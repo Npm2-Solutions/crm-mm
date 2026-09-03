@@ -51,6 +51,10 @@ import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideNetwork from '~icons/lucide/network'
 import MonitorCogIcon from '~icons/lucide/monitor-cog'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
+import LucideSparkles from '~icons/lucide/sparkles'
+import LucideDoorOpen from '~icons/lucide/door-open'
+import LucideTags from '~icons/lucide/tags'
+import LucideClock from '~icons/lucide/clock'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
 import SparkleIcon from '@/components/Icons/SparkleIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
@@ -80,6 +84,11 @@ import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplate
 import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
 import BookingSettings from '@/components/Settings/Booking/BookingSettings.vue'
 import GoogleCalendarSettings from '@/components/Settings/GoogleCalendarSettings.vue'
+import ServicesSettings from '@/components/Settings/Scheduling/ServicesSettings.vue'
+import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSettings.vue'
+import PriceListsSettings from '@/components/Settings/Scheduling/PriceListsSettings.vue'
+import StaffSchedulesSettings from '@/components/Settings/Scheduling/StaffSchedulesSettings.vue'
+import SchedulingDefaults from '@/components/Settings/Scheduling/SchedulingDefaults.vue'
 import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
 import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
@@ -224,6 +233,39 @@ const tabs = computed(() => {
       condition: () => isManager(),
     },
     {
+      // the agenda setup, in the order you configure it: what you sell, what it
+      // needs, what it costs, who is available, and the rules on top
+      label: __('Agenda'),
+      items: [
+        {
+          label: __('Services'),
+          icon: markRaw(LucideSparkles),
+          component: markRaw(ServicesSettings),
+        },
+        {
+          label: __('Rooms & Equipment'),
+          icon: markRaw(LucideDoorOpen),
+          component: markRaw(ResourcesSettings),
+        },
+        {
+          label: __('Price Lists'),
+          icon: markRaw(LucideTags),
+          component: markRaw(PriceListsSettings),
+        },
+        {
+          label: __('Working Hours'),
+          icon: markRaw(LucideClock),
+          component: markRaw(StaffSchedulesSettings),
+        },
+        {
+          label: __('Scheduling'),
+          icon: SettingsIcon,
+          component: markRaw(SchedulingDefaults),
+        },
+      ],
+      condition: () => isManager(),
+    },
+    {
       label: __('Booking'),
       items: [
         {
@@ -331,7 +373,9 @@ watch(activeSettingsPage, (activePage) => setActiveTab(activePage))
 
 // deep link: /crm?settings=<page label> opens the modal on that page (used by
 // OAuth callbacks, e.g. the Meta Lead Ads connect flow)
-const settingsParam = new URLSearchParams(window.location.search).get('settings')
+const settingsParam = new URLSearchParams(window.location.search).get(
+  'settings',
+)
 if (settingsParam) {
   showSettings.value = true
   activeSettingsPage.value = settingsParam

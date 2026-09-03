@@ -4,11 +4,20 @@
       <ViewBreadcrumbs routeName="Calendar" />
     </template>
     <template #right-header>
+      <TabButtons
+        v-model="viewMode"
+        :buttons="[
+          { label: __('Calendar'), value: 'calendar' },
+          { label: __('Agenda'), value: 'agenda' },
+        ]"
+      />
       <Tooltip
         :text="
           googleConnection.data?.connected
             ? __('Google Calendar connected — busy slots block bookings')
-            : __('Connect your Google Calendar to block busy slots on booking pages')
+            : __(
+                'Connect your Google Calendar to block busy slots on booking pages',
+              )
         "
       >
         <Button
@@ -23,8 +32,7 @@
       </Tooltip>
       <ShortcutTooltip :label="__('Create Event')" combo="Mod+E">
         <Button
-          variant="solid"
-          :label="__('Create')"
+          :label="__('Event')"
           :disabled="isCreateDisabled"
           @click="newEvent"
         >
@@ -33,9 +41,137 @@
           /></template>
         </Button>
       </ShortcutTooltip>
+      <Button
+        variant="solid"
+        :label="__('Appointment')"
+        @click="newAppointment()"
+      >
+        <template #prefix
+          ><span class="lucide-plus h-4" aria-hidden="true"
+        /></template>
+      </Button>
     </template>
   </LayoutHeader>
-  <div class="flex h-screen overflow-hidden">
+
+  <!-- filters -->
+  <div
+    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-5 py-2"
+  >
+    <MultiSelectFilter
+      v-model="filters.services"
+      :label="__('Services')"
+      icon="lucide-sparkles"
+      :options="serviceFilterOptions"
+      :emptyText="__('No services configured yet')"
+      @update:modelValue="reloadScheduler"
+    />
+    <MultiSelectFilter
+      v-model="filters.staff"
+      :label="__('Professionals')"
+      icon="lucide-users"
+      :options="staffFilterOptions"
+      @update:modelValue="reloadScheduler"
+    />
+    <MultiSelectFilter
+      v-model="filters.resources"
+      :label="__('Rooms & equipment')"
+      icon="lucide-door-open"
+      :options="resourceFilterOptions"
+      :emptyText="__('No rooms or equipment yet')"
+      @update:modelValue="reloadScheduler"
+    />
+    <MultiSelectFilter
+      v-model="filters.statuses"
+      :label="__('Status')"
+      icon="lucide-circle-dot"
+      :options="statusFilterOptions"
+      @update:modelValue="reloadScheduler"
+    />
+    <span class="grow" />
+    <span v-if="appointmentCount" class="text-p-sm text-ink-gray-5">
+      {{ appointmentCount }} {{ __('appointments') }}
+    </span>
+    <Button
+      v-if="hasFilters"
+      variant="ghost"
+      :label="__('Reset')"
+      @click="resetFilters"
+    />
+  </div>
+
+  <!-- agenda: one column per professional or per room -->
+  <div
+    v-if="viewMode === 'agenda'"
+    class="flex h-full flex-col overflow-hidden"
+  >
+    <div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
+      <Button
+        variant="ghost"
+        icon="lucide-chevron-left"
+        @click="shiftDay(-1)"
+      />
+      <Button
+        :label="__('Today')"
+        variant="ghost"
+        @click="agendaDate = today()"
+      />
+      <Button
+        variant="ghost"
+        icon="lucide-chevron-right"
+        @click="shiftDay(1)"
+      />
+      <DatePicker
+        :modelValue="agendaDate"
+        :clearable="false"
+        @update:modelValue="(value) => setAgendaDate(value)"
+      >
+        <template #target="{ togglePopover }">
+          <Button
+            variant="ghost"
+            class="text-base-medium text-ink-gray-7"
+            :label="agendaLabel"
+            iconRight="chevron-down"
+            @click="togglePopover"
+          />
+        </template>
+      </DatePicker>
+      <span class="grow" />
+      <TabButtons
+        v-model="columnMode"
+        :buttons="[
+          { label: __('By professional'), value: 'staff' },
+          { label: __('By room'), value: 'resource' },
+        ]"
+      />
+      <FormControl
+        v-model="zoom"
+        type="select"
+        class="w-28"
+        :options="[
+          { label: __('Compact'), value: 0.7 },
+          { label: __('Normal'), value: 1.1 },
+          { label: __('Detailed'), value: 1.8 },
+        ]"
+      />
+    </div>
+    <ResourceScheduler
+      class="flex-1"
+      :mode="columnMode"
+      :date="agendaDate"
+      :appointments="appointments"
+      :columnDefs="schedulerColumns"
+      :serviceColors="serviceColors"
+      :selected="selectedAppointment"
+      :pxPerMinute="Number(zoom)"
+      @select="selectedAppointment = $event"
+      @edit="(name) => openAppointment(name)"
+      @create="onGridCreate"
+      @move="onGridMove"
+    />
+  </div>
+
+  <!-- calendar: month / week / day, appointments and events together -->
+  <div v-else class="flex h-screen overflow-hidden">
     <Calendar
       ref="calendar"
       class="flex-1 overflow-hidden"
@@ -47,7 +183,7 @@
         enableShortcuts: false,
         noBorder: true,
       }"
-      :events="events.data"
+      :events="calendarItems"
       :onClick="showDetails"
       :onDblClick="editDetails"
       :onCellClick="newEvent"
@@ -178,30 +314,52 @@
       />
     </div>
   </div>
+
+  <AppointmentDialog
+    v-model="showAppointmentDialog"
+    :seed="appointmentSeed"
+    :meta="meta.data || {}"
+    @saved="onAppointmentSaved"
+    @deleted="onAppointmentSaved"
+  />
 </template>
 <script setup>
+import AppointmentDialog from '@/components/Calendar/AppointmentDialog.vue'
 import CalendarEventPanel from '@/components/Calendar/CalendarEventPanel.vue'
+import MultiSelectFilter from '@/components/Calendar/MultiSelectFilter.vue'
+import ResourceScheduler from '@/components/Calendar/ResourceScheduler.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ShortcutTooltip from '@/components/ShortcutTooltip.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import Link from '@/components/Controls/Link.vue'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { appointmentColor, formatMinutes } from '@/utils/scheduler'
 import {
   Calendar,
   createListResource,
   createResource,
   dayjs,
   DatePicker,
+  TabButtons,
   Tooltip,
   CalendarActiveEvent as activeEvent,
   call,
   toast,
 } from 'frappe-ui'
-import { onMounted, ref, computed, provide, nextTick } from 'vue'
+import {
+  onMounted,
+  ref,
+  reactive,
+  computed,
+  provide,
+  nextTick,
+  watch,
+} from 'vue'
 import { useRoute } from 'vue-router'
 
 const { user } = sessionStore()
@@ -246,6 +404,281 @@ const defaultMode = computed(() => {
 const calendar = ref(null)
 const activeRangeKey = ref('')
 const currentUser = ref(user)
+
+// ---------------------------------------------------------------------------
+// appointments (services, professionals, rooms, equipment)
+// ---------------------------------------------------------------------------
+
+const APPOINTMENT_PREFIX = 'appt:'
+const isAppointmentId = (id) => String(id || '').startsWith(APPOINTMENT_PREFIX)
+const appointmentName = (id) => String(id).slice(APPOINTMENT_PREFIX.length)
+
+const viewMode = ref('calendar')
+const columnMode = ref('staff')
+const zoom = ref(1.1)
+const agendaDate = ref(today())
+const selectedAppointment = ref('')
+const showAppointmentDialog = ref(false)
+const appointmentSeed = ref({})
+
+const filters = reactive({
+  services: [],
+  staff: [],
+  resources: [],
+  statuses: [],
+})
+
+const meta = createResource({
+  url: 'crm.api.appointments.get_scheduler_meta',
+  cache: 'crm-scheduler-meta',
+  auto: true,
+})
+
+const scheduler = createResource({
+  url: 'crm.api.appointments.get_calendar',
+  auto: false,
+})
+
+const appointments = computed(() => scheduler.data?.appointments || [])
+const appointmentCount = computed(() => appointments.value.length)
+
+const serviceColors = computed(() =>
+  Object.fromEntries(
+    (meta.data?.services || []).map((service) => [service.name, service.color]),
+  ),
+)
+
+const serviceFilterOptions = computed(() =>
+  (meta.data?.services || []).map((service) => ({
+    label: service.service_name,
+    value: service.name,
+    color: service.color,
+  })),
+)
+const staffFilterOptions = computed(() =>
+  (meta.data?.staff || []).map((person) => ({
+    label: person.full_name || person.name,
+    value: person.name,
+  })),
+)
+const resourceFilterOptions = computed(() =>
+  (meta.data?.resources || []).map((resource) => ({
+    label: `${resource.resource_name} · ${__(resource.resource_type)}`,
+    value: resource.name,
+    color: resource.color,
+  })),
+)
+const statusFilterOptions = computed(() =>
+  (meta.data?.statuses || []).map((status) => ({
+    label: __(status),
+    value: status,
+  })),
+)
+
+const hasFilters = computed(() =>
+  Object.values(filters).some((value) => value.length),
+)
+
+function resetFilters() {
+  filters.services = []
+  filters.staff = []
+  filters.resources = []
+  filters.statuses = []
+  reloadScheduler()
+}
+
+/** Columns of the agenda grid: professionals, or rooms and equipment. */
+const schedulerColumns = computed(() => {
+  if (columnMode.value === 'resource') {
+    const wanted = filters.resources
+    return (meta.data?.resources || [])
+      .filter((resource) => !wanted.length || wanted.includes(resource.name))
+      .map((resource) => ({
+        key: resource.name,
+        label: resource.resource_name,
+        caption: [
+          __(resource.resource_type),
+          resource.capacity > 1
+            ? __('{0} at a time').replace('{0}', resource.capacity)
+            : '',
+          resource.seats ? __('{0} seats').replace('{0}', resource.seats) : '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        color: resource.color,
+        closed: [],
+      }))
+  }
+  const wanted = filters.staff
+  return (meta.data?.staff || [])
+    .filter((person) => !wanted.length || wanted.includes(person.name))
+    .map((person) => ({
+      key: person.name,
+      label: person.full_name || person.name,
+      caption: person.name,
+      closed: [],
+    }))
+})
+
+const agendaLabel = computed(() =>
+  dayjs(agendaDate.value).format('dddd D MMMM YYYY'),
+)
+
+function today() {
+  return dayjs().format('YYYY-MM-DD')
+}
+
+function shiftDay(days) {
+  agendaDate.value = dayjs(agendaDate.value)
+    .add(days, 'day')
+    .format('YYYY-MM-DD')
+}
+
+function setAgendaDate(value) {
+  if (value) agendaDate.value = dayjs(value).format('YYYY-MM-DD')
+}
+
+/** Window the appointment feed should cover for the current view. */
+function schedulerRange() {
+  if (viewMode.value === 'agenda') {
+    return { start: agendaDate.value, end: agendaDate.value }
+  }
+  const range = lastRange.value
+  if (range?.startDate && range?.endDate) {
+    return {
+      start: dayjs(range.startDate).format('YYYY-MM-DD'),
+      end: dayjs(range.endDate).format('YYYY-MM-DD'),
+    }
+  }
+  return {
+    start: dayjs().startOf('month').format('YYYY-MM-DD'),
+    end: dayjs().endOf('month').format('YYYY-MM-DD'),
+  }
+}
+
+function reloadScheduler() {
+  const range = schedulerRange()
+  scheduler.submit({
+    start: range.start,
+    end: range.end,
+    services: filters.services,
+    staff: filters.staff,
+    resources: filters.resources,
+    statuses: filters.statuses,
+    include_events: false,
+  })
+}
+
+/** Appointments rendered as calendar events, alongside the plain ones. */
+const appointmentItems = computed(() =>
+  appointments.value.map((appointment) => ({
+    id: `${APPOINTMENT_PREFIX}${appointment.name}`,
+    title: appointment.title || appointment.service,
+    description: appointment.notes || '',
+    status: appointment.status,
+    fromDate: dayjs(appointment.starts_on).format('YYYY-MM-DD'),
+    toDate: dayjs(appointment.ends_on).format('YYYY-MM-DD'),
+    fromTime: dayjs(appointment.starts_on).format('HH:mm'),
+    toTime: dayjs(appointment.ends_on).format('HH:mm'),
+    isFullDay: false,
+    location: appointment.location,
+    color: appointmentColor(appointment, serviceColors.value),
+    attending: 'Yes',
+  })),
+)
+
+const calendarItems = computed(() => [
+  ...(Array.isArray(events.data) ? events.data : []),
+  ...appointmentItems.value,
+])
+
+function newAppointment(seed = {}) {
+  appointmentSeed.value = { ...seed }
+  showAppointmentDialog.value = true
+}
+
+function openAppointment(name) {
+  appointmentSeed.value = { name }
+  showAppointmentDialog.value = true
+}
+
+function onGridCreate({ date, minutes, mode, key }) {
+  newAppointment({
+    date,
+    time: formatMinutes(minutes),
+    staff: mode === 'staff' ? key : undefined,
+    resource: mode === 'resource' ? key : undefined,
+  })
+}
+
+function onGridMove({ name, startsOn, endsOn, mode, from, to }) {
+  const target = appointments.value.find((a) => a.name === name)
+  if (!target) return
+  const sameColumn = from === to
+  const reassign =
+    !sameColumn && mode === 'staff'
+      ? (target.staff || []).map((row) =>
+          row.user === from ? { ...row, user: to } : row,
+        )
+      : !sameColumn && mode === 'resource'
+        ? (target.resources || []).map((row) =>
+            row.resource === from ? { ...row, resource: to } : row,
+          )
+        : null
+
+  if (!reassign) {
+    createResource({
+      url: 'crm.api.appointments.move_appointment',
+      params: {
+        name,
+        starts_on: startsOn.toISOString(),
+        ends_on: endsOn.toISOString(),
+      },
+      auto: true,
+      onSuccess: () => {
+        toast.success(__('Appointment moved'))
+        reloadScheduler()
+      },
+      onError: (e) => toast.error(e.messages?.[0] || __('Could not move it')),
+    })
+    return
+  }
+
+  // dropped on a different column: move it *and* swap the professional or room
+  createResource({
+    url: 'crm.api.appointments.save_appointment',
+    params: {
+      name,
+      appointment: {
+        service: target.service,
+        status: target.status,
+        starts_on: startsOn.toISOString(),
+        ends_on: endsOn.toISOString(),
+        staff: mode === 'staff' ? reassign : target.staff,
+        resources: mode === 'resource' ? reassign : target.resources,
+        participants: target.participants,
+        location: target.location,
+        notes: target.notes,
+      },
+    },
+    auto: true,
+    onSuccess: () => {
+      toast.success(__('Appointment reassigned'))
+      reloadScheduler()
+    },
+    onError: (e) => toast.error(e.messages?.[0] || __('Could not reassign it')),
+  })
+}
+
+function onAppointmentSaved() {
+  reloadScheduler()
+}
+
+watch([viewMode, agendaDate], reloadScheduler)
+
+// ---------------------------------------------------------------------------
+// events (the classic calendar)
+// ---------------------------------------------------------------------------
 
 async function updateUser(u) {
   currentUser.value = u
@@ -298,6 +731,9 @@ const events = createListResource({
   auto: true,
   transform: (data) =>
     data
+      // appointments are mirrored into Event for Google sync; showing both would
+      // draw every appointment twice
+      .filter((ev) => ev.reference_doctype !== 'CRM Appointment')
       .map((ev) => ({
         id: ev.name,
         title: ev.subject,
@@ -326,6 +762,7 @@ const eventPanel = ref(null)
 const showEventPanel = ref(false)
 const event = ref({})
 const mode = ref('')
+const lastRange = ref(null)
 
 const isCreateDisabled = computed(() =>
   ['edit', 'new', 'duplicate'].includes(mode.value),
@@ -390,6 +827,34 @@ function createEvent(_event) {
 async function updateEvent(_event, afterDrag = false) {
   if (!_event.id) return
 
+  // an appointment dragged on the classic calendar reschedules through the
+  // scheduling engine, so conflicts and buffers still apply
+  if (isAppointmentId(_event.id)) {
+    const start = dayjs(
+      `${_event.fromDate} ${_event.fromTime}`,
+      'YYYY-MM-DD HH:mm',
+    )
+    const end = dayjs(`${_event.toDate} ${_event.toTime}`, 'YYYY-MM-DD HH:mm')
+    createResource({
+      url: 'crm.api.appointments.move_appointment',
+      params: {
+        name: appointmentName(_event.id),
+        starts_on: start.toDate().toISOString(),
+        ends_on: end.toDate().toISOString(),
+      },
+      auto: true,
+      onSuccess: () => {
+        toast.success(__('Appointment moved'))
+        reloadScheduler()
+      },
+      onError: (e) => {
+        toast.error(e.messages?.[0] || __('Could not move it'))
+        reloadScheduler()
+      },
+    })
+    return
+  }
+
   _event.fromTime = dayjs(_event.fromTime, 'HH:mm').format('HH:mm')
   _event.toTime = dayjs(_event.toTime, 'HH:mm').format('HH:mm')
 
@@ -445,6 +910,11 @@ async function updateEvent(_event, afterDrag = false) {
 function deleteEvent(eventID) {
   if (!eventID) return
 
+  if (isAppointmentId(eventID)) {
+    openAppointment(appointmentName(eventID))
+    return
+  }
+
   $dialog({
     title: __('Delete'),
     message: __('Are you sure you want to delete this event?'),
@@ -484,6 +954,7 @@ function syncEvent(eventID, _event) {
 
 async function handleRangeChange(range) {
   if (!range?.startDate || !range?.endDate) return
+  lastRange.value = range
   const key = `${range.view}-${range.startDate}-${range.endDate}`
   if (key === activeRangeKey.value) {
     if (events.list?.loading || events.list?.fetched) return
@@ -494,14 +965,19 @@ async function handleRangeChange(range) {
     orFilters: buildEventOrFilters(),
   })
   await events.reload()
+  reloadScheduler()
 }
 
 onMounted(async () => {
   activeEvent.value = ''
   mode.value = ''
   showEventPanel.value = false
+  reloadScheduler()
 
-  const { eventId, date } = route.query
+  const { eventId, date, appointment } = route.query
+  if (appointment) {
+    openAppointment(appointment)
+  }
   if (eventId && date) {
     await events.promise
     await nextTick()
@@ -536,10 +1012,21 @@ useKeyboardShortcuts({
 })
 
 function showDetails(e, reloadEvent = false) {
+  const id = (e?.calendarEvent || e)?.id
+  if (isAppointmentId(id)) {
+    selectedAppointment.value = appointmentName(id)
+    openAppointment(appointmentName(id))
+    return
+  }
   openEvent(e, 'details', reloadEvent)
 }
 
 function editDetails(e) {
+  const id = (e?.calendarEvent || e)?.id
+  if (isAppointmentId(id)) {
+    openAppointment(appointmentName(id))
+    return
+  }
   openEvent(e, 'edit')
 }
 
@@ -560,8 +1047,6 @@ function buildTempEvent(e = {}, duplicate = false) {
     eventType: e.eventType || 'Private',
     color: e.color || 'green',
     attending: e.attending || 'Yes',
-    referenceDoctype: e.referenceDoctype,
-    referenceDocname: e.referenceDocname,
     event_participants: e.event_participants || [],
     notifications: e.notifications || [],
   }
