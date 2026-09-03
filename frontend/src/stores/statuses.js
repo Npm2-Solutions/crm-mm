@@ -30,8 +30,10 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
   const dealStatuses = createListResource({
     doctype: 'CRM Deal Status',
-    fields: ['name', 'color', 'position', 'type'],
+    fields: ['name', 'color', 'position', 'type', 'pipeline'],
     orderBy: 'position asc',
+    // stages add up across pipelines -- the default page length of 20 would cut them off
+    pageLength: 500,
     cache: 'deal-statuses',
     initialData: [],
     auto: true,

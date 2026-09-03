@@ -148,7 +148,7 @@ class TestCRMPipeline(IntegrationTestCase):
 	def test_get_pipelines_reports_deal_counts(self):
 		create_test_deal(organization="Counting Org")
 
-		pipelines = {pipeline["name"]: pipeline for pipeline in get_pipelines()}
+		pipelines = {pipeline["name"]: pipeline for pipeline in get_pipelines(with_counts=1)}
 
 		self.assertIn(self.pipeline, pipelines)
 		self.assertTrue(pipelines[self.pipeline]["deal_count"] >= 1)

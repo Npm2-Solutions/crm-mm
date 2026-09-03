@@ -74,8 +74,12 @@ def _deal_counts(field: str) -> dict:
 
 
 @frappe.whitelist()
-def get_pipelines() -> list[dict]:
-	"""Every pipeline with its stages, in board order, plus deal counts."""
+def get_pipelines(with_counts: bool | int = False) -> list[dict]:
+	"""Every pipeline with its stages, in board order.
+
+	`with_counts` adds how many deals sit in each pipeline and each stage -- two
+	grouped queries the deal UI does not need, so it is off by default.
+	"""
 	pipelines = frappe.get_all(
 		"CRM Pipeline",
 		fields=["name", "description", "is_default", "disabled", "position"],
@@ -88,16 +92,19 @@ def get_pipelines() -> list[dict]:
 		order_by="position asc, name asc",
 	)
 
-	pipeline_counts = _deal_counts("pipeline")
-	stage_counts = _deal_counts("status")
+	with_counts = frappe.utils.cint(with_counts)
+	pipeline_counts = _deal_counts("pipeline") if with_counts else {}
+	stage_counts = _deal_counts("status") if with_counts else {}
 
 	stages_by_pipeline = {}
 	for stage in stages:
-		stage["deal_count"] = stage_counts.get(stage.name, 0)
+		if with_counts:
+			stage["deal_count"] = stage_counts.get(stage.name, 0)
 		stages_by_pipeline.setdefault(stage.pipeline, []).append(stage)
 
 	for pipeline in pipelines:
-		pipeline["deal_count"] = pipeline_counts.get(pipeline.name, 0)
+		if with_counts:
+			pipeline["deal_count"] = pipeline_counts.get(pipeline.name, 0)
 		pipeline["stages"] = stages_by_pipeline.get(pipeline.name, [])
 
 	# stages left behind by an older install (no pipeline yet) must stay reachable
