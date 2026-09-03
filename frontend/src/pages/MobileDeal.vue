@@ -9,18 +9,7 @@
         </template>
       </Breadcrumbs>
       <div class="absolute right-0">
-        <Dropdown
-          v-if="doc"
-          :options="
-            statusOptions(
-              'deal',
-              document.statuses?.length
-                ? document.statuses
-                : document._statuses,
-              triggerStatusChange,
-            )
-          "
-        >
+        <Dropdown v-if="doc" :options="statuses">
           <template #default="{ open }">
             <Button
               v-if="doc.status"
@@ -298,6 +287,7 @@ import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
+import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
@@ -321,6 +311,7 @@ import { useRoute, useRouter } from 'vue-router'
 const { brand } = getSettings()
 const { $dialog, $socket } = globalStore()
 const { statusOptions, getDealStatus } = statusesStore()
+const { getStageNames } = pipelinesStore()
 const { doctypeMeta } = getMeta('CRM Deal')
 
 const route = useRoute()
@@ -344,6 +335,17 @@ const {
 } = useDocument('CRM Deal', props.dealId)
 
 const doc = computed(() => document.doc || {})
+
+const statuses = computed(() => {
+  let customStatuses = document.statuses?.length
+    ? document.statuses
+    : document._statuses || []
+  // a deal only moves through the stages of its own pipeline
+  if (!customStatuses.length) {
+    customStatuses = getStageNames(doc.value?.pipeline)
+  }
+  return statusOptions('deal', customStatuses, triggerStatusChange)
+})
 
 onMounted(async () => {
   if (document.doc) await triggerOnRender()

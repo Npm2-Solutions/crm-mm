@@ -24,6 +24,23 @@
       />
       <AssignTo v-model="assignees.data" doctype="CRM Deal" :docname="dealId" />
       <Dropdown
+        v-if="doc.name && pipelines.data?.length > 1"
+        :options="pipelineDropdownOptions"
+        placement="right"
+      >
+        <template #default="{ open }">
+          <Button
+            :label="doc.pipeline || __('Pipeline')"
+            :tooltip="__('Pipeline')"
+            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+          >
+            <template #prefix>
+              <KanbanIcon class="h-4 text-ink-gray-6" />
+            </template>
+          </Button>
+        </template>
+      </Dropdown>
+      <Dropdown
         v-if="doc && document.statuses"
         :options="statuses"
         placement="right"
@@ -358,6 +375,7 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
+import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
 import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
@@ -385,6 +403,7 @@ import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
+import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { whatsappEnabled } from '@/composables/whatsapp'
@@ -420,6 +439,7 @@ const { on } = useBroadcast()
 const { brand } = getSettings()
 const { $dialog, $socket, makeCall } = globalStore()
 const { statusOptions, getDealStatus } = statusesStore()
+const { pipelines, getStageNames, pipelineOptions } = pipelinesStore()
 const { doctypeMeta } = getMeta('CRM Deal')
 
 const { updateOnboardingStep, isOnboardingStepsCompleted } =
@@ -560,8 +580,18 @@ const statuses = computed(() => {
   let customStatuses = document.statuses?.length
     ? document.statuses
     : document._statuses || []
+  // a deal only moves through the stages of its own pipeline
+  if (!customStatuses.length) {
+    customStatuses = getStageNames(doc.value?.pipeline)
+  }
   return statusOptions('deal', customStatuses, triggerStatusChange)
 })
+
+// moving the deal to another pipeline: the backend puts it on that pipeline's
+// first open stage
+const pipelineDropdownOptions = computed(() =>
+  pipelineOptions((pipeline) => updateField('pipeline', pipeline)),
+)
 
 usePageMeta(() => {
   return {

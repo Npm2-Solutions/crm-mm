@@ -8,6 +8,23 @@
         v-if="dealsListView?.customListActions"
         :actions="dealsListView.customListActions"
       />
+      <Dropdown
+        v-if="route.params.viewType == 'kanban' && pipelines.data?.length"
+        :options="pipelineDropdownOptions"
+        placement="right"
+      >
+        <template #default="{ open }">
+          <Button
+            :label="currentPipeline || __('All pipelines')"
+            :tooltip="__('Pipeline')"
+            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+          >
+            <template #prefix>
+              <KanbanIcon class="h-4 text-ink-gray-6" />
+            </template>
+          </Button>
+        </template>
+      </Dropdown>
       <Button
         variant="solid"
         :label="__('Create')"
@@ -252,6 +269,7 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
+import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
@@ -264,8 +282,10 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { organizationsStore } from '@/stores/organizations'
 import { statusesStore } from '@/stores/statuses'
+import { pipelinesStore } from '@/stores/pipelines'
 import { callEnabled } from '@/composables/telephony'
 import { formatDate, timeAgo, website, formatTime } from '@/utils'
+import { kanbanColumnsForPipeline, pipelineOfColumns } from '@/utils/pipelines'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
 import { Tooltip, Avatar, Dropdown } from 'frappe-ui'
@@ -278,6 +298,7 @@ const { makeCall } = globalStore()
 const { getUser } = usersStore()
 const { getOrganization } = organizationsStore()
 const { getDealStatus } = statusesStore()
+const { pipelines, getStages, pipelineOptions } = pipelinesStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 const { showModal } = useDoctypeModal()
@@ -295,6 +316,36 @@ const loadMore = ref(1)
 const triggerResize = ref(1)
 const updatedPageCount = ref(20)
 const viewControls = ref(null)
+
+// Kanban: the board shows one pipeline at a time -- its stages, in their order.
+// Which pipeline that is comes from the columns the view already carries, so a
+// board the user customised is not overwritten on load.
+const kanbanColumns = computed(() => {
+  let columns = deals.value?.data?.kanban_columns || []
+  if (typeof columns === 'string') columns = JSON.parse(columns)
+  return columns
+})
+
+const stagesByName = computed(() =>
+  Object.fromEntries(getStages().map((stage) => [stage.name, stage])),
+)
+
+const currentPipeline = computed(() =>
+  pipelineOfColumns(kanbanColumns.value, stagesByName.value),
+)
+
+const pipelineDropdownOptions = computed(() =>
+  pipelineOptions(switchPipeline, { includeAll: true }),
+)
+
+function switchPipeline(pipeline) {
+  viewControls.value.updateKanbanSettings({
+    kanban_columns: kanbanColumnsForPipeline(
+      getStages(pipeline),
+      kanbanColumns.value,
+    ),
+  })
+}
 
 function getRow(name, field) {
   function getValue(value) {

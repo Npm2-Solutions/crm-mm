@@ -85,6 +85,7 @@ import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { usersStore } from '@/stores/users'
 import { statusesStore } from '@/stores/statuses'
+import { pipelinesStore } from '@/stores/pipelines'
 import { isMobileView } from '@/composables/settings'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { useDocument } from '@/data/document'
@@ -99,6 +100,8 @@ const props = defineProps({
 
 const { getUser, isManager } = usersStore()
 const { getDealStatus, statusOptions } = statusesStore()
+const { pipelines, getStageNames, getPipelineOfStage, defaultPipeline } =
+  pipelinesStore()
 
 const show = defineModel({ type: Boolean })
 const router = useRouter()
@@ -208,6 +211,11 @@ const tabs = createResource({
               field.prefix = getDealStatus(deal.doc.status).color
             }
 
+            if (field.fieldname == 'pipeline') {
+              field.fieldtype = 'Select'
+              field.options = pipelineFieldOptions.value
+            }
+
             if (field.fieldtype === 'Table') {
               deal.doc[field.fieldname] = []
             }
@@ -218,7 +226,46 @@ const tabs = createResource({
   },
 })
 
-const dealStatuses = computed(() => statusOptions('deal'))
+// only the stages of the pipeline the deal is being created in
+const dealStatuses = computed(() =>
+  statusOptions('deal', getStageNames(deal.doc.pipeline)),
+)
+
+const pipelineFieldOptions = computed(() =>
+  (pipelines.data || [])
+    .filter((pipeline) => pipeline.name && !pipeline.disabled)
+    .map((pipeline) => ({ label: __(pipeline.name), value: pipeline.name })),
+)
+
+function quickEntryField(fieldname) {
+  for (const tab of tabs.data || []) {
+    for (const section of tab.sections || []) {
+      for (const column of section.columns || []) {
+        const field = column.fields?.find((f) => f.fieldname == fieldname)
+        if (field) return field
+      }
+    }
+  }
+  return null
+}
+
+// switching pipeline re-stocks the stage dropdown and moves the deal to a stage
+// that exists in the pipeline chosen
+watch(
+  () => deal.doc.pipeline,
+  () => {
+    const stages = getStageNames(deal.doc.pipeline)
+    if (!stages.includes(deal.doc.status)) {
+      deal.doc.status = stages[0]
+    }
+
+    const statusField = quickEntryField('status')
+    if (statusField) {
+      statusField.options = dealStatuses.value
+      statusField.prefix = getDealStatus(deal.doc.status)?.color
+    }
+  },
+)
 
 async function createDeal() {
   if (deal.doc.website && !deal.doc.website.startsWith('http')) {
@@ -294,8 +341,13 @@ onMounted(() => {
   if (!deal.doc.deal_owner) {
     deal.doc.deal_owner = getUser().name
   }
-  if (!deal.doc.status && dealStatuses.value[0].value) {
-    deal.doc.status = dealStatuses.value[0].value
+  if (!deal.doc.pipeline) {
+    // a deal created from a kanban column already knows its stage
+    deal.doc.pipeline =
+      getPipelineOfStage(deal.doc.status) || defaultPipeline.value?.name
+  }
+  if (!deal.doc.status) {
+    deal.doc.status = dealStatuses.value[0]?.value
   }
 })
 </script>

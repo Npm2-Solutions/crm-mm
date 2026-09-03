@@ -95,6 +95,7 @@ import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
 import { statusesStore } from '@/stores/statuses'
+import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { isMobileView } from '@/composables/settings'
@@ -112,6 +113,7 @@ const show = defineModel({ type: Boolean })
 const router = useRouter()
 
 const { statusOptions, getDealStatus } = statusesStore()
+const { pipelines, getStageNames } = pipelinesStore()
 const { isManager } = usersStore()
 const { user } = sessionStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
@@ -189,7 +191,17 @@ async function convertToDeal() {
   }
 }
 
-const dealStatuses = computed(() => statusOptions('deal'))
+// no pipeline picked yet: every stage is offered, and the one chosen decides
+// which pipeline the new deal lands in
+const dealStatuses = computed(() =>
+  statusOptions('deal', getStageNames(deal.doc.pipeline)),
+)
+
+const pipelineFieldOptions = computed(() =>
+  (pipelines.data || [])
+    .filter((pipeline) => pipeline.name && !pipeline.disabled)
+    .map((pipeline) => ({ label: __(pipeline.name), value: pipeline.name })),
+)
 
 const dealTabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
@@ -207,6 +219,11 @@ const dealTabs = createResource({
               field.fieldtype = 'Select'
               field.options = dealStatuses.value
               field.prefix = getDealStatus(deal.doc.status).color
+            }
+
+            if (field.fieldname == 'pipeline') {
+              field.fieldtype = 'Select'
+              field.options = pipelineFieldOptions.value
             }
           })
         })
@@ -292,9 +309,9 @@ function isMatchingCustomField(leadField, dealField) {
 function isCustomField(field) {
   return Boolean(
     field?.is_custom_field ||
-      field?.custom ||
-      field?.fieldname?.startsWith('custom_') ||
-      field?.name === `${field?.parent}-${field?.fieldname}`,
+    field?.custom ||
+    field?.fieldname?.startsWith('custom_') ||
+    field?.name === `${field?.parent}-${field?.fieldname}`,
   )
 }
 
