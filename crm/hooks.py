@@ -219,6 +219,10 @@ doc_events = {
 		"after_insert": ["crm.automation.engine.on_booking_created"],
 		"on_update": ["crm.automation.engine.on_booking_updated"],
 	},
+	"CRM Appointment": {
+		"after_insert": ["crm.automation.engine.on_appointment_created"],
+		"on_update": ["crm.automation.engine.on_appointment_updated"],
+	},
 	"Sales Order": {
 		"before_validate": [
 			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_on_sales_order"

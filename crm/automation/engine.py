@@ -66,6 +66,11 @@ EVENT_TO_TRIGGER = {
 	"booking_cancelled": "Booking Cancelled",
 	"booking_no_show": "Booking No Show",
 	"booking_completed": "Booking Completed",
+	"appointment_created": "Appointment Created",
+	"appointment_rescheduled": "Appointment Rescheduled",
+	"appointment_cancelled": "Appointment Cancelled",
+	"appointment_no_show": "Appointment No Show",
+	"appointment_completed": "Appointment Completed",
 	"sms_received": "Incoming SMS",
 	"reply_received": "Customer Replied",
 	"email_opened": "Email Opened",
@@ -149,7 +154,7 @@ def process_event(event: str, doc, payload: dict | None = None) -> None:
 			handle_goal_event("link_clicked", ref_doctype, ref_name, payload)
 		if event == "tag_added":
 			handle_goal_event("tag_added", ref_doctype, ref_name, payload)
-		if event in ("booking_created",):
+		if event in ("booking_created", "appointment_created"):
 			handle_goal_event("booking_booked", ref_doctype, ref_name, payload)
 		if event in ("lead_status_changed", "deal_status_changed"):
 			handle_goal_event("status_is", ref_doctype, ref_name, {"value": doc.get("status")})
@@ -176,6 +181,13 @@ def resolve_reference(event: str, doc) -> tuple[str, str] | None:
 		return doc.doctype, doc.name
 	if doc.doctype == "CRM Booking":
 		return ("CRM Lead", doc.lead) if doc.lead else None
+	if doc.doctype == "CRM Appointment":
+		# an appointment can hold several clients; the automation follows the first
+		# one linked to a lead or a deal
+		for row in doc.get("participants") or []:
+			if row.get("party") and row.get("party_type") in ("CRM Lead", "CRM Deal"):
+				return row.party_type, row.party
+		return None
 	if doc.doctype in ("CRM SMS Message", "WhatsApp Message", "Communication"):
 		if doc.get("reference_doctype") in ("CRM Lead", "CRM Deal") and doc.get("reference_name"):
 			return doc.reference_doctype, doc.reference_name
@@ -1201,6 +1213,25 @@ def on_booking_updated(doc, method=None):
 	}.get(doc.status)
 	if event:
 		process_event(event, doc, {"status": doc.status})
+
+
+def on_appointment_created(doc, method=None):
+	process_event("appointment_created", doc, {"service": doc.service})
+
+
+def on_appointment_updated(doc, method=None):
+	previous = doc.get_doc_before_save()
+	if previous and str(previous.starts_on) != str(doc.starts_on):
+		process_event("appointment_rescheduled", doc, {"service": doc.service})
+	if not _status_actually_changed(doc):
+		return
+	event = {
+		"Cancelled": "appointment_cancelled",
+		"No Show": "appointment_no_show",
+		"Completed": "appointment_completed",
+	}.get(doc.status)
+	if event:
+		process_event(event, doc, {"status": doc.status, "service": doc.service})
 
 
 def on_communication_update(doc, method=None):
