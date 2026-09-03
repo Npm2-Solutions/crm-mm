@@ -263,18 +263,20 @@ def save_stages(pipeline: str, stages: list | str) -> list[dict]:
 		else:
 			doc = frappe.get_doc("CRM Deal Status", existing)
 
-		doc.pipeline = pipeline
-		doc.position = position
+		values = {"pipeline": pipeline, "position": position}
 		if stage.get("color"):
-			doc.color = stage["color"]
+			values["color"] = stage["color"]
 		if stage.get("type"):
-			doc.type = stage["type"]
+			values["type"] = stage["type"]
 		if stage.get("probability") is not None:
-			doc.probability = stage["probability"]
+			values["probability"] = frappe.utils.flt(stage["probability"])
 
 		if is_new:
+			doc.update(values)
 			doc.insert()
-		else:
+		elif any(doc.get(field) != value for field, value in values.items()):
+			# the screen sends every stage on save -- only touch the ones that moved
+			doc.update(values)
 			doc.save()
 
 		if doc.name != label:

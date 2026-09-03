@@ -87,7 +87,9 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
     if (statuses?.length) {
       statusesByName = statuses.reduce((acc, status) => {
-        acc[status] = statusesByName[status]
+        // a name the store does not know yet (still loading, or deleted) would
+        // otherwise become an option with no label
+        if (statusesByName[status]) acc[status] = statusesByName[status]
         return acc
       }, {})
     }
