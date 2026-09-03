@@ -74,6 +74,10 @@ doctype_js = {
 website_route_rules = [
 	{"from_route": "/crm/<path:app_path>", "to_route": "crm"},
 	{"from_route": "/crm-form/<route>", "to_route": "crm_form"},
+	{"from_route": "/book/<route>", "to_route": "book"},
+	{"from_route": "/book", "to_route": "book_index"},
+	# hub-hosted WhatsApp Embedded Signup (one whitelisted domain for every site)
+	{"from_route": "/whatsapp-connect", "to_route": "whatsapp_connect"},
 ]
 
 # Generators
@@ -172,8 +176,24 @@ doc_events = {
 		"on_update": ["crm.api.todo.on_update"],
 	},
 	"Communication": {
-		"after_insert": ["crm.utils.on_communication_insert"],
-		"on_update": ["crm.utils.on_communication_update"],
+		"after_insert": [
+			"crm.utils.on_communication_insert",
+			"crm.automation.engine.on_communication_insert",
+		],
+		"on_update": [
+			"crm.utils.on_communication_update",
+			"crm.automation.engine.on_communication_update",
+		],
+	},
+	"Tag Link": {
+		"after_insert": ["crm.automation.engine.on_tag_added"],
+		"on_trash": ["crm.automation.engine.on_tag_removed"],
+	},
+	"CRM Task": {
+		"on_update": ["crm.automation.engine.on_task_updated"],
+	},
+	"FCRM Note": {
+		"after_insert": ["crm.automation.engine.on_note_created"],
 	},
 	"Comment": {
 		"after_insert": ["crm.utils.on_comment_insert"],
@@ -182,11 +202,22 @@ doc_events = {
 	"WhatsApp Message": {
 		"validate": ["crm.api.whatsapp.validate"],
 		"on_update": ["crm.api.whatsapp.on_update"],
+		"after_insert": ["crm.automation.engine.on_whatsapp_received"],
+	},
+	"CRM Lead": {
+		"after_insert": ["crm.automation.engine.on_lead_created"],
+		"on_update": ["crm.automation.engine.on_lead_updated"],
 	},
 	"CRM Deal": {
 		"on_update": [
-			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext"
+			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext",
+			"crm.automation.engine.on_deal_updated",
 		],
+		"after_insert": ["crm.automation.engine.on_deal_created"],
+	},
+	"CRM Booking": {
+		"after_insert": ["crm.automation.engine.on_booking_created"],
+		"on_update": ["crm.automation.engine.on_booking_updated"],
 	},
 	"Sales Order": {
 		"before_validate": [
@@ -225,19 +256,19 @@ scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": ["crm.api.event.trigger_hourly_event_notifications"],
 	"daily": [
+		"crm.integrations.meta.leads.check_token_health",
 		"crm.api.event.trigger_daily_event_notifications",
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
 		"crm.fcrm.doctype.crm_view_settings.crm_view_settings.clear_old_versions",
 		"crm.telemetry.capture_feature_state",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
-	"daily_long": ["crm.lead_syncing.background_sync.sync_leads_from_sources_daily"],
-	"hourly_long": ["crm.lead_syncing.background_sync.sync_leads_from_sources_hourly"],
-	"monthly_long": ["crm.lead_syncing.background_sync.sync_leads_from_sources_monthly"],
+	"hourly_long": [
+		"crm.integrations.meta.leads.reconcile_synced_pages",
+	],
 	"cron": {
-		"*/5 * * * *": ["crm.lead_syncing.background_sync.sync_leads_from_sources_5_minutes"],
-		"*/10 * * * *": ["crm.lead_syncing.background_sync.sync_leads_from_sources_10_minutes"],
-		"*/15 * * * *": ["crm.lead_syncing.background_sync.sync_leads_from_sources_15_minutes"],
+		"* * * * *": ["crm.automation.engine.process_due_enrollments"],
+		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 	},
 }
 

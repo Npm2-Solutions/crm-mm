@@ -67,8 +67,8 @@ import InviteUserPage from '@/components/Settings/InviteUserPage.vue'
 import ProfilePage from '@/components/Settings/Profile/ProfilePage.vue'
 import PreferencesSettings from '@/components/Settings/PreferencesSettings.vue'
 import WhatsAppSettings from '@/components/Settings/WhatsAppSettings.vue'
+import WhatsAppTemplates from '@/components/Settings/WhatsAppTemplates.vue'
 import ERPNextSettings from '@/components/Settings/ERPNextSettings.vue'
-import LeadSyncSourcePage from '@/components/Settings/LeadSyncing/LeadSyncSourcePage.vue'
 import DefaultsSettings from '@/components/Settings/DefaultsSettings.vue'
 import BrandSettings from '@/components/Settings/BrandSettings.vue'
 import CalendarSettings from '@/components/Settings/CalendarSettings.vue'
@@ -78,6 +78,12 @@ import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
 import DashboardSettings from '@/components/Settings/DashboardSettings.vue'
 import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplatePage.vue'
 import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
+import BookingSettings from '@/components/Settings/Booking/BookingSettings.vue'
+import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
+import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
+import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
+import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
+import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
 import Icon from '@/components/Icon.vue'
 import { usersStore } from '@/stores/users'
@@ -208,6 +214,56 @@ const tabs = computed(() => {
           component: markRaw(FormsSettings),
           icon: markRaw(LucideTextCursorInput),
         },
+        {
+          label: __('Tracked Links'),
+          component: markRaw(TrackedLinksSettings),
+          icon: 'link',
+        },
+      ],
+      condition: () => isManager(),
+    },
+    {
+      label: __('Booking'),
+      items: [
+        {
+          label: __('Booking Calendars'),
+          icon: CalendarIcon,
+          component: markRaw(BookingSettings),
+        },
+      ],
+      condition: () => isManager(),
+    },
+    {
+      // one connection, three things it feeds — kept together and in order
+      label: __('Meta & Messaging'),
+      items: [
+        {
+          label: __('Meta connection'),
+          icon: 'facebook',
+          component: markRaw(MetaConnection),
+        },
+        {
+          label: __('Lead forms'),
+          icon: markRaw(LucideTextCursorInput),
+          component: markRaw(MetaLeadForms),
+        },
+        {
+          label: __('Social profiles'),
+          icon: SocialIcon,
+          component: markRaw(SocialSettings),
+        },
+        {
+          label: __('WhatsApp'),
+          icon: WhatsAppIcon,
+          component: markRaw(WhatsAppSettings),
+          condition: () => isWhatsappInstalled.value,
+        },
+        {
+          label: __('WhatsApp Templates'),
+          icon: EmailTemplateIcon,
+          component: markRaw(WhatsAppTemplates),
+          condition: () => isWhatsappInstalled.value,
+        },
       ],
       condition: () => isManager(),
     },
@@ -231,21 +287,9 @@ const tabs = computed(() => {
           component: markRaw(TelephonyPage),
         },
         {
-          label: __('WhatsApp'),
-          icon: WhatsAppIcon,
-          component: markRaw(WhatsAppSettings),
-          condition: () => isWhatsappInstalled.value && isManager(),
-        },
-        {
           label: __('ERPNext'),
           icon: ERPNextIcon,
           component: markRaw(ERPNextSettings),
-          condition: () => isManager(),
-        },
-        {
-          label: __('Lead Syncing'),
-          icon: 'refresh-cw',
-          component: markRaw(LeadSyncSourcePage),
           condition: () => isManager(),
         },
       ],
@@ -277,4 +321,13 @@ function setActiveTab(tabName) {
 }
 
 watch(activeSettingsPage, (activePage) => setActiveTab(activePage))
+
+// deep link: /crm?settings=<page label> opens the modal on that page (used by
+// OAuth callbacks, e.g. the Meta Lead Ads connect flow)
+const settingsParam = new URLSearchParams(window.location.search).get('settings')
+if (settingsParam) {
+  showSettings.value = true
+  activeSettingsPage.value = settingsParam
+  setActiveTab(settingsParam)
+}
 </script>

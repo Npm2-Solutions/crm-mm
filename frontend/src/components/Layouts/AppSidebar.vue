@@ -190,6 +190,11 @@ import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
+import SMSIcon from '@/components/Icons/SMSIcon.vue'
+import AutomationIcon from '@/components/Icons/AutomationIcon.vue'
+import DialpadIcon from '@/components/Icons/DialpadIcon.vue'
+import SocialIcon from '@/components/Icons/SocialIcon.vue'
+import { callEnabled } from '@/composables/telephony'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
@@ -279,6 +284,17 @@ const links = [
     to: 'Organizations',
   },
   {
+    label: 'Inbox',
+    icon: SMSIcon,
+    to: 'Inbox',
+  },
+  {
+    label: 'Automations',
+    icon: AutomationIcon,
+    to: 'Automations',
+    condition: () => isManager(),
+  },
+  {
     label: 'Notes',
     icon: NoteIcon,
     to: 'Notes',
@@ -298,6 +314,17 @@ const links = [
     label: 'Call Logs',
     icon: PhoneIcon,
     to: 'Call Logs',
+  },
+  {
+    label: 'Dialer',
+    icon: DialpadIcon,
+    to: 'Dialer',
+    condition: () => callEnabled.value,
+  },
+  {
+    label: 'Social Planner',
+    icon: SocialIcon,
+    to: 'Social Planner',
   },
 ]
 

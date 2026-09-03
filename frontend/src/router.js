@@ -37,6 +37,26 @@ const routes = [
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
+    path: '/inbox',
+    name: 'Inbox',
+    component: () => import('@/pages/Inbox.vue'),
+  },
+  {
+    path: '/automations',
+    name: 'Automations',
+    component: () => import('@/pages/Automations.vue'),
+  },
+  {
+    path: '/dialer',
+    name: 'Dialer',
+    component: () => import('@/pages/Dialer.vue'),
+  },
+  {
+    path: '/social',
+    name: 'Social Planner',
+    component: () => import('@/pages/SocialPlanner.vue'),
+  },
+  {
     alias: '/leads',
     path: '/leads/view/:viewType?',
     name: 'Leads',
