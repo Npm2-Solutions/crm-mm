@@ -8,26 +8,18 @@ from zoneinfo import ZoneInfo
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, get_system_timezone, now_datetime
-
-UTC = datetime.timezone.utc
+from frappe.utils import cint, now_datetime
 
 # All slot math is timezone-aware and returned in UTC; booking rows persist naive
 # datetimes in the site's system timezone (the framework-wide convention).
-
-
-def system_tz() -> ZoneInfo:
-	return ZoneInfo(get_system_timezone())
-
-
-def to_system_naive(aware: datetime.datetime) -> datetime.datetime:
-	return aware.astimezone(system_tz()).replace(tzinfo=None)
-
-
-def from_system_naive(naive) -> datetime.datetime:
-	from frappe.utils import get_datetime
-
-	return get_datetime(naive).replace(tzinfo=system_tz()).astimezone(UTC)
+# The converters live with the scheduling engine so both use exactly one clock.
+from crm.scheduling.timeutils import (
+	UTC,
+	from_system_naive,
+	system_tz,
+	to_system_naive,
+)
+from crm.scheduling.timeutils import as_time as _as_time
 
 
 class CRMBookingCalendar(Document):
@@ -267,15 +259,6 @@ def get_google_busy_intervals(
 
 def _parse_google_dt(value: str) -> datetime.datetime:
 	return datetime.datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
-
-
-def _as_time(value) -> datetime.time:
-	"""Child-table Time fields load as timedelta from the DB but time from forms."""
-	if isinstance(value, datetime.timedelta):
-		return (datetime.datetime.min + value).time()
-	if isinstance(value, str):
-		return datetime.time.fromisoformat(value)
-	return value
 
 
 def _overlaps(intervals, start, end) -> bool:

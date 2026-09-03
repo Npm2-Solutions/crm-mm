@@ -1,0 +1,309 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:service_name",
+ "creation": "2026-09-03 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "service_name",
+  "category",
+  "enabled",
+  "column_break_head",
+  "color",
+  "bookable_online",
+  "description",
+  "scheduling_section",
+  "duration",
+  "slot_interval",
+  "column_break_sched",
+  "buffer_before",
+  "buffer_after",
+  "limits_section",
+  "min_notice_hours",
+  "column_break_limits",
+  "max_horizon_days",
+  "team_section",
+  "staff_selection",
+  "column_break_team",
+  "staff_count",
+  "staff",
+  "roles",
+  "participants_section",
+  "min_participants",
+  "column_break_participants",
+  "max_participants",
+  "resources_section",
+  "resources",
+  "availability_section",
+  "availability",
+  "holiday_list",
+  "pricing_section",
+  "default_price",
+  "price_per_participant",
+  "column_break_pricing",
+  "currency"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "label": "Service",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Colour"
+  },
+  {
+   "fieldname": "bookable_online",
+   "fieldtype": "Check",
+   "label": "Bookable online",
+   "default": "0"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "scheduling_section",
+   "fieldtype": "Section Break",
+   "label": "Scheduling"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Int",
+   "label": "Duration (minutes)",
+   "default": "30",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "slot_interval",
+   "fieldtype": "Int",
+   "label": "Slot Interval (minutes)",
+   "default": "0",
+   "description": "Minutes between slot start times; 0 uses the duration."
+  },
+  {
+   "fieldname": "column_break_sched",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "buffer_before",
+   "fieldtype": "Int",
+   "label": "Buffer Before (minutes)",
+   "default": "0"
+  },
+  {
+   "fieldname": "buffer_after",
+   "fieldtype": "Int",
+   "label": "Buffer After (minutes)",
+   "default": "0"
+  },
+  {
+   "fieldname": "limits_section",
+   "fieldtype": "Section Break",
+   "label": "Limits"
+  },
+  {
+   "fieldname": "min_notice_hours",
+   "fieldtype": "Int",
+   "label": "Minimum Notice (hours)",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_horizon_days",
+   "fieldtype": "Int",
+   "label": "Booking Horizon (days)",
+   "default": "60"
+  },
+  {
+   "fieldname": "team_section",
+   "fieldtype": "Section Break",
+   "label": "Team"
+  },
+  {
+   "fieldname": "staff_selection",
+   "fieldtype": "Select",
+   "label": "Staffing",
+   "options": "Any one\nAll required\nOne per role",
+   "default": "Any one",
+   "reqd": 1,
+   "description": "Any one: the least busy free professional takes it (round robin). All required: every listed professional must be free and is booked together (collective). One per role: one free professional per role below (e.g. therapist + assistant)."
+  },
+  {
+   "fieldname": "column_break_team",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "staff_count",
+   "fieldtype": "Int",
+   "label": "Professionals per appointment",
+   "default": "1",
+   "description": "Used by 'Any one': how many of the listed professionals to assign."
+  },
+  {
+   "fieldname": "staff",
+   "fieldtype": "Table",
+   "label": "Professionals",
+   "options": "CRM Service Staff"
+  },
+  {
+   "fieldname": "roles",
+   "fieldtype": "Table",
+   "label": "Roles",
+   "options": "CRM Service Role"
+  },
+  {
+   "fieldname": "participants_section",
+   "fieldtype": "Section Break",
+   "label": "Participants"
+  },
+  {
+   "fieldname": "min_participants",
+   "fieldtype": "Int",
+   "label": "Minimum participants",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_participants",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_participants",
+   "fieldtype": "Int",
+   "label": "Maximum participants",
+   "default": "1",
+   "description": "Above 1 the service is a group session: several clients share one slot."
+  },
+  {
+   "fieldname": "resources_section",
+   "fieldtype": "Section Break",
+   "label": "Rooms & Equipment"
+  },
+  {
+   "fieldname": "resources",
+   "fieldtype": "Table",
+   "label": "Required Resources",
+   "options": "CRM Service Resource"
+  },
+  {
+   "fieldname": "availability_section",
+   "fieldtype": "Section Break",
+   "label": "Availability"
+  },
+  {
+   "fieldname": "availability",
+   "fieldtype": "Table",
+   "label": "Weekly Hours",
+   "options": "CRM Service Day",
+   "description": "When this service can be delivered. Empty means any time the team is available."
+  },
+  {
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "CRM Holiday List"
+  },
+  {
+   "fieldname": "pricing_section",
+   "fieldtype": "Section Break",
+   "label": "Pricing"
+  },
+  {
+   "fieldname": "default_price",
+   "fieldtype": "Currency",
+   "label": "Default Price"
+  },
+  {
+   "fieldname": "price_per_participant",
+   "fieldtype": "Check",
+   "label": "Price is per participant",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_pricing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "default": "EUR"
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-03 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Service",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "service_name",
+ "sort_order": "ASC",
+ "states": []
+}
