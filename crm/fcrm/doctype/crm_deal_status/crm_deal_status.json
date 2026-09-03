@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "deal_status",
+  "pipeline",
   "type",
   "position",
   "column_break_ojiu",
@@ -35,6 +36,16 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Position"
+  },
+  {
+   "description": "Pipeline this stage belongs to",
+   "fieldname": "pipeline",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Pipeline",
+   "options": "CRM Pipeline",
+   "reqd": 1
   },
   {
    "fieldname": "probability",

@@ -7,6 +7,11 @@ from frappe.desk.form.assign_to import _add as assign
 from frappe.model.document import Document
 
 from crm.api.exchange_rate import get_exchange_rate
+from crm.fcrm.doctype.crm_pipeline.crm_pipeline import (
+	get_default_pipeline,
+	get_first_stage,
+	get_pipeline_of_stage,
+)
 from crm.fcrm.doctype.crm_service_level_agreement.utils import get_sla
 from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import add_status_change_log
 from crm.fcrm.doctype.utils import add_or_remove_lost_reason_section_in_sidepanel
@@ -61,6 +66,7 @@ class CRMDeal(Document):
 		organization: DF.Link | None
 		organization_name: DF.Data | None
 		phone: DF.Data | None
+		pipeline: DF.Link | None
 		probability: DF.Percent
 		products: DF.Table[CRMProducts]
 		response_by: DF.Datetime | None
@@ -118,11 +124,37 @@ class CRMDeal(Document):
 		self.apply_sla()
 
 	def validate_status(self):
-		if self.is_new() and not self.status:
-			if frappe.db.exists("CRM Deal Status", "Qualification"):
-				self.status = "Qualification"
-			else:
-				self.status = frappe.get_all("CRM Deal Status", {"type": "Open"}, pluck="name")[0]
+		"""Keep stage and pipeline in sync.
+
+		The stage is the source of truth: `pipeline` always mirrors the pipeline its
+		stage belongs to. Setting a different pipeline on an existing deal moves it to
+		the first stage of that pipeline.
+		"""
+		status_pipeline = get_pipeline_of_stage(self.status)
+
+		if (
+			not self.is_new()
+			and self.pipeline
+			and self.has_value_changed("pipeline")
+			and self.pipeline != status_pipeline
+		):
+			self.status = get_first_stage(self.pipeline) or self.status
+			status_pipeline = get_pipeline_of_stage(self.status)
+
+		if not self.status:
+			self.pipeline = self.pipeline or get_default_pipeline()
+			self.status = get_first_stage(self.pipeline) or self.first_open_status()
+			status_pipeline = get_pipeline_of_stage(self.status)
+
+		self.pipeline = status_pipeline or self.pipeline or get_default_pipeline()
+
+	def first_open_status(self) -> str | None:
+		"""Fallback for sites whose stages are not on a pipeline yet."""
+		if frappe.db.exists("CRM Deal Status", "Qualification"):
+			return "Qualification"
+
+		statuses = frappe.get_all("CRM Deal Status", {"type": "Open"}, pluck="name", order_by="position asc")
+		return statuses[0] if statuses else None
 
 	def set_primary_contact(self, contact=None):
 		if not self.contacts:
@@ -352,6 +384,7 @@ class CRMDeal(Document):
 			"organization",
 			"annual_revenue",
 			"status",
+			"pipeline",
 			"email",
 			"currency",
 			"mobile_no",

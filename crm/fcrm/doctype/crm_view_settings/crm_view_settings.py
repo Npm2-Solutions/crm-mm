@@ -7,6 +7,8 @@ from frappe import _
 from frappe.model.document import Document, get_controller
 from frappe.utils import parse_json
 
+from crm.utils import get_kanban_column_options
+
 
 class CRMViewSettings(Document):
 	# begin: auto-generated types
@@ -182,15 +184,7 @@ def sync_default_columns(view):
 	columns = []
 
 	if view.type == "kanban" and view.column_field:
-		field_meta = frappe.get_meta(doctype).get_field(view.column_field)
-		if field_meta.fieldtype == "Link":
-			columns = frappe.get_all(
-				field_meta.options,
-				fields=["name"],
-				order_by="modified asc",
-			)
-		elif field_meta.fieldtype == "Select":
-			columns = [{"name": option} for option in field_meta.options.split("\n")]
+		columns = get_kanban_column_options(doctype, view.column_field, parse_json(view.filters or {}))
 	elif hasattr(list, "default_list_data"):
 		columns = list.default_list_data().get("columns")
 
