@@ -41,7 +41,7 @@
             >
               <div
                 class="w-full pl-2 col-span-5 flex items-center h-14 gap-2"
-                @click="updateStep('view', pipeline.name)"
+                @click="openPipeline(pipeline)"
               >
                 <div class="text-base-medium text-ink-gray-7 truncate">
                   {{ pipeline.name || __('Without pipeline') }}
@@ -55,7 +55,7 @@
               </div>
               <div
                 class="col-span-1 text-ink-gray-8 text-sm"
-                @click="updateStep('view', pipeline.name)"
+                @click="openPipeline(pipeline)"
               >
                 {{ pipeline.stages?.length || 0 }}
               </div>
@@ -217,6 +217,11 @@ const moveTargets = computed(() =>
     .filter((p) => p.name && p.name !== moveDeals.pipeline && !p.disabled)
     .map((p) => ({ label: p.name, value: p.name })),
 )
+
+// the "no pipeline yet" bucket is a reading aid, not a pipeline to edit
+function openPipeline(pipeline) {
+  if (pipeline.name) updateStep('view', pipeline.name)
+}
 
 function openNewPipelineDialog() {
   newPipeline.show = true

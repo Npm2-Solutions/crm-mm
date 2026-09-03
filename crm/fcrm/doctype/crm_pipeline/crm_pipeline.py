@@ -123,4 +123,4 @@ def get_pipeline_of_stage(stage: str | None) -> str | None:
 	if not stage:
 		return None
 
-	return frappe.db.get_value("CRM Deal Status", stage, "pipeline")
+	return frappe.get_cached_value("CRM Deal Status", stage, "pipeline")
