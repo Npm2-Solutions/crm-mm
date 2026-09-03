@@ -162,33 +162,26 @@ class CRMBookingCalendar(Document):
 	def get_busy_intervals(
 		self, members: list[str], start: datetime.datetime, end: datetime.datetime
 	) -> dict[str, list[tuple[datetime.datetime, datetime.datetime]]]:
-		"""Confirmed bookings of these members across ALL calendars, expanded by
-		this calendar's buffers, keyed by member, as aware-UTC intervals."""
+		"""Everything that occupies these members, expanded by this calendar's
+		buffers, keyed by member, as aware-UTC intervals.
+
+		Confirmed bookings on ANY public calendar, internal appointments from the
+		scheduling module, and — when enabled — their Google Calendar. A member
+		whose diary is full of internal appointments must not look free to a
+		visitor of the public page.
+		"""
 		if not members:
 			return {}
-		before = datetime.timedelta(minutes=cint(self.buffer_before))
-		after = datetime.timedelta(minutes=cint(self.buffer_after))
-		rows = frappe.get_all(
-			"CRM Booking",
-			filters={
-				"agent": ["in", members],
-				"status": "Confirmed",
-				"starts_on": ["<", to_system_naive(end + before)],
-				"ends_on": [">", to_system_naive(start - after)],
-			},
-			fields=["agent", "starts_on", "ends_on"],
-		)
-		busy: dict[str, list] = {}
-		for row in rows:
-			busy.setdefault(row.agent, []).append(
-				(from_system_naive(row.starts_on) - before, from_system_naive(row.ends_on) + after)
-			)
+		from crm.scheduling.availability import staff_busy
 
-		if self.check_google_busy:
-			for user in members:
-				for interval in get_google_busy_intervals(user, start, end):
-					busy.setdefault(user, []).append((interval[0] - before, interval[1] + after))
-		return busy
+		return staff_busy(
+			members,
+			start,
+			end,
+			buffer_before=cint(self.buffer_before),
+			buffer_after=cint(self.buffer_after),
+			include_google=bool(cint(self.check_google_busy)),
+		)
 
 	def is_slot_available(self, start_utc: datetime.datetime) -> list[str]:
 		"""Free members for one exact slot start (aware UTC); [] if unavailable."""

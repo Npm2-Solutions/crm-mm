@@ -34,6 +34,7 @@ Scope ridotto rispetto alla parità completa, su decisione del committente:
 | [06](./06-white-label-saas.md) | White-Label / SaaS | ⚠️ solo provisioning+snapshot | Script interni per creare site clienti preconfigurati; niente billing |
 | [07](./07-reputazione-recensioni.md) | Reputation | ❌ fuori scope | Solo Google via GBP API; Facebook API morta (v22) |
 | [08](./08-roadmap.md) | Roadmap & effort | aggiornata | Fasi, dipendenze, stime — ricalibrata sullo scope ridotto |
+| [13](./13-agenda-appuntamenti.md) | Agenda interna: multi-persona, stanze, attrezzature, listini | ✅ implementato | Staffing collective/round-robin/per-ruolo, capacità delle risorse, sessioni di gruppo, prezzi condizionati |
 
 ## Architettura complessiva
 

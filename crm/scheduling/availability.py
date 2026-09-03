@@ -477,13 +477,16 @@ class SlotFinder:
 		self.buffer_after = cint(self.service.buffer_after)
 
 		self.eligible = [row.user for row in self.service.staff]
-		if staff:
+		# a collective service always books its whole roster, so a staff filter can
+		# only say "show me slots this person is in" — never shrink the team
+		if staff and self.service.staff_selection != "All required":
 			self.eligible = [u for u in self.eligible if u in set(staff)]
 		self.roles = {}
 		for row in self.service.staff:
 			self.roles.setdefault(row.role or "", []).append(row.user)
 		self.priority = {row.user: cint(row.priority) for row in self.service.staff}
 		self.resource_filter = set(resources or [])
+		self._loads: dict[str, int] = {}
 
 	# -- window ------------------------------------------------------------
 
@@ -512,8 +515,10 @@ class SlotFinder:
 				filters["resource_type"] = row.resource_type
 			names = frappe.get_all("CRM Resource", filters=filters, pluck="name")
 			if self.resource_filter:
+				# a caller's resource picks narrow a requirement only where they can:
+				# asking for "Room A" must not starve the requirement for a treadmill
 				preferred = [n for n in names if n in self.resource_filter]
-				names = preferred or ([] if row.resource or row.resource_type else names)
+				names = preferred or names
 			requirements.append(
 				{
 					"quantity": max(cint(row.quantity), 1),
@@ -535,6 +540,8 @@ class SlotFinder:
 
 		staff_hours = {u: staff_working_hours(u) for u in self.eligible}
 		caps = {u: staff_daily_cap(u) for u in self.eligible}
+		# ranking is the same for every candidate slot of this run: query it once
+		self._loads = self.upcoming_load(self.eligible)
 		counts = daily_counts(self.eligible, start, end)
 		busy = staff_busy(
 			self.eligible,
@@ -640,7 +647,7 @@ class SlotFinder:
 
 	def _rank(self, users: list[str]) -> list[str]:
 		"""Lowest priority number first, then the least-booked professional."""
-		loads = self.upcoming_load(users)
+		loads = self._loads or self.upcoming_load(users)
 		return sorted(users, key=lambda u: (self.priority.get(u, 0), loads.get(u, 0), u))
 
 	@staticmethod
@@ -705,7 +712,7 @@ class SlotFinder:
 		"""Seats a slot offers: the service cap, narrowed by any room's own seats."""
 		seats = max(cint(self.service.max_participants), 1)
 		for row in booked:
-			resource_seats = cint(frappe.db.get_value("CRM Resource", row["resource"], "seats"))
+			resource_seats = cint(frappe.get_cached_doc("CRM Resource", row["resource"]).seats)
 			if resource_seats:
 				seats = min(seats, resource_seats)
 		return seats
