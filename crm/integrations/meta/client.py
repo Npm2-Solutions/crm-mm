@@ -50,6 +50,21 @@ def get_app_secret() -> str:
 	)
 
 
+def get_whatsapp_app_id() -> str:
+	"""App ID of the app that owns WhatsApp, which need not be the Meta one.
+
+	App Review is serialised per app, so a WhatsApp submission queued behind a
+	Pages one blocks it, and a restriction on either takes the other down with
+	it. Keeping WhatsApp in its own app separates both. Falling back to the
+	Meta credentials keeps a single-app setup working untouched.
+	"""
+	return frappe.conf.get("whatsapp_app_id") or get_app_id()
+
+
+def get_whatsapp_app_secret() -> str:
+	return frappe.conf.get("whatsapp_app_secret") or get_app_secret()
+
+
 def is_managed_app() -> bool:
 	"""True when the app credentials come from the bench, not from this site."""
 	return bool(frappe.conf.get("meta_app_id") and frappe.conf.get("meta_app_secret"))

@@ -11,7 +11,37 @@ Come per Facebook: il cliente apre Settings → WhatsApp, preme **Connetti**,
 stanno **sia nel CRM sia nell'app WhatsApp Business sul telefono**, sincronizzate.
 Una sola app Meta dell'agenzia per tutti i clienti.
 
-## Cosa serve sull'app Meta
+## Un'app separata da quella di Facebook
+
+WhatsApp ha la **sua** app Meta, non quella dei lead e del Social Planner.
+`whatsapp_app_id` e `whatsapp_app_secret` nel config del bench; se mancano si
+ricade su `meta_app_id`/`meta_app_secret`, cosi' chi tiene tutto in un'app sola
+continua a funzionare senza toccare niente.
+
+Perche' separate:
+
+- **L'App Review e' serializzata per app.** Meta rifiuta una nuova submission
+  finche' un'altra e' in revisione: con un'app sola la review di WhatsApp si
+  mette in coda dietro quella delle Pagine, e viceversa.
+- **Il rigetto e' contagioso.** Meta avverte che chiedere permessi non
+  necessari e' causa comune di rigetto: un'app che chiede insieme lead,
+  gestione Pagine, pubblicazione Instagram e messaggistica offre una superficie
+  enorme a un solo revisore.
+- **La restrizione lo e' altrettanto.** Un problema di policy sul lato
+  messaggistica, che e' la parte piu' regolata, fermerebbe anche i lead ads di
+  tutti i clienti.
+- **Cicli di vita diversi**: status Tech Provider, limiti di onboarding e di
+  messaggistica riguardano solo WhatsApp.
+
+Non si duplica nulla di importante: la **Business Verification sta sul
+portfolio**, non sull'app, quindi due app sotto lo stesso Business Manager la
+condividono. L'hub resta uno solo, con lo stesso dominio in allowlist.
+
+L'hub rifirma le consegne WhatsApp con il secret **dell'app WhatsApp**: se si
+separano le app senza impostare `whatsapp_app_secret`, le firme non tornano e
+i messaggi vengono rifiutati a valle.
+
+## Cosa serve sull'app
 
 Il collegamento col QR passa da **Embedded Signup**, che Meta sblocca solo alle
 app registrate come **Tech Provider**. Sull'app servono, nell'ordine:

@@ -16,7 +16,7 @@ from frappe import _
 from frappe.utils import get_url
 from werkzeug.wrappers import Response
 
-from crm.integrations.meta.client import get_app_id
+from crm.integrations.meta.client import get_whatsapp_app_id
 from crm.integrations.meta.relay import valid_relay_signature
 from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, make_state
 
@@ -54,7 +54,7 @@ def get_status() -> dict:
 	default = frappe.db.get_single_value("WhatsApp Settings", "default_outgoing_account")
 	return {
 		"installed": True,
-		"can_connect": bool(get_app_id() and config_id()),
+		"can_connect": bool(get_whatsapp_app_id() and config_id()),
 		# say WHICH piece is missing: "ask your provider" left nobody, the
 		# provider included, able to tell what to do next
 		"missing": missing_requirements(),
@@ -71,12 +71,16 @@ def missing_requirements() -> list[dict]:
 	Embedded Signup is unlocked by Meta, not by configuration.
 	"""
 	missing = []
-	if not get_app_id():
+	if not get_whatsapp_app_id():
 		missing.append(
 			{
-				"key": "meta_app_id",
-				"what": _("The Meta app is not configured"),
-				"how": _("Set meta_app_id and meta_app_secret in the bench config, as for Facebook."),
+				"key": "whatsapp_app_id",
+				"what": _("The WhatsApp app is not configured"),
+				"how": _(
+					"Set whatsapp_app_id and whatsapp_app_secret in the bench config. Leave them out "
+					"only if WhatsApp lives in the same Meta app as Facebook, in which case "
+					"meta_app_id and meta_app_secret are used."
+				),
 			}
 		)
 	if not config_id():
@@ -151,7 +155,7 @@ def upsert_account(data: dict) -> str:
 		"token": data.get("token"),
 		"phone_id": phone_id,
 		"business_id": data.get("waba_id"),
-		"app_id": get_app_id(),
+		"app_id": get_whatsapp_app_id(),
 		"webhook_verify_token": frappe.get_cached_value(
 			"CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token"
 		),
