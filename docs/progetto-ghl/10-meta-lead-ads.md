@@ -59,21 +59,25 @@ lavoro (`start_page_sync`). La schermata mostra "sto leggendo le tue Pagine" e
 si ricontrolla da sola finche' il job non ha finito. Anche "Aggiorna pagine"
 passa dalla stessa coda.
 
-## Solo le Pagine concesse
+## Chi decide cosa: Facebook concede, il CRM sceglie
 
-L'elenco mostra `/me/accounts`, che e' esattamente cio' che si e' spuntato nel
-dialog di Facebook — una Pagina amministrata tramite un portfolio Business
-compare qui, una volta concessa.
+Una sola strada, non un misto. Il dialog di Facebook serve a dire *"questa app
+puo' vedere queste Pagine"*: conviene concederle tutte, una volta. Cosa il CRM
+usa davvero si decide **qui**, con gli interruttori della schermata di
+connessione.
 
-Il CRM ha provato anche a percorrere `owned_pages` e `client_pages` del
-portfolio: era un errore. Quegli edge restituiscono anche Pagine **non**
-concesse, che arrivano senza i permessi per usarle. Ogni chiamata su di esse
-fallisce con *"permission(s) must be granted before impersonating a user's
-page"* e riempiono l'elenco di righe che nessuno puo' accendere. Chi vuole una
-Pagina in piu' la aggiunge dal dialog, con "Scegli le pagine".
+Non e' una preferenza. La strada opposta — decidere tutto nel dialog — non
+regge: Facebook **non riapre il selettore** alle autorizzazioni successive
+(serve `auth_type=rerequest`, ed e' comunque un giro fuori dal CRM), e con
+un'app sola dell'agenzia su tanti clienti ogni modifica rimanderebbe il cliente
+su facebook.com. E' anche cio' che fa GHL.
 
-Una Pagina tolta dal dialog sparisce anche da qui, purche' non ci sia appeso
-nulla: con dei moduli, o con la sincronizzazione lead ancora accesa, resta.
+L'elenco e' `/me/accounts`, cioe' esattamente cio' che si e' concesso. Il CRM
+non va a cercare altrove: percorrere `owned_pages` e `client_pages` del
+portfolio portava dentro Pagine **non** concesse, che arrivano senza i permessi
+per usarle e falliscono a ogni chiamata. Una Pagina tolta dal dialog viene
+dimenticata, purche' non abbia moduli ne' la sincronizzazione accesa.
+
 
 ## Perche' Facebook chiede il portfolio Business
 

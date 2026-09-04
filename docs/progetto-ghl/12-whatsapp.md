@@ -11,6 +11,36 @@ Come per Facebook: il cliente apre Settings → WhatsApp, preme **Connetti**,
 stanno **sia nel CRM sia nell'app WhatsApp Business sul telefono**, sincronizzate.
 Una sola app Meta dell'agenzia per tutti i clienti.
 
+## Cosa serve sull'app Meta
+
+Il collegamento col QR passa da **Embedded Signup**, che Meta sblocca solo alle
+app registrate come **Tech Provider**. Sull'app servono, nell'ordine:
+
+1. **Use case "Connect with customers through WhatsApp"**, aggiunto all'app.
+   Porta con se' tre permessi obbligatori che non si possono togliere:
+   `public_profile`, `whatsapp_business_management`, `whatsapp_business_messaging`.
+   `business_management` e `email` sono opzionali: il primo serve solo per
+   leggere il portfolio via API — con Meta Business Suite non serve.
+2. **Business Verification** del portfolio dell'agenzia.
+3. **App Review con Advanced access** su `whatsapp_business_management` e
+   `whatsapp_business_messaging`. Senza Advanced access l'app non puo' toccare
+   i WABA di clienti che non sono nostri: le chiamate tornano errore 200. Meta
+   pretende **un video separato per ogni permesso** (uno che mostra la
+   creazione di un modello, uno che mostra l'invio di un messaggio ricevuto
+   dal client WhatsApp) piu' una descrizione scritta per ciascuno: un video
+   solo per due permessi fa respingere la richiesta.
+4. **Configurazione Facebook Login for Business** di tipo Embedded Signup: e'
+   lei che genera il `config_id` da mettere in `whatsapp_signup_config_id`.
+5. **Manage domains**: il dominio dell'hub va in allowlist, altrimenti il
+   JavaScript SDK non parte.
+
+In development mode i permessi compaiono nel dialog solo a chi ha un ruolo
+sull'app; in live mode compaiono **solo** quelli approvati in App Review.
+
+**Limiti di onboarding**: 10 nuovi clienti in 7 giorni finche' non si
+completano Business Verification, App Review e Access Verification; poi 200.
+
+
 ## Il QR code: quale dei due
 
 Esistono due strade che passano per un QR, e vanno distinte bene.

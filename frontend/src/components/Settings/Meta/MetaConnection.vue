@@ -117,11 +117,14 @@
         class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
       >
         <div class="flex items-center justify-between gap-3">
-          <span class="text-p-base-medium text-ink-gray-7">
-            {{ __('Pages shared with the CRM') }}
-          </span>
+          <div class="flex flex-col">
+            <span class="text-p-base-medium text-ink-gray-7">{{ __('Your Pages') }}</span>
+            <span class="text-p-sm text-ink-gray-5">
+              {{ __('Give Facebook access once, then decide here what the CRM uses.') }}
+            </span>
+          </div>
           <Button
-            :label="__('Choose pages')"
+            :label="__('Add Pages from Facebook')"
             :loading="choosing"
             @click="connect(true)"
           />
@@ -155,14 +158,14 @@
                 {{ __('Instagram') }}: @{{ page.instagram_username }}
               </span>
               <span v-if="page.can_sync_leads === false" class="text-p-xs text-ink-amber-6">
-                {{ __('Not authorised for leads — reconnect and tick this Page') }}
+                {{ __('Facebook did not give the CRM the advertising role here — grant it again to use its leads') }}
               </span>
             </div>
           </div>
           <span class="mt-2 text-p-sm text-ink-gray-5">
             {{
               __(
-                'Missing one? "Choose pages" reopens the Facebook window: without it Facebook skips the picker and keeps the earlier choice.',
+                'A Page you never granted is not here at all: "Add Pages from Facebook" reopens the Facebook window to grant it. Everything else is decided on this screen.',
               )
             }}
           </span>
@@ -170,12 +173,12 @@
 
         <div v-else-if="!syncing" class="flex flex-col gap-1 text-p-sm">
           <span class="text-ink-red-5">
-            {{ __('Facebook shared no Page with the CRM.') }}
+            {{ __('Facebook granted the CRM no Page.') }}
           </span>
           <span class="text-ink-gray-5">
             {{
               __(
-                'The login worked but no Page was selected. Press "Choose pages" and tick the Pages you want in the Facebook window — you must be an administrator of them.',
+                'The login worked but no Page came with it. Press "Add Pages from Facebook" and tick the Pages you administer — granting them all is fine, you choose here which ones the CRM actually uses.',
               )
             }}
           </span>
