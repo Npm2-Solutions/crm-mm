@@ -158,11 +158,10 @@ def refresh_pages() -> dict:
 	"""Re-pull pages and forms with the stored long-lived user token."""
 	_check_manager()
 	settings = get_settings()
-	token = settings.get_password("user_access_token", raise_exception=False)
-	if not token:
+	if not settings.get_password("user_access_token", raise_exception=False):
 		frappe.throw(_("Connect Facebook first"))
 	# same reason as the OAuth callback: too slow to hold a web request open
-	start_page_sync(token)
+	start_page_sync()
 	return {"started": True}
 
 

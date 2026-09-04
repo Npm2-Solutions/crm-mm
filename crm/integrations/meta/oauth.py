@@ -223,7 +223,7 @@ def callback(code: str | None = None, state: str | None = None, **kwargs):
 		# worked and granting access to all of them came back disconnected.
 		frappe.db.commit()
 
-		start_page_sync(user_token)
+		start_page_sync()
 		_redirect_back()
 	except MetaAPIError as exc:
 		frappe.log_error(frappe.get_traceback(), "Meta OAuth callback failed")
@@ -321,25 +321,29 @@ def sync_running() -> bool:
 	return bool(frappe.cache().get_value(SYNC_FLAG))
 
 
-def start_page_sync(user_token: str) -> None:
+def start_page_sync() -> None:
 	"""Run the page/form sync in the background.
 
 	It is far too slow for a web request: `discover_pages` alone is one Graph
 	call per Page reached through a Business portfolio, and every Page then
 	costs another call for its lead forms.
+
+	The token is deliberately NOT passed as an argument: enqueue arguments are
+	serialised into the queue and kept in the job record, so a long-lived user
+	access token would sit there in the clear, readable from the background
+	jobs screen. The job reads it from the settings instead.
 	"""
 	frappe.cache().set_value(SYNC_FLAG, 1, expires_in_sec=900)
-	frappe.enqueue(
-		"crm.integrations.meta.oauth.run_page_sync",
-		queue="long",
-		timeout=900,
-		user_token=user_token,
-	)
+	frappe.enqueue("crm.integrations.meta.oauth.run_page_sync", queue="long", timeout=900)
 
 
-def run_page_sync(user_token: str) -> None:
+def run_page_sync() -> None:
 	try:
-		sync_pages_and_forms(user_token)
+		settings = frappe.get_doc("CRM Meta Settings")
+		token = settings.get_password("user_access_token", raise_exception=False)
+		if not token:
+			return
+		sync_pages_and_forms(token)
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Meta: page sync failed")
