@@ -210,7 +210,8 @@
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
 import { Badge, createResource, FeatherIcon, FormControl, Switch, toast } from 'frappe-ui'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
+import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
 
 const metaError = ref(new URLSearchParams(window.location.search).get('meta_error') || '')
 const appForm = ref({ app_id: '', app_secret: '' })
@@ -307,43 +308,12 @@ function configureWebhook() {
   })
 }
 
-// The login runs in a popup so this page keeps its state: navigating the whole
-// CRM to facebook.com and back reloads the app, and a failure on the way had
-// nowhere to be shown. The popup posts its outcome back and closes.
-function openLoginPopup(url) {
-  const width = 620
-  const height = 720
-  const left = window.screenX + (window.outerWidth - width) / 2
-  const top = window.screenY + (window.outerHeight - height) / 2
-  const popup = window.open(
-    url,
-    'crm-meta-oauth',
-    `popup=1,width=${width},height=${height},left=${left},top=${top}`,
-  )
-  if (!popup) {
-    // popup blocked: fall back to navigating, the callback page handles it
-    window.location.href = url
-    return
-  }
-  popup.focus()
-}
-
-function onOAuthMessage(event) {
-  if (event.origin !== window.location.origin) return
-  if (event.data?.source !== 'crm-meta-oauth') return
+onOAuthResult('meta', ({ error }) => {
   choosing.value = false
-  if (event.data.error) {
-    metaError.value = event.data.error
-    toast.error(event.data.error)
-  } else {
-    metaError.value = ''
-    toast.success(__('Facebook connected'))
-  }
+  metaError.value = error
+  error ? toast.error(error) : toast.success(__('Facebook connected'))
   status.reload()
-}
-
-onMounted(() => window.addEventListener('message', onOAuthMessage))
-onUnmounted(() => window.removeEventListener('message', onOAuthMessage))
+})
 
 function connect(rerequest = false) {
   if (rerequest) choosing.value = true
@@ -351,7 +321,7 @@ function connect(rerequest = false) {
     url: 'crm.integrations.meta.oauth.get_login_url',
     params: { rerequest: rerequest ? 1 : 0 },
     auto: true,
-    onSuccess: (data) => openLoginPopup(data.login_url),
+    onSuccess: (data) => openOAuthPopup(data.login_url, 'crm-meta-oauth'),
     onError: (e) => {
       choosing.value = false
       toast.error(e.messages?.[0] || __('Failed to start login'))
