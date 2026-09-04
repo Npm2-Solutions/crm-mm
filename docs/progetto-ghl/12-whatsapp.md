@@ -11,6 +11,22 @@ Come per Facebook: il cliente apre Settings → WhatsApp, preme **Connetti**,
 stanno **sia nel CRM sia nell'app WhatsApp Business sul telefono**, sincronizzate.
 Una sola app Meta dell'agenzia per tutti i clienti.
 
+## Le pagine legali
+
+`/privacy` e `/terms` sono servite dall'hub e valgono per entrambe le app: Meta
+le pretende su ognuna, ma nulla impedisce che puntino allo stesso posto.
+
+I dati dell'azienda **non sono scritti nel codice**: arrivano dal config del
+site (`legal_name`, `legal_address`, `legal_vat`, `legal_email`), cosi' lo
+stesso codice serve qualunque agenzia e non si modifica un template per
+correggere una partita IVA. Finche' sede e partita IVA mancano, le pagine
+mostrano un avviso giallo: sono bozze, non ancora idonee per l'App Review.
+
+Il testo descrive cio' che il sistema fa davvero — token dei collegamenti,
+risposte ai moduli, messaggi WhatsApp, eventi di calendario — ma non e' stato
+rivisto da un legale.
+
+
 ## Un'app separata da quella di Facebook
 
 WhatsApp ha la **sua** app Meta, non quella dei lead e del Social Planner.
@@ -55,7 +71,7 @@ Cento clienti, un dominio solo.
 | … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
 | Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
 | App settings → Basic → + Add Platform → **Website** | Site URL: `https://<hub>/` — senza la piattaforma Website il JavaScript SDK non e' autorizzato |
-| App settings → Basic | Privacy Policy e Terms of Service (obbligatori per l'App Review) |
+| App settings → Basic | Privacy Policy `https://<hub>/privacy` e Terms of Service `https://<hub>/terms` |
 | App settings → Advanced → Data Deletion Request URL | `https://<hub>/api/method/crm.integrations.meta.webhook.data_deletion` |
 
 Il callback di cancellazione dati e' **lo stesso** per le due app: valida la

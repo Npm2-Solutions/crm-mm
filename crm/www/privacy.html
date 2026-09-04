@@ -1,0 +1,113 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Informativa sulla privacy") }}{% endblock %}
+
+{% block page_content %}
+{% include "www/legal_style.html" %}
+
+<div class="legal">
+	<h1>Informativa sulla privacy</h1>
+	<p class="updated">Ultimo aggiornamento: {{ updated_on }}</p>
+
+	{% if incomplete %}
+	<div class="todo">
+		<strong>Da completare prima della pubblicazione.</strong> Sede legale e partita IVA
+		non sono ancora impostate: aggiungi <code>legal_address</code> e <code>legal_vat</code>
+		al config del site. Finché mancano, questa pagina non è idonea per l'App Review di Meta.
+	</div>
+	{% endif %}
+
+	<h2>Chi tratta i dati</h2>
+	<p>
+		Il titolare del trattamento è <strong>{{ legal_name }}</strong>{% if legal_address %},
+		con sede in {{ legal_address }}{% endif %}{% if legal_vat %}, partita IVA {{ legal_vat }}{% endif %}.
+		Per qualsiasi richiesta: <a href="mailto:{{ legal_email }}">{{ legal_email }}</a>.
+	</p>
+	<p>
+		Questo servizio è un CRM che le aziende clienti usano per gestire i propri contatti.
+		Per i dati dei loro contatti, l'azienda cliente è titolare e {{ legal_name }} agisce
+		come responsabile del trattamento per suo conto.
+	</p>
+
+	<h2>Quali dati trattiamo, e perché</h2>
+	<table>
+		<tr>
+			<th>Dati</th>
+			<th>Da dove</th>
+			<th>Perché</th>
+		</tr>
+		<tr>
+			<td>Nome, email e identificativo Facebook di chi collega un account; token di accesso</td>
+			<td>Login con Facebook o Google, effettuato dall'utente del CRM</td>
+			<td>Mantenere attivo il collegamento fra il CRM e le Pagine, gli account pubblicitari,
+				i numeri WhatsApp e il calendario dell'azienda</td>
+		</tr>
+		<tr>
+			<td>Nome, email, telefono e risposte ai moduli</td>
+			<td>Moduli per contatti di Facebook e Instagram, compilati da chi risponde a un annuncio</td>
+			<td>Consegnare il contatto all'azienda inserzionista dentro il suo CRM</td>
+		</tr>
+		<tr>
+			<td>Contenuto dei messaggi, numeri di telefono, allegati</td>
+			<td>WhatsApp Business, quando l'azienda collega il proprio numero</td>
+			<td>Mostrare la conversazione nel CRM e permettere di rispondere</td>
+		</tr>
+		<tr>
+			<td>Titolo, orario e stato di occupato degli eventi</td>
+			<td>Google Calendar, quando l'utente lo collega</td>
+			<td>Evitare doppie prenotazioni e scrivere in calendario gli appuntamenti presi</td>
+		</tr>
+	</table>
+	<p>
+		Non usiamo questi dati per profilazione pubblicitaria, non li vendiamo e non li cediamo
+		a terzi per finalità proprie.
+	</p>
+
+	<h2>Base giuridica</h2>
+	<ul>
+		<li><strong>Contratto</strong> — per i dati di chi usa il CRM, necessari a fornire il servizio.</li>
+		<li><strong>Legittimo interesse dell'azienda cliente</strong> — per i contatti che arrivano dai
+			moduli e dalle conversazioni, che l'azienda tratta per rispondere a una richiesta ricevuta.</li>
+		<li><strong>Consenso</strong> — per i collegamenti facoltativi come il calendario, revocabile
+			in ogni momento scollegando l'account dalle impostazioni.</li>
+	</ul>
+
+	<h2>Con chi li condividiamo</h2>
+	<p>
+		Solo con i fornitori tecnici che rendono possibile il servizio, ciascuno per la propria parte:
+		Meta Platforms (Facebook, Instagram, WhatsApp), Google (calendario), Twilio (SMS e chiamate),
+		e il fornitore di hosting dell'infrastruttura. Ognuno tratta i dati come responsabile e
+		secondo le proprie condizioni.
+	</p>
+
+	<h2>Per quanto tempo</h2>
+	<p>
+		I dati restano nel CRM dell'azienda cliente finché è lei a conservarli: è l'azienda a decidere
+		cosa cancellare e quando. I token di accesso vengono eliminati quando l'account viene
+		scollegato. Alla chiusura del rapporto, i dati del site vengono cancellati entro 90 giorni.
+	</p>
+
+	<h2>I tuoi diritti</h2>
+	<p>
+		Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opposizione
+		scrivendo a <a href="mailto:{{ legal_email }}">{{ legal_email }}</a>. Rispondiamo entro
+		30 giorni. Puoi inoltre proporre reclamo al Garante per la protezione dei dati personali.
+	</p>
+	<p>
+		Se sei arrivato qui da Facebook o Instagram e vuoi che eliminiamo i dati collegati al tuo
+		account, la richiesta si può inviare anche automaticamente dalle impostazioni della tua
+		app su Facebook. Il nostro punto di ricezione è:
+		<br><code>{{ deletion_url }}</code>
+	</p>
+
+	<h2>Modifiche</h2>
+	<p>
+		Se cambiamo questa informativa, aggiorniamo la data in cima. Le modifiche sostanziali
+		vengono comunicate alle aziende clienti prima che abbiano effetto.
+	</p>
+
+	<footer>
+		{{ legal_name }} · <a href="/terms">Termini di servizio</a>
+	</footer>
+</div>
+{% endblock %}

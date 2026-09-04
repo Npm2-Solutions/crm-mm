@@ -1,0 +1,98 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Termini di servizio") }}{% endblock %}
+
+{% block page_content %}
+{% include "www/legal_style.html" %}
+
+<div class="legal">
+	<h1>Termini di servizio</h1>
+	<p class="updated">Ultimo aggiornamento: {{ updated_on }}</p>
+
+	{% if incomplete %}
+	<div class="todo">
+		<strong>Da completare prima della pubblicazione.</strong> Sede legale e partita IVA
+		non sono ancora impostate: aggiungi <code>legal_address</code> e <code>legal_vat</code>
+		al config del site.
+	</div>
+	{% endif %}
+
+	<h2>1. Chi fornisce il servizio</h2>
+	<p>
+		Il servizio è fornito da <strong>{{ legal_name }}</strong>{% if legal_address %},
+		con sede in {{ legal_address }}{% endif %}{% if legal_vat %}, partita IVA {{ legal_vat }}{% endif %}
+		(di seguito "il fornitore"). Contatto: <a href="mailto:{{ legal_email }}">{{ legal_email }}</a>.
+	</p>
+
+	<h2>2. Cos'è</h2>
+	<p>
+		Un CRM in cloud che permette di raccogliere contatti dai moduli di Facebook e Instagram,
+		conversare su WhatsApp, pianificare pubblicazioni sui social, gestire appuntamenti e
+		automatizzare le attività commerciali. Ogni azienda cliente ha il proprio spazio separato.
+	</p>
+
+	<h2>3. Account e responsabilità</h2>
+	<ul>
+		<li>Il cliente è responsabile delle credenziali dei propri utenti e di ciò che questi fanno.</li>
+		<li>Il cliente garantisce di avere il diritto di collegare le Pagine, gli account pubblicitari
+			e i numeri di telefono che collega, e di trattare i dati dei contatti che vi transitano.</li>
+		<li>Il cliente resta titolare del trattamento dei dati dei propri contatti.</li>
+	</ul>
+
+	<h2>4. Uso consentito</h2>
+	<p>Non è consentito usare il servizio per:</p>
+	<ul>
+		<li>inviare messaggi non richiesti o in violazione delle policy di Meta, Google o Twilio;</li>
+		<li>trattare dati raccolti senza una base giuridica valida;</li>
+		<li>attività illecite, ingannevoli o lesive di diritti altrui;</li>
+		<li>tentare di accedere ai dati di altri clienti o di comprometterne l'infrastruttura.</li>
+	</ul>
+	<p>
+		L'uso di WhatsApp, Facebook e Instagram è inoltre soggetto alle condizioni di Meta: una loro
+		violazione può comportare la sospensione del collegamento indipendentemente da questi termini.
+	</p>
+
+	<h2>5. Servizi di terze parti</h2>
+	<p>
+		Il servizio si appoggia a Meta, Google e Twilio. Le loro interruzioni, modifiche alle API o
+		decisioni di sospensione possono limitare alcune funzioni: non dipendono dal fornitore, che
+		si impegna a ripristinare quanto prima ciò che è nel suo controllo.
+	</p>
+
+	<h2>6. Dati e continuità</h2>
+	<p>
+		I dati del cliente restano suoi. Su richiesta ne viene fornita un'esportazione in formato
+		leggibile. Alla cessazione del rapporto i dati vengono conservati 30 giorni per consentire
+		l'esportazione, poi cancellati entro i successivi 60.
+	</p>
+
+	<h2>7. Disponibilità</h2>
+	<p>
+		Il fornitore si impegna a mantenere il servizio disponibile con continuità, salvo interventi
+		di manutenzione programmata comunicati in anticipo e cause non imputabili al fornitore.
+	</p>
+
+	<h2>8. Limitazione di responsabilità</h2>
+	<p>
+		Nei limiti consentiti dalla legge, la responsabilità del fornitore è limitata a quanto pagato
+		dal cliente nei dodici mesi precedenti l'evento. Restano escluse le limitazioni non ammesse
+		dalla normativa applicabile, in particolare in caso di dolo o colpa grave.
+	</p>
+
+	<h2>9. Modifiche</h2>
+	<p>
+		Le modifiche a questi termini vengono comunicate con almeno 30 giorni di preavviso.
+		Proseguire nell'uso del servizio dopo tale termine ne comporta l'accettazione.
+	</p>
+
+	<h2>10. Legge applicabile</h2>
+	<p>
+		Si applica la legge italiana. Per le controversie con clienti professionali è competente
+		il foro della sede del fornitore; per i consumatori restano fermi i fori inderogabili di legge.
+	</p>
+
+	<footer>
+		{{ legal_name }} · <a href="/privacy">Informativa sulla privacy</a>
+	</footer>
+</div>
+{% endblock %}
