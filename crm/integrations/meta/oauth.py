@@ -297,13 +297,22 @@ def discover_pages(user_token: str) -> list[dict]:
 	for business in businesses:
 		for edge in ("owned_pages", "client_pages"):
 			try:
-				rows = graph_get_paginated(f"{business['id']}/{edge}", user_token, {"fields": "id,name"})
+				# ask for the whole Page node on the edge itself: one call per
+				# business instead of one per Page, which is what made granting
+				# access to every Page of a portfolio take minutes
+				rows = list(
+					graph_get_paginated(f"{business['id']}/{edge}", user_token, {"fields": PAGE_FIELDS})
+				)
 			except MetaAPIError:
 				frappe.log_error(frappe.get_traceback(), f"Meta: {edge} failed for {business.get('name')}")
 				continue
 			for row in rows:
 				if row["id"] in pages:
 					continue
+				if row.get("access_token"):
+					pages[row["id"]] = row
+					continue
+				# the edge withheld the token: ask for that Page on its own
 				try:
 					full = graph_get(row["id"], user_token, {"fields": PAGE_FIELDS})
 				except MetaAPIError:

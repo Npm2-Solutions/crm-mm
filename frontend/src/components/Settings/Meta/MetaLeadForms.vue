@@ -104,6 +104,14 @@
               </div>
             </div>
           </div>
+          <div v-else-if="pagesError" class="flex flex-col gap-1 text-p-base">
+            <span class="text-ink-red-5">{{ __('The pages could not be read.') }}</span>
+            <span class="text-p-sm text-ink-gray-5">{{ pagesError }}</span>
+          </div>
+          <div v-else-if="syncing" class="flex items-center gap-2 text-p-base text-ink-gray-6">
+            <LoadingIndicator class="size-4" />
+            {{ __('Reading your Pages from Facebook…') }}
+          </div>
           <div v-else class="text-p-base text-ink-gray-5">
             {{ __('No pages yet — refresh them from the connection page.') }}
           </div>
@@ -169,8 +177,15 @@
 
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
-import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
-import { ref, computed } from 'vue'
+import {
+  createResource,
+  Dialog,
+  FormControl,
+  LoadingIndicator,
+  Switch,
+  toast,
+} from 'frappe-ui'
+import { ref, computed, watch, onUnmounted } from 'vue'
 
 const status = createResource({
   url: 'crm.integrations.meta.api.get_status',
@@ -179,10 +194,29 @@ const status = createResource({
 
 const connected = computed(() => Boolean(status.data?.connected))
 
+// a failing call used to look exactly like "you have no pages", which sent
+// people back to reconnect instead of showing them what went wrong
+const pagesError = ref('')
 const pages = createResource({
   url: 'crm.integrations.meta.api.get_pages',
   auto: true,
+  onSuccess: () => (pagesError.value = ''),
+  onError: (e) => (pagesError.value = e.messages?.[0] || e.message || __('Unknown error')),
 })
+
+const syncing = computed(() => Boolean(status.data?.syncing))
+
+// the sync runs in a background job: come back for it while it is running
+let pollTimer = null
+watch(syncing, (running) => {
+  clearTimeout(pollTimer)
+  if (running)
+    pollTimer = setTimeout(() => {
+      status.reload()
+      pages.reload()
+    }, 4000)
+})
+onUnmounted(() => clearTimeout(pollTimer))
 
 const failures = createResource({
   url: 'crm.integrations.meta.api.get_failure_logs',
