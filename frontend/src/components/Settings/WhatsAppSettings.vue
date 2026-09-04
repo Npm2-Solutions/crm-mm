@@ -50,6 +50,33 @@
         </div>
 
         <!-- numbers -->
+        <!-- the WhatsApp app is a different Meta app, so its webhook does not come
+             along with the Facebook one: it appears here only when it is not set,
+             with the button that sets it -->
+        <div
+          v-if="webhook.data?.is_hub && !webhook.data?.configured"
+          class="mb-4 flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+        >
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex flex-col">
+              <span class="text-p-base-medium text-ink-gray-7">
+                {{ __('Meta is not notifying this hub yet') }}
+              </span>
+              <span class="text-p-sm text-ink-gray-6">
+                {{ __('Without it no message reaches the CRM, in either direction.') }}
+              </span>
+              <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
+                {{ webhook.data.error }}
+              </span>
+            </div>
+            <Button
+              :label="__('Configure it')"
+              :loading="configuringWebhook"
+              @click="configureWebhook"
+            />
+          </div>
+        </div>
+
         <div
           v-if="status.data?.installed && status.data?.missing?.length"
           class="mb-4 flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
@@ -113,6 +140,31 @@ import { createResource, toast } from 'frappe-ui'
 import { ref } from 'vue'
 
 const connecting = ref(false)
+
+const webhook = createResource({
+  url: 'crm.integrations.whatsapp.api.get_webhook',
+  auto: true,
+})
+const configuringWebhook = ref(false)
+
+function configureWebhook() {
+  configuringWebhook.value = true
+  createResource({
+    url: 'crm.integrations.whatsapp.api.configure_webhook',
+    auto: true,
+    onSuccess: (data) => {
+      configuringWebhook.value = false
+      webhook.data = data
+      data.configured
+        ? toast.success(__('Webhook configured on the WhatsApp app'))
+        : toast.error(data.error || __('Webhook not configured'))
+    },
+    onError: (e) => {
+      configuringWebhook.value = false
+      toast.error(e.messages?.[0] || __('Could not configure the webhook'))
+    },
+  })
+}
 
 const status = createResource({
   url: 'crm.integrations.whatsapp.api.get_status',

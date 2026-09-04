@@ -41,6 +41,30 @@ L'hub rifirma le consegne WhatsApp con il secret **dell'app WhatsApp**: se si
 separano le app senza impostare `whatsapp_app_secret`, le firme non tornano e
 i messaggi vengono rifiutati a valle.
 
+## Cosa mettere dove, sull'app WhatsApp
+
+Tutti gli indirizzi puntano all'**hub**, mai al site del cliente: e' l'hub a
+ospitare la pagina di Embedded Signup e a ricevere i webhook, poi smista.
+Cento clienti, un dominio solo.
+
+| Dove, sull'app | Cosa mettere |
+|---|---|
+| Manage domains → allowlist | `<hub>` (solo il dominio, serve al JavaScript SDK) |
+| Webhooks → WhatsApp Business Account | `https://<hub>/api/method/crm.integrations.whatsapp.webhook.handle` |
+| … verify token | quello del site hub (Settings → Meta connection) |
+| … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
+| Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
+| App settings → Basic | Privacy Policy e Terms of Service (obbligatori per l'App Review) |
+
+Il webhook non va incollato a mano: sull'hub, Settings → WhatsApp mostra il
+bottone **"Configuralo"** quando manca, e lo registra da solo sull'app
+(`{app_id}/subscriptions`). Meta verifica il callback sul momento, quindi
+l'hub deve gia' rispondere in HTTPS.
+
+**Nessun redirect URI da whitelistare.** Embedded Signup usa il JavaScript SDK
+e restituisce il codice alla finestra che l'ha aperta: la lista dei "Valid
+OAuth Redirect URIs" riguarda solo l'app Facebook.
+
 ## Cosa serve sull'app
 
 Il collegamento col QR passa da **Embedded Signup**, che Meta sblocca solo alle
