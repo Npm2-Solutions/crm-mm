@@ -114,10 +114,10 @@
           />
         </div>
         <div
-          v-else-if="getRow(itemName, titleField).label"
+          v-else-if="cardTitle(itemName, titleField)"
           class="truncate text-base"
         >
-          {{ getRow(itemName, titleField).label }}
+          {{ cardTitle(itemName, titleField) }}
         </div>
         <div v-else class="text-ink-gray-4">{{ __('No Title') }}</div>
       </div>
@@ -355,6 +355,20 @@ function getRow(name, field) {
     return { label: value }
   }
   return getValue(rows.value?.find((row) => row.name == name)[field])
+}
+
+// A deal with no organization (B2C, or a lead that had no company) would show an
+// empty card: fall back to whoever the deal is with.
+function cardTitle(itemName, titleField) {
+  const value = getRow(itemName, titleField).label
+  if (value || titleField !== 'organization') return value
+
+  return (
+    getRow(itemName, 'lead_name').label ||
+    getRow(itemName, 'email').label ||
+    getRow(itemName, 'mobile_no').label ||
+    ''
+  )
 }
 
 // Rows

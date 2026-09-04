@@ -96,6 +96,7 @@ class CRMDeal(Document):
 		self.validate_status()
 		self.set_primary_contact()
 		self.set_primary_email_mobile_no()
+		self.set_person_name()
 		if not self.is_new() and self.has_value_changed("deal_owner") and self.deal_owner:
 			self.share_with_agent(self.deal_owner)
 			self.assign_agent(self.deal_owner)
@@ -192,6 +193,29 @@ class CRMDeal(Document):
 			self.email = ""
 			self.mobile_no = ""
 			self.phone = ""
+
+	def set_person_name(self):
+		"""Name of the person the deal is with, kept in `lead_name`.
+
+		A deal without an organization (B2C, or a lead that had no company) has
+		nothing else to show on the board or in the header, so the primary contact
+		provides the label. Kept, not cleared, when the last contact is removed --
+		it is a display name, not a link.
+		"""
+		primary = next((contact for contact in self.contacts if contact.is_primary), None)
+
+		full_name = ""
+		if primary:
+			full_name = (primary.full_name or "").strip()
+			if not full_name and primary.contact:
+				# fetch_from values land after this hook, so read the contact on new rows
+				full_name = (frappe.get_cached_value("Contact", primary.contact, "full_name") or "").strip()
+
+		if not full_name:
+			full_name = " ".join(part for part in (self.first_name, self.last_name) if part).strip()
+
+		if full_name:
+			self.lead_name = full_name
 
 	def assign_agent(self, agent):
 		if not agent:
@@ -386,6 +410,7 @@ class CRMDeal(Document):
 			"status",
 			"pipeline",
 			"email",
+			"lead_name",
 			"currency",
 			"mobile_no",
 			"deal_owner",

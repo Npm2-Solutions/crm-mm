@@ -573,7 +573,8 @@ const breadcrumbs = computed(() => {
 
 const title = computed(() => {
   let t = doctypeMeta.value?.title_field || 'name'
-  return doc.value?.[t] || props.dealId
+  // no organization on the deal: the person it is with names it, not its ID
+  return doc.value?.[t] || doc.value?.lead_name || props.dealId
 })
 
 const statuses = computed(() => {
