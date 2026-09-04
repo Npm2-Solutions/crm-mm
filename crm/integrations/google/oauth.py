@@ -240,8 +240,15 @@ def _relay_to_site(site: str, code: str | None, state: str, kwargs: dict) -> Non
 
 
 def _redirect_back(error: str | None = None) -> None:
-	target = "/crm?settings=" + quote("Google Calendar")
+	"""End of the login: a page that reports back to whoever opened it.
+
+	The connect button opens a popup, so the CRM behind it must not be
+	navigated anywhere; `oauth_connected` posts the outcome to the opener and
+	closes. Opened as a plain tab it redirects to the settings page itself, so
+	a blocked popup still lands somewhere sensible.
+	"""
+	target = "/oauth_connected?provider=google"
 	if error:
-		target += f"&google_error={quote(error[:300])}"
+		target += f"&error={quote(error[:300])}"
 	frappe.local.response["type"] = "redirect"
 	frappe.local.response["location"] = target

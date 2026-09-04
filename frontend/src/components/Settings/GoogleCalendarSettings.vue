@@ -67,6 +67,7 @@
 <script setup>
 import { createResource, toast } from 'frappe-ui'
 import { ref } from 'vue'
+import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
 
 const googleError = ref(new URLSearchParams(window.location.search).get('google_error') || '')
 const connecting = ref(false)
@@ -76,15 +77,19 @@ const status = createResource({
   auto: true,
 })
 
+onOAuthResult('google', ({ error }) => {
+  connecting.value = false
+  googleError.value = error
+  error ? toast.error(error) : toast.success(__('Calendar connected'))
+  status.reload()
+})
+
 function connect() {
   connecting.value = true
   createResource({
     url: 'crm.integrations.google.oauth.get_login_url',
     auto: true,
-    onSuccess: (data) => {
-      connecting.value = false
-      window.location.href = data.login_url
-    },
+    onSuccess: (data) => openOAuthPopup(data.login_url, 'crm-google-oauth'),
     onError: (e) => {
       connecting.value = false
       toast.error(e.messages?.[0] || __('Could not start the connection'))

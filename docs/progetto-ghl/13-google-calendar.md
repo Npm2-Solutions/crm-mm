@@ -29,6 +29,17 @@ Il codice chiede `access_type=offline` **e** `prompt=consent`: senza entrambi
 Google non restituisce il refresh token alla seconda autorizzazione, e il
 collegamento morirebbe alla prima scadenza.
 
+## Il popup
+
+Il pulsante apre una finestra popup, non porta via l'intero CRM: la pagina
+dietro resta dov'e' con il suo stato. Alla fine del giro Google atterra su
+`/oauth_connected?provider=google`, che comunica l'esito alla finestra che
+l'ha aperta e si chiude; la schermata ricarica il proprio stato da sola. Se il
+browser blocca il popup si naviga come prima e la stessa pagina rimanda alle
+impostazioni. E' la stessa pagina che chiude il login di Facebook, con
+`provider` diverso.
+
+
 ## Configurazione (una volta sola)
 
 `common_site_config.json`, accanto alle chiavi Meta:

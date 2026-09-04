@@ -150,28 +150,31 @@
           />
         </div>
 
-        <div v-if="pages.length" class="flex flex-col gap-1.5">
+        <div v-if="pages.length" class="flex flex-col gap-1">
+          <p class="mb-1 text-p-sm text-ink-gray-5">
+            {{ __('Turn on the Pages whose leads should reach this CRM.') }}
+          </p>
           <div
             v-for="page in pages"
             :key="page.name"
-            class="flex items-center gap-2 text-p-sm text-ink-gray-6"
+            class="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-surface-gray-1"
           >
-            <FeatherIcon name="facebook" class="size-4 shrink-0 text-ink-gray-5" />
-            <span class="truncate text-ink-gray-8">{{ page.page_name || page.name }}</span>
-            <Badge
-              v-if="page.instagram_username"
-              :label="'@' + page.instagram_username"
-              theme="gray"
+            <Switch
               size="sm"
+              :modelValue="Boolean(page.sync_enabled)"
+              :disabled="busyPage === page.name"
+              @update:modelValue="(value) => togglePage(page, value)"
             />
-            <Badge
-              v-if="page.sync_enabled"
-              :label="__('Leads on')"
-              theme="green"
-              size="sm"
-            />
+            <div class="flex min-w-0 flex-1 flex-col">
+              <span class="truncate text-p-sm text-ink-gray-8">
+                {{ page.page_name || page.name }}
+              </span>
+              <span v-if="page.instagram_username" class="text-p-xs text-ink-gray-5">
+                {{ __('Instagram') }}: @{{ page.instagram_username }}
+              </span>
+            </div>
           </div>
-          <span class="mt-1 text-p-sm text-ink-gray-5">
+          <span class="mt-2 text-p-sm text-ink-gray-5">
             {{
               __(
                 'Missing one? "Choose pages" reopens the Facebook window: without it Facebook skips the picker and keeps the earlier choice.',
@@ -206,8 +209,9 @@
 
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
-import { Badge, createResource, FeatherIcon, FormControl, toast } from 'frappe-ui'
+import { Badge, createResource, FeatherIcon, FormControl, Switch, toast } from 'frappe-ui'
 import { ref, computed } from 'vue'
+import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
 
 const metaError = ref(new URLSearchParams(window.location.search).get('meta_error') || '')
 const appForm = ref({ app_id: '', app_secret: '' })
@@ -233,8 +237,28 @@ const webhook = createResource({
 const configuringWebhook = ref(false)
 const refreshing = ref(false)
 const choosing = ref(false)
+const busyPage = ref('')
 
 const pages = computed(() => status.data?.pages || [])
+
+function togglePage(page, enabled) {
+  busyPage.value = page.name
+  createResource({
+    url: 'crm.integrations.meta.api.set_page_sync',
+    params: { page_id: page.name, enabled: enabled ? 1 : 0 },
+    auto: true,
+    onSuccess: () => {
+      busyPage.value = ''
+      toast.success(enabled ? __('Leads enabled') : __('Leads disabled'))
+      status.reload()
+    },
+    onError: (e) => {
+      busyPage.value = ''
+      toast.error(e.messages?.[0] || __('Could not change the page'))
+      status.reload()
+    },
+  })
+}
 
 function go(page) {
   activeSettingsPage.value = page
@@ -284,13 +308,20 @@ function configureWebhook() {
   })
 }
 
+onOAuthResult('meta', ({ error }) => {
+  choosing.value = false
+  metaError.value = error
+  error ? toast.error(error) : toast.success(__('Facebook connected'))
+  status.reload()
+})
+
 function connect(rerequest = false) {
   if (rerequest) choosing.value = true
   createResource({
     url: 'crm.integrations.meta.oauth.get_login_url',
     params: { rerequest: rerequest ? 1 : 0 },
     auto: true,
-    onSuccess: (data) => (window.location.href = data.login_url),
+    onSuccess: (data) => openOAuthPopup(data.login_url, 'crm-meta-oauth'),
     onError: (e) => {
       choosing.value = false
       toast.error(e.messages?.[0] || __('Failed to start login'))
