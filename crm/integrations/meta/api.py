@@ -19,7 +19,7 @@ from crm.integrations.meta.client import (
 	is_managed_app,
 )
 from crm.integrations.meta.leads import backfill_form, get_page_token
-from crm.integrations.meta.oauth import _check_manager, hub_url, is_hub, sync_pages_and_forms
+from crm.integrations.meta.oauth import _check_manager, hub_url, is_hub, start_page_sync, sync_running
 
 WEBHOOK_PATH = "/api/method/crm.integrations.meta.webhook.handle"
 
@@ -45,6 +45,9 @@ def get_status() -> dict:
 		# what Facebook actually shared: the dialog decides which Pages the app
 		# can see, and a login that granted none looks exactly like a successful
 		# one unless we say so here
+		# a background job is still pulling pages in: the screen says so instead
+		# of looking like the login shared nothing
+		"syncing": sync_running(),
 		"pages": frappe.get_all(
 			"Facebook Page",
 			fields=["name", "page_name", "instagram_username", "sync_enabled"],
@@ -158,11 +161,9 @@ def refresh_pages() -> dict:
 	token = settings.get_password("user_access_token", raise_exception=False)
 	if not token:
 		frappe.throw(_("Connect Facebook first"))
-	try:
-		pages = sync_pages_and_forms(token)
-	except MetaAPIError as exc:
-		frappe.throw(_("Meta API error: {0}").format(exc))
-	return {"pages": len(pages)}
+	# same reason as the OAuth callback: too slow to hold a web request open
+	start_page_sync(token)
+	return {"started": True}
 
 
 @frappe.whitelist()

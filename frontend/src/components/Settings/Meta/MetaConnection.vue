@@ -150,7 +150,12 @@
           />
         </div>
 
-        <div v-if="pages.length" class="flex flex-col gap-1">
+        <div v-if="syncing" class="flex items-center gap-2 text-p-sm text-ink-gray-6">
+          <LoadingIndicator class="size-4" />
+          {{ __('Reading your Pages from Facebook — this can take a minute on an account with many.') }}
+        </div>
+
+        <div v-else-if="pages.length" class="flex flex-col gap-1">
           <p class="mb-1 text-p-sm text-ink-gray-5">
             {{ __('Turn on the Pages whose leads should reach this CRM.') }}
           </p>
@@ -183,7 +188,7 @@
           </span>
         </div>
 
-        <div v-else class="flex flex-col gap-1 text-p-sm">
+        <div v-else-if="!syncing" class="flex flex-col gap-1 text-p-sm">
           <span class="text-ink-red-5">
             {{ __('Facebook shared no Page with the CRM.') }}
           </span>
@@ -209,8 +214,16 @@
 
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
-import { Badge, createResource, FeatherIcon, FormControl, Switch, toast } from 'frappe-ui'
-import { ref, computed } from 'vue'
+import {
+  Badge,
+  createResource,
+  FeatherIcon,
+  FormControl,
+  LoadingIndicator,
+  Switch,
+  toast,
+} from 'frappe-ui'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
 
 const metaError = ref(new URLSearchParams(window.location.search).get('meta_error') || '')
@@ -240,6 +253,15 @@ const choosing = ref(false)
 const busyPage = ref('')
 
 const pages = computed(() => status.data?.pages || [])
+const syncing = computed(() => Boolean(status.data?.syncing))
+
+// the sync runs in a background job, so the screen has to come back for it
+let pollTimer = null
+watch(syncing, (running) => {
+  clearTimeout(pollTimer)
+  if (running) pollTimer = setTimeout(() => status.reload(), 4000)
+})
+onUnmounted(() => clearTimeout(pollTimer))
 
 function togglePage(page, enabled) {
   busyPage.value = page.name
@@ -347,7 +369,8 @@ function refreshPages() {
     auto: true,
     onSuccess: () => {
       refreshing.value = false
-      toast.success(__('Pages refreshed'))
+      toast.success(__('Reading your Pages from Facebook…'))
+      status.reload()
     },
     onError: (e) => {
       refreshing.value = false

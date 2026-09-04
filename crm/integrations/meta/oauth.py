@@ -215,9 +215,15 @@ def callback(code: str | None = None, state: str | None = None, **kwargs):
 			add_to_date(now_datetime(), seconds=expires_in) if expires_in else None
 		)
 		settings.save(ignore_permissions=True)
-
-		sync_pages_and_forms(user_token)
+		# Commit the token BEFORE touching the pages. Discovering them costs one
+		# Graph call per page plus one per form, so an account with access to
+		# every Page of a portfolio runs into the gateway timeout — and a request
+		# that dies takes the whole transaction with it, losing the token that
+		# was already obtained. That is why granting access to a single Page
+		# worked and granting access to all of them came back disconnected.
 		frappe.db.commit()
+
+		start_page_sync(user_token)
 		_redirect_back()
 	except MetaAPIError as exc:
 		frappe.log_error(frappe.get_traceback(), "Meta OAuth callback failed")
@@ -306,6 +312,39 @@ def discover_pages(user_token: str) -> list[dict]:
 				if full.get("access_token"):
 					pages[full["id"]] = full
 	return list(pages.values())
+
+
+SYNC_FLAG = "meta_page_sync_running"
+
+
+def sync_running() -> bool:
+	return bool(frappe.cache().get_value(SYNC_FLAG))
+
+
+def start_page_sync(user_token: str) -> None:
+	"""Run the page/form sync in the background.
+
+	It is far too slow for a web request: `discover_pages` alone is one Graph
+	call per Page reached through a Business portfolio, and every Page then
+	costs another call for its lead forms.
+	"""
+	frappe.cache().set_value(SYNC_FLAG, 1, expires_in_sec=900)
+	frappe.enqueue(
+		"crm.integrations.meta.oauth.run_page_sync",
+		queue="long",
+		timeout=900,
+		user_token=user_token,
+	)
+
+
+def run_page_sync(user_token: str) -> None:
+	try:
+		sync_pages_and_forms(user_token)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Meta: page sync failed")
+	finally:
+		frappe.cache().delete_value(SYNC_FLAG)
 
 
 def sync_pages_and_forms(user_token: str) -> list[dict]:

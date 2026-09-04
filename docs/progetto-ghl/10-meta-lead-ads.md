@@ -44,6 +44,31 @@ Settings modal → "Meta Lead Ads"
 - Instagram: i lead IG appartengono alla stessa pagina Facebook (conferma docs) —
   un'unica integrazione copre entrambi.
 
+## La sincronizzazione delle Pagine gira in background
+
+Scoprire le Pagine costa una chiamata Graph per ogni Pagina raggiunta tramite
+un portfolio Business, piu' una per i form di ognuna. Un account con accesso a
+tutte le Pagine di un'agenzia sono decine o centinaia di chiamate in fila:
+dentro una richiesta web si va oltre il timeout del gateway, e una richiesta
+che muore si porta dietro l'intera transazione — **compreso il token appena
+ottenuto**. Era questo il motivo per cui dare accesso a una sola Pagina
+funzionava e darlo a tutte tornava indietro "non collegato".
+
+Ora il callback salva il token e fa `commit` subito, poi mette in coda il
+lavoro (`start_page_sync`). La schermata mostra "sto leggendo le tue Pagine" e
+si ricontrolla da sola finche' il job non ha finito. Anche "Aggiorna pagine"
+passa dalla stessa coda.
+
+## Perche' Facebook chiede il portfolio Business
+
+Il dialog chiede di scegliere un portfolio perche' l'app domanda
+`business_management`: e' il permesso che rende visibili le Pagine possedute o
+gestite da un Business invece che dalla persona. La scelta dice a Meta **quali
+asset di quel portfolio** l'app puo' vedere. Senza, restano solo le Pagine su
+cui hai un ruolo diretto — di nuovo il caso in cui "collego l'account ma non
+trovo le mie Pagine".
+
+
 ## Checklist di produzione (dalle guide ufficiali)
 
 > **Un'app sola per tutti i clienti**: vedi
