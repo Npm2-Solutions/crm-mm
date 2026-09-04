@@ -365,10 +365,7 @@ def sync_pages_and_forms(user_token: str) -> list[dict]:
 	pages = discover_pages(user_token)
 	for page in pages:
 		upsert_page(page)
-		try:
-			sync_forms_for_page(page["id"], page["access_token"])
-		except MetaAPIError:
-			frappe.log_error(frappe.get_traceback(), f"Meta: form sync failed for page {page['id']}")
+		sync_forms_recording_failure(page["id"], page["access_token"])
 
 	# make the pages (and linked IG accounts) usable by the Social Planner
 	try:
@@ -398,6 +395,24 @@ def upsert_page(page: dict) -> None:
 		frappe.get_doc({"doctype": "Facebook Page", "id": page["id"], **values}).insert(
 			ignore_permissions=True
 		)
+
+
+def sync_forms_recording_failure(page_id: str, page_token: str) -> str:
+	"""Pull a page's forms, keeping any failure where someone can read it.
+
+	Meta refuses `leadgen_forms` for a page whose token comes from a user
+	without the ADVERTISE task on it, and rate-limits with error 80005. Both
+	used to go only to the error log, so the page appeared connected with no
+	forms and no reason given. The message is stored on the page instead.
+	"""
+	error = ""
+	try:
+		sync_forms_for_page(page_id, page_token)
+	except MetaAPIError as exc:
+		error = str(exc)[:500]
+		frappe.log_error(frappe.get_traceback(), f"Meta: form sync failed for page {page_id}")
+	frappe.db.set_value("Facebook Page", page_id, "last_form_sync_error", error, update_modified=False)
+	return error
 
 
 def sync_forms_for_page(page_id: str, page_token: str) -> None:

@@ -19,7 +19,14 @@ from crm.integrations.meta.client import (
 	is_managed_app,
 )
 from crm.integrations.meta.leads import backfill_form, get_page_token
-from crm.integrations.meta.oauth import _check_manager, hub_url, is_hub, start_page_sync, sync_running
+from crm.integrations.meta.oauth import (
+	_check_manager,
+	hub_url,
+	is_hub,
+	start_page_sync,
+	sync_forms_recording_failure,
+	sync_running,
+)
 
 WEBHOOK_PATH = "/api/method/crm.integrations.meta.webhook.handle"
 
@@ -165,6 +172,27 @@ def refresh_pages() -> dict:
 	return {"started": True}
 
 
+@frappe.whitelist(methods=["POST"])
+def sync_forms(page_id: str) -> dict:
+	"""Ask Meta for this page's lead forms, now, and say how it went.
+
+	The page sync pulls forms too, but a page can be connected while its forms
+	fail on their own (the connecting user needs the ADVERTISE task on the page
+	for `leadgen_forms`). One page is a single Graph call, so unlike the whole
+	sync this can answer inside the request.
+	"""
+	_check_manager()
+	token = get_page_token(page_id)
+	if not token:
+		frappe.throw(_("No page token stored. Reconnect Facebook."))
+	error = sync_forms_recording_failure(page_id, token)
+	frappe.db.commit()
+	return {
+		"error": error,
+		"forms": frappe.db.count("Facebook Lead Form", {"page": page_id}),
+	}
+
+
 @frappe.whitelist()
 def get_pages() -> list[dict]:
 	_check_manager()
@@ -178,6 +206,7 @@ def get_pages() -> list[dict]:
 			"webhook_subscribed",
 			"token_valid",
 			"last_webhook_at",
+			"last_form_sync_error",
 		],
 		order_by="page_name asc",
 	)

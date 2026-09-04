@@ -16,7 +16,8 @@
   "token_valid",
   "last_webhook_at",
   "instagram_account_id",
-  "instagram_username"
+  "instagram_username",
+  "last_form_sync_error"
  ],
  "fields": [
   {
@@ -88,6 +89,12 @@
    "fieldname": "instagram_username",
    "fieldtype": "Data",
    "label": "Instagram Username",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_form_sync_error",
+   "fieldtype": "Small Text",
+   "label": "Last Form Sync Error",
    "read_only": 1
   }
  ],
