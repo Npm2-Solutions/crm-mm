@@ -28,7 +28,13 @@ import requests
 from frappe import _
 from frappe.utils import get_url
 
-from crm.integrations.meta.client import MetaAPIError, get_app_id, get_app_secret, graph_get, graph_post
+from crm.integrations.meta.client import (
+	MetaAPIError,
+	get_whatsapp_app_id,
+	get_whatsapp_app_secret,
+	graph_get,
+	graph_post,
+)
 from crm.integrations.meta.relay import relay_secret, sign
 from crm.integrations.meta.relay import sign as relay_sign
 
@@ -160,8 +166,8 @@ def exchange_code(code: str) -> str:
 			"oauth/access_token",
 			token="",
 			params={
-				"client_id": get_app_id(),
-				"client_secret": get_app_secret(),
+				"client_id": get_whatsapp_app_id(),
+				"client_secret": get_whatsapp_app_secret(),
 				"code": code,
 			},
 		)

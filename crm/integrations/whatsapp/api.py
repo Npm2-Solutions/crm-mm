@@ -16,7 +16,15 @@ from frappe import _
 from frappe.utils import get_url
 from werkzeug.wrappers import Response
 
-from crm.integrations.meta.client import get_app_id
+from crm.integrations.meta.client import (
+	MetaAPIError,
+	get_settings,
+	get_whatsapp_app_id,
+	get_whatsapp_app_secret,
+	graph_get,
+	graph_post,
+)
+from crm.integrations.meta.oauth import is_hub
 from crm.integrations.meta.relay import valid_relay_signature
 from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, make_state
 
@@ -54,7 +62,7 @@ def get_status() -> dict:
 	default = frappe.db.get_single_value("WhatsApp Settings", "default_outgoing_account")
 	return {
 		"installed": True,
-		"can_connect": bool(get_app_id() and config_id()),
+		"can_connect": bool(get_whatsapp_app_id() and config_id()),
 		# say WHICH piece is missing: "ask your provider" left nobody, the
 		# provider included, able to tell what to do next
 		"missing": missing_requirements(),
@@ -71,12 +79,16 @@ def missing_requirements() -> list[dict]:
 	Embedded Signup is unlocked by Meta, not by configuration.
 	"""
 	missing = []
-	if not get_app_id():
+	if not get_whatsapp_app_id():
 		missing.append(
 			{
-				"key": "meta_app_id",
-				"what": _("The Meta app is not configured"),
-				"how": _("Set meta_app_id and meta_app_secret in the bench config, as for Facebook."),
+				"key": "whatsapp_app_id",
+				"what": _("The WhatsApp app is not configured"),
+				"how": _(
+					"Set whatsapp_app_id and whatsapp_app_secret in the bench config. Leave them out "
+					"only if WhatsApp lives in the same Meta app as Facebook, in which case "
+					"meta_app_id and meta_app_secret are used."
+				),
 			}
 		)
 	if not config_id():
@@ -93,6 +105,79 @@ def missing_requirements() -> list[dict]:
 			}
 		)
 	return missing
+
+
+WEBHOOK_PATH = "/api/method/crm.integrations.whatsapp.webhook.handle"
+
+# What the CRM needs to see. `messages` alone is the plain Cloud API flow;
+# Coexistence adds the rest — without `smb_message_echoes` the CRM never sees
+# what the business writes from its own phone, and without `history` the past
+# conversations are never imported.
+WEBHOOK_FIELDS = "messages,smb_message_echoes,history,smb_app_state_sync,message_template_status_update"
+
+
+@frappe.whitelist()
+def get_webhook() -> dict:
+	"""The webhook this hub expects on the WhatsApp app, and whether it is set."""
+	_check_manager()
+	settings = get_settings()
+	configured = False
+	error = ""
+	if is_hub() and get_whatsapp_app_id() and get_whatsapp_app_secret():
+		try:
+			data = graph_get(f"{get_whatsapp_app_id()}/subscriptions", _app_token())
+			for row in data.get("data") or []:
+				if row.get("object") == "whatsapp_business_account":
+					configured = get_url(WEBHOOK_PATH) in str(row)
+		except MetaAPIError as exc:
+			error = str(exc)
+	return {
+		"is_hub": is_hub(),
+		"url": get_url(WEBHOOK_PATH),
+		"verify_token": settings.webhook_verify_token or "",
+		"fields": WEBHOOK_FIELDS,
+		"configured": configured,
+		"error": error,
+	}
+
+
+def _app_token() -> str:
+	return f"{get_whatsapp_app_id()}|{get_whatsapp_app_secret()}"
+
+
+@frappe.whitelist(methods=["POST"])
+def configure_webhook() -> dict:
+	"""Register this hub as the WhatsApp app's webhook, without leaving the CRM.
+
+	The WhatsApp app is a different app from the Facebook one, so its webhook
+	does not come along with the Meta one: it has to be registered separately,
+	and doing it by hand means copying a URL and a verify token into
+	developers.facebook.com. Meta verifies the callback synchronously, so the
+	hub must already be reachable over HTTPS.
+	"""
+	_check_manager()
+	if not is_hub():
+		frappe.throw(_("The webhook is configured centrally by your provider"))
+	settings = get_settings()
+	if not settings.webhook_verify_token:
+		frappe.throw(_("Open Settings → Meta connection once to generate a verify token"))
+	if not get_whatsapp_app_id() or not get_whatsapp_app_secret():
+		frappe.throw(_("Set whatsapp_app_id and whatsapp_app_secret in the bench config first"))
+	try:
+		graph_post(
+			f"{get_whatsapp_app_id()}/subscriptions",
+			_app_token(),
+			{
+				"object": "whatsapp_business_account",
+				"callback_url": get_url(WEBHOOK_PATH),
+				"fields": WEBHOOK_FIELDS,
+				"verify_token": settings.webhook_verify_token,
+				"include_values": "true",
+			},
+		)
+	except MetaAPIError as exc:
+		frappe.throw(_("Could not configure the webhook automatically: {0}").format(exc))
+	return get_webhook()
 
 
 @frappe.whitelist()
@@ -151,7 +236,7 @@ def upsert_account(data: dict) -> str:
 		"token": data.get("token"),
 		"phone_id": phone_id,
 		"business_id": data.get("waba_id"),
-		"app_id": get_app_id(),
+		"app_id": get_whatsapp_app_id(),
 		"webhook_verify_token": frappe.get_cached_value(
 			"CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token"
 		),

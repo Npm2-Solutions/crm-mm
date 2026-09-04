@@ -12,7 +12,7 @@ sensitive is rendered: the state only says which site started the flow, and
 import frappe
 from frappe import _
 
-from crm.integrations.meta.client import get_app_id
+from crm.integrations.meta.client import get_whatsapp_app_id
 from crm.integrations.whatsapp.signup import allowed_site, config_id, parse_state
 
 no_cache = 1
@@ -23,7 +23,7 @@ def get_context(context):
 	context.state = frappe.form_dict.get("state") or ""
 	parsed = parse_state(context.state)
 
-	context.app_id = get_app_id()
+	context.app_id = get_whatsapp_app_id()
 	context.config_id = config_id()
 	context.site_label = ""
 	context.error = ""

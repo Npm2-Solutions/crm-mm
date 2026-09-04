@@ -11,7 +11,61 @@ Come per Facebook: il cliente apre Settings → WhatsApp, preme **Connetti**,
 stanno **sia nel CRM sia nell'app WhatsApp Business sul telefono**, sincronizzate.
 Una sola app Meta dell'agenzia per tutti i clienti.
 
-## Cosa serve sull'app Meta
+## Un'app separata da quella di Facebook
+
+WhatsApp ha la **sua** app Meta, non quella dei lead e del Social Planner.
+`whatsapp_app_id` e `whatsapp_app_secret` nel config del bench; se mancano si
+ricade su `meta_app_id`/`meta_app_secret`, cosi' chi tiene tutto in un'app sola
+continua a funzionare senza toccare niente.
+
+Perche' separate:
+
+- **L'App Review e' serializzata per app.** Meta rifiuta una nuova submission
+  finche' un'altra e' in revisione: con un'app sola la review di WhatsApp si
+  mette in coda dietro quella delle Pagine, e viceversa.
+- **Il rigetto e' contagioso.** Meta avverte che chiedere permessi non
+  necessari e' causa comune di rigetto: un'app che chiede insieme lead,
+  gestione Pagine, pubblicazione Instagram e messaggistica offre una superficie
+  enorme a un solo revisore.
+- **La restrizione lo e' altrettanto.** Un problema di policy sul lato
+  messaggistica, che e' la parte piu' regolata, fermerebbe anche i lead ads di
+  tutti i clienti.
+- **Cicli di vita diversi**: status Tech Provider, limiti di onboarding e di
+  messaggistica riguardano solo WhatsApp.
+
+Non si duplica nulla di importante: la **Business Verification sta sul
+portfolio**, non sull'app, quindi due app sotto lo stesso Business Manager la
+condividono. L'hub resta uno solo, con lo stesso dominio in allowlist.
+
+L'hub rifirma le consegne WhatsApp con il secret **dell'app WhatsApp**: se si
+separano le app senza impostare `whatsapp_app_secret`, le firme non tornano e
+i messaggi vengono rifiutati a valle.
+
+## Cosa mettere dove, sull'app WhatsApp
+
+Tutti gli indirizzi puntano all'**hub**, mai al site del cliente: e' l'hub a
+ospitare la pagina di Embedded Signup e a ricevere i webhook, poi smista.
+Cento clienti, un dominio solo.
+
+| Dove, sull'app | Cosa mettere |
+|---|---|
+| Manage domains → allowlist | `<hub>` (solo il dominio, serve al JavaScript SDK) |
+| Webhooks → WhatsApp Business Account | `https://<hub>/api/method/crm.integrations.whatsapp.webhook.handle` |
+| … verify token | quello del site hub (Settings → Meta connection) |
+| … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
+| Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
+| App settings → Basic | Privacy Policy e Terms of Service (obbligatori per l'App Review) |
+
+Il webhook non va incollato a mano: sull'hub, Settings → WhatsApp mostra il
+bottone **"Configuralo"** quando manca, e lo registra da solo sull'app
+(`{app_id}/subscriptions`). Meta verifica il callback sul momento, quindi
+l'hub deve gia' rispondere in HTTPS.
+
+**Nessun redirect URI da whitelistare.** Embedded Signup usa il JavaScript SDK
+e restituisce il codice alla finestra che l'ha aperta: la lista dei "Valid
+OAuth Redirect URIs" riguarda solo l'app Facebook.
+
+## Cosa serve sull'app
 
 Il collegamento col QR passa da **Embedded Signup**, che Meta sblocca solo alle
 app registrate come **Tech Provider**. Sull'app servono, nell'ordine:

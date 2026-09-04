@@ -26,7 +26,7 @@ import frappe
 import requests
 from werkzeug.wrappers import Response
 
-from crm.integrations.meta.client import get_app_secret, get_settings
+from crm.integrations.meta.client import get_settings, get_whatsapp_app_secret
 from crm.integrations.meta.relay import sign as relay_sign
 
 TIMEOUT = 15
@@ -96,7 +96,7 @@ def split_entry(entry: dict) -> list[tuple[str, dict]]:
 
 
 def valid_signature(header: str | None, raw_body: bytes) -> bool:
-	secret = get_app_secret()
+	secret = get_whatsapp_app_secret()
 	if not secret or not header or not header.startswith("sha256="):
 		return False
 	expected = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
@@ -134,7 +134,7 @@ def forward(site: str, entry: dict, kind: str = "messages") -> None:
 	if kind == "coexistence":
 		path, headers = COEXISTENCE_PATH, {"X-CRM-Relay-Signature": relay_sign(body)}
 	else:
-		secret = get_app_secret()
+		secret = get_whatsapp_app_secret()
 		if not secret:
 			frappe.log_error("No Meta app secret configured", "WhatsApp relay: cannot sign")
 			return
