@@ -26,16 +26,13 @@
         }}
       </div>
 
-      <!-- the app itself: hidden when it is provided centrally and this site
-           does not own its callbacks -->
-      <div v-if="!managed || isHub" class="rounded-lg border border-outline-gray-2 p-4">
-        <div v-if="!managed" class="mb-2 text-p-base-medium text-ink-gray-7">
+      <!-- App ID/secret only when this site owns its own Meta app; when the app
+           is provided centrally there is nothing to type here -->
+      <div v-if="!managed" class="rounded-lg border border-outline-gray-2 p-4">
+        <div class="mb-2 text-p-base-medium text-ink-gray-7">
           {{ __('Meta App (developers.facebook.com)') }}
         </div>
-        <div v-else class="mb-2 text-p-base-medium text-ink-gray-7">
-          {{ __('Webhook (this site receives the leads of every connected site)') }}
-        </div>
-        <div v-if="!managed" class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3">
           <FormControl v-model="appForm.app_id" type="text" :label="__('App ID')" />
           <FormControl
             v-model="appForm.app_secret"
@@ -44,57 +41,34 @@
             :placeholder="status.data?.has_app_secret ? __('•••••• (saved — type to replace)') : ''"
           />
         </div>
-        <div v-if="!managed" class="mt-3 flex items-center gap-2">
+        <div class="mt-3 flex items-center gap-2">
           <Button :label="__('Save app')" variant="solid" @click="saveApp" />
         </div>
-        <div
-          v-if="status.data?.webhook_url"
-          class="mt-3 flex flex-col gap-2 text-p-sm text-ink-gray-6"
-        >
-          <div class="flex items-center gap-2">
-            <span class="shrink-0 font-medium">{{ __('Webhook') }}:</span>
-            <Badge
-              v-if="webhook.data?.configured && webhook.data?.matches_site"
-              :label="__('Configured automatically')"
-              theme="green"
-              size="sm"
-            />
-            <template v-else>
-              <Badge :label="__('Not configured')" theme="orange" size="sm" />
-              <Button
-                size="sm"
-                :label="__('Configure automatically')"
-                :loading="configuringWebhook"
-                @click="configureWebhook"
-              />
-            </template>
-          </div>
-          <span v-if="webhook.data?.error" class="text-ink-red-5">{{ webhook.data.error }}</span>
-          <details>
-            <summary class="cursor-pointer text-ink-gray-5">
-              {{ __('Manual configuration (fallback)') }}
-            </summary>
-            <div class="mt-1 flex flex-col gap-1">
-              <div class="flex items-center gap-2">
-                <span class="shrink-0 font-medium">{{ __('Webhook URL') }}:</span>
-                <span class="truncate">{{ status.data.webhook_url }}</span>
-                <Button variant="ghost" icon="lucide-copy" @click="copy(status.data.webhook_url)" />
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="shrink-0 font-medium">{{ __('Verify token') }}:</span>
-                <span class="truncate">{{ status.data.webhook_verify_token }}</span>
-                <Button
-                  variant="ghost"
-                  icon="lucide-copy"
-                  @click="copy(status.data.webhook_verify_token)"
-                />
-              </div>
-              <span class="text-ink-gray-5">
-                {{ __('In the app: Webhooks → Page → subscribe to "leadgen".') }}
-              </span>
-            </div>
-          </details>
+      </div>
+
+      <!-- The webhook configures itself and belongs to the plumbing, not to the
+           screen: it appears only when it is broken, with the button that fixes
+           it. Nothing to copy by hand. -->
+      <div
+        v-if="webhookBroken"
+        class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+      >
+        <div class="flex flex-col">
+          <span class="text-p-base-medium text-ink-gray-7">
+            {{ __('Real-time leads are off') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{ __('Meta is not notifying this site yet, so leads arrive with the hourly check instead of instantly.') }}
+          </span>
+          <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
+            {{ webhook.data.error }}
+          </span>
         </div>
+        <Button
+          :label="__('Fix it')"
+          :loading="configuringWebhook"
+          @click="configureWebhook"
+        />
       </div>
 
       <!-- the account -->
@@ -107,8 +81,11 @@
                 : __('Connect Facebook')
             }}
           </span>
-          <span v-if="status.data?.connected" class="text-p-sm text-ink-gray-5">
-            {{ __('Token valid until') }}: {{ status.data.user_token_expires_at || '—' }}
+          <span
+            v-if="status.data?.connected && status.data.user_token_expires_at"
+            class="text-p-sm text-ink-gray-5"
+          >
+            {{ __('Token valid until') }}: {{ status.data.user_token_expires_at }}
           </span>
           <span v-if="metaError" class="text-p-sm text-ink-red-5">{{ metaError }}</span>
         </div>
@@ -215,7 +192,6 @@
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
 import {
-  Badge,
   createResource,
   FeatherIcon,
   FormControl,
@@ -253,6 +229,13 @@ const choosing = ref(false)
 const busyPage = ref('')
 
 const pages = computed(() => status.data?.pages || [])
+// only the site that owns the app's callbacks can do anything about it
+const webhookBroken = computed(
+  () =>
+    isHub.value &&
+    webhook.data &&
+    !(webhook.data.configured && webhook.data.matches_site),
+)
 const syncing = computed(() => Boolean(status.data?.syncing))
 
 // the sync runs in a background job, so the screen has to come back for it
@@ -284,11 +267,6 @@ function togglePage(page, enabled) {
 
 function go(page) {
   activeSettingsPage.value = page
-}
-
-function copy(text) {
-  navigator.clipboard?.writeText(text)
-  toast.success(__('Copied'))
 }
 
 function saveApp() {
