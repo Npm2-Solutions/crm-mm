@@ -55,10 +55,44 @@ def get_status() -> dict:
 	return {
 		"installed": True,
 		"can_connect": bool(get_app_id() and config_id()),
+		# say WHICH piece is missing: "ask your provider" left nobody, the
+		# provider included, able to tell what to do next
+		"missing": missing_requirements(),
 		"accounts": accounts,
 		"default_account": default,
 		"connected": bool(accounts),
 	}
+
+
+def missing_requirements() -> list[dict]:
+	"""What still has to exist before the QR connection can run at all.
+
+	None of it can be created from the CRM: the Meta app is the agency's, and
+	Embedded Signup is unlocked by Meta, not by configuration.
+	"""
+	missing = []
+	if not get_app_id():
+		missing.append(
+			{
+				"key": "meta_app_id",
+				"what": _("The Meta app is not configured"),
+				"how": _("Set meta_app_id and meta_app_secret in the bench config, as for Facebook."),
+			}
+		)
+	if not config_id():
+		missing.append(
+			{
+				"key": "whatsapp_signup_config_id",
+				"what": _("Embedded Signup is not configured"),
+				"how": _(
+					"On the Meta app, create a Facebook Login for Business configuration of type "
+					"WhatsApp Embedded Signup, and put its id in whatsapp_signup_config_id. Meta "
+					"only offers it to apps registered as a WhatsApp Business Tech Provider — that "
+					"registration comes first."
+				),
+			}
+		)
+	return missing
 
 
 @frappe.whitelist()

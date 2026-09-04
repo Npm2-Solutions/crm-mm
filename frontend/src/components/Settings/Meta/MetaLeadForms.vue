@@ -7,7 +7,7 @@
       <p class="text-p-base text-ink-gray-6">
         {{
           __(
-            'Pick which Facebook and Instagram pages send their form leads into the CRM, and how the answers map to fields.',
+            'Choose which of your Facebook and Instagram pages send their form leads into the CRM, and how the answers map to fields.',
           )
         }}
       </p>
@@ -62,7 +62,7 @@
                   <div v-if="!page.can_sync_leads" class="mt-1 text-p-sm text-ink-amber-6">
                     {{
                       __(
-                        'Not authorised for leads: Facebook did not give this CRM the advertising role on this Page. Reconnect from the connection screen and tick it.',
+                        'Facebook did not give the CRM the advertising role on this Page, so its leads cannot be read. Grant it again from the connection screen.',
                       )
                     }}
                   </div>
@@ -135,7 +135,7 @@
             {{ __('Reading your Pages from Facebook…') }}
           </div>
           <div v-else class="text-p-base text-ink-gray-5">
-            {{ __('No pages yet — refresh them from the connection page.') }}
+            {{ __('No pages yet — grant them from the connection screen.') }}
           </div>
           <div class="mt-3 rounded-md bg-surface-gray-1 p-3 text-p-sm text-ink-gray-5">
             {{
@@ -247,16 +247,21 @@ function readForms(page) {
   })
 }
 
-// the sync runs in a background job: come back for it while it is running
+// The sync runs in a background job, so the screen has to keep coming back for
+// it. `watch` alone fires only when the flag CHANGES: after one reload with the
+// job still running the value stayed true, nothing rescheduled, and the screen
+// sat on "reading your Pages" until someone reloaded by hand.
 let pollTimer = null
-watch(syncing, (running) => {
+function pollWhileSyncing() {
   clearTimeout(pollTimer)
-  if (running)
-    pollTimer = setTimeout(() => {
-      status.reload()
-      pages.reload()
-    }, 4000)
-})
+  if (!syncing.value) return
+  pollTimer = setTimeout(() => {
+    status.reload()
+    pages.reload()
+    pollWhileSyncing()
+  }, 3000)
+}
+watch(syncing, pollWhileSyncing, { immediate: true })
 onUnmounted(() => clearTimeout(pollTimer))
 
 const failures = createResource({
