@@ -13,18 +13,19 @@ Una sola app Meta dell'agenzia per tutti i clienti.
 
 ## Le pagine legali
 
-`/privacy` e `/terms` sono servite dall'hub e valgono per entrambe le app: Meta
-le pretende su ognuna, ma nulla impedisce che puntino allo stesso posto.
+`/privacy` e `/terms` sono **record `Web Page`**, spediti come fixture dell'app
+(`crm/fixtures/web_page.json`, registrati in `hooks.py`). Arrivano con
+`bench migrate` e valgono per entrambe le app Meta: la revisione le pretende su
+ognuna, ma nulla impedisce che puntino allo stesso posto.
 
-I dati dell'azienda **non sono scritti nel codice**: arrivano dal config del
-site (`legal_name`, `legal_address`, `legal_vat`, `legal_email`), cosi' lo
-stesso codice serve qualunque agenzia e non si modifica un template per
-correggere una partita IVA. Finche' sede e partita IVA mancano, le pagine
-mostrano un avviso giallo: sono bozze, non ancora idonee per l'App Review.
+Essendo record e non template, si correggono dall'interfaccia Website senza
+toccare il codice — ma **`bench migrate` li reimporta**, quindi una correzione
+che deve durare va riportata anche nel file della fixture, altrimenti al
+deploy successivo torna indietro.
 
-Il testo descrive cio' che il sistema fa davvero — token dei collegamenti,
-risposte ai moduli, messaggi WhatsApp, eventi di calendario — ma non e' stato
-rivisto da un legale.
+Il testo descrive cio' che il sistema tratta davvero — token dei collegamenti,
+risposte ai moduli, messaggi WhatsApp, eventi di calendario, e con chi sono
+condivisi — ma non e' stato rivisto da un legale.
 
 
 ## Un'app separata da quella di Facebook
