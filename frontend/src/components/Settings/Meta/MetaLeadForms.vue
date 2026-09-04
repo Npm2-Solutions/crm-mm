@@ -57,8 +57,30 @@
                       · {{ __('last lead webhook') }}: {{ page.last_webhook_at }}
                     </span>
                   </div>
+                  <!-- a page can be connected while its forms fail on their
+                       own: say so instead of just showing zero forms -->
+                  <div v-if="!page.can_sync_leads" class="mt-1 text-p-sm text-ink-amber-6">
+                    {{
+                      __(
+                        'Not authorised for leads: Facebook did not give this CRM the advertising role on this Page. Reconnect from the connection screen and tick it.',
+                      )
+                    }}
+                  </div>
+                  <div v-else-if="page.last_form_sync_error" class="mt-1 text-p-sm text-ink-red-5">
+                    {{ __('Meta refused the forms') }}: {{ page.last_form_sync_error }}
+                  </div>
+                  <div v-else-if="!page.forms.length" class="mt-1 text-p-sm text-ink-gray-5">
+                    {{ __('No forms on this Page. If it has some, press "Read forms".') }}
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    :label="__('Read forms')"
+                    :disabled="!page.can_sync_leads"
+                    :loading="syncingForms === page.name"
+                    @click="readForms(page)"
+                  />
                   <span class="text-p-sm text-ink-gray-5">{{ __('Sync leads') }}</span>
                   <Switch
                     :modelValue="Boolean(page.sync_enabled)"
@@ -205,6 +227,25 @@ const pages = createResource({
 })
 
 const syncing = computed(() => Boolean(status.data?.syncing))
+const syncingForms = ref('')
+
+function readForms(page) {
+  syncingForms.value = page.name
+  createResource({
+    url: 'crm.integrations.meta.api.sync_forms',
+    params: { page_id: page.name },
+    auto: true,
+    onSuccess: (data) => {
+      syncingForms.value = ''
+      data.error ? toast.error(data.error) : toast.success(__('{0} forms read', [data.forms]))
+      pages.reload()
+    },
+    onError: (e) => {
+      syncingForms.value = ''
+      toast.error(e.messages?.[0] || __('Could not read the forms'))
+    },
+  })
+}
 
 // the sync runs in a background job: come back for it while it is running
 let pollTimer = null

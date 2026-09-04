@@ -16,7 +16,9 @@
   "token_valid",
   "last_webhook_at",
   "instagram_account_id",
-  "instagram_username"
+  "instagram_username",
+  "last_form_sync_error",
+  "tasks"
  ],
  "fields": [
   {
@@ -89,6 +91,19 @@
    "fieldtype": "Data",
    "label": "Instagram Username",
    "read_only": 1
+  },
+  {
+   "fieldname": "last_form_sync_error",
+   "fieldtype": "Small Text",
+   "label": "Last Form Sync Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tasks",
+   "fieldtype": "Small Text",
+   "label": "Granted Tasks",
+   "read_only": 1,
+   "description": "What Facebook says this connection may do on the page"
   }
  ],
  "grid_page_length": 50,
