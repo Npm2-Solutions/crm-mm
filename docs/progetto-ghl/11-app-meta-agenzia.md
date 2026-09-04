@@ -107,6 +107,52 @@ quelli restano ognuno nel proprio site.
    (App roles → Add people), ed è normale.
 8. **App Review**: avviarla subito, è la parte lunga (settimane).
 
+### "Invalid Scopes" al login
+
+Se il dialog di Facebook si apre ma dice *Invalid Scopes*, l'app **non conosce**
+uno dei permessi richiesti: chiederne uno che l'app non ha fa fallire **l'intero
+login**, non solo quella funzione.
+
+I permessi non si aggiungono uno per uno: si aggiungono i **casi d'uso** (la
+lista fissa in *App → Casi d'uso*), e ogni caso d'uso porta con sé i suoi
+permessi — alcuni obbligatori, altri opzionali da spuntare dentro il caso d'uso
+stesso.
+
+| Serve per | Permessi | Dove si prendono |
+|---|---|---|
+| Lead dai form | `pages_show_list`, `pages_read_engagement`, `pages_manage_ads`, `leads_retrieval`, `ads_management`, `business_management` | *Capture & manage ad leads with Marketing API* |
+| Webhook lead in tempo reale | `pages_manage_metadata` | **stesso caso d'uso dei lead**, fra i permessi opzionali da spuntare — è ciò che iscrive la pagina al webhook `leadgen` |
+| Social Planner (Facebook) | `pages_manage_posts` | *Manage everything on your Page* (Page Management API) |
+| Social Planner (Instagram) | `instagram_basic`, `instagram_content_publish` | *Instagram API with Facebook Login* — **non** la variante *with Instagram Login*, che dà `instagram_business_*` e non funziona con il nostro flusso (login Facebook → Pagina → account IG collegato) |
+
+Finché mancano i casi d'uso della pubblicazione, `meta_scopes` nel config del
+site restringe la lista richiesta, così il collegamento funziona subito per i
+lead:
+
+```json
+"meta_scopes": ["pages_show_list", "pages_read_engagement", "pages_manage_metadata",
+                "pages_manage_ads", "leads_retrieval", "ads_management", "business_management"]
+```
+
+Il Social Planner resta muto finché non si toglie la chiave e l'app ha tutto.
+
+### "Mi sono collegato ma non mi ha chiesto quali pagine"
+
+Il dialog di Facebook mostra il selettore delle Pagine **solo la prima volta**
+che quell'utente autorizza quell'app. Alle autorizzazioni successive Facebook
+rimanda indietro subito, senza schermata di consenso e senza selettore: la
+scelta fatta la prima volta resta valida in silenzio.
+
+Perciò Settings → *Meta connection* mostra, sotto l'account, **le Pagine che
+Facebook ha effettivamente condiviso** (con l'account Instagram collegato, se
+c'è) e il bottone **"Scegli le pagine"**, che riapre il dialog con
+`auth_type=rerequest` per aggiungerne o toglierne. Se la lista è vuota il login
+è comunque riuscito, ma nessuna Pagina è stata selezionata: si deve esserne
+amministratori e spuntarla nella finestra di Facebook.
+
+Quali Pagine sincronizzare per i lead resta invece una scelta del CRM, in
+Settings → *Lead forms* (interruttore "Sync leads" per Pagina).
+
 ## Configurazione (una volta sola, sul bench)
 
 `common_site_config.json` — vale per **tutti** i site:
