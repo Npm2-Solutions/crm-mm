@@ -33,6 +33,7 @@ from crm.scheduling.timeutils import (
 	scheduling_tz,
 	to_system_naive,
 )
+from crm.utils import count_field
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 MAX_RANGE_DAYS = 92
@@ -671,7 +672,7 @@ def list_services() -> list[dict]:
 				"status": ["in", ("Scheduled", "Confirmed")],
 				"starts_on": [">=", frappe.utils.now_datetime()],
 			},
-			fields=["service", "count(name) as total"],
+			fields=["service", count_field()],
 			group_by="service",
 			as_list=True,
 		)
@@ -863,7 +864,7 @@ def list_price_lists() -> list[dict]:
 	counts = dict(
 		frappe.get_all(
 			"CRM Service Price",
-			fields=["price_list", "count(name) as total"],
+			fields=["price_list", count_field()],
 			group_by="price_list",
 			as_list=True,
 		)
@@ -987,7 +988,7 @@ def list_schedules() -> list[dict]:
 		frappe.get_all(
 			"CRM Service Day",
 			filters={"parenttype": "CRM Staff Schedule"},
-			fields=["parent", "count(name) as total"],
+			fields=["parent", count_field()],
 			group_by="parent",
 			as_list=True,
 		)

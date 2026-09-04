@@ -50,6 +50,7 @@ from crm.scheduling.timeutils import (
 	scheduling_tz,
 	to_system_naive,
 )
+from crm.utils import count_field
 
 ACTIVE_STATUSES = ("Scheduled", "Confirmed", "Completed", "No Show")
 """Statuses that still occupy the diary. Only ``Cancelled`` frees the slot —
@@ -739,7 +740,7 @@ class SlotFinder:
 		for row in frappe.get_all(
 			"CRM Appointment Participant",
 			filters={"parent": ["in", names], "status": ["!=", "Cancelled"]},
-			fields=["parent", "count(name) as total"],
+			fields=["parent", count_field()],
 			group_by="parent",
 		):
 			booked[row.parent] = cint(row.total)

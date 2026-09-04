@@ -269,58 +269,21 @@ PAGE_FIELDS = "id,name,category,access_token,tasks,instagram_business_account{id
 
 
 def discover_pages(user_token: str) -> list[dict]:
-	"""Every Page this user can manage, personal ones and Business ones alike.
+	"""The Pages this person actually granted, and only those.
 
-	`/me/accounts` only returns Pages the person holds a role on directly. A
-	Page administered through a Business portfolio — the normal case for an
-	agency managing clients — is invisible there, which is why connecting an
-	account that clearly manages dozens of Pages could come back with none.
-	Those live under the Business: `owned_pages` (its own) and `client_pages`
-	(Pages other businesses shared with it).
-
-	The Business edges return Page nodes without a token, so each one is read
-	again individually to pick up its `access_token`; a Page we cannot get a
-	token for is dropped rather than stored half-connected.
+	`/me/accounts` is exactly the list ticked in the Facebook dialog — a Page
+	administered through a Business portfolio appears here too, once granted.
+	Walking the portfolio's `owned_pages` and `client_pages` instead surfaces
+	Pages that were NOT granted: they arrive without the permissions to use
+	them, so every call on them fails with "permission(s) must be granted
+	before impersonating a user's page", and they only crowd the list with
+	entries nobody can switch on. Whoever wants one adds it in the dialog.
 	"""
-	pages: dict[str, dict] = {}
-	for page in graph_get_paginated("me/accounts", user_token, {"fields": PAGE_FIELDS}):
-		if page.get("access_token"):
-			pages[page["id"]] = page
-
-	try:
-		businesses = list(graph_get_paginated("me/businesses", user_token, {"fields": "id,name"}))
-	except MetaAPIError:
-		# no business_management, or no portfolio: the personal pages stand
-		frappe.log_error(frappe.get_traceback(), "Meta: could not list businesses")
-		return list(pages.values())
-
-	for business in businesses:
-		for edge in ("owned_pages", "client_pages"):
-			try:
-				# ask for the whole Page node on the edge itself: one call per
-				# business instead of one per Page, which is what made granting
-				# access to every Page of a portfolio take minutes
-				rows = list(
-					graph_get_paginated(f"{business['id']}/{edge}", user_token, {"fields": PAGE_FIELDS})
-				)
-			except MetaAPIError:
-				frappe.log_error(frappe.get_traceback(), f"Meta: {edge} failed for {business.get('name')}")
-				continue
-			for row in rows:
-				if row["id"] in pages:
-					continue
-				if row.get("access_token"):
-					pages[row["id"]] = row
-					continue
-				# the edge withheld the token: ask for that Page on its own
-				try:
-					full = graph_get(row["id"], user_token, {"fields": PAGE_FIELDS})
-				except MetaAPIError:
-					# we are in the portfolio but hold no role on this Page
-					continue
-				if full.get("access_token"):
-					pages[full["id"]] = full
-	return list(pages.values())
+	return [
+		page
+		for page in graph_get_paginated("me/accounts", user_token, {"fields": PAGE_FIELDS})
+		if page.get("access_token")
+	]
 
 
 SYNC_FLAG = "meta_page_sync_running"
@@ -333,9 +296,9 @@ def sync_running() -> bool:
 def start_page_sync() -> None:
 	"""Run the page/form sync in the background.
 
-	It is far too slow for a web request: `discover_pages` alone is one Graph
-	call per Page reached through a Business portfolio, and every Page then
-	costs another call for its lead forms.
+	It is too slow for a web request: every Page costs a call for its lead
+	forms, and a request that dies takes the whole transaction with it —
+	including the token just obtained.
 
 	The token is deliberately NOT passed as an argument: enqueue arguments are
 	serialised into the queue and kept in the job record, so a long-lived user
@@ -367,6 +330,8 @@ def sync_pages_and_forms(user_token: str) -> list[dict]:
 		upsert_page(page)
 		sync_forms_recording_failure(page["id"], page["access_token"])
 
+	forget_ungranted_pages({page["id"] for page in pages})
+
 	# make the pages (and linked IG accounts) usable by the Social Planner
 	try:
 		from crm.social.accounts import sync_from_facebook_pages
@@ -375,6 +340,24 @@ def sync_pages_and_forms(user_token: str) -> list[dict]:
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Meta: social account sync failed")
 	return pages
+
+
+def forget_ungranted_pages(granted: set[str]) -> None:
+	"""Remove Pages the connection no longer covers.
+
+	Un-ticking a Page in the Facebook dialog should make it disappear here too,
+	otherwise the list keeps growing with Pages that cannot be used. A Page is
+	only dropped when nothing hangs off it: with lead forms, or with the lead
+	sync still on, it stays, because removing it would break what it feeds.
+	"""
+	for name in frappe.get_all("Facebook Page", pluck="name"):
+		if name in granted:
+			continue
+		if frappe.db.exists("Facebook Lead Form", {"page": name}):
+			continue
+		if frappe.db.get_value("Facebook Page", name, "sync_enabled"):
+			continue
+		frappe.delete_doc("Facebook Page", name, ignore_permissions=True, force=True)
 
 
 def upsert_page(page: dict) -> None:

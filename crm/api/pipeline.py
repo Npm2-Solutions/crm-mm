@@ -19,7 +19,7 @@ from crm.fcrm.doctype.crm_pipeline.crm_pipeline import (
 	get_first_stage,
 	get_pipeline_stages,
 )
-from crm.utils import is_frappe_version
+from crm.utils import count_field, is_frappe_version
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
@@ -66,10 +66,7 @@ def _parse(value, fallback):
 
 def _deal_counts(field: str) -> dict:
 	# get_list, not get_all: a user only counts the deals they are allowed to see
-	count = (
-		{"COUNT": "name", "as": "total"} if is_frappe_version("16", above=True) else "count(name) as total"
-	)
-	rows = frappe.get_list("CRM Deal", fields=[field, count], group_by=field, as_list=True)
+	rows = frappe.get_list("CRM Deal", fields=[field, count_field()], group_by=field, as_list=True)
 	return {row[0]: row[1] for row in rows}
 
 

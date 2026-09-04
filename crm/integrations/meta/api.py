@@ -27,6 +27,7 @@ from crm.integrations.meta.oauth import (
 	sync_forms_recording_failure,
 	sync_running,
 )
+from crm.utils import count_field
 
 WEBHOOK_PATH = "/api/method/crm.integrations.meta.webhook.handle"
 
@@ -249,11 +250,14 @@ def get_pages() -> list[dict]:
 		order_by="form_name asc",
 	):
 		forms_by_page.setdefault(form.page, []).append(form)
+	# `count_field()`, not a SQL string: v16 rejects the string form and the
+	# whole call raised, which is what made this screen claim there were no
+	# pages at all
 	lead_counts = dict(
 		frappe.get_all(
 			"CRM Lead",
 			filters={"facebook_form_id": ["is", "set"]},
-			fields=["facebook_form_id", "count(name) as total"],
+			fields=["facebook_form_id", count_field()],
 			group_by="facebook_form_id",
 			as_list=True,
 		)
