@@ -150,28 +150,31 @@
           />
         </div>
 
-        <div v-if="pages.length" class="flex flex-col gap-1.5">
+        <div v-if="pages.length" class="flex flex-col gap-1">
+          <p class="mb-1 text-p-sm text-ink-gray-5">
+            {{ __('Turn on the Pages whose leads should reach this CRM.') }}
+          </p>
           <div
             v-for="page in pages"
             :key="page.name"
-            class="flex items-center gap-2 text-p-sm text-ink-gray-6"
+            class="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-surface-gray-1"
           >
-            <FeatherIcon name="facebook" class="size-4 shrink-0 text-ink-gray-5" />
-            <span class="truncate text-ink-gray-8">{{ page.page_name || page.name }}</span>
-            <Badge
-              v-if="page.instagram_username"
-              :label="'@' + page.instagram_username"
-              theme="gray"
+            <Switch
               size="sm"
+              :modelValue="Boolean(page.sync_enabled)"
+              :disabled="busyPage === page.name"
+              @update:modelValue="(value) => togglePage(page, value)"
             />
-            <Badge
-              v-if="page.sync_enabled"
-              :label="__('Leads on')"
-              theme="green"
-              size="sm"
-            />
+            <div class="flex min-w-0 flex-1 flex-col">
+              <span class="truncate text-p-sm text-ink-gray-8">
+                {{ page.page_name || page.name }}
+              </span>
+              <span v-if="page.instagram_username" class="text-p-xs text-ink-gray-5">
+                {{ __('Instagram') }}: @{{ page.instagram_username }}
+              </span>
+            </div>
           </div>
-          <span class="mt-1 text-p-sm text-ink-gray-5">
+          <span class="mt-2 text-p-sm text-ink-gray-5">
             {{
               __(
                 'Missing one? "Choose pages" reopens the Facebook window: without it Facebook skips the picker and keeps the earlier choice.',
@@ -206,8 +209,8 @@
 
 <script setup>
 import { activeSettingsPage } from '@/composables/settings'
-import { Badge, createResource, FeatherIcon, FormControl, toast } from 'frappe-ui'
-import { ref, computed } from 'vue'
+import { Badge, createResource, FeatherIcon, FormControl, Switch, toast } from 'frappe-ui'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const metaError = ref(new URLSearchParams(window.location.search).get('meta_error') || '')
 const appForm = ref({ app_id: '', app_secret: '' })
@@ -233,8 +236,28 @@ const webhook = createResource({
 const configuringWebhook = ref(false)
 const refreshing = ref(false)
 const choosing = ref(false)
+const busyPage = ref('')
 
 const pages = computed(() => status.data?.pages || [])
+
+function togglePage(page, enabled) {
+  busyPage.value = page.name
+  createResource({
+    url: 'crm.integrations.meta.api.set_page_sync',
+    params: { page_id: page.name, enabled: enabled ? 1 : 0 },
+    auto: true,
+    onSuccess: () => {
+      busyPage.value = ''
+      toast.success(enabled ? __('Leads enabled') : __('Leads disabled'))
+      status.reload()
+    },
+    onError: (e) => {
+      busyPage.value = ''
+      toast.error(e.messages?.[0] || __('Could not change the page'))
+      status.reload()
+    },
+  })
+}
 
 function go(page) {
   activeSettingsPage.value = page
@@ -284,13 +307,51 @@ function configureWebhook() {
   })
 }
 
+// The login runs in a popup so this page keeps its state: navigating the whole
+// CRM to facebook.com and back reloads the app, and a failure on the way had
+// nowhere to be shown. The popup posts its outcome back and closes.
+function openLoginPopup(url) {
+  const width = 620
+  const height = 720
+  const left = window.screenX + (window.outerWidth - width) / 2
+  const top = window.screenY + (window.outerHeight - height) / 2
+  const popup = window.open(
+    url,
+    'crm-meta-oauth',
+    `popup=1,width=${width},height=${height},left=${left},top=${top}`,
+  )
+  if (!popup) {
+    // popup blocked: fall back to navigating, the callback page handles it
+    window.location.href = url
+    return
+  }
+  popup.focus()
+}
+
+function onOAuthMessage(event) {
+  if (event.origin !== window.location.origin) return
+  if (event.data?.source !== 'crm-meta-oauth') return
+  choosing.value = false
+  if (event.data.error) {
+    metaError.value = event.data.error
+    toast.error(event.data.error)
+  } else {
+    metaError.value = ''
+    toast.success(__('Facebook connected'))
+  }
+  status.reload()
+}
+
+onMounted(() => window.addEventListener('message', onOAuthMessage))
+onUnmounted(() => window.removeEventListener('message', onOAuthMessage))
+
 function connect(rerequest = false) {
   if (rerequest) choosing.value = true
   createResource({
     url: 'crm.integrations.meta.oauth.get_login_url',
     params: { rerequest: rerequest ? 1 : 0 },
     auto: true,
-    onSuccess: (data) => (window.location.href = data.login_url),
+    onSuccess: (data) => openLoginPopup(data.login_url),
     onError: (e) => {
       choosing.value = false
       toast.error(e.messages?.[0] || __('Failed to start login'))

@@ -1,0 +1,37 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Facebook connection") }}{% endblock %}
+
+{% block page_content %}
+<div style="font-family: system-ui, sans-serif; max-width: 30rem; margin: 4rem auto; text-align: center;">
+	{% if error %}
+	<h3 style="color: #b91c1c;">{{ _("Connection failed") }}</h3>
+	<p style="color: #52525b;">{{ error }}</p>
+	{% else %}
+	<h3>{{ _("Facebook connected") }}</h3>
+	<p style="color: #52525b;">{{ _("You can close this window.") }}</p>
+	{% endif %}
+	<p id="fallback" style="color: #71717a; font-size: .875rem;"></p>
+</div>
+
+<script>
+(function () {
+	var result = { source: 'crm-meta-oauth', error: {{ frappe.as_json(error) }} }
+	// opened as a popup: hand the outcome to the CRM behind us and get out of
+	// the way — the settings page reloads its own status
+	if (window.opener && window.opener !== window) {
+		try {
+			window.opener.postMessage(result, window.location.origin)
+		} catch (e) {}
+		window.close()
+		document.getElementById('fallback').textContent =
+			{{ frappe.as_json(_("If this window does not close, you can close it yourself.")) }}
+		return
+	}
+	// opened as a normal tab: behave like before and go back to the settings
+	var target = '/crm?settings=' + encodeURIComponent({{ frappe.as_json(settings_page) }})
+	if (result.error) target += '&meta_error=' + encodeURIComponent(result.error)
+	window.location.replace(target)
+})()
+</script>
+{% endblock %}

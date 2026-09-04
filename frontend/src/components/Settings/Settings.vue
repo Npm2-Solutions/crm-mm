@@ -290,6 +290,7 @@ const tabs = computed(() => {
         {
           // per user, not per site: everyone connects their own calendar
           label: __('Google Calendar'),
+          key: 'Google Calendar',
           icon: CalendarIcon,
           component: markRaw(GoogleCalendarSettings),
         },
@@ -301,6 +302,7 @@ const tabs = computed(() => {
       items: [
         {
           label: __('Meta connection'),
+          key: 'Meta connection',
           icon: 'facebook',
           component: markRaw(MetaConnection),
         },
@@ -316,6 +318,7 @@ const tabs = computed(() => {
         },
         {
           label: __('WhatsApp'),
+          key: 'WhatsApp',
           icon: WhatsAppIcon,
           component: markRaw(WhatsAppSettings),
           condition: () => isWhatsappInstalled.value,
@@ -373,12 +376,14 @@ const tabs = computed(() => {
 const activeTab = ref(tabs.value[0].items[0])
 
 function setActiveTab(tabName) {
+  // `label` is translated, so a deep link built server-side (an OAuth callback
+  // sending the browser back here) can only match the untranslated `key`
   activeTab.value =
     (tabName &&
       tabs.value
         .map((tab) => tab.items)
         .flat()
-        .find((tab) => tab.label === tabName)) ||
+        .find((tab) => tab.label === tabName || tab.key === tabName)) ||
     tabs.value[0].items[0]
 }
 

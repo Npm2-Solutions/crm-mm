@@ -245,22 +245,72 @@ def _relay_to_site(site: str, code: str | None, state: str, kwargs: dict):
 
 
 def _redirect_back(error: str | None = None):
-	target = "/crm?settings=" + quote("Meta connection")
+	"""End of the login: a page that reports back to whoever opened it.
+
+	The connect button opens a popup, so the CRM behind it must not be
+	navigated anywhere; `meta_connected` posts the outcome to the opener and
+	closes. Opened as a plain tab it redirects to the settings page itself, so
+	a blocked popup still lands somewhere sensible.
+	"""
+	target = "/meta_connected"
 	if error:
-		target += f"&meta_error={quote(error[:300])}"
+		target += f"?error={quote(error[:300])}"
 	frappe.local.response["type"] = "redirect"
 	frappe.local.response["location"] = target
 
 
+PAGE_FIELDS = "id,name,category,access_token,tasks,instagram_business_account{id,username}"
+
+
+def discover_pages(user_token: str) -> list[dict]:
+	"""Every Page this user can manage, personal ones and Business ones alike.
+
+	`/me/accounts` only returns Pages the person holds a role on directly. A
+	Page administered through a Business portfolio — the normal case for an
+	agency managing clients — is invisible there, which is why connecting an
+	account that clearly manages dozens of Pages could come back with none.
+	Those live under the Business: `owned_pages` (its own) and `client_pages`
+	(Pages other businesses shared with it).
+
+	The Business edges return Page nodes without a token, so each one is read
+	again individually to pick up its `access_token`; a Page we cannot get a
+	token for is dropped rather than stored half-connected.
+	"""
+	pages: dict[str, dict] = {}
+	for page in graph_get_paginated("me/accounts", user_token, {"fields": PAGE_FIELDS}):
+		if page.get("access_token"):
+			pages[page["id"]] = page
+
+	try:
+		businesses = list(graph_get_paginated("me/businesses", user_token, {"fields": "id,name"}))
+	except MetaAPIError:
+		# no business_management, or no portfolio: the personal pages stand
+		frappe.log_error(frappe.get_traceback(), "Meta: could not list businesses")
+		return list(pages.values())
+
+	for business in businesses:
+		for edge in ("owned_pages", "client_pages"):
+			try:
+				rows = graph_get_paginated(f"{business['id']}/{edge}", user_token, {"fields": "id,name"})
+			except MetaAPIError:
+				frappe.log_error(frappe.get_traceback(), f"Meta: {edge} failed for {business.get('name')}")
+				continue
+			for row in rows:
+				if row["id"] in pages:
+					continue
+				try:
+					full = graph_get(row["id"], user_token, {"fields": PAGE_FIELDS})
+				except MetaAPIError:
+					# we are in the portfolio but hold no role on this Page
+					continue
+				if full.get("access_token"):
+					pages[full["id"]] = full
+	return list(pages.values())
+
+
 def sync_pages_and_forms(user_token: str) -> list[dict]:
 	"""Upsert the user's pages (with long-lived page tokens) and their forms."""
-	pages = list(
-		graph_get_paginated(
-			"me/accounts",
-			user_token,
-			{"fields": "id,name,category,access_token,tasks,instagram_business_account{id,username}"},
-		)
-	)
+	pages = discover_pages(user_token)
 	for page in pages:
 		upsert_page(page)
 		try:
