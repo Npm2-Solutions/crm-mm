@@ -21,7 +21,7 @@ import json
 import frappe
 from werkzeug.wrappers import Response
 
-from crm.integrations.meta.client import get_app_secret, get_settings
+from crm.integrations.meta.client import get_app_secret, get_settings, get_whatsapp_app_secret
 from crm.integrations.meta.leads import ingest_leadgen_entry
 from crm.integrations.meta.relay import route_for, valid_relay_signature
 
@@ -115,13 +115,21 @@ def data_deletion(signed_request: str | None = None):
 	if not signed_request or "." not in signed_request:
 		return Response("bad request", status=400, mimetype="text/plain")
 
-	secret = get_app_secret()
-	if not secret:
+	# Both apps point here: the Facebook one and, when WhatsApp lives in its own
+	# app, that one too. They sign with different secrets, so accept either
+	# rather than rejecting whichever is not the Facebook app.
+	secrets = [s for s in (get_app_secret(), get_whatsapp_app_secret()) if s]
+	if not secrets:
 		return Response("not configured", status=400, mimetype="text/plain")
 
 	encoded_sig, encoded_payload = signed_request.split(".", 1)
-	expected = hmac.new(secret.encode(), encoded_payload.encode(), hashlib.sha256).digest()
-	if not hmac.compare_digest(b64url_decode(encoded_sig), expected):
+	signature = b64url_decode(encoded_sig)
+	if not any(
+		hmac.compare_digest(
+			signature, hmac.new(secret.encode(), encoded_payload.encode(), hashlib.sha256).digest()
+		)
+		for secret in secrets
+	):
 		return Response("invalid signature", status=403, mimetype="text/plain")
 
 	try:

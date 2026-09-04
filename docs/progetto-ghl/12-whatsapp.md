@@ -54,7 +54,13 @@ Cento clienti, un dominio solo.
 | … verify token | quello del site hub (Settings → Meta connection) |
 | … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
 | Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
+| App settings → Basic → + Add Platform → **Website** | Site URL: `https://<hub>/` — senza la piattaforma Website il JavaScript SDK non e' autorizzato |
 | App settings → Basic | Privacy Policy e Terms of Service (obbligatori per l'App Review) |
+| App settings → Advanced → Data Deletion Request URL | `https://<hub>/api/method/crm.integrations.meta.webhook.data_deletion` |
+
+Il callback di cancellazione dati e' **lo stesso** per le due app: valida la
+firma con entrambi i secret, quindi accetta sia quella di Facebook sia quella
+di WhatsApp. Non serve un secondo endpoint.
 
 Il webhook non va incollato a mano: sull'hub, Settings → WhatsApp mostra il
 bottone **"Configuralo"** quando manca, e lo registra da solo sull'app
