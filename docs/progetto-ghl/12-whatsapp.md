@@ -11,6 +11,23 @@ Come per Facebook: il cliente apre Settings → WhatsApp, preme **Connetti**,
 stanno **sia nel CRM sia nell'app WhatsApp Business sul telefono**, sincronizzate.
 Una sola app Meta dell'agenzia per tutti i clienti.
 
+## Le pagine legali
+
+`/privacy` e `/terms` sono **record `Web Page`**, spediti come fixture dell'app
+(`crm/fixtures/web_page.json`, registrati in `hooks.py`). Arrivano con
+`bench migrate` e valgono per entrambe le app Meta: la revisione le pretende su
+ognuna, ma nulla impedisce che puntino allo stesso posto.
+
+Essendo record e non template, si correggono dall'interfaccia Website senza
+toccare il codice — ma **`bench migrate` li reimporta**, quindi una correzione
+che deve durare va riportata anche nel file della fixture, altrimenti al
+deploy successivo torna indietro.
+
+Il testo descrive cio' che il sistema tratta davvero — token dei collegamenti,
+risposte ai moduli, messaggi WhatsApp, eventi di calendario, e con chi sono
+condivisi — ma non e' stato rivisto da un legale.
+
+
 ## Un'app separata da quella di Facebook
 
 WhatsApp ha la **sua** app Meta, non quella dei lead e del Social Planner.
@@ -54,7 +71,13 @@ Cento clienti, un dominio solo.
 | … verify token | quello del site hub (Settings → Meta connection) |
 | … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
 | Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
-| App settings → Basic | Privacy Policy e Terms of Service (obbligatori per l'App Review) |
+| App settings → Basic → + Add Platform → **Website** | Site URL: `https://<hub>/` — senza la piattaforma Website il JavaScript SDK non e' autorizzato |
+| App settings → Basic | Privacy Policy `https://<hub>/privacy` e Terms of Service `https://<hub>/terms` |
+| App settings → Advanced → Data Deletion Request URL | `https://<hub>/api/method/crm.integrations.meta.webhook.data_deletion` |
+
+Il callback di cancellazione dati e' **lo stesso** per le due app: valida la
+firma con entrambi i secret, quindi accetta sia quella di Facebook sia quella
+di WhatsApp. Non serve un secondo endpoint.
 
 Il webhook non va incollato a mano: sull'hub, Settings → WhatsApp mostra il
 bottone **"Configuralo"** quando manca, e lo registra da solo sull'app

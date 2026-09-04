@@ -71,6 +71,14 @@ doctype_js = {
 # "Role": "home_page"
 # }
 
+# Shipped website content: the privacy policy and terms of service the Meta
+# apps point at. They are records, not templates, so they can be corrected from
+# the Website UI — but a `bench migrate` re-imports them, so a lasting edit has
+# to come back into this file.
+fixtures = [
+	{"dt": "Web Page", "filters": [["name", "in", ["privacy", "terms"]]]},
+]
+
 website_route_rules = [
 	{"from_route": "/crm/<path:app_path>", "to_route": "crm"},
 	{"from_route": "/crm-form/<route>", "to_route": "crm_form"},

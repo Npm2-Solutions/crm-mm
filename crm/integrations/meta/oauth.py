@@ -346,17 +346,24 @@ def forget_ungranted_pages(granted: set[str]) -> None:
 	"""Remove Pages the connection no longer covers.
 
 	Un-ticking a Page in the Facebook dialog should make it disappear here too,
-	otherwise the list keeps growing with Pages that cannot be used. A Page is
-	only dropped when nothing hangs off it: with lead forms, or with the lead
-	sync still on, it stays, because removing it would break what it feeds.
+	otherwise the list keeps growing with Pages that cannot be used.
+
+	What earns a Page a stay of execution is **real data**, not paperwork: leads
+	that actually came from one of its forms, or a lead sync somebody
+	deliberately switched on. Keeping it merely because form definitions exist
+	was the bug — those forms were synced from the same ungranted Page and are
+	just as stale, so they kept a list of unusable Pages alive forever.
 	"""
 	for name in frappe.get_all("Facebook Page", pluck="name"):
 		if name in granted:
 			continue
-		if frappe.db.exists("Facebook Lead Form", {"page": name}):
-			continue
 		if frappe.db.get_value("Facebook Page", name, "sync_enabled"):
 			continue
+		forms = frappe.get_all("Facebook Lead Form", filters={"page": name}, pluck="name")
+		if forms and frappe.db.exists("CRM Lead", {"facebook_form_id": ["in", forms]}):
+			continue
+		for form in forms:
+			frappe.delete_doc("Facebook Lead Form", form, ignore_permissions=True, force=True)
 		# the Social Planner profiles hang off the page: leaving them behind is
 		# what kept publishing targets around for Pages the CRM no longer has
 		for account in frappe.get_all("CRM Social Account", filters={"facebook_page": name}, pluck="name"):

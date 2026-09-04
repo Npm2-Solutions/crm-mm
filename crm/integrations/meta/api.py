@@ -56,14 +56,10 @@ def get_status() -> dict:
 		# a background job is still pulling pages in: the screen says so instead
 		# of looking like the login shared nothing
 		"syncing": sync_running(),
-		"pages": [
-			{**page, "can_sync_leads": can_sync_leads(page.get("tasks"))}
-			for page in frappe.get_all(
-				"Facebook Page",
-				fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks"],
-				order_by="page_name asc",
-			)
-		],
+		# the Pages themselves come from `list_pages`, which pages and filters
+		# them; here only how many there are, so the screen can tell "none yet"
+		# from "still loading"
+		"page_count": frappe.db.count("Facebook Page"),
 	}
 
 
@@ -202,6 +198,45 @@ NOT_GRANTED = (
 )
 
 
+@frappe.whitelist()
+def list_pages(start: int = 0, limit: int = 20, search: str | None = None) -> dict:
+	"""The Pages worth showing on the connection screen, a page at a time.
+
+	Only the ones whose switch can actually do something: Meta wants the
+	ADVERTISE task for anything leadgen, so a Page without it offers a switch
+	that can only fail. They are counted, not listed — vanishing without a
+	word would be its own mystery.
+
+	Pages stored before the CRM recorded tasks have none, and are shown: Meta
+	is the judge, and hiding something that used to work would be worse.
+	"""
+	_check_manager()
+	filters = {}
+	if search:
+		filters["page_name"] = ["like", f"%{search}%"]
+	usable = [["tasks", "like", f"%{LEAD_TASK}%"], ["tasks", "is", "not set"]]
+
+	total = len(
+		frappe.get_all("Facebook Page", filters=filters, or_filters=usable, pluck="name", limit_page_length=0)
+	)
+	pages = frappe.get_all(
+		"Facebook Page",
+		filters=filters,
+		or_filters=usable,
+		fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks"],
+		order_by="page_name asc",
+		limit_start=frappe.utils.cint(start),
+		limit_page_length=frappe.utils.cint(limit),
+	)
+	return {
+		"pages": pages,
+		"total": total,
+		# how many the connection screen is deliberately not showing
+		"hidden": frappe.db.count("Facebook Page")
+		- len(frappe.get_all("Facebook Page", or_filters=usable, pluck="name", limit_page_length=0)),
+	}
+
+
 @frappe.whitelist(methods=["POST"])
 def sync_forms(page_id: str) -> dict:
 	"""Ask Meta for this page's lead forms, now, and say how it went.
@@ -227,9 +262,17 @@ def sync_forms(page_id: str) -> dict:
 
 @frappe.whitelist()
 def get_pages() -> list[dict]:
+	"""The Pages whose leads reach this CRM — the ones switched on, and only those.
+
+	Which Pages the CRM uses is decided on the connection screen; this screen is
+	about their forms. Listing every granted Page here meant the forms of Pages
+	nobody had switched on sat in the list too, which is precisely what the
+	switch is supposed to prevent.
+	"""
 	_check_manager()
 	pages = frappe.get_all(
 		"Facebook Page",
+		filters={"sync_enabled": 1},
 		fields=[
 			"name",
 			"page_name",

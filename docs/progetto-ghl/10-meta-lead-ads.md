@@ -61,6 +61,39 @@ passa dalla stessa coda.
 
 ## Chi decide cosa: Facebook concede, il CRM sceglie
 
+Una sola decisione, in un solo posto. *Meta connection* elenca le Pagine
+concesse e i loro interruttori: quello e' il punto in cui si sceglie. *Lead
+forms* mostra i moduli **solo delle Pagine accese** — accenderne una la fa
+comparire li', spegnerla la fa sparire. Non e' cosmetica: e' cio' che
+l'interruttore promette.
+
+Una Pagina che non e' mai stata concessa non compare da nessuna parte, e si
+aggiunge con "Aggiungi Pagine da Facebook".
+
+L'elenco mostra **solo le Pagine su cui l'interruttore puo' fare qualcosa**:
+Meta pretende il task ADVERTISE per tutto cio' che e' leadgen, quindi una
+Pagina senza offrirebbe un interruttore capace solo di fallire. Quelle vengono
+**contate, non elencate** — sparire senza una parola sarebbe un mistero a sua
+volta. Le Pagine salvate prima che il CRM registrasse i task non ne hanno e
+restano visibili: giudica Meta.
+
+L'elenco e' **paginato** (venti per volta, con ricerca quando sono di piu'):
+l'account di un'agenzia puo' contenerne centinaia, e non hanno niente da fare
+dentro il payload dello stato della connessione.
+
+### Quando una Pagina viene dimenticata
+
+Alla sincronizzazione, una Pagina che Facebook non concede piu' viene rimossa,
+insieme ai suoi profili social e ai suoi moduli. Resta solo se c'e' **dato
+vero** da proteggere: la sincronizzazione lead accesa, oppure lead gia'
+arrivati da uno dei suoi moduli.
+
+Tenerla per la sola esistenza dei moduli era sbagliato: quei moduli erano stati
+sincronizzati dalla stessa Pagina non concessa, quindi altrettanto obsoleti, e
+bastavano a mantenere in vita per sempre un elenco di Pagine inutilizzabili.
+
+
+
 Una sola strada, non un misto. Il dialog di Facebook serve a dire *"questa app
 puo' vedere queste Pagine"*: conviene concederle tutte, una volta. Cosa il CRM
 usa davvero si decide **qui**, con gli interruttori della schermata di
