@@ -55,11 +55,14 @@ def get_status() -> dict:
 		# a background job is still pulling pages in: the screen says so instead
 		# of looking like the login shared nothing
 		"syncing": sync_running(),
-		"pages": frappe.get_all(
-			"Facebook Page",
-			fields=["name", "page_name", "instagram_username", "sync_enabled"],
-			order_by="page_name asc",
-		),
+		"pages": [
+			{**page, "can_sync_leads": can_sync_leads(page.get("tasks"))}
+			for page in frappe.get_all(
+				"Facebook Page",
+				fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks"],
+				order_by="page_name asc",
+			)
+		],
 	}
 
 
@@ -172,6 +175,32 @@ def refresh_pages() -> dict:
 	return {"started": True}
 
 
+# Meta requires the ADVERTISE task on the page for anything leadgen: reading
+# `leadgen_forms` and subscribing the page to the `leadgen` webhook both fail
+# without it, with an error about permissions "before impersonating a user's
+# page". A page listed through a Business portfolio can easily lack it.
+LEAD_TASK = "ADVERTISE"
+
+
+def page_tasks(page_id: str) -> list[str]:
+	return [t for t in (frappe.db.get_value("Facebook Page", page_id, "tasks") or "").split(",") if t]
+
+
+def can_sync_leads(tasks: str | None) -> bool:
+	"""Unknown tasks mean a page stored before we recorded them: allow it and
+	let Meta be the judge, rather than hiding a page that used to work."""
+	if not tasks:
+		return True
+	return LEAD_TASK in tasks.split(",")
+
+
+NOT_GRANTED = (
+	"Facebook did not grant this CRM the advertising role on this Page, so it cannot read "
+	'its lead forms. Press "Choose pages" on the connection screen and tick this Page — '
+	"you must be an administrator of it."
+)
+
+
 @frappe.whitelist(methods=["POST"])
 def sync_forms(page_id: str) -> dict:
 	"""Ask Meta for this page's lead forms, now, and say how it went.
@@ -185,6 +214,8 @@ def sync_forms(page_id: str) -> dict:
 	token = get_page_token(page_id)
 	if not token:
 		frappe.throw(_("No page token stored. Reconnect Facebook."))
+	if not can_sync_leads(frappe.db.get_value("Facebook Page", page_id, "tasks")):
+		frappe.throw(_(NOT_GRANTED))
 	error = sync_forms_recording_failure(page_id, token)
 	frappe.db.commit()
 	return {
@@ -207,6 +238,7 @@ def get_pages() -> list[dict]:
 			"token_valid",
 			"last_webhook_at",
 			"last_form_sync_error",
+			"tasks",
 		],
 		order_by="page_name asc",
 	)
@@ -235,6 +267,7 @@ def get_pages() -> list[dict]:
 			unmapped[row.parent] = unmapped.get(row.parent, 0) + 1
 
 	for page in pages:
+		page["can_sync_leads"] = can_sync_leads(page.get("tasks"))
 		page["forms"] = forms_by_page.get(page.name, [])
 		for form in page["forms"]:
 			form["lead_count"] = lead_counts.get(form.name, 0)
@@ -252,6 +285,8 @@ def set_page_sync(page_id: str, enabled: bool) -> dict:
 	token = get_page_token(page_id)
 	if not token:
 		frappe.throw(_("No page token stored. Reconnect Facebook."))
+	if enabled and not can_sync_leads(page.tasks):
+		frappe.throw(_(NOT_GRANTED))
 
 	subscribed = page.webhook_subscribed
 	try:

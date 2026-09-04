@@ -386,6 +386,12 @@ def upsert_page(page: dict) -> None:
 		"token_valid": 1,
 		"instagram_account_id": ig.get("id") or "",
 		"instagram_username": ig.get("username") or "",
+		# what this connection may actually do on the page. A page reachable
+		# through a Business portfolio can be listed without the person having
+		# granted it in the login dialog, and then every page call fails with
+		# "permission(s) must be granted before impersonating a user's page".
+		# Keeping the tasks lets the CRM say which pages are really usable.
+		"tasks": ",".join(page.get("tasks") or []),
 	}
 	if frappe.db.exists("Facebook Page", page["id"]):
 		doc = frappe.get_doc("Facebook Page", page["id"])

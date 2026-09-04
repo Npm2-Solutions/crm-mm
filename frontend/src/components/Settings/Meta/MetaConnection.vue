@@ -144,7 +144,7 @@
             <Switch
               size="sm"
               :modelValue="Boolean(page.sync_enabled)"
-              :disabled="busyPage === page.name"
+              :disabled="busyPage === page.name || page.can_sync_leads === false"
               @update:modelValue="(value) => togglePage(page, value)"
             />
             <div class="flex min-w-0 flex-1 flex-col">
@@ -153,6 +153,9 @@
               </span>
               <span v-if="page.instagram_username" class="text-p-xs text-ink-gray-5">
                 {{ __('Instagram') }}: @{{ page.instagram_username }}
+              </span>
+              <span v-if="page.can_sync_leads === false" class="text-p-xs text-ink-amber-6">
+                {{ __('Not authorised for leads — reconnect and tick this Page') }}
               </span>
             </div>
           </div>

@@ -59,7 +59,14 @@
                   </div>
                   <!-- a page can be connected while its forms fail on their
                        own: say so instead of just showing zero forms -->
-                  <div v-if="page.last_form_sync_error" class="mt-1 text-p-sm text-ink-red-5">
+                  <div v-if="!page.can_sync_leads" class="mt-1 text-p-sm text-ink-amber-6">
+                    {{
+                      __(
+                        'Not authorised for leads: Facebook did not give this CRM the advertising role on this Page. Reconnect from the connection screen and tick it.',
+                      )
+                    }}
+                  </div>
+                  <div v-else-if="page.last_form_sync_error" class="mt-1 text-p-sm text-ink-red-5">
                     {{ __('Meta refused the forms') }}: {{ page.last_form_sync_error }}
                   </div>
                   <div v-else-if="!page.forms.length" class="mt-1 text-p-sm text-ink-gray-5">
@@ -70,6 +77,7 @@
                   <Button
                     size="sm"
                     :label="__('Read forms')"
+                    :disabled="!page.can_sync_leads"
                     :loading="syncingForms === page.name"
                     @click="readForms(page)"
                   />
