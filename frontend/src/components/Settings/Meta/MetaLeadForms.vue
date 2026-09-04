@@ -247,16 +247,21 @@ function readForms(page) {
   })
 }
 
-// the sync runs in a background job: come back for it while it is running
+// The sync runs in a background job, so the screen has to keep coming back for
+// it. `watch` alone fires only when the flag CHANGES: after one reload with the
+// job still running the value stayed true, nothing rescheduled, and the screen
+// sat on "reading your Pages" until someone reloaded by hand.
 let pollTimer = null
-watch(syncing, (running) => {
+function pollWhileSyncing() {
   clearTimeout(pollTimer)
-  if (running)
-    pollTimer = setTimeout(() => {
-      status.reload()
-      pages.reload()
-    }, 4000)
-})
+  if (!syncing.value) return
+  pollTimer = setTimeout(() => {
+    status.reload()
+    pages.reload()
+    pollWhileSyncing()
+  }, 3000)
+}
+watch(syncing, pollWhileSyncing, { immediate: true })
 onUnmounted(() => clearTimeout(pollTimer))
 
 const failures = createResource({

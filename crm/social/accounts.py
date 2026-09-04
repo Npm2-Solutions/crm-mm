@@ -71,4 +71,25 @@ def sync_from_facebook_pages() -> dict:
 			result = upsert_account("Instagram", page.instagram_account_id, ig_name, page.name)
 			created += result == "created"
 			updated += result == "updated"
-	return {"created": created, "updated": updated}
+	removed = forget_orphan_accounts()
+	return {"created": created, "updated": updated, "removed": removed}
+
+
+def forget_orphan_accounts() -> int:
+	"""Drop profiles whose Facebook Page is gone.
+
+	A profile is only a publishing target for a page; once the page is no
+	longer connected the profile cannot publish anything, and leaving it in the
+	list is how the Social Planner ended up offering Pages the CRM had already
+	forgotten.
+	"""
+	pages = set(frappe.get_all("Facebook Page", pluck="name"))
+	removed = 0
+	for account in frappe.get_all(
+		"CRM Social Account", fields=["name", "facebook_page"], filters={"facebook_page": ["is", "set"]}
+	):
+		if account.facebook_page in pages:
+			continue
+		frappe.delete_doc("CRM Social Account", account.name, ignore_permissions=True, force=True)
+		removed += 1
+	return removed

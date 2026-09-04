@@ -36,7 +36,7 @@
               {{
                 status.data?.can_connect
                   ? __('You will scan a QR code with the WhatsApp Business app on your phone.')
-                  : __('WhatsApp signup is not configured yet — ask your provider.')
+                  : __('Two things have to exist first — see below.')
               }}
             </span>
           </div>
@@ -50,6 +50,26 @@
         </div>
 
         <!-- numbers -->
+        <div
+          v-if="status.data?.installed && status.data?.missing?.length"
+          class="mb-4 flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+        >
+          <span class="text-p-base-medium text-ink-gray-7">
+            {{ __('Still missing before WhatsApp can be connected') }}
+          </span>
+          <div
+            v-for="item in status.data.missing"
+            :key="item.key"
+            class="flex flex-col gap-0.5"
+          >
+            <span class="text-p-sm-medium text-ink-gray-7">{{ item.what }}</span>
+            <span class="text-p-sm text-ink-gray-6">{{ item.how }}</span>
+          </div>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ __('None of this can be done from here: it lives on the Meta app and in the bench configuration.') }}
+          </span>
+        </div>
+
         <div v-if="status.data?.accounts?.length">
           <div class="mb-2 text-p-base-medium text-ink-gray-7">{{ __('Numbers') }}</div>
           <div class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2">

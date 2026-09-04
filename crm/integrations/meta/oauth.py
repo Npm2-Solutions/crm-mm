@@ -357,6 +357,10 @@ def forget_ungranted_pages(granted: set[str]) -> None:
 			continue
 		if frappe.db.get_value("Facebook Page", name, "sync_enabled"):
 			continue
+		# the Social Planner profiles hang off the page: leaving them behind is
+		# what kept publishing targets around for Pages the CRM no longer has
+		for account in frappe.get_all("CRM Social Account", filters={"facebook_page": name}, pluck="name"):
+			frappe.delete_doc("CRM Social Account", account, ignore_permissions=True, force=True)
 		frappe.delete_doc("Facebook Page", name, ignore_permissions=True, force=True)
 
 
