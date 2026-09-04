@@ -20,6 +20,7 @@ from crm.scheduling.timeutils import (
 	to_system_naive,
 )
 from crm.scheduling.timeutils import as_time as _as_time
+from crm.utils import count_field
 
 
 class CRMBookingCalendar(Document):
@@ -203,7 +204,7 @@ class CRMBookingCalendar(Document):
 				"status": "Confirmed",
 				"starts_on": [">=", now_datetime()],
 			},
-			fields=["agent", "count(name) as total"],
+			fields=["agent", count_field()],
 			group_by="agent",
 		)
 		for row in rows:

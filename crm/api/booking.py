@@ -12,6 +12,7 @@ from crm.fcrm.doctype.crm_booking_calendar.crm_booking_calendar import (
 	from_system_naive,
 	to_system_naive,
 )
+from crm.utils import count_field
 
 BOOKING_SOURCE = "Booking"
 MAX_RANGE_DAYS = 31
@@ -447,7 +448,7 @@ def list_calendars_admin() -> list[dict]:
 		frappe.get_all(
 			"CRM Booking",
 			filters={"status": "Confirmed", "starts_on": [">=", frappe.utils.now_datetime()]},
-			fields=["calendar", "count(name) as total"],
+			fields=["calendar", count_field()],
 			group_by="calendar",
 			as_list=True,
 		)

@@ -57,6 +57,8 @@ import frappe
 from frappe import _
 from frappe.utils import add_to_date, get_datetime, now_datetime
 
+from crm.utils import count_field
+
 EVENT_TO_TRIGGER = {
 	"lead_created": "Lead Created",
 	"deal_created": "Deal Created",
@@ -819,7 +821,7 @@ def step_assign(step, ref_doc) -> str:
 		rows = frappe.get_all(
 			"ToDo",
 			filters={"allocated_to": ["in", users], "status": "Open"},
-			fields=["allocated_to", "count(name) as total"],
+			fields=["allocated_to", count_field()],
 			group_by="allocated_to",
 		)
 		for row in rows:

@@ -59,14 +59,27 @@ lavoro (`start_page_sync`). La schermata mostra "sto leggendo le tue Pagine" e
 si ricontrolla da sola finche' il job non ha finito. Anche "Aggiorna pagine"
 passa dalla stessa coda.
 
+## Solo le Pagine concesse
+
+L'elenco mostra `/me/accounts`, che e' esattamente cio' che si e' spuntato nel
+dialog di Facebook — una Pagina amministrata tramite un portfolio Business
+compare qui, una volta concessa.
+
+Il CRM ha provato anche a percorrere `owned_pages` e `client_pages` del
+portfolio: era un errore. Quegli edge restituiscono anche Pagine **non**
+concesse, che arrivano senza i permessi per usarle. Ogni chiamata su di esse
+fallisce con *"permission(s) must be granted before impersonating a user's
+page"* e riempiono l'elenco di righe che nessuno puo' accendere. Chi vuole una
+Pagina in piu' la aggiunge dal dialog, con "Scegli le pagine".
+
+Una Pagina tolta dal dialog sparisce anche da qui, purche' non ci sia appeso
+nulla: con dei moduli, o con la sincronizzazione lead ancora accesa, resta.
+
 ## Perche' Facebook chiede il portfolio Business
 
 Il dialog chiede di scegliere un portfolio perche' l'app domanda
-`business_management`: e' il permesso che rende visibili le Pagine possedute o
-gestite da un Business invece che dalla persona. La scelta dice a Meta **quali
-asset di quel portfolio** l'app puo' vedere. Senza, restano solo le Pagine su
-cui hai un ruolo diretto — di nuovo il caso in cui "collego l'account ma non
-trovo le mie Pagine".
+`business_management`: serve alle Pagine possedute o gestite da un Business,
+che senza quel permesso non compaiono nemmeno dopo essere state spuntate.
 
 
 ## Checklist di produzione (dalle guide ufficiali)

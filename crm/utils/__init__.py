@@ -154,6 +154,18 @@ def is_frappe_version(version: str, above: bool = False, below: bool = False):
 	return major_version == target_version
 
 
+def count_field(alias: str = "total"):
+	"""How to ask for COUNT(name) in a `fields` list, for this Frappe.
+
+	v16 rejects SQL functions written as strings and wants the dict form. A
+	call that gets it wrong does not degrade: it raises, and takes the whole
+	screen with it.
+	"""
+	return (
+		{"COUNT": "name", "as": alias} if is_frappe_version("16", above=True) else f"count(name) as {alias}"
+	)
+
+
 def _should_update_modified(doc: Communication | Comment) -> bool:
 	if not frappe.db.get_single_value("FCRM Settings", "update_timestamp_on_new_communication"):
 		return False

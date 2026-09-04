@@ -5,6 +5,7 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 
 from crm.automation.engine import STEP_TYPES, parse_json, validate_steps
+from crm.utils import count_field
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
@@ -24,7 +25,7 @@ def list_automations() -> list[dict]:
 	counts = dict(
 		frappe.get_all(
 			"CRM Automation Enrollment",
-			fields=["automation", "count(name) as total"],
+			fields=["automation", count_field()],
 			group_by="automation",
 			as_list=True,
 		)
@@ -33,7 +34,7 @@ def list_automations() -> list[dict]:
 		frappe.get_all(
 			"CRM Automation Enrollment",
 			filters={"status": ["in", ["Active", "Waiting"]]},
-			fields=["automation", "count(name) as total"],
+			fields=["automation", count_field()],
 			group_by="automation",
 			as_list=True,
 		)
