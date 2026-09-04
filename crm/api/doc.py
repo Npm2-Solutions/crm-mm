@@ -12,7 +12,7 @@ from pypika import Criterion
 
 from crm.api.views import get_views
 from crm.fcrm.doctype.crm_form_script.crm_form_script import get_form_script
-from crm.utils import is_frappe_version
+from crm.utils import get_kanban_column_options, is_frappe_version
 
 COUNT_NAME = (
 	{"COUNT": "name", "as": "total_count"}
@@ -372,15 +372,7 @@ def get_data(
 			rows = default_rows
 
 		if not kanban_columns and column_field:
-			field_meta = frappe.get_meta(doctype).get_field(column_field)
-			if field_meta.fieldtype == "Link":
-				kanban_columns = frappe.get_all(
-					field_meta.options,
-					fields=["name"],
-					order_by="modified asc",
-				)
-			elif field_meta.fieldtype == "Select":
-				kanban_columns = [{"name": option} for option in field_meta.options.split("\n")]
+			kanban_columns = get_kanban_column_options(doctype, column_field, filters)
 
 		if not title_field:
 			title_field = "name"

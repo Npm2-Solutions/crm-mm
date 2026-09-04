@@ -440,6 +440,21 @@ class TestCRMDeal(IntegrationTestCase):
 		deal.reload()
 		self.assertEqual(deal.contacts[0].is_primary, 1)
 
+	def test_person_name_from_primary_contact(self):
+		"""A deal with no organization is named after the person it is with"""
+		contact = create_test_contact(first_name="Giulia", last_name="Rossi", email="giulia@example.com")
+		deal = create_test_deal()
+		deal.append("contacts", {"contact": contact.name, "is_primary": 1})
+		deal.save()
+
+		self.assertEqual(deal.lead_name, "Giulia Rossi")
+
+	def test_person_name_from_create_deal_api(self):
+		"""The name typed in the create modal names the deal too"""
+		name = create_deal({"first_name": "Mario", "last_name": "Bianchi", "mobile_no": "+391234567890"})
+
+		self.assertEqual(frappe.db.get_value("CRM Deal", name, "lead_name"), "Mario Bianchi")
+
 	def test_negative_currency_fields_rejected(self):
 		"""Test that Currency fields reject negative values"""
 		for fieldname in ("annual_revenue", "deal_value", "expected_deal_value", "total", "net_total"):

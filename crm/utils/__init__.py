@@ -288,3 +288,32 @@ def on_communication_update(doc: Communication, method: str | None = None):
 		values,
 		update_modified=False,
 	)
+
+
+def get_kanban_column_options(doctype: str, column_field: str, filters: dict | None = None) -> list[dict]:
+	"""Board columns of a kanban view, in the order they should appear.
+
+	Link columns come from the linked doctype: ordered by `position` when it has one
+	(so deal stages follow the order set in Settings > Pipelines) and narrowed to a
+	single pipeline when the view filters by one.
+	"""
+	field_meta = frappe.get_meta(doctype).get_field(column_field)
+	if not field_meta:
+		return []
+
+	if field_meta.fieldtype == "Select":
+		return [{"name": option} for option in (field_meta.options or "").split("\n")]
+
+	if field_meta.fieldtype != "Link" or not field_meta.options:
+		return []
+
+	link_meta = frappe.get_meta(field_meta.options)
+	link_filters = {}
+
+	pipeline = (filters or {}).get("pipeline")
+	if pipeline and isinstance(pipeline, str) and link_meta.has_field("pipeline"):
+		link_filters["pipeline"] = pipeline
+
+	order_by = "position asc, name asc" if link_meta.has_field("position") else "modified asc"
+
+	return frappe.get_all(field_meta.options, fields=["name"], filters=link_filters, order_by=order_by)

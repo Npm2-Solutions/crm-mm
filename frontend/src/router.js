@@ -282,7 +282,9 @@ router.beforeEach(async (to, from, next) => {
       }
 
       const doctype = doctypeMap[to.name]
-      let defaultViewType = 'list'
+      // deals live on a pipeline: the board is the view that shows it. Any view
+      // the user marked as default (below) still wins.
+      let defaultViewType = to.name === 'Deals' ? 'kanban' : 'list'
 
       let globalDefault = getDefaultView()
       if (globalDefault && globalDefault.route_name === to.name) {

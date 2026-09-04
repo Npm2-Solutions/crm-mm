@@ -58,6 +58,7 @@ import LucideClock from '~icons/lucide/clock'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
 import SparkleIcon from '@/components/Icons/SparkleIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
+import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import ERPNextIcon from '@/components/Icons/ERPNextIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
@@ -89,6 +90,7 @@ import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSetting
 import PriceListsSettings from '@/components/Settings/Scheduling/PriceListsSettings.vue'
 import StaffSchedulesSettings from '@/components/Settings/Scheduling/StaffSchedulesSettings.vue'
 import SchedulingDefaults from '@/components/Settings/Scheduling/SchedulingDefaults.vue'
+import PipelinesSettings from '@/components/Settings/Pipelines/PipelinesSettings.vue'
 import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
 import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
@@ -162,6 +164,17 @@ const tabs = computed(() => {
           label: __('Calendar'),
           icon: CalendarIcon,
           component: markRaw(CalendarSettings),
+        },
+      ],
+      condition: () => isManager(),
+    },
+    {
+      label: __('Sales'),
+      items: [
+        {
+          label: __('Pipelines'),
+          icon: KanbanIcon,
+          component: markRaw(PipelinesSettings),
         },
       ],
       condition: () => isManager(),

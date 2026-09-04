@@ -168,3 +168,56 @@ Three patterns were considered:
 
 > Current stable API: [SPEC.md — formDialog API](./SPEC.md#formdialog-api)  
 > Full guide with examples: [feats/form-scripting/form-dialog.md](./feats/form-scripting/form-dialog.md)
+
+---
+
+## Pipelines — piu' funnel per le trattative
+
+> **Completata.** Guida d'uso: [feats/pipelines/guide.md](./feats/pipelines/guide.md)
+
+### Il problema
+
+Un solo elenco di `CRM Deal Status` per tutto il CRM: ogni trattativa, di
+qualunque natura, condivideva lo stesso funnel. Nessun modo di tenere separati,
+per esempio, il funnel commerciale e quello di onboarding.
+
+### Il modello scelto
+
+`CRM Pipeline` (nuovo DocType) + campo `pipeline` su `CRM Deal Status` e su
+`CRM Deal`.
+
+**Lo stage e' la fonte di verita'.** `CRM Deal.pipeline` rispecchia sempre la
+pipeline del suo stage (`validate_status`), quindi i due campi non possono
+divergere: non esiste uno stato "deal nella pipeline A con stage della B".
+Impostare una pipeline diversa su un deal esistente lo sposta sul primo stage
+aperto di quella pipeline — la stessa semantica di GoHighLevel.
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Estendere `CRM Deal Status` invece di creare uno `stage` nuovo | `status` e' cablato ovunque: SLA, dashboard, automazioni, status change log, form script, viste salvate. Sostituirlo avrebbe significato riscrivere mezzo CRM |
+| Nomi degli stage unici su tutto il sito | `CRM Deal.status` e' un Link: il valore salvato *e'* il nome. Nominare gli stage con un hash avrebbe reso illeggibili dashboard, esportazioni e filtri salvati. Le pipeline nuove ricevono percio' stage con suffisso automatico (`Qualification (Onboarding)`), rinominabili subito |
+| `pipeline` non obbligatorio sul deal, obbligatorio sullo stage | Il deal lo riceve sempre in `validate`; renderlo `reqd` avrebbe rotto ogni creazione via API che passa solo lo stato |
+| Colonne kanban ordinate per `position` | Prima erano ordinate per `modified asc`, cioe' a caso. Con le pipeline l'ordine degli stage e' la board stessa |
+| Pipeline corrente del kanban dedotta dalle colonne della vista | Nessun nuovo campo su `CRM View Settings` e nessuna sovrascrittura delle board che l'utente ha personalizzato |
+| Spostamenti di massa via SQL (`delete_stage`, `delete_pipeline`) | Sono operazioni di configurazione su potenzialmente migliaia di deal: passare dai hook del documento avrebbe significato ricalcoli SLA e sharing per ognuno. Il compromesso e' che non finiscono nello status change log |
+
+### File
+
+| File | Ruolo |
+|---|---|
+| `crm/fcrm/doctype/crm_pipeline/` | DocType + helper (`get_default_pipeline`, `get_pipeline_stages`, `get_first_stage`, `get_pipeline_of_stage`) |
+| `crm/api/pipeline.py` | API della schermata impostazioni: elenco, creazione, `save_stages`, cancellazioni con spostamento dei deal |
+| `crm/utils/__init__.py` | `get_kanban_column_options` — colonne kanban ordinate e filtrate per pipeline (usata da `api/doc.py` e `crm_view_settings.py`) |
+| `crm/patches/v1_0/create_default_pipeline.py` | Migrazione dei siti esistenti |
+| `frontend/src/stores/pipelines.js` | Store: pipeline + stage in una sola chiamata |
+| `frontend/src/utils/pipelines.js` | Funzioni pure (testate): stage di una pipeline, colonne kanban, pipeline di default |
+| `frontend/src/components/Settings/Pipelines/` | Impostazioni → Vendite → Pipeline (lista + editor stage) |
+
+### Non incluso
+
+- I grafici della dashboard aggregano ancora tutte le pipeline insieme: filtrarli
+  per pipeline vuol dire passare il parametro attraverso ~15 funzioni di
+  `crm/api/dashboard.py` e la relativa UI.
+- Le pipeline valgono per i deal, non per i lead (come in GoHighLevel).
