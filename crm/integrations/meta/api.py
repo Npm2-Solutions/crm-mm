@@ -56,14 +56,10 @@ def get_status() -> dict:
 		# a background job is still pulling pages in: the screen says so instead
 		# of looking like the login shared nothing
 		"syncing": sync_running(),
-		"pages": [
-			{**page, "can_sync_leads": can_sync_leads(page.get("tasks"))}
-			for page in frappe.get_all(
-				"Facebook Page",
-				fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks"],
-				order_by="page_name asc",
-			)
-		],
+		# the Pages themselves come from `list_pages`, which pages and filters
+		# them; here only how many there are, so the screen can tell "none yet"
+		# from "still loading"
+		"page_count": frappe.db.count("Facebook Page"),
 	}
 
 
@@ -200,6 +196,45 @@ NOT_GRANTED = (
 	'its lead forms. Press "Choose pages" on the connection screen and tick this Page — '
 	"you must be an administrator of it."
 )
+
+
+@frappe.whitelist()
+def list_pages(start: int = 0, limit: int = 20, search: str | None = None) -> dict:
+	"""The Pages worth showing on the connection screen, a page at a time.
+
+	Only the ones whose switch can actually do something: Meta wants the
+	ADVERTISE task for anything leadgen, so a Page without it offers a switch
+	that can only fail. They are counted, not listed — vanishing without a
+	word would be its own mystery.
+
+	Pages stored before the CRM recorded tasks have none, and are shown: Meta
+	is the judge, and hiding something that used to work would be worse.
+	"""
+	_check_manager()
+	filters = {}
+	if search:
+		filters["page_name"] = ["like", f"%{search}%"]
+	usable = [["tasks", "like", f"%{LEAD_TASK}%"], ["tasks", "is", "not set"]]
+
+	total = len(
+		frappe.get_all("Facebook Page", filters=filters, or_filters=usable, pluck="name", limit_page_length=0)
+	)
+	pages = frappe.get_all(
+		"Facebook Page",
+		filters=filters,
+		or_filters=usable,
+		fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks"],
+		order_by="page_name asc",
+		limit_start=frappe.utils.cint(start),
+		limit_page_length=frappe.utils.cint(limit),
+	)
+	return {
+		"pages": pages,
+		"total": total,
+		# how many the connection screen is deliberately not showing
+		"hidden": frappe.db.count("Facebook Page")
+		- len(frappe.get_all("Facebook Page", or_filters=usable, pluck="name", limit_page_length=0)),
+	}
 
 
 @frappe.whitelist(methods=["POST"])

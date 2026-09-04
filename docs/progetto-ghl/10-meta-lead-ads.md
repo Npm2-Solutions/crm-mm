@@ -70,6 +70,17 @@ l'interruttore promette.
 Una Pagina che non e' mai stata concessa non compare da nessuna parte, e si
 aggiunge con "Aggiungi Pagine da Facebook".
 
+L'elenco mostra **solo le Pagine su cui l'interruttore puo' fare qualcosa**:
+Meta pretende il task ADVERTISE per tutto cio' che e' leadgen, quindi una
+Pagina senza offrirebbe un interruttore capace solo di fallire. Quelle vengono
+**contate, non elencate** — sparire senza una parola sarebbe un mistero a sua
+volta. Le Pagine salvate prima che il CRM registrasse i task non ne hanno e
+restano visibili: giudica Meta.
+
+L'elenco e' **paginato** (venti per volta, con ricerca quando sono di piu'):
+l'account di un'agenzia puo' contenerne centinaia, e non hanno niente da fare
+dentro il payload dello stato della connessione.
+
 ### Quando una Pagina viene dimenticata
 
 Alla sincronizzazione, una Pagina che Facebook non concede piu' viene rimossa,

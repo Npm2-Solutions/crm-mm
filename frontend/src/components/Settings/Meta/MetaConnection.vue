@@ -135,43 +135,69 @@
           {{ __('Reading your Pages from Facebook — this can take a minute on an account with many.') }}
         </div>
 
-        <div v-else-if="pages.length" class="flex flex-col gap-1">
-          <p class="mb-1 text-p-sm text-ink-gray-5">
+        <template v-else-if="pageCount">
+          <FormControl
+            v-if="showSearch"
+            v-model="search"
+            type="text"
+            :placeholder="__('Search a Page')"
+          />
+
+          <p class="text-p-sm text-ink-gray-5">
             {{ __('Turn on the Pages whose leads should reach this CRM.') }}
           </p>
-          <div
-            v-for="page in pages"
-            :key="page.name"
-            class="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-surface-gray-1"
-          >
-            <Switch
-              size="sm"
-              :modelValue="Boolean(page.sync_enabled)"
-              :disabled="busyPage === page.name || page.can_sync_leads === false"
-              @update:modelValue="(value) => togglePage(page, value)"
-            />
-            <div class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-p-sm text-ink-gray-8">
-                {{ page.page_name || page.name }}
-              </span>
-              <span v-if="page.instagram_username" class="text-p-xs text-ink-gray-5">
-                {{ __('Instagram') }}: @{{ page.instagram_username }}
-              </span>
-              <span v-if="page.can_sync_leads === false" class="text-p-xs text-ink-amber-6">
-                {{ __('Facebook did not give the CRM the advertising role here — grant it again to use its leads') }}
-              </span>
+
+          <div class="flex flex-col gap-1">
+            <div
+              v-for="page in pages"
+              :key="page.name"
+              class="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-surface-gray-1"
+            >
+              <Switch
+                size="sm"
+                :modelValue="Boolean(page.sync_enabled)"
+                :disabled="busyPage === page.name"
+                @update:modelValue="(value) => togglePage(page, value)"
+              />
+              <div class="flex min-w-0 flex-1 flex-col">
+                <span class="truncate text-p-sm text-ink-gray-8">
+                  {{ page.page_name || page.name }}
+                </span>
+                <span v-if="page.instagram_username" class="text-p-xs text-ink-gray-5">
+                  {{ __('Instagram') }}: @{{ page.instagram_username }}
+                </span>
+              </div>
             </div>
           </div>
-          <span class="mt-2 text-p-sm text-ink-gray-5">
+
+          <div v-if="pages.length < total" class="flex items-center gap-3">
+            <Button
+              :label="__('Show more')"
+              :loading="pageList.loading"
+              @click="loadMore"
+            />
+            <span class="text-p-sm text-ink-gray-5">
+              {{ __('{0} of {1}', [pages.length, total]) }}
+            </span>
+          </div>
+
+          <div v-if="!pages.length" class="text-p-sm text-ink-gray-5">
+            {{ __('No Page matches this search.') }}
+          </div>
+
+          <!-- counted, not listed: a switch that can only fail is noise, but a
+               Page disappearing without a word is a mystery of its own -->
+          <span v-if="hidden" class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'A Page you never granted is not here at all: "Add Pages from Facebook" reopens the Facebook window to grant it. Everything else is decided on this screen.',
+                '{0} Page(s) are not shown: Facebook did not give the CRM the advertising role on them, so their leads cannot be read. Grant them again to use them.',
+                [hidden],
               )
             }}
           </span>
-        </div>
+        </template>
 
-        <div v-else-if="!syncing" class="flex flex-col gap-1 text-p-sm">
+        <div v-else class="flex flex-col gap-1 text-p-sm">
           <span class="text-ink-red-5">
             {{ __('Facebook granted the CRM no Page.') }}
           </span>
@@ -234,14 +260,38 @@ const refreshing = ref(false)
 const choosing = ref(false)
 const busyPage = ref('')
 
-const pages = computed(() => status.data?.pages || [])
-// only the site that owns the app's callbacks can do anything about it
-const webhookBroken = computed(
-  () =>
-    isHub.value &&
-    webhook.data &&
-    !(webhook.data.configured && webhook.data.matches_site),
-)
+const PAGE_SIZE = 20
+
+const search = ref('')
+const limit = ref(PAGE_SIZE)
+
+// the Pages live in their own paginated call: an agency account can hold
+// hundreds, and none of them belong in the status payload
+const pageList = createResource({
+  url: 'crm.integrations.meta.api.list_pages',
+  makeParams: () => ({ start: 0, limit: limit.value, search: search.value }),
+  auto: true,
+})
+
+const pages = computed(() => pageList.data?.pages || [])
+const total = computed(() => pageList.data?.total || 0)
+const hidden = computed(() => pageList.data?.hidden || 0)
+const pageCount = computed(() => status.data?.page_count || 0)
+// searching a handful of Pages is worse than reading them
+const showSearch = computed(() => total.value > PAGE_SIZE || Boolean(search.value))
+
+function loadMore() {
+  limit.value += PAGE_SIZE
+  pageList.reload()
+}
+
+let searchTimer = null
+watch(search, () => {
+  clearTimeout(searchTimer)
+  limit.value = PAGE_SIZE
+  searchTimer = setTimeout(() => pageList.reload(), 250)
+})
+
 const syncing = computed(() => Boolean(status.data?.syncing))
 
 // The sync runs in a background job, so the screen has to keep coming back for
@@ -254,11 +304,15 @@ function pollWhileSyncing() {
   if (!syncing.value) return
   pollTimer = setTimeout(() => {
     status.reload()
+    pageList.reload()
     pollWhileSyncing()
   }, 3000)
 }
 watch(syncing, pollWhileSyncing, { immediate: true })
-onUnmounted(() => clearTimeout(pollTimer))
+onUnmounted(() => {
+  clearTimeout(pollTimer)
+  clearTimeout(searchTimer)
+})
 
 function togglePage(page, enabled) {
   busyPage.value = page.name
@@ -269,12 +323,12 @@ function togglePage(page, enabled) {
     onSuccess: () => {
       busyPage.value = ''
       toast.success(enabled ? __('Leads enabled') : __('Leads disabled'))
-      status.reload()
+      pageList.reload()
     },
     onError: (e) => {
       busyPage.value = ''
       toast.error(e.messages?.[0] || __('Could not change the page'))
-      status.reload()
+      pageList.reload()
     },
   })
 }
