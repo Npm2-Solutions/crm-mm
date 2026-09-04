@@ -16,9 +16,9 @@ import frappe
 
 # what the pages say about the operator, overridable per site
 DEFAULTS = {
-	"legal_name": "NPM2 Solutions",
-	"legal_address": "",
-	"legal_vat": "",
+	"legal_name": "NPM2 Solutions Srl",
+	"legal_address": "Via San Gregorio 55, 20124 Milano (MI), Italia",
+	"legal_vat": "IT13832480969",
 	"legal_email": "info@npm2solutions.com",
 }
 
