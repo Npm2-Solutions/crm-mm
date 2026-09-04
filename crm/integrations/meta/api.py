@@ -227,9 +227,17 @@ def sync_forms(page_id: str) -> dict:
 
 @frappe.whitelist()
 def get_pages() -> list[dict]:
+	"""The Pages whose leads reach this CRM — the ones switched on, and only those.
+
+	Which Pages the CRM uses is decided on the connection screen; this screen is
+	about their forms. Listing every granted Page here meant the forms of Pages
+	nobody had switched on sat in the list too, which is precisely what the
+	switch is supposed to prevent.
+	"""
 	_check_manager()
 	pages = frappe.get_all(
 		"Facebook Page",
+		filters={"sync_enabled": 1},
 		fields=[
 			"name",
 			"page_name",

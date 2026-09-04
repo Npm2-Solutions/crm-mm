@@ -7,7 +7,7 @@
       <p class="text-p-base text-ink-gray-6">
         {{
           __(
-            'Choose which of your Facebook and Instagram pages send their form leads into the CRM, and how the answers map to fields.',
+            'The Pages you switched on, and how their form answers map to CRM fields.',
           )
         }}
       </p>
@@ -135,7 +135,11 @@
             {{ __('Reading your Pages from Facebook…') }}
           </div>
           <div v-else class="text-p-base text-ink-gray-5">
-            {{ __('No pages yet — grant them from the connection screen.') }}
+            {{
+              __(
+                'No Page is switched on yet. Choose which ones the CRM should use on the connection screen, and their forms appear here.',
+              )
+            }}
           </div>
           <div class="mt-3 rounded-md bg-surface-gray-1 p-3 text-p-sm text-ink-gray-5">
             {{
