@@ -23,7 +23,7 @@
 
 > 🔗 **Aggiornamento 03/09/2026** — l'agenda interna (stanze, attrezzature,
 > appuntamenti multi-persona, listini variabili) è nel
-> [modulo 13](./13-agenda-appuntamenti.md). Il calcolo dell'occupato di questa
+> [modulo 14](./14-agenda-appuntamenti.md). Il calcolo dell'occupato di questa
 > pagina pubblica passa ora dal motore condiviso: un professionista pieno di
 > appuntamenti interni non appare più libero agli invitati.
 

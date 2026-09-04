@@ -1,4 +1,4 @@
-# 13 — Agenda: appuntamenti multi-persona, stanze, attrezzature e listini
+# 14 — Agenda: appuntamenti multi-persona, stanze, attrezzature e listini
 
 > ✅ **IMPLEMENTATO** (03/09/2026) direttamente in questo fork (modulo FCRM).
 >
