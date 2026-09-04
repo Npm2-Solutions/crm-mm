@@ -7,7 +7,10 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import booking as B
-from crm.fcrm.doctype.crm_booking_calendar.crm_booking_calendar import from_system_naive
+from crm.fcrm.doctype.crm_booking_calendar.crm_booking_calendar import (
+	from_system_naive,
+	to_system_naive,
+)
 
 ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -150,6 +153,30 @@ class TestBooking(IntegrationTestCase):
 			B.get_booking(token="short")
 		with self.assertRaises(frappe.DoesNotExistError):
 			B.get_booking(token="x" * 32)
+
+	def test_internal_appointment_blocks_a_public_slot(self):
+		"""The public page and the internal agenda share the same people."""
+		frappe.db.set_single_value("CRM Scheduling Settings", "sync_to_event", 0)
+		make_calendar(route="appt-cal")
+		start = first_slot("appt-cal")
+		frappe.get_doc(
+			{
+				"doctype": "CRM Service",
+				"service_name": "Visita interna",
+				"duration": 30,
+				"staff": [{"user": "Administrator"}],
+			}
+		).insert()
+		frappe.get_doc(
+			{
+				"doctype": "CRM Appointment",
+				"service": "Visita interna",
+				"starts_on": to_system_naive(start),
+				"staff": [{"user": "Administrator"}],
+			}
+		).insert()
+		cal = frappe.get_doc("CRM Booking Calendar", {"route": "appt-cal"})
+		self.assertEqual(cal.is_slot_available(start), [])
 
 	def test_buffer_blocks_adjacent_slot(self):
 		make_calendar(route="buffer-cal", buffer_after=30)

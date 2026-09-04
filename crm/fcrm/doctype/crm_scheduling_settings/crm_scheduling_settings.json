@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "creation": "2026-09-03 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "defaults_section",
+  "timezone",
+  "default_price_list",
+  "column_break_defaults",
+  "default_duration",
+  "cancellation_notice_hours",
+  "rules_section",
+  "enforce_staff_conflicts",
+  "enforce_resource_conflicts",
+  "enforce_participant_conflicts",
+  "column_break_rules",
+  "enforce_working_hours",
+  "allow_override",
+  "sync_to_event",
+  "check_google_busy",
+  "hours_section",
+  "default_availability",
+  "default_holiday_list"
+ ],
+ "fields": [
+  {
+   "fieldname": "defaults_section",
+   "fieldtype": "Section Break",
+   "label": "Defaults"
+  },
+  {
+   "fieldname": "timezone",
+   "fieldtype": "Data",
+   "label": "Scheduling Timezone",
+   "description": "IANA timezone the weekly hours are expressed in. Empty uses the site timezone."
+  },
+  {
+   "fieldname": "default_price_list",
+   "fieldtype": "Link",
+   "label": "Default Price List",
+   "options": "CRM Price List"
+  },
+  {
+   "fieldname": "column_break_defaults",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_duration",
+   "fieldtype": "Int",
+   "label": "Default Duration (minutes)",
+   "default": "30"
+  },
+  {
+   "fieldname": "cancellation_notice_hours",
+   "fieldtype": "Int",
+   "label": "Cancellation Notice (hours)",
+   "default": "0"
+  },
+  {
+   "fieldname": "rules_section",
+   "fieldtype": "Section Break",
+   "label": "Conflict Rules"
+  },
+  {
+   "fieldname": "enforce_staff_conflicts",
+   "fieldtype": "Check",
+   "label": "Block double-booked professionals",
+   "default": "1"
+  },
+  {
+   "fieldname": "enforce_resource_conflicts",
+   "fieldtype": "Check",
+   "label": "Block over-booked rooms & equipment",
+   "default": "1"
+  },
+  {
+   "fieldname": "enforce_participant_conflicts",
+   "fieldtype": "Check",
+   "label": "Block double-booked clients",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_rules",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enforce_working_hours",
+   "fieldtype": "Check",
+   "label": "Block appointments outside working hours",
+   "default": "0"
+  },
+  {
+   "fieldname": "allow_override",
+   "fieldtype": "Check",
+   "label": "Let managers force a conflicting appointment",
+   "default": "1"
+  },
+  {
+   "fieldname": "sync_to_event",
+   "fieldtype": "Check",
+   "label": "Mirror appointments to the calendar Event doctype",
+   "default": "1",
+   "description": "Keeps appointments visible in the classic calendar and in Google Calendar sync."
+  },
+  {
+   "default": "0",
+   "description": "Query each professional's connected Google Calendar for busy blocks when computing free slots.",
+   "fieldname": "check_google_busy",
+   "fieldtype": "Check",
+   "label": "Check Google Calendar busy blocks"
+  },
+  {
+   "fieldname": "hours_section",
+   "fieldtype": "Section Break",
+   "label": "Fallback Working Hours"
+  },
+  {
+   "fieldname": "default_availability",
+   "fieldtype": "Table",
+   "label": "Weekly Hours",
+   "options": "CRM Service Day",
+   "description": "Used for professionals without their own schedule."
+  },
+  {
+   "fieldname": "default_holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "CRM Holiday List"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-03 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Scheduling Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

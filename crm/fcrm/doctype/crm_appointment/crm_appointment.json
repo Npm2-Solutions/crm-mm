@@ -1,0 +1,285 @@
+{
+ "actions": [],
+ "autoname": "format:APPT-{#####}",
+ "creation": "2026-09-03 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "service",
+  "status",
+  "column_break_head",
+  "starts_on",
+  "ends_on",
+  "color",
+  "team_section",
+  "staff",
+  "participants_section",
+  "participants",
+  "resources_section",
+  "resources",
+  "location",
+  "pricing_section",
+  "price_list",
+  "unit_price",
+  "per_participant",
+  "column_break_pricing",
+  "currency",
+  "total_amount",
+  "price_source",
+  "details_section",
+  "notes",
+  "cancellation_reason",
+  "column_break_details",
+  "series",
+  "booking",
+  "event",
+  "conflict_section",
+  "override_conflicts",
+  "conflict_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "service",
+   "fieldtype": "Link",
+   "label": "Service",
+   "options": "CRM Service",
+   "reqd": 1,
+   "in_list_view": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Scheduled\nConfirmed\nCompleted\nCancelled\nNo Show",
+   "default": "Scheduled",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "starts_on",
+   "fieldtype": "Datetime",
+   "label": "Starts On",
+   "reqd": 1,
+   "in_list_view": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "ends_on",
+   "fieldtype": "Datetime",
+   "label": "Ends On",
+   "reqd": 1
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Colour"
+  },
+  {
+   "fieldname": "team_section",
+   "fieldtype": "Section Break",
+   "label": "Team"
+  },
+  {
+   "fieldname": "staff",
+   "fieldtype": "Table",
+   "label": "Professionals",
+   "options": "CRM Appointment Staff"
+  },
+  {
+   "fieldname": "participants_section",
+   "fieldtype": "Section Break",
+   "label": "Participants"
+  },
+  {
+   "fieldname": "participants",
+   "fieldtype": "Table",
+   "label": "Participants",
+   "options": "CRM Appointment Participant"
+  },
+  {
+   "fieldname": "resources_section",
+   "fieldtype": "Section Break",
+   "label": "Rooms & Equipment"
+  },
+  {
+   "fieldname": "resources",
+   "fieldtype": "Table",
+   "label": "Resources",
+   "options": "CRM Appointment Resource"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location / Meeting Link"
+  },
+  {
+   "fieldname": "pricing_section",
+   "fieldtype": "Section Break",
+   "label": "Pricing"
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "CRM Price List"
+  },
+  {
+   "fieldname": "unit_price",
+   "fieldtype": "Currency",
+   "label": "Unit Price",
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_participant",
+   "fieldtype": "Check",
+   "label": "Price is per participant",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_pricing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price_source",
+   "fieldtype": "Data",
+   "label": "Rate from",
+   "read_only": 1
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "cancellation_reason",
+   "fieldtype": "Small Text",
+   "label": "Cancellation Reason",
+   "depends_on": "eval:doc.status=='Cancelled'"
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "series",
+   "fieldtype": "Data",
+   "label": "Series",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "booking",
+   "fieldtype": "Link",
+   "label": "Booking",
+   "options": "CRM Booking",
+   "read_only": 1
+  },
+  {
+   "fieldname": "event",
+   "fieldtype": "Link",
+   "label": "Calendar Event",
+   "options": "Event",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "conflict_section",
+   "fieldtype": "Section Break",
+   "label": "Conflicts"
+  },
+  {
+   "fieldname": "override_conflicts",
+   "fieldtype": "Check",
+   "label": "Book despite conflicts",
+   "default": "0",
+   "description": "Managers only: saves the appointment even if staff, resources or clients are already busy."
+  },
+  {
+   "fieldname": "conflict_note",
+   "fieldtype": "Small Text",
+   "label": "Recorded Conflicts",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-03 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Appointment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "starts_on",
+ "sort_order": "DESC",
+ "states": []
+}

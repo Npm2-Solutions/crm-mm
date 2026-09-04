@@ -8,26 +8,18 @@ from zoneinfo import ZoneInfo
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, get_system_timezone, now_datetime
-
-UTC = datetime.timezone.utc
+from frappe.utils import cint, now_datetime
 
 # All slot math is timezone-aware and returned in UTC; booking rows persist naive
 # datetimes in the site's system timezone (the framework-wide convention).
-
-
-def system_tz() -> ZoneInfo:
-	return ZoneInfo(get_system_timezone())
-
-
-def to_system_naive(aware: datetime.datetime) -> datetime.datetime:
-	return aware.astimezone(system_tz()).replace(tzinfo=None)
-
-
-def from_system_naive(naive) -> datetime.datetime:
-	from frappe.utils import get_datetime
-
-	return get_datetime(naive).replace(tzinfo=system_tz()).astimezone(UTC)
+# The converters live with the scheduling engine so both use exactly one clock.
+from crm.scheduling.timeutils import (
+	UTC,
+	from_system_naive,
+	system_tz,
+	to_system_naive,
+)
+from crm.scheduling.timeutils import as_time as _as_time
 
 
 class CRMBookingCalendar(Document):
@@ -170,33 +162,26 @@ class CRMBookingCalendar(Document):
 	def get_busy_intervals(
 		self, members: list[str], start: datetime.datetime, end: datetime.datetime
 	) -> dict[str, list[tuple[datetime.datetime, datetime.datetime]]]:
-		"""Confirmed bookings of these members across ALL calendars, expanded by
-		this calendar's buffers, keyed by member, as aware-UTC intervals."""
+		"""Everything that occupies these members, expanded by this calendar's
+		buffers, keyed by member, as aware-UTC intervals.
+
+		Confirmed bookings on ANY public calendar, internal appointments from the
+		scheduling module, and — when enabled — their Google Calendar. A member
+		whose diary is full of internal appointments must not look free to a
+		visitor of the public page.
+		"""
 		if not members:
 			return {}
-		before = datetime.timedelta(minutes=cint(self.buffer_before))
-		after = datetime.timedelta(minutes=cint(self.buffer_after))
-		rows = frappe.get_all(
-			"CRM Booking",
-			filters={
-				"agent": ["in", members],
-				"status": "Confirmed",
-				"starts_on": ["<", to_system_naive(end + before)],
-				"ends_on": [">", to_system_naive(start - after)],
-			},
-			fields=["agent", "starts_on", "ends_on"],
-		)
-		busy: dict[str, list] = {}
-		for row in rows:
-			busy.setdefault(row.agent, []).append(
-				(from_system_naive(row.starts_on) - before, from_system_naive(row.ends_on) + after)
-			)
+		from crm.scheduling.availability import staff_busy
 
-		if self.check_google_busy:
-			for user in members:
-				for interval in get_google_busy_intervals(user, start, end):
-					busy.setdefault(user, []).append((interval[0] - before, interval[1] + after))
-		return busy
+		return staff_busy(
+			members,
+			start,
+			end,
+			buffer_before=cint(self.buffer_before),
+			buffer_after=cint(self.buffer_after),
+			include_google=bool(cint(self.check_google_busy)),
+		)
 
 	def is_slot_available(self, start_utc: datetime.datetime) -> list[str]:
 		"""Free members for one exact slot start (aware UTC); [] if unavailable."""
@@ -267,15 +252,6 @@ def get_google_busy_intervals(
 
 def _parse_google_dt(value: str) -> datetime.datetime:
 	return datetime.datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
-
-
-def _as_time(value) -> datetime.time:
-	"""Child-table Time fields load as timedelta from the DB but time from forms."""
-	if isinstance(value, datetime.timedelta):
-		return (datetime.datetime.min + value).time()
-	if isinstance(value, str):
-		return datetime.time.fromisoformat(value)
-	return value
 
 
 def _overlaps(intervals, start, end) -> bool:

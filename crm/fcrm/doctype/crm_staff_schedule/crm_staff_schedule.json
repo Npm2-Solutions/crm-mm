@@ -1,0 +1,124 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:user",
+ "creation": "2026-09-03 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "enabled",
+  "column_break_head",
+  "max_daily_appointments",
+  "availability_section",
+  "availability",
+  "holiday_list",
+  "exceptions_section",
+  "exceptions"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "Professional",
+   "options": "User",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_daily_appointments",
+   "fieldtype": "Int",
+   "label": "Max appointments per day",
+   "default": "0",
+   "description": "0 = no limit."
+  },
+  {
+   "fieldname": "availability_section",
+   "fieldtype": "Section Break",
+   "label": "Weekly Hours"
+  },
+  {
+   "fieldname": "availability",
+   "fieldtype": "Table",
+   "label": "Weekly Hours",
+   "options": "CRM Service Day"
+  },
+  {
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "CRM Holiday List"
+  },
+  {
+   "fieldname": "exceptions_section",
+   "fieldtype": "Section Break",
+   "label": "Exceptions"
+  },
+  {
+   "fieldname": "exceptions",
+   "fieldtype": "Table",
+   "label": "Date Overrides",
+   "options": "CRM Availability Exception",
+   "description": "Days off and one-off extra hours."
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-03 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Staff Schedule",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "user",
+ "sort_order": "ASC",
+ "states": []
+}

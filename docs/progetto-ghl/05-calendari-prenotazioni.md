@@ -21,6 +21,12 @@
 > Calendar, vista di gestione nella SPA (per ora si usa il Desk), promemoria
 > SMS/sequenze (arrivano con i moduli 03/02), pagamenti alla prenotazione.
 
+> 🔗 **Aggiornamento 03/09/2026** — l'agenda interna (stanze, attrezzature,
+> appuntamenti multi-persona, listini variabili) è nel
+> [modulo 14](./14-agenda-appuntamenti.md). Il calcolo dell'occupato di questa
+> pagina pubblica passa ora dal motore condiviso: un professionista pieno di
+> appuntamenti interni non appare più libero agli invitati.
+
 > Parte del [Progetto GHL-Parity](./README.md). Obiettivo: pagine di prenotazione
 > pubbliche con disponibilità reale, round-robin di team, promemoria e sync
 > calendario esterno.
