@@ -153,6 +153,33 @@
           </div>
         </div>
       </div>
+      <!-- what was actually said, once the recording has been through the model -->
+      <div
+        v-if="transcriptionEnabled && callLog?.data?.recording_url"
+        class="border-t px-4 pt-4 sm:px-6"
+      >
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-base font-medium text-ink-gray-8">
+            {{ __('Transcript') }}
+          </span>
+          <Button
+            size="sm"
+            :label="callLog.data.transcript ? __('Redo') : __('Transcribe')"
+            :loading="transcribing"
+            @click="transcribeNow"
+          />
+        </div>
+        <FadedScrollableDiv
+          v-if="callLog.data.transcript"
+          class="max-h-48 overflow-y-auto whitespace-pre-wrap rounded border px-2 py-1.5 text-base text-ink-gray-7"
+        >
+          {{ callLog.data.transcript }}
+        </FadedScrollableDiv>
+        <div v-else class="text-base text-ink-gray-5">
+          {{ transcriptHint }}
+        </div>
+      </div>
+
       <div
         v-if="!callLog?.data?._lead && !callLog?.data?._deal"
         class="px-4 pb-7 pt-4 sm:px-6"
@@ -183,6 +210,7 @@ import FadedScrollableDiv from '@/components/FadedScrollableDiv.vue'
 import { getCallLogDetail } from '@/utils/callLog'
 import { sanitizeHTML } from '@/utils'
 import { isMobileView } from '@/composables/settings'
+import { transcriptionEnabled } from '@/composables/telephony'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { useDocument } from '@/data/document'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
@@ -206,6 +234,36 @@ const task = ref('')
 // (recording never made / expired) — track load failure to show a fallback instead
 // of a dead 0:00 player
 const recordingError = ref(false)
+const transcribing = ref(false)
+
+const transcriptHint = computed(() => {
+  const status = callLog.value?.data?.transcription_status
+  if (status === 'Failed')
+    return (
+      callLog.value?.data?.transcription_error ||
+      __('The last attempt failed. Try again.')
+    )
+  if (status === 'Pending' || status === 'In Progress')
+    return __('Transcribing — this takes a moment.')
+  return __('Not transcribed yet.')
+})
+
+async function transcribeNow() {
+  transcribing.value = true
+  try {
+    await call('crm.telephony.transcription.transcribe_now', {
+      call_log: callLog.value.data.name,
+    })
+    // the work happens in a background job, so say it was accepted rather than
+    // leaving the panel looking untouched until someone reopens it
+    callLog.value.data.transcription_status = 'Pending'
+    toast.success(__('Transcription queued'))
+  } catch (e) {
+    toast.error(e.messages?.[0] || __('Could not start the transcription'))
+  } finally {
+    transcribing.value = false
+  }
+}
 
 function showNote(name) {
   showModal({
