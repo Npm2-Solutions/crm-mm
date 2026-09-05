@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:script_name",
+ "creation": "2026-09-05 12:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "script_name",
+  "enabled",
+  "column_break_head",
+  "service",
+  "idx_hint",
+  "description",
+  "steps_section",
+  "steps"
+ ],
+ "fields": [
+  {
+   "fieldname": "script_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Script Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Offer this script first when the call is about that service. Empty means it is offered on every call.",
+   "fieldname": "service",
+   "fieldtype": "Link",
+   "label": "For Service",
+   "options": "CRM Service"
+  },
+  {
+   "default": "0",
+   "description": "Scripts are offered in this order, lowest first.",
+   "fieldname": "idx_hint",
+   "fieldtype": "Int",
+   "label": "Order"
+  },
+  {
+   "description": "When to reach for this script, in one line.",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "steps_section",
+   "fieldtype": "Section Break",
+   "label": "Steps"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "CRM Call Script Step"
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-05 12:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Call Script",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 0,
+   "print": 0,
+   "read": 1,
+   "report": 0,
+   "role": "Sales User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

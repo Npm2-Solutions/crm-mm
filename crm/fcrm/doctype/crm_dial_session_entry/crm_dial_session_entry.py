@@ -22,6 +22,8 @@ class CRMDialSessionEntry(Document):
 		number: DF.Data
 		reference_doctype: DF.Link | None
 		reference_name: DF.DynamicLink | None
+		script: DF.Link | None
+		script_steps_done: DF.JSON | None
 		status: DF.Literal["Pending", "Done", "Skipped"]
 	# end: auto-generated types
 
