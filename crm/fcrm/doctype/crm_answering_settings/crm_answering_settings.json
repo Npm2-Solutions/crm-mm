@@ -1,0 +1,223 @@
+{
+ "actions": [],
+ "creation": "2026-09-05 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "mode_section",
+  "enabled",
+  "answer_mode",
+  "column_break_mode",
+  "use_working_hours",
+  "promise_section",
+  "callback_hours",
+  "dedupe_window_hours",
+  "column_break_promise",
+  "max_callback_attempts",
+  "retry_after_hours",
+  "greeting_section",
+  "greeting_source",
+  "greeting_text",
+  "greeting_audio",
+  "after_hours_section",
+  "after_hours_greeting_text",
+  "after_hours_greeting_audio",
+  "voice_section",
+  "language",
+  "column_break_voice",
+  "voice"
+ ],
+ "fields": [
+  {
+   "fieldname": "mode_section",
+   "fieldtype": "Section Break",
+   "label": "Answer Mode"
+  },
+  {
+   "default": "0",
+   "description": "Answer incoming calls with a recorded announcement and queue a callback instead of ringing an agent.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Answering Service"
+  },
+  {
+   "default": "Always Answering Service",
+   "depends_on": "enabled",
+   "description": "An explicit choice, never inferred from who happens to be online. \"Always Answering Service\" sends every incoming call to the announcement. \"Ring Agents First\" keeps the current behaviour and falls back to the announcement only when nobody picks up.",
+   "fieldname": "answer_mode",
+   "fieldtype": "Select",
+   "label": "Incoming Calls",
+   "options": "Always Answering Service\nRing Agents First"
+  },
+  {
+   "fieldname": "column_break_mode",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "description": "Play a different announcement outside working hours, and count the promised callback time in working hours only.",
+   "fieldname": "use_working_hours",
+   "fieldtype": "Check",
+   "label": "Respect Working Hours"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "promise_section",
+   "fieldtype": "Section Break",
+   "label": "Callback Promise"
+  },
+  {
+   "default": "3",
+   "description": "How soon the caller is promised a callback. Counted in working hours when \"Respect Working Hours\" is on, so an evening call is due the next morning.",
+   "fieldname": "callback_hours",
+   "fieldtype": "Int",
+   "label": "Call Back Within (hours)"
+  },
+  {
+   "default": "4",
+   "description": "A caller who rings again inside this window joins the callback already queued instead of creating a second one. Set to 0 to queue every call separately.",
+   "fieldname": "dedupe_window_hours",
+   "fieldtype": "Int",
+   "label": "Merge Repeat Calls Within (hours)"
+  },
+  {
+   "fieldname": "column_break_promise",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "3",
+   "description": "How many times a caller is tried before the callback is closed as unreachable. Set to 0 for no limit.",
+   "fieldname": "max_callback_attempts",
+   "fieldtype": "Int",
+   "label": "Maximum Attempts"
+  },
+  {
+   "default": "3",
+   "description": "After an unanswered attempt, the callback comes back around after this many working hours.",
+   "fieldname": "retry_after_hours",
+   "fieldtype": "Int",
+   "label": "Retry After (hours)"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "greeting_section",
+   "fieldtype": "Section Break",
+   "label": "Announcement"
+  },
+  {
+   "default": "Text to Speech",
+   "description": "A recorded file sounds better to callers; text to speech is there to get started without a studio recording.",
+   "fieldname": "greeting_source",
+   "fieldtype": "Select",
+   "label": "Announcement Source",
+   "options": "Text to Speech\nAudio File"
+  },
+  {
+   "depends_on": "eval:doc.greeting_source=='Text to Speech'",
+   "description": "Played during working hours. <code>{hours}</code> becomes the promised hours and <code>{time}</code> the time the caller will be called back by. Left empty, a default sentence is used.",
+   "fieldname": "greeting_text",
+   "fieldtype": "Small Text",
+   "label": "Announcement (open)"
+  },
+  {
+   "depends_on": "eval:doc.greeting_source=='Audio File'",
+   "description": "Audio played during working hours. Must be a public MP3 or WAV reachable by the telephony provider.",
+   "fieldname": "greeting_audio",
+   "fieldtype": "Attach",
+   "label": "Announcement Audio (open)"
+  },
+  {
+   "depends_on": "eval:doc.enabled && doc.use_working_hours",
+   "fieldname": "after_hours_section",
+   "fieldtype": "Section Break",
+   "label": "Outside Working Hours"
+  },
+  {
+   "depends_on": "eval:doc.greeting_source=='Text to Speech'",
+   "description": "Played when the practice is closed. Supports the same <code>{hours}</code> and <code>{time}</code> placeholders.",
+   "fieldname": "after_hours_greeting_text",
+   "fieldtype": "Small Text",
+   "label": "Announcement (closed)"
+  },
+  {
+   "depends_on": "eval:doc.greeting_source=='Audio File'",
+   "fieldname": "after_hours_greeting_audio",
+   "fieldtype": "Attach",
+   "label": "Announcement Audio (closed)"
+  },
+  {
+   "depends_on": "eval:doc.enabled && doc.greeting_source=='Text to Speech'",
+   "fieldname": "voice_section",
+   "fieldtype": "Section Break",
+   "label": "Voice"
+  },
+  {
+   "default": "it-IT",
+   "description": "Language tag the provider speaks the announcement in, for example it-IT or en-GB.",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language"
+  },
+  {
+   "fieldname": "column_break_voice",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Polly.Bianca",
+   "fieldname": "voice",
+   "fieldtype": "Select",
+   "label": "Voice",
+   "options": "alice\nman\nwoman\nPolly.Bianca\nPolly.Carla\nPolly.Giorgio"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-05 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Answering Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 0,
+   "print": 0,
+   "read": 1,
+   "report": 0,
+   "role": "Sales User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

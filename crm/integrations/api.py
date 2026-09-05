@@ -41,6 +41,9 @@ def is_call_integration_enabled():
 			"exotel": bool(frappe.db.get_single_value("CRM Exotel Settings", "enabled")),
 		},
 		"default_calling_medium": get_user_default_calling_medium(),
+		# deliberately outside "integrations": the answering service answers calls, it
+		# does not place them, so it must not make the call buttons appear on its own
+		"answering_service": bool(frappe.db.get_single_value("CRM Answering Settings", "enabled")),
 	}
 
 
