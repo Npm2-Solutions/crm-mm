@@ -16,7 +16,10 @@
   </LayoutHeader>
 
   <div class="flex-1 overflow-y-auto">
-    <div class="mx-auto w-full max-w-xl px-3 py-6 sm:px-5">
+    <div
+      class="mx-auto w-full px-3 py-6 sm:px-5"
+      :class="session.data ? 'max-w-5xl' : 'max-w-xl'"
+    >
       <!-- no active session: build one -->
       <div
         v-if="!session.data && !session.loading"
@@ -91,147 +94,210 @@
 
       <!-- active session -->
       <template v-else-if="session.data">
-        <div class="mb-4 flex items-center justify-between">
-          <span class="text-lg font-semibold text-ink-gray-9">
-            {{ session.data.title }}
-          </span>
-          <span class="text-sm text-ink-gray-5">
-            {{ session.data.done }} / {{ session.data.total }}
-          </span>
-        </div>
-        <div
-          class="mb-6 h-1.5 w-full overflow-hidden rounded bg-surface-gray-2"
-        >
-          <div
-            class="h-full rounded bg-surface-gray-7 transition-all"
-            :style="{
-              width: (session.data.done / session.data.total) * 100 + '%',
-            }"
-          />
-        </div>
-
-        <!-- current contact -->
-        <div
-          v-if="current"
-          class="rounded-lg border border-outline-gray-2 bg-surface-base p-4"
-        >
-          <div class="flex items-center justify-between">
-            <div class="min-w-0">
-              <router-link
-                v-if="recordRoute(current)"
-                :to="recordRoute(current)"
-                class="text-lg font-medium text-ink-gray-9 hover:underline"
-              >
-                {{ current.display_name }}
-              </router-link>
-              <span v-else class="text-lg font-medium text-ink-gray-9">
-                {{ current.display_name }}
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div class="min-w-0">
+            <div class="mb-4 flex items-center justify-between">
+              <span class="text-lg font-semibold text-ink-gray-9">
+                {{ session.data.title }}
               </span>
-              <div class="text-sm text-ink-gray-5">{{ current.number }}</div>
+              <span class="text-sm text-ink-gray-5">
+                {{ session.data.done }} / {{ session.data.total }}
+              </span>
+            </div>
+            <div
+              class="mb-6 h-1.5 w-full overflow-hidden rounded bg-surface-gray-2"
+            >
               <div
-                v-if="current.call_log && !current.reference_name"
-                class="mt-1 text-p-sm text-ink-gray-5"
-              >
-                {{ __('No lead or deal matched this number') }}
+                class="h-full rounded bg-surface-gray-7 transition-all"
+                :style="{
+                  width: (session.data.done / session.data.total) * 100 + '%',
+                }"
+              />
+            </div>
+
+            <!-- current contact -->
+            <div
+              v-if="current"
+              class="rounded-lg border border-outline-gray-2 bg-surface-base p-4"
+            >
+              <div class="flex items-center justify-between">
+                <div class="min-w-0">
+                  <router-link
+                    v-if="recordRoute(current)"
+                    :to="recordRoute(current)"
+                    class="text-lg font-medium text-ink-gray-9 hover:underline"
+                  >
+                    {{ current.display_name }}
+                  </router-link>
+                  <span v-else class="text-lg font-medium text-ink-gray-9">
+                    {{ current.display_name }}
+                  </span>
+                  <div class="text-sm text-ink-gray-5">
+                    {{ current.number }}
+                  </div>
+                  <div
+                    v-if="current.call_log && !current.reference_name"
+                    class="mt-1 text-p-sm text-ink-gray-5"
+                  >
+                    {{ __('No lead or deal matched this number') }}
+                  </div>
+                </div>
+                <Button
+                  variant="solid"
+                  theme="green"
+                  :label="__('Call')"
+                  :disabled="!callEnabled"
+                  @click="makeCall(current.number)"
+                >
+                  <template #prefix>
+                    <PhoneIcon class="h-4 w-4" />
+                  </template>
+                </Button>
+              </div>
+
+              <div class="mt-4 border-t border-outline-gray-1 pt-3">
+                <div class="mb-2 text-xs text-ink-gray-5">
+                  {{ __('Outcome') }}
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <Button
+                    v-for="d in session.data.dispositions"
+                    :key="d"
+                    :variant="disposition == d ? 'solid' : 'outline'"
+                    :label="__(d)"
+                    @click="disposition = disposition == d ? '' : d"
+                  />
+                </div>
+                <p
+                  v-if="isCallbackSession && outcomeHint"
+                  class="mt-2 text-p-sm text-ink-gray-5"
+                >
+                  {{ outcomeHint }}
+                </p>
+                <FormControl
+                  v-model="note"
+                  type="textarea"
+                  class="mt-3"
+                  :placeholder="__('Call note (optional)')"
+                />
+                <div class="mt-3 flex justify-between">
+                  <Button :label="__('Skip')" @click="completeCurrent(true)" />
+                  <Button
+                    variant="solid"
+                    :label="__('Save & next')"
+                    :loading="completing"
+                    @click="completeCurrent(false)"
+                  />
+                </div>
               </div>
             </div>
-            <Button
-              variant="solid"
-              theme="green"
-              :label="__('Call')"
-              :disabled="!callEnabled"
-              @click="makeCall(current.number)"
-            >
-              <template #prefix>
-                <PhoneIcon class="h-4 w-4" />
-              </template>
-            </Button>
-          </div>
 
-          <div class="mt-4 border-t border-outline-gray-1 pt-3">
-            <div class="mb-2 text-xs text-ink-gray-5">{{ __('Outcome') }}</div>
-            <div class="flex flex-wrap gap-2">
-              <Button
-                v-for="d in session.data.dispositions"
-                :key="d"
-                :variant="disposition == d ? 'solid' : 'outline'"
-                :label="__(d)"
-                @click="disposition = disposition == d ? '' : d"
-              />
-            </div>
-            <p
-              v-if="isCallbackSession && outcomeHint"
-              class="mt-2 text-p-sm text-ink-gray-5"
-            >
-              {{ outcomeHint }}
-            </p>
-            <FormControl
-              v-model="note"
-              type="textarea"
-              class="mt-3"
-              :placeholder="__('Call note (optional)')"
-            />
-            <div class="mt-3 flex justify-between">
-              <Button :label="__('Skip')" @click="completeCurrent(true)" />
-              <Button
-                variant="solid"
-                :label="__('Save & next')"
-                :loading="completing"
-                @click="completeCurrent(false)"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- queue done -->
-        <div
-          v-else
-          class="flex flex-col items-center gap-2 rounded-lg border border-outline-gray-2 bg-surface-base p-8 text-ink-gray-5"
-        >
-          <span class="text-lg font-medium text-ink-gray-9">
-            {{ __('Queue completed!') }}
-          </span>
-          <span class="text-sm">{{
-            __('Every record has been handled.')
-          }}</span>
-          <Button
-            class="mt-2"
-            variant="solid"
-            :label="__('Close session')"
-            @click="endSession(false)"
-          />
-        </div>
-
-        <!-- upcoming -->
-        <div v-if="upcoming.length" class="mt-6">
-          <div class="mb-2 text-sm font-medium text-ink-gray-7">
-            {{ __('Up next') }}
-          </div>
-          <div
-            class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
-          >
+            <!-- queue done -->
             <div
-              v-for="e in upcoming"
-              :key="e.idx"
-              class="flex items-center justify-between px-3 py-2 text-sm"
+              v-else
+              class="flex flex-col items-center gap-2 rounded-lg border border-outline-gray-2 bg-surface-base p-8 text-ink-gray-5"
             >
-              <span class="truncate text-ink-gray-8">{{ e.display_name }}</span>
-              <span class="text-ink-gray-4">{{ e.number }}</span>
+              <span class="text-lg font-medium text-ink-gray-9">
+                {{ __('Queue completed!') }}
+              </span>
+              <span class="text-sm">{{
+                __('Every record has been handled.')
+              }}</span>
+              <Button
+                class="mt-2"
+                variant="solid"
+                :label="__('Close session')"
+                @click="endSession(false)"
+              />
+            </div>
+
+            <!-- upcoming -->
+            <div v-if="upcoming.length" class="mt-6">
+              <div class="mb-2 text-sm font-medium text-ink-gray-7">
+                {{ __('Up next') }}
+              </div>
+              <div
+                class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+              >
+                <div
+                  v-for="e in upcoming"
+                  :key="e.idx"
+                  class="flex items-center justify-between px-3 py-2 text-sm"
+                >
+                  <span class="truncate text-ink-gray-8">{{
+                    e.display_name
+                  }}</span>
+                  <span class="text-ink-gray-4">{{ e.number }}</span>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- everything the agent wants in view while the line is open -->
+          <aside
+            v-if="current"
+            class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 bg-surface-base p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto"
+          >
+            <div class="flex gap-1">
+              <Button
+                class="flex-1"
+                :variant="panel === 'contact' ? 'subtle' : 'ghost'"
+                :label="__('Contact')"
+                @click="panel = 'contact'"
+              />
+              <Button
+                class="flex-1"
+                :variant="panel === 'script' ? 'subtle' : 'ghost'"
+                :label="__('Script')"
+                @click="panel = 'script'"
+              />
+            </div>
+
+            <div v-if="context.loading" class="flex justify-center py-10">
+              <LoadingIndicator class="size-5" />
+            </div>
+            <template v-else>
+              <DialerContactPanel
+                v-if="panel === 'contact'"
+                :context="context.data"
+                @book="showBooking = true"
+              />
+              <DialerScriptPanel
+                v-else
+                :context="context.data"
+                @pick="pickScript"
+                @toggle="saveSteps"
+              />
+            </template>
+          </aside>
         </div>
       </template>
     </div>
   </div>
+
+  <QuickAppointmentDialog
+    v-model="showBooking"
+    :context="context.data"
+    @booked="context.reload()"
+  />
 </template>
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
+import DialerContactPanel from '@/components/Dialer/DialerContactPanel.vue'
+import DialerScriptPanel from '@/components/Dialer/DialerScriptPanel.vue'
+import QuickAppointmentDialog from '@/components/Dialer/QuickAppointmentDialog.vue'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { answeringEnabled, callEnabled } from '@/composables/telephony'
-import { createResource, Breadcrumbs, FormControl, toast } from 'frappe-ui'
+import {
+  createResource,
+  Breadcrumbs,
+  FormControl,
+  LoadingIndicator,
+  toast,
+} from 'frappe-ui'
 import { ref, reactive, computed, watch } from 'vue'
 
 const { makeCall } = globalStore()
@@ -245,6 +311,8 @@ const form = reactive({
   includeUpcoming: false,
 })
 const sourceTouched = ref(false)
+const panel = ref('contact')
+const showBooking = ref(false)
 const creating = ref(false)
 const createError = ref('')
 const completing = ref(false)
@@ -261,6 +329,14 @@ const summary = createResource({
   url: 'crm.api.dialer.get_callback_summary',
   cache: 'crm-callback-summary',
   auto: true,
+})
+
+const context = createResource({
+  url: 'crm.api.dialer.get_entry_context',
+  makeParams: () => ({
+    session: session.data?.name,
+    idx: current.value?.idx,
+  }),
 })
 
 // a practice running the answering service works its callbacks far more often
@@ -309,6 +385,47 @@ const statusSelectOptions = computed(() => {
     ...(statuses || []).map((s) => ({ label: s.name, value: s.name })),
   ]
 })
+
+watch(
+  () => (session.data ? current.value?.idx : null),
+  (idx) => {
+    if (idx) context.fetch()
+  },
+  { immediate: true },
+)
+
+function pickScript(script) {
+  // '' clears the script; null would read as "not provided" and change nothing
+  updateScript({ script: script || '' })
+}
+
+function saveSteps(stepsDone) {
+  updateScript({ steps_done: stepsDone })
+}
+
+function updateScript(payload) {
+  if (!current.value) return
+  const idx = current.value.idx
+  createResource({
+    url: 'crm.api.dialer.update_entry_script',
+    params: { session: session.data.name, idx, ...payload },
+    auto: true,
+    onSuccess: (data) => {
+      session.data = data
+      const entry = data.entries.find((e) => e.idx === idx)
+      if (entry && context.data) {
+        // patch what changed instead of refetching: a checkbox should feel instant
+        context.data = {
+          ...context.data,
+          script: entry.script,
+          steps_done: entry.steps_done,
+        }
+      }
+    },
+    onError: (e) =>
+      toast.error(e.messages?.[0] || __('Could not update the script')),
+  })
+}
 
 function recordRoute(entry) {
   // a callback whose number matched nothing has no record to open
