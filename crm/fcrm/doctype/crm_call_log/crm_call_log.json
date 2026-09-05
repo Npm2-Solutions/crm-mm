@@ -28,7 +28,14 @@
   "end_time",
   "note",
   "section_break_kebz",
-  "links"
+  "links",
+  "callback_section",
+  "callback_status",
+  "callback_due",
+  "callback_attempts",
+  "column_break_callback",
+  "callback_by",
+  "callback_completed_on"
  ],
  "fields": [
   {
@@ -157,6 +164,47 @@
   {
    "fieldname": "section_break_gyqe",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "callback_section",
+   "fieldtype": "Section Break",
+   "label": "Callback"
+  },
+  {
+   "fieldname": "callback_status",
+   "fieldtype": "Select",
+   "label": "Callback Status",
+   "options": "\nPending\nDone\nCancelled",
+   "search_index": 1,
+   "description": "Set when the answering service takes a call and a callback is owed."
+  },
+  {
+   "fieldname": "callback_due",
+   "fieldtype": "Datetime",
+   "label": "Call Back By",
+   "search_index": 1,
+   "description": "The moment promised to the caller, counted in working hours."
+  },
+  {
+   "fieldname": "callback_attempts",
+   "fieldtype": "Int",
+   "label": "Attempts",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_callback",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "callback_by",
+   "fieldtype": "Link",
+   "label": "Called Back By",
+   "options": "User"
+  },
+  {
+   "fieldname": "callback_completed_on",
+   "fieldtype": "Datetime",
+   "label": "Called Back On"
   }
  ],
  "index_web_pages_for_search": 1,

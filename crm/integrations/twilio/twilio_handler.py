@@ -6,6 +6,8 @@ from twilio.jwt.access_token.grants import VoiceGrant
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import Dial, VoiceResponse
 
+from crm.telephony import answering, callbacks
+
 from .utils import get_public_url, merge_dicts
 
 
@@ -124,22 +126,63 @@ class Twilio:
 		return client
 
 
+class AnsweringService:
+	"""The announcement a caller hears when nobody is going to pick up.
+
+	Plays a recording when one is configured and speaks the text otherwise, then
+	hangs up. It never records the caller: the practice this serves works from the
+	number alone, so there is no voicemail to store, transcribe or keep.
+	"""
+
+	def __init__(self, config=None):
+		self.config = config if config is not None else answering.settings()
+
+	def respond(self, due=None) -> VoiceResponse:
+		resp = VoiceResponse()
+		open_now = answering.is_open(self.config)
+
+		if audio_url := answering.greeting_audio_url(self.config, open_now):
+			resp.play(audio_url)
+		else:
+			resp.say(
+				answering.render_greeting(self.config, open_now, due),
+				language=self.config.language or "it-IT",
+				voice=self.config.voice or "alice",
+			)
+
+		resp.hangup()
+		return resp
+
+
 class IncomingCall:
-	def __init__(self, from_number, to_number, meta=None):
+	def __init__(self, from_number, to_number, meta=None, call_log=None):
 		self.from_number = from_number
 		self.to_number = to_number
 		self.meta = meta
+		self.call_log = call_log
 
 	def process(self):
-		"""Process the incoming call
-		* Figure out who is going to pick the call (call attender)
-		* Check call attender settings and forward the call to Phone
+		"""Decide what an incoming call hears.
+
+		Whether the answering service takes the call is read off ``answer_mode``,
+		never inferred from who happens to be logged in. A practice needs the same
+		number to behave the same way at 9am and at 9pm, and "somebody left a tab
+		open" is not an explanation it can give its patients.
 		"""
+		config = answering.settings()
+
+		if answering.takes_every_call(config):
+			return self.answer_with_service(config)
+
 		twilio = Twilio.connect()
 		owners = get_twilio_number_owners(self.to_number)
 		attender = get_the_call_attender(owners, self.from_number)
 
 		if not attender:
+			# "Ring Agents First" means exactly that — the announcement is the
+			# fallback, not the surprise
+			if answering.rings_agents_first(config):
+				return self.answer_with_service(config)
 			resp = VoiceResponse()
 			resp.say(_("Agent is unavailable to take the call, please call after some time."))
 			return resp
@@ -148,6 +191,29 @@ class IncomingCall:
 			return twilio.generate_twilio_dial_response(self.from_number, attender["mobile_no"])
 		else:
 			return twilio.generate_twilio_client_response(twilio.safe_identity(attender["name"]))
+
+	def answer_with_service(self, config):
+		"""Queue the callback, then say so.
+
+		A failure to queue must not cost the caller the announcement: they would
+		hear dead air and ring again, which is the one outcome worse than losing
+		the queue entry.
+		"""
+		due = None
+		if self.call_log:
+			try:
+				carrier = callbacks.queue_callback(self.call_log, config)
+				due = frappe.db.get_value("CRM Call Log", carrier, "callback_due")
+			except Exception:
+				# the call log itself is already committed, so this only discards the
+				# half-written callback — and leaves the session clean enough to log
+				frappe.db.rollback()
+				frappe.log_error(frappe.get_traceback(), "CRM Answering Service: failed to queue callback")
+				due = answering.callback_due(config)
+		else:
+			due = answering.callback_due(config)
+
+		return AnsweringService(config).respond(due)
 
 
 def get_twilio_number_owners(phone_number):
@@ -251,7 +317,9 @@ class TwilioCallDetails:
 			caller = self.call_info.get("Caller")
 			identity = caller.replace("client:", "").strip()
 			caller = Twilio.emailid_from_identity(identity) if identity else ""
-		else:
+		elif not answering.takes_every_call():
+			# with the announcement answering every call there is no attender to
+			# find, and guessing one would credit an agent with a call they never took
 			owners = get_twilio_number_owners(to_number)
 			attender = get_the_call_attender(owners, from_number)
 			receiver = attender["name"] if attender else ""

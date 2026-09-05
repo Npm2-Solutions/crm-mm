@@ -92,14 +92,17 @@ def twilio_incoming_call_handler(**kwargs):
 
 	call_details = TwilioCallDetails(args)
 	try:
-		create_call_log(call_details)
+		call_log = create_call_log(call_details)
 	except Exception:
 		frappe.db.rollback()
 		frappe.log_error(title="Error while creating Twilio call log")
 		frappe.db.commit()
 		return Response(_call_failed_response().to_xml(), mimetype="text/xml")
 
-	resp = IncomingCall(args.From, args.To).process()
+	# the log goes in so the answering service can hang the callback off it and
+	# tell the caller the time it was actually promised for
+	resp = IncomingCall(args.From, args.To, call_log=call_log).process()
+	frappe.db.commit()
 	return Response(resp.to_xml(), mimetype="text/xml")
 
 
