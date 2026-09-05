@@ -1,7 +1,9 @@
 <template>
   <LayoutHeader>
     <template #left-header>
-      <Breadcrumbs :items="[{ label: __('Dialer'), route: { name: 'Dialer' } }]" />
+      <Breadcrumbs
+        :items="[{ label: __('Dialer'), route: { name: 'Dialer' } }]"
+      />
     </template>
     <template #right-header>
       <Button
@@ -15,7 +17,7 @@
 
   <div class="flex-1 overflow-y-auto">
     <div class="mx-auto w-full max-w-xl px-3 py-6 sm:px-5">
-      <!-- no active session: create one -->
+      <!-- no active session: build one -->
       <div
         v-if="!session.data && !session.loading"
         class="rounded-lg border border-outline-gray-2 bg-surface-base p-4"
@@ -23,22 +25,55 @@
         <div class="mb-3 text-lg font-semibold text-ink-gray-9">
           {{ __('Start a dial session') }}
         </div>
+
         <div class="flex flex-col gap-3">
           <FormControl
-            v-model="form.doctype"
+            v-model="form.source"
             type="select"
-            :label="__('Call')"
-            :options="[
-              { label: __('Leads'), value: 'CRM Lead' },
-              { label: __('Deals'), value: 'CRM Deal' },
-            ]"
+            :label="__('Build queue from')"
+            :options="sourceOptions"
+            @update:modelValue="sourceTouched = true"
           />
-          <FormControl
-            v-model="form.status"
-            type="select"
-            :label="__('With status')"
-            :options="statusSelectOptions"
-          />
+
+          <!-- callbacks the answering service promised -->
+          <template v-if="isCallbackRound">
+            <div
+              class="flex items-center justify-between rounded-md bg-surface-gray-2 px-3 py-2"
+            >
+              <div class="flex flex-col">
+                <span class="text-base-medium text-ink-gray-8">
+                  {{ __('{0} due now', [summary.data?.due ?? 0]) }}
+                </span>
+                <span class="text-p-sm text-ink-gray-6">
+                  {{ __('{0} waiting in total', [summary.data?.pending ?? 0]) }}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                icon="refresh-cw"
+                :loading="summary.loading"
+                :tooltip="__('Refresh')"
+                @click="summary.reload()"
+              />
+            </div>
+
+            <FormControl
+              v-model="form.includeUpcoming"
+              type="checkbox"
+              :label="__('Include callbacks that are not due yet')"
+            />
+          </template>
+
+          <!-- the original lead/deal queue -->
+          <template v-else>
+            <FormControl
+              v-model="form.status"
+              type="select"
+              :label="__('With status')"
+              :options="statusSelectOptions"
+            />
+          </template>
+
           <FormControl
             v-model="form.limit"
             type="number"
@@ -64,7 +99,9 @@
             {{ session.data.done }} / {{ session.data.total }}
           </span>
         </div>
-        <div class="mb-6 h-1.5 w-full overflow-hidden rounded bg-surface-gray-2">
+        <div
+          class="mb-6 h-1.5 w-full overflow-hidden rounded bg-surface-gray-2"
+        >
           <div
             class="h-full rounded bg-surface-gray-7 transition-all"
             :style="{
@@ -79,14 +116,24 @@
           class="rounded-lg border border-outline-gray-2 bg-surface-base p-4"
         >
           <div class="flex items-center justify-between">
-            <div>
+            <div class="min-w-0">
               <router-link
+                v-if="recordRoute(current)"
                 :to="recordRoute(current)"
                 class="text-lg font-medium text-ink-gray-9 hover:underline"
               >
                 {{ current.display_name }}
               </router-link>
+              <span v-else class="text-lg font-medium text-ink-gray-9">
+                {{ current.display_name }}
+              </span>
               <div class="text-sm text-ink-gray-5">{{ current.number }}</div>
+              <div
+                v-if="current.call_log && !current.reference_name"
+                class="mt-1 text-p-sm text-ink-gray-5"
+              >
+                {{ __('No lead or deal matched this number') }}
+              </div>
             </div>
             <Button
               variant="solid"
@@ -112,6 +159,12 @@
                 @click="disposition = disposition == d ? '' : d"
               />
             </div>
+            <p
+              v-if="isCallbackSession && outcomeHint"
+              class="mt-2 text-p-sm text-ink-gray-5"
+            >
+              {{ outcomeHint }}
+            </p>
             <FormControl
               v-model="note"
               type="textarea"
@@ -138,7 +191,9 @@
           <span class="text-lg font-medium text-ink-gray-9">
             {{ __('Queue completed!') }}
           </span>
-          <span class="text-sm">{{ __('Every record has been handled.') }}</span>
+          <span class="text-sm">{{
+            __('Every record has been handled.')
+          }}</span>
           <Button
             class="mt-2"
             variant="solid"
@@ -175,14 +230,21 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
-import { callEnabled } from '@/composables/telephony'
+import { answeringEnabled, callEnabled } from '@/composables/telephony'
 import { createResource, Breadcrumbs, FormControl, toast } from 'frappe-ui'
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 
 const { makeCall } = globalStore()
 const { leadStatuses, dealStatuses } = statusesStore()
 
-const form = reactive({ doctype: 'CRM Lead', status: '', limit: 20 })
+const form = reactive({
+  source: 'Records',
+  doctype: 'CRM Lead',
+  status: '',
+  limit: 20,
+  includeUpcoming: false,
+})
+const sourceTouched = ref(false)
 const creating = ref(false)
 const createError = ref('')
 const completing = ref(false)
@@ -195,6 +257,31 @@ const session = createResource({
   auto: true,
 })
 
+const summary = createResource({
+  url: 'crm.api.dialer.get_callback_summary',
+  cache: 'crm-callback-summary',
+  auto: true,
+})
+
+// a practice running the answering service works its callbacks far more often
+// than it cold-calls a list, so that is the round it lands on — until the agent
+// says otherwise, at which point their choice stands. The flag is only ever set
+// from the select's own event, so this default never counts as a choice.
+function preferCallbacks() {
+  if (answeringEnabled.value && !sourceTouched.value) form.source = 'Callbacks'
+}
+preferCallbacks()
+watch(answeringEnabled, preferCallbacks)
+
+const sourceOptions = [
+  { label: __('Callbacks'), value: 'Callbacks' },
+  { label: __('Leads'), value: 'CRM Lead' },
+  { label: __('Deals'), value: 'CRM Deal' },
+]
+
+const isCallbackRound = computed(() => form.source === 'Callbacks')
+const isCallbackSession = computed(() => session.data?.source === 'Callbacks')
+
 const current = computed(() => session.data?.current)
 const upcoming = computed(
   () =>
@@ -203,9 +290,20 @@ const upcoming = computed(
       .slice(0, 5) || [],
 )
 
+const outcomeHint = computed(() => {
+  const d = disposition.value
+  if (['No Answer', 'Voicemail'].includes(d))
+    return __('The callback stays queued and comes back around later.')
+  if (d === 'Callback') return __('The callback is pushed to a later round.')
+  if (d === 'Wrong Number')
+    return __('The callback is closed — nobody to call.')
+  if (d) return __('The callback is marked as done.')
+  return ''
+})
+
 const statusSelectOptions = computed(() => {
   const statuses =
-    form.doctype == 'CRM Lead' ? leadStatuses.data : dealStatuses.data
+    form.source == 'CRM Lead' ? leadStatuses.data : dealStatuses.data
   return [
     { label: __('Any'), value: '' },
     ...(statuses || []).map((s) => ({ label: s.name, value: s.name })),
@@ -213,6 +311,8 @@ const statusSelectOptions = computed(() => {
 })
 
 function recordRoute(entry) {
+  // a callback whose number matched nothing has no record to open
+  if (!entry.reference_doctype || !entry.reference_name) return null
   const name = entry.reference_doctype == 'CRM Lead' ? 'Lead' : 'Deal'
   const paramKey = name == 'Lead' ? 'leadId' : 'dealId'
   return { name, params: { [paramKey]: entry.reference_name } }
@@ -224,8 +324,10 @@ function createSession() {
   createResource({
     url: 'crm.api.dialer.create_session',
     params: {
-      doctype: form.doctype,
-      status: form.status || null,
+      source: isCallbackRound.value ? 'Callbacks' : 'Records',
+      doctype: isCallbackRound.value ? undefined : form.source,
+      status: isCallbackRound.value ? undefined : form.status || null,
+      include_upcoming: isCallbackRound.value ? form.includeUpcoming : false,
       limit: form.limit || 20,
     },
     auto: true,
@@ -274,6 +376,7 @@ function endSession(cancel) {
     onSuccess: () => {
       session.data = null
       session.reload()
+      summary.reload()
     },
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to end session')),
   })

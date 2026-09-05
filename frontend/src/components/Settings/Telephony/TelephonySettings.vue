@@ -159,6 +159,43 @@
         v-if="isManager()"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
       >
+        {{ __('Incoming Calls') }}
+      </div>
+
+      <div
+        v-if="isManager()"
+        class="flex items-center justify-between py-3 px-2"
+      >
+        <div class="flex flex-col gap-1">
+          <span
+            class="flex items-center gap-2 text-base-medium text-ink-gray-8"
+          >
+            {{ __('Answering Service') }}
+            <Badge
+              v-if="answeringEnabled"
+              :label="__('On')"
+              variant="subtle"
+              theme="green"
+            />
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'Answer incoming calls with an announcement and queue a callback, instead of ringing an agent.',
+              )
+            }}
+          </span>
+        </div>
+        <Button
+          :label="answeringEnabled ? __('Configure') : __('Set up')"
+          @click="emit('updateStep', 'answering-settings')"
+        />
+      </div>
+
+      <div
+        v-if="isManager()"
+        class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
+      >
         {{ __('Integrations') }}
       </div>
 
@@ -224,7 +261,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { useTelephony } from '@/composables/telephony'
+import { answeringEnabled, useTelephony } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
 import { validatePhone } from '@/utils'
