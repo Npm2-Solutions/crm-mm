@@ -42,6 +42,7 @@ class CRMAutomation(Document):
 			"Appointment Cancelled",
 			"Appointment No Show",
 			"Appointment Completed",
+			"Call Transcribed",
 			"Callback Requested",
 			"Callback Attempt Failed",
 			"Callback Completed",

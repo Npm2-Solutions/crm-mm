@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "creation": "2026-09-05 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "service_section",
+  "enabled",
+  "auto_transcribe",
+  "column_break_service",
+  "language",
+  "endpoint_section",
+  "base_url",
+  "model",
+  "column_break_endpoint",
+  "api_key",
+  "prompt",
+  "retention_section",
+  "transcript_retention_days",
+  "column_break_retention",
+  "recording_retention_days",
+  "limits_section",
+  "max_recording_mb",
+  "column_break_limits",
+  "request_timeout"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_section",
+   "fieldtype": "Section Break",
+   "label": "Transcription"
+  },
+  {
+   "default": "0",
+   "description": "Turn call recordings into text a person or an external agent can read.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Transcription"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "description": "Transcribe every recording as soon as the provider hands it over. With this off, transcription only runs when asked for on a call.",
+   "fieldname": "auto_transcribe",
+   "fieldtype": "Check",
+   "label": "Transcribe Automatically"
+  },
+  {
+   "fieldname": "column_break_service",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "it",
+   "depends_on": "enabled",
+   "description": "ISO code of the language spoken on calls, for example it. Leave empty to let the model detect it, which is slower and less accurate on short calls.",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language"
+  },
+  {
+   "depends_on": "enabled",
+   "description": "Any endpoint that speaks the OpenAI audio-transcription API: a Whisper server you host yourself, OpenAI, or Azure OpenAI. Only the URL and the key change.",
+   "fieldname": "endpoint_section",
+   "fieldtype": "Section Break",
+   "label": "Endpoint"
+  },
+  {
+   "description": "Base URL up to and including the version, e.g. https://api.openai.com/v1 or http://localhost:8000/v1 for a self-hosted Whisper.",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL"
+  },
+  {
+   "default": "whisper-1",
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "column_break_endpoint",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Leave empty for a self-hosted endpoint that needs no authentication.",
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "description": "Optional hint passed to the model: names, jargon or product terms it should spell correctly.",
+   "fieldname": "prompt",
+   "fieldtype": "Small Text",
+   "label": "Vocabulary Hint"
+  },
+  {
+   "depends_on": "enabled",
+   "description": "Call content is personal data, and for a health practice it is a special category. Keep it only as long as there is a reason to.",
+   "fieldname": "retention_section",
+   "fieldtype": "Section Break",
+   "label": "Retention"
+  },
+  {
+   "default": "365",
+   "description": "Transcripts older than this are deleted nightly. 0 keeps them forever.",
+   "fieldname": "transcript_retention_days",
+   "fieldtype": "Int",
+   "label": "Delete Transcripts After (days)"
+  },
+  {
+   "fieldname": "column_break_retention",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Nightly, drops the recording link from calls older than this so the audio is no longer reachable from the CRM. 0 keeps the links. Deleting the audio at the provider is a separate step.",
+   "fieldname": "recording_retention_days",
+   "fieldtype": "Int",
+   "label": "Forget Recording Links After (days)"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "enabled",
+   "fieldname": "limits_section",
+   "fieldtype": "Section Break",
+   "label": "Limits"
+  },
+  {
+   "default": "25",
+   "description": "Recordings larger than this are not sent. Guards both the provider's own limit and this server's memory.",
+   "fieldname": "max_recording_mb",
+   "fieldtype": "Int",
+   "label": "Maximum Recording Size (MB)"
+  },
+  {
+   "fieldname": "column_break_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "300",
+   "description": "Seconds to wait for the transcription to come back.",
+   "fieldname": "request_timeout",
+   "fieldtype": "Int",
+   "label": "Request Timeout (seconds)"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-05 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Transcription Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

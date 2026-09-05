@@ -73,6 +73,7 @@ EVENT_TO_TRIGGER = {
 	"appointment_cancelled": "Appointment Cancelled",
 	"appointment_no_show": "Appointment No Show",
 	"appointment_completed": "Appointment Completed",
+	"call_transcribed": "Call Transcribed",
 	"callback_requested": "Callback Requested",
 	"callback_attempt_failed": "Callback Attempt Failed",
 	"callback_completed": "Callback Completed",

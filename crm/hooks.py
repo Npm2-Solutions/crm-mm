@@ -197,6 +197,9 @@ doc_events = {
 		"after_insert": ["crm.automation.engine.on_tag_added"],
 		"on_trash": ["crm.automation.engine.on_tag_removed"],
 	},
+	"CRM Call Log": {
+		"on_update": ["crm.telephony.transcription.on_call_log_update"],
+	},
 	"CRM Task": {
 		"on_update": ["crm.automation.engine.on_task_updated"],
 	},
@@ -273,6 +276,7 @@ scheduler_events = {
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
 		"crm.fcrm.doctype.crm_view_settings.crm_view_settings.clear_old_versions",
 		"crm.telemetry.capture_feature_state",
+		"crm.telephony.transcription.expire_transcripts",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [

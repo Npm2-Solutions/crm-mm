@@ -35,7 +35,14 @@
   "callback_attempts",
   "column_break_callback",
   "callback_by",
-  "callback_completed_on"
+  "callback_completed_on",
+  "transcription_section",
+  "transcription_status",
+  "transcript",
+  "column_break_transcription",
+  "transcribed_on",
+  "transcript_language",
+  "transcription_error"
  ],
  "fields": [
   {
@@ -205,6 +212,48 @@
    "fieldname": "callback_completed_on",
    "fieldtype": "Datetime",
    "label": "Called Back On"
+  },
+  {
+   "fieldname": "transcription_section",
+   "fieldtype": "Section Break",
+   "label": "Transcript"
+  },
+  {
+   "fieldname": "transcription_status",
+   "fieldtype": "Select",
+   "label": "Transcription Status",
+   "options": "\nPending\nIn Progress\nCompleted\nFailed\nSkipped",
+   "search_index": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "transcript",
+   "fieldtype": "Long Text",
+   "label": "Transcript",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_transcription",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transcribed_on",
+   "fieldtype": "Datetime",
+   "label": "Transcribed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transcript_language",
+   "fieldtype": "Data",
+   "label": "Language",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transcription_error",
+   "fieldtype": "Small Text",
+   "label": "Transcription Error",
+   "read_only": 1,
+   "depends_on": "eval:doc.transcription_status=='Failed'"
   }
  ],
  "index_web_pages_for_search": 1,
