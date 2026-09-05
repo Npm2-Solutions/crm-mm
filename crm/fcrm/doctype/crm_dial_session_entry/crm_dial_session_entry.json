@@ -12,7 +12,9 @@
   "status",
   "disposition",
   "note",
-  "call_log"
+  "call_log",
+  "script",
+  "script_steps_done"
  ],
  "fields": [
   {
@@ -68,6 +70,19 @@
    "label": "Call Log",
    "options": "CRM Call Log",
    "description": "The incoming call this callback answers, when the entry came from the callback queue."
+  },
+  {
+   "fieldname": "script",
+   "fieldtype": "Link",
+   "label": "Call Script",
+   "options": "CRM Call Script",
+   "description": "The script the agent worked from on this call."
+  },
+  {
+   "fieldname": "script_steps_done",
+   "fieldtype": "JSON",
+   "label": "Steps Done",
+   "description": "Row names of the script steps ticked during the call."
   }
  ],
  "istable": 1,
