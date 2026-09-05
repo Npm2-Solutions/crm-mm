@@ -53,7 +53,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Trigger Event",
-   "options": "Lead Created\nDeal Created\nLead Status Changed\nDeal Status Changed\nBooking Created\nBooking Cancelled\nBooking No Show\nBooking Completed\nAppointment Created\nAppointment Rescheduled\nAppointment Cancelled\nAppointment No Show\nAppointment Completed\nIncoming SMS\nCustomer Replied\nEmail Opened\nTrigger Link Clicked\nTag Added\nTag Removed\nTask Completed\nNote Added\nDate Reminder\nInbound Webhook",
+   "options": "Lead Created\nDeal Created\nLead Status Changed\nDeal Status Changed\nBooking Created\nBooking Cancelled\nBooking No Show\nBooking Completed\nAppointment Created\nAppointment Rescheduled\nAppointment Cancelled\nAppointment No Show\nAppointment Completed\nCallback Requested\nCallback Attempt Failed\nCallback Completed\nIncoming SMS\nCustomer Replied\nEmail Opened\nTrigger Link Clicked\nTag Added\nTag Removed\nTask Completed\nNote Added\nDate Reminder\nInbound Webhook",
    "reqd": 1
   },
   {

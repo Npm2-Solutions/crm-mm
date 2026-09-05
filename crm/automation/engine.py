@@ -73,6 +73,9 @@ EVENT_TO_TRIGGER = {
 	"appointment_cancelled": "Appointment Cancelled",
 	"appointment_no_show": "Appointment No Show",
 	"appointment_completed": "Appointment Completed",
+	"callback_requested": "Callback Requested",
+	"callback_attempt_failed": "Callback Attempt Failed",
+	"callback_completed": "Callback Completed",
 	"sms_received": "Incoming SMS",
 	"reply_received": "Customer Replied",
 	"email_opened": "Email Opened",
@@ -193,7 +196,7 @@ def resolve_reference(event: str, doc) -> tuple[str, str] | None:
 	if doc.doctype in ("CRM SMS Message", "WhatsApp Message", "Communication"):
 		if doc.get("reference_doctype") in ("CRM Lead", "CRM Deal") and doc.get("reference_name"):
 			return doc.reference_doctype, doc.reference_name
-	if doc.doctype in ("CRM Task", "FCRM Note"):
+	if doc.doctype in ("CRM Task", "FCRM Note", "CRM Call Log"):
 		ref_dt = doc.get("reference_doctype")
 		ref_dn = doc.get("reference_docname")
 		if ref_dt in ("CRM Lead", "CRM Deal") and ref_dn:
