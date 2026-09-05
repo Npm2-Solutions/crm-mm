@@ -6,6 +6,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from werkzeug.wrappers import Response
 
 from crm.integrations.api import get_contact_by_phone_number
+from crm.telephony import transcription
 
 from .twilio_handler import IncomingCall, Twilio, TwilioCallDetails
 
@@ -182,6 +183,12 @@ def update_recording_info(**kwargs):
 	except Exception as exc:
 		frappe.log_error(title=_("Failed to capture Twilio recording"))
 		raise exc
+
+	# set_value bypasses document hooks, so the transcription is asked for here
+	# rather than from the CRM Call Log on_update handler
+	if transcription.transcribes_automatically():
+		transcription.request_transcription(call_sid)
+		frappe.db.commit()
 
 
 @frappe.whitelist(allow_guest=True)

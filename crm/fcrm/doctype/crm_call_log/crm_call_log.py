@@ -47,6 +47,11 @@ class CRMCallLog(Document):
 			"Queued",
 			"Canceled",
 		]
+		transcribed_on: DF.Datetime | None
+		transcript: DF.LongText | None
+		transcript_language: DF.Data | None
+		transcription_error: DF.SmallText | None
+		transcription_status: DF.Literal["", "Pending", "In Progress", "Completed", "Failed", "Skipped"]
 		telephony_medium: DF.Literal["", "Manual", "Twilio", "Exotel"]
 		to: DF.Data
 		type: DF.Literal["Incoming", "Outgoing"]

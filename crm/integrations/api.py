@@ -44,6 +44,7 @@ def is_call_integration_enabled():
 		# deliberately outside "integrations": the answering service answers calls, it
 		# does not place them, so it must not make the call buttons appear on its own
 		"answering_service": bool(frappe.db.get_single_value("CRM Answering Settings", "enabled")),
+		"transcription": bool(frappe.db.get_single_value("CRM Transcription Settings", "enabled")),
 	}
 
 
@@ -248,6 +249,34 @@ def _fetch_recording(url: str, auth, headers: dict):
 		return resp
 
 	frappe.throw(_("Too many redirects while fetching recording"), frappe.ValidationError)
+
+
+def download_recording(call_log, max_bytes: int | None = None) -> tuple[bytes, str]:
+	"""Fetch a recording through the same hardened path the in-browser player uses.
+
+	Returns the audio and its content type. ``max_bytes`` caps what is pulled into
+	memory: the size of a recording is decided by how long someone talked, so it is
+	not ours to trust, and every transcription provider has a ceiling of its own.
+	"""
+	if not call_log.recording_url:
+		frappe.throw(_("Recording URL not found"), frappe.DoesNotExistError)
+
+	auth = _get_recording_credentials(call_log.telephony_medium)
+	upstream = _fetch_recording(call_log.recording_url, auth, {})
+	try:
+		upstream.raise_for_status()
+		chunks, total = [], 0
+		for chunk in upstream.iter_content(chunk_size=64 * 1024):
+			total += len(chunk)
+			if max_bytes and total > max_bytes:
+				frappe.throw(_("Recording is larger than the configured limit"), frappe.ValidationError)
+			chunks.append(chunk)
+		return b"".join(chunks), upstream.headers.get("Content-Type") or "audio/mpeg"
+	finally:
+		upstream.close()
+		session = getattr(upstream, "_pinned_session", None)
+		if session is not None:
+			session.close()
 
 
 @frappe.whitelist()
