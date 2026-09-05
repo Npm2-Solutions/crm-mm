@@ -8,6 +8,7 @@
   "agent",
   "status",
   "column_break_head",
+  "source",
   "source_doctype",
   "title",
   "entries_section",
@@ -38,11 +39,19 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Records",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Records\nCallbacks",
+   "description": "Records: a queue built from leads or deals. Callbacks: people the answering service promised a call back to."
+  },
+  {
    "default": "CRM Lead",
    "fieldname": "source_doctype",
    "fieldtype": "Select",
    "label": "Source Doctype",
-   "options": "CRM Lead\nCRM Deal"
+   "options": "\nCRM Lead\nCRM Deal"
   },
   {
    "fieldname": "title",
