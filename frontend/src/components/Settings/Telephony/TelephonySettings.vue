@@ -194,6 +194,41 @@
 
       <div
         v-if="isManager()"
+        class="h-px border-t mx-2 border-outline-elevation-2"
+      />
+
+      <div
+        v-if="isManager()"
+        class="flex items-center justify-between py-3 px-2"
+      >
+        <div class="flex flex-col gap-1">
+          <span
+            class="flex items-center gap-2 text-base-medium text-ink-gray-8"
+          >
+            {{ __('Transcription') }}
+            <Badge
+              v-if="transcriptionEnabled"
+              :label="__('On')"
+              variant="subtle"
+              theme="green"
+            />
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'Turn call recordings into text a person or an AI agent can work with.',
+              )
+            }}
+          </span>
+        </div>
+        <Button
+          :label="transcriptionEnabled ? __('Configure') : __('Set up')"
+          @click="emit('updateStep', 'transcription-settings')"
+        />
+      </div>
+
+      <div
+        v-if="isManager()"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
       >
         {{ __('Integrations') }}
@@ -261,7 +296,11 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { answeringEnabled, useTelephony } from '@/composables/telephony'
+import {
+  answeringEnabled,
+  transcriptionEnabled,
+  useTelephony,
+} from '@/composables/telephony'
 import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
 import { validatePhone } from '@/utils'

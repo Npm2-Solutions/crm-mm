@@ -5,6 +5,7 @@ const integrations = ref({})
 export const defaultCallingMedium = ref('')
 export const callEnabled = ref(false)
 export const answeringEnabled = ref(false)
+export const transcriptionEnabled = ref(false)
 
 createResource({
   url: 'crm.integrations.api.is_call_integration_enabled',
@@ -15,6 +16,7 @@ createResource({
     defaultCallingMedium.value = data.default_calling_medium
     callEnabled.value = Object.values(integrations.value).some(Boolean)
     answeringEnabled.value = Boolean(data.answering_service)
+    transcriptionEnabled.value = Boolean(data.transcription)
   },
 })
 
