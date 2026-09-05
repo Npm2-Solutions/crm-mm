@@ -17,7 +17,8 @@ class CRMDialSession(Document):
 
 		agent: DF.Link
 		entries: DF.Table[CRMDialSessionEntry]
-		source_doctype: DF.Literal["CRM Lead", "CRM Deal"]
+		source: DF.Literal["Records", "Callbacks"]
+		source_doctype: DF.Literal["", "CRM Lead", "CRM Deal"]
 		status: DF.Literal["In Progress", "Completed", "Cancelled"]
 		title: DF.Data | None
 	# end: auto-generated types

@@ -13,14 +13,15 @@ class CRMDialSessionEntry(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		call_log: DF.Link | None
 		disposition: DF.Literal[
 			"", "Interested", "Not Interested", "No Answer", "Callback", "Voicemail", "Wrong Number"
 		]
 		display_name: DF.Data | None
 		note: DF.SmallText | None
 		number: DF.Data
-		reference_doctype: DF.Link
-		reference_name: DF.DynamicLink
+		reference_doctype: DF.Link | None
+		reference_name: DF.DynamicLink | None
 		status: DF.Literal["Pending", "Done", "Skipped"]
 	# end: auto-generated types
 

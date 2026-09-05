@@ -11,23 +11,22 @@
   "number",
   "status",
   "disposition",
-  "note"
+  "note",
+  "call_log"
  ],
  "fields": [
   {
    "fieldname": "reference_doctype",
    "fieldtype": "Link",
    "label": "Reference Doctype",
-   "options": "DocType",
-   "reqd": 1
+   "options": "DocType"
   },
   {
    "fieldname": "reference_name",
    "fieldtype": "Dynamic Link",
    "in_list_view": 1,
    "label": "Reference Name",
-   "options": "reference_doctype",
-   "reqd": 1
+   "options": "reference_doctype"
   },
   {
    "fieldname": "display_name",
@@ -62,6 +61,13 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note"
+  },
+  {
+   "fieldname": "call_log",
+   "fieldtype": "Link",
+   "label": "Call Log",
+   "options": "CRM Call Log",
+   "description": "The incoming call this callback answers, when the entry came from the callback queue."
   }
  ],
  "istable": 1,
