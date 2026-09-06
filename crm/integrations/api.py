@@ -13,33 +13,31 @@ from crm.utils import are_same_phone_number, parse_phone_number
 
 
 def _get_recording_credentials(telephony_medium: str) -> tuple | None:
-	"""Return (api_key, secret) for the given telephony medium, or None when the
-	recording needs no auth.
+	"""Credentials for fetching a recording, or None when it needs no auth.
 
-	A manual/unrecognized medium (a recording added by hand) is fetched as-is, and
-	a provider whose credentials aren't configured yet falls back to no auth rather
-	than raising — so the proxy attempts the fetch and lets the provider decide,
-	instead of 500-ing before the request is even made.
+	Asked of the provider rather than decided here, so a new carrier does not mean
+	another branch in this file. A manual or unrecognised medium (a recording added
+	by hand) is fetched as-is, and a provider whose credentials aren't configured
+	yet falls back to no auth rather than raising — the proxy attempts the fetch and
+	lets the provider decide, instead of 500-ing before the request is even made.
 	"""
-	if telephony_medium == "Twilio":
-		s = frappe.get_single("CRM Twilio Settings")
-		secret = s.get_password("api_secret", raise_exception=False)
-		return (s.api_key, secret) if s.api_key and secret else None
-	elif telephony_medium == "Exotel":
-		s = frappe.get_single("CRM Exotel Settings")
-		token = s.get_password("api_token", raise_exception=False)
-		return (s.api_key, token) if s.api_key and token else None
-	# manual or unrecognized medium: no provider auth to apply
-	return None
+	from crm.telephony import providers
+
+	provider = providers.for_medium(telephony_medium)
+	return provider.recording_credentials() if provider else None
 
 
 @frappe.whitelist()
 def is_call_integration_enabled():
+	from crm.telephony import providers
+
+	descriptors = [provider.as_dict() for provider in providers.all_providers()]
 	return {
-		"integrations": {
-			"twilio": bool(frappe.db.get_single_value("CRM Twilio Settings", "enabled")),
-			"exotel": bool(frappe.db.get_single_value("CRM Exotel Settings", "enabled")),
-		},
+		# name -> bool, the shape the call button has always read
+		"integrations": {row["name"]: row["enabled"] for row in descriptors},
+		# the full list, so the medium picker learns about a new carrier from the
+		# registry instead of from a hardcoded array in the frontend
+		"providers": descriptors,
 		"default_calling_medium": get_user_default_calling_medium(),
 		# deliberately outside "integrations": the answering service answers calls, it
 		# does not place them, so it must not make the call buttons appear on its own

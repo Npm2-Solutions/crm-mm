@@ -6,9 +6,10 @@ from twilio.twiml.voice_response import VoiceResponse
 from werkzeug.wrappers import Response
 
 from crm.integrations.api import get_contact_by_phone_number
-from crm.telephony import transcription
+from crm.telephony import inbound, transcription
+from crm.telephony.providers import get as get_provider
 
-from .twilio_handler import IncomingCall, Twilio, TwilioCallDetails
+from .twilio_handler import Twilio, TwilioCallDetails
 
 
 def validate_twilio_request(args, require_application_sid: bool = False):
@@ -102,9 +103,9 @@ def twilio_incoming_call_handler(**kwargs):
 
 	# the log goes in so the answering service can hang the callback off it and
 	# tell the caller the time it was actually promised for
-	resp = IncomingCall(args.From, args.To, call_log=call_log).process()
+	instruction = inbound.handle_incoming_call(get_provider("twilio"), args.From, args.To, call_log=call_log)
 	frappe.db.commit()
-	return Response(resp.to_xml(), mimetype="text/xml")
+	return Response(instruction.body, mimetype=instruction.mimetype)
 
 
 def _call_failed_response():

@@ -6,9 +6,10 @@ from twilio.jwt.access_token.grants import VoiceGrant
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import Dial, VoiceResponse
 
-from crm.telephony import answering, callbacks
+from crm.telephony import answering, routing
+from crm.telephony.providers import get as get_provider
 
-from .utils import get_public_url, merge_dicts
+from .utils import get_public_url
 
 
 class Twilio:
@@ -126,158 +127,6 @@ class Twilio:
 		return client
 
 
-class AnsweringService:
-	"""The announcement a caller hears when nobody is going to pick up.
-
-	Plays a recording when one is configured and speaks the text otherwise, then
-	hangs up. It never records the caller: the practice this serves works from the
-	number alone, so there is no voicemail to store, transcribe or keep.
-	"""
-
-	def __init__(self, config=None):
-		self.config = config if config is not None else answering.settings()
-
-	def respond(self, due=None) -> VoiceResponse:
-		resp = VoiceResponse()
-		open_now = answering.is_open(self.config)
-
-		if audio_url := answering.greeting_audio_url(self.config, open_now):
-			resp.play(audio_url)
-		else:
-			resp.say(
-				answering.render_greeting(self.config, open_now, due),
-				language=self.config.language or "it-IT",
-				voice=self.config.voice or "alice",
-			)
-
-		resp.hangup()
-		return resp
-
-
-class IncomingCall:
-	def __init__(self, from_number, to_number, meta=None, call_log=None):
-		self.from_number = from_number
-		self.to_number = to_number
-		self.meta = meta
-		self.call_log = call_log
-
-	def process(self):
-		"""Decide what an incoming call hears.
-
-		Whether the answering service takes the call is read off ``answer_mode``,
-		never inferred from who happens to be logged in. A practice needs the same
-		number to behave the same way at 9am and at 9pm, and "somebody left a tab
-		open" is not an explanation it can give its patients.
-		"""
-		config = answering.settings()
-
-		if answering.takes_every_call(config):
-			return self.answer_with_service(config)
-
-		twilio = Twilio.connect()
-		owners = get_twilio_number_owners(self.to_number)
-		attender = get_the_call_attender(owners, self.from_number)
-
-		if not attender:
-			# "Ring Agents First" means exactly that — the announcement is the
-			# fallback, not the surprise
-			if answering.rings_agents_first(config):
-				return self.answer_with_service(config)
-			resp = VoiceResponse()
-			resp.say(_("Agent is unavailable to take the call, please call after some time."))
-			return resp
-
-		if attender["call_receiving_device"] == "Phone":
-			return twilio.generate_twilio_dial_response(self.from_number, attender["mobile_no"])
-		else:
-			return twilio.generate_twilio_client_response(twilio.safe_identity(attender["name"]))
-
-	def answer_with_service(self, config):
-		"""Queue the callback, then say so.
-
-		A failure to queue must not cost the caller the announcement: they would
-		hear dead air and ring again, which is the one outcome worse than losing
-		the queue entry.
-		"""
-		due = None
-		if self.call_log:
-			try:
-				carrier = callbacks.queue_callback(self.call_log, config)
-				due = frappe.db.get_value("CRM Call Log", carrier, "callback_due")
-			except Exception:
-				# the call log itself is already committed, so this only discards the
-				# half-written callback — and leaves the session clean enough to log
-				frappe.db.rollback()
-				frappe.log_error(frappe.get_traceback(), "CRM Answering Service: failed to queue callback")
-				due = answering.callback_due(config)
-		else:
-			due = answering.callback_due(config)
-
-		return AnsweringService(config).respond(due)
-
-
-def get_twilio_number_owners(phone_number):
-	"""Get list of users who is using the phone_number.
-	>>> get_twilio_number_owners("+11234567890")
-	{
-		'owner1': {'name': '..', 'mobile_no': '..', 'call_receiving_device': '...'},
-		'owner2': {....}
-	}
-	"""
-	# remove special characters from phone number and get only digits also remove white spaces
-	# keep + sign in the number at start of the number
-	phone_number = "".join([c for c in phone_number if c.isdigit() or c == "+"])
-	user_voice_settings = frappe.get_all(
-		"CRM Telephony Agent",
-		filters={"twilio_number": phone_number},
-		fields=["name", "call_receiving_device"],
-	)
-	user_wise_voice_settings = {user["name"]: user for user in user_voice_settings}
-
-	user_general_settings = frappe.get_all(
-		"User", filters=[["name", "IN", user_wise_voice_settings.keys()]], fields=["name", "mobile_no"]
-	)
-	user_wise_general_settings = {user["name"]: user for user in user_general_settings}
-
-	return merge_dicts(user_wise_general_settings, user_wise_voice_settings)
-
-
-def get_active_loggedin_users(users):
-	"""Filter the current loggedin users from the given users list"""
-	rows = frappe.db.sql(
-		"""
-		SELECT `user`
-		FROM `tabSessions`
-		WHERE `user` IN %(users)s
-		""",
-		{"users": users},
-	)
-	return [row[0] for row in set(rows)]
-
-
-def get_the_call_attender(owners, caller=None):
-	"""Get attender details from list of owners"""
-	if not owners:
-		return
-	current_loggedin_users = get_active_loggedin_users(list(owners.keys()))
-
-	if len(current_loggedin_users) > 1 and caller:
-		deal_owner = frappe.db.get_value("CRM Deal", {"mobile_no": caller}, "deal_owner")
-		if not deal_owner:
-			deal_owner = frappe.db.get_value(
-				"CRM Lead", {"mobile_no": caller, "converted": False}, "lead_owner"
-			)
-		for user in current_loggedin_users:
-			if user == deal_owner:
-				current_loggedin_users = [user]
-
-	for name, details in owners.items():
-		if (details["call_receiving_device"] == "Phone" and details["mobile_no"]) or (
-			details["call_receiving_device"] == "Computer" and name in current_loggedin_users
-		):
-			return details
-
-
 class TwilioCallDetails:
 	def __init__(self, call_info, call_from=None, call_to=None):
 		self.call_info = call_info
@@ -320,8 +169,7 @@ class TwilioCallDetails:
 		elif not answering.takes_every_call():
 			# with the announcement answering every call there is no attender to
 			# find, and guessing one would credit an agent with a call they never took
-			owners = get_twilio_number_owners(to_number)
-			attender = get_the_call_attender(owners, from_number)
+			attender = routing.find_attender(get_provider("twilio"), to_number, from_number)
 			receiver = attender["name"] if attender else ""
 
 		return {

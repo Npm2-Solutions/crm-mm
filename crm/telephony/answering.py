@@ -26,6 +26,7 @@ from frappe.utils import cint, get_url, now_datetime
 
 from crm.scheduling import availability
 from crm.scheduling.timeutils import from_system_naive, to_system_naive
+from crm.telephony.providers.base import Announcement
 
 MODE_ALWAYS = "Always Answering Service"
 MODE_RING_FIRST = "Ring Agents First"
@@ -157,6 +158,24 @@ def render_greeting(config=None, open_now: bool | None = None, due=None) -> str:
 			f"Unsupported placeholder in answering greeting: {template!r}", "CRM Answering Service"
 		)
 		return template
+
+
+def build_announcement(config=None, open_now: bool | None = None, due=None) -> Announcement:
+	"""What the caller hears, in a form no carrier owns.
+
+	Both the recording and the words are filled in: the provider prefers the
+	audio and falls back to speaking, so a carrier that cannot play a file still
+	says the right thing.
+	"""
+	config = config if config is not None else settings()
+	if open_now is None:
+		open_now = is_open(config)
+	return Announcement(
+		audio_url=greeting_audio_url(config, open_now),
+		text=render_greeting(config, open_now, due),
+		language=config.language or "it-IT",
+		voice=config.voice or "alice",
+	)
 
 
 def greeting_audio_url(config=None, open_now: bool | None = None) -> str | None:
