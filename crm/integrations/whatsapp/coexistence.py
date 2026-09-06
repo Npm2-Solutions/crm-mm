@@ -139,6 +139,16 @@ def store_message(message: dict, our_number: str, historical: bool = False) -> b
 	# db_insert: the message already went out from the phone, so the controller
 	# must not run and send it again
 	doc.db_insert()
+	# and because the controller did not run, neither did the hook that tells an
+	# open chat to reload: without this the message sits there until a refresh
+	if not historical and doc.get("reference_doctype"):
+		frappe.publish_realtime(
+			"whatsapp_message",
+			{
+				"reference_doctype": doc.reference_doctype,
+				"reference_name": doc.reference_name,
+			},
+		)
 	return True
 
 
