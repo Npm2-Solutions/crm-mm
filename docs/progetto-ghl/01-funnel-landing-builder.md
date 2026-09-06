@@ -2,6 +2,9 @@
 
 > ⚠️ **FUORI SCOPE** dal 31/08/2026 (vedi [decisioni di scope](./README.md#%EF%B8%8F-decisioni-di-scope-31082026)). Conservato come riferimento.
 
+> 📄 Dal 06/09/2026 esiste una proposta **ridotta e in scope** per un sito vetrina
+> alimentato dal CRM (senza funnel, A/B test o checkout): [16 — Sito web vetrina](./16-sito-web-vetrina.md).
+
 > Parte del [Progetto GHL-Parity](./README.md). Obiettivo: costruzione visuale di
 > landing page e funnel multi-step con A/B test, form di cattura lead e checkout.
 

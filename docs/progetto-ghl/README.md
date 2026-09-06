@@ -21,6 +21,16 @@ Scope ridotto rispetto alla parità completa, su decisione del committente:
   white-label aggiuntivo (parte di 06). I documenti restano come riferimento
   se lo scope dovesse riaprirsi.
 
+### Aggiornamento (06/09/2026) — sito vetrina
+
+Riapertura **parziale e ridotta** del modulo 01: non il funnel builder, ma un **sito
+web semplice alimentato dai dati del CRM** (servizi, prodotti, form, prenotazioni).
+Proposta e alternative in [16](./16-sito-web-vetrina.md); funnel, A/B test e checkout
+restano fuori scope.
+
+L'architettura scelta è quella già anticipata qui sopra: **Frappe Builder come app
+accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_files/`.
+
 ## Indice dei documenti
 
 | Doc | Modulo | Stato | Verdetto sintetico |
@@ -37,6 +47,7 @@ Scope ridotto rispetto alla parità completa, su decisione del committente:
 | [13](./13-google-calendar.md) | Google Calendar collegato in un click | ✅ implementato | OAuth gestito dall'agenzia: nessuna credenziale da incollare sul sito cliente |
 | [14](./14-agenda-appuntamenti.md) | Agenda interna: multi-persona, stanze, attrezzature, listini | ✅ implementato | Staffing collective/round-robin/per-ruolo, capacità delle risorse, sessioni di gruppo, prezzi condizionati |
 | [15](./15-tracciamento-lead.md) | Tracciamento del lead e attribuzione | ✅ implementato | Script esterno, sessioni, primo/ultimo contatto, percorso pagina per pagina |
+| [16](./16-sito-web-vetrina.md) | Sito web vetrina integrato nel CRM | 🟡 proposta rivista | Frappe Builder installato accanto come **tela**; il CRM resta guscio e dati: componenti spediti da noi con data script, impostazioni e publish nel modale |
 
 ## Architettura complessiva
 
