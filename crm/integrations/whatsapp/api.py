@@ -17,6 +17,8 @@ from frappe.utils import get_url
 from werkzeug.wrappers import Response
 
 from crm.integrations.meta.client import (
+	GRAPH_BASE,
+	GRAPH_VERSION,
 	MetaAPIError,
 	get_settings,
 	get_whatsapp_app_id,
@@ -268,6 +270,12 @@ def upsert_account(data: dict) -> str:
 	values = {
 		"token": data.get("token"),
 		"phone_id": phone_id,
+		# `frappe_whatsapp` builds every call as f"{url}/{version}/{phone_id}/messages".
+		# Without these two the request is never issued and the send dies far from
+		# here, on `frappe.flags.integration_request.json()` of a request that was
+		# never made: "'NoneType' object has no attribute 'json'".
+		"url": GRAPH_BASE,
+		"version": GRAPH_VERSION,
 		"business_id": data.get("waba_id"),
 		"app_id": get_whatsapp_app_id(),
 		"webhook_verify_token": frappe.get_cached_value(
@@ -284,6 +292,10 @@ def upsert_account(data: dict) -> str:
 	existing = frappe.db.get_value("WhatsApp Account", {"phone_id": phone_id}, "name")
 	if existing:
 		doc = frappe.get_doc("WhatsApp Account", existing)
+		for field in ("url", "version"):
+			# an endpoint someone pinned by hand stays pinned
+			if doc.get(field):
+				values.pop(field, None)
 		doc.update(values)
 		doc.save(ignore_permissions=True)
 	else:
