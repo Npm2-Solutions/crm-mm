@@ -272,21 +272,52 @@ seo_title, seo_description
 Stessi campi su `CRM Product`. **Nessuna duplicazione del catalogo**: la fonte resta il
 doctype di sistema, il sito è una vista pubblicata. Cambi il prezzo in agenda, cambia sul sito.
 
-### 6.4 Il guscio nel modale Impostazioni
+### 6.4 Dove vive nel CRM: una scheda "Sito", più il modale
 
-Nuovo gruppo **"Sito web"**:
+Il taglio giusto non è "tutto nel modale". Il modale Impostazioni è per la
+**configurazione** — le cose che tocchi una volta e poi dimentichi. Pubblicare un servizio,
+aggiornare la home, buttare giù una landing è **lavoro ricorrente**, e il lavoro ricorrente
+non si fa dentro un modale di impostazioni.
 
-| Voce | Cosa fa |
+È esattamente il taglio che questo repo ha già fatto per il social: `/social` è una voce di
+sidebar (il **Social Planner**, dove si lavora), mentre `Impostazioni → Social profiles`
+tiene le connessioni. Il sito si comporta allo stesso modo.
+
+**Sidebar → `Sito`** (una voce in `links` dentro `AppSidebar.vue`, con
+`condition: () => siteEnabled`), che apre `/sito` con tre schede:
+
+| Scheda | Cosa contiene |
 |---|---|
-| **Sito** | interruttore generale, home, brand (logo/colore/font → scritti nei Builder Token), menu, footer e dati legali, SEO di default, GA4 / Meta Pixel, banner consenso |
-| **Pagine** | lista delle `Builder Page` con stato, rotta, "apri sul sito", **Pubblica/Ritira**, "Disegna" (→ rotta a piena pagina), duplica, elimina. Creazione da starter template nostri |
-| **Vetrina** | servizi e prodotti con **toggle Pubblica**, immagine, ordine trascinabile, link "modifica scheda" |
+| **Pagine** | le `Builder Page`: nome, rotta, stato (bozza/pubblicata), ultima modifica, visite. Azioni per riga: **Disegna**, Anteprima, **Pubblica/Ritira**, Duplica, Elimina. "Nuova pagina" parte dalle nostre starter page |
+| **Vetrina** | servizi e prodotti in una tabella sola: toggle **Pubblica**, immagine, descrizione breve, ordine trascinabile, link "modifica scheda". È il posto dove si decide *cosa* il sito mostra |
+| **Moduli** | i form CRM già esistenti, con il loro stato e il link "incorpora". Oggi vivono in `Impostazioni → Forms`: restano lì, qui compaiono in sola lettura con un link — non si spostano le abitudini di chi già li usa |
 
-Più una scheda **"Sito web"** nell'editor di servizio già esistente
-(`Settings/Scheduling/ServicesSettings.vue`): è lì che l'utente la cerca.
+**Disegna** apre `/sito/pagine/:name`: pagina intera del CRM, header sottile (nome pagina,
+stato, "Torna al sito", "Apri nel browser") e sotto l'iframe di Builder a tutta altezza.
+È l'unico punto in cui si vede Builder, ed è a un clic di distanza dal rientro.
 
-La lista pagine legge/scrive `Builder Page` via `frappe.client` — nessuna API nuova da
-inventare, e nessun bisogno che l'utente veda la dashboard di Builder.
+**Impostazioni → Sito web** resta, ma solo per ciò che è configurazione:
+
+| Voce | Cosa |
+|---|---|
+| **Sito** | interruttore generale, dominio e home, brand (logo, colori, font → scritti nei Builder Token), menu di navigazione, footer e dati legali, SEO di default, GA4 / Meta Pixel, banner di consenso |
+
+E una scheda **"Sito web"** dentro l'editor di servizio già esistente
+(`Settings/Scheduling/ServicesSettings.vue`): immagine, descrizioni, slug, CTA, interruttore
+di pubblicazione. È lì che l'utente la cerca quando sta guardando un servizio.
+
+### 6.4bis E i funnel?
+
+**Non c'è una scheda Funnel, e non la farei adesso.** Un funnel non è un tipo di pagina: è
+una *sequenza* di pagine con split test, tracking per step e checkout — cioè il modulo
+[01](./01-funnel-landing-builder.md), fuori scope. Nel frattempo una landing page è
+semplicemente una `Builder Page` con la sua rotta, e si costruisce nella scheda Pagine come
+tutte le altre.
+
+Se un giorno lo scope riapre, il funnel entra come **quarta scheda dentro `Sito`** — non
+come sezione nuova dell'app — perché riusa le stesse pagine: un funnel è un raggruppamento
+ordinato di `Builder Page` più un contatore e una variante. È il motivo per cui la sidebar
+prende una voce sola e generica ("Sito") invece di due specifiche.
 
 ### 6.5 Rotte, permessi, conflitti
 
@@ -416,17 +447,36 @@ Il contratto dei componenti è stato ricostruito riga per riga:
 | `crm/tests/test_builder_files.py` | valida ogni componente spedito: fixture importabile, chiavi di blocco note, `blockId` unici, repeater con un solo figlio, props referenziate dichiarate, data script che compila e resta compatibile con `safe_exec`. Con Builder installato fa anche il giro completo su `get_component_data` |
 | `scripts/builder/spike.sh` | `bench get-app` → `install-app` → `migrate` → controlla che il componente sia arrivato → esegue il data script. Poi elenca i sette controlli da fare a mano nel browser |
 
-### 11.3 Le due incognite che restano, e cosa cambiano
+### 11.3 Le due incognite, chiuse
 
-1. **HTML non-escaped nei binding** (controllo `e` dello script). Builder non emette `|safe`:
-   se l'ambiente Jinja di Frappe fa autoescape, il componente **Form CRM** non può iniettare
-   il markup del form come dato e va costruito diversamente (blocco HTML custom o client
-   script). Non tocca gli altri componenti.
-2. **`safe_exec` e `frappe.utils.fmt_money`** — se non fosse nella sandbox, il prezzo si
-   formatta a mano. Il data script ha già il `try/except` che regge in entrambi i casi.
+Verificate sul sorgente di Frappe, non per intuizione.
 
-Nessuna delle due mette in discussione l'architettura: la prima sposta il *come* di un
-componente, la seconda tre righe.
+**1. I binding non vengono escapati — e va bene, ma ha un prezzo.**
+`get_jenv()` costruisce un `FrappeSandboxedEnvironment` **senza passare `autoescape`**, e il
+default di Jinja è `False`; Builder non emette `|safe` da nessuna parte. Quindi un valore
+che finisce in un binding esce come HTML.
+
+- ✅ **Il componente Form CRM si può fare come previsto**: il data script rende il markup del
+  form e lo consegna come dato. Niente blocco HTML custom, niente client script.
+- ⚠️ **Ma allora l'escaping è compito nostro.** Un `<` nel nome di un servizio finirebbe in
+  pagina come markup: è XSS immagazzinato, da utente CRM a visitatore. Il data script di
+  `Servizi CRM` ora passa ogni campo di testo per `frappe.utils.escape_html()`, e la regola è
+  scritta in `crm/builder_files/README.md`: **testo → `escape_html`, rich text → `sanitize_html`,
+  markup nostro → così com'è.**
+
+**2. `fmt_money` è dentro la sandbox.** È in `VALID_UTILS` di `frappe/utils/safe_exec.py`,
+insieme a `cint`, `cstr`, `flt`, `escape_html`, `sanitize_html`, `strip_html`,
+`format_datetime`, `get_url`, `parse_json`. Il `try/except` difensivo è stato tolto: il
+codice ora dice quello che fa.
+
+**Una terza cosa emersa mentre verificavo.** `get_jenv()` sceglie fra globals ristretti e
+non secondo `disable_render_safe_exec`, ma i metodi registrati via `hooks.jinja.methods`
+vengono aggiunti **dopo** quella scelta. `get_component_data` è registrata proprio così da
+Builder: funziona in entrambe le modalità. Era un modo silenzioso in cui i componenti
+avrebbero potuto non renderizzare su un site configurato in modo restrittivo — non succede.
+
+Nessuna delle tre tocca l'architettura. Il controllo `e` dello spike resta nello script come
+conferma sul campo, non più come bivio.
 
 ## 12. Fasi
 

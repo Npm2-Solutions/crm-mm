@@ -46,10 +46,39 @@ repeater deve avere **esattamente un figlio**.
 
 Il valore statico del blocco resta come fallback: `{{ chiave if chiave else 'statico' }}`.
 
+## ⚠️ Il rendering non fa autoescape — escapa tu
+
+`FrappeSandboxedEnvironment` non passa `autoescape`, e il default di Jinja è `False`;
+Builder, dal canto suo, non emette `|safe`. Quindi **ogni valore che finisce in un binding
+esce come HTML**.
+
+Ha due conseguenze, e vanno tenute insieme:
+
+1. **Il testo va escapato nel data script.** Un `<` nel nome di un servizio finirebbe in
+   pagina come markup. Si usa `frappe.utils.escape_html()` su tutto ciò che è testo — è
+   l'unico punto in cui possiamo farlo, perché il template non lo farà.
+2. **L'HTML voluto passa così com'è.** È ciò che rende possibile il componente *Form CRM*:
+   il data script può rendere il markup del form e consegnarlo come dato, senza bisogno di
+   un blocco HTML custom. Per il rich text che arriva dagli utenti (`CRM Product.description`
+   è un Text Editor) si passa da `frappe.utils.sanitize_html()`.
+
+## Cosa è disponibile dentro `safe_exec`
+
+Il data script gira con `safe_exec` se `server_script_enabled` è attivo, altrimenti con il
+`safer_exec` di Builder: in entrambi i casi è RestrictedPython, quindi niente import e
+niente dunder. `frappe.utils` espone la lista `VALID_UTILS` del framework — fra le altre
+`cint`, `cstr`, `flt`, `escape_html`, `sanitize_html`, `strip_html`, `fmt_money`,
+`format_datetime`, `get_url`, `parse_json`.
+
+`get_component_data` è registrata da Builder come metodo Jinja (`hooks.jinja.methods`), e
+i metodi da hook vengono aggiunti ai globals **dopo** la scelta fra globals ristretti e
+non: quindi funziona anche con `disable_render_safe_exec` non impostato.
+
 ## Regole di casa
 
 - **Il data script lo scriviamo noi**, il cliente compila solo le props.
 - Legge **solo campi pubblicabili**: mai costi, staff, note interne.
+- **Escapa ogni testo** con `escape_html`; `sanitize_html` per il rich text.
 - Deve essere veloce: gira a ogni render della pagina.
-- Va tenuto compatibile con `safe_exec` (niente import, niente dunder).
+- Niente import, niente dunder, solo `VALID_UTILS`.
 - `crm/tests/test_builder_files.py` valida struttura e compilabilità di ogni file qui dentro.

@@ -53,10 +53,12 @@ cat <<'CHECKS'
   c) Le liste si popolano         → trascina il componente, pubblica, apri la rotta pubblica:
                                     devono comparire le card dei CRM Service abilitati
   d) Le props funzionano          → cambia "categoria" e "limite" sull'istanza, ripubblica
-  e) ⚠ HTML non-escaped           → in un blocco lega innerHTML a una chiave che contiene
-                                    "<b>x</b>": se esce in grassetto, il componente "Form CRM"
-                                    può iniettare il markup del form; se esce come testo,
-                                    servirà un'altra via (blocco HTML custom o client script)
+  e) HTML non-escaped (atteso)    → verificato sul sorgente di Frappe: get_jenv() non abilita
+                                    autoescape, quindi i binding escono come HTML e il blocco
+                                    "Form CRM" potrà iniettare il markup del form. Conferma sul
+                                    campo: lega innerHTML a una chiave che contiene "<b>x</b>"
+                                    e controlla che esca in grassetto. Corollario gia' applicato:
+                                    il testo lo escapiamo noi nel data script (escape_html)
   f) Iframe stesso dominio        → in una scheda del CRM apri la console e prova:
                                     document.body.insertAdjacentHTML('beforeend',
                                       '<iframe src="/builder/page/<nome>" style="position:fixed;\
@@ -64,5 +66,6 @@ inset:0;width:100vw;height:100vh;z-index:9999"></iframe>')
                                     l'editor deve caricarsi con la sessione già attiva
   g) Rotte del CRM intatte        → /crm, /book/<rotta>, /crm-form/<rotta> rispondono come prima
 
-Il punto (e) è l'unico che può cambiare il piano: decide come si costruisce il blocco Form.
+Nessuno di questi controlli e' piu' un bivio: (e) e (f) sono verificati sul sorgente,
+qui si conferma solo che sul bench reale si comportino come letto.
 CHECKS
