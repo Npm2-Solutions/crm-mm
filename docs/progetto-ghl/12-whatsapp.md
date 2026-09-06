@@ -28,6 +28,22 @@ risposte ai moduli, messaggi WhatsApp, eventi di calendario, e con chi sono
 condivisi — ma non e' stato rivisto da un legale.
 
 
+## Due modi di collegare un numero, per due situazioni diverse
+
+**Il QR (Embedded Signup)** e' la via dei clienti, e resta l'unica che viene
+loro offerta: premono un bottone, scansionano dall'app WhatsApp Business, non
+vedono un token.
+
+**Le credenziali a mano** (Settings → WhatsApp → *Aggiungi un numero con le sue
+credenziali*) servono a un numero che Embedded Signup non puo' raggiungere: il
+**numero di test** che Meta presta a ogni app. Non e' un ripiego, e' l'unica
+strada possibile in quel momento — l'agenzia ne ha bisogno per registrare i
+video dell'App Review **prima** di essere Tech Provider, e senza di esso il CRM
+non puo' inviare un solo messaggio.
+
+Il token da usare e' quello **permanente da system user**, non il temporaneo
+della dashboard, che scade a meta' registrazione.
+
 ## Un'app separata da quella di Facebook
 
 WhatsApp ha la **sua** app Meta, non quella dei lead e del Social Planner.

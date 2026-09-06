@@ -180,6 +180,36 @@ def configure_webhook() -> dict:
 	return get_webhook()
 
 
+@frappe.whitelist(methods=["POST"])
+def add_account(phone_number_id: str, waba_id: str, token: str, account_name: str | None = None) -> dict:
+	"""Add a number with credentials typed in, instead of Embedded Signup.
+
+	Clients connect by scanning a QR — that stays the one path offered to them.
+	This is the way in for a number Embedded Signup cannot reach: the test
+	number Meta lends every app, which is what an agency needs to record the
+	App Review videos before it is a Tech Provider at all, and which otherwise
+	leaves the CRM with no way to send a single message.
+	"""
+	_check_manager()
+	if not whatsapp_installed():
+		frappe.throw(_("The WhatsApp app is not installed on this site"))
+	phone_number_id = (phone_number_id or "").strip()
+	waba_id = (waba_id or "").strip()
+	if not phone_number_id or not waba_id or not (token or "").strip():
+		frappe.throw(_("Phone number ID, WhatsApp Business Account ID and token are all required"))
+
+	name = upsert_account(
+		{
+			"phone_number_id": phone_number_id,
+			"waba_id": waba_id,
+			"token": token.strip(),
+			"verified_name": (account_name or "").strip() or None,
+		}
+	)
+	frappe.db.commit()
+	return {"account": name}
+
+
 @frappe.whitelist()
 def get_connect_url() -> dict:
 	"""Where to send the browser to run Embedded Signup on the hub."""
