@@ -26,42 +26,50 @@
 
     <div class="flex-1 flex flex-col gap-6 overflow-y-auto px-2">
       <!-- the snippet: the one thing a new install actually has to do -->
-      <div class="rounded-lg border border-outline-gray-2">
-        <div
-          class="flex items-center justify-between gap-4 border-b border-outline-gray-2 px-3 py-2.5"
-        >
-          <div class="flex flex-col">
-            <div class="text-p-base-medium text-ink-gray-7">
-              {{ __('Tracking script') }}
-            </div>
-            <div class="text-p-sm text-ink-gray-5">
-              {{ __('Paste this in the head of every page you want tracked.') }}
-            </div>
-          </div>
-          <Button
-            :label="copied ? __('Copied') : __('Copy')"
-            :iconLeft="copied ? 'check' : 'copy'"
-            @click="copySnippet"
-          />
+      <div>
+        <div class="flex flex-col gap-1">
+          <span class="text-lg-semibold text-ink-gray-8">
+            {{ __('Tracking script') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{ __('Paste this in the head of every page you want tracked.') }}
+          </span>
         </div>
-        <pre
-          class="overflow-x-auto whitespace-pre-wrap break-all px-3 py-3 text-p-sm text-ink-gray-7"
-          >{{ snippet.data?.snippet || __('Loading…') }}</pre
-        >
+        <div class="relative mt-3.5">
+          <textarea
+            readonly
+            rows="2"
+            class="w-full resize-none rounded-md border border-outline-gray-2 bg-surface-gray-1 py-2 pl-3 pr-10 font-mono text-xs text-ink-gray-7 focus:border-outline-gray-4 focus:outline-none focus:ring-0 focus-visible:outline-none"
+            :value="snippet.data?.snippet || ''"
+          />
+          <button
+            class="absolute right-2 top-2 flex text-ink-gray-5 transition-colors hover:text-ink-gray-8"
+            :title="__('Copy')"
+            @click="copySnippet"
+          >
+            <LucideCopy class="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
-      <div v-if="stats" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div
-          v-for="stat in stats"
-          :key="stat.label"
-          class="rounded-lg border border-outline-gray-2 px-3 py-2.5"
-        >
-          <div class="text-2xl-semibold text-ink-gray-8">{{ stat.value }}</div>
-          <div class="text-p-sm text-ink-gray-5">{{ stat.label }}</div>
+      <div v-if="stats">
+        <hr class="mb-8 border-outline-gray-2" />
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="rounded-md border border-outline-gray-2 bg-surface-gray-1 px-3 py-2.5"
+          >
+            <div class="text-2xl-semibold text-ink-gray-8">
+              {{ stat.value }}
+            </div>
+            <div class="text-p-sm text-ink-gray-5">{{ stat.label }}</div>
+          </div>
         </div>
       </div>
 
       <div v-if="settings.doc" class="flex flex-col">
+        <hr class="mb-4 border-outline-gray-2" />
         <SettingsRow
           :label="__('Enable lead tracking')"
           :description="
@@ -116,9 +124,10 @@
           />
         </SettingsRow>
 
-        <h3 class="mt-4 px-2 text-p-base-medium text-ink-gray-7">
+        <hr class="my-4 border-outline-gray-2" />
+        <span class="px-2 py-1 text-lg-semibold text-ink-gray-8">
           {{ __('Privacy') }}
-        </h3>
+        </span>
 
         <SettingsRow
           :label="__('Require consent')"
@@ -203,6 +212,8 @@
 
 <script setup>
 import SettingsRow from '@/components/Settings/SettingsRow.vue'
+import LucideCopy from '~icons/lucide/copy'
+import { copyToClipboard } from '@/utils'
 import {
   Button,
   FormControl,
@@ -211,7 +222,10 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { useTelemetry } from 'frappe-ui/frappe'
+import { computed } from 'vue'
+
+const { capture } = useTelemetry()
 
 const settings = createDocumentResource({
   doctype: 'CRM Tracking Settings',
@@ -239,22 +253,13 @@ const stats = computed(() => {
   ]
 })
 
-const copied = ref(false)
-
 function copySnippet() {
   const text = snippet.data?.snippet
   if (!text) return
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      copied.value = true
-      setTimeout(() => (copied.value = false), 2000)
-    })
-    .catch(() =>
-      toast.error(
-        __('Could not copy — select the snippet and copy it by hand.'),
-      ),
-    )
+  // the shared helper, not navigator.clipboard directly: it falls back for a
+  // page served over plain http, where the Clipboard API is not available
+  copyToClipboard(text)
+  capture('tracking_snippet_copied')
 }
 
 function updateSettings() {

@@ -8,7 +8,16 @@
       <span>{{ __('Loading...') }}</span>
     </div>
 
-    <EmptyState v-else-if="!hasAnything" :title="__('Nothing tracked yet')" />
+    <EmptyState
+      v-else-if="!hasAnything"
+      :title="__('Nothing tracked yet')"
+      :description="
+        __(
+          'No visit has been recorded for this record yet. Add the tracking script to your site, or check that this lead came in through a tracked form.',
+        )
+      "
+      :icon="DetailsIcon"
+    />
 
     <template v-else>
       <!-- What brought them in, and what brought them back -->
@@ -16,10 +25,12 @@
         <TouchCard
           :title="__('First touch')"
           :touch="journey.data?.first_touch"
+          theme="green"
         />
         <TouchCard
           :title="__('Last touch')"
           :touch="journey.data?.last_touch"
+          theme="blue"
         />
       </div>
 
