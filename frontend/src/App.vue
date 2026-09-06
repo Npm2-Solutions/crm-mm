@@ -2,6 +2,11 @@
   <FrappeUIProvider>
     <NotPermitted v-if="$route.name === 'Not Permitted'" />
     <router-view v-else-if="$route.name === 'Onboarding'" />
+    <!-- The page designer takes the whole viewport: the CRM's sidebar and header on top
+         of Builder's own toolbar would be three bars stacked over one canvas. -->
+    <router-view
+      v-else-if="session.isLoggedIn && $route.name === 'WebsitePage'"
+    />
     <Layout v-else-if="session.isLoggedIn" class="isolate">
       <router-view :key="$route.fullPath" />
     </Layout>

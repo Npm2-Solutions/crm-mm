@@ -275,7 +275,11 @@ doc_events = {
 	# Frappe checks that two pages don't share a route, but knows nothing about /crm,
 	# /book or /crm-form. Without this a page could be published straight over the app.
 	"Builder Page": {
-		"validate": ["crm.api.site_routes.guard_builder_route"],
+		"validate": [
+			"crm.api.site_routes.guard_builder_route",
+			"crm.api.site_routes.guard_home_page",
+		],
+		"on_trash": ["crm.api.site_routes.guard_home_page"],
 	},
 }
 

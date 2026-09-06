@@ -1,64 +1,53 @@
 <template>
-  <div class="flex h-full flex-col">
-    <!-- Our own chrome, so the editor reads as a room of the CRM rather than a
-         different application the user was thrown into. -->
+  <div
+    class="flex h-screen w-screen flex-col overflow-hidden bg-surface-gray-2"
+  >
+    <!-- One thin strip, and nothing else of the CRM: Builder brings its own toolbar and
+         panels, so anything more here would just be a second set of chrome over the same
+         canvas. Back, where you are, and whether it is live — that is all this needs. -->
     <header
-      class="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-outline-gray-2 bg-surface-white px-3"
+      class="flex h-9 shrink-0 items-center gap-2 border-b border-outline-gray-2 bg-surface-white px-2"
     >
-      <div class="flex min-w-0 items-center gap-2">
-        <Button variant="ghost" icon="arrow-left" @click="back">
-          <template #default>
-            <span class="text-p-sm">{{ __('Site') }}</span>
-          </template>
-        </Button>
-        <span class="text-ink-gray-4">/</span>
-        <span class="truncate text-p-base-medium text-ink-gray-8">
-          {{ page.data?.page_title || __('Page') }}
-        </span>
-        <span
-          class="hidden truncate font-mono text-p-sm text-ink-gray-5 sm:inline"
-        >
-          /{{ page.data?.route }}
-        </span>
-        <Badge
-          v-if="page.data"
-          :label="page.data.published ? __('Published') : __('Draft')"
-          :theme="page.data.published ? 'green' : 'gray'"
-          size="sm"
-        />
-        <Badge
-          v-if="page.data?.has_draft"
-          :label="__('Unpublished changes')"
-          theme="orange"
-          size="sm"
-        />
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <Button
-          v-if="page.data?.published"
-          variant="ghost"
-          icon="external-link"
-          :label="__('Open')"
-          @click="openPublic"
-        />
-        <Button
-          variant="ghost"
-          icon="refresh-cw"
-          :label="__('Refresh status')"
-          @click="page.reload()"
-        />
-        <Button
-          variant="solid"
-          :label="page.data?.published ? __('Republish') : __('Publish')"
-          :loading="publishing"
-          @click="publish"
-        />
-      </div>
+      <Button variant="ghost" size="sm" icon="arrow-left" @click="back">
+        <template #default>
+          <span class="text-p-sm">{{ __('Site') }}</span>
+        </template>
+      </Button>
+      <span class="truncate text-p-sm text-ink-gray-7">
+        {{ page.data?.page_title || __('Page') }}
+      </span>
+      <span
+        v-if="page.data?.route"
+        class="hidden truncate font-mono text-xs text-ink-gray-4 sm:inline"
+      >
+        /{{ page.data.route }}
+      </span>
+      <Badge
+        v-if="page.data"
+        :label="page.data.published ? __('Published') : __('Draft')"
+        :theme="page.data.published ? 'green' : 'gray'"
+        size="sm"
+      />
+      <Badge
+        v-if="page.data?.has_draft"
+        :label="__('Unpublished changes')"
+        theme="orange"
+        size="sm"
+      />
+      <a
+        v-if="page.data?.published"
+        :href="page.data.url"
+        target="_blank"
+        rel="noopener"
+        class="ml-auto text-p-sm text-ink-gray-5 hover:text-ink-gray-8"
+      >
+        {{ __('Open the page') }}
+      </a>
     </header>
 
-    <div class="relative flex-1 bg-surface-gray-2">
-      <!-- Builder's editor refuses to render below its own breakpoint, and its message
-           would look like a broken CRM. Say it ourselves, in our words. -->
+    <div class="relative min-h-0 flex-1">
+      <!-- Builder refuses to render below its own breakpoint, and its message would read
+           as a broken CRM. Say it ourselves. -->
       <div
         v-if="tooSmall"
         class="flex h-full flex-col items-center justify-center gap-2 px-6 text-center"
@@ -80,13 +69,13 @@
         v-else-if="editorUrl"
         ref="frame"
         :src="editorUrl"
-        class="h-full w-full border-0"
+        class="block h-full w-full border-0"
         :title="__('Page editor')"
         @load="onFrameLoad"
       />
 
       <div
-        v-if="!editorUrl && !tooSmall"
+        v-else
         class="flex h-full items-center justify-center text-p-base text-ink-gray-5"
       >
         {{ __('Loading the editor…') }}
@@ -96,7 +85,7 @@
 </template>
 
 <script setup>
-import { Badge, createResource, call, toast } from 'frappe-ui'
+import { Badge, createResource, toast } from 'frappe-ui'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -104,7 +93,6 @@ const route = useRoute()
 const router = useRouter()
 
 const frame = ref(null)
-const publishing = ref(false)
 const width = ref(window.innerWidth)
 let watcher = null
 
@@ -164,7 +152,7 @@ function keepInsideEditor() {
 }
 
 function onFrameLoad() {
-  // The editor may have saved while it was open; the header's state comes from us.
+  // Builder saves and publishes on its own schedule; the strip's state comes from us.
   page.reload()
 }
 
@@ -172,27 +160,6 @@ function back() {
   router.push({ name: 'Website' })
 }
 
-function openPublic() {
-  if (page.data?.url) window.open(page.data.url, '_blank', 'noopener')
-}
-
-async function publish() {
-  publishing.value = true
-  try {
-    await call('crm.api.site.set_published', {
-      name: route.params.name,
-      published: 1,
-    })
-    await page.reload()
-    toast.success(__('Published'))
-  } catch (error) {
-    toast.error(error.messages?.[0] || __('Could not publish the page'))
-  } finally {
-    publishing.value = false
-  }
-}
-
-// Refresh the header when the tab regains focus: the editor saves on its own schedule.
 watch(
   () => route.params.name,
   () => page.reload(),

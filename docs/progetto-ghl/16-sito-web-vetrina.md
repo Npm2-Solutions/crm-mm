@@ -519,12 +519,15 @@ solo la tela, e solo quando si preme "Disegna".
 | Superficie | Rotta / posto | Cosa fa |
 |---|---|---|
 | **Sito** (sidebar) | `/sito` | due schede: **Pagine** (stato, rotta, home, bozza non pubblicata, Disegna, Pubblica, Duplica, Elimina) e **Vetrina** (servizi e prodotti con l'interruttore Pubblica, immagine, descrizione, ordine) |
-| **Editor** | `/sito/pagine/:name` | pagina intera del CRM: header nostro con nome, stato, Apri, Pubblica; sotto l'iframe di Builder, stesso dominio e stessa sessione |
+| **Editor** | `/sito/pagine/:name` | **schermo intero**, fuori dal layout del CRM: niente sidebar, niente header dell'app. Una striscia sottile (indietro, nome, stato) e sotto l'iframe di Builder, stesso dominio e stessa sessione |
 | **Impostazioni → Sito web** | modale | interruttore generale, home e radice, brand, menu, footer e dati legali, SEO, GA4/Pixel, consenso |
 | **Editor di servizio** | modale Agenda | l'interruttore "Pubblica sul sito" dove uno lo cerca, con il link alla scheda completa in Vetrina |
 
 L'editor non è dentro il modale perché Builder rifiuta gli schermi piccoli (§4.6): sotto i
-900px mostriamo un messaggio nostro invece del suo.
+900px mostriamo un messaggio nostro invece del suo. E non è nemmeno dentro il layout del
+CRM: sidebar e header dell'app sopra la toolbar di Builder farebbero tre barre impilate
+sulla stessa tela. La rotta esce dal layout come già fa l'onboarding, e di nostro resta
+una striscia sola.
 
 **Non si esce mai dal CRM.** Un guardiano sull'iframe controlla dove è finito: se Builder
 naviga verso la sua dashboard riporta a `/sito`, se finisce su `/app` (rimbalzo sui
@@ -543,12 +546,16 @@ stessa rotta; non sa che `/crm` è l'app, `/book` le prenotazioni e `/crm-form` 
   invaderebbe una di quelle: non si arriva nemmeno a pubblicarla.
 - Stessa guardia sugli slug di servizi e prodotti, e sul campo rotta della nuova pagina,
   che valida mentre scrivi e propone un'alternativa libera.
-- La home non si può ritirare né cancellare senza prima sceglierne un'altra.
+- La home non si può ritirare né cancellare senza prima sceglierne un'altra — e la regola
+  sta sul documento (`validate` e `on_trash`), non nella nostra API: si pubblica e si
+  cancella anche dalla dashboard di Builder, e la rete deve esserci comunque.
 
 ### 13.3 Pubblicazione
 
 Passa sempre da `Builder Page.publish()`, mai da un `db_set`: così restano gli snapshot e
-la promozione della bozza che Builder fa di suo. La lista mostra "modifiche non pubblicate"
+la promozione della bozza che Builder fa di suo. Nell'editor il pulsante è quello di
+Builder — un secondo Pubblica nostro sarebbe la stessa azione due volte — e le protezioni
+reggono lo stesso perché stanno sul documento. La lista mostra "modifiche non pubblicate"
 quando la bozza è avanti rispetto al vivo.
 
 L'interruttore **Servi la home su `/`** scrive `Builder Settings.home_page` — l'unico
