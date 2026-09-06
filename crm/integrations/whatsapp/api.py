@@ -12,6 +12,7 @@ a ready `WhatsApp Account` for frappe_whatsapp, which owns the messaging itself.
 import json
 
 import frappe
+import requests
 from frappe import _
 from frappe.utils import get_url
 from werkzeug.wrappers import Response
@@ -27,8 +28,11 @@ from crm.integrations.meta.client import (
 	graph_post,
 )
 from crm.integrations.meta.oauth import is_hub
+from crm.integrations.meta.relay import sign as relay_sign
 from crm.integrations.meta.relay import valid_relay_signature
 from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, make_state
+
+RELAY_TIMEOUT = 15
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
@@ -185,6 +189,156 @@ def configure_webhook() -> dict:
 	return get_webhook()
 
 
+CLAIM_PATH = "/api/method/crm.integrations.whatsapp.api.claim_route"
+
+
+def app_is_subscribed(waba_id: str, token: str) -> bool:
+	"""Is our app among the ones Meta notifies for this WhatsApp Business account?"""
+	data = graph_get(f"{waba_id}/subscribed_apps", token)
+	app_id = str(get_whatsapp_app_id())
+	for row in data.get("data") or []:
+		api_data = row.get("whatsapp_business_api_data") or {}
+		if str(api_data.get("id")) == app_id:
+			return True
+	return False
+
+
+def claim_route_on_hub(waba_id: str, phone_number_id: str, display_number: str = "") -> None:
+	"""Tell the hub that this CRM owns the account, so it forwards its messages here.
+
+	The webhook is registered per app and therefore lands on the hub for every
+	client at once; the route is what turns one incoming entry into a delivery to
+	one site. Embedded Signup records it as it goes — a number added by hand has
+	nobody to do it, and without it the hub silently drops everything.
+	"""
+	site = get_url().rstrip("/")
+	if is_hub():
+		from crm.integrations.whatsapp.signup import claim_route as record_route
+
+		record_route(waba_id, phone_number_id, display_number, site)
+		return
+
+	body = json.dumps(
+		{
+			"waba_id": waba_id,
+			"phone_number_id": phone_number_id,
+			"display_phone_number": display_number or "",
+			"site": site,
+		}
+	).encode()
+	response = requests.post(
+		f"{hub_url()}{CLAIM_PATH}",
+		data=body,
+		headers={"Content-Type": "application/json", "X-CRM-Relay-Signature": relay_sign(body)},
+		timeout=RELAY_TIMEOUT,
+	)
+	if response.status_code >= 300:
+		raise ValueError(f"HTTP {response.status_code}: {response.text[:200]}")
+
+
+def wire_up_delivery(account) -> list[dict]:
+	"""Everything that has to be true before a reply can come back in.
+
+	Sending needs only a token; receiving needs Meta to be subscribed to the
+	account *and* the hub to know where to forward what it receives. Both are
+	idempotent, so this doubles as the check: what it cannot fix, it names.
+	"""
+	problems = []
+	token = account.get_password("token", raise_exception=False)
+	waba_id = account.get("business_id")
+	if not token:
+		problems.append(
+			{
+				"key": "token",
+				"what": _("This number has no access token"),
+				"detail": _("Add it again with its credentials."),
+			}
+		)
+		return problems
+	if not waba_id:
+		# both remaining steps are keyed by the business account: without it
+		# there is nothing to subscribe and nothing to route
+		problems.append(
+			{
+				"key": "waba_id",
+				"what": _("This number has no WhatsApp Business Account id"),
+				"detail": _("Without it Meta cannot be asked to send its messages anywhere."),
+			}
+		)
+		return problems
+
+	try:
+		if not app_is_subscribed(waba_id, token):
+			graph_post(f"{waba_id}/subscribed_apps", token, {})
+	except MetaAPIError as exc:
+		problems.append(
+			{
+				"key": "subscribed_apps",
+				"what": _("Meta is not sending this number's messages to the app"),
+				"detail": str(exc)[:300],
+			}
+		)
+
+	try:
+		claim_route_on_hub(waba_id, account.get("phone_id") or "", account.get("account_name") or "")
+	except Exception as exc:
+		frappe.log_error(frappe.get_traceback(), "WhatsApp: could not claim the route on the hub")
+		problems.append(
+			{
+				"key": "route",
+				"what": _("The hub does not know this number belongs to this CRM"),
+				"detail": str(exc)[:300],
+			}
+		)
+	return problems
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def claim_route():
+	"""Client site → hub: this CRM owns this WhatsApp account.
+
+	Guest-accessible because the caller is another of our sites rather than a
+	logged-in user; the relay signature over the exact body authenticates it, and
+	an account already routed elsewhere is refused rather than reassigned.
+	"""
+	raw_body = frappe.request.get_data() or b""
+	if not valid_relay_signature(frappe.request.headers.get("X-CRM-Relay-Signature"), raw_body):
+		return Response("invalid signature", status=403, mimetype="text/plain")
+
+	try:
+		data = json.loads(raw_body)
+	except ValueError:
+		return Response("bad payload", status=400, mimetype="text/plain")
+
+	from crm.integrations.whatsapp.signup import allowed_site
+	from crm.integrations.whatsapp.signup import claim_route as record_route
+
+	site = (data.get("site") or "").rstrip("/")
+	waba_id = data.get("waba_id") or ""
+	if not site or not waba_id or not allowed_site(site):
+		return Response("refused", status=403, mimetype="text/plain")
+
+	try:
+		record_route(waba_id, data.get("phone_number_id") or "", data.get("display_phone_number") or "", site)
+	except frappe.ValidationError as exc:
+		return Response(str(exc)[:200], status=409, mimetype="text/plain")
+	return Response(json.dumps({"ok": True}), mimetype="application/json")
+
+
+@frappe.whitelist(methods=["POST"])
+def recheck_delivery(name: str) -> dict:
+	"""Make incoming messages possible for this number, and say what is missing.
+
+	Everything it does is idempotent, so the button that repairs a number and the
+	button that checks one are the same button.
+	"""
+	_check_manager()
+	if not frappe.db.exists("WhatsApp Account", name):
+		frappe.throw(_("That number is not connected"))
+	problems = wire_up_delivery(frappe.get_doc("WhatsApp Account", name))
+	return {"ok": not problems, "problems": problems}
+
+
 @frappe.whitelist(methods=["POST"])
 def add_account(phone_number_id: str, waba_id: str, token: str, account_name: str | None = None) -> dict:
 	"""Add a number with credentials typed in, instead of Embedded Signup.
@@ -212,7 +366,10 @@ def add_account(phone_number_id: str, waba_id: str, token: str, account_name: st
 		}
 	)
 	frappe.db.commit()
-	return {"account": name}
+
+	# sending would work from here; receiving would not, and silently
+	problems = wire_up_delivery(frappe.get_doc("WhatsApp Account", name))
+	return {"account": name, "problems": problems}
 
 
 @frappe.whitelist()

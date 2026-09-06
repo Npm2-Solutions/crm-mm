@@ -205,6 +205,38 @@ messaggio Outgoing inserito normalmente farebbe partire l'invio via API a
 frappe_whatsapp, e il messaggio — già partito dal telefono — verrebbe recapitato
 due volte.
 
+### Perché un numero invia ma non riceve
+
+Sono **tre** condizioni, e solo la prima serve per inviare:
+
+| Cosa | Chi la crea | Se manca |
+|---|---|---|
+| token sull'account | Embedded Signup, o l'aggiunta manuale | non parte niente |
+| `POST /{waba_id}/subscribed_apps` | Embedded Signup (`subscribe_waba`) | Meta non notifica l'app per quel WABA |
+| `Meta WhatsApp Route` sull'hub | Embedded Signup (`claim_route`) | l'hub riceve l'entry e **la scarta**, perché non sa a chi darla |
+
+L'aggiunta manuale di un numero non passa dall'hub, quindi non aveva nessuna
+delle ultime due: un numero di test collegato a mano poteva inviare e non
+riceveva mai nulla, senza un errore da nessuna parte. Ora `add_account` le
+esegue entrambe, e il bottone **Check incoming** nelle impostazioni le rifà (sono
+idempotenti) dicendo quale delle due non riesce.
+
+Resta comunque necessaria la sottoscrizione **a livello di app** (callback URL +
+verify token), che è quella del bottone *Configure it*: senza, Meta non chiama
+l'hub per nessun cliente.
+
+### La finestra di 24 ore
+
+WhatsApp lascia scrivere liberamente solo per **24 ore dall'ultimo messaggio del
+cliente**. Fuori da quella finestra Meta consegna soltanto un **template
+approvato**, e un testo libero torna indietro con l'errore 131047.
+
+Nella chat del CRM la finestra è calcolata dall'ultimo messaggio `Incoming`, e
+quando è chiusa compare l'avviso con il bottone che apre i template. L'avviso
+**non blocca** l'invio: quello che sappiamo della finestra vale quanto i messaggi
+in entrata che ci sono arrivati, e finché la ricezione non è a posto sarebbe un
+blocco basato su dati incompleti.
+
 ### Session logging
 
 Meta richiede che l'Embedded Signup sia implementato **con session logging**.
