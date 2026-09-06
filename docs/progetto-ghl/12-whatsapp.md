@@ -365,9 +365,37 @@ per variabile, e ognuno passa da `render()`: si può scrivere
 > L'azione **"Invia template WhatsApp" nelle automazioni c'è già** dal lavoro
 > sul motore (`step_send_whatsapp_template`): non era da fare.
 
-## Nota sui costi
+## Costi e chi li paga
 
-WhatsApp non è gratis: Meta fattura **per conversazione** e le regole cambiano
-spesso. Fuori dalla finestra di 24 ore dall'ultimo messaggio del cliente si può
-scrivere **solo con template approvati**. Va deciso presto se il costo lo
-assorbi tu o lo ribalti sul cliente, perché cambia cosa mostrare nell'interfaccia.
+Dal **1 luglio 2025** Meta non fattura più a conversazione ma **a messaggio**, e
+solo quando viene consegnato un **template**:
+
+- ogni messaggio **non-template** (testo, immagine, audio…) è **gratis**, ma si
+  può inviare solo dentro la finestra di 24 ore;
+- i template **utility** consegnati dentro una finestra aperta sono gratis;
+- i template **marketing** si pagano sempre, con tariffa per categoria e prefisso
+  del destinatario;
+- entrando da un *free entry point* tutto è gratis per 72 ore.
+
+### Chi mette la carta
+
+Da **Tech Provider non hai una linea di credito**. La documentazione Meta è
+esplicita: i clienti onboardati da un Tech Provider *«must provide their own
+payment method after onboarding is complete»*, Meta fattura loro l'uso dell'API e
+il partner fattura i propri servizi. E soprattutto: senza metodo di pagamento
+sulla propria WABA il cliente **non può né inviare né ricevere** con la nostra
+app.
+
+Va quindi messo nell'onboarding: dopo il QR, il cliente deve aggiungere una carta
+alla sua WhatsApp Business Account. Non è un dettaglio amministrativo, è un
+prerequisito tecnico.
+
+L'alternativa — linea di credito condivisa, fattura aggregata a noi, noi che
+fatturiamo ai clienti — è riservata ai **Solution Partner**, processo lungo e che
+ci rende *«Bill To Party»*: responsabili verso Meta di tutta la spesa dei clienti
+che usano la nostra linea.
+
+Il **numero di test** che Meta presta all'app è l'eccezione: WABA e numero di
+test *«don't require a payment method on file in order to send template
+messages»* e hanno limiti rilassati. Per registrare i video di App Review basta
+quello.
