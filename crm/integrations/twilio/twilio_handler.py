@@ -24,6 +24,7 @@ class Twilio:
 		self.application_sid = settings.twiml_sid
 		self.api_key = settings.api_key
 		self.api_secret = settings.get_password("api_secret")
+		self.auth_token = settings.get_password("auth_token", raise_exception=False)
 		self.twilio_client = self.get_twilio_client()
 
 	@classmethod
@@ -76,9 +77,35 @@ class Twilio:
 		url_path = "/api/method/crm.integrations.twilio.api.update_call_status_info"
 		return get_public_url(url_path)
 
-	def generate_twilio_dial_response(self, from_number: str, to_number: str):
-		"""Generates voice call instructions to forward the call to agents Phone."""
+	def recording_notice(self) -> str | None:
+		"""What to say before connecting, when the call is being recorded."""
+		if not self.settings.record_calls:
+			return None
+		return (self.settings.recording_notice or "").strip() or None
+
+	def get_recording_notice_url(self):
+		url_path = "/api/method/crm.integrations.twilio.api.recording_notice"
+		return get_public_url(url_path)
+
+	def say_notice(self, resp: VoiceResponse) -> None:
+		"""Speak the recording notice into an existing response, if there is one."""
+		if notice := self.recording_notice():
+			voice, language = notice_voice()
+			resp.say(notice, language=language, voice=voice)
+
+	def generate_twilio_dial_response(self, from_number: str, to_number: str, notify_callee=False):
+		"""Voice instructions to forward the call to a phone.
+
+		``notify_callee`` decides which side hears the recording notice. On an
+		incoming call the person to tell is the one already on the line, so it is
+		spoken before dialling. On an outgoing one it is the person about to be
+		rung, so it rides on their leg via the number's own TwiML — telling the
+		agent that their own call is recorded discloses nothing to anybody.
+		"""
 		resp = VoiceResponse()
+		if not notify_callee:
+			self.say_notice(resp)
+
 		dial = Dial(
 			caller_id=from_number,
 			record=self.settings.record_calls,
@@ -87,6 +114,7 @@ class Twilio:
 		)
 		dial.number(
 			to_number,
+			url=self.get_recording_notice_url() if (notify_callee and self.recording_notice()) else None,
 			status_callback_event="initiated ringing answered completed",
 			status_callback=self.get_update_call_status_callback_url(),
 			status_callback_method="POST",
@@ -100,6 +128,8 @@ class Twilio:
 	def generate_twilio_client_response(self, client, ring_tone="at"):
 		"""Generates voice call instructions to forward the call to agents computer."""
 		resp = VoiceResponse()
+		# the caller is already on the line, so they are the one to tell
+		self.say_notice(resp)
 		dial = Dial(
 			ring_tone=ring_tone,
 			record=self.settings.record_calls,
@@ -127,6 +157,16 @@ class Twilio:
 		return client
 
 
+def notice_voice() -> tuple[str, str]:
+	"""Voice and language for spoken notices, borrowed from the answering service.
+
+	One place to configure how the CRM sounds on the phone; a second pair of
+	fields would only ever be set to the same values.
+	"""
+	config = answering.settings()
+	return (config.voice or "alice", config.language or "it-IT")
+
+
 class TwilioCallDetails:
 	def __init__(self, call_info, call_from=None, call_to=None):
 		self.call_info = call_info
@@ -138,9 +178,9 @@ class TwilioCallDetails:
 		self._call_to = call_to or call_info.get("To")
 
 	def get_direction(self):
-		if self.call_info.get("Caller").lower().startswith("client"):
-			return "Outgoing"
-		return "Incoming"
+		# Caller is absent on some callbacks; a missing one is not an outgoing call
+		caller = self.call_info.get("Caller") or ""
+		return "Outgoing" if caller.lower().startswith("client") else "Incoming"
 
 	def get_from_number(self):
 		return self._call_from or self.call_info.get("From")
@@ -163,8 +203,7 @@ class TwilioCallDetails:
 		receiver = ""
 
 		if direction == "Outgoing":
-			caller = self.call_info.get("Caller")
-			identity = caller.replace("client:", "").strip()
+			identity = (self.call_info.get("Caller") or "").replace("client:", "").strip()
 			caller = Twilio.emailid_from_identity(identity) if identity else ""
 		elif not answering.takes_every_call():
 			# with the announcement answering every call there is no attender to
