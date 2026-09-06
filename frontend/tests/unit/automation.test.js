@@ -8,12 +8,17 @@ import {
   hasErrors,
   moveStep,
   newStep,
+  newTrigger,
   normalizeSteps,
+  normalizeTriggers,
   removeStep,
+  serializeTriggers,
+  sharedTriggerDoctype,
   stepFromPalette,
   stepLabels,
   stepSummary,
   triggerDoctype,
+  triggerSummary,
   validateAutomation,
   waitSummary,
   PALETTE,
@@ -185,7 +190,7 @@ describe('cleanGroups', () => {
 describe('validateAutomation', () => {
   const draft = (steps, extra = {}) => ({
     title: 'Flow',
-    trigger_event: 'Lead Created',
+    triggers: [newTrigger()],
     steps,
     ...extra,
   })
@@ -221,9 +226,28 @@ describe('validateAutomation', () => {
     expect(issues[0].node).toBe(sms.id)
   })
 
-  it('requires a title and at least one step', () => {
-    const issues = validateAutomation({ title: '', steps: [] })
-    expect(issues.filter((i) => i.level === 'error')).toHaveLength(2)
+  it('requires a title, a step and a trigger', () => {
+    const issues = validateAutomation({ title: '', steps: [], triggers: [] })
+    expect(issues.filter((i) => i.level === 'error')).toHaveLength(3)
+  })
+
+  it('warns when two triggers listen to the same thing', () => {
+    const twice = [newTrigger('Tag Added'), newTrigger('Tag Added')]
+    const issues = validateAutomation(
+      draft([newStep('add_note', { comment: 'x' })], { triggers: twice }),
+    )
+    expect(issues).toHaveLength(1)
+    expect(issues[0].level).toBe('warning')
+    expect(issues[0].node).toBe(`trigger:${twice[1].id}`)
+  })
+
+  it('asks a date reminder which field it watches', () => {
+    const issues = validateAutomation(
+      draft([newStep('add_note', { comment: 'x' })], {
+        triggers: [newTrigger('Date Reminder')],
+      }),
+    )
+    expect(issues[0].message).toContain('date field')
   })
 
   it('accepts a go_to pointing at an existing label', () => {
@@ -241,5 +265,76 @@ describe('triggerDoctype', () => {
     expect(triggerDoctype('Lead Created')).toBe('CRM Lead')
     expect(triggerDoctype('Deal Status Changed')).toBe('CRM Deal')
     expect(triggerDoctype('Tag Added')).toBeNull()
+  })
+})
+
+describe('triggers', () => {
+  it('reads both the table and the single trigger of older automations', () => {
+    const fromTable = normalizeTriggers({
+      triggers: [
+        { event: 'Lead Created', config: {}, condition: null },
+        {
+          event: 'Tag Added',
+          config: { tag: 'vip' },
+          condition: [[{ field: 'email', operator: 'is_set' }]],
+        },
+      ],
+    })
+    expect(fromTable.map((t) => t.event)).toEqual(['Lead Created', 'Tag Added'])
+    expect(fromTable[1].config.tag).toBe('vip')
+    expect(fromTable[1].condition_groups).toEqual([
+      [{ field: 'email', operator: 'is_set' }],
+    ])
+    expect(fromTable[0].id).toBeTruthy()
+
+    const legacy = normalizeTriggers({
+      trigger_event: 'Deal Created',
+      trigger_config: { tag: 'x' },
+      trigger_condition: { field: 'status', operator: 'equals', value: 'New' },
+    })
+    expect(legacy).toHaveLength(1)
+    expect(legacy[0].event).toBe('Deal Created')
+    expect(legacy[0].condition_groups).toEqual([
+      [{ field: 'status', operator: 'equals', value: 'New' }],
+    ])
+  })
+
+  it('sends conditions only when there is something to send', () => {
+    const trigger = newTrigger('Tag Added')
+    trigger.config = { tag: 'vip' }
+    expect(serializeTriggers([trigger])).toEqual([
+      { event: 'Tag Added', config: { tag: 'vip' }, condition: null },
+    ])
+
+    trigger.condition_groups = [[{ field: 'email', operator: 'is_set' }]]
+    expect(serializeTriggers([trigger])[0].condition).toEqual([
+      [{ field: 'email', operator: 'is_set' }],
+    ])
+  })
+
+  it('knows when every trigger works on the same record', () => {
+    expect(
+      sharedTriggerDoctype([
+        newTrigger('Lead Created'),
+        newTrigger('Lead Status Changed'),
+      ]),
+    ).toBe('CRM Lead')
+    expect(
+      sharedTriggerDoctype([
+        newTrigger('Lead Created'),
+        newTrigger('Deal Created'),
+      ]),
+    ).toBeNull()
+    expect(sharedTriggerDoctype([newTrigger('Tag Added')])).toBeNull()
+  })
+
+  it('summarises what a trigger listens to', () => {
+    const trigger = newTrigger('Tag Added')
+    expect(triggerSummary(trigger)).toBe('every record')
+    trigger.config = { tag: 'vip' }
+    trigger.condition_groups = [
+      [{ field: 'status', operator: 'equals', value: 'New' }],
+    ]
+    expect(triggerSummary(trigger)).toBe('tag «vip» · status is New')
   })
 })

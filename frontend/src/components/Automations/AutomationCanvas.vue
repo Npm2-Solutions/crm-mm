@@ -11,46 +11,68 @@
       :style="{ transform: `scale(${zoom})`, transformOrigin: 'top center' }"
     >
       <div class="flex flex-col items-center">
-        <!-- trigger: what puts a record into this automation -->
-        <div
-          data-node
-          class="w-[320px] cursor-pointer rounded-lg border bg-surface-white px-3 py-2.5 shadow-sm transition-colors"
-          :class="
-            editor.selectedId.value === 'trigger'
-              ? 'border-outline-gray-4 ring-2 ring-outline-gray-3'
-              : 'border-outline-gray-2 hover:border-outline-gray-3'
-          "
-          @click.stop="editor.select('trigger')"
-        >
-          <div class="flex items-start gap-2.5">
-            <div
-              class="grid size-8 shrink-0 place-items-center rounded-md bg-surface-gray-2 text-ink-gray-7"
-            >
-              <FeatherIcon
-                :name="triggerDefinition(draft.trigger_event).icon"
-                class="size-4"
+        <!-- triggers: any of them puts a record into this automation -->
+        <div class="flex flex-wrap items-stretch justify-center gap-3">
+          <div
+            v-for="(trigger, index) in draft.triggers"
+            :key="trigger.id"
+            data-node
+            class="w-[320px] cursor-pointer rounded-lg border bg-surface-white px-3 py-2.5 shadow-sm transition-colors"
+            :class="
+              editor.selectedId.value === `trigger:${trigger.id}`
+                ? 'border-outline-gray-4 ring-2 ring-outline-gray-3'
+                : 'border-outline-gray-2 hover:border-outline-gray-3'
+            "
+            @click.stop="editor.select(`trigger:${trigger.id}`)"
+          >
+            <div class="flex items-start gap-2.5">
+              <div
+                class="grid size-8 shrink-0 place-items-center rounded-md bg-surface-gray-2 text-ink-gray-7"
+              >
+                <FeatherIcon
+                  :name="triggerDefinition(trigger.event).icon"
+                  class="size-4"
+                />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div
+                  class="text-xs font-medium uppercase tracking-wide text-ink-gray-5"
+                >
+                  {{ __('Trigger') }}
+                  <span v-if="draft.triggers.length > 1">{{ index + 1 }}</span>
+                </div>
+                <div class="truncate text-base font-medium text-ink-gray-8">
+                  {{ __(trigger.event) }}
+                </div>
+                <div class="truncate text-sm text-ink-gray-5">
+                  {{ triggerSummary(trigger) }}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                icon="lucide-settings-2"
+                :label="__('Trigger settings')"
+                @click.stop="editor.select(`trigger:${trigger.id}`)"
               />
             </div>
-            <div class="min-w-0 flex-1">
-              <div
-                class="text-xs font-medium uppercase tracking-wide text-ink-gray-5"
-              >
-                {{ __('Trigger') }}
-              </div>
-              <div class="truncate text-base font-medium text-ink-gray-8">
-                {{ __(draft.trigger_event) }}
-              </div>
-              <div class="truncate text-sm text-ink-gray-5">
-                {{ enrolmentSummary }}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              icon="lucide-settings-2"
-              :label="__('Trigger settings')"
-              @click.stop="editor.select('trigger')"
-            />
           </div>
+
+          <button
+            data-node
+            class="grid w-[180px] place-items-center rounded-lg border border-dashed border-outline-gray-3 px-3 py-2.5 text-sm text-ink-gray-6 transition-colors hover:border-outline-gray-4 hover:bg-surface-gray-2"
+            @click.stop="editor.addTrigger()"
+          >
+            <span class="flex items-center gap-1.5">
+              <FeatherIcon name="plus" class="size-4" />
+              {{ __('Add trigger') }}
+            </span>
+          </button>
+        </div>
+        <div
+          v-if="draft.triggers.length > 1"
+          class="mt-3 rounded-full bg-surface-gray-2 px-3 py-1 text-xs text-ink-gray-6"
+        >
+          {{ __('any of these starts the flow') }}
         </div>
 
         <StepFlow :steps="draft.steps" :depth="0" />
@@ -89,12 +111,8 @@
 <script setup>
 import StepFlow from './StepFlow.vue'
 import { Button, FeatherIcon } from 'frappe-ui'
-import { computed, inject, ref } from 'vue'
-import {
-  cleanGroups,
-  groupsSummary,
-  triggerDefinition,
-} from '@/utils/automation'
+import { inject, ref } from 'vue'
+import { triggerDefinition, triggerSummary } from '@/utils/automation'
 
 const editor = inject('automation-editor')
 const draft = editor.draft
@@ -102,13 +120,6 @@ const draft = editor.draft
 const viewport = ref(null)
 const zoom = ref(1)
 const panning = ref(false)
-
-const enrolmentSummary = computed(() => {
-  const groups = cleanGroups(draft.trigger_condition_groups)
-  return groups
-    ? __('only when {0}', [groupsSummary(groups)])
-    : __('every record')
-})
 
 function setZoom(value) {
   zoom.value = Math.min(1.4, Math.max(0.5, Math.round(value * 10) / 10))

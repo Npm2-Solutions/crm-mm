@@ -64,7 +64,7 @@
             "
           >
             <FeatherIcon
-              :name="triggerDefinition(row.trigger_event).icon"
+              :name="triggerDefinition(primaryTrigger(row)).icon"
               class="size-4"
             />
           </div>
@@ -80,7 +80,7 @@
               />
             </div>
             <div class="mt-0.5 truncate text-sm text-ink-gray-5">
-              {{ __(row.trigger_event)
+              {{ triggerLabels(row)
               }}<span v-if="row.description"> · {{ row.description }}</span>
             </div>
           </div>
@@ -180,7 +180,7 @@ import {
 } from 'frappe-ui'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { RECIPES, triggerDefinition } from '@/utils/automation'
+import { RECIPES, newTrigger, triggerDefinition } from '@/utils/automation'
 
 const router = useRouter()
 
@@ -206,11 +206,29 @@ const visible = computed(() => {
     if (filter.value === 'active' && !row.enabled) return false
     if (filter.value === 'draft' && row.enabled) return false
     if (!needle) return true
-    return [row.title, row.description, row.trigger_event]
+    return [row.title, row.description, ...triggerEventsOf(row)]
       .map((text) => (text || '').toLowerCase())
       .some((text) => text.includes(needle))
   })
 })
+
+function triggerEventsOf(row) {
+  return row.triggers?.length ? row.triggers : [row.trigger_event]
+}
+
+function primaryTrigger(row) {
+  return triggerEventsOf(row)[0]
+}
+
+/** The events this automation listens to, kept short in the row. */
+function triggerLabels(row) {
+  const events = triggerEventsOf(row)
+  const shown = events.slice(0, 2).map((event) => __(event))
+  if (events.length > shown.length) {
+    shown.push(__('+{0}', [events.length - shown.length]))
+  }
+  return shown.join(' · ')
+}
 
 function open(name) {
   router.push({ name: 'Automation', params: { automationId: name } })
@@ -229,7 +247,7 @@ function useRecipe(recipe) {
   create({
     title: __(recipe.title),
     description: __(recipe.description),
-    trigger_event: recipe.trigger_event,
+    triggers: [newTrigger(recipe.trigger_event)],
     steps: recipe.build(),
   })
 }

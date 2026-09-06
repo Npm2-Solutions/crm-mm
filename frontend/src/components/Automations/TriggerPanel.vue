@@ -1,16 +1,20 @@
 <template>
-  <div class="flex h-full flex-col">
+  <div v-if="trigger" class="flex h-full flex-col">
     <div
       class="flex items-start gap-2.5 border-b border-outline-gray-2 px-4 py-3"
     >
       <div
         class="grid size-8 shrink-0 place-items-center rounded-md bg-surface-gray-2 text-ink-gray-7"
       >
-        <FeatherIcon name="zap" class="size-4" />
+        <FeatherIcon
+          :name="triggerDefinition(trigger.event).icon"
+          class="size-4"
+        />
       </div>
       <div class="min-w-0 flex-1">
         <div class="text-base font-semibold text-ink-gray-8">
           {{ __('Trigger') }}
+          <span v-if="draft.triggers.length > 1">{{ position }}</span>
         </div>
         <div class="truncate text-sm text-ink-gray-5">
           {{ __('What puts a record into this automation') }}
@@ -30,11 +34,11 @@
         @click="showPicker = true"
       >
         <FeatherIcon
-          :name="triggerDefinition(draft.trigger_event).icon"
+          :name="triggerDefinition(trigger.event).icon"
           class="size-4 text-ink-gray-6"
         />
         <span class="flex-1 text-base font-medium text-ink-gray-8">
-          {{ __(draft.trigger_event) }}
+          {{ __(trigger.event) }}
         </span>
         <FeatherIcon name="chevron-right" class="size-4 text-ink-gray-5" />
       </button>
@@ -46,20 +50,20 @@
         </div>
         <FormControl
           v-if="configKind === 'tag'"
-          v-model="draft.trigger_config.tag"
+          v-model="trigger.config.tag"
           type="text"
           :label="__('Only this tag (empty = any)')"
         />
         <FormControl
           v-else-if="configKind === 'link'"
-          v-model="draft.trigger_config.link"
+          v-model="trigger.config.link"
           type="select"
           :label="__('Tracked link')"
           :options="linkOptions"
         />
         <template v-else-if="configKind === 'date'">
           <FormControl
-            v-model="draft.trigger_config.doctype"
+            v-model="trigger.config.doctype"
             type="select"
             :label="__('Record')"
             :options="[
@@ -72,23 +76,22 @@
               {{ __('Date field') }}
             </div>
             <Autocomplete
-              :modelValue="draft.trigger_config.date_field"
+              :modelValue="trigger.config.date_field"
               :options="dateFieldOptions"
               :placeholder="__('e.g. expected_closure_date')"
               @update:modelValue="
-                (option) =>
-                  (draft.trigger_config.date_field = option?.value || '')
+                (option) => (trigger.config.date_field = option?.value || '')
               "
             />
           </div>
           <div class="grid grid-cols-2 gap-2">
             <FormControl
-              v-model="draft.trigger_config.offset_days"
+              v-model="trigger.config.offset_days"
               type="number"
               :label="__('Days offset')"
             />
             <FormControl
-              v-model="draft.trigger_config.direction"
+              v-model="trigger.config.direction"
               type="select"
               :label="__('Direction')"
               :options="[
@@ -98,7 +101,7 @@
             />
           </div>
           <label class="flex items-center gap-2 text-sm text-ink-gray-7">
-            <Switch v-model="draft.trigger_config.annual" size="sm" />
+            <Switch v-model="trigger.config.annual" size="sm" />
             {{ __('Every year (birthdays and anniversaries)') }}
           </label>
         </template>
@@ -123,52 +126,45 @@
       </div>
 
       <FormControl
-        v-if="!triggerDefinition(draft.trigger_event).doctype"
+        v-if="!sharedTriggerDoctype(draft.triggers)"
         v-model="editor.fieldContext.value"
         type="select"
-        :label="__('This trigger fires on both — pick the fields to work with')"
+        :label="__('Fields to work with (the triggers do not agree)')"
         :options="[
           { label: __('Lead'), value: 'CRM Lead' },
           { label: __('Deal'), value: 'CRM Deal' },
         ]"
       />
 
-      <!-- who gets in -->
+      <!-- who gets in through this trigger -->
       <div class="flex flex-col gap-2">
         <div class="text-xs font-medium uppercase text-ink-gray-5">
           {{ __('Only enrol records matching') }}
         </div>
         <ConditionBuilder
-          v-model="draft.trigger_condition_groups"
+          v-model="trigger.condition_groups"
           :fields="editor.fields.value"
         />
+        <p class="text-xs text-ink-gray-4">
+          {{ __('These conditions belong to this trigger alone.') }}
+        </p>
       </div>
+    </div>
 
-      <!-- re-entry rules -->
-      <div class="flex flex-col gap-2 border-t border-outline-gray-1 pt-3">
-        <label class="flex items-start gap-2 text-sm text-ink-gray-7">
-          <Switch v-model="draft.allow_reenrollment" size="sm" class="mt-0.5" />
-          <span>
-            {{ __('Allow re-enrolment') }}
-            <span class="block text-xs text-ink-gray-5">
-              {{
-                __(
-                  'Off: a record enters once and never again. On: it can re-enter once it has left.',
-                )
-              }}
-            </span>
-          </span>
-        </label>
-        <label class="flex items-start gap-2 text-sm text-ink-gray-7">
-          <Switch v-model="draft.exit_on_reply" size="sm" class="mt-0.5" />
-          <span>
-            {{ __('Stop on response') }}
-            <span class="block text-xs text-ink-gray-5">
-              {{ __('The record leaves as soon as it answers.') }}
-            </span>
-          </span>
-        </label>
-      </div>
+    <div
+      class="flex items-center justify-between border-t border-outline-gray-2 px-4 py-3"
+    >
+      <span class="text-xs text-ink-gray-5">
+        {{ __('{0} trigger(s)', [draft.triggers.length]) }}
+      </span>
+      <Button
+        variant="ghost"
+        theme="red"
+        iconLeft="trash-2"
+        :label="__('Delete trigger')"
+        :disabled="draft.triggers.length <= 1"
+        @click="editor.removeTrigger(trigger.id)"
+      />
     </div>
 
     <CatalogPicker
@@ -189,6 +185,7 @@ import { Button, FeatherIcon, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, inject, ref } from 'vue'
 import {
   TRIGGER_CATEGORIES,
+  sharedTriggerDoctype,
   triggerConfigKind,
   triggerDefinition,
   triggerEntries,
@@ -196,10 +193,15 @@ import {
 
 const editor = inject('automation-editor')
 const draft = editor.draft
+const trigger = computed(() => editor.selectedTrigger.value)
 
 const showPicker = ref(false)
 
-const configKind = computed(() => triggerConfigKind(draft.trigger_event))
+const position = computed(
+  () => draft.triggers.findIndex((row) => row.id === trigger.value?.id) + 1,
+)
+
+const configKind = computed(() => triggerConfigKind(trigger.value?.event))
 
 const triggerOptions = computed(() =>
   triggerEntries(editor.meta.data?.trigger_events || []),
@@ -215,7 +217,7 @@ const linkOptions = computed(() => [
 
 /** Date reminders only make sense on date fields of the chosen record. */
 const dateFieldOptions = computed(() => {
-  const doctype = draft.trigger_config.doctype || 'CRM Lead'
+  const doctype = trigger.value?.config?.doctype || 'CRM Lead'
   return (editor.meta.data?.fields?.[doctype] || [])
     .filter((field) => ['Date', 'Datetime'].includes(field.fieldtype))
     .map((field) => ({
@@ -232,8 +234,8 @@ const webhookUrl = computed(
 )
 
 function pickTrigger(entry) {
-  draft.trigger_event = entry.key
-  draft.trigger_config = {}
+  trigger.value.event = entry.key
+  trigger.value.config = {}
 }
 
 function copyWebhook() {

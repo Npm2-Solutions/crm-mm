@@ -508,6 +508,51 @@ export function newConditionGroup() {
   return [newCondition()]
 }
 
+/** A trigger row: the event, its event filters and its own record conditions. */
+export function newTrigger(event = 'Lead Created') {
+  return {
+    id: newId(),
+    event,
+    config: {},
+    condition_groups: [newConditionGroup()],
+  }
+}
+
+/** API shape → editor shape, with the pre-table single trigger folded in. */
+export function normalizeTriggers(data) {
+  const rows = data?.triggers?.length
+    ? data.triggers
+    : [
+        {
+          event: data?.trigger_event || 'Lead Created',
+          config: data?.trigger_config || {},
+          condition: data?.trigger_condition,
+        },
+      ]
+  return rows.map((row) => ({
+    id: newId(),
+    event: row.event || row.trigger_event,
+    config: row.config || {},
+    condition_groups: normalizeGroups(row.condition),
+  }))
+}
+
+/** Editor shape → API payload; empty conditions are dropped, not sent as noise. */
+export function serializeTriggers(triggers) {
+  return (triggers || []).map((trigger) => ({
+    event: trigger.event,
+    config: trigger.config || {},
+    condition: cleanGroups(trigger.condition_groups),
+  }))
+}
+
+/** The record every trigger agrees on, or null when they disagree (or don't say). */
+export function sharedTriggerDoctype(triggers) {
+  const doctypes = new Set((triggers || []).map((t) => triggerDoctype(t.event)))
+  if (doctypes.size !== 1) return null
+  return [...doctypes][0]
+}
+
 export function newBranch(label = '') {
   return {
     id: newId(),
@@ -753,6 +798,26 @@ export function waitSummary(step) {
   return parts.length ? parts.join(' ') : __('no delay')
 }
 
+/** What a trigger listens to, in one line: its filters and its conditions. */
+export function triggerSummary(trigger) {
+  const parts = []
+  const config = trigger?.config || {}
+  if (config.tag) parts.push(__('tag «{0}»', [config.tag]))
+  if (config.link) parts.push(__('link «{0}»', [config.link]))
+  if (config.date_field) {
+    parts.push(
+      __('{0} {1} {2}', [
+        config.date_field,
+        config.offset_days || 0,
+        __(config.direction || 'before'),
+      ]),
+    )
+  }
+  const groups = cleanGroups(trigger?.condition_groups)
+  if (groups) parts.push(groupsSummary(groups))
+  return parts.join(' · ') || __('every record')
+}
+
 export function stepSummary(step) {
   switch (step.type) {
     case 'send_email':
@@ -824,11 +889,32 @@ export function validateAutomation(draft) {
 
   if (!draft.title?.trim()) add('error', __('The automation needs a title'))
   if (!draft.steps?.length) add('error', __('Add at least one step'))
+  if (!draft.triggers?.length) add('error', __('Add at least one trigger'))
 
-  if (triggerConfigKind(draft.trigger_event) === 'date') {
-    if (!draft.trigger_config?.date_field) {
-      add('warning', __('Pick the date field the reminder watches'))
+  const seen = new Set()
+  for (const trigger of draft.triggers || []) {
+    const where = __(trigger.event)
+    const node = `trigger:${trigger.id}`
+    if (
+      triggerConfigKind(trigger.event) === 'date' &&
+      !trigger.config?.date_field
+    ) {
+      add(
+        'warning',
+        `${where}: ${__('pick the date field the reminder watches')}`,
+        node,
+      )
     }
+    // two triggers on the same event with the same filters: the second never fires
+    const fingerprint = `${trigger.event}|${JSON.stringify(trigger.config || {})}`
+    if (seen.has(fingerprint)) {
+      add(
+        'warning',
+        `${where}: ${__('a trigger with the same filters is already there')}`,
+        node,
+      )
+    }
+    seen.add(fingerprint)
   }
 
   const labels = stepLabels(draft.steps || [])

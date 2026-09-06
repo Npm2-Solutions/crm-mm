@@ -9,7 +9,8 @@
 >
 > ## Matrice di parità GHL → CRM (stato attuale)
 >
-> **Trigger** ✅: Lead/Deal Created, Lead/Deal Status Changed, Booking
+> **Trigger** ✅ (**piu' d'uno per automazione**, ognuno con i suoi filtri e le
+> sue condizioni): Lead/Deal Created, Lead/Deal Status Changed, Booking
 > Created/Cancelled/No Show/Completed (≈ Appointment Status), Incoming SMS,
 > **Customer Replied** (SMS/WhatsApp/email), **Email Opened** (read tracking),
 > **Trigger Link Clicked**, **Tag Added/Removed**, Task Completed, Note Added,
@@ -42,8 +43,7 @@
 > condizioni con selettore di campo dai meta, merge field, problemi cliccabili,
 > statistiche per nodo, prova a vuoto su un record vero, ricette.
 > ❌ (rispetto all'Advanced Builder di GHL): canvas free-form con nodi
-> scollegati, sticky note e commenti, multi-selezione, minimappa, trigger
-> multipli per workflow.
+> scollegati, sticky note e commenti, multi-selezione, minimappa.
 
 > Parte del [Progetto GHL-Parity](./README.md). **È il modulo cuore del progetto**:
 > il builder visuale di automazioni multi-step temporizzate (trigger → wait →
@@ -104,9 +104,14 @@ notifica interna, review request), dati (webhook, Google Sheets), opportunità
 
 ### DocType
 
-- `CRM Workflow` *(nome def.: Automation Workflow)* — grafo JSON (nodi+archi),
-  stato (draft/attivo/paused), regole di ri-ingresso, statistiche
-- `Workflow Trigger` — tipo evento + filtri (child table o campo JSON del grafo)
+- `CRM Automation` — albero JSON degli step (+ programma compilato), stato
+  (draft/attivo), regole di ri-ingresso, finestra oraria
+- `CRM Automation Trigger` — child table: un'automazione ascolta **piu' eventi**,
+  ognuno con i suoi filtri (`trigger_config`) e le sue condizioni sul record
+  (`trigger_condition`). Il primo trigger che fa entrare il record iscrive, gli
+  altri stanno fermi: una sola iscrizione per evento. I campi singoli
+  `trigger_event`/`trigger_config`/`trigger_condition` restano come specchio
+  della prima riga, per non rompere chi li legge
 - `Workflow Enrollment` — contatto/lead/deal + workflow + **step corrente** +
   `wait_until` + stato (active/waiting/completed/exited/goal_met)
 - `Workflow Execution Log` — audit per step (inviato, skippato, errore)
@@ -172,6 +177,9 @@ Cosa fa, in concreto:
   davvero, messaggi solo renderizzati: niente invii, niente scritture.
 - **Problemi**: errore = il server rifiuterebbe (blocca il salvataggio), avviso
   = lo step girerebbe a vuoto (blocca la pubblicazione). Un click porta al nodo.
+- **Piu' trigger**: in cima al canvas c'e' una card per trigger e un
+  «+ Aggiungi trigger»; ognuna ha il suo evento, i suoi filtri e le sue
+  condizioni, e l'editor avvisa se due ascoltano la stessa cosa.
 - Merge field inseriti al cursore, copia/incolla dei passi fra automazioni,
   ricette pronte, guardia sulle modifiche non salvate, ⌘S.
 
@@ -187,8 +195,9 @@ gli Email Template esistenti).
 3. ✅ If/Else + Goal + Split + Trigger Link con tracking click.
 4. ✅ Canali WhatsApp e SMS; trigger da booking/appuntamenti.
 5. ✅ Statistiche per step, split test, ricette pronte.
-6. Da fare: trigger multipli per automazione, note e commenti sul canvas,
-   formatter dei valori, output di uno step riusabile in quelli dopo.
+6. ✅ Trigger multipli per automazione, con filtri e condizioni per trigger.
+7. Da fare: note e commenti sul canvas, formatter dei valori, output di uno
+   step riusabile in quelli dopo.
 
 ## Rischi
 

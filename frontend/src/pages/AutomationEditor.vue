@@ -110,6 +110,40 @@
           :label="__('Description')"
         />
 
+        <div
+          class="flex flex-col gap-2 rounded-lg border border-outline-gray-2 p-3"
+        >
+          <div class="text-xs font-medium uppercase text-ink-gray-5">
+            {{ __('Enrolment') }}
+          </div>
+          <label class="flex items-start gap-2 text-sm text-ink-gray-7">
+            <Switch
+              v-model="draft.allow_reenrollment"
+              size="sm"
+              class="mt-0.5"
+            />
+            <span>
+              {{ __('Allow re-enrolment') }}
+              <span class="block text-xs text-ink-gray-5">
+                {{
+                  __(
+                    'Off: a record enters once and never again. On: it can re-enter once it has left.',
+                  )
+                }}
+              </span>
+            </span>
+          </label>
+          <label class="flex items-start gap-2 text-sm text-ink-gray-7">
+            <Switch v-model="draft.exit_on_reply" size="sm" class="mt-0.5" />
+            <span>
+              {{ __('Stop on response') }}
+              <span class="block text-xs text-ink-gray-5">
+                {{ __('The record leaves as soon as it answers.') }}
+              </span>
+            </span>
+          </label>
+        </div>
+
         <div class="rounded-lg border border-outline-gray-2 p-3">
           <label class="flex items-start gap-2 text-sm text-ink-gray-7">
             <Switch
@@ -184,7 +218,7 @@
       v-if="tab === 'builder' && selectedId"
       class="absolute inset-y-0 right-0 z-10 w-full max-w-[400px] border-l border-outline-gray-2 bg-surface-white shadow-lg sm:static sm:z-auto sm:shadow-none"
     >
-      <TriggerPanel v-if="selectedId === 'trigger'" />
+      <TriggerPanel v-if="selectedTrigger" />
       <StepPanel v-else-if="selectedStep" />
     </aside>
   </div>
@@ -236,17 +270,18 @@ import {
   PALETTE,
   STEP_CATEGORIES,
   WEEKDAYS,
-  cleanGroups,
   cloneStep,
   duplicateStep,
   findStep,
   hasErrors,
   moveStep,
-  normalizeGroups,
+  newTrigger,
   normalizeSteps,
+  normalizeTriggers,
   removeStep,
+  serializeTriggers,
+  sharedTriggerDoctype,
   stepFromPalette,
-  triggerDoctype,
   validateAutomation,
 } from '@/utils/automation'
 
@@ -264,9 +299,7 @@ const emptyDraft = () => ({
   title: '',
   description: '',
   enabled: false,
-  trigger_event: 'Lead Created',
-  trigger_condition_groups: normalizeGroups(null),
-  trigger_config: {},
+  triggers: [newTrigger()],
   allow_reenrollment: false,
   exit_on_reply: false,
   time_window_enabled: false,
@@ -280,7 +313,7 @@ const emptyDraft = () => ({
 const draft = reactive(emptyDraft())
 const tab = ref('builder')
 const saving = ref(false)
-const selectedId = ref('trigger')
+const selectedId = ref(null)
 const showPicker = ref(false)
 const showPreview = ref(false)
 const showStats = ref(false)
@@ -301,11 +334,12 @@ const breadcrumbs = [
   { label: __('Automations'), route: { name: 'Automations' } },
 ]
 
-/** Some triggers fire on both leads and deals; then the author picks the side. */
+/** Some triggers fire on both leads and deals, and a flow can mix the two; then
+ *  the author says which side the fields come from. */
 const fieldContext = ref('CRM Lead')
 
 const recordDoctype = computed(
-  () => triggerDoctype(draft.trigger_event) || fieldContext.value,
+  () => sharedTriggerDoctype(draft.triggers) || fieldContext.value,
 )
 
 /** Fields offered to conditions, plus the wait outcome the engine exposes. */
@@ -345,8 +379,14 @@ const issuesByNode = computed(() => {
   return map
 })
 
+const selectedTrigger = computed(() => {
+  if (!selectedId.value?.startsWith('trigger:')) return null
+  const id = selectedId.value.slice('trigger:'.length)
+  return draft.triggers.find((trigger) => trigger.id === id) || null
+})
+
 const selectedEntry = computed(() =>
-  selectedId.value && selectedId.value !== 'trigger'
+  selectedId.value && !selectedId.value.startsWith('trigger:')
     ? findStep(draft.steps, selectedId.value)
     : null,
 )
@@ -401,6 +441,23 @@ function select(id) {
   selectedId.value = id
 }
 
+function addTrigger() {
+  const trigger = newTrigger()
+  draft.triggers.push(trigger)
+  select(`trigger:${trigger.id}`)
+}
+
+function removeTrigger(id) {
+  if (draft.triggers.length <= 1) {
+    toast.error(__('An automation needs at least one trigger'))
+    return
+  }
+  const index = draft.triggers.findIndex((trigger) => trigger.id === id)
+  if (index === -1) return
+  draft.triggers.splice(index, 1)
+  select(`trigger:${draft.triggers[0].id}`)
+}
+
 function openPicker(list, index) {
   pickerTarget = { list, index }
   showPicker.value = true
@@ -427,7 +484,10 @@ provide('automation-editor', {
   recordDoctype,
   selectedId,
   selectedStep,
+  selectedTrigger,
   fieldContext,
+  addTrigger,
+  removeTrigger,
   issuesByNode,
   stats,
   showStats,
@@ -457,9 +517,7 @@ function payload() {
   return {
     title: draft.title,
     description: draft.description,
-    trigger_event: draft.trigger_event,
-    trigger_condition: cleanGroups(draft.trigger_condition_groups),
-    trigger_config: draft.trigger_config,
+    triggers: serializeTriggers(draft.triggers),
     allow_reenrollment: draft.allow_reenrollment,
     exit_on_reply: draft.exit_on_reply,
     time_window_enabled: draft.time_window_enabled,
@@ -481,13 +539,12 @@ function load(name) {
         allow_reenrollment: Boolean(data.allow_reenrollment),
         exit_on_reply: Boolean(data.exit_on_reply),
         time_window_enabled: Boolean(data.time_window_enabled),
-        trigger_config: data.trigger_config || {},
-        trigger_condition_groups: normalizeGroups(data.trigger_condition),
+        triggers: normalizeTriggers(data),
         window_days: data.window_days || [],
         steps: normalizeSteps(data.steps || []),
       })
       saved.value = JSON.stringify(payload())
-      selectedId.value = 'trigger'
+      selectedId.value = `trigger:${draft.triggers[0].id}`
     },
     onError: (error) => {
       toast.error(error.messages?.[0] || __('Could not load the automation'))
@@ -614,6 +671,7 @@ onMounted(() => {
     saved.value = JSON.stringify(payload())
     const recipe = window.history.state?.recipe
     if (recipe) Object.assign(draft, recipe)
+    selectedId.value = `trigger:${draft.triggers[0].id}`
   }
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('beforeunload', warnOnUnload)
