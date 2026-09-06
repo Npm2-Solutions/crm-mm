@@ -384,28 +384,73 @@ server-side** con `event_id` dedupato col pixel.
 - Test: unit test sulle funzioni pure (slug, whitelist campi, JSON-LD) in `crm/tests`;
   i data script si testano come funzioni Python normali prima di finire nel JSON.
 
-## 11. Fasi
+## 11. Lo spike
+
+**Stato: kit pronto, da eseguire su un bench.** In questo ambiente non c'è né un bench né
+Frappe installato, quindi lo spike non è stato *eseguito*: è stato **verificato leggendo il
+codice di Builder**, e il materiale per lanciarlo è nel repo.
+
+### 11.1 Cosa è già verificato (lettura del codice, non esecuzione)
+
+Il contratto dei componenti è stato ricostruito riga per riga:
+
+| Cosa | Dove nel codice di Builder | Esito |
+|---|---|---|
+| I file dell'app vengono importati | `export_import_standard_page.sync_standard_builder_pages` | `<app>/builder_files/{components,pages,client_scripts,variables,fonts}`, importati da `make_records` che cerca `<cartella>/<cartella>.json` |
+| Il data script riceve le props | `builder_component.get_component_data` | `_locals = {component: _dict(), props: _dict(props)}`; il valore di ritorno è `component` |
+| Naming del componente | `builder_component.json` | `autoname: field:component_id` → `name == component_id` |
+| Binding da prop | `get_dynamic_value_key`, `comesFrom="props"` | `{{ props.<chiave> }}` |
+| Binding da data script | idem, `comesFrom="componentData"` | `{{ component.<chiave> }}` |
+| Liste | `get_loop_info` + `render_repeater_children` | `{% for component in component.<chiave> %}` — ⚠️ **la variabile di ciclo si chiama `component` e oscura quella esterna**, e il repeater rende **solo `children[0]`** |
+| Fallback statico | `set_dynamic_content_placeholders` | `{{ chiave if chiave else '<valore statico>' }}` |
+| Sandbox | `utils.execute_script` | `safe_exec` se abilitata, altrimenti `safer_exec`: niente import, niente dunder |
+| Ruoli | permessi di `Builder Page` | `System Manager`, `Website Manager` — il Sales Manager del CRM **non basta** |
+| Chrome dell'editor | `PageBuilder.vue` | `h-screen w-screen` + rifiuto degli schermi piccoli → serve una rotta a piena pagina |
+
+### 11.2 Cosa c'è nel repo
+
+| File | Cosa |
+|---|---|
+| `crm/builder_files/components/servizi_crm/servizi_crm.json` | il componente **Servizi CRM**: props `titolo`/`categoria`/`limite`, repeater su `component.servizi`, card con nome, descrizione, durata e prezzo. Il data script legge **solo campi che `CRM Service` ha già**, così lo spike non richiede alcuna modifica di schema |
+| `crm/builder_files/README.md` | il contratto qui sopra, scritto per chi costruirà gli altri componenti |
+| `crm/tests/test_builder_files.py` | valida ogni componente spedito: fixture importabile, chiavi di blocco note, `blockId` unici, repeater con un solo figlio, props referenziate dichiarate, data script che compila e resta compatibile con `safe_exec`. Con Builder installato fa anche il giro completo su `get_component_data` |
+| `scripts/builder/spike.sh` | `bench get-app` → `install-app` → `migrate` → controlla che il componente sia arrivato → esegue il data script. Poi elenca i sette controlli da fare a mano nel browser |
+
+### 11.3 Le due incognite che restano, e cosa cambiano
+
+1. **HTML non-escaped nei binding** (controllo `e` dello script). Builder non emette `|safe`:
+   se l'ambiente Jinja di Frappe fa autoescape, il componente **Form CRM** non può iniettare
+   il markup del form come dato e va costruito diversamente (blocco HTML custom o client
+   script). Non tocca gli altri componenti.
+2. **`safe_exec` e `frappe.utils.fmt_money`** — se non fosse nella sandbox, il prezzo si
+   formatta a mano. Il data script ha già il `try/except` che regge in entrambi i casi.
+
+Nessuna delle due mette in discussione l'architettura: la prima sposta il *come* di un
+componente, la seconda tre righe.
+
+## 12. Fasi
+
 
 | Fase | Contenuto | Stima |
 |---|---|---|
-| **0 — Spike (1–2 gg)** | installare Builder sul bench accanto al CRM; una `Builder Page` con un componente nostro che elenca i servizi; verificare `safe_exec`, l'HTML non-escaped del form, l'iframe stesso-dominio e i ruoli. **Se qui qualcosa non regge, si torna al piano B** | 1–2 gg |
+| **0 — Spike** | vedi §11: kit pronto in `scripts/builder/spike.sh`. **Se qui qualcosa non regge, si torna al piano B** | 1–2 gg |
 | **1+2 — Consegna unica** | libreria componenti CRM (servizi, prodotti, form, prenota, contatti, WhatsApp, scheda servizio) + Builder Token di brand + starter pages; campi sito su `CRM Service`/`CRM Product` + scheda "Sito web" nell'editor servizio; gruppo "Sito web" nel modale (Sito, Pagine, Vetrina); rotta `/crm/sito/pagine/:name` con iframe | 10–14 gg |
 | **3 — Crescita** | SEO (JSON-LD, sitemap, OG), attribuzione UTM + Conversions API, consenso cookie, componenti FAQ/galleria/numeri/social | 6–8 gg |
 | **4 — Opzionale** | embed mode (PR upstream, poi eventuale fork sottile), blog/news, multilingua, script embed JS per siti esterni | su richiesta |
 
-## 12. Decisioni e domande
+## 13. Decisioni e domande
 
 | | Domanda | Esito |
 |---|---|---|
 | **D1** | Motore di pagine nostro o Builder? | **Ribaltata: Builder**, installato accanto nel site. Ragioni in §4.7 e §4.8 |
 | **D2** | Ampiezza della prima consegna | **Fasi 1+2 insieme**, precedute da uno spike di 1–2 giorni |
 | **D3** | La home prende la radice `/` | **Configurabile** — è già così in Builder (`home_page` nelle sue impostazioni), lo pilotiamo dal nostro modale |
-| **D4** | Servizi vs Calendari di prenotazione | **Aperta.** Proposta: `booking_calendar` su `CRM Service`, il sito pubblica i servizi, `show_in_menu` deprecato |
-| **D5** | Multi-tenant | **Aperta.** Un sito per site: se confermato, niente astrazione multi-sito |
+| **D4** | Servizi vs Calendari di prenotazione | **Confermata**: campo `booking_calendar` su `CRM Service`, il sito pubblica **i servizi**, `show_in_menu` su `CRM Booking Calendar` va deprecato |
+| **D5** | Multi-tenant | **Confermata**: un sito per site Frappe. Niente astrazione multi-sito |
 | **D6** | ~~Builder come opzione?~~ | **Superata**: Builder è la base, non l'opzione |
-| **D7** | Fork subito o dopo? | **Proposta: dopo.** Fase 1 senza fork, poi PR upstream per l'embed mode, fork sottile solo come ultima spiaggia (§5.4) |
+| **D7** | Fork subito o dopo? | **Confermata: dopo.** Fase 1 senza fork, poi PR upstream per l'embed mode, fork sottile solo come ultima spiaggia (§5.4) |
 
-## 13. Compatibilità futura
+## 14. Compatibilità futura
 
 Le API `crm.api.site.*` restano il contratto: le usano i data script dei nostri componenti
 oggi, potrebbero usarle una landing esterna o un'app mobile domani. E se un giorno lo scope
