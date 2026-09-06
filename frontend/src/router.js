@@ -47,6 +47,11 @@ const routes = [
     component: () => import('@/pages/Automations.vue'),
   },
   {
+    path: '/automations/:automationId',
+    name: 'Automation',
+    component: () => import('@/pages/AutomationEditor.vue'),
+  },
+  {
     path: '/dialer',
     name: 'Dialer',
     component: () => import('@/pages/Dialer.vue'),

@@ -302,6 +302,7 @@ export const TRIGGER_CATALOG = {
     category: 'lead',
     icon: 'refresh-cw',
     doctype: 'CRM Lead',
+    hint: 'The lead moves to another status.',
   },
   'Deal Created': {
     category: 'deal',
@@ -312,30 +313,65 @@ export const TRIGGER_CATALOG = {
     category: 'deal',
     icon: 'flag',
     doctype: 'CRM Deal',
+    hint: 'The deal moves to another stage of the pipeline.',
   },
   'Booking Created': { category: 'appointment', icon: 'calendar' },
-  'Booking Cancelled': { category: 'appointment', icon: 'calendar-x' },
+  'Booking Cancelled': { category: 'appointment', icon: 'x-circle' },
   'Booking No Show': { category: 'appointment', icon: 'user-x' },
   'Booking Completed': { category: 'appointment', icon: 'check-circle' },
   'Appointment Created': { category: 'appointment', icon: 'calendar' },
   'Appointment Rescheduled': { category: 'appointment', icon: 'repeat' },
-  'Appointment Cancelled': { category: 'appointment', icon: 'calendar-x' },
+  'Appointment Cancelled': { category: 'appointment', icon: 'x-circle' },
   'Appointment No Show': { category: 'appointment', icon: 'user-x' },
   'Appointment Completed': { category: 'appointment', icon: 'check-circle' },
   'Incoming SMS': { category: 'messaging', icon: 'message-square' },
-  'Customer Replied': { category: 'messaging', icon: 'corner-up-left' },
-  'Email Opened': { category: 'messaging', icon: 'mail-open' },
+  'Customer Replied': {
+    category: 'messaging',
+    icon: 'corner-up-left',
+    hint: 'The contact answers by SMS, WhatsApp or email.',
+  },
+  'Email Opened': {
+    category: 'messaging',
+    icon: 'mail',
+    hint: 'Read tracking on an email sent by the CRM.',
+  },
   'Trigger Link Clicked': {
     category: 'messaging',
     icon: 'mouse-pointer',
     config: 'link',
+    hint: 'A click on a tracked link inside a message.',
   },
   'Tag Added': { category: 'record', icon: 'tag', config: 'tag' },
   'Tag Removed': { category: 'record', icon: 'tag', config: 'tag' },
   'Task Completed': { category: 'record', icon: 'check-square' },
   'Note Added': { category: 'record', icon: 'file-text' },
-  'Date Reminder': { category: 'other', icon: 'clock', config: 'date' },
-  'Inbound Webhook': { category: 'other', icon: 'globe', config: 'webhook' },
+  'Date Reminder': {
+    category: 'other',
+    icon: 'clock',
+    config: 'date',
+    hint: 'A date field comes up — birthdays, renewals, anything.',
+  },
+  'Inbound Webhook': {
+    category: 'other',
+    icon: 'globe',
+    config: 'webhook',
+    hint: 'An external system posts to a URL and enrols the contact.',
+  },
+}
+
+/** Palette entries for the trigger picker, in the order the backend allows. */
+export function triggerEntries(events) {
+  return (events || []).map((event) => {
+    const definition = triggerDefinition(event)
+    return {
+      key: event,
+      label: event,
+      description: definition.hint || '',
+      icon: definition.icon,
+      theme: 'gray',
+      category: definition.category,
+    }
+  })
 }
 
 export const CONDITION_OPERATORS = [
@@ -395,6 +431,16 @@ export const MERGE_FIELDS = [
   { token: '{{ status }}', label: 'Status' },
   { token: '{{ tracked_link("slug") }}', label: 'Tracked link' },
 ]
+
+/** Full class strings per theme — Tailwind only sees literals, not templates. */
+export const ICON_CLASSES = {
+  blue: 'bg-surface-blue-1 text-ink-blue-3',
+  green: 'bg-surface-green-1 text-ink-green-3',
+  red: 'bg-surface-red-1 text-ink-red-3',
+  orange: 'bg-surface-amber-1 text-ink-amber-3',
+  purple: 'bg-surface-violet-1 text-ink-violet-1',
+  gray: 'bg-surface-gray-2 text-ink-gray-7',
+}
 
 // --- catalogue lookups -----------------------------------------------------
 
@@ -533,17 +579,26 @@ export function normalizeSteps(steps) {
     if (step.condition_groups && !step.condition_groups.length) {
       delete step.condition_groups
     }
+    if (step.type === 'if_else') {
+      if (!step.branches?.length) step.branches = [newBranch()]
+      if (!step.else_steps) step.else_steps = []
+    }
+    if (step.type === 'split' && !step.paths?.length) {
+      step.paths = [newPath('A', 50), newPath('B', 50)]
+    }
     for (const branch of step.branches || []) {
       if (!branch.id) branch.id = newId()
+      if (!branch.steps) branch.steps = []
       if (!branch.condition_groups?.length) {
         branch.condition_groups = [newConditionGroup()]
       }
-      normalizeSteps(branch.steps || [])
+      normalizeSteps(branch.steps)
     }
     normalizeSteps(step.else_steps || [])
     for (const path of step.paths || []) {
       if (!path.id) path.id = newId()
-      normalizeSteps(path.steps || [])
+      if (!path.steps) path.steps = []
+      normalizeSteps(path.steps)
     }
   }
   return steps
