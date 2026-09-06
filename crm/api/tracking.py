@@ -79,6 +79,9 @@ def collect() -> dict:
 	skips the CORS preflight, which would otherwise cost a round trip on every
 	page and fail outright on sites we haven't listed yet.
 	"""
+	if not _request():
+		return {"ok": False}
+
 	origin = frappe.get_request_header("Origin")
 	settings = get_tracking_settings()
 
@@ -87,7 +90,7 @@ def collect() -> dict:
 		return {"ok": False}
 
 	_allow_origin(origin)
-	if frappe.request and frappe.request.method == "OPTIONS":
+	if _request().method == "OPTIONS":
 		return {"ok": True}
 
 	payload = _request_payload()
@@ -131,16 +134,30 @@ def collect() -> dict:
 	return {"ok": True, "vid": visitor.name, "sid": session.session_id}
 
 
+def _request():
+	"""The current HTTP request, or None.
+
+	`frappe.request` is a proxy that raises when nothing is bound, and half of
+	this module runs from places with no request at all — a scheduled purge, a
+	lead created by a background job, a test. Everything goes through here.
+	"""
+	return getattr(frappe.local, "request", None)
+
+
+def _request_cookies() -> dict:
+	request = _request()
+	return request.cookies if request else {}
+
+
 def _request_payload() -> dict:
 	"""The beacon body. `text/plain` means Frappe hasn't parsed it for us."""
+	request = _request()
 	try:
-		raw = frappe.request.get_data(as_text=True) if frappe.request else ""
+		raw = request.get_data(as_text=True) if request else ""
 		payload = json.loads(raw) if raw else {}
 	except (ValueError, TypeError):
 		payload = {}
-	if not isinstance(payload, dict):
-		return {}
-	return payload
+	return payload if isinstance(payload, dict) else {}
 
 
 def _may_collect(settings, payload: dict) -> bool:
@@ -169,12 +186,12 @@ def _visitor_id(payload: dict) -> str:
 	Ids are 32 hex characters — 128 bits, so an id cannot be guessed onto someone
 	else's history — and are minted here, never accepted in an arbitrary shape.
 	"""
-	vid = str(payload.get("vid") or frappe.request.cookies.get(VISITOR_COOKIE) or "").strip()
+	vid = str(payload.get("vid") or _request_cookies().get(VISITOR_COOKIE) or "").strip()
 	return vid if _is_id(vid) else frappe.generate_hash(length=32)
 
 
 def _session_id(payload: dict) -> str:
-	sid = str(payload.get("sid") or frappe.request.cookies.get(SESSION_COOKIE) or "").strip()
+	sid = str(payload.get("sid") or _request_cookies().get(SESSION_COOKIE) or "").strip()
 	return sid if _is_id(sid) else ""
 
 
@@ -266,9 +283,10 @@ def _set_cookies(visitor_id: str, session_id: str, days: int) -> None:
 	what carries the same visitor across pages the CRM itself serves.
 	"""
 	manager = getattr(frappe.local, "cookie_manager", None)
-	if not manager:
+	request = _request()
+	if not manager or not request:
 		return
-	secure = bool(frappe.request and frappe.request.scheme == "https")
+	secure = request.scheme == "https"
 	manager.set_cookie(VISITOR_COOKIE, visitor_id, max_age=days * 24 * 60 * 60, samesite="Lax", secure=secure)
 	manager.set_cookie(SESSION_COOKIE, session_id, max_age=24 * 60 * 60, samesite="Lax", secure=secure)
 
@@ -299,6 +317,11 @@ def attribute(
 	First touch is written once and never overwritten: it is the campaign that
 	introduced this person, and a later visit must not be able to claim it. Last
 	touch is rewritten on every subsequent touch.
+
+	Called before the insert on every entry point that creates a record, so the
+	attribution is part of the row rather than an update after it. At that moment
+	the document has no name yet and nothing can point at it — the visitor and the
+	session are bound by `bind_visitor()` on `after_insert`.
 	"""
 	if doc.doctype not in TRACKED_DOCTYPES:
 		return
@@ -325,18 +348,33 @@ def attribute(
 		return
 
 	_apply(doc, values)
+	if not doc.is_new():
+		bind_visitor(doc)
 
-	if visitor:
-		visitor.identify(doc.doctype, doc.name)
-	if session:
-		session.db_set(
-			{
-				"converted": 1,
-				"lead": doc.name if doc.doctype == "CRM Lead" else session.lead,
-				"deal": doc.name if doc.doctype == "CRM Deal" else session.deal,
-			},
-			update_modified=False,
-		)
+
+def bind_visitor(doc, method=None) -> None:
+	"""`after_insert` hook: point the visitor and its last session at the record.
+
+	Separate from `attribute()` because that runs before the insert, when the
+	document has no name for anything to reference. Reading it back off the
+	document — rather than carrying state between the two — means it works the
+	same whether the record was just created or attributed later.
+	"""
+	if doc.doctype not in TRACKED_DOCTYPES or not doc.get("visitor"):
+		return
+
+	claim_visitor(doc.visitor, doc)
+
+	session_name = doc.get("last_touch_session")
+	if not session_name or not frappe.db.exists("CRM Visitor Session", session_name):
+		return
+	field = "lead" if doc.doctype == "CRM Lead" else "deal"
+	frappe.db.set_value(
+		"CRM Visitor Session",
+		session_name,
+		{"converted": 1, field: doc.name},
+		update_modified=False,
+	)
 
 
 def attribute_from_request(doc, category: str | None = None, dimensions: dict | None = None) -> None:
@@ -346,7 +384,7 @@ def attribute_from_request(doc, category: str | None = None, dimensions: dict | 
 	as cookies for anything served from the CRM's own domain.
 	"""
 	form = frappe.local.form_dict or {}
-	cookies = frappe.request.cookies if frappe.request else {}
+	cookies = _request_cookies()
 	attribute(
 		doc,
 		visitor_id=form.get("crm_vid") or cookies.get(VISITOR_COOKIE),

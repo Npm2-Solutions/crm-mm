@@ -214,7 +214,7 @@ doc_events = {
 	},
 	"CRM Lead": {
 		"before_insert": ["crm.api.tracking.stamp_manual_source"],
-		"after_insert": ["crm.automation.engine.on_lead_created"],
+		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_lead_created"],
 		"on_update": ["crm.automation.engine.on_lead_updated"],
 	},
 	"CRM Deal": {
@@ -223,7 +223,7 @@ doc_events = {
 			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext",
 			"crm.automation.engine.on_deal_updated",
 		],
-		"after_insert": ["crm.automation.engine.on_deal_created"],
+		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_deal_created"],
 	},
 	"CRM Booking": {
 		"after_insert": ["crm.automation.engine.on_booking_created"],

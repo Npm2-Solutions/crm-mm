@@ -459,16 +459,11 @@ class CRMLead(Document):
 		if deal:
 			new_deal.update(deal)
 
+		# Attribution needs no special handling here: the deal carries the same
+		# fieldnames, so the generic copy above brings the two snapshots and the
+		# visitor across, and the `bind_visitor` after_insert hook then hands the
+		# browsing history to the deal as well.
 		new_deal.insert(ignore_permissions=True)
-
-		# The attribution fields ride across on the generic field copy above (the
-		# deal carries the same fieldnames); this hands the *visitor* over too, so
-		# the browsing history follows the person into the deal rather than being
-		# stranded on the lead.
-		if self.visitor:
-			from crm.api.tracking import claim_visitor
-
-			claim_visitor(self.visitor, new_deal)
 
 		for user in self.get_assigned_users():
 			if user and user != new_deal.deal_owner:
