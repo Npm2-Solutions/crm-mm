@@ -23,7 +23,7 @@
           v-model="callMedium"
           type="select"
           :label="__('Calling Medium')"
-          :options="['Twilio', 'Exotel']"
+          :options="mediumOptions"
         />
         <div class="flex flex-col gap-1">
           <FormControl
@@ -45,7 +45,11 @@
 <script setup>
 import TwilioCallUI from '@/components/Telephony/TwilioCallUI.vue'
 import ExotelCallUI from '@/components/Telephony/ExotelCallUI.vue'
-import { defaultCallingMedium, useTelephony } from '@/composables/telephony'
+import {
+  defaultCallingMedium,
+  providers,
+  useTelephony,
+} from '@/composables/telephony'
 import { globalStore } from '@/stores/global'
 import { FormControl, call, toast } from 'frappe-ui'
 import { computed, nextTick, ref, watch } from 'vue'
@@ -56,17 +60,25 @@ const { isEnabled, isAnyEnabled } = useTelephony()
 const twilio = ref(null)
 const exotel = ref(null)
 
-const callMedium = ref('Twilio')
+const callMedium = ref('')
 const isDefaultMedium = ref(false)
 
 const show = ref(false)
 const mobileNumber = ref('')
 
+// which carriers exist comes from the backend registry; only the in-browser
+// calling component stays mapped by name here, because each SDK is genuinely
+// its own thing and there is nothing to share between them
+const uiComponents = { twilio, exotel }
+
 const enabledIntegrations = computed(() =>
-  [
-    { key: 'twilio', label: 'Twilio', ref: twilio },
-    { key: 'exotel', label: 'Exotel', ref: exotel },
-  ].filter(({ key }) => isEnabled(key)),
+  providers.value
+    .filter((p) => isEnabled(p.name) && uiComponents[p.name])
+    .map((p) => ({ key: p.name, label: p.label, ref: uiComponents[p.name] })),
+)
+
+const mediumOptions = computed(() =>
+  enabledIntegrations.value.map(({ label }) => label),
 )
 
 function makeCall(number) {
@@ -76,7 +88,7 @@ function makeCall(number) {
     return
   }
 
-  callMedium.value = enabledIntegrations.value[0]?.label ?? 'Twilio'
+  callMedium.value = enabledIntegrations.value[0]?.label ?? ''
   if (defaultCallingMedium.value) {
     callMedium.value = defaultCallingMedium.value
   }
@@ -90,13 +102,10 @@ function makeCallUsing() {
     setDefaultCallingMedium()
   }
 
-  if (callMedium.value === 'Twilio') {
-    twilio.value.makeOutgoingCall(mobileNumber.value)
-  }
-
-  if (callMedium.value === 'Exotel') {
-    exotel.value.makeOutgoingCall(mobileNumber.value)
-  }
+  const chosen = enabledIntegrations.value.find(
+    ({ label }) => label === callMedium.value,
+  )
+  chosen?.ref?.value?.makeOutgoingCall(mobileNumber.value)
   show.value = false
 }
 
@@ -115,17 +124,15 @@ watch(
   isAnyEnabled,
   () =>
     nextTick(() => {
-      for (const {
-        key,
-        label,
-        ref: integrationRef,
-      } of enabledIntegrations.value) {
-        integrationRef.value.setup()
-        callMedium.value = label
+      for (const { ref: integrationRef } of enabledIntegrations.value) {
+        integrationRef.value?.setup()
       }
 
       if (isAnyEnabled.value) {
-        callMedium.value = enabledIntegrations.value[0]?.label ?? 'Twilio'
+        callMedium.value =
+          defaultCallingMedium.value ||
+          enabledIntegrations.value[0]?.label ||
+          ''
         setMakeCall(makeCall)
       }
     }),

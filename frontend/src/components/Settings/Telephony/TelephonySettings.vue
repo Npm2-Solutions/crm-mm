@@ -46,11 +46,7 @@
             v-model="telephonyAgent.doc.default_medium"
             type="select"
             class="w-44 p-1"
-            :options="[
-              { label: __(''), value: '' },
-              { label: __('Twilio'), value: 'Twilio' },
-              { label: __('Exotel'), value: 'Exotel' },
-            ]"
+            :options="mediumOptions"
             :placeholder="__('Select Medium')"
           />
           <Button
@@ -298,6 +294,7 @@ import {
 } from 'frappe-ui'
 import {
   answeringEnabled,
+  providers,
   transcriptionEnabled,
   useTelephony,
 } from '@/composables/telephony'
@@ -307,6 +304,15 @@ import { validatePhone } from '@/utils'
 import { ref, computed } from 'vue'
 
 const { isEnabled } = useTelephony()
+
+// the options follow the provider registry, so a new carrier shows up here
+// without this file having to learn its name
+const mediumOptions = computed(() => [
+  { label: '', value: '' },
+  ...providers.value
+    .filter((p) => p.enabled)
+    .map((p) => ({ label: p.label, value: p.label })),
+])
 
 const emit = defineEmits(['updateStep'])
 
