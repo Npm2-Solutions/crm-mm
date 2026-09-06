@@ -306,32 +306,41 @@ def compile_steps(steps: list) -> list[dict]:
 			step_type = step.get("type")
 			label = step.get("label")
 			gate = condition_groups_of(step)
+			node = step.get("id")
 
 			if step_type == "if_else":
 				compile_if_else(step, label)
 			elif step_type == "split":
 				compile_split(step, label)
 			elif step_type == "wait":
-				emit({"op": "wait", "step": step}, label)
+				emit({"op": "wait", "step": step, "node": node}, label)
 			elif step_type == "goal":
-				emit({"op": "goal", "step": step}, label)
+				emit({"op": "goal", "step": step, "node": node}, label)
 			elif step_type == "go_to":
-				index = emit({"op": "jump", "to": None}, label)
+				index = emit({"op": "jump", "to": None, "node": node}, label)
 				pending_jumps.append((index, step.get("target")))
 			elif step_type == "exit":
-				emit({"op": "exit"}, label)
+				emit({"op": "exit", "node": node}, label)
 			elif step_type == "stop_if":
-				emit({"op": "stop_if", "groups": condition_groups_of(step)}, label)
+				emit({"op": "stop_if", "groups": condition_groups_of(step), "node": node}, label)
 			else:  # plain action
-				emit({"op": "action", "step": step, "gate": gate}, label)
+				emit({"op": "action", "step": step, "gate": gate, "node": node}, label)
 
 	def compile_if_else(step, label):
 		branches = step.get("branches") or []
 		end_jumps = []
 		anchor = None
-		for branch in branches:
+		for position, branch in enumerate(branches):
 			test_index = emit(
-				{"op": "branch", "groups": condition_groups_of(branch), "else_to": None},
+				{
+					"op": "branch",
+					"groups": condition_groups_of(branch),
+					"else_to": None,
+					"node": step.get("id"),
+					"branch": position,
+					"branch_label": branch.get("label") or "",
+					"branches_total": len(branches),
+				},
 				label if anchor is None else None,
 			)
 			anchor = anchor or test_index
@@ -345,7 +354,7 @@ def compile_steps(steps: list) -> list[dict]:
 
 	def compile_split(step, label):
 		paths = step.get("paths") or []
-		split_index = emit({"op": "split", "paths": []}, label)
+		split_index = emit({"op": "split", "paths": [], "node": step.get("id")}, label)
 		end_jumps = []
 		for path in paths:
 			start = len(program)
@@ -717,17 +726,25 @@ def execute_step(step: dict, ref_doc, enrollment=None) -> str:
 	return handler(step, ref_doc)
 
 
-def render(text: str, ref_doc) -> str:
+def render(text: str, ref_doc, preview: bool = False) -> str:
+	"""Render Jinja against the record. In preview mode nothing is minted or logged."""
 	if not text:
 		return ""
 
 	def tracked_link(slug: str) -> str:
+		if preview:
+			return f"{frappe.utils.get_url()}/crm/l/{slug}"
 		from crm.api.links import personal_link_url
 
 		return personal_link_url(slug, ref_doc.doctype, ref_doc.name)
 
 	context = ref_doc.as_dict()
 	context["tracked_link"] = tracked_link
+	if preview:
+		try:
+			return frappe.render_template(text, context)
+		except Exception:
+			return text
 	return frappe.render_template(text, context)
 
 
@@ -1102,6 +1119,231 @@ def log_step(enrollment, step_index: int, action: str, status: str, detail: str 
 		"logs",
 		{"step_index": step_index, "action": action or "", "status": status, "detail": (detail or "")[:500]},
 	)
+
+
+# ---------------------------------------------------------------------------
+# builder support: stable ids, stats mapping, dry run
+# ---------------------------------------------------------------------------
+
+
+def ensure_step_ids(steps: list) -> list:
+	"""Give every builder node a stable id.
+
+	The visual editor addresses nodes by id (select, move, paste, jump-to-error)
+	and per-step statistics map the flat program back onto them. Ids survive
+	edits, so the stats of a step stay attached to it when the flow is reordered.
+	"""
+	seen: set[str] = set()
+
+	def fresh() -> str:
+		return frappe.generate_hash(length=10)
+
+	def tag(container: dict) -> None:
+		node_id = container.get("id")
+		if not node_id or not isinstance(node_id, str) or node_id in seen:
+			node_id = fresh()
+		seen.add(node_id)
+		container["id"] = node_id
+
+	def walk(block) -> None:
+		for step in block or []:
+			if not isinstance(step, dict):
+				continue
+			tag(step)
+			for branch in step.get("branches") or []:
+				tag(branch)
+				walk(branch.get("steps"))
+			walk(step.get("else_steps"))
+			for path in step.get("paths") or []:
+				tag(path)
+				walk(path.get("steps"))
+
+	walk(steps)
+	return steps
+
+
+def program_nodes(program: list) -> dict[int, str]:
+	"""Program counter → builder node id, for statistics and enrollment positions."""
+	return {index: op.get("node") for index, op in enumerate(program or []) if op.get("node")}
+
+
+def wait_description(step: dict) -> str:
+	mode = step.get("mode") or "duration"
+	if mode == "until_time":
+		return _("waits until {0}").format(step.get("time") or "09:00")
+	if mode == "until_reply":
+		return _("waits for a reply")
+	if mode == "until_link_click":
+		return _("waits for a click on {0}").format(step.get("link") or _("any link"))
+	parts = []
+	for value, unit in (
+		(step.get("days"), _("d")),
+		(step.get("hours"), _("h")),
+		(step.get("minutes"), _("m")),
+	):
+		if int(value or 0):
+			parts.append(f"{int(value)}{unit}")
+	return _("waits {0}").format(" ".join(parts) or "0m")
+
+
+def describe_step(step: dict, ref_doc) -> str:
+	"""What this step would do to this record — Jinja resolved, nothing sent."""
+	step_type = step.get("type")
+
+	def text(value):
+		return render(value or "", ref_doc, preview=True)
+
+	if step_type == "send_email":
+		subject = step.get("subject") or ""
+		if not subject and step.get("email_template"):
+			subject = frappe.db.get_value("Email Template", step["email_template"], "subject") or ""
+		return _("email to {0} — {1}").format(ref_doc.get("email") or _("no address"), text(subject))
+	if step_type == "send_sms":
+		return _("SMS to {0} — {1}").format(
+			ref_doc.get("mobile_no") or ref_doc.get("phone") or _("no number"), text(step.get("message"))
+		)
+	if step_type == "send_whatsapp_template":
+		return _("WhatsApp template {0} to {1}").format(
+			step.get("template") or "?", ref_doc.get("mobile_no") or ref_doc.get("phone") or _("no number")
+		)
+	if step_type == "notify":
+		return _("internal notification — {0}").format(text(step.get("message")))
+	if step_type == "create_task":
+		return _("task «{0}» due in {1} day(s)").format(
+			text(step.get("title")) or _("Follow up"), int(step.get("due_in_days") or 0)
+		)
+	if step_type == "assign":
+		users = step.get("users") or ([step["user"]] if step.get("user") else [])
+		return _("assign to {0}").format(", ".join(users) or _("nobody"))
+	if step_type in ("add_note", "add_tag_comment"):
+		return _("note — {0}").format(text(step.get("comment") or step.get("note")))
+	if step_type == "add_tag":
+		return _("add tag {0}").format(step.get("tag") or "?")
+	if step_type == "remove_tag":
+		return _("remove tag {0}").format(step.get("tag") or "?")
+	if step_type == "set_field":
+		return _("set {0} to {1}").format(step.get("field") or "?", text(str(step.get("value") or "")))
+	if step_type == "convert_to_deal":
+		if ref_doc.doctype != "CRM Lead":
+			return _("skipped: only leads can be converted")
+		return _("convert this lead into a deal")
+	if step_type == "webhook":
+		return f"{(step.get('method') or 'POST').upper()} {step.get('url') or '?'}"
+	if step_type == "add_to_workflow":
+		return _("enrol in {0}").format(step.get("automation") or "?")
+	if step_type == "remove_from_workflow":
+		return _("remove from {0}").format(step.get("automation") or _("all automations"))
+	return step_type or ""
+
+
+def simulate(steps: list, ref_doc, max_ops: int = 200) -> list[dict]:
+	"""Dry run of the flow against one record: no message leaves, nothing is written.
+
+	Waits pass through, splits take their most likely path and goals are assumed
+	met — everything else (conditions, branches, stop rules) is evaluated for real
+	against the record, which is what makes the preview worth trusting.
+	"""
+	program = compile_steps(ensure_step_ids(steps))
+	state: dict = {"wait_result": "event"}
+	trace: list[dict] = []
+	pointer = 0
+	ops = 0
+
+	def note(op_index, node, step_type, status, detail=""):
+		trace.append(
+			{
+				"index": op_index,
+				"node": node,
+				"type": step_type,
+				"status": status,
+				"detail": detail,
+			}
+		)
+
+	while pointer < len(program):
+		ops += 1
+		if ops > max_ops:
+			note(pointer, None, "loop_guard", "Failed", _("Too many steps — possible go_to loop"))
+			break
+		op = program[pointer]
+		kind = op.get("op")
+		node = op.get("node")
+
+		if kind == "end":
+			note(pointer, node, "end", "End", _("End of the automation"))
+			break
+		if kind == "exit":
+			note(pointer, node, "exit", "Exited", _("The record leaves the automation here"))
+			break
+		if kind == "jump":
+			if node:  # a go_to step, not the structural jump closing a branch
+				note(pointer, node, "go_to", "Jump", _("Jumps to step {0}").format(op.get("to")))
+			pointer = op["to"]
+			continue
+		if kind == "stop_if":
+			if evaluate_condition_groups(op.get("groups"), ref_doc, state):
+				note(pointer, node, "stop_if", "Exited", _("Stop condition met"))
+				break
+			note(pointer, node, "stop_if", "Skipped", _("Stop condition not met — carries on"))
+			pointer += 1
+			continue
+		if kind == "branch":
+			label = op.get("branch_label") or _("Branch {0}").format((op.get("branch") or 0) + 1)
+			if evaluate_condition_groups(op.get("groups"), ref_doc, state):
+				note(pointer, node, "if_else", "Branch", _("takes «{0}»").format(label))
+				pointer += 1
+			else:
+				if (op.get("branch") or 0) + 1 >= (op.get("branches_total") or 0):
+					note(pointer, node, "if_else", "Branch", _("takes «None (else)»"))
+				pointer = op["else_to"]
+			continue
+		if kind == "split":
+			paths = op.get("paths") or []
+			chosen = max(paths, key=lambda p: p.get("percent") or 0) if paths else None
+			if not chosen:
+				pointer += 1
+				continue
+			note(
+				pointer,
+				node,
+				"split",
+				"Branch",
+				_("most likely path: {0} ({1}%)").format(
+					chosen.get("label") or "?", int(chosen.get("percent") or 0)
+				),
+			)
+			pointer = chosen["to"]
+			continue
+		if kind == "goal":
+			goal = op.get("step") or {}
+			note(
+				pointer,
+				node,
+				"goal",
+				"Goal",
+				_("goal {0} — assumed met in the preview").format(goal.get("event") or "?"),
+			)
+			pointer += 1
+			continue
+		if kind == "wait":
+			note(pointer, node, "wait", "Wait", wait_description(op.get("step") or {}))
+			pointer += 1
+			continue
+
+		step = op.get("step") or {}
+		gate = op.get("gate")
+		if gate and not evaluate_condition_groups(gate, ref_doc, state):
+			note(pointer, node, step.get("type"), "Skipped", _("Condition not met"))
+			pointer += 1
+			continue
+		try:
+			detail = describe_step(step, ref_doc)
+		except Exception:
+			detail = _("could not be previewed")
+		note(pointer, node, step.get("type"), "Would run", detail)
+		pointer += 1
+
+	return trace
 
 
 # ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@ import json
 import frappe
 from frappe.model.document import Document
 
-from crm.automation.engine import compile_steps, parse_json, validate_steps
+from crm.automation.engine import compile_steps, ensure_step_ids, parse_json, validate_steps
 
 
 class CRMAutomation(Document):
@@ -62,6 +62,8 @@ class CRMAutomation(Document):
 	def validate(self):
 		steps = parse_json(self.steps)
 		validate_steps(steps)
+		ensure_step_ids(steps)
+		self.steps = json.dumps(steps)
 		self.compiled_steps = json.dumps(compile_steps(steps))
 		if self.trigger_event == "Inbound Webhook" and not self.webhook_key:
 			self.webhook_key = frappe.generate_hash(length=32)

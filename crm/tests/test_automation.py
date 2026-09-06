@@ -327,3 +327,144 @@ class TestAutomationV2(IntegrationTestCase):
 		program = json.loads(auto.compiled_steps)
 		self.assertEqual(program[-1]["op"], "end")
 		self.assertEqual(program[0]["op"], "action")
+
+
+class TestAutomationBuilder(IntegrationTestCase):
+	"""What the visual editor leans on: stable node ids, statistics, dry run."""
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_steps_get_stable_ids_and_compile_to_nodes(self):
+		auto = make_automation(
+			"identified",
+			[
+				{"type": "add_note", "comment": "one"},
+				{
+					"type": "if_else",
+					"branches": [
+						{
+							"condition_groups": [[{"field": "email", "operator": "is_set"}]],
+							"steps": [{"type": "add_note", "comment": "has email"}],
+						}
+					],
+					"else_steps": [{"type": "add_note", "comment": "no email"}],
+				},
+			],
+		)
+		steps = json.loads(auto.steps)
+		first_id = steps[0]["id"]
+		self.assertTrue(first_id)
+		self.assertTrue(steps[1]["branches"][0]["id"])
+		self.assertTrue(steps[1]["branches"][0]["steps"][0]["id"])
+		self.assertTrue(steps[1]["else_steps"][0]["id"])
+
+		program = json.loads(auto.compiled_steps)
+		self.assertIn(first_id, [op.get("node") for op in program])
+		self.assertEqual(engine.program_nodes(program)[0], first_id)
+
+		# ids survive an edit of the flow
+		steps[0]["comment"] = "one, edited"
+		auto.steps = json.dumps(steps)
+		auto.save()
+		self.assertEqual(json.loads(auto.steps)[0]["id"], first_id)
+
+	def test_duplicate_ids_are_replaced(self):
+		auto = make_automation(
+			"twins",
+			[
+				{"id": "same", "type": "add_note", "comment": "one"},
+				{"id": "same", "type": "add_note", "comment": "two"},
+			],
+		)
+		ids = [step["id"] for step in json.loads(auto.steps)]
+		self.assertEqual(len(set(ids)), 2)
+
+	def test_step_stats_are_keyed_by_node(self):
+		from crm.api.automation import get_step_stats
+
+		auto = make_automation(
+			"counted",
+			[
+				{"type": "add_note", "comment": "runs"},
+				{
+					"type": "add_note",
+					"comment": "skipped",
+					"condition": {"field": "email", "operator": "contains", "value": "@never.test"},
+				},
+			],
+		)
+		lead = make_lead(email="stats@example.com")
+		self.assertIsNotNone(get_enrollment(auto.name, lead.name))
+
+		steps = json.loads(auto.steps)
+		stats = get_step_stats(auto.name)
+		self.assertEqual(stats["nodes"][steps[0]["id"]]["success"], 1)
+		self.assertEqual(stats["nodes"][steps[1]["id"]]["skipped"], 1)
+		self.assertEqual(stats["totals"].get("Completed"), 1)
+
+	def test_simulate_walks_the_flow_without_side_effects(self):
+		steps = [
+			{"type": "add_note", "comment": "ciao {{ first_name }}"},
+			{"type": "wait", "hours": 3},
+			{
+				"type": "if_else",
+				"branches": [
+					{
+						"label": "VIP",
+						"condition_groups": [
+							[{"field": "email", "operator": "contains", "value": "@vip.test"}]
+						],
+						"steps": [{"type": "add_tag", "tag": "vip"}],
+					}
+				],
+				"else_steps": [{"type": "add_tag", "tag": "standard"}],
+			},
+		]
+		lead = make_lead(email="boss@vip.test", first_name="Marco")
+		trace = engine.simulate(steps, lead)
+
+		self.assertEqual(trace[0]["status"], "Would run")
+		self.assertIn("Marco", trace[0]["detail"])
+		self.assertEqual(trace[1]["status"], "Wait")
+		self.assertEqual(trace[2]["status"], "Branch")
+		self.assertIn("VIP", trace[2]["detail"])
+		self.assertIn("vip", trace[3]["detail"])
+		self.assertEqual(trace[-1]["status"], "End")
+
+		# nothing was written: no comment, no tag
+		self.assertFalse(
+			frappe.get_all("Comment", filters={"reference_doctype": "CRM Lead", "reference_name": lead.name})
+		)
+		lead.reload()
+		self.assertNotIn("vip", lead.get("_user_tags") or "")
+
+	def test_simulate_reports_stop_and_skips(self):
+		steps = [
+			{
+				"type": "add_note",
+				"comment": "never",
+				"condition": {"field": "email", "operator": "contains", "value": "@never.test"},
+			},
+			{"type": "stop_if", "condition": {"field": "email", "operator": "is_set"}},
+			{"type": "add_note", "comment": "unreachable"},
+		]
+		lead = make_lead(email="stop@example.com")
+		trace = engine.simulate(steps, lead)
+		self.assertEqual(trace[0]["status"], "Skipped")
+		self.assertEqual(trace[1]["status"], "Exited")
+		self.assertEqual(len(trace), 2)
+
+	def test_duplicate_automation_is_a_fresh_draft(self):
+		from crm.api.automation import duplicate_automation
+
+		auto = make_automation("original", [{"type": "add_note", "comment": "x"}])
+		copy_name = duplicate_automation(auto.name)["name"]
+		copy = frappe.get_doc("CRM Automation", copy_name)
+		self.assertFalse(copy.enabled)
+		self.assertIn("copy", copy.title)
+		self.assertNotEqual(
+			json.loads(copy.steps)[0]["id"],
+			json.loads(auto.steps)[0]["id"],
+		)
