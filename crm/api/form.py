@@ -581,6 +581,16 @@ def enrich_form_submission(doc):
 	if doc.meta.has_field("source") and not doc.get("source"):
 		doc.source = ensure_form_source()
 
+	# the visitor ids ride along with the submission (see crm_form.html): claim the
+	# browsing history that led here and write the attribution snapshots
+	from crm.api.tracking import attribute_from_request
+
+	attribute_from_request(
+		doc,
+		category="Third Party",
+		dimensions={"source": "web_form", "medium": "form"},
+	)
+
 	capture(
 		"web_form_submitted",
 		"crm",

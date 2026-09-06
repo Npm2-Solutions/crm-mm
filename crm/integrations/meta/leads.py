@@ -149,7 +149,9 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 		}
 	)
 	try:
-		doc = frappe.get_doc(values).insert(ignore_permissions=True)
+		doc = frappe.get_doc(values)
+		_attribute(doc, lead, form_id)
+		doc.insert(ignore_permissions=True)
 		if unmapped:
 			_note_unmapped_answers(doc, unmapped)
 		if form_id:
@@ -162,6 +164,31 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 	except Exception:
 		_log_failure(lead, form_id, frappe.get_traceback())
 		return "failed"
+
+
+def _attribute(doc, lead: dict, form_id: str | None) -> None:
+	"""Credit a lead-ad submission to the ad that produced it.
+
+	These leads never touch a browser we track — Meta hands them over server to
+	server — so there is no session to read. `is_organic` is what separates a paid
+	placement from a lead form on an organic post, and `ad_id` is the closest thing
+	the lead node gives us to a creative, so it goes in the content slot.
+	"""
+	from crm.api.tracking import attribute
+
+	organic = bool(lead.get("is_organic"))
+	instagram = lead.get("platform") == "ig"
+	attribute(
+		doc,
+		category="Organic Social" if organic else "Paid Social",
+		dimensions={
+			"source": "instagram" if instagram else "facebook",
+			"medium": "social" if organic else "paid_social",
+			"campaign": frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or "",
+			"content": lead.get("ad_id") or "",
+			"landing_page": "lead_ad_form",
+		},
+	)
 
 
 def _note_unmapped_answers(lead_doc, answers: list[tuple[str, str]]) -> None:

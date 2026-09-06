@@ -168,6 +168,10 @@
       </div>
     </div>
 
+    <!-- Tracks the visit and hands the visitor ids to the booking call below, so
+         a booking is credited to the campaign that produced it. -->
+    <script async src="/assets/crm/js/tracker.js"></script>
+
     <script>
       const ROUTE = {{ route | tojson }};
       const MANAGE_TOKEN = {{ manage_token | tojson }};
@@ -279,6 +283,10 @@
             invitee_phone: el("f-phone").value.trim(),
             notes: el("f-notes").value.trim(),
             invitee_timezone: TZ,
+            ...((window.CRMTracker && {
+              crm_vid: window.CRMTracker.getIds().vid,
+              crm_sid: window.CRMTracker.getIds().sid,
+            }) || {}),
           }, true);
           el("picker").classList.add("hidden");
           el("book-form").classList.remove("visible");
