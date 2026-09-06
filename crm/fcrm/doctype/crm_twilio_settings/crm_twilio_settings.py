@@ -6,6 +6,8 @@ from frappe import _
 from frappe.model.document import Document
 from twilio.rest import Client
 
+from crm.integrations.twilio.utils import get_public_url
+
 
 class CRMTwilioSettings(Document):
 	# begin: auto-generated types
@@ -23,8 +25,13 @@ class CRMTwilioSettings(Document):
 		auth_token: DF.Password | None
 		enabled: DF.Check
 		record_calls: DF.Check
+		recording_notice: DF.SmallText | None
 		twilio_apps: DF.Data | None
+		twilio_numbers: DF.SmallText | None
 		twiml_sid: DF.Data | None
+		verified_caller_ids: DF.SmallText | None
+		verify_webhook_signature: DF.Check
+		webhook_base_url: DF.Data | None
 	# end: auto-generated types
 
 	friendly_resource_name = "Frappe CRM"  # System creates TwiML app & API keys with this name.
@@ -124,8 +131,47 @@ class CRMTwilioSettings(Document):
 			",".join(applications),
 		)
 
+	@frappe.whitelist()
+	def test_connection(self) -> dict:
+		"""Prove the credentials work, and say what they reach.
 
-def get_public_url(path: str | None = None):
-	from frappe.utils import get_url
+		Worth its own button: without it the first sign that a key is wrong is a
+		call that silently fails to connect.
+		"""
+		try:
+			twilio = Client(self.account_sid, self.get_password("auth_token"))
+			account = twilio.api.accounts(self.account_sid).fetch()
+		except Exception as exc:
+			return {"ok": False, "error": str(exc)[:300]}
 
-	return get_url().split(":8", 1)[0] + path
+		return {
+			"ok": True,
+			"account": account.friendly_name,
+			"status": account.status,
+			"callback_url": get_public_url("/api/method/crm.integrations.twilio.api.voice"),
+		}
+
+	@frappe.whitelist()
+	def fetch_numbers(self) -> dict:
+		"""Cache what this account can actually present as a caller ID.
+
+		Both lists matter: an agent can be reached on a number the account owns,
+		and can present a number that was verified as an outgoing caller ID. A
+		number in neither list will not work, and typing one by hand is how that
+		happens.
+		"""
+		twilio = self.validate_twilio_account()
+
+		numbers = sorted(n.phone_number for n in twilio.incoming_phone_numbers.list())
+		verified = sorted(c.phone_number for c in twilio.outgoing_caller_ids.list())
+
+		frappe.db.set_single_value(
+			"CRM Twilio Settings",
+			{"twilio_numbers": ",".join(numbers), "verified_caller_ids": ",".join(verified)},
+		)
+		return {"numbers": numbers, "verified_caller_ids": verified}
+
+	def usable_caller_ids(self) -> list[str]:
+		"""Every number this account may present, owned or verified."""
+		raw = f"{self.twilio_numbers or ''},{self.verified_caller_ids or ''}"
+		return sorted({part.strip() for part in raw.split(",") if part.strip()})
