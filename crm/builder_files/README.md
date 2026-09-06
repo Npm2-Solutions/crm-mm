@@ -18,6 +18,10 @@ cartella, del file e il campo `name` devono coincidere: `make_records` cerca
 
 Se Builder **non** è installato, questa cartella è inerte: nessun hook, nessun costo.
 
+`client_scripts/` è il posto dove finirà `tracker.js` (modulo 15): montato su ogni pagina
+pubblicata, le visite e i submit del sito entrano nella pipeline di attribuzione che il CRM
+ha già, senza che nessuno debba incollare un tag.
+
 ## Il contratto dei componenti
 
 Un `Builder Component` è due cose:

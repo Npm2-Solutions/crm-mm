@@ -1,4 +1,4 @@
-# 15 — Sito web vetrina, integrato nel CRM
+# 16 — Sito web vetrina, integrato nel CRM
 
 > **Stato: proposta rivista il 06/09/2026 dopo lettura del codice di
 > [frappe/builder](https://github.com/frappe/builder).** La prima stesura proponeva di
@@ -34,6 +34,7 @@ calendario, form, attribuzione dei lead e automazioni sono **lo stesso dato**.
 | **Pagine legali** | fixture `Web Page` `privacy` / `terms` | footer legale pronto |
 | **Meta, social, WhatsApp, tracked links** | `crm/integrations/meta`, `crm/social` | pixel, Conversions API, planner, CTA |
 | **Automazioni** | `crm/automation/engine.py` | `on_lead_created`, `on_booking_created` già agganciabili |
+| **Tracciamento e attribuzione** | `crm/public/js/tracker.js`, `CRM Visitor Session`, `first_touch_*` / `last_touch_*` ([modulo 15](./15-tracciamento-lead.md)) | provenienza dei lead già risolta: al sito basta montare il tracker |
 
 ## 3. Fatti verificati (settembre 2026)
 
@@ -368,13 +369,29 @@ con rotta dinamica Builder. CTA "Prenota" → `/book/<route>` del calendario col
 l'appuntamento nasce già in agenda, col servizio giusto, la durata giusta, lo staff giusto.
 JSON-LD `Service` / `Product` + `Offer` dal data script.
 
-### 8.3 Attribuzione dei lead — il vero moltiplicatore
+### 8.3 Attribuzione: non c'è da costruirla, c'è da collegarla
 
-Ogni submit porta pagina di atterraggio, form di origine, referrer, `utm_*`, `gclid`,
-`fbclid`. Oggi `CRM Lead` ha `source` ma **non ha campi UTM**: vanno aggiunti (o una child
-table `CRM Lead Attribution` per il multi-touch). Da lì: sorgente reale di ogni deal
-chiuso, ROI per campagna, e — con l'integrazione Meta già presente — la **Conversions API
-server-side** con `event_id` dedupato col pixel.
+Quando ho scritto la prima versione di questa sezione proponevo di aggiungere i campi UTM
+a `CRM Lead`. **Non serve più**: il modulo [15](./15-tracciamento-lead.md) è stato
+implementato nel frattempo e porta già `tracker.js`, `CRM Visitor`, `CRM Visitor Session`,
+`CRM Tracking Event`, i due scatti `first_touch_*` / `last_touch_*` su Lead e Trattativa,
+la classificazione della sorgente e il report per categoria/campagna.
+
+Quello che il sito deve fare è **entrare in quella pipeline**, non costruirne una seconda:
+
+| Cosa | Come |
+|---|---|
+| Le pagine del sito tracciano le visite | `tracker.js` spedito come **Builder Client Script** in `crm/builder_files/client_scripts/`, così ogni pagina pubblicata lo monta senza che nessuno debba incollarlo |
+| I form del sito nominano il visitatore | il componente **Form CRM** invia l'evento di submit che fa scattare `attribute()`: la storia anonima passata viene riscritta sul Lead appena creato |
+| Le prenotazioni fanno lo stesso | la CTA "Prenota" porta su `/book/<rotta>`, già dentro lo stesso dominio e quindi la stessa sessione tracciata |
+| Il report esiste già | `crm.api.tracking.source_report` risponde "da dove arrivano i lead del sito" senza una riga in più |
+
+È un pezzo di lavoro che sparisce dal piano, e vale più di quanto costa: significa che dal
+primo giorno **ogni lead che nasce dal sito arriva con la sua provenienza attaccata**.
+
+La **Meta Conversions API** resta fuori scope anche qui: il modulo 15 la elenca fra le cose
+non fatte (invio di conversioni offline verso le piattaforme), e non è questo il modulo che
+la porta.
 
 ### 8.4 Il resto
 
@@ -382,7 +399,7 @@ server-side** con `event_id` dedupato col pixel.
 - **WhatsApp**: CTA `wa.me` con testo precompilato; il messaggio atterra nell'inbox CRM.
 - **Social**: alla pubblicazione, "condividi" che precompila un `CRM Social Post` con URL,
   titolo e immagine.
-- **Tracked Links** per le CTA in uscita.
+- **Tracked Links** per le CTA in uscita — i click finiscono già nel percorso del visitatore.
 - **GDPR**: banner che gate-a GA4/Pixel prima del consenso, checkbox nel form salvata sul
   lead, footer verso le `Web Page` `privacy`/`terms` già spedite.
 - **Dominio**: custom domain a livello di site (`bench setup add-domain`) — procedura di
@@ -485,7 +502,7 @@ conferma sul campo, non più come bivio.
 |---|---|---|
 | **0 — Spike** | vedi §11: kit pronto in `scripts/builder/spike.sh`. **Se qui qualcosa non regge, si torna al piano B** | 1–2 gg |
 | **1+2 — Consegna unica** | libreria componenti CRM (servizi, prodotti, form, prenota, contatti, WhatsApp, scheda servizio) + Builder Token di brand + starter pages; campi sito su `CRM Service`/`CRM Product` + scheda "Sito web" nell'editor servizio; gruppo "Sito web" nel modale (Sito, Pagine, Vetrina); rotta `/crm/sito/pagine/:name` con iframe | 10–14 gg |
-| **3 — Crescita** | SEO (JSON-LD, sitemap, OG), attribuzione UTM + Conversions API, consenso cookie, componenti FAQ/galleria/numeri/social | 6–8 gg |
+| **3 — Crescita** | SEO (JSON-LD, sitemap, OG), `tracker.js` come client script sulle pagine, consenso cookie che gate-a i pixel, componenti FAQ/galleria/numeri/social | 5–7 gg |
 | **4 — Opzionale** | embed mode (PR upstream, poi eventuale fork sottile), blog/news, multilingua, script embed JS per siti esterni | su richiesta |
 
 ## 13. Decisioni e domande
