@@ -24,6 +24,7 @@ lo nomina: form, sondaggio, prenotazione, chat widget, order form.
 | Trigger link click | `CRM Tracking Event` (`Link Clicked`) | Gia' esistevano i link tracciati, ora finiscono nel percorso |
 | Source report | `crm.api.tracking.source_report` | Lead/trattative per categoria, sorgente, mezzo o campagna |
 | — | Scheda **Tracking** su Lead e Trattativa | I due scatti + il percorso + le visite |
+| — | Sezioni **First Touch / Last Touch** nella scheda Dati | I campi grezzi, richiudibili, accanto agli altri dati del record |
 
 Fuori scope per ora: modelli multi-touch pesati (lineare, time-decay), stitching
 cross-device oltre il click identificato, e l'invio di conversioni offline verso
@@ -141,6 +142,7 @@ API per la pagina: `CRMTracker.track(nome, props)`, `CRMTracker.identify(traits)
 | `crm/fcrm/doctype/crm_tracking_settings/` | La policy del sito |
 | `frontend/src/components/Settings/TrackingSettings.vue` | Snippet + impostazioni |
 | `frontend/src/components/Activities/AttributionArea.vue` | La scheda Tracking |
+| `crm/patches/v1_0/add_attribution_sections_to_data_layouts.py` | Porta le sezioni nella scheda Dati sui site gia' installati |
 | `crm/tests/test_attribution.py` | Le regole, una per test |
 | `crm/tests/test_tracking.py` | Il percorso completo, dal beacon al lead attribuito |
 

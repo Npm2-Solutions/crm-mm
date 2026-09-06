@@ -124,6 +124,99 @@ def add_default_communication_statuses():
 		doc.insert()
 
 
+# The two attribution snapshots, as Data Fields layout sections.
+#
+# Two sections and not one: both touches carry identical field labels ("Source",
+# "Medium", "Campaign", …), so side by side in a single section there would be no
+# telling which is which. Collapsed by default — this is reference you consult
+# when a deal closes, not something you fill in.
+ATTRIBUTION_SECTIONS = [
+	{
+		"label": "First Touch",
+		"name": "first_touch_data_section",
+		"opened": False,
+		"columns": [
+			{
+				"name": "column_first_touch_1",
+				"fields": ["first_touch_category", "first_touch_source", "first_touch_medium"],
+			},
+			{
+				"name": "column_first_touch_2",
+				"fields": ["first_touch_campaign", "first_touch_term", "first_touch_content"],
+			},
+			{
+				"name": "column_first_touch_3",
+				"fields": ["first_touch_landing_page", "first_touch_referrer", "first_touch_on"],
+			},
+		],
+	},
+	{
+		"label": "Last Touch",
+		"name": "last_touch_data_section",
+		"opened": False,
+		"columns": [
+			{
+				"name": "column_last_touch_1",
+				"fields": ["last_touch_category", "last_touch_source", "last_touch_medium"],
+			},
+			{
+				"name": "column_last_touch_2",
+				"fields": ["last_touch_campaign", "last_touch_term", "last_touch_content"],
+			},
+			{
+				"name": "column_last_touch_3",
+				"fields": ["last_touch_landing_page", "last_touch_referrer", "last_touch_on"],
+			},
+		],
+	},
+]
+
+
+def add_attribution_sections(layout: list, doctype: str) -> bool:
+	"""Append the attribution sections to a parsed Data Fields layout, in place.
+
+	Shared by the seeder below and by the patch that brings existing sites up to
+	date, so the two can't drift apart.
+
+	Handles both layout shapes the CRM stores: a flat list of sections (Lead) and
+	the tabbed form where sections hang off a tab's `sections` key (Deal). Returns
+	whether anything changed — a layout that already carries them, or a doctype
+	without the fields, is left exactly as it was.
+	"""
+	if not isinstance(layout, list):
+		return False
+
+	# Where sections live: a tab's `sections` list, or the layout itself. On a
+	# layout someone has split into several tabs, the last one — appended reference
+	# material belongs at the end, not wedged among the primary fields.
+	tabs = [e for e in layout if isinstance(e, dict) and isinstance(e.get("sections"), list)]
+	container = tabs[-1]["sections"] if tabs else layout
+
+	present = {section.get("name") for section in container if isinstance(section, dict)}
+	meta = frappe.get_meta(doctype)
+	added = False
+	for section in ATTRIBUTION_SECTIONS:
+		if section["name"] in present:
+			continue
+		columns = [
+			{**column, "fields": [f for f in column["fields"] if meta.has_field(f)]}
+			for column in section["columns"]
+		]
+		columns = [column for column in columns if column["fields"]]
+		if not columns:
+			continue
+		container.append({**section, "columns": columns})
+		added = True
+	return added
+
+
+def _with_attribution(layout: str, doctype: str) -> str:
+	"""A seeded Data Fields layout with the attribution sections appended."""
+	parsed = json.loads(layout)
+	add_attribution_sections(parsed, doctype)
+	return json.dumps(parsed)
+
+
 def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
@@ -226,7 +319,7 @@ def add_default_fields_layout(force=False):
 		doc = frappe.new_doc("CRM Fields Layout")
 		doc.type = "Data Fields"
 		doc.dt = data_fields_layouts[layout]["doctype"]
-		doc.layout = data_fields_layouts[layout]["layout"]
+		doc.layout = _with_attribution(data_fields_layouts[layout]["layout"], doc.dt)
 		doc.insert()
 
 

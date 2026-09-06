@@ -392,6 +392,68 @@ class TestRetention(TrackingTestCase):
 		self.assertTrue(frappe.db.exists("CRM Visitor", result["vid"]))
 
 
+class TestDataLayout(IntegrationTestCase):
+	"""The attribution sections on the Data tab of a lead or deal."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def layout_of(self, name):
+		return json.loads(frappe.db.get_value("CRM Fields Layout", name, "layout") or "[]")
+
+	def section_names(self, layout):
+		"""Section names, from either layout shape: a flat list, or sections nested
+		under a tab."""
+		for entry in layout:
+			if isinstance(entry.get("sections"), list):
+				return [s.get("name") for s in entry["sections"]]
+		return [s.get("name") for s in layout]
+
+	def test_patch_adds_both_sections_to_lead_and_deal(self):
+		from crm.patches.v1_0.add_attribution_sections_to_data_layouts import execute
+
+		execute()
+		for name in ("CRM Lead-Data Fields", "CRM Deal-Data Fields"):
+			names = self.section_names(self.layout_of(name))
+			self.assertIn("first_touch_data_section", names, name)
+			self.assertIn("last_touch_data_section", names, name)
+
+	def test_patch_is_idempotent(self):
+		from crm.patches.v1_0.add_attribution_sections_to_data_layouts import execute
+
+		execute()
+		before = self.layout_of("CRM Lead-Data Fields")
+		execute()
+		self.assertEqual(self.layout_of("CRM Lead-Data Fields"), before)
+
+	def test_patch_keeps_what_was_already_there(self):
+		"""Purely additive: nothing an author arranged by hand may move or vanish."""
+		from crm.patches.v1_0.add_attribution_sections_to_data_layouts import execute
+
+		before = self.section_names(self.layout_of("CRM Lead-Data Fields"))
+		before = [n for n in before if not n.endswith("_touch_data_section")]
+		execute()
+		after = self.section_names(self.layout_of("CRM Lead-Data Fields"))
+		self.assertEqual(after[: len(before)], before)
+
+	def test_the_fields_resolve_against_the_doctype(self):
+		"""A fieldname the layout names but the doctype lacks would reach the
+		frontend as a bare string and break the tab."""
+		from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import get_fields_layout
+		from crm.patches.v1_0.add_attribution_sections_to_data_layouts import execute
+
+		execute()
+		tabs = get_fields_layout("CRM Lead", "Data Fields")
+		sections = [s for tab in tabs for s in tab.get("sections", [])]
+		attribution = [s for s in sections if s.get("name", "").endswith("_touch_data_section")]
+		self.assertEqual(len(attribution), 2)
+		for section in attribution:
+			for column in section["columns"]:
+				for field in column["fields"]:
+					self.assertIsInstance(field, dict, f"{field} did not resolve")
+					self.assertTrue(field["read_only"])
+
+
 class TestSessionLifecycle(TrackingTestCase):
 	def test_an_idle_session_is_replaced(self):
 		visitor = get_visitor(frappe.generate_hash(length=32))
