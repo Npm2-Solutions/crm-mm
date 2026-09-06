@@ -425,6 +425,7 @@
       v-model:whatsapp="whatsappMessages"
       :doctype="doctype"
       @scroll="scroll"
+      @template="showWhatsappTemplates = true"
     />
     <SMSBox
       v-if="title == 'SMS'"

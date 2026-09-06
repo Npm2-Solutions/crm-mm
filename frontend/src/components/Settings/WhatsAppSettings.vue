@@ -169,7 +169,35 @@
                 :label="__('Use for sending')"
                 @click="setDefault(account.name)"
               />
+              <Button
+                size="sm"
+                variant="outline"
+                :label="__('Check incoming')"
+                :loading="checking == account.name"
+                @click="recheckDelivery(account.name)"
+              />
               <Button variant="ghost" icon="lucide-trash-2" @click="disconnect(account.name)" />
+            </div>
+            <!-- Sending needs only a token, receiving needs two more things that
+                 nothing tells you about until a reply never arrives. -->
+            <div
+              v-if="delivery[account.name]"
+              class="px-3 pb-3"
+              :class="delivery[account.name].ok ? 'text-ink-green-5' : 'text-ink-gray-6'"
+            >
+              <div v-if="delivery[account.name].ok" class="text-p-sm">
+                {{ __('Incoming messages can arrive: Meta notifies the app and the hub routes them here.') }}
+              </div>
+              <div v-else class="flex flex-col gap-1">
+                <div
+                  v-for="problem in delivery[account.name].problems"
+                  :key="problem.key"
+                  class="flex flex-col"
+                >
+                  <span class="text-p-sm-medium text-ink-red-5">{{ problem.what }}</span>
+                  <span class="text-p-sm text-ink-gray-6">{{ problem.detail }}</span>
+                </div>
+              </div>
             </div>
           </div>
           <p class="mt-2 text-p-sm text-ink-gray-5">
@@ -183,7 +211,7 @@
 
 <script setup>
 import { createResource, FormControl, toast } from 'frappe-ui'
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 
 const connecting = ref(false)
 
@@ -196,10 +224,15 @@ function addAccount() {
     url: 'crm.integrations.whatsapp.api.add_account',
     params: { ...manual.value },
     auto: true,
-    onSuccess: () => {
+    onSuccess: (data) => {
       addingAccount.value = false
       manual.value = { phone_number_id: '', waba_id: '', token: '', account_name: '' }
       toast.success(__('Number added'))
+      if (data?.account)
+        delivery[data.account] = {
+          ok: !data.problems?.length,
+          problems: data.problems || [],
+        }
       status.reload()
     },
     onError: (e) => {
@@ -238,6 +271,31 @@ const status = createResource({
   url: 'crm.integrations.whatsapp.api.get_status',
   auto: true,
 })
+
+// What the check found, per number. Repairing and checking are the same call:
+// everything it does is idempotent, so there is nothing to press twice.
+const delivery = reactive({})
+const checking = ref('')
+
+function recheckDelivery(name) {
+  checking.value = name
+  createResource({
+    url: 'crm.integrations.whatsapp.api.recheck_delivery',
+    params: { name },
+    auto: true,
+    onSuccess: (data) => {
+      checking.value = ''
+      delivery[name] = data
+      data.ok
+        ? toast.success(__('This number can receive messages'))
+        : toast.error(__('Something is still missing, see below'))
+    },
+    onError: (e) => {
+      checking.value = ''
+      toast.error(e.messages?.[0] || __('Could not check the number'))
+    },
+  })
+}
 
 function connect() {
   connecting.value = true

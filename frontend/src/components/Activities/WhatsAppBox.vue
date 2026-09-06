@@ -24,6 +24,18 @@
 
     <Button variant="ghost" icon="lucide-x" @click="reply = {}" />
   </div>
+  <!-- WhatsApp only lets a business write freely for 24 hours after the
+       customer's last message; outside that window Meta delivers an approved
+       template and nothing else. This says so instead of letting the send fail,
+       but it does not block it: what we know about the window is only as good
+       as the incoming messages that reached us. -->
+  <div
+    v-if="!windowOpen"
+    class="mx-3 mb-1 flex items-center justify-between gap-3 rounded border border-outline-amber-2 bg-surface-amber-1 px-3 py-2 sm:mx-10"
+  >
+    <span class="text-p-sm text-ink-gray-7">{{ windowNotice }}</span>
+    <Button size="sm" :label="__('Send a template')" @click="emit('template')" />
+  </div>
   <div class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
     <div class="flex h-8 items-center gap-2">
       <FileUploader @success="(file) => uploadFile(file)">
@@ -97,12 +109,16 @@ import {
   FileUploader,
   Dropdown,
   toast,
+  dayjs,
+  dayjsLocal,
 } from 'frappe-ui'
 import { ref, computed, nextTick, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, default: '' },
 })
+
+const emit = defineEmits(['template'])
 
 const doc = defineModel({ type: Object, default: () => ({}) })
 const whatsapp = defineModel('whatsapp', { type: Object, default: () => ({}) })
@@ -117,6 +133,32 @@ const emoji = ref('')
 const content = ref('')
 const placeholder = ref(__('Type your message here...'))
 const fileType = ref('')
+
+// --- the 24-hour window -----------------------------------------------------
+// Only a message *from* the customer opens it, which is why an echo of our own
+// messages does not count here.
+const lastIncomingAt = computed(() => {
+  const messages = whatsapp.value?.data || []
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].type === 'Incoming') return messages[i].creation
+  }
+  return null
+})
+
+const windowOpen = computed(() => {
+  if (!lastIncomingAt.value) return false
+  return dayjs().diff(dayjsLocal(lastIncomingAt.value), 'hour', true) < 24
+})
+
+const windowNotice = computed(() =>
+  lastIncomingAt.value
+    ? __(
+        'More than 24 hours since this contact last wrote: WhatsApp only delivers an approved template now.',
+      )
+    : __(
+        'This contact has never written here: WhatsApp only delivers an approved template until they reply.',
+      ),
+)
 
 // --- voice messages ---------------------------------------------------------
 // Recorded in the browser with MediaRecorder, uploaded like any other file and
