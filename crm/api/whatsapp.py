@@ -253,6 +253,27 @@ def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 	return [message for message in messages if message["content_type"] != "reaction"]
 
 
+def insert_and_send(doc) -> str:
+	"""Insert the message, and say what actually went wrong when the send fails.
+
+	`frappe_whatsapp` reports a failed send by reading
+	`frappe.flags.integration_request.json()`. That flag is only set once a
+	request reaches Meta, so when the call never leaves the server — a malformed
+	URL, DNS, a timeout — its own error handler dies with "'NoneType' object has
+	no attribute 'json'" and buries the cause. Python keeps the cause in
+	`__context__`: report that one instead.
+	"""
+	try:
+		doc.insert(ignore_permissions=True)
+	except AttributeError as exc:
+		cause = exc
+		while cause.__context__ is not None:
+			cause = cause.__context__
+		frappe.log_error(frappe.get_traceback(), "WhatsApp: send failed")
+		frappe.throw(_("WhatsApp could not send the message: {0}").format(cause))
+	return doc.name
+
+
 @frappe.whitelist()
 def create_whatsapp_message(
 	reference_doctype: str,
@@ -292,8 +313,7 @@ def create_whatsapp_message(
 			"content_type": content_type,
 		}
 	)
-	doc.insert(ignore_permissions=True)
-	return doc.name
+	return insert_and_send(doc)
 
 
 @frappe.whitelist()
@@ -332,8 +352,7 @@ def send_whatsapp_template(
 		values = json.loads(value) if isinstance(value, str) else value
 		if values:
 			doc.set(fieldname, json.dumps(values))
-	doc.insert(ignore_permissions=True)
-	return doc.name
+	return insert_and_send(doc)
 
 
 @frappe.whitelist()
@@ -381,8 +400,7 @@ def react_on_whatsapp_message(emoji: str, reply_to_name: str):
 			"content_type": "reaction",
 		}
 	)
-	doc.insert(ignore_permissions=True)
-	return doc.name
+	return insert_and_send(doc)
 
 
 def parse_template_parameters(string, parameters):
