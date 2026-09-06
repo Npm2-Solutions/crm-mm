@@ -55,6 +55,7 @@ import LucideSparkles from '~icons/lucide/sparkles'
 import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
 import LucideClock from '~icons/lucide/clock'
+import LucideRadar from '~icons/lucide/radar'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
 import SparkleIcon from '@/components/Icons/SparkleIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
@@ -95,6 +96,7 @@ import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
 import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
 import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
+import TrackingSettings from '@/components/Settings/TrackingSettings.vue'
 import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
 import Icon from '@/components/Icon.vue'
@@ -241,6 +243,11 @@ const tabs = computed(() => {
           label: __('Tracked Links'),
           component: markRaw(TrackedLinksSettings),
           icon: 'link',
+        },
+        {
+          label: __('Lead Tracking'),
+          component: markRaw(TrackingSettings),
+          icon: markRaw(LucideRadar),
         },
       ],
       condition: () => isManager(),

@@ -22,6 +22,9 @@
     <div v-else-if="title == 'Events'" class="h-full activity">
       <EventArea :doctype="doctype" :docname="docname" />
     </div>
+    <div v-else-if="title == 'Tracking'" class="h-full">
+      <AttributionArea :doctype="doctype" :docname="docname" />
+    </div>
     <div
       v-else-if="
         activities?.length ||
@@ -476,6 +479,7 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import EventArea from '@/components/Activities/EventArea.vue'
+import AttributionArea from '@/components/Activities/AttributionArea.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'
