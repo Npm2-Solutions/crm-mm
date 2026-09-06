@@ -137,6 +137,27 @@ class TestCollect(TrackingTestCase):
 	def test_unknown_event_types_are_dropped(self):
 		result = beacon([{"type": "definitely_not_an_event", "url": "https://example.it/"}])
 		self.assertEqual(frappe.db.count("CRM Tracking Event", {"visitor": result["vid"]}), 0)
+		# and they must not inflate the session's counters either
+		self.assertEqual(
+			frappe.db.get_value("CRM Visitor Session", {"session_id": result["sid"]}, "event_count"), 0
+		)
+
+	def test_an_empty_beacon_opens_nothing(self):
+		self.assertFalse(beacon([])["ok"])
+		self.assertEqual(frappe.db.count("CRM Visitor Session"), 0)
+
+	def test_the_landing_page_is_the_page_not_the_first_event(self):
+		"""A click flushes on its own; taking its target as the landing page would
+		credit the visit to the page the visitor left for."""
+		result = beacon(
+			[
+				{"type": "link_click", "url": "https://altrove.it/partner", "label": "Partner"},
+				page_view("https://example.it/prezzi?utm_source=newsletter&utm_medium=email"),
+			]
+		)
+		session = frappe.get_doc("CRM Visitor Session", {"session_id": result["sid"]})
+		self.assertIn("/prezzi", session.landing_page)
+		self.assertEqual(session.source_category, "Email")
 
 	def test_a_forged_visitor_id_is_replaced_not_trusted(self):
 		"""Ids are minted server-side; anything else gets a fresh one."""

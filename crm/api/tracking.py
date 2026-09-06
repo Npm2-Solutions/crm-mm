@@ -106,7 +106,7 @@ def collect() -> dict:
 		return {"ok": False}
 
 	events = payload.get("events") or []
-	if not isinstance(events, list):
+	if not isinstance(events, list) or not events:
 		return {"ok": False}
 	events = events[:MAX_EVENTS_PER_BEACON]
 
@@ -115,23 +115,36 @@ def collect() -> dict:
 	visitor = get_or_create_visitor(_visitor_id(payload), defaults=visitor_client)
 	visitor.db_set(dict(last_seen_on=now(), **visitor_client), update_modified=False)
 
-	first = events[0] if events else {}
+	landing = _landing_event(events)
 	session = start_or_continue(
 		visitor,
 		_session_id(payload),
-		first.get("url"),
-		first.get("referrer"),
+		landing.get("url"),
+		landing.get("referrer"),
 		client=client,
 		timeout_minutes=settings.session_timeout_minutes,
 		own_domains=own_domains(),
 	)
 
-	page_views = sum(_store_event(visitor, session, event) for event in events)
-	_bump_counters(visitor, session, len(events), page_views)
+	stored = [t for t in (_store_event(visitor, session, event) for event in events) if t]
+	_bump_counters(visitor, session, stored)
 
 	frappe.db.commit()
 	_set_cookies(visitor.name, session.session_id, settings.visitor_cookie_days)
 	return {"ok": True, "vid": visitor.name, "sid": session.session_id}
+
+
+def _landing_event(events: list) -> dict:
+	"""The event that says where this visit landed.
+
+	The first page view, not simply the first event: a link click flushes on its
+	own, and taking its target URL as the landing page would credit the visit to
+	the page the visitor left for.
+	"""
+	for event in events:
+		if isinstance(event, dict) and event.get("type") == "page_view":
+			return event
+	return events[0] if isinstance(events[0], dict) else {}
 
 
 def _request():
@@ -218,14 +231,18 @@ def _client_info(payload: dict, user_agent: str, ip: str) -> dict:
 	}
 
 
-def _store_event(visitor, session, event: dict) -> int:
-	"""Persist one event. Returns 1 if it was a page view, so the caller can
-	total up the counters and write them once instead of once per event."""
+def _store_event(visitor, session, event: dict) -> str | None:
+	"""Persist one event and return its stored type, or None if it was dropped.
+
+	The caller totals the return values so the counters reflect what actually
+	landed in the table — a payload full of unknown event types must not inflate
+	a session's event count.
+	"""
 	if not isinstance(event, dict):
-		return 0
+		return None
 	event_type = EVENT_TYPES.get(str(event.get("type") or "").strip())
 	if not event_type:
-		return 0
+		return None
 
 	url = str(event.get("url") or "")[:500]
 	doc = frappe.get_doc(
@@ -246,15 +263,16 @@ def _store_event(visitor, session, event: dict) -> int:
 		}
 	)
 	doc.insert(ignore_permissions=True)
-	return 1 if event_type == "Page View" else 0
+	return event_type
 
 
-def _bump_counters(visitor, session, events: int, page_views: int) -> None:
-	if not events:
+def _bump_counters(visitor, session, stored: list) -> None:
+	if not stored:
 		return
+	page_views = stored.count("Page View")
 	session.db_set(
 		{
-			"event_count": (session.event_count or 0) + events,
+			"event_count": (session.event_count or 0) + len(stored),
 			"page_view_count": (session.page_view_count or 0) + page_views,
 		},
 		update_modified=False,
