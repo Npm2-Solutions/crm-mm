@@ -301,8 +301,11 @@ const breadcrumbs = [
   { label: __('Automations'), route: { name: 'Automations' } },
 ]
 
+/** Some triggers fire on both leads and deals; then the author picks the side. */
+const fieldContext = ref('CRM Lead')
+
 const recordDoctype = computed(
-  () => triggerDoctype(draft.trigger_event) || 'CRM Lead',
+  () => triggerDoctype(draft.trigger_event) || fieldContext.value,
 )
 
 /** Fields offered to conditions, plus the wait outcome the engine exposes. */
@@ -424,6 +427,7 @@ provide('automation-editor', {
   recordDoctype,
   selectedId,
   selectedStep,
+  fieldContext,
   issuesByNode,
   stats,
   showStats,
@@ -496,11 +500,11 @@ async function save() {
   if (!draft.title.trim()) {
     tab.value = 'settings'
     toast.error(__('The automation needs a title'))
-    return
+    return false
   }
   if (blocking.value) {
     toast.error(issues.value.find((issue) => issue.level === 'error').message)
-    return
+    return false
   }
   saving.value = true
   try {
@@ -519,10 +523,13 @@ async function save() {
       })
     }
     toast.success(__('Automation saved'))
+    return true
   } catch (error) {
     toast.error(error.messages?.[0] || __('Could not save'))
+    return false
+  } finally {
+    saving.value = false
   }
-  saving.value = false
 }
 
 async function togglePublish(enabled) {
@@ -532,7 +539,8 @@ async function togglePublish(enabled) {
     )
     return
   }
-  if (dirty.value || !draft.name) await save()
+  // pausing must always work, even while the draft still has problems
+  if (enabled && (dirty.value || !draft.name) && !(await save())) return
   if (!draft.name) return
   try {
     await call('crm.api.automation.toggle_automation', {
@@ -559,6 +567,8 @@ async function toggleStats() {
 }
 
 async function duplicate() {
+  // the copy is made from what is stored, so unsaved edits go in first
+  if (dirty.value && !(await save())) return
   const data = await call('crm.api.automation.duplicate_automation', {
     name: draft.name,
   })
@@ -601,9 +611,9 @@ onMounted(() => {
   if (id && id !== 'new') {
     load(id)
   } else {
+    saved.value = JSON.stringify(payload())
     const recipe = window.history.state?.recipe
     if (recipe) Object.assign(draft, recipe)
-    saved.value = JSON.stringify(payload())
   }
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('beforeunload', warnOnUnload)

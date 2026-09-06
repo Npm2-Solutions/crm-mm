@@ -106,6 +106,9 @@ def save_automation(automation: dict | str, name: str | None = None) -> dict:
 		doc.update(values)
 		doc.save()
 	else:
+		# the DocType is named after the title, so a clash needs to say so plainly
+		if frappe.db.exists("CRM Automation", values["title"]):
+			frappe.throw(_("An automation called «{0}» already exists").format(values["title"]))
 		doc = frappe.get_doc({"doctype": "CRM Automation", "enabled": 0, **values})
 		doc.insert()
 	return get_automation(doc.name)
@@ -365,12 +368,22 @@ def duplicate_automation(name: str) -> dict:
 	_check_manager()
 	source = frappe.get_doc("CRM Automation", name)
 	copy = frappe.copy_doc(source)
-	copy.title = _("{0} (copy)").format(source.title)
+	copy.title = _free_title(_("{0} (copy)").format(source.title))
 	copy.enabled = 0
 	copy.webhook_key = None
 	copy.steps = json.dumps(_strip_step_ids(parse_json(source.steps) or []))
 	copy.insert()
 	return {"name": copy.name, "title": copy.title}
+
+
+def _free_title(title: str) -> str:
+	"""Titles are the names here, so the second copy has to be «… (copy) 2»."""
+	candidate = title
+	suffix = 1
+	while frappe.db.exists("CRM Automation", candidate):
+		suffix += 1
+		candidate = f"{title} {suffix}"
+	return candidate
 
 
 def _strip_step_ids(steps: list) -> list:

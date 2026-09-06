@@ -122,6 +122,17 @@
         </div>
       </div>
 
+      <FormControl
+        v-if="!triggerDefinition(draft.trigger_event).doctype"
+        v-model="editor.fieldContext.value"
+        type="select"
+        :label="__('This trigger fires on both — pick the fields to work with')"
+        :options="[
+          { label: __('Lead'), value: 'CRM Lead' },
+          { label: __('Deal'), value: 'CRM Deal' },
+        ]"
+      />
+
       <!-- who gets in -->
       <div class="flex flex-col gap-2">
         <div class="text-xs font-medium uppercase text-ink-gray-5">

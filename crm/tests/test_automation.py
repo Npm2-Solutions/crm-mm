@@ -486,3 +486,20 @@ class TestAutomationBuilder(IntegrationTestCase):
 		self.assertIsNotNone(get_enrollment(auto.name, by_email.name))
 		by_phone = make_lead(email="x@example.com", mobile_no="+39999123456")
 		self.assertIsNotNone(get_enrollment(auto.name, by_phone.name))
+
+	def test_second_copy_gets_its_own_title(self):
+		from crm.api.automation import duplicate_automation
+
+		auto = make_automation("popular", [{"type": "add_note", "comment": "x"}])
+		first = duplicate_automation(auto.name)["name"]
+		second = duplicate_automation(auto.name)["name"]
+		self.assertNotEqual(first, second)
+		self.assertTrue(frappe.db.exists("CRM Automation", second))
+
+	def test_creating_two_automations_with_the_same_title_is_refused(self):
+		from crm.api.automation import save_automation
+
+		payload = {"title": "same name", "trigger_event": "Lead Created", "steps": [{"type": "exit"}]}
+		save_automation(automation=payload)
+		with self.assertRaises(frappe.ValidationError):
+			save_automation(automation=dict(payload))

@@ -2,12 +2,13 @@
   <Dialog v-model="show" :options="{ title, size: '3xl' }">
     <template #body-content>
       <div class="flex flex-col gap-4">
-        <FormControl
+        <input
           ref="searchInput"
           v-model="query"
           type="text"
-          :placeholder="__('Search')"
+          class="form-input w-full"
           autocomplete="off"
+          :placeholder="__('Search')"
         />
         <div
           v-for="category in visibleCategories"
@@ -56,8 +57,8 @@
 </template>
 
 <script setup>
-import { Dialog, FeatherIcon, FormControl } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { Dialog, FeatherIcon } from 'frappe-ui'
+import { computed, nextTick, ref, watch } from 'vue'
 import { ICON_CLASSES } from '@/utils/automation'
 
 const props = defineProps({
@@ -70,6 +71,13 @@ const emit = defineEmits(['select'])
 
 const show = defineModel({ type: Boolean, default: false })
 const query = ref('')
+const searchInput = ref(null)
+
+watch(show, (open) => {
+  if (!open) return
+  query.value = ''
+  nextTick(() => searchInput.value?.focus())
+})
 
 const matches = computed(() => {
   const needle = query.value.trim().toLowerCase()
