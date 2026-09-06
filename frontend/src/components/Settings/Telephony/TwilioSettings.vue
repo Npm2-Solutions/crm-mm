@@ -87,6 +87,75 @@
               </Combobox>
             </div>
           </div>
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-col min-w-0">
+              <div class="text-p-base-medium text-ink-gray-7">
+                {{ __('Connection') }}
+              </div>
+              <div
+                v-if="connection"
+                class="text-p-sm truncate"
+                :class="connection.ok ? 'text-ink-green-3' : 'text-ink-red-3'"
+              >
+                {{
+                  connection.ok
+                    ? __('Reached {0} ({1})', [
+                        connection.account,
+                        connection.status,
+                      ])
+                    : connection.error
+                }}
+              </div>
+              <div v-else class="text-p-sm text-ink-gray-5">
+                {{ __('Check the credentials actually reach your account.') }}
+              </div>
+            </div>
+            <Button
+              :label="__('Test')"
+              :loading="twilio.testConnection.loading"
+              @click="testConnection"
+            />
+          </div>
+
+          <div
+            v-if="connection?.ok"
+            class="rounded-md bg-surface-gray-2 px-3 py-2"
+          >
+            <div class="text-p-sm text-ink-gray-6">
+              {{ __("Point your Twilio number's voice webhook here:") }}
+            </div>
+            <code class="text-p-sm text-ink-gray-8 break-all">
+              {{ connection.callback_url }}
+            </code>
+          </div>
+
+          <div class="h-px border-t border-outline-elevation-2" />
+
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-col min-w-0">
+              <div class="text-p-base-medium text-ink-gray-7">
+                {{ __('Numbers') }}
+              </div>
+              <div class="text-p-sm text-ink-gray-5">
+                {{
+                  numberCount
+                    ? __('{0} usable caller IDs on this account', [numberCount])
+                    : __(
+                        'Fetch the numbers this account owns, so agents pick one instead of typing it.',
+                      )
+                }}
+              </div>
+            </div>
+            <Button
+              :label="__('Refresh')"
+              icon-left="lucide-refresh-cw"
+              :loading="twilio.fetchNumbers.loading"
+              @click="twilio.fetchNumbers.fetch"
+            />
+          </div>
+
+          <div class="h-px border-t border-outline-elevation-2" />
+
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
               <div class="text-p-base-medium text-ink-gray-7 truncate">
@@ -101,6 +170,28 @@
             <div>
               <Switch v-model="twilio.doc.record_calls" size="sm" />
             </div>
+          </div>
+
+          <div v-if="twilio.doc.record_calls" class="pt-1">
+            <div class="text-p-base-medium text-ink-gray-7">
+              {{ __('Recording Notice') }}
+            </div>
+            <div class="text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  'Spoken to the other party before they are connected. Empty means no announcement — check what your jurisdiction requires.',
+                )
+              }}
+            </div>
+            <FormControl
+              v-model="twilio.doc.recording_notice"
+              type="textarea"
+              rows="2"
+              class="mt-2"
+              :placeholder="
+                __('This call may be recorded for quality purposes.')
+              "
+            />
           </div>
         </div>
         <!--  Disabled state -->
@@ -138,10 +229,12 @@
 <script setup>
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
-import { Combobox, Switch } from 'frappe-ui'
-import { computed } from 'vue'
+import { Combobox, FormControl, Switch } from 'frappe-ui'
+import { computed, ref } from 'vue'
 
 const emit = defineEmits(['updateStep'])
+
+const connection = ref(null)
 
 const { document: twilio } = useDocument(
   'CRM Twilio Settings',
@@ -152,9 +245,29 @@ const { document: twilio } = useDocument(
         method: 'fetch_applications',
         onSuccess: () => twilio.reload(),
       },
+      fetchNumbers: {
+        method: 'fetch_numbers',
+        onSuccess: () => twilio.reload(),
+      },
+      testConnection: {
+        method: 'test_connection',
+        onSuccess: (data) => (connection.value = data),
+      },
     },
   },
 )
+
+const numberCount = computed(() => {
+  const raw = `${twilio.doc?.twilio_numbers || ''},${
+    twilio.doc?.verified_caller_ids || ''
+  }`
+  return new Set(raw.split(',').filter(Boolean)).size
+})
+
+function testConnection() {
+  connection.value = null
+  twilio.testConnection.fetch()
+}
 
 const twilioApps = computed(() => {
   if (!twilio.doc?.account_sid) return []

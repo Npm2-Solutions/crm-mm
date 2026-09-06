@@ -19,6 +19,11 @@ class CRMCallLog(Document):
 		from frappe.core.doctype.dynamic_link.dynamic_link import DynamicLink
 		from frappe.types import DF
 
+		callback_attempts: DF.Int
+		callback_by: DF.Link | None
+		callback_completed_on: DF.Datetime | None
+		callback_due: DF.Datetime | None
+		callback_status: DF.Literal["", "Pending", "Done", "Cancelled"]
 		caller: DF.Link | None
 		duration: DF.Duration | None
 		end_time: DF.Datetime | None
@@ -42,6 +47,11 @@ class CRMCallLog(Document):
 			"Queued",
 			"Canceled",
 		]
+		transcribed_on: DF.Datetime | None
+		transcript: DF.LongText | None
+		transcript_language: DF.Data | None
+		transcription_error: DF.SmallText | None
+		transcription_status: DF.Literal["", "Pending", "In Progress", "Completed", "Failed", "Skipped"]
 		telephony_medium: DF.Literal["", "Manual", "Twilio", "Exotel"]
 		to: DF.Data
 		type: DF.Literal["Incoming", "Outgoing"]
@@ -106,6 +116,18 @@ class CRMCallLog(Document):
 				"key": "creation",
 				"width": "8rem",
 			},
+			{
+				"label": "Callback Status",
+				"type": "Select",
+				"key": "callback_status",
+				"width": "8rem",
+			},
+			{
+				"label": "Call Back By",
+				"type": "Datetime",
+				"key": "callback_due",
+				"width": "8rem",
+			},
 		]
 		rows = [
 			"name",
@@ -121,6 +143,10 @@ class CRMCallLog(Document):
 			"reference_doctype",
 			"reference_docname",
 			"creation",
+			"callback_status",
+			"callback_due",
+			"callback_attempts",
+			"callback_by",
 		]
 		return {"columns": columns, "rows": rows}
 

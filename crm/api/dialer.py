@@ -1,7 +1,20 @@
 import frappe
 from frappe import _
 
+from crm.api import call_scripts
+from crm.telephony import callbacks
+
 DISPOSITIONS = ["Interested", "Not Interested", "No Answer", "Callback", "Voicemail", "Wrong Number"]
+
+SOURCE_RECORDS = "Records"
+SOURCE_CALLBACKS = "Callbacks"
+
+UNREACHED = {"No Answer", "Voicemail"}
+"""Outcomes where the caller was never actually spoken to.
+
+A queued callback survives these: the promise was to reach the person, and
+hearing their answering machine is not reaching them.
+"""
 
 
 def _get_session(name: str):
@@ -22,6 +35,9 @@ def _session_payload(doc) -> dict:
 			"status": e.status,
 			"disposition": e.disposition,
 			"note": e.note,
+			"call_log": e.call_log,
+			"script": e.script,
+			"steps_done": _steps_done(e),
 		}
 		for e in doc.entries
 	]
@@ -31,6 +47,7 @@ def _session_payload(doc) -> dict:
 		"name": doc.name,
 		"title": doc.title,
 		"status": doc.status,
+		"source": doc.source or SOURCE_RECORDS,
 		"source_doctype": doc.source_doctype,
 		"total": len(entries),
 		"done": done,
@@ -46,15 +63,36 @@ def get_active_session() -> dict | None:
 	return _session_payload(frappe.get_doc("CRM Dial Session", name)) if name else None
 
 
+@frappe.whitelist()
+def get_callback_summary() -> dict:
+	"""What the callback queue owes right now — drives the round's badge."""
+	return callbacks.pending_summary()
+
+
 @frappe.whitelist(methods=["POST"])
 def create_session(
-	doctype: str = "CRM Lead", status: str | None = None, limit: int = 20, title: str | None = None
+	doctype: str = "CRM Lead",
+	status: str | None = None,
+	limit: int = 20,
+	title: str | None = None,
+	source: str = SOURCE_RECORDS,
+	include_upcoming: bool = False,
 ) -> dict:
-	"""Build a call queue from the newest records (with a phone number) of a status."""
-	if doctype not in ("CRM Lead", "CRM Deal"):
-		frappe.throw(_("Invalid doctype"))
+	"""Build a call queue, either from records or from the callbacks owed to callers."""
+	if source not in (SOURCE_RECORDS, SOURCE_CALLBACKS):
+		frappe.throw(_("Invalid source"))
 	if frappe.db.exists("CRM Dial Session", {"agent": frappe.session.user, "status": "In Progress"}):
 		frappe.throw(_("You already have a dial session in progress. Finish or cancel it first."))
+
+	if source == SOURCE_CALLBACKS:
+		return _create_callback_session(limit, title, frappe.utils.sbool(include_upcoming))
+	return _create_record_session(doctype, status, limit, title)
+
+
+def _create_record_session(doctype: str, status: str | None, limit: int, title: str | None) -> dict:
+	"""A queue from the newest records (with a phone number) of a status."""
+	if doctype not in ("CRM Lead", "CRM Deal"):
+		frappe.throw(_("Invalid doctype"))
 
 	filters = {"mobile_no": ["is", "set"]}
 	if doctype == "CRM Lead":
@@ -77,6 +115,7 @@ def create_session(
 			"doctype": "CRM Dial Session",
 			"agent": frappe.session.user,
 			"status": "In Progress",
+			"source": SOURCE_RECORDS,
 			"source_doctype": doctype,
 			"title": title or _("{0} · {1} records").format(status or _("All"), len(rows)),
 			"entries": [
@@ -93,6 +132,60 @@ def create_session(
 	)
 	doc.insert()
 	return _session_payload(doc)
+
+
+def _create_callback_session(limit: int, title: str | None, include_upcoming: bool) -> dict:
+	"""A round of the callbacks the answering service promised, oldest promise first."""
+	rows = callbacks.pending_callbacks(only_due=not include_upcoming, limit=min(int(limit), 100))
+	if not rows:
+		frappe.throw(
+			_("No callbacks are waiting right now.")
+			if include_upcoming
+			else _("No callbacks are due yet. Include the upcoming ones to work ahead.")
+		)
+
+	names = _display_names(rows)
+	doc = frappe.get_doc(
+		{
+			"doctype": "CRM Dial Session",
+			"agent": frappe.session.user,
+			"status": "In Progress",
+			"source": SOURCE_CALLBACKS,
+			"title": title or _("Callbacks · {0} waiting").format(len(rows)),
+			"entries": [
+				{
+					# a callback whose number matched nothing has no record to point at,
+					# which is fine — the number is what the agent needs
+					"reference_doctype": row.get("reference_doctype") or None,
+					"reference_name": row.get("reference_docname") or None,
+					"display_name": names.get((row.get("reference_doctype"), row.get("reference_docname")))
+					or row.get("from"),
+					"number": row.get("from"),
+					"status": "Pending",
+					"call_log": row.name,
+				}
+				for row in rows
+			],
+		}
+	)
+	doc.insert()
+	return _session_payload(doc)
+
+
+def _display_names(rows) -> dict:
+	"""Lead/deal titles for the queue — one query per doctype, not one per row."""
+	wanted: dict[str, set] = {}
+	for row in rows:
+		doctype, docname = row.get("reference_doctype"), row.get("reference_docname")
+		if doctype in ("CRM Lead", "CRM Deal") and docname:
+			wanted.setdefault(doctype, set()).add(docname)
+
+	out = {}
+	for doctype, docnames in wanted.items():
+		field = "lead_name" if doctype == "CRM Lead" else "organization"
+		for row in frappe.get_all(doctype, filters={"name": ["in", list(docnames)]}, fields=["name", field]):
+			out[(doctype, row.name)] = row.get(field)
+	return out
 
 
 @frappe.whitelist(methods=["POST"])
@@ -113,21 +206,203 @@ def complete_entry(
 	if entry.status == "Done" and (entry.disposition or entry.note):
 		_log_outcome_on_record(entry)
 
+	_advance_callback(entry)
+
 	if all(e.status != "Pending" for e in doc.entries):
 		doc.status = "Completed"
 	doc.save(ignore_permissions=True)
 	return _session_payload(doc)
 
 
+def _advance_callback(entry) -> None:
+	"""Move the queued callback to match the outcome the agent recorded.
+
+	Skipping is deliberately inert: passing someone over in a round doesn't
+	discharge the promise made to them, it just defers it to the next one.
+	"""
+	if not entry.call_log or entry.status == "Skipped":
+		return
+
+	try:
+		if entry.disposition in UNREACHED:
+			callbacks.record_attempt(entry.call_log)
+		elif entry.disposition == "Callback":
+			callbacks.reschedule_callback(entry.call_log)
+		elif entry.disposition == "Wrong Number":
+			callbacks.cancel_callback(entry.call_log)
+		else:
+			callbacks.resolve_callback(entry.call_log)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "CRM Dialer: failed to advance callback")
+
+
 def _log_outcome_on_record(entry) -> None:
+	if not (entry.reference_doctype and entry.reference_name):
+		return
 	try:
 		ref = frappe.get_doc(entry.reference_doctype, entry.reference_name)
 		parts = [_("Call outcome: {0}").format(_(entry.disposition or "-"))]
+		if progress := _script_progress_line(entry):
+			parts.append(progress)
 		if entry.note:
 			parts.append(frappe.utils.escape_html(entry.note))
 		ref.add_comment("Comment", "<br>".join(parts))
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "CRM Dialer: failed to log outcome")
+
+
+def _steps_done(entry) -> list[str]:
+	parsed = frappe.parse_json(entry.script_steps_done or "[]")
+	return [str(step) for step in parsed] if isinstance(parsed, list) else []
+
+
+def _script_progress_line(entry) -> str | None:
+	"""How far through the script the call actually got.
+
+	Worth writing next to the outcome: a run of deals lost at the same step says
+	something the disposition alone never does.
+	"""
+	if not entry.script:
+		return None
+	total = frappe.db.count("CRM Call Script Step", {"parenttype": "CRM Call Script", "parent": entry.script})
+	done = len(_steps_done(entry))
+	return _("Script: {0} — {1}/{2} steps").format(frappe.utils.escape_html(entry.script), done, total)
+
+
+@frappe.whitelist(methods=["POST"])
+def update_entry_script(
+	session: str, idx: int, script: str | None = None, steps_done: list | str | None = None
+) -> dict:
+	"""Attach a script to the call in hand, or record what has been ticked off."""
+	doc = _get_session(session)
+	entry = next((e for e in doc.entries if e.idx == int(idx)), None)
+	if not entry:
+		frappe.throw(_("Entry not found"))
+
+	if script is not None:
+		if script and not frappe.db.exists("CRM Call Script", script):
+			frappe.throw(_("Call script not found"))
+		# a different script starts from a clean slate; keeping ticks across scripts
+		# would credit steps the agent never saw
+		if script != entry.script:
+			entry.script_steps_done = "[]"
+		entry.script = script or None
+
+	if steps_done is not None:
+		parsed = frappe.parse_json(steps_done) if isinstance(steps_done, str) else steps_done
+		if not isinstance(parsed, list):
+			frappe.throw(_("Invalid step list"))
+		valid = set(
+			frappe.get_all(
+				"CRM Call Script Step",
+				filters={"parenttype": "CRM Call Script", "parent": entry.script or ""},
+				pluck="name",
+			)
+		)
+		entry.script_steps_done = frappe.as_json([s for s in parsed if s in valid])
+
+	doc.save(ignore_permissions=True)
+	return _session_payload(doc)
+
+
+@frappe.whitelist()
+def get_entry_context(session: str, idx: int) -> dict:
+	"""Everything the agent wants on screen for the call in hand, in one round trip.
+
+	Assembled server-side because the alternative is five requests fired the moment
+	the agent lands on a contact, each one a chance for the panel to be half-drawn
+	when the call connects.
+	"""
+	doc = _get_session(session)
+	entry = next((e for e in doc.entries if e.idx == int(idx)), None)
+	if not entry:
+		frappe.throw(_("Entry not found"))
+
+	return {
+		"idx": entry.idx,
+		"number": entry.number,
+		"display_name": entry.display_name,
+		"reference_doctype": entry.reference_doctype,
+		"reference_name": entry.reference_name,
+		"script": entry.script,
+		"steps_done": _steps_done(entry),
+		"record": _record_summary(entry),
+		"recent_calls": _recent_calls(entry),
+		"appointments": _upcoming_appointments(entry),
+		"scripts": call_scripts.list_scripts(),
+	}
+
+
+def _record_summary(entry) -> dict | None:
+	"""The lead or deal behind the number, trimmed to what is useful mid-call."""
+	if not (entry.reference_doctype and entry.reference_name):
+		return None
+	if not frappe.has_permission(entry.reference_doctype, "read", entry.reference_name):
+		return None
+
+	fields = {
+		"CRM Lead": ["name", "lead_name", "organization", "email", "mobile_no", "status", "lead_owner"],
+		"CRM Deal": ["name", "organization", "email", "mobile_no", "status", "deal_owner"],
+	}.get(entry.reference_doctype)
+	if not fields:
+		return None
+
+	row = frappe.db.get_value(entry.reference_doctype, entry.reference_name, fields, as_dict=True)
+	if row:
+		row["doctype"] = entry.reference_doctype
+	return row
+
+
+def _recent_calls(entry, limit: int = 5) -> list[dict]:
+	filters = (
+		{"reference_doctype": entry.reference_doctype, "reference_docname": entry.reference_name}
+		if entry.reference_doctype and entry.reference_name
+		else {"name": entry.call_log or ""}
+	)
+	return frappe.get_list(
+		"CRM Call Log",
+		filters=filters,
+		fields=[
+			"name",
+			"type",
+			"status",
+			"duration",
+			"start_time",
+			"creation",
+			"callback_status",
+			"transcription_status",
+		],
+		order_by="creation desc",
+		page_length=limit,
+	)
+
+
+def _upcoming_appointments(entry, limit: int = 5) -> list[dict]:
+	"""Appointments the person already has, so nobody books a second one by mistake."""
+	if not (entry.reference_doctype and entry.reference_name):
+		return []
+	names = frappe.get_all(
+		"CRM Appointment Participant",
+		filters={
+			"parenttype": "CRM Appointment",
+			"party_type": entry.reference_doctype,
+			"party": entry.reference_name,
+		},
+		pluck="parent",
+	)
+	if not names:
+		return []
+	return frappe.get_list(
+		"CRM Appointment",
+		filters={
+			"name": ["in", names],
+			"status": ["in", ("Scheduled", "Confirmed")],
+			"starts_on": [">=", frappe.utils.now_datetime()],
+		},
+		fields=["name", "title", "service", "starts_on", "ends_on", "status"],
+		order_by="starts_on asc",
+		page_length=limit,
+	)
 
 
 @frappe.whitelist(methods=["POST"])

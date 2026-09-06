@@ -46,11 +46,7 @@
             v-model="telephonyAgent.doc.default_medium"
             type="select"
             class="w-44 p-1"
-            :options="[
-              { label: __(''), value: '' },
-              { label: __('Twilio'), value: 'Twilio' },
-              { label: __('Exotel'), value: 'Exotel' },
-            ]"
+            :options="mediumOptions"
             :placeholder="__('Select Medium')"
           />
           <Button
@@ -78,7 +74,14 @@
           </div>
         </div>
         <div>
+          <Combobox
+            v-if="callerIds.data?.length"
+            v-model="telephonyAgent.doc.twilio_number"
+            class="w-44"
+            :options="callerIdOptions"
+          />
           <FormControl
+            v-else
             v-model="telephonyAgent.doc.twilio_number"
             class="flex-1 truncate w-44 p-1"
             :placeholder="__('Enter Twilio Number')"
@@ -159,6 +162,78 @@
         v-if="isManager()"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
       >
+        {{ __('Incoming Calls') }}
+      </div>
+
+      <div
+        v-if="isManager()"
+        class="flex items-center justify-between py-3 px-2"
+      >
+        <div class="flex flex-col gap-1">
+          <span
+            class="flex items-center gap-2 text-base-medium text-ink-gray-8"
+          >
+            {{ __('Answering Service') }}
+            <Badge
+              v-if="answeringEnabled"
+              :label="__('On')"
+              variant="subtle"
+              theme="green"
+            />
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'Answer incoming calls with an announcement and queue a callback, instead of ringing an agent.',
+              )
+            }}
+          </span>
+        </div>
+        <Button
+          :label="answeringEnabled ? __('Configure') : __('Set up')"
+          @click="emit('updateStep', 'answering-settings')"
+        />
+      </div>
+
+      <div
+        v-if="isManager()"
+        class="h-px border-t mx-2 border-outline-elevation-2"
+      />
+
+      <div
+        v-if="isManager()"
+        class="flex items-center justify-between py-3 px-2"
+      >
+        <div class="flex flex-col gap-1">
+          <span
+            class="flex items-center gap-2 text-base-medium text-ink-gray-8"
+          >
+            {{ __('Transcription') }}
+            <Badge
+              v-if="transcriptionEnabled"
+              :label="__('On')"
+              variant="subtle"
+              theme="green"
+            />
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'Turn call recordings into text a person or an AI agent can work with.',
+              )
+            }}
+          </span>
+        </div>
+        <Button
+          :label="transcriptionEnabled ? __('Configure') : __('Set up')"
+          @click="emit('updateStep', 'transcription-settings')"
+        />
+      </div>
+
+      <div
+        v-if="isManager()"
+        class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
+      >
         {{ __('Integrations') }}
       </div>
 
@@ -220,17 +295,44 @@
 import {
   FormControl,
   Badge,
+  Combobox,
   ErrorMessage,
   createResource,
   toast,
 } from 'frappe-ui'
-import { useTelephony } from '@/composables/telephony'
+import {
+  answeringEnabled,
+  providers,
+  transcriptionEnabled,
+  useTelephony,
+} from '@/composables/telephony'
 import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
 import { validatePhone } from '@/utils'
 import { ref, computed } from 'vue'
 
 const { isEnabled } = useTelephony()
+
+// what the account can actually present; typing a number Twilio has never heard
+// of is the quiet way calls stop working
+const callerIds = createResource({
+  url: 'crm.integrations.twilio.api.usable_caller_ids',
+  cache: 'twilio-caller-ids',
+  auto: true,
+})
+
+const callerIdOptions = computed(() =>
+  (callerIds.data || []).map((number) => ({ label: number, value: number })),
+)
+
+// the options follow the provider registry, so a new carrier shows up here
+// without this file having to learn its name
+const mediumOptions = computed(() => [
+  { label: '', value: '' },
+  ...providers.value
+    .filter((p) => p.enabled)
+    .map((p) => ({ label: p.label, value: p.label })),
+])
 
 const emit = defineEmits(['updateStep'])
 

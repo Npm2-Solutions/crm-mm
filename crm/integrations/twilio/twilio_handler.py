@@ -6,7 +6,10 @@ from twilio.jwt.access_token.grants import VoiceGrant
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import Dial, VoiceResponse
 
-from .utils import get_public_url, merge_dicts
+from crm.telephony import answering, routing
+from crm.telephony.providers import get as get_provider
+
+from .utils import get_public_url
 
 
 class Twilio:
@@ -21,6 +24,7 @@ class Twilio:
 		self.application_sid = settings.twiml_sid
 		self.api_key = settings.api_key
 		self.api_secret = settings.get_password("api_secret")
+		self.auth_token = settings.get_password("auth_token", raise_exception=False)
 		self.twilio_client = self.get_twilio_client()
 
 	@classmethod
@@ -73,9 +77,35 @@ class Twilio:
 		url_path = "/api/method/crm.integrations.twilio.api.update_call_status_info"
 		return get_public_url(url_path)
 
-	def generate_twilio_dial_response(self, from_number: str, to_number: str):
-		"""Generates voice call instructions to forward the call to agents Phone."""
+	def recording_notice(self) -> str | None:
+		"""What to say before connecting, when the call is being recorded."""
+		if not self.settings.record_calls:
+			return None
+		return (self.settings.recording_notice or "").strip() or None
+
+	def get_recording_notice_url(self):
+		url_path = "/api/method/crm.integrations.twilio.api.recording_notice"
+		return get_public_url(url_path)
+
+	def say_notice(self, resp: VoiceResponse) -> None:
+		"""Speak the recording notice into an existing response, if there is one."""
+		if notice := self.recording_notice():
+			voice, language = notice_voice()
+			resp.say(notice, language=language, voice=voice)
+
+	def generate_twilio_dial_response(self, from_number: str, to_number: str, notify_callee=False):
+		"""Voice instructions to forward the call to a phone.
+
+		``notify_callee`` decides which side hears the recording notice. On an
+		incoming call the person to tell is the one already on the line, so it is
+		spoken before dialling. On an outgoing one it is the person about to be
+		rung, so it rides on their leg via the number's own TwiML — telling the
+		agent that their own call is recorded discloses nothing to anybody.
+		"""
 		resp = VoiceResponse()
+		if not notify_callee:
+			self.say_notice(resp)
+
 		dial = Dial(
 			caller_id=from_number,
 			record=self.settings.record_calls,
@@ -84,6 +114,7 @@ class Twilio:
 		)
 		dial.number(
 			to_number,
+			url=self.get_recording_notice_url() if (notify_callee and self.recording_notice()) else None,
 			status_callback_event="initiated ringing answered completed",
 			status_callback=self.get_update_call_status_callback_url(),
 			status_callback_method="POST",
@@ -97,6 +128,8 @@ class Twilio:
 	def generate_twilio_client_response(self, client, ring_tone="at"):
 		"""Generates voice call instructions to forward the call to agents computer."""
 		resp = VoiceResponse()
+		# the caller is already on the line, so they are the one to tell
+		self.say_notice(resp)
 		dial = Dial(
 			ring_tone=ring_tone,
 			record=self.settings.record_calls,
@@ -124,92 +157,14 @@ class Twilio:
 		return client
 
 
-class IncomingCall:
-	def __init__(self, from_number, to_number, meta=None):
-		self.from_number = from_number
-		self.to_number = to_number
-		self.meta = meta
+def notice_voice() -> tuple[str, str]:
+	"""Voice and language for spoken notices, borrowed from the answering service.
 
-	def process(self):
-		"""Process the incoming call
-		* Figure out who is going to pick the call (call attender)
-		* Check call attender settings and forward the call to Phone
-		"""
-		twilio = Twilio.connect()
-		owners = get_twilio_number_owners(self.to_number)
-		attender = get_the_call_attender(owners, self.from_number)
-
-		if not attender:
-			resp = VoiceResponse()
-			resp.say(_("Agent is unavailable to take the call, please call after some time."))
-			return resp
-
-		if attender["call_receiving_device"] == "Phone":
-			return twilio.generate_twilio_dial_response(self.from_number, attender["mobile_no"])
-		else:
-			return twilio.generate_twilio_client_response(twilio.safe_identity(attender["name"]))
-
-
-def get_twilio_number_owners(phone_number):
-	"""Get list of users who is using the phone_number.
-	>>> get_twilio_number_owners("+11234567890")
-	{
-		'owner1': {'name': '..', 'mobile_no': '..', 'call_receiving_device': '...'},
-		'owner2': {....}
-	}
+	One place to configure how the CRM sounds on the phone; a second pair of
+	fields would only ever be set to the same values.
 	"""
-	# remove special characters from phone number and get only digits also remove white spaces
-	# keep + sign in the number at start of the number
-	phone_number = "".join([c for c in phone_number if c.isdigit() or c == "+"])
-	user_voice_settings = frappe.get_all(
-		"CRM Telephony Agent",
-		filters={"twilio_number": phone_number},
-		fields=["name", "call_receiving_device"],
-	)
-	user_wise_voice_settings = {user["name"]: user for user in user_voice_settings}
-
-	user_general_settings = frappe.get_all(
-		"User", filters=[["name", "IN", user_wise_voice_settings.keys()]], fields=["name", "mobile_no"]
-	)
-	user_wise_general_settings = {user["name"]: user for user in user_general_settings}
-
-	return merge_dicts(user_wise_general_settings, user_wise_voice_settings)
-
-
-def get_active_loggedin_users(users):
-	"""Filter the current loggedin users from the given users list"""
-	rows = frappe.db.sql(
-		"""
-		SELECT `user`
-		FROM `tabSessions`
-		WHERE `user` IN %(users)s
-		""",
-		{"users": users},
-	)
-	return [row[0] for row in set(rows)]
-
-
-def get_the_call_attender(owners, caller=None):
-	"""Get attender details from list of owners"""
-	if not owners:
-		return
-	current_loggedin_users = get_active_loggedin_users(list(owners.keys()))
-
-	if len(current_loggedin_users) > 1 and caller:
-		deal_owner = frappe.db.get_value("CRM Deal", {"mobile_no": caller}, "deal_owner")
-		if not deal_owner:
-			deal_owner = frappe.db.get_value(
-				"CRM Lead", {"mobile_no": caller, "converted": False}, "lead_owner"
-			)
-		for user in current_loggedin_users:
-			if user == deal_owner:
-				current_loggedin_users = [user]
-
-	for name, details in owners.items():
-		if (details["call_receiving_device"] == "Phone" and details["mobile_no"]) or (
-			details["call_receiving_device"] == "Computer" and name in current_loggedin_users
-		):
-			return details
+	config = answering.settings()
+	return (config.voice or "alice", config.language or "it-IT")
 
 
 class TwilioCallDetails:
@@ -223,9 +178,9 @@ class TwilioCallDetails:
 		self._call_to = call_to or call_info.get("To")
 
 	def get_direction(self):
-		if self.call_info.get("Caller").lower().startswith("client"):
-			return "Outgoing"
-		return "Incoming"
+		# Caller is absent on some callbacks; a missing one is not an outgoing call
+		caller = self.call_info.get("Caller") or ""
+		return "Outgoing" if caller.lower().startswith("client") else "Incoming"
 
 	def get_from_number(self):
 		return self._call_from or self.call_info.get("From")
@@ -248,12 +203,12 @@ class TwilioCallDetails:
 		receiver = ""
 
 		if direction == "Outgoing":
-			caller = self.call_info.get("Caller")
-			identity = caller.replace("client:", "").strip()
+			identity = (self.call_info.get("Caller") or "").replace("client:", "").strip()
 			caller = Twilio.emailid_from_identity(identity) if identity else ""
-		else:
-			owners = get_twilio_number_owners(to_number)
-			attender = get_the_call_attender(owners, from_number)
+		elif not answering.takes_every_call():
+			# with the announcement answering every call there is no attender to
+			# find, and guessing one would credit an agent with a call they never took
+			attender = routing.find_attender(get_provider("twilio"), to_number, from_number)
 			receiver = attender["name"] if attender else ""
 
 		return {

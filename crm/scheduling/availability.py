@@ -185,6 +185,117 @@ def service_working_hours(service) -> WorkingHours:
 	)
 
 
+def company_working_hours() -> WorkingHours:
+	"""The organisation's own opening hours.
+
+	These are the site-wide defaults, which on a one-practice-per-site install
+	*are* that practice's hours — the level the telephony announcement and the
+	callback promise are judged against.
+	"""
+	if not hasattr(frappe.local, "crm_company_hours"):
+		config = settings()
+		frappe.local.crm_company_hours = WorkingHours(
+			rows=config.default_availability,
+			holidays=holiday_dates(config.default_holiday_list),
+			always=not config.default_availability,
+		)
+	return frappe.local.crm_company_hours
+
+
+# --------------------------------------------------------------------------
+# open/closed questions
+#
+# The scheduling engine asks whether a *span* fits inside the working windows.
+# Telephony asks two thinner questions instead — is it open right now, and what
+# instant is N working hours from now — so they get their own helpers rather
+# than a slot search with a one-second duration.
+# --------------------------------------------------------------------------
+
+
+def _as_aware(moment: datetime.datetime | None) -> datetime.datetime:
+	"""Naive values are stored in the system timezone; aware ones pass through."""
+	if moment is None:
+		return datetime.datetime.now(UTC)
+	return moment if moment.tzinfo else from_system_naive(moment)
+
+
+def _open_windows(hours: WorkingHours, tz: ZoneInfo, from_day: datetime.date, horizon_days: int):
+	"""Open windows one day at a time.
+
+	Lazier than ``for_span`` on purpose: a deadline that lands tomorrow shouldn't
+	pay for a quarter of interval math. Windows that touch at midnight arrive
+	unmerged, which callers here don't mind — they accumulate elapsed time and a
+	window ending exactly where the next begins accumulates continuously.
+	"""
+	for offset in range(horizon_days):
+		yield from hours.for_day(from_day + datetime.timedelta(days=offset), tz)
+
+
+def is_open(hours: WorkingHours, moment: datetime.datetime | None = None, tz: ZoneInfo | None = None) -> bool:
+	"""Is ``moment`` inside an open window?"""
+	tz = tz or scheduling_tz()
+	moment = _as_aware(moment)
+	# start a day early: a window may open the previous evening and run past midnight
+	first_day = moment.astimezone(tz).date() - datetime.timedelta(days=1)
+	return any(start <= moment < end for start, end in _open_windows(hours, tz, first_day, 3))
+
+
+def next_opening(
+	hours: WorkingHours,
+	moment: datetime.datetime | None = None,
+	tz: ZoneInfo | None = None,
+	horizon_days: int = 14,
+) -> datetime.datetime | None:
+	"""When the doors are next open, or ``None`` if they stay shut for the horizon.
+
+	Returns ``moment`` itself when it is already inside an open window.
+	"""
+	tz = tz or scheduling_tz()
+	moment = _as_aware(moment)
+	first_day = moment.astimezone(tz).date() - datetime.timedelta(days=1)
+	for start, end in _open_windows(hours, tz, first_day, horizon_days + 1):
+		if end <= moment:
+			continue
+		return max(start, moment)
+	return None
+
+
+def add_working_time(
+	start: datetime.datetime,
+	seconds: int,
+	hours: WorkingHours,
+	tz: ZoneInfo | None = None,
+	horizon_days: int = 90,
+) -> datetime.datetime:
+	"""``start`` plus ``seconds`` of *open* time.
+
+	A promise made to a caller has to land inside opening hours: someone ringing
+	at 18:30 a practice that shuts at 19:00 is owed a call the next morning, not
+	at 21:30 the same evening. Time spent while closed doesn't count down.
+
+	Falls back to plain wall-clock arithmetic when the horizon holds no open time
+	at all, so a misconfigured schedule still yields a deadline instead of nothing.
+	"""
+	tz = tz or scheduling_tz()
+	cursor = _as_aware(start)
+	remaining = max(int(seconds), 0)
+	if not remaining:
+		return next_opening(hours, cursor, tz) or cursor
+
+	first_day = cursor.astimezone(tz).date() - datetime.timedelta(days=1)
+	for win_start, win_end in _open_windows(hours, tz, first_day, horizon_days):
+		if win_end <= cursor:
+			continue
+		window_from = max(win_start, cursor)
+		available = (win_end - window_from).total_seconds()
+		if available >= remaining:
+			return window_from + datetime.timedelta(seconds=remaining)
+		remaining -= available
+		cursor = win_end
+
+	return _as_aware(start) + datetime.timedelta(seconds=max(int(seconds), 0))
+
+
 # --------------------------------------------------------------------------
 # busy time
 # --------------------------------------------------------------------------

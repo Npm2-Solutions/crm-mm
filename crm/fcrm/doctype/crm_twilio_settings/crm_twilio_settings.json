@@ -11,6 +11,7 @@
   "enabled",
   "column_break_avmt",
   "record_calls",
+  "recording_notice",
   "section_break_eklq",
   "account_sid",
   "column_break_yqvr",
@@ -18,11 +19,16 @@
   "section_break_malx",
   "api_key",
   "twiml_sid",
+  "webhook_base_url",
+  "verify_webhook_signature",
   "column_break_idds",
   "api_secret",
   "app_name",
   "section_break_cghd",
-  "twilio_apps"
+  "twilio_apps",
+  "numbers_section",
+  "twilio_numbers",
+  "verified_caller_ids"
  ],
  "fields": [
   {
@@ -117,6 +123,45 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Twilio Apps"
+  },
+  {
+   "default": "1",
+   "description": "Reject webhooks that are not signed by Twilio. The Account SID alone proves nothing — it appears in every request. Only turn this off to debug a proxy that rewrites the callback URL.",
+   "fieldname": "verify_webhook_signature",
+   "fieldtype": "Check",
+   "label": "Verify Webhook Signature"
+  },
+  {
+   "description": "Public address Twilio calls back on, e.g. https://crm.studio.it or an ngrok tunnel in development. Leave empty to use the site URL.",
+   "fieldname": "webhook_base_url",
+   "fieldtype": "Data",
+   "label": "Callback Base URL"
+  },
+  {
+   "depends_on": "record_calls",
+   "description": "Spoken to the other party before they are connected, so recording is disclosed on the leg being recorded. Leave empty for no announcement. The voice and language are the answering service's.",
+   "fieldname": "recording_notice",
+   "fieldtype": "Small Text",
+   "label": "Recording Notice"
+  },
+  {
+   "fieldname": "numbers_section",
+   "fieldtype": "Section Break",
+   "label": "Account Numbers"
+  },
+  {
+   "description": "Numbers this account owns, refreshed from Twilio.",
+   "fieldname": "twilio_numbers",
+   "fieldtype": "Small Text",
+   "label": "Phone Numbers",
+   "read_only": 1
+  },
+  {
+   "description": "Numbers verified as outgoing caller IDs on this account.",
+   "fieldname": "verified_caller_ids",
+   "fieldtype": "Small Text",
+   "label": "Verified Caller IDs",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

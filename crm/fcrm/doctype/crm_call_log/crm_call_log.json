@@ -28,7 +28,21 @@
   "end_time",
   "note",
   "section_break_kebz",
-  "links"
+  "links",
+  "callback_section",
+  "callback_status",
+  "callback_due",
+  "callback_attempts",
+  "column_break_callback",
+  "callback_by",
+  "callback_completed_on",
+  "transcription_section",
+  "transcription_status",
+  "transcript",
+  "column_break_transcription",
+  "transcribed_on",
+  "transcript_language",
+  "transcription_error"
  ],
  "fields": [
   {
@@ -157,6 +171,89 @@
   {
    "fieldname": "section_break_gyqe",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "callback_section",
+   "fieldtype": "Section Break",
+   "label": "Callback"
+  },
+  {
+   "fieldname": "callback_status",
+   "fieldtype": "Select",
+   "label": "Callback Status",
+   "options": "\nPending\nDone\nCancelled",
+   "search_index": 1,
+   "description": "Set when the answering service takes a call and a callback is owed."
+  },
+  {
+   "fieldname": "callback_due",
+   "fieldtype": "Datetime",
+   "label": "Call Back By",
+   "search_index": 1,
+   "description": "The moment promised to the caller, counted in working hours."
+  },
+  {
+   "fieldname": "callback_attempts",
+   "fieldtype": "Int",
+   "label": "Attempts",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_callback",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "callback_by",
+   "fieldtype": "Link",
+   "label": "Called Back By",
+   "options": "User"
+  },
+  {
+   "fieldname": "callback_completed_on",
+   "fieldtype": "Datetime",
+   "label": "Called Back On"
+  },
+  {
+   "fieldname": "transcription_section",
+   "fieldtype": "Section Break",
+   "label": "Transcript"
+  },
+  {
+   "fieldname": "transcription_status",
+   "fieldtype": "Select",
+   "label": "Transcription Status",
+   "options": "\nPending\nIn Progress\nCompleted\nFailed\nSkipped",
+   "search_index": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "transcript",
+   "fieldtype": "Long Text",
+   "label": "Transcript",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_transcription",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transcribed_on",
+   "fieldtype": "Datetime",
+   "label": "Transcribed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transcript_language",
+   "fieldtype": "Data",
+   "label": "Language",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transcription_error",
+   "fieldtype": "Small Text",
+   "label": "Transcription Error",
+   "read_only": 1,
+   "depends_on": "eval:doc.transcription_status=='Failed'"
   }
  ],
  "index_web_pages_for_search": 1,

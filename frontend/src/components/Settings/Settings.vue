@@ -56,6 +56,7 @@ import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
 import LucideClock from '~icons/lucide/clock'
 import LucideRadar from '~icons/lucide/radar'
+import LucideListChecks from '~icons/lucide/list-checks'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
 import SparkleIcon from '@/components/Icons/SparkleIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
@@ -92,6 +93,7 @@ import PriceListsSettings from '@/components/Settings/Scheduling/PriceListsSetti
 import StaffSchedulesSettings from '@/components/Settings/Scheduling/StaffSchedulesSettings.vue'
 import SchedulingDefaults from '@/components/Settings/Scheduling/SchedulingDefaults.vue'
 import PipelinesSettings from '@/components/Settings/Pipelines/PipelinesSettings.vue'
+import CallScriptsSettings from '@/components/Settings/CallScriptsSettings.vue'
 import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
 import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
@@ -177,6 +179,11 @@ const tabs = computed(() => {
           label: __('Pipelines'),
           icon: KanbanIcon,
           component: markRaw(PipelinesSettings),
+        },
+        {
+          label: __('Call Scripts'),
+          icon: markRaw(LucideListChecks),
+          component: markRaw(CallScriptsSettings),
         },
       ],
       condition: () => isManager(),
