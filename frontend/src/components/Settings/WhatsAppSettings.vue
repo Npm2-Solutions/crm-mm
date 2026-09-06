@@ -146,56 +146,54 @@
         <div v-if="status.data?.accounts?.length">
           <div class="mb-2 text-p-base-medium text-ink-gray-7">{{ __('Numbers') }}</div>
           <div class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2">
-            <div
-              v-for="account in status.data.accounts"
-              :key="account.name"
-              class="flex items-center gap-3 px-3 py-2.5"
-            >
-              <div class="min-w-0 flex-1">
-                <div class="truncate text-p-base text-ink-gray-8">{{ account.name }}</div>
-                <div class="truncate text-p-sm text-ink-gray-5">
-                  {{ __('Phone number ID') }}: {{ account.phone_id }}
+            <div v-for="account in status.data.accounts" :key="account.name">
+              <div class="flex items-center gap-3 px-3 py-2.5">
+                <div class="min-w-0 flex-1">
+                  <div class="truncate text-p-base text-ink-gray-8">{{ account.name }}</div>
+                  <div class="truncate text-p-sm text-ink-gray-5">
+                    {{ __('Phone number ID') }}: {{ account.phone_id }}
+                  </div>
                 </div>
+                <Badge
+                  v-if="account.name == status.data.default_account"
+                  :label="__('Sends messages')"
+                  theme="green"
+                  size="sm"
+                />
+                <Button
+                  v-else
+                  size="sm"
+                  :label="__('Use for sending')"
+                  @click="setDefault(account.name)"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  :label="__('Check incoming')"
+                  :loading="checking == account.name"
+                  @click="recheckDelivery(account.name)"
+                />
+                <Button variant="ghost" icon="lucide-trash-2" @click="disconnect(account.name)" />
               </div>
-              <Badge
-                v-if="account.name == status.data.default_account"
-                :label="__('Sends messages')"
-                theme="green"
-                size="sm"
-              />
-              <Button
-                v-else
-                size="sm"
-                :label="__('Use for sending')"
-                @click="setDefault(account.name)"
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                :label="__('Check incoming')"
-                :loading="checking == account.name"
-                @click="recheckDelivery(account.name)"
-              />
-              <Button variant="ghost" icon="lucide-trash-2" @click="disconnect(account.name)" />
-            </div>
-            <!-- Sending needs only a token, receiving needs two more things that
-                 nothing tells you about until a reply never arrives. -->
-            <div
-              v-if="delivery[account.name]"
-              class="px-3 pb-3"
-              :class="delivery[account.name].ok ? 'text-ink-green-5' : 'text-ink-gray-6'"
-            >
-              <div v-if="delivery[account.name].ok" class="text-p-sm">
-                {{ __('Incoming messages can arrive: Meta notifies the app and the hub routes them here.') }}
-              </div>
-              <div v-else class="flex flex-col gap-1">
-                <div
-                  v-for="problem in delivery[account.name].problems"
-                  :key="problem.key"
-                  class="flex flex-col"
-                >
-                  <span class="text-p-sm-medium text-ink-red-5">{{ problem.what }}</span>
-                  <span class="text-p-sm text-ink-gray-6">{{ problem.detail }}</span>
+              <!-- Sending needs only a token, receiving needs two more things that
+                   nothing tells you about until a reply never arrives. -->
+              <div
+                v-if="delivery[account.name]"
+                class="px-3 pb-3"
+                :class="delivery[account.name].ok ? 'text-ink-green-5' : 'text-ink-gray-6'"
+              >
+                <div v-if="delivery[account.name].ok" class="text-p-sm">
+                  {{ __('Incoming messages can arrive: Meta notifies the app and the hub routes them here.') }}
+                </div>
+                <div v-else class="flex flex-col gap-1">
+                  <div
+                    v-for="problem in delivery[account.name].problems"
+                    :key="problem.key"
+                    class="flex flex-col"
+                  >
+                    <span class="text-p-sm-medium text-ink-red-5">{{ problem.what }}</span>
+                    <span class="text-p-sm text-ink-gray-6">{{ problem.detail }}</span>
+                  </div>
                 </div>
               </div>
             </div>
