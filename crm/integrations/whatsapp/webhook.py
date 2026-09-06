@@ -59,9 +59,32 @@ def _verify_subscription(args):
 	return Response("verification failed", status=403, mimetype="text/plain")
 
 
+def note_once(key: str, title: str, message: str) -> None:
+	"""Record a dropped delivery, without letting a flood fill the Error Log.
+
+	These two drops are the only places where a real message can disappear
+	leaving nothing behind, which is exactly when someone is staring at an empty
+	inbox wondering whether Meta ever called. One entry every ten minutes per
+	kind is enough to answer that, and little enough that a caller hammering the
+	endpoint cannot use it to bury everything else.
+	"""
+	flag = f"whatsapp_webhook_note:{key}"
+	if frappe.cache().get_value(flag):
+		return
+	frappe.cache().set_value(flag, 1, expires_in_sec=600)
+	frappe.log_error(message, title)
+
+
 def _receive(request):
 	raw_body = request.get_data() or b""
 	if not valid_signature(request.headers.get("X-Hub-Signature-256"), raw_body):
+		note_once(
+			"signature",
+			"WhatsApp webhook: signature refused",
+			"A delivery was refused because its X-Hub-Signature-256 did not match. "
+			"The usual cause is whatsapp_app_secret in the site config not being the "
+			"secret of the app that owns the webhook.",
+		)
 		return Response("invalid signature", status=403, mimetype="text/plain")
 
 	try:
@@ -73,6 +96,14 @@ def _receive(request):
 		for entry in payload.get("entry") or []:
 			site = route_for(entry)
 			if not site:
+				note_once(
+					f"route:{entry.get('id')}",
+					"WhatsApp webhook: nowhere to deliver",
+					"Meta called with a notification for WhatsApp Business account "
+					f"{entry.get('id')}, which no site has claimed: there is no Meta "
+					"WhatsApp Route for it, so the message was dropped. Press "
+					'"Check incoming" on the number in the CRM that owns it.',
+				)
 				continue
 			# `messages` is the only field frappe_whatsapp understands; the
 			# Coexistence ones (echoes from the phone, chat history, contacts)
