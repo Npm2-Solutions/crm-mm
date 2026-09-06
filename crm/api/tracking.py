@@ -450,15 +450,23 @@ def _resolve_session(visitor, session_id: str | None):
 		name = frappe.db.get_value("CRM Visitor Session", {"session_id": session_id}, "name")
 		if name:
 			return frappe.get_doc("CRM Visitor Session", name)
-	if visitor and visitor.last_session:
-		return frappe.get_doc("CRM Visitor Session", visitor.last_session)
-	return None
+	return _session(visitor.last_session) if visitor else None
 
 
 def _first_session(visitor, fallback):
-	if visitor and visitor.first_session:
-		return frappe.get_doc("CRM Visitor Session", visitor.first_session)
-	return fallback
+	return (_session(visitor.first_session) if visitor else None) or fallback
+
+
+def _session(name: str | None):
+	"""A session by name, or None if it is gone.
+
+	A visitor keeps pointing at its first and last session by name, and the
+	nightly purge can have removed either while the visitor was still anonymous.
+	A missing one must not turn a form submission into a 500.
+	"""
+	if not name or not frappe.db.exists("CRM Visitor Session", name):
+		return None
+	return frappe.get_doc("CRM Visitor Session", name)
 
 
 def _synthetic_snapshot(category: str, dimensions: dict) -> dict:

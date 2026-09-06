@@ -106,15 +106,24 @@
   if (lastSeen && Date.now() - lastSeen > SESSION_TIMEOUT_MS) sessionId = ''
 
   function remember(ids) {
+    var changed = false
     if (ids.vid && ids.vid !== visitorId) {
       visitorId = ids.vid
       write(STORAGE_VID, visitorId)
+      changed = true
     }
     if (ids.sid && ids.sid !== sessionId) {
       sessionId = ids.sid
       write(STORAGE_SID, sessionId)
+      changed = true
     }
     write(STORAGE_SEEN, String(Date.now()))
+
+    // On a brand-new browser there is no id until the first beacon comes back.
+    // The forms were already scanned by then and carry a blank one, so re-stamp
+    // them — otherwise the very first submission of a first-ever visit, which is
+    // exactly the one worth attributing, arrives anonymous.
+    if (changed && started) stampForms()
   }
 
   function hasConsent() {
@@ -129,6 +138,7 @@
   // Transport
   // ---------------------------------------------------------------------------
 
+  var started = false
   var queue = []
   var flushTimer = null
 
@@ -251,9 +261,15 @@
   var BOOKING_MARKER = '/book/'
 
   function scanForms() {
-    if (!visitorId) return
     scanIframes()
     scanNativeForms()
+  }
+
+  /** Refresh the ids already-scanned forms carry, without rescanning. */
+  function stampForms() {
+    scanIframes()
+    var forms = document.getElementsByTagName('form')
+    for (var i = 0; i < forms.length; i++) setIds(forms[i])
   }
 
   /**
@@ -262,6 +278,7 @@
    * forwards them with the submission.
    */
   function scanIframes() {
+    if (!visitorId) return
     var frames = document.getElementsByTagName('iframe')
     for (var i = 0; i < frames.length; i++) {
       var frame = frames[i]
@@ -291,20 +308,26 @@
       var form = forms[i]
       if (form.getAttribute('data-crm-tracked')) continue
       form.setAttribute('data-crm-tracked', '1')
-      addHidden(form, 'crm_vid', visitorId)
-      addHidden(form, 'crm_sid', sessionId || '')
+      setIds(form)
       form.addEventListener('submit', onFormSubmit)
       enqueue({ type: 'form_view', url: location.href, label: formLabel(form) })
     }
   }
 
-  function addHidden(form, name, value) {
-    if (form.querySelector('input[name="' + name + '"]')) return
-    var input = document.createElement('input')
-    input.type = 'hidden'
-    input.name = name
+  function setIds(form) {
+    setHidden(form, 'crm_vid', visitorId)
+    setHidden(form, 'crm_sid', sessionId || '')
+  }
+
+  function setHidden(form, name, value) {
+    var input = form.querySelector('input[name="' + name + '"]')
+    if (!input) {
+      input = document.createElement('input')
+      input.type = 'hidden'
+      input.name = name
+      form.appendChild(input)
+    }
     input.value = value
-    form.appendChild(input)
   }
 
   function formLabel(form) {
@@ -313,12 +336,7 @@
 
   function onFormSubmit(event) {
     var form = event.target
-    // refresh the ids: the visitor may have been given a new one since the form
-    // was first seen (a first-ever page view mints the id after the scan)
-    addHidden(form, 'crm_vid', visitorId)
-    addHidden(form, 'crm_sid', sessionId || '')
-    var input = form.querySelector('input[name="crm_vid"]')
-    if (input) input.value = visitorId
+    setIds(form) // last chance: the ids may have arrived since the scan
     enqueue({ type: 'form_submit', url: location.href, label: formLabel(form) })
     flush(true)
   }
@@ -386,8 +404,6 @@
   // Boot
   // ---------------------------------------------------------------------------
 
-  var started = false
-
   function start() {
     if (started || !enabled()) return
     started = true
@@ -396,11 +412,17 @@
     watchHistory()
     document.addEventListener('click', onClick, true)
 
-    // A form may be injected long after load (a modal, a lazy embed). One
-    // observer costs nothing and saves the host site from calling refresh().
+    // A form may be injected long after load (a modal, a lazy embed), so watch
+    // for it rather than making the host site call refresh(). Coalesced: an SPA
+    // re-rendering mutates constantly, and this runs on someone else's page.
     if (window.MutationObserver) {
+      var rescan = null
       new MutationObserver(function () {
-        scanForms()
+        if (rescan) return
+        rescan = setTimeout(function () {
+          rescan = null
+          scanForms()
+        }, 500)
       }).observe(document.documentElement, { childList: true, subtree: true })
     }
 
