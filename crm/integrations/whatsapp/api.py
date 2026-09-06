@@ -59,7 +59,10 @@ def get_status() -> dict:
 		fields=["name", "phone_id", "business_id", "status"],
 		order_by="creation desc",
 	)
-	default = frappe.db.get_single_value("WhatsApp Settings", "default_outgoing_account")
+	# read the flag frappe_whatsapp actually sends from, not the Settings link
+	default = frappe.db.get_value("WhatsApp Account", {"is_default_outgoing": 1}, "name") or (
+		frappe.db.get_single_value("WhatsApp Settings", "default_outgoing_account")
+	)
 	return {
 		"installed": True,
 		"can_connect": bool(get_whatsapp_app_id() and config_id()),
@@ -287,12 +290,35 @@ def upsert_account(data: dict) -> str:
 		doc = frappe.get_doc({"doctype": "WhatsApp Account", **values})
 		doc.insert(ignore_permissions=True)
 
-	# first number connected becomes the one messages go out from
-	settings = frappe.get_doc("WhatsApp Settings")
-	if not settings.get("default_outgoing_account"):
-		settings.default_outgoing_account = doc.name
-		settings.save(ignore_permissions=True)
+	make_default_if_first(doc)
 	return doc.name
+
+
+def make_default_if_first(doc) -> None:
+	"""The first number connected becomes the one messages go through.
+
+	`frappe_whatsapp` resolves the account from the **checkboxes on the account
+	itself** (`is_default_outgoing` / `is_default_incoming`), not from the links
+	in `WhatsApp Settings`: see `utils.get_whatsapp_account`. Setting only the
+	links left every send failing with "Please set a default outgoing WhatsApp
+	Account", with a number that looked perfectly connected.
+
+	Both are written anyway — the links are what the Settings screen shows, and
+	a future release may go back to reading them.
+	"""
+	known = {df.fieldname for df in frappe.get_meta("WhatsApp Account").fields}
+	for field, kind in (("is_default_outgoing", "outgoing"), ("is_default_incoming", "incoming")):
+		if field not in known:
+			continue
+		if frappe.db.exists("WhatsApp Account", {field: 1, "name": ["!=", doc.name]}):
+			continue  # somebody else already holds this role
+		if not doc.get(field):
+			doc.db_set(field, 1, update_modified=False)
+		link = f"default_{kind}_account"
+		if frappe.get_meta("WhatsApp Settings").has_field(link) and not frappe.db.get_single_value(
+			"WhatsApp Settings", link
+		):
+			frappe.db.set_single_value("WhatsApp Settings", link, doc.name)
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
@@ -331,10 +357,23 @@ def receive_events():
 
 @frappe.whitelist(methods=["POST"])
 def set_default_account(name: str) -> dict:
+	"""Send from this number from now on.
+
+	The flag lives on the account and only one may hold it, so the previous
+	holder has to give it up first — `frappe_whatsapp` picks the account by
+	`is_default_outgoing`, and two of them would make the choice arbitrary.
+	"""
 	_check_manager()
-	settings = frappe.get_doc("WhatsApp Settings")
-	settings.default_outgoing_account = name
-	settings.save()
+	if not frappe.db.exists("WhatsApp Account", name):
+		frappe.throw(_("That number is not connected"))
+	if frappe.get_meta("WhatsApp Account").has_field("is_default_outgoing"):
+		for other in frappe.get_all(
+			"WhatsApp Account", filters={"is_default_outgoing": 1, "name": ["!=", name]}, pluck="name"
+		):
+			frappe.db.set_value("WhatsApp Account", other, "is_default_outgoing", 0, update_modified=False)
+		frappe.db.set_value("WhatsApp Account", name, "is_default_outgoing", 1, update_modified=False)
+	if frappe.get_meta("WhatsApp Settings").has_field("default_outgoing_account"):
+		frappe.db.set_single_value("WhatsApp Settings", "default_outgoing_account", name)
 	return {"default_account": name}
 
 
