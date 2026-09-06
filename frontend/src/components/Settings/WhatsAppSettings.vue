@@ -97,6 +97,52 @@
           </span>
         </div>
 
+        <!-- The QR stays the one path a client is offered. This is for a number
+             Embedded Signup cannot reach — Meta's own test number, which is how
+             an agency records the App Review videos before it is a Tech
+             Provider, and without which the CRM cannot send a single message. -->
+        <details class="mb-4 rounded-lg border border-outline-gray-2 p-4">
+          <summary class="cursor-pointer text-p-base-medium text-ink-gray-7">
+            {{ __('Add a number with its credentials') }}
+          </summary>
+          <p class="mt-2 text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'For the test number Meta lends the app, from App Dashboard → WhatsApp → API Setup. Use a permanent System User token, not the temporary one, or it stops working halfway through. Clients connect by scanning the QR instead.',
+              )
+            }}
+          </p>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <FormControl
+              v-model="manual.phone_number_id"
+              type="text"
+              :label="__('Phone number ID')"
+            />
+            <FormControl
+              v-model="manual.waba_id"
+              type="text"
+              :label="__('WhatsApp Business Account ID')"
+            />
+            <FormControl
+              v-model="manual.token"
+              type="password"
+              :label="__('Access token')"
+            />
+            <FormControl
+              v-model="manual.account_name"
+              type="text"
+              :label="__('Name (optional)')"
+            />
+          </div>
+          <Button
+            class="mt-3"
+            variant="solid"
+            :label="__('Add number')"
+            :loading="addingAccount"
+            @click="addAccount"
+          />
+        </details>
+
         <div v-if="status.data?.accounts?.length">
           <div class="mb-2 text-p-base-medium text-ink-gray-7">{{ __('Numbers') }}</div>
           <div class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2">
@@ -136,10 +182,32 @@
 </template>
 
 <script setup>
-import { createResource, toast } from 'frappe-ui'
+import { createResource, FormControl, toast } from 'frappe-ui'
 import { ref } from 'vue'
 
 const connecting = ref(false)
+
+const manual = ref({ phone_number_id: '', waba_id: '', token: '', account_name: '' })
+const addingAccount = ref(false)
+
+function addAccount() {
+  addingAccount.value = true
+  createResource({
+    url: 'crm.integrations.whatsapp.api.add_account',
+    params: { ...manual.value },
+    auto: true,
+    onSuccess: () => {
+      addingAccount.value = false
+      manual.value = { phone_number_id: '', waba_id: '', token: '', account_name: '' }
+      toast.success(__('Number added'))
+      status.reload()
+    },
+    onError: (e) => {
+      addingAccount.value = false
+      toast.error(e.messages?.[0] || __('Could not add the number'))
+    },
+  })
+}
 
 const webhook = createResource({
   url: 'crm.integrations.whatsapp.api.get_webhook',
