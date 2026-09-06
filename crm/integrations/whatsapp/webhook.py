@@ -12,10 +12,15 @@ The forwarded body is re-signed with the **app secret**, producing a genuine
 exactly as if Meta had called it directly, so nothing on the client side needs
 to know the hub exists.
 
-Configure in the Meta app (Webhooks → WhatsApp Business Account):
+Configure in the Meta app (Webhooks → WhatsApp Business Account) — or press
+"Configure it" in the CRM, which registers the same thing through the API:
   Callback URL:  https://<hub>/api/method/crm.integrations.whatsapp.webhook.handle
   Verify token:  CRM Meta Settings → Webhook Verify Token (on the hub)
-  Fields:        messages, account_update
+  Fields:        `WEBHOOK_FIELDS` in crm.integrations.whatsapp.api
+
+None of it delivers anything while the app is in development mode: Meta then
+sends only the test notifications fired from the dashboard. The app has to be
+published.
 """
 
 import hashlib

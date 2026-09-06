@@ -205,6 +205,22 @@ messaggio Outgoing inserito normalmente farebbe partire l'invio via API a
 frappe_whatsapp, e il messaggio — già partito dal telefono — verrebbe recapitato
 due volte.
 
+### L'app deve essere pubblicata, altrimenti non riceve niente
+
+> *«Apps in development mode can only receive test notifications initiated
+> through the app dashboard or notifications initiated by people who have a role
+> on the app»* — e il pannello WhatsApp è ancora più netto: in dev mode **non
+> vengono inviati dati di produzione**, nemmeno quelli di amministratori,
+> sviluppatori o tester.
+
+Quindi il webhook può essere configurato alla perfezione e non arrivare nulla lo
+stesso. Per passare a Live servono, nelle impostazioni di base: privacy policy,
+icona 1024×1024, categoria, uso aziendale, e l'email di contatto verificata.
+
+Il passaggio a Live è indipendente dall'App Review: la review serve per
+l'**Advanced Access**, cioè per agire sugli asset di *altre* aziende. Con lo
+Standard Access un'app Live lavora sui propri, e il numero di test lo è.
+
 ### Perché un numero invia ma non riceve
 
 Sono **tre** condizioni, e solo la prima serve per inviare:
