@@ -1,57 +1,91 @@
 <template>
-  <div class="grid grid-cols-3 gap-2">
-    <FormControl
-      v-model="condition.field"
-      type="text"
-      :placeholder="__('field, e.g. status')"
+  <div class="grid grid-cols-[1.1fr_0.9fr_1.2fr_28px] items-center gap-2">
+    <Autocomplete
+      :modelValue="condition.field"
+      :options="fieldOptions"
+      :placeholder="__('field')"
+      @update:modelValue="pickField"
     />
     <FormControl
-      v-model="condition.operator"
+      :modelValue="condition.operator"
       type="select"
       :options="operatorOptions"
+      @update:modelValue="(value) => setOperator(value)"
     />
-    <FormControl
-      v-model="condition.value"
-      type="text"
+    <div v-if="!needsValue(condition.operator)" class="text-sm text-ink-gray-4">
+      —
+    </div>
+    <ValueInput
+      v-else
+      :modelValue="condition.value"
+      :field="field"
       :placeholder="__('value')"
-      :disabled="['is_set', 'is_not_set'].includes(condition.operator)"
+      @update:modelValue="setValue"
+    />
+    <Button
+      variant="ghost"
+      icon="lucide-x"
+      :label="__('Remove condition')"
+      @click="$emit('remove')"
     />
   </div>
 </template>
 
 <script setup>
-import { FormControl } from 'frappe-ui'
-import { computed, watch } from 'vue'
+import Autocomplete from '@/components/frappe-ui/Autocomplete.vue'
+import ValueInput from './ValueInput.vue'
+import { Button, FormControl } from 'frappe-ui'
+import { computed } from 'vue'
+import { needsValue, operatorsForFieldtype } from '@/utils/automation'
 
 const props = defineProps({
-  meta: { type: Object, default: () => ({}) },
-  required: { type: Boolean, default: false },
+  fields: { type: Array, default: () => [] },
 })
 
-const model = defineModel({ type: Object, default: null })
+defineEmits(['remove'])
 
-// keep a stable object so the inputs always have something to bind to
-const condition = computed(() => {
-  if (!model.value) {
-    model.value = { field: '', operator: 'equals', value: '' }
-  }
-  return model.value
-})
+const condition = defineModel({ type: Object, required: true })
+
+const fieldOptions = computed(() =>
+  props.fields.map((f) => ({
+    label: f.label || f.fieldname,
+    value: f.fieldname,
+    description: f.fieldname,
+  })),
+)
+
+const field = computed(
+  () =>
+    props.fields.find((f) => f.fieldname === condition.value.field) || {
+      fieldtype: 'Data',
+      options: '',
+    },
+)
 
 const operatorOptions = computed(() =>
-  (props.meta.data?.condition_operators || [
-    'equals',
-    'not_equals',
-    'contains',
-    'is_set',
-    'is_not_set',
-  ]).map((op) => ({ label: __(op), value: op })),
+  operatorsForFieldtype(field.value.fieldtype).map((o) => ({
+    label: __(o.label),
+    value: o.value,
+  })),
 )
 
-watch(
-  () => condition.value.operator,
-  (op) => {
-    if (['is_set', 'is_not_set'].includes(op)) condition.value.value = ''
-  },
-)
+function setValue(value) {
+  condition.value = { ...condition.value, value }
+}
+
+function setOperator(operator) {
+  const next = { ...condition.value, operator }
+  if (!needsValue(operator)) next.value = ''
+  condition.value = next
+}
+
+function pickField(option) {
+  const fieldname = option?.value || ''
+  const picked = props.fields.find((f) => f.fieldname === fieldname)
+  const allowed = operatorsForFieldtype(picked?.fieldtype)
+  const next = { ...condition.value, field: fieldname, value: '' }
+  // an operator that no longer applies to the new fieldtype would silently fail
+  if (!allowed.some((o) => o.value === next.operator)) next.operator = 'equals'
+  condition.value = next
+}
 </script>

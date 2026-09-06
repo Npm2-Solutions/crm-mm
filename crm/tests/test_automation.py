@@ -327,3 +327,310 @@ class TestAutomationV2(IntegrationTestCase):
 		program = json.loads(auto.compiled_steps)
 		self.assertEqual(program[-1]["op"], "end")
 		self.assertEqual(program[0]["op"], "action")
+
+
+class TestAutomationBuilder(IntegrationTestCase):
+	"""What the visual editor leans on: stable node ids, statistics, dry run."""
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_steps_get_stable_ids_and_compile_to_nodes(self):
+		auto = make_automation(
+			"identified",
+			[
+				{"type": "add_note", "comment": "one"},
+				{
+					"type": "if_else",
+					"branches": [
+						{
+							"condition_groups": [[{"field": "email", "operator": "is_set"}]],
+							"steps": [{"type": "add_note", "comment": "has email"}],
+						}
+					],
+					"else_steps": [{"type": "add_note", "comment": "no email"}],
+				},
+			],
+		)
+		steps = json.loads(auto.steps)
+		first_id = steps[0]["id"]
+		self.assertTrue(first_id)
+		self.assertTrue(steps[1]["branches"][0]["id"])
+		self.assertTrue(steps[1]["branches"][0]["steps"][0]["id"])
+		self.assertTrue(steps[1]["else_steps"][0]["id"])
+
+		program = json.loads(auto.compiled_steps)
+		self.assertIn(first_id, [op.get("node") for op in program])
+		self.assertEqual(engine.program_nodes(program)[0], first_id)
+
+		# ids survive an edit of the flow
+		steps[0]["comment"] = "one, edited"
+		auto.steps = json.dumps(steps)
+		auto.save()
+		self.assertEqual(json.loads(auto.steps)[0]["id"], first_id)
+
+	def test_duplicate_ids_are_replaced(self):
+		auto = make_automation(
+			"twins",
+			[
+				{"id": "same", "type": "add_note", "comment": "one"},
+				{"id": "same", "type": "add_note", "comment": "two"},
+			],
+		)
+		ids = [step["id"] for step in json.loads(auto.steps)]
+		self.assertEqual(len(set(ids)), 2)
+
+	def test_step_stats_are_keyed_by_node(self):
+		from crm.api.automation import get_step_stats
+
+		auto = make_automation(
+			"counted",
+			[
+				{"type": "add_note", "comment": "runs"},
+				{
+					"type": "add_note",
+					"comment": "skipped",
+					"condition": {"field": "email", "operator": "contains", "value": "@never.test"},
+				},
+			],
+		)
+		lead = make_lead(email="stats@example.com")
+		self.assertIsNotNone(get_enrollment(auto.name, lead.name))
+
+		steps = json.loads(auto.steps)
+		stats = get_step_stats(auto.name)
+		self.assertEqual(stats["nodes"][steps[0]["id"]]["success"], 1)
+		self.assertEqual(stats["nodes"][steps[1]["id"]]["skipped"], 1)
+		self.assertEqual(stats["totals"].get("Completed"), 1)
+
+	def test_simulate_walks_the_flow_without_side_effects(self):
+		steps = [
+			{"type": "add_note", "comment": "ciao {{ first_name }}"},
+			{"type": "wait", "hours": 3},
+			{
+				"type": "if_else",
+				"branches": [
+					{
+						"label": "VIP",
+						"condition_groups": [
+							[{"field": "email", "operator": "contains", "value": "@vip.test"}]
+						],
+						"steps": [{"type": "add_tag", "tag": "vip"}],
+					}
+				],
+				"else_steps": [{"type": "add_tag", "tag": "standard"}],
+			},
+		]
+		lead = make_lead(email="boss@vip.test", first_name="Marco")
+		trace = engine.simulate(steps, lead)
+
+		self.assertEqual(trace[0]["status"], "Would run")
+		self.assertIn("Marco", trace[0]["detail"])
+		self.assertEqual(trace[1]["status"], "Wait")
+		self.assertEqual(trace[2]["status"], "Branch")
+		self.assertIn("VIP", trace[2]["detail"])
+		self.assertIn("vip", trace[3]["detail"])
+		self.assertEqual(trace[-1]["status"], "End")
+
+		# nothing was written: no comment, no tag
+		self.assertFalse(
+			frappe.get_all("Comment", filters={"reference_doctype": "CRM Lead", "reference_name": lead.name})
+		)
+		lead.reload()
+		self.assertNotIn("vip", lead.get("_user_tags") or "")
+
+	def test_simulate_reports_stop_and_skips(self):
+		steps = [
+			{
+				"type": "add_note",
+				"comment": "never",
+				"condition": {"field": "email", "operator": "contains", "value": "@never.test"},
+			},
+			{"type": "stop_if", "condition": {"field": "email", "operator": "is_set"}},
+			{"type": "add_note", "comment": "unreachable"},
+		]
+		lead = make_lead(email="stop@example.com")
+		trace = engine.simulate(steps, lead)
+		self.assertEqual(trace[0]["status"], "Skipped")
+		self.assertEqual(trace[1]["status"], "Exited")
+		self.assertEqual(len(trace), 2)
+
+	def test_duplicate_automation_is_a_fresh_draft(self):
+		from crm.api.automation import duplicate_automation
+
+		auto = make_automation("original", [{"type": "add_note", "comment": "x"}])
+		copy_name = duplicate_automation(auto.name)["name"]
+		copy = frappe.get_doc("CRM Automation", copy_name)
+		self.assertFalse(copy.enabled)
+		self.assertIn("copy", copy.title)
+		self.assertNotEqual(
+			json.loads(copy.steps)[0]["id"],
+			json.loads(auto.steps)[0]["id"],
+		)
+
+	def test_trigger_condition_accepts_or_groups(self):
+		auto = make_automation(
+			"segmented",
+			[{"type": "add_note", "comment": "x"}],
+			trigger_condition=json.dumps(
+				[
+					[{"field": "email", "operator": "contains", "value": "@vip.test"}],
+					[{"field": "mobile_no", "operator": "contains", "value": "+39999"}],
+				]
+			),
+		)
+		out = make_lead(email="no@example.com", mobile_no="+390000000123")
+		self.assertIsNone(get_enrollment(auto.name, out.name))
+		by_email = make_lead(email="ceo@vip.test", mobile_no="+390000000124")
+		self.assertIsNotNone(get_enrollment(auto.name, by_email.name))
+		by_phone = make_lead(email="x@example.com", mobile_no="+39999123456")
+		self.assertIsNotNone(get_enrollment(auto.name, by_phone.name))
+
+	def test_second_copy_gets_its_own_title(self):
+		from crm.api.automation import duplicate_automation
+
+		auto = make_automation("popular", [{"type": "add_note", "comment": "x"}])
+		first = duplicate_automation(auto.name)["name"]
+		second = duplicate_automation(auto.name)["name"]
+		self.assertNotEqual(first, second)
+		self.assertTrue(frappe.db.exists("CRM Automation", second))
+
+	def test_creating_two_automations_with_the_same_title_is_refused(self):
+		from crm.api.automation import save_automation
+
+		payload = {"title": "same name", "trigger_event": "Lead Created", "steps": [{"type": "exit"}]}
+		save_automation(automation=payload)
+		with self.assertRaises(frappe.ValidationError):
+			save_automation(automation=dict(payload))
+
+
+class TestAutomationTriggers(IntegrationTestCase):
+	"""One automation, several triggers — each with its own filters and conditions."""
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_single_trigger_becomes_a_row(self):
+		auto = make_automation(
+			"legacy-shape",
+			[{"type": "add_note", "comment": "x"}],
+			trigger_event="Tag Added",
+			trigger_config=frappe.as_json({"tag": "hot"}),
+		)
+		self.assertEqual(len(auto.triggers), 1)
+		self.assertEqual(auto.triggers[0].trigger_event, "Tag Added")
+		self.assertEqual(json.loads(auto.triggers[0].trigger_config), {"tag": "hot"})
+		# the single field keeps mirroring the first row
+		self.assertEqual(auto.trigger_event, "Tag Added")
+
+	def test_automation_listens_to_every_trigger_it_has(self):
+		from frappe.desk.doctype.tag.tag import add_tag
+
+		auto = make_automation(
+			"two-ways",
+			[{"type": "add_note", "comment": "in"}],
+			triggers=[
+				{
+					"trigger_event": "Lead Created",
+					"trigger_condition": frappe.as_json(
+						[[{"field": "email", "operator": "contains", "value": "@first.test"}]]
+					),
+				},
+				{
+					"trigger_event": "Tag Added",
+					"trigger_config": frappe.as_json({"tag": "vip"}),
+				},
+			],
+		)
+		self.assertEqual(len(auto.triggers), 2)
+
+		# first trigger: only the leads its own condition allows
+		matching = make_lead(email="a@first.test")
+		self.assertIsNotNone(get_enrollment(auto.name, matching.name))
+		other = make_lead(email="b@second.test", mobile_no="+390000000002")
+		self.assertIsNone(get_enrollment(auto.name, other.name))
+
+		# second trigger: the same automation, entered by a tag
+		add_tag("vip", "CRM Lead", other.name)
+		self.assertIsNotNone(get_enrollment(auto.name, other.name))
+
+		# a tag the trigger does not watch changes nothing
+		third = make_lead(email="c@third.test", mobile_no="+390000000003")
+		add_tag("cold", "CRM Lead", third.name)
+		self.assertIsNone(get_enrollment(auto.name, third.name))
+
+	def test_overlapping_triggers_enrol_once(self):
+		auto = make_automation(
+			"overlapping",
+			[{"type": "add_note", "comment": "in"}],
+			triggers=[
+				{"trigger_event": "Lead Created"},
+				{"trigger_event": "Lead Created"},
+			],
+		)
+		lead = make_lead(email="once@example.com")
+		self.assertEqual(
+			frappe.db.count(
+				"CRM Automation Enrollment", {"automation": auto.name, "reference_name": lead.name}
+			),
+			1,
+		)
+
+	def test_api_round_trip_keeps_the_triggers(self):
+		from crm.api.automation import get_automation, save_automation
+
+		payload = {
+			"title": "multi via api",
+			"steps": [{"type": "add_note", "comment": "x"}],
+			"triggers": [
+				{"event": "Deal Created", "config": {}, "condition": None},
+				{"event": "Tag Added", "config": {"tag": "vip"}, "condition": None},
+			],
+		}
+		saved = save_automation(automation=payload)
+		self.assertEqual([t["event"] for t in saved["triggers"]], ["Deal Created", "Tag Added"])
+		self.assertEqual(saved["trigger_event"], "Deal Created")
+
+		fetched = get_automation(saved["name"])
+		self.assertEqual(fetched["triggers"][1]["config"], {"tag": "vip"})
+
+	def test_unknown_trigger_is_refused(self):
+		from crm.api.automation import save_automation
+
+		with self.assertRaises(frappe.ValidationError):
+			save_automation(
+				automation={
+					"title": "bad trigger",
+					"steps": [{"type": "exit"}],
+					"triggers": [{"event": "Volcano Erupted"}],
+				}
+			)
+
+	def test_two_triggers_on_one_event_keep_their_own_conditions(self):
+		auto = make_automation(
+			"per-source",
+			[{"type": "add_note", "comment": "in"}],
+			triggers=[
+				{
+					"trigger_event": "Lead Created",
+					"trigger_condition": frappe.as_json(
+						[[{"field": "email", "operator": "contains", "value": "@web.test"}]]
+					),
+				},
+				{
+					"trigger_event": "Lead Created",
+					"trigger_condition": frappe.as_json(
+						[[{"field": "email", "operator": "contains", "value": "@ads.test"}]]
+					),
+				},
+			],
+		)
+		# the second trigger still gets its turn when the first one says no
+		from_ads = make_lead(email="a@ads.test")
+		self.assertIsNotNone(get_enrollment(auto.name, from_ads.name))
+		from_web = make_lead(email="b@web.test", mobile_no="+390000000004")
+		self.assertIsNotNone(get_enrollment(auto.name, from_web.name))
+		neither = make_lead(email="c@shop.test", mobile_no="+390000000005")
+		self.assertIsNone(get_enrollment(auto.name, neither.name))

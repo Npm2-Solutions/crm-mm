@@ -1,13 +1,16 @@
 # 02 — Marketing Automation Omnicanale (Workflow Engine)
 
-> ✅ **IMPLEMENTATO (v2, 31/08/2026) — allineato ai Workflows GHL.** Motore a
+> ✅ **IMPLEMENTATO (v3, 06/09/2026) — allineato ai Workflows GHL.** Motore a
 > compilazione (`crm/automation/engine.py`): il builder salva step annidati, il
-> salvataggio li compila in un programma piatto con salti. Builder visuale in
-> `/automations`. Verifica: 23/23 scenari smoke del motore + test integrazione.
+> salvataggio li compila in un programma piatto con salti. Editor a canvas in
+> `/automations/:nome` (v3, vedi [L'editor](#leditor-canvas-verticale-alla-ghl)).
+> Verifica: scenari smoke del motore + test integrazione + 20 test unitari sulle
+> utility dell'editor.
 >
 > ## Matrice di parità GHL → CRM (stato attuale)
 >
-> **Trigger** ✅: Lead/Deal Created, Lead/Deal Status Changed, Booking
+> **Trigger** ✅ (**piu' d'uno per automazione**, ognuno con i suoi filtri e le
+> sue condizioni): Lead/Deal Created, Lead/Deal Status Changed, Booking
 > Created/Cancelled/No Show/Completed (≈ Appointment Status), Incoming SMS,
 > **Customer Replied** (SMS/WhatsApp/email), **Email Opened** (read tracking),
 > **Trigger Link Clicked**, **Tag Added/Removed**, Task Completed, Note Added,
@@ -34,6 +37,13 @@
 > Stop-on-Response; re-entry; **finestra oraria di invio** (ore + giorni);
 > condizione per singolo step. ❌: Drip batching, Custom Code, formatter
 > testo/numeri/date, merge di variabili di step (output webhook riusabili).
+>
+> **Editor** ✅: canvas verticale con inserimento fra due passi qualsiasi,
+> drag & drop anche dentro i rami, pannello laterale, palette ricercabile,
+> condizioni con selettore di campo dai meta, merge field, problemi cliccabili,
+> statistiche per nodo, prova a vuoto su un record vero, ricette.
+> ❌ (rispetto all'Advanced Builder di GHL): canvas free-form con nodi
+> scollegati, sticky note e commenti, multi-selezione, minimappa.
 
 > Parte del [Progetto GHL-Parity](./README.md). **È il modulo cuore del progetto**:
 > il builder visuale di automazioni multi-step temporizzate (trigger → wait →
@@ -94,9 +104,14 @@ notifica interna, review request), dati (webhook, Google Sheets), opportunità
 
 ### DocType
 
-- `CRM Workflow` *(nome def.: Automation Workflow)* — grafo JSON (nodi+archi),
-  stato (draft/attivo/paused), regole di ri-ingresso, statistiche
-- `Workflow Trigger` — tipo evento + filtri (child table o campo JSON del grafo)
+- `CRM Automation` — albero JSON degli step (+ programma compilato), stato
+  (draft/attivo), regole di ri-ingresso, finestra oraria
+- `CRM Automation Trigger` — child table: un'automazione ascolta **piu' eventi**,
+  ognuno con i suoi filtri (`trigger_config`) e le sue condizioni sul record
+  (`trigger_condition`). Il primo trigger che fa entrare il record iscrive, gli
+  altri stanno fermi: una sola iscrizione per evento. I campi singoli
+  `trigger_event`/`trigger_config`/`trigger_condition` restano come specchio
+  della prima riga, per non rompere chi li legge
 - `Workflow Enrollment` — contatto/lead/deal + workflow + **step corrente** +
   `wait_until` + stato (active/waiting/completed/exited/goal_met)
 - `Workflow Execution Log` — audit per step (inviato, skippato, errore)
@@ -123,27 +138,66 @@ notifica interna, review request), dati (webhook, Google Sheets), opportunità
    - Interno → `CRM Notification`, assegnazione, task.
 6. **Throttling/Drip**: batch con rate limit per non bruciare quote provider.
 
-### Frontend: canvas visuale
+### L'editor: canvas verticale alla GHL
 
-- **[Vue Flow](https://github.com/bcakmakoglu/vue-flow)** (MIT, ~6.8k stelle,
-  attivo, Vue 3 + TS): port di React Flow, nodi/archi come componenti SFC.
-  Scelto su Drawflow (dormiente da fine 2024) e Rete.js (overkill: l'esecuzione
-  è server-side).
-- Pagina `Automations` nella SPA CRM: lista workflow + canvas editor con palette
-  nodi (trigger/azioni/control-flow), pannello proprietà per nodo (riuso di
-  FieldLayout standalone / formDialog già presenti in questo fork), test-run e
-  log per enrollment.
-- Editor template email: GrapesJS preset newsletter (fase 2; all'inizio bastano
-  gli Email Template esistenti).
+**Niente Vue Flow.** Il modello dati è un *albero* di step (rami annidati che il
+salvataggio compila in un programma piatto), non un grafo libero: un canvas
+free-form permetterebbe di disegnare grafi che il compilatore non sa
+rappresentare. Anche GHL, sotto il canvas, tiene un albero con rami e colonne.
+Il canvas quindi è **verticale, generato dall'albero** — nessuna posizione da
+salvare, nessuna dipendenza in più.
+
+| File | Ruolo |
+|---|---|
+| `frontend/src/utils/automation.js` | Catalogo step/trigger, palette, chirurgia sull'albero, validazione, ricette — tutto puro, 20 test |
+| `frontend/src/pages/Automations.vue` | Lista: ricerca, filtri, duplica, ricette |
+| `frontend/src/pages/AutomationEditor.vue` | Editor: tab Builder/Impostazioni/Iscrizioni, salvataggio, problemi, prova |
+| `frontend/src/components/Automations/AutomationCanvas.vue` | Viewport con zoom e pan, nodo trigger |
+| `frontend/src/components/Automations/StepFlow.vue` | Flusso ricorsivo: connettori con «+», drag & drop, colonne dei rami |
+| `frontend/src/components/Automations/StepNode.vue` | La card di un passo: icona, sommario, problemi, statistiche, menu |
+| `frontend/src/components/Automations/StepPanel.vue` | Pannello laterale: il form del passo selezionato |
+| `frontend/src/components/Automations/TriggerPanel.vue` | Trigger, filtri evento, condizioni di iscrizione, re-ingresso |
+| `frontend/src/components/Automations/ConditionBuilder.vue` | Gruppi AND/OR con selettore di campo dai meta |
+| `frontend/src/components/Automations/RunPreviewDialog.vue` | Prova a vuoto su un record vero |
+
+Cosa fa, in concreto:
+
+- **Inserimento ovunque**: ogni connettore fra due passi ha un «+»; la palette è
+  ricercabile e divisa per categorie, con i preset del **Deal** (l'*opportunity*
+  di GHL): sposta di stage, valore atteso, data di chiusura, prossimo passo.
+- **Condizioni non più a mano**: i campi arrivano da `frappe.get_meta` di CRM
+  Lead / CRM Deal, gli operatori dipendono dal tipo di campo e il valore usa il
+  controllo giusto (select, link, data, numero). Gruppi AND/OR ovunque, incluso
+  il filtro di iscrizione.
+- **Statistiche per nodo**: ogni step del builder ha un `id` stabile che il
+  programma compilato porta con sé, così i log tornano sul nodo giusto —
+  passati, falliti, saltati e quanti contatti sono fermi lì adesso.
+- **Prova a vuoto** (`simulate_automation`): percorre il flusso *a schermo*,
+  anche non salvato, contro un lead o un deal veri. Condizioni e rami valutati
+  davvero, messaggi solo renderizzati: niente invii, niente scritture.
+- **Problemi**: errore = il server rifiuterebbe (blocca il salvataggio), avviso
+  = lo step girerebbe a vuoto (blocca la pubblicazione). Un click porta al nodo.
+- **Piu' trigger**: in cima al canvas c'e' una card per trigger e un
+  «+ Aggiungi trigger»; ognuna ha il suo evento, i suoi filtri e le sue
+  condizioni, e l'editor avvisa se due ascoltano la stessa cosa.
+- Merge field inseriti al cursore, copia/incolla dei passi fra automazioni,
+  ricette pronte, guardia sulle modifiche non salvate, ⌘S.
+
+Editor template email: GrapesJS preset newsletter (fase 2; all'inizio bastano
+gli Email Template esistenti).
 
 ## Ordine di build (MVP → parità)
 
-1. **MVP verticale**: trigger "Lead creato" + azioni Email/Wait/Tag + enrollment
-   + tick scheduler. Senza canvas: definizione JSON. *(prova del motore)*
-2. Canvas Vue Flow + pannelli proprietà + attivazione/pausa.
-3. If/Else + Goal + Split + Trigger Link con tracking click.
-4. Canali WhatsApp e SMS; trigger da funnel/booking/pagamenti.
-5. Statistiche per step, test A/B, template di workflow pronti ("ricette").
+1. ✅ **MVP verticale**: trigger "Lead creato" + azioni Email/Wait/Tag +
+   enrollment + tick scheduler. *(prova del motore)*
+2. ✅ Canvas + pannelli proprietà + attivazione/pausa. *(verticale, non Vue
+   Flow: il modello è un albero — vedi [L'editor](#leditor-canvas-verticale-alla-ghl))*
+3. ✅ If/Else + Goal + Split + Trigger Link con tracking click.
+4. ✅ Canali WhatsApp e SMS; trigger da booking/appuntamenti.
+5. ✅ Statistiche per step, split test, ricette pronte.
+6. ✅ Trigger multipli per automazione, con filtri e condizioni per trigger.
+7. Da fare: note e commenti sul canvas, formatter dei valori, output di uno
+   step riusabile in quelli dopo.
 
 ## Rischi
 

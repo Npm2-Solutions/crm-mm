@@ -1,0 +1,46 @@
+{
+ "actions": [],
+ "creation": "2026-09-06 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "trigger_event",
+  "trigger_config",
+  "trigger_condition"
+ ],
+ "fields": [
+  {
+   "fieldname": "trigger_event",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Trigger Event",
+   "options": "Lead Created\nDeal Created\nLead Status Changed\nDeal Status Changed\nBooking Created\nBooking Cancelled\nBooking No Show\nBooking Completed\nAppointment Created\nAppointment Rescheduled\nAppointment Cancelled\nAppointment No Show\nAppointment Completed\nIncoming SMS\nCustomer Replied\nEmail Opened\nTrigger Link Clicked\nTag Added\nTag Removed\nTask Completed\nNote Added\nDate Reminder\nInbound Webhook",
+   "reqd": 1
+  },
+  {
+   "description": "Event filters: which tag, which link, which date field",
+   "fieldname": "trigger_config",
+   "fieldtype": "JSON",
+   "label": "Trigger Config"
+  },
+  {
+   "description": "Conditions the record must match for this trigger",
+   "fieldname": "trigger_condition",
+   "fieldtype": "JSON",
+   "label": "Trigger Condition"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-06 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Automation Trigger",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

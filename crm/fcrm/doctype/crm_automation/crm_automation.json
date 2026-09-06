@@ -10,6 +10,7 @@
   "enabled",
   "column_break_head",
   "trigger_event",
+  "triggers",
   "allow_reenrollment",
   "exit_on_reply",
   "description",
@@ -54,7 +55,14 @@
    "in_standard_filter": 1,
    "label": "Trigger Event",
    "options": "Lead Created\nDeal Created\nLead Status Changed\nDeal Status Changed\nBooking Created\nBooking Cancelled\nBooking No Show\nBooking Completed\nAppointment Created\nAppointment Rescheduled\nAppointment Cancelled\nAppointment No Show\nAppointment Completed\nIncoming SMS\nCustomer Replied\nEmail Opened\nTrigger Link Clicked\nTag Added\nTag Removed\nTask Completed\nNote Added\nDate Reminder\nInbound Webhook",
-   "reqd": 1
+   "reqd": 1,
+   "description": "First trigger, kept in sync with the Triggers table"
+  },
+  {
+   "fieldname": "triggers",
+   "fieldtype": "Table",
+   "label": "Triggers",
+   "options": "CRM Automation Trigger"
   },
   {
    "default": "0",

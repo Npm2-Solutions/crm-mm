@@ -169,10 +169,18 @@ def process_event(event: str, doc, payload: dict | None = None) -> None:
 		triggers = [trigger]
 		if event == "sms_received":
 			triggers.append("Incoming SMS")
-		for automation in frappe.get_all(
-			"CRM Automation", filters={"enabled": 1, "trigger_event": ["in", triggers]}, pluck="name"
-		):
-			enroll(automation, ref_doctype, ref_name, payload)
+
+		fired: set[str] = set()
+		for row in matching_triggers(triggers):
+			# every trigger of an automation gets its turn — two triggers on the
+			# same event can hold different conditions — but the first one that
+			# lets the record in enrols it, and the rest stand down
+			if row.parent in fired:
+				continue
+			if not trigger_config_matches(parse_json(row.trigger_config) or {}, payload):
+				continue
+			if enroll(row.parent, ref_doctype, ref_name, payload, trigger_row=row):
+				fired.add(row.parent)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "CRM Automation: process_event failed")
 
@@ -201,10 +209,68 @@ def resolve_reference(event: str, doc) -> tuple[str, str] | None:
 	return None
 
 
-def trigger_config_matches(automation, payload: dict) -> bool:
+def matching_triggers(events: list[str]) -> list:
+	"""Every trigger of every enabled automation listening to one of these events.
+
+	Triggers live in a child table: an automation can wait for a new lead *and*
+	for a tag *and* for a stage change, each with its own filters and conditions.
+	Automations saved before that table existed still carry the single
+	`trigger_event`, so they are folded in here and keep firing until their next
+	save. Read with the query builder: this runs from doc events, under whichever
+	user happened to touch the record.
+	"""
+	trigger = frappe.qb.DocType("CRM Automation Trigger")
+	automation = frappe.qb.DocType("CRM Automation")
+	matches = (
+		frappe.qb.from_(trigger)
+		.join(automation)
+		.on(trigger.parent == automation.name)
+		.select(
+			trigger.parent,
+			trigger.trigger_event,
+			trigger.trigger_config,
+			trigger.trigger_condition,
+			trigger.idx,
+		)
+		.where(
+			(trigger.parenttype == "CRM Automation")
+			& (trigger.trigger_event.isin(events))
+			& (automation.enabled == 1)
+		)
+		.orderby(trigger.parent)
+		.orderby(trigger.idx)
+	).run(as_dict=True)
+
+	legacy = (
+		frappe.qb.from_(automation)
+		.select(
+			automation.name,
+			automation.trigger_event,
+			automation.trigger_config,
+			automation.trigger_condition,
+		)
+		.where((automation.enabled == 1) & (automation.trigger_event.isin(events)))
+	).run(as_dict=True)
+	if legacy:
+		with_rows = {
+			row.parent
+			for row in (
+				frappe.qb.from_(trigger)
+				.select(trigger.parent)
+				.where(trigger.parenttype == "CRM Automation")
+				.distinct()
+			).run(as_dict=True)
+		}
+		for row in legacy:
+			if row.name in with_rows:
+				continue
+			matches.append(frappe._dict({**row, "parent": row.name}))
+	return matches
+
+
+def trigger_config_matches(config: dict, payload: dict) -> bool:
 	"""Event-payload filters, GHL-style (which link, which tag, which form…)."""
-	config = parse_json(automation.get("trigger_config")) or {}
-	for key, expected in config.items():
+	for key, expected in (config or {}).items():
 		if expected in (None, "", []):
 			continue
 		actual = payload.get(key)
@@ -238,9 +304,23 @@ def exit_enrollments_on_reply(ref_doctype: str, ref_name: str) -> None:
 			enr.save(ignore_permissions=True)
 
 
-def enroll(automation_name: str, ref_doctype: str, ref_name: str, payload: dict | None = None) -> str | None:
+def enroll(
+	automation_name: str,
+	ref_doctype: str,
+	ref_name: str,
+	payload: dict | None = None,
+	trigger_row=None,
+) -> str | None:
+	"""Put a record into an automation. `trigger_row` is the trigger that fired.
+
+	Its filters have already matched by then; its conditions are what decides
+	whether this record gets in. Without a row (a step adding the record by
+	hand) the automation-level fields — a mirror of the first trigger — apply.
+	"""
 	automation = frappe.get_doc("CRM Automation", automation_name)
-	if not trigger_config_matches(automation, payload or {}):
+	if trigger_row is None and not trigger_config_matches(
+		parse_json(automation.trigger_config) or {}, payload or {}
+	):
 		return None
 
 	existing_filters = {
@@ -254,7 +334,12 @@ def enroll(automation_name: str, ref_doctype: str, ref_name: str, payload: dict 
 		return None
 
 	ref_doc = frappe.get_doc(ref_doctype, ref_name)
-	groups = condition_groups_of(automation.as_dict())
+	source = (
+		{"trigger_condition": trigger_row.get("trigger_condition")}
+		if trigger_row is not None
+		else automation.as_dict()
+	)
+	groups = condition_groups_of(source)
 	if groups and not evaluate_condition_groups(groups, ref_doc):
 		return None
 
@@ -306,32 +391,41 @@ def compile_steps(steps: list) -> list[dict]:
 			step_type = step.get("type")
 			label = step.get("label")
 			gate = condition_groups_of(step)
+			node = step.get("id")
 
 			if step_type == "if_else":
 				compile_if_else(step, label)
 			elif step_type == "split":
 				compile_split(step, label)
 			elif step_type == "wait":
-				emit({"op": "wait", "step": step}, label)
+				emit({"op": "wait", "step": step, "node": node}, label)
 			elif step_type == "goal":
-				emit({"op": "goal", "step": step}, label)
+				emit({"op": "goal", "step": step, "node": node}, label)
 			elif step_type == "go_to":
-				index = emit({"op": "jump", "to": None}, label)
+				index = emit({"op": "jump", "to": None, "node": node}, label)
 				pending_jumps.append((index, step.get("target")))
 			elif step_type == "exit":
-				emit({"op": "exit"}, label)
+				emit({"op": "exit", "node": node}, label)
 			elif step_type == "stop_if":
-				emit({"op": "stop_if", "groups": condition_groups_of(step)}, label)
+				emit({"op": "stop_if", "groups": condition_groups_of(step), "node": node}, label)
 			else:  # plain action
-				emit({"op": "action", "step": step, "gate": gate}, label)
+				emit({"op": "action", "step": step, "gate": gate, "node": node}, label)
 
 	def compile_if_else(step, label):
 		branches = step.get("branches") or []
 		end_jumps = []
 		anchor = None
-		for branch in branches:
+		for position, branch in enumerate(branches):
 			test_index = emit(
-				{"op": "branch", "groups": condition_groups_of(branch), "else_to": None},
+				{
+					"op": "branch",
+					"groups": condition_groups_of(branch),
+					"else_to": None,
+					"node": step.get("id"),
+					"branch": position,
+					"branch_label": branch.get("label") or "",
+					"branches_total": len(branches),
+				},
 				label if anchor is None else None,
 			)
 			anchor = anchor or test_index
@@ -345,7 +439,7 @@ def compile_steps(steps: list) -> list[dict]:
 
 	def compile_split(step, label):
 		paths = step.get("paths") or []
-		split_index = emit({"op": "split", "paths": []}, label)
+		split_index = emit({"op": "split", "paths": [], "node": step.get("id")}, label)
 		end_jumps = []
 		for path in paths:
 			start = len(program)
@@ -717,17 +811,25 @@ def execute_step(step: dict, ref_doc, enrollment=None) -> str:
 	return handler(step, ref_doc)
 
 
-def render(text: str, ref_doc) -> str:
+def render(text: str, ref_doc, preview: bool = False) -> str:
+	"""Render Jinja against the record. In preview mode nothing is minted or logged."""
 	if not text:
 		return ""
 
 	def tracked_link(slug: str) -> str:
+		if preview:
+			return f"{frappe.utils.get_url()}/crm/l/{slug}"
 		from crm.api.links import personal_link_url
 
 		return personal_link_url(slug, ref_doc.doctype, ref_doc.name)
 
 	context = ref_doc.as_dict()
 	context["tracked_link"] = tracked_link
+	if preview:
+		try:
+			return frappe.render_template(text, context)
+		except Exception:
+			return text
 	return frappe.render_template(text, context)
 
 
@@ -981,7 +1083,11 @@ def step_notify(step, ref_doc) -> str:
 
 
 def condition_groups_of(container: dict) -> list | None:
-	"""Normalize: condition_groups (list of AND-groups, OR between) or single condition."""
+	"""Normalize: condition_groups (list of AND-groups, OR between) or single condition.
+
+	`trigger_condition` accepts the same two shapes, so an enrolment filter can be
+	a full AND/OR segment and not just one comparison.
+	"""
 	groups = container.get("condition_groups")
 	if groups:
 		return groups
@@ -989,7 +1095,9 @@ def condition_groups_of(container: dict) -> list | None:
 	if condition:
 		if isinstance(condition, str):
 			condition = parse_json(condition)
-		if condition and condition.get("field"):
+		if isinstance(condition, list):
+			return [group for group in condition if group] or None
+		if isinstance(condition, dict) and condition.get("field"):
 			return [[condition]]
 	return None
 
@@ -1078,10 +1186,12 @@ def validate_steps(steps, _top=True) -> None:
 				frappe.throw(_("Step {0}: split percentages must total 100").format(i + 1))
 			for path in paths:
 				validate_steps(path.get("steps") or [], _top=False)
-		for cond_key in ("condition",):
-			cond = step.get(cond_key)
-			if cond and (cond.get("operator") or "equals") not in CONDITION_OPERATORS:
-				frappe.throw(_("Step {0}: unknown condition operator").format(i + 1))
+		for group in condition_groups_of(step) or []:
+			for cond in group:
+				if not isinstance(cond, dict):
+					frappe.throw(_("Step {0}: malformed condition").format(i + 1))
+				if (cond.get("operator") or "equals") not in CONDITION_OPERATORS:
+					frappe.throw(_("Step {0}: unknown condition operator").format(i + 1))
 	if _top:
 		compile_steps(steps)  # surfaces unresolved go_to targets
 
@@ -1105,6 +1215,231 @@ def log_step(enrollment, step_index: int, action: str, status: str, detail: str 
 
 
 # ---------------------------------------------------------------------------
+# builder support: stable ids, stats mapping, dry run
+# ---------------------------------------------------------------------------
+
+
+def ensure_step_ids(steps: list) -> list:
+	"""Give every builder node a stable id.
+
+	The visual editor addresses nodes by id (select, move, paste, jump-to-error)
+	and per-step statistics map the flat program back onto them. Ids survive
+	edits, so the stats of a step stay attached to it when the flow is reordered.
+	"""
+	seen: set[str] = set()
+
+	def fresh() -> str:
+		return frappe.generate_hash(length=10)
+
+	def tag(container: dict) -> None:
+		node_id = container.get("id")
+		if not node_id or not isinstance(node_id, str) or node_id in seen:
+			node_id = fresh()
+		seen.add(node_id)
+		container["id"] = node_id
+
+	def walk(block) -> None:
+		for step in block or []:
+			if not isinstance(step, dict):
+				continue
+			tag(step)
+			for branch in step.get("branches") or []:
+				tag(branch)
+				walk(branch.get("steps"))
+			walk(step.get("else_steps"))
+			for path in step.get("paths") or []:
+				tag(path)
+				walk(path.get("steps"))
+
+	walk(steps)
+	return steps
+
+
+def program_nodes(program: list) -> dict[int, str]:
+	"""Program counter → builder node id, for statistics and enrollment positions."""
+	return {index: op.get("node") for index, op in enumerate(program or []) if op.get("node")}
+
+
+def wait_description(step: dict) -> str:
+	mode = step.get("mode") or "duration"
+	if mode == "until_time":
+		return _("waits until {0}").format(step.get("time") or "09:00")
+	if mode == "until_reply":
+		return _("waits for a reply")
+	if mode == "until_link_click":
+		return _("waits for a click on {0}").format(step.get("link") or _("any link"))
+	parts = []
+	for value, unit in (
+		(step.get("days"), _("d")),
+		(step.get("hours"), _("h")),
+		(step.get("minutes"), _("m")),
+	):
+		if int(value or 0):
+			parts.append(f"{int(value)}{unit}")
+	return _("waits {0}").format(" ".join(parts) or "0m")
+
+
+def describe_step(step: dict, ref_doc) -> str:
+	"""What this step would do to this record — Jinja resolved, nothing sent."""
+	step_type = step.get("type")
+
+	def text(value):
+		return render(value or "", ref_doc, preview=True)
+
+	if step_type == "send_email":
+		subject = step.get("subject") or ""
+		if not subject and step.get("email_template"):
+			subject = frappe.db.get_value("Email Template", step["email_template"], "subject") or ""
+		return _("email to {0} — {1}").format(ref_doc.get("email") or _("no address"), text(subject))
+	if step_type == "send_sms":
+		return _("SMS to {0} — {1}").format(
+			ref_doc.get("mobile_no") or ref_doc.get("phone") or _("no number"), text(step.get("message"))
+		)
+	if step_type == "send_whatsapp_template":
+		return _("WhatsApp template {0} to {1}").format(
+			step.get("template") or "?", ref_doc.get("mobile_no") or ref_doc.get("phone") or _("no number")
+		)
+	if step_type == "notify":
+		return _("internal notification — {0}").format(text(step.get("message")))
+	if step_type == "create_task":
+		return _("task «{0}» due in {1} day(s)").format(
+			text(step.get("title")) or _("Follow up"), int(step.get("due_in_days") or 0)
+		)
+	if step_type == "assign":
+		users = step.get("users") or ([step["user"]] if step.get("user") else [])
+		return _("assign to {0}").format(", ".join(users) or _("nobody"))
+	if step_type in ("add_note", "add_tag_comment"):
+		return _("note — {0}").format(text(step.get("comment") or step.get("note")))
+	if step_type == "add_tag":
+		return _("add tag {0}").format(step.get("tag") or "?")
+	if step_type == "remove_tag":
+		return _("remove tag {0}").format(step.get("tag") or "?")
+	if step_type == "set_field":
+		return _("set {0} to {1}").format(step.get("field") or "?", text(str(step.get("value") or "")))
+	if step_type == "convert_to_deal":
+		if ref_doc.doctype != "CRM Lead":
+			return _("skipped: only leads can be converted")
+		return _("convert this lead into a deal")
+	if step_type == "webhook":
+		return f"{(step.get('method') or 'POST').upper()} {step.get('url') or '?'}"
+	if step_type == "add_to_workflow":
+		return _("enrol in {0}").format(step.get("automation") or "?")
+	if step_type == "remove_from_workflow":
+		return _("remove from {0}").format(step.get("automation") or _("all automations"))
+	return step_type or ""
+
+
+def simulate(steps: list, ref_doc, max_ops: int = 200) -> list[dict]:
+	"""Dry run of the flow against one record: no message leaves, nothing is written.
+
+	Waits pass through, splits take their most likely path and goals are assumed
+	met — everything else (conditions, branches, stop rules) is evaluated for real
+	against the record, which is what makes the preview worth trusting.
+	"""
+	program = compile_steps(ensure_step_ids(steps))
+	state: dict = {"wait_result": "event"}
+	trace: list[dict] = []
+	pointer = 0
+	ops = 0
+
+	def note(op_index, node, step_type, status, detail=""):
+		trace.append(
+			{
+				"index": op_index,
+				"node": node,
+				"type": step_type,
+				"status": status,
+				"detail": detail,
+			}
+		)
+
+	while pointer < len(program):
+		ops += 1
+		if ops > max_ops:
+			note(pointer, None, "loop_guard", "Failed", _("Too many steps — possible go_to loop"))
+			break
+		op = program[pointer]
+		kind = op.get("op")
+		node = op.get("node")
+
+		if kind == "end":
+			note(pointer, node, "end", "End", _("End of the automation"))
+			break
+		if kind == "exit":
+			note(pointer, node, "exit", "Exited", _("The record leaves the automation here"))
+			break
+		if kind == "jump":
+			if node:  # a go_to step, not the structural jump closing a branch
+				note(pointer, node, "go_to", "Jump", _("Jumps to step {0}").format(op.get("to")))
+			pointer = op["to"]
+			continue
+		if kind == "stop_if":
+			if evaluate_condition_groups(op.get("groups"), ref_doc, state):
+				note(pointer, node, "stop_if", "Exited", _("Stop condition met"))
+				break
+			note(pointer, node, "stop_if", "Skipped", _("Stop condition not met — carries on"))
+			pointer += 1
+			continue
+		if kind == "branch":
+			label = op.get("branch_label") or _("Branch {0}").format((op.get("branch") or 0) + 1)
+			if evaluate_condition_groups(op.get("groups"), ref_doc, state):
+				note(pointer, node, "if_else", "Branch", _("takes «{0}»").format(label))
+				pointer += 1
+			else:
+				if (op.get("branch") or 0) + 1 >= (op.get("branches_total") or 0):
+					note(pointer, node, "if_else", "Branch", _("takes «None (else)»"))
+				pointer = op["else_to"]
+			continue
+		if kind == "split":
+			paths = op.get("paths") or []
+			chosen = max(paths, key=lambda p: p.get("percent") or 0) if paths else None
+			if not chosen:
+				pointer += 1
+				continue
+			note(
+				pointer,
+				node,
+				"split",
+				"Branch",
+				_("most likely path: {0} ({1}%)").format(
+					chosen.get("label") or "?", int(chosen.get("percent") or 0)
+				),
+			)
+			pointer = chosen["to"]
+			continue
+		if kind == "goal":
+			goal = op.get("step") or {}
+			note(
+				pointer,
+				node,
+				"goal",
+				"Goal",
+				_("goal {0} — assumed met in the preview").format(goal.get("event") or "?"),
+			)
+			pointer += 1
+			continue
+		if kind == "wait":
+			note(pointer, node, "wait", "Wait", wait_description(op.get("step") or {}))
+			pointer += 1
+			continue
+
+		step = op.get("step") or {}
+		gate = op.get("gate")
+		if gate and not evaluate_condition_groups(gate, ref_doc, state):
+			note(pointer, node, step.get("type"), "Skipped", _("Condition not met"))
+			pointer += 1
+			continue
+		try:
+			detail = describe_step(step, ref_doc)
+		except Exception:
+			detail = _("could not be previewed")
+		note(pointer, node, step.get("type"), "Would run", detail)
+		pointer += 1
+
+	return trace
+
+
+# ---------------------------------------------------------------------------
 # date reminders (birthday / custom date trigger)
 # ---------------------------------------------------------------------------
 
@@ -1120,13 +1455,10 @@ def process_date_reminders_tick() -> None:
 		return
 	frappe.cache.set_value(cache_key, 1, expires_in_sec=60 * 60 * 20)
 
-	automations = frappe.get_all(
-		"CRM Automation", filters={"enabled": 1, "trigger_event": "Date Reminder"}, pluck="name"
-	)
-	for name in automations:
+	for trigger in matching_triggers(["Date Reminder"]):
+		name = trigger.parent
 		try:
-			automation = frappe.get_doc("CRM Automation", name)
-			config = parse_json(automation.trigger_config) or {}
+			config = parse_json(trigger.trigger_config) or {}
 			field = config.get("date_field")
 			doctype = config.get("doctype") or "CRM Lead"
 			if not field or doctype not in ("CRM Lead", "CRM Deal"):
@@ -1155,7 +1487,7 @@ def process_date_reminders_tick() -> None:
 					limit=500,
 				)
 			for row in rows:
-				enroll(name, doctype, row, {"date_field": field})
+				enroll(name, doctype, row, {"date_field": field}, trigger_row=trigger)
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"CRM Automation: date reminder failed ({name})")
 
