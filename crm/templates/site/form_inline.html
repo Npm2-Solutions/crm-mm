@@ -1,0 +1,158 @@
+{#- A CRM form rendered inside a page: same document, same styles, no iframe.
+    Scoped by a per-instance id so two forms on one page never fight over the DOM. -#}
+<div class="crm-form" id="crm-form-{{ uid }}">
+  <style>
+    #crm-form-{{ uid }} { width: 100%; font: inherit; }
+    #crm-form-{{ uid }} .crm-form-head { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    #crm-form-{{ uid }} .crm-form-title { font-size: 1.25em; font-weight: 600; }
+    #crm-form-{{ uid }} .crm-form-desc { opacity: .7; font-size: .95em; }
+    #crm-form-{{ uid }} .crm-section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    #crm-form-{{ uid }} .crm-section-title { font-weight: 600; font-size: .95em; }
+    #crm-form-{{ uid }} .crm-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    #crm-form-{{ uid }} .crm-col { display: flex; flex-direction: column; gap: 12px; }
+    #crm-form-{{ uid }} .crm-field { display: flex; flex-direction: column; gap: 5px; }
+    #crm-form-{{ uid }} label { font-size: .85em; font-weight: 500; opacity: .85; }
+    #crm-form-{{ uid }} .crm-req { color: #dc2626; }
+    #crm-form-{{ uid }} input:not([type="checkbox"]), #crm-form-{{ uid }} select, #crm-form-{{ uid }} textarea {
+      font: inherit; width: 100%; padding: 9px 11px; border: 1px solid currentColor;
+      border-color: color-mix(in oklch, currentColor 22%, transparent);
+      border-radius: 8px; background: transparent; color: inherit; box-sizing: border-box;
+    }
+    #crm-form-{{ uid }} textarea { min-height: 96px; resize: vertical; }
+    #crm-form-{{ uid }} .crm-check { flex-direction: row; align-items: center; gap: 8px; }
+    #crm-form-{{ uid }} .crm-hint { font-size: .8em; opacity: .6; }
+    #crm-form-{{ uid }} button {
+      font: inherit; font-weight: 600; padding: 11px 18px; border: 0; border-radius: 8px;
+      cursor: pointer; background: currentColor; width: 100%;
+    }
+    #crm-form-{{ uid }} button span { color: canvas; mix-blend-mode: difference; }
+    #crm-form-{{ uid }} button[disabled] { opacity: .6; cursor: default; }
+    #crm-form-{{ uid }} .crm-msg { margin-top: 12px; font-size: .9em; }
+    #crm-form-{{ uid }} .crm-msg.err { color: #dc2626; }
+    #crm-form-{{ uid }} .crm-ok { display: none; padding: 16px; border-radius: 8px; text-align: center; }
+  </style>
+
+  {% if form_title or form_description %}
+  <div class="crm-form-head">
+    {% if form_title %}<div class="crm-form-title">{{ form_title }}</div>{% endif %}
+    {% if form_description %}<div class="crm-form-desc">{{ form_description }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <form class="crm-form-body" novalidate>
+    {%- for section in layout %}
+    <div class="crm-section">
+      {% if section.label %}<div class="crm-section-title">{{ section.label }}</div>{% endif %}
+      <div class="crm-cols">
+        {%- for column in section.columns %}
+        <div class="crm-col">
+          {%- for f in column %}
+          <div class="crm-field {% if f.fieldtype == 'Check' %}crm-check{% endif %}">
+            {%- if f.fieldtype == 'Check' %}
+            <input type="checkbox" id="{{ uid }}-{{ f.fieldname }}" data-fieldname="{{ f.fieldname }}" />
+            <label for="{{ uid }}-{{ f.fieldname }}">{{ f.label }}{% if f.reqd %} <span class="crm-req">*</span>{% endif %}</label>
+            {%- else %}
+            <label for="{{ uid }}-{{ f.fieldname }}">{{ f.label }}{% if f.reqd %} <span class="crm-req">*</span>{% endif %}</label>
+            {%- if f.fieldtype == 'Select' %}
+            <select id="{{ uid }}-{{ f.fieldname }}" data-fieldname="{{ f.fieldname }}" {% if f.reqd %}data-reqd="1"{% endif %}>
+              <option value="">{{ f.placeholder or '—' }}</option>
+              {%- for option in f.options.split('\n') %}{% if option %}<option value="{{ option }}">{{ option }}</option>{% endif %}{% endfor %}
+            </select>
+            {%- elif f.fieldtype == 'Link' %}
+            <select id="{{ uid }}-{{ f.fieldname }}" data-fieldname="{{ f.fieldname }}" {% if f.reqd %}data-reqd="1"{% endif %}>
+              <option value="">{{ f.placeholder or '—' }}</option>
+              {%- for option in link_options.get(f.fieldname, []) %}<option value="{{ option.value }}">{{ option.label }}</option>{% endfor %}
+            </select>
+            {%- elif f.fieldtype in textarea_types %}
+            <textarea id="{{ uid }}-{{ f.fieldname }}" data-fieldname="{{ f.fieldname }}"
+              placeholder="{{ f.placeholder }}" {% if f.reqd %}data-reqd="1"{% endif %}></textarea>
+            {%- else %}
+            <input type="{{ input_types.get(f.fieldtype, 'text') }}" id="{{ uid }}-{{ f.fieldname }}"
+              data-fieldname="{{ f.fieldname }}" placeholder="{{ f.placeholder }}"
+              {% if f.reqd %}data-reqd="1"{% endif %} />
+            {%- endif %}
+            {%- endif %}
+            {% if f.description %}<div class="crm-hint">{{ f.description }}</div>{% endif %}
+          </div>
+          {%- endfor %}
+        </div>
+        {%- endfor %}
+      </div>
+    </div>
+    {%- endfor %}
+    <button type="submit"><span>{{ submit_label }}</span></button>
+    <div class="crm-msg" hidden></div>
+  </form>
+
+  <div class="crm-ok">{{ success_message }}</div>
+</div>
+
+<script>
+(function () {
+  var root = document.getElementById("crm-form-{{ uid }}");
+  if (!root) return;
+  var form = root.querySelector(".crm-form-body");
+  var okBox = root.querySelector(".crm-ok");
+  var msg = root.querySelector(".crm-msg");
+  var button = form.querySelector("button");
+  var WEB_FORM = {{ web_form_name | tojson }};
+  var CSRF = {{ csrf_token | tojson }};
+  var SUCCESS_URL = {{ success_url | tojson }};
+
+  function say(text, isError) {
+    msg.textContent = text || "";
+    msg.hidden = !text;
+    msg.className = "crm-msg" + (isError ? " err" : "");
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var values = {};
+    var missing = null;
+    form.querySelectorAll("[data-fieldname]").forEach(function (el) {
+      var value = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value.trim();
+      values[el.dataset.fieldname] = value;
+      if (!missing && el.dataset.reqd && !value) missing = el;
+    });
+    if (missing) {
+      say("Compila i campi obbligatori.", true);
+      missing.focus();
+      return;
+    }
+
+    // the same ids the standalone form sends, so a submission from a page keeps the
+    // visit's attribution instead of arriving as a lead from nowhere
+    var ids = (window.CRMTracker && window.CRMTracker.getIds()) || {};
+    button.disabled = true;
+    say("");
+
+    fetch("/api/method/frappe.website.doctype.web_form.web_form.accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Frappe-CSRF-Token": CSRF || "" },
+      body: JSON.stringify({
+        web_form: WEB_FORM,
+        data: JSON.stringify(values),
+        crm_vid: ids.vid || "",
+        crm_sid: ids.sid || "",
+      }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          var text = "";
+          try { text = JSON.parse(JSON.parse(res.data._server_messages)[0]).message; } catch (e) {}
+          say(text || "Non siamo riusciti a inviare il modulo. Riprova.", true);
+          button.disabled = false;
+          return;
+        }
+        if (SUCCESS_URL) { window.location.href = SUCCESS_URL; return; }
+        form.style.display = "none";
+        okBox.style.display = "block";
+      })
+      .catch(function () {
+        say("Non siamo riusciti a inviare il modulo. Riprova.", true);
+        button.disabled = false;
+      });
+  });
+})();
+</script>

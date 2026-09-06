@@ -1,6 +1,9 @@
 # 16 — Sito web vetrina, integrato nel CRM
 
-> **Stato: proposta rivista il 06/09/2026 dopo lettura del codice di
+> **Stato: implementato (fase 1+2) il 06/09/2026.** Cosa c'è nel repo e dove: §13.
+> La proposta che segue resta come racconto delle decisioni.
+>
+> Stato precedente: proposta rivista il 06/09/2026 dopo lettura del codice di
 > [frappe/builder](https://github.com/frappe/builder).** La prima stesura proponeva di
 > costruire un motore di pagine dentro il CRM; due scoperte nel codice di Builder l'hanno
 > ribaltata (§4.7, §4.8). Ora la proposta è: **Builder è la tela, il CRM è il guscio e i dati.**
@@ -505,7 +508,102 @@ conferma sul campo, non più come bivio.
 | **3 — Crescita** | SEO (JSON-LD, sitemap, OG), `tracker.js` come client script sulle pagine, consenso cookie che gate-a i pixel, componenti FAQ/galleria/numeri/social | 5–7 gg |
 | **4 — Opzionale** | embed mode (PR upstream, poi eventuale fork sottile), blog/news, multilingua, script embed JS per siti esterni | su richiesta |
 
-## 13. Decisioni e domande
+
+## 13. Cosa è stato costruito
+
+Fase 1+2, consegnate insieme come deciso. Tutto vive dentro il CRM: di Builder si vede
+solo la tela, e solo quando si preme "Disegna".
+
+### 13.1 Dove si lavora
+
+| Superficie | Rotta / posto | Cosa fa |
+|---|---|---|
+| **Sito** (sidebar) | `/sito` | due schede: **Pagine** (stato, rotta, home, bozza non pubblicata, Disegna, Pubblica, Duplica, Elimina) e **Vetrina** (servizi e prodotti con l'interruttore Pubblica, immagine, descrizione, ordine) |
+| **Editor** | `/sito/pagine/:name` | pagina intera del CRM: header nostro con nome, stato, Apri, Pubblica; sotto l'iframe di Builder, stesso dominio e stessa sessione |
+| **Impostazioni → Sito web** | modale | interruttore generale, home e radice, brand, menu, footer e dati legali, SEO, GA4/Pixel, consenso |
+| **Editor di servizio** | modale Agenda | l'interruttore "Pubblica sul sito" dove uno lo cerca, con il link alla scheda completa in Vetrina |
+
+L'editor non è dentro il modale perché Builder rifiuta gli schermi piccoli (§4.6): sotto i
+900px mostriamo un messaggio nostro invece del suo.
+
+**Non si esce mai dal CRM.** Un guardiano sull'iframe controlla dove è finito: se Builder
+naviga verso la sua dashboard riporta a `/sito`, se finisce su `/app` (rimbalzo sui
+permessi) avvisa e torna indietro.
+
+### 13.2 Come non ci pestiamo i piedi
+
+`crm/api/site_routes.py` è la guardia. Frappe controlla solo che due pagine non abbiano la
+stessa rotta; non sa che `/crm` è l'app, `/book` le prenotazioni e `/crm-form` i moduli.
+
+- L'insieme riservato è **derivato**, non scritto a mano: primo segmento di ogni
+  `website_route_rules` di ogni app installata, più i percorsi del framework che non hanno
+  una regola (`api`, `app`, `assets`, `files`, `builder`, …). Un'app installata domani è
+  protetta senza toccare nulla.
+- Un `doc_events` su `Builder Page.validate` **rifiuta il salvataggio** di una pagina che
+  invaderebbe una di quelle: non si arriva nemmeno a pubblicarla.
+- Stessa guardia sugli slug di servizi e prodotti, e sul campo rotta della nuova pagina,
+  che valida mentre scrivi e propone un'alternativa libera.
+- La home non si può ritirare né cancellare senza prima sceglierne un'altra.
+
+### 13.3 Pubblicazione
+
+Passa sempre da `Builder Page.publish()`, mai da un `db_set`: così restano gli snapshot e
+la promozione della bozza che Builder fa di suo. La lista mostra "modifiche non pubblicate"
+quando la bozza è avanti rispetto al vivo.
+
+L'interruttore **Servi la home su `/`** scrive `Builder Settings.home_page` — l'unico
+punto che decide cosa risponde alla radice — e la spegne quando lo spegni. Il CRM resta
+su `/crm` in entrambi i casi.
+
+### 13.4 Il tracciamento, in un punto solo
+
+`Builder Settings.head_html` è l'unico posto dove un tag vale per tutte le pagine (il
+template di Builder non include `web_include_js`). Le impostazioni del sito ci scrivono un
+blocco delimitato da marcatori, senza toccare quello che c'è intorno:
+
+- `tracker.js` sempre, così le visite alle pagine entrano nell'attribuzione del
+  [modulo 15](./15-tracciamento-lead.md);
+- token di brand e font;
+- GA4 e Meta Pixel **tenuti come testo inerte** finché il banner non riceve un sì. È la
+  differenza fra un banner che informa e uno che funziona.
+
+### 13.5 I componenti
+
+`crm/builder_files/components/` — cinque, generati da `scripts/builder/build_components.py`:
+Servizi, Prodotti (data script), Form, Prenota, Contatti (metodo Jinja, §15.6).
+
+Ogni testo che arriva dal CRM passa per `escape_html`: il rendering non fa autoescape
+(§11.3), quindi un `<` in un nome servizio sarebbe markup in pagina.
+
+### 13.6 Il form, inline
+
+`crm/api/site_render.py` registra tre metodi Jinja (`crm_form_html`, `crm_booking_html`,
+`crm_contact_html`). Builder passa ogni pagina per `render_template`, quindi un blocco il
+cui markup è `{{ crm_form_html(props.modulo) }}` riceve il form vero: stesso documento,
+stessi font, niente iframe, e gli id del visitatore viaggiano con l'invio esattamente come
+sulla pagina form standalone. Un modulo non pubblicato rende un segnaposto, non una bozza.
+
+### 13.7 File
+
+| | |
+|---|---|
+| `crm/fcrm/doctype/crm_website_settings/` | il Single, più `CRM Web Nav Item` e `CRM Web Social Link` |
+| `crm/fcrm/doctype/crm_service/`, `crm_product/` | campi sito (pubblica, slug, immagine, descrizioni, CTA, ordine, SEO) |
+| `crm/api/site.py` | pagine, vetrina, impostazioni, API pubblica dei servizi |
+| `crm/api/site_routes.py` | la guardia sulle rotte e gli slug |
+| `crm/api/site_render.py` | frammenti Jinja e `head_html` del sito |
+| `crm/templates/site/` | form inline, CTA prenotazione, contatti |
+| `frontend/src/pages/Website.vue`, `WebsitePageEditor.vue` | la scheda Sito e la tela incapsulata |
+| `frontend/src/components/Settings/Website/` | le impostazioni nel modale |
+| `crm/tests/test_site.py`, `test_builder_files.py` | rotte riservate, slug, permessi, whitelist dei campi, contratto dei componenti |
+
+### 13.8 Cosa resta fuori
+
+Il selettore di slot **inline** (la CTA porta a `/book/<rotta>`, che è già una pagina
+nostra), il blog, il multilingua, e i componenti decorativi (FAQ, galleria, numeri): quelli
+si costruiscono con i blocchi nativi di Builder, senza bisogno che li spediamo noi.
+
+## 14. Decisioni e domande
 
 | | Domanda | Esito |
 |---|---|---|
@@ -517,7 +615,7 @@ conferma sul campo, non più come bivio.
 | **D6** | ~~Builder come opzione?~~ | **Superata**: Builder è la base, non l'opzione |
 | **D7** | Fork subito o dopo? | **Confermata: dopo.** Fase 1 senza fork, poi PR upstream per l'embed mode, fork sottile solo come ultima spiaggia (§5.4) |
 
-## 14. Compatibilità futura
+## 15. Compatibilità futura
 
 Le API `crm.api.site.*` restano il contratto: le usano i data script dei nostri componenti
 oggi, potrebbero usarle una landing esterna o un'app mobile domani. E se un giorno lo scope

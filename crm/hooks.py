@@ -98,10 +98,18 @@ website_route_rules = [
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# "methods": "crm.utils.jinja_methods",
-# "filters": "crm.utils.jinja_filters"
-# }
+#
+# These are what makes a CRM block work inside a Builder page: Builder passes every
+# rendered page through `render_template`, so a block whose markup says
+# `{{ crm_form_html(props.form) }}` gets a real, inline CRM form — same document, no
+# iframe. Names are prefixed because the Jinja namespace is shared with every app.
+jinja = {
+	"methods": [
+		"crm.api.site_render.crm_form_html",
+		"crm.api.site_render.crm_booking_html",
+		"crm.api.site_render.crm_contact_html",
+	],
+}
 
 # Setup wizard
 # setup_wizard_requires = "assets/crm/js/setup_wizard.js"
@@ -263,6 +271,11 @@ doc_events = {
 	"User": {
 		"before_validate": ["crm.api.live_demo.validate_user"],
 		"validate_reset_password": ["crm.api.live_demo.validate_reset_password"],
+	},
+	# Frappe checks that two pages don't share a route, but knows nothing about /crm,
+	# /book or /crm-form. Without this a page could be published straight over the app.
+	"Builder Page": {
+		"validate": ["crm.api.site_routes.guard_builder_route"],
 	},
 }
 

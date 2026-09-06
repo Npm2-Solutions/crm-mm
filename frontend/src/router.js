@@ -62,6 +62,17 @@ const routes = [
     component: () => import('@/pages/SocialPlanner.vue'),
   },
   {
+    path: '/sito',
+    name: 'Website',
+    component: () => import('@/pages/Website.vue'),
+  },
+  {
+    // full page, not a modal: Builder's canvas refuses to work in a small box
+    path: '/sito/pagine/:name',
+    name: 'WebsitePage',
+    component: () => import('@/pages/WebsitePageEditor.vue'),
+  },
+  {
     alias: '/leads',
     path: '/leads/view/:viewType?',
     name: 'Leads',

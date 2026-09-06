@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from crm.api.site_routes import apply_website_fields
 from crm.fcrm.doctype.crm_product.sync_utils import payload_differs
 from crm.integrations.erpnext.utils import (
 	cascade_rename,
@@ -25,13 +26,22 @@ class CRMProduct(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		cta_label: DF.Data | None
+		cta_target: DF.Data | None
+		cta_type: DF.Literal["Book", "Form", "Link", "None"]
 		description: DF.TextEditor | None
 		disabled: DF.Check
 		image: DF.AttachImage | None
 		naming_series: DF.Literal["CRM-PROD-.YYYY.-"]
 		product_code: DF.Data
 		product_name: DF.Data | None
+		publish_on_website: DF.Check
+		seo_description: DF.SmallText | None
+		seo_title: DF.Data | None
+		short_description: DF.SmallText | None
 		standard_rate: DF.Currency
+		website_order: DF.Int
+		website_slug: DF.Data | None
 	# end: auto-generated types
 
 	def before_insert(self):
@@ -47,6 +57,7 @@ class CRMProduct(Document):
 
 	def validate(self):
 		self.set_product_name()
+		apply_website_fields(self)
 
 	def set_product_name(self):
 		self.product_name = (self.product_name or self.product_code or "").strip()

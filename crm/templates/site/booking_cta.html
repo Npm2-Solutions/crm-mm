@@ -1,0 +1,16 @@
+{#- A booking calendar as a card the visitor can act on. The appointment it leads to
+    lands in the CRM agenda with the right service, duration and staff. -#}
+<div style="display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid
+     color-mix(in oklch, currentColor 15%, transparent);border-radius:12px">
+  <div style="font-size:1.1em;font-weight:600">{{ cal.calendar_name }}</div>
+  {% if cal.description %}<div style="opacity:.75;font-size:.95em">{{ cal.description }}</div>{% endif %}
+  <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.9em;opacity:.75">
+    {% if cal.duration %}<span>{{ cal.duration }} min</span>{% endif %}
+    {% if cal.location %}<span>{{ cal.location }}</span>{% endif %}
+    {% if price %}<span style="font-weight:600;opacity:1">{{ price }}</span>{% endif %}
+  </div>
+  <a href="{{ url }}" style="margin-top:4px;display:inline-block;text-align:center;padding:11px 18px;
+     border-radius:8px;background:currentColor;font-weight:600;text-decoration:none">
+    <span style="color:canvas;mix-blend-mode:difference">{{ label }}</span>
+  </a>
+</div>

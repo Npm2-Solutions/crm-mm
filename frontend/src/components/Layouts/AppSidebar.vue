@@ -174,6 +174,7 @@
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
+import LucideGlobe from '~icons/lucide/globe'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
@@ -325,6 +326,14 @@ const links = [
     label: 'Social Planner',
     icon: SocialIcon,
     to: 'Social Planner',
+  },
+  {
+    label: 'Site',
+    icon: LucideGlobe,
+    to: 'Website',
+    // managers only: the page itself handles "Builder missing" and "site off", so it
+    // stays reachable — otherwise there would be nowhere to turn the site on from
+    condition: () => isManager(),
   },
 ]
 

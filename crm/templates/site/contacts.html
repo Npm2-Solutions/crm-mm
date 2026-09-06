@@ -1,0 +1,22 @@
+{#- Contact details straight from the site settings, so they are never out of date. -#}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+  {% if settings.address %}
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div style="font-size:.8em;text-transform:uppercase;letter-spacing:.06em;opacity:.6">{{ _("Where") }}</div>
+    <div style="white-space:pre-line">{{ settings.address }}</div>
+  </div>
+  {% endif %}
+  {% if settings.phone or settings.email %}
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div style="font-size:.8em;text-transform:uppercase;letter-spacing:.06em;opacity:.6">{{ _("Contacts") }}</div>
+    {% if settings.phone %}<a href="tel:{{ settings.phone }}" style="color:inherit">{{ settings.phone }}</a>{% endif %}
+    {% if settings.email %}<a href="mailto:{{ settings.email }}" style="color:inherit">{{ settings.email }}</a>{% endif %}
+  </div>
+  {% endif %}
+  {% if whatsapp_url %}
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div style="font-size:.8em;text-transform:uppercase;letter-spacing:.06em;opacity:.6">WhatsApp</div>
+    <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" style="color:inherit">{{ _("Write to us") }}</a>
+  </div>
+  {% endif %}
+</div>

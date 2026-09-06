@@ -6,6 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint
 
+from crm.api.site_routes import apply_website_fields
 from crm.scheduling.timeutils import as_time
 
 
@@ -25,10 +26,14 @@ class CRMService(Document):
 
 		availability: DF.Table[CRMServiceDay]
 		bookable_online: DF.Check
+		booking_calendar: DF.Link | None
 		buffer_after: DF.Int
 		buffer_before: DF.Int
 		category: DF.Data | None
 		color: DF.Color | None
+		cta_label: DF.Data | None
+		cta_target: DF.Data | None
+		cta_type: DF.Literal["Book", "Form", "Link", "None"]
 		currency: DF.Link | None
 		default_price: DF.Currency | None
 		description: DF.SmallText | None
@@ -40,13 +45,21 @@ class CRMService(Document):
 		min_notice_hours: DF.Int
 		min_participants: DF.Int
 		price_per_participant: DF.Check
+		publish_on_website: DF.Check
 		resources: DF.Table[CRMServiceResource]
 		roles: DF.Table[CRMServiceRole]
+		seo_description: DF.SmallText | None
+		seo_title: DF.Data | None
 		service_name: DF.Data
+		short_description: DF.SmallText | None
 		slot_interval: DF.Int
 		staff: DF.Table[CRMServiceStaff]
 		staff_count: DF.Int
 		staff_selection: DF.Literal["Any one", "All required", "One per role"]
+		website_description: DF.TextEditor | None
+		website_image: DF.AttachImage | None
+		website_order: DF.Int
+		website_slug: DF.Data | None
 	# end: auto-generated types
 
 	def validate(self):
@@ -55,6 +68,7 @@ class CRMService(Document):
 		self.validate_staffing()
 		self.validate_availability()
 		self.validate_resources()
+		apply_website_fields(self)
 
 	def validate_numbers(self):
 		if cint(self.duration) <= 0:

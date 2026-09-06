@@ -54,6 +54,7 @@ import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
 import LucideSparkles from '~icons/lucide/sparkles'
 import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
+import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
@@ -97,6 +98,7 @@ import CallScriptsSettings from '@/components/Settings/CallScriptsSettings.vue'
 import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
 import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
+import WebsiteSettings from '@/components/Settings/Website/WebsiteSettings.vue'
 import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
 import TrackingSettings from '@/components/Settings/TrackingSettings.vue'
 import SocialIcon from '@/components/Icons/SocialIcon.vue'
@@ -342,6 +344,20 @@ const tabs = computed(() => {
           icon: EmailTemplateIcon,
           component: markRaw(WhatsAppTemplates),
           condition: () => isWhatsappInstalled.value,
+        },
+      ],
+      condition: () => isManager(),
+    },
+    {
+      // the site's configuration; the day-to-day work (pages, showcase) is a
+      // section of the app, not a settings screen
+      label: __('Website'),
+      items: [
+        {
+          label: __('Website'),
+          key: 'Website',
+          icon: markRaw(LucideGlobe),
+          component: markRaw(WebsiteSettings),
         },
       ],
       condition: () => isManager(),
