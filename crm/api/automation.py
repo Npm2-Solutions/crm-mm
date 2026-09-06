@@ -6,6 +6,7 @@ from frappe.rate_limiter import rate_limit
 
 from crm.automation.engine import (
 	STEP_TYPES,
+	TRIGGER_EVENTS,
 	ensure_step_ids,
 	parse_json,
 	program_nodes,
@@ -45,9 +46,20 @@ def list_automations() -> list[dict]:
 			as_list=True,
 		)
 	)
+	trigger = frappe.qb.DocType("CRM Automation Trigger")
+	events: dict[str, list[str]] = {}
+	for row in (
+		frappe.qb.from_(trigger)
+		.select(trigger.parent, trigger.trigger_event)
+		.where(trigger.parenttype == "CRM Automation")
+		.orderby(trigger.parent)
+		.orderby(trigger.idx)
+	).run(as_dict=True):
+		events.setdefault(row.parent, []).append(row.trigger_event)
 	for row in automations:
 		row["enrolled_count"] = counts.get(row.name, 0)
 		row["active_count"] = active.get(row.name, 0)
+		row["triggers"] = events.get(row.name) or [row.trigger_event]
 	return automations
 
 
@@ -60,6 +72,14 @@ def get_automation(name: str) -> dict:
 		"title": doc.title,
 		"enabled": doc.enabled,
 		"trigger_event": doc.trigger_event,
+		"triggers": [
+			{
+				"event": row.trigger_event,
+				"config": parse_json(row.trigger_config) or {},
+				"condition": parse_json(row.trigger_condition),
+			}
+			for row in doc.triggers
+		],
 		"trigger_condition": parse_json(doc.trigger_condition),
 		"allow_reenrollment": doc.allow_reenrollment,
 		"exit_on_reply": doc.exit_on_reply,
@@ -101,6 +121,26 @@ def save_automation(automation: dict | str, name: str | None = None) -> dict:
 	if not values["title"]:
 		frappe.throw(_("Title is required"))
 
+	# what the caller sends is what the automation listens to; a payload with the
+	# old single trigger becomes one row, so the two shapes stay interchangeable
+	rows = _trigger_rows(automation.get("triggers"))
+	if not rows and automation.get("trigger_event"):
+		rows = _trigger_rows(
+			[
+				{
+					"event": automation.get("trigger_event"),
+					"config": automation.get("trigger_config"),
+					"condition": automation.get("trigger_condition"),
+				}
+			]
+		)
+	if not rows:
+		frappe.throw(_("An automation needs at least one trigger"))
+	values["triggers"] = rows
+	values["trigger_event"] = rows[0]["trigger_event"]
+	values["trigger_config"] = rows[0]["trigger_config"]
+	values["trigger_condition"] = rows[0]["trigger_condition"]
+
 	if name:
 		doc = frappe.get_doc("CRM Automation", name)
 		doc.update(values)
@@ -112,6 +152,23 @@ def save_automation(automation: dict | str, name: str | None = None) -> dict:
 		doc = frappe.get_doc({"doctype": "CRM Automation", "enabled": 0, **values})
 		doc.insert()
 	return get_automation(doc.name)
+
+
+def _trigger_rows(triggers) -> list[dict]:
+	"""Builder payload → rows of the triggers table, one per event it listens to."""
+	rows = []
+	for entry in triggers or []:
+		event = entry.get("event") or entry.get("trigger_event")
+		if event not in TRIGGER_EVENTS:
+			frappe.throw(_("Unknown trigger: {0}").format(event))
+		rows.append(
+			{
+				"trigger_event": event,
+				"trigger_config": json.dumps(entry.get("config") or None),
+				"trigger_condition": json.dumps(entry.get("condition") or None),
+			}
+		)
+	return rows
 
 
 @frappe.whitelist(methods=["POST"])
@@ -310,8 +367,10 @@ def inbound_webhook(automation: str, key: str) -> dict:
 	import hmac as hmac_mod
 
 	doc = frappe.get_doc("CRM Automation", automation)
+	trigger = next((row for row in doc.triggers if row.trigger_event == "Inbound Webhook"), None)
+	listens = bool(trigger) or doc.trigger_event == "Inbound Webhook"
 	if (
-		doc.trigger_event != "Inbound Webhook"
+		not listens
 		or not doc.enabled
 		or not doc.webhook_key
 		or not hmac_mod.compare_digest(str(key), str(doc.webhook_key))
@@ -355,10 +414,10 @@ def inbound_webhook(automation: str, key: str) -> dict:
 		lead_doc.insert(ignore_permissions=True)
 		lead = lead_doc.name
 
-	from crm.automation.engine import process_event
+	from crm.automation.engine import enroll
 
-	ref = frappe.get_doc("CRM Lead", lead)
-	process_event("inbound_webhook", ref, payload)
+	# only this automation: the key in the URL is its own, not everyone's
+	enroll(automation, "CRM Lead", lead, payload, trigger_row=trigger)
 	return {"lead": lead}
 
 

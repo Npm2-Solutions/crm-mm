@@ -34,3 +34,4 @@ crm.patches.v1_0.remove_crm_social_settings
 crm.patches.v1_0.remove_lead_sync_source
 crm.patches.v1_0.create_default_pipeline
 crm.patches.v1_0.recompile_automations_with_node_ids
+crm.patches.v1_0.create_automation_trigger_rows

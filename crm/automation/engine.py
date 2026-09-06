@@ -169,10 +169,18 @@ def process_event(event: str, doc, payload: dict | None = None) -> None:
 		triggers = [trigger]
 		if event == "sms_received":
 			triggers.append("Incoming SMS")
-		for automation in frappe.get_all(
-			"CRM Automation", filters={"enabled": 1, "trigger_event": ["in", triggers]}, pluck="name"
-		):
-			enroll(automation, ref_doctype, ref_name, payload)
+
+		fired: set[str] = set()
+		for row in matching_triggers(triggers):
+			# every trigger of an automation gets its turn — two triggers on the
+			# same event can hold different conditions — but the first one that
+			# lets the record in enrols it, and the rest stand down
+			if row.parent in fired:
+				continue
+			if not trigger_config_matches(parse_json(row.trigger_config) or {}, payload):
+				continue
+			if enroll(row.parent, ref_doctype, ref_name, payload, trigger_row=row):
+				fired.add(row.parent)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "CRM Automation: process_event failed")
 
@@ -201,10 +209,68 @@ def resolve_reference(event: str, doc) -> tuple[str, str] | None:
 	return None
 
 
-def trigger_config_matches(automation, payload: dict) -> bool:
+def matching_triggers(events: list[str]) -> list:
+	"""Every trigger of every enabled automation listening to one of these events.
+
+	Triggers live in a child table: an automation can wait for a new lead *and*
+	for a tag *and* for a stage change, each with its own filters and conditions.
+	Automations saved before that table existed still carry the single
+	`trigger_event`, so they are folded in here and keep firing until their next
+	save. Read with the query builder: this runs from doc events, under whichever
+	user happened to touch the record.
+	"""
+	trigger = frappe.qb.DocType("CRM Automation Trigger")
+	automation = frappe.qb.DocType("CRM Automation")
+	matches = (
+		frappe.qb.from_(trigger)
+		.join(automation)
+		.on(trigger.parent == automation.name)
+		.select(
+			trigger.parent,
+			trigger.trigger_event,
+			trigger.trigger_config,
+			trigger.trigger_condition,
+			trigger.idx,
+		)
+		.where(
+			(trigger.parenttype == "CRM Automation")
+			& (trigger.trigger_event.isin(events))
+			& (automation.enabled == 1)
+		)
+		.orderby(trigger.parent)
+		.orderby(trigger.idx)
+	).run(as_dict=True)
+
+	legacy = (
+		frappe.qb.from_(automation)
+		.select(
+			automation.name,
+			automation.trigger_event,
+			automation.trigger_config,
+			automation.trigger_condition,
+		)
+		.where((automation.enabled == 1) & (automation.trigger_event.isin(events)))
+	).run(as_dict=True)
+	if legacy:
+		with_rows = {
+			row.parent
+			for row in (
+				frappe.qb.from_(trigger)
+				.select(trigger.parent)
+				.where(trigger.parenttype == "CRM Automation")
+				.distinct()
+			).run(as_dict=True)
+		}
+		for row in legacy:
+			if row.name in with_rows:
+				continue
+			matches.append(frappe._dict({**row, "parent": row.name}))
+	return matches
+
+
+def trigger_config_matches(config: dict, payload: dict) -> bool:
 	"""Event-payload filters, GHL-style (which link, which tag, which form…)."""
-	config = parse_json(automation.get("trigger_config")) or {}
-	for key, expected in config.items():
+	for key, expected in (config or {}).items():
 		if expected in (None, "", []):
 			continue
 		actual = payload.get(key)
@@ -238,9 +304,23 @@ def exit_enrollments_on_reply(ref_doctype: str, ref_name: str) -> None:
 			enr.save(ignore_permissions=True)
 
 
-def enroll(automation_name: str, ref_doctype: str, ref_name: str, payload: dict | None = None) -> str | None:
+def enroll(
+	automation_name: str,
+	ref_doctype: str,
+	ref_name: str,
+	payload: dict | None = None,
+	trigger_row=None,
+) -> str | None:
+	"""Put a record into an automation. `trigger_row` is the trigger that fired.
+
+	Its filters have already matched by then; its conditions are what decides
+	whether this record gets in. Without a row (a step adding the record by
+	hand) the automation-level fields — a mirror of the first trigger — apply.
+	"""
 	automation = frappe.get_doc("CRM Automation", automation_name)
-	if not trigger_config_matches(automation, payload or {}):
+	if trigger_row is None and not trigger_config_matches(
+		parse_json(automation.trigger_config) or {}, payload or {}
+	):
 		return None
 
 	existing_filters = {
@@ -254,7 +334,12 @@ def enroll(automation_name: str, ref_doctype: str, ref_name: str, payload: dict 
 		return None
 
 	ref_doc = frappe.get_doc(ref_doctype, ref_name)
-	groups = condition_groups_of(automation.as_dict())
+	source = (
+		{"trigger_condition": trigger_row.get("trigger_condition")}
+		if trigger_row is not None
+		else automation.as_dict()
+	)
+	groups = condition_groups_of(source)
 	if groups and not evaluate_condition_groups(groups, ref_doc):
 		return None
 
@@ -1370,13 +1455,10 @@ def process_date_reminders_tick() -> None:
 		return
 	frappe.cache.set_value(cache_key, 1, expires_in_sec=60 * 60 * 20)
 
-	automations = frappe.get_all(
-		"CRM Automation", filters={"enabled": 1, "trigger_event": "Date Reminder"}, pluck="name"
-	)
-	for name in automations:
+	for trigger in matching_triggers(["Date Reminder"]):
+		name = trigger.parent
 		try:
-			automation = frappe.get_doc("CRM Automation", name)
-			config = parse_json(automation.trigger_config) or {}
+			config = parse_json(trigger.trigger_config) or {}
 			field = config.get("date_field")
 			doctype = config.get("doctype") or "CRM Lead"
 			if not field or doctype not in ("CRM Lead", "CRM Deal"):
@@ -1405,7 +1487,7 @@ def process_date_reminders_tick() -> None:
 					limit=500,
 				)
 			for row in rows:
-				enroll(name, doctype, row, {"date_field": field})
+				enroll(name, doctype, row, {"date_field": field}, trigger_row=trigger)
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"CRM Automation: date reminder failed ({name})")
 
