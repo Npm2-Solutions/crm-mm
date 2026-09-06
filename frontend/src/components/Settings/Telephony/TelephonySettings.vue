@@ -74,7 +74,14 @@
           </div>
         </div>
         <div>
+          <Combobox
+            v-if="callerIds.data?.length"
+            v-model="telephonyAgent.doc.twilio_number"
+            class="w-44"
+            :options="callerIdOptions"
+          />
           <FormControl
+            v-else
             v-model="telephonyAgent.doc.twilio_number"
             class="flex-1 truncate w-44 p-1"
             :placeholder="__('Enter Twilio Number')"
@@ -288,6 +295,7 @@
 import {
   FormControl,
   Badge,
+  Combobox,
   ErrorMessage,
   createResource,
   toast,
@@ -304,6 +312,18 @@ import { validatePhone } from '@/utils'
 import { ref, computed } from 'vue'
 
 const { isEnabled } = useTelephony()
+
+// what the account can actually present; typing a number Twilio has never heard
+// of is the quiet way calls stop working
+const callerIds = createResource({
+  url: 'crm.integrations.twilio.api.usable_caller_ids',
+  cache: 'twilio-caller-ids',
+  auto: true,
+})
+
+const callerIdOptions = computed(() =>
+  (callerIds.data || []).map((number) => ({ label: number, value: number })),
+)
 
 // the options follow the provider registry, so a new carrier shows up here
 // without this file having to learn its name
