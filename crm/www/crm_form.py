@@ -41,6 +41,11 @@ def get_context(context):
 		context.csrf_token = frappe.sessions.get_csrf_token()
 	except Exception:
 		context.csrf_token = ""
+	# When the form is embedded in an iframe the tracker on the host page appends
+	# the visitor ids to the frame's src, because the frame cannot read the host
+	# page's storage. Same-origin (a form opened directly) has the cookies instead.
+	context.crm_vid = _tracking_id("crm_vid")
+	context.crm_sid = _tracking_id("crm_sid")
 	context.web_form_name = doc.name
 	# ?embed=1 (set by the iframe snippet) strips the page chrome so the form sits
 	# flush inside the host page instead of showing our own card-on-gray-background
@@ -79,6 +84,14 @@ def get_context(context):
 		if f["fieldtype"] == "Link" and f["options"]
 	}
 	return context
+
+
+def _tracking_id(key: str) -> str:
+	"""A visitor/session id from the query string, or the cookie set by an earlier
+	visit. Validated to the minted shape so nothing else reaches the database."""
+	value = str(frappe.form_dict.get(key) or frappe.request.cookies.get(key) or "").strip()
+	is_id = len(value) == 32 and all(c in "0123456789abcdef" for c in value)
+	return value if is_id else ""
 
 
 def _link_field_options(doctype: str) -> list[dict]:

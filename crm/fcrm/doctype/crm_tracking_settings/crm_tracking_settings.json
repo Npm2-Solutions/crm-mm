@@ -1,0 +1,160 @@
+{
+ "actions": [],
+ "creation": "2026-09-06 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "track_anonymous",
+  "column_break_head",
+  "session_timeout_minutes",
+  "visitor_cookie_days",
+  "privacy_section",
+  "require_consent",
+  "respect_do_not_track",
+  "exclude_bots",
+  "column_break_privacy",
+  "store_ip_address",
+  "anonymize_ip",
+  "retention_days",
+  "domains_section",
+  "allowed_origins",
+  "column_break_domains",
+  "excluded_ips"
+ ],
+ "fields": [
+  {
+   "default": "1",
+   "description": "Master switch. With this off the collect endpoint accepts nothing and the script goes quiet.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Lead Tracking"
+  },
+  {
+   "default": "1",
+   "description": "Record sessions and page views before a visitor identifies. Off means only the submission itself is attributed, with no browsing history.",
+   "fieldname": "track_anonymous",
+   "fieldtype": "Check",
+   "label": "Track Anonymous Visitors"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "description": "Inactivity after which the next page view starts a new session. A new campaign always starts a new session regardless.",
+   "fieldname": "session_timeout_minutes",
+   "fieldtype": "Int",
+   "label": "Session Timeout (minutes)"
+  },
+  {
+   "default": "365",
+   "fieldname": "visitor_cookie_days",
+   "fieldtype": "Int",
+   "label": "Visitor Cookie Lifetime (days)"
+  },
+  {
+   "fieldname": "privacy_section",
+   "fieldtype": "Section Break",
+   "label": "Privacy"
+  },
+  {
+   "default": "0",
+   "description": "Collect nothing until the page calls CRMTracker.consent(true).",
+   "fieldname": "require_consent",
+   "fieldtype": "Check",
+   "label": "Require Consent"
+  },
+  {
+   "default": "1",
+   "fieldname": "respect_do_not_track",
+   "fieldtype": "Check",
+   "label": "Respect Do Not Track"
+  },
+  {
+   "default": "1",
+   "fieldname": "exclude_bots",
+   "fieldtype": "Check",
+   "label": "Exclude Bots"
+  },
+  {
+   "fieldname": "column_break_privacy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "store_ip_address",
+   "fieldtype": "Check",
+   "label": "Store IP Address"
+  },
+  {
+   "default": "1",
+   "depends_on": "store_ip_address",
+   "description": "Drop the last octet (IPv4) or the last 80 bits (IPv6) before storing.",
+   "fieldname": "anonymize_ip",
+   "fieldtype": "Check",
+   "label": "Anonymize IP Address"
+  },
+  {
+   "default": "365",
+   "description": "Anonymous sessions and events older than this are deleted nightly. History attached to a lead or deal is kept. 0 disables the cleanup.",
+   "fieldname": "retention_days",
+   "fieldtype": "Int",
+   "label": "Retention (days)"
+  },
+  {
+   "fieldname": "domains_section",
+   "fieldtype": "Section Break",
+   "label": "Domains"
+  },
+  {
+   "description": "One origin per line (https://www.example.com). The collect endpoint answers only these. Empty means any origin, which is what you want while testing.",
+   "fieldname": "allowed_origins",
+   "fieldtype": "Small Text",
+   "label": "Allowed Origins"
+  },
+  {
+   "fieldname": "column_break_domains",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "One per line. Visits from these addresses are ignored \u2014 put your own office here so internal browsing doesn't land in the reports.",
+   "fieldname": "excluded_ips",
+   "fieldtype": "Small Text",
+   "label": "Excluded IPs"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-06 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Tracking Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,493 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-09-06 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "session_id",
+  "visitor",
+  "source_category",
+  "column_break_head",
+  "started_on",
+  "last_activity_on",
+  "duration",
+  "attribution_section",
+  "source",
+  "medium",
+  "campaign",
+  "column_break_attribution",
+  "landing_page",
+  "referrer",
+  "referrer_domain",
+  "utm_section",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "column_break_utm",
+  "utm_term",
+  "utm_content",
+  "utm_id",
+  "ads_section",
+  "campaign_id",
+  "ad_group_id",
+  "ad_id",
+  "column_break_ads",
+  "utm_keyword",
+  "utm_match_type",
+  "click_ids_section",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "msclkid",
+  "dclid",
+  "yclid",
+  "fbclid",
+  "ttclid",
+  "li_fat_id",
+  "twclid",
+  "epik",
+  "sccid",
+  "rdt_cid",
+  "ctwa_clid",
+  "irclickid",
+  "client_section",
+  "device_type",
+  "browser",
+  "os",
+  "language",
+  "column_break_client",
+  "ip_address",
+  "country",
+  "user_agent",
+  "link_section",
+  "lead",
+  "deal",
+  "column_break_link",
+  "page_view_count",
+  "event_count",
+  "converted"
+ ],
+ "fields": [
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Session ID",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "visitor",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Visitor",
+   "options": "CRM Visitor",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "source_category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Source Category",
+   "options": "\nPaid Search\nPaid Social\nOrganic Search\nOrganic Social\nEmail\nSMS\nAffiliate\nReferral\nDirect Traffic\nCRM UI\nThird Party\nUnknown",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Started On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_activity_on",
+   "fieldtype": "Datetime",
+   "label": "Last Activity On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Duration",
+   "label": "Duration",
+   "read_only": 1
+  },
+  {
+   "fieldname": "attribution_section",
+   "fieldtype": "Section Break",
+   "label": "Attribution"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "medium",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Medium",
+   "read_only": 1
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Campaign",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_attribution",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "landing_page",
+   "fieldtype": "Small Text",
+   "label": "Landing Page",
+   "read_only": 1
+  },
+  {
+   "fieldname": "referrer",
+   "fieldtype": "Small Text",
+   "label": "Referrer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "referrer_domain",
+   "fieldtype": "Data",
+   "label": "Referring Domain",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utm_section",
+   "fieldtype": "Section Break",
+   "label": "UTM Parameters"
+  },
+  {
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "label": "utm_source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "label": "utm_medium",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "label": "utm_campaign",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_utm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "utm_term",
+   "fieldtype": "Data",
+   "label": "utm_term",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utm_content",
+   "fieldtype": "Data",
+   "label": "utm_content",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utm_id",
+   "fieldtype": "Data",
+   "label": "utm_id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ads_section",
+   "fieldtype": "Section Break",
+   "label": "Ad Details"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Data",
+   "label": "Campaign ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ad_group_id",
+   "fieldtype": "Data",
+   "label": "Ad Group / Ad Set ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ad_id",
+   "fieldtype": "Data",
+   "label": "Ad ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ads",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "utm_keyword",
+   "fieldtype": "Data",
+   "label": "Keyword",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utm_match_type",
+   "fieldtype": "Data",
+   "label": "Match Type",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "click_ids_section",
+   "fieldtype": "Section Break",
+   "label": "Click Identifiers"
+  },
+  {
+   "fieldname": "gclid",
+   "fieldtype": "Data",
+   "label": "Google Click ID (gclid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gbraid",
+   "fieldtype": "Data",
+   "label": "gbraid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "wbraid",
+   "fieldtype": "Data",
+   "label": "wbraid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "msclkid",
+   "fieldtype": "Data",
+   "label": "Microsoft Click ID (msclkid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dclid",
+   "fieldtype": "Data",
+   "label": "dclid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "yclid",
+   "fieldtype": "Data",
+   "label": "Yandex Click ID (yclid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fbclid",
+   "fieldtype": "Data",
+   "label": "Facebook Click ID (fbclid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ttclid",
+   "fieldtype": "Data",
+   "label": "TikTok Click ID (ttclid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "li_fat_id",
+   "fieldtype": "Data",
+   "label": "LinkedIn Click ID (li_fat_id)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "twclid",
+   "fieldtype": "Data",
+   "label": "X Click ID (twclid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "epik",
+   "fieldtype": "Data",
+   "label": "Pinterest Click ID (epik)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sccid",
+   "fieldtype": "Data",
+   "label": "Snapchat Click ID (sccid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rdt_cid",
+   "fieldtype": "Data",
+   "label": "Reddit Click ID (rdt_cid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ctwa_clid",
+   "fieldtype": "Data",
+   "label": "WhatsApp Ad Click ID (ctwa_clid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "irclickid",
+   "fieldtype": "Data",
+   "label": "Impact Click ID (irclickid)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "client_section",
+   "fieldtype": "Section Break",
+   "label": "Client"
+  },
+  {
+   "fieldname": "device_type",
+   "fieldtype": "Select",
+   "label": "Device",
+   "options": "\nDesktop\nMobile\nTablet\nBot",
+   "read_only": 1
+  },
+  {
+   "fieldname": "browser",
+   "fieldtype": "Data",
+   "label": "Browser",
+   "read_only": 1
+  },
+  {
+   "fieldname": "os",
+   "fieldtype": "Data",
+   "label": "Operating System",
+   "read_only": 1
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_client",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user_agent",
+   "fieldtype": "Small Text",
+   "label": "User Agent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "link_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Record"
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "CRM Lead",
+   "read_only": 1
+  },
+  {
+   "fieldname": "deal",
+   "fieldtype": "Link",
+   "label": "Deal",
+   "options": "CRM Deal",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_link",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "page_view_count",
+   "fieldtype": "Int",
+   "label": "Page Views",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "event_count",
+   "fieldtype": "Int",
+   "label": "Events",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Set when this session produced a lead, a deal or a booking.",
+   "fieldname": "converted",
+   "fieldtype": "Check",
+   "label": "Converted",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-06 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Visitor Session",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "started_on",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "source"
+}

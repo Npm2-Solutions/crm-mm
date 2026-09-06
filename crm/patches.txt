@@ -35,3 +35,4 @@ crm.patches.v1_0.remove_lead_sync_source
 crm.patches.v1_0.create_default_pipeline
 crm.patches.v1_0.recompile_automations_with_node_ids
 crm.patches.v1_0.create_automation_trigger_rows
+crm.patches.v1_0.add_attribution_sections_to_data_layouts

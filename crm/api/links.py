@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+from urllib.parse import quote
 
 import frappe
 from frappe.rate_limiter import rate_limit
@@ -46,6 +47,7 @@ def r(l: str, t: str | None = None, s: str | None = None):
 		"CRM Tracked Link", link.name, "click_count", (link.click_count or 0) + 1, update_modified=False
 	)
 
+	target = link.target_url
 	payload = _verify(l, t, s) if (t and s) else None
 	if (
 		payload
@@ -57,6 +59,8 @@ def r(l: str, t: str | None = None, s: str | None = None):
 			ref.add_comment(
 				"Comment", frappe._("Clicked tracked link {0}").format(frappe.utils.escape_html(l))
 			)
+			target = _identify_on_destination(ref, l, target)
+
 			from crm.automation.engine import process_event
 
 			frappe.local.form_dict["_tracked_link"] = l
@@ -66,4 +70,25 @@ def r(l: str, t: str | None = None, s: str | None = None):
 
 	frappe.db.commit()
 	frappe.local.response["type"] = "redirect"
-	frappe.local.response["location"] = link.target_url
+	frappe.local.response["location"] = target
+
+
+def _identify_on_destination(ref, slug: str, target: str) -> str:
+	"""Log the click on the record's journey and carry its visitor id to the
+	destination.
+
+	The tracker on the landing site keeps its ids in that site's own storage, which
+	this redirect cannot write to. Passing the id on the URL is what lets a click
+	from an email adopt the right identity, so the pages read after it land on this
+	record instead of starting a fresh anonymous trail.
+	"""
+	from crm.api import tracking
+
+	# mint the visitor first: the click is logged against it
+	visitor_id = tracking.visitor_for(ref)
+	tracking.record_conversion(ref, "link_click", label=slug)
+	if not visitor_id:
+		return target
+
+	separator = "&" if "?" in target else "?"
+	return f"{target}{separator}crm_vid={quote(visitor_id)}"

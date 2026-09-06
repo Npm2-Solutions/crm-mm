@@ -213,15 +213,17 @@ doc_events = {
 		"after_insert": ["crm.automation.engine.on_whatsapp_received"],
 	},
 	"CRM Lead": {
-		"after_insert": ["crm.automation.engine.on_lead_created"],
+		"before_insert": ["crm.api.tracking.stamp_manual_source"],
+		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_lead_created"],
 		"on_update": ["crm.automation.engine.on_lead_updated"],
 	},
 	"CRM Deal": {
+		"before_insert": ["crm.api.tracking.stamp_manual_source"],
 		"on_update": [
 			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext",
 			"crm.automation.engine.on_deal_updated",
 		],
-		"after_insert": ["crm.automation.engine.on_deal_created"],
+		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_deal_created"],
 	},
 	"CRM Booking": {
 		"after_insert": ["crm.automation.engine.on_booking_created"],
@@ -272,6 +274,7 @@ scheduler_events = {
 		"crm.api.event.trigger_daily_event_notifications",
 		"crm.fcrm.doctype.crm_invitation.crm_invitation.expire_invitations",
 		"crm.fcrm.doctype.crm_view_settings.crm_view_settings.clear_old_versions",
+		"crm.api.tracking.purge_old_data",
 		"crm.telemetry.capture_feature_state",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],

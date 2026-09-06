@@ -124,8 +124,15 @@ def book(
 	invitee_phone: str | None = None,
 	notes: str | None = None,
 	invitee_timezone: str | None = None,
+	crm_vid: str | None = None,
+	crm_sid: str | None = None,
 ) -> dict:
-	"""Create a booking on a free slot; returns the manage token."""
+	"""Create a booking on a free slot; returns the manage token.
+
+	`crm_vid`/`crm_sid` are the tracker's visitor and session ids, sent by the
+	booking page. They are what lets a booking be credited to the campaign that
+	produced it instead of just to "Booking".
+	"""
 	# row lock on the calendar serializes concurrent bookings for the same page,
 	# so the availability re-check below cannot race another insert
 	cal = _get_calendar_by_route(route, for_update=True)
@@ -155,7 +162,7 @@ def book(
 			"currency": cal.currency,
 		}
 	)
-	booking.lead = _find_or_create_lead(booking)
+	booking.lead = _find_or_create_lead(booking, crm_vid, crm_sid)
 	booking.insert(ignore_permissions=True)
 	_send_confirmation(cal, booking)
 	return _public_booking(cal, booking)
@@ -315,10 +322,18 @@ def _ensure_booking_source() -> str:
 	return BOOKING_SOURCE
 
 
-def _find_or_create_lead(booking) -> str:
+def _find_or_create_lead(booking, crm_vid: str | None = None, crm_sid: str | None = None) -> str:
+	from crm.api.tracking import attribute, record_conversion
+
 	existing = frappe.db.get_value("CRM Lead", {"email": booking.invitee_email, "converted": 0})
 	if existing:
+		# a returning invitee: their first touch is already recorded, but this visit
+		# is a new last touch, and the booking belongs on their journey
+		lead = frappe.get_doc("CRM Lead", existing)
+		attribute(lead, visitor_id=crm_vid, session_id=crm_sid)
+		record_conversion(lead, "booking", booking.invitee_name or "", reference=booking)
 		return existing
+
 	from crm.api.form import _default_status
 
 	parts = booking.invitee_name.split(maxsplit=1)
@@ -333,7 +348,15 @@ def _find_or_create_lead(booking) -> str:
 			"source": _ensure_booking_source(),
 		}
 	)
+	attribute(
+		lead,
+		visitor_id=crm_vid,
+		session_id=crm_sid,
+		category="Third Party",
+		dimensions={"source": "booking_page", "medium": "booking"},
+	)
 	lead.insert(ignore_permissions=True)
+	record_conversion(lead, "booking", booking.invitee_name or "", reference=booking)
 	return lead.name
 
 
