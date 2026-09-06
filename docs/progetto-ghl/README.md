@@ -36,6 +36,7 @@ Scope ridotto rispetto alla parità completa, su decisione del committente:
 | [08](./08-roadmap.md) | Roadmap & effort | aggiornata | Fasi, dipendenze, stime — ricalibrata sullo scope ridotto |
 | [13](./13-google-calendar.md) | Google Calendar collegato in un click | ✅ implementato | OAuth gestito dall'agenzia: nessuna credenziale da incollare sul sito cliente |
 | [14](./14-agenda-appuntamenti.md) | Agenda interna: multi-persona, stanze, attrezzature, listini | ✅ implementato | Staffing collective/round-robin/per-ruolo, capacità delle risorse, sessioni di gruppo, prezzi condizionati |
+| [15](./15-tracciamento-lead.md) | Tracciamento del lead e attribuzione | ✅ implementato | Script esterno, sessioni, primo/ultimo contatto, percorso pagina per pagina |
 
 ## Architettura complessiva
 

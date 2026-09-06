@@ -10,7 +10,7 @@
       <Badge
         v-if="touch?.category"
         :label="__(touch.category)"
-        :theme="title === __('First touch') ? 'green' : 'blue'"
+        :theme="theme"
         size="sm"
       />
     </div>
@@ -36,6 +36,7 @@ import { computed } from 'vue'
 const props = defineProps({
   title: { type: String, required: true },
   touch: { type: Object, default: () => ({}) },
+  theme: { type: String, default: 'blue' },
 })
 
 const rows = computed(() => {

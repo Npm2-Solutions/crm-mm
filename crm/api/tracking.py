@@ -37,7 +37,7 @@ from frappe.utils import add_days, cint, get_url, now
 from crm.fcrm.doctype.crm_tracking_settings.crm_tracking_settings import get_tracking_settings
 from crm.fcrm.doctype.crm_visitor.crm_visitor import get_or_create as get_or_create_visitor
 from crm.fcrm.doctype.crm_visitor_session.crm_visitor_session import start_or_continue
-from crm.utils import attribution
+from crm.utils import attribution, count_field
 
 VISITOR_COOKIE = "crm_vid"
 SESSION_COOKIE = "crm_sid"
@@ -669,7 +669,9 @@ def source_report(
 	rows = frappe.get_list(
 		doctype,
 		filters=filters,
-		fields=[f"{field} as label", "count(name) as total"],
+		# count_field(): v16 rejects a SQL function written as a string, and a call
+		# that gets it wrong raises rather than degrading
+		fields=[f"{field} as label", count_field("total")],
 		group_by=field,
 		order_by="total desc",
 		limit=100,
@@ -730,7 +732,7 @@ def purge_old_data() -> None:
 		return
 
 	cutoff = add_days(now(), -days)
-	unclaimed = {"lead": ["in", (None, "")], "deal": ["in", (None, "")]}
+	unclaimed = {"lead": ["is", "not set"], "deal": ["is", "not set"]}
 	# events first, then the sessions they hang off, then the visitor: deleting a
 	# parent while children still point at it would leave dangling links.
 	for doctype, filters in (

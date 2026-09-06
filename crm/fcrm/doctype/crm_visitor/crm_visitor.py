@@ -76,7 +76,10 @@ class CRMVisitor(Document):
 		for doctype in ("CRM Visitor Session", "CRM Tracking Event"):
 			frappe.db.set_value(
 				doctype,
-				{"visitor": self.name, field: ["in", (None, "")]},
+				# `is not set` and not `in (None, "")`: an unset Link is NULL, and
+				# `NULL IN (NULL, '')` is never true — that filter would quietly
+				# back-fill nothing, which is the one thing this method exists to do.
+				{"visitor": self.name, field: ["is", "not set"]},
 				field,
 				name,
 				update_modified=False,
@@ -86,7 +89,7 @@ class CRMVisitor(Document):
 def get_or_create(visitor_id: str, defaults: dict | None = None) -> "CRMVisitor":
 	"""The visitor for `visitor_id`, created on first sight.
 
-	The id is minted server-side (see `crm.api.tracking.new_id`) and only ever
+	The id is minted server-side (`crm.api.tracking._visitor_id`) and only ever
 	returned to the browser that owns it, so an unknown id means a new browser —
 	not something to reject.
 	"""
