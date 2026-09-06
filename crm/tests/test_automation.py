@@ -468,3 +468,21 @@ class TestAutomationBuilder(IntegrationTestCase):
 			json.loads(copy.steps)[0]["id"],
 			json.loads(auto.steps)[0]["id"],
 		)
+
+	def test_trigger_condition_accepts_or_groups(self):
+		auto = make_automation(
+			"segmented",
+			[{"type": "add_note", "comment": "x"}],
+			trigger_condition=json.dumps(
+				[
+					[{"field": "email", "operator": "contains", "value": "@vip.test"}],
+					[{"field": "mobile_no", "operator": "contains", "value": "+39999"}],
+				]
+			),
+		)
+		out = make_lead(email="no@example.com", mobile_no="+390000000123")
+		self.assertIsNone(get_enrollment(auto.name, out.name))
+		by_email = make_lead(email="ceo@vip.test", mobile_no="+390000000124")
+		self.assertIsNotNone(get_enrollment(auto.name, by_email.name))
+		by_phone = make_lead(email="x@example.com", mobile_no="+39999123456")
+		self.assertIsNotNone(get_enrollment(auto.name, by_phone.name))

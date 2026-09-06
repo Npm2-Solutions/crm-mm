@@ -998,7 +998,11 @@ def step_notify(step, ref_doc) -> str:
 
 
 def condition_groups_of(container: dict) -> list | None:
-	"""Normalize: condition_groups (list of AND-groups, OR between) or single condition."""
+	"""Normalize: condition_groups (list of AND-groups, OR between) or single condition.
+
+	`trigger_condition` accepts the same two shapes, so an enrolment filter can be
+	a full AND/OR segment and not just one comparison.
+	"""
 	groups = container.get("condition_groups")
 	if groups:
 		return groups
@@ -1006,7 +1010,9 @@ def condition_groups_of(container: dict) -> list | None:
 	if condition:
 		if isinstance(condition, str):
 			condition = parse_json(condition)
-		if condition and condition.get("field"):
+		if isinstance(condition, list):
+			return [group for group in condition if group] or None
+		if isinstance(condition, dict) and condition.get("field"):
 			return [[condition]]
 	return None
 
@@ -1095,10 +1101,12 @@ def validate_steps(steps, _top=True) -> None:
 				frappe.throw(_("Step {0}: split percentages must total 100").format(i + 1))
 			for path in paths:
 				validate_steps(path.get("steps") or [], _top=False)
-		for cond_key in ("condition",):
-			cond = step.get(cond_key)
-			if cond and (cond.get("operator") or "equals") not in CONDITION_OPERATORS:
-				frappe.throw(_("Step {0}: unknown condition operator").format(i + 1))
+		for group in condition_groups_of(step) or []:
+			for cond in group:
+				if not isinstance(cond, dict):
+					frappe.throw(_("Step {0}: malformed condition").format(i + 1))
+				if (cond.get("operator") or "equals") not in CONDITION_OPERATORS:
+					frappe.throw(_("Step {0}: unknown condition operator").format(i + 1))
 	if _top:
 		compile_steps(steps)  # surfaces unresolved go_to targets
 
