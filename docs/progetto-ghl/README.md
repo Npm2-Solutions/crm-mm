@@ -47,7 +47,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [13](./13-google-calendar.md) | Google Calendar collegato in un click | ✅ implementato | OAuth gestito dall'agenzia: nessuna credenziale da incollare sul sito cliente |
 | [14](./14-agenda-appuntamenti.md) | Agenda interna: multi-persona, stanze, attrezzature, listini | ✅ implementato | Staffing collective/round-robin/per-ruolo, capacità delle risorse, sessioni di gruppo, prezzi condizionati |
 | [15](./15-tracciamento-lead.md) | Tracciamento del lead e attribuzione | ✅ implementato | Script esterno, sessioni, primo/ultimo contatto, percorso pagina per pagina |
-| [16](./16-sito-web-vetrina.md) | Sito web vetrina integrato nel CRM | 🟡 proposta rivista | Frappe Builder installato accanto come **tela**; il CRM resta guscio e dati: componenti spediti da noi con data script, impostazioni e publish nel modale |
+| [16](./16-sito-web-vetrina.md) | Sito web vetrina integrato nel CRM | ✅ implementato | Frappe Builder installato accanto come **tela**; il CRM resta guscio e dati: componenti spediti da noi con data script, impostazioni e publish nel modale |
 
 ## Architettura complessiva
 

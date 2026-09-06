@@ -22,6 +22,35 @@ Se Builder **non** è installato, questa cartella è inerte: nessun hook, nessun
 pubblicata, le visite e i submit del sito entrano nella pipeline di attribuzione che il CRM
 ha già, senza che nessuno debba incollare un tag.
 
+## Cosa spediamo
+
+| Componente | Come prende i dati |
+|---|---|
+| **Servizi CRM** | data script su `CRM Service` con `publish_on_website` |
+| **Prodotti CRM** | data script su `CRM Product` |
+| **Form CRM** | `{{ crm_form_html(props.modulo, …) }}` — il form del CRM reso inline |
+| **Prenota** | `{{ crm_booking_html(props.calendario, …) }}` |
+| **Contatti** | `{{ crm_contact_html() }}` |
+
+I JSON **non si scrivono a mano**: li genera `scripts/builder/build_components.py`.
+Modifica quello e rilancialo — un albero di blocchi sbagliato non fallisce in fase di
+salvataggio, fallisce in silenzio sulla pagina di un cliente.
+
+```bash
+python3 scripts/builder/build_components.py
+```
+
+## Due modi di portare dati in un blocco
+
+**Data script** — Python server-side sul componente, per le liste. Vedi sotto.
+
+**Metodo Jinja** — per i frammenti che il CRM sa già rendere (un form, una CTA di
+prenotazione). Builder passa ogni pagina per `render_template`, quindi un blocco il cui
+`innerHTML` è `{{ crm_form_html(props.modulo) }}` riceve il markup vero. I metodi sono
+registrati in `crm/hooks.py` (`jinja.methods`) e implementati in `crm/api/site_render.py`;
+il nome è prefissato perché lo spazio dei nomi Jinja è condiviso con tutte le app.
+Un test verifica che ogni chiamata presente nei blocchi sia davvero registrata.
+
 ## Il contratto dei componenti
 
 Un `Builder Component` è due cose:

@@ -13,6 +13,7 @@ The structural checks run whether or not Builder is installed; the round-trip th
 
 import json
 import os
+import re
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -152,7 +153,13 @@ class TestBuilderFiles(IntegrationTestCase):
 			self.skipTest("crm-servizi not synced — run `bench --site <site> migrate`")
 
 		service = frappe.get_doc(
-			{"doctype": "CRM Service", "service_name": "Spike Service", "enabled": 1, "duration": 30}
+			{
+				"doctype": "CRM Service",
+				"service_name": "Spike Service",
+				"enabled": 1,
+				"duration": 30,
+				"publish_on_website": 1,
+			}
 		).insert(ignore_permissions=True)
 		try:
 			data = get_component_data("crm-servizi")
@@ -162,3 +169,25 @@ class TestBuilderFiles(IntegrationTestCase):
 			self.assertEqual(data["vuoto"], 0)
 		finally:
 			service.delete(ignore_permissions=True)
+
+	def test_jinja_calls_in_blocks_are_registered_methods(self):
+		"""A block whose markup calls `{{ crm_form_html(...) }}` renders nothing unless the
+		method is in `hooks.jinja`. That mismatch is silent on a live page, so it is caught
+		here instead."""
+		registered = set()
+		for path in frappe.get_hooks("jinja").get("methods") or []:
+			registered.add(path.rsplit(".", 1)[-1])
+
+		called = re.compile(r"\{\{\s*([a-zA-Z_][\w]*)\s*\(")
+		for folder, path in component_files():
+			doc = json.loads(open(path, encoding="utf-8").read())
+			for block in iter_blocks(json.loads(doc["block"])):
+				for name in called.findall(block.get("innerHTML") or ""):
+					with self.subTest(component=folder, method=name):
+						self.assertIn(name, registered, f"{name}() is not registered in hooks.jinja")
+
+	def test_shipped_components_cover_the_crm_blocks(self):
+		"""The set a page needs to be a CRM site rather than a brochure."""
+		shipped = {folder for folder, _path in component_files()}
+		for expected in ("crm_servizi", "crm_prodotti", "crm_form", "crm_prenota", "crm_contatti"):
+			self.assertIn(expected, shipped)

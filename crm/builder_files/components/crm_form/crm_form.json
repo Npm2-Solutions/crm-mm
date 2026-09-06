@@ -1,0 +1,13 @@
+{
+ "doctype": "Builder Component",
+ "name": "crm-form",
+ "component_id": "crm-form",
+ "component_name": "Form CRM",
+ "component_data_script": "",
+ "block": "{\"blockId\":\"crm-form-root\",\"element\":\"div\",\"children\":[{\"blockId\":\"crm-form-titolo\",\"element\":\"h2\",\"children\":[],\"baseStyles\":{\"fontSize\":\"1.75rem\",\"fontWeight\":\"600\",\"lineHeight\":\"1.2\",\"color\":\"#171717\"},\"mobileStyles\":{},\"tabletStyles\":{},\"rawStyles\":{},\"attributes\":{},\"customAttributes\":{},\"classes\":[],\"dataKey\":null,\"innerHTML\":\"Scrivici\",\"dynamicValues\":[{\"key\":\"titolo\",\"type\":\"key\",\"property\":\"innerHTML\",\"comesFrom\":\"props\"}]},{\"blockId\":\"crm-form-body\",\"element\":\"div\",\"children\":[],\"baseStyles\":{\"width\":\"100%\",\"maxWidth\":\"640px\",\"margin\":\"0 auto\"},\"mobileStyles\":{},\"tabletStyles\":{},\"rawStyles\":{},\"attributes\":{},\"customAttributes\":{},\"classes\":[],\"dataKey\":null,\"innerHTML\":\"{{ crm_form_html(props.modulo, props.titolo_form, props.pulsante) }}\"}],\"baseStyles\":{\"display\":\"flex\",\"flexDirection\":\"column\",\"gap\":\"20px\",\"width\":\"100%\",\"padding\":\"48px 24px\"},\"mobileStyles\":{},\"tabletStyles\":{},\"rawStyles\":{},\"attributes\":{},\"customAttributes\":{},\"classes\":[],\"dataKey\":null,\"props\":{\"titolo\":{\"isStandard\":true,\"value\":null,\"propOptions\":{\"type\":\"string\",\"options\":{\"defaultValue\":\"Scrivici\"}}},\"modulo\":{\"isStandard\":true,\"value\":null,\"propOptions\":{\"type\":\"string\",\"options\":{\"defaultValue\":\"\"}}},\"titolo_form\":{\"isStandard\":true,\"value\":null,\"propOptions\":{\"type\":\"string\",\"options\":{\"defaultValue\":\"\"}}},\"pulsante\":{\"isStandard\":true,\"value\":null,\"propOptions\":{\"type\":\"string\",\"options\":{\"defaultValue\":\"\"}}}}}",
+ "docstatus": 0,
+ "idx": 0,
+ "modified": "2026-09-06 16:00:00.000000",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

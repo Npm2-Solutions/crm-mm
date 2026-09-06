@@ -1,0 +1,13 @@
+{
+ "doctype": "Builder Component",
+ "name": "crm-contatti",
+ "component_id": "crm-contatti",
+ "component_name": "Contatti",
+ "component_data_script": "",
+ "block": "{\"blockId\":\"crm-contatti-root\",\"element\":\"div\",\"children\":[{\"blockId\":\"crm-contatti-titolo\",\"element\":\"h2\",\"children\":[],\"baseStyles\":{\"fontSize\":\"1.75rem\",\"fontWeight\":\"600\",\"lineHeight\":\"1.2\",\"color\":\"#171717\"},\"mobileStyles\":{},\"tabletStyles\":{},\"rawStyles\":{},\"attributes\":{},\"customAttributes\":{},\"classes\":[],\"dataKey\":null,\"innerHTML\":\"Dove siamo\",\"dynamicValues\":[{\"key\":\"titolo\",\"type\":\"key\",\"property\":\"innerHTML\",\"comesFrom\":\"props\"}]},{\"blockId\":\"crm-contatti-body\",\"element\":\"div\",\"children\":[],\"baseStyles\":{\"width\":\"100%\",\"maxWidth\":\"900px\",\"margin\":\"0 auto\"},\"mobileStyles\":{},\"tabletStyles\":{},\"rawStyles\":{},\"attributes\":{},\"customAttributes\":{},\"classes\":[],\"dataKey\":null,\"innerHTML\":\"{{ crm_contact_html() }}\"}],\"baseStyles\":{\"display\":\"flex\",\"flexDirection\":\"column\",\"gap\":\"20px\",\"width\":\"100%\",\"padding\":\"48px 24px\"},\"mobileStyles\":{},\"tabletStyles\":{},\"rawStyles\":{},\"attributes\":{},\"customAttributes\":{},\"classes\":[],\"dataKey\":null,\"props\":{\"titolo\":{\"isStandard\":true,\"value\":null,\"propOptions\":{\"type\":\"string\",\"options\":{\"defaultValue\":\"Dove siamo\"}}}}}",
+ "docstatus": 0,
+ "idx": 0,
+ "modified": "2026-09-06 16:00:00.000000",
+ "modified_by": "Administrator",
+ "owner": "Administrator"
+}

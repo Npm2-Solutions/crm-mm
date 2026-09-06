@@ -334,6 +334,43 @@
           :label="__('When it can be delivered')"
           :hint="__('Empty means any time the team is available.')"
         />
+
+        <!-- The website face of this service. The card itself (image, descriptions,
+             button) is edited in Site → Showcase, so there is one place to get it
+             right; the switch lives here because this is where you are when you
+             decide a service should be public. -->
+        <div
+          v-if="editingName"
+          class="flex items-center justify-between rounded-lg border border-outline-gray-2 px-3 py-2.5"
+        >
+          <div class="flex flex-col">
+            <span class="text-p-base-medium text-ink-gray-8">
+              {{ __('Publish on the website') }}
+            </span>
+            <span class="text-p-sm text-ink-gray-5">
+              {{
+                publishedOnWebsite
+                  ? __(
+                      'Visible on the site. Edit its card under Site → Showcase.',
+                    )
+                  : __('Not on the site yet.')
+              }}
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <Button
+              v-if="publishedOnWebsite"
+              variant="ghost"
+              :label="__('Edit card')"
+              @click="openShowcase"
+            />
+            <Switch
+              size="sm"
+              :modelValue="publishedOnWebsite"
+              @update:modelValue="toggleWebsite"
+            />
+          </div>
+        </div>
       </div>
     </template>
     <template #actions>
@@ -352,6 +389,7 @@
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import {
+  call,
   createResource,
   Dialog,
   FormControl,
@@ -360,6 +398,10 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { showSettings } from '@/composables/settings'
+
+const router = useRouter()
 
 const services = createResource({
   url: 'crm.api.appointments.list_services',
@@ -460,12 +502,40 @@ const emptyForm = () => ({
 
 const form = reactive(emptyForm())
 
+// Published state is written straight through, not carried in `form`: the rest of this
+// dialog is a draft until Save, and a publish switch that silently waited for Save would
+// be a lie.
+const publishedOnWebsite = ref(false)
+
+async function toggleWebsite(value) {
+  const previous = publishedOnWebsite.value
+  publishedOnWebsite.value = value
+  try {
+    await call('crm.api.site.set_showcase_published', {
+      doctype: 'CRM Service',
+      name: editingName.value,
+      published: value ? 1 : 0,
+    })
+    services.reload()
+  } catch (error) {
+    publishedOnWebsite.value = previous
+    toast.error(error.messages?.[0] || __('Could not change it'))
+  }
+}
+
+function openShowcase() {
+  showEditor.value = false
+  showSettings.value = false
+  router.push({ name: 'Website' })
+}
+
 const editorTitle = computed(() =>
   editingName.value ? __('Edit service') : __('New service'),
 )
 
 function openEditor(name = null) {
   editingName.value = name
+  publishedOnWebsite.value = false
   Object.assign(form, emptyForm())
   if (!name) {
     showEditor.value = true
@@ -497,6 +567,7 @@ function openEditor(name = null) {
         })),
         availability: data.availability || [],
       })
+      publishedOnWebsite.value = Boolean(data.publish_on_website)
       showEditor.value = true
     },
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to load')),
