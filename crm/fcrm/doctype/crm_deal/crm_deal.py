@@ -48,12 +48,66 @@ class CRMDeal(Document):
 		first_name: DF.Data | None
 		first_responded_on: DF.Datetime | None
 		first_response_time: DF.Duration | None
+		first_touch_campaign: DF.Data | None
+		first_touch_category: (
+			DF.Literal[
+				"",
+				"Paid Search",
+				"Paid Social",
+				"Organic Search",
+				"Organic Social",
+				"Email",
+				"SMS",
+				"Affiliate",
+				"Referral",
+				"Direct Traffic",
+				"CRM UI",
+				"Third Party",
+				"Unknown",
+			]
+			| None
+		)
+		first_touch_content: DF.Data | None
+		first_touch_landing_page: DF.SmallText | None
+		first_touch_medium: DF.Data | None
+		first_touch_on: DF.Datetime | None
+		first_touch_referrer: DF.SmallText | None
+		first_touch_session: DF.Link | None
+		first_touch_source: DF.Data | None
+		first_touch_term: DF.Data | None
 		gender: DF.Link | None
 		industry: DF.Link | None
 		job_title: DF.Data | None
 		last_name: DF.Data | None
 		last_responded_on: DF.Datetime | None
 		last_response_time: DF.Duration | None
+		last_touch_campaign: DF.Data | None
+		last_touch_category: (
+			DF.Literal[
+				"",
+				"Paid Search",
+				"Paid Social",
+				"Organic Search",
+				"Organic Social",
+				"Email",
+				"SMS",
+				"Affiliate",
+				"Referral",
+				"Direct Traffic",
+				"CRM UI",
+				"Third Party",
+				"Unknown",
+			]
+			| None
+		)
+		last_touch_content: DF.Data | None
+		last_touch_landing_page: DF.SmallText | None
+		last_touch_medium: DF.Data | None
+		last_touch_on: DF.Datetime | None
+		last_touch_referrer: DF.SmallText | None
+		last_touch_session: DF.Link | None
+		last_touch_source: DF.Data | None
+		last_touch_term: DF.Data | None
 		lead: DF.Link | None
 		lead_name: DF.Data | None
 		lost_notes: DF.Text | None
@@ -80,6 +134,7 @@ class CRMDeal(Document):
 		status_change_log: DF.Table[CRMStatusChangeLog]
 		territory: DF.Link | None
 		total: DF.Currency
+		visitor: DF.Link | None
 		website: DF.Data | None
 	# end: auto-generated types
 

@@ -42,6 +42,33 @@ class CRMLead(Document):
 		first_name: DF.Data
 		first_responded_on: DF.Datetime | None
 		first_response_time: DF.Duration | None
+		first_touch_campaign: DF.Data | None
+		first_touch_category: (
+			DF.Literal[
+				"",
+				"Paid Search",
+				"Paid Social",
+				"Organic Search",
+				"Organic Social",
+				"Email",
+				"SMS",
+				"Affiliate",
+				"Referral",
+				"Direct Traffic",
+				"CRM UI",
+				"Third Party",
+				"Unknown",
+			]
+			| None
+		)
+		first_touch_content: DF.Data | None
+		first_touch_landing_page: DF.SmallText | None
+		first_touch_medium: DF.Data | None
+		first_touch_on: DF.Datetime | None
+		first_touch_referrer: DF.SmallText | None
+		first_touch_session: DF.Link | None
+		first_touch_source: DF.Data | None
+		first_touch_term: DF.Data | None
 		gender: DF.Link | None
 		image: DF.AttachImage | None
 		industry: DF.Link | None
@@ -49,6 +76,33 @@ class CRMLead(Document):
 		last_name: DF.Data | None
 		last_responded_on: DF.Datetime | None
 		last_response_time: DF.Duration | None
+		last_touch_campaign: DF.Data | None
+		last_touch_category: (
+			DF.Literal[
+				"",
+				"Paid Search",
+				"Paid Social",
+				"Organic Search",
+				"Organic Social",
+				"Email",
+				"SMS",
+				"Affiliate",
+				"Referral",
+				"Direct Traffic",
+				"CRM UI",
+				"Third Party",
+				"Unknown",
+			]
+			| None
+		)
+		last_touch_content: DF.Data | None
+		last_touch_landing_page: DF.SmallText | None
+		last_touch_medium: DF.Data | None
+		last_touch_on: DF.Datetime | None
+		last_touch_referrer: DF.SmallText | None
+		last_touch_session: DF.Link | None
+		last_touch_source: DF.Data | None
+		last_touch_term: DF.Data | None
 		lead_name: DF.Data | None
 		lead_owner: DF.Link | None
 		lost_notes: DF.Text | None
@@ -72,6 +126,7 @@ class CRMLead(Document):
 		status_change_log: DF.Table[CRMStatusChangeLog]
 		territory: DF.Link | None
 		total: DF.Currency
+		visitor: DF.Link | None
 		website: DF.Data | None
 	# end: auto-generated types
 
@@ -405,6 +460,15 @@ class CRMLead(Document):
 			new_deal.update(deal)
 
 		new_deal.insert(ignore_permissions=True)
+
+		# The attribution fields ride across on the generic field copy above (the
+		# deal carries the same fieldnames); this hands the *visitor* over too, so
+		# the browsing history follows the person into the deal rather than being
+		# stranded on the lead.
+		if self.visitor:
+			from crm.api.tracking import claim_visitor
+
+			claim_visitor(self.visitor, new_deal)
 
 		for user in self.get_assigned_users():
 			if user and user != new_deal.deal_owner:

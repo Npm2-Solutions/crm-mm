@@ -75,7 +75,35 @@
   "facebook_form_id",
   "lost_details_tab",
   "lost_reason",
-  "lost_notes"
+  "lost_notes",
+  "tracking_tab",
+  "visitor",
+  "first_touch_section",
+  "first_touch_category",
+  "first_touch_source",
+  "first_touch_medium",
+  "first_touch_campaign",
+  "column_break_first_touch",
+  "first_touch_term",
+  "first_touch_content",
+  "first_touch_on",
+  "first_touch_session",
+  "first_touch_page_section",
+  "first_touch_landing_page",
+  "first_touch_referrer",
+  "last_touch_section",
+  "last_touch_category",
+  "last_touch_source",
+  "last_touch_medium",
+  "last_touch_campaign",
+  "column_break_last_touch",
+  "last_touch_term",
+  "last_touch_content",
+  "last_touch_on",
+  "last_touch_session",
+  "last_touch_page_section",
+  "last_touch_landing_page",
+  "last_touch_referrer"
  ],
  "fields": [
   {
@@ -429,18 +457,18 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "Company logo discovered by Domain Enrichment.",
    "fieldname": "organization_logo",
    "fieldtype": "Attach Image",
    "label": "Organization Logo",
-   "no_copy": 1,
-   "description": "Company logo discovered by Domain Enrichment."
+   "no_copy": 1
   },
   {
+   "description": "Company description discovered by Domain Enrichment.",
    "fieldname": "company_description",
    "fieldtype": "Small Text",
    "label": "Company Description",
-   "no_copy": 1,
-   "description": "Company description discovered by Domain Enrichment."
+   "no_copy": 1
   },
   {
    "depends_on": "eval:doc.linkedin",
@@ -462,6 +490,169 @@
    "fieldtype": "Data",
    "label": "Facebook",
    "no_copy": 1
+  },
+  {
+   "fieldname": "tracking_tab",
+   "fieldtype": "Tab Break",
+   "label": "Tracking"
+  },
+  {
+   "description": "The browser this record was first recognised in. Its page views and events make up the journey shown on the record.",
+   "fieldname": "visitor",
+   "fieldtype": "Link",
+   "label": "Visitor",
+   "options": "CRM Visitor",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_section",
+   "fieldtype": "Section Break",
+   "label": "First Touch"
+  },
+  {
+   "fieldname": "first_touch_category",
+   "fieldtype": "Select",
+   "label": "Source Category",
+   "options": "\nPaid Search\nPaid Social\nOrganic Search\nOrganic Social\nEmail\nSMS\nAffiliate\nReferral\nDirect Traffic\nCRM UI\nThird Party\nUnknown",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_source",
+   "fieldtype": "Data",
+   "label": "Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_medium",
+   "fieldtype": "Data",
+   "label": "Medium",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_campaign",
+   "fieldtype": "Data",
+   "label": "Campaign",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_first_touch",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "first_touch_term",
+   "fieldtype": "Data",
+   "label": "Term",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_content",
+   "fieldtype": "Data",
+   "label": "Content",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_on",
+   "fieldtype": "Datetime",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_session",
+   "fieldtype": "Link",
+   "label": "Session",
+   "options": "CRM Visitor Session",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_page_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "first_touch_landing_page",
+   "fieldtype": "Small Text",
+   "label": "Landing Page",
+   "read_only": 1
+  },
+  {
+   "fieldname": "first_touch_referrer",
+   "fieldtype": "Small Text",
+   "label": "Referrer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_section",
+   "fieldtype": "Section Break",
+   "label": "Last Touch"
+  },
+  {
+   "fieldname": "last_touch_category",
+   "fieldtype": "Select",
+   "label": "Source Category",
+   "options": "\nPaid Search\nPaid Social\nOrganic Search\nOrganic Social\nEmail\nSMS\nAffiliate\nReferral\nDirect Traffic\nCRM UI\nThird Party\nUnknown",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_source",
+   "fieldtype": "Data",
+   "label": "Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_medium",
+   "fieldtype": "Data",
+   "label": "Medium",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_campaign",
+   "fieldtype": "Data",
+   "label": "Campaign",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_last_touch",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_touch_term",
+   "fieldtype": "Data",
+   "label": "Term",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_content",
+   "fieldtype": "Data",
+   "label": "Content",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_on",
+   "fieldtype": "Datetime",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_session",
+   "fieldtype": "Link",
+   "label": "Session",
+   "options": "CRM Visitor Session",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_page_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "last_touch_landing_page",
+   "fieldtype": "Small Text",
+   "label": "Landing Page",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_touch_referrer",
+   "fieldtype": "Small Text",
+   "label": "Referrer",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
