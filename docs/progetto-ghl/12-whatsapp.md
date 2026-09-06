@@ -205,6 +205,22 @@ messaggio Outgoing inserito normalmente farebbe partire l'invio via API a
 frappe_whatsapp, e il messaggio — già partito dal telefono — verrebbe recapitato
 due volte.
 
+### L'app deve essere pubblicata, altrimenti non riceve niente
+
+> *«Apps in development mode can only receive test notifications initiated
+> through the app dashboard or notifications initiated by people who have a role
+> on the app»* — e il pannello WhatsApp è ancora più netto: in dev mode **non
+> vengono inviati dati di produzione**, nemmeno quelli di amministratori,
+> sviluppatori o tester.
+
+Quindi il webhook può essere configurato alla perfezione e non arrivare nulla lo
+stesso. Per passare a Live servono, nelle impostazioni di base: privacy policy,
+icona 1024×1024, categoria, uso aziendale, e l'email di contatto verificata.
+
+Il passaggio a Live è indipendente dall'App Review: la review serve per
+l'**Advanced Access**, cioè per agire sugli asset di *altre* aziende. Con lo
+Standard Access un'app Live lavora sui propri, e il numero di test lo è.
+
 ### Perché un numero invia ma non riceve
 
 Sono **tre** condizioni, e solo la prima serve per inviare:
@@ -365,9 +381,37 @@ per variabile, e ognuno passa da `render()`: si può scrivere
 > L'azione **"Invia template WhatsApp" nelle automazioni c'è già** dal lavoro
 > sul motore (`step_send_whatsapp_template`): non era da fare.
 
-## Nota sui costi
+## Costi e chi li paga
 
-WhatsApp non è gratis: Meta fattura **per conversazione** e le regole cambiano
-spesso. Fuori dalla finestra di 24 ore dall'ultimo messaggio del cliente si può
-scrivere **solo con template approvati**. Va deciso presto se il costo lo
-assorbi tu o lo ribalti sul cliente, perché cambia cosa mostrare nell'interfaccia.
+Dal **1 luglio 2025** Meta non fattura più a conversazione ma **a messaggio**, e
+solo quando viene consegnato un **template**:
+
+- ogni messaggio **non-template** (testo, immagine, audio…) è **gratis**, ma si
+  può inviare solo dentro la finestra di 24 ore;
+- i template **utility** consegnati dentro una finestra aperta sono gratis;
+- i template **marketing** si pagano sempre, con tariffa per categoria e prefisso
+  del destinatario;
+- entrando da un *free entry point* tutto è gratis per 72 ore.
+
+### Chi mette la carta
+
+Da **Tech Provider non hai una linea di credito**. La documentazione Meta è
+esplicita: i clienti onboardati da un Tech Provider *«must provide their own
+payment method after onboarding is complete»*, Meta fattura loro l'uso dell'API e
+il partner fattura i propri servizi. E soprattutto: senza metodo di pagamento
+sulla propria WABA il cliente **non può né inviare né ricevere** con la nostra
+app.
+
+Va quindi messo nell'onboarding: dopo il QR, il cliente deve aggiungere una carta
+alla sua WhatsApp Business Account. Non è un dettaglio amministrativo, è un
+prerequisito tecnico.
+
+L'alternativa — linea di credito condivisa, fattura aggregata a noi, noi che
+fatturiamo ai clienti — è riservata ai **Solution Partner**, processo lungo e che
+ci rende *«Bill To Party»*: responsabili verso Meta di tutta la spesa dei clienti
+che usano la nostra linea.
+
+Il **numero di test** che Meta presta all'app è l'eccezione: WABA e numero di
+test *«don't require a payment method on file in order to send template
+messages»* e hanno limiti rilassati. Per registrare i video di App Review basta
+quello.
