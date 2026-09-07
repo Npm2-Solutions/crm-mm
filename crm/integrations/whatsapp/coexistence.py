@@ -25,7 +25,7 @@ import json
 
 import frappe
 
-from crm.integrations.api import get_contact_lead_or_deal_from_number
+from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 
 COEXISTENCE_FIELDS = ("smb_message_echoes", "history", "smb_app_state_sync")
 
@@ -124,6 +124,14 @@ def store_message(message: dict, our_number: str, historical: bool = False) -> b
 
 	try:
 		reference, doctype = get_contact_lead_or_deal_from_number(counterparty)
+		if not doctype and not outgoing and not historical:
+			# a live message from someone the CRM does not know yet gets a lead;
+			# imported history does not, or six months of chats would become
+			# hundreds of leads in one import
+			reference, doctype = adopt_unknown_number(counterparty, message.get("profile_name")) or (
+				None,
+				None,
+			)
 		if doctype and reference:
 			values["reference_doctype"] = doctype
 			values["reference_name"] = reference

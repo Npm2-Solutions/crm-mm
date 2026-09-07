@@ -30,20 +30,46 @@ class TestWhatsAppHooks(FrappeTestCase):
 		self.assertEqual(doc.reference_doctype, "CRM Lead")
 		self.assertEqual(doc.reference_name, "LEAD-0001")
 
-	def test_validate_skips_reference_when_no_contact_found(self):
-		"""validate() leaves reference fields untouched when number is unknown"""
+	def test_validate_adopts_unknown_number_on_incoming(self):
+		"""An incoming message from a stranger gets a lead, or it lands nowhere"""
 		doc = MagicMock()
 		doc.type = "Incoming"
+		doc.get.return_value = "+15559999999"
+
+		with (
+			patch(
+				"crm.api.whatsapp.get_contact_lead_or_deal_from_number",
+				return_value=(None, None),
+			),
+			patch(
+				"crm.api.whatsapp.adopt_unknown_number",
+				return_value=("LEAD-0002", "CRM Lead"),
+			) as adopt,
+		):
+			validate(doc, None)
+
+		adopt.assert_called_once()
+		self.assertEqual(doc.reference_doctype, "CRM Lead")
+		self.assertEqual(doc.reference_name, "LEAD-0002")
+
+	def test_validate_does_not_adopt_on_outgoing(self):
+		"""Writing to an unknown number must not invent a lead for it"""
+		doc = MagicMock()
+		doc.type = "Outgoing"
 		doc.get.return_value = "+15559999999"
 		doc.reference_doctype = None
 		doc.reference_name = None
 
-		with patch(
-			"crm.api.whatsapp.get_contact_lead_or_deal_from_number",
-			return_value=(None, None),
+		with (
+			patch(
+				"crm.api.whatsapp.get_contact_lead_or_deal_from_number",
+				return_value=(None, None),
+			),
+			patch("crm.api.whatsapp.adopt_unknown_number") as adopt,
 		):
 			validate(doc, None)
 
+		adopt.assert_not_called()
 		self.assertIsNone(doc.reference_doctype)
 		self.assertIsNone(doc.reference_name)
 

@@ -7,7 +7,7 @@ from frappe.permissions import add_permission, update_permission_property
 
 from crm.api.doc import get_assigned_users
 from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
-from crm.integrations.api import get_contact_lead_or_deal_from_number
+from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 
 ALLOWED_WHATSAPP_ROLES = ["System Manager", "Sales Manager", "Sales User"]
 
@@ -40,6 +40,13 @@ def validate(doc, method):
 	if phone_number:
 		try:
 			name, doctype = get_contact_lead_or_deal_from_number(phone_number)
+			if not doctype and doc.type == "Incoming":
+				# nobody in the CRM owns this number: adopt it, or the message
+				# lands in no chat and in no inbox and is lost on arrival
+				name, doctype = adopt_unknown_number(phone_number, doc.get("profile_name")) or (
+					None,
+					None,
+				)
 			if doctype and name is not None:
 				doc.reference_doctype = doctype
 				doc.reference_name = name

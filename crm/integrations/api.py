@@ -191,6 +191,56 @@ def get_lead_by_phone_number(phone_number: str) -> str | None:
 	return rows[0].name if rows else None
 
 
+def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[str, str] | None:
+	"""Give an incoming message from a stranger somewhere to land.
+
+	A message that matches no contact and no lead is stored with no reference,
+	and then it exists nowhere anybody looks: not in a chat, which is opened from
+	a record, and not in the Inbox, which lists conversations by lead or deal. It
+	is received and lost in the same instant.
+
+	So the number becomes a lead, as it does in GoHighLevel. Only for a live
+	incoming message: imported chat history arrives in blocks of months and would
+	invent hundreds of leads in one go.
+	"""
+	digits = "".join(character for character in (number or "") if character.isdigit())
+	if len(digits) < 6:
+		# not a number anyone could call back
+		return None
+
+	# WhatsApp hands the number over without the plus, and parsing it as-is would
+	# have phonenumbers guess a country and guess wrong
+	parsed = parse_phone_number(f"+{digits}")
+	mobile_no = parsed.get("formats", {}).get("E164") if parsed.get("is_valid") else f"+{digits}"
+
+	# two messages arriving together would otherwise each create their own lead
+	existing = frappe.db.get_value("CRM Lead", {"mobile_no": mobile_no, "converted": 0}, "name")
+	if existing:
+		return existing, "CRM Lead"
+
+	lead = frappe.get_doc(
+		{
+			"doctype": "CRM Lead",
+			# the WhatsApp profile name when there is one, the number otherwise:
+			# a lead called "Unknown" is one nobody ever opens
+			"first_name": (display_name or "").strip() or mobile_no,
+			"mobile_no": mobile_no,
+			"source": _known_source(),
+		}
+	)
+	lead.insert(ignore_permissions=True)
+	return lead.name, "CRM Lead"
+
+
+def _known_source() -> str | None:
+	"""The WhatsApp lead source, when the site has one.
+
+	No source at all beats a wrong one: a lead stamped "Existing Customer"
+	because that happened to exist would quietly poison the source report.
+	"""
+	return "WhatsApp" if frappe.db.exists("CRM Lead Source", "WhatsApp") else None
+
+
 @frappe.whitelist()
 def get_contact_by_phone_number(phone_number: str):
 	"""Get contact by phone number."""
