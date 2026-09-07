@@ -3,9 +3,10 @@
 
 """Thin Meta Graph API client used by the Lead Ads integration.
 
-Every call carries `appsecret_proof` (HMAC-SHA256 of the token with the app
-secret) so the app can run with "Require app secret" enabled — a Meta
-production hardening recommendation.
+Every call carries `appsecret_proof` (HMAC-SHA256 of the token with the secret
+of the app that **issued** it) so the app can run with "Require app secret"
+enabled — a Meta production hardening recommendation. WhatsApp may live in its
+own app: `whatsapp_graph_get` / `whatsapp_graph_post` sign with that one.
 """
 
 import hashlib
@@ -74,18 +75,27 @@ def graph_url(endpoint: str) -> str:
 	return f"{GRAPH_BASE}/{GRAPH_VERSION}/{endpoint.lstrip('/')}"
 
 
-def appsecret_proof(token: str) -> str | None:
-	secret = get_app_secret()
+def appsecret_proof(token: str, secret: str | None = None) -> str | None:
+	"""Proof that we hold the secret of the app that issued this token.
+
+	It has to be the **issuing** app's secret. Signing a WhatsApp token with the
+	Facebook app's secret gets the call refused with "Invalid appsecret_proof
+	provided in the API argument", which says nothing about which of the two
+	secrets was the wrong one.
+	"""
+	secret = secret or get_app_secret()
 	if not secret:
 		return None
 	return hmac.new(secret.encode(), token.encode(), hashlib.sha256).hexdigest()
 
 
-def graph_request(method: str, endpoint: str, token: str, params: dict | None = None) -> dict:
+def graph_request(
+	method: str, endpoint: str, token: str, params: dict | None = None, secret: str | None = None
+) -> dict:
 	params = dict(params or {})
 	if token:
 		params["access_token"] = token
-		proof = appsecret_proof(token)
+		proof = appsecret_proof(token, secret)
 		if proof:
 			params["appsecret_proof"] = proof
 	try:
@@ -108,12 +118,23 @@ def graph_request(method: str, endpoint: str, token: str, params: dict | None = 
 	return data
 
 
-def graph_get(endpoint: str, token: str, params: dict | None = None) -> dict:
-	return graph_request("GET", endpoint, token, params)
+def graph_get(endpoint: str, token: str, params: dict | None = None, secret: str | None = None) -> dict:
+	return graph_request("GET", endpoint, token, params, secret)
 
 
-def graph_post(endpoint: str, token: str, params: dict | None = None) -> dict:
-	return graph_request("POST", endpoint, token, params)
+def graph_post(endpoint: str, token: str, params: dict | None = None, secret: str | None = None) -> dict:
+	return graph_request("POST", endpoint, token, params, secret)
+
+
+# WhatsApp may live in its own Meta app, and then its tokens are signed with its
+# own secret. Every WhatsApp call goes through these two, so the choice is made
+# here once instead of at each call site.
+def whatsapp_graph_get(endpoint: str, token: str, params: dict | None = None) -> dict:
+	return graph_get(endpoint, token, params, secret=get_whatsapp_app_secret())
+
+
+def whatsapp_graph_post(endpoint: str, token: str, params: dict | None = None) -> dict:
+	return graph_post(endpoint, token, params, secret=get_whatsapp_app_secret())
 
 
 def graph_get_paginated(endpoint: str, token: str, params: dict | None = None, max_pages: int = 50):

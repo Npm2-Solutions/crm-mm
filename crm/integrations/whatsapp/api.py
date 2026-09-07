@@ -24,8 +24,8 @@ from crm.integrations.meta.client import (
 	get_settings,
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
-	graph_get,
-	graph_post,
+	whatsapp_graph_get,
+	whatsapp_graph_post,
 )
 from crm.integrations.meta.oauth import is_hub
 from crm.integrations.meta.relay import sign as relay_sign
@@ -134,7 +134,7 @@ def get_webhook() -> dict:
 	error = ""
 	if is_hub() and get_whatsapp_app_id() and get_whatsapp_app_secret():
 		try:
-			data = graph_get(f"{get_whatsapp_app_id()}/subscriptions", _app_token())
+			data = whatsapp_graph_get(f"{get_whatsapp_app_id()}/subscriptions", _app_token())
 			for row in data.get("data") or []:
 				if row.get("object") == "whatsapp_business_account":
 					configured = get_url(WEBHOOK_PATH) in str(row)
@@ -173,7 +173,7 @@ def configure_webhook() -> dict:
 	if not get_whatsapp_app_id() or not get_whatsapp_app_secret():
 		frappe.throw(_("Set whatsapp_app_id and whatsapp_app_secret in the bench config first"))
 	try:
-		graph_post(
+		whatsapp_graph_post(
 			f"{get_whatsapp_app_id()}/subscriptions",
 			_app_token(),
 			{
@@ -194,7 +194,7 @@ CLAIM_PATH = "/api/method/crm.integrations.whatsapp.api.claim_route"
 
 def app_is_subscribed(waba_id: str, token: str) -> bool:
 	"""Is our app among the ones Meta notifies for this WhatsApp Business account?"""
-	data = graph_get(f"{waba_id}/subscribed_apps", token)
+	data = whatsapp_graph_get(f"{waba_id}/subscribed_apps", token)
 	app_id = str(get_whatsapp_app_id())
 	for row in data.get("data") or []:
 		api_data = row.get("whatsapp_business_api_data") or {}
@@ -269,7 +269,7 @@ def wire_up_delivery(account) -> list[dict]:
 
 	try:
 		if not app_is_subscribed(waba_id, token):
-			graph_post(f"{waba_id}/subscribed_apps", token, {})
+			whatsapp_graph_post(f"{waba_id}/subscribed_apps", token, {})
 	except MetaAPIError as exc:
 		problems.append(
 			{

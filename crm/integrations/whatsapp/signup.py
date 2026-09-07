@@ -32,8 +32,8 @@ from crm.integrations.meta.client import (
 	MetaAPIError,
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
-	graph_get,
-	graph_post,
+	whatsapp_graph_get,
+	whatsapp_graph_post,
 )
 from crm.integrations.meta.relay import relay_secret, sign
 from crm.integrations.meta.relay import sign as relay_sign
@@ -162,7 +162,7 @@ def complete_signup(state: str, code: str, waba_id: str, phone_number_id: str) -
 def exchange_code(code: str) -> str:
 	"""Trade the 30-second Embedded Signup code for the business token."""
 	try:
-		data = graph_get(
+		data = whatsapp_graph_get(
 			"oauth/access_token",
 			token="",
 			params={
@@ -180,7 +180,7 @@ def exchange_code(code: str) -> str:
 
 def describe_number(phone_number_id: str, token: str) -> dict:
 	try:
-		return graph_get(
+		return whatsapp_graph_get(
 			phone_number_id,
 			token,
 			{"fields": "display_phone_number,verified_name,quality_rating,platform_type"},
@@ -198,7 +198,7 @@ def subscribe_waba(waba_id: str, token: str) -> None:
 	past conversations are never imported.
 	"""
 	try:
-		graph_post(f"{waba_id}/subscribed_apps", token, {})
+		whatsapp_graph_post(f"{waba_id}/subscribed_apps", token, {})
 	except MetaAPIError:
 		frappe.log_error(frappe.get_traceback(), f"WhatsApp: could not subscribe WABA {waba_id}")
 
