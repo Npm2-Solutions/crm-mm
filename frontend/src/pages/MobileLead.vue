@@ -51,7 +51,7 @@
         :actions="document.actions"
       />
       <Button
-        :label="__('Convert')"
+        :label="__('New Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
       />
@@ -384,7 +384,6 @@ function deleteLead() {
   showDeleteLinkedDocModal.value = true
 }
 
-// Convert to Deal
 const showConvertToDealModal = ref(false)
 
 function statusLabel(status) {

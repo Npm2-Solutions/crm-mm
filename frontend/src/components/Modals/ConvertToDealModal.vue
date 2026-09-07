@@ -4,7 +4,7 @@
       <div class="mb-6 flex items-center justify-between">
         <div>
           <h3 class="text-3xl-semibold leading-6 text-ink-gray-9">
-            {{ __('Convert to Deal') }}
+            {{ __('New Deal') }}
           </h3>
         </div>
         <div class="flex items-center gap-1">
@@ -58,7 +58,7 @@
     </template>
     <template #actions>
       <div class="flex justify-end">
-        <Button :label="__('Convert')" variant="solid" @click="convertToDeal" />
+        <Button :label="__('Create')" variant="solid" @click="convertToDeal" />
       </div>
     </template>
   </Dialog>

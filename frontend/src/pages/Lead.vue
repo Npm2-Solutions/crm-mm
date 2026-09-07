@@ -47,8 +47,17 @@
           </Button>
         </template>
       </Dropdown>
+      <Dropdown v-if="deals.data?.length" :options="dealOptions" placement="right">
+        <template #default="{ open }">
+          <Button
+            :label="__('Deals') + ' · ' + deals.data.length"
+            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+          />
+        </template>
+      </Dropdown>
       <Button
-        :label="__('Convert to Deal')"
+        v-else
+        :label="__('New Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
       />
@@ -338,6 +347,27 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 const showConvertToDealModal = ref(false)
+
+// a person has no relationship with us, or one, or several — the deal is the
+// relationship, not what the person turns into. Opening another one never takes
+// this page away from anybody.
+const deals = createResource({
+  url: 'crm.api.lead.get_deals',
+  params: { lead: props.leadId },
+  auto: true,
+})
+
+const dealOptions = computed(() => [
+  ...(deals.data || []).map((deal) => ({
+    label: deal.organization || deal.name,
+    onClick: () => router.push({ name: 'Deal', params: { dealId: deal.name } }),
+  })),
+  {
+    label: __('New Deal'),
+    icon: 'plus',
+    onClick: () => (showConvertToDealModal.value = true),
+  },
+])
 const showFilesUploader = ref(false)
 
 const {
