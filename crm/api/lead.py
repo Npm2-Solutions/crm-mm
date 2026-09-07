@@ -12,6 +12,28 @@ DEAL_FIELDS = [
 ]
 
 
+def deal_names_of(lead: str) -> set[str]:
+	"""This person's deals, found both ways they can be tied to them.
+
+	A deal names the lead it was opened from, and it also lists the person among
+	its contacts. The two do not always agree — a deal made before that link
+	existed has only the second — and a deal missed here is a conversation
+	nobody can read any more.
+	"""
+	names = set(frappe.get_all("CRM Deal", filters={"lead": lead}, pluck="name"))
+
+	contact = frappe.db.get_value("CRM Lead", lead, "contact")
+	if contact:
+		names.update(
+			frappe.get_all(
+				"CRM Contacts",
+				filters={"contact": contact, "parenttype": "CRM Deal"},
+				pluck="parent",
+			)
+		)
+	return names
+
+
 @frappe.whitelist()
 def get_deals(lead: str) -> list[dict]:
 	"""The relationships this person has with us — none, one, or several.
@@ -27,18 +49,7 @@ def get_deals(lead: str) -> list[dict]:
 	if not frappe.has_permission("CRM Lead", "read", lead):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
-	names = set(frappe.get_all("CRM Deal", filters={"lead": lead}, pluck="name"))
-
-	contact = frappe.db.get_value("CRM Lead", lead, "contact")
-	if contact:
-		names.update(
-			frappe.get_all(
-				"CRM Contacts",
-				filters={"contact": contact, "parenttype": "CRM Deal"},
-				pluck="parent",
-			)
-		)
-
+	names = deal_names_of(lead)
 	if not names:
 		return []
 

@@ -6,6 +6,7 @@ from frappe import _
 from frappe.permissions import add_permission, update_permission_property
 
 from crm.api.doc import get_assigned_users
+from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 from crm.utils import to_e164
@@ -37,6 +38,14 @@ def validate_access(reference_doctype=None, reference_name=None, permtype="read"
 
 
 def validate(doc, method):
+	if doc.type != "Incoming" and doc.reference_doctype and doc.reference_name:
+		# a message we are sending already knows the record it was written from.
+		# Looking its number up again could only move it somewhere else — and it
+		# did: `get_contact` answers with the person's deal when they have one, so
+		# a message sent from a lead was filed on the deal and vanished from the
+		# chat it had just been typed into.
+		return
+
 	phone_number = doc.get("from") if doc.type == "Incoming" else doc.get("to")
 	if phone_number:
 		try:
@@ -134,7 +143,7 @@ def whatsapp_thread_of(reference_doctype: str, reference_name: str, reference_do
 		if lead and frappe.has_permission("CRM Lead", "read", lead):
 			yield "CRM Lead", lead
 	elif reference_doctype == "CRM Lead":
-		for deal in frappe.get_all("CRM Deal", filters={"lead": reference_name}, pluck="name"):
+		for deal in deal_names_of(reference_name):
 			# a user can have the person and not one of their deals
 			if frappe.has_permission("CRM Deal", "read", deal):
 				yield "CRM Deal", deal
