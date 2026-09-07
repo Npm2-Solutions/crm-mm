@@ -1,6 +1,8 @@
 # 17 — Timeline unificata: una schermata, non dodici tab
 
-> 📐 **Proposta.** Da realizzare **dopo** che WhatsApp è chiuso e stabile.
+> 📐 **Proposta.** Da realizzare **dopo** che WhatsApp è chiuso e stabile, e
+> **dopo** [18](./18-persona-unica.md): questa schermata poggia su "la
+> conversazione appartiene alla persona", e chi sia la persona lo stabilisce quello.
 >
 > Risponde a una domanda che oggi il CRM sa rispondere solo a pezzi:
 > **cosa è successo con questo lead?** Per saperlo bisogna aprire dodici tab e
