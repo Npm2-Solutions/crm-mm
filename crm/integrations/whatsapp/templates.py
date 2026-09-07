@@ -14,12 +14,26 @@ different frappe_whatsapp release degrades instead of breaking.
 """
 
 import json
+import re
 
 import frappe
 from frappe import _
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
-EDITABLE_FIELDS = ("template_name", "category", "language_code", "header", "template", "footer")
+EDITABLE_FIELDS = (
+	"template_name",
+	"category",
+	"language",
+	"header",
+	"header_type",
+	"template",
+	"footer",
+	"sample_values",
+)
+
+# {{1}}, {{2}}… — Meta wants an example for every one of them, and wants them
+# numbered from 1 without holes
+PLACEHOLDER = re.compile(r"\{\{\s*(\d+)\s*\}\}")
 
 # The only three Meta accepts. The installed doctype still offers TRANSACTIONAL,
 # retired in 2023, and choosing it fails at submission with
@@ -50,6 +64,21 @@ def _options_for(fieldname: str) -> list[str]:
 	return [option for option in field.options.split("\n") if option]
 
 
+def _languages() -> list[dict]:
+	"""The languages the doctype will accept, which are Frappe's own.
+
+	`language_code` is derived from this by frappe_whatsapp — it is not a field
+	to fill in by hand, and the short hardcoded list we offered before ("en",
+	"en_US", "it") both looked like a duplicate and left `language`, which is
+	mandatory, empty.
+	"""
+	languages = frappe.get_all("Language", fields=["name", "language_name"], order_by="language_name")
+	return [
+		{"value": language.name, "label": f"{language.language_name} ({language.name})"}
+		for language in languages
+	]
+
+
 def _categories() -> list[str]:
 	"""What the doctype offers, minus what Meta has stopped accepting."""
 	usable = [option for option in _options_for("category") if option.upper() in META_CATEGORIES]
@@ -70,9 +99,40 @@ def get_templates() -> dict:
 			"WhatsApp Templates", fields=list(dict.fromkeys(fields)), order_by="modified desc"
 		),
 		"categories": _categories(),
-		"languages": _options_for("language_code") or ["en", "en_US", "it"],
+		"languages": _languages(),
 		"fields": sorted(known & set(EDITABLE_FIELDS)),
 	}
+
+
+def check_placeholders(values: dict) -> None:
+	"""Every {{1}} needs an example, and they must run 1, 2, 3 without holes.
+
+	Meta requires an example value for each parameter at creation time, and
+	rejects the template the moment it is submitted when one is missing — so the
+	CRM shows it saved and Meta answers REJECTED a second later, with the reason
+	only in WhatsApp Manager. Better to refuse it here, while the person is still
+	looking at the body they wrote.
+	"""
+	found = [int(number) for number in PLACEHOLDER.findall(values.get("template") or "")]
+	if not found:
+		return
+
+	wanted = sorted(set(found))
+	if wanted != list(range(1, len(wanted) + 1)):
+		frappe.throw(
+			_("The placeholders must be numbered from {{1}} without gaps. This body has: {0}").format(
+				", ".join(f"{{{{{number}}}}}" for number in wanted)
+			)
+		)
+
+	samples = [value.strip() for value in (values.get("sample_values") or "").split(",") if value.strip()]
+	if len(samples) != len(wanted):
+		frappe.throw(
+			_(
+				"Meta wants an example for every placeholder: this body has {0} and {1} were given. "
+				"Write them separated by commas, in order."
+			).format(len(wanted), len(samples))
+		)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -94,6 +154,13 @@ def save_template(template: dict | str, name: str | None = None) -> dict:
 		frappe.throw(_("The message body is required"))
 	if not name and not values.get("template_name"):
 		frappe.throw(_("A template name is required"))
+
+	check_placeholders(values)
+
+	# frappe_whatsapp only puts the header in the payload when `header_type` says
+	# what kind it is; without it the header typed here was dropped in silence
+	if "header_type" in known:
+		values["header_type"] = "TEXT" if values.get("header") else ""
 
 	category = values.get("category")
 	if category and category.upper() not in META_CATEGORIES:

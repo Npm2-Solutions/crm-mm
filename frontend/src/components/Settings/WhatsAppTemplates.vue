@@ -85,10 +85,10 @@
             :options="(data.categories || []).map((c) => ({ label: c, value: c }))"
           />
           <FormControl
-            v-model="form.language_code"
+            v-model="form.language"
             type="select"
             :label="__('Language')"
-            :options="(data.languages || []).map((l) => ({ label: l, value: l }))"
+            :options="data.languages || []"
           />
         </div>
         <FormControl v-model="form.header" type="text" :label="__('Header (optional)')" />
@@ -99,6 +99,21 @@
           :label="__('Message')"
           :placeholder="bodyPlaceholder"
           :description="placeholderHint"
+        />
+        <!-- Meta wants an example for every {{n}} at creation time, and rejects
+             the template the moment it is submitted when one is missing. -->
+        <FormControl
+          v-if="placeholderCount"
+          v-model="form.sample_values"
+          type="text"
+          :label="__('Example values')"
+          :placeholder="samplePlaceholder"
+          :description="
+            __(
+              'One per variable, separated by commas, in order. Meta needs them to review the template — this body has {0}.',
+              [placeholderCount],
+            )
+          "
         />
         <FormControl v-model="form.footer" type="text" :label="__('Footer (optional)')" />
         <div class="rounded-md bg-surface-gray-1 p-3 text-p-sm text-ink-gray-5">
@@ -147,11 +162,23 @@ const form = reactive({
   name: null,
   template_name: '',
   category: 'MARKETING',
-  language_code: 'it',
+  language: 'it',
   header: '',
   template: '',
   footer: '',
+  sample_values: '',
 })
+
+// {{1}}, {{2}}… — how many distinct ones the body uses
+const placeholderCount = computed(
+  () => new Set(form.template?.match(/\{\{\s*\d+\s*\}\}/g) || []).size,
+)
+
+const samplePlaceholder = computed(() =>
+  Array.from({ length: placeholderCount.value }, (_, i) =>
+    i === 0 ? __('Marco') : __('value {0}', [i + 1]),
+  ).join(', '),
+)
 
 function statusTheme(status) {
   return (
@@ -170,10 +197,12 @@ function openTemplate(template = null) {
   form.name = template?.name || null
   form.template_name = template?.template_name || ''
   form.category = template?.category || data.value.categories?.[0] || 'MARKETING'
-  form.language_code = template?.language_code || data.value.languages?.[0] || 'it'
+  form.language =
+    template?.language || data.value.languages?.[0]?.value || 'it'
   form.header = template?.header || ''
   form.template = template?.template || ''
   form.footer = template?.footer || ''
+  form.sample_values = template?.sample_values || ''
   showTemplate.value = true
 }
 

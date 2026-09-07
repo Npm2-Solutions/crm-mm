@@ -367,6 +367,30 @@ qualsiasi cosa in Frappe. Ma non è una strada offerta al cliente.
 
 ## Template: si creano nel CRM
 
+### Cosa Meta pretende, e cosa sbagliavamo
+
+Un template con dei segnaposto viene **rifiutato all'istante** se non gli si dà
+un esempio per ciascuno: *«you must include an example value for each
+parameter»*. E i segnaposto devono essere numerati **da {{1}} senza buchi**.
+
+Il modulo del CRM non aveva il campo degli esempi, quindi ogni template con un
+`{{1}}` partiva senza e tornava REJECTED un secondo dopo il salvataggio, con il
+motivo visibile solo in WhatsApp Manager. Ora il campo c'è — compare solo se il
+corpo ha dei segnaposto — e il controllo si fa **prima** di salvare, mentre chi
+scrive ha ancora il testo davanti.
+
+Altri due difetti dello stesso modulo:
+
+- **L'intestazione spariva.** `frappe_whatsapp` mette l'header nel payload solo
+  se `header_type` dice di che tipo è; noi scrivevamo il testo e non il tipo,
+  quindi Meta non lo vedeva mai. Ora il tipo lo deriviamo dal testo.
+- **La lingua.** Il doctype ha `language` (Link a Language, obbligatorio) e ne
+  ricava lui `language_code`. Noi compilavamo il codice e lasciavamo vuoto il
+  campo obbligatorio, offrendo una lista scritta a mano di tre voci — `en`,
+  `en_US`, `it` — che è quella che sembrava avere due volte l'inglese. Ora si
+  sceglie una lingua vera e il codice se lo calcola l'app.
+
+
 Prima il bottone "Create New Template" apriva il **form grezzo del Desk**
 (`/app/whatsapp-templates/new`): fuori dal gestionale e incomprensibile per un
 cliente. Ora c'è **Settings → WhatsApp Templates**: elenco con lo stato di
