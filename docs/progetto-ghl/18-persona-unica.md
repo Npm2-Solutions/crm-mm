@@ -182,6 +182,29 @@ cambierebbe di qua — e non è una cosa da fare di straforo su una pagina che s
 tutti i giorni. Ora che ogni contatto ha il suo lead, comunque, quella lista *è*
 la rubrica: righe di persone, che si aprono come persone.
 
+## Il lead non si converte
+
+"Converti in trattativa" raccontava la cosa sbagliata: che il lead fosse uno
+stadio da superare, e la trattativa quello che diventa. Ma il lead **è** la
+persona, e la persona resta anche quando la trattativa si chiude, si perde o si
+raddoppia.
+
+Il collegamento c'era già: `CRM Deal` ha da sempre il campo `lead`, e la
+trattativa elenca la persona fra i suoi contatti. Mancava solo di dirlo:
+
+- il bottone sulla scheda del lead è **"Nuova trattativa"**, non "Converti";
+- se la persona ne ha già, diventa **"Trattative · n"**: si aprono da lì, e
+  l'ultima voce del menu ne apre un'altra. Niente e nessuno impedisce la seconda;
+- `crm.api.lead.get_deals` le trova per entrambe le strade — il campo `lead` e i
+  contatti della trattativa — perché una trattativa nata dalla rubrica ha la
+  seconda e non la prima.
+
+Resta il flag `converted`, ma come **impianto interno**: è il filtro della lista
+Lead, che è la lista di lavoro di chi c'è ancora da qualificare. Chi ha già una
+trattativa esce da quella lista, non dal CRM — la sua scheda è la stessa di
+prima, con la conversazione e le attività intatte. La parola "conversione" non
+compare più da nessuna parte nell'interfaccia.
+
 ## Cosa non faremo
 
 **Non togliamo il doctype `Contact`.** È del framework: ci si appoggiano le

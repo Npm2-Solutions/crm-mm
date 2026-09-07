@@ -75,15 +75,13 @@ function editValues(selections, unselectAll) {
 
 function convertToDeal(selections, unselectAll) {
   $dialog({
-    title: __('Convert to Deal'),
-    message: __('Are you sure you want to convert {0} lead(s) to deal(s)?', [
-      selections.size,
-    ]),
+    title: __('New Deal'),
+    message: __('Open a deal for {0} of these people?', [selections.size]),
     variant: 'solid',
     theme: 'blue',
     actions: [
       {
-        label: __('Convert'),
+        label: __('Create'),
         variant: 'solid',
         onClick: (close) => {
           capture('bulk_convert_to_deal')
@@ -91,7 +89,7 @@ function convertToDeal(selections, unselectAll) {
             call('crm.fcrm.doctype.crm_lead.crm_lead.convert_to_deal', {
               lead: name,
             }).then(() => {
-              toast.success(__('Converted Successfully'))
+              toast.success(__('Deal created'))
               list.value.reload()
               unselectAll()
               close()
@@ -192,7 +190,7 @@ function bulkActions(selections, unselectAll) {
 
   if (props.doctype === 'CRM Lead') {
     actions.push({
-      label: __('Convert to Deal'),
+      label: __('New Deal'),
       onClick: () => convertToDeal(selections, unselectAll),
     })
   }
