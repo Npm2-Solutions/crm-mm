@@ -29,7 +29,8 @@
       v-else-if="
         activities?.length ||
         (whatsappMessages.data?.length && title == 'WhatsApp') ||
-        (smsMessages.data?.length && title == 'SMS')
+        (smsMessages.data?.length && title == 'SMS') ||
+        (filesWithoutTab.length && title == 'Notes')
       "
       class="activities"
     >
@@ -44,20 +45,25 @@
       <div v-else-if="title == 'SMS' && smsMessages.data?.length">
         <SMSArea class="px-3 sm:px-10" :messages="smsMessages.data" />
       </div>
-      <div
-        v-else-if="title == 'Notes'"
-        class="grid grid-cols-1 gap-4 px-3 pb-3 sm:px-10 sm:pb-5 lg:grid-cols-2 xl:grid-cols-3"
-      >
-        <div
-          v-for="note in activities"
-          :key="note.name"
-          @click="modalRef.showNote(note)"
-        >
-          <NoteArea
-            v-model="all_activities"
-            :note="note"
-            :modalRef="modalRef"
-          />
+      <div v-else-if="title == 'Notes'" class="px-3 pb-3 sm:px-10 sm:pb-5">
+        <AttachmentArea
+          v-if="filesWithoutTab.length"
+          class="mb-5"
+          :attachments="filesWithoutTab"
+          @reload="all_activities.reload() && scroll()"
+        />
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <div
+            v-for="note in activities"
+            :key="note.name"
+            @click="modalRef.showNote(note)"
+          >
+            <NoteArea
+              v-model="all_activities"
+              :note="note"
+              :modalRef="modalRef"
+            />
+          </div>
         </div>
       </div>
       <div v-else-if="title == 'Comments'" class="pb-5">
@@ -455,7 +461,7 @@
     @after="
       () => {
         all_activities.reload()
-        changeTabTo('attachments')
+        showFilesTab()
       }
     "
   />
@@ -558,9 +564,14 @@ const title = computed(() => props.tabs?.[tabIndex.value]?.name || 'Activity')
 const changeTabTo = (tabName) => {
   const tabNames = props.tabs?.map((tab) => tab.name?.toLowerCase())
   const index = tabNames?.indexOf(tabName)
-  if (index == -1) return
+  if (index == null || index == -1) return false
   tabIndex.value = index
+  return true
 }
+
+// after an upload, land where the files actually are: their own tab, or the
+// notes on a record that hasn't got one
+const showFilesTab = () => changeTabTo('attachments') || changeTabTo('notes')
 
 const all_activities = createResource({
   url: 'crm.api.activities.get_activities',
@@ -691,6 +702,14 @@ function get_activities() {
     return all_activities.data.versions || []
   return [...all_activities.data.versions, ...all_activities.data.calls]
 }
+
+// files a record has no tab of its own for. A deal shows notes and files
+// together, the way GoHighLevel keeps documents beside the notes; a lead still
+// has its own Attachments tab, so nothing is repeated there.
+const filesWithoutTab = computed(() => {
+  if (props.tabs?.some((tab) => tab.name === 'Attachments')) return []
+  return sortByModified(all_activities.data?.attachments || [])
+})
 
 const activities = computed(() => {
   let _activities = []
@@ -921,5 +940,5 @@ function scroll(hash) {
   }, 500)
 }
 
-defineExpose({ emailBox, all_activities, changeTabTo })
+defineExpose({ emailBox, all_activities, changeTabTo, showFilesTab })
 </script>
