@@ -90,9 +90,12 @@ il numero principale: legge lo specchio, non cambia.
 ### Modale "Nuovo contatto" (`ContactModal.vue`)
 
 **Sparisce come creazione autonoma.** Oggi crea una persona che il CRM non
-collega a niente — la stessa che poi riceve messaggi invisibili. Al suo posto,
-"Nuovo contatto" apre la modale del lead: creare una persona in rubrica *è*
-creare un lead, solo con meno campi obbligatori.
+collega a niente — la stessa che poi riceve messaggi invisibili.
+
+La modale resta con i suoi campi, ma smette di creare un Contact da solo: salva
+attraverso `crm.api.contact.create_person`, che crea il lead e si porta dietro il
+contatto, e poi apre **il lead**. Creare una persona in rubrica *è* creare un
+lead; chi la usa scrive gli stessi campi di prima.
 
 Resta come **modifica** dei recapiti, richiamata dal pannello del lead.
 
@@ -136,8 +139,9 @@ Il pezzo scomodo, e non c'è modo di renderlo indolore.
    loro dati. Nessun conflitto.
 2. **Lead convertiti, con la copia divergente**: qualcuno deve vincere. Vince il
    **contatto**, perché è quello che le email e la telefonia hanno usato finora;
-   il valore del lead che non corrisponde si conserva come nota sul contatto,
-   invece di sparire in silenzio.
+   il numero o l'email del lead che non corrisponde diventa **una riga in più**
+   sul contatto — un altro modo per raggiungere quella persona — invece di
+   sparire in silenzio.
 3. **Contatti senza lead** (creati a mano dalla modale che qui togliamo): si crea
    il lead attorno a loro, così nessuna persona resta senza casa.
 
@@ -158,6 +162,25 @@ verrà interrotta almeno una volta.
 
 Le prime due sono invisibili all'utente e si possono rilasciare da sole. Dalla
 terza in poi cambia quello che si vede, e conviene rilasciarle vicine.
+
+### Dove siamo
+
+Tappe 1–4 fatte. Della quinta è fatta la parte che conta per chi usa il CRM:
+**aprire un contatto apre la persona**. Il reindirizzamento sta sulla rotta
+`/contacts/:id`, quindi vale da ovunque si clicchi — la rubrica, la tab Contatti
+di una trattativa, un link vecchio — e non solo dalla lista.
+
+La scheda Contatto non è però sparita: resta l'unico posto dove si aggiungono
+numeri ed email in più, e ci si arriva dal bottone in alto sulla scheda del lead
+(`?rubrica=1` salta il reindirizzamento). Sparirà quando il blocco "Recapiti" del
+pannello laterale saprà fare quel lavoro.
+
+Quello che **non** è stato fatto: la lista Contatti legge ancora il doctype
+`Contact`, non i lead. Puntarla su `CRM Lead` significa condividere con la pagina
+Lead le stesse impostazioni di lista, colonne e viste salvate — cambiarle di là le
+cambierebbe di qua — e non è una cosa da fare di straforo su una pagina che si usa
+tutti i giorni. Ora che ogni contatto ha il suo lead, comunque, quella lista *è*
+la rubrica: righe di persone, che si aprono come persone.
 
 ## Cosa non faremo
 

@@ -119,6 +119,15 @@ const routes = [
     name: 'Contact',
     component: () => import(`@/pages/${handleMobileView('Contact')}.vue`),
     props: true,
+    // an address book entry is not a person: open the lead that owns it, which
+    // is where the chat, the activity and the timeline are
+    // ?rubrica=1 is the way in from the lead, for editing the numbers and
+    // emails themselves — that is the one thing this page is still for
+    beforeEnter: async (to) => {
+      if (to.query.rubrica) return true
+      const leadId = await leadOwning(to.params.contactId)
+      return leadId ? { name: 'Lead', params: { leadId } } : true
+    },
   },
   {
     alias: '/organizations',
@@ -181,6 +190,16 @@ const routes = [
     component: () => import('@/pages/NotPermitted.vue'),
   },
 ]
+
+async function leadOwning(contactId) {
+  if (!contactId) return null
+  try {
+    return await call('crm.api.contact.get_owning_lead', { contact: contactId })
+  } catch (error) {
+    // fail open: a contact we cannot resolve still opens its own page
+    return null
+  }
+}
 
 const handleMobileView = (componentName) => {
   return window.innerWidth < 768 ? `Mobile${componentName}` : componentName

@@ -557,6 +557,46 @@ def contact_exists(doc):
 	return False
 
 
+def create_person(doc) -> str | None:
+	"""The person this deal is for, as a lead — which brings its contact along.
+
+	Making only a Contact here is what used to leave people with no record of
+	their own: nothing to open, no chat, absent from the inbox, and invisible to
+	whatever resolves an incoming number. The lead is the person; the contact is
+	where their numbers live.
+	"""
+	existing = contact_exists(doc)
+	if existing:
+		return existing
+
+	lead = frappe.get_doc(
+		{
+			"doctype": "CRM Lead",
+			"salutation": doc.get("salutation"),
+			"first_name": doc.get("first_name"),
+			"last_name": doc.get("last_name"),
+			"gender": doc.get("gender"),
+			"email": doc.get("email"),
+			"mobile_no": doc.get("mobile_no"),
+			"organization": doc.get("organization") or doc.get("organization_name"),
+			# they arrived with a deal already: they are not somebody to qualify,
+			# and the leads list is for the ones who are
+			"converted": 1,
+		}
+	)
+	lead.insert(ignore_permissions=True)
+	lead.reload()
+	if lead.contact:
+		return lead.contact
+
+	# the address book entry did not get made — fall back rather than leave the
+	# deal without one, and tie it to the lead so the two do not drift apart
+	contact = create_contact(doc)
+	if contact:
+		frappe.db.set_value("CRM Lead", lead.name, "contact", contact, update_modified=False)
+	return contact
+
+
 def create_contact(doc):
 	existing_contact = contact_exists(doc)
 	if existing_contact:
@@ -593,7 +633,7 @@ def create_deal(doc: dict):
 	if not contact and (
 		doc.get("first_name") or doc.get("last_name") or doc.get("email") or doc.get("mobile_no")
 	):
-		contact = create_contact(doc)
+		contact = create_person(doc)
 
 	deal.update(
 		{

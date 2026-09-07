@@ -120,11 +120,13 @@ function validateRequiredFields() {
   return null
 }
 
+// Adding someone to the address book means adding a person: the endpoint
+// creates the lead, the lead brings its contact, and neither is left orphaned.
 const insertContact = createResource({
-  url: 'frappe.client.insert',
-  onSuccess: (doc) => {
+  url: 'crm.api.contact.create_person',
+  onSuccess: (person) => {
     capture('contact_created')
-    handleContactUpdate(doc)
+    handleContactUpdate(person)
     _contact.doc = {}
   },
   onError: (err) => {
@@ -141,40 +143,25 @@ async function createContact() {
     return
   }
 
-  if (_contact.doc.email_id) {
-    _contact.doc.email_ids = [
-      { email_id: _contact.doc.email_id, is_primary: 1 },
-    ]
-    delete _contact.doc.email_id
-  }
-
-  if (_contact.doc.mobile_no) {
-    _contact.doc.phone_nos = [
-      { phone: _contact.doc.mobile_no, is_primary_mobile_no: 1 },
-    ]
-    delete _contact.doc.mobile_no
-  }
-
   await triggerOnBeforeCreate?.()
 
-  insertContact.submit({
-    doc: {
-      doctype: 'Contact',
-      ..._contact.doc,
-    },
-  })
+  // email and number stay flat: the backend puts them where they belong
+  insertContact.submit({ person: { ..._contact.doc } })
 }
 
-function handleContactUpdate(doc) {
+function handleContactUpdate(person) {
   props.contact?.reload?.()
-  if (doc.name && props.options.redirect) {
-    router.push({
-      name: 'Contact',
-      params: { contactId: doc.name },
-    })
+  // open the person, not their address book entry: that page has the
+  // conversation and the activity on it
+  if (person.lead && props.options.redirect) {
+    router.push({ name: 'Lead', params: { leadId: person.lead } })
+  } else if (person.contact && props.options.redirect) {
+    router.push({ name: 'Contact', params: { contactId: person.contact } })
   }
   show.value = false
-  props.options.afterInsert?.(doc)
+  // callers that add someone to a deal want the contact's name, as before —
+  // the lead comes along for whoever cares which person it is
+  props.options.afterInsert?.({ name: person.contact, ...person })
 }
 
 const tabs = createResource({

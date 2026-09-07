@@ -47,6 +47,75 @@ def update_deals_email_mobile_no(doc):
 
 
 @frappe.whitelist()
+def create_person(person: dict | str) -> dict:
+	"""Add someone to the address book — which means adding a person.
+
+	A Contact on its own belongs to nobody: no chat opens on it, the Inbox skips
+	it, and a message from that number lands in a place no one looks. So an
+	address book entry is created as a **lead**, which brings its contact along,
+	and both names come back — the caller decides which one to open.
+	"""
+	if isinstance(person, str):
+		person = frappe.parse_json(person)
+
+	lead = frappe.get_doc(
+		{
+			"doctype": "CRM Lead",
+			"salutation": person.get("salutation"),
+			"first_name": person.get("first_name"),
+			"last_name": person.get("last_name"),
+			"gender": person.get("gender"),
+			"job_title": person.get("designation"),
+			"organization": person.get("company_name"),
+			"image": person.get("image"),
+			"email": person.get("email_id") or first_of(person.get("email_ids"), "email_id"),
+			"mobile_no": person.get("mobile_no") or first_of(person.get("phone_nos"), "phone"),
+			"phone": person.get("phone"),
+		}
+	)
+	lead.insert()
+	lead.reload()
+	return {"lead": lead.name, "contact": lead.contact}
+
+
+@frappe.whitelist()
+def get_owning_lead(contact: str) -> str | None:
+	"""The person whose address book entry this is, if the CRM knows them.
+
+	Every lead now carries its own contact, so a contact almost always has an
+	owner. Opening the owner instead of the contact is the whole point: the lead
+	has the chat, the activity and the timeline, while the Contact page has none
+	of them and reads like a second, poorer copy of the same person.
+
+	Returns nothing for a contact nobody owns — an old record, or one made
+	outside the CRM — and the caller then shows the Contact page as before.
+	"""
+	if not contact:
+		return None
+
+	if not frappe.has_permission("Contact", "read", contact):
+		return None
+
+	leads = frappe.get_all(
+		"CRM Lead",
+		filters={"contact": contact},
+		pluck="name",
+		order_by="creation asc",
+		limit=1,
+	)
+	return leads[0] if leads else None
+
+
+def first_of(rows, fieldname: str):
+	"""The first value in one of the modal's child tables, if it sent any."""
+	for row in rows or []:
+		value = row.get(fieldname) if isinstance(row, dict) else getattr(row, fieldname, None)
+		if value:
+			return value
+	return None
+
+
+@frappe.whitelist()
 def get_linked_deals(contact: str):
 	"""Get linked deals for a contact"""
 

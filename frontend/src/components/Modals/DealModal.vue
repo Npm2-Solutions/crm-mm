@@ -41,7 +41,7 @@
               v-if="hasContactSections"
               class="flex items-center gap-3 text-sm text-ink-gray-5"
             >
-              <div>{{ __('Choose Existing Contact') }}</div>
+              <div>{{ __('Choose Existing Person') }}</div>
               <Switch v-model="chooseExistingContact" />
             </div>
           </div>
