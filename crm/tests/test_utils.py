@@ -12,7 +12,38 @@ from crm.utils import (
 	on_communication_update,
 	parse_phone_number,
 	seconds_to_duration,
+	to_e164,
 )
+
+
+class TestToE164(UnitTestCase):
+	"""A number written the one way that cannot be misread.
+
+	The region is passed explicitly so these say what they mean whatever country
+	the test site is set to.
+	"""
+
+	def test_national_number_gets_its_country(self):
+		self.assertEqual(to_e164("3703400189", region="IT"), "+393703400189")
+		self.assertEqual(to_e164("370 340 0189", region="IT"), "+393703400189")
+
+	def test_international_number_without_the_plus(self):
+		# how WhatsApp and most webhooks hand a number over
+		self.assertEqual(to_e164("393703400189", region="IT"), "+393703400189")
+
+	def test_a_number_already_written_properly_is_left_alone(self):
+		self.assertEqual(to_e164("+39 370 340 0189", region="IT"), "+393703400189")
+		self.assertEqual(to_e164("+14155552671", region="IT"), "+14155552671")
+
+	def test_the_two_ways_of_writing_it_agree(self):
+		self.assertEqual(to_e164("3703400189", region="IT"), to_e164("+393703400189", region="IT"))
+
+	def test_nonsense_is_kept_as_written(self):
+		# inventing a prefix for it would be worse than saying nothing
+		self.assertEqual(to_e164("12345", region="IT"), "12345")
+		self.assertEqual(to_e164("interno 42", region="IT"), "interno 42")
+		self.assertEqual(to_e164(""), "")
+		self.assertEqual(to_e164(None), "")
 
 
 class TestUtils(UnitTestCase):

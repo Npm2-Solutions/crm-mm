@@ -1,10 +1,35 @@
 import frappe
 from frappe import _
 
+from crm.utils import to_e164
+
 
 def validate(doc, method):
+	normalise_numbers(doc)
 	update_deals_email_mobile_no(doc)
 	update_leads_email_mobile_no(doc)
+
+
+def normalise_numbers(doc):
+	"""Every number written the one way that cannot be misread.
+
+	`370 340 0189` is a number only if you already know which country it belongs
+	to; the same person is then `+39 370 340 0189` in the chat, and the two look
+	like two people to anything that compares them — which is exactly how an
+	Italian number came to be read as Indian. Storing E.164, prefix and all,
+	takes the guess out of every later comparison and out of what the user reads.
+
+	It runs before the copies go out to the leads and the deals, so they get the
+	unambiguous form too. A number the library cannot make sense of is left as
+	somebody wrote it: guessing a prefix would be worse than saying nothing.
+	"""
+	for row in doc.phone_nos or []:
+		row.phone = to_e164(row.phone) or row.phone
+
+	# these are filled from the rows by the Contact controller, which has already
+	# run by the time this hook does
+	doc.mobile_no = to_e164(doc.mobile_no) or doc.mobile_no
+	doc.phone = to_e164(doc.phone) or doc.phone
 
 
 def update_leads_email_mobile_no(doc):

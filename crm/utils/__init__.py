@@ -10,6 +10,55 @@ from phonenumbers import NumberParseException
 from phonenumbers import PhoneNumberFormat as PNF
 
 
+@functools.lru_cache(maxsize=1)
+def _region_of(country: str | None) -> str:
+	"""The ISO region for a country name, for `phonenumbers`."""
+	if country:
+		code = frappe.db.get_value("Country", country, "code")
+		if code:
+			return code.upper()
+	# the library's own fallback, kept so a site that never set a country behaves
+	# exactly as it did before
+	return "IN"
+
+
+def default_region() -> str:
+	"""Which country a number without a prefix belongs to.
+
+	A number typed as `370 340 0189` means nothing on its own: it is Italian in
+	Italy and something else elsewhere. `phonenumbers` used to be asked with a
+	hard-coded `IN`, so on an Italian site every plus-less number was read as
+	Indian. The site's own country is the only sensible answer.
+	"""
+	return _region_of(frappe.db.get_single_value("System Settings", "country"))
+
+
+def to_e164(number: str | None, region: str | None = None) -> str:
+	"""The number written the one way that cannot be misread.
+
+	Two readings are tried, in this order: as typed, against the site's country —
+	so `3703400189` on an Italian site becomes `+393703400189` — and then as an
+	international number that lost its plus, which is how WhatsApp and most
+	webhooks hand numbers over. The first one that is a real number wins.
+
+	A number that is neither comes back untouched: better to keep what somebody
+	wrote than to invent a prefix for it.
+	"""
+	if not number:
+		return ""
+
+	region = region or default_region()
+	for candidate in (number, f"+{digits_of(number)}"):
+		try:
+			parsed = phonenumbers.parse(candidate, region)
+		except NumberParseException:
+			continue
+		if phonenumbers.is_valid_number(parsed):
+			return phonenumbers.format_number(parsed, PNF.E164)
+
+	return number.strip()
+
+
 def parse_phone_number(phone_number: str, default_country: str = "IN"):
 	try:
 		# Parse the number
