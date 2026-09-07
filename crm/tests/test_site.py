@@ -222,28 +222,33 @@ class TestHomePageGuard(IntegrationTestCase):
 		frappe.db.set_single_value("CRM Website Settings", "home_page", None)
 		frappe.db.rollback()
 
-	def test_unpublishing_the_home_page_is_refused(self):
+	def test_taking_a_live_home_page_offline_is_refused(self):
 		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
-		doc = frappe._dict(route="casa", published=0)
-		self.assertRaises(frappe.ValidationError, guard_home_page, doc)
+		self.assertRaises(frappe.ValidationError, guard_home_page, _page("casa", 0, was=1))
 
 	def test_deleting_the_home_page_is_refused(self):
 		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
-		doc = frappe._dict(route="casa", published=1)
-		self.assertRaises(frappe.ValidationError, guard_home_page, doc, "on_trash")
+		self.assertRaises(frappe.ValidationError, guard_home_page, _page("casa", 1), "on_trash")
+
+	def test_a_draft_home_page_can_still_be_saved_and_published(self):
+		"""The regression that made a chosen-but-not-yet-live home page impossible to
+		publish: publish() saves, the save threw, the page stayed a draft forever."""
+		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		guard_home_page(_page("casa", 0, was=0))
+		guard_home_page(_page("casa", 1, was=0))
 
 	def test_a_published_home_page_saves_normally(self):
 		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
-		guard_home_page(frappe._dict(route="casa", published=1))
+		guard_home_page(_page("casa", 1, was=1))
 
 	def test_other_pages_are_untouched(self):
 		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
-		guard_home_page(frappe._dict(route="contatti", published=0))
-		guard_home_page(frappe._dict(route="contatti", published=0), "on_trash")
+		guard_home_page(_page("contatti", 0, was=1))
+		guard_home_page(_page("contatti", 0, was=1), "on_trash")
 
 	def test_no_home_page_configured_blocks_nothing(self):
 		frappe.db.set_single_value("CRM Website Settings", "home_page", None)
-		guard_home_page(frappe._dict(route="casa", published=0))
+		guard_home_page(_page("casa", 0, was=1))
 
 
 def _service(name: str, *, publish: bool = False, slug: str | None = None):
@@ -258,4 +263,11 @@ def _service(name: str, *, publish: bool = False, slug: str | None = None):
 		}
 	)
 	doc.insert()
+	return doc
+
+
+def _page(route: str, published: int, was: int | None = None):
+	"""A stand-in for a Builder Page, with the "before this save" state the guard reads."""
+	doc = frappe._dict(route=route, published=published)
+	doc.get_doc_before_save = lambda: frappe._dict(published=was) if was is not None else None
 	return doc

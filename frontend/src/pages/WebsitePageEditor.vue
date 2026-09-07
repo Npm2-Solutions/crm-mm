@@ -140,8 +140,14 @@ function keepInsideEditor() {
     return
   }
   if (!path) return
-  if (path.startsWith(`/${editorPath.value}/page/`)) return
-  if (path.startsWith(`/${editorPath.value}`)) {
+
+  const root = `/${editorPath.value}`
+  // Anything under the editor is the editor doing its job — the preview route, its
+  // settings, its dialogs. Only the dashboard itself is a way out, and only that gets
+  // intercepted: an earlier version bounced on every path that was not /page/…, which
+  // made half of Builder's own buttons look broken.
+  if (path.startsWith(`${root}/`) && !path.startsWith(`${root}/home`)) return
+  if (path === root || path === `${root}/` || path.startsWith(`${root}/home`)) {
     // Builder's own dashboard: the CRM already lists the pages, so go back to ours
     back()
     return
