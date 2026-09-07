@@ -329,7 +329,7 @@
     @after="
       () => {
         activities?.all_activities?.reload()
-        changeTabTo('attachments')
+        activities?.showFilesTab()
       }
     "
   />
@@ -353,10 +353,8 @@ import ErrorPage from '@/components/ErrorPage.vue'
 import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
-import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
-import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
@@ -370,7 +368,6 @@ import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
-import LucideRadar from '~icons/lucide/radar'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
@@ -590,16 +587,6 @@ usePageMeta(() => {
 const tabs = computed(() => {
   let tabOptions = [
     {
-      name: 'Activity',
-      label: __('Activity'),
-      icon: ActivityIcon,
-    },
-    {
-      name: 'Comments',
-      label: __('Comments'),
-      icon: CommentIcon,
-    },
-    {
       name: 'Data',
       label: __('Data'),
       icon: DetailsIcon,
@@ -618,16 +605,6 @@ const tabs = computed(() => {
       name: 'Notes',
       label: __('Notes'),
       icon: NoteIcon,
-    },
-    {
-      name: 'Attachments',
-      label: __('Attachments'),
-      icon: AttachmentIcon,
-    },
-    {
-      name: 'Tracking',
-      label: __('Tracking'),
-      icon: LucideRadar,
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
