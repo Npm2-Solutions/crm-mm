@@ -50,3 +50,40 @@ def get_deals(lead: str) -> list[dict]:
 		fields=DEAL_FIELDS,
 		order_by="modified desc",
 	)
+
+
+@frappe.whitelist()
+def get_contact_details(lead: str) -> dict:
+	"""Every way we have of reaching this person, from their address book entry.
+
+	The lead's own `email` and `mobile_no` are only the primary ones, kept as a
+	copy for the two hundred places that read them. This is the whole list: the
+	second number somebody wrote down, the old address, and which of them is the
+	one we call.
+	"""
+	if not frappe.has_permission("CRM Lead", "read", lead):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	contact = frappe.db.get_value("CRM Lead", lead, "contact")
+	if not contact or not frappe.has_permission("Contact", "read", contact):
+		return {}
+
+	doc = frappe.get_doc("Contact", contact)
+	return {
+		"name": doc.name,
+		"full_name": doc.full_name,
+		"image": doc.image,
+		"phone_nos": [
+			{
+				"phone": row.phone,
+				"primary": bool(row.is_primary_mobile_no or row.is_primary_phone),
+			}
+			for row in doc.phone_nos
+			if row.phone
+		],
+		"email_ids": [
+			{"email_id": row.email_id, "primary": bool(row.is_primary)}
+			for row in doc.email_ids
+			if row.email_id
+		],
+	}
