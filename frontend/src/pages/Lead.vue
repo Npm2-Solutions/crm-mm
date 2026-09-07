@@ -22,6 +22,13 @@
         :website="doc.website"
         @done="onEnriched"
       />
+      <Button
+        v-if="doc.contact"
+        variant="ghost"
+        :tooltip="__('Numbers and emails')"
+        :icon="ContactsIcon"
+        @click="openAddressBook"
+      />
       <AssignTo v-model="assignees.data" doctype="CRM Lead" :docname="leadId" />
       <Dropdown
         v-if="doc && document.statuses"
@@ -256,6 +263,7 @@ import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
+import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
@@ -313,6 +321,16 @@ const router = useRouter()
 const props = defineProps({
   leadId: { type: String, required: true },
 })
+
+// the lead's own page is the person; this opens the address book entry behind
+// it, which is where extra numbers and emails are added
+function openAddressBook() {
+  router.push({
+    name: 'Contact',
+    params: { contactId: doc.value.contact },
+    query: { rubrica: 1 },
+  })
+}
 
 const reload = ref(false)
 const activities = ref(null)

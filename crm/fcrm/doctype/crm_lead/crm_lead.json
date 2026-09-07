@@ -18,6 +18,7 @@
   "lead_name",
   "email",
   "mobile_no",
+  "contact",
   "details",
   "organization",
   "website",
@@ -169,6 +170,15 @@
    "fieldtype": "Data",
    "label": "Mobile No.",
    "options": "Phone"
+  },
+  {
+   "fieldname": "contact",
+   "fieldtype": "Link",
+   "label": "Contact",
+   "options": "Contact",
+   "read_only": 1,
+   "no_copy": 1,
+   "description": "Where this person's phone numbers and emails live. Kept by the CRM, not edited by hand."
   },
   {
    "fieldname": "phone",

@@ -9,7 +9,7 @@ from frappe.query_builder import Order
 from pypika.functions import Replace
 from werkzeug.wrappers import Response
 
-from crm.utils import are_same_phone_number, parse_phone_number
+from crm.utils import are_same_phone_number, digits_of, parse_phone_number
 
 
 def _get_recording_credentials(telephony_medium: str) -> tuple | None:
@@ -143,18 +143,20 @@ def add_task_to_call_log(call_sid: str, task: dict):
 def get_contact_lead_or_deal_from_number(number: str):
 	"""Get contact, lead or deal from the given number."""
 	contact = get_contact_by_phone_number(number)
-	if contact.get("name"):
-		doctype = "Contact"
-		docname = contact.get("name")
-		if contact.get("lead"):
-			doctype = "CRM Lead"
-			docname = contact.get("lead")
-		elif contact.get("deal"):
-			doctype = "CRM Deal"
-			docname = contact.get("deal")
-		return docname, doctype
+	if not contact.get("name"):
+		return None, None
 
-	return None, None
+	if contact.get("lead"):
+		return contact["lead"], "CRM Lead"
+	if contact.get("deal"):
+		return contact["deal"], "CRM Deal"
+
+	# A bare contact is nowhere: no chat opens on it — the Contact page has no
+	# activity at all — and the Inbox lists conversations by lead or deal. Every
+	# contact now belongs to a lead, so ask which one; and if the answer is
+	# nobody, say nobody rather than hand the message to a dead end.
+	lead = frappe.db.get_value("CRM Lead", {"contact": contact["name"], "converted": 0}, "name")
+	return (lead, "CRM Lead") if lead else (None, None)
 
 
 def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[str, str] | None:
@@ -169,7 +171,7 @@ def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[
 	incoming message: imported chat history arrives in blocks of months and would
 	invent hundreds of leads in one go.
 	"""
-	digits = "".join(character for character in (number or "") if character.isdigit())
+	digits = digits_of(number)
 	if len(digits) < 6:
 		# not a number anyone could call back
 		return None
@@ -231,7 +233,7 @@ def _as_international(phone_number: str) -> dict:
 	contact and `are_same_phone_number` then rejects it, comparing an Italian
 	number against an Indian one. Found and thrown away in the same breath.
 	"""
-	digits = "".join(character for character in (phone_number or "") if character.isdigit())
+	digits = digits_of(phone_number)
 	# a national number would become a different country's if we prefixed it blindly
 	if (phone_number or "").strip().startswith("+") or not 8 <= len(digits) <= 15:
 		return {}

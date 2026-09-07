@@ -14,6 +14,7 @@ from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
 )
 from crm.fcrm.doctype.utils import add_or_remove_lost_reason_section_in_sidepanel
+from crm.utils import digits_of
 
 LEAD_DEAL_FIELD_MAP = {"lead_owner": "deal_owner"}
 
@@ -141,6 +142,7 @@ class CRMLead(Document):
 
 	def validate(self):
 		self.validate_status()
+		self.sync_with_contact()
 		self.set_full_name()
 		self.set_lead_name()
 		self.set_title()
@@ -153,6 +155,8 @@ class CRMLead(Document):
 			add_status_change_log(self)
 
 	def after_insert(self):
+		self.ensure_contact()
+
 		if self.lead_owner:
 			if self.lead_owner != frappe.session.user:
 				self.share_with_agent(self.lead_owner)
@@ -265,6 +269,101 @@ class CRMLead(Document):
 					user,
 					flags={"ignore_share_permission": True, "ignore_permissions": True},
 				)
+
+	def sync_with_contact(self) -> None:
+		"""Keep the lead's recapiti and its contact saying the same thing.
+
+		The contact holds the truth — it is the one that can hold several numbers,
+		and the one an incoming message is resolved through. The fields here are a
+		copy kept for the two hundred places that read `lead.mobile_no`, and for
+		as long as they are still editable, editing them writes through instead of
+		quietly drifting apart, which is what they did before.
+		"""
+		if self.is_new() or not self.contact:
+			return
+
+		edited_here = [field for field in ("email", "mobile_no", "phone") if self.has_value_changed(field)]
+		if edited_here:
+			self.push_to_contact(edited_here)
+		else:
+			self.pull_from_contact()
+
+	def pull_from_contact(self) -> None:
+		contact = frappe.db.get_value(
+			"Contact", self.contact, ["email_id", "mobile_no", "phone"], as_dict=True
+		)
+		if not contact:
+			return
+		self.email = contact.email_id or self.email
+		self.mobile_no = contact.mobile_no or self.mobile_no
+		self.phone = contact.phone or self.phone
+
+	def push_to_contact(self, fields: list[str]) -> None:
+		"""Carry an edit made here over to the contact that owns it."""
+		doc = frappe.get_doc("Contact", self.contact)
+		changed = False
+
+		if "email" in fields and self.email:
+			changed |= set_primary_row(doc, "email_ids", "email_id", self.email, "is_primary")
+		for field, primary in (("mobile_no", "is_primary_mobile_no"), ("phone", "is_primary_phone")):
+			if field in fields and self.get(field):
+				changed |= set_primary_row(doc, "phone_nos", "phone", self.get(field), primary)
+
+		if changed:
+			doc.save(ignore_permissions=True)
+
+	def ensure_contact(self) -> None:
+		"""Every lead is a person, and a person's details live in one place.
+
+		Creating the contact here instead of at conversion is what stops the same
+		person from existing twice: by the time the deal is opened there is
+		nothing left to copy. A lead whose email already belongs to a contact
+		joins that contact rather than making a second one.
+
+		It never stops a lead from being created. This runs inside the insert's
+		own transaction, so raising here would roll the lead back — and a lead
+		that cannot be saved because of its address book is a worse outcome than
+		a lead whose address book arrives a moment later, at conversion.
+		"""
+		if self.contact:
+			return
+		if not (self.first_name or self.last_name or self.email or self.mobile_no or self.phone):
+			# an address book entry with a company name and nothing to reach it by
+			# is not worth creating
+			return
+
+		try:
+			existing = self.contact_exists(throw=False)
+			if existing:
+				self.db_set("contact", existing, update_modified=False)
+				# keep what was just typed instead of letting the older record win
+				self.add_numbers_to_contact(existing)
+				return
+
+			self.db_set("contact", self.create_contact(throw=False), update_modified=False)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), f"CRM Lead: could not give {self.name} a contact")
+
+	def add_numbers_to_contact(self, contact: str) -> None:
+		"""Add this lead's numbers to a contact that was already there.
+
+		The same person reached us again from a different number: that is one more
+		way to call them, not a correction of the one we had.
+		"""
+		doc = frappe.get_doc("Contact", contact)
+		known = {digits_of(row.phone) for row in doc.phone_nos}
+		added = False
+		for number, primary in ((self.mobile_no, "is_primary_mobile_no"), (self.phone, "is_primary_phone")):
+			if not number or digits_of(number) in known:
+				continue
+			doc.append("phone_nos", {"phone": number, primary: 0 if doc.phone_nos else 1})
+			known.add(digits_of(number))
+			added = True
+		if self.email and self.email not in {row.email_id for row in doc.email_ids}:
+			doc.append("email_ids", {"email_id": self.email, "is_primary": 0 if doc.email_ids else 1})
+			added = True
+		if added:
+			doc.save(ignore_permissions=True)
 
 	def create_contact(self, existing_contact=None, throw=True):
 		if not self.lead_name:
@@ -597,10 +696,38 @@ def convert_to_deal(
 	lead.db_set("converted", 1)
 	if lead.sla and frappe.db.exists("CRM Communication Status", "Replied"):
 		lead.db_set("communication_status", "Replied")
-	contact = lead.create_contact(existing_contact, False)
+	# the contact was born with the lead: converting has nothing left to copy.
+	# `existing_contact` still wins when the person is picked by hand, and a lead
+	# from before this existed gets one made now.
+	contact = existing_contact or lead.contact or lead.create_contact(throw=False)
+	if contact != lead.contact:
+		lead.db_set("contact", contact, update_modified=False)
 	organization = lead.create_organization(existing_organization)
 	_deal = lead.create_deal(contact, organization, deal)
 	return _deal
+
+
+def set_primary_row(doc, table: str, fieldname: str, value: str, primary: str) -> bool:
+	"""Make `value` the primary row of a contact's numbers or emails.
+
+	An existing row is promoted rather than duplicated: the same number written
+	with spaces or a plus is the same number. Anything else that was primary
+	gives the flag up, because two primaries mean nobody knows which to call.
+	"""
+	rows = doc.get(table) or []
+	same = digits_of if table == "phone_nos" else lambda text: (text or "").strip().lower()
+	match = next((row for row in rows if same(row.get(fieldname)) == same(value)), None)
+
+	if match and match.get(primary):
+		return False
+
+	for row in rows:
+		row.set(primary, 0)
+	if match:
+		match.set(primary, 1)
+	else:
+		doc.append(table, {fieldname: value, primary: 1})
+	return True
 
 
 def get_deal_fieldname(field, deal_meta):

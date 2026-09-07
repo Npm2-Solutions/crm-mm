@@ -49,6 +49,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [15](./15-tracciamento-lead.md) | Tracciamento del lead e attribuzione | ✅ implementato | Script esterno, sessioni, primo/ultimo contatto, percorso pagina per pagina |
 | [16](./16-sito-web-vetrina.md) | Sito web vetrina integrato nel CRM | ✅ implementato | Frappe Builder installato accanto come **tela**; il CRM resta guscio e dati: componenti spediti da noi con data script, impostazioni e publish nel modale |
 | [17](./17-timeline-unificata.md) | Timeline unificata sulla scheda | 📐 proposta | Una schermata al posto di dodici tab: i chip non filtrano soltanto, cambiano vista — chat WhatsApp, thread email — con un solo composer che segue il canale |
+| [18](./18-persona-unica.md) | Una persona sola: lead e contatto smettono di essere due | 📐 proposta | Il lead e' la persona, il deal la relazione, il contatto la rubrica: i recapiti vivono in un posto solo e il campo sul lead diventa uno specchio, cosi' i 201 punti che lo leggono non cambiano |
 
 ## Architettura complessiva
 

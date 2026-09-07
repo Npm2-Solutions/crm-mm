@@ -392,10 +392,14 @@ class TestIntegrations(IntegrationTestCase):
 		self.assertEqual(note_links[0].link_name, note.name)
 		self.assertEqual(task_links[0].link_name, str(task.name))
 
-	def test_get_contact_lead_or_deal_from_number_returns_contact(self):
-		"""Test get_contact_lead_or_deal_from_number returns contact when no lead/deal"""
-		# Create a standalone contact
-		contact = frappe.get_doc(
+	def test_standalone_contact_resolves_to_nobody(self):
+		"""A contact with no lead and no deal is a dead end, not an answer.
+
+		No chat opens on a Contact — that page has no activity at all — and the
+		Inbox lists conversations by lead or deal. Handing a message to one means
+		storing it where nobody will ever see it.
+		"""
+		frappe.get_doc(
 			{
 				"doctype": "Contact",
 				"first_name": "Standalone",
@@ -406,10 +410,28 @@ class TestIntegrations(IntegrationTestCase):
 
 		docname, doctype = get_contact_lead_or_deal_from_number("4155550400")
 
-		# Should return contact
-		if docname:
-			self.assertEqual(doctype, "Contact")
-			self.assertEqual(docname, contact.name)
+		self.assertIsNone(docname)
+		self.assertIsNone(doctype)
+
+	def test_contact_resolves_to_the_lead_that_owns_it(self):
+		"""The lead is the person; its contact is where the numbers live."""
+		lead = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Owned",
+				"last_name": "Contact",
+				"mobile_no": "4155550401",
+				"lead_owner": "Administrator",
+			}
+		).insert()
+		lead.reload()
+
+		self.assertTrue(lead.contact, "a new lead is born with a contact")
+
+		docname, doctype = get_contact_lead_or_deal_from_number("4155550401")
+
+		self.assertEqual(doctype, "CRM Lead")
+		self.assertEqual(docname, lead.name)
 
 	def test_get_contact_lead_or_deal_from_number_returns_lead(self):
 		"""Test get_contact_lead_or_deal_from_number prioritizes lead over contact"""
