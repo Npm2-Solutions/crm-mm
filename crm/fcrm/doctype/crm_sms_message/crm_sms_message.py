@@ -35,13 +35,17 @@ class CRMSMSMessage(Document):
 
 	def link_with_reference_doc(self):
 		"""Attach the message to the lead/deal that owns the counterpart number."""
-		from crm.integrations.api import get_contact_lead_or_deal_from_number
+		from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 
 		phone_number = self.get("from") if self.type == "Incoming" else self.to
 		if not phone_number:
 			return
 		try:
 			name, doctype = get_contact_lead_or_deal_from_number(phone_number)
+			if not doctype and self.type == "Incoming":
+				# nobody owns this number yet; without a lead the message would
+				# be stored and never seen
+				name, doctype = adopt_unknown_number(phone_number) or (None, None)
 			if doctype and name:
 				self.reference_doctype = doctype
 				self.reference_name = name
