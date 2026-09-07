@@ -332,6 +332,27 @@ composer, il contatore mostra la durata, si preme stop e la nota vocale viene
 caricata e inviata come messaggio audio. Se il browser non lo supporta o il
 microfono è negato, lo dice invece di fallire in silenzio.
 
+## A quale numero stiamo scrivendo
+
+Una persona ha un contatto solo — il CRM ne garantisce esattamente uno — ma quel
+contatto può avere **più numeri**: il cellulare, la linea dell'ufficio, quello
+vecchio che qualcuno aveva segnato. Non è un lusso: è quello che impedisce i
+doppioni. Se scrive dal secondo numero e il CRM non lo conosce, il messaggio non
+si aggancia a nessuno e finisce per **creare un secondo lead** per una persona
+che avevamo già.
+
+Quindi i numeri restano più d'uno, e la chat dice sempre a quale sta scrivendo.
+Sopra il campo del messaggio c'è **«A: +39 …»**: se il numero è uno solo lo
+scrive e basta, se ce n'è più d'uno diventa una tendina e si sceglie.
+
+Il **principale** — quello che si usa quando nessuno sceglie, e quello che
+chiamano il pulsante di chiamata e le automazioni — si imposta dal blocco dei
+recapiti sulla scheda della persona: si clicca il numero e diventa principale.
+
+La scelta la fa il browser ma non la decide: `whatsapp_recipient` accetta solo un
+numero **che appartiene a quella persona** e rifiuta gli altri, perché un numero
+arbitrario manderebbe la conversazione a uno sconosciuto.
+
 ## Una sola strada
 
 Settings → WhatsApp ha **solo** il flusso di connessione: nessun form dove
