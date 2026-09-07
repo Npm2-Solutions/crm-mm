@@ -20,6 +20,28 @@ def get_activities(name: str):
 		frappe.throw(_("Document not found"), frappe.DoesNotExistError)
 
 
+def communication_activity(communication, is_lead: bool) -> dict:
+	return {
+		"activity_type": "communication",
+		"communication_type": communication.communication_type,
+		"communication_date": communication.communication_date or communication.creation,
+		"creation": communication.creation,
+		"data": {
+			"subject": communication.subject,
+			"content": communication.content,
+			"sender_full_name": communication.sender_full_name,
+			"sender": communication.sender,
+			"recipients": communication.recipients,
+			"cc": communication.cc,
+			"bcc": communication.bcc,
+			"attachments": get_attachments("Communication", communication.name),
+			"read_by_recipient": communication.read_by_recipient,
+			"delivery_status": communication.delivery_status,
+		},
+		"is_lead": is_lead,
+	}
+
+
 def get_deal_activities(name: str):
 	if not frappe.has_permission("CRM Deal", "read", name):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
@@ -50,11 +72,9 @@ def get_deal_activities(name: str):
 	creation_text = _("created this deal")
 
 	if lead:
+		# the person's story stays on the person: replaying it here made the deal
+		# read like a second copy of the lead, chat and all
 		creation_text = _("converted the lead to this deal")
-		# a user can have access to the deal but not the lead it came from, so
-		# skip the lead's history instead of failing the whole timeline
-		if frappe.has_permission("CRM Lead", "read", lead):
-			activities, calls, notes, tasks, attachments = get_lead_activities(lead)
 
 	activities.append(
 		{
@@ -134,26 +154,7 @@ def get_deal_activities(name: str):
 		activities.append(activity)
 
 	for communication in docinfo.communications + docinfo.automated_messages:
-		activity = {
-			"activity_type": "communication",
-			"communication_type": communication.communication_type,
-			"communication_date": communication.communication_date or communication.creation,
-			"creation": communication.creation,
-			"data": {
-				"subject": communication.subject,
-				"content": communication.content,
-				"sender_full_name": communication.sender_full_name,
-				"sender": communication.sender,
-				"recipients": communication.recipients,
-				"cc": communication.cc,
-				"bcc": communication.bcc,
-				"attachments": get_attachments("Communication", communication.name),
-				"read_by_recipient": communication.read_by_recipient,
-				"delivery_status": communication.delivery_status,
-			},
-			"is_lead": False,
-		}
-		activities.append(activity)
+		activities.append(communication_activity(communication, is_lead=False))
 
 	for attachment_log in docinfo.attachment_logs:
 		activity = {
@@ -275,26 +276,7 @@ def get_lead_activities(name: str):
 		activities.append(activity)
 
 	for communication in docinfo.communications + docinfo.automated_messages:
-		activity = {
-			"activity_type": "communication",
-			"communication_type": communication.communication_type,
-			"communication_date": communication.communication_date or communication.creation,
-			"creation": communication.creation,
-			"data": {
-				"subject": communication.subject,
-				"content": communication.content,
-				"sender_full_name": communication.sender_full_name,
-				"sender": communication.sender,
-				"recipients": communication.recipients,
-				"cc": communication.cc,
-				"bcc": communication.bcc,
-				"attachments": get_attachments("Communication", communication.name),
-				"read_by_recipient": communication.read_by_recipient,
-				"delivery_status": communication.delivery_status,
-			},
-			"is_lead": True,
-		}
-		activities.append(activity)
+		activities.append(communication_activity(communication, is_lead=True))
 
 	for attachment_log in docinfo.attachment_logs:
 		activity = {
@@ -312,10 +294,40 @@ def get_lead_activities(name: str):
 	tasks = get_linked_tasks(name) + get_linked_calls(name).get("tasks", [])
 	attachments = get_attachments("CRM Lead", name)
 
+	deal_activities, deal_calls = get_conversation_on_deals(name)
+	activities += deal_activities
+	calls += deal_calls
+
 	activities.sort(key=lambda x: x["creation"], reverse=True)
 	activities = handle_multiple_versions(activities)
 
 	return activities, calls, notes, tasks, attachments
+
+
+def get_conversation_on_deals(lead: str):
+	"""What was said on this person's deals, brought back to the person.
+
+	An email or a call belongs to whoever we were talking to, not to the
+	negotiation it happened during. The deal no longer shows a copy of this
+	conversation, so without gathering it here anything said from a deal would
+	have nowhere left to be read.
+	"""
+	activities = []
+	calls = []
+
+	for deal in frappe.get_all("CRM Deal", filters={"lead": lead}, pluck="name"):
+		# a user can have the person and not one of their deals
+		if not frappe.has_permission("CRM Deal", "read", deal):
+			continue
+
+		get_docinfo("", "CRM Deal", deal)
+		docinfo = frappe.response["docinfo"]
+		for communication in docinfo.communications + docinfo.automated_messages:
+			activities.append(communication_activity(communication, is_lead=False))
+
+		calls += get_linked_calls(deal).get("calls", [])
+
+	return activities, calls
 
 
 def get_attachments(doctype: str, name: str):

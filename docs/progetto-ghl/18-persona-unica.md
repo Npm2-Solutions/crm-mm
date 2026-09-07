@@ -210,6 +210,46 @@ trattativa esce da quella lista, non dal CRM — la sua scheda è la stessa di
 prima, con la conversazione e le attività intatte. La parola "conversione" non
 compare più da nessuna parte nell'interfaccia.
 
+## La conversazione sta sulla persona
+
+Il deal non mostrava tab *simili* a quelle del lead: mostrava **le stesse**.
+
+```python
+# crm/api/whatsapp.py
+if reference_doctype == "CRM Deal":
+    lead = reference_doc.get("lead")
+    if lead:
+        messages = frappe.get_all("WhatsApp Message",
+            filters={"reference_doctype": "CRM Lead", "reference_name": lead}, ...)
+```
+
+```python
+# crm/api/activities.py
+if lead:
+    activities, calls, notes, tasks, attachments = get_lead_activities(lead)
+```
+
+La chat del deal era la chat del lead, più quella del deal; e il registro
+attività del deal ripeteva tutta la storia del lead. Aprire una trattativa
+sembrava aprire il lead perché per metà lo era.
+
+Adesso: **si parla con la persona, si lavora sulla trattativa.**
+
+| | Dove sta |
+|---|---|
+| Email, WhatsApp, SMS, chiamate | sul lead — e il lead raccoglie anche quelle delle sue trattative |
+| Registro attività, Data, Eventi, Task, Note, Allegati, Tracking, Commenti | sulla trattativa, e solo i suoi |
+
+L'ordine conta: **prima** il lead raccoglie la conversazione delle sue
+trattative (`get_conversation_on_deals`, e `whatsapp_thread_of` per i
+messaggi), **poi** il deal smette di mostrarla. Al contrario, un messaggio
+mandato da una trattativa non avrebbe più avuto nessun posto dove essere letto.
+
+Sulla trattativa, al posto dei bottoni "Chiama" e "Scrivi", ce n'è uno che
+**apre la persona**. E `create_deal` adesso valorizza `deal.lead` anche per una
+trattativa creata dalla sua modale: senza quel collegamento la persona non
+esisterebbe per la trattativa, e la sua conversazione non tornerebbe a casa.
+
 ## Cosa non faremo
 
 **Non togliamo il doctype `Contact`.** È del framework: ci si appoggiano le

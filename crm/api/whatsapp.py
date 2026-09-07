@@ -118,6 +118,27 @@ def is_whatsapp_installed():
 	return True
 
 
+def whatsapp_thread_of(reference_doctype: str, reference_name: str, reference_doc):
+	"""Every record a message with this person could have been filed against.
+
+	The conversation belongs to the person, not to the negotiation it happened
+	during: a message sent from a deal is still a message to them. So a lead
+	answers with its own messages and its deals', and a deal still answers with
+	the lead's, for whatever opens it that way.
+	"""
+	yield reference_doctype, reference_name
+
+	if reference_doctype == "CRM Deal":
+		lead = reference_doc.get("lead")
+		if lead and frappe.has_permission("CRM Lead", "read", lead):
+			yield "CRM Lead", lead
+	elif reference_doctype == "CRM Lead":
+		for deal in frappe.get_all("CRM Deal", filters={"lead": reference_name}, pluck="name"):
+			# a user can have the person and not one of their deals
+			if frappe.has_permission("CRM Deal", "read", deal):
+				yield "CRM Deal", deal
+
+
 @frappe.whitelist()
 def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 	reference_doc = validate_access(reference_doctype, reference_name)
@@ -128,68 +149,34 @@ def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 	if not frappe.db.exists("DocType", "WhatsApp Message"):
 		return []
 	messages = []
-
-	if reference_doctype == "CRM Deal":
-		lead = reference_doc.get("lead")
-		if lead:
-			validate_access("CRM Lead", lead)
-			messages = frappe.get_all(
-				"WhatsApp Message",
-				filters={
-					"reference_doctype": "CRM Lead",
-					"reference_name": lead,
-				},
-				fields=[
-					"name",
-					"type",
-					"to",
-					"from",
-					"content_type",
-					"message_type",
-					"attach",
-					"template",
-					"use_template",
-					"message_id",
-					"is_reply",
-					"reply_to_message_id",
-					"creation",
-					"message",
-					"status",
-					"reference_doctype",
-					"reference_name",
-					"template_parameters",
-					"template_header_parameters",
-				],
-			)
-
-	messages += frappe.get_all(
-		"WhatsApp Message",
-		filters={
-			"reference_doctype": reference_doctype,
-			"reference_name": reference_name,
-		},
-		fields=[
-			"name",
-			"type",
-			"to",
-			"from",
-			"content_type",
-			"message_type",
-			"attach",
-			"template",
-			"use_template",
-			"message_id",
-			"is_reply",
-			"reply_to_message_id",
-			"creation",
-			"message",
-			"status",
-			"reference_doctype",
-			"reference_name",
-			"template_parameters",
-			"template_header_parameters",
-		],
-	)
+	# one thread per person, wherever a message happened to be filed: the deal
+	# used to show the lead's chat, and now the lead shows its deals'
+	for doctype, docname in whatsapp_thread_of(reference_doctype, reference_name, reference_doc):
+		messages += frappe.get_all(
+			"WhatsApp Message",
+			filters={"reference_doctype": doctype, "reference_name": docname},
+			fields=[
+				"name",
+				"type",
+				"to",
+				"from",
+				"content_type",
+				"message_type",
+				"attach",
+				"template",
+				"use_template",
+				"message_id",
+				"is_reply",
+				"reply_to_message_id",
+				"creation",
+				"message",
+				"status",
+				"reference_doctype",
+				"reference_name",
+				"template_parameters",
+				"template_header_parameters",
+			],
+		)
 
 	# Filter messages to get only Template messages
 	template_messages = [message for message in messages if message["message_type"] == "Template"]
