@@ -153,7 +153,42 @@ def get_contact_lead_or_deal_from_number(number: str):
 			doctype = "CRM Deal"
 			docname = contact.get("deal")
 		return docname, doctype
+
+	lead = get_lead_by_phone_number(number)
+	if lead:
+		return lead, "CRM Lead"
 	return None, None
+
+
+def get_lead_by_phone_number(phone_number: str) -> str | None:
+	"""A lead that carries the number itself, with no Contact of its own.
+
+	A lead can be written to straight from its page — the WhatsApp and SMS boxes
+	send to its `mobile_no` — so resolving through Contacts alone made the
+	conversation one-way: the message left, and the answer came back to nobody.
+	A lead already converted is skipped: its deal holds the conversation now, and
+	it is reachable through the Contact that conversion created.
+	"""
+	number = parse_phone_number(phone_number)
+	search = number.get("national_number") if number.get("is_valid") else phone_number
+	cleaned = "".join(character for character in (search or "") if character.isdigit())
+	# a couple of digits would LIKE-match half the table and hand the message to a stranger
+	if len(cleaned) < 6:
+		return None
+
+	Lead = frappe.qb.DocType("CRM Lead")
+	normalized = Replace(
+		Replace(Replace(Replace(Replace(Lead.mobile_no, " ", ""), "-", ""), "(", ""), ")", ""), "+", ""
+	)
+	rows = (
+		frappe.qb.from_(Lead)
+		.select(Lead.name)
+		.where(normalized.like(f"%{cleaned}%"))
+		.where(Lead.converted != 1)
+		.orderby(Lead.modified, order=Order.desc)
+		.limit(1)
+	).run(as_dict=True)
+	return rows[0].name if rows else None
 
 
 @frappe.whitelist()
