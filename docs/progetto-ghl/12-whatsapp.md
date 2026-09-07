@@ -332,6 +332,27 @@ composer, il contatore mostra la durata, si preme stop e la nota vocale viene
 caricata e inviata come messaggio audio. Se il browser non lo supporta o il
 microfono è negato, lo dice invece di fallire in silenzio.
 
+## A quale numero stiamo scrivendo
+
+Una persona ha un contatto solo — il CRM ne garantisce esattamente uno — ma quel
+contatto può avere **più numeri**: il cellulare, la linea dell'ufficio, quello
+vecchio che qualcuno aveva segnato. Non è un lusso: è quello che impedisce i
+doppioni. Se scrive dal secondo numero e il CRM non lo conosce, il messaggio non
+si aggancia a nessuno e finisce per **creare un secondo lead** per una persona
+che avevamo già.
+
+Quindi i numeri restano più d'uno, e la chat dice sempre a quale sta scrivendo.
+Sopra il campo del messaggio c'è **«A: +39 …»**: se il numero è uno solo lo
+scrive e basta, se ce n'è più d'uno diventa una tendina e si sceglie.
+
+Il **principale** — quello che si usa quando nessuno sceglie, e quello che
+chiamano il pulsante di chiamata e le automazioni — si imposta dal blocco dei
+recapiti sulla scheda della persona: si clicca il numero e diventa principale.
+
+La scelta la fa il browser ma non la decide: `whatsapp_recipient` accetta solo un
+numero **che appartiene a quella persona** e rifiuta gli altri, perché un numero
+arbitrario manderebbe la conversazione a uno sconosciuto.
+
 ## Una sola strada
 
 Settings → WhatsApp ha **solo** il flusso di connessione: nessun form dove
@@ -345,6 +366,30 @@ i doctype restano raggiungibili dal Desk (`/app/whatsapp-account`) come per
 qualsiasi cosa in Frappe. Ma non è una strada offerta al cliente.
 
 ## Template: si creano nel CRM
+
+### Cosa Meta pretende, e cosa sbagliavamo
+
+Un template con dei segnaposto viene **rifiutato all'istante** se non gli si dà
+un esempio per ciascuno: *«you must include an example value for each
+parameter»*. E i segnaposto devono essere numerati **da {{1}} senza buchi**.
+
+Il modulo del CRM non aveva il campo degli esempi, quindi ogni template con un
+`{{1}}` partiva senza e tornava REJECTED un secondo dopo il salvataggio, con il
+motivo visibile solo in WhatsApp Manager. Ora il campo c'è — compare solo se il
+corpo ha dei segnaposto — e il controllo si fa **prima** di salvare, mentre chi
+scrive ha ancora il testo davanti.
+
+Altri due difetti dello stesso modulo:
+
+- **L'intestazione spariva.** `frappe_whatsapp` mette l'header nel payload solo
+  se `header_type` dice di che tipo è; noi scrivevamo il testo e non il tipo,
+  quindi Meta non lo vedeva mai. Ora il tipo lo deriviamo dal testo.
+- **La lingua.** Il doctype ha `language` (Link a Language, obbligatorio) e ne
+  ricava lui `language_code`. Noi compilavamo il codice e lasciavamo vuoto il
+  campo obbligatorio, offrendo una lista scritta a mano di tre voci — `en`,
+  `en_US`, `it` — che è quella che sembrava avere due volte l'inglese. Ora si
+  sceglie una lingua vera e il codice se lo calcola l'app.
+
 
 Prima il bottone "Create New Template" apriva il **form grezzo del Desk**
 (`/app/whatsapp-templates/new`): fuori dal gestionale e incomprensibile per un

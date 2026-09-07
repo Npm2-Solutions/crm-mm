@@ -278,6 +278,13 @@ def insert_and_send(doc) -> str:
 	return doc.name
 
 
+@frappe.whitelist()
+def get_recipients(reference_doctype: str, reference_name: str) -> list[str]:
+	"""The numbers the chat may offer, so it can show which one it is writing to."""
+	validate_access(reference_doctype, reference_name)
+	return numbers_of(reference_doctype, reference_name)
+
+
 def whatsapp_recipient(reference_doctype: str, reference_name: str, to: str | None = None) -> str:
 	"""The number a message is going to, decided here and not in the browser.
 
@@ -290,24 +297,54 @@ def whatsapp_recipient(reference_doctype: str, reference_name: str, to: str | No
 	`370 340 0189` here and `+39 370 340 0189` there is one number, and only the
 	second form is one Meta accepts.
 	"""
-	number = to or frappe.db.get_value(reference_doctype, reference_name, "mobile_no")
+	reachable = numbers_of(reference_doctype, reference_name)
 
-	if not number:
-		# the lead's own field is a copy; the address book is where the numbers live
-		contact = None
-		if reference_doctype == "CRM Lead":
-			contact = frappe.db.get_value("CRM Lead", reference_name, "contact")
-		elif reference_doctype == "CRM Deal":
-			contact = frappe.db.get_value(
-				"CRM Contacts", {"parent": reference_name, "is_primary": 1}, "contact"
-			)
-		if contact:
-			number = frappe.db.get_value("Contact", contact, "mobile_no")
+	if to:
+		# the browser may pick which of the person's numbers to write to, and only
+		# which: a number that is not theirs would send this conversation to a
+		# stranger, so it is refused rather than quietly corrected
+		chosen = to_e164(to)
+		if chosen not in reachable:
+			frappe.throw(_("{0} is not one of this person's numbers.").format(to))
+		return chosen
 
-	if not number:
+	if not reachable:
 		frappe.throw(_("There is no phone number to send this to. Add one first."))
 
-	return to_e164(number)
+	return reachable[0]
+
+
+def numbers_of(reference_doctype: str, reference_name: str) -> list[str]:
+	"""Every number this person can be written to, the primary one first.
+
+	The record's own `mobile_no` is a copy of the primary; the address book is
+	where the others live — the work line, the number they changed to. All of
+	them are legitimate recipients, which is why the chat can offer a choice.
+	"""
+	numbers = []
+
+	primary = frappe.db.get_value(reference_doctype, reference_name, "mobile_no")
+	if primary:
+		numbers.append(to_e164(primary))
+
+	contact = None
+	if reference_doctype == "CRM Lead":
+		contact = frappe.db.get_value("CRM Lead", reference_name, "contact")
+	elif reference_doctype == "CRM Deal":
+		contact = frappe.db.get_value("CRM Contacts", {"parent": reference_name, "is_primary": 1}, "contact")
+
+	if contact:
+		for row in frappe.get_all(
+			"Contact Phone",
+			filters={"parent": contact, "parenttype": "Contact"},
+			fields=["phone", "is_primary_mobile_no"],
+			order_by="is_primary_mobile_no desc, idx asc",
+		):
+			number = to_e164(row.phone)
+			if number and number not in numbers:
+				numbers.append(number)
+
+	return numbers
 
 
 @frappe.whitelist()

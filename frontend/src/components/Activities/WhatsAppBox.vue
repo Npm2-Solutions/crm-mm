@@ -36,6 +36,25 @@
     <span class="text-p-sm text-ink-gray-7">{{ windowNotice }}</span>
     <Button size="sm" :label="__('Send a template')" @click="emit('template')" />
   </div>
+  <!-- Which of the person's numbers this is going to. One number, and there is
+       nothing to choose: it says so and stays out of the way. -->
+  <div
+    v-if="recipients.data?.length"
+    class="flex items-center gap-2 px-3 pt-2 text-p-sm text-ink-gray-5 sm:px-10"
+  >
+    <span>{{ __('To') }}</span>
+    <Dropdown v-if="recipients.data.length > 1" :options="recipientOptions">
+      <template #default="{ open }">
+        <Button
+          size="sm"
+          variant="ghost"
+          :label="recipient"
+          :iconRight="open ? 'chevron-up' : 'chevron-down'"
+        />
+      </template>
+    </Dropdown>
+    <span v-else class="text-ink-gray-7">{{ recipient }}</span>
+  </div>
   <div class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
     <div class="flex h-8 items-center gap-2">
       <FileUploader @success="(file) => uploadFile(file)">
@@ -129,6 +148,38 @@ const { capture } = useTelemetry()
 const rows = ref(1)
 const textareaRef = ref(null)
 const emoji = ref('')
+
+// Which of the person's numbers this conversation is going out to. The primary
+// comes first and is the default; the rest are there because somebody wrote the
+// work line down too, and a reply to the wrong one goes nowhere.
+const recipient = ref('')
+
+const recipients = createResource({
+  url: 'crm.api.whatsapp.get_recipients',
+  makeParams: () => ({
+    reference_doctype: props.doctype,
+    reference_name: doc.value.name,
+  }),
+  onSuccess: (numbers) => {
+    if (!numbers?.includes(recipient.value)) recipient.value = numbers?.[0] || ''
+  },
+})
+
+watch(
+  () => doc.value.name,
+  (name) => {
+    recipient.value = ''
+    if (name) recipients.fetch()
+  },
+  { immediate: true },
+)
+
+const recipientOptions = computed(() =>
+  (recipients.data || []).map((number) => ({
+    label: number,
+    onClick: () => (recipient.value = number),
+  })),
+)
 
 const content = ref('')
 const placeholder = ref(__('Type your message here...'))
@@ -255,7 +306,7 @@ async function sendWhatsAppMessage() {
     reference_doctype: props.doctype,
     reference_name: doc.value.name,
     message: content.value,
-    to: doc.value.mobile_no,
+    to: recipient.value || doc.value.mobile_no,
     attach: whatsapp.value.attach || '',
     reply_to: reply.value?.name || '',
     content_type: whatsapp.value.content_type,
