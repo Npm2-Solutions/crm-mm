@@ -497,10 +497,15 @@ class TestIntegrations(IntegrationTestCase):
 		self.assertIsNone(docname)
 		self.assertIsNone(doctype)
 
-	def test_get_contact_lead_or_deal_from_number_ignores_converted_leads(self):
-		"""Test get_contact_lead_or_deal_from_number doesn't return converted leads"""
-		# Create a converted lead
-		frappe.get_doc(
+	def test_a_converted_lead_is_still_the_person(self):
+		"""Becoming a customer does not stop somebody from being a person.
+
+		This used to answer nobody, because a converted lead has left the leads
+		list. An incoming message from a customer then matched no one and was
+		adopted into a *second* lead for someone we already knew — while the
+		conversation they were having stayed on the first.
+		"""
+		lead = frappe.get_doc(
 			{
 				"doctype": "CRM Lead",
 				"first_name": "Converted",
@@ -513,9 +518,44 @@ class TestIntegrations(IntegrationTestCase):
 
 		docname, doctype = get_contact_lead_or_deal_from_number("+91 98765 43213")
 
-		# Should return None since lead is converted
-		self.assertIsNone(docname)
-		self.assertIsNone(doctype)
+		self.assertEqual(doctype, "CRM Lead")
+		self.assertEqual(docname, lead.name)
+
+	def test_the_person_wins_over_their_deal(self):
+		"""A message belongs to who we were talking to, not to the negotiation.
+
+		The deal has no chat to show it: filing it there is filing it where
+		nobody can read it.
+		"""
+		lead = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Person",
+				"last_name": "WithDeal",
+				"mobile_no": "4155550402",
+				"lead_owner": "Administrator",
+			}
+		).insert()
+		lead.reload()
+
+		org = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": "Person With Deal Org"}
+		).insert()
+		deal = frappe.get_doc(
+			{
+				"doctype": "CRM Deal",
+				"organization": org.name,
+				"deal_owner": "Administrator",
+				"lead": lead.name,
+			}
+		)
+		deal.append("contacts", {"contact": lead.contact, "is_primary": 1})
+		deal.insert()
+
+		docname, doctype = get_contact_lead_or_deal_from_number("4155550402")
+
+		self.assertEqual(doctype, "CRM Lead")
+		self.assertEqual(docname, lead.name)
 
 
 def create_test_call_log(**kwargs):

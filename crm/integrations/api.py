@@ -141,22 +141,38 @@ def add_task_to_call_log(call_sid: str, task: dict):
 
 @frappe.whitelist()
 def get_contact_lead_or_deal_from_number(number: str):
-	"""Get contact, lead or deal from the given number."""
+	"""Whose number this is. The person, whenever there is one.
+
+	The conversation belongs to the person, not to the negotiation it happened
+	during. Filing a message on a deal puts it where the deal has no chat to show
+	it, and the person's own page is where somebody is looking — so a deal is the
+	answer only when nobody owns the contact, which happens when one was made
+	straight from the address book.
+
+	A person who became a customer is still a person: a converted lead counts
+	here even though it has left the leads list. Leaving it out meant an incoming
+	message from a customer resolved to nobody and was adopted into a *second*
+	lead for someone we already knew.
+
+	A bare contact is still nowhere — no chat opens on it, the Contact page has
+	no activity at all, and the Inbox lists conversations by lead or deal — so
+	saying nobody stays better than handing the message to a dead end.
+	"""
 	contact = get_contact_by_phone_number(number)
 	if not contact.get("name"):
 		return None, None
 
 	if contact.get("lead"):
 		return contact["lead"], "CRM Lead"
+
+	lead = frappe.db.get_value("CRM Lead", {"contact": contact["name"]}, "name", order_by="creation asc")
+	if lead:
+		return lead, "CRM Lead"
+
 	if contact.get("deal"):
 		return contact["deal"], "CRM Deal"
 
-	# A bare contact is nowhere: no chat opens on it — the Contact page has no
-	# activity at all — and the Inbox lists conversations by lead or deal. Every
-	# contact now belongs to a lead, so ask which one; and if the answer is
-	# nobody, say nobody rather than hand the message to a dead end.
-	lead = frappe.db.get_value("CRM Lead", {"contact": contact["name"], "converted": 0}, "name")
-	return (lead, "CRM Lead") if lead else (None, None)
+	return None, None
 
 
 def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[str, str] | None:

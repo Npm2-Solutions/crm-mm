@@ -21,6 +21,12 @@ from frappe import _
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 EDITABLE_FIELDS = ("template_name", "category", "language_code", "header", "template", "footer")
 
+# The only three Meta accepts. The installed doctype still offers TRANSACTIONAL,
+# retired in 2023, and choosing it fails at submission with
+# "(#100) Param category must be one of {UTILITY, MARKETING, AUTHENTICATION}" —
+# after the template has been saved, so it looks like the CRM lost it.
+META_CATEGORIES = ("UTILITY", "MARKETING", "AUTHENTICATION")
+
 
 def _check_manager():
 	if not MANAGER_ROLES & set(frappe.get_roles()):
@@ -44,6 +50,12 @@ def _options_for(fieldname: str) -> list[str]:
 	return [option for option in field.options.split("\n") if option]
 
 
+def _categories() -> list[str]:
+	"""What the doctype offers, minus what Meta has stopped accepting."""
+	usable = [option for option in _options_for("category") if option.upper() in META_CATEGORIES]
+	return usable or list(META_CATEGORIES)
+
+
 @frappe.whitelist()
 def get_templates() -> dict:
 	_check_manager()
@@ -57,7 +69,7 @@ def get_templates() -> dict:
 		"templates": frappe.get_all(
 			"WhatsApp Templates", fields=list(dict.fromkeys(fields)), order_by="modified desc"
 		),
-		"categories": _options_for("category") or ["MARKETING", "UTILITY", "AUTHENTICATION"],
+		"categories": _categories(),
 		"languages": _options_for("language_code") or ["en", "en_US", "it"],
 		"fields": sorted(known & set(EDITABLE_FIELDS)),
 	}
@@ -82,6 +94,16 @@ def save_template(template: dict | str, name: str | None = None) -> dict:
 		frappe.throw(_("The message body is required"))
 	if not name and not values.get("template_name"):
 		frappe.throw(_("A template name is required"))
+
+	category = values.get("category")
+	if category and category.upper() not in META_CATEGORIES:
+		# say it here, before the template is saved and Meta rejects it with a
+		# number instead of a reason
+		frappe.throw(
+			_("Meta no longer accepts the category {0}. Choose Utility, Marketing or Authentication.").format(
+				category
+			)
+		)
 
 	if name:
 		doc = frappe.get_doc("WhatsApp Templates", name)

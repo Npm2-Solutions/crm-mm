@@ -38,5 +38,5 @@ crm.patches.v1_0.create_automation_trigger_rows
 crm.patches.v1_0.add_attribution_sections_to_data_layouts
 crm.patches.v1_0.set_whatsapp_account_endpoint
 crm.patches.v1_0.give_every_lead_a_contact
-crm.patches.v1_0.add_contact_section_to_lead_panel
 crm.patches.v1_0.write_numbers_with_their_prefix
+crm.patches.v1_0.one_block_for_the_recapiti

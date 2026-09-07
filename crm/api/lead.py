@@ -65,12 +65,13 @@ def get_deals(lead: str) -> list[dict]:
 
 @frappe.whitelist()
 def get_contact_details(lead: str) -> dict:
-	"""Every way we have of reaching this person, from their address book entry.
+	"""This person's address book entry, in the shape the side panel edits.
 
-	The lead's own `email` and `mobile_no` are only the primary ones, kept as a
-	copy for the two hundred places that read them. This is the whole list: the
-	second number somebody wrote down, the old address, and which of them is the
-	one we call.
+	The lead's `email` and `mobile_no` show only the primary ones. Handing the
+	whole entry over lets the same control the Contact page uses list every
+	number and every address, and add, correct or promote one — so there is a
+	single block for the recapiti instead of two saying different halves of the
+	same thing.
 	"""
 	if not frappe.has_permission("CRM Lead", "read", lead):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
@@ -82,19 +83,8 @@ def get_contact_details(lead: str) -> dict:
 	doc = frappe.get_doc("Contact", contact)
 	return {
 		"name": doc.name,
-		"full_name": doc.full_name,
-		"image": doc.image,
-		"phone_nos": [
-			{
-				"phone": row.phone,
-				"primary": bool(row.is_primary_mobile_no or row.is_primary_phone),
-			}
-			for row in doc.phone_nos
-			if row.phone
-		],
-		"email_ids": [
-			{"email_id": row.email_id, "primary": bool(row.is_primary)}
-			for row in doc.email_ids
-			if row.email_id
-		],
+		"email_id": doc.email_id,
+		"mobile_no": doc.mobile_no,
+		"email_ids": [{"name": row.name, "email_id": row.email_id} for row in doc.email_ids if row.email_id],
+		"phone_nos": [{"name": row.name, "phone": row.phone} for row in doc.phone_nos if row.phone],
 	}
