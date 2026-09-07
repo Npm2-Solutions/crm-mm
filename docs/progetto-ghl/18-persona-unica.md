@@ -250,6 +250,27 @@ Sulla trattativa, al posto dei bottoni "Chiama" e "Scrivi", ce n'è uno che
 trattativa creata dalla sua modale: senza quel collegamento la persona non
 esisterebbe per la trattativa, e la sua conversazione non tornerebbe a casa.
 
+### Anche un numero risolve alla persona
+
+Restava un giro storto nascosto. `get_contact_lead_or_deal_from_number` provava
+prima la **trattativa** — perché `get_contact` risponde con quella quando la
+persona ne ha una — e ignorava i lead **convertiti**. Due conseguenze:
+
+- un messaggio in entrata da un cliente veniva archiviato sulla sua trattativa,
+  che una chat non ce l'ha;
+- un messaggio da chi era già diventato cliente non risolveva affatto, e veniva
+  **adottato in un secondo lead** per una persona che avevamo già.
+
+E per i messaggi in **uscita** l'hook `validate` riscriveva il riferimento anche
+quando il record c'era: scrivevi sul lead e il messaggio finiva sulla trattativa,
+sparendo dalla chat in cui l'avevi appena battuto.
+
+Adesso: un messaggio in uscita resta dove è stato scritto — chi ha premuto invio
+lo ha già deciso — e un numero risolve **alla persona**, lead convertiti
+compresi. La trattativa è la risposta solo quando nessuno possiede quel contatto,
+cioè quando è nata dalla rubrica. Un contatto nudo resta nessuno, perché
+consegnare a una pagina senza attività è peggio che dire di no.
+
 ## Cosa non faremo
 
 **Non togliamo il doctype `Contact`.** È del framework: ci si appoggiano le
