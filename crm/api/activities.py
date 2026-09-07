@@ -7,6 +7,7 @@ from frappe.desk.form.load import get_docinfo
 from frappe.query_builder import JoinType
 from frappe.translate import get_translated_doctypes
 
+from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_call_log.crm_call_log import parse_call_log
 
 
@@ -315,7 +316,7 @@ def get_conversation_on_deals(lead: str):
 	activities = []
 	calls = []
 
-	for deal in frappe.get_all("CRM Deal", filters={"lead": lead}, pluck="name"):
+	for deal in deal_names_of(lead):
 		# a user can have the person and not one of their deals
 		if not frappe.has_permission("CRM Deal", "read", deal):
 			continue

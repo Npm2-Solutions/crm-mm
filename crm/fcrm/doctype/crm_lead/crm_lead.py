@@ -14,7 +14,7 @@ from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
 )
 from crm.fcrm.doctype.utils import add_or_remove_lost_reason_section_in_sidepanel
-from crm.utils import digits_of
+from crm.utils import digits_of, to_e164
 
 LEAD_DEAL_FIELD_MAP = {"lead_owner": "deal_owner"}
 
@@ -311,6 +311,12 @@ class CRMLead(Document):
 
 		if changed:
 			doc.save(ignore_permissions=True)
+
+		# and the lead shows what the contact settled on: the same number, written
+		# with its prefix, so nobody has to wonder whether to type one
+		for field, source in (("email", "email_id"), ("mobile_no", "mobile_no"), ("phone", "phone")):
+			if field in fields and doc.get(source):
+				self.set(field, doc.get(source))
 
 	def ensure_contact(self) -> None:
 		"""Every lead is a person, and a person's details live in one place.
@@ -711,11 +717,17 @@ def set_primary_row(doc, table: str, fieldname: str, value: str, primary: str) -
 	"""Make `value` the primary row of a contact's numbers or emails.
 
 	An existing row is promoted rather than duplicated: the same number written
-	with spaces or a plus is the same number. Anything else that was primary
-	gives the flag up, because two primaries mean nobody knows which to call.
+	with spaces, with a plus, or with the country prefix left off is the same
+	number — comparing the raw digits made `3703400189` and `+393703400189` look
+	like two people. Anything else that was primary gives the flag up, because
+	two primaries mean nobody knows which to call.
 	"""
 	rows = doc.get(table) or []
-	same = digits_of if table == "phone_nos" else lambda text: (text or "").strip().lower()
+	same = (
+		(lambda number: digits_of(to_e164(number)))
+		if table == "phone_nos"
+		else (lambda text: (text or "").strip().lower())
+	)
 	match = next((row for row in rows if same(row.get(fieldname)) == same(value)), None)
 
 	if match and match.get(primary):

@@ -6,8 +6,10 @@ from frappe import _
 from frappe.permissions import add_permission, update_permission_property
 
 from crm.api.doc import get_assigned_users
+from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
+from crm.utils import to_e164
 
 ALLOWED_WHATSAPP_ROLES = ["System Manager", "Sales Manager", "Sales User"]
 
@@ -36,6 +38,14 @@ def validate_access(reference_doctype=None, reference_name=None, permtype="read"
 
 
 def validate(doc, method):
+	if doc.type != "Incoming" and doc.reference_doctype and doc.reference_name:
+		# a message we are sending already knows the record it was written from.
+		# Looking its number up again could only move it somewhere else — and it
+		# did: `get_contact` answers with the person's deal when they have one, so
+		# a message sent from a lead was filed on the deal and vanished from the
+		# chat it had just been typed into.
+		return
+
 	phone_number = doc.get("from") if doc.type == "Incoming" else doc.get("to")
 	if phone_number:
 		try:
@@ -133,7 +143,7 @@ def whatsapp_thread_of(reference_doctype: str, reference_name: str, reference_do
 		if lead and frappe.has_permission("CRM Lead", "read", lead):
 			yield "CRM Lead", lead
 	elif reference_doctype == "CRM Lead":
-		for deal in frappe.get_all("CRM Deal", filters={"lead": reference_name}, pluck="name"):
+		for deal in deal_names_of(reference_name):
 			# a user can have the person and not one of their deals
 			if frappe.has_permission("CRM Deal", "read", deal):
 				yield "CRM Deal", deal
@@ -268,6 +278,38 @@ def insert_and_send(doc) -> str:
 	return doc.name
 
 
+def whatsapp_recipient(reference_doctype: str, reference_name: str, to: str | None = None) -> str:
+	"""The number a message is going to, decided here and not in the browser.
+
+	The page sent whatever `mobile_no` it happened to be holding. When that was
+	empty the message left with no recipient and Meta answered "The parameter to
+	is required" — an error about a field the person pressing send has never
+	heard of. The record knows who it is for, so it says so.
+
+	Whatever comes out is in E.164, prefix and all: the same person written
+	`370 340 0189` here and `+39 370 340 0189` there is one number, and only the
+	second form is one Meta accepts.
+	"""
+	number = to or frappe.db.get_value(reference_doctype, reference_name, "mobile_no")
+
+	if not number:
+		# the lead's own field is a copy; the address book is where the numbers live
+		contact = None
+		if reference_doctype == "CRM Lead":
+			contact = frappe.db.get_value("CRM Lead", reference_name, "contact")
+		elif reference_doctype == "CRM Deal":
+			contact = frappe.db.get_value(
+				"CRM Contacts", {"parent": reference_name, "is_primary": 1}, "contact"
+			)
+		if contact:
+			number = frappe.db.get_value("Contact", contact, "mobile_no")
+
+	if not number:
+		frappe.throw(_("There is no phone number to send this to. Add one first."))
+
+	return to_e164(number)
+
+
 @frappe.whitelist()
 def create_whatsapp_message(
 	reference_doctype: str,
@@ -302,7 +344,7 @@ def create_whatsapp_message(
 			"reference_doctype": reference_doctype,
 			"reference_name": reference_name,
 			"message": message or attach,
-			"to": to,
+			"to": whatsapp_recipient(reference_doctype, reference_name, to),
 			"attach": attach,
 			"content_type": content_type,
 		}
@@ -336,7 +378,7 @@ def send_whatsapp_template(
 			"content_type": "text",
 			"use_template": True,
 			"template": template,
-			"to": to,
+			"to": whatsapp_recipient(reference_doctype, reference_name, to),
 		}
 	)
 	for fieldname, value in (

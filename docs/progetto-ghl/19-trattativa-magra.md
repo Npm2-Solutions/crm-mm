@@ -55,3 +55,21 @@ niente e non si vede niente due volte.
 **Il Tracking.** L'attribuzione dice da dove è arrivata *la persona*, non la
 trattativa: la sua casa è il lead, che la tab ce l'ha già. Sulla trattativa era
 una copia.
+
+## Il pannello sopra la pipeline
+
+Da GHL l'opportunità si apre **accanto** alla pipeline, non al posto suo: si
+guarda un'offerta, si cambia stage, si chiude, e la board è ancora lì.
+
+Il nostro `DealPanel` fa lo stesso: un pannello a destra sopra la kanban, con il
+titolo, lo **stato** (che si cambia da lì), il link alla **persona**, e le
+quattro tab della trattativa. Non reimplementa niente: monta lo stesso
+componente `Activities` della pagina, quindi i due non possono divergere.
+
+La `KanbanView` supportava già `onClick` come alternativa a `getRoute` — la
+scheda diventa un `div` invece di un `router-link` — quindi non è servito
+toccarla.
+
+La **pagina** resta, e ci si arriva dal bottone in alto nel pannello: serve per
+i campi del pannello laterale, per gli assegnatari e per i link condivisi. Anche
+l'elenco continua ad aprirla, perché lì non c'è una board da conservare dietro.

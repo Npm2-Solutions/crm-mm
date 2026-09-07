@@ -48,11 +48,8 @@
     v-if="route.params.viewType == 'kanban'"
     v-model="deals"
     :options="{
-      getRoute: (row) => ({
-        name: 'Deal',
-        params: { dealId: row.name },
-        query: { view: route.query.view, viewType: route.params.viewType },
-      }),
+      // a card opens the panel, not another page: the pipeline stays behind it
+      onClick: (row) => openDealPanel(row.name),
       onNewClick: (column) => onNewClick(column),
     }"
     @update="(data) => viewControls.updateKanbanSettings(data)"
@@ -256,6 +253,12 @@
     v-model="showDealModal"
     :defaults="defaults"
   />
+  <DealPanel
+    v-if="panelDeal"
+    :key="panelDeal"
+    v-model="showDealPanel"
+    :dealName="panelDeal"
+  />
 </template>
 
 <script setup>
@@ -274,6 +277,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import KanbanView from '@/components/Kanban/KanbanView.vue'
+import DealPanel from '@/components/Deals/DealPanel.vue'
 import DealModal from '@/components/Modals/DealModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import { useDoctypeModal } from '@/composables/doctypeModal'
@@ -304,6 +308,17 @@ const { capture } = useTelemetry()
 const { showModal } = useDoctypeModal()
 
 const route = useRoute()
+
+// clicking a card opens the deal beside the pipeline instead of leaving it.
+// `panelDeal` outlives the closing animation; the key remounts the panel when a
+// different card is picked, so it never shows the previous deal for a frame.
+const panelDeal = ref('')
+const showDealPanel = ref(false)
+
+function openDealPanel(name) {
+  panelDeal.value = name
+  showDealPanel.value = true
+}
 
 const dealsListView = ref(null)
 const showDealModal = ref(false)
