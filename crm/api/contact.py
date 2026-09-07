@@ -4,6 +4,26 @@ from frappe import _
 
 def validate(doc, method):
 	update_deals_email_mobile_no(doc)
+	update_leads_email_mobile_no(doc)
+
+
+def update_leads_email_mobile_no(doc):
+	"""A lead's recapiti follow its contact, the way a deal's already do.
+
+	The contact is where a person's numbers live; the fields on the lead are a
+	copy kept for everything that reads `lead.mobile_no`. Without this the copy
+	goes stale the moment somebody edits the number in the address book, which is
+	precisely how the two came to disagree before they were tied together.
+	"""
+	wanted = {
+		"email": doc.email_id,
+		"mobile_no": doc.mobile_no,
+		"phone": doc.get("phone"),
+	}
+	for lead in frappe.get_all("CRM Lead", filters={"contact": doc.name}, pluck="name"):
+		current = frappe.db.get_values("CRM Lead", lead, list(wanted), as_dict=True)[0]
+		if any(current.get(field) != value for field, value in wanted.items()):
+			frappe.db.set_value("CRM Lead", lead, wanted)
 
 
 def update_deals_email_mobile_no(doc):
