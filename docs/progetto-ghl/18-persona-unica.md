@@ -170,15 +170,17 @@ Tappe 1–4 fatte. Della quinta è fatta la parte che conta per chi usa il CRM:
 `/contacts/:id`, quindi vale da ovunque si clicchi — la rubrica, la tab Contatti
 di una trattativa, un link vecchio — e non solo dalla lista.
 
-Il blocco **Contact** nel pannello laterale del lead c'è: l'elenco dei numeri e
-delle email della persona, con il badge *principale*, sopra le altre sezioni —
-la stessa posizione che la sezione Contatti ha da sempre sulla trattativa. Il
-lead mostrava solo `email` e `mobile_no`, cioè il recapito principale e basta;
-adesso si vede tutta la rubrica di quella persona.
+**Un blocco solo.** I campi `email` e `mobile_no` della sezione *Person*
+mostravano il recapito principale e basta; adesso sono lo stesso controllo che
+usa la scheda Contatto — elencano ogni numero e ogni indirizzo, con il badge
+*principale*, e da lì si aggiunge, si corregge e si promuove.
 
-La scheda Contatto non è però sparita: resta il posto dove si **modificano** —
-ci si arriva dalla matita sul blocco, o dal bottone in alto (`?rubrica=1` salta
-il reindirizzamento). Sparirà quando il blocco saprà anche scrivere.
+Un primo tentativo aveva messo un blocco *Contact* in cima al pannello, sopra la
+sezione Person: la stessa persona due volte, e i due blocchi non mostravano
+nemmeno le stesse cose. Quel blocco è stato tolto — una patch lo rimuove dai
+siti che l'avevano ricevuto — e al suo posto è la sezione Person a saper fare
+tutto. La scheda Contatto resta raggiungibile dal bottone in alto
+(`?rubrica=1` salta il reindirizzamento), ma non serve più per i recapiti.
 
 Quello che **non** è stato fatto: la lista Contatti legge ancora il doctype
 `Contact`, non i lead. Puntarla su `CRM Lead` significa condividere con la pagina

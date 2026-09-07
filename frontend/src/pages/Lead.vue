@@ -209,86 +209,13 @@
         class="flex flex-1 flex-col justify-between overflow-hidden"
       >
         <SidePanelLayout
-          :sections="sections.data"
+          :sections="parsedSections"
           doctype="CRM Lead"
           :docname="leadId"
           @reload="sections.reload"
           @beforeFieldChange="beforeStatusChange"
           @afterFieldChange="reloadResources"
-        >
-          <template #actions="{ section }">
-            <Button
-              v-if="section.name == 'contacts_section' && doc.contact"
-              variant="ghost"
-              class="w-7 mr-2"
-              :tooltip="__('Edit numbers and emails')"
-              :icon="EditIcon"
-              @click="openAddressBook"
-            />
-          </template>
-          <template #default="{ section }">
-            <div
-              v-if="section.name == 'contacts_section'"
-              class="flex flex-col gap-1.5 px-3 pt-3 text-base"
-            >
-              <div
-                v-if="!person.data?.name"
-                class="flex h-16 items-center justify-center text-ink-gray-5"
-              >
-                {{ __('No Contact') }}
-              </div>
-              <template v-else>
-                <div class="flex items-center gap-2 pb-1">
-                  <Avatar
-                    :label="person.data.full_name"
-                    :image="person.data.image"
-                    size="md"
-                  />
-                  <div class="truncate text-ink-gray-8">
-                    {{ person.data.full_name }}
-                  </div>
-                </div>
-                <div
-                  v-for="row in person.data.email_ids"
-                  :key="row.email_id"
-                  class="flex items-center gap-3 py-1 text-ink-gray-8"
-                >
-                  <Email2Icon class="h-4 w-4 shrink-0" />
-                  <div class="truncate">{{ row.email_id }}</div>
-                  <Badge
-                    v-if="row.primary"
-                    variant="outline"
-                    theme="green"
-                    :label="__('Primary')"
-                  />
-                </div>
-                <div
-                  v-for="row in person.data.phone_nos"
-                  :key="row.phone"
-                  class="flex items-center gap-3 py-1 text-ink-gray-8"
-                >
-                  <PhoneIcon class="h-4 w-4 shrink-0" />
-                  <div class="truncate">{{ row.phone }}</div>
-                  <Badge
-                    v-if="row.primary"
-                    variant="outline"
-                    theme="green"
-                    :label="__('Primary')"
-                  />
-                </div>
-                <div
-                  v-if="
-                    !person.data.email_ids?.length &&
-                    !person.data.phone_nos?.length
-                  "
-                  class="flex items-center justify-center py-3 text-sm text-ink-gray-4"
-                >
-                  {{ __('No Details Added') }}
-                </div>
-              </template>
-            </div>
-          </template>
-        </SidePanelLayout>
+        />
       </div>
     </Resizer>
   </div>
@@ -372,24 +299,23 @@ import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
+import { useContactFields } from '@/composables/useContactFields'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { callEnabled } from '@/composables/telephony'
-import EditIcon from '@/components/Icons/EditIcon.vue'
 import {
   createResource,
   FileUploader,
   Dropdown,
   Tooltip,
   Avatar,
-  Badge,
   Tabs,
   Breadcrumbs,
   call,
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning'
@@ -432,13 +358,35 @@ const deals = createResource({
   auto: true,
 })
 
-// the whole address book entry, not just the primary number the lead mirrors:
-// the second phone somebody wrote down is still a way to reach this person
-const person = createResource({
+// The lead's `email` and `mobile_no` are the primary ones only. This hands the
+// whole address book entry to the same control the Contact page uses, so the
+// Person section lists every number and every address — and there is one block
+// for the recapiti instead of two showing different halves of the same thing.
+const personResource = createResource({
   url: 'crm.api.lead.get_contact_details',
   params: { lead: props.leadId },
   auto: true,
+  onSuccess: (data) => (person.doc = data || {}),
 })
+
+const person = reactive({
+  doc: {},
+  reload: () => personResource.reload(),
+})
+
+const transformContactField = useContactFields(person, { emailFieldname: 'email' })
+
+const parsedSections = computed(() =>
+  (sections.data || []).map((section) => ({
+    ...section,
+    columns: (section.columns || []).map((column) => ({
+      ...column,
+      fields: (column.fields || []).map((field) =>
+        person.doc.name ? transformContactField(field) : field,
+      ),
+    })),
+  })),
+)
 
 const dealOptions = computed(() => [
   ...(deals.data || []).map((deal) => ({
@@ -718,7 +666,7 @@ function reloadResources(data) {
   // editing the number or the email here writes it on the contact, so the
   // address book block beside it is now out of date
   if (['email', 'mobile_no', 'phone'].some((f) => Object.hasOwn(data ?? {}, f))) {
-    person.reload()
+    personResource.reload()
   }
   if (
     Object.hasOwn(data ?? {}, 'status') &&

@@ -30,7 +30,13 @@ interface DropdownOption {
 
 type SidePanelField = Record<string, unknown> & { fieldname?: string }
 
-export function useContactFields(contact: ContactDocument) {
+// The lead calls its primary address `email` where the contact calls it
+// `email_id`; the field it renders is the same one, so it says which name it
+// uses rather than getting a second copy of all this.
+export function useContactFields(
+  contact: ContactDocument,
+  { emailFieldname = 'email_id' }: { emailFieldname?: string } = {},
+) {
   // 'email' | 'mobile_no' (setAsPrimary) and 'email' | 'phone' (createNew)
   const isEmailField = (field: string) => field === 'email'
   const isEmailDoctype = (doctype: string) => doctype === 'Contact Email'
@@ -146,7 +152,7 @@ export function useContactFields(contact: ContactDocument) {
       showAddressModal,
     }: { showAddressModal?: (address?: string) => void } = {},
   ): SidePanelField {
-    if (field.fieldname === 'email_id') {
+    if (field.fieldname === emailFieldname) {
       return {
         ...field,
         read_only: false,
