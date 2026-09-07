@@ -15,6 +15,7 @@ from frappe.tests import IntegrationTestCase
 from crm.api import site
 from crm.api.site_routes import (
 	apply_website_fields,
+	guard_home_page,
 	normalise_route,
 	reserved_prefixes,
 	route_conflict,
@@ -208,6 +209,41 @@ class TestSiteAPI(IntegrationTestCase):
 	def test_write_endpoints_need_a_manager(self):
 		frappe.set_user("Guest")
 		self.assertRaises(frappe.PermissionError, site.check_route, "qualcosa")
+
+
+class TestHomePageGuard(IntegrationTestCase):
+	"""The home page must survive every path, not only the CRM's own buttons.
+
+	Builder's dashboard can unpublish or delete a page too, so the rule sits on the
+	document rather than in the API that happens to be convenient.
+	"""
+
+	def tearDown(self):
+		frappe.db.set_single_value("CRM Website Settings", "home_page", None)
+		frappe.db.rollback()
+
+	def test_unpublishing_the_home_page_is_refused(self):
+		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		doc = frappe._dict(route="casa", published=0)
+		self.assertRaises(frappe.ValidationError, guard_home_page, doc)
+
+	def test_deleting_the_home_page_is_refused(self):
+		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		doc = frappe._dict(route="casa", published=1)
+		self.assertRaises(frappe.ValidationError, guard_home_page, doc, "on_trash")
+
+	def test_a_published_home_page_saves_normally(self):
+		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		guard_home_page(frappe._dict(route="casa", published=1))
+
+	def test_other_pages_are_untouched(self):
+		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		guard_home_page(frappe._dict(route="contatti", published=0))
+		guard_home_page(frappe._dict(route="contatti", published=0), "on_trash")
+
+	def test_no_home_page_configured_blocks_nothing(self):
+		frappe.db.set_single_value("CRM Website Settings", "home_page", None)
+		guard_home_page(frappe._dict(route="casa", published=0))
 
 
 def _service(name: str, *, publish: bool = False, slug: str | None = None):

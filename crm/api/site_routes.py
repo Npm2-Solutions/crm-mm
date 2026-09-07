@@ -118,6 +118,27 @@ def guard_builder_route(doc, method=None):
 		frappe.throw(reason, title=_("Reserved address"))
 
 
+def guard_home_page(doc, method=None):
+	"""Refuse to take the site's home page off the air.
+
+	The CRM's own screens ask first, but the page can also be unpublished or deleted from
+	Builder's dashboard, and a home page that stops answering leaves the site root on a
+	404. So the rule lives on the document, where every path has to pass through it.
+	"""
+	if not doc.get("route") or not frappe.db.exists("DocType", "CRM Website Settings"):
+		return
+	home = frappe.db.get_single_value("CRM Website Settings", "home_page")
+	if not home or normalise_route(home) != normalise_route(doc.route):
+		return
+	if method == "on_trash" or not doc.get("published"):
+		frappe.throw(
+			_("{0} is the site home page. Choose another home page first.").format(
+				frappe.bold("/" + normalise_route(doc.route))
+			),
+			title=_("Home page"),
+		)
+
+
 def unique_slug(doctype: str, text: str, exclude: str | None = None, field: str = "website_slug") -> str:
 	"""A slug free within `doctype`, suffixed with -2, -3 … when it is already taken."""
 	base = slugify(text) or "pagina"
