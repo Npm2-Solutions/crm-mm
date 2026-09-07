@@ -154,41 +154,7 @@ def get_contact_lead_or_deal_from_number(number: str):
 			docname = contact.get("deal")
 		return docname, doctype
 
-	lead = get_lead_by_phone_number(number)
-	if lead:
-		return lead, "CRM Lead"
 	return None, None
-
-
-def get_lead_by_phone_number(phone_number: str) -> str | None:
-	"""A lead that carries the number itself, with no Contact of its own.
-
-	A lead can be written to straight from its page — the WhatsApp and SMS boxes
-	send to its `mobile_no` — so resolving through Contacts alone made the
-	conversation one-way: the message left, and the answer came back to nobody.
-	A lead already converted is skipped: its deal holds the conversation now, and
-	it is reachable through the Contact that conversion created.
-	"""
-	number = parse_phone_number(phone_number)
-	search = number.get("national_number") if number.get("is_valid") else phone_number
-	cleaned = "".join(character for character in (search or "") if character.isdigit())
-	# a couple of digits would LIKE-match half the table and hand the message to a stranger
-	if len(cleaned) < 6:
-		return None
-
-	Lead = frappe.qb.DocType("CRM Lead")
-	normalized = Replace(
-		Replace(Replace(Replace(Replace(Lead.mobile_no, " ", ""), "-", ""), "(", ""), ")", ""), "+", ""
-	)
-	rows = (
-		frappe.qb.from_(Lead)
-		.select(Lead.name)
-		.where(normalized.like(f"%{cleaned}%"))
-		.where(Lead.converted != 1)
-		.orderby(Lead.modified, order=Order.desc)
-		.limit(1)
-	).run(as_dict=True)
-	return rows[0].name if rows else None
 
 
 def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[str, str] | None:
@@ -248,8 +214,28 @@ def get_contact_by_phone_number(phone_number: str):
 
 	if number.get("is_valid"):
 		return get_contact(number.get("national_number"), number.get("country"))
-	else:
-		return get_contact(phone_number, number.get("country"), exact_match=True)
+
+	international = _as_international(phone_number)
+	if international.get("is_valid"):
+		return get_contact(international.get("national_number"), international.get("country"))
+
+	return get_contact(phone_number, number.get("country"), exact_match=True)
+
+
+def _as_international(phone_number: str) -> dict:
+	"""Read a plus-less number as the international one it is.
+
+	WhatsApp hands over "393703400189" and webhooks generally drop the plus. With
+	no plus `phonenumbers` falls back to the default region — India — and reads
+	that same number as Indian: +91393703400189. The `LIKE` finds the right
+	contact and `are_same_phone_number` then rejects it, comparing an Italian
+	number against an Indian one. Found and thrown away in the same breath.
+	"""
+	digits = "".join(character for character in (phone_number or "") if character.isdigit())
+	# a national number would become a different country's if we prefixed it blindly
+	if (phone_number or "").strip().startswith("+") or not 8 <= len(digits) <= 15:
+		return {}
+	return parse_phone_number(f"+{digits}")
 
 
 def _resolve_validated_ip(hostname: str, port: int) -> str:
