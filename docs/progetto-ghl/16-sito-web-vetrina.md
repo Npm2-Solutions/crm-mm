@@ -548,7 +548,10 @@ stessa rotta; non sa che `/crm` è l'app, `/book` le prenotazioni e `/crm-form` 
   che valida mentre scrivi e propone un'alternativa libera.
 - La home non si può ritirare né cancellare senza prima sceglierne un'altra — e la regola
   sta sul documento (`validate` e `on_trash`), non nella nostra API: si pubblica e si
-  cancella anche dalla dashboard di Builder, e la rete deve esserci comunque.
+  cancella anche dalla dashboard di Builder, e la rete deve esserci comunque. Conta solo
+  la **transizione** (era viva, la stai togliendo): una guardia che scattava su "non è
+  pubblicata" rendeva impossibile pubblicare una home scelta prima di andare online,
+  perché `publish()` salva e il salvataggio veniva rifiutato.
 
 ### 13.3 Pubblicazione
 

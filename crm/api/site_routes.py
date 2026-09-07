@@ -121,22 +121,35 @@ def guard_builder_route(doc, method=None):
 def guard_home_page(doc, method=None):
 	"""Refuse to take the site's home page off the air.
 
-	The CRM's own screens ask first, but the page can also be unpublished or deleted from
-	Builder's dashboard, and a home page that stops answering leaves the site root on a
-	404. So the rule lives on the document, where every path has to pass through it.
+	Only a *transition* counts. An earlier version threw whenever the home page was saved
+	while unpublished, which meant a home page chosen before it went live could never be
+	published at all: publish() saves, the save threw, and the page was stuck as a draft.
+	So the rule is "was live, is being pulled", not "is not live".
+
+	It lives on the document rather than in our API because a page can also be unpublished
+	or deleted from Builder's own dashboard, and a home page that stops answering leaves
+	the site root on a 404.
 	"""
 	if not doc.get("route") or not frappe.db.exists("DocType", "CRM Website Settings"):
 		return
 	home = frappe.db.get_single_value("CRM Website Settings", "home_page")
 	if not home or normalise_route(home) != normalise_route(doc.route):
 		return
-	if method == "on_trash" or not doc.get("published"):
-		frappe.throw(
-			_("{0} is the site home page. Choose another home page first.").format(
-				frappe.bold("/" + normalise_route(doc.route))
-			),
-			title=_("Home page"),
-		)
+
+	if method == "on_trash":
+		frappe.throw(_home_page_message(doc.route), title=_("Home page"))
+
+	if doc.get("published"):
+		return
+	previous = doc.get_doc_before_save() if hasattr(doc, "get_doc_before_save") else None
+	if previous and previous.get("published"):
+		frappe.throw(_home_page_message(doc.route), title=_("Home page"))
+
+
+def _home_page_message(route: str) -> str:
+	return _("{0} is the site home page. Choose another home page first.").format(
+		frappe.bold("/" + normalise_route(route))
+	)
 
 
 def unique_slug(doctype: str, text: str, exclude: str | None = None, field: str = "website_slug") -> str:
