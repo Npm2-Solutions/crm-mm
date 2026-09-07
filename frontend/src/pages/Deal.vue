@@ -105,21 +105,11 @@
           </Tooltip>
           <div class="flex gap-1.5">
             <Button
-              v-if="callEnabled"
-              :tooltip="__('Make a Call')"
-              :icon="PhoneIcon"
-              @click="triggerCall"
-            />
-
-            <Button
-              :tooltip="__('Send an Email')"
-              :icon="Email2Icon"
+              v-if="doc.lead"
+              :tooltip="__('Open the person')"
+              :icon="ContactsIcon"
               @click="
-                doc.email
-                  ? openEmailBox()
-                  : toast.error(
-                      __('Please set an email address to send emails'),
-                    )
+                router.push({ name: 'Lead', params: { leadId: doc.lead } })
               "
             />
 
@@ -364,16 +354,14 @@ import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
-import EmailIcon from '@/components/Icons/EmailIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
+import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
-import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
-import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
@@ -407,9 +395,6 @@ import { statusesStore } from '@/stores/statuses'
 import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
-import { whatsappEnabled } from '@/composables/whatsapp'
-import { smsEnabled } from '@/composables/sms'
-import { callEnabled } from '@/composables/telephony'
 import { useBroadcast } from '@/composables/useBroadcast'
 import {
   createResource,
@@ -610,11 +595,6 @@ const tabs = computed(() => {
       icon: ActivityIcon,
     },
     {
-      name: 'Emails',
-      label: __('Emails'),
-      icon: EmailIcon,
-    },
-    {
       name: 'Comments',
       label: __('Comments'),
       icon: CommentIcon,
@@ -628,11 +608,6 @@ const tabs = computed(() => {
       name: 'Events',
       label: __('Events'),
       icon: EventIcon,
-    },
-    {
-      name: 'Calls',
-      label: __('Calls'),
-      icon: PhoneIcon,
     },
     {
       name: 'Tasks',
@@ -653,18 +628,6 @@ const tabs = computed(() => {
       name: 'Tracking',
       label: __('Tracking'),
       icon: LucideRadar,
-    },
-    {
-      name: 'WhatsApp',
-      label: __('WhatsApp'),
-      icon: WhatsAppIcon,
-      condition: () => whatsappEnabled.value,
-    },
-    {
-      name: 'SMS',
-      label: __('SMS'),
-      icon: SMSIcon,
-      condition: () => smsEnabled.value,
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
@@ -778,22 +741,6 @@ const dealContacts = createResource({
 
 if (!dealContacts.data) dealContacts.fetch()
 
-function triggerCall() {
-  let primaryContact = dealContacts.data?.find((c) => c.is_primary)
-  let mobile_no = primaryContact.mobile_no || null
-
-  if (!primaryContact) {
-    toast.error(__('No Primary Contact Set'))
-    return
-  }
-
-  if (!mobile_no) {
-    toast.error(__('No Mobile Number Set'))
-    return
-  }
-
-  makeCall(mobile_no)
-}
 
 async function triggerStatusChange(value) {
   await triggerOnChange('status', value)
@@ -833,13 +780,6 @@ function deleteDeal() {
 
 const activities = ref(null)
 
-function openEmailBox() {
-  let currentTab = tabs.value[tabIndex.value]
-  if (!['Emails', 'Comments', 'Activities'].includes(currentTab.name)) {
-    activities.value.changeTabTo('emails')
-  }
-  nextTick(() => (activities.value.emailBox.show = true))
-}
 
 function statusLabel(status) {
   if (isTranslatable('CRM Deal Status')) return __(status)
