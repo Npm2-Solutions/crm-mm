@@ -19,6 +19,18 @@
         :iconLeft="CommentIcon"
         @click="toggleCommentBox()"
       />
+      <!-- the third way of answering somebody, and on this CRM often the first
+           one: it was the only one missing from here -->
+      <Button
+        v-if="whatsappEnabled"
+        variant="ghost"
+        :label="__('WhatsApp')"
+        :class="[
+          showWhatsAppBox ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : '',
+        ]"
+        :iconLeft="WhatsAppIcon"
+        @click="toggleWhatsAppBox()"
+      />
     </div>
   </div>
   <div
@@ -84,12 +96,31 @@
       :placeholder="__('@John, can you please check this?')"
     />
   </div>
+  <!-- mounted the first time it is opened, and kept afterwards: the box asks
+       the backend which numbers this person has, and that question is not worth
+       asking on every record somebody merely looks at -->
+  <div v-if="whatsappEnabled && whatsappEverOpened" v-show="showWhatsAppBox">
+    <!-- the same box as the WhatsApp tab, not a second one: recipient choice,
+         media checks and templates behave identically wherever you write from -->
+    <WhatsAppBox
+      ref="whatsappBox"
+      v-model="doc"
+      v-model:whatsapp="whatsapp"
+      v-model:reply="reply"
+      :doctype="doctype"
+      @scroll="emit('scroll')"
+      @template="emit('template')"
+    />
+  </div>
 </template>
 
 <script setup>
 import EmailEditor from '@/components/EmailEditor.vue'
 import CommentBox from '@/components/CommentBox.vue'
 import CommentIcon from '@/components/Icons/CommentIcon.vue'
+import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
+import { whatsappEnabled } from '@/composables/whatsapp'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import { isContentEmpty } from '@/utils'
 import { usersStore } from '@/stores/users'
@@ -104,8 +135,10 @@ const props = defineProps({
 
 const doc = defineModel({ type: Object, default: () => ({}) })
 const reload = defineModel('reload', { type: Boolean })
+const whatsapp = defineModel('whatsapp', { type: Object, default: () => ({}) })
+const reply = defineModel('reply', { type: Object, default: () => ({}) })
 
-const emit = defineEmits(['scroll'])
+const emit = defineEmits(['scroll', 'template'])
 
 const { getUser } = usersStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
@@ -113,6 +146,9 @@ const { capture } = useTelemetry()
 
 const showEmailBox = ref(false)
 const showCommentBox = ref(false)
+const showWhatsAppBox = ref(false)
+const whatsappEverOpened = ref(false)
+const whatsappBox = ref(null)
 const newEmail = useStorage(
   `emailBoxContent-${getUser().email}-${props.doctype}-${doc.value.name}`,
   '',
@@ -311,23 +347,38 @@ async function submitComment() {
   updateOnboardingStep('add_first_comment')
 }
 
-function toggleEmailBox() {
-  if (showCommentBox.value) {
-    showCommentBox.value = false
+// one box at a time: three open editors on the same record is nobody's idea of
+// a conversation
+function toggle(which) {
+  const open = {
+    email: showEmailBox,
+    comment: showCommentBox,
+    whatsapp: showWhatsAppBox,
   }
-  showEmailBox.value = !showEmailBox.value
+  const wanted = !open[which].value
+  Object.entries(open).forEach(
+    ([name, box]) => (box.value = name === which && wanted),
+  )
+}
+
+function toggleEmailBox() {
+  toggle('email')
 }
 
 function toggleCommentBox() {
-  if (showEmailBox.value) {
-    showEmailBox.value = false
-  }
-  showCommentBox.value = !showCommentBox.value
+  toggle('comment')
+}
+
+function toggleWhatsAppBox() {
+  whatsappEverOpened.value = true
+  toggle('whatsapp')
 }
 
 defineExpose({
   show: showEmailBox,
   showComment: showCommentBox,
+  showWhatsApp: showWhatsAppBox,
+  whatsappBox,
   editor: newEmailEditor,
 })
 </script>

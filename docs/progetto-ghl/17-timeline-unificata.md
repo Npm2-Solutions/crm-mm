@@ -20,11 +20,18 @@ Due difetti, e il secondo è peggiore del primo.
 WhatsApp, riceve una email e poi risponde di nuovo su WhatsApp produce due storie
 separate che nessuna schermata rimette insieme. Ma è *una* conversazione.
 
-**"Activity" promette tutto e mantiene poco.** Oggi contiene solo le `versions`
+**"Activity" promette tutto e mantiene poco.** Conteneva solo le `versions`
 (modifiche ai campi, commenti, email) e le chiamate — si legge in
-`Activities.vue`, `get_activities()`. Non contiene WhatsApp, non contiene SMS,
+`Activities.vue`, `get_activities()`. Non conteneva WhatsApp, non contiene SMS,
 non contiene task, note, appuntamenti né automazioni. Chi la apre crede di vedere
 tutto e ne vede metà, che è peggio di una tab onesta chiamata "Modifiche".
+
+> **Primo pezzo fatto (08/09/2026).** WhatsApp è dentro Activity, e la barra in
+> fondo ha il suo pulsante accanto a Reply e Comment — la stessa casella della
+> tab WhatsApp, non una seconda. Era il passo che si poteva fare senza la
+> schermata nuova: il pulsante da solo avrebbe inviato in un posto dove il
+> messaggio non compariva. Restano fuori SMS, task, note, appuntamenti e
+> automazioni, che è il resto di questo documento.
 
 ## L'idea: il filtro non filtra, cambia vista
 

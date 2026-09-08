@@ -206,6 +206,15 @@
           >
             <EmailArea :activity="activity" :emailBox="emailBox" />
           </div>
+          <!-- no id here: WhatsAppArea puts it on the bubble itself, and two
+               elements with the same id break the jump to a replied message -->
+          <div v-else-if="activity.activity_type == 'whatsapp'" class="mb-4">
+            <WhatsAppArea
+              v-model="whatsappMessages"
+              v-model:reply="replyMessage"
+              :messages="[activity]"
+            />
+          </div>
           <div
             v-else-if="activity.activity_type == 'comment'"
             :id="activity.name"
@@ -420,8 +429,11 @@
       ref="emailBox"
       v-model="doc"
       v-model:reload="reload_email"
+      v-model:whatsapp="whatsappMessages"
+      v-model:reply="replyMessage"
       :doctype="doctype"
       @scroll="scroll"
+      @template="showWhatsappTemplates = true"
     />
     <WhatsAppBox
       v-if="title == 'WhatsApp'"
@@ -698,9 +710,17 @@ const replyMessage = ref({})
 
 function get_activities() {
   if (!all_activities.data?.versions) return []
-  if (!all_activities.data?.calls.length)
-    return all_activities.data.versions || []
-  return [...all_activities.data.versions, ...all_activities.data.calls]
+  return [
+    ...(all_activities.data.versions || []),
+    ...(all_activities.data.calls || []),
+    // the conversation is part of what happened on this person, not a separate
+    // world: without this, a message written from here would be sent and then
+    // vanish from the very tab it was written in
+    ...(whatsappMessages.data || []).map((message) => ({
+      ...message,
+      activity_type: 'whatsapp',
+    })),
+  ]
 }
 
 // files a record has no tab of its own for. A deal shows notes and files
@@ -745,7 +765,8 @@ const activities = computed(() => {
     if (
       activity.activity_type == 'incoming_call' ||
       activity.activity_type == 'outgoing_call' ||
-      activity.activity_type == 'communication'
+      activity.activity_type == 'communication' ||
+      activity.activity_type == 'whatsapp'
     )
       return
 
@@ -902,6 +923,9 @@ function timelineIcon(activity_type, is_lead) {
       break
     case 'attachment_log':
       icon = AttachmentIcon
+      break
+    case 'whatsapp':
+      icon = WhatsAppIcon
       break
     default:
       icon = DotIcon
