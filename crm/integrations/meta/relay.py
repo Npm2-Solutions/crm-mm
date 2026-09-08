@@ -125,6 +125,32 @@ def register_page_route(page_id: str, site: str, ts: str, signature: str):
 	return Response("ok", mimetype="text/plain")
 
 
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def unregister_page_route(page_id: str, site: str, ts: str, signature: str):
+	"""Client site → hub: 'I no longer own this page'.
+
+	Signed like the claim, but over a different message, so a captured claim
+	cannot be replayed as a release. A site can only release its own route:
+	dropping somebody else's would silently divert their leads to the hub.
+	"""
+	if not relay_secret():
+		return Response("relay not configured", status=400, mimetype="text/plain")
+	if abs(int(time.time()) - int(ts or 0)) > MAX_SKEW:
+		return Response("stale request", status=403, mimetype="text/plain")
+	expected = sign(f"release|{page_id}|{site}|{ts}".encode())
+	if not hmac.compare_digest(signature or "", expected):
+		return Response("invalid signature", status=403, mimetype="text/plain")
+
+	site = site.rstrip("/")
+	current = frappe.db.get_value("Meta Page Route", page_id, "site_url")
+	if current and current.rstrip("/") != site:
+		return Response("page belongs to another site", status=409, mimetype="text/plain")
+	if current:
+		frappe.delete_doc("Meta Page Route", page_id, ignore_permissions=True, force=True)
+	frappe.db.commit()
+	return Response("ok", mimetype="text/plain")
+
+
 def claim_page(page_id: str) -> None:
 	"""Register this site as the owner of a page on the hub (best effort)."""
 	from crm.integrations.meta.oauth import hub_url
@@ -147,3 +173,32 @@ def claim_page(page_id: str) -> None:
 		)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Meta relay: could not claim page on the hub")
+
+
+def release_page(page_id: str) -> None:
+	"""Tell the hub this site no longer owns the page (best effort).
+
+	The counterpart of `claim_page`. Without it a page stayed routed here
+	forever: the hub refuses to reassign a claimed page, so a page disconnected
+	on one client site could never be connected on another.
+	"""
+	from crm.integrations.meta.oauth import hub_url
+
+	hub = hub_url()
+	if not hub or not relay_secret():
+		return
+	site = get_url().rstrip("/")
+	ts = str(int(time.time()))
+	try:
+		requests.post(
+			f"{hub}/api/method/crm.integrations.meta.relay.unregister_page_route",
+			json={
+				"page_id": page_id,
+				"site": site,
+				"ts": ts,
+				"signature": sign(f"release|{page_id}|{site}|{ts}".encode()),
+			},
+			timeout=TIMEOUT,
+		)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Meta relay: could not release page on the hub")

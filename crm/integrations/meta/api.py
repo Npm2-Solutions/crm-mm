@@ -147,9 +147,44 @@ def get_webhook_subscription() -> dict:
 	return {"configured": False}
 
 
+def stop_page(page_id: str) -> None:
+	"""Undo everything that makes a page produce leads.
+
+	Best effort on Meta's side: a page whose token Meta already rejects must
+	not keep the rest of the disconnection from happening.
+	"""
+	token = get_page_token(page_id)
+	if token:
+		try:
+			graph_post(f"{page_id}/subscribed_apps", token, {"method": "delete"})
+		except MetaAPIError:
+			pass  # already unsubscribed, or the token is dead: nothing to undo
+
+	from crm.integrations.meta.relay import release_page
+
+	release_page(page_id)
+
+	page = frappe.get_doc("Facebook Page", page_id)
+	page.sync_enabled = 0
+	page.webhook_subscribed = 0
+	page.token_valid = 0
+	page.access_token = ""  # empty means "forget it" for a Password field
+	page.save(ignore_permissions=True)
+
+
 @frappe.whitelist(methods=["POST"])
 def disconnect() -> dict:
+	"""Really disconnect, not just forget who logged in.
+
+	Clearing the user token alone left every Page importing: page tokens do not
+	expire with it, the app stays subscribed to each Page's leadgen webhook, and
+	the hourly reconciliation keeps polling Meta. Leads went on arriving for a
+	connection the screen showed as gone.
+	"""
 	_check_manager()
+	for page_id in frappe.get_all("Facebook Page", pluck="name"):
+		stop_page(page_id)
+
 	settings = frappe.get_doc("CRM Meta Settings")
 	settings.user_access_token = ""
 	settings.connected_user_id = ""
@@ -352,11 +387,14 @@ def set_page_sync(page_id: str, enabled: bool) -> dict:
 	page.webhook_subscribed = subscribed
 	page.save(ignore_permissions=True)
 
-	if enabled:
-		# tell the hub that leads for this page belong to this site
-		from crm.integrations.meta.relay import claim_page
+	# tell the hub whether leads for this page belong to this site: a page left
+	# claimed after sync is switched off can never be connected anywhere else
+	from crm.integrations.meta.relay import claim_page, release_page
 
+	if enabled:
 		claim_page(page_id)
+	else:
+		release_page(page_id)
 	return {"sync_enabled": page.sync_enabled, "webhook_subscribed": page.webhook_subscribed}
 
 

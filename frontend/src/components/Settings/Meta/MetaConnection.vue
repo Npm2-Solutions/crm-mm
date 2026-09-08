@@ -105,7 +105,7 @@
             v-if="status.data?.connected"
             variant="ghost"
             :label="__('Disconnect')"
-            @click="disconnect"
+            @click="confirmingDisconnect = true"
           />
         </div>
       </div>
@@ -218,6 +218,34 @@
         <Button :label="__('WhatsApp')" @click="go('WhatsApp')" />
       </div>
     </div>
+
+    <!-- disconnecting stops the leads and the publishing: say so before doing
+         it, because reconnecting means going through Facebook again -->
+    <Dialog
+      v-model="confirmingDisconnect"
+      :options="{
+        title: __('Disconnect Facebook?'),
+        actions: [
+          {
+            label: __('Disconnect'),
+            theme: 'red',
+            variant: 'solid',
+            loading: disconnecting,
+            onClick: disconnect,
+          },
+        ],
+      }"
+    >
+      <template #body-content>
+        <p class="text-p-base text-ink-gray-6">
+          {{
+            __(
+              'The CRM stops importing leads from every Page, unsubscribes them from Facebook and forgets their tokens. The Social Planner cannot publish either until you connect again.',
+            )
+          }}
+        </p>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -225,6 +253,7 @@
 import { activeSettingsPage } from '@/composables/settings'
 import {
   createResource,
+  Dialog,
   FeatherIcon,
   FormControl,
   LoadingIndicator,
@@ -255,6 +284,8 @@ const webhook = createResource({
   auto: true,
 })
 
+const confirmingDisconnect = ref(false)
+const disconnecting = ref(false)
 const configuringWebhook = ref(false)
 const refreshing = ref(false)
 const choosing = ref(false)
@@ -398,12 +429,20 @@ function connect(rerequest = false) {
 }
 
 function disconnect() {
+  disconnecting.value = true
   createResource({
     url: 'crm.integrations.meta.api.disconnect',
     auto: true,
     onSuccess: () => {
+      disconnecting.value = false
+      confirmingDisconnect.value = false
       toast.success(__('Disconnected'))
       status.reload()
+      pageList.reload()
+    },
+    onError: (e) => {
+      disconnecting.value = false
+      toast.error(e.messages?.[0] || __('Could not disconnect'))
     },
   })
 }

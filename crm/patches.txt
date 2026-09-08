@@ -41,3 +41,4 @@ crm.patches.v1_0.set_whatsapp_account_endpoint
 crm.patches.v1_0.give_every_lead_a_contact
 crm.patches.v1_0.write_numbers_with_their_prefix
 crm.patches.v1_0.one_block_for_the_recapiti
+crm.patches.v1_0.stop_lead_import_after_disconnect
