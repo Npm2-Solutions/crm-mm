@@ -1,7 +1,7 @@
 <template>
   <LayoutHeader>
     <template #left-header>
-      <ViewBreadcrumbs v-model="viewControls" routeName="Leads" />
+      <ViewBreadcrumbs v-model="viewControls" routeName="Leads" :label="__('People')" />
     </template>
     <template #right-header>
       <CustomActions
@@ -23,7 +23,6 @@
     v-model:resizeColumn="triggerResize"
     v-model:updatedPageCount="updatedPageCount"
     doctype="CRM Lead"
-    :filters="{ converted: 0 }"
     :options="{
       allowedViews: ['list', 'group_by', 'kanban'],
     }"

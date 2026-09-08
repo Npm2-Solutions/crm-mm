@@ -227,7 +227,13 @@ doc_events = {
 	"CRM Lead": {
 		"before_insert": ["crm.api.tracking.stamp_manual_source"],
 		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_lead_created"],
-		"on_update": ["crm.automation.engine.on_lead_updated"],
+		"on_update": [
+			"crm.automation.engine.on_lead_updated",
+			"crm.api.mirror.on_lead_updated",
+		],
+	},
+	"CRM Organization": {
+		"on_update": ["crm.api.mirror.on_organization_updated"],
 	},
 	"CRM Deal": {
 		"before_insert": ["crm.api.tracking.stamp_manual_source"],

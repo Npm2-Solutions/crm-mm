@@ -36,6 +36,7 @@ class CRMAutomation(Document):
 		trigger_config: DF.JSON | None
 		trigger_event: DF.Literal[
 			"Lead Created",
+			"Lead Form Submitted",
 			"Deal Created",
 			"Lead Status Changed",
 			"Deal Status Changed",

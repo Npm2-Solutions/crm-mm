@@ -42,3 +42,5 @@ crm.patches.v1_0.write_numbers_with_their_prefix
 crm.patches.v1_0.one_block_for_the_recapiti
 crm.patches.v1_0.stop_lead_import_after_disconnect
 crm.patches.v1_0.create_first_web_site #08-09-2026
+crm.patches.v1_0.give_every_contact_a_person
+crm.patches.v1_0.link_deals_to_their_organization

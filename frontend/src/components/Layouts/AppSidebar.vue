@@ -265,7 +265,10 @@ const links = [
     condition: () => !props.mobile,
   },
   {
-    label: 'Leads',
+    // the people. "Lead" is what one of them is at the start, not what they
+    // are forever: they stay here after a deal is opened, as in GHL and
+    // HubSpot, so the list cannot be named after the first ten minutes
+    label: 'People',
     icon: LeadsIcon,
     to: 'Leads',
   },
@@ -273,11 +276,6 @@ const links = [
     label: 'Deals',
     icon: DealsIcon,
     to: 'Deals',
-  },
-  {
-    label: 'Contacts',
-    icon: ContactsIcon,
-    to: 'Contacts',
   },
   {
     label: 'Organizations',

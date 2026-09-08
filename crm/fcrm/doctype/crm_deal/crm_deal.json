@@ -126,7 +126,7 @@
    "label": "Probability"
   },
   {
-   "fetch_from": ".annual_revenue",
+   "fetch_from": "organization.annual_revenue",
    "fieldname": "annual_revenue",
    "fieldtype": "Currency",
    "label": "Annual Revenue",
@@ -134,7 +134,7 @@
    "options": "currency"
   },
   {
-   "fetch_from": ".website",
+   "fetch_from": "organization.website",
    "fieldname": "website",
    "fieldtype": "Data",
    "label": "Website"
@@ -292,12 +292,14 @@
    "fieldname": "no_of_employees",
    "fieldtype": "Select",
    "label": "No. of Employees",
-   "options": "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+"
+   "options": "1-10\n11-50\n51-200\n201-500\n501-1000\n1000+",
+   "fetch_from": "organization.no_of_employees"
   },
   {
    "fieldname": "job_title",
    "fieldtype": "Data",
-   "label": "Job Title"
+   "label": "Job Title",
+   "fetch_from": "lead.job_title"
   },
   {
    "fieldname": "phone",
@@ -320,7 +322,8 @@
   {
    "fieldname": "lead_name",
    "fieldtype": "Data",
-   "label": "Lead Name"
+   "label": "Lead Name",
+   "fetch_from": "lead.lead_name"
   },
   {
    "fieldname": "column_break_ijan",
@@ -343,7 +346,8 @@
   {
    "fieldname": "organization_name",
    "fieldtype": "Data",
-   "label": "Organization Name"
+   "label": "Organization Name",
+   "fetch_from": "organization.organization_name"
   },
   {
    "fieldname": "column_break_xbyf",
@@ -353,7 +357,8 @@
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
-   "options": "CRM Industry"
+   "options": "CRM Industry",
+   "fetch_from": "organization.industry"
   },
   {
    "fieldname": "person_section",
@@ -364,17 +369,20 @@
    "fieldname": "salutation",
    "fieldtype": "Link",
    "label": "Salutation",
-   "options": "Salutation"
+   "options": "Salutation",
+   "fetch_from": "lead.salutation"
   },
   {
    "fieldname": "first_name",
    "fieldtype": "Data",
-   "label": "First name"
+   "label": "First name",
+   "fetch_from": "lead.first_name"
   },
   {
    "fieldname": "last_name",
    "fieldtype": "Data",
-   "label": "Last name"
+   "label": "Last name",
+   "fetch_from": "lead.last_name"
   },
   {
    "fieldname": "column_break_xjmy",
@@ -384,7 +392,8 @@
    "fieldname": "gender",
    "fieldtype": "Link",
    "label": "Gender",
-   "options": "Gender"
+   "options": "Gender",
+   "fetch_from": "lead.gender"
   },
   {
    "fieldname": "contact",
@@ -525,35 +534,40 @@
    "fieldname": "organization_logo",
    "fieldtype": "Attach Image",
    "label": "Organization Logo",
-   "no_copy": 1
+   "no_copy": 1,
+   "fetch_from": "organization.organization_logo"
   },
   {
    "description": "Company description discovered by Domain Enrichment.",
    "fieldname": "company_description",
    "fieldtype": "Small Text",
    "label": "Company Description",
-   "no_copy": 1
+   "no_copy": 1,
+   "fetch_from": "organization.company_description"
   },
   {
    "depends_on": "eval:doc.linkedin",
    "fieldname": "linkedin",
    "fieldtype": "Data",
    "label": "LinkedIn",
-   "no_copy": 1
+   "no_copy": 1,
+   "fetch_from": "organization.linkedin"
   },
   {
    "depends_on": "eval:doc.twitter",
    "fieldname": "twitter",
    "fieldtype": "Data",
    "label": "X (Twitter)",
-   "no_copy": 1
+   "no_copy": 1,
+   "fetch_from": "organization.twitter"
   },
   {
    "depends_on": "eval:doc.facebook",
    "fieldname": "facebook",
    "fieldtype": "Data",
    "label": "Facebook",
-   "no_copy": 1
+   "no_copy": 1,
+   "fetch_from": "organization.facebook"
   },
   {
    "fieldname": "tracking_tab",

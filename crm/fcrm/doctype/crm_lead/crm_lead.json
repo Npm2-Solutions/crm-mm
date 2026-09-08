@@ -74,6 +74,7 @@
   "facebook_lead_id",
   "column_break_ixmu",
   "facebook_form_id",
+  "facebook_submissions",
   "lost_details_tab",
   "lost_reason",
   "lost_notes",
@@ -261,7 +262,7 @@
    "fieldtype": "Check",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Converted"
+   "label": "Has a deal"
   },
   {
    "fieldname": "person_tab",
@@ -409,6 +410,13 @@
    "fieldname": "facebook_form_id",
    "fieldtype": "Data",
    "label": "Facebook Form ID"
+  },
+  {
+   "fieldname": "facebook_submissions",
+   "fieldtype": "Table",
+   "label": "Lead Form Submissions",
+   "options": "CRM Lead Facebook Submission",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_kikl",

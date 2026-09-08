@@ -52,6 +52,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [18](./18-persona-unica.md) | Una persona sola: lead e contatto smettono di essere due | 📐 proposta | Il lead e' la persona, il deal la relazione, il contatto la rubrica: i recapiti vivono in un posto solo e il campo sul lead diventa uno specchio, cosi' i 201 punti che lo leggono non cambiano |
 | [19](./19-trattativa-magra.md) | La trattativa magra, come l'opportunita' di GHL | ✅ fatto | L'opportunita' di GHL e' un pannello con i campi, le note, i task e un appuntamento: la nostra trattativa scende da otto tab a quattro, e i file finiscono accanto alle note |
 | [20](./20-domini-dei-clienti.md) | Più siti, sul dominio del cliente | 🟡 proposta | Un cliente per site, tanti domini sopra: CNAME come GHL e certificati on-demand, senza configurare nginx a ogni dominio |
+| [21](./21-lead-contatto-trattativa.md) | Lead, contatto, azienda, trattativa: cosa significano davvero | ✅ fatto | Verifica contro Salesforce, HubSpot, Pipedrive e GHL: la persona e' unica e permanente, "lead" e' uno stadio. Sei punti dove il codice seguiva ancora il modello opposto |
 
 ## Architettura complessiva
 

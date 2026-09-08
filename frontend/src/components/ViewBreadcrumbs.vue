@@ -9,7 +9,7 @@
           : 'text-ink-gray-7',
       ]"
     >
-      {{ __(routeName) }}
+      {{ __(label || routeName) }}
     </router-link>
     <span
       v-if="viewControls && viewControls.viewsDropdownOptions"
@@ -66,6 +66,9 @@ import { Dropdown } from 'frappe-ui'
 
 defineProps({
   routeName: { type: String, required: true },
+  // what to call the list when the route name is not what people call it: the
+  // person list still routes as "Leads" so old links keep working
+  label: { type: String, default: '' },
 })
 
 const viewControls = defineModel({ type: Object, default: () => ({}) })

@@ -393,11 +393,11 @@ def inbound_webhook(automation: str, key: str) -> dict:
 	if not email and not phone:
 		frappe.throw(_("Payload must contain email or mobile_no"))
 
-	lead = None
-	if email:
-		lead = frappe.db.get_value("CRM Lead", {"email": email, "converted": 0})
-	if not lead and phone:
-		lead = frappe.db.get_value("CRM Lead", {"mobile_no": phone, "converted": 0})
+	# the person, whether or not they already have a deal: excluding the ones
+	# that had one is what made a second record for a customer who comes back
+	from crm.api.lead import find_person
+
+	lead = find_person(email=email, phone=phone)
 	if not lead:
 		from crm.api.form import _default_status
 

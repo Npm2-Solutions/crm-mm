@@ -95,8 +95,6 @@ def _create_record_session(doctype: str, status: str | None, limit: int, title: 
 		frappe.throw(_("Invalid doctype"))
 
 	filters = {"mobile_no": ["is", "set"]}
-	if doctype == "CRM Lead":
-		filters["converted"] = 0
 	if status:
 		filters["status"] = status
 	name_field = "lead_name" if doctype == "CRM Lead" else "organization"

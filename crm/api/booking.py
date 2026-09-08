@@ -323,9 +323,11 @@ def _ensure_booking_source() -> str:
 
 
 def _find_or_create_lead(booking, crm_vid: str | None = None, crm_sid: str | None = None) -> str:
+	from crm.api.lead import find_person
 	from crm.api.tracking import attribute, record_conversion
 
-	existing = frappe.db.get_value("CRM Lead", {"email": booking.invitee_email, "converted": 0})
+	# a customer who books again is the same person, deal or no deal
+	existing = find_person(email=booking.invitee_email, phone=booking.get("invitee_phone"))
 	if existing:
 		# a returning invitee: their first touch is already recorded, but this visit
 		# is a new last touch, and the booking belongs on their journey

@@ -85,16 +85,37 @@ def backfill_form(form_id: str, since=None, page_token: str | None = None) -> di
 			]
 		)
 
-	created, skipped, failed = 0, 0, 0
+	counts = {"created": 0, "merged": 0, "duplicates": 0, "failed": 0}
 	for lead in graph_get_paginated(f"{form_id}/leads", token, params, max_pages=200):
 		result = store_lead(lead, form_id)
-		if result == "created":
-			created += 1
-		elif result == "duplicate":
-			skipped += 1
-		else:
-			failed += 1
-	return {"created": created, "duplicates": skipped, "failed": failed}
+		# "merged" is a submission filed on somebody the CRM already knew
+		key = "duplicates" if result == "duplicate" else result
+		counts[key] = counts.get(key, 0) + 1
+	return counts
+
+
+def already_stored(leadgen_id: str) -> bool:
+	"""Have we seen this submission before?
+
+	Two places to look: the person born from it (the first submission is stamped
+	on the record) and the submissions of a person it was merged into. Meta
+	re-delivers, and the hourly reconciliation re-reads two days of every form,
+	so this question gets asked a lot.
+	"""
+	return bool(
+		frappe.db.exists("CRM Lead", {"facebook_lead_id": leadgen_id})
+		or frappe.db.exists("CRM Lead Facebook Submission", {"leadgen_id": leadgen_id})
+	)
+
+
+def submission_row(lead: dict, form_id: str | None) -> dict:
+	return {
+		"leadgen_id": lead.get("id"),
+		"form": form_id or "",
+		"form_name": frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or "",
+		"submitted_on": lead.get("created_time") or frappe.utils.now(),
+		"platform": "Instagram" if lead.get("platform") == "ig" else "Facebook",
+	}
 
 
 def store_lead(lead: dict, form_id: str | None) -> str:
@@ -102,7 +123,7 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 	lead_id = lead.get("id")
 	if not lead_id:
 		return "failed"
-	if frappe.db.exists("CRM Lead", {"facebook_lead_id": lead_id}):
+	if already_stored(lead_id):
 		return "duplicate"
 
 	mapping = get_question_mapping(form_id)
@@ -140,12 +161,23 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 		_log_failure(lead, form_id, _("No first name could be mapped"))
 		return "failed"
 
+	# the same human being can answer two ads, or the same ad twice: that is a
+	# second submission, not a second person
+	from crm.api.lead import find_person
+
+	# only the mobile number, never the landline: a switchboard is shared by a
+	# whole company, and merging two colleagues into one person loses one of them
+	person = find_person(email=values.get("email"), phone=values.get("mobile_no"))
+	if person:
+		return _merge_submission(person, lead, form_id, values, unmapped)
+
 	values.update(
 		{
 			"doctype": "CRM Lead",
 			"source": _ensure_source("Instagram" if lead.get("platform") == "ig" else "Facebook"),
 			"facebook_lead_id": lead_id,
 			"facebook_form_id": form_id,
+			"facebook_submissions": [submission_row(lead, form_id)],
 		}
 	)
 	try:
@@ -154,16 +186,63 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 		doc.insert(ignore_permissions=True)
 		if unmapped:
 			_note_unmapped_answers(doc, unmapped)
-		if form_id:
-			frappe.db.set_value(
-				"Facebook Lead Form", form_id, "last_lead_at", frappe.utils.now(), update_modified=False
-			)
+		_note_form_submitted(doc, form_id)
 		return "created"
 	except frappe.UniqueValidationError:
 		return "duplicate"
 	except Exception:
 		_log_failure(lead, form_id, frappe.get_traceback())
 		return "failed"
+
+
+def _merge_submission(person: str, lead: dict, form_id: str | None, values: dict, unmapped: list) -> str:
+	"""File a submission on the person who made it, instead of cloning them.
+
+	What they typed this time fills only what is still empty: a number somebody
+	corrected by hand in the CRM outranks the one re-typed into an ad form. The
+	first touch is theirs already; this becomes the last one.
+	"""
+	try:
+		doc = frappe.get_doc("CRM Lead", person)
+		for field, value in values.items():
+			if value and not doc.get(field):
+				doc.set(field, value)
+		if not doc.facebook_lead_id:
+			doc.facebook_lead_id = lead.get("id")
+			doc.facebook_form_id = form_id
+		doc.append("facebook_submissions", submission_row(lead, form_id))
+		_attribute(doc, lead, form_id)
+		doc.save(ignore_permissions=True)
+		if unmapped:
+			_note_unmapped_answers(doc, unmapped)
+		_note_form_submitted(doc, form_id)
+		return "merged"
+	except Exception:
+		_log_failure(lead, form_id, frappe.get_traceback())
+		return "failed"
+
+
+def _note_form_submitted(doc, form_id: str | None) -> None:
+	"""Say that a form was filled in, whoever filled it.
+
+	`Lead Created` cannot carry this any more: a customer who comes back has
+	existed for months. GHL splits the two the same way — a contact is created
+	once, a form is submitted every time.
+	"""
+	if form_id:
+		frappe.db.set_value(
+			"Facebook Lead Form", form_id, "last_lead_at", frappe.utils.now(), update_modified=False
+		)
+	try:
+		from crm.automation.engine import process_event
+
+		process_event(
+			"form_submitted",
+			doc,
+			{"facebook_form_id": form_id, "source": doc.get("source")},
+		)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Meta: form_submitted automations failed")
 
 
 def _attribute(doc, lead: dict, form_id: str | None) -> None:

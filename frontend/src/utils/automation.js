@@ -298,6 +298,14 @@ export const TRIGGER_CATEGORIES = [
 /** trigger event → category, icon, which record it enrols and its filters. */
 export const TRIGGER_CATALOG = {
   'Lead Created': { category: 'lead', icon: 'user-plus', doctype: 'CRM Lead' },
+  // a person is created once; a form can be filled in again by somebody the
+  // CRM already knows, and that submission still has to start something
+  'Lead Form Submitted': {
+    category: 'lead',
+    icon: 'clipboard-check',
+    doctype: 'CRM Lead',
+    hint: 'A lead ad form is filled in — by a new person or by one the CRM already knows.',
+  },
   'Lead Status Changed': {
     category: 'lead',
     icon: 'refresh-cw',
