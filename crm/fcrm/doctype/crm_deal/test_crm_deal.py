@@ -462,6 +462,57 @@ class TestCRMDeal(IntegrationTestCase):
 				create_test_deal(organization=f"Negative {fieldname}", **{fieldname: -100})
 
 
+class TestDealMirrorsThePersonAndTheCompany(IntegrationTestCase):
+	"""The deal used to receive a copy of the lead at conversion, and the two
+	were then free to disagree forever. Now it mirrors them."""
+
+	def tearDown(self) -> None:
+		frappe.db.rollback()
+
+	def _person_with_a_deal(self):
+		lead = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Mario",
+				"last_name": "Rossi",
+				"email": "mario.mirror@example.com",
+				"organization": "Specchio SRL",
+			}
+		).insert(ignore_permissions=True)
+		deal = frappe.get_doc("CRM Deal", lead.convert_to_deal())
+		return lead, deal
+
+	def test_the_deal_shows_the_name_the_person_has_now(self):
+		lead, deal = self._person_with_a_deal()
+		self.assertEqual(deal.first_name, "Mario")
+
+		lead.first_name = "Maria"
+		lead.save(ignore_permissions=True)
+
+		self.assertEqual(frappe.db.get_value("CRM Deal", deal.name, "first_name"), "Maria")
+
+	def test_the_deal_shows_the_company_data_the_company_has_now(self):
+		_, deal = self._person_with_a_deal()
+		organization = frappe.get_doc("CRM Organization", deal.organization)
+		organization.website = "https://specchio.it"
+		organization.save(ignore_permissions=True)
+
+		self.assertEqual(frappe.db.get_value("CRM Deal", deal.name, "website"), "https://specchio.it")
+
+	def test_converting_leaves_the_person_where_they_are(self):
+		"""A converted lead is not a spent record here: it is the person, and
+		they can carry a second deal."""
+		lead, first = self._person_with_a_deal()
+		second = frappe.get_doc("CRM Deal", lead.convert_to_deal())
+
+		self.assertNotEqual(first.name, second.name)
+		self.assertTrue(frappe.db.exists("CRM Lead", lead.name))
+		self.assertEqual(
+			set(frappe.get_all("CRM Deal", filters={"lead": lead.name}, pluck="name")),
+			{first.name, second.name},
+		)
+
+
 def create_test_deal(**kwargs):
 	"""Helper function to create a CRM Deal for testing"""
 	# Create organization if provided as string

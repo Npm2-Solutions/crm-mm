@@ -61,6 +61,7 @@ from crm.utils import count_field
 
 EVENT_TO_TRIGGER = {
 	"lead_created": "Lead Created",
+	"form_submitted": "Lead Form Submitted",
 	"deal_created": "Deal Created",
 	"lead_status_changed": "Lead Status Changed",
 	"deal_status_changed": "Deal Status Changed",

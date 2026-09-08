@@ -8,10 +8,12 @@ from unittest.mock import patch
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from crm.api.lead import find_person
 from crm.integrations.meta import api
 from crm.integrations.meta import relay as R
 from crm.integrations.meta import webhook as W
 from crm.integrations.meta.leads import (
+	already_stored,
 	ingest_leadgen_entry,
 	normalize_value,
 	reconcile_synced_pages,
@@ -97,6 +99,40 @@ class TestMetaLeads(IntegrationTestCase):
 		)
 		self.assertTrue(any("risposta" in (c or "") for c in comments))
 
+	def test_a_second_form_is_a_submission_not_a_second_person(self):
+		"""The same human being answering two ads is one person with two
+		submissions — in every CRM the person is deduplicated on email/phone."""
+		make_form()
+		self.assertEqual(store_lead(sample_lead("7770201"), "990001"), "created")
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7770201"})
+
+		again = sample_lead("7770202")
+		self.assertEqual(store_lead(again, "990001"), "merged")
+
+		self.assertEqual(frappe.db.count("CRM Lead", {"email": "mario@example.com"}), 1)
+		doc = frappe.get_doc("CRM Lead", person)
+		self.assertEqual([row.leadgen_id for row in doc.facebook_submissions], ["7770201", "7770202"])
+
+	def test_a_merged_submission_is_not_imported_twice(self):
+		"""Meta re-delivers, and the hourly reconciliation re-reads two days."""
+		make_form()
+		store_lead(sample_lead("7770301"), "990001")
+		store_lead(sample_lead("7770302"), "990001")
+		self.assertTrue(already_stored("7770302"))
+		self.assertEqual(store_lead(sample_lead("7770302"), "990001"), "duplicate")
+		self.assertEqual(frappe.db.count("CRM Lead", {"email": "mario@example.com"}), 1)
+
+	def test_merging_never_overwrites_what_somebody_typed(self):
+		make_form()
+		store_lead(sample_lead("7770401"), "990001")
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7770401"})
+		frappe.db.set_value("CRM Lead", person, "job_title", "Titolare")
+
+		second = sample_lead("7770402")
+		second["field_data"].append({"name": "custom_q", "values": ["Impiegato"]})
+		store_lead(second, "990001")
+		self.assertEqual(frappe.db.get_value("CRM Lead", person, "job_title"), "Titolare")
+
 	def test_store_lead_is_idempotent(self):
 		make_form()
 		self.assertEqual(store_lead(sample_lead("7770002"), "990001"), "created")
@@ -175,6 +211,18 @@ class TestMetaLeads(IntegrationTestCase):
 		with patch("crm.integrations.meta.leads.backfill_form") as backfill:
 			reconcile_synced_pages()
 		backfill.assert_not_called()
+
+	def test_find_person_ignores_whether_they_have_a_deal(self):
+		"""Looking a customer up with `converted = 0` is what made a second
+		record for somebody who came back after a deal was opened."""
+		make_form()
+		store_lead(sample_lead("7770501"), "990001")
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7770501"})
+		frappe.db.set_value("CRM Lead", person, "converted", 1)
+
+		self.assertEqual(find_person(email="mario@example.com"), person)
+		self.assertEqual(find_person(phone="+39 333 1234567"), person)
+		self.assertIsNone(find_person(email="nessuno@example.com"))
 
 	def test_webhook_signature_validation(self):
 		settings = frappe.get_doc("CRM Meta Settings")

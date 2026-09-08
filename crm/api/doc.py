@@ -198,9 +198,6 @@ def get_quick_filters(doctype: str, cached: bool = True):
 			}
 		)
 
-	if doctype == "CRM Lead":
-		quick_filters = [filter for filter in quick_filters if filter.get("fieldname") != "converted"]
-
 	return quick_filters
 
 

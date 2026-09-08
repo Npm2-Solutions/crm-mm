@@ -9,6 +9,7 @@ from frappe.desk.form.assign_to import _add as assign
 from frappe.model.document import Document
 from frappe.utils import validate_email_address
 
+from crm.api.mirror import FROM_LEAD, FROM_ORGANIZATION
 from crm.fcrm.doctype.crm_service_level_agreement.utils import get_sla
 from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
@@ -28,6 +29,9 @@ class CRMLead(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		from crm.fcrm.doctype.crm_lead_facebook_submission.crm_lead_facebook_submission import (
+			CRMLeadFacebookSubmission,
+		)
 		from crm.fcrm.doctype.crm_products.crm_products import CRMProducts
 		from crm.fcrm.doctype.crm_rolling_response_time.crm_rolling_response_time import (
 			CRMRollingResponseTime,
@@ -40,6 +44,7 @@ class CRMLead(Document):
 		email: DF.Data | None
 		facebook_form_id: DF.Data | None
 		facebook_lead_id: DF.Data | None
+		facebook_submissions: DF.Table[CRMLeadFacebookSubmission]
 		first_name: DF.Data
 		first_responded_on: DF.Datetime | None
 		first_response_time: DF.Duration | None
@@ -527,6 +532,10 @@ class CRMLead(Document):
 			"sla_creation",
 			"status_change_log",
 		]
+		# the person and the company are not copied any more: the deal mirrors
+		# them from the lead and the organization it is linked to, so there is
+		# one place where a name is right (see crm/api/mirror.py)
+		restricted_map_fields += list(FROM_LEAD) + list(FROM_ORGANIZATION)
 
 		for field in self.meta.fields:
 			if field.fieldtype in restricted_fieldtypes:

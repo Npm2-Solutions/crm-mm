@@ -1,6 +1,8 @@
 import frappe
 from frappe import _
 
+from crm.utils import to_e164
+
 DEAL_FIELDS = [
 	"name",
 	"organization",
@@ -10,6 +12,46 @@ DEAL_FIELDS = [
 	"deal_owner",
 	"modified",
 ]
+
+
+def find_person(email: str | None = None, phone: str | None = None) -> str | None:
+	"""The person behind an email address or a phone number — deal or no deal.
+
+	Looking them up with `converted = 0` was the bug: a customer who comes back
+	(books again, fills another form, writes again) already has a deal, so the
+	lookup missed them and a second person was born for the same human being.
+	In Salesforce a converted lead is frozen history and there is a Contact to
+	find instead; here the person record IS the person and stays, so there is
+	nothing to exclude.
+
+	The address book is searched too: the second email address and the second
+	number of somebody are rows on their Contact, not fields on the person.
+	"""
+	email = (email or "").strip()
+	if email:
+		person = frappe.db.get_value("CRM Lead", {"email": email}, "name", order_by="modified desc")
+		if person:
+			return person
+		for contact in frappe.get_all(
+			"Contact Email", filters={"email_id": email, "parenttype": "Contact"}, pluck="parent"
+		):
+			person = frappe.db.get_value("CRM Lead", {"contact": contact}, "name")
+			if person:
+				return person
+
+	number = to_e164(phone)
+	if number:
+		for fieldname in ("mobile_no", "phone"):
+			person = frappe.db.get_value("CRM Lead", {fieldname: number}, "name", order_by="modified desc")
+			if person:
+				return person
+		for contact in frappe.get_all(
+			"Contact Phone", filters={"phone": number, "parenttype": "Contact"}, pluck="parent"
+		):
+			person = frappe.db.get_value("CRM Lead", {"contact": contact}, "name")
+			if person:
+				return person
+	return None
 
 
 def deal_names_of(lead: str) -> set[str]:
