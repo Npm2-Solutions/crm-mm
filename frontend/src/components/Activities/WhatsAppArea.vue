@@ -14,12 +14,19 @@
         :id="whatsapp.name"
         class="group/message relative max-w-[90%] rounded-md bg-surface-gray-1 text-ink-gray-9 p-1.5 pl-2 text-base shadow-sm"
       >
-        <Badge
-          v-if="whatsapp.status == 'failed'"
-          theme="red"
-          :label="whatsapp.status"
-          class="absolute -top-2 right-0"
-        />
+        <div
+          v-if="hasFailed(whatsapp)"
+          class="absolute -top-2 right-0 flex items-center gap-1"
+        >
+          <Badge theme="red" :label="__('failed')" />
+          <Button
+            size="sm"
+            variant="subtle"
+            :label="__('Retry')"
+            :loading="retrying == whatsapp.name"
+            @click="retry(whatsapp)"
+          />
+        </div>
         <div
           v-if="whatsapp.is_reply"
           class="mb-1 cursor-pointer rounded border-0 border-l-4 bg-surface-gray-3 p-2 text-ink-gray-5"
@@ -52,7 +59,7 @@
         </div>
         <div class="flex gap-2 justify-between">
           <div
-            v-if="whatsapp.status != 'failed'"
+            v-if="!hasFailed(whatsapp)"
             class="absolute -right-0.5 -top-0.5 flex cursor-pointer gap-1 rounded-full bg-surface-base pb-2 pl-2 pr-1.5 pt-1.5 opacity-0 group-hover/message:opacity-100"
             :style="{
               background:
@@ -158,7 +165,7 @@
         </div>
       </div>
       <div
-        v-if="whatsapp.status != 'failed'"
+        v-if="!hasFailed(whatsapp)"
         class="flex items-center justify-center opacity-0 transition-all ease-in group-hover:opacity-100"
       >
         <IconPicker
@@ -251,6 +258,34 @@ function reactOnMessage(name, emoji) {
 }
 
 const reply = defineModel('reply', { type: Object, default: () => ({}) })
+
+// Meta's webhook says `failed` in lowercase; a send that never left says
+// `Failed`. Only the first was recognised, so a message that failed here showed
+// no badge at all — and neither had any way back.
+function hasFailed(whatsapp) {
+  return (whatsapp.status || '').toLowerCase() == 'failed'
+}
+
+const retrying = ref('')
+
+function retry(whatsapp) {
+  retrying.value = whatsapp.name
+  createResource({
+    url: 'crm.api.whatsapp.retry_whatsapp_message',
+    params: { name: whatsapp.name },
+    auto: true,
+    onSuccess: () => {
+      retrying.value = ''
+      toast.success(__('Sent'))
+      list.value.reload()
+    },
+    onError: (error) => {
+      retrying.value = ''
+      // Meta's own reason, which is the whole point of retrying by hand
+      toast.error(error.messages?.[0] || __('It failed again'))
+    },
+  })
+}
 const replyMode = ref(false)
 
 function messageOptions(message) {

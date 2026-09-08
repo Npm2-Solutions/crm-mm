@@ -332,6 +332,35 @@ composer, il contatore mostra la durata, si preme stop e la nota vocale viene
 caricata e inviata come messaggio audio. Se il browser non lo supporta o il
 microfono è negato, lo dice invece di fallire in silenzio.
 
+## File, audio e video: perché non partivano
+
+Tre difetti in fila, tutti nostri.
+
+**Il file era privato.** `frappe_whatsapp` non carica il file su Meta: gli passa
+un **link** e Meta lo scarica da solo, senza sessione. `FileUploader` di
+frappe-ui però carica in privato se non gli si dice il contrario, e un file
+privato di Frappe a quella richiesta risponde con la pagina di login. Quindi
+ogni messaggio con un allegato falliva, sempre, qualunque fosse il file.
+
+**La nota vocale era in webm.** `MediaRecorder` su Chrome registra
+`audio/webm`, che WhatsApp **non accetta**: la lista di Meta è AAC, AMR, MP3,
+M4A e OGG (solo Opus, mono). Ora si registra in OGG/Opus o MP4, e se il browser
+non sa fare né l'uno né l'altro lo si dice invece di registrare qualcosa che non
+può essere consegnato.
+
+**Niente diceva cosa fosse andato storto.** I formati accettati si controllano
+adesso *prima* di caricare, per nome ed estensione — immagini JPEG e PNG fino a
+5 MB, video MP4 e 3GP fino a 16 MB, audio fino a 16 MB, documenti fino a 100 MB.
+
+E un messaggio fallito non è più un vicolo cieco: ha un **Riprova** accanto.
+`send_outgoing` di frappe_whatsapp è scritto per poter essere richiamato, non
+aveva solo nessuno che lo chiamasse. Se fallisce di nuovo, torna l'errore di
+Meta, che è il motivo per cui si riprova a mano invece che in coda.
+
+Il badge rosso, poi, cercava `failed` minuscolo — che è quello che dice il
+webhook di Meta — mentre un invio mai partito scrive `Failed`. Un messaggio
+fallito qui non mostrava proprio nessun badge.
+
 ## A quale numero stiamo scrivendo
 
 Una persona ha un contatto solo — il CRM ne garantisce esattamente uno — ma quel
