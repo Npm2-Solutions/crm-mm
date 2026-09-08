@@ -35,15 +35,38 @@
       </div>
 
       <!-- One stream: every visit, and what happened inside it -->
-      <div v-if="timeline.length" class="pt-6">
+      <div class="pt-6">
         <div class="flex items-baseline gap-2 pb-3">
           <span class="text-lg-semibold text-ink-gray-8">{{
             __('Timeline')
           }}</span>
-          <span class="text-p-sm text-ink-gray-5">
+          <span v-if="timeline.length" class="text-p-sm text-ink-gray-5">
             {{ __('{0} visits', [sessions.length]) }} ·
             {{ __('{0} events', [events.length]) }}
           </span>
+        </div>
+
+        <!--
+          Nothing to show is a fact worth stating. A record attributed to the CRM
+          itself never had a browser session, and silently rendering an empty
+          space here reads as a broken screen rather than as an answer.
+        -->
+        <div
+          v-if="!timeline.length"
+          class="flex flex-col items-start gap-2 rounded-md border border-outline-gray-2 bg-surface-gray-1 px-3 py-3"
+        >
+          <div
+            class="flex items-center gap-2 text-p-base-medium text-ink-gray-7"
+          >
+            <LucideInfo class="h-4 w-4 shrink-0" />
+            {{ __('No visit recorded') }}
+          </div>
+          <p class="text-p-sm text-ink-gray-6">{{ emptyReason }}</p>
+          <Button
+            v-if="!isOfflineOrigin"
+            :label="__('Set up lead tracking')"
+            @click="openTrackingSettings"
+          />
         </div>
 
         <div
@@ -153,18 +176,20 @@ import EmptyState from '@/components/ListViews/EmptyState.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import TouchCard from '@/components/Activities/TouchCard.vue'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
+import { activeSettingsPage, showSettings } from '@/composables/settings'
 import { groupJourney, readableDuration } from '@/utils/journey'
 import LucideCalendarClock from '~icons/lucide/calendar-clock'
 import LucideCheck from '~icons/lucide/check'
 import LucideEye from '~icons/lucide/eye'
 import LucideGlobe from '~icons/lucide/globe'
+import LucideInfo from '~icons/lucide/info'
 import LucideLink from '~icons/lucide/link'
 import LucidePhone from '~icons/lucide/phone'
 import LucideRadar from '~icons/lucide/radar'
 import LucideSparkles from '~icons/lucide/sparkles'
 import LucideSquareCheck from '~icons/lucide/square-check'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
-import { Badge, LoadingIndicator, createResource } from 'frappe-ui'
+import { Badge, Button, LoadingIndicator, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -195,6 +220,37 @@ const hasAnything = computed(
     sessions.value.length ||
     journey.data?.first_touch?.category,
 )
+
+/**
+ * Records whose origin was never a browser: the CRM's own screens, or an API
+ * that handed us a contact. They have attribution but can never have a journey,
+ * so pointing their owner at the tracking script would be wrong advice.
+ */
+const OFFLINE_CATEGORIES = ['CRM UI', 'Third Party']
+
+const isOfflineOrigin = computed(() =>
+  OFFLINE_CATEGORIES.includes(journey.data?.first_touch?.category),
+)
+
+const emptyReason = computed(() => {
+  const category = journey.data?.first_touch?.category
+  if (category === 'CRM UI')
+    return __(
+      'This record was created by hand in the CRM, so there is no browsing to show. A journey appears for records that arrive from a form, a booking, or a site running the tracking script.',
+    )
+  if (category === 'Third Party')
+    return __(
+      'This record arrived through an integration rather than a browser, so there is no browsing to show.',
+    )
+  return __(
+    'Nothing has been recorded for this visitor yet. Check that the tracking script is installed on the site this lead came from.',
+  )
+})
+
+function openTrackingSettings() {
+  activeSettingsPage.value = 'Lead Tracking'
+  showSettings.value = true
+}
 
 const ICONS = {
   'Page View': LucideEye,
