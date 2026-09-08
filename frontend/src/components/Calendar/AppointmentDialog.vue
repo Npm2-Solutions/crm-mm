@@ -1,7 +1,7 @@
 <template>
   <Dialog v-model="show" :options="{ size: '4xl' }">
     <template #body>
-      <div class="flex flex-col bg-surface-modal">
+      <div class="flex flex-col bg-surface-elevation-2">
         <!-- header -->
         <div
           class="flex items-start justify-between gap-3 border-b border-outline-gray-2 px-5 py-4"

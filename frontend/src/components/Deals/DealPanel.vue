@@ -20,7 +20,7 @@
     >
       <aside
         v-if="show"
-        class="fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-surface-modal shadow-2xl sm:w-[36rem]"
+        class="fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-surface-elevation-2 shadow-2xl sm:w-[36rem]"
       >
         <div class="flex items-center justify-between gap-2 border-b px-4 py-3">
           <div class="flex min-w-0 items-center gap-2">
