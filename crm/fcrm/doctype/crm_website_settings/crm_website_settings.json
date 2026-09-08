@@ -5,250 +5,32 @@
  "engine": "InnoDB",
  "field_order": [
   "enabled",
-  "site_title",
-  "tagline",
-  "column_break_general",
-  "home_page",
-  "serve_at_root",
-  "brand_section",
-  "logo",
-  "favicon",
-  "column_break_brand",
-  "primary_color",
-  "font_family",
-  "nav_section",
-  "nav_items",
-  "footer_section",
-  "footer_text",
-  "company_name",
-  "vat_number",
-  "address",
-  "column_break_footer",
-  "email",
-  "phone",
-  "whatsapp_number",
-  "social_links",
-  "privacy_route",
-  "terms_route",
-  "seo_section",
-  "default_meta_title",
-  "default_meta_description",
-  "column_break_seo",
-  "default_og_image",
-  "robots_indexable",
-  "tracking_section",
-  "ga4_id",
-  "meta_pixel_id",
-  "column_break_tracking",
-  "consent_banner",
-  "consent_text"
+  "column_break_head",
+  "default_site"
  ],
  "fields": [
   {
    "default": "0",
-   "description": "Turns the Site section on in the CRM. Pages stay unpublished until you publish them.",
+   "description": "Turns the Site section on in the CRM. Nothing is published until you publish it.",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Website enabled"
   },
   {
-   "fieldname": "site_title",
-   "fieldtype": "Data",
-   "label": "Site title"
-  },
-  {
-   "fieldname": "tagline",
-   "fieldtype": "Small Text",
-   "label": "Tagline"
-  },
-  {
-   "fieldname": "column_break_general",
+   "fieldname": "column_break_head",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Route of the page served as the site home.",
-   "fieldname": "home_page",
-   "fieldtype": "Data",
-   "label": "Home page route"
-  },
-  {
-   "default": "0",
-   "description": "When on, the site home answers at the site root. The CRM stays at /crm.",
-   "fieldname": "serve_at_root",
-   "fieldtype": "Check",
-   "label": "Serve the home page at /"
-  },
-  {
-   "fieldname": "brand_section",
-   "fieldtype": "Section Break",
-   "label": "Brand"
-  },
-  {
-   "fieldname": "logo",
-   "fieldtype": "Attach Image",
-   "label": "Logo"
-  },
-  {
-   "fieldname": "favicon",
-   "fieldtype": "Attach Image",
-   "label": "Favicon"
-  },
-  {
-   "fieldname": "column_break_brand",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "primary_color",
-   "fieldtype": "Color",
-   "label": "Primary colour"
-  },
-  {
-   "description": "A Google Fonts family name, e.g. Inter. Empty uses the theme default.",
-   "fieldname": "font_family",
-   "fieldtype": "Data",
-   "label": "Font family"
-  },
-  {
-   "fieldname": "nav_section",
-   "fieldtype": "Section Break",
-   "label": "Navigation"
-  },
-  {
-   "fieldname": "nav_items",
-   "fieldtype": "Table",
-   "label": "Menu",
-   "options": "CRM Web Nav Item"
-  },
-  {
-   "fieldname": "footer_section",
-   "fieldtype": "Section Break",
-   "label": "Footer & legal"
-  },
-  {
-   "fieldname": "footer_text",
-   "fieldtype": "Small Text",
-   "label": "Footer text"
-  },
-  {
-   "fieldname": "company_name",
-   "fieldtype": "Data",
-   "label": "Registered name"
-  },
-  {
-   "fieldname": "vat_number",
-   "fieldtype": "Data",
-   "label": "VAT number"
-  },
-  {
-   "fieldname": "address",
-   "fieldtype": "Small Text",
-   "label": "Address"
-  },
-  {
-   "fieldname": "column_break_footer",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "email",
-   "fieldtype": "Data",
-   "label": "Email",
-   "options": "Email"
-  },
-  {
-   "fieldname": "phone",
-   "fieldtype": "Data",
-   "label": "Phone",
-   "options": "Phone"
-  },
-  {
-   "description": "International format without + or spaces, e.g. 393331234567.",
-   "fieldname": "whatsapp_number",
-   "fieldtype": "Data",
-   "label": "WhatsApp number"
-  },
-  {
-   "fieldname": "social_links",
-   "fieldtype": "Table",
-   "label": "Social profiles",
-   "options": "CRM Web Social Link"
-  },
-  {
-   "default": "privacy",
-   "fieldname": "privacy_route",
-   "fieldtype": "Data",
-   "label": "Privacy page route"
-  },
-  {
-   "default": "terms",
-   "fieldname": "terms_route",
-   "fieldtype": "Data",
-   "label": "Terms page route"
-  },
-  {
-   "fieldname": "seo_section",
-   "fieldtype": "Section Break",
-   "label": "SEO"
-  },
-  {
-   "fieldname": "default_meta_title",
-   "fieldtype": "Data",
-   "label": "Default meta title"
-  },
-  {
-   "fieldname": "default_meta_description",
-   "fieldtype": "Small Text",
-   "label": "Default meta description"
-  },
-  {
-   "fieldname": "column_break_seo",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_og_image",
-   "fieldtype": "Attach Image",
-   "label": "Default sharing image"
-  },
-  {
-   "default": "1",
-   "fieldname": "robots_indexable",
-   "fieldtype": "Check",
-   "label": "Allow search engines"
-  },
-  {
-   "fieldname": "tracking_section",
-   "fieldtype": "Section Break",
-   "label": "Tracking & consent"
-  },
-  {
-   "fieldname": "ga4_id",
-   "fieldtype": "Data",
-   "label": "GA4 measurement ID"
-  },
-  {
-   "fieldname": "meta_pixel_id",
-   "fieldtype": "Data",
-   "label": "Meta Pixel ID"
-  },
-  {
-   "fieldname": "column_break_tracking",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "1",
-   "description": "Analytics and pixel scripts only load after consent.",
-   "fieldname": "consent_banner",
-   "fieldtype": "Check",
-   "label": "Show the cookie banner"
-  },
-  {
-   "fieldname": "consent_text",
-   "fieldtype": "Small Text",
-   "label": "Consent text"
+   "description": "The site the CRM opens on.",
+   "fieldname": "default_site",
+   "fieldtype": "Link",
+   "label": "Default site",
+   "options": "CRM Web Site"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-06 15:00:00.000000",
+ "modified": "2026-09-08 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Website Settings",

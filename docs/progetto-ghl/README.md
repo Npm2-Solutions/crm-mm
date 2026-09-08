@@ -51,6 +51,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [17](./17-timeline-unificata.md) | Timeline unificata sulla scheda | 📐 proposta | Una schermata al posto di dodici tab: i chip non filtrano soltanto, cambiano vista — chat WhatsApp, thread email — con un solo composer che segue il canale |
 | [18](./18-persona-unica.md) | Una persona sola: lead e contatto smettono di essere due | 📐 proposta | Il lead e' la persona, il deal la relazione, il contatto la rubrica: i recapiti vivono in un posto solo e il campo sul lead diventa uno specchio, cosi' i 201 punti che lo leggono non cambiano |
 | [19](./19-trattativa-magra.md) | La trattativa magra, come l'opportunita' di GHL | ✅ fatto | L'opportunita' di GHL e' un pannello con i campi, le note, i task e un appuntamento: la nostra trattativa scende da otto tab a quattro, e i file finiscono accanto alle note |
+| [20](./20-domini-dei-clienti.md) | Più siti, sul dominio del cliente | 🟡 proposta | Un cliente per site, tanti domini sopra: CNAME come GHL e certificati on-demand, senza configurare nginx a ogni dominio |
 
 ## Architettura complessiva
 
