@@ -13,13 +13,22 @@
           }}
         </p>
       </div>
-      <Button
-        v-if="data.available"
-        variant="solid"
-        iconLeft="plus"
-        :label="__('New template')"
-        @click="openTemplate()"
-      />
+      <div v-if="data.available" class="flex items-center gap-2">
+        <!-- A template made in WhatsApp Manager, or `hello_world` that Meta
+             creates by itself, exists there and not here — so it cannot be sent
+             until it is brought in. -->
+        <Button
+          :loading="syncing"
+          :label="__('Sync from Meta')"
+          @click="sync"
+        />
+        <Button
+          variant="solid"
+          iconLeft="plus"
+          :label="__('New template')"
+          @click="openTemplate()"
+        />
+      </div>
     </div>
 
     <div class="flex-1 overflow-y-auto px-2">
@@ -204,6 +213,25 @@ function openTemplate(template = null) {
   form.footer = template?.footer || ''
   form.sample_values = template?.sample_values || ''
   showTemplate.value = true
+}
+
+const syncing = ref(false)
+
+function sync() {
+  syncing.value = true
+  createResource({
+    url: 'crm.integrations.whatsapp.templates.sync_templates',
+    auto: true,
+    onSuccess: (fresh) => {
+      syncing.value = false
+      templates.data = fresh
+      toast.success(__('Templates brought in from Meta'))
+    },
+    onError: (e) => {
+      syncing.value = false
+      toast.error(e.messages?.[0] || __('Could not read the templates from Meta'))
+    },
+  })
 }
 
 function save() {
