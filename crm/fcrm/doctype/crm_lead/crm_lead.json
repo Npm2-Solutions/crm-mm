@@ -252,9 +252,10 @@
   },
   {
    "fieldname": "organization",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_standard_filter": 1,
-   "label": "Organization"
+   "label": "Organization",
+   "options": "CRM Organization"
   },
   {
    "default": "0",

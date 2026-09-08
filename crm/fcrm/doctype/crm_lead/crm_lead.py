@@ -118,7 +118,7 @@ class CRMLead(Document):
 		naming_series: DF.Literal["CRM-LEAD-.YYYY.-"]
 		net_total: DF.Currency
 		no_of_employees: DF.Literal["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"]
-		organization: DF.Data | None
+		organization: DF.Link | None
 		phone: DF.Data | None
 		products: DF.Table[CRMProducts]
 		response_by: DF.Datetime | None
@@ -141,6 +141,48 @@ class CRMLead(Document):
 		from crm.api.form import enrich_form_submission
 
 		enrich_form_submission(self)
+
+	def _validate_links(self):
+		"""Make the company real before Frappe checks that it is.
+
+		The company is a Link now, so two people from the same firm are two
+		people of one company instead of two strings that look alike. But a
+		company name arrives from everywhere — a lead ad answer, a web form, an
+		enrichment, somebody typing — and Frappe validates links BEFORE any hook
+		on insert, so a `validate` would be too late and the lead would be
+		rejected rather than saved.
+
+		This runs at the only moment that covers every path in and both insert
+		and save, because every one of them goes through here.
+		"""
+		self.ensure_organization()
+		return super()._validate_links()
+
+	def ensure_organization(self):
+		"""The company named on this person, created if the CRM has none.
+
+		`CRM Organization` is named after itself, so a name that is already a
+		company is already the link — there is nothing to do for it. A new one
+		is born with what this person knows about it, which is more than a name
+		and would otherwise be lost.
+		"""
+		if not self.organization or frappe.db.exists("CRM Organization", self.organization):
+			return
+		organization = frappe.new_doc("CRM Organization")
+		organization.update(
+			{
+				"organization_name": self.organization,
+				"website": self.website,
+				"territory": self.territory,
+				"industry": self.industry,
+				"annual_revenue": self.annual_revenue,
+				"no_of_employees": self.no_of_employees,
+				"company_description": self.company_description,
+			}
+		)
+		organization.flags.ignore_mandatory = True
+		organization.insert(ignore_permissions=True)
+		self.organization = organization.name
 
 	def before_validate(self):
 		self.set_sla()
@@ -414,29 +456,24 @@ class CRMLead(Document):
 		return contact.name
 
 	def create_organization(self, existing_organization=None):
-		if not self.organization and not existing_organization:
+		"""The company this deal belongs to.
+
+		Nothing is created here any more: the person is already linked to their
+		company, because `ensure_organization` made it when the name was first
+		written. What is left is the choice of somebody converting by hand, who
+		may point the deal at a different company than the one on the person.
+		"""
+		organization = existing_organization or self.organization
+		if not organization:
 			return
-
-		existing_organization = existing_organization or frappe.db.exists(
-			"CRM Organization", {"organization_name": self.organization}
-		)
-		if existing_organization:
-			self.db_set("organization", existing_organization)
-			self.copy_enrichment_from_organization()
-			return existing_organization
-
-		organization = frappe.new_doc("CRM Organization")
-		organization.update(
-			{
-				"organization_name": self.organization,
-				"website": self.website,
-				"territory": self.territory,
-				"industry": self.industry,
-				"annual_revenue": self.annual_revenue,
-			}
-		)
-		organization.insert(ignore_permissions=True)
-		return organization.name
+		if organization != self.organization:
+			# db_set writes past validation, so check first: a person pointed at
+			# a company that does not exist is a link nothing would catch later
+			if not frappe.db.exists("CRM Organization", organization):
+				frappe.throw(_("Organization {0} does not exist").format(organization))
+			self.db_set("organization", organization)
+		self.copy_enrichment_from_organization()
+		return organization
 
 	def copy_enrichment_from_organization(self):
 		"""Fill-empty copy of a linked enriched Organization's fields onto this Lead.

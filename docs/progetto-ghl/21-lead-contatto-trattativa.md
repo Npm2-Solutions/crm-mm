@@ -80,17 +80,42 @@ compilazione — persona nuova o no — con `facebook_form_id` e `source` nel
 payload. E' la stessa distinzione di GHL fra "Contact Created" e "Facebook Lead
 Form Submitted".
 
-### 4. L'azienda dall'inizio
+### 4. L'azienda dall'inizio *(fatto 08/09/2026)*
 
-Su `CRM Lead` `organization` e' testo libero, su `CRM Deal` e' un Link a
-`CRM Organization`: due persone della stessa azienda non sono collegate da
-niente finche' non si convertono. In Salesforce, HubSpot e Pipedrive l'azienda
-e' un oggetto di prima classe fin da subito.
+Su `CRM Lead` `organization` era testo libero mentre su `CRM Deal` era un Link a
+`CRM Organization`: due persone della stessa azienda non erano collegate da
+niente finche' non si convertivano. In Salesforce, HubSpot e Pipedrive l'azienda
+e' un oggetto di prima classe fin da subito, e adesso lo e' anche qui.
 
-Cambiare il tipo di campo e' una migrazione a sé: Frappe valida i Link **prima**
-di qualunque hook in inserimento, quindi ogni punto che scrive un nome di
-azienda deve creare l'organizzazione prima, e un punto dimenticato non salva la
-persona. Va fatto con la sua patch e i suoi test, non dentro questa modifica.
+Il punto delicato e' **quando** creare l'azienda. Frappe valida i Link **prima**
+di qualunque hook in inserimento (`Document.insert` chiama `_validate_links()`
+prima di `before_insert` e di `validate`), quindi un hook sarebbe arrivato tardi
+e la persona sarebbe stata rifiutata invece che salvata. E i nomi di azienda
+arrivano da ovunque: risposta a un'inserzione, modulo pubblico, arricchimento
+dal sito, qualcuno che scrive.
+
+Percio' `CRMLead._validate_links` e' sovrascritto e chiama `ensure_organization`
+un istante prima del controllo. E' l'unico momento che copre **tutte** le strade
+in ingresso e tutti e due i casi, inserimento e salvataggio, perche' ci passano
+tutte. L'azienda nuova nasce con quello che la persona sa di lei — sito,
+settore, fatturato, dipendenti, descrizione — che altrimenti andrebbe perso; se
+l'azienda esiste gia', quello che dice di se' vale piu' di quello che digita una
+persona nuova.
+
+Un'eccezione dichiarata: sui **moduli pubblici** il campo resta una casella di
+testo (`TYPED_BY_HAND` in `crm/api/form.py`). Uno sconosciuto non conosce
+l'elenco delle aziende del CRM, non ha il permesso di cercarci dentro, e non
+deve essere impedito di scrivere il nome della propria: il record nasce dal
+nome, alla ricezione.
+
+`create_organization` alla conversione non crea piu' niente: la persona e' gia'
+collegata alla sua azienda. Gli resta solo la scelta di chi converte a mano e
+punta la trattativa su un'azienda diversa da quella della persona.
+
+La patch `give_the_person_a_real_company` crea le aziende per i nomi gia'
+scritti sulle persone: un `CRM Organization` prende il nome da se' stesso,
+quindi la stringa che una persona porta **e'** gia' il link, appena l'azienda
+esiste.
 
 ### 5. La trattativa non e' piu' una copia della persona
 
@@ -130,6 +155,10 @@ import) ricevono la loro persona, cosi' togliere l'elenco non nasconde nessuno.
 
 ## Test
 
+- `crm/fcrm/doctype/crm_lead/test_crm_lead.py`: scrivere il nome di un'azienda
+  la crea e la collega, con quello che la persona sa di lei; due persone della
+  stessa azienda ne condividono una sola; un'azienda che esiste gia' non viene
+  riscritta da chi arriva dopo.
 - `crm/tests/test_meta_leads.py`: una seconda compilazione e' una submission e
   non una seconda persona; una submission unita non viene reimportata; l'unione
   non sovrascrive cio' che e' stato scritto a mano; `find_person` trova chi ha
