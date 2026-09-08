@@ -1,4 +1,7 @@
+import ast
+import re
 import time
+from pathlib import Path
 from unittest.mock import patch
 
 import frappe
@@ -691,3 +694,39 @@ class TestCreateLeadFromIncomingEmail(IntegrationTestCase):
 		create_lead_from_incoming_email(doc)
 
 		self.assertTrue(frappe.db.exists("CRM Lead", {"email": "sentcomm@example.com"}))
+
+
+class TestNoSqlFunctionsInFields(UnitTestCase):
+	"""No `fields=["count(name) as x"]` anywhere in the app.
+
+	v16 rejects a SQL function written as a string and raises before returning a row —
+	`crm.utils.count_field()` writes it the way this Frappe wants. The mistake is easy to
+	make and impossible to spot in review, and it has already reached three screens, so it
+	is checked here across the whole app instead of one call site at a time.
+	"""
+
+	SQL_FUNCTION = re.compile(r"\b(count|sum|avg|min|max|group_concat)\s*\(", re.IGNORECASE)
+
+	def test_no_call_asks_for_a_sql_function_as_a_string(self):
+		offenders = []
+		root = Path(frappe.get_app_path("crm"))
+		for path in root.rglob("*.py"):
+			tree = ast.parse(path.read_text(), filename=str(path))
+			for node in ast.walk(tree):
+				if not isinstance(node, ast.Call):
+					continue
+				for keyword in node.keywords:
+					if keyword.arg not in ("fields", "pluck", "group_by", "order_by"):
+						continue
+					for value in self._strings(keyword.value):
+						if self.SQL_FUNCTION.search(value.value):
+							offenders.append(f"{path.relative_to(root)}:{value.lineno}: {value.value}")
+		self.assertEqual(offenders, [], "use crm.utils.count_field() instead:\n" + "\n".join(offenders))
+
+	@staticmethod
+	def _strings(node) -> list[ast.Constant]:
+		if isinstance(node, ast.Constant) and isinstance(node.value, str):
+			return [node]
+		if isinstance(node, ast.List | ast.Tuple):
+			return [e for e in node.elts if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+		return []
