@@ -13,6 +13,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import site
+from crm.patches.v1_0 import create_first_web_site
 from crm.api import site as site_api
 from crm.api.site_routes import (
 	apply_website_fields,
@@ -346,3 +347,34 @@ def _site(name: str, slug: str | None = None, serve_at_root: int = 0):
 		}
 	).insert()
 	return doc
+
+
+class TestFirstSitePatch(IntegrationTestCase):
+	"""The migration reads values whose field no longer exists.
+
+	`get_single_value` looks the fieldname up in the doctype meta and throws when it is
+	gone — which is precisely the case for the fields that moved to `CRM Web Site`. The
+	rows survive in `tabSingles`, so that is where the patch reads them, and this test
+	pins that behaviour so nobody "simplifies" it back into a broken migrate.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_get_single_value_refuses_a_field_that_moved(self):
+		self.assertRaises(Exception, frappe.db.get_single_value, "CRM Website Settings", "site_title")
+
+	def test_stored_values_still_finds_it(self):
+		frappe.db.sql(
+			"""insert into `tabSingles` (doctype, field, value) values (%s, %s, %s)""",
+			("CRM Website Settings", "site_title", "Studio Rossi"),
+		)
+		stored = create_first_web_site._stored_values("CRM Website Settings")
+		self.assertEqual(stored.get("site_title"), "Studio Rossi")
+
+	def test_blank_values_are_left_out(self):
+		frappe.db.sql(
+			"""insert into `tabSingles` (doctype, field, value) values (%s, %s, %s)""",
+			("CRM Website Settings", "tagline", ""),
+		)
+		self.assertNotIn("tagline", create_first_web_site._stored_values("CRM Website Settings"))

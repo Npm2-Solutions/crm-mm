@@ -16,8 +16,13 @@ Runs **after** the model sync, for two reasons that the first version got wrong:
 - the record cannot be created before `CRM Web Site` exists, and it is the sync that
   creates it;
 - reading the old values afterwards is safe anyway. A Single's values live as rows in
-  `tabSingles`, keyed by doctype and fieldname; dropping a field from the doctype leaves
-  those rows alone, so `get_single_value` still finds them.
+  `tabSingles`, keyed by doctype and fieldname, and dropping a field from the doctype
+  leaves those rows alone.
+
+  What is *not* safe is `get_single_value`: it looks the fieldname up in the doctype meta
+  and throws `Field X does not exist on Y` when it is gone — which is exactly the case
+  here, since these fields moved to `CRM Web Site`. So the rows are read straight from
+  `tabSingles`, which is the only way to reach a value whose field no longer exists.
 
 It also installs `Builder Page.crm_site` itself instead of waiting for the `after_migrate`
 hook, which runs later — otherwise the column would not exist yet and no page would be
@@ -63,10 +68,11 @@ def execute():
 
 	add_builder_page_custom_fields()
 
-	values = {field: frappe.db.get_single_value("CRM Website Settings", field) for field in MOVED_FIELDS}
-	home_page = frappe.db.get_single_value("CRM Website Settings", "home_page")
-	serve_at_root = frappe.db.get_single_value("CRM Website Settings", "serve_at_root")
-	enabled = frappe.db.get_single_value("CRM Website Settings", "enabled")
+	stored = _stored_values("CRM Website Settings")
+	values = {field: stored.get(field) for field in MOVED_FIELDS}
+	home_page = stored.get("home_page")
+	serve_at_root = stored.get("serve_at_root")
+	enabled = stored.get("enabled")
 
 	pages = _existing_pages()
 	if not any(values.values()) and not home_page and not enabled and not pages:
@@ -104,6 +110,12 @@ def execute():
 
 	frappe.db.set_single_value("CRM Website Settings", "default_site", site.name)
 	print(f"Website settings moved to CRM Web Site {site.name} ({len(pages)} pages adopted)")
+
+
+def _stored_values(doctype: str) -> dict:
+	"""Every value a Single has ever stored, fields it no longer declares included."""
+	rows = frappe.db.sql("select field, value from `tabSingles` where doctype = %s", doctype, as_dict=True)
+	return {row.field: row.value for row in rows if row.value not in (None, "")}
 
 
 def _existing_pages() -> list[str]:
