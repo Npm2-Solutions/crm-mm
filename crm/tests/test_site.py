@@ -13,7 +13,6 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import site
-from crm.patches.v1_0 import create_first_web_site
 from crm.api import site as site_api
 from crm.api.site_routes import (
 	apply_website_fields,
@@ -24,6 +23,7 @@ from crm.api.site_routes import (
 	slugify,
 	unique_slug,
 )
+from crm.patches.v1_0 import create_first_web_site
 
 
 class TestSiteRoutes(IntegrationTestCase):
