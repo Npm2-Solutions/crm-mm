@@ -231,6 +231,7 @@ doc_events = {
 			"crm.automation.engine.on_lead_updated",
 			"crm.api.mirror.on_lead_updated",
 		],
+		"on_trash": ["crm.integrations.meta.leads.forget_person"],
 	},
 	"CRM Organization": {
 		"on_update": ["crm.api.mirror.on_organization_updated"],

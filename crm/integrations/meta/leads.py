@@ -97,15 +97,53 @@ def backfill_form(form_id: str, since=None, page_token: str | None = None) -> di
 def already_stored(leadgen_id: str) -> bool:
 	"""Have we seen this submission before?
 
-	Two places to look: the person born from it (the first submission is stamped
-	on the record) and the submissions of a person it was merged into. Meta
-	re-delivers, and the hourly reconciliation re-reads two days of every form,
-	so this question gets asked a lot.
+	The ledger answers first, and it is the only answer that survives somebody
+	deleting the person: a lead removed from the CRM used to come back within
+	the hour, because the reconciliation re-reads two days of every form and
+	nothing remembered that this submission had already been dealt with.
+
+	The two older places are still consulted for the submissions taken in before
+	the ledger existed.
 	"""
 	return bool(
-		frappe.db.exists("CRM Lead", {"facebook_lead_id": leadgen_id})
+		frappe.db.exists("Facebook Lead Import", leadgen_id)
+		or frappe.db.exists("CRM Lead", {"facebook_lead_id": leadgen_id})
 		or frappe.db.exists("CRM Lead Facebook Submission", {"leadgen_id": leadgen_id})
 	)
+
+
+def record_import(lead: dict, form_id: str | None, person: str, outcome: str) -> None:
+	"""Write the submission into the ledger. Never fatal: the person is already
+	saved, and losing the row must not roll that back."""
+	try:
+		frappe.get_doc(
+			{
+				"doctype": "Facebook Lead Import",
+				"leadgen_id": lead.get("id"),
+				"form": form_id or "",
+				"form_name": frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or "",
+				"platform": "Instagram" if lead.get("platform") == "ig" else "Facebook",
+				"lead": person,
+				"outcome": outcome,
+				"imported_on": frappe.utils.now(),
+			}
+		).insert(ignore_permissions=True)
+	except frappe.DuplicateEntryError:
+		pass
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Meta: could not record the import")
+
+
+def forget_person(doc, method=None) -> None:
+	"""A person was deleted: stamp their submissions instead of dropping them.
+
+	The row stays, so the submission is not imported all over again — deleting a
+	lead has to mean deleting it, not asking for it back.
+	"""
+	for name in frappe.get_all("Facebook Lead Import", filters={"lead": doc.name}, pluck="name"):
+		frappe.db.set_value(
+			"Facebook Lead Import", name, "deleted_on", frappe.utils.now(), update_modified=False
+		)
 
 
 def submission_row(lead: dict, form_id: str | None) -> dict:
@@ -184,6 +222,7 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 		doc = frappe.get_doc(values)
 		_attribute(doc, lead, form_id)
 		doc.insert(ignore_permissions=True)
+		record_import(lead, form_id, doc.name, "Created")
 		if unmapped:
 			_note_unmapped_answers(doc, unmapped)
 		_note_form_submitted(doc, form_id)
@@ -213,6 +252,7 @@ def _merge_submission(person: str, lead: dict, form_id: str | None, values: dict
 		doc.append("facebook_submissions", submission_row(lead, form_id))
 		_attribute(doc, lead, form_id)
 		doc.save(ignore_permissions=True)
+		record_import(lead, form_id, doc.name, "Merged")
 		if unmapped:
 			_note_unmapped_answers(doc, unmapped)
 		_note_form_submitted(doc, form_id)

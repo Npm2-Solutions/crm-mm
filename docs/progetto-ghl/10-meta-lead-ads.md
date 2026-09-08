@@ -142,6 +142,16 @@ quindi nessuna Pagina puo' importare. I token delle Pagine li lascia stare — c
 pubblica il Social Planner, e disiscrivere su Meta vorrebbe dire chiamate di
 rete dentro una migrazione.
 
+### Il registro delle importazioni (08/09/2026)
+
+`Facebook Lead Import`: una riga per submission presa in carico, con il modulo,
+la persona che ne e' nata e l'esito (Created/Merged). Serve a una cosa sola, ma
+importante: **sapere che una compilazione e' gia' stata gestita anche quando la
+persona non c'e' piu'**. Prima la domanda era "esiste un lead con questo leadgen
+id?", quindi cancellare un lead lo faceva tornare alla riconciliazione oraria
+successiva. Il `on_trash` del lead timbra `deleted_on` sulle sue righe e le
+lascia dov'erano.
+
 ## Perche' Facebook chiede il portfolio Business
 
 Il dialog chiede di scegliere un portfolio perche' l'app domanda
@@ -216,6 +226,7 @@ Un gruppo solo, **"Meta & Messaging"**, in ordine di dipendenza:
 
 `crm/tests/test_meta_leads.py`: mapping/split nome, idempotenza, source IG,
 failure log, normalizzazione telefono, merge domande senza perdere mapping,
-verifica firma webhook, disconnessione che ferma davvero le Pagine, notifica
+verifica firma webhook, un lead cancellato che non torna, disconnessione che
+ferma davvero le Pagine, notifica
 ignorata per una Pagina spenta (anche quando arriva senza page id), rilascio
 della rotta sull'hub e rifiuto del replay di una rivendicazione.
