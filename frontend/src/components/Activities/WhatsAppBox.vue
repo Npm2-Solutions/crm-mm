@@ -57,7 +57,15 @@
   </div>
   <div class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
     <div class="flex h-8 items-center gap-2">
-      <FileUploader @success="(file) => uploadFile(file)">
+      <!-- `private: false` is load-bearing. frappe_whatsapp hands Meta a link and
+           Meta fetches it anonymously; a private Frappe file answers that fetch
+           with a login page, so the message fails every time. FileUploader
+           defaults to private, which is why nothing with a file ever left. -->
+      <FileUploader
+        :uploadArgs="{ private: false }"
+        :validateFile="validateForWhatsApp"
+        @success="(file) => uploadFile(file)"
+      >
         <template #default="{ openFileSelector }">
           <div class="flex items-center space-x-2">
             <Dropdown :options="uploadOptions(openFileSelector)">
@@ -211,6 +219,43 @@ const windowNotice = computed(() =>
       ),
 )
 
+// What WhatsApp actually accepts, from Meta's media reference. A file outside
+// this list is refused by Meta after the upload, and the chat used to show only
+// "failed" — so it is refused here, by name, before anything is sent.
+const WHATSAPP_MEDIA = {
+  image: { extensions: ['jpg', 'jpeg', 'png'], megabytes: 5, label: 'JPEG, PNG' },
+  video: { extensions: ['mp4', '3gp'], megabytes: 16, label: 'MP4, 3GP' },
+  audio: {
+    extensions: ['aac', 'amr', 'mp3', 'm4a', 'ogg'],
+    megabytes: 16,
+    label: 'AAC, AMR, MP3, M4A, OGG',
+  },
+  document: {
+    extensions: ['txt', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf'],
+    megabytes: 100,
+    label: 'PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT',
+  },
+}
+
+function validateForWhatsApp(file) {
+  const rules = WHATSAPP_MEDIA[fileType.value]
+  if (!rules) return null
+
+  const extension = (file.name.split('.').pop() || '').toLowerCase()
+  if (!rules.extensions.includes(extension)) {
+    return __('WhatsApp does not accept .{0} here. It takes: {1}.', [
+      extension || '?',
+      rules.label,
+    ])
+  }
+  if (file.size > rules.megabytes * 1024 * 1024) {
+    return __('WhatsApp allows at most {0} MB for this kind of file.', [
+      rules.megabytes,
+    ])
+  }
+  return null
+}
+
 // --- voice messages ---------------------------------------------------------
 // Recorded in the browser with MediaRecorder, uploaded like any other file and
 // sent as an audio message, so it lands in the same chat as everything else.
@@ -225,6 +270,18 @@ const recordingLabel = computed(() => {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 })
 
+// Chrome records `audio/webm` by default, which WhatsApp refuses outright — the
+// voice note was uploaded, sent, and rejected. OGG/Opus and MP4 are on Meta's
+// accepted list; if the browser can do neither, better to say so than to record
+// something that cannot be delivered.
+function recordableType() {
+  return (
+    ['audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((type) =>
+      MediaRecorder.isTypeSupported?.(type),
+    ) || ''
+  )
+}
+
 async function startRecording() {
   if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
     toast.error(__('This browser cannot record audio'))
@@ -237,15 +294,24 @@ async function startRecording() {
     toast.error(__('Microphone access was denied'))
     return
   }
+  const container = recordableType()
+  if (!container) {
+    stream.getTracks().forEach((track) => track.stop())
+    toast.error(
+      __('This browser can only record in a format WhatsApp does not accept'),
+    )
+    return
+  }
+
   chunks = []
-  recorder = new MediaRecorder(stream)
+  recorder = new MediaRecorder(stream, { mimeType: container })
   recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data)
   recorder.onstop = async () => {
     stream.getTracks().forEach((track) => track.stop())
     clearInterval(ticker)
     recording.value = false
     if (!chunks.length) return
-    await uploadRecording(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }))
+    await uploadRecording(new Blob(chunks, { type: recorder.mimeType || container }))
   }
   recorder.start()
   recording.value = true
@@ -259,10 +325,10 @@ function stopRecording() {
 }
 
 async function uploadRecording(blob) {
-  const extension = (blob.type.split('/')[1] || 'webm').split(';')[0]
+  const extension = (blob.type.split('/')[1] || 'ogg').split(';')[0]
   const form = new FormData()
   form.append('file', blob, `voice-${Date.now()}.${extension}`)
-  form.append('is_private', 1)
+  form.append('is_private', 0)
   form.append('doctype', props.doctype)
   form.append('docname', doc.value.name)
   try {

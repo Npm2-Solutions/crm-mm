@@ -278,6 +278,32 @@ def insert_and_send(doc) -> str:
 	return doc.name
 
 
+@frappe.whitelist(methods=["POST"])
+def retry_whatsapp_message(name: str) -> str:
+	"""Send a message that failed again, and say why if it fails again.
+
+	A failed message used to be the end of the road: it sat in the chat marked
+	Failed with no reason and no way to try once more, so the only way out was to
+	retype it. frappe_whatsapp can re-dispatch one — `send_outgoing` is written to
+	be called a second time — it just had nothing calling it.
+
+	Meta's own error comes back to whoever pressed the button: that is the point
+	of retrying by hand rather than in a queue.
+	"""
+	doc = frappe.get_doc("WhatsApp Message", name)
+	validate_access(doc.reference_doctype, doc.reference_name, "write")
+
+	if doc.type != "Outgoing":
+		frappe.throw(_("Only a message we sent can be sent again."))
+	if doc.status not in ("Failed", "", None):
+		frappe.throw(_("This message did not fail, so there is nothing to send again."))
+
+	doc.send_outgoing()
+	doc.status = "Success" if doc.message_id else doc.status
+	doc.db_update()
+	return doc.status or ""
+
+
 @frappe.whitelist()
 def get_recipients(reference_doctype: str, reference_name: str) -> list[str]:
 	"""The numbers the chat may offer, so it can show which one it is writing to."""
