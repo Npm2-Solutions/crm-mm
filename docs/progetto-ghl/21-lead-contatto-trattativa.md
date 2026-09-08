@@ -57,6 +57,23 @@ touch resta suo e questo diventa l'ultimo. Le compilazioni si accumulano in
 compilato, e l'idempotenza — Meta riconsegna, e la riconciliazione oraria
 rilegge due giorni di ogni modulo.
 
+### 3-bis. Cancellare un lead deve volere dire cancellarlo
+
+Sul sito vero e' successo questo: cancellati i lead arrivati da Facebook, si
+sono ricreati da soli entro l'ora. Il motivo non era un'importazione impazzita
+ma la domanda sbagliata: *"esiste un lead che porta questo leadgen id?"*. Con il
+lead cancellato la risposta era no, e la riconciliazione oraria — che rilegge
+gli ultimi due giorni di ogni modulo — lo riportava dentro.
+
+Se una compilazione e' gia' stata gestita e' un fatto **dell'importazione**, non
+di un record che qualcuno puo' aver cancellato nel frattempo. Adesso sta in
+`Facebook Lead Import`, una riga per submission che sopravvive alla persona; il
+`on_trash` del lead ci mette sopra la data di cancellazione invece di toglierla.
+La patch `remember_the_leads_already_imported` ci scrive quello che il CRM ha
+adesso, cosi' i lead di oggi si possono cancellare e restano cancellati. Una
+compilazione il cui lead era gia' stato cancellato prima della patch il CRM non
+la conosce e puo' rientrare **una volta**: da li' in poi la riga c'e'.
+
 Con l'unione, pero', `Lead Created` non scatta piu' per chi torna: e' nato mesi
 fa. Percio' esiste un trigger nuovo, **Lead Form Submitted**, che scatta a ogni
 compilazione — persona nuova o no — con `facebook_form_id` e `source` nel
@@ -116,7 +133,8 @@ import) ricevono la loro persona, cosi' togliere l'elenco non nasconde nessuno.
 - `crm/tests/test_meta_leads.py`: una seconda compilazione e' una submission e
   non una seconda persona; una submission unita non viene reimportata; l'unione
   non sovrascrive cio' che e' stato scritto a mano; `find_person` trova chi ha
-  gia' una trattativa.
+  gia' una trattativa; **un lead cancellato non torna**, e cancellare una
+  persona timbra le sue submission.
 - `crm/fcrm/doctype/crm_deal/test_crm_deal.py`: la trattativa mostra il nome che
   la persona ha adesso e i dati che l'azienda ha adesso; convertire lascia la
   persona dov'e' e la seconda conversione le mette accanto una seconda

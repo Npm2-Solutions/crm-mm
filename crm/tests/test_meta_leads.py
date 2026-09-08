@@ -14,6 +14,7 @@ from crm.integrations.meta import relay as R
 from crm.integrations.meta import webhook as W
 from crm.integrations.meta.leads import (
 	already_stored,
+	forget_person,
 	ingest_leadgen_entry,
 	normalize_value,
 	reconcile_synced_pages,
@@ -132,6 +133,29 @@ class TestMetaLeads(IntegrationTestCase):
 		second["field_data"].append({"name": "custom_q", "values": ["Impiegato"]})
 		store_lead(second, "990001")
 		self.assertEqual(frappe.db.get_value("CRM Lead", person, "job_title"), "Titolare")
+
+	def test_a_deleted_lead_does_not_come_back(self):
+		"""Deleting a lead has to mean deleting it. The reconciliation re-reads
+		two days of every form, so without the ledger it returned within the
+		hour — which is exactly what was happening on the live site."""
+		make_form()
+		self.assertEqual(store_lead(sample_lead("7770601"), "990001"), "created")
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7770601"})
+
+		frappe.delete_doc("CRM Lead", person, force=True, ignore_permissions=True)
+
+		self.assertTrue(already_stored("7770601"))
+		self.assertEqual(store_lead(sample_lead("7770601"), "990001"), "duplicate")
+		self.assertFalse(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7770601"}))
+
+	def test_deleting_a_person_stamps_their_submissions(self):
+		make_form()
+		store_lead(sample_lead("7770701"), "990001")
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7770701"})
+
+		forget_person(frappe.get_doc("CRM Lead", person))
+
+		self.assertTrue(frappe.db.get_value("Facebook Lead Import", "7770701", "deleted_on"))
 
 	def test_store_lead_is_idempotent(self):
 		make_form()

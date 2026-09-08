@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:leadgen_id",
+ "creation": "2026-09-08 14:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "leadgen_id",
+  "form",
+  "form_name",
+  "platform",
+  "column_break_impt",
+  "lead",
+  "outcome",
+  "imported_on",
+  "deleted_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "leadgen_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Leadgen ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "form",
+   "fieldtype": "Data",
+   "label": "Form ID"
+  },
+  {
+   "fieldname": "form_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Form"
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Data",
+   "label": "Platform"
+  },
+  {
+   "fieldname": "column_break_impt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Not a Link: a person must stay deletable, and this row outlives them on purpose.",
+   "fieldname": "lead",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Person"
+  },
+  {
+   "default": "Created",
+   "fieldname": "outcome",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Outcome",
+   "options": "Created\nMerged"
+  },
+  {
+   "fieldname": "imported_on",
+   "fieldtype": "Datetime",
+   "label": "Imported On"
+  },
+  {
+   "description": "The person this submission produced was deleted. It is not imported again.",
+   "fieldname": "deleted_on",
+   "fieldtype": "Datetime",
+   "label": "Person Deleted On"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-08 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Lead Syncing",
+ "name": "Facebook Lead Import",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
