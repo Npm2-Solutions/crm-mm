@@ -235,6 +235,51 @@ class TestCRMLead(IntegrationTestCase):
 		self.assertEqual(contact.company_name, "Chicago Bulls")
 		self.assertEqual(contact.designation, "Player")
 
+	def test_the_company_is_made_when_the_name_is_written(self):
+		"""The company is a Link now: two people of the same firm must be two
+		people of one company, not two strings that look alike."""
+		lead = create_lead(
+			first_name="Giulia",
+			email="giulia@nuova.it",
+			organization="Nuova Impresa SRL",
+			website="https://nuova.it",
+			industry="Technology",
+		)
+
+		self.assertEqual(lead.organization, "Nuova Impresa SRL")
+		organization = frappe.get_doc("CRM Organization", "Nuova Impresa SRL")
+		self.assertEqual(organization.website, "https://nuova.it")
+		self.assertEqual(organization.industry, "Technology")
+
+	def test_two_people_of_one_company_share_it(self):
+		first = create_lead(first_name="Uno", email="uno@stessa.it", organization="Stessa Azienda")
+		second = create_lead(first_name="Due", email="due@stessa.it", organization="Stessa Azienda")
+
+		self.assertEqual(first.organization, second.organization)
+		self.assertEqual(frappe.db.count("CRM Organization", {"organization_name": "Stessa Azienda"}), 1)
+
+	def test_an_existing_company_is_not_rewritten(self):
+		"""What the company says about itself outranks what a new person types."""
+		frappe.get_doc(
+			{
+				"doctype": "CRM Organization",
+				"organization_name": "Gia Nostra",
+				"website": "https://gia-nostra.it",
+			}
+		).insert(ignore_permissions=True)
+
+		create_lead(
+			first_name="Terzo",
+			email="terzo@gia-nostra.it",
+			organization="Gia Nostra",
+			website="https://sbagliato.it",
+		)
+
+		self.assertEqual(
+			frappe.db.get_value("CRM Organization", "Gia Nostra", "website"),
+			"https://gia-nostra.it",
+		)
+
 	def test_create_organization_from_lead(self):
 		"""Test creating an organization from lead data"""
 		lead = create_lead(

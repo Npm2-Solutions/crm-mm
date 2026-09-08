@@ -124,6 +124,13 @@ def _link_target_doctypes() -> set:
 	return targets
 
 
+# Fields the CRM stores as a Link but a stranger types by hand. A visitor filling
+# in a public form does not know the CRM's list of companies, has no permission to
+# search it, and must not be stopped from writing the name of their own: the record
+# is created from the name on submission (`CRMLead.ensure_organization`).
+TYPED_BY_HAND = {("CRM Lead", "organization")}
+
+
 def _mappable_fields(document_type: str) -> list[dict]:
 	"""Fields of a target DocType a form may collect (shared by the picker and by
 	the brand-new-form seeding)."""
@@ -138,12 +145,13 @@ def _mappable_fields(document_type: str) -> list[dict]:
 			continue
 		# a Link is offered even when guests can't select the target yet; the builder
 		# warns and offers a one-click grant (see grant_guest_link_access).
+		typed_by_hand = (document_type, df.fieldname) in TYPED_BY_HAND
 		fields.append(
 			{
 				"fieldname": df.fieldname,
 				"label": df.label or df.fieldname,
-				"fieldtype": df.fieldtype,
-				"options": df.options,
+				"fieldtype": "Data" if typed_by_hand else df.fieldtype,
+				"options": None if typed_by_hand else df.options,
 				"reqd": df.reqd,
 				"default": df.default,
 			}
