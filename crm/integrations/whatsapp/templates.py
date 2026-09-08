@@ -136,6 +136,32 @@ def check_placeholders(values: dict) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
+def sync_templates() -> dict:
+	"""Bring in the templates that live on Meta but not here.
+
+	The list is read from the local records, so a template made in WhatsApp
+	Manager — or `hello_world`, which Meta creates by itself with every new
+	WhatsApp Business Account — exists on Meta and is invisible here, and cannot
+	be sent.
+
+	It also refreshes the status of the ones we did create: normally that arrives
+	on the `message_template_status_update` webhook, and this is the way back if
+	one is ever missed.
+
+	frappe_whatsapp's `fetch` writes with `db_insert`/`db_update`, not `insert`,
+	so it does not re-submit anything to Meta — it only reads.
+	"""
+	_check_manager()
+	if not templates_available():
+		frappe.throw(_("The WhatsApp app is not installed on this site"))
+
+	from frappe_whatsapp.frappe_whatsapp.doctype.whatsapp_templates.whatsapp_templates import fetch
+
+	fetch()
+	return get_templates()
+
+
+@frappe.whitelist(methods=["POST"])
 def save_template(template: dict | str, name: str | None = None) -> dict:
 	"""Create or update a template. Saving submits it to Meta for review."""
 	_check_manager()

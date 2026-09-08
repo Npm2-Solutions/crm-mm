@@ -396,6 +396,22 @@ qualsiasi cosa in Frappe. Ma non è una strada offerta al cliente.
 
 ## Template: si creano nel CRM
 
+### I template che esistono su Meta e non qui
+
+La lista del CRM legge i record locali. Un template creato da **WhatsApp
+Manager** — o `hello_world`, che Meta crea da sé con ogni nuovo WABA — su Meta
+c'è e qui no: non si vede e non si può mandare.
+
+Il bottone **«Sincronizza da Meta»** li porta dentro. Riallinea anche lo stato di
+quelli creati da noi: normalmente arriva sul webhook
+`message_template_status_update`, e questa è la via di ritorno se uno andasse
+perso.
+
+La `fetch` di frappe_whatsapp scrive con `db_insert`/`db_update` e non con
+`insert`, quindi **non ri-sottopone niente a Meta**: legge soltanto. Se usasse
+`insert` farebbe scattare l'`after_insert`, che rimanderebbe ogni template a
+Meta come se fosse nuovo.
+
 ### Cosa Meta pretende, e cosa sbagliavamo
 
 Un template con dei segnaposto viene **rifiutato all'istante** se non gli si dà
