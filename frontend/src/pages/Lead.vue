@@ -515,6 +515,18 @@ const tabs = computed(() => {
       icon: EmailIcon,
     },
     {
+      name: 'WhatsApp',
+      label: __('WhatsApp'),
+      icon: WhatsAppIcon,
+      condition: () => whatsappEnabled.value,
+    },
+    {
+      name: 'SMS',
+      label: __('SMS'),
+      icon: SMSIcon,
+      condition: () => smsEnabled.value,
+    },
+    {
       name: 'Comments',
       label: __('Comments'),
       icon: CommentIcon,
@@ -553,18 +565,6 @@ const tabs = computed(() => {
       name: 'Tracking',
       label: __('Tracking'),
       icon: LucideRadar,
-    },
-    {
-      name: 'WhatsApp',
-      label: __('WhatsApp'),
-      icon: WhatsAppIcon,
-      condition: () => whatsappEnabled.value,
-    },
-    {
-      name: 'SMS',
-      label: __('SMS'),
-      icon: SMSIcon,
-      condition: () => smsEnabled.value,
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
