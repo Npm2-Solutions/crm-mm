@@ -40,21 +40,21 @@ def ingest_leadgen_entry(
 	"""Webhook path: fetch one lead by id and store it."""
 	if not leadgen_id:
 		return
-	if page_id and not frappe.db.get_value("Facebook Page", page_id, "sync_enabled"):
+	# a notification can arrive without the page id: resolve it from the form,
+	# otherwise a page whose sync was switched off would still be imported
+	if not page_id and form_id:
+		page_id = frappe.db.get_value("Facebook Lead Form", form_id, "page")
+	if not page_id or not frappe.db.get_value("Facebook Page", page_id, "sync_enabled"):
 		return
 
-	token = get_page_token(page_id) if page_id else None
-	if not token and form_id:
-		page = frappe.db.get_value("Facebook Lead Form", form_id, "page")
-		token = get_page_token(page) if page else None
+	token = get_page_token(page_id)
 	if not token:
 		_log_failure({"leadgen_id": leadgen_id}, form_id, _("No page token available"))
 		return
 
-	if page_id:
-		frappe.db.set_value(
-			"Facebook Page", page_id, "last_webhook_at", frappe.utils.now(), update_modified=False
-		)
+	frappe.db.set_value(
+		"Facebook Page", page_id, "last_webhook_at", frappe.utils.now(), update_modified=False
+	)
 
 	try:
 		lead = fetch_lead(leadgen_id, token)

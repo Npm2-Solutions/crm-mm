@@ -112,6 +112,36 @@ per usarle e falliscono a ogni chiamata. Una Pagina tolta dal dialog viene
 dimenticata, purche' non abbia moduli ne' la sincronizzazione accesa.
 
 
+### Disconnettere significa smettere davvero (08/09/2026)
+
+"Disconnetti" cancellava il solo token utente. Ma i lead non arrivano con
+quello: arrivano con il **token della Pagina**, che non scade insieme, e la
+Pagina resta iscritta al webhook `leadgen` dell'app. Risultato: la schermata
+diceva "non connesso" e i lead continuavano a entrare — sia dal webhook, sia
+dalla riconciliazione oraria che ripesca gli ultimi due giorni.
+
+Adesso la disconnessione, per ogni Pagina: disiscrive l'app dal webhook
+(`DELETE /{page}/subscribed_apps`), spegne la sincronizzazione, dimentica il
+token e rilascia la Pagina sull'hub. Meta lato suo non ha piu' nulla a cui
+notificare, e il CRM non ha piu' nulla con cui chiedere.
+
+Due conseguenze da dire prima, ed e' quello che spiega il dialog di conferma:
+anche il Social Planner pubblica con quei token, quindi si ferma; e per
+tornare indietro si ripassa dal login di Facebook.
+
+Il rilascio sull'hub non e' un dettaglio: l'hub **rifiuta** di riassegnare una
+Pagina gia' rivendicata, quindi una Pagina disconnessa su un sito cliente non
+avrebbe mai piu' potuto essere collegata altrove. Ora `set_page_sync(off)` e la
+disconnessione la liberano, con una firma diversa da quella della
+rivendicazione perche' una richiesta catturata non possa essere rigiocata al
+contrario.
+
+Per i siti disconnessi *prima* di questa correzione c'e' la patch
+`stop_lead_import_after_disconnect`: senza token utente non c'e' connessione,
+quindi nessuna Pagina puo' importare. I token delle Pagine li lascia stare — ci
+pubblica il Social Planner, e disiscrivere su Meta vorrebbe dire chiamate di
+rete dentro una migrazione.
+
 ## Perche' Facebook chiede il portfolio Business
 
 Il dialog chiede di scegliere un portfolio perche' l'app domanda
@@ -186,4 +216,6 @@ Un gruppo solo, **"Meta & Messaging"**, in ordine di dipendenza:
 
 `crm/tests/test_meta_leads.py`: mapping/split nome, idempotenza, source IG,
 failure log, normalizzazione telefono, merge domande senza perdere mapping,
-verifica firma webhook.
+verifica firma webhook, disconnessione che ferma davvero le Pagine, notifica
+ignorata per una Pagina spenta (anche quando arriva senza page id), rilascio
+della rotta sull'hub e rifiuto del replay di una rivendicazione.

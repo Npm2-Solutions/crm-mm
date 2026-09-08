@@ -3,13 +3,20 @@
 
 import hashlib
 import hmac
+from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from crm.integrations.meta import api
 from crm.integrations.meta import relay as R
 from crm.integrations.meta import webhook as W
-from crm.integrations.meta.leads import normalize_value, store_lead
+from crm.integrations.meta.leads import (
+	ingest_leadgen_entry,
+	normalize_value,
+	reconcile_synced_pages,
+	store_lead,
+)
 from crm.integrations.meta.oauth import _parse_state, _sign_state, merge_questions
 
 
@@ -129,6 +136,46 @@ class TestMetaLeads(IntegrationTestCase):
 		self.assertEqual(by_key["custom_q"].mapped_to_crm_field, "job_title")
 		self.assertIn("nuova", by_key)
 
+	def test_ingest_skips_a_page_that_no_longer_syncs(self):
+		make_form()
+		frappe.db.set_value("Facebook Page", "880001", "sync_enabled", 0)
+		ingest_leadgen_entry("7770099", page_id="880001", form_id="990001")
+		self.assertFalse(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7770099"}))
+
+	def test_ingest_finds_the_page_through_the_form(self):
+		"""A notification without the page id must not bypass the switch."""
+		make_form()
+		frappe.db.set_value("Facebook Page", "880001", "sync_enabled", 0)
+		ingest_leadgen_entry("7770098", form_id="990001")
+		self.assertFalse(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7770098"}))
+
+	def test_disconnect_stops_every_page(self):
+		"""Disconnecting used to clear the user token and nothing else, so the
+		pages kept their token, their webhook and their hourly polling."""
+		make_form()
+		frappe.set_user("Administrator")
+		with patch.object(api, "graph_post") as graph_post:
+			api.disconnect()
+		# every page it knows is unsubscribed from the leadgen webhook
+		self.assertIn("880001/subscribed_apps", [call[0][0] for call in graph_post.call_args_list])
+
+		page = frappe.get_doc("Facebook Page", "880001")
+		self.assertEqual(page.sync_enabled, 0)
+		self.assertEqual(page.webhook_subscribed, 0)
+		self.assertIsNone(page.get_password("access_token", raise_exception=False))
+		self.assertIsNone(
+			frappe.get_doc("CRM Meta Settings").get_password("user_access_token", raise_exception=False)
+		)
+
+	def test_disconnected_pages_are_left_out_of_the_reconciliation(self):
+		make_form()
+		frappe.set_user("Administrator")
+		with patch.object(api, "graph_post"):
+			api.disconnect()
+		with patch("crm.integrations.meta.leads.backfill_form") as backfill:
+			reconcile_synced_pages()
+		backfill.assert_not_called()
+
 	def test_webhook_signature_validation(self):
 		settings = frappe.get_doc("CRM Meta Settings")
 		settings.app_secret = "topsecret"
@@ -217,6 +264,44 @@ class TestMetaSharedApp(IntegrationTestCase):
 		response = R.register_page_route("881000", "https://ignoto.it", ts, signature)
 		self.assertEqual(response.status_code, 403)
 		self.assertFalse(frappe.db.exists("Meta Page Route", "881000"))
+
+	def test_release_frees_the_page_for_another_site(self):
+		frappe.local.conf["meta_relay_secret"] = "shared"
+		site = frappe.utils.get_url().rstrip("/")
+		frappe.get_doc({"doctype": "Meta Page Route", "page_id": "881100", "site_url": site}).insert(
+			ignore_permissions=True
+		)
+
+		ts = str(int(__import__("time").time()))
+		signature = R.sign(f"release|881100|{site}|{ts}".encode())
+		response = R.unregister_page_route("881100", site, ts, signature)
+		self.assertEqual(response.status_code, 200)
+		self.assertFalse(frappe.db.exists("Meta Page Route", "881100"))
+
+	def test_release_refuses_another_site_route(self):
+		frappe.local.conf["meta_relay_secret"] = "shared"
+		frappe.get_doc(
+			{"doctype": "Meta Page Route", "page_id": "881200", "site_url": "https://primo.it"}
+		).insert(ignore_permissions=True)
+
+		ts = str(int(__import__("time").time()))
+		signature = R.sign(f"release|881200|https://ladro.it|{ts}".encode())
+		response = R.unregister_page_route("881200", "https://ladro.it", ts, signature)
+		self.assertEqual(response.status_code, 409)
+		self.assertTrue(frappe.db.exists("Meta Page Route", "881200"))
+
+	def test_a_claim_signature_cannot_be_replayed_as_a_release(self):
+		frappe.local.conf["meta_relay_secret"] = "shared"
+		site = frappe.utils.get_url().rstrip("/")
+		frappe.get_doc({"doctype": "Meta Page Route", "page_id": "881300", "site_url": site}).insert(
+			ignore_permissions=True
+		)
+
+		ts = str(int(__import__("time").time()))
+		claim_signature = R.sign(f"881300|{site}|{ts}".encode())
+		response = R.unregister_page_route("881300", site, ts, claim_signature)
+		self.assertEqual(response.status_code, 403)
+		self.assertTrue(frappe.db.exists("Meta Page Route", "881300"))
 
 	def test_route_for_returns_other_site(self):
 		frappe.get_doc(
