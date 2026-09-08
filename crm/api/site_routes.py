@@ -130,10 +130,9 @@ def guard_home_page(doc, method=None):
 	or deleted from Builder's own dashboard, and a home page that stops answering leaves
 	the site root on a 404.
 	"""
-	if not doc.get("route") or not frappe.db.exists("DocType", "CRM Website Settings"):
+	if not doc.get("route") or not frappe.db.exists("DocType", "CRM Web Site"):
 		return
-	home = frappe.db.get_single_value("CRM Website Settings", "home_page")
-	if not home or normalise_route(home) != normalise_route(doc.route):
+	if not frappe.db.exists("CRM Web Site", {"home_page": normalise_route(doc.route)}):
 		return
 
 	if method == "on_trash":

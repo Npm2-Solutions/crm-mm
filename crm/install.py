@@ -423,6 +423,37 @@ def add_web_form_custom_fields():
 	frappe.clear_cache(doctype="Web Form")
 
 
+def add_builder_page_custom_fields():
+	"""The CRM's own field on Builder Page: which of our sites the page belongs to.
+
+	Builder groups pages into Project Folders, but a folder has no address, no home and no
+	brand — so it cannot be the site. This link is the one that decides what a page's head
+	renders and which folder its route lives under.
+
+	Skipped when Builder is not installed; `after_app_install` brings it in later.
+	"""
+	if not frappe.db.exists("DocType", "Builder Page"):
+		return
+	if frappe.get_meta("Builder Page").has_field("crm_site"):
+		return
+	click.secho("* Installing Custom Fields in Builder Page")
+	create_custom_fields(
+		{
+			"Builder Page": [
+				{
+					"fieldname": "crm_site",
+					"fieldtype": "Link",
+					"options": "CRM Web Site",
+					"label": "CRM Site",
+					"insert_after": "project_folder",
+					"read_only": 1,
+				}
+			]
+		}
+	)
+	frappe.clear_cache(doctype="Builder Page")
+
+
 def add_default_industries():
 	industries = [
 		"Accounting",

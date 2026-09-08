@@ -123,9 +123,15 @@ def crm_booking_html(route: str | None = None, label: str | None = None) -> str:
 	)
 
 
-def crm_contact_html() -> str:
-	"""Address, phone, email and WhatsApp, from the site settings — never retyped."""
-	s = frappe.get_cached_doc("CRM Website Settings")
+def crm_contact_html(page_name: str | None = None) -> str:
+	"""Address, phone, email and WhatsApp, from this page's own site — never retyped.
+
+	`page_name` comes from Builder's render context, so a contacts block on site A shows
+	site A's details even though the same component is shipped to every site.
+	"""
+	s = _site_of_page(page_name)
+	if not s:
+		return _placeholder(_("Fill in the contact details under Settings → Website."))
 	if not (s.address or s.phone or s.email or s.whatsapp_number):
 		return _placeholder(_("Fill in the contact details under Settings → Website."))
 	return frappe.render_template(
@@ -149,14 +155,39 @@ def _placeholder(message: str) -> str:
 
 CRM_HEAD_START = "<!-- crm:site:start -->"
 CRM_HEAD_END = "<!-- crm:site:end -->"
+# One line in Builder's global head, resolved per page at render time. Builder applies
+# `Builder Settings.head_html` to every page it renders — the only place a site-wide tag
+# can live — but with several sites on one Frappe site, "site-wide" is the wrong scope:
+# brand, analytics and consent differ per site. So the global entry is a call, and the
+# call looks up which site the page belongs to.
+CRM_HEAD_CALL = "{{ crm_site_head(page_name) }}"
+
+
+def crm_site_head(page_name: str | None = None) -> str:
+	"""The <head> markup for whichever site this page belongs to."""
+	site = _site_of_page(page_name)
+	if not site:
+		return ""
+	return build_head_html(site)
+
+
+def _site_of_page(page_name: str | None):
+	if not page_name or not frappe.db.exists("DocType", "CRM Web Site"):
+		return None
+	name = frappe.db.get_value("Builder Page", page_name, "crm_site")
+	if not name:
+		# a page built straight in Builder, outside the CRM: fall back to the site whose
+		# folder its route sits in, so it still gets a brand instead of nothing
+		route = frappe.db.get_value("Builder Page", page_name, "route") or ""
+		head = route.split("/")[0]
+		name = head and frappe.db.get_value("CRM Web Site", {"slug": head, "enabled": 1})
+	if not name:
+		return None
+	return frappe.get_cached_doc("CRM Web Site", name)
 
 
 def build_head_html(settings) -> str:
-	"""The markup the CRM owns in every Builder page's <head>.
-
-	Builder applies `Builder Settings.head_html` to every page it renders, which is the
-	only place a site-wide tag can live — its page template does not include the
-	framework's `web_include_js`, so `hooks.web_include_js` would never fire.
+	"""The markup the CRM owns in a page's <head>.
 
 	Three things go in: the brand tokens, the tracker (so a visit to a page feeds the
 	attribution the CRM already has), and the analytics tags — the last two gated behind
@@ -282,23 +313,23 @@ def _consent_banner(settings, analytics: list[str]) -> str:
 	)
 
 
-def sync_builder_head(settings) -> None:
-	"""Write our block into Builder's site-wide head, leaving anyone else's alone.
+def sync_builder_head() -> None:
+	"""Put our one line into Builder's global head, leaving anyone else's tags alone.
 
-	Delimited by markers so an author can add their own tags around ours and keep them
-	across every save.
+	Delimited by markers so an author can add their own around ours and keep them across
+	every save. The line itself never changes — what it renders does.
 	"""
 	if not frappe.db.exists("DocType", "Builder Settings"):
 		return
 	current = frappe.db.get_single_value("Builder Settings", "head_html") or ""
-	ours = f"{CRM_HEAD_START}\n{build_head_html(settings)}\n{CRM_HEAD_END}" if settings.enabled else ""
+	wanted = f"{CRM_HEAD_START}\n{CRM_HEAD_CALL}\n{CRM_HEAD_END}"
 
 	if CRM_HEAD_START in current and CRM_HEAD_END in current:
 		head, _sep, rest = current.partition(CRM_HEAD_START)
 		_ours, _sep2, tail = rest.partition(CRM_HEAD_END)
-		updated = (head + ours + tail).strip()
+		updated = (head + wanted + tail).strip()
 	else:
-		updated = (current + "\n" + ours).strip() if ours else current.strip()
+		updated = (current + "\n" + wanted).strip()
 
 	if updated != current:
 		frappe.db.set_single_value("Builder Settings", "head_html", updated)

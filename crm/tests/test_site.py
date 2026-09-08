@@ -13,6 +13,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import site
+from crm.api import site as site_api
 from crm.api.site_routes import (
 	apply_website_fields,
 	guard_home_page,
@@ -218,36 +219,43 @@ class TestHomePageGuard(IntegrationTestCase):
 	document rather than in the API that happens to be convenient.
 	"""
 
+	def setUp(self):
+		self.site = frappe.get_doc(
+			{"doctype": "CRM Web Site", "site_name": "Guardia", "slug": "guardia", "enabled": 1}
+		).insert()
+
 	def tearDown(self):
-		frappe.db.set_single_value("CRM Website Settings", "home_page", None)
 		frappe.db.rollback()
 
+	def set_home(self, route):
+		frappe.db.set_value("CRM Web Site", self.site.name, "home_page", route)
+
 	def test_taking_a_live_home_page_offline_is_refused(self):
-		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		self.set_home("casa")
 		self.assertRaises(frappe.ValidationError, guard_home_page, _page("casa", 0, was=1))
 
 	def test_deleting_the_home_page_is_refused(self):
-		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		self.set_home("casa")
 		self.assertRaises(frappe.ValidationError, guard_home_page, _page("casa", 1), "on_trash")
 
 	def test_a_draft_home_page_can_still_be_saved_and_published(self):
 		"""The regression that made a chosen-but-not-yet-live home page impossible to
 		publish: publish() saves, the save threw, the page stayed a draft forever."""
-		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		self.set_home("casa")
 		guard_home_page(_page("casa", 0, was=0))
 		guard_home_page(_page("casa", 1, was=0))
 
 	def test_a_published_home_page_saves_normally(self):
-		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		self.set_home("casa")
 		guard_home_page(_page("casa", 1, was=1))
 
 	def test_other_pages_are_untouched(self):
-		frappe.db.set_single_value("CRM Website Settings", "home_page", "casa")
+		self.set_home("casa")
 		guard_home_page(_page("contatti", 0, was=1))
 		guard_home_page(_page("contatti", 0, was=1), "on_trash")
 
 	def test_no_home_page_configured_blocks_nothing(self):
-		frappe.db.set_single_value("CRM Website Settings", "home_page", None)
+		self.set_home(None)
 		guard_home_page(_page("casa", 0, was=1))
 
 
@@ -270,4 +278,71 @@ def _page(route: str, published: int, was: int | None = None):
 	"""A stand-in for a Builder Page, with the "before this save" state the guard reads."""
 	doc = frappe._dict(route=route, published=published)
 	doc.get_doc_before_save = lambda: frappe._dict(published=was) if was is not None else None
+	return doc
+
+
+class TestSitesInFolders(IntegrationTestCase):
+	"""Several websites on one domain, each living in its own folder.
+
+	The folder is not a label: a page's route *is* `<folder>/<page>`, so Frappe and
+	Builder resolve it natively and no request-time rewriting exists anywhere.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_folder_comes_from_the_name_and_stays_unique(self):
+		first = _site("Studio Rossi")
+		self.assertEqual(first.slug, "studio-rossi")
+		second = _site("Studio Rossi!")
+		self.assertNotEqual(second.slug, first.slug)
+
+	def test_a_reserved_folder_is_refused(self):
+		self.assertRaises(frappe.ValidationError, _site, "CRM", slug="crm")
+
+	def test_page_routes_land_inside_the_folder(self):
+		site = _site("Vetrina")
+		self.assertEqual(site.page_route("chi-siamo"), "vetrina/chi-siamo")
+		# already inside: left alone rather than nested twice
+		self.assertEqual(site.page_route("vetrina/chi-siamo"), "vetrina/chi-siamo")
+		# the home of a site is the folder itself
+		self.assertEqual(site.page_route(""), "vetrina")
+
+	def test_only_one_site_answers_at_the_root(self):
+		first = _site("Primo", serve_at_root=1)
+		second = _site("Secondo", serve_at_root=1)
+		first.reload()
+		self.assertFalse(first.serve_at_root, "the newcomer takes the root over")
+		self.assertTrue(second.serve_at_root)
+
+	def test_a_home_page_must_belong_to_its_own_site(self):
+		site = _site("Terzo")
+		site.home_page = "un-altro-sito/casa"
+		self.assertRaises(frappe.ValidationError, site.save)
+
+	def test_a_site_with_pages_is_not_deleted_by_accident(self):
+		if "builder" not in frappe.get_installed_apps():
+			self.skipTest("builder app is not installed on this site")
+		site = _site("Con pagine")
+		frappe.get_doc(
+			{
+				"doctype": "Builder Page",
+				"page_title": "Casa",
+				"route": f"{site.slug}/casa",
+				"crm_site": site.name,
+			}
+		).insert()
+		self.assertRaises(frappe.ValidationError, site_api.delete_site, site.name)
+
+
+def _site(name: str, slug: str | None = None, serve_at_root: int = 0):
+	doc = frappe.get_doc(
+		{
+			"doctype": "CRM Web Site",
+			"site_name": name,
+			"slug": slug,
+			"enabled": 1,
+			"serve_at_root": serve_at_root,
+		}
+	).insert()
 	return doc

@@ -4,6 +4,14 @@
       <Breadcrumbs
         :items="[{ label: __('Site'), route: { name: 'Website' } }]"
       />
+      <!-- one CRM can publish several sites, each in its own folder -->
+      <Dropdown v-if="ready && sites.data?.length" :options="siteOptions">
+        <Button variant="ghost" iconRight="chevron-down">
+          <span class="truncate">{{
+            currentSite?.site_name || __('Sites')
+          }}</span>
+        </Button>
+      </Dropdown>
     </template>
     <template #right-header>
       <Button
@@ -82,7 +90,61 @@
         />
       </div>
 
-      <template v-if="ready">
+      <!-- website on, but no site created yet -->
+      <div
+        v-else-if="status.fetched && !sites.loading && !sites.data?.length"
+        class="flex items-center justify-between gap-3 rounded-xl border border-outline-gray-2 bg-surface-gray-1 px-4 py-3"
+      >
+        <div class="flex flex-col">
+          <span class="text-p-base-medium text-ink-gray-8">
+            {{ __('No site yet') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                'A site is a folder of the domain: its pages answer at /folder/… and its home at /folder.',
+              )
+            }}
+          </span>
+        </div>
+        <Button
+          variant="solid"
+          :label="__('Create a site')"
+          @click="showNewSite = true"
+        />
+      </div>
+
+      <template v-if="ready && currentSite">
+        <div
+          class="flex items-center justify-between rounded-lg border border-outline-gray-2 px-3 py-2"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-p-base-medium text-ink-gray-8">
+              {{ currentSite.site_name }}
+            </span>
+            <span class="font-mono text-p-sm text-ink-gray-5">
+              /{{ currentSite.slug || '' }}
+            </span>
+            <Badge
+              v-if="currentSite.serve_at_root"
+              :label="__('Also at /')"
+              theme="blue"
+              size="sm"
+            />
+            <Badge
+              v-if="!currentSite.enabled"
+              :label="__('Off')"
+              theme="gray"
+              size="sm"
+            />
+          </div>
+          <Button
+            variant="ghost"
+            :label="__('Site settings')"
+            @click="openWebsiteSettings"
+          />
+        </div>
+
         <div class="flex items-center gap-1">
           <Button
             v-for="entry in tabs"
@@ -274,6 +336,37 @@
     </template>
   </Dialog>
 
+  <!-- new site -->
+  <Dialog v-model="showNewSite" :options="{ title: __('New site') }">
+    <template #body-content>
+      <div class="flex flex-col gap-3">
+        <FormControl
+          v-model="newSiteName"
+          type="text"
+          :label="__('Site name')"
+          :placeholder="__('Studio Rossi, Campagna estate…')"
+        />
+        <p class="text-p-sm text-ink-gray-5">
+          {{
+            __(
+              'Its folder comes from the name and can be changed afterwards. Pages answer at /folder/…',
+            )
+          }}
+        </p>
+      </div>
+    </template>
+    <template #actions>
+      <Button
+        class="w-full"
+        variant="solid"
+        :label="__('Create')"
+        :loading="creatingSite"
+        :disabled="!newSiteName"
+        @click="createSite"
+      />
+    </template>
+  </Dialog>
+
   <!-- showcase card -->
   <Dialog
     v-model="showShowcase"
@@ -421,18 +514,58 @@ const ctaOptions = computed(() => [
 
 const status = createResource({ url: 'crm.api.site.get_status', auto: true })
 
+const sites = createResource({ url: 'crm.api.site.list_sites', auto: false })
+const activeSite = ref('')
+const showNewSite = ref(false)
+const newSiteName = ref('')
+const creatingSite = ref(false)
+
+const currentSite = computed(
+  () =>
+    (sites.data || []).find((site) => site.name === activeSite.value) || null,
+)
+
+const siteOptions = computed(() => [
+  ...(sites.data || []).map((site) => ({
+    label: site.site_name,
+    icon: site.name === activeSite.value ? 'check' : null,
+    onClick: () => (activeSite.value = site.name),
+  })),
+  {
+    label: __('New site'),
+    icon: 'plus',
+    onClick: () => {
+      newSiteName.value = ''
+      showNewSite.value = true
+    },
+  },
+])
+
+async function createSite() {
+  creatingSite.value = true
+  try {
+    const site = await call('crm.api.site.create_site', {
+      site_name: newSiteName.value,
+    })
+    showNewSite.value = false
+    await sites.reload()
+    activeSite.value = site.name
+  } catch (error) {
+    toast.error(error.messages?.[0] || __('Could not create the site'))
+  } finally {
+    creatingSite.value = false
+  }
+}
+
 const ready = computed(
   () => status.data?.builder_installed && status.data?.enabled,
 )
-const siteUrl = computed(() => {
-  const home = status.data?.home_page
-  if (!status.data?.site_url) return ''
-  return home ? `${status.data.site_url}/${home}` : status.data.site_url
-})
+const siteUrl = computed(() => currentSite.value?.url || '')
 const siteName = computed(() => window.location.hostname)
 
 const pages = createResource({
   url: 'crm.api.site.list_pages',
+  makeParams: () => ({ site: activeSite.value }),
   auto: false,
 })
 
@@ -443,10 +576,30 @@ const showcase = createResource({
 })
 
 // Load a tab's data the first time it is opened, and whenever the site becomes usable.
+// Sites first: everything else is scoped to whichever one is open.
 watch(
-  [ready, tab, showcaseType],
+  ready,
+  (isReady) => {
+    if (isReady) sites.reload()
+  },
+  { immediate: true },
+)
+
+watch(
+  () => sites.data,
+  (rows) => {
+    if (!rows?.length) return
+    const stillThere = rows.some((site) => site.name === activeSite.value)
+    if (!stillThere) {
+      activeSite.value = status.data?.default_site || rows[0].name
+    }
+  },
+)
+
+watch(
+  [activeSite, tab, showcaseType],
   () => {
-    if (!ready.value) return
+    if (!ready.value || !activeSite.value) return
     if (tab.value === 'pages') pages.reload()
     else showcase.reload()
   },
@@ -530,6 +683,7 @@ async function createPage() {
     const page = await call('crm.api.site.create_page', {
       title: newPage.title,
       route: newPage.route,
+      site: activeSite.value,
     })
     showNewPage.value = false
     pages.reload()
@@ -591,7 +745,10 @@ async function setPublished(page, published) {
 }
 
 async function setHome(page) {
-  await call('crm.api.site.set_home_page', { route: page.route })
+  await call('crm.api.site.set_home_page', {
+    route: page.route,
+    site: activeSite.value,
+  })
   toast.success(__('Home page updated'))
   status.reload()
   pages.reload()

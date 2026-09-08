@@ -8,17 +8,25 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Brand, menu, footer and tracking. Pages and the showcase live in the Site section.',
+              'Brand, menu, footer and tracking, per site. Pages and the showcase live in the Site section.',
             )
           }}
         </p>
       </div>
-      <Button
-        variant="solid"
-        :label="__('Save')"
-        :loading="saving"
-        @click="save"
-      />
+      <div class="flex items-center gap-2">
+        <FormControl
+          v-if="sites.data?.length > 1"
+          v-model="activeSite"
+          type="select"
+          :options="siteOptions"
+        />
+        <Button
+          variant="solid"
+          :label="__('Save')"
+          :loading="saving"
+          @click="save"
+        />
+      </div>
     </div>
 
     <div class="flex flex-1 flex-col gap-7 overflow-y-auto px-2">
@@ -29,19 +37,36 @@
         >
           <div class="flex flex-col">
             <span class="text-p-base-medium text-ink-gray-8">
-              {{ __('Website enabled') }}
+              {{ __('Site enabled') }}
             </span>
             <span class="text-p-sm text-ink-gray-5">
               {{
-                __(
-                  'Adds the Site section to the sidebar. Pages stay as they are.',
-                )
+                __('Off takes this site offline. Its pages keep their drafts.')
               }}
             </span>
           </div>
           <Switch v-model="form.enabled" size="sm" />
         </div>
 
+        <div class="grid grid-cols-2 gap-3">
+          <FormControl
+            v-model="form.site_name"
+            type="text"
+            :label="__('Site name')"
+            :description="__('Only you see this.')"
+          />
+          <FormControl
+            :modelValue="form.slug"
+            type="text"
+            :label="__('Folder')"
+            disabled
+            :description="
+              __('Its pages answer at /{0}/… — set when the site is created.', [
+                form.slug || '',
+              ])
+            "
+          />
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <FormControl
             v-model="form.site_title"
@@ -364,11 +389,14 @@
 <script setup>
 import ImageField from '@/components/Settings/Website/ImageField.vue'
 import { createResource, FormControl, Switch, call, toast } from 'frappe-ui'
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 
 const saving = ref(false)
 
 const form = reactive({
+  name: '',
+  site_name: '',
+  slug: '',
   enabled: false,
   site_title: '',
   tagline: '',
@@ -416,8 +444,23 @@ const platforms = [
   'WhatsApp',
 ].map((value) => ({ label: value, value }))
 
-// Only published pages are offered: pointing the root at a draft would 404 the site.
-const pages = createResource({ url: 'crm.api.site.list_pages', auto: false })
+const sites = createResource({ url: 'crm.api.site.list_sites', auto: false })
+const activeSite = ref('')
+
+const siteOptions = computed(() =>
+  (sites.data || []).map((site) => ({
+    label: site.site_name,
+    value: site.name,
+  })),
+)
+
+// Only this site's published pages are offered: pointing the root at a draft, or at
+// another site's page, would leave the address on a 404.
+const pages = createResource({
+  url: 'crm.api.site.list_pages',
+  makeParams: () => ({ site: activeSite.value }),
+  auto: false,
+})
 
 const homeOptions = computed(() => [
   { label: __('None'), value: '' },
@@ -470,7 +513,11 @@ function targetHint(type) {
 async function save() {
   saving.value = true
   try {
-    await call('crm.api.site.save_settings', { settings: { ...form } })
+    await call('crm.api.site.save_settings', {
+      settings: { ...form },
+      site: form.name,
+    })
+    sites.reload()
     toast.success(__('Saved'))
   } catch (error) {
     toast.error(error.messages?.[0] || __('Could not save the settings'))

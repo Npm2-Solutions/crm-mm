@@ -108,6 +108,7 @@ jinja = {
 		"crm.api.site_render.crm_form_html",
 		"crm.api.site_render.crm_booking_html",
 		"crm.api.site_render.crm_contact_html",
+		"crm.api.site_render.crm_site_head",
 	],
 }
 
@@ -383,6 +384,7 @@ after_migrate = [
 	"crm.domain_enrichment.install.seed_default_rules_and_mappings",
 	"crm.install.add_default_scripts",
 	"crm.install.add_web_form_custom_fields",
+	"crm.install.add_builder_page_custom_fields",
 ]
 
 standard_dropdown_items = [

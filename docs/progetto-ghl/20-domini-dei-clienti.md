@@ -1,6 +1,11 @@
 # 20 — Più siti, sul dominio del cliente
 
-> **Stato: proposta, in attesa di una decisione (§6).** Ricerca condotta il 07/09/2026.
+> **Stato: la modalità cartella è implementata (08/09/2026); i domini custom restano una
+> proposta.** Decisione del committente: per ora niente proxy e niente certificati
+> automatici — i siti si pubblicano nelle cartelle del dominio del site. Il resto di
+> questo documento resta valido per quando si aprirà quel capitolo.
+>
+> Ricerca condotta il 07/09/2026.
 > Estende il [modulo 16](./16-sito-web-vetrina.md), che oggi gestisce **un sito solo**
 > sul dominio del site Frappe.
 
@@ -186,7 +191,30 @@ applicativo è identico nei tre casi):
 **Raccomandazione: Caddy.** È il modo per cui l'on-demand TLS esiste, l'endpoint `ask` è
 un contratto di due righe, e il giorno che si cambia idea il lato applicativo non si tocca.
 
-## 7. Ordine dei lavori
+## 7. Cosa è stato fatto: i siti in cartella
+
+Implementato senza toccare nulla fuori dall'applicazione, perché **la cartella è la rotta**:
+una pagina del sito `studio-rossi` ha rotta `studio-rossi/chi-siamo`, e la sua home è
+`studio-rossi` e basta. Frappe e Builder la risolvono da soli — non esiste riscrittura di
+percorsi da nessuna parte, e questo è il motivo per cui costa poco ed è difficile romperla.
+
+| | |
+|---|---|
+| `CRM Web Site` | un sito: nome, cartella, home, brand, menu, footer, SEO, tracciamento, acceso/spento |
+| `CRM Website Settings` | resta Single, ma tiene solo l'interruttore generale e quale sito apre il CRM |
+| `Builder Page.crm_site` | campo custom: a quale sito appartiene la pagina |
+| patch `split_website_settings_into_sites` | gira **prima** del sync dei modelli, quando le vecchie colonne esistono ancora: crea "Sito principale" con i valori di oggi, gli assegna le pagine esistenti, e gli lascia la cartella **vuota** — le rotte già in circolazione non si toccano |
+
+**La radice.** Un sito può prendersi anche `/` (`serve_at_root`), e Builder ha un solo
+interruttore per quello: prenderselo lo toglie a chi ce l'aveva, che continua a funzionare
+sotto la sua cartella. È una riga di regola, non un caso limite lasciato al caso.
+
+**Il `<head>` per sito.** Builder applica `Builder Settings.head_html` a *tutte* le pagine,
+che con più siti è lo scopo sbagliato: brand, analytics e consenso cambiano da sito a sito.
+Nella voce globale ora c'è una sola riga — `{{ crm_site_head(page_name) }}` — e la chiamata
+guarda a quale sito appartiene quella pagina. Stesso trucco per il blocco Contatti.
+
+## 8. Ordine dei lavori (domini custom)
 
 | Fase | Cosa | Stima |
 |---|---|---|

@@ -424,7 +424,7 @@ def build_all():
 		jinja_block(
 			"crm-contatti",
 			"Contatti",
-			"{{ crm_contact_html() }}",
+			"{{ crm_contact_html(page_name) }}",
 			{"titolo": prop("Dove siamo")},
 			"Dove siamo",
 			"900px",
