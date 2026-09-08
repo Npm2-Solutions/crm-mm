@@ -19,6 +19,7 @@ from frappe import _
 from frappe.utils import cint
 
 from crm.api.site_routes import normalise_route, route_conflict, slugify, unique_slug
+from crm.utils import count_field
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 PAGE_DOCTYPE = "Builder Page"
@@ -195,7 +196,7 @@ def _page_counts() -> dict:
 	rows = frappe.get_all(
 		PAGE_DOCTYPE,
 		filters={"is_template": 0},
-		fields=["crm_site", "count(name) as pages"],
+		fields=["crm_site", count_field("pages")],
 		group_by="crm_site",
 	)
 	return {row["crm_site"]: row["pages"] for row in rows if row["crm_site"]}
