@@ -16,7 +16,7 @@
           'No visit has been recorded for this record yet. Add the tracking script to your site, or check that this lead came in through a tracked form.',
         )
       "
-      :icon="DetailsIcon"
+      :icon="LucideRadar"
     />
 
     <template v-else>
@@ -34,94 +34,114 @@
         />
       </div>
 
-      <!-- The journey itself -->
-      <div v-if="events.length" class="pt-6">
-        <div class="pb-2 text-p-base-medium text-ink-gray-7">
-          {{ __('Journey') }}
+      <!-- One stream: every visit, and what happened inside it -->
+      <div v-if="timeline.length" class="pt-6">
+        <div class="flex items-baseline gap-2 pb-3">
+          <span class="text-lg-semibold text-ink-gray-8">{{
+            __('Timeline')
+          }}</span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ __('{0} visits', [sessions.length]) }} ·
+            {{ __('{0} events', [events.length]) }}
+          </span>
         </div>
+
         <div
-          v-for="(event, i) in events"
-          :key="event.name"
-          class="grid grid-cols-[30px_minmax(auto,_1fr)] gap-4"
+          v-for="(visit, v) in timeline"
+          :key="visit.name"
+          class="grid grid-cols-[30px_minmax(0,_1fr)] gap-4"
         >
+          <!-- the rail: unbroken except under the very last row -->
           <div
             class="z-0 relative flex justify-center before:absolute before:left-[50%] before:-z-[1] before:top-0 before:border-l before:border-outline-elevation-2"
-            :class="i != events.length - 1 ? 'before:h-full' : 'before:h-4'"
+            :class="
+              v != timeline.length - 1 || visit.events.length
+                ? 'before:h-full'
+                : 'before:h-4'
+            "
           >
             <div
               class="flex h-8 w-7 items-center justify-center bg-surface-base text-ink-gray-7"
             >
-              <component :is="iconFor(event.event_type)" class="h-4 w-4" />
+              <LucideGlobe class="h-4 w-4" />
             </div>
           </div>
-          <div class="mb-4 min-w-0">
-            <div class="flex items-center justify-between gap-2 py-1">
-              <span class="truncate text-base font-medium text-ink-gray-8">
-                {{ event.label || event.path || event.event_type }}
-              </span>
-              <span class="ml-auto whitespace-nowrap">
-                <TimelineTimestamp :date="event.occurred_on" />
-              </span>
-            </div>
-            <div
-              class="flex flex-wrap items-center gap-2 text-p-sm text-ink-gray-5"
-            >
-              <Badge :label="__(event.event_type)" theme="gray" size="sm" />
-              <span v-if="event.path" class="truncate">{{ event.path }}</span>
-              <span v-if="event.duration"
-                >· {{ readableDuration(event.duration) }}</span
-              >
-              <span v-if="sessionLabel(event.session)"
-                >· {{ sessionLabel(event.session) }}</span
-              >
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Every visit, with the campaign behind it -->
-      <div v-if="sessions.length" class="pt-4">
-        <div class="pb-2 text-p-base-medium text-ink-gray-7">
-          {{ __('Sessions') }}
-        </div>
-        <div
-          class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
-        >
-          <div
-            v-for="session in sessions"
-            :key="session.name"
-            class="flex flex-col gap-1 px-3 py-2.5"
-          >
-            <div class="flex flex-wrap items-center gap-2">
+          <!-- the visit, and the campaign behind it -->
+          <div class="min-w-0 pb-3">
+            <div class="flex flex-wrap items-center gap-2 py-1">
               <Badge
-                :label="__(session.source_category || 'Unknown')"
+                v-if="!visit.unknown"
+                :label="__(visit.source_category || 'Unknown')"
                 theme="blue"
                 size="sm"
               />
-              <span class="text-p-base text-ink-gray-7">
-                {{ session.source }} / {{ session.medium }}
+              <span class="truncate text-base font-medium text-ink-gray-8">
+                {{ visitTitle(visit) }}
               </span>
-              <span v-if="session.campaign" class="text-p-sm text-ink-gray-5">
-                · {{ session.campaign }}
+              <span
+                v-if="visit.campaign"
+                class="truncate text-p-sm text-ink-gray-5"
+              >
+                · {{ visit.campaign }}
               </span>
-              <span class="ml-auto text-p-sm text-ink-gray-5">
-                <TimelineTimestamp :date="session.started_on" />
+              <span class="ml-auto whitespace-nowrap">
+                <TimelineTimestamp :date="visit.started_on" />
               </span>
             </div>
-            <div class="flex flex-wrap gap-3 text-p-sm text-ink-gray-5">
-              <span v-if="session.landing_page" class="truncate">{{
-                session.landing_page
-              }}</span>
-              <span v-if="session.referrer_domain"
-                >← {{ session.referrer_domain }}</span
+            <div
+              v-if="visitDetails(visit).length"
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-p-sm text-ink-gray-5"
+            >
+              <span
+                v-for="detail in visitDetails(visit)"
+                :key="detail"
+                class="truncate"
               >
-              <span v-if="session.page_view_count">
-                {{ session.page_view_count }} {{ __('pages') }}
+                {{ detail }}
               </span>
-              <span v-if="session.device_type">{{ session.device_type }}</span>
-              <span v-if="session.browser">{{ session.browser }}</span>
             </div>
           </div>
+
+          <!-- the events of this visit, in the same stream -->
+          <template v-for="(event, i) in visit.events" :key="event.name">
+            <div
+              class="z-0 relative flex justify-center before:absolute before:left-[50%] before:-z-[1] before:top-0 before:border-l before:border-outline-elevation-2"
+              :class="
+                v != timeline.length - 1 || i != visit.events.length - 1
+                  ? 'before:h-full'
+                  : 'before:h-3'
+              "
+            >
+              <div
+                class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-gray-2 text-ink-gray-6"
+              >
+                <component :is="iconFor(event.event_type)" class="h-3 w-3" />
+              </div>
+            </div>
+            <div class="min-w-0 pb-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="truncate text-base text-ink-gray-8">
+                  {{ eventTitle(event) }}
+                </span>
+                <span class="ml-auto whitespace-nowrap">
+                  <TimelineTimestamp :date="event.occurred_on" />
+                </span>
+              </div>
+              <div
+                v-if="eventDetails(event).length"
+                class="flex flex-wrap items-center gap-x-3 text-p-sm text-ink-gray-5"
+              >
+                <span
+                  v-for="detail in eventDetails(event)"
+                  :key="detail"
+                  class="truncate"
+                >
+                  {{ detail }}
+                </span>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </template>
@@ -132,11 +152,18 @@
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import TouchCard from '@/components/Activities/TouchCard.vue'
-import EmailIcon from '@/components/Icons/EmailIcon.vue'
-import LinkIcon from '@/components/Icons/LinkIcon.vue'
-import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
-import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
-import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
+import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
+import { groupJourney, readableDuration } from '@/utils/journey'
+import LucideCalendarClock from '~icons/lucide/calendar-clock'
+import LucideCheck from '~icons/lucide/check'
+import LucideEye from '~icons/lucide/eye'
+import LucideGlobe from '~icons/lucide/globe'
+import LucideLink from '~icons/lucide/link'
+import LucidePhone from '~icons/lucide/phone'
+import LucideRadar from '~icons/lucide/radar'
+import LucideSparkles from '~icons/lucide/sparkles'
+import LucideSquareCheck from '~icons/lucide/square-check'
+import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
 import { Badge, LoadingIndicator, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -144,6 +171,8 @@ const props = defineProps({
   doctype: { type: String, default: 'CRM Lead' },
   docname: { type: String, default: '' },
 })
+
+const { isNewestFirst } = useTimelinePreferences()
 
 const journey = createResource({
   url: 'crm.api.tracking.get_journey',
@@ -154,6 +183,12 @@ const journey = createResource({
 const events = computed(() => journey.data?.events || [])
 const sessions = computed(() => journey.data?.sessions || [])
 
+const timeline = computed(() =>
+  groupJourney(sessions.value, events.value, {
+    newestFirst: isNewestFirst.value,
+  }),
+)
+
 const hasAnything = computed(
   () =>
     events.value.length ||
@@ -162,33 +197,49 @@ const hasAnything = computed(
 )
 
 const ICONS = {
-  'Page View': DetailsIcon,
-  'Form View': DetailsIcon,
-  'Form Submitted': EmailIcon,
-  'Link Clicked': LinkIcon,
-  Booking: CalendarIcon,
-  Call: PhoneIcon,
+  'Page View': LucideEye,
+  'Form View': LucideTextCursorInput,
+  'Form Submitted': LucideSquareCheck,
+  'Link Clicked': LucideLink,
+  Booking: LucideCalendarClock,
+  Call: LucidePhone,
+  Identified: LucideCheck,
+  Custom: LucideSparkles,
 }
 
 function iconFor(eventType) {
-  return ICONS[eventType] || DetailsIcon
+  return ICONS[eventType] || LucideSparkles
 }
 
-// Sessions are already loaded; label an event with the campaign of the visit it
-// happened in, so a page view in the timeline carries its own attribution.
-const sessionsByName = computed(() =>
-  Object.fromEntries(sessions.value.map((s) => [s.name, s])),
-)
-
-function sessionLabel(name) {
-  const session = sessionsByName.value[name]
-  if (!session) return ''
-  return session.campaign || session.source || ''
+function visitTitle(visit) {
+  if (visit.unknown) return __('Earlier activity')
+  const source = visit.source || __('Unknown')
+  return visit.medium ? `${source} / ${visit.medium}` : source
 }
 
-function readableDuration(seconds) {
-  if (seconds < 60) return `${seconds}s`
-  const minutes = Math.floor(seconds / 60)
-  return `${minutes}m ${seconds % 60}s`
+function visitDetails(visit) {
+  if (visit.unknown)
+    return [__('The visit these belong to is no longer listed')]
+  return [
+    visit.landing_page,
+    visit.referrer_domain ? `← ${visit.referrer_domain}` : '',
+    visit.duration ? readableDuration(visit.duration) : '',
+    [visit.device_type, visit.browser, visit.country]
+      .filter(Boolean)
+      .join(' · '),
+  ].filter(Boolean)
+}
+
+function eventTitle(event) {
+  const what = __(event.event_type)
+  const which = event.label || event.path
+  return which ? `${what} — ${which}` : what
+}
+
+function eventDetails(event) {
+  return [
+    event.label && event.path ? event.path : '',
+    event.duration ? readableDuration(event.duration) : '',
+  ].filter(Boolean)
 }
 </script>
