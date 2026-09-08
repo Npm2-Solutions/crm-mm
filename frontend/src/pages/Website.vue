@@ -468,7 +468,11 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Link from '@/components/Controls/Link.vue'
-import { showSettings, activeSettingsPage } from '@/composables/settings'
+import {
+  showSettings,
+  activeSettingsPage,
+  activeSettingsSite,
+} from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 import {
   createResource,
@@ -607,6 +611,7 @@ watch(
 )
 
 function openWebsiteSettings() {
+  activeSettingsSite.value = activeSite.value
   activeSettingsPage.value = 'Website'
   showSettings.value = true
 }

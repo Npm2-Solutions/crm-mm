@@ -14,22 +14,55 @@
         </p>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Every field below belongs to one site, so which one is never left implied:
+             with several sites the switcher picks it, with one it names it. -->
         <FormControl
           v-if="sites.data?.length > 1"
           v-model="activeSite"
           type="select"
           :options="siteOptions"
         />
+        <span
+          v-else-if="form.site_name"
+          class="rounded bg-surface-gray-2 px-2 py-1 text-p-sm text-ink-gray-7"
+        >
+          {{ form.site_name }}
+        </span>
         <Button
+          v-if="!noSites"
           variant="solid"
           :label="__('Save')"
           :loading="saving"
+          :disabled="loading"
           @click="save"
         />
       </div>
     </div>
 
-    <div class="flex flex-1 flex-col gap-7 overflow-y-auto px-2">
+    <div
+      v-if="noSites"
+      class="flex flex-1 flex-col items-center justify-center gap-2 text-center"
+    >
+      <span class="text-p-lg-medium text-ink-gray-8">
+        {{ __('No site yet') }}
+      </span>
+      <span class="max-w-sm text-p-base text-ink-gray-5">
+        {{
+          __(
+            'These settings belong to a site. Create one in the Site section and it will show up here.',
+          )
+        }}
+      </span>
+    </div>
+
+    <div
+      v-else-if="loading"
+      class="flex flex-1 items-center justify-center text-p-base text-ink-gray-5"
+    >
+      {{ __('Loading…') }}
+    </div>
+
+    <div v-else class="flex flex-1 flex-col gap-7 overflow-y-auto px-2">
       <!-- ------------------------------------------------ general -->
       <section class="flex flex-col gap-3">
         <div
@@ -388,10 +421,13 @@
 
 <script setup>
 import ImageField from '@/components/Settings/Website/ImageField.vue'
+import { activeSettingsSite } from '@/composables/settings'
 import { createResource, FormControl, Switch, call, toast } from 'frappe-ui'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 
 const saving = ref(false)
+const loading = ref(true)
+const noSites = ref(false)
 
 const form = reactive({
   name: '',
@@ -472,8 +508,7 @@ const homeOptions = computed(() => [
     })),
 ])
 
-onMounted(async () => {
-  const data = await call('crm.api.site.get_settings')
+function fill(data) {
   Object.keys(form).forEach((key) => {
     if (data[key] === undefined || data[key] === null) return
     if (Array.isArray(form[key]))
@@ -481,7 +516,59 @@ onMounted(async () => {
     else if (typeof form[key] === 'boolean') form[key] = Boolean(data[key])
     else form[key] = data[key]
   })
-  if (data._builder_installed) pages.reload()
+}
+
+// What the form looked like the last time it was loaded or saved. Switching site
+// replaces the whole form, so it has to be able to tell a typed change from a fresh load.
+let pristine = ''
+const snapshot = () => JSON.stringify(form)
+
+async function loadSite(name) {
+  loading.value = true
+  try {
+    const data = await call(
+      'crm.api.site.get_settings',
+      name ? { site: name } : {},
+    )
+    fill(data)
+    activeSite.value = data.name || ''
+    pristine = snapshot()
+    if (data._builder_installed) pages.reload()
+  } catch (error) {
+    toast.error(error.messages?.[0] || __('Could not load the settings'))
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  await sites.reload()
+  const rows = sites.data || []
+  if (!rows.length) {
+    // Nothing to configure yet, and the backend rightly refuses to guess a site. Say so
+    // instead of showing an empty form that would save nowhere.
+    noSites.value = true
+    loading.value = false
+    return
+  }
+  // The Site section leaves the site you were looking at here. Honour it unless it has
+  // since been deleted, in which case fall back to the CRM's default.
+  const remembered = rows.some((row) => row.name === activeSettingsSite.value)
+  await loadSite(remembered ? activeSettingsSite.value : '')
+})
+
+// The switcher is a second way into the same form. Reload it for the site chosen, and
+// do not throw away what was typed without asking first.
+watch(activeSite, (name, previous) => {
+  if (!name || !previous || name === form.name) return
+  if (
+    snapshot() !== pristine &&
+    !window.confirm(__('Discard the unsaved changes to this site?'))
+  ) {
+    activeSite.value = previous
+    return
+  }
+  loadSite(name)
 })
 
 function addNavItem() {
@@ -515,8 +602,9 @@ async function save() {
   try {
     await call('crm.api.site.save_settings', {
       settings: { ...form },
-      site: form.name,
+      site: activeSite.value || form.name,
     })
+    pristine = snapshot()
     sites.reload()
     toast.success(__('Saved'))
   } catch (error) {
