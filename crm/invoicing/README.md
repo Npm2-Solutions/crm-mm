@@ -66,6 +66,19 @@ The Frappe-side tests are in `crm/tests/test_invoicing.py` and need a bench.
 
 ---
 
+## Where it is configured
+
+**Settings → Invoicing**, in the CRM's own modal: the issuing company, the
+qualification register, the service cards, the providers, and the switches that
+apply to every document. The screens render each DocType's own layout, so the
+help text under a field is the description written on the field — a rule explained
+once cannot drift away from the interface that shows it.
+
+`/crm/fatture` stays the operator's console: what has been issued, and what still
+has a button waiting. Nothing is configured from there.
+
+---
+
 ## The triple, and the two symmetrical mistakes
 
 Routing is not decided by "is this healthcare". It is decided by

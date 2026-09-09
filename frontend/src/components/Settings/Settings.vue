@@ -58,6 +58,11 @@ import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
+import LucideReceipt from '~icons/lucide/receipt-text'
+import LucideBuilding from '~icons/lucide/building-2'
+import LucideBookOpen from '~icons/lucide/book-open'
+import LucideStethoscope from '~icons/lucide/stethoscope'
+import LucideUserCog from '~icons/lucide/user-cog'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
 import SparkleIcon from '@/components/Icons/SparkleIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
@@ -101,6 +106,11 @@ import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
 import WebsiteSettings from '@/components/Settings/Website/WebsiteSettings.vue'
 import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
 import TrackingSettings from '@/components/Settings/TrackingSettings.vue'
+import InvoicingCompany from '@/components/Settings/Invoicing/InvoicingCompany.vue'
+import InvoicingDefaults from '@/components/Settings/Invoicing/InvoicingDefaults.vue'
+import QualificationsSettings from '@/components/Settings/Invoicing/QualificationsSettings.vue'
+import BillableServicesSettings from '@/components/Settings/Invoicing/BillableServicesSettings.vue'
+import ProvidersSettings from '@/components/Settings/Invoicing/ProvidersSettings.vue'
 import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
 import Icon from '@/components/Icon.vue'
@@ -257,6 +267,45 @@ const tabs = computed(() => {
           label: __('Lead Tracking'),
           component: markRaw(TrackingSettings),
           icon: markRaw(LucideRadar),
+        },
+      ],
+      condition: () => isManager(),
+    },
+    {
+      // invoicing, in the order you set it up: who signs the documents, what the
+      // qualifications mean, what is being sold, who performs it, and the
+      // switches that apply to all of it
+      label: __('Invoicing'),
+      items: [
+        {
+          label: __('Issuing company'),
+          key: 'Issuing company',
+          icon: markRaw(LucideBuilding),
+          component: markRaw(InvoicingCompany),
+        },
+        {
+          label: __('Qualification register'),
+          key: 'Qualification register',
+          icon: markRaw(LucideBookOpen),
+          component: markRaw(QualificationsSettings),
+        },
+        {
+          label: __('Billable services'),
+          key: 'Billable services',
+          icon: markRaw(LucideStethoscope),
+          component: markRaw(BillableServicesSettings),
+        },
+        {
+          label: __('Providers'),
+          key: 'Providers',
+          icon: markRaw(LucideUserCog),
+          component: markRaw(ProvidersSettings),
+        },
+        {
+          label: __('Invoicing defaults'),
+          key: 'Invoicing defaults',
+          icon: markRaw(LucideReceipt),
+          component: markRaw(InvoicingDefaults),
         },
       ],
       condition: () => isManager(),
