@@ -74,6 +74,7 @@
   "ts_username",
   "ts_password",
   "ts_pincode",
+  "ts_intermediary_reference",
   "ts_certificate",
   "sdi_section",
   "sdi_mode",
@@ -495,6 +496,13 @@
    "fieldname": "ts_pincode",
    "fieldtype": "Password",
    "label": "PINCODE"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode=='intermediario'",
+   "description": "On the Entratel channel: codicefiscale-sedetelematica of the intermediary, e.g. 07874631000-000. It travels as opzionale1.",
+   "fieldname": "ts_intermediary_reference",
+   "fieldtype": "Data",
+   "label": "Entratel reference"
   },
   {
    "description": "From the official kit. It expires and is reissued: an expired certificate fails every submission with code 002, silently.",

@@ -56,9 +56,12 @@ from .codici import (
 	SOGGETTI_PERSONA_FISICA,
 	SOGGETTI_SENZA_TRACCIABILITA,
 	TIPI_SPESA_SENZA_TRACCIABILITA,
+	EsitoChiamata,
 	OperazioneTS,
 	SoggettoInviante,
+	StrEnum,
 	TipoDocumentoTS,
+	TipoMessaggioTS,
 	tipi_spesa_ammessi,
 )
 
@@ -802,3 +805,351 @@ def scadenza_invio(anno: int, veterinario: bool = False) -> date:
 
 def giorni_alla_scadenza(anno: int, oggi: date | None = None, veterinario: bool = False) -> int:
 	return (scadenza_invio(anno, veterinario) - (oggi or date.today())).days
+
+
+# ------------------------------------------------------------------- channels
+
+HOST_TEST = "invioSS730pTest.sanita.finanze.it"
+HOST_PRODUZIONE = "invioSS730p.sanita.finanze.it"
+
+SERVIZIO_SINCRONO = "DocumentoSpesa730pWeb/DocumentoSpesa730pPort"
+SERVIZIO_ASINCRONO = "InvioTelematicoSS730pMtomWeb/InvioTelematicoSS730pMtomPort"
+
+
+class Canale(StrEnum):
+	"""The three ways in.
+
+	Picking the wrong family of endpoints **does not give a readable error**: it
+	gives 401, or "user not recognised". So the channel is configuration, not a
+	parameter somebody passes by hand.
+
+		sistema_ts   /DocumentoSpesa730pWeb/...   professionals and facilities   pincode encrypted
+		enti         /enti/...                    regions and public bodies      pincode encrypted
+		entratel     /entrate/...                 tax intermediaries             pincode in clear
+
+	The endpoints do not publish their WSDL and are not callable from a browser.
+	"""
+
+	SISTEMA_TS = "sistema_ts"
+	ENTI = "enti"
+	ENTRATEL = "entratel"
+
+
+class Ambiente(StrEnum):
+	TEST = "test"
+	PRODUZIONE = "produzione"
+
+
+PREFISSO_CANALE: dict[str, str] = {
+	Canale.SISTEMA_TS: "",
+	Canale.ENTI: "enti/",
+	Canale.ENTRATEL: "entrate/",
+}
+
+#: On the Entratel channel the pincode travels **in clear** - it is the
+#: intermediary's, not the practice's. Everywhere else it is encrypted.
+PINCODE_IN_CHIARO: frozenset[str] = frozenset({Canale.ENTRATEL})
+
+
+@dataclass(frozen=True)
+class Destinazione:
+	canale: str
+	ambiente: str
+
+	@property
+	def host(self) -> str:
+		return HOST_TEST if self.ambiente == Ambiente.TEST else HOST_PRODUZIONE
+
+	@property
+	def pincode_cifrato(self) -> bool:
+		return self.canale not in PINCODE_IN_CHIARO
+
+	def _url(self, servizio: str) -> str:
+		return f"https://{self.host}/{PREFISSO_CANALE[self.canale]}{servizio}"
+
+	@property
+	def url_sincrono(self) -> str:
+		return self._url(SERVIZIO_SINCRONO)
+
+	@property
+	def url_asincrono(self) -> str:
+		return self._url(SERVIZIO_ASINCRONO)
+
+
+def destinazione(canale: str, ambiente: str = Ambiente.TEST) -> Destinazione:
+	return Destinazione(Canale(canale), Ambiente(ambiente))
+
+
+def canale_per_modalita(modalita: str) -> str:
+	"""The base channel for the practice's own credentials, `/entrate/` for an
+	intermediary. The two are not interchangeable, and getting it wrong gives 401."""
+	return Canale.ENTRATEL if modalita == "intermediario" else Canale.SISTEMA_TS
+
+
+# ------------------------------------------------------------ synchronous SOAP
+
+NS_SOAP = "http://schemas.xmlsoap.org/soap/envelope/"
+
+
+class Operazione(StrEnum):
+	"""The four operations of the synchronous service.
+
+	The operation is **not** expressed with `flagOperazione` here: it is chosen by
+	invoking a different SOAP operation.
+	"""
+
+	INSERIMENTO = "Inserimento"
+	VARIAZIONE = "Variazione"
+	RIMBORSO = "Rimborso"
+	CANCELLAZIONE = "Cancellazione"
+
+
+OPERAZIONE_DA_FLAG: dict[str, str] = {
+	OperazioneTS.INSERIMENTO: Operazione.INSERIMENTO,
+	OperazioneTS.VARIAZIONE: Operazione.VARIAZIONE,
+	OperazioneTS.RIMBORSO: Operazione.RIMBORSO,
+	OperazioneTS.CANCELLAZIONE: Operazione.CANCELLAZIONE,
+}
+
+#: Operations that carry only the identifier, not the document body.
+OPERAZIONI_SOLO_IDENTIFICATIVO: frozenset[str] = frozenset({Operazione.CANCELLAZIONE})
+
+#: The document wrapper changes name with the operation. Not an oddity to
+#: normalise: it is what `DocumentoSpesa730pSchema.xsd` declares, and a different
+#: name is not recognised.
+WRAPPER_DOCUMENTO: dict[str, str] = {
+	Operazione.INSERIMENTO: "idInserimentoDocumentoFiscale",
+	Operazione.VARIAZIONE: "idVariazioneDocumentoFiscale",
+	Operazione.RIMBORSO: "DocumentoSpesa",
+	Operazione.CANCELLAZIONE: "idCancellazioneDocumentoFiscale",
+}
+
+#: In a refund and a cancellation the bare identifier gets an element of its own,
+#: beside the document (refund) or instead of it (cancellation).
+WRAPPER_IDENTIFICATIVO: dict[str, str] = {
+	Operazione.RIMBORSO: "idRimborsoDocumentoFiscale",
+	Operazione.CANCELLAZIONE: "idCancellazioneDocumentoFiscale",
+}
+
+
+@dataclass
+class Credenziali:
+	"""Access credentials.
+
+	They are **the practice's**, not ours. In `intermediario` mode they are the
+	accountant's Entratel credentials instead, and the pincode travels in clear.
+	"""
+
+	utente: str
+	password: str
+	pincode: str
+	#: On the Entratel channel: `codicefiscale-sedetelematica`, e.g. `07874631000-000`.
+	opzionale1: str | None = None
+	opzionale2: str | None = None
+	opzionale3: str | None = None
+
+
+def costruisci_busta(
+	documento: DocumentoSpesa,
+	credenziali: Credenziali,
+	destinazione: Destinazione,
+	cifratore: Cifratore,
+	operazione: str = Operazione.INSERIMENTO,
+) -> bytes:
+	"""Build the SOAP 1.1 document/literal envelope for one operation.
+
+	All three encryption rules apply here, and they are not symmetric:
+
+	* `pincode` - encrypted, **except** on the `/entrate/` channel;
+	* `cfProprietario` - encrypted;
+	* `cfCittadino` - encrypted, and absent when there is an opposition.
+	"""
+	operazione = Operazione(operazione)
+	ET.register_namespace("soapenv", NS_SOAP)
+	ET.register_namespace("ts", NAMESPACE_SINCRONO)
+
+	busta = ET.Element(f"{{{NS_SOAP}}}Envelope")
+	ET.SubElement(busta, f"{{{NS_SOAP}}}Header")
+	corpo = ET.SubElement(busta, f"{{{NS_SOAP}}}Body")
+	# `inserimentoDocumentoSpesaRequest`, lowercase initial: it is the name the
+	# schema declares, and with a capital the service does not recognise the root.
+	radice = f"{operazione.value[0].lower()}{operazione.value[1:]}DocumentoSpesaRequest"
+	richiesta = ET.SubElement(corpo, f"{{{NAMESPACE_SINCRONO}}}{radice}")
+
+	def campo(nome: str, valore: str | None) -> None:
+		if valore in (None, ""):
+			return
+		_el(richiesta, nome, valore, NAMESPACE_SINCRONO)
+
+	# The order is the schema's `xs:sequence`: the three optionals **before** the
+	# pincode.
+	campo("opzionale1", credenziali.opzionale1)
+	campo("opzionale2", credenziali.opzionale2)
+	campo("opzionale3", credenziali.opzionale3)
+	campo(
+		"pincode",
+		cifratore.cifra(credenziali.pincode) if destinazione.pincode_cifrato else credenziali.pincode,
+	)
+
+	scrivi_proprietario(
+		richiesta,
+		documento.proprietario,
+		cifratore.cifra(documento.proprietario.cf_proprietario),
+		NAMESPACE_SINCRONO,
+	)
+
+	if operazione in WRAPPER_IDENTIFICATIVO:
+		identificativo = documento.id_rimborso or documento.id_spesa
+		scrivi_id_spesa(richiesta, identificativo, WRAPPER_IDENTIFICATIVO[operazione], NAMESPACE_SINCRONO)
+
+	if operazione not in OPERAZIONI_SOLO_IDENTIFICATIVO:
+		cf_cittadino = (
+			None if documento.flag_opposizione else cifratore.cifra_opzionale(documento.cf_cittadino)
+		)
+		scrivi_documento_sincrono(
+			richiesta,
+			documento,
+			cf_cittadino,
+			WRAPPER_DOCUMENTO[operazione],
+			NAMESPACE_SINCRONO,
+		)
+
+	corpo_xml = ET.tostring(busta, encoding="unicode")
+	return f'<?xml version="1.0" encoding="UTF-8"?>{corpo_xml}'.encode()
+
+
+def soap_action(operazione: str) -> str:
+	"""The operation's SOAPAction, in the form the kit's WSDL declares.
+
+	It is not a URL: it is `inserimento.documentospesap730.sanita.finanze.it` - the
+	operation name in lowercase, a dot, the service domain.
+	"""
+	dominio = NAMESPACE_SINCRONO.rstrip("/").removeprefix("http://")
+	return f"{Operazione(operazione).value.lower()}.{dominio}"
+
+
+# ---------------------------------------------------------------- the response
+
+#: The protocol is a string of **seventeen digits**.
+PROTOCOLLO_PATTERN = re.compile(r"^\d{17}$")
+
+
+@dataclass(frozen=True)
+class Messaggio:
+	tipo: str
+	codice: str
+	descrizione: str
+
+	@property
+	def scartante(self) -> bool:
+		return self.tipo == TipoMessaggioTS.ERRORE
+
+
+@dataclass
+class Esito:
+	"""The outcome of one call."""
+
+	esito_chiamata: str | None = None
+	protocollo: str | None = None
+	messaggi: list[Messaggio] = field(default_factory=list)
+	fault: str | None = None
+
+	@property
+	def accolto(self) -> bool:
+		"""Accepted, with or without remarks, and with a protocol."""
+		if self.fault:
+			return False
+		if self.esito_chiamata not in (
+			EsitoChiamata.ACCOLTO,
+			EsitoChiamata.ACCOLTO_CON_SEGNALAZIONI,
+		):
+			return False
+		return bool(self.protocollo)
+
+	@property
+	def errori(self) -> list[Messaggio]:
+		return [m for m in self.messaggi if m.scartante]
+
+	@property
+	def codici_errore(self) -> list[str]:
+		return [m.codice for m in self.errori]
+
+	@property
+	def protocollo_valido(self) -> bool:
+		return bool(self.protocollo and PROTOCOLLO_PATTERN.match(self.protocollo))
+
+	def riassunto(self) -> str:
+		"""A sentence for whoever is at the desk, not for a developer."""
+		if self.fault:
+			return f"The Sistema TS answered with a SOAP fault: {self.fault}"
+		if self.accolto:
+			testo = f"Accepted, protocol {self.protocollo}"
+			avvisi = [m for m in self.messaggi if m.tipo == TipoMessaggioTS.WARNING]
+			if avvisi:
+				testo += f" (with {len(avvisi)} remark(s))"
+			return testo
+		if self.errori:
+			from .codici import descrivi_esito
+
+			return " - ".join(descrivi_esito(m.codice) for m in self.errori)
+		return "Not accepted by the Sistema TS, with no diagnostic message"
+
+
+def _tutti(radice, nome: str) -> list:
+	"""Every element with this local name, whatever namespace it carries.
+
+	The parsing is deliberately namespace-agnostic. The service's namespaces are not
+	published with the specification and differ between test and production; a
+	parser that insists on them breaks at the first deploy, and breaks silently.
+	"""
+	return radice.findall(f".//{{*}}{nome}")
+
+
+def _primo_testo(radice, *nomi: str) -> str | None:
+	for nome in nomi:
+		for nodo in _tutti(radice, nome):
+			valore = (nodo.text or "").strip()
+			if valore:
+				return valore
+	return None
+
+
+def analizza_risposta(corpo: bytes) -> Esito:
+	"""Read the SOAP response of a submission."""
+	esito = Esito()
+	try:
+		radice = ET.fromstring(corpo)
+	except ET.ParseError as exc:
+		esito.fault = f"the response is not parseable as XML: {exc}"
+		return esito
+
+	fault = _tutti(radice, "Fault")
+	if fault:
+		stringa = _primo_testo(fault[0], "faultstring", "Reason", "Text")
+		codice = _primo_testo(fault[0], "faultcode", "Value")
+		esito.fault = " ".join(x for x in (codice, stringa) if x) or "SOAP Fault"
+		return esito
+
+	esito.esito_chiamata = _primo_testo(radice, "esitoChiamata", "esito")
+	esito.protocollo = _primo_testo(radice, "protocollo", "protocolloTelematico")
+
+	for nodo in _tutti(radice, "messaggio") + _tutti(radice, "listaMessaggi"):
+		tipo = _primo_testo(nodo, "tipoMessaggio", "tipo") or ""
+		codice = _primo_testo(nodo, "codiceEsito", "codice", "codiceMessaggio") or ""
+		descrizione = _primo_testo(nodo, "descrizione", "descrizioneMessaggio", "testo") or ""
+		if not (tipo or codice or descrizione):
+			continue
+		esito.messaggi.append(Messaggio(tipo=tipo, codice=codice, descrizione=descrizione))
+
+	# Some responses carry the rejection code outside the message list.
+	if not esito.messaggi:
+		codice = _primo_testo(radice, "codiceEsito", "codiceErrore")
+		if codice:
+			esito.messaggi.append(
+				Messaggio(
+					tipo=TipoMessaggioTS.ERRORE,
+					codice=codice,
+					descrizione=_primo_testo(radice, "descrizione", "descrizioneErrore") or "",
+				)
+			)
+	return esito

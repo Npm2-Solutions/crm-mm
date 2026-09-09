@@ -93,6 +93,16 @@
                 :theme="row.state.startsWith('scart') ? 'red' : 'orange'"
                 :label="row.state"
               />
+              <!-- Reporting is only offered when somebody here can actually do
+                   it. On an export company the file is prepared and uploaded
+                   from the portal, so there is nothing to press. -->
+              <Button
+                v-if="row.action === 'ts' && tsMode !== 'export'"
+                variant="subtle"
+                :loading="sending === row.name"
+                :label="__('Report')"
+                @click="report(row)"
+              />
               <Button
                 variant="subtle"
                 :label="__('Open')"
@@ -316,7 +326,7 @@ const tabs = computed(() => [
 
 const companies = createListResource({
   doctype: 'CRM Invoicing Company',
-  fields: ['name', 'company_name', 'sender_category', 'is_default'],
+  fields: ['name', 'company_name', 'sender_category', 'ts_mode', 'is_default'],
   filters: { enabled: 1 },
   pageLength: 50,
   auto: true,
@@ -332,6 +342,12 @@ const companyOptions = computed(() =>
     label: row.company_name,
     onClick: () => (company.value = row.name),
   })),
+)
+
+const tsMode = computed(
+  () =>
+    (companies.data || []).find((r) => r.name === company.value)?.ts_mode ||
+    'export',
 )
 
 const healthcareCompany = computed(() => {
@@ -443,6 +459,24 @@ async function transmit(row) {
     // A 403 here is the guard, not a glitch: healthcare services towards a
     // natural person have been barred from the SdI since 2026, and the message
     // says which lines and why.
+    toast.error(stripHtml(error.messages?.[0] || error.message))
+  } finally {
+    sending.value = ''
+  }
+}
+
+async function report(row) {
+  sending.value = row.name
+  try {
+    const result = await call('crm.invoicing.api.send_to_ts', {
+      invoice: row.name,
+    })
+    // A rejection is an answer, not a crash: it says which code came back, and
+    // codes 105 and 106 have already moved the company's submission mode.
+    if (result.accepted) toast.success(result.summary)
+    else toast.error(result.summary)
+    pending.fetch({ company: company.value })
+  } catch (error) {
     toast.error(stripHtml(error.messages?.[0] || error.message))
   } finally {
     sending.value = ''
