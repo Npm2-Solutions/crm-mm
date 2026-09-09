@@ -10,6 +10,19 @@ Il modulo e' `crm/invoicing/`. La documentazione tecnica sta nel suo
 
 ---
 
+## Dove si configura
+
+Tutto sta in **Impostazioni → Fatturazione**, nella modale del CRM: azienda
+emittente, registro delle qualifiche, servizi, erogatori e le impostazioni comuni.
+Le schermate rendono il layout dei DocType, quindi le spiegazioni che leggi sotto
+ogni campo sono le stesse scritte nella definizione — una regola spiegata una
+volta sola non puo' divergere dall'interfaccia che la mostra.
+
+Il pannello `/crm/fatture` resta la console dell'operatore: cosa e' stato emesso e
+cosa aspetta ancora un bottone. Non si configura niente da li'.
+
+---
+
 ## Prima di emettere: quattro cose
 
 ### 1. L'azienda emittente — `CRM Invoicing Company`

@@ -13,9 +13,9 @@
     <template #right-header>
       <Button
         variant="ghost"
-        :label="__('Register')"
-        iconLeft="book-open"
-        @click="openDesk('crm-professional-qualification')"
+        :label="__('Settings')"
+        iconLeft="settings"
+        @click="openSettings('Issuing company')"
       />
       <Button
         variant="solid"
@@ -47,7 +47,7 @@
           <Button
             variant="solid"
             :label="__('Create the company')"
-            @click="openDesk('crm-invoicing-company/new')"
+            @click="openSettings('Issuing company')"
           />
         </div>
       </div>
@@ -310,6 +310,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
+import { activeSettingsPage, showSettings } from '@/composables/settings'
 
 const tab = ref('todo')
 const company = ref('')
@@ -440,6 +441,13 @@ function formatCurrency(value) {
 
 function openDesk(route) {
   window.open(`/app/${route}`, '_blank')
+}
+
+function openSettings(page) {
+  // Everything that configures invoicing lives in the settings modal, so the
+  // console never sends anybody to the desk to change a rule.
+  activeSettingsPage.value = page
+  showSettings.value = true
 }
 
 function openExternal(url) {
