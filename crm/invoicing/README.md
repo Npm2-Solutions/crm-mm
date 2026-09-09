@@ -191,6 +191,10 @@ Part 3 rather than 1 for two reasons: the renderer emits modern PDF with
 transparency, which part 1 forbids; and part 3 is the one that lets the FatturaPA
 file ride inside the document a human reads, as a properly declared associated file.
 
+It leans on `pypdf` and `pillow`, both of which come from Frappe — nothing is
+added to this app's dependencies. If either is missing the file is stored exactly
+as rendered and says so, rather than claiming a conformance it did not reach.
+
 The PDF is generated **once**. The renderer is not byte-stable across versions, so
 regenerating is not a recovery path: the file handed over is the one stored, and the
 SHA-256 taken at creation is what proves it years later. The file name stays neutral

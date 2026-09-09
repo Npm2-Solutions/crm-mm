@@ -104,21 +104,15 @@ async function save() {
   saving.value = true
   error.value = ''
   try {
-    if (props.docname) {
-      await call('frappe.client.set_value', {
-        doctype: props.doctype,
-        name: props.docname,
-        fieldname: { ...local },
-      })
-      toast.success(__('Saved'))
-      emit('saved', props.docname)
-    } else {
-      const creato = await call('frappe.client.insert', {
-        doc: { doctype: props.doctype, ...local },
-      })
-      toast.success(__('Created'))
-      emit('saved', creato.name)
-    }
+    // `save` and not `set_value`: it handles a Single, it inserts when there is no
+    // name, and it carries `modified` through, so two people editing the same
+    // company collide instead of silently overwriting each other.
+    const payload = { ...local, doctype: props.doctype }
+    if (props.docname) payload.name = props.docname
+    const salvato = await call('frappe.client.save', { doc: payload })
+    Object.assign(local, salvato)
+    toast.success(props.docname ? __('Saved') : __('Created'))
+    emit('saved', salvato.name)
   } catch (e) {
     // The controllers refuse for reasons worth reading — a numbering format the
     // Sistema TS would not take, a stamp duty without its authorisation. The
