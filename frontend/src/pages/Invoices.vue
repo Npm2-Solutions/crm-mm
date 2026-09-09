@@ -53,10 +53,18 @@
       </div>
 
       <template v-else>
-        <Tabs v-model="tab" :tabs="tabs" />
+        <div class="flex items-center gap-1">
+          <Button
+            v-for="entry in tabs"
+            :key="entry.value"
+            :variant="tab === entry.value ? 'subtle' : 'ghost'"
+            :label="entry.label"
+            @click="tab = entry.value"
+          />
+        </div>
 
         <!-- ------------------------------------------------------- to do -->
-        <div v-if="tab === 0" class="flex flex-col gap-3">
+        <div v-if="tab === 'todo'" class="flex flex-col gap-3">
           <!-- A button not pressed produces no error: it produces absence, and
                absence is found in January. This list is what makes yesterday's
                absences visible today. -->
@@ -95,7 +103,7 @@
         </div>
 
         <!-- ---------------------------------------------------- invoices -->
-        <div v-else-if="tab === 1" class="flex flex-col gap-2">
+        <div v-else-if="tab === 'invoices'" class="flex flex-col gap-2">
           <div
             v-for="row in invoices.data || []"
             :key="row.name"
@@ -287,14 +295,13 @@ import {
   Breadcrumbs,
   Dropdown,
   FormControl,
-  Tabs,
   call,
   dayjs,
   toast,
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 
-const tab = ref(0)
+const tab = ref('todo')
 const company = ref('')
 const year = ref(new Date().getFullYear())
 const sending = ref('')
@@ -302,9 +309,9 @@ const preparing = ref(false)
 const lastPrepared = ref(null)
 
 const tabs = computed(() => [
-  { label: __('To do') },
-  { label: __('Invoices') },
-  { label: __('Sistema TS') },
+  { value: 'todo', label: __('To do') },
+  { value: 'invoices', label: __('Invoices') },
+  { value: 'ts', label: __('Sistema TS') },
 ])
 
 const companies = createListResource({
