@@ -815,3 +815,123 @@ def _valida_importi(fattura: FatturaElettronica) -> list[str]:
 			)
 			break
 	return problemi
+
+
+# -------------------------------------------------- from the computed document
+
+#: Where the levy and the re-charged stamp duty go, and why the totals reconcile
+#: only when both are placed exactly here.
+#:
+#: * the **fund levy** does not sit on a line. It travels in
+#:   `DatiCassaPrevidenziale`, and check 00423 counts it towards the summary block,
+#:   so lines plus levy blocks equal the summary;
+#: * the **re-charged stamp duty** does get a line, because it is part of the
+#:   compensation (Risposta AdE 428/2022) and follows the VAT regime of the service.
+#:   Leaving it out of the lines is how the summary ends up two euros over.
+#:
+#: These live here rather than in the Frappe layer so the reconciliation can be
+#: tested without a database - it is the seam where a wrong total actually happens.
+
+
+def linee_da_calcolo(calcolo, dettagli: list[dict]) -> list[Linea]:
+	"""Lines from a computed document.
+
+	`dettagli` runs parallel to `calcolo.righe` and carries what the arithmetic does
+	not know: the description, the quantity, the unit and the period.
+	"""
+	linee: list[Linea] = []
+	numero = 0
+	riaddebiti: dict[tuple[str, str], Decimal] = {}
+
+	for riga, dettaglio in zip(calcolo.righe, dettagli, strict=True):
+		numero += 1
+		quantita = Decimal(str(dettaglio.get("quantita") or 1))
+		prezzo = dettaglio.get("prezzo_unitario")
+		if prezzo is None:
+			prezzo = riga.imponibile / quantita if quantita else riga.imponibile
+		linee.append(
+			Linea(
+				numero=numero,
+				descrizione=dettaglio.get("descrizione") or "",
+				quantita=quantita,
+				unita_misura=dettaglio.get("unita_misura"),
+				prezzo_unitario=Decimal(str(prezzo)),
+				prezzo_totale=riga.imponibile,
+				aliquota_iva=riga.aliquota,
+				natura=riga.natura,
+				ritenuta=bool(dettaglio.get("ritenuta")) and not riga.fuori_base_iva,
+				data_inizio_periodo=dettaglio.get("data_inizio_periodo"),
+				data_fine_periodo=dettaglio.get("data_fine_periodo"),
+			)
+		)
+		if riga.bollo_riaddebitato > ZERO:
+			chiave = (_d(riga.aliquota), riga.natura or "")
+			riaddebiti[chiave] = riaddebiti.get(chiave, ZERO) + riga.bollo_riaddebitato
+
+	for (aliquota, natura), importo in sorted(riaddebiti.items()):
+		numero += 1
+		linee.append(
+			Linea(
+				numero=numero,
+				descrizione="Recupero imposta di bollo",
+				quantita=Decimal("1"),
+				prezzo_unitario=importo,
+				prezzo_totale=importo,
+				aliquota_iva=Decimal(aliquota),
+				natura=natura or None,
+			)
+		)
+	return linee
+
+
+def riepiloghi_da_calcolo(calcolo) -> list[Riepilogo]:
+	return [
+		Riepilogo(
+			aliquota_iva=r.aliquota,
+			natura=r.natura,
+			imponibile_importo=r.imponibile,
+			imposta=r.imposta,
+			esigibilita_iva=r.esigibilita,
+			riferimento_normativo=r.riferimento_normativo,
+		)
+		for r in calcolo.riepiloghi
+	]
+
+
+def casse_da_calcolo(calcolo, ritenuta: bool = False) -> list[DatiCassa]:
+	"""One levy block per (rate, nature) pair, so the summary reconciles."""
+	if calcolo.cassa <= ZERO or not calcolo.tipo_cassa:
+		return []
+	per_chiave: dict[tuple[str, str], list[Decimal]] = {}
+	for riga in calcolo.righe:
+		if riga.cassa <= ZERO:
+			continue
+		chiave = (_d(riga.aliquota), riga.natura or "")
+		quote = per_chiave.setdefault(chiave, [ZERO, ZERO])
+		quote[0] += riga.cassa
+		quote[1] += riga.imponibile
+	return [
+		DatiCassa(
+			tipo_cassa=calcolo.tipo_cassa,
+			al_cassa=calcolo.percentuale_cassa or ZERO,
+			importo_contributo=contributo,
+			imponibile_cassa=imponibile,
+			aliquota_iva=Decimal(aliquota),
+			natura=natura or None,
+			ritenuta=ritenuta,
+		)
+		for (aliquota, natura), (contributo, imponibile) in sorted(per_chiave.items())
+	]
+
+
+def ritenute_da_calcolo(calcolo) -> list[DatiRitenuta]:
+	if calcolo.ritenuta <= ZERO:
+		return []
+	return [
+		DatiRitenuta(
+			tipo_ritenuta=calcolo.tipo_ritenuta or "RT01",
+			importo_ritenuta=calcolo.ritenuta,
+			aliquota_ritenuta=calcolo.aliquota_ritenuta,
+			causale_pagamento=calcolo.causale_pagamento or "A",
+		)
+	]

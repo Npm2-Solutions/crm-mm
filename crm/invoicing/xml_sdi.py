@@ -26,7 +26,6 @@ from decimal import Decimal
 import frappe
 from frappe.utils import getdate
 
-from crm.invoicing.engine import diciture
 from crm.invoicing.engine.codici import (
 	CODICE_DESTINATARIO_ESTERO,
 	LUNGHEZZA_CODICE_PA,
@@ -38,17 +37,17 @@ from crm.invoicing.engine.fatturapa import (
 	Cedente,
 	Cessionario,
 	Contatti,
-	DatiCassa,
-	DatiRitenuta,
 	DettaglioPagamento,
 	DocumentoCollegato,
 	FatturaElettronica,
 	IscrizioneREA,
-	Linea,
-	Riepilogo,
 	Sede,
+	casse_da_calcolo,
 	codice_destinatario,
+	linee_da_calcolo,
 	progressivo_alfanumerico,
+	riepiloghi_da_calcolo,
+	ritenute_da_calcolo,
 	valida,
 )
 
@@ -127,74 +126,20 @@ def _cessionario(doc) -> Cessionario:
 	)
 
 
-def _linee(doc, conto) -> list[Linea]:
-	linee: list[Linea] = []
-	numero = 0
-	riaddebiti: dict[tuple[str, str], Decimal] = {}
-
-	for riga_doc, riga in zip(doc.items, conto.righe, strict=False):
-		numero += 1
-		linee.append(
-			Linea(
-				numero=numero,
-				descrizione=riga_doc.description,
-				quantita=_dec(riga_doc.qty or 1),
-				unita_misura=riga_doc.uom or None,
-				prezzo_unitario=_dec(riga_doc.rate),
-				prezzo_totale=riga.imponibile,
-				aliquota_iva=riga.aliquota,
-				natura=riga.natura,
-				ritenuta=bool(doc.apply_withholding) and not riga.fuori_base_iva,
-				data_inizio_periodo=getdate(riga_doc.period_from) if riga_doc.period_from else None,
-				data_fine_periodo=getdate(riga_doc.period_to) if riga_doc.period_to else None,
-			)
-		)
-		if riga.bollo_riaddebitato > ZERO:
-			chiave = (f"{riga.aliquota:.2f}", riga.natura or "")
-			riaddebiti[chiave] = riaddebiti.get(chiave, ZERO) + riga.bollo_riaddebitato
-
-	for (aliquota, natura), importo in sorted(riaddebiti.items()):
-		numero += 1
-		linee.append(
-			Linea(
-				numero=numero,
-				descrizione=diciture.riaddebito_bollo(),
-				quantita=Decimal("1"),
-				prezzo_unitario=importo,
-				prezzo_totale=importo,
-				aliquota_iva=Decimal(aliquota),
-				natura=natura or None,
-			)
-		)
-	return linee
-
-
-def _casse(doc, conto) -> list[DatiCassa]:
-	"""One levy block per (rate, nature) pair, so the summary reconciles."""
-	if conto.cassa <= ZERO or not conto.tipo_cassa:
-		return []
-	per_chiave: dict[tuple[str, str], list[Decimal]] = {}
-	for riga in conto.righe:
-		if riga.cassa <= ZERO:
-			continue
-		chiave = (f"{riga.aliquota:.2f}", riga.natura or "")
-		quote = per_chiave.setdefault(chiave, [ZERO, ZERO])
-		quote[0] += riga.cassa
-		quote[1] += riga.imponibile
-	blocchi = []
-	for (aliquota, natura), (contributo, imponibile) in sorted(per_chiave.items()):
-		blocchi.append(
-			DatiCassa(
-				tipo_cassa=conto.tipo_cassa,
-				al_cassa=conto.percentuale_cassa or ZERO,
-				importo_contributo=contributo,
-				imponibile_cassa=imponibile,
-				aliquota_iva=Decimal(aliquota),
-				natura=natura or None,
-				ritenuta=bool(doc.apply_withholding) and bool(doc.fund_subject_to_withholding),
-			)
-		)
-	return blocchi
+def _dettagli(doc) -> list[dict]:
+	"""What the arithmetic does not know: description, quantity, unit, period."""
+	return [
+		{
+			"descrizione": riga.description,
+			"quantita": riga.qty or 1,
+			"prezzo_unitario": _dec(riga.rate),
+			"unita_misura": riga.uom or None,
+			"ritenuta": bool(doc.apply_withholding),
+			"data_inizio_periodo": getdate(riga.period_from) if riga.period_from else None,
+			"data_fine_periodo": getdate(riga.period_to) if riga.period_to else None,
+		}
+		for riga in doc.items
+	]
 
 
 def _pagamenti(doc, conto, emittente: dict) -> list[DettaglioPagamento]:
@@ -249,34 +194,13 @@ def costruisci(doc, preparato: dict, progressivo: str | None = None) -> FatturaE
 			)
 		)
 
-	ritenute = []
-	if conto.ritenuta > ZERO:
-		ritenute.append(
-			DatiRitenuta(
-				tipo_ritenuta=conto.tipo_ritenuta or "RT01",
-				importo_ritenuta=conto.ritenuta,
-				aliquota_ritenuta=conto.aliquota_ritenuta,
-				causale_pagamento=conto.causale_pagamento or "A",
-			)
-		)
-
 	return FatturaElettronica(
 		cedente=_cedente(emittente),
 		cessionario=_cessionario(doc),
 		numero=doc.document_number,
 		data=getdate(doc.posting_date),
-		linee=_linee(doc, conto),
-		riepiloghi=[
-			Riepilogo(
-				aliquota_iva=r.aliquota,
-				natura=r.natura,
-				imponibile_importo=r.imponibile,
-				imposta=r.imposta,
-				esigibilita_iva=r.esigibilita,
-				riferimento_normativo=r.riferimento_normativo,
-			)
-			for r in conto.riepiloghi
-		],
+		linee=linee_da_calcolo(conto, _dettagli(doc)),
+		riepiloghi=riepiloghi_da_calcolo(conto),
 		importo_totale=conto.totale,
 		tipo_documento=doc.document_type or "TD01",
 		codice_destinatario=codice,
@@ -284,10 +208,12 @@ def costruisci(doc, preparato: dict, progressivo: str | None = None) -> FatturaE
 		progressivo_invio=progressivo,
 		formato_trasmissione="FPA12" if len(codice) == LUNGHEZZA_CODICE_PA else None,
 		contatti_trasmittente=Contatti(email=emittente.get("email"), telefono=emittente.get("phone")),
-		dati_ritenuta=ritenute,
+		dati_ritenuta=ritenute_da_calcolo(conto),
 		bollo_virtuale=bool(conto.bollo_dovuto and doc.stamp_duty_mode == "virtuale"),
 		importo_bollo=conto.bollo if conto.bollo_dovuto else None,
-		dati_cassa=_casse(doc, conto),
+		dati_cassa=casse_da_calcolo(
+			conto, bool(doc.apply_withholding) and bool(doc.fund_subject_to_withholding)
+		),
 		causale=[riga for riga in (doc.legal_notes or "").splitlines() if riga.strip()],
 		documenti_collegati=collegati,
 		ordini_acquisto=ordini,
