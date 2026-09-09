@@ -46,3 +46,4 @@ crm.patches.v1_0.give_every_contact_a_person
 crm.patches.v1_0.link_deals_to_their_organization
 crm.patches.v1_0.remember_the_leads_already_imported
 crm.patches.v1_0.give_the_person_a_real_company
+crm.patches.v1_0.seed_invoicing_register #09-09-2026

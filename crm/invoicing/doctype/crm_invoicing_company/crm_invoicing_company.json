@@ -1,0 +1,639 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:company_name",
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "identity_section",
+  "company_name",
+  "first_name",
+  "last_name",
+  "column_identity",
+  "is_default",
+  "enabled",
+  "logo",
+  "fiscal_section",
+  "tax_id",
+  "fiscal_code",
+  "country",
+  "column_fiscal",
+  "tax_regime",
+  "document_mode",
+  "address_section",
+  "address_line",
+  "civic_number",
+  "postal_code",
+  "column_address",
+  "city",
+  "province",
+  "register_section",
+  "professional_register",
+  "register_province",
+  "column_register",
+  "register_number",
+  "register_date",
+  "rea_section",
+  "rea_office",
+  "rea_number",
+  "column_rea",
+  "share_capital",
+  "sole_shareholder",
+  "liquidation_state",
+  "fund_section",
+  "fund_type",
+  "fund_rate",
+  "fund_mandatory",
+  "fund_subject_to_withholding",
+  "column_fund",
+  "apply_withholding_by_default",
+  "withholding_rate",
+  "withholding_type",
+  "payment_reason",
+  "stamp_section",
+  "stamp_duty_mode",
+  "recharge_stamp_duty",
+  "column_stamp",
+  "stamp_authorization_number",
+  "stamp_authorization_date",
+  "stamp_authorization_office",
+  "numbering_section",
+  "series_electronic",
+  "series_healthcare",
+  "column_numbering",
+  "number_format",
+  "healthcare_section",
+  "sender_category",
+  "region_code",
+  "asl_code",
+  "ssa_code",
+  "column_healthcare",
+  "ts_mode",
+  "ts_delegation_status",
+  "ts_username",
+  "ts_password",
+  "ts_pincode",
+  "ts_certificate",
+  "sdi_section",
+  "sdi_mode",
+  "sdi_provider",
+  "sdi_endpoint",
+  "column_sdi",
+  "sdi_username",
+  "sdi_password",
+  "sdi_last_progressive",
+  "contacts_section",
+  "email",
+  "phone",
+  "pec",
+  "column_contacts",
+  "bank_name",
+  "iban"
+ ],
+ "fields": [
+  {
+   "fieldname": "identity_section",
+   "fieldtype": "Section Break",
+   "label": "Issuer"
+  },
+  {
+   "description": "The Denominazione on the invoice, or the practice name for a professional.",
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "For a professional invoicing in their own name: FatturaPA wants Nome and Cognome, not a Denominazione.",
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Surname"
+  },
+  {
+   "fieldname": "column_identity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Default company"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "description": "Embedded in the PDF, never linked. A PDF that loads its logo from a URL stops being readable in eight years and tells a third party every time it is opened.",
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "fieldname": "fiscal_section",
+   "fieldtype": "Section Break",
+   "label": "Fiscal identity"
+  },
+  {
+   "fieldname": "tax_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Partita IVA",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fiscal_code",
+   "fieldtype": "Data",
+   "label": "Codice fiscale"
+  },
+  {
+   "default": "IT",
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "length": 2
+  },
+  {
+   "fieldname": "column_fiscal",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "RF01",
+   "description": "RF01 Regime ordinario · RF02 Contribuenti minimi (art. 1, c. 96-117, L. 244/2007) · RF04 Agricoltura e attivita' connesse e pesca (artt. 34 e 34-bis, DPR 633/72) · RF19 forfettario",
+   "fieldname": "tax_regime",
+   "fieldtype": "Select",
+   "label": "Regime fiscale",
+   "options": "RF01\nRF02\nRF04\nRF05\nRF06\nRF07\nRF08\nRF09\nRF10\nRF11\nRF12\nRF13\nRF14\nRF15\nRF16\nRF17\nRF18\nRF19",
+   "reqd": 1
+  },
+  {
+   "default": "analogico_con_copia",
+   "description": "Two product configurations, not a detail (Circolare 18/E 2014): they carry different retention duties and a different coherent answer on the stamp duty.",
+   "fieldname": "document_mode",
+   "fieldtype": "Select",
+   "label": "Document mode",
+   "options": "analogico_con_copia\nelettronica_extra_sdi"
+  },
+  {
+   "fieldname": "address_section",
+   "fieldtype": "Section Break",
+   "label": "Registered office"
+  },
+  {
+   "fieldname": "address_line",
+   "fieldtype": "Data",
+   "label": "Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "civic_number",
+   "fieldtype": "Data",
+   "label": "Number"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal code",
+   "length": 10,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_address",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City",
+   "reqd": 1
+  },
+  {
+   "fieldname": "province",
+   "fieldtype": "Data",
+   "label": "Province",
+   "length": 2
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "register_section",
+   "fieldtype": "Section Break",
+   "label": "Professional register"
+  },
+  {
+   "fieldname": "professional_register",
+   "fieldtype": "Data",
+   "label": "Albo professionale"
+  },
+  {
+   "fieldname": "register_province",
+   "fieldtype": "Data",
+   "label": "Province",
+   "length": 2
+  },
+  {
+   "fieldname": "column_register",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "register_number",
+   "fieldtype": "Data",
+   "label": "Registration number"
+  },
+  {
+   "fieldname": "register_date",
+   "fieldtype": "Date",
+   "label": "Registration date"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "rea_section",
+   "fieldtype": "Section Break",
+   "label": "Registro imprese"
+  },
+  {
+   "fieldname": "rea_office",
+   "fieldtype": "Data",
+   "label": "REA office",
+   "length": 2
+  },
+  {
+   "fieldname": "rea_number",
+   "fieldtype": "Data",
+   "label": "REA number"
+  },
+  {
+   "fieldname": "column_rea",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "share_capital",
+   "fieldtype": "Currency",
+   "label": "Share capital"
+  },
+  {
+   "fieldname": "sole_shareholder",
+   "fieldtype": "Select",
+   "label": "Sole shareholder",
+   "options": "\nSU\nSM"
+  },
+  {
+   "default": "LN",
+   "fieldname": "liquidation_state",
+   "fieldtype": "Select",
+   "label": "Liquidation",
+   "options": "LN\nLS"
+  },
+  {
+   "fieldname": "fund_section",
+   "fieldtype": "Section Break",
+   "label": "Pension fund and withholding"
+  },
+  {
+   "description": "TC01 Cassa Nazionale Previdenza e Assistenza Avvocati e Procuratori legali · TC02 Cassa Previdenza Dottori Commercialisti ... TC22 INPS",
+   "fieldname": "fund_type",
+   "fieldtype": "Select",
+   "label": "Fund",
+   "options": "\nTC01\nTC02\nTC03\nTC04\nTC05\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC12\nTC13\nTC14\nTC15\nTC16\nTC17\nTC18\nTC19\nTC20\nTC21\nTC22"
+  },
+  {
+   "fieldname": "fund_rate",
+   "fieldtype": "Percent",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "fund_mandatory",
+   "fieldtype": "Check",
+   "label": "Contributo integrativo (mandatory)"
+  },
+  {
+   "fieldname": "fund_subject_to_withholding",
+   "fieldtype": "Check",
+   "label": "Subject to withholding"
+  },
+  {
+   "fieldname": "column_fund",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "apply_withholding_by_default",
+   "fieldtype": "Check",
+   "label": "Apply the withholding by default"
+  },
+  {
+   "default": "20",
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Rate"
+  },
+  {
+   "default": "RT01",
+   "fieldname": "withholding_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "RT01\nRT02\nRT03\nRT04\nRT05\nRT06"
+  },
+  {
+   "default": "A",
+   "fieldname": "payment_reason",
+   "fieldtype": "Data",
+   "label": "Causale pagamento",
+   "length": 2
+  },
+  {
+   "fieldname": "stamp_section",
+   "fieldtype": "Section Break",
+   "label": "Stamp duty"
+  },
+  {
+   "default": "su_originale",
+   "fieldname": "stamp_duty_mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "su_originale\nvirtuale\nnon_dovuto"
+  },
+  {
+   "description": "It is an integral part of the compensation (Risposta AdE 428/2022), so it follows the VAT regime of the service. It is not an art. 15 exclusion.",
+   "fieldname": "recharge_stamp_duty",
+   "fieldtype": "Check",
+   "label": "Re-charge it to the client"
+  },
+  {
+   "fieldname": "column_stamp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.stamp_duty_mode=='virtuale'",
+   "description": "Mandatory in the wording: without the number and date the annotation does not satisfy art. 15 DPR 642/72.",
+   "fieldname": "stamp_authorization_number",
+   "fieldtype": "Data",
+   "label": "Authorisation number"
+  },
+  {
+   "depends_on": "eval:doc.stamp_duty_mode=='virtuale'",
+   "fieldname": "stamp_authorization_date",
+   "fieldtype": "Date",
+   "label": "Authorisation date"
+  },
+  {
+   "depends_on": "eval:doc.stamp_duty_mode=='virtuale'",
+   "fieldname": "stamp_authorization_office",
+   "fieldtype": "Data",
+   "label": "Issuing office"
+  },
+  {
+   "fieldname": "numbering_section",
+   "fieldtype": "Section Break",
+   "label": "Numbering"
+  },
+  {
+   "default": "E",
+   "fieldname": "series_electronic",
+   "fieldtype": "Data",
+   "label": "Electronic series",
+   "reqd": 1
+  },
+  {
+   "default": "S",
+   "description": "Separate series are not mandatory (FAQ n. 33 del 27/11/2018) but two flows in two retention systems are easier to govern apart.",
+   "fieldname": "series_healthcare",
+   "fieldtype": "Data",
+   "label": "Healthcare series",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_numbering",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "{anno}/{serie}/{numero}",
+   "description": "Validated against the Sistema TS alphabet at the first document, not at the first submission: at most 20 characters of [A-Za-z0-9_./-].",
+   "fieldname": "number_format",
+   "fieldtype": "Data",
+   "label": "Format",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "healthcare_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema TS"
+  },
+  {
+   "default": "non_sanitario",
+   "description": "The category of whoever issues. In a facility it diverges from the performer's, and it is this one the tracciato validates against.",
+   "fieldname": "sender_category",
+   "fieldtype": "Select",
+   "label": "Sender category",
+   "options": "non_sanitario\nmedico_odontoiatra\nprofessionista_sanitario\nstruttura_autorizzata\nstruttura_accreditata\nveterinario\nfarmacia\nparafarmacia\nottico"
+  },
+  {
+   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "fieldname": "region_code",
+   "fieldtype": "Data",
+   "label": "codiceRegione",
+   "length": 3
+  },
+  {
+   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "fieldname": "asl_code",
+   "fieldtype": "Data",
+   "label": "codiceAsl",
+   "length": 3
+  },
+  {
+   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "fieldname": "ssa_code",
+   "fieldtype": "Data",
+   "label": "codiceSSA",
+   "length": 6
+  },
+  {
+   "fieldname": "column_healthcare",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "export",
+   "description": "Everyone is born in export: no onboarding waits on somebody else's paperwork. It is the universal plan B, and it stays tested.",
+   "fieldname": "ts_mode",
+   "fieldtype": "Select",
+   "label": "Submission mode",
+   "options": "export\ncredenziali_studio\nintermediario"
+  },
+  {
+   "default": "sconosciuta",
+   "description": "Not asked for: probed. Rejection 105 means there is no mandate, 106 means there is one.",
+   "fieldname": "ts_delegation_status",
+   "fieldtype": "Select",
+   "label": "Entratel mandate",
+   "options": "sconosciuta\nassente\npresente\nnon_sondabile",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.ts_mode!='export'",
+   "fieldname": "ts_username",
+   "fieldtype": "Data",
+   "label": "Sistema TS user"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode!='export'",
+   "fieldname": "ts_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode!='export'",
+   "fieldname": "ts_pincode",
+   "fieldtype": "Password",
+   "label": "PINCODE"
+  },
+  {
+   "description": "From the official kit. It expires and is reissued: an expired certificate fails every submission with code 002, silently.",
+   "fieldname": "ts_certificate",
+   "fieldtype": "Attach",
+   "label": "SanitelCF.cer"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sdi_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema di Interscambio"
+  },
+  {
+   "default": "export",
+   "description": "export writes the XML and hands it over. The XML is generated here either way; the provider is only the last mile.",
+   "fieldname": "sdi_mode",
+   "fieldtype": "Select",
+   "label": "Transmission",
+   "options": "export\nprovider"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "fieldname": "sdi_provider",
+   "fieldtype": "Data",
+   "label": "Provider"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "fieldname": "sdi_endpoint",
+   "fieldtype": "Data",
+   "label": "Endpoint"
+  },
+  {
+   "fieldname": "column_sdi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "fieldname": "sdi_username",
+   "fieldtype": "Data",
+   "label": "User"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "fieldname": "sdi_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "description": "The SdI refuses a file name it has already seen, and it does not forget.",
+   "fieldname": "sdi_last_progressive",
+   "fieldtype": "Int",
+   "label": "Last transmission progressive",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contacts_section",
+   "fieldtype": "Section Break",
+   "label": "Contacts"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "fieldname": "pec",
+   "fieldtype": "Data",
+   "label": "PEC",
+   "options": "Email"
+  },
+  {
+   "fieldname": "column_contacts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank"
+  },
+  {
+   "fieldname": "iban",
+   "fieldtype": "Data",
+   "label": "IBAN"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Invoicing Company",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "tax_id",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "company_name",
+ "track_changes": 1
+}

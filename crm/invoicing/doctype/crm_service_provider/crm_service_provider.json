@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:provider_name",
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "identity_section",
+  "provider_name",
+  "qualification",
+  "user",
+  "column_identity",
+  "enabled",
+  "company",
+  "registration_section",
+  "fiscal_code",
+  "professional_register",
+  "column_registration",
+  "register_number",
+  "register_province",
+  "notes_section",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "identity_section",
+   "fieldtype": "Section Break",
+   "label": "Provider"
+  },
+  {
+   "fieldname": "provider_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "description": "Confirming this is not a formality: it decides the tipoSpesa and the VAT regime. In a shared calendar a wrong assignment produces no error, it produces rejected rows in January.",
+   "fieldname": "qualification",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Qualification",
+   "options": "CRM Professional Qualification",
+   "reqd": 1
+  },
+  {
+   "description": "Links the provider to whoever performs the work in the CRM, so the agenda can propose them.",
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_identity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "description": "Empty means every company. In a facility, the issuer's category decides the usable expense types, not the provider's.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Issued by",
+   "options": "CRM Invoicing Company"
+  },
+  {
+   "fieldname": "registration_section",
+   "fieldtype": "Section Break",
+   "label": "Registration"
+  },
+  {
+   "fieldname": "fiscal_code",
+   "fieldtype": "Data",
+   "label": "Codice fiscale"
+  },
+  {
+   "fieldname": "professional_register",
+   "fieldtype": "Data",
+   "label": "Albo professionale"
+  },
+  {
+   "fieldname": "column_registration",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "register_number",
+   "fieldtype": "Data",
+   "label": "Registration number"
+  },
+  {
+   "fieldname": "register_province",
+   "fieldtype": "Data",
+   "label": "Province",
+   "length": 2
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Service Provider",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ],
+ "quick_entry": 1,
+ "row_format": "Dynamic",
+ "search_fields": "qualification",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "provider_name",
+ "track_changes": 1
+}

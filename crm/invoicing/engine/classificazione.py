@@ -24,6 +24,7 @@ another member state. Since 2022 those invoices go through the SdI too, with
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
 
@@ -36,7 +37,13 @@ from .codici import (
 	TipoDestinatario,
 	tipi_spesa_ammessi,
 )
-from .professioni import professione
+from .professioni import Professione, professione
+
+#: How a qualification code is turned into a `Professione`. The shipped register is
+#: the default; the CRM overrides it with the editable table, because the choices
+#: that decide fiscal correctness belong to the practice owner and not to a file
+#: only a developer can change.
+Risolutore = Callable[[str], Professione]
 
 
 class GuardiaSdI(PermissionError):
@@ -245,6 +252,7 @@ def classifica_riga(
 	destinatario: str,
 	regime: str = RegimeFiscale.ORDINARIO,
 	soggetto_emittente: str | None = None,
+	risolvi: Risolutore | None = None,
 ) -> EsitoRiga:
 	"""`soggetto_emittente` is the category of **whoever issues the document**.
 
@@ -297,7 +305,7 @@ def classifica_riga(
 		return _riga_semplice()
 
 	try:
-		prof = professione(riga.erogatore_qualifica)
+		prof = (risolvi or professione)(riga.erogatore_qualifica)
 	except KeyError as exc:
 		errori.append(str(exc))
 		return _riga_semplice()
@@ -409,6 +417,7 @@ def classifica(
 	destinatario: str,
 	regime: str = RegimeFiscale.ORDINARIO,
 	soggetto_emittente: str | None = None,
+	risolvi: Risolutore | None = None,
 ) -> EsitoClassificazione:
 	"""Classify the whole document. **Model it per line, never per document.**
 
@@ -426,7 +435,7 @@ def classifica(
 			errori=["the document has no lines"],
 		)
 
-	esiti = [classifica_riga(r, destinatario, regime, soggetto_emittente) for r in righe]
+	esiti = [classifica_riga(r, destinatario, regime, soggetto_emittente, risolvi) for r in righe]
 	da_valutare = [e for e in esiti if not e.riga.e_riga_bollo and not e.riga.e_anticipazione]
 
 	vietato = any(e.regola_sdi == RegolaSdI.VIETATO for e in da_valutare)

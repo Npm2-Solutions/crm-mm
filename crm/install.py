@@ -36,7 +36,21 @@ def after_install(force=False):
 	create_assignment_rule_custom_fields()
 	add_assignment_rule_property_setters()
 	seed_default_rules_and_mappings()
+	seed_invoicing()
 	frappe.db.commit()
+
+
+def seed_invoicing():
+	"""Roles and the qualification register.
+
+	The register ships as records rather than as a fixture, because a practice that
+	corrects an entry has to keep the correction across every migration.
+	"""
+	from crm.invoicing.install import crea_ruoli, imposta_predefiniti, semina_qualifiche
+
+	crea_ruoli()
+	semina_qualifiche()
+	imposta_predefiniti()
 
 
 def add_default_lead_statuses():

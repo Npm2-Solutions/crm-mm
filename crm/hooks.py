@@ -305,6 +305,9 @@ scheduler_events = {
 		"crm.api.tracking.purge_old_data",
 		"crm.telemetry.capture_feature_state",
 		"crm.telephony.transcription.expire_transcripts",
+		# Invoicing fails quietly and annually: an expired Sistema TS certificate,
+		# a button nobody pressed. The sweep looks for absence, not for errors.
+		"crm.invoicing.monitoraggio.giornaliero",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [

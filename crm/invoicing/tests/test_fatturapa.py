@@ -397,3 +397,20 @@ class CodiceDestinatarioTest(UnitTestCase):
 		self.assertEqual(progressivo_alfanumerico(1), "00001")
 		self.assertEqual(progressivo_alfanumerico(35), "0000Z")
 		self.assertEqual(progressivo_alfanumerico(36), "00010")
+
+
+class RilieviBloccantiTest(UnitTestCase):
+	"""A finding with an SdI code stops the file; the rest are worth saying anyway."""
+
+	def test_i_codici_sdi_sono_bloccanti(self):
+		from crm.invoicing.engine.fatturapa import bloccanti
+
+		problemi = ["00421: imposta", "the recipient has nowhere to receive it", "00400: natura"]
+		self.assertEqual(bloccanti(problemi), ["00421: imposta", "00400: natura"])
+
+	def test_una_fattura_senza_recapito_e_valida_ma_non_recapitabile(self):
+		from crm.invoicing.engine.fatturapa import bloccanti
+
+		problemi = valida(fattura(codice_destinatario=CODICE_DESTINATARIO_ASSENTE))
+		self.assertTrue(problemi)
+		self.assertEqual(bloccanti(problemi), [])

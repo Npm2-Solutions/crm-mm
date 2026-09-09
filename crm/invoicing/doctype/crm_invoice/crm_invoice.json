@@ -1,0 +1,872 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "document_section",
+  "company",
+  "document_type",
+  "posting_date",
+  "payment_date",
+  "column_document",
+  "document_number",
+  "series",
+  "fiscal_year",
+  "sequence",
+  "channel",
+  "amended_from",
+  "party_section",
+  "recipient_type",
+  "party_type",
+  "party",
+  "billing_name",
+  "first_name",
+  "last_name",
+  "column_party",
+  "tax_id",
+  "fiscal_code",
+  "recipient_code",
+  "pec",
+  "address_section",
+  "address_line",
+  "civic_number",
+  "postal_code",
+  "column_address",
+  "city",
+  "province",
+  "country",
+  "items_section",
+  "items",
+  "totals_section",
+  "net_total",
+  "fund_contribution",
+  "vat_total",
+  "excluded_total",
+  "stamp_duty",
+  "stamp_duty_recharged",
+  "column_totals",
+  "withholding_base",
+  "withholding_amount",
+  "grand_total",
+  "net_payable",
+  "ts_total",
+  "summary_section",
+  "tax_summary",
+  "treatment_section",
+  "fund_type",
+  "fund_rate",
+  "fund_mandatory",
+  "fund_subject_to_withholding",
+  "apply_optional_fund",
+  "column_treatment",
+  "apply_withholding",
+  "withholding_rate",
+  "withholding_type",
+  "payment_reason",
+  "split_payment",
+  "stamp_section",
+  "subject_to_stamp_duty",
+  "stamp_duty_mode",
+  "recharge_stamp_duty",
+  "column_stamp",
+  "stamp_duty_paid_cash",
+  "stamp_identifier",
+  "stamp_date",
+  "payment_section",
+  "payment_method",
+  "payment_terms",
+  "payment_traced",
+  "column_payment",
+  "advance_payment",
+  "payments",
+  "healthcare_section",
+  "privacy_opposition",
+  "opposition_recorded_on",
+  "column_healthcare",
+  "print_opposition",
+  "routing_section",
+  "sdi_status",
+  "sdi_identifier",
+  "sdi_filename",
+  "sdi_sent_on",
+  "sdi_message",
+  "column_routing",
+  "ts_status",
+  "ts_operation",
+  "ts_year",
+  "ts_submission",
+  "files_section",
+  "xml_file",
+  "xml_hash",
+  "column_files",
+  "pdf_file",
+  "pdf_hash",
+  "references_section",
+  "reference_invoice",
+  "deal",
+  "appointment",
+  "column_references",
+  "purchase_order",
+  "cig",
+  "cup",
+  "notes_section",
+  "causale",
+  "legal_notes",
+  "column_notes",
+  "internal_notes",
+  "warnings"
+ ],
+ "fields": [
+  {
+   "default": "INV-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming series",
+   "options": "INV-.YYYY.-",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "document_section",
+   "fieldtype": "Section Break",
+   "label": "Document"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "CRM Invoicing Company",
+   "reqd": 1
+  },
+  {
+   "default": "TD01",
+   "description": "TD01 Fattura · TD02 Acconto / anticipo su fattura · TD03 Acconto / anticipo su parcella · TD04 Nota di credito · TD05 Nota di debito · TD06 Parcella",
+   "fieldname": "document_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "TD01\nTD02\nTD03\nTD04\nTD05\nTD06\nTD07\nTD08\nTD09\nTD16\nTD17\nTD18\nTD19\nTD20\nTD21\nTD22\nTD23\nTD24\nTD25\nTD26\nTD27\nTD28",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "description": "The Sistema TS files the expense by this date, not by the issue date. A prepaid package paid in December belongs to that year.",
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "label": "Payment date"
+  },
+  {
+   "fieldname": "column_document",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "description": "Assigned on submit, inside the transaction that saves the document.",
+   "fieldname": "document_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "series",
+   "fieldtype": "Data",
+   "label": "Series",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fiscal_year",
+   "fieldtype": "Int",
+   "label": "Year",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence",
+   "read_only": 1
+  },
+  {
+   "description": "Decided by the classification, not chosen.",
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "\nsdi\npdf_ts\npdf_solo",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended from",
+   "no_copy": 1,
+   "options": "CRM Invoice",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "party_section",
+   "fieldtype": "Section Break",
+   "label": "Client"
+  },
+  {
+   "default": "persona_fisica",
+   "description": "persona_fisica, soggetto_iva, pubblica_amministrazione, estero. It decides the channel before anything else does.",
+   "fieldname": "recipient_type",
+   "fieldtype": "Select",
+   "label": "Recipient",
+   "options": "persona_fisica\nsoggetto_iva\npubblica_amministrazione\nestero",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Select",
+   "label": "Linked to",
+   "options": "\nContact\nCRM Organization\nCRM Deal\nCRM Lead"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Record",
+   "options": "party_type"
+  },
+  {
+   "fieldname": "billing_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name on the invoice",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.recipient_type=='persona_fisica'",
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First name"
+  },
+  {
+   "depends_on": "eval:doc.recipient_type=='persona_fisica'",
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Surname"
+  },
+  {
+   "fieldname": "column_party",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_id",
+   "fieldtype": "Data",
+   "label": "Partita IVA / VAT number"
+  },
+  {
+   "fieldname": "fiscal_code",
+   "fieldtype": "Data",
+   "label": "Codice fiscale"
+  },
+  {
+   "description": "Seven characters for private clients, six for the PA, XXXXXXX abroad. Without it and without a PEC the invoice reaches the SdI and stops there.",
+   "fieldname": "recipient_code",
+   "fieldtype": "Data",
+   "label": "Codice destinatario",
+   "length": 7
+  },
+  {
+   "fieldname": "pec",
+   "fieldtype": "Data",
+   "label": "PEC",
+   "options": "Email"
+  },
+  {
+   "fieldname": "address_section",
+   "fieldtype": "Section Break",
+   "label": "Address"
+  },
+  {
+   "fieldname": "address_line",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "civic_number",
+   "fieldtype": "Data",
+   "label": "Number"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal code",
+   "length": 10
+  },
+  {
+   "fieldname": "column_address",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "province",
+   "fieldtype": "Data",
+   "label": "Province",
+   "length": 2
+  },
+  {
+   "default": "IT",
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "length": 2
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Lines"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Lines",
+   "options": "CRM Invoice Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "net_total",
+   "fieldtype": "Currency",
+   "label": "Net total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fund_contribution",
+   "fieldtype": "Currency",
+   "label": "Fund contribution",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_total",
+   "fieldtype": "Currency",
+   "label": "VAT",
+   "read_only": 1
+  },
+  {
+   "fieldname": "excluded_total",
+   "fieldtype": "Currency",
+   "label": "Advances (art. 15)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stamp_duty",
+   "fieldtype": "Currency",
+   "label": "Stamp duty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stamp_duty_recharged",
+   "fieldtype": "Currency",
+   "label": "Stamp duty re-charged",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "withholding_base",
+   "fieldtype": "Currency",
+   "label": "Withholding base",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withholding_amount",
+   "fieldtype": "Currency",
+   "label": "Withholding",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "grand_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Document total",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "net_payable",
+   "fieldtype": "Currency",
+   "label": "Net payable",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.channel=='pdf_ts'",
+   "fieldname": "ts_total",
+   "fieldtype": "Currency",
+   "label": "Reported to the Sistema TS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "VAT summary"
+  },
+  {
+   "fieldname": "tax_summary",
+   "fieldtype": "Table",
+   "label": "Summary",
+   "options": "CRM Invoice Tax Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "treatment_section",
+   "fieldtype": "Section Break",
+   "label": "Treatment"
+  },
+  {
+   "fieldname": "fund_type",
+   "fieldtype": "Select",
+   "label": "Fund",
+   "options": "\nTC01\nTC02\nTC03\nTC04\nTC05\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC12\nTC13\nTC14\nTC15\nTC16\nTC17\nTC18\nTC19\nTC20\nTC21\nTC22"
+  },
+  {
+   "fieldname": "fund_rate",
+   "fieldtype": "Percent",
+   "label": "Fund rate"
+  },
+  {
+   "fieldname": "fund_mandatory",
+   "fieldtype": "Check",
+   "label": "Mandatory levy"
+  },
+  {
+   "fieldname": "fund_subject_to_withholding",
+   "fieldtype": "Check",
+   "label": "Levy subject to withholding"
+  },
+  {
+   "description": "The INPS 4% rivalsa is optional: off by default, turned on knowingly.",
+   "fieldname": "apply_optional_fund",
+   "fieldtype": "Check",
+   "label": "Apply the optional rivalsa"
+  },
+  {
+   "fieldname": "column_treatment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "apply_withholding",
+   "fieldtype": "Check",
+   "label": "Apply the withholding"
+  },
+  {
+   "default": "20",
+   "depends_on": "eval:doc.apply_withholding",
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Rate"
+  },
+  {
+   "default": "RT01",
+   "depends_on": "eval:doc.apply_withholding",
+   "fieldname": "withholding_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "RT01\nRT02\nRT03\nRT04\nRT05\nRT06"
+  },
+  {
+   "default": "A",
+   "depends_on": "eval:doc.apply_withholding",
+   "fieldname": "payment_reason",
+   "fieldtype": "Data",
+   "label": "Causale pagamento",
+   "length": 2
+  },
+  {
+   "description": "The VAT is shown but paid to the Treasury by the client.",
+   "fieldname": "split_payment",
+   "fieldtype": "Check",
+   "label": "Split payment (art. 17-ter)"
+  },
+  {
+   "fieldname": "stamp_section",
+   "fieldtype": "Section Break",
+   "label": "Stamp duty"
+  },
+  {
+   "default": "1",
+   "fieldname": "subject_to_stamp_duty",
+   "fieldtype": "Check",
+   "label": "Subject to stamp duty"
+  },
+  {
+   "fieldname": "stamp_duty_mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "su_originale\nvirtuale\nnon_dovuto"
+  },
+  {
+   "fieldname": "recharge_stamp_duty",
+   "fieldtype": "Check",
+   "label": "Re-charge it"
+  },
+  {
+   "fieldname": "column_stamp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The only case where the document total and the amount reported to the Sistema TS legitimately differ.",
+   "fieldname": "stamp_duty_paid_cash",
+   "fieldtype": "Check",
+   "label": "Stamp duty paid in cash"
+  },
+  {
+   "depends_on": "eval:doc.stamp_duty_mode=='su_originale'",
+   "fieldname": "stamp_identifier",
+   "fieldtype": "Data",
+   "label": "Stamp identifier"
+  },
+  {
+   "depends_on": "eval:doc.stamp_duty_mode=='su_originale'",
+   "description": "Must be the same as or earlier than the invoice date.",
+   "fieldname": "stamp_date",
+   "fieldtype": "Date",
+   "label": "Stamp date"
+  },
+  {
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment"
+  },
+  {
+   "default": "MP05",
+   "description": "MP01 Contanti · MP02 Assegno · MP03 Assegno circolare · MP04 Contanti presso Tesoreria · MP05 Bonifico · MP06 Vaglia cambiario · MP07 Bollettino bancario · MP08 Carta di pagamento",
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "MP01\nMP02\nMP03\nMP04\nMP05\nMP06\nMP07\nMP08\nMP09\nMP10\nMP11\nMP12\nMP13\nMP14\nMP15\nMP16\nMP17\nMP18\nMP19\nMP20\nMP21\nMP22\nMP23"
+  },
+  {
+   "default": "TP02",
+   "fieldname": "payment_terms",
+   "fieldtype": "Select",
+   "label": "Terms",
+   "options": "TP02\nTP01\nTP03"
+  },
+  {
+   "description": "A mixed payment - part cash, part traced - is reported as NOT traced.",
+   "fieldname": "payment_traced",
+   "fieldtype": "Select",
+   "label": "Traced",
+   "options": "\nyes\nno\nnot_applicable",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_payment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The prepaid package case. Without this flag a payment date before the issue date is an error, not a fact.",
+   "fieldname": "advance_payment",
+   "fieldtype": "Check",
+   "label": "Payment precedes the issue"
+  },
+  {
+   "fieldname": "payments",
+   "fieldtype": "Table",
+   "label": "Payment schedule",
+   "options": "CRM Invoice Payment"
+  },
+  {
+   "depends_on": "eval:doc.channel=='pdf_ts'",
+   "fieldname": "healthcare_section",
+   "fieldtype": "Section Break",
+   "label": "Healthcare"
+  },
+  {
+   "description": "Asked orally by the client (art. 3, c. 2, DM 31/7/2015). With it the document is still transmitted, without the codice fiscale.",
+   "fieldname": "privacy_opposition",
+   "fieldtype": "Check",
+   "label": "Opposition to the pre-filled return"
+  },
+  {
+   "fieldname": "opposition_recorded_on",
+   "fieldtype": "Date",
+   "label": "Recorded on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_healthcare",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "The annotation on the fiscal document is not optional; how to word it is, and it is kept neutral.",
+   "fieldname": "print_opposition",
+   "fieldtype": "Check",
+   "label": "Print the opposition annotation"
+  },
+  {
+   "fieldname": "routing_section",
+   "fieldtype": "Section Break",
+   "label": "Routing"
+  },
+  {
+   "default": "non_applicabile",
+   "fieldname": "sdi_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "SdI",
+   "options": "non_applicabile\nda_inviare\ninviato\nconsegnata\nscartata\nmancata_consegna\nesito_pa\ndecorrenza_termini\nerrore",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sdi_identifier",
+   "fieldtype": "Data",
+   "label": "SdI identifier",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sdi_filename",
+   "fieldtype": "Data",
+   "label": "XML file name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sdi_sent_on",
+   "fieldtype": "Datetime",
+   "label": "Sent on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sdi_message",
+   "fieldtype": "Small Text",
+   "label": "Last SdI message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_routing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "non_applicabile",
+   "fieldname": "ts_status",
+   "fieldtype": "Select",
+   "label": "Sistema TS",
+   "options": "non_applicabile\nda_inviare\npronto_export\ninviato\naccolto\nscartato\nannullato",
+   "read_only": 1
+  },
+  {
+   "default": "I",
+   "fieldname": "ts_operation",
+   "fieldtype": "Select",
+   "label": "Operation",
+   "options": "I\nV\nR\nC"
+  },
+  {
+   "fieldname": "ts_year",
+   "fieldtype": "Int",
+   "label": "Year of competence",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ts_submission",
+   "fieldtype": "Link",
+   "label": "Submission",
+   "options": "CRM TS Submission",
+   "read_only": 1
+  },
+  {
+   "fieldname": "files_section",
+   "fieldtype": "Section Break",
+   "label": "Files"
+  },
+  {
+   "fieldname": "xml_file",
+   "fieldtype": "Attach",
+   "label": "FatturaPA XML",
+   "read_only": 1
+  },
+  {
+   "fieldname": "xml_hash",
+   "fieldtype": "Data",
+   "label": "XML SHA-256",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_files",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pdf_file",
+   "fieldtype": "Attach",
+   "label": "PDF",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pdf_hash",
+   "fieldtype": "Data",
+   "label": "PDF SHA-256",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "References"
+  },
+  {
+   "depends_on": "eval:['TD04','TD05','TD08','TD09'].includes(doc.document_type)",
+   "description": "A credit or debit note has to say which document it corrects.",
+   "fieldname": "reference_invoice",
+   "fieldtype": "Link",
+   "label": "Corrects",
+   "options": "CRM Invoice"
+  },
+  {
+   "fieldname": "deal",
+   "fieldtype": "Link",
+   "label": "Deal",
+   "options": "CRM Deal"
+  },
+  {
+   "fieldname": "appointment",
+   "fieldtype": "Link",
+   "label": "Appointment",
+   "options": "CRM Appointment"
+  },
+  {
+   "fieldname": "column_references",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Data",
+   "label": "Ordine di acquisto"
+  },
+  {
+   "fieldname": "cig",
+   "fieldtype": "Data",
+   "label": "CIG",
+   "length": 15
+  },
+  {
+   "fieldname": "cup",
+   "fieldtype": "Data",
+   "label": "CUP",
+   "length": 15
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Annotations"
+  },
+  {
+   "description": "Printed on the document and carried in the XML, split into 200-character chunks rather than truncated.",
+   "fieldname": "causale",
+   "fieldtype": "Small Text",
+   "label": "Causale"
+  },
+  {
+   "description": "Composed from the treatment. Every reference is doubled with the Testo Unico that applies from 1 January 2027.",
+   "fieldname": "legal_notes",
+   "fieldtype": "Text",
+   "label": "Legal wording",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_notes",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "internal_notes",
+   "fieldtype": "Small Text",
+   "label": "Internal notes",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "warnings",
+   "fieldtype": "Text",
+   "label": "Warnings",
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Invoice",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "document_number,billing_name",
+ "show_name_in_global_search": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "billing_name",
+ "track_changes": 1
+}
