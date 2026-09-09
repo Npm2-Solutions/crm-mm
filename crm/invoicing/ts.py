@@ -191,12 +191,16 @@ def prepara_invio(azienda: str, anno: int) -> dict:
 	nomi = fatture_da_inviare(azienda, anno)
 	documenti: list[DocumentoSpesa] = []
 	scartate: list[dict] = []
+	# The tracciato identifies a document by its number, so that is the key back to
+	# the record once the batch has been split.
+	per_numero: dict[str, str] = {}
 	for nome in nomi:
 		fattura = frappe.get_doc("CRM Invoice", nome)
 		spesa = documento_spesa(fattura, emittente)
 		esito = valida_documento(spesa)
 		if esito.valido:
 			documenti.append(spesa)
+			per_numero[fattura.document_number] = nome
 		else:
 			scartate.append({"invoice": nome, "number": fattura.document_number, "errors": esito.errori})
 
@@ -240,10 +244,9 @@ def prepara_invio(azienda: str, anno: int) -> dict:
 		invio.db_set("file", allegato.file_url)
 		invii.append(invio.name)
 
-		chiavi = {d.id_spesa.num_documento for d in parte.documenti}
-		for nome in nomi:
-			numero = frappe.db.get_value("CRM Invoice", nome, "document_number")
-			if numero in chiavi:
+		for spesa in parte.documenti:
+			nome = per_numero.get(spesa.id_spesa.num_documento)
+			if nome:
 				frappe.db.set_value(
 					"CRM Invoice",
 					nome,

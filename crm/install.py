@@ -13,7 +13,12 @@ from crm.fcrm.doctype.crm_products.crm_products import create_product_details_sc
 
 
 def before_install():
-	pass
+	# The invoicing doctypes grant permissions to roles that do not ship with
+	# Frappe. A DocPerm pointing at a Role that does not exist yet fails link
+	# validation during the sync, so the roles are created before it runs.
+	from crm.invoicing.install import crea_ruoli
+
+	crea_ruoli()
 
 
 def after_install(force=False):

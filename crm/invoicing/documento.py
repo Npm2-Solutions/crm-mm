@@ -126,9 +126,15 @@ def righe_da_documento(doc) -> list[RigaDaClassificare]:
 		riga.qualification = riga.qualification or frappe.db.get_value(
 			"CRM Service Provider", riga.service_provider, "qualification"
 		)
+		if not dati.get("enabled"):
+			frappe.throw(
+				_("The service {0} is disabled: re-enable it or pick another one").format(
+					riga.billable_service
+				)
+			)
 		righe.append(
 			RigaDaClassificare(
-				servizio_id=riga.billable_service if dati.get("enabled") else None,
+				servizio_id=riga.billable_service,
 				descrizione_fiscale=riga.description or dati.get("fiscal_description") or "",
 				is_sanitaria=bool(riga.is_healthcare),
 				esente_iva=bool(riga.vat_exempt),
