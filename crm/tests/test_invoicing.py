@@ -14,7 +14,9 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.invoicing import api
+from crm.invoicing.engine import ricevute
 from crm.invoicing.install import semina_qualifiche
+from crm.invoicing.sdi import ricezione
 
 CF_PAZIENTE = "RSSMRA80A01H501U"
 CF_TITOLARE = "BNCLCU75B41F205Z"
@@ -289,3 +291,137 @@ class ConfigurazioneTest(InvoicingBase):
 	def test_la_checklist_dice_cosa_manca_e_cosa_costa(self):
 		voci = api.onboarding_checklist(self.azienda.name)
 		self.assertTrue(all("consequence" in voce for voce in voci))
+
+
+class TrasmissioneTest(InvoicingBase):
+	def _emessa_sdi(self):
+		documento = self.fattura(self.trattamento.name, self.osteopata.name)
+		documento.submit()
+		documento.reload()
+		return documento
+
+	def test_export_consegna_il_file(self):
+		documento = self._emessa_sdi()
+		esito = api.send_to_sdi(documento.name)
+		self.assertEqual(esito["mode"], "export")
+		self.assertTrue(esito["sent"])
+		self.assertTrue(esito["file"])
+
+	def test_la_pec_senza_casella_lo_dice(self):
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "pec")
+		documento = self._emessa_sdi()
+		with self.assertRaises(frappe.ValidationError) as errore:
+			api.send_to_sdi(documento.name)
+		self.assertIn("PEC", str(errore.exception))
+
+	def test_il_provider_senza_endpoint_lo_dice(self):
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "provider")
+		documento = self._emessa_sdi()
+		with self.assertRaises(frappe.ValidationError) as errore:
+			api.send_to_sdi(documento.name)
+		self.assertIn("endpoint", str(errore.exception).lower())
+
+	def test_un_canale_sconosciuto_ripiega_su_export(self):
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "inesistente")
+		documento = self._emessa_sdi()
+		self.assertEqual(api.send_to_sdi(documento.name)["mode"], "export")
+
+
+class RicevuteTest(InvoicingBase):
+	def _emessa_sdi(self):
+		documento = self.fattura(self.trattamento.name, self.osteopata.name)
+		documento.submit()
+		documento.reload()
+		return documento
+
+	def _ricevuta(self, documento, tipo, corpo):
+		nome = documento.sdi_filename.replace(".xml", f"_{tipo}_001.xml")
+		return ricezione.applica_file(corpo, nome)
+
+	def test_la_consegna_chiude_il_documento(self):
+		documento = self._emessa_sdi()
+		corpo = f"""<RicevutaConsegna><IdentificativoSdI>42</IdentificativoSdI>
+			<NomeFile>{documento.sdi_filename}</NomeFile></RicevutaConsegna>""".encode()
+		esito = self._ricevuta(documento, "RC", corpo)
+		self.assertTrue(esito["applied"])
+		documento.reload()
+		self.assertEqual(documento.sdi_status, "consegnata")
+		self.assertEqual(documento.sdi_identifier, "42")
+
+	def test_lo_scarto_porta_i_codici_sul_documento(self):
+		documento = self._emessa_sdi()
+		corpo = f"""<RicevutaScarto><NomeFile>{documento.sdi_filename}</NomeFile>
+			<ListaErrori><Errore><Codice>00423</Codice>
+			<Descrizione>Imponibile non congruente</Descrizione></Errore></ListaErrori>
+			</RicevutaScarto>""".encode()
+		self._ricevuta(documento, "NS", corpo)
+		documento.reload()
+		self.assertEqual(documento.sdi_status, "scartata")
+		self.assertIn("00423", documento.sdi_message)
+
+	def test_la_mancata_consegna_non_e_uno_scarto(self):
+		documento = self._emessa_sdi()
+		corpo = f"""<RicevutaImpossibilitaRecapito><NomeFile>{documento.sdi_filename}</NomeFile>
+			</RicevutaImpossibilitaRecapito>""".encode()
+		self._ricevuta(documento, "MC", corpo)
+		documento.reload()
+		self.assertEqual(documento.sdi_status, "mancata_consegna")
+		self.assertIn("area riservata", documento.sdi_message)
+
+	def test_la_stessa_ricevuta_non_si_applica_due_volte(self):
+		documento = self._emessa_sdi()
+		corpo = f"<RicevutaConsegna><NomeFile>{documento.sdi_filename}</NomeFile></RicevutaConsegna>".encode()
+		self.assertTrue(self._ricevuta(documento, "RC", corpo)["applied"])
+		secondo = self._ricevuta(documento, "RC", corpo)
+		self.assertFalse(secondo["applied"])
+		self.assertIn("Already applied", secondo["reason"])
+
+	def test_una_ricevuta_orfana_non_rompe_nulla(self):
+		corpo = b"<RicevutaConsegna><NomeFile>IT99999999999_00001.xml</NomeFile></RicevutaConsegna>"
+		esito = ricezione.applica_file(corpo, "IT99999999999_00001_RC_001.xml")
+		self.assertFalse(esito["applied"])
+		self.assertIn("No invoice matches", esito["reason"])
+
+	def test_un_file_che_non_e_una_ricevuta_viene_ignorato(self):
+		esito = ricezione.applica_file(b"<FatturaElettronica/>", "IT01234567890_00001.xml")
+		self.assertFalse(esito["applied"])
+
+	def test_il_registro_annota_la_ricevuta(self):
+		documento = self._emessa_sdi()
+		corpo = f"<RicevutaConsegna><NomeFile>{documento.sdi_filename}</NomeFile></RicevutaConsegna>".encode()
+		self._ricevuta(documento, "RC", corpo)
+		self.assertTrue(
+			frappe.db.exists("CRM Invoice Log", {"invoice": documento.name, "event": "sdi_receipt"})
+		)
+
+	def test_i_tipi_di_ricevuta_coprono_gli_stati(self):
+		for tipo in ricevute.TipoRicevuta:
+			self.assertIn(tipo.value, ricevute.STATO_PER_TIPO)
+
+
+class PdfTest(InvoicingBase):
+	def test_la_fattura_emessa_porta_il_suo_pdf(self):
+		frappe.db.set_single_value("CRM Invoicing Settings", "attach_pdf", 1)
+		documento = self.fattura(self.seduta.name, self.psicologo.name)
+		documento.submit()
+		documento.reload()
+		self.assertTrue(documento.pdf_file)
+		self.assertTrue(documento.pdf_hash)
+		# Whatever came out, it is recorded rather than assumed.
+		self.assertTrue(documento.pdf_conformita)
+
+	def test_il_pdf_non_si_rigenera(self):
+		frappe.db.set_single_value("CRM Invoicing Settings", "attach_pdf", 1)
+		documento = self.fattura(self.seduta.name, self.psicologo.name)
+		documento.submit()
+		documento.reload()
+		esito = api.generate_pdf(documento.name)
+		self.assertTrue(esito.get("skipped"))
+
+	def test_il_nome_del_file_non_e_parlante(self):
+		frappe.db.set_single_value("CRM Invoicing Settings", "attach_pdf", 1)
+		documento = self.fattura(self.seduta.name, self.psicologo.name)
+		documento.submit()
+		documento.reload()
+		self.assertNotIn("psicoterapia", (documento.pdf_file or "").lower())
+		self.assertIn("documento_", documento.pdf_file)

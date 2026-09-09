@@ -71,7 +71,13 @@ def send_to_sdi(invoice: str) -> dict:
 	It is not an input problem, it is a forbidden operation: since 2026 the
 	electronic invoice through the SdI for healthcare services towards natural
 	persons is structurally forbidden (D.Lgs. 12 giugno 2025 n. 81).
+
+	Then the channel takes it - export, the practice's own PEC mailbox, or an
+	accredited provider. Which one is configuration; the XML is the same file either
+	way, and it was built and checked here.
 	"""
+	from crm.invoicing import sdi
+
 	fattura = _fattura(invoice)
 	fattura.check_permission("submit")
 	if fattura.docstatus != 1:
@@ -99,20 +105,56 @@ def send_to_sdi(invoice: str) -> dict:
 		)
 
 	emittente = documento.azienda(fattura)
-	if (emittente.get("sdi_mode") or "export") == "export":
-		# The file is written and handed over. The XML is generated here either way;
-		# the accredited channel is the only part a provider sells.
-		documento.registra(
-			fattura, "sdi_sent", _("XML made available for manual transmission"), stato="export"
-		)
-		return {"mode": "export", "file": fattura.xml_file, "file_name": fattura.sdi_filename}
+	try:
+		esito = sdi.invia(fattura, emittente)
+	except sdi.ErroreCanale as errore:
+		documento.registra(fattura, "sdi_sent", str(errore), stato="errore")
+		frappe.throw(str(errore), title=_("Transmission"))
 
-	frappe.throw(
-		_(
-			"No transmission adapter is configured for provider {0}. The XML is ready at {1}: "
-			"download it, or configure the provider."
-		).format(emittente.get("sdi_provider") or "-", fattura.xml_file)
+	fattura.db_set(
+		{
+			"sdi_status": "inviato" if esito.canale != "export" else fattura.sdi_status,
+			"sdi_sent_on": frappe.utils.now_datetime(),
+			"sdi_identifier": esito.identificativo or fattura.sdi_identifier,
+			"sdi_message": esito.messaggio,
+		},
+		update_modified=False,
 	)
+	documento.registra(fattura, "sdi_sent", esito.messaggio, stato=esito.canale)
+	return esito.come_dizionario()
+
+
+@frappe.whitelist(methods=["POST"])
+def apply_sdi_notice(invoice: str = "", file_url: str = "") -> dict:
+	"""Apply a notice downloaded from the portal, or pushed by a provider.
+
+	One path for every channel: a notice is a file whose name says which document it
+	answers. Applying the same one twice is a no-op - a PEC mailbox re-delivers and a
+	webhook retries.
+	"""
+	from crm.invoicing.sdi import ricezione
+
+	frappe.has_permission("CRM Invoice", "write", throw=True)
+	if not file_url:
+		frappe.throw(_("No notice file"))
+	allegato = frappe.get_doc("File", {"file_url": file_url})
+	contenuto = allegato.get_content(encodings=[])
+	if isinstance(contenuto, str):
+		contenuto = contenuto.encode()
+	return ricezione.applica_file(contenuto, allegato.file_name, invoice or None)
+
+
+@frappe.whitelist(methods=["POST"])
+def scan_sdi_mailbox(days: int = 7) -> list[dict]:
+	"""Look through incoming mail for notices nobody has applied yet.
+
+	The PEC route has no webhook. If nothing reads the mailbox the invoices stay in
+	`inviato` forever, which looks like nothing is wrong.
+	"""
+	from crm.invoicing.sdi import ricezione
+
+	frappe.has_permission("CRM Invoice", "write", throw=True)
+	return ricezione.scansiona_posta(int(days))
 
 
 @frappe.whitelist(methods=["POST"])

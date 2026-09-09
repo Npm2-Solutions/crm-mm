@@ -146,6 +146,81 @@ la console dell'operatore, non un secondo editor.
 
 ---
 
+## Trasmettere allo SdI
+
+L'XML si genera qui. Il canale aggiunge solo la strada accreditata per entrare, e
+si sceglie sull'azienda emittente.
+
+| Canale | Cosa serve | Chi tiene i documenti |
+|---|---|---|
+| `export` | niente | nessuno — il file lo consegni tu |
+| `pec` | la casella PEC dello studio | nessuno |
+| `provider` | l'API di un intermediario accreditato | il provider |
+
+`export` e' il pavimento su cui stanno gli altri due: ogni altra strada degrada a
+quello, quindi resta testato anche quando non lo usa nessuno.
+
+### La PEC
+
+E' la strada che non ha bisogno di nessuno: una casella certificata, un indirizzo,
+e la fattura parte. Serve un Email Account in Frappe con quella PEC, **in invio e
+in ricezione** — le ricevute tornano li'.
+
+Due dettagli che decidono se funziona:
+
+- **solo la prima fattura va a `sdi01@pec.fatturapa.it`.** Con la ricevuta di
+  consegna lo SdI dice a quale indirizzo scrivere da li' in avanti, e la posta
+  mandata a quello vecchio non riceve risposta. Il modulo lo impara e lo salva.
+- **la fattura alla PA va firmata.** La firma qualificata e' obbligatoria su FPA12
+  e facoltativa su FPR12. Mandarne una non firmata torna indietro con `00102`, e a
+  quel punto i cinque giorni corrono gia': il canale si rifiuta e dice cosa manca.
+  Il `.p7m` firmato si allega sul documento.
+
+### Le ricevute
+
+Ne tornano sei, e una sola e' una buona notizia.
+
+| Tipo | Cosa vuol dire |
+|---|---|
+| `RC` | consegnata al destinatario |
+| `NS` | **scartata**: la fattura si considera non emessa, cinque giorni per rimandarla |
+| `MC` | mancata consegna: emessa, depositata nell'area riservata del destinatario |
+| `AT` | attestazione di trasmissione con impossibilita' di recapito |
+| `NE` | la PA ha accettato (`EC01`) o rifiutato (`EC02`) |
+| `DT` | la PA non si e' espressa entro quindici giorni |
+
+`MC` e' quella che si legge male. **Non e' un fallimento**: la fattura e' emessa e
+sta nell'area riservata del cliente. Quello che si deve fare e' avvisarlo, perche'
+lo SdI non lo fa — e il modulo alza esattamente quell'avviso.
+
+Le ricevute si applicano da sole: sul canale PEC il controllo giornaliero legge la
+casella, sul provider arrivano via webhook, e una scaricata dal portale si applica
+con `crm.invoicing.api.apply_sdi_notice`. Applicare due volte la stessa non fa
+nulla: la casella PEC riconsegna e i webhook ritentano.
+
+---
+
+## Il PDF che il cliente conserva
+
+PDF/A-3b, e la conformita' si **misura**. Il modulo costruisce la struttura sopra
+al PDF reso — XMP non compresso con `pdfaid`, OutputIntent sRGB, metadati azzerati,
+date e identificativo presi dal documento e non dall'orologio — e poi rilegge cio'
+che ha prodotto. Il campo *PDF conformance* sulla fattura dice quello che e' venuto
+fuori, non quello che si sperava.
+
+Sul ramo SdI l'XML FatturaPA viaggia **dentro** il PDF come associated file: la
+resa leggibile e l'originale leggibile da una macchina restano un file solo.
+
+Il PDF si genera **una volta sola**. Il renderer non e' stabile fra versioni,
+quindi rigenerare non e' un percorso di recupero: il file consegnato e' quello
+conservato, e l'impronta presa alla creazione e' cio' che lo dimostra.
+
+Il nome resta neutro — `documento_2026-S-128.pdf`, mai
+`fattura_psicoterapia_rossi_marzo.pdf`: il nome di un file e' a sua volta un dato,
+e racconta la diagnosi a chiunque guardi una cartella dei download.
+
+---
+
 ## Sistema TS: si nasce in `export`
 
 Tre modalita', una sola pipeline, e cambiano solo gli ultimi dieci centimetri.
