@@ -80,9 +80,12 @@
   "sdi_mode",
   "sdi_provider",
   "sdi_endpoint",
+  "sdi_login_url",
   "column_sdi",
   "sdi_username",
   "sdi_password",
+  "sdi_api_key",
+  "sdi_pec_address",
   "sdi_last_progressive",
   "contacts_section",
   "email",
@@ -518,11 +521,11 @@
   },
   {
    "default": "export",
-   "description": "export writes the XML and hands it over. The XML is generated here either way; the provider is only the last mile.",
+   "description": "export hands the file over. pec sends it from the practice's own certified mailbox - no intermediary holds the documents. provider posts it to an accredited API. The XML is generated here either way.",
    "fieldname": "sdi_mode",
    "fieldtype": "Select",
    "label": "Transmission",
-   "options": "export\nprovider"
+   "options": "export\npec\nprovider"
   },
   {
    "depends_on": "eval:doc.sdi_mode=='provider'",
@@ -535,6 +538,13 @@
    "fieldname": "sdi_endpoint",
    "fieldtype": "Data",
    "label": "Endpoint"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "Where the provider issues a token, when it wants one. Empty means HTTP Basic.",
+   "fieldname": "sdi_login_url",
+   "fieldtype": "Data",
+   "label": "Login endpoint"
   },
   {
    "fieldname": "column_sdi",
@@ -551,6 +561,21 @@
    "fieldname": "sdi_password",
    "fieldtype": "Password",
    "label": "Password"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "Used instead of a user and password when the provider issues keys.",
+   "fieldname": "sdi_api_key",
+   "fieldtype": "Password",
+   "label": "API key"
+  },
+  {
+   "default": "sdi01@pec.fatturapa.it",
+   "depends_on": "eval:doc.sdi_mode=='pec'",
+   "description": "Only the first invoice goes to sdi01@. The delivery receipt names the address to use from then on, and this is updated when it does.",
+   "fieldname": "sdi_pec_address",
+   "fieldtype": "Data",
+   "label": "SdI mailbox"
   },
   {
    "description": "The SdI refuses a file name it has already seen, and it does not forget.",

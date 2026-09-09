@@ -93,6 +93,7 @@
   "sdi_filename",
   "sdi_sent_on",
   "sdi_message",
+  "sdi_notices",
   "column_routing",
   "ts_status",
   "ts_operation",
@@ -101,6 +102,7 @@
   "files_section",
   "xml_file",
   "xml_hash",
+  "sdi_signed_file",
   "column_files",
   "pdf_file",
   "pdf_hash",
@@ -659,6 +661,13 @@
    "read_only": 1
   },
   {
+   "description": "The applied notices, by file name. A notice applied twice would move a document that had already moved on.",
+   "fieldname": "sdi_notices",
+   "fieldtype": "Small Text",
+   "label": "Notices applied",
+   "read_only": 1
+  },
+  {
    "fieldname": "column_routing",
    "fieldtype": "Column Break"
   },
@@ -706,6 +715,12 @@
    "fieldtype": "Data",
    "label": "XML SHA-256",
    "read_only": 1
+  },
+  {
+   "description": "The .p7m, when the XML has been signed. Mandatory towards a public administration: an unsigned one comes back as rejection 00102.",
+   "fieldname": "sdi_signed_file",
+   "fieldtype": "Attach",
+   "label": "Signed XML (.p7m)"
   },
   {
    "fieldname": "column_files",

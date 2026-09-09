@@ -182,9 +182,23 @@ def controlla_scadenze() -> list[dict]:
 	return rilievi
 
 
+def leggi_ricevute() -> list[dict]:
+	"""Apply the SdI notices sitting in the mailbox.
+
+	Not a monitoring check but it belongs in the same sweep: the PEC route has no
+	webhook, and an unread mailbox leaves every invoice in `inviato` - which looks
+	exactly like nothing being wrong.
+	"""
+	from crm.invoicing.sdi import ricezione
+
+	if not frappe.db.exists("CRM Invoicing Company", {"sdi_mode": "pec", "enabled": 1}):
+		return []
+	return ricezione.scansiona_posta()
+
+
 def giornaliero() -> None:
 	"""The daily sweep. Every check is independent: one failing does not hide the rest."""
-	for controllo in (controlla_certificati, controlla_silenzio, controlla_scadenze):
+	for controllo in (leggi_ricevute, controlla_certificati, controlla_silenzio, controlla_scadenze):
 		try:
 			controllo()
 		except Exception:

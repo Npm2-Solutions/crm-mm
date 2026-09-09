@@ -28,7 +28,8 @@ they were protecting is simply true by construction.
 | **Double opt-in** on the address before the first send | Ordinary CRM email | The Garante's December 2025 finding was about sending health documents through a third-party channel. |
 | Appointments **stay in the GHL calendar**; the arrangement is an art. 9 processing to be declared, covered by transfer clauses and a documented TIA | `CRM Appointment`, next to everything else | Nothing crosses a border, so there is nothing to declare. The agenda proposes the service and the provider directly. |
 | Row-level security, per-tenant envelope encryption, blind indexes, an application guard that fails tests when a query forgets `tenant_id` | Frappe roles and permissions | Multi-tenancy was the threat model. One site is one practice. |
-| SdI through a paid API that converts **JSON to XML** | The XML is generated here | Buying the conversion made sense when there was nowhere to run it. Owning the format means issuing, inspecting and keeping a document without a round trip. The accredited channel stays a swappable last mile. |
+| SdI through a paid API that converts **JSON to XML** | The XML is generated here, and the practice's own PEC mailbox can transmit it | Buying the conversion made sense when there was nowhere to run it. Owning the format means issuing, inspecting and keeping a document without a round trip — and with a mailbox of its own, no intermediary has to hold the documents at all. |
+| A courtesy PDF that **never entered the CRM** | PDF/A-3b attached to its record, with the XML riding inside it | The file lived outside the controller's systems, so it had to be kept out. Here it lives with the record it belongs to. |
 | **Healthcare only** | Every service | A CRM invoices a physiotherapist and a marketing agency from the same screen; the answer has to come from the same place. |
 
 What did **not** change is everything the original had actually solved: the triple,
@@ -54,7 +55,7 @@ DESK / SPA (data)                    ENGINE (code, no Frappe)          BRIDGE (F
 ```
 
 `engine/` imports nothing from Frappe and has no database, no network and no
-global state. It is the part an accountant has to be able to read, and its 183
+global state. It is the part an accountant has to be able to read, and its 227
 tests run with a checkout and a Python interpreter:
 
 ```bash
@@ -125,6 +126,63 @@ Beyond the original scope, the engine also carries withholding (`DatiRitenuta`),
 split payment, reverse charge, non-taxable and out-of-scope treatments, art. 15
 advances, per-line discounts, and multi-rate VAT summaries — the things a
 non-healthcare invoice needs.
+
+---
+
+## Transmission
+
+The XML is built and checked here; a channel only adds the accredited way in.
+
+| Channel | What it needs | Who holds the documents |
+|---|---|---|
+| `export` | nothing | nobody — the file is handed over |
+| `pec` | the practice's own certified mailbox | nobody |
+| `provider` | an accredited intermediary's API | the provider |
+
+`export` is the floor everything else stands on: every other route degrades to it,
+so it stays tested even when nobody uses it. `pec` is the route the original design
+could not take, because it had no mailbox of its own to send from.
+
+Two details decide whether PEC works at all. **Only the first invoice goes to
+`sdi01@pec.fatturapa.it`** — the delivery receipt names the address to use from
+then on, and mail to the old one is not answered, so the address is learned and
+stored rather than hard-coded. And **an invoice to a public administration has to
+carry a qualified signature**: mandatory on FPA12, optional on FPR12. Sending an
+unsigned PA invoice comes back as `00102` with the five days already running, so
+the channel refuses instead and says what is missing.
+
+### The notices
+
+Six kinds come back, and only one is good news. `MC` is the one that gets misread:
+it is not a failure, the invoice is fiscally issued and sits in the client's
+reserved area — what is owed is telling the client, because the SdI will not, and
+the module raises exactly that alert.
+
+Applying a notice is idempotent by file name: a PEC mailbox re-delivers and a
+webhook retries. On the PEC route nothing pushes, so the daily sweep reads the
+mailbox — an unread inbox leaves every invoice in `inviato`, which looks exactly
+like nothing being wrong.
+
+---
+
+## The document the client keeps
+
+PDF/A-3b, and the conformance is **measured**. The module builds the structure —
+uncompressed XMP with `pdfaid`, an sRGB OutputIntent, neutral metadata, dates and
+file identifier derived from the document rather than the clock — and then re-reads
+what it produced. With no ICC profile available it declares a plain PDF, because
+without an OutputIntent it would not be PDF/A and declaring it anyway is a false
+declaration.
+
+Part 3 rather than 1 for two reasons: the renderer emits modern PDF with
+transparency, which part 1 forbids; and part 3 is the one that lets the FatturaPA
+file ride inside the document a human reads, as a properly declared associated file.
+
+The PDF is generated **once**. The renderer is not byte-stable across versions, so
+regenerating is not a recovery path: the file handed over is the one stored, and the
+SHA-256 taken at creation is what proves it years later. The file name stays neutral
+— `fattura_psicoterapia_rossi_marzo.pdf` tells the diagnosis to anyone who glances
+at a downloads folder.
 
 ---
 
