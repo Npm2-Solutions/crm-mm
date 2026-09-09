@@ -1,0 +1,217 @@
+{#-
+	The document the client actually receives.
+
+	On the healthcare branch this is the only document there is: it does not travel
+	through the SdI, so nothing else exists to fall back on. It is the product, not
+	a courtesy copy.
+
+	Three things this template does deliberately:
+
+	* it loads **no remote resource**. A PDF that fetches its logo from a URL stops
+	  being readable in eight years, and tells a third party every time somebody
+	  opens it;
+	* it prints the **wording**, not the codes. On paper `N4` has no legal weight -
+	  the "operazione esente" annotation with its article does (art. 21, c. 6,
+	  lett. c). The codes are XML fields and stay there;
+	* it prints **in duplicate** when the practice issues on paper (art. 21, c. 4):
+	  one copy is handed or sent to the client, the other stays.
+-#}
+{%- set azienda = frappe.get_cached_doc("CRM Invoicing Company", doc.company) -%}
+{%- set esemplari = 2 if azienda.document_mode == "analogico_con_copia" else 1 -%}
+{%- set valuta = "EUR" -%}
+
+<style>
+	.fattura { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #1a1a1a; }
+	.fattura h1 { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 2px; }
+	.fattura .sommesso { color: #666; font-size: 11px; }
+	.fattura .intestazione { display: flex; justify-content: space-between; gap: 24px; }
+	.fattura .marchio img { max-height: 56px; max-width: 200px; }
+	.fattura .parti { display: flex; gap: 24px; margin: 22px 0 18px; }
+	.fattura .parte { flex: 1; }
+	.fattura .etichetta { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #767676; margin-bottom: 4px; }
+	.fattura table { width: 100%; border-collapse: collapse; }
+	.fattura .righe th { text-align: left; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #767676; border-bottom: 1px solid #d4d4d4; padding: 0 6px 6px 0; }
+	.fattura .righe td { padding: 7px 6px 7px 0; border-bottom: 1px solid #eee; vertical-align: top; }
+	.fattura .n { text-align: right; white-space: nowrap; }
+	.fattura .totali { margin-top: 14px; margin-left: auto; width: 62%; }
+	.fattura .totali td { padding: 3px 0; }
+	.fattura .totali .somma td { border-top: 1px solid #1a1a1a; font-weight: 600; padding-top: 7px; }
+	.fattura .totali .netto td { font-weight: 600; }
+	.fattura .diciture { margin-top: 22px; font-size: 11px; line-height: 1.5; color: #333; }
+	.fattura .diciture p { margin: 0 0 4px; }
+	.fattura .piede { margin-top: 26px; padding-top: 10px; border-top: 1px solid #e4e4e4; font-size: 10px; color: #767676; display: flex; justify-content: space-between; gap: 16px; }
+	.fattura .esemplare { font-size: 10px; color: #767676; text-align: right; }
+	.pagina-nuova { page-break-before: always; }
+</style>
+
+{% for copia in range(1, esemplari + 1) %}
+<div class="fattura {% if copia > 1 %}pagina-nuova{% endif %}">
+
+	<div class="intestazione">
+		<div>
+			<h1>
+				{%- if azienda.last_name -%}
+					{{ azienda.first_name }} {{ azienda.last_name }}
+				{%- else -%}
+					{{ azienda.company_name }}
+				{%- endif -%}
+			</h1>
+			<div class="sommesso">
+				{{ azienda.address_line }}{% if azienda.civic_number %} {{ azienda.civic_number }}{% endif %}
+				&middot; {{ azienda.postal_code }} {{ azienda.city }}{% if azienda.province %} ({{ azienda.province }}){% endif %}<br>
+				{{ _("VAT") }} {{ azienda.tax_id }}{% if azienda.fiscal_code %} &middot; {{ _("Tax code") }} {{ azienda.fiscal_code }}{% endif %}
+				{%- if azienda.professional_register %}<br>{{ azienda.professional_register }}
+					{%- if azienda.register_number %} n. {{ azienda.register_number }}{% endif %}
+					{%- if azienda.register_province %} ({{ azienda.register_province }}){% endif %}
+				{%- endif %}
+				{%- if azienda.email or azienda.phone %}<br>{{ azienda.email or "" }}{% if azienda.email and azienda.phone %} &middot; {% endif %}{{ azienda.phone or "" }}{% endif %}
+			</div>
+		</div>
+		<div class="marchio">
+			{% if azienda.logo %}<img src="{{ azienda.logo }}" alt="">{% endif %}
+		</div>
+	</div>
+
+	<div class="parti">
+		<div class="parte">
+			<div class="etichetta">{{ _("Invoice") }}</div>
+			<div style="font-size:15px;font-weight:600">{{ doc.document_number or _("Draft") }}</div>
+			<div class="sommesso">
+				{{ _("Date") }} {{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}
+				{%- if doc.payment_date and doc.payment_date != doc.posting_date %}
+					&middot; {{ _("Paid on") }} {{ frappe.format(doc.payment_date, {"fieldtype": "Date"}) }}
+				{%- endif %}
+			</div>
+		</div>
+		<div class="parte">
+			<div class="etichetta">{{ _("Billed to") }}</div>
+			<div style="font-weight:600">{{ doc.billing_name }}</div>
+			<div class="sommesso">
+				{%- if doc.address_line %}{{ doc.address_line }}{% if doc.civic_number %} {{ doc.civic_number }}{% endif %}<br>{% endif -%}
+				{%- if doc.postal_code or doc.city %}{{ doc.postal_code }} {{ doc.city }}{% if doc.province %} ({{ doc.province }}){% endif %}<br>{% endif -%}
+				{%- if doc.fiscal_code %}{{ _("Tax code") }} {{ doc.fiscal_code }}<br>{% endif -%}
+				{%- if doc.tax_id %}{{ _("VAT") }} {{ doc.tax_id }}{% endif -%}
+			</div>
+		</div>
+	</div>
+
+	<table class="righe">
+		<thead>
+			<tr>
+				<th style="width:52%">{{ _("Description") }}</th>
+				<th class="n" style="width:10%">{{ _("Qty") }}</th>
+				<th class="n" style="width:14%">{{ _("Rate") }}</th>
+				<th class="n" style="width:10%">{{ _("VAT") }}</th>
+				<th class="n" style="width:14%">{{ _("Amount") }}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for riga in doc.items %}
+			<tr>
+				<td>
+					{{ riga.description }}
+					{%- if riga.period_from %}<div class="sommesso">
+						{{ frappe.format(riga.period_from, {"fieldtype": "Date"}) }}
+						{%- if riga.period_to %} &ndash; {{ frappe.format(riga.period_to, {"fieldtype": "Date"}) }}{% endif %}
+					</div>{% endif -%}
+				</td>
+				<td class="n">{{ frappe.format(riga.qty, {"fieldtype": "Float", "precision": 2}) }}</td>
+				<td class="n">{{ frappe.format(riga.rate, {"fieldtype": "Currency"}, doc) }}</td>
+				<td class="n">{% if riga.vat_nature %}{{ riga.vat_nature }}{% else %}{{ riga.vat_rate | int }}%{% endif %}</td>
+				<td class="n">{{ frappe.format(riga.amount, {"fieldtype": "Currency"}, doc) }}</td>
+			</tr>
+		{% endfor %}
+		{% if doc.stamp_duty_recharged %}
+			<tr>
+				<td>{{ _("Stamp duty recovery") }}</td>
+				<td class="n">1.00</td>
+				<td class="n">{{ frappe.format(doc.stamp_duty_recharged, {"fieldtype": "Currency"}, doc) }}</td>
+				<td class="n"></td>
+				<td class="n">{{ frappe.format(doc.stamp_duty_recharged, {"fieldtype": "Currency"}, doc) }}</td>
+			</tr>
+		{% endif %}
+		</tbody>
+	</table>
+
+	<table class="totali">
+		<tr>
+			<td>{{ _("Net total") }}</td>
+			<td class="n">{{ frappe.format(doc.net_total, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% if doc.fund_contribution %}
+		<tr>
+			{#- The contributo integrativo has to be shown (art. 8, c. 3, D.Lgs. 103/1996)
+				and it enters the VAT base. -#}
+			<td>{{ _("Pension fund contribution") }} {{ doc.fund_rate | int }}%</td>
+			<td class="n">{{ frappe.format(doc.fund_contribution, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% endif %}
+		{% if doc.stamp_duty_recharged %}
+		<tr>
+			<td>{{ _("Stamp duty recovery") }}</td>
+			<td class="n">{{ frappe.format(doc.stamp_duty_recharged, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% endif %}
+		{% if doc.excluded_total %}
+		<tr>
+			<td>{{ _("Advances excluded from the base") }}</td>
+			<td class="n">{{ frappe.format(doc.excluded_total, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% endif %}
+		{% for riepilogo in doc.tax_summary %}
+			{% if riepilogo.tax_amount %}
+			<tr>
+				<td>{{ _("VAT") }} {{ riepilogo.vat_rate | int }}%</td>
+				<td class="n">{{ frappe.format(riepilogo.tax_amount, {"fieldtype": "Currency"}, doc) }}</td>
+			</tr>
+			{% endif %}
+		{% endfor %}
+		<tr class="somma">
+			<td>{{ _("Total") }}</td>
+			<td class="n">{{ frappe.format(doc.grand_total, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% if doc.withholding_amount %}
+		<tr>
+			<td>{{ _("Withholding") }} {{ doc.withholding_rate | int }}%</td>
+			<td class="n">&minus; {{ frappe.format(doc.withholding_amount, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% endif %}
+		{% if doc.split_payment and doc.vat_total %}
+		<tr>
+			<td>{{ _("VAT paid by the client (art. 17-ter)") }}</td>
+			<td class="n">&minus; {{ frappe.format(doc.vat_total, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% endif %}
+		{% if doc.net_payable != doc.grand_total %}
+		<tr class="netto">
+			<td>{{ _("Net payable") }}</td>
+			<td class="n">{{ frappe.format(doc.net_payable, {"fieldtype": "Currency"}, doc) }}</td>
+		</tr>
+		{% endif %}
+	</table>
+
+	{% if doc.legal_notes %}
+	<div class="diciture">
+		{% for riga in doc.legal_notes.split("\n") %}{% if riga.strip() %}<p>{{ riga }}</p>{% endif %}{% endfor %}
+	</div>
+	{% endif %}
+
+	{% if azienda.iban %}
+	<div class="diciture">
+		<p>{{ _("Payment to") }} {{ azienda.bank_name or "" }} &mdash; IBAN {{ azienda.iban }}</p>
+	</div>
+	{% endif %}
+
+	<div class="piede">
+		<div>
+			{%- if doc.document_number %}{{ doc.document_number }} &middot; {% endif -%}
+			{{ frappe.format(doc.posting_date, {"fieldtype": "Date"}) }}
+		</div>
+		{% if esemplari > 1 %}
+		<div class="esemplare">
+			{{ _("Original") if copia == 1 else _("Copy for the client ({0} of {1})").format(copia, esemplari) }}
+		</div>
+		{% endif %}
+	</div>
+</div>
+{% endfor %}

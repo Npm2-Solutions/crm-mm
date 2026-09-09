@@ -174,6 +174,7 @@
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideGlobe from '~icons/lucide/globe'
+import LucideReceipt from '~icons/lucide/receipt-text'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
@@ -322,6 +323,12 @@ const links = [
     label: 'Social Planner',
     icon: SocialIcon,
     to: 'Social Planner',
+  },
+  {
+    label: 'Invoices',
+    icon: LucideReceipt,
+    to: 'Invoices',
+    condition: () => isManager(),
   },
   {
     label: 'Site',
