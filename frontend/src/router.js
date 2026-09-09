@@ -67,6 +67,13 @@ const routes = [
     component: () => import('@/pages/Website.vue'),
   },
   {
+    // the operator's console: what has been issued, and what still has a button
+    // waiting to be pressed. Editing a document happens on its form.
+    path: '/fatture',
+    name: 'Invoices',
+    component: () => import('@/pages/Invoices.vue'),
+  },
+  {
     // full page, not a modal: Builder's canvas refuses to work in a small box
     path: '/sito/pagine/:name',
     name: 'WebsitePage',
