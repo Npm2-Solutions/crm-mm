@@ -104,6 +104,7 @@
   "column_files",
   "pdf_file",
   "pdf_hash",
+  "pdf_conformita",
   "references_section",
   "reference_invoice",
   "deal",
@@ -720,6 +721,13 @@
    "fieldname": "pdf_hash",
    "fieldtype": "Data",
    "label": "PDF SHA-256",
+   "read_only": 1
+  },
+  {
+   "description": "What the produced file actually contains, re-read after writing it - never what was hoped for.",
+   "fieldname": "pdf_conformita",
+   "fieldtype": "Data",
+   "label": "PDF conformance",
    "read_only": 1
   },
   {

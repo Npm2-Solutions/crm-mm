@@ -23,7 +23,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate
 
-from crm.invoicing import documento, ts, xml_sdi
+from crm.invoicing import documento, pdf, ts, xml_sdi
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 
@@ -82,6 +82,11 @@ class CRMInvoice(Document):
 			self.genera_xml(preparato)
 		if self.channel == Canale.PDF_TS:
 			self.verifica_tracciato(preparato)
+		# The PDF comes last: the XML has to exist before it can ride inside it. It
+		# never raises - an invoice the client cannot be handed is worse than one
+		# whose PDF has to be produced again from the form.
+		if frappe.db.get_single_value("CRM Invoicing Settings", "attach_pdf"):
+			pdf.genera_e_allega(self)
 
 	def before_cancel(self):
 		"""An issued document that has already left is corrected, not cancelled."""
