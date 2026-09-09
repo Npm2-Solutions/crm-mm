@@ -169,6 +169,22 @@ errori del Sistema TS invece sono inequivocabili:
 - `105` invio per conto in assenza di delega attiva → **la delega non c'e'**
 - `106` invio in proprio in presenza di delega attiva → **la delega c'e'**
 
+Il sondaggio si lancia con `crm.invoicing.api.probe_delegation`: manda il primo
+documento reale in attesa e legge la risposta. Se torna `105` o `106` l'azienda
+viene spostata da sola sulla modalita' giusta e retrocessa a `export` con un
+avviso — la fatturazione non si ferma, e nessuno resta a indovinare.
+
+### Comunicare un documento
+
+Con `credenziali_studio` o `intermediario` il bottone **Comunica** (*Report*) nella scheda
+«Da fare» manda il singolo documento, **subito**, e la risposta arriva in giornata
+invece che il 20 gennaio con quattromila righe in coda. Uno scarto non e' un
+guasto: dice quale codice e' tornato, e i codici `105` e `106` hanno gia' spostato
+la modalita' dell'azienda.
+
+Sulle aziende in `export` il bottone non compare: li' il file si prepara e si
+carica dal portale, e non c'e' niente da premere.
+
 ### Preparare l'invio
 
 *Sistema TS → Prepara il file*. Costruisce uno o piu' zip, ciascuno sotto i 5 MB

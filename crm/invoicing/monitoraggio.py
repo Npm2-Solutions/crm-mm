@@ -30,7 +30,7 @@ def _aziende_sanitarie() -> list[dict]:
 	)
 
 
-def _avvisa(titolo: str, azienda: str, dettaglio: str) -> None:
+def avvisa(titolo: str, azienda: str, dettaglio: str) -> None:
 	"""One notification per condition, per company, per day.
 
 	`notification_text` carries the stable half - the condition and who it is about -
@@ -84,7 +84,7 @@ def controlla_certificati() -> list[dict]:
 			cifratore = Cifratore.da_certificato(contenuto_allegato(azienda["ts_certificate"]))
 		except Exception as errore:
 			rilievi.append({"company": azienda["name"], "issue": "unreadable", "detail": str(errore)})
-			_avvisa(
+			avvisa(
 				_("Sistema TS certificate unusable"),
 				azienda["name"],
 				_("The certificate cannot be read: every submission would fail with code 002."),
@@ -98,7 +98,7 @@ def controlla_certificati() -> list[dict]:
 					"expires_on": str(cifratore.scadenza),
 				}
 			)
-			_avvisa(
+			avvisa(
 				_("Sistema TS certificate expiring"),
 				azienda["name"],
 				_("It expires on {0}. Download the current kit before then.").format(cifratore.scadenza),
@@ -137,7 +137,7 @@ def controlla_silenzio() -> list[dict]:
 		rilievi.append(
 			{"company": azienda["name"], "pending": in_attesa, "last_accepted": str(ultimo or "never")}
 		)
-		_avvisa(
+		avvisa(
 			_("No accepted Sistema TS submission"),
 			azienda["name"],
 			_("{0} documents are waiting and nothing has been accepted for {1} days.").format(
@@ -174,7 +174,7 @@ def controlla_scadenze() -> list[dict]:
 		if mancano > 30:
 			continue
 		rilievi.append({"company": azienda["name"], "pending": in_attesa, "days_left": mancano})
-		_avvisa(
+		avvisa(
 			_("Sistema TS deadline approaching"),
 			azienda["name"],
 			_("{0} documents for {1} are still to report, {2} days left.").format(in_attesa, anno, mancano),

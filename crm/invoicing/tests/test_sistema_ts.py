@@ -347,3 +347,166 @@ class ScadenzeTest(UnitTestCase):
 
 	def test_i_veterinari_hanno_la_loro(self):
 		self.assertEqual(scadenza_invio(2026, veterinario=True), date(2027, 3, 16))
+
+
+class CanaliTest(UnitTestCase):
+	"""The three channels are not interchangeable, and getting it wrong gives 401."""
+
+	def test_ogni_canale_ha_il_suo_prefisso(self):
+		from crm.invoicing.engine.sistema_ts import destinazione
+
+		self.assertIn("/DocumentoSpesa730pWeb/", destinazione("sistema_ts", "test").url_sincrono)
+		self.assertIn("/entrate/", destinazione("entratel", "test").url_sincrono)
+		self.assertIn("/enti/", destinazione("enti", "test").url_sincrono)
+
+	def test_test_e_produzione_sono_host_diversi(self):
+		from crm.invoicing.engine.sistema_ts import destinazione
+
+		self.assertIn("Test", destinazione("sistema_ts", "test").host)
+		self.assertNotIn("Test", destinazione("sistema_ts", "produzione").host)
+
+	def test_il_pincode_viaggia_in_chiaro_solo_su_entratel(self):
+		from crm.invoicing.engine.sistema_ts import destinazione
+
+		self.assertTrue(destinazione("sistema_ts").pincode_cifrato)
+		self.assertTrue(destinazione("enti").pincode_cifrato)
+		self.assertFalse(destinazione("entratel").pincode_cifrato)
+
+	def test_la_modalita_sceglie_il_canale(self):
+		from crm.invoicing.engine.sistema_ts import canale_per_modalita
+
+		self.assertEqual(canale_per_modalita("intermediario"), "entratel")
+		self.assertEqual(canale_per_modalita("credenziali_studio"), "sistema_ts")
+
+
+class BustaSoapTest(UnitTestCase):
+	def _busta(self, canale="sistema_ts", **kwargs):
+		from crm.invoicing.engine.sistema_ts import Credenziali, costruisci_busta, destinazione
+
+		credenziali = kwargs.pop("credenziali", Credenziali("utente", "password", "1234"))
+		return ET.fromstring(
+			costruisci_busta(
+				kwargs.pop("documento", documento()),
+				credenziali,
+				destinazione(canale),
+				CifratoreFittizio(),
+				kwargs.pop("operazione", "Inserimento"),
+			)
+		)
+
+	def test_la_radice_ha_l_iniziale_minuscola(self):
+		richiesta = self._busta()[1][0]
+		self.assertTrue(richiesta.tag.endswith("}inserimentoDocumentoSpesaRequest"))
+
+	def test_gli_opzionali_vengono_prima_del_pincode(self):
+		from crm.invoicing.engine.sistema_ts import Credenziali
+
+		richiesta = self._busta(
+			"entratel", credenziali=Credenziali("u", "p", "9999", opzionale1="07874631000-000")
+		)[1][0]
+		self.assertEqual(
+			figli(richiesta)[:2],
+			["opzionale1", "pincode"],
+		)
+
+	def test_su_entratel_il_pincode_non_e_cifrato(self):
+		from crm.invoicing.engine.sistema_ts import Credenziali
+
+		richiesta = self._busta("entratel", credenziali=Credenziali("u", "p", "9999"))[1][0]
+		pincode = next(c for c in richiesta if c.tag.endswith("pincode"))
+		self.assertEqual(pincode.text, "9999")
+
+	def test_sugli_altri_canali_il_pincode_e_cifrato(self):
+		richiesta = self._busta("sistema_ts")[1][0]
+		pincode = next(c for c in richiesta if c.tag.endswith("pincode"))
+		self.assertNotEqual(pincode.text, "1234")
+
+	def test_il_wrapper_cambia_con_l_operazione(self):
+		for operazione, atteso in (
+			("Inserimento", "idInserimentoDocumentoFiscale"),
+			("Variazione", "idVariazioneDocumentoFiscale"),
+		):
+			richiesta = self._busta(operazione=operazione)[1][0]
+			self.assertIn(atteso, figli(richiesta))
+
+	def test_la_cancellazione_porta_solo_l_identificativo(self):
+		richiesta = self._busta(operazione="Cancellazione")[1][0]
+		nomi = figli(richiesta)
+		self.assertIn("idCancellazioneDocumentoFiscale", nomi)
+		# The body of the document is not sent: the identifier is the whole request.
+		self.assertEqual(nomi.count("idCancellazioneDocumentoFiscale"), 1)
+
+	def test_la_soap_action_non_e_un_url(self):
+		from crm.invoicing.engine.sistema_ts import soap_action
+
+		self.assertEqual(soap_action("Inserimento"), "inserimento.documentospesap730.sanita.finanze.it")
+
+
+class EsitoTest(UnitTestCase):
+	def _analizza(self, corpo):
+		from crm.invoicing.engine.sistema_ts import analizza_risposta
+
+		return analizza_risposta(corpo)
+
+	def test_un_accolto_porta_un_protocollo_di_diciassette_cifre(self):
+		esito = self._analizza(
+			b"""<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>
+			<ns:esito xmlns:ns="http://qualunque"><esitoChiamata>0</esitoChiamata>
+			<protocollo>12345678901234567</protocollo></ns:esito></soap:Body></soap:Envelope>"""
+		)
+		self.assertTrue(esito.accolto)
+		self.assertTrue(esito.protocollo_valido)
+
+	def test_il_parsing_ignora_i_namespace(self):
+		# The service's namespaces are not published and differ between test and
+		# production: a parser that insists on them breaks silently at deploy.
+		esito = self._analizza(
+			b"""<Envelope xmlns="http://un/altro/namespace"><Body><esito>
+			<esitoChiamata>0</esitoChiamata><protocollo>12345678901234567</protocollo>
+			</esito></Body></Envelope>"""
+		)
+		self.assertTrue(esito.accolto)
+
+	def test_un_accolto_senza_protocollo_non_e_accolto(self):
+		esito = self._analizza(b"<esito><esitoChiamata>0</esitoChiamata></esito>")
+		self.assertFalse(esito.accolto)
+
+	def test_i_codici_di_scarto_si_leggono(self):
+		esito = self._analizza(
+			b"""<esito><esitoChiamata>1</esitoChiamata><listaMessaggi>
+			<tipoMessaggio>E</tipoMessaggio><codiceEsito>105</codiceEsito>
+			<descrizione>x</descrizione></listaMessaggi></esito>"""
+		)
+		self.assertFalse(esito.accolto)
+		self.assertEqual(esito.codici_errore, ["105"])
+		self.assertIn("delega", esito.riassunto())
+
+	def test_un_warning_non_rende_lo_scarto(self):
+		esito = self._analizza(
+			b"""<esito><esitoChiamata>2</esitoChiamata><protocollo>12345678901234567</protocollo>
+			<listaMessaggi><tipoMessaggio>W</tipoMessaggio><codiceEsito>500</codiceEsito>
+			<descrizione>x</descrizione></listaMessaggi></esito>"""
+		)
+		self.assertTrue(esito.accolto)
+		self.assertEqual(esito.errori, [])
+
+	def test_un_soap_fault_si_riconosce(self):
+		esito = self._analizza(
+			b"""<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>
+			<soap:Fault><faultcode>soap:Server</faultcode><faultstring>boom</faultstring>
+			</soap:Fault></soap:Body></soap:Envelope>"""
+		)
+		self.assertFalse(esito.accolto)
+		self.assertIn("boom", esito.fault)
+
+	def test_una_risposta_illeggibile_non_solleva(self):
+		esito = self._analizza(b"non e' xml")
+		self.assertFalse(esito.accolto)
+		self.assertIn("not parseable", esito.fault)
+
+	def test_il_codice_fuori_dalla_lista_viene_raccolto(self):
+		esito = self._analizza(
+			b"<esito><esitoChiamata>1</esitoChiamata><codiceEsito>002</codiceEsito></esito>"
+		)
+		self.assertEqual(esito.codici_errore, ["002"])
+		self.assertIn("Certificato", esito.riassunto())

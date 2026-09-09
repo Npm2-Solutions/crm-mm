@@ -54,7 +54,7 @@ DESK / SPA (data)                    ENGINE (code, no Frappe)          BRIDGE (F
 ```
 
 `engine/` imports nothing from Frappe and has no database, no network and no
-global state. It is the part an accountant has to be able to read, and its 164
+global state. It is the part an accountant has to be able to read, and its 183
 tests run with a checkout and a Python interpreter:
 
 ```bash
@@ -154,8 +154,18 @@ One pipeline, three submission modes, and only the last ten centimetres change.
 **Everybody is born in `export`**, so no onboarding waits on somebody else's
 paperwork, and `export` stays tested even when every company is on automatic: it is
 the universal plan B. The truth about the mandate is not asked for — practices
-answer it wrong without meaning to, they simply do not know. It is probed: rejection
-`105` means there is no mandate, `106` means there is one.
+answer it wrong without meaning to, they simply do not know. It is probed
+(`api.probe_delegation`): rejection `105` means there is no mandate, `106` means
+there is one, and the company is moved to match.
+
+Transmission is synchronous, one document per call (`api.send_to_ts`), because the
+answer then comes back the same day rather than on 20 January with four thousand
+rows behind it — and because it is what makes the probe possible at all.
+Authentication is **preemptive** HTTP Basic: the service issues no 401 challenge.
+Credentials never reach a log or an error message. A rejection that says something
+about the configuration — an expired PINCODE, `105`, `106` — sends the company back
+to `export` with an alert rather than retrying, because **invoicing must not stop
+for a broken last mile**.
 
 Two schemas, not one with a switch. The synchronous one is namespaced and puts
 `voceSpesa` before the closing flags; the attached file has no namespace at all, one

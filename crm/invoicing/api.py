@@ -248,6 +248,34 @@ def prepare_ts_submission(company: str, year: int) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def send_to_ts(invoice: str, operation: str = "") -> dict:
+	"""Report one issued invoice to the Sistema TS, synchronously.
+
+	Synchronous on purpose: the answer comes back the same day, not on 20 January
+	with four thousand rows behind it. On `export` companies this refuses and points
+	at the file instead - and a failure here never touches the invoice, which the
+	patient already has.
+	"""
+	from crm.invoicing import trasporto_ts
+
+	return trasporto_ts.invia_documento(invoice, operation or None)
+
+
+@frappe.whitelist(methods=["POST"])
+def probe_delegation(company: str) -> dict:
+	"""Find out whether an Entratel mandate exists, by sending one real document.
+
+	The alternative is asking, and practices answer that question wrong without
+	meaning to - they do not know. Rejection 105 means there is no mandate, 106 means
+	there is one, and the company is moved to match.
+	"""
+	from crm.invoicing import trasporto_ts
+
+	frappe.has_permission("CRM Invoicing Company", "write", throw=True)
+	return trasporto_ts.sonda_delega(company)
+
+
+@frappe.whitelist(methods=["POST"])
 def record_ts_outcome(submission: str, code: str, message: str = "", protocol: str = "") -> dict:
 	"""Record the outcome of a Sistema TS submission."""
 	frappe.has_permission("CRM TS Submission", "write", throw=True)
