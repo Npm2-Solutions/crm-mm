@@ -255,14 +255,14 @@ def record_ts_outcome(submission: str, code: str, message: str = "", protocol: s
 	return {"submission": submission, "code": code}
 
 
-@frappe.whitelist(methods=["GET"])
+@frappe.whitelist()
 def ts_status(company: str, year: int) -> dict:
 	"""What is still outstanding for a year, and how long there is left."""
 	frappe.has_permission("CRM TS Submission", "read", throw=True)
 	return ts.stato(company, int(year))
 
 
-@frappe.whitelist(methods=["GET"])
+@frappe.whitelist()
 def onboarding_checklist(company: str) -> list[dict]:
 	"""What is still missing, and what each gap costs.
 
@@ -335,7 +335,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 	return voci
 
 
-@frappe.whitelist(methods=["GET"])
+@frappe.whitelist()
 def shipped_qualifications() -> list[dict]:
 	"""The register as it ships, for comparison with what is stored.
 
@@ -359,7 +359,7 @@ def shipped_qualifications() -> list[dict]:
 	]
 
 
-@frappe.whitelist(methods=["GET"])
+@frappe.whitelist()
 def pending_actions(company: str = "") -> list[dict]:
 	"""Everything issued that still has a button waiting to be pressed.
 
@@ -400,7 +400,7 @@ def pending_actions(company: str = "") -> list[dict]:
 	return da_fare
 
 
-@frappe.whitelist(methods=["GET"])
+@frappe.whitelist()
 def invoice_channel(invoice: str) -> dict:
 	"""Which channel a document takes, and whether the SdI is open to it.
 
