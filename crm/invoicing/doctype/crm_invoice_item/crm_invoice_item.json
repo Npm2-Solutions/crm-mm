@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "billable_service",
+  "description",
+  "service_provider",
+  "qualification",
+  "column_quantity",
+  "qty",
+  "uom",
+  "rate",
+  "discount_percentage",
+  "discount_amount",
+  "amount",
+  "vat_section",
+  "is_healthcare",
+  "vat_exempt",
+  "is_advance",
+  "column_vat",
+  "vat_rate",
+  "vat_nature",
+  "vat_amount",
+  "fund_share",
+  "line_total",
+  "ts_section",
+  "ts_expense_type",
+  "ts_expense_flag",
+  "column_ts",
+  "not_borne_amount",
+  "ts_amount",
+  "period_section",
+  "period_from",
+  "column_period",
+  "period_to"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "billable_service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service",
+   "options": "CRM Billable Service",
+   "reqd": 1
+  },
+  {
+   "columns": 3,
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "service_provider",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Provider",
+   "options": "CRM Service Provider",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "service_provider.qualification",
+   "fieldname": "qualification",
+   "fieldtype": "Link",
+   "label": "Qualification",
+   "options": "CRM Professional Qualification",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_quantity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "default": "1",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "columns": 1,
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate"
+  },
+  {
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "label": "Discount %"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_section",
+   "fieldtype": "Section Break",
+   "label": "VAT"
+  },
+  {
+   "fieldname": "is_healthcare",
+   "fieldtype": "Check",
+   "label": "Healthcare"
+  },
+  {
+   "fieldname": "vat_exempt",
+   "fieldtype": "Check",
+   "label": "Exempt"
+  },
+  {
+   "fieldname": "is_advance",
+   "fieldtype": "Check",
+   "label": "Advance (art. 15)"
+  },
+  {
+   "fieldname": "column_vat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT rate"
+  },
+  {
+   "fieldname": "vat_nature",
+   "fieldtype": "Select",
+   "label": "Natura",
+   "options": "\nN1\nN2.1\nN2.2\nN3.1\nN3.2\nN3.3\nN3.4\nN3.5\nN3.6\nN4\nN5\nN6.1\nN6.2\nN6.3\nN6.4\nN6.5\nN6.6\nN6.7\nN6.8\nN6.9\nN7"
+  },
+  {
+   "fieldname": "vat_amount",
+   "fieldtype": "Currency",
+   "label": "VAT",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fund_share",
+   "fieldtype": "Currency",
+   "label": "Fund share",
+   "read_only": 1
+  },
+  {
+   "fieldname": "line_total",
+   "fieldtype": "Currency",
+   "label": "Line total",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_healthcare",
+   "fieldname": "ts_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema TS"
+  },
+  {
+   "fieldname": "ts_expense_type",
+   "fieldtype": "Select",
+   "label": "tipoSpesa",
+   "options": "\nTK\nFC\nFV\nAD\nAS\nSR\nCT\nPI\nIC\nAA\nSP\nSV"
+  },
+  {
+   "fieldname": "ts_expense_flag",
+   "fieldtype": "Select",
+   "label": "flagTipoSpesa",
+   "options": "\n1\n2"
+  },
+  {
+   "fieldname": "column_ts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Covered by a voucher or a bonus: reported under AA, because it did not stay at the taxpayer's expense.",
+   "fieldname": "not_borne_amount",
+   "fieldtype": "Currency",
+   "label": "Share not borne by the taxpayer"
+  },
+  {
+   "fieldname": "ts_amount",
+   "fieldtype": "Currency",
+   "label": "Amount reported",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "period_section",
+   "fieldtype": "Section Break",
+   "label": "Period"
+  },
+  {
+   "fieldname": "period_from",
+   "fieldtype": "Date",
+   "label": "From"
+  },
+  {
+   "fieldname": "column_period",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "period_to",
+   "fieldtype": "Date",
+   "label": "To"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Invoice Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,328 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:code",
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "identity_section",
+  "code",
+  "qualification_name",
+  "category",
+  "column_identity",
+  "enabled",
+  "is_healthcare",
+  "vat_section",
+  "vat_exempt",
+  "exemption_reference",
+  "column_vat",
+  "default_vat_rate",
+  "sdi_rule",
+  "ts_section",
+  "ts_required",
+  "ts_required_since",
+  "column_ts",
+  "sender_category",
+  "fund_section",
+  "fund_type",
+  "fund_rate",
+  "column_fund",
+  "fund_mandatory",
+  "fund_subject_to_withholding",
+  "withholding_section",
+  "withholding_applies",
+  "withholding_rate",
+  "column_withholding",
+  "withholding_type",
+  "payment_reason",
+  "verification_section",
+  "needs_verification",
+  "verified",
+  "column_verification",
+  "verified_by",
+  "verified_on",
+  "notes_section",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "identity_section",
+   "fieldtype": "Section Break",
+   "label": "Qualification"
+  },
+  {
+   "description": "Stable identifier used by the engine, e.g. fisioterapista.",
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "qualification_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "default": "non_ordinistica",
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "sanitaria\nordinistica\nnon_ordinistica\nimpresa"
+  },
+  {
+   "fieldname": "column_identity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "description": "Decides whether the exemption test can even be met: it is joint, objective and subjective. A service card can narrow it, never widen it.",
+   "fieldname": "is_healthcare",
+   "fieldtype": "Check",
+   "label": "Health profession"
+  },
+  {
+   "fieldname": "vat_section",
+   "fieldtype": "Section Break",
+   "label": "VAT"
+  },
+  {
+   "fieldname": "vat_exempt",
+   "fieldtype": "Check",
+   "label": "Exempt under art. 10"
+  },
+  {
+   "depends_on": "eval:doc.vat_exempt",
+   "fieldname": "exemption_reference",
+   "fieldtype": "Small Text",
+   "label": "Exemption reference"
+  },
+  {
+   "fieldname": "column_vat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "22",
+   "depends_on": "eval:!doc.vat_exempt",
+   "fieldname": "default_vat_rate",
+   "fieldtype": "Percent",
+   "label": "Default VAT rate"
+  },
+  {
+   "default": "obbligatorio",
+   "description": "vietato: healthcare towards a natural person, forbidden since 2026. obbligatorio: expressly required (Ris. AdE 9/2026 for osteopath, chiropractor, kinesiologist). Blocking one of those is the violation in reverse.",
+   "fieldname": "sdi_rule",
+   "fieldtype": "Select",
+   "label": "SdI rule",
+   "options": "ammesso\nobbligatorio\nvietato",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ts_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema TS"
+  },
+  {
+   "fieldname": "ts_required",
+   "fieldtype": "Check",
+   "label": "Reports to the Sistema TS"
+  },
+  {
+   "depends_on": "eval:doc.ts_required",
+   "fieldname": "ts_required_since",
+   "fieldtype": "Int",
+   "label": "Bound since"
+  },
+  {
+   "fieldname": "column_ts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "non_sanitario",
+   "description": "Decides which tipoSpesa codes are usable. It follows the register of whoever issues the document, not the service.",
+   "fieldname": "sender_category",
+   "fieldtype": "Select",
+   "label": "Sender category",
+   "options": "non_sanitario\nmedico_odontoiatra\nprofessionista_sanitario\nstruttura_autorizzata\nstruttura_accreditata\nveterinario\nfarmacia\nparafarmacia\nottico"
+  },
+  {
+   "fieldname": "fund_section",
+   "fieldtype": "Section Break",
+   "label": "Pension fund"
+  },
+  {
+   "fieldname": "fund_type",
+   "fieldtype": "Select",
+   "label": "Fund",
+   "options": "\nTC01\nTC02\nTC03\nTC04\nTC05\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC12\nTC13\nTC14\nTC15\nTC16\nTC17\nTC18\nTC19\nTC20\nTC21\nTC22"
+  },
+  {
+   "fieldname": "fund_rate",
+   "fieldtype": "Percent",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "column_fund",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Mandatory levy shown on the invoice (art. 8, c. 3, D.Lgs. 103/1996). Off means an optional rivalsa, which is not applied unless asked for.",
+   "fieldname": "fund_mandatory",
+   "fieldtype": "Check",
+   "label": "Contributo integrativo (mandatory)"
+  },
+  {
+   "description": "False for a contributo integrativo, true for the INPS rivalsa, which is compensation.",
+   "fieldname": "fund_subject_to_withholding",
+   "fieldtype": "Check",
+   "label": "The levy is subject to withholding"
+  },
+  {
+   "fieldname": "withholding_section",
+   "fieldtype": "Section Break",
+   "label": "Withholding"
+  },
+  {
+   "description": "Only towards a withholding agent. A natural person never is one.",
+   "fieldname": "withholding_applies",
+   "fieldtype": "Check",
+   "label": "Withholding applies"
+  },
+  {
+   "default": "20",
+   "depends_on": "eval:doc.withholding_applies",
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "column_withholding",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "RT01",
+   "depends_on": "eval:doc.withholding_applies",
+   "fieldname": "withholding_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "RT01\nRT02\nRT03\nRT04\nRT05\nRT06"
+  },
+  {
+   "default": "A",
+   "depends_on": "eval:doc.withholding_applies",
+   "description": "The Modello 770 code. 'A' is self-employment in the exercise of arts and professions.",
+   "fieldname": "payment_reason",
+   "fieldtype": "Data",
+   "label": "Causale pagamento",
+   "length": 2
+  },
+  {
+   "fieldname": "verification_section",
+   "fieldtype": "Section Break",
+   "label": "Verification"
+  },
+  {
+   "description": "Filled in by the shipped register where a point has to be closed before going live. The catalogue never infers.",
+   "fieldname": "needs_verification",
+   "fieldtype": "Small Text",
+   "label": "Open points for the accountant"
+  },
+  {
+   "fieldname": "verified",
+   "fieldtype": "Check",
+   "label": "Verified by the accountant"
+  },
+  {
+   "fieldname": "column_verification",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.verified",
+   "fieldname": "verified_by",
+   "fieldtype": "Data",
+   "label": "Verified by"
+  },
+  {
+   "depends_on": "eval:doc.verified",
+   "fieldname": "verified_on",
+   "fieldtype": "Date",
+   "label": "Verified on"
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Professional Qualification",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "qualification_name,category",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "qualification_name",
+ "track_changes": 1
+}

@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "vat_rate",
+  "vat_nature",
+  "taxable_amount",
+  "tax_amount",
+  "collectability",
+  "legal_reference"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "VAT rate",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "vat_nature",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Natura",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "taxable_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Taxable",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "tax_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Tax",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "collectability",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Esigibilita",
+   "read_only": 1
+  },
+  {
+   "columns": 4,
+   "fieldname": "legal_reference",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Riferimento normativo",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Invoice Tax Summary",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

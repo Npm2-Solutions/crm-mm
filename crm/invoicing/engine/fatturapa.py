@@ -623,6 +623,18 @@ def valida(fattura: FatturaElettronica) -> list[str]:
 	return problemi
 
 
+#: A finding that carries an SdI code is one the SdI itself would reject on. The
+#: rest are things a human on the other side will notice - a credit note that does
+#: not say what it corrects, an invoice with nowhere to be delivered - and they are
+#: worth saying without stopping the document.
+_CODICE = re.compile(r"^\d{5}:")
+
+
+def bloccanti(problemi: list[str]) -> list[str]:
+	"""The subset of findings that would come back as a rejection."""
+	return [p for p in problemi if _CODICE.match(p)]
+
+
 def _valida_trasmissione(fattura: FatturaElettronica) -> list[str]:
 	problemi: list[str] = []
 	codice = fattura.codice_destinatario or ""

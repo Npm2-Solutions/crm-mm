@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "autoname": "format:TS-{company}-{fiscal_year}-{part}",
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "fiscal_year",
+  "mode",
+  "operation",
+  "column_head",
+  "status",
+  "part",
+  "total_parts",
+  "deadline",
+  "content_section",
+  "document_count",
+  "total_amount",
+  "column_content",
+  "file",
+  "file_name",
+  "file_hash",
+  "outcome_section",
+  "sent_on",
+  "protocol",
+  "column_outcome",
+  "response_code",
+  "response_message",
+  "log_section",
+  "log"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "CRM Invoicing Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fiscal_year",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Year of competence",
+   "reqd": 1
+  },
+  {
+   "default": "export",
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Mode",
+   "options": "export\ncredenziali_studio\nintermediario"
+  },
+  {
+   "default": "I",
+   "fieldname": "operation",
+   "fieldtype": "Select",
+   "label": "Operation",
+   "options": "I\nV\nR\nC"
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "aperto",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "aperto\npronto\ninviato\naccolto\nscartato\nscaricato"
+  },
+  {
+   "default": "1",
+   "fieldname": "part",
+   "fieldtype": "Int",
+   "label": "Part"
+  },
+  {
+   "default": "1",
+   "fieldname": "total_parts",
+   "fieldtype": "Int",
+   "label": "Of"
+  },
+  {
+   "description": "31 January of the following year, mid-March for vets, who therefore get their own batch.",
+   "fieldname": "deadline",
+   "fieldtype": "Date",
+   "label": "Deadline",
+   "read_only": 1
+  },
+  {
+   "fieldname": "content_section",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "document_count",
+   "fieldtype": "Int",
+   "label": "Documents",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total reported",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_content",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "label": "Zip",
+   "read_only": 1
+  },
+  {
+   "fieldname": "file_name",
+   "fieldtype": "Data",
+   "label": "File name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "file_hash",
+   "fieldtype": "Data",
+   "label": "SHA-256",
+   "read_only": 1
+  },
+  {
+   "fieldname": "outcome_section",
+   "fieldtype": "Section Break",
+   "label": "Outcome"
+  },
+  {
+   "fieldname": "sent_on",
+   "fieldtype": "Datetime",
+   "label": "Sent on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "protocol",
+   "fieldtype": "Data",
+   "label": "Protocol",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_outcome",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "response_code",
+   "fieldtype": "Data",
+   "label": "Response code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "response_message",
+   "fieldtype": "Small Text",
+   "label": "Message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "log_section",
+   "fieldtype": "Section Break",
+   "label": "Log"
+  },
+  {
+   "fieldname": "log",
+   "fieldtype": "Text",
+   "label": "Log",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM TS Submission",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
