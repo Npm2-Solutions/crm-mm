@@ -248,6 +248,23 @@ def prepare_ts_submission(company: str, year: int) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def generate_pdf(invoice: str) -> dict:
+	"""Produce the PDF/A for an issued invoice that has none.
+
+	It will not overwrite one: the file that was handed over is the one stored, and
+	its hash is what proves that years later. A second call on a document that
+	already has a PDF says so and changes nothing.
+	"""
+	from crm.invoicing import pdf
+
+	fattura = _fattura(invoice)
+	fattura.check_permission("write")
+	if fattura.docstatus != 1:
+		frappe.throw(_("Only an issued invoice has a document to produce"))
+	return pdf.genera_e_allega(fattura)
+
+
+@frappe.whitelist(methods=["POST"])
 def send_to_ts(invoice: str, operation: str = "") -> dict:
 	"""Report one issued invoice to the Sistema TS, synchronously.
 
