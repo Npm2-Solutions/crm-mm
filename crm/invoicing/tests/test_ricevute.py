@@ -77,9 +77,7 @@ class NomeFileTest(UnitTestCase):
 		self.assertFalse(e_ricevuta(None))
 
 	def test_il_nome_dice_a_quale_file_risponde(self):
-		self.assertEqual(
-			riferimento_da_nome("IT01234567890_00001_MC_001.xml"), "IT01234567890_00001.xml"
-		)
+		self.assertEqual(riferimento_da_nome("IT01234567890_00001_MC_001.xml"), "IT01234567890_00001.xml")
 
 	def test_un_nome_qualunque_non_passa(self):
 		self.assertIsNone(tipo_da_nome("ricevuta.xml"))
@@ -171,8 +169,9 @@ class RobustezzaTest(UnitTestCase):
 		self.assertIsNone(analizza(b"<FatturaElettronica/>", "IT01234567890_00001.xml"))
 
 	def test_una_radice_sconosciuta_si_salva_col_nome(self):
-		ricevuta = analizza(b"<Qualcosa><Descrizione>x</Descrizione></Qualcosa>",
-		                    "IT01234567890_00001_RC_001.xml")
+		ricevuta = analizza(
+			b"<Qualcosa><Descrizione>x</Descrizione></Qualcosa>", "IT01234567890_00001_RC_001.xml"
+		)
 		self.assertEqual(ricevuta.tipo, TipoRicevuta.CONSEGNA)
 
 	def test_il_parsing_ignora_i_namespace(self):

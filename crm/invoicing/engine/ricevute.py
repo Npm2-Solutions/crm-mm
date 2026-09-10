@@ -101,6 +101,7 @@ DESCRIZIONE_SCARTO: dict[str, str] = {
 	"00318": "Errore di elaborazione del file",
 	"00320": "Fattura duplicata",
 	"00321": "Fattura gia' trasmessa e accolta",
+	"00327": "CessionarioCommittente in Gruppo IVA: il codice fiscale deve essere quello della societa' partecipante, non del Gruppo",
 	"00330": "IdFiscaleIVA del CedentePrestatore cessato",
 	"00400": "Aliquota IVA a zero senza Natura",
 	"00401": "Natura presente con aliquota diversa da zero",

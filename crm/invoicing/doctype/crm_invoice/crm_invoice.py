@@ -24,6 +24,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate
 
 from crm.invoicing import documento, pdf, ts, xml_sdi
+from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 
@@ -190,6 +191,8 @@ class CRMInvoice(Document):
 		# refuses a file name it has already seen, and it does not forget.
 		progressivo = xml_sdi.prossimo_progressivo(self.company)
 		xml, nome, rilievi = xml_sdi.genera(self, preparato, progressivo)
+		if troppo_grande := fatturapa.dimensione_ammessa(xml):
+			rilievi.append(troppo_grande)
 
 		allegato = frappe.get_doc(
 			{

@@ -55,6 +55,17 @@ TOLLERANZA_TOTALE = Decimal("1.00")
 
 _ALFANUM = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+#: Size limits the SdI enforces. The file cap is what rejection 00003 measures and
+#: it holds on every channel; the 30 MB is the PEC *message*, attachment included,
+#: which can carry a zip of several invoices.
+#: (specifiche tecniche v1.9.1, in force since 15 May 2026)
+DIMENSIONE_MASSIMA_FILE = 5 * 1024 * 1024
+DIMENSIONE_MASSIMA_MESSAGGIO_PEC = 30 * 1024 * 1024
+
+#: `AltriDatiGestionali` marker for income invoiced exempt by an amateur sports
+#: worker, introduced by v1.9.1.
+TIPO_DATO_SPORT_DILETTANTISTICO = "ESENZSPORT"
+
 
 class ErroreFatturaPA(ValueError):
 	"""The document cannot be serialised: a mandatory element is missing."""
@@ -606,6 +617,22 @@ def codice_destinatario(
 
 
 # ------------------------------------------------------------------ validation
+
+
+def dimensione_ammessa(dati: bytes | str) -> str | None:
+	"""Say whether the file is within what the SdI takes, or why it is not.
+
+	Rejection `00003` is measured on the file, not on the invoice: an attachment
+	embedded in `Allegati` is what usually pushes it over, and it comes back after
+	the document has already been issued.
+	"""
+	byte = len(dati.encode() if isinstance(dati, str) else dati)
+	if byte <= DIMENSIONE_MASSIMA_FILE:
+		return None
+	return (
+		f"00003: the file is {-(-byte // 1024)} KB, over the {DIMENSIONE_MASSIMA_FILE // 1024} KB the "
+		"SdI accepts. Usually an embedded attachment"
+	)
 
 
 def valida(fattura: FatturaElettronica) -> list[str]:

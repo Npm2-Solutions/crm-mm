@@ -55,7 +55,7 @@ DESK / SPA (data)                    ENGINE (code, no Frappe)          BRIDGE (F
 ```
 
 `engine/` imports nothing from Frappe and has no database, no network and no
-global state. It is the part an accountant has to be able to read, and its 227
+global state. It is the part an accountant has to be able to read, and its 231
 tests run with a checkout and a Python interpreter:
 
 ```bash
@@ -278,6 +278,27 @@ errors:
   live list that says what each gap costs.
 - **The element names and date format of the Sistema TS tracciato.** They come from
   the official kit and are worth re-checking against its XSDs before go-live.
+
+## Which specification this is built against
+
+FatturaPA **specifiche tecniche v1.9.1**, in force since 15 May 2026, schema
+`Schema_VFPR12` — so the root `versione` attribute stays `FPR12`/`FPA12`. What
+1.9.1 changed and where it lands here: the VAT Group control (rejection `00327`,
+in the notice table), the `ESENZSPORT` marker for amateur sports income (a
+`TipoDato` in `AltriDatiGestionali`, which `Linea` already carries), the
+destination-code registry cap moving from 100 to 300 (registry-side, nothing in
+the XML), and the accreditation rules for the web service and SFTP channels —
+which is exactly the part a provider sells and the PEC route does not need.
+
+Size limits: **5 MB per file** on every channel (rejection `00003`, checked when
+the XML is written) and **30 MB per PEC message**, attachment included, because
+that message can carry a zip of several invoices.
+
+Sources checked on 10 September 2026: fatturapa.gov.it (transmission channels)
+and the Agenzia delle Entrate page for specifiche tecniche v1.9.1. Worth
+re-reading before go-live — this is the part of the module that moves.
+
+---
 
 *Not tax or legal advice. The A-Cube endpoints, the Sistema TS kit and the FatturaPA
 technical specification should be taken from their current versions, and every legal
