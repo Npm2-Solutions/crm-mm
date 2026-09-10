@@ -26,6 +26,7 @@ import frappe
 from frappe import _
 
 from crm.invoicing.engine.codici import FORMATO_PA
+from crm.invoicing.engine.fatturapa import DIMENSIONE_MASSIMA_MESSAGGIO_PEC
 from crm.invoicing.sdi.base import ErroreCanale, EsitoInvio
 
 CODICE = "pec"
@@ -76,6 +77,16 @@ def invia(doc, emittente: dict) -> EsitoInvio:
 	if firmato and not nome.endswith(".p7m"):
 		nome = f"{nome}.p7m"
 
+	contenuto = _contenuto(url)
+	if len(contenuto) > DIMENSIONE_MASSIMA_MESSAGGIO_PEC:
+		# The cap is on the message and not on the invoice, so it is measured here
+		# rather than at generation: over it, delivery is simply not guaranteed.
+		raise ErroreCanale(
+			_("The message would be {0} MB, over the {1} MB the SdI accepts by PEC").format(
+				len(contenuto) // (1024 * 1024), DIMENSIONE_MASSIMA_MESSAGGIO_PEC // (1024 * 1024)
+			)
+		)
+
 	destinatario = indirizzo_sdi(emittente)
 	frappe.sendmail(
 		recipients=[destinatario],
@@ -84,7 +95,7 @@ def invia(doc, emittente: dict) -> EsitoInvio:
 		# The body is not read by anything: the SdI looks at the attachment. It stays
 		# empty of anything that describes the service.
 		message=_("Invoice transmission to the Sistema di Interscambio."),
-		attachments=[{"fname": nome, "fcontent": _contenuto(url)}],
+		attachments=[{"fname": nome, "fcontent": contenuto}],
 		now=True,
 		reference_doctype=doc.doctype,
 		reference_name=doc.name,

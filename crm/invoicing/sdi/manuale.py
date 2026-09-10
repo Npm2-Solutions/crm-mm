@@ -28,6 +28,7 @@ def invia(doc, emittente: dict) -> EsitoInvio:
 		nome_file=doc.sdi_filename,
 		messaggio=_(
 			"The file is ready. Upload it from the Fatture e Corrispettivi portal, or from your "
-			"intermediary's, and record the outcome here when the notice arrives."
+			"intermediary's, and record the outcome here when the notice arrives. The portal takes "
+			"files up to 5 MB."
 		),
 	)

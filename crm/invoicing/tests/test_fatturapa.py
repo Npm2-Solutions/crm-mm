@@ -414,3 +414,38 @@ class RilieviBloccantiTest(UnitTestCase):
 		problemi = valida(fattura(codice_destinatario=CODICE_DESTINATARIO_ASSENTE))
 		self.assertTrue(problemi)
 		self.assertEqual(bloccanti(problemi), [])
+
+
+class DimensioniTest(UnitTestCase):
+	"""Rejection 00003 is measured on the file, and it comes back after the fact."""
+
+	def test_un_file_normale_passa(self):
+		from crm.invoicing.engine.fatturapa import dimensione_ammessa
+
+		self.assertIsNone(dimensione_ammessa(fattura().xml()))
+
+	def test_un_file_oltre_i_cinque_mega_viene_fermato(self):
+		from crm.invoicing.engine.fatturapa import DIMENSIONE_MASSIMA_FILE, dimensione_ammessa
+
+		rilievo = dimensione_ammessa(b"x" * (DIMENSIONE_MASSIMA_FILE + 1))
+		self.assertTrue(rilievo.startswith("00003"))
+
+	def test_il_rilievo_di_dimensione_e_bloccante(self):
+		from crm.invoicing.engine.fatturapa import (
+			DIMENSIONE_MASSIMA_FILE,
+			bloccanti,
+			dimensione_ammessa,
+		)
+
+		rilievo = dimensione_ammessa(b"x" * (DIMENSIONE_MASSIMA_FILE + 1))
+		self.assertEqual(bloccanti([rilievo]), [rilievo])
+
+	def test_il_limite_pec_e_sul_messaggio_non_sul_file(self):
+		from crm.invoicing.engine.fatturapa import (
+			DIMENSIONE_MASSIMA_FILE,
+			DIMENSIONE_MASSIMA_MESSAGGIO_PEC,
+		)
+
+		# The PEC message can carry a zip of several invoices, so its cap is the
+		# larger of the two and lives on the channel, not on the document.
+		self.assertGreater(DIMENSIONE_MASSIMA_MESSAGGIO_PEC, DIMENSIONE_MASSIMA_FILE)
