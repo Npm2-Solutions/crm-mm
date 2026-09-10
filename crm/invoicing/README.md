@@ -292,7 +292,12 @@ errors:
 ## What this module does not decide
 
 - **Paper or electronic** (`document_mode`): two product configurations with
-  different retention duties, not a detail.
+  different retention duties, not a detail — and the one place where an
+  intermediary stops being optional. Healthcare invoices towards a natural person
+  never transit the SdI, so the Agenzia's free preservation, which only covers what
+  did, does not reach them. Under `elettronica_extra_sdi` those documents are born
+  electronic and have to be preserved by somebody you pay; under
+  `analogico_con_copia` the paper original is what gets kept, and nobody has to be.
 - **The exemption, profession by profession.** The register ships as a documented
   starting point with `needs_verification` marking every point an accountant has to
   close before go-live. `crm.invoicing.api.onboarding_checklist` returns them as a
