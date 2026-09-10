@@ -340,7 +340,9 @@ def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 		testi.append(diciture.pagamento(doc.payment_method, motore.tracciabile(doc.payment_method)))
 	if doc.privacy_opposition and doc.print_opposition:
 		testi.append(diciture.opposizione())
-	if emittente.get("document_mode") == "elettronica_extra_sdi":
+	if emittente.get("document_mode") == "elettronica_extra_sdi" and classificazione.canale != Canale.SDI:
+		# Only the documents that never transit the SdI carry this: the ones that do
+		# are electronic by definition, and preserved by the Agenzia rather than here.
 		testi.append(diciture.conservazione_elettronica())
 	if doc.causale:
 		testi.append(doc.causale)

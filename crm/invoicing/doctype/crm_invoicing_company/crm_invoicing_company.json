@@ -88,6 +88,7 @@
   "sdi_pec_address",
   "sdi_last_progressive",
   "conservation_service",
+  "conservation_local",
   "conservation_reference",
   "contacts_section",
   "email",
@@ -184,10 +185,10 @@
   },
   {
    "default": "analogico_con_copia",
-   "description": "Two product configurations, not a detail (Circolare 18/E 2014): they carry different retention duties and a different coherent answer on the stamp duty.",
+   "description": "A document that transits the SdI is electronic by definition, and the Agenzia's free service preserves it. This choice is about the documents that never transit - healthcare towards a natural person, which is forbidden from the SdI, and PDF-only documents. analogico_con_copia keeps a paper original and needs nobody; elettronica_extra_sdi makes them born electronic, and then somebody has to be paid to preserve them (Circolare 18/E 2014).",
    "fieldname": "document_mode",
    "fieldtype": "Select",
-   "label": "Document mode",
+   "label": "Documents outside the SdI",
    "options": "analogico_con_copia\nelettronica_extra_sdi"
   },
   {
@@ -522,8 +523,8 @@
    "label": "Sistema di Interscambio"
   },
   {
-   "default": "export",
-   "description": "export hands the file over. pec sends it from the practice's own certified mailbox - no intermediary holds the documents. provider posts it to an accredited API. The XML is generated here either way.",
+   "default": "provider",
+   "description": "provider posts the file to an accredited intermediary, which is the default because somebody has to watch the channel and answer for it. pec sends it from the practice's own certified mailbox - free, but the mailbox is then yours to read. export writes the file and hands it over, and stays the tested fallback for both.",
    "fieldname": "sdi_mode",
    "fieldtype": "Select",
    "label": "Transmission",
@@ -587,15 +588,23 @@
    "read_only": 1
   },
   {
-   "description": "Ten years of compliant preservation is mandatory and transmitting does not provide it. The Agenzia's service is free and preserves for fifteen years, but it needs an explicit adhesion in Fatture e Corrispettivi and only covers invoices from that day on.",
+   "description": "Ten years is mandatory and transmitting does not provide it. The Agenzia's service is free and keeps them fifteen years, but it needs an explicit adhesion in Fatture e Corrispettivi and only covers invoices from that day on.",
    "fieldname": "conservation_service",
    "fieldtype": "Select",
-   "label": "Digital preservation",
+   "label": "Preservation, SdI documents",
    "options": "\nagenzia_entrate\nprovider\naltro"
   },
   {
-   "depends_on": "eval:doc.conservation_service",
-   "description": "Who preserves, and since when. A note for whoever asks in eight years.",
+   "depends_on": "eval:doc.document_mode=='elettronica_extra_sdi'",
+   "description": "Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Under elettronica_extra_sdi these need a preservation provider of their own - or switch the mode back and keep the paper original.",
+   "fieldname": "conservation_local",
+   "fieldtype": "Select",
+   "label": "Preservation, documents outside the SdI",
+   "options": "\nprovider\naltro"
+  },
+  {
+   "depends_on": "eval:doc.conservation_service||doc.conservation_local",
+   "description": "Who preserves each branch, and since when. A note for whoever asks in eight years - name both if the two branches went to different preservers.",
    "fieldname": "conservation_reference",
    "fieldtype": "Data",
    "label": "Preservation reference"
@@ -639,7 +648,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-09 10:00:00.000000",
+ "modified": "2026-09-10 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

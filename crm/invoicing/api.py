@@ -402,13 +402,38 @@ def onboarding_checklist(company: str) -> list[dict]:
 	)
 	manca(
 		not emittente.get("conservation_service"),
-		_("Digital preservation"),
+		_("Preservation of the SdI documents"),
 		_(
-			"Ten years of compliant preservation is mandatory, and transmitting does not provide "
-			"it. The Agenzia's service is free but needs an explicit adhesion in Fatture e "
-			"Corrispettivi, and it only covers invoices from that day on."
+			"Ten years is mandatory, and transmitting does not provide it. The Agenzia's service "
+			"is free but needs an explicit adhesion in Fatture e Corrispettivi, and it only covers "
+			"invoices from that day on."
 		),
 		"conservation_service",
+	)
+	manca(
+		emittente.get("document_mode") == "elettronica_extra_sdi" and not emittente.get("conservation_local"),
+		_("Preservation of the documents outside the SdI"),
+		_(
+			"Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's "
+			"free service cannot reach them. Either name a provider for these, or switch back to a "
+			"paper original and keep that."
+		),
+		"conservation_local",
+	)
+	manca(
+		emittente.get("sdi_mode") == "provider" and not emittente.get("sdi_endpoint"),
+		_("Transmission channel"),
+		_(
+			"The channel is set to an accredited provider but has no endpoint: the XML is written "
+			"and nothing carries it. Configure it, or fall back to export and upload by hand."
+		),
+		"sdi_endpoint",
+	)
+	manca(
+		emittente.get("sdi_mode") == "pec" and not emittente.get("pec"),
+		_("PEC mailbox"),
+		_("The channel is set to PEC and the company has none: nothing can leave."),
+		"pec",
 	)
 	manca(
 		not frappe.db.count("CRM Service Provider", {"enabled": 1}),
