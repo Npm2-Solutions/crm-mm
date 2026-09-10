@@ -152,9 +152,24 @@ The XML is built and checked here; a channel only adds the accredited way in.
 | `pec` | the practice's own certified mailbox | nobody |
 | `provider` | an accredited intermediary's API | the provider |
 
-`export` is the floor everything else stands on: every other route degrades to it,
-so it stays tested even when nobody uses it. `pec` is the route the original design
-could not take, because it had no mailbox of its own to send from.
+**`provider` is the default**, and the reason is not technical. All three routes
+issue an invoice that is equally valid; they differ in who is on the hook when the
+channel goes quiet. PEC costs nothing extra and needs nobody's accreditation, but it
+only works if somebody reads that mailbox — and a practice that has just been told
+its invoicing is automatic does not read it. The notice arrives, nobody opens it,
+the five days run out, and the complaint lands on whoever sold the system. An
+intermediary is the paid answer to that: it watches the channel, and it answers for
+it.
+
+`export` is still the floor everything else stands on: an unrecognised channel code
+resolves to it rather than raising, so a mistyped configuration leaves the invoice
+transmissible by hand instead of stuck. `pec` is the route the original design could
+not take, because it had no mailbox of its own to send from.
+
+What the default does **not** do is fall back quietly. A company set to `provider`
+with no endpoint yet still builds and stores its XML, but the send refuses and says
+which piece is missing, and the onboarding checklist carries the gap until it is
+closed. A channel that pretends to have sent is worse than one that stops.
 
 Two details decide whether PEC works at all. **Only the first invoice goes to
 `sdi01@pec.fatturapa.it`** — the delivery receipt names the address to use from
@@ -221,6 +236,38 @@ regenerating is not a recovery path: the file handed over is the one stored, and
 SHA-256 taken at creation is what proves it years later. The file name stays neutral
 — `fattura_psicoterapia_rossi_marzo.pdf` tells the diagnosis to anyone who glances
 at a downloads folder.
+
+---
+
+## Two branches, two retention duties
+
+The same practice that cannot send its physiotherapy invoices to the SdI sends its
+gym memberships, its lectures and its insurance reports through it, so **retention
+is not one company-wide setting**. It splits exactly where the triple already split
+routing:
+
+| Branch | Preserved by | Configured in |
+|---|---|---|
+| Documents that transit the SdI | the Agenzia's free service, or a provider | `conservation_service` |
+| Documents that never transit it | somebody the practice pays, or paper | `document_mode` + `conservation_local` |
+
+The asymmetry has one cause: **the Agenzia preserves only what passed through the
+SdI**. The free service is real and it is enough — for the branch it covers. The
+healthcare branch, which the SdI is forbidden to carry, falls outside it entirely,
+and that is the point at which conservation stops being free.
+
+So `document_mode` asks about that second branch only. Under
+`elettronica_extra_sdi` those documents are born electronic and somebody has to be
+paid to keep them for ten years; under `analogico_con_copia` the paper original is
+what gets kept, in two exemplars, and nobody has to be. The retention wording on the
+document (`diciture.conservazione_elettronica`) and the second exemplar in the print
+format both follow that branch, never the SdI one: an electronic invoice has no
+second copy, and saying it is preserved under D.M. 17 giugno 2014 when the Agenzia
+is the one preserving it is a claim about the wrong custodian.
+
+`api.onboarding_checklist` asks for both, separately, and only when they are owed —
+the local preserver appears as a gap only if the practice chose
+`elettronica_extra_sdi` and named nobody.
 
 ---
 
@@ -291,13 +338,11 @@ errors:
 
 ## What this module does not decide
 
-- **Paper or electronic** (`document_mode`): two product configurations with
-  different retention duties, not a detail — and the one place where an
-  intermediary stops being optional. Healthcare invoices towards a natural person
-  never transit the SdI, so the Agenzia's free preservation, which only covers what
-  did, does not reach them. Under `elettronica_extra_sdi` those documents are born
-  electronic and have to be preserved by somebody you pay; under
-  `analogico_con_copia` the paper original is what gets kept, and nobody has to be.
+- **Paper or electronic, for the branch outside the SdI** (`document_mode`): two
+  product configurations with different costs, not a detail. The module scopes the
+  question and prices it, and refuses to answer it — whether a practice wants a
+  paid preserver or a filing cabinet is a commercial decision. See *Two branches,
+  two retention duties*.
 - **The exemption, profession by profession.** The register ships as a documented
   starting point with `needs_verification` marking every point an accountant has to
   close before go-live. `crm.invoicing.api.onboarding_checklist` returns them as a

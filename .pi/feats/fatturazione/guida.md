@@ -170,8 +170,22 @@ si sceglie sull'azienda emittente.
 | `pec` | la casella PEC dello studio | nessuno |
 | `provider` | l'API di un intermediario accreditato | il provider |
 
-`export` e' il pavimento su cui stanno gli altri due: ogni altra strada degrada a
-quello, quindi resta testato anche quando non lo usa nessuno.
+**Il predefinito e' `provider`**, e il motivo non e' tecnico. Le tre strade emettono
+una fattura ugualmente valida: cambia chi risponde quando il canale tace. La PEC non
+costa niente e non chiede l'accreditamento di nessuno, ma funziona solo se qualcuno
+quella casella la legge — e uno studio a cui hai appena detto che la fatturazione e'
+automatica non la legge. La notifica arriva, non la apre nessuno, i cinque giorni
+scadono, e la lamentela arriva a chi ha venduto il sistema. L'intermediario e' la
+risposta a pagamento a questo: guarda il canale, e ne risponde.
+
+`export` resta il pavimento su cui stanno gli altri due: un codice canale che non
+esiste ricade li' invece di dare errore, cosi' una configurazione sbagliata lascia la
+fattura consegnabile a mano e non bloccata.
+
+Quello che il predefinito **non** fa e' ricadere in silenzio. Un'azienda su
+`provider` senza endpoint l'XML lo genera e lo conserva lo stesso, ma l'invio si
+rifiuta e dice cosa manca, e il pezzo resta in «Cosa manca» finche' non lo chiudi. Un
+canale che finge di aver mandato e' peggio di uno che si ferma.
 
 ### La PEC
 
@@ -204,12 +218,9 @@ bozza tenendo numero e data — non e' riscrivere la storia, quel documento non
 esiste ancora — e butta via l'XML, perche' lo SdI rifiuta un nome di file che ha
 gia' visto.
 
-**La conservazione a norma, dieci anni.** Non te la da' la trasmissione. Il
-servizio dell'Agenzia e' **gratuito** e conserva quindici anni, ma vuole
-un'**adesione esplicita** in Fatture e Corrispettivi e copre solo le fatture da
-quel giorno in poi. E' un modulo da firmare una volta, non un prodotto da
-comprare: per questo e' un campo sull'azienda e una riga in «Cosa manca», non un
-motivo per prendere un intermediario.
+**La conservazione a norma, dieci anni.** Non te la da' la trasmissione, e **non e'
+una cosa sola**: si divide dove si divide il routing. Vedi *La conservazione si
+divide in due*, piu' sotto.
 
 ### Le ricevute
 
@@ -253,6 +264,44 @@ conservato, e l'impronta presa alla creazione e' cio' che lo dimostra.
 Il nome resta neutro — `documento_2026-S-128.pdf`, mai
 `fattura_psicoterapia_rossi_marzo.pdf`: il nome di un file e' a sua volta un dato,
 e racconta la diagnosi a chiunque guardi una cartella dei download.
+
+---
+
+## La conservazione si divide in due
+
+Lo stesso studio che non puo' mandare allo SdI le sedute di fisioterapia ci manda
+gli abbonamenti in palestra, i corsi e le perizie per l'assicurazione. Non e' un
+caso limite: e' la giornata normale di un poliambulatorio. Quindi **la conservazione
+non e' un'impostazione sola**, e si divide esattamente dove si divide il routing.
+
+| Ramo | Chi conserva | Campo sull'azienda |
+|---|---|---|
+| Documenti che passano dallo SdI | l'Agenzia (gratis) o un provider | `conservation_service` |
+| Documenti che non ci passano mai | qualcuno che paghi, o la carta | `document_mode` + `conservation_local` |
+
+La ragione dell'asimmetria e' una sola: **l'Agenzia conserva solo cio' che e'
+passato dallo SdI**. Il suo servizio e' gratuito, conserva quindici anni, vuole
+un'**adesione esplicita** in Fatture e Corrispettivi e copre le fatture da
+quel giorno in avanti. E' un modulo da firmare una volta, non un prodotto da
+comprare — ma copre il ramo che copre. Le fatture sanitarie verso persona fisica,
+che allo SdI e' **vietato** far transitare, ne restano fuori: e' li' che la
+conservazione smette di essere gratis.
+
+Percio' `document_mode` riguarda **solo quel secondo ramo**:
+
+- **`elettronica_extra_sdi`** — quei documenti nascono elettronici, e qualcuno va
+  pagato per tenerli dieci anni. Chi sia lo dici nel campo accanto.
+- **`analogico_con_copia`** — l'originale e' la carta, in due esemplari, e non deve
+  conservarlo nessun servizio.
+
+La dicitura sulla conservazione e il secondo esemplare in stampa seguono quel ramo,
+mai quello SdI: una fattura elettronica non ha una seconda copia, e scrivere che e'
+conservata ai sensi del D.M. 17 giugno 2014 quando a conservarla e' l'Agenzia e'
+dire il custode sbagliato.
+
+«Cosa manca» le chiede tutte e due, separate, e solo quando sono dovute: il
+conservatore locale compare come buco solo se hai scelto `elettronica_extra_sdi` e
+non hai detto chi.
 
 ---
 
@@ -361,8 +410,9 @@ cui si scorre oltre quello che contava.
 
 ## Cosa il modulo non decide
 
-- **Cartaceo o elettronico** (`document_mode`): due configurazioni di prodotto con
-  obblighi di conservazione diversi, non un dettaglio.
+- **Cartaceo o elettronico, per il ramo fuori SdI** (`document_mode`): due
+  configurazioni di prodotto con costi diversi, non un dettaglio. Il modulo dice
+  quale scelta comporta cosa e non sceglie: e' una decisione commerciale.
 - **L'esenzione, professione per professione.** Il registro e' un punto di partenza
   documentato; `needs_verification` segna dove serve il commercialista.
 - **I nomi degli elementi e il formato delle date del tracciato TS**: vengono dal

@@ -489,3 +489,61 @@ class ScartoTest(InvoicingBase):
 		voci = api.onboarding_checklist(self.azienda.name)
 		titoli = [v["title"] for v in voci]
 		self.assertIn("Digital preservation", titoli)
+
+
+class DueRamiTest(InvoicingBase):
+	"""One practice, two branches: the healthcare one never reaches the SdI.
+
+	This is the ordinary case, not the exception — a physiotherapist who also runs
+	paid workshops has both, and the two carry different retention duties.
+	"""
+
+	def _checklist(self):
+		return {v["title"]: v for v in api.onboarding_checklist(self.azienda.name)}
+
+	def test_lo_stesso_studio_manda_i_due_documenti_su_due_strade(self):
+		sanitaria = self.fattura(self.seduta.name, self.psicologo.name)
+		consulenza = self.fattura(self.consulenza.name, self.consulente.name)
+		self.assertEqual(sanitaria.channel, "pdf_ts")
+		self.assertEqual(consulenza.channel, "sdi")
+
+	def test_la_dicitura_di_conservazione_sta_solo_fuori_dallo_sdi(self):
+		frappe.db.set_value(
+			"CRM Invoicing Company", self.azienda.name, "document_mode", "elettronica_extra_sdi"
+		)
+		frappe.clear_cache(doctype="CRM Invoicing Company")
+		sanitaria = self.fattura(self.seduta.name, self.psicologo.name)
+		consulenza = self.fattura(self.consulenza.name, self.consulente.name)
+		self.assertIn("D.M. 17 giugno 2014", sanitaria.legal_notes)
+		# The SdI document is preserved by the Agenzia, not by the practice.
+		self.assertNotIn("D.M. 17 giugno 2014", consulenza.legal_notes)
+
+	def test_il_cartaceo_non_chiede_un_conservatore(self):
+		frappe.db.set_value(
+			"CRM Invoicing Company", self.azienda.name, "document_mode", "analogico_con_copia"
+		)
+		self.assertNotIn("Preservation of the documents outside the SdI", self._checklist())
+
+	def test_l_elettronico_extra_sdi_lo_chiede(self):
+		frappe.db.set_value(
+			"CRM Invoicing Company",
+			self.azienda.name,
+			{"document_mode": "elettronica_extra_sdi", "conservation_local": None},
+		)
+		voce = self._checklist().get("Preservation of the documents outside the SdI")
+		self.assertIsNotNone(voce)
+		self.assertIn("cannot reach them", voce["consequence"])
+
+	def test_un_provider_senza_endpoint_si_vede_nella_checklist(self):
+		frappe.db.set_value(
+			"CRM Invoicing Company",
+			self.azienda.name,
+			{"sdi_mode": "provider", "sdi_endpoint": None},
+		)
+		voce = self._checklist().get("Transmission channel")
+		self.assertIsNotNone(voce)
+		self.assertIn("nothing carries it", voce["consequence"])
+
+	def test_una_pec_senza_casella_si_vede_nella_checklist(self):
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, {"sdi_mode": "pec", "pec": None})
+		self.assertIn("PEC mailbox", self._checklist())

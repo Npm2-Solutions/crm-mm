@@ -17,7 +17,10 @@
 	  one copy is handed or sent to the client, the other stays.
 -#}
 {%- set azienda = frappe.get_cached_doc("CRM Invoicing Company", doc.company) -%}
-{%- set esemplari = 2 if azienda.document_mode == "analogico_con_copia" else 1 -%}
+{#- Duplicate copies belong to a paper original, so they follow the branch that
+    stays out of the SdI. An electronic invoice has no second exemplar. -#}
+{%- set fuori_sdi = doc.channel != "sdi" -%}
+{%- set esemplari = 2 if (fuori_sdi and azienda.document_mode == "analogico_con_copia") else 1 -%}
 {%- set valuta = "EUR" -%}
 
 <style>
