@@ -125,6 +125,20 @@ def send_to_sdi(invoice: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
+def reopen_rejected(invoice: str) -> dict:
+	"""Reopen a rejected invoice for correction, keeping its number and date.
+
+	A rejection means the invoice counts as not issued, so this is not editing
+	history - the document does not exist yet. Five days from the notice to correct
+	and resend, with the same number and the same date, which is the route the
+	Agenzia calls preferable (Circolare 13/E del 2 luglio 2018).
+	"""
+	fattura = _fattura(invoice)
+	fattura.check_permission("submit")
+	return documento.riapri_scartata(fattura)
+
+
+@frappe.whitelist(methods=["POST"])
 def apply_sdi_notice(invoice: str = "", file_url: str = "") -> dict:
 	"""Apply a notice downloaded from the portal, or pushed by a provider.
 
@@ -385,6 +399,16 @@ def onboarding_checklist(company: str) -> list[dict]:
 		_("Stamp duty authorisation"),
 		_("The wording would not satisfy art. 15 DPR 642/72."),
 		"stamp_authorization_number",
+	)
+	manca(
+		not emittente.get("conservation_service"),
+		_("Digital preservation"),
+		_(
+			"Ten years of compliant preservation is mandatory, and transmitting does not provide "
+			"it. The Agenzia's service is free but needs an explicit adhesion in Fatture e "
+			"Corrispettivi, and it only covers invoices from that day on."
+		),
+		"conservation_service",
 	)
 	manca(
 		not frappe.db.count("CRM Service Provider", {"enabled": 1}),

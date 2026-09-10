@@ -189,6 +189,28 @@ Due dettagli che decidono se funziona:
   quel punto i cinque giorni corrono gia': il canale si rifiuta e dice cosa manca.
   Il `.p7m` firmato si allega sul documento.
 
+### Mandare non basta
+
+Il file parte, e quella e' la meta' facile. Tre cose non le fa la trasmissione:
+
+**Leggere le ricevute.** Finche' non arriva `RC` o `MC` nessuno sa se la fattura
+e' emessa. Sul canale PEC non spinge nessuno: legge il controllo giornaliero.
+
+**Rispondere a uno scarto entro cinque giorni.** `NS` vuol dire che la fattura
+**si considera non emessa**, e la strada che l'Agenzia definisce preferibile e'
+rimandarla con **lo stesso numero e la stessa data** (Circolare 13/E del 2 luglio
+2018). Il bottone e' `crm.invoicing.api.reopen_rejected`: riporta il documento in
+bozza tenendo numero e data — non e' riscrivere la storia, quel documento non
+esiste ancora — e butta via l'XML, perche' lo SdI rifiuta un nome di file che ha
+gia' visto.
+
+**La conservazione a norma, dieci anni.** Non te la da' la trasmissione. Il
+servizio dell'Agenzia e' **gratuito** e conserva quindici anni, ma vuole
+un'**adesione esplicita** in Fatture e Corrispettivi e copre solo le fatture da
+quel giorno in poi. E' un modulo da firmare una volta, non un prodotto da
+comprare: per questo e' un campo sull'azienda e una riga in «Cosa manca», non un
+motivo per prendere un intermediario.
+
 ### Le ricevute
 
 Ne tornano sei, e una sola e' una buona notizia.

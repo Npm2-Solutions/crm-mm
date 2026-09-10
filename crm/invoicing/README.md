@@ -164,6 +164,27 @@ carry a qualified signature**: mandatory on FPA12, optional on FPR12. Sending an
 unsigned PA invoice comes back as `00102` with the five days already running, so
 the channel refuses instead and says what is missing.
 
+### What transmitting does not do
+
+Sending the file is the easy half. Three things are not done by it, and only the
+first two are code:
+
+* **the notices have to be read.** Until `RC` or `MC` arrives nobody knows whether
+  the invoice is issued. On the PEC route nothing pushes, so the daily sweep reads
+  the mailbox;
+* **a rejection has to be answered within five days.** `NS` means the invoice
+  **counts as not issued**, and the Agenzia's preferred route is to resend it with
+  the **same number and the same date** (Circolare 13/E del 2 luglio 2018). So
+  `api.reopen_rejected` puts the document back in draft keeping its number — that
+  is not rewriting history, the document does not exist yet — and discards the XML,
+  because the SdI refuses a file name it has already seen;
+* **ten years of compliant preservation**, which transmitting never provides. The
+  Agenzia's service is free and keeps documents for fifteen years, but it needs an
+  **explicit adhesion** in Fatture e Corrispettivi and only covers invoices from
+  that day on. It is a form to sign once, not a product to buy — which is why it is
+  a field on the company and a line in the onboarding checklist rather than a
+  reason to hire an intermediary.
+
 ### The notices
 
 Six kinds come back, and only one is good news. `MC` is the one that gets misread:

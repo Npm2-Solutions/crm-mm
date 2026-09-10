@@ -425,3 +425,67 @@ class PdfTest(InvoicingBase):
 		documento.reload()
 		self.assertNotIn("psicoterapia", (documento.pdf_file or "").lower())
 		self.assertIn("documento_", documento.pdf_file)
+
+
+class ScartoTest(InvoicingBase):
+	"""A rejected invoice counts as not issued, so it is corrected, not replaced."""
+
+	def _scartata(self):
+		documento = self.fattura(self.trattamento.name, self.osteopata.name)
+		documento.submit()
+		documento.reload()
+		corpo = f"""<RicevutaScarto><NomeFile>{documento.sdi_filename}</NomeFile>
+			<ListaErrori><Errore><Codice>00423</Codice><Descrizione>x</Descrizione></Errore>
+			</ListaErrori></RicevutaScarto>""".encode()
+		ricezione.applica_file(corpo, documento.sdi_filename.replace(".xml", "_NS_001.xml"))
+		documento.reload()
+		return documento
+
+	def test_una_scartata_torna_in_bozza_con_lo_stesso_numero(self):
+		documento = self._scartata()
+		numero, data = documento.document_number, documento.posting_date
+		api.reopen_rejected(documento.name)
+		documento.reload()
+		self.assertEqual(documento.docstatus, 0)
+		# Same number and same date: the route the Agenzia calls preferable.
+		self.assertEqual(documento.document_number, numero)
+		self.assertEqual(documento.posting_date, data)
+
+	def test_riaprendola_il_file_vecchio_sparisce(self):
+		documento = self._scartata()
+		api.reopen_rejected(documento.name)
+		documento.reload()
+		# The SdI refuses a file name it has already seen, so the XML is rebuilt.
+		self.assertFalse(documento.xml_file)
+		self.assertFalse(documento.sdi_filename)
+
+	def test_riemettendola_il_numero_non_avanza(self):
+		documento = self._scartata()
+		numero = documento.document_number
+		api.reopen_rejected(documento.name)
+		documento.reload()
+		documento.submit()
+		documento.reload()
+		self.assertEqual(documento.document_number, numero)
+		self.assertTrue(documento.xml_file)
+
+	def test_una_consegnata_non_si_riapre(self):
+		documento = self.fattura(self.trattamento.name, self.osteopata.name)
+		documento.submit()
+		documento.db_set("sdi_status", "consegnata", update_modified=False)
+		documento.reload()
+		with self.assertRaises(frappe.ValidationError) as errore:
+			api.reopen_rejected(documento.name)
+		self.assertIn("credit note", str(errore.exception))
+
+	def test_la_riapertura_finisce_nel_registro(self):
+		documento = self._scartata()
+		api.reopen_rejected(documento.name)
+		self.assertTrue(
+			frappe.db.exists("CRM Invoice Log", {"invoice": documento.name, "status": "riaperta"})
+		)
+
+	def test_la_conservazione_compare_fra_le_cose_che_mancano(self):
+		voci = api.onboarding_checklist(self.azienda.name)
+		titoli = [v["title"] for v in voci]
+		self.assertIn("Digital preservation", titoli)
