@@ -482,3 +482,79 @@ def registra(doc, evento: str, messaggio: str = "", stato: str = "", payload: di
 			"payload": frappe.as_json(payload) if payload else None,
 		}
 	).insert(ignore_permissions=True)
+
+
+# ------------------------------------------------------- a rejected document
+
+
+def riapri_scartata(doc) -> dict:
+	"""Put a rejected invoice back in draft, keeping its number and its date.
+
+	A rejection means the invoice **counts as not issued** (Circolare 13/E del 2
+	luglio 2018), so correcting it is not rewriting history - the document does not
+	exist yet. The Agenzia's preferred route is to resend it with the **same number
+	and the same date** within five days of the notice, and that is only possible if
+	the number survives the correction.
+
+	What does not survive is the file: the SdI refuses a file name it has already
+	seen, so the XML is discarded and rebuilt with a fresh transmission progressive.
+	The courtesy PDF goes with it, because it now describes a document that changed.
+	"""
+	if doc.docstatus != 1:
+		frappe.throw(_("Only an issued invoice can be reopened"))
+	if doc.sdi_status != "scartata":
+		frappe.throw(
+			_(
+				"This invoice was not rejected. A document the Sistema di Interscambio accepted is "
+				"corrected with a credit note, not by editing it."
+			)
+		)
+
+	for campo in ("xml_file", "pdf_file"):
+		for allegato in frappe.get_all(
+			"File",
+			filters={
+				"attached_to_doctype": doc.doctype,
+				"attached_to_name": doc.name,
+				"attached_to_field": campo,
+			},
+			pluck="name",
+		):
+			frappe.delete_doc("File", allegato, ignore_permissions=True, force=True)
+
+	doc.db_set(
+		{
+			"docstatus": 0,
+			"xml_file": None,
+			"xml_hash": None,
+			"sdi_filename": None,
+			"pdf_file": None,
+			"pdf_hash": None,
+			"pdf_conformita": None,
+			"sdi_status": "da_inviare",
+			"sdi_sent_on": None,
+		},
+		update_modified=False,
+	)
+
+	scadenza = None
+	if doc.sdi_message:
+		# Five days from the notice, and it is a fiscal deadline rather than a
+		# technical one: past it the document still has to go out, late.
+		scadenza = frappe.utils.add_days(frappe.utils.nowdate(), 5)
+
+	registra(
+		doc,
+		"sdi_blocked",
+		_("Reopened for correction, keeping number {0} and date {1}").format(
+			doc.document_number, doc.posting_date
+		),
+		stato="riaperta",
+		payload={"previous_message": doc.sdi_message},
+	)
+	return {
+		"invoice": doc.name,
+		"document_number": doc.document_number,
+		"posting_date": str(doc.posting_date),
+		"deadline": str(scadenza) if scadenza else None,
+	}

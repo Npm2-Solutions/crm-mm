@@ -87,6 +87,8 @@
   "sdi_api_key",
   "sdi_pec_address",
   "sdi_last_progressive",
+  "conservation_service",
+  "conservation_reference",
   "contacts_section",
   "email",
   "phone",
@@ -583,6 +585,20 @@
    "fieldtype": "Int",
    "label": "Last transmission progressive",
    "read_only": 1
+  },
+  {
+   "description": "Ten years of compliant preservation is mandatory and transmitting does not provide it. The Agenzia's service is free and preserves for fifteen years, but it needs an explicit adhesion in Fatture e Corrispettivi and only covers invoices from that day on.",
+   "fieldname": "conservation_service",
+   "fieldtype": "Select",
+   "label": "Digital preservation",
+   "options": "\nagenzia_entrate\nprovider\naltro"
+  },
+  {
+   "depends_on": "eval:doc.conservation_service",
+   "description": "Who preserves, and since when. A note for whoever asks in eight years.",
+   "fieldname": "conservation_reference",
+   "fieldtype": "Data",
+   "label": "Preservation reference"
   },
   {
    "fieldname": "contacts_section",
