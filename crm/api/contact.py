@@ -6,8 +6,30 @@ from crm.utils import to_e164
 
 def validate(doc, method):
 	normalise_numbers(doc)
+	keep_one_of_each(doc)
 	update_deals_email_mobile_no(doc)
 	update_leads_email_mobile_no(doc)
+
+
+def keep_one_of_each(doc):
+	"""One number and one email per person — decided, not discovered.
+
+	A second number is a second question at every send (which one? and was the
+	reply on the other?) and the answer was worth less than the doubt. The CRM's
+	own screens no longer offer adding one; this is the guard for everything else
+	(the Desk, an import, a script), so the rule holds wherever the entry is
+	edited from.
+
+	What is kept is the primary, or the first row when nothing is marked — never
+	nothing, because dropping every row would take the person's number away.
+	"""
+	for table, primary in (("email_ids", "is_primary"), ("phone_nos", "is_primary_mobile_no")):
+		rows = doc.get(table) or []
+		if len(rows) < 2:
+			continue
+		keep = next((row for row in rows if row.get(primary)), rows[0])
+		keep.set(primary, 1)
+		doc.set(table, [keep])
 
 
 def normalise_numbers(doc):
@@ -40,10 +62,12 @@ def update_leads_email_mobile_no(doc):
 	goes stale the moment somebody edits the number in the address book, which is
 	precisely how the two came to disagree before they were tied together.
 	"""
+	# the landline is not an address book entry: it lives on the person and
+	# nowhere else, so it is not copied back from here (it would be copied as
+	# empty, and clear what somebody typed)
 	wanted = {
 		"email": doc.email_id,
 		"mobile_no": doc.mobile_no,
-		"phone": doc.get("phone"),
 	}
 	for lead in frappe.get_all("CRM Lead", filters={"contact": doc.name}, pluck="name"):
 		current = frappe.db.get_values("CRM Lead", lead, list(wanted), as_dict=True)[0]
@@ -175,55 +199,6 @@ def get_linked_deals(contact: str):
 		deals.append(deal.as_dict())
 
 	return deals
-
-
-@frappe.whitelist()
-def create_new(contact: str, field: str, value: str):
-	"""Create new email or phone for a contact"""
-	if not frappe.has_permission("Contact", "write", contact):
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
-
-	contact = frappe.get_cached_doc("Contact", contact)
-
-	if field == "email":
-		email = {"email_id": value, "is_primary": 1 if len(contact.email_ids) == 0 else 0}
-		contact.append("email_ids", email)
-	elif field in ("mobile_no", "phone"):
-		mobile_no = {"phone": value, "is_primary_mobile_no": 1 if len(contact.phone_nos) == 0 else 0}
-		contact.append("phone_nos", mobile_no)
-	else:
-		frappe.throw(_("Invalid field"))
-
-	contact.save()
-	return True
-
-
-@frappe.whitelist()
-def set_as_primary(contact: str, field: str, value: str):
-	"""Set email or phone as primary for a contact"""
-	if not frappe.has_permission("Contact", "write", contact):
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
-
-	contact = frappe.get_doc("Contact", contact)
-
-	if field == "email":
-		for email in contact.email_ids:
-			if email.email_id == value:
-				email.is_primary = 1
-			else:
-				email.is_primary = 0
-	elif field in ("mobile_no", "phone"):
-		name = "is_primary_mobile_no" if field == "mobile_no" else "is_primary_phone"
-		for phone in contact.phone_nos:
-			if phone.phone == value:
-				phone.set(name, 1)
-			else:
-				phone.set(name, 0)
-	else:
-		frappe.throw(_("Invalid field"))
-
-	contact.save()
-	return True
 
 
 @frappe.whitelist()

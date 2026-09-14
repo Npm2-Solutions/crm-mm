@@ -12,6 +12,49 @@ Tre parole, tre significati distinti:
 - **il deal è la relazione con noi** — una persona può averne una, tre, nessuna;
 - **il contatto è la rubrica** — i recapiti di quella persona, non una seconda persona.
 
+## La decisione: uno a uno, un numero solo (14/09/2026)
+
+Il modello qui sopra lasciava una cosa aperta: quanti recapiti ha una persona.
+La rubrica di Frappe ne regge quanti se ne vuole, con uno marcato primario, e per
+un po' li abbiamo retti anche noi — la chat chiedeva a quale numero scrivere, il
+pannello offriva "aggiungi", "rendi primario", "elimina".
+
+**Chiuso: una persona, una voce di rubrica, un numero, una email.**
+
+Non è una limitazione tecnica, è una scelta. Un secondo numero è una seconda
+domanda a ogni invio — a quale dei due scrivo, e la risposta è arrivata
+sull'altro? — e la risposta valeva meno del dubbio. Il numero fisso resta un
+campo della persona, ma non è un destinatario: il sistema scrive al cellulare, e
+solo a quello.
+
+Cosa ne segue, in concreto:
+
+| | Prima | Adesso |
+|---|---|---|
+| Recapiti sul pannello | `Dropdown` con aggiungi / rendi primario / elimina | due campi normali, si scrivono dove si leggono |
+| Chat WhatsApp | menu "a quale numero" quando ce n'era più d'uno | dice il numero e basta |
+| `numbers_of()` | tutti i numeri della rubrica | quello della persona |
+| Voce di rubrica | poteva appartenere a più persone | **una sola**, rifiutato altrimenti |
+| Il fisso | finiva in rubrica come secondo numero | vive sulla persona, fuori dalla rubrica |
+
+Il guardiano non è solo nella UI: `crm.api.contact.keep_one_of_each` collassa le
+righe in eccesso a ogni salvataggio del contatto, così la regola vale anche dal
+Desk, da un import o da uno script.
+
+La patch `one_number_one_person` sistema i dati che ci sono: tiene il primario
+(o la prima riga, se nessuno è marcato) e **scrive in un commento sulla persona
+quello che toglie**, perché un numero che qualcuno si è preso la briga di
+annotare non è nostro da cancellare in silenzio. Se fra le righe scartate c'era
+il fisso e la persona non ne aveva uno, glielo mette. Due persone che
+condividevano una voce di rubrica non si riparano a indovinare: vengono
+segnalate nell'error log, e da ora il CRM non lascia più creare la situazione.
+
+**Se un domani servirà diversamente** — una persona con il numero personale e
+quello dell'ufficio, entrambi da usare — si torna indietro da qui: la rubrica
+regge già più righe, e quello che va rifatto è la scelta del destinatario
+(`numbers_of` più il selettore nella chat). Nessuna migrazione distruttiva di
+mezzo: i numeri scartati sono nei commenti delle persone.
+
 ## Cosa fa il codice oggi, che è l'opposto
 
 Alla conversione, `CRMLead.create_contact` **copia** la persona in un secondo

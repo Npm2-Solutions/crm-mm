@@ -34,26 +34,20 @@
     class="mx-3 mb-1 flex items-center justify-between gap-3 rounded border border-outline-amber-2 bg-surface-amber-1 px-3 py-2 sm:mx-10"
   >
     <span class="text-p-sm text-ink-gray-7">{{ windowNotice }}</span>
-    <Button size="sm" :label="__('Send a template')" @click="emit('template')" />
+    <Button
+      size="sm"
+      :label="__('Send a template')"
+      @click="emit('template')"
+    />
   </div>
-  <!-- Which of the person's numbers this is going to. One number, and there is
-       nothing to choose: it says so and stays out of the way. -->
+  <!-- The number this is going to. One person, one number: nothing to choose,
+       and reading it is how you see the prefix is there. -->
   <div
-    v-if="recipients.data?.length"
+    v-if="recipient"
     class="flex items-center gap-2 px-3 pt-2 text-p-sm text-ink-gray-5 sm:px-10"
   >
     <span>{{ __('To') }}</span>
-    <Dropdown v-if="recipients.data.length > 1" :options="recipientOptions">
-      <template #default="{ open }">
-        <Button
-          size="sm"
-          variant="ghost"
-          :label="recipient"
-          :iconRight="open ? 'chevron-up' : 'chevron-down'"
-        />
-      </template>
-    </Dropdown>
-    <span v-else class="text-ink-gray-7">{{ recipient }}</span>
+    <span class="text-ink-gray-7">{{ recipient }}</span>
   </div>
   <div class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
     <div class="flex h-8 items-center gap-2">
@@ -157,9 +151,8 @@ const rows = ref(1)
 const textareaRef = ref(null)
 const emoji = ref('')
 
-// Which of the person's numbers this conversation is going out to. The primary
-// comes first and is the default; the rest are there because somebody wrote the
-// work line down too, and a reply to the wrong one goes nowhere.
+// The number this conversation goes out to. One person, one number — read from
+// the backend rather than assumed here, so what is shown is what will be used.
 const recipient = ref('')
 
 const recipients = createResource({
@@ -169,7 +162,8 @@ const recipients = createResource({
     reference_name: doc.value.name,
   }),
   onSuccess: (numbers) => {
-    if (!numbers?.includes(recipient.value)) recipient.value = numbers?.[0] || ''
+    if (!numbers?.includes(recipient.value))
+      recipient.value = numbers?.[0] || ''
   },
 })
 
@@ -180,13 +174,6 @@ watch(
     if (name) recipients.fetch()
   },
   { immediate: true },
-)
-
-const recipientOptions = computed(() =>
-  (recipients.data || []).map((number) => ({
-    label: number,
-    onClick: () => (recipient.value = number),
-  })),
 )
 
 const content = ref('')
@@ -223,7 +210,11 @@ const windowNotice = computed(() =>
 // this list is refused by Meta after the upload, and the chat used to show only
 // "failed" — so it is refused here, by name, before anything is sent.
 const WHATSAPP_MEDIA = {
-  image: { extensions: ['jpg', 'jpeg', 'png'], megabytes: 5, label: 'JPEG, PNG' },
+  image: {
+    extensions: ['jpg', 'jpeg', 'png'],
+    megabytes: 5,
+    label: 'JPEG, PNG',
+  },
   video: { extensions: ['mp4', '3gp'], megabytes: 16, label: 'MP4, 3GP' },
   audio: {
     extensions: ['aac', 'amr', 'mp3', 'm4a', 'ogg'],
@@ -283,7 +274,10 @@ function recordableType() {
 }
 
 async function startRecording() {
-  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+  if (
+    !navigator.mediaDevices?.getUserMedia ||
+    typeof MediaRecorder === 'undefined'
+  ) {
     toast.error(__('This browser cannot record audio'))
     return
   }
@@ -305,13 +299,16 @@ async function startRecording() {
 
   chunks = []
   recorder = new MediaRecorder(stream, { mimeType: container })
-  recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data)
+  recorder.ondataavailable = (event) =>
+    event.data.size && chunks.push(event.data)
   recorder.onstop = async () => {
     stream.getTracks().forEach((track) => track.stop())
     clearInterval(ticker)
     recording.value = false
     if (!chunks.length) return
-    await uploadRecording(new Blob(chunks, { type: recorder.mimeType || container }))
+    await uploadRecording(
+      new Blob(chunks, { type: recorder.mimeType || container }),
+    )
   }
   recorder.start()
   recording.value = true
