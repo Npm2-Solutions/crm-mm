@@ -40,14 +40,24 @@
 
 {% if not error %}
 <script>
+	// Whether Facebook's script ever arrived. Without this the click handler
+	// called FB.login on an undefined FB: the button greyed out, the status said
+	// "Opening WhatsApp setup…" and nothing else ever happened — which is a
+	// silent failure, and the commonest cause (a blocker stopping
+	// connect.facebook.net) is the one a person can actually do something about.
+	var sdkReady = false;
+	var sdkFailed = false;
+
 	window.fbAsyncInit = function () {
 		FB.init({ appId: {{ app_id | tojson }}, cookie: true, xfbml: false, version: 'v23.0' });
+		sdkReady = true;
 	};
 	(function (d, s, id) {
 		var js, fjs = d.getElementsByTagName(s)[0];
 		if (d.getElementById(id)) return;
 		js = d.createElement(s); js.id = id;
 		js.src = 'https://connect.facebook.net/en_US/sdk.js';
+		js.onerror = function () { sdkFailed = true; };
 		fjs.parentNode.insertBefore(js, fjs);
 	})(document, 'script', 'facebook-jssdk');
 
@@ -91,15 +101,53 @@
 		}
 	});
 
+	function blocked() {
+		say(
+			{{ _("Facebook's script could not be loaded, so the setup cannot open. An ad or privacy blocker is the usual cause: turn it off for this page, or open this link in a private window without extensions.") | tojson }},
+			true
+		);
+		logEvent('ERROR', { current_step: 'sdk_unavailable' });
+	}
+
 	button.addEventListener('click', function () {
+		if (sdkFailed || typeof FB === 'undefined' || !sdkReady) {
+			// it may simply be slow: wait a moment before blaming a blocker.
+			// The retry is left to the person on purpose — Facebook's window
+			// opens only from a real click, so pressing Start for them would
+			// get the pop-up blocked instead.
+			say({{ _("Loading Facebook…") | tojson }});
+			button.disabled = true;
+			var waited = 0;
+			var timer = setInterval(function () {
+				waited += 500;
+				if (sdkReady && typeof FB !== 'undefined') {
+					clearInterval(timer);
+					button.disabled = false;
+					say({{ _("Ready — press Start again.") | tojson }});
+				} else if (sdkFailed || waited >= 8000) {
+					clearInterval(timer);
+					button.disabled = false;
+					blocked();
+				}
+			}, 500);
+			return;
+		}
+
 		button.disabled = true;
 		say({{ _("Opening WhatsApp setup…") | tojson }});
 		logEvent('STARTED', { current_step: 'launch' });
+		try {
 		FB.login(function (response) {
 			const code = response.authResponse && response.authResponse.code;
 			if (!code) {
-				logEvent('CANCEL', { current_step: 'login' });
-				say({{ _("Connection cancelled.") | tojson }}, true);
+				// `status` is what separates "the person closed the window" from
+				// "this app cannot log in from a browser at all", which is the
+				// JavaScript SDK switch on the app being off
+				logEvent('CANCEL', { current_step: 'login', status: response.status || '' });
+				say(
+					{{ _("Connection cancelled or refused. If you did not close the window, check on the Meta app that Login with the JavaScript SDK is on and that this domain is in Allowed domains.") | tojson }},
+					true
+				);
 				button.disabled = false;
 				return;
 			}
@@ -138,6 +186,22 @@
 			override_default_response_type: true,
 			extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding' },
 		});
+		} catch (e) {
+			// FB.login threw: a blocked popup, a stale SDK, a bad configuration.
+			// Whatever it is, the page says it instead of stopping silently.
+			logEvent('ERROR', { current_step: 'login_threw', message: String(e && e.message || e) });
+			say(
+				{{ _("The setup window could not be opened. Allow pop-ups for this page and try again.") | tojson }},
+				true
+			);
+			button.disabled = false;
+		}
+	});
+
+	// whatever else breaks on this page, the hub's log gets it: a stalled
+	// onboarding is otherwise a mystery told only by "nothing happened"
+	window.addEventListener('error', function (event) {
+		logEvent('ERROR', { current_step: 'page_error', message: String(event.message || '') });
 	});
 </script>
 {% endif %}
