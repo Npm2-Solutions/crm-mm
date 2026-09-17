@@ -16,7 +16,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
-from crm.invoicing import documento, registro, ts
+from crm.invoicing import acube, documento, registro, ts
 from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
@@ -117,6 +117,9 @@ def send_to_sdi(invoice: str) -> dict:
 			"sdi_sent_on": frappe.utils.now_datetime(),
 			"sdi_identifier": esito.identificativo or fattura.sdi_identifier,
 			"sdi_message": esito.messaggio,
+			# Stamped on the document, not read back from the company: by the time
+			# somebody asks whether this one was real, the switch will have moved.
+			"sdi_environment": esito.dettagli.get("environment") or fattura.sdi_environment,
 		},
 		update_modified=False,
 	)
@@ -430,6 +433,30 @@ def onboarding_checklist(company: str) -> list[dict]:
 		"sdi_endpoint",
 	)
 	manca(
+		emittente.get("sdi_mode") == "provider"
+		and emittente.get("sdi_endpoint")
+		and not acube.in_produzione(emittente),
+		_("Still on the sandbox"),
+		_(
+			"The channel is configured and working, but aimed at the provider's sandbox: "
+			"documents sent from here reach nobody. Switch the environment to production "
+			"once the rehearsal is done."
+		),
+		"acube_environment",
+	)
+	manca(
+		emittente.get("sdi_mode") == "provider"
+		and emittente.get("sdi_endpoint")
+		and not acube.segreto(emittente, "sdi_webhook_secret"),
+		_("Webhook secret"),
+		_(
+			"Without it the provider has no authenticated way to push notices here, so "
+			"nobody learns whether an invoice was accepted until somebody looks by hand - "
+			"which is the failure an intermediary was chosen to prevent."
+		),
+		"sdi_webhook_secret",
+	)
+	manca(
 		emittente.get("sdi_mode") == "pec" and not emittente.get("pec"),
 		_("PEC mailbox"),
 		_("The channel is set to PEC and the company has none: nothing can leave."),
@@ -552,4 +579,81 @@ def invoice_channel(invoice: str) -> dict:
 		"ts_required": classificazione.ts_richiesto,
 		"is_healthcare": classificazione.canale == Canale.PDF_TS,
 		"deadline": str(getdate(fattura.posting_date)),
+	}
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def acube_webhook():
+	"""The provider's way in with a notice. Guest by necessity, secret by design.
+
+	This is the only endpoint in the module that answers an unauthenticated caller,
+	so it answers as little as possible: a refused delivery learns nothing about why.
+
+	The status code is the contract with the provider's retry queue - it retries
+	fifteen times over about ten hours on anything that is not a 200. So a delivery
+	that was understood returns 200 even when there was nothing to apply, because
+	sending the same bytes again would reach the same answer; an unexpected failure
+	returns 500, because that one is worth trying again.
+	"""
+	from crm.invoicing.sdi import webhook
+
+	try:
+		esito = webhook.gestisci(frappe.request)
+	except webhook.Rifiutata:
+		frappe.local.response["http_status_code"] = 401
+		return {"ok": False}
+	except Exception:
+		frappe.db.rollback()
+		frappe.log_error(title=_("Provider webhook failed"))
+		frappe.local.response["http_status_code"] = 500
+		return {"ok": False}
+	return {"ok": True, **esito}
+
+
+@frappe.whitelist()
+def webhook_endpoint(company: str) -> dict:
+	"""The URL to paste into the provider's configuration, and whether it is armed.
+
+	The secret itself is never returned. It is written once, to the provider and to
+	the encrypted field, and a value that can be read back out of a settings screen
+	is one that can be read out of a screenshot.
+	"""
+	frappe.has_permission("CRM Invoicing Company", "write", doc=company, throw=True)
+	from urllib.parse import quote
+
+	url = frappe.utils.get_url(
+		f"/api/method/crm.invoicing.api.acube_webhook?company={quote(company, safe='')}"
+	)
+	configurato = bool(acube.segreto({"name": company}, "sdi_webhook_secret"))
+	return {
+		"url": url,
+		"configured": configurato,
+		"header": "X-Acube-Token",
+		"hint": _(
+			"In the provider's configuration set the authentication token to the secret you "
+			"generated here, as a header named X-Acube-Token or as a query parameter named token."
+		),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def generate_webhook_secret(company: str) -> dict:
+	"""Mint a new secret and hand it over exactly once.
+
+	Rotating is the same call: the old secret stops working the moment this returns,
+	so the provider's configuration has to be updated in the same sitting. That is
+	said out loud rather than discovered when the notices go quiet.
+	"""
+	frappe.has_permission("CRM Invoicing Company", "write", doc=company, throw=True)
+	segreto = frappe.generate_hash(length=48)
+	azienda = frappe.get_doc("CRM Invoicing Company", company)
+	azienda.sdi_webhook_secret = segreto
+	azienda.save(ignore_permissions=True)
+	return {
+		"secret": segreto,
+		**webhook_endpoint(company),
+		"warning": _(
+			"Copy it now: it is stored encrypted and will not be shown again. Any secret "
+			"configured at the provider before this call has just stopped working."
+		),
 	}

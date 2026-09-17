@@ -93,6 +93,7 @@
   "sdi_filename",
   "sdi_sent_on",
   "sdi_message",
+  "sdi_environment",
   "sdi_notices",
   "column_routing",
   "ts_status",
@@ -826,12 +827,19 @@
    "label": "Warnings",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "description": "Which environment carried this document. A sandbox invoice reached nobody; it is recorded on the document rather than inferred from today's settings, because the switch will have moved by the time anyone asks.",
+   "fieldname": "sdi_environment",
+   "fieldtype": "Data",
+   "label": "Environment",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-09 10:00:00.000000",
+ "modified": "2026-09-17 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",
