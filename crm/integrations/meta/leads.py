@@ -61,7 +61,7 @@ def ingest_leadgen_entry(
 	except MetaAPIError as exc:
 		_log_failure({"leadgen_id": leadgen_id}, form_id, str(exc))
 		return
-	store_lead(lead, lead.get("form_id") or form_id)
+	store_lead(lead, lead.get("form_id") or form_id, token)
 
 
 def backfill_form(form_id: str, since=None, page_token: str | None = None) -> dict:
@@ -87,7 +87,7 @@ def backfill_form(form_id: str, since=None, page_token: str | None = None) -> di
 
 	counts = {"created": 0, "merged": 0, "duplicates": 0, "failed": 0}
 	for lead in graph_get_paginated(f"{form_id}/leads", token, params, max_pages=200):
-		result = store_lead(lead, form_id)
+		result = store_lead(lead, form_id, token)
 		# "merged" is a submission filed on somebody the CRM already knew
 		key = "duplicates" if result == "duplicate" else result
 		counts[key] = counts.get(key, 0) + 1
@@ -156,8 +156,12 @@ def submission_row(lead: dict, form_id: str | None) -> dict:
 	}
 
 
-def store_lead(lead: dict, form_id: str | None) -> str:
-	"""Map field_data → CRM Lead via the form's question mapping. Idempotent."""
+def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str:
+	"""Map field_data → CRM Lead via the form's question mapping. Idempotent.
+
+	The token travels with the lead because attribution asks Meta what the ad is
+	called, and the only token allowed to ask is the one the lead came with.
+	"""
 	lead_id = lead.get("id")
 	if not lead_id:
 		return "failed"
@@ -207,7 +211,7 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 	# whole company, and merging two colleagues into one person loses one of them
 	person = find_person(email=values.get("email"), phone=values.get("mobile_no"))
 	if person:
-		return _merge_submission(person, lead, form_id, values, unmapped)
+		return _merge_submission(person, lead, form_id, values, unmapped, token)
 
 	values.update(
 		{
@@ -220,7 +224,7 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 	)
 	try:
 		doc = frappe.get_doc(values)
-		_attribute(doc, lead, form_id)
+		_attribute(doc, lead, form_id, token)
 		doc.insert(ignore_permissions=True)
 		record_import(lead, form_id, doc.name, "Created")
 		if unmapped:
@@ -234,7 +238,14 @@ def store_lead(lead: dict, form_id: str | None) -> str:
 		return "failed"
 
 
-def _merge_submission(person: str, lead: dict, form_id: str | None, values: dict, unmapped: list) -> str:
+def _merge_submission(
+	person: str,
+	lead: dict,
+	form_id: str | None,
+	values: dict,
+	unmapped: list,
+	token: str | None = None,
+) -> str:
 	"""File a submission on the person who made it, instead of cloning them.
 
 	What they typed this time fills only what is still empty: a number somebody
@@ -250,7 +261,7 @@ def _merge_submission(person: str, lead: dict, form_id: str | None, values: dict
 			doc.facebook_lead_id = lead.get("id")
 			doc.facebook_form_id = form_id
 		doc.append("facebook_submissions", submission_row(lead, form_id))
-		_attribute(doc, lead, form_id)
+		_attribute(doc, lead, form_id, token)
 		doc.save(ignore_permissions=True)
 		record_import(lead, form_id, doc.name, "Merged")
 		if unmapped:
@@ -285,26 +296,110 @@ def _note_form_submitted(doc, form_id: str | None) -> None:
 		frappe.log_error(frappe.get_traceback(), "Meta: form_submitted automations failed")
 
 
-def _attribute(doc, lead: dict, form_id: str | None) -> None:
+# An ad's name can be edited, so a cached one is not true forever; a week is
+# long enough to save the calls and short enough that a renamed campaign catches
+# up on the next lead.
+AD_CACHE_DAYS = 7
+
+
+def describe_ad(ad_id: str, token: str) -> dict:
+	"""What Meta calls this ad, its ad set and its campaign.
+
+	A lead arrives with an `ad_id` and nothing else, so the CRM could only say
+	"ad 120210…" — true and useless. This asks once per ad and remembers the
+	answer: many leads come from the same ad, and the answer does not change
+	between them.
+
+	Never fatal. A page token cannot always read the ad object — the ad belongs
+	to the client's ad account, and whoever connected the page may not be able to
+	advertise on it — and a lead is worth more than the name of the ad that
+	produced it. A refusal is remembered so the CRM stops asking, but only for
+	the cache window: access granted later must be able to take effect, and a
+	name we already knew is not forgotten because of one refusal.
+	"""
+	if not ad_id or not token:
+		return {}
+
+	cached = frappe.db.get_value(
+		"Facebook Ad",
+		ad_id,
+		["ad_name", "adset_name", "campaign_id", "campaign_name", "fetched_on", "unreadable"],
+		as_dict=True,
+	)
+	known = _names(cached)
+	if (
+		cached
+		and cached.fetched_on
+		and frappe.utils.date_diff(frappe.utils.now(), cached.fetched_on) < AD_CACHE_DAYS
+	):
+		return known
+
+	try:
+		data = graph_get(ad_id, token, {"fields": "name,adset{name},campaign{id,name}"})
+	except MetaAPIError as exc:
+		_remember_ad(ad_id, {"unreadable": 1})
+		frappe.logger("meta").info(f"Could not describe ad {ad_id}: {exc}")
+		return known
+
+	values = {
+		"ad_name": data.get("name") or "",
+		"adset_name": (data.get("adset") or {}).get("name") or "",
+		"campaign_id": (data.get("campaign") or {}).get("id") or "",
+		"campaign_name": (data.get("campaign") or {}).get("name") or "",
+		"unreadable": 0,
+	}
+	_remember_ad(ad_id, values)
+	return values
+
+
+def _names(cached: dict | None) -> dict:
+	"""The part of a remembered ad that attribution reads."""
+	if not cached or (cached.get("unreadable") and not cached.get("ad_name")):
+		return {}
+	return {key: cached.get(key) or "" for key in ("ad_name", "adset_name", "campaign_id", "campaign_name")}
+
+
+def _remember_ad(ad_id: str, values: dict) -> None:
+	values = {**values, "fetched_on": frappe.utils.now()}
+	try:
+		if frappe.db.exists("Facebook Ad", ad_id):
+			frappe.db.set_value("Facebook Ad", ad_id, values, update_modified=False)
+		else:
+			frappe.get_doc({"doctype": "Facebook Ad", "ad_id": ad_id, **values}).insert(
+				ignore_permissions=True
+			)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), f"Meta: could not remember ad {ad_id}")
+
+
+def _attribute(doc, lead: dict, form_id: str | None, token: str | None = None) -> None:
 	"""Credit a lead-ad submission to the ad that produced it.
 
 	These leads never touch a browser we track — Meta hands them over server to
 	server — so there is no session to read. `is_organic` is what separates a paid
-	placement from a lead form on an organic post, and `ad_id` is the closest thing
-	the lead node gives us to a creative, so it goes in the content slot.
+	placement from a lead form on an organic post.
+
+	The ad is named where Meta will tell us its name: "arrived from the ad
+	Promo Autunno, campaign Lead Settembre" is worth incomparably more to whoever
+	reads the record than the id of the same ad. The form name stays the fallback
+	for the campaign slot, which is what an organic lead has instead.
 	"""
 	from crm.api.tracking import attribute
 
 	organic = bool(lead.get("is_organic"))
 	instagram = lead.get("platform") == "ig"
+	ad = describe_ad(lead.get("ad_id"), token) if lead.get("ad_id") and not organic else {}
+	form_name = frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or ""
+
 	attribute(
 		doc,
 		category="Organic Social" if organic else "Paid Social",
 		dimensions={
 			"source": "instagram" if instagram else "facebook",
 			"medium": "social" if organic else "paid_social",
-			"campaign": frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or "",
-			"content": lead.get("ad_id") or "",
+			"campaign": ad.get("campaign_name") or form_name,
+			"term": ad.get("adset_name") or "",
+			"content": ad.get("ad_name") or lead.get("ad_id") or "",
 			"landing_page": "lead_ad_form",
 		},
 	)
