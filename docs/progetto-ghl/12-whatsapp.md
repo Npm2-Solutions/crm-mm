@@ -188,6 +188,31 @@ dimenticata, che è come le chiamate WhatsApp finiscono firmate dall'app
 Facebook. La schermata adesso dice quale app sta firmando, e se l'ha presa in
 prestito.
 
+### Quando "Start" non fa niente
+
+La pagina dell'hub chiamava `FB.login` senza sapere se lo script di Facebook era
+arrivato. Se non era arrivato — e la causa piu' comune e' un blocco pubblicita'
+o privacy su `connect.facebook.net` — il pulsante si disabilitava, lo stato
+diceva "Opening WhatsApp setup…" e non succedeva piu' nulla: un fallimento muto
+su un pezzo che non si puo' nemmeno riprovare a caso.
+
+Adesso la pagina sa tre cose e le dice:
+
+- **lo script non c'e'**: aspetta fino a otto secondi (puo' solo essere lento) e
+  poi dice che e' bloccato e cosa fare. Il nuovo tentativo lo fa la persona, di
+  proposito: la finestra di Facebook si apre solo da un click vero, e premere
+  Start al posto suo la farebbe bloccare come popup;
+- **`FB.login` solleva un'eccezione**: popup bloccato, SDK vecchio,
+  configurazione sbagliata — lo dice invece di fermarsi;
+- **`FB.login` torna senza `authResponse`**: puo' essere una finestra chiusa
+  dalla persona, ma e' anche cosa succede quando *Login with the JavaScript SDK*
+  e' spento sull'app o il dominio non e' fra gli Allowed domains. Il messaggio
+  nomina entrambe, e `status` finisce nel log della sessione.
+
+Dove si guarda: **WhatsApp Signup Session** sull'hub. C'era gia' e registra ogni
+passo; un `STARTED` senza niente dopo vuol dire che il click e' arrivato al
+server e la finestra di Facebook non si e' mai aperta.
+
 ## Architettura (stesso schema del Facebook già fatto)
 
 L'onboarding di Coexistence si fa con **Embedded Signup**, che gira nel browser
