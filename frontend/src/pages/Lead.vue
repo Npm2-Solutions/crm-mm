@@ -22,13 +22,6 @@
         :website="doc.website"
         @done="onEnriched"
       />
-      <Button
-        v-if="doc.contact"
-        variant="ghost"
-        :tooltip="__('Numbers and emails')"
-        :icon="ContactsIcon"
-        @click="openAddressBook"
-      />
       <AssignTo v-model="assignees.data" doctype="CRM Lead" :docname="leadId" />
       <Dropdown
         v-if="doc && document.statuses"
@@ -47,7 +40,11 @@
           </Button>
         </template>
       </Dropdown>
-      <Dropdown v-if="deals.data?.length" :options="dealOptions" placement="right">
+      <Dropdown
+        v-if="deals.data?.length"
+        :options="dealOptions"
+        placement="right"
+      >
         <template #default="{ open }">
           <Button
             :label="__('Deals') + ' · ' + deals.data.length"
@@ -209,7 +206,7 @@
         class="flex flex-1 flex-col justify-between overflow-hidden"
       >
         <SidePanelLayout
-          :sections="parsedSections"
+          :sections="sections.data"
           doctype="CRM Lead"
           :docname="leadId"
           @reload="sections.reload"
@@ -272,7 +269,6 @@ import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
-import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
@@ -299,7 +295,6 @@ import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
-import { useContactFields } from '@/composables/useContactFields'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { callEnabled } from '@/composables/telephony'
@@ -315,7 +310,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning'
@@ -332,16 +327,6 @@ const props = defineProps({
   leadId: { type: String, required: true },
 })
 
-// the lead's own page is the person; this opens the address book entry behind
-// it, which is where extra numbers and emails are added
-function openAddressBook() {
-  router.push({
-    name: 'Contact',
-    params: { contactId: doc.value.contact },
-    query: { rubrica: 1 },
-  })
-}
-
 const reload = ref(false)
 const activities = ref(null)
 const errorTitle = ref('')
@@ -357,36 +342,6 @@ const deals = createResource({
   params: { lead: props.leadId },
   auto: true,
 })
-
-// The lead's `email` and `mobile_no` are the primary ones only. This hands the
-// whole address book entry to the same control the Contact page uses, so the
-// Person section lists every number and every address — and there is one block
-// for the recapiti instead of two showing different halves of the same thing.
-const personResource = createResource({
-  url: 'crm.api.lead.get_contact_details',
-  params: { lead: props.leadId },
-  auto: true,
-  onSuccess: (data) => (person.doc = data || {}),
-})
-
-const person = reactive({
-  doc: {},
-  reload: () => personResource.reload(),
-})
-
-const transformContactField = useContactFields(person, { emailFieldname: 'email' })
-
-const parsedSections = computed(() =>
-  (sections.data || []).map((section) => ({
-    ...section,
-    columns: (section.columns || []).map((column) => ({
-      ...column,
-      fields: (column.fields || []).map((field) =>
-        person.doc.name ? transformContactField(field) : field,
-      ),
-    })),
-  })),
-)
 
 const dealOptions = computed(() => [
   ...(deals.data || []).map((deal) => ({
@@ -662,11 +617,6 @@ function onEnriched() {
 function reloadResources(data) {
   if (Object.hasOwn(data ?? {}, 'lead_owner')) {
     assignees.reload()
-  }
-  // editing the number or the email here writes it on the contact, so the
-  // address book block beside it is now out of date
-  if (['email', 'mobile_no', 'phone'].some((f) => Object.hasOwn(data ?? {}, f))) {
-    personResource.reload()
   }
   if (
     Object.hasOwn(data ?? {}, 'status') &&

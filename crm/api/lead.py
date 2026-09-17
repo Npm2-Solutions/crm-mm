@@ -103,30 +103,3 @@ def get_deals(lead: str) -> list[dict]:
 		fields=DEAL_FIELDS,
 		order_by="modified desc",
 	)
-
-
-@frappe.whitelist()
-def get_contact_details(lead: str) -> dict:
-	"""This person's address book entry, in the shape the side panel edits.
-
-	The lead's `email` and `mobile_no` show only the primary ones. Handing the
-	whole entry over lets the same control the Contact page uses list every
-	number and every address, and add, correct or promote one — so there is a
-	single block for the recapiti instead of two saying different halves of the
-	same thing.
-	"""
-	if not frappe.has_permission("CRM Lead", "read", lead):
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
-
-	contact = frappe.db.get_value("CRM Lead", lead, "contact")
-	if not contact or not frappe.has_permission("Contact", "read", contact):
-		return {}
-
-	doc = frappe.get_doc("Contact", contact)
-	return {
-		"name": doc.name,
-		"email_id": doc.email_id,
-		"mobile_no": doc.mobile_no,
-		"email_ids": [{"name": row.name, "email_id": row.email_id} for row in doc.email_ids if row.email_id],
-		"phone_nos": [{"name": row.name, "phone": row.phone} for row in doc.phone_nos if row.phone],
-	}

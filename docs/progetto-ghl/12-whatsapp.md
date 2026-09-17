@@ -152,6 +152,42 @@ telefono che continua a funzionare, chat in entrambi i posti — restando una co
 vendibile. La strada non ufficiale, su numeri di clienti paganti, è un rischio
 che non vale la pena correre.
 
+## Finire la configurazione dell'app (17/09/2026)
+
+Le permission sono approvate — `whatsapp_business_messaging` e
+`whatsapp_business_management` con accesso **advanced**, che è ciò che rende
+l'app un Tech Provider. Restano tre cose, e due sono sul lato Meta:
+
+1. **La configurazione di Embedded Signup.** Sull'app WhatsApp: *Facebook Login
+   for Business → Configurations → Create from template →* "WhatsApp Embedded
+   Signup". Il template con scadenza token a 60 giorni è quello indicato dalla
+   doc. Si copia l'**id della configurazione**.
+2. **Le impostazioni OAuth del client**, sotto *Facebook Login for Business →
+   Settings*: Client OAuth login, Web OAuth login, Enforce HTTPS, Embedded
+   Browser OAuth Login, Strict Mode, e **Login with the JavaScript SDK** —
+   Embedded Signup gira nel browser col JS SDK. Il domino dell'hub va in
+   *Allowed domains*; il redirect URI
+   (`https://hub.../whatsapp-connect`) c'è già.
+3. **L'id nel CRM.** Prima si poteva solo dal bench
+   (`whatsapp_signup_config_id`); adesso si incolla nella schermata, perché su
+   un host gestito il bench non è di chi configura, e quell'id è l'ultima cosa
+   fra un cliente e il QR. Il bench continua a vincere dove c'è.
+
+Due cose trovate mentre si verificava:
+
+**`account_update` non era sottoscritto.** L'Embedded Signup lo richiede — è
+come Meta racconta l'esito di un onboarding e lo stato dell'account dopo — e noi
+avevamo `handle_account_update` senza iscriverci al campo: quindi era codice
+morto, e un onboarding fallito non lo sapeva nessuno. Ora è in `WEBHOOK_FIELDS`
+e viene smistato al nostro handler come gli altri campi della Coexistence.
+
+**L'app WhatsApp può essere quella di Facebook per sbaglio.**
+`get_whatsapp_app_id()` ripiega sull'app Meta quando non c'è un id proprio: è
+legittimo (un'app sola per tutto) ed è anche identico a un'impostazione
+dimenticata, che è come le chiamate WhatsApp finiscono firmate dall'app
+Facebook. La schermata adesso dice quale app sta firmando, e se l'ha presa in
+prestito.
+
 ## Architettura (stesso schema del Facebook già fatto)
 
 L'onboarding di Coexistence si fa con **Embedded Signup**, che gira nel browser

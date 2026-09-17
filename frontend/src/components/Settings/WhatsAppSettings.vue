@@ -1,7 +1,9 @@
 <template>
   <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
     <div class="flex flex-col gap-1 px-2">
-      <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">{{ __('WhatsApp') }}</h2>
+      <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        {{ __('WhatsApp') }}
+      </h2>
       <p class="text-p-base text-ink-gray-6">
         {{
           __(
@@ -20,6 +22,23 @@
       </div>
 
       <template v-else>
+        <!-- which Meta app signs these calls. A borrowed id is legitimate (one
+             app for Facebook and WhatsApp) and also how an agency discovers,
+             weeks later, that its WhatsApp calls went out as the Facebook app -->
+        <div
+          v-if="status.data?.app?.app_id"
+          class="mb-4 flex items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
+        >
+          <span>{{ __('Meta app in use') }}:</span>
+          <span class="text-ink-gray-8">{{ status.data.app.app_id }}</span>
+          <span
+            v-if="status.data.app.borrowed_from_meta_app"
+            class="text-ink-amber-6"
+          >
+            {{ __('— the Facebook app, because no WhatsApp app is set') }}
+          </span>
+        </div>
+
         <!-- connect -->
         <div
           class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
@@ -35,7 +54,9 @@
             <span class="text-p-sm text-ink-gray-5">
               {{
                 status.data?.can_connect
-                  ? __('You will scan a QR code with the WhatsApp Business app on your phone.')
+                  ? __(
+                      'You will scan a QR code with the WhatsApp Business app on your phone.',
+                    )
                   : __('Two things have to exist first — see below.')
               }}
             </span>
@@ -44,7 +65,11 @@
             :variant="status.data?.connected ? 'outline' : 'solid'"
             :disabled="!status.data?.can_connect"
             :loading="connecting"
-            :label="status.data?.connected ? __('Connect another number') : __('Connect WhatsApp')"
+            :label="
+              status.data?.connected
+                ? __('Connect another number')
+                : __('Connect WhatsApp')
+            "
             @click="connect"
           />
         </div>
@@ -63,7 +88,11 @@
                 {{ __('Meta is not notifying this hub yet') }}
               </span>
               <span class="text-p-sm text-ink-gray-6">
-                {{ __('Without it no message reaches the CRM, in either direction.') }}
+                {{
+                  __(
+                    'Without it no message reaches the CRM, in either direction.',
+                  )
+                }}
               </span>
               <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
                 {{ webhook.data.error }}
@@ -89,11 +118,33 @@
             :key="item.key"
             class="flex flex-col gap-0.5"
           >
-            <span class="text-p-sm-medium text-ink-gray-7">{{ item.what }}</span>
+            <span class="text-p-sm-medium text-ink-gray-7">{{
+              item.what
+            }}</span>
             <span class="text-p-sm text-ink-gray-6">{{ item.how }}</span>
+            <!-- what can be finished here is finished here: the id comes off the
+                 Meta app and has nowhere else to go -->
+            <div v-if="item.fieldname" class="mt-2 flex items-end gap-2">
+              <FormControl
+                v-model="appForm[item.fieldname]"
+                type="text"
+                class="w-72"
+                :placeholder="__('Paste the id')"
+              />
+              <Button
+                :label="__('Save')"
+                variant="solid"
+                :loading="savingApp"
+                @click="saveWhatsAppApp()"
+              />
+            </div>
           </div>
           <span class="text-p-sm text-ink-gray-5">
-            {{ __('None of this can be done from here: it lives on the Meta app and in the bench configuration.') }}
+            {{
+              __(
+                'The rest lives on the Meta app: it cannot be created from here.',
+              )
+            }}
           </span>
         </div>
 
@@ -144,12 +195,18 @@
         </details>
 
         <div v-if="status.data?.accounts?.length">
-          <div class="mb-2 text-p-base-medium text-ink-gray-7">{{ __('Numbers') }}</div>
-          <div class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2">
+          <div class="mb-2 text-p-base-medium text-ink-gray-7">
+            {{ __('Numbers') }}
+          </div>
+          <div
+            class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+          >
             <div v-for="account in status.data.accounts" :key="account.name">
               <div class="flex items-center gap-3 px-3 py-2.5">
                 <div class="min-w-0 flex-1">
-                  <div class="truncate text-p-base text-ink-gray-8">{{ account.name }}</div>
+                  <div class="truncate text-p-base text-ink-gray-8">
+                    {{ account.name }}
+                  </div>
                   <div class="truncate text-p-sm text-ink-gray-5">
                     {{ __('Phone number ID') }}: {{ account.phone_id }}
                   </div>
@@ -173,17 +230,29 @@
                   :loading="checking == account.name"
                   @click="recheckDelivery(account.name)"
                 />
-                <Button variant="ghost" icon="lucide-trash-2" @click="disconnect(account.name)" />
+                <Button
+                  variant="ghost"
+                  icon="lucide-trash-2"
+                  @click="disconnect(account.name)"
+                />
               </div>
               <!-- Sending needs only a token, receiving needs two more things that
                    nothing tells you about until a reply never arrives. -->
               <div
                 v-if="delivery[account.name]"
                 class="px-3 pb-3"
-                :class="delivery[account.name].ok ? 'text-ink-green-5' : 'text-ink-gray-6'"
+                :class="
+                  delivery[account.name].ok
+                    ? 'text-ink-green-5'
+                    : 'text-ink-gray-6'
+                "
               >
                 <div v-if="delivery[account.name].ok" class="text-p-sm">
-                  {{ __('Incoming messages can arrive: Meta notifies the app and the hub routes them here.') }}
+                  {{
+                    __(
+                      'Incoming messages can arrive: Meta notifies the app and the hub routes them here.',
+                    )
+                  }}
                 </div>
                 <div v-else class="flex flex-col gap-1">
                   <div
@@ -191,15 +260,23 @@
                     :key="problem.key"
                     class="flex flex-col"
                   >
-                    <span class="text-p-sm-medium text-ink-red-5">{{ problem.what }}</span>
-                    <span class="text-p-sm text-ink-gray-6">{{ problem.detail }}</span>
+                    <span class="text-p-sm-medium text-ink-red-5">{{
+                      problem.what
+                    }}</span>
+                    <span class="text-p-sm text-ink-gray-6">{{
+                      problem.detail
+                    }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           <p class="mt-2 text-p-sm text-ink-gray-5">
-            {{ __('Removing a number here does not affect the WhatsApp Business app on the phone.') }}
+            {{
+              __(
+                'Removing a number here does not affect the WhatsApp Business app on the phone.',
+              )
+            }}
           </p>
         </div>
       </template>
@@ -213,7 +290,12 @@ import { reactive, ref } from 'vue'
 
 const connecting = ref(false)
 
-const manual = ref({ phone_number_id: '', waba_id: '', token: '', account_name: '' })
+const manual = ref({
+  phone_number_id: '',
+  waba_id: '',
+  token: '',
+  account_name: '',
+})
 const addingAccount = ref(false)
 
 function addAccount() {
@@ -224,7 +306,12 @@ function addAccount() {
     auto: true,
     onSuccess: (data) => {
       addingAccount.value = false
-      manual.value = { phone_number_id: '', waba_id: '', token: '', account_name: '' }
+      manual.value = {
+        phone_number_id: '',
+        waba_id: '',
+        token: '',
+        account_name: '',
+      }
       toast.success(__('Number added'))
       if (data?.account)
         delivery[data.account] = {
@@ -269,6 +356,34 @@ const status = createResource({
   url: 'crm.integrations.whatsapp.api.get_status',
   auto: true,
 })
+
+// the ids that belong to the WhatsApp app itself. They can also come from the
+// bench config, which wins; this is the way in on a host where the bench is not
+// somebody's to edit.
+const appForm = reactive({ whatsapp_app_id: '', whatsapp_signup_config_id: '' })
+const savingApp = ref(false)
+
+function saveWhatsAppApp() {
+  savingApp.value = true
+  // only what was typed: sending an empty box would clear an id that is there
+  const params = Object.fromEntries(
+    Object.entries(appForm).filter(([, value]) => value),
+  )
+  createResource({
+    url: 'crm.integrations.whatsapp.api.save_whatsapp_app',
+    params,
+    auto: true,
+    onSuccess: (data) => {
+      savingApp.value = false
+      status.data = data
+      toast.success(__('Saved'))
+    },
+    onError: (e) => {
+      savingApp.value = false
+      toast.error(e.messages?.[0] || __('Could not save'))
+    },
+  })
+}
 
 // What the check found, per number. Repairing and checking are the same call:
 // everything it does is idempotent, so there is nothing to press twice.

@@ -30,6 +30,7 @@ from frappe.utils import get_url
 
 from crm.integrations.meta.client import (
 	MetaAPIError,
+	get_settings,
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
 	whatsapp_graph_get,
@@ -44,8 +45,14 @@ TIMEOUT = 30
 
 
 def config_id() -> str:
-	"""Facebook Login for Business configuration for Embedded Signup v4."""
-	return frappe.conf.get("whatsapp_signup_config_id") or ""
+	"""Facebook Login for Business configuration for Embedded Signup v4.
+
+	The bench config wins, so an agency that sets it once for every client site
+	keeps doing that. Settings is the fallback, because on a managed host the
+	bench is not somebody's to edit and the id is the last thing standing
+	between a client and the QR.
+	"""
+	return frappe.conf.get("whatsapp_signup_config_id") or get_settings().whatsapp_signup_config_id or ""
 
 
 def _state_secret() -> str:

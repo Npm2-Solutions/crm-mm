@@ -120,11 +120,10 @@ const routes = [
     component: () => import(`@/pages/${handleMobileView('Contact')}.vue`),
     props: true,
     // an address book entry is not a person: open the lead that owns it, which
-    // is where the chat, the activity and the timeline are
-    // ?rubrica=1 is the way in from the lead, for editing the numbers and
-    // emails themselves — that is the one thing this page is still for
+    // is where the chat, the activity and the timeline are. There is no way past
+    // this any more — with one number and one email per person there is nothing
+    // in here that is not on the person's own page.
     beforeEnter: async (to) => {
-      if (to.query.rubrica) return true
       const leadId = await leadOwning(to.params.contactId)
       return leadId ? { name: 'Lead', params: { leadId } } : true
     },

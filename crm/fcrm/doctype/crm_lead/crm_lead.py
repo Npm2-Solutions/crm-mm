@@ -318,50 +318,70 @@ class CRMLead(Document):
 				)
 
 	def sync_with_contact(self) -> None:
-		"""Keep the lead's recapiti and its contact saying the same thing.
+		"""Keep the person and their address book entry saying the same thing.
 
-		The contact holds the truth — it is the one that can hold several numbers,
-		and the one an incoming message is resolved through. The fields here are a
-		copy kept for the two hundred places that read `lead.mobile_no`, and for
-		as long as they are still editable, editing them writes through instead of
-		quietly drifting apart, which is what they did before.
+		One person, one entry, one number, one email — decided, not discovered.
+		The entry is what an incoming message is resolved through; the fields here
+		are the copy the two hundred places that read `lead.mobile_no` use, and
+		editing them writes through instead of quietly drifting apart.
 		"""
 		if self.is_new() or not self.contact:
 			return
 
-		edited_here = [field for field in ("email", "mobile_no", "phone") if self.has_value_changed(field)]
+		self.validate_one_person_per_contact()
+
+		edited_here = [field for field in ("email", "mobile_no") if self.has_value_changed(field)]
 		if edited_here:
 			self.push_to_contact(edited_here)
 		else:
 			self.pull_from_contact()
 
+	def validate_one_person_per_contact(self) -> None:
+		"""One address book entry belongs to one person.
+
+		Two people sharing an entry means one number with two owners: a reply
+		would land on whichever the CRM happened to find first. Refused here
+		rather than repaired later, because by then nobody knows which of the two
+		the conversation was with.
+		"""
+		other = frappe.db.get_value("CRM Lead", {"contact": self.contact, "name": ["!=", self.name]}, "name")
+		if other:
+			frappe.throw(
+				_("This address book entry already belongs to {0}").format(other),
+				title=_("One person, one entry"),
+			)
+
 	def pull_from_contact(self) -> None:
-		contact = frappe.db.get_value(
-			"Contact", self.contact, ["email_id", "mobile_no", "phone"], as_dict=True
-		)
+		# the landline is not in the address book (see push_to_contact): it lives
+		# here and nowhere else, so there is nothing to pull for it
+		contact = frappe.db.get_value("Contact", self.contact, ["email_id", "mobile_no"], as_dict=True)
 		if not contact:
 			return
 		self.email = contact.email_id or self.email
 		self.mobile_no = contact.mobile_no or self.mobile_no
-		self.phone = contact.phone or self.phone
 
 	def push_to_contact(self, fields: list[str]) -> None:
-		"""Carry an edit made here over to the contact that owns it."""
+		"""Carry an edit made here over to the contact that owns it.
+
+		The landline is deliberately not carried: the address book entry holds the
+		one number the system writes to, and that is the mobile. A second number
+		in there would be a second possible recipient, which is the doubt we
+		decided not to have.
+		"""
 		doc = frappe.get_doc("Contact", self.contact)
 		changed = False
 
 		if "email" in fields and self.email:
-			changed |= set_primary_row(doc, "email_ids", "email_id", self.email, "is_primary")
-		for field, primary in (("mobile_no", "is_primary_mobile_no"), ("phone", "is_primary_phone")):
-			if field in fields and self.get(field):
-				changed |= set_primary_row(doc, "phone_nos", "phone", self.get(field), primary)
+			changed |= only_row(doc, "email_ids", "email_id", self.email, "is_primary")
+		if "mobile_no" in fields and self.mobile_no:
+			changed |= only_row(doc, "phone_nos", "phone", self.mobile_no, "is_primary_mobile_no")
 
 		if changed:
 			doc.save(ignore_permissions=True)
 
 		# and the lead shows what the contact settled on: the same number, written
 		# with its prefix, so nobody has to wonder whether to type one
-		for field, source in (("email", "email_id"), ("mobile_no", "mobile_no"), ("phone", "phone")):
+		for field, source in (("email", "email_id"), ("mobile_no", "mobile_no")):
 			if field in fields and doc.get(source):
 				self.set(field, doc.get(source))
 
@@ -387,36 +407,25 @@ class CRMLead(Document):
 
 		try:
 			existing = self.contact_exists(throw=False)
-			if existing:
+			if existing and not self.someone_elses(existing):
 				self.db_set("contact", existing, update_modified=False)
-				# keep what was just typed instead of letting the older record win
-				self.add_numbers_to_contact(existing)
 				return
 
 			self.db_set("contact", self.create_contact(throw=False), update_modified=False)
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"CRM Lead: could not give {self.name} a contact")
 
-	def add_numbers_to_contact(self, contact: str) -> None:
-		"""Add this lead's numbers to a contact that was already there.
+	def someone_elses(self, contact: str) -> bool:
+		"""Is this address book entry already somebody's?
 
-		The same person reached us again from a different number: that is one more
-		way to call them, not a correction of the one we had.
+		An entry belongs to one person. Sharing the one that matches this email
+		would give one number two owners, and a reply would land on whichever the
+		CRM found first — so this lead gets its own entry instead. Two entries
+		with the same email is the lesser evil, and the entry points that dedupe a
+		person (`crm.api.lead.find_person`) are what keep it rare.
 		"""
-		doc = frappe.get_doc("Contact", contact)
-		known = {digits_of(row.phone) for row in doc.phone_nos}
-		added = False
-		for number, primary in ((self.mobile_no, "is_primary_mobile_no"), (self.phone, "is_primary_phone")):
-			if not number or digits_of(number) in known:
-				continue
-			doc.append("phone_nos", {"phone": number, primary: 0 if doc.phone_nos else 1})
-			known.add(digits_of(number))
-			added = True
-		if self.email and self.email not in {row.email_id for row in doc.email_ids}:
-			doc.append("email_ids", {"email_id": self.email, "is_primary": 0 if doc.email_ids else 1})
-			added = True
-		if added:
-			doc.save(ignore_permissions=True)
+		owner = frappe.db.get_value("CRM Lead", {"contact": contact, "name": ["!=", self.name]}, "name")
+		return bool(owner)
 
 	def create_contact(self, existing_contact=None, throw=True):
 		if not self.lead_name:
@@ -444,9 +453,8 @@ class CRMLead(Document):
 		if self.email:
 			contact.append("email_ids", {"email_id": self.email, "is_primary": 1})
 
-		if self.phone:
-			contact.append("phone_nos", {"phone": self.phone, "is_primary_phone": 1})
-
+		# the landline is not an address book entry: it stays on the person, so the
+		# entry holds the one number the system writes to
 		if self.mobile_no:
 			contact.append("phone_nos", {"phone": self.mobile_no, "is_primary_mobile_no": 1})
 
@@ -759,14 +767,18 @@ def convert_to_deal(
 	return _deal
 
 
-def set_primary_row(doc, table: str, fieldname: str, value: str, primary: str) -> bool:
-	"""Make `value` the primary row of a contact's numbers or emails.
+def only_row(doc, table: str, fieldname: str, value: str, primary: str) -> bool:
+	"""Leave `value` as the ONE number (or email) of this address book entry.
 
-	An existing row is promoted rather than duplicated: the same number written
-	with spaces, with a plus, or with the country prefix left off is the same
-	number — comparing the raw digits made `3703400189` and `+393703400189` look
-	like two people. Anything else that was primary gives the flag up, because
-	two primaries mean nobody knows which to call.
+	One person, one way to reach them. A second number is a second question at
+	every send — which one, and was the reply on the other one? — and the answer
+	was worth less than the doubt. So this replaces rather than appends: the row
+	that already holds the same number is kept (its id is referenced elsewhere)
+	and everything else goes.
+
+	"The same number" is the number itself, not how somebody typed it: with
+	spaces, without the prefix, or with a plus, `3703400189` and `+393703400189`
+	are one person — comparing the raw text made them two.
 	"""
 	rows = doc.get(table) or []
 	same = (
@@ -776,14 +788,15 @@ def set_primary_row(doc, table: str, fieldname: str, value: str, primary: str) -
 	)
 	match = next((row for row in rows if same(row.get(fieldname)) == same(value)), None)
 
-	if match and match.get(primary):
+	if match and match.get(primary) and len(rows) == 1:
 		return False
 
-	for row in rows:
-		row.set(primary, 0)
 	if match:
+		match.set(fieldname, value)
 		match.set(primary, 1)
+		doc.set(table, [match])
 	else:
+		doc.set(table, [])
 		doc.append(table, {fieldname: value, primary: 1})
 	return True
 

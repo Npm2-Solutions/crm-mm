@@ -322,6 +322,45 @@ class TestCRMLead(IntegrationTestCase):
 		# Should return the same organization
 		self.assertEqual(org_name1, org_name2)
 
+	def test_the_person_keeps_one_number_and_one_email(self):
+		"""Decided, not discovered: a second number is a second question at every
+		send, and the answer was worth less than the doubt."""
+		lead = create_lead(
+			first_name="Chiara",
+			email="chiara@example.com",
+			mobile_no="+39 333 1112223",
+		)
+		contact = frappe.get_doc("Contact", lead.contact)
+		self.assertEqual(len(contact.phone_nos), 1)
+		self.assertEqual(len(contact.email_ids), 1)
+
+		lead.mobile_no = "+39 333 9998887"
+		lead.email = "chiara.nuova@example.com"
+		lead.save()
+
+		contact.reload()
+		self.assertEqual([row.phone for row in contact.phone_nos], ["+393339998887"])
+		self.assertEqual([row.email_id for row in contact.email_ids], ["chiara.nuova@example.com"])
+
+	def test_an_extra_row_added_elsewhere_is_collapsed(self):
+		"""The screens no longer offer adding one; the Desk, an import or a script
+		still can, and the rule has to hold there too."""
+		lead = create_lead(first_name="Paolo", email="paolo@example.com", mobile_no="+39 333 4445556")
+		contact = frappe.get_doc("Contact", lead.contact)
+		contact.append("phone_nos", {"phone": "+39 02 1234567"})
+		contact.save()
+
+		contact.reload()
+		self.assertEqual([row.phone for row in contact.phone_nos], ["+393334445556"])
+
+	def test_two_people_cannot_share_one_address_book_entry(self):
+		first = create_lead(first_name="Anna", email="anna@example.com")
+		second = create_lead(first_name="Bruno", email="bruno@example.com")
+
+		second.contact = first.contact
+		with self.assertRaises(frappe.ValidationError):
+			second.save()
+
 	def test_contact_exists_with_email(self):
 		"""Test checking if contact already exists with same email"""
 		lead1 = create_lead(
