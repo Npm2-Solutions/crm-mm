@@ -6,6 +6,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "tab_company",
   "identity_section",
   "company_name",
   "first_name",
@@ -20,7 +21,6 @@
   "country",
   "column_fiscal",
   "tax_regime",
-  "document_mode",
   "address_section",
   "address_line",
   "civic_number",
@@ -41,6 +41,14 @@
   "share_capital",
   "sole_shareholder",
   "liquidation_state",
+  "contacts_section",
+  "email",
+  "phone",
+  "pec",
+  "column_contacts",
+  "bank_name",
+  "iban",
+  "tab_invoicing",
   "fund_section",
   "fund_type",
   "fund_rate",
@@ -63,20 +71,14 @@
   "series_healthcare",
   "column_numbering",
   "number_format",
-  "healthcare_section",
-  "sender_category",
-  "region_code",
-  "asl_code",
-  "ssa_code",
-  "column_healthcare",
-  "ts_mode",
-  "ts_provider_endpoint",
-  "ts_delegation_status",
-  "ts_username",
-  "ts_password",
-  "ts_pincode",
-  "ts_intermediary_reference",
-  "ts_certificate",
+  "tab_documents",
+  "preservation_section",
+  "document_mode",
+  "conservation_local",
+  "column_preservation",
+  "conservation_service",
+  "conservation_reference",
+  "tab_sdi",
   "sdi_section",
   "sdi_mode",
   "acube_environment",
@@ -90,18 +92,30 @@
   "sdi_webhook_secret",
   "sdi_pec_address",
   "sdi_last_progressive",
-  "conservation_service",
-  "conservation_local",
-  "conservation_reference",
-  "contacts_section",
-  "email",
-  "phone",
-  "pec",
-  "column_contacts",
-  "bank_name",
-  "iban"
+  "tab_healthcare",
+  "healthcare_section",
+  "sender_category",
+  "region_code",
+  "asl_code",
+  "ssa_code",
+  "column_healthcare",
+  "ts_certificate",
+  "ts_transmission_section",
+  "ts_mode",
+  "ts_provider_endpoint",
+  "ts_delegation_status",
+  "column_ts_transmission",
+  "ts_username",
+  "ts_password",
+  "ts_pincode",
+  "ts_intermediary_reference"
  ],
  "fields": [
+  {
+   "fieldname": "tab_company",
+   "fieldtype": "Tab Break",
+   "label": "Company"
+  },
   {
    "fieldname": "identity_section",
    "fieldtype": "Section Break",
@@ -185,14 +199,6 @@
    "label": "Regime fiscale",
    "options": "RF01\nRF02\nRF04\nRF05\nRF06\nRF07\nRF08\nRF09\nRF10\nRF11\nRF12\nRF13\nRF14\nRF15\nRF16\nRF17\nRF18\nRF19",
    "reqd": 1
-  },
-  {
-   "default": "analogico_con_copia",
-   "description": "A document that transits the SdI is electronic by definition, and the Agenzia's free service preserves it. This choice is about the documents that never transit - healthcare towards a natural person, which is forbidden from the SdI, and PDF-only documents. analogico_con_copia keeps a paper original and needs nobody; elettronica_extra_sdi makes them born electronic, and then somebody has to be paid to preserve them (Circolare 18/E 2014).",
-   "fieldname": "document_mode",
-   "fieldtype": "Select",
-   "label": "Documents outside the SdI",
-   "options": "analogico_con_copia\nelettronica_extra_sdi"
   },
   {
    "fieldname": "address_section",
@@ -302,6 +308,47 @@
    "fieldtype": "Select",
    "label": "Liquidation",
    "options": "LN\nLS"
+  },
+  {
+   "fieldname": "contacts_section",
+   "fieldtype": "Section Break",
+   "label": "Contacts"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "fieldname": "pec",
+   "fieldtype": "Data",
+   "label": "PEC",
+   "options": "Email"
+  },
+  {
+   "fieldname": "column_contacts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank"
+  },
+  {
+   "fieldname": "iban",
+   "fieldtype": "Data",
+   "label": "IBAN"
+  },
+  {
+   "fieldname": "tab_invoicing",
+   "fieldtype": "Tab Break",
+   "label": "Invoicing"
   },
   {
    "fieldname": "fund_section",
@@ -433,91 +480,53 @@
    "reqd": 1
   },
   {
-   "collapsible": 1,
-   "fieldname": "healthcare_section",
+   "fieldname": "tab_documents",
+   "fieldtype": "Tab Break",
+   "label": "Documents"
+  },
+  {
+   "fieldname": "preservation_section",
    "fieldtype": "Section Break",
-   "label": "Sistema TS"
+   "label": "Preservation"
   },
   {
-   "default": "non_sanitario",
-   "description": "The category of whoever issues. In a facility it diverges from the performer's, and it is this one the tracciato validates against.",
-   "fieldname": "sender_category",
+   "default": "analogico_con_copia",
+   "description": "A document that transits the SdI is electronic by definition, and the Agenzia's free service preserves it. This choice is about the documents that never transit - healthcare towards a natural person, which is forbidden from the SdI, and PDF-only documents. analogico_con_copia keeps a paper original and needs nobody; elettronica_extra_sdi makes them born electronic, and then somebody has to be paid to preserve them (Circolare 18/E 2014).",
+   "fieldname": "document_mode",
    "fieldtype": "Select",
-   "label": "Sender category",
-   "options": "non_sanitario\nmedico_odontoiatra\nprofessionista_sanitario\nstruttura_autorizzata\nstruttura_accreditata\nveterinario\nfarmacia\nparafarmacia\nottico"
+   "label": "Documents outside the SdI",
+   "options": "analogico_con_copia\nelettronica_extra_sdi"
   },
   {
-   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
-   "fieldname": "region_code",
-   "fieldtype": "Data",
-   "label": "codiceRegione",
-   "length": 3
+   "depends_on": "eval:doc.document_mode=='elettronica_extra_sdi'",
+   "description": "Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Under elettronica_extra_sdi these need a preservation provider of their own - or switch the mode back and keep the paper original.",
+   "fieldname": "conservation_local",
+   "fieldtype": "Select",
+   "label": "Preservation, documents outside the SdI",
+   "options": "\nprovider\naltro"
   },
   {
-   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
-   "fieldname": "asl_code",
-   "fieldtype": "Data",
-   "label": "codiceAsl",
-   "length": 3
-  },
-  {
-   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
-   "fieldname": "ssa_code",
-   "fieldtype": "Data",
-   "label": "codiceSSA",
-   "length": 6
-  },
-  {
-   "fieldname": "column_healthcare",
+   "fieldname": "column_preservation",
    "fieldtype": "Column Break"
   },
   {
-   "default": "provider",
-   "description": "provider hands the tracciato to the accredited intermediary, which is the default for the same reason it is on the SdI side: somebody has to watch the channel. credenziali_studio transmits straight from here with the practice's own Sistema TS credentials - no per-document cost, but the practice owns the credentials and the silence. intermediario is the same, on the /entrate/ channel, for an accountant with an active mandate. export prepares the file and the practice uploads it from the portal, and stays the tested fallback for all three.",
-   "fieldname": "ts_mode",
+   "description": "Ten years is mandatory and transmitting does not provide it. The Agenzia's service is free and keeps them fifteen years, but it needs an explicit adhesion in Fatture e Corrispettivi and only covers invoices from that day on.",
+   "fieldname": "conservation_service",
    "fieldtype": "Select",
-   "label": "Submission mode",
-   "options": "export\nprovider\ncredenziali_studio\nintermediario"
+   "label": "Preservation, SdI documents",
+   "options": "\nagenzia_entrate\nprovider\naltro"
   },
   {
-   "default": "sconosciuta",
-   "description": "Not asked for: probed. Rejection 105 means there is no mandate, 106 means there is one.",
-   "fieldname": "ts_delegation_status",
-   "fieldtype": "Select",
-   "label": "Entratel mandate",
-   "options": "sconosciuta\nassente\npresente\nnon_sondabile",
-   "read_only": 1
-  },
-  {
-   "depends_on": "eval:doc.ts_mode!='export'",
-   "fieldname": "ts_username",
+   "depends_on": "eval:doc.conservation_service||doc.conservation_local",
+   "description": "Who preserves each branch, and since when. A note for whoever asks in eight years - name both if the two branches went to different preservers.",
+   "fieldname": "conservation_reference",
    "fieldtype": "Data",
-   "label": "Sistema TS user"
+   "label": "Preservation reference"
   },
   {
-   "depends_on": "eval:doc.ts_mode!='export'",
-   "fieldname": "ts_password",
-   "fieldtype": "Password",
-   "label": "Password"
-  },
-  {
-   "depends_on": "eval:doc.ts_mode!='export'",
-   "fieldname": "ts_pincode",
-   "fieldtype": "Password",
-   "label": "PINCODE"
-  },
-  {
-   "depends_on": "eval:doc.ts_mode=='intermediario'",
-   "description": "On the Entratel channel: codicefiscale-sedetelematica of the intermediary, e.g. 07874631000-000. It travels as opzionale1.",
-   "fieldname": "ts_intermediary_reference",
-   "fieldtype": "Data",
-   "label": "Entratel reference"
-  },
-  {
-   "description": "From the official kit. It expires and is reissued: an expired certificate fails every submission with code 002, silently.",
-   "fieldname": "ts_certificate",
-   "fieldtype": "Attach",
-   "label": "SanitelCF.cer"
+   "fieldname": "tab_sdi",
+   "fieldtype": "Tab Break",
+   "label": "Transmission"
   },
   {
    "collapsible": 1,
@@ -532,6 +541,15 @@
    "fieldtype": "Select",
    "label": "Transmission",
    "options": "export\npec\nprovider"
+  },
+  {
+   "default": "sandbox",
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "sandbox reaches nobody: the SdI never sees the document and the client never gets it. It is the default so the first real invoice is not the first test. Every document sent from here is stamped with the environment it left through, so a rehearsal can never be mistaken for an issued invoice - but nothing is actually issued until this says production.",
+   "fieldname": "acube_environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "sandbox\nproduction"
   },
   {
    "depends_on": "eval:doc.sdi_mode=='provider'",
@@ -577,6 +595,13 @@
    "label": "API key"
   },
   {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "The shared secret the provider sends back when it pushes a notice here. Generate it, then paste it into the provider's webhook configuration together with the URL shown in the settings panel. Without it the door stays shut: an endpoint that accepts fiscal notices from anyone is worse than no endpoint.",
+   "fieldname": "sdi_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook secret"
+  },
+  {
    "default": "sdi01@pec.fatturapa.it",
    "depends_on": "eval:doc.sdi_mode=='pec'",
    "description": "Only the first invoice goes to sdi01@. The delivery receipt names the address to use from then on, and this is updated when it does.",
@@ -592,78 +617,67 @@
    "read_only": 1
   },
   {
-   "description": "Ten years is mandatory and transmitting does not provide it. The Agenzia's service is free and keeps them fifteen years, but it needs an explicit adhesion in Fatture e Corrispettivi and only covers invoices from that day on.",
-   "fieldname": "conservation_service",
-   "fieldtype": "Select",
-   "label": "Preservation, SdI documents",
-   "options": "\nagenzia_entrate\nprovider\naltro"
+   "fieldname": "tab_healthcare",
+   "fieldtype": "Tab Break",
+   "label": "Healthcare"
   },
   {
-   "depends_on": "eval:doc.document_mode=='elettronica_extra_sdi'",
-   "description": "Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Under elettronica_extra_sdi these need a preservation provider of their own - or switch the mode back and keep the paper original.",
-   "fieldname": "conservation_local",
-   "fieldtype": "Select",
-   "label": "Preservation, documents outside the SdI",
-   "options": "\nprovider\naltro"
-  },
-  {
-   "depends_on": "eval:doc.conservation_service||doc.conservation_local",
-   "description": "Who preserves each branch, and since when. A note for whoever asks in eight years - name both if the two branches went to different preservers.",
-   "fieldname": "conservation_reference",
-   "fieldtype": "Data",
-   "label": "Preservation reference"
-  },
-  {
-   "fieldname": "contacts_section",
+   "collapsible": 1,
+   "fieldname": "healthcare_section",
    "fieldtype": "Section Break",
-   "label": "Contacts"
+   "label": "Healthcare identity"
   },
   {
-   "fieldname": "email",
+   "default": "non_sanitario",
+   "description": "The category of whoever issues. In a facility it diverges from the performer's, and it is this one the tracciato validates against.",
+   "fieldname": "sender_category",
+   "fieldtype": "Select",
+   "label": "Sender category",
+   "options": "non_sanitario\nmedico_odontoiatra\nprofessionista_sanitario\nstruttura_autorizzata\nstruttura_accreditata\nveterinario\nfarmacia\nparafarmacia\nottico"
+  },
+  {
+   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "fieldname": "region_code",
    "fieldtype": "Data",
-   "label": "Email",
-   "options": "Email"
+   "label": "codiceRegione",
+   "length": 3
   },
   {
-   "fieldname": "phone",
+   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "fieldname": "asl_code",
    "fieldtype": "Data",
-   "label": "Phone"
+   "label": "codiceAsl",
+   "length": 3
   },
   {
-   "fieldname": "pec",
+   "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "fieldname": "ssa_code",
    "fieldtype": "Data",
-   "label": "PEC",
-   "options": "Email"
+   "label": "codiceSSA",
+   "length": 6
   },
   {
-   "fieldname": "column_contacts",
+   "fieldname": "column_healthcare",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "bank_name",
-   "fieldtype": "Data",
-   "label": "Bank"
+   "description": "From the official kit. It expires and is reissued: an expired certificate fails every submission with code 002, silently.",
+   "fieldname": "ts_certificate",
+   "fieldtype": "Attach",
+   "label": "SanitelCF.cer"
   },
   {
-   "fieldname": "iban",
-   "fieldtype": "Data",
-   "label": "IBAN"
+   "fieldname": "ts_transmission_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema TS transmission"
   },
   {
-   "default": "sandbox",
-   "depends_on": "eval:doc.sdi_mode=='provider'",
-   "description": "sandbox reaches nobody: the SdI never sees the document and the client never gets it. It is the default so the first real invoice is not the first test. Every document sent from here is stamped with the environment it left through, so a rehearsal can never be mistaken for an issued invoice - but nothing is actually issued until this says production.",
-   "fieldname": "acube_environment",
+   "default": "provider",
+   "description": "provider hands the tracciato to the accredited intermediary, which is the default for the same reason it is on the SdI side: somebody has to watch the channel. credenziali_studio transmits straight from here with the practice's own Sistema TS credentials - no per-document cost, but the practice owns the credentials and the silence. intermediario is the same, on the /entrate/ channel, for an accountant with an active mandate. export prepares the file and the practice uploads it from the portal, and stays the tested fallback for all three.",
+   "fieldname": "ts_mode",
    "fieldtype": "Select",
-   "label": "Environment",
-   "options": "sandbox\nproduction"
-  },
-  {
-   "depends_on": "eval:doc.sdi_mode=='provider'",
-   "description": "The shared secret the provider sends back when it pushes a notice here. Generate it, then paste it into the provider's webhook configuration together with the URL shown in the settings panel. Without it the door stays shut: an endpoint that accepts fiscal notices from anyone is worse than no endpoint.",
-   "fieldname": "sdi_webhook_secret",
-   "fieldtype": "Password",
-   "label": "Webhook secret"
+   "label": "Submission mode",
+   "options": "export\nprovider\ncredenziali_studio\nintermediario"
   },
   {
    "depends_on": "eval:doc.ts_mode=='provider'",
@@ -671,11 +685,49 @@
    "fieldname": "ts_provider_endpoint",
    "fieldtype": "Data",
    "label": "Sistema TS endpoint"
+  },
+  {
+   "default": "sconosciuta",
+   "description": "Not asked for: probed. Rejection 105 means there is no mandate, 106 means there is one.",
+   "fieldname": "ts_delegation_status",
+   "fieldtype": "Select",
+   "label": "Entratel mandate",
+   "options": "sconosciuta\nassente\npresente\nnon_sondabile",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_ts_transmission",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode!='export'",
+   "fieldname": "ts_username",
+   "fieldtype": "Data",
+   "label": "Sistema TS user"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode!='export'",
+   "fieldname": "ts_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode!='export'",
+   "fieldname": "ts_pincode",
+   "fieldtype": "Password",
+   "label": "PINCODE"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode=='intermediario'",
+   "description": "On the Entratel channel: codicefiscale-sedetelematica of the intermediary, e.g. 07874631000-000. It travels as opzionale1.",
+   "fieldname": "ts_intermediary_reference",
+   "fieldtype": "Data",
+   "label": "Entratel reference"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-17 11:00:00.000000",
+ "modified": "2026-09-17 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

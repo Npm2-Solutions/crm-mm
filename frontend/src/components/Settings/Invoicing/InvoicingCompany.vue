@@ -83,8 +83,12 @@ const predefiniti = {
   number_format: '{anno}/{serie}/{numero}',
   stamp_duty_mode: 'su_originale',
   sender_category: 'non_sanitario',
-  ts_mode: 'export',
-  sdi_mode: 'export',
+  // Both channels are born on the provider, same as the DocType's own defaults:
+  // two places disagreeing about where a company starts is how a company starts
+  // somewhere nobody chose.
+  ts_mode: 'provider',
+  sdi_mode: 'provider',
+  acube_environment: 'sandbox',
   enabled: 1,
 }
 

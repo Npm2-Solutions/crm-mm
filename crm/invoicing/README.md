@@ -69,10 +69,20 @@ The Frappe-side tests are in `crm/tests/test_invoicing.py` and need a bench.
 ## Where it is configured
 
 **Settings → Invoicing**, in the CRM's own modal: the issuing company, the
-qualification register, the service cards, the providers, and the switches that
-apply to every document. The screens render each DocType's own layout, so the
-help text under a field is the description written on the field — a rule explained
-once cannot drift away from the interface that shows it.
+qualification register, the service cards, the providers, the provider connection,
+and the switches that apply to every document. The screens render each DocType's own
+layout, so the help text under a field is the description written on the field — a
+rule explained once cannot drift away from the interface that shows it.
+
+The company is split into tabs by subject rather than being one long form, so the
+healthcare configuration and the Sistema TS channel have their own screen: *Company*,
+*Invoicing*, *Documents* (form and preservation), *Transmission* (the SdI) and
+*Healthcare*.
+
+**Provider connection** is the one panel that is not rendered from meta, because two
+things there cannot be fields: the webhook URL, which is built rather than stored,
+and the secret, which is shown exactly once. A value that can be read back out of a
+settings screen is one that can be read out of a screenshot.
 
 `/crm/fatture` stays the operator's console: what has been issued, and what still
 has a button waiting. Nothing is configured from there.
@@ -179,29 +189,58 @@ carry a qualified signature**: mandatory on FPA12, optional on FPR12. Sending an
 unsigned PA invoice comes back as `00102` with the five days already running, so
 the channel refuses instead and says what is missing.
 
-### The provider contract, and what is still missing from it
+### The provider contract, and the one thing still unverified
 
-No vendor is wired in. `sdi/provider.py` posts the built XML and reads an
-identifier back, and endpoint, authentication and the field that identifier hides in
-are all configuration — pinning one vendor's shape into the code is how the next
-migration turns into a rewrite. The shape it assumes was checked (17 September 2026)
-against a published accredited-provider API and matches on all four points that
-matter: raw XML with `Content-Type: application/xml`, `202 Accepted`, `{"uuid": …}`
-in the body, and a login exchange that takes `{"email", "password"}` and answers
-`{"token": …}`.
+No vendor is wired in. `sdi/provider.py` posts the built XML and reads an identifier
+back; endpoint, login URL and the field that identifier hides in are configuration,
+with the defaults seeded to the provider this system ships with. Clearing the login
+URL is a real choice and asks for HTTP Basic instead.
 
-Three gaps are known and open, and the first one matters more than the other two:
+Being authenticated and staying that way is `acube.py`, shared with the Sistema TS
+channel: the token is good for a day and is cached per company **and environment**,
+so a switch to production cannot reuse a sandbox token and read as bad credentials.
+One 401 renews and retries; a second is a real authentication problem.
 
-* **there is no door for a webhook.** `api.apply_sdi_notice` is session
-  authenticated and wants a File already inside Frappe; nothing in this module is
-  `allow_guest`. So on the `provider` route the notices only arrive if a human
-  downloads and drops them — which is the exact failure the default was chosen to
-  prevent. Closing it means a public endpoint that accepts fiscal notices, so it
-  needs the provider's signature scheme read from their documentation rather than
-  guessed: an open door that trusts any caller is worse than no door;
-* **no way to aim at a sandbox.** The login body carries no environment selector, so
-  the first real invoice would be the first test;
-* **a fresh login per send**, where the token is good for 24 hours.
+The shape was checked (17 September 2026) against the published API and matches on
+every point that matters: raw XML with `Content-Type: application/xml`, `202
+Accepted`, `{"uuid": …}` in the body, and a login taking `{"email", "password",
+"environment"}` and answering `{"token": …}`.
+
+**The environment is not a detail.** A sandbox document reached nobody, and the only
+thing separating it from a real invoice is which switch was set months ago. So it
+defaults to sandbox, it is stamped on each document rather than read back from the
+company, it is appended to every message a sandbox send produces, and it sits at the
+top of its settings panel rather than inside a fieldset — it is the one setting whose
+wrong value produces no error anywhere.
+
+What is still unverified is **the webhook payload's shape**. The provider documents
+its event names, not the envelope around them, and this was written without a real
+delivery to read. So nothing insists on a shape: `engine/busta.py` looks in several
+plausible places, refuses to guess when a notice is absent, and records what it could
+not act on by the *names* of the keys it saw and never their values — the same door
+takes `supplier-invoice`, and that one carries somebody's healthcare document. The
+first real delivery is what closes this, and the log is written to tell you.
+
+### The door notices come back through
+
+A public endpoint, so the design is mostly about who may knock:
+
+* **one shared secret per company**, compared in constant time, presented as a header
+  or a query parameter because the provider's configuration chooses between them.
+  Every candidate is checked even after one matches, so a caller cannot time how far
+  down the list its guess landed;
+* **a refused delivery is told nothing.** Unknown company, wrong secret and junk body
+  get the same answer. An endpoint that explains itself to strangers is an
+  enumeration oracle;
+* **a company that never generated a secret cannot be opened** by a caller presenting
+  nothing — an empty stored secret matches nothing, deliberately;
+* **the body is never trusted for identity.** Which invoice a notice answers is
+  resolved the way every channel resolves it, by the file name the SdI put on it.
+
+The status code is the contract with the provider's retry queue, which retries
+fifteen times over about ten hours on anything but a 200. So a delivery that was
+understood returns 200 even when there was nothing to apply — the same bytes would
+reach the same answer — and only an unexpected failure returns 500.
 
 ### What transmitting does not do
 
@@ -310,20 +349,40 @@ the Agenzia rejected numbering with gaps (Risposta n. 505 del 29 ottobre 2020).
 
 ## Sistema TS
 
-One pipeline, three submission modes, and only the last ten centimetres change.
+One pipeline, four submission modes, and only the last ten centimetres change.
 
 | Mode | What it needs | Who transmits |
 |---|---|---|
-| `export` | nothing | the practice, from the portal |
+| `provider` | an endpoint on the accredited intermediary | the provider, under its own accreditation |
 | `credenziali_studio` | user, password, PINCODE, **no active mandate** | this system |
 | `intermediario` | an Entratel accountant **with** an active mandate | this system, on the `/entrate/` channel |
+| `export` | nothing | the practice, from the portal |
 
-**Everybody is born in `export`**, so no onboarding waits on somebody else's
-paperwork, and `export` stays tested even when every company is on automatic: it is
-the universal plan B. The truth about the mandate is not asked for — practices
-answer it wrong without meaning to, they simply do not know. It is probed
-(`api.probe_delegation`): rejection `105` means there is no mandate, `106` means
-there is one, and the company is moved to match.
+**`provider` is the default**, for the same reason it is on the SdI side: somebody
+has to watch the channel. The direct routes cost nothing per document and stay whole
+— but the practice owns the credentials, and owns the silence.
+
+Which modes need the practice's own credentials is one definition
+(`sistema_ts.richiede_credenziali`), because two places disagreeing about it is how a
+company gets blocked at a PINCODE field it can never fill: a company on `provider`
+has no Sistema TS credentials at all, and asking for them asks for something that
+does not exist.
+
+**A provider's yes is not the Sistema TS's yes.** The direct call is synchronous and
+its answer carries the protocol. A provider only takes the file and forwards it, so
+the document lands in `inviato` and never in `accolto` — writing `accolto` on a 202
+would invent an acceptance nobody gave, and the practice would find out next January.
+The silence watch counts `inviato` as waiting for exactly that reason.
+
+The patient's fiscal code is **ciphered before it reaches anybody's API**, the
+provider's included. A non-2xx body is truncated into the log, because a provider
+that echoes the document back would otherwise write healthcare data into it.
+
+`export` stays the universal plan B and stays tested even when every company is on
+automatic. The truth about the mandate is not asked for — practices answer it wrong
+without meaning to, they simply do not know. It is probed (`api.probe_delegation`):
+rejection `105` means there is no mandate, `106` means there is one, and the company
+is moved to match.
 
 Transmission is synchronous, one document per call (`api.send_to_ts`), because the
 answer then comes back the same day rather than on 20 January with four thousand
