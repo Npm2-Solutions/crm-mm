@@ -65,14 +65,28 @@ nel nostro `SCOPES` era giusto e resta.
 | `pages_manage_ads` | idem, e obbligatoria nella submission | use case, screencast, api precheck, DUC |
 | `business_management` | le pagine possedute da un portfolio Business, che senza questa non compaiono nemmeno dopo essere state spuntate | use case, screencast, api precheck, DUC |
 
-### Da togliere dalla richiesta (6)
+### Da togliere dalla richiesta (4)
 
 Il nostro codice non le chiede mai, e ognuna e' un use case e uno screencast in
 piu' su cui farsi rifiutare:
 
 `instagram_business_basic` · `instagram_business_manage_messages` ·
-`instagram_manage_comments` · `ads_read` · `Marketing API Access Tier` ·
-`Business Asset User Profile Access`
+`instagram_manage_comments` · `Business Asset User Profile Access`
+
+### Non si possono togliere (correzione del 17/09/2026)
+
+`ads_read` e `Marketing API Access Tier` (ex *Ads Management Standard Access*)
+erano in quella lista. Non si possono levare: la tabella "Marketing API Use
+Cases" della doc li segna **Required for all use cases. Cannot be removed** —
+insieme a `ads_management`, `business_management` e, per *Capture & manage ad
+leads*, `leads_retrieval` e `pages_manage_ads`. Sono attaccati allo use case, non
+al singolo endpoint che chiamiamo.
+
+E non e' solo burocrazia: per leggere i **campi di inserzione sul lead** (`ad_id`,
+`campaign_id` e i nomi) la doc "Retrieving Leads" chiede *"a Page or User access
+token requested by a person who can advertise on the ad account and on the Page"*
+e la permission `ads_management`. Cioe' la provenienza che vedi su ogni lead
+dipende da quelle permission: toglierle vorrebbe dire perdere anche l'`ad_id`.
 
 ### Da rimandare al secondo giro (3)
 

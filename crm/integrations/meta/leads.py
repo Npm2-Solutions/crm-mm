@@ -13,19 +13,36 @@ from frappe import _
 
 from crm.integrations.meta.client import MetaAPIError, graph_get, graph_get_paginated
 
-# documented lead-node fields; PLATFORM_FIELDS adds `platform` (fb/ig) which is
-# not guaranteed on every Graph version — we retry without it on error 100
+# documented lead-node fields, in decreasing order of appetite.
+#
+# The ad-level names live on the lead itself: Meta fills `ad_name`, `adset_name`
+# and `campaign_name` in the same answer as `ad_id`, for a token belonging to
+# somebody who can advertise on the ad account — the same privilege `ad_id`
+# already needs. So the name of the ad costs no second call and no ads token,
+# and when the privilege is missing Meta simply leaves the fields out (the same
+# way it leaves out `ad_id`) instead of failing.
+#
+# `platform` (fb/ig) is not guaranteed on every Graph version, and neither are
+# the ad-level names on an old one, so each attempt drops what a version may not
+# know. A refused field must never cost the lead.
 LEAD_FIELDS = "id,created_time,ad_id,form_id,is_organic,field_data"
-LEAD_FIELDS_WITH_PLATFORM = LEAD_FIELDS + ",platform"
+AD_LEVEL_FIELDS = "ad_name,adset_id,adset_name,campaign_id,campaign_name"
+LEAD_FIELDS_WITH_ADS = LEAD_FIELDS + "," + AD_LEVEL_FIELDS
+LEAD_FIELDS_WITH_PLATFORM = LEAD_FIELDS_WITH_ADS + ",platform"
+
+# 100 is "unknown field on this version", 200 "you may not read this one"
+RETRYABLE_FIELD_ERRORS = (100, 200)
 
 
 def fetch_lead(leadgen_id: str, token: str) -> dict:
-	try:
-		return graph_get(leadgen_id, token, {"fields": LEAD_FIELDS_WITH_PLATFORM})
-	except MetaAPIError as exc:
-		if exc.code == 100:  # invalid field on this version
-			return graph_get(leadgen_id, token, {"fields": LEAD_FIELDS})
-		raise
+	attempts = (LEAD_FIELDS_WITH_PLATFORM, LEAD_FIELDS_WITH_ADS, LEAD_FIELDS)
+	for fields in attempts:
+		try:
+			return graph_get(leadgen_id, token, {"fields": fields})
+		except MetaAPIError as exc:
+			if fields == attempts[-1] or exc.code not in RETRYABLE_FIELD_ERRORS:
+				raise
+	return {}
 
 
 def get_page_token(page_id: str) -> str | None:
@@ -73,7 +90,7 @@ def backfill_form(form_id: str, since=None, page_token: str | None = None) -> di
 	if not token:
 		frappe.throw(_("No page token available for this form. Reconnect Facebook."))
 
-	params = {"fields": LEAD_FIELDS}  # keep the safe set for bulk reads
+	params = {}
 	if since:
 		params["filtering"] = frappe.as_json(
 			[
@@ -85,13 +102,26 @@ def backfill_form(form_id: str, since=None, page_token: str | None = None) -> di
 			]
 		)
 
-	counts = {"created": 0, "merged": 0, "duplicates": 0, "failed": 0}
-	for lead in graph_get_paginated(f"{form_id}/leads", token, params, max_pages=200):
-		result = store_lead(lead, form_id, token)
-		# "merged" is a submission filed on somebody the CRM already knew
-		key = "duplicates" if result == "duplicate" else result
-		counts[key] = counts.get(key, 0) + 1
-	return counts
+	def run(fields: str) -> dict:
+		counts = {"created": 0, "merged": 0, "duplicates": 0, "failed": 0}
+		for lead in graph_get_paginated(
+			f"{form_id}/leads", token, {**params, "fields": fields}, max_pages=200
+		):
+			result = store_lead(lead, form_id, token)
+			# "merged" is a submission filed on somebody the CRM already knew
+			key = "duplicates" if result == "duplicate" else result
+			counts[key] = counts.get(key, 0) + 1
+		return counts
+
+	try:
+		return run(LEAD_FIELDS_WITH_ADS)
+	except MetaAPIError as exc:
+		if exc.code not in RETRYABLE_FIELD_ERRORS:
+			raise
+		# This version will not give the ad names in bulk: the leads matter more.
+		# Starting over is safe — the import ledger knows what it already filed,
+		# so the leads of the first pass come back as duplicates, not as twins.
+		return run(LEAD_FIELDS)
 
 
 def already_stored(leadgen_id: str) -> bool:
@@ -394,6 +424,18 @@ def _remember_ad(ad_id: str, values: dict) -> None:
 		frappe.log_error(frappe.get_traceback(), f"Meta: could not remember ad {ad_id}")
 
 
+def _ad_names(lead: dict) -> dict:
+	"""The ad-level names Meta already put on the lead, when it did.
+
+	This is the cheap road and the one that works everywhere: no second call, no
+	user token, nothing to keep in step. `describe_ad` stays for the leads that
+	arrive without them — an older Graph version, or a backfill that had to ask
+	for less.
+	"""
+	names = {key: (lead.get(key) or "") for key in ("ad_name", "adset_name", "campaign_id", "campaign_name")}
+	return names if (names["ad_name"] or names["campaign_name"]) else {}
+
+
 def _attribute(doc, lead: dict, form_id: str | None, token: str | None = None) -> None:
 	"""Credit a lead-ad submission to the ad that produced it.
 
@@ -401,16 +443,19 @@ def _attribute(doc, lead: dict, form_id: str | None, token: str | None = None) -
 	server — so there is no session to read. `is_organic` is what separates a paid
 	placement from a lead form on an organic post.
 
-	The ad is named where Meta will tell us its name: "arrived from the ad
-	Promo Autunno, campaign Lead Settembre" is worth incomparably more to whoever
-	reads the record than the id of the same ad. The form name stays the fallback
+	The ad is named, not numbered: "arrived from the ad Promo Autunno, campaign
+	Lead Settembre" is worth incomparably more to whoever reads the record than
+	the id of the same ad. The names usually travel with the lead; `describe_ad`
+	is the fallback for when they do not. The form name stays the fallback
 	for the campaign slot, which is what an organic lead has instead.
 	"""
 	from crm.api.tracking import attribute
 
 	organic = bool(lead.get("is_organic"))
 	instagram = lead.get("platform") == "ig"
-	ad = describe_ad(lead.get("ad_id"), token) if lead.get("ad_id") and not organic else {}
+	ad = _ad_names(lead)
+	if not ad and lead.get("ad_id") and not organic:
+		ad = describe_ad(lead.get("ad_id"), token)
 	form_name = frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or ""
 
 	attribute(

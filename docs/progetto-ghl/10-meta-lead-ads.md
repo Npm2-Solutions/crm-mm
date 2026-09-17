@@ -157,14 +157,26 @@ sono cento domande: la risposta sta in `Facebook Ad` e vale una settimana — ch
 e' abbastanza per risparmiare le chiamate e poco abbastanza perche' una campagna
 rinominata si aggiorni al lead successivo.
 
-**Chiede col token giusto (correzione del 17/09/2026).** Il lead arriva sul token
-della Pagina, ma l'inserzione non appartiene alla Pagina: appartiene all'account
-pubblicitario. Meta risponde alla lettura del nodo `ad` solo a un token che porta
-`ads_management` (o `ads_read`), cioe' il **token utente** ottenuto col login —
-col token della Pagina la chiamata viene rifiutata, e i rifiuti pesano sul tasso
-di errore dell'app. Quindi si chiede col token utente salvato in `CRM Meta
-Settings`, tenendo quello della Pagina come ripiego. Nella prima versione
-chiedeva col token della Pagina: i nomi non arrivavano mai.
+**I nomi arrivano col lead, senza una seconda chiamata (correzione del
+17/09/2026).** Nella prima versione il nome lo chiedevamo leggendo il nodo `ad`
+col token della Pagina: sbagliato due volte. L'inserzione non appartiene alla
+Pagina ma all'account pubblicitario, quindi quel token veniva rifiutato — i nomi
+non comparivano mai e ogni lead spendeva una chiamata per farsi dire no. E la
+chiamata non serviva: Meta mette `ad_name`, `adset_name`, `campaign_id` e
+`campaign_name` **sul lead stesso**, accanto ad `ad_id`, nella stessa risposta.
+Adesso li chiediamo li'. Costo: zero chiamate in piu', nessun token utente da
+tenere valido, niente che possa disallinearsi.
+
+Il privilegio richiesto e' lo stesso che serve gia' per `ad_id` — un token di chi
+puo' inserzionare su quell'account pubblicitario, con `ads_management` — e quando
+manca Meta **omette i campi** invece di dare errore, esattamente come fa con
+`ad_id`.
+
+La lettura del nodo `ad` resta come ripiego (`describe_ad`, col token utente e
+la cache in `Facebook Ad`) per i lead che arrivano senza quei campi: una versione
+vecchia delle API, o un backfill che ha dovuto chiedere meno. Ogni tentativo
+chiede meno del precedente, perche' **un campo rifiutato non deve costare il
+lead**.
 
 **Un rifiuto non costa il lead.** L'inserzione appartiene all'account
 pubblicitario del cliente, e chi ha collegato la pagina non sempre puo'
