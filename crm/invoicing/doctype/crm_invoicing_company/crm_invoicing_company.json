@@ -78,6 +78,7 @@
   "ts_certificate",
   "sdi_section",
   "sdi_mode",
+  "acube_environment",
   "sdi_provider",
   "sdi_endpoint",
   "sdi_login_url",
@@ -85,6 +86,7 @@
   "sdi_username",
   "sdi_password",
   "sdi_api_key",
+  "sdi_webhook_secret",
   "sdi_pec_address",
   "sdi_last_progressive",
   "conservation_service",
@@ -544,10 +546,11 @@
   },
   {
    "depends_on": "eval:doc.sdi_mode=='provider'",
-   "description": "Where the provider issues a token, when it wants one. Empty means HTTP Basic.",
+   "description": "Where credentials are exchanged for a token. Seeded with the provider this system ships with. Clear it only if your provider takes HTTP Basic directly - that is what an empty field asks for.",
    "fieldname": "sdi_login_url",
    "fieldtype": "Data",
-   "label": "Login endpoint"
+   "label": "Login endpoint",
+   "default": "https://common.api.acubeapi.com/login"
   },
   {
    "fieldname": "column_sdi",
@@ -644,11 +647,27 @@
    "fieldname": "iban",
    "fieldtype": "Data",
    "label": "IBAN"
+  },
+  {
+   "default": "sandbox",
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "sandbox reaches nobody: the SdI never sees the document and the client never gets it. It is the default so the first real invoice is not the first test. Every document sent from here is stamped with the environment it left through, so a rehearsal can never be mistaken for an issued invoice - but nothing is actually issued until this says production.",
+   "fieldname": "acube_environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "sandbox\nproduction"
+  },
+  {
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "The shared secret the provider sends back when it pushes a notice here. Generate it, then paste it into the provider's webhook configuration together with the URL shown in the settings panel. Without it the door stays shut: an endpoint that accepts fiscal notices from anyone is worse than no endpoint.",
+   "fieldname": "sdi_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook secret"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-10 10:00:00.000000",
+ "modified": "2026-09-17 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",
