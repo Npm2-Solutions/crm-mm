@@ -8,6 +8,11 @@
   "app_id",
   "column_break_app",
   "app_secret",
+  "whatsapp_section",
+  "whatsapp_app_id",
+  "whatsapp_signup_config_id",
+  "column_break_wa",
+  "whatsapp_app_secret",
   "webhook_section",
   "webhook_verify_token",
   "connection_section",
@@ -24,7 +29,7 @@
    "label": "Meta App"
   },
   {
-   "description": "From developers.facebook.com → your app → Settings → Basic",
+   "description": "From developers.facebook.com \u2192 your app \u2192 Settings \u2192 Basic",
    "fieldname": "app_id",
    "fieldtype": "Data",
    "label": "App ID"
@@ -39,12 +44,38 @@
    "label": "App Secret"
   },
   {
+   "fieldname": "whatsapp_section",
+   "fieldtype": "Section Break",
+   "label": "WhatsApp App"
+  },
+  {
+   "fieldname": "whatsapp_app_id",
+   "fieldtype": "Data",
+   "label": "WhatsApp App ID",
+   "description": "Only when WhatsApp lives in its own Meta app. Empty means the Meta app above is used."
+  },
+  {
+   "fieldname": "whatsapp_signup_config_id",
+   "fieldtype": "Data",
+   "label": "Embedded Signup Configuration ID",
+   "description": "Facebook Login for Business \u2192 Configurations, on the WhatsApp app. Needed before a client can scan the QR."
+  },
+  {
+   "fieldname": "column_break_wa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "whatsapp_app_secret",
+   "fieldtype": "Password",
+   "label": "WhatsApp App Secret"
+  },
+  {
    "fieldname": "webhook_section",
    "fieldtype": "Section Break",
    "label": "Webhook"
   },
   {
-   "description": "Paste this as Verify Token when configuring the Webhooks product (Page → leadgen)",
+   "description": "Paste this as Verify Token when configuring the Webhooks product (Page \u2192 leadgen)",
    "fieldname": "webhook_verify_token",
    "fieldtype": "Data",
    "label": "Webhook Verify Token",

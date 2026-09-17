@@ -24,6 +24,7 @@ from crm.integrations.meta.client import (
 	get_settings,
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
+	whatsapp_app_in_use,
 	whatsapp_graph_get,
 	whatsapp_graph_post,
 )
@@ -72,6 +73,10 @@ def get_status() -> dict:
 	return {
 		"installed": True,
 		"can_connect": bool(get_whatsapp_app_id() and config_id()),
+		# which Meta app signs these calls: a borrowed id is legitimate and also
+		# how an agency discovers, weeks later, that its WhatsApp calls were
+		# attributed to the Facebook app
+		"app": whatsapp_app_in_use(),
 		# say WHICH piece is missing: "ask your provider" left nobody, the
 		# provider included, able to tell what to do next
 		"missing": missing_requirements(),
@@ -106,14 +111,52 @@ def missing_requirements() -> list[dict]:
 				"key": "whatsapp_signup_config_id",
 				"what": _("Embedded Signup is not configured"),
 				"how": _(
-					"On the Meta app, create a Facebook Login for Business configuration of type "
-					"WhatsApp Embedded Signup, and put its id in whatsapp_signup_config_id. Meta "
-					"only offers it to apps registered as a WhatsApp Business Tech Provider — that "
-					"registration comes first."
+					"On the WhatsApp app: Facebook Login for Business → Configurations → Create "
+					"from template → WhatsApp Embedded Signup. Then paste its id below. Meta only "
+					"offers the template to apps that are WhatsApp Business Tech Providers, which "
+					"is what advanced access on whatsapp_business_messaging and "
+					"whatsapp_business_management makes you."
 				),
+				# this one can be finished from here: no bench access needed
+				"fieldname": "whatsapp_signup_config_id",
 			}
 		)
 	return missing
+
+
+@frappe.whitelist(methods=["POST"])
+def save_whatsapp_app(
+	whatsapp_app_id: str | None = None,
+	whatsapp_app_secret: str | None = None,
+	whatsapp_signup_config_id: str | None = None,
+) -> dict:
+	"""Type the WhatsApp app's ids here instead of in the bench config.
+
+	The bench still wins where an agency sets these once for every client site;
+	this is for the managed host where the bench is not somebody's to edit, and
+	for the one id that is the last thing standing between a client and the QR.
+	"""
+	_check_manager()
+	if (whatsapp_app_id or "").strip() and not (
+		(whatsapp_app_secret or "").strip()
+		or frappe.conf.get("whatsapp_app_secret")
+		or get_settings().get_password("whatsapp_app_secret", raise_exception=False)
+	):
+		# the secret signs every call (appsecret_proof): an app id without its
+		# own secret would be signed with the Facebook app's and fail everywhere
+		frappe.throw(_("Set the WhatsApp app secret as well, or Meta refuses every call."))
+
+	settings = frappe.get_doc("CRM Meta Settings")
+	for field, value in (
+		("whatsapp_app_id", whatsapp_app_id),
+		("whatsapp_app_secret", whatsapp_app_secret),
+		("whatsapp_signup_config_id", whatsapp_signup_config_id),
+	):
+		if value is not None:
+			settings.set(field, (value or "").strip())
+	settings.save()
+	frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+	return get_status()
 
 
 WEBHOOK_PATH = "/api/method/crm.integrations.whatsapp.webhook.handle"
@@ -122,7 +165,13 @@ WEBHOOK_PATH = "/api/method/crm.integrations.whatsapp.webhook.handle"
 # Coexistence adds the rest — without `smb_message_echoes` the CRM never sees
 # what the business writes from its own phone, and without `history` the past
 # conversations are never imported.
-WEBHOOK_FIELDS = "messages,smb_message_echoes,history,smb_app_state_sync,message_template_status_update"
+# `account_update` is a prerequisite of Embedded Signup — it is how Meta reports
+# the outcome of an onboarding and the state of the account afterwards. We had a
+# handler for it and never subscribed to it, so the handler was dead code and an
+# onboarding that failed told this CRM nothing.
+WEBHOOK_FIELDS = (
+	"messages,smb_message_echoes,history,smb_app_state_sync,message_template_status_update,account_update"
+)
 
 
 @frappe.whitelist()

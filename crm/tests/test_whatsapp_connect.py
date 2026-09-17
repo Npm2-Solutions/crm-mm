@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import json
 import time
+from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -105,6 +106,64 @@ class TestWhatsAppWebhookRouting(IntegrationTestCase):
 		self.assertFalse(W.valid_signature(None, body))
 
 
+class TestWhatsAppAppConfiguration(IntegrationTestCase):
+	"""The last two ids of the onboarding can be typed in Settings.
+
+	On a managed host the bench config is not somebody's to edit, and the
+	Embedded Signup configuration id is the last thing standing between a client
+	and the QR."""
+
+	def tearDown(self):
+		frappe.local.conf.pop("whatsapp_signup_config_id", None)
+		frappe.db.rollback()
+
+	def test_the_configuration_id_can_come_from_settings(self):
+		from crm.integrations.whatsapp.api import save_whatsapp_app
+
+		self.assertEqual(S.config_id(), "")
+		save_whatsapp_app(whatsapp_signup_config_id="  1234567890  ")
+		self.assertEqual(S.config_id(), "1234567890")
+
+	def test_the_bench_config_still_wins(self):
+		from crm.integrations.whatsapp.api import save_whatsapp_app
+
+		save_whatsapp_app(whatsapp_signup_config_id="from-settings")
+		frappe.local.conf["whatsapp_signup_config_id"] = "from-bench"
+		self.assertEqual(S.config_id(), "from-bench")
+
+	def test_saving_one_id_does_not_clear_the_other(self):
+		from crm.integrations.whatsapp.api import save_whatsapp_app
+
+		save_whatsapp_app(whatsapp_app_id="111", whatsapp_app_secret="shhh", whatsapp_signup_config_id="222")
+		save_whatsapp_app(whatsapp_signup_config_id="333")
+		settings = frappe.get_doc("CRM Meta Settings")
+		self.assertEqual(settings.whatsapp_app_id, "111")
+		self.assertEqual(settings.whatsapp_signup_config_id, "333")
+
+	def test_an_app_id_without_its_secret_is_refused(self):
+		"""The secret signs every call: an id without one would be signed with
+		the Facebook app's and fail everywhere, obscurely."""
+		from crm.integrations.whatsapp.api import save_whatsapp_app
+
+		with self.assertRaises(frappe.ValidationError):
+			save_whatsapp_app(whatsapp_app_id="111")
+
+	def test_a_borrowed_app_id_says_so(self):
+		from crm.integrations.meta.client import whatsapp_app_in_use
+
+		frappe.db.set_single_value("CRM Meta Settings", "app_id", "999")
+		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+		state = whatsapp_app_in_use()
+		self.assertEqual(state["app_id"], "999")
+		self.assertTrue(state["borrowed_from_meta_app"])
+
+		frappe.db.set_single_value("CRM Meta Settings", "whatsapp_app_id", "888")
+		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+		state = whatsapp_app_in_use()
+		self.assertEqual(state["app_id"], "888")
+		self.assertFalse(state["borrowed_from_meta_app"])
+
+
 class TestCoexistenceRouting(IntegrationTestCase):
 	"""The Coexistence fields must not be sent to frappe_whatsapp, which only
 	understands `messages`."""
@@ -124,6 +183,23 @@ class TestCoexistenceRouting(IntegrationTestCase):
 			[c["field"] for c in parts["coexistence"]["changes"]],
 			["smb_message_echoes", "history"],
 		)
+
+	def test_account_update_is_ours_and_is_subscribed(self):
+		"""Embedded Signup requires the subscription, and we had the handler
+		without it — so an onboarding that failed told this CRM nothing."""
+		from crm.integrations.whatsapp.api import WEBHOOK_FIELDS
+
+		self.assertIn("account_update", WEBHOOK_FIELDS.split(","))
+
+		entry = {
+			"id": "WABA22",
+			"changes": [{"field": "account_update", "value": {"event": "PARTNER_ADDED"}}],
+		}
+		self.assertEqual([kind for kind, _ in W.split_entry(entry)], ["coexistence"])
+
+		with patch.object(C, "handle_account_update") as handler:
+			C.ingest_entry(entry)
+		handler.assert_called_once_with({"event": "PARTNER_ADDED"})
 
 	def test_split_entry_with_only_messages_has_no_coexistence_part(self):
 		entry = {"id": "WABA21", "changes": [{"field": "messages", "value": {}}]}

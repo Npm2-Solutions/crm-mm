@@ -27,7 +27,7 @@ import frappe
 
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 
-COEXISTENCE_FIELDS = ("smb_message_echoes", "history", "smb_app_state_sync")
+COEXISTENCE_FIELDS = ("smb_message_echoes", "history", "smb_app_state_sync", "account_update")
 
 
 def ingest_entry(entry: dict) -> dict:
@@ -42,6 +42,8 @@ def ingest_entry(entry: dict) -> dict:
 			tally["history"] += ingest_history(value)
 		elif field == "smb_app_state_sync":
 			tally["contacts"] += ingest_state_sync(value)
+		elif field == "account_update":
+			handle_account_update(value)
 	return tally
 
 

@@ -57,13 +57,30 @@ def get_whatsapp_app_id() -> str:
 	App Review is serialised per app, so a WhatsApp submission queued behind a
 	Pages one blocks it, and a restriction on either takes the other down with
 	it. Keeping WhatsApp in its own app separates both. Falling back to the
-	Meta credentials keeps a single-app setup working untouched.
+	Meta credentials keeps a single-app setup working untouched — but that
+	fallback is how calls meant for the WhatsApp app end up signed by the
+	Facebook one, so `whatsapp_app_in_use()` says out loud which is being used.
 	"""
-	return frappe.conf.get("whatsapp_app_id") or get_app_id()
+	return frappe.conf.get("whatsapp_app_id") or get_settings().whatsapp_app_id or get_app_id()
 
 
 def get_whatsapp_app_secret() -> str:
-	return frappe.conf.get("whatsapp_app_secret") or get_app_secret()
+	return (
+		frappe.conf.get("whatsapp_app_secret")
+		or get_settings().get_password("whatsapp_app_secret", raise_exception=False)
+		or get_app_secret()
+	)
+
+
+def whatsapp_app_in_use() -> dict:
+	"""Which app the CRM signs WhatsApp calls with, and whether that was a choice.
+
+	A borrowed id is not an error — a single-app setup is legitimate — but it
+	looks identical to a forgotten setting until somebody asks Meta why the
+	calls are attributed to the wrong app.
+	"""
+	own = frappe.conf.get("whatsapp_app_id") or get_settings().whatsapp_app_id
+	return {"app_id": get_whatsapp_app_id(), "borrowed_from_meta_app": not own}
 
 
 def is_managed_app() -> bool:
