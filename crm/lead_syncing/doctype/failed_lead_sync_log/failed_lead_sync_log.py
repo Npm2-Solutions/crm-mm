@@ -30,7 +30,12 @@ class FailedLeadSyncLog(Document):
 		if not form_id:
 			frappe.throw(frappe._("This log has no form to retry against"))
 
-		result = store_lead(lead_data, form_id)
+		# the token lets attribution ask Meta what the ad is called, same as a
+		# lead arriving normally would
+		from crm.integrations.meta.leads import get_page_token
+
+		page = frappe.db.get_value("Facebook Lead Form", form_id, "page")
+		result = store_lead(lead_data, form_id, get_page_token(page) if page else None)
 		if result == "failed":
 			frappe.throw(frappe._("The lead could not be imported, see the newest log"))
 		self.type = "Synced"

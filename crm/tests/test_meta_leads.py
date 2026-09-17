@@ -10,10 +10,12 @@ from frappe.tests import IntegrationTestCase
 
 from crm.api.lead import find_person
 from crm.integrations.meta import api
+from crm.integrations.meta import leads as L
 from crm.integrations.meta import relay as R
 from crm.integrations.meta import webhook as W
 from crm.integrations.meta.leads import (
 	already_stored,
+	describe_ad,
 	forget_person,
 	ingest_leadgen_entry,
 	normalize_value,
@@ -247,6 +249,77 @@ class TestMetaLeads(IntegrationTestCase):
 		self.assertEqual(find_person(email="mario@example.com"), person)
 		self.assertEqual(find_person(phone="+39 333 1234567"), person)
 		self.assertIsNone(find_person(email="nessuno@example.com"))
+
+	def test_the_ad_is_named_not_numbered(self):
+		"""A lead arrives with an ad id and nothing else, so the record could
+		only say "ad 120210…" — true and useless."""
+		make_form()
+		lead = sample_lead("7770801")
+		lead["ad_id"] = "120210999"
+
+		described = {
+			"name": "Promo Autunno",
+			"adset": {"name": "Milano 25-45"},
+			"campaign": {"id": "23850", "name": "Lead Settembre"},
+		}
+		with patch.object(L, "graph_get", return_value=described):
+			store_lead(lead, "990001", token="page-token")
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7770801"}, "name")
+		doc = frappe.get_doc("CRM Lead", person)
+		self.assertEqual(doc.first_touch_campaign, "Lead Settembre")
+		self.assertEqual(doc.first_touch_content, "Promo Autunno")
+		self.assertEqual(doc.first_touch_term, "Milano 25-45")
+
+	def test_the_same_ad_is_asked_about_once(self):
+		"""Many leads come from one ad and the answer does not change between
+		them: a backfill must not ask Meta the same question a hundred times."""
+		make_form()
+		described = {"name": "Promo", "campaign": {"id": "1", "name": "Camp"}}
+
+		with patch.object(L, "graph_get", return_value=described) as graph_get:
+			for leadgen_id in ("7770901", "7770902", "7770903"):
+				lead = sample_lead(leadgen_id)
+				lead["ad_id"] = "120211000"
+				lead["email"] = f"{leadgen_id}@example.com"
+				store_lead(lead, "990001", token="page-token")
+
+		self.assertEqual(graph_get.call_count, 1)
+		self.assertEqual(frappe.db.get_value("Facebook Ad", "120211000", "ad_name"), "Promo")
+
+	def test_a_refused_ad_does_not_cost_the_lead(self):
+		"""The ad belongs to the client's ad account and a page token cannot
+		always read it. A lead is worth more than the name of its ad."""
+		make_form()
+		lead = sample_lead("7771001")
+		lead["ad_id"] = "120211001"
+
+		with patch.object(L, "graph_get", side_effect=L.MetaAPIError("no permission")):
+			self.assertEqual(store_lead(lead, "990001", token="page-token"), "created")
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7771001"}, "name")
+		# the id is the fallback: worse than a name, better than nothing
+		self.assertEqual(frappe.db.get_value("CRM Lead", person, "first_touch_content"), "120211001")
+		self.assertTrue(frappe.db.get_value("Facebook Ad", "120211001", "unreadable"))
+
+		# and it is not asked again
+		with patch.object(L, "graph_get") as graph_get:
+			self.assertEqual(describe_ad("120211001", "page-token"), {})
+		graph_get.assert_not_called()
+
+	def test_an_organic_lead_asks_nobody(self):
+		"""There is no ad behind it, so there is nothing to name."""
+		make_form()
+		lead = sample_lead("7771101")
+		lead["is_organic"] = True
+		lead["ad_id"] = ""
+
+		with patch.object(L, "graph_get") as graph_get:
+			store_lead(lead, "990001", token="page-token")
+		graph_get.assert_not_called()
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7771101"}, "name")
+		self.assertEqual(frappe.db.get_value("CRM Lead", person, "first_touch_category"), "Organic Social")
 
 	def test_webhook_signature_validation(self):
 		settings = frappe.get_doc("CRM Meta Settings")

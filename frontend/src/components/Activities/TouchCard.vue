@@ -39,15 +39,22 @@ const props = defineProps({
   theme: { type: String, default: 'blue' },
 })
 
+// A lead ad fills the same three slots with an ad, an ad set and a campaign.
+// "Content: Promo Autunno" is the right value under the wrong word, so the
+// words follow where the person came from.
 const rows = computed(() => {
   const t = props.touch || {}
+  const fromAnAd = t.landing_page === 'lead_ad_form'
   return [
     { label: __('Source'), value: t.source },
     { label: __('Medium'), value: t.medium },
     { label: __('Campaign'), value: t.campaign },
-    { label: __('Term'), value: t.term },
-    { label: __('Content'), value: t.content },
-    { label: __('Landing page'), value: t.landing_page },
+    { label: fromAnAd ? __('Ad set') : __('Term'), value: t.term },
+    { label: fromAnAd ? __('Ad') : __('Content'), value: t.content },
+    {
+      label: __('Landing page'),
+      value: fromAnAd ? __('Lead form') : t.landing_page,
+    },
     { label: __('Referrer'), value: t.referrer },
     { label: __('Date'), value: t.on },
   ].filter((row) => row.value)

@@ -167,6 +167,56 @@ chiede come la si usa.
 > owner cannot connect the Page they actually use. We read the list of Pages a
 > Business owns; we do not manage the Business, its users or its assets.
 
+### `ads_read`
+
+> Granted as part of the Marketing API use case that `ads_management` belongs to;
+> `ads_management` is required by the Lead Ads documentation to retrieve full
+> lead data. Our application does not read ad insights, spend or campaign
+> performance. The only ad data we read is the name of the ad, ad set and
+> campaign that produced a lead, so the business owner can see which of their
+> ads brought each customer.
+
+### `Marketing API Access Tier`
+
+> This feature is part of the lead ads use case our application requires; we are
+> not requesting it in order to obtain higher rate limits or unlimited ad account
+> management.
+>
+> Our application is a CRM for small businesses. Our use of these APIs is
+> read-only and limited to lead retrieval on behalf of the Page owner who granted
+> access: we read the Page's lead generation forms, we subscribe to the Page's
+> `leadgen` webhook, and when a person submits a lead form we read that lead and
+> create a contact in that business's own CRM. We also read the name of the ad,
+> ad set and campaign behind each lead, so the owner sees "from the ad Autumn
+> Promo, campaign September Leads" instead of a numeric id.
+>
+> We create no campaigns, ad sets, ads or audiences; we read no insights, spend
+> or performance metrics; we manage no ad accounts and we create no system users.
+> The Limited access tier is sufficient for our operations.
+>
+> The data we receive is used only to populate the CRM of the business that
+> granted access. It is never sold, shared with third parties, or used for
+> advertising or profiling.
+
+## Il "0 di 500" dell'Access Tier
+
+La doc della Marketing API: *"Limited access (default): automatically granted
+when you add the Marketing API product to your app"*, e Full access chiede
+*"at least 500 Marketing API calls in the last 15 days"* con meno del 15% di
+errori.
+
+Quindi **Limited ci basta** — le letture dei lead non sono governate da quei
+limiti ma da quelli della pagina, che hanno la loro formula (200 × 24 × lead
+degli ultimi 90 giorni). Quella riga non e' un permesso mancante: e' un upgrade
+dei limiti di traffico che non ci serve.
+
+Da quando il CRM legge il nome dell'inserzione, **le chiamate alla Marketing API
+esistono davvero** — una per inserzione nuova, piu' i rinnovi settimanali, piu'
+quelle di un backfill su 90 giorni. Se arrivano a 500 in 15 giorni dipende da
+quante inserzioni diverse porta il traffico: non e' garantito, e non va forzato.
+Il punto non era far diventare verde un pallino: era non dover scrivere a Meta
+una giustificazione falsa.
+
 ## Cosa mostrare negli screencast
 
 Uno solo basta, girato sul CRM vero, con questi passaggi in fila: Settings →

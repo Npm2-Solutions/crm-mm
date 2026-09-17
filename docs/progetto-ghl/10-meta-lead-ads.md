@@ -142,6 +142,36 @@ quindi nessuna Pagina puo' importare. I token delle Pagine li lascia stare — c
 pubblica il Social Planner, e disiscrivere su Meta vorrebbe dire chiamate di
 rete dentro una migrazione.
 
+### L'inserzione ha un nome, non un numero (17/09/2026)
+
+Un lead arriva portando un `ad_id` e nient'altro, quindi la scheda poteva solo
+dire *"ad 120210…"*: vero e inutile. Adesso il CRM chiede a Meta come si chiama
+quell'inserzione (`/{ad_id}?fields=name,adset{name},campaign{id,name}`) e la
+persona legge **"arrivato dall'inserzione Promo Autunno, campagna Lead
+Settembre, gruppo Milano 25-45"**.
+
+Tre cose non ovvie:
+
+**Si chiede una volta per inserzione.** Cento lead dalla stessa inserzione non
+sono cento domande: la risposta sta in `Facebook Ad` e vale una settimana — che
+e' abbastanza per risparmiare le chiamate e poco abbastanza perche' una campagna
+rinominata si aggiorni al lead successivo.
+
+**Un rifiuto non costa il lead.** L'inserzione appartiene all'account
+pubblicitario del cliente, e chi ha collegato la pagina non sempre puo'
+inserzionare su quell'account: la chiamata puo' essere negata. Allora si tiene
+l'id come ripiego, il rifiuto viene ricordato per non richiedere ogni volta, e —
+questo era il difetto da evitare — **un nome che sapevamo non si perde per un
+rifiuto temporaneo**. Passata la settimana si riprova, perche' un accesso
+concesso dopo deve poter avere effetto.
+
+**Un lead organico non chiede niente**, perche' non c'e' nessuna inserzione
+dietro.
+
+Nella scheda, sotto Tracciamento, le tre caselle cambiano nome quando il lead
+viene da un modulo: "Campagna", "Gruppo di inserzioni", "Inserzione" invece di
+Campaign/Term/Content, che erano i valori giusti sotto le parole sbagliate.
+
 ### Il registro delle importazioni (08/09/2026)
 
 `Facebook Lead Import`: una riga per submission presa in carico, con il modulo,
