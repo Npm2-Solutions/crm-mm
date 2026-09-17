@@ -150,12 +150,21 @@ quell'inserzione (`/{ad_id}?fields=name,adset{name},campaign{id,name}`) e la
 persona legge **"arrivato dall'inserzione Promo Autunno, campagna Lead
 Settembre, gruppo Milano 25-45"**.
 
-Tre cose non ovvie:
+Quattro cose non ovvie:
 
 **Si chiede una volta per inserzione.** Cento lead dalla stessa inserzione non
 sono cento domande: la risposta sta in `Facebook Ad` e vale una settimana — che
 e' abbastanza per risparmiare le chiamate e poco abbastanza perche' una campagna
 rinominata si aggiorni al lead successivo.
+
+**Chiede col token giusto (correzione del 17/09/2026).** Il lead arriva sul token
+della Pagina, ma l'inserzione non appartiene alla Pagina: appartiene all'account
+pubblicitario. Meta risponde alla lettura del nodo `ad` solo a un token che porta
+`ads_management` (o `ads_read`), cioe' il **token utente** ottenuto col login —
+col token della Pagina la chiamata viene rifiutata, e i rifiuti pesano sul tasso
+di errore dell'app. Quindi si chiede col token utente salvato in `CRM Meta
+Settings`, tenendo quello della Pagina come ripiego. Nella prima versione
+chiedeva col token della Pagina: i nomi non arrivavano mai.
 
 **Un rifiuto non costa il lead.** L'inserzione appartiene all'account
 pubblicitario del cliente, e chi ha collegato la pagina non sempre puo'

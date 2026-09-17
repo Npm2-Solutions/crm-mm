@@ -302,7 +302,25 @@ def _note_form_submitted(doc, form_id: str | None) -> None:
 AD_CACHE_DAYS = 7
 
 
-def describe_ad(ad_id: str, token: str) -> dict:
+def ads_token(page_token: str | None = None) -> str | None:
+	"""The token allowed to read an ad object.
+
+	The lead arrives on a page token, but an ad belongs to the ad account, not to
+	the page: Meta answers a read of the ad node only for a token that carries
+	`ads_management` (or `ads_read`), and that is the user token the login dialog
+	asks for — a page token is scoped to page data and gets refused. Asking with
+	the wrong one spends a call to be told no, and refusals count towards the
+	app's error rate.
+
+	The page token stays as the fallback, for a site connected before the user
+	token was stored or one whose token has expired: it may still be refused,
+	which `describe_ad` survives by design.
+	"""
+	token = frappe.get_doc("CRM Meta Settings").get_password("user_access_token", raise_exception=False)
+	return token or page_token or None
+
+
+def describe_ad(ad_id: str, page_token: str | None = None) -> dict:
 	"""What Meta calls this ad, its ad set and its campaign.
 
 	A lead arrives with an `ad_id` and nothing else, so the CRM could only say
@@ -310,14 +328,14 @@ def describe_ad(ad_id: str, token: str) -> dict:
 	answer: many leads come from the same ad, and the answer does not change
 	between them.
 
-	Never fatal. A page token cannot always read the ad object — the ad belongs
-	to the client's ad account, and whoever connected the page may not be able to
+	Never fatal. Even the right token can be refused — the ad belongs to the
+	client's ad account, and whoever connected Facebook may not be able to
 	advertise on it — and a lead is worth more than the name of the ad that
 	produced it. A refusal is remembered so the CRM stops asking, but only for
 	the cache window: access granted later must be able to take effect, and a
 	name we already knew is not forgotten because of one refusal.
 	"""
-	if not ad_id or not token:
+	if not ad_id:
 		return {}
 
 	cached = frappe.db.get_value(
@@ -332,6 +350,10 @@ def describe_ad(ad_id: str, token: str) -> dict:
 		and cached.fetched_on
 		and frappe.utils.date_diff(frappe.utils.now(), cached.fetched_on) < AD_CACHE_DAYS
 	):
+		return known
+
+	token = ads_token(page_token)
+	if not token:
 		return known
 
 	try:

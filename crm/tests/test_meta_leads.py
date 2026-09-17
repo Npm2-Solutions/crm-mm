@@ -57,6 +57,12 @@ def make_form(form_id="990001", page_id="880001"):
 	return doc
 
 
+def _forget_user_token():
+	settings = frappe.get_doc("CRM Meta Settings")
+	settings.user_access_token = ""
+	settings.save(ignore_permissions=True)
+
+
 def sample_lead(lead_id="7770001"):
 	return {
 		"id": lead_id,
@@ -287,9 +293,39 @@ class TestMetaLeads(IntegrationTestCase):
 		self.assertEqual(graph_get.call_count, 1)
 		self.assertEqual(frappe.db.get_value("Facebook Ad", "120211000", "ad_name"), "Promo")
 
+	def test_the_ad_is_asked_with_the_ads_token(self):
+		"""The lead arrives on a page token, but an ad belongs to the ad account:
+		only the user token carries ads_management, so that is the one that asks.
+		Asking with the page token spent a call to be refused, every time."""
+		make_form()
+		settings = frappe.get_doc("CRM Meta Settings")
+		settings.user_access_token = "user-token"
+		settings.save(ignore_permissions=True)
+		self.addCleanup(_forget_user_token)
+
+		lead = sample_lead("7771201")
+		lead["ad_id"] = "120211002"
+		with patch.object(L, "graph_get", return_value={"name": "Promo"}) as graph_get:
+			store_lead(lead, "990001", token="page-token")
+
+		self.assertEqual(graph_get.call_args.args[1], "user-token")
+
+	def test_the_page_token_is_the_fallback(self):
+		"""No user token — expired, or a site connected before it was stored —
+		is a reason to try anyway, not to give up on the name."""
+		make_form()
+		_forget_user_token()
+
+		lead = sample_lead("7771301")
+		lead["ad_id"] = "120211003"
+		with patch.object(L, "graph_get", return_value={"name": "Promo"}) as graph_get:
+			store_lead(lead, "990001", token="page-token")
+
+		self.assertEqual(graph_get.call_args.args[1], "page-token")
+
 	def test_a_refused_ad_does_not_cost_the_lead(self):
-		"""The ad belongs to the client's ad account and a page token cannot
-		always read it. A lead is worth more than the name of its ad."""
+		"""Even the right token can be refused: whoever connected Facebook may
+		not advertise on that account. A lead is worth more than its ad name."""
 		make_form()
 		lead = sample_lead("7771001")
 		lead["ad_id"] = "120211001"
