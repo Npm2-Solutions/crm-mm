@@ -13,7 +13,14 @@ Il modulo e' `crm/invoicing/`. La documentazione tecnica sta nel suo
 ## Dove si configura
 
 Tutto sta in **Impostazioni → Fatturazione**, nella modale del CRM: azienda
-emittente, registro delle qualifiche, servizi, erogatori e le impostazioni comuni.
+emittente, registro delle qualifiche, servizi, erogatori, la connessione al provider
+e le impostazioni comuni.
+
+La scheda dell'azienda e' divisa per argomento, cosi' il sanitario e il Sistema TS
+hanno il loro spazio invece di stare in fondo a un modulo unico: *Company*,
+*Invoicing*, *Documents* (forma e conservazione), *Transmission* (lo SdI) e
+*Healthcare* (categoria TS, Codice Proprietario, certificato e modalita' di
+trasmissione).
 Le schermate rendono il layout dei DocType, quindi le spiegazioni che leggi sotto
 ogni campo sono le stesse scritte nella definizione — una regola spiegata una
 volta sola non puo' divergere dall'interfaccia che la mostra.
@@ -203,25 +210,57 @@ Due dettagli che decidono se funziona:
   quel punto i cinque giorni corrono gia': il canale si rifiuta e dice cosa manca.
   Il `.p7m` firmato si allega sul documento.
 
-### Il provider: cosa manca ancora
+### Il provider: la connessione, e cosa resta da verificare
 
-Nessun fornitore e' cablato nel codice: endpoint, autenticazione e campo da cui
-leggere l'identificativo sono configurazione. La forma e' stata verificata (17
-settembre 2026) su un'API di intermediario accreditato pubblicata, e combacia: XML
-grezzo con `Content-Type: application/xml`, risposta `202`, `{"uuid": ...}` nel
-corpo, login che prende `{"email", "password"}` e risponde `{"token": ...}`.
+Nessun fornitore e' cablato nel codice: endpoint, URL di login e campo
+dell'identificativo sono configurazione, con i valori predefiniti gia' impostati sul
+fornitore con cui il sistema viene venduto. Svuotare l'URL di login e' una scelta
+vera e chiede l'HTTP Basic.
 
-Tre buchi aperti, e il primo pesa piu' degli altri due:
+Autenticarsi e restarlo e' `acube.py`, condiviso con il canale Sistema TS: il token
+dura un giorno e sta in cache per azienda **e ambiente**, cosi' il passaggio in
+produzione non riusa quello di sandbox facendolo sembrare un problema di credenziali.
+Un 401 rinnova e riprova una volta; il secondo e' un problema vero.
 
-- **non c'e' una porta per il webhook.** `apply_sdi_notice` vuole una sessione e un
-  file gia' dentro Frappe: nel modulo non c'e' nessun `allow_guest`. Quindi oggi, sul
-  canale provider, le ricevute arrivano solo se qualcuno le scarica a mano — cioe'
-  esattamente il fallimento per cui il provider e' il predefinito. Chiuderlo vuol
-  dire un endpoint pubblico che accetta ricevute fiscali, e quello va fatto con la
-  verifica della firma del provider letta sulla sua documentazione, non dedotta;
-- **non si puo' puntare al sandbox**: nel login non viaggia nessun selettore di
-  ambiente, quindi la prima fattura vera sarebbe la prima prova;
-- **un login per ogni invio**, con un token che dura 24 ore.
+**L'ambiente non e' un dettaglio.** Un documento in sandbox non e' arrivato a nessuno,
+e l'unica cosa che lo distingue da una fattura vera e' quale interruttore era messo
+mesi fa. Quindi: parte da sandbox, viene **timbrato sul documento** invece di essere
+riletto dall'azienda, finisce in coda a ogni messaggio di un invio di prova, e sta in
+cima al suo pannello invece che dentro una sezione — e' l'unica impostazione il cui
+valore sbagliato non produce nessun errore.
+
+Resta non verificata **la forma del payload del webhook**: il fornitore documenta i
+nomi degli eventi, non la busta che ci mette intorno, e questo e' stato scritto senza
+una consegna vera da leggere. Percio' niente pretende una forma: si cerca in piu'
+posti plausibili, si rifiuta di indovinare, e cio' che non si e' potuto applicare
+viene registrato con i **nomi** delle chiavi e mai con i valori — dalla stessa porta
+entra `supplier-invoice`, e quello porta il documento sanitario di qualcuno. La prima
+consegna vera chiude il punto, e il log serve a raccontartela.
+
+### La porta da cui tornano le ricevute
+
+E' un endpoint pubblico, quindi il progetto riguarda soprattutto chi puo' bussare:
+
+- **un segreto per azienda**, confrontato a tempo costante, in header o in query
+  perche' la configurazione del fornitore sceglie fra i due. Tutti i candidati vengono
+  controllati anche dopo che uno ha corrisposto, cosi' nessuno puo' misurare quanto in
+  basso nella lista e' finito il suo tentativo;
+- **a chi viene rifiutato non si dice niente**: azienda sconosciuta, segreto sbagliato
+  e corpo spazzatura ricevono la stessa risposta;
+- **un'azienda che non ha mai generato un segreto non si apre** con un chiamante che
+  non presenta niente;
+- **l'identita' non si legge mai dal corpo**: a quale fattura risponde una ricevuta si
+  decide come su ogni altro canale, dal nome file che ci ha messo lo SdI.
+
+Il codice di stato e' il contratto con la coda del fornitore, che riprova quindici
+volte in circa dieci ore su tutto cio' che non e' 200. Quindi una consegna capita
+risponde 200 anche quando non c'era niente da applicare — gli stessi byte
+arriverebbero alla stessa risposta — e solo un guasto inatteso risponde 500.
+
+Il pannello **Impostazioni → Fatturazione → Connessione al provider** costruisce l'URL
+da incollare e genera il segreto. Il segreto si vede **una volta sola**: e' conservato
+cifrato, e un valore rileggibile da una schermata e' un valore leggibile da uno
+screenshot. Rigenerarlo e' anche ruotarlo — il vecchio smette di funzionare subito.
 
 ### Mandare non basta
 
@@ -325,21 +364,40 @@ non hai detto chi.
 
 ---
 
-## Sistema TS: si nasce in `export`
+## Sistema TS: quattro strade, una pipeline
 
-Tre modalita', una sola pipeline, e cambiano solo gli ultimi dieci centimetri.
+Cambiano solo gli ultimi dieci centimetri.
 
 | Modalita' | Cosa serve | Chi trasmette |
 |---|---|---|
-| `export` | niente | lo studio, dal portale |
+| `provider` | un endpoint sull'intermediario accreditato | il provider, sotto il proprio accreditamento |
 | `credenziali_studio` | utente, password, PINCODE, **nessuna delega attiva** | il CRM |
 | `intermediario` | commercialista Entratel **con** delega attiva | il CRM, canale `/entrate/` |
+| `export` | niente | lo studio, dal portale |
 
-Nessun onboarding aspetta una pratica altrui: si parte in `export`, si vende, si
-fattura, si accumula. Si promuove quando le credenziali arrivano — e' configurazione,
-non migrazione. E si retrocede da soli, non in silenzio: PINCODE scaduto, delega
-cambiata, scarti `105`/`106` riportano l'azienda a `export` con un avviso. **La
-fatturazione non si ferma mai** per un problema dell'ultimo miglio.
+**Il predefinito e' `provider`**, per lo stesso motivo dello SdI: qualcuno il canale
+deve guardarlo. Le strade dirette non costano niente a documento e restano intere —
+ma le credenziali sono dello studio, e anche il silenzio.
+
+**Attenzione: il sì del provider non e' il sì del Sistema TS.** La chiamata diretta e'
+sincrona e la risposta porta il protocollo. Il provider invece prende il file e lo
+inoltra, quindi il documento resta `inviato` e non diventa `accolto`. Scrivere
+`accolto` su un 202 sarebbe inventarsi un'accettazione che nessuno ha dato, e lo
+studio se ne accorgerebbe a gennaio. Per questo il controllo della silenzio conta
+`inviato` fra i documenti in attesa.
+
+Il codice fiscale del paziente e' **cifrato prima di arrivare all'API di chiunque**,
+provider compreso.
+
+Chi ha bisogno delle credenziali dello studio e chi no e' una definizione sola
+(`sistema_ts.richiede_credenziali`): un'azienda su `provider` di credenziali TS non ne
+ha, e chiedergliele bloccherebbe il salvataggio su un campo che non potra' mai
+riempire.
+
+`export` resta il piano B universale e resta testato anche quando nessuno lo usa. Si
+retrocede da soli, non in silenzio: PINCODE scaduto, delega cambiata, scarti
+`105`/`106` riportano l'azienda a `export` con un avviso. **La fatturazione non si
+ferma mai** per un problema dell'ultimo miglio.
 
 La verita' sulla delega non si chiede: si sonda. Alla domanda «chi ha mandato i dati
 l'anno scorso?» molti studi rispondono male, non per malafede — non lo sanno. Gli

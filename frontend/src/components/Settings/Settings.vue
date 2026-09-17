@@ -60,6 +60,7 @@ import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
 import LucideReceipt from '~icons/lucide/receipt-text'
 import LucideBuilding from '~icons/lucide/building-2'
+import LucidePlug from '~icons/lucide/plug-zap'
 import LucideBookOpen from '~icons/lucide/book-open'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideUserCog from '~icons/lucide/user-cog'
@@ -111,6 +112,7 @@ import InvoicingDefaults from '@/components/Settings/Invoicing/InvoicingDefaults
 import QualificationsSettings from '@/components/Settings/Invoicing/QualificationsSettings.vue'
 import BillableServicesSettings from '@/components/Settings/Invoicing/BillableServicesSettings.vue'
 import ProvidersSettings from '@/components/Settings/Invoicing/ProvidersSettings.vue'
+import ProviderConnection from '@/components/Settings/Invoicing/ProviderConnection.vue'
 import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
 import Icon from '@/components/Icon.vue'
@@ -273,8 +275,8 @@ const tabs = computed(() => {
     },
     {
       // invoicing, in the order you set it up: who signs the documents, what the
-      // qualifications mean, what is being sold, who performs it, and the
-      // switches that apply to all of it
+      // qualifications mean, what is being sold, who performs it, how it reaches
+      // the provider and comes back, and the switches that apply to all of it
       label: __('Invoicing'),
       items: [
         {
@@ -300,6 +302,12 @@ const tabs = computed(() => {
           key: 'Providers',
           icon: markRaw(LucideUserCog),
           component: markRaw(ProvidersSettings),
+        },
+        {
+          label: __('Provider connection'),
+          key: 'Provider connection',
+          icon: markRaw(LucidePlug),
+          component: markRaw(ProviderConnection),
         },
         {
           label: __('Invoicing defaults'),
