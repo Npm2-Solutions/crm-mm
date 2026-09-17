@@ -179,6 +179,30 @@ carry a qualified signature**: mandatory on FPA12, optional on FPR12. Sending an
 unsigned PA invoice comes back as `00102` with the five days already running, so
 the channel refuses instead and says what is missing.
 
+### The provider contract, and what is still missing from it
+
+No vendor is wired in. `sdi/provider.py` posts the built XML and reads an
+identifier back, and endpoint, authentication and the field that identifier hides in
+are all configuration — pinning one vendor's shape into the code is how the next
+migration turns into a rewrite. The shape it assumes was checked (17 September 2026)
+against a published accredited-provider API and matches on all four points that
+matter: raw XML with `Content-Type: application/xml`, `202 Accepted`, `{"uuid": …}`
+in the body, and a login exchange that takes `{"email", "password"}` and answers
+`{"token": …}`.
+
+Three gaps are known and open, and the first one matters more than the other two:
+
+* **there is no door for a webhook.** `api.apply_sdi_notice` is session
+  authenticated and wants a File already inside Frappe; nothing in this module is
+  `allow_guest`. So on the `provider` route the notices only arrive if a human
+  downloads and drops them — which is the exact failure the default was chosen to
+  prevent. Closing it means a public endpoint that accepts fiscal notices, so it
+  needs the provider's signature scheme read from their documentation rather than
+  guessed: an open door that trusts any caller is worse than no door;
+* **no way to aim at a sandbox.** The login body carries no environment selector, so
+  the first real invoice would be the first test;
+* **a fresh login per send**, where the token is good for 24 hours.
+
 ### What transmitting does not do
 
 Sending the file is the easy half. Three things are not done by it, and only the
@@ -371,6 +395,7 @@ re-reading before go-live — this is the part of the module that moves.
 
 ---
 
-*Not tax or legal advice. The A-Cube endpoints, the Sistema TS kit and the FatturaPA
-technical specification should be taken from their current versions, and every legal
-reference is doubled with the Testi Unici applicable from 1 January 2027.*
+*Not tax or legal advice. The provider's endpoints, the Sistema TS kit and the
+FatturaPA technical specification should be taken from their current versions, and
+every legal reference is doubled with the Testi Unici applicable from 1 January
+2027.*

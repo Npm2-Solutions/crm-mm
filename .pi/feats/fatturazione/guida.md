@@ -203,6 +203,26 @@ Due dettagli che decidono se funziona:
   quel punto i cinque giorni corrono gia': il canale si rifiuta e dice cosa manca.
   Il `.p7m` firmato si allega sul documento.
 
+### Il provider: cosa manca ancora
+
+Nessun fornitore e' cablato nel codice: endpoint, autenticazione e campo da cui
+leggere l'identificativo sono configurazione. La forma e' stata verificata (17
+settembre 2026) su un'API di intermediario accreditato pubblicata, e combacia: XML
+grezzo con `Content-Type: application/xml`, risposta `202`, `{"uuid": ...}` nel
+corpo, login che prende `{"email", "password"}` e risponde `{"token": ...}`.
+
+Tre buchi aperti, e il primo pesa piu' degli altri due:
+
+- **non c'e' una porta per il webhook.** `apply_sdi_notice` vuole una sessione e un
+  file gia' dentro Frappe: nel modulo non c'e' nessun `allow_guest`. Quindi oggi, sul
+  canale provider, le ricevute arrivano solo se qualcuno le scarica a mano — cioe'
+  esattamente il fallimento per cui il provider e' il predefinito. Chiuderlo vuol
+  dire un endpoint pubblico che accetta ricevute fiscali, e quello va fatto con la
+  verifica della firma del provider letta sulla sua documentazione, non dedotta;
+- **non si puo' puntare al sandbox**: nel login non viaggia nessun selettore di
+  ambiente, quindi la prima fattura vera sarebbe la prima prova;
+- **un login per ogni invio**, con un token che dura 24 ore.
+
 ### Mandare non basta
 
 Il file parte, e quella e' la meta' facile. Tre cose non le fa la trasmissione:
