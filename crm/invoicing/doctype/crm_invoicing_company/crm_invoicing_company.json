@@ -70,6 +70,7 @@
   "ssa_code",
   "column_healthcare",
   "ts_mode",
+  "ts_provider_endpoint",
   "ts_delegation_status",
   "ts_username",
   "ts_password",
@@ -471,12 +472,12 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "export",
-   "description": "Everyone is born in export: no onboarding waits on somebody else's paperwork. It is the universal plan B, and it stays tested.",
+   "default": "provider",
+   "description": "provider hands the tracciato to the accredited intermediary, which is the default for the same reason it is on the SdI side: somebody has to watch the channel. credenziali_studio transmits straight from here with the practice's own Sistema TS credentials - no per-document cost, but the practice owns the credentials and the silence. intermediario is the same, on the /entrate/ channel, for an accountant with an active mandate. export prepares the file and the practice uploads it from the portal, and stays the tested fallback for all three.",
    "fieldname": "ts_mode",
    "fieldtype": "Select",
    "label": "Submission mode",
-   "options": "export\ncredenziali_studio\nintermediario"
+   "options": "export\nprovider\ncredenziali_studio\nintermediario"
   },
   {
    "default": "sconosciuta",
@@ -663,11 +664,18 @@
    "fieldname": "sdi_webhook_secret",
    "fieldtype": "Password",
    "label": "Webhook secret"
+  },
+  {
+   "depends_on": "eval:doc.ts_mode=='provider'",
+   "description": "Where the provider takes the Sistema TS tracciato. The provider's acceptance is not the Sistema TS's: a document leaves here as 'inviato' and only becomes 'accolto' when the real outcome comes back.",
+   "fieldname": "ts_provider_endpoint",
+   "fieldtype": "Data",
+   "label": "Sistema TS endpoint"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-17 10:00:00.000000",
+ "modified": "2026-09-17 11:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

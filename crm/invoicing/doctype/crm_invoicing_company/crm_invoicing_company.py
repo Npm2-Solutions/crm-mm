@@ -19,6 +19,7 @@ from frappe.model.document import Document
 from crm.invoicing.engine import codice_fiscale as cf
 from crm.invoicing.engine.codici import SOGGETTI_CON_CODICE_PROPRIETARIO, SoggettoInviante
 from crm.invoicing.engine.numerazione import FormatoNonCompatibile, valida_formato
+from crm.invoicing.engine.sistema_ts import richiede_credenziali
 
 
 class CRMInvoicingCompany(Document):
@@ -99,7 +100,7 @@ class CRMInvoicingCompany(Document):
 					"to be empty, only the codice fiscale is used"
 				).format(categoria)
 			)
-		if self.ts_mode != "export" and not self.ts_username:
+		if richiede_credenziali(self.ts_mode) and not self.ts_username:
 			frappe.throw(
 				_(
 					"Submission mode {0} needs Sistema TS credentials. Leave it on export until they "

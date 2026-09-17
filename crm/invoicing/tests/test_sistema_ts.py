@@ -26,6 +26,7 @@ from crm.invoicing.engine.sistema_ts import (
 	nome_file,
 	nome_file_valido,
 	prepara_batch,
+	richiede_credenziali,
 	scadenza_invio,
 	scrivi_documento_sincrono,
 	valida_documento,
@@ -510,3 +511,28 @@ class EsitoTest(UnitTestCase):
 		)
 		self.assertEqual(esito.codici_errore, ["002"])
 		self.assertIn("Certificato", esito.riassunto())
+
+
+class ModalitaTest(UnitTestCase):
+	"""Who actually holds Sistema TS credentials.
+
+	The distinction earns a test because getting it wrong blocks a save: a company
+	on the provider channel has no PINCODE to give, and demanding one would stop
+	onboarding at a field that can never be filled.
+	"""
+
+	def test_lo_studio_che_trasmette_da_se_le_ha(self):
+		self.assertTrue(richiede_credenziali("credenziali_studio"))
+
+	def test_e_anche_l_intermediario_entratel(self):
+		self.assertTrue(richiede_credenziali("intermediario"))
+
+	def test_il_provider_trasmette_sotto_il_proprio_accreditamento(self):
+		self.assertFalse(richiede_credenziali("provider"))
+
+	def test_export_consegna_un_file_e_basta(self):
+		self.assertFalse(richiede_credenziali("export"))
+
+	def test_non_detto_vuol_dire_export(self):
+		self.assertFalse(richiede_credenziali(None))
+		self.assertFalse(richiede_credenziali(""))

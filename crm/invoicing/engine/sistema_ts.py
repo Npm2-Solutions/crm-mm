@@ -880,6 +880,17 @@ def destinazione(canale: str, ambiente: str = Ambiente.TEST) -> Destinazione:
 	return Destinazione(Canale(canale), Ambiente(ambiente))
 
 
+#: The modes that transmit with the practice's own Sistema TS credentials. The
+#: others do not have any: `export` hands a file over, and `provider` transmits
+#: under the intermediary's accreditation - asking either for a PINCODE is asking
+#: for something that does not exist.
+MODALITA_CON_CREDENZIALI = ("credenziali_studio", "intermediario")
+
+
+def richiede_credenziali(modalita: str | None) -> bool:
+	return (modalita or "export") in MODALITA_CON_CREDENZIALI
+
+
 def canale_per_modalita(modalita: str) -> str:
 	"""The base channel for the practice's own credentials, `/entrate/` for an
 	intermediary. The two are not interchangeable, and getting it wrong gives 401."""

@@ -13,9 +13,10 @@ import base64
 import unittest
 
 from crm.invoicing.engine import busta
+from crm.invoicing.tests.base import UnitTestCase
 
 
-class TokenTest(unittest.TestCase):
+class TokenTest(UnitTestCase):
 	def test_legge_l_intestazione_dedicata(self):
 		self.assertEqual(busta.token_presentato({"X-Acube-Token": "abc"}, {}), "abc")
 
@@ -39,7 +40,7 @@ class TokenTest(unittest.TestCase):
 		self.assertEqual(busta.token_presentato({"X-Acube-Token": "  abc  "}, {}), "abc")
 
 
-class SegretoTest(unittest.TestCase):
+class SegretoTest(UnitTestCase):
 	def test_uguali_passano(self):
 		self.assertTrue(busta.segreto_corrisponde("abc", "abc"))
 
@@ -57,7 +58,7 @@ class SegretoTest(unittest.TestCase):
 		self.assertFalse(busta.segreto_corrisponde("abc", "abcdef"))
 
 
-class CercaTest(unittest.TestCase):
+class CercaTest(UnitTestCase):
 	def test_trova_in_superficie(self):
 		self.assertEqual(busta.cerca({"uuid": "u1"}, busta.CHIAVI_UUID), "u1")
 
@@ -82,7 +83,7 @@ class CercaTest(unittest.TestCase):
 		self.assertEqual(busta.cerca({"uuid": "   ", "id": "vero"}, busta.CHIAVI_UUID), "vero")
 
 
-class ContenutoTest(unittest.TestCase):
+class ContenutoTest(UnitTestCase):
 	def test_xml_diretto(self):
 		self.assertEqual(busta.forse_xml("<RC>ok</RC>"), b"<RC>ok</RC>")
 
@@ -103,7 +104,7 @@ class ContenutoTest(unittest.TestCase):
 		self.assertIsNone(busta.forse_xml("   "))
 
 
-class FormaTest(unittest.TestCase):
+class FormaTest(UnitTestCase):
 	def test_descrive_senza_citare(self):
 		corpo = {"event": "customer-notification", "uuid": "u1", "attachment": "PHNlZ3JldG8+"}
 		descritta = busta.forma(corpo)
@@ -117,7 +118,7 @@ class FormaTest(unittest.TestCase):
 		self.assertEqual(busta.forma({}), {"keys": [], "event": None, "uuid": None})
 
 
-class EventoTest(unittest.TestCase):
+class EventoTest(UnitTestCase):
 	def test_la_notifica_doveva_portare_qualcosa(self):
 		self.assertTrue(busta.porta_una_notifica(busta.EVENTO_NOTIFICA))
 
