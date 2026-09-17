@@ -21,6 +21,7 @@ from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
 from crm.invoicing.engine.professioni import elenco as professioni_di_serie
+from crm.invoicing.engine.sistema_ts import richiede_credenziali
 
 
 def _fattura(name: str):
@@ -480,10 +481,20 @@ def onboarding_checklist(company: str) -> list[dict]:
 			"ts_certificate",
 		)
 		manca(
-			emittente.get("ts_mode") != "export" and not emittente.get("ts_username"),
+			richiede_credenziali(emittente.get("ts_mode")) and not emittente.get("ts_username"),
 			_("Sistema TS credentials"),
 			_("Submission falls back to export until they arrive."),
 			"ts_username",
+		)
+		manca(
+			emittente.get("ts_mode") == "provider" and not emittente.get("ts_provider_endpoint"),
+			_("Sistema TS channel"),
+			_(
+				"The Sistema TS is set to go through the provider but has no endpoint: the "
+				"tracciato is built and nothing carries it. Configure it, or fall back to export "
+				"and upload from the portal."
+			),
+			"ts_provider_endpoint",
 		)
 
 	for qualifica in registro.da_verificare(company):

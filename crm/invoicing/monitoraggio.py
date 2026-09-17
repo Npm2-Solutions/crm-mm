@@ -107,10 +107,14 @@ def controlla_certificati() -> list[dict]:
 
 
 def controlla_silenzio() -> list[dict]:
-	"""No accepted submission for N days.
+	"""Nothing accepted for N days, while documents wait.
 
-	The most dangerous check in the file, because the condition it looks for
-	produces no error anywhere else.
+	The most dangerous check in the file, because the condition it looks for produces
+	no error anywhere else.
+
+	`inviato` counts as waiting. On the provider channel a document sits there from
+	the moment the intermediary takes it until the real Sistema TS outcome comes
+	back - and if that outcome never comes, nothing else in the system will say so.
 	"""
 	giorni = frappe.db.get_single_value("CRM Invoicing Settings", "ts_silence_days") or 30
 	soglia = now_datetime() - timedelta(days=giorni)
@@ -121,17 +125,12 @@ def controlla_silenzio() -> list[dict]:
 			{
 				"company": azienda["name"],
 				"docstatus": 1,
-				"ts_status": ["in", ("da_inviare", "pronto_export")],
+				"ts_status": ["in", ("da_inviare", "pronto_export", "inviato")],
 			},
 		)
 		if not in_attesa:
 			continue
-		ultimo = frappe.db.get_value(
-			"CRM TS Submission",
-			{"company": azienda["name"], "status": "accolto"},
-			"sent_on",
-			order_by="sent_on desc",
-		)
+		ultimo = _ultimo_accolto(azienda["name"])
 		if ultimo and ultimo >= soglia:
 			continue
 		rilievi.append(
@@ -145,6 +144,31 @@ def controlla_silenzio() -> list[dict]:
 			),
 		)
 	return rilievi
+
+
+def _ultimo_accolto(azienda: str):
+	"""When this company last had anything accepted by the Sistema TS.
+
+	Both routes count. A batch leaves a submission behind; a synchronous send only
+	moves the invoice, so looking at submissions alone would report silence at a
+	practice that has been transmitting document by document all along.
+	"""
+	candidati = [
+		frappe.db.get_value(
+			"CRM TS Submission",
+			{"company": azienda, "status": "accolto"},
+			"sent_on",
+			order_by="sent_on desc",
+		),
+		frappe.db.get_value(
+			"CRM Invoice",
+			{"company": azienda, "docstatus": 1, "ts_status": "accolto"},
+			"modified",
+			order_by="modified desc",
+		),
+	]
+	visti = [c for c in candidati if c]
+	return max(visti) if visti else None
 
 
 def controlla_scadenze() -> list[dict]:

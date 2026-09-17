@@ -31,7 +31,8 @@ from frappe import _
 from frappe.utils import getdate
 from frappe.utils.password import get_decrypted_password
 
-from crm.invoicing import documento, ts
+from crm.invoicing import acube, documento, ts
+from crm.invoicing.engine import busta
 from crm.invoicing.engine.codici import (
 	CODICE_DELEGA_ASSENTE,
 	CODICE_DELEGA_PRESENTE,
@@ -47,6 +48,7 @@ from crm.invoicing.engine.sistema_ts import (
 	analizza_risposta,
 	canale_per_modalita,
 	costruisci_busta,
+	costruisci_file_allegato,
 	destinazione,
 	soap_action,
 )
@@ -172,6 +174,11 @@ def invia_documento(nome_fattura: str, operazione: str | None = None) -> dict:
 			"<br>".join(esito_validazione.errori), title=_("The document does not pass the tracciato")
 		)
 
+	if modalita == "provider":
+		# The tracciato is validated the same way whichever door it leaves by. What
+		# changes past this point is only who carries it, and what an answer means.
+		return _invia_tramite_provider(fattura, emittente, spesa)
+
 	scelta = Operazione(
 		{
 			"I": Operazione.INSERIMENTO,
@@ -229,6 +236,84 @@ def _registra_esito(fattura, emittente: dict, esito: Esito, modalita: str) -> No
 		payload={"codes": esito.codici_errore},
 	)
 	_reagisci_ai_codici(emittente, esito, modalita)
+
+
+def _invia_tramite_provider(fattura, emittente: dict, spesa) -> dict:
+	"""Hand the tracciato to the intermediary.
+
+	**A provider's yes is not the Sistema TS's yes.** On the direct channel the call
+	is synchronous and the answer is the outcome, protocol and all. Here the provider
+	takes the file and forwards it, exactly as it does for the SdI, so the honest
+	state is `inviato` - never `accolto`. Writing `accolto` on a 202 would invent an
+	acceptance nobody gave, and the practice would find out next January.
+
+	The file is the standard attached-file tracciato, encrypted here as always: the
+	patient's fiscal code is ciphered before it reaches anybody's API, provider
+	included.
+	"""
+	endpoint = (emittente.get("ts_provider_endpoint") or "").strip()
+	if not endpoint:
+		frappe.throw(
+			_("No Sistema TS endpoint for the provider: the tracciato is ready, the channel is not."),
+			title=_("Sistema TS"),
+		)
+
+	contenuto = costruisci_file_allegato([spesa], ts.cifratore(emittente))
+	try:
+		risposta = acube.posta(emittente, endpoint, contenuto, tipo="application/xml")
+	except acube.ErroreAcube as errore:
+		documento.registra(fattura, "ts_sent", str(errore), stato="errore")
+		frappe.throw(str(errore), title=_("Sistema TS"))
+
+	if risposta.status_code not in (200, 201, 202):
+		# Truncated on purpose: a provider that echoes the document back would
+		# otherwise write a patient's healthcare data into a log.
+		messaggio = _("The provider answered {0}: {1}").format(
+			risposta.status_code, (risposta.text or "")[:500]
+		)
+		fattura.db_set("ts_status", "scartato", update_modified=False)
+		documento.registra(fattura, "ts_rejected", messaggio, stato="scartato")
+		frappe.throw(messaggio, title=_("Sistema TS"))
+
+	identificativo = _identificativo_provider(risposta)
+	riassunto = _("Handed to {0}{1}. The Sistema TS outcome arrives separately.").format(
+		emittente.get("sdi_provider") or _("the provider"),
+		f" ({identificativo})" if identificativo else "",
+	) + acube.etichetta_ambiente(emittente)
+
+	fattura.db_set(
+		{
+			"ts_status": "inviato",
+			"ts_year": fattura.ts_year or getdate(fattura.payment_date).year,
+		},
+		update_modified=False,
+	)
+	documento.registra(fattura, "ts_sent", riassunto, stato="inviato", payload={"identifier": identificativo})
+	return {
+		"accepted": False,
+		"sent": True,
+		"protocol": None,
+		"identifier": identificativo,
+		"codes": [],
+		"summary": riassunto,
+	}
+
+
+def _identificativo_provider(risposta) -> str | None:
+	"""The provider's own reference, wherever it hid it. Shared shape with the SdI side."""
+	try:
+		corpo = risposta.json() if risposta.content else {}
+	except ValueError:
+		return None
+	if isinstance(corpo, str):
+		return corpo.strip() or None
+	if not isinstance(corpo, dict):
+		return None
+	for chiave in busta.CHIAVI_UUID:
+		valore = corpo.get(chiave)
+		if valore:
+			return str(valore)
+	return None
 
 
 def _reagisci_ai_codici(emittente: dict, esito: Esito, modalita: str) -> None:
