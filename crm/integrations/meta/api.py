@@ -588,11 +588,17 @@ def set_account_sync(account_id: str, enabled: bool = True) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def sync_ad_spend_now() -> dict:
-	"""Read every enabled account again, without waiting for tomorrow."""
+def sync_ad_spend_now(days: int = 7) -> dict:
+	"""Read every enabled account again, without waiting for tomorrow.
+
+	`days` is how far back to go. The daily job only re-reads the last week —
+	enough to catch Meta's revisions — so a longer window is what fills the
+	report's history the first time an account is switched on.
+	"""
 	_check_manager()
-	start_spend_sync()
-	return {"queued": True}
+	days = min(max(frappe.utils.cint(days) or 7, 1), 365)
+	start_spend_sync(days)
+	return {"queued": True, "days": days}
 
 
 @frappe.whitelist()

@@ -129,7 +129,7 @@ def _store_insight(account: str, row: dict) -> bool:
 	return True
 
 
-def sync_ad_spend() -> dict:
+def sync_ad_spend(days: int = SYNC_WINDOW_DAYS) -> dict:
 	"""Daily job: every enabled account, each one on its own.
 
 	One account failing — a revoked role, a closed account — must not cost the
@@ -141,7 +141,7 @@ def sync_ad_spend() -> dict:
 	read = {}
 	for account in frappe.get_all("Facebook Ad Account", filters={"sync_enabled": 1}, pluck="name"):
 		try:
-			read[account] = sync_account(account)
+			read[account] = sync_account(account, days)
 			# same trip, opposite side of the same question: "no leads today" is
 			# either no money spent or an ad Meta quietly stopped
 			refresh_delivery(account)
@@ -294,19 +294,24 @@ def spend_sync_running() -> bool:
 	return bool(frappe.cache().get_value(SPEND_FLAG))
 
 
-def start_spend_sync() -> None:
+def start_spend_sync(days: int = SYNC_WINDOW_DAYS) -> None:
 	"""Read the spend in the background.
 
 	A request cannot hold the browser for as long as several accounts of daily
 	rows take, and the token must not travel through the job arguments — the job
 	reads it from the settings itself.
 	"""
-	frappe.cache().set_value(SPEND_FLAG, 1, expires_in_sec=900)
-	frappe.enqueue("crm.integrations.meta.insights.run_spend_sync", queue="long", timeout=900)
+	frappe.cache().set_value(SPEND_FLAG, 1, expires_in_sec=1800)
+	frappe.enqueue(
+		"crm.integrations.meta.insights.run_spend_sync",
+		queue="long",
+		timeout=1800,
+		days=frappe.utils.cint(days) or SYNC_WINDOW_DAYS,
+	)
 
 
-def run_spend_sync() -> None:
+def run_spend_sync(days: int = SYNC_WINDOW_DAYS) -> None:
 	try:
-		sync_ad_spend()
+		sync_ad_spend(days)
 	finally:
 		frappe.cache().delete_value(SPEND_FLAG)

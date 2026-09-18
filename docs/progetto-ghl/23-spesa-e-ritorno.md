@@ -81,6 +81,12 @@ inserzioni sono molte). Con tre clienti sono tre chiamate al giorno: non e' un
 modo per far salire un contatore, e' quello che serve. Il pulsante **"Leggi la
 spesa adesso"** fa la stessa cosa fuori orario, in background.
 
+**"Leggi 90 giorni"** serve la prima volta che si accende un account: il giro
+giornaliero rilegge solo l'ultima settimana, quindi senza questo il report
+partirebbe senza storia. Sono chiamate vere e utili — la storia serve per
+confrontare i mesi — e sono anche quelle che fanno salire per davvero il
+contatore delle chiamate Marketing API, senza inventarsi traffico finto.
+
 ## L'inserzione vera nella scheda del lead
 
 Chi chiama un lead cinque minuti dopo che e' arrivato e' la persona per cui

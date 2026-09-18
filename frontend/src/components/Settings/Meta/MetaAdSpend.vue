@@ -57,7 +57,16 @@
                 size="sm"
                 :label="__('Read spend now')"
                 :loading="accounts.data?.syncing"
-                @click="syncNow"
+                @click="syncNow(7)"
+              />
+              <!-- the first read of an account has no history: this gives it one -->
+              <Button
+                v-if="enabledCount"
+                size="sm"
+                variant="ghost"
+                :label="__('Read 90 days')"
+                :loading="accounts.data?.syncing"
+                @click="syncNow(90)"
               />
             </div>
           </div>
@@ -407,9 +416,10 @@ function toggleAccount(account, enabled) {
   })
 }
 
-function syncNow() {
+function syncNow(days) {
   createResource({
     url: 'crm.integrations.meta.api.sync_ad_spend_now',
+    params: { days },
     auto: true,
     onSuccess: () => {
       toast.success(
