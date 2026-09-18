@@ -172,3 +172,67 @@ class TestMetaInsights(IntegrationTestCase):
 		totals = I.performance(30)["totals"]
 		self.assertTrue(totals["mixed_currencies"])
 		self.assertEqual(totals["currency"], "")
+
+
+class TestMetaAds(IntegrationTestCase):
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_creative_is_asked_once_a_month(self):
+		"""The picture and the words of an ad do not change; asking every time a
+		lead is opened would spend a call per page view."""
+		from crm.integrations.meta import ads as A
+
+		answer = {
+			"name": "Promo Autunno",
+			"preview_shareable_link": "https://facebook.com/ads/preview",
+			"creative": {
+				"title": "Sconto 20%",
+				"body": "Solo questo mese",
+				"thumbnail_url": "https://cdn/x.jpg",
+			},
+		}
+		# ads.py asks insights.py for the token at call time, so that is the one
+		# a test has to answer for
+		with (
+			patch("crm.integrations.meta.insights.user_token", return_value="tok"),
+			patch.object(A, "graph_get", return_value=answer) as graph_get,
+		):
+			first = A.read_creative("120400")
+			second = A.read_creative("120400")
+
+		self.assertEqual(graph_get.call_count, 1)
+		self.assertEqual(first["creative_title"], "Sconto 20%")
+		self.assertEqual(second["creative_body"], "Solo questo mese")
+
+	def test_a_refused_creative_does_not_break_the_lead_screen(self):
+		from crm.integrations.meta import ads as A
+
+		with (
+			patch("crm.integrations.meta.insights.user_token", return_value="tok"),
+			patch.object(A, "graph_get", side_effect=Exception("no ads access")),
+		):
+			self.assertEqual(A.read_creative("120401"), {})
+
+	def test_only_ads_that_were_working_are_reported_as_stopped(self):
+		"""An old paused ad is housekeeping. An ad that brought leads this month
+		and is now rejected is money and leads stopping."""
+		from crm.integrations.meta import ads as A
+
+		A._remember("120402", {"ad_name": "Vecchia", "effective_status": "PAUSED"})
+		A._remember("120403", {"ad_name": "Rifiutata", "effective_status": "DISAPPROVED"})
+		make_lead(ad_id="120403", email="fermata@example.com")
+
+		stopped = {row["ad_id"] for row in A.stopped_ads(30)}
+		self.assertIn("120403", stopped)
+		self.assertNotIn("120402", stopped)
+
+	def test_a_deal_shows_the_ad_of_its_lead(self):
+		from crm.integrations.meta import ads as A
+
+		lead = make_lead(ad_id="120404", email="trattativa@example.com")
+		deal = create_test_deal(organization="Ad Card Org", lead=lead.name)
+
+		self.assertEqual(A.ad_of_record("CRM Deal", deal.name), "120404")
+		self.assertEqual(A.ad_of_record("CRM Lead", lead.name), "120404")
+		self.assertEqual(A.ad_of_record("Contact", "whatever"), "")

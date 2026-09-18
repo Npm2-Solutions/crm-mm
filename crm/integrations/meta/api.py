@@ -9,6 +9,7 @@ import frappe
 from frappe import _
 from frappe.utils import get_url
 
+from crm.integrations.meta.ads import ad_of_record, read_creative, stopped_ads
 from crm.integrations.meta.client import (
 	MetaAPIError,
 	get_app_id,
@@ -595,7 +596,31 @@ def sync_ad_spend_now() -> dict:
 
 @frappe.whitelist()
 def get_ad_performance(days: int = 30) -> dict:
-	"""Spend against outcome, one line per ad."""
+	"""Spend against outcome, one line per ad — plus the ads that stopped.
+
+	An ad that was bringing leads and is now rejected belongs at the top of this
+	screen, not in a log: it is the difference between "we spent badly" and "we
+	stopped spending at all".
+	"""
 	_check_manager()
 	days = min(max(frappe.utils.cint(days) or 30, 1), 365)
-	return performance(days)
+	report = performance(days)
+	report["stopped"] = stopped_ads(days)
+	return report
+
+
+@frappe.whitelist()
+def get_record_ad(doctype: str, name: str) -> dict:
+	"""The actual ad behind a lead or a deal: headline, text, picture, link.
+
+	Read when somebody opens the record, so an ad nobody looks at costs nothing,
+	and never fatal: the record's own screen cannot depend on Meta answering.
+	"""
+	if doctype not in ("CRM Lead", "CRM Deal"):
+		return {}
+	if not frappe.has_permission(doctype, "read", doc=name):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	ad_id = ad_of_record(doctype, name)
+	if not ad_id:
+		return {}
+	return {"ad_id": ad_id, **read_creative(ad_id)}

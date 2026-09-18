@@ -129,6 +129,31 @@
           </div>
         </div>
 
+        <!-- an ad that was bringing leads and is now stopped is not a log line -->
+        <div
+          v-if="stopped.length"
+          class="rounded-lg border border-outline-red-1 bg-surface-red-1 p-4"
+        >
+          <div class="text-p-base-medium text-ink-red-5">
+            {{
+              __('{0} ads that were bringing leads are not running', [
+                stopped.length,
+              ])
+            }}
+          </div>
+          <div
+            v-for="ad in stopped"
+            :key="ad.ad_id"
+            class="mt-1 text-p-sm text-ink-gray-7"
+          >
+            {{ ad.ad_name || ad.ad_id }} —
+            {{ __(humanStatus(ad.effective_status)) }}
+            <span class="text-ink-gray-5">
+              ({{ __('{0} leads', [ad.leads]) }})
+            </span>
+          </div>
+        </div>
+
         <!-- the table itself -->
         <div class="rounded-lg border border-outline-gray-2 p-4">
           <div class="flex items-center justify-between gap-3">
@@ -178,8 +203,19 @@
               <tbody class="divide-y divide-outline-gray-1">
                 <tr v-for="row in rows" :key="row.ad_id">
                   <td class="py-2 pr-3">
-                    <div class="max-w-sm truncate text-ink-gray-8">
-                      {{ row.ad_name || row.ad_id }}
+                    <div class="flex items-center gap-2">
+                      <span class="max-w-sm truncate text-ink-gray-8">
+                        {{ row.ad_name || row.ad_id }}
+                      </span>
+                      <Badge
+                        v-if="
+                          row.effective_status &&
+                          row.effective_status !== 'ACTIVE'
+                        "
+                        :label="__(humanStatus(row.effective_status))"
+                        theme="orange"
+                        size="sm"
+                      />
                     </div>
                     <div class="max-w-sm truncate text-ink-gray-4">
                       {{
@@ -315,6 +351,20 @@ const performance = createResource({
   auto: true,
 })
 const rows = computed(() => performance.data?.rows || [])
+const stopped = computed(() => performance.data?.stopped || [])
+
+// Meta's own vocabulary, in words somebody can act on
+const WORDS = {
+  DISAPPROVED: 'Rejected by Meta',
+  WITH_ISSUES: 'Has issues',
+  PENDING_REVIEW: 'Waiting for review',
+  PAUSED: 'Paused',
+  ADSET_PAUSED: 'Ad set paused',
+  CAMPAIGN_PAUSED: 'Campaign paused',
+}
+function humanStatus(status) {
+  return WORDS[status] || status || ''
+}
 const totals = computed(() => performance.data?.totals || null)
 
 function setDays(value) {

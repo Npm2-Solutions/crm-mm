@@ -14,7 +14,17 @@
   "campaign_id",
   "campaign_name",
   "fetched_on",
-  "unreadable"
+  "unreadable",
+  "section_break_creative",
+  "creative_title",
+  "creative_body",
+  "column_break_creative",
+  "thumbnail_url",
+  "permalink",
+  "creative_fetched_on",
+  "section_break_delivery",
+  "effective_status",
+  "status_checked_on"
  ],
  "fields": [
   {
@@ -62,6 +72,60 @@
    "fieldname": "unreadable",
    "fieldtype": "Check",
    "label": "Unreadable"
+  },
+  {
+   "fieldname": "section_break_creative",
+   "fieldtype": "Section Break",
+   "label": "The Ad Itself"
+  },
+  {
+   "fieldname": "creative_title",
+   "fieldtype": "Data",
+   "label": "Headline"
+  },
+  {
+   "fieldname": "creative_body",
+   "fieldtype": "Small Text",
+   "label": "Body"
+  },
+  {
+   "fieldname": "column_break_creative",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Meta's own CDN link. Stored, never downloaded: it expires, and a stale copy of somebody's creative is not ours to keep.",
+   "fieldname": "thumbnail_url",
+   "fieldtype": "Data",
+   "label": "Thumbnail URL",
+   "length": 2000
+  },
+  {
+   "fieldname": "permalink",
+   "fieldtype": "Data",
+   "label": "Preview Link",
+   "length": 2000
+  },
+  {
+   "fieldname": "creative_fetched_on",
+   "fieldtype": "Datetime",
+   "label": "Creative Read On"
+  },
+  {
+   "fieldname": "section_break_delivery",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "description": "ACTIVE, PAUSED, DISAPPROVED, WITH_ISSUES\u2026 Meta's word for whether this ad is actually running.",
+   "fieldname": "effective_status",
+   "fieldtype": "Data",
+   "label": "Effective Status",
+   "length": 40
+  },
+  {
+   "fieldname": "status_checked_on",
+   "fieldtype": "Datetime",
+   "label": "Status Checked On"
   }
  ],
  "index_web_pages_for_search": 1,

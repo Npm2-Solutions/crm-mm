@@ -136,10 +136,15 @@ def sync_ad_spend() -> dict:
 	others their numbers, so each is committed and each failure is recorded where
 	the person who enabled it will see it.
 	"""
+	from crm.integrations.meta.ads import refresh_delivery
+
 	read = {}
 	for account in frappe.get_all("Facebook Ad Account", filters={"sync_enabled": 1}, pluck="name"):
 		try:
 			read[account] = sync_account(account)
+			# same trip, opposite side of the same question: "no leads today" is
+			# either no money spent or an ad Meta quietly stopped
+			refresh_delivery(account)
 			frappe.db.commit()
 		except Exception as exc:
 			frappe.db.rollback()
@@ -208,14 +213,19 @@ def performance(days: int = 30) -> dict:
 		entry = rows.setdefault(row.ad_id, _empty(row.ad_id))
 		entry.update({"deals": row.deals, "won": row.won, "revenue": flt(row.revenue)})
 
-	# names for the ads we only know from the CRM side (no spend in the window)
+	# what the CRM knows about these ads beyond the spend: the names of the ones
+	# with no spend in the window, and whether each one is still running
 	for ad_id, entry in rows.items():
-		if not entry.get("ad_name"):
-			known = frappe.db.get_value(
-				"Facebook Ad", ad_id, ["ad_name", "adset_name", "campaign_name"], as_dict=True
-			)
-			if known:
-				entry.update({key: known.get(key) or "" for key in known})
+		known = frappe.db.get_value(
+			"Facebook Ad",
+			ad_id,
+			["ad_name", "adset_name", "campaign_name", "effective_status"],
+			as_dict=True,
+		)
+		entry["effective_status"] = (known or {}).get("effective_status") or ""
+		if known and not entry.get("ad_name"):
+			for key in ("ad_name", "adset_name", "campaign_name"):
+				entry[key] = known.get(key) or ""
 
 	for entry in rows.values():
 		_derive(entry)
@@ -238,6 +248,7 @@ def _empty(ad_id: str) -> dict:
 		"deals": 0,
 		"won": 0,
 		"revenue": 0.0,
+		"effective_status": "",
 	}
 
 

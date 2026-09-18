@@ -80,3 +80,38 @@ Una chiamata al giorno per account (piu' le pagine di risultati, se le
 inserzioni sono molte). Con tre clienti sono tre chiamate al giorno: non e' un
 modo per far salire un contatore, e' quello che serve. Il pulsante **"Leggi la
 spesa adesso"** fa la stessa cosa fuori orario, in background.
+
+## L'inserzione vera nella scheda del lead
+
+Chi chiama un lead cinque minuti dopo che e' arrivato e' la persona per cui
+questo conta piu' di tutti: sapere **cosa gli e' stato promesso** e' la
+differenza tra *"salve, ha compilato un modulo"* e continuare la conversazione
+che l'inserzione ha iniziato. Prima bisognava andare a cercarla in Gestione
+inserzioni.
+
+Nella tab Tracciamento del lead (e della trattativa) compare la scheda **"L'inserzione
+che ha cliccato"**: titolo, testo, anteprima e il link per aprirla su Meta. Si
+legge **quando qualcuno apre il lead**, non all'importazione, e si ricorda per
+30 giorni: un'inserzione che nessuno guarda non costa niente, e la stessa
+inserzione aperta cento volte costa una chiamata al mese.
+
+Se Meta non risponde (nessun accesso all'account pubblicitario, inserzione
+troppo vecchia) **la scheda semplicemente non c'e'**. Un lead vale piu' della
+foto della sua inserzione. Anche l'immagine: i link della CDN di Meta scadono,
+quindi se l'immagine non carica spariscere e' meglio di una cornice rotta — e
+non ne teniamo una copia, perche' il creativo e' del cliente, non nostro.
+
+## Quando un'inserzione smette di girare
+
+Un'inserzione rifiutata da Meta smette di portare lead **senza dirlo a nessuno**:
+il cliente lo scopre dal silenzio. Nello stesso giro giornaliero della spesa si
+legge anche `effective_status` di tutte le inserzioni dell'account (una chiamata
+per account: piu' economica e piu' utile che chiederlo inserzione per
+inserzione).
+
+Il risultato non finisce in un log ma in cima alla schermata, e solo se ha senso:
+**si segnalano le inserzioni che hanno portato lead negli ultimi 30 giorni e che
+adesso non stanno girando**. Un'inserzione vecchia in pausa e' archivio; una che
+funzionava ieri ed e' stata rifiutata oggi e' soldi e lead che si fermano. Sulla
+riga della tabella resta un'etichetta ("Rifiutata da Meta", "In pausa"), con le
+parole di Meta tradotte in qualcosa su cui si puo' agire.
