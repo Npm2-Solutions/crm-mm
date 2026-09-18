@@ -47,3 +47,4 @@ crm.patches.v1_0.link_deals_to_their_organization
 crm.patches.v1_0.remember_the_leads_already_imported
 crm.patches.v1_0.give_the_person_a_real_company
 crm.patches.v1_0.one_number_one_person
+crm.patches.v1_0.remember_which_ad_each_lead_came_from

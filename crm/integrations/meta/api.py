@@ -9,6 +9,7 @@ import frappe
 from frappe import _
 from frappe.utils import get_url
 
+from crm.integrations.meta.ads import ad_of_record, read_creative, stopped_ads
 from crm.integrations.meta.client import (
 	MetaAPIError,
 	get_app_id,
@@ -17,6 +18,14 @@ from crm.integrations.meta.client import (
 	graph_get,
 	graph_post,
 	is_managed_app,
+)
+from crm.integrations.meta.conversions import coverage, send_pending
+from crm.integrations.meta.insights import (
+	discover_accounts,
+	performance,
+	spend_sync_running,
+	start_spend_sync,
+	sync_account,
 )
 from crm.integrations.meta.leads import backfill_form, get_page_token
 from crm.integrations.meta.oauth import (
@@ -519,3 +528,154 @@ def create_test_lead(form_id: str) -> dict:
 		return {"ok": True, "id": result.get("id")}
 	except MetaAPIError as exc:
 		frappe.throw(_("Could not create test lead: {0}").format(exc))
+
+
+# --- ad spend --------------------------------------------------------------
+
+
+@frappe.whitelist()
+def get_ad_accounts() -> dict:
+	"""The ad accounts we know of, and whether a read is running right now."""
+	_check_manager()
+	accounts = frappe.get_all(
+		"Facebook Ad Account",
+		fields=[
+			"name as account_id",
+			"account_name",
+			"business_name",
+			"currency",
+			"account_status",
+			"sync_enabled",
+			"last_synced_on",
+			"last_error",
+		],
+		order_by="sync_enabled desc, account_name asc",
+	)
+	return {"accounts": accounts, "syncing": spend_sync_running()}
+
+
+@frappe.whitelist(methods=["POST"])
+def refresh_ad_accounts() -> dict:
+	"""Ask Facebook which ad accounts this connection can see."""
+	_check_manager()
+	try:
+		found = discover_accounts()
+	except MetaAPIError as exc:
+		frappe.throw(str(exc))
+	return {"found": len(found)}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_account_sync(account_id: str, enabled: bool = True) -> dict:
+	"""Turn one account's spend on or off.
+
+	Turning it on reads it straight away: an empty report right after saying yes
+	looks broken, and the first read is the one that proves the access works.
+	"""
+	_check_manager()
+	enabled = frappe.parse_json(enabled) if isinstance(enabled, str) else bool(enabled)
+	frappe.db.set_value("Facebook Ad Account", account_id, "sync_enabled", 1 if enabled else 0)
+	if not enabled:
+		return {"enabled": False}
+	try:
+		rows = sync_account(account_id)
+	except MetaAPIError as exc:
+		frappe.db.set_value(
+			"Facebook Ad Account", account_id, "last_error", str(exc)[:500], update_modified=False
+		)
+		frappe.throw(_("Facebook refused to give the spend of this account: {0}").format(str(exc)))
+	return {"enabled": True, "rows": rows}
+
+
+@frappe.whitelist(methods=["POST"])
+def sync_ad_spend_now(days: int = 7) -> dict:
+	"""Read every enabled account again, without waiting for tomorrow.
+
+	`days` is how far back to go. The daily job only re-reads the last week —
+	enough to catch Meta's revisions — so a longer window is what fills the
+	report's history the first time an account is switched on.
+	"""
+	_check_manager()
+	days = min(max(frappe.utils.cint(days) or 7, 1), 365)
+	start_spend_sync(days)
+	return {"queued": True, "days": days}
+
+
+@frappe.whitelist()
+def get_ad_performance(days: int = 30) -> dict:
+	"""Spend against outcome, one line per ad — plus the ads that stopped.
+
+	An ad that was bringing leads and is now rejected belongs at the top of this
+	screen, not in a log: it is the difference between "we spent badly" and "we
+	stopped spending at all".
+	"""
+	_check_manager()
+	days = min(max(frappe.utils.cint(days) or 30, 1), 365)
+	report = performance(days)
+	report["stopped"] = stopped_ads(days)
+	return report
+
+
+@frappe.whitelist()
+def get_record_ad(doctype: str, name: str) -> dict:
+	"""The actual ad behind a lead or a deal: headline, text, picture, link.
+
+	Read when somebody opens the record, so an ad nobody looks at costs nothing,
+	and never fatal: the record's own screen cannot depend on Meta answering.
+	"""
+	if doctype not in ("CRM Lead", "CRM Deal"):
+		return {}
+	if not frappe.has_permission(doctype, "read", doc=name):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	ad_id = ad_of_record(doctype, name)
+	if not ad_id:
+		return {}
+	return {"ad_id": ad_id, **read_creative(ad_id)}
+
+
+# --- lead quality feedback (Conversions API) --------------------------------
+
+
+@frappe.whitelist()
+def get_conversions_status() -> dict:
+	"""How the feedback loop is doing, in the terms Meta grades it on."""
+	_check_manager()
+	settings = get_settings()
+	return {
+		"enabled": bool(settings.conversions_enabled),
+		"dataset_id": settings.conversions_dataset_id or "",
+		"test_code": settings.conversions_test_code or "",
+		"last_error": settings.conversions_last_error or "",
+		"connected": bool(settings.connected_user_id),
+		**coverage(30),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_conversions_settings(
+	dataset_id: str | None = None, enabled: bool = False, test_code: str | None = None
+) -> dict:
+	"""Turn the feedback loop on, and say where to send it.
+
+	Refusing to enable it without a dataset is the whole validation: events sent
+	nowhere would look like a working integration and quietly teach Meta nothing.
+	"""
+	_check_manager()
+	enabled = frappe.parse_json(enabled) if isinstance(enabled, str) else bool(enabled)
+	settings = frappe.get_doc("CRM Meta Settings")
+	if dataset_id is not None:
+		settings.conversions_dataset_id = (dataset_id or "").strip()
+	if test_code is not None:
+		settings.conversions_test_code = (test_code or "").strip()
+	if enabled and not settings.conversions_dataset_id:
+		frappe.throw(_("Put the dataset id from Events Manager in first."))
+	settings.conversions_enabled = 1 if enabled else 0
+	settings.save(ignore_permissions=True)
+	return {"enabled": bool(settings.conversions_enabled)}
+
+
+@frappe.whitelist(methods=["POST"])
+def send_conversions_now() -> dict:
+	"""Empty the queue without waiting for the hour."""
+	_check_manager()
+	return send_pending()

@@ -293,6 +293,54 @@ class TestMetaLeads(IntegrationTestCase):
 		self.assertEqual(graph_get.call_count, 1)
 		self.assertEqual(frappe.db.get_value("Facebook Ad", "120211000", "ad_name"), "Promo")
 
+	def test_the_lead_already_knows_the_name_of_its_ad(self):
+		"""Meta puts ad_name/campaign_name on the lead itself, next to ad_id.
+		That is one call instead of two, and it needs no ads token at all."""
+		make_form()
+		lead = sample_lead("7771401")
+		lead.update(
+			{
+				"ad_id": "120211004",
+				"ad_name": "Promo Autunno",
+				"adset_name": "Milano 25-45",
+				"campaign_id": "23850",
+				"campaign_name": "Lead Settembre",
+			}
+		)
+
+		with patch.object(L, "graph_get") as graph_get:
+			store_lead(lead, "990001", token="page-token")
+		graph_get.assert_not_called()
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7771401"}, "name")
+		doc = frappe.get_doc("CRM Lead", person)
+		self.assertEqual(doc.first_touch_campaign, "Lead Settembre")
+		self.assertEqual(doc.first_touch_term, "Milano 25-45")
+		self.assertEqual(doc.first_touch_content, "Promo Autunno")
+
+	def test_the_names_are_asked_for_with_the_lead(self):
+		"""If we never ask, Meta never tells: the fields have to be in `fields`."""
+		make_form()
+		with patch.object(L, "graph_get", return_value=sample_lead("7771501")) as graph_get:
+			L.fetch_lead("7771501", "page-token")
+		asked = graph_get.call_args.args[2]["fields"]
+		for field in ("ad_name", "adset_name", "campaign_name"):
+			self.assertIn(field, asked)
+
+	def test_an_unknown_field_does_not_cost_the_lead(self):
+		"""An older Graph version refuses a field it does not know. Then we ask
+		for less — never nothing."""
+		make_form()
+		answers = [
+			L.MetaAPIError("unknown field", code=100),
+			L.MetaAPIError("unknown field", code=100),
+			sample_lead("7771601"),
+		]
+		with patch.object(L, "graph_get", side_effect=answers) as graph_get:
+			self.assertEqual(L.fetch_lead("7771601", "page-token")["id"], "7771601")
+		self.assertEqual(graph_get.call_count, 3)
+		self.assertEqual(graph_get.call_args.args[2]["fields"], L.LEAD_FIELDS)
+
 	def test_the_ad_is_asked_with_the_ads_token(self):
 		"""The lead arrives on a page token, but an ad belongs to the ad account:
 		only the user token carries ads_management, so that is the one that asks.

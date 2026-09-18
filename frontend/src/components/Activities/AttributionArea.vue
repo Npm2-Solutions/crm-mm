@@ -20,8 +20,13 @@
     />
 
     <template v-else>
+      <!-- The ad itself, when there was one: what they were promised -->
+      <div class="pt-4">
+        <AdCard :doctype="doctype" :docname="docname" />
+      </div>
+
       <!-- What brought them in, and what brought them back -->
-      <div class="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-2">
+      <div class="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-2">
         <TouchCard
           :title="__('First touch')"
           :touch="journey.data?.first_touch"
@@ -175,6 +180,7 @@
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import TouchCard from '@/components/Activities/TouchCard.vue'
+import AdCard from '@/components/Activities/AdCard.vue'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { activeSettingsPage, showSettings } from '@/composables/settings'
 import { groupJourney, readableDuration } from '@/utils/journey'

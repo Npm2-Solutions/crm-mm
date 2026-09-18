@@ -15,6 +15,12 @@
   "whatsapp_app_secret",
   "webhook_section",
   "webhook_verify_token",
+  "conversions_section",
+  "conversions_enabled",
+  "conversions_dataset_id",
+  "column_break_capi",
+  "conversions_test_code",
+  "conversions_last_error",
   "connection_section",
   "connected_user_name",
   "connected_user_id",
@@ -80,6 +86,40 @@
    "fieldtype": "Data",
    "label": "Webhook Verify Token",
    "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Send back to Meta what became of each lead, so the ads optimise for the leads that buy instead of the ones that fill in forms.",
+   "fieldname": "conversions_section",
+   "fieldtype": "Section Break",
+   "label": "Lead Quality Feedback (Conversions API)"
+  },
+  {
+   "default": "0",
+   "fieldname": "conversions_enabled",
+   "fieldtype": "Check",
+   "label": "Send Lead Stages To Meta"
+  },
+  {
+   "description": "The CRM dataset created in Events Manager. Not the lead form and not the ad account.",
+   "fieldname": "conversions_dataset_id",
+   "fieldtype": "Data",
+   "label": "Dataset (Pixel) ID"
+  },
+  {
+   "fieldname": "column_break_capi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Only while verifying in Events Manager. Leave empty in normal use: events sent with a test code do not count.",
+   "fieldname": "conversions_test_code",
+   "fieldtype": "Data",
+   "label": "Test Event Code"
+  },
+  {
+   "fieldname": "conversions_last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
    "read_only": 1
   },
   {
