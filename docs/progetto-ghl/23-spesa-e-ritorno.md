@@ -121,3 +121,16 @@ adesso non stanno girando**. Un'inserzione vecchia in pausa e' archivio; una che
 funzionava ieri ed e' stata rifiutata oggi e' soldi e lead che si fermano. Sulla
 riga della tabella resta un'etichetta ("Rifiutata da Meta", "In pausa"), con le
 parole di Meta tradotte in qualcosa su cui si puo' agire.
+
+## Una nota sullo schema (18/09/2026)
+
+La prima migrazione si e' fermata su `Length of thumbnail_url should be between
+1 and 1000`: in Frappe un campo **Data** e' un varchar e lo schema rifiuta una
+lunghezza oltre i 1000 caratteri. I link firmati della CDN di Meta possono
+superarli, quindi `thumbnail_url` e `permalink` sono **Small Text** (colonna
+TEXT): nessun limite, e su quei campi non si filtra e non si ordina mai.
+
+Per non ripetere l'errore c'e' `crm/tests/test_doctype_schema.py`, che legge i
+JSON di tutti i doctype dell'app e fallisce se un Data supera il varchar o se un
+nome in `field_order` non ha un campo dietro. Sono controlli che costano tre
+righe e che altrimenti si scoprono **a meta' di una migrazione, sul sito**.

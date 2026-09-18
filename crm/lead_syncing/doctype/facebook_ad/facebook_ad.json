@@ -95,15 +95,13 @@
   {
    "description": "Meta's own CDN link. Stored, never downloaded: it expires, and a stale copy of somebody's creative is not ours to keep.",
    "fieldname": "thumbnail_url",
-   "fieldtype": "Data",
-   "label": "Thumbnail URL",
-   "length": 2000
+   "fieldtype": "Small Text",
+   "label": "Thumbnail URL"
   },
   {
    "fieldname": "permalink",
-   "fieldtype": "Data",
-   "label": "Preview Link",
-   "length": 2000
+   "fieldtype": "Small Text",
+   "label": "Preview Link"
   },
   {
    "fieldname": "creative_fetched_on",
