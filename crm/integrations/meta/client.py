@@ -107,8 +107,19 @@ def appsecret_proof(token: str, secret: str | None = None) -> str | None:
 
 
 def graph_request(
-	method: str, endpoint: str, token: str, params: dict | None = None, secret: str | None = None
+	method: str,
+	endpoint: str,
+	token: str,
+	params: dict | None = None,
+	secret: str | None = None,
+	body: dict | None = None,
 ) -> dict:
+	"""One Graph call. `body` moves the payload out of the query string.
+
+	Everything here sends a handful of parameters, for which a query string is
+	simplest — except a batch of conversion events, which does not fit in a URL
+	at all. Authentication stays in the query either way.
+	"""
 	params = dict(params or {})
 	if token:
 		params["access_token"] = token
@@ -116,7 +127,9 @@ def graph_request(
 		if proof:
 			params["appsecret_proof"] = proof
 	try:
-		response = requests.request(method, graph_url(endpoint), params=params, timeout=TIMEOUT)
+		response = requests.request(
+			method, graph_url(endpoint), params=params, data=body or None, timeout=TIMEOUT
+		)
 	except requests.RequestException as exc:
 		raise MetaAPIError(_("Network error talking to Meta: {0}").format(exc)) from exc
 
@@ -141,6 +154,11 @@ def graph_get(endpoint: str, token: str, params: dict | None = None, secret: str
 
 def graph_post(endpoint: str, token: str, params: dict | None = None, secret: str | None = None) -> dict:
 	return graph_request("POST", endpoint, token, params, secret)
+
+
+def graph_post_body(endpoint: str, token: str, payload: dict, secret: str | None = None) -> dict:
+	"""POST whose payload travels in the body: for anything too big for a URL."""
+	return graph_request("POST", endpoint, token, None, secret, body=payload)
 
 
 # WhatsApp may live in its own Meta app, and then its tokens are signed with its

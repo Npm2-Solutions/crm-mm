@@ -19,6 +19,7 @@ from crm.integrations.meta.client import (
 	graph_post,
 	is_managed_app,
 )
+from crm.integrations.meta.conversions import coverage, send_pending
 from crm.integrations.meta.insights import (
 	discover_accounts,
 	performance,
@@ -624,3 +625,51 @@ def get_record_ad(doctype: str, name: str) -> dict:
 	if not ad_id:
 		return {}
 	return {"ad_id": ad_id, **read_creative(ad_id)}
+
+
+# --- lead quality feedback (Conversions API) --------------------------------
+
+
+@frappe.whitelist()
+def get_conversions_status() -> dict:
+	"""How the feedback loop is doing, in the terms Meta grades it on."""
+	_check_manager()
+	settings = get_settings()
+	return {
+		"enabled": bool(settings.conversions_enabled),
+		"dataset_id": settings.conversions_dataset_id or "",
+		"test_code": settings.conversions_test_code or "",
+		"last_error": settings.conversions_last_error or "",
+		"connected": bool(settings.connected_user_id),
+		**coverage(30),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_conversions_settings(
+	dataset_id: str | None = None, enabled: bool = False, test_code: str | None = None
+) -> dict:
+	"""Turn the feedback loop on, and say where to send it.
+
+	Refusing to enable it without a dataset is the whole validation: events sent
+	nowhere would look like a working integration and quietly teach Meta nothing.
+	"""
+	_check_manager()
+	enabled = frappe.parse_json(enabled) if isinstance(enabled, str) else bool(enabled)
+	settings = frappe.get_doc("CRM Meta Settings")
+	if dataset_id is not None:
+		settings.conversions_dataset_id = (dataset_id or "").strip()
+	if test_code is not None:
+		settings.conversions_test_code = (test_code or "").strip()
+	if enabled and not settings.conversions_dataset_id:
+		frappe.throw(_("Put the dataset id from Events Manager in first."))
+	settings.conversions_enabled = 1 if enabled else 0
+	settings.save(ignore_permissions=True)
+	return {"enabled": bool(settings.conversions_enabled)}
+
+
+@frappe.whitelist(methods=["POST"])
+def send_conversions_now() -> dict:
+	"""Empty the queue without waiting for the hour."""
+	_check_manager()
+	return send_pending()

@@ -226,10 +226,15 @@ doc_events = {
 	},
 	"CRM Lead": {
 		"before_insert": ["crm.api.tracking.stamp_manual_source"],
-		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_lead_created"],
+		"after_insert": [
+			"crm.api.tracking.bind_visitor",
+			"crm.automation.engine.on_lead_created",
+			"crm.integrations.meta.conversions.on_lead_created",
+		],
 		"on_update": [
 			"crm.automation.engine.on_lead_updated",
 			"crm.api.mirror.on_lead_updated",
+			"crm.integrations.meta.conversions.on_lead_updated",
 		],
 		"on_trash": ["crm.integrations.meta.leads.forget_person"],
 	},
@@ -241,6 +246,7 @@ doc_events = {
 		"on_update": [
 			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext",
 			"crm.automation.engine.on_deal_updated",
+			"crm.integrations.meta.conversions.on_deal_updated",
 		],
 		"after_insert": ["crm.api.tracking.bind_visitor", "crm.automation.engine.on_deal_created"],
 	},
@@ -296,7 +302,10 @@ doc_events = {
 
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
-	"hourly": ["crm.api.event.trigger_hourly_event_notifications"],
+	"hourly": [
+		"crm.api.event.trigger_hourly_event_notifications",
+		"crm.integrations.meta.conversions.flush",
+	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
 		"crm.integrations.meta.insights.sync_ad_spend",
