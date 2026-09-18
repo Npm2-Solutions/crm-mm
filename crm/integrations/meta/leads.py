@@ -249,6 +249,7 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 			"source": _ensure_source("Instagram" if lead.get("platform") == "ig" else "Facebook"),
 			"facebook_lead_id": lead_id,
 			"facebook_form_id": form_id,
+			"facebook_ad_id": lead.get("ad_id") or "",
 			"facebook_submissions": [submission_row(lead, form_id)],
 		}
 	)
@@ -290,6 +291,11 @@ def _merge_submission(
 		if not doc.facebook_lead_id:
 			doc.facebook_lead_id = lead.get("id")
 			doc.facebook_form_id = form_id
+		# the ad that first brought them keeps the credit, like the first touch:
+		# otherwise a second submission would move the cost of an old lead onto a
+		# new ad, and every report built on it would be wrong in both directions
+		if not doc.facebook_ad_id:
+			doc.facebook_ad_id = lead.get("ad_id") or ""
 		doc.append("facebook_submissions", submission_row(lead, form_id))
 		_attribute(doc, lead, form_id, token)
 		doc.save(ignore_permissions=True)

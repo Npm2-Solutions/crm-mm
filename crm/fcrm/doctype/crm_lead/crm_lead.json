@@ -74,6 +74,7 @@
   "facebook_lead_id",
   "column_break_ixmu",
   "facebook_form_id",
+  "facebook_ad_id",
   "facebook_submissions",
   "lost_details_tab",
   "lost_reason",
@@ -411,6 +412,14 @@
    "fieldname": "facebook_form_id",
    "fieldtype": "Data",
    "label": "Facebook Form ID"
+  },
+  {
+   "description": "The ad that produced the first submission. Kept as the id, not the name, because the name changes and the spend report joins on this.",
+   "fieldname": "facebook_ad_id",
+   "fieldtype": "Data",
+   "label": "Facebook Ad ID",
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "facebook_submissions",

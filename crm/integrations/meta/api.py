@@ -18,6 +18,13 @@ from crm.integrations.meta.client import (
 	graph_post,
 	is_managed_app,
 )
+from crm.integrations.meta.insights import (
+	discover_accounts,
+	performance,
+	spend_sync_running,
+	start_spend_sync,
+	sync_account,
+)
 from crm.integrations.meta.leads import backfill_form, get_page_token
 from crm.integrations.meta.oauth import (
 	_check_manager,
@@ -519,3 +526,76 @@ def create_test_lead(form_id: str) -> dict:
 		return {"ok": True, "id": result.get("id")}
 	except MetaAPIError as exc:
 		frappe.throw(_("Could not create test lead: {0}").format(exc))
+
+
+# --- ad spend --------------------------------------------------------------
+
+
+@frappe.whitelist()
+def get_ad_accounts() -> dict:
+	"""The ad accounts we know of, and whether a read is running right now."""
+	_check_manager()
+	accounts = frappe.get_all(
+		"Facebook Ad Account",
+		fields=[
+			"name as account_id",
+			"account_name",
+			"business_name",
+			"currency",
+			"account_status",
+			"sync_enabled",
+			"last_synced_on",
+			"last_error",
+		],
+		order_by="sync_enabled desc, account_name asc",
+	)
+	return {"accounts": accounts, "syncing": spend_sync_running()}
+
+
+@frappe.whitelist(methods=["POST"])
+def refresh_ad_accounts() -> dict:
+	"""Ask Facebook which ad accounts this connection can see."""
+	_check_manager()
+	try:
+		found = discover_accounts()
+	except MetaAPIError as exc:
+		frappe.throw(str(exc))
+	return {"found": len(found)}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_account_sync(account_id: str, enabled: bool = True) -> dict:
+	"""Turn one account's spend on or off.
+
+	Turning it on reads it straight away: an empty report right after saying yes
+	looks broken, and the first read is the one that proves the access works.
+	"""
+	_check_manager()
+	enabled = frappe.parse_json(enabled) if isinstance(enabled, str) else bool(enabled)
+	frappe.db.set_value("Facebook Ad Account", account_id, "sync_enabled", 1 if enabled else 0)
+	if not enabled:
+		return {"enabled": False}
+	try:
+		rows = sync_account(account_id)
+	except MetaAPIError as exc:
+		frappe.db.set_value(
+			"Facebook Ad Account", account_id, "last_error", str(exc)[:500], update_modified=False
+		)
+		frappe.throw(_("Facebook refused to give the spend of this account: {0}").format(str(exc)))
+	return {"enabled": True, "rows": rows}
+
+
+@frappe.whitelist(methods=["POST"])
+def sync_ad_spend_now() -> dict:
+	"""Read every enabled account again, without waiting for tomorrow."""
+	_check_manager()
+	start_spend_sync()
+	return {"queued": True}
+
+
+@frappe.whitelist()
+def get_ad_performance(days: int = 30) -> dict:
+	"""Spend against outcome, one line per ad."""
+	_check_manager()
+	days = min(max(frappe.utils.cint(days) or 30, 1), 365)
+	return performance(days)

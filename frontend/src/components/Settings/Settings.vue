@@ -51,6 +51,7 @@ import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideNetwork from '~icons/lucide/network'
 import MonitorCogIcon from '~icons/lucide/monitor-cog'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
+import LucideTrendingUp from '~icons/lucide/trending-up'
 import LucideSparkles from '~icons/lucide/sparkles'
 import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
@@ -97,6 +98,7 @@ import PipelinesSettings from '@/components/Settings/Pipelines/PipelinesSettings
 import CallScriptsSettings from '@/components/Settings/CallScriptsSettings.vue'
 import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
 import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
+import MetaAdSpend from '@/components/Settings/Meta/MetaAdSpend.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
 import WebsiteSettings from '@/components/Settings/Website/WebsiteSettings.vue'
 import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
@@ -326,6 +328,11 @@ const tabs = computed(() => {
           label: __('Lead forms'),
           icon: markRaw(LucideTextCursorInput),
           component: markRaw(MetaLeadForms),
+        },
+        {
+          label: __('Ad performance'),
+          icon: markRaw(LucideTrendingUp),
+          component: markRaw(MetaAdSpend),
         },
         {
           label: __('Social profiles'),

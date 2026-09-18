@@ -54,6 +54,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [20](./20-domini-dei-clienti.md) | Più siti, sul dominio del cliente | 🟡 proposta | Un cliente per site, tanti domini sopra: CNAME come GHL e certificati on-demand, senza configurare nginx a ogni dominio |
 | [21](./21-lead-contatto-trattativa.md) | Lead, contatto, azienda, trattativa: cosa significano davvero | ✅ fatto | Verifica contro Salesforce, HubSpot, Pipedrive e GHL: la persona e' unica e permanente, "lead" e' uno stadio. Sei punti dove il codice seguiva ancora il modello opposto |
 | [22](./22-app-review-facebook.md) | App Review dell'app Facebook: cosa serve e cosa no | 🟡 in corso | Stato letto dall'API di Meta: l'app e' in dev mode, quindi i lead dei clienti non possono arrivare. Le 7 permission che servono, le 6 da togliere, l'ordine delle operazioni e i testi degli use case |
+| [23](./23-spesa-e-ritorno.md) | Spesa e ritorno: il costo per cliente, non per lead | ✅ fatto | La spesa di Meta letta ogni giorno per inserzione e incrociata con le trattative del CRM: costo per lead, costo per cliente acquisito e ROAS per inserzione — il numero che ne' Meta ne' il CRM sanno da soli |
 
 ## Architettura complessiva
 
