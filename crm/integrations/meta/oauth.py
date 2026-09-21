@@ -383,8 +383,16 @@ def sync_pages_and_forms(user_token: str) -> list[dict]:
 	"""Upsert the user's pages (with long-lived page tokens) and their forms."""
 	pages = discover_pages(user_token)
 	for page in pages:
-		upsert_page(page)
-		sync_forms_recording_failure(page["id"], page["access_token"])
+		# One page must never cost the others their token. This loop used to stop
+		# at the first exception, so a single form with a 400-character name left
+		# every page after it in the list WITHOUT a stored token — and the CRM
+		# then said "No token is stored for this Page. Press Reconnect", which
+		# ran the same sync, which died at the same form, forever.
+		try:
+			upsert_page(page)
+			sync_forms_recording_failure(page["id"], page["access_token"])
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), f"Meta: page {page.get('id')} could not be stored")
 
 	granted = {page["id"] for page in pages}
 	forget_ungranted_pages(granted)
@@ -494,38 +502,72 @@ def sync_forms_recording_failure(page_id: str, page_token: str) -> str:
 	return error
 
 
+# A Frappe Data column refuses anything past 140 characters, and a lead form can
+# be named with a whole advertisement: "Grazie per l'interesse! Per accedere al
+# beneficio… (tempo stimato: meno di 1 min)". That raised inside the page sync
+# and took the WHOLE sync down with it — no forms, no page refresh, nothing —
+# for every page, because of one form's name.
+NAME_LIMIT = 140
+
+
+def short(value, limit: int = NAME_LIMIT) -> str:
+	"""As much of a name as the column holds, cut on a word where possible."""
+	text = str(value or "").strip()
+	if len(text) <= limit:
+		return text
+	cut = text[: limit - 1]
+	space = cut.rfind(" ")
+	if space > limit // 2:
+		cut = cut[:space]
+	return cut + "…"
+
+
 def sync_forms_for_page(page_id: str, page_token: str) -> None:
 	"""Upsert leadgen forms, refreshing questions while keeping existing mappings."""
 	for form in graph_get_paginated(
 		f"{page_id}/leadgen_forms", page_token, {"fields": "id,name,status,questions"}
 	):
-		if frappe.db.exists("Facebook Lead Form", form["id"]):
-			doc = frappe.get_doc("Facebook Lead Form", form["id"])
-			doc.form_name = form.get("name")
-			doc.form_status = form.get("status")
-			merge_questions(doc, form.get("questions") or [])
-			doc.flags.ignore_validate = True
-			doc.save(ignore_permissions=True)
-		else:
-			doc = frappe.get_doc(
-				{
-					"doctype": "Facebook Lead Form",
-					"id": form["id"],
-					"form_name": form.get("name"),
-					"form_status": form.get("status"),
-					"page": page_id,
-					"questions": [
-						{**question_row(q), "mapped_to_crm_field": default_mapping(q)}
-						for q in form.get("questions") or []
-					],
-				}
-			)
-			doc.flags.ignore_validate = True
-			doc.insert(ignore_permissions=True)
+		try:
+			_upsert_form(page_id, form)
+		except Exception:
+			# one form must never cost a page all its other forms
+			frappe.log_error(frappe.get_traceback(), f"Meta: form {form.get('id')} could not be stored")
+
+
+def _upsert_form(page_id: str, form: dict) -> None:
+	if frappe.db.exists("Facebook Lead Form", form["id"]):
+		doc = frappe.get_doc("Facebook Lead Form", form["id"])
+		doc.form_name = short(form.get("name"))
+		doc.form_status = short(form.get("status"), 60)
+		merge_questions(doc, form.get("questions") or [])
+		doc.flags.ignore_validate = True
+		doc.save(ignore_permissions=True)
+	else:
+		doc = frappe.get_doc(
+			{
+				"doctype": "Facebook Lead Form",
+				"id": form["id"],
+				"form_name": short(form.get("name")),
+				"form_status": short(form.get("status"), 60),
+				"page": page_id,
+				"questions": [
+					{**question_row(q), "mapped_to_crm_field": default_mapping(q)}
+					for q in form.get("questions") or []
+				],
+			}
+		)
+		doc.flags.ignore_validate = True
+		doc.insert(ignore_permissions=True)
 
 
 def question_row(q: dict) -> dict:
-	return {"key": q.get("key"), "label": q.get("label"), "type": q.get("type"), "id": q.get("id")}
+	# a question's label can be a paragraph too, and it lands in a Data column
+	return {
+		"key": q.get("key"),
+		"label": short(q.get("label")),
+		"type": q.get("type"),
+		"id": q.get("id"),
+	}
 
 
 DEFAULT_QUESTION_MAP = {

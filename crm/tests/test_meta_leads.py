@@ -709,3 +709,60 @@ class TestMetaTestLeads(IntegrationTestCase):
 	def test_a_real_answer_is_left_alone(self):
 		self.assertEqual(normalize_value("first_name", "  Mario  "), "Mario")
 		self.assertEqual(normalize_value("mobile_no", "p:+39 333 1234567"), "+393331234567")
+
+
+class TestMetaSyncResilience(IntegrationTestCase):
+	"""One page, or one form, must never cost all the others."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_form_name_longer_than_the_column_is_cut(self):
+		"""A lead form can be named with a whole advertisement, and a Data column
+		refuses anything past 140 characters — which used to raise inside the
+		page sync and take the whole sync down with it."""
+		from crm.integrations.meta.oauth import short
+
+		long_name = (
+			"Grazie per l'interesse! Per accedere al beneficio, prosegui. "
+			"Trattamento osteopatico avanzato a soli 59 euro anziche 80, "
+			"nessun vincolo a proseguire, rispondi di seguito per sbloccare l'offerta"
+		)
+		cut = short(long_name)
+		self.assertLessEqual(len(cut), 140)
+		self.assertTrue(cut.endswith("…"))
+		self.assertTrue(cut.startswith("Grazie per l'interesse!"))
+
+	def test_a_short_name_is_left_exactly_as_it_is(self):
+		from crm.integrations.meta.oauth import short
+
+		self.assertEqual(short("Modulo contatti"), "Modulo contatti")
+		self.assertEqual(short(None), "")
+
+	def test_one_bad_page_does_not_cost_the_others_their_token(self):
+		"""This is why pages ended up without a token: the loop stopped at the
+		first exception and every page after it was never stored."""
+		from crm.integrations.meta import oauth as O
+
+		pages = [
+			{"id": "880600", "name": "Prima", "access_token": "tok-1", "tasks": ["ADVERTISE"]},
+			{"id": "880601", "name": "Seconda", "access_token": "tok-2", "tasks": ["ADVERTISE"]},
+		]
+		boom = {"count": 0}
+
+		def explode_on_the_first(page_id, token):
+			boom["count"] += 1
+			if page_id == "880600":
+				raise ValueError("a form name nobody could store")
+			return ""
+
+		with (
+			patch.object(O, "discover_pages", return_value=pages),
+			patch.object(O, "sync_forms_recording_failure", side_effect=explode_on_the_first),
+			patch.object(O, "forget_ungranted_pages"),
+		):
+			O.sync_pages_and_forms("user-token")
+
+		# the second page still has its token, which is the whole point
+		self.assertTrue(frappe.db.exists("Facebook Page", "880601"))
+		self.assertEqual(boom["count"], 2)
