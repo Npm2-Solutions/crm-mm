@@ -72,6 +72,11 @@ def get_status() -> dict:
 		# them; here only how many there are, so the screen can tell "none yet"
 		# from "still loading"
 		"page_count": frappe.db.count("Facebook Page"),
+		# has Meta ever called this webhook, and what did we do with the call?
+		# Without this, "Facebook is not sending" and "we refused it" look the
+		# same from the screen, and the only way to tell them apart was to guess.
+		"last_webhook_seen": str(settings.last_webhook_seen or ""),
+		"last_webhook_outcome": settings.last_webhook_outcome or "",
 		# what the dialog granted, and what it did not: a token can be valid and
 		# still unable to touch a Page, and Meta's error for that names six
 		# permissions without saying which one is missing

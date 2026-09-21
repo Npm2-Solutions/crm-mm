@@ -64,6 +64,15 @@ def ingest_leadgen_entry(
 	# otherwise a page whose sync was switched off would still be imported
 	if not page_id and form_id:
 		page_id = frappe.db.get_value("Facebook Lead Form", form_id, "page")
+	# Stamp the page BEFORE deciding what to do with the notification. The stamp
+	# used to come after the checks below, so a page with sync off — or without a
+	# token — looked exactly like a page Meta never calls about, which is the
+	# difference between "Facebook is not sending" and "we are not listening".
+	if page_id and frappe.db.exists("Facebook Page", page_id):
+		frappe.db.set_value(
+			"Facebook Page", page_id, "last_webhook_at", frappe.utils.now(), update_modified=False
+		)
+
 	if not page_id or not frappe.db.get_value("Facebook Page", page_id, "sync_enabled"):
 		return
 
@@ -71,10 +80,6 @@ def ingest_leadgen_entry(
 	if not token:
 		_log_failure({"leadgen_id": leadgen_id}, form_id, _("No page token available"))
 		return
-
-	frappe.db.set_value(
-		"Facebook Page", page_id, "last_webhook_at", frappe.utils.now(), update_modified=False
-	)
 
 	try:
 		lead = fetch_lead(leadgen_id, token)

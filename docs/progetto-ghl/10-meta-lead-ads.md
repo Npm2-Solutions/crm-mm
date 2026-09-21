@@ -471,3 +471,30 @@ vuoti, e il lead entra con il nome e tutto il resto.
 La risposta non si perde comunque: se era mappata ma inutilizzabile finisce nella
 nota delle risposte non mappate, cioe' resta scritta sulla scheda della persona
 esattamente come l'ha data.
+
+## Il webhook non ha mai chiamato, e non si poteva sapere (21/09/2026)
+
+Dai dati del sito: **`last_webhook_at` vuoto su tutte le venti Pagine**, comprese
+quelle con `sync_enabled = 1` e `webhook_subscribed = 1`. Eppure i lead entrano.
+
+Vuol dire che entrano **dalla riconciliazione oraria**, non dal webhook. Il
+tempo reale non ha mai funzionato su questo sito, e nessuna schermata lo diceva:
+un lead che arriva con quaranta minuti di ritardo somiglia moltissimo a un lead
+che arriva subito, se non stai col cronometro.
+
+Due punti ciechi, adesso chiusi.
+
+**Una consegna rifiutata non lasciava traccia.** Se la firma non torna — il
+segreto dell'app sbagliato, per esempio — il gestore risponde 403 e **non scrive
+niente**: nessun log, nessun timbro sulla Pagina. Da fuori "Meta non ci chiama"
+e "noi l'abbiamo buttata" sono identiche. Adesso ogni consegna viene registrata
+su `CRM Meta Settings` con il suo esito (`accepted`, `refused: signature did not
+match the app secret`, `refused: the body was not JSON`), e la schermata
+Connessione lo mostra — oppure dice a chiare lettere che Meta **non ha mai
+chiamato**, e che i lead stanno arrivando solo dal controllo orario.
+
+**Il timbro sulla Pagina arrivava troppo tardi.** Era messo dopo i controlli su
+`sync_enabled` e sul token, quindi una Pagina spenta sembrava una Pagina di cui
+Meta non parla mai. Adesso si timbra appena la notifica nomina quella Pagina,
+prima di decidere cosa farne: e' la differenza tra *"Facebook non manda"* e
+*"noi non ascoltiamo"*.
