@@ -584,16 +584,45 @@ oauth_redirect_uris:  https://hub.npm2solutions.com/whatsapp-connect
 js_sdk_host_domains:  https://hub.npm2solutions.com/
 ```
 
-L'URI in whitelist e' giusto — la pagina risponde sia con il trattino sia con
-l'underscore, e il CRM manda al trattino. Quindi il blocco non viene dal
-percorso: viene dal fatto che **"Accedi con l'SDK JavaScript" e' spento**. Con
-quell'interruttore spento l'SDK non usa il canale JavaScript ma un
-reindirizzamento OAuth classico, e quel redirect **non** e' in whitelist.
+> **Correzione (21/09, sera).** Qui era scritto che la causa fosse *"Accedi con
+> l'SDK JavaScript" spento*. Era sbagliato: l'interruttore era gia' acceso, e
+> me l'ha fatto notare chi l'aveva acceso. La causa vera e' documentata ed e'
+> un'altra.
 
-Da sistemare nel pannello dell'app, in *Accesso Facebook per le aziende →
-Impostazioni*: Client OAuth login, Web OAuth login, Enforce HTTPS, Embedded
-Browser OAuth Login, Strict Mode e soprattutto **Login with the JavaScript
-SDK** su Si'.
+L'URI in whitelist e' giusto — la pagina risponde sia con il trattino sia con
+l'underscore, e il CRM manda al trattino. Il blocco non viene dal percorso e
+non viene da un interruttore: viene da **cosa fa l'SDK quando il popup non si
+apre**.
+
+Dalla documentazione di Meta, *Login Security → In-App Browsers and the
+JavaScript SDK*:
+
+> The JavaScript SDK normally relies on popups and callbacks to complete a
+> Login. For some in-app browsers that suppress popups, this can fail. When
+> this happens, **the SDK will automatically attempt to redirect** […] to the
+> page that invoked it. It can only do this redirect safely if the full URI of
+> the page is listed in the Valid OAuth Redirect URIs.
+
+La pagina che invoca il login e' `/whatsapp-connect?state=…`. Quella con lo
+`state` attaccato **non** e' l'URI registrato, e Strict Mode confronta
+carattere per carattere. Da qui "URL bloccato": non un permesso mancante, ma
+un ripiego dell'SDK verso un indirizzo che l'app non conosce.
+
+La stessa pagina di Meta dice come si chiude:
+
+> If you have a lot of variation in the URIs where Login happens for your app,
+> you can manually specify a **`fallback_redirect_uri`** as an option in the
+> `FB.login()` call so you only need to add that one entry to your Valid OAuth
+> Redirect URIs list.
+
+Ed e' quello che la pagina fa adesso: fissa il ripiego sulla pagina nuda,
+scritta esattamente come e' registrata. Il resto del giro di ritorno e'
+descritto sotto, in *Quando il popup non si apre*.
+
+Gli interruttori di *Accesso Facebook per le aziende → Impostazioni* vanno
+comunque tutti su Si' — Client OAuth login, Web OAuth login, Enforce HTTPS,
+Embedded Browser OAuth Login, Strict Mode, Login with the JavaScript SDK — ma
+su questa app lo erano gia'.
 
 ### Il link scadeva in quindici minuti
 
@@ -612,3 +641,144 @@ e il log di sessione accetta anche uno state scaduto, marcandolo `expired:`.
 Un onboarding che si e' trascinato e' esattamente quello che vale la pena vedere
 scritto: rifiutarsi di registrarlo e' il modo in cui un flusso incagliato
 diventa invisibile.
+
+## Quando il popup non si apre (21/09/2026)
+
+Il popup soppresso non e' un caso di bordo: e' il browser in-app di Instagram,
+di Facebook, di un client di posta — cioe' i posti da cui un cliente clicca un
+link che gli abbiamo mandato. Quando succede, l'SDK naviga invece di aprire una
+finestra, e navigare distrugge la pagina che stava ascoltando.
+
+Tre cose si rompevano in fila, e ognuna da sola bastava:
+
+1. **Il ritorno era bloccato.** L'SDK rimandava all'URL che aveva aperto il
+   login (`/whatsapp-connect?state=…`), che non e' l'URI registrato. Strict
+   Mode: "URL bloccato".
+2. **Il ritorno veniva scambiato per un link rotto.** La pagina leggeva lo
+   `state` dalla query. Strict Mode non lo lascia passare (la sua eccezione per
+   `state` ne ignora il valore), quindi la pagina diceva *"link non valido o
+   scaduto"* a una registrazione appena conclusa.
+3. **Mancavano i due id.** `waba_id` e `phone_number_id` arrivano in un
+   `postMessage` alla finestra che ha aperto il flusso. Quella finestra non
+   c'e' piu'.
+
+### Come si chiudono
+
+**`fallback_redirect_uri`** fissa dove Facebook puo' rimandare: la pagina nuda,
+uguale all'URI registrato. Un solo indirizzo in whitelist, qualunque sia la
+pagina di partenza.
+
+**`sessionStorage`** porta quello che l'URL non puo' portare. Prima di lanciare
+il login la pagina scrive nel tab lo `state` e l'indirizzo di ritorno; al
+ritorno li rilegge. Stesso tab, stessa origine, sopravvive all'andata su
+facebook.com. Se il browser l'ha svuotato, la pagina lo dice invece di girare
+a vuoto.
+
+**`debug_token`** recupera gli id quando nemmeno il tab li ha. E' la via
+documentata in *Manage WhatsApp Business accounts*:
+
+> After a business finishes the Embedded Signup flow, you can get the shared
+> WABA ID using the returned accessToken with the Debug Token endpoint. […]
+> IDs for the most recently onboarded WABAs appear first, so capture the first
+> ID in the `target_ids` array for the `whatsapp_business_management` scope.
+
+Dal conto, `GET /{waba_id}/phone_numbers` da' il numero.
+
+**Un dettaglio che costa un giro intero**: un codice emesso su un redirect e'
+legato a quell'indirizzo, e lo scambio deve ricitarlo in `redirect_uri`. Il
+flusso col popup non ha nessun indirizzo e non deve mandarne — mandarlo lo fa
+rifiutare.
+
+## La pagina di accesso ospitata da Meta: perche' non sostituisce la nostra
+
+Nel pannello WhatsApp Meta offre un URL gia' pronto:
+
+```
+https://business.facebook.com/messaging/whatsapp/onboard/
+    ?app_id=…&config_id=…&extras={"sessionInfoVersion":"3","version":"v4"}
+```
+
+Si chiama **Hosted Embedded Signup**, e la tentazione e' ovvia: funziona
+sempre, perche' gira su facebook.com e quindi non ha ne' domini in whitelist
+ne' popup da far sopravvivere. Togliere la nostra pagina e mandare li' sarebbe
+un problema in meno.
+
+Non si puo', e le ragioni sono tre, tutte documentate.
+
+**1. Non fa Coexistence.** Dalla pagina *Hosted Embedded Signup*:
+
+> Hosted Embedded Signup ("Hosted ES") can only be used to onboard business
+> customers to **Cloud API**, and **the flow cannot be customized**.
+
+Coexistence e' esattamente una personalizzazione del flusso
+(`featureType: whatsapp_business_app_onboarding`). Il flusso ospitato porta il
+cliente a un numero Cloud API nuovo — non al numero che ha gia' in mano, non
+con lo storico delle chat. E' un altro prodotto, non un'altra porta per lo
+stesso.
+
+**2. Non torna indietro niente al browser.** Con Hosted ES gli id del cliente
+arrivano dal webhook `account_update` con `event: PARTNER_ADDED`, e il token si
+prende con la **System User Access Tokens API** puntando al portfolio del
+cliente, con il nostro system token e l'`appsecret_proof`. Non c'e' codice da
+scambiare, non c'e' callback: e' una catena di onboarding diversa da scrivere
+per intero, che pretende anche un system token conservato sull'hub.
+
+**3. Non sa da quale sito arriva il cliente.** L'URL non porta `state`, e non
+c'e' un posto documentato dove infilarcelo. Con un site per cliente, l'hub
+riceverebbe un `PARTNER_ADDED` con un WABA e nessun modo di dire di chi e'.
+
+E c'e' un equivoco da sciogliere: la pagina ospitata **non** toglie una
+schermata intermedia. E' anche lei una schermata con un bottone *Get started*,
+solo che sta su facebook.com invece che sull'hub. Quello che toglie e' la
+*nostra* pagina, non *una* pagina — e il motivo per cui quella funziona sempre
+non e' che sia piu' semplice, e' che parte gia' dal dominio giusto.
+
+Resta buona per una cosa: se un giorno serve collegare un cliente **senza**
+WhatsApp Business gia' in uso — numero nuovo, Cloud API puro — quello e' il
+flusso adatto, e quel giorno serviranno le tre cose sopra.
+
+## Due configurazioni di accesso, e la differenza dura 60 giorni
+
+Sull'app WhatsApp ci sono due configurazioni di Facebook Login for Business
+valide per Embedded Signup:
+
+| Id | Nome | Scadenza del token |
+|---|---|---|
+| `2922986928038126` | Tech Provider Embedded Signup config | **Mai** |
+| `2026289871367450` | WhatsApp Embedded Signup con token a 60 giorni | 60 giorni |
+
+Quella dei 60 giorni e' il template che la documentazione di Meta suggerisce
+per cominciare (*Create from template → WhatsApp Embedded Signup Configuration
+With 60 Expiration Token*). Per noi e' la scelta peggiore, e in modo
+silenzioso: il token che conserviamo per il cliente muore al sessantesimo
+giorno, il cliente scopre che WhatsApp non funziona piu' senza che niente
+glielo abbia detto prima, e per rimetterlo a posto deve rifare tutto il giro,
+QR compreso.
+
+`whatsapp_signup_config_id` va quindi su quella **senza scadenza**. Vale la
+pena controllarlo prima del prossimo collegamento: Settings → WhatsApp mostra
+l'id in uso.
+
+## Il campo del webhook che non c'era
+
+L'iscrizione registrata sull'app ha cinque campi:
+
+```
+messages, smb_message_echoes, history, smb_app_state_sync,
+message_template_status_update
+```
+
+Nel codice ce ne sono sei: c'e' anche **`account_update`**, che la guida di
+Embedded Signup mette fra i prerequisiti —
+
+> You must be subscribed to the `account_update` webhook, as this webhook is
+> triggered whenever a customer successfully completes the Embedded Signup
+> flow, and contains their business information that you will need.
+
+E' stato aggiunto al codice dopo che l'iscrizione esisteva gia', e **Meta non
+aggiorna da sola un'iscrizione esistente**. Risultato: il gestore c'era, il
+campo no, e una registrazione fallita non diceva niente a questo CRM.
+
+La schermata guardava solo se l'URL fosse registrato — trovava di si', e
+taceva. Adesso legge anche i campi e, quando ne manca qualcuno, lo scrive per
+nome con un bottone *Completalo* accanto. Da premere una volta.

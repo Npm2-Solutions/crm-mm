@@ -258,3 +258,113 @@ class TestWhatsAppSignupState(IntegrationTestCase):
 		late = S.parse_state(state, allow_expired=True)
 		self.assertTrue(late and late.get("expired"))
 		self.assertEqual(late["site"], "https://x.test")
+
+
+class TestSuppressedPopupFallback(IntegrationTestCase):
+	"""A connection one redirect away from done must not be thrown away.
+
+	When a browser suppresses the pop-up the JavaScript SDK navigates instead,
+	and the page that was listening for Meta's `WA_EMBEDDED_SIGNUP` message dies
+	with the navigation. Only the code comes back. Meta documents the way round:
+	the business token names, in `granular_scopes`, the WABAs that granted the
+	app `whatsapp_business_management`, most recently onboarded first.
+	"""
+
+	def test_the_ids_the_browser_gave_are_trusted_and_cost_no_call(self):
+		with patch.object(S, "whatsapp_graph_get") as graph:
+			self.assertEqual(S.discover_assets("TOKEN", "WABA1", "PHONE1"), ("WABA1", "PHONE1"))
+		graph.assert_not_called()
+
+	def test_the_account_is_read_back_off_the_token(self):
+		answers = {
+			"debug_token": {
+				"data": {
+					"granular_scopes": [
+						{"scope": "whatsapp_business_messaging", "target_ids": ["OTHER"]},
+						{"scope": "whatsapp_business_management", "target_ids": ["WABA9", "WABA8"]},
+					]
+				}
+			},
+			"WABA9/phone_numbers": {"data": [{"id": "PHONE9"}]},
+		}
+		with patch.object(S, "whatsapp_graph_get", side_effect=lambda ep, *a, **k: answers[ep]):
+			self.assertEqual(S.discover_assets("TOKEN"), ("WABA9", "PHONE9"))
+
+	def test_a_token_that_names_no_account_is_said_out_loud(self):
+		with patch.object(S, "whatsapp_graph_get", return_value={"data": {"granular_scopes": []}}):
+			with self.assertRaises(frappe.ValidationError):
+				S.discover_assets("TOKEN")
+
+	def test_an_account_without_a_number_is_said_out_loud(self):
+		answers = {
+			"debug_token": {
+				"data": {"granular_scopes": [{"scope": "whatsapp_business_management", "target_ids": ["W"]}]}
+			},
+			"W/phone_numbers": {"data": []},
+		}
+		with patch.object(S, "whatsapp_graph_get", side_effect=lambda ep, *a, **k: answers[ep]):
+			with self.assertRaises(frappe.ValidationError):
+				S.discover_assets("TOKEN")
+
+	def test_the_redirect_leg_quotes_its_redirect_uri_back(self):
+		"""Meta issued the code against a URL this time, and checks the exchange
+		names the same one. The pop-up flow has no URL, and must not send one."""
+		with patch.object(S, "whatsapp_graph_get", return_value={"access_token": "T"}) as graph:
+			S.exchange_code("CODE")
+			self.assertNotIn("redirect_uri", graph.call_args.kwargs["params"])
+			S.exchange_code("CODE", "https://hub.test/whatsapp-connect")
+			self.assertEqual(
+				graph.call_args.kwargs["params"]["redirect_uri"], "https://hub.test/whatsapp-connect"
+			)
+
+	def test_the_fallback_uri_is_the_page_itself_and_nothing_more(self):
+		"""Strict Mode matches character for character, so this is also what has
+		to be in the app's Valid OAuth Redirect URIs."""
+		self.assertTrue(S.connect_url().endswith(S.CONNECT_PATH))
+		self.assertNotIn("?", S.connect_url())
+
+	def test_the_returning_page_does_not_call_the_link_broken(self):
+		"""The redirect leg arrives with a code and no state — Strict Mode drops
+		everything the registered URI does not spell. Rendering "invalid link"
+		there would throw away a finished onboarding."""
+		from crm.www.whatsapp_connect import get_context
+
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict({"code": "CODE"})
+		try:
+			get_context(context)
+		finally:
+			frappe.form_dict = frappe._dict()
+		self.assertTrue(context.returning)
+		self.assertEqual(context.error, "")
+
+
+class TestWebhookFieldsAreChecked(IntegrationTestCase):
+	"""Meta never adds a field to an existing subscription by itself."""
+
+	def test_a_subscription_short_of_a_field_is_not_complete(self):
+		from crm.integrations.whatsapp import api as A
+
+		row = {
+			"object": "whatsapp_business_account",
+			"callback_url": frappe.utils.get_url(A.WEBHOOK_PATH),
+			"fields": [{"name": f} for f in A.WEBHOOK_FIELDS.split(",") if f != "account_update"],
+		}
+		with (
+			patch.object(A, "is_hub", return_value=True),
+			patch.object(A, "get_whatsapp_app_id", return_value="1"),
+			patch.object(A, "get_whatsapp_app_secret", return_value="s"),
+			patch.object(A, "whatsapp_graph_get", return_value={"data": [row]}),
+		):
+			state = A.get_webhook()
+		self.assertTrue(state["configured"])
+		self.assertFalse(state["complete"])
+		self.assertEqual(state["missing_fields"], ["account_update"])
+
+	def test_plain_strings_mean_the_same_as_objects(self):
+		from crm.integrations.whatsapp import api as A
+
+		self.assertEqual(
+			A.subscribed_field_names({"fields": ["messages", {"name": "history"}]}), ["messages", "history"]
+		)
+		self.assertEqual(A.subscribed_field_names({}), [])

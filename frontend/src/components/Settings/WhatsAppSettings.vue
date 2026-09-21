@@ -76,22 +76,34 @@
 
         <!-- numbers -->
         <!-- the WhatsApp app is a different Meta app, so its webhook does not come
-             along with the Facebook one: it appears here only when it is not set,
-             with the button that sets it -->
+             along with the Facebook one: it appears here only when it is not set
+             or set short of the fields the CRM needs, with the button that fixes it.
+             Meta never adds a field to an existing subscription by itself, so
+             "configured" alone was a half-truth: the webhook could be registered
+             and still never mention an onboarding or a number's own messages. -->
         <div
-          v-if="webhook.data?.is_hub && !webhook.data?.configured"
+          v-if="webhook.data?.is_hub && !webhook.data?.complete"
           class="mb-4 flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
         >
           <div class="flex items-center justify-between gap-3">
             <div class="flex flex-col">
               <span class="text-p-base-medium text-ink-gray-7">
-                {{ __('Meta is not notifying this hub yet') }}
+                {{
+                  webhook.data?.configured
+                    ? __('Meta is notifying this hub, but not about everything')
+                    : __('Meta is not notifying this hub yet')
+                }}
               </span>
               <span class="text-p-sm text-ink-gray-6">
                 {{
-                  __(
-                    'Without it no message reaches the CRM, in either direction.',
-                  )
+                  webhook.data?.configured
+                    ? __('These are missing: {0}').replace(
+                        '{0}',
+                        (webhook.data?.missing_fields || []).join(', '),
+                      )
+                    : __(
+                        'Without it no message reaches the CRM, in either direction.',
+                      )
                 }}
               </span>
               <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
@@ -99,7 +111,9 @@
               </span>
             </div>
             <Button
-              :label="__('Configure it')"
+              :label="
+                webhook.data?.configured ? __('Complete it') : __('Configure it')
+              "
               :loading="configuringWebhook"
               @click="configureWebhook"
             />
@@ -341,7 +355,7 @@ function configureWebhook() {
     onSuccess: (data) => {
       configuringWebhook.value = false
       webhook.data = data
-      data.configured
+      data.complete
         ? toast.success(__('Webhook configured on the WhatsApp app'))
         : toast.error(data.error || __('Webhook not configured'))
     },

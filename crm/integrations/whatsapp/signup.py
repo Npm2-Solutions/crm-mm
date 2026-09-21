@@ -33,6 +33,7 @@ from crm.integrations.meta.client import (
 	get_settings,
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
+	whatsapp_app_token,
 	whatsapp_graph_get,
 	whatsapp_graph_post,
 )
@@ -153,11 +154,22 @@ def log_session_event(state: str, event: str, data: str | dict | None = None) ->
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
-def complete_signup(state: str, code: str, waba_id: str, phone_number_id: str) -> dict:
+def complete_signup(
+	state: str,
+	code: str,
+	waba_id: str = "",
+	phone_number_id: str = "",
+	redirected: int | str = 0,
+) -> dict:
 	"""Called by the hub page as soon as Embedded Signup finishes.
 
 	Guest-accessible because the browser session belongs to the client site, not
 	to the hub; the signed state is what authenticates the request.
+
+	`waba_id` and `phone_number_id` are optional because the browser cannot
+	always report them: see `discover_assets`. `redirected` says the code came
+	back through the full-page fallback rather than the pop-up, and Meta then
+	wants the same `redirect_uri` quoted back at the exchange.
 	"""
 	parsed = parse_state(state)
 	if not parsed:
@@ -167,7 +179,8 @@ def complete_signup(state: str, code: str, waba_id: str, phone_number_id: str) -
 		frappe.log_error(f"WhatsApp signup from unlisted site {site}", "WhatsApp: signup refused")
 		frappe.throw(_("This site is not allowed to connect WhatsApp"))
 
-	token = exchange_code(code)
+	token = exchange_code(code, connect_url() if frappe.utils.cint(redirected) else "")
+	waba_id, phone_number_id = discover_assets(token, waba_id, phone_number_id)
 	number = describe_number(phone_number_id, token)
 
 	claim_route(waba_id, phone_number_id, number.get("display_phone_number"), site)
@@ -182,23 +195,87 @@ def complete_signup(state: str, code: str, waba_id: str, phone_number_id: str) -
 	return {"ok": True, "site": site}
 
 
-def exchange_code(code: str) -> str:
-	"""Trade the 30-second Embedded Signup code for the business token."""
+def connect_url() -> str:
+	"""The one page Meta may send a login back to, spelled exactly as registered.
+
+	Strict Mode matches the redirect URI character for character, so this is
+	also the value that belongs in the app's *Valid OAuth Redirect URIs* — and
+	the `fallback_redirect_uri` the page hands to `FB.login`.
+	"""
+	return get_url().rstrip("/") + CONNECT_PATH
+
+
+def exchange_code(code: str, redirect_uri: str = "") -> str:
+	"""Trade the 30-second Embedded Signup code for the business token.
+
+	`redirect_uri` is empty for the pop-up flow, where the code was never tied
+	to a URL. It is required for the full-page fallback, where it was: Meta
+	checks that the exchange quotes back the same address the code was issued
+	against, and refuses it otherwise.
+	"""
+	params = {
+		"client_id": get_whatsapp_app_id(),
+		"client_secret": get_whatsapp_app_secret(),
+		"code": code,
+	}
+	if redirect_uri:
+		params["redirect_uri"] = redirect_uri
 	try:
-		data = whatsapp_graph_get(
-			"oauth/access_token",
-			token="",
-			params={
-				"client_id": get_whatsapp_app_id(),
-				"client_secret": get_whatsapp_app_secret(),
-				"code": code,
-			},
-		)
+		data = whatsapp_graph_get("oauth/access_token", token="", params=params)
 	except MetaAPIError as exc:
 		frappe.throw(_("Meta refused the WhatsApp connection: {0}").format(exc))
 	if not data.get("access_token"):
 		frappe.throw(_("Meta did not return an access token"))
 	return data["access_token"]
+
+
+def discover_assets(token: str, waba_id: str = "", phone_number_id: str = "") -> tuple[str, str]:
+	"""Which WhatsApp account was just shared, when the browser could not say.
+
+	Embedded Signup normally posts the WABA and the phone number back to the
+	page that opened it. That page is not always still there: when a browser
+	suppresses the pop-up the JavaScript SDK falls back to a full-page redirect,
+	and what comes back is the code alone — the listener that would have caught
+	the ids was destroyed with the page.
+
+	Meta documents the way round, and it is the same one the hosted flow uses:
+	the business token itself names, in `granular_scopes`, every WABA that
+	granted the app `whatsapp_business_management`, most recently onboarded
+	first. From the account, its phone number.
+
+	A connection that is one redirect away from done must not be thrown away for
+	want of two ids we can ask for.
+	"""
+	if waba_id and phone_number_id:
+		return waba_id, phone_number_id
+
+	if not waba_id:
+		try:
+			data = whatsapp_graph_get("debug_token", whatsapp_app_token(), {"input_token": token})
+		except MetaAPIError as exc:
+			frappe.throw(_("Meta would not say which WhatsApp account was shared: {0}").format(exc))
+		for scope in (data.get("data") or {}).get("granular_scopes") or []:
+			if scope.get("scope") == "whatsapp_business_management" and scope.get("target_ids"):
+				waba_id = str(scope["target_ids"][0])
+				break
+	if not waba_id:
+		frappe.throw(_("Meta did not say which WhatsApp account was shared. Please retry."))
+
+	if not phone_number_id:
+		try:
+			numbers = whatsapp_graph_get(f"{waba_id}/phone_numbers", token, {"limit": 1})
+		except MetaAPIError as exc:
+			frappe.throw(_("Could not read this WhatsApp account's phone number: {0}").format(exc))
+		rows = numbers.get("data") or []
+		if not rows:
+			frappe.throw(
+				_("This WhatsApp account has no phone number yet. Finish the setup on Meta and retry.")
+			)
+		phone_number_id = str(rows[0].get("id") or "")
+	if not phone_number_id:
+		frappe.throw(_("Meta did not say which phone number was shared. Please retry."))
+
+	return waba_id, phone_number_id
 
 
 def describe_number(phone_number_id: str, token: str) -> dict:
@@ -286,4 +363,12 @@ def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, n
 		frappe.throw(_("Could not hand the connection to your CRM: {0}").format(str(exc)[:200]))
 
 
-__all__ = ["complete_signup", "config_id", "make_state", "parse_state", "sign"]
+__all__ = [
+	"complete_signup",
+	"config_id",
+	"connect_url",
+	"discover_assets",
+	"make_state",
+	"parse_state",
+	"sign",
+]
