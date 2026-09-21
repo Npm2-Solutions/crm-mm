@@ -313,3 +313,33 @@ il caso peggiore (quello in cui stai guardando lo schermo senza capire) e' anche
 quello che si risolve da solo. Se non c'e' nemmeno un token, il CRM **tace**:
 accusare una connessione funzionante di non avere niente sarebbe peggio del
 silenzio.
+
+## "No page token stored. Reconnect Facebook." — e riconnettere non basta
+
+Il seguito naturale del problema qui sopra, e il caso piu' frustrante: il CRM
+chiede di riconnettere, tu riconnetti, e non cambia niente.
+
+Il motivo e' che `discover_pages` tiene **solo le Pagine che tornano da
+`/me/accounts` con un `access_token`**: quelle sono le Pagine che la persona ha
+davvero spuntato nel dialogo. Una Pagina che resta nel CRM senza token e' una
+Pagina che **l'ultimo login non ha incluso** — e non viene cancellata perche'
+qualcuno l'aveva accesa o perche' ha gia' prodotto lead (buttarla via
+porterebbe con se' la sua storia).
+
+Quindi il CRM adesso lo scrive. Dopo ogni sincronizzazione, ogni Pagina rimasta
+fuori viene marcata `granted = 0` (e `token_valid = 0`, perche' senza token non
+funziona niente), e nella lista compare l'etichetta rossa **"Non concessa"** con
+la spiegazione. Il messaggio d'errore delle tre azioni che richiedono il token
+non dice piu' "Reconnect Facebook" e basta, ma:
+
+> Facebook non ha incluso questa Pagina nell'ultimo collegamento, quindi il CRM
+> non ha un token per lei. Premi "Riconnetti" e spunta questa Pagina nel
+> dialogo. Se li' non compare, appartiene al portfolio Business di qualcun
+> altro: deve essere il proprietario a darti un ruolo sulla Pagina.
+
+Quest'ultima frase e' il punto. **Riconnettere non puo' funzionare se il dialogo
+non offre quella Pagina**, e non la offre finche' il Business Manager che la
+possiede non ti assegna un ruolo (serve almeno Inserzionista). E' un passaggio
+che avviene su Facebook, tra due persone, e nessun codice puo' farlo al posto
+loro: l'unica cosa utile che il software puo' fare e' dirlo chiaramente invece
+di mandarti in cerchio.

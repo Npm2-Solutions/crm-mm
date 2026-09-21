@@ -589,3 +589,45 @@ class TestMetaPermissions(IntegrationTestCase):
 
 		with patch.object(O, "debug_token", side_effect=Exception("nope"), create=True):
 			self.assertEqual(O.granted_scopes("tok"), [])
+
+
+class TestMetaPageGrants(IntegrationTestCase):
+	"""A Page kept without being granted has to say so."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_page_left_out_of_the_login_is_flagged(self):
+		"""It survives because somebody switched it on, but nothing works on it
+		and reconnecting blindly does not help."""
+		from crm.integrations.meta.oauth import mark_ungranted_pages
+
+		make_form(form_id="990500", page_id="880500")
+		frappe.db.set_value("Facebook Page", "880500", "sync_enabled", 1)
+
+		mark_ungranted_pages({"880999"})
+
+		self.assertEqual(frappe.db.get_value("Facebook Page", "880500", "granted"), 0)
+		self.assertEqual(frappe.db.get_value("Facebook Page", "880500", "token_valid"), 0)
+
+	def test_a_page_that_came_back_is_granted_again(self):
+		from crm.integrations.meta.oauth import mark_ungranted_pages
+
+		make_form(form_id="990501", page_id="880501")
+		frappe.db.set_value("Facebook Page", "880501", "granted", 0)
+
+		mark_ungranted_pages({"880501"})
+
+		self.assertEqual(frappe.db.get_value("Facebook Page", "880501", "granted"), 1)
+
+	def test_the_error_says_why_and_what_to_do(self):
+		"""'Reconnect Facebook' was true and useless: the dialog may not even
+		offer that Page."""
+		from crm.integrations.meta.api import no_token_message
+
+		make_form(form_id="990502", page_id="880502")
+		frappe.db.set_value("Facebook Page", "880502", "granted", 0)
+
+		message = no_token_message("880502")
+		self.assertIn("did not include this Page", message)
+		self.assertIn("Business portfolio", message)
