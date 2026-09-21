@@ -386,7 +386,9 @@ def sync_pages_and_forms(user_token: str) -> list[dict]:
 		upsert_page(page)
 		sync_forms_recording_failure(page["id"], page["access_token"])
 
-	forget_ungranted_pages({page["id"] for page in pages})
+	granted = {page["id"] for page in pages}
+	forget_ungranted_pages(granted)
+	mark_ungranted_pages(granted)
 
 	# make the pages (and linked IG accounts) usable by the Social Planner
 	try:
@@ -427,6 +429,26 @@ def forget_ungranted_pages(granted: set[str]) -> None:
 		frappe.delete_doc("Facebook Page", name, ignore_permissions=True, force=True)
 
 
+def mark_ungranted_pages(granted: set[str]) -> None:
+	"""Say so, for the Pages that survived the clean-up without being granted.
+
+	A Page somebody switched on, or one that has already produced leads, is kept
+	even when the latest login did not include it — deleting it would take its
+	history with it. But keeping it silently is how "No page token stored.
+	Reconnect Facebook." becomes a mystery: the person reconnects, the dialog
+	does not offer that Page (it belongs to a client's portfolio, or it was left
+	unticked), and nothing changes. The flag is what lets the screen say that.
+	"""
+	for name in frappe.get_all("Facebook Page", pluck="name"):
+		is_granted = 1 if name in granted else 0
+		if frappe.db.get_value("Facebook Page", name, "granted") != is_granted:
+			values = {"granted": is_granted}
+			if not is_granted:
+				# no token came with it, so nothing on it can work
+				values["token_valid"] = 0
+			frappe.db.set_value("Facebook Page", name, values, update_modified=False)
+
+
 def upsert_page(page: dict) -> None:
 	ig = page.get("instagram_business_account") or {}
 	values = {
@@ -442,6 +464,7 @@ def upsert_page(page: dict) -> None:
 		# "permission(s) must be granted before impersonating a user's page".
 		# Keeping the tasks lets the CRM say which pages are really usable.
 		"tasks": ",".join(page.get("tasks") or []),
+		"granted": 1,
 	}
 	if frappe.db.exists("Facebook Page", page["id"]):
 		doc = frappe.get_doc("Facebook Page", page["id"])

@@ -8,6 +8,8 @@ unique, which makes webhook + backfill safely idempotent. Facebook keeps lead
 data for 90 days only, so the backfill can never recover older leads.
 """
 
+import datetime
+
 import frappe
 from frappe import _
 
@@ -176,12 +178,42 @@ def forget_person(doc, method=None) -> None:
 		)
 
 
+def submitted_at(created_time) -> str:
+	"""Meta's own timestamp, in a shape the database accepts.
+
+	The Graph API answers ISO 8601 with an offset — "2026-09-21T11:02:23+0000" —
+	and MariaDB refuses it outright: *Incorrect datetime value*. Storing it raw
+	did not merely lose the timestamp, it threw in the middle of saving the lead,
+	which is how a whole day of submissions ended up in the failure log.
+
+	The instant is kept, not the wall clock: converted to the site's timezone, so
+	"submitted at 13:02" means what the person reading the record thinks it
+	means. An unparseable value falls back to now — a slightly wrong timestamp is
+	worth incomparably less than the lead it would otherwise cost.
+	"""
+	if not created_time:
+		return frappe.utils.now()
+	try:
+		moment = frappe.utils.get_datetime(created_time)
+	except Exception:
+		return frappe.utils.now()
+	if moment is None:
+		return frappe.utils.now()
+	if moment.tzinfo:
+		utc_naive = moment.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+		try:
+			moment = frappe.utils.convert_utc_to_system_timezone(utc_naive).replace(tzinfo=None)
+		except Exception:
+			moment = utc_naive
+	return frappe.utils.get_datetime_str(moment)
+
+
 def submission_row(lead: dict, form_id: str | None) -> dict:
 	return {
 		"leadgen_id": lead.get("id"),
 		"form": form_id or "",
 		"form_name": frappe.db.get_value("Facebook Lead Form", form_id, "form_name") or "",
-		"submitted_on": lead.get("created_time") or frappe.utils.now(),
+		"submitted_on": submitted_at(lead.get("created_time")),
 		"platform": "Instagram" if lead.get("platform") == "ig" else "Facebook",
 	}
 
@@ -253,6 +285,11 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 			"facebook_submissions": [submission_row(lead, form_id)],
 		}
 	)
+	# All of it, or none of it. Without the savepoint a failure halfway through
+	# left the person in the CRM while the submission row and the ledger entry
+	# were lost — a lead that looks imported, is not recorded as imported, and
+	# comes back at the next reconciliation.
+	frappe.db.savepoint("meta_lead")
 	try:
 		doc = frappe.get_doc(values)
 		_attribute(doc, lead, form_id, token)
@@ -263,8 +300,10 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 		_note_form_submitted(doc, form_id)
 		return "created"
 	except frappe.UniqueValidationError:
+		frappe.db.rollback(save_point="meta_lead")
 		return "duplicate"
 	except Exception:
+		frappe.db.rollback(save_point="meta_lead")
 		_log_failure(lead, form_id, frappe.get_traceback())
 		return "failed"
 
@@ -283,6 +322,7 @@ def _merge_submission(
 	corrected by hand in the CRM outranks the one re-typed into an ad form. The
 	first touch is theirs already; this becomes the last one.
 	"""
+	frappe.db.savepoint("meta_merge")
 	try:
 		doc = frappe.get_doc("CRM Lead", person)
 		for field, value in values.items():
@@ -305,6 +345,8 @@ def _merge_submission(
 		_note_form_submitted(doc, form_id)
 		return "merged"
 	except Exception:
+		# the person existed before this submission and must survive it failing
+		frappe.db.rollback(save_point="meta_merge")
 		_log_failure(lead, form_id, frappe.get_traceback())
 		return "failed"
 

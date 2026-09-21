@@ -243,6 +243,29 @@ def can_sync_leads(tasks: str | None) -> bool:
 	return LEAD_TASK in tasks.split(",")
 
 
+def no_token_message(page_id: str | None) -> str:
+	"""Why there is no page token, in the words of whoever has to fix it.
+
+	"Reconnect Facebook" was true and useless: the person reconnects, the dialog
+	does not offer that Page, and nothing changes. What they need to know is
+	that the Page was not part of the last login — and that a Page belonging to
+	somebody else's Business portfolio has to be shared with them first, which
+	no amount of reconnecting will do on its own.
+	"""
+	granted = frappe.db.get_value("Facebook Page", page_id, "granted") if page_id else None
+	if granted == 0:
+		return _(
+			"Facebook did not include this Page in the last connection, so the CRM has no token "
+			'for it. Press "Reconnect" and tick this Page in the dialog. If it is not offered '
+			"there, it belongs to somebody else's Business portfolio: its owner has to give you "
+			"a role on the Page first."
+		)
+	return _(
+		'No token is stored for this Page. Press "Reconnect" and make sure this Page is ticked '
+		"in the Facebook dialog."
+	)
+
+
 NOT_GRANTED = (
 	"Facebook did not grant this CRM the advertising role on this Page, so it cannot read "
 	'its lead forms. Press "Choose pages" on the connection screen and tick this Page — '
@@ -275,7 +298,7 @@ def list_pages(start: int = 0, limit: int = 20, search: str | None = None) -> di
 		"Facebook Page",
 		filters=filters,
 		or_filters=usable,
-		fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks"],
+		fields=["name", "page_name", "instagram_username", "sync_enabled", "tasks", "granted"],
 		order_by="page_name asc",
 		limit_start=frappe.utils.cint(start),
 		limit_page_length=frappe.utils.cint(limit),
@@ -301,7 +324,7 @@ def sync_forms(page_id: str) -> dict:
 	_check_manager()
 	token = get_page_token(page_id)
 	if not token:
-		frappe.throw(_("No page token stored. Reconnect Facebook."))
+		frappe.throw(no_token_message(page_id))
 	if not can_sync_leads(frappe.db.get_value("Facebook Page", page_id, "tasks")):
 		frappe.throw(_(NOT_GRANTED))
 	error = sync_forms_recording_failure(page_id, token)
@@ -331,6 +354,7 @@ def get_pages() -> list[dict]:
 			"category",
 			"sync_enabled",
 			"webhook_subscribed",
+			"granted",
 			"token_valid",
 			"last_webhook_at",
 			"last_form_sync_error",
@@ -383,7 +407,7 @@ def set_page_sync(page_id: str, enabled: bool) -> dict:
 	page = frappe.get_doc("Facebook Page", page_id)
 	token = get_page_token(page_id)
 	if not token:
-		frappe.throw(_("No page token stored. Reconnect Facebook."))
+		frappe.throw(no_token_message(page_id))
 	if enabled and not can_sync_leads(page.tasks):
 		frappe.throw(_(NOT_GRANTED))
 
@@ -542,7 +566,7 @@ def create_test_lead(form_id: str) -> dict:
 	page = frappe.db.get_value("Facebook Lead Form", form_id, "page")
 	token = get_page_token(page) if page else None
 	if not token:
-		frappe.throw(_("No page token stored. Reconnect Facebook."))
+		frappe.throw(no_token_message(page))
 	try:
 		result = graph_post(f"{form_id}/test_leads", token, {})
 		return {"ok": True, "id": result.get("id")}
@@ -699,3 +723,45 @@ def send_conversions_now() -> dict:
 	"""Empty the queue without waiting for the hour."""
 	_check_manager()
 	return send_pending()
+
+
+@frappe.whitelist(methods=["POST"])
+def retry_failed_leads(limit: int = 500) -> dict:
+	"""Re-import every submission still sitting in the failure log.
+
+	A failure log is not an archive: each row is a person who asked to be
+	contacted and never reached anybody. Retrying them one by one through the
+	desk is fine for three and absurd for three hundred, which is exactly the
+	number a single bad deploy produces.
+
+	Safe to press twice: a submission already imported comes back as a duplicate
+	and its log is marked Synced either way.
+	"""
+	_check_manager()
+	from crm.integrations.meta.leads import get_page_token, store_lead
+
+	rows = frappe.get_all(
+		"Failed Lead Sync Log",
+		filters={"type": "Failure"},
+		fields=["name", "form", "lead_data"],
+		order_by="creation asc",
+		limit=min(max(frappe.utils.cint(limit) or 500, 1), 2000),
+	)
+	counts = {"created": 0, "merged": 0, "duplicate": 0, "failed": 0}
+	for row in rows:
+		try:
+			lead = frappe.parse_json(row.lead_data)
+		except Exception:
+			counts["failed"] += 1
+			continue
+		form_id = row.form or lead.get("form_id")
+		if not form_id:
+			counts["failed"] += 1
+			continue
+		page = frappe.db.get_value("Facebook Lead Form", form_id, "page")
+		result = store_lead(lead, form_id, get_page_token(page) if page else None)
+		counts[result] = counts.get(result, 0) + 1
+		if result != "failed":
+			frappe.db.set_value("Failed Lead Sync Log", row.name, "type", "Synced")
+		frappe.db.commit()
+	return counts

@@ -13,6 +13,7 @@
   "access_token",
   "sync_enabled",
   "webhook_subscribed",
+  "granted",
   "token_valid",
   "last_webhook_at",
   "instagram_account_id",
@@ -64,6 +65,14 @@
    "fieldtype": "Check",
    "label": "Webhook Subscribed",
    "default": "0",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "description": "Facebook handed this Page over, with a token, at the last connection. Off means the login dialog did not include it \u2014 the Page stays here because somebody switched it on or it has leads, but nothing can be done with it until it is granted again.",
+   "fieldname": "granted",
+   "fieldtype": "Check",
+   "label": "Granted At Last Connection",
    "read_only": 1
   },
   {

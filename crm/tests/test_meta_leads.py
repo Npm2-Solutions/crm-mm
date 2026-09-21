@@ -589,3 +589,89 @@ class TestMetaPermissions(IntegrationTestCase):
 
 		with patch.object(O, "debug_token", side_effect=Exception("nope"), create=True):
 			self.assertEqual(O.granted_scopes("tok"), [])
+
+
+class TestMetaPageGrants(IntegrationTestCase):
+	"""A Page kept without being granted has to say so."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_page_left_out_of_the_login_is_flagged(self):
+		"""It survives because somebody switched it on, but nothing works on it
+		and reconnecting blindly does not help."""
+		from crm.integrations.meta.oauth import mark_ungranted_pages
+
+		make_form(form_id="990500", page_id="880500")
+		frappe.db.set_value("Facebook Page", "880500", "sync_enabled", 1)
+
+		mark_ungranted_pages({"880999"})
+
+		self.assertEqual(frappe.db.get_value("Facebook Page", "880500", "granted"), 0)
+		self.assertEqual(frappe.db.get_value("Facebook Page", "880500", "token_valid"), 0)
+
+	def test_a_page_that_came_back_is_granted_again(self):
+		from crm.integrations.meta.oauth import mark_ungranted_pages
+
+		make_form(form_id="990501", page_id="880501")
+		frappe.db.set_value("Facebook Page", "880501", "granted", 0)
+
+		mark_ungranted_pages({"880501"})
+
+		self.assertEqual(frappe.db.get_value("Facebook Page", "880501", "granted"), 1)
+
+	def test_the_error_says_why_and_what_to_do(self):
+		"""'Reconnect Facebook' was true and useless: the dialog may not even
+		offer that Page."""
+		from crm.integrations.meta.api import no_token_message
+
+		make_form(form_id="990502", page_id="880502")
+		frappe.db.set_value("Facebook Page", "880502", "granted", 0)
+
+		message = no_token_message("880502")
+		self.assertIn("did not include this Page", message)
+		self.assertIn("Business portfolio", message)
+
+
+class TestMetaTimestamps(IntegrationTestCase):
+	"""Meta's timestamps, and the day they took the imports down with them."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_offset_timestamp_is_accepted(self):
+		"""Graph answers "2026-09-21T11:02:23+0000"; MariaDB refuses it outright,
+		and it threw in the middle of saving the lead."""
+		make_form()
+		lead = sample_lead("7772001")
+		lead["created_time"] = "2026-09-21T11:02:23+0000"
+
+		self.assertEqual(store_lead(lead, "990001"), "created")
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7772001"}, "name")
+		row = frappe.get_doc("CRM Lead", person).facebook_submissions[0]
+		self.assertTrue(row.submitted_on)
+		# the instant is kept: 11:02 UTC is 13:02 in Rome, and the record is read
+		# by somebody who lives in one timezone, not in UTC
+		self.assertIn("2026-09-21", str(row.submitted_on))
+
+	def test_an_unreadable_timestamp_does_not_cost_the_lead(self):
+		make_form()
+		lead = sample_lead("7772002")
+		lead["created_time"] = "not a date at all"
+
+		self.assertEqual(store_lead(lead, "990001"), "created")
+		self.assertTrue(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7772002"}))
+
+	def test_a_failed_import_leaves_nothing_behind(self):
+		"""Half a lead is worse than none: the person was in the CRM, the
+		submission and the ledger row were not, and the reconciliation kept
+		bringing it back."""
+		make_form()
+		lead = sample_lead("7772003")
+
+		with patch.object(L, "record_import", side_effect=Exception("boom")):
+			self.assertEqual(store_lead(lead, "990001"), "failed")
+
+		self.assertFalse(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7772003"}))
+		self.assertTrue(frappe.db.exists("Failed Lead Sync Log", {"form": "990001"}))

@@ -313,3 +313,75 @@ il caso peggiore (quello in cui stai guardando lo schermo senza capire) e' anche
 quello che si risolve da solo. Se non c'e' nemmeno un token, il CRM **tace**:
 accusare una connessione funzionante di non avere niente sarebbe peggio del
 silenzio.
+
+## "No page token stored. Reconnect Facebook." — e riconnettere non basta
+
+Il seguito naturale del problema qui sopra, e il caso piu' frustrante: il CRM
+chiede di riconnettere, tu riconnetti, e non cambia niente.
+
+Il motivo e' che `discover_pages` tiene **solo le Pagine che tornano da
+`/me/accounts` con un `access_token`**: quelle sono le Pagine che la persona ha
+davvero spuntato nel dialogo. Una Pagina che resta nel CRM senza token e' una
+Pagina che **l'ultimo login non ha incluso** — e non viene cancellata perche'
+qualcuno l'aveva accesa o perche' ha gia' prodotto lead (buttarla via
+porterebbe con se' la sua storia).
+
+Quindi il CRM adesso lo scrive. Dopo ogni sincronizzazione, ogni Pagina rimasta
+fuori viene marcata `granted = 0` (e `token_valid = 0`, perche' senza token non
+funziona niente), e nella lista compare l'etichetta rossa **"Non concessa"** con
+la spiegazione. Il messaggio d'errore delle tre azioni che richiedono il token
+non dice piu' "Reconnect Facebook" e basta, ma:
+
+> Facebook non ha incluso questa Pagina nell'ultimo collegamento, quindi il CRM
+> non ha un token per lei. Premi "Riconnetti" e spunta questa Pagina nel
+> dialogo. Se li' non compare, appartiene al portfolio Business di qualcun
+> altro: deve essere il proprietario a darti un ruolo sulla Pagina.
+
+Quest'ultima frase e' il punto. **Riconnettere non puo' funzionare se il dialogo
+non offre quella Pagina**, e non la offre finche' il Business Manager che la
+possiede non ti assegna un ruolo (serve almeno Inserzionista). E' un passaggio
+che avviene su Facebook, tra due persone, e nessun codice puo' farlo al posto
+loro: l'unica cosa utile che il software puo' fare e' dirlo chiaramente invece
+di mandarti in cerchio.
+
+## Il timestamp che si e' mangiato 354 lead (21/09/2026)
+
+Sintomo: *"arrivano i lead normali ma non quello di test"*. Nei log del sito,
+354 righe in `Failed Lead Sync Log`, tutte con lo stesso errore:
+
+```
+MySQLdb.OperationalError: (1292, "Incorrect datetime value:
+'2026-09-19T20:28:45+0000' for column ...`tabCRM Lead Facebook Submission`.`submitted_on`")
+```
+
+Il Graph risponde con **ISO 8601 con offset**, e MariaDB lo rifiuta. Noi lo
+infilavamo **cosi' com'era** nel campo Datetime della riga di submission. Non
+perdeva solo il timestamp: **sollevava a meta' del salvataggio del lead**.
+
+Il danno, e perche' sembrava che funzionasse tutto:
+
+- **persona nuova** → il `CRM Lead` veniva inserito (e si vedeva!), poi la riga
+  figlia falliva. Restava un lead a meta': senza submission, e soprattutto senza
+  riga nel registro delle importazioni;
+- **persona gia' esistente** → il `save()` falliva e **non si vedeva niente**. Ed
+  e' esattamente il caso del lead di prova, che e' sempre la stessa persona
+  finta: per questo i lead veri comparivano e quello di test no.
+
+Tre correzioni:
+
+**Il timestamp si converte.** `submitted_at()` legge l'ISO con offset, tiene
+l'**istante** (non l'orologio a muro) e lo porta nel fuso del sito: "13:02"
+significa quello che chi legge la scheda pensa che significhi. Una data
+illeggibile ripiega su adesso — un timestamp storto vale incomparabilmente meno
+del lead che altrimenti costerebbe.
+
+**O tutto o niente.** `store_lead` e `_merge_submission` lavorano dentro un
+savepoint: se qualcosa fallisce, si torna indietro e nel CRM non resta mezza
+persona. Un lead che *sembra* importato ma non risulta importato e' peggio di un
+lead mancante, perche' la riconciliazione oraria continua a riproporlo.
+
+**Il registro dei fallimenti non e' un archivio.** Ogni riga e' una persona che
+ha chiesto di essere ricontattata e non ha raggiunto nessuno. In Settings → Lead
+forms → Sync failures c'e' **"Riprova tutti"**: rimporta in blocco, si puo'
+premere due volte senza danni (un lead gia' importato torna come duplicato) e
+segna le righe come Synced.
