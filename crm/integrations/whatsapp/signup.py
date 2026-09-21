@@ -40,7 +40,14 @@ from crm.integrations.meta.relay import relay_secret, sign
 from crm.integrations.meta.relay import sign as relay_sign
 
 CONNECT_PATH = "/whatsapp-connect"
-STATE_TTL = 900
+# An hour, not fifteen minutes. The state says nothing but "which site started
+# this" and is signed, so a long life costs nothing — while a short one costs
+# everything: a Coexistence onboarding means opening WhatsApp on the phone,
+# confirming, copying a verification code and coming back, and a person who
+# fumbles the Facebook login first is easily past a quarter of an hour. When it
+# expired mid-flow the session logging went silent and the token exchange
+# failed, which is precisely the case nobody could see.
+STATE_TTL = 3600
 TIMEOUT = 30
 
 
@@ -68,7 +75,14 @@ def make_state(site: str) -> str:
 	return f"{base64.urlsafe_b64encode(payload.encode()).decode()}.{sign_state(payload)}"
 
 
-def parse_state(state: str | None) -> dict | None:
+def parse_state(state: str | None, allow_expired: bool = False) -> dict | None:
+	"""The site that started this flow, if the state really came from us.
+
+	`allow_expired` exists for one caller: the session log. An onboarding that
+	ran long is exactly the one worth recording, and refusing to write it down
+	because the link aged is how a stalled flow becomes invisible. Nothing is
+	granted on an expired state — only remembered.
+	"""
 	if not state or "." not in state:
 		return None
 	try:
@@ -80,7 +94,9 @@ def parse_state(state: str | None) -> dict | None:
 	except Exception:
 		return None
 	if int(time.time()) - int(parsed.get("t") or 0) > STATE_TTL:
-		return None
+		if not allow_expired:
+			return None
+		parsed["expired"] = True
 	return parsed
 
 
@@ -110,7 +126,7 @@ def log_session_event(state: str, event: str, data: str | dict | None = None) ->
 	guessed at. Nothing here is trusted: the state carries the signature, and
 	only the fields we know are stored.
 	"""
-	parsed = parse_state(state)
+	parsed = parse_state(state, allow_expired=True)
 	if not parsed:
 		return {"ok": False}
 	if isinstance(data, str):
@@ -124,7 +140,7 @@ def log_session_event(state: str, event: str, data: str | dict | None = None) ->
 		{
 			"doctype": "WhatsApp Signup Session",
 			"site_url": parsed["site"],
-			"event": (event or "")[:140],
+			"event": ("expired: " + (event or ""))[:140] if parsed.get("expired") else (event or "")[:140],
 			"current_step": (data.get("current_step") or "")[:140],
 			"waba_id": data.get("waba_id") or "",
 			"phone_number_id": data.get("phone_number_id") or "",

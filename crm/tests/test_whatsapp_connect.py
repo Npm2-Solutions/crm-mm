@@ -219,3 +219,42 @@ class TestCoexistenceRouting(IntegrationTestCase):
 			"393331234567",
 		)
 		self.assertEqual(C.business_number({}), "")
+
+
+class TestWhatsAppSignupState(IntegrationTestCase):
+	"""The link that carries an onboarding from the CRM to the hub."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_link_lasts_longer_than_a_real_onboarding(self):
+		"""Opening WhatsApp on the phone, confirming, copying a code and coming
+		back takes longer than a quarter of an hour — and a person who fumbles
+		the Facebook login first takes longer still."""
+		from crm.integrations.whatsapp.signup import STATE_TTL
+
+		self.assertGreaterEqual(STATE_TTL, 3600)
+
+	def test_a_forged_state_is_refused_however_fresh(self):
+		from crm.integrations.whatsapp.signup import parse_state
+
+		self.assertIsNone(parse_state("bm9uc2Vuc2U=.notasignature"))
+		self.assertIsNone(parse_state("bm9uc2Vuc2U=.notasignature", allow_expired=True))
+		self.assertIsNone(parse_state(None))
+
+	def test_an_expired_state_is_still_worth_writing_down(self):
+		"""An onboarding that ran long is exactly the one worth recording:
+		refusing to log it is how a stalled flow becomes invisible."""
+		import base64
+		import json
+		import time
+
+		from crm.integrations.whatsapp import signup as S
+
+		payload = json.dumps({"t": int(time.time()) - S.STATE_TTL - 60, "site": "https://x.test"})
+		state = f"{base64.urlsafe_b64encode(payload.encode()).decode()}.{S.sign_state(payload)}"
+
+		self.assertIsNone(S.parse_state(state))
+		late = S.parse_state(state, allow_expired=True)
+		self.assertTrue(late and late.get("expired"))
+		self.assertEqual(late["site"], "https://x.test")
