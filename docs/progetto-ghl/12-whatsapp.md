@@ -566,3 +566,49 @@ Il **numero di test** che Meta presta all'app è l'eccezione: WABA e numero di
 test *«don't require a payment method on file in order to send template
 messages»* e hanno limiti rilassati. Per registrare i video di App Review basta
 quello.
+
+## "URL bloccato" e il link che scadeva troppo presto (21/09/2026)
+
+Due cose diverse, incontrate nello stesso tentativo di collegare un numero in
+Coexistence.
+
+### L'URL bloccato non era nostro
+
+> Questo reindirizzamento non e' riuscito perche' l'URI di reindirizzamento non
+> e' stato aggiunto alla whitelist nelle impostazioni OAuth client dell'app.
+
+Letto dalle impostazioni dell'app WhatsApp (`1025903810451453`):
+
+```
+oauth_redirect_uris:  https://hub.npm2solutions.com/whatsapp-connect
+js_sdk_host_domains:  https://hub.npm2solutions.com/
+```
+
+L'URI in whitelist e' giusto — la pagina risponde sia con il trattino sia con
+l'underscore, e il CRM manda al trattino. Quindi il blocco non viene dal
+percorso: viene dal fatto che **"Accedi con l'SDK JavaScript" e' spento**. Con
+quell'interruttore spento l'SDK non usa il canale JavaScript ma un
+reindirizzamento OAuth classico, e quel redirect **non** e' in whitelist.
+
+Da sistemare nel pannello dell'app, in *Accesso Facebook per le aziende →
+Impostazioni*: Client OAuth login, Web OAuth login, Enforce HTTPS, Embedded
+Browser OAuth Login, Strict Mode e soprattutto **Login with the JavaScript
+SDK** su Si'.
+
+### Il link scadeva in quindici minuti
+
+`STATE_TTL` era 900 secondi. Un onboarding Coexistence vero significa aprire
+WhatsApp sul telefono, confermare, copiare un codice di verifica e tornare
+indietro — e chi prima deve anche fare login su Facebook supera il quarto d'ora
+senza accorgersene.
+
+Quando lo `state` scadeva a meta' flusso succedevano due cose, entrambe mute:
+il **log di sessione smetteva di scrivere** (quindi dai log sembrava che nessuno
+avesse mai premuto Start) e lo **scambio del codice falliva**.
+
+Adesso dura **un'ora** — lo state dice soltanto "quale sito ha iniziato" ed e'
+firmato, quindi una vita lunga non costa niente mentre una corta costava tutto —
+e il log di sessione accetta anche uno state scaduto, marcandolo `expired:`.
+Un onboarding che si e' trascinato e' esattamente quello che vale la pena vedere
+scritto: rifiutarsi di registrarlo e' il modo in cui un flusso incagliato
+diventa invisibile.
