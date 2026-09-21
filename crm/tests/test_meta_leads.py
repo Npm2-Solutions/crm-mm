@@ -766,3 +766,36 @@ class TestMetaSyncResilience(IntegrationTestCase):
 		# the second page still has its token, which is the whole point
 		self.assertTrue(frappe.db.exists("Facebook Page", "880601"))
 		self.assertEqual(boom["count"], 2)
+
+
+class TestMetaUnusableAnswers(IntegrationTestCase):
+	"""An answer that cannot go in its field must not cost the whole person."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_phone_that_is_not_a_phone_does_not_kill_the_lead(self):
+		"""Frappe refuses "Test" as a phone number and raises on save. That is
+		how every test lead died the moment it stopped being eaten by the
+		sanitiser."""
+		make_form()
+		lead = sample_lead("7774001")
+		lead["field_data"] = [
+			{"name": "full_name", "values": ["<test lead: dummy data for full_name>"]},
+			{"name": "phone_number", "values": ["<test lead: dummy data for phone_number>"]},
+			{"name": "email", "values": ["<test lead: dummy data for email>"]},
+		]
+
+		self.assertEqual(store_lead(lead, "990001"), "created")
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7774001"}, "name")
+		doc = frappe.get_doc("CRM Lead", person)
+		self.assertTrue(doc.first_name)
+		self.assertFalse(doc.mobile_no)
+		self.assertFalse(doc.email)
+
+	def test_a_real_phone_is_still_a_phone(self):
+		self.assertEqual(normalize_value("mobile_no", "p:+39 333 1234567"), "+393331234567")
+		self.assertEqual(normalize_value("mobile_no", "Test"), "")
+		self.assertEqual(normalize_value("email", "mario@example.com"), "mario@example.com")
+		self.assertEqual(normalize_value("email", "Test"), "")

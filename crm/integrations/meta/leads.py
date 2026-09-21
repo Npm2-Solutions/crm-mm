@@ -241,6 +241,11 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 		if not raw_values:
 			continue
 		crm_field = mapping.get(key)
+		if crm_field and not normalize_value(crm_field, raw_values[0]):
+			# mapped, but unusable for that field (a phone that is not a phone):
+			# the answer still belongs to the person who gave it
+			unmapped.append((labels.get(key) or key, ", ".join(clean_answer(v) for v in raw_values)))
+			continue
 		if not crm_field:
 			# an answer nobody mapped is still the customer talking: keep it
 			unmapped.append((labels.get(key) or key, ", ".join(clean_answer(v) for v in raw_values)))
@@ -573,11 +578,24 @@ def clean_answer(value) -> str:
 
 
 def normalize_value(crm_field: str, value):
+	"""One answer, ready for its field — or nothing, rather than a lost lead.
+
+	Frappe validates phone numbers and email addresses, and a value it refuses
+	raises on save: "Test is not a valid Phone Number" cost us every test lead
+	the moment they stopped being eaten by the sanitiser. An answer that cannot
+	be a phone is not a phone, and dropping it keeps the person, their name and
+	every other answer. The original text is not lost either: an unmappable
+	answer is already written on the lead as a note.
+	"""
 	value = clean_answer(value)
 	if crm_field in ("mobile_no", "phone"):
 		# Meta sends phones like "+3933312345 67" / "p:+39..." — keep digits and +
 		value = value.removeprefix("p:")
 		value = "+" + "".join(ch for ch in value if ch.isdigit()) if value.startswith("+") else value
+		if not any(ch.isdigit() for ch in value):
+			return ""
+	if crm_field == "email" and "@" not in value:
+		return ""
 	return value
 
 

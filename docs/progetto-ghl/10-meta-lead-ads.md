@@ -449,3 +449,25 @@ tutto il resto**:
   alla Pagina tutti gli altri moduli;
 - ogni **Pagina** e' avvolta nel suo: una Pagina che fallisce non costa alle
   altre il loro token.
+
+## "Test non e' un numero di telefono valido" (21/09/2026)
+
+Conseguenza diretta della correzione precedente, e ultimo anello della catena.
+Tolto il segnaposto di Meta dal sanitizzatore, ogni risposta del lead di prova
+diventava la parola `Test` — **anche nel campo telefono**. Frappe valida i numeri
+e rifiuta:
+
+```
+frappe.exceptions.InvalidPhoneNumberError: Test is not a valid Phone Number
+```
+
+quindi i lead di prova morivano di nuovo, un passo piu' avanti.
+
+Il principio, che a questo punto vale per tutta l'importazione: **una risposta
+che non puo' stare nel suo campo non deve costare la persona.** Un valore senza
+nemmeno una cifra non e' un telefono, uno senza `@` non e' un'email: si lasciano
+vuoti, e il lead entra con il nome e tutto il resto.
+
+La risposta non si perde comunque: se era mappata ma inutilizzabile finisce nella
+nota delle risposte non mappate, cioe' resta scritta sulla scheda della persona
+esattamente come l'ha data.
