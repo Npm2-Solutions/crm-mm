@@ -83,6 +83,61 @@ def scopes() -> tuple[str, ...]:
 	return SCOPES
 
 
+def granted_scopes(token: str) -> list[str]:
+	"""What Facebook actually gave us, not what we asked for.
+
+	The two differ more often than anyone expects: a person can untick a Page or
+	a permission in the dialog, and Facebook never asks again on a later login
+	unless `auth_type=rerequest` is used. The token is then perfectly valid and
+	useless — every page call fails with "must be granted before impersonating a
+	user's page", which says nothing about which permission is missing.
+
+	Read once, at login, and remembered: a diagnostic must not cost a Graph call
+	on every settings screen. Never fatal — a login must not fail because the
+	diagnosis did.
+	"""
+	from crm.integrations.meta.client import debug_token
+
+	try:
+		return sorted(debug_token(token).get("scopes") or [])
+	except Exception:
+		frappe.logger("meta").info("Could not read the granted scopes of the new token")
+		return []
+
+
+def known_scopes() -> list[str]:
+	"""The granted permissions, asking Facebook once if we never wrote them down.
+
+	A connection made before this diagnostic existed has nothing recorded, and
+	that is exactly the connection somebody is staring at when a Page refuses to
+	subscribe. So the first screen that asks pays for one `debug_token` call and
+	everyone after it reads the answer for free.
+	"""
+	settings = frappe.get_cached_doc("CRM Meta Settings")
+	recorded = [s.strip() for s in (settings.granted_scopes or "").split(",") if s.strip()]
+	if recorded:
+		return recorded
+
+	token = settings.get_password("user_access_token", raise_exception=False)
+	if not token:
+		return []
+	granted = granted_scopes(token)
+	if granted:
+		frappe.db.set_single_value("CRM Meta Settings", "granted_scopes", ",".join(granted))
+		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+	return granted
+
+
+def missing_scopes() -> list[str]:
+	"""The permissions this CRM needs and the connection does not have."""
+	granted = set(known_scopes())
+	if not granted:
+		# Facebook would not say: keep quiet rather than accuse a working
+		# connection of missing everything
+		return []
+	return sorted(set(scopes()) - granted)
+
+
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
 
@@ -211,6 +266,7 @@ def callback(code: str | None = None, state: str | None = None, **kwargs):
 		settings.user_access_token = user_token
 		settings.connected_user_id = me.get("id")
 		settings.connected_user_name = me.get("name")
+		settings.granted_scopes = ",".join(granted_scopes(user_token))
 		settings.user_token_expires_at = (
 			add_to_date(now_datetime(), seconds=expires_in) if expires_in else None
 		)

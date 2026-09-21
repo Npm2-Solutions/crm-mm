@@ -281,3 +281,35 @@ verifica firma webhook, un lead cancellato che non torna, disconnessione che
 ferma davvero le Pagine, notifica
 ignorata per una Pagina spenta (anche quando arriva senza page id), rilascio
 della rotta sull'hub e rifiuto del replay di una rivendicazione.
+
+## Quando Meta dice "impersonating a user's page" (21/09/2026)
+
+Errore vero, incontrato collegando le pagine di un cliente:
+
+> Any of the pages_read_engagement, pages_manage_metadata, pages_read_user_content,
+> pages_manage_ads, pages_show_list or pages_messaging permission(s) must be granted
+> before impersonating a user's page.
+
+Nomina sei permission e non dice quale manca. Significa una cosa sola: **il token
+non porta i permessi di Pagina**, e i motivi sono tre, tutti invisibili dal CRM:
+
+1. nel dialogo di login qualcuno ha tolto una spunta (a una permission o a una
+   Pagina) — e **Facebook non lo richiede piu'** ai login successivi, a meno di
+   `auth_type=rerequest`;
+2. il token e' stato ottenuto **prima** che la permission venisse aggiunta all'app:
+   i token sono congelati al momento del rilascio e non si aggiornano da soli;
+3. chi ha collegato non ha il ruolo necessario **su quella Pagina** (serve almeno
+   Inserzionista/ADVERTISE), quindi la vede in `/me/accounts` ma non puo' gestirla.
+
+Adesso il CRM lo dice prima. Al login leggiamo `debug_token` e salviamo in
+`CRM Meta Settings.granted_scopes` **cosa Facebook ha concesso davvero**; la
+schermata Connessione confronta quella lista con quella che serve e, se manca
+qualcosa, mostra in rosso **i nomi esatti** e il pulsante "Chiedi di nuovo a
+Facebook", che riapre il dialogo con `rerequest`.
+
+Una connessione fatta prima che questo esistesse non ha niente di registrato: la
+prima schermata che lo chiede paga una chiamata a `debug_token` e la salva, cosi'
+il caso peggiore (quello in cui stai guardando lo schermo senza capire) e' anche
+quello che si risolve da solo. Se non c'e' nemmeno un token, il CRM **tace**:
+accusare una connessione funzionante di non avere niente sarebbe peggio del
+silenzio.

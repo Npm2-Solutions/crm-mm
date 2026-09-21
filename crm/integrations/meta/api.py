@@ -30,8 +30,11 @@ from crm.integrations.meta.insights import (
 from crm.integrations.meta.leads import backfill_form, get_page_token
 from crm.integrations.meta.oauth import (
 	_check_manager,
+	granted_scopes,
 	hub_url,
 	is_hub,
+	known_scopes,
+	missing_scopes,
 	start_page_sync,
 	sync_forms_recording_failure,
 	sync_running,
@@ -69,6 +72,11 @@ def get_status() -> dict:
 		# them; here only how many there are, so the screen can tell "none yet"
 		# from "still loading"
 		"page_count": frappe.db.count("Facebook Page"),
+		# what the dialog granted, and what it did not: a token can be valid and
+		# still unable to touch a Page, and Meta's error for that names six
+		# permissions without saying which one is missing
+		"granted_scopes": known_scopes(),
+		"missing_scopes": missing_scopes(),
 	}
 
 
@@ -506,9 +514,21 @@ def test_connection() -> dict:
 		frappe.throw(_("Connect Facebook first"))
 	try:
 		me = graph_get("me", token, {"fields": "id,name"})
-		return {"ok": True, "user": me.get("name")}
 	except MetaAPIError as exc:
 		return {"ok": False, "error": str(exc)}
+
+	# re-read the permissions while we are here: they change when somebody
+	# reconnects, and a stale list is worse than none
+	granted = granted_scopes(token)
+	if granted:
+		frappe.db.set_single_value("CRM Meta Settings", "granted_scopes", ",".join(granted))
+		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+	return {
+		"ok": True,
+		"user": me.get("name"),
+		"granted_scopes": granted,
+		"missing_scopes": missing_scopes(),
+	}
 
 
 @frappe.whitelist(methods=["POST"])

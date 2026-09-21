@@ -26,6 +26,7 @@
   "connected_user_id",
   "column_break_conn",
   "user_token_expires_at",
+  "granted_scopes",
   "user_access_token"
  ],
  "fields": [
@@ -147,6 +148,13 @@
    "fieldname": "user_token_expires_at",
    "fieldtype": "Datetime",
    "label": "User Token Expires At",
+   "read_only": 1
+  },
+  {
+   "description": "What Facebook actually granted at the last login, read from debug_token. A permission missing here is a feature that will fail later with a message about 'impersonating a user's page'.",
+   "fieldname": "granted_scopes",
+   "fieldtype": "Small Text",
+   "label": "Granted Permissions",
    "read_only": 1
   },
   {

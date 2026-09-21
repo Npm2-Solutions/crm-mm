@@ -537,3 +537,55 @@ class TestMetaSharedApp(IntegrationTestCase):
 			{"doctype": "Meta Page Route", "page_id": "880888", "site_url": "https://cliente.it/"}
 		).insert(ignore_permissions=True)
 		self.assertEqual(R.route_for("880888"), "https://cliente.it")
+
+
+class TestMetaPermissions(IntegrationTestCase):
+	"""What the login dialog granted, and what it quietly did not."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+		frappe.clear_cache(doctype="CRM Meta Settings")
+
+	def _record(self, granted: str):
+		settings = frappe.get_doc("CRM Meta Settings")
+		settings.granted_scopes = granted
+		settings.save(ignore_permissions=True)
+		frappe.clear_cache(doctype="CRM Meta Settings")
+
+	def test_a_missing_permission_is_named(self):
+		"""Meta's own error names six permissions without saying which one is
+		missing. This says which one."""
+		from crm.integrations.meta.oauth import missing_scopes
+
+		self._record("pages_show_list,leads_retrieval,public_profile")
+		missing = missing_scopes()
+		self.assertIn("pages_manage_metadata", missing)
+		self.assertIn("pages_read_engagement", missing)
+		self.assertNotIn("pages_show_list", missing)
+
+	def test_a_complete_grant_complains_about_nothing(self):
+		from crm.integrations.meta.oauth import SCOPES, missing_scopes
+
+		self._record(",".join(SCOPES))
+		self.assertEqual(missing_scopes(), [])
+
+	def test_silence_is_not_an_accusation(self):
+		"""A connection made before we recorded this, and no token to ask with,
+		must not be reported as missing everything."""
+		from crm.integrations.meta.oauth import missing_scopes
+
+		settings = frappe.get_doc("CRM Meta Settings")
+		settings.granted_scopes = ""
+		settings.user_access_token = ""
+		settings.save(ignore_permissions=True)
+		frappe.clear_cache(doctype="CRM Meta Settings")
+
+		self.assertEqual(missing_scopes(), [])
+
+	def test_the_login_survives_a_failed_diagnosis(self):
+		"""Reading the scopes is a diagnostic. A diagnostic may not cost anybody
+		their connection."""
+		from crm.integrations.meta import oauth as O
+
+		with patch.object(O, "debug_token", side_effect=Exception("nope"), create=True):
+			self.assertEqual(O.granted_scopes("tok"), [])
