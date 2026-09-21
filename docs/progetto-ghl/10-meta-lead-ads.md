@@ -343,3 +343,45 @@ possiede non ti assegna un ruolo (serve almeno Inserzionista). E' un passaggio
 che avviene su Facebook, tra due persone, e nessun codice puo' farlo al posto
 loro: l'unica cosa utile che il software puo' fare e' dirlo chiaramente invece
 di mandarti in cerchio.
+
+## Il timestamp che si e' mangiato 354 lead (21/09/2026)
+
+Sintomo: *"arrivano i lead normali ma non quello di test"*. Nei log del sito,
+354 righe in `Failed Lead Sync Log`, tutte con lo stesso errore:
+
+```
+MySQLdb.OperationalError: (1292, "Incorrect datetime value:
+'2026-09-19T20:28:45+0000' for column ...`tabCRM Lead Facebook Submission`.`submitted_on`")
+```
+
+Il Graph risponde con **ISO 8601 con offset**, e MariaDB lo rifiuta. Noi lo
+infilavamo **cosi' com'era** nel campo Datetime della riga di submission. Non
+perdeva solo il timestamp: **sollevava a meta' del salvataggio del lead**.
+
+Il danno, e perche' sembrava che funzionasse tutto:
+
+- **persona nuova** → il `CRM Lead` veniva inserito (e si vedeva!), poi la riga
+  figlia falliva. Restava un lead a meta': senza submission, e soprattutto senza
+  riga nel registro delle importazioni;
+- **persona gia' esistente** → il `save()` falliva e **non si vedeva niente**. Ed
+  e' esattamente il caso del lead di prova, che e' sempre la stessa persona
+  finta: per questo i lead veri comparivano e quello di test no.
+
+Tre correzioni:
+
+**Il timestamp si converte.** `submitted_at()` legge l'ISO con offset, tiene
+l'**istante** (non l'orologio a muro) e lo porta nel fuso del sito: "13:02"
+significa quello che chi legge la scheda pensa che significhi. Una data
+illeggibile ripiega su adesso — un timestamp storto vale incomparabilmente meno
+del lead che altrimenti costerebbe.
+
+**O tutto o niente.** `store_lead` e `_merge_submission` lavorano dentro un
+savepoint: se qualcosa fallisce, si torna indietro e nel CRM non resta mezza
+persona. Un lead che *sembra* importato ma non risulta importato e' peggio di un
+lead mancante, perche' la riconciliazione oraria continua a riproporlo.
+
+**Il registro dei fallimenti non e' un archivio.** Ogni riga e' una persona che
+ha chiesto di essere ricontattata e non ha raggiunto nessuno. In Settings → Lead
+forms → Sync failures c'e' **"Riprova tutti"**: rimporta in blocco, si puo'
+premere due volte senza danni (un lead gia' importato torna come duplicato) e
+segna le righe come Synced.

@@ -218,12 +218,24 @@
           <div v-else class="mt-2 text-p-sm text-ink-gray-5">
             {{ __('No failures. 🎉') }}
           </div>
-          <Button
-            class="mt-2"
-            variant="ghost"
-            :label="__('Reload')"
-            @click="failures.reload()"
-          />
+          <!--
+            Each row is a person who asked to be contacted and never reached
+            anybody. One by one is fine for three and absurd for three hundred.
+          -->
+          <div class="mt-2 flex gap-2">
+            <Button
+              variant="ghost"
+              :label="__('Reload')"
+              @click="failures.reload()"
+            />
+            <Button
+              v-if="failures.data?.length"
+              variant="subtle"
+              :label="__('Retry all')"
+              :loading="retrying"
+              @click="retryAll"
+            />
+          </div>
         </details>
       </template>
     </div>
@@ -314,6 +326,32 @@ const pages = createResource({
 
 const syncing = computed(() => Boolean(status.data?.syncing))
 const syncingForms = ref('')
+
+const retrying = ref(false)
+function retryAll() {
+  retrying.value = true
+  createResource({
+    url: 'crm.integrations.meta.api.retry_failed_leads',
+    auto: true,
+    onSuccess: (data) => {
+      retrying.value = false
+      toast.success(
+        __('{0} imported, {1} merged, {2} already there, {3} still failing', [
+          data.created || 0,
+          data.merged || 0,
+          data.duplicate || 0,
+          data.failed || 0,
+        ]),
+      )
+      failures.reload()
+      pages.reload()
+    },
+    onError: (e) => {
+      retrying.value = false
+      toast.error(e.messages?.[0] || e.message || __('Unknown error'))
+    },
+  })
+}
 
 function readForms(page) {
   syncingForms.value = page.name

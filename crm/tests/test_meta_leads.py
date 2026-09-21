@@ -631,3 +631,47 @@ class TestMetaPageGrants(IntegrationTestCase):
 		message = no_token_message("880502")
 		self.assertIn("did not include this Page", message)
 		self.assertIn("Business portfolio", message)
+
+
+class TestMetaTimestamps(IntegrationTestCase):
+	"""Meta's timestamps, and the day they took the imports down with them."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_offset_timestamp_is_accepted(self):
+		"""Graph answers "2026-09-21T11:02:23+0000"; MariaDB refuses it outright,
+		and it threw in the middle of saving the lead."""
+		make_form()
+		lead = sample_lead("7772001")
+		lead["created_time"] = "2026-09-21T11:02:23+0000"
+
+		self.assertEqual(store_lead(lead, "990001"), "created")
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7772001"}, "name")
+		row = frappe.get_doc("CRM Lead", person).facebook_submissions[0]
+		self.assertTrue(row.submitted_on)
+		# the instant is kept: 11:02 UTC is 13:02 in Rome, and the record is read
+		# by somebody who lives in one timezone, not in UTC
+		self.assertIn("2026-09-21", str(row.submitted_on))
+
+	def test_an_unreadable_timestamp_does_not_cost_the_lead(self):
+		make_form()
+		lead = sample_lead("7772002")
+		lead["created_time"] = "not a date at all"
+
+		self.assertEqual(store_lead(lead, "990001"), "created")
+		self.assertTrue(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7772002"}))
+
+	def test_a_failed_import_leaves_nothing_behind(self):
+		"""Half a lead is worse than none: the person was in the CRM, the
+		submission and the ledger row were not, and the reconciliation kept
+		bringing it back."""
+		make_form()
+		lead = sample_lead("7772003")
+
+		with patch.object(L, "record_import", side_effect=Exception("boom")):
+			self.assertEqual(store_lead(lead, "990001"), "failed")
+
+		self.assertFalse(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7772003"}))
+		self.assertTrue(frappe.db.exists("Failed Lead Sync Log", {"form": "990001"}))

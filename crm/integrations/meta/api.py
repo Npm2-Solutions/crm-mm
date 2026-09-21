@@ -723,3 +723,45 @@ def send_conversions_now() -> dict:
 	"""Empty the queue without waiting for the hour."""
 	_check_manager()
 	return send_pending()
+
+
+@frappe.whitelist(methods=["POST"])
+def retry_failed_leads(limit: int = 500) -> dict:
+	"""Re-import every submission still sitting in the failure log.
+
+	A failure log is not an archive: each row is a person who asked to be
+	contacted and never reached anybody. Retrying them one by one through the
+	desk is fine for three and absurd for three hundred, which is exactly the
+	number a single bad deploy produces.
+
+	Safe to press twice: a submission already imported comes back as a duplicate
+	and its log is marked Synced either way.
+	"""
+	_check_manager()
+	from crm.integrations.meta.leads import get_page_token, store_lead
+
+	rows = frappe.get_all(
+		"Failed Lead Sync Log",
+		filters={"type": "Failure"},
+		fields=["name", "form", "lead_data"],
+		order_by="creation asc",
+		limit=min(max(frappe.utils.cint(limit) or 500, 1), 2000),
+	)
+	counts = {"created": 0, "merged": 0, "duplicate": 0, "failed": 0}
+	for row in rows:
+		try:
+			lead = frappe.parse_json(row.lead_data)
+		except Exception:
+			counts["failed"] += 1
+			continue
+		form_id = row.form or lead.get("form_id")
+		if not form_id:
+			counts["failed"] += 1
+			continue
+		page = frappe.db.get_value("Facebook Lead Form", form_id, "page")
+		result = store_lead(lead, form_id, get_page_token(page) if page else None)
+		counts[result] = counts.get(result, 0) + 1
+		if result != "failed":
+			frappe.db.set_value("Failed Lead Sync Log", row.name, "type", "Synced")
+		frappe.db.commit()
+	return counts
