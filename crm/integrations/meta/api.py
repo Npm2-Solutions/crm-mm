@@ -770,3 +770,46 @@ def retry_failed_leads(limit: int = 500) -> dict:
 			frappe.db.set_value("Failed Lead Sync Log", row.name, "type", "Synced")
 		frappe.db.commit()
 	return counts
+
+
+@frappe.whitelist(methods=["POST"])
+def verify_webhook_subscriptions() -> dict:
+	"""Ask META whether each Page really has this app installed.
+
+	`webhook_subscribed` in the CRM only means "our POST to `subscribed_apps`
+	answered success", once, at some point. Meta can drop that on its own — a
+	Page can disable the App platform in its own settings, and the docs are
+	explicit that notifications stop then — and nothing tells us. So the flag is
+	checked against the source instead of trusted: `GET /{page}/subscribed_apps`
+	says who is installed right now.
+	"""
+	_check_manager()
+	app_id = get_app_id()
+	report = []
+	for page in frappe.get_all("Facebook Page", filters={"sync_enabled": 1}, fields=["name", "page_name"]):
+		token = get_page_token(page.name)
+		if not token:
+			report.append({"page": page.page_name, "installed": None, "error": _("No page token")})
+			continue
+		try:
+			apps = graph_get(f"{page.name}/subscribed_apps", token).get("data") or []
+		except MetaAPIError as exc:
+			report.append({"page": page.page_name, "installed": None, "error": str(exc)})
+			continue
+		installed = any(str(app.get("id")) == str(app_id) for app in apps)
+		# what Meta says now wins over what we remembered
+		frappe.db.set_value(
+			"Facebook Page", page.name, "webhook_subscribed", 1 if installed else 0, update_modified=False
+		)
+		report.append(
+			{
+				"page": page.page_name,
+				"installed": installed,
+				"fields": next(
+					(app.get("subscribed_fields") for app in apps if str(app.get("id")) == str(app_id)),
+					[],
+				),
+			}
+		)
+	frappe.db.commit()
+	return {"pages": report, "app_id": app_id}

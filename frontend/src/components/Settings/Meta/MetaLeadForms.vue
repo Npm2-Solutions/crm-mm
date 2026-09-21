@@ -228,6 +228,16 @@
               :label="__('Reload')"
               @click="failures.reload()"
             />
+            <!--
+              "Real-time" only ever meant "our subscribe call answered success
+              once". This asks Meta who is installed on each Page right now.
+            -->
+            <Button
+              variant="ghost"
+              :label="__('Check webhook')"
+              :loading="verifying"
+              @click="verifyWebhook"
+            />
             <Button
               v-if="failures.data?.length"
               variant="subtle"
@@ -326,6 +336,42 @@ const pages = createResource({
 
 const syncing = computed(() => Boolean(status.data?.syncing))
 const syncingForms = ref('')
+
+const verifying = ref(false)
+function verifyWebhook() {
+  verifying.value = true
+  createResource({
+    url: 'crm.integrations.meta.api.verify_webhook_subscriptions',
+    auto: true,
+    onSuccess: (data) => {
+      verifying.value = false
+      const pages = data.pages || []
+      const missing = pages.filter((p) => p.installed === false)
+      const failed = pages.filter((p) => p.installed === null)
+      if (!pages.length) {
+        toast.info(__('No page is switched on.'))
+      } else if (missing.length || failed.length) {
+        toast.error(
+          __('{0} of {1} pages do not have this app installed on Meta', [
+            missing.length + failed.length,
+            pages.length,
+          ]),
+        )
+      } else {
+        toast.success(
+          __('Meta confirms the app is installed on all {0} pages', [
+            pages.length,
+          ]),
+        )
+      }
+      pages.reload()
+    },
+    onError: (e) => {
+      verifying.value = false
+      toast.error(e.messages?.[0] || e.message || __('Unknown error'))
+    },
+  })
+}
 
 const retrying = ref(false)
 function retryAll() {
