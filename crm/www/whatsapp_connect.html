@@ -18,7 +18,13 @@
 
 <div class="wa-wrap">
 	<div class="wa-card">
-		{% if error %}
+		{% if returning %}
+			<h1 class="wa-title">{{ _("Finishing the connection") }}</h1>
+			<p class="wa-text">
+				{{ _("Facebook sent you back here. Give us a moment while we finish setting up your number.") }}
+			</p>
+			<div class="wa-status" id="wa-status"></div>
+		{% elif error %}
 			<h1 class="wa-title">{{ _("Cannot connect") }}</h1>
 			<div class="wa-error">{{ error }}</div>
 		{% else %}
@@ -38,7 +44,117 @@
 	</div>
 </div>
 
-{% if not error %}
+{% if returning or not error %}
+<script>
+	// What the tab knows about this onboarding. The pop-up flow keeps it in
+	// these variables; the full-page fallback destroys them, so it also goes to
+	// sessionStorage — same tab, same origin, and it outlives the navigation to
+	// facebook.com and back. The URL cannot carry it: Strict Mode matches the
+	// redirect URI exactly and drops anything the registered one does not spell.
+	var MEMORY = 'wa-connect';
+
+	function remember(patch) {
+		try {
+			var kept = recall();
+			for (var key in patch) kept[key] = patch[key];
+			sessionStorage.setItem(MEMORY, JSON.stringify(kept));
+		} catch (e) { /* a private window must not break the pop-up flow */ }
+	}
+
+	function recall() {
+		try { return JSON.parse(sessionStorage.getItem(MEMORY) || '{}') || {}; } catch (e) { return {}; }
+	}
+
+	function forget() {
+		try { sessionStorage.removeItem(MEMORY); } catch (e) { /* nothing to clean up */ }
+	}
+
+	var statusEl = document.getElementById('wa-status');
+
+	function say(message, isError) {
+		statusEl.textContent = message;
+		statusEl.style.color = isError ? '#b91c1c' : '#525252';
+	}
+
+	// session logging: Meta requires Embedded Signup to be implemented with it,
+	// and it is what makes a stalled onboarding supportable instead of a mystery
+	function logEvent(state, event, data) {
+		if (!state) return;
+		try {
+			navigator.sendBeacon(
+				'/api/method/crm.integrations.whatsapp.signup.log_session_event',
+				new Blob([JSON.stringify({ state: state, event: event, data: data || {} })], {
+					type: 'application/json',
+				})
+			);
+		} catch (e) { /* logging must never block the flow */ }
+	}
+
+	// The one call that turns a code into a connected number. Both legs end
+	// here: the pop-up with the ids Meta posted back, the redirect without them
+	// — the server asks Meta which account was shared when the browser cannot.
+	function finish(payload, returnUrl) {
+		say({{ _("Finishing up…") | tojson }});
+		fetch('/api/method/crm.integrations.whatsapp.signup.complete_signup', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		})
+			.then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+			.then(function (result) {
+				if (!result.ok) throw new Error((result.body && result.body.exc_type) || 'error');
+				forget();
+				say({{ _("Connected. Taking you back to your CRM…") | tojson }});
+				if (returnUrl) window.location.href = returnUrl;
+			})
+			.catch(function () {
+				logEvent(payload.state, 'ERROR', { current_step: 'exchange_failed' });
+				say({{ _("Could not complete the connection. Please retry.") | tojson }}, true);
+				if (typeof onFinishFailed === 'function') onFinishFailed();
+			});
+	}
+</script>
+{% endif %}
+
+{% if returning %}
+<script>
+	// The redirect leg. Nothing usable is in the URL except the code, so the
+	// state and the ids come from the tab's own memory.
+	(function () {
+		var kept = recall();
+		var denied = {{ denied | tojson }};
+		var code = {{ code | tojson }};
+
+		if (denied) {
+			logEvent(kept.state, 'CANCEL', { current_step: 'redirect', status: denied });
+			forget();
+			say({{ _("Connection cancelled or refused on Facebook.") | tojson }}, true);
+			return;
+		}
+		if (!kept.state) {
+			// A different tab, or storage the browser cleared. There is nothing
+			// to recover from here, and pretending otherwise wastes the code.
+			say(
+				{{ _("This browser tab lost track of the connection. Go back to your CRM and press Connect again.") | tojson }},
+				true
+			);
+			return;
+		}
+		finish(
+			{
+				state: kept.state,
+				code: code,
+				waba_id: kept.waba_id || '',
+				phone_number_id: kept.phone_number_id || '',
+				redirected: 1,
+			},
+			kept.return_url || ''
+		);
+	})();
+</script>
+{% endif %}
+
+{% if not returning and not error %}
 <script>
 	// Whether Facebook's script ever arrived. Without this the click handler
 	// called FB.login on an undefined FB: the button greyed out, the status said
@@ -63,27 +179,10 @@
 
 	const state = {{ state | tojson }};
 	const returnUrl = {{ return_url | tojson }};
-	const statusEl = document.getElementById('wa-status');
 	const button = document.getElementById('wa-connect');
 	let signupData = null;
 
-	function say(message, isError) {
-		statusEl.textContent = message;
-		statusEl.style.color = isError ? '#b91c1c' : '#525252';
-	}
-
-	// session logging: Meta requires Embedded Signup to be implemented with it,
-	// and it is what makes a stalled onboarding supportable instead of a mystery
-	function logEvent(event, data) {
-		try {
-			navigator.sendBeacon(
-				'/api/method/crm.integrations.whatsapp.signup.log_session_event',
-				new Blob([JSON.stringify({ state: state, event: event, data: data || {} })], {
-					type: 'application/json',
-				})
-			);
-		} catch (e) { /* logging must never block the flow */ }
-	}
+	function onFinishFailed() { button.disabled = false; }
 
 	// Embedded Signup reports every step through a window message
 	window.addEventListener('message', function (event) {
@@ -92,9 +191,13 @@
 		try { data = JSON.parse(event.data); } catch (e) { return; }
 		if (data.type !== 'WA_EMBEDDED_SIGNUP') return;
 		const detail = data.data || {};
-		logEvent(data.event || 'STEP', detail);
-		if (data.event === 'FINISH' || data.event === 'FINISH_ONLY_WABA') {
+		logEvent(state, data.event || 'STEP', detail);
+		if (String(data.event || '').indexOf('FINISH') === 0) {
 			signupData = detail;
+			// The ids are worth keeping even in the pop-up flow: if the window
+			// is closed between the message and the callback, the redirect leg
+			// still has them.
+			remember({ waba_id: detail.waba_id || '', phone_number_id: detail.phone_number_id || '' });
 		} else if (data.event === 'CANCEL') {
 			say({{ _("Connection cancelled.") | tojson }}, true);
 			button.disabled = false;
@@ -106,7 +209,7 @@
 			{{ _("Facebook's script could not be loaded, so the setup cannot open. An ad or privacy blocker is the usual cause: turn it off for this page, or open this link in a private window without extensions.") | tojson }},
 			true
 		);
-		logEvent('ERROR', { current_step: 'sdk_unavailable' });
+		logEvent(state, 'ERROR', { current_step: 'sdk_unavailable' });
 	}
 
 	button.addEventListener('click', function () {
@@ -135,7 +238,11 @@
 
 		button.disabled = true;
 		say({{ _("Opening WhatsApp setup…") | tojson }});
-		logEvent('STARTED', { current_step: 'launch' });
+		logEvent(state, 'STARTED', { current_step: 'launch' });
+		// Hand the tab everything the redirect leg would need before leaving it:
+		// once the SDK decides to navigate instead of opening a window, this
+		// page is gone and there is no second chance to write it down.
+		remember({ state: state, return_url: returnUrl });
 		try {
 		FB.login(function (response) {
 			const code = response.authResponse && response.authResponse.code;
@@ -143,7 +250,7 @@
 				// `status` is what separates "the person closed the window" from
 				// "this app cannot log in from a browser at all", which is the
 				// JavaScript SDK switch on the app being off
-				logEvent('CANCEL', { current_step: 'login', status: response.status || '' });
+				logEvent(state, 'CANCEL', { current_step: 'login', status: response.status || '' });
 				say(
 					{{ _("Connection cancelled or refused. If you did not close the window, check on the Meta app that Login with the JavaScript SDK is on and that this domain is in Allowed domains.") | tojson }},
 					true
@@ -151,45 +258,30 @@
 				button.disabled = false;
 				return;
 			}
-			if (!signupData || !signupData.waba_id || !signupData.phone_number_id) {
-				logEvent('ERROR', { current_step: 'no_assets_returned' });
-				say({{ _("WhatsApp did not return an account. Please retry.") | tojson }}, true);
-				button.disabled = false;
-				return;
-			}
-			say({{ _("Finishing up…") | tojson }});
-			// the code expires in 30 seconds: redeem it server-side right away
-			fetch('/api/method/crm.integrations.whatsapp.signup.complete_signup', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
+			finish(
+				{
 					state: state,
 					code: code,
-					waba_id: signupData.waba_id,
-					phone_number_id: signupData.phone_number_id,
-				}),
-			})
-				.then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
-				.then(function (result) {
-					if (!result.ok) throw new Error((result.body && result.body.exc_type) || 'error');
-					say({{ _("Connected. Taking you back to your CRM…") | tojson }});
-					window.location.href = returnUrl;
-				})
-				.catch(function () {
-					logEvent('ERROR', { current_step: 'exchange_failed' });
-					say({{ _("Could not complete the connection. Please retry.") | tojson }}, true);
-					button.disabled = false;
-				});
+					waba_id: (signupData && signupData.waba_id) || '',
+					phone_number_id: (signupData && signupData.phone_number_id) || '',
+				},
+				returnUrl
+			);
 		}, {
 			config_id: {{ config_id | tojson }},
 			response_type: 'code',
 			override_default_response_type: true,
+			// Where Facebook may send the person when the pop-up is suppressed.
+			// Without it the SDK redirects to whatever URL invoked the login,
+			// which carries a `state` query the app's registered redirect URI
+			// does not — and Strict Mode answers that with "URL blocked".
+			fallback_redirect_uri: {{ connect_url | tojson }},
 			extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding' },
 		});
 		} catch (e) {
 			// FB.login threw: a blocked popup, a stale SDK, a bad configuration.
 			// Whatever it is, the page says it instead of stopping silently.
-			logEvent('ERROR', { current_step: 'login_threw', message: String(e && e.message || e) });
+			logEvent(state, 'ERROR', { current_step: 'login_threw', message: String(e && e.message || e) });
 			say(
 				{{ _("The setup window could not be opened. Allow pop-ups for this page and try again.") | tojson }},
 				true
@@ -201,7 +293,7 @@
 	// whatever else breaks on this page, the hub's log gets it: a stalled
 	// onboarding is otherwise a mystery told only by "nothing happened"
 	window.addEventListener('error', function (event) {
-		logEvent('ERROR', { current_step: 'page_error', message: String(event.message || '') });
+		logEvent(state, 'ERROR', { current_step: 'page_error', message: String(event.message || '') });
 	});
 </script>
 {% endif %}

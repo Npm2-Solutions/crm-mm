@@ -72,6 +72,16 @@ def get_whatsapp_app_secret() -> str:
 	)
 
 
+def whatsapp_app_token() -> str:
+	"""App access token of the WhatsApp app: `id|secret`.
+
+	Some calls belong to the app itself and not to any customer — reading the
+	webhook subscription, asking Meta what a token was granted. They need this,
+	and it is the one token we can always build without anybody's consent.
+	"""
+	return f"{get_whatsapp_app_id()}|{get_whatsapp_app_secret()}"
+
+
 def whatsapp_app_in_use() -> dict:
 	"""Which app the CRM signs WhatsApp calls with, and whether that was a choice.
 
