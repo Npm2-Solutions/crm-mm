@@ -44,19 +44,41 @@ def _verify_subscription(args):
 	return Response("verification failed", status=403, mimetype="text/plain")
 
 
+def remember_delivery(outcome: str) -> None:
+	"""Meta called us. Worth writing down even when we refuse the call.
+
+	A rejected delivery left no trace at all: no log, no page stamp, nothing —
+	so "Meta never calls us" and "we threw it away" looked identical from the
+	outside, and there was no way to tell which without guessing. Now the
+	connection screen can say it.
+	"""
+	try:
+		frappe.db.set_single_value(
+			"CRM Meta Settings",
+			{"last_webhook_seen": frappe.utils.now(), "last_webhook_outcome": outcome[:140]},
+		)
+		frappe.db.commit()
+	except Exception:
+		# a diagnostic may never cost a delivery
+		pass
+
+
 def _receive(request):
 	raw_body = request.get_data() or b""
+	remember_delivery("received")
 	# either Meta itself, or our own hub forwarding a notification for a page
 	# this site owns (one shared app has a single callback URL for every client)
 	if not (
 		_valid_signature(request.headers.get("X-Hub-Signature-256"), raw_body)
 		or valid_relay_signature(request.headers.get("X-CRM-Relay-Signature"), raw_body)
 	):
+		remember_delivery("refused: signature did not match the app secret")
 		return Response("invalid signature", status=403, mimetype="text/plain")
 
 	try:
 		payload = json.loads(raw_body)
 	except ValueError:
+		remember_delivery("refused: the body was not JSON")
 		return Response("bad payload", status=400, mimetype="text/plain")
 
 	if payload.get("object") == "page":
@@ -85,6 +107,7 @@ def _receive(request):
 					form_id=value.get("form_id"),
 					created_time=value.get("created_time"),
 				)
+	remember_delivery("accepted")
 	frappe.db.commit()
 	return Response("ok", mimetype="text/plain")
 

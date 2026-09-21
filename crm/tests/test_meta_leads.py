@@ -799,3 +799,78 @@ class TestMetaUnusableAnswers(IntegrationTestCase):
 		self.assertEqual(normalize_value("mobile_no", "Test"), "")
 		self.assertEqual(normalize_value("email", "mario@example.com"), "mario@example.com")
 		self.assertEqual(normalize_value("email", "Test"), "")
+
+
+class TestMetaWebhookVisibility(IntegrationTestCase):
+	"""Whether Meta ever called, and what we did with the call."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+		frappe.clear_cache(doctype="CRM Meta Settings")
+
+	def test_a_refused_delivery_is_still_written_down(self):
+		"""A rejected delivery left no trace at all, so "Meta never calls us"
+		and "we threw it away" looked identical from the outside."""
+		from crm.integrations.meta.webhook import remember_delivery
+
+		remember_delivery("refused: signature did not match the app secret")
+
+		settings = frappe.get_doc("CRM Meta Settings")
+		self.assertTrue(settings.last_webhook_seen)
+		self.assertIn("signature", settings.last_webhook_outcome)
+
+	def test_the_page_is_stamped_before_we_decide_anything(self):
+		"""A page with sync off used to look exactly like a page Meta never
+		calls about — the difference between "Facebook is not sending" and
+		"we are not listening"."""
+		make_form(form_id="990700", page_id="880700")
+		frappe.db.set_value("Facebook Page", "880700", {"sync_enabled": 0, "last_webhook_at": None})
+
+		ingest_leadgen_entry(leadgen_id="7775001", page_id="880700", form_id="990700")
+
+		self.assertTrue(frappe.db.get_value("Facebook Page", "880700", "last_webhook_at"))
+
+
+class TestMetaCatchUp(IntegrationTestCase):
+	"""The short pass that exists only while the webhook is silent."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+		frappe.clear_cache(doctype="CRM Meta Settings")
+
+	def _last_call(self, when):
+		frappe.db.set_single_value("CRM Meta Settings", "last_webhook_seen", when)
+		frappe.clear_cache(doctype="CRM Meta Settings")
+
+	def test_it_polls_while_meta_stays_silent(self):
+		"""An app in Development mode never receives a leadgen notification, so
+		polling is the only way a lead reaches anybody."""
+		from crm.integrations.meta import leads as L
+
+		make_form(form_id="990800", page_id="880800")
+		frappe.db.set_value("Facebook Page", "880800", "sync_enabled", 1)
+		self._last_call(None)
+
+		with patch.object(L, "reconcile_synced_pages") as reconcile:
+			L.catch_up_recent_leads()
+		reconcile.assert_called_once()
+
+	def test_it_stands_down_once_the_webhook_works(self):
+		"""Polling on top of a working webhook is calls spent on nothing."""
+		from crm.integrations.meta import leads as L
+
+		make_form(form_id="990801", page_id="880801")
+		frappe.db.set_value("Facebook Page", "880801", "sync_enabled", 1)
+		self._last_call(frappe.utils.now())
+
+		with patch.object(L, "reconcile_synced_pages") as reconcile:
+			L.catch_up_recent_leads()
+		reconcile.assert_not_called()
+
+	def test_nothing_switched_on_costs_nothing(self):
+		from crm.integrations.meta import leads as L
+
+		frappe.db.sql("update `tabFacebook Page` set sync_enabled = 0")
+		with patch.object(L, "reconcile_synced_pages") as reconcile:
+			L.catch_up_recent_leads()
+		reconcile.assert_not_called()

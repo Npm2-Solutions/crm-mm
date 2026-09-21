@@ -322,6 +322,10 @@ scheduler_events = {
 	],
 	"cron": {
 		"* * * * *": ["crm.automation.engine.process_due_enrollments"],
+		# while the webhook is silent (an app in Development mode never gets one)
+		# this is the only way a lead reaches anybody, and an hour of waiting is
+		# most of a lead's value. It stands down on its own once Meta calls.
+		"*/10 * * * *": ["crm.integrations.meta.leads.catch_up_recent_leads"],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 	},
 }

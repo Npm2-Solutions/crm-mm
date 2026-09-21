@@ -114,6 +114,36 @@
           <span v-if="metaError" class="text-p-sm text-ink-red-5">{{
             metaError
           }}</span>
+          <!--
+            Whether Meta has ever called the webhook, and what happened to the
+            call. Without it, "Facebook is not sending" and "we refused it" look
+            identical from here — and leads arriving late through the hourly
+            reconciliation look exactly like leads arriving in real time.
+          -->
+          <span
+            v-if="status.data?.connected"
+            class="text-p-sm"
+            :class="
+              status.data.last_webhook_seen
+                ? 'text-ink-gray-5'
+                : 'text-ink-amber-6'
+            "
+          >
+            <template v-if="status.data.last_webhook_seen">
+              {{ __('Last call from Meta') }}:
+              {{ status.data.last_webhook_seen }}
+              <template v-if="status.data.last_webhook_outcome">
+                — {{ status.data.last_webhook_outcome }}
+              </template>
+            </template>
+            <template v-else>
+              {{
+                __(
+                  'Meta has never called this webhook. Leads still arrive, but only through the hourly check — not in real time.',
+                )
+              }}
+            </template>
+          </span>
         </div>
         <div class="flex gap-2">
           <Button

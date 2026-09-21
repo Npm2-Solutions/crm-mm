@@ -21,6 +21,10 @@
   "column_break_capi",
   "conversions_test_code",
   "conversions_last_error",
+  "webhook_seen_section",
+  "last_webhook_seen",
+  "column_break_seen",
+  "last_webhook_outcome",
   "connection_section",
   "connected_user_name",
   "connected_user_id",
@@ -121,6 +125,29 @@
    "fieldname": "conversions_last_error",
    "fieldtype": "Small Text",
    "label": "Last Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "webhook_seen_section",
+   "fieldtype": "Section Break",
+   "label": "Last Delivery From Meta"
+  },
+  {
+   "description": "When Meta last POSTed to the webhook \u2014 whether or not the CRM accepted it. Empty means Meta has never called.",
+   "fieldname": "last_webhook_seen",
+   "fieldtype": "Datetime",
+   "label": "Last Call From Meta",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_seen",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_webhook_outcome",
+   "fieldtype": "Data",
+   "label": "What Happened To It",
+   "length": 140,
    "read_only": 1
   },
   {

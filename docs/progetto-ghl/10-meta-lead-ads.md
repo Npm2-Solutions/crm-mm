@@ -471,3 +471,98 @@ vuoti, e il lead entra con il nome e tutto il resto.
 La risposta non si perde comunque: se era mappata ma inutilizzabile finisce nella
 nota delle risposte non mappate, cioe' resta scritta sulla scheda della persona
 esattamente come l'ha data.
+
+## Il webhook non ha mai chiamato, e non si poteva sapere (21/09/2026)
+
+Dai dati del sito: **`last_webhook_at` vuoto su tutte le venti Pagine**, comprese
+quelle con `sync_enabled = 1` e `webhook_subscribed = 1`. Eppure i lead entrano.
+
+Vuol dire che entrano **dalla riconciliazione oraria**, non dal webhook. Il
+tempo reale non ha mai funzionato su questo sito, e nessuna schermata lo diceva:
+un lead che arriva con quaranta minuti di ritardo somiglia moltissimo a un lead
+che arriva subito, se non stai col cronometro.
+
+Due punti ciechi, adesso chiusi.
+
+**Una consegna rifiutata non lasciava traccia.** Se la firma non torna — il
+segreto dell'app sbagliato, per esempio — il gestore risponde 403 e **non scrive
+niente**: nessun log, nessun timbro sulla Pagina. Da fuori "Meta non ci chiama"
+e "noi l'abbiamo buttata" sono identiche. Adesso ogni consegna viene registrata
+su `CRM Meta Settings` con il suo esito (`accepted`, `refused: signature did not
+match the app secret`, `refused: the body was not JSON`), e la schermata
+Connessione lo mostra — oppure dice a chiare lettere che Meta **non ha mai
+chiamato**, e che i lead stanno arrivando solo dal controllo orario.
+
+**Il timbro sulla Pagina arrivava troppo tardi.** Era messo dopo i controlli su
+`sync_enabled` e sul token, quindi una Pagina spenta sembrava una Pagina di cui
+Meta non parla mai. Adesso si timbra appena la notifica nomina quella Pagina,
+prima di decidere cosa farne: e' la differenza tra *"Facebook non manda"* e
+*"noi non ascoltiamo"*.
+
+## Perche' i lead arrivano dopo 40 minuti (21/09/2026)
+
+La risposta, dalla documentazione di Meta sui Webhooks, sezione **Development
+Mode**:
+
+> Apps in development mode can only receive **test notifications initiated
+> through the app dashboard** or **notifications initiated by people who have a
+> role on the app**.
+
+L'app e' in `dev_mode`. Chi compila i moduli dei clienti non ha un ruolo
+sull'app — e' gente qualunque che ha visto un'inserzione — quindi **Meta non
+manda la notifica**. Non e' rotto niente: e' quello che la piattaforma fa.
+
+Percio' `last_webhook_at` e' vuoto su tutte e venti le Pagine mentre i lead
+entrano lo stesso: entrano dalla **riconciliazione**, che rilegge i moduli e
+prende quello che manca. Il tempo reale arrivera' quando l'app passera' **Live**,
+dopo l'App Review. Nessuna riga di codice puo' anticiparlo.
+
+Nel frattempo pero' un'ora di attesa e' quasi tutto il valore di un lead: chi
+richiama in cinque minuti parla con la persona, chi richiama dopo un'ora trova
+qualcuno che ha gia' chiamato tre concorrenti. Quindi c'e' un secondo passaggio,
+**ogni dieci minuti**, che guarda solo le ultime ventiquattro ore.
+
+Si spegne da solo: se Meta ha chiamato il webhook nelle ultime 24 ore, il
+passaggio breve non fa niente — pollare sopra un webhook che funziona sono
+chiamate spese per nulla. Torna da solo se il webhook tace di nuovo.
+
+## Cosa sappiamo davvero del webhook, e cosa no (21/09/2026)
+
+Precisazione a quanto scritto sopra: la regola della Development mode spiega
+perche' non arrivano i webhook dei lead **dei clienti** — chi compila i moduli e'
+gente qualunque, senza ruolo sull'app. **Non** spiega il lead di test fatto da
+chi l'app la amministra. Quel pezzo restava scoperto.
+
+Cosa dicono i dati del sito, tutti insieme:
+
+| Segnale | Valore |
+|---|---|
+| `last_webhook_at` su tutte le Pagine | vuoto |
+| `Meta Page Route.last_forwarded_at` | vuoto su tutte e 9 le righe |
+| Error Log, `Meta relay: forward ...` | **nessuna riga** |
+
+Nessun inoltro tentato, nessun inoltro fallito, nessuna notifica processata.
+Quindi il problema non e' dentro la nostra pipeline: **o Meta non chiama, o
+chiama e noi rispondiamo 403 alla firma** — e quel 403 finora non lasciava
+traccia (e' il buco chiuso dalla PR successiva).
+
+C'e' pero' anche una **terza** possibilita', che nessuno controllava: la
+documentazione dice che le notifiche partono *"only if your Page has installed
+your Webhooks configured-app, **and if the Page has not disabled the App platform
+in its App Settings**"*. Il nostro `webhook_subscribed` significa soltanto "la
+nostra chiamata di iscrizione ha risposto success, una volta". Meta puo' averla
+persa per strada, o la Pagina puo' aver spento la piattaforma App: nessuno ce lo
+dice.
+
+Quindi **"Verifica webhook"**: chiede a Meta, adesso, chi risulta installato su
+ogni Pagina accesa (`GET /{page}/subscribed_apps`), e riallinea il flag a quello
+che risponde. Da "ce lo ricordiamo noi" a "lo dice Meta".
+
+## Una nota sulla tabella delle rotte
+
+`Meta Page Route` conteneva nove righe con **due nomi per lo stesso sito** — sette
+su `hub.npm2solutions.com`, due su `crm-mm.frappe.cloud`. Non ha causato il
+problema (nessun inoltro e' mai partito), ma e' una trappola pronta a scattare:
+`route_for()` confronta il nome salvato con `get_url()`, e due nomi dello stesso
+sito si presentano come due siti diversi. Il sito che chiama se stesso e' gia'
+costato i timeout sulle rivendicazioni delle pagine.
