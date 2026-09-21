@@ -385,3 +385,32 @@ ha chiesto di essere ricontattata e non ha raggiunto nessuno. In Settings → Le
 forms → Sync failures c'e' **"Riprova tutti"**: rimporta in blocco, si puo'
 premere due volte senza danni (un lead gia' importato torna come duplicato) e
 segna le righe come Synced.
+
+## Il segnaposto di Meta che spariva (21/09/2026)
+
+Dopo aver sistemato il timestamp, "Riprova tutti" ha recuperato la maggior parte
+dei lead veri e ne sono rimasti 114, tutti con lo stesso errore nuovo:
+
+```
+frappe.exceptions.MandatoryError: [CRM Lead, CRM-LEAD-2026-01086]: first_name
+```
+
+Guardando il loro `lead_data`, sono i **lead di prova**: lo strumento di test di
+Meta riempie ogni risposta con
+
+```
+<test lead: dummy data for nome>
+```
+
+Frappe ci vede **un tag HTML**, il sanitizzatore lo rimuove, e il valore arriva
+**vuoto**. Quindi il lead moriva su un campo obbligatorio — e l'errore dava la
+colpa a un nome mancante che Meta aveva invece mandato.
+
+E' il dettaglio piu' fastidioso di tutta la vicenda: **l'unico flusso che ogni
+revisore di App Review usa era l'unico flusso che non poteva funzionare.**
+
+`clean_answer()` adesso sostituisce quel segnaposto con `Test` prima di qualsiasi
+altra cosa, e toglie le parentesi angolari da qualunque risposta ne contenga —
+perche' qualsiasi altra cosa avvolta in `< >` sarebbe sparita nello stesso
+silenzio. Vale sia per i campi mappati sia per le risposte non mappate, che
+finiscono in una nota.

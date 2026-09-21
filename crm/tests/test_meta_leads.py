@@ -675,3 +675,37 @@ class TestMetaTimestamps(IntegrationTestCase):
 
 		self.assertFalse(frappe.db.exists("CRM Lead", {"facebook_lead_id": "7772003"}))
 		self.assertTrue(frappe.db.exists("Failed Lead Sync Log", {"form": "990001"}))
+
+
+class TestMetaTestLeads(IntegrationTestCase):
+	"""Meta's own testing tool, which every App Review reviewer uses."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_dummy_answers_survive_the_sanitiser(self):
+		"""The testing tool answers "<test lead: dummy data for nome>". Frappe
+		sees a tag and removes it, so the name arrived empty and the lead died
+		on a mandatory field — blaming Meta for a name Meta had sent."""
+		make_form()
+		lead = sample_lead("7773001")
+		lead["field_data"] = [
+			{"name": "full_name", "values": ["<test lead: dummy data for full_name>"]},
+			{"name": "email", "values": ["<test lead: dummy data for email>"]},
+			{"name": "phone_number", "values": ["<test lead: dummy data for phone_number>"]},
+		]
+
+		self.assertEqual(store_lead(lead, "990001"), "created")
+
+		person = frappe.db.get_value("CRM Lead", {"facebook_lead_id": "7773001"}, "name")
+		self.assertTrue(frappe.db.get_value("CRM Lead", person, "first_name"))
+
+	def test_angle_brackets_never_eat_an_answer(self):
+		"""Anything else arriving wrapped in brackets would vanish just as
+		quietly: keep the text, lose the brackets."""
+		self.assertEqual(normalize_value("first_name", "<Mario>"), "Mario")
+		self.assertEqual(normalize_value("first_name", "Mario"), "Mario")
+
+	def test_a_real_answer_is_left_alone(self):
+		self.assertEqual(normalize_value("first_name", "  Mario  "), "Mario")
+		self.assertEqual(normalize_value("mobile_no", "p:+39 333 1234567"), "+393331234567")
