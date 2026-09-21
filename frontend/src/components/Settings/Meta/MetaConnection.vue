@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8">
+  <div
+    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
+  >
     <div class="flex flex-col gap-1 px-2">
       <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
         {{ __('Meta connection') }}
@@ -18,11 +20,18 @@
         v-if="managed"
         class="flex items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
       >
-        <FeatherIcon name="shield-check" class="size-4 shrink-0 text-ink-gray-5" />
+        <FeatherIcon
+          name="shield-check"
+          class="size-4 shrink-0 text-ink-gray-5"
+        />
         {{
           isHub
-            ? __('The Meta app is provided centrally; this site owns its webhook.')
-            : __('The Meta app and its webhook are managed for you — just connect your account.')
+            ? __(
+                'The Meta app is provided centrally; this site owns its webhook.',
+              )
+            : __(
+                'The Meta app and its webhook are managed for you — just connect your account.',
+              )
         }}
       </div>
 
@@ -33,12 +42,20 @@
           {{ __('Meta App (developers.facebook.com)') }}
         </div>
         <div class="grid grid-cols-2 gap-3">
-          <FormControl v-model="appForm.app_id" type="text" :label="__('App ID')" />
+          <FormControl
+            v-model="appForm.app_id"
+            type="text"
+            :label="__('App ID')"
+          />
           <FormControl
             v-model="appForm.app_secret"
             type="password"
             :label="__('App Secret')"
-            :placeholder="status.data?.has_app_secret ? __('•••••• (saved — type to replace)') : ''"
+            :placeholder="
+              status.data?.has_app_secret
+                ? __('•••••• (saved — type to replace)')
+                : ''
+            "
           />
         </div>
         <div class="mt-3 flex items-center gap-2">
@@ -58,7 +75,11 @@
             {{ __('Real-time leads are off') }}
           </span>
           <span class="text-p-sm text-ink-gray-6">
-            {{ __('Meta is not notifying this site yet, so leads arrive with the hourly check instead of instantly.') }}
+            {{
+              __(
+                'Meta is not notifying this site yet, so leads arrive with the hourly check instead of instantly.',
+              )
+            }}
           </span>
           <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
             {{ webhook.data.error }}
@@ -72,7 +93,9 @@
       </div>
 
       <!-- the account -->
-      <div class="flex items-center justify-between rounded-lg border border-outline-gray-2 p-4">
+      <div
+        class="flex items-center justify-between rounded-lg border border-outline-gray-2 p-4"
+      >
         <div class="flex flex-col">
           <span class="text-p-base-medium text-ink-gray-7">
             {{
@@ -85,9 +108,12 @@
             v-if="status.data?.connected && status.data.user_token_expires_at"
             class="text-p-sm text-ink-gray-5"
           >
-            {{ __('Token valid until') }}: {{ status.data.user_token_expires_at }}
+            {{ __('Token valid until') }}:
+            {{ status.data.user_token_expires_at }}
           </span>
-          <span v-if="metaError" class="text-p-sm text-ink-red-5">{{ metaError }}</span>
+          <span v-if="metaError" class="text-p-sm text-ink-red-5">{{
+            metaError
+          }}</span>
         </div>
         <div class="flex gap-2">
           <Button
@@ -98,7 +124,11 @@
           />
           <Button
             :variant="status.data?.connected ? 'outline' : 'solid'"
-            :label="status.data?.connected ? __('Reconnect') : __('Connect with Facebook')"
+            :label="
+              status.data?.connected
+                ? __('Reconnect')
+                : __('Connect with Facebook')
+            "
             @click="connect()"
           />
           <Button
@@ -106,6 +136,43 @@
             variant="ghost"
             :label="__('Disconnect')"
             @click="confirmingDisconnect = true"
+          />
+        </div>
+      </div>
+
+      <!--
+        A permission the dialog did not grant. The token stays valid, so nothing
+        looks broken until a Page refuses with Meta's own message, which names
+        six permissions without saying which one is missing. Facebook never asks
+        again on a normal login, so the way out is the rerequest dialog.
+      -->
+      <div
+        v-if="missingScopes.length"
+        class="flex flex-col gap-2 rounded-lg border border-outline-red-1 bg-surface-red-1 p-4"
+      >
+        <div class="text-p-base-medium text-ink-red-5">
+          {{
+            __('Facebook did not grant {0} permissions this CRM needs', [
+              missingScopes.length,
+            ])
+          }}
+        </div>
+        <div class="font-mono text-p-sm text-ink-gray-7">
+          {{ missingScopes.join(' · ') }}
+        </div>
+        <div class="text-p-sm text-ink-gray-6">
+          {{
+            __(
+              'Pages will refuse to subscribe and leads will not arrive. Facebook does not ask again by itself: press the button, and tick every box and every Page in the dialog.',
+            )
+          }}
+        </div>
+        <div>
+          <Button
+            variant="solid"
+            theme="red"
+            :label="__('Ask Facebook again')"
+            @click="connect(true)"
           />
         </div>
       </div>
@@ -118,9 +185,15 @@
       >
         <div class="flex items-center justify-between gap-3">
           <div class="flex flex-col">
-            <span class="text-p-base-medium text-ink-gray-7">{{ __('Your Pages') }}</span>
+            <span class="text-p-base-medium text-ink-gray-7">{{
+              __('Your Pages')
+            }}</span>
             <span class="text-p-sm text-ink-gray-5">
-              {{ __('Give Facebook access once, then decide here what the CRM uses.') }}
+              {{
+                __(
+                  'Give Facebook access once, then decide here what the CRM uses.',
+                )
+              }}
             </span>
           </div>
           <Button
@@ -130,9 +203,16 @@
           />
         </div>
 
-        <div v-if="syncing" class="flex items-center gap-2 text-p-sm text-ink-gray-6">
+        <div
+          v-if="syncing"
+          class="flex items-center gap-2 text-p-sm text-ink-gray-6"
+        >
           <LoadingIndicator class="size-4" />
-          {{ __('Reading your Pages from Facebook — this can take a minute on an account with many.') }}
+          {{
+            __(
+              'Reading your Pages from Facebook — this can take a minute on an account with many.',
+            )
+          }}
         </div>
 
         <template v-else-if="pageCount">
@@ -163,7 +243,10 @@
                 <span class="truncate text-p-sm text-ink-gray-8">
                   {{ page.page_name || page.name }}
                 </span>
-                <span v-if="page.instagram_username" class="text-p-xs text-ink-gray-5">
+                <span
+                  v-if="page.instagram_username"
+                  class="text-p-xs text-ink-gray-5"
+                >
                   {{ __('Instagram') }}: @{{ page.instagram_username }}
                 </span>
               </div>
@@ -263,7 +346,9 @@ import {
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
 
-const metaError = ref(new URLSearchParams(window.location.search).get('meta_error') || '')
+const metaError = ref(
+  new URLSearchParams(window.location.search).get('meta_error') || '',
+)
 const appForm = ref({ app_id: '', app_secret: '' })
 
 const status = createResource({
@@ -308,8 +393,11 @@ const pages = computed(() => pageList.data?.pages || [])
 const total = computed(() => pageList.data?.total || 0)
 const hidden = computed(() => pageList.data?.hidden || 0)
 const pageCount = computed(() => status.data?.page_count || 0)
+const missingScopes = computed(() => status.data?.missing_scopes || [])
 // searching a handful of Pages is worse than reading them
-const showSearch = computed(() => total.value > PAGE_SIZE || Boolean(search.value))
+const showSearch = computed(
+  () => total.value > PAGE_SIZE || Boolean(search.value),
+)
 
 function loadMore() {
   limit.value += PAGE_SIZE
@@ -371,12 +459,17 @@ function go(page) {
 function saveApp() {
   createResource({
     url: 'crm.integrations.meta.api.save_app_settings',
-    params: { app_id: appForm.value.app_id, app_secret: appForm.value.app_secret },
+    params: {
+      app_id: appForm.value.app_id,
+      app_secret: appForm.value.app_secret,
+    },
     auto: true,
     onSuccess: (data) => {
       appForm.value.app_secret = ''
       if (data?.webhook?.configured) {
-        toast.success(__('Saved — webhook configured on the Meta app automatically'))
+        toast.success(
+          __('Saved — webhook configured on the Meta app automatically'),
+        )
         webhook.data = data.webhook
       } else {
         toast.success(__('Saved'))
