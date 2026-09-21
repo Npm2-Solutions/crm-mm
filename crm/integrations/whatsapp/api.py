@@ -25,6 +25,7 @@ from crm.integrations.meta.client import (
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
 	whatsapp_app_in_use,
+	whatsapp_app_token,
 	whatsapp_graph_get,
 	whatsapp_graph_post,
 )
@@ -174,33 +175,62 @@ WEBHOOK_FIELDS = (
 )
 
 
+def subscribed_field_names(row: dict) -> list[str]:
+	"""The field names in one `/{app}/subscriptions` row.
+
+	Graph answers with objects (`{"name": "messages", "version": "v23.0"}`), but
+	not always — some readers hand back plain strings. Both shapes mean the same
+	thing and neither is worth an exception.
+	"""
+	names = []
+	for field in row.get("fields") or []:
+		name = field.get("name") if isinstance(field, dict) else field
+		if name:
+			names.append(str(name))
+	return names
+
+
 @frappe.whitelist()
 def get_webhook() -> dict:
-	"""The webhook this hub expects on the WhatsApp app, and whether it is set."""
+	"""The webhook this hub expects on the WhatsApp app, and whether it is set.
+
+	Not only *whether*: also **with which fields**. A subscription registered
+	before a field was added to `WEBHOOK_FIELDS` keeps the old list for ever —
+	Meta does not backfill it — so the app reads as configured while the CRM
+	never hears about the thing the new field was added for. That is exactly
+	what happened to `account_update`: subscribed in the code, absent on the
+	app, and nothing anywhere said so.
+	"""
 	_check_manager()
 	settings = get_settings()
 	configured = False
+	subscribed: list[str] = []
 	error = ""
 	if is_hub() and get_whatsapp_app_id() and get_whatsapp_app_secret():
 		try:
 			data = whatsapp_graph_get(f"{get_whatsapp_app_id()}/subscriptions", _app_token())
 			for row in data.get("data") or []:
-				if row.get("object") == "whatsapp_business_account":
-					configured = get_url(WEBHOOK_PATH) in str(row)
+				if row.get("object") == "whatsapp_business_account" and get_url(WEBHOOK_PATH) in str(row):
+					configured = True
+					subscribed = subscribed_field_names(row)
 		except MetaAPIError as exc:
 			error = str(exc)
+	missing_fields = [f for f in WEBHOOK_FIELDS.split(",") if f not in subscribed] if configured else []
 	return {
 		"is_hub": is_hub(),
 		"url": get_url(WEBHOOK_PATH),
 		"verify_token": settings.webhook_verify_token or "",
 		"fields": WEBHOOK_FIELDS,
 		"configured": configured,
+		"subscribed_fields": subscribed,
+		"missing_fields": missing_fields,
+		"complete": configured and not missing_fields,
 		"error": error,
 	}
 
 
 def _app_token() -> str:
-	return f"{get_whatsapp_app_id()}|{get_whatsapp_app_secret()}"
+	return whatsapp_app_token()
 
 
 @frappe.whitelist(methods=["POST"])
