@@ -153,10 +153,16 @@ def unregister_page_route(page_id: str, site: str, ts: str, signature: str):
 
 def claim_page(page_id: str) -> None:
 	"""Register this site as the owner of a page on the hub (best effort)."""
-	from crm.integrations.meta.oauth import hub_url
+	from crm.integrations.meta.oauth import hub_url, is_hub
 
 	hub = hub_url()
 	if not hub or not relay_secret():
+		return
+	if is_hub():
+		# the hub is us: calling ourselves over HTTP inside a request means
+		# waiting for a worker that is busy serving that same request, which is
+		# exactly the read timeout the logs were full of
+		claim_locally(page_id)
 		return
 	site = get_url().rstrip("/")
 	ts = str(int(time.time()))
@@ -175,6 +181,30 @@ def claim_page(page_id: str) -> None:
 		frappe.log_error(frappe.get_traceback(), "Meta relay: could not claim page on the hub")
 
 
+def claim_locally(page_id: str) -> None:
+	"""The same bookkeeping `register_page_route` does, without the round trip."""
+	site = get_url().rstrip("/")
+	current = frappe.db.get_value("Meta Page Route", page_id, "site_url")
+	if current and current.rstrip("/") != site:
+		frappe.log_error(
+			f"Page {page_id} is routed to {current}; {site} tried to take it over",
+			"Meta relay: takeover refused",
+		)
+		return
+	if not current:
+		frappe.get_doc({"doctype": "Meta Page Route", "page_id": page_id, "site_url": site}).insert(
+			ignore_permissions=True
+		)
+
+
+def release_locally(page_id: str) -> None:
+	"""The same bookkeeping `unregister_page_route` does, without the round trip."""
+	site = get_url().rstrip("/")
+	current = frappe.db.get_value("Meta Page Route", page_id, "site_url")
+	if current and current.rstrip("/") == site:
+		frappe.delete_doc("Meta Page Route", page_id, ignore_permissions=True, force=True)
+
+
 def release_page(page_id: str) -> None:
 	"""Tell the hub this site no longer owns the page (best effort).
 
@@ -182,10 +212,13 @@ def release_page(page_id: str) -> None:
 	forever: the hub refuses to reassign a claimed page, so a page disconnected
 	on one client site could never be connected on another.
 	"""
-	from crm.integrations.meta.oauth import hub_url
+	from crm.integrations.meta.oauth import hub_url, is_hub
 
 	hub = hub_url()
 	if not hub or not relay_secret():
+		return
+	if is_hub():
+		release_locally(page_id)
 		return
 	site = get_url().rstrip("/")
 	ts = str(int(time.time()))

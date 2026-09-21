@@ -9,6 +9,7 @@ data for 90 days only, so the backfill can never recover older leads.
 """
 
 import datetime
+import re
 
 import frappe
 from frappe import _
@@ -242,7 +243,7 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 		crm_field = mapping.get(key)
 		if not crm_field:
 			# an answer nobody mapped is still the customer talking: keep it
-			unmapped.append((labels.get(key) or key, ", ".join(str(v) for v in raw_values)))
+			unmapped.append((labels.get(key) or key, ", ".join(clean_answer(v) for v in raw_values)))
 			continue
 		values[crm_field] = normalize_value(crm_field, raw_values[0])
 
@@ -552,8 +553,27 @@ def get_question_mapping(form_id: str | None) -> dict:
 	return {row.key: row.mapped_to_crm_field for row in rows if row.mapped_to_crm_field}
 
 
-def normalize_value(crm_field: str, value):
+# Meta's Lead Ads Testing Tool answers every question with
+# "<test lead: dummy data for nome>". Frappe sees a tag, its HTML sanitiser
+# removes it, and the value arrives EMPTY — so the lead died on a mandatory
+# first name. The one flow every App Review reviewer uses was the one flow that
+# could not work, and the error blamed a missing name that Meta had sent.
+TEST_PLACEHOLDER = re.compile(r"<\s*test lead:[^>]*>", re.IGNORECASE)
+
+
+def clean_answer(value) -> str:
+	"""An answer as typed, minus what the sanitiser would silently swallow."""
 	value = str(value).strip()
+	value = TEST_PLACEHOLDER.sub("Test", value)
+	if "<" in value and ">" in value:
+		# whatever else arrives wrapped in angle brackets would be eaten just as
+		# silently: keep the text, lose the brackets
+		value = value.replace("<", "").replace(">", "").strip()
+	return value
+
+
+def normalize_value(crm_field: str, value):
+	value = clean_answer(value)
 	if crm_field in ("mobile_no", "phone"):
 		# Meta sends phones like "+3933312345 67" / "p:+39..." — keep digits and +
 		value = value.removeprefix("p:")

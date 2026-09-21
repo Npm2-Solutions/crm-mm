@@ -385,3 +385,67 @@ ha chiesto di essere ricontattata e non ha raggiunto nessuno. In Settings → Le
 forms → Sync failures c'e' **"Riprova tutti"**: rimporta in blocco, si puo'
 premere due volte senza danni (un lead gia' importato torna come duplicato) e
 segna le righe come Synced.
+
+## Il segnaposto di Meta che spariva (21/09/2026)
+
+Dopo aver sistemato il timestamp, "Riprova tutti" ha recuperato la maggior parte
+dei lead veri e ne sono rimasti 114, tutti con lo stesso errore nuovo:
+
+```
+frappe.exceptions.MandatoryError: [CRM Lead, CRM-LEAD-2026-01086]: first_name
+```
+
+Guardando il loro `lead_data`, sono i **lead di prova**: lo strumento di test di
+Meta riempie ogni risposta con
+
+```
+<test lead: dummy data for nome>
+```
+
+Frappe ci vede **un tag HTML**, il sanitizzatore lo rimuove, e il valore arriva
+**vuoto**. Quindi il lead moriva su un campo obbligatorio — e l'errore dava la
+colpa a un nome mancante che Meta aveva invece mandato.
+
+E' il dettaglio piu' fastidioso di tutta la vicenda: **l'unico flusso che ogni
+revisore di App Review usa era l'unico flusso che non poteva funzionare.**
+
+`clean_answer()` adesso sostituisce quel segnaposto con `Test` prima di qualsiasi
+altra cosa, e toglie le parentesi angolari da qualunque risposta ne contenga —
+perche' qualsiasi altra cosa avvolta in `< >` sarebbe sparita nello stesso
+silenzio. Vale sia per i campi mappati sia per le risposte non mappate, che
+finiscono in una nota.
+
+## Un nome di modulo lungo che spegneva tutto (21/09/2026)
+
+Nei log del sito, quattro volte *"Meta: page sync failed"*, e sotto:
+
+```
+CharacterLengthExceededError: Facebook Lead Form 2811508929182392:
+'Form Name' (Grazie per l'interesse! Per accedere al beneficio, prosegui.
+• Trattamento osteopatico avanzato a soli 59€ ...) will get truncated,
+as max characters allowed is 140
+```
+
+Una colonna `Data` di Frappe rifiuta oltre 140 caratteri, e un modulo lead puo'
+essere intitolato con **un'intera inserzione**. L'eccezione saliva fino a
+`sync_pages_and_forms`, che scorreva le Pagine in un ciclo **senza protezione**:
+
+1. il ciclo si fermava alla prima Pagina che aveva quel modulo;
+2. tutte le Pagine successive non venivano mai salvate, quindi **restavano senza
+   token**;
+3. il CRM diceva *"No token is stored for this Page. Press Reconnect"*;
+4. riconnettere rilanciava la stessa sincronizzazione, che moriva sullo stesso
+   modulo. Per sempre.
+
+Ecco perche' spuntare tutto nel dialogo non cambiava niente: il problema non era
+mai stato il dialogo.
+
+Tre correzioni, tutte della stessa forma — **un dato storto non deve costare
+tutto il resto**:
+
+- `short()` taglia nome del modulo, stato e testo delle domande alla lunghezza
+  che la colonna regge, spezzando su uno spazio quando puo';
+- ogni **modulo** e' avvolto nel suo try/except: un modulo illeggibile non costa
+  alla Pagina tutti gli altri moduli;
+- ogni **Pagina** e' avvolta nel suo: una Pagina che fallisce non costa alle
+  altre il loro token.
