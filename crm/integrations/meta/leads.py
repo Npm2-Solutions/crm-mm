@@ -630,10 +630,14 @@ def _log_failure(lead_data: dict, form_id: str | None, traceback: str):
 # --- hourly reconciliation --------------------------------------------------
 
 
-def reconcile_synced_pages() -> None:
-	"""Hourly safety net: Meta retries failed webhooks for only 36 hours, so we
-	re-poll the last 2 days of every synced page's forms (dedup makes it cheap)."""
-	since = frappe.utils.add_to_date(frappe.utils.now_datetime(), days=-2)
+def reconcile_synced_pages(days: int = 2) -> None:
+	"""Safety net: re-poll the forms of every synced page and store what is new.
+
+	Meta retries a failed webhook for 36 hours only, so the deep pass looks two
+	days back. Deduplication makes a re-read cheap: a submission already filed
+	costs one index lookup and nothing else.
+	"""
+	since = frappe.utils.add_to_date(frappe.utils.now_datetime(), days=-abs(days))
 	pages = frappe.get_all("Facebook Page", filters={"sync_enabled": 1}, pluck="name")
 	if not pages:
 		return
@@ -645,6 +649,28 @@ def reconcile_synced_pages() -> None:
 		except Exception:
 			frappe.db.rollback()
 			frappe.log_error(frappe.get_traceback(), f"Meta: reconciliation failed for form {form_id}")
+
+
+def catch_up_recent_leads() -> None:
+	"""The short pass, every few minutes, for as long as the webhook is silent.
+
+	An app in Development mode receives leadgen notifications only for people
+	who have a role on it — which is nobody's customers — so real-time delivery
+	simply does not happen until the app is Live. Until then the hourly net was
+	the only way in, and a lead could sit unseen for the best part of an hour:
+	for a business that calls its leads back, that hour is most of the value.
+
+	So: a two-hour window, every few minutes, and only while it is worth doing —
+	once Meta actually calls the webhook this pass steps aside and the hourly
+	net is enough again.
+	"""
+	if not frappe.db.get_all("Facebook Page", filters={"sync_enabled": 1}, limit=1):
+		return
+	last_call = frappe.db.get_single_value("CRM Meta Settings", "last_webhook_seen")
+	if last_call and frappe.utils.time_diff_in_hours(frappe.utils.now(), last_call) < 24:
+		# the webhook is alive and doing its job: no need to poll on top of it
+		return
+	reconcile_synced_pages(days=1)
 
 
 # --- daily token health -----------------------------------------------------

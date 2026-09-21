@@ -498,3 +498,30 @@ chiamato**, e che i lead stanno arrivando solo dal controllo orario.
 Meta non parla mai. Adesso si timbra appena la notifica nomina quella Pagina,
 prima di decidere cosa farne: e' la differenza tra *"Facebook non manda"* e
 *"noi non ascoltiamo"*.
+
+## Perche' i lead arrivano dopo 40 minuti (21/09/2026)
+
+La risposta, dalla documentazione di Meta sui Webhooks, sezione **Development
+Mode**:
+
+> Apps in development mode can only receive **test notifications initiated
+> through the app dashboard** or **notifications initiated by people who have a
+> role on the app**.
+
+L'app e' in `dev_mode`. Chi compila i moduli dei clienti non ha un ruolo
+sull'app — e' gente qualunque che ha visto un'inserzione — quindi **Meta non
+manda la notifica**. Non e' rotto niente: e' quello che la piattaforma fa.
+
+Percio' `last_webhook_at` e' vuoto su tutte e venti le Pagine mentre i lead
+entrano lo stesso: entrano dalla **riconciliazione**, che rilegge i moduli e
+prende quello che manca. Il tempo reale arrivera' quando l'app passera' **Live**,
+dopo l'App Review. Nessuna riga di codice puo' anticiparlo.
+
+Nel frattempo pero' un'ora di attesa e' quasi tutto il valore di un lead: chi
+richiama in cinque minuti parla con la persona, chi richiama dopo un'ora trova
+qualcuno che ha gia' chiamato tre concorrenti. Quindi c'e' un secondo passaggio,
+**ogni dieci minuti**, che guarda solo le ultime ventiquattro ore.
+
+Si spegne da solo: se Meta ha chiamato il webhook nelle ultime 24 ore, il
+passaggio breve non fa niente — pollare sopra un webhook che funziona sono
+chiamate spese per nulla. Torna da solo se il webhook tace di nuovo.
