@@ -857,3 +857,30 @@ class TestTheHubDoesNotCallItself(IntegrationTestCase):
 			frappe.local.conf.pop("meta_relay_secret", None)
 		local.assert_not_called()
 		self.assertIn("altro.test", over_http.call_args[0][0])
+
+
+class TestTheLoggedInCaseWasRefused(IntegrationTestCase):
+	"""Frappe answers an unsafe request from a logged-in session without a CSRF
+	token with one word: «Invalid Request».
+
+	The page was written for the client's customer, a visitor with no session on
+	the hub. The agency connecting its own number is logged in — and that is the
+	first thing anybody does. For them every POST from this page was refused:
+	the connection at the last step, and silently every line of session logging.
+	"""
+
+	def test_the_page_sends_the_token_both_ways(self):
+		import pathlib
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		# a header for fetch…
+		self.assertIn("X-Frappe-CSRF-Token", page)
+		# …and the body for sendBeacon, which cannot set headers
+		self.assertIn("csrf_token: CSRF", page)
+
+	def test_the_log_accepts_the_token_without_choking_on_it(self):
+		"""Frappe strips it off form_dict, but the argument must not blow up the
+		call if it ever arrives."""
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(state, "STARTED", {"current_step": "launch"}, csrf_token="whatever")
+		self.assertEqual(frappe.get_last_doc("WhatsApp Signup Session").event, "STARTED")

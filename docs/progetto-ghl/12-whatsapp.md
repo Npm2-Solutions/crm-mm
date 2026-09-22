@@ -1663,3 +1663,44 @@ Ogni volta che la stessa macchina fa **due ruoli** — hub e cliente — il codi
 che parla «all'altro» deve chiedersi se l'altro e' se stesso. L'avevamo
 imparato una volta e non l'avevamo scritto in un posto dove si applicasse a
 tutto.
+
+## «Invalid Request»: il CSRF che rifiutava chi e' loggato
+
+Il messaggio arriva da Frappe, non da noi, e da un posto solo —
+`frappe/auth.py`:
+
+```python
+frappe.throw(_("Invalid Request"), frappe.CSRFTokenError)
+```
+
+Scatta quando una richiesta **non sicura** (POST) arriva da una sessione che ha
+un `csrf_token` e non lo manda indietro.
+
+La pagina `/whatsapp-connect` e' scritta per il **cliente del cliente**: uno che
+su hub non ha nessuna sessione, per cui non c'e' nessun token e non c'e' niente
+da mandare. Ma l'agenzia che collega il **proprio** numero sull'hub **e'
+loggata** — ed e' la prima cosa che chiunque fa. Per lei ogni POST da questa
+pagina veniva rifiutato:
+
+- **il collegamento all'ultimo passo**, dopo QR e condivisione;
+- e, silenziosamente e da settimane, **ogni riga di log di sessione** — che e'
+  il motivo per cui ogni volta che andavamo a leggere il log c'era cosi' poco.
+
+Quel secondo effetto e' il piu' costoso: abbiamo costruito il log apposta per
+capire, e proprio nel caso in cui lo usavamo non scriveva niente.
+
+### Come si manda
+
+Frappe mette il token nella pagina stessa per un visitatore loggato
+(`base_template_page.py` sostituisce un commento con
+`<script>frappe.csrf_token = "…"</script>`), quindi basta leggerlo quando c'e'.
+
+Due strade, perche' i due invii sono diversi:
+
+| Chiamata | Come |
+|---|---|
+| `fetch` → `complete_signup` | header `X-Frappe-CSRF-Token` |
+| `sendBeacon` → `log_session_event` | **nel corpo**, perche' `sendBeacon` non puo' mettere header — e Frappe lo cerca anche li' (`form_dict.pop("csrf_token")`) |
+
+Per il visitatore senza sessione non cambia niente: il token non esiste, non si
+manda, e non serve.
