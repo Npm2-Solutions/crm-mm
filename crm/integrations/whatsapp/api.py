@@ -475,12 +475,7 @@ def get_connect_url() -> dict:
 	# `go` tells the hub page not to draw itself: the person pressed Connect
 	# here, so the next thing they should see is Facebook, not a second screen
 	# explaining that they are about to see Facebook.
-	return {
-		"url": f"{hub}{CONNECT_PATH}?state={state}&go=1",
-		# so the CRM can tell a "connected" message from the hub apart from
-		# anything else a page might post at it
-		"hub_origin": hub,
-	}
+	return {"url": f"{hub}{CONNECT_PATH}?state={state}&go=1", "hub_origin": hub}
 
 
 @frappe.whitelist()
