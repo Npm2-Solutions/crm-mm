@@ -813,3 +813,47 @@ class TestARefusalNamesBothSides(IntegrationTestCase):
 		self.assertIn("hub.example.com", said)
 		self.assertIn("crm.example.com", said)
 		self.assertIn("WABA90", said)
+
+
+class TestTheHubDoesNotCallItself(IntegrationTestCase):
+	"""An agency connecting its own number on the hub is the commonest first
+	test there is, and it was the one shape that could not work: the hub posted
+	the credentials to itself while the request that would answer was still
+	open. On one worker that is a deadlock — and it fails at the very end, after
+	Meta has said yes and a QR has been scanned.
+	"""
+
+	def test_its_own_site_is_served_in_process(self):
+		here = frappe.utils.get_url().rstrip("/")
+		with (
+			patch.object(S, "deliver_locally") as local,
+			patch.object(S.requests, "post") as over_http,
+		):
+			S.deliver_to_site(here, "TOKEN", "WABA", "PHONE", {"display_phone_number": "+39"})
+		over_http.assert_not_called()
+		self.assertEqual(local.call_args[0][0]["waba_id"], "WABA")
+		self.assertEqual(local.call_args[0][0]["token"], "TOKEN")
+
+	def test_a_trailing_slash_is_not_another_site(self):
+		here = frappe.utils.get_url().rstrip("/")
+		with (
+			patch.object(S, "deliver_locally") as local,
+			patch.object(S.requests, "post") as over_http,
+		):
+			S.deliver_to_site(here + "/", "TOKEN", "WABA", "PHONE", {})
+		over_http.assert_not_called()
+		self.assertTrue(local.called)
+
+	def test_another_site_still_goes_over_http(self):
+		frappe.local.conf["meta_relay_secret"] = "shhh"
+		try:
+			with (
+				patch.object(S, "deliver_locally") as local,
+				patch.object(S.requests, "post") as over_http,
+			):
+				over_http.return_value = frappe._dict(status_code=200, text="")
+				S.deliver_to_site("https://altro.test", "TOKEN", "WABA", "PHONE", {})
+		finally:
+			frappe.local.conf.pop("meta_relay_secret", None)
+		local.assert_not_called()
+		self.assertIn("altro.test", over_http.call_args[0][0])

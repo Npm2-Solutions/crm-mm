@@ -530,19 +530,41 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 	frappe.db.commit()
 
 
+def deliver_locally(payload: dict) -> None:
+	"""The same thing `receive_connection` does, without the round trip.
+
+	When the CRM being connected **is** this site — an agency connecting its own
+	number on the hub — the HTTP call goes out to ourselves and comes back in
+	while this very request is still open. On one worker that is a deadlock, and
+	the person sees the connection fail after Meta has already said yes and they
+	have already scanned a QR.
+
+	`claim_route_on_hub` learned this lesson months ago; the delivery never did.
+	"""
+	from crm.integrations.whatsapp.api import upsert_account, whatsapp_installed
+
+	if not whatsapp_installed():
+		frappe.throw(_("The WhatsApp app is not installed on this site"))
+	upsert_account(payload)
+	frappe.db.commit()
+
+
 def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, number: dict) -> None:
 	"""Hand the credentials to the client CRM, signed with the relay secret."""
+	payload = {
+		"token": token,
+		"waba_id": waba_id,
+		"phone_number_id": phone_number_id,
+		"display_phone_number": number.get("display_phone_number") or "",
+		"verified_name": number.get("verified_name") or "",
+	}
+	if site.rstrip("/") == get_url().rstrip("/"):
+		deliver_locally(payload)
+		return
+
 	if not relay_secret():
 		frappe.throw(_("meta_relay_secret is not configured on this hub"))
-	body = json.dumps(
-		{
-			"token": token,
-			"waba_id": waba_id,
-			"phone_number_id": phone_number_id,
-			"display_phone_number": number.get("display_phone_number") or "",
-			"verified_name": number.get("verified_name") or "",
-		}
-	).encode()
+	body = json.dumps(payload).encode()
 	try:
 		response = requests.post(
 			f"{site.rstrip('/')}/api/method/crm.integrations.whatsapp.api.receive_connection",
@@ -562,6 +584,7 @@ __all__ = [
 	"config_id",
 	"config_in_use",
 	"connect_url",
+	"deliver_locally",
 	"discover_assets",
 	"error_fields",
 	"hint_for",

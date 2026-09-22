@@ -1630,3 +1630,36 @@ La sequenza vera era:
 Sommare un guasto nostro a uno di configurazione, mentre si indaga, e' il modo
 piu' rapido per non capire piu' niente. Il momento di cambiare il lancio non
 era durante un'indagine.
+
+## L'ultimo passo: l'hub che chiamava se stesso
+
+Meta finisce senza una parola di lamentela — QR scansionato, condivisione
+confermata — e il CRM risponde «Could not complete the connection».
+
+Il passo che falliva e' `deliver_to_site`: l'hub consegna le credenziali al site
+del cliente con una POST HTTP. Quando il cliente **e' l'hub stesso** — un'agenzia
+che collega il proprio numero, cioe' la prima prova che chiunque fa — quella
+POST esce e rientra **mentre la richiesta che dovrebbe rispondere e' ancora
+aperta**. Su un worker solo e' uno stallo, e si vede alla fine di tutto.
+
+E' esattamente lo stesso guasto che avevamo gia' trovato e chiuso per il relay
+Meta (`claim_locally`, `release_locally`) e che `claim_route_on_hub` evita da
+mesi con una guardia `is_hub()`. La consegna WhatsApp non l'aveva mai imparato.
+
+Ora, se il site di destinazione e' questo site, la consegna avviene in processo:
+stesso lavoro, nessun giro di rete.
+
+### E la pagina diceva la cosa sbagliata
+
+Su qualunque rifiuto del server rispondeva «Could not complete the connection.
+Please retry.» — compreso questo, che e' il peggiore da nascondere perche'
+arriva dopo che la persona ha fatto tutto. Il messaggio c'era nella risposta,
+in una delle forme di Frappe (`_server_messages`, `exception`, `exc_type`): lo
+buttavamo via. Ora lo legge, lo mostra e lo scrive nel log.
+
+### La lezione di questa sessione, in una riga
+
+Ogni volta che la stessa macchina fa **due ruoli** — hub e cliente — il codice
+che parla «all'altro» deve chiedersi se l'altro e' se stesso. L'avevamo
+imparato una volta e non l'avevamo scritto in un posto dove si applicasse a
+tutto.
