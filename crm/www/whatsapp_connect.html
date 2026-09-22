@@ -93,6 +93,22 @@
 		try { sessionStorage.removeItem(MEMORY); } catch (e) { /* nothing to clean up */ }
 	}
 
+	// Frappe refuses an unsafe request from a logged-in session without this,
+	// with the single word «Invalid Request» and no traceback.
+	//
+	// The page was written for the client's customer, who is a visitor here and
+	// has no session on the hub — and for them there is no token and nothing to
+	// send. But the agency connecting its own number **is** logged into the hub,
+	// and that is the first thing anybody does. For them every POST from this
+	// page was refused: the connection at the last step, and — silently, for
+	// weeks — every line of session logging, which is why the log had so little
+	// to say each time we went looking.
+	//
+	// Frappe puts the token in the page itself for a logged-in visitor
+	// (`base_template_page.py` replaces a comment with a script that sets it),
+	// so it is there to be read when it exists.
+	var CSRF = (window.frappe && window.frappe.csrf_token) || '';
+
 	var statusEl = document.getElementById('wa-status');
 
 	function say(message, isError) {
@@ -107,9 +123,12 @@
 		try {
 			navigator.sendBeacon(
 				'/api/method/crm.integrations.whatsapp.signup.log_session_event',
-				new Blob([JSON.stringify({ state: state, event: event, data: data || {} })], {
-					type: 'application/json',
-				})
+				// `sendBeacon` cannot set a header, so the token rides in the
+				// body: Frappe looks there too (`form_dict.pop("csrf_token")`).
+				new Blob(
+					[JSON.stringify({ state: state, event: event, data: data || {}, csrf_token: CSRF })],
+					{ type: 'application/json' }
+				)
 			);
 		} catch (e) { /* logging must never block the flow */ }
 	}
@@ -138,9 +157,11 @@
 	// — the server asks Meta which account was shared when the browser cannot.
 	function finish(payload, returnUrl) {
 		say({{ _("Finishing up…") | tojson }});
+		var headers = { 'Content-Type': 'application/json' };
+		if (CSRF) headers['X-Frappe-CSRF-Token'] = CSRF;
 		fetch('/api/method/crm.integrations.whatsapp.signup.complete_signup', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: headers,
 			body: JSON.stringify(payload),
 		})
 			.then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })

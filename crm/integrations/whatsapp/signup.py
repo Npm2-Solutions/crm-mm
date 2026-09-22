@@ -224,13 +224,20 @@ def error_fields(data: dict) -> dict:
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
-def log_session_event(state: str, event: str, data: str | dict | None = None) -> dict:
+def log_session_event(
+	state: str, event: str, data: str | dict | None = None, csrf_token: str | None = None
+) -> dict:
 	"""Session logging — Meta requires Embedded Signup to be implemented with it.
 
 	The hub page reports every step the business customer goes through, so an
 	onboarding that stalls or is abandoned can actually be supported instead of
 	guessed at. Nothing here is trusted: the state carries the signature, and
 	only the fields we know are stored.
+
+	`csrf_token` is never read here — the page sends it in the body because
+	`sendBeacon` cannot set a header, and Frappe takes it off `form_dict` before
+	we are called. It is named in the signature so that it does not arrive as an
+	unexpected argument.
 	"""
 	parsed = parse_state(state, allow_expired=True)
 	if not parsed:
