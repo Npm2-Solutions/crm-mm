@@ -838,13 +838,15 @@ di primo livello non ha bisogno di nessun permesso.
 
 ```
 CRM: click su Connetti
-  → window.open(hub/whatsapp-connect?state=…&go=1)     ← e' nel click: consentito
+  → la tab va su hub/whatsapp-connect?state=…&go=1
       → la pagina hub NON si disegna: redirect immediato a
         facebook.com/v23.0/dialog/oauth?config_id=…&redirect_uri=…&extras=…
-          → tutto il flusso dentro quella finestra
+          → tutto il flusso, nella stessa tab
             → Facebook torna su hub/whatsapp-connect?code=…&state=…
-              → la pagina chiude il collegamento, avvisa il CRM, si chiude
+              → la pagina chiude il collegamento e riporta al CRM
 ```
+
+Una finestra dalla prima schermata all'ultima.
 
 Per chi guarda: preme Connetti, si apre una finestra di Facebook. Nessuna
 schermata intermedia, e nessun popup di Facebook da far sopravvivere ai
@@ -909,24 +911,33 @@ Solo sull'hub: l'onboarding di un cliente viene registrato dove sta la pagina,
 non dove sta il suo CRM, e un site cliente lo dice invece di mostrare una lista
 vuota come se non fosse successo niente.
 
-### Il conflitto
+### Il conflitto, e come l'ho risolto male prima di risolverlo bene
 
 Il primo dei due canali — quello che dice davvero qualcosa — esiste **solo
-finche' la nostra pagina e' aperta ad ascoltare**. Il redirect secco che apriva
-Facebook in un click la buttava via: da quel momento facebook.com parla e non
-c'e' nessuno, e un onboarding che si rompe a meta' resta leggibile esattamente
-come «non ha funzionato».
+finche' la nostra pagina e' aperta ad ascoltare**. Un redirect secco la butta
+via: da quel momento facebook.com parla e non c'e' nessuno.
 
-Quindi il lancio automatico ora **prova prima `FB.login`**, pur senza click.
-Sembra la via lunga quando un redirect basterebbe, ed e' li' per una ragione
-sola: `FB.login` tiene viva la pagina che ascolta. Se il browser rifiuta un
-popup che nessuno ha chiesto — e la maggior parte lo rifiuta — il redirect
-avviene comunque un attimo dopo, e la persona non ha premuto niente lo stesso.
+Il primo tentativo e' stato tenere tutt'e due: il CRM apriva un popup con la
+nostra pagina dentro, e quella pagina chiamava `FB.login` per restare viva ad
+ascoltare. Sulla carta: un click, e il log quando il browser lo concede.
 
-Non si perde nulla di quello che c'era; si guadagna il log ogni volta che il
-browser lo concede. Un'alternativa che dia *sempre* entrambi non esiste: il
-popup di Facebook si apre solo dentro un click, e un click richiede una pagina
-davanti — che e' la schermata che volevamo togliere.
+Nella pratica era un pasticcio, e si vedeva. `FB.login` apre **un secondo
+popup**, e un popup si apre solo dentro un click — nessuno aveva cliccato *li'*,
+quindi il browser lo bloccava quasi sempre e si finiva col redirect un attimo
+dopo. Quello che la persona vedeva era una finestra che apre una finestra e poi
+se ne va da un'altra parte: costo visibile e ricorrente, beneficio quasi mai.
+
+**Adesso: una tab sola, una navigazione sola.** Il CRM porta la tab sulla
+pagina hub, la pagina hub va su Facebook, Facebook torna indietro, e la pagina
+riporta al CRM. Nessun popup in nessun punto, quindi nessun blocco da
+sopravvivere.
+
+Cosa si perde: i messaggi in corso di flusso. Cosa resta: i rifiuti che Meta
+mette nella query string al ritorno, che vengono registrati come prima. E la
+pagina col bottone **Start** e' ancora li' — si raggiunge togliendo `go`
+dall'URL — e quella, essendo un click vero, apre il popup e ascolta tutto.
+Quando serve capire un errore a meta' flusso, e' quella la strada, usata
+apposta invece che subita ogni volta.
 
 ## L'errore 1690130: «non e' un ID business valido»
 
@@ -1089,3 +1100,41 @@ cause documentate e **nel codice non c'e' niente da correggere**. Se fallisce
 anche col sandbox, allora e' altro — e a quel punto il log ha `error_code`,
 `error_id`, `session_id` e `timestamp`, cioe' esattamente i quattro valori che
 Meta chiede per aprire un ticket.
+
+## `3441038`: «Non disponi delle autorizzazioni per questa risorsa»
+
+Compare alla schermata **Aggiungi il tuo numero di telefono WhatsApp**, dopo
+che il passo del portfolio e' andato a buon fine.
+
+Cercato (22/09): **non e' documentato**, come `1690130`. Ne' nelle tabelle di
+Embedded Signup, ne' in quelle di WhatsApp, ne' nelle guide dei vendor.
+
+Ma il testo dice una cosa che vale la pena leggere con attenzione: parla di
+**una risorsa**, e non dice quale. La risorsa che si sta compilando in quel
+momento e' il numero — ed e' il posto sbagliato dove guardare. Un numero non e'
+ancora una risorsa di nessuno: lo diventa quando viene creato **dentro** un
+WhatsApp Business Account, che sta **dentro** un portfolio. E' li' che un
+diritto puo' mancare.
+
+Meta la stessa cosa la dice in chiaro altrove, nella tabella degli errori di
+Embedded Signup:
+
+> **User does not have permission to create WhatsApp Business Accounts.** You do
+> not have the Admin level permission needed to create WhatsApp Business
+> Accounts under the Business Account you selected. *Suggested Solution: Get
+> Admin access to the Business Account to proceed or select an account you have
+> Admin permissions for.*
+
+E c'e' un motivo strutturale per cui questa configurazione lo pretende: e' una
+configurazione **System-user access token**, e la documentazione di Facebook
+Login for Business dice che con quel tipo «your app users will be required to
+log in using a business portfolio», e che «**any admin** in your business
+client's admin group can grant your app a system user access token». Admin,
+non membro.
+
+Quindi la cosa da controllare non e' il numero: e' **di quale portfolio si e'
+Admin**, e se quello scelto allo schermo prima e' proprio quello.
+
+Nota: questo errore arriva **dopo** `1690130`, non al suo posto. Il passo del
+portfolio ora passa; e' il passo dopo che si ferma. E' un avanzamento, non uno
+scambio.

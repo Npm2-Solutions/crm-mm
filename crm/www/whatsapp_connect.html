@@ -109,17 +109,6 @@
 			.then(function (result) {
 				if (!result.ok) throw new Error((result.body && result.body.exc_type) || 'error');
 				forget();
-				// A pop-up must not navigate the CRM: it tells the window that
-				// opened it and gets out of the way. Only a tab that IS the
-				// CRM's own navigates.
-				if (window.opener && !window.opener.closed) {
-					say({{ _("Connected. You can close this window.") | tojson }});
-					try {
-						window.opener.postMessage({ type: 'crm-whatsapp-connected' }, '*');
-					} catch (e) { /* the opener may be gone; closing still helps */ }
-					window.close();
-					return;
-				}
 				say({{ _("Connected. Taking you back to your CRM…") | tojson }});
 				if (returnUrl) window.location.href = returnUrl;
 			})
@@ -186,7 +175,7 @@
 </script>
 {% endif %}
 
-{% if launch or (not returning and not error) %}
+{% if not returning and not launch and not error %}
 <script>
 	// Whether Facebook's script ever arrived. Without this the click handler
 	// called FB.login on an undefined FB: the button greyed out, the status said
@@ -247,11 +236,11 @@
 		logEvent(state, 'ERROR', { current_step: 'sdk_unavailable' });
 	}
 
-	// `onUnavailable` is what separates the two pages. With a button, the retry
-	// is left to the person: Facebook's window opens only from a real click, so
-	// pressing Start for them would get the pop-up blocked instead. Without a
-	// button there is nobody to ask, and the caller hands us somewhere to go.
-	function launchSignup(onUnavailable) {
+	// The retry is left to the person on purpose: Facebook's window opens only
+	// from a real click, so pressing Start for them would get the pop-up
+	// blocked instead — which is exactly the mistake the waypoint above used to
+	// make.
+	function launchSignup() {
 		if (sdkFailed || typeof FB === 'undefined' || !sdkReady) {
 			// it may simply be slow: wait a moment before blaming a blocker
 			say({{ _("Loading Facebook…") | tojson }});
@@ -262,12 +251,10 @@
 				if (sdkReady && typeof FB !== 'undefined') {
 					clearInterval(timer);
 					enable();
-					if (onUnavailable) { launchSignup(onUnavailable); return; }
 					say({{ _("Ready — press Start again.") | tojson }});
 				} else if (sdkFailed || waited >= 8000) {
 					clearInterval(timer);
 					enable();
-					if (onUnavailable) { onUnavailable(); return; }
 					blocked();
 				}
 			}, 500);
@@ -321,7 +308,6 @@
 			// Whatever it is, the page says it instead of stopping silently.
 			logEvent(state, 'ERROR', { current_step: 'login_threw', message: String(e && e.message || e) });
 			enable();
-			if (onUnavailable) { onUnavailable(); return; }
 			say(
 				{{ _("The setup window could not be opened. Allow pop-ups for this page and try again.") | tojson }},
 				true
@@ -329,7 +315,7 @@
 		}
 	}
 
-	if (button) button.addEventListener('click', function () { launchSignup(null); });
+	if (button) button.addEventListener('click', launchSignup);
 
 	// whatever else breaks on this page, the hub's log gets it: a stalled
 	// onboarding is otherwise a mystery told only by "nothing happened"
@@ -341,27 +327,26 @@
 
 {% if launch %}
 <script>
-	// The waypoint: nothing to read and nothing to press.
+	// The waypoint: nothing to read, nothing to press, and no second window.
 	//
-	// It tries `FB.login` first, even though nobody clicked. That looks like the
-	// long way round when a plain redirect would also work, and it is there for
-	// one reason: `FB.login` keeps THIS page alive, listening for Meta's
-	// `WA_EMBEDDED_SIGNUP` messages. Those messages are the only place the flow
-	// ever says what went wrong — the error, its id, the screen it happened on.
-	// A redirect leaves facebook.com talking to nobody, and an onboarding that
-	// fails halfway is then exactly as legible as "it didn't work".
+	// This used to call `FB.login` first, to keep the page alive listening for
+	// Meta's `WA_EMBEDDED_SIGNUP` messages. It was the wrong trade. `FB.login`
+	// opens a pop-up, a pop-up opens only from a click, and nobody clicked
+	// here — so the browser blocked it nearly every time and we redirected a
+	// moment later anyway. What the person saw was a window opening a window
+	// and then going somewhere else. A visible mess, for a benefit that almost
+	// never arrived.
 	//
-	// When the browser refuses a pop-up nobody clicked for — which is most of
-	// them — we lose nothing that we had: the redirect happens anyway, one
-	// moment later, and the person still never pressed a thing.
+	// So: one tab, one navigation. The refusals Meta puts in the query string
+	// on the way back are still recorded. The in-flow messages are not, and
+	// that is what the page with the Start button below is for — reached by
+	// leaving off `go`, deliberately, when something needs debugging.
 	(function () {
 		remember({
 			state: {{ state | tojson }},
 			return_url: {{ return_url | tojson }},
 		});
-		launchSignup(function () {
-			window.location.replace({{ launch | tojson }});
-		});
+		window.location.replace({{ launch | tojson }});
 	})();
 </script>
 {% endif %}
