@@ -162,6 +162,76 @@ def store_message(message: dict, our_number: str, historical: bool = False) -> b
 	return True
 
 
+# What Meta reports on `account_update`. The second column is the only thing
+# that matters when somebody asks, weeks later, why WhatsApp stopped working.
+#
+# `PARTNER_REMOVED` is the one a person can cause from their own phone, in
+# WhatsApp Business → Settings → Account → Business Platform → Disconnect
+# Account. Until now it arrived and went into a log line nobody reads, so a
+# number could go quiet with the answer sitting in the journal.
+ACCOUNT_EVENTS = {
+	"PARTNER_ADDED": ("Completed", "The app was connected to this WhatsApp account"),
+	"PARTNER_APP_INSTALLED": ("Completed", "The app was installed on this WhatsApp account"),
+	"PARTNER_REMOVED": (
+		"Cancelled",
+		"This WhatsApp account was disconnected from the app. Messages will not "
+		"arrive until it is connected again.",
+	),
+	"PARTNER_APP_UNINSTALLED": ("Cancelled", "The app was removed from this WhatsApp account"),
+	# A device change or a re-registration: Meta reconnects it by itself, usually
+	# within minutes. Not a fault, but sends fail in between, so it is worth
+	# seeing rather than guessing at a few failed messages.
+	"ACCOUNT_OFFBOARDED": (
+		"In Progress",
+		"The phone was re-registered or changed. Meta is reconnecting the account; "
+		"sending is suspended until it finishes.",
+	),
+	"ACCOUNT_RECONNECTED": ("Completed", "The account was reconnected after a device change"),
+}
+
+
 def handle_account_update(value: dict) -> None:
-	"""Onboarding milestones and account status changes."""
+	"""Onboarding milestones and account status changes.
+
+	These arrive long after onboarding, on their own, and they are the only
+	warning a CRM gets that a live number has gone away — most of all when the
+	business disconnects it from the phone itself.
+	"""
+	event = value.get("event") or ""
 	frappe.logger("whatsapp").info(f"Coexistence account update: {json.dumps(value)[:500]}")
+
+	outcome, what = ACCOUNT_EVENTS.get(event, ("In Progress", ""))
+	waba_id = str((value.get("waba_info") or {}).get("waba_id") or "")
+	# who pulled the plug, when Meta says: a person on the phone, or the system
+	# after a spell of inactivity
+	disconnection = value.get("disconnection_info") or {}
+	if disconnection:
+		what = (
+			f"{what} ({disconnection.get('reason') or 'unknown reason'}, "
+			f"initiated by {disconnection.get('initiated_by') or 'unknown'})"
+		)
+
+	try:
+		frappe.get_doc(
+			{
+				"doctype": "WhatsApp Signup Session",
+				"site_url": site_of_waba(waba_id),
+				"event": event[:140],
+				"waba_id": waba_id,
+				"outcome": outcome,
+				"error_message": what if outcome == "Cancelled" else "",
+				"current_step": "account_update",
+				"details": json.dumps(value)[:5000],
+			}
+		).insert(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		# an account notice must never cost us the rest of the delivery
+		frappe.log_error(frappe.get_traceback(), "WhatsApp: could not record an account update")
+
+
+def site_of_waba(waba_id: str) -> str:
+	"""Whose number this is, so the notice is filed against the right client."""
+	if not waba_id:
+		return ""
+	return frappe.db.get_value("Meta WhatsApp Route", waba_id, "site_url") or ""

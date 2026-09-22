@@ -411,7 +411,11 @@ class TestOneClickLaunch(IntegrationTestCase):
 		query = parse_qs(urlparse(S.login_url("S")).query)
 		self.assertEqual(json.loads(query["extras"][0])["featureType"], "whatsapp_business_app_onboarding")
 
-	def test_go_turns_the_page_into_a_waypoint(self):
+	def test_go_still_offers_a_button_and_does_not_redirect_by_itself(self):
+		"""The click is what `FB.login` needs, and `FB.login` is what carries
+		`extras.featureType` — which is what asks for Coexistence. Redirecting
+		straight to the dialog URL dropped it, and the flow silently became the
+		plain Cloud API one, which cannot take a number already on a phone."""
 		from crm.www.whatsapp_connect import get_context
 
 		state = S.make_state(frappe.utils.get_url().rstrip("/"))
@@ -421,8 +425,10 @@ class TestOneClickLaunch(IntegrationTestCase):
 			get_context(context)
 		finally:
 			frappe.form_dict = frappe._dict()
-		self.assertEqual(context.error, "")
+		# the dialog URL is still built, but as a last-resort link, not a redirect
 		self.assertIn("/dialog/oauth?", context.launch)
+		self.assertEqual(context.error, "")
+		self.assertEqual(context.return_url, state and context.return_url)
 
 	def test_without_go_the_page_still_draws_itself(self):
 		"""Anyone who lands here from an old link must still see the card."""
@@ -635,6 +641,7 @@ class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
 		"""The message names no resource, and the one being typed when it appears
 		is the phone number — which is the wrong place to look."""
 		hint = S.hint_for(3441038)
+		self.assertIn("WhatsApp Business app account", hint)
 		self.assertIn("business portfolio", hint)
 		self.assertIn("not the phone number", hint)
 
@@ -654,3 +661,64 @@ class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
 		with patch.object(A, "is_hub", return_value=True):
 			answer = A.recent_signup_attempts(limit=1)
 		self.assertIn("business-portfolio step", answer["attempts"][0]["hint"])
+
+
+class TestAccountNoticesAreKept(IntegrationTestCase):
+	"""`account_update` is the only warning a CRM gets that a live number went
+	away — most of all when the business disconnects it from its own phone,
+	which WhatsApp Business offers under Settings → Account → Business Platform.
+	It used to arrive and go into a log line nobody reads."""
+
+	def test_a_disconnection_from_the_phone_is_written_down(self):
+		C.handle_account_update(
+			{
+				"event": "PARTNER_REMOVED",
+				"waba_info": {"waba_id": "WABA77"},
+				"disconnection_info": {"reason": "PRIMARY_INACTIVITY", "initiated_by": "SYSTEM"},
+			}
+		)
+		row = frappe.get_last_doc("WhatsApp Signup Session")
+		self.assertEqual(row.event, "PARTNER_REMOVED")
+		self.assertEqual(row.outcome, "Cancelled")
+		self.assertEqual(row.waba_id, "WABA77")
+		# who pulled the plug, which is the first thing anybody asks
+		self.assertIn("PRIMARY_INACTIVITY", row.error_message)
+		self.assertIn("SYSTEM", row.error_message)
+
+	def test_a_device_change_is_not_reported_as_a_failure(self):
+		"""Meta reconnects it by itself within minutes. Worth seeing, not worth
+		alarming about."""
+		C.handle_account_update({"event": "ACCOUNT_OFFBOARDED", "waba_info": {"waba_id": "WABA78"}})
+		row = frappe.get_last_doc("WhatsApp Signup Session")
+		self.assertEqual(row.outcome, "In Progress")
+		self.assertEqual(row.error_message, "")
+
+	def test_a_reconnection_closes_it(self):
+		C.handle_account_update({"event": "ACCOUNT_RECONNECTED", "waba_info": {"waba_id": "WABA79"}})
+		self.assertEqual(frappe.get_last_doc("WhatsApp Signup Session").outcome, "Completed")
+
+	def test_an_event_we_do_not_know_is_still_kept(self):
+		"""Meta adds events. One we have never seen is exactly the one worth
+		having a row for."""
+		C.handle_account_update({"event": "SOMETHING_NEW", "waba_info": {"waba_id": "WABA80"}})
+		row = frappe.get_last_doc("WhatsApp Signup Session")
+		self.assertEqual(row.event, "SOMETHING_NEW")
+		self.assertIn("SOMETHING_NEW", row.details)
+
+	def test_the_notice_is_filed_against_the_right_client(self):
+		frappe.get_doc(
+			{
+				"doctype": "Meta WhatsApp Route",
+				"waba_id": "WABA81",
+				"phone_number_id": "P81",
+				"site_url": "https://cliente.test",
+			}
+		).insert(ignore_permissions=True)
+		C.handle_account_update({"event": "PARTNER_REMOVED", "waba_info": {"waba_id": "WABA81"}})
+		self.assertEqual(frappe.get_last_doc("WhatsApp Signup Session").site_url, "https://cliente.test")
+
+	def test_a_broken_notice_does_not_cost_the_rest_of_the_delivery(self):
+		with patch.object(C.frappe, "get_doc", side_effect=ValueError("boom")):
+			with patch.object(C.frappe, "log_error") as log:
+				C.handle_account_update({"event": "PARTNER_REMOVED"})
+		self.assertTrue(log.called)

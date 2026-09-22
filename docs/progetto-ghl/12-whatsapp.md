@@ -1138,3 +1138,370 @@ Admin**, e se quello scelto allo schermo prima e' proprio quello.
 Nota: questo errore arriva **dopo** `1690130`, non al suo posto. Il passo del
 portfolio ora passa; e' il passo dopo che si ferma. E' un avanzamento, non uno
 scambio.
+
+## Staccare il collegamento dal telefono, e perche' il QR non ritorna
+
+### Come si stacca
+
+Dalla documentazione di *Onboard WhatsApp Business app users*:
+
+> You cannot use the Deregister API to deregister a business phone number from
+> Cloud API if it is already in use with both Cloud API and the WhatsApp
+> Business app. Instead, your clients can use the WhatsApp Business app to
+> disconnect from Cloud API by navigating to **Settings > Account > Business
+> Platform** and clicking the **Disconnect Account** button.
+
+Quindi: **non da API, dal telefono.** WhatsApp Business → Impostazioni →
+Account → Business Platform → *Disconnetti account*. L'API non serve e non
+funzionerebbe: un numero in Coexistence non si deregistra da fuori.
+
+### Perche' il QR non ricompare
+
+Perche' dal punto di vista di Meta quel numero **e' gia' collegato**. La
+schermata «collega il tuo account esistente» offre di collegare qualcosa che
+risulta gia' collegato, quindi non ha niente da offrire.
+
+E c'e' una finestra che spiega come ci si arriva a meta':
+
+> when a business completes the flow and you onboard the customer, you have
+> **24 hours to synchronize their messaging history, otherwise they must be
+> offboarded and they must complete the flow again**.
+
+Il primo tentativo era arrivato fino al QR: il numero ha preso il suo companion
+Cloud API. Il resto del flusso e' fallito subito dopo, quindi la
+sincronizzazione non e' mai partita. Risultato: mezzo collegato — abbastanza
+perche' Coexistence non si rioffra, non abbastanza perche' funzioni.
+
+Staccare dal telefono riporta il numero allo stato di partenza, e il QR torna.
+
+### Adesso il CRM se ne accorge
+
+Quando il collegamento viene staccato, Meta manda un `account_update` con
+`PARTNER_REMOVED` — e, se e' stato il sistema a staccarlo, anche un
+`disconnection_info` con il motivo e chi l'ha fatto. Il gestore c'era e scriveva
+una riga di log che non legge nessuno.
+
+Ora ogni notifica di questo tipo diventa una riga in `WhatsApp Signup Session`,
+accanto ai tentativi di collegamento, intestata al site del cliente giusto:
+
+| Evento | Come viene letto |
+|---|---|
+| `PARTNER_ADDED`, `PARTNER_APP_INSTALLED` | collegato |
+| `PARTNER_REMOVED`, `PARTNER_APP_UNINSTALLED` | **scollegato**, col motivo e chi l'ha fatto |
+| `ACCOUNT_OFFBOARDED` | telefono cambiato o rinregistrato: Meta lo ricollega da solo in pochi minuti, invio sospeso nel frattempo |
+| `ACCOUNT_RECONNECTED` | ricollegato |
+| qualunque altro | scritto comunque — un evento che non abbiamo mai visto e' esattamente quello per cui serve una riga |
+
+`ACCOUNT_OFFBOARDED` non e' un guasto e non viene segnato come tale: e' quello
+che succede ogni volta che un cliente cambia telefono. Ma qualche messaggio
+fallisce mentre dura, e senza la riga si va a caccia della ragione sbagliata.
+
+## Il click torna, perche' senza non c'e' Coexistence (22/09, sera)
+
+Il sintomo: la schermata che compare non e' piu' «collega il tuo account
+WhatsApp Business esistente», ma **«Aggiungi il tuo numero di telefono
+WhatsApp — inserisci un nuovo numero»**. Cioe' il flusso Cloud API normale.
+
+E' la verifica che la documentazione stessa indica:
+
+> To verify that you have enabled the feature correctly, access your
+> implementation of Embedded Signup. **If the WABA selection screen has been
+> replaced with a screen that gives you the option to connect your existing
+> WhatsApp Business Account, the feature is enabled.**
+
+Non e' stata sostituita. Quindi Coexistence **non e' attiva**, e il motivo era
+scritto qui sopra da due giorni, nella riga che diceva cosa non era verificato:
+`extras` e' documentato per `FB.login`, **non** per un dialog costruito a mano.
+Meta lo ignora li'. Togliendo il click per aprire Facebook direttamente ho
+tolto `FB.login`, e con lui l'unico posto dove `featureType` viene letto.
+
+Da qui tutto il resto, in fila:
+
+1. niente Coexistence → il flusso offre di aggiungere un numero **nuovo**;
+2. il numero che si prova a mettere e' quello che sta gia' su un telefono con
+   WhatsApp Business — e questo e' il caso che la documentazione chiama
+   esplicitamente fuori: «Business phone numbers already in use with the
+   WhatsApp Business app are supported, **but require you customize the flow to
+   enable WhatsApp Business app user onboarding**»;
+3. il QR non compare piu', perche' il QR e' un passo di Coexistence;
+4. e il primo tentativo, quello che il QR l'aveva mostrato, girava ancora con
+   `FB.login`.
+
+**Quindi il click resta.** Non e' una schermata che abbiamo scelto di mettere:
+e' il browser che pretende un gesto prima di aprire una finestra, e la finestra
+di Facebook e' l'unico posto dove Coexistence esiste. Con `go` la pagina si
+riduce al minimo — una riga e un bottone, gia' a fuoco — ma il bottone c'e'.
+
+Il link diretto al dialog resta, sotto *«Il bottone non fa niente?»*, con
+scritto cosa fa davvero: apre Facebook senza l'SDK, quindi **offre un numero
+nuovo invece di quello sul telefono**. E' un ripiego per un browser che non
+carica l'SDK, non una seconda strada equivalente.
+
+### La lezione, che vale piu' del bug
+
+L'unica parte non verificata di quel cambiamento era scritta nella sua PR, e la
+verifica da fare era descritta in una riga. Nessuno l'ha eseguita, e il costo
+non e' stato un errore: e' stato **un errore che sembrava un altro errore**.
+`3441038` ha mandato a cercare permessi e portfolio per un giorno, quando la
+causa era due passi prima.
+
+## La schermata del numero: cosa scegliere, e cosa non scegliere
+
+La schermata di Meta offre tre cose, e solo una porta a Coexistence:
+
+```
+Inserisci un nuovo numero di telefono          ← QUESTA
+Usa un nome visualizzato con un numero virtuale
+[elenco dei numeri gia' nei portfolio a cui hai accesso]
+```
+
+Dalla documentazione di *Version 4 Public Preview*, flusso Coexistence:
+
+> Phone number entry screen: This screen lets the business customer enter the
+> phone number they want to onboard. **To trigger the Coexistence flow, the
+> customer must enter a WhatsApp Business app phone number.**
+
+> The Coexistence flow is **automatically triggered when the business customer
+> enters a phone number that is already in use with the WhatsApp Business app.**
+
+Quindi il numero **si scrive**, non si sceglie dall'elenco. L'elenco contiene i
+numeri gia' registrati nei portfolio: sono numeri Cloud API, non numeri che
+stanno su un telefono. Sceglierne uno di li' e' l'altro flusso.
+
+### Perche' alcuni sono «Non idoneo»
+
+Il **numero di test** (`+1 555-…`) e' permanentemente non idoneo, ed e'
+documentato due volte: «Existing WABAs that were originally created via the
+developer app cannot be selected or onboarded directly through the Embedded
+Signup flow», e i numeri 555 «cannot be migrated to another WhatsApp Business
+Account, or used outside of the WhatsApp Business platform». Non c'e' niente da
+sistemare: non sara' mai selezionabile li'.
+
+### WhatsApp Business, non WhatsApp
+
+Coexistence riguarda **l'app WhatsApp Business**, versione 2.24.17 o superiore.
+Un numero con il WhatsApp normale non e' un caso di Coexistence, ed e' anche il
+caso peggiore:
+
+> Registered numbers can still be used for everyday purposes… but **cannot be
+> used with WhatsApp Messenger**. **Numbers already in use with WhatsApp cannot
+> be registered unless they are deleted first.**
+
+Cioe': col WhatsApp normale non si puo' ne' fare Coexistence ne' registrare il
+numero — a meno di cancellare prima l'account WhatsApp, che e' una cosa che a un
+cliente non si chiede.
+
+Percio' la prima domanda davanti a un collegamento che non parte non e' quale
+portfolio o quale permesso: e' **quale app c'e' su quel telefono**.
+
+## Come si abilita Coexistence davvero (ricerca del 22/09)
+
+Tre livelli, e vanno tutti e tre. Il primo e' l'unico che avevamo in mente.
+
+### 1. Nel codice: `featureType` in `extras`
+
+Documentato da Meta:
+
+> Add a `featureType` property set to `whatsapp_business_app_onboarding` to the
+> `extras` object in the launch method.
+
+Una guida di terze parti aggiunge una precisazione che vale la pena avere per
+iscritto, perche' toglie un'ambiguita':
+
+> this launch selector surfaces the Coexistence branch and is **still required
+> even when the Builder configuration has Coexistence enabled**.
+
+Cioe': l'interruttore nella configurazione **non sostituisce** `extras`. Servono
+entrambi. E `extras` viaggia solo con `FB.login` — non su un dialog costruito a
+mano, come abbiamo imparato a nostre spese.
+
+### 2. Sulla configurazione di accesso
+
+Se la configurazione Facebook Login for Business ha una voce Coexistence, va
+accesa. Non la sostituisce il punto 1 e il punto 1 non la sostituisce.
+
+### 3. Sul numero del cliente — ed e' qui che si casca
+
+Questo e' il livello che non dipende da noi e che nessun errore dice in chiaro.
+Da **respond.io**:
+
+> Eligible if: WhatsApp Business App version **2.24.17 or later**; **actively
+> using the WhatsApp Business App, based on Meta's review of account age and
+> messaging quality**; phone number added to your Meta Business Manager.
+
+E sul perche' un numero viene rifiutato:
+
+> Numbers where Meta returns an eligibility error during signup typically
+> require **more activity on the WhatsApp Business App**.
+
+Da **360dialog**, nello stesso senso:
+
+> Newly created Business App accounts are **not immediately eligible for API
+> access**.
+
+> Do not uninstall the WhatsApp Business App — doing so will disconnect. Open it
+> **at least once every 13 days** to keep the account active.
+
+> Numbers already connected to WhatsApp API **cannot use Coexistence**.
+
+E un requisito di verifica che vale la pena sapere prima di prometterlo a un
+cliente:
+
+> Partner-Led Business Verification (PLBV) or Meta Verified for Business must be
+> used — **Classic Business Verification is not supported**. Official Business
+> Account (OBA) status is not supported.
+
+### Cosa ne segue, praticamente
+
+Un numero **appena messo su WhatsApp Business per fare una prova non e'
+idoneo**, e Meta non lo dice con quelle parole: restituisce un errore di
+eleggibilita' o semplicemente non offre il ramo Coexistence. Nessuna
+configurazione lo aggira — ci vuole un numero con una storia vera alle spalle,
+cioe' quello di un cliente che usa WhatsApp Business da mesi.
+
+Il che ribalta anche il modo di provarlo: **il test buono non e' un numero
+nuovo dell'agenzia, e' il numero di un cliente che gia' lavora**. Un numero
+nuovo dimostra solo che il flusso parte.
+
+## Provare Coexistence dall'Embedded Signup Builder
+
+Il Builder (*Finestra di dialogo dell'iscrizione integrata*) e' il modo piu'
+rapido per separare «il nostro codice non chiede Coexistence» da «questa app o
+questo numero non possono farla». I menu corrispondono uno a uno ai parametri
+che passiamo noi:
+
+| Menu del Builder | Parametro |
+|---|---|
+| Scegli una configurazione di accesso | `config_id` |
+| Versione ES | `extras.version` |
+| Versione informazioni sulla sessione | `extras.sessionInfoVersion` |
+| Funzioni | `extras.features[].name` |
+| **Tipo di funzione** | **`extras.featureType`** |
+
+### Le due prove, che rispondono a due domande diverse
+
+**A — «il nostro codice chiede la cosa giusta?»** Riprodurre esattamente cio'
+che manda `FB.login`:
+
+```
+Configurazione   Tech Provider Embedded Signup config
+Versione ES      v4
+Info sessione    3
+Funzioni         (vuoto)
+Tipo di funzione Onboarding del numero dell'app WhatsApp Business
+                 (= whatsapp_business_app_onboarding)
+```
+
+Se cosi' compare «collega il tuo account esistente», l'app e la configurazione
+sono a posto e il problema e' solo nel nostro lancio.
+
+**B — «questo numero puo' fare Coexistence?»** Con `v4-public-preview` il ramo
+si apre da solo, senza `featureType`:
+
+> The Coexistence flow is **automatically triggered when the business customer
+> enters a phone number that is already in use with the WhatsApp Business app.**
+
+Cioe' la prova B isola l'idoneita' del numero da qualunque nostra impostazione.
+
+### Quella da non lasciare selezionata
+
+**«Condivisione solo con account WhatsApp Business»** e' `only_waba_sharing`:
+condivide un WABA esistente e basta, non fa onboarding di un numero, e non e'
+Coexistence. E' anche un tipo che Meta non migra da solo —
+
+> integrations using the below feature types with v2 cannot be automatically
+> upgraded […] `only_waba_sharing`, `marketing_messages_lite`, `coex`
+
+— quindi dopo il **15 ottobre 2026** smette di funzionare e ricade sul flusso
+standard. Il bottone che dice «Avvia l'iscrizione integrata per **condividere**
+un account WhatsApp Business» sta gia' dicendo che e' un'altra cosa: condividere
+un conto, non collegare un telefono.
+
+## `3441038`, riletto meglio — e una correzione
+
+Prima lettura: «il portfolio scelto allo schermo prima, dove serve Admin».
+Plausibile, ma indicava il posto sbagliato dove guardare.
+
+La schermata su cui compare e' la **phone number entry screen**, che nella v4
+esiste in **tutti e due** i flussi. Quello che cambia e' cosa succede dopo:
+
+> To trigger the Coexistence flow, the customer **must enter a WhatsApp Business
+> app phone number**.
+
+> **Business profile screen**: This screen displays the WhatsApp Business app
+> account details associated with the entered phone number — the profile
+> picture, name, phone number, and website that the business has set in the
+> WhatsApp Business app.
+
+Quindi scrivere il numero e' la mossa giusta, e subito dopo il flusso deve
+**leggere l'account WhatsApp Business che sta dietro a quel numero**, per
+mostrarne nome e foto. Quella lettura e' un pezzo di Coexistence.
+
+Ed e' li' che «non disponi delle autorizzazioni per visualizzare questa risorsa»
+torna a significare qualcosa di preciso: **la risorsa e' quell'account**, e
+senza Coexistence attiva non c'e' nessun diritto di leggerlo.
+
+Il portfolio resta il secondo candidato — li' serve Admin e essere membri non
+basta. Ma la prima cosa da guardare non e' un permesso: e' **se il ramo
+Coexistence e' acceso**.
+
+### Cosa e' stato escluso
+
+Verificato sull'app (22/09): `whatsapp_business_messaging` e
+`whatsapp_business_management` sono entrambi **advanced access, approvati e
+live**. Non e' l'App Review, e non e' un permesso mancante.
+
+## «Prima andava, ora no»: le due cose cambiate
+
+Il dato decisivo: **le prime volte comparivano il QR e la foto profilo**. Sono
+schermate del ramo Coexistence, e nessun'altra strada le mostra. Quindi, senza
+piu' ipotesi:
+
+- l'app **puo'** fare Coexistence;
+- la configurazione di accesso e' quella giusta;
+- **il numero e' idoneo** (eta' dell'account, attivita', versione dell'app);
+- i permessi ci sono.
+
+Tutto quello che avevamo sospettato e' escluso da un fatto osservato, non da un
+ragionamento. Restano due cose, che sono cambiate davvero.
+
+### 1. Noi abbiamo smesso di chiedere Coexistence
+
+`FB.login` porta `extras`, il dialog costruito a mano no. Passando al redirect
+per togliere un click abbiamo smesso di mandare `featureType`, e da quel momento
+il flusso non puo' piu' offrire il ramo Coexistence — a chiunque, con qualunque
+numero. Le prime prove, quelle col QR, giravano ancora con `FB.login`.
+
+Questa e' la parte nostra, e si ripara deployando.
+
+### 2. Il primo tentativo ha lasciato qualcosa a meta'
+
+Il QR era stato **inquadrato**: il numero ha preso il suo companion Cloud API.
+Il flusso e' morto subito dopo, quindi la sincronizzazione non e' mai partita,
+e la finestra per farla e' di 24 ore:
+
+> you have 24 hours to synchronize their messaging history, otherwise they must
+> be offboarded and they must complete the flow again.
+
+Da qui due conseguenze che si sommano:
+
+> **Numbers already connected to WhatsApp API cannot use Coexistence.**
+
+e, se quel tentativo ha creato un WABA che poi non e' mai stato condiviso con
+l'app, leggerlo diventa esattamente «non disponi delle autorizzazioni per
+visualizzare questa risorsa. **Contatta il titolare della risorsa**» — il
+titolare e' il portfolio dove quel conto e' rimasto.
+
+### L'ordine in cui si sistema
+
+1. **Deploy**, perche' finche' `extras` non arriva a Meta nessuna pulizia si
+   puo' verificare.
+2. **Scollegare dal telefono** (WhatsApp Business → Impostazioni → Account →
+   Business Platform → Disconnetti account) e controllare che dica scollegato.
+3. **Guardare cosa e' rimasto in WhatsApp Manager**: un WABA o un numero creato
+   nel primo tentativo, sotto il portfolio usato allora. Se c'e', il numero va
+   tolto da li' — finche' resta agganciato, Coexistence non si rioffre.
+4. Riprovare.
+
+Invertire 1 e 3 fa perdere tempo: senza il deploy, anche un numero perfettamente
+libero non vedrebbe comunque il ramo Coexistence.
