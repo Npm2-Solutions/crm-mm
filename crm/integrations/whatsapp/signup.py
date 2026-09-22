@@ -499,7 +499,18 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 			f"WABA {waba_id} is routed to {current}; {site} tried to take it over",
 			"WhatsApp relay: takeover refused",
 		)
-		frappe.throw(_("This WhatsApp account is already connected to another site"))
+		# Name both sides. "Already connected to another site" was true and
+		# useless: the commonest cause is not another client at all, it is the
+		# same site reached by a second hostname — a custom domain and the one
+		# the host gave it — and nobody can see that from a sentence that names
+		# neither.
+		frappe.throw(
+			_(
+				"This WhatsApp account is already connected to {0}, and this request came from "
+				"{1}. If those are the same CRM under two addresses, remove the Meta WhatsApp "
+				"Route for {2} on the hub and connect again."
+			).format(current, site, waba_id)
+		)
 	if current:
 		frappe.db.set_value(
 			"Meta WhatsApp Route",

@@ -114,6 +114,25 @@
 		} catch (e) { /* logging must never block the flow */ }
 	}
 
+	// What the server actually said, dug out of Frappe's shapes.
+	//
+	// This page used to answer every failure with "Could not complete the
+	// connection. Please retry." — including the one failure that matters most,
+	// the one that happens after Meta has finished without a word of complaint.
+	// At that point the person has scanned a QR and confirmed a sharing screen,
+	// and we told them nothing. The message was always there; we threw it away.
+	function serverMessage(body) {
+		if (!body) return '';
+		try {
+			var messages = body._server_messages ? JSON.parse(body._server_messages) : [];
+			for (var i = 0; i < messages.length; i++) {
+				var parsed = JSON.parse(messages[i]);
+				if (parsed && parsed.message) return String(parsed.message);
+			}
+		} catch (e) { /* fall through to the other shapes */ }
+		return String(body.exception || body.exc_type || body.message || '');
+	}
+
 	// The one call that turns a code into a connected number. Both legs end
 	// here: the pop-up with the ids Meta posted back, the redirect without them
 	// — the server asks Meta which account was shared when the browser cannot.
@@ -126,14 +145,26 @@
 		})
 			.then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
 			.then(function (result) {
-				if (!result.ok) throw new Error((result.body && result.body.exc_type) || 'error');
+				if (!result.ok) throw new Error(serverMessage(result.body));
 				forget();
 				say({{ _("Connected. Taking you back to your CRM…") | tojson }});
 				if (returnUrl) window.location.href = returnUrl;
 			})
-			.catch(function () {
-				logEvent(payload.state, 'ERROR', { current_step: 'exchange_failed' });
-				say({{ _("Could not complete the connection. Please retry.") | tojson }}, true);
+			.catch(function (error) {
+				var reason = String((error && error.message) || '');
+				// strip the tags Frappe wraps its messages in, so the person
+				// reads a sentence and not markup
+				reason = reason.replace(/<[^>]*>/g, '').trim();
+				logEvent(payload.state, 'ERROR', {
+					current_step: 'exchange_failed',
+					error_message: reason,
+				});
+				say(
+					reason
+						? {{ _("Facebook finished, but your CRM refused the connection: ") | tojson }} + reason
+						: {{ _("Could not complete the connection. Please retry.") | tojson }},
+					true
+				);
 				if (typeof onFinishFailed === 'function') onFinishFailed();
 			});
 	}

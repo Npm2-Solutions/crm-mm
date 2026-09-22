@@ -787,3 +787,29 @@ class TestTheSecondRunAsksAgain(IntegrationTestCase):
 
 		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
 		self.assertIn("auth_type: 'reauthorize'", page)
+
+
+class TestARefusalNamesBothSides(IntegrationTestCase):
+	"""«Already connected to another site» was true and useless.
+
+	The commonest cause is not another client: it is the same CRM reached by a
+	second hostname — a custom domain and the one the host handed out — and
+	nobody can see that from a sentence naming neither side.
+	"""
+
+	def test_the_takeover_refusal_says_which_sites(self):
+		frappe.get_doc(
+			{
+				"doctype": "Meta WhatsApp Route",
+				"waba_id": "WABA90",
+				"phone_number_id": "P90",
+				"site_url": "https://hub.example.com",
+			}
+		).insert(ignore_permissions=True)
+
+		with self.assertRaises(frappe.ValidationError) as refusal:
+			S.claim_route("WABA90", "P90", "+39000", "https://crm.example.com")
+		said = str(refusal.exception)
+		self.assertIn("hub.example.com", said)
+		self.assertIn("crm.example.com", said)
+		self.assertIn("WABA90", said)
