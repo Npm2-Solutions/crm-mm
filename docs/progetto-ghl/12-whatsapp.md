@@ -779,6 +779,24 @@ builder**. Non e' la stessa cosa di quale id manda questo CRM: quello sta in
 naso e' costato un pomeriggio, quindi ora Settings → WhatsApp scrive l'id in
 uso accanto a quello dell'app, e dice da dove viene.
 
+E si e' visto subito a cosa serviva: il builder di Meta mostrava la Tech
+Provider, ma l'id che il CRM mandava era quello **a 60 giorni**. Le due cose
+erano diverse e nessuno poteva accorgersene.
+
+### E si puo' cambiare
+
+La casella dell'id compariva **solo finche' l'id mancava**, dentro il riquadro
+"Still missing". Appena salvato, il riquadro spariva e con lui l'unico posto da
+cui modificarlo: il primo valore salvato era anche l'ultimo possibile. Un'app
+puo' tenere piu' configurazioni, e quale mandare cambia — un token che scade
+contro uno che non scade — quindi la casella non poteva essere un fatto
+irreversibile.
+
+Adesso la riga dell'id ha **Cambia** accanto, precompilata con quello in uso.
+Non compare quando l'id viene dal bench config: li' la modifica da questa
+schermata non avrebbe effetto, perche' il bench vince, e un campo che non fa
+niente e' peggio di nessun campo.
+
 ## Il campo del webhook che non c'era
 
 L'iscrizione registrata sull'app ha cinque campi:
@@ -1013,3 +1031,61 @@ pista, non come verdetto**: e' ricostruito da noi, non pubblicato da Meta, e
 scriverlo come se fosse documentato sarebbe peggio che non scriverlo. Ma
 l'alternativa era un numero sullo schermo e un pomeriggio di ricerche che
 finisce dove e' finito il nostro.
+
+## Il sandbox account: come si prende, e cosa prova davvero
+
+Un sandbox account e' un finto cliente: un portfolio business che **non e' il
+nostro** e un WABA che **non nasce dall'app di sviluppo**. E' la prova decisiva
+per `1690130`, perche' toglie di mezzo entrambe le cause documentate in un colpo.
+
+### Come si prende
+
+La documentazione lo dice in due posti, con parole diverse — la dashboard e'
+cambiata, quindi vale quello dei due che si trova:
+
+**Percorso breve** (*Embedded Signup → Claiming sandbox accounts*):
+
+1. App Dashboard → **WhatsApp** → pannello **Quickstart**
+2. sezione **Testing Integrations**
+3. bottone **Claim sandbox account**
+
+**Percorso lungo** (*Using a Sandbox Account*, piu' recente):
+
+1. App Dashboard → l'app → **Use cases** (icona matita)
+2. sotto *Connect with customers through WhatsApp* → **Customize**
+3. menu di sinistra → **Partner tools**
+4. sezione *Claim a sandbox account* → scegli le **Features** → **Claim
+   sandbox account**
+
+Poi, dentro il flusso di Embedded Signup:
+
+- alla schermata **Business portfolio** scegli **Sandbox Business**
+- alla schermata del profilo WhatsApp scegli **Test Number**
+
+### I vincoli, che sono parecchi
+
+| | |
+|---|---|
+| Dura **30 giorni**, poi si disattiva e va richiesto di nuovo |
+| Non si possono creare altri portfolio/WABA/numeri sandbox: gli asset sono generati da Meta e compaiono nel flusso |
+| **E' legato all'admin dell'app**: perche' gli asset sandbox compaiano nel flusso, l'admin dell'app deve essere loggato nel suo account sviluppatore Meta |
+| Il portfolio sandbox **non compare** in Meta Business Suite ne' in WhatsApp Manager |
+| Il token si scambia e il WABA ID si legge, ma **il numero non puo' inviare ne' ricevere messaggi** |
+| La pagina del Calling scrive «Sandbox accounts are only available to **Tech Partners**» — se il bottone non c'e', e' li' che guardare |
+
+### Cosa prova, e cosa no
+
+**Prova**: che il passo del portfolio passa con un portfolio che non e' il
+nostro, e che la nostra catena di onboarding gira fino in fondo — scambio del
+codice, claim della rotta, iscrizione al WABA, consegna al site.
+
+**Non prova**: Coexistence. Il sandbox da' un *Test Number*, non un numero che
+sta davvero su un telefono con WhatsApp Business installato, quindi la
+schermata «collega il tuo account esistente» non ha niente da collegare. E non
+prova la messaggistica, perche' quel numero non invia.
+
+Quindi: se il flusso col sandbox arriva in fondo, `1690130` era una delle due
+cause documentate e **nel codice non c'e' niente da correggere**. Se fallisce
+anche col sandbox, allora e' altro — e a quel punto il log ha `error_code`,
+`error_id`, `session_id` e `timestamp`, cioe' esattamente i quattro valori che
+Meta chiede per aprire un ticket.

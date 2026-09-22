@@ -46,19 +46,46 @@
              CRM sends — so say what this CRM sends. -->
         <div
           v-if="status.data?.signup_config?.config_id"
-          class="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
+          class="mb-4 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
         >
-          <span>{{ __('Embedded Signup configuration') }}:</span>
-          <span class="text-ink-gray-8">{{
-            status.data.signup_config.config_id
-          }}</span>
-          <span class="text-ink-gray-5">
-            {{
-              status.data.signup_config.from_bench
-                ? __('— from the bench config')
-                : __('— set here, in Settings')
-            }}
-          </span>
+          <div class="flex flex-wrap items-center gap-2">
+            <span>{{ __('Embedded Signup configuration') }}:</span>
+            <span class="text-ink-gray-8">{{
+              status.data.signup_config.config_id
+            }}</span>
+            <span class="text-ink-gray-5">
+              {{
+                status.data.signup_config.from_bench
+                  ? __('— from the bench config, which wins over this screen')
+                  : __('— set here, in Settings')
+              }}
+            </span>
+            <!-- An app can hold more than one configuration, and the one it
+                 should send changes: a token that expires versus one that does
+                 not. Until now the box appeared only while the id was missing,
+                 so the first value saved was the last one possible. -->
+            <Button
+              v-if="!status.data.signup_config.from_bench && !editingConfig"
+              variant="ghost"
+              :label="__('Change')"
+              @click="startEditingConfig"
+            />
+          </div>
+          <div v-if="editingConfig" class="mt-2 flex items-end gap-2">
+            <FormControl
+              v-model="appForm.whatsapp_signup_config_id"
+              type="text"
+              class="w-72"
+              :placeholder="__('Paste the id')"
+            />
+            <Button
+              :label="__('Save')"
+              variant="solid"
+              :loading="savingApp"
+              @click="saveConfigId"
+            />
+            <Button :label="__('Cancel')" @click="editingConfig = false" />
+          </div>
         </div>
 
         <!-- what Meta said, last few attempts. Only the hub has these rows: a
@@ -468,8 +495,27 @@ const status = createResource({
 // somebody's to edit.
 const appForm = reactive({ whatsapp_app_id: '', whatsapp_signup_config_id: '' })
 const savingApp = ref(false)
+const editingConfig = ref(false)
 
-function saveWhatsAppApp() {
+function startEditingConfig() {
+  // prefilled with what is in use, so changing one digit does not mean
+  // retyping sixteen
+  appForm.whatsapp_signup_config_id =
+    status.data?.signup_config?.config_id || ''
+  editingConfig.value = true
+}
+
+function saveConfigId() {
+  if (!appForm.whatsapp_signup_config_id?.trim()) {
+    toast.error(__('Paste the configuration id first'))
+    return
+  }
+  saveWhatsAppApp(() => {
+    editingConfig.value = false
+  })
+}
+
+function saveWhatsAppApp(onSaved) {
   savingApp.value = true
   // only what was typed: sending an empty box would clear an id that is there
   const params = Object.fromEntries(
@@ -482,6 +528,7 @@ function saveWhatsAppApp() {
     onSuccess: (data) => {
       savingApp.value = false
       status.data = data
+      if (onSaved) onSaved()
       toast.success(__('Saved'))
     },
     onError: (e) => {
