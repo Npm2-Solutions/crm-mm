@@ -25,10 +25,22 @@
 			</p>
 			<div class="wa-status" id="wa-status"></div>
 		{% elif launch %}
-			<h1 class="wa-title">{{ _("Opening WhatsApp setup") }}</h1>
-			<p class="wa-text">{{ _("Facebook is opening. If nothing happens, use the button below.") }}</p>
-			<a class="wa-btn" style="text-decoration:none;display:inline-block" href="{{ launch }}">{{ _("Continue on Facebook") }}</a>
+			<h1 class="wa-title">{{ _("Connect WhatsApp Business") }}</h1>
+			<p class="wa-text">
+				{{ _("You will keep using WhatsApp on your phone as always. Press the button and pick your existing WhatsApp Business account.") }}
+			</p>
+			<button class="wa-btn" id="wa-connect">{{ _("Continue on Facebook") }}</button>
 			<div class="wa-status" id="wa-status"></div>
+			<!-- last resort, and it is a different flow: this link cannot ask for
+			     Coexistence, so it offers a brand new number instead of the one
+			     already on the phone. Offered only if the button will not work. -->
+			<details class="wa-site">
+				<summary style="cursor:pointer">{{ _("The button does nothing?") }}</summary>
+				<p class="wa-text" style="margin-top:.5rem">
+					{{ _("This link opens Facebook without the JavaScript SDK. It cannot connect a number that is already on your phone — it will offer you a new one instead.") }}
+					<a href="{{ launch }}">{{ _("Open it anyway") }}</a>
+				</p>
+			</details>
 		{% elif error %}
 			<h1 class="wa-title">{{ _("Cannot connect") }}</h1>
 			<div class="wa-error">{{ error }}</div>
@@ -175,7 +187,7 @@
 </script>
 {% endif %}
 
-{% if not returning and not launch and not error %}
+{% if launch or (not returning and not error) %}
 <script>
 	// Whether Facebook's script ever arrived. Without this the click handler
 	// called FB.login on an undefined FB: the button greyed out, the status said
@@ -327,26 +339,25 @@
 
 {% if launch %}
 <script>
-	// The waypoint: nothing to read, nothing to press, and no second window.
+	// `go` means the person pressed Connect in their CRM and should see as
+	// little of this page as possible: no explanation, one button, straight on.
 	//
-	// This used to call `FB.login` first, to keep the page alive listening for
-	// Meta's `WA_EMBEDDED_SIGNUP` messages. It was the wrong trade. `FB.login`
-	// opens a pop-up, a pop-up opens only from a click, and nobody clicked
-	// here — so the browser blocked it nearly every time and we redirected a
-	// moment later anyway. What the person saw was a window opening a window
-	// and then going somewhere else. A visible mess, for a benefit that almost
-	// never arrived.
+	// It briefly skipped the button too, redirecting to Facebook's dialog URL
+	// by itself. That removed the click — and with it Coexistence. The
+	// `featureType` that asks for it rides in `extras`, which `FB.login`
+	// documents and a hand-built dialog URL does not: Meta ignored it there and
+	// offered the plain Cloud API flow, which cannot take a number that is
+	// already on somebody's phone. The QR stopped appearing, and what appeared
+	// instead was a screen asking for a new number.
 	//
-	// So: one tab, one navigation. The refusals Meta puts in the query string
-	// on the way back are still recorded. The in-flow messages are not, and
-	// that is what the page with the Start button below is for — reached by
-	// leaving off `go`, deliberately, when something needs debugging.
+	// So the click stays. The browser requires it, not us.
 	(function () {
 		remember({
 			state: {{ state | tojson }},
 			return_url: {{ return_url | tojson }},
 		});
-		window.location.replace({{ launch | tojson }});
+		// focused, so Enter works and the button is the obvious next thing
+		if (button) button.focus();
 	})();
 </script>
 {% endif %}

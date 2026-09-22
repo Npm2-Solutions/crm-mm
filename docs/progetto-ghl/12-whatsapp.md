@@ -1195,3 +1195,52 @@ accanto ai tentativi di collegamento, intestata al site del cliente giusto:
 `ACCOUNT_OFFBOARDED` non e' un guasto e non viene segnato come tale: e' quello
 che succede ogni volta che un cliente cambia telefono. Ma qualche messaggio
 fallisce mentre dura, e senza la riga si va a caccia della ragione sbagliata.
+
+## Il click torna, perche' senza non c'e' Coexistence (22/09, sera)
+
+Il sintomo: la schermata che compare non e' piu' «collega il tuo account
+WhatsApp Business esistente», ma **«Aggiungi il tuo numero di telefono
+WhatsApp — inserisci un nuovo numero»**. Cioe' il flusso Cloud API normale.
+
+E' la verifica che la documentazione stessa indica:
+
+> To verify that you have enabled the feature correctly, access your
+> implementation of Embedded Signup. **If the WABA selection screen has been
+> replaced with a screen that gives you the option to connect your existing
+> WhatsApp Business Account, the feature is enabled.**
+
+Non e' stata sostituita. Quindi Coexistence **non e' attiva**, e il motivo era
+scritto qui sopra da due giorni, nella riga che diceva cosa non era verificato:
+`extras` e' documentato per `FB.login`, **non** per un dialog costruito a mano.
+Meta lo ignora li'. Togliendo il click per aprire Facebook direttamente ho
+tolto `FB.login`, e con lui l'unico posto dove `featureType` viene letto.
+
+Da qui tutto il resto, in fila:
+
+1. niente Coexistence → il flusso offre di aggiungere un numero **nuovo**;
+2. il numero che si prova a mettere e' quello che sta gia' su un telefono con
+   WhatsApp Business — e questo e' il caso che la documentazione chiama
+   esplicitamente fuori: «Business phone numbers already in use with the
+   WhatsApp Business app are supported, **but require you customize the flow to
+   enable WhatsApp Business app user onboarding**»;
+3. il QR non compare piu', perche' il QR e' un passo di Coexistence;
+4. e il primo tentativo, quello che il QR l'aveva mostrato, girava ancora con
+   `FB.login`.
+
+**Quindi il click resta.** Non e' una schermata che abbiamo scelto di mettere:
+e' il browser che pretende un gesto prima di aprire una finestra, e la finestra
+di Facebook e' l'unico posto dove Coexistence esiste. Con `go` la pagina si
+riduce al minimo — una riga e un bottone, gia' a fuoco — ma il bottone c'e'.
+
+Il link diretto al dialog resta, sotto *«Il bottone non fa niente?»*, con
+scritto cosa fa davvero: apre Facebook senza l'SDK, quindi **offre un numero
+nuovo invece di quello sul telefono**. E' un ripiego per un browser che non
+carica l'SDK, non una seconda strada equivalente.
+
+### La lezione, che vale piu' del bug
+
+L'unica parte non verificata di quel cambiamento era scritta nella sua PR, e la
+verifica da fare era descritta in una riga. Nessuno l'ha eseguita, e il costo
+non e' stato un errore: e' stato **un errore che sembrava un altro errore**.
+`3441038` ha mandato a cercare permessi e portfolio per un giorno, quando la
+causa era due passi prima.

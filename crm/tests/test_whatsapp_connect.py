@@ -411,7 +411,11 @@ class TestOneClickLaunch(IntegrationTestCase):
 		query = parse_qs(urlparse(S.login_url("S")).query)
 		self.assertEqual(json.loads(query["extras"][0])["featureType"], "whatsapp_business_app_onboarding")
 
-	def test_go_turns_the_page_into_a_waypoint(self):
+	def test_go_still_offers_a_button_and_does_not_redirect_by_itself(self):
+		"""The click is what `FB.login` needs, and `FB.login` is what carries
+		`extras.featureType` — which is what asks for Coexistence. Redirecting
+		straight to the dialog URL dropped it, and the flow silently became the
+		plain Cloud API one, which cannot take a number already on a phone."""
 		from crm.www.whatsapp_connect import get_context
 
 		state = S.make_state(frappe.utils.get_url().rstrip("/"))
@@ -421,8 +425,10 @@ class TestOneClickLaunch(IntegrationTestCase):
 			get_context(context)
 		finally:
 			frappe.form_dict = frappe._dict()
-		self.assertEqual(context.error, "")
+		# the dialog URL is still built, but as a last-resort link, not a redirect
 		self.assertIn("/dialog/oauth?", context.launch)
+		self.assertEqual(context.error, "")
+		self.assertEqual(context.return_url, state and context.return_url)
 
 	def test_without_go_the_page_still_draws_itself(self):
 		"""Anyone who lands here from an old link must still see the card."""
