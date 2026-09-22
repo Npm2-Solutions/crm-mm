@@ -425,6 +425,24 @@ function recheckDelivery(name) {
   })
 }
 
+// The hub page that runs Embedded Signup tells us when it is done, because a
+// pop-up cannot navigate the tab that opened it.
+let connectedListener = null
+
+function listenForConnection(hubOrigin) {
+  if (connectedListener)
+    window.removeEventListener('message', connectedListener)
+  connectedListener = (event) => {
+    if (hubOrigin && event.origin !== hubOrigin) return
+    if (event.data?.type !== 'crm-whatsapp-connected') return
+    window.removeEventListener('message', connectedListener)
+    connectedListener = null
+    status.reload()
+    toast.success(__('WhatsApp connected'))
+  }
+  window.addEventListener('message', connectedListener)
+}
+
 function connect() {
   connecting.value = true
   createResource({
@@ -432,7 +450,17 @@ function connect() {
     auto: true,
     onSuccess: (data) => {
       connecting.value = false
-      window.location.href = data.url
+      listenForConnection(data.hub_origin)
+      // A window opened straight from this click is what makes Facebook appear
+      // without an intermediate page: the hub page inside it redirects on to
+      // Facebook by itself. If the browser refuses the window, this tab goes
+      // instead — losing the tab is better than losing the connection.
+      const popup = window.open(
+        data.url,
+        'crm-whatsapp-connect',
+        'width=640,height=820,noopener=no',
+      )
+      if (!popup) window.location.href = data.url
     },
     onError: (e) => {
       connecting.value = false
