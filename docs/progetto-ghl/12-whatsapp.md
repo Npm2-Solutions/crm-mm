@@ -1362,3 +1362,57 @@ cioe' quello di un cliente che usa WhatsApp Business da mesi.
 Il che ribalta anche il modo di provarlo: **il test buono non e' un numero
 nuovo dell'agenzia, e' il numero di un cliente che gia' lavora**. Un numero
 nuovo dimostra solo che il flusso parte.
+
+## Provare Coexistence dall'Embedded Signup Builder
+
+Il Builder (*Finestra di dialogo dell'iscrizione integrata*) e' il modo piu'
+rapido per separare «il nostro codice non chiede Coexistence» da «questa app o
+questo numero non possono farla». I menu corrispondono uno a uno ai parametri
+che passiamo noi:
+
+| Menu del Builder | Parametro |
+|---|---|
+| Scegli una configurazione di accesso | `config_id` |
+| Versione ES | `extras.version` |
+| Versione informazioni sulla sessione | `extras.sessionInfoVersion` |
+| Funzioni | `extras.features[].name` |
+| **Tipo di funzione** | **`extras.featureType`** |
+
+### Le due prove, che rispondono a due domande diverse
+
+**A — «il nostro codice chiede la cosa giusta?»** Riprodurre esattamente cio'
+che manda `FB.login`:
+
+```
+Configurazione   Tech Provider Embedded Signup config
+Versione ES      v4
+Info sessione    3
+Funzioni         (vuoto)
+Tipo di funzione Onboarding del numero dell'app WhatsApp Business
+                 (= whatsapp_business_app_onboarding)
+```
+
+Se cosi' compare «collega il tuo account esistente», l'app e la configurazione
+sono a posto e il problema e' solo nel nostro lancio.
+
+**B — «questo numero puo' fare Coexistence?»** Con `v4-public-preview` il ramo
+si apre da solo, senza `featureType`:
+
+> The Coexistence flow is **automatically triggered when the business customer
+> enters a phone number that is already in use with the WhatsApp Business app.**
+
+Cioe' la prova B isola l'idoneita' del numero da qualunque nostra impostazione.
+
+### Quella da non lasciare selezionata
+
+**«Condivisione solo con account WhatsApp Business»** e' `only_waba_sharing`:
+condivide un WABA esistente e basta, non fa onboarding di un numero, e non e'
+Coexistence. E' anche un tipo che Meta non migra da solo —
+
+> integrations using the below feature types with v2 cannot be automatically
+> upgraded […] `only_waba_sharing`, `marketing_messages_lite`, `coex`
+
+— quindi dopo il **15 ottobre 2026** smette di funzionare e ricade sul flusso
+standard. Il bottone che dice «Avvia l'iscrizione integrata per **condividere**
+un account WhatsApp Business» sta gia' dicendo che e' un'altra cosa: condividere
+un conto, non collegare un telefono.
