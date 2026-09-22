@@ -24,7 +24,6 @@ another member state. Since 2022 those invoices go through the SdI too, with
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
 
@@ -35,15 +34,27 @@ from .codici import (
 	RegimeFiscale,
 	RegolaSdI,
 	TipoDestinatario,
-	tipi_spesa_ammessi,
 )
-from .professioni import Professione, professione
+from .qualifica import Risolutore
 
-#: How a qualification code is turned into a `Professione`. The shipped register is
-#: the default; the CRM overrides it with the editable table, because the choices
-#: that decide fiscal correctness belong to the practice owner and not to a file
-#: only a developer can change.
-Risolutore = Callable[[str], Professione]
+
+def _arricchisci(riga, emittente: str | None, erogatore: str | None) -> tuple[str | None, list[str]]:
+	"""Ask the registered module for the secondary-reporting code of this line.
+
+	Nothing registered means nothing to report, which is the right answer for a
+	document that only travels through the SdI.
+	"""
+	from crm.invoicing.estensioni import arricchitore
+
+	funzione = arricchitore()
+	return funzione(riga, emittente, erogatore) if funzione else (None, [])
+
+
+def _risolutore_corrente() -> Risolutore:
+	"""Asked for late, never at import: a module may register after this one loads."""
+	from crm.invoicing.estensioni import risolutore
+
+	return risolutore()
 
 
 class GuardiaSdI(PermissionError):
@@ -188,65 +199,6 @@ def natura_territoriale(
 	return None, ""
 
 
-def _risolvi_tipo_spesa(
-	riga: RigaDaClassificare, emittente: str, erogatore: str
-) -> tuple[str | None, list[str]]:
-	"""(service, performer's qualification, **issuer's category**) -> `tipoSpesa`.
-
-	Two different subjects, which coincide in a solo practice and diverge in a
-	facility:
-
-	* **whoever performs** decides whether the service is exempt and whether it goes
-	  to the Sistema TS - the same session is `SR` from the doctor and `SP` from the
-	  physiotherapist;
-	* **whoever issues the fiscal document** decides which codes are *usable*,
-	  because it is their category that ends up in `proprietario.soggetto`, and the
-	  tracciato validates the field against it.
-
-	When a facility does the invoicing the codes are its own - `SR CT PI IC AA` for
-	an authorised one - and **`SP` is not among them**, however much a health
-	professional performed the session. Picking from the profession would produce a
-	document that is rejected at send time: with the invoice already issued and
-	already handed to the patient.
-	"""
-	ammessi = tipi_spesa_ammessi(emittente)
-	problemi: list[str] = []
-
-	if riga.quota_non_a_carico and riga.quota_non_a_carico > 0 and "AA" in ammessi:
-		return "AA", problemi
-
-	candidato = riga.tipo_spesa_catalogo
-	if candidato and candidato in ammessi:
-		return candidato, problemi
-	if candidato:
-		problemi.append(
-			f"the catalogue proposes tipoSpesa {candidato!r}, which is not admitted to whoever "
-			f"issues the document (category {emittente!r}; admitted: {', '.join(sorted(ammessi))}). "
-			"The expense type follows the issuer of the fiscal document, not the service"
-		)
-		return None, problemi
-
-	if len(ammessi) == 1:
-		# The health professional invoicing in their own name: `SP` and nothing else.
-		return next(iter(ammessi)), problemi
-
-	naturali = tipi_spesa_ammessi(erogatore)
-	if erogatore != emittente and not (naturali & ammessi):
-		problemi.append(
-			f"tipoSpesa not determinable: the service is performed by a subject of category "
-			f"{erogatore!r} (which would use {', '.join(sorted(naturali))}), but the document is "
-			f"issued by {emittente!r}, which cannot use those codes "
-			f"(admitted: {', '.join(sorted(ammessi))}). Pick it on the service card"
-		)
-	else:
-		problemi.append(
-			f"tipoSpesa not determinable for {emittente!r}: the catalogue does not say, and the "
-			f"issuer's category admits more than one ({', '.join(sorted(ammessi))}). Pick it on "
-			"the service card"
-		)
-	return None, problemi
-
-
 def classifica_riga(
 	riga: RigaDaClassificare,
 	destinatario: str,
@@ -305,7 +257,7 @@ def classifica_riga(
 		return _riga_semplice()
 
 	try:
-		prof = (risolvi or professione)(riga.erogatore_qualifica)
+		prof = (risolvi or _risolutore_corrente())(riga.erogatore_qualifica)
 	except KeyError as exc:
 		errori.append(str(exc))
 		return _riga_semplice()
@@ -344,7 +296,7 @@ def classifica_riga(
 		va_al_ts = False
 	else:
 		regola = prof.regola_sdi
-		va_al_ts = prof.obbligo_ts and regola == RegolaSdI.VIETATO
+		va_al_ts = prof.comunicazione_esterna and regola == RegolaSdI.VIETATO
 		obbligo_esplicito = regola == RegolaSdI.OBBLIGATORIO
 
 	if (
@@ -360,18 +312,15 @@ def classifica_riga(
 	# ------------------------------------------------------------- expense type
 	tipo_spesa: str | None = None
 	if va_al_ts:
-		tipo_spesa, problemi = _risolvi_tipo_spesa(
-			riga, soggetto_emittente or prof.soggetto_inviante, prof.soggetto_inviante
+		# Which code the secondary system wants, and whether this line can produce one,
+		# is knowledge the module that owns that system holds. Invoicing records the
+		# answer and never second-guesses it.
+		tipo_spesa, problemi = _arricchisci(
+			riga, soggetto_emittente or prof.soggetto_comunicazione, prof.soggetto_comunicazione
 		)
 		errori.extend(problemi)
 
 	flag = riga.flag_tipo_spesa
-	if flag and tipo_spesa:
-		atteso = {"1": "TK", "2": "SR"}.get(flag)
-		if atteso != tipo_spesa:
-			errori.append(
-				f"flagTipoSpesa={flag} is only admitted with tipoSpesa={atteso}, not with {tipo_spesa!r}"
-			)
 
 	# ------------------------------------------------------------- VAT on the line
 	natura = _natura(esente, regime, riga.natura_iva_catalogo)
@@ -403,7 +352,7 @@ def classifica_riga(
 		va_al_ts=va_al_ts,
 		tipo_spesa=tipo_spesa,
 		flag_tipo_spesa=flag,
-		soggetto_inviante=prof.soggetto_inviante,
+		soggetto_inviante=prof.soggetto_comunicazione,
 		obbligo_sdi_esplicito=obbligo_esplicito,
 		fuori_base_iva=fuori_base,
 		reverse_charge=reverse_charge,

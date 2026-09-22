@@ -16,7 +16,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-from crm.invoicing.engine.codici import RegolaSdI, SoggettoInviante, tipi_spesa_ammessi
+from crm.invoicing.engine.codici import RegolaSdI
+from crm.tessera_sanitaria.engine.codici import SoggettoInviante, tipi_spesa_ammessi
 
 
 class CRMProfessionalQualification(Document):

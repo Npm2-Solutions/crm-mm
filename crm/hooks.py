@@ -357,6 +357,7 @@ scheduler_events = {
 		# Invoicing fails quietly and annually: an expired Sistema TS certificate,
 		# a button nobody pressed. The sweep looks for absence, not for errors.
 		"crm.invoicing.monitoraggio.giornaliero",
+		"crm.tessera_sanitaria.monitoraggio.giornaliero",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
@@ -498,3 +499,19 @@ standard_dropdown_items = [
 		"is_standard": 1,
 	},
 ]
+
+
+# ---------------------------------------------------------------------------
+# Which modules extend invoicing.
+#
+# `crm.invoicing` issues, calculates, formats and transmits documents for any
+# sector, and knows nothing about healthcare. `crm.tessera_sanitaria` adds the
+# healthcare half and plugs itself in through `crm.invoicing.estensioni`.
+#
+# The wiring lives here, in the app, because deciding which modules an
+# installation has is the app's job - not something either module gets to assume
+# about the other. Removing this line leaves a working invoicing system; that is
+# the whole point of the arrangement.
+from crm.tessera_sanitaria import registra as _registra_tessera_sanitaria
+
+_registra_tessera_sanitaria()

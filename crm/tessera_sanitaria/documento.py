@@ -22,8 +22,11 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
-from crm.invoicing.engine.codici import OperazioneTS, SoggettoInviante
-from crm.invoicing.engine.sistema_ts import (
+from crm.tessera_sanitaria.engine.codici import (
+	OperazioneTS,
+	SoggettoInviante,
+)
+from crm.tessera_sanitaria.engine.tracciato import (
 	Cifratore,
 	CifratoreFittizio,
 	DocumentoSpesa,

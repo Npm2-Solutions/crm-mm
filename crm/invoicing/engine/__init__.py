@@ -21,20 +21,16 @@ from .classificazione import (
 	guardia_sdi,
 )
 from .codici import Canale, RegolaSdI, TipoDestinatario
-from .professioni import PROFESSIONI, Professione, professione
 
 __all__ = [
-	"PROFESSIONI",
 	"Calcolo",
 	"Canale",
 	"EsitoClassificazione",
 	"GuardiaSdI",
-	"Professione",
 	"RegolaSdI",
 	"RigaDaClassificare",
 	"TipoDestinatario",
 	"calcola",
 	"classifica",
 	"guardia_sdi",
-	"professione",
 ]

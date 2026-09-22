@@ -12,8 +12,9 @@ from decimal import Decimal
 from io import BytesIO
 from xml.etree import ElementTree as ET
 
-from crm.invoicing.engine.codici import OperazioneTS, SoggettoInviante, TipoDocumentoTS
-from crm.invoicing.engine.sistema_ts import (
+from crm.invoicing.tests.base import UnitTestCase
+from crm.tessera_sanitaria.engine.codici import OperazioneTS, SoggettoInviante, TipoDocumentoTS
+from crm.tessera_sanitaria.engine.tracciato import (
 	NAMESPACE_SINCRONO,
 	CifratoreFittizio,
 	DocumentoSpesa,
@@ -31,7 +32,6 @@ from crm.invoicing.engine.sistema_ts import (
 	scrivi_documento_sincrono,
 	valida_documento,
 )
-from crm.invoicing.tests.base import UnitTestCase
 
 CF_PAZIENTE = "RSSMRA80A01H501U"
 CF_MEDICO = "BNCLCU75B41F205Z"
@@ -354,27 +354,27 @@ class CanaliTest(UnitTestCase):
 	"""The three channels are not interchangeable, and getting it wrong gives 401."""
 
 	def test_ogni_canale_ha_il_suo_prefisso(self):
-		from crm.invoicing.engine.sistema_ts import destinazione
+		from crm.tessera_sanitaria.engine.tracciato import destinazione
 
 		self.assertIn("/DocumentoSpesa730pWeb/", destinazione("sistema_ts", "test").url_sincrono)
 		self.assertIn("/entrate/", destinazione("entratel", "test").url_sincrono)
 		self.assertIn("/enti/", destinazione("enti", "test").url_sincrono)
 
 	def test_test_e_produzione_sono_host_diversi(self):
-		from crm.invoicing.engine.sistema_ts import destinazione
+		from crm.tessera_sanitaria.engine.tracciato import destinazione
 
 		self.assertIn("Test", destinazione("sistema_ts", "test").host)
 		self.assertNotIn("Test", destinazione("sistema_ts", "produzione").host)
 
 	def test_il_pincode_viaggia_in_chiaro_solo_su_entratel(self):
-		from crm.invoicing.engine.sistema_ts import destinazione
+		from crm.tessera_sanitaria.engine.tracciato import destinazione
 
 		self.assertTrue(destinazione("sistema_ts").pincode_cifrato)
 		self.assertTrue(destinazione("enti").pincode_cifrato)
 		self.assertFalse(destinazione("entratel").pincode_cifrato)
 
 	def test_la_modalita_sceglie_il_canale(self):
-		from crm.invoicing.engine.sistema_ts import canale_per_modalita
+		from crm.tessera_sanitaria.engine.tracciato import canale_per_modalita
 
 		self.assertEqual(canale_per_modalita("intermediario"), "entratel")
 		self.assertEqual(canale_per_modalita("credenziali_studio"), "sistema_ts")
@@ -382,7 +382,7 @@ class CanaliTest(UnitTestCase):
 
 class BustaSoapTest(UnitTestCase):
 	def _busta(self, canale="sistema_ts", **kwargs):
-		from crm.invoicing.engine.sistema_ts import Credenziali, costruisci_busta, destinazione
+		from crm.tessera_sanitaria.engine.tracciato import Credenziali, costruisci_busta, destinazione
 
 		credenziali = kwargs.pop("credenziali", Credenziali("utente", "password", "1234"))
 		return ET.fromstring(
@@ -400,7 +400,7 @@ class BustaSoapTest(UnitTestCase):
 		self.assertTrue(richiesta.tag.endswith("}inserimentoDocumentoSpesaRequest"))
 
 	def test_gli_opzionali_vengono_prima_del_pincode(self):
-		from crm.invoicing.engine.sistema_ts import Credenziali
+		from crm.tessera_sanitaria.engine.tracciato import Credenziali
 
 		richiesta = self._busta(
 			"entratel", credenziali=Credenziali("u", "p", "9999", opzionale1="07874631000-000")
@@ -411,7 +411,7 @@ class BustaSoapTest(UnitTestCase):
 		)
 
 	def test_su_entratel_il_pincode_non_e_cifrato(self):
-		from crm.invoicing.engine.sistema_ts import Credenziali
+		from crm.tessera_sanitaria.engine.tracciato import Credenziali
 
 		richiesta = self._busta("entratel", credenziali=Credenziali("u", "p", "9999"))[1][0]
 		pincode = next(c for c in richiesta if c.tag.endswith("pincode"))
@@ -438,14 +438,14 @@ class BustaSoapTest(UnitTestCase):
 		self.assertEqual(nomi.count("idCancellazioneDocumentoFiscale"), 1)
 
 	def test_la_soap_action_non_e_un_url(self):
-		from crm.invoicing.engine.sistema_ts import soap_action
+		from crm.tessera_sanitaria.engine.tracciato import soap_action
 
 		self.assertEqual(soap_action("Inserimento"), "inserimento.documentospesap730.sanita.finanze.it")
 
 
 class EsitoTest(UnitTestCase):
 	def _analizza(self, corpo):
-		from crm.invoicing.engine.sistema_ts import analizza_risposta
+		from crm.tessera_sanitaria.engine.tracciato import analizza_risposta
 
 		return analizza_risposta(corpo)
 

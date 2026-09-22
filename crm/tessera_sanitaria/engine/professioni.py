@@ -31,13 +31,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from .codici import (
+from crm.invoicing.engine.codici import (
 	CausalePagamento,
 	RegolaSdI,
-	SoggettoInviante,
 	TipoCassa,
 	TipoRitenuta,
 )
+
+from .codici import SoggettoInviante
 
 #: Withholding on self-employment income: 20% of the taxable compensation
 #: (art. 25, DPR 600/73; from 2027: D.Lgs. 33/2025 and 141/2026).
@@ -87,6 +88,22 @@ class Professione:
 	#: Points the accountant has to close before going live.
 	da_verificare: tuple[str, ...] = field(default_factory=tuple)
 	note: str = ""
+
+	@property
+	def comunicazione_esterna(self) -> bool:
+		"""The name invoicing knows this duty by.
+
+		Invoicing understands "this line owes a report to some system that is not the
+		SdI" and nothing more specific. Here that system is the Sistema TS, and the
+		two names are kept side by side rather than one renamed: `obbligo_ts` is what
+		this module's own code should read, because that is what it means here.
+		"""
+		return self.obbligo_ts
+
+	@property
+	def soggetto_comunicazione(self) -> str | None:
+		"""Likewise: `soggetto_inviante` towards the Sistema TS."""
+		return self.soggetto_inviante
 
 	@property
 	def sanitaria(self) -> bool:
@@ -653,7 +670,7 @@ def professione(codice: str | None) -> Professione:
 	except KeyError:
 		raise KeyError(
 			f"qualification {codice!r} is not in the register. The catalogue never infers: add it "
-			"in crm/invoicing/engine/professioni.py, or as a CRM Professional Qualification "
+			"in crm/tessera_sanitaria/engine/professioni.py, or as a CRM Professional Qualification "
 			f"record, after the accountant has verified it. Known: {', '.join(sorted(PROFESSIONI))}"
 		) from None
 

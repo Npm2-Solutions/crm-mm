@@ -104,23 +104,6 @@ class RiconciliazioneTest(UnitTestCase):
 		self.assertEqual(fattura.dati_cassa[0].importo_contributo, Decimal("40.00"))
 		self.assertEqual(fattura.importo_totale, Decimal("1268.80"))
 
-	def test_il_riaddebito_del_bollo_prende_una_riga_sua(self):
-		calcolo = calcola(
-			classifica(
-				[riga("200.00", "psicologo", sanitaria=True, esente=True, aliquota=None)],
-				TipoDestinatario.PERSONA_FISICA,
-				soggetto_emittente="professionista_sanitario",
-			),
-			bollo_riaddebitato=True,
-		)
-		fattura = componi(calcolo)
-		self._controlla(fattura)
-		self.assertEqual(len(fattura.linee), 2)
-		self.assertEqual(fattura.linee[1].prezzo_totale, Decimal("2.00"))
-		self.assertEqual(fattura.linee[1].natura, "N4")
-		self.assertEqual(fattura.riepiloghi[0].imponibile_importo, Decimal("202.00"))
-		self.assertEqual(fattura.importo_totale, Decimal("202.00"))
-
 	def test_un_documento_multi_aliquota_produce_un_riepilogo_per_gruppo(self):
 		calcolo = calcola(
 			classifica(

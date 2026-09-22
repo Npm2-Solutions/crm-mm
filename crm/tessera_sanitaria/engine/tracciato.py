@@ -47,7 +47,8 @@ from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 from xml.etree import ElementTree as ET
 
-from . import codice_fiscale as cf
+from crm.invoicing.engine import codice_fiscale as cf
+
 from .codici import (
 	FLAG_TIPO_SPESA_AMMESSO,
 	NATURE_IVA_DOCUMENTO_COMMERCIALE,

@@ -18,7 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt, getdate
 
-from crm.invoicing import registro
+from crm.invoicing import estensioni
 from crm.invoicing.engine import calcolo as motore
 from crm.invoicing.engine import codice_fiscale as cf
 from crm.invoicing.engine import diciture
@@ -175,7 +175,7 @@ def prepara(doc) -> dict:
 		doc.recipient_type or TipoDestinatario.PERSONA_FISICA,
 		regime,
 		emittente.get("sender_category"),
-		registro.risolutore(),
+		estensioni.risolutore(),
 	)
 
 	soggetto_a_bollo = bool(doc.subject_to_stamp_duty) and any(

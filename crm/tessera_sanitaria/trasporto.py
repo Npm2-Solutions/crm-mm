@@ -33,13 +33,13 @@ from frappe.utils.password import get_decrypted_password
 
 from crm.invoicing import acube, documento, ts
 from crm.invoicing.engine import busta
-from crm.invoicing.engine.codici import (
+from crm.tessera_sanitaria.engine.codici import (
 	CODICE_DELEGA_ASSENTE,
 	CODICE_DELEGA_PRESENTE,
 	CODICI_RETROCESSIONE,
 	descrivi_esito,
 )
-from crm.invoicing.engine.sistema_ts import (
+from crm.tessera_sanitaria.engine.tracciato import (
 	OPERAZIONE_DA_FLAG,
 	Ambiente,
 	Credenziali,

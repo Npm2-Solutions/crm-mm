@@ -16,12 +16,10 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
-from crm.invoicing import acube, documento, registro, ts
+from crm.invoicing import acube, documento, estensioni
 from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
-from crm.invoicing.engine.professioni import elenco as professioni_di_serie
-from crm.invoicing.engine.sistema_ts import richiede_credenziali
 
 
 def _fattura(name: str):
@@ -297,17 +295,6 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 
 
 @frappe.whitelist(methods=["POST"])
-def prepare_ts_submission(company: str, year: int) -> dict:
-	"""Build the Sistema TS file for a year.
-
-	Invoices that do not validate are listed and left behind rather than holding the
-	whole year hostage: a single broken row must not cost the deadline.
-	"""
-	frappe.has_permission("CRM TS Submission", "create", throw=True)
-	return ts.prepara_invio(company, int(year))
-
-
-@frappe.whitelist(methods=["POST"])
 def generate_pdf(invoice: str) -> dict:
 	"""Produce the PDF/A for an issued invoice that has none.
 
@@ -324,47 +311,15 @@ def generate_pdf(invoice: str) -> dict:
 	return pdf.genera_e_allega(fattura)
 
 
-@frappe.whitelist(methods=["POST"])
-def send_to_ts(invoice: str, operation: str = "") -> dict:
-	"""Report one issued invoice to the Sistema TS, synchronously.
+def _riga_mancante(condizione: bool, titolo: str, conseguenza: str, campo: str = "") -> dict | None:
+	"""One checklist row, or nothing when the gap is not there.
 
-	Synchronous on purpose: the answer comes back the same day, not on 20 January
-	with four thousand rows behind it. On `export` companies this refuses and points
-	at the file instead - and a failure here never touches the invoice, which the
-	patient already has.
+	Public shape rather than a closure: a module that registers extra duties builds
+	its rows the same way, so the list reads as one list and not as two.
 	"""
-	from crm.invoicing import trasporto_ts
-
-	return trasporto_ts.invia_documento(invoice, operation or None)
-
-
-@frappe.whitelist(methods=["POST"])
-def probe_delegation(company: str) -> dict:
-	"""Find out whether an Entratel mandate exists, by sending one real document.
-
-	The alternative is asking, and practices answer that question wrong without
-	meaning to - they do not know. Rejection 105 means there is no mandate, 106 means
-	there is one, and the company is moved to match.
-	"""
-	from crm.invoicing import trasporto_ts
-
-	frappe.has_permission("CRM Invoicing Company", "write", throw=True)
-	return trasporto_ts.sonda_delega(company)
-
-
-@frappe.whitelist(methods=["POST"])
-def record_ts_outcome(submission: str, code: str, message: str = "", protocol: str = "") -> dict:
-	"""Record the outcome of a Sistema TS submission."""
-	frappe.has_permission("CRM TS Submission", "write", throw=True)
-	ts.segna_esito(submission, code, message, protocol)
-	return {"submission": submission, "code": code}
-
-
-@frappe.whitelist()
-def ts_status(company: str, year: int) -> dict:
-	"""What is still outstanding for a year, and how long there is left."""
-	frappe.has_permission("CRM TS Submission", "read", throw=True)
-	return ts.stato(company, int(year))
+	if not condizione:
+		return None
+	return {"title": titolo, "consequence": conseguenza, "field": campo}
 
 
 @frappe.whitelist()
@@ -383,8 +338,9 @@ def onboarding_checklist(company: str) -> list[dict]:
 	voci: list[dict] = []
 
 	def manca(condizione: bool, titolo: str, conseguenza: str, campo: str = "") -> None:
-		if condizione:
-			voci.append({"title": titolo, "consequence": conseguenza, "field": campo})
+		riga = _riga_mancante(condizione, titolo, conseguenza, campo)
+		if riga:
+			voci.append(riga)
 
 	manca(
 		not emittente.get("tax_id"),
@@ -473,64 +429,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		_("At least one service card"),
 		_("A service without a card is not billable."),
 	)
-	if emittente.get("sender_category") not in (None, "", "non_sanitario"):
-		manca(
-			not emittente.get("ts_certificate"),
-			_("Sistema TS certificate"),
-			_("The expense file is built with a stand-in and cannot be submitted."),
-			"ts_certificate",
-		)
-		manca(
-			richiede_credenziali(emittente.get("ts_mode")) and not emittente.get("ts_username"),
-			_("Sistema TS credentials"),
-			_("Submission falls back to export until they arrive."),
-			"ts_username",
-		)
-		manca(
-			emittente.get("ts_mode") == "provider" and not emittente.get("ts_provider_endpoint"),
-			_("Sistema TS channel"),
-			_(
-				"The Sistema TS is set to go through the provider but has no endpoint: the "
-				"tracciato is built and nothing carries it. Configure it, or fall back to export "
-				"and upload from the portal."
-			),
-			"ts_provider_endpoint",
-		)
-
-	for qualifica in registro.da_verificare(company):
-		voci.append(
-			{
-				"title": _("Verify {0}").format(qualifica["qualification_name"]),
-				"consequence": qualifica["needs_verification"],
-				"field": "",
-				"link": {"doctype": "CRM Professional Qualification", "name": qualifica["name"]},
-			}
-		)
-	return voci
-
-
-@frappe.whitelist()
-def shipped_qualifications() -> list[dict]:
-	"""The register as it ships, for comparison with what is stored.
-
-	Useful when a rule moves: the file is where the research lives, the records are
-	what the practice runs on, and seeing them side by side is how a change gets
-	noticed instead of silently diverging.
-	"""
-	frappe.has_permission("CRM Professional Qualification", "read", throw=True)
-	return [
-		{
-			"code": p.codice,
-			"label": p.etichetta,
-			"category": p.categoria,
-			"vat_exempt": p.esente_iva,
-			"sdi_rule": p.regola_sdi,
-			"ts_required": p.obbligo_ts,
-			"needs_verification": list(p.da_verificare),
-			"stored": bool(frappe.db.exists("CRM Professional Qualification", p.codice)),
-		}
-		for p in professioni_di_serie()
-	]
+	voci.extend(estensioni.controlli_aggiuntivi(emittente))
 
 
 @frappe.whitelist()

@@ -21,8 +21,8 @@ from decimal import Decimal
 import frappe
 from frappe import _
 
-from crm.invoicing.engine.professioni import Professione
-from crm.invoicing.engine.professioni import professione as professione_di_serie
+from crm.tessera_sanitaria.engine.professioni import Professione
+from crm.tessera_sanitaria.engine.professioni import professione as professione_di_serie
 
 CAMPI = (
 	"code",
