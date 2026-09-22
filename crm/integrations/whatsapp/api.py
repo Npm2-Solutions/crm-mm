@@ -32,7 +32,13 @@ from crm.integrations.meta.client import (
 from crm.integrations.meta.oauth import is_hub
 from crm.integrations.meta.relay import sign as relay_sign
 from crm.integrations.meta.relay import valid_relay_signature
-from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, config_in_use, make_state
+from crm.integrations.whatsapp.signup import (
+	CONNECT_PATH,
+	config_id,
+	config_in_use,
+	hint_for,
+	make_state,
+)
 
 RELAY_TIMEOUT = 15
 
@@ -493,25 +499,27 @@ def recent_signup_attempts(limit: int = 8) -> dict:
 	_check_manager()
 	if not is_hub():
 		return {"is_hub": False, "attempts": []}
-	return {
-		"is_hub": True,
-		"attempts": frappe.get_all(
-			"WhatsApp Signup Session",
-			fields=[
-				"creation",
-				"event",
-				"current_step",
-				"outcome",
-				"error_message",
-				"error_code",
-				"error_id",
-				"session_id",
-				"site_url",
-			],
-			order_by="creation desc",
-			limit=frappe.utils.cint(limit) or 8,
-		),
-	}
+	rows = frappe.get_all(
+		"WhatsApp Signup Session",
+		fields=[
+			"creation",
+			"event",
+			"current_step",
+			"outcome",
+			"error_message",
+			"error_code",
+			"error_id",
+			"session_id",
+			"site_url",
+		],
+		order_by="creation desc",
+		limit=frappe.utils.cint(limit) or 8,
+	)
+	for row in rows:
+		# what we worked out about a code Meta does not document, so the number
+		# on screen comes with somewhere to go
+		row["hint"] = hint_for(row.get("error_code"))
+	return {"is_hub": True, "attempts": rows}
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method

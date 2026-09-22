@@ -149,6 +149,45 @@ ERROR_KEYS = {
 }
 
 
+# Meta does not document every code it sends, so this is where what we worked
+# out goes — plainly labelled as a lead, never as a verdict. It exists because
+# the alternative is a number on screen and an afternoon of searching that ends
+# where ours ended: nobody documents it.
+#
+# `1690xxx` is documented in exactly one place, *Business Owned Businesses*
+# (`POST /{business_id}/owned_businesses`, `client_businesses`) — the calls with
+# which an aggregator business links a client business. That is the step
+# Embedded Signup runs when the customer picks their portfolio, so the code is
+# about the portfolio, not about WhatsApp.
+SIGNUP_HINTS = (
+	(
+		"1690",
+		_(
+			"This code belongs to the business-portfolio step, not to WhatsApp. Two documented "
+			"causes fit: a WhatsApp Business Account created through the developer app cannot be "
+			"selected in Embedded Signup at all, and the flow is meant to attach a customer's "
+			"portfolio to yours. A sandbox test account rules out both at once."
+		),
+	),
+	(
+		"200",
+		_(
+			"Meta refused for want of permission. On a live app only permissions approved for "
+			"Advanced Access appear in the flow at all."
+		),
+	),
+)
+
+
+def hint_for(error_code: str | None) -> str:
+	"""What we know about a code Meta did not document. A lead, not a verdict."""
+	code = str(error_code or "")
+	for prefix, hint in SIGNUP_HINTS:
+		if code.startswith(prefix):
+			return hint
+	return ""
+
+
 def error_fields(data: dict) -> dict:
 	"""Meta's own words about a failure, pulled out of whatever shape they came in.
 
@@ -491,6 +530,7 @@ __all__ = [
 	"connect_url",
 	"discover_assets",
 	"error_fields",
+	"hint_for",
 	"login_url",
 	"make_state",
 	"parse_state",

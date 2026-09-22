@@ -612,3 +612,38 @@ class TestTheErrorIsCollected(IntegrationTestCase):
 			answer = A.recent_signup_attempts(limit=2)
 		self.assertTrue(answer["is_hub"])
 		self.assertEqual(answer["attempts"][0]["error_message"], "boom")
+
+
+class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
+	"""Meta does not document every code it sends. `1690130` is one: it is not in
+	the Embedded Signup error tables, nor in WhatsApp's, and no public source
+	describes it. What we worked out belongs next to the number — labelled as a
+	lead, never as a verdict — because the alternative is a bare number and an
+	afternoon of searching that ends where ours ended.
+	"""
+
+	def test_the_portfolio_family_gets_the_portfolio_lead(self):
+		hint = S.hint_for(1690130)
+		self.assertIn("business-portfolio step", hint)
+		self.assertIn("sandbox", hint)
+
+	def test_the_whole_family_matches_not_just_the_one_we_saw(self):
+		for code in (1690130, 1690165, "1690192"):
+			self.assertTrue(S.hint_for(code))
+
+	def test_a_permissions_error_gets_the_permissions_lead(self):
+		self.assertIn("Advanced Access", S.hint_for("200"))
+
+	def test_an_unknown_code_invents_nothing(self):
+		self.assertEqual(S.hint_for("133010"), "")
+		self.assertEqual(S.hint_for(None), "")
+		self.assertEqual(S.hint_for(""), "")
+
+	def test_the_lead_travels_with_the_row(self):
+		from crm.integrations.whatsapp import api as A
+
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(state, "ERROR", {"error_message": "nope", "error_code": 1690130})
+		with patch.object(A, "is_hub", return_value=True):
+			answer = A.recent_signup_attempts(limit=1)
+		self.assertIn("business-portfolio step", answer["attempts"][0]["hint"])

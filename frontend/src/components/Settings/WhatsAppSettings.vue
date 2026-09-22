@@ -97,6 +97,11 @@
               <div v-if="row.error_message" class="text-ink-red-5">
                 {{ row.error_message }}
               </div>
+              <!-- what we worked out about a code Meta does not document. A
+                   lead, not a verdict — and it is labelled as one. -->
+              <div v-if="row.hint" class="text-ink-gray-6">
+                {{ row.hint }}
+              </div>
               <!-- the two values Meta asks for when you open a support ticket -->
               <div
                 v-if="row.error_id || row.session_id"

@@ -967,11 +967,49 @@ sviluppo — cioe' quello del numero di test che Meta presta — non e'
 selezionabile da Embedded Signup, per progetto. Non e' una configurazione da
 sistemare.
 
-### Come si distingue quale delle due
+### Cosa dice internet: niente
 
-Un **sandbox test account** risponde a entrambe in un colpo: e' un portfolio che
+Cercato (22/09): `1690130` **non e' documentato da nessuna parte**. Non e' nelle
+tabelle di errore di Embedded Signup, non e' in quelle di WhatsApp, e nessuna
+delle guide dei vendor che elencano gli errori del flusso — MSG91, Wati, Qiscus,
+360dialog — lo cita. Le loro liste coprono il portfolio ristretto, la
+verifica business mancante, il numero gia' registrato: non questo.
+
+Una cosa utile c'e', dalla documentazione di 360dialog:
+
+> The Embedded Signup uses Facebook Login, so **only the owner or administrator
+> of the Business Portfolio can start and complete the flow**. Third-party
+> providers are not allowed to navigate the Embedded Signup on behalf of the
+> business.
+
+Dice che il flusso lo deve fare il proprietario del portfolio, non il fornitore
+al suo posto. Non dice che il fornitore non possa collegare il **proprio**
+portfolio — quindi l'ipotesi «non si puo' essere clienti di se stessi» resta
+un'ipotesi, dedotta dalla famiglia del codice, non una cosa scritta.
+
+### Quindi: cosa e' certo e cosa no
+
+| | |
+|---|---|
+| **Certo** | `1690xxx` e' documentato solo sotto *Business Owned Businesses*: riguarda il passo del portfolio, non WhatsApp |
+| **Certo** | «WABAs originally created via the developer app **cannot be selected or onboarded** directly through the Embedded Signup flow» — limite assoluto, e combacia con un WABA nato dal numero di test |
+| **Ipotesi** | che `1690130` significhi proprio «questo portfolio e' il tuo» |
+| **Ignoto** | il significato esatto del codice: nessuno lo pubblica |
+
+### Come si distingue
+
+Un **sandbox test account** risponde a tutto in un colpo: e' un portfolio che
 non e' il nostro e un WABA che non nasce dall'app di sviluppo. Se con quello il
-flusso arriva in fondo, la causa era una delle due e non c'e' niente da
-correggere nel codice. Se fallisce anche li', allora e' altro, e il log adesso
-ha `error_code`, `error_id`, `session_id` e `timestamp` — cioe' tutto quello che
-Meta chiede per aprire un ticket.
+flusso arriva in fondo, la causa era una di quelle e non c'e' niente da
+correggere nel codice. Se fallisce anche li', allora e' altro — e il log adesso
+ha `error_code`, `error_id`, `session_id` e `timestamp`, cioe' esattamente quello
+che Meta chiede per aprire un ticket, che a quel punto e' la strada giusta.
+
+### E il codice lo dice sullo schermo
+
+`hint_for()` tiene quello che abbiamo ricostruito, indicizzato per famiglia di
+codice, e la schermata lo scrive sotto il messaggio di Meta. **Etichettato come
+pista, non come verdetto**: e' ricostruito da noi, non pubblicato da Meta, e
+scriverlo come se fosse documentato sarebbe peggio che non scriverlo. Ma
+l'alternativa era un numero sullo schermo e un pomeriggio di ricerche che
+finisce dove e' finito il nostro.
