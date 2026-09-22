@@ -56,6 +56,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [22](./22-app-review-facebook.md) | App Review dell'app Facebook: cosa serve e cosa no | 🟡 in corso | Stato letto dall'API di Meta: l'app e' in dev mode, quindi i lead dei clienti non possono arrivare. Le 7 permission che servono, le 6 da togliere, l'ordine delle operazioni e i testi degli use case |
 | [23](./23-spesa-e-ritorno.md) | Spesa e ritorno: il costo per cliente, non per lead | ✅ fatto | La spesa di Meta letta ogni giorno per inserzione e incrociata con le trattative del CRM: costo per lead, costo per cliente acquisito e ROAS per inserzione — il numero che ne' Meta ne' il CRM sanno da soli |
 | [24](./24-qualita-dei-lead.md) | Qualita' dei lead: far imparare le inserzioni dalle vendite | ✅ fatto | Conversions API per CRM: gli stadi del funnel tornano a Meta col lead id, cosi' le inserzioni ottimizzano per chi compra e non per chi compila. Coda, copertura, e i requisiti veri detti chiari |
+| [25](./25-costo-hosting.md) | Quanto costa tenerci i clienti sopra | 📊 stima | Un server condiviso invece di un piano per sito: quale taglio, quanti siti ci stanno e perche'. Il carico di cron per sito e' quello che decide il numero, non il prezzo del server |
 
 ## Architettura complessiva
 
