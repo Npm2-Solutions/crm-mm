@@ -1244,3 +1244,52 @@ verifica da fare era descritta in una riga. Nessuno l'ha eseguita, e il costo
 non e' stato un errore: e' stato **un errore che sembrava un altro errore**.
 `3441038` ha mandato a cercare permessi e portfolio per un giorno, quando la
 causa era due passi prima.
+
+## La schermata del numero: cosa scegliere, e cosa non scegliere
+
+La schermata di Meta offre tre cose, e solo una porta a Coexistence:
+
+```
+Inserisci un nuovo numero di telefono          ← QUESTA
+Usa un nome visualizzato con un numero virtuale
+[elenco dei numeri gia' nei portfolio a cui hai accesso]
+```
+
+Dalla documentazione di *Version 4 Public Preview*, flusso Coexistence:
+
+> Phone number entry screen: This screen lets the business customer enter the
+> phone number they want to onboard. **To trigger the Coexistence flow, the
+> customer must enter a WhatsApp Business app phone number.**
+
+> The Coexistence flow is **automatically triggered when the business customer
+> enters a phone number that is already in use with the WhatsApp Business app.**
+
+Quindi il numero **si scrive**, non si sceglie dall'elenco. L'elenco contiene i
+numeri gia' registrati nei portfolio: sono numeri Cloud API, non numeri che
+stanno su un telefono. Sceglierne uno di li' e' l'altro flusso.
+
+### Perche' alcuni sono «Non idoneo»
+
+Il **numero di test** (`+1 555-…`) e' permanentemente non idoneo, ed e'
+documentato due volte: «Existing WABAs that were originally created via the
+developer app cannot be selected or onboarded directly through the Embedded
+Signup flow», e i numeri 555 «cannot be migrated to another WhatsApp Business
+Account, or used outside of the WhatsApp Business platform». Non c'e' niente da
+sistemare: non sara' mai selezionabile li'.
+
+### WhatsApp Business, non WhatsApp
+
+Coexistence riguarda **l'app WhatsApp Business**, versione 2.24.17 o superiore.
+Un numero con il WhatsApp normale non e' un caso di Coexistence, ed e' anche il
+caso peggiore:
+
+> Registered numbers can still be used for everyday purposes… but **cannot be
+> used with WhatsApp Messenger**. **Numbers already in use with WhatsApp cannot
+> be registered unless they are deleted first.**
+
+Cioe': col WhatsApp normale non si puo' ne' fare Coexistence ne' registrare il
+numero — a meno di cancellare prima l'account WhatsApp, che e' una cosa che a un
+cliente non si chiede.
+
+Percio' la prima domanda davanti a un collegamento che non parte non e' quale
+portfolio o quale permesso: e' **quale app c'e' su quel telefono**.

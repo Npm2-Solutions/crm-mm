@@ -27,8 +27,14 @@
 		{% elif launch %}
 			<h1 class="wa-title">{{ _("Connect WhatsApp Business") }}</h1>
 			<p class="wa-text">
-				{{ _("You will keep using WhatsApp on your phone as always. Press the button and pick your existing WhatsApp Business account.") }}
+				{{ _("You will keep using WhatsApp on your phone as always. Messages will also appear in your CRM, and the last months of conversations are imported.") }}
 			</p>
+			<ol class="wa-steps">
+				<li>{{ _("Type the number that has the WhatsApp Business app on it. Do not pick another number from the list: typing the right one is what turns on the connection that keeps your phone working.") }}</li>
+				<li>{{ _("Check that the business details shown are yours, and choose your business portfolio.") }}</li>
+				<li>{{ _("Scan the QR code with the WhatsApp Business app on that phone.") }}</li>
+				<li>{{ _("Choose whether to bring your chat history across.") }}</li>
+			</ol>
 			<button class="wa-btn" id="wa-connect">{{ _("Continue on Facebook") }}</button>
 			<div class="wa-status" id="wa-status"></div>
 			<!-- last resort, and it is a different flow: this link cannot ask for
@@ -50,7 +56,8 @@
 				{{ _("You will keep using WhatsApp on your phone as always. Messages will also appear in your CRM, and the last months of conversations are imported.") }}
 			</p>
 			<ol class="wa-steps">
-				<li>{{ _("Pick the business and the phone number you use on WhatsApp.") }}</li>
+				<li>{{ _("Type the number that has the WhatsApp Business app on it. Do not pick another number from the list: typing the right one is what turns on the connection that keeps your phone working.") }}</li>
+				<li>{{ _("Check that the business details shown are yours, and choose your business portfolio.") }}</li>
 				<li>{{ _("Scan the QR code with the WhatsApp Business app on that phone.") }}</li>
 				<li>{{ _("Choose whether to bring your chat history across.") }}</li>
 			</ol>
