@@ -172,12 +172,13 @@ SIGNUP_HINTS = (
 	(
 		"3441",
 		_(
-			"Meta refused for want of a right over a resource, and the resource is almost "
-			"certainly the business portfolio or the WhatsApp account chosen a screen earlier "
-			"— not the phone number being typed. Meta words the same refusal plainly "
-			"elsewhere: «You do not have the Admin level permission needed to create WhatsApp "
-			"Business Accounts under the Business Account you selected.» Check that the person "
-			"running the flow is Admin of the portfolio they picked."
+			"Meta refused for want of a right over a resource, and it does not say which. The "
+			"likeliest one is the WhatsApp Business app account behind the number just typed: "
+			"after that number the flow has to read it, to show the business its own name and "
+			"picture, and that read is part of Coexistence. If Coexistence is not switched on "
+			"for the flow, there is no right to read it. The second candidate is the business "
+			"portfolio chosen a screen earlier, where Admin is required and membership is not "
+			"enough. What it is almost certainly not is the phone number itself."
 		),
 	),
 	(

@@ -1416,3 +1416,37 @@ Coexistence. E' anche un tipo che Meta non migra da solo —
 standard. Il bottone che dice «Avvia l'iscrizione integrata per **condividere**
 un account WhatsApp Business» sta gia' dicendo che e' un'altra cosa: condividere
 un conto, non collegare un telefono.
+
+## `3441038`, riletto meglio — e una correzione
+
+Prima lettura: «il portfolio scelto allo schermo prima, dove serve Admin».
+Plausibile, ma indicava il posto sbagliato dove guardare.
+
+La schermata su cui compare e' la **phone number entry screen**, che nella v4
+esiste in **tutti e due** i flussi. Quello che cambia e' cosa succede dopo:
+
+> To trigger the Coexistence flow, the customer **must enter a WhatsApp Business
+> app phone number**.
+
+> **Business profile screen**: This screen displays the WhatsApp Business app
+> account details associated with the entered phone number — the profile
+> picture, name, phone number, and website that the business has set in the
+> WhatsApp Business app.
+
+Quindi scrivere il numero e' la mossa giusta, e subito dopo il flusso deve
+**leggere l'account WhatsApp Business che sta dietro a quel numero**, per
+mostrarne nome e foto. Quella lettura e' un pezzo di Coexistence.
+
+Ed e' li' che «non disponi delle autorizzazioni per visualizzare questa risorsa»
+torna a significare qualcosa di preciso: **la risorsa e' quell'account**, e
+senza Coexistence attiva non c'e' nessun diritto di leggerlo.
+
+Il portfolio resta il secondo candidato — li' serve Admin e essere membri non
+basta. Ma la prima cosa da guardare non e' un permesso: e' **se il ramo
+Coexistence e' acceso**.
+
+### Cosa e' stato escluso
+
+Verificato sull'app (22/09): `whatsapp_business_messaging` e
+`whatsapp_business_management` sono entrambi **advanced access, approvati e
+live**. Non e' l'App Review, e non e' un permesso mancante.

@@ -641,6 +641,7 @@ class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
 		"""The message names no resource, and the one being typed when it appears
 		is the phone number — which is the wrong place to look."""
 		hint = S.hint_for(3441038)
+		self.assertIn("WhatsApp Business app account", hint)
 		self.assertIn("business portfolio", hint)
 		self.assertIn("not the phone number", hint)
 
