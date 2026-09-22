@@ -163,10 +163,14 @@ SIGNUP_HINTS = (
 	(
 		"1690",
 		_(
-			"This code belongs to the business-portfolio step, not to WhatsApp. Two documented "
-			"causes fit: a WhatsApp Business Account created through the developer app cannot be "
-			"selected in Embedded Signup at all, and the flow is meant to attach a customer's "
-			"portfolio to yours. A sandbox test account rules out both at once."
+			"This code belongs to the business-portfolio step, not to WhatsApp. It is the family "
+			"Meta documents under client businesses — an aggregator business attaching a client "
+			"business — so when it fires on the last screen, the one that offers to share the "
+			"account, the id it names is a portfolio that cannot be the client. The usual reason "
+			"is that it is your own: the customer's WhatsApp account has to live in a portfolio "
+			"other than the one that owns the Meta app. A second documented cause is a WhatsApp "
+			"Business Account created through the developer app, which Embedded Signup cannot "
+			"select at all. A sandbox test account rules out both at once."
 		),
 	),
 	(

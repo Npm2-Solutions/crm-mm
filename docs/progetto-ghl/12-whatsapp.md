@@ -1585,3 +1585,48 @@ clients can invalidate business integration system user access tokens by going
 to Business Manager > Settings > Business Settings > Integrations > Connected
 apps and removing your app»). Tolta la concessione, il giro successivo riparte
 da zero — **anche nel Builder**.
+
+## `1690130` all'ultimo passo: il portfolio del cliente non puo' essere il nostro
+
+Questa e' la conclusione, ed e' arrivata quando l'errore ha cambiato posizione.
+
+All'inizio `1690130` compariva subito. Dopo aver rimesso il numero in un
+portfolio e riprovato, il flusso e' andato fino in fondo — immagine del
+profilo, QR, e la schermata finale:
+
+> Il tuo account WhatsApp Business ora e' collegato al tuo portfolio business.
+> **Se continui, condividerai** il tuo account WhatsApp Business e il tuo
+> profilo business **con NPM2**.
+
+Ed e' li' che si ferma. Quel passo e' precisamente cio' che la famiglia
+`1690xxx` documenta — `owned_businesses` / `client_businesses`, cioe'
+**l'aggregator business che aggancia un client business**.
+
+E `1270213918015409` e' l'id che comparve nel callback della dashboard
+dell'app: **il portfolio che possiede l'app**. Il nostro.
+
+Quindi il flusso sta provando ad agganciare il portfolio di NPM2 come **cliente
+di NPM2**. Non si puo' essere clienti di se stessi, e l'errore lo dice a modo
+suo: quell'id non e' valido *come client business*.
+
+### La regola, e perche' morde solo in prova
+
+Il conto WhatsApp del cliente deve stare in un **portfolio diverso** da quello
+che possiede l'app Meta. In produzione non succede mai: il portfolio del
+cliente e' suo. Morde solo quando si prova su se stessi, con l'unico portfolio
+che si ha sottomano — che e' esattamente il caso per cui Meta offre i **sandbox
+account**, «a portfolio that is not yours».
+
+### La riga che ha fatto perdere due giorni
+
+La sequenza vera era:
+
+1. `1690130` all'inizio → stesso motivo, portfolio sbagliato;
+2. poi io ho tolto `FB.login` e rotto Coexistence, **sovrapponendo un secondo
+   guasto al primo**;
+3. da li' in poi ogni sintomo era ambiguo: non si capiva piu' quale dei due
+   guasti si stesse guardando.
+
+Sommare un guasto nostro a uno di configurazione, mentre si indaga, e' il modo
+piu' rapido per non capire piu' niente. Il momento di cambiare il lancio non
+era durante un'indagine.

@@ -631,6 +631,9 @@ class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
 	def test_the_portfolio_family_gets_the_portfolio_lead(self):
 		hint = S.hint_for(1690130)
 		self.assertIn("business-portfolio step", hint)
+		# the thing that took two days to see: a customer cannot be your client
+		# while sitting in the portfolio that owns your app
+		self.assertIn("other than the one that owns the Meta app", hint)
 		self.assertIn("sandbox", hint)
 
 	def test_the_whole_family_matches_not_just_the_one_we_saw(self):
