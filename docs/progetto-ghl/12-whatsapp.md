@@ -1138,3 +1138,60 @@ Admin**, e se quello scelto allo schermo prima e' proprio quello.
 Nota: questo errore arriva **dopo** `1690130`, non al suo posto. Il passo del
 portfolio ora passa; e' il passo dopo che si ferma. E' un avanzamento, non uno
 scambio.
+
+## Staccare il collegamento dal telefono, e perche' il QR non ritorna
+
+### Come si stacca
+
+Dalla documentazione di *Onboard WhatsApp Business app users*:
+
+> You cannot use the Deregister API to deregister a business phone number from
+> Cloud API if it is already in use with both Cloud API and the WhatsApp
+> Business app. Instead, your clients can use the WhatsApp Business app to
+> disconnect from Cloud API by navigating to **Settings > Account > Business
+> Platform** and clicking the **Disconnect Account** button.
+
+Quindi: **non da API, dal telefono.** WhatsApp Business → Impostazioni →
+Account → Business Platform → *Disconnetti account*. L'API non serve e non
+funzionerebbe: un numero in Coexistence non si deregistra da fuori.
+
+### Perche' il QR non ricompare
+
+Perche' dal punto di vista di Meta quel numero **e' gia' collegato**. La
+schermata «collega il tuo account esistente» offre di collegare qualcosa che
+risulta gia' collegato, quindi non ha niente da offrire.
+
+E c'e' una finestra che spiega come ci si arriva a meta':
+
+> when a business completes the flow and you onboard the customer, you have
+> **24 hours to synchronize their messaging history, otherwise they must be
+> offboarded and they must complete the flow again**.
+
+Il primo tentativo era arrivato fino al QR: il numero ha preso il suo companion
+Cloud API. Il resto del flusso e' fallito subito dopo, quindi la
+sincronizzazione non e' mai partita. Risultato: mezzo collegato — abbastanza
+perche' Coexistence non si rioffra, non abbastanza perche' funzioni.
+
+Staccare dal telefono riporta il numero allo stato di partenza, e il QR torna.
+
+### Adesso il CRM se ne accorge
+
+Quando il collegamento viene staccato, Meta manda un `account_update` con
+`PARTNER_REMOVED` — e, se e' stato il sistema a staccarlo, anche un
+`disconnection_info` con il motivo e chi l'ha fatto. Il gestore c'era e scriveva
+una riga di log che non legge nessuno.
+
+Ora ogni notifica di questo tipo diventa una riga in `WhatsApp Signup Session`,
+accanto ai tentativi di collegamento, intestata al site del cliente giusto:
+
+| Evento | Come viene letto |
+|---|---|
+| `PARTNER_ADDED`, `PARTNER_APP_INSTALLED` | collegato |
+| `PARTNER_REMOVED`, `PARTNER_APP_UNINSTALLED` | **scollegato**, col motivo e chi l'ha fatto |
+| `ACCOUNT_OFFBOARDED` | telefono cambiato o rinregistrato: Meta lo ricollega da solo in pochi minuti, invio sospeso nel frattempo |
+| `ACCOUNT_RECONNECTED` | ricollegato |
+| qualunque altro | scritto comunque — un evento che non abbiamo mai visto e' esattamente quello per cui serve una riga |
+
+`ACCOUNT_OFFBOARDED` non e' un guasto e non viene segnato come tale: e' quello
+che succede ogni volta che un cliente cambia telefono. Ma qualche messaggio
+fallisce mentre dura, e senza la riga si va a caccia della ragione sbagliata.
