@@ -782,3 +782,70 @@ campo no, e una registrazione fallita non diceva niente a questo CRM.
 La schermata guardava solo se l'URL fosse registrato — trovava di si', e
 taceva. Adesso legge anche i campi e, quando ne manca qualcuno, lo scrive per
 nome con un bottone *Completalo* accanto. Da premere una volta.
+
+## Un click, e si apre Facebook (22/09/2026)
+
+La pagina `/whatsapp-connect` con il bottone **Start** era una schermata di
+troppo: il cliente preme Connetti nel CRM, e la cosa dopo che deve vedere e'
+Facebook, non una pagina che gli spiega che sta per vedere Facebook.
+
+Non si poteva togliere finche' il lancio passava da `FB.login`, per un motivo
+strutturale: `FB.login` apre un popup, e un popup si apre solo dentro un click.
+Il click deve avvenire su un dominio in *Allowed domains* — cioe' sull'hub —
+quindi serviva una pagina dell'hub con un bottone. Il click nel CRM non si puo'
+prestare a una finestra diversa.
+
+La strada che lo toglie e' **non usare un popup per Facebook**: una navigazione
+di primo livello non ha bisogno di nessun permesso.
+
+```
+CRM: click su Connetti
+  → window.open(hub/whatsapp-connect?state=…&go=1)     ← e' nel click: consentito
+      → la pagina hub NON si disegna: redirect immediato a
+        facebook.com/v23.0/dialog/oauth?config_id=…&redirect_uri=…&extras=…
+          → tutto il flusso dentro quella finestra
+            → Facebook torna su hub/whatsapp-connect?code=…&state=…
+              → la pagina chiude il collegamento, avvisa il CRM, si chiude
+```
+
+Per chi guarda: preme Connetti, si apre una finestra di Facebook. Nessuna
+schermata intermedia, e nessun popup di Facebook da far sopravvivere ai
+blocchi — la finestra e' la nostra, aperta dal click, e dentro ci va un
+redirect.
+
+`go=1` e' quello che dice alla pagina di essere un passaggio e non una
+schermata. Senza, la pagina col bottone c'e' ancora: serve a chi arriva da un
+link vecchio, e come ripiego se la configurazione manca.
+
+### Cosa e' documentato e cosa no
+
+**Documentato.** Il `config_id` su un dialog costruito a mano lo dice *Facebook
+Login for Business*: «Build a manual login flow […] include your configuration
+ID as an optional parameter». E lo `state` torna indietro intatto, dice
+*Manually Build a Login Flow*: «This parameter […] will be passed back to you,
+unchanged, in your redirect URI». Lo usiamo, con sessionStorage come secondo
+appoggio.
+
+**Non documentato: `extras`.** Con l'SDK JavaScript Coexistence si chiede con
+`extras.featureType = whatsapp_business_app_onboarding`. Su un dialog costruito
+a mano `extras` non e' documentato da nessuna parte. Lo mandiamo come parametro
+di query, nella stessa forma che usa la pagina di onboarding ospitata da Meta —
+ma **se Meta lo ignora, il flusso ricade sull'onboarding Cloud API normale**, e
+il cliente finisce su un numero nuovo invece che sul suo.
+
+### Quindi la verifica e' a valle, non a monte
+
+Coexistence si decide dentro il flusso di Meta, dove non possiamo guardare. Ma
+Meta la dice dopo, e la *Onboard WhatsApp Business app users* spiega come:
+
+> If `is_on_biz_app` is true and `platform_type` is `CLOUD_API`, the business
+> phone number is able to use Cloud API and the WhatsApp Business app.
+
+`check_coexistence` legge quei due campi appena il numero e' collegato. Se
+`is_on_biz_app` non e' vero, il collegamento resta valido — e' un numero Cloud
+API funzionante — ma finisce scritto nell'error log e nel log di sessione con
+il motivo per cui e' un problema: *l'app WhatsApp Business del cliente NON e'
+collegata, e lo storico delle chat non arrivera'*.
+
+Un esito diverso non e' un guasto da annullare. La cosa che non deve essere e'
+silenziosa.

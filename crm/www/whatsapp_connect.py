@@ -18,7 +18,13 @@ import frappe
 from frappe import _
 
 from crm.integrations.meta.client import get_whatsapp_app_id
-from crm.integrations.whatsapp.signup import allowed_site, config_id, connect_url, parse_state
+from crm.integrations.whatsapp.signup import (
+	allowed_site,
+	config_id,
+	connect_url,
+	login_url,
+	parse_state,
+)
 
 no_cache = 1
 
@@ -40,9 +46,12 @@ def get_context(context):
 	context.return_url = ""
 	context.error = ""
 
+	context.launch = ""
+
 	if context.returning:
 		# Everything this leg needs was kept in the tab that started the flow;
-		# the page picks it up from sessionStorage instead of from the URL.
+		# the page picks it up from sessionStorage, or from the state Facebook
+		# hands back, instead of from a fresh link.
 		return context
 	if not parsed:
 		context.error = _(
@@ -55,4 +64,10 @@ def get_context(context):
 	else:
 		context.site_label = parsed["site"]
 		context.return_url = parsed["site"] + "/crm?settings=WhatsApp"
+		# `go` says the CRM sent the person here to connect, not to read about
+		# connecting. Then this page is a waypoint, not a screen: it hands the
+		# browser on to Facebook without waiting for a second click. The card
+		# below stays as the fallback for anyone who lands here without it.
+		if frappe.form_dict.get("go"):
+			context.launch = login_url(context.state)
 	return context

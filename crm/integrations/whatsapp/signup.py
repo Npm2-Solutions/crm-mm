@@ -22,6 +22,7 @@ import hashlib
 import hmac
 import json
 import time
+from urllib.parse import urlencode
 
 import frappe
 import requests
@@ -182,6 +183,7 @@ def complete_signup(
 	token = exchange_code(code, connect_url() if frappe.utils.cint(redirected) else "")
 	waba_id, phone_number_id = discover_assets(token, waba_id, phone_number_id)
 	number = describe_number(phone_number_id, token)
+	coexistence = check_coexistence(phone_number_id, number, token)
 
 	claim_route(waba_id, phone_number_id, number.get("display_phone_number"), site)
 	subscribe_waba(waba_id, token)
@@ -190,9 +192,14 @@ def complete_signup(
 	log_session_event(
 		state,
 		"CONNECTED",
-		{"waba_id": waba_id, "phone_number_id": phone_number_id, "current_step": "delivered"},
+		{
+			"waba_id": waba_id,
+			"phone_number_id": phone_number_id,
+			"current_step": "delivered",
+			"coexistence": coexistence,
+		},
 	)
-	return {"ok": True, "site": site}
+	return {"ok": True, "site": site, "coexistence": coexistence}
 
 
 def connect_url() -> str:
@@ -203,6 +210,67 @@ def connect_url() -> str:
 	the `fallback_redirect_uri` the page hands to `FB.login`.
 	"""
 	return get_url().rstrip("/") + CONNECT_PATH
+
+
+# What Coexistence asks Embedded Signup for. In the JS SDK this rides in
+# `extras`; on a hand-built dialog URL there is no documented home for it, so it
+# is sent as a query parameter in the same shape Meta's own hosted onboarding
+# page uses. If Meta ignores it there, the flow falls back to the plain Cloud
+# API onboarding — which is why `check_coexistence` looks at the result instead
+# of trusting it.
+SIGNUP_EXTRAS = {"setup": {}, "featureType": "whatsapp_business_app_onboarding"}
+
+
+def login_url(state: str) -> str:
+	"""The Facebook login dialog, addressed directly.
+
+	`FB.login` needs a click to open its pop-up, and a click can only happen on
+	a page we have already put in front of the person — which is the extra
+	screen nobody wants. A top-level navigation needs no click and no pop-up
+	permission, so the hub page can send the browser straight on to Facebook
+	the moment it loads.
+
+	Meta documents the configuration id on a hand-built dialog
+	("include your configuration ID as an optional parameter"). It does not
+	document `extras` there.
+	"""
+	params = {
+		"client_id": get_whatsapp_app_id(),
+		"config_id": config_id(),
+		"redirect_uri": connect_url(),
+		"response_type": "code",
+		"override_default_response_type": "true",
+		"extras": json.dumps(SIGNUP_EXTRAS),
+		# Strict Mode ignores its value when matching the redirect URI, and the
+		# manual-flow guide says it comes back unchanged. Belt; sessionStorage
+		# in the page is the braces.
+		"state": state,
+	}
+	return f"https://www.facebook.com/v23.0/dialog/oauth?{urlencode(params)}"
+
+
+def check_coexistence(phone_number_id: str, number: dict, token: str) -> bool:
+	"""Did the number keep its WhatsApp Business app, or did we just take it over?
+
+	Coexistence is the whole promise made to the client — "you keep using
+	WhatsApp on your phone as always" — and it is decided inside Meta's flow,
+	where we cannot see. Meta does expose the answer afterwards: a number that
+	can do both reads `is_on_biz_app: true` with `platform_type: CLOUD_API`.
+
+	A plain Cloud API onboarding is not a failure to undo; it is a different
+	outcome, and the one thing it must not be is silent.
+	"""
+	on_app = bool(number.get("is_on_biz_app"))
+	if on_app:
+		return True
+	frappe.log_error(
+		f"Number {phone_number_id} finished Embedded Signup without Coexistence: "
+		f"is_on_biz_app={number.get('is_on_biz_app')!r} "
+		f"platform_type={number.get('platform_type')!r}. The client's WhatsApp Business "
+		f"app is NOT connected, and their chat history will not arrive.",
+		"WhatsApp: onboarded without Coexistence",
+	)
+	return False
 
 
 def exchange_code(code: str, redirect_uri: str = "") -> str:
@@ -283,7 +351,7 @@ def describe_number(phone_number_id: str, token: str) -> dict:
 		return whatsapp_graph_get(
 			phone_number_id,
 			token,
-			{"fields": "display_phone_number,verified_name,quality_rating,platform_type"},
+			{"fields": "display_phone_number,verified_name,quality_rating,platform_type,is_on_biz_app"},
 		)
 	except MetaAPIError:
 		frappe.log_error(frappe.get_traceback(), "WhatsApp: could not read the phone number")
@@ -368,6 +436,7 @@ __all__ = [
 	"config_id",
 	"connect_url",
 	"discover_assets",
+	"login_url",
 	"make_state",
 	"parse_state",
 	"sign",

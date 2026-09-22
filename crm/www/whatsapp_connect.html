@@ -24,6 +24,11 @@
 				{{ _("Facebook sent you back here. Give us a moment while we finish setting up your number.") }}
 			</p>
 			<div class="wa-status" id="wa-status"></div>
+		{% elif launch %}
+			<h1 class="wa-title">{{ _("Opening WhatsApp setup") }}</h1>
+			<p class="wa-text">{{ _("Facebook is opening. If nothing happens, use the button below.") }}</p>
+			<a class="wa-btn" style="text-decoration:none;display:inline-block" href="{{ launch }}">{{ _("Continue on Facebook") }}</a>
+			<div class="wa-status" id="wa-status"></div>
 		{% elif error %}
 			<h1 class="wa-title">{{ _("Cannot connect") }}</h1>
 			<div class="wa-error">{{ error }}</div>
@@ -44,7 +49,7 @@
 	</div>
 </div>
 
-{% if returning or not error %}
+{% if returning or launch or not error %}
 <script>
 	// What the tab knows about this onboarding. The pop-up flow keeps it in
 	// these variables; the full-page fallback destroys them, so it also goes to
@@ -104,6 +109,17 @@
 			.then(function (result) {
 				if (!result.ok) throw new Error((result.body && result.body.exc_type) || 'error');
 				forget();
+				// A pop-up must not navigate the CRM: it tells the window that
+				// opened it and gets out of the way. Only a tab that IS the
+				// CRM's own navigates.
+				if (window.opener && !window.opener.closed) {
+					say({{ _("Connected. You can close this window.") | tojson }});
+					try {
+						window.opener.postMessage({ type: 'crm-whatsapp-connected' }, '*');
+					} catch (e) { /* the opener may be gone; closing still helps */ }
+					window.close();
+					return;
+				}
 				say({{ _("Connected. Taking you back to your CRM…") | tojson }});
 				if (returnUrl) window.location.href = returnUrl;
 			})
@@ -116,6 +132,22 @@
 </script>
 {% endif %}
 
+{% if launch %}
+<script>
+	// The waypoint. Nothing to read and nothing to press: remember what the
+	// return leg will need, then hand the browser to Facebook. A top-level
+	// navigation needs no pop-up permission, which is the whole reason this is
+	// a redirect and not another FB.login.
+	(function () {
+		remember({
+			state: {{ state | tojson }},
+			return_url: {{ return_url | tojson }},
+		});
+		window.location.replace({{ launch | tojson }});
+	})();
+</script>
+{% endif %}
+
 {% if returning %}
 <script>
 	// The redirect leg. Nothing usable is in the URL except the code, so the
@@ -124,6 +156,11 @@
 		var kept = recall();
 		var denied = {{ denied | tojson }};
 		var code = {{ code | tojson }};
+		// Facebook returns `state` unchanged on a hand-built dialog. When it
+		// does, it beats the tab's memory — a person who started in one tab and
+		// came back in another still lands here with a usable state.
+		var returnedState = {{ state | tojson }};
+		if (returnedState) kept.state = returnedState;
 
 		if (denied) {
 			logEvent(kept.state, 'CANCEL', { current_step: 'redirect', status: denied });
@@ -154,7 +191,7 @@
 </script>
 {% endif %}
 
-{% if not returning and not error %}
+{% if not returning and not launch and not error %}
 <script>
 	// Whether Facebook's script ever arrived. Without this the click handler
 	// called FB.login on an undefined FB: the button greyed out, the status said

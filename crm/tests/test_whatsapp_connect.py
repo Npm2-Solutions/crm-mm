@@ -368,3 +368,127 @@ class TestWebhookFieldsAreChecked(IntegrationTestCase):
 			A.subscribed_field_names({"fields": ["messages", {"name": "history"}]}), ["messages", "history"]
 		)
 		self.assertEqual(A.subscribed_field_names({}), [])
+
+
+class TestOneClickLaunch(IntegrationTestCase):
+	"""The CRM's Connect button should end on Facebook, not on a second screen.
+
+	`FB.login` needs a click to open its pop-up, and a click needs a page in
+	front of the person first — which is the screen nobody wants. A top-level
+	navigation needs no click, so the hub page can hand the browser straight on.
+	"""
+
+	def setUp(self):
+		frappe.local.conf["whatsapp_signup_config_id"] = "CONF1"
+
+	def tearDown(self):
+		frappe.local.conf.pop("whatsapp_signup_config_id", None)
+		frappe.db.rollback()
+
+	def test_the_dialog_url_carries_what_meta_documents(self):
+		url = S.login_url("STATE1")
+		self.assertTrue(url.startswith("https://www.facebook.com/"))
+		self.assertIn("/dialog/oauth?", url)
+		for expected in (
+			"config_id=CONF1",
+			"response_type=code",
+			"override_default_response_type=true",
+			"state=STATE1",
+		):
+			self.assertIn(expected, url)
+
+	def test_the_redirect_uri_is_the_one_registered_on_the_app(self):
+		"""Strict Mode matches character for character, so this must be exactly
+		`connect_url()` — the value that is in Valid OAuth Redirect URIs."""
+		from urllib.parse import parse_qs, urlparse
+
+		query = parse_qs(urlparse(S.login_url("S")).query)
+		self.assertEqual(query["redirect_uri"], [S.connect_url()])
+
+	def test_coexistence_is_still_asked_for(self):
+		from urllib.parse import parse_qs, urlparse
+
+		query = parse_qs(urlparse(S.login_url("S")).query)
+		self.assertEqual(json.loads(query["extras"][0])["featureType"], "whatsapp_business_app_onboarding")
+
+	def test_go_turns_the_page_into_a_waypoint(self):
+		from crm.www.whatsapp_connect import get_context
+
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict({"state": state, "go": "1"})
+		try:
+			get_context(context)
+		finally:
+			frappe.form_dict = frappe._dict()
+		self.assertEqual(context.error, "")
+		self.assertIn("/dialog/oauth?", context.launch)
+
+	def test_without_go_the_page_still_draws_itself(self):
+		"""Anyone who lands here from an old link must still see the card."""
+		from crm.www.whatsapp_connect import get_context
+
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict({"state": state})
+		try:
+			get_context(context)
+		finally:
+			frappe.form_dict = frappe._dict()
+		self.assertEqual(context.launch, "")
+		self.assertEqual(context.error, "")
+
+	def test_the_return_leg_never_launches(self):
+		"""A page that both finishes and relaunches would loop for ever."""
+		from crm.www.whatsapp_connect import get_context
+
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict({"code": "CODE", "go": "1"})
+		try:
+			get_context(context)
+		finally:
+			frappe.form_dict = frappe._dict()
+		self.assertTrue(context.returning)
+		self.assertEqual(context.launch, "")
+
+	def test_the_crm_sends_the_browser_straight_through(self):
+		from crm.integrations.whatsapp import api as A
+
+		with (
+			patch.object(A, "whatsapp_installed", return_value=True),
+			patch.object(A, "hub_url", return_value="https://hub.test/"),
+		):
+			answer = A.get_connect_url()
+		self.assertIn("go=1", answer["url"])
+		self.assertEqual(answer["hub_origin"], "https://hub.test")
+
+
+class TestCoexistenceIsVerified(IntegrationTestCase):
+	"""Coexistence is decided inside Meta's flow, where we cannot look.
+
+	It is also the whole promise made to the client — "you keep using WhatsApp
+	on your phone as always" — so the one thing a plain Cloud API onboarding
+	must not be is silent.
+	"""
+
+	def test_a_number_on_both_is_coexistence(self):
+		number = {"is_on_biz_app": True, "platform_type": "CLOUD_API"}
+		with patch.object(S.frappe, "log_error") as log:
+			self.assertTrue(S.check_coexistence("PHONE", number, "TOKEN"))
+		log.assert_not_called()
+
+	def test_a_number_only_on_cloud_api_is_written_down(self):
+		number = {"is_on_biz_app": False, "platform_type": "CLOUD_API"}
+		with patch.object(S.frappe, "log_error") as log:
+			self.assertFalse(S.check_coexistence("PHONE", number, "TOKEN"))
+		self.assertTrue(log.called)
+		self.assertIn("without Coexistence", log.call_args[0][1])
+
+	def test_a_number_meta_said_nothing_about_is_not_assumed_good(self):
+		with patch.object(S.frappe, "log_error"):
+			self.assertFalse(S.check_coexistence("PHONE", {}, "TOKEN"))
+
+	def test_the_flag_is_asked_for(self):
+		with patch.object(S, "whatsapp_graph_get", return_value={}) as graph:
+			S.describe_number("PHONE", "TOKEN")
+		self.assertIn("is_on_biz_app", graph.call_args[0][2]["fields"])

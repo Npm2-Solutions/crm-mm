@@ -460,7 +460,16 @@ def get_connect_url() -> dict:
 	if not config_id():
 		frappe.throw(_("WhatsApp signup is not configured yet — ask your provider"))
 	state = make_state(get_url().rstrip("/"))
-	return {"url": f"{hub_url()}{CONNECT_PATH}?state={state}"}
+	hub = hub_url().rstrip("/")
+	# `go` tells the hub page not to draw itself: the person pressed Connect
+	# here, so the next thing they should see is Facebook, not a second screen
+	# explaining that they are about to see Facebook.
+	return {
+		"url": f"{hub}{CONNECT_PATH}?state={state}&go=1",
+		# so the CRM can tell a "connected" message from the hub apart from
+		# anything else a page might post at it
+		"hub_origin": hub,
+	}
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
