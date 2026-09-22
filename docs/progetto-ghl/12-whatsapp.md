@@ -779,6 +779,24 @@ builder**. Non e' la stessa cosa di quale id manda questo CRM: quello sta in
 naso e' costato un pomeriggio, quindi ora Settings → WhatsApp scrive l'id in
 uso accanto a quello dell'app, e dice da dove viene.
 
+E si e' visto subito a cosa serviva: il builder di Meta mostrava la Tech
+Provider, ma l'id che il CRM mandava era quello **a 60 giorni**. Le due cose
+erano diverse e nessuno poteva accorgersene.
+
+### E si puo' cambiare
+
+La casella dell'id compariva **solo finche' l'id mancava**, dentro il riquadro
+"Still missing". Appena salvato, il riquadro spariva e con lui l'unico posto da
+cui modificarlo: il primo valore salvato era anche l'ultimo possibile. Un'app
+puo' tenere piu' configurazioni, e quale mandare cambia — un token che scade
+contro uno che non scade — quindi la casella non poteva essere un fatto
+irreversibile.
+
+Adesso la riga dell'id ha **Cambia** accanto, precompilata con quello in uso.
+Non compare quando l'id viene dal bench config: li' la modifica da questa
+schermata non avrebbe effetto, perche' il bench vince, e un campo che non fa
+niente e' peggio di nessun campo.
+
 ## Il campo del webhook che non c'era
 
 L'iscrizione registrata sull'app ha cinque campi:
