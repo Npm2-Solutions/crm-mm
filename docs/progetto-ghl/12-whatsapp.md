@@ -1505,3 +1505,35 @@ titolare e' il portfolio dove quel conto e' rimasto.
 
 Invertire 1 e 3 fa perdere tempo: senza il deploy, anche un numero perfettamente
 libero non vedrebbe comunque il ramo Coexistence.
+
+## `sessionInfoVersion`: la terza chiave che mancava
+
+Il payload che manda Coexistence ha **tre** chiavi. Ne mandavamo due.
+
+Dalla pagina *Onboard WhatsApp Business app users*, che e' la pagina di
+Coexistence, il suo stesso snippet:
+
+```js
+extras: {
+  setup: {},
+  featureType: "whatsapp_business_app_onboarding",
+  sessionInfoVersion: "3"
+}
+```
+
+`sessionInfoVersion` sembra un dettaglio sul logging — si chiama come il log di
+sessione — e l'avevamo lasciato fuori perche' la pagina *Versions* per la v4 non
+lo elenca. Ma:
+
+- la pagina di Coexistence lo stampa nel suo snippet;
+- l'Embedded Signup Builder ha *Versione informazioni sulla sessione* come menu
+  a se', impostato su 3;
+- e per la v2 la pagina *Versions* diceva: «Partners are **required** to add a
+  `sessionInfoVersion` to receive the callback».
+
+Tre posti dicono che conta. Una pagina che non lo nomina non era una ragione
+per toglierlo.
+
+Ora lo mandiamo, ed e' la stessa costante per tutt'e due i lanci — quello con
+`FB.login` e l'URL di ripiego — con un test che li confronta: due strade che
+chiedono cose diverse fanno fallire una in un modo che l'altra non riproduce.

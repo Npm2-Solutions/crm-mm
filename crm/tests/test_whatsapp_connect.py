@@ -722,3 +722,44 @@ class TestAccountNoticesAreKept(IntegrationTestCase):
 			with patch.object(C.frappe, "log_error") as log:
 				C.handle_account_update({"event": "PARTNER_REMOVED"})
 		self.assertTrue(log.called)
+
+
+class TestTheExtrasMatchMetaSnippet(IntegrationTestCase):
+	"""Coexistence is asked for in `extras`, and the object has three keys.
+
+	We shipped two. `sessionInfoVersion` reads like a detail about logging, and
+	the v4 Versions page does not list it — but the Coexistence page prints it,
+	the Embedded Signup Builder has it as a dropdown of its own, and v2
+	documented it as the thing without which the callback never arrives.
+	"""
+
+	def test_every_key_meta_prints_is_sent(self):
+		self.assertEqual(
+			S.SIGNUP_EXTRAS,
+			{
+				"setup": {},
+				"featureType": "whatsapp_business_app_onboarding",
+				"sessionInfoVersion": "3",
+			},
+		)
+
+	def test_the_page_and_the_dialog_url_ask_for_the_same_thing(self):
+		"""Two launch paths that disagree about what they request would make one
+		of them fail in a way the other cannot reproduce."""
+		import json as _json
+		import pathlib
+		import re
+		from urllib.parse import parse_qs, urlparse
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		block = re.search(r"extras:\s*\{(.+?)\n\t\t\t\},", page, re.DOTALL)
+		self.assertTrue(block, "the page must still pass extras to FB.login")
+		for key, value in (
+			("featureType", "whatsapp_business_app_onboarding"),
+			("sessionInfoVersion", "3"),
+		):
+			self.assertIn(key, block.group(1))
+			self.assertIn(value, block.group(1))
+
+		query = parse_qs(urlparse(S.login_url("S")).query)
+		self.assertEqual(_json.loads(query["extras"][0]), S.SIGNUP_EXTRAS)

@@ -320,7 +320,19 @@
 			// which carries a `state` query the app's registered redirect URI
 			// does not — and Strict Mode answers that with "URL blocked".
 			fallback_redirect_uri: {{ connect_url | tojson }},
-			extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding' },
+			// Exactly the object Meta prints on the Coexistence page, down to the
+			// third key. `sessionInfoVersion` looks like a detail about logging
+			// — it is named after the session log, after all — and we left it
+			// out because the v4 Versions page does not list it. The Coexistence
+			// page does, the Embedded Signup Builder has it as a dropdown of its
+			// own, and v2 documented it as the thing without which the callback
+			// never arrives. Three places say it matters; one page not
+			// mentioning it was not a reason to drop it.
+			extras: {
+				setup: {},
+				featureType: 'whatsapp_business_app_onboarding',
+				sessionInfoVersion: '3',
+			},
 		});
 		} catch (e) {
 			// FB.login threw: a blocked popup, a stale SDK, a bad configuration.

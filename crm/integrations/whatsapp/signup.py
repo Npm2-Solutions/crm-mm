@@ -322,7 +322,11 @@ def connect_url() -> str:
 # page uses. If Meta ignores it there, the flow falls back to the plain Cloud
 # API onboarding — which is why `check_coexistence` looks at the result instead
 # of trusting it.
-SIGNUP_EXTRAS = {"setup": {}, "featureType": "whatsapp_business_app_onboarding"}
+SIGNUP_EXTRAS = {
+	"setup": {},
+	"featureType": "whatsapp_business_app_onboarding",
+	"sessionInfoVersion": "3",
+}
 
 
 def login_url(state: str) -> str:
