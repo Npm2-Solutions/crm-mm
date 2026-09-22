@@ -1450,3 +1450,58 @@ Coexistence e' acceso**.
 Verificato sull'app (22/09): `whatsapp_business_messaging` e
 `whatsapp_business_management` sono entrambi **advanced access, approvati e
 live**. Non e' l'App Review, e non e' un permesso mancante.
+
+## «Prima andava, ora no»: le due cose cambiate
+
+Il dato decisivo: **le prime volte comparivano il QR e la foto profilo**. Sono
+schermate del ramo Coexistence, e nessun'altra strada le mostra. Quindi, senza
+piu' ipotesi:
+
+- l'app **puo'** fare Coexistence;
+- la configurazione di accesso e' quella giusta;
+- **il numero e' idoneo** (eta' dell'account, attivita', versione dell'app);
+- i permessi ci sono.
+
+Tutto quello che avevamo sospettato e' escluso da un fatto osservato, non da un
+ragionamento. Restano due cose, che sono cambiate davvero.
+
+### 1. Noi abbiamo smesso di chiedere Coexistence
+
+`FB.login` porta `extras`, il dialog costruito a mano no. Passando al redirect
+per togliere un click abbiamo smesso di mandare `featureType`, e da quel momento
+il flusso non puo' piu' offrire il ramo Coexistence — a chiunque, con qualunque
+numero. Le prime prove, quelle col QR, giravano ancora con `FB.login`.
+
+Questa e' la parte nostra, e si ripara deployando.
+
+### 2. Il primo tentativo ha lasciato qualcosa a meta'
+
+Il QR era stato **inquadrato**: il numero ha preso il suo companion Cloud API.
+Il flusso e' morto subito dopo, quindi la sincronizzazione non e' mai partita,
+e la finestra per farla e' di 24 ore:
+
+> you have 24 hours to synchronize their messaging history, otherwise they must
+> be offboarded and they must complete the flow again.
+
+Da qui due conseguenze che si sommano:
+
+> **Numbers already connected to WhatsApp API cannot use Coexistence.**
+
+e, se quel tentativo ha creato un WABA che poi non e' mai stato condiviso con
+l'app, leggerlo diventa esattamente «non disponi delle autorizzazioni per
+visualizzare questa risorsa. **Contatta il titolare della risorsa**» — il
+titolare e' il portfolio dove quel conto e' rimasto.
+
+### L'ordine in cui si sistema
+
+1. **Deploy**, perche' finche' `extras` non arriva a Meta nessuna pulizia si
+   puo' verificare.
+2. **Scollegare dal telefono** (WhatsApp Business → Impostazioni → Account →
+   Business Platform → Disconnetti account) e controllare che dica scollegato.
+3. **Guardare cosa e' rimasto in WhatsApp Manager**: un WABA o un numero creato
+   nel primo tentativo, sotto il portfolio usato allora. Se c'e', il numero va
+   tolto da li' — finche' resta agganciato, Coexistence non si rioffre.
+4. Riprovare.
+
+Invertire 1 e 3 fa perdere tempo: senza il deploy, anche un numero perfettamente
+libero non vedrebbe comunque il ramo Coexistence.
