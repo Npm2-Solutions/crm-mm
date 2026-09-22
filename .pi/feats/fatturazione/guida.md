@@ -10,6 +10,22 @@ Il modulo e' `crm/invoicing/`. La documentazione tecnica sta nel suo
 
 ---
 
+## Due moduli, una direzione
+
+Il codice e' diviso come fossero due app, perche' un domani possano esserlo:
+
+- **`crm/invoicing`** emette, calcola, stampa, conserva e trasmette documenti per
+  qualsiasi settore. Non sa che esiste il sanitario: niente professioni, niente tipi
+  spesa, niente delega, niente pazienti;
+- **`crm/tessera_sanitaria`** aggiunge la meta' sanitaria e si innesta da sola, su
+  tre punti di estensione.
+
+La dipendenza va in una direzione sola, e c'e' un test che lo verifica. In
+`crm/hooks.py` c'e' la riga che decide che il modulo TS e' installato: **togliendola
+resta un sistema di fatturazione funzionante**.
+
+---
+
 ## Dove si configura
 
 Tutto sta in **Impostazioni → Fatturazione**, nella modale del CRM: azienda
@@ -210,6 +226,22 @@ Due dettagli che decidono se funziona:
   quel punto i cinque giorni corrono gia': il canale si rifiuta e dice cosa manca.
   Il `.p7m` firmato si allega sul documento.
 
+### Solo uscita, o anche ingresso
+
+Sul canale provider c'e' un interruttore per azienda:
+
+- **`uscita`** manda le fatture e riporta indietro le loro ricevute. Basta.
+- **`entrambi`** archivia anche le fatture che ti mandano i fornitori.
+
+Il ciclo passivo e' volutamente **un registro, non una contabilita'**: cosa e'
+arrivato, da chi, e il file originale. Niente riconciliazione con gli ordini, niente
+approvazione, niente registrazione — fare meta' partita doppia sarebbe peggio che non
+farla. L'XML e' il documento; tutto il resto e' comodita' che il provider aveva gia'
+estratto.
+
+Accendilo solo dove qualcuno lo legge davvero: una casella che non apre nessuno e'
+peggio di non averla.
+
 ### Il provider: la connessione, e cosa resta da verificare
 
 Nessun fornitore e' cablato nel codice: endpoint, URL di login e campo
@@ -370,14 +402,27 @@ Cambiano solo gli ultimi dieci centimetri.
 
 | Modalita' | Cosa serve | Chi trasmette |
 |---|---|---|
-| `provider` | un endpoint sull'intermediario accreditato | il provider, sotto il proprio accreditamento |
-| `credenziali_studio` | utente, password, PINCODE, **nessuna delega attiva** | il CRM |
+| `credenziali_studio` | utente, password, PINCODE del centro, **nessuna delega attiva** | il CRM, in diretta |
 | `intermediario` | commercialista Entratel **con** delega attiva | il CRM, canale `/entrate/` |
-| `export` | niente | lo studio, dal portale |
+| `provider` | un endpoint sull'intermediario accreditato | il provider, sotto il proprio accreditamento |
+| `export` | niente | il centro, dal portale |
 
-**Il predefinito e' `provider`**, per lo stesso motivo dello SdI: qualcuno il canale
-deve guardarlo. Le strade dirette non costano niente a documento e restano intere —
-ma le credenziali sono dello studio, e anche il silenzio.
+**Il predefinito e' `credenziali_studio`**, e il motivo e' commerciale prima che
+tecnico: non costa niente a documento, ed e' questo che rende le *fatture sanitarie
+illimitate* un prodotto invece di una perdita. Un centro con sei professionisti fa
+circa sedicimila righe l'anno: contarle finirebbe nel prezzo o nel margine.
+
+Le credenziali sono **del centro e le inserisce il centro**, dalle sue impostazioni.
+Una credenziale che non hai e' un incidente che non puoi avere.
+
+`provider` e' la risposta per il centro che la strada diretta **non puo'** prenderla:
+dove la delega ce l'ha il commercialista, trasmettere in nome proprio torna `105`. E'
+un segmento vero, e poterlo servire e' una differenza che vale.
+
+Il predefinito non blocca il salvataggio: un centro si configura prima che arrivino
+le credenziali, e fermare l'onboarding su un campo che si riempie la settimana dopo
+sarebbe assurdo. Il buco compare in «Cosa manca», l'invio si rifiuta da solo finche'
+non lo chiudi, e **la fatturazione non aspetta niente di tutto questo**.
 
 **Attenzione: il sì del provider non e' il sì del Sistema TS.** La chiamata diretta e'
 sincrona e la risposta porta il protocollo. Il provider invece prende il file e lo

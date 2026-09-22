@@ -83,11 +83,16 @@ const predefiniti = {
   number_format: '{anno}/{serie}/{numero}',
   stamp_duty_mode: 'su_originale',
   sender_category: 'non_sanitario',
-  // Both channels are born on the provider, same as the DocType's own defaults:
-  // two places disagreeing about where a company starts is how a company starts
-  // somewhere nobody chose.
-  ts_mode: 'provider',
+  // Same as the DocType's own defaults: two places disagreeing about where a
+  // company starts is how a company starts somewhere nobody chose.
+  //
+  // The two channels differ on purpose. The SdI goes through the accredited
+  // intermediary, because somebody has to watch it. The Sistema TS goes out on
+  // the centre's own credentials, because it costs nothing per document and that
+  // is what makes unlimited healthcare invoicing a product rather than a loss.
+  ts_mode: 'credenziali_studio',
   sdi_mode: 'provider',
+  sdi_flow: 'uscita',
   provider_environment: 'sandbox',
   enabled: 1,
 }

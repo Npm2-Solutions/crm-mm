@@ -683,12 +683,12 @@
    "label": "Sistema TS transmission"
   },
   {
-   "default": "provider",
-   "description": "provider hands the tracciato to the accredited intermediary, which is the default for the same reason it is on the SdI side: somebody has to watch the channel. credenziali_studio transmits straight from here with the practice's own Sistema TS credentials - no per-document cost, but the practice owns the credentials and the silence. intermediario is the same, on the /entrate/ channel, for an accountant with an active mandate. export prepares the file and the practice uploads it from the portal, and stays the tested fallback for all three.",
+   "default": "credenziali_studio",
+   "description": "credenziali_studio transmits straight from here with the centre's own Sistema TS credentials, and is the default: it costs nothing per document, which is what makes unlimited healthcare invoicing possible as a product rather than as a loss. The credentials belong to the centre and are entered by the centre. intermediario is the same channel for an accountant holding an active mandate. provider hands the tracciato to the intermediary instead - the answer for a centre whose accountant holds the mandate, so the direct route is closed to it. export prepares the file and the centre uploads it from the portal, and stays the tested fallback for all three.",
    "fieldname": "ts_mode",
    "fieldtype": "Select",
    "label": "Submission mode",
-   "options": "export\nprovider\ncredenziali_studio\nintermediario"
+   "options": "credenziali_studio\nintermediario\nprovider\nexport"
   },
   {
    "depends_on": "eval:doc.ts_mode=='provider'",
@@ -714,7 +714,8 @@
    "depends_on": "eval:doc.ts_mode!='export'",
    "fieldname": "ts_username",
    "fieldtype": "Data",
-   "label": "Sistema TS user"
+   "label": "Sistema TS user",
+   "description": "The centre's own Sistema TS user. Entered by whoever runs the centre, from their own settings - not collected and held on their behalf. A credential you do not hold is an incident you cannot have."
   },
   {
    "depends_on": "eval:doc.ts_mode!='export'",
@@ -738,7 +739,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-22 10:00:00.000000",
+ "modified": "2026-09-22 11:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

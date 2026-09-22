@@ -40,31 +40,33 @@ to guess.
 
 ## Architecture
 
+**Two modules, one direction.**
+
 ```
-DESK / SPA (data)                    ENGINE (code, no Frappe)          BRIDGE (Frappe)
- CRM Invoicing Company ──────┐        crm/invoicing/engine/
- CRM Professional Qualification ─┼──► professioni.py                    registro.py
- CRM Billable Service ───────┤        classificazione.py  ← the triple  documento.py
- CRM Service Provider ───────┘        calcolo.py                        xml_sdi.py
-                                      numerazione.py                    ts.py
- CRM Invoice ──────────────────────►  diciture.py                       api.py
-   + Item / Tax Summary / Payment     fatturapa.py     → XML            monitoraggio.py
-                                      sistema_ts.py    → zip
- CRM Invoice Series (counter)         codici.py · codice_fiscale.py
- CRM TS Submission · CRM Invoice Log
+crm/invoicing/            issues, calculates, formats, preserves, transmits
+   engine/                pure Python, no Frappe - the auditable core
+   sdi/                   export, PEC, the accredited provider, the inbound door
+   estensioni.py          where another module plugs in
+
+crm/tessera_sanitaria/    the healthcare half, which extends the above
+   engine/                the register, the tracciato, the spesa codes
 ```
 
-`engine/` imports nothing from Frappe and has no database, no network and no
-global state. It is the part an accountant has to be able to read, and its 231
-tests run with a checkout and a Python interpreter:
+Invoicing knows nothing about healthcare: no professions, no spesa types, no
+delega, no patients. It issues documents for any sector. The Sistema TS module adds
+the healthcare half and registers itself through three seams — a resolver for
+qualifications, an enricher for the secondary reporting code, and extra onboarding
+checks. `crm/hooks.py` is what decides the module is installed; **removing that one
+line leaves a working invoicing system**, and a test enforces that invoicing never
+imports the other way round.
 
-```bash
-python -m unittest discover -s crm/invoicing/tests -t .
-```
+The point is that lifting the second module into its own Frappe app later is a move
+and not a rewrite.
 
-The Frappe-side tests are in `crm/tests/test_invoicing.py` and need a bench.
-
----
+Inside invoicing, the engine is the part that matters: pure Python, no database, no
+site. A rule that decides whether somebody gets fined is provable with a checkout
+and an interpreter, which is what makes it auditable by an accountant rather than
+only by a developer.
 
 ## Where it is configured
 
@@ -353,30 +355,34 @@ One pipeline, four submission modes, and only the last ten centimetres change.
 
 | Mode | What it needs | Who transmits |
 |---|---|---|
-| `provider` | an endpoint on the accredited intermediary | the provider, under its own accreditation |
-| `credenziali_studio` | user, password, PINCODE, **no active mandate** | this system |
+| `credenziali_studio` | the centre's own user, password and PINCODE, **no active mandate** | this system, directly |
 | `intermediario` | an Entratel accountant **with** an active mandate | this system, on the `/entrate/` channel |
-| `export` | nothing | the practice, from the portal |
+| `provider` | an endpoint on the accredited intermediary | the provider, under its own accreditation |
+| `export` | nothing | the centre, from the portal |
 
-**`provider` is the default**, for the same reason it is on the SdI side: somebody
-has to watch the channel. The direct routes cost nothing per document and stay whole
-— but the practice owns the credentials, and owns the silence.
+**`credenziali_studio` is the default**, and the reason is commercial before it is
+technical. It costs nothing per document, and that is what makes *unlimited
+healthcare invoicing* a product rather than a loss: a centre with six practitioners
+reports around sixteen thousand lines a year, and metering those would either show
+up in the price or eat the margin. The credentials belong to the centre and are
+entered by the centre, from its own settings. A credential you do not hold is an
+incident you cannot have.
 
-Which modes need the practice's own credentials is one definition
-(`sistema_ts.richiede_credenziali`), because two places disagreeing about it is how a
-company gets blocked at a PINCODE field it can never fill: a company on `provider`
-has no Sistema TS credentials at all, and asking for them asks for something that
-does not exist.
+`provider` is the answer for the centre that **cannot** take the direct route —
+where the accountant holds an active mandate, transmitting in the centre's own name
+comes back as `105`. That is a real segment, and being able to serve it is a
+difference worth having.
 
-**A provider's yes is not the Sistema TS's yes.** The direct call is synchronous and
-its answer carries the protocol. A provider only takes the file and forwards it, so
-the document lands in `inviato` and never in `accolto` — writing `accolto` on a 202
-would invent an acceptance nobody gave, and the practice would find out next January.
-The silence watch counts `inviato` as waiting for exactly that reason.
+Which modes need the centre's own credentials is one definition
+(`tracciato.richiede_credenziali`), pinned by a test, because two places disagreeing
+about it blocks a save at a field that can never be filled — and because every mode
+in that set makes a centre hand over its fiscal identity, which should never grow by
+accident.
 
-The patient's fiscal code is **ciphered before it reaches anybody's API**, the
-provider's included. A non-2xx body is truncated into the log, because a provider
-that echoes the document back would otherwise write healthcare data into it.
+The default is not enforced at save time. A centre is set up before its credentials
+arrive, so blocking the save would stop onboarding at a field that will be filled
+next week: the gap shows in the checklist, the send refuses on its own until it is
+closed, and **nothing about invoicing waits on any of it**.
 
 `export` stays the universal plan B and stays tested even when every company is on
 automatic. The truth about the mandate is not asked for — practices answer it wrong

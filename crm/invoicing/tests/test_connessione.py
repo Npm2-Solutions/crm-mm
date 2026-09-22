@@ -13,7 +13,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from crm.invoicing.engine.busta import DURATA_MASSIMA, DURATA_PRUDENTE, MARGINE, durata_token as _durata
+from crm.invoicing.engine.busta import DURATA_MASSIMA, DURATA_PRUDENTE, MARGINE
+from crm.invoicing.engine.busta import durata_token as _durata
 from crm.invoicing.tests.base import UnitTestCase
 
 

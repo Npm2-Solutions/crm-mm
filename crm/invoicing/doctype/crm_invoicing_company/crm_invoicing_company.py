@@ -99,13 +99,11 @@ class CRMInvoicingCompany(Document):
 					"to be empty, only the codice fiscale is used"
 				).format(categoria)
 			)
-		if self.ts_mode in ("credenziali_studio", "intermediario") and not self.ts_username:
-			frappe.throw(
-				_(
-					"Submission mode {0} needs Sistema TS credentials. Leave it on export until they "
-					"arrive - export is the plan B, not the bottom rung."
-				).format(self.ts_mode)
-			)
+		# Deliberately not a throw. The intended mode is the centre's own credentials,
+		# and a centre is set up before its credentials arrive - blocking the save
+		# would stop onboarding at a field that will be filled next week. The gap
+		# shows in the checklist, and the send refuses on its own until it is closed.
+		# Nothing about invoicing waits on any of it.
 		if not self.fiscal_code and not self.tax_id:
 			frappe.throw(_("The Sistema TS needs a codice fiscale or a VAT number for the owner"))
 
