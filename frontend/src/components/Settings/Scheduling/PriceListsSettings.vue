@@ -71,7 +71,7 @@
       <div class="flex flex-1 flex-col overflow-hidden">
         <div v-if="selected" class="mb-2 flex items-center justify-between">
           <span class="text-p-base-medium text-ink-gray-8">
-            {{ __('Rules of {0}').replace('{0}', selected) }}
+            {{ __('Rules of {0}', [selected]) }}
           </span>
           <div class="flex items-center gap-2">
             <Button
@@ -403,10 +403,10 @@ function conditionsOf(rule) {
     )
   }
   if (rule.min_participants) {
-    parts.push(__('{0}+ people').replace('{0}', rule.min_participants))
+    parts.push(__('{0}+ people', [rule.min_participants]))
   }
   if (rule.max_participants) {
-    parts.push(__('up to {0}').replace('{0}', rule.max_participants))
+    parts.push(__('up to {0}', [rule.max_participants]))
   }
   if (rule.valid_from || rule.valid_upto) {
     parts.push(`${rule.valid_from || '…'} → ${rule.valid_upto || '…'}`)

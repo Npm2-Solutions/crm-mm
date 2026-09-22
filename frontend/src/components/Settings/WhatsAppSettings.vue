@@ -97,10 +97,9 @@
               <span class="text-p-sm text-ink-gray-6">
                 {{
                   webhook.data?.configured
-                    ? __('These are missing: {0}').replace(
-                        '{0}',
+                    ? __('These are missing: {0}', [
                         (webhook.data?.missing_fields || []).join(', '),
-                      )
+                      ])
                     : __(
                         'Without it no message reaches the CRM, in either direction.',
                       )
@@ -112,7 +111,9 @@
             </div>
             <Button
               :label="
-                webhook.data?.configured ? __('Complete it') : __('Configure it')
+                webhook.data?.configured
+                  ? __('Complete it')
+                  : __('Configure it')
               "
               :loading="configuringWebhook"
               @click="configureWebhook"

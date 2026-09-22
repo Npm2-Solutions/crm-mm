@@ -436,17 +436,10 @@ const serviceSummary = computed(() => {
   } else if (service.value.staff_selection === 'One per role') {
     parts.push(__('one professional per role'))
   } else if (service.value.staff_count > 1) {
-    parts.push(
-      __('{0} professionals').replace('{0}', service.value.staff_count),
-    )
+    parts.push(__('{0} professionals', [service.value.staff_count]))
   }
   if (service.value.max_participants > 1) {
-    parts.push(
-      __('up to {0} participants').replace(
-        '{0}',
-        service.value.max_participants,
-      ),
-    )
+    parts.push(__('up to {0} participants', [service.value.max_participants]))
   }
   return parts.join(' · ')
 })
@@ -552,7 +545,7 @@ function findSlots() {
       onSuccess: (data) => {
         slotList.value = (data || []).slice(0, 24)
         slotHint.value = slotList.value.length
-          ? __('{0} free slots in the next 7 days').replace('{0}', data.length)
+          ? __('{0} free slots in the next 7 days', [data.length])
           : __('No free slot in the next 7 days')
       },
       onError: (e) =>
@@ -825,10 +818,11 @@ function createSeries() {
       const skipped = data.skipped?.length || 0
       toast.success(
         skipped
-          ? __('{0} appointments created, {1} skipped for conflicts')
-              .replace('{0}', created)
-              .replace('{1}', skipped)
-          : __('{0} appointments created').replace('{0}', created),
+          ? __('{0} appointments created, {1} skipped for conflicts', [
+              created,
+              skipped,
+            ])
+          : __('{0} appointments created', [created]),
       )
       emit('saved', null)
     },

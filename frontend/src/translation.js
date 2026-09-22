@@ -5,9 +5,18 @@ export default function translationPlugin(app) {
   window.__ = translate
 }
 
+// A missing `replace` used to throw here, and a throw inside a render function
+// blanks the whole page: one forgotten argument, an entire settings screen gone
+// and a stack trace pointing at translation.js instead of at the call site.
+// Leaving the placeholder in place is wrong on screen but wrong in one line.
 function format(message, replace) {
+  const values = Array.isArray(replace)
+    ? replace
+    : replace == null
+      ? []
+      : [replace]
   return message.replace(/{(\d+)}/g, function (match, number) {
-    return typeof replace[number] != 'undefined' ? replace[number] : match
+    return typeof values[number] != 'undefined' ? String(values[number]) : match
   })
 }
 
