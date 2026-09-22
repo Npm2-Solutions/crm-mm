@@ -1100,3 +1100,41 @@ cause documentate e **nel codice non c'e' niente da correggere**. Se fallisce
 anche col sandbox, allora e' altro — e a quel punto il log ha `error_code`,
 `error_id`, `session_id` e `timestamp`, cioe' esattamente i quattro valori che
 Meta chiede per aprire un ticket.
+
+## `3441038`: «Non disponi delle autorizzazioni per questa risorsa»
+
+Compare alla schermata **Aggiungi il tuo numero di telefono WhatsApp**, dopo
+che il passo del portfolio e' andato a buon fine.
+
+Cercato (22/09): **non e' documentato**, come `1690130`. Ne' nelle tabelle di
+Embedded Signup, ne' in quelle di WhatsApp, ne' nelle guide dei vendor.
+
+Ma il testo dice una cosa che vale la pena leggere con attenzione: parla di
+**una risorsa**, e non dice quale. La risorsa che si sta compilando in quel
+momento e' il numero — ed e' il posto sbagliato dove guardare. Un numero non e'
+ancora una risorsa di nessuno: lo diventa quando viene creato **dentro** un
+WhatsApp Business Account, che sta **dentro** un portfolio. E' li' che un
+diritto puo' mancare.
+
+Meta la stessa cosa la dice in chiaro altrove, nella tabella degli errori di
+Embedded Signup:
+
+> **User does not have permission to create WhatsApp Business Accounts.** You do
+> not have the Admin level permission needed to create WhatsApp Business
+> Accounts under the Business Account you selected. *Suggested Solution: Get
+> Admin access to the Business Account to proceed or select an account you have
+> Admin permissions for.*
+
+E c'e' un motivo strutturale per cui questa configurazione lo pretende: e' una
+configurazione **System-user access token**, e la documentazione di Facebook
+Login for Business dice che con quel tipo «your app users will be required to
+log in using a business portfolio», e che «**any admin** in your business
+client's admin group can grant your app a system user access token». Admin,
+non membro.
+
+Quindi la cosa da controllare non e' il numero: e' **di quale portfolio si e'
+Admin**, e se quello scelto allo schermo prima e' proprio quello.
+
+Nota: questo errore arriva **dopo** `1690130`, non al suo posto. Il passo del
+portfolio ora passa; e' il passo dopo che si ferma. E' un avanzamento, non uno
+scambio.

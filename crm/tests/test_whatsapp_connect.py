@@ -631,6 +631,13 @@ class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
 		for code in (1690130, 1690165, "1690192"):
 			self.assertTrue(S.hint_for(code))
 
+	def test_the_missing_right_family_points_at_the_portfolio(self):
+		"""The message names no resource, and the one being typed when it appears
+		is the phone number — which is the wrong place to look."""
+		hint = S.hint_for(3441038)
+		self.assertIn("business portfolio", hint)
+		self.assertIn("not the phone number", hint)
+
 	def test_a_permissions_error_gets_the_permissions_lead(self):
 		self.assertIn("Advanced Access", S.hint_for("200"))
 

@@ -170,6 +170,17 @@ SIGNUP_HINTS = (
 		),
 	),
 	(
+		"3441",
+		_(
+			"Meta refused for want of a right over a resource, and the resource is almost "
+			"certainly the business portfolio or the WhatsApp account chosen a screen earlier "
+			"— not the phone number being typed. Meta words the same refusal plainly "
+			"elsewhere: «You do not have the Admin level permission needed to create WhatsApp "
+			"Business Accounts under the Business Account you selected.» Check that the person "
+			"running the flow is Admin of the portfolio they picked."
+		),
+	),
+	(
 		"200",
 		_(
 			"Meta refused for want of permission. On a live app only permissions approved for "
