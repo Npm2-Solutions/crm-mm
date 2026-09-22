@@ -12,19 +12,19 @@ from __future__ import annotations
 
 from frappe import _
 
-from crm.invoicing.sdi import manuale, pec, provider
+from crm.invoicing.sdi import itala, manuale, pec
 from crm.invoicing.sdi.base import ErroreCanale, EsitoInvio
 
 CANALI = {
 	manuale.CODICE: manuale,
 	pec.CODICE: pec,
-	provider.CODICE: provider,
+	itala.CODICE: itala,
 }
 
 ETICHETTE = {
 	manuale.CODICE: manuale.ETICHETTA,
 	pec.CODICE: pec.ETICHETTA,
-	provider.CODICE: provider.ETICHETTA,
+	itala.CODICE: itala.ETICHETTA,
 }
 
 

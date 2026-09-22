@@ -29,6 +29,27 @@ def leggi_ricevute() -> list[dict]:
 	return ricezione.scansiona_posta()
 
 
+def riconcilia_provider() -> list[dict]:
+	"""Ask the provider for what it is holding, for every company on that channel.
+
+	The webhook is the fast path and this is the one that catches what it missed: a
+	delivery that never arrived leaves no trace anywhere, and the invoice it was
+	about sits in `inviato` looking exactly like one that went through.
+	"""
+	from crm.invoicing.api import reconcile_provider
+
+	try:
+		esiti = reconcile_provider()
+	except Exception as errore:
+		frappe.log_error(title="Provider reconciliation failed", message=str(errore))
+		return []
+	return [{"company": nome, **esito} for nome, esito in esiti.items()]
+
+
 def giornaliero() -> None:
-	"""Everything invoicing watches, once a day."""
-	leggi_ricevute()
+	"""Everything invoicing watches, once a day. One failing never hides the rest."""
+	for controllo in (leggi_ricevute, riconcilia_provider):
+		try:
+			controllo()
+		except Exception:
+			frappe.log_error(title=f"Invoicing watch failed: {controllo.__name__}")

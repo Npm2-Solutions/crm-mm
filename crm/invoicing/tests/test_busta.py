@@ -18,7 +18,7 @@ from crm.invoicing.tests.base import UnitTestCase
 
 class TokenTest(UnitTestCase):
 	def test_legge_l_intestazione_dedicata(self):
-		self.assertEqual(busta.token_presentato({"X-Acube-Token": "abc"}, {}), "abc")
+		self.assertEqual(busta.token_presentato({"X-Provider-Token": "abc"}, {}), "abc")
 
 	def test_sbuccia_bearer(self):
 		# A provider told to use a header named Bearer sends "Authorization: Bearer x".
@@ -31,13 +31,13 @@ class TokenTest(UnitTestCase):
 		self.assertEqual(busta.token_presentato({}, {"token": "q"}), "q")
 
 	def test_l_intestazione_vince_sulla_query(self):
-		self.assertEqual(busta.token_presentato({"X-Acube-Token": "h"}, {"token": "q"}), "h")
+		self.assertEqual(busta.token_presentato({"X-Provider-Token": "h"}, {"token": "q"}), "h")
 
 	def test_niente_token_e_stringa_vuota(self):
 		self.assertEqual(busta.token_presentato({}, {}), "")
 
 	def test_spazi_non_contano(self):
-		self.assertEqual(busta.token_presentato({"X-Acube-Token": "  abc  "}, {}), "abc")
+		self.assertEqual(busta.token_presentato({"X-Provider-Token": "  abc  "}, {}), "abc")
 
 
 class SegretoTest(UnitTestCase):

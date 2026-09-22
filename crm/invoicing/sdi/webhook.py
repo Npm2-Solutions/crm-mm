@@ -33,7 +33,7 @@ import json
 import frappe
 from frappe import _
 
-from crm.invoicing import acube
+from crm.invoicing import connessione
 from crm.invoicing.engine import busta
 from crm.invoicing.sdi import ricezione
 
@@ -70,7 +70,7 @@ def autentica(richiesta) -> str:
 
 	trovata = ""
 	for nome in _aziende_candidate(richiesta):
-		atteso = acube.segreto({"name": nome}, "sdi_webhook_secret")
+		atteso = connessione.segreto({"name": nome}, "sdi_webhook_secret")
 		if busta.segreto_corrisponde(presentato, atteso):
 			trovata = nome
 	if not trovata:
@@ -88,6 +88,10 @@ def _corpo(richiesta) -> dict:
 		caricato = json.loads(grezzo)
 	except (ValueError, UnicodeDecodeError):
 		return {}
+	# They post a list of updates; other providers post an object. Both are accepted,
+	# and a list is handed on as one rather than flattened into nothing.
+	if isinstance(caricato, list):
+		return {"data": caricato}
 	return caricato if isinstance(caricato, dict) else {}
 
 
@@ -98,7 +102,7 @@ def gestisci(richiesta) -> dict:
 	descrizione = busta.forma(corpo)
 	evento = descrizione["event"] or ""
 
-	frappe.logger("invoicing").info({"acube_webhook": descrizione, "company": azienda})
+	frappe.logger("invoicing").info({"provider_webhook": descrizione, "company": azienda})
 
 	grezzo = busta.cerca(corpo, busta.CHIAVI_CONTENUTO)
 	contenuto = busta.forse_xml(grezzo) if grezzo else None
@@ -112,15 +116,23 @@ def gestisci(richiesta) -> dict:
 		_registra_inapplicata(azienda, descrizione, esito.get("reason"))
 		return {"handled": False, "reason": esito.get("reason")}
 
-	if busta.porta_una_notifica(evento):
-		# The event says something happened and the envelope did not carry it. That is
-		# a gap in what this module knows, not a reason to lose the news.
-		_registra_inapplicata(azienda, descrizione, _("No notice content in the delivery"))
-		return {"handled": False, "reason": _("Recorded: the delivery carried no notice to apply")}
+	# Nothing readable in the body. That is the normal case with a provider that
+	# pushes a list of updates rather than a notice: the delivery is the alarm, and
+	# the reconciliation is what goes and gets the record. Doing it here rather than
+	# waiting for the sweep is the whole point of having a webhook.
+	from crm.invoicing.sdi import riconciliazione
 
-	# An invoice sent or received is news, not a notice. Accepted so the provider
-	# stops retrying, and left alone.
-	return {"handled": False, "reason": _("Nothing to apply for {0}").format(evento or _("this event"))}
+	emittente = frappe.get_cached_doc("CRM Invoicing Company", azienda).as_dict()
+	voci = corpo if isinstance(corpo, list) else corpo.get("data") if isinstance(corpo, dict) else None
+	esito = riconciliazione.riconcilia(emittente, voci if isinstance(voci, list) else None)
+	if esito["notices"] or esito["incoming"]:
+		return {"handled": True, **esito}
+
+	if busta.porta_una_notifica(evento):
+		# The event claimed something happened and nothing came of it. Worth surfacing:
+		# either the contract moved or we are looking in the wrong place.
+		_registra_inapplicata(azienda, descrizione, _("No update could be applied"))
+	return {"handled": False, **esito}
 
 
 def _registra_inapplicata(azienda: str, descrizione: dict, motivo: str | None) -> None:

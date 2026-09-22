@@ -16,7 +16,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
-from crm.invoicing import acube, documento, estensioni
+from crm.invoicing import connessione, documento, estensioni
 from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
@@ -392,19 +392,19 @@ def onboarding_checklist(company: str) -> list[dict]:
 	manca(
 		emittente.get("sdi_mode") == "provider"
 		and emittente.get("sdi_endpoint")
-		and not acube.in_produzione(emittente),
+		and not connessione.in_produzione(emittente),
 		_("Still on the sandbox"),
 		_(
 			"The channel is configured and working, but aimed at the provider's sandbox: "
 			"documents sent from here reach nobody. Switch the environment to production "
 			"once the rehearsal is done."
 		),
-		"acube_environment",
+		"provider_environment",
 	)
 	manca(
 		emittente.get("sdi_mode") == "provider"
 		and emittente.get("sdi_endpoint")
-		and not acube.segreto(emittente, "sdi_webhook_secret"),
+		and not connessione.segreto(emittente, "sdi_webhook_secret"),
 		_("Webhook secret"),
 		_(
 			"Without it the provider has no authenticated way to push notices here, so "
@@ -493,7 +493,7 @@ def invoice_channel(invoice: str) -> dict:
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
-def acube_webhook():
+def provider_webhook():
 	"""The provider's way in with a notice. Guest by necessity, secret by design.
 
 	This is the only endpoint in the module that answers an unauthenticated caller,
@@ -532,13 +532,13 @@ def webhook_endpoint(company: str) -> dict:
 	from urllib.parse import quote
 
 	url = frappe.utils.get_url(
-		f"/api/method/crm.invoicing.api.acube_webhook?company={quote(company, safe='')}"
+		f"/api/method/crm.invoicing.api.provider_webhook?company={quote(company, safe='')}"
 	)
-	configurato = bool(acube.segreto({"name": company}, "sdi_webhook_secret"))
+	configurato = bool(connessione.segreto({"name": company}, "sdi_webhook_secret"))
 	return {
 		"url": url,
 		"configured": configurato,
-		"header": "X-Acube-Token",
+		"header": "X-Provider-Token",
 		"hint": _(
 			"In the provider's configuration set the authentication token to the secret you "
 			"generated here, as a header named X-Acube-Token or as a query parameter named token."
@@ -567,3 +567,54 @@ def generate_webhook_secret(company: str) -> dict:
 			"configured at the provider before this call has just stopped working."
 		),
 	}
+
+
+@frappe.whitelist(methods=["POST"])
+def reconcile_provider(company: str = "") -> dict:
+	"""Fetch and apply everything the provider is holding for us.
+
+	The webhook does this too, on the way in. This is the same work on demand, and
+	on a schedule - because a webhook that was never delivered leaves no trace, and
+	an invoice stuck in `inviato` looks exactly like one that went through.
+	"""
+	from crm.invoicing.sdi import riconciliazione
+
+	frappe.has_permission("CRM Invoice", "write", throw=True)
+	aziende = (
+		[company]
+		if company
+		else [riga.name for riga in frappe.get_all("CRM Invoicing Company", filters={"sdi_mode": "provider"})]
+	)
+	esiti = {}
+	for nome in aziende:
+		emittente = frappe.get_cached_doc("CRM Invoicing Company", nome).as_dict()
+		if not (emittente.get("sdi_endpoint") or "").strip():
+			continue
+		esiti[nome] = riconciliazione.riconcilia(emittente)
+	return esiti
+
+
+@frappe.whitelist()
+def supplier_invoices(company: str = "", limit: int = 50) -> list[dict]:
+	"""The passive cycle, as a list. Empty where the company only issues."""
+	frappe.has_permission("CRM Supplier Invoice", "read", throw=True)
+	filtri = {"company": company} if company else {}
+	return frappe.get_all(
+		"CRM Supplier Invoice",
+		filters=filtri,
+		fields=[
+			"name",
+			"supplier_name",
+			"supplier_tax_id",
+			"document_type",
+			"document_number",
+			"document_date",
+			"total_amount",
+			"currency",
+			"status",
+			"xml_file",
+			"received_on",
+		],
+		order_by="document_date desc, received_on desc",
+		limit_page_length=int(limit),
+	)

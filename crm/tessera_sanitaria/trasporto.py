@@ -31,7 +31,7 @@ from frappe import _
 from frappe.utils import getdate
 from frappe.utils.password import get_decrypted_password
 
-from crm.invoicing import acube, documento, ts
+from crm.invoicing import connessione, documento, ts
 from crm.invoicing.engine import busta
 from crm.tessera_sanitaria.engine.codici import (
 	CODICE_DELEGA_ASSENTE,
@@ -260,8 +260,8 @@ def _invia_tramite_provider(fattura, emittente: dict, spesa) -> dict:
 
 	contenuto = costruisci_file_allegato([spesa], ts.cifratore(emittente))
 	try:
-		risposta = acube.posta(emittente, endpoint, contenuto, tipo="application/xml")
-	except acube.ErroreAcube as errore:
+		risposta = connessione.posta(emittente, endpoint, contenuto, tipo="application/xml")
+	except connessione.ErroreProvider as errore:
 		documento.registra(fattura, "ts_sent", str(errore), stato="errore")
 		frappe.throw(str(errore), title=_("Sistema TS"))
 
@@ -279,7 +279,7 @@ def _invia_tramite_provider(fattura, emittente: dict, spesa) -> dict:
 	riassunto = _("Handed to {0}{1}. The Sistema TS outcome arrives separately.").format(
 		emittente.get("sdi_provider") or _("the provider"),
 		f" ({identificativo})" if identificativo else "",
-	) + acube.etichetta_ambiente(emittente)
+	) + connessione.etichetta_ambiente(emittente)
 
 	fattura.db_set(
 		{

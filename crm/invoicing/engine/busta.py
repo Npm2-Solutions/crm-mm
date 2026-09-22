@@ -22,6 +22,7 @@ from __future__ import annotations
 import base64
 import binascii
 import hmac
+from datetime import datetime
 
 #: The provider's events. Only a notification carries an SdI notice; the rest are
 #: lifecycle news, kept because silence about them is how an invoice dies quietly.
@@ -31,7 +32,7 @@ EVENTO_RICEVUTA = "supplier-invoice"
 EVENTI_GUASTO = ("invoice-status-invoice-error", "invoice-status-quarantena")
 
 #: Headers the secret may arrive in, in the order they are trusted.
-INTESTAZIONI_TOKEN = ("X-Acube-Token", "X-Webhook-Token", "X-Hook-Secret")
+INTESTAZIONI_TOKEN = ("X-Provider-Token", "X-Webhook-Token", "X-Hook-Secret")
 #: Query parameters it may arrive in instead, because the provider's configuration
 #: chooses between the two placements and both are legitimate.
 ARGOMENTI_TOKEN = ("token", "secret", "key")
@@ -149,3 +150,92 @@ def forma(corpo: dict) -> dict:
 def porta_una_notifica(evento: str | None) -> bool:
 	"""Whether this event is one that should have carried something to apply."""
 	return bool(evento) and (evento == EVENTO_NOTIFICA or evento in EVENTI_GUASTO)
+
+
+# --------------------------------------------------------- the provider's words
+
+#: The intermediary's transmission states, and what each means for a document here.
+#: `NONC` is the one that gets misread: not delivered is **not** a failure - the
+#: invoice is issued, the sender's obligation is discharged, and what is owed is
+#: telling the client to go and fetch it.
+STATO_PROVIDER = {
+	"PREN": "inviato",
+	"INVI": "inviato",
+	"CONS": "consegnato",
+	"NONC": "mancata_consegna",
+	"ACCE": "accettato",
+	"RIFI": "rifiutato",
+	"DECO": "decorrenza_termini",
+	"ERRO": "errore",
+}
+
+#: States that mean the SdI has answered, so there is a notice worth fetching.
+#: Asking for one before that is a wasted call and a 404 to explain.
+STATI_CON_NOTIFICA = frozenset({"CONS", "NONC", "ACCE", "RIFI", "DECO", "ERRO"})
+
+#: Where an identifier hides. The provider's own field first, then the shapes other
+#: providers use, because the adapter stays generic on purpose.
+CHIAVI_IDENTIFICATIVO = ("sdi_identificativo", "uuid", "id", "identifier", "invoice_uuid", "sdi_id")
+
+
+def identificativo(corpo) -> str | None:
+	"""The provider's reference for a document, wherever it put it."""
+	if isinstance(corpo, str):
+		return corpo.strip() or None
+	if not isinstance(corpo, dict):
+		return None
+	for chiave in CHIAVI_IDENTIFICATIVO:
+		valore = corpo.get(chiave)
+		if valore not in (None, "", []):
+			return str(valore)
+	for annidato in corpo.values():
+		if isinstance(annidato, dict):
+			trovato = identificativo(annidato)
+			if trovato:
+				return trovato
+	return None
+
+
+def xml_in_ingresso(voce: dict) -> bytes | None:
+	"""An incoming invoice's own XML, whichever way the provider encoded it.
+
+	Plain text wins over base64 when both are present: it is the one that needs no
+	decoding step to go wrong.
+	"""
+	grezzo = voce.get("sdi_fattura_xml") if isinstance(voce, dict) else None
+	if isinstance(grezzo, str) and grezzo.lstrip().startswith("<"):
+		return grezzo.encode()
+	codificato = voce.get("sdi_fattura_base64") if isinstance(voce, dict) else None
+	if isinstance(codificato, str) and codificato.strip():
+		try:
+			return base64.b64decode(codificato, validate=True)
+		except (binascii.Error, ValueError):
+			return None
+	return None
+
+
+#: Used when the provider does not say when its token expires. Short on purpose.
+DURATA_PRUDENTE = 3600
+#: Never trust a stated expiry further than this, whatever the provider claims: a
+#: year-long token is either a mistake or a compromise, and neither gets cached.
+DURATA_MASSIMA = 23 * 3600
+#: Slack between what the provider says and what we act on, so a token cannot die
+#: between the check and the call that uses it.
+MARGINE = 60
+
+
+def durata_token(scadenza: str | None) -> int:
+	"""How long to keep a token, from what the provider said rather than a guess.
+
+	An unreadable or absent expiry falls back to a short life: re-authenticating an
+	hour early costs one call, while trusting a number nobody stated costs a failed
+	invoice at the worst moment.
+	"""
+	if not scadenza:
+		return DURATA_PRUDENTE
+	try:
+		fine = datetime.strptime(str(scadenza).strip(), "%Y-%m-%d %H:%M:%S")
+	except (TypeError, ValueError):
+		return DURATA_PRUDENTE
+	restano = int((fine - datetime.now()).total_seconds()) - MARGINE
+	return max(MARGINE, min(restano, DURATA_MASSIMA))

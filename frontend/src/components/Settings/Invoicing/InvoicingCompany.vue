@@ -88,7 +88,7 @@ const predefiniti = {
   // somewhere nobody chose.
   ts_mode: 'provider',
   sdi_mode: 'provider',
-  acube_environment: 'sandbox',
+  provider_environment: 'sandbox',
   enabled: 1,
 }
 

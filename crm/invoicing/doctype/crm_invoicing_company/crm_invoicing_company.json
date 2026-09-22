@@ -81,7 +81,8 @@
   "tab_sdi",
   "sdi_section",
   "sdi_mode",
-  "acube_environment",
+  "sdi_flow",
+  "provider_environment",
   "sdi_provider",
   "sdi_endpoint",
   "sdi_login_url",
@@ -543,10 +544,19 @@
    "options": "export\npec\nprovider"
   },
   {
+   "default": "uscita",
+   "depends_on": "eval:doc.sdi_mode=='provider'",
+   "description": "uscita sends invoices and brings back their notices, and nothing else. entrambi also files the invoices suppliers send you - a register of what arrived, not an accounting system: no matching, no approval, no posting. Switch it on only where somebody will read it, because an inbox nobody opens is worse than none.",
+   "fieldname": "sdi_flow",
+   "fieldtype": "Select",
+   "label": "Which direction",
+   "options": "uscita\nentrambi"
+  },
+  {
    "default": "sandbox",
    "depends_on": "eval:doc.sdi_mode=='provider'",
    "description": "sandbox reaches nobody: the SdI never sees the document and the client never gets it. It is the default so the first real invoice is not the first test. Every document sent from here is stamped with the environment it left through, so a rehearsal can never be mistaken for an issued invoice - but nothing is actually issued until this says production.",
-   "fieldname": "acube_environment",
+   "fieldname": "provider_environment",
    "fieldtype": "Select",
    "label": "Environment",
    "options": "sandbox\nproduction"
@@ -561,7 +571,8 @@
    "depends_on": "eval:doc.sdi_mode=='provider'",
    "fieldname": "sdi_endpoint",
    "fieldtype": "Data",
-   "label": "Endpoint"
+   "label": "Endpoint",
+   "description": "The provider's base URL for this environment - production and sandbox are two different hosts, not a flag on one. Everything hangs off it: /fatture to send, /fatture?unread to read back, /fatture/{id}/notifica for the SdI's own notice."
   },
   {
    "depends_on": "eval:doc.sdi_mode=='provider'",
@@ -569,7 +580,7 @@
    "fieldname": "sdi_login_url",
    "fieldtype": "Data",
    "label": "Login endpoint",
-   "default": "https://common.api.acubeapi.com/login"
+   "default": "https://fattura-elettronica-api.it/ws2.0/prod/authentication"
   },
   {
    "fieldname": "column_sdi",
@@ -596,7 +607,7 @@
   },
   {
    "depends_on": "eval:doc.sdi_mode=='provider'",
-   "description": "The shared secret the provider sends back when it pushes a notice here. Generate it, then paste it into the provider's webhook configuration together with the URL shown in the settings panel. Without it the door stays shut: an endpoint that accepts fiscal notices from anyone is worse than no endpoint.",
+   "description": "The token the provider sends back when it pushes updates here, as Authorization: Bearer. Generate it, then paste it into their console with the URL from the settings panel. Without it the door stays shut: an endpoint that accepts fiscal notices from anyone is worse than no endpoint.",
    "fieldname": "sdi_webhook_secret",
    "fieldtype": "Password",
    "label": "Webhook secret"
@@ -727,7 +738,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-17 12:00:00.000000",
+ "modified": "2026-09-22 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

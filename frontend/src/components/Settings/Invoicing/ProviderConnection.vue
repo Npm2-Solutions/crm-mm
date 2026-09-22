@@ -167,7 +167,7 @@ const cambiando = ref(false)
 
 const companies = createListResource({
   doctype: 'CRM Invoicing Company',
-  fields: ['name', 'company_name', 'acube_environment', 'is_default'],
+  fields: ['name', 'company_name', 'provider_environment', 'is_default'],
   orderBy: 'is_default desc, company_name asc',
   pageLength: 100,
   auto: true,
@@ -185,7 +185,7 @@ const etichettaCorrente = computed(
   () => corrente.value?.company_name || __('Companies'),
 )
 const inProduzione = computed(
-  () => corrente.value?.acube_environment === 'production',
+  () => corrente.value?.provider_environment === 'production',
 )
 const armato = computed(() => !!endpoint.data?.configured)
 
@@ -227,7 +227,7 @@ async function cambiaAmbiente() {
     await call('frappe.client.set_value', {
       doctype: 'CRM Invoicing Company',
       name: azienda.value,
-      fieldname: 'acube_environment',
+      fieldname: 'provider_environment',
       value: inProduzione.value ? 'sandbox' : 'production',
     })
     companies.reload()
