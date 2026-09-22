@@ -477,6 +477,43 @@ def get_connect_url() -> dict:
 	}
 
 
+@frappe.whitelist()
+def recent_signup_attempts(limit: int = 8) -> dict:
+	"""The last things Meta said during Embedded Signup, on this hub.
+
+	The flow runs on facebook.com and reports itself back through the hub page;
+	the rows land here. Reading them meant opening the Desk and unfolding a JSON
+	blob, which is a lot of steps between "it didn't work" and the sentence that
+	says why.
+
+	Only the hub has the rows — a client site's onboarding is logged where the
+	page lives, not where the CRM does — so a client site gets an empty list and
+	says so rather than pretending there is nothing to see.
+	"""
+	_check_manager()
+	if not is_hub():
+		return {"is_hub": False, "attempts": []}
+	return {
+		"is_hub": True,
+		"attempts": frappe.get_all(
+			"WhatsApp Signup Session",
+			fields=[
+				"creation",
+				"event",
+				"current_step",
+				"outcome",
+				"error_message",
+				"error_code",
+				"error_id",
+				"session_id",
+				"site_url",
+			],
+			order_by="creation desc",
+			limit=frappe.utils.cint(limit) or 8,
+		),
+	}
+
+
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def receive_connection():
 	"""Hub → this site: the credentials of a freshly connected WhatsApp number.

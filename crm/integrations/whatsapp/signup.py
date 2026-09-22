@@ -134,6 +134,40 @@ OUTCOME_BY_EVENT = {
 }
 
 
+# What Meta calls the parts of an error, across the two places it reports one:
+# the `WA_EMBEDDED_SIGNUP` message event while the flow runs, and the OAuth
+# query string when it hands the browser back. The names differ; the meaning
+# does not, so they land in the same fields.
+ERROR_KEYS = {
+	"error_message": ("error_message", "error_description", "error_reason", "error"),
+	"error_code": ("error_code", "code"),
+	"error_id": ("error_id", "fbtrace_id"),
+	"session_id": ("session_id",),
+	# Meta asks for this one too when you open a ticket: the moment the customer
+	# hit the error, which is how support finds it in their own logs.
+	"reported_at": ("timestamp",),
+}
+
+
+def error_fields(data: dict) -> dict:
+	"""Meta's own words about a failure, pulled out of whatever shape they came in.
+
+	`error_id` and `session_id` are the two values Meta asks for when you open a
+	support ticket, which is the whole reason they are worth a field of their
+	own rather than a line inside a JSON blob nobody opens.
+	"""
+	found = {}
+	for field, keys in ERROR_KEYS.items():
+		for key in keys:
+			value = data.get(key)
+			if value:
+				# error_message is Small Text; the rest are Data, and a Data
+				# column is a varchar(140) that raises rather than truncates.
+				found[field] = str(value)[: 2000 if field == "error_message" else 140]
+				break
+	return found
+
+
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def log_session_event(state: str, event: str, data: str | dict | None = None) -> dict:
 	"""Session logging — Meta requires Embedded Signup to be implemented with it.
@@ -162,6 +196,10 @@ def log_session_event(state: str, event: str, data: str | dict | None = None) ->
 			"waba_id": data.get("waba_id") or "",
 			"phone_number_id": data.get("phone_number_id") or "",
 			"outcome": OUTCOME_BY_EVENT.get(event, "In Progress"),
+			# Meta's own words, out of `details` and into fields you can read in
+			# a list. The payload was always stored; it took opening a JSON blob
+			# to find out that the flow had said something specific.
+			**error_fields(data),
 			"details": json.dumps(data)[:5000],
 		}
 	).insert(ignore_permissions=True)
@@ -452,6 +490,7 @@ __all__ = [
 	"config_in_use",
 	"connect_url",
 	"discover_assets",
+	"error_fields",
 	"login_url",
 	"make_state",
 	"parse_state",

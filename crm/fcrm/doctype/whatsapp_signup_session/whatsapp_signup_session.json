@@ -13,6 +13,13 @@
   "waba_id",
   "phone_number_id",
   "outcome",
+  "error_section",
+  "error_message",
+  "error_code",
+  "column_break_err",
+  "error_id",
+  "session_id",
+  "reported_at",
   "details_section",
   "details"
  ],
@@ -59,6 +66,42 @@
    "options": "In Progress\nCompleted\nCancelled\nError"
   },
   {
+   "fieldname": "error_section",
+   "fieldtype": "Section Break",
+   "label": "What Meta said",
+   "depends_on": "eval:doc.error_message || doc.error_code || doc.error_id"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "error_code",
+   "fieldtype": "Data",
+   "label": "Error Code"
+  },
+  {
+   "fieldname": "column_break_err",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "error_id",
+   "fieldtype": "Data",
+   "label": "Error ID"
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Meta Session ID"
+  },
+  {
+   "fieldname": "reported_at",
+   "fieldtype": "Data",
+   "label": "Reported At (Meta timestamp)"
+  },
+  {
    "fieldname": "details_section",
    "fieldtype": "Section Break",
    "label": "Details"
@@ -71,7 +114,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-03 13:00:00.000000",
+ "modified": "2026-09-22 10:30:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "WhatsApp Signup Session",

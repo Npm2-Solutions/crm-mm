@@ -515,3 +515,100 @@ class TestWhichConfigIsSent(IntegrationTestCase):
 
 	def test_nothing_configured_is_reported_as_nothing(self):
 		self.assertEqual(S.config_in_use(), {"config_id": "", "from_bench": False})
+
+
+class TestTheErrorIsCollected(IntegrationTestCase):
+	"""Meta says what went wrong exactly once, and in two different shapes.
+
+	While the flow runs it reports through the `WA_EMBEDDED_SIGNUP` message
+	event; when it hands the browser back it puts the reason in the OAuth query
+	string. The names differ, the meaning does not, and both used to end up in a
+	JSON blob nobody opens.
+	"""
+
+	def test_the_message_event_shape_is_read(self):
+		self.assertEqual(
+			S.error_fields(
+				{
+					"error_message": "1270213918015409 is not a valid business ID",
+					"error_id": "1690130",
+					"session_id": "f34b51dab5e0498",
+					"current_step": "BUSINESS_ACCOUNT_SELECTION",
+				}
+			),
+			{
+				"error_message": "1270213918015409 is not a valid business ID",
+				"error_id": "1690130",
+				"session_id": "f34b51dab5e0498",
+			},
+		)
+
+	def test_the_oauth_query_shape_is_read_into_the_same_fields(self):
+		found = S.error_fields(
+			{"error": "access_denied", "error_description": "Permissions error", "error_code": "200"}
+		)
+		self.assertEqual(found["error_message"], "Permissions error")
+		self.assertEqual(found["error_code"], "200")
+
+	def test_the_bare_error_is_better_than_nothing(self):
+		self.assertEqual(S.error_fields({"error": "access_denied"})["error_message"], "access_denied")
+
+	def test_a_clean_step_carries_no_error(self):
+		self.assertEqual(S.error_fields({"current_step": "PHONE_NUMBER_SETUP"}), {})
+
+	def test_a_long_message_is_cut_before_the_column_does(self):
+		"""A Data column is a varchar that raises rather than truncates, and the
+		row that raises is the one written to explain a failure."""
+		found = S.error_fields({"error_message": "x" * 5000, "error_id": "y" * 400})
+		self.assertEqual(len(found["error_message"]), 2000)
+		self.assertEqual(len(found["error_id"]), 140)
+
+	def test_what_meta_said_reaches_the_log_row(self):
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(
+			state,
+			"ERROR",
+			{
+				"error_message": "not a valid business ID",
+				"error_id": "1690130",
+				"current_step": "PERMISSIONS",
+			},
+		)
+		row = frappe.get_last_doc("WhatsApp Signup Session")
+		self.assertEqual(row.outcome, "Error")
+		self.assertEqual(row.error_message, "not a valid business ID")
+		self.assertEqual(row.error_id, "1690130")
+		self.assertEqual(row.current_step, "PERMISSIONS")
+
+	def test_the_page_hands_the_query_reason_to_the_log(self):
+		from crm.www.whatsapp_connect import get_context
+
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict(
+			{"error": "access_denied", "error_reason": "user_denied", "error_description": "closed"}
+		)
+		try:
+			get_context(context)
+		finally:
+			frappe.form_dict = frappe._dict()
+		self.assertTrue(context.returning)
+		self.assertEqual(context.error_query["error_reason"], "user_denied")
+		self.assertEqual(context.error_query["error_description"], "closed")
+
+	def test_only_the_hub_has_the_rows_and_says_so(self):
+		from crm.integrations.whatsapp import api as A
+
+		with patch.object(A, "is_hub", return_value=False):
+			answer = A.recent_signup_attempts()
+		self.assertEqual(answer, {"is_hub": False, "attempts": []})
+
+	def test_the_hub_returns_the_last_attempts_newest_first(self):
+		from crm.integrations.whatsapp import api as A
+
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(state, "STARTED", {"current_step": "launch"})
+		S.log_session_event(state, "ERROR", {"error_message": "boom"})
+		with patch.object(A, "is_hub", return_value=True):
+			answer = A.recent_signup_attempts(limit=2)
+		self.assertTrue(answer["is_hub"])
+		self.assertEqual(answer["attempts"][0]["error_message"], "boom")

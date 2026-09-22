@@ -36,6 +36,14 @@ def get_context(context):
 	# Meta reports a refusal on the redirect leg the same way it reports one on
 	# any OAuth redirect: in the query string, not by staying silent.
 	context.denied = frappe.form_dict.get("error") or frappe.form_dict.get("error_reason") or ""
+	# Everything Meta says about a refusal, not just that there was one. These
+	# are the names it uses on an OAuth redirect; the page hands them to the
+	# session log under the same fields the in-flow errors use.
+	context.error_query = {
+		key: frappe.form_dict.get(key)
+		for key in ("error", "error_code", "error_reason", "error_description")
+		if frappe.form_dict.get(key)
+	}
 	context.returning = bool(context.code or context.denied)
 	parsed = parse_state(context.state)
 

@@ -869,3 +869,109 @@ collegata, e lo storico delle chat non arrivera'*.
 
 Un esito diverso non e' un guasto da annullare. La cosa che non deve essere e'
 silenziosa.
+
+## Raccogliere l'errore, e il conflitto con l'unico click
+
+Meta dice cosa non ha funzionato esattamente una volta, e in due forme diverse:
+
+| Dove | Come |
+|---|---|
+| Mentre il flusso gira | messaggio `WA_EMBEDDED_SIGNUP` con `error_message`, `error_id`, `session_id`, `current_step` |
+| Quando restituisce il browser | query string OAuth con `error`, `error_code`, `error_reason`, `error_description` |
+
+I nomi cambiano, il significato no. Adesso finiscono negli stessi campi di
+`WhatsApp Signup Session` — `error_message`, `error_code`, `error_id`,
+`session_id` — invece che dentro `details`, che era un blob JSON da aprire a
+mano nel Desk. `error_id` e `session_id` sono i due valori che Meta chiede
+quando si apre un ticket di assistenza: sono il motivo per cui meritano un
+campo e non una riga in un JSON.
+
+E Settings → WhatsApp mostra gli ultimi tentativi, con il messaggio in chiaro.
+Solo sull'hub: l'onboarding di un cliente viene registrato dove sta la pagina,
+non dove sta il suo CRM, e un site cliente lo dice invece di mostrare una lista
+vuota come se non fosse successo niente.
+
+### Il conflitto
+
+Il primo dei due canali — quello che dice davvero qualcosa — esiste **solo
+finche' la nostra pagina e' aperta ad ascoltare**. Il redirect secco che apriva
+Facebook in un click la buttava via: da quel momento facebook.com parla e non
+c'e' nessuno, e un onboarding che si rompe a meta' resta leggibile esattamente
+come «non ha funzionato».
+
+Quindi il lancio automatico ora **prova prima `FB.login`**, pur senza click.
+Sembra la via lunga quando un redirect basterebbe, ed e' li' per una ragione
+sola: `FB.login` tiene viva la pagina che ascolta. Se il browser rifiuta un
+popup che nessuno ha chiesto — e la maggior parte lo rifiuta — il redirect
+avviene comunque un attimo dopo, e la persona non ha premuto niente lo stesso.
+
+Non si perde nulla di quello che c'era; si guadagna il log ogni volta che il
+browser lo concede. Un'alternativa che dia *sempre* entrambi non esiste: il
+popup di Facebook si apre solo dentro un click, e un click richiede una pagina
+davanti — che e' la schermata che volevamo togliere.
+
+## L'errore 1690130: «non e' un ID business valido»
+
+Il payload, preso dal canale di sopra:
+
+```json
+{ "type": "WA_EMBEDDED_SIGNUP", "event": "ERROR",
+  "data": { "error_code": 1690130,
+            "error_message": "1270213918015409 non e' un ID business valido",
+            "session_id": "01a0c8a7-…", "timestamp": "1790072801680" } }
+```
+
+`1690130` non e' nelle tabelle di errore di Embedded Signup, ne' in quelle di
+WhatsApp. Sta nella famiglia `1690xxx`, che e' documentata in un posto solo:
+**Business Owned Businesses**, cioe' `POST /{business_id}/owned_businesses` e
+`client_businesses` — le chiamate con cui un *aggregator business* crea o
+collega un **client business**. Le vicine dicono di che materia si tratta:
+
+| Codice | Messaggio |
+|---|---|
+| 1690165 | This aggregator business already has an existing **client business associated with this user** |
+| 1690192 | App is not owned or shared by a business: App must exist and be owned or shared to aggregator business **to create client businesses** |
+| 1690138 | To create a business using a primary page, you must be an admin of that page |
+| 1690232 | Businesses Do Not Have Primary Pages |
+
+Ed e' esattamente quello che Embedded Signup fa quando il cliente scegli il suo
+portfolio: il **nostro** business (l'aggregator) crea o collega il **suo**
+business come client.
+
+### Perche' essere admin non aiuta
+
+Il permesso non e' il problema. Il problema e' *di chi e'* il portfolio.
+Embedded Signup e' fatto per attaccare il portfolio di **un cliente** al nostro;
+se il portfolio scelto e' il nostro — quello che possiede l'app — il
+collegamento non ha senso e Meta rifiuta l'id. Essere admin di se stessi non
+cambia niente: non si puo' essere clienti di se stessi.
+
+Da qui il consiglio della documentazione, che a rileggerlo dice proprio questo:
+
+> You can test the Embedded Signup flow using your own Facebook account, but
+> this can result in additional business portfolios, WABAs, and business phone
+> numbers. If you don't want to clutter your Facebook account with test data,
+> you can **claim a sandbox test account** instead, and use it to simulate a
+> business customer completing the flow.
+
+### E una seconda causa, documentata come limite assoluto
+
+Dalla pagina *Embedded Signup → Limitations*:
+
+> **Existing WhatsApp Business Accounts (WABAs) that were originally created via
+> the developer app cannot be selected or onboarded directly through the
+> Embedded Signup flow.**
+
+Se il WABA che compare nella schermata di conferma e' quello nato dall'app di
+sviluppo — cioe' quello del numero di test che Meta presta — non e'
+selezionabile da Embedded Signup, per progetto. Non e' una configurazione da
+sistemare.
+
+### Come si distingue quale delle due
+
+Un **sandbox test account** risponde a entrambe in un colpo: e' un portfolio che
+non e' il nostro e un WABA che non nasce dall'app di sviluppo. Se con quello il
+flusso arriva in fondo, la causa era una delle due e non c'e' niente da
+correggere nel codice. Se fallisce anche li', allora e' altro, e il log adesso
+ha `error_code`, `error_id`, `session_id` e `timestamp` — cioe' tutto quello che
+Meta chiede per aprire un ticket.
