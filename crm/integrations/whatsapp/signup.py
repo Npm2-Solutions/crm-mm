@@ -64,6 +64,21 @@ def config_id() -> str:
 	return frappe.conf.get("whatsapp_signup_config_id") or get_settings().whatsapp_signup_config_id or ""
 
 
+def config_in_use() -> dict:
+	"""Which login configuration the CRM sends, and where that value came from.
+
+	An app can hold several, and which one is used changes what the client gets:
+	how long their token lives, and whether they are asked to log in with a
+	business portfolio at all. Meta's dashboard shows what is selected *there*,
+	in its own builder — which is a different thing from what this CRM sends,
+	and telling the two apart by guesswork has already cost an afternoon.
+	"""
+	return {
+		"config_id": config_id(),
+		"from_bench": bool(frappe.conf.get("whatsapp_signup_config_id")),
+	}
+
+
 def _state_secret() -> str:
 	return relay_secret() or frappe.local.conf.get("encryption_key") or frappe.local.site
 
@@ -119,6 +134,79 @@ OUTCOME_BY_EVENT = {
 }
 
 
+# What Meta calls the parts of an error, across the two places it reports one:
+# the `WA_EMBEDDED_SIGNUP` message event while the flow runs, and the OAuth
+# query string when it hands the browser back. The names differ; the meaning
+# does not, so they land in the same fields.
+ERROR_KEYS = {
+	"error_message": ("error_message", "error_description", "error_reason", "error"),
+	"error_code": ("error_code", "code"),
+	"error_id": ("error_id", "fbtrace_id"),
+	"session_id": ("session_id",),
+	# Meta asks for this one too when you open a ticket: the moment the customer
+	# hit the error, which is how support finds it in their own logs.
+	"reported_at": ("timestamp",),
+}
+
+
+# Meta does not document every code it sends, so this is where what we worked
+# out goes — plainly labelled as a lead, never as a verdict. It exists because
+# the alternative is a number on screen and an afternoon of searching that ends
+# where ours ended: nobody documents it.
+#
+# `1690xxx` is documented in exactly one place, *Business Owned Businesses*
+# (`POST /{business_id}/owned_businesses`, `client_businesses`) — the calls with
+# which an aggregator business links a client business. That is the step
+# Embedded Signup runs when the customer picks their portfolio, so the code is
+# about the portfolio, not about WhatsApp.
+SIGNUP_HINTS = (
+	(
+		"1690",
+		_(
+			"This code belongs to the business-portfolio step, not to WhatsApp. Two documented "
+			"causes fit: a WhatsApp Business Account created through the developer app cannot be "
+			"selected in Embedded Signup at all, and the flow is meant to attach a customer's "
+			"portfolio to yours. A sandbox test account rules out both at once."
+		),
+	),
+	(
+		"200",
+		_(
+			"Meta refused for want of permission. On a live app only permissions approved for "
+			"Advanced Access appear in the flow at all."
+		),
+	),
+)
+
+
+def hint_for(error_code: str | None) -> str:
+	"""What we know about a code Meta did not document. A lead, not a verdict."""
+	code = str(error_code or "")
+	for prefix, hint in SIGNUP_HINTS:
+		if code.startswith(prefix):
+			return hint
+	return ""
+
+
+def error_fields(data: dict) -> dict:
+	"""Meta's own words about a failure, pulled out of whatever shape they came in.
+
+	`error_id` and `session_id` are the two values Meta asks for when you open a
+	support ticket, which is the whole reason they are worth a field of their
+	own rather than a line inside a JSON blob nobody opens.
+	"""
+	found = {}
+	for field, keys in ERROR_KEYS.items():
+		for key in keys:
+			value = data.get(key)
+			if value:
+				# error_message is Small Text; the rest are Data, and a Data
+				# column is a varchar(140) that raises rather than truncates.
+				found[field] = str(value)[: 2000 if field == "error_message" else 140]
+				break
+	return found
+
+
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def log_session_event(state: str, event: str, data: str | dict | None = None) -> dict:
 	"""Session logging — Meta requires Embedded Signup to be implemented with it.
@@ -147,6 +235,10 @@ def log_session_event(state: str, event: str, data: str | dict | None = None) ->
 			"waba_id": data.get("waba_id") or "",
 			"phone_number_id": data.get("phone_number_id") or "",
 			"outcome": OUTCOME_BY_EVENT.get(event, "In Progress"),
+			# Meta's own words, out of `details` and into fields you can read in
+			# a list. The payload was always stored; it took opening a JSON blob
+			# to find out that the flow had said something specific.
+			**error_fields(data),
 			"details": json.dumps(data)[:5000],
 		}
 	).insert(ignore_permissions=True)
@@ -434,8 +526,11 @@ def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, n
 __all__ = [
 	"complete_signup",
 	"config_id",
+	"config_in_use",
 	"connect_url",
 	"discover_assets",
+	"error_fields",
+	"hint_for",
 	"login_url",
 	"make_state",
 	"parse_state",

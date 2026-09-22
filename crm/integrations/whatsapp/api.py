@@ -32,7 +32,13 @@ from crm.integrations.meta.client import (
 from crm.integrations.meta.oauth import is_hub
 from crm.integrations.meta.relay import sign as relay_sign
 from crm.integrations.meta.relay import valid_relay_signature
-from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, make_state
+from crm.integrations.whatsapp.signup import (
+	CONNECT_PATH,
+	config_id,
+	config_in_use,
+	hint_for,
+	make_state,
+)
 
 RELAY_TIMEOUT = 15
 
@@ -78,6 +84,11 @@ def get_status() -> dict:
 		# how an agency discovers, weeks later, that its WhatsApp calls were
 		# attributed to the Facebook app
 		"app": whatsapp_app_in_use(),
+		# and which login configuration it sends. Two configurations on the same
+		# app can differ in the one thing nobody can see from the outside — how
+		# long the client's token lives — so the id belongs on screen, next to
+		# the app's.
+		"signup_config": config_in_use(),
 		# say WHICH piece is missing: "ask your provider" left nobody, the
 		# provider included, able to tell what to do next
 		"missing": missing_requirements(),
@@ -470,6 +481,45 @@ def get_connect_url() -> dict:
 		# anything else a page might post at it
 		"hub_origin": hub,
 	}
+
+
+@frappe.whitelist()
+def recent_signup_attempts(limit: int = 8) -> dict:
+	"""The last things Meta said during Embedded Signup, on this hub.
+
+	The flow runs on facebook.com and reports itself back through the hub page;
+	the rows land here. Reading them meant opening the Desk and unfolding a JSON
+	blob, which is a lot of steps between "it didn't work" and the sentence that
+	says why.
+
+	Only the hub has the rows — a client site's onboarding is logged where the
+	page lives, not where the CRM does — so a client site gets an empty list and
+	says so rather than pretending there is nothing to see.
+	"""
+	_check_manager()
+	if not is_hub():
+		return {"is_hub": False, "attempts": []}
+	rows = frappe.get_all(
+		"WhatsApp Signup Session",
+		fields=[
+			"creation",
+			"event",
+			"current_step",
+			"outcome",
+			"error_message",
+			"error_code",
+			"error_id",
+			"session_id",
+			"site_url",
+		],
+		order_by="creation desc",
+		limit=frappe.utils.cint(limit) or 8,
+	)
+	for row in rows:
+		# what we worked out about a code Meta does not document, so the number
+		# on screen comes with somewhere to go
+		row["hint"] = hint_for(row.get("error_code"))
+	return {"is_hub": True, "attempts": rows}
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method

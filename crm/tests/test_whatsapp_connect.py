@@ -492,3 +492,158 @@ class TestCoexistenceIsVerified(IntegrationTestCase):
 		with patch.object(S, "whatsapp_graph_get", return_value={}) as graph:
 			S.describe_number("PHONE", "TOKEN")
 		self.assertIn("is_on_biz_app", graph.call_args[0][2]["fields"])
+
+
+class TestWhichConfigIsSent(IntegrationTestCase):
+	"""An app can hold several login configurations, and the choice decides how
+	long the client's token lives. Meta's dashboard shows what is selected in
+	its own builder, which is not what this CRM sends — so the CRM says it."""
+
+	def tearDown(self):
+		frappe.local.conf.pop("whatsapp_signup_config_id", None)
+		frappe.db.rollback()
+
+	def test_it_reports_the_id_and_says_it_came_from_the_bench(self):
+		frappe.local.conf["whatsapp_signup_config_id"] = "FROM-BENCH"
+		self.assertEqual(S.config_in_use(), {"config_id": "FROM-BENCH", "from_bench": True})
+
+	def test_it_reports_the_id_and_says_it_came_from_settings(self):
+		from crm.integrations.whatsapp.api import save_whatsapp_app
+
+		save_whatsapp_app(whatsapp_signup_config_id="FROM-SETTINGS")
+		self.assertEqual(S.config_in_use(), {"config_id": "FROM-SETTINGS", "from_bench": False})
+
+	def test_nothing_configured_is_reported_as_nothing(self):
+		self.assertEqual(S.config_in_use(), {"config_id": "", "from_bench": False})
+
+
+class TestTheErrorIsCollected(IntegrationTestCase):
+	"""Meta says what went wrong exactly once, and in two different shapes.
+
+	While the flow runs it reports through the `WA_EMBEDDED_SIGNUP` message
+	event; when it hands the browser back it puts the reason in the OAuth query
+	string. The names differ, the meaning does not, and both used to end up in a
+	JSON blob nobody opens.
+	"""
+
+	def test_the_message_event_shape_is_read(self):
+		self.assertEqual(
+			S.error_fields(
+				{
+					"error_message": "1270213918015409 is not a valid business ID",
+					"error_id": "1690130",
+					"session_id": "f34b51dab5e0498",
+					"current_step": "BUSINESS_ACCOUNT_SELECTION",
+				}
+			),
+			{
+				"error_message": "1270213918015409 is not a valid business ID",
+				"error_id": "1690130",
+				"session_id": "f34b51dab5e0498",
+			},
+		)
+
+	def test_the_oauth_query_shape_is_read_into_the_same_fields(self):
+		found = S.error_fields(
+			{"error": "access_denied", "error_description": "Permissions error", "error_code": "200"}
+		)
+		self.assertEqual(found["error_message"], "Permissions error")
+		self.assertEqual(found["error_code"], "200")
+
+	def test_the_bare_error_is_better_than_nothing(self):
+		self.assertEqual(S.error_fields({"error": "access_denied"})["error_message"], "access_denied")
+
+	def test_a_clean_step_carries_no_error(self):
+		self.assertEqual(S.error_fields({"current_step": "PHONE_NUMBER_SETUP"}), {})
+
+	def test_a_long_message_is_cut_before_the_column_does(self):
+		"""A Data column is a varchar that raises rather than truncates, and the
+		row that raises is the one written to explain a failure."""
+		found = S.error_fields({"error_message": "x" * 5000, "error_id": "y" * 400})
+		self.assertEqual(len(found["error_message"]), 2000)
+		self.assertEqual(len(found["error_id"]), 140)
+
+	def test_what_meta_said_reaches_the_log_row(self):
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(
+			state,
+			"ERROR",
+			{
+				"error_message": "not a valid business ID",
+				"error_id": "1690130",
+				"current_step": "PERMISSIONS",
+			},
+		)
+		row = frappe.get_last_doc("WhatsApp Signup Session")
+		self.assertEqual(row.outcome, "Error")
+		self.assertEqual(row.error_message, "not a valid business ID")
+		self.assertEqual(row.error_id, "1690130")
+		self.assertEqual(row.current_step, "PERMISSIONS")
+
+	def test_the_page_hands_the_query_reason_to_the_log(self):
+		from crm.www.whatsapp_connect import get_context
+
+		context = frappe._dict()
+		frappe.form_dict = frappe._dict(
+			{"error": "access_denied", "error_reason": "user_denied", "error_description": "closed"}
+		)
+		try:
+			get_context(context)
+		finally:
+			frappe.form_dict = frappe._dict()
+		self.assertTrue(context.returning)
+		self.assertEqual(context.error_query["error_reason"], "user_denied")
+		self.assertEqual(context.error_query["error_description"], "closed")
+
+	def test_only_the_hub_has_the_rows_and_says_so(self):
+		from crm.integrations.whatsapp import api as A
+
+		with patch.object(A, "is_hub", return_value=False):
+			answer = A.recent_signup_attempts()
+		self.assertEqual(answer, {"is_hub": False, "attempts": []})
+
+	def test_the_hub_returns_the_last_attempts_newest_first(self):
+		from crm.integrations.whatsapp import api as A
+
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(state, "STARTED", {"current_step": "launch"})
+		S.log_session_event(state, "ERROR", {"error_message": "boom"})
+		with patch.object(A, "is_hub", return_value=True):
+			answer = A.recent_signup_attempts(limit=2)
+		self.assertTrue(answer["is_hub"])
+		self.assertEqual(answer["attempts"][0]["error_message"], "boom")
+
+
+class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
+	"""Meta does not document every code it sends. `1690130` is one: it is not in
+	the Embedded Signup error tables, nor in WhatsApp's, and no public source
+	describes it. What we worked out belongs next to the number — labelled as a
+	lead, never as a verdict — because the alternative is a bare number and an
+	afternoon of searching that ends where ours ended.
+	"""
+
+	def test_the_portfolio_family_gets_the_portfolio_lead(self):
+		hint = S.hint_for(1690130)
+		self.assertIn("business-portfolio step", hint)
+		self.assertIn("sandbox", hint)
+
+	def test_the_whole_family_matches_not_just_the_one_we_saw(self):
+		for code in (1690130, 1690165, "1690192"):
+			self.assertTrue(S.hint_for(code))
+
+	def test_a_permissions_error_gets_the_permissions_lead(self):
+		self.assertIn("Advanced Access", S.hint_for("200"))
+
+	def test_an_unknown_code_invents_nothing(self):
+		self.assertEqual(S.hint_for("133010"), "")
+		self.assertEqual(S.hint_for(None), "")
+		self.assertEqual(S.hint_for(""), "")
+
+	def test_the_lead_travels_with_the_row(self):
+		from crm.integrations.whatsapp import api as A
+
+		state = S.make_state(frappe.utils.get_url().rstrip("/"))
+		S.log_session_event(state, "ERROR", {"error_message": "nope", "error_code": 1690130})
+		with patch.object(A, "is_hub", return_value=True):
+			answer = A.recent_signup_attempts(limit=1)
+		self.assertIn("business-portfolio step", answer["attempts"][0]["hint"])

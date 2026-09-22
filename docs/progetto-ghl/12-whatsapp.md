@@ -755,9 +755,29 @@ giorno, il cliente scopre che WhatsApp non funziona piu' senza che niente
 glielo abbia detto prima, e per rimetterlo a posto deve rifare tutto il giro,
 QR compreso.
 
-`whatsapp_signup_config_id` va quindi su quella **senza scadenza**. Vale la
-pena controllarlo prima del prossimo collegamento: Settings → WhatsApp mostra
-l'id in uso.
+**Quella in uso e' la prima** (verificato 22/09): la Tech Provider, senza
+scadenza. E' anche quella giusta per come lavoriamo, e la documentazione dice
+perche': per un Tech Provider il token corretto e' il *Business Integration
+System User access token*, che «defaults to never expire» e si ottiene
+**scambiando il codice** — che e' esattamente cio' che fa `exchange_code`.
+
+C'e' una conseguenza di quella scelta che vale la pena sapere, perche' cambia
+cosa vede il cliente. Da *Facebook Login for Business*:
+
+> If you select **System-user access token** then your app users will be
+> **required to log in using a business portfolio**.
+
+Quindi il flusso passa per un portfolio business, e un errore del tipo «X non
+e' un ID business valido» va cercato li' — nel portfolio con cui si entra nel
+flusso — non nel codice.
+
+### Quale configurazione stiamo mandando davvero
+
+Il pannello di Meta mostra quale configurazione e' selezionata **nel suo
+builder**. Non e' la stessa cosa di quale id manda questo CRM: quello sta in
+`whatsapp_signup_config_id`, fra bench config e Settings. Distinguere le due a
+naso e' costato un pomeriggio, quindi ora Settings → WhatsApp scrive l'id in
+uso accanto a quello dell'app, e dice da dove viene.
 
 ## Il campo del webhook che non c'era
 
@@ -849,3 +869,147 @@ collegata, e lo storico delle chat non arrivera'*.
 
 Un esito diverso non e' un guasto da annullare. La cosa che non deve essere e'
 silenziosa.
+
+## Raccogliere l'errore, e il conflitto con l'unico click
+
+Meta dice cosa non ha funzionato esattamente una volta, e in due forme diverse:
+
+| Dove | Come |
+|---|---|
+| Mentre il flusso gira | messaggio `WA_EMBEDDED_SIGNUP` con `error_message`, `error_id`, `session_id`, `current_step` |
+| Quando restituisce il browser | query string OAuth con `error`, `error_code`, `error_reason`, `error_description` |
+
+I nomi cambiano, il significato no. Adesso finiscono negli stessi campi di
+`WhatsApp Signup Session` — `error_message`, `error_code`, `error_id`,
+`session_id` — invece che dentro `details`, che era un blob JSON da aprire a
+mano nel Desk. `error_id` e `session_id` sono i due valori che Meta chiede
+quando si apre un ticket di assistenza: sono il motivo per cui meritano un
+campo e non una riga in un JSON.
+
+E Settings → WhatsApp mostra gli ultimi tentativi, con il messaggio in chiaro.
+Solo sull'hub: l'onboarding di un cliente viene registrato dove sta la pagina,
+non dove sta il suo CRM, e un site cliente lo dice invece di mostrare una lista
+vuota come se non fosse successo niente.
+
+### Il conflitto
+
+Il primo dei due canali — quello che dice davvero qualcosa — esiste **solo
+finche' la nostra pagina e' aperta ad ascoltare**. Il redirect secco che apriva
+Facebook in un click la buttava via: da quel momento facebook.com parla e non
+c'e' nessuno, e un onboarding che si rompe a meta' resta leggibile esattamente
+come «non ha funzionato».
+
+Quindi il lancio automatico ora **prova prima `FB.login`**, pur senza click.
+Sembra la via lunga quando un redirect basterebbe, ed e' li' per una ragione
+sola: `FB.login` tiene viva la pagina che ascolta. Se il browser rifiuta un
+popup che nessuno ha chiesto — e la maggior parte lo rifiuta — il redirect
+avviene comunque un attimo dopo, e la persona non ha premuto niente lo stesso.
+
+Non si perde nulla di quello che c'era; si guadagna il log ogni volta che il
+browser lo concede. Un'alternativa che dia *sempre* entrambi non esiste: il
+popup di Facebook si apre solo dentro un click, e un click richiede una pagina
+davanti — che e' la schermata che volevamo togliere.
+
+## L'errore 1690130: «non e' un ID business valido»
+
+Il payload, preso dal canale di sopra:
+
+```json
+{ "type": "WA_EMBEDDED_SIGNUP", "event": "ERROR",
+  "data": { "error_code": 1690130,
+            "error_message": "1270213918015409 non e' un ID business valido",
+            "session_id": "01a0c8a7-…", "timestamp": "1790072801680" } }
+```
+
+`1690130` non e' nelle tabelle di errore di Embedded Signup, ne' in quelle di
+WhatsApp. Sta nella famiglia `1690xxx`, che e' documentata in un posto solo:
+**Business Owned Businesses**, cioe' `POST /{business_id}/owned_businesses` e
+`client_businesses` — le chiamate con cui un *aggregator business* crea o
+collega un **client business**. Le vicine dicono di che materia si tratta:
+
+| Codice | Messaggio |
+|---|---|
+| 1690165 | This aggregator business already has an existing **client business associated with this user** |
+| 1690192 | App is not owned or shared by a business: App must exist and be owned or shared to aggregator business **to create client businesses** |
+| 1690138 | To create a business using a primary page, you must be an admin of that page |
+| 1690232 | Businesses Do Not Have Primary Pages |
+
+Ed e' esattamente quello che Embedded Signup fa quando il cliente scegli il suo
+portfolio: il **nostro** business (l'aggregator) crea o collega il **suo**
+business come client.
+
+### Perche' essere admin non aiuta
+
+Il permesso non e' il problema. Il problema e' *di chi e'* il portfolio.
+Embedded Signup e' fatto per attaccare il portfolio di **un cliente** al nostro;
+se il portfolio scelto e' il nostro — quello che possiede l'app — il
+collegamento non ha senso e Meta rifiuta l'id. Essere admin di se stessi non
+cambia niente: non si puo' essere clienti di se stessi.
+
+Da qui il consiglio della documentazione, che a rileggerlo dice proprio questo:
+
+> You can test the Embedded Signup flow using your own Facebook account, but
+> this can result in additional business portfolios, WABAs, and business phone
+> numbers. If you don't want to clutter your Facebook account with test data,
+> you can **claim a sandbox test account** instead, and use it to simulate a
+> business customer completing the flow.
+
+### E una seconda causa, documentata come limite assoluto
+
+Dalla pagina *Embedded Signup → Limitations*:
+
+> **Existing WhatsApp Business Accounts (WABAs) that were originally created via
+> the developer app cannot be selected or onboarded directly through the
+> Embedded Signup flow.**
+
+Se il WABA che compare nella schermata di conferma e' quello nato dall'app di
+sviluppo — cioe' quello del numero di test che Meta presta — non e'
+selezionabile da Embedded Signup, per progetto. Non e' una configurazione da
+sistemare.
+
+### Cosa dice internet: niente
+
+Cercato (22/09): `1690130` **non e' documentato da nessuna parte**. Non e' nelle
+tabelle di errore di Embedded Signup, non e' in quelle di WhatsApp, e nessuna
+delle guide dei vendor che elencano gli errori del flusso — MSG91, Wati, Qiscus,
+360dialog — lo cita. Le loro liste coprono il portfolio ristretto, la
+verifica business mancante, il numero gia' registrato: non questo.
+
+Una cosa utile c'e', dalla documentazione di 360dialog:
+
+> The Embedded Signup uses Facebook Login, so **only the owner or administrator
+> of the Business Portfolio can start and complete the flow**. Third-party
+> providers are not allowed to navigate the Embedded Signup on behalf of the
+> business.
+
+Dice che il flusso lo deve fare il proprietario del portfolio, non il fornitore
+al suo posto. Non dice che il fornitore non possa collegare il **proprio**
+portfolio — quindi l'ipotesi «non si puo' essere clienti di se stessi» resta
+un'ipotesi, dedotta dalla famiglia del codice, non una cosa scritta.
+
+### Quindi: cosa e' certo e cosa no
+
+| | |
+|---|---|
+| **Certo** | `1690xxx` e' documentato solo sotto *Business Owned Businesses*: riguarda il passo del portfolio, non WhatsApp |
+| **Certo** | «WABAs originally created via the developer app **cannot be selected or onboarded** directly through the Embedded Signup flow» — limite assoluto, e combacia con un WABA nato dal numero di test |
+| **Ipotesi** | che `1690130` significhi proprio «questo portfolio e' il tuo» |
+| **Ignoto** | il significato esatto del codice: nessuno lo pubblica |
+
+### Come si distingue
+
+Un **sandbox test account** risponde a tutto in un colpo: e' un portfolio che
+non e' il nostro e un WABA che non nasce dall'app di sviluppo. Se con quello il
+flusso arriva in fondo, la causa era una di quelle e non c'e' niente da
+correggere nel codice. Se fallisce anche li', allora e' altro — e il log adesso
+ha `error_code`, `error_id`, `session_id` e `timestamp`, cioe' esattamente quello
+che Meta chiede per aprire un ticket, che a quel punto e' la strada giusta.
+
+### E il codice lo dice sullo schermo
+
+`hint_for()` tiene quello che abbiamo ricostruito, indicizzato per famiglia di
+codice, e la schermata lo scrive sotto il messaggio di Meta. **Etichettato come
+pista, non come verdetto**: e' ricostruito da noi, non pubblicato da Meta, e
+scriverlo come se fosse documentato sarebbe peggio che non scriverlo. Ma
+l'alternativa era un numero sullo schermo e un pomeriggio di ricerche che
+finisce dove e' finito il nostro.

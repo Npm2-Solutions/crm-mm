@@ -39,6 +39,88 @@
           </span>
         </div>
 
+        <!-- and which login configuration it sends. An app can hold several,
+             and the choice decides how long the client's token lives and
+             whether they are asked for a business portfolio. Meta's dashboard
+             shows what is selected there, which is not the same as what this
+             CRM sends — so say what this CRM sends. -->
+        <div
+          v-if="status.data?.signup_config?.config_id"
+          class="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
+        >
+          <span>{{ __('Embedded Signup configuration') }}:</span>
+          <span class="text-ink-gray-8">{{
+            status.data.signup_config.config_id
+          }}</span>
+          <span class="text-ink-gray-5">
+            {{
+              status.data.signup_config.from_bench
+                ? __('— from the bench config')
+                : __('— set here, in Settings')
+            }}
+          </span>
+        </div>
+
+        <!-- what Meta said, last few attempts. Only the hub has these rows: a
+             client site's onboarding is logged where the page lives, not where
+             the CRM does. -->
+        <div
+          v-if="attempts.data?.is_hub && attempts.data?.attempts?.length"
+          class="mb-4 rounded-lg border border-outline-gray-2 p-3"
+        >
+          <div class="mb-2 text-p-sm-medium text-ink-gray-7">
+            {{ __('Last connection attempts') }}
+          </div>
+          <div class="flex flex-col divide-y divide-outline-gray-1">
+            <div
+              v-for="row in attempts.data.attempts"
+              :key="row.creation"
+              class="flex flex-col gap-0.5 py-1.5 text-p-sm"
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-ink-gray-5">{{ row.creation }}</span>
+                <span
+                  :class="
+                    row.outcome === 'Error'
+                      ? 'text-ink-red-5'
+                      : row.outcome === 'Completed'
+                        ? 'text-ink-green-5'
+                        : 'text-ink-gray-7'
+                  "
+                >
+                  {{ row.event || row.outcome }}
+                </span>
+                <span v-if="row.current_step" class="text-ink-gray-5">
+                  {{ row.current_step }}
+                </span>
+              </div>
+              <div v-if="row.error_message" class="text-ink-red-5">
+                {{ row.error_message }}
+              </div>
+              <!-- what we worked out about a code Meta does not document. A
+                   lead, not a verdict — and it is labelled as one. -->
+              <div v-if="row.hint" class="text-ink-gray-6">
+                {{ row.hint }}
+              </div>
+              <!-- the two values Meta asks for when you open a support ticket -->
+              <div
+                v-if="row.error_id || row.session_id"
+                class="text-p-xs text-ink-gray-4"
+              >
+                {{
+                  [
+                    row.error_code && `code ${row.error_code}`,
+                    row.error_id && `error ${row.error_id}`,
+                    row.session_id && `session ${row.session_id}`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')
+                }}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- connect -->
         <div
           class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
@@ -346,6 +428,15 @@ const webhook = createResource({
   url: 'crm.integrations.whatsapp.api.get_webhook',
   auto: true,
 })
+
+// The signup flow runs on facebook.com and reports itself back to the hub page.
+// These are those reports. Reading them used to mean opening the Desk and
+// unfolding a JSON blob — a lot of steps between "it didn't work" and the
+// sentence that says why.
+const attempts = createResource({
+  url: 'crm.integrations.whatsapp.api.recent_signup_attempts',
+  auto: true,
+})
 const configuringWebhook = ref(false)
 
 function configureWebhook() {
@@ -438,6 +529,7 @@ function listenForConnection(hubOrigin) {
     window.removeEventListener('message', connectedListener)
     connectedListener = null
     status.reload()
+    attempts.reload()
     toast.success(__('WhatsApp connected'))
   }
   window.addEventListener('message', connectedListener)

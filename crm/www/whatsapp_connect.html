@@ -132,22 +132,6 @@
 </script>
 {% endif %}
 
-{% if launch %}
-<script>
-	// The waypoint. Nothing to read and nothing to press: remember what the
-	// return leg will need, then hand the browser to Facebook. A top-level
-	// navigation needs no pop-up permission, which is the whole reason this is
-	// a redirect and not another FB.login.
-	(function () {
-		remember({
-			state: {{ state | tojson }},
-			return_url: {{ return_url | tojson }},
-		});
-		window.location.replace({{ launch | tojson }});
-	})();
-</script>
-{% endif %}
-
 {% if returning %}
 <script>
 	// The redirect leg. Nothing usable is in the URL except the code, so the
@@ -163,9 +147,20 @@
 		if (returnedState) kept.state = returnedState;
 
 		if (denied) {
-			logEvent(kept.state, 'CANCEL', { current_step: 'redirect', status: denied });
+			// Everything Meta put in the query, not just that there was a
+			// refusal. `user_denied` is a person closing a window; anything
+			// else is the flow itself objecting, and that is worth reading.
+			var reported = {{ error_query | tojson }};
+			reported.current_step = 'redirect';
+			var closed = (reported.error_reason || '') === 'user_denied';
+			logEvent(kept.state, closed ? 'CANCEL' : 'ERROR', reported);
 			forget();
-			say({{ _("Connection cancelled or refused on Facebook.") | tojson }}, true);
+			say(
+				closed
+					? {{ _("Connection cancelled on Facebook.") | tojson }}
+					: {{ _("Facebook refused the connection. The reason has been recorded — ask your provider to look at the WhatsApp signup log.") | tojson }},
+				true
+			);
 			return;
 		}
 		if (!kept.state) {
@@ -191,7 +186,7 @@
 </script>
 {% endif %}
 
-{% if not returning and not launch and not error %}
+{% if launch or (not returning and not error) %}
 <script>
 	// Whether Facebook's script ever arrived. Without this the click handler
 	// called FB.login on an undefined FB: the button greyed out, the status said
@@ -216,10 +211,13 @@
 
 	const state = {{ state | tojson }};
 	const returnUrl = {{ return_url | tojson }};
+	// No button on the page that launches by itself. Everything below has to
+	// cope with that, so the two pages can share one launcher.
 	const button = document.getElementById('wa-connect');
 	let signupData = null;
 
-	function onFinishFailed() { button.disabled = false; }
+	function enable() { if (button) button.disabled = false; }
+	function onFinishFailed() { enable(); }
 
 	// Embedded Signup reports every step through a window message
 	window.addEventListener('message', function (event) {
@@ -237,7 +235,7 @@
 			remember({ waba_id: detail.waba_id || '', phone_number_id: detail.phone_number_id || '' });
 		} else if (data.event === 'CANCEL') {
 			say({{ _("Connection cancelled.") | tojson }}, true);
-			button.disabled = false;
+			enable();
 		}
 	});
 
@@ -249,31 +247,34 @@
 		logEvent(state, 'ERROR', { current_step: 'sdk_unavailable' });
 	}
 
-	button.addEventListener('click', function () {
+	// `onUnavailable` is what separates the two pages. With a button, the retry
+	// is left to the person: Facebook's window opens only from a real click, so
+	// pressing Start for them would get the pop-up blocked instead. Without a
+	// button there is nobody to ask, and the caller hands us somewhere to go.
+	function launchSignup(onUnavailable) {
 		if (sdkFailed || typeof FB === 'undefined' || !sdkReady) {
-			// it may simply be slow: wait a moment before blaming a blocker.
-			// The retry is left to the person on purpose — Facebook's window
-			// opens only from a real click, so pressing Start for them would
-			// get the pop-up blocked instead.
+			// it may simply be slow: wait a moment before blaming a blocker
 			say({{ _("Loading Facebook…") | tojson }});
-			button.disabled = true;
+			if (button) button.disabled = true;
 			var waited = 0;
 			var timer = setInterval(function () {
 				waited += 500;
 				if (sdkReady && typeof FB !== 'undefined') {
 					clearInterval(timer);
-					button.disabled = false;
+					enable();
+					if (onUnavailable) { launchSignup(onUnavailable); return; }
 					say({{ _("Ready — press Start again.") | tojson }});
 				} else if (sdkFailed || waited >= 8000) {
 					clearInterval(timer);
-					button.disabled = false;
+					enable();
+					if (onUnavailable) { onUnavailable(); return; }
 					blocked();
 				}
 			}, 500);
 			return;
 		}
 
-		button.disabled = true;
+		if (button) button.disabled = true;
 		say({{ _("Opening WhatsApp setup…") | tojson }});
 		logEvent(state, 'STARTED', { current_step: 'launch' });
 		// Hand the tab everything the redirect leg would need before leaving it:
@@ -292,7 +293,7 @@
 					{{ _("Connection cancelled or refused. If you did not close the window, check on the Meta app that Login with the JavaScript SDK is on and that this domain is in Allowed domains.") | tojson }},
 					true
 				);
-				button.disabled = false;
+				enable();
 				return;
 			}
 			finish(
@@ -319,19 +320,49 @@
 			// FB.login threw: a blocked popup, a stale SDK, a bad configuration.
 			// Whatever it is, the page says it instead of stopping silently.
 			logEvent(state, 'ERROR', { current_step: 'login_threw', message: String(e && e.message || e) });
+			enable();
+			if (onUnavailable) { onUnavailable(); return; }
 			say(
 				{{ _("The setup window could not be opened. Allow pop-ups for this page and try again.") | tojson }},
 				true
 			);
-			button.disabled = false;
 		}
-	});
+	}
+
+	if (button) button.addEventListener('click', function () { launchSignup(null); });
 
 	// whatever else breaks on this page, the hub's log gets it: a stalled
 	// onboarding is otherwise a mystery told only by "nothing happened"
 	window.addEventListener('error', function (event) {
 		logEvent(state, 'ERROR', { current_step: 'page_error', message: String(event.message || '') });
 	});
+</script>
+{% endif %}
+
+{% if launch %}
+<script>
+	// The waypoint: nothing to read and nothing to press.
+	//
+	// It tries `FB.login` first, even though nobody clicked. That looks like the
+	// long way round when a plain redirect would also work, and it is there for
+	// one reason: `FB.login` keeps THIS page alive, listening for Meta's
+	// `WA_EMBEDDED_SIGNUP` messages. Those messages are the only place the flow
+	// ever says what went wrong — the error, its id, the screen it happened on.
+	// A redirect leaves facebook.com talking to nobody, and an onboarding that
+	// fails halfway is then exactly as legible as "it didn't work".
+	//
+	// When the browser refuses a pop-up nobody clicked for — which is most of
+	// them — we lose nothing that we had: the redirect happens anyway, one
+	// moment later, and the person still never pressed a thing.
+	(function () {
+		remember({
+			state: {{ state | tojson }},
+			return_url: {{ return_url | tojson }},
+		});
+		launchSignup(function () {
+			window.location.replace({{ launch | tojson }});
+		});
+	})();
 </script>
 {% endif %}
 {% endblock %}
