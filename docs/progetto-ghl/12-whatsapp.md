@@ -1293,3 +1293,72 @@ cliente non si chiede.
 
 Percio' la prima domanda davanti a un collegamento che non parte non e' quale
 portfolio o quale permesso: e' **quale app c'e' su quel telefono**.
+
+## Come si abilita Coexistence davvero (ricerca del 22/09)
+
+Tre livelli, e vanno tutti e tre. Il primo e' l'unico che avevamo in mente.
+
+### 1. Nel codice: `featureType` in `extras`
+
+Documentato da Meta:
+
+> Add a `featureType` property set to `whatsapp_business_app_onboarding` to the
+> `extras` object in the launch method.
+
+Una guida di terze parti aggiunge una precisazione che vale la pena avere per
+iscritto, perche' toglie un'ambiguita':
+
+> this launch selector surfaces the Coexistence branch and is **still required
+> even when the Builder configuration has Coexistence enabled**.
+
+Cioe': l'interruttore nella configurazione **non sostituisce** `extras`. Servono
+entrambi. E `extras` viaggia solo con `FB.login` — non su un dialog costruito a
+mano, come abbiamo imparato a nostre spese.
+
+### 2. Sulla configurazione di accesso
+
+Se la configurazione Facebook Login for Business ha una voce Coexistence, va
+accesa. Non la sostituisce il punto 1 e il punto 1 non la sostituisce.
+
+### 3. Sul numero del cliente — ed e' qui che si casca
+
+Questo e' il livello che non dipende da noi e che nessun errore dice in chiaro.
+Da **respond.io**:
+
+> Eligible if: WhatsApp Business App version **2.24.17 or later**; **actively
+> using the WhatsApp Business App, based on Meta's review of account age and
+> messaging quality**; phone number added to your Meta Business Manager.
+
+E sul perche' un numero viene rifiutato:
+
+> Numbers where Meta returns an eligibility error during signup typically
+> require **more activity on the WhatsApp Business App**.
+
+Da **360dialog**, nello stesso senso:
+
+> Newly created Business App accounts are **not immediately eligible for API
+> access**.
+
+> Do not uninstall the WhatsApp Business App — doing so will disconnect. Open it
+> **at least once every 13 days** to keep the account active.
+
+> Numbers already connected to WhatsApp API **cannot use Coexistence**.
+
+E un requisito di verifica che vale la pena sapere prima di prometterlo a un
+cliente:
+
+> Partner-Led Business Verification (PLBV) or Meta Verified for Business must be
+> used — **Classic Business Verification is not supported**. Official Business
+> Account (OBA) status is not supported.
+
+### Cosa ne segue, praticamente
+
+Un numero **appena messo su WhatsApp Business per fare una prova non e'
+idoneo**, e Meta non lo dice con quelle parole: restituisce un errore di
+eleggibilita' o semplicemente non offre il ramo Coexistence. Nessuna
+configurazione lo aggira — ci vuole un numero con una storia vera alle spalle,
+cioe' quello di un cliente che usa WhatsApp Business da mesi.
+
+Il che ribalta anche il modo di provarlo: **il test buono non e' un numero
+nuovo dell'agenzia, e' il numero di un cliente che gia' lavora**. Un numero
+nuovo dimostra solo che il flusso parte.
