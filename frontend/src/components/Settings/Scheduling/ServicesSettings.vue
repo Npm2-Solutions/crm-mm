@@ -462,7 +462,7 @@ function describe(service) {
     }[service.staff_selection] || service.staff_selection,
   )
   if (service.max_participants > 1) {
-    parts.push(__('up to {0} people').replace('{0}', service.max_participants))
+    parts.push(__('up to {0} people', [service.max_participants]))
   }
   if (service.default_price) {
     parts.push(`${service.default_price} ${service.currency || ''}`)

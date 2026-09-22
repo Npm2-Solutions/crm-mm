@@ -498,10 +498,8 @@ const schedulerColumns = computed(() => {
         label: resource.resource_name,
         caption: [
           __(resource.resource_type),
-          resource.capacity > 1
-            ? __('{0} at a time').replace('{0}', resource.capacity)
-            : '',
-          resource.seats ? __('{0} seats').replace('{0}', resource.seats) : '',
+          resource.capacity > 1 ? __('{0} at a time', [resource.capacity]) : '',
+          resource.seats ? __('{0} seats', [resource.seats]) : '',
         ]
           .filter(Boolean)
           .join(' · '),

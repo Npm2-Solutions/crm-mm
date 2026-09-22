@@ -178,9 +178,9 @@ const grouped = computed(() => {
 function describe(resource) {
   const parts = []
   if (resource.capacity > 1) {
-    parts.push(__('{0} at a time').replace('{0}', resource.capacity))
+    parts.push(__('{0} at a time', [resource.capacity]))
   }
-  if (resource.seats) parts.push(__('{0} seats').replace('{0}', resource.seats))
+  if (resource.seats) parts.push(__('{0} seats', [resource.seats]))
   if (resource.location) parts.push(resource.location)
   if (resource.hourly_rate) {
     parts.push(`${resource.hourly_rate} ${resource.currency || ''}/h`)

@@ -41,12 +41,7 @@
               {{ schedule.day_count }} {{ __('time bands') }}
               <span v-if="schedule.max_daily_appointments">
                 ·
-                {{
-                  __('max {0}/day').replace(
-                    '{0}',
-                    schedule.max_daily_appointments,
-                  )
-                }}
+                {{ __('max {0}/day', [schedule.max_daily_appointments]) }}
               </span>
               <span v-if="schedule.holiday_list">
                 · {{ schedule.holiday_list }}</span
