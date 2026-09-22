@@ -348,6 +348,9 @@ def login_url(state: str) -> str:
 		"redirect_uri": connect_url(),
 		"response_type": "code",
 		"override_default_response_type": "true",
+		# see the page: without it Facebook skips every screen it already has an
+		# answer for, and the Coexistence branch is one of those screens
+		"auth_type": "reauthorize",
 		"extras": json.dumps(SIGNUP_EXTRAS),
 		# Strict Mode ignores its value when matching the redirect URI, and the
 		# manual-flow guide says it comes back unchanged. Belt; sessionStorage

@@ -763,3 +763,24 @@ class TestTheExtrasMatchMetaSnippet(IntegrationTestCase):
 
 		query = parse_qs(urlparse(S.login_url("S")).query)
 		self.assertEqual(_json.loads(query["extras"][0]), S.SIGNUP_EXTRAS)
+
+
+class TestTheSecondRunAsksAgain(IntegrationTestCase):
+	"""«In the Login dialog, the user will only ever be asked for permissions
+	they have not already granted.»
+
+	Which means the second time somebody runs this flow, Facebook skips every
+	screen it already has an answer for — the portfolio, the assets, and the
+	Coexistence branch, which is one of those screens. A flow that worked once
+	then never works again, and the same happens in Meta's own Builder, because
+	it is the same account with the same grant.
+	"""
+
+	def test_both_launches_ask_to_authorise_again(self):
+		import pathlib
+		from urllib.parse import parse_qs, urlparse
+
+		self.assertEqual(parse_qs(urlparse(S.login_url("S")).query)["auth_type"], ["reauthorize"])
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		self.assertIn("auth_type: 'reauthorize'", page)

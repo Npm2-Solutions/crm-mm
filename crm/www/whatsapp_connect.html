@@ -315,6 +315,25 @@
 			config_id: {{ config_id | tojson }},
 			response_type: 'code',
 			override_default_response_type: true,
+			// Ask again for what has already been granted.
+			//
+			// «In the Login dialog, the user will only ever be asked for
+			// permissions they have not already granted.» So the second time a
+			// person runs this, Facebook skips the screens it has answers for —
+			// no portfolio question, no asset choice, and no Coexistence branch,
+			// because that branch is one of those screens. Straight to the phone
+			// number, against whatever was chosen the first time.
+			//
+			// That is why a flow that worked once never works again, and why
+			// Meta's own Embedded Signup Builder behaves the same way: it is the
+			// same Facebook account with the same prior grant, not a different
+			// implementation.
+			//
+			// `reauthorize` undoes it: «call login() with the auth_type=reauthorize
+			// parameter, which will ask them to accept the permissions currently
+			// granted to your app again». Harmless on a first connection, where
+			// there is nothing to ask again.
+			auth_type: 'reauthorize',
 			// Where Facebook may send the person when the pop-up is suppressed.
 			// Without it the SDK redirects to whatever URL invoked the login,
 			// which carries a `state` query the app's registered redirect URI

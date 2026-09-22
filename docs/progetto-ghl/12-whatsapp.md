@@ -1537,3 +1537,51 @@ per toglierlo.
 Ora lo mandiamo, ed e' la stessa costante per tutt'e due i lanci — quello con
 `FB.login` e l'URL di ripiego — con un test che li confronta: due strade che
 chiedono cose diverse fanno fallire una in un modo che l'altra non riproduce.
+
+## «Non mi chiede piu' il portfolio»: il secondo giro salta le schermate
+
+E' la risposta, ed e' documentata in una riga di *FB.login*:
+
+> **In the Login dialog, the user will only ever be asked for permissions they
+> have not already granted.**
+
+Il primo giro si concede tutto. Dal secondo in poi Facebook **salta ogni
+schermata di cui ha gia' la risposta**: niente scelta del portfolio, niente
+scelta degli asset — e niente ramo Coexistence, perche' quel ramo *e'* una di
+quelle schermate. Si finisce dritti al numero, contro gli asset scelti la prima
+volta.
+
+Il che spiega, tutto insieme:
+
+- **perche' ha funzionato una volta e mai piu'**;
+- perche' non chiede piu' il portfolio;
+- perche' va dritto a «inserisci un nuovo numero»;
+- e perche' **anche il Builder di Meta fa lo stesso** — non e'
+  un'implementazione diversa, e' lo stesso account Facebook con la stessa
+  concessione di prima. Avevo preso il comportamento del Builder come prova che
+  non fosse il nostro codice: era invece lo stesso meccanismo visto da un'altra
+  finestra.
+
+Ed e' la **stessa trappola** che avevamo gia' documentato per il lato Facebook,
+in `meta/oauth.py`: «chi ha gia' autorizzato l'app viene rimbalzato dentro senza
+schermata di consenso — e quindi senza selettore delle Pagine». Lo sapevamo di
+la' e non l'avevamo portato di qua.
+
+### Le due strade per uscirne
+
+**Nel codice**: `auth_type: 'reauthorize'` su `FB.login`, che e' l'opposto
+esatto —
+
+> call `login()` with the `auth_type=reauthorize` parameter, which will **ask
+> them to accept the permissions currently granted to your app again** in order
+> to continue.
+
+Innocuo al primo collegamento, dove non c'e' niente da richiedere.
+
+**A mano, subito, senza deploy**: togliere l'app dalle integrazioni del proprio
+account. Per una configurazione System-user e' in **Business Manager →
+Impostazioni → Integrazioni → App connesse → rimuovi l'app** («your business
+clients can invalidate business integration system user access tokens by going
+to Business Manager > Settings > Business Settings > Integrations > Connected
+apps and removing your app»). Tolta la concessione, il giro successivo riparte
+da zero — **anche nel Builder**.
