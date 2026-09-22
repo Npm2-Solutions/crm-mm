@@ -755,9 +755,29 @@ giorno, il cliente scopre che WhatsApp non funziona piu' senza che niente
 glielo abbia detto prima, e per rimetterlo a posto deve rifare tutto il giro,
 QR compreso.
 
-`whatsapp_signup_config_id` va quindi su quella **senza scadenza**. Vale la
-pena controllarlo prima del prossimo collegamento: Settings → WhatsApp mostra
-l'id in uso.
+**Quella in uso e' la prima** (verificato 22/09): la Tech Provider, senza
+scadenza. E' anche quella giusta per come lavoriamo, e la documentazione dice
+perche': per un Tech Provider il token corretto e' il *Business Integration
+System User access token*, che «defaults to never expire» e si ottiene
+**scambiando il codice** — che e' esattamente cio' che fa `exchange_code`.
+
+C'e' una conseguenza di quella scelta che vale la pena sapere, perche' cambia
+cosa vede il cliente. Da *Facebook Login for Business*:
+
+> If you select **System-user access token** then your app users will be
+> **required to log in using a business portfolio**.
+
+Quindi il flusso passa per un portfolio business, e un errore del tipo «X non
+e' un ID business valido» va cercato li' — nel portfolio con cui si entra nel
+flusso — non nel codice.
+
+### Quale configurazione stiamo mandando davvero
+
+Il pannello di Meta mostra quale configurazione e' selezionata **nel suo
+builder**. Non e' la stessa cosa di quale id manda questo CRM: quello sta in
+`whatsapp_signup_config_id`, fra bench config e Settings. Distinguere le due a
+naso e' costato un pomeriggio, quindi ora Settings → WhatsApp scrive l'id in
+uso accanto a quello dell'app, e dice da dove viene.
 
 ## Il campo del webhook che non c'era
 

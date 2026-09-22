@@ -64,6 +64,21 @@ def config_id() -> str:
 	return frappe.conf.get("whatsapp_signup_config_id") or get_settings().whatsapp_signup_config_id or ""
 
 
+def config_in_use() -> dict:
+	"""Which login configuration the CRM sends, and where that value came from.
+
+	An app can hold several, and which one is used changes what the client gets:
+	how long their token lives, and whether they are asked to log in with a
+	business portfolio at all. Meta's dashboard shows what is selected *there*,
+	in its own builder — which is a different thing from what this CRM sends,
+	and telling the two apart by guesswork has already cost an afternoon.
+	"""
+	return {
+		"config_id": config_id(),
+		"from_bench": bool(frappe.conf.get("whatsapp_signup_config_id")),
+	}
+
+
 def _state_secret() -> str:
 	return relay_secret() or frappe.local.conf.get("encryption_key") or frappe.local.site
 
@@ -434,6 +449,7 @@ def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, n
 __all__ = [
 	"complete_signup",
 	"config_id",
+	"config_in_use",
 	"connect_url",
 	"discover_assets",
 	"login_url",

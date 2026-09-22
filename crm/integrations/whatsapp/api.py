@@ -32,7 +32,7 @@ from crm.integrations.meta.client import (
 from crm.integrations.meta.oauth import is_hub
 from crm.integrations.meta.relay import sign as relay_sign
 from crm.integrations.meta.relay import valid_relay_signature
-from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, make_state
+from crm.integrations.whatsapp.signup import CONNECT_PATH, config_id, config_in_use, make_state
 
 RELAY_TIMEOUT = 15
 
@@ -78,6 +78,11 @@ def get_status() -> dict:
 		# how an agency discovers, weeks later, that its WhatsApp calls were
 		# attributed to the Facebook app
 		"app": whatsapp_app_in_use(),
+		# and which login configuration it sends. Two configurations on the same
+		# app can differ in the one thing nobody can see from the outside — how
+		# long the client's token lives — so the id belongs on screen, next to
+		# the app's.
+		"signup_config": config_in_use(),
 		# say WHICH piece is missing: "ask your provider" left nobody, the
 		# provider included, able to tell what to do next
 		"missing": missing_requirements(),

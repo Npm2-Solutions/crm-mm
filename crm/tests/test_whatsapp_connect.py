@@ -492,3 +492,26 @@ class TestCoexistenceIsVerified(IntegrationTestCase):
 		with patch.object(S, "whatsapp_graph_get", return_value={}) as graph:
 			S.describe_number("PHONE", "TOKEN")
 		self.assertIn("is_on_biz_app", graph.call_args[0][2]["fields"])
+
+
+class TestWhichConfigIsSent(IntegrationTestCase):
+	"""An app can hold several login configurations, and the choice decides how
+	long the client's token lives. Meta's dashboard shows what is selected in
+	its own builder, which is not what this CRM sends — so the CRM says it."""
+
+	def tearDown(self):
+		frappe.local.conf.pop("whatsapp_signup_config_id", None)
+		frappe.db.rollback()
+
+	def test_it_reports_the_id_and_says_it_came_from_the_bench(self):
+		frappe.local.conf["whatsapp_signup_config_id"] = "FROM-BENCH"
+		self.assertEqual(S.config_in_use(), {"config_id": "FROM-BENCH", "from_bench": True})
+
+	def test_it_reports_the_id_and_says_it_came_from_settings(self):
+		from crm.integrations.whatsapp.api import save_whatsapp_app
+
+		save_whatsapp_app(whatsapp_signup_config_id="FROM-SETTINGS")
+		self.assertEqual(S.config_in_use(), {"config_id": "FROM-SETTINGS", "from_bench": False})
+
+	def test_nothing_configured_is_reported_as_nothing(self):
+		self.assertEqual(S.config_in_use(), {"config_id": "", "from_bench": False})

@@ -39,6 +39,28 @@
           </span>
         </div>
 
+        <!-- and which login configuration it sends. An app can hold several,
+             and the choice decides how long the client's token lives and
+             whether they are asked for a business portfolio. Meta's dashboard
+             shows what is selected there, which is not the same as what this
+             CRM sends — so say what this CRM sends. -->
+        <div
+          v-if="status.data?.signup_config?.config_id"
+          class="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
+        >
+          <span>{{ __('Embedded Signup configuration') }}:</span>
+          <span class="text-ink-gray-8">{{
+            status.data.signup_config.config_id
+          }}</span>
+          <span class="text-ink-gray-5">
+            {{
+              status.data.signup_config.from_bench
+                ? __('— from the bench config')
+                : __('— set here, in Settings')
+            }}
+          </span>
+        </div>
+
         <!-- connect -->
         <div
           class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
