@@ -1505,3 +1505,161 @@ titolare e' il portfolio dove quel conto e' rimasto.
 
 Invertire 1 e 3 fa perdere tempo: senza il deploy, anche un numero perfettamente
 libero non vedrebbe comunque il ramo Coexistence.
+
+## `sessionInfoVersion`: la terza chiave che mancava
+
+Il payload che manda Coexistence ha **tre** chiavi. Ne mandavamo due.
+
+Dalla pagina *Onboard WhatsApp Business app users*, che e' la pagina di
+Coexistence, il suo stesso snippet:
+
+```js
+extras: {
+  setup: {},
+  featureType: "whatsapp_business_app_onboarding",
+  sessionInfoVersion: "3"
+}
+```
+
+`sessionInfoVersion` sembra un dettaglio sul logging — si chiama come il log di
+sessione — e l'avevamo lasciato fuori perche' la pagina *Versions* per la v4 non
+lo elenca. Ma:
+
+- la pagina di Coexistence lo stampa nel suo snippet;
+- l'Embedded Signup Builder ha *Versione informazioni sulla sessione* come menu
+  a se', impostato su 3;
+- e per la v2 la pagina *Versions* diceva: «Partners are **required** to add a
+  `sessionInfoVersion` to receive the callback».
+
+Tre posti dicono che conta. Una pagina che non lo nomina non era una ragione
+per toglierlo.
+
+Ora lo mandiamo, ed e' la stessa costante per tutt'e due i lanci — quello con
+`FB.login` e l'URL di ripiego — con un test che li confronta: due strade che
+chiedono cose diverse fanno fallire una in un modo che l'altra non riproduce.
+
+## «Non mi chiede piu' il portfolio»: il secondo giro salta le schermate
+
+E' la risposta, ed e' documentata in una riga di *FB.login*:
+
+> **In the Login dialog, the user will only ever be asked for permissions they
+> have not already granted.**
+
+Il primo giro si concede tutto. Dal secondo in poi Facebook **salta ogni
+schermata di cui ha gia' la risposta**: niente scelta del portfolio, niente
+scelta degli asset — e niente ramo Coexistence, perche' quel ramo *e'* una di
+quelle schermate. Si finisce dritti al numero, contro gli asset scelti la prima
+volta.
+
+Il che spiega, tutto insieme:
+
+- **perche' ha funzionato una volta e mai piu'**;
+- perche' non chiede piu' il portfolio;
+- perche' va dritto a «inserisci un nuovo numero»;
+- e perche' **anche il Builder di Meta fa lo stesso** — non e'
+  un'implementazione diversa, e' lo stesso account Facebook con la stessa
+  concessione di prima. Avevo preso il comportamento del Builder come prova che
+  non fosse il nostro codice: era invece lo stesso meccanismo visto da un'altra
+  finestra.
+
+Ed e' la **stessa trappola** che avevamo gia' documentato per il lato Facebook,
+in `meta/oauth.py`: «chi ha gia' autorizzato l'app viene rimbalzato dentro senza
+schermata di consenso — e quindi senza selettore delle Pagine». Lo sapevamo di
+la' e non l'avevamo portato di qua.
+
+### Le due strade per uscirne
+
+**Nel codice**: `auth_type: 'reauthorize'` su `FB.login`, che e' l'opposto
+esatto —
+
+> call `login()` with the `auth_type=reauthorize` parameter, which will **ask
+> them to accept the permissions currently granted to your app again** in order
+> to continue.
+
+Innocuo al primo collegamento, dove non c'e' niente da richiedere.
+
+**A mano, subito, senza deploy**: togliere l'app dalle integrazioni del proprio
+account. Per una configurazione System-user e' in **Business Manager →
+Impostazioni → Integrazioni → App connesse → rimuovi l'app** («your business
+clients can invalidate business integration system user access tokens by going
+to Business Manager > Settings > Business Settings > Integrations > Connected
+apps and removing your app»). Tolta la concessione, il giro successivo riparte
+da zero — **anche nel Builder**.
+
+## `1690130` all'ultimo passo: il portfolio del cliente non puo' essere il nostro
+
+Questa e' la conclusione, ed e' arrivata quando l'errore ha cambiato posizione.
+
+All'inizio `1690130` compariva subito. Dopo aver rimesso il numero in un
+portfolio e riprovato, il flusso e' andato fino in fondo — immagine del
+profilo, QR, e la schermata finale:
+
+> Il tuo account WhatsApp Business ora e' collegato al tuo portfolio business.
+> **Se continui, condividerai** il tuo account WhatsApp Business e il tuo
+> profilo business **con NPM2**.
+
+Ed e' li' che si ferma. Quel passo e' precisamente cio' che la famiglia
+`1690xxx` documenta — `owned_businesses` / `client_businesses`, cioe'
+**l'aggregator business che aggancia un client business**.
+
+E `1270213918015409` e' l'id che comparve nel callback della dashboard
+dell'app: **il portfolio che possiede l'app**. Il nostro.
+
+Quindi il flusso sta provando ad agganciare il portfolio di NPM2 come **cliente
+di NPM2**. Non si puo' essere clienti di se stessi, e l'errore lo dice a modo
+suo: quell'id non e' valido *come client business*.
+
+### La regola, e perche' morde solo in prova
+
+Il conto WhatsApp del cliente deve stare in un **portfolio diverso** da quello
+che possiede l'app Meta. In produzione non succede mai: il portfolio del
+cliente e' suo. Morde solo quando si prova su se stessi, con l'unico portfolio
+che si ha sottomano — che e' esattamente il caso per cui Meta offre i **sandbox
+account**, «a portfolio that is not yours».
+
+### La riga che ha fatto perdere due giorni
+
+La sequenza vera era:
+
+1. `1690130` all'inizio → stesso motivo, portfolio sbagliato;
+2. poi io ho tolto `FB.login` e rotto Coexistence, **sovrapponendo un secondo
+   guasto al primo**;
+3. da li' in poi ogni sintomo era ambiguo: non si capiva piu' quale dei due
+   guasti si stesse guardando.
+
+Sommare un guasto nostro a uno di configurazione, mentre si indaga, e' il modo
+piu' rapido per non capire piu' niente. Il momento di cambiare il lancio non
+era durante un'indagine.
+
+## L'ultimo passo: l'hub che chiamava se stesso
+
+Meta finisce senza una parola di lamentela — QR scansionato, condivisione
+confermata — e il CRM risponde «Could not complete the connection».
+
+Il passo che falliva e' `deliver_to_site`: l'hub consegna le credenziali al site
+del cliente con una POST HTTP. Quando il cliente **e' l'hub stesso** — un'agenzia
+che collega il proprio numero, cioe' la prima prova che chiunque fa — quella
+POST esce e rientra **mentre la richiesta che dovrebbe rispondere e' ancora
+aperta**. Su un worker solo e' uno stallo, e si vede alla fine di tutto.
+
+E' esattamente lo stesso guasto che avevamo gia' trovato e chiuso per il relay
+Meta (`claim_locally`, `release_locally`) e che `claim_route_on_hub` evita da
+mesi con una guardia `is_hub()`. La consegna WhatsApp non l'aveva mai imparato.
+
+Ora, se il site di destinazione e' questo site, la consegna avviene in processo:
+stesso lavoro, nessun giro di rete.
+
+### E la pagina diceva la cosa sbagliata
+
+Su qualunque rifiuto del server rispondeva «Could not complete the connection.
+Please retry.» — compreso questo, che e' il peggiore da nascondere perche'
+arriva dopo che la persona ha fatto tutto. Il messaggio c'era nella risposta,
+in una delle forme di Frappe (`_server_messages`, `exception`, `exc_type`): lo
+buttavamo via. Ora lo legge, lo mostra e lo scrive nel log.
+
+### La lezione di questa sessione, in una riga
+
+Ogni volta che la stessa macchina fa **due ruoli** — hub e cliente — il codice
+che parla «all'altro» deve chiedersi se l'altro e' se stesso. L'avevamo
+imparato una volta e non l'avevamo scritto in un posto dove si applicasse a
+tutto.

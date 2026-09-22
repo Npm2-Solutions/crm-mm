@@ -163,10 +163,14 @@ SIGNUP_HINTS = (
 	(
 		"1690",
 		_(
-			"This code belongs to the business-portfolio step, not to WhatsApp. Two documented "
-			"causes fit: a WhatsApp Business Account created through the developer app cannot be "
-			"selected in Embedded Signup at all, and the flow is meant to attach a customer's "
-			"portfolio to yours. A sandbox test account rules out both at once."
+			"This code belongs to the business-portfolio step, not to WhatsApp. It is the family "
+			"Meta documents under client businesses — an aggregator business attaching a client "
+			"business — so when it fires on the last screen, the one that offers to share the "
+			"account, the id it names is a portfolio that cannot be the client. The usual reason "
+			"is that it is your own: the customer's WhatsApp account has to live in a portfolio "
+			"other than the one that owns the Meta app. A second documented cause is a WhatsApp "
+			"Business Account created through the developer app, which Embedded Signup cannot "
+			"select at all. A sandbox test account rules out both at once."
 		),
 	),
 	(
@@ -322,7 +326,11 @@ def connect_url() -> str:
 # page uses. If Meta ignores it there, the flow falls back to the plain Cloud
 # API onboarding — which is why `check_coexistence` looks at the result instead
 # of trusting it.
-SIGNUP_EXTRAS = {"setup": {}, "featureType": "whatsapp_business_app_onboarding"}
+SIGNUP_EXTRAS = {
+	"setup": {},
+	"featureType": "whatsapp_business_app_onboarding",
+	"sessionInfoVersion": "3",
+}
 
 
 def login_url(state: str) -> str:
@@ -344,6 +352,9 @@ def login_url(state: str) -> str:
 		"redirect_uri": connect_url(),
 		"response_type": "code",
 		"override_default_response_type": "true",
+		# see the page: without it Facebook skips every screen it already has an
+		# answer for, and the Coexistence branch is one of those screens
+		"auth_type": "reauthorize",
 		"extras": json.dumps(SIGNUP_EXTRAS),
 		# Strict Mode ignores its value when matching the redirect URI, and the
 		# manual-flow guide says it comes back unchanged. Belt; sessionStorage
@@ -488,7 +499,18 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 			f"WABA {waba_id} is routed to {current}; {site} tried to take it over",
 			"WhatsApp relay: takeover refused",
 		)
-		frappe.throw(_("This WhatsApp account is already connected to another site"))
+		# Name both sides. "Already connected to another site" was true and
+		# useless: the commonest cause is not another client at all, it is the
+		# same site reached by a second hostname — a custom domain and the one
+		# the host gave it — and nobody can see that from a sentence that names
+		# neither.
+		frappe.throw(
+			_(
+				"This WhatsApp account is already connected to {0}, and this request came from "
+				"{1}. If those are the same CRM under two addresses, remove the Meta WhatsApp "
+				"Route for {2} on the hub and connect again."
+			).format(current, site, waba_id)
+		)
 	if current:
 		frappe.db.set_value(
 			"Meta WhatsApp Route",
@@ -508,19 +530,41 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 	frappe.db.commit()
 
 
+def deliver_locally(payload: dict) -> None:
+	"""The same thing `receive_connection` does, without the round trip.
+
+	When the CRM being connected **is** this site — an agency connecting its own
+	number on the hub — the HTTP call goes out to ourselves and comes back in
+	while this very request is still open. On one worker that is a deadlock, and
+	the person sees the connection fail after Meta has already said yes and they
+	have already scanned a QR.
+
+	`claim_route_on_hub` learned this lesson months ago; the delivery never did.
+	"""
+	from crm.integrations.whatsapp.api import upsert_account, whatsapp_installed
+
+	if not whatsapp_installed():
+		frappe.throw(_("The WhatsApp app is not installed on this site"))
+	upsert_account(payload)
+	frappe.db.commit()
+
+
 def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, number: dict) -> None:
 	"""Hand the credentials to the client CRM, signed with the relay secret."""
+	payload = {
+		"token": token,
+		"waba_id": waba_id,
+		"phone_number_id": phone_number_id,
+		"display_phone_number": number.get("display_phone_number") or "",
+		"verified_name": number.get("verified_name") or "",
+	}
+	if site.rstrip("/") == get_url().rstrip("/"):
+		deliver_locally(payload)
+		return
+
 	if not relay_secret():
 		frappe.throw(_("meta_relay_secret is not configured on this hub"))
-	body = json.dumps(
-		{
-			"token": token,
-			"waba_id": waba_id,
-			"phone_number_id": phone_number_id,
-			"display_phone_number": number.get("display_phone_number") or "",
-			"verified_name": number.get("verified_name") or "",
-		}
-	).encode()
+	body = json.dumps(payload).encode()
 	try:
 		response = requests.post(
 			f"{site.rstrip('/')}/api/method/crm.integrations.whatsapp.api.receive_connection",
@@ -540,6 +584,7 @@ __all__ = [
 	"config_id",
 	"config_in_use",
 	"connect_url",
+	"deliver_locally",
 	"discover_assets",
 	"error_fields",
 	"hint_for",

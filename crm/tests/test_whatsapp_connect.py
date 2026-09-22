@@ -631,6 +631,9 @@ class TestWhatWeKnowAboutTheCode(IntegrationTestCase):
 	def test_the_portfolio_family_gets_the_portfolio_lead(self):
 		hint = S.hint_for(1690130)
 		self.assertIn("business-portfolio step", hint)
+		# the thing that took two days to see: a customer cannot be your client
+		# while sitting in the portfolio that owns your app
+		self.assertIn("other than the one that owns the Meta app", hint)
 		self.assertIn("sandbox", hint)
 
 	def test_the_whole_family_matches_not_just_the_one_we_saw(self):
@@ -722,3 +725,135 @@ class TestAccountNoticesAreKept(IntegrationTestCase):
 			with patch.object(C.frappe, "log_error") as log:
 				C.handle_account_update({"event": "PARTNER_REMOVED"})
 		self.assertTrue(log.called)
+
+
+class TestTheExtrasMatchMetaSnippet(IntegrationTestCase):
+	"""Coexistence is asked for in `extras`, and the object has three keys.
+
+	We shipped two. `sessionInfoVersion` reads like a detail about logging, and
+	the v4 Versions page does not list it — but the Coexistence page prints it,
+	the Embedded Signup Builder has it as a dropdown of its own, and v2
+	documented it as the thing without which the callback never arrives.
+	"""
+
+	def test_every_key_meta_prints_is_sent(self):
+		self.assertEqual(
+			S.SIGNUP_EXTRAS,
+			{
+				"setup": {},
+				"featureType": "whatsapp_business_app_onboarding",
+				"sessionInfoVersion": "3",
+			},
+		)
+
+	def test_the_page_and_the_dialog_url_ask_for_the_same_thing(self):
+		"""Two launch paths that disagree about what they request would make one
+		of them fail in a way the other cannot reproduce."""
+		import json as _json
+		import pathlib
+		import re
+		from urllib.parse import parse_qs, urlparse
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		block = re.search(r"extras:\s*\{(.+?)\n\t\t\t\},", page, re.DOTALL)
+		self.assertTrue(block, "the page must still pass extras to FB.login")
+		for key, value in (
+			("featureType", "whatsapp_business_app_onboarding"),
+			("sessionInfoVersion", "3"),
+		):
+			self.assertIn(key, block.group(1))
+			self.assertIn(value, block.group(1))
+
+		query = parse_qs(urlparse(S.login_url("S")).query)
+		self.assertEqual(_json.loads(query["extras"][0]), S.SIGNUP_EXTRAS)
+
+
+class TestTheSecondRunAsksAgain(IntegrationTestCase):
+	"""«In the Login dialog, the user will only ever be asked for permissions
+	they have not already granted.»
+
+	Which means the second time somebody runs this flow, Facebook skips every
+	screen it already has an answer for — the portfolio, the assets, and the
+	Coexistence branch, which is one of those screens. A flow that worked once
+	then never works again, and the same happens in Meta's own Builder, because
+	it is the same account with the same grant.
+	"""
+
+	def test_both_launches_ask_to_authorise_again(self):
+		import pathlib
+		from urllib.parse import parse_qs, urlparse
+
+		self.assertEqual(parse_qs(urlparse(S.login_url("S")).query)["auth_type"], ["reauthorize"])
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		self.assertIn("auth_type: 'reauthorize'", page)
+
+
+class TestARefusalNamesBothSides(IntegrationTestCase):
+	"""«Already connected to another site» was true and useless.
+
+	The commonest cause is not another client: it is the same CRM reached by a
+	second hostname — a custom domain and the one the host handed out — and
+	nobody can see that from a sentence naming neither side.
+	"""
+
+	def test_the_takeover_refusal_says_which_sites(self):
+		frappe.get_doc(
+			{
+				"doctype": "Meta WhatsApp Route",
+				"waba_id": "WABA90",
+				"phone_number_id": "P90",
+				"site_url": "https://hub.example.com",
+			}
+		).insert(ignore_permissions=True)
+
+		with self.assertRaises(frappe.ValidationError) as refusal:
+			S.claim_route("WABA90", "P90", "+39000", "https://crm.example.com")
+		said = str(refusal.exception)
+		self.assertIn("hub.example.com", said)
+		self.assertIn("crm.example.com", said)
+		self.assertIn("WABA90", said)
+
+
+class TestTheHubDoesNotCallItself(IntegrationTestCase):
+	"""An agency connecting its own number on the hub is the commonest first
+	test there is, and it was the one shape that could not work: the hub posted
+	the credentials to itself while the request that would answer was still
+	open. On one worker that is a deadlock — and it fails at the very end, after
+	Meta has said yes and a QR has been scanned.
+	"""
+
+	def test_its_own_site_is_served_in_process(self):
+		here = frappe.utils.get_url().rstrip("/")
+		with (
+			patch.object(S, "deliver_locally") as local,
+			patch.object(S.requests, "post") as over_http,
+		):
+			S.deliver_to_site(here, "TOKEN", "WABA", "PHONE", {"display_phone_number": "+39"})
+		over_http.assert_not_called()
+		self.assertEqual(local.call_args[0][0]["waba_id"], "WABA")
+		self.assertEqual(local.call_args[0][0]["token"], "TOKEN")
+
+	def test_a_trailing_slash_is_not_another_site(self):
+		here = frappe.utils.get_url().rstrip("/")
+		with (
+			patch.object(S, "deliver_locally") as local,
+			patch.object(S.requests, "post") as over_http,
+		):
+			S.deliver_to_site(here + "/", "TOKEN", "WABA", "PHONE", {})
+		over_http.assert_not_called()
+		self.assertTrue(local.called)
+
+	def test_another_site_still_goes_over_http(self):
+		frappe.local.conf["meta_relay_secret"] = "shhh"
+		try:
+			with (
+				patch.object(S, "deliver_locally") as local,
+				patch.object(S.requests, "post") as over_http,
+			):
+				over_http.return_value = frappe._dict(status_code=200, text="")
+				S.deliver_to_site("https://altro.test", "TOKEN", "WABA", "PHONE", {})
+		finally:
+			frappe.local.conf.pop("meta_relay_secret", None)
+		local.assert_not_called()
+		self.assertIn("altro.test", over_http.call_args[0][0])

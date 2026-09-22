@@ -114,6 +114,25 @@
 		} catch (e) { /* logging must never block the flow */ }
 	}
 
+	// What the server actually said, dug out of Frappe's shapes.
+	//
+	// This page used to answer every failure with "Could not complete the
+	// connection. Please retry." — including the one failure that matters most,
+	// the one that happens after Meta has finished without a word of complaint.
+	// At that point the person has scanned a QR and confirmed a sharing screen,
+	// and we told them nothing. The message was always there; we threw it away.
+	function serverMessage(body) {
+		if (!body) return '';
+		try {
+			var messages = body._server_messages ? JSON.parse(body._server_messages) : [];
+			for (var i = 0; i < messages.length; i++) {
+				var parsed = JSON.parse(messages[i]);
+				if (parsed && parsed.message) return String(parsed.message);
+			}
+		} catch (e) { /* fall through to the other shapes */ }
+		return String(body.exception || body.exc_type || body.message || '');
+	}
+
 	// The one call that turns a code into a connected number. Both legs end
 	// here: the pop-up with the ids Meta posted back, the redirect without them
 	// — the server asks Meta which account was shared when the browser cannot.
@@ -126,14 +145,26 @@
 		})
 			.then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
 			.then(function (result) {
-				if (!result.ok) throw new Error((result.body && result.body.exc_type) || 'error');
+				if (!result.ok) throw new Error(serverMessage(result.body));
 				forget();
 				say({{ _("Connected. Taking you back to your CRM…") | tojson }});
 				if (returnUrl) window.location.href = returnUrl;
 			})
-			.catch(function () {
-				logEvent(payload.state, 'ERROR', { current_step: 'exchange_failed' });
-				say({{ _("Could not complete the connection. Please retry.") | tojson }}, true);
+			.catch(function (error) {
+				var reason = String((error && error.message) || '');
+				// strip the tags Frappe wraps its messages in, so the person
+				// reads a sentence and not markup
+				reason = reason.replace(/<[^>]*>/g, '').trim();
+				logEvent(payload.state, 'ERROR', {
+					current_step: 'exchange_failed',
+					error_message: reason,
+				});
+				say(
+					reason
+						? {{ _("Facebook finished, but your CRM refused the connection: ") | tojson }} + reason
+						: {{ _("Could not complete the connection. Please retry.") | tojson }},
+					true
+				);
 				if (typeof onFinishFailed === 'function') onFinishFailed();
 			});
 	}
@@ -315,12 +346,43 @@
 			config_id: {{ config_id | tojson }},
 			response_type: 'code',
 			override_default_response_type: true,
+			// Ask again for what has already been granted.
+			//
+			// «In the Login dialog, the user will only ever be asked for
+			// permissions they have not already granted.» So the second time a
+			// person runs this, Facebook skips the screens it has answers for —
+			// no portfolio question, no asset choice, and no Coexistence branch,
+			// because that branch is one of those screens. Straight to the phone
+			// number, against whatever was chosen the first time.
+			//
+			// That is why a flow that worked once never works again, and why
+			// Meta's own Embedded Signup Builder behaves the same way: it is the
+			// same Facebook account with the same prior grant, not a different
+			// implementation.
+			//
+			// `reauthorize` undoes it: «call login() with the auth_type=reauthorize
+			// parameter, which will ask them to accept the permissions currently
+			// granted to your app again». Harmless on a first connection, where
+			// there is nothing to ask again.
+			auth_type: 'reauthorize',
 			// Where Facebook may send the person when the pop-up is suppressed.
 			// Without it the SDK redirects to whatever URL invoked the login,
 			// which carries a `state` query the app's registered redirect URI
 			// does not — and Strict Mode answers that with "URL blocked".
 			fallback_redirect_uri: {{ connect_url | tojson }},
-			extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding' },
+			// Exactly the object Meta prints on the Coexistence page, down to the
+			// third key. `sessionInfoVersion` looks like a detail about logging
+			// — it is named after the session log, after all — and we left it
+			// out because the v4 Versions page does not list it. The Coexistence
+			// page does, the Embedded Signup Builder has it as a dropdown of its
+			// own, and v2 documented it as the thing without which the callback
+			// never arrives. Three places say it matters; one page not
+			// mentioning it was not a reason to drop it.
+			extras: {
+				setup: {},
+				featureType: 'whatsapp_business_app_onboarding',
+				sessionInfoVersion: '3',
+			},
 		});
 		} catch (e) {
 			// FB.login threw: a blocked popup, a stale SDK, a bad configuration.
