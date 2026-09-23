@@ -1907,3 +1907,63 @@ diverso.
 Ora anche il percorso diretto scrive: `STARTED` all'apertura, ogni messaggio
 `WA_EMBEDDED_SIGNUP` che Facebook manda, `CANCEL` se la finestra si chiude senza
 codice, `ERROR` se l'ultimo passo fallisce.
+
+## La finestra «URL bloccato» era FedCM, non il nostro login
+
+L'URL della finestra, finalmente letto per intero:
+
+```
+https://www.facebook.com/dialog/oauth/?client_id=…&response_type=token
+&scope=openid&display=popup&redirect_uri=https%3A%2F%2Fhub.npm2solutions.com%2F
+&fedcm_origin=…&dialog_source=fedcm
+```
+
+Tre cose dicono che **non e' la nostra chiamata**:
+
+| Nel nostro `FB.login` | In quella finestra |
+|---|---|
+| `response_type=code` | `response_type=token` |
+| `config_id=…` (Login for Business) | `scope=openid` |
+| — | `dialog_source=fedcm` |
+
+E' **FedCM** — *Federated Credential Management*, il meccanismo del browser con
+cui un sito chiede a un provider chi sei. L'SDK di Facebook lo usa per sapere se
+sei loggato; quando il browser non puo' eseguirlo, ripiega su un popup, e quel
+popup ha come `redirect_uri` **la radice del sito** (`https://…/`) — un
+indirizzo che l'app non ha fra i redirect URI registrati e che non c'e' motivo
+di registrare.
+
+Da qui tutto: la prima finestra bloccata, e la seconda giusta che si apriva solo
+dopo averla chiusa. Non erano due tentativi della stessa cosa: era FedCM che
+falliva e poi lasciava passare l'Embedded Signup vero.
+
+Si spegne dalle opzioni di init, come si legge nel sorgente dell'SDK:
+
+```js
+t.fedCM === !1 || … ? (Runtime.setUseFedCM(!1), Runtime.setFedCMExplicitlySet(!0))
+```
+
+quindi `FB.init({ …, fedCM: false })`. Non serve a niente qui: questo flusso non
+logga nessuno, collega un numero.
+
+**C'e' anche una conseguenza peggiore del fastidio.** Se FedCM fosse riuscito,
+avrebbe risolto il login per conto suo — con `response_type=token` e senza il
+nostro `config_id` e senza `extras`. Cioe' senza Coexistence. Spegnerlo non
+toglie solo una finestra: garantisce che quella che si apre sia la nostra.
+
+## Il numero collegato e invisibile
+
+Dopo la connessione riuscita, di WhatsApp non si vedeva piu' niente nella scheda
+del contatto. Il server diceva il contrario — `is_whatsapp_enabled` a `true`,
+account attivo e predefinito.
+
+Era il frontend, e la causa e' il percorso diretto. `whatsappEnabled` e
+`isWhatsappInstalled` si leggono **una volta sola, al caricamento dell'app**, e
+da quei due flag dipende tutto: la tab sul lead, il pulsante nell'header, il box
+nell'area di comunicazione. Finche' collegare un numero voleva dire uscire dalla
+pagina, al ritorno l'app ripartiva da zero e li rileggeva. Collegare **senza
+uscire dalla pagina** no: il numero era collegato, funzionante, e invisibile
+fino a un reload fatto per caso.
+
+Ora chi cambia la risposta la richiede: connessione riuscita, numero aggiunto a
+mano, numero rimosso, cambio di predefinito.

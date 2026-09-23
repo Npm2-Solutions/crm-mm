@@ -266,7 +266,20 @@
 	var sdkFailed = false;
 
 	window.fbAsyncInit = function () {
-		FB.init({ appId: {{ app_id | tojson }}, cookie: true, xfbml: false, version: 'v23.0' });
+		FB.init({
+			appId: {{ app_id | tojson }},
+			cookie: true,
+			xfbml: false,
+			version: 'v23.0',
+			// See the CRM's copy of this call for the whole story. Short version:
+			// with FedCM on, the SDK opens a window of its own before ours —
+			// `response_type=token&scope=openid&dialog_source=fedcm`, redirecting
+			// to the site root, which the app does not have registered — and
+			// Facebook refuses it on sight. That is the «URL bloccato» window. It
+			// has nothing to do with Embedded Signup, and this flow does not need
+			// it.
+			fedCM: false,
+		});
 		sdkReady = true;
 	};
 	(function (d, s, id) {

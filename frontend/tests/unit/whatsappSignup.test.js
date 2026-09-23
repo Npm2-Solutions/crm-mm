@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loginOptions, runsHere } from '@/utils/whatsappSignup'
+import { initOptions, loginOptions, runsHere } from '@/utils/whatsappSignup'
 
 describe('runsHere', () => {
   it('is true when the hub is the domain we are already on', () => {
@@ -55,5 +55,21 @@ describe('loginOptions', () => {
     expect(options.config_id).toBe('123')
     expect(options.response_type).toBe('code')
     expect(options.override_default_response_type).toBe(true)
+  })
+})
+
+describe('initOptions', () => {
+  it('turns FedCM off', () => {
+    // with it on, the SDK opens a window of its own before ours —
+    // response_type=token&scope=openid&dialog_source=fedcm, redirecting to the
+    // site root, which the app does not have registered — and Facebook refuses
+    // it on sight. That was the «URL bloccato» window.
+    expect(initOptions('123').fedCM).toBe(false)
+  })
+
+  it('still passes the app and a pinned version', () => {
+    const options = initOptions('123')
+    expect(options.appId).toBe('123')
+    expect(options.version).toMatch(/^v\d+\.\d+$/)
   })
 })

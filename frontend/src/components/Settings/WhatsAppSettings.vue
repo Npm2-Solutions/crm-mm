@@ -411,6 +411,7 @@
 <script setup>
 import { call, createResource, FormControl, toast } from 'frappe-ui'
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { refreshWhatsappState } from '@/composables/whatsapp'
 import {
   listenForSignup,
   loadFacebookSdk,
@@ -449,6 +450,7 @@ function addAccount() {
           problems: data.problems || [],
         }
       status.reload()
+      refreshWhatsappState()
     },
     onError: (e) => {
       addingAccount.value = false
@@ -628,6 +630,10 @@ function finishSignup(code, state) {
       connecting.value = false
       toast.success(__('WhatsApp connected'))
       status.reload()
+      // the tab on a lead, the button in the header, the box in the
+      // communication area: all of them hang off flags read when the app
+      // loaded, and this connection never left the page
+      refreshWhatsappState()
     })
     .catch((e) => {
       connecting.value = false
@@ -701,7 +707,10 @@ function setDefault(name) {
     url: 'crm.integrations.whatsapp.api.set_default_account',
     params: { name },
     auto: true,
-    onSuccess: () => status.reload(),
+    onSuccess: () => {
+      status.reload()
+      refreshWhatsappState()
+    },
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to update')),
   })
 }
@@ -714,6 +723,7 @@ function disconnect(name) {
     onSuccess: () => {
       toast.success(__('Number removed'))
       status.reload()
+      refreshWhatsappState()
     },
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to remove')),
   })

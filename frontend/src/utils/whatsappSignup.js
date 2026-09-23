@@ -26,6 +26,36 @@ export function runsHere(hubOrigin, here) {
 }
 
 /**
+ * How the SDK is initialised, and the one option that mattered.
+ *
+ * FedCM off. This is the window that kept opening first, the one saying the
+ * redirect was not allowed:
+ *
+ *     /dialog/oauth/?response_type=token&scope=openid&display=popup
+ *     &redirect_uri=https%3A%2F%2F<site>%2F&dialog_source=fedcm
+ *
+ * It is not Embedded Signup. `response_type=token`, `scope=openid`,
+ * `dialog_source=fedcm`: it is the browser's Federated Credential Management
+ * asking Facebook who you are, and when the browser cannot run it the SDK falls
+ * back to a pop-up whose redirect is the **site root** — an address the app does
+ * not have registered, and has no reason to.
+ *
+ * Closing it let the real dialog through, which is why one action looked like
+ * two windows. The SDK reads this straight from the init options
+ * (`t.fedCM === false → setUseFedCM(false)`), and nothing here wants it: this
+ * flow logs nobody in, it onboards a number.
+ */
+export function initOptions(appId) {
+  return {
+    appId,
+    cookie: true,
+    xfbml: false,
+    version: GRAPH_VERSION,
+    fedCM: false,
+  }
+}
+
+/**
  * Facebook's script, loaded once.
  *
  * Called early rather than on the click: `FB.login` opens a window, and a
@@ -39,12 +69,7 @@ export function loadFacebookSdk(appId) {
   if (!window.__waSdkPromise) {
     window.__waSdkPromise = new Promise((resolve, reject) => {
       window.fbAsyncInit = function () {
-        window.FB.init({
-          appId,
-          cookie: true,
-          xfbml: false,
-          version: GRAPH_VERSION,
-        })
+        window.FB.init(initOptions(appId))
         resolve(window.FB)
       }
       const existing = document.getElementById(SDK_ID)
