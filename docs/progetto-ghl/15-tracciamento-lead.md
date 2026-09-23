@@ -157,3 +157,53 @@ sulle guide di terze parti:
 - [GoHighLevel Attribution: UTMs, Sources and Fixes — GHLFocus](https://ghlfocus.com/gohighlevel-attribution-explained/)
 - [GoHighLevel CRM Lead Tracking & Attribution: Complete Setup Guide](https://blog.closelyhq.com/gohighlevel-crm-lead-tracking-attribution-setup-guide/)
 - [Workflow Contact Attribution Variables — Growthable](https://growthable.io/gohighlevel-tutorials/workflows/workflow-contact-attribution-variables-for-gohighlevel/)
+
+## Il pannello e' una timeline sola
+
+Erano tre cose impilate: l'inserzione in un riquadro, i due snapshot di
+attribuzione in altri due, e sotto la timeline delle visite. La domanda che si
+fa a questo pannello e' una sola — **cosa e' successo, e in che ordine** — e
+nessuna delle tre rispondeva.
+
+Ora c'e' un flusso unico, e **niente e' messo in base a che cosa e'**: ogni riga
+sta al momento in cui e' successa.
+
+| Riga | Quando |
+|---|---|
+| l'inserzione cliccata | il first touch che ha prodotto, o — per un lead arrivato dal modulo inserzione — la creazione del record |
+| first touch / last touch | la loro data |
+| ogni visita | `started_on` |
+| ogni evento | `occurred_on` |
+| **arrivato nel CRM** | `creation` del lead o della trattativa |
+
+### Perche' l'inserzione non sta in cima
+
+All'inizio era fissata in testa, dando per scontato che l'inserzione venga
+sempre prima. Non e' vero: una persona puo' leggere una pagina, andarsene, e
+incontrare l'inserzione una settimana dopo. Adesso si ordina come tutto il
+resto.
+
+Meta non dice mai **quando** l'annuncio e' stato visto, e non e' comunque il
+momento utile. Quello utile e' quando ha portato qui la persona: il touch che ha
+prodotto. Per un lead che arriva dritto da un modulo inserzione, senza nessuna
+navigazione dietro, quel momento e' la creazione del record — lo stesso fatto
+raccontato dall'altro lato.
+
+### La riga che mancava
+
+`get_journey` restituisce anche `created_on`. Per un lead da modulo inserzione
+**e' tutto il percorso che esiste**: non c'e' niente da navigare, quello che c'e'
+da sapere e' quando e' arrivato e da cosa. E anche dove la navigazione c'e', e'
+la riga che dice quando ha smesso di essere anonima.
+
+### Piatta invece che annidata
+
+`buildTimeline` sostituisce `groupJourney`. Gli eventi stavano sotto la loro
+visita solo per dire da quale campagna venivano, ma in una lista ordinata nel
+tempo la visita sta gia' accanto ai propri eventi. Sparisce anche la **visita
+finta** che serviva a reggere un evento la cui sessione era caduta fuori dalla
+risposta (ne tornano 50): ora compare dove e' successo.
+
+A parita' di secondo l'ordine e' `inserzione → touch → visita → evento →
+record`, che e' la sequenza in cui le cose accadono davvero quando un lead da
+modulo le stampa tutte nello stesso istante.

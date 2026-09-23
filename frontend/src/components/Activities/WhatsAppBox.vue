@@ -49,7 +49,57 @@
     <span>{{ __('To') }}</span>
     <span class="text-ink-gray-7">{{ recipient }}</span>
   </div>
-  <div class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
+  <!--
+    Recording takes over the composer instead of hiding in it.
+
+    The whole thing used to be one button: press to start, press to send. No way
+    to stop without sending, no way to hear it first, and nothing on screen
+    afterwards to say whether it had gone — a voice note is the one message you
+    cannot glance at before it leaves, so it was the one that most needed
+    checking.
+  -->
+  <div
+    v-if="recording || voiceNote"
+    class="flex items-center gap-3 px-3 py-2.5 sm:px-10"
+  >
+    <button
+      class="lucide-trash-2 size-4.5 shrink-0 cursor-pointer text-ink-gray-5 hover:text-ink-red-4"
+      :title="__('Discard')"
+      aria-hidden="true"
+      @click="discardRecording"
+    />
+
+    <template v-if="recording">
+      <span
+        class="size-2 shrink-0 animate-pulse rounded-full bg-surface-red-5"
+      />
+      <span class="shrink-0 text-p-base tabular-nums text-ink-red-5">
+        {{ recordingLabel }}
+      </span>
+      <span class="truncate text-p-sm text-ink-gray-5">
+        {{ __('Recording…') }}
+      </span>
+      <Button
+        class="ml-auto shrink-0"
+        variant="subtle"
+        :label="__('Stop')"
+        @click="stopRecording"
+      />
+    </template>
+
+    <template v-else>
+      <audio :src="voiceNote.url" controls class="h-8 min-w-0 flex-1" />
+      <Button
+        class="shrink-0"
+        variant="solid"
+        :label="sendingVoice ? __('Sending…') : __('Send')"
+        :loading="sendingVoice"
+        @click="sendRecording"
+      />
+    </template>
+  </div>
+
+  <div v-else class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
     <div class="flex h-8 items-center gap-2">
       <!-- `private: false` is load-bearing. frappe_whatsapp hands Meta a link and
            Meta fetches it anonymously; a private Frappe file answers that fetch
@@ -72,22 +122,11 @@
         </template>
       </FileUploader>
       <button
-        v-if="!recording"
         class="lucide-mic size-4.5 cursor-pointer text-ink-gray-5"
         :title="__('Record a voice message')"
         aria-hidden="true"
         @click="startRecording"
       />
-      <button
-        v-else
-        class="lucide-square size-4.5 cursor-pointer text-ink-red-5"
-        :title="__('Stop and send')"
-        aria-hidden="true"
-        @click="stopRecording"
-      />
-      <span v-if="recording" class="text-sm tabular-nums text-ink-red-5">
-        {{ recordingLabel }}
-      </span>
       <IconPicker
         v-slot="{ togglePopover }"
         v-model="emoji"
@@ -125,6 +164,7 @@ import SmileIcon from '@/components/Icons/SmileIcon.vue'
 import { sanitizeHTML } from '@/utils'
 import { useTelemetry } from 'frappe-ui/frappe'
 import {
+  Button,
   createResource,
   Textarea,
   FileUploader,
@@ -252,6 +292,10 @@ function validateForWhatsApp(file) {
 // sent as an audio message, so it lands in the same chat as everything else.
 const recording = ref(false)
 const recordingSeconds = ref(0)
+// What was recorded and not yet sent: `{ blob, url }`. Kept rather than sent
+// straight away, so it can be heard — and thrown away — first.
+const voiceNote = ref(null)
+const sendingVoice = ref(false)
 let recorder = null
 let chunks = []
 let ticker = null
@@ -301,14 +345,16 @@ async function startRecording() {
   recorder = new MediaRecorder(stream, { mimeType: container })
   recorder.ondataavailable = (event) =>
     event.data.size && chunks.push(event.data)
-  recorder.onstop = async () => {
+  recorder.onstop = () => {
     stream.getTracks().forEach((track) => track.stop())
     clearInterval(ticker)
     recording.value = false
-    if (!chunks.length) return
-    await uploadRecording(
-      new Blob(chunks, { type: recorder.mimeType || container }),
-    )
+    if (!chunks.length || discarding) {
+      discarding = false
+      return
+    }
+    const blob = new Blob(chunks, { type: recorder.mimeType || container })
+    voiceNote.value = { blob, url: URL.createObjectURL(blob) }
   }
   recorder.start()
   recording.value = true
@@ -321,7 +367,32 @@ function stopRecording() {
   if (recorder && recorder.state !== 'inactive') recorder.stop()
 }
 
-async function uploadRecording(blob) {
+// Set while a recording is being thrown away, so `onstop` knows not to keep
+// what it collected. The recorder has no other way to say why it stopped.
+let discarding = false
+
+function forgetVoiceNote() {
+  if (voiceNote.value?.url) URL.revokeObjectURL(voiceNote.value.url)
+  voiceNote.value = null
+  sendingVoice.value = false
+}
+
+function discardRecording() {
+  if (recording.value) {
+    discarding = true
+    stopRecording()
+  }
+  forgetVoiceNote()
+}
+
+async function sendRecording() {
+  const blob = voiceNote.value?.blob
+  if (!blob || sendingVoice.value) return
+  sendingVoice.value = true
+
+  // `.mp4` matters. The browser hands back `audio/mp4` on Safari and recent
+  // Chrome, and naming the file after the container is what lets the server say
+  // it is audio when Meta comes to fetch it.
   const extension = (blob.type.split('/')[1] || 'ogg').split(';')[0]
   const form = new FormData()
   form.append('file', blob, `voice-${Date.now()}.${extension}`)
@@ -339,8 +410,10 @@ async function uploadRecording(blob) {
     if (!fileUrl) throw new Error('no file_url')
     whatsapp.value.attach = fileUrl
     whatsapp.value.content_type = 'audio'
+    forgetVoiceNote()
     sendWhatsAppMessage()
   } catch (e) {
+    sendingVoice.value = false
     toast.error(__('Could not send the voice message'))
   }
 }
@@ -429,7 +502,11 @@ function uploadOptions(openFileSelector) {
 
 onBeforeUnmount(() => {
   clearInterval(ticker)
-  if (recorder && recorder.state !== 'inactive') recorder.stop()
+  if (recorder && recorder.state !== 'inactive') {
+    discarding = true
+    recorder.stop()
+  }
+  forgetVoiceNote()
 })
 
 watch(reply, (value) => {

@@ -1,124 +1,191 @@
 import { describe, expect, it } from 'vitest'
-import { groupJourney, readableDuration } from '@/utils/journey'
+import { buildTimeline, readableDuration } from '@/utils/journey'
 
 const visit = (name, started_on, extra = {}) => ({
   name,
   started_on,
-  source: 'google',
-  medium: 'organic',
   ...extra,
 })
-
-const event = (name, session, occurred_on, extra = {}) => ({
+const event = (name, occurred_on, extra = {}) => ({
   name,
-  session,
   occurred_on,
   event_type: 'Page View',
   ...extra,
 })
 
-describe('groupJourney', () => {
-  it('hangs each event off the visit it happened in', () => {
-    const visits = groupJourney(
-      [visit('s1', '2026-09-01 10:00:00'), visit('s2', '2026-09-05 10:00:00')],
-      [
-        event('e1', 's1', '2026-09-01 10:00:10'),
-        event('e2', 's2', '2026-09-05 10:00:10'),
-        event('e3', 's1', '2026-09-01 10:02:00'),
+describe('buildTimeline', () => {
+  it('puts everything on one stream, in the order it happened', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 10:00:00')],
+      events: [
+        event('e2', '2026-09-01 10:05:00'),
+        event('e1', '2026-09-01 10:01:00'),
       ],
-    )
-
-    expect(visits.map((v) => v.name)).toEqual(['s1', 's2'])
-    expect(visits[0].events.map((e) => e.name)).toEqual(['e1', 'e3'])
-    expect(visits[1].events.map((e) => e.name)).toEqual(['e2'])
-  })
-
-  it('keeps a visit that produced no events', () => {
-    const visits = groupJourney([visit('s1', '2026-09-01 10:00:00')], [])
-    expect(visits).toHaveLength(1)
-    expect(visits[0].events).toEqual([])
-  })
-
-  it('orders oldest first by default, newest first when asked', () => {
-    const sessions = [
-      visit('old', '2026-09-01 10:00:00'),
-      visit('new', '2026-09-05 10:00:00'),
-    ]
-    const events = [
-      event('e_old', 'old', '2026-09-01 10:05:00'),
-      event('e_older', 'old', '2026-09-01 10:00:00'),
-    ]
-
-    const oldestFirst = groupJourney(sessions, events)
-    expect(oldestFirst.map((v) => v.name)).toEqual(['old', 'new'])
-    expect(oldestFirst[0].events.map((e) => e.name)).toEqual([
-      'e_older',
-      'e_old',
+      first_touch: { on: '2026-09-01 10:00:00', category: 'Paid Social' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual([
+      'touch',
+      'visit',
+      'event',
+      'event',
     ])
-
-    const newestFirst = groupJourney(sessions, events, { newestFirst: true })
-    expect(newestFirst.map((v) => v.name)).toEqual(['new', 'old'])
-    expect(newestFirst[1].events.map((e) => e.name)).toEqual([
-      'e_old',
-      'e_older',
+    expect(rows.map((r) => r.at)).toEqual([
+      '2026-09-01 10:00:00',
+      '2026-09-01 10:00:00',
+      '2026-09-01 10:01:00',
+      '2026-09-01 10:05:00',
     ])
   })
 
-  it('parks events whose visit is missing instead of dropping them', () => {
-    // the journey returns the most recent visits, so older ones fall off the end
-    const visits = groupJourney(
-      [visit('s1', '2026-09-05 10:00:00')],
-      [
-        event('kept', 's1', '2026-09-05 10:00:10'),
-        event('orphan', 's_gone', '2026-08-01 09:00:00'),
-        event('orphan2', null, '2026-08-02 09:00:00'),
+  it('places the ad at the moment it brought the person here', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 10:00:00')],
+      events: [],
+      first_touch: { on: '2026-09-01 10:00:00', category: 'Paid Social' },
+      ad: { ad_id: '123', creative_title: 'Promo' },
+    })
+    expect(rows[0].kind).toBe('ad')
+    expect(rows[0].data.creative_title).toBe('Promo')
+    expect(rows[0].at).toBe('2026-09-01 10:00:00')
+  })
+
+  it('does not put the ad first when the ad did not come first', () => {
+    // somebody read a page, left, and met the ad a week later
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 09:00:00')],
+      events: [event('e1', '2026-09-01 09:05:00')],
+      first_touch: { on: '2026-09-08 11:00:00', category: 'Paid Social' },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['visit', 'event', 'ad', 'touch'])
+  })
+
+  it('a lead straight off an ad form is placed when it arrived', () => {
+    // no browsing behind it at all: the record's own creation is the moment
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: '2026-09-03 15:30:00',
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['ad', 'record'])
+    expect(rows[0].at).toBe('2026-09-03 15:30:00')
+  })
+
+  it('falls back to the earliest thing known when nothing else has a date', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-02 08:00:00')],
+      events: [event('e1', '2026-09-01 07:00:00')],
+      ad: { ad_id: '123' },
+    })
+    expect(rows[0].kind).toBe('ad')
+    expect(rows[0].at).toBe('2026-09-01 07:00:00')
+  })
+
+  it('says when the record landed in the CRM', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 10:00:00')],
+      events: [event('e1', '2026-09-01 10:02:00')],
+      created_on: '2026-09-01 10:03:00',
+      doctype: 'CRM Deal',
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['visit', 'event', 'record'])
+    expect(rows[2].data.doctype).toBe('CRM Deal')
+  })
+
+  it('leaves the ad out when Meta said nothing', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 10:00:00')],
+      ad: {},
+    })
+    expect(rows.some((r) => r.kind === 'ad')).toBe(false)
+  })
+
+  it('does not say the same touch twice', () => {
+    // a lead that arrived and never came back has both snapshots on one visit
+    const touch = { on: '2026-09-01 10:00:00', session: 's1', source: 'meta' }
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 10:00:00')],
+      first_touch: touch,
+      last_touch: { ...touch },
+    })
+    expect(rows.filter((r) => r.kind === 'touch')).toHaveLength(1)
+  })
+
+  it('keeps the last touch when it is a different visit', () => {
+    const rows = buildTimeline({
+      sessions: [],
+      first_touch: { on: '2026-09-01 10:00:00', session: 's1' },
+      last_touch: { on: '2026-09-05 09:00:00', session: 's2' },
+    })
+    const touches = rows.filter((r) => r.kind === 'touch')
+    expect(touches).toHaveLength(2)
+    expect(touches.map((t) => t.data.which)).toEqual(['first', 'last'])
+  })
+
+  it('reads either way round', () => {
+    const journey = {
+      sessions: [
+        visit('s1', '2026-09-01 10:00:00'),
+        visit('s2', '2026-09-05 10:00:00'),
       ],
-    )
-
-    const unknown = visits.find((v) => v.unknown)
-    expect(unknown).toBeTruthy()
-    expect(unknown.events.map((e) => e.name)).toEqual(['orphan', 'orphan2'])
-    // it sorts by its earliest event, so it lands before the visit we do know
-    expect(visits.map((v) => v.name)).toEqual(['__unknown_visit__', 's1'])
+      events: [],
+    }
+    expect(buildTimeline(journey).map((r) => r.key)).toEqual([
+      'visit:s1',
+      'visit:s2',
+    ])
+    expect(
+      buildTimeline(journey, { newestFirst: true }).map((r) => r.key),
+    ).toEqual(['visit:s2', 'visit:s1'])
   })
 
-  it('adds no unknown bucket when every event has its visit', () => {
-    const visits = groupJourney(
-      [visit('s1', '2026-09-05 10:00:00')],
-      [event('e1', 's1', '2026-09-05 10:00:10')],
-    )
-    expect(visits.some((v) => v.unknown)).toBe(false)
+  it('shows an event whose visit is no longer listed', () => {
+    // the journey returns the most recent visits, so older ones fall off the
+    // end — the event still belongs on the stream, at the time it happened
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-05 10:00:00')],
+      events: [event('e1', '2026-09-01 09:00:00', { session: 'gone' })],
+    })
+    expect(rows.map((r) => r.key)).toEqual(['event:e1', 'visit:s1'])
   })
 
-  it('never mutates what it was handed', () => {
-    const sessions = [visit('s1', '2026-09-05 10:00:00')]
-    const events = [event('e1', 's1', '2026-09-05 10:00:10')]
-    groupJourney(sessions, events)
+  it('does not mutate what it was given', () => {
+    const sessions = [visit('s1', '2026-09-01 10:00:00')]
+    const events = [event('e1', '2026-09-01 10:01:00')]
+    buildTimeline({ sessions, events })
     expect(sessions[0].events).toBeUndefined()
-    expect(events).toHaveLength(1)
   })
 
-  it('survives an empty or absent journey', () => {
-    expect(groupJourney()).toEqual([])
-    expect(groupJourney([], [])).toEqual([])
-    expect(groupJourney(null, null)).toEqual([])
+  it('survives an empty journey', () => {
+    expect(buildTimeline()).toEqual([])
+    expect(buildTimeline({})).toEqual([])
+    expect(buildTimeline({ sessions: null, events: null })).toEqual([])
+  })
+
+  it('at the same instant, reads in the order things happened', () => {
+    // a lead off an ad form stamps all three at the same second
+    const at = '2026-09-03 15:30:00'
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: at,
+      first_touch: { on: at, category: 'Paid Social' },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['ad', 'touch', 'record'])
   })
 })
 
 describe('readableDuration', () => {
-  it.each([
-    [0, '0s'],
-    [45, '45s'],
-    [60, '1m 0s'],
-    [130, '2m 10s'],
-    [3600, '1h 00m'],
-    [3900, '1h 05m'],
-  ])('%is reads as %s', (seconds, expected) => {
-    expect(readableDuration(seconds)).toBe(expected)
+  it('reads seconds, minutes and hours', () => {
+    expect(readableDuration(45)).toBe('45s')
+    expect(readableDuration(130)).toBe('2m 10s')
+    expect(readableDuration(3900)).toBe('1h 05m')
   })
 
-  it('treats a missing duration as zero', () => {
-    expect(readableDuration(undefined)).toBe('0s')
+  it('treats nothing as zero', () => {
+    expect(readableDuration()).toBe('0s')
     expect(readableDuration(null)).toBe('0s')
   })
 })

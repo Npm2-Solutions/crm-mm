@@ -328,6 +328,14 @@ class TestJourney(TrackingTestCase):
 		self.assertEqual(len(journey["sessions"]), 1)
 		self.assertEqual(len(journey["events"]), 1)
 
+	def test_journey_says_when_the_record_landed_here(self):
+		"""The moment that matters most for a lead off an ad form, which has no
+		browsing behind it at all: not when the ad was seen — Meta never says
+		that — but when it arrived."""
+		lead = make_lead()
+		journey = T.get_journey("CRM Lead", lead.name)
+		self.assertEqual(str(journey["created_on"]), str(lead.creation))
+
 	def test_journey_refuses_a_doctype_it_does_not_track(self):
 		with self.assertRaises(frappe.ValidationError):
 			T.get_journey("User", "Administrator")

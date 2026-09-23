@@ -587,14 +587,24 @@ def get_journey(doctype: str, name: str, limit: int = 200) -> dict:
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
 	field = "lead" if doctype == "CRM Lead" else "deal"
+	# `creation` because the moment the record appeared here is part of the story
+	# — often the part that matters most. A lead from an ad form has no browsing
+	# at all: what there is to know is when it arrived, and what it arrived from.
 	doc = frappe.db.get_value(
 		doctype,
 		name,
-		["visitor", *_snapshot_fieldnames()],
+		["visitor", "creation", *_snapshot_fieldnames()],
 		as_dict=True,
 	)
 	if not doc:
-		return {"visitor": None, "sessions": [], "events": [], "first_touch": {}, "last_touch": {}}
+		return {
+			"visitor": None,
+			"created_on": None,
+			"sessions": [],
+			"events": [],
+			"first_touch": {},
+			"last_touch": {},
+		}
 
 	sessions = frappe.get_all(
 		"CRM Visitor Session",
@@ -643,6 +653,7 @@ def get_journey(doctype: str, name: str, limit: int = 200) -> dict:
 	)
 	return {
 		"visitor": doc.get("visitor"),
+		"created_on": doc.get("creation"),
 		"first_touch": {k[len("first_touch_") :]: v for k, v in doc.items() if k.startswith("first_touch_")},
 		"last_touch": {k[len("last_touch_") :]: v for k, v in doc.items() if k.startswith("last_touch_")},
 		"sessions": sessions,
