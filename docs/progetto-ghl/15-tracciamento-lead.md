@@ -207,3 +207,44 @@ risposta (ne tornano 50): ora compare dove e' successo.
 A parita' di secondo l'ordine e' `inserzione → touch → visita → evento →
 record`, che e' la sequenza in cui le cose accadono davvero quando un lead da
 modulo le stampa tutte nello stesso istante.
+
+## L'inserzione e il first touch sono una riga sola
+
+Erano due righe, e si leggevano come due cose successe: una creativita', e sotto
+— con un titolo suo e un orario suo — una sorgente, un mezzo e una campagna che
+nominavano **quella stessa creativita'**.
+
+Non e' successo niente due volte. L'attribuzione **e'** l'inserzione che arriva,
+scritta nell'altro vocabolario, quindi sta sotto di essa: un'unica riga, la
+creativita' in cima e i dati di attribuzione come dettaglio.
+
+Quando c'e' un'inserzione ma nessun first touch a cui appenderla — non dovrebbe
+capitare, ma il dato viene da due fonti diverse — l'inserzione tiene la sua
+riga. Meglio una riga in piu' che un'informazione persa.
+
+## «No visit recorded» su un lead che non ha mai visitato niente
+
+Per un lead arrivato da un modulo Facebook il pannello diceva:
+
+> Nothing has been recorded for this visitor yet. Check that the tracking script
+> is installed on the site this lead came from.
+
+con sotto un pulsante **Set up lead tracking**. Cioe': un avviso che sembra un
+guasto, e un invito a sistemare qualcosa — sull'unico tipo di lead in cui non
+c'e' niente di rotto. Quella persona ha compilato il modulo **dentro Facebook**
+e sul sito non ci e' mai passata: non c'e' nessuna navigazione da mostrare, ed
+e' normale.
+
+Ora il caso e' riconosciuto (`first_touch.landing_page == "lead_ad_form"`,
+insieme a *CRM UI* e *Third Party* che gia' c'erano) e il pannello dice:
+
+> **No browsing to show** — This person filled in the form inside Facebook and
+> never visited the site, so there is no browsing to show — nothing is missing.
+> What there is to know is above: the ad, the campaign, and when the lead
+> arrived.
+
+senza nessun pulsante da premere.
+
+Il pulsante, dove ha ancora senso, non si chiama piu' *Set up lead tracking* ma
+**Open tracking settings**: dice quello che fa — apre le impostazioni — invece di
+suggerire che ci sia qualcosa da riparare.

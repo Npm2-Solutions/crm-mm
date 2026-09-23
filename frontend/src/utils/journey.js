@@ -53,37 +53,46 @@ export function buildTimeline(journey = {}, options = {}) {
 
   const rows = []
 
-  if (ad.ad_id) {
-    // Meta never says when the ad was *seen*, and that is not the useful moment
-    // anyway. The useful moment is when it brought this person here: the touch
-    // it produced, or — for a lead that arrived straight from an ad form, with
-    // no browsing behind it — the instant the record was created, which is the
-    // same event described from this side.
-    //
-    // It is placed by that time like everything else. It was pinned to the top
-    // at first, on the assumption that the ad always comes first; it does not.
-    // Somebody can read a page, leave, and meet the ad a week later.
-    rows.push({
-      key: `ad:${ad.ad_id}`,
-      kind: 'ad',
-      at:
-        firstTouch.on ||
-        journey.created_on ||
-        oldest(
-          sessions.map((s) => s.started_on),
-          events.map((e) => e.occurred_on),
-        ),
-      data: ad,
-    })
-  }
+  // Meta never says when the ad was *seen*, and that is not the useful moment
+  // anyway. The useful moment is when it brought this person here: the touch it
+  // produced, or — for a lead that arrived straight from an ad form, with no
+  // browsing behind it — the instant the record was created, which is the same
+  // event described from this side.
+  //
+  // It is placed by that time like everything else. It was pinned to the top at
+  // first, on the assumption that the ad always comes first; it does not.
+  // Somebody can read a page, leave, and meet the ad a week later.
+  const adAt =
+    firstTouch.on ||
+    journey.created_on ||
+    oldest(
+      sessions.map((s) => s.started_on),
+      events.map((e) => e.occurred_on),
+    )
 
-  if (firstTouch.on || firstTouch.category) {
-    rows.push({
-      key: 'touch:first',
-      kind: 'touch',
-      at: firstTouch.on || null,
-      data: { ...firstTouch, which: 'first' },
-    })
+  // The ad and the first touch are **one row**, not two.
+  //
+  // They were separate at first, and read as two things that had happened:
+  // a creative, and then — below it, with its own heading and its own
+  // timestamp — a source, a medium and a campaign naming that same creative.
+  // Nothing happened twice. The attribution *is* the ad arriving, written in
+  // the other vocabulary, so it belongs under it.
+  const firstTouchRow =
+    firstTouch.on || firstTouch.category
+      ? {
+          key: 'touch:first',
+          kind: 'touch',
+          at: firstTouch.on || null,
+          data: { ...firstTouch, which: 'first' },
+        }
+      : null
+
+  if (firstTouchRow) rows.push(firstTouchRow)
+
+  if (ad.ad_id) {
+    if (firstTouchRow) firstTouchRow.data.ad = ad
+    else
+      rows.push({ key: `ad:${ad.ad_id}`, kind: 'ad', at: adAt, data: { ad } })
   }
 
   // Only when it is a different moment. A lead that arrived and never came back

@@ -37,16 +37,20 @@ describe('buildTimeline', () => {
     ])
   })
 
-  it('places the ad at the moment it brought the person here', () => {
+  it('carries the ad on the first touch, as one row and not two', () => {
+    // the attribution *is* the ad arriving, written in another vocabulary:
+    // a creative above, and a source/medium/campaign naming that same creative
+    // below it with its own heading, read as two things having happened
     const rows = buildTimeline({
       sessions: [visit('s1', '2026-09-01 10:00:00')],
       events: [],
       first_touch: { on: '2026-09-01 10:00:00', category: 'Paid Social' },
       ad: { ad_id: '123', creative_title: 'Promo' },
     })
-    expect(rows[0].kind).toBe('ad')
-    expect(rows[0].data.creative_title).toBe('Promo')
-    expect(rows[0].at).toBe('2026-09-01 10:00:00')
+    expect(rows.filter((r) => r.kind === 'ad')).toHaveLength(0)
+    const touch = rows.find((r) => r.kind === 'touch')
+    expect(touch.data.ad.creative_title).toBe('Promo')
+    expect(touch.at).toBe('2026-09-01 10:00:00')
   })
 
   it('does not put the ad first when the ad did not come first', () => {
@@ -57,11 +61,11 @@ describe('buildTimeline', () => {
       first_touch: { on: '2026-09-08 11:00:00', category: 'Paid Social' },
       ad: { ad_id: '123' },
     })
-    expect(rows.map((r) => r.kind)).toEqual(['visit', 'event', 'ad', 'touch'])
+    expect(rows.map((r) => r.kind)).toEqual(['visit', 'event', 'touch'])
+    expect(rows[2].data.ad.ad_id).toBe('123')
   })
 
-  it('a lead straight off an ad form is placed when it arrived', () => {
-    // no browsing behind it at all: the record's own creation is the moment
+  it('an ad with no attribution to hang on still gets its own row', () => {
     const rows = buildTimeline({
       sessions: [],
       events: [],
@@ -69,6 +73,7 @@ describe('buildTimeline', () => {
       ad: { ad_id: '123' },
     })
     expect(rows.map((r) => r.kind)).toEqual(['ad', 'record'])
+    expect(rows[0].data.ad.ad_id).toBe('123')
     expect(rows[0].at).toBe('2026-09-03 15:30:00')
   })
 
@@ -80,6 +85,24 @@ describe('buildTimeline', () => {
     })
     expect(rows[0].kind).toBe('ad')
     expect(rows[0].at).toBe('2026-09-01 07:00:00')
+  })
+
+  it('a lead straight off an ad form is one row, then its arrival', () => {
+    // no browsing at all: the ad, the attribution that names it, and the moment
+    // it landed here
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: '2026-09-03 15:30:00',
+      first_touch: {
+        on: '2026-09-03 15:30:00',
+        category: 'Paid Social',
+        landing_page: 'lead_ad_form',
+      },
+      ad: { ad_id: '123', creative_title: 'Reformer' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['touch', 'record'])
+    expect(rows[0].data.ad.creative_title).toBe('Reformer')
   })
 
   it('says when the record landed in the CRM', () => {
@@ -173,7 +196,7 @@ describe('buildTimeline', () => {
       first_touch: { on: at, category: 'Paid Social' },
       ad: { ad_id: '123' },
     })
-    expect(rows.map((r) => r.kind)).toEqual(['ad', 'touch', 'record'])
+    expect(rows.map((r) => r.kind)).toEqual(['touch', 'record'])
   })
 })
 
