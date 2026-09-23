@@ -8,12 +8,18 @@
  * attribution snapshots in two more, and a timeline of visits below them. Three
  * boxes, three readings, and the one question anybody actually asks — *what
  * happened, in what order* — answered by none of them. There is one stream now,
- * and the ad is the first thing on it, because it is the first thing that
- * happened.
+ * and nothing on it is placed by what kind of thing it is: everything sits at
+ * the moment it happened, the record's own arrival included.
  */
 
-/** Same timestamp, different things: the order they belong in. */
-const RANK = { ad: 0, touch: 1, visit: 2, event: 3 }
+/**
+ * Same timestamp, different things: the order they belong in.
+ *
+ * Only a tie-break. A lead from an ad form has its ad, its attribution and its
+ * arrival all stamped at the same second, and this is the sequence they
+ * actually occurred in: the ad was seen, it was credited, the record appeared.
+ */
+const RANK = { ad: 0, touch: 1, visit: 2, event: 3, record: 4 }
 
 function oldest(...times) {
   const known = times.flat().filter(Boolean)
@@ -48,14 +54,21 @@ export function buildTimeline(journey = {}, options = {}) {
   const rows = []
 
   if (ad.ad_id) {
-    // The ad has no time of its own — Meta does not say when it was served,
-    // only what it said. The moment it can be pinned to is the touch it
-    // produced, and failing that the earliest thing we know about at all.
+    // Meta never says when the ad was *seen*, and that is not the useful moment
+    // anyway. The useful moment is when it brought this person here: the touch
+    // it produced, or — for a lead that arrived straight from an ad form, with
+    // no browsing behind it — the instant the record was created, which is the
+    // same event described from this side.
+    //
+    // It is placed by that time like everything else. It was pinned to the top
+    // at first, on the assumption that the ad always comes first; it does not.
+    // Somebody can read a page, leave, and meet the ad a week later.
     rows.push({
       key: `ad:${ad.ad_id}`,
       kind: 'ad',
       at:
         firstTouch.on ||
+        journey.created_on ||
         oldest(
           sessions.map((s) => s.started_on),
           events.map((e) => e.occurred_on),
@@ -106,13 +119,26 @@ export function buildTimeline(journey = {}, options = {}) {
     })
   }
 
+  // When it landed here. For a lead off an ad form this is the whole journey —
+  // there is no browsing behind it — and even where there is, it is the line
+  // that says when the browsing stopped being anonymous.
+  if (journey.created_on) {
+    rows.push({
+      key: 'record',
+      kind: 'record',
+      at: journey.created_on,
+      data: { doctype: journey.doctype || '' },
+    })
+  }
+
   const direction = options.newestFirst ? -1 : 1
   return rows.sort((a, b) => {
-    // A row with no time at all still belongs somewhere: at the start, where a
-    // reader looks for what set everything off.
+    // Nothing here is placed by what kind of thing it is. A row with no time at
+    // all cannot be placed, so it goes to the end rather than jumping a queue
+    // it has no claim on.
     if (!a.at && !b.at) return RANK[a.kind] - RANK[b.kind]
-    if (!a.at) return -1
-    if (!b.at) return 1
+    if (!a.at) return 1
+    if (!b.at) return -1
     if (a.at === b.at) return RANK[a.kind] - RANK[b.kind]
     return direction * (new Date(a.at) - new Date(b.at))
   })

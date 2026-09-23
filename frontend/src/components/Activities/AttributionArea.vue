@@ -6,7 +6,9 @@
   one question anybody actually asks of this panel is what happened and in what
   order, and none of the three answered it — the reader had to hold the ad in
   their head while reading the visits below it. So there is one timeline, and
-  the ad, the touches, the visits and the events are all rows on it.
+  the ad, the touches, the visits, the events and the record's own arrival are
+  all rows on it — each one where it happened, never by what kind of thing it
+  is.
 -->
 <template>
   <div class="h-full overflow-y-auto px-3 pb-5 sm:px-10">
@@ -47,7 +49,7 @@
           space here reads as a broken screen rather than as an answer.
         -->
         <div
-          v-if="!timeline.length"
+          v-if="!sessions.length && !events.length"
           class="flex flex-col items-start gap-2 rounded-md border border-outline-gray-2 bg-surface-gray-1 px-3 py-3"
         >
           <div
@@ -139,6 +141,21 @@
                   </div>
                 </template>
 
+                <template v-else-if="row.kind === 'record'">
+                  <div class="flex flex-wrap items-center gap-2 py-1">
+                    <Badge :label="__('In the CRM')" theme="gray" size="sm" />
+                    <span
+                      class="truncate text-base font-medium text-ink-gray-8"
+                    >
+                      {{
+                        row.data.doctype === 'CRM Deal'
+                          ? __('Deal created')
+                          : __('Lead created')
+                      }}
+                    </span>
+                  </div>
+                </template>
+
                 <template v-else>
                   <span class="truncate text-base text-ink-gray-8">
                     {{ eventTitle(row.data) }}
@@ -189,6 +206,7 @@ import LucideRadar from '~icons/lucide/radar'
 import LucideSparkles from '~icons/lucide/sparkles'
 import LucideSquareCheck from '~icons/lucide/square-check'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
+import LucideUserPlus from '~icons/lucide/user-plus'
 import { Badge, Button, LoadingIndicator, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -219,7 +237,7 @@ const sessions = computed(() => journey.data?.sessions || [])
 
 const timeline = computed(() =>
   buildTimeline(
-    { ...(journey.data || {}), ad: ad.data || {} },
+    { ...(journey.data || {}), ad: ad.data || {}, doctype: props.doctype },
     { newestFirst: isNewestFirst.value },
   ),
 )
@@ -277,6 +295,7 @@ function iconFor(row) {
   if (row.kind === 'ad') return LucideMegaphone
   if (row.kind === 'touch') return LucideFlag
   if (row.kind === 'visit') return LucideGlobe
+  if (row.kind === 'record') return LucideUserPlus
   return ICONS[row.data.event_type] || LucideSparkles
 }
 

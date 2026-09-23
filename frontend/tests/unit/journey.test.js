@@ -37,7 +37,7 @@ describe('buildTimeline', () => {
     ])
   })
 
-  it('opens with the ad, because that is what happened first', () => {
+  it('places the ad at the moment it brought the person here', () => {
     const rows = buildTimeline({
       sessions: [visit('s1', '2026-09-01 10:00:00')],
       events: [],
@@ -46,11 +46,33 @@ describe('buildTimeline', () => {
     })
     expect(rows[0].kind).toBe('ad')
     expect(rows[0].data.creative_title).toBe('Promo')
-    // pinned to the touch it produced, so it sorts with everything else
     expect(rows[0].at).toBe('2026-09-01 10:00:00')
   })
 
-  it('falls back to the earliest thing known when there is no touch date', () => {
+  it('does not put the ad first when the ad did not come first', () => {
+    // somebody read a page, left, and met the ad a week later
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 09:00:00')],
+      events: [event('e1', '2026-09-01 09:05:00')],
+      first_touch: { on: '2026-09-08 11:00:00', category: 'Paid Social' },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['visit', 'event', 'ad', 'touch'])
+  })
+
+  it('a lead straight off an ad form is placed when it arrived', () => {
+    // no browsing behind it at all: the record's own creation is the moment
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: '2026-09-03 15:30:00',
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['ad', 'record'])
+    expect(rows[0].at).toBe('2026-09-03 15:30:00')
+  })
+
+  it('falls back to the earliest thing known when nothing else has a date', () => {
     const rows = buildTimeline({
       sessions: [visit('s1', '2026-09-02 08:00:00')],
       events: [event('e1', '2026-09-01 07:00:00')],
@@ -58,6 +80,17 @@ describe('buildTimeline', () => {
     })
     expect(rows[0].kind).toBe('ad')
     expect(rows[0].at).toBe('2026-09-01 07:00:00')
+  })
+
+  it('says when the record landed in the CRM', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-01 10:00:00')],
+      events: [event('e1', '2026-09-01 10:02:00')],
+      created_on: '2026-09-01 10:03:00',
+      doctype: 'CRM Deal',
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['visit', 'event', 'record'])
+    expect(rows[2].data.doctype).toBe('CRM Deal')
   })
 
   it('leaves the ad out when Meta said nothing', () => {
@@ -128,6 +161,19 @@ describe('buildTimeline', () => {
     expect(buildTimeline()).toEqual([])
     expect(buildTimeline({})).toEqual([])
     expect(buildTimeline({ sessions: null, events: null })).toEqual([])
+  })
+
+  it('at the same instant, reads in the order things happened', () => {
+    // a lead off an ad form stamps all three at the same second
+    const at = '2026-09-03 15:30:00'
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: at,
+      first_touch: { on: at, category: 'Paid Social' },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['ad', 'touch', 'record'])
   })
 })
 
