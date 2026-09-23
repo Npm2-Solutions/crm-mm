@@ -64,20 +64,34 @@ export function loadFacebookSdk(appId) {
 }
 
 /**
- * What Meta documents for Embedded Signup v4, and nothing it does not.
+ * What Meta documents for Embedded Signup v4, plus the two things it does not.
  *
  * `extras` is where Coexistence is asked for: without `featureType` the flow
  * offers the plain Cloud API onboarding, which cannot take a number that is
- * already live on somebody's phone. `auth_type` is the one addition — Facebook
- * skips every screen it already has an answer for, Coexistence among them, so
- * a flow that worked once would never work again without it.
+ * already live on somebody's phone. `auth_type` counters Facebook skipping
+ * every screen it already has an answer for, Coexistence among them, so a flow
+ * that worked once would work differently the second time.
+ *
+ * `fallbackRedirectUri` is not optional, whatever its name suggests. From the
+ * SDK's own source:
+ *
+ *     e.fallback_redirect_uri || (e.fallback_redirect_uri = document.location.href)
+ *
+ * Leave it out and the SDK fills it with **the page you are on**, and Facebook
+ * checks that against the app's Valid OAuth Redirect URIs before it shows
+ * anything. The CRM's own address is not in that list and has no business being
+ * there, so what opens is a window saying the redirect is not allowed. Passing
+ * the hub's connect page — which is in the list, and which already knows how to
+ * finish a flow that comes back by redirect — is what stops that window from
+ * ever opening.
  */
-export function loginOptions(configId) {
+export function loginOptions(configId, fallbackRedirectUri) {
   return {
     config_id: configId,
     response_type: 'code',
     override_default_response_type: true,
     auth_type: 'reauthorize',
+    fallback_redirect_uri: fallbackRedirectUri,
     extras: {
       setup: {},
       featureType: 'whatsapp_business_app_onboarding',

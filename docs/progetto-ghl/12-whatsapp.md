@@ -1839,3 +1839,71 @@ nomi a cui il sito risponde (`crm/utils/sites.py`), e vale per entrambi.
 
 Con i lead che passano dal relay, questo spiega anche perche' arrivavano solo
 col controllo orario — che nel frattempo era fermo per il token invalidato.
+
+## «Webhook Verify Token must be unique»: il passo finale che falliva dopo Meta
+
+Il flusso arrivava in fondo — QR, conferma, Facebook contento — e poi il CRM si
+fermava con questo. E' un vincolo del database, non un problema di Meta.
+
+`frappe_whatsapp` dichiara **unique** il campo `webhook_verify_token` di
+*WhatsApp Account*. Il nostro `upsert_account` ci scriveva sopra **sempre lo
+stesso valore**, quello di CRM Meta Settings. Il primo numero entrava; il
+secondo no.
+
+E il secondo numero e' esattamente il caso normale: sul sito c'era gia'
+l'account `Test` (il numero di prova che Meta presta all'app), quindi il numero
+vero era il secondo.
+
+Quel campo, da noi, **non lo legge nessuno**: la challenge di Meta viene
+verificata contro il token unico in CRM Meta Settings
+(`crm/integrations/whatsapp/webhook.py`), mentre quello per-account appartiene
+all'endpoint di `frappe_whatsapp`, che non usiamo. Copiarlo su ogni account non
+serviva a niente e rompeva il secondo.
+
+Ora: il valore condiviso resta a chi gia' ce l'ha, e a ogni altro account ne
+tocca uno suo. Se in Settings non c'e' nessun token, il campo resta `None` e non
+stringa vuota — perche' su un campo unique due stringhe vuote collidono come due
+copie di qualunque altra cosa.
+
+## La finestra «URL bloccato»: l'SDK sceglie al posto nostro
+
+Dal sorgente dell'SDK di Facebook (`connect.facebook.net/en_US/bundle/sdk.js/`),
+dentro `FB.ui`:
+
+```js
+e.fallback_redirect_uri || (e.fallback_redirect_uri = document.location.href)
+```
+
+Tradotto: **se non gli dici dove puo' reindirizzare, ci mette la pagina in cui
+ti trovi.** Facebook poi controlla quel valore contro i *Valid OAuth Redirect
+URIs* dell'app **prima di mostrare qualunque cosa**, e se non e' in lista apre
+una finestra che dice che il redirect non e' consentito.
+
+Questo spiega tutte e tre le versioni del problema, che sembravano diverse:
+
+| Da dove partiva | Cosa finiva in `fallback_redirect_uri` | Esito |
+|---|---|---|
+| pagina hub, prima | `…/whatsapp-connect?state=…&go=1` | query non registrata → bloccato |
+| pagina hub, oggi | `…/whatsapp-connect` (query tolta) | in lista → ok |
+| CRM in Impostazioni | `…/crm?settings=WhatsApp` | non in lista → bloccato |
+
+Il percorso diretto dalle Impostazioni — quello aggiunto per togliere la pagina
+di mezzo — non passava il parametro, quindi si e' ripreso il problema sotto
+un'altra forma. Ora passa la pagina dell'hub, che e' registrata e che sa gia'
+finire un flusso che torna per redirect.
+
+**Nota per chi legge dopo:** `fallback_redirect_uri` ha un nome che suggerisce
+un ripiego opzionale. Non lo e'. Se non lo passi, non e' che non viene usato: e'
+che viene scelto per te.
+
+## Il registro di sessione, perso e rimesso
+
+Il percorso diretto dalle Impostazioni non scriveva nessuna riga di log: tutta
+la registrazione stava nella pagina dell'hub, che ora per l'agenzia non viene
+piu' aperta. Il risultato e' che il log e' tornato vuoto **proprio per le
+connessioni che stavamo guardando** — la stessa trappola del CSRF, per un motivo
+diverso.
+
+Ora anche il percorso diretto scrive: `STARTED` all'apertura, ogni messaggio
+`WA_EMBEDDED_SIGNUP` che Facebook manda, `CANCEL` se la finestra si chiude senza
+codice, `ERROR` se l'ultimo passo fallisce.

@@ -992,3 +992,89 @@ class TestOneClickWhereTheDomainAllowsIt(IntegrationTestCase):
 		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
 		self.assertIn("history.replaceState", page)
 		self.assertIn("window.location.pathname", page)
+
+
+class TestTheLastStepThatFailedAfterMetaFinished(IntegrationTestCase):
+	"""«Webhook Verify Token must be unique».
+
+	`frappe_whatsapp` declares that field unique, and this CRM wrote the one
+	value from CRM Meta Settings onto every account it created. The first number
+	went in, the second could not — and the failure landed at the very end, after
+	Meta had finished its side without complaint.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_shared_token_stays_with_whoever_holds_it(self):
+		from crm.integrations.whatsapp.api import account_verify_token
+
+		shared = frappe.db.get_single_value("CRM Meta Settings", "webhook_verify_token")
+		if not shared:
+			frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "shared-token")
+			frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+			shared = "shared-token"
+
+		# nobody holds it yet: the first account may have it
+		self.assertEqual(account_verify_token("PHONE_A"), shared)
+
+	def test_a_second_number_does_not_take_a_token_that_is_taken(self):
+		from crm.integrations.whatsapp.api import account_verify_token
+
+		if "WhatsApp Account" not in (frappe.db.get_tables() or []):
+			self.skipTest("frappe_whatsapp is not installed on this bench")
+
+		frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "shared-token")
+		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+		frappe.get_doc(
+			{
+				"doctype": "WhatsApp Account",
+				"account_name": "primo",
+				"phone_id": "PHONE_A",
+				"business_id": "WABA_A",
+				"webhook_verify_token": "shared-token",
+			}
+		).insert(ignore_permissions=True)
+
+		# the same number keeps it; a different one gets its own
+		self.assertEqual(account_verify_token("PHONE_A"), "shared-token")
+		self.assertNotEqual(account_verify_token("PHONE_B"), "shared-token")
+		self.assertTrue(account_verify_token("PHONE_B"))
+
+	def test_no_shared_token_means_no_value_at_all(self):
+		"""Not an empty string: the field is unique, and a second empty string
+		collides exactly like a second copy of anything else."""
+		from crm.integrations.whatsapp.api import account_verify_token
+
+		frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "")
+		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+		self.assertIsNone(account_verify_token("PHONE_C"))
+
+
+class TestTheSDKChoosesTheRedirectWhenWeDoNot(IntegrationTestCase):
+	"""From the Facebook SDK's own source:
+
+	    e.fallback_redirect_uri || (e.fallback_redirect_uri = document.location.href)
+
+	Left out, the SDK sends the page you are on. Facebook checks it against the
+	app's Valid OAuth Redirect URIs before showing anything, the CRM's own
+	address is not in that list, and what opens is a window refusing to redirect.
+	"""
+
+	def test_the_connect_call_hands_over_the_registered_address(self):
+		from crm.integrations.meta.client import get_settings
+		from crm.integrations.whatsapp.api import get_connect_url, hub_url, save_whatsapp_app
+		from crm.integrations.whatsapp.signup import CONNECT_PATH
+
+		settings = get_settings()
+		settings.whatsapp_app_id = "111"
+		settings.whatsapp_app_secret = "shhh"
+		settings.save()
+		save_whatsapp_app(whatsapp_signup_config_id="222")
+
+		data = get_connect_url()
+		# the hub's page — never this site's, which on a client CRM is the client
+		self.assertEqual(data["redirect_uri"], f"{hub_url().rstrip('/')}{CONNECT_PATH}")
+		# and no query on it: the registered value has none
+		self.assertNotIn("?", data["redirect_uri"])
+		frappe.db.rollback()

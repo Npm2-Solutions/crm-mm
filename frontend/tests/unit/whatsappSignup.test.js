@@ -40,6 +40,16 @@ describe('loginOptions', () => {
     expect(loginOptions('123').auth_type).toBe('reauthorize')
   })
 
+  it('says where Facebook may redirect, so the SDK does not choose', () => {
+    // the SDK's own source: `e.fallback_redirect_uri ||
+    // (e.fallback_redirect_uri = document.location.href)` — left out, it sends
+    // the page you are on, and Facebook blocks an address it has not been given
+    expect(
+      loginOptions('123', 'https://hub.example.com/whatsapp-connect')
+        .fallback_redirect_uri,
+    ).toBe('https://hub.example.com/whatsapp-connect')
+  })
+
   it('returns a code, not a token', () => {
     const options = loginOptions('123')
     expect(options.config_id).toBe('123')
