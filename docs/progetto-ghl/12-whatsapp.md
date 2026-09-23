@@ -1704,3 +1704,39 @@ Due strade, perche' i due invii sono diversi:
 
 Per il visitatore senza sessione non cambia niente: il token non esiste, non si
 manda, e non serve.
+### La prima versione di questa fix non funzionava
+
+Dopo il deploy l'errore era identico. La prova sta nella pagina servita, senza
+bisogno di guardare nessun log: `curl https://hub.npm2solutions.com/whatsapp-connect?code=…`
+mostra lo script di questa pagina alle righe 120-244, e
+
+```html
+<script>frappe.csrf_token = "…";</script></body>
+```
+
+alla riga **346**. Frappe scrive il token **in fondo al body**, dopo tutto quello
+che questa pagina genera: `<!-- csrf_token -->` e' l'ultima riga di `base.html`.
+
+Quindi un
+
+```js
+var CSRF = (window.frappe && window.frappe.csrf_token) || '';
+```
+
+in cima al nostro script legge una variabile che non e' ancora stata scritta:
+cattura `''`, sempre. L'header veniva costruito e partiva vuoto — il codice
+sembrava giusto e il comportamento era quello di prima.
+
+Il token adesso arriva **dal server**, come gia' fanno `/book` e le pagine form
+del portale in questa stessa app:
+
+```python
+context.csrf_token = frappe.sessions.get_csrf_token()
+```
+
+e la pagina lo legge da li'; la copia scritta da Frappe resta solo come ripiego,
+e comunque letta al momento dell'invio e non al parse.
+
+**La lezione:** l'ordine degli script in una pagina Frappe non e' un dettaglio.
+Tutto quello che `base.html` aggiunge — token compreso — sta dopo il contenuto,
+non prima.

@@ -104,10 +104,18 @@
 	// weeks — every line of session logging, which is why the log had so little
 	// to say each time we went looking.
 	//
-	// Frappe puts the token in the page itself for a logged-in visitor
-	// (`base_template_page.py` replaces a comment with a script that sets it),
-	// so it is there to be read when it exists.
-	var CSRF = (window.frappe && window.frappe.csrf_token) || '';
+	// It comes from the server, the way `/book` and the portal form pages in
+	// this app already take it. Frappe also writes its own copy into the page,
+	// but at the **very end of the body** — long after this script has been
+	// parsed. Reading it into a variable up here therefore captures nothing,
+	// and that is exactly how the first attempt at this fix shipped and still
+	// failed: the header was built, and it was always empty.
+	//
+	// So: the server's value first, and the page's own only as a late fallback,
+	// read when something is actually sent rather than when this is parsed.
+	function csrf() {
+		return {{ csrf_token | tojson }} || (window.frappe && window.frappe.csrf_token) || '';
+	}
 
 	var statusEl = document.getElementById('wa-status');
 
@@ -126,7 +134,7 @@
 				// `sendBeacon` cannot set a header, so the token rides in the
 				// body: Frappe looks there too (`form_dict.pop("csrf_token")`).
 				new Blob(
-					[JSON.stringify({ state: state, event: event, data: data || {}, csrf_token: CSRF })],
+					[JSON.stringify({ state: state, event: event, data: data || {}, csrf_token: csrf() })],
 					{ type: 'application/json' }
 				)
 			);
@@ -158,7 +166,8 @@
 	function finish(payload, returnUrl) {
 		say({{ _("Finishing up…") | tojson }});
 		var headers = { 'Content-Type': 'application/json' };
-		if (CSRF) headers['X-Frappe-CSRF-Token'] = CSRF;
+		var token = csrf();
+		if (token) headers['X-Frappe-CSRF-Token'] = token;
 		fetch('/api/method/crm.integrations.whatsapp.signup.complete_signup', {
 			method: 'POST',
 			headers: headers,

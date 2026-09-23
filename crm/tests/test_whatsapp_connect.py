@@ -876,7 +876,28 @@ class TestTheLoggedInCaseWasRefused(IntegrationTestCase):
 		# a header for fetch…
 		self.assertIn("X-Frappe-CSRF-Token", page)
 		# …and the body for sendBeacon, which cannot set headers
-		self.assertIn("csrf_token: CSRF", page)
+		self.assertIn("csrf_token: csrf()", page)
+
+	def test_the_token_comes_from_the_server_not_from_the_page(self):
+		"""Frappe writes its own copy at the very end of the body, after
+		everything this page renders. Reading it into a variable up in this
+		page's script captures nothing, and every POST goes out bare — which is
+		how the first attempt at this fix shipped and still failed."""
+		import pathlib
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		source = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.py")).read_text()
+
+		self.assertNotRegex(page, r"var\s+CSRF\s*=")
+		self.assertIn("get_csrf_token()", source)
+		self.assertIn("{{ csrf_token | tojson }}", page)
+
+	def test_the_context_carries_the_token(self):
+		from crm.www.whatsapp_connect import get_context
+
+		context = frappe._dict()
+		get_context(context)
+		self.assertIn("csrf_token", context)
 
 	def test_the_log_accepts_the_token_without_choking_on_it(self):
 		"""Frappe strips it off form_dict, but the argument must not blow up the
