@@ -574,13 +574,32 @@ function recheckDelivery(name) {
 // can arrive without the other.
 let signupData = null
 let stopListening = null
+// the state of the flow in progress, so the session log knows which one a
+// message belongs to
+let signupState = ''
 
 // Facebook's script, fetched while the panel is merely open. `FB.login` opens a
 // window, and a browser allows that only inside a gesture it is still handling:
 // waiting for a script in the click handler loses the gesture and the window is
 // blocked. This is also why nothing here is awaited before the call.
+// Meta asks for Embedded Signup to be implemented with session logging, and it
+// is also the only thing that makes a stalled onboarding explicable afterwards.
+// The hub page had it; this path, when it was added, did not — so the log went
+// quiet again for exactly the connections we were watching.
+function logSignupEvent(event, detail) {
+  if (!signupState) return
+  call('crm.integrations.whatsapp.signup.log_session_event', {
+    state: signupState,
+    event,
+    data: detail || {},
+  }).catch(() => {
+    // logging must never be what stops a connection
+  })
+}
+
 onMounted(() => {
   stopListening = listenForSignup((event, detail) => {
+    logSignupEvent(event, detail)
     if (String(event).indexOf('FINISH') === 0) signupData = detail
   })
 })
@@ -612,7 +631,9 @@ function finishSignup(code, state) {
     })
     .catch((e) => {
       connecting.value = false
-      toast.error(e.messages?.[0] || String(e?.message || e))
+      const reason = e.messages?.[0] || String(e?.message || e)
+      logSignupEvent('ERROR', { current_step: 'complete', message: reason })
+      toast.error(reason)
     })
 }
 
@@ -627,15 +648,24 @@ function launchHere(data) {
   loadFacebookSdk(data.app_id)
     .then((FB) => {
       signupData = null
-      FB.login((response) => {
-        const code = response?.authResponse?.code
-        if (!code) {
-          connecting.value = false
-          toast.error(__('Connection cancelled'))
-          return
-        }
-        finishSignup(code, data.state)
-      }, loginOptions(data.config_id))
+      signupState = data.state
+      logSignupEvent('STARTED', { current_step: 'launch' })
+      FB.login(
+        (response) => {
+          const code = response?.authResponse?.code
+          if (!code) {
+            connecting.value = false
+            logSignupEvent('CANCEL', {
+              current_step: 'login',
+              status: response?.status || '',
+            })
+            toast.error(__('Connection cancelled'))
+            return
+          }
+          finishSignup(code, data.state)
+        },
+        loginOptions(data.config_id, data.redirect_uri),
+      )
     })
     .catch(() => {
       // the script never arrived — a blocker, usually. The hub page says so

@@ -492,6 +492,12 @@ def get_connect_url() -> dict:
 		"app_id": get_whatsapp_app_id(),
 		"config_id": config_id(),
 		"return_url": get_url().rstrip("/") + "/crm?settings=WhatsApp",
+		# Where Facebook is allowed to send the browser when it cannot answer the
+		# window that opened it. Spelled exactly as the app has it registered —
+		# the hub's page, never this site's, because on a client CRM `get_url()`
+		# is the client. Left out, the SDK fills the field with whatever page
+		# you are on, and Facebook refuses an address it does not have listed.
+		"redirect_uri": f"{hub}{CONNECT_PATH}",
 	}
 
 
@@ -564,6 +570,34 @@ def receive_connection():
 	return Response(json.dumps({"ok": True, "account": name}), mimetype="application/json")
 
 
+def account_verify_token(phone_id: str) -> str | None:
+	"""A verify token this account may hold without colliding with another.
+
+	`frappe_whatsapp` declares the field **unique**, and this CRM was writing the
+	one value from CRM Meta Settings onto every account it created. The first
+	number went in; the second failed with «Webhook Verify Token must be
+	unique» — at the very end, after Meta had finished its side without a word
+	of complaint, which is the worst moment to discover a database constraint.
+
+	Nothing of ours reads the per-account field. Meta's challenge is answered
+	against the single token in CRM Meta Settings (see `webhook.verify`); this
+	one belongs to `frappe_whatsapp`'s own endpoint, which we do not use. So the
+	shared value is kept where it is already in use, and anything else gets a
+	token of its own.
+	"""
+	shared = frappe.get_cached_value("CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token")
+	if not shared:
+		# None and not "": the field is unique, and a second empty string
+		# collides exactly like a second copy of anything else would
+		return None
+	holder = frappe.db.get_value(
+		"WhatsApp Account", {"webhook_verify_token": shared}, ["name", "phone_id"], as_dict=True
+	)
+	if not holder or holder.phone_id == phone_id:
+		return shared
+	return frappe.generate_hash(length=32)
+
+
 def upsert_account(data: dict) -> str:
 	"""Create or refresh the frappe_whatsapp account for this number.
 
@@ -585,9 +619,7 @@ def upsert_account(data: dict) -> str:
 		"version": GRAPH_VERSION,
 		"business_id": data.get("waba_id"),
 		"app_id": get_whatsapp_app_id(),
-		"webhook_verify_token": frappe.get_cached_value(
-			"CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token"
-		),
+		"webhook_verify_token": account_verify_token(phone_id),
 		"status": "Active",
 		"enabled": 1,
 		"account_name": data.get("verified_name") or data.get("display_phone_number") or phone_id,
