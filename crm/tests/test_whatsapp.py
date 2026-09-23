@@ -267,3 +267,77 @@ class TestRetryingAMessageThatFailed(FrappeTestCase):
 			retry_whatsapp_message("whatever")
 
 		doc.send_outgoing.assert_not_called()
+
+
+class TestATemplateBelongsToItsNumber(FrappeTestCase):
+	"""A template is approved on one WhatsApp Business account and belongs to it.
+
+	Sent from another number Meta refuses it, complaining about a template name
+	that does not exist — true from where it is standing, useless to whoever
+	pressed Send. The chooser was listing every approved template on the site,
+	including the ones left behind by a number no longer in use, and offering
+	Send on all of them.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_template_of_another_account_is_refused_by_name(self):
+		from crm.api.whatsapp import send_whatsapp_template
+
+		with (
+			patch("crm.api.whatsapp.frappe.db.get_value", return_value="Vecchio"),
+			patch("crm.api.whatsapp.sending_account_name", return_value="Nuovo"),
+			patch("crm.api.whatsapp.validate_access"),
+		):
+			with self.assertRaises(frappe.ValidationError) as caught:
+				send_whatsapp_template("CRM Lead", "LEAD-0001", "promo-it", "+393330000000")
+
+		message = str(caught.exception)
+		# both numbers named, so the reader knows what to do about it
+		self.assertIn("Vecchio", message)
+		self.assertIn("Nuovo", message)
+		self.assertIn("promo-it", message)
+
+	def test_a_template_with_no_account_recorded_is_left_alone(self):
+		"""Nobody wrote down where it came from; it goes out from whichever number
+		is sending, exactly as it did before."""
+		from crm.api.whatsapp import send_whatsapp_template
+
+		with (
+			patch("crm.api.whatsapp.frappe.db.get_value", return_value=None),
+			patch("crm.api.whatsapp.sending_account_name", return_value="Nuovo"),
+			patch("crm.api.whatsapp.validate_access"),
+			patch("crm.api.whatsapp.frappe.new_doc"),
+			patch("crm.api.whatsapp.whatsapp_recipient", return_value="+393330000000"),
+			patch("crm.api.whatsapp.insert_and_send", return_value="MSG-1") as sent,
+		):
+			send_whatsapp_template("CRM Lead", "LEAD-0001", "promo-it", "+393330000000")
+
+		sent.assert_called_once()
+
+	def test_the_sending_account_is_the_one_frappe_whatsapp_uses(self):
+		"""The flag on the account, not the link on Settings — they can disagree,
+		and the flag is what sends."""
+		from crm.api.whatsapp import sending_account_name
+
+		with (
+			patch("crm.api.whatsapp.frappe.db.exists", return_value=True),
+			patch("crm.api.whatsapp.frappe.db.get_value", return_value="Mattia"),
+		):
+			self.assertEqual(sending_account_name(), "Mattia")
+
+
+class TestAClientSiteDoesNotSeeTheAgencysPlumbing(FrappeTestCase):
+	"""The Meta app id, the Embedded Signup configuration and the button that
+	changes it belong to the provider. On a client's site the app is somebody
+	else's: the id means nothing they can act on, and the field is the one thing
+	that would stop their own connection working."""
+
+	def test_the_status_says_whether_this_is_the_provider(self):
+		from crm.integrations.whatsapp.api import get_status
+
+		status = get_status()
+		if status.get("installed"):
+			self.assertIn("is_hub", status)
+			self.assertIsInstance(status["is_hub"], bool)

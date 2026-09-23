@@ -100,6 +100,11 @@ def get_status() -> dict:
 		# hub — Facebook can be opened straight from the button, and Facebook's
 		# script is worth fetching before anybody presses it.
 		"hub_origin": hub_url().rstrip("/"),
+		# Whether this site is the provider's. The Meta app id, the login
+		# configuration and the button that changes it are the agency's plumbing:
+		# a client has no use for them, cannot act on them, and should not be
+		# invited to edit the id their own onboarding depends on.
+		"is_hub": is_hub(),
 	}
 
 

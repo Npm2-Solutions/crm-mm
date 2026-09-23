@@ -560,6 +560,33 @@ def create_whatsapp_message(
 	return insert_and_send(doc)
 
 
+def sending_account_name() -> str:
+	"""The account a message actually leaves from.
+
+	`frappe_whatsapp` sends from the account flagged `is_default_outgoing`, and
+	falls back to the link on WhatsApp Settings. Read the same way here, or the
+	CRM would be checking one number while another one sends.
+	"""
+	if not frappe.db.exists("DocType", "WhatsApp Account"):
+		return ""
+	return frappe.db.get_value("WhatsApp Account", {"is_default_outgoing": 1}, "name") or (
+		frappe.db.get_single_value("WhatsApp Settings", "default_outgoing_account") or ""
+	)
+
+
+@frappe.whitelist()
+def get_sending_account() -> dict:
+	"""Which number will send, so a chooser can offer only what it can send.
+
+	A template is approved **on one WhatsApp Business account**. It cannot be
+	sent from another number, and Meta refuses it — so a list that mixes the
+	templates of a number no longer in use with the ones that work, and offers
+	Send on both, is a list that is wrong half the time.
+	"""
+	validate_access()
+	return {"account": sending_account_name()}
+
+
 @frappe.whitelist()
 def send_whatsapp_template(
 	reference_doctype: str,
@@ -576,6 +603,23 @@ def send_whatsapp_template(
 	actually left is what the timeline shows later.
 	"""
 	validate_access(reference_doctype, reference_name)
+
+	# A template is approved on one WhatsApp Business account and belongs to it.
+	# Sent from another number Meta refuses it, with a message about a template
+	# name that does not exist — which is true from where it is standing, and
+	# useless to whoever pressed Send. Said here instead, while there is still
+	# somebody to read it.
+	owner = frappe.db.get_value("WhatsApp Templates", template, "whatsapp_account")
+	sender = sending_account_name()
+	if owner and sender and owner != sender:
+		frappe.throw(
+			_(
+				"«{0}» belongs to the number {1}, and messages go out from {2}. A template can "
+				"only be sent from the account it was approved on — it has to be created again "
+				"on {2}."
+			).format(template, owner, sender)
+		)
+
 	doc = frappe.new_doc("WhatsApp Message")
 	doc.update(
 		{
