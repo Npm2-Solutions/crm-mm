@@ -190,3 +190,80 @@ class TestOutgoingMediaMetaCanRead(FrappeTestCase):
 				kind="audio",
 				s=media_signature(private.file_url, "audio"),
 			)
+
+
+class TestOpusInsideMp4IsNotAudioMp4(FrappeTestCase):
+	"""`audio/mp4` means **AAC** in an MP4 container.
+
+	Chrome's MediaRecorder, asked for `audio/mp4` with no codec named, records
+	**Opus** in an MP4 container — which no messenger accepts. The file plays
+	perfectly in the browser that made it, the Content-Type header is right, and
+	Meta answers with a message id and then marks the message failed in a status
+	webhook nobody sees. Said out loud at send time instead.
+	"""
+
+	def test_opus_in_mp4_is_refused_with_a_reason(self):
+		from crm.api.whatsapp import audio_codec_problem
+
+		# the boxes an Opus-in-MP4 recording carries
+		opus_mp4 = b"\x00\x00\x00\x18ftypisom" + b"\x00" * 400 + b"Opus" + b"\x00" * 40 + b"dOps"
+		problem = audio_codec_problem(opus_mp4, "/files/voice-1.mp4")
+		self.assertIn("Opus", problem)
+		self.assertIn("OGG", problem)
+
+	def test_aac_in_mp4_is_exactly_what_it_should_be(self):
+		from crm.api.whatsapp import audio_codec_problem
+
+		aac_mp4 = b"\x00\x00\x00\x18ftypisom" + b"\x00" * 400 + b"mp4a" + b"\x00" * 40 + b"esds"
+		self.assertEqual(audio_codec_problem(aac_mp4, "/files/voice-1.m4a"), "")
+
+	def test_an_ogg_recording_is_left_alone(self):
+		"""Opus belongs in OGG, and nothing here has an opinion about it."""
+		from crm.api.whatsapp import audio_codec_problem
+
+		self.assertEqual(audio_codec_problem(b"OggS" + b"\x00" * 100 + b"OpusHead", "/files/v.ogg"), "")
+
+
+class TestRetryingAMessageThatFailed(FrappeTestCase):
+	"""Meta's status webhook writes `failed`; the doctype's own option is
+	`Failed`. The comparison was case-sensitive, so the retry button refused
+	exactly the messages it exists for."""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_lower_case_failed_is_still_failed(self):
+		from crm.api.whatsapp import retry_whatsapp_message
+
+		doc = MagicMock()
+		doc.type = "Outgoing"
+		doc.status = "failed"
+		doc.reference_doctype = None
+		doc.reference_name = None
+		doc.message_id = "wamid.TEST"
+
+		with (
+			patch("crm.api.whatsapp.frappe.get_doc", return_value=doc),
+			patch("crm.api.whatsapp.validate_access"),
+		):
+			retry_whatsapp_message("whatever")
+
+		doc.send_outgoing.assert_called_once()
+
+	def test_a_message_that_went_through_is_not_sent_twice(self):
+		from crm.api.whatsapp import retry_whatsapp_message
+
+		doc = MagicMock()
+		doc.type = "Outgoing"
+		doc.status = "sent"
+		doc.reference_doctype = None
+		doc.reference_name = None
+
+		with (
+			patch("crm.api.whatsapp.frappe.get_doc", return_value=doc),
+			patch("crm.api.whatsapp.validate_access"),
+			self.assertRaises(frappe.ValidationError),
+		):
+			retry_whatsapp_message("whatever")
+
+		doc.send_outgoing.assert_not_called()

@@ -305,16 +305,26 @@ const recordingLabel = computed(() => {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 })
 
-// Chrome records `audio/webm` by default, which WhatsApp refuses outright — the
-// voice note was uploaded, sent, and rejected. OGG/Opus and MP4 are on Meta's
-// accepted list; if the browser can do neither, better to say so than to record
-// something that cannot be delivered.
+// The codec is named, never left to the browser.
+//
+// Asking for `audio/mp4` and nothing more is how this failed the second time:
+// Chrome answers that request with **Opus inside MP4**, a combination WhatsApp
+// refuses — `audio/mp4` means AAC to Meta, and Opus is only allowed inside OGG.
+// The file played fine in the browser that made it, the server sent the right
+// Content-Type, and Meta still marked the message failed an hour later.
+//
+// So the list holds only pairings that are what they say they are: Opus in OGG,
+// AAC in MP4. Plain `audio/ogg` is out too — it may be Vorbis, which Meta does
+// not take either. If the browser can do none of them, better to say so than to
+// record something that cannot be delivered.
+const RECORDABLE = [
+  'audio/ogg;codecs=opus',
+  'audio/mp4;codecs=mp4a.40.2',
+  'audio/aac',
+]
+
 function recordableType() {
-  return (
-    ['audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'].find((type) =>
-      MediaRecorder.isTypeSupported?.(type),
-    ) || ''
-  )
+  return RECORDABLE.find((type) => MediaRecorder.isTypeSupported?.(type)) || ''
 }
 
 async function startRecording() {
@@ -336,7 +346,9 @@ async function startRecording() {
   if (!container) {
     stream.getTracks().forEach((track) => track.stop())
     toast.error(
-      __('This browser can only record in a format WhatsApp does not accept'),
+      __(
+        'This browser cannot record in a format WhatsApp accepts. Try Firefox, Safari, or your phone.',
+      ),
     )
     return
   }

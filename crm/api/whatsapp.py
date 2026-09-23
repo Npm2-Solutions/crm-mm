@@ -301,7 +301,10 @@ def retry_whatsapp_message(name: str) -> str:
 
 	if doc.type != "Outgoing":
 		frappe.throw(_("Only a message we sent can be sent again."))
-	if doc.status not in ("Failed", "", None):
+	# Meta's status webhook writes `failed`, the doctype's own option is `Failed`,
+	# and the comparison was case-sensitive — so the button refused to retry
+	# exactly the messages it exists for.
+	if (doc.status or "").lower() not in ("failed", ""):
 		frappe.throw(_("This message did not fail, so there is nothing to send again."))
 
 	doc.send_outgoing()
@@ -447,7 +450,7 @@ def media_url(file_url: str, kind: str) -> str:
 	return f"{get_url().rstrip('/')}/api/method/crm.api.whatsapp.media?{query}"
 
 
-@frappe.whitelist(allow_guest=True, methods=["GET"])  # nosemgrep: guest-whitelisted-method
+@frappe.whitelist(allow_guest=True, methods=["GET", "HEAD"])  # nosemgrep: guest-whitelisted-method
 def media(file: str, kind: str, s: str):
 	"""Serve one outgoing attachment with the Content-Type Meta expects.
 
@@ -470,6 +473,44 @@ def media(file: str, kind: str, s: str):
 		content_type=media_content_type(file, kind),
 		headers={"Content-Length": str(len(content)), "Cache-Control": "private, max-age=3600"},
 	)
+
+
+def audio_codec_problem(content: bytes, file_url: str) -> str:
+	"""Why WhatsApp will refuse this recording, said now instead of in an hour.
+
+	`audio/mp4` means **AAC** in an MP4 container. Chrome's MediaRecorder,
+	asked for `audio/mp4` with no codec, records **Opus** in an MP4 container —
+	a combination no messenger accepts. The file plays perfectly in the browser
+	that made it, the Content-Type header is right, everything looks correct,
+	and Meta answers with a message id and then marks the message failed in a
+	status webhook nobody sees.
+
+	Opus belongs in OGG. The boxes are enough to tell which is which: `dOps` is
+	an Opus description, `esds`/`mp4a` an AAC one.
+	"""
+	if not file_url.lower().endswith((".mp4", ".m4a")):
+		return ""
+	head = content[:4096]
+	if b"dOps" in head and b"esds" not in head:
+		return _(
+			"This recording is Opus audio inside an MP4 file, which WhatsApp does not accept — "
+			"Opus is only allowed inside OGG. The browser chose that combination on its own. "
+			"Record from Firefox, from Safari, or from a phone, and it will go through."
+		)
+	return ""
+
+
+def outgoing_media(attach: str, content_type: str) -> str:
+	"""The link Meta is given, and a last look at what is behind it."""
+	if not attach or content_type == "text" or not attach.startswith("/files/"):
+		return attach
+
+	name = frappe.db.get_value("File", {"file_url": attach}, "name")
+	if name and content_type == "audio":
+		problem = audio_codec_problem(frappe.get_doc("File", name).get_content(), attach)
+		if problem:
+			frappe.throw(problem)
+	return media_url(attach, content_type)
 
 
 @frappe.whitelist()
@@ -512,9 +553,7 @@ def create_whatsapp_message(
 			# what the file is instead of leaving nginx to guess from the name.
 			# `message` keeps the original path: the chat already knows to hide a
 			# caption that is only a file path.
-			"attach": media_url(attach, content_type)
-			if attach and attach.startswith("/files/") and content_type != "text"
-			else attach,
+			"attach": outgoing_media(attach, content_type),
 			"content_type": content_type,
 		}
 	)
