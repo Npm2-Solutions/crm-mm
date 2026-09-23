@@ -1,9 +1,15 @@
+import hashlib
+import hmac
 import json
+import mimetypes
 import re
+from urllib.parse import urlencode
 
 import frappe
 from frappe import _
 from frappe.permissions import add_permission, update_permission_property
+from frappe.utils import get_url
+from werkzeug.wrappers import Response
 
 from crm.api.doc import get_assigned_users
 from crm.api.lead import deal_names_of
@@ -371,6 +377,101 @@ def numbers_of(reference_doctype: str, reference_name: str) -> list[str]:
 	return []
 
 
+# --- media Meta can actually read ------------------------------------------
+#
+# Meta does not download a file and work out what it is. It reads the
+# **Content-Type header** the web server sends, and refuses anything that does
+# not match the kind of message it was asked to send.
+#
+# A voice note recorded in the browser is saved as `voice-….mp4`, and nginx
+# serves every `.mp4` as `video/mp4` — the extension map says so, and it has no
+# idea the file holds only audio. Meta accepted the send (it answered with a
+# message id), fetched `video/mp4` for an `audio` message, and marked it
+# **failed**. Nothing in the CRM said why, because the refusal arrives in a
+# status webhook long after the send returned successfully.
+#
+# So the file is not handed over as a bare `/files/…` link any more. It goes
+# through here, where the type is stated outright instead of being guessed from
+# a filename.
+MEDIA_TYPES = {
+	"audio": {
+		".aac": "audio/aac",
+		".amr": "audio/amr",
+		".m4a": "audio/mp4",
+		".mp3": "audio/mpeg",
+		".mp4": "audio/mp4",
+		".ogg": "audio/ogg",
+		".opus": "audio/ogg",
+	},
+	"image": {
+		".jpeg": "image/jpeg",
+		".jpg": "image/jpeg",
+		".png": "image/png",
+		".webp": "image/webp",
+	},
+	"video": {
+		".3gp": "video/3gp",
+		".mp4": "video/mp4",
+	},
+}
+
+
+def media_content_type(file_url: str, kind: str) -> str:
+	"""What to tell Meta this file is.
+
+	Only the types Meta lists for that kind of message. A document may be
+	anything, so it keeps whatever the extension suggests.
+	"""
+	extension = ("." + file_url.rsplit(".", 1)[-1]).lower() if "." in file_url else ""
+	known = MEDIA_TYPES.get(kind)
+	if known:
+		return known.get(extension) or next(iter(known.values()))
+	return mimetypes.guess_type(file_url)[0] or "application/octet-stream"
+
+
+def _media_secret() -> str:
+	return frappe.local.conf.get("encryption_key") or frappe.local.site
+
+
+def media_signature(file_url: str, kind: str) -> str:
+	return hmac.new(_media_secret().encode(), f"{kind}|{file_url}".encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def media_url(file_url: str, kind: str) -> str:
+	"""The address handed to Meta: this site, with the type spelled out.
+
+	Signed, so the endpoint serves the files this CRM chose to send and not any
+	path somebody cares to ask for.
+	"""
+	query = urlencode({"file": file_url, "kind": kind, "s": media_signature(file_url, kind)})
+	return f"{get_url().rstrip('/')}/api/method/crm.api.whatsapp.media?{query}"
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])  # nosemgrep: guest-whitelisted-method
+def media(file: str, kind: str, s: str):
+	"""Serve one outgoing attachment with the Content-Type Meta expects.
+
+	Guest-accessible because the caller is Meta, fetching a link it was given —
+	there is no session to authenticate. Two things keep it honest: the
+	signature, which only this site can produce, and the refusal to read
+	anything but a public file, so it can hand out nothing that was not already
+	being served from `/files` anyway.
+	"""
+	if not hmac.compare_digest(s or "", media_signature(file, kind)):
+		raise frappe.PermissionError
+
+	name = frappe.db.get_value("File", {"file_url": file, "is_private": 0}, "name")
+	if not name:
+		raise frappe.DoesNotExistError
+
+	content = frappe.get_doc("File", name).get_content()
+	return Response(
+		content,
+		content_type=media_content_type(file, kind),
+		headers={"Content-Length": str(len(content)), "Cache-Control": "private, max-age=3600"},
+	)
+
+
 @frappe.whitelist()
 def create_whatsapp_message(
 	reference_doctype: str,
@@ -406,7 +507,14 @@ def create_whatsapp_message(
 			"reference_name": reference_name,
 			"message": message or attach,
 			"to": whatsapp_recipient(reference_doctype, reference_name, to),
-			"attach": attach,
+			# Meta reads the Content-Type header of whatever it is pointed at, so
+			# a local file is handed over through the endpoint above, which says
+			# what the file is instead of leaving nginx to guess from the name.
+			# `message` keeps the original path: the chat already knows to hide a
+			# caption that is only a file path.
+			"attach": media_url(attach, content_type)
+			if attach and attach.startswith("/files/") and content_type != "text"
+			else attach,
 			"content_type": content_type,
 		}
 	)

@@ -1967,3 +1967,76 @@ fino a un reload fatto per caso.
 
 Ora chi cambia la risposta la richiede: connessione riuscita, numero aggiunto a
 mano, numero rimosso, cambio di predefinito.
+
+## Perche' i vocali partivano e non arrivavano
+
+Il messaggio veniva accettato — Meta rispondeva con un `message_id` — e poi
+risultava `failed`. Sul sito:
+
+```
+name: do0vc204lc   type: Outgoing   content_type: audio   status: failed
+attach: /files/voice-1790157621002.mp4
+message_id: wamid.HBgMMzkzNzAzNDAwMTg5…
+```
+
+La prova sta in un header:
+
+```
+$ curl -I https://hub.npm2solutions.com/files/voice-1790157621002.mp4
+content-type: video/mp4
+```
+
+**Meta non guarda dentro al file.** Segue il link, legge il `Content-Type` che
+gli manda il web server, e rifiuta tutto quello che non corrisponde al tipo di
+messaggio richiesto. Il vocale registrato dal browser viene salvato come
+`.mp4`, nginx serve qualunque `.mp4` come `video/mp4` — la mappa delle
+estensioni dice cosi', e non sa che dentro c'e' solo audio — e un `video/mp4`
+per un messaggio `audio` non e' nella lista che Meta accetta (`audio/aac`,
+`audio/amr`, `audio/mpeg`, `audio/mp4`, `audio/ogg` con codec opus).
+
+Per confronto, il vocale **in arrivo** e' un `.ogg` servito come `audio/ogg`:
+per questo la ricezione ha sempre funzionato.
+
+### La correzione
+
+`frappe_whatsapp` passa a Meta un link (`{"audio": {"link": …}}`), non carica il
+file su `/media`. Quindi il link non e' piu' il `/files/...` nudo: passa da
+
+```
+/api/method/crm.api.whatsapp.media?file=…&kind=audio&s=<firma>
+```
+
+che il tipo **lo dichiara** invece di lasciarlo indovinare all'estensione.
+L'endpoint e' aperto ai guest perche' chi chiama e' Meta, che non ha nessuna
+sessione; due cose lo tengono onesto:
+
+- la **firma HMAC**, che solo questo sito sa produrre, quindi non e' un proxy
+  per qualunque percorso a richiesta;
+- il rifiuto di leggere file **privati**: serve quello che gia' usciva da
+  `/files`, niente di piu'.
+
+Vale per tutti i media, non solo per i vocali: un'immagine, un video o un
+documento con un'estensione ambigua avevano lo stesso destino.
+
+Nota su `.webm`: Chrome desktop registra solo `audio/webm`, che Meta non accetta
+e che **non** si puo' spacciare per `audio/ogg` — il codec dentro e' lo stesso
+(Opus) ma il contenitore no, e dichiararlo ogg sposterebbe l'errore invece di
+toglierlo. La registrazione in quel caso si rifiuta di partire, dicendolo.
+
+## La UI del vocale
+
+Era un pulsante solo: premi e registra, premi e **invia**. Nessun modo di
+fermarsi senza mandare, nessun modo di risentirlo prima, e niente sullo schermo
+dopo che dicesse se era partito. Un vocale e' l'unico messaggio che non puoi
+rileggere prima che esca, quindi era proprio quello che aveva piu' bisogno di un
+controllo.
+
+Adesso la registrazione **prende il posto della barra di scrittura**:
+
+| Stato | Cosa c'e' |
+|---|---|
+| registra | pallino rosso che pulsa, cronometro, **Elimina**, **Stop** |
+| registrato | lettore audio per riascoltare, **Elimina**, **Invia** |
+| invio | il pulsante diventa *Sto inviando…* e si blocca |
+
+Chiudere la scheda mentre si registra butta via il pezzo invece di mandarlo.
