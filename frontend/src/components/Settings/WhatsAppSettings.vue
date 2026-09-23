@@ -365,9 +365,12 @@
                   :loading="checking == account.name"
                   @click="recheckDelivery(account.name)"
                 />
+                <!-- switches the number off; nothing is deleted, because the
+                     chat history belongs to it -->
                 <Button
                   variant="ghost"
-                  icon="lucide-trash-2"
+                  icon="lucide-power-off"
+                  :title="__('Stop using this number')"
                   @click="disconnect(account.name)"
                 />
               </div>
@@ -409,7 +412,7 @@
           <p class="mt-2 text-p-sm text-ink-gray-5">
             {{
               __(
-                'Removing a number here does not affect the WhatsApp Business app on the phone.',
+                'Stopping a number here leaves the WhatsApp Business app on the phone untouched, and keeps every message it carried. It cannot be deleted: the chat history is attached to it.',
               )
             }}
           </p>
@@ -731,11 +734,12 @@ function disconnect(name) {
     params: { name },
     auto: true,
     onSuccess: () => {
-      toast.success(__('Number removed'))
+      toast.success(__('This number is no longer in use'))
       status.reload()
       refreshWhatsappState()
     },
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to remove')),
+    onError: (e) =>
+      toast.error(e.messages?.[0] || __('Could not stop this number')),
   })
 }
 </script>

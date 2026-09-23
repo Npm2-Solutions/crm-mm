@@ -2080,3 +2080,55 @@ Altre due cose trovate per strada:
   `failed` minuscolo, l'opzione del doctype e' `Failed`, e il confronto era
   sensibile alle maiuscole. Il pulsante rifiutava esattamente i messaggi per cui
   esiste.
+
+## Gli errori di Meta, spiegati in un posto solo
+
+Meta risponde a un rifiuto con un numero e una frase scritta per chi ha scritto
+l'integrazione: «(#131047) Re-engagement message», «Unsupported get request»,
+«Invalid parameter». Il numero non e' nella frase, la frase non dice cosa fare, e
+nessuno dei due dice **di chi e' il problema**.
+
+`crm/integrations/meta/errors.py` aggiunge a ogni errore una seconda frase. Non
+e' una traduzione della prima: dice chi deve fare cosa. Dove non si sa, lo dice —
+un'ipotesi etichettata come ipotesi vale piu' di un numero che nessuno puo'
+cercare.
+
+Una tabella, usata da tutto, per due strade:
+
+| Da dove passa l'errore | Come viene spiegato |
+|---|---|
+| ogni chiamata Graph (lead, insights, publishing, signup, conversions) | `MetaAPIError` porta la spiegazione con se': ogni schermata che mostra l'errore la mostra, senza sapere niente di Meta |
+| l'invio WhatsApp, che esce da `frappe_whatsapp` e non tocca il nostro client | `explain_text()` legge il codice fra parentesi dalla frase di Meta e ci aggiunge il resto |
+
+Coperti i codici Graph che mordono (1, 2, 4, 10, 33, 100, 102, 190, 200, 294,
+368, 2635, 80004), i sottocodici dove cambiano il senso — 190 da solo e'
+«rifai il login», 190/460 e' «hai cambiato la password» — e tutta la famiglia
+`13xxxx` della Cloud API: la finestra delle 24 ore, i limiti di qualita', i due
+codici dei media su cui abbiamo perso una giornata (`131052` Content-Type,
+`131053` il contenuto che non corrisponde), i template su un altro account, la
+verifica del numero.
+
+Un codice sconosciuto **non aggiunge niente**, invece di inventare.
+
+## Togliere un numero: una via sola
+
+Cancellarlo era il comportamento di prima e non funzionava quasi mai: **otto
+doctype** puntano a un account — ogni messaggio, ogni template, i profili, i
+flow, le notifiche, gli invii in blocco e i due link su WhatsApp Settings —
+quindi Frappe rifiutava, correttamente, e l'unica uscita era andare a caccia di
+riferimenti uno per uno.
+
+E **deve** rifiutare. Lo storico delle chat **appartiene** a quel numero:
+cancellare la riga lascerebbe mesi di conversazione attaccati al nulla, per
+risparmiare una riga che non costa niente.
+
+Quindi il numero si **spegne**: `Inactive` — la parola che il doctype ha gia', e
+che `is_whatsapp_enabled()` gia' legge, quindi tutta l'interfaccia WhatsApp tace
+da sola. I flag di default si azzerano, i link su Settings si liberano, e se
+resta **un solo** numero attivo quello diventa il predefinito (solo se e' uno: con
+due, scegliere per qualcuno vorrebbe dire far uscire i messaggi da un numero che
+non ha scelto).
+
+L'altra via e' chiusa: `on_trash` su WhatsApp Account rifiuta la cancellazione
+dal desk e dice dove si fa. Non due modi di cui uno funziona e l'altro lascia il
+CRM mezzo configurato — uno.

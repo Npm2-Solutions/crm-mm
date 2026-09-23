@@ -735,11 +735,80 @@ def set_default_account(name: str) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def disconnect(name: str) -> dict:
-	"""Remove a number from this CRM. The WhatsApp Business app keeps working."""
+	"""Retire a number from this CRM. It is not deleted, and it cannot be.
+
+	Deleting it was the old behaviour and it barely worked: eight doctypes point
+	at an account — every message, every template, the profiles, the flows, the
+	notifications, the bulk sends, and both links on WhatsApp Settings — so
+	Frappe refused, correctly, and the only way out was hunting down references
+	one at a time.
+
+	It should refuse. The chat history *belongs* to that number: deleting the row
+	would leave months of conversation attached to nothing, to spare a row nobody
+	was paying for. So the number is switched off instead — `Inactive` is the
+	word the doctype already has, and `is_whatsapp_enabled()` already reads it,
+	so everything WhatsApp-shaped goes quiet by itself.
+
+	This is the one way. Deleting an account from the desk is refused outright
+	(see `refuse_account_deletion`), because two ways of doing this meant one way
+	that worked and one that left the CRM half-configured.
+	"""
 	_check_manager()
+	doc = frappe.get_doc("WhatsApp Account", name)
+	meta = frappe.get_meta("WhatsApp Account")
+	for field, value in (
+		("is_default_outgoing", 0),
+		("is_default_incoming", 0),
+		("enabled", 0),
+		("status", "Inactive"),
+	):
+		if meta.has_field(field):
+			doc.set(field, value)
+	doc.save(ignore_permissions=True)
+
+	# the links on Settings hold the name, and frappe_whatsapp sends from them
 	settings = frappe.get_doc("WhatsApp Settings")
-	if settings.get("default_outgoing_account") == name:
-		settings.default_outgoing_account = None
+	touched = False
+	for field in ("default_outgoing_account", "default_incoming_account"):
+		if settings.get(field) == name:
+			settings.set(field, None)
+			touched = True
+	if touched:
 		settings.save(ignore_permissions=True)
-	frappe.delete_doc("WhatsApp Account", name, ignore_permissions=True)
+
+	promote_the_only_number_left()
 	return get_status()
+
+
+def promote_the_only_number_left() -> None:
+	"""When retiring leaves exactly one working number, that one sends.
+
+	Only when there is no choice to make. With two left, picking for somebody
+	would mean messages going out from a number they did not choose — which is
+	the kind of help nobody asks for.
+	"""
+	active = frappe.get_all("WhatsApp Account", filters={"status": "Active"}, pluck="name", limit=2)
+	if len(active) != 1:
+		return
+	if frappe.db.get_value("WhatsApp Account", {"is_default_outgoing": 1}, "name"):
+		return
+	set_default_account(active[0])
+
+
+def refuse_account_deletion(doc, method=None):
+	"""Deleting a WhatsApp Account from the desk: no.
+
+	Eight doctypes point at one, the chat history most of all. A number is taken
+	out of this CRM from Settings → WhatsApp, which switches it off and keeps
+	every message it ever carried. There is one way to do this on purpose, and
+	this is the other one being closed.
+	"""
+	frappe.throw(
+		_(
+			"A WhatsApp number cannot be deleted: the whole chat history is attached to it, "
+			"and so are its templates, profiles and notifications. Take it out from "
+			"Settings → WhatsApp instead — it stops sending and receiving, and everything it "
+			"carried stays where it is."
+		),
+		title=_("Remove it from Settings, not from here"),
+	)

@@ -273,6 +273,8 @@ def insert_and_send(doc) -> str:
 	no attribute 'json'" and buries the cause. Python keeps the cause in
 	`__context__`: report that one instead.
 	"""
+	from crm.integrations.meta.errors import explain_text
+
 	try:
 		doc.insert(ignore_permissions=True)
 	except AttributeError as exc:
@@ -280,7 +282,15 @@ def insert_and_send(doc) -> str:
 		while cause.__context__ is not None:
 			cause = cause.__context__
 		frappe.log_error(frappe.get_traceback(), "WhatsApp: send failed")
-		frappe.throw(_("WhatsApp could not send the message: {0}").format(cause))
+		frappe.throw(_("WhatsApp could not send the message: {0}").format(explain_text(str(cause))))
+	except frappe.ValidationError as exc:
+		# Meta's refusal, as `frappe_whatsapp` re-raises it: its own sentence with
+		# the code in brackets and nothing about what to do. Sent on with the
+		# second half added, because this is where somebody is still watching.
+		explained = explain_text(str(exc))
+		if explained == str(exc):
+			raise
+		frappe.throw(explained)
 	return doc.name
 
 
