@@ -905,3 +905,44 @@ class TestTheLoggedInCaseWasRefused(IntegrationTestCase):
 		state = S.make_state(frappe.utils.get_url().rstrip("/"))
 		S.log_session_event(state, "STARTED", {"current_step": "launch"}, csrf_token="whatever")
 		self.assertEqual(frappe.get_last_doc("WhatsApp Signup Session").event, "STARTED")
+
+
+class TestTheHubIsNotSomebodyElse(IntegrationTestCase):
+	"""A Frappe site answers to more than one name.
+
+	On Frappe Cloud it is created as `<name>.frappe.cloud` and then given a
+	custom domain; `get_url()` returns the custom one and `frappe.local.site` is
+	still the original. A route row written under the other name therefore did
+	not look like this site, and the hub set off to deliver a webhook to itself
+	over HTTP — a call that cannot even resolve its own public hostname from
+	inside the container, and so failed every hour, silently, in the Error Log.
+	"""
+
+	def test_either_name_is_this_site(self):
+		from crm.utils.sites import is_this_site
+
+		self.assertTrue(is_this_site(frappe.utils.get_url()))
+		self.assertTrue(is_this_site(f"https://{frappe.local.site}"))
+		self.assertTrue(is_this_site(f"{frappe.utils.get_url().rstrip('/')}/"))
+		self.assertFalse(is_this_site("https://qualcun-altro.frappe.cloud"))
+		self.assertFalse(is_this_site(""))
+		self.assertFalse(is_this_site(None))
+
+	def test_the_relay_does_not_route_to_itself_under_its_other_name(self):
+		from crm.integrations.meta.relay import route_for
+
+		frappe.get_doc(
+			{
+				"doctype": "Meta Page Route",
+				"page_id": "PAGE_SELF",
+				"site_url": f"https://{frappe.local.site}",
+			}
+		).insert(ignore_permissions=True)
+		self.assertIsNone(route_for("PAGE_SELF"))
+		frappe.db.rollback()
+
+	def test_the_credentials_are_handed_over_in_process_under_either_name(self):
+		with patch.object(S, "deliver_locally") as local, patch.object(S.requests, "post") as over_http:
+			S.deliver_to_site(f"https://{frappe.local.site}", "TOKEN", "WABA", "PHONE", {})
+		local.assert_called_once()
+		over_http.assert_not_called()

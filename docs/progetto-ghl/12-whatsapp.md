@@ -1740,3 +1740,40 @@ e comunque letta al momento dell'invio e non al parse.
 **La lezione:** l'ordine degli script in una pagina Frappe non e' un dettaglio.
 Tutto quello che `base.html` aggiunge — token compreso — sta dopo il contenuto,
 non prima.
+
+## Dai log del sito: due cose che non c'entravano con WhatsApp
+
+Con gli accessi API, l'Error Log dell'hub ha detto due cose importanti.
+
+### Il token Meta e' invalidato
+
+Ogni ora, per ogni form:
+
+```
+MetaAPIError: Error validating access token: The session has been invalidated
+because the user changed their password or Facebook has changed the session for
+security reasons.
+```
+
+La riconciliazione oraria dei lead **non gira piu'**. Va rifatto il collegamento
+Meta dal CRM: nessuna modifica al codice la aggira, il token va riottenuto.
+
+### Il relay consegnava a se stesso
+
+```
+Meta relay: forward to https://crm-mm.frappe.cloud failed
+Failed to resolve 'hub.npm2solutions.com' ([Errno -2] Name or service not known)
+```
+
+`crm-mm.frappe.cloud` **e' questo sito**: il nome con cui e' stato creato, prima
+del dominio personalizzato. Una route salvata con quel nome non somigliava a
+`get_url()`, quindi l'hub partiva a consegnare il webhook **a se stesso** via
+HTTP — e dall'interno del container il proprio hostname pubblico non si risolve
+nemmeno.
+
+E' la stessa classe di bug gia' corretta per WhatsApp (`deliver_locally`), mai
+portata sul relay dei lead. Ora il confronto e' per hostname, contro **tutti** i
+nomi a cui il sito risponde (`crm/utils/sites.py`), e vale per entrambi.
+
+Con i lead che passano dal relay, questo spiega anche perche' arrivavano solo
+col controllo orario — che nel frattempo era fermo per il token invalidato.

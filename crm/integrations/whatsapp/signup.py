@@ -40,6 +40,7 @@ from crm.integrations.meta.client import (
 )
 from crm.integrations.meta.relay import relay_secret, sign
 from crm.integrations.meta.relay import sign as relay_sign
+from crm.utils.sites import is_this_site
 
 CONNECT_PATH = "/whatsapp-connect"
 # An hour, not fifteen minutes. The state says nothing but "which site started
@@ -565,7 +566,10 @@ def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, n
 		"display_phone_number": number.get("display_phone_number") or "",
 		"verified_name": number.get("verified_name") or "",
 	}
-	if site.rstrip("/") == get_url().rstrip("/"):
+	# By hostname, not by string: the site that started the flow can name this
+	# hub by its other name (the `.frappe.cloud` one it was created with), and a
+	# plain comparison would send the hub off to fetch itself over HTTP.
+	if is_this_site(site):
 		deliver_locally(payload)
 		return
 
