@@ -336,10 +336,16 @@ class TestIntegrations(IntegrationTestCase):
 		self.assertNotIn("name", result)
 		self.assertNotIn("full_name", result)
 
-	def test_get_contact_by_phone_number_skips_converted_leads(self):
-		"""Test get_contact_by_phone_number doesn't return converted leads"""
-		# Create a lead and mark as converted
-		frappe.get_doc(
+	def test_a_customer_calling_still_resolves_to_their_person(self):
+		"""A person who already has a deal is still the person who is calling.
+
+		This used to assert the opposite -- that a converted lead is skipped --
+		which was the Salesforce reading of `converted`, where the lead is frozen
+		history and there is a Contact to find instead. Here the person record IS
+		the person and stays, so skipping them resolved an incoming call to
+		nobody and let a second record be adopted for somebody we already knew.
+		"""
+		lead = frappe.get_doc(
 			{
 				"doctype": "CRM Lead",
 				"first_name": "Converted",
@@ -350,10 +356,10 @@ class TestIntegrations(IntegrationTestCase):
 			}
 		).insert()
 
-		result = get_contact_by_phone_number("+91 98765 43211")
+		name, doctype = get_contact_lead_or_deal_from_number("+91 98765 43211")
 
-		# Should not find the converted lead - should return just the phone number
-		self.assertNotIn("lead", result)
+		self.assertEqual(doctype, "CRM Lead")
+		self.assertEqual(name, lead.name)
 
 	def test_integration_workflow_call_with_note_and_task(self):
 		"""Test complete workflow: call log with note and task"""
