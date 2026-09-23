@@ -189,6 +189,11 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+	# The healthcare rules on a qualification belong to the module that can explain
+	# them, not to a DocType that also serves lawyers and engineers.
+	"CRM Professional Qualification": {
+		"validate": "crm.tessera_sanitaria.qualifica.valida",
+	},
 	"Contact": {
 		"validate": ["crm.api.contact.validate"],
 		# created by a webhook, a form, a booking: nobody was logged in, and
@@ -512,6 +517,8 @@ standard_dropdown_items = [
 # installation has is the app's job - not something either module gets to assume
 # about the other. Removing this line leaves a working invoicing system; that is
 # the whole point of the arrangement.
+from crm.invoicing import registra as _registra_fatturazione
 from crm.tessera_sanitaria import registra as _registra_tessera_sanitaria
 
+_registra_fatturazione()
 _registra_tessera_sanitaria()

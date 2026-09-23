@@ -17,4 +17,9 @@ def execute():
 		return
 	crea_ruoli()
 	semina_qualifiche()
+
+	# The healthcare half of the same register, from the module that owns it.
+	from crm.tessera_sanitaria.install import semina_qualifiche as semina_sanitarie
+
+	semina_sanitarie()
 	imposta_predefiniti()

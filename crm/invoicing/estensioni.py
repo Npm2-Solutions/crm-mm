@@ -14,29 +14,49 @@ working unchanged when nobody does.
 
 from __future__ import annotations
 
-from crm.invoicing.engine.qualifica import Risolutore, risolutore_neutro
+from crm.invoicing.engine import professioni
+from crm.invoicing.engine.qualifica import Risolutore
 
-#: The registered resolver, or nothing. Module-level rather than a Frappe hook so
-#: the engine stays importable without a site - the suite that proves the fiscal
-#: rules runs on a checkout and a Python interpreter, and that is worth keeping.
-_risolutore: Risolutore | None = None
+#: Resolvers, in registration order. A chain rather than one slot, because more
+#: than one register legitimately answers: what the practice edited, what the
+#: healthcare module adds, and what this module ships. Module-level rather than a
+#: Frappe hook so the engine stays importable without a site.
+_risolutori: list[Risolutore] = []
 
 
 def registra_risolutore(funzione: Risolutore) -> None:
-	"""Supply the register of qualifications. Called once, when a module loads."""
-	global _risolutore
-	_risolutore = funzione
+	"""Add a register. The last one registered is asked first."""
+	if funzione not in _risolutori:
+		_risolutori.append(funzione)
 
 
 def dimentica_risolutore() -> None:
-	"""Back to the neutral answer. For tests that need the bare module."""
-	global _risolutore
-	_risolutore = None
+	"""Back to the shipped register alone. For tests that need the bare module."""
+	_risolutori.clear()
 
 
 def risolutore() -> Risolutore:
-	"""Whoever answers about qualifications today, or the dull default."""
-	return _risolutore or risolutore_neutro
+	"""Ask each register in turn, most recently added first.
+
+	A register says "not mine" by raising `KeyError`, and the chain moves on. The
+	floor is this module's own twenty qualifications - not a neutral answer, because
+	a lawyer's invoice without Cassa Forense and withholding is a **wrong invoice**,
+	not an incomplete one.
+
+	The last link raises too. A qualification nobody configured has no VAT regime, no
+	fund and no withholding, and inventing any of the three produces a document that
+	is wrong in a way nobody notices until it is too late.
+	"""
+
+	def _risolvi(codice: str):
+		for funzione in reversed(_risolutori):
+			try:
+				return funzione(codice)
+			except KeyError:
+				continue
+		return professioni.professione(codice)
+
+	return _risolvi
 
 
 #: How a line's secondary-reporting code is worked out. Invoicing knows a line may

@@ -1,126 +1,51 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-"""The qualification register, as the practice can edit it.
+"""Reading the stored register, for the rows that carry a healthcare duty.
 
-The engine ships a register in `engine/professioni.py`. That file is the
-documented starting point, and it is where the research lives - but the choices
-that decide fiscal correctness belong to the practice owner, and while they sat in
-a Python file, correcting one meant a developer.
+The table is invoicing's and so is the plain reading of it. What is here is the
+half that only means something with this module installed: a row that reports to
+the Sistema TS needs a class that can say so, and that class does not exist
+without this file.
 
-So the shipped register is seeded into `CRM Professional Qualification` records at
-install, and from then on the records win. A code that has a record uses the
-record; a code that does not falls back to the file; a code in neither raises,
-because the catalogue never infers.
+So the traffic runs the right way. Invoicing never reaches for a healthcare class
+it may not have; this module reaches for invoicing's table, which is always there.
+A row that carries no healthcare duty is refused with `KeyError`, and the chain in
+`crm.invoicing.estensioni` hands it to invoicing's own reader.
 """
 
 from __future__ import annotations
 
-from decimal import Decimal
-
 import frappe
-from frappe import _
 
-from crm.tessera_sanitaria.engine.professioni import Professione
-from crm.tessera_sanitaria.engine.professioni import professione as professione_di_serie
-
-CAMPI = (
-	"code",
-	"qualification_name",
-	"category",
-	"sender_category",
-	"is_healthcare",
-	"vat_exempt",
-	"exemption_reference",
-	"ts_required",
-	"ts_required_since",
-	"sdi_rule",
-	"fund_type",
-	"fund_rate",
-	"fund_mandatory",
-	"fund_subject_to_withholding",
-	"withholding_applies",
-	"withholding_rate",
-	"withholding_type",
-	"payment_reason",
-	"default_vat_rate",
-	"needs_verification",
-	"notes",
-	"enabled",
-)
+from crm.invoicing.registro import CAMPI, da_record
+from crm.tessera_sanitaria.engine.professioni import ProfessioneSanitaria
 
 
-def _decimale(valore) -> Decimal | None:
-	if valore in (None, "", 0):
-		return None
-	return Decimal(str(valore))
-
-
-def da_record(record: dict) -> Professione:
-	"""Turn a stored qualification into the dataclass the engine speaks."""
-	return Professione(
-		codice=record["code"],
-		etichetta=record.get("qualification_name") or record["code"],
-		categoria=record.get("category") or "non_ordinistica",
-		soggetto_inviante=record.get("sender_category") or "non_sanitario",
-		esente_iva=bool(record.get("vat_exempt")),
-		riferimento_esenzione=record.get("exemption_reference"),
-		obbligo_ts=bool(record.get("ts_required")),
-		obbligo_ts_dal=record.get("ts_required_since") or None,
-		regola_sdi=record.get("sdi_rule") or "obbligatorio",
-		cassa=record.get("fund_type") or None,
-		cassa_percentuale=_decimale(record.get("fund_rate")),
-		cassa_obbligatoria=bool(record.get("fund_mandatory")),
-		cassa_soggetta_a_ritenuta=bool(record.get("fund_subject_to_withholding")),
-		ritenuta_applicabile=bool(record.get("withholding_applies")),
-		ritenuta_aliquota=_decimale(record.get("withholding_rate")) or Decimal("20.00"),
-		tipo_ritenuta=record.get("withholding_type") or "RT01",
-		causale_pagamento=record.get("payment_reason") or "A",
-		aliquota_iva_default=_decimale(record.get("default_vat_rate")) or Decimal("22.00"),
-		da_verificare=tuple(filter(None, (record.get("needs_verification") or "").splitlines())),
-		note=record.get("notes") or "",
+def _sanitaria(record: dict) -> bool:
+	return bool(record.get("ts_required")) or record.get("sender_category") not in (
+		None,
+		"",
+		"non_sanitario",
 	)
 
 
-def professione(codice: str | None) -> Professione:
-	"""Resolve a qualification code. Records first, shipped register second."""
+def professione(codice: str | None) -> ProfessioneSanitaria:
+	"""A stored row that carries a healthcare duty, or KeyError."""
 	if not codice:
-		raise KeyError(_("No qualification on the line: the expense type cannot be determined"))
+		raise KeyError("No qualification on the line")
 	record = frappe.db.get_value("CRM Professional Qualification", codice, CAMPI, as_dict=True)
-	if record:
-		if not record.get("enabled"):
-			raise KeyError(
-				_("The qualification {0} is disabled: re-enable it or pick another one").format(codice)
-			)
-		return da_record(record)
-	return professione_di_serie(codice)
+	if not record or not record.get("enabled") or not _sanitaria(record):
+		raise KeyError(codice)
+
+	base = da_record(record)
+	return ProfessioneSanitaria(
+		**{campo: getattr(base, campo) for campo in base.__dataclass_fields__},
+		soggetto_inviante=record.get("sender_category") or "non_sanitario",
+		obbligo_ts=bool(record.get("ts_required")),
+		obbligo_ts_dal=record.get("ts_required_since") or None,
+	)
 
 
 def risolutore():
-	"""The resolver to hand the classification engine."""
 	return professione
-
-
-def da_verificare(azienda: str | None = None) -> list[dict]:
-	"""Qualifications the accountant still has to sign off.
-
-	Shown as a live checklist rather than a document nobody opens: the list gets
-	shorter, and each row says what it costs to leave it open.
-	"""
-	filtri = {"enabled": 1, "verified": 0, "needs_verification": ["is", "set"]}
-	righe = frappe.get_all(
-		"CRM Professional Qualification",
-		filters=filtri,
-		fields=["name", "qualification_name", "needs_verification", "category"],
-		order_by="category asc, qualification_name asc",
-	)
-	if azienda:
-		in_uso = set(
-			frappe.get_all(
-				"CRM Service Provider",
-				filters={"enabled": 1},
-				pluck="qualification",
-			)
-		)
-		righe = [r for r in righe if r["name"] in in_uso]
-	return righe

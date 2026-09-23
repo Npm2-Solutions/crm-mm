@@ -1,10 +1,10 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-"""Seeding what this module brings with it.
+"""Seeding the thirty-six this module adds.
 
-The register of qualifications is this module's, so creating it is this module's
-job. Invoicing installs and runs without any of it.
+The register itself is invoicing's and it seeds its own twenty. This adds the
+healthcare half to the same table, so a mixed practice sees one list and not two.
 """
 
 from __future__ import annotations

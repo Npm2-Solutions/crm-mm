@@ -48,21 +48,41 @@ class ConfineTest(UnitTestCase):
 			"register into crm.invoicing.estensioni instead.\n" + "\n".join(colpevoli),
 		)
 
-	def test_la_fatturazione_classifica_senza_il_registro_sanitario(self):
-		"""With nothing registered, a line is taxable and the SdI is open to it.
+	def test_la_fatturazione_risolve_le_proprie_qualifiche_da_sola(self):
+		"""With nothing registered, a lawyer still gets Cassa Forense and withholding.
 
-		This is the answer for a plumber, and proving it here is what says the module
-		really does stand on its own rather than merely being arranged as if it did.
+		This is the property the split nearly lost. Cassa and ritenuta are **ordinary
+		invoicing** - Cassa Forense at 4%, Inarcassa at 4%, withholding at 20% - and an
+		installation that never sees a patient still has to get them right. Resolving
+		to a neutral answer there is not a missing feature, it is a wrong invoice.
 		"""
 		from crm.invoicing import estensioni
-		from crm.invoicing.engine.qualifica import risolutore_neutro
 
 		estensioni.dimentica_risolutore()
 		try:
-			qualifica = estensioni.risolutore()("qualsiasi_codice")
-			self.assertIs(estensioni.risolutore(), risolutore_neutro)
-			self.assertFalse(qualifica.esente_iva)
-			self.assertFalse(qualifica.comunicazione_esterna)
-			self.assertIsNone(qualifica.soggetto_comunicazione)
+			risolvi = estensioni.risolutore()
+			avvocato = risolvi("avvocato")
+			self.assertEqual(avvocato.cassa, "TC01")
+			self.assertTrue(avvocato.ritenuta_applicabile)
+			self.assertFalse(avvocato.esente_iva)
+			# And nothing here claims a duty towards a system it has never heard of.
+			self.assertFalse(avvocato.comunicazione_esterna)
+			self.assertIsNone(avvocato.soggetto_comunicazione)
+		finally:
+			estensioni.dimentica_risolutore()
+
+	def test_una_qualifica_sanitaria_non_si_risolve_senza_il_suo_modulo(self):
+		"""And it is refused rather than guessed.
+
+		A masseur without the healthcare register has no VAT regime here. Answering
+		"taxable at 22%" would be an invention, and an exempt service invoiced with VAT
+		is wrong in a way the client notices and the practice pays for.
+		"""
+		from crm.invoicing import estensioni
+
+		estensioni.dimentica_risolutore()
+		try:
+			with self.assertRaises(KeyError):
+				estensioni.risolutore()("massoterapista")
 		finally:
 			estensioni.dimentica_risolutore()

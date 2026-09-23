@@ -39,16 +39,17 @@ def registra_motore() -> None:
 def registra() -> None:
 	"""Everything, including the parts that need a site.
 
-	The editable register wins over the shipped one: the choices that decide fiscal
-	correctness belong to the practice owner, not to a file only a developer can
-	change.
+	The stored register is invoicing's, not this module's: it holds ordinary
+	qualifications too, and a practice that edits one is editing a fact about its own
+	invoicing. What this adds is the healthcare half of the shipped register and the
+	duties that come with it.
 	"""
 	from crm.invoicing import estensioni
 
-	from . import registro
+	from . import registro as registro_sanitario
 
 	registra_motore()
-	estensioni.registra_risolutore(registro.risolutore())
+	estensioni.registra_risolutore(registro_sanitario.risolutore())
 	estensioni.registra_controlli(controlli)
 
 
@@ -60,8 +61,8 @@ def controlli(emittente: dict) -> list[dict]:
 	"""
 	from frappe import _
 
+	from crm.invoicing import registro
 	from crm.invoicing.api import _riga_mancante
-	from crm.tessera_sanitaria import registro
 	from crm.tessera_sanitaria.engine.tracciato import richiede_credenziali
 
 	voci: list[dict] = []

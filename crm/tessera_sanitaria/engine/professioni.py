@@ -1,103 +1,55 @@
-"""Register of qualifications: VAT exemption, Sistema TS duty, SdI routing, fund.
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
 
-This table is the reason a practice picks a vertical module over a generic
-accounting package: **it is exactly the casuistry practices get wrong on their
-own.** It covers healthcare and everything else in one list, because a CRM
-invoices a physiotherapist and a marketing agency out of the same screen and the
-answer has to come from the same place.
+"""The healthcare register, which **adds** to invoicing's own.
 
-The counter-intuitive part, from **Risoluzione AdE n. 9 del 24 febbraio 2026**:
+Thirty-six qualifications that carry two things invoicing has no business knowing:
+a VAT exemption under art. 10, and an SdI rule that can be a **ban**. The twenty
+ordinary ones - lawyer, engineer, consultant - live in
+`crm.invoicing.engine.professioni`, because cassa and ritenuta are ordinary
+invoicing and an installation with no patients still has to get them right.
 
-	Osteopata        imponibile, ordinary rate    SdI mandatory   no Sistema TS
-	Chiropratico     imponibile                   SdI mandatory   no Sistema TS
-	Chinesiologo     imponibile 22%               SdI mandatory   no Sistema TS
-	Massoterapista   esente art. 10 n. 18         SdI forbidden   Sistema TS yes
+`ProfessioneSanitaria` extends invoicing's `Professione` rather than repeating it.
+The direction is the one this whole split allows: this module imports invoicing,
+never the reverse.
 
-So a multi-specialty practice with an osteopath and a physiotherapist runs **two
-opposite regimes on the same legal person**. A guard that blocks the SdI for
-everything that "looks medical" blocks a document the law says *must* go through
-it - the violation in reverse, and the expensive one, because nobody notices.
-
-WARNING: this is a documented starting point, not a tax opinion. The exemption
-test is **joint** - objective (diagnosis, care, rehabilitation) and subjective (a
-supervised health profession) - so the service catalogue carries an explicit
-exemption flag, verified by the accountant profession by profession, never
-inferred. The `da_verificare` entries mark where that verification is mandatory
-before going live.
+The two names the seam speaks - `comunicazione_esterna` and
+`soggetto_comunicazione` - are exposed alongside this module's own, not instead of
+them: `obbligo_ts` is what the code in here should read, because that is what it
+means here.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal
 
-from crm.invoicing.engine.codici import (
-	CausalePagamento,
-	RegolaSdI,
-	TipoCassa,
-	TipoRitenuta,
-)
+from crm.invoicing.engine.codici import RegolaSdI, TipoCassa, TipoRitenuta
+from crm.invoicing.engine.professioni import Professione
+from crm.invoicing.engine.professioni import professione as professione_ordinaria
 
 from .codici import SoggettoInviante
 
-#: Withholding on self-employment income: 20% of the taxable compensation
-#: (art. 25, DPR 600/73; from 2027: D.Lgs. 33/2025 and 141/2026).
-ALIQUOTA_RITENUTA_ORDINARIA = Decimal("20.00")
+#: The category this module adds to invoicing's three.
+CATEGORIA_SANITARIA = "sanitaria"
 
 ESENZIONE_PROFESSIONISTA = "art. 10, n. 18, DPR 633/72 (dal 2027: art. 37, c. 1, lett. t, D.Lgs. 10/2026)"
 ESENZIONE_STRUTTURA = "art. 10, n. 19, DPR 633/72 (dal 2027: art. 37, c. 1, lett. u, D.Lgs. 10/2026)"
 
 
-class Categoria:
-	"""What kind of issuer this is. It drives defaults, never the tax answer."""
-
-	SANITARIA = "sanitaria"
-	ORDINISTICA = "ordinistica"
-	NON_ORDINISTICA = "non_ordinistica"
-	IMPRESA = "impresa"
-
-
 @dataclass(frozen=True)
-class Professione:
-	codice: str
-	etichetta: str
-	categoria: str
+class ProfessioneSanitaria(Professione):
+	"""An ordinary qualification, plus what the Sistema TS needs of it."""
+
 	#: Category for the Sistema TS tracciato: it decides the admitted `tipoSpesa`.
-	soggetto_inviante: str
-	#: VAT exemption under art. 10 n. 18 (professional) or n. 19 (care facility).
-	esente_iva: bool
-	riferimento_esenzione: str | None
+	soggetto_inviante: str = SoggettoInviante.NON_SANITARIO
 	#: Bound to report to the Sistema TS, and from which year.
-	obbligo_ts: bool
-	obbligo_ts_dal: int | None
-	regola_sdi: str
-	cassa: str | None
-	cassa_percentuale: Decimal | None
-	#: Is the levy a mandatory `contributo integrativo` or an optional rivalsa?
-	cassa_obbligatoria: bool
-	#: The `contributo integrativo` is **not** subject to withholding; the optional
-	#: INPS 4% rivalsa **is**, because it is part of the compensation.
-	cassa_soggetta_a_ritenuta: bool = False
-	#: Withholding applies by default when the client is a withholding agent. It
-	#: never applies towards a natural person, who is not one.
-	ritenuta_applicabile: bool = False
-	ritenuta_aliquota: Decimal = ALIQUOTA_RITENUTA_ORDINARIA
-	tipo_ritenuta: str = TipoRitenuta.PERSONE_FISICHE
-	causale_pagamento: str = CausalePagamento.AUTONOMO_ABITUALE
-	aliquota_iva_default: Decimal = Decimal("22.00")
-	#: Points the accountant has to close before going live.
-	da_verificare: tuple[str, ...] = field(default_factory=tuple)
-	note: str = ""
+	obbligo_ts: bool = False
+	obbligo_ts_dal: int | None = None
 
 	@property
 	def comunicazione_esterna(self) -> bool:
-		"""The name invoicing knows this duty by.
-
-		Invoicing understands "this line owes a report to some system that is not the
-		SdI" and nothing more specific. Here that system is the Sistema TS, and the
-		two names are kept side by side rather than one renamed: `obbligo_ts` is what
-		this module's own code should read, because that is what it means here.
-		"""
+		"""The name invoicing knows this duty by."""
 		return self.obbligo_ts
 
 	@property
@@ -107,7 +59,7 @@ class Professione:
 
 	@property
 	def sanitaria(self) -> bool:
-		return self.categoria == Categoria.SANITARIA
+		return self.categoria == CATEGORIA_SANITARIA
 
 	@property
 	def tipo_spesa_suggerito(self) -> str | None:
@@ -118,15 +70,6 @@ class Professione:
 		if self.soggetto_inviante == SoggettoInviante.VETERINARIO:
 			return "SV"
 		return None
-
-	@property
-	def natura_iva_suggerita(self) -> str | None:
-		"""`N4` under the ordinary regime. The flat-rate regime uses `N2.2`.
-
-		The code is computed and stored **even when it is not printed**: it has no
-		legal weight on a PDF, but the Sistema TS tracciato has a `naturaIVA` field.
-		"""
-		return "N4" if self.esente_iva else None
 
 
 def _sanitaria(
@@ -145,11 +88,11 @@ def _sanitaria(
 	cassa_soggetta_a_ritenuta: bool | None = None,
 	verificare: tuple[str, ...] = (),
 	note: str = "",
-) -> Professione:
-	return Professione(
+) -> ProfessioneSanitaria:
+	return ProfessioneSanitaria(
 		codice=codice,
 		etichetta=etichetta,
-		categoria=Categoria.SANITARIA,
+		categoria=CATEGORIA_SANITARIA,
 		soggetto_inviante=soggetto,
 		esente_iva=esente,
 		riferimento_esenzione=riferimento if esente else None,
@@ -171,51 +114,7 @@ def _sanitaria(
 	)
 
 
-def _professionale(
-	codice: str,
-	etichetta: str,
-	*,
-	categoria: str = Categoria.ORDINISTICA,
-	cassa: str | None = TipoCassa.INPS,
-	percentuale: str | None = "4.00",
-	cassa_obbligatoria: bool = False,
-	cassa_soggetta_a_ritenuta: bool | None = None,
-	ritenuta: bool = True,
-	aliquota_ritenuta: str = "20.00",
-	tipo_ritenuta: str = TipoRitenuta.PERSONE_FISICHE,
-	causale: str = CausalePagamento.AUTONOMO_ABITUALE,
-	aliquota_iva: str = "22.00",
-	verificare: tuple[str, ...] = (),
-	note: str = "",
-) -> Professione:
-	return Professione(
-		codice=codice,
-		etichetta=etichetta,
-		categoria=categoria,
-		soggetto_inviante=SoggettoInviante.NON_SANITARIO,
-		esente_iva=False,
-		riferimento_esenzione=None,
-		obbligo_ts=False,
-		obbligo_ts_dal=None,
-		regola_sdi=RegolaSdI.OBBLIGATORIO,
-		cassa=cassa,
-		cassa_percentuale=Decimal(percentuale) if percentuale else None,
-		cassa_obbligatoria=cassa_obbligatoria,
-		cassa_soggetta_a_ritenuta=(
-			not cassa_obbligatoria if cassa_soggetta_a_ritenuta is None else cassa_soggetta_a_ritenuta
-		),
-		ritenuta_applicabile=ritenuta,
-		ritenuta_aliquota=Decimal(aliquota_ritenuta),
-		tipo_ritenuta=tipo_ritenuta,
-		causale_pagamento=causale,
-		aliquota_iva_default=Decimal(aliquota_iva),
-		da_verificare=verificare,
-		note=note,
-	)
-
-
-_ELENCO: list[Professione] = [
-	# ================================================== healthcare, since 2015
+_ELENCO: list[ProfessioneSanitaria] = [
 	_sanitaria(
 		"medico_chirurgo",
 		"Medico chirurgo",
@@ -482,204 +381,34 @@ _ELENCO: list[Professione] = [
 		verificare=("VAT regime per product type",),
 	),
 	# ================================================ regulated non-healthcare
-	_professionale(
-		"avvocato",
-		"Avvocato",
-		cassa=TipoCassa.AVVOCATI,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-		note="Cassa Forense contributo integrativo 4%: mandatory, part of the VAT base, not "
-		"subject to withholding.",
-	),
-	_professionale(
-		"commercialista",
-		"Dottore commercialista",
-		cassa=TipoCassa.COMMERCIALISTI,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"ragioniere",
-		"Ragioniere / perito commerciale",
-		cassa=TipoCassa.RAGIONIERI,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"consulente_lavoro",
-		"Consulente del lavoro",
-		cassa=TipoCassa.ENPACL,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"ingegnere",
-		"Ingegnere",
-		cassa=TipoCassa.INGEGNERI_ARCHITETTI,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"architetto",
-		"Architetto",
-		cassa=TipoCassa.INGEGNERI_ARCHITETTI,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"geometra",
-		"Geometra",
-		cassa=TipoCassa.GEOMETRI,
-		percentuale="5.00",
-		cassa_obbligatoria=True,
-		verificare=("the current Cassa Geometri contributo integrativo rate",),
-	),
-	_professionale(
-		"perito_industriale",
-		"Perito industriale",
-		cassa=TipoCassa.EPPI,
-		percentuale="5.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"notaio",
-		"Notaio",
-		cassa=TipoCassa.NOTARIATO,
-		percentuale=None,
-		verificare=("the Cassa Nazionale del Notariato levy, which is not a rivalsa on the client",),
-	),
-	_professionale(
-		"giornalista",
-		"Giornalista",
-		cassa=TipoCassa.INPGI,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"agrotecnico",
-		"Agrotecnico / perito agrario",
-		cassa=TipoCassa.ENPAIA,
-		percentuale="4.00",
-		cassa_obbligatoria=True,
-	),
-	_professionale(
-		"agente_commercio",
-		"Agente e rappresentante di commercio",
-		cassa=TipoCassa.ENASARCO,
-		percentuale=None,
-		ritenuta=True,
-		aliquota_ritenuta="23.00",
-		causale=CausalePagamento.PROVVIGIONI_MONOMANDATARIO,
-		verificare=(
-			"the ENASARCO rate and the split between principal and agent",
-			"the withholding base: 50% or 20% of the commission depending on the arrangement",
-		),
-		note="Commissions do not follow the professional pattern: the withholding is 23% of a "
-		"reduced base, and ENASARCO is a contribution split with the principal, not a rivalsa "
-		"charged to the client. Configure it explicitly.",
-	),
-	_professionale(
-		"psicologo_del_lavoro",
-		"Psicologo del lavoro (non-clinical services)",
-		cassa=TipoCassa.ENPAP,
-		percentuale="2.00",
-		cassa_obbligatoria=True,
-		note="Organisational assessment, training and selection are not diagnosis or care: they "
-		"are taxable and go through the SdI. The clinical work of the same professional does not "
-		"- that is the `psicologo` entry.",
-	),
-	# ============================================ non-regulated professionals
-	_professionale(
-		"consulente",
-		"Consulente (non-regulated profession)",
-		categoria=Categoria.NON_ORDINISTICA,
-		note="Marketing, management, IT, training: taxable at 22%, SdI, optional INPS 4% rivalsa, "
-		"20% withholding towards a withholding agent.",
-	),
-	_professionale(
-		"formatore",
-		"Formatore / docente",
-		categoria=Categoria.NON_ORDINISTICA,
-		verificare=("exemption under art. 10 n. 20 for school-recognised training",),
-		note="Training is taxable as a rule. The art. 10 n. 20 exemption is narrow - recognised "
-		"bodies and school or vocational education - and it is decided in the service card, "
-		"never inferred from the word 'course'.",
-	),
-	_professionale(
-		"sviluppatore",
-		"Sviluppatore software",
-		categoria=Categoria.NON_ORDINISTICA,
-	),
-	_professionale(
-		"designer",
-		"Designer / creativo",
-		categoria=Categoria.NON_ORDINISTICA,
-		note="Assignment of copyright in a work of the mind follows a different pattern "
-		"(causale B, reduced base): it goes on its own line with its own service card.",
-	),
-	# ============================================================== companies
-	_professionale(
-		"societa_servizi",
-		"Societa' o impresa di servizi",
-		categoria=Categoria.IMPRESA,
-		cassa=None,
-		percentuale=None,
-		ritenuta=False,
-		note="A company is not subject to the withholding on self-employment income and has no "
-		"professional fund to charge. The plain case, and the most common one in a CRM.",
-	),
-	_professionale(
-		"associazione_professionale",
-		"Associazione professionale / STP",
-		categoria=Categoria.IMPRESA,
-		cassa=TipoCassa.INPS,
-		percentuale="4.00",
-		ritenuta=True,
-		tipo_ritenuta=TipoRitenuta.PERSONE_GIURIDICHE,
-		verificare=("the fund of the associated professionals and the rate to charge",),
-		note="An association keeps the withholding but as a legal person (RT02). The fund "
-		"depends on the professionals it groups.",
-	),
-	_professionale(
-		"ente_non_commerciale",
-		"Ente non commerciale",
-		categoria=Categoria.IMPRESA,
-		cassa=None,
-		percentuale=None,
-		ritenuta=False,
-		verificare=("whether the activity is commercial and therefore in scope of VAT",),
-	),
 ]
 
-PROFESSIONI: dict[str, Professione] = {p.codice: p for p in _ELENCO}
 
-#: Qualifications for which the SdI is **mandatory** even towards a natural
-#: person. Blocking them "because they look medical" is the violation in reverse.
+PROFESSIONI: dict[str, ProfessioneSanitaria] = {p.codice: p for p in _ELENCO}
+
 PROFESSIONI_SDI_OBBLIGATORIO: frozenset[str] = frozenset(
-	p.codice for p in _ELENCO if p.regola_sdi == RegolaSdI.OBBLIGATORIO and p.sanitaria
+	p.codice for p in _ELENCO if p.regola_sdi == RegolaSdI.OBBLIGATORIO
 )
 
-#: Qualifications bound to report to the Sistema TS.
 PROFESSIONI_TS: frozenset[str] = frozenset(p.codice for p in _ELENCO if p.obbligo_ts)
 
 
-def professione(codice: str | None) -> Professione:
-	"""Look up a qualification. The catalogue never infers - it raises."""
-	try:
+def professione(codice: str | None):
+	"""A healthcare qualification, or invoicing's own answer for an ordinary one.
+
+	Delegating rather than raising keeps one register from the caller's point of
+	view: a practice that invoices both a session and a training course asks once
+	and gets the right answer either way.
+	"""
+	if codice and codice in PROFESSIONI:
 		return PROFESSIONI[codice]
-	except KeyError:
-		raise KeyError(
-			f"qualification {codice!r} is not in the register. The catalogue never infers: add it "
-			"in crm/tessera_sanitaria/engine/professioni.py, or as a CRM Professional Qualification "
-			f"record, after the accountant has verified it. Known: {', '.join(sorted(PROFESSIONI))}"
-		) from None
+	return professione_ordinaria(codice)
 
 
-def professioni_da_verificare() -> list[Professione]:
-	"""What the accountant has to close before go-live."""
-	return [p for p in _ELENCO if p.da_verificare]
-
-
-def elenco() -> list[Professione]:
-	"""The register, in declaration order - healthcare first, then the rest."""
+def elenco() -> list[ProfessioneSanitaria]:
+	"""The healthcare register alone. Invoicing's twenty are not in here."""
 	return list(_ELENCO)
+
+
+def professioni_da_verificare() -> list[ProfessioneSanitaria]:
+	return [p for p in _ELENCO if p.da_verificare]
