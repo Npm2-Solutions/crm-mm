@@ -25,6 +25,8 @@ import requests
 from frappe.utils import get_url
 from werkzeug.wrappers import Response
 
+from crm.utils.sites import is_this_site
+
 TIMEOUT = 15
 MAX_SKEW = 300
 
@@ -48,7 +50,11 @@ def route_for(page_id: str) -> str | None:
 	if not page_id:
 		return None
 	site = frappe.db.get_value("Meta Page Route", page_id, "site_url")
-	if not site or site.rstrip("/") == get_url().rstrip("/"):
+	# `is_this_site` and not a string comparison: a client row can hold this
+	# site's other name — the `.frappe.cloud` one it was created with — and the
+	# hub would then post a webhook to itself over HTTP, from inside the very
+	# request that is serving it. That call cannot even resolve the hostname.
+	if not site or is_this_site(site):
 		return None
 	return site.rstrip("/")
 

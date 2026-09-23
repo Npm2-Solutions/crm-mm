@@ -905,3 +905,90 @@ class TestTheLoggedInCaseWasRefused(IntegrationTestCase):
 		state = S.make_state(frappe.utils.get_url().rstrip("/"))
 		S.log_session_event(state, "STARTED", {"current_step": "launch"}, csrf_token="whatever")
 		self.assertEqual(frappe.get_last_doc("WhatsApp Signup Session").event, "STARTED")
+
+
+class TestTheHubIsNotSomebodyElse(IntegrationTestCase):
+	"""A Frappe site answers to more than one name.
+
+	On Frappe Cloud it is created as `<name>.frappe.cloud` and then given a
+	custom domain; `get_url()` returns the custom one and `frappe.local.site` is
+	still the original. A route row written under the other name therefore did
+	not look like this site, and the hub set off to deliver a webhook to itself
+	over HTTP — a call that cannot even resolve its own public hostname from
+	inside the container, and so failed every hour, silently, in the Error Log.
+	"""
+
+	def test_either_name_is_this_site(self):
+		from crm.utils.sites import is_this_site
+
+		self.assertTrue(is_this_site(frappe.utils.get_url()))
+		self.assertTrue(is_this_site(f"https://{frappe.local.site}"))
+		self.assertTrue(is_this_site(f"{frappe.utils.get_url().rstrip('/')}/"))
+		self.assertFalse(is_this_site("https://qualcun-altro.frappe.cloud"))
+		self.assertFalse(is_this_site(""))
+		self.assertFalse(is_this_site(None))
+
+	def test_the_relay_does_not_route_to_itself_under_its_other_name(self):
+		from crm.integrations.meta.relay import route_for
+
+		frappe.get_doc(
+			{
+				"doctype": "Meta Page Route",
+				"page_id": "PAGE_SELF",
+				"site_url": f"https://{frappe.local.site}",
+			}
+		).insert(ignore_permissions=True)
+		self.assertIsNone(route_for("PAGE_SELF"))
+		frappe.db.rollback()
+
+	def test_the_credentials_are_handed_over_in_process_under_either_name(self):
+		with patch.object(S, "deliver_locally") as local, patch.object(S.requests, "post") as over_http:
+			S.deliver_to_site(f"https://{frappe.local.site}", "TOKEN", "WABA", "PHONE", {})
+		local.assert_called_once()
+		over_http.assert_not_called()
+
+
+class TestOneClickWhereTheDomainAllowsIt(IntegrationTestCase):
+	"""Meta opens Embedded Signup only from a domain registered with the app.
+
+	A client CRM is on a domain Facebook has never heard of, so it is sent to the
+	hub page. The agency's CRM *is* the hub — same domain, already registered —
+	and for it the page is a hop to nowhere.
+	"""
+
+	def test_the_connect_call_says_where_the_flow_would_open(self):
+		from crm.integrations.meta.client import get_settings
+		from crm.integrations.whatsapp.api import get_connect_url, save_whatsapp_app
+
+		settings = get_settings()
+		settings.whatsapp_app_id = "111"
+		settings.whatsapp_app_secret = "shhh"
+		settings.save()
+		save_whatsapp_app(whatsapp_signup_config_id="222")
+
+		data = get_connect_url()
+		# enough to open Facebook without the page in between
+		self.assertEqual(data["app_id"], "111")
+		self.assertEqual(data["config_id"], "222")
+		self.assertTrue(data["state"])
+		self.assertIn(data["state"], data["url"])
+		self.assertTrue(data["hub_origin"])
+		frappe.db.rollback()
+
+	def test_the_status_says_which_origin_that_is(self):
+		from crm.integrations.whatsapp.api import get_status
+
+		status = get_status()
+		if status.get("installed"):
+			self.assertIn("hub_origin", status)
+
+	def test_the_page_takes_its_own_query_out_of_the_address_bar(self):
+		"""Facebook refuses to redirect back to a URL carrying query parameters
+		the registered redirect URI does not have — and this page arrives with
+		`?state=…&go=1`. What the person saw was a window saying it could not
+		redirect."""
+		import pathlib
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		self.assertIn("history.replaceState", page)
+		self.assertIn("window.location.pathname", page)

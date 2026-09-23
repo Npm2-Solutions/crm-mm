@@ -409,8 +409,14 @@
 </template>
 
 <script setup>
-import { createResource, FormControl, toast } from 'frappe-ui'
-import { reactive, ref } from 'vue'
+import { call, createResource, FormControl, toast } from 'frappe-ui'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import {
+  listenForSignup,
+  loadFacebookSdk,
+  loginOptions,
+  runsHere,
+} from '@/utils/whatsappSignup'
 
 const connecting = ref(false)
 
@@ -563,20 +569,94 @@ function recheckDelivery(name) {
   })
 }
 
+// What Embedded Signup reported about the account the person picked. It comes
+// over `postMessage`, separately from the code the callback brings, and either
+// can arrive without the other.
+let signupData = null
+let stopListening = null
+
+// Facebook's script, fetched while the panel is merely open. `FB.login` opens a
+// window, and a browser allows that only inside a gesture it is still handling:
+// waiting for a script in the click handler loses the gesture and the window is
+// blocked. This is also why nothing here is awaited before the call.
+onMounted(() => {
+  stopListening = listenForSignup((event, detail) => {
+    if (String(event).indexOf('FINISH') === 0) signupData = detail
+  })
+})
+
+// `status` loads by itself, so the app id arrives after this mounts.
+watch(
+  () => status.data,
+  (data) => {
+    const app = data?.app?.app_id
+    if (app && runsHere(data?.hub_origin, window.location.origin)) {
+      loadFacebookSdk(app).catch(() => {})
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => stopListening && stopListening())
+
+function finishSignup(code, state) {
+  return call('crm.integrations.whatsapp.signup.complete_signup', {
+    state,
+    code,
+    waba_id: signupData?.waba_id || '',
+    phone_number_id: signupData?.phone_number_id || '',
+  })
+    .then(() => {
+      connecting.value = false
+      toast.success(__('WhatsApp connected'))
+      status.reload()
+    })
+    .catch((e) => {
+      connecting.value = false
+      toast.error(e.messages?.[0] || String(e?.message || e))
+    })
+}
+
+// One click, one window — the same thing Meta's own builder does.
+//
+// It only works where the domain is registered with the Meta app, which for the
+// agency is this very domain: its CRM is the hub. A client CRM lives somewhere
+// Facebook has never heard of and cannot open the dialog at all, so it is sent
+// to the hub's page, which can. That page is not ceremony; it is the only
+// address Meta will start the flow from.
+function launchHere(data) {
+  loadFacebookSdk(data.app_id)
+    .then((FB) => {
+      signupData = null
+      FB.login((response) => {
+        const code = response?.authResponse?.code
+        if (!code) {
+          connecting.value = false
+          toast.error(__('Connection cancelled'))
+          return
+        }
+        finishSignup(code, data.state)
+      }, loginOptions(data.config_id))
+    })
+    .catch(() => {
+      // the script never arrived — a blocker, usually. The hub page says so
+      // properly, so send the person there rather than failing in a toast.
+      window.location.href = data.url
+    })
+}
+
 function connect() {
   connecting.value = true
   createResource({
     url: 'crm.integrations.whatsapp.api.get_connect_url',
     auto: true,
     onSuccess: (data) => {
+      if (runsHere(data.hub_origin, window.location.origin)) {
+        launchHere(data)
+        return
+      }
       connecting.value = false
-      // This tab goes to the hub page, which goes straight on to Facebook, which
-      // comes back here when it is done. One window the whole way.
-      //
-      // It briefly opened a pop-up instead, so the hub page could keep a
-      // listener alive inside it. That made a window open a window, and the
-      // second one was blocked nearly every time anyway — a mess on screen for
-      // a benefit that almost never arrived.
+      // Another domain: the hub page is the registered one, so it opens
+      // Facebook. This tab goes there and comes back when it is done.
       window.location.href = data.url
     },
     onError: (e) => {
