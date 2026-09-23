@@ -65,6 +65,43 @@
 
         <!-- ------------------------------------------------------- to do -->
         <div v-if="tab === 'todo'" class="flex flex-col gap-3">
+          <!-- The agenda already knows the client, the performer and the service.
+               Retyping them is the difference between a system used between
+               patients and one abandoned by Thursday. -->
+          <div
+            v-if="daFatturare.data?.length"
+            class="flex flex-col gap-2 rounded-xl border border-outline-blue-2 bg-surface-blue-1 px-4 py-3"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-p-base-medium text-ink-gray-8">
+                {{ __('From the agenda, not yet invoiced') }}
+              </span>
+              <span class="text-p-sm text-ink-gray-6">
+                {{ __('{0} appointments', [daFatturare.data.length]) }}
+              </span>
+            </div>
+            <div
+              v-for="incontro in daFatturare.data.slice(0, 8)"
+              :key="incontro.name"
+              class="flex items-center justify-between gap-3 border-t border-outline-blue-2 pt-2 first:border-0 first:pt-0"
+            >
+              <div class="min-w-0">
+                <div class="truncate text-p-sm-medium text-ink-gray-7">
+                  {{ incontro.title || incontro.name }}
+                </div>
+                <div class="text-p-xs text-ink-gray-5">
+                  {{ formatDate(incontro.starts_on) }}
+                </div>
+              </div>
+              <Button
+                variant="subtle"
+                :loading="emettendo === incontro.name"
+                :label="__('Invoice it')"
+                @click="fatturaIncontro(incontro)"
+              />
+            </div>
+          </div>
+
           <!-- A button not pressed produces no error: it produces absence, and
                absence is found in January. This list is what makes yesterday's
                absences visible today. -->
@@ -133,6 +170,15 @@
               </span>
             </div>
             <div class="flex shrink-0 items-center gap-2">
+              <!-- On a draft, where it will go matters more than where it has
+                   been: a document that turns out to be un-issuable at submit
+                   has already cost the time of whoever typed it, with the client
+                   still in the room. -->
+              <Badge
+                v-if="row.docstatus === 0 && row.channel"
+                :theme="row.channel === 'sdi' ? 'blue' : 'green'"
+                :label="channelLabel(row.channel)"
+              />
               <Badge
                 v-if="row.sdi_status && row.sdi_status !== 'non_applicabile'"
                 :theme="statusTheme(row.sdi_status)"
@@ -298,6 +344,7 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { formatDate } from '@/utils'
 import {
   createListResource,
   createResource,
@@ -382,6 +429,40 @@ const invoices = createListResource({
 })
 
 const pending = createResource({ url: 'crm.invoicing.api.pending_actions' })
+
+// Appointments that happened and produced no document yet. Past only: a list
+// showing tomorrow's bookings is a list nobody trusts.
+const daFatturare = createResource({
+  url: 'crm.invoicing.api.appointments_to_invoice',
+  auto: true,
+})
+
+// Solo practitioner or centre. Derived from how many providers are enabled, so a
+// practice that hires its second physiotherapist never has to flip a setting.
+const forma = createResource({
+  url: 'crm.invoicing.api.practice_shape',
+  auto: true,
+})
+
+const emettendo = ref('')
+
+async function fatturaIncontro(incontro) {
+  emettendo.value = incontro.name
+  try {
+    const nome = await call('crm.invoicing.api.issue_from_appointment', {
+      appointment: incontro.name,
+    })
+    daFatturare.reload()
+    invoices.reload()
+    openDesk(`crm-invoice/${nome}`)
+  } catch (errore) {
+    // The commonest one is a service with no fiscal card, and saying so is more
+    // use than a generic failure: it names the thing to go and configure.
+    toast.error(errore.messages?.[0] || __('Could not open the invoice'))
+  } finally {
+    emettendo.value = ''
+  }
+}
 const tsStatus = createResource({ url: 'crm.invoicing.api.ts_status' })
 const submissions = createListResource({
   doctype: 'CRM TS Submission',

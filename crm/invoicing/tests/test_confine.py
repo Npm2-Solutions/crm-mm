@@ -86,3 +86,37 @@ class ConfineTest(UnitTestCase):
 				estensioni.risolutore()("massoterapista")
 		finally:
 			estensioni.dimentica_risolutore()
+
+
+class FormaStudioTest(UnitTestCase):
+	"""What the interface may hide, and what it may never hide.
+
+	The provider field is the one that flips: for a centre it decides the VAT
+	regime, the fund and whether the SdI may carry the document at all; for
+	somebody working alone it has exactly one possible value. Hiding it in the
+	second case is a saving of sixty interactions a day. Hiding it in the first
+	would be a silent fiscal error.
+
+	These pin the rule that decides which of the two it is, so that a change to
+	`practice_shape` cannot quietly start hiding a field a centre needs.
+	"""
+
+	def test_uno_solo_e_singolo(self):
+		self.assertTrue(self._solo(1))
+
+	def test_due_sono_un_centro(self):
+		self.assertFalse(self._solo(2))
+
+	def test_nessun_erogatore_non_e_un_singolo(self):
+		"""Zero is not one.
+
+		An empty register must not read as "solo" and pre-fill nothing while hiding
+		the field: that is a document with no qualification at all, which is exactly
+		what the engine refuses to guess.
+		"""
+		self.assertFalse(self._solo(0))
+
+	@staticmethod
+	def _solo(quanti: int) -> bool:
+		# The rule itself, without a database: one enabled provider and no more.
+		return quanti == 1

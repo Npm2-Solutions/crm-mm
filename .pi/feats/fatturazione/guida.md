@@ -26,6 +26,50 @@ resta un sistema di fatturazione funzionante**.
 
 ---
 
+## Il modulo chiede solo quello che non puo' dedurre
+
+Due assi, indipendenti. **Quale modulo** decide cosa esiste; **singolo o centro**
+decide cosa ti viene chiesto.
+
+| | Singolo | Centro |
+|---|---|---|
+| Senza Sistema TS | consulente, sviluppatore | studio associato, agenzia |
+| Con Sistema TS | osteopata, psicologo | poliambulatorio |
+
+Il campo che si ribalta e' l'erogatore. Chi eroga decide il regime IVA, la cassa e —
+col modulo sanitario — se il documento puo' passare dallo SdI. In un centro e' il
+campo piu' importante della riga. Per chi lavora da solo e' sempre la stessa persona,
+su un campo con un solo valore possibile, e chiederlo sessanta volte al giorno e'
+attrito e basta.
+
+Percio' **si deduce, non si configura**: si contano gli erogatori attivi. Uno, e il
+campo sparisce gia' compilato. Due, e ricompare. Chi assume il secondo fisioterapista
+non deve ricordarsi di cambiare niente. Zero non e' uno: un registro vuoto non deve
+leggersi come «singolo».
+
+Nascosto e non in sola lettura, perche' un campo bloccato occupa comunque una colonna
+e invita comunque un click.
+
+## La fattura nasce dall'appuntamento
+
+L'agenda sa gia' le tre cose da cui dipende il routing — chi e' il cliente, chi
+eroga, che prestazione — piu' la data. Riscriverle a mano e' la differenza fra un
+sistema che si usa fra un paziente e l'altro e uno che si abbandona il giovedi'. Un
+centro da sei professionisti fa circa **sessanta documenti al giorno**: a quel ritmo
+ogni interazione in piu' e' un minuto al giorno.
+
+Nel pannello, sotto «Da fare», c'e' la coda **«Dall'agenda, non ancora fatturati»**:
+appuntamenti passati che non hanno prodotto un documento. Solo passati — una lista che
+mostra le prenotazioni di domani e' una lista di cui non ti fidi. Un bottone apre la
+bozza con i quattro campi gia' a posto.
+
+**E la bozza dice dove andra' prima di essere emessa**: un badge *Fattura elettronica
+via SdI* oppure *PDF al cliente, comunicato al Sistema TS*. L'errore si vede prima di
+farlo, non dopo — un documento che si scopre non emettibile al momento dell'emissione
+ha gia' consumato il tempo di chi l'ha scritto, col cliente ancora davanti.
+
+---
+
 ## Dove si configura
 
 Tutto sta in **Impostazioni → Fatturazione**, nella modale del CRM: azienda

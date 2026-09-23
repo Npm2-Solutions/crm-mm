@@ -68,6 +68,52 @@ site. A rule that decides whether somebody gets fined is provable with a checkou
 and an interpreter, which is what makes it auditable by an accountant rather than
 only by a developer.
 
+## The form asks only what it cannot work out
+
+Two axes, and they are independent. **Which module** decides what exists; **solo or
+centre** decides what you are asked.
+
+|  | Solo | Centre |
+|---|---|---|
+| No Sistema TS | consultant, developer | firm, agency |
+| With Sistema TS | osteopath, psychologist | poliambulatorio |
+
+The field that flips is `service_provider`. Whoever performed a service decides the
+VAT regime, the fund, and — where the healthcare module is installed — whether the
+SdI may carry the document at all. In a centre that makes it the most important
+field on the line. For somebody working alone it is the same name every time, on a
+field with exactly one possible value, and asking is friction sixty times a day.
+
+So it is **derived, never configured**: `api.practice_shape` counts the enabled
+providers. One, and the field is hidden and pre-filled. Two, and it comes back. The
+practice that hires its second physiotherapist never has to remember a setting.
+Zero is not one — an empty register must not read as "solo" and quietly pre-fill
+nothing, which is exactly the qualification the engine refuses to guess.
+
+Hidden rather than read-only, because a locked field still takes a column and still
+invites a click.
+
+## The invoice is born from the appointment
+
+The agenda already knows the three things routing depends on — who the client is,
+who performed, which service — plus the date. Retyping them into a form is the
+difference between a system somebody uses between patients and one they stop using
+by Thursday. A centre with six practitioners issues around sixty documents a day;
+at that rate every extra interaction costs a minute a day.
+
+`api.appointments_to_invoice` is the queue: appointments that happened and produced
+no document. Past only — a list that shows tomorrow's bookings is a list nobody
+trusts. `api.issue_from_appointment` opens the draft with all four fields already
+in place.
+
+**And the document says where it is going before it is issued.** `api.invoice_channel`
+returns the destination in words, what is blocking it, and whether it can be issued
+at all, so the interface can show it beside the line that caused it rather than in a
+dialog at the end. A document that turns out to be un-issuable at submit has already
+cost the time of whoever typed it, with the client still in the room.
+
+---
+
 ## Where it is configured
 
 **Settings → Invoicing**, in the CRM's own modal: the issuing company, the

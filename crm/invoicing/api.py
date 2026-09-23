@@ -483,12 +483,28 @@ def invoice_channel(invoice: str) -> dict:
 	fattura = _fattura(invoice)
 	preparato = documento.prepara(fattura)
 	classificazione = preparato["classificazione"]
+
+	# What the desk needs to read in one glance, before issuing rather than after.
+	# A document that turns out to be un-issuable at submit has already cost the
+	# time of whoever typed it, with the client still standing there.
+	etichette = {
+		Canale.SDI: _("Electronic invoice, through the SdI"),
+		Canale.PDF_TS: _("PDF to the client, reported to the Sistema TS"),
+		Canale.PDF_SOLO: _("PDF to the client. Nothing is transmitted"),
+	}
 	return {
 		"channel": classificazione.canale,
+		"label": etichette.get(classificazione.canale, classificazione.canale),
 		"sdi_allowed": classificazione.sdi_consentito,
+		"sdi_required": classificazione.sdi_obbligatorio,
 		"ts_required": classificazione.ts_richiesto,
 		"is_healthcare": classificazione.canale == Canale.PDF_TS,
 		"deadline": str(getdate(fattura.posting_date)),
+		# Everything wrong with it as it stands, so the interface can say it beside
+		# the line that caused it instead of in a dialog at the end.
+		"blocking": classificazione.tutti_errori,
+		"warnings": list(classificazione.avvisi),
+		"issuable": classificazione.valido,
 	}
 
 
@@ -618,3 +634,69 @@ def supplier_invoices(company: str = "", limit: int = 50) -> list[dict]:
 		order_by="document_date desc, received_on desc",
 		limit_page_length=int(limit),
 	)
+
+
+@frappe.whitelist()
+def practice_shape(company: str = "") -> dict:
+	"""Solo practitioner or centre, worked out rather than asked.
+
+	Whoever performed a service decides the VAT regime, the fund and - where the
+	healthcare module is installed - whether the SdI may carry the document at all.
+	In a centre that makes it the most important field on the line. For somebody
+	working alone it is the same name every time, on a field that has exactly one
+	possible value, and asking is pure friction sixty times a day.
+
+	So it is derived from how many providers are actually enabled, not set in a
+	screen. A practice that hires its second physiotherapist does not have to
+	remember to flip anything: the field appears the day the second provider does.
+	"""
+	frappe.has_permission("CRM Service Provider", "read", throw=True)
+	filtri = {"enabled": 1}
+	if company:
+		filtri["company"] = ["in", [company, ""]]
+	erogatori = frappe.get_all(
+		"CRM Service Provider", filters=filtri, fields=["name", "provider_name", "qualification"], limit=2
+	)
+	solo = len(erogatori) == 1
+	return {
+		"solo": solo,
+		"count": len(erogatori),
+		"provider": erogatori[0].name if solo else None,
+		"provider_name": erogatori[0].provider_name if solo else None,
+		"qualification": erogatori[0].qualification if solo else None,
+	}
+
+
+@frappe.whitelist()
+def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100) -> list[dict]:
+	"""Appointments that happened and have no invoice yet.
+
+	The agenda already knows the three things routing depends on - who the client
+	is, who performed, which service - plus the date. Retyping them into an invoice
+	form is the difference between a system somebody uses between patients and one
+	they stop using by Thursday.
+
+	Past only, and only what is still open: a list that shows tomorrow's bookings is
+	a list nobody trusts.
+	"""
+	frappe.has_permission("CRM Invoice", "create", throw=True)
+	da = frappe.utils.add_days(frappe.utils.nowdate(), -int(days))
+	fatturati = {
+		riga.appointment
+		for riga in frappe.get_all(
+			"CRM Invoice",
+			filters={"appointment": ["is", "set"], "docstatus": ["<", 2]},
+			fields=["appointment"],
+		)
+	}
+	incontri = frappe.get_all(
+		"CRM Appointment",
+		filters={
+			"starts_on": ["between", [da, frappe.utils.now_datetime()]],
+			"status": ["not in", ("Cancelled", "No Show")],
+		},
+		fields=["name", "title", "starts_on", "service", "unit_price", "status"],
+		order_by="starts_on desc",
+		limit_page_length=int(limit),
+	)
+	return [dict(i) for i in incontri if i.name not in fatturati]
