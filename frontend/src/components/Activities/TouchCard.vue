@@ -7,7 +7,12 @@
 -->
 <template>
   <div class="min-w-0">
-    <div class="flex flex-wrap items-center gap-2 py-1">
+    <!--
+      With the ad rendered directly above, its own heading would be a second
+      title for one thing: the attribution is not a separate event, it is the
+      same arrival written in another vocabulary.
+    -->
+    <div v-if="heading" class="flex flex-wrap items-center gap-2 py-1">
       <Badge
         v-if="touch?.category"
         :label="__(touch.category)"
@@ -18,7 +23,11 @@
         {{ title }}
       </span>
     </div>
-    <div v-if="rows.length" class="flex flex-wrap gap-x-3 gap-y-0.5 text-p-sm">
+    <div
+      v-if="rows.length"
+      class="flex flex-wrap gap-x-3 gap-y-0.5 text-p-sm"
+      :class="heading ? '' : 'pt-1.5'"
+    >
       <span v-for="row in rows" :key="row.label" class="truncate">
         <span class="text-ink-gray-5">{{ row.label }}</span>
         <span class="text-ink-gray-7"> {{ row.value }}</span>
@@ -36,6 +45,7 @@ const props = defineProps({
   title: { type: String, required: true },
   touch: { type: Object, default: () => ({}) },
   theme: { type: String, default: 'blue' },
+  heading: { type: Boolean, default: true },
 })
 
 // A lead ad fills the same three slots with an ad, an ad set and a campaign.

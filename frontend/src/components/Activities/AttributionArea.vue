@@ -56,12 +56,12 @@
             class="flex items-center gap-2 text-p-base-medium text-ink-gray-7"
           >
             <LucideInfo class="h-4 w-4 shrink-0" />
-            {{ __('No visit recorded') }}
+            {{ emptyTitle }}
           </div>
           <p class="text-p-sm text-ink-gray-6">{{ emptyReason }}</p>
           <Button
             v-if="!isOfflineOrigin"
-            :label="__('Set up lead tracking')"
+            :label="__('Open tracking settings')"
             @click="openTrackingSettings"
           />
         </div>
@@ -95,18 +95,22 @@
             <!-- the timestamp sits on the same line as whatever the row is -->
             <div class="flex items-start gap-2">
               <div class="min-w-0 flex-1">
-                <AdCard v-if="row.kind === 'ad'" :ad="row.data" />
+                <AdCard v-if="row.kind === 'ad'" :ad="row.data.ad" />
 
-                <TouchCard
-                  v-else-if="row.kind === 'touch'"
-                  :title="
-                    row.data.which === 'first'
-                      ? __('First touch')
-                      : __('Last touch')
-                  "
-                  :touch="row.data"
-                  :theme="row.data.which === 'first' ? 'green' : 'blue'"
-                />
+                <template v-else-if="row.kind === 'touch'">
+                  <!-- the ad, and the attribution that describes it, as one -->
+                  <AdCard v-if="row.data.ad" :ad="row.data.ad" />
+                  <TouchCard
+                    :title="
+                      row.data.which === 'first'
+                        ? __('First touch')
+                        : __('Last touch')
+                    "
+                    :touch="row.data"
+                    :theme="row.data.which === 'first' ? 'green' : 'blue'"
+                    :heading="!row.data.ad"
+                  />
+                </template>
 
                 <template v-else-if="row.kind === 'visit'">
                   <div class="flex flex-wrap items-center gap-2 py-1">
@@ -250,18 +254,35 @@ const hasAnything = computed(
 )
 
 /**
- * Records whose origin was never a browser: the CRM's own screens, or an API
- * that handed us a contact. They have attribution but can never have a journey,
- * so pointing their owner at the tracking script would be wrong advice.
+ * Records whose origin was never a browser on a site of ours: the CRM's own
+ * screens, an API that handed us a contact, or a lead form filled in inside
+ * Facebook. They have attribution and can never have browsing, so telling their
+ * owner to check the tracking script is wrong advice — and it read as a fault
+ * to be fixed, on the one kind of lead where nothing is wrong at all.
  */
 const OFFLINE_CATEGORIES = ['CRM UI', 'Third Party']
 
-const isOfflineOrigin = computed(() =>
-  OFFLINE_CATEGORIES.includes(journey.data?.first_touch?.category),
+// Meta's own form, filled in without ever leaving Facebook.
+const isLeadAd = computed(
+  () => journey.data?.first_touch?.landing_page === 'lead_ad_form',
+)
+
+const isOfflineOrigin = computed(
+  () =>
+    isLeadAd.value ||
+    OFFLINE_CATEGORIES.includes(journey.data?.first_touch?.category),
+)
+
+const emptyTitle = computed(() =>
+  isOfflineOrigin.value ? __('No browsing to show') : __('No visit recorded'),
 )
 
 const emptyReason = computed(() => {
   const category = journey.data?.first_touch?.category
+  if (isLeadAd.value)
+    return __(
+      'This person filled in the form inside Facebook and never visited the site, so there is no browsing to show — nothing is missing. What there is to know is above: the ad, the campaign, and when the lead arrived.',
+    )
   if (category === 'CRM UI')
     return __(
       'This record was created by hand in the CRM, so there is no browsing to show. A journey appears for records that arrive from a form, a booking, or a site running the tracking script.',
@@ -293,7 +314,8 @@ const ICONS = {
 
 function iconFor(row) {
   if (row.kind === 'ad') return LucideMegaphone
-  if (row.kind === 'touch') return LucideFlag
+  // a touch that carries its ad is the ad arriving, and reads better as one
+  if (row.kind === 'touch') return row.data.ad ? LucideMegaphone : LucideFlag
   if (row.kind === 'visit') return LucideGlobe
   if (row.kind === 'record') return LucideUserPlus
   return ICONS[row.data.event_type] || LucideSparkles
