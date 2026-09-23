@@ -148,6 +148,12 @@ def open_deal_for_inquiry(person: str, source: str | None = None) -> str | None:
 			deal.set(fieldname, person_doc.get(fieldname))
 		# no status: the deal controller puts it in the first stage of the
 		# default pipeline, which is the one place that decides where a sale starts
+		#
+		# and no forecast: with `enable_forecasting` on, the deal controller
+		# requires an expected value and a closing date, which nobody can supply
+		# from a webhook. Refused, it would be swallowed below and the sale would
+		# exist in no pipeline at all.
+		deal.flags.from_inquiry = True
 		deal.insert(ignore_permissions=True)
 
 		# `converted` is read as "has a deal" -- the quick filter says so

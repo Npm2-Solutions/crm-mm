@@ -95,5 +95,29 @@ class TestInquiryOpensADeal(IntegrationTestCase):
 		self.assertEqual(deal.first_touch_category, "Paid Social")
 		self.assertEqual(deal.first_touch_source, "facebook")
 
+	def test_forecasting_on_does_not_swallow_the_deal(self):
+		"""With forecasting on, the deal controller requires an expected value
+		and a closing date. Nobody can supply either from a webhook, so the
+		insert was refused, the failure was swallowed into the error log, and
+		the sale existed in no pipeline while the person existed fine.
+		"""
+		frappe.db.set_single_value("FCRM Settings", "enable_forecasting", 1)
+		self.addCleanup(frappe.db.set_single_value, "FCRM Settings", "enable_forecasting", 0)
+
+		name = open_deal_for_inquiry(self._person().name)
+
+		self.assertTrue(name, "an inquiry with forecasting on still opens its deal")
+
+	def test_a_person_still_has_to_forecast_by_hand(self):
+		"""The exemption is for the webhook, not for the salesperson."""
+		frappe.db.set_single_value("FCRM Settings", "enable_forecasting", 1)
+		self.addCleanup(frappe.db.set_single_value, "FCRM Settings", "enable_forecasting", 0)
+
+		deal = frappe.get_doc("CRM Deal", open_deal_for_inquiry(self._person().name))
+		deal.next_step = "chiamare"
+
+		with self.assertRaises(frappe.MandatoryError):
+			deal.save(ignore_permissions=True)
+
 	def test_a_person_with_no_deal_has_none_open(self):
 		self.assertIsNone(open_deal_of(self._person().name))

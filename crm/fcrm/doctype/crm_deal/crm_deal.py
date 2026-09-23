@@ -404,6 +404,15 @@ class CRMDeal(Document):
 		self.update_closed_date()
 		self.update_default_probability()
 		self.update_expected_deal_value()
+		if self.flags.from_inquiry:
+			# A forecast is asked of a person, not of a webhook. An inquiry opens
+			# its deal with nobody around to say what it is worth or when it
+			# closes, and refusing it would mean no deal at all -- the person
+			# lands in the CRM and their sale lands in no pipeline, with only a
+			# line in the error log to say so. The salesperson is asked the first
+			# time they save it by hand, which is when there is somebody to ask.
+			return
+
 		if frappe.db.get_single_value("FCRM Settings", "enable_forecasting"):
 			if not self.expected_deal_value or self.expected_deal_value == 0:
 				frappe.throw(_("Expected deal value is required."), frappe.MandatoryError)
