@@ -1,29 +1,28 @@
 <!--
   One attribution snapshot — the campaign that introduced this person, or the
-  one that brought them back. Blank fields are dropped rather than shown empty:
-  a direct visit has no campaign, and a row reading "Campaign: —" is noise.
+  one that brought them back — as a row on the journey.
+
+  Blank fields are dropped rather than shown empty: a direct visit has no
+  campaign, and a row reading "Campaign: —" is noise.
 -->
 <template>
-  <div class="rounded-lg border border-outline-gray-2 px-3 py-2.5">
-    <div class="flex items-center justify-between gap-2 pb-2">
-      <span class="text-p-base-medium text-ink-gray-7">{{ title }}</span>
+  <div class="min-w-0">
+    <div class="flex flex-wrap items-center gap-2 py-1">
       <Badge
         v-if="touch?.category"
         :label="__(touch.category)"
         :theme="theme"
         size="sm"
       />
+      <span class="truncate text-base font-medium text-ink-gray-8">
+        {{ title }}
+      </span>
     </div>
-    <div v-if="rows.length" class="flex flex-col gap-1">
-      <div v-for="row in rows" :key="row.label" class="flex gap-2 text-p-sm">
-        <span class="w-24 shrink-0 text-ink-gray-5">{{ row.label }}</span>
-        <span
-          class="min-w-0 flex-1 truncate text-ink-gray-7"
-          :title="row.value"
-        >
-          {{ row.value }}
-        </span>
-      </div>
+    <div v-if="rows.length" class="flex flex-wrap gap-x-3 gap-y-0.5 text-p-sm">
+      <span v-for="row in rows" :key="row.label" class="truncate">
+        <span class="text-ink-gray-5">{{ row.label }}</span>
+        <span class="text-ink-gray-7"> {{ row.value }}</span>
+      </span>
     </div>
     <div v-else class="text-p-sm text-ink-gray-5">{{ __('Not recorded') }}</div>
   </div>
@@ -56,7 +55,6 @@ const rows = computed(() => {
       value: fromAnAd ? __('Lead form') : t.landing_page,
     },
     { label: __('Referrer'), value: t.referrer },
-    { label: __('Date'), value: t.on },
   ].filter((row) => row.value)
 })
 </script>

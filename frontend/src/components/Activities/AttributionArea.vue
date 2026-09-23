@@ -1,3 +1,13 @@
+<!--
+  Where this person came from, and what they did — as one stream.
+
+  It used to be three things stacked on one screen: the ad in a card, the two
+  attribution snapshots in two more, and the timeline of visits underneath. The
+  one question anybody actually asks of this panel is what happened and in what
+  order, and none of the three answered it — the reader had to hold the ad in
+  their head while reading the visits below it. So there is one timeline, and
+  the ad, the touches, the visits and the events are all rows on it.
+-->
 <template>
   <div class="h-full overflow-y-auto px-3 pb-5 sm:px-10">
     <div
@@ -20,27 +30,7 @@
     />
 
     <template v-else>
-      <!-- The ad itself, when there was one: what they were promised -->
       <div class="pt-4">
-        <AdCard :doctype="doctype" :docname="docname" />
-      </div>
-
-      <!-- What brought them in, and what brought them back -->
-      <div class="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-2">
-        <TouchCard
-          :title="__('First touch')"
-          :touch="journey.data?.first_touch"
-          theme="green"
-        />
-        <TouchCard
-          :title="__('Last touch')"
-          :touch="journey.data?.last_touch"
-          theme="blue"
-        />
-      </div>
-
-      <!-- One stream: every visit, and what happened inside it -->
-      <div class="pt-6">
         <div class="flex items-baseline gap-2 pb-3">
           <span class="text-lg-semibold text-ink-gray-8">{{
             __('Timeline')
@@ -75,101 +65,103 @@
         </div>
 
         <div
-          v-for="(visit, v) in timeline"
-          :key="visit.name"
+          v-for="(row, i) in timeline"
+          :key="row.key"
           class="grid grid-cols-[30px_minmax(0,_1fr)] gap-4"
         >
           <!-- the rail: unbroken except under the very last row -->
           <div
             class="z-0 relative flex justify-center before:absolute before:left-[50%] before:-z-[1] before:top-0 before:border-l before:border-outline-elevation-2"
-            :class="
-              v != timeline.length - 1 || visit.events.length
-                ? 'before:h-full'
-                : 'before:h-4'
-            "
+            :class="i != timeline.length - 1 ? 'before:h-full' : 'before:h-4'"
           >
             <div
-              class="flex h-8 w-7 items-center justify-center bg-surface-base text-ink-gray-7"
-            >
-              <LucideGlobe class="h-4 w-4" />
-            </div>
-          </div>
-
-          <!-- the visit, and the campaign behind it -->
-          <div class="min-w-0 pb-3">
-            <div class="flex flex-wrap items-center gap-2 py-1">
-              <Badge
-                v-if="!visit.unknown"
-                :label="__(visit.source_category || 'Unknown')"
-                theme="blue"
-                size="sm"
-              />
-              <span class="truncate text-base font-medium text-ink-gray-8">
-                {{ visitTitle(visit) }}
-              </span>
-              <span
-                v-if="visit.campaign"
-                class="truncate text-p-sm text-ink-gray-5"
-              >
-                · {{ visit.campaign }}
-              </span>
-              <span class="ml-auto whitespace-nowrap">
-                <TimelineTimestamp :date="visit.started_on" />
-              </span>
-            </div>
-            <div
-              v-if="visitDetails(visit).length"
-              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-p-sm text-ink-gray-5"
-            >
-              <span
-                v-for="detail in visitDetails(visit)"
-                :key="detail"
-                class="truncate"
-              >
-                {{ detail }}
-              </span>
-            </div>
-          </div>
-
-          <!-- the events of this visit, in the same stream -->
-          <template v-for="(event, i) in visit.events" :key="event.name">
-            <div
-              class="z-0 relative flex justify-center before:absolute before:left-[50%] before:-z-[1] before:top-0 before:border-l before:border-outline-elevation-2"
+              class="flex items-center justify-center bg-surface-base text-ink-gray-7"
               :class="
-                v != timeline.length - 1 || i != visit.events.length - 1
-                  ? 'before:h-full'
-                  : 'before:h-3'
+                row.kind === 'event'
+                  ? 'h-6 w-6 rounded-full bg-surface-gray-2 text-ink-gray-6'
+                  : 'h-8 w-7'
               "
             >
-              <div
-                class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-gray-2 text-ink-gray-6"
-              >
-                <component :is="iconFor(event.event_type)" class="h-3 w-3" />
-              </div>
+              <component
+                :is="iconFor(row)"
+                :class="row.kind === 'event' ? 'h-3 w-3' : 'h-4 w-4'"
+              />
             </div>
-            <div class="min-w-0 pb-3">
-              <div class="flex items-center justify-between gap-2">
-                <span class="truncate text-base text-ink-gray-8">
-                  {{ eventTitle(event) }}
-                </span>
-                <span class="ml-auto whitespace-nowrap">
-                  <TimelineTimestamp :date="event.occurred_on" />
-                </span>
+          </div>
+
+          <div class="min-w-0 pb-3">
+            <!-- the timestamp sits on the same line as whatever the row is -->
+            <div class="flex items-start gap-2">
+              <div class="min-w-0 flex-1">
+                <AdCard v-if="row.kind === 'ad'" :ad="row.data" />
+
+                <TouchCard
+                  v-else-if="row.kind === 'touch'"
+                  :title="
+                    row.data.which === 'first'
+                      ? __('First touch')
+                      : __('Last touch')
+                  "
+                  :touch="row.data"
+                  :theme="row.data.which === 'first' ? 'green' : 'blue'"
+                />
+
+                <template v-else-if="row.kind === 'visit'">
+                  <div class="flex flex-wrap items-center gap-2 py-1">
+                    <Badge
+                      :label="__(row.data.source_category || 'Unknown')"
+                      theme="blue"
+                      size="sm"
+                    />
+                    <span
+                      class="truncate text-base font-medium text-ink-gray-8"
+                    >
+                      {{ visitTitle(row.data) }}
+                    </span>
+                    <span
+                      v-if="row.data.campaign"
+                      class="truncate text-p-sm text-ink-gray-5"
+                    >
+                      · {{ row.data.campaign }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="visitDetails(row.data).length"
+                    class="flex flex-wrap items-center gap-x-3 gap-y-1 text-p-sm text-ink-gray-5"
+                  >
+                    <span
+                      v-for="detail in visitDetails(row.data)"
+                      :key="detail"
+                      class="truncate"
+                    >
+                      {{ detail }}
+                    </span>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <span class="truncate text-base text-ink-gray-8">
+                    {{ eventTitle(row.data) }}
+                  </span>
+                  <div
+                    v-if="eventDetails(row.data).length"
+                    class="flex flex-wrap items-center gap-x-3 text-p-sm text-ink-gray-5"
+                  >
+                    <span
+                      v-for="detail in eventDetails(row.data)"
+                      :key="detail"
+                      class="truncate"
+                    >
+                      {{ detail }}
+                    </span>
+                  </div>
+                </template>
               </div>
-              <div
-                v-if="eventDetails(event).length"
-                class="flex flex-wrap items-center gap-x-3 text-p-sm text-ink-gray-5"
-              >
-                <span
-                  v-for="detail in eventDetails(event)"
-                  :key="detail"
-                  class="truncate"
-                >
-                  {{ detail }}
-                </span>
-              </div>
+              <span v-if="row.at" class="shrink-0 whitespace-nowrap">
+                <TimelineTimestamp :date="row.at" />
+              </span>
             </div>
-          </template>
+          </div>
         </div>
       </div>
     </template>
@@ -183,13 +175,15 @@ import TouchCard from '@/components/Activities/TouchCard.vue'
 import AdCard from '@/components/Activities/AdCard.vue'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { activeSettingsPage, showSettings } from '@/composables/settings'
-import { groupJourney, readableDuration } from '@/utils/journey'
+import { buildTimeline, readableDuration } from '@/utils/journey'
 import LucideCalendarClock from '~icons/lucide/calendar-clock'
 import LucideCheck from '~icons/lucide/check'
 import LucideEye from '~icons/lucide/eye'
+import LucideFlag from '~icons/lucide/flag'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideInfo from '~icons/lucide/info'
 import LucideLink from '~icons/lucide/link'
+import LucideMegaphone from '~icons/lucide/megaphone'
 import LucidePhone from '~icons/lucide/phone'
 import LucideRadar from '~icons/lucide/radar'
 import LucideSparkles from '~icons/lucide/sparkles'
@@ -211,13 +205,23 @@ const journey = createResource({
   auto: true,
 })
 
+// Fetched here rather than inside the card, because the ad has to be placed in
+// time with everything else and a component that fetches its own data cannot be
+// sorted into a list. Never fatal: this screen does not depend on Meta.
+const ad = createResource({
+  url: 'crm.integrations.meta.api.get_record_ad',
+  params: { doctype: props.doctype, name: props.docname },
+  auto: true,
+})
+
 const events = computed(() => journey.data?.events || [])
 const sessions = computed(() => journey.data?.sessions || [])
 
 const timeline = computed(() =>
-  groupJourney(sessions.value, events.value, {
-    newestFirst: isNewestFirst.value,
-  }),
+  buildTimeline(
+    { ...(journey.data || {}), ad: ad.data || {} },
+    { newestFirst: isNewestFirst.value },
+  ),
 )
 
 const hasAnything = computed(
@@ -269,19 +273,19 @@ const ICONS = {
   Custom: LucideSparkles,
 }
 
-function iconFor(eventType) {
-  return ICONS[eventType] || LucideSparkles
+function iconFor(row) {
+  if (row.kind === 'ad') return LucideMegaphone
+  if (row.kind === 'touch') return LucideFlag
+  if (row.kind === 'visit') return LucideGlobe
+  return ICONS[row.data.event_type] || LucideSparkles
 }
 
 function visitTitle(visit) {
-  if (visit.unknown) return __('Earlier activity')
   const source = visit.source || __('Unknown')
   return visit.medium ? `${source} / ${visit.medium}` : source
 }
 
 function visitDetails(visit) {
-  if (visit.unknown)
-    return [__('The visit these belong to is no longer listed')]
   return [
     visit.landing_page,
     visit.referrer_domain ? `← ${visit.referrer_domain}` : '',

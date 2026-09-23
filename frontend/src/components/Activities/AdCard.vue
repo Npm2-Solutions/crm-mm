@@ -1,55 +1,48 @@
 <!--
-  The ad they actually clicked.
+  The ad they actually clicked, as a row on the journey.
 
   Whoever calls a lead five minutes after it arrives is the person for whom this
   matters most: knowing what was promised in the ad is the difference between
   "hi, you filled in a form" and continuing a conversation the ad started. Today
-  that means going hunting in Ads Manager, so it is here instead.
+  that means going hunting in Ads Manager, so it is here instead — and on the
+  timeline rather than in a box above it, because seeing the ad is the first
+  thing that happened to this person, not a footnote to it.
 
   It is deliberately quiet: if Meta will not say (no ads access on that account,
-  an old ad) the card simply is not there. A lead is worth more than the picture
+  an old ad) the row simply is not there. A lead is worth more than the picture
   of its ad.
 -->
 <template>
-  <div
-    v-if="ad.data?.ad_id"
-    class="rounded-lg border border-outline-gray-2 px-3 py-2.5"
-  >
-    <div class="flex items-center justify-between gap-2 pb-2">
-      <span class="text-p-base-medium text-ink-gray-7">
-        {{ __('The ad they clicked') }}
+  <div v-if="ad?.ad_id" class="min-w-0">
+    <div class="flex flex-wrap items-center gap-2 py-1">
+      <Badge :label="__('Ad')" theme="orange" size="sm" />
+      <span class="truncate text-base font-medium text-ink-gray-8">
+        {{ ad.creative_title || ad.ad_name || ad.ad_id }}
       </span>
       <Badge v-if="stopped" :label="__(humanStatus)" theme="red" size="sm" />
     </div>
-    <div class="flex gap-3">
+    <div class="flex gap-3 pt-1">
       <img
-        v-if="ad.data.thumbnail_url"
-        :src="ad.data.thumbnail_url"
-        :alt="ad.data.creative_title || ad.data.ad_name"
-        class="size-16 shrink-0 rounded-md object-cover"
+        v-if="ad.thumbnail_url"
+        :src="ad.thumbnail_url"
+        :alt="ad.creative_title || ad.ad_name"
+        class="size-14 shrink-0 rounded-md object-cover"
         @error="hideImage"
       />
       <div class="min-w-0 flex-1">
-        <div class="truncate text-p-sm-medium text-ink-gray-8">
-          {{ ad.data.creative_title || ad.data.ad_name || ad.data.ad_id }}
-        </div>
         <div
-          v-if="ad.data.creative_body"
+          v-if="ad.creative_body"
           class="line-clamp-3 text-p-sm text-ink-gray-6"
         >
-          {{ ad.data.creative_body }}
+          {{ ad.creative_body }}
         </div>
         <div class="mt-1 flex items-center gap-2 text-p-sm text-ink-gray-5">
           <span class="truncate">
-            {{
-              [ad.data.campaign_name, ad.data.adset_name]
-                .filter(Boolean)
-                .join(' · ')
-            }}
+            {{ [ad.campaign_name, ad.adset_name].filter(Boolean).join(' · ') }}
           </span>
           <a
-            v-if="ad.data.permalink"
-            :href="ad.data.permalink"
+            v-if="ad.permalink"
+            :href="ad.permalink"
             target="_blank"
             rel="noopener"
             class="shrink-0 text-ink-blue-link"
@@ -63,18 +56,14 @@
 </template>
 
 <script setup>
-import { Badge, createResource } from 'frappe-ui'
+import { Badge } from 'frappe-ui'
 import { computed } from 'vue'
 
+// The ad is fetched by the timeline, not here: it has to be placed in time
+// alongside everything else, and a component that fetches its own data cannot
+// be sorted into a list.
 const props = defineProps({
-  doctype: { type: String, default: 'CRM Lead' },
-  docname: { type: String, default: '' },
-})
-
-const ad = createResource({
-  url: 'crm.integrations.meta.api.get_record_ad',
-  params: { doctype: props.doctype, name: props.docname },
-  auto: true,
+  ad: { type: Object, default: () => ({}) },
 })
 
 // Meta's own vocabulary, in words somebody can act on
@@ -88,11 +77,11 @@ const WORDS = {
 }
 
 const stopped = computed(() => {
-  const status = ad.data?.effective_status
+  const status = props.ad?.effective_status
   return Boolean(status) && status !== 'ACTIVE'
 })
 const humanStatus = computed(
-  () => WORDS[ad.data?.effective_status] || ad.data?.effective_status || '',
+  () => WORDS[props.ad?.effective_status] || props.ad?.effective_status || '',
 )
 
 function hideImage(event) {
