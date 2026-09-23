@@ -1741,6 +1741,68 @@ e comunque letta al momento dell'invio e non al parse.
 Tutto quello che `base.html` aggiunge — token compreso — sta dopo il contenuto,
 non prima.
 
+## Perche' tre finestre, e come se ne torna a una
+
+La domanda era legittima: su Facebook Developer si clicca un pulsante e si apre
+il popup. Da noi: clicca *Connetti* → si apre una pagina → clicca di nuovo → un
+popup che dice che non puo' reindirizzare → lo chiudi → si apre finalmente
+quello giusto. Tre passaggi di troppo, e due hanno una causa precisa.
+
+### La pagina intermedia: obbligatoria per i clienti, inutile per noi
+
+Meta apre l'Embedded Signup **solo da un dominio registrato nell'app**. Dalla
+pagina di implementazione: *"the domain of the page that spawned the flow is
+listed in the **Allowed domains** and **Valid OAuth redirect URIs** fields"*, e
+il flusso **non** puo' partire da un dominio qualunque.
+
+L'app ha esattamente questi:
+
+```
+oauth_redirect_uris : ["https://hub.npm2solutions.com/whatsapp-connect"]
+js_sdk_host_domains : ["https://hub.npm2solutions.com/"]
+base_domains        : ["hub.npm2solutions.com"]
+```
+
+Il CRM di un cliente sta su un altro dominio, che Facebook non conosce e che non
+ha senso registrare uno per uno: per lui la pagina sull'hub **e' l'unico
+indirizzo da cui il flusso puo' partire**. Non e' cerimonia nostra, e' la regola
+di Meta.
+
+Ma il CRM dell'agenzia **e' l'hub**. Stesso dominio, gia' registrato. Per lui la
+pagina intermedia non faceva niente: ora il pulsante in Impostazioni apre
+Facebook direttamente, come il builder di Meta. Il confronto e' banale —
+`hub_origin` contro l'origin corrente — e quando non coincidono si continua a
+passare dalla pagina.
+
+Un dettaglio che non e' un dettaglio: lo script di Facebook si carica **quando
+si apre il pannello**, non al click. `FB.login` apre una finestra, e il browser
+lo permette solo dentro un gesto che sta ancora gestendo: aspettare uno script
+dentro l'handler perde il gesto, e la finestra viene bloccata.
+
+### Il popup che «non puo' reindirizzare»
+
+Dalla documentazione di Facebook Login:
+
+> The redirect also won't allow any extra query parameters not present in your
+> Valid OAuth redirect URIs list.
+
+Quando il popup non riesce a rispondere alla pagina, l'SDK reindirizza **alla
+pagina che l'ha aperto**. La nostra arrivava come
+
+```
+https://hub.npm2solutions.com/whatsapp-connect?state=…&go=1
+```
+
+e l'URI registrato e' il path nudo. Con lo Strict Mode attivo quel redirect e'
+rifiutato, e quello che si vede e' una finestra che dice che non puo'
+reindirizzare. Chiusa quella, l'SDK ripiega sul suo canale e la seconda finestra
+funziona: due popup per un motivo solo.
+
+La pagina ora, appena caricata, si toglie la query dalla barra degli indirizzi
+(`history.replaceState`): `state` e `return_url` sono gia' letti nelle due
+costanti, la query non serve piu' a nessuno, e l'indirizzo torna a essere
+**esattamente** quello registrato.
+
 ## Dai log del sito: due cose che non c'entravano con WhatsApp
 
 Con gli accessi API, l'Error Log dell'hub ha detto due cose importanti.

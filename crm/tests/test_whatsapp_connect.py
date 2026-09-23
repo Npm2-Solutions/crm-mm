@@ -946,3 +946,49 @@ class TestTheHubIsNotSomebodyElse(IntegrationTestCase):
 			S.deliver_to_site(f"https://{frappe.local.site}", "TOKEN", "WABA", "PHONE", {})
 		local.assert_called_once()
 		over_http.assert_not_called()
+
+
+class TestOneClickWhereTheDomainAllowsIt(IntegrationTestCase):
+	"""Meta opens Embedded Signup only from a domain registered with the app.
+
+	A client CRM is on a domain Facebook has never heard of, so it is sent to the
+	hub page. The agency's CRM *is* the hub — same domain, already registered —
+	and for it the page is a hop to nowhere.
+	"""
+
+	def test_the_connect_call_says_where_the_flow_would_open(self):
+		from crm.integrations.meta.client import get_settings
+		from crm.integrations.whatsapp.api import get_connect_url, save_whatsapp_app
+
+		settings = get_settings()
+		settings.whatsapp_app_id = "111"
+		settings.whatsapp_app_secret = "shhh"
+		settings.save()
+		save_whatsapp_app(whatsapp_signup_config_id="222")
+
+		data = get_connect_url()
+		# enough to open Facebook without the page in between
+		self.assertEqual(data["app_id"], "111")
+		self.assertEqual(data["config_id"], "222")
+		self.assertTrue(data["state"])
+		self.assertIn(data["state"], data["url"])
+		self.assertTrue(data["hub_origin"])
+		frappe.db.rollback()
+
+	def test_the_status_says_which_origin_that_is(self):
+		from crm.integrations.whatsapp.api import get_status
+
+		status = get_status()
+		if status.get("installed"):
+			self.assertIn("hub_origin", status)
+
+	def test_the_page_takes_its_own_query_out_of_the_address_bar(self):
+		"""Facebook refuses to redirect back to a URL carrying query parameters
+		the registered redirect URI does not have — and this page arrives with
+		`?state=…&go=1`. What the person saw was a window saying it could not
+		redirect."""
+		import pathlib
+
+		page = pathlib.Path(frappe.get_app_path("crm", "www", "whatsapp_connect.html")).read_text()
+		self.assertIn("history.replaceState", page)
+		self.assertIn("window.location.pathname", page)

@@ -95,6 +95,11 @@ def get_status() -> dict:
 		"accounts": accounts,
 		"default_account": default,
 		"connected": bool(accounts),
+		# Where the signup flow would have to be opened from. When it matches the
+		# CRM's own origin — which is the agency's own case, its CRM being the
+		# hub — Facebook can be opened straight from the button, and Facebook's
+		# script is worth fetching before anybody presses it.
+		"hub_origin": hub_url().rstrip("/"),
 	}
 
 
@@ -475,7 +480,19 @@ def get_connect_url() -> dict:
 	# `go` tells the hub page not to draw itself: the person pressed Connect
 	# here, so the next thing they should see is Facebook, not a second screen
 	# explaining that they are about to see Facebook.
-	return {"url": f"{hub}{CONNECT_PATH}?state={state}&go=1", "hub_origin": hub}
+	# Everything the CRM needs to open Facebook by itself, for the case where it
+	# may: when this site *is* the hub, the page it would send the browser to is
+	# on this very domain, and the hop exists only to land on a domain the Meta
+	# app knows. There it is a hop to nowhere — so the caller compares
+	# `hub_origin` with its own and, when they match, runs the flow in place.
+	return {
+		"url": f"{hub}{CONNECT_PATH}?state={state}&go=1",
+		"hub_origin": hub,
+		"state": state,
+		"app_id": get_whatsapp_app_id(),
+		"config_id": config_id(),
+		"return_url": get_url().rstrip("/") + "/crm?settings=WhatsApp",
+	}
 
 
 @frappe.whitelist()

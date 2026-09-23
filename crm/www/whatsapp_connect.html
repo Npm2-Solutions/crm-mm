@@ -280,6 +280,19 @@
 
 	const state = {{ state | tojson }};
 	const returnUrl = {{ return_url | tojson }};
+
+	// The address bar has to say exactly what the app has registered.
+	//
+	// «The redirect also won't allow any extra query parameters not present in
+	// your Valid OAuth redirect URIs list.» When the pop-up cannot talk back,
+	// the SDK redirects to the page that opened it — this page, which arrives
+	// carrying `?state=…&go=1`. The registered URI is the bare path, so that
+	// redirect is refused, and what the person sees is a window complaining
+	// that it cannot redirect. Both values are already read into the two
+	// constants above, so the query has no further use here.
+	if (window.history && window.history.replaceState && window.location.search) {
+		window.history.replaceState({}, '', window.location.pathname);
+	}
 	// No button on the page that launches by itself. Everything below has to
 	// cope with that, so the two pages can share one launcher.
 	const button = document.getElementById('wa-connect');
