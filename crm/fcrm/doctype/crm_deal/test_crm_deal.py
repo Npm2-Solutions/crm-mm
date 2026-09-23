@@ -499,6 +499,35 @@ class TestDealMirrorsThePersonAndTheCompany(IntegrationTestCase):
 
 		self.assertEqual(frappe.db.get_value("CRM Deal", deal.name, "website"), "https://specchio.it")
 
+	def test_changing_the_primary_contact_moves_the_person_too(self):
+		"""Name and number on a deal must be the same person's.
+
+		Email and mobile come from the primary contact row, the name and the job
+		title are mirrors of `lead`. Only the first half used to move, so a deal
+		whose primary contact was swapped showed one person's name above another
+		person's number, and its conversation still returned to the first.
+		"""
+		_, deal = self._person_with_a_deal()
+
+		other = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Giulia",
+				"last_name": "Verdi",
+				"email": "giulia.verdi@example.com",
+				"mobile_no": "+39 333 9999999",
+			}
+		).insert(ignore_permissions=True)
+		other.reload()
+
+		add_contact(deal.name, other.contact)
+		set_primary_contact(deal.name, other.contact)
+
+		deal.reload()
+		self.assertEqual(deal.lead, other.name)
+		self.assertEqual(deal.first_name, "Giulia")
+		self.assertEqual(deal.email, "giulia.verdi@example.com")
+
 	def test_converting_leaves_the_person_where_they_are(self):
 		"""A converted lead is not a spent record here: it is the person, and
 		they can carry a second deal."""

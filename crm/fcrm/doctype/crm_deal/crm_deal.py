@@ -151,6 +151,7 @@ class CRMDeal(Document):
 		self.validate_status()
 		self.set_primary_contact()
 		self.set_primary_email_mobile_no()
+		self.set_person_link()
 		self.set_person_name()
 		if not self.is_new() and self.has_value_changed("deal_owner") and self.deal_owner:
 			self.share_with_agent(self.deal_owner)
@@ -248,6 +249,27 @@ class CRMDeal(Document):
 			self.email = ""
 			self.mobile_no = ""
 			self.phone = ""
+
+	def set_person_link(self):
+		"""`lead` is whoever the primary contact belongs to.
+
+		The deal shows the person twice over: email, mobile and phone are copied
+		from the primary contact row, while the name, the job title and the gender
+		are `fetch_from` mirrors that read `lead`. Nothing moved `lead` when the
+		primary contact changed, so the two halves came apart -- one person's name
+		above another person's number, and the conversation returning to whoever
+		the deal was opened with months earlier.
+
+		Kept, not cleared, when the last contact is removed: a deal still has to
+		have somewhere to send a reply.
+		"""
+		primary = next((contact for contact in self.contacts if contact.is_primary), None)
+		if not primary or not primary.contact:
+			return
+
+		person = frappe.db.get_value("CRM Lead", {"contact": primary.contact}, "name")
+		if person:
+			self.lead = person
 
 	def set_person_name(self):
 		"""Name of the person the deal is with, kept in `lead_name`.
