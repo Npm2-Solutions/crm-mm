@@ -570,6 +570,25 @@ def test_submit_form(name: str, values: dict | str) -> dict:
 # `in_web_form` flag. No CRM-owned guest endpoint is needed for that path.
 
 
+def open_deal_for_web_submission(doc, method=None):
+	"""A public form submission is an inquiry, and an inquiry opens a deal.
+
+	`enrich_form_submission` cannot do this: it runs on `before_insert`, when the
+	person has no name yet to hang a deal off. So this is the same guard one hook
+	later.
+
+	Only for the person -- a form that targets `CRM Deal` already made one.
+	"""
+	if not frappe.flags.get("in_web_form"):
+		return
+	if doc.doctype != "CRM Lead":
+		return
+
+	from crm.api.lead import open_deal_for_inquiry
+
+	open_deal_for_inquiry(doc.name, source=doc.get("source"))
+
+
 def enrich_form_submission(doc):
 	"""Called from the CRM Lead/Deal `before_insert`: when the record is created via a
 	web form, apply the same enrichment the CRM applies on manual creation.

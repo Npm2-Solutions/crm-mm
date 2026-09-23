@@ -244,6 +244,7 @@ doc_events = {
 		],
 		"after_insert": [
 			"crm.api.tracking.bind_visitor",
+			"crm.api.form.open_deal_for_web_submission",
 			"crm.automation.engine.on_lead_created",
 			"crm.integrations.meta.conversions.on_lead_created",
 		],
