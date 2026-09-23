@@ -135,6 +135,17 @@ def open_deal_for_inquiry(person: str, source: str | None = None) -> str | None:
 		deal.deal_owner = person_doc.lead_owner
 		if person_doc.contact:
 			deal.append("contacts", {"contact": person_doc.contact, "is_primary": 1})
+
+		# where the person came from is where this deal came from, and converting
+		# by hand has always copied it. Not decoration: `stamp_manual_source`
+		# claims for "CRM UI" any record created by a signed-in user that nothing
+		# else has claimed -- and the hourly Meta reconciliation runs as one, so a
+		# deal born from an ad would otherwise report as typed into the CRM.
+		from crm.api.tracking import snapshot_fieldnames
+
+		deal.visitor = person_doc.visitor
+		for fieldname in snapshot_fieldnames():
+			deal.set(fieldname, person_doc.get(fieldname))
 		# no status: the deal controller puts it in the first stage of the
 		# default pipeline, which is the one place that decides where a sale starts
 		deal.insert(ignore_permissions=True)

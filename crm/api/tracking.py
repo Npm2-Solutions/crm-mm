@@ -661,6 +661,11 @@ def get_journey(doctype: str, name: str, limit: int = 200) -> dict:
 	}
 
 
+def snapshot_fieldnames() -> list[str]:
+	"""The attribution snapshot, for anything that has to carry it across records."""
+	return _snapshot_fieldnames()
+
+
 def _snapshot_fieldnames() -> list[str]:
 	suffixes = (
 		"category",

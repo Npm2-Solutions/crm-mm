@@ -73,5 +73,27 @@ class TestInquiryOpensADeal(IntegrationTestCase):
 		self.assertNotEqual(first, second)
 		self.assertEqual(open_deal_of(person.name), second)
 
+	def test_the_deal_says_where_the_person_came_from(self):
+		"""Not decoration: `stamp_manual_source` claims for "CRM UI" any record
+		a signed-in user creates that nothing else has claimed, and the hourly
+		Meta reconciliation runs as one. Without carrying the snapshot over, a
+		deal born from a paid ad reported as typed into the CRM by hand.
+		"""
+		person = self._person()
+		person.db_set(
+			{
+				"first_touch_category": "Paid Social",
+				"first_touch_source": "facebook",
+				"last_touch_category": "Paid Social",
+				"last_touch_source": "facebook",
+			},
+			update_modified=False,
+		)
+
+		deal = frappe.get_doc("CRM Deal", open_deal_for_inquiry(person.name))
+
+		self.assertEqual(deal.first_touch_category, "Paid Social")
+		self.assertEqual(deal.first_touch_source, "facebook")
+
 	def test_a_person_with_no_deal_has_none_open(self):
 		self.assertIsNone(open_deal_of(self._person().name))
