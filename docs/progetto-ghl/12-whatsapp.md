@@ -2040,3 +2040,43 @@ Adesso la registrazione **prende il posto della barra di scrittura**:
 | invio | il pulsante diventa *Sto inviando…* e si blocca |
 
 Chiudere la scheda mentre si registra butta via il pezzo invece di mandarlo.
+
+### Non bastava il Content-Type: era il codec dentro al file
+
+Con l'header corretto il vocale falliva ancora. Scaricando il file dal link che
+riceve Meta:
+
+```
+content-type: audio/mp4      ← giusto
+...
+ftyp isom … Opus … dOps      ← dentro c'e' Opus
+```
+
+**`audio/mp4` per WhatsApp significa AAC**, non "qualunque cosa dentro un MP4".
+Opus e' accettato **solo** dentro OGG. E il MediaRecorder di Chrome, a cui si
+chiede `audio/mp4` senza nominare il codec, risponde con **Opus dentro MP4** —
+una combinazione che nessun messenger prende.
+
+Il file si ascolta benissimo nel browser che l'ha registrato, l'header e'
+giusto, Meta risponde con un `message_id`, e poi segna `failed` in uno status
+webhook che nessuno guarda. Tre livelli che sembravano tutti corretti.
+
+Due correzioni:
+
+1. **Il codec si nomina.** La lista dei formati da registrare contiene solo
+   accoppiate che sono quello che dichiarano: `audio/ogg;codecs=opus` e
+   `audio/mp4;codecs=mp4a.40.2`. Fuori `audio/mp4` nudo (Chrome ci mette Opus) e
+   `audio/ogg` nudo (potrebbe essere Vorbis, che Meta non prende).
+2. **Il server controlla prima di mandare.** `audio_codec_problem()` guarda i
+   box del file: `dOps` senza `esds` significa Opus in MP4, e il messaggio viene
+   rifiutato **subito**, con scritto perche', invece di partire e fallire
+   un'ora dopo in silenzio.
+
+Altre due cose trovate per strada:
+
+- **HEAD dava 403.** L'endpoint accettava solo GET, e chi scarica spesso prima
+  chiede HEAD: si vedeva un link morto. Ora accetta entrambi.
+- **«This message did not fail»** sul pulsante Riprova: Meta scrive lo stato
+  `failed` minuscolo, l'opzione del doctype e' `Failed`, e il confronto era
+  sensibile alle maiuscole. Il pulsante rifiutava esattamente i messaggi per cui
+  esiste.
