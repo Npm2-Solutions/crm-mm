@@ -61,6 +61,16 @@ describe('directionOf', () => {
     ).toBe('out')
   })
 
+  it('puts a call on its side even when only one field says which', () => {
+    // the backend derives activity_type from type, so a row can arrive with
+    // either one of them; neither alone may put an incoming call on the right
+    expect(directionOf({ activity_type: 'incoming_call' })).toBe('in')
+    expect(directionOf({ activity_type: 'outgoing_call' })).toBe('out')
+    expect(channelOf({ type: 'Incoming', duration: 42 })).toBe('call')
+    expect(directionOf({ type: 'Incoming', duration: 42 })).toBe('in')
+    expect(directionOf({ type: 'Outgoing', duration: 42 })).toBe('out')
+  })
+
   it('gives a comment no side, because it was sent to nobody', () => {
     expect(directionOf(comment('5'))).toBe('internal')
     expect(directionOf({ activity_type: 'changed' })).toBe('internal')

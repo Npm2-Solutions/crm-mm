@@ -52,6 +52,12 @@ export function channelOf(item) {
   if (type === 'communication') return 'email'
   if (type === 'comment') return 'comment'
   if (type === 'incoming_call' || type === 'outgoing_call') return 'call'
+  // A call is the one row whose channel is derived rather than stored: without
+  // a readable `type` the backend writes no `activity_type` at all, and the
+  // call would quietly leave the conversation instead of taking a side in it.
+  if (!type && (item?.telephony_medium || item?.duration !== undefined)) {
+    if (item.type === 'Incoming' || item.type === 'Outgoing') return 'call'
+  }
   return ''
 }
 
@@ -66,7 +72,15 @@ export function directionOf(item) {
   const channel = channelOf(item)
   if (channel === 'whatsapp' || channel === 'sms')
     return item.type === 'Outgoing' ? 'out' : 'in'
-  if (channel === 'call') return item.type === 'Incoming' ? 'in' : 'out'
+  if (channel === 'call') {
+    // The side says who picked up the phone, so it must not hang on a single
+    // field. The backend words it twice — `activity_type` is derived from
+    // `type` when the call is read — and a row that reached this stream by
+    // another road may carry only one of them.
+    if (item.activity_type === 'incoming_call') return 'in'
+    if (item.activity_type === 'outgoing_call') return 'out'
+    return item.type === 'Incoming' ? 'in' : 'out'
+  }
   if (channel === 'email') {
     const said = item.data?.sent_or_received || item.sent_or_received || ''
     if (said) return said === 'Received' ? 'in' : 'out'

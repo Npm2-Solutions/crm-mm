@@ -223,6 +223,13 @@ const LABELS = {
 
 function labelFor(row) {
   const what = LABELS[row.channel] || 'Activity'
+  // A call is not sent or received, it is made or taken. The side already says
+  // which; the caption says it in words for anyone who reads before looking.
+  if (row.channel === 'call') {
+    if (row.direction === 'out') return `${what} — outgoing`
+    if (row.direction === 'in') return `${what} — incoming`
+    return what
+  }
   if (row.direction === 'out') return `${what} — sent`
   if (row.direction === 'in') return `${what} — received`
   return what
