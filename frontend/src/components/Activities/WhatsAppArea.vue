@@ -185,6 +185,20 @@
             />
           </div>
           <div class="-mb-1 flex shrink-0 items-end gap-1 text-ink-gray-5">
+            <!--
+              Written on the phone, not here.
+
+              The same number is used from the CRM and from the WhatsApp app in
+              somebody's pocket, and both halves land in this one chat. Without
+              saying which is which, «did I answer this, or did a colleague
+              answer from his phone?» has no answer a week later.
+            -->
+            <Tooltip
+              v-if="whatsapp.written_on_the_phone"
+              :text="__('Sent from the phone')"
+            >
+              <LucideSmartphone class="size-3" />
+            </Tooltip>
             <Tooltip :text="formatDate(whatsapp.creation, 'ddd, MMM D, YYYY')">
               <div class="text-2xs">
                 {{ formatDate(whatsapp.creation, 'hh:mm a') }}
@@ -233,6 +247,7 @@ import IconPicker from '@/components/IconPicker.vue'
 import CheckIcon from '@/components/Icons/CheckIcon.vue'
 import DoubleCheckIcon from '@/components/Icons/DoubleCheckIcon.vue'
 import DocumentIcon from '@/components/Icons/DocumentIcon.vue'
+import LucideSmartphone from '~icons/lucide/smartphone'
 import ReactIcon from '@/components/Icons/ReactIcon.vue'
 import { formatDate } from '@/utils'
 import { formatWhatsAppMessage } from '@/utils/whatsappText'

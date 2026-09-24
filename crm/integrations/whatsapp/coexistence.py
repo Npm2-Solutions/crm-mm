@@ -301,6 +301,10 @@ def store_message(message: dict, our_number: str, historical: bool = False, acco
 		"to": counterparty if outgoing else our_number,
 		"from": our_number if outgoing else sender,
 		"status": "delivered" if historical else "sent",
+		# this one was typed on the phone, not here. The chat says so, because
+		# «did I answer, or did a colleague answer from his phone?» otherwise has
+		# no answer a week later
+		"written_on_the_phone": 1,
 		"whatsapp_account": account,
 	}
 	if message.get("context", {}).get("id"):

@@ -53,3 +53,4 @@ crm.patches.v1_0.nobody_is_called_guest
 crm.patches.v1_0.one_booking_system
 crm.patches.v1_0.what_was_last_said_to_each_person
 crm.patches.v1_0.the_sale_state_leaves_the_person
+crm.patches.v1_0.which_messages_were_typed_on_the_phone

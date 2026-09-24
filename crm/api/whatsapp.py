@@ -155,6 +155,18 @@ def whatsapp_thread_of(reference_doctype: str, reference_name: str, reference_do
 				yield "CRM Deal", deal
 
 
+def phone_field() -> list[str]:
+	"""`written_on_the_phone`, when the site has been migrated far enough to have it.
+
+	It is a custom field this app adds to somebody else's doctype, so a site that
+	has not run the patch yet does not have the column — and asking for a column
+	that is not there is an error, not an empty answer.
+	"""
+	if frappe.get_meta("WhatsApp Message").has_field("written_on_the_phone"):
+		return ["written_on_the_phone"]
+	return []
+
+
 @frappe.whitelist()
 def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 	reference_doc = validate_access(reference_doctype, reference_name)
@@ -191,6 +203,7 @@ def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 				"reference_name",
 				"template_parameters",
 				"template_header_parameters",
+				*phone_field(),
 			],
 		)
 

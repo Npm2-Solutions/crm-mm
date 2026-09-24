@@ -26,6 +26,7 @@ def after_install(force=False):
 	add_email_template_custom_fields()
 	add_email_account_custom_field()
 	add_web_form_custom_fields()
+	add_whatsapp_custom_fields()
 	add_default_industries()
 	add_default_lead_sources()
 	add_default_lost_reasons()
@@ -383,6 +384,42 @@ def add_email_account_custom_field():
 		)
 
 		frappe.clear_cache(doctype="Email Account")
+
+
+def add_whatsapp_custom_fields():
+	"""Where an outgoing WhatsApp message was written.
+
+	With Coexistence the same number is used from the CRM *and* from the phone in
+	somebody's pocket, and both halves land in the same chat. Reading it back a
+	week later, «did I answer this, or did my colleague answer it from his
+	phone?» has no answer — the two look identical.
+
+	A custom field rather than a field of ours, because the doctype belongs to
+	`frappe_whatsapp`: this is the mechanism Frappe has for saying something more
+	about somebody else's document.
+	"""
+	if not frappe.db.exists("DocType", "WhatsApp Message"):
+		return
+	if frappe.get_meta("WhatsApp Message").has_field("written_on_the_phone"):
+		return
+
+	click.secho("* Installing Custom Fields in WhatsApp Message")
+	create_custom_fields(
+		{
+			"WhatsApp Message": [
+				{
+					"default": "0",
+					"description": "Sent from the WhatsApp app on the phone, not from the CRM",
+					"fieldname": "written_on_the_phone",
+					"fieldtype": "Check",
+					"insert_after": "message_type",
+					"label": "Written On The Phone",
+					"read_only": 1,
+				}
+			]
+		}
+	)
+	frappe.clear_cache(doctype="WhatsApp Message")
 
 
 def add_web_form_custom_fields():
