@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-center justify-between px-2">
+    <div class="flex items-start justify-between gap-4 px-2">
       <div class="flex flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
           {{ __('Services') }}
@@ -8,79 +8,50 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'What you deliver: duration, who delivers it, which room it needs, and the base price.',
+              'What you deliver and who delivers it. Click a service to edit it, a cell to assign a person or give them their own length, price and online flag.',
             )
           }}
         </p>
       </div>
-      <Button
-        variant="solid"
-        :label="__('New service')"
-        iconLeft="plus"
-        @click="openEditor()"
-      />
+      <div class="flex shrink-0 items-center gap-2">
+        <FormControl
+          v-model="query"
+          type="text"
+          class="w-44"
+          :placeholder="__('Filter services…')"
+        />
+        <Button
+          :label="__('Online booking')"
+          icon-left="lucide-globe"
+          :tooltip="__('Who clients can book online')"
+          @click="activeSettingsPage = 'Online booking'"
+        />
+        <Button
+          variant="solid"
+          :label="__('New service')"
+          iconLeft="plus"
+          @click="openEditor()"
+        />
+      </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto px-2">
-      <div
-        v-if="services.data?.length"
-        class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
-      >
-        <div
-          v-for="service in services.data"
-          :key="service.name"
-          class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
-          @click="openEditor(service.name)"
-        >
-          <span
-            class="size-2.5 shrink-0 rounded-full"
-            :style="{ backgroundColor: service.color || '#4C7EFF' }"
-          />
-          <div class="min-w-0 flex-1">
-            <div class="truncate text-p-base-medium text-ink-gray-8">
-              {{ service.service_name }}
-            </div>
-            <div class="truncate text-p-sm text-ink-gray-5">
-              {{ describe(service) }}
-            </div>
-          </div>
-          <span class="shrink-0 text-p-sm text-ink-gray-5">
-            {{ service.upcoming_count }} {{ __('upcoming') }}
-          </span>
-          <Badge
-            v-if="service.bookable_online"
-            :label="__('Online')"
-            theme="blue"
-            size="sm"
-          />
-          <Badge
-            :label="service.enabled ? __('Active') : __('Off')"
-            :theme="service.enabled ? 'green' : 'gray'"
-            size="sm"
-          />
-          <Button
-            variant="ghost"
-            icon="lucide-trash-2"
-            @click.stop="remove(service)"
-          />
-        </div>
-      </div>
-      <div
-        v-else-if="!services.loading"
-        class="px-2 text-p-base text-ink-gray-5"
-      >
-        {{ __('No services yet. Create the first one!') }}
-      </div>
-    </div>
+    <TeamMatrix
+      ref="grid"
+      :query="query"
+      @edit="(service) => openEditor(service.name)"
+      @remove="remove"
+    />
   </div>
 
   <Dialog v-model="showEditor" :options="{ title: editorTitle, size: '3xl' }">
     <template #body-content>
       <TabButtons v-model="editorTab" :buttons="editorTabs" class="mb-4" />
-      <div class="flex min-h-[420px] flex-col gap-4">
+      <div
+        class="-mx-1 flex h-[min(540px,62vh)] flex-col gap-4 overflow-y-auto px-1 pb-1"
+      >
         <!-- what it is and what it costs -->
         <template v-if="editorTab === 'details'">
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 gap-3">
             <FormControl
               v-model="form.service_name"
               type="text"
@@ -91,12 +62,26 @@
               v-model="form.category"
               type="text"
               :label="__('Category')"
+              :placeholder="__('e.g. Massages')"
             />
-            <FormControl
-              v-model="form.color"
-              type="text"
-              :label="__('Colour (hex)')"
-            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs text-ink-gray-5">{{ __('Colour') }}</span>
+            <div class="flex items-center gap-2">
+              <button
+                v-for="colour in COLOURS"
+                :key="colour"
+                class="size-6 rounded-full ring-offset-2 ring-offset-surface-modals transition"
+                :class="
+                  sameColour(form.color, colour)
+                    ? 'ring-2 ring-outline-gray-5'
+                    : 'hover:scale-110'
+                "
+                :style="{ backgroundColor: colour }"
+                :title="colour"
+                @click="form.color = colour"
+              />
+            </div>
           </div>
           <FormControl
             v-model="form.description"
@@ -104,8 +89,7 @@
             :rows="2"
             :label="__('Description')"
           />
-
-          <div class="grid grid-cols-4 gap-3">
+          <div class="grid grid-cols-[1fr_1fr_110px] gap-3">
             <FormControl
               v-model.number="form.duration"
               type="number"
@@ -115,6 +99,7 @@
             <FormControl
               v-model.number="form.default_price"
               type="number"
+              min="0"
               :label="__('Base price')"
             />
             <FormControl
@@ -122,13 +107,13 @@
               type="text"
               :label="__('Currency')"
             />
-            <FormControl
-              v-model="form.location"
-              type="text"
-              :label="__('Location')"
-              :placeholder="__('e.g. Via Roma 1 — or online')"
-            />
           </div>
+          <FormControl
+            v-model="form.location"
+            type="text"
+            :label="__('Location')"
+            :placeholder="__('e.g. Via Roma 1, Milano — or Online')"
+          />
           <div class="flex flex-wrap gap-4">
             <label class="flex items-center gap-2 text-sm text-ink-gray-7">
               <Switch v-model="form.enabled" size="sm" /> {{ __('Enabled') }}
@@ -176,7 +161,7 @@
           </div>
         </template>
 
-        <!-- who delivers it: the people only; their own settings live in Who does what -->
+        <!-- who delivers it: the service's row of the grid; own settings are set there -->
         <template v-else-if="editorTab === 'team'">
           <div class="grid grid-cols-2 gap-3">
             <FormControl
@@ -201,11 +186,11 @@
               :key="i"
               class="flex items-center gap-2"
             >
-              <Link
+              <PersonPicker
                 class="flex-1"
-                doctype="User"
                 :modelValue="row.user"
                 :placeholder="__('Professional')"
+                :exclude="form.staff.map((r) => r.user)"
                 @update:modelValue="(v) => (row.user = v)"
               />
               <FormControl
@@ -218,7 +203,7 @@
               <span
                 v-if="ownSettings(row)"
                 class="shrink-0 rounded bg-surface-blue-2 px-2 py-1 text-p-xs text-ink-blue-8"
-                :title="__('Set in Who does what')"
+                :title="__('Their own settings, from the grid')"
               >
                 {{ ownSettings(row) }}
               </span>
@@ -237,22 +222,13 @@
               @click="addProfessional"
             />
           </div>
-          <div
-            class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
-          >
-            <span>
-              {{
-                __(
-                  'Own length, price, priority or online for one person: Who does what.',
-                )
-              }}
-            </span>
-            <Button
-              size="sm"
-              :label="__('Open Who does what')"
-              @click="goTo('Who does what')"
-            />
-          </div>
+          <p class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                "The same people as this service's row in the grid. Click their cell there for their own length, price, priority or online flag.",
+              )
+            }}
+          </p>
           <div
             v-if="form.staff_selection === 'One per role'"
             class="mt-3 flex flex-col gap-2"
@@ -389,11 +365,33 @@
               :label="__('Buffer after')"
             />
           </div>
-          <WeeklyHours
-            v-model="form.availability"
-            :label="__('When it can be delivered')"
-            :hint="__('Empty means any time the team is available.')"
-          />
+          <div class="flex flex-col gap-2">
+            <span class="text-p-base-medium text-ink-gray-8">
+              {{ __('When it can be delivered') }}
+            </span>
+            <TabButtons
+              :modelValue="restrictHours ? 'set' : 'team'"
+              :buttons="[
+                { label: __('Whenever the team works'), value: 'team' },
+                { label: __('Only at set times'), value: 'set' },
+              ]"
+              @update:modelValue="setRestrictHours"
+            />
+            <p v-if="!restrictHours" class="text-p-sm text-ink-gray-5">
+              {{
+                __('Bookable in any free slot of the people who deliver it.')
+              }}
+            </p>
+            <WeeklyHours
+              v-else
+              v-model="form.availability"
+              :hint="
+                __(
+                  'e.g. first visits only on Tuesday morning. Still within each person\'s own hours.',
+                )
+              "
+            />
+          </div>
           <p class="text-p-xs text-ink-gray-5">
             {{ __("Each person's own hours and days off: Team rota.") }}
           </p>
@@ -437,8 +435,10 @@
 </template>
 
 <script setup>
-import Link from '@/components/Controls/Link.vue'
+import PersonPicker from '@/components/Settings/Scheduling/PersonPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
+import { globalStore } from '@/stores/global'
+import TeamMatrix from '@/components/Settings/Scheduling/TeamMatrix.vue'
 import OnlineBookingPanel from '@/components/Settings/Scheduling/OnlineBookingPanel.vue'
 import {
   INHERITED_RULES,
@@ -461,11 +461,26 @@ import { activeSettingsPage, showSettings } from '@/composables/settings'
 
 const router = useRouter()
 
-const services = createResource({
-  url: 'crm.api.appointments.list_services',
-  cache: 'crm-services-admin',
-  auto: true,
-})
+const { $dialog } = globalStore()
+
+// the calendar colours of a service: one tap instead of a hex code
+const COLOURS = [
+  '#4C7EFF',
+  '#30A46C',
+  '#E5484D',
+  '#F76B15',
+  '#FFB224',
+  '#8E4EC6',
+  '#D6409F',
+  '#12A594',
+  '#6E6E6E',
+]
+
+function sameColour(a, b) {
+  return (a || '#4C7EFF').toLowerCase() === b.toLowerCase()
+}
+const grid = ref(null)
+const query = ref('')
 
 const resources = createResource({
   url: 'crm.api.appointments.list_resources',
@@ -510,26 +525,24 @@ const staffingHint = computed(() => {
   return __('The least busy free professional takes the appointment.')
 })
 
-function describe(service) {
-  const parts = [`${service.duration} ${__('min')}`]
-  parts.push(
-    {
-      'Any one': __('round robin'),
-      'All required': __('collective'),
-      'One per role': __('one per role'),
-    }[service.staff_selection] || service.staff_selection,
-  )
-  if (service.max_participants > 1) {
-    parts.push(__('up to {0} people', [service.max_participants]))
-  }
-  if (service.default_price) {
-    parts.push(`${service.default_price} ${service.currency || ''}`)
-  }
-  return parts.join(' · ')
-}
-
 const showEditor = ref(false)
 const editorTab = ref('details')
+// a service without hours follows its team; "set times" narrows it
+const restrictHours = ref(false)
+
+function setRestrictHours(mode) {
+  restrictHours.value = mode === 'set'
+  if (!restrictHours.value) form.availability = []
+  else if (!form.availability.length) {
+    form.availability = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+    ].map((workday) => ({ workday, start_time: '09:00', end_time: '18:00' }))
+  }
+}
 const editorTabs = [
   { label: __('Details'), value: 'details' },
   { label: __('Team'), value: 'team' },
@@ -538,7 +551,7 @@ const editorTabs = [
   { label: __('Online'), value: 'online' },
 ]
 
-// one person's own settings, shown here, edited in Who does what
+// one person's own settings, shown here, edited from the grid's cell
 function ownSettings(row) {
   const parts = []
   if (row.duration) parts.push(`${row.duration}'`)
@@ -559,10 +572,6 @@ function addProfessional() {
   })
 }
 
-function goTo(page) {
-  showEditor.value = false
-  activeSettingsPage.value = page
-}
 const saving = ref(false)
 const editingName = ref(null)
 
@@ -613,7 +622,7 @@ async function toggleWebsite(value) {
       name: editingName.value,
       published: value ? 1 : 0,
     })
-    services.reload()
+    grid.value?.reload()
   } catch (error) {
     publishedOnWebsite.value = previous
     toast.error(error.messages?.[0] || __('Could not change it'))
@@ -633,6 +642,7 @@ const editorTitle = computed(() =>
 function openEditor(name = null) {
   editingName.value = name
   editorTab.value = 'details'
+  restrictHours.value = false
   publishedOnWebsite.value = false
   Object.assign(form, emptyForm())
   if (!name) {
@@ -681,6 +691,7 @@ function openEditor(name = null) {
         availability: data.availability || [],
       })
       publishedOnWebsite.value = Boolean(data.publish_on_website)
+      restrictHours.value = form.availability.length > 0
       showEditor.value = true
     },
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to load')),
@@ -710,7 +721,7 @@ function save() {
       saving.value = false
       showEditor.value = false
       toast.success(__('Service saved'))
-      services.reload()
+      grid.value?.reload()
     },
     onError: (e) => {
       saving.value = false
@@ -720,12 +731,29 @@ function save() {
 }
 
 function remove(service) {
-  createResource({
-    url: 'crm.api.appointments.delete_service',
-    params: { name: service.name },
-    auto: true,
-    onSuccess: () => services.reload(),
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
+  $dialog({
+    title: __('Delete {0}?', [service.service_name]),
+    message: __(
+      'This cannot be undone. A service with appointments cannot be deleted: turn it off instead.',
+    ),
+    actions: [
+      {
+        label: __('Delete'),
+        theme: 'red',
+        variant: 'solid',
+        onClick: (close) => {
+          close()
+          createResource({
+            url: 'crm.api.appointments.delete_service',
+            params: { name: service.name },
+            auto: true,
+            onSuccess: () => grid.value?.reload(),
+            onError: (e) =>
+              toast.error(e.messages?.[0] || __('Failed to delete')),
+          })
+        },
+      },
+    ],
   })
 }
 </script>
