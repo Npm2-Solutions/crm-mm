@@ -40,15 +40,6 @@
       @click="emit('template')"
     />
   </div>
-  <!-- The number this is going to. One person, one number: nothing to choose,
-       and reading it is how you see the prefix is there. -->
-  <div
-    v-if="recipient"
-    class="flex items-center gap-2 px-3 pt-2 text-p-sm text-ink-gray-5 sm:px-10"
-  >
-    <span>{{ __('To') }}</span>
-    <span class="text-ink-gray-7">{{ recipient }}</span>
-  </div>
   <!--
     Recording takes over the composer instead of hiding in it.
 
@@ -190,31 +181,6 @@ const { capture } = useTelemetry()
 const rows = ref(1)
 const textareaRef = ref(null)
 const emoji = ref('')
-
-// The number this conversation goes out to. One person, one number — read from
-// the backend rather than assumed here, so what is shown is what will be used.
-const recipient = ref('')
-
-const recipients = createResource({
-  url: 'crm.api.whatsapp.get_recipients',
-  makeParams: () => ({
-    reference_doctype: props.doctype,
-    reference_name: doc.value.name,
-  }),
-  onSuccess: (numbers) => {
-    if (!numbers?.includes(recipient.value))
-      recipient.value = numbers?.[0] || ''
-  },
-})
-
-watch(
-  () => doc.value.name,
-  (name) => {
-    recipient.value = ''
-    if (name) recipients.fetch()
-  },
-  { immediate: true },
-)
 
 const content = ref('')
 const placeholder = ref(__('Type your message here...'))
@@ -454,7 +420,9 @@ async function sendWhatsAppMessage() {
     reference_doctype: props.doctype,
     reference_name: doc.value.name,
     message: content.value,
-    to: recipient.value || doc.value.mobile_no,
+    // no recipient: the record knows whose conversation this is, and the
+    // backend reads it from there. A number sent from here would be a second
+    // answer to a question that already has one.
     attach: whatsapp.value.attach || '',
     reply_to: reply.value?.name || '',
     content_type: whatsapp.value.content_type,
