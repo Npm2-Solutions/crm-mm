@@ -1,6 +1,7 @@
 import frappe
 
 
+# nosemgrep: guest-whitelisted-method — the login page's SSO buttons; secrets are checked, never returned
 @frappe.whitelist(allow_guest=True)
 def oauth_providers():
 	from frappe.utils.html_utils import get_icon_html

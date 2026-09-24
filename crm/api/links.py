@@ -33,6 +33,7 @@ def _verify(slug: str, token: str, sig: str) -> dict | None:
 		return None
 
 
+# nosemgrep: guest-whitelisted-method — a tracked link is opened by a browser with no session, 600/h
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @rate_limit(limit=600, seconds=60 * 60)
 def r(l: str, t: str | None = None, s: str | None = None):

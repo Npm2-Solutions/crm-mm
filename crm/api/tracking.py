@@ -69,6 +69,7 @@ MAX_EVENTS_PER_BEACON = 20
 # ---------------------------------------------------------------------------
 
 
+# nosemgrep: guest-whitelisted-method — the beacon runs in a visitor's browser, before any login, 600/h
 @frappe.whitelist(allow_guest=True, methods=["POST", "OPTIONS"])
 @rate_limit(limit=600, seconds=60 * 60)
 def collect() -> dict:

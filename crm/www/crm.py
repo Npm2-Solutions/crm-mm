@@ -55,6 +55,7 @@ def redirect_to_set_password():
 	raise redirect
 
 
+# nosemgrep: guest-whitelisted-method — throws unless developer_mode is on, so it is dead on a real site
 @frappe.whitelist(methods=["POST"], allow_guest=True)
 def get_context_for_dev():
 	if not frappe.conf.developer_mode:

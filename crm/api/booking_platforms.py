@@ -80,6 +80,7 @@ def _check_manager():
 # --------------------------------------------------------------------------
 
 
+# nosemgrep: guest-whitelisted-method — platforms push bookings here; the token authenticates the call
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def webhook(token: str | None = None, **kwargs):
 	"""Bookings pushed by a platform. Answers fast: platforms retry on slowness."""
@@ -116,6 +117,7 @@ def busy_feed_url(conn, user: str | None = None) -> str:
 	return get_url(f"/api/method/crm.api.booking_platforms.busy_feed?{query}")
 
 
+# nosemgrep: guest-whitelisted-method — token plus key, and it answers only anonymous busy blocks
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def busy_feed(token: str, key: str, staff: str | None = None):
 	"""The professional's (or the whole team's) agenda as anonymous busy blocks.

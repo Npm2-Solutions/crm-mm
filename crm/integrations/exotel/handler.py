@@ -16,6 +16,7 @@ from crm.integrations.api import get_contact_by_phone_number
 
 
 # Incoming Call
+# nosemgrep: guest-whitelisted-method — Exotel's own webhook; validate_request() checks it really is Exotel
 @frappe.whitelist(allow_guest=True)
 def handle_request(**kwargs):
 	validate_request()
