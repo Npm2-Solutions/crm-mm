@@ -207,6 +207,7 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 	when the page was opened on its own link (``service``).
 	"""
 	config = _config()
+	wanted = service  # the loops below reuse the name: keep what was asked for
 	names = frappe.get_all(
 		"CRM Service",
 		filters={"enabled": 1, "bookable_online": 1},
@@ -215,26 +216,25 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 	)
 	services = []
 	for name in names:
-		service = frappe.get_cached_doc("CRM Service", name)
-		services.append(_service_card(service))
+		services.append(_service_card(frappe.get_cached_doc("CRM Service", name)))
 	# the link builder in Settings needs the link-only services too
 	show_hidden = cint(include_hidden) and bool({"System Manager", "Sales Manager"} & set(frappe.get_roles()))
 	services = [
 		card
 		for card in services
 		if card["bookable"]
-		and (card["listed"] or show_hidden or (service and service in (card["id"], card["name"])))
+		and (card["listed"] or show_hidden or (wanted and wanted in (card["id"], card["name"])))
 	]
 	categories = []
-	for service in services:
-		if service["category"] and service["category"] not in categories:
-			categories.append(service["category"])
+	for card in services:
+		if card["category"] and card["category"] not in categories:
+			categories.append(card["category"])
 	# the team, for staff pages (/prenota?professionista=…): who they are, what they do
 	people: dict[str, dict] = {}
 	for name in names:
-		service = frappe.get_cached_doc("CRM Service", name)
-		card_id = service.website_slug or service.name
-		for user in _online_staff(service):
+		doc = frappe.get_cached_doc("CRM Service", name)
+		card_id = doc.website_slug or doc.name
+		for user in _online_staff(doc):
 			person = people.setdefault(user, {**_staff_card(user), "services": []})
 			person["services"].append(card_id)
 	return {
