@@ -214,6 +214,7 @@ import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
 import { buildBookingLink, embedSnippet } from '@/utils/onlineBooking'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import QRCode from 'qrcode'
+import { hhmm } from '@/utils/scheduler'
 import { computed, defineComponent, h, reactive, ref, watch } from 'vue'
 
 // the rule on the settings page ↔ the service field that inherits it
@@ -382,9 +383,7 @@ createResource({
     })
     FIELDS.forEach((field) => {
       if (data[field] !== undefined && data[field] !== null)
-        form[field] = field.endsWith('cutoff')
-          ? String(data[field]).slice(0, 5)
-          : data[field]
+        form[field] = field.endsWith('cutoff') ? hhmm(data[field]) : data[field]
     })
   },
 })

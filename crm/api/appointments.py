@@ -28,6 +28,7 @@ from crm.scheduling.availability import (
 )
 from crm.scheduling.timeutils import (
 	from_system_naive,
+	hhmm,
 	parse_date,
 	parse_utc,
 	scheduling_tz,
@@ -743,7 +744,7 @@ def get_service(name: str) -> dict:
 	data = doc.as_dict()
 	data.update(online_rule_state(doc))
 	data["availability"] = [
-		{"workday": row.workday, "start_time": str(row.start_time), "end_time": str(row.end_time)}
+		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.availability
 	]
 	return data
@@ -927,7 +928,7 @@ def get_resource(name: str) -> dict:
 	doc = frappe.get_doc("CRM Resource", name)
 	data = doc.as_dict()
 	data["availability"] = [
-		{"workday": row.workday, "start_time": str(row.start_time), "end_time": str(row.end_time)}
+		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.availability
 	]
 	return data
@@ -1153,15 +1154,15 @@ def get_schedule(user: str) -> dict:
 		"public_bio": doc.get("public_bio") or "",
 		"holiday_list": doc.holiday_list,
 		"availability": [
-			{"workday": row.workday, "start_time": str(row.start_time), "end_time": str(row.end_time)}
+			{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 			for row in doc.availability
 		],
 		"exceptions": [
 			{
 				"date": str(row.date),
 				"unavailable": row.unavailable,
-				"start_time": str(row.start_time) if row.start_time else None,
-				"end_time": str(row.end_time) if row.end_time else None,
+				"start_time": hhmm(row.start_time),
+				"end_time": hhmm(row.end_time),
 				"reason": row.reason,
 			}
 			for row in doc.exceptions
@@ -1225,7 +1226,7 @@ def get_scheduling_settings() -> dict:
 	doc = frappe.get_doc("CRM Scheduling Settings")
 	data = doc.as_dict()
 	data["default_availability"] = [
-		{"workday": row.workday, "start_time": str(row.start_time), "end_time": str(row.end_time)}
+		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.default_availability
 	]
 	return data

@@ -204,3 +204,18 @@ export function unassigned(appointments, mode, columnKeys) {
     return !keys.some((key) => known.has(key))
   })
 }
+
+/**
+ * A server time as `HH:MM` for a time input.
+ *
+ * Frappe sends Time columns as a timedelta string, so nine o'clock arrives as
+ * `"9:00:00"` — cutting the first five characters gives `"9:00:"`, which a time
+ * input silently shows as empty. Anything unreadable becomes `""`.
+ */
+export function hhmm(value) {
+  const match = /^\s*(\d{1,2}):(\d{2})/.exec(String(value ?? ''))
+  if (!match) return ''
+  const hours = Number(match[1])
+  if (hours > 23) return ''
+  return `${String(hours).padStart(2, '0')}:${match[2]}`
+}

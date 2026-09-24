@@ -286,6 +286,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+import { hhmm } from '@/utils/scheduler'
 
 const weekStart = ref('')
 const todayIso = new Date().toISOString().slice(0, 10)
@@ -373,8 +374,8 @@ function openEditor(user = '') {
         exceptions: (data.exceptions || []).map((row) => ({
           date: row.date,
           unavailable: Boolean(row.unavailable),
-          start_time: String(row.start_time || '').slice(0, 5),
-          end_time: String(row.end_time || '').slice(0, 5),
+          start_time: hhmm(row.start_time),
+          end_time: hhmm(row.end_time),
           reason: row.reason || '',
         })),
       })

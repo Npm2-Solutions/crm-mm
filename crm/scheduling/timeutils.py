@@ -66,6 +66,18 @@ def as_time(value) -> datetime.time:
 	return value
 
 
+def hhmm(value) -> str | None:
+	"""A Time column as ``HH:MM`` for a time input. Frappe hands it over as a
+	timedelta, whose ``str`` is ``9:00:00`` — no leading zero, which the browser
+	reads as no time at all."""
+	if value in (None, ""):
+		return None
+	if isinstance(value, str):
+		hours, _, rest = value.strip().partition(":")
+		return f"{int(hours):02d}:{rest[:2]}" if hours.isdigit() and rest[:2].isdigit() else None
+	return as_time(value).strftime("%H:%M")
+
+
 def day_bounds(day: datetime.date, tz: ZoneInfo) -> tuple[datetime.datetime, datetime.datetime]:
 	"""Midnight-to-midnight of a calendar day in ``tz``, as aware UTC."""
 	start = datetime.datetime.combine(day, datetime.time.min, tzinfo=tz).astimezone(UTC)

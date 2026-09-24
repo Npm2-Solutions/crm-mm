@@ -334,6 +334,7 @@
 import Link from '@/components/Controls/Link.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+import { hhmm } from '@/utils/scheduler'
 
 const WEEKDAYS = [
   'Monday',
@@ -397,9 +398,7 @@ function conditionsOf(rule) {
   if (rule.weekday) parts.push(__(rule.weekday))
   if (rule.start_time || rule.end_time) {
     parts.push(
-      `${String(rule.start_time || '00:00').slice(0, 5)}–${String(
-        rule.end_time || '24:00',
-      ).slice(0, 5)}`,
+      `${hhmm(rule.start_time) || '00:00'}–${hhmm(rule.end_time) || '24:00'}`,
     )
   }
   if (rule.min_participants) {
@@ -528,8 +527,8 @@ function openRuleEditor(rule = null) {
           staff: rule.staff || '',
           resource: rule.resource || '',
           weekday: rule.weekday || '',
-          start_time: String(rule.start_time || '').slice(0, 5),
-          end_time: String(rule.end_time || '').slice(0, 5),
+          start_time: hhmm(rule.start_time),
+          end_time: hhmm(rule.end_time),
           valid_from: rule.valid_from || '',
           valid_upto: rule.valid_upto || '',
         }

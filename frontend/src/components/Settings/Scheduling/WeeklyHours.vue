@@ -48,6 +48,7 @@
 <script setup>
 import { Button, FormControl, FormLabel } from 'frappe-ui'
 import { computed } from 'vue'
+import { hhmm } from '@/utils/scheduler'
 
 const WEEKDAYS = [
   'Monday',
@@ -71,10 +72,8 @@ const weekdayOptions = computed(() =>
   WEEKDAYS.map((day) => ({ label: __(day), value: day })),
 )
 
-/** `"09:00:00"` and `"09:00"` both come back from the server. */
-function short(value) {
-  return String(value || '').slice(0, 5)
-}
+/** `"9:00:00"`, `"09:00:00"` and `"09:00"` all come back from the server. */
+const short = hhmm
 
 function patch(index, changes) {
   const next = props.modelValue.map((row, i) =>
