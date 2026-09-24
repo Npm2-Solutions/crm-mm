@@ -177,7 +177,7 @@ def import_accounts() -> dict:
 		try:
 			sync_pages_and_forms(token)
 		except MetaAPIError as exc:
-			frappe.throw(_("Meta API error: {0}").format(exc))
+			frappe.throw(_("Meta API error: {0}").format(str(exc)))
 
 	result = sync_from_facebook_pages()
 	result["accounts"] = list_accounts_admin()

@@ -285,7 +285,7 @@ def configure_webhook() -> dict:
 			},
 		)
 	except MetaAPIError as exc:
-		frappe.throw(_("Could not configure the webhook automatically: {0}").format(exc))
+		frappe.throw(_("Could not configure the webhook automatically: {0}").format(str(exc)))
 	return get_webhook()
 
 

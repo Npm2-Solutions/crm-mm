@@ -142,7 +142,7 @@ def configure_webhook() -> dict:
 			},
 		)
 	except MetaAPIError as exc:
-		frappe.throw(_("Could not configure the webhook automatically: {0}").format(exc))
+		frappe.throw(_("Could not configure the webhook automatically: {0}").format(str(exc)))
 	return get_webhook_subscription()
 
 
@@ -425,7 +425,7 @@ def set_page_sync(page_id: str, enabled: bool) -> dict:
 			subscribed = 0
 	except MetaAPIError as exc:
 		if enabled:
-			frappe.throw(_("Could not subscribe the page to the leadgen webhook: {0}").format(exc))
+			frappe.throw(_("Could not subscribe the page to the leadgen webhook: {0}").format(str(exc)))
 		subscribed = 0
 
 	page.sync_enabled = 1 if enabled else 0
@@ -575,7 +575,7 @@ def create_test_lead(form_id: str) -> dict:
 		result = graph_post(f"{form_id}/test_leads", token, {})
 		return {"ok": True, "id": result.get("id")}
 	except MetaAPIError as exc:
-		frappe.throw(_("Could not create test lead: {0}").format(exc))
+		frappe.throw(_("Could not create test lead: {0}").format(str(exc)))
 
 
 # --- ad spend --------------------------------------------------------------

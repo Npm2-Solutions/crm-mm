@@ -413,7 +413,7 @@ def exchange_code(code: str, redirect_uri: str = "") -> str:
 	try:
 		data = whatsapp_graph_get("oauth/access_token", token="", params=params)
 	except MetaAPIError as exc:
-		frappe.throw(_("Meta refused the WhatsApp connection: {0}").format(exc))
+		frappe.throw(_("Meta refused the WhatsApp connection: {0}").format(str(exc)))
 	if not data.get("access_token"):
 		frappe.throw(_("Meta did not return an access token"))
 	return data["access_token"]
@@ -443,7 +443,7 @@ def discover_assets(token: str, waba_id: str = "", phone_number_id: str = "") ->
 		try:
 			data = whatsapp_graph_get("debug_token", whatsapp_app_token(), {"input_token": token})
 		except MetaAPIError as exc:
-			frappe.throw(_("Meta would not say which WhatsApp account was shared: {0}").format(exc))
+			frappe.throw(_("Meta would not say which WhatsApp account was shared: {0}").format(str(exc)))
 		for scope in (data.get("data") or {}).get("granular_scopes") or []:
 			if scope.get("scope") == "whatsapp_business_management" and scope.get("target_ids"):
 				waba_id = str(scope["target_ids"][0])
@@ -455,7 +455,7 @@ def discover_assets(token: str, waba_id: str = "", phone_number_id: str = "") ->
 		try:
 			numbers = whatsapp_graph_get(f"{waba_id}/phone_numbers", token, {"limit": 1})
 		except MetaAPIError as exc:
-			frappe.throw(_("Could not read this WhatsApp account's phone number: {0}").format(exc))
+			frappe.throw(_("Could not read this WhatsApp account's phone number: {0}").format(str(exc)))
 		rows = numbers.get("data") or []
 		if not rows:
 			frappe.throw(
