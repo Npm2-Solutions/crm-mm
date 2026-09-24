@@ -519,9 +519,11 @@ function configureWebhook() {
     onSuccess: (data) => {
       configuringWebhook.value = false
       webhook.data = data
-      data.configured
-        ? toast.success(__('Webhook configured on the Meta app'))
-        : toast.error(data.error || __('Webhook not configured'))
+      if (data.configured) {
+        toast.success(__('Webhook configured on the Meta app'))
+      } else {
+        toast.error(data.error || __('Webhook not configured'))
+      }
     },
     onError: (e) => {
       configuringWebhook.value = false
@@ -533,7 +535,11 @@ function configureWebhook() {
 onOAuthResult('meta', ({ error }) => {
   choosing.value = false
   metaError.value = error
-  error ? toast.error(error) : toast.success(__('Facebook connected'))
+  if (error) {
+    toast.error(error)
+  } else {
+    toast.success(__('Facebook connected'))
+  }
   status.reload()
 })
 

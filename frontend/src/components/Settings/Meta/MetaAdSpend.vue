@@ -108,7 +108,9 @@
                   {{ account.last_error }}
                 </div>
               </div>
-              <div class="flex shrink-0 items-center gap-2">
+              <div
+                class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap"
+              >
                 <span class="text-p-sm text-ink-gray-5">{{
                   __('Read spend')
                 }}</span>

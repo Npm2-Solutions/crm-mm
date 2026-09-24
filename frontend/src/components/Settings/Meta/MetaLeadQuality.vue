@@ -204,9 +204,11 @@ function sendNow() {
     auto: true,
     onSuccess: (data) => {
       sending.value = false
-      data.error
-        ? toast.error(data.error)
-        : toast.success(__('{0} stages sent', [data.sent || 0]))
+      if (data.error) {
+        toast.error(data.error)
+      } else {
+        toast.success(__('{0} stages sent', [data.sent || 0]))
+      }
       status.reload()
     },
     onError: (e) => {

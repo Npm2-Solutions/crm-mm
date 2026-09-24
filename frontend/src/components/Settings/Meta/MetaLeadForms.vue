@@ -105,7 +105,9 @@
                     }}
                   </div>
                 </div>
-                <div class="flex shrink-0 items-center gap-2">
+                <div
+                  class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap"
+                >
                   <Button
                     size="sm"
                     :label="__('Read forms')"
@@ -407,9 +409,11 @@ function readForms(page) {
     auto: true,
     onSuccess: (data) => {
       syncingForms.value = ''
-      data.error
-        ? toast.error(data.error)
-        : toast.success(__('{0} forms read', [data.forms]))
+      if (data.error) {
+        toast.error(data.error)
+      } else {
+        toast.success(__('{0} forms read', [data.forms]))
+      }
       pages.reload()
     },
     onError: (e) => {

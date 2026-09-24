@@ -1,6 +1,10 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-center justify-between px-2">
+  <div
+    class="flex h-full flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 text-ink-gray-8"
+  >
+    <div
+      class="flex flex-col items-start gap-3 px-2 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div class="flex flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
           {{ __('Team rota') }}
@@ -21,7 +25,7 @@
       />
     </div>
 
-    <div class="flex items-center gap-2 px-2">
+    <div class="flex flex-wrap items-center gap-2 px-2">
       <Button
         variant="ghost"
         icon="lucide-chevron-left"
@@ -33,9 +37,14 @@
         icon="lucide-chevron-right"
         @click="shiftWeek(7)"
       />
-      <span class="text-p-base-medium text-ink-gray-7">{{ weekLabel }}</span>
+      <span class="whitespace-nowrap text-p-base-medium text-ink-gray-7">
+        {{ weekLabel }}
+      </span>
       <span class="grow" />
-      <span class="flex items-center gap-2 text-p-xs">
+      <!-- A colour key is a reference, not a control: on a phone it would cost
+           two rows above the rota it explains, and the colours are in the grid
+           right below. -->
+      <span class="hidden items-center gap-2 text-p-xs sm:flex">
         <span class="rounded bg-surface-green-2 px-1.5 py-0.5 text-ink-green-8">
           {{ __('Working') }}
         </span>

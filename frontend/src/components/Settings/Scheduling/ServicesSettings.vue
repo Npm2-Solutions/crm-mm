@@ -1,6 +1,10 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4 px-2">
+  <div
+    class="flex h-full flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 text-ink-gray-8"
+  >
+    <div
+      class="flex flex-col items-stretch gap-3 px-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+    >
       <div class="flex flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
           {{ __('Services') }}
@@ -13,11 +17,11 @@
           }}
         </p>
       </div>
-      <div class="flex shrink-0 items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap">
         <FormControl
           v-model="query"
           type="text"
-          class="w-44"
+          class="w-full sm:w-44"
           :placeholder="__('Filter services…')"
         />
         <Button

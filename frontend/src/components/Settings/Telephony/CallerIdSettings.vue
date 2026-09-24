@@ -113,7 +113,9 @@
                 />
               </div>
 
-              <div class="flex shrink-0 items-center gap-2">
+              <div
+                class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap"
+              >
                 <Badge
                   :label="
                     row.routes_to_crm
