@@ -352,7 +352,7 @@ def unread(records: list | str | None = None) -> dict:
 	wanted: set[tuple[str, str]] = set()
 	for entry in records:
 		doctype, name = (
-			entry if isinstance(entry, (list, tuple)) else (entry.get("doctype"), entry.get("name"))
+			entry if isinstance(entry, list | tuple) else (entry.get("doctype"), entry.get("name"))
 		)
 		if doctype in RECORDS and name:
 			wanted.add((doctype, name))

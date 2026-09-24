@@ -1053,7 +1053,7 @@ def step_webhook(step, ref_doc) -> str:
 			"data": {
 				k: v
 				for k, v in ref_doc.as_dict().items()
-				if isinstance(v, (str, int, float, bool)) or v is None
+				if isinstance(v, str | int | float | bool) or v is None
 			},
 		}
 	response = requests.request(method, url, json=payload, headers=headers, timeout=15)
@@ -1240,7 +1240,7 @@ def validate_steps(steps, _top=True) -> None:
 def parse_json(value):
 	if not value:
 		return None
-	if isinstance(value, (list, dict)):
+	if isinstance(value, list | dict):
 		return value
 	try:
 		return json.loads(value)
