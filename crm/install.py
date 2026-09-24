@@ -7,6 +7,7 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 from crm.api.pipeline import DEFAULT_STAGES, create_default_pipeline
+from crm.dashboard.store import create_template_dashboards
 from crm.domain_enrichment.install import seed_default_rules_and_mappings
 from crm.fcrm.doctype.crm_dashboard.crm_dashboard import create_default_manager_dashboard
 from crm.fcrm.doctype.crm_products.crm_products import create_product_details_script
@@ -34,6 +35,7 @@ def after_install(force=False):
 	add_standard_dropdown_items()
 	add_default_scripts()
 	create_default_manager_dashboard(force)
+	create_template_dashboards()
 	create_assignment_rule_custom_fields()
 	add_assignment_rule_property_setters()
 	seed_default_rules_and_mappings()

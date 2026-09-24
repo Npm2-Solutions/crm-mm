@@ -1,12 +1,12 @@
-import json
-
 import frappe
 from frappe import _
 from frappe.query_builder import Case, DocType
 from frappe.query_builder.functions import Avg, Coalesce, Count, Date, DateFormat, IfNull, Sum
 from pypika.functions import Function
 
-from crm.fcrm.doctype.crm_dashboard.crm_dashboard import create_default_manager_dashboard
+from crm.dashboard import layout as grid
+from crm.dashboard import registry, store, templates
+from crm.dashboard.context import Context, is_manager
 from crm.utils import sales_user_only
 
 
@@ -16,10 +16,177 @@ class TimestampDiff(Function):
 		super().__init__("TIMESTAMPDIFF", unit, start, end, **kwargs)
 
 
+# -- the dashboard builder ---------------------------------------------------------
+#
+# The endpoints below serve the dashboard page: which dashboards a person has,
+# the widget catalogue to build them from, and the numbers for a set of widgets.
+# Everything about what a widget means lives in ``crm.dashboard``.
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def get_dashboards() -> dict:
+	"""The dashboards the person can open. POST: the first call on a site creates the defaults."""
+	return {
+		"dashboards": store.visible_dashboards(),
+		"can_share": is_manager(),
+	}
+
+
+@frappe.whitelist()
+@sales_user_only
+def get_dashboard_layout(name: str) -> dict:
+	return store.load(name)
+
+
+@frappe.whitelist()
+@sales_user_only
+def get_widget_catalog() -> dict:
+	"""Every widget the person may add, with the reason when their site cannot answer it yet."""
+	manager = is_manager()
+	widgets = []
+	for widget in registry.all_widgets():
+		if widget.retired or (widget.managers_only and not manager):
+			continue
+		blocked = store.availability(widget)
+		widgets.append(
+			{
+				"id": widget.id,
+				"category": widget.category,
+				"kind": widget.kind,
+				"title": str(widget.title),
+				"description": str(widget.description),
+				"size": list(widget.size),
+				"live": widget.live,
+				"scope": widget.scope,
+				"options": [option.describe() for option in widget.options],
+				"keywords": list(widget.keywords),
+				"unavailable": blocked,
+			}
+		)
+	return {
+		"categories": list(registry.CATEGORIES),
+		"widgets": widgets,
+		"templates": [
+			{
+				**templates.describe(template),
+				"available": any(
+					item["name"] not in grid.STRUCTURAL for item in templates.build(template, store.showable)
+				),
+			}
+			for template in templates.TEMPLATES
+			if manager or not template.managers_only
+		],
+		"periods": list(store.PERIODS),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def get_widgets_data(
+	widgets: str | list,
+	from_date: str | None = None,
+	to_date: str | None = None,
+	user: str | None = None,
+	only_mine: int | str | None = 0,
+) -> dict:
+	"""The answer of each widget, keyed by its place on the grid.
+
+	One request for the whole dashboard, but each widget on its own: one that
+	fails is logged and comes back as an error, the others still load.
+	"""
+	items = frappe.parse_json(widgets) if isinstance(widgets, str) else widgets
+	if not isinstance(items, list):
+		frappe.throw(_("Invalid widgets"))
+	only_mine = frappe.utils.cint(only_mine)
+	answers = {}
+	for entry in items[: grid.MAX_ITEMS]:
+		if not isinstance(entry, dict) or entry.get("name") in grid.STRUCTURAL:
+			continue
+		key = str(entry.get("i") or entry.get("name"))
+		answers[key] = widget_answer(
+			entry.get("name"), entry.get("config") or {}, from_date, to_date, user, only_mine
+		)
+	return answers
+
+
+def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
+	widget = registry.get(name)
+	if not widget:
+		return {"error": _("This widget does not exist any more")}
+	blocked = store.availability(widget)
+	if blocked:
+		return {"kind": widget.kind, "unavailable": blocked}
+	scope = "me" if only_mine and widget.scope == "team" else widget.scope
+	ctx = Context.build(
+		from_date,
+		to_date,
+		requested_user=user,
+		scope=scope,
+		config=widget.clean_config(config if isinstance(config, dict) else {}),
+	)
+	try:
+		answer = widget.fn(ctx)
+	except Exception:
+		frappe.log_error(title=f"Dashboard widget {widget.id} failed")
+		return {"kind": widget.kind, "error": _("This widget could not be loaded")}
+	answer.setdefault("kind", widget.kind)
+	answer["live"] = widget.live
+	answer["scope"] = scope
+	if answer.get("format") == "currency" or answer.get("kind") in ("table", "list", "axis", "donut"):
+		answer.setdefault("currency", ctx.currency)
+	return answer
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def save_dashboard_layout(name: str, layout: str | list) -> dict:
+	items = frappe.parse_json(layout) if isinstance(layout, str) else layout
+	return store.save_layout(name, items)
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def update_dashboard(
+	name: str,
+	title: str | None = None,
+	icon: str | None = None,
+	period: str | None = None,
+	only_mine: int | str | None = None,
+) -> dict:
+	return store.update(name, title=title, icon=icon, period=period, only_mine=only_mine)
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def create_dashboard(
+	title: str,
+	private: int | str = 1,
+	template: str | None = None,
+	copy_of: str | None = None,
+) -> dict:
+	return store.create(title, private=bool(frappe.utils.cint(private)), template=template, copy_of=copy_of)
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def delete_dashboard(name: str) -> None:
+	store.delete(name)
+
+
+@frappe.whitelist(methods=["POST"])
+@sales_user_only
+def reset_dashboard(name: str) -> dict:
+	return store.reset(name)
+
+
+# -- the first dashboard's endpoints, kept for anything still calling them ---------
+
+
 @frappe.whitelist()
 def reset_to_default():
 	frappe.only_for("System Manager", True)
-	create_default_manager_dashboard(force=True)
+	store.ensure_manager_dashboard(force=True)
 
 
 @frappe.whitelist()
@@ -27,6 +194,9 @@ def reset_to_default():
 def get_dashboard(from_date: str | None = None, to_date: str | None = None, user: str | None = None):
 	"""
 	Get the dashboard data for the CRM dashboard.
+
+	The layout of the team's main dashboard, each item with its data. Widgets the
+	first dashboard knew answer as they always did; the others in the new shapes.
 	"""
 
 	if not from_date or not to_date:
@@ -40,25 +210,20 @@ def get_dashboard(from_date: str | None = None, to_date: str | None = None, user
 	if is_sales_user:
 		user = frappe.session.user
 
-	dashboard = frappe.db.exists("CRM Dashboard", "Manager Dashboard")
+	store.ensure_manager_dashboard()
+	items = store.resolve(frappe.get_doc("CRM Dashboard", store.MANAGER_DASHBOARD))
 
-	layout = []
-
-	if not dashboard:
-		layout = json.loads(create_default_manager_dashboard())
-		frappe.db.commit()  # nosemgrep: frappe-manual-commit — not POST-only: a GET would roll the new dashboard back
-	else:
-		layout = json.loads(frappe.db.get_value("CRM Dashboard", "Manager Dashboard", "layout") or "[]")
-
-	for l in layout:
+	for l in items:
 		method_name = f"get_{l['name']}"
-		if hasattr(frappe.get_attr("crm.api.dashboard"), method_name):
+		if l["name"] in grid.STRUCTURAL:
+			l["data"] = None
+		elif hasattr(frappe.get_attr("crm.api.dashboard"), method_name):
 			method = getattr(frappe.get_attr("crm.api.dashboard"), method_name)
 			l["data"] = method(from_date, to_date, user)
 		else:
-			l["data"] = None
+			l["data"] = widget_answer(l["name"], l.get("config") or {}, from_date, to_date, user, 0)
 
-	return layout
+	return items
 
 
 @frappe.whitelist()
