@@ -5,14 +5,14 @@
        scrollbar gutter and hands the page a horizontal scroll it never wanted. -->
   <div class="flex h-app w-full">
     <MobileMenu />
-    <div class="flex h-full min-w-0 flex-1 flex-col px-safe">
+    <!-- The surface belongs to the whole column, not just the scroll box: with
+         it only on the box, the header and the strip around it fell through to
+         the page background, which in dark mode is white — white text on white. -->
+    <div class="flex h-full min-w-0 flex-1 flex-col bg-surface-base px-safe">
       <MobileAppHeader />
       <!-- The scroll box is this wrapper, not the whole column, so the header
            stays put and the tab bar is never scrolled off the bottom. -->
-      <div
-        ref="scroll"
-        class="flex min-h-0 flex-1 flex-col overflow-auto bg-surface-base"
-      >
+      <div ref="scroll" class="flex min-h-0 flex-1 flex-col overflow-auto">
         <slot />
       </div>
       <MobileBottomNav v-if="!mobileNavHidden" />
