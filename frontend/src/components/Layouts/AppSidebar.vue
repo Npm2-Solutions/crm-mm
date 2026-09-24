@@ -283,9 +283,14 @@ const links = [
     to: 'Organizations',
   },
   {
+    // The same people as above, read in the order they last wrote. One list,
+    // two ways of looking at it — so this is a view of People, not a page of
+    // its own.
     label: 'Inbox',
     icon: SMSIcon,
-    to: 'Inbox',
+    to: 'Leads',
+    params: { viewType: 'inbox' },
+    key: 'Inbox',
   },
   {
     label: 'Automations',
@@ -351,8 +356,8 @@ const allViews = computed(() => {
         .map((link) => ({
           label: link.label,
           icon: link.icon,
-          key: link.to,
-          to: { name: link.to },
+          key: link.key || link.to,
+          to: { name: link.to, params: link.params },
         })),
     },
   ]
@@ -411,7 +416,11 @@ function getIcon(routeName, icon) {
 }
 
 // A saved view's key is its name; a plain nav item's key is its route name.
+// The Inbox is the exception, because it shares its route with People: what
+// tells them apart is which view of that route is open.
 function currentRouteKey() {
+  if (route.name === 'Leads' && route.params.viewType === 'inbox')
+    return 'Inbox'
   return route.query.view || route.name
 }
 
@@ -440,7 +449,7 @@ function selectItem(event, key) {
 }
 
 watch(
-  () => [route.name, route.query.view],
+  () => [route.name, route.query.view, route.params.viewType],
   () => (activeItem.value = currentRouteKey()),
 )
 

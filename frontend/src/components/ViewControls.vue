@@ -12,6 +12,30 @@
             :default_filters="filters"
             @update="updateFilter"
           />
+          <!--
+            Two chips instead of a filter to build: «what is still waiting» is the
+            question an inbox is opened to answer, and making somebody assemble it
+            out of a field and an operator every morning is making them work for
+            the tool.
+          -->
+          <div
+            v-if="route.params.viewType === 'inbox'"
+            class="flex items-center rounded bg-surface-gray-2 p-0.5"
+          >
+            <button
+              v-for="choice in INBOX_CHOICES"
+              :key="choice.value"
+              class="rounded px-2 py-1 text-sm transition-colors"
+              :class="
+                waitingOnly === choice.value
+                  ? 'bg-surface-white text-ink-gray-9 shadow-sm'
+                  : 'text-ink-gray-6 hover:text-ink-gray-8'
+              "
+              @click="showOnlyWaiting(choice.value)"
+            >
+              {{ __(choice.label) }}
+            </button>
+          </div>
           <GroupBy
             v-if="route.params.viewType === 'group_by'"
             v-model="list"
@@ -29,7 +53,7 @@
             @click="reload()"
           />
           <SortBy
-            v-if="route.params.viewType !== 'kanban'"
+            v-if="!['kanban', 'inbox'].includes(route.params.viewType)"
             v-model="list"
             :doctype="doctype"
             :hideLabel="isMobileView"
@@ -42,7 +66,9 @@
             @update="updateKanbanSettings"
           />
           <ColumnSettings
-            v-else-if="!options.hideColumnsButton"
+            v-else-if="
+              !options.hideColumnsButton && route.params.viewType !== 'inbox'
+            "
             v-model="list"
             :doctype="doctype"
             :hideLabel="isMobileView"
@@ -173,8 +199,32 @@
           :default_filters="filters"
           @update="updateFilter"
         />
+        <!--
+          Two chips instead of a filter to build: «what is still waiting» is the
+          question an inbox is opened to answer, and making somebody assemble it
+          out of a field and an operator every morning is making them work for
+          the tool.
+        -->
+        <div
+          v-if="route.params.viewType === 'inbox'"
+          class="flex items-center rounded bg-surface-gray-2 p-0.5"
+        >
+          <button
+            v-for="choice in INBOX_CHOICES"
+            :key="choice.value"
+            class="rounded px-2 py-1 text-sm transition-colors"
+            :class="
+              waitingOnly === choice.value
+                ? 'bg-surface-white text-ink-gray-9 shadow-sm'
+                : 'text-ink-gray-6 hover:text-ink-gray-8'
+            "
+            @click="showOnlyWaiting(choice.value)"
+          >
+            {{ __(choice.label) }}
+          </button>
+        </div>
         <SortBy
-          v-if="route.params.viewType !== 'kanban'"
+          v-if="!['kanban', 'inbox'].includes(route.params.viewType)"
           v-model="list"
           :doctype="doctype"
           @update="updateSort"
@@ -186,7 +236,9 @@
           @update="updateKanbanSettings"
         />
         <ColumnSettings
-          v-else-if="!options.hideColumnsButton"
+          v-else-if="
+            !options.hideColumnsButton && route.params.viewType !== 'inbox'
+          "
           v-model="list"
           :doctype="doctype"
           @update="(isDefault) => updateColumns(isDefault)"
@@ -304,6 +356,7 @@ import Icon from '@/components/Icon.vue'
 import ListIcon from '@/components/Icons/ListIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import GroupByIcon from '@/components/Icons/GroupByIcon.vue'
+import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import QuickFilterField from '@/components/QuickFilterField.vue'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import DuplicateIcon from '@/components/Icons/DuplicateIcon.vue'
@@ -378,6 +431,44 @@ const updatedPageCount = defineModel('updatedPageCount', { type: Boolean })
 const route = useRoute()
 const router = useRouter()
 
+// What a conversation row is made of. Fixed rather than configurable: these are
+// not columns somebody chose to see, they are the row itself.
+const INBOX_ROWS = [
+  'name',
+  'lead_name',
+  'first_name',
+  'last_name',
+  'image',
+  'organization',
+  'status',
+  'mobile_no',
+  'last_conversation_on',
+  'last_conversation_channel',
+  'last_conversation_direction',
+  'last_conversation_preview',
+  'conversation_unread',
+]
+
+// «All» and «Waiting» — the two questions an inbox gets asked.
+const INBOX_CHOICES = [
+  { value: false, label: 'All' },
+  { value: true, label: 'Waiting' },
+]
+
+const waitingOnly = computed(
+  () => !!list.value?.params?.filters?.conversation_unread,
+)
+
+function showOnlyWaiting(only) {
+  const filters = { ...(list.value?.params?.filters || {}) }
+  if (only) {
+    filters.conversation_unread = 1
+  } else {
+    delete filters.conversation_unread
+  }
+  updateFilter(filters)
+}
+
 const defaultParams = ref('')
 
 const viewUpdated = ref(false)
@@ -400,6 +491,12 @@ function getViewType() {
       name: 'kanban',
       label: __('Kanban'),
       icon: markRaw(KanbanIcon),
+    },
+    // the same list of people, in the order they last said something
+    inbox: {
+      name: 'inbox',
+      label: __('Inbox'),
+      icon: markRaw(InboxIcon),
     },
   }
 
@@ -471,10 +568,22 @@ function getParams() {
   const view_name = _view?.name || ''
   const view_type = _view?.type || route.params.viewType || 'list'
   const filters = (_view?.filters && JSON.parse(_view.filters)) || {}
-  const order_by = _view?.order_by || 'modified desc'
+  const order_by =
+    (_view?.type || route.params.viewType) === 'inbox'
+      ? 'last_conversation_on desc'
+      : _view?.order_by || 'modified desc'
   const group_by_field = _view?.group_by_field || 'owner'
   const columns = _view?.columns || ''
-  const rows = _view?.rows || ''
+  let rows = _view?.rows || ''
+
+  // The Inbox is this same list, sorted by who wrote last and drawn as
+  // conversations. The sort is not a preference here — it is what the view is —
+  // and the row needs fields that no saved column list would carry, so both are
+  // fixed rather than read from the view.
+  const isInbox = (_view?.type || route.params.viewType) === 'inbox'
+  if (isInbox) {
+    rows = JSON.stringify(INBOX_ROWS)
+  }
   const column_field = _view?.column_field || 'status'
   const title_field = _view?.title_field || ''
   const kanban_columns = _view?.kanban_columns || ''
@@ -665,6 +774,17 @@ if (allowedViews.includes('kanban')) {
     onClick() {
       viewUpdated.value = false
       router.push({ name: route.name, params: { viewType: 'kanban' } })
+    },
+  })
+}
+if (allowedViews.includes('inbox')) {
+  standardViews.push({
+    name: 'inbox',
+    label: __('Inbox'),
+    icon: markRaw(InboxIcon),
+    onClick() {
+      viewUpdated.value = false
+      router.push({ name: route.name, params: { viewType: 'inbox' } })
     },
   })
 }

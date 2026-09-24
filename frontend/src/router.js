@@ -37,9 +37,12 @@ const routes = [
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
+    // The Inbox is a way of reading the People list, not a list of its own:
+    // same people, same filters, same saved views, ordered by who wrote last.
+    // The old address still works, and lands where the Inbox now lives.
     path: '/inbox',
     name: 'Inbox',
-    component: () => import('@/pages/Inbox.vue'),
+    redirect: () => ({ name: 'Leads', params: { viewType: 'inbox' } }),
   },
   {
     path: '/automations',
