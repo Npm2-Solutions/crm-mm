@@ -71,6 +71,17 @@ def settings():
 	return frappe.local.crm_scheduling_settings
 
 
+def forget_settings() -> None:
+	"""Drop the memo when the singleton changes inside the same request.
+
+	Whoever writes the settings must not be answered from the copy the engine read
+	before the write. Deleting the attribute unconditionally is a trap — the memo
+	may simply never have been warmed — so the check belongs here, once.
+	"""
+	if hasattr(frappe.local, "crm_scheduling_settings"):
+		del frappe.local.crm_scheduling_settings
+
+
 # --------------------------------------------------------------------------
 # working windows
 # --------------------------------------------------------------------------

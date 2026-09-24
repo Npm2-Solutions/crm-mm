@@ -212,6 +212,24 @@ class CRMBookingCalendar(Document):
 		return min(free_members, key=lambda u: counts[u])
 
 
+def live_google_calendar(user: str) -> str | None:
+	"""The user's connected Google Calendar, or None when there is none to ask.
+
+	The switch on frappe's own Google Calendar doctype is ``enable``: asking for
+	``enabled`` is not an empty result but a SQL error, and this lookup runs on
+	every public slot query, before the fail-open guard below can catch anything.
+	So the row is found on ``user`` alone and the flag is only selected while the
+	doctype still declares it — a framework that renames it again costs us the
+	filter, not the booking page.
+	"""
+	has_flag = frappe.get_meta("Google Calendar").has_field("enable")
+	fields = ["name", "enable"] if has_flag else ["name"]
+	row = frappe.db.get_value("Google Calendar", {"user": user}, fields, as_dict=True)
+	if not row or (has_flag and not cint(row.enable)):
+		return None
+	return row.name
+
+
 def get_google_busy_intervals(
 	user: str, start: datetime.datetime, end: datetime.datetime
 ) -> list[tuple[datetime.datetime, datetime.datetime]]:
@@ -221,7 +239,7 @@ def get_google_busy_intervals(
 	on any error so an expired token never breaks the public booking page — the
 	error is logged for the admin.
 	"""
-	calendar_name = frappe.db.get_value("Google Calendar", {"user": user, "enabled": 1})
+	calendar_name = live_google_calendar(user)
 	if not calendar_name:
 		return []
 	cache_key = f"gcal_busy|{calendar_name}|{start.isoformat()}|{end.isoformat()}"
