@@ -27,7 +27,17 @@ jobs:
               run: npm install --no-save @commitlint/cli @commitlint/config-conventional
 
             - name: Check commit titles
-              run: npx commitlint --verbose --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}"
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  # started by hand there is no pull request to take a range
+                  # from, so check the commit that is checked out instead
+                  if [ -n "$BASE_SHA" ]; then
+                      npx commitlint --verbose --from "$BASE_SHA" --to "$HEAD_SHA"
+                  else
+                      npx commitlint --verbose --last
+                  fi
 
     semgrep:
         name: Semgrep Rules
@@ -81,5 +91,9 @@ jobs:
 
             - name: Run Pre-commit
               uses: pre-commit/action@v3.0.1
+              env:
+                  # no-commit-to-branch guards local commits; on a runner the
+                  # branch is whatever was checked out, so the hook means nothing
+                  SKIP: no-commit-to-branch
               with:
                   extra_args: --all-files
