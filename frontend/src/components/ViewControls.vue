@@ -440,7 +440,6 @@ const INBOX_ROWS = [
   'last_name',
   'image',
   'organization',
-  'status',
   'mobile_no',
   'last_conversation_on',
   'last_conversation_channel',
