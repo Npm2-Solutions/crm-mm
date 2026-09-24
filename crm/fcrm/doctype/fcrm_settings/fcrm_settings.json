@@ -17,6 +17,7 @@
   "activity_timeline_section",
   "crm_timeline_timestamp_format",
   "crm_timeline_sort_order",
+  "conversation_badge_clears",
   "currency_tab",
   "currency",
   "exchange_rate_provider_section",
@@ -174,14 +175,14 @@
   },
   {
    "default": "0",
-   "description": "Automatically sets Communication Status to \u201cReplied\u201d for the lead or deal when a response is received. Applies only when SLA is enabled",
+   "description": "Automatically sets Communication Status to “Replied” for the lead or deal when a response is received. Applies only when SLA is enabled",
    "fieldname": "auto_mark_replied_on_response",
    "fieldtype": "Check",
    "label": "Mark lead/deal as replied on response"
   },
   {
    "default": "0",
-   "description": "Automatically sets Communication Status to \u201cOpen\u201d for the lead or deal when a new communication is created. Applies only when SLA is enabled",
+   "description": "Automatically sets Communication Status to “Open” for the lead or deal when a new communication is created. Applies only when SLA is enabled",
    "fieldname": "auto_reopen_on_new_communication",
    "fieldtype": "Check",
    "label": "Reopen lead/deal on new communication"
@@ -211,6 +212,14 @@
    "fieldtype": "Select",
    "label": "Timeline Sort Order",
    "options": "Oldest First\nNewest First"
+  },
+  {
+   "default": "When seen",
+   "description": "When the count of waiting messages on a conversation goes away",
+   "fieldname": "conversation_badge_clears",
+   "fieldtype": "Select",
+   "label": "Conversation Badge Clears",
+   "options": "When seen\nWhen answered"
   },
   {
    "default": "0",

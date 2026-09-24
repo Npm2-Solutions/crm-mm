@@ -110,7 +110,16 @@
   "last_touch_session",
   "last_touch_page_section",
   "last_touch_landing_page",
-  "last_touch_referrer"
+  "last_touch_referrer",
+  "last_conversation_section",
+  "last_conversation_on",
+  "last_conversation_channel",
+  "last_conversation_direction",
+  "column_break_last_conversation",
+  "last_conversation_preview",
+  "last_answered_on",
+  "conversation_seen_until",
+  "conversation_seen_by"
  ],
  "fields": [
   {
@@ -472,7 +481,7 @@
   },
   {
    "default": "1",
-   "description": "The rate used to convert the deal\u2019s currency to your crm's base currency (set in CRM Settings). It is set once when the currency is first added and doesn't change automatically.",
+   "description": "The rate used to convert the deal’s currency to your crm's base currency (set in CRM Settings). It is set once when the currency is first added and doesn't change automatically.",
    "fieldname": "exchange_rate",
    "fieldtype": "Float",
    "label": "Exchange Rate"
@@ -730,6 +739,62 @@
    "fieldname": "last_touch_referrer",
    "fieldtype": "Small Text",
    "label": "Referrer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_conversation_section",
+   "fieldtype": "Section Break",
+   "label": "Last Conversation"
+  },
+  {
+   "description": "When the most recent message of any channel happened",
+   "fieldname": "last_conversation_on",
+   "fieldtype": "Datetime",
+   "label": "Last Message On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_conversation_channel",
+   "fieldtype": "Select",
+   "label": "Last Message Channel",
+   "options": "\nWhatsApp\nSMS\nEmail",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_conversation_direction",
+   "fieldtype": "Select",
+   "label": "Last Message Direction",
+   "options": "\nIncoming\nOutgoing",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_last_conversation",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_conversation_preview",
+   "fieldtype": "Small Text",
+   "label": "Last Message",
+   "read_only": 1
+  },
+  {
+   "description": "When somebody here last wrote back",
+   "fieldname": "last_answered_on",
+   "fieldtype": "Datetime",
+   "label": "Last Answered On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversation_seen_until",
+   "fieldtype": "Datetime",
+   "label": "Conversation Seen Until",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversation_seen_by",
+   "fieldtype": "Link",
+   "label": "Conversation Seen By",
+   "options": "User",
    "read_only": 1
   }
  ],

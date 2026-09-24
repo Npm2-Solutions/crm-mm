@@ -31,6 +31,7 @@ class FCRMSettings(Document):
 		auto_update_expected_deal_value: DF.Check
 		brand_logo: DF.Attach | None
 		brand_name: DF.Data | None
+		conversation_badge_clears: DF.Literal["When seen", "When answered"]
 		currency: DF.Link | None
 		default_calendar_view: DF.Literal["Daily", "Weekly", "Monthly"]
 		dropdown_items: DF.Table[CRMDropdownItem]

@@ -40,6 +40,8 @@ class CRMLead(Document):
 
 		annual_revenue: DF.Currency
 		communication_status: DF.Link | None
+		conversation_seen_by: DF.Link | None
+		conversation_seen_until: DF.Datetime | None
 		converted: DF.Check
 		email: DF.Data | None
 		facebook_form_id: DF.Data | None
@@ -82,6 +84,11 @@ class CRMLead(Document):
 		last_name: DF.Data | None
 		last_responded_on: DF.Datetime | None
 		last_response_time: DF.Duration | None
+		last_answered_on: DF.Datetime | None
+		last_conversation_channel: DF.Literal["", "WhatsApp", "SMS", "Email"]
+		last_conversation_direction: DF.Literal["", "Incoming", "Outgoing"]
+		last_conversation_on: DF.Datetime | None
+		last_conversation_preview: DF.SmallText | None
 		last_touch_campaign: DF.Data | None
 		last_touch_category: (
 			DF.Literal[

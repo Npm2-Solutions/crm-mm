@@ -204,10 +204,14 @@ doc_events = {
 			"crm.utils.on_communication_insert",
 			"crm.automation.engine.on_communication_insert",
 			"crm.booking_platforms.sync.on_communication",
+			"crm.api.conversations.on_communication",
 		],
 		"on_update": [
 			"crm.utils.on_communication_update",
 			"crm.automation.engine.on_communication_update",
+			# an email is linked to its record after it is written, so the
+			# conversation only knows whose it is on the update
+			"crm.api.conversations.on_communication",
 		],
 	},
 	"Tag Link": {
@@ -235,7 +239,13 @@ doc_events = {
 	"WhatsApp Message": {
 		"validate": ["crm.api.whatsapp.validate"],
 		"on_update": ["crm.api.whatsapp.on_update"],
-		"after_insert": ["crm.automation.engine.on_whatsapp_received"],
+		"after_insert": [
+			"crm.automation.engine.on_whatsapp_received",
+			"crm.api.conversations.on_message",
+		],
+	},
+	"CRM SMS Message": {
+		"after_insert": ["crm.api.conversations.on_message"],
 	},
 	"CRM Lead": {
 		"before_insert": [
