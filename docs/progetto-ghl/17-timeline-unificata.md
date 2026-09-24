@@ -222,3 +222,25 @@ spacciarli per nostri vorrebbe dire che un cambio di tema ristila WhatsApp.
 `get_activities()` metteva nel flusso i messaggi WhatsApp ma non gli SMS: una
 conversazione proseguita per SMS **spariva dalla cronologia della scheda** e si
 vedeva solo nella sua tab. Ora ci sono.
+
+### Tre cose viste solo guardandola
+
+Dopo il deploy, col browser:
+
+1. **Ogni vocale compariva due volte.** Un file mandato come messaggio viene
+   anche scritto fra gli allegati della scheda, e in un flusso unico si vedevano
+   tutti e due: la bolla che qualcuno ha mandato, e una riga che dice che e'
+   stato allegato un file. La bolla e' il fatto; la riga e' contabilita' su quel
+   fatto. Ora la riga sparisce quando il file e' gia' un messaggio — e il
+   confronto legge il nome **anche dentro l'URL firmato**, perche' i media in
+   uscita non passano piu' da `/files/…` e leggendo solo il percorso il nome
+   sarebbe `media` per tutti.
+
+2. **La pastiglia del canale sbatteva contro «failed / Retry».** Stava
+   nell'angolo in alto, che su un messaggio in uscita e' esattamente dove
+   WhatsAppArea mette la coppia fallito/ritenta. Ora e' centrata verticalmente
+   sul lato esterno, dove non c'e' niente.
+
+3. **Nella vista di un singolo canale la pastiglia non serve.** Sono tutte
+   uguali: ripetuta lungo tutta la pagina non dice niente e occupa l'angolo.
+   Compare solo su «Tutto».

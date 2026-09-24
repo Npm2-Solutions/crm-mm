@@ -137,3 +137,56 @@ describe('countByChannel', () => {
     expect(tally.email).toBeUndefined()
   })
 })
+
+describe('a file that was sent is not also an attachment line', () => {
+  it('drops the log line for a file that is already a message', () => {
+    const rows = buildStream([
+      {
+        name: 'w1',
+        activity_type: 'whatsapp',
+        type: 'Outgoing',
+        attach: '/files/voice-1790157621002.mp4',
+        creation: '2026-09-23 12:00:00',
+      },
+      {
+        name: 'a1',
+        activity_type: 'attachment_log',
+        data: { file_name: 'voice-1790157621002.mp4' },
+        creation: '2026-09-23 12:00:01',
+      },
+    ])
+    expect(rows.map((r) => r.key)).toEqual(['whatsapp:w1'])
+  })
+
+  it('matches through the signed media url the server now hands to Meta', () => {
+    const rows = buildStream([
+      {
+        name: 'w1',
+        activity_type: 'whatsapp',
+        type: 'Outgoing',
+        attach:
+          'https://site/api/method/crm.api.whatsapp.media?file=%2Ffiles%2Fvoice-1.mp4&kind=audio&s=abc',
+        creation: '2026-09-23 12:00:00',
+      },
+      {
+        name: 'a1',
+        activity_type: 'attachment_log',
+        data: { file_name: 'voice-1.mp4' },
+        creation: '2026-09-23 12:00:01',
+      },
+    ])
+    expect(rows).toHaveLength(1)
+  })
+
+  it('keeps a file nobody sent as a message', () => {
+    const rows = buildStream([
+      {
+        name: 'a1',
+        activity_type: 'attachment_log',
+        data: { file_name: 'contratto.pdf' },
+        creation: '2026-09-23 12:00:00',
+      },
+    ])
+    expect(rows.map((r) => r.key)).toEqual(['attachment_log:a1'])
+  })
+})
