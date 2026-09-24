@@ -38,7 +38,7 @@ class CRMViewSettings(Document):
 		route_name: DF.Data | None
 		rows: DF.Code | None
 		title_field: DF.Data | None
-		type: DF.Literal["list", "group_by", "kanban"]
+		type: DF.Literal["list", "group_by", "kanban", "inbox"]
 		user: DF.Link | None
 	# end: auto-generated types
 

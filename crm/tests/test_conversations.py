@@ -27,6 +27,26 @@ class TestWhatTheRowSays(FrappeTestCase):
 		self.assertEqual(snippet(""), "")
 
 
+class TestAPreviewIsOnlyAPreview(FrappeTestCase):
+	"""It runs on the way in for every message, so it may never be the reason
+	one does not go out."""
+
+	def test_it_does_not_reach_for_an_api_that_may_not_be_there(self):
+		# a wrong helper name here made sending a WhatsApp message fail with a
+		# Python error about a string nobody had asked for
+		self.assertEqual(snippet("Rossi &amp; Figli &lt;3"), "Rossi & Figli <3")
+
+	def test_a_fault_costs_a_line_in_the_log_and_nothing_else(self):
+		from unittest.mock import patch
+
+		from crm.api.conversations import quietly
+
+		with patch("crm.api.conversations.remember", side_effect=RuntimeError("boom")):
+			# no exception: the message was already sent, and where the person
+			# sits in a list is not worth taking it down for
+			quietly("CRM Lead", "whatever")
+
+
 class TestTheBadgeSetting(FrappeTestCase):
 	def setUp(self):
 		self.was = frappe.db.get_single_value("FCRM Settings", "conversation_badge_clears")

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { standardViewTypesFor } from '@/utils/viewTypes'
 import { call } from 'frappe-ui'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
@@ -306,7 +307,7 @@ router.beforeEach(async (to, from, next) => {
     await views.promise
 
     const viewType = to.params?.viewType ?? ''
-    const standardViewTypes = ['list', 'kanban', 'group_by']
+    const standardViewTypes = standardViewTypesFor(to.name)
 
     if (!viewType) {
       const doctypeMap = {

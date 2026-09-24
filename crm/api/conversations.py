@@ -19,6 +19,9 @@ waiting for you, and a badge that says it is would be the second thing you learn
 to ignore.
 """
 
+import html
+import re
+
 import frappe
 from frappe.utils import now
 
@@ -92,13 +95,16 @@ def snippet(text: str) -> str:
 	"""One line of a message, for the row in the list.
 
 	Email arrives as HTML and WhatsApp with its own marks; neither reads as a
-	preview. The tags come out, the whitespace collapses, and what is left is
-	the beginning of what was said.
-	"""
-	import re
+	preview. The tags come out, the entities are read back, the whitespace
+	collapses, and what is left is the beginning of what was said.
 
+	`html.unescape` from the standard library rather than a Frappe helper: this
+	runs on the way in for every message, and reaching for an API that might not
+	be there is how sending a WhatsApp message came to fail with a Python error
+	about a preview string.
+	"""
 	plain = re.sub(r"<[^>]+>", " ", str(text or ""))
-	plain = frappe.utils.unescape_html(plain)
+	plain = html.unescape(plain)
 	plain = re.sub(r"\s+", " ", plain).strip()
 	return plain[:PREVIEW]
 
@@ -197,16 +203,34 @@ def remember(reference_doctype: str, reference_name: str) -> None:
 # --- the hooks, one per place a message can arrive from ----------------------
 
 
+def quietly(reference_doctype: str, reference_name: str) -> None:
+	"""`remember`, but it can never take a message down with it.
+
+	What this writes is bookkeeping: where a person sits in a list, and whether
+	a badge shows. A message is the thing that matters, and it has already been
+	sent by the time this runs — so a fault here is worth a line in the error
+	log and nothing else.
+
+	Not a precaution in the abstract: one wrong helper name in the preview and
+	sending a WhatsApp message failed with a Python error about a string nobody
+	had asked for.
+	"""
+	try:
+		remember(reference_doctype, reference_name)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Conversations: could not note the last message")
+
+
 def on_message(doc, method: str | None = None) -> None:
 	"""A WhatsApp or SMS message was written."""
-	remember(doc.get("reference_doctype"), doc.get("reference_name"))
+	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
 
 
 def on_communication(doc, method: str | None = None) -> None:
 	"""An email was written. Only real correspondence, not automated notices."""
 	if doc.get("communication_type") != "Communication":
 		return
-	remember(doc.get("reference_doctype"), doc.get("reference_name"))
+	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
 
 
 # --- how many are still waiting ----------------------------------------------
