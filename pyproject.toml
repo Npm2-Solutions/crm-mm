@@ -74,6 +74,10 @@ ignore = [
     "UP030", # Use implicit references for positional format fields (translations)
     "UP031", # Use format specifiers instead of percent format
     "UP032", # Use f-string instead of `format` call (translations)
+    # isinstance(x, (A, B)) beats isinstance(x, A | B) at runtime -- building the
+    # union costs an allocation per call. Ruff has since removed the rule for the
+    # same reason; the version pinned in .pre-commit-config.yaml still has it.
+    "UP038",
 ]
 typing-modules = ["frappe.types.DF"]
 

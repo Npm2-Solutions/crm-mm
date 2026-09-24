@@ -718,7 +718,6 @@ const dealContacts = createResource({
 
 if (!dealContacts.data) dealContacts.fetch()
 
-
 async function triggerStatusChange(value) {
   await triggerOnChange('status', value)
   setLostReason()
@@ -756,7 +755,6 @@ function deleteDeal() {
 }
 
 const activities = ref(null)
-
 
 function statusLabel(status) {
   if (isTranslatable('CRM Deal Status')) return __(status)

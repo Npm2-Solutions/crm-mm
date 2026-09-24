@@ -139,7 +139,7 @@ def transcribe_call(call_log_name: str) -> str | None:
 	frappe.db.set_value(
 		"CRM Call Log", call_log_name, "transcription_status", IN_PROGRESS, update_modified=False
 	)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — in progress must be visible while the download runs
 
 	try:
 		from crm.integrations.api import download_recording
@@ -201,7 +201,7 @@ def _finish(call_log_name: str, status: str, text: str | None = None, language=N
 	if status == COMPLETED:
 		values.update({"transcript": text, "transcribed_on": now_datetime(), "transcript_language": language})
 	frappe.db.set_value("CRM Call Log", call_log_name, values, update_modified=False)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — called after a rollback; the status must survive it
 
 
 def _announce(call_log_name: str) -> None:
@@ -260,7 +260,7 @@ def expire_transcripts() -> dict:
 			frappe.db.set_value("CRM Call Log", name, "recording_url", None, update_modified=False)
 		cleared["recordings"] = len(names)
 
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — nightly job, no request to commit the pruning
 	return cleared
 
 

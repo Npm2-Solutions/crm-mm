@@ -143,6 +143,7 @@ def write(component_id, name, root, data_script=""):
 		"owner": "Administrator",
 	}
 	target = os.path.join(path, f"{folder}.json")
+	# nosemgrep: frappe-security-file-traversal — build-time script: the path is built from this file's own constants, no request involved
 	with open(target, "w", encoding="utf-8") as f:
 		f.write(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
 	return target

@@ -33,6 +33,7 @@ def _verify(slug: str, token: str, sig: str) -> dict | None:
 		return None
 
 
+# nosemgrep: guest-whitelisted-method — a tracked link is opened by a browser with no session, 600/h
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @rate_limit(limit=600, seconds=60 * 60)
 def r(l: str, t: str | None = None, s: str | None = None):
@@ -68,7 +69,7 @@ def r(l: str, t: str | None = None, s: str | None = None):
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "CRM Tracked Link: event failed")
 
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — GET by design, and a GET is rolled back
 	frappe.local.response["type"] = "redirect"
 	frappe.local.response["location"] = target
 

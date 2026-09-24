@@ -48,14 +48,14 @@ def handle(**kwargs):
 	return _receive(frappe.request)
 
 
-def _verify_subscription(args):
+def _verify_subscription(params):
 	settings = get_settings()
 	if (
-		args.get("hub.mode") == "subscribe"
+		params.get("hub.mode") == "subscribe"
 		and settings.webhook_verify_token
-		and args.get("hub.verify_token") == settings.webhook_verify_token
+		and params.get("hub.verify_token") == settings.webhook_verify_token
 	):
-		return Response(args.get("hub.challenge") or "", mimetype="text/plain")
+		return Response(params.get("hub.challenge") or "", mimetype="text/plain")
 	return Response("verification failed", status=403, mimetype="text/plain")
 
 
@@ -116,7 +116,6 @@ def _receive(request):
 					entry=part,
 					kind=kind,
 				)
-	frappe.db.commit()
 	return Response("ok", mimetype="text/plain")
 
 

@@ -16,6 +16,7 @@ from crm.integrations.api import get_contact_by_phone_number
 
 
 # Incoming Call
+# nosemgrep: guest-whitelisted-method — Exotel's own webhook; validate_request() checks it really is Exotel
 @frappe.whitelist(allow_guest=True)
 def handle_request(**kwargs):
 	validate_request()
@@ -38,6 +39,7 @@ def handle_request(**kwargs):
 
 		call_payload = kwargs
 
+		# nosemgrep: frappe-realtime-pick-room — an incoming call has to pop on every agent's screen: nobody owns it yet
 		frappe.publish_realtime("exotel_call", call_payload)
 		status = call_payload.get("Status")
 		if status == "free":
@@ -69,10 +71,10 @@ def handle_request(**kwargs):
 		request_log.error = frappe.get_traceback()
 		frappe.db.rollback()
 		frappe.log_error(title="Error while creating/updating call record")
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the rollback above took the error log with it
 	finally:
 		request_log.save(ignore_permissions=True)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the request log outlives that rollback
 
 
 # Outgoing Call
@@ -224,7 +226,7 @@ def create_call_log(
 	link(contact_number, call_log)
 
 	call_log.save(ignore_permissions=True)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the caller's except rolls back; a real call must not vanish
 	return call_log
 
 

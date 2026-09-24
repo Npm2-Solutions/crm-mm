@@ -69,6 +69,7 @@ MAX_EVENTS_PER_BEACON = 20
 # ---------------------------------------------------------------------------
 
 
+# nosemgrep: guest-whitelisted-method — the beacon runs in a visitor's browser, before any login, 600/h
 @frappe.whitelist(allow_guest=True, methods=["POST", "OPTIONS"])
 @rate_limit(limit=600, seconds=60 * 60)
 def collect() -> dict:
@@ -129,7 +130,6 @@ def collect() -> dict:
 	stored = [t for t in (_store_event(visitor, session, event) for event in events) if t]
 	_bump_counters(visitor, session, stored)
 
-	frappe.db.commit()
 	_set_cookies(visitor.name, session.session_id, settings.visitor_cookie_days)
 	return {"ok": True, "vid": visitor.name, "sid": session.session_id}
 
@@ -784,4 +784,4 @@ def purge_old_data() -> None:
 	):
 		for name in frappe.get_all(doctype, filters=filters, pluck="name", limit=5000):
 			frappe.delete_doc(doctype, name, ignore_permissions=True, force=True, delete_permanently=True)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — one phase at a time: up to 5000 deletes each

@@ -199,6 +199,7 @@ def _tz_or(value: str | None, fallback: ZoneInfo) -> ZoneInfo:
 # --------------------------------------------------------------------------
 
 
+# nosemgrep: guest-whitelisted-method — the /prenota menu; services marked direct-link-only stay out
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> dict:
 	"""The service menu: categories, services, professionals, page settings.
@@ -366,6 +367,7 @@ def online_slots(
 	return [s for s in slots if cint(s.seats_left) >= participants]
 
 
+# nosemgrep: guest-whitelisted-method — free slots are what /prenota shows, 300/h
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @rate_limit(limit=300, seconds=60 * 60)
 def get_slots_public(
@@ -492,6 +494,7 @@ def _find_slot(service, start_utc, staff_user, seats, exclude_appointment=None):
 	return None
 
 
+# nosemgrep: guest-whitelisted-method — taking the booking is the point of /prenota, 10/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=10, seconds=60 * 60)
 def book(
@@ -571,7 +574,7 @@ def book(
 			appointment.append("participants", row)
 		if notes:
 			appointment.customer_notes = "\n".join(
-				filter(None, [appointment.customer_notes, f"{full_name}: {notes}"])
+				[part for part in (appointment.customer_notes, f"{full_name}: {notes}") if part]
 			)
 		appointment.flags.ignore_permissions = True
 		appointment.save(ignore_permissions=True)
@@ -697,11 +700,13 @@ def public_view(appointment, token: str) -> dict:
 	}
 
 
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_booking(token: str) -> dict:
 	return public_view(_by_token(token), token)
 
 
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential, 20/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=20, seconds=60 * 60)
 def cancel(token: str, reason: str | None = None) -> dict:
@@ -735,6 +740,7 @@ def _cancel_rows(appointment, token: str, reason: str | None):
 	appointment.save(ignore_permissions=True)
 
 
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential, 20/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=20, seconds=60 * 60)
 def reschedule(token: str, start: str) -> dict:

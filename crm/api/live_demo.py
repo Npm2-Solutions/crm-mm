@@ -6,6 +6,7 @@ from frappe import _
 from frappe.auth import LoginManager
 
 
+# nosemgrep: guest-whitelisted-method — demo sites only: returns at once unless demo credentials are in site config
 @frappe.whitelist(allow_guest=True)
 def login():
 	if not frappe.conf.demo_username or not frappe.conf.demo_password:

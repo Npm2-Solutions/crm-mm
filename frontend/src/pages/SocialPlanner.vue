@@ -259,7 +259,7 @@
           v-for="post in dayPosts"
           :key="post.name"
           class="flex cursor-pointer items-center gap-3 py-2.5 hover:bg-surface-gray-1"
-          @click="((showDay = false), openComposer(post))"
+          @click="(showDay = false), openComposer(post)"
         >
           <span class="w-12 shrink-0 tabular-nums text-sm text-ink-gray-5">
             {{ timeOf(post.scheduled_at) }}

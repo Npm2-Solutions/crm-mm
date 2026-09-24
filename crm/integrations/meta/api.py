@@ -96,7 +96,7 @@ def save_app_settings(app_id: str, app_secret: str | None = None) -> dict:
 		settings.app_secret = app_secret
 	settings.save()
 	frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
-	frappe.db.commit()  # the webhook handshake below hits this site re-entrantly
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the handshake below re-enters this site
 
 	# best-effort: register the app-level webhook subscription right away so
 	# nothing has to be configured by hand on developers.facebook.com
@@ -142,7 +142,7 @@ def configure_webhook() -> dict:
 			},
 		)
 	except MetaAPIError as exc:
-		frappe.throw(_("Could not configure the webhook automatically: {0}").format(exc))
+		frappe.throw(_("Could not configure the webhook automatically: {0}").format(str(exc)))
 	return get_webhook_subscription()
 
 
@@ -333,7 +333,6 @@ def sync_forms(page_id: str) -> dict:
 	if not can_sync_leads(frappe.db.get_value("Facebook Page", page_id, "tasks")):
 		frappe.throw(_(NOT_GRANTED))
 	error = sync_forms_recording_failure(page_id, token)
-	frappe.db.commit()
 	return {
 		"error": error,
 		"forms": frappe.db.count("Facebook Lead Form", {"page": page_id}),
@@ -426,7 +425,7 @@ def set_page_sync(page_id: str, enabled: bool) -> dict:
 			subscribed = 0
 	except MetaAPIError as exc:
 		if enabled:
-			frappe.throw(_("Could not subscribe the page to the leadgen webhook: {0}").format(exc))
+			frappe.throw(_("Could not subscribe the page to the leadgen webhook: {0}").format(str(exc)))
 		subscribed = 0
 
 	page.sync_enabled = 1 if enabled else 0
@@ -576,7 +575,7 @@ def create_test_lead(form_id: str) -> dict:
 		result = graph_post(f"{form_id}/test_leads", token, {})
 		return {"ok": True, "id": result.get("id")}
 	except MetaAPIError as exc:
-		frappe.throw(_("Could not create test lead: {0}").format(exc))
+		frappe.throw(_("Could not create test lead: {0}").format(str(exc)))
 
 
 # --- ad spend --------------------------------------------------------------
@@ -768,7 +767,6 @@ def retry_failed_leads(limit: int = 500) -> dict:
 		counts[result] = counts.get(result, 0) + 1
 		if result != "failed":
 			frappe.db.set_value("Failed Lead Sync Log", row.name, "type", "Synced")
-		frappe.db.commit()
 	return counts
 
 
@@ -811,5 +809,4 @@ def verify_webhook_subscriptions() -> dict:
 				),
 			}
 		)
-	frappe.db.commit()
 	return {"pages": report, "app_id": app_id}

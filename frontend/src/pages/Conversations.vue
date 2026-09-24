@@ -18,7 +18,9 @@
   <LayoutHeader>
     <template #left-header>
       <Breadcrumbs
-        :items="[{ label: __('Conversations'), route: { name: 'Conversations' } }]"
+        :items="[
+          { label: __('Conversations'), route: { name: 'Conversations' } },
+        ]"
       />
     </template>
     <template #right-header>

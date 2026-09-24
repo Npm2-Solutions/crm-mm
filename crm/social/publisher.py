@@ -131,6 +131,7 @@ def publish_post(name: str) -> None:
 		post.published_at = frappe.utils.now_datetime()
 		schedule_recurrence(post)
 	post.save(ignore_permissions=True)
+	# nosemgrep: frappe-realtime-pick-room — the planner board is shared; the payload is a name and a status
 	frappe.publish_realtime("crm_social_post", {"name": post.name, "status": post.status})
 
 

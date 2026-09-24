@@ -71,6 +71,7 @@ def validate(doc, method):
 
 
 def on_update(doc, method):
+	# nosemgrep: frappe-realtime-pick-room — Conversations.vue refreshes wherever the agent is; the payload is two ids, no text
 	frappe.publish_realtime(
 		"whatsapp_message",
 		{

@@ -551,6 +551,7 @@ def _site_of_route(route: str) -> str:
 # ---------------------------------------------------------------- public
 
 
+# nosemgrep: guest-whitelisted-method — published rows only, explicit field list, nothing internal
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def list_services(category: str | None = None, limit: int = 24) -> list[dict]:
 	"""Published services, for anything that renders the catalogue outside a Builder page.

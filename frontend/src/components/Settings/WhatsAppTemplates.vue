@@ -48,11 +48,16 @@
           :key="template.name"
           class="flex items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
         >
-          <div class="min-w-0 flex-1 cursor-pointer" @click="openTemplate(template)">
+          <div
+            class="min-w-0 flex-1 cursor-pointer"
+            @click="openTemplate(template)"
+          >
             <div class="truncate text-p-base text-ink-gray-8">
               {{ template.template_name || template.name }}
             </div>
-            <div class="truncate text-p-sm text-ink-gray-5">{{ template.template }}</div>
+            <div class="truncate text-p-sm text-ink-gray-5">
+              {{ template.template }}
+            </div>
           </div>
           <Badge
             v-if="template.status"
@@ -60,7 +65,11 @@
             :theme="statusTheme(template.status)"
             size="sm"
           />
-          <Button variant="ghost" icon="lucide-trash-2" @click.stop="remove(template)" />
+          <Button
+            variant="ghost"
+            icon="lucide-trash-2"
+            @click.stop="remove(template)"
+          />
         </div>
       </div>
 
@@ -75,7 +84,10 @@
 
   <Dialog
     v-model="showTemplate"
-    :options="{ title: form.name ? __('Edit template') : __('New template'), size: 'xl' }"
+    :options="{
+      title: form.name ? __('Edit template') : __('New template'),
+      size: 'xl',
+    }"
   >
     <template #body-content>
       <div class="flex flex-col gap-3">
@@ -84,14 +96,20 @@
           v-model="form.template_name"
           type="text"
           :label="__('Name')"
-          :description="__('Lowercase letters, digits and underscores. It cannot be changed later.')"
+          :description="
+            __(
+              'Lowercase letters, digits and underscores. It cannot be changed later.',
+            )
+          "
         />
         <div class="grid grid-cols-2 gap-3">
           <FormControl
             v-model="form.category"
             type="select"
             :label="__('Category')"
-            :options="(data.categories || []).map((c) => ({ label: c, value: c }))"
+            :options="
+              (data.categories || []).map((c) => ({ label: c, value: c }))
+            "
           />
           <FormControl
             v-model="form.language"
@@ -100,7 +118,11 @@
             :options="data.languages || []"
           />
         </div>
-        <FormControl v-model="form.header" type="text" :label="__('Header (optional)')" />
+        <FormControl
+          v-model="form.header"
+          type="text"
+          :label="__('Header (optional)')"
+        />
         <FormControl
           v-model="form.template"
           type="textarea"
@@ -124,7 +146,11 @@
             )
           "
         />
-        <FormControl v-model="form.footer" type="text" :label="__('Footer (optional)')" />
+        <FormControl
+          v-model="form.footer"
+          type="text"
+          :label="__('Footer (optional)')"
+        />
         <div class="rounded-md bg-surface-gray-1 p-3 text-p-sm text-ink-gray-5">
           {{
             __(
@@ -152,10 +178,10 @@ import { ref, reactive, computed } from 'vue'
 
 // a literal {{1}} cannot live in the template markup: Vue would parse it
 const bodyPlaceholder = 'Ciao {{1}}, il tuo ordine è pronto.'
-const placeholderHint = __('Use {0} for the first variable, {1} for the second, and so on.', [
-  '{{1}}',
-  '{{2}}',
-])
+const placeholderHint = __(
+  'Use {0} for the first variable, {1} for the second, and so on.',
+  ['{{1}}', '{{2}}'],
+)
 
 const saving = ref(false)
 const showTemplate = ref(false)
@@ -205,9 +231,9 @@ function statusTheme(status) {
 function openTemplate(template = null) {
   form.name = template?.name || null
   form.template_name = template?.template_name || ''
-  form.category = template?.category || data.value.categories?.[0] || 'MARKETING'
-  form.language =
-    template?.language || data.value.languages?.[0]?.value || 'it'
+  form.category =
+    template?.category || data.value.categories?.[0] || 'MARKETING'
+  form.language = template?.language || data.value.languages?.[0]?.value || 'it'
   form.header = template?.header || ''
   form.template = template?.template || ''
   form.footer = template?.footer || ''
@@ -229,7 +255,9 @@ function sync() {
     },
     onError: (e) => {
       syncing.value = false
-      toast.error(e.messages?.[0] || __('Could not read the templates from Meta'))
+      toast.error(
+        e.messages?.[0] || __('Could not read the templates from Meta'),
+      )
     },
   })
 }

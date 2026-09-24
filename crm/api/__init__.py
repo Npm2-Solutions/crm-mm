@@ -9,6 +9,7 @@ from frappe.utils import cstr, split_emails, validate_email_address
 from crm.utils import is_frappe_version
 
 
+# nosemgrep: guest-whitelisted-method — the login page needs its strings before anyone is logged in
 @frappe.whitelist(allow_guest=True)
 def get_translations():
 	if frappe.session.user != "Guest":
@@ -76,6 +77,7 @@ def check_app_permission():
 	return False
 
 
+# nosemgrep: guest-whitelisted-method — the invitation link itself: the key is the credential, 10/h
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=10, seconds=60 * 60)
 def accept_invitation(key: str | None = None):

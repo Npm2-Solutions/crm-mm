@@ -155,7 +155,7 @@ def graph_request(
 			method, graph_url(endpoint), params=params, data=body or None, timeout=TIMEOUT
 		)
 	except requests.RequestException as exc:
-		raise MetaAPIError(_("Network error talking to Meta: {0}").format(exc)) from exc
+		raise MetaAPIError(_("Network error talking to Meta: {0}").format(str(exc))) from exc
 
 	try:
 		data = response.json()
@@ -210,7 +210,7 @@ def graph_get_paginated(endpoint: str, token: str, params: dict | None = None, m
 				response = requests.get(next_url, timeout=TIMEOUT)
 				data = response.json()
 			except (requests.RequestException, ValueError) as exc:
-				raise MetaAPIError(_("Network error talking to Meta: {0}").format(exc)) from exc
+				raise MetaAPIError(_("Network error talking to Meta: {0}").format(str(exc))) from exc
 			if response.status_code >= 400 or "error" in data:
 				error = data.get("error") or {}
 				raise MetaAPIError(error.get("message") or "pagination error", code=error.get("code"))

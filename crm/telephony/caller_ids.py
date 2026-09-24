@@ -255,7 +255,7 @@ def sync_caller_ids(provider: str = "twilio") -> dict:
 	if not frappe.has_permission("CRM Caller ID", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	result = sync(provider)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — not POST-only: a GET would roll back the carrier sync
 	return result
 
 

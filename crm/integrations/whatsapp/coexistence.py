@@ -185,7 +185,7 @@ def fetch_media(message: str, media_id: str, kind: str, account: str) -> bool:
 	).save(ignore_permissions=True)
 
 	frappe.db.set_value("WhatsApp Message", message, "attach", stored.file_url, update_modified=False)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the realtime nudge below must find the attachment
 
 	# the bubble was drawn when the row arrived, before the file existed: without
 	# this it stays an empty frame until somebody reloads the page
@@ -193,6 +193,7 @@ def fetch_media(message: str, media_id: str, kind: str, account: str) -> bool:
 		"WhatsApp Message", message, ["reference_doctype", "reference_name"], as_dict=True
 	)
 	if reference and reference.reference_doctype:
+		# nosemgrep: frappe-realtime-pick-room — Conversations.vue refreshes wherever the agent is; the payload is two ids, no text
 		frappe.publish_realtime(
 			"whatsapp_message",
 			{
@@ -363,6 +364,7 @@ def store_message(message: dict, our_number: str, historical: bool = False, acco
 		quietly(doc.reference_doctype, doc.reference_name)
 
 	if not historical and doc.get("reference_doctype"):
+		# nosemgrep: frappe-realtime-pick-room — Conversations.vue refreshes wherever the agent is; the payload is two ids, no text
 		frappe.publish_realtime(
 			"whatsapp_message",
 			{

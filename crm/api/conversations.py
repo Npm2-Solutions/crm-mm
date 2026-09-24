@@ -324,7 +324,7 @@ def refresh_waiting_flags() -> None:
 	"""
 	cutoff = cutoff_field()
 	for doctype in RECORDS:
-		frappe.db.sql(  # nosemgrep
+		frappe.db.sql(  # nosemgrep: frappe-sql-format-injection — RECORDS is ours, nothing is interpolated from input
 			f"""
 			update `tab{doctype}`
 			set conversation_unread = case
@@ -334,7 +334,7 @@ def refresh_waiting_flags() -> None:
 				then 1 else 0 end
 			"""
 		)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — enqueued job and patch: no request will commit this
 
 
 @frappe.whitelist()
@@ -516,7 +516,7 @@ def wake_the_snoozed() -> int:
 	"""
 	woken = 0
 	for doctype in RECORDS:
-		woken += frappe.db.sql(  # nosemgrep
+		woken += frappe.db.sql(  # nosemgrep: frappe-sql-format-injection — RECORDS is ours; the cutoff is bound with %s
 			f"""
 			update `tab{doctype}`
 			set conversation_snoozed_until = null
@@ -525,7 +525,7 @@ def wake_the_snoozed() -> int:
 			""",
 			(now(),),
 		)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — hourly scheduler job, no request to commit it
 	return woken
 
 

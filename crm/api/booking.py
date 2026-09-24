@@ -59,6 +59,7 @@ def _price_info(cal) -> dict:
 	}
 
 
+# nosemgrep: guest-whitelisted-method — the public booking page reading its own configuration
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_calendar(route: str) -> dict:
 	"""Public configuration of a booking page."""
@@ -76,6 +77,7 @@ def get_calendar(route: str) -> dict:
 	}
 
 
+# nosemgrep: guest-whitelisted-method — the public directory: only calendars flagged for it
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def list_services() -> list[dict]:
 	"""Public service menu: every enabled calendar flagged for the directory."""
@@ -101,6 +103,7 @@ def list_services() -> list[dict]:
 	]
 
 
+# nosemgrep: guest-whitelisted-method — free slots are what a booking page is for, 120/h
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @rate_limit(limit=120, seconds=60 * 60)
 def get_slots(route: str, start_date: str, end_date: str) -> list[str]:
@@ -114,6 +117,7 @@ def get_slots(route: str, start_date: str, end_date: str) -> list[str]:
 	return [s["start"].isoformat() for s in cal.get_available_slots(start, end)]
 
 
+# nosemgrep: guest-whitelisted-method — taking the booking is the point of a public page, 10/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=10, seconds=60 * 60)
 def book(
@@ -168,6 +172,7 @@ def book(
 	return _public_booking(cal, booking)
 
 
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_booking(token: str) -> dict:
 	booking = _get_booking_by_token(token)
@@ -175,6 +180,7 @@ def get_booking(token: str) -> dict:
 	return _public_booking(cal, booking)
 
 
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential, 20/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=20, seconds=60 * 60)
 def cancel_booking(token: str) -> dict:
@@ -187,6 +193,7 @@ def cancel_booking(token: str) -> dict:
 	return _public_booking(cal, booking)
 
 
+# nosemgrep: guest-whitelisted-method — the opaque manage token is the credential, 20/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=20, seconds=60 * 60)
 def reschedule_booking(token: str, start: str) -> dict:

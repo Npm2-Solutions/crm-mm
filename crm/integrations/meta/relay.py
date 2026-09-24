@@ -112,7 +112,6 @@ def register_page_route(page_id: str, site: str, ts: str, signature: str):
 	allowed = frappe.conf.get("meta_relay_sites")
 	if allowed and site not in [s.rstrip("/") for s in allowed]:
 		frappe.log_error(f"Page {page_id} claimed by unlisted site {site}", "Meta relay: claim refused")
-		frappe.db.commit()
 		return Response("site not allowed", status=403, mimetype="text/plain")
 
 	current = frappe.db.get_value("Meta Page Route", page_id, "site_url")
@@ -121,13 +120,11 @@ def register_page_route(page_id: str, site: str, ts: str, signature: str):
 			f"Page {page_id} is routed to {current}; {site} tried to take it over",
 			"Meta relay: takeover refused",
 		)
-		frappe.db.commit()
 		return Response("page already claimed", status=409, mimetype="text/plain")
 	if not current:
 		frappe.get_doc({"doctype": "Meta Page Route", "page_id": page_id, "site_url": site}).insert(
 			ignore_permissions=True
 		)
-	frappe.db.commit()
 	return Response("ok", mimetype="text/plain")
 
 
@@ -153,7 +150,6 @@ def unregister_page_route(page_id: str, site: str, ts: str, signature: str):
 		return Response("page belongs to another site", status=409, mimetype="text/plain")
 	if current:
 		frappe.delete_doc("Meta Page Route", page_id, ignore_permissions=True, force=True)
-	frappe.db.commit()
 	return Response("ok", mimetype="text/plain")
 
 

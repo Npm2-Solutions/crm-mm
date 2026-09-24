@@ -285,7 +285,7 @@ def configure_webhook() -> dict:
 			},
 		)
 	except MetaAPIError as exc:
-		frappe.throw(_("Could not configure the webhook automatically: {0}").format(exc))
+		frappe.throw(_("Could not configure the webhook automatically: {0}").format(str(exc)))
 	return get_webhook()
 
 
@@ -465,7 +465,7 @@ def add_account(phone_number_id: str, waba_id: str, token: str, account_name: st
 			"verified_name": (account_name or "").strip() or None,
 		}
 	)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — wire_up_delivery below can fail; the account stays
 
 	# sending would work from here; receiving would not, and silently
 	problems = wire_up_delivery(frappe.get_doc("WhatsApp Account", name))
@@ -571,7 +571,6 @@ def receive_connection():
 		frappe.log_error(frappe.get_traceback(), "WhatsApp: could not store the connection")
 		return Response("could not store account", status=500, mimetype="text/plain")
 
-	frappe.db.commit()
 	return Response(json.dumps({"ok": True, "account": name}), mimetype="application/json")
 
 
@@ -707,7 +706,6 @@ def receive_events():
 			continue
 		for key, value in counts.items():
 			tally[key] += value
-	frappe.db.commit()
 	return Response(json.dumps({"ok": True, **tally}), mimetype="application/json")
 
 

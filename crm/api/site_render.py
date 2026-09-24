@@ -12,6 +12,11 @@ ids travel with the submission exactly as they do on the standalone form page.
 
 Nothing here trusts its caller: an unpublished form or a disabled calendar renders as
 nothing rather than leaking a draft onto a live page.
+
+Every render_template() below is marked `# nosemgrep: frappe-ssti`: the template is a
+literal path to a file shipped in this app, never a string a caller supplied, so there
+is no template for anyone to inject. What the caller controls is the context, and that
+is data — escaped by the templates, which is what `escape_html` above is for.
 """
 
 import json
@@ -79,7 +84,7 @@ def crm_form_html(route: str | None = None, title: str | None = None, button: st
 	except Exception:
 		csrf_token = ""
 
-	return frappe.render_template(
+	return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 		"crm/templates/site/form_inline.html",
 		{
 			"web_form_name": doc.name,
@@ -110,7 +115,7 @@ def crm_booking_html(route: str | None = None, label: str | None = None) -> str:
 	key = str(route or "").strip("/")
 	label = label or _("Book now")
 	if not key:
-		return frappe.render_template(
+		return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 			"crm/templates/site/booking_cta.html",
 			{
 				"cal": {"calendar_name": _("Book an appointment")},
@@ -144,7 +149,7 @@ def crm_booking_html(route: str | None = None, label: str | None = None) -> str:
 		)
 		if not row or not row.enabled or not row.bookable_online:
 			return _placeholder(_("This service is not bookable online."))
-		return frappe.render_template(
+		return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 			"crm/templates/site/booking_cta.html",
 			{
 				"cal": {
@@ -170,7 +175,7 @@ def crm_booking_html(route: str | None = None, label: str | None = None) -> str:
 	if not cal:
 		return _placeholder(_("This booking calendar is off."))
 
-	return frappe.render_template(
+	return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 		"crm/templates/site/booking_cta.html",
 		{
 			"cal": cal,
@@ -192,7 +197,7 @@ def crm_contact_html(page_name: str | None = None) -> str:
 		return _placeholder(_("Fill in the contact details under Settings → Website."))
 	if not (s.address or s.phone or s.email or s.whatsapp_number):
 		return _placeholder(_("Fill in the contact details under Settings → Website."))
-	return frappe.render_template(
+	return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 		"crm/templates/site/contacts.html",
 		{
 			"settings": s,

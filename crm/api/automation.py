@@ -356,6 +356,7 @@ def save_settings(name: str, settings: dict | str) -> None:
 	doc.save()
 
 
+# nosemgrep: guest-whitelisted-method — external systems post here; the webhook key is compared with hmac, 300/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(limit=300, seconds=60 * 60)
 def inbound_webhook(automation: str, key: str) -> dict:

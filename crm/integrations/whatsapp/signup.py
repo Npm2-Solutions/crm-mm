@@ -160,10 +160,14 @@ ERROR_KEYS = {
 # which an aggregator business links a client business. That is the step
 # Embedded Signup runs when the customer picks their portfolio, so the code is
 # about the portfolio, not about WhatsApp.
+# Each hint is a lambda, not a string: a module is imported once per worker and
+# shared by every site and every user on it, so calling _() out here would freeze
+# these paragraphs in whichever language happened to be loaded first.
+# nosemgrep: frappe-breaks-multitenancy — the lambda is the point: _() runs per call, not once at import
 SIGNUP_HINTS = (
 	(
 		"1690",
-		_(
+		lambda: _(
 			"This code belongs to the business-portfolio step, not to WhatsApp. It is the family "
 			"Meta documents under client businesses — an aggregator business attaching a client "
 			"business — so when it fires on the last screen, the one that offers to share the "
@@ -176,7 +180,7 @@ SIGNUP_HINTS = (
 	),
 	(
 		"3441",
-		_(
+		lambda: _(
 			"Meta refused for want of a right over a resource, and it does not say which. The "
 			"likeliest one is the WhatsApp Business app account behind the number just typed: "
 			"after that number the flow has to read it, to show the business its own name and "
@@ -188,7 +192,7 @@ SIGNUP_HINTS = (
 	),
 	(
 		"200",
-		_(
+		lambda: _(
 			"Meta refused for want of permission. On a live app only permissions approved for "
 			"Advanced Access appear in the flow at all."
 		),
@@ -201,7 +205,7 @@ def hint_for(error_code: str | None) -> str:
 	code = str(error_code or "")
 	for prefix, hint in SIGNUP_HINTS:
 		if code.startswith(prefix):
-			return hint
+			return hint()
 	return ""
 
 
@@ -266,7 +270,6 @@ def log_session_event(
 			"details": json.dumps(data)[:5000],
 		}
 	).insert(ignore_permissions=True)
-	frappe.db.commit()
 	return {"ok": True}
 
 
@@ -414,7 +417,7 @@ def exchange_code(code: str, redirect_uri: str = "") -> str:
 	try:
 		data = whatsapp_graph_get("oauth/access_token", token="", params=params)
 	except MetaAPIError as exc:
-		frappe.throw(_("Meta refused the WhatsApp connection: {0}").format(exc))
+		frappe.throw(_("Meta refused the WhatsApp connection: {0}").format(str(exc)))
 	if not data.get("access_token"):
 		frappe.throw(_("Meta did not return an access token"))
 	return data["access_token"]
@@ -444,7 +447,7 @@ def discover_assets(token: str, waba_id: str = "", phone_number_id: str = "") ->
 		try:
 			data = whatsapp_graph_get("debug_token", whatsapp_app_token(), {"input_token": token})
 		except MetaAPIError as exc:
-			frappe.throw(_("Meta would not say which WhatsApp account was shared: {0}").format(exc))
+			frappe.throw(_("Meta would not say which WhatsApp account was shared: {0}").format(str(exc)))
 		for scope in (data.get("data") or {}).get("granular_scopes") or []:
 			if scope.get("scope") == "whatsapp_business_management" and scope.get("target_ids"):
 				waba_id = str(scope["target_ids"][0])
@@ -456,7 +459,7 @@ def discover_assets(token: str, waba_id: str = "", phone_number_id: str = "") ->
 		try:
 			numbers = whatsapp_graph_get(f"{waba_id}/phone_numbers", token, {"limit": 1})
 		except MetaAPIError as exc:
-			frappe.throw(_("Could not read this WhatsApp account's phone number: {0}").format(exc))
+			frappe.throw(_("Could not read this WhatsApp account's phone number: {0}").format(str(exc)))
 		rows = numbers.get("data") or []
 		if not rows:
 			frappe.throw(
@@ -535,7 +538,7 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 				"site_url": site,
 			}
 		).insert(ignore_permissions=True)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the two calls after this can fail; the claim stands
 
 
 def deliver_locally(payload: dict) -> None:
@@ -554,7 +557,7 @@ def deliver_locally(payload: dict) -> None:
 	if not whatsapp_installed():
 		frappe.throw(_("The WhatsApp app is not installed on this site"))
 	upsert_account(payload)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the self-call re-enters this site and must see it
 
 
 def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, number: dict) -> None:
