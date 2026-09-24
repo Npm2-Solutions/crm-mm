@@ -135,6 +135,125 @@ class TestTheColumnBesideARecord(FrappeTestCase):
 		self.assertNotIn(self.silent.name, waiting)
 
 
+class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
+	"""«In attesa» says what happened. The state says what we decided about it."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Stato", "last_name": "Prova"}
+		).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _state(self, field="conversation_status"):
+		return frappe.db.get_value("CRM Lead", self.lead.name, field)
+
+	def _sms(self, direction, message="ciao"):
+		return frappe.get_doc(
+			{
+				"doctype": "CRM SMS Message",
+				"type": direction,
+				"message": message,
+				"from": "+390000000001",
+				"to": "+390000000002",
+				"reference_doctype": "CRM Lead",
+				"reference_name": self.lead.name,
+			}
+		).insert(ignore_permissions=True)
+
+	def test_handled_takes_it_off_the_pile_and_clears_the_count(self):
+		from crm.api.conversations import HANDLED, set_state
+
+		self._sms("Incoming")
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		self.assertEqual(self._state(), HANDLED)
+		# a count left on something just closed would be the badge arguing
+		self.assertEqual(self._state("conversation_unread"), 0)
+
+	def test_they_write_again_and_it_is_open_again(self):
+		from crm.api.conversations import HANDLED, OPEN, set_state
+
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		self._sms("Incoming", "ci sei?")
+		self.assertEqual(self._state(), OPEN)
+
+	def test_our_own_message_does_not_reopen_what_we_closed(self):
+		from crm.api.conversations import HANDLED, set_state
+
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		self._sms("Outgoing", "ti aggiorno")
+		self.assertEqual(self._state(), HANDLED)
+
+	def test_a_recount_does_not_reopen_it_either(self):
+		# handled while the last word is still theirs is the common case —
+		# «grazie» needs no answer — and any later touch must not undo that
+		from crm.api.conversations import HANDLED, remember, set_state
+
+		self._sms("Incoming", "grazie mille")
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		remember("CRM Lead", self.lead.name)
+		self.assertEqual(self._state(), HANDLED)
+
+	def test_snoozing_parks_it_and_the_hour_brings_it_back(self):
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import set_state, wake_the_snoozed
+
+		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, hours=-1))
+		self.assertTrue(self._state("conversation_snoozed_until"))
+
+		wake_the_snoozed()
+		self.assertFalse(self._state("conversation_snoozed_until"))
+
+	def test_one_that_is_still_parked_stays_parked(self):
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import set_state, wake_the_snoozed
+
+		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, days=2))
+		wake_the_snoozed()
+		self.assertTrue(self._state("conversation_snoozed_until"))
+
+	def test_snoozing_needs_a_moment_to_snooze_until(self):
+		from crm.api.conversations import set_state
+
+		with self.assertRaises(frappe.ValidationError):
+			set_state("CRM Lead", self.lead.name, "Snoozed")
+
+	def test_a_conversation_is_never_handled_and_parked_at_once(self):
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import HANDLED, set_state
+
+		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, days=1))
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		self.assertEqual(self._state(), HANDLED)
+		self.assertFalse(self._state("conversation_snoozed_until"))
+
+	def test_the_list_answers_the_four_questions_separately(self):
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import HANDLED, people, set_state
+
+		parked = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Rinviata", "last_name": "Prova"}
+		).insert(ignore_permissions=True)
+		set_state("CRM Lead", parked.name, "Snoozed", until=add_to_date(None, days=1))
+		set_state("CRM Lead", self.lead.name, HANDLED)
+
+		def named(state):
+			return [row.name for row in people(state=state, limit=200)]
+
+		self.assertIn(self.lead.name, named("handled"))
+		self.assertNotIn(self.lead.name, named("open"))
+		self.assertIn(parked.name, named("snoozed"))
+		self.assertNotIn(parked.name, named("open"))
+		self.assertIn(self.lead.name, named("all"))
+		self.assertIn(parked.name, named("all"))
+
+
 class TestTheConversationOfARealPerson(FrappeTestCase):
 	"""End to end, with rows in the database."""
 

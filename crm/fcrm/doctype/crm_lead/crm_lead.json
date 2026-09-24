@@ -114,6 +114,9 @@
   "column_break_last_conversation",
   "last_conversation_preview",
   "last_answered_on",
+  "conversation_status",
+  "conversation_snoozed_until",
+  "conversation_assigned_to",
   "conversation_unread",
   "conversation_seen_until",
   "conversation_seen_by"
@@ -733,6 +736,29 @@
    "fieldname": "last_answered_on",
    "fieldtype": "Datetime",
    "label": "Last Answered On",
+   "read_only": 1
+  },
+  {
+   "default": "Open",
+   "description": "Whether somebody here still has to deal with this conversation",
+   "fieldname": "conversation_status",
+   "fieldtype": "Select",
+   "label": "Conversation Status",
+   "options": "Open\nHandled",
+   "read_only": 1
+  },
+  {
+   "description": "Parked until this moment, then it comes back",
+   "fieldname": "conversation_snoozed_until",
+   "fieldtype": "Datetime",
+   "label": "Conversation Snoozed Until",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversation_assigned_to",
+   "fieldtype": "Link",
+   "label": "Conversation Assigned To",
+   "options": "User",
    "read_only": 1
   },
   {

@@ -203,27 +203,55 @@ def remember(reference_doctype: str, reference_name: str) -> None:
 # --- the hooks, one per place a message can arrive from ----------------------
 
 
-def quietly(reference_doctype: str, reference_name: str) -> None:
-	"""`remember`, but it can never take a message down with it.
+def quiet(what, *args) -> None:
+	"""Run it; a fault is a line in the log and nothing more.
 
-	What this writes is bookkeeping: where a person sits in a list, and whether
-	a badge shows. A message is the thing that matters, and it has already been
-	sent by the time this runs — so a fault here is worth a line in the error
-	log and nothing else.
-
-	Not a precaution in the abstract: one wrong helper name in the preview and
-	sending a WhatsApp message failed with a Python error about a string nobody
-	had asked for.
+	Everything this module does on the way in is bookkeeping, and the message it
+	is bookkeeping about has already been sent. Not a precaution in the abstract:
+	one wrong helper name in a preview once made sending a WhatsApp message fail
+	with a Python error about a string nobody had asked for.
 	"""
 	try:
-		remember(reference_doctype, reference_name)
+		what(*args)
 	except Exception:
-		frappe.log_error(frappe.get_traceback(), "Conversations: could not note the last message")
+		frappe.log_error(frappe.get_traceback(), f"Conversations: {what.__name__} did not run")
+
+
+def quietly(reference_doctype: str, reference_name: str) -> None:
+	"""`remember`, and it can never take a message down with it."""
+	quiet(remember, reference_doctype, reference_name)
+
+
+def they_wrote(doc) -> bool:
+	"""Did this arrive from them, rather than leave from us?"""
+	if doc.doctype == "Communication":
+		return doc.get("sent_or_received") == "Received"
+	return doc.get("type") == "Incoming"
+
+
+def reopen(reference_doctype: str, reference_name: str) -> None:
+	"""They wrote again: whatever we had decided about this, it is open now.
+
+	Decided from the message that just arrived rather than from the recomputed
+	«last message», because those are not the same question. A conversation is
+	often marked handled while the last word is still theirs — «grazie» needs no
+	answer — and reading the state off the last message would have reopened it
+	the next time anything at all touched the record.
+	"""
+	for doctype, name in also_the_person(reference_doctype, reference_name):
+		frappe.db.set_value(
+			doctype,
+			name,
+			{"conversation_status": OPEN, "conversation_snoozed_until": None},
+			update_modified=False,
+		)
 
 
 def on_message(doc, method: str | None = None) -> None:
 	"""A WhatsApp or SMS message was written."""
 	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
+	if they_wrote(doc) and doc.get("reference_doctype") in RECORDS:
+		quiet(reopen, doc.reference_doctype, doc.reference_name)
 
 
 def on_communication(doc, method: str | None = None) -> None:
@@ -231,6 +259,8 @@ def on_communication(doc, method: str | None = None) -> None:
 	if doc.get("communication_type") != "Communication":
 		return
 	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
+	if they_wrote(doc) and doc.get("reference_doctype") in RECORDS:
+		quiet(reopen, doc.reference_doctype, doc.reference_name)
 
 
 # --- how many are still waiting ----------------------------------------------
@@ -407,12 +437,16 @@ ROW = (
 	"last_conversation_direction",
 	"last_conversation_preview",
 	"conversation_unread",
+	"conversation_status",
+	"conversation_snoozed_until",
+	"conversation_assigned_to",
 )
 
 
 @frappe.whitelist()
 def people(
 	search: str = "",
+	state: str = "all",
 	waiting: bool | int | str = False,
 	filters: dict | str | None = None,
 	limit: int = 30,
@@ -433,6 +467,7 @@ def people(
 	frappe.has_permission("CRM Lead", "read", throw=True)
 
 	conditions = frappe.parse_json(filters) if isinstance(filters, str) else dict(filters or {})
+	conditions.update(STATES.get(state or "all", STATES["all"]))
 	if waiting in (True, 1, "1", "true", "True"):
 		conditions["conversation_unread"] = 1
 
@@ -455,6 +490,82 @@ def people(
 		order_by="last_conversation_on desc, modified desc",
 		limit_page_length=min(int(limit), 200),
 	)
+
+
+OPEN = "Open"
+HANDLED = "Handled"
+
+# The four questions asked of a list of conversations, and the filter each one is.
+# Kept here rather than in the browser so «open» means the same thing to the list,
+# to the count above it and to anything that asks later.
+STATES = {
+	"open": {"conversation_status": OPEN, "conversation_snoozed_until": ["is", "not set"]},
+	"handled": {"conversation_status": HANDLED},
+	"snoozed": {"conversation_snoozed_until": ["is", "set"]},
+	"all": {},
+}
+
+
+def wake_the_snoozed() -> int:
+	"""Bring back the conversations whose moment has come.
+
+	Cleared on a schedule rather than read as «snoozed until now is past»,
+	because the second way makes every list ask two questions about two columns
+	for every row. Emptied, the field says exactly what it means: this one is
+	parked. What is not parked is simply not.
+	"""
+	woken = 0
+	for doctype in RECORDS:
+		woken += frappe.db.sql(  # nosemgrep
+			f"""
+			update `tab{doctype}`
+			set conversation_snoozed_until = null
+			where conversation_snoozed_until is not null
+			  and conversation_snoozed_until <= %s
+			""",
+			(now(),),
+		)
+	frappe.db.commit()
+	return woken
+
+
+@frappe.whitelist(methods=["POST"])
+def set_state(
+	reference_doctype: str,
+	reference_name: str,
+	state: str = OPEN,
+	until: str | None = None,
+	assign_to: str | None = None,
+) -> dict:
+	"""Dealt with, parked, or back on the pile.
+
+	One endpoint for the three, because they are one decision — what happens to
+	this conversation now — and three endpoints would let a conversation be
+	handled *and* snoozed, which is two answers to a question with one.
+	"""
+	if reference_doctype not in RECORDS:
+		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
+	frappe.has_permission(reference_doctype, "write", doc=reference_name, throw=True)
+
+	values = {"conversation_status": OPEN, "conversation_snoozed_until": None}
+	if state == HANDLED:
+		values["conversation_status"] = HANDLED
+		# handled means read: leaving a count on something somebody has just
+		# closed would be the badge arguing with the person
+		values["conversation_seen_until"] = now()
+		values["conversation_seen_by"] = frappe.session.user
+		values["conversation_unread"] = 0
+	elif state == "Snoozed":
+		if not until:
+			frappe.throw(frappe._("Say until when."), frappe.ValidationError)
+		values["conversation_snoozed_until"] = until
+
+	if assign_to is not None:
+		values["conversation_assigned_to"] = assign_to or None
+
+	for doctype, name in also_the_person(reference_doctype, reference_name):
+		frappe.db.set_value(doctype, name, values, update_modified=False)
+	return {"state": values["conversation_status"], "until": values["conversation_snoozed_until"]}
 
 
 @frappe.whitelist(methods=["POST"])
