@@ -32,33 +32,79 @@
           @click="connectGoogle"
         />
       </Tooltip>
-      <ShortcutTooltip :label="__('Create Event')" combo="Mod+E">
+      <!-- Two icon-only «+» side by side are two buttons that look identical and
+           do different things. On a phone it is one button that asks which. -->
+      <Dropdown
+        v-if="isMobileView"
+        :options="[
+          {
+            label: __('Appointment'),
+            icon: 'calendar-plus',
+            onClick: () => newAppointment(),
+          },
+          {
+            label: __('Event'),
+            icon: 'plus',
+            onClick: () => newEvent(),
+            condition: () => !isCreateDisabled,
+          },
+        ]"
+      >
+        <Button variant="solid" icon="plus" :aria-label="__('New')" />
+      </Dropdown>
+      <template v-else>
+        <ShortcutTooltip :label="__('Create Event')" combo="Mod+E">
+          <Button
+            :label="__('Event')"
+            :disabled="isCreateDisabled"
+            @click="newEvent"
+          >
+            <template #prefix
+              ><span class="lucide-plus h-4" aria-hidden="true"
+            /></template>
+          </Button>
+        </ShortcutTooltip>
         <Button
-          :label="isMobileView ? undefined : __('Event')"
-          :aria-label="__('Event')"
-          :disabled="isCreateDisabled"
-          @click="newEvent"
+          variant="solid"
+          :label="__('Appointment')"
+          @click="newAppointment()"
         >
           <template #prefix
             ><span class="lucide-plus h-4" aria-hidden="true"
           /></template>
         </Button>
-      </ShortcutTooltip>
-      <Button
-        variant="solid"
-        :label="isMobileView ? undefined : __('Appointment')"
-        :aria-label="__('Appointment')"
-        @click="newAppointment()"
-      >
-        <template #prefix
-          ><span class="lucide-plus h-4" aria-hidden="true"
-        /></template>
-      </Button>
+      </template>
     </template>
   </LayoutHeader>
 
   <!-- filters -->
   <div
+    v-if="isMobileView"
+    class="flex items-center gap-2 border-b border-outline-gray-2 px-3 py-2"
+  >
+    <Button
+      :label="__('Filters')"
+      icon-left="lucide-filter"
+      @click="showFilters = true"
+    >
+      <template v-if="activeFilterCount" #suffix>
+        <Badge :label="String(activeFilterCount)" variant="subtle" />
+      </template>
+    </Button>
+    <Button
+      v-if="hasFilters"
+      variant="ghost"
+      :label="__('Reset')"
+      @click="resetFilters"
+    />
+    <span class="grow" />
+    <span v-if="appointmentCount" class="text-p-sm text-ink-gray-5">
+      {{ appointmentCount }} {{ __('appointments') }}
+    </span>
+  </div>
+
+  <div
+    v-else
     class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5"
   >
     <MultiSelectFilter
@@ -109,6 +155,58 @@
       @click="resetFilters"
     />
   </div>
+
+  <!-- the same five filters, as a sheet, on a phone -->
+  <BottomSheet
+    v-if="isMobileView"
+    v-model:open="showFilters"
+    :title="__('Filters')"
+  >
+    <div class="flex flex-col gap-3 px-4 pb-6">
+      <MultiSelectFilter
+        v-model="filters.services"
+        class="w-full"
+        :label="__('Services')"
+        icon="lucide-sparkles"
+        :options="serviceFilterOptions"
+        :emptyText="__('No services configured yet')"
+        @update:modelValue="reloadScheduler"
+      />
+      <MultiSelectFilter
+        v-model="filters.staff"
+        class="w-full"
+        :label="__('Professionals')"
+        icon="lucide-users"
+        :options="staffFilterOptions"
+        @update:modelValue="reloadScheduler"
+      />
+      <MultiSelectFilter
+        v-model="filters.resources"
+        class="w-full"
+        :label="__('Rooms & equipment')"
+        icon="lucide-door-open"
+        :options="resourceFilterOptions"
+        :emptyText="__('No rooms or equipment yet')"
+        @update:modelValue="reloadScheduler"
+      />
+      <MultiSelectFilter
+        v-model="filters.statuses"
+        class="w-full"
+        :label="__('Status')"
+        icon="lucide-circle-dot"
+        :options="statusFilterOptions"
+        @update:modelValue="reloadScheduler"
+      />
+      <MultiSelectFilter
+        v-model="filters.sources"
+        class="w-full"
+        :label="__('Source')"
+        icon="lucide-plug-zap"
+        :options="sourceFilterOptions"
+        @update:modelValue="reloadScheduler"
+      />
+    </div>
+  </BottomSheet>
 
   <!-- agenda: one column per professional or per room -->
   <div
@@ -358,7 +456,10 @@ import { isMobileView } from '@/composables/breakpoints'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { appointmentColor, formatMinutes } from '@/utils/scheduler'
 import {
+  Badge,
+  BottomSheet,
   Calendar,
+  Dropdown,
   createListResource,
   createResource,
   dayjs,
@@ -512,6 +613,11 @@ const sourceFilterOptions = computed(() => [
 
 const hasFilters = computed(() =>
   Object.values(filters).some((value) => value.length),
+)
+
+const showFilters = ref(false)
+const activeFilterCount = computed(() =>
+  Object.values(filters).reduce((total, value) => total + value.length, 0),
 )
 
 function resetFilters() {
