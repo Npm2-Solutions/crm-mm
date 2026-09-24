@@ -48,6 +48,12 @@
             {{ service.upcoming_count }} {{ __('upcoming') }}
           </span>
           <Badge
+            v-if="service.bookable_online"
+            :label="__('Online')"
+            theme="blue"
+            size="sm"
+          />
+          <Badge
             :label="service.enabled ? __('Active') : __('Off')"
             :theme="service.enabled ? 'green' : 'gray'"
             size="sm"
@@ -329,6 +335,12 @@
           </label>
         </div>
 
+        <OnlineBookingPanel
+          v-if="form.bookable_online"
+          v-model="form"
+          :serviceName="editingName || ''"
+        />
+
         <WeeklyHours
           v-model="form.availability"
           :label="__('When it can be delivered')"
@@ -388,6 +400,8 @@
 <script setup>
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
+import OnlineBookingPanel from '@/components/Settings/Scheduling/OnlineBookingPanel.vue'
+import { ONLINE_DEFAULTS, onlineFieldsFrom } from '@/utils/onlineBooking'
 import {
   call,
   createResource,
@@ -494,6 +508,7 @@ const emptyForm = () => ({
   currency: 'EUR',
   price_per_participant: false,
   bookable_online: false,
+  ...ONLINE_DEFAULTS,
   staff: [],
   roles: [],
   resources: [],
@@ -546,7 +561,7 @@ function openEditor(name = null) {
     params: { name },
     auto: true,
     onSuccess: (data) => {
-      Object.assign(form, data, {
+      Object.assign(form, data, onlineFieldsFrom(data), {
         enabled: Boolean(data.enabled),
         price_per_participant: Boolean(data.price_per_participant),
         bookable_online: Boolean(data.bookable_online),

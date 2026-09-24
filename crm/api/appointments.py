@@ -75,6 +75,7 @@ def get_calendar(
 	services: str | list | None = None,
 	statuses: str | list | None = None,
 	include_events: bool = True,
+	sources: str | list | None = None,
 ) -> dict:
 	"""Appointments (and optionally plain calendar events) in a date window.
 
@@ -96,6 +97,24 @@ def get_calendar(
 	wanted_services = _as_list(services)
 	if wanted_services:
 		filters["service"] = ["in", wanted_services]
+	# "Internal", "Online", or a connected platform's name (e.g. "Treatwell / Uala")
+	wanted_sources = _as_list(sources)
+	if wanted_sources:
+		kinds = [s for s in wanted_sources if s in ("Internal", "Online", "External")]
+		platforms = [s for s in wanted_sources if s not in kinds]
+		or_filters = []
+		if kinds:
+			or_filters.append(["source", "in", kinds])
+		if platforms:
+			or_filters.append(["external_platform", "in", platforms])
+		if len(or_filters) == 1:
+			filters[or_filters[0][0]] = or_filters[0][1:]
+		else:
+			filters["name"] = [
+				"in",
+				frappe.get_all("CRM Appointment", or_filters=or_filters, pluck="name", limit_page_length=0)
+				or [""],
+			]
 
 	rows = frappe.get_all(
 		"CRM Appointment",
@@ -297,6 +316,14 @@ def get_scheduler_meta() -> dict:
 			order_by="price_list_name asc",
 		),
 		"statuses": ["Scheduled", "Confirmed", "Completed", "Cancelled", "No Show"],
+		# where appointments come from: the calendar can be filtered by it
+		"platforms": sorted(
+			set(
+				frappe.get_all("CRM Booking Connection", filters={"enabled": 1}, pluck="platform")
+				if frappe.db.table_exists("CRM Booking Connection")
+				else []
+			)
+		),
 		"settings": {
 			"timezone": config.timezone or str(scheduling_tz()),
 			"default_price_list": pricing.default_price_list(),
@@ -738,9 +765,42 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 			"default_price",
 			"currency",
 			"holiday_list",
+			# online booking
+			"online_confirmation",
+			"online_slot_interval",
+			"online_max_participants",
+			"booking_opens_on",
+			"booking_closes_on",
+			"same_day_cutoff",
+			"online_question",
+			"booking_instructions",
+			"max_bookings_per_day",
+			"max_bookings_per_week",
+			"max_concurrent",
+			"customer_eligibility",
+			"max_active_per_customer",
+			"max_per_customer_per_day",
+			"min_days_between",
+			"cancel_notice_hours",
+			"reschedule_notice_hours",
+			"max_reschedules",
 		)
 		if key in payload
 	}
+	for key in ("booking_opens_on", "booking_closes_on", "same_day_cutoff"):
+		# an emptied date/time picker sends "", which a Date/Time column refuses
+		if key in values and not values[key]:
+			values[key] = None
+	for key in (
+		"allow_staff_choice",
+		"show_price_online",
+		"require_phone",
+		"require_notes",
+		"allow_online_cancel",
+		"allow_online_reschedule",
+	):
+		if key in payload:
+			values[key] = cint(payload.get(key))
 	values.update(
 		{
 			"enabled": cint(payload.get("enabled", 1)),
