@@ -194,9 +194,9 @@ def calls_trend(ctx: Context):
 		ctx.buckets,
 		ctx.grain,
 		[
-			charts.series("incoming", _("Incoming"), charts.fill(ctx.buckets, incoming)),
-			charts.series("outgoing", _("Outgoing"), charts.fill(ctx.buckets, outgoing)),
-			charts.series("missed", _("Missed"), charts.fill(ctx.buckets, lost)),
+			charts.series("incoming", _("Incoming"), charts.fill(ctx.buckets, incoming), color="blue"),
+			charts.series("outgoing", _("Outgoing"), charts.fill(ctx.buckets, outgoing), color="darkgreen"),
+			charts.series("missed", _("Missed"), charts.fill(ctx.buckets, lost), color="red", dashed=True),
 		],
 	)
 
@@ -230,8 +230,12 @@ def calls_by_agent(ctx: Context):
 		key=lambda row: row["outgoing"] + row["incoming"],
 		reverse=True,
 	)[:12]
+	# the same colours as "Calls over time"
 	return charts.bars(
-		rows, label_key="user", lines=[("outgoing", _("Outgoing")), ("incoming", _("Incoming"))], stacked=True
+		rows,
+		label_key="user",
+		lines=[("incoming", _("Incoming"), "blue"), ("outgoing", _("Outgoing"), "darkgreen")],
+		stacked=True,
 	)
 
 

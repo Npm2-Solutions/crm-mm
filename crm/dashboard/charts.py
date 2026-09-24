@@ -5,8 +5,13 @@
 
 Widgets return data, never drawing instructions: numbers, series, slices, rows.
 How it looks — colours, fonts, number formats in the reader's locale — is the
-browser's job, the same for every widget. So a widget never says "blue" or
+browser's job, the same for every widget. So a widget never says "#2a78d6" or
 "€ 1.234,00"; it says ``format="currency"`` and hands over 1234.
+
+One exception, by name only: a series or slice that stands for one known thing
+(a status, a direction) may keep a slot of the palette (``color="green"``), so
+"No show" is never painted green because it happened to come third. The slots
+are ``COLORS``; their shades, per theme, live in the browser.
 
 Formats: ``number``, ``currency`` (in the dashboard currency, unless the payload
 names another), ``percent`` (0 to 100), ``duration`` (seconds), ``days``,
@@ -25,6 +30,9 @@ FORMATS = ("number", "currency", "percent", "duration", "days", "ratio")
 
 # a donut past six slices stops being part-to-whole and becomes a colour quiz
 MAX_SLICES = 6
+
+# the palette's slots, in its order (frontend/src/utils/dashboardCharts.js)
+COLORS = ("blue", "orange", "green", "amber", "pink", "darkgreen", "violet", "red")
 
 
 def number(
@@ -72,8 +80,22 @@ def number(
 	return payload
 
 
-def series(name: str, label: str, values: list[float], type: str = "line") -> dict[str, Any]:
-	return {"name": name, "label": label, "type": type, "values": [_num(value) for value in values]}
+def series(
+	name: str,
+	label: str,
+	values: list[float],
+	type: str = "line",
+	*,
+	color: str | None = None,
+	dashed: bool = False,
+) -> dict[str, Any]:
+	"""One line or set of bars. ``dashed`` tells a line apart by more than its colour."""
+	out = {"name": name, "label": label, "type": type, "values": [_num(value) for value in values]}
+	if color in COLORS:
+		out["color"] = color
+	if dashed:
+		out["dashed"] = True
+	return out
 
 
 def trend(
@@ -102,21 +124,25 @@ def bars(
 	rows: list[dict[str, Any]],
 	*,
 	label_key: str,
-	lines: list[tuple[str, str]],
+	lines: list[tuple],
 	format: str = "number",
 	horizontal: bool = True,
 	stacked: bool = False,
 ) -> dict[str, Any]:
 	"""A bar chart over categories — a ranking when ``horizontal`` (long names read sideways).
 
-	``lines`` are ``(key in each row, label)``; one line is a plain ranking, more
-	than one a grouped (or ``stacked``) comparison. One scale for all of them: two
-	measures of different size belong in two widgets, not on a second axis.
+	``lines`` are ``(key in each row, label)``, or ``(key, label, color)`` to keep
+	a palette slot; one line is a plain ranking, more than one a grouped (or
+	``stacked``) comparison. One scale for all of them: two measures of different
+	size belong in two widgets, not on a second axis.
 	"""
 	return {
 		"kind": "axis",
 		"x": {"type": "category", "values": [_label(row.get(label_key)) for row in rows]},
-		"series": [series(key, label, [row.get(key) for row in rows], type="bar") for key, label in lines],
+		"series": [
+			series(key, label, [row.get(key) for row in rows], type="bar", color=color[0] if color else None)
+			for key, label, *color in lines
+		],
 		"horizontal": horizontal,
 		"stacked": stacked,
 		"format": _format(format),
@@ -124,24 +150,40 @@ def bars(
 
 
 def donut(
-	rows: Iterable[tuple[Any, float]],
+	rows: Iterable[tuple],
 	*,
 	format: str = "number",
 	other_label: str = "Other",
 	empty_label: str = "Not set",
 ) -> dict[str, Any]:
-	"""Part-to-whole. The biggest five slices stay, the rest fold into one "Other"."""
-	slices = [(_label(label, empty_label), _num(value)) for label, value in rows]
-	slices = [entry for entry in slices if entry[1] > 0]
-	slices.sort(key=lambda entry: entry[1], reverse=True)
-	if len(slices) > MAX_SLICES:
-		kept = slices[: MAX_SLICES - 1]
-		rest = sum(value for _label_, value in slices[MAX_SLICES - 1 :])
-		slices = [*kept, (other_label, rest)]
+	"""Part-to-whole. The biggest five slices stay, the rest fold into one "Other".
+
+	``rows`` are ``(label, value)``, or ``(label, value, color)`` for a slice that
+	keeps its slot of the palette whatever its size.
+	"""
+	entries = []
+	for row in rows:
+		label, value, *color = row
+		entries.append((_label(label, empty_label), _num(value), color[0] if color else None))
+	entries = [entry for entry in entries if entry[1] > 0]
+	entries.sort(key=lambda entry: entry[1], reverse=True)
+	rest = None
+	if len(entries) > MAX_SLICES:
+		rest = sum(entry[1] for entry in entries[MAX_SLICES - 1 :])
+		entries = entries[: MAX_SLICES - 1]
+	slices = []
+	for label, value, color in entries:
+		slice_ = {"label": label, "value": value}
+		if color in COLORS:
+			slice_["color"] = color
+		slices.append(slice_)
+	if rest is not None:
+		# drawn in a neutral grey: "the rest" is not one more thing to tell apart
+		slices.append({"label": other_label, "value": rest, "other": True})
 	return {
 		"kind": "donut",
-		"slices": [{"label": label, "value": value} for label, value in slices],
-		"total": sum(value for _label_, value in slices),
+		"slices": slices,
+		"total": sum(slice_["value"] for slice_ in slices),
 		"format": _format(format),
 	}
 

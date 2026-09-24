@@ -208,8 +208,15 @@ def whatsapp_failed(ctx: Context):
 def whatsapp_status(ctx: Context):
 	labels = status_labels()
 	counts = outgoing_by_status(ctx)
+	# still on its way, whether Meta has it yet or not
+	on_the_way = counts.get(SENT, 0) + counts.get(PENDING, 0)
 	return charts.donut(
-		[(labels[key], counts.get(key, 0)) for key in (READ, DELIVERED, SENT, PENDING, FAILED)]
+		[
+			(labels[READ], counts.get(READ, 0), "darkgreen"),
+			(labels[DELIVERED], counts.get(DELIVERED, 0), "blue"),
+			(labels[SENT], on_the_way, "amber"),
+			(labels[FAILED], counts.get(FAILED, 0), "pink"),
+		]
 	)
 
 

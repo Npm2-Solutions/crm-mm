@@ -306,14 +306,15 @@ def agenda_occupancy(ctx: Context):
 def appointments_trend(ctx: Context):
 	scope = staffed_by(ctx)
 	lines = []
-	for key, statuses, label in (
-		("completed", ("Completed",), _("Completed")),
-		("upcoming", UPCOMING, _("Scheduled")),
-		("no_show", ("No Show",), _("No show")),
-		("cancelled", ("Cancelled",), _("Cancelled")),
+	# stacked from what went well to what went wrong; each outcome keeps its colour
+	for key, statuses, label, color in (
+		("completed", ("Completed",), _("Completed"), "green"),
+		("upcoming", UPCOMING, _("Scheduled"), "blue"),
+		("cancelled", ("Cancelled",), _("Cancelled"), "amber"),
+		("no_show", ("No Show",), _("No show"), "pink"),
 	):
 		values = per_bucket(ctx, per_day(ctx, Appt, Appt.starts_on, Appt.status.isin(statuses), scope))
-		lines.append(charts.series(key, label, charts.fill(ctx.buckets, values), type="bar"))
+		lines.append(charts.series(key, label, charts.fill(ctx.buckets, values), type="bar", color=color))
 	return charts.trend(ctx.buckets, ctx.grain, lines, stacked=True)
 
 

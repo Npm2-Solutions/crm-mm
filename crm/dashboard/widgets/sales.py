@@ -404,9 +404,9 @@ def sales_trend(ctx: Context):
 		ctx.buckets,
 		ctx.grain,
 		[
-			charts.series("people", _("New people"), charts.fill(ctx.buckets, people)),
-			charts.series("deals", _("New deals"), charts.fill(ctx.buckets, deals)),
-			charts.series("won", _("Won deals"), charts.fill(ctx.buckets, won)),
+			charts.series("people", _("New people"), charts.fill(ctx.buckets, people), color="blue"),
+			charts.series("deals", _("New deals"), charts.fill(ctx.buckets, deals), color="orange"),
+			charts.series("won", _("Won deals"), charts.fill(ctx.buckets, won), color="green"),
 		],
 	)
 
@@ -489,8 +489,10 @@ def forecasted_revenue(ctx: Context):
 		months,
 		"month",
 		[
-			charts.series("won", _("Won"), charts.fill(months, won), type="bar"),
-			charts.series("forecast", _("Weighted forecast"), charts.fill(months, forecast), type="bar"),
+			charts.series("won", _("Won"), charts.fill(months, won), type="bar", color="green"),
+			charts.series(
+				"forecast", _("Weighted forecast"), charts.fill(months, forecast), type="bar", color="blue"
+			),
 		],
 		format="currency",
 		stacked=True,
