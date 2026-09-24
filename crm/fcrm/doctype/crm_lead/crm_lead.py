@@ -14,7 +14,6 @@ from crm.fcrm.doctype.crm_service_level_agreement.utils import get_sla
 from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
 )
-from crm.fcrm.doctype.utils import add_or_remove_lost_reason_section_in_sidepanel
 from crm.utils import digits_of, to_e164
 
 LEAD_DEAL_FIELD_MAP = {"lead_owner": "deal_owner"}
@@ -196,13 +195,11 @@ class CRMLead(Document):
 		self.set_sla()
 
 	def validate(self):
-		self.validate_status()
 		self.sync_with_contact()
 		self.set_full_name()
 		self.set_lead_name()
 		self.set_title()
 		self.validate_email()
-		self.validate_lost_reason()
 		if not self.is_new() and self.has_value_changed("lead_owner") and self.lead_owner:
 			self.share_with_agent(self.lead_owner)
 			self.assign_agent(self.lead_owner)
@@ -224,13 +221,6 @@ class CRMLead(Document):
 
 	def before_save(self):
 		self.apply_sla()
-
-	def validate_status(self):
-		if self.is_new() and not self.status:
-			if frappe.db.exists("CRM Lead Status", "New"):
-				self.status = "New"
-			else:
-				self.status = frappe.get_all("CRM Lead Status", {"type": "Open"}, pluck="name")[0]
 
 	def set_full_name(self):
 		if self.first_name:
@@ -267,18 +257,6 @@ class CRMLead(Document):
 
 			if self.email == self.lead_owner:
 				frappe.throw(_("Lead Owner cannot be same as the Lead Email Address"))
-
-	def validate_lost_reason(self):
-		"""
-		Validate the lost reason if the status is set to "Lost".
-		"""
-		if self.status and frappe.get_cached_value("CRM Lead Status", self.status, "type") == "Lost":
-			if not self.lost_reason:
-				frappe.throw(_("Please specify a reason for losing the lead."), frappe.ValidationError)
-			elif self.lost_reason == "Other" and not self.lost_notes:
-				frappe.throw(_("Please specify the reason for losing the lead."), frappe.ValidationError)
-		if self.has_value_changed("status"):
-			add_or_remove_lost_reason_section_in_sidepanel(self)
 
 	def assign_agent(self, agent):
 		if not agent:
@@ -686,13 +664,6 @@ class CRMLead(Document):
 				"width": "10rem",
 			},
 			{
-				"label": "Status",
-				"type": "Link",
-				"options": "CRM Lead Status",
-				"key": "status",
-				"width": "8rem",
-			},
-			{
 				"label": "Email",
 				"type": "Data",
 				"key": "email",
@@ -721,7 +692,6 @@ class CRMLead(Document):
 			"name",
 			"lead_name",
 			"organization",
-			"status",
 			"email",
 			"mobile_no",
 			"lead_owner",
@@ -735,14 +705,6 @@ class CRMLead(Document):
 			"image",
 		]
 		return {"columns": columns, "rows": rows}
-
-	@staticmethod
-	def default_kanban_settings():
-		return {
-			"column_field": "status",
-			"title_field": "lead_name",
-			"kanban_fields": '["organization", "email", "mobile_no", "_assign", "modified"]',
-		}
 
 
 @frappe.whitelist()
@@ -759,8 +721,7 @@ def convert_to_deal(
 		frappe.throw(_("Not allowed to convert Lead to Deal"), frappe.PermissionError)
 
 	lead = frappe.get_cached_doc("CRM Lead", lead)
-	if frappe.db.exists("CRM Lead Status", "Qualified"):
-		lead.db_set("status", "Qualified")
+	# no status: the sale has one scale of states and it lives on the deal (doc 26)
 	lead.db_set("converted", 1)
 	if lead.sla and frappe.db.exists("CRM Communication Status", "Replied"):
 		lead.db_set("communication_status", "Replied")
