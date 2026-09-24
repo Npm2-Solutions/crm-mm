@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { splitColumnsForCard } from '@/utils/mobileList'
+import { hasCellValue, splitColumnsForCard } from '@/utils/mobileList'
 
 // The shape the server sends for the default People list.
 const leadColumns = [
@@ -76,5 +76,36 @@ describe('splitColumnsForCard', () => {
     ])
     expect(title.key).toBe('name')
     expect(details).toEqual([])
+  })
+})
+
+describe('hasCellValue', () => {
+  it('drops the empties a card would otherwise label', () => {
+    for (const empty of [null, undefined, '', '   ', [], {}, { label: '' }]) {
+      expect(hasCellValue(empty)).toBe(false)
+    }
+  })
+
+  it('keeps anything with something in it', () => {
+    expect(hasCellValue('Acme')).toBe(true)
+    expect(hasCellValue({ label: 'Acme' })).toBe(true)
+    expect(hasCellValue({ full_name: 'Sarah Connor' })).toBe(true)
+    expect(hasCellValue([{ name: 'a' }])).toBe(true)
+  })
+
+  // A count of zero is a fact, not a blank — "0 emails" is worth a line.
+  it('keeps a zero', () => {
+    expect(hasCellValue(0)).toBe(true)
+    expect(hasCellValue({ label: 0 })).toBe(true)
+  })
+
+  it('treats an unticked checkbox as nothing to show', () => {
+    expect(hasCellValue(false)).toBe(false)
+    expect(hasCellValue(true)).toBe(true)
+  })
+
+  // Dates arrive as `{ label, timeAgo }` from the list views.
+  it('keeps a timestamp that only carries its relative form', () => {
+    expect(hasCellValue({ timeAgo: '2 hours ago' })).toBe(true)
   })
 })

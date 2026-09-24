@@ -78,10 +78,10 @@
                  like "12" or a date says nothing on its own once it is off the
                  table header it used to sit under. -->
             <dl
-              v-if="detailColumns.length"
+              v-if="detailsFor(row).length"
               class="mt-2 grid grid-cols-2 gap-x-3 gap-y-2"
             >
-              <div v-for="column in detailColumns" :key="column.key">
+              <div v-for="column in detailsFor(row)" :key="column.key">
                 <dt class="truncate text-xs text-ink-gray-5">
                   {{ __(column.label) }}
                 </dt>
@@ -117,7 +117,7 @@
  * scoped slot as `ListRows.vue`, so each *ListView keeps one copy of its cell
  * renderers and only swaps which component lays them out.
  */
-import { splitColumnsForCard } from '@/utils/mobileList'
+import { hasCellValue, splitColumnsForCard } from '@/utils/mobileList'
 import { useStorage } from '@vueuse/core'
 import { Checkbox, ListGroupHeader } from 'frappe-ui'
 import { ref, computed, watch, inject, onBeforeUnmount } from 'vue'
@@ -137,6 +137,11 @@ const cardColumns = computed(() => splitColumnsForCard(list.value.columns))
 const titleColumn = computed(() => cardColumns.value.title)
 const trailingColumn = computed(() => cardColumns.value.trailing)
 const detailColumns = computed(() => cardColumns.value.details)
+
+// Per row, not per list: which columns are empty depends on the person.
+function detailsFor(row) {
+  return detailColumns.value.filter((column) => hasCellValue(row[column.key]))
+}
 
 const isGrouped = computed(
   () =>
