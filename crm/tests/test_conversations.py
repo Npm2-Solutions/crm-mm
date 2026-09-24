@@ -27,6 +27,26 @@ class TestWhatTheRowSays(FrappeTestCase):
 		self.assertEqual(snippet(""), "")
 
 
+class TestAPreviewIsOnlyAPreview(FrappeTestCase):
+	"""It runs on the way in for every message, so it may never be the reason
+	one does not go out."""
+
+	def test_it_does_not_reach_for_an_api_that_may_not_be_there(self):
+		# a wrong helper name here made sending a WhatsApp message fail with a
+		# Python error about a string nobody had asked for
+		self.assertEqual(snippet("Rossi &amp; Figli &lt;3"), "Rossi & Figli <3")
+
+	def test_a_fault_costs_a_line_in_the_log_and_nothing_else(self):
+		from unittest.mock import patch
+
+		from crm.api.conversations import quietly
+
+		with patch("crm.api.conversations.remember", side_effect=RuntimeError("boom")):
+			# no exception: the message was already sent, and where the person
+			# sits in a list is not worth taking it down for
+			quietly("CRM Lead", "whatever")
+
+
 class TestTheBadgeSetting(FrappeTestCase):
 	def setUp(self):
 		self.was = frappe.db.get_single_value("FCRM Settings", "conversation_badge_clears")
@@ -57,6 +77,62 @@ class TestAPersonsConversationIncludesTheirDeals(FrappeTestCase):
 				"reference_name": ["in", ["D1", "D2", "L1"]],
 			},
 		)
+
+
+class TestTheColumnBesideARecord(FrappeTestCase):
+	"""It is a chat list, so it has to behave like one."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.wrote = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Giulia", "last_name": "Neri", "mobile_no": "+393331112223"}
+		).insert(ignore_permissions=True)
+		self.silent = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Paolo", "last_name": "Gialli"}
+		).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_whoever_wrote_last_comes_first(self):
+		from crm.api.conversations import people, remember
+
+		frappe.get_doc(
+			{
+				"doctype": "CRM SMS Message",
+				"type": "Incoming",
+				"message": "ci sei?",
+				"from": "+393331112223",
+				"to": "+390000000002",
+				"reference_doctype": "CRM Lead",
+				"reference_name": self.wrote.name,
+			}
+		).insert(ignore_permissions=True)
+		remember("CRM Lead", self.wrote.name)
+
+		found = [row.name for row in people(limit=200)]
+		self.assertIn(self.wrote.name, found)
+		self.assertIn(self.silent.name, found)
+		# and not in a heap: the one who wrote is ahead of the one who did not
+		self.assertLess(found.index(self.wrote.name), found.index(self.silent.name))
+
+	def test_a_search_looks_in_the_name_the_company_and_the_number(self):
+		from crm.api.conversations import people
+
+		self.assertIn(self.wrote.name, [row.name for row in people(search="Neri")])
+		self.assertIn(self.wrote.name, [row.name for row in people(search="3331112223")])
+		# and a surname that is not in the field the filter happened to pick must
+		# not answer «nobody»
+		self.assertNotIn(self.wrote.name, [row.name for row in people(search="Rossini")])
+
+	def test_only_the_ones_waiting_when_that_is_asked(self):
+		from crm.api.conversations import people
+
+		frappe.db.set_value("CRM Lead", self.wrote.name, "conversation_unread", 1, update_modified=False)
+		frappe.db.set_value("CRM Lead", self.silent.name, "conversation_unread", 0, update_modified=False)
+		waiting = [row.name for row in people(waiting=True, limit=200)]
+		self.assertIn(self.wrote.name, waiting)
+		self.assertNotIn(self.silent.name, waiting)
 
 
 class TestTheConversationOfARealPerson(FrappeTestCase):

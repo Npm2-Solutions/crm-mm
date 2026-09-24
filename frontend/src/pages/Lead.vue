@@ -63,7 +63,6 @@
     <PeopleSidebar
       v-if="peopleSidebar.open.value"
       :active="leadId"
-      :waiting="peopleSidebar.waitingOnly.value"
       @close="peopleSidebar.toggle()"
     />
     <Tabs

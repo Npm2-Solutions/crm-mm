@@ -569,7 +569,11 @@ function getParams() {
   const filters = (_view?.filters && JSON.parse(_view.filters)) || {}
   const order_by =
     (_view?.type || route.params.viewType) === 'inbox'
-      ? 'last_conversation_on desc'
+      ? // whoever wrote last comes first; the rest fall back to when they were
+        // last touched. Sorting by the conversation alone left everybody who
+        // has never written in a heap, in whatever order the database felt
+        // like, and the list read as shuffled — because it was.
+        'last_conversation_on desc, modified desc'
       : _view?.order_by || 'modified desc'
   const group_by_field = _view?.group_by_field || 'owner'
   const columns = _view?.columns || ''

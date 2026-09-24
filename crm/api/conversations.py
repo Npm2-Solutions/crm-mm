@@ -19,6 +19,9 @@ waiting for you, and a badge that says it is would be the second thing you learn
 to ignore.
 """
 
+import html
+import re
+
 import frappe
 from frappe.utils import now
 
@@ -92,13 +95,16 @@ def snippet(text: str) -> str:
 	"""One line of a message, for the row in the list.
 
 	Email arrives as HTML and WhatsApp with its own marks; neither reads as a
-	preview. The tags come out, the whitespace collapses, and what is left is
-	the beginning of what was said.
-	"""
-	import re
+	preview. The tags come out, the entities are read back, the whitespace
+	collapses, and what is left is the beginning of what was said.
 
+	`html.unescape` from the standard library rather than a Frappe helper: this
+	runs on the way in for every message, and reaching for an API that might not
+	be there is how sending a WhatsApp message came to fail with a Python error
+	about a preview string.
+	"""
 	plain = re.sub(r"<[^>]+>", " ", str(text or ""))
-	plain = frappe.utils.unescape_html(plain)
+	plain = html.unescape(plain)
 	plain = re.sub(r"\s+", " ", plain).strip()
 	return plain[:PREVIEW]
 
@@ -197,16 +203,34 @@ def remember(reference_doctype: str, reference_name: str) -> None:
 # --- the hooks, one per place a message can arrive from ----------------------
 
 
+def quietly(reference_doctype: str, reference_name: str) -> None:
+	"""`remember`, but it can never take a message down with it.
+
+	What this writes is bookkeeping: where a person sits in a list, and whether
+	a badge shows. A message is the thing that matters, and it has already been
+	sent by the time this runs — so a fault here is worth a line in the error
+	log and nothing else.
+
+	Not a precaution in the abstract: one wrong helper name in the preview and
+	sending a WhatsApp message failed with a Python error about a string nobody
+	had asked for.
+	"""
+	try:
+		remember(reference_doctype, reference_name)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Conversations: could not note the last message")
+
+
 def on_message(doc, method: str | None = None) -> None:
 	"""A WhatsApp or SMS message was written."""
-	remember(doc.get("reference_doctype"), doc.get("reference_name"))
+	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
 
 
 def on_communication(doc, method: str | None = None) -> None:
 	"""An email was written. Only real correspondence, not automated notices."""
 	if doc.get("communication_type") != "Communication":
 		return
-	remember(doc.get("reference_doctype"), doc.get("reference_name"))
+	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
 
 
 # --- how many are still waiting ----------------------------------------------
@@ -366,6 +390,71 @@ def also_the_person(reference_doctype: str, reference_name: str) -> set[tuple[st
 	if person:
 		both.add(person)
 	return both
+
+
+# What a conversation row is made of. Fixed rather than configurable: these are
+# not columns somebody chose to see, they are the row itself.
+ROW = (
+	"name",
+	"lead_name",
+	"first_name",
+	"last_name",
+	"image",
+	"organization",
+	"mobile_no",
+	"last_conversation_on",
+	"last_conversation_channel",
+	"last_conversation_direction",
+	"last_conversation_preview",
+	"conversation_unread",
+)
+
+
+@frappe.whitelist()
+def people(
+	search: str = "",
+	waiting: bool | int | str = False,
+	filters: dict | str | None = None,
+	limit: int = 30,
+) -> list[dict]:
+	"""The column of people beside a record: a chat list, so it behaves like one.
+
+	`get_data` cannot serve this. A search across a name, a company and a phone
+	number is an OR across three columns, and that is not something a list of
+	AND filters can say — so somebody typing a surname would be told there is
+	nobody, because the surname is not in the field the filter happened to pick.
+
+	The order is the other reason. Sorting by `last_conversation_on` alone leaves
+	everybody who has never written in a heap, in whatever order the database
+	feels like: the list looked shuffled, because for most of it it was. Whoever
+	wrote last comes first; the rest fall back to when they were last touched,
+	which is at least an order somebody can predict.
+	"""
+	frappe.has_permission("CRM Lead", "read", throw=True)
+
+	conditions = frappe.parse_json(filters) if isinstance(filters, str) else dict(filters or {})
+	if waiting in (True, 1, "1", "true", "True"):
+		conditions["conversation_unread"] = 1
+
+	or_conditions = {}
+	search = (search or "").strip()
+	if search:
+		like = f"%{search}%"
+		or_conditions = {
+			"lead_name": ["like", like],
+			"organization": ["like", like],
+			"mobile_no": ["like", like],
+			"email": ["like", like],
+		}
+
+	return frappe.get_list(
+		"CRM Lead",
+		fields=list(ROW),
+		filters=conditions,
+		or_filters=or_conditions,
+		order_by="last_conversation_on desc, modified desc",
+		limit_page_length=min(int(limit), 200),
+	)
 
 
 @frappe.whitelist(methods=["POST"])

@@ -354,9 +354,9 @@ def store_message(message: dict, our_number: str, historical: bool = False, acco
 	# the controller did not run, so neither did the hook that keeps the person's
 	# last message up to date — and the Inbox is sorted by it
 	if doc.get("reference_doctype"):
-		from crm.api.conversations import remember
+		from crm.api.conversations import quietly
 
-		remember(doc.reference_doctype, doc.reference_name)
+		quietly(doc.reference_doctype, doc.reference_name)
 
 	if not historical and doc.get("reference_doctype"):
 		frappe.publish_realtime(

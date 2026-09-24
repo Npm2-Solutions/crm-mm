@@ -323,13 +323,6 @@ def retry_whatsapp_message(name: str) -> str:
 	return doc.status or ""
 
 
-@frappe.whitelist()
-def get_recipients(reference_doctype: str, reference_name: str) -> list[str]:
-	"""The number the chat is writing to, so it can show it. Always one."""
-	validate_access(reference_doctype, reference_name)
-	return numbers_of(reference_doctype, reference_name)
-
-
 def whatsapp_recipient(reference_doctype: str, reference_name: str, to: str | None = None) -> str:
 	"""The number a message is going to, decided here and not in the browser.
 

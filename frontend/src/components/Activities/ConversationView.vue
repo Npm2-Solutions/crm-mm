@@ -67,10 +67,35 @@
           </span>
         </div>
 
-        <template v-for="row in group.rows" :key="row.key">
+        <template v-for="row in rowsOf(group)" :key="row.key">
+          <!--
+            A long run of one channel, folded.
+
+            Forty WhatsApp bubbles in a row bury the email, the call and the
+            note that happened around them — and seeing what happened around
+            them is the whole reason for reading everything together.
+          -->
+          <button
+            v-if="row.kind === 'run'"
+            class="mx-auto my-1 flex items-center gap-2 rounded-full border border-outline-gray-2 bg-surface-white px-3 py-1 text-p-xs text-ink-gray-6 shadow-sm transition-colors hover:bg-surface-gray-2"
+            @click="open(row.key)"
+          >
+            <component :is="iconFor(row.channel)" class="size-3" />
+            <span>{{ runLabel(row) }}</span>
+            <span class="text-ink-gray-4">{{ span(row) }}</span>
+            <LucideChevronDown class="size-3" />
+          </button>
+          <button
+            v-else-if="row.kind === 'run-open'"
+            class="mx-auto my-1 flex items-center gap-2 rounded-full px-3 py-1 text-p-xs text-ink-gray-5 transition-colors hover:bg-surface-gray-2"
+            @click="fold(row.key)"
+          >
+            <LucideChevronUp class="size-3" />
+            <span>{{ __('Fold these back') }}</span>
+          </button>
           <!-- a message: one side or the other -->
           <div
-            v-if="row.direction !== 'internal'"
+            v-else-if="row.direction !== 'internal'"
             class="flex px-3 sm:px-4"
             :class="row.direction === 'out' ? 'justify-end' : 'justify-start'"
           >
@@ -169,10 +194,17 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
-import { buildStream, dayLabel, groupByDay } from '@/utils/conversation'
+import LucideChevronDown from '~icons/lucide/chevron-down'
+import LucideChevronUp from '~icons/lucide/chevron-up'
+import {
+  buildStream,
+  collapseRuns,
+  dayLabel,
+  groupByDay,
+} from '@/utils/conversation'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { dayjs } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -190,14 +222,69 @@ const emit = defineEmits(['reload'])
 
 const { isNewestFirst } = useTimelinePreferences()
 
+const today = computed(() => dayjs().format('YYYY-MM-DD'))
+
 const days = computed(() =>
   groupByDay(
     buildStream(props.items, {
       channel: props.channel,
       newestFirst: isNewestFirst.value,
     }),
-  ),
+  ).map((group) => ({
+    ...group,
+    // Folding belongs to the mixed view: in a single channel every row is the
+    // same channel, and folding a WhatsApp conversation inside the WhatsApp
+    // view would fold the view into a button.
+    //
+    // And never today. What happened today is what somebody came to read, and
+    // answering that with a door is not an improvement.
+    rows:
+      props.channel === 'all' && group.day && group.day !== today.value
+        ? collapseRuns(group.rows)
+        : group.rows,
+  })),
 )
+
+// Which folded runs somebody has opened. Forgotten on the way out on purpose:
+// it is a glance at one thread, not a preference about the page.
+const opened = ref(new Set())
+
+function open(key) {
+  opened.value = new Set(opened.value).add(key)
+}
+
+function fold(key) {
+  const rest = new Set(opened.value)
+  rest.delete(key)
+  opened.value = rest
+}
+
+// An opened run becomes its own rows, with a line above them to put them back.
+function rowsOf(group) {
+  const out = []
+  for (const entry of group.rows) {
+    if (entry.kind !== 'run' || !opened.value.has(entry.key)) {
+      out.push(entry)
+      continue
+    }
+    out.push({ ...entry, kind: 'run-open' })
+    out.push(...entry.rows)
+  }
+  return out
+}
+
+// «12 messaggi WhatsApp» — the count first, because the count is why it is
+// folded, and the channel second so the eye can skip the ones it does not want.
+function runLabel(row) {
+  return __('{0} {1} messages', [row.rows.length, LABELS[row.channel] || ''])
+}
+
+// «9:14 → 11:02»: enough to tell whether it was a conversation or a burst.
+function span(row) {
+  const first = dayjs(row.rows[0].at).format('HH:mm')
+  const last = dayjs(row.rows[row.rows.length - 1].at).format('HH:mm')
+  return first === last ? first : `${first} → ${last}`
+}
 
 // `Today` and `Yesterday` are what somebody is actually asking when they look
 // at a date, so they get the words and everything else gets the date.

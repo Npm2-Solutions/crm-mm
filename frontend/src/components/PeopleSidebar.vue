@@ -6,6 +6,10 @@
   inbox: who wrote, what they said, and the one you are answering — all at once,
   which is what every mail client has looked like for thirty years.
 
+  And it behaves like a chat list, because that is what it is: newest
+  conversation first, a search, and the same two questions the Inbox answers —
+  everybody, or only the ones still waiting.
+
   It is opt-in and it is remembered, because the same page is also used to read
   one person's file on a narrow screen, and a column stealing a third of the
   width is wrong there.
@@ -32,6 +36,52 @@
         @click="emit('close')"
       />
     </div>
+
+    <div class="flex shrink-0 flex-col gap-2 border-b px-3 py-2">
+      <!-- A name, a company, a number: whichever one somebody remembers. -->
+      <TextInput
+        v-model="search"
+        type="text"
+        :placeholder="__('Search')"
+        @input="searchLater"
+      >
+        <template #prefix>
+          <LucideSearch class="size-4 text-ink-gray-4" />
+        </template>
+      </TextInput>
+      <div class="flex items-center gap-2">
+        <div class="flex flex-1 items-center rounded bg-surface-gray-2 p-0.5">
+          <button
+            v-for="choice in CHOICES"
+            :key="String(choice.value)"
+            class="flex-1 rounded px-2 py-1 text-sm transition-colors"
+            :class="
+              waitingOnly === choice.value
+                ? 'bg-surface-white text-ink-gray-9 shadow-sm'
+                : 'text-ink-gray-6 hover:text-ink-gray-8'
+            "
+            @click="waitingOnly = choice.value"
+          >
+            {{ __(choice.label) }}
+          </button>
+        </div>
+        <!-- the same filter builder the list uses, on the same doctype: one way
+           of saying «only the ones from Facebook», not a second one -->
+        <!--
+          Read-only into Filter on purpose. It only ever *reads* the list — the
+          rows and the filters currently on them — and answers with the filters
+          somebody built. Handing it the resource with v-model would be asking
+          to be assigned a const.
+        -->
+        <Filter
+          :modelValue="asList"
+          doctype="CRM Lead"
+          :hideLabel="true"
+          @update="applyFilters"
+        />
+      </div>
+    </div>
+
     <div class="flex-1 overflow-y-auto" @scroll="onScroll">
       <ConversationList
         :rows="rows"
@@ -46,22 +96,39 @@
       >
         <LoadingIndicator class="size-4" />
       </div>
+      <div
+        v-else-if="!rows.length"
+        class="px-3 py-6 text-center text-p-sm text-ink-gray-4"
+      >
+        {{
+          search || waitingOnly
+            ? __('Nobody matches that')
+            : __('No people yet')
+        }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import ConversationList from '@/components/ConversationList.vue'
+import Filter from '@/components/Filter.vue'
+import LucideSearch from '~icons/lucide/search'
 import { globalStore } from '@/stores/global'
-import { Badge, LoadingIndicator, createResource } from 'frappe-ui'
+import { usePeopleSidebar } from '@/composables/usePeopleSidebar'
+import {
+  Badge,
+  LoadingIndicator,
+  TextInput,
+  createResource,
+  debounce,
+} from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
   // the record being read, so the column can show where you are
   active: { type: String, default: '' },
-  // «all» or «waiting» — the same two questions the Inbox view answers
-  waiting: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close'])
@@ -69,36 +136,34 @@ const emit = defineEmits(['close'])
 const router = useRouter()
 const { $socket } = globalStore()
 
-const pageLength = ref(30)
-
-const ROWS = [
-  'name',
-  'lead_name',
-  'first_name',
-  'last_name',
-  'image',
-  'organization',
-  'last_conversation_on',
-  'last_conversation_channel',
-  'last_conversation_direction',
-  'last_conversation_preview',
-  'conversation_unread',
+const CHOICES = [
+  { value: false, label: 'All' },
+  { value: true, label: 'Waiting' },
 ]
 
+const search = ref('')
+// remembered across records, unlike the search: «only the ones waiting» is how
+// somebody is working this morning, and retyping it on every person opened
+// would make it not worth setting
+const { waitingOnly } = usePeopleSidebar()
+const filters = ref({})
+const pageLength = ref(30)
+
+// One endpoint rather than the generic list one: a search across a name, a
+// company and a number is an OR across three columns, which a list of AND
+// filters cannot say — somebody typing a surname was told there was nobody.
 const people = createResource({
-  url: 'crm.api.doc.get_data',
+  url: 'crm.api.conversations.people',
   makeParams: () => ({
-    doctype: 'CRM Lead',
-    filters: props.waiting ? { conversation_unread: 1 } : {},
-    order_by: 'last_conversation_on desc',
-    rows: JSON.stringify(ROWS),
-    page_length: pageLength.value,
-    page_length_count: pageLength.value,
+    search: search.value,
+    waiting: waitingOnly.value ? 1 : 0,
+    filters: filters.value,
+    limit: pageLength.value,
   }),
   auto: true,
 })
 
-const rows = computed(() => people.data?.data || [])
+const rows = computed(() => people.data || [])
 
 const unread = createResource({
   url: 'crm.api.conversations.unread',
@@ -106,6 +171,13 @@ const unread = createResource({
     records: rows.value.map((row) => ['CRM Lead', row.name]),
   }),
 })
+
+// what Filter needs to see: the rows it is filtering, and the filters already on
+// them, so it opens showing what is in force
+const asList = computed(() => ({
+  data: rows.value,
+  params: { filters: filters.value },
+}))
 
 const waitingCount = computed(
   () => rows.value.filter((row) => row.conversation_unread).length,
@@ -117,10 +189,22 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => props.waiting,
-  () => people.reload(),
-)
+// typing is not a request per keystroke
+const searchLater = debounce(() => {
+  pageLength.value = 30
+  people.reload()
+}, 300)
+
+watch(waitingOnly, () => {
+  pageLength.value = 30
+  people.reload()
+})
+
+function applyFilters(chosen) {
+  filters.value = chosen || {}
+  pageLength.value = 30
+  people.reload()
+}
 
 function open(row) {
   if (row.name === props.active) return
