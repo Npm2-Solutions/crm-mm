@@ -37,7 +37,7 @@ Le automazioni *Booking …* scattano per le prenotazioni online dei clienti.
 | `&embed=1` | per un iframe nel sito (il tracker gli passa il visitatore) |
 | `?token=…` | gestione della prenotazione: annulla / sposta entro le regole |
 
-Il **generatore di link** (*Impostazioni → Booking → Pagina di prenotazione*) costruisce il
+Il **generatore di link** (*Impostazioni → Booking → Pagina e regole*) costruisce il
 link, il **QR code** scaricabile e il **codice da incorporare**. Il blocco *Prenota* del sito
 accetta un servizio, un vecchio calendario o niente (tutto il menu).
 
@@ -52,7 +52,7 @@ professionisti differiscono.
 
 Tre livelli, sempre visibili, mai copiati:
 
-1. **Pagina di prenotazione** (*Impostazioni → Booking*): le regole online predefinite
+1. **Pagina e regole** (*Impostazioni → Booking*): le regole online predefinite
    (preavviso, orizzonte, passo degli orari, conferma automatica o su approvazione,
    stesso giorno fino a, telefono obbligatorio, annullamento/spostamento e loro
    preavviso, spostamenti massimi, prenotazioni per cliente al giorno). Accanto a ognuna:
@@ -63,7 +63,7 @@ Tre livelli, sempre visibili, mai copiati:
    settimana / contemporanei, chi può prenotare (nuovi/già clienti), prenotazioni future
    per cliente, giorni tra due visite, domanda e istruzioni, posti per prenotazione,
    scelta del professionista, prezzo visibile, *solo tramite link*.
-3. **Professionista × servizio** (*Agenda → Chi fa cosa*, o l'editor del servizio): durata
+3. **Professionista × servizio** (solo *Agenda → Chi fa cosa*; l'editor del servizio sceglie chi lo fa e lo riassume): durata
    e prezzo propri, prenotabile online sì/no, priorità, ruolo. Mai duplicare un servizio
    per cambiare prezzo o durata a una persona.
 
@@ -75,13 +75,19 @@ globale per cliente).
 
 ## 3. Le viste d'insieme
 
+- **Prenotazione online** (*Impostazioni → Booking*, la prima voce) — la risposta a
+  "come rendo prenotabile qualcuno?" in un'unica schermata, con effetto immediato: pagina
+  aperta/chiusa e link; servizi online con quante persone li prendono; per ogni persona un
+  interruttore, i servizi da accendere con un clic (se non li fa ancora viene aggiunta al
+  servizio) e il motivo quando non è prenotabile. Da qui si apre anche *Perché non è
+  disponibile?*.
 - **Chi fa cosa** — matrice servizi × professionisti: clic su una cella vuota per
-  assegnare, su una piena per durata/prezzo/online propri; spunta di riga (tutti/nessuno),
+  assegnare, su una piena per durata/prezzo/online propri; menu di riga (tutti/nessuno),
   menu di colonna (assegna tutto, togli tutto, *copia i servizi di…*). Avvisi: servizio
   che nessuno fa, che fa una sola persona, online ma nessuno lo prende online.
 - **Turni del team** — la settimana di tutti: orari, ferie, ore extra e quanto è pieno
   ogni giorno.
-- **Perché non è disponibile?** — servizio + giorno + ora (come cliente online o come
+- **Perché non è disponibile?** (pulsante in *Prenotazione online*) — servizio + giorno + ora (come cliente online o come
   reception): per ogni professionista il primo motivo che blocca (fuori orario, ferie,
   impegnato con…, tetto, stanza occupata, preavviso, tetto del servizio…) e dove
   cambiarlo.
@@ -99,6 +105,16 @@ piattaforma*. Ogni connessione ha:
   servizio predefinito;
 - **opzioni**: importa le prenotazioni, collega il cliente come lead, blocca sulla
   piattaforma gli orari già occupati nel CRM, annulla anche sulla piattaforma.
+
+### Stabili e beta
+
+Ogni connettore ha un livello. **Stabile** = provato fino in fondo: oggi solo *Feed iCal*
+e *Webhook generico* (formati standard, coperti da test). **Beta** = costruito dalla
+documentazione ufficiale ma non ancora provato su un account reale: tutti gli altri,
+compresa la lettura delle email (euristica). L'amministratore (System Manager) vede tutto,
+con il badge *Beta*; il resto del team vede e usa solo gli stabili — il blocco è anche sul
+server. Un connettore passa a stabile (`stability = "stable"`) solo dopo una prova su un
+account vero; il test `test_only_proven_connectors_are_stable` tiene l'elenco esplicito.
 
 ### Che cosa è possibile con ciascuna
 
@@ -182,7 +198,7 @@ Le piattaforme lo rileggono ogni 15–60 minuti.
 crm/scheduling/booking_rules.py      limiti online ed ereditarietà delle regole (puri)
 crm/scheduling/availability.py       motore: durata per professionista, online, tetti
 crm/scheduling/unify.py              Booking Calendars → servizi, link del servizio
-crm/api/booking_admin.py             Chi fa cosa, Turni del team, Perché non è disponibile
+crm/api/booking_admin.py             Prenotazione online, Chi fa cosa, Turni del team, Perché non è disponibile
 crm/api/service_booking.py           API pubblica di /prenota
 crm/www/prenota.{py,html}            la pagina
 crm/booking_platforms/

@@ -233,6 +233,10 @@ class BookingPlatform:
 	website: ClassVar[str] = ""
 	docs_url: ClassVar[str] = ""
 	api_access: ClassVar[str] = "public"  # public | partner | none
+	#: "stable" only when proven end to end; everything else is "beta" and shown to
+	#: administrators alone — a connector nobody ran against a real account is not
+	#: something to hand to a client
+	stability: ClassVar[str] = "beta"
 	capabilities: ClassVar[frozenset] = frozenset()
 	#: connection fields the admin must fill, in the order the form asks for them
 	required_fields: ClassVar[tuple] = ()
@@ -278,6 +282,7 @@ class BookingPlatform:
 			"website": cls.website,
 			"docs_url": cls.docs_url,
 			"api_access": cls.api_access,
+			"stability": cls.stability,
 			"capabilities": sorted(cls.capabilities),
 			"required_fields": list(cls.required_fields),
 			"fields": list(cls.fields or cls.required_fields),

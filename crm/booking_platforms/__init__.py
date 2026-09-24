@@ -155,5 +155,12 @@ def get_provider(conn) -> BookingPlatform:
 	return provider_class(conn.get("platform"))(conn)
 
 
-def catalog() -> list[dict]:
-	return [cls.describe() for cls in REGISTRY.values()]
+def catalog(include_beta: bool = True) -> list[dict]:
+	return [cls.describe() for cls in REGISTRY.values() if include_beta or cls.stability == "stable"]
+
+
+def is_stable(platform: str) -> bool:
+	try:
+		return provider_class(platform).stability == "stable"
+	except KeyError:
+		return False

@@ -31,7 +31,7 @@
 
     <div
       v-if="problems.length"
-      class="rounded bg-surface-red-1 px-3 py-2 text-p-sm text-ink-red-4"
+      class="rounded bg-surface-red-1 px-3 py-2 text-p-sm text-ink-red-8"
     >
       <div v-for="problem in problems" :key="problem">{{ problem }}</div>
     </div>
@@ -69,7 +69,7 @@
       <p class="mb-2 text-p-xs text-ink-gray-5">
         {{
           __(
-            'Grey values come from Booking page defaults and follow them. Customise a rule to give this service its own value.',
+            'Grey values come from Booking → Page & rules and follow them. Customise a rule to give this service its own value.',
           )
         }}
       </p>

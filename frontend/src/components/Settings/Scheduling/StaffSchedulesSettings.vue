@@ -100,15 +100,15 @@
               class="rounded px-1 py-0.5 text-center text-p-xs"
               :class="
                 cell.state === 'extra'
-                  ? 'bg-surface-blue-2 text-ink-blue-3'
-                  : 'bg-surface-green-2 text-ink-green-3'
+                  ? 'bg-surface-blue-2 text-ink-blue-8'
+                  : 'bg-surface-green-2 text-ink-green-8'
               "
             >
               {{ w[0] }}–{{ w[1] }}
             </div>
             <div
               v-if="cell.state === 'off' || cell.state === 'holiday'"
-              class="truncate rounded bg-surface-amber-2 px-1 py-0.5 text-center text-p-xs text-ink-amber-3"
+              class="truncate rounded bg-surface-amber-2 px-1 py-0.5 text-center text-p-xs text-ink-amber-8"
               :title="cell.reason"
             >
               {{

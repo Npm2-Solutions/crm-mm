@@ -65,6 +65,7 @@ class CRMAppointment(Document):
 		self.apply_service_defaults()
 
 	def validate(self):
+		self.participants_are_people()
 		self.validate_times()
 		self.validate_participants()
 		self.set_title()
@@ -116,6 +117,15 @@ class CRMAppointment(Document):
 		self.title = f"{self.service} — {who}" if who else self.service
 
 	# --- validation -------------------------------------------------------
+
+	def participants_are_people(self):
+		"""A participant is a person: a contact or a deal picked by an older screen, or
+		by a flow that starts from them (the dialer on a deal), becomes the person
+		behind it. One that has no person behind it stays as it is."""
+		for row in self.participants:
+			person = person_of(row.party_type, row.party)
+			if person:
+				row.party_type, row.party = "CRM Lead", person
 
 	def validate_times(self):
 		if get_datetime(self.ends_on) <= get_datetime(self.starts_on):
@@ -246,3 +256,16 @@ class CRMAppointment(Document):
 			frappe.log_error(frappe.get_traceback(), f"Appointment {self.name}: calendar cleanup failed")
 		finally:
 			frappe.flags.in_appointment_sync = False
+
+
+def person_of(party_type: str | None, party: str | None) -> str | None:
+	"""The person (``CRM Lead``) behind a participant, whatever it was picked as."""
+	if not party:
+		return None
+	if party_type in (None, "", "CRM Lead"):
+		return party if party_type == "CRM Lead" else None
+	if party_type == "Contact":
+		return frappe.db.get_value("CRM Lead", {"contact": party}, "name")
+	if party_type == "CRM Deal":
+		return frappe.db.get_value("CRM Deal", party, "lead")
+	return None

@@ -1,6 +1,9 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex flex-col gap-1 px-2">
+  <div
+    class="flex h-full flex-col gap-6 text-ink-gray-8"
+    :class="embedded ? '' : 'py-8 px-6'"
+  >
+    <div v-if="!embedded" class="flex flex-col gap-1 px-2">
       <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
         {{ __('Why is it not available?') }}
       </h2>
@@ -41,8 +44,8 @@
         class="flex items-center gap-2 rounded-lg px-3 py-2 text-p-base-medium"
         :class="
           result.offered
-            ? 'bg-surface-green-1 text-ink-green-3'
-            : 'bg-surface-red-1 text-ink-red-4'
+            ? 'bg-surface-green-1 text-ink-green-8'
+            : 'bg-surface-red-1 text-ink-red-8'
         "
       >
         <span
@@ -104,7 +107,7 @@
                   >{{ person.duration }} min</span
                 >
               </div>
-              <div v-if="person.free" class="text-p-sm text-ink-green-3">
+              <div v-if="person.free" class="text-p-sm text-ink-green-8">
                 {{ __('Free at this time') }}
               </div>
               <div
@@ -133,10 +136,15 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, defineComponent, h, ref } from 'vue'
 
+defineProps({
+  // inside a dialog: the dialog carries the title
+  embedded: { type: Boolean, default: false },
+})
+
 const FIXES = {
   service: () => __('Agenda → Services'),
   online_rules: () => __('Booking page defaults, or the service online panel'),
-  matrix: () => __('Agenda → Who does what'),
+  matrix: () => __('Booking → Online booking, or Agenda → Who does what'),
   rota: () => __('Agenda → Team rota'),
   calendar: () => __('the calendar'),
   resources: () => __('Agenda → Rooms & equipment'),

@@ -155,6 +155,8 @@ class GenericWebhook(BookingPlatform):
 	label = "Generic webhook (Zapier, Make, n8n)"
 	sector = "general"
 	api_access = "none"
+	# the payload shape is ours to define: nothing on the other side can drift
+	stability = "stable"
 	capabilities = frozenset({"webhook"})
 	fields = ("webhook_secret", "field_map")
 	setup_help = (

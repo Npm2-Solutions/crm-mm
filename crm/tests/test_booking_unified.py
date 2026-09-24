@@ -252,3 +252,58 @@ class TestUnifiedBooking(SchedulingCase):
 		summary = ADMIN.get_inheritance_summary()
 		self.assertIn(service.service_name, summary["max_reschedules"]["own"])
 		self.assertGreaterEqual(summary["min_notice_hours"]["inherit"], 1)
+
+	# -- online booking, one screen ------------------------------------------------
+
+	def test_online_setup_switches(self):
+		service = self.service(staff=[self.anna])
+		setup = ADMIN.get_online_setup()
+		self.assertTrue(setup["open"])
+		anna = next(p for p in setup["team"] if p["user"] == self.anna)
+		self.assertEqual(anna["bookable"], [service.name])
+
+		# bruno does nothing yet: switching the service on for him adds him to it
+		setup = ADMIN.set_person_service_online(user=self.bruno, service=service.name, online=1)
+		bruno = next(p for p in setup["team"] if p["user"] == self.bruno)
+		self.assertEqual(bruno["bookable"], [service.name])
+		self.assertIn(self.bruno, [r.user for r in frappe.get_doc("CRM Service", service.name).staff])
+
+		# off for a person, without a schedule: no longer bookable, hours untouched
+		setup = ADMIN.set_person_online(user=self.bruno, online=0)
+		bruno = next(p for p in setup["team"] if p["user"] == self.bruno)
+		self.assertFalse(bruno["online"])
+		self.assertEqual(bruno["bookable"], [])
+		day = self.tomorrow().date()
+		self.assertTrue(all(s.staff == [self.anna] for s in get_slots(service.name, day, day, online=True)))
+
+		# the service off: nobody is bookable for it
+		setup = ADMIN.set_service_online(service=service.name, online=0)
+		anna = next(p for p in setup["team"] if p["user"] == self.anna)
+		self.assertEqual(anna["bookable"], [])
+		self.assertTrue(anna["reason"])
+
+		setup = ADMIN.set_booking_open(enabled=0)
+		self.assertFalse(setup["open"])
+
+
+class TestParticipantsArePeople(SchedulingCase):
+	def test_contact_and_deal_become_their_person(self):
+		user = self.make_user("people.unified@example.com")
+		service = self.make_service("People Visit", [user])
+		lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Persona", "email": "persona@example.com"}
+		).insert()
+		lead.reload()
+		rows = []
+		if lead.get("contact"):
+			rows.append({"party_type": "Contact", "party": lead.contact, "participant_name": "Persona"})
+		appointment = self.make_appointment(service.name, self.tomorrow(10), [user], participants=rows)
+		for row in appointment.participants:
+			self.assertEqual((row.party_type, row.party), ("CRM Lead", lead.name))
+
+	def test_person_of(self):
+		from crm.fcrm.doctype.crm_appointment.crm_appointment import person_of
+
+		self.assertEqual(person_of("CRM Lead", "X"), "X")
+		self.assertIsNone(person_of("Contact", None))
+		self.assertIsNone(person_of("Contact", "does-not-exist"))

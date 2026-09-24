@@ -161,16 +161,11 @@
                 :key="i"
                 class="rounded-md border border-outline-gray-2 p-2"
               >
-                <div class="grid grid-cols-[110px_1fr_32px] items-end gap-2">
-                  <FormControl
-                    v-model="row.party_type"
-                    type="select"
-                    :options="partyTypeOptions"
-                  />
+                <div class="grid grid-cols-[1fr_32px] items-end gap-2">
                   <Link
-                    :doctype="row.party_type"
+                    doctype="CRM Lead"
                     :modelValue="row.party"
-                    :placeholder="__('Search…')"
+                    :placeholder="__('Search a person…')"
                     @update:modelValue="(v) => pickParty(row, v)"
                   />
                   <Button
@@ -274,7 +269,7 @@
                   :href="origin.external_url"
                   target="_blank"
                   rel="noopener"
-                  class="ml-auto text-ink-blue-3 underline"
+                  class="ml-auto text-ink-blue-link underline"
                 >
                   {{ __('Open on the platform') }}
                 </a>
@@ -326,10 +321,10 @@
           v-if="conflicts.length"
           class="mx-5 mb-3 rounded-md border border-outline-red-2 bg-surface-red-1 px-3 py-2"
         >
-          <div class="text-p-sm-medium text-ink-red-3">
+          <div class="text-p-sm-medium text-ink-red-8">
             {{ __('Scheduling conflict') }}
           </div>
-          <ul class="mt-1 list-inside list-disc text-p-xs text-ink-red-3">
+          <ul class="mt-1 list-inside list-disc text-p-xs text-ink-red-8">
             <li v-for="(conflict, i) in conflicts" :key="i">{{ conflict }}</li>
           </ul>
           <label
@@ -398,7 +393,6 @@ const show = computed({
   set: (value) => emit('update:modelValue', value),
 })
 
-const PARTY_TYPES = ['CRM Lead', 'Contact', 'CRM Deal']
 const emptyForm = () => ({
   name: null,
   service: '',
@@ -450,7 +444,6 @@ const priceListOptions = computed(() => [
 const statusOptions = computed(() =>
   (props.meta?.statuses || []).map((s) => ({ label: __(s), value: s })),
 )
-const partyTypeOptions = PARTY_TYPES.map((t) => ({ label: __(t), value: t }))
 const attendanceOptions = ['Booked', 'Attended', 'No Show', 'Cancelled'].map(
   (s) => ({
     label: __(s),
@@ -684,29 +677,21 @@ function addParticipant() {
 const partyDetails = createResource({ url: 'frappe.client.get_value' })
 
 function pickParty(row, value) {
+  // a participant is always a person
+  row.party_type = 'CRM Lead'
   row.party = value
   if (!value) return
-  const fieldsByType = {
-    'CRM Lead': ['lead_name', 'email', 'mobile_no'],
-    Contact: ['name', 'email_id', 'mobile_no'],
-    'CRM Deal': ['organization', 'email', 'mobile_no'],
-  }
   partyDetails.submit(
     {
-      doctype: row.party_type,
+      doctype: 'CRM Lead',
       filters: { name: value },
-      fieldname: fieldsByType[row.party_type],
+      fieldname: ['lead_name', 'email', 'mobile_no'],
     },
     {
       onSuccess: (data) => {
         if (!data) return
-        row.participant_name =
-          data.lead_name ||
-          data.organization ||
-          data.name ||
-          row.participant_name ||
-          value
-        row.email = data.email || data.email_id || row.email
+        row.participant_name = data.lead_name || row.participant_name || value
+        row.email = data.email || row.email
         row.phone = data.mobile_no || row.phone
         refreshPrice()
       },

@@ -56,6 +56,12 @@
             {{ conn.upcoming }} {{ __('upcoming') }}
           </span>
           <Badge
+            v-if="conn.platform_info?.stability === 'beta'"
+            :label="__('Beta')"
+            theme="gray"
+            size="sm"
+          />
+          <Badge
             :label="statusLabel(conn)"
             :theme="statusTheme(conn)"
             size="sm"
@@ -115,12 +121,20 @@
                 <span class="text-p-base-medium text-ink-gray-8">
                   {{ platform.label }}
                 </span>
-                <Badge
-                  v-if="platform.api_access === 'partner'"
-                  :label="__('partner')"
-                  theme="orange"
-                  size="sm"
-                />
+                <div class="flex gap-1">
+                  <Badge
+                    v-if="platform.stability !== 'stable'"
+                    :label="__('Beta')"
+                    theme="gray"
+                    size="sm"
+                  />
+                  <Badge
+                    v-if="platform.api_access === 'partner'"
+                    :label="__('partner')"
+                    theme="orange"
+                    size="sm"
+                  />
+                </div>
               </div>
               <div class="flex flex-wrap gap-1">
                 <span
@@ -143,6 +157,16 @@
     <template #body-content>
       <div v-if="info" class="flex flex-col gap-4">
         <div
+          v-if="info.stability !== 'stable'"
+          class="rounded-lg bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
+        >
+          {{
+            __(
+              'Beta: built from the official documentation but not yet proven on a real account. Visible to administrators only — the team sees it once it is verified.',
+            )
+          }}
+        </div>
+        <div
           class="rounded-lg bg-surface-gray-1 px-3 py-2 text-p-sm text-ink-gray-7"
         >
           <div class="whitespace-pre-line">{{ __(info.setup_help) }}</div>
@@ -151,7 +175,7 @@
             :href="info.docs_url"
             target="_blank"
             rel="noopener"
-            class="mt-1 inline-block text-ink-blue-3 underline"
+            class="mt-1 inline-block text-ink-blue-link underline"
           >
             {{ __('Platform documentation') }}
           </a>
@@ -414,8 +438,8 @@
           class="rounded px-3 py-2 text-p-sm"
           :class="
             testResult.ok
-              ? 'bg-surface-green-1 text-ink-green-3'
-              : 'bg-surface-red-1 text-ink-red-4'
+              ? 'bg-surface-green-1 text-ink-green-8'
+              : 'bg-surface-red-1 text-ink-red-8'
           "
         >
           {{ testResult.message }}

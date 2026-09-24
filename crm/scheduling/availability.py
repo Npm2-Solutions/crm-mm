@@ -173,15 +173,18 @@ def staff_profile(user: str) -> dict:
 	"""Caps and online visibility of a professional; permissive when there is no schedule."""
 	row = frappe.db.get_value(
 		"CRM Staff Schedule",
-		{"user": user, "enabled": 1},
-		["max_daily_appointments", "max_weekly_appointments", "bookable_online"],
+		{"user": user},
+		["enabled", "max_daily_appointments", "max_weekly_appointments", "bookable_online"],
 		as_dict=True,
 	)
 	if not row:
 		return {"daily": 0, "weekly": 0, "online": True}
+	# caps belong to the schedule in use; being bookable online belongs to the
+	# person, so a switched-off schedule (default hours) still keeps it
+	enabled = cint(row.enabled)
 	return {
-		"daily": cint(row.max_daily_appointments),
-		"weekly": cint(row.max_weekly_appointments),
+		"daily": cint(row.max_daily_appointments) if enabled else 0,
+		"weekly": cint(row.max_weekly_appointments) if enabled else 0,
 		"online": row.bookable_online is None or bool(cint(row.bookable_online)),
 	}
 

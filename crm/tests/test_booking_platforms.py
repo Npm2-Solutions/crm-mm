@@ -53,6 +53,17 @@ class TestRegistry(unittest.TestCase):
 			json.dumps(cls.describe())
 			self.assertTrue(cls.label and cls.key)
 
+	def test_only_proven_connectors_are_stable(self):
+		"""What the team (not only administrators) may use: raise this list only with proof."""
+		stable = {cls.key for cls in PROVIDERS if cls.stability == "stable"}
+		self.assertEqual(stable, {"ical", "webhook"})
+		from crm.booking_platforms import catalog, is_stable
+
+		self.assertEqual({p["key"] for p in catalog(include_beta=False)}, stable)
+		self.assertTrue(is_stable("iCal feed"))
+		self.assertFalse(is_stable("Treatwell / Uala"))
+		self.assertFalse(is_stable("nope"))
+
 	def test_missing_fields(self):
 		provider = S.CalCom(Conn())
 		self.assertEqual(provider.missing_fields(), ["api_key"])
