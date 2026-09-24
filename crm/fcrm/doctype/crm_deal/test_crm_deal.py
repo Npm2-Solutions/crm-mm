@@ -480,6 +480,9 @@ class TestDealMirrorsThePersonAndTheCompany(IntegrationTestCase):
 			}
 		).insert(ignore_permissions=True)
 		deal = frappe.get_doc("CRM Deal", lead.convert_to_deal())
+		# converting writes `converted` and the contact straight to the row, so the
+		# person in hand is a version behind before anybody has edited them
+		lead.reload()
 		return lead, deal
 
 	def test_the_deal_shows_the_name_the_person_has_now(self):

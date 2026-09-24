@@ -279,8 +279,33 @@ class CRMDeal(Document):
 			return
 
 		person = frappe.db.get_value("CRM Lead", {"contact": primary.contact}, "name")
-		if person:
-			self.lead = person
+		if not person or person == self.lead:
+			return
+
+		self.lead = person
+		self.refresh_person_mirrors()
+
+	def refresh_person_mirrors(self):
+		"""Re-read from `lead` the fields the deal only shows a copy of.
+
+		Frappe fills `fetch_from` fields before `validate` runs, so a deal whose
+		`lead` has just moved to somebody else still carries the previous person's
+		name, salutation, gender and job title -- one person's name above another
+		person's number, which is the very thing moving the link prevents. The
+		list comes from the doctype itself, so a mirror added later is not
+		forgotten here.
+		"""
+		mirrors = self.meta.get_fields_to_fetch("lead")
+		if not mirrors:
+			return
+
+		sources = {df.fieldname: df.fetch_from.split(".")[-1] for df in mirrors}
+		person = frappe.db.get_value("CRM Lead", self.lead, list(sources.values()), as_dict=True)
+		if not person:
+			return
+
+		for fieldname, source in sources.items():
+			self.set(fieldname, person.get(source))
 
 	def set_person_name(self):
 		"""Name of the person the deal is with, kept in `lead_name`.
