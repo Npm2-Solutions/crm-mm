@@ -23,8 +23,9 @@ def execute():
 			continue
 		table = f"`tab{doctype}`"
 		for field in ("owner", "modified_by"):
+			# nosemgrep: frappe-sql-format-injection — table and field come from the tuples above; the user is bound with %s
 			frappe.db.sql(
-				f"update {table} set `{field}` = %s where `{field}` = 'Guest'",  # nosemgrep
+				f"update {table} set `{field}` = %s where `{field}` = 'Guest'",
 				(SYSTEM_USER,),
 			)
 	frappe.db.commit()

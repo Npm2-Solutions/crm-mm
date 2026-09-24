@@ -133,6 +133,7 @@ def _link_field_options(doctype: str) -> list[dict]:
 			frappe.set_user("Guest")  # nosemgrep — session fully restored in finally
 			rows = _query()
 		finally:
+			# nosemgrep: frappe-setuser — this is the restore: it puts the real user back after the guest-scoped read
 			frappe.set_user(current_user)
 			# set_user() clobbers sid (→ username) and wipes data; put the real ones
 			# back so the request doesn't persist a corrupted session (see #logout).

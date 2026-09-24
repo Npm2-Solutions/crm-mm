@@ -176,6 +176,7 @@ has_permission = {
 # ---------------
 # Override standard doctype classes
 
+# nosemgrep: override-doctype-class — both overrides only add default_list_data() for the CRM list views, nothing else
 override_doctype_class = {
 	"Contact": "crm.overrides.contact.CustomContact",
 	"Email Template": "crm.overrides.email_template.CustomEmailTemplate",

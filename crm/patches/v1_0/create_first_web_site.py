@@ -99,6 +99,7 @@ def execute():
 	for table in ("CRM Web Nav Item", "CRM Web Social Link"):
 		if not frappe.db.table_exists(table):
 			continue
+		# nosemgrep: frappe-sql-format-injection — the table name comes from the tuple just above, the value is bound with %s
 		frappe.db.sql(
 			f"""update `tab{table}` set parent=%s, parenttype='CRM Web Site'
 			where parenttype='CRM Website Settings'""",
