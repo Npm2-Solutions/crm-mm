@@ -268,6 +268,8 @@ class ICalFeed(BookingPlatform):
 	label = "iCal feed"
 	sector = "general"
 	api_access = "none"
+	# RFC 5545 is a standard and the parser is covered by tests end to end
+	stability = "stable"
 	capabilities = frozenset({"pull", "feed"})
 	required_fields = ("ical_url",)
 	fields = ("ical_url",)
@@ -314,6 +316,7 @@ def ical_preset(key: str, label: str, sector: str, website: str, docs_url: str =
 			"website": website,
 			"docs_url": docs_url,
 			"api_access": "partner",
+			"stability": "beta",
 			"setup_help": help_text or ICalFeed.setup_help,
 		},
 	)

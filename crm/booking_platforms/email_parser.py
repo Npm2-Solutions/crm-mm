@@ -307,6 +307,8 @@ class NotificationEmail(ICalFeed):
 	label = "Notification email (any platform)"
 	sector = "general"
 	api_access = "none"
+	# heuristic by nature: beta until proven on each platform's real emails
+	stability = "beta"
 	capabilities = frozenset({"email", "webhook", "pull", "feed"})
 	required_fields = ()
 	fields = ("inbound_email_account", "sender_filter", "ical_url", "webhook_secret")

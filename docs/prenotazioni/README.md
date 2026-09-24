@@ -100,6 +100,16 @@ piattaforma*. Ogni connessione ha:
 - **opzioni**: importa le prenotazioni, collega il cliente come lead, blocca sulla
   piattaforma gli orari già occupati nel CRM, annulla anche sulla piattaforma.
 
+### Stabili e beta
+
+Ogni connettore ha un livello. **Stabile** = provato fino in fondo: oggi solo *Feed iCal*
+e *Webhook generico* (formati standard, coperti da test). **Beta** = costruito dalla
+documentazione ufficiale ma non ancora provato su un account reale: tutti gli altri,
+compresa la lettura delle email (euristica). L'amministratore (System Manager) vede tutto,
+con il badge *Beta*; il resto del team vede e usa solo gli stabili — il blocco è anche sul
+server. Un connettore passa a stabile (`stability = "stable"`) solo dopo una prova su un
+account vero; il test `test_only_proven_connectors_are_stable` tiene l'elenco esplicito.
+
 ### Che cosa è possibile con ciascuna
 
 | Piattaforma | Settore | Accesso | Entrata prenotazioni | Uscita (blocchi / annullamenti) |

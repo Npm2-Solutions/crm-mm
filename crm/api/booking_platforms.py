@@ -52,6 +52,24 @@ FLAG_FIELDS = ("enabled", "import_bookings", "push_blocks", "push_cancellations"
 INT_FIELDS = ("sync_window_days", "lookback_days")
 
 
+def _is_admin() -> bool:
+	return "System Manager" in frappe.get_roles()
+
+
+def _check_platform(platform: str | None):
+	"""Beta connectors are for administrators only — server side too, not just hidden."""
+	from crm.booking_platforms import is_stable
+
+	if platform and not is_stable(platform) and not _is_admin():
+		frappe.throw(
+			_("This connection is still in testing: only an administrator can use it"), frappe.PermissionError
+		)
+
+
+def _check_connection(name: str):
+	_check_platform(frappe.db.get_value("CRM Booking Connection", name, "platform"))
+
+
 def _check_manager():
 	if not MANAGER_ROLES & set(frappe.get_roles()):
 		frappe.throw(_("Only sales managers can manage booking platforms"), frappe.PermissionError)
@@ -184,7 +202,7 @@ def render_busy_ics(rows: list[dict], calendar_name: str) -> str:
 @frappe.whitelist()
 def list_platforms() -> list[dict]:
 	_check_manager()
-	return catalog()
+	return catalog(include_beta=_is_admin())
 
 
 @frappe.whitelist()
@@ -218,6 +236,10 @@ def list_connections() -> list[dict]:
 			as_list=True,
 		)
 	)
+	if not _is_admin():
+		from crm.booking_platforms import is_stable
+
+		rows = [row for row in rows if is_stable(row.platform)]
 	for row in rows:
 		row["upcoming"] = upcoming.get(row.name, 0)
 		try:
@@ -230,6 +252,7 @@ def list_connections() -> list[dict]:
 @frappe.whitelist()
 def get_connection(name: str) -> dict:
 	_check_manager()
+	_check_connection(name)
 	conn = frappe.get_doc("CRM Booking Connection", name)
 	data = {field: conn.get(field) for field in PLAIN_FIELDS + FLAG_FIELDS + INT_FIELDS}
 	data.update(
@@ -276,6 +299,9 @@ def get_connection(name: str) -> dict:
 def save_connection(connection: str | dict, name: str | None = None) -> dict:
 	_check_manager()
 	payload = frappe.parse_json(connection) if isinstance(connection, str) else connection
+	if name:
+		_check_connection(name)
+	_check_platform(payload.get("platform"))
 	doc = frappe.get_doc("CRM Booking Connection", name) if name else frappe.new_doc("CRM Booking Connection")
 	for field in PLAIN_FIELDS:
 		if field in payload:
@@ -314,6 +340,7 @@ def save_connection(connection: str | dict, name: str | None = None) -> dict:
 @frappe.whitelist(methods=["POST"])
 def delete_connection(name: str) -> None:
 	_check_manager()
+	_check_connection(name)
 	frappe.delete_doc("CRM Booking Connection", name)
 
 
@@ -321,6 +348,7 @@ def delete_connection(name: str) -> None:
 def test_connection(name: str) -> dict:
 	"""Prove the credentials, and set up what the platform lets us set up from here."""
 	_check_manager()
+	_check_connection(name)
 	conn = frappe.get_doc("CRM Booking Connection", name)
 	provider = get_provider(conn)
 	missing = provider.missing_fields()
@@ -346,6 +374,7 @@ def test_connection(name: str) -> dict:
 @frappe.whitelist(methods=["POST"])
 def sync_now(name: str) -> dict:
 	_check_manager()
+	_check_connection(name)
 	from crm.booking_platforms.sync import sync_connection
 
 	return sync_connection(name)
@@ -355,6 +384,7 @@ def sync_now(name: str) -> dict:
 def fetch_catalog(name: str) -> list[dict]:
 	"""The platform's services and staff, for the mapping table."""
 	_check_manager()
+	_check_connection(name)
 	conn = frappe.get_doc("CRM Booking Connection", name)
 	try:
 		items = get_provider(conn).fetch_catalog()
