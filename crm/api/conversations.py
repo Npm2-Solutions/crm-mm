@@ -524,17 +524,22 @@ def wake_the_snoozed() -> int:
 	for every row. Emptied, the field says exactly what it means: this one is
 	parked. What is not parked is simply not.
 	"""
+	cutoff = now()
 	woken = 0
 	for doctype in RECORDS:
-		woken += frappe.db.sql(  # nosemgrep: frappe-sql-format-injection — RECORDS is ours; the cutoff is bound with %s
-			f"""
-			update `tab{doctype}`
-			set conversation_snoozed_until = null
-			where conversation_snoozed_until is not null
-			  and conversation_snoozed_until <= %s
-			""",
-			(now(),),
+		# a null moment never satisfies `<=`, so the ones that were never parked
+		# are already out; asking for the names first is what makes the count true
+		due = frappe.get_all(
+			doctype,
+			filters={"conversation_snoozed_until": ["<=", cutoff]},
+			pluck="name",
 		)
+		if not due:
+			continue
+		frappe.db.set_value(
+			doctype, {"name": ["in", due]}, "conversation_snoozed_until", None, update_modified=False
+		)
+		woken += len(due)
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — hourly scheduler job, no request to commit it
 	return woken
 

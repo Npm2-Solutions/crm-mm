@@ -239,6 +239,17 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 		wake_the_snoozed()
 		self.assertTrue(self._state("conversation_snoozed_until"))
 
+	def test_waking_says_how_many_it_woke(self):
+		from frappe.utils import add_to_date
+
+		from crm.api.conversations import set_state, wake_the_snoozed
+
+		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, hours=-1))
+		# the count is the job's whole answer, and it used to be whatever
+		# `frappe.db.sql` hands back for an update, which is not a number at all
+		self.assertEqual(wake_the_snoozed(), 1)
+		self.assertEqual(wake_the_snoozed(), 0)
+
 	def test_the_moment_is_the_same_moment_however_it_was_said(self):
 		from frappe.utils import add_to_date, get_datetime
 
