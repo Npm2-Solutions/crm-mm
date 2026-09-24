@@ -1,9 +1,15 @@
 <template>
   <div
     v-if="title !== 'Data'"
-    class="flex items-center justify-between text-lg-medium sm:mx-10 sm:mb-4 sm:mt-8"
+    class="flex items-center justify-between gap-2 px-3 py-2 text-lg-medium sm:mx-10 sm:mb-4 sm:mt-8 sm:px-0 sm:py-0"
   >
-    <div class="flex h-8 items-center text-2xl-semibold text-ink-gray-8">
+    <!-- On a phone the screen's own header already says whose conversation this
+         is, so a second 24px title saying "Activity" only costs the channel
+         picker the width it needs. -->
+    <div
+      v-if="!isMobileView"
+      class="flex h-8 items-center text-2xl-semibold text-ink-gray-8"
+    >
       {{ __(title) }}
     </div>
     <!--
@@ -11,14 +17,19 @@
       WhatsApp and then typing into an email composer was the whole reason the
       four tabs existed.
     -->
-    <div v-if="title == 'Activity'" class="flex items-center gap-2">
+    <div
+      v-if="title == 'Activity'"
+      class="flex min-w-0 flex-1 items-center gap-2 sm:flex-none"
+    >
+      <!-- Four channels do not fit across 390px, so on a phone the strip scrolls
+           rather than pushing the action button off the edge. -->
       <div
-        class="flex items-center gap-0.5 rounded-lg bg-surface-gray-2 p-0.5 text-p-sm"
+        class="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-lg bg-surface-gray-2 p-0.5 text-p-sm [scrollbar-width:none] sm:flex-none sm:overflow-visible [&::-webkit-scrollbar]:hidden"
       >
         <button
           v-for="option in channelOptions"
           :key="option.key"
-          class="flex items-center gap-1.5 rounded-md px-2 py-1"
+          class="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1"
           :class="
             channel === option.key
               ? 'bg-surface-white text-ink-gray-8 shadow-sm'
@@ -37,7 +48,10 @@
            past 24 hours, so the button belongs beside the WhatsApp channel -->
       <Button
         v-if="channel === 'whatsapp'"
-        :label="__('Send Template')"
+        class="shrink-0"
+        :icon="isMobileView ? 'file-text' : undefined"
+        :label="isMobileView ? undefined : __('Send Template')"
+        :aria-label="__('Send Template')"
         @click="showWhatsappTemplates = true"
       />
       <!--
@@ -50,18 +64,23 @@
         <template #default="{ open }">
           <Button
             variant="solid"
-            class="flex items-center gap-1"
-            :label="__('New')"
+            class="flex shrink-0 items-center gap-1"
+            :label="isMobileView ? undefined : __('New')"
+            :aria-label="__('New')"
             iconLeft="plus"
-            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+            :iconRight="
+              isMobileView ? undefined : open ? 'chevron-up' : 'chevron-down'
+            "
           />
         </template>
       </Dropdown>
       <Button
         v-else
         variant="solid"
+        class="shrink-0"
         iconLeft="plus"
-        :label="__(newLabel)"
+        :label="isMobileView ? undefined : __(newLabel)"
+        :aria-label="__(newLabel)"
         @click="startNew"
       />
     </div>
@@ -116,6 +135,7 @@
 </template>
 <script setup>
 import MultiActionButton from '@/components/MultiActionButton.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'

@@ -17,7 +17,28 @@
 <template>
   <LayoutHeader>
     <template #left-header>
+      <!-- Inside a conversation on a phone this row is the conversation's own
+           header: who you are talking to and the way back. A second bar under
+           the page header, saying the same thing twice, would cost a tenth of
+           the screen. -->
+      <div v-if="onePane && chosen" class="flex min-w-0 items-center gap-1.5">
+        <Button
+          variant="ghost"
+          icon="chevron-left"
+          :aria-label="__('Back')"
+          @click="back()"
+        />
+        <Avatar
+          size="sm"
+          :label="titleOf(chosen)"
+          :image="personOf(chosen).image"
+        />
+        <span class="min-w-0 truncate text-base-medium text-ink-gray-9">
+          {{ titleOf(chosen) }}
+        </span>
+      </div>
       <Breadcrumbs
+        v-else
         :items="[
           { label: __('Conversations'), route: { name: 'Conversations' } },
         ]"
@@ -25,6 +46,14 @@
     </template>
     <template #right-header>
       <Button
+        v-if="onePane && chosen"
+        variant="ghost"
+        icon="info"
+        :aria-label="__('Details')"
+        @click="showPerson = true"
+      />
+      <Button
+        v-else
         variant="ghost"
         icon="lucide-refresh-ccw"
         :loading="people.loading"
@@ -34,14 +63,23 @@
     </template>
   </LayoutHeader>
 
+  <!--
+    Three columns side by side need about 900px. On a phone they used to be laid
+    out anyway inside an `overflow-hidden`, so the conversation and the person
+    were not merely off screen — they were clipped away, with no scroll that
+    could reach them. Narrow, it becomes one pane at a time: the list, then the
+    conversation, and the person on a sheet.
+  -->
   <div class="flex flex-1 overflow-hidden">
     <ConversationPicker
+      v-if="!onePane || !chosen"
       v-model:state="state"
       v-model:search="search"
       :rows="rows"
       :unread="unread.data || {}"
       :loading="people.loading"
       :active="chosen"
+      :class="onePane ? '!w-full border-r-0' : ''"
       @open="choose"
       @loadMore="loadMore"
     />
@@ -61,7 +99,7 @@
       />
     </div>
     <div
-      v-else
+      v-else-if="!onePane"
       class="flex flex-1 flex-col items-center justify-center gap-2 text-ink-gray-4"
     >
       <InboxIcon class="h-8 w-8" />
@@ -72,11 +110,21 @@
     </div>
 
     <ConversationAside
-      v-if="chosen"
+      v-if="chosen && !onePane"
       :person="personOf(chosen)"
       @changed="reload()"
     />
   </div>
+
+  <!-- The same card, as a sheet you pull up and flick away. -->
+  <BottomSheet v-if="onePane" v-model:open="showPerson" :title="__('Details')">
+    <ConversationAside
+      v-if="chosen"
+      plain
+      :person="personOf(chosen)"
+      @changed="reload()"
+    />
+  </BottomSheet>
 </template>
 
 <script setup>
@@ -86,7 +134,15 @@ import ConversationPicker from '@/components/Conversations/ConversationPicker.vu
 import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
-import { Breadcrumbs, createResource, debounce } from 'frappe-ui'
+import { isMobileView } from '@/composables/breakpoints'
+import { useHiddenMobileNav } from '@/composables/mobileChrome'
+import {
+  Avatar,
+  BottomSheet,
+  Breadcrumbs,
+  createResource,
+  debounce,
+} from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -123,6 +179,23 @@ const unread = createResource({
 
 function personOf(name) {
   return rows.value.find((row) => row.name === name) || { name }
+}
+
+function titleOf(name) {
+  const person = personOf(name)
+  return person.lead_name || person.organization || person.name || ''
+}
+
+// One pane at a time below the width where three of them fit.
+const onePane = isMobileView
+const showPerson = ref(false)
+
+// Reading a conversation takes the whole phone: no tab bar under the composer.
+useHiddenMobileNav(computed(() => onePane.value && !!chosen.value))
+
+function back() {
+  showPerson.value = false
+  router.replace({ name: 'Conversations' })
 }
 
 const seen = createResource({ url: 'crm.api.conversations.mark_seen' })

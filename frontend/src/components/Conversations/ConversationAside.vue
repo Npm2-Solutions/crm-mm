@@ -6,8 +6,15 @@
   reach them, and the three decisions that take a conversation off the pile.
 -->
 <template>
+  <!-- `plain` is the same card inside the phone's bottom sheet, which supplies
+       its own width, scroll and edge. -->
   <div
-    class="flex w-72 shrink-0 flex-col gap-4 overflow-y-auto border-l bg-surface-white p-4"
+    class="flex flex-col gap-4 p-4"
+    :class="
+      plain
+        ? 'w-full'
+        : 'w-72 shrink-0 overflow-y-auto border-l bg-surface-white'
+    "
   >
     <div class="flex flex-col items-center gap-2 text-center">
       <Avatar size="2xl" :label="title" :image="person.image" />
@@ -94,6 +101,7 @@ import { useRouter } from 'vue-router'
 
 const props = defineProps({
   person: { type: Object, default: () => ({}) },
+  plain: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['changed'])

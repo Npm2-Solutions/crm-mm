@@ -15,7 +15,7 @@
       >
         <slot />
       </div>
-      <MobileBottomNav />
+      <MobileBottomNav v-if="!mobileNavHidden" />
     </div>
     <GlobalModals />
   </div>
@@ -25,6 +25,7 @@ import MobileSidebar from '@/components/Mobile/MobileSidebar.vue'
 import MobileAppHeader from '@/components/Mobile/MobileAppHeader.vue'
 import MobileBottomNav from '@/components/Mobile/MobileBottomNav.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
+import { mobileNavHidden } from '@/composables/mobileChrome'
 import { registerScrollContainer, unregisterScrollContainer } from 'frappe-ui'
 import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
 
