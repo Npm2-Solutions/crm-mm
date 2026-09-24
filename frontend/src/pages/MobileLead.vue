@@ -1,36 +1,39 @@
 <template>
+  <!-- One bar, not two. The breadcrumb row was on its own and the assignee and
+       actions had a second 48px strip under it, saying nothing the first could
+       not hold. On 844px of phone, above a conversation, that strip was a
+       twentieth of the screen spent on a divider. -->
   <LayoutHeader>
     <header
-      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
+      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2 pr-1"
     >
-      <Breadcrumbs :items="breadcrumbs">
+      <Breadcrumbs class="min-w-0" :items="breadcrumbs">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
+      <div v-if="doc.name" class="flex shrink-0 items-center gap-1.5">
+        <AssignTo
+          v-model="assignees.data"
+          doctype="CRM Lead"
+          :docname="leadId"
+        />
+        <CustomActions
+          v-if="document._actions?.length"
+          :actions="document._actions"
+        />
+        <CustomActions
+          v-if="document.actions?.length"
+          :actions="document.actions"
+        />
+        <Button
+          :label="__('New Deal')"
+          variant="solid"
+          @click="showConvertToDealModal = true"
+        />
+      </div>
     </header>
   </LayoutHeader>
-  <div
-    v-if="doc.name"
-    class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
-  >
-    <AssignTo v-model="assignees.data" doctype="CRM Lead" :docname="leadId" />
-    <div class="flex items-center gap-2">
-      <CustomActions
-        v-if="document._actions?.length"
-        :actions="document._actions"
-      />
-      <CustomActions
-        v-if="document.actions?.length"
-        :actions="document.actions"
-      />
-      <Button
-        :label="__('New Deal')"
-        variant="solid"
-        @click="showConvertToDealModal = true"
-      />
-    </div>
-  </div>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
     <Tabs
       v-model="tabIndex"
