@@ -12,7 +12,7 @@
     >
       <div
         :id="whatsapp.name"
-        class="group/message wa-bubble relative max-w-[90%] rounded-lg p-1.5 pl-2 text-base shadow-sm"
+        class="group/message wa-bubble relative min-w-0 max-w-full break-words rounded-lg p-1.5 pl-2 text-base shadow-sm"
         :class="whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in'"
       >
         <div
@@ -205,7 +205,8 @@ import CheckIcon from '@/components/Icons/CheckIcon.vue'
 import DoubleCheckIcon from '@/components/Icons/DoubleCheckIcon.vue'
 import DocumentIcon from '@/components/Icons/DocumentIcon.vue'
 import ReactIcon from '@/components/Icons/ReactIcon.vue'
-import { formatDate, sanitizeHTML } from '@/utils'
+import { formatDate } from '@/utils'
+import { formatWhatsAppMessage } from '@/utils/whatsappText'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { Tooltip, Dropdown, createResource, toast } from 'frappe-ui'
 import { ref } from 'vue'
@@ -220,29 +221,6 @@ const { capture } = useTelemetry()
 
 function openFileInAnotherTab(url) {
   window.open(url, '_blank')
-}
-
-function formatWhatsAppMessage(message) {
-  // if message contains _text_, make it italic
-  message = message.replace(/_(.*?)_/g, '<i>$1</i>')
-  // if message contains *text*, make it bold
-  message = message.replace(/\*(.*?)\*/g, '<b>$1</b>')
-  // if message contains ~text~, make it strikethrough
-  message = message.replace(/~(.*?)~/g, '<s>$1</s>')
-  // if message contains ```text```, make it monospace
-  message = message.replace(/```(.*?)```/g, '<code>$1</code>')
-  // if message contains `text`, make it inline code
-  message = message.replace(/`(.*?)`/g, '<code>$1</code>')
-  // if message contains > text, make it a blockquote
-  message = message.replace(/^> (.*)$/gm, '<blockquote>$1</blockquote>')
-  // if contain /n, make it a new line
-  message = message.replace(/\n/g, '<br>')
-  // if contains *<space>text, make it a bullet point
-  message = message.replace(/\* (.*?)(?=\s*\*|$)/g, '<li>$1</li>')
-  message = message.replace(/- (.*?)(?=\s*-|$)/g, '<li>$1</li>')
-  message = message.replace(/(\d+)\. (.*?)(?=\s*(\d+)\.|$)/g, '<li>$2</li>')
-
-  return sanitizeHTML(message)
 }
 
 const emoji = ref('')
@@ -378,6 +356,40 @@ function scrollToMessage(name) {
 }
 .wa-out {
   background-color: #d9fdd3;
+}
+
+/*
+  A list inside a bubble.
+
+  The padding is the whole point. A marker is drawn outside the item's content
+  box, so a list with no padding of its own draws its bullets in whatever lies
+  to the left — which on a bubble is its own padding, and then the edge: the
+  dots ended up outside the bubble, in the margin beside it. Half a rem of room
+  puts them back inside, and keeps a wrapped line indented under its own text
+  instead of under the bullet.
+
+  `:deep` because the message is written with v-html: these rules have to reach
+  content this component did not render itself.
+*/
+:deep(.wa-list) {
+  margin: 0.125rem 0;
+  padding-left: 0.75rem;
+  list-style-position: outside;
+}
+:deep(.wa-list > li) {
+  margin: 0;
+}
+:deep(ul.wa-list) {
+  list-style-type: disc;
+}
+:deep(ol.wa-list) {
+  list-style-type: decimal;
+}
+:deep(blockquote) {
+  margin: 0.125rem 0;
+  border-left: 3px solid currentColor;
+  padding-left: 0.5rem;
+  opacity: 0.85;
 }
 
 @media (prefers-color-scheme: dark) {

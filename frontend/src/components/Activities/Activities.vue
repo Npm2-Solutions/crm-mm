@@ -34,7 +34,7 @@
         (smsMessages.data?.length && title == 'SMS') ||
         (filesWithoutTab.length && title == 'Notes')
       "
-      class="activities"
+      class="activities flex flex-1 flex-col"
     >
       <!--
         The Activity tab is the conversation now: email, WhatsApp, SMS, comments
@@ -48,7 +48,7 @@
         :items="conversationItems"
         :channel="channel"
         :modalRef="modalRef"
-        class="pb-4"
+        class="flex-1 pb-4"
         @reload="all_activities.reload()"
       >
         <template #other="{ item }">
