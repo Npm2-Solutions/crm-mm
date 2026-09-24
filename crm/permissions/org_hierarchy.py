@@ -103,6 +103,32 @@ def has_deal_permission(doc, ptype, user):
 	return _has_permission(doc, ptype, user, "CRM Deal")
 
 
+def visible_owners(user: str | None = None) -> list[str] | None:
+	"""Whose records ``user`` sees by ownership: a list of users, or ``None`` for everyone.
+
+	The same rule as the permission query above, for the places that count
+	instead of listing — the dashboard. Records assigned by ToDo are left out: a
+	count is attributed to its owner, so a deal handed to a colleague for a day
+	does not show up in two people's numbers.
+	"""
+	user = user or frappe.session.user
+	if user == "Administrator":
+		return None
+
+	roles = frappe.get_roles(user)
+	if "System Manager" in roles:
+		return None
+
+	if hierarchy_enabled() and _in_hierarchy(user):
+		members = {row[0] for row in _team_mem_query(user).run() if row[0]}
+		return sorted(members | {user})
+
+	if "Sales Manager" in roles:
+		return None
+
+	return [user]
+
+
 def _in_hierarchy(user: str) -> bool:
 	return bool(frappe.db.exists("CRM Sales Hierarchy", {"user": user}))
 
