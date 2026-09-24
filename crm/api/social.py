@@ -3,6 +3,8 @@ import json
 import frappe
 from frappe import _
 
+from crm.integrations.meta.redact import redact
+
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
 
@@ -17,10 +19,11 @@ def _check_manager():
 
 @frappe.whitelist()
 def get_accounts() -> list[dict]:
+	"""The profiles the composer offers: a name and a platform is all it shows."""
 	return frappe.get_list(
 		"CRM Social Account",
 		filters={"enabled": 1},
-		fields=["name", "account_name", "platform", "provider_account_id"],
+		fields=["name", "account_name", "platform"],
 		order_by="platform asc",
 	)
 
@@ -47,8 +50,15 @@ def get_posts(start: str, end: str) -> list[dict]:
 		filters={"parent": ["in", [r.name for r in rows]]},
 		fields=["parent", "account", "platform", "status", "error", "override_content"],
 	)
+	# Why a profile refused the post is Meta's answer, written for whoever runs
+	# the connection — and, before it was redacted, it could quote the URL of the
+	# call with the page token in it. The author learns that it did not go out;
+	# the reason is for a manager, who can do something about it.
+	manager = _is_manager()
 	by_post: dict[str, list] = {}
 	for t in targets:
+		if t.error:
+			t.error = redact(t.error) if manager else _("Not published. A manager can see why.")
 		by_post.setdefault(t.parent, []).append(t)
 	for row in rows:
 		row["targets"] = by_post.get(row.name, [])

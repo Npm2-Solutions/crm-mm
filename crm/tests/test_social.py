@@ -155,3 +155,73 @@ class TestSocialPlanner(IntegrationTestCase):
 		doc = frappe.get_doc("CRM Social Post", result["name"])
 		self.assertEqual(doc.status, "Failed")
 		self.assertTrue(doc.targets[0].error)
+
+
+class TestSocialPlannerRoles(IntegrationTestCase):
+	"""Who may put a post on the schedule, and who reads why it failed."""
+
+	MANAGER = "crm.manager@example.com"
+	USER = "crm.user1@example.com"
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def post(self, **values):
+		return frappe.get_doc(
+			{
+				"doctype": "CRM Social Post",
+				"content": "ciao",
+				"scheduled_at": frappe.utils.add_to_date(frappe.utils.now_datetime(), days=1),
+				"targets": [{"account": "Test FB"}],
+				**values,
+			}
+		)
+
+	def test_a_user_cannot_schedule_past_the_approval(self):
+		"""The doctype is writable by Sales Users: a post saved over the REST API,
+		without `save_post`, went on the schedule with nobody approving it."""
+		make_account()
+		frappe.set_user(self.USER)
+		doc = self.post(status="Scheduled").insert()
+		self.assertEqual(doc.status, "Pending Approval")
+		self.assertEqual(doc.requested_by, self.USER)
+
+	def test_an_approved_post_edited_by_a_user_goes_back_for_approval(self):
+		make_account()
+		doc = self.post(status="Scheduled").insert()
+		self.assertEqual(doc.status, "Scheduled")
+
+		frappe.set_user(self.USER)
+		doc = frappe.get_doc("CRM Social Post", doc.name)
+		doc.content = "altro testo"
+		doc.save()
+		self.assertEqual(doc.status, "Pending Approval")
+		self.assertFalse(doc.approved_by)
+
+	def test_a_manager_schedules(self):
+		make_account()
+		frappe.set_user(self.MANAGER)
+		doc = self.post(status="Scheduled").insert()
+		self.assertEqual(doc.status, "Scheduled")
+
+	def test_why_a_post_failed_is_for_managers_and_never_holds_a_token(self):
+		make_account()
+		doc = self.post(status="Failed").insert()
+		doc.targets[0].status = "Failed"
+		doc.targets[0].error = "Meta: Network error, url: /v23.0/1/feed?access_token=SECRET"
+		doc.save()
+		start = frappe.utils.add_to_date(frappe.utils.now_datetime(), days=-1)
+		end = frappe.utils.add_to_date(frappe.utils.now_datetime(), days=2)
+
+		def error_seen_by(user):
+			frappe.set_user(user)
+			rows = S.get_posts(str(start), str(end))
+			return next(r for r in rows if r.name == doc.name)["targets"][0].error
+
+		manager_sees = error_seen_by(self.MANAGER)
+		self.assertIn("Network error", manager_sees)
+		self.assertNotIn("SECRET", manager_sees)
+		user_sees = error_seen_by(self.USER)
+		self.assertNotIn("Network error", user_sees)
+		self.assertNotIn("SECRET", user_sees)
