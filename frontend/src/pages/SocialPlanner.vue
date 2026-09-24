@@ -35,8 +35,15 @@
           <span class="text-p-base-medium text-ink-gray-8">
             {{ __('No social profiles connected yet') }}
           </span>
+          <!-- connecting them is a manager's job: say whose, not how -->
           <span class="text-p-sm text-ink-gray-5">
-            {{ __('Connect Facebook & Instagram to start scheduling.') }}
+            {{
+              isManager()
+                ? __('Connect Facebook & Instagram to start scheduling.')
+                : __(
+                    'Posts can be planned once a manager connects the Facebook and Instagram profiles.',
+                  )
+            }}
           </span>
         </div>
         <Button
@@ -319,7 +326,11 @@
             v-if="accounts.fetched && !(accounts.data || []).length"
             class="flex items-center gap-2 text-sm text-ink-gray-5"
           >
-            {{ __('No profiles connected.') }}
+            {{
+              isManager()
+                ? __('No profiles connected.')
+                : __('No profiles yet: a manager has to connect them.')
+            }}
             <Button
               v-if="isManager()"
               size="sm"

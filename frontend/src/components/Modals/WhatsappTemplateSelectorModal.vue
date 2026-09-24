@@ -16,7 +16,9 @@
             />
           </template>
         </TextInput>
+        <!-- templates are made in Settings, which only managers can open -->
         <Button
+          v-if="isManager()"
           :label="__('Create New Template')"
           variant="solid"
           @click="newWhatsappTemplate"
@@ -68,13 +70,19 @@
             class="text-center text-p-sm text-ink-gray-5"
           >
             {{
-              __(
-                '{0} approved templates belong to another number and cannot be sent from {1}. A template lives on the WhatsApp account it was approved on, so they have to be created again here.',
-                [hiddenForOtherAccount, sending.data?.account],
-              )
+              isManager()
+                ? __(
+                    '{0} approved templates belong to another number and cannot be sent from {1}. A template lives on the WhatsApp account it was approved on, so they have to be created again here.',
+                    [hiddenForOtherAccount, sending.data?.account],
+                  )
+                : __(
+                    '{0} approved templates belong to another number and cannot be sent from the one in use. A manager can create them again for this number.',
+                    [hiddenForOtherAccount],
+                  )
             }}
           </p>
           <Button
+            v-if="isManager()"
             :label="__('Create New')"
             class="mt-2"
             @click="newWhatsappTemplate"
@@ -129,10 +137,13 @@ import {
 import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { sanitizeHTML } from '@/utils'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
+import { usersStore } from '@/stores/users'
 
 const props = defineProps({
   doctype: { type: String, default: '' },
 })
+
+const { isManager } = usersStore()
 
 const show = defineModel({ type: Boolean })
 const searchInput = ref('')

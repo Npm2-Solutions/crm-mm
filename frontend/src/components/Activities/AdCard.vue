@@ -10,14 +10,15 @@
 
   It is deliberately quiet: if Meta will not say (no ads access on that account,
   an old ad) the row simply is not there. A lead is worth more than the picture
-  of its ad.
+  of its ad. Whether Meta is still delivering the ad is the campaign's business:
+  the server tells managers only, and the badge follows.
 -->
 <template>
   <div v-if="ad?.ad_id" class="min-w-0">
     <div class="flex flex-wrap items-center gap-2 py-1">
       <Badge :label="__('Ad')" theme="orange" size="sm" />
       <span class="truncate text-base font-medium text-ink-gray-8">
-        {{ ad.creative_title || ad.ad_name || ad.ad_id }}
+        {{ ad.creative_title || ad.ad_name || __('Facebook ad') }}
       </span>
       <Badge v-if="stopped" :label="__(humanStatus)" theme="red" size="sm" />
     </div>

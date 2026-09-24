@@ -29,6 +29,7 @@ from crm.integrations.meta.insights import (
 )
 from crm.integrations.meta.leads import backfill_form, get_page_token
 from crm.integrations.meta.oauth import (
+	MANAGER_ROLES,
 	_check_manager,
 	granted_scopes,
 	hub_url,
@@ -42,6 +43,10 @@ from crm.integrations.meta.oauth import (
 from crm.utils import check_system_manager, count_field, is_system_manager
 
 WEBHOOK_PATH = "/api/method/crm.integrations.meta.webhook.handle"
+
+
+def _is_manager() -> bool:
+	return bool(MANAGER_ROLES & set(frappe.get_roles()))
 
 
 @frappe.whitelist()
@@ -707,7 +712,12 @@ def get_record_ad(doctype: str, name: str) -> dict:
 	ad_id = ad_of_record(doctype, name)
 	if not ad_id:
 		return {}
-	return {"ad_id": ad_id, **read_creative(ad_id)}
+	ad = {"ad_id": ad_id, **read_creative(ad_id)}
+	# what the ad said is for whoever calls the lead; whether Meta is still
+	# delivering it is the campaign's business, and the managers'
+	if not _is_manager():
+		ad.pop("effective_status", None)
+	return ad
 
 
 # --- lead quality feedback (Conversions API) --------------------------------
