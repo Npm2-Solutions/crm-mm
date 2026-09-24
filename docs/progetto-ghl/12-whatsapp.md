@@ -6,7 +6,7 @@
 
 ## L'obiettivo
 
-Come per Facebook: il cliente apre Settings → WhatsApp, preme **Connetti**,
+Come per Facebook: il cliente apre Settings → WhatsApp → Numbers, preme **Connetti**,
 **scansiona un QR code col telefono**, e da quel momento le chat WhatsApp
 stanno **sia nel CRM sia nell'app WhatsApp Business sul telefono**, sincronizzate.
 Una sola app Meta dell'agenzia per tutti i clienti.
@@ -34,7 +34,7 @@ condivisi — ma non e' stato rivisto da un legale.
 loro offerta: premono un bottone, scansionano dall'app WhatsApp Business, non
 vedono un token.
 
-**Le credenziali a mano** (Settings → WhatsApp → *Aggiungi un numero con le sue
+**Le credenziali a mano** (Settings → WhatsApp → Numbers → *Dettagli tecnici*, solo amministratori → *Aggiungi un numero con le sue
 credenziali*) servono a un numero che Embedded Signup non puo' raggiungere: il
 **numero di test** che Meta presta a ogni app. Non e' un ripiego, e' l'unica
 strada possibile in quel momento — l'agenzia ne ha bisogno per registrare i
@@ -84,7 +84,7 @@ Cento clienti, un dominio solo.
 |---|---|
 | Manage domains → allowlist | `<hub>` (solo il dominio, serve al JavaScript SDK) |
 | Webhooks → WhatsApp Business Account | `https://<hub>/api/method/crm.integrations.whatsapp.webhook.handle` |
-| … verify token | quello del site hub (Settings → Meta connection) |
+| … verify token | quello del site hub (Settings → Integrations → Meta) |
 | … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
 | Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
 | App settings → Basic → + Add Platform → **Website** | Site URL: `https://<hub>/` — senza la piattaforma Website il JavaScript SDK non e' autorizzato |
@@ -95,7 +95,7 @@ Il callback di cancellazione dati e' **lo stesso** per le due app: valida la
 firma con entrambi i secret, quindi accetta sia quella di Facebook sia quella
 di WhatsApp. Non serve un secondo endpoint.
 
-Il webhook non va incollato a mano: sull'hub, Settings → WhatsApp mostra il
+Il webhook non va incollato a mano: sull'hub, Settings → WhatsApp → Numbers mostra (a un amministratore) il
 bottone **"Configuralo"** quando manca, e lo registra da solo sull'app
 (`{app_id}/subscriptions`). Meta verifica il callback sul momento, quindi
 l'hub deve gia' rispondere in HTTPS.
@@ -221,7 +221,7 @@ dell'app. Con N siti cliente varrebbe lo stesso problema dei redirect URI —
 e la soluzione è la stessa: **la pagina di connessione la ospita l'hub**.
 
 ```
-cliente.it → Settings → WhatsApp → "Connetti"
+cliente.it → Settings → WhatsApp → Numbers → "Connetti"
            → si apre l'hub:  https://hub/whatsapp-connect?site=<firmato>
 HUB        → FB.login() con il config_id dell'Embedded Signup v4
              il cliente sceglie/crea la WABA, il numero, e SCANSIONA IL QR
@@ -369,7 +369,7 @@ scappare.
   sapere che esiste un hub;
 - doctype `Meta WhatsApp Route` (WABA → site), con le stesse difese delle
   pagine: elenco chiuso dei site e nessuna riassegnazione silenziosa;
-- Settings → WhatsApp: stato, numeri, scelta del numero di invio, disconnessione;
+- Settings → WhatsApp → Numbers: stato, numeri, scelta del numero di invio, disconnessione;
 - test: `crm/tests/test_whatsapp_connect.py`.
 
 **Config aggiuntiva** (oltre a quelle di `11-app-meta-agenzia.md`):
@@ -499,7 +499,7 @@ Altri due difetti dello stesso modulo:
 
 Prima il bottone "Create New Template" apriva il **form grezzo del Desk**
 (`/app/whatsapp-templates/new`): fuori dal gestionale e incomprensibile per un
-cliente. Ora c'è **Settings → WhatsApp Templates**: elenco con lo stato di
+cliente. Ora c'è **Settings → WhatsApp → Templates**: elenco con lo stato di
 approvazione (Approvato / In attesa / Rifiutato), creazione e modifica con
 categoria, lingua, header, corpo con le variabili `{{1}}` e footer. Il
 salvataggio inoltra il template a Meta per la revisione — è frappe_whatsapp a
@@ -906,7 +906,7 @@ mano nel Desk. `error_id` e `session_id` sono i due valori che Meta chiede
 quando si apre un ticket di assistenza: sono il motivo per cui meritano un
 campo e non una riga in un JSON.
 
-E Settings → WhatsApp mostra gli ultimi tentativi, con il messaggio in chiaro.
+E Settings → WhatsApp → Numbers mostra gli ultimi tentativi, con il messaggio in chiaro (nei *Dettagli tecnici*, solo amministratori).
 Solo sull'hub: l'onboarding di un cliente viene registrato dove sta la pagina,
 non dove sta il suo CRM, e un site cliente lo dice invece di mostrare una lista
 vuota come se non fosse successo niente.

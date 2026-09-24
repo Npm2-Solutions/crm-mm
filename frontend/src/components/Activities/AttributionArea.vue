@@ -24,9 +24,11 @@
       v-else-if="!hasAnything"
       :title="__('Nothing tracked yet')"
       :description="
-        __(
-          'No visit has been recorded for this record yet. Add the tracking script to your site, or check that this lead came in through a tracked form.',
-        )
+        isManager()
+          ? __(
+              'No visit has been recorded for this record yet. Add the tracking script to your site, or check that this lead came in through a tracked form.',
+            )
+          : __('No visit has been recorded for this record yet.')
       "
       :icon="LucideRadar"
     />
@@ -59,8 +61,10 @@
             {{ emptyTitle }}
           </div>
           <p class="text-p-sm text-ink-gray-6">{{ emptyReason }}</p>
+          <!-- the tracking settings open for managers only: anybody else
+               would land on a page that is not there -->
           <Button
-            v-if="!isOfflineOrigin"
+            v-if="!isOfflineOrigin && isManager()"
             :label="__('Open tracking settings')"
             @click="openTrackingSettings"
           />
@@ -196,6 +200,7 @@ import TouchCard from '@/components/Activities/TouchCard.vue'
 import AdCard from '@/components/Activities/AdCard.vue'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { activeSettingsPage, showSettings } from '@/composables/settings'
+import { usersStore } from '@/stores/users'
 import { buildTimeline, readableDuration } from '@/utils/journey'
 import LucideCalendarClock from '~icons/lucide/calendar-clock'
 import LucideCheck from '~icons/lucide/check'
@@ -213,6 +218,8 @@ import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
 import LucideUserPlus from '~icons/lucide/user-plus'
 import { Badge, Button, LoadingIndicator, createResource } from 'frappe-ui'
 import { computed } from 'vue'
+
+const { isManager } = usersStore()
 
 const props = defineProps({
   doctype: { type: String, default: 'CRM Lead' },
@@ -291,9 +298,13 @@ const emptyReason = computed(() => {
     return __(
       'This record arrived through an integration rather than a browser, so there is no browsing to show.',
     )
-  return __(
-    'Nothing has been recorded for this visitor yet. Check that the tracking script is installed on the site this lead came from.',
-  )
+  // installing the script is a manager's job: anybody else is told what is
+  // missing, not how to fix it
+  return isManager()
+    ? __(
+        'Nothing has been recorded for this visitor yet. Check that the tracking script is installed on the site this lead came from.',
+      )
+    : __('Nothing has been recorded for this visitor yet.')
 })
 
 function openTrackingSettings() {

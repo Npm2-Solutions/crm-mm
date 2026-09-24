@@ -20,7 +20,7 @@ perche' **l'inserzione con i lead piu' economici e' molto spesso quella con i
 lead peggiori**. Chi guarda solo Gestione inserzioni sposta budget verso il costo
 per lead piu' basso e a fine mese ha speso uguale e venduto meno.
 
-Questa e' la schermata che chiude quel buco: Settings → **Ad performance**.
+Questa e' la schermata che chiude quel buco: Settings → Integrations → Meta → **Ad performance**.
 
 ## Come funziona
 

@@ -49,14 +49,12 @@
             <nav class="space-y-[3px] px-1">
               <SidebarItem
                 v-for="item in tab.items"
-                :key="item.label"
+                :key="itemId(item)"
                 :label="__(item.label)"
-                :active="activeTab?.label == item.label"
+                :active="isActive(item)"
                 class="w-full"
-                :class="
-                  activeTab?.label != item.label && 'hover:!bg-surface-gray-3'
-                "
-                @click="openSettingsPage(item.label)"
+                :class="!isActive(item) && 'hover:!bg-surface-gray-3'"
+                @click="openSettingsPage(itemId(item))"
               >
                 <template #prefix>
                   <Icon :icon="item.icon" class="size-4 text-ink-gray-7" />
@@ -80,7 +78,7 @@
               @click="showingDetail = false"
             />
             <span class="truncate text-base-medium text-ink-gray-9">
-              {{ __(activeTab?.label || 'Settings') }}
+              {{ __(activeTab?.title || activeTab?.label || 'Settings') }}
             </span>
           </div>
           <component :is="activeTab.component" v-if="activeTab" />
@@ -94,9 +92,8 @@ import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideNetwork from '~icons/lucide/network'
 import MonitorCogIcon from '~icons/lucide/monitor-cog'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
-import LucideTrendingUp from '~icons/lucide/trending-up'
-import LucideTarget from '~icons/lucide/target'
 import LucideSparkles from '~icons/lucide/sparkles'
+import LucideInfinity from '~icons/lucide/infinity'
 import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
 import LucideGlobe from '~icons/lucide/globe'
@@ -143,10 +140,7 @@ import StaffSchedulesSettings from '@/components/Settings/Scheduling/StaffSchedu
 import SchedulingDefaults from '@/components/Settings/Scheduling/SchedulingDefaults.vue'
 import PipelinesSettings from '@/components/Settings/Pipelines/PipelinesSettings.vue'
 import CallScriptsSettings from '@/components/Settings/CallScriptsSettings.vue'
-import MetaConnection from '@/components/Settings/Meta/MetaConnection.vue'
-import MetaLeadForms from '@/components/Settings/Meta/MetaLeadForms.vue'
-import MetaAdSpend from '@/components/Settings/Meta/MetaAdSpend.vue'
-import MetaLeadQuality from '@/components/Settings/Meta/MetaLeadQuality.vue'
+import MetaSettings from '@/components/Settings/Meta/MetaSettings.vue'
 import SocialSettings from '@/components/Settings/Social/SocialSettings.vue'
 import WebsiteSettings from '@/components/Settings/Website/WebsiteSettings.vue'
 import TrackedLinksSettings from '@/components/Settings/TrackedLinksSettings.vue'
@@ -277,6 +271,28 @@ const tabs = computed(() => {
       ],
     },
     {
+      // a channel of its own, next to Email and built the same way: the numbers
+      // it sends from, and the templates it may send outside the 24 hours
+      label: __('WhatsApp'),
+      items: [
+        {
+          label: __('Numbers'),
+          title: __('WhatsApp'),
+          key: 'WhatsApp',
+          icon: WhatsAppIcon,
+          component: markRaw(WhatsAppSettings),
+        },
+        {
+          label: __('Templates'),
+          title: __('WhatsApp Templates'),
+          key: 'WhatsApp Templates',
+          icon: EmailTemplateIcon,
+          component: markRaw(WhatsAppTemplates),
+        },
+      ],
+      condition: () => isManager() && isWhatsappInstalled.value,
+    },
+    {
       label: __('Automation & Rules'),
       items: [
         {
@@ -379,47 +395,16 @@ const tabs = computed(() => {
       ],
     },
     {
-      // one connection, three things it feeds — kept together and in order
-      label: __('Meta & Messaging'),
+      // the planner's own space: which profiles it publishes to. They come from
+      // sources connected under Integrations — Meta today, others later
+      label: __('Social Planner'),
       items: [
         {
-          label: __('Meta connection'),
-          key: 'Meta connection',
-          icon: 'facebook',
-          component: markRaw(MetaConnection),
-        },
-        {
-          label: __('Lead forms'),
-          icon: markRaw(LucideTextCursorInput),
-          component: markRaw(MetaLeadForms),
-        },
-        {
-          label: __('Ad performance'),
-          icon: markRaw(LucideTrendingUp),
-          component: markRaw(MetaAdSpend),
-        },
-        {
-          label: __('Lead quality'),
-          icon: markRaw(LucideTarget),
-          component: markRaw(MetaLeadQuality),
-        },
-        {
-          label: __('Social profiles'),
+          label: __('Profiles'),
+          title: __('Social Planner'),
+          key: 'Social profiles',
           icon: SocialIcon,
           component: markRaw(SocialSettings),
-        },
-        {
-          label: __('WhatsApp'),
-          key: 'WhatsApp',
-          icon: WhatsAppIcon,
-          component: markRaw(WhatsAppSettings),
-          condition: () => isWhatsappInstalled.value,
-        },
-        {
-          label: __('WhatsApp Templates'),
-          icon: EmailTemplateIcon,
-          component: markRaw(WhatsAppTemplates),
-          condition: () => isWhatsappInstalled.value,
         },
       ],
       condition: () => isManager(),
@@ -453,6 +438,18 @@ const tabs = computed(() => {
       label: __('Integrations', null, 'FCRM'),
       items: [
         {
+          // one page with its own tabs: the connection and the three things
+          // it feeds. The old page names still open it, on the right tab.
+          label: __('Meta'),
+          key: 'Meta connection',
+          aliases: ['Lead forms', 'Ad performance', 'Lead quality'],
+          // the Meta mark, near enough: the sprite has no 'facebook' any more,
+          // and the entry had been drawing an empty square
+          icon: markRaw(LucideInfinity),
+          component: markRaw(MetaSettings),
+          condition: () => isManager(),
+        },
+        {
           label: __('Telephony'),
           icon: PhoneIcon,
           component: markRaw(TelephonyPage),
@@ -481,15 +478,27 @@ const tabs = computed(() => {
 
 const activeTab = ref(tabs.value[0].items[0])
 
+// What tells one page from another. The label cannot: it is translated, and two
+// pages share it ("Templates" is both Email's and WhatsApp's).
+function itemId(item) {
+  return item.key || item.label
+}
+
+function isActive(item) {
+  return Boolean(activeTab.value) && itemId(activeTab.value) === itemId(item)
+}
+
 function setActiveTab(tabName) {
   // `label` is translated, so a deep link built server-side (an OAuth callback
-  // sending the browser back here) can only match the untranslated `key`
+  // sending the browser back here) can only match the untranslated `key`. The
+  // key wins over a label, and a page that used to exist on its own (`aliases`)
+  // opens the page that holds it now.
+  const items = tabs.value.map((tab) => tab.items).flat()
   activeTab.value =
     (tabName &&
-      tabs.value
-        .map((tab) => tab.items)
-        .flat()
-        .find((tab) => tab.label === tabName || tab.key === tabName)) ||
+      (items.find((item) => itemId(item) === tabName) ||
+        items.find((item) => item.aliases?.includes(tabName)) ||
+        items.find((item) => item.label === tabName))) ||
     tabs.value[0].items[0]
 }
 
@@ -508,10 +517,24 @@ watch(activeSettingsPage, (activePage) => {
   if (activePage) showingDetail.value = true
 })
 
+// The page a link asks for can sit in a group whose condition is not known yet:
+// the user's role and whether WhatsApp is installed both load in the
+// background. The WhatsApp signup comes back to `?settings=WhatsApp` on a fresh
+// page, and landed on Profile whenever it won that race. So when the groups
+// change, the page asked for is looked up again.
+watch(tabs, () => {
+  const asked = activeSettingsPage.value
+  const current = activeTab.value
+  if (!asked || !current) return
+  if (itemId(current) === asked || current.aliases?.includes(asked)) return
+  setActiveTab(asked)
+})
+
 // Tapping a row has to push to the detail even when it is the row you were last
 // on: `activeSettingsPage` does not change then, so the watch above never fires.
-function openSettingsPage(label) {
-  activeSettingsPage.value = label
+function openSettingsPage(id) {
+  activeSettingsPage.value = id
+  setActiveTab(id)
   showingDetail.value = true
 }
 

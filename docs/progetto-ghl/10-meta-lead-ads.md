@@ -263,15 +263,17 @@ nuovo.
 
 ### Le voci nel menu Settings
 
-Un gruppo solo, **"Meta & Messaging"**, in ordine di dipendenza:
+Dal 24/09/2026 non c'è più il gruppo unico "Meta & Messaging": WhatsApp, il
+Social Planner e le integrazioni hanno ciascuno il proprio spazio (dettagli e
+"chi vede cosa" in [27](./27-impostazioni-canali-integrazioni.md)).
 
-| Voce | A cosa serve |
+| Dove | A cosa serve |
 |---|---|
-| **Meta connection** | l'unica connessione: app, webhook, "Connetti con Facebook". Alimenta tutto il resto |
-| **Lead forms** | quali pagine sincronizzano i lead e come le domande mappano sui campi |
-| **Social profiles** | i profili su cui pubblica il Social Planner |
-| **WhatsApp** | il numero collegato col QR |
-| **WhatsApp Templates** | i modelli e il loro stato di approvazione |
+| **Integrations → Meta**, scheda *Connection* | l'unica connessione: "Connetti con Facebook" e le Pagine che portano lead. App e webhook solo per gli amministratori |
+| **Integrations → Meta**, scheda *Lead Ads* | i moduli delle Pagine accese e come le domande mappano sui campi |
+| **Integrations → Meta**, schede *Ad performance* e *Lead quality* | spesa contro risultati, e gli stadi rimandati a Meta |
+| **Social Planner → Profiles** | le sorgenti (oggi Meta) e i profili su cui pubblica il planner |
+| **WhatsApp → Numbers / Templates** | i numeri collegati col QR, i modelli e il loro stato di approvazione |
 
 ## Test
 

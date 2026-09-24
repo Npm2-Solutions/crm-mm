@@ -88,7 +88,8 @@ const status = createResource({
 onOAuthResult('google', ({ error }) => {
   connecting.value = false
   googleError.value = error
-  error ? toast.error(error) : toast.success(__('Calendar connected'))
+  if (error) toast.error(error)
+  else toast.success(__('Calendar connected'))
   status.reload()
 })
 

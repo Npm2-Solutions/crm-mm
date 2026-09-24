@@ -234,7 +234,7 @@ una giustificazione falsa.
 ## Cosa mostrare negli screencast
 
 Uno solo basta, girato sul CRM vero, con questi passaggi in fila: Settings →
-Meta → "Connect with Facebook" → il dialog di Facebook con la scelta delle
+Integrations → Meta → "Connect with Facebook" → il dialog di Facebook con la scelta delle
 pagine → l'elenco delle pagine nel CRM → l'interruttore di sincronizzazione su
 una pagina → i moduli della pagina con la mappatura delle domande → l'invio di
 un lead di prova dal modulo → il lead che compare nella lista Persone con i

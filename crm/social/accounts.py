@@ -1,14 +1,14 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-"""Social profiles, imported from the Meta connection.
+"""Social profiles from the Meta source.
 
 Nothing is typed by hand: profiles come from the Facebook Pages connected in
-Settings → Meta, plus the Instagram Business account linked to each page.
+Settings → Integrations → Meta, plus the Instagram Business account linked to
+each page. Other sources bring their own (see `sources.py`).
 """
 
 import frappe
-from frappe import _
 
 
 def upsert_account(
@@ -54,14 +54,17 @@ def upsert_account(
 
 
 def sync_from_facebook_pages() -> dict:
-	"""One profile per connected Facebook Page (+ its linked Instagram account)."""
+	"""One profile per connected Facebook Page (+ its linked Instagram account).
+
+	No Page is an answer, not an error: the login shared none, or they were all
+	taken away. It used to throw, which the page sync — whose last step this is —
+	logged as a failure every time an account had nothing to share.
+	"""
 	created = updated = 0
 	pages = frappe.get_all(
 		"Facebook Page",
 		fields=["name", "page_name", "instagram_account_id", "instagram_username"],
 	)
-	if not pages:
-		frappe.throw(_("No Facebook pages connected yet — connect Facebook first in Settings → Meta"))
 	for page in pages:
 		result = upsert_account("Facebook", page.name, page.page_name or page.name, page.name)
 		created += result == "created"

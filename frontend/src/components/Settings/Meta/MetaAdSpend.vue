@@ -7,25 +7,18 @@
   one with the worst ones — which is the whole reason this screen exists.
 -->
 <template>
-  <div
-    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
-  >
-    <div class="flex flex-col gap-1 px-2">
-      <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
-        {{ __('Ad performance') }}
-      </h2>
-      <p class="text-p-base text-ink-gray-6">
-        {{
-          __(
-            'Spend read from Meta, results read from this CRM. The cost per customer is the number Ads Manager cannot show you.',
-          )
-        }}
-      </p>
-    </div>
+  <div class="flex flex-col gap-4 px-2">
+    <p class="text-p-sm text-ink-gray-5">
+      {{
+        __(
+          'Spend read from Meta, results read from this CRM. The cost per customer is the number Ads Manager cannot show you.',
+        )
+      }}
+    </p>
 
-    <div class="flex flex-col gap-4 px-2">
+    <div class="flex flex-col gap-4">
       <div
-        v-if="!connected"
+        v-if="status.data && !connected"
         class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6"
       >
         <span class="text-p-base text-ink-gray-5">
@@ -35,10 +28,13 @@
             )
           }}
         </span>
-        <Button :label="__('Go to connection')" @click="goToConnection" />
+        <Button
+          :label="__('Go to connection')"
+          @click="emit('navigate', 'connection')"
+        />
       </div>
 
-      <template v-else>
+      <template v-else-if="connected">
         <!-- which accounts' money we are allowed to look at -->
         <div class="rounded-lg border border-outline-gray-2 p-4">
           <div class="flex items-center justify-between gap-3">
@@ -328,21 +324,17 @@
 </template>
 
 <script setup>
-import { activeSettingsPage } from '@/composables/settings'
-import {
-  Badge,
-  createResource,
-  LoadingIndicator,
-  Switch,
-  toast,
-} from 'frappe-ui'
+import { createResource, LoadingIndicator, Switch, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
-const status = createResource({
-  url: 'crm.integrations.meta.api.get_status',
-  auto: true,
+// loaded once by the page around the tabs
+const props = defineProps({
+  status: { type: Object, required: true },
 })
-const connected = computed(() => Boolean(status.data?.connected))
+
+const emit = defineEmits(['navigate'])
+
+const connected = computed(() => Boolean(props.status.data?.connected))
 
 const accounts = createResource({
   url: 'crm.integrations.meta.api.get_ad_accounts',
@@ -449,9 +441,5 @@ function money(value, currency) {
 function roasClass(roas) {
   if (roas === null || roas === undefined) return 'text-ink-gray-4'
   return roas >= 1 ? 'text-ink-green-6' : 'text-ink-red-5'
-}
-
-function goToConnection() {
-  activeSettingsPage.value = 'Meta connection'
 }
 </script>

@@ -39,6 +39,7 @@ from crm.integrations.whatsapp.signup import (
 	hint_for,
 	make_state,
 )
+from crm.utils import check_system_manager, is_system_manager
 
 RELAY_TIMEOUT = 15
 
@@ -68,44 +69,63 @@ def get_status() -> dict:
 	if not whatsapp_installed():
 		return {"installed": False}
 
+	admin = is_system_manager()
 	accounts = frappe.get_all(
 		"WhatsApp Account",
-		fields=["name", "phone_id", "business_id", "status"],
+		# the ids are what a number is called on Meta's side: an administrator
+		# repairing a route needs them, a manager choosing who sends does not
+		fields=["name", "phone_id", "business_id", "status"] if admin else ["name", "status"],
 		order_by="creation desc",
 	)
 	# read the flag frappe_whatsapp actually sends from, not the Settings link
 	default = frappe.db.get_value("WhatsApp Account", {"is_default_outgoing": 1}, "name") or (
 		frappe.db.get_single_value("WhatsApp Settings", "default_outgoing_account")
 	)
-	return {
+	missing = missing_requirements()
+	status = {
 		"installed": True,
 		"can_connect": bool(get_whatsapp_app_id() and config_id()),
-		# which Meta app signs these calls: a borrowed id is legitimate and also
-		# how an agency discovers, weeks later, that its WhatsApp calls were
-		# attributed to the Facebook app
-		"app": whatsapp_app_in_use(),
-		# and which login configuration it sends. Two configurations on the same
-		# app can differ in the one thing nobody can see from the outside — how
-		# long the client's token lives — so the id belongs on screen, next to
-		# the app's.
-		"signup_config": config_in_use(),
-		# say WHICH piece is missing: "ask your provider" left nobody, the
-		# provider included, able to tell what to do next
-		"missing": missing_requirements(),
+		# a manager learns that the setup is unfinished and that it is not theirs
+		# to finish; what is missing, in bench-config terms, is for who can fix it
+		"setup_incomplete": bool(missing),
 		"accounts": accounts,
 		"default_account": default,
-		"connected": bool(accounts),
+		# a number taken out of use keeps its row for the history it carries, so
+		# "connected" means one still working, not one that ever was
+		"connected": any(account.status != "Inactive" for account in accounts),
 		# Where the signup flow would have to be opened from. When it matches the
 		# CRM's own origin — which is the agency's own case, its CRM being the
 		# hub — Facebook can be opened straight from the button, and Facebook's
 		# script is worth fetching before anybody presses it.
 		"hub_origin": hub_url().rstrip("/"),
+		# The id that script is loaded with. It is public — every Facebook login
+		# URL carries it — and it is needed before the click, not on screen.
+		"app": {"app_id": get_whatsapp_app_id()},
 		# Whether this site is the provider's. The Meta app id, the login
 		# configuration and the button that changes it are the agency's plumbing:
 		# a client has no use for them, cannot act on them, and should not be
 		# invited to edit the id their own onboarding depends on.
 		"is_hub": is_hub(),
+		"is_admin": admin,
 	}
+	if admin:
+		status.update(
+			{
+				# which Meta app signs these calls: a borrowed id is legitimate and
+				# also how an agency discovers, weeks later, that its WhatsApp calls
+				# were attributed to the Facebook app
+				"app": whatsapp_app_in_use(),
+				# and which login configuration it sends. Two configurations on the
+				# same app can differ in the one thing nobody can see from the
+				# outside — how long the client's token lives — so the id belongs
+				# on screen, next to the app's.
+				"signup_config": config_in_use(),
+				# say WHICH piece is missing: "ask your provider" left nobody, the
+				# provider included, able to tell what to do next
+				"missing": missing,
+			}
+		)
+	return status
 
 
 def missing_requirements() -> list[dict]:
@@ -158,7 +178,7 @@ def save_whatsapp_app(
 	this is for the managed host where the bench is not somebody's to edit, and
 	for the one id that is the last thing standing between a client and the QR.
 	"""
-	_check_manager()
+	check_system_manager()
 	if (whatsapp_app_id or "").strip() and not (
 		(whatsapp_app_secret or "").strip()
 		or frappe.conf.get("whatsapp_app_secret")
@@ -222,8 +242,7 @@ def get_webhook() -> dict:
 	what happened to `account_update`: subscribed in the code, absent on the
 	app, and nothing anywhere said so.
 	"""
-	_check_manager()
-	settings = get_settings()
+	check_system_manager()
 	configured = False
 	subscribed: list[str] = []
 	error = ""
@@ -240,7 +259,6 @@ def get_webhook() -> dict:
 	return {
 		"is_hub": is_hub(),
 		"url": get_url(WEBHOOK_PATH),
-		"verify_token": settings.webhook_verify_token or "",
 		"fields": WEBHOOK_FIELDS,
 		"configured": configured,
 		"subscribed_fields": subscribed,
@@ -264,12 +282,12 @@ def configure_webhook() -> dict:
 	developers.facebook.com. Meta verifies the callback synchronously, so the
 	hub must already be reachable over HTTPS.
 	"""
-	_check_manager()
+	check_system_manager()
 	if not is_hub():
 		frappe.throw(_("The webhook is configured centrally by your provider"))
 	settings = get_settings()
 	if not settings.webhook_verify_token:
-		frappe.throw(_("Open Settings → Meta connection once to generate a verify token"))
+		frappe.throw(_("Open Settings → Integrations → Meta once to generate a verify token"))
 	if not get_whatsapp_app_id() or not get_whatsapp_app_secret():
 		frappe.throw(_("Set whatsapp_app_id and whatsapp_app_secret in the bench config first"))
 	try:
@@ -432,7 +450,7 @@ def recheck_delivery(name: str) -> dict:
 	Everything it does is idempotent, so the button that repairs a number and the
 	button that checks one are the same button.
 	"""
-	_check_manager()
+	check_system_manager()
 	if not frappe.db.exists("WhatsApp Account", name):
 		frappe.throw(_("That number is not connected"))
 	problems = wire_up_delivery(frappe.get_doc("WhatsApp Account", name))
@@ -449,7 +467,7 @@ def add_account(phone_number_id: str, waba_id: str, token: str, account_name: st
 	App Review videos before it is a Tech Provider at all, and which otherwise
 	leaves the CRM with no way to send a single message.
 	"""
-	_check_manager()
+	check_system_manager()
 	if not whatsapp_installed():
 		frappe.throw(_("The WhatsApp app is not installed on this site"))
 	phone_number_id = (phone_number_id or "").strip()
@@ -519,7 +537,7 @@ def recent_signup_attempts(limit: int = 8) -> dict:
 	page lives, not where the CRM does — so a client site gets an empty list and
 	says so rather than pretending there is nothing to see.
 	"""
-	_check_manager()
+	check_system_manager()
 	if not is_hub():
 		return {"is_hub": False, "attempts": []}
 	rows = frappe.get_all(
@@ -797,7 +815,7 @@ def refuse_account_deletion(doc, method=None):
 	"""Deleting a WhatsApp Account from the desk: no.
 
 	Eight doctypes point at one, the chat history most of all. A number is taken
-	out of this CRM from Settings → WhatsApp, which switches it off and keeps
+	out of this CRM from Settings → WhatsApp → Numbers, which switches it off and keeps
 	every message it ever carried. There is one way to do this on purpose, and
 	this is the other one being closed.
 	"""
@@ -805,7 +823,7 @@ def refuse_account_deletion(doc, method=None):
 		_(
 			"A WhatsApp number cannot be deleted: the whole chat history is attached to it, "
 			"and so are its templates, profiles and notifications. Take it out from "
-			"Settings → WhatsApp instead — it stops sending and receiving, and everything it "
+			"Settings → WhatsApp → Numbers instead — it stops sending and receiving, and everything it "
 			"carried stays where it is."
 		),
 		title=_("Remove it from Settings, not from here"),

@@ -29,6 +29,7 @@ from crm.integrations.meta.insights import (
 )
 from crm.integrations.meta.leads import backfill_form, get_page_token
 from crm.integrations.meta.oauth import (
+	MANAGER_ROLES,
 	_check_manager,
 	granted_scopes,
 	hub_url,
@@ -39,28 +40,31 @@ from crm.integrations.meta.oauth import (
 	sync_forms_recording_failure,
 	sync_running,
 )
-from crm.utils import count_field
+from crm.utils import check_system_manager, count_field, is_system_manager
 
 WEBHOOK_PATH = "/api/method/crm.integrations.meta.webhook.handle"
+
+
+def _is_manager() -> bool:
+	return bool(MANAGER_ROLES & set(frappe.get_roles()))
 
 
 @frappe.whitelist()
 def get_status() -> dict:
 	_check_manager()
 	settings = get_settings()
-	return {
-		"app_id": get_app_id(),
-		"has_app_secret": bool(get_app_secret()),
+	status = {
 		# managed: the app belongs to the provider and is shared by every client
 		# site, so this site shows no developer credentials and no webhook setup
 		"managed": is_managed_app(),
-		"hub": hub_url(),
-		# this site owns the app's callbacks (single-site setup, or the hub)
-		"is_hub": is_hub(),
-		"webhook_url": get_url(WEBHOOK_PATH),
-		"webhook_verify_token": settings.webhook_verify_token or "",
+		# whether there is a Meta app to connect to at all. Only an administrator
+		# can add one, so this is all a manager needs to know about it
+		"app_ready": bool(get_app_id() and get_app_secret()),
 		"connected": bool(settings.get_password("user_access_token", raise_exception=False)),
 		"connected_user_name": settings.connected_user_name or "",
+		# a long-lived token lasts about sixty days and nothing renews it: the
+		# screen warns before it runs out, because afterwards the ad spend and the
+		# lead-quality feedback stop without a word
 		"user_token_expires_at": str(settings.user_token_expires_at or ""),
 		# what Facebook actually shared: the dialog decides which Pages the app
 		# can see, and a login that granted none looks exactly like a successful
@@ -72,22 +76,41 @@ def get_status() -> dict:
 		# them; here only how many there are, so the screen can tell "none yet"
 		# from "still loading"
 		"page_count": frappe.db.count("Facebook Page"),
-		# has Meta ever called this webhook, and what did we do with the call?
-		# Without this, "Facebook is not sending" and "we refused it" look the
-		# same from the screen, and the only way to tell them apart was to guess.
-		"last_webhook_seen": str(settings.last_webhook_seen or ""),
-		"last_webhook_outcome": settings.last_webhook_outcome or "",
-		# what the dialog granted, and what it did not: a token can be valid and
-		# still unable to touch a Page, and Meta's error for that names six
-		# permissions without saying which one is missing
-		"granted_scopes": known_scopes(),
+		# what the dialog did not grant: a token can be valid and still unable to
+		# touch a Page, and Meta's error for that names six permissions without
+		# saying which one is missing
 		"missing_scopes": missing_scopes(),
+		"is_admin": is_system_manager(),
 	}
+	if not status["is_admin"]:
+		return status
+
+	# The plumbing, for whoever can act on it. A manager connects the account and
+	# chooses the Pages; the app, its webhook and its permissions are somebody
+	# else's job, and a number they cannot do anything with only reads like
+	# something they are supposed to check.
+	status.update(
+		{
+			"app_id": get_app_id(),
+			"has_app_secret": bool(get_app_secret()),
+			"hub": hub_url(),
+			# this site owns the app's callbacks (single-site setup, or the hub)
+			"is_hub": is_hub(),
+			"webhook_url": get_url(WEBHOOK_PATH),
+			# has Meta ever called this webhook, and what did we do with the call?
+			# Without this, "Facebook is not sending" and "we refused it" look the
+			# same from the screen, and the only way to tell them apart was to guess.
+			"last_webhook_seen": str(settings.last_webhook_seen or ""),
+			"last_webhook_outcome": settings.last_webhook_outcome or "",
+			"granted_scopes": known_scopes(),
+		}
+	)
+	return status
 
 
 @frappe.whitelist(methods=["POST"])
 def save_app_settings(app_id: str, app_secret: str | None = None) -> dict:
-	_check_manager()
+	check_system_manager()
 	if is_managed_app():
 		frappe.throw(_("The Meta app is managed by your provider and cannot be changed here"))
 	settings = frappe.get_doc("CRM Meta Settings")
@@ -121,7 +144,7 @@ def configure_webhook() -> dict:
 
 	Meta verifies the callback synchronously (GET handshake against this site),
 	so the site must be publicly reachable over HTTPS."""
-	_check_manager()
+	check_system_manager()
 	settings = get_settings()
 	if not is_hub():
 		# one shared app has a single callback: the hub owns it, and it fans
@@ -149,7 +172,7 @@ def configure_webhook() -> dict:
 @frappe.whitelist()
 def get_webhook_subscription() -> dict:
 	"""Current app-level webhook subscription state, straight from Meta."""
-	_check_manager()
+	check_system_manager()
 	if not is_hub():
 		return {"configured": True, "managed_by_hub": True, "callback_url": hub_url() + WEBHOOK_PATH}
 	try:
@@ -523,10 +546,21 @@ def backfill(form_id: str, days: int = 90) -> dict:
 
 @frappe.whitelist()
 def get_failure_logs(limit: int = 50) -> list[dict]:
+	"""The submissions that never became a lead, newest first.
+
+	Only the failures: a row marked Synced or Duplicate was listed here too, under
+	"Sync failures", which made a retried lead look like a lead still lost. And
+	what Meta sent, with the traceback, only for an administrator — a manager
+	needs to know how many there are and to press Retry, not to read a payload.
+	"""
 	_check_manager()
+	fields = ["name", "type", "creation"]
+	if is_system_manager():
+		fields += ["lead_data", "traceback"]
 	return frappe.get_all(
 		"Failed Lead Sync Log",
-		fields=["name", "type", "lead_data", "traceback", "creation"],
+		filters={"type": "Failure"},
+		fields=fields,
 		order_by="creation desc",
 		page_length=min(int(limit), 200),
 	)
@@ -535,7 +569,7 @@ def get_failure_logs(limit: int = 50) -> list[dict]:
 @frappe.whitelist()
 def test_connection() -> dict:
 	"""Sanity check: token valid + can list pages."""
-	_check_manager()
+	check_system_manager()
 	settings = get_settings()
 	token = settings.get_password("user_access_token", raise_exception=False)
 	if not token:
@@ -566,7 +600,7 @@ def create_test_lead(form_id: str) -> dict:
 	Requires the app to be Live; the official Lead Ads Testing tool is the
 	alternative: https://developers.facebook.com/tools/lead-ads-testing
 	"""
-	_check_manager()
+	check_system_manager()
 	page = frappe.db.get_value("Facebook Lead Form", form_id, "page")
 	token = get_page_token(page) if page else None
 	if not token:
@@ -678,7 +712,12 @@ def get_record_ad(doctype: str, name: str) -> dict:
 	ad_id = ad_of_record(doctype, name)
 	if not ad_id:
 		return {}
-	return {"ad_id": ad_id, **read_creative(ad_id)}
+	ad = {"ad_id": ad_id, **read_creative(ad_id)}
+	# what the ad said is for whoever calls the lead; whether Meta is still
+	# delivering it is the campaign's business, and the managers'
+	if not _is_manager():
+		ad.pop("effective_status", None)
+	return ad
 
 
 # --- lead quality feedback (Conversions API) --------------------------------
@@ -781,7 +820,7 @@ def verify_webhook_subscriptions() -> dict:
 	checked against the source instead of trusted: `GET /{page}/subscribed_apps`
 	says who is installed right now.
 	"""
-	_check_manager()
+	check_system_manager()
 	app_id = get_app_id()
 	report = []
 	for page in frappe.get_all("Facebook Page", filters={"sync_enabled": 1}, fields=["name", "page_name"]):
