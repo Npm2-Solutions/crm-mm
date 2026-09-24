@@ -41,6 +41,7 @@ class CRMLead(Document):
 		annual_revenue: DF.Currency
 		communication_status: DF.Link | None
 		conversation_seen_by: DF.Link | None
+		conversation_unread: DF.Check
 		conversation_seen_until: DF.Datetime | None
 		converted: DF.Check
 		email: DF.Data | None

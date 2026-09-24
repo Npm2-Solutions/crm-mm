@@ -114,6 +114,7 @@
   "column_break_last_conversation",
   "last_conversation_preview",
   "last_answered_on",
+  "conversation_unread",
   "conversation_seen_until",
   "conversation_seen_by"
  ],
@@ -732,6 +733,14 @@
    "fieldname": "last_answered_on",
    "fieldtype": "Datetime",
    "label": "Last Answered On",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Somebody wrote and nobody has dealt with it yet",
+   "fieldname": "conversation_unread",
+   "fieldtype": "Check",
+   "label": "Conversation Waiting",
    "read_only": 1
   },
   {

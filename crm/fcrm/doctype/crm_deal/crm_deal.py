@@ -37,6 +37,7 @@ class CRMDeal(Document):
 		closed_date: DF.Date | None
 		communication_status: DF.Link | None
 		conversation_seen_by: DF.Link | None
+		conversation_unread: DF.Check
 		conversation_seen_until: DF.Datetime | None
 		contact: DF.Link | None
 		contacts: DF.Table[CRMContacts]

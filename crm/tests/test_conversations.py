@@ -139,6 +139,47 @@ class TestTheConversationOfARealPerson(FrappeTestCase):
 		self.assertNotIn(key, unread([["CRM Lead", self.lead.name]]))
 		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", SEEN)
 
+	def test_the_flag_the_list_filters_on_follows_the_conversation(self):
+		from crm.api.conversations import mark_seen, mark_unread, remember
+
+		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", SEEN)
+		waiting = lambda: frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread")  # noqa: E731
+
+		self._sms("Incoming", "c'è nessuno?")
+		remember("CRM Lead", self.lead.name)
+		self.assertEqual(waiting(), 1)
+
+		mark_seen("CRM Lead", self.lead.name)
+		self.assertEqual(waiting(), 0)
+
+		mark_unread("CRM Lead", self.lead.name)
+		self.assertEqual(waiting(), 1)
+
+	def test_our_own_last_word_leaves_nobody_waiting(self):
+		from crm.api.conversations import remember
+
+		self._sms("Incoming", "domanda")
+		self._sms("Outgoing", "risposta")
+		remember("CRM Lead", self.lead.name)
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 0)
+
+	def test_changing_the_setting_redoes_the_flag_for_everybody(self):
+		from crm.api.conversations import refresh_waiting_flags, remember
+
+		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", SEEN)
+		self._sms("Incoming", "ci sei?")
+		remember("CRM Lead", self.lead.name)
+		from crm.api.conversations import mark_seen
+
+		mark_seen("CRM Lead", self.lead.name)
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 0)
+
+		# seen, but never answered: under the other rule this one is waiting again
+		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", ANSWERED)
+		refresh_waiting_flags()
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 1)
+		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", SEEN)
+
 	def test_a_message_on_a_deal_is_a_message_with_the_person(self):
 		from crm.api.conversations import remember, unread
 

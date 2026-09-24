@@ -172,6 +172,7 @@ def remember(reference_doctype: str, reference_name: str) -> None:
 		"last_conversation_preview": snippet(newest.text) if newest else None,
 		"last_answered_on": last_answer(where),
 	}
+	values["conversation_unread"] = 1 if is_waiting(reference_doctype, reference_name, values) else 0
 	frappe.db.set_value(reference_doctype, reference_name, values, update_modified=False)
 
 	# a message on a deal is a message with that person: the row they appear as
@@ -215,6 +216,60 @@ def badge_clears() -> str:
 
 def cutoff_field() -> str:
 	return "last_answered_on" if badge_clears() == ANSWERED else "conversation_seen_until"
+
+
+def is_waiting(reference_doctype: str, reference_name: str, values: dict | None = None) -> bool:
+	"""Is somebody still waiting on an answer from us?
+
+	Kept as a stored flag rather than worked out when the list is drawn, because
+	«show me the ones still waiting» has to be a filter the list can run — over
+	every person, not over the twenty on screen. It is a comparison between two
+	dates, so refreshing it for a whole site is one statement.
+	"""
+	values = dict(values or {})
+	if not values:
+		values = (
+			frappe.db.get_value(
+				reference_doctype,
+				reference_name,
+				[
+					"last_conversation_direction",
+					"last_conversation_on",
+					"last_answered_on",
+					"conversation_seen_until",
+				],
+				as_dict=True,
+			)
+			or {}
+		)
+	if values.get("last_conversation_direction") != "Incoming":
+		return False
+	said_on = values.get("last_conversation_on")
+	if not said_on:
+		return False
+	cutoff = values.get(cutoff_field())
+	return not cutoff or said_on > cutoff
+
+
+def refresh_waiting_flags() -> None:
+	"""Redo the flag on every person, after the setting that defines it changed.
+
+	One statement per doctype: what counts as waiting is a comparison between
+	two columns, so there is nothing to walk.
+	"""
+	cutoff = cutoff_field()
+	for doctype in RECORDS:
+		frappe.db.sql(  # nosemgrep
+			f"""
+			update `tab{doctype}`
+			set conversation_unread = case
+				when last_conversation_direction = 'Incoming'
+					and last_conversation_on is not null
+					and (`{cutoff}` is null or last_conversation_on > `{cutoff}`)
+				then 1 else 0 end
+			"""
+		)
+	frappe.db.commit()
 
 
 @frappe.whitelist()
@@ -309,15 +364,15 @@ def mark_seen(reference_doctype: str, reference_name: str) -> dict:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
 	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
 	seen = now()
-	# and on the person, when the conversation was opened from one of their
-	# deals: the badge that was showing is theirs
+	values = {"conversation_seen_until": seen, "conversation_seen_by": frappe.session.user}
+	# under the other setting, opening a conversation is not what settles it:
+	# the person is still waiting until somebody writes back
+	if badge_clears() == SEEN:
+		values["conversation_unread"] = 0
+	# and on the person, when it was opened from one of their deals: the badge
+	# that was showing is theirs
 	for doctype, name in also_the_person(reference_doctype, reference_name):
-		frappe.db.set_value(
-			doctype,
-			name,
-			{"conversation_seen_until": seen, "conversation_seen_by": frappe.session.user},
-			update_modified=False,
-		)
+		frappe.db.set_value(doctype, name, values, update_modified=False)
 	return {"seen_until": seen}
 
 
@@ -333,5 +388,8 @@ def mark_unread(reference_doctype: str, reference_name: str) -> dict:
 			name,
 			{"conversation_seen_until": None, "conversation_seen_by": None},
 			update_modified=False,
+		)
+		frappe.db.set_value(
+			doctype, name, "conversation_unread", 1 if is_waiting(doctype, name) else 0, update_modified=False
 		)
 	return {"seen_until": None}

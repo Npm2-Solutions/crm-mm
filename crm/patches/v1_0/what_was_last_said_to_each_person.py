@@ -14,7 +14,7 @@ into. Nothing is marked read: what was never seen should still be waiting.
 
 import frappe
 
-from crm.api.conversations import RECORDS, available_channels, remember
+from crm.api.conversations import RECORDS, available_channels, refresh_waiting_flags, remember
 
 
 def execute():
@@ -38,3 +38,7 @@ def execute():
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"Conversations: could not read back {doctype} {name}")
 	frappe.db.commit()
+
+	# and the flag the Inbox filters on, for everybody at once — including the
+	# people who have no conversation and are therefore waiting on nothing
+	refresh_waiting_flags()
