@@ -114,9 +114,10 @@ def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
 	widget = registry.get(name)
 	if not widget:
 		return {"error": _("This widget does not exist any more")}
+	about = {"title": str(widget.title), "description": str(widget.description), "live": widget.live}
 	blocked = store.availability(widget)
 	if blocked:
-		return {"kind": widget.kind, "unavailable": blocked}
+		return {"kind": widget.kind, **about, "unavailable": blocked}
 	scope = "me" if only_mine and widget.scope == "team" else widget.scope
 	ctx = Context.build(
 		from_date,
@@ -129,13 +130,10 @@ def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
 		answer = widget.fn(ctx)
 	except Exception:
 		frappe.log_error(title=f"Dashboard widget {widget.id} failed")
-		return {"kind": widget.kind, "error": _("This widget could not be loaded")}
+		return {"kind": widget.kind, **about, "error": _("This widget could not be loaded")}
 	answer.setdefault("kind", widget.kind)
-	answer["live"] = widget.live
-	answer["scope"] = scope
-	if answer.get("format") == "currency" or answer.get("kind") in ("table", "list", "axis", "donut"):
-		answer.setdefault("currency", ctx.currency)
-	return answer
+	answer.setdefault("currency", ctx.currency)
+	return {**answer, **about, "scope": scope}
 
 
 @frappe.whitelist(methods=["POST"])
