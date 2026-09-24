@@ -31,7 +31,7 @@
 
     <div
       v-if="problems.length"
-      class="rounded bg-surface-red-1 px-3 py-2 text-p-sm text-ink-red-4"
+      class="rounded bg-surface-red-1 px-3 py-2 text-p-sm text-ink-red-8"
     >
       <div v-for="problem in problems" :key="problem">{{ problem }}</div>
     </div>

@@ -158,7 +158,7 @@
       <div v-if="info" class="flex flex-col gap-4">
         <div
           v-if="info.stability !== 'stable'"
-          class="rounded-lg bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-3"
+          class="rounded-lg bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
         >
           {{
             __(
@@ -175,7 +175,7 @@
             :href="info.docs_url"
             target="_blank"
             rel="noopener"
-            class="mt-1 inline-block text-ink-blue-3 underline"
+            class="mt-1 inline-block text-ink-blue-link underline"
           >
             {{ __('Platform documentation') }}
           </a>
@@ -438,8 +438,8 @@
           class="rounded px-3 py-2 text-p-sm"
           :class="
             testResult.ok
-              ? 'bg-surface-green-1 text-ink-green-3'
-              : 'bg-surface-red-1 text-ink-red-4'
+              ? 'bg-surface-green-1 text-ink-green-8'
+              : 'bg-surface-red-1 text-ink-red-8'
           "
         >
           {{ testResult.message }}

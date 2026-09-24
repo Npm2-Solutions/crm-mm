@@ -13,30 +13,41 @@
           }}
         </p>
       </div>
-      <FormControl
-        v-model="query"
-        type="text"
-        class="w-56"
-        :placeholder="__('Filter services…')"
-      />
+      <div class="flex shrink-0 items-center gap-2">
+        <Button
+          :label="__('Online booking')"
+          icon-left="lucide-globe"
+          :tooltip="__('Who clients can book online')"
+          @click="activeSettingsPage = 'Online booking'"
+        />
+        <FormControl
+          v-model="query"
+          type="text"
+          class="w-48"
+          :placeholder="__('Filter services…')"
+        />
+      </div>
     </div>
 
     <div
       v-if="problems.length"
-      class="mx-2 flex flex-col gap-1 rounded-lg bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-3"
+      class="mx-2 flex gap-2 rounded-lg border border-outline-amber-2 bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
     >
-      <div v-for="problem in problems" :key="problem">{{ problem }}</div>
+      <span class="lucide-triangle-alert mt-0.5 size-4 shrink-0" />
+      <div class="flex flex-col gap-0.5">
+        <div v-for="problem in problems" :key="problem">{{ problem }}</div>
+      </div>
     </div>
 
     <div class="flex-1 overflow-auto px-2">
       <table
         v-if="matrix.data?.services?.length"
-        class="min-w-full border-separate border-spacing-0 text-p-sm"
+        class="w-max border-separate border-spacing-0 text-p-sm"
       >
         <thead class="sticky top-0 z-10 bg-surface-white">
           <tr>
             <th
-              class="sticky left-0 z-20 min-w-[220px] border-b border-outline-gray-2 bg-surface-white px-3 py-2 text-left text-p-xs font-medium text-ink-gray-5"
+              class="sticky left-0 z-20 w-[280px] min-w-[280px] border-b border-outline-gray-2 bg-surface-white px-3 py-2 text-left text-p-xs font-medium text-ink-gray-5"
             >
               {{ __('Service') }}
             </th>
@@ -99,16 +110,19 @@
                     size="sm"
                   />
                   <span class="grow" />
-                  <Checkbox
-                    :modelValue="rowFull(service)"
-                    :title="__('Everyone / nobody')"
-                    @update:modelValue="(v) => toggleRow(service, v)"
-                  />
+                  <Dropdown :options="rowActions(service)">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon="lucide-ellipsis"
+                      :disabled="busy"
+                    />
+                  </Dropdown>
                 </div>
                 <div
                   v-for="warning in service.warnings"
                   :key="warning"
-                  class="mt-0.5 text-p-xs text-ink-amber-3"
+                  class="mt-0.5 pl-4.5 text-p-xs text-ink-amber-8"
                 >
                   {{ warning }}
                 </div>
@@ -119,13 +133,17 @@
                 class="border-b border-outline-gray-1 p-1 text-center"
               >
                 <button
-                  class="mx-auto flex h-8 w-full max-w-[96px] items-center justify-center gap-1 rounded border text-p-xs"
+                  class="group mx-auto flex h-8 w-full max-w-[96px] items-center justify-center gap-1 rounded border text-p-xs"
                   :class="cellClass(service, person.user)"
                   :title="cellTitle(service, person.user)"
                   :disabled="busy"
                   @click="clickCell(service, person)"
                 >
-                  <template v-if="cell(service, person.user)">
+                  <span
+                    v-if="!cell(service, person.user)"
+                    class="lucide-plus size-3.5 opacity-0 group-hover:opacity-100"
+                  />
+                  <template v-else>
                     <span class="lucide-check size-3.5" />
                     <span v-if="overrideText(service, person.user)">{{
                       overrideText(service, person.user)
@@ -141,6 +159,29 @@
           </template>
         </tbody>
       </table>
+      <div
+        v-if="matrix.data?.services?.length"
+        class="flex flex-wrap items-center gap-4 px-3 pt-3 text-p-xs text-ink-gray-6"
+      >
+        <span class="flex items-center gap-1.5">
+          <span
+            class="size-3 rounded-sm border border-outline-green-3 bg-surface-green-2"
+          />
+          {{ __('Delivers it') }}
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span
+            class="size-3 rounded-sm border border-outline-blue-3 bg-surface-blue-2"
+          />
+          {{ __('Own length or price, or not online') }}
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span
+            class="size-3 rounded-sm border border-dashed border-outline-gray-3"
+          />
+          {{ __('Click to assign') }}
+        </span>
+      </div>
       <div v-else-if="!matrix.loading" class="px-2 text-p-base text-ink-gray-5">
         {{ __('No services yet. Create them in Agenda → Services.') }}
       </div>
@@ -220,8 +261,8 @@
 
 <script setup>
 import UserAvatar from '@/components/UserAvatar.vue'
+import { activeSettingsPage } from '@/composables/settings'
 import {
-  Checkbox,
   createResource,
   Dialog,
   Dropdown,
@@ -277,12 +318,12 @@ function overrideText(service, user) {
 function cellClass(service, user) {
   const c = cell(service, user)
   if (!c) {
-    return 'border-dashed border-outline-gray-2 text-ink-gray-4 hover:border-outline-gray-4'
+    return 'border-dashed border-outline-gray-3 text-ink-gray-5 hover:border-outline-gray-4 hover:bg-surface-gray-2'
   }
   if (overrideText(service, user) || !c.bookable_online) {
-    return 'border-outline-blue-1 bg-surface-blue-1 text-ink-blue-3'
+    return 'border-outline-blue-3 bg-surface-blue-2 text-ink-blue-8'
   }
-  return 'border-outline-green-1 bg-surface-green-1 text-ink-green-3'
+  return 'border-outline-green-3 bg-surface-green-2 text-ink-green-8'
 }
 
 function cellTitle(service, user) {
@@ -326,6 +367,24 @@ async function run(method, params) {
     toast.error(error.messages?.[0] || __('Could not save'))
   }
   busy.value = false
+}
+
+function rowActions(service) {
+  const actions = [
+    {
+      label: __('Remove everyone'),
+      icon: 'square',
+      onClick: () => toggleRow(service, false),
+    },
+  ]
+  if (!rowFull(service)) {
+    actions.unshift({
+      label: __('Everyone delivers it'),
+      icon: 'check-square',
+      onClick: () => toggleRow(service, true),
+    })
+  }
+  return actions
 }
 
 function toggleRow(service, value) {

@@ -126,7 +126,7 @@
               </span>
               <span
                 v-if="block.conflict_note"
-                class="lucide-triangle-alert size-3 shrink-0 text-ink-amber-3"
+                class="lucide-triangle-alert size-3 shrink-0 text-ink-amber-7"
                 :title="block.conflict_note"
               />
               <span

@@ -269,7 +269,7 @@
                   :href="origin.external_url"
                   target="_blank"
                   rel="noopener"
-                  class="ml-auto text-ink-blue-3 underline"
+                  class="ml-auto text-ink-blue-link underline"
                 >
                   {{ __('Open on the platform') }}
                 </a>
@@ -321,10 +321,10 @@
           v-if="conflicts.length"
           class="mx-5 mb-3 rounded-md border border-outline-red-2 bg-surface-red-1 px-3 py-2"
         >
-          <div class="text-p-sm-medium text-ink-red-3">
+          <div class="text-p-sm-medium text-ink-red-8">
             {{ __('Scheduling conflict') }}
           </div>
-          <ul class="mt-1 list-inside list-disc text-p-xs text-ink-red-3">
+          <ul class="mt-1 list-inside list-disc text-p-xs text-ink-red-8">
             <li v-for="(conflict, i) in conflicts" :key="i">{{ conflict }}</li>
           </ul>
           <label
