@@ -63,7 +63,7 @@ Tre livelli, sempre visibili, mai copiati:
    settimana / contemporanei, chi può prenotare (nuovi/già clienti), prenotazioni future
    per cliente, giorni tra due visite, domanda e istruzioni, posti per prenotazione,
    scelta del professionista, prezzo visibile, *solo tramite link*.
-3. **Professionista × servizio** (*Agenda → Chi fa cosa*, o l'editor del servizio): durata
+3. **Professionista × servizio** (solo *Agenda → Chi fa cosa*; l'editor del servizio sceglie chi lo fa e lo riassume): durata
    e prezzo propri, prenotabile online sì/no, priorità, ruolo. Mai duplicare un servizio
    per cambiare prezzo o durata a una persona.
 

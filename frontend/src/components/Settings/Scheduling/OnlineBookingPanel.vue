@@ -69,7 +69,7 @@
       <p class="mb-2 text-p-xs text-ink-gray-5">
         {{
           __(
-            'Grey values come from Booking page defaults and follow them. Customise a rule to give this service its own value.',
+            'Grey values come from Booking → Page & rules and follow them. Customise a rule to give this service its own value.',
           )
         }}
       </p>

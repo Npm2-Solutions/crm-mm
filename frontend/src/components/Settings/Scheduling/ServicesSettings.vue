@@ -76,64 +76,108 @@
 
   <Dialog v-model="showEditor" :options="{ title: editorTitle, size: '3xl' }">
     <template #body-content>
-      <div class="flex flex-col gap-4">
-        <div class="grid grid-cols-3 gap-3">
-          <FormControl
-            v-model="form.service_name"
-            type="text"
-            :label="__('Name')"
-            required
-          />
-          <FormControl
-            v-model="form.category"
-            type="text"
-            :label="__('Category')"
-          />
-          <FormControl
-            v-model="form.color"
-            type="text"
-            :label="__('Colour (hex)')"
-          />
-        </div>
-        <FormControl
-          v-model="form.description"
-          type="textarea"
-          :rows="2"
-          :label="__('Description')"
-        />
-
-        <div class="grid grid-cols-4 gap-3">
-          <FormControl
-            v-model.number="form.duration"
-            type="number"
-            min="5"
-            :label="__('Duration (min)')"
-          />
-          <FormControl
-            v-model.number="form.slot_interval"
-            type="number"
-            min="0"
-            :label="__('Slot step (min)')"
-          />
-          <FormControl
-            v-model.number="form.buffer_before"
-            type="number"
-            min="0"
-            :label="__('Buffer before')"
-          />
-          <FormControl
-            v-model.number="form.buffer_after"
-            type="number"
-            min="0"
-            :label="__('Buffer after')"
-          />
-        </div>
-
-        <!-- staffing -->
-        <div class="rounded-lg border border-outline-gray-2 p-3">
-          <div class="mb-2 text-p-base-medium text-ink-gray-8">
-            {{ __('Who delivers it') }}
+      <TabButtons v-model="editorTab" :buttons="editorTabs" class="mb-4" />
+      <div class="flex min-h-[420px] flex-col gap-4">
+        <!-- what it is and what it costs -->
+        <template v-if="editorTab === 'details'">
+          <div class="grid grid-cols-3 gap-3">
+            <FormControl
+              v-model="form.service_name"
+              type="text"
+              :label="__('Name')"
+              required
+            />
+            <FormControl
+              v-model="form.category"
+              type="text"
+              :label="__('Category')"
+            />
+            <FormControl
+              v-model="form.color"
+              type="text"
+              :label="__('Colour (hex)')"
+            />
           </div>
+          <FormControl
+            v-model="form.description"
+            type="textarea"
+            :rows="2"
+            :label="__('Description')"
+          />
+
+          <div class="grid grid-cols-4 gap-3">
+            <FormControl
+              v-model.number="form.duration"
+              type="number"
+              min="5"
+              :label="__('Duration (min)')"
+            />
+            <FormControl
+              v-model.number="form.default_price"
+              type="number"
+              :label="__('Base price')"
+            />
+            <FormControl
+              v-model="form.currency"
+              type="text"
+              :label="__('Currency')"
+            />
+            <FormControl
+              v-model="form.location"
+              type="text"
+              :label="__('Location')"
+              :placeholder="__('e.g. Via Roma 1 — or online')"
+            />
+          </div>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center gap-2 text-sm text-ink-gray-7">
+              <Switch v-model="form.enabled" size="sm" /> {{ __('Enabled') }}
+            </label>
+            <label class="flex items-center gap-2 text-sm text-ink-gray-7">
+              <Switch v-model="form.price_per_participant" size="sm" />
+              {{ __('Price is per participant') }}
+            </label>
+          </div>
+          <!-- The website face of this service. The card itself (image, descriptions,
+             button) is edited in Site → Showcase, so there is one place to get it
+             right; the switch lives here because this is where you are when you
+             decide a service should be public. -->
+          <div
+            v-if="editingName"
+            class="flex items-center justify-between rounded-lg border border-outline-gray-2 px-3 py-2.5"
+          >
+            <div class="flex flex-col">
+              <span class="text-p-base-medium text-ink-gray-8">
+                {{ __('Publish on the website') }}
+              </span>
+              <span class="text-p-sm text-ink-gray-5">
+                {{
+                  publishedOnWebsite
+                    ? __(
+                        'Visible on the site. Edit its card under Site → Showcase.',
+                      )
+                    : __('Not on the site yet.')
+                }}
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Button
+                v-if="publishedOnWebsite"
+                variant="ghost"
+                :label="__('Edit card')"
+                @click="openShowcase"
+              />
+              <Switch
+                size="sm"
+                :modelValue="publishedOnWebsite"
+                @update:modelValue="toggleWebsite"
+              />
+            </div>
+          </div>
+        </template>
+
+        <!-- who delivers it: the people only; their own settings live in Who does what -->
+        <template v-else-if="editorTab === 'team'">
           <div class="grid grid-cols-2 gap-3">
             <FormControl
               v-model="form.staff_selection"
@@ -151,54 +195,33 @@
           </div>
           <p class="mt-1 text-p-xs text-ink-gray-5">{{ staffingHint }}</p>
 
-          <div class="mt-3 flex flex-col gap-2">
+          <div class="flex flex-col gap-2">
             <div
               v-for="(row, i) in form.staff"
               :key="i"
-              class="grid grid-cols-[1fr_130px_80px_90px_100px_70px_32px] items-center gap-2"
+              class="flex items-center gap-2"
             >
               <Link
+                class="flex-1"
                 doctype="User"
                 :modelValue="row.user"
                 :placeholder="__('Professional')"
                 @update:modelValue="(v) => (row.user = v)"
               />
               <FormControl
+                v-if="form.staff_selection === 'One per role'"
                 v-model="row.role"
+                class="w-40"
                 type="text"
-                :placeholder="__('Role (optional)')"
+                :placeholder="__('Role')"
               />
-              <FormControl
-                v-model.number="row.priority"
-                type="number"
-                :placeholder="__('Priority')"
-              />
-              <FormControl
-                v-model.number="row.duration"
-                type="number"
-                min="0"
-                :placeholder="__('Own min')"
-                :title="
-                  __('Own length for this service; empty = service duration')
-                "
-              />
-              <FormControl
-                v-model.number="row.price"
-                type="number"
-                min="0"
-                :placeholder="__('Own price')"
-                :title="__('Own price for this service; empty = base price')"
-                @update:modelValue="
-                  (v) => (row.custom_price = v !== '' && v !== null)
-                "
-              />
-              <label
-                class="flex items-center gap-1 text-p-xs text-ink-gray-6"
-                :title="__('Bookable online for this service')"
+              <span
+                v-if="ownSettings(row)"
+                class="shrink-0 rounded bg-surface-blue-2 px-2 py-1 text-p-xs text-ink-blue-8"
+                :title="__('Set in Who does what')"
               >
-                <Switch v-model="row.bookable_online" size="sm" />
-                {{ __('Online') }}
-              </label>
+                {{ ownSettings(row) }}
+              </span>
               <Button
                 variant="ghost"
                 icon="lucide-trash-2"
@@ -211,20 +234,25 @@
               class="self-start"
               :label="__('Add professional')"
               iconLeft="plus"
-              @click="
-                form.staff.push({
-                  user: '',
-                  role: '',
-                  priority: 0,
-                  duration: null,
-                  price: null,
-                  custom_price: false,
-                  bookable_online: true,
-                })
-              "
+              @click="addProfessional"
             />
           </div>
-
+          <div
+            class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
+          >
+            <span>
+              {{
+                __(
+                  'Own length, price, priority or online for one person: Who does what.',
+                )
+              }}
+            </span>
+            <Button
+              size="sm"
+              :label="__('Open Who does what')"
+              @click="goTo('Who does what')"
+            />
+          </div>
           <div
             v-if="form.staff_selection === 'One per role'"
             class="mt-3 flex flex-col gap-2"
@@ -260,160 +288,140 @@
               @click="form.roles.push({ role: '', staff_count: 1 })"
             />
           </div>
-        </div>
+        </template>
 
-        <!-- participants -->
-        <div class="grid grid-cols-2 gap-3">
-          <FormControl
-            v-model.number="form.min_participants"
-            type="number"
-            min="1"
-            :label="__('Minimum participants')"
-          />
-          <FormControl
-            v-model.number="form.max_participants"
-            type="number"
-            min="1"
-            :label="__('Maximum participants')"
-            :description="__('Above 1 it becomes a group session')"
-          />
-        </div>
-
-        <!-- resources -->
-        <div class="flex flex-col gap-2">
-          <FormLabel :label="__('Rooms & equipment it needs')" />
-          <div
-            v-for="(row, i) in form.resources"
-            :key="i"
-            class="grid grid-cols-[130px_1fr_70px_90px_32px] items-end gap-2"
-          >
+        <!-- what it occupies -->
+        <template v-else-if="editorTab === 'space'">
+          <!-- participants -->
+          <div class="grid grid-cols-2 gap-3">
             <FormControl
-              v-model="row.resource_type"
-              type="select"
-              :options="resourceTypeOptions"
+              v-model.number="form.min_participants"
+              type="number"
+              min="1"
+              :label="__('Minimum participants')"
             />
             <FormControl
-              v-model="row.resource"
-              type="select"
-              :options="resourceOptions(row.resource_type)"
-            />
-            <FormControl v-model.number="row.quantity" type="number" min="1" />
-            <label
-              class="flex items-center gap-1.5 pb-2 text-p-xs text-ink-gray-7"
-            >
-              <Switch v-model="row.required" size="sm" /> {{ __('Required') }}
-            </label>
-            <Button
-              variant="ghost"
-              icon="lucide-trash-2"
-              @click="form.resources.splice(i, 1)"
+              v-model.number="form.max_participants"
+              type="number"
+              min="1"
+              :label="__('Maximum participants')"
+              :description="__('Above 1 it becomes a group session')"
             />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            class="self-start"
-            :label="__('Add requirement')"
-            iconLeft="plus"
-            @click="
-              form.resources.push({
-                resource_type: 'Room',
-                resource: '',
-                quantity: 1,
-                required: true,
-              })
-            "
+          <!-- resources -->
+          <div class="flex flex-col gap-2">
+            <FormLabel :label="__('Rooms & equipment it needs')" />
+            <div
+              v-for="(row, i) in form.resources"
+              :key="i"
+              class="grid grid-cols-[130px_1fr_70px_90px_32px] items-end gap-2"
+            >
+              <FormControl
+                v-model="row.resource_type"
+                type="select"
+                :options="resourceTypeOptions"
+              />
+              <FormControl
+                v-model="row.resource"
+                type="select"
+                :options="resourceOptions(row.resource_type)"
+              />
+              <FormControl
+                v-model.number="row.quantity"
+                type="number"
+                min="1"
+              />
+              <label
+                class="flex items-center gap-1.5 pb-2 text-p-xs text-ink-gray-7"
+              >
+                <Switch v-model="row.required" size="sm" /> {{ __('Required') }}
+              </label>
+              <Button
+                variant="ghost"
+                icon="lucide-trash-2"
+                @click="form.resources.splice(i, 1)"
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              class="self-start"
+              :label="__('Add requirement')"
+              iconLeft="plus"
+              @click="
+                form.resources.push({
+                  resource_type: 'Room',
+                  resource: '',
+                  quantity: 1,
+                  required: true,
+                })
+              "
+            />
+            <p class="text-p-xs text-ink-gray-5">
+              {{
+                __(
+                  'Leave the resource empty to take any free one of that type.',
+                )
+              }}
+            </p>
+          </div>
+        </template>
+
+        <!-- when -->
+        <template v-else-if="editorTab === 'hours'">
+          <div class="grid grid-cols-3 gap-3">
+            <FormControl
+              v-model.number="form.slot_interval"
+              type="number"
+              min="0"
+              :label="__('Slot step (min)')"
+            />
+            <FormControl
+              v-model.number="form.buffer_before"
+              type="number"
+              min="0"
+              :label="__('Buffer before')"
+            />
+            <FormControl
+              v-model.number="form.buffer_after"
+              type="number"
+              min="0"
+              :label="__('Buffer after')"
+            />
+          </div>
+          <WeeklyHours
+            v-model="form.availability"
+            :label="__('When it can be delivered')"
+            :hint="__('Empty means any time the team is available.')"
           />
           <p class="text-p-xs text-ink-gray-5">
-            {{
-              __('Leave the resource empty to take any free one of that type.')
-            }}
+            {{ __("Each person's own hours and days off: Team rota.") }}
           </p>
-        </div>
+        </template>
 
-        <!-- price & limits -->
-        <div class="grid grid-cols-4 gap-3">
-          <FormControl
-            v-model.number="form.default_price"
-            type="number"
-            :label="__('Base price')"
-          />
-          <FormControl
-            v-model="form.currency"
-            type="text"
-            :label="__('Currency')"
-          />
-          <FormControl
-            v-model="form.location"
-            class="col-span-2"
-            type="text"
-            :label="__('Location')"
-            :placeholder="__('e.g. Via Roma 1, Milano — or online')"
-          />
-        </div>
-
-        <div class="flex flex-wrap gap-4">
-          <label class="flex items-center gap-2 text-sm text-ink-gray-7">
-            <Switch v-model="form.enabled" size="sm" /> {{ __('Enabled') }}
-          </label>
-          <label class="flex items-center gap-2 text-sm text-ink-gray-7">
-            <Switch v-model="form.price_per_participant" size="sm" />
-            {{ __('Price is per participant') }}
-          </label>
-          <label class="flex items-center gap-2 text-sm text-ink-gray-7">
+        <!-- online -->
+        <template v-else>
+          <label
+            class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 px-3 py-2.5"
+          >
+            <span class="flex flex-col">
+              <span class="text-p-base-medium text-ink-gray-8">
+                {{ __('Bookable online') }}
+              </span>
+              <span class="text-p-sm text-ink-gray-5">
+                {{
+                  __('Who clients can book for it: Booking → Online booking.')
+                }}
+              </span>
+            </span>
             <Switch v-model="form.bookable_online" size="sm" />
-            {{ __('Bookable online') }}
           </label>
-        </div>
-
-        <OnlineBookingPanel
-          v-if="form.bookable_online"
-          v-model="form"
-          :serviceName="editingName || ''"
-        />
-
-        <WeeklyHours
-          v-model="form.availability"
-          :label="__('When it can be delivered')"
-          :hint="__('Empty means any time the team is available.')"
-        />
-
-        <!-- The website face of this service. The card itself (image, descriptions,
-             button) is edited in Site → Showcase, so there is one place to get it
-             right; the switch lives here because this is where you are when you
-             decide a service should be public. -->
-        <div
-          v-if="editingName"
-          class="flex items-center justify-between rounded-lg border border-outline-gray-2 px-3 py-2.5"
-        >
-          <div class="flex flex-col">
-            <span class="text-p-base-medium text-ink-gray-8">
-              {{ __('Publish on the website') }}
-            </span>
-            <span class="text-p-sm text-ink-gray-5">
-              {{
-                publishedOnWebsite
-                  ? __(
-                      'Visible on the site. Edit its card under Site → Showcase.',
-                    )
-                  : __('Not on the site yet.')
-              }}
-            </span>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              v-if="publishedOnWebsite"
-              variant="ghost"
-              :label="__('Edit card')"
-              @click="openShowcase"
-            />
-            <Switch
-              size="sm"
-              :modelValue="publishedOnWebsite"
-              @update:modelValue="toggleWebsite"
-            />
-          </div>
-        </div>
+          <OnlineBookingPanel
+            v-if="form.bookable_online"
+            v-model="form"
+            :serviceName="editingName || ''"
+          />
+        </template>
       </div>
     </template>
     <template #actions>
@@ -444,11 +452,12 @@ import {
   FormControl,
   FormLabel,
   Switch,
+  TabButtons,
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { showSettings } from '@/composables/settings'
+import { activeSettingsPage, showSettings } from '@/composables/settings'
 
 const router = useRouter()
 
@@ -520,6 +529,40 @@ function describe(service) {
 }
 
 const showEditor = ref(false)
+const editorTab = ref('details')
+const editorTabs = [
+  { label: __('Details'), value: 'details' },
+  { label: __('Team'), value: 'team' },
+  { label: __('Rooms & group'), value: 'space' },
+  { label: __('Hours'), value: 'hours' },
+  { label: __('Online'), value: 'online' },
+]
+
+// one person's own settings, shown here, edited in Who does what
+function ownSettings(row) {
+  const parts = []
+  if (row.duration) parts.push(`${row.duration}'`)
+  if (row.custom_price) parts.push(`${row.price} ${form.currency || ''}`.trim())
+  if (!row.bookable_online) parts.push(__('not online'))
+  return parts.join(' · ')
+}
+
+function addProfessional() {
+  form.staff.push({
+    user: '',
+    role: '',
+    priority: 0,
+    duration: null,
+    price: null,
+    custom_price: false,
+    bookable_online: true,
+  })
+}
+
+function goTo(page) {
+  showEditor.value = false
+  activeSettingsPage.value = page
+}
 const saving = ref(false)
 const editingName = ref(null)
 
@@ -589,6 +632,7 @@ const editorTitle = computed(() =>
 
 function openEditor(name = null) {
   editingName.value = name
+  editorTab.value = 'details'
   publishedOnWebsite.value = false
   Object.assign(form, emptyForm())
   if (!name) {
