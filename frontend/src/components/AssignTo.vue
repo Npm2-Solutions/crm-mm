@@ -6,7 +6,7 @@
           :is="assignees?.length == 1 ? 'Button' : 'div'"
           v-if="assignees?.length"
         >
-          <MultipleAvatar :avatars="assignees" />
+          <MultipleAvatar :avatars="assignees" :hideLabel="compact" />
         </component>
         <Button v-else :label="__('Assign To')" />
       </div>
@@ -33,6 +33,8 @@ import { computed } from 'vue'
 const props = defineProps({
   doctype: { type: String, default: '' },
   docname: { type: String, default: '' },
+  // avatar only, no name: for the phone's header row
+  compact: { type: Boolean, default: false },
 })
 
 const { document } = useDocument(props.doctype, props.docname)

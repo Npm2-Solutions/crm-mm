@@ -14,7 +14,7 @@
           :label="avatars[0].label"
           :size="size"
         />
-        <div class="truncate">{{ avatars[0].label }}</div>
+        <div v-if="!hideLabel" class="truncate">{{ avatars[0].label }}</div>
       </div>
     </Tooltip>
     <Tooltip
@@ -41,6 +41,9 @@ import { computed } from 'vue'
 const props = defineProps({
   avatars: { type: Array, default: () => [] },
   size: { type: String, default: 'md' },
+  // A single assignee normally shows their name beside the avatar. In a phone's
+  // header that name is wide enough to push the record's own name off the row.
+  hideLabel: { type: Boolean, default: false },
 })
 const reverseAvatars = computed(() => [...props.avatars].reverse())
 </script>

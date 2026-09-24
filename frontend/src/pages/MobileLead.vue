@@ -15,6 +15,7 @@
       <div v-if="doc.name" class="flex shrink-0 items-center gap-1.5">
         <AssignTo
           v-model="assignees.data"
+          compact
           doctype="CRM Lead"
           :docname="leadId"
         />

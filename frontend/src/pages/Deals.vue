@@ -14,10 +14,18 @@
         placement="right"
       >
         <template #default="{ open }">
+          <!-- On a phone this sits between the breadcrumb and «Create», and its
+               label is a pipeline name: the three together left the deal list's
+               own name with nothing. The icon carries it. -->
           <Button
-            :label="currentPipeline || __('All pipelines')"
+            :label="
+              isMobileView ? undefined : currentPipeline || __('All pipelines')
+            "
+            :aria-label="__('Pipeline')"
             :tooltip="__('Pipeline')"
-            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+            :iconRight="
+              isMobileView ? undefined : open ? 'chevron-up' : 'chevron-down'
+            "
           >
             <template #prefix>
               <KanbanIcon class="h-4 text-ink-gray-6" />
@@ -293,6 +301,7 @@ import { kanbanColumnsForPipeline, pipelineOfColumns } from '@/utils/pipelines'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
 import { Tooltip, Avatar, Dropdown } from 'frappe-ui'
+import { isMobileView } from '@/composables/breakpoints'
 import { useRoute } from 'vue-router'
 import { ref, reactive, computed, h } from 'vue'
 
