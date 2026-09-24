@@ -155,7 +155,7 @@
             <div
               v-for="(row, i) in form.staff"
               :key="i"
-              class="grid grid-cols-[1fr_160px_90px_32px] items-end gap-2"
+              class="grid grid-cols-[1fr_130px_80px_90px_100px_70px_32px] items-center gap-2"
             >
               <Link
                 doctype="User"
@@ -173,6 +173,32 @@
                 type="number"
                 :placeholder="__('Priority')"
               />
+              <FormControl
+                v-model.number="row.duration"
+                type="number"
+                min="0"
+                :placeholder="__('Own min')"
+                :title="
+                  __('Own length for this service; empty = service duration')
+                "
+              />
+              <FormControl
+                v-model.number="row.price"
+                type="number"
+                min="0"
+                :placeholder="__('Own price')"
+                :title="__('Own price for this service; empty = base price')"
+                @update:modelValue="
+                  (v) => (row.custom_price = v !== '' && v !== null)
+                "
+              />
+              <label
+                class="flex items-center gap-1 text-p-xs text-ink-gray-6"
+                :title="__('Bookable online for this service')"
+              >
+                <Switch v-model="row.bookable_online" size="sm" />
+                {{ __('Online') }}
+              </label>
               <Button
                 variant="ghost"
                 icon="lucide-trash-2"
@@ -185,7 +211,17 @@
               class="self-start"
               :label="__('Add professional')"
               iconLeft="plus"
-              @click="form.staff.push({ user: '', role: '', priority: 0 })"
+              @click="
+                form.staff.push({
+                  user: '',
+                  role: '',
+                  priority: 0,
+                  duration: null,
+                  price: null,
+                  custom_price: false,
+                  bookable_online: true,
+                })
+              "
             />
           </div>
 
@@ -308,16 +344,11 @@
             :label="__('Currency')"
           />
           <FormControl
-            v-model.number="form.min_notice_hours"
-            type="number"
-            min="0"
-            :label="__('Min notice (h)')"
-          />
-          <FormControl
-            v-model.number="form.max_horizon_days"
-            type="number"
-            min="1"
-            :label="__('Horizon (days)')"
+            v-model="form.location"
+            class="col-span-2"
+            type="text"
+            :label="__('Location')"
+            :placeholder="__('e.g. Via Roma 1, Milano — or online')"
           />
         </div>
 
@@ -401,7 +432,11 @@
 import Link from '@/components/Controls/Link.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import OnlineBookingPanel from '@/components/Settings/Scheduling/OnlineBookingPanel.vue'
-import { ONLINE_DEFAULTS, onlineFieldsFrom } from '@/utils/onlineBooking'
+import {
+  INHERITED_RULES,
+  ONLINE_DEFAULTS,
+  onlineFieldsFrom,
+} from '@/utils/onlineBooking'
 import {
   call,
   createResource,
@@ -508,7 +543,11 @@ const emptyForm = () => ({
   currency: 'EUR',
   price_per_participant: false,
   bookable_online: false,
+  location: '',
   ...ONLINE_DEFAULTS,
+  online_overrides: [],
+  online_defaults: {},
+  hide_from_menu: false,
   staff: [],
   roles: [],
   resources: [],
@@ -553,6 +592,17 @@ function openEditor(name = null) {
   publishedOnWebsite.value = false
   Object.assign(form, emptyForm())
   if (!name) {
+    // a new service follows the booking-page defaults: show them in its panel
+    call('crm.api.appointments.get_scheduling_settings')
+      .then((settings) => {
+        form.online_defaults = Object.fromEntries(
+          INHERITED_RULES.map((rule) => [
+            rule.key,
+            settings[`default_${rule.key}`],
+          ]),
+        )
+      })
+      .catch(() => {})
     showEditor.value = true
     return
   }
@@ -569,6 +619,10 @@ function openEditor(name = null) {
           user: row.user,
           role: row.role || '',
           priority: row.priority || 0,
+          duration: row.duration || null,
+          custom_price: Boolean(row.custom_price),
+          price: row.custom_price ? row.price : null,
+          bookable_online: row.bookable_online !== 0,
         })),
         roles: (data.roles || []).map((row) => ({
           role: row.role,
@@ -593,7 +647,20 @@ function save() {
   saving.value = true
   createResource({
     url: 'crm.api.appointments.save_service',
-    params: { name: editingName.value, service: { ...form } },
+    params: {
+      name: editingName.value,
+      service: {
+        ...form,
+        staff: form.staff.map((row) => ({
+          ...row,
+          duration: Number(row.duration) || 0,
+          custom_price: row.custom_price ? 1 : 0,
+          price: Number(row.price) || 0,
+          bookable_online: row.bookable_online ? 1 : 0,
+        })),
+        hide_from_menu: form.hide_from_menu ? 1 : 0,
+      },
+    },
     auto: true,
     onSuccess: () => {
       saving.value = false

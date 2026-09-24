@@ -200,7 +200,7 @@ def _tz_or(value: str | None, fallback: ZoneInfo) -> ZoneInfo:
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
-def get_catalog(service: str | None = None) -> dict:
+def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> dict:
 	"""The service menu: categories, services, professionals, page settings.
 
 	A service marked "only via direct link" is left out of the menu, but comes back
@@ -217,10 +217,13 @@ def get_catalog(service: str | None = None) -> dict:
 	for name in names:
 		service = frappe.get_cached_doc("CRM Service", name)
 		services.append(_service_card(service))
+	# the link builder in Settings needs the link-only services too
+	show_hidden = cint(include_hidden) and bool({"System Manager", "Sales Manager"} & set(frappe.get_roles()))
 	services = [
 		card
 		for card in services
-		if card["bookable"] and (card["listed"] or (service and service in (card["id"], card["name"])))
+		if card["bookable"]
+		and (card["listed"] or show_hidden or (service and service in (card["id"], card["name"])))
 	]
 	categories = []
 	for service in services:

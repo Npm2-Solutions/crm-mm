@@ -787,6 +787,7 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 			"default_price",
 			"currency",
 			"holiday_list",
+			"location",
 			# online booking
 			"online_confirmation",
 			"online_slot_interval",
@@ -820,6 +821,7 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 		"require_notes",
 		"allow_online_cancel",
 		"allow_online_reschedule",
+		"hide_from_menu",
 	):
 		if key in payload:
 			values[key] = cint(payload.get(key))

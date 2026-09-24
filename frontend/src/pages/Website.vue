@@ -437,13 +437,16 @@
             :label="__('Button label')"
           />
         </div>
-        <Link
+        <p
           v-if="showcaseType === 'CRM Service' && editing.cta_type === 'Book'"
-          doctype="CRM Booking Calendar"
-          :modelValue="editing.booking_calendar"
-          :label="__('Booking calendar')"
-          @update:modelValue="(v) => (editing.booking_calendar = v)"
-        />
+          class="rounded bg-surface-gray-1 px-3 py-2 text-p-sm text-ink-gray-6"
+        >
+          {{
+            __(
+              'The button opens this service on the booking page (/prenota). It must be marked "Bookable online" in Agenda → Services.',
+            )
+          }}
+        </p>
         <FormControl
           v-else-if="editing.cta_type !== 'None'"
           v-model="editing.cta_target"
@@ -467,7 +470,6 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
-import Link from '@/components/Controls/Link.vue'
 import {
   showSettings,
   activeSettingsPage,

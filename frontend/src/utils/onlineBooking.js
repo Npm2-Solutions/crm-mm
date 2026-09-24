@@ -68,6 +68,11 @@ export function onlineFieldsFrom(data = {}) {
   if (out.same_day_cutoff && out.same_day_cutoff.length > 5) {
     out.same_day_cutoff = out.same_day_cutoff.slice(0, 5)
   }
+  out.online_overrides = Array.isArray(data.online_overrides)
+    ? [...data.online_overrides]
+    : []
+  out.online_defaults = { ...(data.online_defaults || {}) }
+  out.hide_from_menu = Boolean(data.hide_from_menu)
   return out
 }
 
@@ -77,6 +82,7 @@ export function onlineFieldsFrom(data = {}) {
  */
 export function describeOnlineLimits(form, t = (s, a) => format(s, a)) {
   if (!form?.bookable_online) return []
+  form = effectiveForm(form)
   const parts = []
   if (form.online_confirmation === 'Manual approval') parts.push(t('approval'))
   if (form.min_notice_hours)
@@ -115,6 +121,7 @@ export function describeOnlineLimits(form, t = (s, a) => format(s, a)) {
  */
 export function onlineProblems(form, t = (s, a) => format(s, a)) {
   if (!form?.bookable_online) return []
+  form = effectiveForm(form)
   const problems = []
   if (
     form.booking_opens_on &&
@@ -194,4 +201,142 @@ export function sourceTag(appointment = {}) {
   if (appointment.source !== 'External') return ''
   const platform = (appointment.external_platform || '').trim()
   return platform.split(/\s[/(]/)[0].trim() || 'External'
+}
+
+/**
+ * A link to the one booking page, narrowed as asked: a service, a professional
+ * (their own page), a category, prefilled client details, campaign tags.
+ * `staff` is the public id the booking page uses, never an e-mail address.
+ */
+export function buildBookingLink(origin, options = {}) {
+  const base = `${(origin || '').replace(/\/$/, '')}/prenota`
+  const params = new URLSearchParams()
+  if (options.service) params.set('servizio', options.service)
+  if (options.staff) params.set('professionista', options.staff)
+  if (options.category && !options.service)
+    params.set('categoria', options.category)
+  for (const [key, value] of Object.entries(options.prefill || {})) {
+    if (value) params.set(key, value)
+  }
+  for (const [key, value] of Object.entries(options.utm || {})) {
+    if (value) params.set(`utm_${key}`, value)
+  }
+  if (options.embed) params.set('embed', '1')
+  const query = params.toString()
+  return query ? `${base}?${query}` : base
+}
+
+/** HTML to paste in a website: the booking page as an iframe, full width. */
+export function embedSnippet(url, height = 820) {
+  const src = url.includes('embed=1')
+    ? url
+    : `${url}${url.includes('?') ? '&' : '?'}embed=1`
+  return `<iframe src="${src.replace(/"/g, '&quot;')}" style="width:100%;height:${height}px;border:0" loading="lazy" title="Prenota"></iframe>`
+}
+
+/** Label for where an online rule's value comes from. */
+export function ruleSourceLabel(source, t = (s) => s) {
+  return source === 'service' ? t('own') : t('default')
+}
+
+/**
+ * The online rules a service inherits from the booking-page defaults. Same
+ * keys as `crm.scheduling.booking_rules.INHERITED` on the server.
+ */
+export const INHERITED_RULES = Object.freeze([
+  { key: 'online_confirmation', type: 'select', label: 'Confirmation' },
+  { key: 'min_notice_hours', type: 'number', label: 'Minimum notice (hours)' },
+  { key: 'max_horizon_days', type: 'number', label: 'Booking horizon (days)' },
+  {
+    key: 'online_slot_interval',
+    type: 'number',
+    label: 'Online start times every (min)',
+  },
+  { key: 'same_day_cutoff', type: 'time', label: 'Same-day bookings until' },
+  { key: 'require_phone', type: 'check', label: 'Phone required' },
+  {
+    key: 'max_per_customer_per_day',
+    type: 'number',
+    label: 'Max per client per day',
+  },
+  {
+    key: 'allow_online_cancel',
+    type: 'check',
+    label: 'Client can cancel online',
+  },
+  {
+    key: 'cancel_notice_hours',
+    type: 'number',
+    label: 'Cancel up to (hours before)',
+  },
+  {
+    key: 'allow_online_reschedule',
+    type: 'check',
+    label: 'Client can move online',
+  },
+  {
+    key: 'reschedule_notice_hours',
+    type: 'number',
+    label: 'Move up to (hours before)',
+  },
+  { key: 'max_reschedules', type: 'number', label: 'Max moves (0 = any)' },
+])
+
+/** Is this rule customised on the service (true) or inherited (false)? */
+export function isCustomised(form, key) {
+  return (form?.online_overrides || []).includes(key)
+}
+
+/**
+ * Customise a rule (starting from the default value, so nothing jumps) or give
+ * it back to the default. Returns the new overrides list; mutates `form`.
+ */
+export function setCustomised(form, key, on) {
+  const current = new Set(form.online_overrides || [])
+  if (on) {
+    if (!current.has(key)) {
+      current.add(key)
+      const fallback = form.online_defaults?.[key]
+      if (fallback !== undefined && fallback !== null) {
+        form[key] = normaliseRuleValue(key, fallback)
+      }
+    }
+  } else {
+    current.delete(key)
+  }
+  form.online_overrides = [...current].sort()
+  return form.online_overrides
+}
+
+/** The value shown for an inherited rule: the default, in the form's shape. */
+export function inheritedValue(form, key) {
+  const value = form?.online_defaults?.[key]
+  return value === undefined || value === null
+    ? ''
+    : normaliseRuleValue(key, value)
+}
+
+function normaliseRuleValue(key, value) {
+  const rule = INHERITED_RULES.find((r) => r.key === key)
+  if (!rule) return value
+  if (rule.type === 'check') return Boolean(Number(value))
+  if (rule.type === 'number') return Number(value) || 0
+  if (rule.type === 'time') return String(value || '').slice(0, 5)
+  return value
+}
+
+/**
+ * The form with every inherited rule replaced by the default in force — what
+ * the summaries and checks must judge, not the stale value stored on the service.
+ */
+export function effectiveForm(form) {
+  if (!form?.online_defaults || !Object.keys(form.online_defaults).length)
+    return form
+  const out = { ...form }
+  for (const rule of INHERITED_RULES) {
+    if (!isCustomised(form, rule.key) && rule.key in form.online_defaults) {
+      out[rule.key] = inheritedValue(form, rule.key)
+    }
+  }
+  return out
 }

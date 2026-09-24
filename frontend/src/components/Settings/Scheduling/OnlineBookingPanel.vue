@@ -9,9 +9,7 @@
           {{
             summary.length
               ? summary.join(' · ')
-              : __(
-                  'Clients book it on the public page, within the limits below.',
-                )
+              : __('Clients book it on the booking page, with the rules below.')
           }}
         </span>
       </div>
@@ -38,33 +36,7 @@
       <div v-for="problem in problems" :key="problem">{{ problem }}</div>
     </div>
 
-    <!-- how it is booked -->
-    <div class="grid grid-cols-3 gap-3">
-      <FormControl
-        v-model="form.online_confirmation"
-        type="select"
-        :label="__('Confirmation')"
-        :options="[
-          { label: __('Automatic'), value: 'Automatic' },
-          { label: __('Manual approval'), value: 'Manual approval' },
-        ]"
-      />
-      <FormControl
-        v-model.number="form.online_slot_interval"
-        type="number"
-        min="0"
-        :label="__('Online start times every (min)')"
-        :description="__('0 = the service slot step')"
-      />
-      <FormControl
-        v-if="form.max_participants > 1"
-        v-model.number="form.online_max_participants"
-        type="number"
-        min="1"
-        :max="form.max_participants"
-        :label="__('Seats per booking')"
-      />
-    </div>
+    <!-- only this service -->
     <div class="flex flex-wrap gap-4">
       <label class="flex items-center gap-2 text-sm text-ink-gray-7">
         <Switch v-model="form.allow_staff_choice" size="sm" />
@@ -74,43 +46,107 @@
         <Switch v-model="form.show_price_online" size="sm" />
         {{ __('Show the price') }}
       </label>
+      <label class="flex items-center gap-2 text-sm text-ink-gray-7">
+        <Switch v-model="form.hide_from_menu" size="sm" />
+        {{ __('Only via its direct link') }}
+      </label>
+      <FormControl
+        v-if="form.max_participants > 1"
+        v-model.number="form.online_max_participants"
+        class="w-40"
+        type="number"
+        min="1"
+        :max="form.max_participants"
+        :label="__('Seats per booking')"
+      />
     </div>
 
-    <!-- when -->
+    <!-- inherited rules -->
     <div>
-      <div class="mb-2 text-p-sm-medium text-ink-gray-6">
-        {{ __('When it can be booked') }}
+      <div class="mb-1 text-p-sm-medium text-ink-gray-6">
+        {{ __('Rules') }}
       </div>
-      <div class="grid grid-cols-3 gap-3">
-        <FormControl
-          v-model="form.booking_opens_on"
-          type="date"
-          :label="__('Bookable from')"
-        />
-        <FormControl
-          v-model="form.booking_closes_on"
-          type="date"
-          :label="__('Bookable until')"
-        />
-        <FormControl
-          v-model="form.same_day_cutoff"
-          type="time"
-          :label="__('Same-day bookings until')"
-        />
-      </div>
-      <p class="mt-1 text-p-xs text-ink-gray-5">
+      <p class="mb-2 text-p-xs text-ink-gray-5">
         {{
           __(
-            'Minimum notice and horizon above apply too. Leave a field empty for no limit.',
+            'Grey values come from Booking page defaults and follow them. Customise a rule to give this service its own value.',
           )
         }}
       </p>
+      <div
+        class="divide-y divide-outline-gray-1 rounded-md border border-outline-gray-2"
+      >
+        <div
+          v-for="rule in INHERITED_RULES"
+          :key="rule.key"
+          class="grid grid-cols-[1fr_180px_120px] items-center gap-3 px-3 py-1.5"
+        >
+          <span class="text-p-sm text-ink-gray-7">{{ __(rule.label) }}</span>
+          <div>
+            <template v-if="isCustomised(form, rule.key)">
+              <Switch
+                v-if="rule.type === 'check'"
+                v-model="form[rule.key]"
+                size="sm"
+              />
+              <FormControl
+                v-else-if="rule.type === 'select'"
+                v-model="form[rule.key]"
+                type="select"
+                :options="confirmationOptions"
+              />
+              <FormControl
+                v-else-if="rule.type === 'time'"
+                v-model="form[rule.key]"
+                type="time"
+              />
+              <FormControl
+                v-else
+                v-model.number="form[rule.key]"
+                type="number"
+                min="0"
+              />
+            </template>
+            <span v-else class="text-p-sm text-ink-gray-5">
+              {{ showValue(rule, inheritedValue(form, rule.key)) }}
+            </span>
+          </div>
+          <Button
+            v-if="isCustomised(form, rule.key)"
+            variant="ghost"
+            size="sm"
+            :label="__('Use default')"
+            @click="setCustomised(form, rule.key, false)"
+          />
+          <Button
+            v-else
+            variant="subtle"
+            size="sm"
+            :label="__('Customise')"
+            @click="setCustomised(form, rule.key, true)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- when -->
+    <div class="grid grid-cols-2 gap-3">
+      <FormControl
+        v-model="form.booking_opens_on"
+        type="date"
+        :label="__('Bookable from')"
+      />
+      <FormControl
+        v-model="form.booking_closes_on"
+        type="date"
+        :label="__('Bookable until')"
+      />
     </div>
 
     <!-- capacity -->
     <div>
       <div class="mb-2 text-p-sm-medium text-ink-gray-6">
-        {{ __('Capacity') }}
+        {{ __('Capacity of this service') }}
       </div>
       <div class="grid grid-cols-3 gap-3">
         <FormControl
@@ -139,7 +175,7 @@
       <div class="mb-2 text-p-sm-medium text-ink-gray-6">
         {{ __('Clients') }}
       </div>
-      <div class="grid grid-cols-4 gap-3">
+      <div class="grid grid-cols-3 gap-3">
         <FormControl
           v-model="form.customer_eligibility"
           type="select"
@@ -158,12 +194,6 @@
           type="number"
           min="0"
           :label="__('Upcoming per client')"
-        />
-        <FormControl
-          v-model.number="form.max_per_customer_per_day"
-          type="number"
-          min="0"
-          :label="__('Per client per day')"
         />
         <FormControl
           v-model.number="form.min_days_between"
@@ -193,55 +223,10 @@
           :placeholder="__('e.g. Bring previous reports')"
         />
       </div>
-      <div class="mt-2 flex flex-wrap gap-4">
-        <label class="flex items-center gap-2 text-sm text-ink-gray-7">
-          <Switch v-model="form.require_phone" size="sm" />
-          {{ __('Phone required') }}
-        </label>
-        <label class="flex items-center gap-2 text-sm text-ink-gray-7">
-          <Switch v-model="form.require_notes" size="sm" />
-          {{ __('Answer required') }}
-        </label>
-      </div>
-    </div>
-
-    <!-- changes -->
-    <div>
-      <div class="mb-2 text-p-sm-medium text-ink-gray-6">
-        {{ __('Cancelling and moving') }}
-      </div>
-      <div class="grid grid-cols-4 items-end gap-3">
-        <label class="flex h-7 items-center gap-2 text-sm text-ink-gray-7">
-          <Switch v-model="form.allow_online_cancel" size="sm" />
-          {{ __('Can cancel') }}
-        </label>
-        <FormControl
-          v-model.number="form.cancel_notice_hours"
-          type="number"
-          min="0"
-          :disabled="!form.allow_online_cancel"
-          :label="__('Cancel up to (h before)')"
-        />
-        <label class="flex h-7 items-center gap-2 text-sm text-ink-gray-7">
-          <Switch v-model="form.allow_online_reschedule" size="sm" />
-          {{ __('Can move') }}
-        </label>
-        <FormControl
-          v-model.number="form.reschedule_notice_hours"
-          type="number"
-          min="0"
-          :disabled="!form.allow_online_reschedule"
-          :label="__('Move up to (h before)')"
-        />
-      </div>
-      <FormControl
-        v-if="form.allow_online_reschedule"
-        v-model.number="form.max_reschedules"
-        class="mt-3 w-1/4"
-        type="number"
-        min="0"
-        :label="__('Max moves (0 = any)')"
-      />
+      <label class="mt-2 flex items-center gap-2 text-sm text-ink-gray-7">
+        <Switch v-model="form.require_notes" size="sm" />
+        {{ __('Answer required') }}
+      </label>
     </div>
   </div>
 </template>
@@ -250,7 +235,11 @@
 import {
   bookingLink,
   describeOnlineLimits,
+  inheritedValue,
+  INHERITED_RULES,
+  isCustomised,
   onlineProblems,
+  setCustomised,
 } from '@/utils/onlineBooking'
 import { FormControl, Switch, toast } from 'frappe-ui'
 import { computed } from 'vue'
@@ -259,6 +248,18 @@ const form = defineModel({ type: Object, required: true })
 const props = defineProps({
   serviceName: { type: String, default: '' },
 })
+
+const confirmationOptions = [
+  { label: __('Automatic'), value: 'Automatic' },
+  { label: __('Manual approval'), value: 'Manual approval' },
+]
+
+function showValue(rule, value) {
+  if (rule.type === 'check') return value ? __('Yes') : __('No')
+  if (rule.type === 'select') return __(value || 'Automatic')
+  if (value === '' || value === null || value === undefined) return '—'
+  return String(value)
+}
 
 const translate = (text, args) => __(text, args)
 const summary = computed(() => describeOnlineLimits(form.value, translate))

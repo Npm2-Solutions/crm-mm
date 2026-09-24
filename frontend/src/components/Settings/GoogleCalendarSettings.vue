@@ -28,11 +28,15 @@
           <span class="text-p-sm text-ink-gray-5">
             {{
               status.data?.can_connect
-                ? __('A Google window will ask you to choose the account and allow access.')
+                ? __(
+                    'A Google window will ask you to choose the account and allow access.',
+                  )
                 : __('Google is not configured yet — ask your provider.')
             }}
           </span>
-          <span v-if="googleError" class="text-p-sm text-ink-red-5">{{ googleError }}</span>
+          <span v-if="googleError" class="text-p-sm text-ink-red-5">{{
+            googleError
+          }}</span>
         </div>
         <div class="flex gap-2">
           <Button
@@ -40,7 +44,9 @@
             :disabled="!status.data?.can_connect"
             :loading="connecting"
             :label="
-              status.data?.connected ? __('Reconnect') : __('Connect Google Calendar')
+              status.data?.connected
+                ? __('Reconnect')
+                : __('Connect Google Calendar')
             "
             @click="connect"
           />
@@ -69,7 +75,9 @@ import { createResource, toast } from 'frappe-ui'
 import { ref } from 'vue'
 import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
 
-const googleError = ref(new URLSearchParams(window.location.search).get('google_error') || '')
+const googleError = ref(
+  new URLSearchParams(window.location.search).get('google_error') || '',
+)
 const connecting = ref(false)
 
 const status = createResource({
