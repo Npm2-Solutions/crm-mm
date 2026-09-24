@@ -614,3 +614,66 @@ class TestACallLoggedByHandKnowsWhoWasOnIt(FrappeTestCase):
 		doc = self._log("Incoming", telephony_medium="Twilio")
 		self.assertFalse(doc.get("from"))
 		self.assertFalse(doc.to)
+
+
+class TestMediaSentFromThePhone(FrappeTestCase):
+	"""A photo, a voice note or a document arrives as an id, not as a file.
+
+	The Coexistence webhook was reading the caption and throwing the id away, so
+	everything sent from the phone that was not typed reached the CRM as the word
+	«[image]» with nothing attached.
+	"""
+
+	def test_the_media_id_is_read_from_the_node_meta_puts_it_in(self):
+		from crm.integrations.whatsapp.coexistence import media_of
+
+		self.assertEqual(media_of({"type": "image", "image": {"id": "MEDIA1"}}), ("MEDIA1", "image"))
+		self.assertEqual(
+			media_of({"type": "document", "document": {"id": "D2"}}),
+			("D2", "document"),
+		)
+
+	def test_a_typed_message_carries_no_file(self):
+		from crm.integrations.whatsapp.coexistence import media_of
+
+		self.assertEqual(media_of({"type": "text", "text": {"body": "ciao"}}), ("", ""))
+		self.assertEqual(media_of({}), ("", ""))
+
+	def test_a_photo_with_no_caption_says_nothing_rather_than_image(self):
+		from crm.integrations.whatsapp.coexistence import message_body
+
+		self.assertEqual(message_body({"type": "image", "image": {"id": "X"}}), ("", "image"))
+		self.assertEqual(
+			message_body({"type": "image", "image": {"id": "X", "caption": "eccolo"}}),
+			("eccolo", "image"),
+		)
+
+	def test_a_sticker_is_filed_as_an_image_because_there_is_no_option_for_one(self):
+		# content_type is a Select and «sticker» is not one of its options: a row
+		# written with it is a row the Desk refuses to open
+		from crm.integrations.whatsapp.coexistence import media_of, message_body
+
+		self.assertEqual(message_body({"type": "sticker", "sticker": {"id": "S"}})[1], "image")
+		# and the file is still fetched from the node Meta actually used
+		self.assertEqual(media_of({"type": "sticker", "sticker": {"id": "S"}}), ("S", "sticker"))
+
+	def test_a_document_keeps_the_name_it_was_sent_with(self):
+		from crm.integrations.whatsapp.coexistence import media_file_name
+
+		self.assertEqual(
+			media_file_name("MSG1", "document", "application/pdf", {"file_name": "Preventivo.pdf"}),
+			"Preventivo.pdf",
+		)
+
+	def test_a_name_cannot_climb_out_of_the_files_folder(self):
+		from crm.integrations.whatsapp.coexistence import media_file_name
+
+		named = media_file_name("MSG1", "document", "application/pdf", {"file_name": "../../etc/passwd"})
+		self.assertNotIn("/", named)
+
+	def test_everything_else_is_named_after_what_it_is(self):
+		from crm.integrations.whatsapp.coexistence import media_file_name
+
+		self.assertEqual(media_file_name("MSG1", "image", "image/jpeg", {}), "image-MSG1.jpeg")
+		self.assertEqual(media_file_name("MSG1", "audio", "audio/ogg; codecs=opus", {}), "audio-MSG1.ogg")
+		self.assertEqual(media_file_name("MSG1", "video", "", {}), "video-MSG1.bin")

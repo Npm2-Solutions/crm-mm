@@ -54,8 +54,9 @@ def business_number(value: dict) -> str:
 def ingest_echoes(value: dict) -> int:
 	"""Messages the business sent from the phone after onboarding."""
 	stored = 0
+	account = account_of(value)
 	for message in value.get("message_echoes") or []:
-		if store_message(message, business_number(value)):
+		if store_message(message, business_number(value), account=account):
 			stored += 1
 	return stored
 
@@ -64,10 +65,11 @@ def ingest_history(value: dict) -> int:
 	"""Past conversations, delivered in chunks after the business opts in."""
 	stored = 0
 	ours = business_number(value)
+	account = account_of(value)
 	for chunk in value.get("history") or []:
 		for thread in chunk.get("threads") or []:
 			for message in thread.get("messages") or []:
-				if store_message(message, ours, historical=True):
+				if store_message(message, ours, historical=True, account=account):
 					stored += 1
 	return stored
 
@@ -81,6 +83,141 @@ def ingest_state_sync(value: dict) -> int:
 	return len(contacts)
 
 
+MEDIA_KINDS = ("image", "video", "audio", "document", "sticker")
+
+
+def account_of(value: dict) -> str:
+	"""The `WhatsApp Account` this webhook is about.
+
+	Coexistence rows had no account on them at all. Which is not cosmetic: the
+	account is where the token lives, so a message with no account cannot have
+	its media fetched, cannot be retried, and belongs to no number when somebody
+	asks later which one it was sent from.
+
+	Meta names the number by its `phone_number_id`, and that is the one field a
+	`WhatsApp Account` stores about it — there is no number on the doctype.
+	"""
+	phone_id = (value.get("metadata") or {}).get("phone_number_id") or ""
+	if phone_id:
+		found = frappe.db.get_value("WhatsApp Account", {"phone_id": phone_id}, "name")
+		if found:
+			return found
+	# a site with one number: it is that one, whatever id the webhook names
+	return frappe.db.get_value("WhatsApp Account", {"is_default_incoming": 1}, "name") or (
+		frappe.db.get_value("WhatsApp Account", {"is_default_outgoing": 1}, "name") or ""
+	)
+
+
+def media_of(message: dict) -> tuple[str, str]:
+	"""(media id, kind) when the message is a file, else `("", "")`.
+
+	A photo, a voice note or a document arrives as an **id**, not as a file: the
+	bytes have to be fetched from Meta with the account's token, and they are
+	kept for a few days only. Until this existed the id was thrown away and the
+	row said `[image]` with nothing attached — a photo sent from the phone was in
+	the CRM as the word «image».
+	"""
+	kind = message.get("type") or ""
+	if kind not in MEDIA_KINDS:
+		return ("", "")
+	return ((message.get(kind) or {}).get("id") or "", kind)
+
+
+def fetch_media(message: str, media_id: str, kind: str, account: str) -> bool:
+	"""Download one message's file and attach it. Runs in the background.
+
+	In the background because this is a webhook: Meta waits for the response and
+	retries what it does not get, and two round trips to the Graph API for every
+	photo in a six-month history import is not something to make it wait for.
+	"""
+	if not (message and media_id and account):
+		return False
+	if frappe.db.get_value("WhatsApp Message", message, "attach"):
+		return False
+
+	import requests
+
+	doc = frappe.get_cached_doc("WhatsApp Account", account)
+	token = doc.get_password("token")
+	headers = {"Authorization": f"Bearer {token}"}
+	base = f"{doc.url}/{doc.version}"
+
+	try:
+		# what the file is, and the one-time link to it
+		about = requests.get(f"{base}/{media_id}/", headers=headers, timeout=30)
+		if about.status_code != 200:
+			frappe.log_error(
+				f"{media_id}: {about.status_code} {about.text[:500]}",
+				"WhatsApp: media could not be described",
+			)
+			return False
+		described = about.json()
+		link = described.get("url")
+		mime = described.get("mime_type") or ""
+		if not link:
+			return False
+
+		# the link itself is on Meta's lookaside host and needs the same token
+		got = requests.get(link, headers=headers, timeout=120)
+		if got.status_code != 200:
+			frappe.log_error(
+				f"{media_id}: {got.status_code}",
+				"WhatsApp: media could not be downloaded",
+			)
+			return False
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "WhatsApp: media fetch failed")
+		return False
+
+	# private: this is somebody's photo, their voice, their invoice. A public
+	# file is a guessable URL that needs no login, and a customer's media has no
+	# business being readable by anyone who guesses one.
+	stored = frappe.get_doc(
+		{
+			"doctype": "File",
+			"file_name": media_file_name(message, kind, mime, described),
+			"attached_to_doctype": "WhatsApp Message",
+			"attached_to_name": message,
+			"attached_to_field": "attach",
+			"content": got.content,
+			"is_private": 1,
+		}
+	).save(ignore_permissions=True)
+
+	frappe.db.set_value("WhatsApp Message", message, "attach", stored.file_url, update_modified=False)
+	frappe.db.commit()
+
+	# the bubble was drawn when the row arrived, before the file existed: without
+	# this it stays an empty frame until somebody reloads the page
+	reference = frappe.db.get_value(
+		"WhatsApp Message", message, ["reference_doctype", "reference_name"], as_dict=True
+	)
+	if reference and reference.reference_doctype:
+		frappe.publish_realtime(
+			"whatsapp_message",
+			{
+				"reference_doctype": reference.reference_doctype,
+				"reference_name": reference.reference_name,
+			},
+		)
+	return True
+
+
+def media_file_name(message: str, kind: str, mime: str, described: dict) -> str:
+	"""A name a person can read, and an extension the browser can act on.
+
+	A document keeps the name it was sent with — that name is most of what a
+	document *is* to whoever receives it. Everything else is named after what it
+	is, because `IMG-20260924-WA0007.jpg` tells nobody anything.
+	"""
+	sent_as = (described.get("file_name") or "").strip()
+	if kind == "document" and sent_as:
+		return sent_as.replace("/", "-")
+	extension = (mime.split(";")[0].split("/")[-1] or "bin").strip() or "bin"
+	# mp4 audio is AAC and ogg audio is Opus; both are what the extension says
+	return f"{kind}-{message}.{extension}"
+
+
 def message_body(message: dict) -> tuple[str, str]:
 	"""(text, content_type) for the message types worth storing as text."""
 	kind = message.get("type") or "text"
@@ -88,9 +225,15 @@ def message_body(message: dict) -> tuple[str, str]:
 		return (message.get("text") or {}).get("body") or "", "text"
 	if kind == "reaction":
 		return (message.get("reaction") or {}).get("emoji") or "", "reaction"
-	if kind in ("image", "video", "audio", "document", "sticker"):
+	if kind in MEDIA_KINDS:
 		node = message.get(kind) or {}
-		return node.get("caption") or f"[{kind}]", kind
+		# the caption, and nothing when there is none: the file is the message,
+		# and a bubble that says «[image]» under an image is saying it twice.
+		#
+		# A sticker is filed as an image because `content_type` has no option for
+		# one — and it is an image, a small webp. Writing a value the field does
+		# not offer would leave a row the Desk cannot open.
+		return node.get("caption") or "", ("image" if kind == "sticker" else kind)
 	if kind == "location":
 		node = message.get("location") or {}
 		return node.get("name") or "[location]", "location"
@@ -136,7 +279,9 @@ def adopt_orphans(number: str, doctype: str, reference: str) -> int:
 	return len(orphans)
 
 
-def store_message(message: dict, our_number: str, historical: bool = False) -> bool:
+def store_message(
+	message: dict, our_number: str, historical: bool = False, account: str = ""
+) -> bool:
 	"""Idempotent by WhatsApp message id. Returns True when a row was written."""
 	message_id = message.get("id")
 	if not message_id or frappe.db.exists("WhatsApp Message", {"message_id": message_id}):
@@ -158,6 +303,7 @@ def store_message(message: dict, our_number: str, historical: bool = False) -> b
 		"to": counterparty if outgoing else our_number,
 		"from": our_number if outgoing else sender,
 		"status": "delivered" if historical else "sent",
+		"whatsapp_account": account,
 	}
 	if message.get("context", {}).get("id"):
 		values["is_reply"] = 1
@@ -192,6 +338,21 @@ def store_message(message: dict, our_number: str, historical: bool = False) -> b
 	doc.db_insert()
 	# and because the controller did not run, neither did the hook that tells an
 	# open chat to reload: without this the message sits there until a refresh
+	# the file itself, which arrives as an id and has to be fetched. Queued
+	# rather than fetched here: this runs inside the webhook Meta is waiting on,
+	# and a history import would hold it open for two requests per photo.
+	media_id, kind = media_of(message)
+	if media_id and account:
+		frappe.enqueue(
+			"crm.integrations.whatsapp.coexistence.fetch_media",
+			queue="short",
+			message=doc.name,
+			media_id=media_id,
+			kind=kind,
+			account=account,
+			enqueue_after_commit=True,
+		)
+
 	if not historical and doc.get("reference_doctype"):
 		frappe.publish_realtime(
 			"whatsapp_message",
