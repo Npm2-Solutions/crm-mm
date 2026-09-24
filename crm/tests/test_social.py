@@ -225,3 +225,42 @@ class TestSocialPlannerRoles(IntegrationTestCase):
 		user_sees = error_seen_by(self.USER)
 		self.assertNotIn("Network error", user_sees)
 		self.assertNotIn("SECRET", user_sees)
+
+
+class TestSocialSources(IntegrationTestCase):
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_meta_is_a_source_with_its_profiles(self):
+		upsert_account("Facebook", "5550099", "Pagina Sorgente")
+		sources = {s["key"]: s for s in S.get_sources()}
+		self.assertIn("meta", sources)
+		self.assertEqual(sources["meta"]["platforms"], ["Facebook", "Instagram"])
+		self.assertEqual(sources["meta"]["settings_page"], "Meta connection")
+		self.assertGreaterEqual(sources["meta"]["profiles"], 1)
+		self.assertIn("connected", sources["meta"])
+
+	def test_profiles_are_listed_with_their_source(self):
+		upsert_account("Instagram", "17840000077", "@sorgente")
+		row = next(a for a in S.list_accounts_admin() if a.account_name == "@sorgente")
+		self.assertEqual(row["source"], "meta")
+
+	def test_no_page_is_an_answer_not_an_error(self):
+		"""It used to throw, which the page sync logged as a failure every time an
+		account had nothing to share."""
+		frappe.db.delete("Facebook Page")
+		result = sync_from_facebook_pages()
+		self.assertEqual(result["created"], 0)
+
+	def test_the_composer_is_not_handed_the_ids(self):
+		make_account()
+		for account in S.get_accounts():
+			self.assertNotIn("provider_account_id", account)
+
+	def test_managers_only(self):
+		frappe.set_user("crm.user1@example.com")
+		with self.assertRaises(frappe.PermissionError):
+			S.get_sources()
+		with self.assertRaises(frappe.PermissionError):
+			S.sync_profiles()

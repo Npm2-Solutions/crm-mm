@@ -1,11 +1,12 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-"""Social publishing — directly to Meta, from Frappe.
+"""Social publishing, and its scheduler.
 
-There is exactly one publishing path: the Meta Graph API, using the page
-tokens obtained by the Meta connection (Settings → Meta). No third-party
-service is involved.
+A post goes out through the source its profile belongs to (see `sources.py`).
+Today that is Meta alone, straight to the Graph API with the page tokens of
+the connection in Settings → Integrations → Meta — no third-party service in
+between:
 
 - Facebook Page: /feed (text), /photos (image), /videos (video)
 - Instagram Business: /media (container) → wait for processing → /media_publish
@@ -28,19 +29,28 @@ class PublishError(Exception):
 
 
 def publish_target(post, target) -> str:
-	"""Publish one post to one profile; returns the provider post id."""
+	"""Publish one post to one profile, through its source; returns the post's id there."""
+	from crm.social.sources import source_for
+
+	account = frappe.get_doc("CRM Social Account", target.account)
+	return source_for(account.platform).publish(post, target, account)
+
+
+def publish_to_meta(post, target, account) -> str:
+	"""Facebook Page or Instagram business account, with the Page's own token."""
 	from crm.integrations.meta.client import MetaAPIError, graph_post
 
 	content = target.override_content or post.content
 	media_url = get_url(post.media) if post.media else None
 
-	account = frappe.get_doc("CRM Social Account", target.account)
 	page_id = account.facebook_page or account.provider_account_id
 	token = page_id and frappe.get_doc("Facebook Page", page_id).get_password(
 		"access_token", raise_exception=False
 	)
 	if not token:
-		raise PublishError(_("No Facebook page token for this profile — reconnect Facebook in Settings"))
+		raise PublishError(
+			_("No Facebook page token for this profile — reconnect in Settings → Integrations → Meta")
+		)
 
 	is_video = bool(media_url) and media_url.lower().split("?")[0].endswith(VIDEO_EXTENSIONS)
 	try:
@@ -56,7 +66,9 @@ def publish_target(post, target) -> str:
 
 		ig_id = account.provider_account_id
 		if not ig_id:
-			raise PublishError(_("No Instagram account id — re-import profiles in Settings"))
+			raise PublishError(
+				_("No Instagram account id — refresh the profiles in Settings → Social Planner")
+			)
 		if not media_url:
 			raise PublishError(_("Instagram requires an image or a video"))
 		params = (

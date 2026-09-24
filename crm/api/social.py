@@ -160,48 +160,75 @@ def cancel_post(name: str) -> dict:
 
 
 @frappe.whitelist()
-def get_connection() -> dict:
-	"""Publishing runs on the Meta connection: report its state."""
+def get_sources() -> list[dict]:
+	"""Every source the planner publishes through, how it stands, and its profiles.
+
+	The profiles are not typed in here: each source brings its own. So the
+	settings page starts from the sources — connected or not, as whom — and a
+	source's connection lives with the integration it belongs to.
+	"""
 	_check_manager()
-	meta = frappe.get_doc("CRM Meta Settings")
-	return {
-		"has_app": bool(meta.app_id and meta.get_password("app_secret", raise_exception=False)),
-		"connected": bool(meta.get_password("user_access_token", raise_exception=False)),
-		"connected_user": meta.connected_user_name or "",
-		"pages": frappe.db.count("Facebook Page"),
-	}
+	from crm.social.sources import SOURCES
+
+	counts: dict[str, list[int]] = {}
+	for row in frappe.get_all("CRM Social Account", fields=["platform", "enabled"]):
+		total_enabled = counts.setdefault(row.platform, [0, 0])
+		total_enabled[0] += 1
+		total_enabled[1] += 1 if row.enabled else 0
+
+	sources = []
+	for source in SOURCES:
+		sources.append(
+			{
+				"key": source.key,
+				"label": source.label,
+				"description": source.description(),
+				"platforms": list(source.platforms),
+				"settings_page": source.settings_page,
+				"profiles": sum(counts.get(p, [0, 0])[0] for p in source.platforms),
+				"enabled_profiles": sum(counts.get(p, [0, 0])[1] for p in source.platforms),
+				**source.status(),
+			}
+		)
+	return sources
 
 
 @frappe.whitelist(methods=["POST"])
-def import_accounts() -> dict:
-	"""One-click profile connection: refresh the pages from Meta and turn them
-	(plus their linked Instagram accounts) into publishable profiles."""
+def sync_profiles() -> dict:
+	"""Bring the profiles in line with every connected source.
+
+	Idempotent: a profile is matched by platform and id, so pressing it twice
+	changes nothing, and a profile that was switched off stays off.
+	"""
 	_check_manager()
-	from crm.social.accounts import sync_from_facebook_pages
+	from crm.social.sources import SOURCES
 
-	token = frappe.get_doc("CRM Meta Settings").get_password("user_access_token", raise_exception=False)
-	if token:
-		from crm.integrations.meta.client import MetaAPIError
-		from crm.integrations.meta.oauth import sync_pages_and_forms
-
-		try:
-			sync_pages_and_forms(token)
-		except MetaAPIError as exc:
-			frappe.throw(_("Meta API error: {0}").format(str(exc)))
-
-	result = sync_from_facebook_pages()
-	result["accounts"] = list_accounts_admin()
-	return result
+	totals = {"created": 0, "updated": 0, "removed": 0, "refreshing": False}
+	for source in SOURCES:
+		if not source.status().get("connected"):
+			continue
+		result = source.sync()
+		for key in ("created", "updated", "removed"):
+			totals[key] += result.get(key) or 0
+		totals["refreshing"] = totals["refreshing"] or bool(result.get("refreshing"))
+	totals["accounts"] = list_accounts_admin()
+	return totals
 
 
 @frappe.whitelist()
 def list_accounts_admin() -> list[dict]:
 	_check_manager()
-	return frappe.get_all(
+	from crm.social.sources import SOURCES
+
+	source_of = {platform: source.key for source in SOURCES for platform in source.platforms}
+	accounts = frappe.get_all(
 		"CRM Social Account",
-		fields=["name", "account_name", "platform", "enabled", "provider_account_id"],
-		order_by="platform asc",
+		fields=["name", "account_name", "platform", "enabled"],
+		order_by="platform asc, account_name asc",
 	)
+	for account in accounts:
+		account["source"] = source_of.get(account.platform, "")
+	return accounts
 
 
 @frappe.whitelist(methods=["POST"])
@@ -211,9 +238,3 @@ def set_account_enabled(name: str, enabled: bool) -> dict:
 	doc.enabled = 1 if frappe.utils.sbool(enabled) else 0
 	doc.save()
 	return {"name": doc.name, "enabled": doc.enabled}
-
-
-@frappe.whitelist(methods=["POST"])
-def delete_account(name: str) -> None:
-	_check_manager()
-	frappe.delete_doc("CRM Social Account", name)
