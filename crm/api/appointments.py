@@ -115,6 +115,10 @@ def get_calendar(
 			"notes",
 			"conflict_note",
 			"series",
+			"source",
+			"external_platform",
+			"external_url",
+			"customer_notes",
 		],
 		order_by="starts_on asc",
 		limit_page_length=0,
@@ -394,6 +398,10 @@ def _normalize(payload: dict) -> dict:
 			"phone": row.get("phone"),
 			"status": row.get("status") or "Booked",
 			"amount": flt(row.get("amount")),
+			# what the client uses to manage an online booking must survive a staff edit
+			"access_token": row.get("access_token"),
+			"booked_online": cint(row.get("booked_online")),
+			"timezone": row.get("timezone"),
 		}
 		for row in data.get("participants") or []
 		if row.get("participant_name") or row.get("party")
@@ -414,10 +422,22 @@ def save_appointment(appointment: str | dict, name: str | None = None) -> dict:
 	if name:
 		doc = frappe.get_doc("CRM Appointment", name)
 		doc.check_permission("write")
+		kept = {
+			(row.party_type, row.party or row.participant_name): row
+			for row in doc.participants
+			if row.get("access_token")
+		}
 		# child tables must be replaced wholesale, not merged
 		for table in ("staff", "participants", "resources"):
 			doc.set(table, [])
 		doc.update(values)
+		# an editor that never saw the online token must not wipe it
+		for row in doc.participants:
+			old = kept.get((row.party_type, row.party or row.participant_name))
+			if old and not row.get("access_token"):
+				row.access_token = old.access_token
+				row.booked_online = old.booked_online
+				row.timezone = old.get("timezone")
 		doc.save()
 	else:
 		doc = frappe.get_doc({"doctype": "CRM Appointment", **values})

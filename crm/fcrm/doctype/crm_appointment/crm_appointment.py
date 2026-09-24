@@ -30,12 +30,17 @@ class CRMAppointment(Document):
 		from crm.fcrm.doctype.crm_appointment_staff.crm_appointment_staff import CRMAppointmentStaff
 
 		booking: DF.Link | None
+		booking_connection: DF.Link | None
 		cancellation_reason: DF.SmallText | None
 		color: DF.Color | None
 		conflict_note: DF.SmallText | None
 		currency: DF.Link | None
 		ends_on: DF.Datetime
+		customer_notes: DF.SmallText | None
 		event: DF.Link | None
+		external_id: DF.Data | None
+		external_platform: DF.Data | None
+		external_url: DF.Data | None
 		location: DF.Data | None
 		notes: DF.SmallText | None
 		override_conflicts: DF.Check
@@ -43,8 +48,10 @@ class CRMAppointment(Document):
 		per_participant: DF.Check
 		price_list: DF.Link | None
 		price_source: DF.Data | None
+		reschedule_count: DF.Int
 		resources: DF.Table[CRMAppointmentResource]
 		series: DF.Data | None
+		source: DF.Literal["Internal", "Online", "External"]
 		service: DF.Link
 		staff: DF.Table[CRMAppointmentStaff]
 		starts_on: DF.Datetime
@@ -66,6 +73,7 @@ class CRMAppointment(Document):
 
 	def on_update(self):
 		self.sync_event()
+		self.notify_online_client()
 
 	def on_trash(self):
 		self.remove_event()
@@ -147,6 +155,17 @@ class CRMAppointment(Document):
 			"<br>".join([_("This appointment cannot be booked:"), *conflicts]),
 			title=_("Scheduling conflict"),
 		)
+
+	def notify_online_client(self):
+		"""A client who booked online hears about approval or cancellation."""
+		if self.source != "Online":
+			return
+		try:
+			from crm.api.service_booking import on_appointment_status_change
+
+			on_appointment_status_change(self)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), f"Appointment {self.name}: client notification failed")
 
 	# --- calendar mirror --------------------------------------------------
 

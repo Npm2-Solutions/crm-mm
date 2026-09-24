@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="{{ boot.lang }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --ink-strong: oklch(0.168 0 0);
+        --ink: oklch(0.205 0 0);
+        --muted: oklch(0.52 0 0);
+        --faint: oklch(0.683 0 0);
+        --border: oklch(0.913 0 0);
+        --border-focus: oklch(0.8 0 0);
+        --bg: oklch(0.975 0 0);
+        --card: oklch(1 0 0);
+        --field: oklch(0.975 0 0);
+        --hover: oklch(0.96 0 0);
+        --accent: oklch(0.205 0 0);
+        --accent-ink: oklch(1 0 0);
+        --accent-soft: oklch(0.94 0 0);
+        --danger: oklch(0.507 0.165 25.286);
+        --danger-bg: oklch(0.978 0.011 17.34);
+        --success-bg: oklch(0.965 0.03 155.987);
+        --success-ink: oklch(0.45 0.118 155.358);
+        --warn-bg: oklch(0.975 0.04 85);
+        --warn-ink: oklch(0.47 0.1 70);
+        --ring: oklch(0.586 0 0 / 0.18);
+        --radius: 12px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ink-strong: oklch(0.98 0 0);
+          --ink: oklch(0.92 0 0);
+          --muted: oklch(0.72 0 0);
+          --faint: oklch(0.55 0 0);
+          --border: oklch(0.3 0 0);
+          --border-focus: oklch(0.45 0 0);
+          --bg: oklch(0.17 0 0);
+          --card: oklch(0.21 0 0);
+          --field: oklch(0.25 0 0);
+          --hover: oklch(0.26 0 0);
+          --accent: oklch(0.95 0 0);
+          --accent-ink: oklch(0.18 0 0);
+          --accent-soft: oklch(0.3 0 0);
+          --danger-bg: oklch(0.3 0.06 25);
+          --danger: oklch(0.8 0.1 25);
+          --success-bg: oklch(0.3 0.05 155);
+          --success-ink: oklch(0.85 0.1 155);
+          --warn-bg: oklch(0.32 0.05 85);
+          --warn-ink: oklch(0.88 0.08 85);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg); color: var(--ink); min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+      body.embed { background: transparent; }
+      .shell { max-width: 980px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+      header.top { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1.25rem; }
+      header.top h1 { font-size: 1.5rem; margin: 0; color: var(--ink-strong); letter-spacing: -.01em; }
+      header.top p { margin: 0; color: var(--muted); font-size: .95rem; max-width: 60ch; }
+
+      /* stepper */
+      ol.steps { list-style: none; display: flex; gap: .25rem; padding: 0; margin: 0 0 1.25rem; flex-wrap: wrap; }
+      ol.steps li { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: var(--faint); padding: .3rem .6rem .3rem .35rem; border-radius: 999px; }
+      ol.steps li .n { width: 1.35rem; height: 1.35rem; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border); font-size: .72rem; font-weight: 600; }
+      ol.steps li.done { color: var(--muted); cursor: pointer; }
+      ol.steps li.done:hover { background: var(--hover); }
+      ol.steps li.done .n { background: var(--accent-soft); border-color: transparent; }
+      ol.steps li.current { color: var(--ink-strong); font-weight: 600; }
+      ol.steps li.current .n { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+      .layout { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+      @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } .summary { position: static; } }
+      .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+      .panel h2 { font-size: 1.05rem; margin: 0 0 1rem; color: var(--ink-strong); }
+      .panel h3 { font-size: .85rem; margin: 1.25rem 0 .6rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+      /* summary */
+      .summary { position: sticky; top: 1rem; display: flex; flex-direction: column; gap: .75rem; }
+      .summary .row { display: flex; gap: .6rem; font-size: .88rem; color: var(--muted); align-items: flex-start; }
+      .summary .row b { color: var(--ink-strong); font-weight: 600; }
+      .summary .row .ico { width: 1.1rem; flex: none; text-align: center; }
+      .summary .price { font-size: 1.1rem; color: var(--ink-strong); font-weight: 700; }
+      .summary .empty { color: var(--faint); font-size: .85rem; }
+
+      /* search + categories */
+      .toolbar { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1rem; }
+      .chips { display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .15rem; scrollbar-width: thin; }
+      button.chip {
+        border: 1px solid var(--border); background: var(--card); color: var(--ink);
+        border-radius: 999px; padding: .4rem .85rem; font: inherit; font-size: .83rem; cursor: pointer; white-space: nowrap;
+      }
+      button.chip:hover { border-color: var(--border-focus); }
+      button.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+      /* service cards */
+      .services { display: grid; gap: .6rem; }
+      .service {
+        display: grid; grid-template-columns: auto 1fr auto; gap: .9rem; align-items: center; text-align: left;
+        border: 1px solid var(--border); background: var(--card); border-radius: 10px; padding: .9rem 1rem;
+        font: inherit; color: inherit; cursor: pointer; width: 100%; transition: border-color .12s, box-shadow .12s;
+      }
+      .service:hover, .service:focus-visible { border-color: var(--border-focus); box-shadow: 0 1px 0 var(--border); outline: none; }
+      .service .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--faint); }
+      .service img.thumb { width: 3.25rem; height: 3.25rem; object-fit: cover; border-radius: 8px; }
+      .service .name { font-weight: 600; color: var(--ink-strong); }
+      .service .desc { color: var(--muted); font-size: .84rem; margin-top: .15rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .service .tags { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .4rem; }
+      .tag { font-size: .72rem; color: var(--muted); background: var(--field); border-radius: 6px; padding: .12rem .45rem; }
+      .service .right { text-align: right; white-space: nowrap; }
+      .service .right .p { font-weight: 700; color: var(--ink-strong); }
+      .service .right .go { color: var(--faint); font-size: .8rem; margin-top: .2rem; }
+
+      /* staff */
+      .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: .6rem; }
+      .person {
+        display: flex; align-items: center; gap: .7rem; border: 1px solid var(--border); background: var(--card);
+        border-radius: 10px; padding: .75rem; cursor: pointer; font: inherit; color: inherit; text-align: left;
+      }
+      .person:hover { border-color: var(--border-focus); }
+      .avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-weight: 600; color: var(--ink-strong); overflow: hidden; flex: none; }
+      .avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .person .who { font-weight: 600; color: var(--ink-strong); font-size: .9rem; }
+      .person .sub { color: var(--muted); font-size: .78rem; }
+
+      /* month */
+      .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+      .cal-head b { text-transform: capitalize; color: var(--ink-strong); }
+      .icon-btn { border: 1px solid var(--border); background: var(--card); border-radius: 8px; width: 2rem; height: 2rem; cursor: pointer; color: var(--ink); font-size: 1rem; }
+      .icon-btn:disabled { opacity: .35; cursor: default; }
+      .month { display: grid; grid-template-columns: repeat(7, 1fr); gap: .3rem; }
+      .month .dow { text-align: center; font-size: .72rem; color: var(--faint); text-transform: uppercase; padding-bottom: .2rem; }
+      .day {
+        aspect-ratio: 1 / 1; border-radius: 10px; border: 1px solid transparent; background: transparent; font: inherit;
+        font-size: .88rem; color: var(--faint); cursor: default; position: relative; max-height: 3.2rem;
+      }
+      .day.avail { color: var(--ink-strong); background: var(--field); cursor: pointer; font-weight: 600; }
+      .day.avail:hover { border-color: var(--border-focus); }
+      .day.avail::after { content: ""; position: absolute; bottom: 18%; left: 50%; width: .28rem; height: .28rem; border-radius: 50%; background: var(--success-ink); transform: translateX(-50%); }
+      .day.sel { background: var(--accent); color: var(--accent-ink); }
+      .day.sel::after { background: var(--accent-ink); }
+      .day.today { text-decoration: underline; text-underline-offset: 3px; }
+      .times-wrap { margin-top: 1rem; }
+      .times { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: .45rem; }
+      button.time {
+        border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: .55rem .4rem; font: inherit;
+        font-size: .88rem; cursor: pointer; color: var(--ink-strong); display: flex; flex-direction: column; align-items: center; gap: .1rem;
+      }
+      button.time small { color: var(--muted); font-size: .68rem; }
+      button.time:hover { border-color: var(--border-focus); }
+      button.time[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+      button.time[aria-pressed="true"] small { color: var(--accent-ink); }
+      .hint { color: var(--muted); font-size: .82rem; }
+      .tz { color: var(--faint); font-size: .78rem; margin-top: .75rem; }
+      .next-free { margin-top: .75rem; }
+
+      /* form */
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .9rem; }
+      @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+      label { display: block; font-size: .8rem; color: var(--muted); margin: .8rem 0 .3rem; font-weight: 500; }
+      label .req { color: var(--danger); }
+      input, textarea, select {
+        width: 100%; border: 1px solid var(--border); background: var(--field); border-radius: 8px;
+        padding: .6rem .75rem; font: inherit; color: var(--ink);
+      }
+      input:focus, textarea:focus, select:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--ring); }
+      .check { display: flex; gap: .55rem; align-items: flex-start; margin-top: 1rem; font-size: .85rem; color: var(--muted); }
+      .check input { width: auto; margin-top: .2rem; }
+      .check a { color: var(--ink-strong); }
+      .actions { margin-top: 1.25rem; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+      button.primary, button.ghost, button.danger, a.btn {
+        border-radius: 8px; padding: .65rem 1.15rem; font: inherit; font-weight: 600; cursor: pointer; border: 1px solid transparent; text-decoration: none; font-size: .9rem;
+      }
+      button.primary { background: var(--accent); color: var(--accent-ink); }
+      button.primary:disabled { opacity: .5; cursor: default; }
+      button.ghost, a.btn { background: transparent; color: var(--ink); border-color: var(--border); }
+      button.ghost:hover, a.btn:hover { background: var(--hover); }
+      button.danger { background: var(--danger-bg); color: var(--danger); }
+      .msg { border-radius: 8px; padding: .75rem 1rem; font-size: .88rem; margin-top: 1rem; }
+      .msg.error { background: var(--danger-bg); color: var(--danger); }
+      .msg.success { background: var(--success-bg); color: var(--success-ink); }
+      .msg.warn { background: var(--warn-bg); color: var(--warn-ink); }
+      .done-hero { text-align: center; padding: 1rem 0 .5rem; }
+      .done-hero .badge { width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center; margin: 0 auto .75rem; background: var(--success-bg); color: var(--success-ink); font-size: 1.5rem; }
+      .done-hero.pending .badge { background: var(--warn-bg); color: var(--warn-ink); }
+      .done-hero.cancelled .badge { background: var(--danger-bg); color: var(--danger); }
+      .done-hero h2 { margin: 0 0 .35rem; }
+      .kv { display: grid; grid-template-columns: max-content 1fr; gap: .45rem 1rem; font-size: .9rem; margin: 1rem 0; }
+      .kv dt { color: var(--muted); }
+      .kv dd { margin: 0; color: var(--ink-strong); font-weight: 500; }
+      .skeleton { background: linear-gradient(90deg, var(--field), var(--hover), var(--field)); background-size: 200% 100%; animation: sh 1.2s infinite; border-radius: 10px; height: 4.25rem; }
+      @keyframes sh { to { background-position: -200% 0; } }
+      .hidden { display: none !important; }
+      .stepper-seats { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+      .stepper-seats button { border: 0; background: var(--card); width: 2.1rem; height: 2.1rem; font-size: 1rem; cursor: pointer; color: var(--ink); }
+      .stepper-seats span { min-width: 2.2rem; text-align: center; font-weight: 600; }
+      footer.foot { text-align: center; color: var(--faint); font-size: .75rem; margin-top: 2rem; }
+      .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="top">
+        <h1 id="page-title">{{ title }}</h1>
+        <p id="page-intro"></p>
+      </header>
+
+      <ol class="steps" id="steps" aria-label="progress"></ol>
+
+      <div class="layout">
+        <main class="panel" id="main" aria-live="polite">
+          <div class="services"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+        </main>
+        <aside class="panel summary" id="summary"></aside>
+      </div>
+      <footer class="foot" id="foot"></footer>
+    </div>
+
+    <script>
+      const BOOT = {{ boot | tojson }};
+      const CSRF = "{{ csrf_token }}";
+      const API = "/api/method/crm.api.service_booking.";
+      const CLIENT_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // --- i18n -----------------------------------------------------------
+      const DICT = {
+        it: {
+          stepService: "Servizio", stepStaff: "Professionista", stepTime: "Data e ora", stepDetails: "I tuoi dati", stepDone: "Conferma",
+          search: "Cerca un servizio…", all: "Tutti", noServices: "Nessun servizio prenotabile online al momento.",
+          noMatch: "Nessun servizio corrisponde alla ricerca.", minutes: "min", group: "Di gruppo", from: "da",
+          choose: "Scegli", pickStaff: "Con chi vuoi prenotare?", anyone: "Chiunque disponibile", anyoneSub: "Primo orario libero",
+          pickDate: "Scegli giorno e orario", noSlotsMonth: "Nessun orario libero in questo mese.", nextFree: "Vai al primo giorno libero",
+          pickDay: "Seleziona un giorno evidenziato.", noSlotsDay: "Nessun orario libero in questo giorno.",
+          morning: "Mattina", afternoon: "Pomeriggio", evening: "Sera", seatsLeft: "posti", people: "Persone",
+          tzNote: "Orari nel fuso", continue: "Continua", back: "Indietro",
+          name: "Nome e cognome", email: "Email", phone: "Telefono", notes: "Note per lo studio", optional: "facoltativo",
+          consent: "Ho letto e accetto l'", privacy: "informativa sulla privacy", consentPlain: "Acconsento al trattamento dei miei dati per gestire la prenotazione.",
+          confirm: "Conferma prenotazione", confirmMove: "Sposta qui", booking: "Prenotazione in corso…",
+          summary: "Riepilogo", summaryEmpty: "Scegli un servizio per iniziare.", with: "Con", when: "Quando", duration: "Durata",
+          price: "Prezzo", where: "Dove", manual: "La prenotazione sarà confermata dallo studio.",
+          doneTitle: "Prenotazione confermata", pendingTitle: "Richiesta inviata", pendingSub: "Riceverai un'email appena lo studio conferma.",
+          doneSub: "Ti abbiamo inviato un'email con tutti i dettagli.", cancelledTitle: "Prenotazione annullata",
+          addGoogle: "Aggiungi a Google Calendar", addOutlook: "Aggiungi a Outlook", manageSave: "Salva questo link per gestire la prenotazione:",
+          another: "Prenota un altro servizio", manageTitle: "La tua prenotazione", cancelBtn: "Annulla prenotazione",
+          moveBtn: "Cambia data o orario", cancelReason: "Motivo (facoltativo)", cancelConfirm: "Confermi l'annullamento?",
+          yesCancel: "Sì, annulla", keep: "No, mantieni", status: "Stato", stConfirmed: "Confermata", stScheduled: "In attesa di conferma",
+          stCancelled: "Annullata", stCompleted: "Completata", "stNo Show": "Assente", instructions: "Indicazioni", genericError: "Qualcosa è andato storto. Riprova.",
+          required: "Compila i campi obbligatori.", invalidEmail: "Inserisci un'email valida.", poweredBy: "Prenotazione online",
+        },
+        en: {
+          stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
+          search: "Search a service…", all: "All", noServices: "No service can be booked online right now.",
+          noMatch: "No service matches your search.", minutes: "min", group: "Group", from: "from",
+          choose: "Choose", pickStaff: "Who would you like to book with?", anyone: "Anyone available", anyoneSub: "Earliest free time",
+          pickDate: "Pick a day and time", noSlotsMonth: "No free times this month.", nextFree: "Jump to the first free day",
+          pickDay: "Select a highlighted day.", noSlotsDay: "No free times on this day.",
+          morning: "Morning", afternoon: "Afternoon", evening: "Evening", seatsLeft: "seats", people: "People",
+          tzNote: "Times shown in", continue: "Continue", back: "Back",
+          name: "Full name", email: "Email", phone: "Phone", notes: "Notes for us", optional: "optional",
+          consent: "I have read and accept the ", privacy: "privacy policy", consentPlain: "I agree to the processing of my data to manage this booking.",
+          confirm: "Confirm booking", confirmMove: "Move here", booking: "Booking…",
+          summary: "Summary", summaryEmpty: "Pick a service to start.", with: "With", when: "When", duration: "Duration",
+          price: "Price", where: "Where", manual: "The booking will be confirmed by our team.",
+          doneTitle: "Booking confirmed", pendingTitle: "Request sent", pendingSub: "You'll get an email as soon as we confirm it.",
+          doneSub: "We've emailed you all the details.", cancelledTitle: "Booking cancelled",
+          addGoogle: "Add to Google Calendar", addOutlook: "Add to Outlook", manageSave: "Keep this link to manage your booking:",
+          another: "Book another service", manageTitle: "Your booking", cancelBtn: "Cancel booking",
+          moveBtn: "Change date or time", cancelReason: "Reason (optional)", cancelConfirm: "Cancel this booking?",
+          yesCancel: "Yes, cancel", keep: "No, keep it", status: "Status", stConfirmed: "Confirmed", stScheduled: "Awaiting confirmation",
+          stCancelled: "Cancelled", stCompleted: "Completed", "stNo Show": "No show", instructions: "Instructions", genericError: "Something went wrong. Please try again.",
+          required: "Please fill in the required fields.", invalidEmail: "Please enter a valid email.", poweredBy: "Online booking",
+        },
+      };
+      const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
+      const T = (k) => DICT[LANG][k] ?? DICT.it[k] ?? k;
+      const LOCALE = LANG === "it" ? "it-IT" : undefined;
+
+      // --- tiny DOM helper ---------------------------------------------------
+      function h(tag, attrs = {}, ...children) {
+        const node = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs || {})) {
+          if (v === false || v == null) continue;
+          if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
+          else if (k === "class") node.className = v;
+          else if (k === "html") node.innerHTML = v;
+          else node.setAttribute(k, v === true ? "" : v);
+        }
+        for (const c of children.flat()) if (c != null && c !== false) node.append(c.nodeType ? c : document.createTextNode(c));
+        return node;
+      }
+      const $ = (id) => document.getElementById(id);
+      if (BOOT.embed) document.body.classList.add("embed");
+
+      // --- API ------------------------------------------------------------------
+      async function api(method, params = {}, post = false) {
+        const url = new URL(API + method, location.origin);
+        const opts = { headers: { Accept: "application/json" } };
+        if (post) {
+          opts.method = "POST";
+          opts.headers["Content-Type"] = "application/json";
+          if (CSRF && CSRF !== "None") opts.headers["X-Frappe-CSRF-Token"] = CSRF;
+          opts.body = JSON.stringify(params);
+        } else {
+          for (const [k, v] of Object.entries(params)) if (v !== "" && v != null) url.searchParams.set(k, v);
+        }
+        const res = await fetch(url, opts);
+        let data = {};
+        try { data = await res.json(); } catch (e) {}
+        if (!res.ok) throw new Error(serverError(data));
+        return data.message;
+      }
+      function serverError(data) {
+        try {
+          if (data._server_messages) {
+            const msgs = JSON.parse(data._server_messages).map((m) => JSON.parse(m).message);
+            return msgs.join(" ").replace(/<[^>]+>/g, " ");
+          }
+        } catch (e) {}
+        return data.exception ? String(data.exception).split(":").slice(1).join(":").trim() || T("genericError") : T("genericError");
+      }
+
+      // --- formatting -----------------------------------------------------------
+      const fmtTime = new Intl.DateTimeFormat(LOCALE, { hour: "2-digit", minute: "2-digit", timeZone: CLIENT_TZ });
+      const fmtLong = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long", timeZone: CLIENT_TZ });
+      const fmtFull = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: CLIENT_TZ });
+      const fmtMonth = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" });
+      const iso = (d) => d.toISOString().slice(0, 10);
+      const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
+      const todayLocal = () => new Intl.DateTimeFormat("en-CA", { timeZone: CLIENT_TZ }).format(new Date());
+      const initials = (n) => (n || "?").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+      const duration = (m) => (m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? " " + (m % 60) + " " + T("minutes") : ""}` : `${m} ${T("minutes")}`);
+
+      // --- state ---------------------------------------------------------------
+      const S = {
+        catalog: null, step: "service", query: "", category: "",
+        service: null, staff: "", staffName: "", seats: 1,
+        month: null, days: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
+        form: { full_name: "", email: "", phone: "", notes: "", consent: false },
+        result: null, manage: null, moving: false, error: "", busy: false,
+      };
+      const STEPS = () => {
+        const list = [["service", T("stepService")]];
+        if (S.service?.can_pick_staff) list.push(["staff", T("stepStaff")]);
+        list.push(["time", T("stepTime")], ["details", T("stepDetails")], ["done", T("stepDone")]);
+        return list;
+      };
+
+      function go(step) {
+        S.step = step; S.error = "";
+        render();
+        if (!BOOT.embed) window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // --- rendering -------------------------------------------------------------
+      function render() {
+        renderSteps();
+        renderSummary();
+        const main = $("main");
+        main.replaceChildren();
+        const view = { service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage }[S.step];
+        try { main.append(view()); } catch (e) { console.error(e); main.append(h("div", { class: "msg error", role: "alert" }, T("genericError"))); }
+        if (S.error) main.append(h("div", { class: "msg error", role: "alert" }, S.error));
+      }
+
+      function renderSteps() {
+        const ol = $("steps");
+        ol.replaceChildren();
+        if (S.step === "manage" || (S.step === "time" && S.moving)) { ol.classList.add("hidden"); return; }
+        ol.classList.remove("hidden");
+        const list = STEPS();
+        const at = list.findIndex(([k]) => k === S.step);
+        list.forEach(([key, label], i) => {
+          const done = i < at && S.step !== "done";
+          ol.append(h("li", { class: done ? "done" : i === at ? "current" : "", onclick: done ? () => go(key) : null, "aria-current": i === at ? "step" : null },
+            h("span", { class: "n" }, done ? "✓" : String(i + 1)), label));
+        });
+      }
+
+      function renderSummary() {
+        const box = $("summary");
+        box.replaceChildren(h("h2", {}, T("summary")));
+        const svc = S.manage ? { name: S.manage.service } : S.service;
+        if (!svc) { box.append(h("div", { class: "empty" }, T("summaryEmpty"))); return; }
+        const row = (ico, label, value) => h("div", { class: "row" }, h("span", { class: "ico", "aria-hidden": "true" }, ico), h("div", {}, h("div", {}, label), h("b", {}, value)));
+        box.append(row("◆", T("stepService"), svc.name));
+        if (S.manage) {
+          if (S.manage.staff.length) box.append(row("☺", T("with"), S.manage.staff.join(", ")));
+          box.append(row("◷", T("when"), fmtFull.format(new Date(S.manage.start))));
+          if (S.manage.location) box.append(row("⌖", T("where"), S.manage.location));
+          if (S.manage.formatted_price) box.append(h("div", { class: "price" }, S.manage.formatted_price));
+          return;
+        }
+        box.append(row("⏱", T("duration"), duration(S.service.duration)));
+        if (S.staffName || S.service.can_pick_staff) box.append(row("☺", T("with"), S.staffName || T("anyone")));
+        if (S.slot) box.append(row("◷", T("when"), fmtFull.format(new Date(S.slot.start))));
+        if (S.seats > 1) box.append(row("⚇", T("people"), String(S.seats)));
+        if (S.service.formatted_price) box.append(h("div", { class: "price" }, (S.service.per_participant && S.seats > 1 ? `${S.seats} × ` : "") + S.service.formatted_price));
+        if (S.service.manual_approval) box.append(h("div", { class: "msg warn" }, T("manual")));
+      }
+
+      function viewServices() {
+        const wrap = h("section", {});
+        const c = S.catalog;
+        if (!c.services.length) return h("div", { class: "hint" }, T("noServices"));
+        const bar = h("div", { class: "toolbar" });
+        const search = h("input", { type: "search", placeholder: T("search"), value: S.query, "aria-label": T("search") });
+        search.addEventListener("input", (e) => { S.query = e.target.value; drawList(); });
+        bar.append(search);
+        if (c.categories.length > 1) {
+          const chips = h("div", { class: "chips", role: "toolbar" });
+          [["", T("all")], ...c.categories.map((x) => [x, x])].forEach(([val, label]) => {
+            chips.append(h("button", { class: "chip", "aria-pressed": String(S.category === val), onclick: () => { S.category = val; render(); } }, label));
+          });
+          bar.append(chips);
+        }
+        const list = h("div", { class: "services" });
+        wrap.append(bar, list);
+        function drawList() {
+          list.replaceChildren();
+          const q = S.query.trim().toLowerCase();
+          const items = c.services.filter((s) => (!S.category || s.category === S.category) && (!q || (s.name + " " + s.description + " " + s.category).toLowerCase().includes(q)));
+          if (!items.length) list.append(h("div", { class: "hint" }, T("noMatch")));
+          let lastCat = null;
+          for (const s of items) {
+            if (!S.category && c.categories.length > 1 && s.category !== lastCat) {
+              lastCat = s.category;
+              if (s.category) list.append(h("h3", {}, s.category));
+            }
+            const tags = [h("span", { class: "tag" }, duration(s.duration))];
+            if (s.group) tags.push(h("span", { class: "tag" }, T("group")));
+            list.append(h("button", { class: "service", onclick: () => pickService(s) },
+              s.image ? h("img", { class: "thumb", src: s.image, alt: "" }) : h("span", { class: "dot", style: s.color ? `background:${s.color}` : null }),
+              h("div", {}, h("div", { class: "name" }, s.name), s.description ? h("div", { class: "desc" }, s.description) : null, h("div", { class: "tags" }, tags)),
+              h("div", { class: "right" }, s.formatted_price ? h("div", { class: "p" }, s.formatted_price) : null, h("div", { class: "go" }, T("choose") + " →"))));
+          }
+        }
+        drawList();
+        setTimeout(() => { if (!matchMedia("(pointer: coarse)").matches) search.focus(); }, 0);
+        return wrap;
+      }
+
+      function pickService(s) {
+        const changed = S.service?.id !== s.id;
+        S.service = s;
+        if (changed) { S.staff = ""; S.staffName = ""; S.slot = null; S.date = null; S.month = null; S.days = {}; S.seats = 1; }
+        go(s.can_pick_staff ? "staff" : "time");
+        if (!s.can_pick_staff) loadMonth();
+      }
+
+      function viewStaff() {
+        const wrap = h("section", {}, h("h2", {}, T("pickStaff")));
+        const grid = h("div", { class: "staff-grid" });
+        grid.append(h("button", { class: "person", onclick: () => pickStaff("", "") },
+          h("span", { class: "avatar" }, "★"), h("span", {}, h("div", { class: "who" }, T("anyone")), h("div", { class: "sub" }, T("anyoneSub")))));
+        for (const p of S.service.staff) {
+          grid.append(h("button", { class: "person", onclick: () => pickStaff(p.id, p.name) },
+            h("span", { class: "avatar" }, p.image ? h("img", { src: p.image, alt: "" }) : initials(p.name)),
+            h("span", {}, h("div", { class: "who" }, p.name))));
+        }
+        wrap.append(grid, h("div", { class: "actions" }, h("button", { class: "ghost", onclick: () => go("service") }, "← " + T("back"))));
+        return wrap;
+      }
+
+      function pickStaff(id, name) {
+        if (S.staff !== id) { S.slot = null; S.date = null; S.days = {}; }
+        S.staff = id; S.staffName = name;
+        go("time");
+        loadMonth();
+      }
+
+      async function loadMonth(month) {
+        const today = todayLocal();
+        S.month = month || S.month || today.slice(0, 7) + "-01";
+        const first = S.month < today ? today : S.month;
+        const d = new Date(S.month + "T00:00:00Z");
+        const last = iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)));
+        S.loadingSlots = true; render();
+        try {
+          const r = await api("get_slots_public", { service: S.service.id, start_date: first, end_date: last, staff: S.staff, participants: S.seats, timezone: CLIENT_TZ });
+          S.days = r.days; S.minDate = r.min_date; S.maxDate = r.max_date;
+          const available = Object.keys(S.days).sort();
+          if (!S.date || !S.days[S.date]) S.date = available[0] || null;
+          if (S.slot && !(S.days[S.date] || []).some((x) => x.start === S.slot.start)) S.slot = null;
+        } catch (e) { S.error = e.message; S.days = {}; }
+        S.loadingSlots = false; render();
+      }
+
+      function viewTime() {
+        const wrap = h("section", {}, h("h2", {}, S.moving ? T("moveBtn") : T("pickDate")));
+        if (S.service.group && S.service.max_seats > 1 && !S.moving) {
+          const seats = h("div", { class: "stepper-seats" },
+            h("button", { "aria-label": "-", onclick: () => { if (S.seats > 1) { S.seats--; loadMonth(); } } }, "−"),
+            h("span", {}, String(S.seats)),
+            h("button", { "aria-label": "+", onclick: () => { if (S.seats < S.service.max_seats) { S.seats++; loadMonth(); } } }, "+"));
+          wrap.append(h("div", { style: "display:flex;align-items:center;gap:.6rem;margin-bottom:1rem" }, h("span", { class: "hint" }, T("people")), seats));
+        }
+        S.month = S.month || todayLocal().slice(0, 7) + "-01";
+        const m = new Date(S.month + "T00:00:00Z");
+        const prevMonth = iso(new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() - 1, 1)));
+        const nextMonth = iso(new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)));
+        const today = todayLocal();
+        wrap.append(h("div", { class: "cal-head" },
+          h("button", { class: "icon-btn", "aria-label": "prev", disabled: S.month <= today.slice(0, 7) + "-01" || S.loadingSlots, onclick: () => loadMonth(prevMonth) }, "‹"),
+          h("b", {}, fmtMonth.format(m)),
+          h("button", { class: "icon-btn", "aria-label": "next", disabled: (S.maxDate && nextMonth > S.maxDate) || S.loadingSlots, onclick: () => loadMonth(nextMonth) }, "›")));
+        const grid = h("div", { class: "month", role: "grid" });
+        const dows = [];
+        for (let i = 0; i < 7; i++) dows.push(new Intl.DateTimeFormat(LOCALE, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i))));
+        dows.forEach((x) => grid.append(h("div", { class: "dow" }, x)));
+        const offset = (m.getUTCDay() + 6) % 7;
+        for (let i = 0; i < offset; i++) grid.append(h("span"));
+        const dim = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 0)).getUTCDate();
+        for (let dnum = 1; dnum <= dim; dnum++) {
+          const key = addDays(S.month, dnum - 1);
+          const avail = !S.loadingSlots && (S.days[key] || []).length > 0;
+          const cls = ["day", avail ? "avail" : "", key === S.date ? "sel" : "", key === today ? "today" : ""].join(" ");
+          grid.append(h("button", { class: cls, disabled: !avail, "aria-label": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
+        }
+        wrap.append(grid);
+
+        const times = h("div", { class: "times-wrap" });
+        if (S.loadingSlots) times.append(h("div", { class: "skeleton" }));
+        else if (!Object.keys(S.days).length) {
+          times.append(h("div", { class: "hint" }, T("noSlotsMonth")));
+          if (!S.maxDate || nextMonth <= S.maxDate) times.append(h("button", { class: "ghost next-free", onclick: () => loadMonth(nextMonth) }, T("nextFree") + " →"));
+        } else if (!S.date) times.append(h("div", { class: "hint" }, T("pickDay")));
+        else {
+          times.append(h("h3", {}, fmtLong.format(new Date(S.days[S.date][0].start))));
+          const buckets = { morning: [], afternoon: [], evening: [] };
+          for (const slot of S.days[S.date]) {
+            const hour = Number(slot.time.slice(0, 2));
+            buckets[hour < 13 ? "morning" : hour < 18 ? "afternoon" : "evening"].push(slot);
+          }
+          for (const [bucket, list] of Object.entries(buckets)) {
+            if (!list.length) continue;
+            times.append(h("div", { class: "hint", style: "margin:.6rem 0 .35rem" }, T(bucket)));
+            const g = h("div", { class: "times" });
+            for (const slot of list) {
+              const sub = S.service.group ? `${slot.seats_left} ${T("seatsLeft")}` : slot.staff.length && !S.staff && S.service.can_pick_staff ? slot.staff.join(", ") : null;
+              g.append(h("button", { class: "time", "aria-pressed": String(S.slot?.start === slot.start), onclick: () => { S.slot = slot; S.moving ? confirmMove() : go("details"); } },
+                slot.time, sub ? h("small", {}, sub) : null));
+            }
+            times.append(g);
+          }
+        }
+        times.append(h("div", { class: "tz" }, `${T("tzNote")} ${CLIENT_TZ}`));
+        wrap.append(times);
+        const backTo = S.moving ? () => { S.moving = false; go("manage"); } : () => go(S.service.can_pick_staff ? "staff" : "service");
+        wrap.append(h("div", { class: "actions" }, h("button", { class: "ghost", onclick: backTo }, "← " + T("back"))));
+        return wrap;
+      }
+
+      function field(key, label, attrs = {}, required = false) {
+        const input = h(attrs.tag || "input", { id: "f-" + key, name: key, ...attrs, tag: null, required: required || null });
+        input.value = S.form[key] || "";
+        input.addEventListener("input", (e) => (S.form[key] = e.target.value));
+        return h("div", {}, h("label", { for: "f-" + key }, label, required ? h("span", { class: "req" }, " *") : ` (${T("optional")})`), input);
+      }
+
+      function viewDetails() {
+        const svc = S.service;
+        const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submit(); } });
+        form.append(h("h2", {}, T("stepDetails")));
+        form.append(field("full_name", T("name"), { autocomplete: "name" }, true));
+        form.append(h("div", { class: "grid2" },
+          field("email", T("email"), { type: "email", autocomplete: "email", inputmode: "email" }, true),
+          field("phone", T("phone"), { type: "tel", autocomplete: "tel", inputmode: "tel" }, !!svc.require_phone)));
+        form.append(field("notes", svc.question || T("notes"), { tag: "textarea", rows: 3 }, !!svc.require_notes));
+        if (S.catalog.require_consent) {
+          const cb = h("input", { type: "checkbox", id: "f-consent" });
+          cb.checked = S.form.consent;
+          cb.addEventListener("change", (e) => (S.form.consent = e.target.checked));
+          const text = S.catalog.privacy_policy_url
+            ? h("span", {}, T("consent"), h("a", { href: S.catalog.privacy_policy_url, target: "_blank", rel: "noopener" }, T("privacy")), h("span", { class: "req" }, " *"))
+            : h("span", {}, T("consentPlain"), h("span", { class: "req" }, " *"));
+          form.append(h("label", { class: "check", for: "f-consent" }, cb, text));
+        }
+        form.append(h("div", { class: "actions" },
+          h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
+          h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
+        setTimeout(() => $("f-full_name")?.focus(), 0);
+        return form;
+      }
+
+      async function submit() {
+        const f = S.form, svc = S.service;
+        if (!f.full_name.trim() || !f.email.trim() || (svc.require_phone && !f.phone.trim()) || (svc.require_notes && !f.notes.trim()) || (S.catalog.require_consent && !f.consent)) {
+          S.error = T("required"); render(); return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { S.error = T("invalidEmail"); render(); return; }
+        S.busy = true; S.error = ""; render();
+        try {
+          const params = new URLSearchParams(location.search);
+          S.result = await api("book", {
+            service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
+            staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
+            crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
+          }, true);
+          S.busy = false;
+          history.replaceState(null, "", "?token=" + encodeURIComponent(S.result.token));
+          go("done");
+        } catch (e) {
+          S.busy = false; S.error = e.message;
+          // the slot may have gone: refresh the times so the client sees what is left
+          if (/available|disponibil/i.test(e.message)) { S.slot = null; go("time"); S.error = e.message; loadMonth(); } else render();
+        }
+      }
+      function readCookie(name) { const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : ""; }
+
+      function outcome(b) {
+        const kind = b.status === "Cancelled" ? "cancelled" : b.pending_approval ? "pending" : "";
+        const title = kind === "cancelled" ? T("cancelledTitle") : kind === "pending" ? T("pendingTitle") : T("doneTitle");
+        const sub = kind === "cancelled" ? "" : kind === "pending" ? T("pendingSub") : T("doneSub");
+        return h("div", { class: "done-hero " + kind }, h("div", { class: "badge", "aria-hidden": "true" }, kind === "cancelled" ? "✕" : kind === "pending" ? "…" : "✓"), h("h2", {}, title), sub ? h("div", { class: "hint" }, sub) : null);
+      }
+
+      function details(b) {
+        const dl = h("dl", { class: "kv" });
+        const add = (k, v) => { if (v) dl.append(h("dt", {}, k), h("dd", {}, v)); };
+        add(T("stepService"), b.service);
+        add(T("when"), fmtFull.format(new Date(b.start)));
+        add(T("duration"), duration(b.duration));
+        add(T("with"), b.staff.join(", "));
+        add(T("where"), b.location);
+        if (b.seats > 1) add(T("people"), String(b.seats));
+        add(T("price"), b.formatted_price);
+        add(T("status"), T("st" + b.status));
+        return dl;
+      }
+
+      function viewDone() {
+        const b = S.result;
+        const wrap = h("section", {}, outcome(b), details(b));
+        if (b.instructions) wrap.append(h("div", { class: "msg warn" }, b.instructions));
+        if (b.status !== "Cancelled") {
+          wrap.append(h("div", { class: "actions" },
+            h("a", { class: "btn", href: b.calendar_links.google, target: "_blank", rel: "noopener" }, T("addGoogle")),
+            h("a", { class: "btn", href: b.calendar_links.outlook, target: "_blank", rel: "noopener" }, T("addOutlook"))));
+          const link = location.origin + location.pathname + "?token=" + b.token;
+          wrap.append(h("p", { class: "hint", style: "margin-top:1.25rem" }, T("manageSave"), " ", h("a", { href: link }, T("manageTitle"))));
+        }
+        wrap.append(h("div", { class: "actions" }, h("button", { class: "ghost", onclick: restart }, T("another"))));
+        return wrap;
+      }
+
+      function restart() {
+        history.replaceState(null, "", location.pathname);
+        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, result: null, manage: null, moving: false, seats: 1 });
+        S.form.notes = ""; S.form.consent = false;
+        go("service");
+      }
+
+      function viewManage() {
+        const b = S.manage;
+        const wrap = h("section", {}, h("h2", {}, T("manageTitle")), outcome(b), details(b));
+        if (b.instructions && b.status !== "Cancelled") wrap.append(h("div", { class: "msg warn" }, b.instructions));
+        if (b.status !== "Cancelled") {
+          const actions = h("div", { class: "actions" });
+          if (b.can_reschedule) actions.append(h("button", { class: "primary", onclick: startMove }, T("moveBtn")));
+          if (b.can_cancel) actions.append(h("button", { class: "danger", onclick: askCancel }, T("cancelBtn")));
+          wrap.append(actions);
+          const notes = [b.reschedule_block, b.cancel_block].filter(Boolean);
+          [...new Set(notes)].forEach((n) => wrap.append(h("div", { class: "msg warn" }, n)));
+          wrap.append(h("div", { class: "actions" },
+            h("a", { class: "btn", href: b.calendar_links.google, target: "_blank", rel: "noopener" }, T("addGoogle")),
+            h("a", { class: "btn", href: b.calendar_links.outlook, target: "_blank", rel: "noopener" }, T("addOutlook"))));
+        }
+        wrap.append(h("div", { class: "actions" }, h("button", { class: "ghost", onclick: restart }, T("another"))));
+        return wrap;
+      }
+
+      function askCancel() {
+        const main = $("main");
+        const reason = h("textarea", { rows: 2, id: "f-reason" });
+        const box = h("div", { class: "msg warn", role: "alertdialog" },
+          h("b", {}, T("cancelConfirm")), h("label", { for: "f-reason" }, T("cancelReason")), reason,
+          h("div", { class: "actions" },
+            h("button", { class: "danger", onclick: async (e) => {
+              e.target.disabled = true;
+              try { S.manage = await api("cancel", { token: S.manage.token, reason: reason.value }, true); S.error = ""; }
+              catch (err) { S.error = err.message; }
+              go("manage");
+            } }, T("yesCancel")),
+            h("button", { class: "ghost", onclick: () => box.remove() }, T("keep"))));
+        main.append(box);
+        reason.focus();
+      }
+
+      async function startMove() {
+        const svc = S.catalog.services.find((s) => s.id === S.manage.service_id);
+        if (!svc) { S.error = T("genericError"); render(); return; }
+        S.service = svc; S.moving = true; S.staff = ""; S.slot = null; S.date = null; S.month = null; S.seats = S.manage.seats || 1;
+        go("time");
+        loadMonth();
+      }
+
+      async function confirmMove() {
+        S.busy = true; render();
+        try {
+          S.manage = await api("reschedule", { token: S.manage.token, start: S.slot.start }, true);
+          S.moving = false; S.busy = false; S.result = S.manage;
+          go("manage");
+        } catch (e) { S.busy = false; S.error = e.message; S.slot = null; render(); loadMonth(); }
+      }
+
+      // --- boot --------------------------------------------------------------------
+      (async function boot() {
+        try {
+          S.catalog = await api("get_catalog");
+          if (S.catalog.title) { $("page-title").textContent = S.catalog.title; document.title = S.catalog.title; }
+          $("page-intro").textContent = S.catalog.intro || "";
+          $("foot").textContent = T("poweredBy");
+          if (BOOT.token) {
+            S.manage = await api("get_booking", { token: BOOT.token });
+            S.step = "manage";
+            render();
+            return;
+          }
+          const pre = BOOT.service && S.catalog.services.find((s) => s.id === BOOT.service);
+          if (pre) {
+            S.service = pre;
+            const person = BOOT.staff && pre.staff.find((p) => p.id === BOOT.staff);
+            if (person) { S.staff = person.id; S.staffName = person.name; }
+            go(pre.can_pick_staff && !person ? "staff" : "time");
+            if (!(pre.can_pick_staff && !person)) loadMonth();
+            return;
+          }
+          render();
+        } catch (e) {
+          $("main").replaceChildren(h("div", { class: "msg error", role: "alert" }, e.message || T("genericError")));
+        }
+      })();
+    </script>
+  </body>
+</html>

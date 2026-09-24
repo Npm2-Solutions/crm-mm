@@ -36,7 +36,16 @@
   "event",
   "conflict_section",
   "override_conflicts",
-  "conflict_note"
+  "conflict_note",
+  "source_section",
+  "source",
+  "booking_connection",
+  "external_platform",
+  "external_id",
+  "column_break_source",
+  "external_url",
+  "customer_notes",
+  "reschedule_count"
  ],
  "fields": [
   {
@@ -232,10 +241,68 @@
    "fieldtype": "Small Text",
    "label": "Recorded Conflicts",
    "read_only": 1
+  },
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Internal\nOnline\nExternal",
+   "default": "Internal",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "booking_connection",
+   "fieldtype": "Link",
+   "label": "Booking Platform",
+   "options": "CRM Booking Connection",
+   "read_only": 1
+  },
+  {
+   "fieldname": "external_platform",
+   "fieldtype": "Data",
+   "label": "Platform",
+   "read_only": 1
+  },
+  {
+   "fieldname": "external_id",
+   "fieldtype": "Data",
+   "label": "External ID",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "external_url",
+   "fieldtype": "Data",
+   "label": "External Link",
+   "options": "URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_notes",
+   "fieldtype": "Small Text",
+   "label": "Client Notes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reschedule_count",
+   "fieldtype": "Int",
+   "label": "Reschedules",
+   "read_only": 1,
+   "default": "0"
   }
  ],
  "links": [],
- "modified": "2026-09-03 10:00:00.000000",
+ "modified": "2026-09-24 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",
