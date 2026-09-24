@@ -134,7 +134,13 @@ def _staff_from_public_id(service, public_id: str | None) -> str | None:
 
 
 def _staff_card(user: str) -> dict:
-	info = frappe.db.get_value("User", user, ["full_name", "user_image"], as_dict=True) or {}
+	# a month of slots names the same few people hundreds of times: ask once per request
+	if not hasattr(frappe.local, "crm_booking_staff_cards"):
+		frappe.local.crm_booking_staff_cards = {}
+	cache = frappe.local.crm_booking_staff_cards
+	if user not in cache:
+		cache[user] = frappe.db.get_value("User", user, ["full_name", "user_image"], as_dict=True) or {}
+	info = cache[user]
 	return {
 		"id": public_staff_id(user),
 		"name": info.get("full_name") or _("Professional"),
