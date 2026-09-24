@@ -87,6 +87,13 @@
       :options="statusFilterOptions"
       @update:modelValue="reloadScheduler"
     />
+    <MultiSelectFilter
+      v-model="filters.sources"
+      :label="__('Source')"
+      icon="lucide-plug-zap"
+      :options="sourceFilterOptions"
+      @update:modelValue="reloadScheduler"
+    />
     <span class="grow" />
     <span v-if="appointmentCount" class="text-p-sm text-ink-gray-5">
       {{ appointmentCount }} {{ __('appointments') }}
@@ -328,6 +335,7 @@ import AppointmentDialog from '@/components/Calendar/AppointmentDialog.vue'
 import CalendarEventPanel from '@/components/Calendar/CalendarEventPanel.vue'
 import MultiSelectFilter from '@/components/Calendar/MultiSelectFilter.vue'
 import ResourceScheduler from '@/components/Calendar/ResourceScheduler.vue'
+import { sourceTag } from '@/utils/onlineBooking'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ShortcutTooltip from '@/components/ShortcutTooltip.vue'
@@ -426,6 +434,7 @@ const filters = reactive({
   staff: [],
   resources: [],
   statuses: [],
+  sources: [],
 })
 
 const meta = createResource({
@@ -475,6 +484,15 @@ const statusFilterOptions = computed(() =>
   })),
 )
 
+const sourceFilterOptions = computed(() => [
+  { label: __('Created in the CRM'), value: 'Internal' },
+  { label: __('Online booking page'), value: 'Online' },
+  ...(meta.data?.platforms || []).map((platform) => ({
+    label: platform,
+    value: platform,
+  })),
+])
+
 const hasFilters = computed(() =>
   Object.values(filters).some((value) => value.length),
 )
@@ -484,6 +502,7 @@ function resetFilters() {
   filters.staff = []
   filters.resources = []
   filters.statuses = []
+  filters.sources = []
   reloadScheduler()
 }
 
@@ -563,6 +582,7 @@ function reloadScheduler() {
     staff: filters.staff,
     resources: filters.resources,
     statuses: filters.statuses,
+    sources: filters.sources,
     include_events: false,
   })
 }
@@ -571,7 +591,9 @@ function reloadScheduler() {
 const appointmentItems = computed(() =>
   appointments.value.map((appointment) => ({
     id: `${APPOINTMENT_PREFIX}${appointment.name}`,
-    title: appointment.title || appointment.service,
+    title: sourceTag(appointment)
+      ? `${sourceTag(appointment)} · ${appointment.title || appointment.service}`
+      : appointment.title || appointment.service,
     description: appointment.notes || '',
     status: appointment.status,
     fromDate: dayjs(appointment.starts_on).format('YYYY-MM-DD'),
