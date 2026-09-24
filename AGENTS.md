@@ -57,6 +57,15 @@ they run as evaluated strings in the browser.
 | `frontend/src/stores/meta.js` | `getMeta(doctype)` — fetches DocType meta, exposes `getFields()`, formatters |
 | `frontend/src/stores/global.js` | `$dialog`, `$socket`, `makeCall` |
 
+### Service booking & external platforms
+| File | Role |
+|---|---|
+| `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest` |
+| `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine |
+| `crm/booking_platforms/` | Connectors (MioDottore, Treatwell, Calendly, Cal.com…), sync engine |
+| `crm/api/booking_platforms.py` | Webhook in, busy feed out, settings API |
+| `docs/prenotazioni/` | User guide + platform API research |
+
 ---
 
 ## Tests
