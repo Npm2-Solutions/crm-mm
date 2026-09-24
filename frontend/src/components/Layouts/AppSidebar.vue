@@ -583,6 +583,27 @@ onMounted(async () => {
   })
 
   setUp(filteredSteps)
+  autoOpenedHelp = showHelpModal.value
+})
+
+/*
+  frappe-ui's `setUp()` opens the help panel from `!isOnboardingStepsCompleted`,
+  read *before* it syncs the real status — and that status comes from the server.
+  The completed flag lives in localStorage, so on any browser that has never seen
+  this site (a new phone, a new computer, a private window) it starts false: the
+  panel opens, the status then comes back «finished», and neither of the panel's
+  two bodies renders. What is left is an empty white rectangle over the page, on
+  first visit, which is exactly the visit that should look right.
+
+  Close the one nobody asked for. A panel the user opened themselves is left be.
+*/
+let autoOpenedHelp = false
+
+watch(isOnboardingStepsCompleted, (done) => {
+  if (done && autoOpenedHelp) {
+    autoOpenedHelp = false
+    showHelpModal.value = false
+  }
 })
 
 // help center
