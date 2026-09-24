@@ -55,9 +55,14 @@ import random
 
 import frappe
 from frappe import _
-from frappe.utils import add_to_date, get_datetime, now_datetime
+from frappe.utils import add_to_date, cint, cstr, flt, get_datetime, now_datetime
+from jinja2 import DebugUndefined
+from jinja2.sandbox import SandboxedEnvironment
 
 from crm.utils import count_field
+
+# built on first render, then reused: it holds filters only, nothing site-specific
+_JENV = None
 
 EVENT_TO_TRIGGER = {
 	"lead_created": "Lead Created",
@@ -815,6 +820,38 @@ def execute_step(step: dict, ref_doc, enrollment=None) -> str:
 	return handler(step, ref_doc)
 
 
+def _automation_jenv():
+	"""The Jinja environment automation text is rendered in — deliberately not Frappe's.
+
+	A Sales Manager can write automations (MANAGER_ROLES in crm/api/automation.py, and
+	the write permission on CRM Automation), and every message, subject, task title and
+	webhook body they save is rendered server-side. frappe.render_template() would hand
+	that text Frappe's safe-exec globals, where frappe.db.get_value and friends ignore
+	permissions: "{{ frappe.db.get_value(...) }}" in a message body would read any field
+	of any doctype, including the API tokens in the integration settings, from a role
+	that cannot open those doctypes at all. So templates get their own environment with
+	no frappe global in it and no loader (nothing to {% include %} off the disk) — only
+	the record's own fields, the tracked-link helper, and the same filters Frappe adds.
+
+	DebugUndefined and autoescape=False match frappe.render_template, so a template that
+	worked before renders identically; what changes is only what it can reach.
+	"""
+	global _JENV
+	if _JENV is None:
+		from frappe.utils.safe_exec import UNSAFE_ATTRIBUTES
+
+		class AutomationSandbox(SandboxedEnvironment):
+			def is_safe_attribute(self, obj, attr, value):
+				if attr in UNSAFE_ATTRIBUTES:
+					return False
+				return super().is_safe_attribute(obj, attr, value)
+
+		env = AutomationSandbox(undefined=DebugUndefined)
+		env.filters.update(json=frappe.as_json, len=len, int=cint, str=cstr, flt=flt)
+		_JENV = env
+	return _JENV
+
+
 def render(text: str, ref_doc, preview: bool = False) -> str:
 	"""Render Jinja against the record. In preview mode nothing is minted or logged."""
 	if not text:
@@ -831,10 +868,10 @@ def render(text: str, ref_doc, preview: bool = False) -> str:
 	context["tracked_link"] = tracked_link
 	if preview:
 		try:
-			return frappe.render_template(text, context)
+			return _automation_jenv().from_string(text).render(context)
 		except Exception:
 			return text
-	return frappe.render_template(text, context)
+	return _automation_jenv().from_string(text).render(context)
 
 
 def step_send_email(step, ref_doc) -> str:
