@@ -260,7 +260,6 @@ const links = [
     label: 'Dashboard',
     icon: LucideLayoutDashboard,
     to: 'Dashboard',
-    condition: () => !props.mobile,
   },
   {
     // the people. "Lead" is what one of them is at the start, not what they
@@ -310,7 +309,6 @@ const links = [
     label: 'Calendar',
     icon: CalendarIcon,
     to: 'Calendar',
-    condition: () => !props.mobile,
   },
   {
     label: 'Call Logs',

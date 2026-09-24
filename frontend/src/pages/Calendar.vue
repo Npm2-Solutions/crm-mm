@@ -5,6 +5,7 @@
     </template>
     <template #right-header>
       <TabButtons
+        v-if="!isMobileView"
         v-model="viewMode"
         :buttons="[
           { label: __('Calendar'), value: 'calendar' },
@@ -12,6 +13,7 @@
         ]"
       />
       <Tooltip
+        v-if="!isMobileView"
         :text="
           googleConnection.data?.connected
             ? __('Google Calendar connected — busy slots block bookings')
@@ -32,7 +34,8 @@
       </Tooltip>
       <ShortcutTooltip :label="__('Create Event')" combo="Mod+E">
         <Button
-          :label="__('Event')"
+          :label="isMobileView ? undefined : __('Event')"
+          :aria-label="__('Event')"
           :disabled="isCreateDisabled"
           @click="newEvent"
         >
@@ -43,7 +46,8 @@
       </ShortcutTooltip>
       <Button
         variant="solid"
-        :label="__('Appointment')"
+        :label="isMobileView ? undefined : __('Appointment')"
+        :aria-label="__('Appointment')"
         @click="newAppointment()"
       >
         <template #prefix
@@ -55,7 +59,7 @@
 
   <!-- filters -->
   <div
-    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-5 py-2"
+    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5"
   >
     <MultiSelectFilter
       v-model="filters.services"
@@ -178,10 +182,10 @@
   </div>
 
   <!-- calendar: month / week / day, appointments and events together -->
-  <div v-else class="flex h-screen overflow-hidden">
+  <div v-else class="flex h-full overflow-hidden">
     <Calendar
       ref="calendar"
-      class="flex-1 overflow-hidden"
+      class="min-w-0 flex-1 overflow-hidden"
       :config="{
         defaultMode: defaultMode,
         isEditMode: true,
@@ -211,7 +215,9 @@
           setCalendarDate,
         }"
       >
-        <div class="my-4 mx-5 flex justify-between">
+        <div
+          class="mx-3 my-4 flex flex-wrap items-center justify-between gap-2 sm:mx-5"
+        >
           <!-- left side  -->
           <!-- Month Year -->
           <div class="flex items-center">
@@ -267,6 +273,7 @@
             />
 
             <Link
+              v-if="!isMobileView"
               class="form-control"
               :value="getUser(currentUser).full_name"
               doctype="User"
@@ -301,7 +308,9 @@
     <div
       class="overflow-hidden flex-none transition-all duration-300 ease-in-out flex flex-col"
       :class="
-        showEventPanel ? 'w-[352px] border-l bg-surface-base' : 'w-0 border-l-0'
+        showEventPanel
+          ? 'w-full border-l bg-surface-base sm:w-[352px]'
+          : 'w-0 border-l-0'
       "
     >
       <CalendarEventPanel
@@ -345,6 +354,7 @@ import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
+import { isMobileView } from '@/composables/breakpoints'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { appointmentColor, formatMinutes } from '@/utils/scheduler'
 import {
@@ -406,6 +416,9 @@ const modeMap = {
 }
 
 const defaultMode = computed(() => {
+  // A seven-column week grid on a 390px screen is a smear; a phone calendar
+  // opens on the day.
+  if (isMobileView.value) return 'Day'
   return modeMap[settings.value?.default_calendar_view] || 'Week'
 })
 
@@ -421,7 +434,11 @@ const APPOINTMENT_PREFIX = 'appt:'
 const isAppointmentId = (id) => String(id || '').startsWith(APPOINTMENT_PREFIX)
 const appointmentName = (id) => String(id).slice(APPOINTMENT_PREFIX.length)
 
+// Pinned to 'calendar' on a phone: the agenda is one column per professional.
 const viewMode = ref('calendar')
+watch(isMobileView, (mobile) => {
+  if (mobile) viewMode.value = 'calendar'
+})
 const columnMode = ref('staff')
 const zoom = ref(1.1)
 const agendaDate = ref(today())
