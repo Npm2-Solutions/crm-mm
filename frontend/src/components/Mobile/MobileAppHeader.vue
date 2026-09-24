@@ -1,5 +1,5 @@
 <template>
-  <div class="flex pr-3">
+  <div class="flex pr-3 pt-safe">
     <div class="z-20 ml-2 flex items-center justify-center">
       <Button
         class="size-7"

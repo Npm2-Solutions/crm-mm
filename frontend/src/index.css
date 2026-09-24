@@ -1,5 +1,33 @@
 @import 'frappe-ui/style.css';
 
+@layer utilities {
+  /* The mobile shell measures itself against the *visible* viewport. `100vh` on a
+     phone is the tallest the page can ever be — the browser's address bar is
+     counted as if it were already hidden — so a `h-screen` app shell always
+     overflows by the height of that bar and pushes its own bottom row off
+     screen. `dvh` tracks the bar; `vh` stays as the fallback for anything
+     older than Safari 15.4 / Chrome 108. */
+  .h-app {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* Safe areas. These read as 0 unless the viewport meta says `viewport-fit=cover`,
+     which it now does, so they are inert on everything but notched phones. */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .px-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
 @layer components {
   .prose-f {
     @apply break-all
