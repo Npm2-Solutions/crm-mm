@@ -10,11 +10,11 @@
 
 const EVERYWHERE = ['list', 'kanban', 'group_by']
 
-// The Inbox is People read as conversations — the same rows, ordered by who
-// wrote last. No other list has a conversation on it, so no other list has it.
-const ONLY_HERE = {
-  Leads: ['inbox'],
-}
+// Nothing has a view type of its own at the moment. The shape stays because the
+// rule is per list, and the Inbox proved what happens when a built-in view type
+// is not named here: it reads as a saved view, finds none, and sends you back to
+// the list — which looks like the click doing nothing at all.
+const ONLY_HERE = {}
 
 export function standardViewTypesFor(routeName) {
   return [...EVERYWHERE, ...(ONLY_HERE[routeName] || [])]

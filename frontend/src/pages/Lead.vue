@@ -8,18 +8,6 @@
       </Breadcrumbs>
     </template>
     <template v-if="!errorTitle" #right-header>
-      <Button
-        variant="ghost"
-        :icon="
-          peopleSidebar.open.value
-            ? 'lucide-panel-left-close'
-            : 'lucide-panel-left-open'
-        "
-        :tooltip="
-          peopleSidebar.open.value ? __('Hide the list') : __('Show the list')
-        "
-        @click="peopleSidebar.toggle()"
-      />
       <CustomActions
         v-if="document._actions?.length"
         :actions="document._actions"
@@ -56,15 +44,6 @@
     </template>
   </LayoutHeader>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
-    <!--
-      The list, kept beside the record. Opt-in, because the same page is also
-      how one person's file is read on a narrow screen.
-    -->
-    <PeopleSidebar
-      v-if="peopleSidebar.open.value"
-      :active="leadId"
-      @close="peopleSidebar.toggle()"
-    />
     <Tabs
       v-model="tabIndex"
       :tabs="tabs"
@@ -254,7 +233,6 @@ import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
 import ErrorPage from '@/components/ErrorPage.vue'
 import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
-import PeopleSidebar from '@/components/PeopleSidebar.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
@@ -300,7 +278,6 @@ import {
   toast,
 } from 'frappe-ui'
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { usePeopleSidebar } from '@/composables/usePeopleSidebar'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning'
@@ -315,8 +292,6 @@ const router = useRouter()
 const props = defineProps({
   leadId: { type: String, required: true },
 })
-
-const peopleSidebar = usePeopleSidebar()
 
 // Opening somebody's record is reading their conversation, so the badge the
 // list was showing has nothing left to announce. Told to the server rather

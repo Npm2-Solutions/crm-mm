@@ -39,12 +39,18 @@ const routes = [
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
-    // The Inbox is a way of reading the People list, not a list of its own:
-    // same people, same filters, same saved views, ordered by who wrote last.
-    // The old address still works, and lands where the Inbox now lives.
+    // Where you answer people: the list, the conversation and the person, all
+    // on screen at once. A place you stay, rather than a list that sends you
+    // somewhere else on every click.
+    path: '/conversazioni',
+    name: 'Conversations',
+    component: () => import('@/pages/Conversations.vue'),
+  },
+  {
+    // the two addresses the Inbox has had before now
     path: '/inbox',
     name: 'Inbox',
-    redirect: () => ({ name: 'Leads', params: { viewType: 'inbox' } }),
+    redirect: () => ({ name: 'Conversations' }),
   },
   {
     path: '/automations',

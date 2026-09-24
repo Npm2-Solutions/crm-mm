@@ -281,14 +281,10 @@ const links = [
     to: 'Organizations',
   },
   {
-    // The same people as above, read in the order they last wrote. One list,
-    // two ways of looking at it — so this is a view of People, not a page of
-    // its own.
-    label: 'Inbox',
+    // the same people as above; this is where you answer them
+    label: 'Conversations',
     icon: SMSIcon,
-    to: 'Leads',
-    params: { viewType: 'inbox' },
-    key: 'Inbox',
+    to: 'Conversations',
   },
   {
     label: 'Automations',
@@ -413,8 +409,6 @@ function getIcon(routeName, icon) {
 }
 
 // A saved view's key is its name; a plain nav item's key is its route name.
-// The Inbox is the exception, because it shares its route with People: what
-// tells them apart is which view of that route is open.
 function currentRouteKey() {
   return currentNavKey(route)
 }
