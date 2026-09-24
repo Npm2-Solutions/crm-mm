@@ -1,38 +1,14 @@
 <template>
-  <div class="flex justify-between gap-3 border-t px-4 py-2.5">
-    <div class="flex gap-1.5">
-      <Button
-        variant="ghost"
-        :class="[
-          showEmailBox ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : '',
-        ]"
-        :label="__('Reply')"
-        :iconLeft="Email2Icon"
-        @click="toggleEmailBox()"
-      />
-      <Button
-        variant="ghost"
-        :label="__('Comment')"
-        :class="[
-          showCommentBox ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : '',
-        ]"
-        :iconLeft="CommentIcon"
-        @click="toggleCommentBox()"
-      />
-      <!-- the third way of answering somebody, and on this CRM often the first
-           one: it was the only one missing from here -->
-      <Button
-        v-if="whatsappEnabled"
-        variant="ghost"
-        :label="__('WhatsApp')"
-        :class="[
-          showWhatsAppBox ? '!bg-surface-gray-4 hover:!bg-surface-gray-3' : '',
-        ]"
-        :iconLeft="WhatsAppIcon"
-        @click="toggleWhatsAppBox()"
-      />
-    </div>
-  </div>
+  <!--
+    Nothing is open: the bar, and the three ways of writing on it. Clicking it
+    is what opens the editor — an email or a note is usually one sentence, and
+    meeting it with a toolbar and a subject line asks for a letter.
+  -->
+  <ComposerBar
+    v-if="!showEmailBox && !showCommentBox && !showWhatsAppBox"
+    v-model:channel="way"
+    @open="openWay"
+  />
   <div
     v-show="showEmailBox"
     @keydown.ctrl.enter.capture.stop="submitEmail"
@@ -115,13 +91,11 @@
 </template>
 
 <script setup>
+import ComposerBar from '@/components/ComposerBar.vue'
 import EmailEditor from '@/components/EmailEditor.vue'
 import CommentBox from '@/components/CommentBox.vue'
-import CommentIcon from '@/components/Icons/CommentIcon.vue'
-import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import { whatsappEnabled } from '@/composables/whatsapp'
-import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import { isContentEmpty } from '@/utils'
 import { usersStore } from '@/stores/users'
 import { useStorage } from '@vueuse/core'
@@ -369,29 +343,21 @@ async function submitComment() {
 
 // one box at a time: three open editors on the same record is nobody's idea of
 // a conversation
-function toggle(which) {
-  const open = {
+// Which way the bar is set to write. Remembered while the record is open, so
+// somebody writing notes all afternoon is not put back on email every time.
+const way = ref('email')
+
+function openWay(which) {
+  way.value = which
+  if (which === 'whatsapp') {
+    whatsappEverOpened.value = true
+  }
+  const boxes = {
     email: showEmailBox,
     comment: showCommentBox,
     whatsapp: showWhatsAppBox,
   }
-  const wanted = !open[which].value
-  Object.entries(open).forEach(
-    ([name, box]) => (box.value = name === which && wanted),
-  )
-}
-
-function toggleEmailBox() {
-  toggle('email')
-}
-
-function toggleCommentBox() {
-  toggle('comment')
-}
-
-function toggleWhatsAppBox() {
-  whatsappEverOpened.value = true
-  toggle('whatsapp')
+  Object.entries(boxes).forEach(([name, box]) => (box.value = name === which))
 }
 
 defineExpose({
