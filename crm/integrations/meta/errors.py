@@ -28,6 +28,7 @@ from frappe import _
 
 # --- Graph API, all products -------------------------------------------------
 
+# nosemgrep: frappe-breaks-multitenancy — the lambda is the point: _() runs per call, not once at import
 GRAPH = {
 	1: lambda: _(
 		"Meta answered with its own generic failure, which usually means their end had a "
@@ -86,6 +87,7 @@ GRAPH = {
 }
 
 # 190 says "log in again" and means different things underneath
+# nosemgrep: frappe-breaks-multitenancy — the lambda is the point: _() runs per call, not once at import
 GRAPH_SUBCODES = {
 	(190, 458): lambda: _(
 		"Whoever connected has removed this app from their Facebook account. They have to "
@@ -117,6 +119,7 @@ GRAPH_SUBCODES = {
 # The 13xxxx family. These are the ones that actually come up; the rest of the
 # list is generic enough that the code itself says as much as a paraphrase would.
 
+# nosemgrep: frappe-breaks-multitenancy — the lambda is the point: _() runs per call, not once at import
 WHATSAPP = {
 	130429: lambda: _(
 		"Too many messages at once for this number's throughput. They are not lost, but the "

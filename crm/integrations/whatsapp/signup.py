@@ -160,10 +160,14 @@ ERROR_KEYS = {
 # which an aggregator business links a client business. That is the step
 # Embedded Signup runs when the customer picks their portfolio, so the code is
 # about the portfolio, not about WhatsApp.
+# Each hint is a lambda, not a string: a module is imported once per worker and
+# shared by every site and every user on it, so calling _() out here would freeze
+# these paragraphs in whichever language happened to be loaded first.
+# nosemgrep: frappe-breaks-multitenancy — the lambda is the point: _() runs per call, not once at import
 SIGNUP_HINTS = (
 	(
 		"1690",
-		_(
+		lambda: _(
 			"This code belongs to the business-portfolio step, not to WhatsApp. It is the family "
 			"Meta documents under client businesses — an aggregator business attaching a client "
 			"business — so when it fires on the last screen, the one that offers to share the "
@@ -176,7 +180,7 @@ SIGNUP_HINTS = (
 	),
 	(
 		"3441",
-		_(
+		lambda: _(
 			"Meta refused for want of a right over a resource, and it does not say which. The "
 			"likeliest one is the WhatsApp Business app account behind the number just typed: "
 			"after that number the flow has to read it, to show the business its own name and "
@@ -188,7 +192,7 @@ SIGNUP_HINTS = (
 	),
 	(
 		"200",
-		_(
+		lambda: _(
 			"Meta refused for want of permission. On a live app only permissions approved for "
 			"Advanced Access appear in the flow at all."
 		),
@@ -201,7 +205,7 @@ def hint_for(error_code: str | None) -> str:
 	code = str(error_code or "")
 	for prefix, hint in SIGNUP_HINTS:
 		if code.startswith(prefix):
-			return hint
+			return hint()
 	return ""
 
 
