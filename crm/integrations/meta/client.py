@@ -16,6 +16,8 @@ import frappe
 import requests
 from frappe import _
 
+from crm.integrations.meta.redact import redact
+
 GRAPH_BASE = "https://graph.facebook.com"
 GRAPH_VERSION = "v23.0"
 TIMEOUT = 30
@@ -155,7 +157,11 @@ def graph_request(
 			method, graph_url(endpoint), params=params, data=body or None, timeout=TIMEOUT
 		)
 	except requests.RequestException as exc:
-		raise MetaAPIError(_("Network error talking to Meta: {0}").format(str(exc))) from exc
+		# `requests` quotes the URL it could not reach, and ours carries the token
+		# in its query string: said as it is, a dropped connection handed the
+		# page token to whoever read the error. `from None` keeps the original,
+		# which says the same thing unredacted, out of the traceback too.
+		raise MetaAPIError(_("Network error talking to Meta: {0}").format(redact(exc))) from None
 
 	try:
 		data = response.json()
@@ -210,7 +216,7 @@ def graph_get_paginated(endpoint: str, token: str, params: dict | None = None, m
 				response = requests.get(next_url, timeout=TIMEOUT)
 				data = response.json()
 			except (requests.RequestException, ValueError) as exc:
-				raise MetaAPIError(_("Network error talking to Meta: {0}").format(str(exc))) from exc
+				raise MetaAPIError(_("Network error talking to Meta: {0}").format(redact(exc))) from None
 			if response.status_code >= 400 or "error" in data:
 				error = data.get("error") or {}
 				raise MetaAPIError(error.get("message") or "pagination error", code=error.get("code"))

@@ -18,6 +18,8 @@ import frappe
 from frappe import _
 from frappe.utils import get_url
 
+from crm.integrations.meta.redact import redact
+
 VIDEO_EXTENSIONS = (".mp4", ".mov", ".m4v")
 
 
@@ -123,7 +125,9 @@ def publish_post(name: str) -> None:
 		except Exception as exc:
 			any_failed = True
 			target.status = "Failed"
-			target.error = str(exc)[:400]
+			# whoever wrote the post reads this: never a credential, even when the
+			# failure quoted a URL that carried one
+			target.error = redact(exc)[:400]
 			frappe.log_error(frappe.get_traceback(), f"Social Planner: target failed ({name})")
 
 	post.status = "Failed" if any_failed else "Published"
