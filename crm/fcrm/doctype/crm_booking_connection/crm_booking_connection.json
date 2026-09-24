@@ -1,0 +1,369 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:connection_name",
+ "creation": "2026-09-24 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "connection_name",
+  "platform",
+  "enabled",
+  "column_break_head",
+  "status",
+  "last_sync",
+  "last_error",
+  "credentials_section",
+  "api_base_url",
+  "account_id",
+  "client_id",
+  "tenant_id",
+  "extra_param",
+  "column_break_credentials",
+  "client_secret",
+  "api_key",
+  "refresh_token",
+  "access_token",
+  "token_expires_on",
+  "feed_section",
+  "ical_url",
+  "inbound_email_account",
+  "sender_filter",
+  "column_break_feed",
+  "webhook_token",
+  "webhook_secret",
+  "field_map",
+  "sync_section",
+  "import_bookings",
+  "sync_window_days",
+  "lookback_days",
+  "column_break_sync",
+  "push_blocks",
+  "push_cancellations",
+  "defaults_section",
+  "default_service",
+  "default_staff",
+  "column_break_defaults",
+  "imported_status",
+  "create_leads",
+  "mapping_section",
+  "mappings",
+  "stats_section",
+  "imported_count",
+  "column_break_stats",
+  "last_webhook"
+ ],
+ "fields": [
+  {
+   "fieldname": "connection_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "MioDottore (Docplanner)\nMioDottore (email)\nTreatwell / Uala\nFresha\nBooksy\nElty\niDoctors\nDoctolib (Dottori.it)\nTop Doctors\nPazienti.it\nSimplyBook.me\nCalendly\nCal.com\nAcuity Scheduling\nMicrosoft Bookings\nTIMIFY\nSetmore\nEasy!Appointments\niCal feed\nNotification email (any platform)\nGeneric webhook (Zapier, Make, n8n)",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Not configured\nConnected\nError",
+   "default": "Not configured",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "last_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Sync",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "credentials_section",
+   "fieldtype": "Section Break",
+   "label": "Credentials"
+  },
+  {
+   "fieldname": "api_base_url",
+   "fieldtype": "Data",
+   "label": "API Base URL",
+   "description": "Leave empty for the platform default"
+  },
+  {
+   "fieldname": "account_id",
+   "fieldtype": "Data",
+   "label": "Account / Business ID",
+   "description": "Facility, business, calendar or location ID on the platform"
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID / Username"
+  },
+  {
+   "fieldname": "tenant_id",
+   "fieldtype": "Data",
+   "label": "Tenant / Region",
+   "description": "Microsoft tenant ID, Booksy country code…"
+  },
+  {
+   "fieldname": "extra_param",
+   "fieldtype": "Data",
+   "label": "Additional Parameter",
+   "description": "Only when the platform's setup notes ask for it"
+  },
+  {
+   "fieldname": "column_break_credentials",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key / Token"
+  },
+  {
+   "fieldname": "refresh_token",
+   "fieldtype": "Password",
+   "label": "Refresh Token"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "token_expires_on",
+   "fieldtype": "Datetime",
+   "label": "Token Expires On",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "feed_section",
+   "fieldtype": "Section Break",
+   "label": "Calendar Feed & Webhook"
+  },
+  {
+   "fieldname": "ical_url",
+   "fieldtype": "Small Text",
+   "label": "iCal Feed URL",
+   "description": "Private .ics address exported by the platform (Google/Apple calendar sync)"
+  },
+  {
+   "fieldname": "inbound_email_account",
+   "fieldtype": "Link",
+   "label": "Notification Mailbox",
+   "options": "Email Account",
+   "description": "Booking emails received on this account become appointments"
+  },
+  {
+   "fieldname": "sender_filter",
+   "fieldtype": "Data",
+   "label": "Sender Domains",
+   "description": "Comma separated, e.g. treatwell.it, uala.it — empty uses the platform's own"
+  },
+  {
+   "fieldname": "column_break_feed",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "webhook_token",
+   "fieldtype": "Data",
+   "label": "Webhook Token",
+   "read_only": 1,
+   "no_copy": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Signing Secret",
+   "description": "Used to verify that webhook calls really come from the platform"
+  },
+  {
+   "fieldname": "field_map",
+   "fieldtype": "Code",
+   "label": "Payload Field Map",
+   "options": "JSON",
+   "description": "Generic webhook only: where each field lives in the JSON (dot paths)"
+  },
+  {
+   "fieldname": "sync_section",
+   "fieldtype": "Section Break",
+   "label": "Synchronisation"
+  },
+  {
+   "fieldname": "import_bookings",
+   "fieldtype": "Check",
+   "label": "Import Bookings",
+   "default": "1"
+  },
+  {
+   "fieldname": "sync_window_days",
+   "fieldtype": "Int",
+   "label": "Days Ahead to Sync",
+   "default": "60",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "lookback_days",
+   "fieldtype": "Int",
+   "label": "Days Back to Sync",
+   "default": "1",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_sync",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "push_blocks",
+   "fieldtype": "Check",
+   "label": "Block Time on the Platform",
+   "description": "When an appointment is booked in the CRM, mark the professional busy on the platform (where supported)"
+  },
+  {
+   "fieldname": "push_cancellations",
+   "fieldtype": "Check",
+   "label": "Cancel on the Platform",
+   "description": "Cancelling an imported appointment in the CRM cancels it on the platform too (where supported)"
+  },
+  {
+   "fieldname": "defaults_section",
+   "fieldtype": "Section Break",
+   "label": "Defaults for Imported Bookings"
+  },
+  {
+   "fieldname": "default_service",
+   "fieldtype": "Link",
+   "label": "Default Service",
+   "options": "CRM Service",
+   "description": "Used when a platform service is not mapped"
+  },
+  {
+   "fieldname": "default_staff",
+   "fieldtype": "Link",
+   "label": "Default Professional",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_defaults",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "imported_status",
+   "fieldtype": "Select",
+   "label": "Status of Imported Bookings",
+   "options": "Confirmed\nScheduled",
+   "default": "Confirmed"
+  },
+  {
+   "fieldname": "create_leads",
+   "fieldtype": "Check",
+   "label": "Create or Link the Client as Lead",
+   "default": "1"
+  },
+  {
+   "fieldname": "mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Mapping"
+  },
+  {
+   "fieldname": "mappings",
+   "fieldtype": "Table",
+   "label": "Mappings",
+   "options": "CRM Booking Connection Map"
+  },
+  {
+   "fieldname": "stats_section",
+   "fieldtype": "Section Break",
+   "label": "Activity",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "imported_count",
+   "fieldtype": "Int",
+   "label": "Bookings Imported",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_stats",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_webhook",
+   "fieldtype": "Datetime",
+   "label": "Last Webhook",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-24 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Booking Connection",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "connection_name",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

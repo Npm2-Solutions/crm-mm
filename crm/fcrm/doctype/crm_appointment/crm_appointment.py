@@ -146,6 +146,11 @@ class CRMAppointment(Document):
 		if not conflicts:
 			self.conflict_note = None
 			return
+		if self.flags.external_booking:
+			# a booking that already exists on an external platform cannot be refused:
+			# keep it, and keep the clash visible for whoever has to solve it
+			self.conflict_note = "\n".join(conflicts)
+			return
 		config = settings()
 		may_override = cint(config.allow_override) and bool(MANAGER_ROLES & set(frappe.get_roles()))
 		if cint(self.override_conflicts) and may_override:

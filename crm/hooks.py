@@ -201,6 +201,7 @@ doc_events = {
 		"after_insert": [
 			"crm.utils.on_communication_insert",
 			"crm.automation.engine.on_communication_insert",
+			"crm.booking_platforms.sync.on_communication",
 		],
 		"on_update": [
 			"crm.utils.on_communication_update",
@@ -272,7 +273,11 @@ doc_events = {
 	},
 	"CRM Appointment": {
 		"after_insert": ["crm.automation.engine.on_appointment_created"],
-		"on_update": ["crm.automation.engine.on_appointment_updated"],
+		"on_update": [
+			"crm.automation.engine.on_appointment_updated",
+			"crm.booking_platforms.sync.on_appointment_change",
+		],
+		"on_trash": ["crm.booking_platforms.sync.on_appointment_change"],
 	},
 	"Sales Order": {
 		"before_validate": [
@@ -343,6 +348,8 @@ scheduler_events = {
 		# most of a lead's value. It stands down on its own once Meta calls.
 		"*/10 * * * *": ["crm.integrations.meta.leads.catch_up_recent_leads"],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
+		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
+		"*/15 * * * *": ["crm.booking_platforms.sync.sync_all"],
 	},
 }
 
