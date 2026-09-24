@@ -534,11 +534,11 @@ def wake_the_snoozed() -> int:
 			filters={"conversation_snoozed_until": ["<=", cutoff]},
 			pluck="name",
 		)
-		if not due:
-			continue
-		frappe.db.set_value(
-			doctype, {"name": ["in", due]}, "conversation_snoozed_until", None, update_modified=False
-		)
+		for name in due:
+			# one row at a time, by name: a filter dict with an `in` reached nothing,
+			# and a count that says it woke them while they stay parked is worse than
+			# slow. There are only ever the ones whose hour has just come.
+			frappe.db.set_value(doctype, name, "conversation_snoozed_until", None, update_modified=False)
 		woken += len(due)
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — hourly scheduler job, no request to commit it
 	return woken
