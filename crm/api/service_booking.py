@@ -199,6 +199,41 @@ def _tz_or(value: str | None, fallback: ZoneInfo) -> ZoneInfo:
 # --------------------------------------------------------------------------
 
 
+def page_title(config=None) -> str:
+	"""What the booking page is called: its own title, else the brand of the CRM.
+
+	Never Frappe's own default ``app_name``: a client booking a massage must not
+	read "Frappe" in the tab.
+	"""
+	config = config or settings()
+	title = (config.get("booking_page_title") or "").strip()
+	if title:
+		return title
+	brand = (frappe.db.get_single_value("FCRM Settings", "brand_name") or "").strip()
+	if brand:
+		return brand
+	app_name = (frappe.db.get_single_value("Website Settings", "app_name") or "").strip()
+	if app_name and app_name.lower() not in ("frappe", "frappe crm"):
+		return app_name
+	return _("Book an appointment")
+
+
+def page_branding(config=None) -> dict:
+	"""Title, logo, favicon and colours of the public page. Each falls back to the
+	CRM's own brand (Settings → Brand), never to Frappe's."""
+	from crm.scheduling.branding import accent_vars
+
+	config = config or settings()
+	brand = frappe.db.get_value("FCRM Settings", None, ["brand_logo", "favicon"], as_dict=True) or {}
+	logo = config.get("booking_page_logo") or brand.get("brand_logo") or ""
+	return {
+		"title": page_title(config),
+		"logo": logo,
+		"favicon": brand.get("favicon") or logo,
+		"css": accent_vars(config.get("booking_page_color")),
+	}
+
+
 # nosemgrep: guest-whitelisted-method — the /prenota menu; services marked direct-link-only stay out
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> dict:
@@ -239,9 +274,7 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 			person = people.setdefault(user, {**_staff_card(user), "services": []})
 			person["services"].append(card_id)
 	return {
-		"title": config.get("booking_page_title")
-		or frappe.db.get_single_value("Website Settings", "app_name")
-		or _("Book an appointment"),
+		"title": page_title(config),
 		"intro": config.get("booking_page_intro") or "",
 		"privacy_policy_url": config.get("privacy_policy_url") or "",
 		"require_consent": cint(config.get("require_privacy_consent")),

@@ -1249,6 +1249,9 @@ def get_scheduling_settings() -> dict:
 	]
 	# what an empty time zone means, for the settings page to say it
 	data["site_timezone"] = frappe.utils.get_system_timezone()
+	# what the booking page falls back to, for the settings to show it
+	brand = frappe.db.get_value("FCRM Settings", None, ["brand_name", "brand_logo"], as_dict=True) or {}
+	data["brand"] = {"name": brand.get("brand_name") or "", "logo": brand.get("brand_logo") or ""}
 	return data
 
 
@@ -1273,6 +1276,8 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		# the public /prenota page
 		"online_booking_enabled",
 		"booking_page_title",
+		"booking_page_logo",
+		"booking_page_color",
 		"booking_page_intro",
 		"privacy_policy_url",
 		"require_privacy_consent",
