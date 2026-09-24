@@ -56,11 +56,105 @@ class TestDashboard(IntegrationTestCase):
 		make_test_records("CRM Lead")
 		make_test_records("CRM Deal")
 
+		# Leads this class creates itself, which is what the lead assertions are
+		# written against.
+		#
+		# The month is not this class's alone: other modules commit leads that
+		# outlive their own rollback (the first CI run of this file found 37
+		# leads in a month whose fixtures hold 35), and get_dashboard() commits
+		# again while it writes the default dashboard, so a fixed total was
+		# never going to hold. Counting the window a second time would not fix
+		# it either — that only proves two queries agree, not that the dashboard
+		# picked the right rows. So the class reads what each metric says before
+		# it inserts anything, inserts leads it fully describes below, and then
+		# requires each metric to have moved by exactly those leads, both
+		# unfiltered and filtered to an owner no other fixture uses.
+		cls.lead_owner = "crm.user2@example.com"  # owns no record in test_records.json
+
+		# source, creation (None = now), and whether the window should hold it.
+		# The two outside it sit a single day beyond each edge and carry a source
+		# of their own, so a metric that stopped filtering by date would show up
+		# twice over: in the totals, and as Cold Call leads appearing in a window
+		# this class never put any in.
+		cls.own_leads = [
+			("Website", None, True),
+			("Website", cls.from_date, True),  # first moment of the window
+			("Referral", f"{cls.to_date} 23:59:59", True),  # last moment of the window
+			("Cold Call", add_days(cls.from_date, -1), False),  # the day before it
+			("Cold Call", add_days(cls.to_date, 1), False),  # the day after it
+		]
+		cls.own_leads_by_source = {source: 0 for source, _, _ in cls.own_leads}
+		for source, _, inside_window in cls.own_leads:
+			cls.own_leads_by_source[source] += int(inside_window)
+		cls.own_leads_in_window = sum(cls.own_leads_by_source.values())
+
+		cls.leads_before_all = cls._lead_metrics()
+		cls.leads_before_owner = cls._lead_metrics(cls.lead_owner)
+		cls._make_own_leads()
+
+	@classmethod
+	def _lead_metrics(cls, user: str | None = None):
+		"""What each lead metric of the dashboard reports for this window.
+
+		Taken once before the class inserts its own leads and compared against
+		afterwards: every lead assertion is a before/after of the same metric
+		across a change this test made, which is the only thing about the row
+		set it actually controls.
+		"""
+		return {
+			"total": get_total_leads(cls.from_date, cls.to_date, user)["value"],
+			"chart": get_chart("total_leads", "number", cls.from_date, cls.to_date, user)["value"],
+			"funnel": get_funnel_conversion(cls.from_date, cls.to_date, user)["data"][0]["count"],
+			"by_source": {
+				row["source"]: row["count"]
+				for row in get_leads_by_source(cls.from_date, cls.to_date, user)["data"]
+			},
+		}
+
+	@classmethod
+	def _make_own_leads(cls):
+		"""Insert the leads described by `cls.own_leads`, one owner, one email each.
+
+		`creation` is stamped by Frappe on insert, so the leads that belong to a
+		particular day are moved there afterwards.
+		"""
+		for i, (source, creation, _) in enumerate(cls.own_leads):
+			lead = frappe.get_doc(
+				{
+					"doctype": "CRM Lead",
+					"first_name": "Dashboard",
+					"last_name": f"Fixture {i}",
+					"email": f"dashboard.fixture{i}@example.com",
+					"mobile_no": f"+1-555-99{i:02d}",
+					"source": source,
+					"status": "New Lead",
+					"lead_owner": cls.lead_owner,
+				}
+			).insert(ignore_permissions=True)
+
+			if creation:
+				frappe.db.set_value("CRM Lead", lead.name, "creation", creation, update_modified=False)
+
 	@classmethod
 	def tearDownClass(cls):
 		"""Clean up test records after all tests"""
 		frappe.db.rollback()
 		super().tearDownClass()
+
+	def assertLeadsBySource(self, data, before, message):
+		"""The per-source counts moved by this class's leads and nothing else.
+
+		Every source is checked: the two it added leads to, the Cold Call it
+		expects no movement from because those leads are dated outside the
+		window, and any source the site already had.
+		"""
+		now = {row["source"]: row["count"] for row in data}
+		for source in set(now) | set(before) | set(self.own_leads_by_source):
+			self.assertEqual(
+				now.get(source, 0) - before.get(source, 0),
+				self.own_leads_by_source.get(source, 0),
+				f"{message}: leads from {source} moved by the wrong amount",
+			)
 
 	def test_get_total_leads(self):
 		"""Test get_total_leads returns correct lead count and delta calculation"""
@@ -68,17 +162,28 @@ class TestDashboard(IntegrationTestCase):
 
 		# Verify actual count from test data
 		self.assertEqual(result["title"], "Total leads")
-		self.assertEqual(result["value"], 35)  # 35 leads from test_records.json
 		self.assertIsInstance(result["delta"], (int, float))
 		self.assertEqual(result["deltaSuffix"], "%")
+
+		# The three leads this class put inside the window are counted; the two
+		# it put a day on either side of it are not.
+		self.assertEqual(
+			result["value"],
+			self.leads_before_all["total"] + self.own_leads_in_window,
+			"total leads did not move by exactly the leads created inside the window",
+		)
+
+		# and filtered to their owner, those three are all there is
+		result_owner = get_total_leads(self.from_date, self.to_date, self.lead_owner)
+		self.assertEqual(result_owner["value"], self.leads_before_owner["total"] + self.own_leads_in_window)
 
 		# Test with user filter - crm.user1@example.com owns 3 leads
 		result_user = get_total_leads(self.from_date, self.to_date, self.user2_email)
 		self.assertEqual(result_user["value"], 3)
-		self.assertLessEqual(result_user["value"], result["value"])
 
-		# Verify user's leads are subset of total
+		# Verify each owner's leads are a subset of the total
 		self.assertGreater(result["value"], result_user["value"])
+		self.assertGreaterEqual(result["value"], result_user["value"] + result_owner["value"])
 
 	def test_get_ongoing_deals(self):
 		"""Test get_ongoing_deals returns correct non-won/lost deal count"""
@@ -260,9 +365,13 @@ class TestDashboard(IntegrationTestCase):
 		self.assertEqual(result["title"], "Funnel conversion")
 		self.assertGreater(len(result["data"]), 0)
 
-		# Verify funnel starts with Leads
+		# Verify funnel starts with Leads, and that its first stage gained
+		# exactly the leads this class created inside the window
 		self.assertEqual(result["data"][0]["stage"], "Leads")
-		self.assertEqual(result["data"][0]["count"], 35)  # 35 leads from test_records.json
+		self.assertEqual(
+			result["data"][0]["count"],
+			self.leads_before_all["funnel"] + self.own_leads_in_window,
+		)
 
 		# Verify funnel stages are in order and counts decrease or stay same (funnel effect)
 		for i in range(len(result["data"]) - 1):
@@ -281,6 +390,14 @@ class TestDashboard(IntegrationTestCase):
 		self.assertGreater(len(result_user["data"]), 0)
 		self.assertEqual(result_user["data"][0]["stage"], "Leads")
 		self.assertEqual(result_user["data"][0]["count"], 3)
+
+		# Scoped to the owner of this class's leads, the funnel opens on exactly
+		# the three of them that belong to the window
+		result_owner = get_funnel_conversion(self.from_date, self.to_date, self.lead_owner)
+		self.assertEqual(
+			result_owner["data"][0]["count"],
+			self.leads_before_owner["funnel"] + self.own_leads_in_window,
+		)
 
 		# User's funnel should be subset of total
 		for i in range(min(len(result["data"]), len(result_user["data"]))):
@@ -340,15 +457,22 @@ class TestDashboard(IntegrationTestCase):
 
 		self.assertEqual(result["title"], "Leads by source")
 
-		# Should have source data
-		if result["data"]:
-			total_leads = sum(entry.get("count", 0) for entry in result["data"])  # API uses 'count'
-			self.assertEqual(total_leads, 35)  # Total leads from test data
+		# Two Website leads and one Referral lead joined the window; the two
+		# Cold Call leads did not, because they are dated outside it
+		self.assertLeadsBySource(result["data"], self.leads_before_all["by_source"], "all leads")
+
+		result_owner = get_leads_by_source(self.from_date, self.to_date, self.lead_owner)
+		self.assertLeadsBySource(
+			result_owner["data"], self.leads_before_owner["by_source"], "leads of one owner"
+		)
+		self.assertEqual(
+			sum(entry.get("count", 0) for entry in result_owner["data"]),
+			sum(self.leads_before_owner["by_source"].values()) + self.own_leads_in_window,
+		)
 
 		result_user = get_leads_by_source(self.from_date, self.to_date, self.user2_email)
-		if result_user["data"]:
-			user_total = sum(entry.get("count", 0) for entry in result_user["data"])  # API uses 'count'
-			self.assertEqual(user_total, 3)  # user1 owns 3 leads
+		user_total = sum(entry.get("count", 0) for entry in result_user["data"])  # API uses 'count'
+		self.assertEqual(user_total, 3)  # user1 owns 3 leads
 
 	def test_get_deals_by_source(self):
 		"""Test get_deals_by_source returns source distribution"""
@@ -423,9 +547,15 @@ class TestDashboard(IntegrationTestCase):
 		"""Test get_chart returns correct chart data for valid chart names"""
 		result = get_chart("total_leads", "number", self.from_date, self.to_date)
 
-		self.assertEqual(result["value"], 35)  # Should match get_total_leads
+		self.assertEqual(result["value"], self.leads_before_all["chart"] + self.own_leads_in_window)
+		# and "total_leads" is dispatched to the metric of that name
+		self.assertEqual(result["value"], get_total_leads(self.from_date, self.to_date)["value"])
 		self.assertIsInstance(result["value"], (int, float))
 		self.assertIsNotNone(result.get("title"))
+
+		# the chart carries the user filter through to the metric it dispatches to
+		result_owner = get_chart("total_leads", "number", self.from_date, self.to_date, self.lead_owner)
+		self.assertEqual(result_owner["value"], self.leads_before_owner["chart"] + self.own_leads_in_window)
 
 	def test_get_chart_invalid_name(self):
 		"""Test get_chart returns proper error for invalid chart name"""
@@ -447,11 +577,17 @@ class TestDashboard(IntegrationTestCase):
 	def test_user_filtering_isolation(self):
 		"""Test that user filtering correctly isolates data across metrics"""
 		result_crm_user = get_total_leads(self.from_date, self.to_date, self.user2_email)
+		result_owner = get_total_leads(self.from_date, self.to_date, self.lead_owner)
 		result_all = get_total_leads(self.from_date, self.to_date, "")
 
+		# Two owners, two disjoint sets of leads, neither leaking into the other:
+		# three from test_records.json for one, three created by this class for
+		# the other, and both inside the unfiltered total
 		self.assertEqual(result_crm_user["value"], 3)  # crm.user1@example.com owns 3 leads
-		self.assertEqual(result_all["value"], 35)  # 35 total leads
+		self.assertEqual(result_owner["value"], self.leads_before_owner["total"] + self.own_leads_in_window)
+		self.assertEqual(result_all["value"], self.leads_before_all["total"] + self.own_leads_in_window)
 		self.assertGreater(result_all["value"], result_crm_user["value"])
+		self.assertGreaterEqual(result_all["value"], result_crm_user["value"] + result_owner["value"])
 
 	def test_date_range_filtering(self):
 		"""Test that date range filtering works correctly"""

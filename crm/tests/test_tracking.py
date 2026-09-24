@@ -143,8 +143,11 @@ class TestCollect(TrackingTestCase):
 		)
 
 	def test_an_empty_beacon_opens_nothing(self):
+		# A delta, not a bare zero: this site carries the traffic of every other test in
+		# the run, so what matters is that this beacon added nothing to it.
+		before = frappe.db.count("CRM Visitor Session")
 		self.assertFalse(beacon([])["ok"])
-		self.assertEqual(frappe.db.count("CRM Visitor Session"), 0)
+		self.assertEqual(frappe.db.count("CRM Visitor Session"), before)
 
 	def test_the_landing_page_is_the_page_not_the_first_event(self):
 		"""A click flushes on its own; taking its target as the landing page would
@@ -176,8 +179,9 @@ class TestCollect(TrackingTestCase):
 
 	def test_disabled_collects_nothing(self):
 		set_settings(enabled=0)
+		before = frappe.db.count("CRM Visitor Session")
 		self.assertFalse(beacon([page_view("https://example.it/")])["ok"])
-		self.assertEqual(frappe.db.count("CRM Visitor Session"), 0)
+		self.assertEqual(frappe.db.count("CRM Visitor Session"), before)
 
 	def test_bots_are_ignored(self):
 		set_request({"events": [page_view("https://example.it/")]}, headers={"User-Agent": "Googlebot/2.1"})

@@ -393,8 +393,14 @@ class TestTheConversationOfARealPerson(FrappeTestCase):
 		from crm.api.conversations import remember, unread
 
 		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", SEEN)
+		# the company has to be a row of its own before the deal can point at it:
+		# on a deal `organization` is a Link, and unlike a lead a deal does not turn
+		# a name typed into that field into a CRM Organization by itself
+		organization = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": "Prova Srl"}
+		).insert(ignore_permissions=True)
 		deal = frappe.get_doc(
-			{"doctype": "CRM Deal", "lead": self.lead.name, "organization": "Prova Srl"}
+			{"doctype": "CRM Deal", "lead": self.lead.name, "organization": organization.name}
 		).insert(ignore_permissions=True)
 		self._sms("Incoming", "novità?", reference=("CRM Deal", deal.name))
 		remember("CRM Deal", deal.name)

@@ -130,6 +130,10 @@ def collect() -> dict:
 	stored = [t for t in (_store_event(visitor, session, event) for event in events) if t]
 	_bump_counters(visitor, session, stored)
 
+	# No commit of our own: the framework commits the beacon's POST when the request
+	# ends. Closing the transaction here instead would leave half a visit written if
+	# anything past this line failed, and would put every row a beacon writes beyond
+	# the reach of a caller that wanted to undo it.
 	_set_cookies(visitor.name, session.session_id, settings.visitor_cookie_days)
 	return {"ok": True, "vid": visitor.name, "sid": session.session_id}
 
