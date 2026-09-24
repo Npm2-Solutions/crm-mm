@@ -46,24 +46,16 @@
           v-if="connection.data?.has_app"
           :variant="connection.data?.connected ? 'outline' : 'solid'"
           :label="
-            connection.data?.connected
-              ? __('Reconnect Facebook')
-              : __('Connect with Facebook')
+            connection.data?.connected ? __('Reconnect Facebook') : __('Connect with Facebook')
           "
           @click="connectFacebook"
         />
-        <Button
-          v-else
-          :label="__('Open Meta settings')"
-          @click="goToMetaSettings"
-        />
+        <Button v-else :label="__('Open Meta settings')" @click="goToMetaSettings" />
       </div>
 
       <!-- profiles -->
       <div class="mb-2 flex items-center justify-between gap-2">
-        <span class="text-p-base-medium text-ink-gray-7">{{
-          __('Profiles')
-        }}</span>
+        <span class="text-p-base-medium text-ink-gray-7">{{ __('Profiles') }}</span>
         <Button
           v-if="connection.data?.connected"
           variant="solid"
@@ -89,23 +81,15 @@
             {{ platformInitial(account.platform) }}
           </span>
           <div class="min-w-0 flex-1">
-            <div class="truncate text-p-base text-ink-gray-8">
-              {{ account.account_name }}
-            </div>
-            <div class="truncate text-p-sm text-ink-gray-5">
-              {{ account.platform }}
-            </div>
+            <div class="truncate text-p-base text-ink-gray-8">{{ account.account_name }}</div>
+            <div class="truncate text-p-sm text-ink-gray-5">{{ account.platform }}</div>
           </div>
           <Switch
             :modelValue="Boolean(account.enabled)"
             size="sm"
             @update:modelValue="(v) => toggleAccount(account, v)"
           />
-          <Button
-            variant="ghost"
-            icon="lucide-trash-2"
-            @click="removeAccount(account)"
-          />
+          <Button variant="ghost" icon="lucide-trash-2" @click="removeAccount(account)" />
         </div>
       </div>
       <div
@@ -163,10 +147,7 @@ function importAccounts() {
       accounts.reload()
       connection.reload()
       toast.success(
-        __('{0} profiles imported, {1} updated', [
-          data.created || 0,
-          data.updated || 0,
-        ]),
+        __('{0} profiles imported, {1} updated', [data.created || 0, data.updated || 0]),
       )
     },
     onError: (e) => {

@@ -7,12 +7,7 @@
         </h2>
         <p class="text-p-base text-ink-gray-6">{{ subtitle }}</p>
       </div>
-      <Button
-        variant="solid"
-        :label="__('New link')"
-        iconLeft="plus"
-        @click="openEditor()"
-      />
+      <Button variant="solid" :label="__('New link')" iconLeft="plus" @click="openEditor()" />
     </div>
 
     <div class="flex-1 overflow-y-auto px-2">
@@ -33,11 +28,7 @@
           <span class="shrink-0 text-p-sm text-ink-gray-5">
             {{ link.click_count || 0 }} {{ __('clicks') }}
           </span>
-          <Button
-            variant="ghost"
-            icon="lucide-trash-2"
-            @click.stop="removeLink(link)"
-          />
+          <Button variant="ghost" icon="lucide-trash-2" @click.stop="removeLink(link)" />
         </div>
       </div>
       <div v-else-if="!links.loading" class="text-p-base text-ink-gray-5">
@@ -48,10 +39,7 @@
 
   <Dialog
     v-model="showEditor"
-    :options="{
-      title: form.name ? __('Edit link') : __('New link'),
-      size: 'lg',
-    }"
+    :options="{ title: form.name ? __('Edit link') : __('New link'), size: 'lg' }"
   >
     <template #body-content>
       <div class="flex flex-col gap-3">
@@ -68,32 +56,17 @@
           :label="__('Target URL')"
           :placeholder="'https://…'"
         />
-        <FormControl
-          v-model="form.description"
-          type="text"
-          :label="__('Description')"
-        />
+        <FormControl v-model="form.description" type="text" :label="__('Description')" />
       </div>
     </template>
     <template #actions>
-      <Button
-        class="w-full"
-        variant="solid"
-        :label="__('Save')"
-        @click="saveLink"
-      />
+      <Button class="w-full" variant="solid" :label="__('Save')" @click="saveLink" />
     </template>
   </Dialog>
 </template>
 
 <script setup>
-import {
-  createListResource,
-  createResource,
-  Dialog,
-  FormControl,
-  toast,
-} from 'frappe-ui'
+import { createListResource, createResource, Dialog, FormControl, toast } from 'frappe-ui'
 import { ref, reactive } from 'vue'
 
 const subtitle =
@@ -127,10 +100,7 @@ function saveLink() {
       params: {
         doctype: 'CRM Tracked Link',
         name: form.name,
-        fieldname: {
-          target_url: form.target_url,
-          description: form.description,
-        },
+        fieldname: { target_url: form.target_url, description: form.description },
       },
       auto: true,
       onSuccess: () => {
@@ -141,11 +111,7 @@ function saveLink() {
     })
   } else {
     links.insert.submit(
-      {
-        slug: form.slug,
-        target_url: form.target_url,
-        description: form.description,
-      },
+      { slug: form.slug, target_url: form.target_url, description: form.description },
       {
         onSuccess: () => {
           showEditor.value = false
