@@ -276,7 +276,7 @@
    "options": "CRM Communication Status"
   },
   {
-   "fetch_from": ".territory",
+   "fetch_from": "organization.territory",
    "fieldname": "territory",
    "fieldtype": "Link",
    "label": "Territory",

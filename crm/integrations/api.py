@@ -197,8 +197,13 @@ def adopt_unknown_number(number: str, display_name: str | None = None) -> tuple[
 	parsed = parse_phone_number(f"+{digits}")
 	mobile_no = parsed.get("formats", {}).get("E164") if parsed.get("is_valid") else f"+{digits}"
 
-	# two messages arriving together would otherwise each create their own lead
-	existing = frappe.db.get_value("CRM Lead", {"mobile_no": mobile_no, "converted": 0}, "name")
+	# somebody we already know, whether or not they have a deal -- two messages
+	# arriving together, and a customer writing from a number that never made it
+	# onto their address book entry. `converted = 0` here was the last place a
+	# returning customer could still be given a second record of their own.
+	from crm.api.lead import find_person
+
+	existing = find_person(phone=mobile_no)
 	if existing:
 		return existing, "CRM Lead"
 
@@ -479,7 +484,9 @@ def get_contact(phone_number: str, country: str = "IN", exact_match: bool = Fals
 	query = (
 		frappe.qb.from_(Lead)
 		.select(Lead.name, Lead.lead_name, Lead.image, Lead.mobile_no)
-		.where(Lead.converted == 0)
+		# no `converted = 0`: this is the fallback for a person whose address book
+		# entry is missing, and a customer without one is still the person who is
+		# calling. Excluding them is what resolved an incoming message to nobody.
 		.where(normalized_phone.like(f"%{cleaned_number}%"))
 		.orderby("modified", order=Order.desc)
 	)

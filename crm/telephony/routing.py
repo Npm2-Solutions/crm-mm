@@ -53,13 +53,25 @@ def logged_in(users: list[str]) -> set[str]:
 
 
 def record_owner(caller: str | None) -> str | None:
-	"""The salesperson who already knows this caller, if the number matches a record."""
+	"""The salesperson who already knows this caller, if the number matches a record.
+
+	Asked of the person, whether or not they have a deal. Filtering on
+	``converted = 0`` sent exactly the wrong caller to whoever happened to be
+	free: the one who already bought, whose salesperson knows them best. And it
+	only ever compared ``mobile_no``, so the number had to be written the same
+	way twice -- ``find_person`` reads the address book too.
+	"""
 	if not caller:
 		return None
+
 	owner = frappe.db.get_value("CRM Deal", {"mobile_no": caller}, "deal_owner")
-	if not owner:
-		owner = frappe.db.get_value("CRM Lead", {"mobile_no": caller, "converted": False}, "lead_owner")
-	return owner
+	if owner:
+		return owner
+
+	from crm.api.lead import find_person
+
+	person = find_person(phone=caller)
+	return frappe.db.get_value("CRM Lead", person, "lead_owner") if person else None
 
 
 def pick_attender(owners: dict, caller: str | None = None) -> dict | None:

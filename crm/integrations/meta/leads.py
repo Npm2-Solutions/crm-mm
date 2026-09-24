@@ -278,7 +278,7 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 
 	# the same human being can answer two ads, or the same ad twice: that is a
 	# second submission, not a second person
-	from crm.api.lead import find_person
+	from crm.api.lead import find_person, open_deal_for_inquiry
 
 	# only the mobile number, never the landline: a switchboard is shared by a
 	# whole company, and merging two colleagues into one person loses one of them
@@ -309,6 +309,8 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 		if unmapped:
 			_note_unmapped_answers(doc, unmapped)
 		_note_form_submitted(doc, form_id)
+		# a lead you paid for belongs in a pipeline from the moment it lands
+		open_deal_for_inquiry(doc.name, source=doc.source)
 		return "created"
 	except frappe.UniqueValidationError:
 		frappe.db.rollback(save_point="meta_lead")
@@ -333,6 +335,8 @@ def _merge_submission(
 	corrected by hand in the CRM outranks the one re-typed into an ad form. The
 	first touch is theirs already; this becomes the last one.
 	"""
+	from crm.api.lead import open_deal_for_inquiry
+
 	frappe.db.savepoint("meta_merge")
 	try:
 		doc = frappe.get_doc("CRM Lead", person)
@@ -354,6 +358,9 @@ def _merge_submission(
 		if unmapped:
 			_note_unmapped_answers(doc, unmapped)
 		_note_form_submitted(doc, form_id)
+		# the person is months old; this inquiry is not. If their last deal is
+		# closed, coming back is a new sale and gets a deal of its own
+		open_deal_for_inquiry(doc.name, source=doc.source)
 		return "merged"
 	except Exception:
 		# the person existed before this submission and must survive it failing

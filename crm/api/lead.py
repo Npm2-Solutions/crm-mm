@@ -76,6 +76,97 @@ def deal_names_of(lead: str) -> set[str]:
 	return names
 
 
+# A deal that is neither won nor lost is the conversation still in progress.
+CLOSED_DEAL_TYPES = ("Won", "Lost")
+
+
+def open_deal_of(person: str) -> str | None:
+	"""The deal this person has in progress, if any -- most recent first."""
+	names = deal_names_of(person)
+	if not names:
+		return None
+
+	for deal in frappe.get_all(
+		"CRM Deal",
+		filters={"name": ["in", list(names)]},
+		fields=["name", "status"],
+		order_by="modified desc",
+	):
+		if not deal.status:
+			return deal.name
+		if frappe.get_cached_value("CRM Deal Status", deal.status, "type") not in CLOSED_DEAL_TYPES:
+			return deal.name
+	return None
+
+
+def open_deal_for_inquiry(person: str, source: str | None = None) -> str | None:
+	"""The deal an inquiry belongs to: the one already open, or a new one.
+
+	The sale has one scale of states and it lives here. A person does not carry
+	a stage of their own -- they are a person, not a step -- so an inquiry that
+	is worth working has to open a deal, or it lands in no pipeline and nobody
+	sees it.
+
+	Not a second one while the first is open: two boards for the same
+	conversation is how a customer gets called twice about the same thing. But
+	once the last one closed -- won a year ago, lost in spring -- somebody
+	coming back is a *new* sale, with its own stage, its own response clock and
+	its own outcome. Collapsing that into the old deal is what the single
+	permanent status used to do, and it is the reason a customer who returned
+	stayed marked Lost.
+
+	Silent on failure by design: this is called from webhooks and public form
+	submissions, and a person who reached us must be saved even if the deal
+	cannot be.
+	"""
+	if not person:
+		return None
+
+	existing = open_deal_of(person)
+	if existing:
+		return existing
+
+	try:
+		person_doc = frappe.get_cached_doc("CRM Lead", person)
+		deal = frappe.new_doc("CRM Deal")
+		deal.lead = person
+		deal.organization = person_doc.organization
+		deal.source = source or person_doc.source
+		deal.deal_owner = person_doc.lead_owner
+		if person_doc.contact:
+			deal.append("contacts", {"contact": person_doc.contact, "is_primary": 1})
+
+		# where the person came from is where this deal came from, and converting
+		# by hand has always copied it. Not decoration: `stamp_manual_source`
+		# claims for "CRM UI" any record created by a signed-in user that nothing
+		# else has claimed -- and the hourly Meta reconciliation runs as one, so a
+		# deal born from an ad would otherwise report as typed into the CRM.
+		from crm.api.tracking import snapshot_fieldnames
+
+		deal.visitor = person_doc.visitor
+		for fieldname in snapshot_fieldnames():
+			deal.set(fieldname, person_doc.get(fieldname))
+		# no status: the deal controller puts it in the first stage of the
+		# default pipeline, which is the one place that decides where a sale starts
+		#
+		# and no forecast: with `enable_forecasting` on, the deal controller
+		# requires an expected value and a closing date, which nobody can supply
+		# from a webhook. Refused, it would be swallowed below and the sale would
+		# exist in no pipeline at all.
+		deal.flags.from_inquiry = True
+		deal.insert(ignore_permissions=True)
+
+		# `converted` is read as "has a deal" -- the quick filter says so
+		frappe.db.set_value("CRM Lead", person, "converted", 1, update_modified=False)
+		return deal.name
+	except Exception:
+		frappe.log_error(
+			title="Could not open a deal for an inquiry",
+			message=f"person: {person}\n\n{frappe.get_traceback()}",
+		)
+		return None
+
+
 @frappe.whitelist()
 def get_deals(lead: str) -> list[dict]:
 	"""The relationships this person has with us — none, one, or several.

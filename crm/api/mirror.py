@@ -35,6 +35,7 @@ FROM_ORGANIZATION = {
 	"no_of_employees": "no_of_employees",
 	"annual_revenue": "annual_revenue",
 	"industry": "industry",
+	"territory": "territory",
 	"company_description": "company_description",
 	"linkedin": "linkedin",
 	"twitter": "twitter",
