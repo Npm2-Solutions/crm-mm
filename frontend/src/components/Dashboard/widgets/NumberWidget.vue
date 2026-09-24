@@ -97,11 +97,22 @@ const fill = computed(() => colors(1, dark.value)[0])
 </script>
 
 <style scoped>
-/* the figure shrinks with its card, so a narrow tile still shows it whole */
+/* the figure shrinks with its card, so a narrow tile (the builder with the
+   library open) still shows "246.900 USD" whole; a normal row keeps 26px */
 .kpi {
   container-type: inline-size;
 }
 .kpi-value {
-  font-size: clamp(18px, 14cqi, 26px);
+  font-size: 26px;
+}
+@container (max-width: 170px) {
+  .kpi-value {
+    font-size: 21px;
+  }
+}
+@container (max-width: 135px) {
+  .kpi-value {
+    font-size: 17px;
+  }
 }
 </style>

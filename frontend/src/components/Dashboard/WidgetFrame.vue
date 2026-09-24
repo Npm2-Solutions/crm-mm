@@ -10,7 +10,10 @@
   >
     <div class="flex min-h-9 items-start justify-between gap-2 px-4 pt-3">
       <div class="flex min-w-0 items-center gap-1.5">
-        <span class="truncate text-sm font-medium text-ink-gray-7">
+        <span
+          class="truncate text-sm font-medium text-ink-gray-7"
+          :title="title"
+        >
           {{ title }}
         </span>
         <Tooltip v-if="description" :text="description" :hoverDelay="0.4">
