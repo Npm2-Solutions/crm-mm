@@ -93,6 +93,8 @@ class CRMAppointment(Document):
 			self.ends_on = add_to_date(get_datetime(self.starts_on), minutes=minutes, as_datetime=True)
 		if not self.color:
 			self.color = service.color
+		if not self.location and service.get("location"):
+			self.location = service.location
 		if not self.location:
 			# the room the appointment runs in is the most useful default location
 			for row in self.resources:

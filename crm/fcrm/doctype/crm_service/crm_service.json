@@ -13,6 +13,7 @@
   "color",
   "bookable_online",
   "description",
+  "location",
   "scheduling_section",
   "duration",
   "slot_interval",
@@ -27,6 +28,7 @@
   "online_confirmation",
   "online_overrides",
   "allow_staff_choice",
+  "hide_from_menu",
   "show_price_online",
   "online_slot_interval",
   "online_max_participants",
@@ -135,6 +137,12 @@
    "label": "Description"
   },
   {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "description": "Where it takes place: shown to the client and written on the appointment"
+  },
+  {
    "fieldname": "scheduling_section",
    "fieldtype": "Section Break",
    "label": "Scheduling"
@@ -218,6 +226,12 @@
    "fieldtype": "Check",
    "label": "Client Picks the Professional",
    "default": "1"
+  },
+  {
+   "fieldname": "hide_from_menu",
+   "fieldtype": "Check",
+   "label": "Only via Direct Link",
+   "description": "Not listed on the booking page menu; bookable through its own link"
   },
   {
    "fieldname": "show_price_online",

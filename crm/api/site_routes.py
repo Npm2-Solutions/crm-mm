@@ -180,6 +180,7 @@ def apply_website_fields(doc):
 	if doc.get("website_slug") and (reason := route_conflict(doc.website_slug)):
 		frappe.throw(reason, title=_("Reserved address"))
 
-	if doc.get("cta_type") == "Book" and not doc.get("booking_calendar"):
+	bookable_here = doc.doctype == "CRM Service" and doc.get("bookable_online")
+	if doc.get("cta_type") == "Book" and not doc.get("booking_calendar") and not bookable_here:
 		# Book with nowhere to book is a dead button on a live page
 		doc.cta_type = "None"

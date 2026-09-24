@@ -259,6 +259,8 @@
 
   var CRM_FORM_MARKER = '/crm-form/'
   var BOOKING_MARKER = '/book/'
+  // the unified booking page, embedded as an iframe on a site
+  var PRENOTA_MARKER = '/prenota'
 
   function scanForms() {
     scanIframes()
@@ -283,7 +285,12 @@
     for (var i = 0; i < frames.length; i++) {
       var frame = frames[i]
       var src = frame.getAttribute('src') || ''
-      if (src.indexOf(CRM_FORM_MARKER) === -1 && src.indexOf(BOOKING_MARKER) === -1) continue
+      if (
+        src.indexOf(CRM_FORM_MARKER) === -1 &&
+        src.indexOf(BOOKING_MARKER) === -1 &&
+        src.indexOf(PRENOTA_MARKER) === -1
+      )
+        continue
       if (src.indexOf('crm_vid=') !== -1) continue
       frame.setAttribute(
         'src',

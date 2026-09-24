@@ -200,8 +200,12 @@ def _tz_or(value: str | None, fallback: ZoneInfo) -> ZoneInfo:
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
-def get_catalog() -> dict:
-	"""The service menu: categories, services, professionals, page settings."""
+def get_catalog(service: str | None = None) -> dict:
+	"""The service menu: categories, services, professionals, page settings.
+
+	A service marked "only via direct link" is left out of the menu, but comes back
+	when the page was opened on its own link (``service``).
+	"""
 	config = _config()
 	names = frappe.get_all(
 		"CRM Service",
@@ -213,7 +217,11 @@ def get_catalog() -> dict:
 	for name in names:
 		service = frappe.get_cached_doc("CRM Service", name)
 		services.append(_service_card(service))
-	services = [card for card in services if card["bookable"]]
+	services = [
+		card
+		for card in services
+		if card["bookable"] and (card["listed"] or (service and service in (card["id"], card["name"])))
+	]
 	categories = []
 	for service in services:
 		if service["category"] and service["category"] not in categories:
@@ -276,6 +284,8 @@ def _service_card(service) -> dict:
 		"max_horizon_days": cint(rules.get("max_horizon_days")),
 		"manual_approval": rules.get("online_confirmation") == "Manual approval",
 		"bookable": bool(online_staff),
+		"listed": not cint(service.get("hide_from_menu")),
+		"location": service.get("location") or "",
 	}
 
 
@@ -575,6 +585,7 @@ def book(
 				"participants": rows,
 				"source": "Online",
 				"customer_notes": notes,
+				"location": doc.get("location") or None,
 			}
 		)
 		appointment.insert(ignore_permissions=True)

@@ -86,6 +86,8 @@ website_route_rules = [
 	{"from_route": "/book", "to_route": "book_index"},
 	# service self-booking; /prenota is the www page itself, /booking is its English alias
 	{"from_route": "/booking", "to_route": "prenota"},
+	# path-style links: /prenota/<servizio>, /prenota/p/<professionista>, /prenota/c/<categoria>
+	{"from_route": "/prenota/<path:prenota_path>", "to_route": "prenota"},
 	# hub-hosted WhatsApp Embedded Signup (one whitelisted domain for every site)
 	{"from_route": "/whatsapp-connect", "to_route": "whatsapp_connect"},
 ]
