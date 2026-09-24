@@ -266,7 +266,6 @@ def log_session_event(
 			"details": json.dumps(data)[:5000],
 		}
 	).insert(ignore_permissions=True)
-	frappe.db.commit()
 	return {"ok": True}
 
 

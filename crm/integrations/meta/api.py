@@ -333,7 +333,6 @@ def sync_forms(page_id: str) -> dict:
 	if not can_sync_leads(frappe.db.get_value("Facebook Page", page_id, "tasks")):
 		frappe.throw(_(NOT_GRANTED))
 	error = sync_forms_recording_failure(page_id, token)
-	frappe.db.commit()
 	return {
 		"error": error,
 		"forms": frappe.db.count("Facebook Lead Form", {"page": page_id}),
@@ -768,7 +767,6 @@ def retry_failed_leads(limit: int = 500) -> dict:
 		counts[result] = counts.get(result, 0) + 1
 		if result != "failed":
 			frappe.db.set_value("Failed Lead Sync Log", row.name, "type", "Synced")
-		frappe.db.commit()
 	return counts
 
 
@@ -811,5 +809,4 @@ def verify_webhook_subscriptions() -> dict:
 				),
 			}
 		)
-	frappe.db.commit()
 	return {"pages": report, "app_id": app_id}

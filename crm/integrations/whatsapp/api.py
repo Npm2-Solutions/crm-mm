@@ -571,7 +571,6 @@ def receive_connection():
 		frappe.log_error(frappe.get_traceback(), "WhatsApp: could not store the connection")
 		return Response("could not store account", status=500, mimetype="text/plain")
 
-	frappe.db.commit()
 	return Response(json.dumps({"ok": True, "account": name}), mimetype="application/json")
 
 
@@ -707,7 +706,6 @@ def receive_events():
 			continue
 		for key, value in counts.items():
 			tally[key] += value
-	frappe.db.commit()
 	return Response(json.dumps({"ok": True, **tally}), mimetype="application/json")
 
 

@@ -116,7 +116,6 @@ def _receive(request):
 					entry=part,
 					kind=kind,
 				)
-	frappe.db.commit()
 	return Response("ok", mimetype="text/plain")
 
 

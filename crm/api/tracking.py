@@ -129,7 +129,6 @@ def collect() -> dict:
 	stored = [t for t in (_store_event(visitor, session, event) for event in events) if t]
 	_bump_counters(visitor, session, stored)
 
-	frappe.db.commit()
 	_set_cookies(visitor.name, session.session_id, settings.visitor_cookie_days)
 	return {"ok": True, "vid": visitor.name, "sid": session.session_id}
 

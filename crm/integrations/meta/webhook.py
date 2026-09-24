@@ -108,7 +108,6 @@ def _receive(request):
 					created_time=value.get("created_time"),
 				)
 	remember_delivery("accepted")
-	frappe.db.commit()
 	return Response("ok", mimetype="text/plain")
 
 
