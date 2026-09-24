@@ -39,10 +39,12 @@ def get_context(context):
 		},
 	}
 	try:
-		title = frappe.db.get_single_value("CRM Scheduling Settings", "booking_page_title")
+		from crm.api.service_booking import page_branding
+
+		context.branding = page_branding()
 	except Exception:
-		title = None
-	context.title = title or "Prenota"
+		context.branding = {"title": "Prenota", "logo": "", "favicon": "", "css": {}}
+	context.title = context.branding["title"]
 	return context
 
 

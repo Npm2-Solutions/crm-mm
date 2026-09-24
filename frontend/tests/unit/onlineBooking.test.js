@@ -13,6 +13,8 @@ import {
   inheritedValue,
   isCustomised,
   setCustomised,
+  hexColour,
+  readableInk,
 } from '@/utils/onlineBooking'
 
 describe('bookingLink', () => {
@@ -253,5 +255,20 @@ describe('rule inheritance', () => {
     expect(form.min_notice_hours).toBe(2)
     setCustomised(form, 'max_horizon_days', false)
     expect(form.online_overrides).toEqual(['min_notice_hours'])
+  })
+})
+
+describe('booking page colour', () => {
+  it('normalises a colour or refuses it', () => {
+    expect(hexColour('#4C7EFF')).toBe('#4c7eff')
+    expect(hexColour('abc')).toBe('#aabbcc')
+    expect(hexColour('red')).toBe('')
+    expect(hexColour('')).toBe('')
+  })
+  it('picks readable text like the server does', () => {
+    expect(readableInk('#000000')).toBe('#ffffff')
+    expect(readableInk('#1f3a93')).toBe('#ffffff')
+    expect(readableInk('#ffffff')).toBe('#111111')
+    expect(readableInk('#ffd60a')).toBe('#111111')
   })
 })

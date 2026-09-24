@@ -38,6 +38,156 @@
         />
       </div>
 
+      <!-- the look: what clients see first -->
+      <section class="flex flex-col gap-3">
+        <h3 class="text-p-base-medium text-ink-gray-8">
+          {{ __('Look of the page') }}
+        </h3>
+        <div class="grid grid-cols-[1fr_320px] gap-5">
+          <div class="flex flex-col gap-4">
+            <FormControl
+              v-model="form.booking_page_title"
+              type="text"
+              :label="__('Title')"
+              :placeholder="brand.name || __('Book an appointment')"
+              :description="
+                brand.name
+                  ? __('Empty = your brand name ({0})', [brand.name])
+                  : __('Empty = \'Book an appointment\'')
+              "
+            />
+            <div class="flex items-center gap-4">
+              <div
+                class="flex size-14 shrink-0 items-center justify-center rounded-lg border border-outline-gray-2 bg-surface-gray-1"
+              >
+                <img
+                  v-if="logo"
+                  :src="logo"
+                  alt=""
+                  class="max-h-10 max-w-12 object-contain"
+                />
+                <span v-else class="lucide-image size-5 text-ink-gray-4" />
+              </div>
+              <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span class="text-p-sm-medium text-ink-gray-8">{{
+                  __('Logo')
+                }}</span>
+                <span class="text-p-xs text-ink-gray-5">
+                  {{
+                    form.booking_page_logo
+                      ? __('Its own logo.')
+                      : brand.logo
+                        ? __('Using your brand logo (Settings → Brand).')
+                        : __('PNG or SVG, about 200 × 48 px.')
+                  }}
+                </span>
+              </div>
+              <ImageUploader
+                image_type="image/*"
+                :image_url="form.booking_page_logo"
+                @upload="(url) => (form.booking_page_logo = url)"
+                @remove="() => (form.booking_page_logo = '')"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <span class="text-xs text-ink-gray-5">{{
+                __('Main colour')
+              }}</span>
+              <div class="flex flex-wrap items-center gap-3">
+                <ColourPicker
+                  :modelValue="form.booking_page_color"
+                  fallback="#171717"
+                  @update:modelValue="(v) => (form.booking_page_color = v)"
+                />
+                <FormControl
+                  v-model="form.booking_page_color"
+                  class="w-28"
+                  type="text"
+                  placeholder="#171717"
+                />
+                <Button
+                  v-if="form.booking_page_color"
+                  variant="ghost"
+                  size="sm"
+                  :label="__('Default')"
+                  @click="form.booking_page_color = ''"
+                />
+              </div>
+              <span class="text-p-xs text-ink-gray-5">
+                {{ __('Buttons, the chosen day and time, the steps.') }}
+              </span>
+            </div>
+            <FormControl
+              v-model="form.booking_page_intro"
+              type="textarea"
+              :rows="2"
+              :label="__('Intro text')"
+              :placeholder="
+                __('e.g. Book in a minute: you get a confirmation by email.')
+              "
+            />
+          </div>
+
+          <!-- live preview, same colours as the real page -->
+          <div
+            class="flex flex-col gap-3 self-start rounded-xl border border-outline-gray-2 bg-surface-gray-1 p-4"
+            :aria-label="__('Preview')"
+          >
+            <span class="text-p-xs uppercase text-ink-gray-5">{{
+              __('Preview')
+            }}</span>
+            <img
+              v-if="logo"
+              :src="logo"
+              alt=""
+              class="max-h-9 max-w-40 self-start object-contain"
+            />
+            <div class="text-lg font-semibold text-ink-gray-9">
+              {{
+                form.booking_page_title ||
+                brand.name ||
+                __('Book an appointment')
+              }}
+            </div>
+            <div
+              v-if="form.booking_page_intro"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{ form.booking_page_intro }}
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                v-for="(slot, i) in ['09:00', '09:30', '10:00']"
+                :key="slot"
+                class="rounded-md border px-2.5 py-1 text-p-sm"
+                :style="
+                  i === 1
+                    ? {
+                        background: accent,
+                        color: accentInk,
+                        borderColor: accent,
+                      }
+                    : {}
+                "
+                :class="
+                  i === 1
+                    ? ''
+                    : 'border-outline-gray-2 bg-surface-white text-ink-gray-8'
+                "
+              >
+                {{ slot }}
+              </span>
+            </div>
+            <span
+              class="rounded-md px-3 py-1.5 text-center text-p-sm-medium"
+              :style="{ background: accent, color: accentInk }"
+            >
+              {{ __('Confirm booking') }}
+            </span>
+          </div>
+        </div>
+      </section>
+
       <!-- link builder -->
       <section
         class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-3"
@@ -158,22 +308,6 @@
       </section>
 
       <section class="flex flex-col gap-3">
-        <h3 class="text-p-base-medium text-ink-gray-8">{{ __('Content') }}</h3>
-        <FormControl
-          v-model="form.booking_page_title"
-          type="text"
-          :label="__('Page title')"
-          :placeholder="__('Book an appointment')"
-        />
-        <FormControl
-          v-model="form.booking_page_intro"
-          type="textarea"
-          :rows="2"
-          :label="__('Intro text')"
-        />
-      </section>
-
-      <section class="flex flex-col gap-3">
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Privacy and notifications') }}
         </h3>
@@ -219,7 +353,14 @@
 
 <script setup>
 import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
-import { buildBookingLink, embedSnippet } from '@/utils/onlineBooking'
+import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
+import ImageUploader from '@/components/Controls/ImageUploader.vue'
+import {
+  buildBookingLink,
+  embedSnippet,
+  hexColour,
+  readableInk,
+} from '@/utils/onlineBooking'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import QRCode from 'qrcode'
 import { activeSettingsPage } from '@/composables/settings'
@@ -344,6 +485,8 @@ const CHECKS = [
 ]
 const FIELDS = [
   'booking_page_title',
+  'booking_page_logo',
+  'booking_page_color',
   'booking_page_intro',
   'privacy_policy_url',
   'max_active_per_customer',
@@ -364,6 +507,8 @@ const form = reactive({
   send_client_confirmation: true,
   notify_staff_on_booking: true,
   booking_page_title: '',
+  booking_page_logo: '',
+  booking_page_color: '',
   booking_page_intro: '',
   privacy_policy_url: '',
   max_active_per_customer: 0,
@@ -385,6 +530,7 @@ createResource({
   url: 'crm.api.appointments.get_scheduling_settings',
   auto: true,
   onSuccess: (data) => {
+    Object.assign(brand, data.brand || {})
     // a site not yet migrated has no value: keep the defaults above
     CHECKS.forEach((field) => {
       if (data[field] !== undefined && data[field] !== null)
@@ -396,6 +542,11 @@ createResource({
     })
   },
 })
+
+const brand = reactive({ name: '', logo: '' })
+const logo = computed(() => form.booking_page_logo || brand.logo)
+const accent = computed(() => hexColour(form.booking_page_color) || '#171717')
+const accentInk = computed(() => readableInk(accent.value))
 
 const summary = createResource({
   url: 'crm.api.booking_admin.get_inheritance_summary',

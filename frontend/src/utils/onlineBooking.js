@@ -341,3 +341,34 @@ export function effectiveForm(form) {
   }
   return out
 }
+
+/** `#rrggbb` for a colour typed or picked by hand, or `''` if it is not one. */
+export function hexColour(value) {
+  const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(
+    String(value || '').trim(),
+  )
+  if (!match) return ''
+  let digits = match[1].toLowerCase()
+  if (digits.length === 3) digits = [...digits].map((c) => c + c).join('')
+  return `#${digits}`
+}
+
+/**
+ * White or near-black text on a colour — the same rule the booking page uses
+ * (crm/scheduling/branding.py), so the preview matches what clients see.
+ */
+export function readableInk(colour) {
+  const hex = hexColour(colour)
+  if (!hex) return '#ffffff'
+  const lum = (h) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(h.slice(i, i + 2), 16) / 255
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const l = lum(hex)
+  const onWhite = 1.05 / (l + 0.05)
+  const onBlack = (l + 0.05) / (lum('#111111') + 0.05)
+  return onWhite >= onBlack ? '#ffffff' : '#111111'
+}
