@@ -46,3 +46,38 @@ describe('breakpoints', () => {
     expect(isMobileView.value).toBe(true)
   })
 })
+
+// A phone turned sideways: 844px wide, 390px tall. Wide enough to be mistaken
+// for a desktop, far too short to be one.
+describe('short viewports on a touch screen', () => {
+  function withPointer(matches) {
+    window.matchMedia = (query) => ({
+      matches: query.includes('coarse') ? matches : false,
+      addEventListener() {},
+      removeEventListener() {},
+    })
+  }
+
+  beforeEach(() => {
+    window.innerWidth = 1440
+    window.innerHeight = 900
+  })
+
+  it('treats a landscape phone as mobile', async () => {
+    withPointer(true)
+    const { isMobileView } = await import('@/composables/breakpoints?touch=yes')
+    window.innerWidth = 844
+    window.innerHeight = 390
+    window.dispatchEvent(new Event('resize'))
+    expect(isMobileView.value).toBe(true)
+  })
+
+  it('leaves a short desktop window alone — a mouse is not a finger', async () => {
+    withPointer(false)
+    const { isMobileView } = await import('@/composables/breakpoints?touch=no')
+    window.innerWidth = 1280
+    window.innerHeight = 420
+    window.dispatchEvent(new Event('resize'))
+    expect(isMobileView.value).toBe(false)
+  })
+})
