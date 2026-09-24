@@ -392,6 +392,71 @@ def also_the_person(reference_doctype: str, reference_name: str) -> set[tuple[st
 	return both
 
 
+# What a conversation row is made of. Fixed rather than configurable: these are
+# not columns somebody chose to see, they are the row itself.
+ROW = (
+	"name",
+	"lead_name",
+	"first_name",
+	"last_name",
+	"image",
+	"organization",
+	"mobile_no",
+	"last_conversation_on",
+	"last_conversation_channel",
+	"last_conversation_direction",
+	"last_conversation_preview",
+	"conversation_unread",
+)
+
+
+@frappe.whitelist()
+def people(
+	search: str = "",
+	waiting: bool | int | str = False,
+	filters: dict | str | None = None,
+	limit: int = 30,
+) -> list[dict]:
+	"""The column of people beside a record: a chat list, so it behaves like one.
+
+	`get_data` cannot serve this. A search across a name, a company and a phone
+	number is an OR across three columns, and that is not something a list of
+	AND filters can say — so somebody typing a surname would be told there is
+	nobody, because the surname is not in the field the filter happened to pick.
+
+	The order is the other reason. Sorting by `last_conversation_on` alone leaves
+	everybody who has never written in a heap, in whatever order the database
+	feels like: the list looked shuffled, because for most of it it was. Whoever
+	wrote last comes first; the rest fall back to when they were last touched,
+	which is at least an order somebody can predict.
+	"""
+	frappe.has_permission("CRM Lead", "read", throw=True)
+
+	conditions = frappe.parse_json(filters) if isinstance(filters, str) else dict(filters or {})
+	if waiting in (True, 1, "1", "true", "True"):
+		conditions["conversation_unread"] = 1
+
+	or_conditions = {}
+	search = (search or "").strip()
+	if search:
+		like = f"%{search}%"
+		or_conditions = {
+			"lead_name": ["like", like],
+			"organization": ["like", like],
+			"mobile_no": ["like", like],
+			"email": ["like", like],
+		}
+
+	return frappe.get_list(
+		"CRM Lead",
+		fields=list(ROW),
+		filters=conditions,
+		or_filters=or_conditions,
+		order_by="last_conversation_on desc, modified desc",
+		limit_page_length=min(int(limit), 200),
+	)
+
+
 @frappe.whitelist(methods=["POST"])
 def mark_seen(reference_doctype: str, reference_name: str) -> dict:
 	"""Somebody opened this conversation. Everything said until now is seen."""

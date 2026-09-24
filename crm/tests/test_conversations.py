@@ -79,6 +79,62 @@ class TestAPersonsConversationIncludesTheirDeals(FrappeTestCase):
 		)
 
 
+class TestTheColumnBesideARecord(FrappeTestCase):
+	"""It is a chat list, so it has to behave like one."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.wrote = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Giulia", "last_name": "Neri", "mobile_no": "+393331112223"}
+		).insert(ignore_permissions=True)
+		self.silent = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Paolo", "last_name": "Gialli"}
+		).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_whoever_wrote_last_comes_first(self):
+		from crm.api.conversations import people, remember
+
+		frappe.get_doc(
+			{
+				"doctype": "CRM SMS Message",
+				"type": "Incoming",
+				"message": "ci sei?",
+				"from": "+393331112223",
+				"to": "+390000000002",
+				"reference_doctype": "CRM Lead",
+				"reference_name": self.wrote.name,
+			}
+		).insert(ignore_permissions=True)
+		remember("CRM Lead", self.wrote.name)
+
+		found = [row.name for row in people(limit=200)]
+		self.assertIn(self.wrote.name, found)
+		self.assertIn(self.silent.name, found)
+		# and not in a heap: the one who wrote is ahead of the one who did not
+		self.assertLess(found.index(self.wrote.name), found.index(self.silent.name))
+
+	def test_a_search_looks_in_the_name_the_company_and_the_number(self):
+		from crm.api.conversations import people
+
+		self.assertIn(self.wrote.name, [row.name for row in people(search="Neri")])
+		self.assertIn(self.wrote.name, [row.name for row in people(search="3331112223")])
+		# and a surname that is not in the field the filter happened to pick must
+		# not answer «nobody»
+		self.assertNotIn(self.wrote.name, [row.name for row in people(search="Rossini")])
+
+	def test_only_the_ones_waiting_when_that_is_asked(self):
+		from crm.api.conversations import people
+
+		frappe.db.set_value("CRM Lead", self.wrote.name, "conversation_unread", 1, update_modified=False)
+		frappe.db.set_value("CRM Lead", self.silent.name, "conversation_unread", 0, update_modified=False)
+		waiting = [row.name for row in people(waiting=True, limit=200)]
+		self.assertIn(self.wrote.name, waiting)
+		self.assertNotIn(self.silent.name, waiting)
+
+
 class TestTheConversationOfARealPerson(FrappeTestCase):
 	"""End to end, with rows in the database."""
 
