@@ -79,3 +79,123 @@ class TestDashboardWidgets(IntegrationTestCase):
 				self.assertTrue(str(widget.title))
 				width, height = widget.size
 				self.assertTrue(1 <= width <= 20 and 1 <= height <= 40)
+
+
+PIPELINE = "Dashboard numbers"
+MARCH = ("2025-03-01", "2025-03-31")
+
+
+class TestSalesNumbers(IntegrationTestCase):
+	"""Known deals in a pipeline of their own, and the numbers they must add up to.
+
+	The period is March 2025; the one before it is the 31 days up to 28 February.
+	Every widget is asked about this pipeline only, so deals made by other tests
+	cannot move the numbers.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		frappe.set_user("Administrator")
+		if not frappe.db.exists("CRM Pipeline", PIPELINE):
+			frappe.get_doc({"doctype": "CRM Pipeline", "pipeline_name": PIPELINE}).insert(
+				ignore_permissions=True
+			)
+		for stage, kind, probability in (
+			("Numbers open", "Open", 20),
+			("Numbers won", "Won", 100),
+			("Numbers lost", "Lost", 0),
+		):
+			if not frappe.db.exists("CRM Deal Status", stage):
+				frappe.get_doc(
+					{
+						"doctype": "CRM Deal Status",
+						"deal_status": stage,
+						"type": kind,
+						"pipeline": PIPELINE,
+						"probability": probability,
+					}
+				).insert(ignore_permissions=True)
+		if not frappe.db.exists("CRM Lost Reason", "Numbers price"):
+			frappe.get_doc({"doctype": "CRM Lost Reason", "lost_reason": "Numbers price"}).insert(
+				ignore_permissions=True
+			)
+		frappe.db.delete("CRM Deal", {"pipeline": PIPELINE})
+
+		cls.deal("Numbers won", 1000, created="2025-02-10", closed="2025-03-05")
+		cls.deal("Numbers won", 2000, created="2025-03-02", closed="2025-03-20", owner=SALES_USER)
+		cls.deal("Numbers won", 3000, created="2025-03-10", closed="2025-03-31", owner=SALES_USER)
+		cls.deal("Numbers won", 500, created="2025-02-01", closed="2025-02-15")
+		cls.deal("Numbers lost", 800, created="2025-03-03", lost="2025-03-12")
+		cls.deal("Numbers open", 4000, created="2025-03-15", expected=5000)
+		cls.deal("Numbers open", 1500, created="2025-01-05")
+
+	@classmethod
+	def tearDownClass(cls):
+		frappe.db.rollback()
+		super().tearDownClass()
+
+	@staticmethod
+	def deal(stage, value, *, created, closed=None, lost=None, expected=None, owner="Administrator"):
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Deal",
+				"status": stage,
+				"deal_value": value,
+				"expected_deal_value": expected or value,
+				"expected_closure_date": closed or created,
+				"deal_owner": owner,
+				"lost_reason": "Numbers price" if lost else None,
+			}
+		).insert(ignore_permissions=True)
+		# saving stamps today on everything; put the deal back where it belongs in time
+		Deal = frappe.qb.DocType("CRM Deal")
+		frappe.qb.update(Deal).set(Deal.creation, f"{created} 10:00:00").set(
+			Deal.modified, f"{lost or closed or created} 10:00:00"
+		).set(Deal.closed_date, closed).where(Deal.name == doc.name).run()
+		if lost:
+			Log = frappe.qb.DocType("CRM Status Change Log")
+			frappe.qb.update(Log).set(Log.from_date, f"{lost} 10:00:00").where(Log.parent == doc.name).where(
+				Log.from_type == "Lost"
+			).run()
+
+	def answer(self, widget_id, user=None):
+		widget = registry.get(widget_id)
+		ctx = Context.build(
+			*MARCH,
+			requested_user=user,
+			scope=widget.scope,
+			config=widget.clean_config({"pipeline": PIPELINE}),
+		)
+		return widget.fn(ctx)
+
+	def test_won_lost_and_the_rate_between_them(self):
+		won = self.answer("won_deals")
+		self.assertEqual((won["value"], won["previous"]), (3, 1))
+		lost = self.answer("deals_lost")
+		self.assertEqual((lost["value"], lost["previous"]), (1, 0))
+		# 3 won of 4 closed, against 1 of 1 before: a fall of 25 points, not of 25%
+		rate = self.answer("win_rate")
+		self.assertEqual((rate["value"], rate["previous"]), (75, 100))
+		self.assertEqual((rate["delta"], rate["deltaUnit"]), (-25, "points"))
+
+	def test_revenue_is_what_was_won_in_the_period(self):
+		won = self.answer("won_value")
+		self.assertEqual((won["value"], won["previous"]), (6000, 500))
+		self.assertEqual(won["delta"], 1100)
+		self.assertEqual(self.answer("average_won_deal_value")["value"], 2000)
+
+	def test_new_deals_are_counted_when_they_were_opened(self):
+		new = self.answer("deals_new")
+		self.assertEqual((new["value"], new["previous"]), (4, 2))
+
+	def test_the_open_pipeline_is_worth_what_is_expected_of_it(self):
+		self.assertEqual(self.answer("deals_open")["value"], 2)
+		# the expected value when there is one (5000), else the deal value (1500)
+		self.assertEqual(self.answer("pipeline_value")["value"], 6500)
+		self.assertEqual(self.answer("weighted_pipeline")["value"], 1300)
+
+	def test_one_salesperson_sees_their_own_deals(self):
+		self.assertEqual(self.answer("won_deals", user=SALES_USER)["value"], 2)
+		self.assertEqual(self.answer("won_value", user=SALES_USER)["value"], 5000)
+		self.assertEqual(self.answer("deals_open", user=SALES_USER)["value"], 0)
