@@ -19,13 +19,34 @@ export default defineConfig(async ({ mode }) => {
         devOptions: {
           enabled: true,
         },
+        // The app lives at /crm; the bundle lives under /assets/crm/frontend/.
+        // vite-plugin-pwa derives `scope` from `base`, so the manifest shipped a
+        // scope of /assets/crm/frontend/ with a start_url of /crm — outside it.
+        // A browser that takes the declared scope then treats every screen of
+        // the app as off-scope. Both are pinned to /crm here, and `id` is set so
+        // the install keeps its identity if the paths ever move.
         manifest: {
-          display: 'standalone',
-          name: 'Frappe CRM',
-          short_name: 'Frappe CRM',
+          id: '/crm',
+          scope: '/crm',
           start_url: '/crm',
+          display: 'standalone',
+          name: 'NPM2 Solutions',
+          short_name: 'NPM2',
           description:
-            'Modern & 100% Open-source CRM tool to supercharge your sales operations',
+            'Conversazioni, agenda e trattative: il gestionale NPM2 Solutions.',
+          // was #42b883 — Vue's green, inherited from the plugin's default and
+          // never anyone's brand. The app's own chrome is white.
+          theme_color: '#ffffff',
+          background_color: '#ffffff',
+          // long-press the installed icon: the two screens the phone is for
+          shortcuts: [
+            {
+              name: 'Conversazioni',
+              short_name: 'Chat',
+              url: '/crm/conversazioni',
+            },
+            { name: 'Calendario', short_name: 'Agenda', url: '/crm/calendar' },
+          ],
           icons: [
             {
               src: '/assets/crm/manifest/manifest-icon-192.maskable.png',
