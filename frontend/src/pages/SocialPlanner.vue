@@ -2,7 +2,9 @@
   <LayoutHeader>
     <template #left-header>
       <Breadcrumbs
-        :items="[{ label: __('Social Planner'), route: { name: 'Social Planner' } }]"
+        :items="[
+          { label: __('Social Planner'), route: { name: 'Social Planner' } },
+        ]"
       />
     </template>
     <template #right-header>
@@ -13,7 +15,12 @@
         iconLeft="settings"
         @click="openSocialSettings"
       />
-      <Button variant="solid" :label="__('New post')" iconLeft="plus" @click="openComposer()" />
+      <Button
+        variant="solid"
+        :label="__('New post')"
+        iconLeft="plus"
+        @click="openComposer()"
+      />
     </template>
   </LayoutHeader>
 
@@ -43,11 +50,21 @@
       <!-- month navigation -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1">
-          <Button variant="ghost" icon="lucide-chevron-left" @click="shiftMonth(-1)" />
-          <span class="w-44 text-center text-lg font-semibold capitalize text-ink-gray-9">
+          <Button
+            variant="ghost"
+            icon="lucide-chevron-left"
+            @click="shiftMonth(-1)"
+          />
+          <span
+            class="w-44 text-center text-lg font-semibold capitalize text-ink-gray-9"
+          >
             {{ monthLabel }}
           </span>
-          <Button variant="ghost" icon="lucide-chevron-right" @click="shiftMonth(1)" />
+          <Button
+            variant="ghost"
+            icon="lucide-chevron-right"
+            @click="shiftMonth(1)"
+          />
         </div>
         <div class="flex items-center gap-3">
           <div class="hidden items-center gap-3 sm:flex">
@@ -56,7 +73,10 @@
               :key="legend.label"
               class="flex items-center gap-1.5 text-xs text-ink-gray-5"
             >
-              <span class="size-2 rounded-full" :style="{ backgroundColor: legend.color }" />
+              <span
+                class="size-2 rounded-full"
+                :style="{ backgroundColor: legend.color }"
+              />
               {{ legend.label }}
             </span>
           </div>
@@ -64,9 +84,64 @@
         </div>
       </div>
 
+      <!-- month agenda (phone): seven columns give each day 55px, which is
+           narrower than the time on the chip inside it. Same month, listed. -->
+      <div
+        v-if="isMobileView"
+        class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-white shadow-sm"
+      >
+        <div
+          v-if="!scheduledDays.length"
+          class="px-3 py-8 text-center text-sm text-ink-gray-5"
+        >
+          {{ __('Nothing scheduled this month') }}
+        </div>
+        <div v-for="cell in scheduledDays" :key="cell.key" class="px-3 py-2.5">
+          <div class="mb-2 flex items-center gap-2">
+            <span
+              class="text-sm font-medium capitalize"
+              :class="cell.isToday ? 'text-ink-gray-9' : 'text-ink-gray-7'"
+            >
+              {{ dayLabel(cell.date) }}
+            </span>
+            <span v-if="cell.isToday" class="text-xs text-ink-gray-5">
+              {{ __('Today') }}
+            </span>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <button
+              v-for="post in cell.posts"
+              :key="post.name"
+              class="flex min-w-0 items-center gap-2 rounded-md border-l-2 px-2 py-1.5 text-left text-xs leading-tight"
+              :class="chipClass(post.status)"
+              :style="{ borderLeftColor: statusColor(post.status) }"
+              @click="openComposer(post)"
+            >
+              <span class="flex shrink-0 -space-x-1">
+                <span
+                  v-for="platform in chipPlatforms(post)"
+                  :key="platform"
+                  class="size-2.5 rounded-full ring-1 ring-white"
+                  :style="{ backgroundColor: platformColor(platform) }"
+                />
+              </span>
+              <span class="shrink-0 tabular-nums text-ink-gray-5">
+                {{ timeOf(post.scheduled_at) }}
+              </span>
+              <span class="truncate">{{ post.content }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- month grid -->
-      <div class="overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-white shadow-sm">
-        <div class="grid grid-cols-7 border-b border-outline-gray-2 bg-surface-gray-1">
+      <div
+        v-else
+        class="overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-white shadow-sm"
+      >
+        <div
+          class="grid grid-cols-7 border-b border-outline-gray-2 bg-surface-gray-1"
+        >
           <div
             v-for="d in dayNames"
             :key="d"
@@ -145,14 +220,20 @@
         <div class="mb-2 text-base font-semibold text-ink-gray-9">
           {{ __('Drafts & pending approval') }}
         </div>
-        <div class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2">
+        <div
+          class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2"
+        >
           <div
             v-for="post in unscheduled"
             :key="post.name"
             class="flex cursor-pointer items-center gap-3 bg-surface-white px-3 py-2.5 hover:bg-surface-gray-1"
             @click="openComposer(post)"
           >
-            <Badge :label="__(post.status)" :theme="badgeTheme(post.status)" size="sm" />
+            <Badge
+              :label="__(post.status)"
+              :theme="badgeTheme(post.status)"
+              size="sm"
+            />
             <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">
               {{ post.content }}
             </span>
@@ -191,19 +272,30 @@
               :style="{ backgroundColor: platformColor(platform) }"
             />
           </span>
-          <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">{{ post.content }}</span>
-          <Badge :label="__(post.status)" :theme="badgeTheme(post.status)" size="sm" />
+          <span class="min-w-0 flex-1 truncate text-sm text-ink-gray-8">{{
+            post.content
+          }}</span>
+          <Badge
+            :label="__(post.status)"
+            :theme="badgeTheme(post.status)"
+            size="sm"
+          />
         </div>
       </div>
     </template>
   </Dialog>
 
   <!-- composer dialog -->
-  <Dialog v-model="showComposer" :options="{ title: composerTitle, size: 'xl' }">
+  <Dialog
+    v-model="showComposer"
+    :options="{ title: composerTitle, size: 'xl' }"
+  >
     <template #body-content>
       <div class="flex flex-col gap-4">
         <div>
-          <div class="mb-1.5 text-xs font-medium text-ink-gray-5">{{ __('Profiles') }}</div>
+          <div class="mb-1.5 text-xs font-medium text-ink-gray-5">
+            {{ __('Profiles') }}
+          </div>
           <div class="flex flex-wrap gap-1.5">
             <button
               v-for="account in accounts.data || []"
@@ -270,14 +362,21 @@
               :src="form.media"
               class="h-10 w-10 rounded-md object-cover"
             />
-            <a :href="form.media" target="_blank" class="truncate text-sm text-ink-gray-5 underline">
+            <a
+              :href="form.media"
+              target="_blank"
+              class="truncate text-sm text-ink-gray-5 underline"
+            >
               {{ form.media.split('/').pop() }}
             </a>
             <Button variant="ghost" icon="lucide-x" @click="form.media = ''" />
           </template>
         </div>
 
-        <details v-if="form.targets.length" class="rounded-md border border-outline-gray-1 p-2">
+        <details
+          v-if="form.targets.length"
+          class="rounded-md border border-outline-gray-1 p-2"
+        >
           <summary class="cursor-pointer text-sm text-ink-gray-6">
             {{ __('Customize per profile (optional)') }}
           </summary>
@@ -295,19 +394,34 @@
         </details>
 
         <div class="grid grid-cols-2 gap-3">
-          <FormControl v-model="form.scheduled_at" type="datetime-local" :label="__('Schedule at')" />
+          <FormControl
+            v-model="form.scheduled_at"
+            type="datetime-local"
+            :label="__('Schedule at')"
+          />
           <FormControl
             v-model="form.recurrence"
             type="select"
             :label="__('Repeat')"
-            :options="['None', 'Daily', 'Weekly', 'Monthly'].map((r) => ({ label: __(r), value: r }))"
+            :options="
+              ['None', 'Daily', 'Weekly', 'Monthly'].map((r) => ({
+                label: __(r),
+                value: r,
+              }))
+            "
           />
         </div>
 
         <div v-if="editingStatus" class="text-xs text-ink-gray-5">
           {{ __('Status') }}: {{ __(editingStatus) }}
           <template v-if="targetErrors.length">
-            <div v-for="err in targetErrors" :key="err" class="mt-1 text-ink-red-4">{{ err }}</div>
+            <div
+              v-for="err in targetErrors"
+              :key="err"
+              class="mt-1 text-ink-red-4"
+            >
+              {{ err }}
+            </div>
           </template>
         </div>
       </div>
@@ -338,8 +452,17 @@
               :label="__('Approve')"
               @click="save('Scheduled')"
             />
-            <Button variant="solid" :label="__('Schedule')" @click="save('Scheduled')" />
-            <Button variant="solid" theme="green" :label="__('Publish now')" @click="publishNow" />
+            <Button
+              variant="solid"
+              :label="__('Schedule')"
+              @click="save('Scheduled')"
+            />
+            <Button
+              variant="solid"
+              theme="green"
+              :label="__('Publish now')"
+              @click="publishNow"
+            />
           </template>
         </div>
       </div>
@@ -349,6 +472,7 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
@@ -404,8 +528,25 @@ function startOfMonth(d) {
 }
 
 const monthLabel = computed(() =>
-  current.value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
+  current.value.toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  }),
 )
+
+// Only the days that have something on them: a phone list of 42 empty rows is
+// not a calendar, it is a scroll.
+const scheduledDays = computed(() =>
+  cells.value.filter((cell) => cell.inMonth && cell.posts.length),
+)
+
+function dayLabel(date) {
+  return date.toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+}
 
 const rangeStart = computed(() => {
   const first = new Date(current.value)
@@ -487,7 +628,11 @@ const unscheduled = computed(() =>
 )
 
 function shiftMonth(delta) {
-  current.value = new Date(current.value.getFullYear(), current.value.getMonth() + delta, 1)
+  current.value = new Date(
+    current.value.getFullYear(),
+    current.value.getMonth() + delta,
+    1,
+  )
   posts.reload()
 }
 
@@ -505,7 +650,8 @@ function chipClass(status) {
   return (
     {
       Scheduled: 'bg-surface-gray-1 text-ink-gray-8 hover:bg-surface-gray-2',
-      'Pending Approval': 'bg-surface-amber-1 text-ink-amber-3 hover:bg-surface-amber-2',
+      'Pending Approval':
+        'bg-surface-amber-1 text-ink-amber-3 hover:bg-surface-amber-2',
       Published: 'bg-surface-green-1 text-ink-green-4 hover:bg-surface-green-2',
       Failed: 'bg-surface-red-1 text-ink-red-4 hover:bg-surface-red-2',
       Draft:
@@ -593,7 +739,11 @@ function isSelected(account) {
 
 function toggleAccount(account) {
   const i = form.targets.findIndex((t) => t.account == account)
-  i == -1 ? form.targets.push({ account, override_content: '' }) : form.targets.splice(i, 1)
+  if (i == -1) {
+    form.targets.push({ account, override_content: '' })
+  } else {
+    form.targets.splice(i, 1)
+  }
 }
 
 function payload(status) {
@@ -604,7 +754,9 @@ function payload(status) {
       content: form.content,
       media: form.media,
       recurrence: form.recurrence,
-      scheduled_at: form.scheduled_at ? form.scheduled_at.replace('T', ' ') + ':00' : null,
+      scheduled_at: form.scheduled_at
+        ? form.scheduled_at.replace('T', ' ') + ':00'
+        : null,
       targets: form.targets,
     },
   }
