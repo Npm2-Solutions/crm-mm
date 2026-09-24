@@ -15,7 +15,12 @@ export function splitColumnsForCard(columns = []) {
   const indexed = columns.map((column, _idx) => ({ ...column, _idx }))
 
   const title = indexed[0] || null
-  const trailing = indexed.find((column) => column.key === 'modified') || null
+  // «Last modified» on most lists, «Created on» where there is no modified —
+  // call logs. Either way it is a timestamp, and a timestamp belongs top-right.
+  const trailing =
+    indexed.find((column) => column.key === 'modified') ||
+    indexed.find((column) => column.key === 'creation') ||
+    null
 
   const details = indexed.filter(
     (column) => column !== title && column.key !== trailing?.key,
@@ -46,4 +51,28 @@ export function hasCellValue(item) {
     return meaningful.some((key) => hasCellValue(item[key]))
   }
   return String(item).trim().length > 0
+}
+
+/**
+ * The three slots filled in for one row.
+ *
+ * `splitColumnsForCard` answers for the whole list; this answers for a row,
+ * because which cells are empty depends on the row. Two things it settles:
+ * empty details are dropped, and a row whose title cell is empty — an unknown
+ * caller, a person with no name yet — gets the first thing it does have as its
+ * heading, rather than rendering a card with nothing at the top and the first
+ * detail floating up next to the checkbox.
+ */
+export function cardFor(row, columns) {
+  const filled = (column) => !!column && hasCellValue(row?.[column.key])
+  const details = columns.details.filter(filled)
+  let title = columns.title
+
+  if (!filled(title)) title = details.shift() || title
+
+  return {
+    title,
+    trailing: filled(columns.trailing) ? columns.trailing : null,
+    details,
+  }
 }
