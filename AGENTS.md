@@ -57,6 +57,16 @@ they run as evaluated strings in the browser.
 | `frontend/src/stores/meta.js` | `getMeta(doctype)` — fetches DocType meta, exposes `getFields()`, formatters |
 | `frontend/src/stores/global.js` | `$dialog`, `$socket`, `makeCall` |
 
+### Dashboard
+| File | Role |
+|---|---|
+| `crm/dashboard/` | Widget registry, context (period, owners), chart payloads, features, templates, store |
+| `crm/dashboard/widgets/` | The widget catalogue, one file per module — `@widget(id, category, kind, requires=…)` |
+| `crm/api/dashboard.py` | Dashboards list/layout/catalogue, widget data in one request, save/reset |
+| `frontend/src/pages/Dashboard.vue` + `components/Dashboard/` | Switcher, period, builder (grid + widget library), the widget kinds |
+| `frontend/src/utils/dashboard.js`, `dashboardCharts.js` | Pure: periods, formats, grid, catalogue search, palette, ECharts options — tested |
+| `docs/progetto-ghl/28-dashboard.md` | What it does and why |
+
 ### Service booking & external platforms
 | File | Role |
 |---|---|
@@ -78,7 +88,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **118 tests · ~250ms** — all must pass before committing
+- **389 tests · ~5s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
