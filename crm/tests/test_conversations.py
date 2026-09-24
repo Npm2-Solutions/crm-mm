@@ -41,10 +41,33 @@ class TestAPreviewIsOnlyAPreview(FrappeTestCase):
 
 		from crm.api.conversations import quietly
 
-		with patch("crm.api.conversations.remember", side_effect=RuntimeError("boom")):
+		with (
+			patch("crm.api.conversations.remember", side_effect=RuntimeError("boom")),
+			patch("frappe.log_error") as logged,
+		):
 			# no exception: the message was already sent, and where the person
 			# sits in a list is not worth taking it down for
 			quietly("CRM Lead", "whatever")
+
+		# and the fault is not simply swallowed: the point of the handler is the
+		# line it leaves behind, so a bare `except: pass` must not pass this
+		logged.assert_called_once()
+
+	def test_the_line_in_the_log_is_not_itself_the_fault(self):
+		from functools import partial
+		from unittest.mock import patch
+
+		from crm.api.conversations import quiet
+
+		def blow_up(_who) -> None:
+			raise RuntimeError("boom")
+
+		# the line is titled after whatever was run, and a `partial` has no name —
+		# nor has a callable object, nor a mock standing in for one of ours. Asking
+		# for one must not be what finally takes the message down
+		with patch("frappe.log_error") as logged:
+			quiet(partial(blow_up, "CRM Lead"))
+		logged.assert_called_once()
 
 
 class TestTheBadgeSetting(FrappeTestCase):
@@ -215,6 +238,23 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, days=2))
 		wake_the_snoozed()
 		self.assertTrue(self._state("conversation_snoozed_until"))
+
+	def test_the_moment_is_the_same_moment_however_it_was_said(self):
+		from frappe.utils import add_to_date, get_datetime
+
+		from crm.api.conversations import set_state
+
+		# the browser says the moment as a string and our own code as a datetime,
+		# because `add_to_date` hands one back; both park the conversation, and both
+		# park it at the same instant
+		moment = add_to_date(None, days=3)
+
+		set_state("CRM Lead", self.lead.name, "Snoozed", until=moment)
+		parked = self._state("conversation_snoozed_until")
+		self.assertTrue(parked)
+
+		set_state("CRM Lead", self.lead.name, "Snoozed", until=str(moment))
+		self.assertEqual(get_datetime(self._state("conversation_snoozed_until")), get_datetime(parked))
 
 	def test_snoozing_needs_a_moment_to_snooze_until(self):
 		from crm.api.conversations import set_state
