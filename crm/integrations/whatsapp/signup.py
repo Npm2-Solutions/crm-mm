@@ -187,7 +187,8 @@ SIGNUP_HINTS = (
 			"picture, and that read is part of Coexistence. If Coexistence is not switched on "
 			"for the flow, there is no right to read it. The second candidate is the business "
 			"portfolio chosen a screen earlier, where Admin is required and membership is not "
-			"enough. What it is almost certainly not is the phone number itself."
+			"enough. It is almost certainly not the phone number itself, which is only the "
+			"field being filled in when the refusal lands, and so the first place anybody looks."
 		),
 	),
 	(

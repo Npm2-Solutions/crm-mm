@@ -211,7 +211,10 @@ class TestCoexistenceRouting(IntegrationTestCase):
 			C.message_body({"type": "reaction", "reaction": {"emoji": "👍"}}), ("👍", "reaction")
 		)
 		self.assertEqual(C.message_body({"type": "image", "image": {"caption": "foto"}}), ("foto", "image"))
-		self.assertEqual(C.message_body({"type": "image", "image": {}}), ("[image]", "image"))
+		# Nothing, not «[image]»: the photo is fetched from the id and attached to
+		# the row, so a body naming the type would be saying under the picture what
+		# the picture already says. `test_whatsapp.py` covers the same rule.
+		self.assertEqual(C.message_body({"type": "image", "image": {}}), ("", "image"))
 
 	def test_business_number_is_normalised(self):
 		self.assertEqual(
@@ -379,9 +382,15 @@ class TestOneClickLaunch(IntegrationTestCase):
 	"""
 
 	def setUp(self):
+		# Both ids, because the hub page launches nothing without both. The app id
+		# is the dialog's `client_id`, and Facebook answers an empty one with its
+		# own error page — so the page is right to draw the card instead, and a
+		# test of the launch has to supply the id a connected hub would have.
+		frappe.local.conf["whatsapp_app_id"] = "APP1"
 		frappe.local.conf["whatsapp_signup_config_id"] = "CONF1"
 
 	def tearDown(self):
+		frappe.local.conf.pop("whatsapp_app_id", None)
 		frappe.local.conf.pop("whatsapp_signup_config_id", None)
 		frappe.db.rollback()
 
@@ -958,6 +967,7 @@ class TestOneClickWhereTheDomainAllowsIt(IntegrationTestCase):
 
 	def test_the_connect_call_says_where_the_flow_would_open(self):
 		from crm.integrations.meta.client import get_settings
+		from crm.integrations.whatsapp import api as A
 		from crm.integrations.whatsapp.api import get_connect_url, save_whatsapp_app
 
 		settings = get_settings()
@@ -966,7 +976,12 @@ class TestOneClickWhereTheDomainAllowsIt(IntegrationTestCase):
 		settings.save()
 		save_whatsapp_app(whatsapp_signup_config_id="222")
 
-		data = get_connect_url()
+		# The call refuses outright where frappe_whatsapp is absent, and rightly:
+		# there is nowhere to put the account the flow ends in. That gate is not
+		# what is under test here — where the browser is sent is — and the app
+		# need not be on the bench for the answer to be checked.
+		with patch.object(A, "whatsapp_installed", return_value=True):
+			data = get_connect_url()
 		# enough to open Facebook without the page in between
 		self.assertEqual(data["app_id"], "111")
 		self.assertEqual(data["config_id"], "222")
@@ -1015,31 +1030,57 @@ class TestTheLastStepThatFailedAfterMetaFinished(IntegrationTestCase):
 			frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
 			shared = "shared-token"
 
-		# nobody holds it yet: the first account may have it
-		self.assertEqual(account_verify_token("PHONE_A"), shared)
+		# Who holds the token is read off `WhatsApp Account`, frappe_whatsapp's own
+		# table, which a bench without that app does not have. What is under test is
+		# what the code makes of the answer, not the SQL that fetches it, so the
+		# answer is handed over and the rule is checked everywhere instead of
+		# skipped. Every other lookup still goes to the real database.
+		asked = []
+		real_get_value = frappe.db.get_value
+
+		def nobody_holds_it(doctype, filters=None, *args, **kwargs):
+			if doctype != "WhatsApp Account":
+				return real_get_value(doctype, filters, *args, **kwargs)
+			asked.append(filters)
+			return None
+
+		with patch.object(frappe.db, "get_value", side_effect=nobody_holds_it):
+			# nobody holds it yet: the first account may have it
+			self.assertEqual(account_verify_token("PHONE_A"), shared)
+
+		# and it went looking for the holder of *this* token -- the one the setting
+		# carries -- which is the only question that decides the answer above
+		self.assertEqual(asked, [{"webhook_verify_token": shared}])
 
 	def test_a_second_number_does_not_take_a_token_that_is_taken(self):
 		from crm.integrations.whatsapp.api import account_verify_token
 
-		if "WhatsApp Account" not in (frappe.db.get_tables() or []):
-			self.skipTest("frappe_whatsapp is not installed on this bench")
-
 		frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "shared-token")
 		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
-		frappe.get_doc(
-			{
-				"doctype": "WhatsApp Account",
-				"account_name": "primo",
-				"phone_id": "PHONE_A",
-				"business_id": "WABA_A",
-				"webhook_verify_token": "shared-token",
-			}
-		).insert(ignore_permissions=True)
 
-		# the same number keeps it; a different one gets its own
-		self.assertEqual(account_verify_token("PHONE_A"), "shared-token")
-		self.assertNotEqual(account_verify_token("PHONE_B"), "shared-token")
-		self.assertTrue(account_verify_token("PHONE_B"))
+		# One account already holds the shared token. It would be a row of
+		# `WhatsApp Account` -- frappe_whatsapp's table, absent from a bench without
+		# the app -- so the table is stood in for, and the stand-in answers whatever
+		# filter it is handed the way the database would: ask it for the holder of
+		# anything other than the token and it finds nobody.
+		accounts = [{"name": "primo", "phone_id": "PHONE_A", "webhook_verify_token": "shared-token"}]
+		real_get_value = frappe.db.get_value
+
+		def holder_lookup(doctype, filters=None, *args, **kwargs):
+			if doctype != "WhatsApp Account":
+				return real_get_value(doctype, filters, *args, **kwargs)
+			for row in accounts:
+				if all(row.get(field) == value for field, value in (filters or {}).items()):
+					return frappe._dict(row)
+			return None
+
+		with patch.object(frappe.db, "get_value", side_effect=holder_lookup):
+			# the same number keeps it; a different one gets its own
+			self.assertEqual(account_verify_token("PHONE_A"), "shared-token")
+			second = account_verify_token("PHONE_B")
+
+		self.assertNotEqual(second, "shared-token")
+		self.assertTrue(second)
 
 	def test_no_shared_token_means_no_value_at_all(self):
 		"""Not an empty string: the field is unique, and a second empty string
@@ -1063,6 +1104,7 @@ class TestTheSDKChoosesTheRedirectWhenWeDoNot(IntegrationTestCase):
 
 	def test_the_connect_call_hands_over_the_registered_address(self):
 		from crm.integrations.meta.client import get_settings
+		from crm.integrations.whatsapp import api as A
 		from crm.integrations.whatsapp.api import get_connect_url, hub_url, save_whatsapp_app
 		from crm.integrations.whatsapp.signup import CONNECT_PATH
 
@@ -1072,7 +1114,11 @@ class TestTheSDKChoosesTheRedirectWhenWeDoNot(IntegrationTestCase):
 		settings.save()
 		save_whatsapp_app(whatsapp_signup_config_id="222")
 
-		data = get_connect_url()
+		# the address handed to the SDK is decided before frappe_whatsapp is
+		# consulted, so the gate that needs the app is stood aside rather than
+		# taking this assertion with it
+		with patch.object(A, "whatsapp_installed", return_value=True):
+			data = get_connect_url()
 		# the hub's page — never this site's, which on a client CRM is the client
 		self.assertEqual(data["redirect_uri"], f"{hub_url().rstrip('/')}{CONNECT_PATH}")
 		# and no query on it: the registered value has none

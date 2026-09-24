@@ -437,7 +437,15 @@ class TestAConversationIsNotSplitInTwo(FrappeTestCase):
 		frappe.db.rollback()
 
 	def test_what_was_already_said_to_the_number_goes_to_the_record(self):
+		from crm.integrations.whatsapp.api import whatsapp_installed
 		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		# the conversation being filed is rows of `WhatsApp Message`, which is
+		# frappe_whatsapp's doctype: without that app there is nothing to file.
+		# Asked of `get_tables()` this was never false -- that returns raw table
+		# names, "tabWhatsApp Message" among them -- and the test never ran.
+		if not whatsapp_installed():
+			self.skipTest("frappe_whatsapp is not installed on this bench")
 
 		number = "393889829151"
 		names = []
@@ -468,7 +476,11 @@ class TestAConversationIsNotSplitInTwo(FrappeTestCase):
 	def test_it_looks_at_both_directions(self):
 		"""The counterparty is `to` on something we sent and `from` on something
 		that arrived, so asking only one field would leave half of them behind."""
+		from crm.integrations.whatsapp.api import whatsapp_installed
 		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		if not whatsapp_installed():
+			self.skipTest("frappe_whatsapp is not installed on this bench")
 
 		number = "393400000001"
 		doc = frappe.get_doc(
@@ -487,7 +499,11 @@ class TestAConversationIsNotSplitInTwo(FrappeTestCase):
 		self.assertEqual(adopt_orphans(number, "CRM Lead", "CRM-LEAD-TEST-0002"), 1)
 
 	def test_a_message_already_filed_is_left_where_it_is(self):
+		from crm.integrations.whatsapp.api import whatsapp_installed
 		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		if not whatsapp_installed():
+			self.skipTest("frappe_whatsapp is not installed on this bench")
 
 		number = "393400000002"
 		doc = frappe.get_doc(
