@@ -244,3 +244,32 @@ Dopo il deploy, col browser:
 3. **Nella vista di un singolo canale la pastiglia non serve.** Sono tutte
    uguali: ripetuta lungo tutta la pagina non dice niente e occupa l'angolo.
    Compare solo su «Tutto».
+
+### Quattro correzioni alla vista «Tutto»
+
+**La data appiccicata in alto.** Una conversazione lunga e' un muro di orari
+senza date: «12:57» non dice se era oggi o ad aprile, e scorrere in su per
+scoprirlo fa perdere il segno. Un separatore per giorno, fissato in alto finche'
+quel giorno e' quello sullo schermo — come fa WhatsApp, e come lo fanno tutti,
+perche' costa **una riga al giorno** invece di una data su ogni messaggio.
+`Oggi` e `Ieri` a parole, tutto il resto con la data; il giorno di riferimento
+si passa alla funzione invece di leggerlo dall'orologio, cosi' «oggi» significa
+la stessa cosa in un test e sullo schermo.
+
+**La pastiglia del canale e' diventata una didascalia.** Sull'angolo non aveva
+niente su cui sedersi che non fosse gia' occupato — la coppia fallito/ritenta da
+una parte, una reazione dall'altra — e sbatteva contro qualunque cosa
+incontrasse. Sotto la bolla non puo' sbattere contro niente, si legge come
+**parole** invece che come un simbolo da decifrare, e sta dalla parte da cui e'
+andato il messaggio.
+
+**Le chiamate sono bolle.** Stessa forma, stesso lato, cosi' l'occhio segue una
+conversazione sola. Superficie diversa, non un verde diverso: prendere in
+prestito il colore di WhatsApp per una telefonata direbbe che la chiamata e'
+avvenuta su WhatsApp.
+
+**Il pulsante «New» su «Tutto» e' tornato il menu.** Su un flusso misto non c'e'
+un canale in cui si stia scrivendo, quindi la domanda «cosa vuoi creare» e'
+ancora aperta: email, commento, evento, chiamata, attivita', nota, file.
+Scegliendo un canale il menu si stringe all'unico pulsante di quel canale,
+perche' li' la domanda ha gia' una risposta.

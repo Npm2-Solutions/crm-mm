@@ -40,7 +40,25 @@
         :label="__('Send Template')"
         @click="showWhatsappTemplates = true"
       />
+      <!--
+        On «All» there is no one channel to be writing in, so the button is the
+        menu it used to be — an email, a comment, an event, a call, a task, a
+        note, a file. Picking a channel narrows it to that channel's one button,
+        because then the question is already answered.
+      -->
+      <Dropdown v-if="channel === 'all'" :options="defaultActions" @click.stop>
+        <template #default="{ open }">
+          <Button
+            variant="solid"
+            class="flex items-center gap-1"
+            :label="__('New')"
+            iconLeft="plus"
+            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+          />
+        </template>
+      </Dropdown>
       <Button
+        v-else
         variant="solid"
         iconLeft="plus"
         :label="__(newLabel)"
@@ -165,8 +183,6 @@ function startNew() {
   if (channel.value === 'whatsapp') return props.whatsappBox?.show?.()
   if (channel.value === 'sms') return props.smsBox?.show?.()
   if (channel.value === 'comment') return (emailBox.value.showComment = true)
-  if (channel.value === 'email') return (emailBox.value.show = true)
-  // «All»: writing needs a channel, and email is the one every record has
   emailBox.value.show = true
 }
 

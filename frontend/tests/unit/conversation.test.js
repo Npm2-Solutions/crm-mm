@@ -3,8 +3,10 @@ import {
   buildStream,
   channelOf,
   countByChannel,
+  dayLabel,
   directionOf,
   isConversational,
+  withDayMarkers,
 } from '@/utils/conversation'
 
 const wa = (name, type, creation) => ({
@@ -57,6 +59,16 @@ describe('directionOf', () => {
     expect(
       directionOf({ activity_type: 'outgoing_call', type: 'Outgoing' }),
     ).toBe('out')
+  })
+
+  it('puts a call on its side even when only one field says which', () => {
+    // the backend derives activity_type from type, so a row can arrive with
+    // either one of them; neither alone may put an incoming call on the right
+    expect(directionOf({ activity_type: 'incoming_call' })).toBe('in')
+    expect(directionOf({ activity_type: 'outgoing_call' })).toBe('out')
+    expect(channelOf({ type: 'Incoming', duration: 42 })).toBe('call')
+    expect(directionOf({ type: 'Incoming', duration: 42 })).toBe('in')
+    expect(directionOf({ type: 'Outgoing', duration: 42 })).toBe('out')
   })
 
   it('gives a comment no side, because it was sent to nobody', () => {
@@ -188,5 +200,59 @@ describe('a file that was sent is not also an attachment line', () => {
       },
     ])
     expect(rows.map((r) => r.key)).toEqual(['attachment_log:a1'])
+  })
+})
+
+describe('withDayMarkers', () => {
+  const row = (name, at) => ({ key: `k:${name}`, at })
+
+  it('puts a marker where the day changes, and only there', () => {
+    const marked = withDayMarkers([
+      row('a', '2026-09-22 10:00:00'),
+      row('b', '2026-09-22 18:00:00'),
+      row('c', '2026-09-23 09:00:00'),
+    ])
+    expect(marked.map((r) => r.key)).toEqual([
+      'day:2026-09-22',
+      'k:a',
+      'k:b',
+      'day:2026-09-23',
+      'k:c',
+    ])
+  })
+
+  it('opens with one, because the first day is a change too', () => {
+    const marked = withDayMarkers([row('a', '2026-09-22 10:00:00')])
+    expect(marked[0].kind).toBe('day')
+  })
+
+  it('does not invent a day for a row that has no time', () => {
+    const marked = withDayMarkers([
+      row('a', null),
+      row('b', '2026-09-22 10:00:00'),
+    ])
+    expect(marked.map((r) => r.kind)).toEqual([undefined, 'day', undefined])
+  })
+
+  it('survives nothing at all', () => {
+    expect(withDayMarkers()).toEqual([])
+    expect(withDayMarkers(null)).toEqual([])
+  })
+})
+
+describe('dayLabel', () => {
+  it('says Today and Yesterday, which is what a reader is actually asking', () => {
+    expect(
+      dayLabel('2026-09-23', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
+    ).toBe('Today')
+    expect(
+      dayLabel('2026-09-22', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
+    ).toBe('Yesterday')
+  })
+
+  it('gives the date itself for anything older', () => {
+    expect(
+      dayLabel('2026-04-01', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
+    ).toBe('2026-04-01')
   })
 })

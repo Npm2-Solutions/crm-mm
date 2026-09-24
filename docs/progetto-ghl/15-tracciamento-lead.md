@@ -248,3 +248,45 @@ senza nessun pulsante da premere.
 Il pulsante, dove ha ancora senso, non si chiama piu' *Set up lead tracking* ma
 **Open tracking settings**: dice quello che fa — apre le impostazioni — invece di
 suggerire che ci sia qualcosa da riparare.
+
+## «Lead created» non puo' venire prima dell'inserzione che l'ha creato
+
+Un lead da modulo inserzione produce l'inserzione, l'attribuzione e la riga del
+record **nello stesso secondo o due**, ognuno timbrato da chi lo ha scritto:
+l'attribuzione quando il lead viene marcato, la riga quando viene inserito.
+Quale dei due orologi vinca e' arbitrario — e quando vinceva quello del record,
+la timeline diceva che il lead era stato creato **prima** dell'inserzione che
+l'ha prodotto. Che non puo' essere successo.
+
+Dentro una finestra di due minuti quelle tre righe sono trattate per quello che
+sono — **un solo momento** — e l'ordine viene da cosa causa cosa: l'inserzione e'
+stata vista, e' stata accreditata, il record e' comparso.
+
+Oltre la finestra tornano eventi separati e decide l'orologio, perche' li'
+significa qualcosa: chi ha letto una pagina e ha incontrato l'inserzione una
+settimana dopo lo ha fatto davvero in quell'ordine.
+
+La finestra vale solo fra inserzione, touch e record. Una visita o un evento non
+vengono piegati: quelli hanno un orario loro che e' un fatto.
+
+## «Guest created this lead»
+
+Un lead da un modulo Meta, un messaggio WhatsApp da uno sconosciuto, una
+prenotazione dalla pagina pubblica: sono tutti creati **senza nessuno
+loggato**, quindi Frappe timbra `Guest` sul record.
+
+E' tecnicamente vero e inutile. Guest non e' una persona, non si puo' chiedere
+niente a Guest, e in mezzo a una lista di nomi si legge come un errore — o
+peggio, come se qualcuno da fuori fosse entrato.
+
+Un record creato senza nessuno loggato appartiene al **sistema**.
+`Administrator` e' il nome che Frappe da' a quello, esiste su ogni sito e non
+richiede di creare o configurare niente.
+
+Un hook solo (`credit_the_system`) su CRM Lead, CRM Deal e Contact, e funziona
+per tutte le strade che passano da li' — webhook, moduli, prenotazioni — invece
+di una correzione in ogni punto che crea qualcosa. `set_user_and_timestamp()`
+gira **prima** di `before_insert`, quindi riscrivere il campo li' e' quello che
+finisce nel database; c'e' un test che se ne accorge se Frappe cambia l'ordine.
+
+Una patch sistema i 16 lead e i 16 contatti gia' timbrati.

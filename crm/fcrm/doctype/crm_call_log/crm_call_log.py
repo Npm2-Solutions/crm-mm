@@ -62,6 +62,70 @@ class CRMCallLog(Document):
 			self.id = generate_hash(length=12)
 		if not self.telephony_medium:
 			self.telephony_medium = "Manual"
+		self.fill_in_who_was_on_the_call()
+
+	def fill_in_who_was_on_the_call(self):
+		"""A call logged by hand already knows who it was with.
+
+		It is written from somebody's record, so one end of it is that person's
+		number and the other is whoever is typing. Leaving both ends blank asked
+		the same question twice on every single call — and got it wrong often
+		enough, because `type` decides which end is which and it is easy to fill
+		the boxes the way they are laid out rather than the way the call went.
+
+		Only what is missing is filled. Somebody who typed a number meant it.
+		"""
+		if self.telephony_medium not in ("", "Manual"):
+			# a real call from a provider carries its own numbers
+			return
+
+		incoming = self.type == "Incoming"
+		theirs = self.number_of_the_record()
+		mine = self.number_of_the_agent()
+
+		if incoming:
+			self.set_if_empty("from", theirs)
+			self.set_if_empty("to", mine)
+			self.set_if_empty("receiver", frappe.session.user)
+		else:
+			self.set_if_empty("from", mine)
+			self.set_if_empty("to", theirs)
+			self.set_if_empty("caller", frappe.session.user)
+
+	def set_if_empty(self, field: str, value: str | None) -> None:
+		if value and not self.get(field):
+			self.set(field, value)
+
+	def number_of_the_record(self) -> str:
+		"""The number of the lead, deal or contact this call was written from."""
+		if not self.reference_doctype or not self.reference_docname:
+			return ""
+		for field in ("mobile_no", "phone", "actual_mobile_no"):
+			if not frappe.get_meta(self.reference_doctype).has_field(field):
+				continue
+			number = frappe.db.get_value(self.reference_doctype, self.reference_docname, field)
+			if number:
+				return number
+		return ""
+
+	def number_of_the_agent(self) -> str:
+		"""The number at this end.
+
+		`CRM Telephony Agent` is where a person's working numbers already live —
+		their own, and the one each provider calls out from. The User's mobile is
+		the fallback for somebody who has never been set up for telephony.
+		"""
+		agent = frappe.db.get_value(
+			"CRM Telephony Agent",
+			frappe.session.user,
+			["mobile_no", "twilio_number", "exotel_number"],
+			as_dict=True,
+		)
+		if agent:
+			for field in ("mobile_no", "twilio_number", "exotel_number"):
+				if agent.get(field):
+					return agent[field]
+		return frappe.db.get_value("User", frappe.session.user, "mobile_no") or ""
 
 	@staticmethod
 	def default_list_data():

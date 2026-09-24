@@ -28,6 +28,30 @@ function oldest(...times) {
 }
 
 /**
+ * One arrival, written down three times.
+ *
+ * A lead from an ad form produces the ad, the attribution and the record within
+ * the same second or two, each stamped by whoever wrote it: the attribution
+ * when the lead is stamped, the row when it is inserted. Which of the two clocks
+ * wins is arbitrary — and when the record's won, the timeline said the lead was
+ * created **before** the ad that produced it. Which cannot have happened.
+ *
+ * So inside a short window these three are treated as the one moment they are,
+ * and the order comes from what actually causes what: the ad was seen, it was
+ * credited, the record appeared. Beyond the window they are separate events
+ * again and the clock decides, because then it means something — somebody who
+ * met the ad a week after reading a page really did do it in that order.
+ */
+const ONE_MOMENT = 120 * 1000
+const CAUSAL = new Set(['ad', 'touch', 'record'])
+
+function sameMoment(a, b) {
+  if (a.at === b.at) return true
+  if (!CAUSAL.has(a.kind) || !CAUSAL.has(b.kind)) return false
+  return Math.abs(new Date(a.at) - new Date(b.at)) <= ONE_MOMENT
+}
+
+/**
  * One stream: the ad, the two touches, every visit and every event, in the
  * order they happened.
  *
@@ -148,7 +172,7 @@ export function buildTimeline(journey = {}, options = {}) {
     if (!a.at && !b.at) return RANK[a.kind] - RANK[b.kind]
     if (!a.at) return 1
     if (!b.at) return -1
-    if (a.at === b.at) return RANK[a.kind] - RANK[b.kind]
+    if (sameMoment(a, b)) return RANK[a.kind] - RANK[b.kind]
     return direction * (new Date(a.at) - new Date(b.at))
   })
 }

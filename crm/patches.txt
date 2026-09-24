@@ -49,3 +49,4 @@ crm.patches.v1_0.give_the_person_a_real_company
 crm.patches.v1_0.one_number_one_person
 crm.patches.v1_0.remember_which_ad_each_lead_came_from
 crm.patches.v1_0.file_the_messages_that_had_no_record
+crm.patches.v1_0.nobody_is_called_guest

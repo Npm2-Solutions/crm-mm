@@ -114,15 +114,25 @@
               v-html="formatWhatsAppMessage(whatsapp.message)"
             />
           </div>
+          <!--
+            A document bubble said «Document» and nothing else: not the file
+            name, not its kind, and the only way to find out was to click and
+            hope. Which is the one thing a document needs to say.
+          -->
           <div
             v-else-if="whatsapp.content_type == 'document'"
-            class="flex items-center gap-2"
+            class="flex min-w-0 cursor-pointer items-center gap-2"
+            @click="() => openFileInAnotherTab(whatsapp.attach)"
           >
-            <DocumentIcon
-              class="size-10 cursor-pointer rounded-md text-ink-gray-4"
-              @click="() => openFileInAnotherTab(whatsapp.attach)"
-            />
-            <div class="text-ink-gray-5">Document</div>
+            <DocumentIcon class="size-8 shrink-0 rounded-md text-ink-gray-4" />
+            <div class="min-w-0">
+              <div class="truncate text-p-sm-medium text-ink-gray-8">
+                {{ documentName(whatsapp) }}
+              </div>
+              <div class="text-p-xs uppercase text-ink-gray-5">
+                {{ documentKind(whatsapp) || __('Document') }}
+              </div>
+            </div>
           </div>
           <div
             v-else-if="whatsapp.content_type == 'audio'"
@@ -263,6 +273,31 @@ const reply = defineModel('reply', { type: Object, default: () => ({}) })
 // Meta's webhook says `failed` in lowercase; a send that never left says
 // `Failed`. Only the first was recognised, so a message that failed here showed
 // no badge at all — and neither had any way back.
+/**
+ * The name of the file in a document bubble.
+ *
+ * An outgoing file no longer travels as `/files/…`: it goes through the signed
+ * endpoint that tells Meta what it is, and the real name is a query parameter
+ * there. Reading only the path would show `media` for every document sent.
+ */
+function documentName(message) {
+  const raw = String(message?.attach || '')
+  const named = /[?&]file=([^&#]+)/.exec(raw)
+  const path = (named ? decodeURIComponent(named[1]) : raw).split('?')[0]
+  const file = decodeURIComponent(path.split('/').pop() || '')
+  // an incoming file arrives with a name Meta made up, so the caption — which
+  // is what the sender actually wrote — is the better title when there is one
+  return message?.message && !message.message.startsWith('/files/')
+    ? message.message
+    : file || __('Document')
+}
+
+function documentKind(message) {
+  const name = documentName(message)
+  const dot = name.lastIndexOf('.')
+  return dot > 0 ? name.slice(dot + 1) : ''
+}
+
 function hasFailed(whatsapp) {
   return (whatsapp.status || '').toLowerCase() == 'failed'
 }

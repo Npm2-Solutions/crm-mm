@@ -253,6 +253,27 @@ const emoji = ref('')
 const subject = ref(props.subject)
 const fromEmail = ref('')
 const toEmails = ref(modelValue.value.email ? [modelValue.value.email] : [])
+
+/**
+ * The person whose record this is, already in the To field.
+ *
+ * This ran once, when the component was created — and at that moment the record
+ * is still being fetched, so `email` was almost always undefined and the field
+ * stayed empty. The address arrived a moment later and nothing was watching for
+ * it, which is why the recipient had to be typed on a screen that knew perfectly
+ * well who it was for. (The discard handler set it correctly, which is the tell:
+ * somebody noticed the empty field and fixed the one path that ran late enough.)
+ *
+ * Only into an empty field: a reply fills it with the sender, and somebody who
+ * has chosen an address is not to be second-guessed.
+ */
+watch(
+  () => modelValue.value?.email,
+  (email) => {
+    if (email && !toEmails.value.length) toEmails.value = [email]
+  },
+  { immediate: true },
+)
 const ccEmails = ref([])
 const bccEmails = ref([])
 const ccInput = ref(null)
