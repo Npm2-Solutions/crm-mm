@@ -57,3 +57,21 @@
 .menu-content {
   z-index: 101;
 }
+
+/* Settings, on a phone, is a screen — not a card floating on the page behind it.
+   frappe-ui's Dialog has no full-bleed option and does not forward a class to
+   its content, so the shell marks itself and the dialog is unwrapped from the
+   outside in. `:has()` is what makes that possible without touching the
+   library. */
+@media (max-width: 767px) {
+  .dialog-scroll-container:has([data-settings-shell]) > div {
+    padding: 0;
+    min-height: 0;
+  }
+
+  .dialog-content:has(> [data-settings-shell]) {
+    margin: 0;
+    max-width: none;
+    border-radius: 0;
+  }
+}

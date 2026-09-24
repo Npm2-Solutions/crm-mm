@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
+  <div
+    class="flex h-full flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 text-ink-gray-8"
+  >
     <div class="flex px-2 justify-between">
       <div class="flex flex-col gap-1 w-9/12">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">

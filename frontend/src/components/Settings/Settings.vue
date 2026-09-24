@@ -9,10 +9,9 @@
       <!-- Two panes side by side on a desktop. On a phone they do not fit, so it
            becomes a list that pushes to a page and comes back. -->
       <div
+        data-settings-shell
         class="flex bg-surface-gray-1"
-        :class="
-          isMobileView ? 'h-[calc(100dvh_-_4rem)]' : 'h-[calc(100vh_-_8rem)]'
-        "
+        :class="isMobileView ? 'h-dvh' : 'h-[calc(100vh_-_8rem)]'"
       >
         <div
           class="m-1 flex shrink-0 flex-col overflow-y-auto rounded-l-lg bg-surface-gray-1"
@@ -511,6 +510,15 @@ const showingDetail = ref(false)
 
 watch(showSettings, (open) => {
   if (open) showingDetail.value = !!activeSettingsPage.value
+})
+
+// `tabs` is filtered by permissions, and those arrive after setup: a deep link
+// resolved before they land finds no Agenda or Meta group and falls back to the
+// first page. Re-resolve whenever the set of tabs changes, so the OAuth callback
+// that sends the browser back to `?settings=Meta connection` arrives there and
+// not on Profile.
+watch(tabs, () => {
+  if (activeSettingsPage.value) setActiveTab(activeSettingsPage.value)
 })
 
 watch(activeSettingsPage, (activePage) => {
