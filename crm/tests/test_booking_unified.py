@@ -252,3 +252,26 @@ class TestUnifiedBooking(SchedulingCase):
 		summary = ADMIN.get_inheritance_summary()
 		self.assertIn(service.service_name, summary["max_reschedules"]["own"])
 		self.assertGreaterEqual(summary["min_notice_hours"]["inherit"], 1)
+
+
+class TestParticipantsArePeople(SchedulingCase):
+	def test_contact_and_deal_become_their_person(self):
+		user = self.make_user("people.unified@example.com")
+		service = self.make_service("People Visit", [user])
+		lead = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Persona", "email": "persona@example.com"}
+		).insert()
+		lead.reload()
+		rows = []
+		if lead.get("contact"):
+			rows.append({"party_type": "Contact", "party": lead.contact, "participant_name": "Persona"})
+		appointment = self.make_appointment(service.name, self.tomorrow(10), [user], participants=rows)
+		for row in appointment.participants:
+			self.assertEqual((row.party_type, row.party), ("CRM Lead", lead.name))
+
+	def test_person_of(self):
+		from crm.fcrm.doctype.crm_appointment.crm_appointment import person_of
+
+		self.assertEqual(person_of("CRM Lead", "X"), "X")
+		self.assertIsNone(person_of("Contact", None))
+		self.assertIsNone(person_of("Contact", "does-not-exist"))

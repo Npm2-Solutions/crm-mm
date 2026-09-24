@@ -226,6 +226,13 @@ def get_appointment(name: str) -> dict:
 	doc = frappe.get_doc("CRM Appointment", name)
 	doc.check_permission("read")
 	data = doc.as_dict()
+	# the editor searches people only: show older contact/deal rows as their person
+	from crm.fcrm.doctype.crm_appointment.crm_appointment import person_of
+
+	for row in data.get("participants") or []:
+		person = person_of(row.get("party_type"), row.get("party"))
+		if person:
+			row["party_type"], row["party"] = "CRM Lead", person
 	data["start_utc"] = from_system_naive(doc.starts_on).isoformat()
 	data["end_utc"] = from_system_naive(doc.ends_on).isoformat()
 	return data
