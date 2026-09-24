@@ -420,3 +420,99 @@ class TestANumberIsRetiredNotDeleted(FrappeTestCase):
 		with self.assertRaises(frappe.ValidationError) as caught:
 			refuse_account_deletion(MagicMock())
 		self.assertIn("Settings", str(caught.exception))
+
+
+class TestAConversationIsNotSplitInTwo(FrappeTestCase):
+	"""A message sent **from the phone** to somebody the CRM has never heard of
+	is stored and filed under nothing: starting a conversation is not the same as
+	having a lead, and every number an owner writes to from their own phone would
+	otherwise become one.
+
+	But when that person answers, a lead *is* created — and the conversation ends
+	up split, the reply on the record and the lines that opened it nowhere.
+	Somebody replying to nothing.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_what_was_already_said_to_the_number_goes_to_the_record(self):
+		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		number = "393889829151"
+		names = []
+		for text, kind in (("Ciao Rocco, come va?", "Outgoing"), ("[document]", "Outgoing")):
+			doc = frappe.get_doc(
+				{
+					"doctype": "WhatsApp Message",
+					"type": kind,
+					"message_type": "Manual",
+					"content_type": "text",
+					"message": text,
+					"message_id": frappe.generate_hash(length=20),
+					"to": number,
+					"from": "393883768154",
+				}
+			)
+			doc.db_insert()
+			names.append(doc.name)
+
+		filed = adopt_orphans(number, "CRM Lead", "CRM-LEAD-TEST-0001")
+		self.assertEqual(filed, 2)
+		for name in names:
+			self.assertEqual(
+				frappe.db.get_value("WhatsApp Message", name, "reference_name"),
+				"CRM-LEAD-TEST-0001",
+			)
+
+	def test_it_looks_at_both_directions(self):
+		"""The counterparty is `to` on something we sent and `from` on something
+		that arrived, so asking only one field would leave half of them behind."""
+		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		number = "393400000001"
+		doc = frappe.get_doc(
+			{
+				"doctype": "WhatsApp Message",
+				"type": "Incoming",
+				"message_type": "Manual",
+				"content_type": "text",
+				"message": "eccomi",
+				"message_id": frappe.generate_hash(length=20),
+				"to": "393883768154",
+				"from": number,
+			}
+		)
+		doc.db_insert()
+		self.assertEqual(adopt_orphans(number, "CRM Lead", "CRM-LEAD-TEST-0002"), 1)
+
+	def test_a_message_already_filed_is_left_where_it_is(self):
+		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		number = "393400000002"
+		doc = frappe.get_doc(
+			{
+				"doctype": "WhatsApp Message",
+				"type": "Outgoing",
+				"message_type": "Manual",
+				"content_type": "text",
+				"message": "gia' archiviato",
+				"message_id": frappe.generate_hash(length=20),
+				"to": number,
+				"from": "393883768154",
+				"reference_doctype": "CRM Lead",
+				"reference_name": "CRM-LEAD-TEST-0003",
+			}
+		)
+		doc.db_insert()
+		self.assertEqual(adopt_orphans(number, "CRM Lead", "CRM-LEAD-OTHER"), 0)
+		self.assertEqual(
+			frappe.db.get_value("WhatsApp Message", doc.name, "reference_name"),
+			"CRM-LEAD-TEST-0003",
+		)
+
+	def test_it_asks_for_nothing_when_there_is_nothing_to_ask(self):
+		from crm.integrations.whatsapp.coexistence import adopt_orphans
+
+		self.assertEqual(adopt_orphans("", "CRM Lead", "X"), 0)
+		self.assertEqual(adopt_orphans("393400000003", "", ""), 0)

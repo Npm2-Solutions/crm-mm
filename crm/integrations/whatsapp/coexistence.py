@@ -97,6 +97,45 @@ def message_body(message: dict) -> tuple[str, str]:
 	return f"[{kind}]", kind
 
 
+def adopt_orphans(number: str, doctype: str, reference: str) -> int:
+	"""File the messages to this number that had no record to be filed under.
+
+	A message **sent from the phone** to somebody the CRM has never heard of is
+	stored and attached to nothing, because starting a conversation is not the
+	same as having a lead: every number an owner writes to from their own phone
+	would otherwise become one — the accountant, the supplier, their mother.
+
+	But when that person answers, a lead *is* created, and the conversation ends
+	up split: the reply is on the record and the two lines that opened it are
+	nowhere. Which reads worse than either half alone — somebody replying to
+	nothing.
+
+	So nothing is invented from a one-way message, and nothing is lost either:
+	the moment the number has a record, whatever was already said to it goes
+	there too.
+	"""
+	if not number or not doctype or not reference:
+		return 0
+	orphans = frappe.get_all(
+		"WhatsApp Message",
+		# filters AND or_filters: unfiled, and to or from this number. The
+		# counterparty is `to` on something we sent and `from` on something that
+		# arrived, so both have to be asked.
+		filters=[["reference_name", "is", "not set"]],
+		or_filters=[["to", "=", number], ["from", "=", number]],
+		pluck="name",
+		limit=200,
+	)
+	for name in orphans:
+		frappe.db.set_value(
+			"WhatsApp Message",
+			name,
+			{"reference_doctype": doctype, "reference_name": reference},
+			update_modified=False,
+		)
+	return len(orphans)
+
+
 def store_message(message: dict, our_number: str, historical: bool = False) -> bool:
 	"""Idempotent by WhatsApp message id. Returns True when a row was written."""
 	message_id = message.get("id")
@@ -137,6 +176,8 @@ def store_message(message: dict, our_number: str, historical: bool = False) -> b
 		if doctype and reference:
 			values["reference_doctype"] = doctype
 			values["reference_name"] = reference
+			# and everything already said to this number that had nowhere to go
+			adopt_orphans(counterparty, doctype, reference)
 	except Exception:
 		pass
 
