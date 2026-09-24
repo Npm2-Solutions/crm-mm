@@ -36,23 +36,6 @@
       />
       <AssignTo v-model="assignees.data" doctype="CRM Lead" :docname="leadId" />
       <Dropdown
-        v-if="doc && document.statuses"
-        :options="statuses"
-        placement="right"
-      >
-        <template #default="{ open }">
-          <Button
-            v-if="doc.status"
-            :label="statusLabel(doc.status)"
-            :iconRight="open ? 'chevron-up' : 'chevron-down'"
-          >
-            <template #prefix>
-              <IndicatorIcon :class="getLeadStatus(doc.status).color" />
-            </template>
-          </Button>
-        </template>
-      </Dropdown>
-      <Dropdown
         v-if="deals.data?.length"
         :options="dealOptions"
         placement="right"
@@ -96,7 +79,7 @@
           doctype="CRM Lead"
           :docname="leadId"
           :tabs="tabs"
-          @beforeSave="beforeStatusChange"
+          @beforeSave="saveChange"
           @afterSave="reloadResources"
         />
       </template>
@@ -232,7 +215,7 @@
           doctype="CRM Lead"
           :docname="leadId"
           @reload="sections.reload"
-          @beforeFieldChange="beforeStatusChange"
+          @beforeFieldChange="saveChange"
           @afterFieldChange="reloadResources"
         />
       </div>
@@ -266,12 +249,6 @@
     :docname="leadId"
     name="Leads"
   />
-  <LostReasonModal
-    v-if="showLostReasonModal"
-    v-model="showLostReasonModal"
-    doctype="CRM Lead"
-    :document="document"
-  />
 </template>
 <script setup>
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
@@ -286,11 +263,9 @@ import EventIcon from '@/components/Icons/EventIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
-import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
-import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import LucideRadar from '~icons/lucide/radar'
@@ -306,12 +281,10 @@ import {
   setupCustomizations,
   copyToClipboard,
   validateIsImageFile,
-  isTranslatable,
 } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
-import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { callEnabled } from '@/composables/telephony'
@@ -335,7 +308,6 @@ import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning
 
 const { brand } = getSettings()
 const { $dialog, $socket, makeCall } = globalStore()
-const { statusOptions, getLeadStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Lead')
 
 const route = useRoute()
@@ -389,15 +361,8 @@ const dealOptions = computed(() => [
 ])
 const showFilesUploader = ref(false)
 
-const {
-  triggerOnChange,
-  triggerOnRender,
-  assignees,
-  permissions,
-  document,
-  scripts,
-  error,
-} = useDocument('CRM Lead', props.leadId)
+const { triggerOnRender, assignees, permissions, document, scripts, error } =
+  useDocument('CRM Lead', props.leadId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
 
@@ -439,7 +404,6 @@ watch(
         call,
       })
       document._actions = s.actions || []
-      document._statuses = s.statuses || []
     }
   },
   { once: true },
@@ -477,13 +441,6 @@ const breadcrumbs = computed(() => {
 const title = computed(() => {
   let t = doctypeMeta.value?.title_field || 'name'
   return doc.value?.[t] || props.leadId
-})
-
-const statuses = computed(() => {
-  let customStatuses = document.statuses?.length
-    ? document.statuses
-    : document._statuses || []
-  return statusOptions('lead', customStatuses, triggerStatusChange)
 })
 
 usePageMeta(() => {
@@ -549,11 +506,6 @@ const sections = createResource({
   auto: true,
 })
 
-async function triggerStatusChange(value) {
-  await triggerOnChange('status', value)
-  setLostReason()
-}
-
 function updateField(name, value) {
   value = Array.isArray(name) ? '' : value
   let oldValues = Array.isArray(name) ? {} : doc.value[name]
@@ -589,39 +541,10 @@ function openEmailBox() {
   nextTick(() => (activities.value.emailBox.show = true))
 }
 
-function statusLabel(status) {
-  if (isTranslatable('CRM Lead Status')) return __(status)
-  return status
-}
-
-const showLostReasonModal = ref(false)
-
-function setLostReason() {
-  if (
-    getLeadStatus(document.doc.status).type !== 'Lost' ||
-    (document.doc.lost_reason && document.doc.lost_reason !== 'Other') ||
-    (document.doc.lost_reason === 'Other' && document.doc.lost_notes)
-  ) {
-    document.save.submit(null, {
-      onSuccess: () => sections.reload(),
-    })
-    return
-  }
-
-  showLostReasonModal.value = true
-}
-
-function beforeStatusChange(data) {
-  if (
-    Object.hasOwn(data ?? {}, 'status') &&
-    getLeadStatus(data.status).type == 'Lost'
-  ) {
-    setLostReason()
-  } else {
-    document.save.submit(null, {
-      onSuccess: () => reloadResources(data),
-    })
-  }
+function saveChange(data) {
+  document.save.submit(null, {
+    onSuccess: () => reloadResources(data),
+  })
 }
 
 function onEnriched() {
@@ -632,12 +555,6 @@ function onEnriched() {
 function reloadResources(data) {
   if (Object.hasOwn(data ?? {}, 'lead_owner')) {
     assignees.reload()
-  }
-  if (
-    Object.hasOwn(data ?? {}, 'status') &&
-    getLeadStatus(data.status).type != 'Lost'
-  ) {
-    sections.reload()
   }
 }
 </script>

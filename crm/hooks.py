@@ -259,7 +259,6 @@ doc_events = {
 			"crm.integrations.meta.conversions.on_lead_created",
 		],
 		"on_update": [
-			"crm.automation.engine.on_lead_updated",
 			"crm.api.mirror.on_lead_updated",
 			"crm.integrations.meta.conversions.on_lead_updated",
 		],

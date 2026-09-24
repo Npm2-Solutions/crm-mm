@@ -80,6 +80,33 @@ Il prezzo, dichiarato: il lunedì dopo il rilascio i venditori non trovano in
 board quello che stavano lavorando. È stato scelto sapendolo, in cambio di una
 pipeline che non nasce già piena di roba di provenienza incerta.
 
+## Cosa è sparito dalle schermate *(24/09/2026)*
+
+| Dove | Prima | Adesso |
+|---|---|---|
+| Scheda persona | bottone con il pallino: New / Contacted / Nurture / Qualified / … | niente. Resta il bottone delle trattative, che è dove sta la vendita |
+| Scheda persona, mobile | idem | idem |
+| Lista Persone | colonna **Status** fra le colonne di default | via; il filtro rapido diventa **Has a deal** |
+| Vista kanban di Persone | colonne per stato | **non esiste più**: la board è Trattative, Persone è un elenco |
+| Modale "nuova persona" | campo Stato obbligatorio | via — non aveva una risposta sensata |
+| Pannello laterale | campo Stato | via |
+| Motivo di perdita | si poteva perdere una *persona* | si perde una trattativa |
+
+Due cose deliberatamente **non** toccate:
+
+- i rami `status` in `Leads.vue` sono renderer generici guidati dalla
+  configurazione della vista, non codice fisso. Cancellarli avrebbe rotto le
+  viste salvate che quella colonna ce l'hanno ancora: restano, e degradano;
+- il campo in tabella (vedi sotto).
+
+### Le automazioni
+
+Il trigger `Lead Status Changed` esce dal catalogo: lo stato di una persona non
+cambia più, quindi non potrebbe più scattare. Le automazioni che lo usavano
+vengono **disabilitate dalla patch e elencate per nome** nell'error log, invece
+di restare accese a non fare niente — che delle due è la peggiore. Chi vuole
+l'intento equivalente le rifà su `Deal Status Changed`.
+
 ## Se un domani servirà diversamente
 
 Il campo `CRM Lead.status` **non viene cancellato dalla tabella**: esce dalle
@@ -90,6 +117,9 @@ un restore. Quello che andrebbe rifatto è l'assegnazione automatica in
 
 ## Test
 
+- `crm/patches/v1_0/the_sale_state_leaves_the_person.py`: scrive sulla persona
+  quello che portava, prima che smetta di essere mostrato, e non crea nessuna
+  trattativa.
 - `crm/tests/test_inquiry_deal.py`: una richiesta apre una trattativa nel primo
   stage; una seconda richiesta si unisce a quella aperta; chi torna dopo una
   trattativa chiusa ne apre **una nuova**, che è il motivo di tutto il resto.

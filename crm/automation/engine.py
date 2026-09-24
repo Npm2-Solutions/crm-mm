@@ -63,7 +63,6 @@ EVENT_TO_TRIGGER = {
 	"lead_created": "Lead Created",
 	"form_submitted": "Lead Form Submitted",
 	"deal_created": "Deal Created",
-	"lead_status_changed": "Lead Status Changed",
 	"deal_status_changed": "Deal Status Changed",
 	"booking_created": "Booking Created",
 	"booking_cancelled": "Booking Cancelled",
@@ -163,7 +162,7 @@ def process_event(event: str, doc, payload: dict | None = None) -> None:
 			handle_goal_event("tag_added", ref_doctype, ref_name, payload)
 		if event in ("booking_created", "appointment_created"):
 			handle_goal_event("booking_booked", ref_doctype, ref_name, payload)
-		if event in ("lead_status_changed", "deal_status_changed"):
+		if event == "deal_status_changed":
 			handle_goal_event("status_is", ref_doctype, ref_name, {"value": doc.get("status")})
 
 		trigger = EVENT_TO_TRIGGER.get(event)
@@ -1517,11 +1516,6 @@ def on_lead_created(doc, method=None):
 		doc,
 		{"facebook_form_id": doc.get("facebook_form_id"), "source": doc.get("source")},
 	)
-
-
-def on_lead_updated(doc, method=None):
-	if _status_actually_changed(doc):
-		process_event("lead_status_changed", doc, {"status": doc.status})
 
 
 def on_deal_created(doc, method=None):
