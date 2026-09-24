@@ -56,14 +56,13 @@
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { usersStore } from '@/stores/users'
-import { statusesStore } from '@/stores/statuses'
 import { sessionStore } from '@/stores/session'
 import { isMobileView } from '@/composables/settings'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
 import { createResource, call, toast } from 'frappe-ui'
 import { useDocument } from '@/data/document'
-import { computed, onMounted, ref, nextTick } from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -72,7 +71,6 @@ const props = defineProps({
 
 const { user } = sessionStore()
 const { getUser, isManager } = usersStore()
-const { getLeadStatus, statusOptions } = statusesStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const show = defineModel({ type: Boolean })
@@ -130,8 +128,6 @@ async function enrichFromWebsite() {
 
 const { capture } = useTelemetry()
 
-const leadStatuses = computed(() => statusOptions('lead'))
-
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
   cache: ['QuickEntry', 'CRM Lead'],
@@ -142,12 +138,6 @@ const tabs = createResource({
       tab.sections.forEach((section) => {
         section.columns.forEach((column) => {
           column.fields.forEach((field) => {
-            if (field.fieldname == 'status') {
-              field.fieldtype = 'Select'
-              field.options = leadStatuses.value
-              field.prefix = getLeadStatus(lead.doc.status).color
-            }
-
             if (field.fieldtype === 'Table') {
               lead.doc[field.fieldname] = []
             }
@@ -202,10 +192,6 @@ async function createNewLead() {
           error.value = __('Invalid email address')
           return error.value
         }
-        if (!lead.doc.status) {
-          error.value = __('Status is required')
-          return error.value
-        }
         isLeadCreating.value = true
       },
       onSuccess(data) {
@@ -242,9 +228,6 @@ onMounted(() => {
 
   if (!lead.doc?.lead_owner) {
     lead.doc.lead_owner = getUser().name
-  }
-  if (!lead.doc?.status && leadStatuses.value[0]?.value) {
-    lead.doc.status = leadStatuses.value[0].value
   }
 })
 </script>

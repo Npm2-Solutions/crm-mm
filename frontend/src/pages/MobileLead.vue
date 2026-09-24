@@ -8,32 +8,6 @@
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
-      <div class="absolute right-0">
-        <Dropdown
-          v-if="doc"
-          :options="
-            statusOptions(
-              'lead',
-              document.statuses?.length
-                ? document.statuses
-                : document._statuses,
-              triggerStatusChange,
-            )
-          "
-        >
-          <template #default="{ open }">
-            <Button
-              v-if="doc.status"
-              :label="statusLabel(doc.status)"
-              :iconRight="open ? 'chevron-up' : 'chevron-down'"
-            >
-              <template #prefix>
-                <IndicatorIcon :class="getLeadStatus(doc.status).color" />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
-      </div>
     </header>
   </LayoutHeader>
   <div
@@ -80,7 +54,7 @@
               doctype="CRM Lead"
               :docname="leadId"
               @reload="sections.reload"
-              @beforeFieldChange="beforeStatusChange"
+              @beforeFieldChange="saveChange"
               @afterFieldChange="reloadAssignees"
             />
           </div>
@@ -92,7 +66,7 @@
           doctype="CRM Lead"
           :docname="leadId"
           :tabs="tabs"
-          @beforeSave="beforeStatusChange"
+          @beforeSave="saveChange"
           @afterSave="reloadAssignees"
         />
       </template>
@@ -115,12 +89,6 @@
     :docname="leadId"
     name="Leads"
   />
-  <LostReasonModal
-    v-if="showLostReasonModal"
-    v-model="showLostReasonModal"
-    doctype="CRM Lead"
-    :document="document"
-  />
 </template>
 <script setup>
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
@@ -132,8 +100,6 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
-import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
-import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import LucideRadar from '~icons/lucide/radar'
@@ -141,18 +107,16 @@ import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
-import { setupCustomizations, isTranslatable } from '@/utils'
+import { setupCustomizations } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
-import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import {
   createResource,
-  Dropdown,
   Tabs,
   Breadcrumbs,
   call,
@@ -165,7 +129,6 @@ import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
 
 const { brand } = getSettings()
 const { $dialog, $socket } = globalStore()
-const { statusOptions, getLeadStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Lead')
 
 const route = useRoute()
@@ -179,14 +142,10 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 
-const {
-  triggerOnChange,
-  triggerOnRender,
-  assignees,
-  document,
-  scripts,
-  error,
-} = useDocument('CRM Lead', props.leadId)
+const { triggerOnRender, assignees, document, scripts, error } = useDocument(
+  'CRM Lead',
+  props.leadId,
+)
 
 const doc = computed(() => document.doc || {})
 
@@ -224,7 +183,6 @@ watch(
         call,
       })
       document._actions = s.actions || []
-      document._statuses = s.statuses || []
     }
   },
   { once: true },
@@ -362,42 +320,10 @@ function deleteLead() {
 
 const showConvertToDealModal = ref(false)
 
-function statusLabel(status) {
-  if (isTranslatable('CRM Lead Status')) return __(status)
-  return status
-}
-
-async function triggerStatusChange(value) {
-  await triggerOnChange('status', value)
-  setLostReason()
-}
-
-const showLostReasonModal = ref(false)
-
-function setLostReason() {
-  if (
-    getLeadStatus(doc.value.status).type !== 'Lost' ||
-    (doc.value.lost_reason && doc.value.lost_reason !== 'Other') ||
-    (doc.value.lost_reason === 'Other' && doc.value.lost_notes)
-  ) {
-    document.save.submit()
-    return
-  }
-
-  showLostReasonModal.value = true
-}
-
-function beforeStatusChange(data) {
-  if (
-    Object.hasOwn(data ?? {}, 'status') &&
-    getLeadStatus(data.status).type == 'Lost'
-  ) {
-    setLostReason()
-  } else {
-    document.save.submit(null, {
-      onSuccess: () => reloadAssignees(data),
-    })
-  }
+function saveChange(data) {
+  document.save.submit(null, {
+    onSuccess: () => reloadAssignees(data),
+  })
 }
 function reloadAssignees(data) {
   if (Object.hasOwn(data ?? {}, 'lead_owner')) {
