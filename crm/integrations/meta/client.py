@@ -22,11 +22,25 @@ TIMEOUT = 30
 
 
 class MetaAPIError(Exception):
+	"""A refusal from Meta, with what to do about it attached.
+
+	Meta's own sentence is written for whoever wrote the integration: «Unsupported
+	get request», «Invalid parameter», «(#131047) Re-engagement message». The code
+	is the part that can be looked up and the message is the part that gets read,
+	and neither says whose problem it is. So the explanation travels with the
+	exception — every screen that shows this error shows it, without having to
+	know anything about Meta.
+	"""
+
 	def __init__(self, message, code=None, subcode=None, http_status=None):
-		super().__init__(message)
+		from crm.integrations.meta.errors import advice
+
+		self.raw = str(message)
 		self.code = code
 		self.subcode = subcode
 		self.http_status = http_status
+		self.advice = advice(code, subcode)
+		super().__init__(f"{self.raw}\n\n{self.advice}" if self.advice else self.raw)
 
 
 def get_settings():

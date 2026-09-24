@@ -12,7 +12,8 @@
     >
       <div
         :id="whatsapp.name"
-        class="group/message relative max-w-[90%] rounded-md bg-surface-gray-1 text-ink-gray-9 p-1.5 pl-2 text-base shadow-sm"
+        class="group/message wa-bubble relative max-w-[90%] rounded-lg p-1.5 pl-2 text-base shadow-sm"
+        :class="whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in'"
       >
         <div
           v-if="hasFailed(whatsapp)"
@@ -322,3 +323,37 @@ function scrollToMessage(name) {
   }, 1000)
 }
 </script>
+
+<style scoped>
+/*
+  WhatsApp's own two colours, because a conversation is read by side and by
+  shade at once. Both bubbles were the same grey, which left the alignment doing
+  all the work — and alignment alone is the first thing that goes when a bubble
+  is wide.
+
+  Written as literals rather than theme tokens: these are somebody else's brand,
+  and pretending they are ours would mean a theme change quietly restyling
+  WhatsApp.
+*/
+.wa-bubble {
+  color: #111b21;
+}
+.wa-in {
+  background-color: #ffffff;
+}
+.wa-out {
+  background-color: #d9fdd3;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wa-bubble {
+    color: #e9edef;
+  }
+  .wa-in {
+    background-color: #202c33;
+  }
+  .wa-out {
+    background-color: #005c4b;
+  }
+}
+</style>

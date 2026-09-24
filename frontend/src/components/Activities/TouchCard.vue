@@ -28,9 +28,20 @@
       class="flex flex-wrap gap-x-3 gap-y-0.5 text-p-sm"
       :class="heading ? '' : 'pt-1.5'"
     >
-      <span v-for="row in rows" :key="row.label" class="truncate">
-        <span class="text-ink-gray-5">{{ row.label }}</span>
-        <span class="text-ink-gray-7"> {{ row.value }}</span>
+      <!--
+        Each pair is its own flex row with a gap. A space written inside the
+        markup does not survive: the template's own newline and indentation
+        collapse it away, and what reaches the screen is «Sourcefacebook».
+      -->
+      <span
+        v-for="row in rows"
+        :key="row.label"
+        class="flex min-w-0 items-baseline gap-1"
+      >
+        <span class="shrink-0 text-ink-gray-5">{{ row.label }}</span>
+        <span class="truncate text-ink-gray-7" :title="row.value">
+          {{ row.value }}
+        </span>
       </span>
     </div>
     <div v-else class="text-p-sm text-ink-gray-5">{{ __('Not recorded') }}</div>

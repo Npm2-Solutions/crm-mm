@@ -163,3 +163,62 @@ e se ci fermassimo lì non avremmo lasciato niente a metà.
 - `frontend/src/components/Activities/WhatsAppBox.vue`, `SMSBox.vue`,
   `frontend/src/components/CommunicationArea.vue` — i composer
 - `crm/api/activities.py` — `versions`, chiamate, note, task, allegati
+
+## Un flusso, quattro canali, un selettore
+
+Email, WhatsApp, SMS e commenti erano quattro tab. La domanda che si fa a una
+scheda — **cosa e' stato detto a questa persona, e in che ordine** — con quattro
+tab si poteva rispondere solo tre quarti alla volta.
+
+Adesso la tab **Activity** e' la conversazione, e sopra c'e' un selettore:
+`Tutto · Email · WhatsApp · SMS · Commenti`. Cambia **due cose insieme**: il
+flusso che leggi e la casella in cui scrivi. Un selettore che cambia solo la
+lettura e non la scrittura e' un selettore che viene ignorato.
+
+### Due forme, e non e' decorazione
+
+| Cosa | Come |
+|---|---|
+| un messaggio **fra due persone** | bolla, con un lato: inviato a destra, ricevuto a sinistra |
+| un commento, una nota, un campo cambiato | **larghezza piena** |
+
+La regola non e' estetica. Un messaggio ha una direzione, e una chat la fa
+leggere a colpo d'occhio. Un commento non e' indirizzato a nessuno: dargli un
+lato inventerebbe un mittente e un destinatario che non esistono.
+
+### L'icona del canale sta sulla bolla
+
+Era una colonna di icone a sinistra. Una colonna funziona finche' tutto e'
+allineato a sinistra: nel momento in cui metа' delle righe stanno a destra,
+l'icona e' lontana dalla cosa che descrive. Ora sta **sull'angolo esterno della
+bolla** e viaggia con il messaggio, leggibile su entrambi i lati.
+
+### Chi disegna cosa
+
+Il componente nuovo (`ConversationView.vue`) fa **la disposizione** e nient'altro:
+quali righe, in che ordine, su quale lato, con quale pastiglia. Com'e' fatto un
+messaggio dentro la bolla resta il componente del suo canale — quelli sanno gia'
+di risposte, reazioni, allegati, invii falliti e ritenta, e riscriverli per
+guadagnare un layout avrebbe perso tutto quello.
+
+La parte che decide — cos'e' un canale, da che parte e' andato un messaggio, cosa
+ha una direzione e cosa no — sta in `frontend/src/utils/conversation.js`, pura e
+sotto test: 18 casi, perche' leggere il campo sbagliato e' esattamente come una
+risposta finisce dalla parte da cui e' stata mandata (`type` su un messaggio,
+`sent_or_received` su una mail, niente su un commento, e le chiamate che lo
+dicono al contrario dei messaggi).
+
+### La chat WhatsApp
+
+Sfondo di WhatsApp — disegnato con tre gradienti radiali invece di spedire un
+asset a mosaico — e le sue due tinte: bianco in arrivo, verde in uscita. Prima
+erano dello stesso grigio, e l'allineamento faceva tutto il lavoro da solo: che
+e' la prima cosa che salta quando una bolla e' larga. I colori sono scritti come
+letterali e non come token del tema, perche' sono il marchio di qualcun altro e
+spacciarli per nostri vorrebbe dire che un cambio di tema ristila WhatsApp.
+
+### Gli SMS erano fuori dalla storia
+
+`get_activities()` metteva nel flusso i messaggi WhatsApp ma non gli SMS: una
+conversazione proseguita per SMS **spariva dalla cronologia della scheda** e si
+vedeva solo nella sua tab. Ora ci sono.

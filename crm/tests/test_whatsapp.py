@@ -267,3 +267,156 @@ class TestRetryingAMessageThatFailed(FrappeTestCase):
 			retry_whatsapp_message("whatever")
 
 		doc.send_outgoing.assert_not_called()
+
+
+class TestATemplateBelongsToItsNumber(FrappeTestCase):
+	"""A template is approved on one WhatsApp Business account and belongs to it.
+
+	Sent from another number Meta refuses it, complaining about a template name
+	that does not exist — true from where it is standing, useless to whoever
+	pressed Send. The chooser was listing every approved template on the site,
+	including the ones left behind by a number no longer in use, and offering
+	Send on all of them.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_template_of_another_account_is_refused_by_name(self):
+		from crm.api.whatsapp import send_whatsapp_template
+
+		with (
+			patch("crm.api.whatsapp.frappe.db.get_value", return_value="Vecchio"),
+			patch("crm.api.whatsapp.sending_account_name", return_value="Nuovo"),
+			patch("crm.api.whatsapp.validate_access"),
+		):
+			with self.assertRaises(frappe.ValidationError) as caught:
+				send_whatsapp_template("CRM Lead", "LEAD-0001", "promo-it", "+393330000000")
+
+		message = str(caught.exception)
+		# both numbers named, so the reader knows what to do about it
+		self.assertIn("Vecchio", message)
+		self.assertIn("Nuovo", message)
+		self.assertIn("promo-it", message)
+
+	def test_a_template_with_no_account_recorded_is_left_alone(self):
+		"""Nobody wrote down where it came from; it goes out from whichever number
+		is sending, exactly as it did before."""
+		from crm.api.whatsapp import send_whatsapp_template
+
+		with (
+			patch("crm.api.whatsapp.frappe.db.get_value", return_value=None),
+			patch("crm.api.whatsapp.sending_account_name", return_value="Nuovo"),
+			patch("crm.api.whatsapp.validate_access"),
+			patch("crm.api.whatsapp.frappe.new_doc"),
+			patch("crm.api.whatsapp.whatsapp_recipient", return_value="+393330000000"),
+			patch("crm.api.whatsapp.insert_and_send", return_value="MSG-1") as sent,
+		):
+			send_whatsapp_template("CRM Lead", "LEAD-0001", "promo-it", "+393330000000")
+
+		sent.assert_called_once()
+
+	def test_the_sending_account_is_the_one_frappe_whatsapp_uses(self):
+		"""The flag on the account, not the link on Settings — they can disagree,
+		and the flag is what sends."""
+		from crm.api.whatsapp import sending_account_name
+
+		with (
+			patch("crm.api.whatsapp.frappe.db.exists", return_value=True),
+			patch("crm.api.whatsapp.frappe.db.get_value", return_value="Mattia"),
+		):
+			self.assertEqual(sending_account_name(), "Mattia")
+
+
+class TestAClientSiteDoesNotSeeTheAgencysPlumbing(FrappeTestCase):
+	"""The Meta app id, the Embedded Signup configuration and the button that
+	changes it belong to the provider. On a client's site the app is somebody
+	else's: the id means nothing they can act on, and the field is the one thing
+	that would stop their own connection working."""
+
+	def test_the_status_says_whether_this_is_the_provider(self):
+		from crm.integrations.whatsapp.api import get_status
+
+		status = get_status()
+		if status.get("installed"):
+			self.assertIn("is_hub", status)
+			self.assertIsInstance(status["is_hub"], bool)
+
+
+class TestMetaErrorsSayWhatToDo(FrappeTestCase):
+	"""Meta answers a refusal with a number and a sentence written for whoever
+	wrote the integration. Neither half says whose problem it is, so every error
+	gets a second sentence that does."""
+
+	def test_the_24_hour_window_is_named_for_what_it_is(self):
+		from crm.integrations.meta.errors import advice
+
+		said = advice(131047)
+		self.assertIn("24 hours", said)
+		self.assertIn("template", said)
+
+	def test_a_dead_token_says_reconnect(self):
+		from crm.integrations.meta.errors import advice
+
+		self.assertIn("reconnect", advice(190).lower())
+
+	def test_a_subcode_is_more_specific_than_its_code(self):
+		"""190 on its own is «log in again»; 190/460 is «the password changed»."""
+		from crm.integrations.meta.errors import advice
+
+		self.assertIn("password", advice(190, 460).lower())
+		self.assertNotEqual(advice(190), advice(190, 460))
+
+	def test_the_media_codes_are_the_two_we_lost_a_day_to(self):
+		from crm.integrations.meta.errors import advice
+
+		self.assertIn("Content-Type", advice(131052))
+		self.assertIn("Opus", advice(131053))
+
+	def test_a_template_on_the_wrong_account_is_explained(self):
+		from crm.integrations.meta.errors import advice
+
+		self.assertIn("approved on", advice(132001))
+
+	def test_an_unknown_code_adds_nothing_rather_than_guessing(self):
+		from crm.integrations.meta.errors import advice
+
+		self.assertEqual(advice(999999), "")
+		self.assertEqual(advice(None), "")
+		self.assertEqual(advice("not a number"), "")
+
+	def test_a_code_is_read_out_of_metas_own_sentence(self):
+		"""A WhatsApp send never touches our Graph client: what comes back is
+		Meta's text with the code in brackets."""
+		from crm.integrations.meta.errors import explain_text
+
+		explained = explain_text("(#131047) Re-engagement message")
+		self.assertIn("Re-engagement message", explained)
+		self.assertIn("24 hours", explained)
+
+	def test_text_with_no_code_is_returned_untouched(self):
+		from crm.integrations.meta.errors import explain_text
+
+		self.assertEqual(explain_text("something broke"), "something broke")
+		self.assertEqual(explain_text(""), "")
+
+	def test_the_exception_carries_the_explanation(self):
+		from crm.integrations.meta.client import MetaAPIError
+
+		error = MetaAPIError("Invalid parameter", code=190)
+		self.assertEqual(error.raw, "Invalid parameter")
+		self.assertIn("Invalid parameter", str(error))
+		self.assertIn("reconnect", str(error).lower())
+
+
+class TestANumberIsRetiredNotDeleted(FrappeTestCase):
+	"""Eight doctypes point at a WhatsApp Account — every message most of all —
+	so deleting one barely worked, and it should not: the chat history belongs to
+	that number. It is switched off instead, and the other way is closed."""
+
+	def test_deleting_from_the_desk_is_refused_and_says_where_to_go(self):
+		from crm.integrations.whatsapp.api import refuse_account_deletion
+
+		with self.assertRaises(frappe.ValidationError) as caught:
+			refuse_account_deletion(MagicMock())
+		self.assertIn("Settings", str(caught.exception))

@@ -53,13 +53,30 @@
         </div>
       </div>
       <div v-else class="mt-2">
-        <div class="flex h-56 flex-col items-center justify-center">
+        <div class="flex h-56 flex-col items-center justify-center gap-2 px-8">
           <div class="text-lg text-ink-gray-4">
             {{ __('No Templates Found') }}
           </div>
+          <!--
+            An empty list where templates plainly exist needs a reason. They
+            belong to a number that is no longer the one sending, and Meta will
+            not send a template from an account it was not approved on — so they
+            are not hidden by mistake, they are unusable.
+          -->
+          <p
+            v-if="hiddenForOtherAccount"
+            class="text-center text-p-sm text-ink-gray-5"
+          >
+            {{
+              __(
+                '{0} approved templates belong to another number and cannot be sent from {1}. A template lives on the WhatsApp account it was approved on, so they have to be created again here.',
+                [hiddenForOtherAccount, sending.data?.account],
+              )
+            }}
+          </p>
           <Button
             :label="__('Create New')"
-            class="mt-4"
+            class="mt-2"
             @click="newWhatsappTemplate"
           />
         </div>
@@ -69,10 +86,15 @@
 
   <!-- a template with {{n}} placeholders cannot be sent blind: ask for the
        values, and show the message exactly as it will leave -->
-  <Dialog v-model="showVariables" :options="{ title: __('Fill in the template'), size: 'lg' }">
+  <Dialog
+    v-model="showVariables"
+    :options="{ title: __('Fill in the template'), size: 'lg' }"
+  >
     <template #body-content>
       <div class="flex flex-col gap-3">
-        <div class="rounded-md bg-surface-gray-1 p-3 text-p-base text-ink-gray-7 whitespace-pre-line">
+        <div
+          class="rounded-md bg-surface-gray-1 p-3 text-p-base text-ink-gray-7 whitespace-pre-line"
+        >
           {{ preview }}
         </div>
         <FormControl
@@ -97,7 +119,13 @@
 </template>
 
 <script setup>
-import { createListResource, createResource, Dialog, FormControl, toast } from 'frappe-ui'
+import {
+  createListResource,
+  createResource,
+  Dialog,
+  FormControl,
+  toast,
+} from 'frappe-ui'
 import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { sanitizeHTML } from '@/utils'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
@@ -113,28 +141,55 @@ const emit = defineEmits(['send'])
 
 const search = ref('')
 
+// A template is approved **on one WhatsApp Business account** and belongs to it.
+// Sent from another number Meta refuses it. This list used to show every
+// approved template on the site — including the ones left behind by a number no
+// longer in use — and offered Send on all of them, so half the choices were
+// choices that could only fail.
+const sending = createResource({
+  url: 'crm.api.whatsapp.get_sending_account',
+  auto: true,
+  onSuccess: () => templates.fetch(),
+})
+
 const templates = createListResource({
   type: 'list',
   doctype: 'WhatsApp Templates',
-  cache: ['whatsappTemplates'],
-  fields: ['name', 'template', 'footer'],
+  fields: ['name', 'template', 'footer', 'whatsapp_account'],
   filters: { status: 'APPROVED', for_doctype: ['in', [props.doctype, '']] },
   orderBy: 'modified desc',
   pageLength: 99999,
 })
 
 onMounted(() => {
-  if (templates.data == null) {
-    templates.fetch()
-  }
+  if (templates.data == null && sending.data) templates.fetch()
 })
 
 const filteredTemplates = computed(() => {
+  const account = sending.data?.account
   return (
     templates.data?.filter((template) => {
+      // an empty account is a template whose owner nobody recorded: it will be
+      // sent from whichever number is sending, so it stays
+      if (
+        account &&
+        template.whatsapp_account &&
+        template.whatsapp_account !== account
+      )
+        return false
       return template.name.toLowerCase().includes(search.value.toLowerCase())
     }) ?? []
   )
+})
+
+// How many were left out because they belong elsewhere — the difference between
+// "you have no templates" and "you have templates that this number cannot send".
+const hiddenForOtherAccount = computed(() => {
+  const account = sending.data?.account
+  if (!account) return 0
+  return (templates.data || []).filter(
+    (t) => t.whatsapp_account && t.whatsapp_account !== account,
+  ).length
 })
 
 const showVariables = ref(false)

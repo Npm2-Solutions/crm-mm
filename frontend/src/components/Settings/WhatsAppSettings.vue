@@ -22,11 +22,18 @@
       </div>
 
       <template v-else>
-        <!-- which Meta app signs these calls. A borrowed id is legitimate (one
-             app for Facebook and WhatsApp) and also how an agency discovers,
-             weeks later, that its WhatsApp calls went out as the Facebook app -->
+        <!--
+          Which Meta app signs these calls. A borrowed id is legitimate (one app
+          for Facebook and WhatsApp) and also how an agency discovers, weeks
+          later, that its WhatsApp calls went out as the Facebook app.
+
+          Only on the provider's own site. On a client's the app is somebody
+          else's, its id means nothing they can act on, and a number written out
+          under «Meta app in use» reads like something they are supposed to
+          check.
+        -->
         <div
-          v-if="status.data?.app?.app_id"
+          v-if="status.data?.is_hub && status.data?.app?.app_id"
           class="mb-4 flex items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
         >
           <span>{{ __('Meta app in use') }}:</span>
@@ -43,9 +50,13 @@
              and the choice decides how long the client's token lives and
              whether they are asked for a business portfolio. Meta's dashboard
              shows what is selected there, which is not the same as what this
-             CRM sends — so say what this CRM sends. -->
+             CRM sends — so say what this CRM sends.
+
+             Provider's site only, and the Change button most of all: on a client
+             site that field is the one thing that would stop their own
+             connection working. -->
         <div
-          v-if="status.data?.signup_config?.config_id"
+          v-if="status.data?.is_hub && status.data?.signup_config?.config_id"
           class="mb-4 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
         >
           <div class="flex flex-wrap items-center gap-2">
@@ -354,9 +365,12 @@
                   :loading="checking == account.name"
                   @click="recheckDelivery(account.name)"
                 />
+                <!-- switches the number off; nothing is deleted, because the
+                     chat history belongs to it -->
                 <Button
                   variant="ghost"
-                  icon="lucide-trash-2"
+                  icon="lucide-power-off"
+                  :title="__('Stop using this number')"
                   @click="disconnect(account.name)"
                 />
               </div>
@@ -398,7 +412,7 @@
           <p class="mt-2 text-p-sm text-ink-gray-5">
             {{
               __(
-                'Removing a number here does not affect the WhatsApp Business app on the phone.',
+                'Stopping a number here leaves the WhatsApp Business app on the phone untouched, and keeps every message it carried. It cannot be deleted: the chat history is attached to it.',
               )
             }}
           </p>
@@ -482,9 +496,9 @@ function configureWebhook() {
     onSuccess: (data) => {
       configuringWebhook.value = false
       webhook.data = data
-      data.complete
-        ? toast.success(__('Webhook configured on the WhatsApp app'))
-        : toast.error(data.error || __('Webhook not configured'))
+      if (data.complete)
+        toast.success(__('Webhook configured on the WhatsApp app'))
+      else toast.error(data.error || __('Webhook not configured'))
     },
     onError: (e) => {
       configuringWebhook.value = false
@@ -560,9 +574,8 @@ function recheckDelivery(name) {
     onSuccess: (data) => {
       checking.value = ''
       delivery[name] = data
-      data.ok
-        ? toast.success(__('This number can receive messages'))
-        : toast.error(__('Something is still missing, see below'))
+      if (data.ok) toast.success(__('This number can receive messages'))
+      else toast.error(__('Something is still missing, see below'))
     },
     onError: (e) => {
       checking.value = ''
@@ -721,11 +734,12 @@ function disconnect(name) {
     params: { name },
     auto: true,
     onSuccess: () => {
-      toast.success(__('Number removed'))
+      toast.success(__('This number is no longer in use'))
       status.reload()
       refreshWhatsappState()
     },
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to remove')),
+    onError: (e) =>
+      toast.error(e.messages?.[0] || __('Could not stop this number')),
   })
 }
 </script>

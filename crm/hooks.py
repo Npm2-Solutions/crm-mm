@@ -219,6 +219,11 @@ doc_events = {
 		"after_insert": ["crm.utils.on_comment_insert"],
 		"on_update": ["crm.api.comment.on_update"],
 	},
+	# A number is taken out of the CRM from Settings, which switches it off and
+	# keeps its chat history. Deleting the row is the other way, and it is closed.
+	"WhatsApp Account": {
+		"on_trash": ["crm.integrations.whatsapp.api.refuse_account_deletion"],
+	},
 	"WhatsApp Message": {
 		"validate": ["crm.api.whatsapp.validate"],
 		"on_update": ["crm.api.whatsapp.on_update"],
