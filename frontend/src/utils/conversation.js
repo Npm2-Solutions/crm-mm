@@ -138,3 +138,40 @@ export function countByChannel(items = []) {
   tally.all = (items || []).length
   return tally
 }
+
+/** The day part of a timestamp, as the string the rest of this file compares. */
+function dayOf(at) {
+  return String(at || '').slice(0, 10)
+}
+
+/**
+ * The same stream, with a marker wherever the day changes.
+ *
+ * A long conversation is a wall of times with no dates: «12:57» tells you
+ * nothing about whether that was today or in April. Every messenger answers it
+ * the same way — a date between the days, pinned to the top while its day is
+ * the one on screen — and it costs one row rather than a date on every message.
+ *
+ * `today` is passed in rather than read from the clock, so «Today» means the
+ * same thing in a test as it does on screen.
+ */
+export function withDayMarkers(rows = [], today = '') {
+  const out = []
+  let previous = null
+  for (const row of rows || []) {
+    const day = dayOf(row.at)
+    if (day && day !== previous) {
+      out.push({ key: `day:${day}`, kind: 'day', at: row.at, day })
+      previous = day
+    }
+    out.push(row)
+  }
+  return out
+}
+
+/** `Today`, `Yesterday`, or the date itself — the label on a day marker. */
+export function dayLabel(day, today = '', yesterday = '') {
+  if (day && day === dayOf(today)) return 'Today'
+  if (day && day === dayOf(yesterday)) return 'Yesterday'
+  return day
+}
