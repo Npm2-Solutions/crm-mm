@@ -658,8 +658,14 @@ class TestCRMLead(IntegrationTestCase):
 
 
 def create_lead(**kwargs):
-	"""Helper function to create a CRM Lead for testing"""
-	data = {"doctype": "CRM Lead"}
+	"""Helper function to create a CRM Lead for testing.
+
+	`status` is mandatory on CRM Lead and the doctype carries no default, so a
+	lead built without one never gets past validation. "New" is the first status
+	`add_default_lead_statuses` installs; a test that cares about status passes
+	its own.
+	"""
+	data = {"doctype": "CRM Lead", "status": "New"}
 	data.update(kwargs)
 	return frappe.get_doc(data).insert()
 
