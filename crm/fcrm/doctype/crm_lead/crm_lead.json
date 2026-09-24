@@ -158,6 +158,7 @@
    "options": "Gender"
   },
   {
+   "default": "New",
    "fieldname": "status",
    "fieldtype": "Link",
    "in_list_view": 1,
