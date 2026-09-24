@@ -96,12 +96,12 @@ quelli restano ognuno nel proprio site.
    **Facebook Login for Business → Configurations** con i permessi elencati in
    fondo, e metti il suo id in `meta_login_config_id`. Se c'è il Login classico
    non serve: il CRM manda gli scope da solo.
-5. **Webhook**: nel CRM **dell'hub**, Settings → Meta → "Configure
+5. **Webhook**: nel CRM **dell'hub**, Settings → Integrations → Meta → "Configure
    automatically". Il CRM registra `Page → leadgen` da solo; il site deve
    essere raggiungibile in HTTPS perché Meta verifica il callback sul momento.
 6. **App settings → Advanced → Data Deletion Request URL**:
    `https://<hub>/api/method/crm.integrations.meta.webhook.data_deletion`
-7. **Prova end-to-end**: Settings → Meta → "Connetti con Facebook" → attivare
+7. **Prova end-to-end**: Settings → Integrations → Meta → "Connetti con Facebook" → attivare
    "Sync leads" su una pagina → bottone **"Test lead"** sul form.
    In development mode funziona solo con gli account del team dell'app
    (App roles → Add people), ed è normale.
@@ -143,15 +143,16 @@ che quell'utente autorizza quell'app. Alle autorizzazioni successive Facebook
 rimanda indietro subito, senza schermata di consenso e senza selettore: la
 scelta fatta la prima volta resta valida in silenzio.
 
-Perciò Settings → *Meta connection* mostra, sotto l'account, **le Pagine che
+Perciò Settings → Integrations → *Meta* mostra, sotto l'account, **le Pagine che
 Facebook ha effettivamente condiviso** (con l'account Instagram collegato, se
 c'è) e il bottone **"Scegli le pagine"**, che riapre il dialog con
 `auth_type=rerequest` per aggiungerne o toglierne. Se la lista è vuota il login
 è comunque riuscito, ma nessuna Pagina è stata selezionata: si deve esserne
 amministratori e spuntarla nella finestra di Facebook.
 
-Quali Pagine sincronizzare per i lead resta invece una scelta del CRM, in
-Settings → *Lead forms* (interruttore "Sync leads" per Pagina).
+Quali Pagine sincronizzare per i lead resta invece una scelta del CRM, nella
+stessa lista (interruttore "Leads to the CRM" per Pagina): da settembre 2026 è
+l'unico posto, la scheda *Lead Ads* non ha più un interruttore suo.
 
 ## Configurazione (una volta sola, sul bench)
 
@@ -174,10 +175,10 @@ Sull'app Meta (developers.facebook.com), una volta sola:
   `https://hub.miaagenzia.it/api/method/crm.integrations.meta.oauth.callback`
 - **Webhooks → Page → leadgen**:
   `https://hub.miaagenzia.it/api/method/crm.integrations.meta.webhook.handle`
-  (configurabile dal bottone in Settings → Meta **sull'hub**)
+  (configurabile dal bottone in Settings → Integrations → Meta **sull'hub**)
 - **Data Deletion**: `…/webhook.data_deletion` sull'hub.
 
-Quando le chiavi sono nel config, la pagina Settings → Meta del cliente
+Quando le chiavi sono nel config, la pagina Settings → Integrations → Meta del cliente
 **nasconde** App ID/Secret e webhook e mostra solo "Connetti con Facebook".
 
 ## Cosa resta da fare all'agenzia (una volta)

@@ -8,7 +8,7 @@
 ## Come funziona
 
 Frappe pubblica da sé con la **Graph API**, riusando i page token ottenuti
-dall'unica connessione Meta (Settings → Meta, la stessa dei Lead Ads):
+dall'unica connessione Meta (Settings → Integrations → Meta, la stessa dei Lead Ads):
 
 | Destinazione | Chiamata |
 |---|---|
@@ -23,13 +23,18 @@ Scope OAuth aggiunti per la pubblicazione: `pages_manage_posts`,
 
 ## Collegamento profili (zero id da incollare)
 
-Settings → Social Planner → **"Import profiles"**
-(`crm.api.social.import_accounts`): rinfresca le pagine da Meta e crea un
-`CRM Social Account` per ogni pagina Facebook e per ogni account Instagram
-Business collegato (letto da `instagram_business_account` in `/me/accounts`).
-L'upsert è idempotente (match per piattaforma + id) e ogni profilo tiene il
-link alla `Facebook Page` da cui prende il token per pubblicare.
-L'import parte anche in automatico al termine dell'OAuth Meta.
+I profili arrivano **da sé** al termine dell'OAuth Meta: un `CRM Social
+Account` per ogni pagina Facebook e per ogni account Instagram Business
+collegato (letto da `instagram_business_account` in `/me/accounts`). L'upsert è
+idempotente (match per piattaforma + id) e ogni profilo tiene il link alla
+`Facebook Page` da cui prende il token per pubblicare.
+
+Settings → **Social Planner → Profiles** (dal 24/09/2026, vedi
+[27](./27-impostazioni-canali-integrazioni.md)) elenca le **sorgenti** — oggi
+solo Meta, registro in `crm/social/sources.py` — e sotto i profili con
+l'interruttore "nel planner". **"Refresh profiles"** (`crm.api.social.sync_profiles`)
+riallinea subito i profili alle Pagine già note e fa rileggere le Pagine da
+Facebook in background.
 
 ## Componenti
 
@@ -53,9 +58,12 @@ L'import parte anche in automatico al termine dell'OAuth Meta.
 
 ## Setup
 
-1. Settings → **Meta**: App ID/Secret (il webhook leadgen si configura da solo).
+1. Settings → **Integrations → Meta**: App ID/Secret, solo se l'app non è
+   fornita centralmente (il webhook leadgen si configura da solo). Lo vede solo
+   un amministratore.
 2. **"Connect with Facebook"** → autorizza pagine e account IG collegati.
-3. Settings → **Social Planner** → **"Import profiles"**.
+3. Settings → **Social Planner → Profiles**: i profili ci sono già; si spengono
+   quelli da non offrire nel planner.
 4. Si pubblica.
 
 ## Limiti noti

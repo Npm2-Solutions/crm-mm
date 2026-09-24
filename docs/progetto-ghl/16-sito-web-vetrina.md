@@ -284,7 +284,7 @@ aggiornare la home, buttare giù una landing è **lavoro ricorrente**, e il lavo
 non si fa dentro un modale di impostazioni.
 
 È esattamente il taglio che questo repo ha già fatto per il social: `/social` è una voce di
-sidebar (il **Social Planner**, dove si lavora), mentre `Impostazioni → Social profiles`
+sidebar (il **Social Planner**, dove si lavora), mentre `Impostazioni → Social Planner → Profiles`
 tiene le connessioni. Il sito si comporta allo stesso modo.
 
 **Sidebar → `Sito`** (una voce in `links` dentro `AppSidebar.vue`, con

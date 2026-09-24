@@ -66,7 +66,7 @@ Questa e' una funzione che paga dopo settimane, non domani. Meta chiede:
 | Finestra | lo stadio deve avvenire entro 28 giorni dal lead |
 | Apprendimento | 3-4 settimane prima del pieno effetto |
 
-La copertura sta in cima a Settings → **Lead quality**, con il numero e non con
+La copertura sta in cima a Settings → Integrations → Meta → **Lead quality**, con il numero e non con
 un semaforo: sotto il 60% Meta non si fida abbastanza dei dati per ottimizzarci
 sopra, e vale la pena saperlo prima di vendere il risultato a un cliente.
 
@@ -74,7 +74,7 @@ sopra, e vale la pena saperlo prima di vendere il risultato a un cliente.
 
 1. In **Events Manager** creare un dataset per gli eventi CRM (non il pixel del
    sito, non il modulo).
-2. Incollare l'id del dataset in Settings → Lead quality e accendere
+2. Incollare l'id del dataset in Settings → Integrations → Meta → Lead quality e accendere
    l'interruttore.
 3. Verificare in Events Manager che gli eventi arrivino (c'e' il campo per il
    *test event code*, da svuotare subito dopo: gli eventi di test non contano).
