@@ -205,3 +205,45 @@ class TestSlotFilters(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class TestInheritance(unittest.TestCase):
+	defaults: ClassVar[dict] = {
+		"default_min_notice_hours": 2,
+		"default_max_horizon_days": 60,
+		"default_cancel_notice_hours": 24,
+		"default_allow_online_cancel": 1,
+		"default_online_confirmation": "Automatic",
+	}
+
+	def test_nothing_customised_follows_the_defaults(self):
+		service = {"min_notice_hours": 48, "max_horizon_days": 7, "online_overrides": None}
+		values, sources = R.effective_rules(service, self.defaults)
+		self.assertEqual(values["min_notice_hours"], 2)
+		self.assertEqual(values["max_horizon_days"], 60)
+		self.assertEqual(sources["min_notice_hours"], R.SOURCE_DEFAULT)
+
+	def test_customised_rules_keep_the_service_value(self):
+		service = {"min_notice_hours": 48, "online_overrides": '["min_notice_hours", "not_a_rule"]'}
+		self.assertEqual(R.overridden_keys(service), {"min_notice_hours"})
+		values, sources = R.effective_rules(service, self.defaults)
+		self.assertEqual(values["min_notice_hours"], 48)
+		self.assertEqual(sources["min_notice_hours"], R.SOURCE_SERVICE)
+		self.assertEqual(values["cancel_notice_hours"], 24)
+
+	def test_without_defaults_the_service_values_stand(self):
+		values, sources = R.effective_rules({"min_notice_hours": 5}, None)
+		self.assertEqual(values["min_notice_hours"], 5)
+		self.assertEqual(sources["min_notice_hours"], R.SOURCE_SERVICE)
+
+	def test_rules_are_built_from_the_effective_values(self):
+		service = {"min_notice_hours": 48, "max_bookings_per_day": 3, "online_overrides": "[]"}
+		rules = R.OnlineRules.from_service(service, defaults=self.defaults)
+		self.assertEqual(rules.min_notice_hours, 2)
+		self.assertEqual(rules.cancel_notice_hours, 24)
+		# a service-only cap is never inherited
+		self.assertEqual(rules.max_per_day, 3)
+
+	def test_garbage_override_list_means_nothing_customised(self):
+		self.assertEqual(R.overridden_keys({"online_overrides": "not json"}), set())
+		self.assertEqual(R.overridden_keys({"online_overrides": ["max_reschedules"]}), {"max_reschedules"})

@@ -4,6 +4,7 @@
 """Public service booking: the menu, the slots, the limits, manage by token."""
 
 import datetime
+import json
 from unittest.mock import patch
 
 import frappe
@@ -20,6 +21,14 @@ class TestServiceBooking(SchedulingCase):
 		settings.online_booking_enabled = 1
 		settings.require_privacy_consent = 0
 		settings.max_active_per_customer = 0
+		# permissive booking-page defaults: each test customises what it checks
+		settings.default_min_notice_hours = 0
+		settings.default_max_horizon_days = 30
+		settings.default_require_phone = 0
+		settings.default_cancel_notice_hours = 0
+		settings.default_reschedule_notice_hours = 0
+		settings.default_max_reschedules = 0
+		settings.default_online_confirmation = "Automatic"
 		settings.save()
 		if hasattr(frappe.local, "crm_scheduling_settings"):
 			del frappe.local.crm_scheduling_settings
@@ -34,9 +43,15 @@ class TestServiceBooking(SchedulingCase):
 		super().tearDown()
 
 	def online_service(self, name="Online Physio", **kw):
+		from crm.scheduling.booking_rules import INHERITED
+
 		kw.setdefault("bookable_online", 1)
 		kw.setdefault("website_slug", name.lower().replace(" ", "-"))
 		kw.setdefault("require_phone", 0)
+		# an inheritable rule a test sets is a rule the service customises
+		custom = [key for key in kw if key in INHERITED and key != "require_phone"]
+		if custom:
+			kw["online_overrides"] = json.dumps(custom)
 		return self.make_service(name, kw.pop("staff", [self.anna, self.bruno]), **kw)
 
 	def book(self, service, start, email="cliente@example.com", **kw):
