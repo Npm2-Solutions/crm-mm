@@ -226,6 +226,13 @@ def active() -> frozenset[str]:
 	return frozenset(on)
 
 
+def forget() -> None:
+	"""Check again on the next call: a feature was switched on or off during this request."""
+	cache = getattr(frappe.local, "request_cache", None)
+	if cache is not None:
+		cache.pop(active.__wrapped__, None)
+
+
 def missing(requires: tuple[str, ...]) -> list[str]:
 	"""The features in ``requires`` the site does not use."""
 	on = active()

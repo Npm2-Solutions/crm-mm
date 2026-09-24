@@ -1,39 +1,61 @@
 {
  "actions": [],
- "allow_rename": 1,
- "autoname": "field:title",
+ "allow_rename": 0,
+ "autoname": "hash",
  "creation": "2025-07-14 12:19:49.725022",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "icon",
+  "template",
+  "customized",
   "private",
   "column_break_exbw",
   "user",
+  "only_mine",
+  "period",
+  "sequence",
   "section_break_hfza",
   "layout"
  ],
  "fields": [
   {
-   "fieldname": "column_break_exbw",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "section_break_hfza",
-   "fieldtype": "Section Break"
-  },
-  {
-   "default": "[]",
-   "fieldname": "layout",
-   "fieldtype": "Code",
-   "label": "Layout",
-   "options": "JSON"
-  },
-  {
    "fieldname": "title",
    "fieldtype": "Data",
-   "label": "Name",
-   "unique": 1
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "icon",
+   "fieldtype": "Data",
+   "label": "Icon"
+  },
+  {
+   "description": "The ready-made dashboard it was made from, and goes back to on reset.",
+   "fieldname": "template",
+   "fieldtype": "Data",
+   "label": "Template",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "template",
+   "description": "Someone rearranged it: it no longer follows its template until it is reset.",
+   "fieldname": "customized",
+   "fieldtype": "Check",
+   "label": "Customized",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "private",
+   "fieldtype": "Check",
+   "label": "Private"
+  },
+  {
+   "fieldname": "column_break_exbw",
+   "fieldtype": "Column Break"
   },
   {
    "depends_on": "private",
@@ -45,19 +67,43 @@
   },
   {
    "default": "0",
-   "fieldname": "private",
+   "description": "Every widget counts only the work of the person looking at it.",
+   "fieldname": "only_mine",
    "fieldtype": "Check",
-   "label": "Private"
+   "label": "Only my work"
+  },
+  {
+   "fieldname": "period",
+   "fieldtype": "Data",
+   "label": "Default Period"
+  },
+  {
+   "default": "100",
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence"
+  },
+  {
+   "fieldname": "section_break_hfza",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "[]",
+   "description": "Empty while the dashboard follows its template; filled the first time someone rearranges it.",
+   "fieldname": "layout",
+   "fieldtype": "Code",
+   "label": "Layout",
+   "options": "JSON"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-14 12:36:10.831351",
+ "modified": "2026-09-24 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Dashboard",
- "naming_rule": "By fieldname",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [
   {
@@ -95,8 +141,8 @@
   }
  ],
  "row_format": "Dynamic",
- "sort_field": "creation",
- "sort_order": "DESC",
+ "sort_field": "sequence",
+ "sort_order": "ASC",
  "states": [],
  "title_field": "title"
 }
