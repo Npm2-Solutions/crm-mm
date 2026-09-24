@@ -65,24 +65,7 @@
               :placeholder="__('e.g. Massages')"
             />
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs text-ink-gray-5">{{ __('Colour') }}</span>
-            <div class="flex items-center gap-2">
-              <button
-                v-for="colour in COLOURS"
-                :key="colour"
-                class="size-6 rounded-full ring-offset-2 ring-offset-surface-modals transition"
-                :class="
-                  sameColour(form.color, colour)
-                    ? 'ring-2 ring-outline-gray-5'
-                    : 'hover:scale-110'
-                "
-                :style="{ backgroundColor: colour }"
-                :title="colour"
-                @click="form.color = colour"
-              />
-            </div>
-          </div>
+          <ColourPicker v-model="form.color" :label="__('Colour')" />
           <FormControl
             v-model="form.description"
             type="textarea"
@@ -365,33 +348,19 @@
               :label="__('Buffer after')"
             />
           </div>
-          <div class="flex flex-col gap-2">
-            <span class="text-p-base-medium text-ink-gray-8">
-              {{ __('When it can be delivered') }}
-            </span>
-            <TabButtons
-              :modelValue="restrictHours ? 'set' : 'team'"
-              :buttons="[
-                { label: __('Whenever the team works'), value: 'team' },
-                { label: __('Only at set times'), value: 'set' },
-              ]"
-              @update:modelValue="setRestrictHours"
-            />
-            <p v-if="!restrictHours" class="text-p-sm text-ink-gray-5">
-              {{
-                __('Bookable in any free slot of the people who deliver it.')
-              }}
-            </p>
-            <WeeklyHours
-              v-else
-              v-model="form.availability"
-              :hint="
-                __(
-                  'e.g. first visits only on Tuesday morning. Still within each person\'s own hours.',
-                )
-              "
-            />
-          </div>
+          <WeeklyHours
+            v-model="form.availability"
+            :label="__('When it can be delivered')"
+            :anyTimeLabel="__('Whenever the team works')"
+            :anyTimeHint="
+              __('Bookable in any free slot of the people who deliver it.')
+            "
+            :hint="
+              __(
+                'e.g. first visits only on Tuesday morning. Still within each person\'s own hours.',
+              )
+            "
+          />
           <p class="text-p-xs text-ink-gray-5">
             {{ __("Each person's own hours and days off: Team rota.") }}
           </p>
@@ -435,6 +404,7 @@
 </template>
 
 <script setup>
+import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import PersonPicker from '@/components/Settings/Scheduling/PersonPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import { globalStore } from '@/stores/global'
@@ -463,22 +433,6 @@ const router = useRouter()
 
 const { $dialog } = globalStore()
 
-// the calendar colours of a service: one tap instead of a hex code
-const COLOURS = [
-  '#4C7EFF',
-  '#30A46C',
-  '#E5484D',
-  '#F76B15',
-  '#FFB224',
-  '#8E4EC6',
-  '#D6409F',
-  '#12A594',
-  '#6E6E6E',
-]
-
-function sameColour(a, b) {
-  return (a || '#4C7EFF').toLowerCase() === b.toLowerCase()
-}
 const grid = ref(null)
 const query = ref('')
 
@@ -527,22 +481,6 @@ const staffingHint = computed(() => {
 
 const showEditor = ref(false)
 const editorTab = ref('details')
-// a service without hours follows its team; "set times" narrows it
-const restrictHours = ref(false)
-
-function setRestrictHours(mode) {
-  restrictHours.value = mode === 'set'
-  if (!restrictHours.value) form.availability = []
-  else if (!form.availability.length) {
-    form.availability = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-    ].map((workday) => ({ workday, start_time: '09:00', end_time: '18:00' }))
-  }
-}
 const editorTabs = [
   { label: __('Details'), value: 'details' },
   { label: __('Team'), value: 'team' },
@@ -642,7 +580,6 @@ const editorTitle = computed(() =>
 function openEditor(name = null) {
   editingName.value = name
   editorTab.value = 'details'
-  restrictHours.value = false
   publishedOnWebsite.value = false
   Object.assign(form, emptyForm())
   if (!name) {
@@ -691,7 +628,6 @@ function openEditor(name = null) {
         availability: data.availability || [],
       })
       publishedOnWebsite.value = Boolean(data.publish_on_website)
-      restrictHours.value = form.availability.length > 0
       showEditor.value = true
     },
     onError: (e) => toast.error(e.messages?.[0] || __('Failed to load')),

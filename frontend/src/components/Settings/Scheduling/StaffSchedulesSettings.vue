@@ -187,7 +187,7 @@
             <div class="mt-1.5 text-p-xs text-ink-gray-5">
               {{
                 __(
-                  'The studio hours are set in Agenda → Scheduling and apply to everyone without their own.',
+                  'The studio hours are set in Agenda → Studio hours & rules and apply to everyone without their own.',
                 )
               }}
             </div>

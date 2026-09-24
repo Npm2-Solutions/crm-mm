@@ -1,10 +1,31 @@
 <template>
   <div class="flex flex-col gap-2">
-    <div v-if="label || hint" class="flex flex-col gap-0.5">
-      <FormLabel v-if="label" :label="label" />
-      <p v-if="hint" class="text-p-xs text-ink-gray-5">{{ hint }}</p>
+    <div v-if="label" class="text-p-base-medium text-ink-gray-8">
+      {{ label }}
     </div>
+    <!-- optional hours: empty means "any time", said in words, never as a
+         week of closed days -->
+    <template v-if="anyTimeLabel">
+      <TabButtons
+        :modelValue="restricted ? 'set' : 'any'"
+        :buttons="[
+          { label: anyTimeLabel, value: 'any' },
+          { label: __('Only at set times'), value: 'set' },
+        ]"
+        @update:modelValue="setRestricted"
+      />
+      <p v-if="!restricted && anyTimeHint" class="text-p-sm text-ink-gray-5">
+        {{ anyTimeHint }}
+      </p>
+    </template>
+    <p
+      v-if="hint && (!anyTimeLabel || restricted)"
+      class="text-p-sm text-ink-gray-5"
+    >
+      {{ hint }}
+    </p>
     <div
+      v-if="!anyTimeLabel || restricted"
       class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
     >
       <div
@@ -84,8 +105,9 @@
 // A week, one line per day: switch it on, give it one or more time slots.
 // The value stays the flat `[{ workday, start_time, end_time }]` the server
 // stores, so every caller (team rota, services, studio hours) is unchanged.
-import { Button, FormControl, FormLabel, Switch } from 'frappe-ui'
+import { Button, FormControl, Switch, TabButtons } from 'frappe-ui'
 import { hhmm } from '@/utils/scheduler'
+import { computed, ref } from 'vue'
 
 const WEEKDAYS = [
   'Monday',
@@ -102,8 +124,33 @@ const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   label: { type: String, default: '' },
   hint: { type: String, default: '' },
+  /** set it when no hours is a valid choice, e.g. "Whenever the team works" */
+  anyTimeLabel: { type: String, default: '' },
+  anyTimeHint: { type: String, default: '' },
 })
 const emit = defineEmits(['update:modelValue'])
+
+// "set times" chosen but not filled yet still shows the week
+const wantsSetTimes = ref(false)
+const restricted = computed(
+  () => wantsSetTimes.value || props.modelValue.length > 0,
+)
+
+function setRestricted(mode) {
+  wantsSetTimes.value = mode === 'set'
+  if (mode === 'any') {
+    emit('update:modelValue', [])
+  } else if (!props.modelValue.length) {
+    emit(
+      'update:modelValue',
+      WEEKDAYS.slice(0, 5).map((workday) => ({
+        workday,
+        start_time: '09:00',
+        end_time: '18:00',
+      })),
+    )
+  }
+}
 
 function windows(day) {
   return props.modelValue

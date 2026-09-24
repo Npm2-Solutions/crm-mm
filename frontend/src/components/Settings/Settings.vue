@@ -217,11 +217,6 @@ const tabs = computed(() => {
           icon: SparkleIcon,
           component: markRaw(BrandSettings),
         },
-        {
-          label: __('Calendar'),
-          icon: CalendarIcon,
-          component: markRaw(CalendarSettings),
-        },
       ],
       condition: () => isManager(),
     },
@@ -328,6 +323,12 @@ const tabs = computed(() => {
           component: markRaw(StaffSchedulesSettings),
         },
         {
+          // opening hours + what the agenda refuses: the studio's own rules
+          label: __('Studio hours & rules'),
+          icon: SettingsIcon,
+          component: markRaw(SchedulingDefaults),
+        },
+        {
           label: __('Rooms & Equipment'),
           icon: markRaw(LucideDoorOpen),
           component: markRaw(ResourcesSettings),
@@ -338,9 +339,10 @@ const tabs = computed(() => {
           component: markRaw(PriceListsSettings),
         },
         {
-          label: __('Scheduling'),
-          icon: SettingsIcon,
-          component: markRaw(SchedulingDefaults),
+          // calendar view and event reminders, next to the rest of the agenda
+          label: __('Calendar & reminders'),
+          icon: CalendarIcon,
+          component: markRaw(CalendarSettings),
         },
       ],
       condition: () => isManager(),

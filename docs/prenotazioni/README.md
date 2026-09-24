@@ -63,12 +63,17 @@ Tre livelli, sempre visibili, mai copiati:
    settimana / contemporanei, chi può prenotare (nuovi/già clienti), prenotazioni future
    per cliente, giorni tra due visite, domanda e istruzioni, posti per prenotazione,
    scelta del professionista, prezzo visibile, *solo tramite link*.
-3. **Professionista × servizio** (solo *Agenda → Chi fa cosa*; l'editor del servizio sceglie chi lo fa e lo riassume): durata
+3. **Professionista × servizio** (la cella della griglia in *Agenda → Servizi*; l'editor del servizio sceglie solo chi lo fa): durata
    e prezzo propri, prenotabile online sì/no, priorità, ruolo. Mai duplicare un servizio
    per cambiare prezzo o durata a una persona.
 
-Il **professionista** (*Agenda → Turni del team*) ha orario settimanale, eccezioni e ferie,
-tetto giornaliero e settimanale, visibile online sì/no, titolo e bio pubblici.
+Il **professionista** (*Agenda → Turni del team*) lavora con gli orari dello studio oppure con
+orari propri, ha giorni liberi ed extra, tetto giornaliero e settimanale. Visibile online,
+titolo e bio stanno in *Booking → Prenotazione online* (pulsante *Profilo*).
+
+Lo **studio** (*Agenda → Orari e regole dello studio*): orario di apertura e festività per chi
+non ha orari propri, durata e listino predefiniti, fuso orario, doppie prenotazioni vietate,
+calendario e Google.
 
 Quando più livelli pongono un tetto vince **il più severo** (es. tetto del servizio e tetto
 globale per cliente).
@@ -81,7 +86,8 @@ globale per cliente).
   interruttore, i servizi da accendere con un clic (se non li fa ancora viene aggiunta al
   servizio) e il motivo quando non è prenotabile. Da qui si apre anche *Perché non è
   disponibile?*.
-- **Chi fa cosa** — matrice servizi × professionisti: clic su una cella vuota per
+- **Servizi** (*Agenda → Servizi*) — la griglia servizi × professionisti: clic sul nome per
+  modificare il servizio, su una cella vuota per
   assegnare, su una piena per durata/prezzo/online propri; menu di riga (tutti/nessuno),
   menu di colonna (assegna tutto, togli tutto, *copia i servizi di…*). Avvisi: servizio
   che nessuno fa, che fa una sola persona, online ma nessuno lo prende online.

@@ -43,7 +43,12 @@
                 {{ list.price_list_name }}
               </div>
               <div class="truncate text-p-sm text-ink-gray-5">
-                {{ list.currency }} · {{ list.rule_count }} {{ __('rules') }}
+                {{ list.currency }} ·
+                {{
+                  list.rule_count === 1
+                    ? __('1 rule')
+                    : __('{0} rules', [list.rule_count])
+                }}
               </div>
             </div>
             <Badge
@@ -100,7 +105,7 @@
             >
               <div class="min-w-0 flex-1">
                 <div class="truncate text-p-base-medium text-ink-gray-8">
-                  {{ rule.service }}
+                  {{ serviceName(rule.service) }}
                   <span v-if="rule.label" class="text-ink-gray-5"
                     >· {{ rule.label }}</span
                   >
@@ -120,8 +125,9 @@
               </span>
               <Badge
                 v-if="rule.priority"
-                :label="`P${rule.priority}`"
-                theme="orange"
+                :label="__('priority {0}', [rule.priority])"
+                :title="__('Higher priority wins when more rules match')"
+                theme="gray"
                 size="sm"
               />
               <Button
@@ -354,6 +360,12 @@ const priceLists = createResource({
     if (!selected.value && data?.length) select(data[0].name)
   },
 })
+
+function serviceName(name) {
+  return (
+    (services.data || []).find((s) => s.name === name)?.service_name || name
+  )
+}
 
 const services = createResource({
   url: 'crm.api.appointments.list_services',

@@ -118,19 +118,19 @@
             type="text"
             :label="__('Currency')"
           />
-          <FormControl
-            v-model="form.color"
-            type="text"
-            :label="__('Colour (hex)')"
-          />
         </div>
         <label class="flex items-center gap-2 text-sm text-ink-gray-7">
           <Switch v-model="form.enabled" size="sm" /> {{ __('Enabled') }}
         </label>
+        <ColourPicker
+          v-model="form.color"
+          :label="__('Colour')"
+          fallback="#6E6E6E"
+        />
         <WeeklyHours
           v-model="form.availability"
           :label="__('When it can be used')"
-          :hint="__('Leave empty to make it available whenever the staff is.')"
+          :anyTimeLabel="__('Whenever the team works')"
         />
         <FormControl
           v-model="form.description"
@@ -153,6 +153,7 @@
 </template>
 
 <script setup>
+import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
@@ -180,7 +181,7 @@ function describe(resource) {
   if (resource.capacity > 1) {
     parts.push(__('{0} at a time', [resource.capacity]))
   }
-  if (resource.seats) parts.push(__('{0} seats', [resource.seats]))
+  if (resource.seats > 1) parts.push(__('{0} seats', [resource.seats]))
   if (resource.location) parts.push(resource.location)
   if (resource.hourly_rate) {
     parts.push(`${resource.hourly_rate} ${resource.currency || ''}/h`)

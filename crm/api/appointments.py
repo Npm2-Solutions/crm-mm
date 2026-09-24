@@ -1247,6 +1247,8 @@ def get_scheduling_settings() -> dict:
 		{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
 		for row in doc.default_availability
 	]
+	# what an empty time zone means, for the settings page to say it
+	data["site_timezone"] = frappe.utils.get_system_timezone()
 	return data
 
 

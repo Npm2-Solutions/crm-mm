@@ -285,6 +285,35 @@ class TestUnifiedBooking(SchedulingCase):
 		setup = ADMIN.set_booking_open(enabled=0)
 		self.assertFalse(setup["open"])
 
+	def test_rota_save_leaves_the_online_side_alone(self):
+		from crm.api import appointments as A
+
+		ADMIN.set_person_online(user=self.anna, online=0)
+		ADMIN.set_person_profile(user=self.anna, public_title="Fisioterapista", public_bio="")
+		A.save_schedule(
+			schedule={
+				"user": self.anna,
+				"enabled": 1,
+				"availability": [{"workday": "Monday", "start_time": "09:00", "end_time": "13:00"}],
+			}
+		)
+		row = frappe.db.get_value(
+			"CRM Staff Schedule", {"user": self.anna}, ["bookable_online", "public_title"], as_dict=True
+		)
+		self.assertEqual(row.bookable_online, 0)
+		self.assertEqual(row.public_title, "Fisioterapista")
+		# the editor gets times a time input can show
+		self.assertEqual(A.get_schedule(self.anna)["availability"][0]["start_time"], "09:00")
+
+	def test_own_hours_cannot_be_empty(self):
+		from crm.api import appointments as A
+
+		with self.assertRaises(frappe.ValidationError):
+			A.save_schedule(schedule={"user": self.bruno, "enabled": 1, "availability": []})
+		# the studio hours are fine
+		A.save_schedule(schedule={"user": self.bruno, "enabled": 0, "availability": []})
+		self.assertEqual(A.get_schedule(self.bruno)["enabled"], 0)
+
 
 class TestParticipantsArePeople(SchedulingCase):
 	def test_contact_and_deal_become_their_person(self):
