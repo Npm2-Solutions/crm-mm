@@ -27,6 +27,23 @@ export const CHANNELS = [
   { key: 'comment', label: 'Comments' },
 ]
 
+/**
+ * The bare file name, from a path, a full URL or a name on its own.
+ *
+ * Outgoing media no longer travels as `/files/…`: it goes through the signed
+ * endpoint that tells Meta what the file is, and the real name is a query
+ * parameter there. Reading only the path would give `media` for every one of
+ * them, and every voice note would go back to appearing twice.
+ */
+export function fileNameOf(pathOrUrl) {
+  const raw = String(pathOrUrl || '')
+  const named = /[?&]file=([^&#]+)/.exec(raw)
+  const clean = (named ? decodeURIComponent(named[1]) : raw)
+    .split('?')[0]
+    .split('#')[0]
+  return decodeURIComponent(clean.split('/').pop() || '')
+}
+
 /** Which channel an item belongs to, or `''` for everything else. */
 export function channelOf(item) {
   const type = item?.activity_type || ''
@@ -79,7 +96,23 @@ export function buildStream(items = [], options = {}) {
   const channel = options.channel || 'all'
   const direction = options.newestFirst ? -1 : 1
 
+  // Every file sent as a message is also written down as an attachment on the
+  // record, so in one stream a voice note appeared twice: once as the bubble
+  // somebody sent, and once as a line saying a file was attached. The bubble is
+  // the event; the log line is bookkeeping about it.
+  const sentFiles = new Set()
+  for (const item of items || []) {
+    const attached = item?.attach || ''
+    if (channelOf(item) && attached) sentFiles.add(fileNameOf(attached))
+  }
+
   const kept = (items || []).filter((item) => {
+    if (item?.activity_type === 'attachment_log') {
+      const named = fileNameOf(
+        item.data?.file_name || item.data?.file_url || '',
+      )
+      if (named && sentFiles.has(named)) return false
+    }
     if (channel === 'all') return true
     return channelOf(item) === channel
   })

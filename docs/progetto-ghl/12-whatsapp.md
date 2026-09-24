@@ -2132,3 +2132,39 @@ non ha scelto).
 L'altra via e' chiusa: `on_trash` su WhatsApp Account rifiuta la cancellazione
 dal desk e dice dove si fa. Non due modi di cui uno funziona e l'altro lascia il
 CRM mezzo configurato — uno.
+
+## I messaggi mandati dal telefono: arrivano, ma dieci erano orfani
+
+La domanda era se il CRM riceva anche quello che si manda **dal telefono**, non
+dal gestionale. La risposta e' si': sul sito ci sono **42 messaggi in uscita
+scritti dal webhook** (`owner = Guest`, `status = sent`) — gli echi
+`smb_message_echoes` della Coexistence, che il codice gia' memorizzava. La
+sottoscrizione e' completa: `messages, smb_message_echoes, history,
+smb_app_state_sync, message_template_status_update, account_update`.
+
+Ma di quei 42, **10 non erano attaccati a nessuna scheda**, e la ragione e' una
+scelta di progetto che si vede solo nei dati:
+
+```
+20:01:04  →  «Ciao Rocco, come va?»             nessuna scheda
+20:01:33  →  «Ho visto che non hai risposto…»   nessuna scheda
+21:05:35  ←  «Ciao Mattia, perdonami…»          CRM-LEAD-2026-01117
+```
+
+`store_message` adotta un numero sconosciuto **solo in entrata**: un messaggio
+che esce non crea un lead, perche' dal proprio telefono si scrive anche al
+commercialista, al fornitore e a propria madre, e ogni numero diventerebbe un
+lead. Giusto.
+
+Solo che quando quella persona **risponde**, il lead viene creato lo stesso — e
+la conversazione resta spezzata: la risposta sulla scheda, e le due righe che
+l'hanno aperta da nessuna parte. Che si legge peggio di entrambe le meta': uno
+che risponde al nulla.
+
+**Quindi: non si inventa niente da un messaggio a senso unico, e non si perde
+niente.** Nel momento in cui il numero ha una scheda, tutto quello che gli era
+gia' stato detto ci finisce dentro (`adopt_orphans`). E una patch fa lo stesso
+per quelli gia' archiviati.
+
+In arrivo il problema non esiste: **0 messaggi ricevuti senza scheda**, perche'
+li' l'adozione c'e' sempre stata.

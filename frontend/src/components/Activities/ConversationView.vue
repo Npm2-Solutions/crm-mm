@@ -41,10 +41,21 @@
         :class="row.direction === 'out' ? 'justify-end' : 'justify-start'"
       >
         <div class="relative min-w-0 max-w-[min(90%,44rem)]">
-          <!-- the badge travels with the bubble, so it is legible on both sides -->
+          <!--
+            The badge travels with the bubble, so it is legible on both sides.
+
+            Only on the mixed stream: in a single channel every row is the same
+            channel, and a badge repeated down the whole page says nothing while
+            taking up the corner.
+
+            Vertically centred, not at the top: the top corner is where the
+            «failed / Retry» pair sits on an outgoing message, and the two were
+            landing on each other.
+          -->
           <span
-            class="absolute -top-2 z-10 flex size-5 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-white shadow-sm"
-            :class="row.direction === 'out' ? '-right-2' : '-left-2'"
+            v-if="channel === 'all'"
+            class="absolute top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-white shadow-sm"
+            :class="row.direction === 'out' ? '-right-2.5' : '-left-2.5'"
             :title="__(labelFor(row))"
           >
             <component :is="iconFor(row.channel)" class="size-3" />
