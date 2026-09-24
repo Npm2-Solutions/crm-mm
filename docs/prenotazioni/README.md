@@ -9,80 +9,84 @@ verifica di ogni dato, è in [ricerca-piattaforme.md](./ricerca-piattaforme.md).
 
 ---
 
-## 1. La pagina `/prenota`
+## 1. Un solo sistema di prenotazione
 
-Una pagina pubblica, senza login, che prenota sul **motore completo** dell'agenda:
-quello che il cliente prenota è esattamente quello che la reception prenoterebbe dal
-calendario, con le stesse regole di conflitto su professionisti, stanze e attrezzature,
-posti di gruppo e listini.
+C'è **una sola pagina**, `/prenota`, e un solo motore (quello dell'agenda: servizi,
+professionisti, stanze, listini, conflitti). Non esistono più "calendari" da moltiplicare:
+ogni link è un **filtro** della stessa pagina. Il perché della scelta, con il confronto tra
+GHL, Calendly, Cal.com, Fresha, Phorest, Cliniko e gli altri, è in
+[sistema-unico.md](./sistema-unico.md).
 
-Il percorso:
+I vecchi *Booking Calendars* (stile Calendly) sono stati convertiti in servizi dalla patch
+`one_booking_system`: stessa durata, stessi membri, stessi orari, stesso prezzo e luogo;
+quelli che non comparivano nel menu `/book` diventano servizi *solo tramite link*.
+`/book/<calendario>` reindirizza a `/prenota?servizio=…`, `/book` a `/prenota`; le
+prenotazioni fatte prima restano gestibili dal loro link e continuano a occupare l'agenda.
+Le automazioni *Booking …* scattano per le prenotazioni online dei clienti.
 
-1. **Servizio**: ricerca, categorie, durata, prezzo, badge per le lezioni di gruppo.
-2. **Professionista**: solo se il servizio ne ha più di uno e lo permette. C'è sempre
-   "Chiunque disponibile".
-3. **Data e ora**: calendario mensile con i soli giorni liberi evidenziati e orari divisi
-   in Mattina / Pomeriggio / Sera. Per i gruppi si sceglie il numero di persone e si
-   vedono i posti rimasti.
-4. **Dati**: nome, email, telefono, la domanda del servizio e il consenso privacy.
-5. **Conferma**: riepilogo, link per aggiungere a Google Calendar o Outlook, un file
-   `.ics` in email e il link per gestire la prenotazione.
+### Link
 
-Con `?token=…` la stessa pagina diventa la gestione della prenotazione: il cliente vede
-lo stato e annulla o sposta **entro i limiti del servizio**.
-
-Link diretti:
-
-| Link | Cosa fa |
+| Link | Apre |
 |---|---|
-| `/prenota` | Menu di tutti i servizi prenotabili online |
-| `/prenota?servizio=<slug>` | Apre direttamente il servizio (lo slug è quello del sito, altrimenti il nome) |
-| `/prenota?servizio=<slug>&professionista=<id>` | Apre servizio e professionista |
-| `/prenota?embed=1` | Sfondo trasparente, per un iframe nel sito |
-| `/booking` | Alias inglese |
+| `/prenota` | il menu dei servizi (categorie, ricerca) |
+| `/prenota/<servizio>` o `?servizio=<slug>` | direttamente un servizio |
+| `/prenota/p/<id>` o `?professionista=<id>` | la pagina del professionista: foto, titolo, bio, solo i suoi servizi |
+| `/prenota/c/<categoria>` o `?categoria=` | una categoria |
+| `&nome=&email=&telefono=` | modulo precompilato (campagne, CRM) |
+| `&utm_source=…` | attribuzione (già tracciata dal CRM) |
+| `&embed=1` | per un iframe nel sito (il tracker gli passa il visitatore) |
+| `?token=…` | gestione della prenotazione: annulla / sposta entro le regole |
 
-La pagina è in italiano, con l'inglese automatico per i browser in inglese (`?lang=en`
-per forzarlo). Segue il tema chiaro o scuro del dispositivo.
+Il **generatore di link** (*Impostazioni → Booking → Pagina di prenotazione*) costruisce il
+link, il **QR code** scaricabile e il **codice da incorporare**. Il blocco *Prenota* del sito
+accetta un servizio, un vecchio calendario o niente (tutto il menu).
 
-Il link di un servizio si copia dal pannello *Prenotazione online* della sua scheda. Il
-link della pagina si copia da *Impostazioni → Booking → Piattaforme di prenotazione*.
+### Il percorso del cliente
 
-## 2. I limiti configurabili
+Servizio → professionista (o "chiunque", o già scelto dal link) → giorno e ora (solo i
+giorni liberi, orari per fascia, scorciatoia *Primo orario libero*) → dati e consenso →
+conferma con Google/Outlook e `.ics`. Prezzi "da …" e durate min–max quando i
+professionisti differiscono.
 
-Si impostano in *Impostazioni → Agenda → Servizi → (servizio) → Prenotabile online*. Il
-pannello riassume i limiti attivi e segnala le configurazioni contraddittorie prima del
-salvataggio: finestra chiusa prima di aprire, preavviso più lungo dell'orizzonte, più
-posti del servizio, nessun professionista.
+## 2. Dove stanno le regole
 
-| Gruppo | Limite | Effetto |
-|---|---|---|
-| Come | Conferma automatica / su approvazione | Con approvazione l'appuntamento nasce *Da confermare*; quando lo staff conferma, il cliente riceve l'email |
-| | Il cliente sceglie il professionista | Mostra il passo "Professionista" |
-| | Mostra il prezzo | |
-| | Orari online ogni N minuti | Lo staff può prenotare ogni 5', il pubblico vede solo :00 e :30 |
-| | Posti per prenotazione | Quante persone può portare un cliente in un gruppo |
-| Quando | Preavviso minimo (ore), orizzonte (giorni) | Già presenti nel servizio, valgono anche online |
-| | Prenotabile dal / fino al | Finestra stagionale |
-| | Stesso giorno fino alle | Dopo quell'ora il giorno stesso non si prenota più online |
-| Capacità | Max al giorno / alla settimana | Tetti su tutto il servizio |
-| | Max contemporanei | Anche se lo staff è libero |
-| Clienti | Chi può prenotare | Tutti / solo nuovi / solo già clienti |
-| | Prenotazioni future per cliente | Per servizio. C'è anche il tetto globale in *Scheduling* |
-| | Per cliente al giorno | |
-| | Giorni tra due visite | Per esempio un trattamento laser non prima di 30 giorni |
-| Modulo | Telefono obbligatorio, domanda (obbligatoria o no), istruzioni dopo la prenotazione | |
-| Modifiche | Annullamento online sì/no + preavviso | |
-| | Spostamento online sì/no + preavviso + numero massimo di spostamenti | |
+Tre livelli, sempre visibili, mai copiati:
 
-Le impostazioni della pagina sono in *CRM Scheduling Settings → Online Booking Page*:
-pagina aperta o chiusa, titolo, testo introduttivo, link all'informativa privacy,
-consenso obbligatorio, email al cliente e al professionista, tetto globale per cliente.
+1. **Pagina di prenotazione** (*Impostazioni → Booking*): le regole online predefinite
+   (preavviso, orizzonte, passo degli orari, conferma automatica o su approvazione,
+   stesso giorno fino a, telefono obbligatorio, annullamento/spostamento e loro
+   preavviso, spostamenti massimi, prenotazioni per cliente al giorno). Accanto a ognuna:
+   quanti servizi la seguono e quali hanno un valore proprio.
+2. **Servizio** (*Agenda → Servizi → Prenotabile online*): ogni regola mostra il valore
+   predefinito in grigio oppure è *personalizzata*, con *Usa predefinita* per tornare
+   indietro. In più le regole solo del servizio: finestra stagionale, tetti al giorno /
+   settimana / contemporanei, chi può prenotare (nuovi/già clienti), prenotazioni future
+   per cliente, giorni tra due visite, domanda e istruzioni, posti per prenotazione,
+   scelta del professionista, prezzo visibile, *solo tramite link*.
+3. **Professionista × servizio** (*Agenda → Chi fa cosa*, o l'editor del servizio): durata
+   e prezzo propri, prenotabile online sì/no, priorità, ruolo. Mai duplicare un servizio
+   per cambiare prezzo o durata a una persona.
 
-Le regole vivono in `crm/scheduling/booking_rules.py` come funzioni pure che restituiscono
-un codice (per esempio `too_soon` o `client_active`). Il messaggio per il cliente è in
-`crm/api/service_booking.py → limit_message`.
+Il **professionista** (*Agenda → Turni del team*) ha orario settimanale, eccezioni e ferie,
+tetto giornaliero e settimanale, visibile online sì/no, titolo e bio pubblici.
 
-## 3. Piattaforme esterne
+Quando più livelli pongono un tetto vince **il più severo** (es. tetto del servizio e tetto
+globale per cliente).
+
+## 3. Le viste d'insieme
+
+- **Chi fa cosa** — matrice servizi × professionisti: clic su una cella vuota per
+  assegnare, su una piena per durata/prezzo/online propri; spunta di riga (tutti/nessuno),
+  menu di colonna (assegna tutto, togli tutto, *copia i servizi di…*). Avvisi: servizio
+  che nessuno fa, che fa una sola persona, online ma nessuno lo prende online.
+- **Turni del team** — la settimana di tutti: orari, ferie, ore extra e quanto è pieno
+  ogni giorno.
+- **Perché non è disponibile?** — servizio + giorno + ora (come cliente online o come
+  reception): per ogni professionista il primo motivo che blocca (fuori orario, ferie,
+  impegnato con…, tetto, stanza occupata, preavviso, tetto del servizio…) e dove
+  cambiarlo.
+
+## 4. Piattaforme esterne
 
 Si configurano in *Impostazioni → Booking → Piattaforme di prenotazione → Collega una
 piattaforma*. Ogni connessione ha:
@@ -172,10 +176,13 @@ Le piattaforme lo rileggono ogni 15–60 minuti.
   si può filtrare per *Provenienza*, e il dettaglio mostra le note del cliente e il link
   alla piattaforma.
 
-## 4. Architettura
+## 5. Architettura
 
 ```
-crm/scheduling/booking_rules.py      limiti online (puri)
+crm/scheduling/booking_rules.py      limiti online ed ereditarietà delle regole (puri)
+crm/scheduling/availability.py       motore: durata per professionista, online, tetti
+crm/scheduling/unify.py              Booking Calendars → servizi, link del servizio
+crm/api/booking_admin.py             Chi fa cosa, Turni del team, Perché non è disponibile
 crm/api/service_booking.py           API pubblica di /prenota
 crm/www/prenota.{py,html}            la pagina
 crm/booking_platforms/
@@ -198,7 +205,7 @@ implementando `fetch_bookings` e/o `parse_webhook` (più `cancel_booking`, `bloc
 Select `platform`. Il test `test_every_platform_is_a_select_option` controlla che le due
 restino allineate.
 
-## 5. Test
+## 6. Test
 
 ```bash
 # puri, girano ovunque (anche senza Frappe, con un modulo frappe vuoto nel PYTHONPATH)
@@ -206,11 +213,12 @@ python -m unittest crm.tests.test_booking_rules crm.tests.test_booking_platforms
 # integrazione (bench)
 bench --site test_site run-tests --module crm.tests.test_service_booking
 bench --site test_site run-tests --module crm.tests.test_booking_platform_sync
+bench --site test_site run-tests --module crm.tests.test_booking_unified
 # frontend
 cd frontend && yarn test:run
 ```
 
-## 6. Cosa resta fuori
+## 7. Cosa resta fuori
 
 - **MioDottore via API** richiede di diventare *integratore certificato* Docplanner
   (sandbox e test di accettazione). Il connettore è pronto; senza credenziali si usa
@@ -221,5 +229,5 @@ cd frontend && yarn test:run
 - **Reserve with Google** è aperto solo alle piattaforme di prenotazione partner (bisogna
   ospitare un booking server). Non è una fonte da cui leggere prenotazioni.
 - **Pagamenti e caparre** online non sono ancora gestiti.
-- Il pulsante **"Prenota"** delle schede servizio del sito punta ancora ai calendari
-  Calendly-style. Collegarlo a `/prenota?servizio=` è il passo successivo.
+- **Fase 2** del progetto (vedi `sistema-unico.md`): tempi di posa, più servizi in una
+  prenotazione, fasce orarie riservate a certi servizi, sedi multiple.

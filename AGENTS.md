@@ -62,6 +62,8 @@ they run as evaluated strings in the browser.
 |---|---|
 | `crm/scheduling/booking_rules.py` | Online booking limits — pure, tested with plain `unittest` |
 | `crm/api/service_booking.py` + `crm/www/prenota.*` | Public `/prenota` page on the full scheduling engine |
+| `crm/scheduling/unify.py` | One booking system: legacy Booking Calendars → services, /book redirects |
+| `crm/api/booking_admin.py` | Who-does-what matrix, team rota, "why not available" explainer |
 | `crm/booking_platforms/` | Connectors (MioDottore, Treatwell, Calendly, Cal.com…), sync engine |
 | `crm/api/booking_platforms.py` | Webhook in, busy feed out, settings API |
 | `docs/prenotazioni/` | User guide + platform API research |

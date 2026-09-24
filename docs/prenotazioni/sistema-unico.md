@@ -101,7 +101,7 @@ Risorsa                            stanza/attrezzatura, capacità, posti, orari
 
 ## 6. Fasi
 
-**Fase 1 — sistema unico (questa consegna)**
+**Fase 1 — sistema unico — FATTA**
 - eccezioni professionista×servizio (durata, prezzo, online, priorità) nel motore
 - regole online predefinite + eredità con provenienza
 - tetto settimanale e visibilità online per professionista
