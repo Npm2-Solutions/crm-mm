@@ -19,6 +19,16 @@
   "allow_override",
   "sync_to_event",
   "check_google_busy",
+  "online_booking_section",
+  "online_booking_enabled",
+  "booking_page_title",
+  "booking_page_intro",
+  "column_break_online_booking",
+  "privacy_policy_url",
+  "require_privacy_consent",
+  "notify_staff_on_booking",
+  "send_client_confirmation",
+  "max_active_per_customer",
   "hours_section",
   "default_availability",
   "default_holiday_list"
@@ -111,6 +121,61 @@
    "label": "Check Google Calendar busy blocks"
   },
   {
+   "fieldname": "online_booking_section",
+   "fieldtype": "Section Break",
+   "label": "Online Booking Page"
+  },
+  {
+   "fieldname": "online_booking_enabled",
+   "fieldtype": "Check",
+   "label": "Online Booking Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "booking_page_title",
+   "fieldtype": "Data",
+   "label": "Page Title"
+  },
+  {
+   "fieldname": "booking_page_intro",
+   "fieldtype": "Small Text",
+   "label": "Intro Text"
+  },
+  {
+   "fieldname": "column_break_online_booking",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "privacy_policy_url",
+   "fieldtype": "Data",
+   "label": "Privacy Policy URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "require_privacy_consent",
+   "fieldtype": "Check",
+   "label": "Require Privacy Consent",
+   "default": "1"
+  },
+  {
+   "fieldname": "notify_staff_on_booking",
+   "fieldtype": "Check",
+   "label": "Email the Professional",
+   "default": "1"
+  },
+  {
+   "fieldname": "send_client_confirmation",
+   "fieldtype": "Check",
+   "label": "Email the Client",
+   "default": "1"
+  },
+  {
+   "fieldname": "max_active_per_customer",
+   "fieldtype": "Int",
+   "label": "Max Upcoming per Client (all services)",
+   "non_negative": 1
+  },
+  {
    "fieldname": "hours_section",
    "fieldtype": "Section Break",
    "label": "Fallback Working Hours"
@@ -131,7 +196,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-03 10:00:00.000000",
+ "modified": "2026-09-24 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",
