@@ -165,7 +165,7 @@ def data_deletion(signed_request: str | None = None):
 		f"Meta data deletion request for user_id={payload.get('user_id')} code={confirmation_code}",
 		"Meta: data deletion request",
 	)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — Meta keeps the code we are about to hand it
 	status_url = frappe.utils.get_url(
 		f"/api/method/crm.integrations.meta.webhook.deletion_status?code={confirmation_code}"
 	)

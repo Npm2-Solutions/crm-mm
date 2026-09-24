@@ -68,7 +68,7 @@ def r(l: str, t: str | None = None, s: str | None = None):
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "CRM Tracked Link: event failed")
 
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — GET by design, and a GET is rolled back
 	frappe.local.response["type"] = "redirect"
 	frappe.local.response["location"] = target
 

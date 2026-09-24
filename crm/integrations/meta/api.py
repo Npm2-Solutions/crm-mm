@@ -96,7 +96,7 @@ def save_app_settings(app_id: str, app_secret: str | None = None) -> dict:
 		settings.app_secret = app_secret
 	settings.save()
 	frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
-	frappe.db.commit()  # the webhook handshake below hits this site re-entrantly
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the handshake below re-enters this site
 
 	# best-effort: register the app-level webhook subscription right away so
 	# nothing has to be configured by hand on developers.facebook.com

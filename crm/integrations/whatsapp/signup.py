@@ -535,7 +535,7 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 				"site_url": site,
 			}
 		).insert(ignore_permissions=True)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the two calls after this can fail; the claim stands
 
 
 def deliver_locally(payload: dict) -> None:
@@ -554,7 +554,7 @@ def deliver_locally(payload: dict) -> None:
 	if not whatsapp_installed():
 		frappe.throw(_("The WhatsApp app is not installed on this site"))
 	upsert_account(payload)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the self-call re-enters this site and must see it
 
 
 def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, number: dict) -> None:

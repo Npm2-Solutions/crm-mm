@@ -784,4 +784,4 @@ def purge_old_data() -> None:
 	):
 		for name in frappe.get_all(doctype, filters=filters, pluck="name", limit=5000):
 			frappe.delete_doc(doctype, name, ignore_permissions=True, force=True, delete_permanently=True)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — one phase at a time: up to 5000 deletes each

@@ -334,7 +334,7 @@ def refresh_waiting_flags() -> None:
 				then 1 else 0 end
 			"""
 		)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — enqueued job and patch: no request will commit this
 
 
 @frappe.whitelist()
@@ -525,7 +525,7 @@ def wake_the_snoozed() -> int:
 			""",
 			(now(),),
 		)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — hourly scheduler job, no request to commit it
 	return woken
 
 

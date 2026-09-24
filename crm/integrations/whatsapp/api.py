@@ -465,7 +465,7 @@ def add_account(phone_number_id: str, waba_id: str, token: str, account_name: st
 			"verified_name": (account_name or "").strip() or None,
 		}
 	)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — wire_up_delivery below can fail; the account stays
 
 	# sending would work from here; receiving would not, and silently
 	problems = wire_up_delivery(frappe.get_doc("WhatsApp Account", name))

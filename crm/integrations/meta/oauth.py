@@ -372,7 +372,7 @@ def run_page_sync() -> None:
 		if not token:
 			return
 		sync_pages_and_forms(token)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — background job, no request to commit the sync
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Meta: page sync failed")
 	finally:

@@ -69,10 +69,10 @@ def handle_request(**kwargs):
 		request_log.error = frappe.get_traceback()
 		frappe.db.rollback()
 		frappe.log_error(title="Error while creating/updating call record")
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the rollback above took the error log with it
 	finally:
 		request_log.save(ignore_permissions=True)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the request log outlives that rollback
 
 
 # Outgoing Call
@@ -224,7 +224,7 @@ def create_call_log(
 	link(contact_number, call_log)
 
 	call_log.save(ignore_permissions=True)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the caller's except rolls back; a real call must not vanish
 	return call_log
 
 

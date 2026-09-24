@@ -185,7 +185,7 @@ def twilio_incoming_call_handler(**kwargs):
 	# the log goes in so the answering service can hang the callback off it and
 	# tell the caller the time it was actually promised for
 	instruction = inbound.handle_incoming_call(get_provider("twilio"), args.From, args.To, call_log=call_log)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — Twilio calls back into this log before we are done
 	return Response(instruction.body, mimetype=instruction.mimetype)
 
 
@@ -205,7 +205,7 @@ def create_call_log(call_details: TwilioCallDetails):
 	link(contact_number, call_log)
 
 	call_log.save(ignore_permissions=True)
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the caller's except rolls back; a real call must not vanish
 	return call_log
 
 
@@ -274,7 +274,7 @@ def update_recording_info(**kwargs):
 	# rather than from the CRM Call Log on_update handler
 	if transcription.transcribes_automatically():
 		transcription.request_transcription(call_sid)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the queued job runs elsewhere and must find the row
 
 	return _acknowledged()
 
@@ -392,4 +392,4 @@ def update_sms_status_info(**kwargs):
 	name = args.MessageSid and frappe.db.get_value("CRM SMS Message", {"message_sid": args.MessageSid})
 	if name and status:
 		frappe.db.set_value("CRM SMS Message", name, "status", status)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — not POST-only: a GET callback would be rolled back

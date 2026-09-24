@@ -46,7 +46,7 @@ def get_dashboard(from_date: str | None = None, to_date: str | None = None, user
 
 	if not dashboard:
 		layout = json.loads(create_default_manager_dashboard())
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — not POST-only: a GET would roll the new dashboard back
 	else:
 		layout = json.loads(frappe.db.get_value("CRM Dashboard", "Manager Dashboard", "layout") or "[]")
 
