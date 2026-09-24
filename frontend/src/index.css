@@ -29,8 +29,13 @@
 }
 
 @layer components {
+  /* `break-all` breaks anywhere at all, mid-word: «be tter UX», «compari son
+     doc». What it was reaching for is a long unbreakable string — a URL, a
+     token — not overflowing its box, and that is `break-words`, which only
+     breaks a word when the word alone cannot fit. Narrower the screen, more
+     lines, more broken words, so a phone showed it worst. */
   .prose-f {
-    @apply break-all
+    @apply break-words
 			max-w-none
 			prose
 			prose-code:break-all

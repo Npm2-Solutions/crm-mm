@@ -31,7 +31,7 @@
       <div
         v-for="note in notes.data.data"
         :key="note.name"
-        class="group flex h-56 cursor-pointer flex-col justify-between gap-2 rounded-lg border px-5 py-4 shadow-sm hover:bg-surface-sidebar"
+        class="group flex min-h-36 cursor-pointer flex-col justify-between gap-2 rounded-lg border px-4 py-3.5 shadow-sm hover:bg-surface-sidebar sm:h-56 sm:px-5 sm:py-4"
         @click="editNote(note.name)"
       >
         <div class="flex items-center justify-between">
