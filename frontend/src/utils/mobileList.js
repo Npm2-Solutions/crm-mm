@@ -23,3 +23,27 @@ export function splitColumnsForCard(columns = []) {
 
   return { title, trailing, details }
 }
+
+/**
+ * Does this cell have anything to say?
+ *
+ * On a desktop an empty cell is a gap in a row you are scanning across, and it
+ * costs nothing. On a card it is a labelled line saying "Organization" with
+ * nothing under it — three of those and one person fills a quarter of the
+ * screen without telling you anything. So empty details are left out.
+ *
+ * Cell values arrive in whatever shape the list view's own renderer wants:
+ * a string, a number, a `{ label }`, a user's `{ full_name }`, or a list of
+ * avatars.
+ */
+export function hasCellValue(item) {
+  if (item === null || item === undefined || item === '') return false
+  if (typeof item === 'number') return true
+  if (typeof item === 'boolean') return item
+  if (Array.isArray(item)) return item.length > 0
+  if (typeof item === 'object') {
+    const meaningful = ['label', 'full_name', 'value', 'name', 'timeAgo']
+    return meaningful.some((key) => hasCellValue(item[key]))
+  }
+  return String(item).trim().length > 0
+}
