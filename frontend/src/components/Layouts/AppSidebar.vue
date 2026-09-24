@@ -172,8 +172,6 @@
 
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
-import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
-import LucideGlobe from '~icons/lucide/globe'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
@@ -190,19 +188,14 @@ import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
-import SMSIcon from '@/components/Icons/SMSIcon.vue'
-import AutomationIcon from '@/components/Icons/AutomationIcon.vue'
-import DialpadIcon from '@/components/Icons/DialpadIcon.vue'
-import SocialIcon from '@/components/Icons/SocialIcon.vue'
-import { callEnabled } from '@/composables/telephony'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
-import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import HelpIcon from '@/components/Icons/HelpIcon.vue'
 import Notifications from '@/components/Notifications.vue'
 import { currentNavKey } from '@/utils/navigation'
+import { visibleLinks } from '@/composables/appLinks'
 import { viewsStore } from '@/stores/views'
 import {
   unreadNotificationsCount,
@@ -256,102 +249,18 @@ const isCollapsed = computed(() => isSidebarCollapsed.value && !props.mobile)
 const isFCSite = ref(window.is_fc_site)
 const isDemoSite = ref(window.is_demo_site)
 
-const links = [
-  {
-    label: 'Dashboard',
-    icon: LucideLayoutDashboard,
-    to: 'Dashboard',
-  },
-  {
-    // the people. "Lead" is what one of them is at the start, not what they
-    // are forever: they stay here after a deal is opened, as in GHL and
-    // HubSpot, so the list cannot be named after the first ten minutes
-    label: 'People',
-    icon: LeadsIcon,
-    to: 'Leads',
-  },
-  {
-    label: 'Deals',
-    icon: DealsIcon,
-    to: 'Deals',
-  },
-  {
-    label: 'Organizations',
-    icon: OrganizationsIcon,
-    to: 'Organizations',
-  },
-  {
-    // the same people as above; this is where you answer them
-    label: 'Conversations',
-    icon: SMSIcon,
-    to: 'Conversations',
-  },
-  {
-    label: 'Automations',
-    icon: AutomationIcon,
-    to: 'Automations',
-    condition: () => isManager(),
-  },
-  {
-    label: 'Notes',
-    icon: NoteIcon,
-    to: 'Notes',
-  },
-  {
-    label: 'Tasks',
-    icon: TaskIcon,
-    to: 'Tasks',
-  },
-  {
-    label: 'Calendar',
-    icon: CalendarIcon,
-    to: 'Calendar',
-  },
-  {
-    label: 'Call Logs',
-    icon: PhoneIcon,
-    to: 'Call Logs',
-  },
-  {
-    label: 'Dialer',
-    icon: DialpadIcon,
-    to: 'Dialer',
-    condition: () => callEnabled.value,
-  },
-  {
-    label: 'Social Planner',
-    icon: SocialIcon,
-    to: 'Social Planner',
-  },
-  {
-    label: 'Site',
-    icon: LucideGlobe,
-    to: 'Website',
-    // managers only: the page itself handles "Builder missing" and "site off", so it
-    // stays reachable — otherwise there would be nowhere to turn the site on from
-    condition: () => isManager(),
-  },
-]
-
 const allViews = computed(() => {
   let _views = [
     {
       name: 'All Views',
       hideLabel: true,
       opened: true,
-      views: links
-        .filter((link) => {
-          if (link.condition) {
-            return link.condition()
-          }
-          return true
-        })
-        .map((link) => ({
-          label: link.label,
-          icon: link.icon,
-          key: link.key || link.to,
-          to: { name: link.to, params: link.params },
-        })),
+      views: visibleLinks().map((link) => ({
+        label: link.label,
+        icon: link.icon,
+        key: link.key || link.to,
+        to: { name: link.to, params: link.params },
+      })),
     },
   ]
   if (getPublicViews().length) {

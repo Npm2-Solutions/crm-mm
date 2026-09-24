@@ -10,10 +10,11 @@
 // view of a list, both keep their section lit. Five tabs going dark because you
 // opened a record would read as broken.
 const BOTTOM_NAV_SECTIONS = {
-  Leads: ['Leads', 'Lead'],
-  Deals: ['Deals', 'Deal'],
-  Tasks: ['Tasks'],
   Conversations: ['Conversations'],
+  Calendar: ['Calendar'],
+  Tasks: ['Tasks'],
+  Deals: ['Deals', 'Deal'],
+  Leads: ['Leads', 'Lead'],
 }
 
 /** The sidebar's notion: a saved view wins over the route it is a view of. */
