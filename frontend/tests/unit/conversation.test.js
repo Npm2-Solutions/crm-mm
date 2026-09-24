@@ -6,7 +6,7 @@ import {
   dayLabel,
   directionOf,
   isConversational,
-  withDayMarkers,
+  groupByDay,
 } from '@/utils/conversation'
 
 const wa = (name, type, creation) => ({
@@ -203,40 +203,40 @@ describe('a file that was sent is not also an attachment line', () => {
   })
 })
 
-describe('withDayMarkers', () => {
+describe('groupByDay', () => {
   const row = (name, at) => ({ key: `k:${name}`, at })
 
-  it('puts a marker where the day changes, and only there', () => {
-    const marked = withDayMarkers([
+  it('cuts the stream where the day changes, and only there', () => {
+    const days = groupByDay([
       row('a', '2026-09-22 10:00:00'),
       row('b', '2026-09-22 18:00:00'),
       row('c', '2026-09-23 09:00:00'),
     ])
-    expect(marked.map((r) => r.key)).toEqual([
-      'day:2026-09-22',
-      'k:a',
-      'k:b',
-      'day:2026-09-23',
-      'k:c',
-    ])
+    expect(days.map((g) => g.day)).toEqual(['2026-09-22', '2026-09-23'])
+    expect(days[0].rows.map((r) => r.key)).toEqual(['k:a', 'k:b'])
+    expect(days[1].rows.map((r) => r.key)).toEqual(['k:c'])
   })
 
-  it('opens with one, because the first day is a change too', () => {
-    const marked = withDayMarkers([row('a', '2026-09-22 10:00:00')])
-    expect(marked[0].kind).toBe('day')
+  it('gives each group its own key, so a day seen twice is two groups', () => {
+    // newest-first and oldest-first both go through here, and a stream that is
+    // not sorted must not collapse two runs of the same day into one key
+    const days = groupByDay([
+      row('a', '2026-09-22 10:00:00'),
+      row('b', '2026-09-23 09:00:00'),
+      row('c', '2026-09-22 11:00:00'),
+    ])
+    expect(days).toHaveLength(3)
+    expect(new Set(days.map((g) => g.key)).size).toBe(3)
   })
 
   it('does not invent a day for a row that has no time', () => {
-    const marked = withDayMarkers([
-      row('a', null),
-      row('b', '2026-09-22 10:00:00'),
-    ])
-    expect(marked.map((r) => r.kind)).toEqual([undefined, 'day', undefined])
+    const days = groupByDay([row('a', null), row('b', '2026-09-22 10:00:00')])
+    expect(days.map((g) => g.day)).toEqual(['', '2026-09-22'])
   })
 
   it('survives nothing at all', () => {
-    expect(withDayMarkers()).toEqual([])
-    expect(withDayMarkers(null)).toEqual([])
+    expect(groupByDay()).toEqual([])
+    expect(groupByDay(null)).toEqual([])
   })
 })
 

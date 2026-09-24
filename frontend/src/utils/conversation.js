@@ -159,26 +159,28 @@ function dayOf(at) {
 }
 
 /**
- * The same stream, with a marker wherever the day changes.
+ * The same stream, cut into one group per day.
  *
  * A long conversation is a wall of times with no dates: «12:57» tells you
  * nothing about whether that was today or in April. Every messenger answers it
- * the same way — a date between the days, pinned to the top while its day is
- * the one on screen — and it costs one row rather than a date on every message.
+ * the same way — a date pinned to the top while its day is the one on screen.
  *
- * `today` is passed in rather than read from the clock, so «Today» means the
- * same thing in a test as it does on screen.
+ * Groups rather than markers in one flat list, because the pinning is what the
+ * shape has to serve. Sticky siblings all pin to the same line and pile up
+ * there, so a day's date stayed on screen under the next day's; a date that
+ * sticks inside **its own day** is carried off the top by that day ending, and
+ * the next one takes its place instead of landing on top of it.
  */
-export function withDayMarkers(rows = [], today = '') {
+export function groupByDay(rows = []) {
   const out = []
-  let previous = null
   for (const row of rows || []) {
     const day = dayOf(row.at)
-    if (day && day !== previous) {
-      out.push({ key: `day:${day}`, kind: 'day', at: row.at, day })
-      previous = day
+    const last = out[out.length - 1]
+    if (last && last.day === day) {
+      last.rows.push(row)
+      continue
     }
-    out.push(row)
+    out.push({ key: `day:${day}:${out.length}`, day, rows: [row] })
   }
   return out
 }

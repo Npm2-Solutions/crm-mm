@@ -36,6 +36,9 @@ class CRMDeal(Document):
 		annual_revenue: DF.Currency
 		closed_date: DF.Date | None
 		communication_status: DF.Link | None
+		conversation_seen_by: DF.Link | None
+		conversation_unread: DF.Check
+		conversation_seen_until: DF.Datetime | None
 		contact: DF.Link | None
 		contacts: DF.Table[CRMContacts]
 		currency: DF.Link | None
@@ -81,6 +84,11 @@ class CRMDeal(Document):
 		last_name: DF.Data | None
 		last_responded_on: DF.Datetime | None
 		last_response_time: DF.Duration | None
+		last_answered_on: DF.Datetime | None
+		last_conversation_channel: DF.Literal["", "WhatsApp", "SMS", "Email"]
+		last_conversation_direction: DF.Literal["", "Incoming", "Outgoing"]
+		last_conversation_on: DF.Datetime | None
+		last_conversation_preview: DF.SmallText | None
 		last_touch_campaign: DF.Data | None
 		last_touch_category: (
 			DF.Literal[

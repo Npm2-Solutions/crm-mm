@@ -12,7 +12,7 @@
     >
       <div
         :id="whatsapp.name"
-        class="group/message wa-bubble relative max-w-[90%] rounded-lg p-1.5 pl-2 text-base shadow-sm"
+        class="group/message wa-bubble relative min-w-0 max-w-full break-words rounded-lg p-1.5 pl-2 text-base shadow-sm"
         :class="whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in'"
       >
         <div
@@ -102,14 +102,27 @@
             v-else-if="whatsapp.content_type == 'button'"
             v-html="formatWhatsAppMessage(whatsapp.message)"
           />
-          <div v-else-if="whatsapp.content_type == 'image'">
+          <!-- a sticker is a picture: it was falling through to nothing at all,
+             so a sticker sent from the phone arrived as an empty bubble -->
+          <div v-else-if="['image', 'sticker'].includes(whatsapp.content_type)">
             <img
+              v-if="whatsapp.attach"
               :src="whatsapp.attach"
-              class="h-40 cursor-pointer rounded-md"
+              class="max-w-full cursor-pointer rounded-md"
+              :class="whatsapp.content_type == 'sticker' ? 'h-28' : 'h-40'"
               @click="() => openFileInAnotherTab(whatsapp.attach)"
             />
+            <!-- the row is written the moment the webhook arrives and the file
+               is fetched from Meta right after, so for a second there is a
+               message with no picture yet -->
             <div
-              v-if="!whatsapp.message.startsWith('/files/')"
+              v-else
+              class="flex h-40 w-40 items-center justify-center rounded-md bg-black/5"
+            >
+              <LoadingIndicator class="size-5 text-ink-gray-5" />
+            </div>
+            <div
+              v-if="hasCaption(whatsapp)"
               class="mt-1.5"
               v-html="formatWhatsAppMessage(whatsapp.message)"
             />
@@ -136,21 +149,37 @@
           </div>
           <div
             v-else-if="whatsapp.content_type == 'audio'"
-            class="flex items-center gap-2"
+            class="flex min-w-0 items-center gap-2"
           >
-            <audio :src="whatsapp.attach" controls class="cursor-pointer" />
+            <audio
+              v-if="whatsapp.attach"
+              :src="whatsapp.attach"
+              controls
+              class="w-full max-w-[15rem] cursor-pointer"
+            />
+            <div v-else class="flex items-center gap-2 py-2 text-ink-gray-5">
+              <LoadingIndicator class="size-4" />
+              <span class="text-p-sm">{{ __('Loading...') }}</span>
+            </div>
           </div>
           <div
             v-else-if="whatsapp.content_type == 'video'"
             class="flex-col items-center gap-2"
           >
             <video
+              v-if="whatsapp.attach"
               :src="whatsapp.attach"
               controls
-              class="h-40 cursor-pointer rounded-md"
+              class="h-40 max-w-full cursor-pointer rounded-md"
             />
             <div
-              v-if="!whatsapp.message.startsWith('/files/')"
+              v-else
+              class="flex h-40 w-40 items-center justify-center rounded-md bg-black/5"
+            >
+              <LoadingIndicator class="size-5 text-ink-gray-5" />
+            </div>
+            <div
+              v-if="hasCaption(whatsapp)"
               class="mt-1.5"
               v-html="formatWhatsAppMessage(whatsapp.message)"
             />
@@ -205,9 +234,16 @@ import CheckIcon from '@/components/Icons/CheckIcon.vue'
 import DoubleCheckIcon from '@/components/Icons/DoubleCheckIcon.vue'
 import DocumentIcon from '@/components/Icons/DocumentIcon.vue'
 import ReactIcon from '@/components/Icons/ReactIcon.vue'
-import { formatDate, sanitizeHTML } from '@/utils'
+import { formatDate } from '@/utils'
+import { formatWhatsAppMessage } from '@/utils/whatsappText'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { Tooltip, Dropdown, createResource, toast } from 'frappe-ui'
+import {
+  Tooltip,
+  Dropdown,
+  LoadingIndicator,
+  createResource,
+  toast,
+} from 'frappe-ui'
 import { ref } from 'vue'
 
 defineProps({
@@ -220,29 +256,6 @@ const { capture } = useTelemetry()
 
 function openFileInAnotherTab(url) {
   window.open(url, '_blank')
-}
-
-function formatWhatsAppMessage(message) {
-  // if message contains _text_, make it italic
-  message = message.replace(/_(.*?)_/g, '<i>$1</i>')
-  // if message contains *text*, make it bold
-  message = message.replace(/\*(.*?)\*/g, '<b>$1</b>')
-  // if message contains ~text~, make it strikethrough
-  message = message.replace(/~(.*?)~/g, '<s>$1</s>')
-  // if message contains ```text```, make it monospace
-  message = message.replace(/```(.*?)```/g, '<code>$1</code>')
-  // if message contains `text`, make it inline code
-  message = message.replace(/`(.*?)`/g, '<code>$1</code>')
-  // if message contains > text, make it a blockquote
-  message = message.replace(/^> (.*)$/gm, '<blockquote>$1</blockquote>')
-  // if contain /n, make it a new line
-  message = message.replace(/\n/g, '<br>')
-  // if contains *<space>text, make it a bullet point
-  message = message.replace(/\* (.*?)(?=\s*\*|$)/g, '<li>$1</li>')
-  message = message.replace(/- (.*?)(?=\s*-|$)/g, '<li>$1</li>')
-  message = message.replace(/(\d+)\. (.*?)(?=\s*(\d+)\.|$)/g, '<li>$2</li>')
-
-  return sanitizeHTML(message)
 }
 
 const emoji = ref('')
@@ -280,6 +293,14 @@ const reply = defineModel('reply', { type: Object, default: () => ({}) })
  * endpoint that tells Meta what it is, and the real name is a query parameter
  * there. Reading only the path would show `media` for every document sent.
  */
+// A photo arrives with no words of its own most of the time, and what is stored
+// then is nothing. The old rows say `/files/…`, which was never a caption
+// either: it was the file's own path, written into the message field.
+function hasCaption(message) {
+  const said = String(message?.message || '')
+  return Boolean(said) && !said.startsWith('/files/')
+}
+
 function documentName(message) {
   const raw = String(message?.attach || '')
   const named = /[?&]file=([^&#]+)/.exec(raw)
@@ -378,6 +399,40 @@ function scrollToMessage(name) {
 }
 .wa-out {
   background-color: #d9fdd3;
+}
+
+/*
+  A list inside a bubble.
+
+  The padding is the whole point. A marker is drawn outside the item's content
+  box, so a list with no padding of its own draws its bullets in whatever lies
+  to the left — which on a bubble is its own padding, and then the edge: the
+  dots ended up outside the bubble, in the margin beside it. Half a rem of room
+  puts them back inside, and keeps a wrapped line indented under its own text
+  instead of under the bullet.
+
+  `:deep` because the message is written with v-html: these rules have to reach
+  content this component did not render itself.
+*/
+:deep(.wa-list) {
+  margin: 0.125rem 0;
+  padding-left: 0.75rem;
+  list-style-position: outside;
+}
+:deep(.wa-list > li) {
+  margin: 0;
+}
+:deep(ul.wa-list) {
+  list-style-type: disc;
+}
+:deep(ol.wa-list) {
+  list-style-type: decimal;
+}
+:deep(blockquote) {
+  margin: 0.125rem 0;
+  border-left: 3px solid currentColor;
+  padding-left: 0.5rem;
+  opacity: 0.85;
 }
 
 @media (prefers-color-scheme: dark) {
