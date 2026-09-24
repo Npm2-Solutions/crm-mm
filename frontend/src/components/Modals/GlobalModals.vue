@@ -16,9 +16,14 @@
     v-model="showChangePasswordModal"
   />
   <AboutModal v-model="showAboutModal" />
+  <!-- Mounted here rather than in AppSidebar: on a phone the sidebar is itself a
+       dialog, and Settings was guarded off it entirely — there was no way to
+       open Settings from a phone at all. -->
+  <Settings />
   <FieldLayoutDialogContainer />
 </template>
 <script setup>
+import Settings from '@/components/Settings/Settings.vue'
 import FieldLayoutDialogContainer from '@/components/Modals/FieldLayoutDialogContainer.vue'
 import ChangePasswordModal from '@/components/Modals/ChangePasswordModal.vue'
 import CreateDocumentModal from '@/components/Modals/CreateDocumentModal.vue'
