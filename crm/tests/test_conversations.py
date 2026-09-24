@@ -155,6 +155,20 @@ class TestTheConversationOfARealPerson(FrappeTestCase):
 		mark_unread("CRM Lead", self.lead.name)
 		self.assertEqual(waiting(), 1)
 
+	def test_a_conversation_already_seen_is_not_called_waiting_again(self):
+		# remember() writes the dates but not the cutoff, and reading the cutoff
+		# back as unset would have put every answered conversation on the pile
+		from crm.api.conversations import mark_seen, remember
+
+		frappe.db.set_single_value("FCRM Settings", "conversation_badge_clears", SEEN)
+		self._sms("Incoming", "una domanda")
+		remember("CRM Lead", self.lead.name)
+		mark_seen("CRM Lead", self.lead.name)
+
+		# nothing new was said; recomputing must not change the answer
+		remember("CRM Lead", self.lead.name)
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead.name, "conversation_unread"), 0)
+
 	def test_our_own_last_word_leaves_nobody_waiting(self):
 		from crm.api.conversations import remember
 

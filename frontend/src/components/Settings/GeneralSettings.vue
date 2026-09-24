@@ -125,6 +125,31 @@
           />
         </div>
       </div>
+      <div class="h-px border-t mx-2 border-outline-gray-modals" />
+      <div class="flex gap-4 items-center justify-between py-3 px-2">
+        <div class="flex flex-col">
+          <div class="text-p-base font-medium text-ink-gray-7 truncate">
+            {{ __('A conversation stops waiting') }}
+          </div>
+          <div class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                'When the count of unanswered messages disappears from the Inbox',
+              )
+            }}
+          </div>
+        </div>
+        <div>
+          <FormControl
+            v-model="settings.doc.conversation_badge_clears"
+            type="select"
+            class="w-40"
+            :options="badgeClearsOptions"
+            :placeholder="__('When seen')"
+            @update:modelValue="save()"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -134,6 +159,14 @@ import { getSettings } from '@/stores/settings'
 import { FormControl, Switch, toast } from 'frappe-ui'
 
 const { _settings: settings } = getSettings()
+
+// Two defensible answers, so it is a choice rather than an argument: opening a
+// conversation is what a mailbox means by read, replying is what a customer
+// means by it.
+const badgeClearsOptions = [
+  { label: __('When somebody opens it'), value: 'When seen' },
+  { label: __('When somebody replies'), value: 'When answered' },
+]
 
 const timestampFormatOptions = [
   { label: __('Relative'), value: 'Relative' },

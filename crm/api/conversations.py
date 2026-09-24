@@ -172,7 +172,18 @@ def remember(reference_doctype: str, reference_name: str) -> None:
 		"last_conversation_preview": snippet(newest.text) if newest else None,
 		"last_answered_on": last_answer(where),
 	}
-	values["conversation_unread"] = 1 if is_waiting(reference_doctype, reference_name, values) else 0
+	# the cutoff is not among the values being written, and «still waiting» is a
+	# comparison against it: read it rather than let it come back as unset, which
+	# would call every answered conversation waiting again
+	cutoff = cutoff_field()
+	if cutoff not in values:
+		values_with_cutoff = dict(values)
+		values_with_cutoff[cutoff] = frappe.db.get_value(reference_doctype, reference_name, cutoff)
+	else:
+		values_with_cutoff = values
+	values["conversation_unread"] = (
+		1 if is_waiting(reference_doctype, reference_name, values_with_cutoff) else 0
+	)
 	frappe.db.set_value(reference_doctype, reference_name, values, update_modified=False)
 
 	# a message on a deal is a message with that person: the row they appear as
@@ -357,7 +368,7 @@ def also_the_person(reference_doctype: str, reference_name: str) -> set[tuple[st
 	return both
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def mark_seen(reference_doctype: str, reference_name: str) -> dict:
 	"""Somebody opened this conversation. Everything said until now is seen."""
 	if reference_doctype not in RECORDS:
@@ -376,7 +387,7 @@ def mark_seen(reference_doctype: str, reference_name: str) -> dict:
 	return {"seen_until": seen}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def mark_unread(reference_doctype: str, reference_name: str) -> dict:
 	"""Put it back in the pile — the one way to undo the line above."""
 	if reference_doctype not in RECORDS:
