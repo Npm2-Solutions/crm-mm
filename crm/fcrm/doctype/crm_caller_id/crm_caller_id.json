@@ -1,0 +1,228 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:phone_number",
+ "creation": "2026-09-24 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "phone_number",
+  "label",
+  "column_break_head",
+  "enabled",
+  "provider",
+  "source",
+  "classification_section",
+  "number_type",
+  "country",
+  "column_break_class",
+  "voice_capable",
+  "sms_capable",
+  "routing_section",
+  "routes_to_crm",
+  "routing_note",
+  "column_break_routing",
+  "sip_trunk",
+  "sip_trunk_sid",
+  "voice_url",
+  "notes_section",
+  "notes",
+  "last_synced_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Number",
+   "options": "Phone",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Who this number belongs to, in words. Shown wherever an agent picks a caller ID.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "A number switched off stays on record but is no longer offered.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "twilio",
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Provider",
+   "read_only": 1
+  },
+  {
+   "default": "Manual",
+   "description": "Account Number: owned outright. Verified Caller ID: proven by a verification call, presentable outbound. Manual: entered by hand and not yet confirmed with the provider.",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Source",
+   "options": "Account Number\nVerified Caller ID\nManual"
+  },
+  {
+   "fieldname": "classification_section",
+   "fieldtype": "Section Break",
+   "label": "Classification"
+  },
+  {
+   "description": "Read from the number itself. It decides what the number can legitimately be used for.",
+   "fieldname": "number_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "\nGeographic\nMobile\nToll Free\nNational\nShared Cost\nVoIP\nOther",
+   "read_only": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_class",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "voice_capable",
+   "fieldtype": "Check",
+   "label": "Voice",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "sms_capable",
+   "fieldtype": "Check",
+   "label": "SMS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "routing_section",
+   "fieldtype": "Section Break",
+   "label": "Incoming Routing"
+  },
+  {
+   "default": "0",
+   "description": "Whether a call to this number actually reaches the CRM. When it does not, the answering service cannot run on it.",
+   "fieldname": "routes_to_crm",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Reaches the CRM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "routing_note",
+   "fieldtype": "Small Text",
+   "label": "Why",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_routing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "When set, incoming calls go to your own SIP infrastructure and never touch the CRM.",
+   "fieldname": "sip_trunk",
+   "fieldtype": "Data",
+   "label": "SIP Trunk",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sip_trunk_sid",
+   "fieldtype": "Data",
+   "label": "SIP Trunk SID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "voice_url",
+   "fieldtype": "Small Text",
+   "label": "Voice Webhook",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "last_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Last Synced On",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-24 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Caller ID",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 0,
+   "print": 0,
+   "read": 1,
+   "report": 0,
+   "role": "Sales User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "phone_number",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "label"
+}
