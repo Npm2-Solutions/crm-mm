@@ -58,20 +58,92 @@
   z-index: 101;
 }
 
-/* Settings, on a phone, is a screen — not a card floating on the page behind it.
-   frappe-ui's Dialog has no full-bleed option and does not forward a class to
-   its content, so the shell marks itself and the dialog is unwrapped from the
-   outside in. `:has()` is what makes that possible without touching the
-   library. */
+/* A dialog on a phone is a screen.
+   frappe-ui's Dialog exposes no full-bleed option and does not forward a class
+   to its content, so the content marks itself and the dialog is unwrapped from
+   the outside in. `:has()` is what makes that possible without forking the
+   library.
+
+   `data-dialog-scroll` goes on the region that should scroll — the form, the
+   appointment's field grid. Everything beside it, header or action row, keeps
+   its own height and stays on screen, so «Create» is never fifteen fields below
+   the fold. `data-settings-shell` is the screen that manages its own two panes
+   and only needs the wrapper taken off. */
 @media (max-width: 767px) {
-  .dialog-scroll-container:has([data-settings-shell]) > div {
+  .dialog-scroll-container:has([data-settings-shell]) > div,
+  .dialog-scroll-container:has([data-dialog-scroll]) > div {
     padding: 0;
     min-height: 0;
   }
 
-  .dialog-content:has(> [data-settings-shell]) {
+  .dialog-content:has(> [data-settings-shell]),
+  .dialog-content:has(> [data-dialog-scroll]) {
     margin: 0;
     max-width: none;
     border-radius: 0;
+  }
+
+  .dialog-content:has(> [data-dialog-scroll]) {
+    display: flex;
+    height: 100dvh;
+    flex-direction: column;
+  }
+
+  .dialog-content:has(> [data-dialog-scroll]) > * {
+    flex: 0 0 auto;
+  }
+
+  .dialog-content > [data-dialog-scroll] {
+    min-height: 0;
+    max-height: none;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  /* Some dialogs wrap header, body and actions in one element instead of
+     leaving them as siblings; that wrapper becomes the column. */
+  .dialog-content:has(> [data-dialog-sheet]) {
+    display: flex;
+    height: 100dvh;
+    flex-direction: column;
+    margin: 0;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .dialog-scroll-container:has([data-dialog-sheet]) > div {
+    padding: 0;
+    min-height: 0;
+  }
+
+  .dialog-content > [data-dialog-sheet] {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  .dialog-content > [data-dialog-sheet] > * {
+    flex: 0 0 auto;
+  }
+
+  [data-dialog-sheet] [data-dialog-scroll] {
+    min-height: 0;
+    max-height: none;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  [data-dialog-sheet] > :last-child {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  /* the action row, wherever each dialog puts it, clear of the home indicator */
+  .dialog-content:has(> [data-dialog-scroll]) > :last-child {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  .dialog-content > [data-dialog-scroll] ~ :last-child {
+    border-top: 1px solid var(--outline-gray-1);
   }
 }

@@ -1,7 +1,10 @@
 <template>
   <Dialog v-model:open="show" :size="'xl'">
     <template #body>
-      <div class="bg-surface-elevation-2 px-4 pb-6 pt-5 sm:px-6">
+      <div
+        data-dialog-scroll
+        class="bg-surface-elevation-2 px-4 pb-6 pt-5 sm:px-6"
+      >
         <div class="mb-5 flex items-center justify-between">
           <div class="flex gap-2 items-center">
             <h3 class="text-3xl-semibold leading-6 text-ink-gray-9">
