@@ -14,6 +14,7 @@
         <AssignTo
           v-if="doc.name"
           v-model="assignees.data"
+          compact
           doctype="CRM Deal"
           :docname="dealId"
         />
