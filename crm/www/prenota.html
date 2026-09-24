@@ -204,6 +204,16 @@
       .stepper-seats button { border: 0; background: var(--card); width: 2.1rem; height: 2.1rem; font-size: 1rem; cursor: pointer; color: var(--ink); }
       .stepper-seats span { min-width: 2.2rem; text-align: center; font-weight: 600; }
       footer.foot { text-align: center; color: var(--faint); font-size: .75rem; margin-top: 2rem; }
+      .profile { display: flex; gap: 1rem; align-items: flex-start; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+      .profile h2 { margin: 0 0 .15rem; }
+      .profile .bio { margin: .4rem 0 0; color: var(--muted); font-size: .88rem; max-width: 55ch; }
+      .profile > button { margin-left: auto; white-space: nowrap; }
+      .avatar.big { width: 3.5rem; height: 3.5rem; font-size: 1.1rem; }
+      button.small { padding: .4rem .7rem; font-size: .8rem; }
+      button.first-free { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: 1rem;
+        border: 1px dashed var(--border-focus); background: var(--field); border-radius: 10px; padding: .7rem .9rem; font: inherit; color: var(--ink-strong); cursor: pointer; text-align: left; }
+      button.first-free:hover { border-style: solid; }
+      button.first-free small { color: var(--muted); display: block; font-size: .75rem; }
       .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     </style>
   </head>
@@ -255,6 +265,7 @@
           yesCancel: "Sì, annulla", keep: "No, mantieni", status: "Stato", stConfirmed: "Confermata", stScheduled: "In attesa di conferma",
           stCancelled: "Annullata", stCompleted: "Completata", "stNo Show": "Assente", instructions: "Indicazioni", genericError: "Qualcosa è andato storto. Riprova.",
           required: "Compila i campi obbligatori.", invalidEmail: "Inserisci un'email valida.", poweredBy: "Prenotazione online",
+          firstFree: "Primo orario libero", servicesOf: "Servizi di", allServices: "Tutti i servizi",
         },
         en: {
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
@@ -278,6 +289,7 @@
           yesCancel: "Yes, cancel", keep: "No, keep it", status: "Status", stConfirmed: "Confirmed", stScheduled: "Awaiting confirmation",
           stCancelled: "Cancelled", stCompleted: "Completed", "stNo Show": "No show", instructions: "Instructions", genericError: "Something went wrong. Please try again.",
           required: "Please fill in the required fields.", invalidEmail: "Please enter a valid email.", poweredBy: "Online booking",
+          firstFree: "First free time", servicesOf: "Services by", allServices: "All services",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -337,6 +349,8 @@
       const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
       const todayLocal = () => new Intl.DateTimeFormat("en-CA", { timeZone: CLIENT_TZ }).format(new Date());
       const initials = (n) => (n || "?").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+      const durationLabel = (s) => (s.duration_max && s.duration_max > s.duration ? `${duration(s.duration)} – ${duration(s.duration_max)}` : duration(s.duration));
+      const priceLabel = (s) => (s.price_from ? `${T("from")} ${s.formatted_price}` : s.formatted_price);
       const duration = (m) => (m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? " " + (m % 60) + " " + T("minutes") : ""}` : `${m} ${T("minutes")}`);
 
       // --- state ---------------------------------------------------------------
@@ -344,7 +358,8 @@
         catalog: null, step: "service", query: "", category: "",
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
-        form: { full_name: "", email: "", phone: "", notes: "", consent: false },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false },
+        person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
       const STEPS = () => {
@@ -399,11 +414,12 @@
           if (S.manage.formatted_price) box.append(h("div", { class: "price" }, S.manage.formatted_price));
           return;
         }
-        box.append(row("⏱", T("duration"), duration(S.service.duration)));
+        box.append(row("⏱", T("duration"), durationLabel(S.service)));
+        if (S.service.location) box.append(row("⌖", T("where"), S.service.location));
         if (S.staffName || S.service.can_pick_staff) box.append(row("☺", T("with"), S.staffName || T("anyone")));
         if (S.slot) box.append(row("◷", T("when"), fmtFull.format(new Date(S.slot.start))));
         if (S.seats > 1) box.append(row("⚇", T("people"), String(S.seats)));
-        if (S.service.formatted_price) box.append(h("div", { class: "price" }, (S.service.per_participant && S.seats > 1 ? `${S.seats} × ` : "") + S.service.formatted_price));
+        if (S.service.formatted_price) box.append(h("div", { class: "price" }, (S.service.per_participant && S.seats > 1 ? `${S.seats} × ` : "") + priceLabel(S.service)));
         if (S.service.manual_approval) box.append(h("div", { class: "msg warn" }, T("manual")));
       }
 
@@ -411,13 +427,24 @@
         const wrap = h("section", {});
         const c = S.catalog;
         if (!c.services.length) return h("div", { class: "hint" }, T("noServices"));
+        if (S.person) {
+          // a professional's own page: who they are, then only what they do
+          const p = S.person;
+          wrap.append(h("div", { class: "profile" },
+            h("span", { class: "avatar big" }, p.image ? h("img", { src: p.image, alt: "" }) : initials(p.name)),
+            h("div", {}, h("h2", {}, p.name), p.title ? h("div", { class: "hint" }, p.title) : null, p.bio ? h("p", { class: "bio" }, p.bio) : null),
+            h("button", { class: "ghost small", onclick: () => { S.person = null; S.staff = ""; S.staffName = ""; history.replaceState(null, "", location.pathname.replace(/\/p\/.*$/, "")); render(); } }, T("allServices"))));
+        }
         const bar = h("div", { class: "toolbar" });
         const search = h("input", { type: "search", placeholder: T("search"), value: S.query, "aria-label": T("search") });
         search.addEventListener("input", (e) => { S.query = e.target.value; drawList(); });
         bar.append(search);
-        if (c.categories.length > 1) {
+        // only the categories that still have something to show (a professional's page narrows them)
+        const categories = c.categories.filter((cat) =>
+          c.services.some((s) => s.category === cat && (s.listed || s.id === BOOT.service) && (!S.person || S.person.services.includes(s.id))));
+        if (categories.length > 1) {
           const chips = h("div", { class: "chips", role: "toolbar" });
-          [["", T("all")], ...c.categories.map((x) => [x, x])].forEach(([val, label]) => {
+          [["", T("all")], ...categories.map((x) => [x, x])].forEach(([val, label]) => {
             chips.append(h("button", { class: "chip", "aria-pressed": String(S.category === val), onclick: () => { S.category = val; render(); } }, label));
           });
           bar.append(chips);
@@ -427,20 +454,25 @@
         function drawList() {
           list.replaceChildren();
           const q = S.query.trim().toLowerCase();
-          const items = c.services.filter((s) => (!S.category || s.category === S.category) && (!q || (s.name + " " + s.description + " " + s.category).toLowerCase().includes(q)));
+          const items = c.services.filter((s) =>
+            (s.listed || s.id === BOOT.service) &&
+            (!S.person || S.person.services.includes(s.id)) &&
+            (!S.category || s.category === S.category) &&
+            (!q || (s.name + " " + s.description + " " + s.category).toLowerCase().includes(q)));
           if (!items.length) list.append(h("div", { class: "hint" }, T("noMatch")));
           let lastCat = null;
           for (const s of items) {
-            if (!S.category && c.categories.length > 1 && s.category !== lastCat) {
+            if (!S.category && categories.length > 1 && s.category !== lastCat) {
               lastCat = s.category;
               if (s.category) list.append(h("h3", {}, s.category));
             }
-            const tags = [h("span", { class: "tag" }, duration(s.duration))];
+            const tags = [h("span", { class: "tag" }, durationLabel(s))];
             if (s.group) tags.push(h("span", { class: "tag" }, T("group")));
+            if (s.location) tags.push(h("span", { class: "tag" }, s.location));
             list.append(h("button", { class: "service", onclick: () => pickService(s) },
               s.image ? h("img", { class: "thumb", src: s.image, alt: "" }) : h("span", { class: "dot", style: s.color ? `background:${s.color}` : null }),
               h("div", {}, h("div", { class: "name" }, s.name), s.description ? h("div", { class: "desc" }, s.description) : null, h("div", { class: "tags" }, tags)),
-              h("div", { class: "right" }, s.formatted_price ? h("div", { class: "p" }, s.formatted_price) : null, h("div", { class: "go" }, T("choose") + " →"))));
+              h("div", { class: "right" }, s.formatted_price ? h("div", { class: "p" }, priceLabel(s)) : null, h("div", { class: "go" }, T("choose") + " →"))));
           }
         }
         drawList();
@@ -452,6 +484,11 @@
         const changed = S.service?.id !== s.id;
         S.service = s;
         if (changed) { S.staff = ""; S.staffName = ""; S.slot = null; S.date = null; S.month = null; S.days = {}; S.seats = 1; }
+        if (S.person && s.can_pick_staff) {
+          // booked from a professional's page: that professional, no question asked
+          S.staff = S.person.id; S.staffName = S.person.name;
+          go("time"); loadMonth(); return;
+        }
         go(s.can_pick_staff ? "staff" : "time");
         if (!s.can_pick_staff) loadMonth();
       }
@@ -464,7 +501,7 @@
         for (const p of S.service.staff) {
           grid.append(h("button", { class: "person", onclick: () => pickStaff(p.id, p.name) },
             h("span", { class: "avatar" }, p.image ? h("img", { src: p.image, alt: "" }) : initials(p.name)),
-            h("span", {}, h("div", { class: "who" }, p.name))));
+            h("span", {}, h("div", { class: "who" }, p.name), p.title ? h("div", { class: "sub" }, p.title) : null)));
         }
         wrap.append(grid, h("div", { class: "actions" }, h("button", { class: "ghost", onclick: () => go("service") }, "← " + T("back"))));
         return wrap;
@@ -504,6 +541,12 @@
           wrap.append(h("div", { style: "display:flex;align-items:center;gap:.6rem;margin-bottom:1rem" }, h("span", { class: "hint" }, T("people")), seats));
         }
         S.month = S.month || todayLocal().slice(0, 7) + "-01";
+        const firstDay = Object.keys(S.days).sort()[0];
+        if (!S.loadingSlots && firstDay && !S.moving) {
+          const first = S.days[firstDay][0];
+          wrap.append(h("button", { class: "first-free", onclick: () => { S.date = firstDay; S.slot = first; go("details"); } },
+            h("span", {}, h("small", {}, T("firstFree")), fmtFull.format(new Date(first.start))), h("span", { "aria-hidden": "true" }, "→")));
+        }
         const m = new Date(S.month + "T00:00:00Z");
         const prevMonth = iso(new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() - 1, 1)));
         const nextMonth = iso(new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 1)));
@@ -715,7 +758,9 @@
       // --- boot --------------------------------------------------------------------
       (async function boot() {
         try {
-          S.catalog = await api("get_catalog");
+          S.catalog = await api("get_catalog", { service: BOOT.service });
+          S.category = BOOT.category && S.catalog.categories.includes(BOOT.category) ? BOOT.category : "";
+          S.person = (BOOT.staff && (S.catalog.people || []).find((p) => p.id === BOOT.staff)) || null;
           if (S.catalog.title) { $("page-title").textContent = S.catalog.title; document.title = S.catalog.title; }
           $("page-intro").textContent = S.catalog.intro || "";
           $("foot").textContent = T("poweredBy");
@@ -725,7 +770,7 @@
             render();
             return;
           }
-          const pre = BOOT.service && S.catalog.services.find((s) => s.id === BOOT.service);
+          const pre = BOOT.service && S.catalog.services.find((s) => s.id === BOOT.service || s.name === BOOT.service);
           if (pre) {
             S.service = pre;
             const person = BOOT.staff && pre.staff.find((p) => p.id === BOOT.staff);
