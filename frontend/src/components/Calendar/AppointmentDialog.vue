@@ -1,7 +1,7 @@
 <template>
   <Dialog v-model="show" :options="{ size: '4xl' }">
     <template #body>
-      <div class="flex flex-col bg-surface-elevation-2">
+      <div data-dialog-sheet class="flex flex-col bg-surface-elevation-2">
         <!-- header -->
         <div
           class="flex items-start justify-between gap-3 border-b border-outline-gray-2 px-5 py-4"
@@ -29,6 +29,7 @@
         </div>
 
         <div
+          data-dialog-scroll
           class="grid max-h-[70vh] grid-cols-1 gap-5 overflow-y-auto p-5 lg:grid-cols-2"
         >
           <!-- left column: what & when -->
@@ -41,12 +42,16 @@
                 :options="serviceOptions"
                 @update:modelValue="onServiceChange"
               />
-              <div class="grid grid-cols-3 gap-2">
-                <FormControl
-                  v-model="form.date"
-                  type="date"
-                  :label="__('Date')"
-                />
+              <!-- Three fields across 390px leaves the date showing
+                   «2026-09-2». On a phone the date takes its own row. -->
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div class="col-span-2 sm:col-span-1">
+                  <FormControl
+                    v-model="form.date"
+                    type="date"
+                    :label="__('Date')"
+                  />
+                </div>
                 <FormControl
                   v-model="form.time"
                   type="time"
