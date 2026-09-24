@@ -131,6 +131,10 @@ import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, default: 'CRM Lead' },
+  // Which channel the stream above is showing. The box follows it, because a
+  // picker that changes what you read and not what you write in is a picker
+  // that will be ignored.
+  channel: { type: String, default: 'all' },
 })
 
 const doc = defineModel({ type: Object, default: () => ({}) })
@@ -146,6 +150,22 @@ const { capture } = useTelemetry()
 
 const showEmailBox = ref(false)
 const showCommentBox = ref(false)
+
+// «All» opens nothing by itself: on a mixed stream there is no obvious channel
+// to be writing in, and a composer that springs open steals the scroll.
+watch(
+  () => props.channel,
+  (channel) => {
+    if (channel === 'email') {
+      showCommentBox.value = false
+      showEmailBox.value = true
+    } else if (channel === 'comment') {
+      showEmailBox.value = false
+      showCommentBox.value = true
+    }
+  },
+  { immediate: true },
+)
 const showWhatsAppBox = ref(false)
 const whatsappEverOpened = ref(false)
 const whatsappBox = ref(null)

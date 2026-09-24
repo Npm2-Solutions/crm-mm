@@ -6,20 +6,47 @@
     <div class="flex h-8 items-center text-2xl-semibold text-ink-gray-8">
       {{ __(title) }}
     </div>
-    <Button
-      v-if="title == 'Emails'"
-      variant="solid"
-      :label="__('New Email')"
-      iconLeft="plus"
-      @click="emailBox.show = true"
-    />
-    <Button
-      v-else-if="title == 'Comments'"
-      variant="solid"
-      :label="__('New Comment')"
-      iconLeft="plus"
-      @click="emailBox.showComment = true"
-    />
+    <!--
+      The channel picker. It changes the stream *and* the box underneath: picking
+      WhatsApp and then typing into an email composer was the whole reason the
+      four tabs existed.
+    -->
+    <div v-if="title == 'Activity'" class="flex items-center gap-2">
+      <div
+        class="flex items-center gap-0.5 rounded-lg bg-surface-gray-2 p-0.5 text-p-sm"
+      >
+        <button
+          v-for="option in channelOptions"
+          :key="option.key"
+          class="flex items-center gap-1.5 rounded-md px-2 py-1"
+          :class="
+            channel === option.key
+              ? 'bg-surface-white text-ink-gray-8 shadow-sm'
+              : 'text-ink-gray-6 hover:text-ink-gray-8'
+          "
+          @click="channel = option.key"
+        >
+          <component :is="option.icon" v-if="option.icon" class="size-3.5" />
+          <span>{{ __(option.label) }}</span>
+          <span v-if="option.count" class="text-ink-gray-4">
+            {{ option.count }}
+          </span>
+        </button>
+      </div>
+      <!-- templates are the only way to open a conversation that has gone cold
+           past 24 hours, so the button belongs beside the WhatsApp channel -->
+      <Button
+        v-if="channel === 'whatsapp'"
+        :label="__('Send Template')"
+        @click="showWhatsappTemplates = true"
+      />
+      <Button
+        variant="solid"
+        iconLeft="plus"
+        :label="__(newLabel)"
+        @click="startNew"
+      />
+    </div>
     <MultiActionButton
       v-else-if="title == 'Calls'"
       variant="solid"
@@ -55,25 +82,6 @@
       :label="__('Upload Attachment')"
       iconLeft="plus"
       @click="showFilesUploader = true"
-    />
-    <div v-else-if="title == 'WhatsApp'" class="flex gap-2 shrink-0">
-      <Button
-        :label="__('Send Template')"
-        @click="showWhatsappTemplates = true"
-      />
-      <Button
-        variant="solid"
-        :label="__('New Message')"
-        iconLeft="plus"
-        @click="whatsappBox.show()"
-      />
-    </div>
-    <Button
-      v-else-if="title == 'SMS'"
-      variant="solid"
-      :label="__('New SMS')"
-      iconLeft="plus"
-      @click="smsBox.show()"
     />
     <Dropdown v-else :options="defaultActions" @click.stop>
       <template #default="{ open }">
@@ -113,7 +121,54 @@ const props = defineProps({
   modalRef: { type: Object, default: () => ({}) },
   whatsappBox: { type: Object, default: () => ({}) },
   smsBox: { type: Object, default: () => ({}) },
+  counts: { type: Object, default: () => ({}) },
 })
+
+const channel = defineModel('channel', { type: String, default: 'all' })
+
+// Only the channels this site actually has. An SMS chip on a CRM with no
+// Twilio is a promise it cannot keep.
+const channelOptions = computed(() =>
+  [
+    { key: 'all', label: 'All' },
+    { key: 'email', label: 'Email', icon: Email2Icon },
+    {
+      key: 'whatsapp',
+      label: 'WhatsApp',
+      icon: WhatsAppIcon,
+      condition: () => whatsappEnabled.value,
+    },
+    {
+      key: 'sms',
+      label: 'SMS',
+      icon: SMSIcon,
+      condition: () => smsEnabled.value,
+    },
+    { key: 'comment', label: 'Comments', icon: CommentIcon },
+  ]
+    .filter((option) => !option.condition || option.condition())
+    .map((option) => ({ ...option, count: props.counts?.[option.key] || 0 })),
+)
+
+// One button, and it writes in the channel you are reading.
+const NEW_LABEL = {
+  all: 'New',
+  email: 'New Email',
+  whatsapp: 'New Message',
+  sms: 'New SMS',
+  comment: 'New Comment',
+}
+
+const newLabel = computed(() => NEW_LABEL[channel.value] || 'New')
+
+function startNew() {
+  if (channel.value === 'whatsapp') return props.whatsappBox?.show?.()
+  if (channel.value === 'sms') return props.smsBox?.show?.()
+  if (channel.value === 'comment') return (emailBox.value.showComment = true)
+  if (channel.value === 'email') return (emailBox.value.show = true)
+  // «All»: writing needs a channel, and email is the one every record has
+  emailBox.value.show = true
+}
 
 const { makeCall } = globalStore()
 

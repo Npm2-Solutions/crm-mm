@@ -4,6 +4,8 @@
     v-model:showWhatsappTemplates="showWhatsappTemplates"
     v-model:showFilesUploader="showFilesUploader"
     v-model:emailBox="emailBox"
+    v-model:channel="channel"
+    :counts="channelCounts"
     :tabs="tabs"
     :title="title"
     :doc="doc"
@@ -34,7 +36,54 @@
       "
       class="activities"
     >
-      <div v-if="title == 'WhatsApp' && whatsappMessages.data?.length">
+      <!--
+        The Activity tab is the conversation now: email, WhatsApp, SMS, comments
+        and calls in one stream, with the selector above choosing which of them
+        to read. What a message looks like is still each channel's own component.
+      -->
+      <ConversationView
+        v-if="title == 'Activity'"
+        v-model:whatsappMessages="whatsappMessages"
+        v-model:reply="replyMessage"
+        :items="conversationItems"
+        :channel="channel"
+        :modalRef="modalRef"
+        class="pb-4"
+        @reload="all_activities.reload()"
+      >
+        <template #other="{ item }">
+          <div class="flex items-center justify-stretch gap-2 py-1 text-base">
+            <div class="inline-flex flex-wrap items-center gap-1.5">
+              <span class="font-medium text-ink-gray-8">
+                {{ item.owner_name }}
+              </span>
+              <span class="text-ink-gray-5">{{ __(item.type) }}</span>
+              <span v-if="item.data?.field_label" class="text-ink-gray-8">
+                {{ __(item.data.field_label) }}
+              </span>
+              <span v-if="item.value" class="text-ink-gray-5">
+                {{ __(item.value) }}
+              </span>
+              <span v-if="item.data?.old_value" class="text-ink-gray-8">
+                {{ item.data.old_value }}
+              </span>
+              <span v-if="item.to" class="text-ink-gray-5">
+                {{ __(item.to) }}
+              </span>
+              <span v-if="item.data?.value" class="text-ink-gray-8">
+                {{ item.data.value }}
+              </span>
+              <span v-if="item.data?.file_name" class="text-ink-gray-8">
+                {{ item.data.file_name }}
+              </span>
+            </div>
+            <div class="ml-auto whitespace-nowrap">
+              <TimelineTimestamp :date="item.creation" />
+            </div>
+          </div>
+        </template>
+      </ConversationView>
+      <div v-else-if="title == 'WhatsApp' && whatsappMessages.data?.length">
         <WhatsAppArea
           v-model="whatsappMessages"
           v-model:reply="replyMessage"
@@ -424,19 +473,28 @@
     />
   </FadedScrollableDiv>
   <div>
+    <!-- Picking a channel changes what you read and what you write in. Typing an
+         email into a box while reading a WhatsApp conversation was half the
+         reason the four tabs existed. -->
     <CommunicationArea
-      v-if="['Emails', 'Comments', 'Activity'].includes(title)"
+      v-if="
+        ['Emails', 'Comments'].includes(title) ||
+        (title == 'Activity' && !['whatsapp', 'sms'].includes(channel))
+      "
       ref="emailBox"
       v-model="doc"
       v-model:reload="reload_email"
       v-model:whatsapp="whatsappMessages"
       v-model:reply="replyMessage"
+      :channel="channel"
       :doctype="doctype"
       @scroll="scroll"
       @template="showWhatsappTemplates = true"
     />
     <WhatsAppBox
-      v-if="title == 'WhatsApp'"
+      v-if="
+        title == 'WhatsApp' || (title == 'Activity' && channel == 'whatsapp')
+      "
       ref="whatsappBox"
       v-model="doc"
       v-model:reply="replyMessage"
@@ -446,7 +504,7 @@
       @template="showWhatsappTemplates = true"
     />
     <SMSBox
-      v-if="title == 'SMS'"
+      v-if="title == 'SMS' || (title == 'Activity' && channel == 'sms')"
       ref="smsBox"
       v-model="doc"
       v-model:sms="smsMessages"
@@ -517,6 +575,7 @@ import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
 import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
 import FadedScrollableDiv from '@/components/FadedScrollableDiv.vue'
 import CommunicationArea from '@/components/CommunicationArea.vue'
+import ConversationView from '@/components/Activities/ConversationView.vue'
 import WhatsappTemplateSelectorModal from '@/components/Modals/WhatsappTemplateSelectorModal.vue'
 import AllModals from '@/components/Activities/AllModals.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
@@ -525,6 +584,7 @@ import { startCase } from '@/utils'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
+import { countByChannel } from '@/utils/conversation'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { useDocument } from '@/data/document'
@@ -708,6 +768,26 @@ function sendTemplate(template, templateParameters) {
 
 const replyMessage = ref({})
 
+// Which channel the Activity tab is reading, and writing in. Remembered per
+// browser: somebody who works on WhatsApp all day should not have to pick it
+// again on every record.
+const channel = ref(localStorage.getItem('crmActivityChannel') || 'all')
+watch(channel, (value) => {
+  try {
+    localStorage.setItem('crmActivityChannel', value)
+  } catch (e) {
+    // a private window refuses; the picker still works for this session
+  }
+})
+
+// Everything the conversation is made of, before the picker narrows it.
+const conversationItems = computed(() => {
+  if (title.value !== 'Activity') return []
+  return activities.value
+})
+
+const channelCounts = computed(() => countByChannel(conversationItems.value))
+
 function get_activities() {
   if (!all_activities.data?.versions) return []
   return [
@@ -719,6 +799,12 @@ function get_activities() {
     ...(whatsappMessages.data || []).map((message) => ({
       ...message,
       activity_type: 'whatsapp',
+    })),
+    // and the SMS, which were in their own tab and nowhere else — a conversation
+    // that carried on by text simply disappeared from the record's history
+    ...(smsMessages.data || []).map((message) => ({
+      ...message,
+      activity_type: 'sms',
     })),
   ]
 }
