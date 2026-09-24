@@ -20,7 +20,9 @@ MAX_DATA_LENGTH = 1000
 
 
 def doctype_files():
-	return sorted(APP.glob("*/doctype/*/*.json"))
+	"""Only a doctype's own definition, which is always named after its folder:
+	a sibling like test_records.json holds a list, not a doctype."""
+	return sorted(p for p in APP.glob("*/doctype/*/*.json") if p.stem == p.parent.name)
 
 
 class TestDocTypeSchema(unittest.TestCase):
