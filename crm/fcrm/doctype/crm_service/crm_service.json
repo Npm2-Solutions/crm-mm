@@ -25,6 +25,7 @@
   "max_horizon_days",
   "online_section",
   "online_confirmation",
+  "online_overrides",
   "allow_staff_choice",
   "show_price_online",
   "online_slot_interval",
@@ -204,6 +205,13 @@
    "options": "Automatic\nManual approval",
    "default": "Automatic",
    "description": "Manual approval books the slot as Scheduled until someone confirms it"
+  },
+  {
+   "fieldname": "online_overrides",
+   "fieldtype": "Small Text",
+   "label": "Customised Online Rules",
+   "hidden": 1,
+   "description": "JSON list of the online rules this service sets itself; the others come from the booking page defaults"
   },
   {
    "fieldname": "allow_staff_choice",

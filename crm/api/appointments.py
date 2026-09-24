@@ -734,11 +734,33 @@ def get_service(name: str) -> dict:
 	_check_manager()
 	doc = frappe.get_doc("CRM Service", name)
 	data = doc.as_dict()
+	data.update(online_rule_state(doc))
 	data["availability"] = [
 		{"workday": row.workday, "start_time": str(row.start_time), "end_time": str(row.end_time)}
 		for row in doc.availability
 	]
 	return data
+
+
+def online_rule_state(service) -> dict:
+	"""Which online rules the service customises, and every rule's value in force
+	with where it comes from — what the editor shows as "inherited" or "own"."""
+	from crm.scheduling.booking_rules import INHERITED, effective_rules, overridden_keys
+
+	def plain(value):
+		# Time fields load as timedelta: the editor wants "HH:MM:SS"
+		return str(value) if hasattr(value, "total_seconds") else value
+
+	config = settings()
+	defaults = config if config.get("default_max_horizon_days") is not None else None
+	values, sources = effective_rules(service, defaults)
+	return {
+		"online_overrides": sorted(overridden_keys(service)),
+		"online_effective": {
+			key: {"value": plain(value), "source": sources[key]} for key, value in values.items()
+		},
+		"online_defaults": {key: plain(config.get(default_key)) for key, default_key in INHERITED.items()},
+	}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -801,16 +823,17 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 	):
 		if key in payload:
 			values[key] = cint(payload.get(key))
+	if "online_overrides" in payload:
+		from crm.scheduling.booking_rules import INHERITED
+
+		keys = _loads(payload.get("online_overrides")) or []
+		values["online_overrides"] = json.dumps(sorted(k for k in keys if k in INHERITED))
 	values.update(
 		{
 			"enabled": cint(payload.get("enabled", 1)),
 			"bookable_online": cint(payload.get("bookable_online")),
 			"price_per_participant": cint(payload.get("price_per_participant")),
-			"staff": [
-				{"user": row.get("user"), "role": row.get("role"), "priority": cint(row.get("priority"))}
-				for row in payload.get("staff") or []
-				if row.get("user")
-			],
+			"staff": [_staff_row(row) for row in payload.get("staff") or [] if row.get("user")],
 			"roles": [
 				{"role": row.get("role"), "staff_count": cint(row.get("staff_count")) or 1}
 				for row in payload.get("roles") or []
@@ -847,6 +870,19 @@ def save_service(service: str | dict, name: str | None = None) -> dict:
 		doc = frappe.get_doc({"doctype": "CRM Service", **values})
 		doc.insert()
 	return get_service(doc.name)
+
+
+def _staff_row(row: dict) -> dict:
+	"""A professional on a service, with their optional own length/price/online flag."""
+	return {
+		"user": row.get("user"),
+		"role": row.get("role"),
+		"priority": cint(row.get("priority")),
+		"duration": cint(row.get("duration")),
+		"custom_price": cint(row.get("custom_price")),
+		"price": flt(row.get("price")),
+		"bookable_online": cint(row.get("bookable_online", 1)),
+	}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -1088,6 +1124,10 @@ def get_schedule(user: str) -> dict:
 			"user": user,
 			"enabled": 1,
 			"max_daily_appointments": 0,
+			"max_weekly_appointments": 0,
+			"bookable_online": 1,
+			"public_title": "",
+			"public_bio": "",
 			"holiday_list": None,
 			"availability": [],
 			"exceptions": [],
@@ -1098,6 +1138,10 @@ def get_schedule(user: str) -> dict:
 		"user": doc.user,
 		"enabled": doc.enabled,
 		"max_daily_appointments": doc.max_daily_appointments,
+		"max_weekly_appointments": doc.get("max_weekly_appointments") or 0,
+		"bookable_online": 1 if doc.get("bookable_online") is None else cint(doc.bookable_online),
+		"public_title": doc.get("public_title") or "",
+		"public_bio": doc.get("public_bio") or "",
 		"holiday_list": doc.holiday_list,
 		"availability": [
 			{"workday": row.workday, "start_time": str(row.start_time), "end_time": str(row.end_time)}
@@ -1127,6 +1171,10 @@ def save_schedule(schedule: str | dict) -> dict:
 		"user": user,
 		"enabled": cint(payload.get("enabled", 1)),
 		"max_daily_appointments": cint(payload.get("max_daily_appointments")),
+		"max_weekly_appointments": cint(payload.get("max_weekly_appointments")),
+		"bookable_online": cint(payload.get("bookable_online", 1)),
+		"public_title": payload.get("public_title") or None,
+		"public_bio": payload.get("public_bio") or None,
 		"holiday_list": payload.get("holiday_list") or None,
 		"availability": [
 			{
@@ -1201,9 +1249,24 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		"notify_staff_on_booking",
 		"send_client_confirmation",
 		"max_active_per_customer",
+		# online defaults every service inherits
+		"default_min_notice_hours",
+		"default_max_horizon_days",
+		"default_online_slot_interval",
+		"default_online_confirmation",
+		"default_same_day_cutoff",
+		"default_allow_online_cancel",
+		"default_cancel_notice_hours",
+		"default_allow_online_reschedule",
+		"default_reschedule_notice_hours",
+		"default_max_reschedules",
+		"default_require_phone",
+		"default_max_per_customer_per_day",
 	):
 		if key in payload:
-			doc.set(key, payload[key])
+			value = payload[key]
+			# an emptied time picker sends "", which a Time column refuses
+			doc.set(key, None if value == "" and key.endswith("cutoff") else value)
 	if "default_availability" in payload:
 		doc.set("default_availability", [])
 		for row in payload["default_availability"] or []:

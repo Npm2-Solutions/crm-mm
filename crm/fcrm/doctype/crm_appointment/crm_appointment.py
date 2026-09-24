@@ -86,9 +86,11 @@ class CRMAppointment(Document):
 			return
 		service = frappe.get_cached_doc("CRM Service", self.service)
 		if self.starts_on and not self.ends_on:
-			self.ends_on = add_to_date(
-				get_datetime(self.starts_on), minutes=cint(service.duration), as_datetime=True
-			)
+			# the professional's own length for this service wins over the service's
+			users = {row.user for row in self.staff if row.user}
+			own = [cint(row.get("duration")) for row in service.staff if row.user in users]
+			minutes = max(own) if own and all(own) else cint(service.duration)
+			self.ends_on = add_to_date(get_datetime(self.starts_on), minutes=minutes, as_datetime=True)
 		if not self.color:
 			self.color = service.color
 		if not self.location:

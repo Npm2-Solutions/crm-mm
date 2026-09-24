@@ -113,9 +113,33 @@ def _resolve_service(key: str):
 
 
 def _rules(service) -> rules_mod.OnlineRules:
+	config = settings()
 	return rules_mod.OnlineRules.from_service(
-		service, global_max_active=settings().get("max_active_per_customer")
+		service, global_max_active=config.get("max_active_per_customer"), defaults=_defaults(config)
 	)
+
+
+def _defaults(config):
+	"""The booking-page defaults, or ``None`` on a site that has not migrated yet."""
+	return config if config.get("default_max_horizon_days") is not None else None
+
+
+def _effective(service) -> dict:
+	"""The inheritable online rules in force for this service (own or default)."""
+	values, _sources = rules_mod.effective_rules(service, _defaults(settings()))
+	return values
+
+
+def _online_staff(service) -> list[str]:
+	"""Professionals of the service who take it through the booking page."""
+	from crm.scheduling.availability import staff_profile
+
+	return [
+		row.user
+		for row in service.staff
+		if (row.get("bookable_online") is None or cint(row.get("bookable_online")))
+		and staff_profile(row.user)["online"]
+	]
 
 
 def public_staff_id(user: str) -> str:
@@ -139,12 +163,21 @@ def _staff_card(user: str) -> dict:
 		frappe.local.crm_booking_staff_cards = {}
 	cache = frappe.local.crm_booking_staff_cards
 	if user not in cache:
-		cache[user] = frappe.db.get_value("User", user, ["full_name", "user_image"], as_dict=True) or {}
+		info = frappe.db.get_value("User", user, ["full_name", "user_image"], as_dict=True) or {}
+		profile = (
+			frappe.db.get_value(
+				"CRM Staff Schedule", {"user": user}, ["public_title", "public_bio"], as_dict=True
+			)
+			or {}
+		)
+		cache[user] = {**info, **profile}
 	info = cache[user]
 	return {
 		"id": public_staff_id(user),
 		"name": info.get("full_name") or _("Professional"),
 		"image": info.get("user_image") or "",
+		"title": info.get("public_title") or "",
+		"bio": info.get("public_bio") or "",
 	}
 
 
@@ -180,10 +213,19 @@ def get_catalog() -> dict:
 	for name in names:
 		service = frappe.get_cached_doc("CRM Service", name)
 		services.append(_service_card(service))
+	services = [card for card in services if card["bookable"]]
 	categories = []
 	for service in services:
 		if service["category"] and service["category"] not in categories:
 			categories.append(service["category"])
+	# the team, for staff pages (/prenota?professionista=…): who they are, what they do
+	people: dict[str, dict] = {}
+	for name in names:
+		service = frappe.get_cached_doc("CRM Service", name)
+		card_id = service.website_slug or service.name
+		for user in _online_staff(service):
+			person = people.setdefault(user, {**_staff_card(user), "services": []})
+			person["services"].append(card_id)
 	return {
 		"title": config.get("booking_page_title")
 		or frappe.db.get_single_value("Website Settings", "app_name")
@@ -194,14 +236,18 @@ def get_catalog() -> dict:
 		"timezone": str(scheduling_tz()),
 		"categories": categories,
 		"services": services,
+		"people": sorted(people.values(), key=lambda p: p["name"]),
 	}
 
 
 def _service_card(service) -> dict:
 	show_price = _flag(service, "show_price_online")
 	staff_choice = _flag(service, "allow_staff_choice")
+	online_staff = _online_staff(service)
+	rules = _effective(service)
 	# picking a professional only makes sense when the engine picks one of several
-	can_pick = staff_choice and service.staff_selection == "Any one" and len(service.staff) > 1
+	can_pick = staff_choice and service.staff_selection == "Any one" and len(online_staff) > 1
+	prices, durations = _price_and_duration_range(service, online_staff)
 	return {
 		"id": service.website_slug or service.name,
 		"name": service.service_name,
@@ -209,23 +255,42 @@ def _service_card(service) -> dict:
 		"color": service.color or "",
 		"description": service.short_description or service.description or "",
 		"image": service.website_image or "",
-		"duration": cint(service.duration),
-		"price": flt(service.default_price) if show_price else 0,
-		"formatted_price": _money(service.default_price, service.currency) if show_price else "",
+		"duration": durations[0],
+		"duration_max": durations[1],
+		"price": prices[0] if show_price else 0,
+		"formatted_price": _money(prices[0], service.currency) if show_price else "",
+		# "from € 40" when professionals charge differently
+		"price_from": bool(show_price and prices[1] > prices[0]),
 		"per_participant": cint(service.price_per_participant),
 		"max_seats": max(cint(service.get("online_max_participants")) or 1, 1)
 		if cint(service.max_participants) > 1
 		else 1,
 		"group": cint(service.max_participants) > 1,
 		"can_pick_staff": bool(can_pick),
-		"staff": [_staff_card(row.user) for row in service.staff] if can_pick else [],
-		"require_phone": _flag(service, "require_phone"),
+		"staff": [_staff_card(user) for user in online_staff] if can_pick else [],
+		"staff_ids": [public_staff_id(user) for user in online_staff],
+		"require_phone": cint(rules.get("require_phone") if rules.get("require_phone") is not None else 1),
 		"require_notes": cint(service.get("require_notes")),
 		"question": service.get("online_question") or "",
-		"min_notice_hours": cint(service.min_notice_hours),
-		"max_horizon_days": cint(service.max_horizon_days),
-		"manual_approval": service.get("online_confirmation") == "Manual approval",
+		"min_notice_hours": cint(rules.get("min_notice_hours")),
+		"max_horizon_days": cint(rules.get("max_horizon_days")),
+		"manual_approval": rules.get("online_confirmation") == "Manual approval",
+		"bookable": bool(online_staff),
 	}
+
+
+def _price_and_duration_range(service, users: list[str]) -> tuple[tuple[float, float], tuple[int, int]]:
+	"""Lowest/highest price and length across the professionals who take it online."""
+	base_price, base_minutes = flt(service.default_price), cint(service.duration)
+	prices, minutes = [], []
+	for row in service.staff:
+		if row.user not in users:
+			continue
+		prices.append(flt(row.get("price")) if cint(row.get("custom_price")) else base_price)
+		minutes.append(cint(row.get("duration")) or base_minutes)
+	prices = prices or [base_price]
+	minutes = minutes or [base_minutes]
+	return (min(prices), max(prices)), (min(minutes), max(minutes))
 
 
 # --------------------------------------------------------------------------
@@ -262,6 +327,9 @@ def online_slots(
 	exclude_appointment: str | None = None,
 ) -> list:
 	"""Engine slots narrowed by the service's online rules."""
+	rules = _rules(service)
+	now = datetime.datetime.now(UTC)
+	earliest, latest = rules.window(now)
 	slots = get_slots(
 		service.name,
 		first,
@@ -269,14 +337,16 @@ def online_slots(
 		staff=[staff_user] if staff_user else None,
 		participants=participants,
 		exclude_appointment=exclude_appointment,
+		online=True,
+		# the online notice/horizon (own or inherited) decide, not the internal ones
+		window=(earliest, latest or now + datetime.timedelta(days=3650)),
 	)
 	tz = scheduling_tz()
-	now = datetime.datetime.now(UTC)
 	window_start = datetime.datetime.combine(first, datetime.time.min, tzinfo=tz)
 	window_end = datetime.datetime.combine(last + datetime.timedelta(days=1), datetime.time.min, tzinfo=tz)
 	booked = _service_booked(service.name, window_start, window_end, exclude=exclude_appointment)
-	slots = rules_mod.thin_grid(slots, cint(service.get("online_slot_interval")), tz)
-	slots = rules_mod.filter_slots(_rules(service), slots, now, tz, booked)
+	slots = rules_mod.thin_grid(slots, cint(_effective(service).get("online_slot_interval")), tz)
+	slots = rules_mod.filter_slots(rules, slots, now, tz, booked)
 	if staff_user:
 		slots = [s for s in slots if staff_user in s.staff]
 	# a group slot needs room for everybody this client is bringing
@@ -438,7 +508,8 @@ def book(
 	notes = (notes or "").strip()
 	if not full_name or not email:
 		frappe.throw(_("Name and email are required"))
-	if _flag(doc, "require_phone") and not phone:
+	require_phone = _effective(doc).get("require_phone")
+	if (require_phone is None or cint(require_phone)) and not phone:
 		frappe.throw(_("A phone number is required"))
 	if cint(doc.get("require_notes")) and not notes:
 		frappe.throw(_("Please answer the question: {0}").format(doc.get("online_question") or _("Notes")))
@@ -479,7 +550,7 @@ def book(
 	)
 	token = frappe.generate_hash(length=32)
 	rows = _participant_rows(full_name, email, phone, lead, token, seats, _valid_tz_name(timezone))
-	status = "Scheduled" if doc.get("online_confirmation") == "Manual approval" else "Confirmed"
+	status = "Scheduled" if _effective(doc).get("online_confirmation") == "Manual approval" else "Confirmed"
 
 	if slot.join_appointment:
 		appointment = frappe.get_doc("CRM Appointment", slot.join_appointment)

@@ -119,6 +119,16 @@ def _specificity(row) -> int:
 	)
 
 
+def staff_price(service_doc, staff: list[str]) -> float | None:
+	"""The highest own price among the booked professionals, if any of them has one."""
+	prices = [
+		flt(row.get("price"))
+		for row in service_doc.staff
+		if row.user in set(staff) and cint(row.get("custom_price"))
+	]
+	return max(prices) if prices else None
+
+
 def resolve_price(
 	service: str,
 	when,
@@ -135,6 +145,12 @@ def resolve_price(
 		per_participant=bool(cint(service_doc.price_per_participant)),
 		source=_("Service default"),
 	)
+	# a professional's own price for this service beats the service's default,
+	# while an explicit price-list rule still beats both
+	own = staff_price(service_doc, staff or [])
+	if own is not None:
+		fallback.rate = own
+		fallback.source = _("Professional's price")
 
 	price_list = price_list or default_price_list()
 	if not price_list:
@@ -173,7 +189,7 @@ def resolve_price(
 			rate=fallback.rate,
 			currency=list_currency or fallback.currency,
 			per_participant=fallback.per_participant,
-			source=_("Service default"),
+			source=fallback.source,
 		)
 
 	winner = max(matching, key=lambda row: (cint(row.priority), _specificity(row), row.modified))

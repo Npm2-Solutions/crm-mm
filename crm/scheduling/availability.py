@@ -169,6 +169,23 @@ def staff_daily_cap(user: str) -> int:
 	return cint(frappe.db.get_value("CRM Staff Schedule", name, "max_daily_appointments")) if name else 0
 
 
+def staff_profile(user: str) -> dict:
+	"""Caps and online visibility of a professional; permissive when there is no schedule."""
+	row = frappe.db.get_value(
+		"CRM Staff Schedule",
+		{"user": user, "enabled": 1},
+		["max_daily_appointments", "max_weekly_appointments", "bookable_online"],
+		as_dict=True,
+	)
+	if not row:
+		return {"daily": 0, "weekly": 0, "online": True}
+	return {
+		"daily": cint(row.max_daily_appointments),
+		"weekly": cint(row.max_weekly_appointments),
+		"online": row.bookable_online is None or bool(cint(row.bookable_online)),
+	}
+
+
 def resource_working_hours(resource) -> WorkingHours:
 	return WorkingHours(
 		rows=resource.availability,
@@ -518,6 +535,18 @@ def party_busy(
 	return {key: iv.merge(entries) for key, entries in busy.items()}
 
 
+def weekly_counts(
+	users: list[str], start: datetime.datetime, end: datetime.datetime
+) -> dict[tuple[str, tuple[int, int]], int]:
+	"""Appointments per professional per ISO week, for the weekly cap."""
+	counts: dict[tuple[str, tuple[int, int]], int] = {}
+	tz = scheduling_tz()
+	for row in _appointment_rows("CRM Appointment Staff", "user", users, start, end):
+		week = from_system_naive(row.starts_on).astimezone(tz).isocalendar()[:2]
+		counts[(row.link, week)] = counts.get((row.link, week), 0) + 1
+	return counts
+
+
 def daily_counts(
 	users: list[str], start: datetime.datetime, end: datetime.datetime
 ) -> dict[tuple[str, datetime.date], int]:
@@ -572,8 +601,12 @@ class SlotFinder:
 		resources: list[str] | None = None,
 		participants: int = 1,
 		exclude_appointment: str | None = None,
+		online: bool = False,
+		window: tuple | None = None,
 	):
 		self.service = frappe.get_cached_doc("CRM Service", service)
+		self.online = online
+		self.window_override = window
 		self.from_date = parse_date(from_date)
 		self.to_date = parse_date(to_date)
 		self.participants = max(cint(participants), 1)
@@ -589,6 +622,25 @@ class SlotFinder:
 		self.buffer_after = cint(self.service.buffer_after)
 
 		self.eligible = [row.user for row in self.service.staff]
+		# per professional: own duration for this service, and whether they take it online
+		self.own_duration = {
+			row.user: datetime.timedelta(minutes=cint(row.get("duration")))
+			for row in self.service.staff
+			if cint(row.get("duration")) > 0
+		}
+		self.profiles = {u: staff_profile(u) for u in self.eligible}
+		if online:
+			self.eligible = [
+				row.user
+				for row in self.service.staff
+				if (row.get("bookable_online") is None or cint(row.get("bookable_online")))
+				and self.profiles[row.user]["online"]
+			]
+			if self.service.staff_selection == "All required" and len(self.eligible) < len(
+				self.service.staff
+			):
+				# a collective service needs everybody: one member off-line closes it online
+				self.eligible = []
 		# a collective service always books its whole roster, so a staff filter can
 		# only say "show me slots this person is in" — never shrink the team
 		if staff and self.service.staff_selection != "All required":
@@ -609,6 +661,8 @@ class SlotFinder:
 
 	def bookable_window(self) -> tuple[datetime.datetime, datetime.datetime]:
 		"""Notice period and horizon, as an absolute UTC window."""
+		if self.window_override:
+			return self.window_override
 		now = datetime.datetime.now(UTC)
 		earliest = now + datetime.timedelta(hours=cint(self.service.min_notice_hours))
 		horizon = cint(self.service.max_horizon_days) or 3650
@@ -651,7 +705,12 @@ class SlotFinder:
 		earliest, latest = self.bookable_window()
 
 		staff_hours = {u: staff_working_hours(u) for u in self.eligible}
-		caps = {u: staff_daily_cap(u) for u in self.eligible}
+		caps = {u: self.profiles[u]["daily"] for u in self.eligible}
+		weekly_caps = {u: self.profiles[u]["weekly"] for u in self.eligible}
+		# a week cap needs the whole ISO week around the range, not just the range
+		week_start = start - datetime.timedelta(days=7)
+		week_end = end + datetime.timedelta(days=7)
+		week_counts = weekly_counts(self.eligible, week_start, week_end) if any(weekly_caps.values()) else {}
 		# ranking is the same for every candidate slot of this run: query it once
 		self._loads = self.upcoming_load(self.eligible)
 		counts = daily_counts(self.eligible, start, end)
@@ -690,11 +749,10 @@ class SlotFinder:
 
 			candidates = iv.slots_in(
 				iv.merge([w for windows in free_by_user.values() for w in windows]),
-				self.duration,
+				self.shortest,
 				self.step,
 			)
 			for slot_start in candidates:
-				slot_end = slot_start + self.duration
 				if not (day_start <= slot_start < day_end):
 					continue
 				if not (earliest <= slot_start <= latest):
@@ -702,12 +760,14 @@ class SlotFinder:
 				free_now = [
 					u
 					for u in self.eligible
-					if iv.covers(free_by_user[u], slot_start, slot_end)
+					if iv.covers(free_by_user[u], slot_start, slot_start + self.duration_for(u))
 					and not self._over_cap(u, day, caps, counts)
+					and not self._over_week_cap(u, slot_start, weekly_caps, week_counts)
 				]
 				assigned = self.assign_staff(free_now)
 				if not assigned:
 					continue
+				slot_end = slot_start + max(self.duration_for(u) for u in assigned)
 				booked = self._assign_resources(
 					requirements, resources, resource_hours, usage, slot_start, slot_end
 				)
@@ -731,6 +791,23 @@ class SlotFinder:
 	def _over_cap(self, user, day, caps, counts) -> bool:
 		cap = caps.get(user) or 0
 		return bool(cap) and counts.get((user, day), 0) >= cap
+
+	def _over_week_cap(self, user, moment, caps, counts) -> bool:
+		cap = caps.get(user) or 0
+		if not cap:
+			return False
+		week = moment.astimezone(self.tz).isocalendar()[:2]
+		return counts.get((user, week), 0) >= cap
+
+	def duration_for(self, user: str) -> datetime.timedelta:
+		"""The service length when ``user`` delivers it (their own, or the service's)."""
+		return self.own_duration.get(user) or self.duration
+
+	@property
+	def shortest(self) -> datetime.timedelta:
+		"""Candidate starts are generated for the shortest length anyone needs."""
+		lengths = [self.duration_for(u) for u in self.eligible] or [self.duration]
+		return min(lengths)
 
 	# -- staffing models ---------------------------------------------------
 
@@ -901,6 +978,8 @@ def get_slots(
 	resources: list[str] | None = None,
 	participants: int = 1,
 	exclude_appointment: str | None = None,
+	online: bool = False,
+	window: tuple | None = None,
 ) -> list[Slot]:
 	return SlotFinder(
 		service,
@@ -910,6 +989,8 @@ def get_slots(
 		resources=resources,
 		participants=participants,
 		exclude_appointment=exclude_appointment,
+		online=online,
+		window=window,
 	).run()
 
 

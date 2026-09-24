@@ -74,6 +74,71 @@ def _time(value) -> datetime.time | None:
 	return datetime.time.fromisoformat(str(value))
 
 
+#: online rules a service inherits from the booking-page defaults unless it
+#: customises them: service field → CRM Scheduling Settings field
+INHERITED = {
+	"min_notice_hours": "default_min_notice_hours",
+	"max_horizon_days": "default_max_horizon_days",
+	"online_slot_interval": "default_online_slot_interval",
+	"online_confirmation": "default_online_confirmation",
+	"same_day_cutoff": "default_same_day_cutoff",
+	"allow_online_cancel": "default_allow_online_cancel",
+	"cancel_notice_hours": "default_cancel_notice_hours",
+	"allow_online_reschedule": "default_allow_online_reschedule",
+	"reschedule_notice_hours": "default_reschedule_notice_hours",
+	"max_reschedules": "default_max_reschedules",
+	"require_phone": "default_require_phone",
+	"max_per_customer_per_day": "default_max_per_customer_per_day",
+}
+
+SOURCE_SERVICE = "service"
+SOURCE_DEFAULT = "default"
+
+
+def _getter(obj):
+	if obj is None:
+		return lambda key, default=None: default
+	if hasattr(obj, "get"):
+		return obj.get
+	return lambda key, default=None: getattr(obj, key, default)
+
+
+def overridden_keys(service) -> set[str]:
+	"""The inherited rules this service sets itself (stored as a JSON list)."""
+	import json
+
+	raw = _getter(service)("online_overrides")
+	if not raw:
+		return set()
+	if isinstance(raw, list | tuple | set):
+		keys = raw
+	else:
+		try:
+			keys = json.loads(raw)
+		except (TypeError, ValueError):
+			return set()
+	return {k for k in keys or [] if k in INHERITED}
+
+
+def effective_rules(service, defaults=None) -> tuple[dict, dict]:
+	"""Each inheritable rule's value in force for ``service``, and where it comes from.
+
+	A rule the service customises keeps the service's value; every other one is
+	the booking-page default. Nothing is copied: changing a default reaches every
+	service that did not customise that rule. Without ``defaults`` (tests, old
+	sites) the service's own values are used as they are.
+	"""
+	get_service, get_default = _getter(service), _getter(defaults)
+	custom = overridden_keys(service)
+	values, sources = {}, {}
+	for key, default_key in INHERITED.items():
+		if defaults is None or key in custom:
+			values[key], sources[key] = get_service(key), SOURCE_SERVICE
+		else:
+			values[key], sources[key] = get_default(default_key), SOURCE_DEFAULT
+	return values, sources
+
+
 @dataclass
 class OnlineRules:
 	"""The online-booking knobs of one service, normalised.
@@ -102,8 +167,12 @@ class OnlineRules:
 	global_max_active_per_customer: int = 0
 
 	@classmethod
-	def from_service(cls, service, global_max_active: int = 0) -> OnlineRules:
-		get = service.get if hasattr(service, "get") else lambda k, d=None: getattr(service, k, d)
+	def from_service(cls, service, global_max_active: int = 0, defaults=None) -> OnlineRules:
+		own = _getter(service)
+		inherited, _sources = effective_rules(service, defaults)
+
+		def get(key, default=None):
+			return inherited[key] if key in inherited else own(key, default)
 
 		def flag(key, default=1):
 			value = get(key)
