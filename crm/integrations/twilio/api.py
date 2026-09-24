@@ -99,13 +99,17 @@ def is_enabled():
 
 @frappe.whitelist()
 def usable_caller_ids() -> list[str]:
-	"""Numbers this account can present, for the agent's own settings.
+	"""Numbers this account can present, as plain strings.
 
-	Not sensitive — they are the practice's own numbers, and the alternative is an
-	agent typing one Twilio has never heard of and wondering why calls fail.
+	Kept for callers that only want the numbers; the settings page reads
+	``crm.telephony.caller_ids.get_caller_ids`` instead, which carries the label and
+	the routing each number actually has.
 	"""
-	settings = frappe.get_cached_doc("CRM Twilio Settings")
-	return settings.usable_caller_ids() if settings.enabled else []
+	from crm.telephony import caller_ids
+
+	if not frappe.db.get_single_value("CRM Twilio Settings", "enabled"):
+		return []
+	return caller_ids.usable_for_outbound("twilio")
 
 
 @frappe.whitelist()

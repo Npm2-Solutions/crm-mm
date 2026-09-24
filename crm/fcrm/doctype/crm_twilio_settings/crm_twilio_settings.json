@@ -26,9 +26,8 @@
   "app_name",
   "section_break_cghd",
   "twilio_apps",
-  "numbers_section",
-  "twilio_numbers",
-  "verified_caller_ids"
+  "sip_section",
+  "sip_trunks"
  ],
  "fields": [
   {
@@ -145,22 +144,17 @@
    "label": "Recording Notice"
   },
   {
-   "fieldname": "numbers_section",
+   "fieldname": "sip_section",
    "fieldtype": "Section Break",
-   "label": "Account Numbers"
+   "label": "SIP Trunking",
+   "collapsible": 1
   },
   {
-   "description": "Numbers this account owns, refreshed from Twilio.",
-   "fieldname": "twilio_numbers",
-   "fieldtype": "Small Text",
-   "label": "Phone Numbers",
-   "read_only": 1
-  },
-  {
-   "description": "Numbers verified as outgoing caller IDs on this account.",
-   "fieldname": "verified_caller_ids",
-   "fieldtype": "Small Text",
-   "label": "Verified Caller IDs",
+   "description": "Elastic SIP trunks on this account, refreshed from Twilio. A number handed to a trunk stops reaching the CRM: Twilio ignores its voice webhook and sends the call to your own SIP infrastructure, so the answering service cannot run on it.",
+   "fieldname": "sip_trunks",
+   "fieldtype": "Code",
+   "options": "JSON",
+   "label": "SIP Trunks",
    "read_only": 1
   }
  ],

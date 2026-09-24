@@ -26,10 +26,9 @@ class CRMTwilioSettings(Document):
 		enabled: DF.Check
 		record_calls: DF.Check
 		recording_notice: DF.SmallText | None
+		sip_trunks: DF.Code | None
 		twilio_apps: DF.Data | None
-		twilio_numbers: DF.SmallText | None
 		twiml_sid: DF.Data | None
-		verified_caller_ids: DF.SmallText | None
 		verify_webhook_signature: DF.Check
 		webhook_base_url: DF.Data | None
 	# end: auto-generated types
@@ -152,26 +151,43 @@ class CRMTwilioSettings(Document):
 		}
 
 	@frappe.whitelist()
-	def fetch_numbers(self) -> dict:
-		"""Cache what this account can actually present as a caller ID.
+	def sync_caller_ids(self) -> dict:
+		"""Rebuild the caller ID list from what the account really has.
 
-		Both lists matter: an agent can be reached on a number the account owns,
-		and can present a number that was verified as an outgoing caller ID. A
-		number in neither list will not work, and typing one by hand is how that
-		happens.
+		The list is a doctype rather than a string of numbers on this record, because
+		each number carries facts worth keeping apart: what kind of number it is,
+		whether it was verified or owned, which trunk has taken it, and whether a
+		call to it reaches this CRM at all.
 		"""
-		twilio = self.validate_twilio_account()
+		from crm.telephony import caller_ids
 
-		numbers = sorted(n.phone_number for n in twilio.incoming_phone_numbers.list())
-		verified = sorted(c.phone_number for c in twilio.outgoing_caller_ids.list())
+		return caller_ids.sync("twilio")
 
-		frappe.db.set_single_value(
-			"CRM Twilio Settings",
-			{"twilio_numbers": ",".join(numbers), "verified_caller_ids": ",".join(verified)},
-		)
-		return {"numbers": numbers, "verified_caller_ids": verified}
+	@frappe.whitelist()
+	def fetch_sip_trunks(self) -> list[dict]:
+		"""Read the account's Elastic SIP trunks and remember them for display."""
+		from crm.telephony import providers
+
+		trunks = providers.get("twilio").list_sip_trunks()
+		frappe.db.set_single_value("CRM Twilio Settings", "sip_trunks", frappe.as_json(trunks))
+		return trunks
+
+	@frappe.whitelist()
+	def verify_caller_id(self, phone_number: str, label: str | None = None) -> dict:
+		"""Start Twilio's verification for a number the practice owns elsewhere.
+
+		Twilio rings the number and the person answering types the code. That is the
+		legitimate way to present a line you did not buy here — and the only one:
+		presenting a number you cannot prove you control is spoofing.
+		"""
+		from crm.telephony import providers
+
+		if not phone_number:
+			frappe.throw(_("Enter the number to verify."))
+		return providers.get("twilio").start_caller_id_verification(phone_number, label)
 
 	def usable_caller_ids(self) -> list[str]:
 		"""Every number this account may present, owned or verified."""
-		raw = f"{self.twilio_numbers or ''},{self.verified_caller_ids or ''}"
-		return sorted({part.strip() for part in raw.split(",") if part.strip()})
+		from crm.telephony import caller_ids
+
+		return caller_ids.usable_for_outbound("twilio")
