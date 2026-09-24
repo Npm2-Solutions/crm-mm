@@ -8,6 +8,14 @@ no_cache = 1
 
 def get_context(context):
 	route = resolve_route()
+	# one booking system: a calendar moved to a service lives on /prenota now. A booking
+	# made before the move (?token=…) is still managed here, on the page that made it.
+	if not frappe.form_dict.get("token"):
+		from crm.scheduling.unify import booking_url, service_for_route
+
+		service = service_for_route(route)
+		if service:
+			_redirect(booking_url(service))
 	name = frappe.db.get_value("CRM Booking Calendar", {"route": route, "enabled": 1})
 	if not name:
 		raise frappe.DoesNotExistError
@@ -40,3 +48,8 @@ def resolve_route() -> str:
 		if len(parts) >= 2 and parts[0] == "book":
 			route = parts[1]
 	return route
+
+
+def _redirect(location: str):
+	frappe.local.flags.redirect_location = location
+	raise frappe.Redirect(301)

@@ -84,6 +84,10 @@ website_route_rules = [
 	{"from_route": "/crm-form/<route>", "to_route": "crm_form"},
 	{"from_route": "/book/<route>", "to_route": "book"},
 	{"from_route": "/book", "to_route": "book_index"},
+	# service self-booking; /prenota is the www page itself, /booking is its English alias
+	{"from_route": "/booking", "to_route": "prenota"},
+	# path-style links: /prenota/<servizio>, /prenota/p/<professionista>, /prenota/c/<categoria>
+	{"from_route": "/prenota/<path:prenota_path>", "to_route": "prenota"},
 	# hub-hosted WhatsApp Embedded Signup (one whitelisted domain for every site)
 	{"from_route": "/whatsapp-connect", "to_route": "whatsapp_connect"},
 ]
@@ -199,6 +203,7 @@ doc_events = {
 		"after_insert": [
 			"crm.utils.on_communication_insert",
 			"crm.automation.engine.on_communication_insert",
+			"crm.booking_platforms.sync.on_communication",
 		],
 		"on_update": [
 			"crm.utils.on_communication_update",
@@ -270,7 +275,11 @@ doc_events = {
 	},
 	"CRM Appointment": {
 		"after_insert": ["crm.automation.engine.on_appointment_created"],
-		"on_update": ["crm.automation.engine.on_appointment_updated"],
+		"on_update": [
+			"crm.automation.engine.on_appointment_updated",
+			"crm.booking_platforms.sync.on_appointment_change",
+		],
+		"on_trash": ["crm.booking_platforms.sync.on_appointment_change"],
 	},
 	"Sales Order": {
 		"before_validate": [
@@ -341,6 +350,8 @@ scheduler_events = {
 		# most of a lead's value. It stands down on its own once Meta calls.
 		"*/10 * * * *": ["crm.integrations.meta.leads.catch_up_recent_leads"],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
+		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
+		"*/15 * * * *": ["crm.booking_platforms.sync.sync_all"],
 	},
 }
 

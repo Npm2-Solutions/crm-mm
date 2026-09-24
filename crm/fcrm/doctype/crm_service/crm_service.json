@@ -13,6 +13,7 @@
   "color",
   "bookable_online",
   "description",
+  "location",
   "scheduling_section",
   "duration",
   "slot_interval",
@@ -23,6 +24,38 @@
   "min_notice_hours",
   "column_break_limits",
   "max_horizon_days",
+  "online_section",
+  "online_confirmation",
+  "online_overrides",
+  "allow_staff_choice",
+  "hide_from_menu",
+  "show_price_online",
+  "online_slot_interval",
+  "online_max_participants",
+  "column_break_online",
+  "booking_opens_on",
+  "booking_closes_on",
+  "same_day_cutoff",
+  "require_phone",
+  "require_notes",
+  "online_question",
+  "booking_instructions",
+  "online_limits_section",
+  "max_bookings_per_day",
+  "max_bookings_per_week",
+  "max_concurrent",
+  "customer_eligibility",
+  "column_break_online_limits",
+  "max_active_per_customer",
+  "max_per_customer_per_day",
+  "min_days_between",
+  "online_changes_section",
+  "allow_online_cancel",
+  "cancel_notice_hours",
+  "column_break_online_changes",
+  "allow_online_reschedule",
+  "reschedule_notice_hours",
+  "max_reschedules",
   "team_section",
   "staff_selection",
   "column_break_team",
@@ -104,6 +137,12 @@
    "label": "Description"
   },
   {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "description": "Where it takes place: shown to the client and written on the appointment"
+  },
+  {
    "fieldname": "scheduling_section",
    "fieldtype": "Section Break",
    "label": "Scheduling"
@@ -159,6 +198,200 @@
    "fieldname": "max_horizon_days",
    "fieldtype": "Int",
    "label": "Booking Horizon (days)"
+  },
+  {
+   "fieldname": "online_section",
+   "fieldtype": "Section Break",
+   "label": "Online Booking",
+   "collapsible": 1,
+   "depends_on": "bookable_online"
+  },
+  {
+   "fieldname": "online_confirmation",
+   "fieldtype": "Select",
+   "label": "Confirmation",
+   "options": "Automatic\nManual approval",
+   "default": "Automatic",
+   "description": "Manual approval books the slot as Scheduled until someone confirms it"
+  },
+  {
+   "fieldname": "online_overrides",
+   "fieldtype": "Small Text",
+   "label": "Customised Online Rules",
+   "hidden": 1,
+   "description": "JSON list of the online rules this service sets itself; the others come from the booking page defaults"
+  },
+  {
+   "fieldname": "allow_staff_choice",
+   "fieldtype": "Check",
+   "label": "Client Picks the Professional",
+   "default": "1"
+  },
+  {
+   "fieldname": "hide_from_menu",
+   "fieldtype": "Check",
+   "label": "Only via Direct Link",
+   "description": "Not listed on the booking page menu; bookable through its own link"
+  },
+  {
+   "fieldname": "show_price_online",
+   "fieldtype": "Check",
+   "label": "Show Price",
+   "default": "1"
+  },
+  {
+   "fieldname": "online_slot_interval",
+   "fieldtype": "Int",
+   "label": "Online Slot Interval (minutes)",
+   "non_negative": 1,
+   "description": "Grid of the start times offered online; 0 uses the service slot interval"
+  },
+  {
+   "fieldname": "online_max_participants",
+   "fieldtype": "Int",
+   "label": "Seats per Online Booking",
+   "default": "1",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_online",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "booking_opens_on",
+   "fieldtype": "Date",
+   "label": "Bookable From",
+   "description": "Seasonal window: no online slot before this date"
+  },
+  {
+   "fieldname": "booking_closes_on",
+   "fieldtype": "Date",
+   "label": "Bookable Until"
+  },
+  {
+   "fieldname": "same_day_cutoff",
+   "fieldtype": "Time",
+   "label": "Same-day Cutoff",
+   "description": "After this time the same day can no longer be booked online"
+  },
+  {
+   "fieldname": "require_phone",
+   "fieldtype": "Check",
+   "label": "Phone Required",
+   "default": "1"
+  },
+  {
+   "fieldname": "require_notes",
+   "fieldtype": "Check",
+   "label": "Question Required"
+  },
+  {
+   "fieldname": "online_question",
+   "fieldtype": "Data",
+   "label": "Question for the Client",
+   "description": "e.g. Reason for the visit"
+  },
+  {
+   "fieldname": "booking_instructions",
+   "fieldtype": "Small Text",
+   "label": "Instructions After Booking"
+  },
+  {
+   "fieldname": "online_limits_section",
+   "fieldtype": "Section Break",
+   "label": "Online Limits",
+   "collapsible": 1,
+   "depends_on": "bookable_online"
+  },
+  {
+   "fieldname": "max_bookings_per_day",
+   "fieldtype": "Int",
+   "label": "Max Bookings per Day",
+   "non_negative": 1,
+   "description": "Across the whole service; 0 = no limit"
+  },
+  {
+   "fieldname": "max_bookings_per_week",
+   "fieldtype": "Int",
+   "label": "Max Bookings per Week",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "max_concurrent",
+   "fieldtype": "Int",
+   "label": "Max Simultaneous Appointments",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "customer_eligibility",
+   "fieldtype": "Select",
+   "label": "Who Can Book",
+   "options": "Everyone\nNew customers only\nReturning customers only",
+   "default": "Everyone"
+  },
+  {
+   "fieldname": "column_break_online_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_active_per_customer",
+   "fieldtype": "Int",
+   "label": "Max Upcoming per Client",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "max_per_customer_per_day",
+   "fieldtype": "Int",
+   "label": "Max per Client per Day",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "min_days_between",
+   "fieldtype": "Int",
+   "label": "Min Days Between a Client's Bookings",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "online_changes_section",
+   "fieldtype": "Section Break",
+   "label": "Cancellation & Rescheduling",
+   "collapsible": 1,
+   "depends_on": "bookable_online"
+  },
+  {
+   "fieldname": "allow_online_cancel",
+   "fieldtype": "Check",
+   "label": "Client Can Cancel Online",
+   "default": "1"
+  },
+  {
+   "fieldname": "cancel_notice_hours",
+   "fieldtype": "Int",
+   "label": "Cancellation Notice (hours)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_online_changes",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "allow_online_reschedule",
+   "fieldtype": "Check",
+   "label": "Client Can Reschedule Online",
+   "default": "1"
+  },
+  {
+   "fieldname": "reschedule_notice_hours",
+   "fieldtype": "Int",
+   "label": "Rescheduling Notice (hours)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "max_reschedules",
+   "fieldtype": "Int",
+   "label": "Max Reschedules",
+   "non_negative": 1,
+   "description": "0 = unlimited"
   },
   {
    "fieldname": "team_section",
@@ -390,7 +623,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-06 15:00:00.000000",
+ "modified": "2026-09-24 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Service",

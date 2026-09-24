@@ -11,7 +11,10 @@
   "email",
   "phone",
   "status",
-  "amount"
+  "amount",
+  "access_token",
+  "booked_online",
+  "timezone"
  ],
  "fields": [
   {
@@ -60,11 +63,33 @@
    "fieldtype": "Currency",
    "label": "Amount",
    "in_list_view": 1
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Data",
+   "label": "Access Token",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "booked_online",
+   "fieldtype": "Check",
+   "label": "Booked Online",
+   "read_only": 1
+  },
+  {
+   "fieldname": "timezone",
+   "fieldtype": "Data",
+   "label": "Client Timezone",
+   "hidden": 1,
+   "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-09-03 10:00:00.000000",
+ "modified": "2026-09-24 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment Participant",

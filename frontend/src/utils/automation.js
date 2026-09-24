@@ -323,8 +323,17 @@ export const TRIGGER_CATALOG = {
     doctype: 'CRM Deal',
     hint: 'The deal moves to another stage of the pipeline.',
   },
-  'Booking Created': { category: 'appointment', icon: 'calendar' },
-  'Booking Cancelled': { category: 'appointment', icon: 'x-circle' },
+  // bookings made by the client on the booking page; "Appointment …" covers all
+  'Booking Created': {
+    category: 'appointment',
+    icon: 'calendar',
+    hint: 'The client books online, on the booking page.',
+  },
+  'Booking Cancelled': {
+    category: 'appointment',
+    icon: 'x-circle',
+    hint: 'An online booking is cancelled.',
+  },
   'Booking No Show': { category: 'appointment', icon: 'user-x' },
   'Booking Completed': { category: 'appointment', icon: 'check-circle' },
   'Appointment Created': { category: 'appointment', icon: 'calendar' },

@@ -34,7 +34,8 @@
   "availability_section",
   "availability",
   "holiday_list",
-  "check_google_busy"
+  "check_google_busy",
+  "migrated_service"
  ],
  "fields": [
   {
@@ -214,10 +215,18 @@
    "default": "1",
    "label": "Block slots busy on Google Calendar",
    "description": "Members' connected Google Calendars are checked via the free/busy API"
+  },
+  {
+   "fieldname": "migrated_service",
+   "fieldtype": "Link",
+   "label": "Moved to Service",
+   "options": "CRM Service",
+   "read_only": 1,
+   "description": "This calendar now lives as a service on /prenota; its old links redirect there"
   }
  ],
  "links": [],
- "modified": "2026-08-31 10:00:00.000000",
+ "modified": "2026-09-24 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Booking Calendar",

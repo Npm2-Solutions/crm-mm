@@ -245,6 +245,45 @@
               </div>
             </section>
 
+            <!-- where the booking came from, when it was not typed in here -->
+            <div
+              v-if="origin.source && origin.source !== 'Internal'"
+              class="flex flex-col gap-1 rounded-md bg-surface-gray-1 px-3 py-2 text-p-sm text-ink-gray-7"
+            >
+              <div class="flex items-center gap-2">
+                <span
+                  :class="
+                    origin.source === 'Online'
+                      ? 'lucide-globe'
+                      : 'lucide-plug-zap'
+                  "
+                  class="size-4 text-ink-gray-5"
+                />
+                <span class="text-p-sm-medium">
+                  {{
+                    origin.source === 'Online'
+                      ? __('Booked online by the client')
+                      : __('Booked on {0}', [origin.external_platform])
+                  }}
+                </span>
+                <span v-if="origin.reschedule_count" class="text-ink-gray-5">
+                  · {{ __('moved {0} times', [origin.reschedule_count]) }}
+                </span>
+                <a
+                  v-if="origin.external_url"
+                  :href="origin.external_url"
+                  target="_blank"
+                  rel="noopener"
+                  class="ml-auto text-ink-blue-3 underline"
+                >
+                  {{ __('Open on the platform') }}
+                </a>
+              </div>
+              <div v-if="origin.customer_notes" class="whitespace-pre-line">
+                {{ origin.customer_notes }}
+              </div>
+            </div>
+
             <FormControl
               v-model="form.location"
               type="text"
@@ -380,6 +419,7 @@ const form = reactive(emptyForm())
 const saving = ref(false)
 const repeating = ref(false)
 const conflicts = ref([])
+const origin = reactive({})
 const slotList = ref([])
 const slotHint = ref('')
 const repeat = reactive({ rule: '', occurrences: 4 })
@@ -710,12 +750,20 @@ function loadInto(doc) {
     notes: doc.notes || '',
     override_conflicts: Boolean(doc.override_conflicts),
   })
+  Object.assign(origin, {
+    source: doc.source || 'Internal',
+    external_platform: doc.external_platform || '',
+    external_url: doc.external_url || '',
+    customer_notes: doc.customer_notes || '',
+    reschedule_count: doc.reschedule_count || 0,
+  })
   refreshPrice()
   refreshConflicts()
 }
 
 function seedForm() {
   conflicts.value = []
+  for (const key of Object.keys(origin)) delete origin[key]
   slotList.value = []
   slotHint.value = ''
   repeat.rule = ''

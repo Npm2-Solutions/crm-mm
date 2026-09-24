@@ -315,39 +315,67 @@ def setup_google_calendar() -> dict:
 
 
 def _ensure_booking_source() -> str:
-	if not frappe.db.exists("CRM Lead Source", BOOKING_SOURCE):
-		frappe.get_doc({"doctype": "CRM Lead Source", "source_name": BOOKING_SOURCE}).insert(
-			ignore_permissions=True
-		)
-	return BOOKING_SOURCE
+	return _ensure_source(BOOKING_SOURCE)
+
+
+def _ensure_source(source: str) -> str:
+	if not frappe.db.exists("CRM Lead Source", source):
+		frappe.get_doc({"doctype": "CRM Lead Source", "source_name": source}).insert(ignore_permissions=True)
+	return source
 
 
 def _find_or_create_lead(booking, crm_vid: str | None = None, crm_sid: str | None = None) -> str:
+	return find_or_create_person(
+		booking.invitee_name,
+		booking.invitee_email,
+		booking.get("invitee_phone"),
+		reference=booking,
+		crm_vid=crm_vid,
+		crm_sid=crm_sid,
+	)
+
+
+def find_or_create_person(
+	full_name: str,
+	email: str | None,
+	phone: str | None,
+	reference=None,
+	crm_vid: str | None = None,
+	crm_sid: str | None = None,
+	source: str = BOOKING_SOURCE,
+	medium: str = "booking",
+	source_dimension: str = "booking_page",
+) -> str:
+	"""The lead behind somebody who just booked — found, or created.
+
+	Shared by the Calendly-style pages, the service booking page and the
+	connectors importing bookings from external platforms.
+	"""
 	from crm.api.lead import find_person
 	from crm.api.tracking import attribute, record_conversion
 
 	# a customer who books again is the same person, deal or no deal
-	existing = find_person(email=booking.invitee_email, phone=booking.get("invitee_phone"))
+	existing = find_person(email=email, phone=phone)
 	if existing:
 		# a returning invitee: their first touch is already recorded, but this visit
 		# is a new last touch, and the booking belongs on their journey
 		lead = frappe.get_doc("CRM Lead", existing)
 		attribute(lead, visitor_id=crm_vid, session_id=crm_sid)
-		record_conversion(lead, "booking", booking.invitee_name or "", reference=booking)
+		record_conversion(lead, "booking", full_name or "", reference=reference)
 		return existing
 
 	from crm.api.form import _default_status
 
-	parts = booking.invitee_name.split(maxsplit=1)
+	parts = (full_name or email or phone or "").split(maxsplit=1) or [""]
 	lead = frappe.get_doc(
 		{
 			"doctype": "CRM Lead",
 			"first_name": parts[0],
 			"last_name": parts[1] if len(parts) > 1 else "",
-			"email": booking.invitee_email,
-			"mobile_no": booking.invitee_phone or "",
+			"email": email or "",
+			"mobile_no": phone or "",
 			"status": _default_status("CRM Lead"),
-			"source": _ensure_booking_source(),
+			"source": _ensure_source(source),
 		}
 	)
 	attribute(
@@ -355,10 +383,10 @@ def _find_or_create_lead(booking, crm_vid: str | None = None, crm_sid: str | Non
 		visitor_id=crm_vid,
 		session_id=crm_sid,
 		category="Third Party",
-		dimensions={"source": "booking_page", "medium": "booking"},
+		dimensions={"source": source_dimension, "medium": medium},
 	)
 	lead.insert(ignore_permissions=True)
-	record_conversion(lead, "booking", booking.invitee_name or "", reference=booking)
+	record_conversion(lead, "booking", full_name or "", reference=reference)
 	return lead.name
 
 

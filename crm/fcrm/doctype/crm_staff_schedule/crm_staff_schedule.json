@@ -10,6 +10,12 @@
   "enabled",
   "column_break_head",
   "max_daily_appointments",
+  "max_weekly_appointments",
+  "bookable_online",
+  "public_section",
+  "public_title",
+  "column_break_public",
+  "public_bio",
   "availability_section",
   "availability",
   "holiday_list",
@@ -44,6 +50,42 @@
    "description": "0 = no limit."
   },
   {
+   "fieldname": "max_weekly_appointments",
+   "fieldtype": "Int",
+   "label": "Max appointments per week",
+   "default": "0",
+   "non_negative": 1,
+   "description": "0 = no limit."
+  },
+  {
+   "fieldname": "bookable_online",
+   "fieldtype": "Check",
+   "label": "Bookable Online",
+   "default": "1",
+   "description": "Off: never offered on the booking page"
+  },
+  {
+   "fieldname": "public_section",
+   "fieldtype": "Section Break",
+   "label": "Booking Page Profile",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "public_title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "description": "e.g. Physiotherapist, Senior stylist"
+  },
+  {
+   "fieldname": "column_break_public",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "public_bio",
+   "fieldtype": "Small Text",
+   "label": "Short Bio"
+  },
+  {
    "fieldname": "availability_section",
    "fieldtype": "Section Break",
    "label": "Weekly Hours"
@@ -74,7 +116,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-03 10:00:00.000000",
+ "modified": "2026-09-24 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Staff Schedule",

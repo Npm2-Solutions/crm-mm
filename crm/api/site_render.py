@@ -99,13 +99,71 @@ def crm_form_html(route: str | None = None, title: str | None = None, button: st
 
 
 def crm_booking_html(route: str | None = None, label: str | None = None) -> str:
-	"""A call to action for a booking calendar, with what the visitor needs to decide."""
-	if not route:
-		return _placeholder(_("Pick a booking calendar in the block settings."))
+	"""A call to action for booking, with what the visitor needs to decide.
+
+	``route`` may name a service (slug or name), an old booking calendar (moved to a
+	service by the unified booking system), or nothing — then it books from the whole
+	menu on /prenota.
+	"""
+	from crm.scheduling.unify import booking_url, service_for_route
+
+	key = str(route or "").strip("/")
+	label = label or _("Book now")
+	if not key:
+		return frappe.render_template(
+			"crm/templates/site/booking_cta.html",
+			{
+				"cal": {"calendar_name": _("Book an appointment")},
+				"label": label,
+				"price": "",
+				"url": "/prenota",
+			},
+		)
+
+	service = (
+		frappe.db.get_value("CRM Service", {"website_slug": key})
+		or (key if frappe.db.exists("CRM Service", key) else None)
+		or service_for_route(key)
+	)
+	if service:
+		row = frappe.db.get_value(
+			"CRM Service",
+			service,
+			[
+				"service_name",
+				"short_description",
+				"description",
+				"duration",
+				"location",
+				"default_price",
+				"currency",
+				"enabled",
+				"bookable_online",
+			],
+			as_dict=True,
+		)
+		if not row or not row.enabled or not row.bookable_online:
+			return _placeholder(_("This service is not bookable online."))
+		return frappe.render_template(
+			"crm/templates/site/booking_cta.html",
+			{
+				"cal": {
+					"calendar_name": row.service_name,
+					"description": row.short_description or row.description,
+					"duration": row.duration,
+					"location": row.location,
+				},
+				"label": label,
+				"price": frappe.utils.fmt_money(row.default_price, currency=row.currency or "EUR")
+				if row.default_price
+				else "",
+				"url": booking_url(service),
+			},
+		)
 
 	cal = frappe.db.get_value(
 		"CRM Booking Calendar",
-		{"route": str(route).strip("/"), "enabled": 1},
+		{"route": key, "enabled": 1},
 		["calendar_name", "description", "duration", "location", "price", "currency", "route"],
 		as_dict=True,
 	)
@@ -116,7 +174,7 @@ def crm_booking_html(route: str | None = None, label: str | None = None) -> str:
 		"crm/templates/site/booking_cta.html",
 		{
 			"cal": cal,
-			"label": label or _("Book now"),
+			"label": label,
 			"price": frappe.utils.fmt_money(cal.price, currency=cal.currency or "EUR") if cal.price else "",
 			"url": f"/book/{cal.route}",
 		},

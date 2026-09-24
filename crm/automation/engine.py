@@ -1556,6 +1556,10 @@ def on_booking_updated(doc, method=None):
 
 def on_appointment_created(doc, method=None):
 	process_event("appointment_created", doc, {"service": doc.service})
+	if doc.get("source") == "Online":
+		# the client booked it on /prenota: automations on "Booking Created" (the old
+		# Calendly-style pages) keep firing now that there is one booking system
+		process_event("booking_created", doc, {"service": doc.service})
 
 
 def on_appointment_updated(doc, method=None):
@@ -1571,6 +1575,8 @@ def on_appointment_updated(doc, method=None):
 	}.get(doc.status)
 	if event:
 		process_event(event, doc, {"status": doc.status, "service": doc.service})
+		if doc.get("source") == "Online":
+			process_event(event.replace("appointment_", "booking_"), doc, {"status": doc.status})
 
 
 def on_communication_update(doc, method=None):

@@ -58,6 +58,8 @@ import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
+import LucideGrid from '~icons/lucide/grid-3x3'
+import LucideSearchCheck from '~icons/lucide/search-check'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
@@ -88,7 +90,10 @@ import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
 import DashboardSettings from '@/components/Settings/DashboardSettings.vue'
 import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplatePage.vue'
 import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
-import BookingSettings from '@/components/Settings/Booking/BookingSettings.vue'
+import BookingPlatforms from '@/components/Settings/Booking/BookingPlatforms.vue'
+import BookingPageSettings from '@/components/Settings/Booking/BookingPageSettings.vue'
+import AvailabilityCheck from '@/components/Settings/Booking/AvailabilityCheck.vue'
+import TeamMatrix from '@/components/Settings/Scheduling/TeamMatrix.vue'
 import GoogleCalendarSettings from '@/components/Settings/GoogleCalendarSettings.vue'
 import ServicesSettings from '@/components/Settings/Scheduling/ServicesSettings.vue'
 import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSettings.vue'
@@ -276,6 +281,16 @@ const tabs = computed(() => {
           component: markRaw(ServicesSettings),
         },
         {
+          label: __('Who does what'),
+          icon: markRaw(LucideGrid),
+          component: markRaw(TeamMatrix),
+        },
+        {
+          label: __('Team rota'),
+          icon: markRaw(LucideClock),
+          component: markRaw(StaffSchedulesSettings),
+        },
+        {
           label: __('Rooms & Equipment'),
           icon: markRaw(LucideDoorOpen),
           component: markRaw(ResourcesSettings),
@@ -284,11 +299,6 @@ const tabs = computed(() => {
           label: __('Price Lists'),
           icon: markRaw(LucideTags),
           component: markRaw(PriceListsSettings),
-        },
-        {
-          label: __('Working Hours'),
-          icon: markRaw(LucideClock),
-          component: markRaw(StaffSchedulesSettings),
         },
         {
           label: __('Scheduling'),
@@ -302,9 +312,22 @@ const tabs = computed(() => {
       label: __('Booking'),
       items: [
         {
-          label: __('Booking Calendars'),
-          icon: CalendarIcon,
-          component: markRaw(BookingSettings),
+          label: __('Booking page'),
+          icon: LucideGlobe,
+          component: markRaw(BookingPageSettings),
+          condition: () => isManager(),
+        },
+        {
+          // one moment, every reason: the answer to "why can't they book?"
+          label: __('Why not available?'),
+          icon: markRaw(LucideSearchCheck),
+          component: markRaw(AvailabilityCheck),
+          condition: () => isManager(),
+        },
+        {
+          label: __('Booking platforms'),
+          icon: LucideNetwork,
+          component: markRaw(BookingPlatforms),
           condition: () => isManager(),
         },
         {

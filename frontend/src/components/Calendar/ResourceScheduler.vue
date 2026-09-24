@@ -129,6 +129,13 @@
                 class="lucide-triangle-alert size-3 shrink-0 text-ink-amber-3"
                 :title="block.conflict_note"
               />
+              <span
+                v-if="sourceTag(block)"
+                class="ml-auto shrink-0 truncate rounded bg-surface-white px-1 text-p-xs text-ink-gray-6"
+                :title="block.external_platform || __('Booked online')"
+              >
+                {{ sourceTag(block) }}
+              </span>
             </div>
             <div class="truncate text-p-xs text-ink-gray-7">
               {{ block.title }}
@@ -157,6 +164,7 @@
 
 <script setup>
 import UserAvatar from '@/components/UserAvatar.vue'
+import { sourceTag } from '@/utils/onlineBooking'
 import {
   appointmentColor,
   blockStyle,
