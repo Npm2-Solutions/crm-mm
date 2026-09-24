@@ -219,8 +219,32 @@ aperto di quella pipeline — la stessa semantica di GoHighLevel.
 
 - I grafici della dashboard aggregano ancora tutte le pipeline insieme: filtrarli
   per pipeline vuol dire passare il parametro attraverso ~15 funzioni di
-  `crm/api/dashboard.py` e la relativa UI.
+  `crm/api/dashboard.py` e la relativa UI. → **Risolto** con la dashboard nuova
+  (sotto): i widget di vendita hanno l'opzione Pipeline.
 - Le pipeline valgono per i deal, non per i lead (come in GoHighLevel).
+
+---
+
+## Dashboard — un cruscotto per ogni modulo
+
+> **Completato** (24/09/2026). Documento di progetto:
+> [docs/progetto-ghl/28-dashboard.md](../docs/progetto-ghl/28-dashboard.md).
+
+147 widget in 15 categorie (`crm/dashboard/widgets/`), nove dashboard pronte che
+seguono il sito finche' nessuno le risistema, builder a griglia nel frontend.
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Il catalogo e' codice (`@widget`), non query scritte dall'utente | Ogni widget e' rivisto e passa da un test che lo esegue su MariaDB; una query libera rompe in silenzio quando cambia uno schema |
+| Ogni widget dichiara le feature che gli servono | Uno zero su un modulo non usato non significa niente e nasconde gli zeri che contano; la libreria offre prima cio' a cui il sito sa rispondere |
+| I modelli sono righe, non posizioni | Vengono impaginati per chi guarda: una riga coi buchi divide la larghezza fra chi resta, una sezione vuota sparisce |
+| Una dashboard da modello lo segue finche' non si salva a mano | Chi collega WhatsApp trova la sezione senza toccare niente; salvare senza cambiare niente non la stacca |
+| Gli id della prima dashboard restano | Un layout salvato prima si apre coi numeri nuovi |
+| Delta dei tassi in punti | Da 50% a 60,5% e' "+10,5 pts": "+21%" di un percentuale non lo legge giusto nessuno |
+| Colore per nome agli stati noti | Assegnati in ordine, "No show" e "Chiamate perse" uscivano verdi; le combinazioni sono validate per daltonismo nei due temi |
+| Griglia di frappe-ui con `responsive` spento | Sotto 768px di griglia passava a una colonna e restituiva quelle posizioni come nuove: il salvataggio le avrebbe tenute |
 
 ---
 
