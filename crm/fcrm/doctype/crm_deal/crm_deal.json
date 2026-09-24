@@ -140,6 +140,7 @@
   },
   {
    "fetch_from": "organization.annual_revenue",
+   "fetch_if_empty": 1,
    "fieldname": "annual_revenue",
    "fieldtype": "Currency",
    "label": "Annual Revenue",

@@ -400,7 +400,10 @@ class CRMLead(Document):
 				self.db_set("contact", existing, update_modified=False)
 				return
 
-			self.db_set("contact", self.create_contact(throw=False), update_modified=False)
+			# a brand new entry, not another lookup: the lookup above is what just
+			# said the matching entry is somebody else's, and `create_contact`
+			# would run it again and hand that same entry straight back
+			self.db_set("contact", self.new_contact(), update_modified=False)
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"CRM Lead: could not give {self.name} a contact")
 
@@ -417,15 +420,40 @@ class CRMLead(Document):
 		return bool(owner)
 
 	def create_contact(self, existing_contact=None, throw=True):
+		"""The address book entry this lead is converted against.
+
+		A picked entry wins, because that is a person somebody chose by hand.
+		Otherwise: the entry this lead already owns, then an entry with the same
+		email that belongs to nobody — and only when there is neither does a new
+		one get made. Joining an entry that is already another lead's is the one
+		thing never done here (see `someone_elses`).
+		"""
 		if not self.lead_name:
 			self.set_full_name()
 			self.set_lead_name()
 
-		existing_contact = existing_contact or self.contact_exists(throw)
+		if not existing_contact:
+			# this raises when asked to, which is why it runs before the entry this
+			# lead owns is taken: the caller that can put the question to a human
+			# wants to be stopped by a duplicate rather than handed a guess
+			duplicate = self.contact_exists(throw)
+			existing_contact = self.contact or (
+				duplicate if duplicate and not self.someone_elses(duplicate) else None
+			)
+
 		if existing_contact:
 			self.update_lead_contact(existing_contact)
 			return existing_contact
 
+		return self.new_contact()
+
+	def new_contact(self) -> str:
+		"""A fresh address book entry for this person, with no lookup first.
+
+		Apart from `create_contact` for the caller that has already decided the
+		matching entry is somebody else's: a second lookup would find that same
+		entry and hand it back, which is the decision undone.
+		"""
 		contact = frappe.new_doc("Contact")
 		contact.update(
 			{
@@ -515,15 +543,24 @@ class CRMLead(Document):
 		)
 
 	def contact_exists(self, throw=True):
+		"""Somebody else's address book entry holding this lead's email.
+
+		The entry this lead was born with holds that email by construction
+		(`ensure_contact`), so counting it would make every lead a duplicate of
+		itself and stop the conversion of all of them. A duplicate is an entry
+		this lead does not already own.
+		"""
 		# Match only on email which uniquely identifies a person
 		if not self.email:
 			return False
 
-		email_exist = frappe.db.exists("Contact Email", {"email_id": self.email})
-		if not email_exist:
-			return False
+		filters = {"email_id": self.email}
+		if self.contact:
+			filters["parent"] = ["!=", self.contact]
 
-		contact = frappe.db.get_value("Contact Email", email_exist, "parent")
+		contact = frappe.db.get_value("Contact Email", filters, "parent")
+		if not contact:
+			return False
 
 		if throw:
 			frappe.throw(

@@ -26,14 +26,22 @@ def number_owners(provider, phone_number: str | None) -> dict:
 	agents = frappe.get_all(
 		"CRM Telephony Agent",
 		filters={provider.agent_number_field: cleaned},
-		fields=["name", "call_receiving_device"],
+		fields=["name", "call_receiving_device", "mobile_no"],
 	)
 	if not agents:
 		return {}
 
 	owners = {row["name"]: dict(row) for row in agents}
-	for user in frappe.get_all("User", filters={"name": ["in", list(owners)]}, fields=["name", "mobile_no"]):
-		owners[user["name"]]["mobile_no"] = user["mobile_no"]
+
+	# the mobile an agent types into Telephony settings is kept on their agent row,
+	# and that is the number they expect to be rung on. Reading it off the User
+	# record instead meant "Device: Phone" rang nobody and the call fell through to
+	# the announcement, unless that person had also filled in a mobile on their user
+	# profile — which nothing in the CRM asks them to do. The profile is still worth
+	# asking, as the fallback for somebody never set up for telephony.
+	if unset := [name for name, details in owners.items() if not details.get("mobile_no")]:
+		for user in frappe.get_all("User", filters={"name": ["in", unset]}, fields=["name", "mobile_no"]):
+			owners[user["name"]]["mobile_no"] = user["mobile_no"]
 	return owners
 
 

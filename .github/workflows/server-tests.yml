@@ -13,40 +13,26 @@ on:
     schedule:
         # Run everday at midnight UTC / 5:30 IST
         - cron: "0 0 * * *"
-env:
-    CRM_BRANCH: ${{ github.base_ref || github.ref_name }}
+    workflow_dispatch:
 
 concurrency:
-    group: develop-crm-${{ github.event.number }}
+    # keyed on the ref, not the pull request number: started by hand there is no
+    # number, so every manual run shared one group and cancelled the one before it
+    group: server-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
-    setup:
-        name: Resolve frappe matrix
-        runs-on: ubuntu-latest
-        outputs:
-            frappe-branches: ${{ steps.resolve.outputs.branches }}
-        steps:
-            - name: Resolve frappe branches from target branch
-              id: resolve
-              run: |
-                  BASE="${{ github.base_ref || github.ref_name }}"
-                  # develop tracks frappe develop; the stable lane ships frappe 15 and 16.
-                  if [ "$BASE" = "develop" ]; then
-                      echo 'branches=["develop"]' >> "$GITHUB_OUTPUT"
-                  else
-                      echo 'branches=["version-15","version-16"]' >> "$GITHUB_OUTPUT"
-                  fi
-
     test:
         name: Tests (frappe ${{ matrix.frappe-branch }})
-        needs: setup
         runs-on: ubuntu-latest
         timeout-minutes: 60
         strategy:
             fail-fast: false
             matrix:
-                frappe-branch: ${{ fromJson(needs.setup.outputs.frappe-branches) }}
+                # what we actually run. pyproject pins frappe to >=16.0.0-dev,<17.0.0,
+                # so a bench on anything else would refuse to install this app in the
+                # first place — testing against it proves nothing about what we ship.
+                frappe-branch: ["version-16"]
 
         services:
             mysql:
@@ -67,8 +53,9 @@ jobs:
                   python-version: "3.14"
                   node-version: "24"
                   type: "server"
-                  # erpnext: stable lane only, never v16 (v16 test bootstrap broken on bare bench)
-                  install-erpnext: ${{ (github.base_ref == 'main-hotfix' || github.base_ref == 'main') && matrix.frappe-branch != 'version-16' }}
+                  # never installed on frappe 16: its test bootstrap does not survive a
+                  # bare bench. The erpnext integration is covered by its own tests.
+                  install-erpnext: false
                   frappe-branch: ${{ matrix.frappe-branch }}
 
             - name: Run server tests

@@ -21,9 +21,12 @@ to ignore.
 
 import html
 import re
+from datetime import date, datetime
 
 import frappe
-from frappe.utils import now
+from frappe.utils import get_datetime, now
+
+from crm.scheduling.timeutils import to_system_naive
 
 RECORDS = ("CRM Lead", "CRM Deal")
 
@@ -214,7 +217,14 @@ def quiet(what, *args) -> None:
 	try:
 		what(*args)
 	except Exception:
-		frappe.log_error(frappe.get_traceback(), f"Conversations: {what.__name__} did not run")
+		# the title of the line is the one part of this handler that depends on what
+		# was passed in, and not every callable carries a `__name__`: a `partial`, a
+		# callable object, a mock standing in for one of ours. Asking for it plainly
+		# made the handler raise while it was handling — which is the single thing
+		# this function exists not to do, and it would have taken the message down
+		# after all, in production as readily as in a test
+		called = getattr(what, "__name__", None) or type(what).__name__
+		frappe.log_error(frappe.get_traceback(), f"Conversations: {called} did not run")
 
 
 def quietly(reference_doctype: str, reference_name: str) -> None:
@@ -352,7 +362,7 @@ def unread(records: list | str | None = None) -> dict:
 	wanted: set[tuple[str, str]] = set()
 	for entry in records:
 		doctype, name = (
-			entry if isinstance(entry, (list, tuple)) else (entry.get("doctype"), entry.get("name"))
+			entry if isinstance(entry, list | tuple) else (entry.get("doctype"), entry.get("name"))
 		)
 		if doctype in RECORDS and name:
 			wanted.add((doctype, name))
@@ -514,19 +524,45 @@ def wake_the_snoozed() -> int:
 	for every row. Emptied, the field says exactly what it means: this one is
 	parked. What is not parked is simply not.
 	"""
+	cutoff = now()
 	woken = 0
 	for doctype in RECORDS:
-		woken += frappe.db.sql(  # nosemgrep: frappe-sql-format-injection — RECORDS is ours; the cutoff is bound with %s
-			f"""
-			update `tab{doctype}`
-			set conversation_snoozed_until = null
-			where conversation_snoozed_until is not null
-			  and conversation_snoozed_until <= %s
-			""",
-			(now(),),
+		# a null moment never satisfies `<=`, so the ones that were never parked
+		# are already out; asking for the names first is what makes the count true
+		due = frappe.get_all(
+			doctype,
+			filters={"conversation_snoozed_until": ["<=", cutoff]},
+			pluck="name",
 		)
+		for name in due:
+			# one row at a time, by name: a filter dict with an `in` reached nothing,
+			# and a count that says it woke them while they stay parked is worse than
+			# slow. There are only ever the ones whose hour has just come.
+			frappe.db.set_value(doctype, name, "conversation_snoozed_until", None, update_modified=False)
+		woken += len(due)
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — hourly scheduler job, no request to commit it
 	return woken
+
+
+def _a_moment(until) -> datetime:
+	"""Read `until` as a moment this site can store, or refuse it.
+
+	The column is a naive Datetime, so anything carrying an offset has to be
+	brought into the site's own clock first: a browser sending an ISO string
+	ending in Z means a real instant, and storing its digits unchanged would park
+	the conversation at an hour nobody asked for. Whatever we cannot read at all
+	is refused in the same words as naming no moment — better a plain no than a
+	conversation left on the pile while the answer says it was parked.
+	"""
+	try:
+		moment = get_datetime(until) if until else None
+	except Exception:
+		moment = None
+	if not moment:
+		frappe.throw(frappe._("Say until when."), frappe.ValidationError)
+	if moment.tzinfo is not None:
+		moment = to_system_naive(moment)
+	return moment
 
 
 @frappe.whitelist(methods=["POST"])
@@ -534,7 +570,7 @@ def set_state(
 	reference_doctype: str,
 	reference_name: str,
 	state: str = OPEN,
-	until: str | None = None,
+	until: str | datetime | date | None = None,
 	assign_to: str | None = None,
 ) -> dict:
 	"""Dealt with, parked, or back on the pile.
@@ -542,6 +578,13 @@ def set_state(
 	One endpoint for the three, because they are one decision — what happens to
 	this conversation now — and three endpoints would let a conversation be
 	handled *and* snoozed, which is two answers to a question with one.
+
+	`until` is a moment, and a moment arrives here in more than one shape: a
+	string from the browser, a `datetime` from `add_to_date`, a `date` from
+	`getdate`. Frappe enforces these annotations on the function itself whenever
+	it runs inside a request or under test, so naming only the browser's shape
+	did not document a contract — it made an ordinary Python call to a function
+	of ours illegal, and left every caller to remember to stringify a date first.
 	"""
 	if reference_doctype not in RECORDS:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
@@ -556,9 +599,9 @@ def set_state(
 		values["conversation_seen_by"] = frappe.session.user
 		values["conversation_unread"] = 0
 	elif state == "Snoozed":
-		if not until:
-			frappe.throw(frappe._("Say until when."), frappe.ValidationError)
-		values["conversation_snoozed_until"] = until
+		# settled into one shape here rather than stored as it came, so what is parked
+		# — and what comes back in the answer — does not depend on who did the asking
+		values["conversation_snoozed_until"] = _a_moment(until)
 
 	if assign_to is not None:
 		values["conversation_assigned_to"] = assign_to or None

@@ -10,6 +10,7 @@ from unittest.mock import patch
 import frappe
 
 from crm.api import service_booking as SB
+from crm.scheduling.availability import forget_settings
 from crm.scheduling.timeutils import UTC, from_system_naive
 from crm.tests.test_scheduling import SchedulingCase
 
@@ -30,8 +31,7 @@ class TestServiceBooking(SchedulingCase):
 		settings.default_max_reschedules = 0
 		settings.default_online_confirmation = "Automatic"
 		settings.save()
-		if hasattr(frappe.local, "crm_scheduling_settings"):
-			del frappe.local.crm_scheduling_settings
+		forget_settings()
 		self.anna = self.make_user("anna.online@example.com")
 		self.bruno = self.make_user("bruno.online@example.com")
 		# emails are queued, never sent; keep them out of the way
@@ -82,7 +82,7 @@ class TestServiceBooking(SchedulingCase):
 
 	def test_closed_page_refuses(self):
 		frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", 0)
-		del frappe.local.crm_scheduling_settings
+		forget_settings()
 		with self.assertRaises(frappe.PermissionError):
 			SB.get_catalog()
 

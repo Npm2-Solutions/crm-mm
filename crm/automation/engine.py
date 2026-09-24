@@ -138,6 +138,11 @@ WAIT_MODES = ("duration", "until_time", "until_reply", "until_link_click")
 
 MAX_OPS_PER_ADVANCE = 100  # go_to loop guard
 
+# An action is allowed to fire a trigger — tagging a lead is exactly how GHL
+# chains one automation into the next — but a chain has to end somewhere, so
+# only this many automations deep will still raise events.
+MAX_CHAIN_DEPTH = 3
+
 
 # ---------------------------------------------------------------------------
 # events → enrollment
@@ -146,7 +151,12 @@ MAX_OPS_PER_ADVANCE = 100  # go_to loop guard
 
 def process_event(event: str, doc, payload: dict | None = None) -> None:
 	"""Entry point called from doc_events / feature code. Never raises."""
+	# in_crm_automation is the outright mute switch feature code holds down while
+	# it shuffles a record around (a reschedule cancels a booking to free the
+	# slot, and nobody should hear about that cancellation)
 	if frappe.flags.in_crm_automation or frappe.flags.in_install or frappe.flags.in_migrate:
+		return
+	if (frappe.flags.crm_automation_depth or 0) >= MAX_CHAIN_DEPTH:
 		return
 	try:
 		payload = payload or {}
@@ -514,7 +524,13 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 		if waiting_for.get("kind") != "window":
 			enrollment.current_step += 1  # move past the satisfied wait/goal op
 
-	frappe.flags.in_crm_automation = True
+	# Actions raise events like any other change, so this run may nest inside
+	# another one. The depth is what bounds the chain; the name is what keeps an
+	# event raised by our own action from reaching back into this enrollment
+	# while we are still walking it.
+	depth = frappe.flags.crm_automation_depth or 0
+	frappe.flags.crm_automation_depth = depth + 1
+	_advancing().add(enrollment_name)
 	try:
 		ops_run = 0
 		while enrollment.status == "Active":
@@ -612,7 +628,8 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 			enrollment.current_step += 1
 			ref_doc.reload()
 	finally:
-		frappe.flags.in_crm_automation = False
+		frappe.flags.crm_automation_depth = depth
+		_advancing().discard(enrollment_name)
 
 	set_state(enrollment, state)
 	enrollment.save(ignore_permissions=True)
@@ -736,13 +753,27 @@ def handle_goal_event(goal_event: str, ref_doctype: str, ref_name: str, payload:
 			break
 
 
+def _advancing() -> set:
+	"""Enrollments this request is in the middle of walking."""
+	if frappe.flags.crm_advancing_enrollments is None:
+		frappe.flags.crm_advancing_enrollments = set()
+	return frappe.flags.crm_advancing_enrollments
+
+
 def _active_enrollments(ref_doctype: str, ref_name: str, status=None) -> list[str]:
 	filters = {
 		"reference_doctype": ref_doctype,
 		"reference_name": ref_name,
 		"status": status or ["in", ["Active", "Waiting"]],
 	}
-	return frappe.get_all("CRM Automation Enrollment", filters=filters, pluck="name")
+	running = _advancing()
+	# an enrollment still being walked holds its program counter in memory: moving
+	# it from here would be overwritten the moment that walk saves
+	return [
+		name
+		for name in frappe.get_all("CRM Automation Enrollment", filters=filters, pluck="name")
+		if name not in running
+	]
 
 
 def process_due_enrollments() -> None:
@@ -1053,7 +1084,7 @@ def step_webhook(step, ref_doc) -> str:
 			"data": {
 				k: v
 				for k, v in ref_doc.as_dict().items()
-				if isinstance(v, (str, int, float, bool)) or v is None
+				if isinstance(v, str | int | float | bool) or v is None
 			},
 		}
 	response = requests.request(method, url, json=payload, headers=headers, timeout=15)
@@ -1064,11 +1095,7 @@ def step_add_to_workflow(step, ref_doc) -> str:
 	target = step.get("automation")
 	if not target or not frappe.db.exists("CRM Automation", target):
 		return _("Skipped: automation not found")
-	frappe.flags.in_crm_automation = False
-	try:
-		result = enroll(target, ref_doc.doctype, ref_doc.name)
-	finally:
-		frappe.flags.in_crm_automation = True
+	result = enroll(target, ref_doc.doctype, ref_doc.name)
 	return _("Enrolled in {0}").format(target) if result else _("Skipped: not enrolled (filters/re-entry)")
 
 
@@ -1240,7 +1267,7 @@ def validate_steps(steps, _top=True) -> None:
 def parse_json(value):
 	if not value:
 		return None
-	if isinstance(value, (list, dict)):
+	if isinstance(value, list | dict):
 		return value
 	try:
 		return json.loads(value)

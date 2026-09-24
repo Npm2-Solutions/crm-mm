@@ -238,7 +238,11 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 
 	mapping = get_question_mapping(form_id)
 	labels = get_question_labels(form_id)
+	types = get_question_types(form_id)
 	values: dict = {}
+	# which question answered which field: a whole name arriving in `first_name`
+	# has to be told from a first name that simply has two words in it
+	sources: dict = {}
 	unmapped: list[tuple[str, str]] = []
 	for item in lead.get("field_data") or []:
 		key = item.get("name")
@@ -256,21 +260,17 @@ def store_lead(lead: dict, form_id: str | None, token: str | None = None) -> str
 			unmapped.append((labels.get(key) or key, ", ".join(clean_answer(v) for v in raw_values)))
 			continue
 		values[crm_field] = normalize_value(crm_field, raw_values[0])
+		sources[crm_field] = key
 
-	if "first_name" not in values:
-		# FULL_NAME questions arrive under one key: split into first/last
-		full = values.pop("full_name", None) or next(
-			(
-				(item.get("values") or [""])[0]
-				for item in lead.get("field_data") or []
-				if item.get("name") in ("full_name", "FULL_NAME")
-			),
-			None,
-		)
-		if full:
-			parts = str(full).split(maxsplit=1)
-			values["first_name"] = parts[0]
-			values.setdefault("last_name", parts[1] if len(parts) > 1 else "")
+	# A question mapped onto "full_name" names no field CRM Lead has, so the name
+	# would be dropped on save; and a FULL_NAME question mapped the way Meta itself
+	# suggests puts the whole name into `first_name`. Either way one answer holds
+	# two fields, and an explicitly mapped surname outranks the half we guess.
+	full = values.pop("full_name", None) or full_name_answer(lead, values, sources, types)
+	if full:
+		parts = str(full).split(maxsplit=1)
+		values["first_name"] = parts[0]
+		values.setdefault("last_name", parts[1] if len(parts) > 1 else "")
 
 	if not values.get("first_name"):
 		_log_failure(lead, form_id, _("No first name could be mapped"))
@@ -568,6 +568,56 @@ def get_question_mapping(form_id: str | None) -> dict:
 		fields=["key", "mapped_to_crm_field"],
 	)
 	return {row.key: row.mapped_to_crm_field for row in rows if row.mapped_to_crm_field}
+
+
+def get_question_types(form_id: str | None) -> dict:
+	"""What each question asked for, as Meta classifies it.
+
+	The type is the only thing that tells a whole name from half of one: two
+	questions can both be mapped to `first_name`, and only one of them is also
+	carrying a surname.
+	"""
+	if not form_id:
+		return {}
+	rows = frappe.get_all("Facebook Lead Form Question", filters={"parent": form_id}, fields=["key", "type"])
+	return {row.key: (row.type or "").upper() for row in rows}
+
+
+# Meta's standard key for the one-box name question. It still answers for a form
+# saved before the question type was kept, and for a notification whose form we
+# cannot read, where there is no type to go on.
+FULL_NAME_KEYS = ("full_name", "fullname")
+
+
+def asks_for_the_whole_name(key: str | None, types: dict) -> bool:
+	return types.get(key) == "FULL_NAME" or (key or "").lower() in FULL_NAME_KEYS
+
+
+def full_name_answer(lead: dict, values: dict, sources: dict, types: dict) -> str | None:
+	"""The answer that holds a whole name, when one of them does.
+
+	Meta's own default mapping sends a FULL_NAME question to `first_name`, so
+	"Mario Rossi" lands whole in the field meant for half of it. Nothing split it,
+	because splitting only ran when no first name had been mapped at all — which,
+	with that mapping, never happens. Leads from the commonest form in existence
+	were called "Mario Rossi" with an empty surname, every list filtered or sorted
+	on the surname missed them, and every "Gentile {{ first_name }}" said it back
+	to the customer.
+	"""
+	first = values.get("first_name")
+	if first:
+		# a FIRST_NAME question answered "Maria Grazia" gave a first name, whole:
+		# only a one-box question may lose half of its answer to the surname
+		return first if asks_for_the_whole_name(sources.get("first_name"), types) else None
+	# nothing was mapped to a name: read the one-box answer as it arrived
+	return next(
+		(
+			clean_answer((item.get("values") or [""])[0])
+			for item in lead.get("field_data") or []
+			if asks_for_the_whole_name(item.get("name"), types) and (item.get("values") or [None])[0]
+		),
+		None,
+	)
 
 
 # Meta's Lead Ads Testing Tool answers every question with

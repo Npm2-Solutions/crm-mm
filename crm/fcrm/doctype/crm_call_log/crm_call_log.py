@@ -4,6 +4,7 @@
 import frappe
 from frappe import _, generate_hash
 from frappe.model.document import Document
+from frappe.utils import validate_phone_number
 
 from crm.integrations.api import get_contact_by_phone_number
 from crm.utils import seconds_to_duration
@@ -370,7 +371,11 @@ def create_lead_from_call_log(call_log: str | dict, lead_details: str | dict | N
 		sanitized_details["lead_owner"] = frappe.session.user
 
 	if "mobile_no" in valid_fieldnames and not sanitized_details.get("mobile_no"):
-		sanitized_details["mobile_no"] = call_doc.get("from") or ""
+		# the caller ID is whatever the network said, which is not always a number:
+		# a withheld one arrives as "anonymous". CRM Lead.mobile_no *is* phone
+		# validated, so copying that across would refuse to create the lead at all.
+		caller = call_doc.get("from") or ""
+		sanitized_details["mobile_no"] = caller if validate_phone_number(caller) else ""
 
 	if "first_name" in valid_fieldnames and not sanitized_details.get("first_name"):
 		reference_label = sanitized_details.get("mobile_no") or call_doc.name

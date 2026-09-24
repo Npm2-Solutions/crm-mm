@@ -118,25 +118,32 @@ class TestAutomation(IntegrationTestCase):
 		self.assertIsNotNone(get_enrollment(auto.name, lead2.name))
 
 	def test_no_reenrollment_by_default(self):
+		# a trigger that can fire again on a record already in: the second tag is
+		# a second "Tag Added" on the same lead. It used to be the second status
+		# change, but the sale state left the person in a000171 and the trigger
+		# went with it.
+		from frappe.desk.doctype.tag.tag import add_tag
+
 		auto = make_automation(
-			"status-flow",
+			"tag-flow",
 			[{"type": "add_tag_comment", "comment": "x"}],
-			trigger_event="Lead Status Changed",
+			trigger_event="Tag Added",
 		)
 		lead = make_lead()
-		other_status = frappe.get_all(
-			"CRM Lead Status", filters={"name": ["!=", lead.status]}, pluck="name", limit=1
-		)
-		self.assertTrue(other_status)
-		lead.status = other_status[0]
-		lead.save()
+		self.assertIsNone(get_enrollment(auto.name, lead.name))  # nothing before the tag
+
+		add_tag("interested", "CRM Lead", lead.name)
 		first = get_enrollment(auto.name, lead.name)
 		self.assertIsNotNone(first)
+
+		add_tag("hot", "CRM Lead", lead.name)
 		lead.reload()
-		lead.status = frappe.get_all(
-			"CRM Lead Status", filters={"name": ["!=", lead.status]}, pluck="name", limit=1
-		)[0]
-		lead.save()
+		self.assertIn("hot", lead.get("_user_tags") or "")  # the second event really happened
+		self.assertEqual(
+			get_enrollment(auto.name, lead.name).name,
+			first.name,
+			"the second trigger must not open a second enrollment",
+		)
 		count = frappe.db.count(
 			"CRM Automation Enrollment",
 			{"automation": auto.name, "reference_name": lead.name},
