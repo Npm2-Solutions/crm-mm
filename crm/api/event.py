@@ -369,4 +369,5 @@ def _format_time_remaining(before_value, interval):
 
 def _send_system_notification(notification):
 	"""Send system notification for an event"""
+	# nosemgrep: frappe-realtime-pick-room — the bell is on every screen: Notifications.vue listens site-wide, not in a doc room
 	frappe.publish_realtime("event_notification", notification)

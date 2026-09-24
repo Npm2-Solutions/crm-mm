@@ -53,6 +53,7 @@ class CRMSMSMessage(Document):
 			frappe.log_error(frappe.get_traceback(), "CRM SMS: failed to resolve contact from number")
 
 	def on_update(self):
+		# nosemgrep: frappe-realtime-pick-room — Conversations.vue refreshes wherever the agent is; the payload is two ids, no text
 		frappe.publish_realtime(
 			"crm_sms_message",
 			{

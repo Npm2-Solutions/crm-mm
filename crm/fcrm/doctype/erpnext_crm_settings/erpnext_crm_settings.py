@@ -629,6 +629,7 @@ def create_customer_from_deal(doc, erpnext_crm_settings):
 
 	if customer_name:
 		frappe.db.set_value("CRM Deal", doc.name, "erpnext_customer", customer_name)
+		# nosemgrep: frappe-realtime-pick-room — Deal.vue listens site-wide, and the event carries nothing at all
 		frappe.publish_realtime("crm_customer_created")
 
 	return customer_name

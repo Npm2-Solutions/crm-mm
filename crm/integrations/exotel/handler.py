@@ -39,6 +39,7 @@ def handle_request(**kwargs):
 
 		call_payload = kwargs
 
+		# nosemgrep: frappe-realtime-pick-room — an incoming call has to pop on every agent's screen: nobody owns it yet
 		frappe.publish_realtime("exotel_call", call_payload)
 		status = call_payload.get("Status")
 		if status == "free":
