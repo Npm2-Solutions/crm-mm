@@ -59,7 +59,7 @@ import LucideTags from '~icons/lucide/tags'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
 import LucideGrid from '~icons/lucide/grid-3x3'
-import LucideSearchCheck from '~icons/lucide/search-check'
+import LucideCalendarCheck from '~icons/lucide/calendar-check'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
@@ -92,7 +92,7 @@ import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplate
 import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
 import BookingPlatforms from '@/components/Settings/Booking/BookingPlatforms.vue'
 import BookingPageSettings from '@/components/Settings/Booking/BookingPageSettings.vue'
-import AvailabilityCheck from '@/components/Settings/Booking/AvailabilityCheck.vue'
+import OnlineBookingSetup from '@/components/Settings/Booking/OnlineBookingSetup.vue'
 import TeamMatrix from '@/components/Settings/Scheduling/TeamMatrix.vue'
 import GoogleCalendarSettings from '@/components/Settings/GoogleCalendarSettings.vue'
 import ServicesSettings from '@/components/Settings/Scheduling/ServicesSettings.vue'
@@ -312,16 +312,16 @@ const tabs = computed(() => {
       label: __('Booking'),
       items: [
         {
-          label: __('Booking page'),
-          icon: LucideGlobe,
-          component: markRaw(BookingPageSettings),
+          // the one place to answer "can clients book this person?"
+          label: __('Online booking'),
+          icon: markRaw(LucideCalendarCheck),
+          component: markRaw(OnlineBookingSetup),
           condition: () => isManager(),
         },
         {
-          // one moment, every reason: the answer to "why can't they book?"
-          label: __('Why not available?'),
-          icon: markRaw(LucideSearchCheck),
-          component: markRaw(AvailabilityCheck),
+          label: __('Page & rules'),
+          icon: LucideGlobe,
+          component: markRaw(BookingPageSettings),
           condition: () => isManager(),
         },
         {

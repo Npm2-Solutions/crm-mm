@@ -8,6 +8,8 @@
   No management software we studied has it; everybody edits the relation from
   one side at a time, which is exactly how "nobody can be booked for X" happens.
 * **Turni del team** — every professional's week, caps and time off together.
+* **Prenotazione online** — the page open, the services online and who clients
+  can book for each, on one screen, each with the reason when it is closed.
 * **Perché non è disponibile?** — pick a service and an instant, get, for every
   professional, the first reason that keeps the slot closed and where to fix it.
 """
@@ -515,6 +517,146 @@ def _resource_reasons(finder, start, end, tz) -> list[dict]:
 				)
 			)
 	return reasons
+
+
+# --------------------------------------------------------------------------
+# Prenotazione online — who clients can book, on one screen
+# --------------------------------------------------------------------------
+
+TEAM_ROLES = ("Sales User", "Sales Manager", "System Manager")
+
+
+def _bookable_people() -> list[str]:
+	"""The team plus every CRM user, so someone new can be switched on here too."""
+	users = set(_team())
+	users |= set(
+		frappe.get_all(
+			"Has Role",
+			filters={"role": ["in", TEAM_ROLES], "parenttype": "User"},
+			pluck="parent",
+		)
+	)
+	users -= {"Administrator", "Guest"}
+	enabled = set(
+		frappe.get_all(
+			"User",
+			filters={"name": ["in", list(users) or [""]], "enabled": 1, "user_type": "System User"},
+			pluck="name",
+		)
+	)
+	return sorted(enabled)
+
+
+def _why_not_online(is_open: bool, online: bool, delivers: int, bookable: list) -> str:
+	if not is_open:
+		return _("Online booking is closed")
+	if not online:
+		return _("Switched off")
+	if not delivers:
+		return _("Pick the services clients can book them for")
+	if not bookable:
+		return _("None of their services is online")
+	return ""
+
+
+@frappe.whitelist()
+def get_online_setup() -> dict:
+	"""Everything that decides whether a client can book someone, together:
+	the page open, which services are online, who takes each of them online."""
+	_check_manager()
+	is_open = bool(cint(settings().get("online_booking_enabled")))
+	services = frappe.get_all(
+		"CRM Service",
+		filters={"enabled": 1},
+		fields=["name", "service_name", "category", "color", "bookable_online"],
+		order_by="category asc, service_name asc",
+	)
+	rows = frappe.get_all(
+		"CRM Service Staff",
+		filters={"parenttype": "CRM Service", "parent": ["in", [s.name for s in services] or [""]]},
+		fields=["parent", "user", "bookable_online"],
+	)
+	cells: dict[str, dict[str, bool]] = {}
+	for row in rows:
+		cells.setdefault(row.user, {})[row.parent] = row.bookable_online is None or bool(
+			cint(row.bookable_online)
+		)
+	online_services = {s.name for s in services if cint(s.bookable_online)}
+	users = _bookable_people()
+	people = _people(users)
+	team = []
+	for user in users:
+		online = staff_profile(user)["online"]
+		mine = cells.get(user, {})
+		bookable = [name for name, flag in mine.items() if flag and name in online_services]
+		team.append(
+			{
+				**people.get(user, {"user": user, "full_name": user}),
+				"online": online,
+				"services": {name: flag for name, flag in mine.items()},
+				"bookable": bookable if online and is_open else [],
+				"reason": _why_not_online(is_open, online, len(mine), bookable),
+			}
+		)
+	for service in services:
+		service["online_staff"] = sum(
+			1 for p in team if p["online"] and p["services"].get(service.name) and service.bookable_online
+		)
+	# people who can be booked first, then those who could, then the rest
+	team.sort(key=lambda p: (not p["bookable"], not p["services"], p["full_name"].lower()))
+	return {"open": is_open, "link": "/prenota", "services": services, "team": team}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_booking_open(enabled: int | str) -> dict:
+	_check_manager()
+	frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", cint(enabled))
+	if hasattr(frappe.local, "crm_scheduling_settings"):
+		del frappe.local.crm_scheduling_settings
+	return get_online_setup()
+
+
+@frappe.whitelist(methods=["POST"])
+def set_person_online(user: str, online: int | str) -> dict:
+	"""Clients can (or cannot) book this professional at all."""
+	_check_manager()
+	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})
+	if name:
+		frappe.db.set_value("CRM Staff Schedule", name, "bookable_online", cint(online))
+	elif not cint(online):
+		# no schedule yet: a switched-off one keeps the default hours and only
+		# records the choice
+		frappe.get_doc(
+			{"doctype": "CRM Staff Schedule", "user": user, "enabled": 0, "bookable_online": 0}
+		).insert()
+	return get_online_setup()
+
+
+@frappe.whitelist(methods=["POST"])
+def set_service_online(service: str, online: int | str) -> dict:
+	_check_manager()
+	doc = frappe.get_doc("CRM Service", service)
+	doc.bookable_online = cint(online)
+	doc.save()
+	return get_online_setup()
+
+
+@frappe.whitelist(methods=["POST"])
+def set_person_service_online(user: str, service: str, online: int | str) -> dict:
+	"""Clients can book this professional for this service. Switching it on adds
+	them to the service when they do not deliver it yet; switching it off keeps
+	them on it for bookings made by the practice."""
+	_check_manager()
+	doc = frappe.get_doc("CRM Service", service)
+	row = next((r for r in doc.staff if r.user == user), None)
+	if row:
+		row.bookable_online = cint(online)
+	elif cint(online):
+		doc.append("staff", {"user": user, "bookable_online": 1})
+	else:
+		return get_online_setup()
+	doc.save()
+	return get_online_setup()
 
 
 # --------------------------------------------------------------------------

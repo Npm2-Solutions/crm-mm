@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between px-2">
       <div class="flex flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
-          {{ __('Booking page') }}
+          {{ __('Page & rules') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
@@ -22,28 +22,13 @@
     </div>
 
     <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-2">
-      <!-- open / closed -->
-      <label
-        class="flex items-start gap-2.5 rounded-md border border-outline-gray-2 px-3 py-2"
-      >
-        <Switch
-          v-model="form.online_booking_enabled"
-          size="sm"
-          class="mt-0.5"
-        />
-        <span class="flex flex-col">
-          <span class="text-p-sm-medium text-ink-gray-8">
-            {{ __('Online booking open') }}
-          </span>
-          <span class="text-p-xs text-ink-gray-5">
-            {{
-              __(
-                'Services appear when marked "Bookable online" (Agenda → Services); who delivers them online is set in Who does what.',
-              )
-            }}
-          </span>
-        </span>
-      </label>
+      <p class="text-p-sm text-ink-gray-6">
+        {{
+          __(
+            'Opening the page and choosing who clients can book is in Booking → Online booking.',
+          )
+        }}
+      </p>
 
       <!-- link builder -->
       <section
@@ -340,7 +325,6 @@ const RuleField = defineComponent({
 })
 
 const CHECKS = [
-  'online_booking_enabled',
   'require_privacy_consent',
   'send_client_confirmation',
   'notify_staff_on_booking',
@@ -366,7 +350,6 @@ const FIELDS = [
 
 const saving = ref(false)
 const form = reactive({
-  online_booking_enabled: true,
   require_privacy_consent: true,
   send_client_confirmation: true,
   notify_staff_on_booking: true,
