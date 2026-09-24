@@ -221,3 +221,108 @@ aperto di quella pipeline — la stessa semantica di GoHighLevel.
   per pipeline vuol dire passare il parametro attraverso ~15 funzioni di
   `crm/api/dashboard.py` e la relativa UI.
 - Le pipeline valgono per i deal, non per i lead (come in GoHighLevel).
+
+---
+
+## Debito semgrep — 102 finding a zero
+
+> **Completato.** La scansione completa (`semgrep scan` con le regole Frappe e
+> `r/python.lang.correctness`) passa da 102 finding, tutti blocking, a 0 su 728
+> target. Il debito si era accumulato perché le GitHub Actions non erano mai
+> girate su questo repo: su una pull request `semgrep ci` è diff-aware e guarda
+> solo il codice introdotto, quindi il pregresso non aveva mai bloccato niente.
+
+### La cosa che contava: SSTI nel motore delle automazioni
+
+`crm/automation/engine.py` rendeva il testo delle automazioni con
+`frappe.render_template()`. Sembra innocuo finché non si guarda chi può
+scrivere quel testo: `MANAGER_ROLES` in `crm/api/automation.py` è
+`{"System Manager", "Sales Manager"}`, e il doctype CRM Automation dà `write` al
+Sales Manager. `frappe.render_template()` passa al template i global di
+safe-exec, dove `frappe.db.get_value` e compagnia **ignorano i permessi**:
+`{{ frappe.db.get_value("Twilio Settings", None, "auth_token") }}` in un corpo
+email leggeva qualsiasi campo di qualsiasi doctype, token delle integrazioni
+compresi, da un ruolo che quei doctype non può nemmeno aprire.
+
+Non era una funzionalità da documentare, era escalation di privilegi. Il testo
+delle automazioni ha ora il suo ambiente Jinja (`_automation_jenv()`):
+
+| Scelta | Perché |
+|---|---|
+| `SandboxedEnvironment` invece di `frappe.render_template` | Toglie i global `frappe.*`, che sono il vettore. Il resto di Jinja resta |
+| Nessun loader | Senza loader `{% include %}` e `{% import %}` non hanno da dove pescare: un template non può tirarsi dentro un file dell'app |
+| `is_safe_attribute` con `UNSAFE_ATTRIBUTES` di Frappe | Stessa lista che usa Frappe per il suo jenv: blocca `f_globals`, `gi_frame`, `format` e parenti |
+| `DebugUndefined`, `autoescape=False`, filtri `json/len/int/str/flt` | Sono esattamente quelli di `frappe.render_template`: un template che funzionava prima rende identico. Cambia solo dove può arrivare |
+| Singleton di modulo | L'ambiente contiene solo filtri, niente di specifico del sito, quindi è condivisibile fra richieste e fra siti |
+
+Verificato a mano prima di committare: bloccati `{{ frappe.* }}`,
+`{% include %}`, `''.__class__.__mro__`, `__globals__`, `__init__`,
+`format.__globals__`; invariati i merge field documentati (`{{ first_name }}`,
+`{{ tracked_link("slug") }}`, `{% if %}`, `|upper`, `|flt`). Nessuna
+documentazione prometteva `frappe.*` dentro i template — `MERGE_FIELDS` in
+`frontend/src/utils/automation.js` offre solo campi del record più
+`tracked_link`.
+
+### Due bug veri trovati dalle regole
+
+- **`crm/api/doc.py`** — `get_list_data` rimuoveva le colonne nascoste dalla
+  lista che stava scorrendo. L'iteratore avanza di indice: dopo una rimozione
+  salta l'elemento successivo, quindi con due colonne nascoste di fila la
+  seconda restava visibile. Ora il giro si fa su una copia.
+- **`crm/integrations/whatsapp/signup.py`** — `SIGNUP_HINTS` chiamava `_()` a
+  livello di modulo. Un modulo si importa una volta per worker e resta lì per
+  ogni sito e ogni utente che passa da quel processo: quei paragrafi restavano
+  congelati nella lingua caricata per prima. Ora sono lambda, come faceva già
+  `crm/integrations/meta/errors.py`.
+
+### Come si annota un `# nosemgrep`
+
+Due cose imparate provandole, che valgono per chiunque ne aggiunga altri:
+
+1. **La forma è `# nosemgrep: <regola> — <motivo>`.** Semgrep legge tutto quello
+   che segue i due punti come una lista di id di regole separati da virgola: un
+   `# nosemgrep: perché serve` non silenzia niente, perché «perché serve» non è
+   il nome di nessuna regola. Con l'id davanti e il motivo dopo un trattino
+   funziona, e silenzia quella regola soltanto.
+2. **Sul decoratore ci va una riga sua.** `ruff-format` manda a capo le chiamate
+   che superano i 110 caratteri, e il commento finisce sulla parentesi di
+   chiusura — dove semgrep non lo legge più, perché il match comincia sulla riga
+   del `@`. Un commento su riga propria, sopra, il formatter non lo tocca. È così
+   che si erano rotte tutte e 25 le soppressioni al primo tentativo.
+
+### Commit manuali: 14 tolti, 24 tenuti
+
+Il criterio: si toglie solo dove si può dire *che cosa* committa al posto suo.
+
+| Caso | Decisione |
+|---|---|
+| Ultima istruzione di un endpoint `methods=["POST"]` | **Tolto.** Su una POST la transazione viene committata a fine richiesta — è la stessa distinzione GET/POST già scritta in `crm/www/crm.py` |
+| `crm/www/crm.py:get_context()` | **Tolto.** L'unica cosa che scrive prima è `redirect_to_set_password()`, che si alza da sola `frappe.local.flags.commit` |
+| Endpoint non ristretti a POST (Twilio, Exotel, caller ID, dashboard, link tracciati) | **Tenuto.** Su una GET Frappe fa rollback: senza commit il log della chiamata o il click non resterebbero |
+| Dopo un `frappe.db.rollback()` (except di Exotel, `_finish()` della trascrizione) | **Tenuto.** Lo stato d'errore svanirebbe con la transazione |
+| Prima che parta qualcos'altro che deve trovare la riga (job accodato, nudge realtime, chiamata rientrante, `wire_up_delivery`) | **Tenuto.** |
+| Job di background, scheduler, `after_install` | **Tenuto.** Nessuna richiesta li committa |
+
+### Lasciato com'è, di proposito
+
+`override_doctype_class` in `crm/hooks.py` è annotato, non rifatto. La regola
+suggerisce `extend_doctype_class` e avrebbe ragione — i due override aggiungono
+solo `default_list_data()` a Contact ed Email Template — ma passare a mixin
+cambia come viene costruita la classe del controller, e serve un bench per
+provarlo: sbagliando si rompono le liste Contatti ed Email Template.
+
+Fuori tema ma necessario: `pre-commit run --all-files` era già rosso su develop
+per tre `UP038` della ruff pinnata. È un consiglio sbagliato — costruire
+l'unione costa un'allocazione a ogni chiamata, e ruff ha poi rimosso la regola —
+quindi è finito negli `ignore` di `pyproject.toml` invece che nel codice.
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/automation/engine.py` | `_automation_jenv()`: la sandbox Jinja delle automazioni |
+| `crm/api/site_render.py` | Annotati i cinque `render_template()` su percorsi letterali dell'app |
+| `crm/api/doc.py` | Le colonne nascoste non fanno più saltare la successiva |
+| `crm/integrations/whatsapp/signup.py` | `SIGNUP_HINTS` valutato al momento, non all'import |
+| `crm/integrations/meta/`, `crm/integrations/whatsapp/`, `crm/telephony/`, `crm/api/` | `str(exc)` nelle stringhe tradotte, commit manuali, endpoint ospiti motivati |
+| `pyproject.toml` | `UP038` fra gli ignore |
