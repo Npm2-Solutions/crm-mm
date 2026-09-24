@@ -37,6 +37,17 @@ class CRMCallerID(Document):
 		voice_url: DF.SmallText | None
 	# end: auto-generated types
 
+	def before_naming(self):
+		"""The row is named after the number, so the spelling has to be settled here.
+
+		Frappe reads the name off the field before `validate` runs, and then
+		`_sync_autoname_field` copies the name back over the field on every save.
+		Normalising in `validate` alone was therefore undone on the way out: the
+		number stayed exactly as it was typed, and `+39 02 1234 5678` could be
+		listed a second time as `+390212345678`.
+		"""
+		self.normalise_number()
+
 	def validate(self):
 		self.normalise_number()
 

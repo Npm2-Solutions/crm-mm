@@ -44,13 +44,17 @@ class CallIntelligenceCase(IntegrationTestCase):
 		return doc
 
 	def make_call(self, **values):
+		values = {"type": "Outgoing", "status": "Completed", "telephony_medium": "Twilio", **values}
+		# A call that reached us through a provider arrives with both its numbers on it,
+		# so the controller fills neither end in — that only happens for a call logged by
+		# hand. Which end is ours depends on the direction, and both ends are mandatory.
+		ours, theirs = "+390210000000", "+393331112233"
+		incoming = values.get("type") == "Incoming"
 		log = frappe.get_doc(
 			{
 				"doctype": "CRM Call Log",
-				"to": "+390210000000",
-				"type": "Outgoing",
-				"status": "Completed",
-				"telephony_medium": "Twilio",
+				"from": theirs if incoming else ours,
+				"to": ours if incoming else theirs,
 				**values,
 			}
 		)
@@ -74,6 +78,26 @@ class CallIntelligenceCase(IntegrationTestCase):
 
 
 class TestTranscriptionQueueing(CallIntelligenceCase):
+	def setUp(self):
+		super().setUp()
+		# `on_update` is hooked to on_call_log_update, and in Frappe on_update also
+		# runs on insert — so while automatic transcription is on, a call log that
+		# arrives with a recording is already claimed by the time insert() returns.
+		# These tests are about request_transcription() doing the claiming, so they
+		# start from a call nobody has claimed yet. The automatic path, which is real
+		# behaviour and was what hid this, has its own two tests below.
+		self.configure_transcription(auto_transcribe=0)
+
+	def unclaimed_call(self, **values):
+		log = self.make_call(recording_url="https://example.com/r.mp3", **values)
+		# none of this means anything unless the call starts out unclaimed
+		self.assertFalse(frappe.db.get_value("CRM Call Log", log.name, "transcription_status"))
+		return log
+
+	def queued(self, enqueued):
+		"""The dotted paths frappe.enqueue was asked for."""
+		return [job.args[0] for job in enqueued.call_args_list if job.args]
+
 	def test_a_call_without_a_recording_is_never_queued(self):
 		log = self.make_call()
 		with patch("frappe.enqueue") as enqueued:
@@ -81,7 +105,7 @@ class TestTranscriptionQueueing(CallIntelligenceCase):
 			enqueued.assert_not_called()
 
 	def test_a_recording_is_queued_and_claimed(self):
-		log = self.make_call(recording_url="https://example.com/r.mp3")
+		log = self.unclaimed_call()
 		with patch("frappe.enqueue") as enqueued:
 			self.assertTrue(transcription.request_transcription(log.name))
 			enqueued.assert_called_once()
@@ -90,14 +114,35 @@ class TestTranscriptionQueueing(CallIntelligenceCase):
 		)
 
 	def test_a_claimed_call_is_not_queued_twice(self):
-		log = self.make_call(recording_url="https://example.com/r.mp3")
-		with patch("frappe.enqueue"):
-			transcription.request_transcription(log.name)
+		log = self.unclaimed_call()
+		with patch("frappe.enqueue") as enqueued:
+			self.assertTrue(transcription.request_transcription(log.name))
 			# a second webhook for the same recording must not buy the same audio again
 			self.assertFalse(transcription.request_transcription(log.name))
+			enqueued.assert_called_once()
+
+	def test_a_recording_that_arrives_claims_itself_when_set_to(self):
+		self.configure_transcription(auto_transcribe=1)
+		with patch("frappe.enqueue") as enqueued:
+			log = self.make_call(recording_url="https://example.com/r.mp3")
+			# the hook runs inside insert(), so the claim is already made here
+			self.assertIn("crm.telephony.transcription.transcribe_call", self.queued(enqueued))
+		self.assertEqual(
+			frappe.db.get_value("CRM Call Log", log.name, "transcription_status"), transcription.PENDING
+		)
+
+	def test_saving_the_call_again_does_not_buy_the_same_audio_again(self):
+		self.configure_transcription(auto_transcribe=1)
+		with patch("frappe.enqueue"):
+			log = self.make_call(recording_url="https://example.com/r.mp3")
+		with patch("frappe.enqueue") as enqueued:
+			log.duration = 42
+			log.save(ignore_permissions=True)
+			# the recording did not change, so there is nothing new to transcribe
+			self.assertNotIn("crm.telephony.transcription.transcribe_call", self.queued(enqueued))
 
 	def test_a_finished_call_is_only_redone_on_request(self):
-		log = self.make_call(recording_url="https://example.com/r.mp3")
+		log = self.unclaimed_call()
 		frappe.db.set_value("CRM Call Log", log.name, "transcription_status", transcription.COMPLETED)
 		with patch("frappe.enqueue"):
 			self.assertFalse(transcription.request_transcription(log.name))
@@ -370,6 +415,9 @@ class TestEntryContext(CallIntelligenceCase):
 				"duration": 30,
 				"enabled": 1,
 				"staff_selection": "Any one",
+				# a service with nobody able to deliver it can never be booked, so the
+				# scheduling rules refuse to save one
+				"staff": [{"user": "Administrator"}],
 			}
 		).insert(ignore_permissions=True)
 		appointment = frappe.get_doc(

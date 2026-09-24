@@ -292,10 +292,28 @@ class TestCallbackQueue(TelephonyCase):
 		self.assertEqual(callbacks.queue_callback(again), again.name)
 
 	def test_an_unreadable_caller_id_never_merges(self):
+		# a caller who withholds their number arrives as a word rather than a number.
+		# The call still has to be written down exactly as the network reported it,
+		# which is why CRM Call Log.from is not phone validated.
 		first = self.make_incoming_call("anonymous")
-		callbacks.queue_callback(first)
-		again = self.make_incoming_call("unknown")
-		self.assertEqual(callbacks.queue_callback(again), again.name)
+		first.reload()
+		self.assertEqual(first.get("from"), "anonymous")
+
+		self.assertEqual(callbacks.queue_callback(first), first.name)
+		self.assertEqual(
+			frappe.db.get_value("CRM Call Log", first.name, "callback_status"), callbacks.PENDING
+		)
+
+		# two people who both withheld their number are not the same person, however
+		# alike the caller ID reads, so neither joins the callback already owed
+		same_words = self.make_incoming_call("anonymous")
+		self.assertEqual(callbacks.queue_callback(same_words), same_words.name)
+
+		other_words = self.make_incoming_call("unknown")
+		self.assertEqual(callbacks.queue_callback(other_words), other_words.name)
+
+		# three unreadable calls, three separate promises
+		self.assertEqual(frappe.db.count("CRM Call Log", {"callback_status": callbacks.PENDING}), 3)
 
 	def test_reaching_the_caller_closes_the_callback(self):
 		log = self.make_incoming_call("+393331234567")

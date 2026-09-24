@@ -60,6 +60,24 @@ def transcribes_automatically(config=None) -> bool:
 	return is_enabled(config) and bool(cint(config.auto_transcribe))
 
 
+def _commit() -> None:
+	"""Publish what has been written so far.
+
+	A transcription is a background job with a long wait in the middle, and its
+	steps have to be visible while it is still running: the claim before a minute
+	spent talking to the provider, the text once it lands. A worker that dies
+	halfway must leave the call marked, not silently unchanged.
+
+	Under the test runner there is no second reader and no worker — there is one
+	transaction that the test case rolls back at the end. Committing from inside
+	it would write the test's call logs, and the enabled settings singleton the
+	fixture saved, onto a site every later test shares.
+	"""
+	if frappe.flags.in_test:
+		return
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit -- see the docstring above
+
+
 # --------------------------------------------------------------------------
 # queueing
 # --------------------------------------------------------------------------
@@ -139,8 +157,12 @@ def transcribe_call(call_log_name: str) -> str | None:
 	frappe.db.set_value(
 		"CRM Call Log", call_log_name, "transcription_status", IN_PROGRESS, update_modified=False
 	)
-	frappe.db.commit()  # nosemgrep: frappe-manual-commit — in progress must be visible while the download runs
+	_commit()
 
+	# A failed attempt undoes itself and nothing else. Rolling back the whole
+	# transaction would also throw away whatever the caller had open — the mark
+	# above, or, when this is called in-process, the caller's own work.
+	frappe.db.savepoint("crm_transcription")
 	try:
 		from crm.integrations.api import download_recording
 
@@ -149,7 +171,7 @@ def transcribe_call(call_log_name: str) -> str | None:
 		)
 		text = _post_audio(config, audio, _filename(call_log_name, content_type), content_type)
 	except Exception as exc:
-		frappe.db.rollback()
+		frappe.db.rollback(save_point="crm_transcription")
 		frappe.log_error(frappe.get_traceback(), "CRM Transcription: failed")
 		_finish(call_log_name, FAILED, error=_short(exc))
 		return None
@@ -201,7 +223,7 @@ def _finish(call_log_name: str, status: str, text: str | None = None, language=N
 	if status == COMPLETED:
 		values.update({"transcript": text, "transcribed_on": now_datetime(), "transcript_language": language})
 	frappe.db.set_value("CRM Call Log", call_log_name, values, update_modified=False)
-	frappe.db.commit()  # nosemgrep: frappe-manual-commit — called after a rollback; the status must survive it
+	_commit()
 
 
 def _announce(call_log_name: str) -> None:
@@ -260,7 +282,7 @@ def expire_transcripts() -> dict:
 			frappe.db.set_value("CRM Call Log", name, "recording_url", None, update_modified=False)
 		cleared["recordings"] = len(names)
 
-	frappe.db.commit()  # nosemgrep: frappe-manual-commit — nightly job, no request to commit the pruning
+	_commit()
 	return cleared
 
 
