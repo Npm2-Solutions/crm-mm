@@ -76,11 +76,21 @@ class CRMWebSite(Document):
 			frappe.throw(_("Another site already uses the folder {0}").format(frappe.bold(self.slug)))
 
 	def validate_home_page(self):
-		"""A home page has to be one of this site's own pages, and be live."""
-		if not self.home_page or not frappe.db.exists("DocType", "Builder Page"):
+		"""A home page has to be one of this site's own pages, and be live.
+
+		Whose page it is, is settled by the route alone — `<folder>/<page>` — so that half
+		of the rule holds with or without Builder and is checked first. Behind the Builder
+		guard sat a real hole: on a bench without Builder a site could be saved pointing at
+		another site's folder, and the bad route then survived Builder being installed
+		later, because nothing re-validates a stored document.
+		"""
+		if not self.home_page:
 			return
 		if not self.home_page.startswith(f"{self.slug}/") and self.home_page != self.slug:
 			frappe.throw(_("{0} is not a page of this site.").format(frappe.bold("/" + self.home_page)))
+		if not frappe.db.exists("DocType", "Builder Page"):
+			# only "does the page exist, and is it live" needs the pages themselves
+			return
 		page = frappe.db.get_value(
 			"Builder Page", {"route": self.home_page}, ["name", "published"], as_dict=True
 		)

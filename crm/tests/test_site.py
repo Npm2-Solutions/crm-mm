@@ -267,6 +267,9 @@ def _service(name: str, *, publish: bool = False, slug: str | None = None):
 			"service_name": name,
 			"enabled": 1,
 			"duration": 30,
+			# these tests are about the website face of a service, but it still has to be a
+			# service the practice could deliver: one with no professional is refused
+			"staff": [{"user": "Administrator"}],
 			"publish_on_website": 1 if publish else 0,
 			"website_slug": slug,
 		}
@@ -317,9 +320,13 @@ class TestSitesInFolders(IntegrationTestCase):
 		self.assertTrue(second.serve_at_root)
 
 	def test_a_home_page_must_belong_to_its_own_site(self):
+		"""Ownership is route arithmetic, so it is refused with or without Builder."""
 		site = _site("Terzo")
 		site.home_page = "un-altro-sito/casa"
-		self.assertRaises(frappe.ValidationError, site.save)
+		with self.assertRaises(frappe.ValidationError) as caught:
+			site.save()
+		# the foreign route, not some other validation that happened to fire
+		self.assertIn("un-altro-sito/casa", str(caught.exception))
 
 	def test_a_site_with_pages_is_not_deleted_by_accident(self):
 		if "builder" not in frappe.get_installed_apps():
