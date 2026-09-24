@@ -6,6 +6,7 @@ import {
   dayLabel,
   directionOf,
   isConversational,
+  collapseRuns,
   groupByDay,
 } from '@/utils/conversation'
 
@@ -237,6 +238,72 @@ describe('groupByDay', () => {
   it('survives nothing at all', () => {
     expect(groupByDay()).toEqual([])
     expect(groupByDay(null)).toEqual([])
+  })
+})
+
+describe('a long run of one channel', () => {
+  const row = (name, channel) => ({
+    key: `k:${name}`,
+    channel,
+    at: '2026-09-22 10:00:00',
+  })
+  const many = (channel, howMany) =>
+    Array.from({ length: howMany }, (_, i) => row(`${channel}${i}`, channel))
+
+  it('is folded into one row that can be opened', () => {
+    const folded = collapseRuns(many('whatsapp', 12))
+    expect(folded).toHaveLength(1)
+    expect(folded[0].kind).toBe('run')
+    expect(folded[0].channel).toBe('whatsapp')
+    expect(folded[0].rows).toHaveLength(12)
+  })
+
+  it('leaves a short run alone, because it is not in the way', () => {
+    const folded = collapseRuns(many('whatsapp', 4))
+    expect(folded).toHaveLength(4)
+    expect(folded.every((entry) => entry.kind !== 'run')).toBe(true)
+  })
+
+  it('does not swallow what happened in between', () => {
+    // the point of the mixed view is seeing the call that interrupted the chat
+    const folded = collapseRuns([
+      ...many('whatsapp', 6),
+      row('call', 'call'),
+      ...many('whatsapp', 7),
+    ])
+    expect(folded.map((entry) => entry.kind || 'row')).toEqual([
+      'run',
+      'row',
+      'run',
+    ])
+  })
+
+  it('does not fold a channel into another one', () => {
+    const folded = collapseRuns([...many('whatsapp', 6), ...many('email', 6)])
+    expect(folded.map((entry) => entry.channel)).toEqual(['whatsapp', 'email'])
+  })
+
+  it('leaves alone what belongs to no thread', () => {
+    // a field that changed is not part of anybody's conversation, and folding
+    // it away with one would say it was
+    const folded = collapseRuns([
+      ...many('whatsapp', 6),
+      { key: 'k:changed', channel: '', at: '2026-09-22 11:00:00' },
+      ...many('whatsapp', 6),
+    ])
+    expect(folded).toHaveLength(3)
+    expect(folded[1].key).toBe('k:changed')
+  })
+
+  it('carries the time of the last thing said, so the day still sorts', () => {
+    const rows = many('whatsapp', 6)
+    rows[5].at = '2026-09-22 23:00:00'
+    expect(collapseRuns(rows)[0].at).toBe('2026-09-22 23:00:00')
+  })
+
+  it('survives nothing at all', () => {
+    expect(collapseRuns()).toEqual([])
+    expect(collapseRuns(null)).toEqual([])
   })
 })
 
