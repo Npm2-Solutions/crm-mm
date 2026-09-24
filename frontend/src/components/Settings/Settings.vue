@@ -56,7 +56,7 @@
                 :class="
                   activeTab?.label != item.label && 'hover:!bg-surface-gray-3'
                 "
-                @click="activeSettingsPage = item.label"
+                @click="openSettingsPage(item.label)"
               >
                 <template #prefix>
                   <Icon :icon="item.icon" class="size-4 text-ink-gray-7" />
@@ -512,6 +512,13 @@ watch(activeSettingsPage, (activePage) => {
   // the sidebar's "Invite User".
   if (activePage) showingDetail.value = true
 })
+
+// Tapping a row has to push to the detail even when it is the row you were last
+// on: `activeSettingsPage` does not change then, so the watch above never fires.
+function openSettingsPage(label) {
+  activeSettingsPage.value = label
+  showingDetail.value = true
+}
 
 // deep link: /crm?settings=<page label> opens the modal on that page (used by
 // OAuth callbacks, e.g. the Meta Lead Ads connect flow)
