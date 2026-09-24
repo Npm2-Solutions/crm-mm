@@ -134,14 +134,37 @@
           <div class="flex items-center justify-between gap-4">
             <div class="flex flex-col min-w-0">
               <div class="text-p-base-medium text-ink-gray-7">
-                {{ __('Numbers') }}
+                {{ __('Caller IDs') }}
               </div>
               <div class="text-p-sm text-ink-gray-5">
                 {{
-                  numberCount
-                    ? __('{0} usable caller IDs on this account', [numberCount])
+                  __(
+                    'The numbers this account owns or has verified, and whether each one reaches the CRM.',
+                  )
+                }}
+              </div>
+            </div>
+            <Button
+              :label="__('Manage')"
+              @click="emit('updateStep', 'caller-id-settings')"
+            />
+          </div>
+
+          <div class="h-px border-t border-outline-elevation-2" />
+
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-col min-w-0">
+              <div class="text-p-base-medium text-ink-gray-7">
+                {{ __('SIP Trunking') }}
+              </div>
+              <div class="text-p-sm text-ink-gray-5">
+                {{
+                  trunks.length
+                    ? __('{0} elastic SIP trunk(s) on this account', [
+                        trunks.length,
+                      ])
                     : __(
-                        'Fetch the numbers this account owns, so agents pick one instead of typing it.',
+                        'Read the Elastic SIP trunks configured on this account.',
                       )
                 }}
               </div>
@@ -149,9 +172,64 @@
             <Button
               :label="__('Refresh')"
               icon-left="lucide-refresh-cw"
-              :loading="twilio.fetchNumbers.loading"
-              @click="twilio.fetchNumbers.fetch"
+              :loading="twilio.fetchSipTrunks.loading"
+              @click="twilio.fetchSipTrunks.fetch"
             />
+          </div>
+
+          <div
+            v-for="trunk in trunks"
+            :key="trunk.sid"
+            class="rounded-md border border-outline-gray-2 px-3 py-2"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-p-base-medium text-ink-gray-8 truncate">
+                {{ trunk.friendly_name || trunk.sid }}
+              </span>
+              <div class="flex shrink-0 gap-1">
+                <Badge
+                  v-if="trunk.secure"
+                  :label="__('Secure')"
+                  variant="subtle"
+                  theme="green"
+                />
+                <Badge
+                  :label="
+                    __('{0} number(s)', [trunk.phone_numbers?.length || 0])
+                  "
+                  variant="subtle"
+                  theme="gray"
+                />
+              </div>
+            </div>
+            <div class="mt-1 text-p-sm text-ink-gray-6">
+              {{ __('Termination') }}:
+              <code class="text-ink-gray-8">{{
+                trunk.termination_uri || '—'
+              }}</code>
+            </div>
+            <div
+              v-for="url in trunk.origination_urls"
+              :key="url.sip_url"
+              class="text-p-sm text-ink-gray-6"
+            >
+              {{ __('Origination') }}:
+              <code class="text-ink-gray-8 break-all">{{ url.sip_url }}</code>
+              <span class="text-ink-gray-4">
+                (p{{ url.priority }}/w{{ url.weight
+                }}{{ url.enabled ? '' : __(', disabled') }})
+              </span>
+            </div>
+            <p
+              v-if="trunk.phone_numbers?.length"
+              class="mt-1.5 text-p-sm text-ink-red-3"
+            >
+              {{
+                __(
+                  'Calls to these numbers go straight to your SIP infrastructure — Twilio ignores their voice webhook, so the answering service cannot run on them.',
+                )
+              }}
+            </p>
           </div>
 
           <div class="h-px border-t border-outline-elevation-2" />
@@ -229,7 +307,7 @@
 <script setup>
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
-import { Combobox, FormControl, Switch } from 'frappe-ui'
+import { Badge, Combobox, FormControl, Switch } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
 const emit = defineEmits(['updateStep'])
@@ -245,8 +323,8 @@ const { document: twilio } = useDocument(
         method: 'fetch_applications',
         onSuccess: () => twilio.reload(),
       },
-      fetchNumbers: {
-        method: 'fetch_numbers',
+      fetchSipTrunks: {
+        method: 'fetch_sip_trunks',
         onSuccess: () => twilio.reload(),
       },
       testConnection: {
@@ -257,11 +335,13 @@ const { document: twilio } = useDocument(
   },
 )
 
-const numberCount = computed(() => {
-  const raw = `${twilio.doc?.twilio_numbers || ''},${
-    twilio.doc?.verified_caller_ids || ''
-  }`
-  return new Set(raw.split(',').filter(Boolean)).size
+const trunks = computed(() => {
+  try {
+    return JSON.parse(twilio.doc?.sip_trunks || '[]')
+  } catch {
+    // a half-written cache must not blank the whole settings page
+    return []
+  }
 })
 
 function testConnection() {

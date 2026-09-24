@@ -74,12 +74,22 @@
           </div>
         </div>
         <div>
-          <Combobox
+          <div
             v-if="callerIds.data?.length"
-            v-model="telephonyAgent.doc.twilio_number"
-            class="w-44"
-            :options="callerIdOptions"
-          />
+            class="flex flex-col items-end gap-1"
+          >
+            <Combobox
+              v-model="telephonyAgent.doc.twilio_number"
+              class="w-44"
+              :options="callerIdOptions"
+            />
+            <span
+              v-if="chosenCallerId && !chosenCallerId.routes_to_crm"
+              class="w-56 text-right text-p-sm text-ink-red-3"
+            >
+              {{ __('Incoming calls to this number do not reach the CRM.') }}
+            </span>
+          </div>
           <FormControl
             v-else
             v-model="telephonyAgent.doc.twilio_number"
@@ -316,13 +326,25 @@ const { isEnabled } = useTelephony()
 // what the account can actually present; typing a number Twilio has never heard
 // of is the quiet way calls stop working
 const callerIds = createResource({
-  url: 'crm.integrations.twilio.api.usable_caller_ids',
+  url: 'crm.telephony.caller_ids.get_caller_ids',
+  params: { provider: 'twilio' },
   cache: 'twilio-caller-ids',
   auto: true,
 })
 
 const callerIdOptions = computed(() =>
-  (callerIds.data || []).map((number) => ({ label: number, value: number })),
+  (callerIds.data || []).map((row) => ({
+    label: row.label ? `${row.label} · ${row.phone_number}` : row.phone_number,
+    value: row.phone_number,
+  })),
+)
+
+// the number an agent presents can be perfectly valid outbound and still never
+// receive anything — say so here rather than leaving it to be discovered
+const chosenCallerId = computed(() =>
+  (callerIds.data || []).find(
+    (row) => row.phone_number === telephonyAgent.doc?.twilio_number,
+  ),
 )
 
 // the options follow the provider registry, so a new carrier shows up here
