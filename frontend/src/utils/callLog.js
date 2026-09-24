@@ -92,3 +92,31 @@ export const statusColorMap = {
   'No Answer': 'red',
   'In Progress': 'blue',
 }
+
+/**
+ * Who was on a call, given which way it went.
+ *
+ * A call logged by hand is written from somebody's record, so one end of it is
+ * that person's number and the other is whoever is typing. Which end is which
+ * is decided by `type` — and that is exactly what a form makes easy to get
+ * wrong: the boxes get filled the way they are laid out rather than the way the
+ * call went, and an incoming call is recorded as an outgoing one.
+ *
+ * @returns `{ from, to, caller, receiver }`
+ */
+export function callParties({ direction, theirNumber, myNumber, me }) {
+  const incoming = direction === 'Incoming'
+  return {
+    from: incoming ? theirNumber : myNumber,
+    to: incoming ? myNumber : theirNumber,
+    // the person who picked up, or the person who dialled: never both
+    caller: incoming ? '' : me,
+    receiver: incoming ? me : '',
+  }
+}
+
+/** Their number on a lead, a deal or a contact, whichever field holds it. */
+export function numberOf(doc) {
+  if (!doc) return ''
+  return doc.mobile_no || doc.actual_mobile_no || doc.phone || ''
+}

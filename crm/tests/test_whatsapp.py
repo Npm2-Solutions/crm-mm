@@ -558,3 +558,59 @@ class TestNobodyIsCalledGuest(FrappeTestCase):
 			source.index("set_user_and_timestamp"),
 			source.index('run_method("before_insert")'),
 		)
+
+
+class TestACallLoggedByHandKnowsWhoWasOnIt(FrappeTestCase):
+	"""A call written from somebody's record already knows one end of itself.
+
+	Leaving both ends blank asked the same question twice on every call, and got
+	it wrong often enough: `type` decides which end is which, and a form is
+	filled the way it is laid out rather than the way the call went.
+	"""
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _log(self, call_type, **extra):
+		doc = frappe.get_doc(
+			{
+				"doctype": "CRM Call Log",
+				"type": call_type,
+				"status": "Completed",
+				"telephony_medium": "Manual",
+				**extra,
+			}
+		)
+		doc.fill_in_who_was_on_the_call()
+		return doc
+
+	def test_an_incoming_call_comes_from_them(self):
+		with (
+			patch.object(type(self._log("Incoming")), "number_of_the_record", return_value="+393331112233"),
+			patch.object(type(self._log("Incoming")), "number_of_the_agent", return_value="+390451234567"),
+		):
+			doc = self._log("Incoming")
+		self.assertEqual(doc.get("from"), "+393331112233")
+		self.assertEqual(doc.to, "+390451234567")
+		self.assertEqual(doc.receiver, frappe.session.user)
+
+	def test_an_outgoing_call_goes_to_them(self):
+		with (
+			patch.object(type(self._log("Outgoing")), "number_of_the_record", return_value="+393331112233"),
+			patch.object(type(self._log("Outgoing")), "number_of_the_agent", return_value="+390451234567"),
+		):
+			doc = self._log("Outgoing")
+		self.assertEqual(doc.get("from"), "+390451234567")
+		self.assertEqual(doc.to, "+393331112233")
+		self.assertEqual(doc.caller, frappe.session.user)
+
+	def test_a_number_somebody_typed_is_left_alone(self):
+		"""Only what is missing is filled: whoever wrote a number meant it."""
+		with patch.object(type(self._log("Outgoing")), "number_of_the_record", return_value="+393331112233"):
+			doc = self._log("Outgoing", to="+390000000000")
+		self.assertEqual(doc.to, "+390000000000")
+
+	def test_a_call_from_a_provider_keeps_its_own_numbers(self):
+		doc = self._log("Incoming", telephony_medium="Twilio")
+		self.assertFalse(doc.get("from"))
+		self.assertFalse(doc.to)

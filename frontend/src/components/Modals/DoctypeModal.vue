@@ -179,4 +179,31 @@ onMounted(async () => {
   }
   await triggerOnRender()
 })
+
+/**
+ * A call log turned round when the direction is.
+ *
+ * Switching Incoming to Outgoing without moving the numbers records the call
+ * backwards — and nothing on the screen says so, because both readings look
+ * equally plausible in a form. So the two ends swap with the switch, and the
+ * one role the call had follows: whoever dialled, or whoever picked up.
+ *
+ * Only what this screen filled in. A number typed by hand is left where it was
+ * put: somebody who wrote it meant it.
+ */
+watch(
+  () => document.doc?.type,
+  (direction, before) => {
+    if (props.doctype !== 'CRM Call Log' || !before || direction === before)
+      return
+    const doc = document.doc
+    Object.assign(doc, {
+      from: doc.to || '',
+      to: doc.from || '',
+      caller: direction === 'Incoming' ? '' : doc.receiver || doc.caller || '',
+      receiver:
+        direction === 'Incoming' ? doc.caller || doc.receiver || '' : '',
+    })
+  },
+)
 </script>

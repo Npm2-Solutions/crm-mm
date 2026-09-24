@@ -12,7 +12,9 @@ import EventModal from '@/components/Modals/EventModal.vue'
 import { showEventModal, activeEvent } from '@/composables/event'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
-import { call } from 'frappe-ui'
+import { call, dayjs } from 'frappe-ui'
+import { callParties, numberOf } from '@/utils/callLog'
+import { usersStore } from '@/stores/users'
 import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -23,6 +25,7 @@ const props = defineProps({
 const activities = defineModel({ type: Object })
 
 const { showModal } = useDoctypeModal()
+const { getUser } = usersStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 
@@ -112,6 +115,13 @@ function afterDoctype(d, isInsert = false) {
 
 // Call Logs
 function createCallLog() {
+  // The record already says who the call was with, and the session says who is
+  // logging it. Asking for both on every call is asking a question the screen
+  // can answer — and getting it wrong often enough, because which end is which
+  // depends on the direction and a form is filled the way it is laid out.
+  const theirNumber = numberOf(props.doc)
+  const me = getUser().name
+
   showModal({
     doctype: 'CRM Call Log',
     title: 'Call Log',
@@ -119,6 +129,11 @@ function createCallLog() {
       reference_doctype: props.doctype,
       reference_docname: props.doc?.name,
       reference_doc: { ...props.doc },
+      type: 'Outgoing',
+      telephony_medium: 'Manual',
+      status: 'Completed',
+      start_time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+      ...callParties({ direction: 'Outgoing', theirNumber, myNumber: '', me }),
     },
     callbacks: {
       afterInsert: (d) => afterDoctype(d, true),
