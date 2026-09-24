@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hasCellValue, splitColumnsForCard } from '@/utils/mobileList'
+import { cardFor, hasCellValue, splitColumnsForCard } from '@/utils/mobileList'
 
 // The shape the server sends for the default People list.
 const leadColumns = [
@@ -107,5 +107,49 @@ describe('hasCellValue', () => {
   // Dates arrive as `{ label, timeAgo }` from the list views.
   it('keeps a timestamp that only carries its relative form', () => {
     expect(hasCellValue({ timeAgo: '2 hours ago' })).toBe(true)
+  })
+})
+
+describe('cardFor', () => {
+  const columns = splitColumnsForCard([
+    { label: 'Caller', key: 'caller' },
+    { label: 'Type', key: 'type' },
+    { label: 'Status', key: 'status' },
+    { label: 'Created On', key: 'creation' },
+  ])
+
+  it('takes the timestamp out of the details, even when it is `creation`', () => {
+    expect(columns.trailing.key).toBe('creation')
+    const card = cardFor({ caller: 'Ada', type: 'Incoming' }, columns)
+    expect(card.details.map((c) => c.key)).not.toContain('creation')
+  })
+
+  it('keeps the first column as the heading when it has a value', () => {
+    const card = cardFor({ caller: 'Ada', type: 'Incoming' }, columns)
+    expect(card.title.key).toBe('caller')
+    expect(card.details.map((c) => c.key)).toEqual(['type'])
+  })
+
+  // An anonymous call has no caller. Without this the card rendered with
+  // nothing at the top and the first detail floating up beside the checkbox.
+  it('promotes the first thing the row has when the heading cell is empty', () => {
+    const card = cardFor(
+      { caller: '', type: 'Outgoing', status: 'Failed' },
+      columns,
+    )
+    expect(card.title.key).toBe('type')
+    expect(card.details.map((c) => c.key)).toEqual(['status'])
+  })
+
+  it('leaves the heading alone when the row has nothing at all', () => {
+    const card = cardFor({}, columns)
+    expect(card.title.key).toBe('caller')
+    expect(card.details).toEqual([])
+    expect(card.trailing).toBeNull()
+  })
+
+  it('drops a trailing timestamp the row does not have', () => {
+    const card = cardFor({ caller: 'Ada' }, columns)
+    expect(card.trailing).toBeNull()
   })
 })

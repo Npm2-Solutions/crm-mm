@@ -19,7 +19,7 @@
       <template v-if="!group.collapsed">
         <component
           :is="routeFor(row) ? 'router-link' : 'div'"
-          v-for="row in group.rows"
+          v-for="{ row, card } in group.cards"
           :key="row[rowKey]"
           v-bind="routeFor(row) ? { to: routeFor(row) } : {}"
           class="flex gap-3 border-b border-outline-gray-1 py-3 last:border-b-0 active:bg-surface-gray-2"
@@ -47,27 +47,27 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-start justify-between gap-3">
               <div
-                v-if="titleColumn"
+                v-if="card.title"
                 class="min-w-0 flex-1 text-base-medium text-ink-gray-9"
               >
                 <slot
                   v-bind="{
-                    idx: titleColumn._idx,
-                    column: titleColumn,
-                    item: row[titleColumn.key],
+                    idx: card.title._idx,
+                    column: card.title,
+                    item: row[card.title.key],
                     row,
                   }"
                 />
               </div>
               <div
-                v-if="trailingColumn"
+                v-if="card.trailing"
                 class="shrink-0 text-sm text-ink-gray-5"
               >
                 <slot
                   v-bind="{
-                    idx: trailingColumn._idx,
-                    column: trailingColumn,
-                    item: row[trailingColumn.key],
+                    idx: card.trailing._idx,
+                    column: card.trailing,
+                    item: row[card.trailing.key],
                     row,
                   }"
                 />
@@ -78,10 +78,10 @@
                  like "12" or a date says nothing on its own once it is off the
                  table header it used to sit under. -->
             <dl
-              v-if="detailsFor(row).length"
+              v-if="card.details.length"
               class="mt-2 grid grid-cols-2 gap-x-3 gap-y-2"
             >
-              <div v-for="column in detailsFor(row)" :key="column.key">
+              <div v-for="column in card.details" :key="column.key">
                 <dt class="truncate text-xs text-ink-gray-5">
                   {{ __(column.label) }}
                 </dt>
@@ -117,7 +117,7 @@
  * scoped slot as `ListRows.vue`, so each *ListView keeps one copy of its cell
  * renderers and only swaps which component lays them out.
  */
-import { hasCellValue, splitColumnsForCard } from '@/utils/mobileList'
+import { cardFor, splitColumnsForCard } from '@/utils/mobileList'
 import { useStorage } from '@vueuse/core'
 import { Checkbox, ListGroupHeader } from 'frappe-ui'
 import { ref, computed, watch, inject, onBeforeUnmount } from 'vue'
@@ -134,13 +134,11 @@ const selectable = computed(() => list.value.options.selectable)
 
 const cardColumns = computed(() => splitColumnsForCard(list.value.columns))
 
-const titleColumn = computed(() => cardColumns.value.title)
-const trailingColumn = computed(() => cardColumns.value.trailing)
-const detailColumns = computed(() => cardColumns.value.details)
-
-// Per row, not per list: which columns are empty depends on the person.
-function detailsFor(row) {
-  return detailColumns.value.filter((column) => hasCellValue(row[column.key]))
+// Which cells are empty depends on the row, and a row whose title cell is empty
+// needs its heading from somewhere — so the split is resolved once per row here,
+// rather than three times over in the template.
+function cardsOf(rows) {
+  return rows.map((row) => ({ row, card: cardFor(row, cardColumns.value) }))
 }
 
 const isGrouped = computed(
@@ -151,7 +149,10 @@ const isGrouped = computed(
 
 // One shape for both cases, so the template does not branch.
 const groups = computed(() =>
-  isGrouped.value ? props.rows : [{ rows: props.rows }],
+  (isGrouped.value ? props.rows : [{ rows: props.rows }]).map((group) => ({
+    ...group,
+    cards: cardsOf(group.rows),
+  })),
 )
 
 const isTappable = computed(
