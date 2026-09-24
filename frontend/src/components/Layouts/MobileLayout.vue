@@ -5,11 +5,14 @@
        scrollbar gutter and hands the page a horizontal scroll it never wanted. -->
   <div class="flex h-app w-full">
     <MobileSidebar />
-    <div
-      class="flex h-full min-w-0 flex-1 flex-col overflow-auto bg-surface-base px-safe"
-    >
+    <div class="flex h-full min-w-0 flex-1 flex-col px-safe">
       <MobileAppHeader />
-      <slot />
+      <!-- The scroll box is this wrapper, not the whole column, so the header
+           stays put and the tab bar is never scrolled off the bottom. -->
+      <div class="flex min-h-0 flex-1 flex-col overflow-auto bg-surface-base">
+        <slot />
+      </div>
+      <MobileBottomNav />
     </div>
     <GlobalModals />
   </div>
@@ -17,5 +20,6 @@
 <script setup>
 import MobileSidebar from '@/components/Mobile/MobileSidebar.vue'
 import MobileAppHeader from '@/components/Mobile/MobileAppHeader.vue'
+import MobileBottomNav from '@/components/Mobile/MobileBottomNav.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
 </script>

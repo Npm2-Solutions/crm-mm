@@ -15,7 +15,7 @@
         leave-from="translate-x-0"
         leave-to="-translate-x-full"
       >
-        <div class="relative z-10 h-full w-fit">
+        <div class="relative z-10 h-full w-fit pb-safe pt-safe">
           <AppSidebar mobile />
         </div>
       </TransitionChild>
