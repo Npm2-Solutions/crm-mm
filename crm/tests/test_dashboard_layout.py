@@ -26,8 +26,12 @@ class TestPeriods(unittest.TestCase):
 	def test_normalize_fills_missing_ends_and_swaps_reversed_ones(self):
 		today = D(2026, 9, 24)
 		self.assertEqual(periods.normalize(None, None, today), (D(2026, 9, 1), D(2026, 9, 30)))
-		self.assertEqual(periods.normalize("2026-09-30", "2026-09-01", today), (D(2026, 9, 1), D(2026, 9, 30)))
-		self.assertEqual(periods.normalize("2026-09-10 10:00:00", "", today), (D(2026, 9, 10), D(2026, 9, 24)))
+		self.assertEqual(
+			periods.normalize("2026-09-30", "2026-09-01", today), (D(2026, 9, 1), D(2026, 9, 30))
+		)
+		self.assertEqual(
+			periods.normalize("2026-09-10 10:00:00", "", today), (D(2026, 9, 10), D(2026, 9, 24))
+		)
 		self.assertEqual(periods.normalize("not a date", None, today), (D(2026, 9, 1), D(2026, 9, 30)))
 
 	def test_grain_follows_the_length(self):
@@ -85,7 +89,11 @@ class TestSanitize(unittest.TestCase):
 		raw = [
 			"nope",
 			{"name": ""},
-			{"name": "won_deals", "layout": {"x": 0, "y": 0, "w": 4, "h": 3, "i": "won"}, "data": {"value": 1}},
+			{
+				"name": "won_deals",
+				"layout": {"x": 0, "y": 0, "w": 4, "h": 3, "i": "won"},
+				"data": {"value": 1},
+			},
 		]
 		cleaned = layout.sanitize(raw)
 		self.assertEqual(len(cleaned), 1)
@@ -145,8 +153,15 @@ class TestPayloads(unittest.TestCase):
 		rows = [(f"s{index}", 10 - index) for index in range(9)] + [("zero", 0)]
 		donut = charts.donut(rows, other_label="Other")
 		self.assertEqual(len(donut["slices"]), charts.MAX_SLICES)
-		self.assertEqual(donut["slices"][-1], {"label": "Other", "value": 5 + 4 + 3 + 2})
+		self.assertEqual(donut["slices"][-1], {"label": "Other", "value": 5 + 4 + 3 + 2, "other": True})
 		self.assertEqual(donut["total"], sum(10 - index for index in range(9)))
+
+	def test_a_known_thing_keeps_its_palette_slot(self):
+		donut = charts.donut([("Read", 2, "darkgreen"), ("Failed", 9, "pink"), ("Odd", 1, "chartreuse")])
+		self.assertEqual([slice_.get("color") for slice_ in donut["slices"]], ["pink", "darkgreen", None])
+		line = charts.series("missed", "Missed", [1, 2], color="red", dashed=True)
+		self.assertEqual((line["color"], line["dashed"]), ("red", True))
+		self.assertNotIn("color", charts.series("calls", "Calls", [1], color="#ff0000"))
 
 	def test_donut_names_the_empty_label(self):
 		self.assertEqual(charts.donut([(None, 3)], empty_label="Not set")["slices"][0]["label"], "Not set")

@@ -109,7 +109,8 @@ def tasks_completed(ctx: Context):
 )
 def tasks_by_status(ctx: Context):
 	rows = grouped(Task, Task.status, is_open(), assigned(ctx))
-	return charts.donut([(_(key), value) for key, value in rows])
+	colors = {"Backlog": "amber", "Todo": "blue", "In Progress": "green"}
+	return charts.donut([(_(key), value, colors.get(key)) for key, value in rows])
 
 
 @widget(
