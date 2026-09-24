@@ -244,6 +244,9 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 
 		from crm.api.conversations import set_state, wake_the_snoozed
 
+		# the site carries whatever earlier tests parked, so the count only means
+		# something once it has been drained: then the one we park is the one it counts
+		wake_the_snoozed()
 		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, hours=-1))
 		# the count is the job's whole answer, and it used to be whatever
 		# `frappe.db.sql` hands back for an update, which is not a number at all
