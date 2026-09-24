@@ -1,44 +1,6 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-center justify-between px-2">
-      <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
-          {{ __('Who does what') }}
-        </h2>
-        <p class="text-p-base text-ink-gray-6">
-          {{
-            __(
-              'Services by professional in one grid. Click an empty cell to assign, a filled one for their own length, price and online flag.',
-            )
-          }}
-        </p>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <Button
-          :label="__('Online booking')"
-          icon-left="lucide-globe"
-          :tooltip="__('Who clients can book online')"
-          @click="activeSettingsPage = 'Online booking'"
-        />
-        <FormControl
-          v-model="query"
-          type="text"
-          class="w-48"
-          :placeholder="__('Filter services…')"
-        />
-      </div>
-    </div>
-
-    <div
-      v-if="problems.length"
-      class="mx-2 flex gap-2 rounded-lg border border-outline-amber-2 bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
-    >
-      <span class="lucide-triangle-alert mt-0.5 size-4 shrink-0" />
-      <div class="flex flex-col gap-0.5">
-        <div v-for="problem in problems" :key="problem">{{ problem }}</div>
-      </div>
-    </div>
-
+  <!-- the body of the Services page: services by people, one grid -->
+  <div class="isolate flex min-h-0 flex-1 flex-col gap-4 text-ink-gray-8">
     <div class="flex-1 overflow-auto px-2">
       <table
         v-if="matrix.data?.services?.length"
@@ -47,18 +9,19 @@
         <thead class="sticky top-0 z-10 bg-surface-white">
           <tr>
             <th
-              class="sticky left-0 z-20 w-[280px] min-w-[280px] border-b border-outline-gray-2 bg-surface-white px-3 py-2 text-left text-p-xs font-medium text-ink-gray-5"
+              class="sticky left-0 z-20 w-[300px] min-w-[300px] border-b border-outline-gray-2 bg-surface-white px-3 py-2 text-left align-bottom text-p-xs font-medium text-ink-gray-5"
             >
               {{ __('Service') }}
             </th>
             <th
               v-for="person in matrix.data.staff"
               :key="person.user"
-              class="min-w-[96px] border-b border-outline-gray-2 px-1 py-2 text-center align-bottom"
+              class="min-w-[104px] border-b border-outline-gray-2 px-1 py-2 text-center align-top"
             >
               <Dropdown :options="columnActions(person)">
                 <button
-                  class="mx-auto flex max-w-[110px] flex-col items-center gap-1 rounded px-1 py-1 hover:bg-surface-gray-2"
+                  class="mx-auto flex min-h-[72px] w-full max-w-[110px] flex-col items-center justify-start gap-1 rounded px-1 py-1.5 hover:bg-surface-gray-2"
+                  :title="__('Actions for {0}', [person.full_name])"
                 >
                   <UserAvatar :user="person.user" size="sm" />
                   <span
@@ -67,7 +30,7 @@
                   >
                   <span
                     v-if="!person.online"
-                    class="text-p-xs text-ink-gray-4"
+                    class="rounded bg-surface-gray-2 px-1 text-p-xs text-ink-gray-5"
                     >{{ __('not online') }}</span
                   >
                 </button>
@@ -98,15 +61,23 @@
                     class="size-2.5 shrink-0 rounded-full"
                     :style="{ backgroundColor: service.color || '#4C7EFF' }"
                   />
-                  <span
-                    class="truncate text-ink-gray-8"
+                  <button
+                    class="min-w-0 truncate text-left text-p-base-medium text-ink-gray-8 hover:underline"
                     :class="service.enabled ? '' : 'line-through opacity-60'"
-                    >{{ service.service_name }}</span
+                    @click="emit('edit', service)"
                   >
+                    {{ service.service_name }}
+                  </button>
                   <Badge
                     v-if="service.bookable_online"
                     :label="__('Online')"
                     theme="blue"
+                    size="sm"
+                  />
+                  <Badge
+                    v-if="!service.enabled"
+                    :label="__('Off')"
+                    theme="gray"
                     size="sm"
                   />
                   <span class="grow" />
@@ -118,6 +89,9 @@
                       :disabled="busy"
                     />
                   </Dropdown>
+                </div>
+                <div class="truncate pl-4.5 text-p-xs text-ink-gray-5">
+                  {{ describe(service) }}
                 </div>
                 <div
                   v-for="warning in service.warnings"
@@ -183,7 +157,7 @@
         </span>
       </div>
       <div v-else-if="!matrix.loading" class="px-2 text-p-base text-ink-gray-5">
-        {{ __('No services yet. Create them in Agenda → Services.') }}
+        {{ __('No services yet. Create the first one!') }}
       </div>
     </div>
   </div>
@@ -261,7 +235,6 @@
 
 <script setup>
 import UserAvatar from '@/components/UserAvatar.vue'
-import { activeSettingsPage } from '@/composables/settings'
 import {
   createResource,
   Dialog,
@@ -273,16 +246,20 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
+const props = defineProps({
+  query: { type: String, default: '' },
+})
+const emit = defineEmits(['edit', 'remove'])
+
 const matrix = createResource({
   url: 'crm.api.booking_admin.get_matrix',
   auto: true,
 })
 
-const query = ref('')
 const busy = ref(false)
 
 const groups = computed(() => {
-  const q = query.value.trim().toLowerCase()
+  const q = props.query.trim().toLowerCase()
   const out = []
   for (const service of matrix.data?.services || []) {
     if (q && !service.service_name.toLowerCase().includes(q)) continue
@@ -295,12 +272,6 @@ const groups = computed(() => {
   }
   return out
 })
-
-const problems = computed(() =>
-  (matrix.data?.services || [])
-    .filter((s) => s.warnings?.length)
-    .map((s) => `${s.service_name}: ${s.warnings.join(', ')}`),
-)
 
 function cell(service, user) {
   return service.cells?.[user]
@@ -369,16 +340,48 @@ async function run(method, params) {
   busy.value = false
 }
 
+function describe(service) {
+  const parts = [`${service.duration} ${__('min')}`]
+  parts.push(
+    {
+      'Any one': __('round robin'),
+      'All required': __('collective'),
+      'One per role': __('one per role'),
+    }[service.staff_selection] || service.staff_selection,
+  )
+  if (service.max_participants > 1) {
+    parts.push(__('up to {0} people', [service.max_participants]))
+  }
+  if (service.default_price) {
+    parts.push(formatMoney(service.default_price, service.currency))
+  }
+  if (service.upcoming_count) {
+    parts.push(__('{0} upcoming', [service.upcoming_count]))
+  }
+  return parts.join(' · ')
+}
+
 function rowActions(service) {
   const actions = [
+    {
+      label: __('Edit service'),
+      icon: 'edit',
+      onClick: () => emit('edit', service),
+    },
     {
       label: __('Remove everyone'),
       icon: 'square',
       onClick: () => toggleRow(service, false),
     },
+    {
+      label: __('Delete service'),
+      icon: 'trash-2',
+      theme: 'red',
+      onClick: () => emit('remove', service),
+    },
   ]
   if (!rowFull(service)) {
-    actions.unshift({
+    actions.splice(1, 0, {
       label: __('Everyone delivers it'),
       icon: 'check-square',
       onClick: () => toggleRow(service, true),
@@ -469,4 +472,6 @@ async function saveCell(keep) {
   })
   showCell.value = false
 }
+
+defineExpose({ reload: () => matrix.reload() })
 </script>

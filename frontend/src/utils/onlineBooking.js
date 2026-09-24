@@ -1,3 +1,4 @@
+import { hhmm } from '@/utils/scheduler'
 // Pure helpers behind the online-booking settings of a service and the
 // booking-platform connections. Kept free of Vue so they are unit-tested.
 
@@ -66,7 +67,7 @@ export function onlineFieldsFrom(data = {}) {
     }
   }
   if (out.same_day_cutoff && out.same_day_cutoff.length > 5) {
-    out.same_day_cutoff = out.same_day_cutoff.slice(0, 5)
+    out.same_day_cutoff = hhmm(out.same_day_cutoff)
   }
   out.online_overrides = Array.isArray(data.online_overrides)
     ? [...data.online_overrides]
@@ -321,7 +322,7 @@ function normaliseRuleValue(key, value) {
   if (!rule) return value
   if (rule.type === 'check') return Boolean(Number(value))
   if (rule.type === 'number') return Number(value) || 0
-  if (rule.type === 'time') return String(value || '').slice(0, 5)
+  if (rule.type === 'time') return hhmm(value)
   return value
 }
 

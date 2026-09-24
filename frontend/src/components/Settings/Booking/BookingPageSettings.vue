@@ -22,13 +22,21 @@
     </div>
 
     <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-2">
-      <p class="text-p-sm text-ink-gray-6">
+      <div
+        class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
+      >
         {{
           __(
-            'Opening the page and choosing who clients can book is in Booking → Online booking.',
+            'Opening the page, and who clients can book for what, is in Online booking.',
           )
         }}
-      </p>
+        <Button
+          size="sm"
+          :label="__('Online booking')"
+          icon-left="lucide-globe"
+          @click="activeSettingsPage = 'Online booking'"
+        />
+      </div>
 
       <!-- link builder -->
       <section
@@ -214,6 +222,8 @@ import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
 import { buildBookingLink, embedSnippet } from '@/utils/onlineBooking'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import QRCode from 'qrcode'
+import { activeSettingsPage } from '@/composables/settings'
+import { hhmm } from '@/utils/scheduler'
 import { computed, defineComponent, h, reactive, ref, watch } from 'vue'
 
 // the rule on the settings page ↔ the service field that inherits it
@@ -382,9 +392,7 @@ createResource({
     })
     FIELDS.forEach((field) => {
       if (data[field] !== undefined && data[field] !== null)
-        form[field] = field.endsWith('cutoff')
-          ? String(data[field]).slice(0, 5)
-          : data[field]
+        form[field] = field.endsWith('cutoff') ? hhmm(data[field]) : data[field]
     })
   },
 })

@@ -101,7 +101,6 @@ import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
-import LucideGrid from '~icons/lucide/grid-3x3'
 import LucideCalendarCheck from '~icons/lucide/calendar-check'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
@@ -136,7 +135,6 @@ import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
 import BookingPlatforms from '@/components/Settings/Booking/BookingPlatforms.vue'
 import BookingPageSettings from '@/components/Settings/Booking/BookingPageSettings.vue'
 import OnlineBookingSetup from '@/components/Settings/Booking/OnlineBookingSetup.vue'
-import TeamMatrix from '@/components/Settings/Scheduling/TeamMatrix.vue'
 import GoogleCalendarSettings from '@/components/Settings/GoogleCalendarSettings.vue'
 import ServicesSettings from '@/components/Settings/Scheduling/ServicesSettings.vue'
 import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSettings.vue'
@@ -218,11 +216,6 @@ const tabs = computed(() => {
           label: __('Brand'),
           icon: SparkleIcon,
           component: markRaw(BrandSettings),
-        },
-        {
-          label: __('Calendar'),
-          icon: CalendarIcon,
-          component: markRaw(CalendarSettings),
         },
       ],
       condition: () => isManager(),
@@ -325,14 +318,15 @@ const tabs = computed(() => {
           component: markRaw(ServicesSettings),
         },
         {
-          label: __('Who does what'),
-          icon: markRaw(LucideGrid),
-          component: markRaw(TeamMatrix),
-        },
-        {
           label: __('Team rota'),
           icon: markRaw(LucideClock),
           component: markRaw(StaffSchedulesSettings),
+        },
+        {
+          // opening hours + what the agenda refuses: the studio's own rules
+          label: __('Studio hours & rules'),
+          icon: SettingsIcon,
+          component: markRaw(SchedulingDefaults),
         },
         {
           label: __('Rooms & Equipment'),
@@ -345,9 +339,10 @@ const tabs = computed(() => {
           component: markRaw(PriceListsSettings),
         },
         {
-          label: __('Scheduling'),
-          icon: SettingsIcon,
-          component: markRaw(SchedulingDefaults),
+          // calendar view and event reminders, next to the rest of the agenda
+          label: __('Calendar & reminders'),
+          icon: CalendarIcon,
+          component: markRaw(CalendarSettings),
         },
       ],
       condition: () => isManager(),

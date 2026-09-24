@@ -35,22 +35,20 @@
       />
       <span class="text-p-base-medium text-ink-gray-7">{{ weekLabel }}</span>
       <span class="grow" />
-      <span class="flex items-center gap-3 text-p-xs text-ink-gray-5">
-        <span class="flex items-center gap-1"
-          ><span class="size-2.5 rounded-sm bg-surface-green-2" />{{
-            __('Working')
-          }}</span
-        >
-        <span class="flex items-center gap-1"
-          ><span class="size-2.5 rounded-sm bg-surface-amber-2" />{{
-            __('Day off / holiday')
-          }}</span
-        >
-        <span class="flex items-center gap-1"
-          ><span class="size-2.5 rounded-sm bg-surface-blue-2" />{{
-            __('Extra hours')
-          }}</span
-        >
+      <span class="flex items-center gap-2 text-p-xs">
+        <span class="rounded bg-surface-green-2 px-1.5 py-0.5 text-ink-green-8">
+          {{ __('Working') }}
+        </span>
+        <span class="rounded bg-surface-amber-2 px-1.5 py-0.5 text-ink-amber-8">
+          {{ __('Day off / holiday') }}
+        </span>
+        <span class="rounded bg-surface-blue-2 px-1.5 py-0.5 text-ink-blue-8">
+          {{ __('Extra hours') }}
+        </span>
+        <span class="flex items-center gap-1 text-ink-gray-5">
+          <span class="h-1 w-5 rounded bg-surface-gray-7" />
+          {{ __('Booked') }}
+        </span>
       </span>
     </div>
 
@@ -107,6 +105,12 @@
               {{ w[0] }}–{{ w[1] }}
             </div>
             <div
+              v-if="cell.state === 'closed'"
+              class="py-0.5 text-center text-p-xs text-ink-gray-4"
+            >
+              {{ __('Closed') }}
+            </div>
+            <div
               v-if="cell.state === 'off' || cell.state === 'holiday'"
               class="truncate rounded bg-surface-amber-2 px-1 py-0.5 text-center text-p-xs text-ink-amber-8"
               :title="cell.reason"
@@ -147,94 +151,96 @@
     </div>
   </div>
 
-  <Dialog
-    v-model="showEditor"
-    :options="{ title: __('Working hours'), size: '2xl' }"
-  >
+  <Dialog v-model="showEditor" :options="{ title: editorTitle, size: '2xl' }">
     <template #body-content>
-      <div class="flex flex-col gap-4">
-        <div class="grid grid-cols-3 gap-3">
-          <Link
-            doctype="User"
-            :modelValue="form.user"
-            :label="__('Professional')"
-            :disabled="Boolean(editingUser)"
-            @update:modelValue="(v) => (form.user = v)"
+      <div class="flex flex-col gap-6">
+        <PersonPicker
+          v-if="!editingUser"
+          v-model="form.user"
+          :label="__('Professional')"
+          :exclude="withOwnHours"
+        />
+
+        <!-- 1. when they work -->
+        <section class="flex flex-col gap-3">
+          <h3 class="text-p-base-medium text-ink-gray-8">
+            {{ __('Working hours') }}
+          </h3>
+          <TabButtons
+            :modelValue="form.enabled ? 'own' : 'studio'"
+            :buttons="[
+              { label: __('Studio hours'), value: 'studio' },
+              { label: __('Own hours'), value: 'own' },
+            ]"
+            @update:modelValue="setOwnHours"
           />
-          <FormControl
-            v-model.number="form.max_daily_appointments"
-            type="number"
-            min="0"
-            :label="__('Max per day')"
-            :description="__('0 = no limit')"
-          />
+          <div
+            v-if="!form.enabled"
+            class="rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
+          >
+            <div v-if="studioSummary.length" class="flex flex-col gap-0.5">
+              <div v-for="line in studioSummary" :key="line">{{ line }}</div>
+            </div>
+            <div v-else>
+              {{ __('No studio hours set: available any time.') }}
+            </div>
+            <div class="mt-1.5 text-p-xs text-ink-gray-5">
+              {{
+                __(
+                  'The studio hours are set in Agenda → Studio hours & rules and apply to everyone without their own.',
+                )
+              }}
+            </div>
+          </div>
+          <WeeklyHours v-else v-model="form.availability" />
           <Link
             doctype="CRM Holiday List"
             :modelValue="form.holiday_list"
-            :label="__('Holiday list')"
+            :label="__('Holiday calendar')"
+            :placeholder="
+              form.enabled
+                ? __('None')
+                : form.default_holiday_list || __('The studio\'s')
+            "
+            :disabled="!form.enabled"
             @update:modelValue="(v) => (form.holiday_list = v)"
           />
-        </div>
-        <div class="grid grid-cols-3 items-end gap-3">
-          <FormControl
-            v-model.number="form.max_weekly_appointments"
-            type="number"
-            min="0"
-            :label="__('Max per week')"
-            :description="__('0 = no limit')"
-          />
-          <label class="flex h-7 items-center gap-2 text-sm text-ink-gray-7">
-            <Switch v-model="form.enabled" size="sm" /> {{ __('Own hours') }}
-          </label>
-          <label class="flex h-7 items-center gap-2 text-sm text-ink-gray-7">
-            <Switch v-model="form.bookable_online" size="sm" />
-            {{ __('Bookable online') }}
-          </label>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <FormControl
-            v-model="form.public_title"
-            type="text"
-            :label="__('Title on the booking page')"
-            :placeholder="__('e.g. Physiotherapist')"
-          />
-          <FormControl
-            v-model="form.public_bio"
-            type="text"
-            :label="__('Short bio')"
-          />
-        </div>
+        </section>
 
-        <WeeklyHours v-model="form.availability" :label="__('Weekly hours')" />
-
-        <div class="flex flex-col gap-2">
-          <FormLabel :label="__('Date overrides')" />
-          <p class="text-p-xs text-ink-gray-5">
-            {{ __('A day off, or extra hours on one specific date.') }}
+        <!-- 2. one-off days -->
+        <section class="flex flex-col gap-2">
+          <h3 class="text-p-base-medium text-ink-gray-8">
+            {{ __('Days off and extra hours') }}
+          </h3>
+          <p class="text-p-sm text-ink-gray-5">
+            {{ __('Holidays, sick days, or extra hours on one date.') }}
           </p>
           <div
             v-for="(row, i) in form.exceptions"
             :key="i"
-            class="grid grid-cols-[1fr_110px_1fr_1fr_1fr_32px] items-center gap-2"
+            class="grid grid-cols-[140px_130px_1fr_1fr_1.4fr_32px] items-center gap-2"
           >
             <FormControl v-model="row.date" type="date" />
-            <label class="flex items-center gap-1.5 text-p-xs text-ink-gray-7">
-              <Switch v-model="row.unavailable" size="sm" /> {{ __('Off') }}
-            </label>
             <FormControl
-              v-model="row.start_time"
-              type="time"
-              :disabled="row.unavailable"
+              :modelValue="row.unavailable ? 'off' : 'extra'"
+              type="select"
+              :options="[
+                { label: __('Day off'), value: 'off' },
+                { label: __('Extra hours'), value: 'extra' },
+              ]"
+              @update:modelValue="(v) => (row.unavailable = v === 'off')"
             />
-            <FormControl
-              v-model="row.end_time"
-              type="time"
-              :disabled="row.unavailable"
-            />
+            <template v-if="!row.unavailable">
+              <FormControl v-model="row.start_time" type="time" />
+              <FormControl v-model="row.end_time" type="time" />
+            </template>
+            <span v-else class="col-span-2 text-p-sm text-ink-gray-5">
+              {{ __('All day') }}
+            </span>
             <FormControl
               v-model="row.reason"
               type="text"
-              :placeholder="__('Reason')"
+              :placeholder="__('Reason (optional)')"
             />
             <Button
               variant="ghost"
@@ -246,7 +252,7 @@
             variant="ghost"
             size="sm"
             class="self-start"
-            :label="__('Add override')"
+            :label="__('Add a date')"
             iconLeft="plus"
             @click="
               form.exceptions.push({
@@ -258,7 +264,30 @@
               })
             "
           />
-        </div>
+        </section>
+
+        <!-- 3. how much -->
+        <section class="flex flex-col gap-3">
+          <h3 class="text-p-base-medium text-ink-gray-8">
+            {{ __('Limits') }}
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <FormControl
+              v-model.number="form.max_daily_appointments"
+              type="number"
+              min="0"
+              :label="__('Appointments per day')"
+              :placeholder="__('No limit')"
+            />
+            <FormControl
+              v-model.number="form.max_weekly_appointments"
+              type="number"
+              min="0"
+              :label="__('Appointments per week')"
+              :placeholder="__('No limit')"
+            />
+          </div>
+        </section>
       </div>
     </template>
     <template #actions>
@@ -275,17 +304,19 @@
 
 <script setup>
 import Link from '@/components/Controls/Link.vue'
+import PersonPicker from '@/components/Settings/Scheduling/PersonPicker.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import {
+  call,
   createResource,
   Dialog,
   FormControl,
-  FormLabel,
-  Switch,
+  TabButtons,
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+import { hhmm } from '@/utils/scheduler'
 
 const weekStart = ref('')
 const todayIso = new Date().toISOString().slice(0, 10)
@@ -327,7 +358,7 @@ function dayLabel(day) {
 }
 
 function personHint(person) {
-  const parts = [person.own_schedule ? __('own hours') : __('default hours')]
+  const parts = [person.own_schedule ? __('own hours') : __('studio hours')]
   if (person.daily_cap) parts.push(__('max {0}/day', [person.daily_cap]))
   if (person.weekly_cap) parts.push(__('max {0}/week', [person.weekly_cap]))
   if (!person.online) parts.push(__('not online'))
@@ -340,48 +371,78 @@ const editingUser = ref('')
 
 const emptyForm = () => ({
   user: '',
-  enabled: true,
-  max_daily_appointments: 0,
-  max_weekly_appointments: 0,
-  bookable_online: true,
-  public_title: '',
-  public_bio: '',
+  full_name: '',
+  enabled: false,
+  max_daily_appointments: null,
+  max_weekly_appointments: null,
   holiday_list: '',
   availability: [],
   exceptions: [],
+  default_availability: [],
+  default_holiday_list: '',
 })
 
 const form = reactive(emptyForm())
 
-function openEditor(user = '') {
+const editorTitle = computed(() =>
+  editingUser.value
+    ? __('Hours of {0}', [form.full_name || editingUser.value])
+    : __('Set hours'),
+)
+
+const withOwnHours = computed(() =>
+  (rota.data?.team || []).filter((p) => p.own_schedule).map((p) => p.user),
+)
+
+// "Mon 09:00–13:00, 14:00–18:00" — the studio hours, read only
+const studioSummary = computed(() => {
+  const byDay = {}
+  for (const row of form.default_availability || []) {
+    ;(byDay[row.workday] ||= []).push(
+      `${hhmm(row.start_time)}–${hhmm(row.end_time)}`,
+    )
+  }
+  return Object.entries(byDay).map(
+    ([day, windows]) => `${__(day)}: ${windows.join(', ')}`,
+  )
+})
+
+function setOwnHours(mode) {
+  form.enabled = mode === 'own'
+  // start from the studio's week instead of an empty one
+  if (form.enabled && !form.availability.length) {
+    form.availability = (form.default_availability || []).map((row) => ({
+      ...row,
+    }))
+  }
+}
+
+async function openEditor(user = '') {
   editingUser.value = user
   Object.assign(form, emptyForm())
-  if (!user) {
+  try {
+    const data = await call('crm.api.appointments.get_schedule', {
+      user,
+    })
+    Object.assign(form, data, {
+      user,
+      enabled: Boolean(data.enabled),
+      max_daily_appointments: data.max_daily_appointments || null,
+      max_weekly_appointments: data.max_weekly_appointments || null,
+      holiday_list: data.holiday_list || '',
+      availability: data.availability || [],
+      exceptions: (data.exceptions || []).map((row) => ({
+        date: row.date,
+        unavailable: Boolean(row.unavailable),
+        start_time: hhmm(row.start_time),
+        end_time: hhmm(row.end_time),
+        reason: row.reason || '',
+      })),
+    })
     showEditor.value = true
-    return
+  } catch (e) {
+    toast.error(e.messages?.[0] || __('Failed to load'))
   }
-  createResource({
-    url: 'crm.api.appointments.get_schedule',
-    params: { user },
-    auto: true,
-    onSuccess: (data) => {
-      Object.assign(form, data, {
-        enabled: Boolean(data.enabled),
-        bookable_online: data.bookable_online !== 0,
-        holiday_list: data.holiday_list || '',
-        availability: data.availability || [],
-        exceptions: (data.exceptions || []).map((row) => ({
-          date: row.date,
-          unavailable: Boolean(row.unavailable),
-          start_time: String(row.start_time || '').slice(0, 5),
-          end_time: String(row.end_time || '').slice(0, 5),
-          reason: row.reason || '',
-        })),
-      })
-      showEditor.value = true
-    },
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to load')),
-  })
 }
 
 function save() {
@@ -389,14 +450,22 @@ function save() {
     toast.error(__('Pick a professional'))
     return
   }
+  if (form.enabled && !form.availability.length) {
+    toast.error(__('Add at least one time slot, or use the studio hours'))
+    return
+  }
   saving.value = true
   createResource({
     url: 'crm.api.appointments.save_schedule',
     params: {
       schedule: {
-        ...form,
+        user: form.user,
         enabled: form.enabled ? 1 : 0,
-        bookable_online: form.bookable_online ? 1 : 0,
+        max_daily_appointments: Number(form.max_daily_appointments) || 0,
+        max_weekly_appointments: Number(form.max_weekly_appointments) || 0,
+        holiday_list: form.enabled ? form.holiday_list : '',
+        availability: form.enabled ? form.availability : [],
+        exceptions: form.exceptions,
       },
     },
     auto: true,

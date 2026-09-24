@@ -1,53 +1,113 @@
 <template>
   <div class="flex flex-col gap-2">
-    <div class="flex items-center justify-between">
-      <FormLabel :label="label" />
-      <Button
-        v-if="!modelValue.length"
-        size="sm"
-        variant="ghost"
-        :label="__('Mon–Fri 9–18')"
-        @click="fillWeekdays"
-      />
+    <div v-if="label" class="text-p-base-medium text-ink-gray-8">
+      {{ label }}
     </div>
-    <p v-if="hint" class="text-p-xs text-ink-gray-5">{{ hint }}</p>
-    <div
-      v-for="(row, i) in modelValue"
-      :key="i"
-      class="grid grid-cols-[1fr_1fr_1fr_32px] items-center gap-2"
+    <!-- optional hours: empty means "any time", said in words, never as a
+         week of closed days -->
+    <template v-if="anyTimeLabel">
+      <TabButtons
+        :modelValue="restricted ? 'set' : 'any'"
+        :buttons="[
+          { label: anyTimeLabel, value: 'any' },
+          { label: __('Only at set times'), value: 'set' },
+        ]"
+        @update:modelValue="setRestricted"
+      />
+      <p v-if="!restricted && anyTimeHint" class="text-p-sm text-ink-gray-5">
+        {{ anyTimeHint }}
+      </p>
+    </template>
+    <p
+      v-if="hint && (!anyTimeLabel || restricted)"
+      class="text-p-sm text-ink-gray-5"
     >
-      <FormControl
-        :modelValue="row.workday"
-        type="select"
-        :options="weekdayOptions"
-        @update:modelValue="(v) => patch(i, { workday: v })"
-      />
-      <FormControl
-        :modelValue="short(row.start_time)"
-        type="time"
-        @update:modelValue="(v) => patch(i, { start_time: v })"
-      />
-      <FormControl
-        :modelValue="short(row.end_time)"
-        type="time"
-        @update:modelValue="(v) => patch(i, { end_time: v })"
-      />
-      <Button variant="ghost" icon="lucide-trash-2" @click="removeRow(i)" />
+      {{ hint }}
+    </p>
+    <div
+      v-if="!anyTimeLabel || restricted"
+      class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+    >
+      <div
+        v-for="day in WEEKDAYS"
+        :key="day"
+        class="group flex min-h-11 items-start gap-3 px-3 py-2"
+      >
+        <label class="flex h-7 w-32 shrink-0 cursor-pointer items-center gap-2">
+          <Switch
+            size="sm"
+            :modelValue="windows(day).length > 0"
+            @update:modelValue="(on) => toggleDay(day, on)"
+          />
+          <span
+            class="text-p-sm"
+            :class="windows(day).length ? 'text-ink-gray-8' : 'text-ink-gray-5'"
+            >{{ __(day) }}</span
+          >
+        </label>
+        <div
+          v-if="windows(day).length"
+          class="flex flex-1 flex-wrap items-center gap-2"
+        >
+          <div
+            v-for="(row, i) in windows(day)"
+            :key="i"
+            class="flex items-center gap-1"
+          >
+            <FormControl
+              class="w-[92px]"
+              :modelValue="hhmm(row.start_time)"
+              type="time"
+              @update:modelValue="(v) => patch(row, { start_time: v })"
+            />
+            <span class="text-ink-gray-4">–</span>
+            <FormControl
+              class="w-[92px]"
+              :modelValue="hhmm(row.end_time)"
+              type="time"
+              @update:modelValue="(v) => patch(row, { end_time: v })"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="lucide-x"
+              :tooltip="__('Remove')"
+              @click="remove(row)"
+            />
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="lucide-plus"
+            :tooltip="__('Add a time slot (e.g. after lunch)')"
+            @click="addWindow(day)"
+          />
+          <span class="grow" />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="opacity-0 transition-opacity group-hover:opacity-100"
+            :label="__('Copy to all')"
+            :tooltip="__('Use these hours on every open day')"
+            icon-left="lucide-copy"
+            @click="copyToAll(day)"
+          />
+        </div>
+        <span v-else class="flex h-7 items-center text-p-sm text-ink-gray-4">
+          {{ __('Closed') }}
+        </span>
+      </div>
     </div>
-    <Button
-      variant="ghost"
-      size="sm"
-      class="self-start"
-      :label="__('Add hours')"
-      iconLeft="plus"
-      @click="addRow"
-    />
   </div>
 </template>
 
 <script setup>
-import { Button, FormControl, FormLabel } from 'frappe-ui'
-import { computed } from 'vue'
+// A week, one line per day: switch it on, give it one or more time slots.
+// The value stays the flat `[{ workday, start_time, end_time }]` the server
+// stores, so every caller (team rota, services, studio hours) is unchanged.
+import { Button, FormControl, Switch, TabButtons } from 'frappe-ui'
+import { hhmm } from '@/utils/scheduler'
+import { computed, ref } from 'vue'
 
 const WEEKDAYS = [
   'Monday',
@@ -64,47 +124,102 @@ const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   label: { type: String, default: '' },
   hint: { type: String, default: '' },
+  /** set it when no hours is a valid choice, e.g. "Whenever the team works" */
+  anyTimeLabel: { type: String, default: '' },
+  anyTimeHint: { type: String, default: '' },
 })
 const emit = defineEmits(['update:modelValue'])
 
-const weekdayOptions = computed(() =>
-  WEEKDAYS.map((day) => ({ label: __(day), value: day })),
+// "set times" chosen but not filled yet still shows the week
+const wantsSetTimes = ref(false)
+const restricted = computed(
+  () => wantsSetTimes.value || props.modelValue.length > 0,
 )
 
-/** `"09:00:00"` and `"09:00"` both come back from the server. */
-function short(value) {
-  return String(value || '').slice(0, 5)
+function setRestricted(mode) {
+  wantsSetTimes.value = mode === 'set'
+  if (mode === 'any') {
+    emit('update:modelValue', [])
+  } else if (!props.modelValue.length) {
+    emit(
+      'update:modelValue',
+      WEEKDAYS.slice(0, 5).map((workday) => ({
+        workday,
+        start_time: '09:00',
+        end_time: '18:00',
+      })),
+    )
+  }
 }
 
-function patch(index, changes) {
-  const next = props.modelValue.map((row, i) =>
-    i === index ? { ...row, ...changes } : row,
+function windows(day) {
+  return props.modelValue
+    .filter((row) => row.workday === day)
+    .sort((a, b) => hhmm(a.start_time).localeCompare(hhmm(b.start_time)))
+}
+
+// rows keep WEEKDAYS order so the saved table reads Monday → Sunday
+function commit(rows) {
+  emit(
+    'update:modelValue',
+    WEEKDAYS.flatMap((day) =>
+      rows
+        .filter((row) => row.workday === day)
+        .sort((a, b) => hhmm(a.start_time).localeCompare(hhmm(b.start_time))),
+    ),
   )
-  emit('update:modelValue', next)
 }
 
-function addRow() {
-  emit('update:modelValue', [
+function patch(row, changes) {
+  commit(props.modelValue.map((r) => (r === row ? { ...r, ...changes } : r)))
+}
+
+function remove(row) {
+  commit(props.modelValue.filter((r) => r !== row))
+}
+
+function toggleDay(day, on) {
+  if (!on) {
+    commit(props.modelValue.filter((r) => r.workday !== day))
+    return
+  }
+  // a new day copies the nearest working day, else a plain 9–18
+  const template = WEEKDAYS.map((d) => windows(d)).find((w) => w.length) || [
+    { start_time: '09:00', end_time: '18:00' },
+  ]
+  commit([
     ...props.modelValue,
-    { workday: 'Monday', start_time: '09:00', end_time: '18:00' },
+    ...template.map((w) => ({
+      workday: day,
+      start_time: hhmm(w.start_time),
+      end_time: hhmm(w.end_time),
+    })),
   ])
 }
 
-function removeRow(index) {
-  emit(
-    'update:modelValue',
-    props.modelValue.filter((_, i) => i !== index),
-  )
+function addWindow(day) {
+  const last = windows(day).at(-1)
+  const start = last ? hhmm(last.end_time) : '09:00'
+  const [h, m] = start.split(':').map(Number)
+  const end = `${String(Math.min(h + 2, 23)).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  commit([
+    ...props.modelValue,
+    { workday: day, start_time: start, end_time: end },
+  ])
 }
 
-function fillWeekdays() {
-  emit(
-    'update:modelValue',
-    WEEKDAYS.slice(0, 5).map((day) => ({
-      workday: day,
-      start_time: '09:00',
-      end_time: '18:00',
-    })),
-  )
+function copyToAll(day) {
+  const source = windows(day)
+  const open = WEEKDAYS.filter((d) => windows(d).length)
+  commit([
+    ...props.modelValue.filter((r) => !open.includes(r.workday)),
+    ...open.flatMap((d) =>
+      source.map((w) => ({
+        workday: d,
+        start_time: hhmm(w.start_time),
+        end_time: hhmm(w.end_time),
+      })),
+    ),
+  ])
 }
 </script>

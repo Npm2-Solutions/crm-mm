@@ -3,7 +3,7 @@
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-col">
         <span class="text-p-base-medium text-ink-gray-8">
-          {{ __('Online booking') }}
+          {{ __('Online rules') }}
         </span>
         <span class="text-p-sm text-ink-gray-5">
           {{
@@ -120,7 +120,7 @@
           />
           <Button
             v-else
-            variant="subtle"
+            variant="ghost"
             size="sm"
             :label="__('Customise')"
             @click="setCustomised(form, rule.key, true)"

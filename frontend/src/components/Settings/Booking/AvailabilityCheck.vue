@@ -144,7 +144,8 @@ defineProps({
 const FIXES = {
   service: () => __('Agenda → Services'),
   online_rules: () => __('Booking page defaults, or the service online panel'),
-  matrix: () => __('Booking → Online booking, or Agenda → Who does what'),
+  matrix: () =>
+    __('Booking → Online booking, or the grid in Agenda → Services'),
   rota: () => __('Agenda → Team rota'),
   calendar: () => __('the calendar'),
   resources: () => __('Agenda → Rooms & equipment'),
