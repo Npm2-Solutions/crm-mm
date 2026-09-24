@@ -212,3 +212,55 @@ describe('readableDuration', () => {
     expect(readableDuration(null)).toBe('0s')
   })
 })
+
+describe('an arrival written down three times', () => {
+  it('never puts the record before the ad that produced it', () => {
+    // the attribution is stamped a second after the row is inserted, and the
+    // timeline said the lead was created before the ad that made it
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: '2026-09-22 09:15:02',
+      first_touch: {
+        on: '2026-09-22 09:15:04',
+        category: 'Paid Social',
+        landing_page: 'lead_ad_form',
+      },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['touch', 'record'])
+  })
+
+  it('holds the other way round too', () => {
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: '2026-09-22 09:15:06',
+      first_touch: { on: '2026-09-22 09:15:01', category: 'Paid Social' },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['touch', 'record'])
+  })
+
+  it('still lets the clock decide when they are really apart', () => {
+    // somebody read a page, left, and met the ad a week later: that order is
+    // a fact about them, not an accident of two clocks
+    const rows = buildTimeline({
+      sessions: [],
+      events: [],
+      created_on: '2026-09-15 10:00:00',
+      first_touch: { on: '2026-09-22 10:00:00', category: 'Paid Social' },
+      ad: { ad_id: '123' },
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['record', 'touch'])
+  })
+
+  it('does not bend a visit or an event around the record', () => {
+    const rows = buildTimeline({
+      sessions: [visit('s1', '2026-09-22 09:15:01')],
+      events: [],
+      created_on: '2026-09-22 09:15:03',
+    })
+    expect(rows.map((r) => r.kind)).toEqual(['visit', 'record'])
+  })
+})

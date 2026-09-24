@@ -184,6 +184,9 @@ override_doctype_class = {
 doc_events = {
 	"Contact": {
 		"validate": ["crm.api.contact.validate"],
+		# created by a webhook, a form, a booking: nobody was logged in, and
+		# «Guest created this contact» reads like somebody got in from outside
+		"before_insert": ["crm.utils.ownership.credit_the_system"],
 	},
 	"Notification Log": {
 		"before_insert": ["crm.extends.notification_log.before_insert"],
@@ -230,7 +233,10 @@ doc_events = {
 		"after_insert": ["crm.automation.engine.on_whatsapp_received"],
 	},
 	"CRM Lead": {
-		"before_insert": ["crm.api.tracking.stamp_manual_source"],
+		"before_insert": [
+			"crm.api.tracking.stamp_manual_source",
+			"crm.utils.ownership.credit_the_system",
+		],
 		"after_insert": [
 			"crm.api.tracking.bind_visitor",
 			"crm.automation.engine.on_lead_created",
@@ -247,7 +253,10 @@ doc_events = {
 		"on_update": ["crm.api.mirror.on_organization_updated"],
 	},
 	"CRM Deal": {
-		"before_insert": ["crm.api.tracking.stamp_manual_source"],
+		"before_insert": [
+			"crm.api.tracking.stamp_manual_source",
+			"crm.utils.ownership.credit_the_system",
+		],
 		"on_update": [
 			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext",
 			"crm.automation.engine.on_deal_updated",

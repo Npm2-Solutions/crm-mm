@@ -516,3 +516,45 @@ class TestAConversationIsNotSplitInTwo(FrappeTestCase):
 
 		self.assertEqual(adopt_orphans("", "CRM Lead", "X"), 0)
 		self.assertEqual(adopt_orphans("393400000003", "", ""), 0)
+
+
+class TestNobodyIsCalledGuest(FrappeTestCase):
+	"""A lead from a Meta form, a WhatsApp message from a stranger, a booking on
+	the public page: all created with nobody logged in, so Frappe stamps `Guest`
+	and the history reads «Guest created this lead». True, and useless — Guest is
+	not a person, and on a screen full of names it reads like somebody outside
+	the company got in."""
+
+	def test_guest_becomes_the_system(self):
+		from crm.utils.ownership import SYSTEM_USER, credit_the_system
+
+		doc = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Anonimo"})
+		doc.owner = "Guest"
+		doc.modified_by = "Guest"
+		credit_the_system(doc)
+		self.assertEqual(doc.owner, SYSTEM_USER)
+		self.assertEqual(doc.modified_by, SYSTEM_USER)
+
+	def test_a_real_person_keeps_their_record(self):
+		from crm.utils.ownership import credit_the_system
+
+		doc = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Anonimo"})
+		doc.owner = "mm@mmwebagency.it"
+		doc.modified_by = "mm@mmwebagency.it"
+		credit_the_system(doc)
+		self.assertEqual(doc.owner, "mm@mmwebagency.it")
+		self.assertEqual(doc.modified_by, "mm@mmwebagency.it")
+
+	def test_the_hook_runs_late_enough_to_win(self):
+		"""`set_user_and_timestamp()` fills `owner` before `before_insert` runs,
+		so overwriting it there is what reaches the database. The order is
+		Frappe's, and this is the assertion that notices if it ever changes."""
+		import inspect
+
+		from frappe.model.document import Document
+
+		source = inspect.getsource(Document.insert)
+		self.assertLess(
+			source.index("set_user_and_timestamp"),
+			source.index('run_method("before_insert")'),
+		)
