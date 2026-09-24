@@ -90,6 +90,7 @@ import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplate
 import TelephonyPage from '@/components/Settings/Telephony/TelephonyPage.vue'
 import BookingSettings from '@/components/Settings/Booking/BookingSettings.vue'
 import BookingPlatforms from '@/components/Settings/Booking/BookingPlatforms.vue'
+import BookingPageSettings from '@/components/Settings/Booking/BookingPageSettings.vue'
 import GoogleCalendarSettings from '@/components/Settings/GoogleCalendarSettings.vue'
 import ServicesSettings from '@/components/Settings/Scheduling/ServicesSettings.vue'
 import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSettings.vue'
@@ -302,6 +303,12 @@ const tabs = computed(() => {
     {
       label: __('Booking'),
       items: [
+        {
+          label: __('Booking page'),
+          icon: LucideGlobe,
+          component: markRaw(BookingPageSettings),
+          condition: () => isManager(),
+        },
         {
           label: __('Booking Calendars'),
           icon: CalendarIcon,

@@ -131,7 +131,7 @@
               />
               <span
                 v-if="sourceTag(block)"
-                class="ml-auto shrink-0 truncate rounded bg-surface-white/70 px-1 text-[10px] leading-4 text-ink-gray-6"
+                class="ml-auto shrink-0 truncate rounded bg-surface-white px-1 text-p-xs text-ink-gray-6"
                 :title="block.external_platform || __('Booked online')"
               >
                 {{ sourceTag(block) }}

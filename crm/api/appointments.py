@@ -1192,6 +1192,15 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		"sync_to_event",
 		"check_google_busy",
 		"default_holiday_list",
+		# the public /prenota page
+		"online_booking_enabled",
+		"booking_page_title",
+		"booking_page_intro",
+		"privacy_policy_url",
+		"require_privacy_consent",
+		"notify_staff_on_booking",
+		"send_client_confirmation",
+		"max_active_per_customer",
 	):
 		if key in payload:
 			doc.set(key, payload[key])

@@ -21,34 +21,6 @@
       />
     </div>
 
-    <!-- the practice's own booking page -->
-    <div
-      class="mx-2 flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 bg-surface-gray-1 px-3 py-2"
-    >
-      <div class="flex min-w-0 flex-col">
-        <span class="text-p-base-medium text-ink-gray-7">
-          {{ __('Your booking page') }}
-        </span>
-        <span class="truncate text-p-sm text-ink-gray-5">
-          {{ ownPage }} ·
-          {{
-            __(
-              'services marked "Bookable online", with their limits (Settings → Services)',
-            )
-          }}
-        </span>
-      </div>
-      <div class="flex shrink-0 gap-1">
-        <Button
-          variant="ghost"
-          icon="lucide-copy"
-          :tooltip="__('Copy link')"
-          @click="copy(ownPage)"
-        />
-        <Button variant="ghost" icon="lucide-external-link" :link="ownPage" />
-      </div>
-    </div>
-
     <div class="flex-1 overflow-y-auto px-2">
       <div
         v-if="connections.data?.length"
@@ -497,8 +469,6 @@ const TARGET = {
 }
 const fieldMapExample =
   '{"id": "booking.id", "start": "booking.start", "end": "booking.end", "status": "booking.status", "customer_name": "client.name", "email": "client.email"}'
-
-const ownPage = `${window.location.origin}/prenota`
 
 const connections = createResource({
   url: 'crm.api.booking_platforms.list_connections',
