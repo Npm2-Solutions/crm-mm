@@ -9,34 +9,30 @@
   otherwise would set the wrong expectation.
 -->
 <template>
-  <div
-    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
-  >
-    <div class="flex flex-col gap-1 px-2">
-      <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
-        {{ __('Lead quality') }}
-      </h2>
-      <p class="text-p-base text-ink-gray-6">
-        {{
-          __(
-            'Send back to Meta what became of each lead, so the ads look for people who buy instead of people who fill in forms.',
-          )
-        }}
-      </p>
-    </div>
+  <div class="flex flex-col gap-4 px-2">
+    <p class="text-p-sm text-ink-gray-5">
+      {{
+        __(
+          'Send back to Meta what became of each lead, so the ads look for people who buy instead of people who fill in forms.',
+        )
+      }}
+    </p>
 
-    <div class="flex flex-col gap-4 px-2">
+    <div class="flex flex-col gap-4">
       <div
-        v-if="!status.data?.connected"
+        v-if="status.data && !connected"
         class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6"
       >
         <span class="text-p-base text-ink-gray-5">
           {{ __('Connect your Meta account first.') }}
         </span>
-        <Button :label="__('Go to connection')" @click="goToConnection" />
+        <Button
+          :label="__('Go to connection')"
+          @click="emit('navigate', 'connection')"
+        />
       </div>
 
-      <template v-else>
+      <template v-else-if="connected">
         <div
           class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
         >
@@ -62,11 +58,16 @@
             placeholder="1234567890"
             @change="save({ dataset_id: form.dataset_id })"
           />
+          <!-- a verification tool, and a trap: events sent with it do not
+               count, so a code left in place silently switches the feature
+               off. An administrator's, not something to find in passing. -->
           <FormControl
+            v-if="isAdmin || form.test_code"
             v-model="form.test_code"
             type="text"
             :label="__('Test event code (only while verifying)')"
             placeholder="TEST12345"
+            :disabled="!isAdmin"
             :description="
               __(
                 'Leave this empty in normal use: events sent with a test code do not count.',
@@ -75,8 +76,11 @@
             @change="save({ test_code: form.test_code })"
           />
 
-          <div v-if="status.data?.last_error" class="text-p-sm text-ink-red-5">
-            {{ status.data.last_error }}
+          <div
+            v-if="conversions.data?.last_error"
+            class="text-p-sm text-ink-red-5"
+          >
+            {{ conversions.data.last_error }}
           </div>
         </div>
 
@@ -99,30 +103,32 @@
               <span
                 class="text-2xl-semibold"
                 :class="
-                  status.data?.enough ? 'text-ink-green-6' : 'text-ink-orange-5'
+                  conversions.data?.enough
+                    ? 'text-ink-green-6'
+                    : 'text-ink-orange-5'
                 "
               >
                 {{
-                  status.data?.percent === null
+                  conversions.data?.percent === null
                     ? '—'
-                    : status.data?.percent + '%'
+                    : conversions.data?.percent + '%'
                 }}
               </span>
               <span class="ml-2 text-p-sm text-ink-gray-5">
                 {{
                   __('{0} of {1} leads reported', [
-                    status.data?.reported ?? 0,
-                    status.data?.leads ?? 0,
+                    conversions.data?.reported ?? 0,
+                    conversions.data?.leads ?? 0,
                   ])
                 }}
               </span>
             </div>
             <div class="text-p-sm text-ink-gray-5">
-              {{ __('{0} waiting', [status.data?.pending ?? 0]) }}
-              <template v-if="status.data?.failed">
+              {{ __('{0} waiting', [conversions.data?.pending ?? 0]) }}
+              <template v-if="conversions.data?.failed">
                 ·
                 <span class="text-ink-red-5">{{
-                  __('{0} failed', [status.data.failed])
+                  __('{0} failed', [conversions.data.failed])
                 }}</span>
               </template>
             </div>
@@ -155,18 +161,27 @@
 </template>
 
 <script setup>
-import { activeSettingsPage } from '@/composables/settings'
-import { createResource, FormControl, Switch, toast } from 'frappe-ui'
+import { createResource, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 
-const status = createResource({
+// the connection, loaded once by the page around the tabs
+const props = defineProps({
+  status: { type: Object, required: true },
+})
+
+const emit = defineEmits(['navigate'])
+
+const connected = computed(() => Boolean(props.status.data?.connected))
+const isAdmin = computed(() => Boolean(props.status.data?.is_admin))
+
+const conversions = createResource({
   url: 'crm.integrations.meta.api.get_conversions_status',
   auto: true,
 })
 
 const form = reactive({ enabled: false, dataset_id: '', test_code: '' })
 watch(
-  () => status.data,
+  () => conversions.data,
   (data) => {
     if (!data) return
     form.enabled = Boolean(data.enabled)
@@ -176,7 +191,7 @@ watch(
   { immediate: true },
 )
 
-const stages = computed(() => status.data?.stages || [])
+const stages = computed(() => conversions.data?.stages || [])
 
 function save(changes) {
   createResource({
@@ -188,9 +203,9 @@ function save(changes) {
       ...changes,
     },
     auto: true,
-    onSuccess: () => status.reload(),
+    onSuccess: () => conversions.reload(),
     onError: (e) => {
-      status.reload()
+      conversions.reload()
       toast.error(e.messages?.[0] || e.message || __('Unknown error'))
     },
   })
@@ -204,19 +219,14 @@ function sendNow() {
     auto: true,
     onSuccess: (data) => {
       sending.value = false
-      data.error
-        ? toast.error(data.error)
-        : toast.success(__('{0} stages sent', [data.sent || 0]))
-      status.reload()
+      if (data.error) toast.error(data.error)
+      else toast.success(__('{0} stages sent', [data.sent || 0]))
+      conversions.reload()
     },
     onError: (e) => {
       sending.value = false
       toast.error(e.messages?.[0] || e.message || __('Unknown error'))
     },
   })
-}
-
-function goToConnection() {
-  activeSettingsPage.value = 'Meta connection'
 }
 </script>

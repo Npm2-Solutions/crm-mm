@@ -31,7 +31,7 @@ def user_token() -> str:
 	"""The token that may read an ad account: the user's, never a page's."""
 	token = frappe.get_doc("CRM Meta Settings").get_password("user_access_token", raise_exception=False)
 	if not token:
-		frappe.throw(_("Facebook is not connected. Connect it from Settings first."))
+		frappe.throw(_("Facebook is not connected. Connect it from Settings → Integrations → Meta first."))
 	return token
 
 

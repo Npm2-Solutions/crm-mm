@@ -68,7 +68,8 @@
           <Button
             variant="ghost"
             icon="lucide-trash-2"
-            @click.stop="remove(template)"
+            :aria-label="__('Delete')"
+            @click.stop="askToRemove(template)"
           />
         </div>
       </div>
@@ -168,6 +169,33 @@
         :label="form.name ? __('Save changes') : __('Submit for approval')"
         @click="save"
       />
+    </template>
+  </Dialog>
+
+  <!-- a template approved by Meta takes hours to approve again: asked first -->
+  <Dialog
+    v-model="confirmingRemove"
+    :options="{
+      title: __('Delete {0}?', [removing?.template_name || removing?.name]),
+      actions: [
+        {
+          label: __('Delete'),
+          theme: 'red',
+          variant: 'solid',
+          loading: deleting,
+          onClick: remove,
+        },
+      ],
+    }"
+  >
+    <template #body-content>
+      <p class="text-p-base text-ink-gray-6">
+        {{
+          __(
+            'It can no longer be sent. Making it again means submitting it to Meta for review again.',
+          )
+        }}
+      </p>
     </template>
   </Dialog>
 </template>
@@ -281,13 +309,30 @@ function save() {
   })
 }
 
-function remove(template) {
+const confirmingRemove = ref(false)
+const removing = ref(null)
+const deleting = ref(false)
+
+function askToRemove(template) {
+  removing.value = template
+  confirmingRemove.value = true
+}
+
+function remove() {
+  deleting.value = true
   createResource({
     url: 'crm.integrations.whatsapp.templates.delete_template',
-    params: { name: template.name },
+    params: { name: removing.value.name },
     auto: true,
-    onSuccess: () => templates.reload(),
-    onError: (e) => toast.error(e.messages?.[0] || __('Failed to delete')),
+    onSuccess: () => {
+      deleting.value = false
+      confirmingRemove.value = false
+      templates.reload()
+    },
+    onError: (e) => {
+      deleting.value = false
+      toast.error(e.messages?.[0] || __('Failed to delete'))
+    },
   })
 }
 </script>

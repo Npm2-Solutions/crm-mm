@@ -166,6 +166,21 @@ def is_admin(user: str | None = None) -> bool:
 	return user == "Administrator"
 
 
+def is_system_manager(user: str | None = None) -> bool:
+	"""Whether `user` holds System Manager — the role the CRM calls "Admin".
+
+	Not `is_admin`, which means the one `Administrator` account. This is the role
+	that sees an integration's plumbing: app ids, webhooks, tokens, raw logs.
+	Managers run the integrations; they do not need to read their wiring.
+	"""
+	return "System Manager" in frappe.get_roles(user or frappe.session.user)
+
+
+def check_system_manager() -> None:
+	if not is_system_manager():
+		frappe.throw(_("Only an administrator can do this"), frappe.PermissionError)
+
+
 def is_sales_user(user: str | None = None) -> bool:
 	"""
 	Check whether `user` is an agent

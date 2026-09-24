@@ -1,19 +1,47 @@
+<!--
+  WhatsApp numbers: the ones connected, the one that sends, and the button that
+  adds another.
+
+  Two readers. A manager connects a number by scanning a QR code with the
+  WhatsApp Business app, chooses which one sends, and stops one that is no
+  longer used — that is the page. Everything that makes the QR possible (the
+  Meta app, its Embedded Signup configuration, the webhook, what Meta answered
+  to the last attempts, numbers added with raw credentials) is the provider's
+  plumbing, and sits in "Technical details", for administrators only; the
+  server does not send it to anybody else.
+-->
 <template>
   <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex flex-col gap-1 px-2">
-      <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
-        {{ __('WhatsApp') }}
-      </h2>
-      <p class="text-p-base text-ink-gray-6">
-        {{
-          __(
-            'Connect your WhatsApp Business number: chats stay on your phone and appear here too.',
-          )
-        }}
-      </p>
+    <div class="flex items-start justify-between gap-3 px-2">
+      <div class="flex min-w-0 flex-1 flex-col gap-1">
+        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+          {{ __('WhatsApp') }}
+        </h2>
+        <p class="text-p-base text-ink-gray-6">
+          {{
+            __(
+              'Connect your WhatsApp Business number: chats stay on your phone and appear here too.',
+            )
+          }}
+        </p>
+      </div>
+      <Button
+        v-if="status.data?.installed"
+        class="shrink-0"
+        variant="solid"
+        iconLeft="plus"
+        :disabled="!status.data?.can_connect"
+        :loading="connecting"
+        :label="
+          status.data?.connected
+            ? __('Connect another number')
+            : __('Connect WhatsApp')
+        "
+        @click="connect"
+      />
     </div>
 
-    <div class="flex-1 overflow-y-auto px-2">
+    <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-2">
       <div
         v-if="status.data && !status.data.installed"
         class="rounded-lg border border-dashed border-outline-gray-2 p-6 text-center text-p-base text-ink-gray-5"
@@ -21,229 +49,25 @@
         {{ __('The WhatsApp app is not installed on this site yet.') }}
       </div>
 
-      <template v-else>
-        <!--
-          Which Meta app signs these calls. A borrowed id is legitimate (one app
-          for Facebook and WhatsApp) and also how an agency discovers, weeks
-          later, that its WhatsApp calls went out as the Facebook app.
-
-          Only on the provider's own site. On a client's the app is somebody
-          else's, its id means nothing they can act on, and a number written out
-          under «Meta app in use» reads like something they are supposed to
-          check.
-        -->
+      <template v-else-if="status.data">
+        <!-- the setup is unfinished: a manager only needs to know it is not
+             theirs to finish -->
         <div
-          v-if="status.data?.is_hub && status.data?.app?.app_id"
-          class="mb-4 flex items-center gap-2 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
+          v-if="status.data.setup_incomplete && !isAdmin"
+          class="flex items-start gap-2 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
         >
-          <span>{{ __('Meta app in use') }}:</span>
-          <span class="text-ink-gray-8">{{ status.data.app.app_id }}</span>
-          <span
-            v-if="status.data.app.borrowed_from_meta_app"
-            class="text-ink-amber-6"
-          >
-            {{ __('— the Facebook app, because no WhatsApp app is set') }}
-          </span>
+          <FeatherIcon name="info" class="mt-0.5 size-4 shrink-0" />
+          {{
+            __(
+              'WhatsApp is not set up on this CRM yet. An administrator has to finish the setup before a number can be connected.',
+            )
+          }}
         </div>
 
-        <!-- and which login configuration it sends. An app can hold several,
-             and the choice decides how long the client's token lives and
-             whether they are asked for a business portfolio. Meta's dashboard
-             shows what is selected there, which is not the same as what this
-             CRM sends — so say what this CRM sends.
-
-             Provider's site only, and the Change button most of all: on a client
-             site that field is the one thing that would stop their own
-             connection working. -->
+        <!-- and an administrator needs to know exactly what is missing -->
         <div
-          v-if="status.data?.is_hub && status.data?.signup_config?.config_id"
-          class="mb-4 rounded-lg bg-surface-gray-1 p-3 text-p-sm text-ink-gray-6"
-        >
-          <div class="flex flex-wrap items-center gap-2">
-            <span>{{ __('Embedded Signup configuration') }}:</span>
-            <span class="text-ink-gray-8">{{
-              status.data.signup_config.config_id
-            }}</span>
-            <span class="text-ink-gray-5">
-              {{
-                status.data.signup_config.from_bench
-                  ? __('— from the bench config, which wins over this screen')
-                  : __('— set here, in Settings')
-              }}
-            </span>
-            <!-- An app can hold more than one configuration, and the one it
-                 should send changes: a token that expires versus one that does
-                 not. Until now the box appeared only while the id was missing,
-                 so the first value saved was the last one possible. -->
-            <Button
-              v-if="!status.data.signup_config.from_bench && !editingConfig"
-              variant="ghost"
-              :label="__('Change')"
-              @click="startEditingConfig"
-            />
-          </div>
-          <div v-if="editingConfig" class="mt-2 flex items-end gap-2">
-            <FormControl
-              v-model="appForm.whatsapp_signup_config_id"
-              type="text"
-              class="w-72"
-              :placeholder="__('Paste the id')"
-            />
-            <Button
-              :label="__('Save')"
-              variant="solid"
-              :loading="savingApp"
-              @click="saveConfigId"
-            />
-            <Button :label="__('Cancel')" @click="editingConfig = false" />
-          </div>
-        </div>
-
-        <!-- what Meta said, last few attempts. Only the hub has these rows: a
-             client site's onboarding is logged where the page lives, not where
-             the CRM does. -->
-        <div
-          v-if="attempts.data?.is_hub && attempts.data?.attempts?.length"
-          class="mb-4 rounded-lg border border-outline-gray-2 p-3"
-        >
-          <div class="mb-2 text-p-sm-medium text-ink-gray-7">
-            {{ __('Last connection attempts') }}
-          </div>
-          <div class="flex flex-col divide-y divide-outline-gray-1">
-            <div
-              v-for="row in attempts.data.attempts"
-              :key="row.creation"
-              class="flex flex-col gap-0.5 py-1.5 text-p-sm"
-            >
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-ink-gray-5">{{ row.creation }}</span>
-                <span
-                  :class="
-                    row.outcome === 'Error'
-                      ? 'text-ink-red-5'
-                      : row.outcome === 'Completed'
-                        ? 'text-ink-green-5'
-                        : 'text-ink-gray-7'
-                  "
-                >
-                  {{ row.event || row.outcome }}
-                </span>
-                <span v-if="row.current_step" class="text-ink-gray-5">
-                  {{ row.current_step }}
-                </span>
-              </div>
-              <div v-if="row.error_message" class="text-ink-red-5">
-                {{ row.error_message }}
-              </div>
-              <!-- what we worked out about a code Meta does not document. A
-                   lead, not a verdict — and it is labelled as one. -->
-              <div v-if="row.hint" class="text-ink-gray-6">
-                {{ row.hint }}
-              </div>
-              <!-- the two values Meta asks for when you open a support ticket -->
-              <div
-                v-if="row.error_id || row.session_id"
-                class="text-p-xs text-ink-gray-4"
-              >
-                {{
-                  [
-                    row.error_code && `code ${row.error_code}`,
-                    row.error_id && `error ${row.error_id}`,
-                    row.session_id && `session ${row.session_id}`,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')
-                }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- connect -->
-        <div
-          class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
-        >
-          <div class="flex flex-col">
-            <span class="text-p-base-medium text-ink-gray-7">
-              {{
-                status.data?.connected
-                  ? __('WhatsApp is connected')
-                  : __('No number connected yet')
-              }}
-            </span>
-            <span class="text-p-sm text-ink-gray-5">
-              {{
-                status.data?.can_connect
-                  ? __(
-                      'You will scan a QR code with the WhatsApp Business app on your phone.',
-                    )
-                  : __('Two things have to exist first — see below.')
-              }}
-            </span>
-          </div>
-          <Button
-            :variant="status.data?.connected ? 'outline' : 'solid'"
-            :disabled="!status.data?.can_connect"
-            :loading="connecting"
-            :label="
-              status.data?.connected
-                ? __('Connect another number')
-                : __('Connect WhatsApp')
-            "
-            @click="connect"
-          />
-        </div>
-
-        <!-- numbers -->
-        <!-- the WhatsApp app is a different Meta app, so its webhook does not come
-             along with the Facebook one: it appears here only when it is not set
-             or set short of the fields the CRM needs, with the button that fixes it.
-             Meta never adds a field to an existing subscription by itself, so
-             "configured" alone was a half-truth: the webhook could be registered
-             and still never mention an onboarding or a number's own messages. -->
-        <div
-          v-if="webhook.data?.is_hub && !webhook.data?.complete"
-          class="mb-4 flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex flex-col">
-              <span class="text-p-base-medium text-ink-gray-7">
-                {{
-                  webhook.data?.configured
-                    ? __('Meta is notifying this hub, but not about everything')
-                    : __('Meta is not notifying this hub yet')
-                }}
-              </span>
-              <span class="text-p-sm text-ink-gray-6">
-                {{
-                  webhook.data?.configured
-                    ? __('These are missing: {0}', [
-                        (webhook.data?.missing_fields || []).join(', '),
-                      ])
-                    : __(
-                        'Without it no message reaches the CRM, in either direction.',
-                      )
-                }}
-              </span>
-              <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
-                {{ webhook.data.error }}
-              </span>
-            </div>
-            <Button
-              :label="
-                webhook.data?.configured
-                  ? __('Complete it')
-                  : __('Configure it')
-              "
-              :loading="configuringWebhook"
-              @click="configureWebhook"
-            />
-          </div>
-        </div>
-
-        <div
-          v-if="status.data?.installed && status.data?.missing?.length"
-          class="mb-4 flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+          v-if="isAdmin && status.data.missing?.length"
+          class="flex flex-col gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
         >
           <span class="text-p-base-medium text-ink-gray-7">
             {{ __('Still missing before WhatsApp can be connected') }}
@@ -257,8 +81,8 @@
               item.what
             }}</span>
             <span class="text-p-sm text-ink-gray-6">{{ item.how }}</span>
-            <!-- what can be finished here is finished here: the id comes off the
-                 Meta app and has nowhere else to go -->
+            <!-- what can be finished here is finished here: the id comes off
+                 the Meta app and has nowhere else to go -->
             <div v-if="item.fieldname" class="mt-2 flex items-end gap-2">
               <FormControl
                 v-model="appForm[item.fieldname]"
@@ -283,71 +107,88 @@
           </span>
         </div>
 
-        <!-- The QR stays the one path a client is offered. This is for a number
-             Embedded Signup cannot reach — Meta's own test number, which is how
-             an agency records the App Review videos before it is a Tech
-             Provider, and without which the CRM cannot send a single message. -->
-        <details class="mb-4 rounded-lg border border-outline-gray-2 p-4">
-          <summary class="cursor-pointer text-p-base-medium text-ink-gray-7">
-            {{ __('Add a number with its credentials') }}
-          </summary>
-          <p class="mt-2 text-p-sm text-ink-gray-6">
-            {{
-              __(
-                'For the test number Meta lends the app, from App Dashboard → WhatsApp → API Setup. Use a permanent System User token, not the temporary one, or it stops working halfway through. Clients connect by scanning the QR instead.',
-              )
-            }}
-          </p>
-          <div class="mt-3 grid grid-cols-2 gap-3">
-            <FormControl
-              v-model="manual.phone_number_id"
-              type="text"
-              :label="__('Phone number ID')"
-            />
-            <FormControl
-              v-model="manual.waba_id"
-              type="text"
-              :label="__('WhatsApp Business Account ID')"
-            />
-            <FormControl
-              v-model="manual.token"
-              type="password"
-              :label="__('Access token')"
-            />
-            <FormControl
-              v-model="manual.account_name"
-              type="text"
-              :label="__('Name (optional)')"
-            />
+        <!-- the WhatsApp app is a different Meta app, so its webhook does not
+             come along with the Facebook one: it appears here only when it is
+             not set, or set short of the fields the CRM needs, with the button
+             that fixes it. Meta never adds a field to an existing subscription
+             by itself, so "configured" alone was a half-truth: the webhook could
+             be registered and still never mention an onboarding or a number's
+             own messages. -->
+        <div
+          v-if="isAdmin && webhook.data?.is_hub && !webhook.data?.complete"
+          class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+        >
+          <div class="flex flex-col">
+            <span class="text-p-base-medium text-ink-gray-7">
+              {{
+                webhook.data?.configured
+                  ? __('Meta is notifying this hub, but not about everything')
+                  : __('Meta is not notifying this hub yet')
+              }}
+            </span>
+            <span class="text-p-sm text-ink-gray-6">
+              {{
+                webhook.data?.configured
+                  ? __('These are missing: {0}', [
+                      (webhook.data?.missing_fields || []).join(', '),
+                    ])
+                  : __(
+                      'Without it no message reaches the CRM, in either direction.',
+                    )
+              }}
+            </span>
+            <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
+              {{ webhook.data.error }}
+            </span>
           </div>
           <Button
-            class="mt-3"
-            variant="solid"
-            :label="__('Add number')"
-            :loading="addingAccount"
-            @click="addAccount"
+            :label="
+              webhook.data?.configured ? __('Complete it') : __('Configure it')
+            "
+            :loading="configuringWebhook"
+            @click="configureWebhook"
           />
-        </details>
+        </div>
 
-        <div v-if="status.data?.accounts?.length">
-          <div class="mb-2 text-p-base-medium text-ink-gray-7">
+        <!-- numbers -->
+        <section class="flex flex-col gap-2">
+          <h3 class="text-p-base-medium text-ink-gray-8">
             {{ __('Numbers') }}
-          </div>
+          </h3>
           <div
+            v-if="status.data.accounts?.length"
             class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
           >
             <div v-for="account in status.data.accounts" :key="account.name">
               <div class="flex items-center gap-3 px-3 py-2.5">
+                <WhatsAppIcon
+                  class="size-6 shrink-0"
+                  :class="{ 'opacity-40 grayscale': !isActive(account) }"
+                />
                 <div class="min-w-0 flex-1">
-                  <div class="truncate text-p-base text-ink-gray-8">
+                  <div
+                    class="truncate text-p-base"
+                    :class="
+                      isActive(account) ? 'text-ink-gray-8' : 'text-ink-gray-5'
+                    "
+                  >
                     {{ account.name }}
                   </div>
-                  <div class="truncate text-p-sm text-ink-gray-5">
+                  <div
+                    v-if="isAdmin && account.phone_id"
+                    class="truncate text-p-sm text-ink-gray-5"
+                  >
                     {{ __('Phone number ID') }}: {{ account.phone_id }}
                   </div>
                 </div>
                 <Badge
-                  v-if="account.name == status.data.default_account"
+                  v-if="!isActive(account)"
+                  :label="__('Not in use')"
+                  theme="gray"
+                  size="sm"
+                />
+                <Badge
+                  v-else-if="account.name == status.data.default_account"
                   :label="__('Sends messages')"
                   theme="green"
                   size="sm"
@@ -358,24 +199,22 @@
                   :label="__('Use for sending')"
                   @click="setDefault(account.name)"
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  :label="__('Check incoming')"
-                  :loading="checking == account.name"
-                  @click="recheckDelivery(account.name)"
-                />
-                <!-- switches the number off; nothing is deleted, because the
-                     chat history belongs to it -->
-                <Button
-                  variant="ghost"
-                  icon="lucide-power-off"
-                  :title="__('Stop using this number')"
-                  @click="disconnect(account.name)"
-                />
+                <Dropdown
+                  v-if="accountActions(account).length"
+                  placement="right"
+                  :options="accountActions(account)"
+                >
+                  <Button
+                    icon="more-horizontal"
+                    size="sm"
+                    variant="ghost"
+                    :loading="checking == account.name"
+                    :aria-label="__('More')"
+                  />
+                </Dropdown>
               </div>
-              <!-- Sending needs only a token, receiving needs two more things that
-                   nothing tells you about until a reply never arrives. -->
+              <!-- Sending needs only a token, receiving needs two more things
+                   that nothing tells you about until a reply never arrives. -->
               <div
                 v-if="delivery[account.name]"
                 class="px-3 pb-3"
@@ -409,22 +248,268 @@
               </div>
             </div>
           </div>
-          <p class="mt-2 text-p-sm text-ink-gray-5">
+          <div
+            v-else
+            class="rounded-lg border border-dashed border-outline-gray-2 p-6 text-center text-p-base text-ink-gray-5"
+          >
+            {{
+              status.data.can_connect
+                ? __(
+                    'No number connected yet. Press "Connect WhatsApp" and scan the QR code with the WhatsApp Business app on your phone.',
+                  )
+                : __('No number connected yet.')
+            }}
+          </div>
+          <p
+            v-if="status.data.accounts?.length"
+            class="text-p-sm text-ink-gray-5"
+          >
             {{
               __(
                 'Stopping a number here leaves the WhatsApp Business app on the phone untouched, and keeps every message it carried. It cannot be deleted: the chat history is attached to it.',
               )
             }}
           </p>
-        </div>
+        </section>
+
+        <!-- the plumbing, for whoever can repair it -->
+        <details
+          v-if="isAdmin"
+          class="group rounded-lg border border-outline-gray-2 p-4"
+        >
+          <summary
+            class="flex cursor-pointer list-none items-center justify-between gap-2 text-p-base-medium text-ink-gray-7"
+          >
+            <span class="flex items-center gap-1.5">
+              <FeatherIcon
+                name="chevron-right"
+                class="size-4 transition-transform group-open:rotate-90"
+              />
+              {{ __('Technical details') }}
+            </span>
+            <Badge :label="__('Administrators only')" theme="gray" size="sm" />
+          </summary>
+          <div class="mt-3 flex flex-col gap-4">
+            <!--
+              Which Meta app signs these calls. A borrowed id is legitimate (one
+              app for Facebook and WhatsApp) and also how an agency discovers,
+              weeks later, that its WhatsApp calls went out as the Facebook app.
+
+              Only on the provider's own site. On a client's the app is somebody
+              else's, its id means nothing they can act on, and a number written
+              out under «Meta app in use» reads like something they are supposed
+              to check.
+            -->
+            <div
+              v-if="status.data.is_hub && status.data.app?.app_id"
+              class="flex flex-wrap items-center gap-2 text-p-sm text-ink-gray-6"
+            >
+              <span>{{ __('Meta app in use') }}:</span>
+              <span class="text-ink-gray-8">{{ status.data.app.app_id }}</span>
+              <span
+                v-if="status.data.app.borrowed_from_meta_app"
+                class="text-ink-amber-6"
+              >
+                {{ __('— the Facebook app, because no WhatsApp app is set') }}
+              </span>
+            </div>
+
+            <!-- and which login configuration it sends. An app can hold
+                 several, and the choice decides how long the client's token
+                 lives and whether they are asked for a business portfolio.
+                 Meta's dashboard shows what is selected there, which is not the
+                 same as what this CRM sends — so say what this CRM sends. -->
+            <div
+              v-if="status.data.is_hub && status.data.signup_config?.config_id"
+              class="text-p-sm text-ink-gray-6"
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <span>{{ __('Embedded Signup configuration') }}:</span>
+                <span class="text-ink-gray-8">{{
+                  status.data.signup_config.config_id
+                }}</span>
+                <span class="text-ink-gray-5">
+                  {{
+                    status.data.signup_config.from_bench
+                      ? __(
+                          '— from the bench config, which wins over this screen',
+                        )
+                      : __('— set here, in Settings')
+                  }}
+                </span>
+                <!-- An app can hold more than one configuration, and the one it
+                     should send changes: a token that expires versus one that
+                     does not. -->
+                <Button
+                  v-if="!status.data.signup_config.from_bench && !editingConfig"
+                  variant="ghost"
+                  size="sm"
+                  :label="__('Change')"
+                  @click="startEditingConfig"
+                />
+              </div>
+              <div v-if="editingConfig" class="mt-2 flex items-end gap-2">
+                <FormControl
+                  v-model="appForm.whatsapp_signup_config_id"
+                  type="text"
+                  class="w-72"
+                  :placeholder="__('Paste the id')"
+                />
+                <Button
+                  :label="__('Save')"
+                  variant="solid"
+                  :loading="savingApp"
+                  @click="saveConfigId"
+                />
+                <Button :label="__('Cancel')" @click="editingConfig = false" />
+              </div>
+            </div>
+
+            <!-- what Meta said, last few attempts. Only the hub has these rows:
+                 a client site's onboarding is logged where the page lives, not
+                 where the CRM does. -->
+            <div
+              v-if="attempts.data?.is_hub && attempts.data?.attempts?.length"
+              class="flex flex-col"
+            >
+              <div class="mb-1 text-p-sm-medium text-ink-gray-7">
+                {{ __('Last connection attempts') }}
+              </div>
+              <div class="flex flex-col divide-y divide-outline-gray-1">
+                <div
+                  v-for="row in attempts.data.attempts"
+                  :key="row.creation"
+                  class="flex flex-col gap-0.5 py-1.5 text-p-sm"
+                >
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-ink-gray-5">{{ row.creation }}</span>
+                    <span
+                      :class="
+                        row.outcome === 'Error'
+                          ? 'text-ink-red-5'
+                          : row.outcome === 'Completed'
+                            ? 'text-ink-green-5'
+                            : 'text-ink-gray-7'
+                      "
+                    >
+                      {{ row.event || row.outcome }}
+                    </span>
+                    <span v-if="row.current_step" class="text-ink-gray-5">
+                      {{ row.current_step }}
+                    </span>
+                  </div>
+                  <div v-if="row.error_message" class="text-ink-red-5">
+                    {{ row.error_message }}
+                  </div>
+                  <!-- what we worked out about a code Meta does not document.
+                       A lead, not a verdict — and it is labelled as one. -->
+                  <div v-if="row.hint" class="text-ink-gray-6">
+                    {{ row.hint }}
+                  </div>
+                  <!-- the two values Meta asks for in a support ticket -->
+                  <div
+                    v-if="row.error_id || row.session_id"
+                    class="text-p-xs text-ink-gray-4"
+                  >
+                    {{
+                      [
+                        row.error_code && `code ${row.error_code}`,
+                        row.error_id && `error ${row.error_id}`,
+                        row.session_id && `session ${row.session_id}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                    }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- The QR stays the one path a client is offered. This is for a
+                 number Embedded Signup cannot reach — Meta's own test number,
+                 which is how an agency records the App Review videos before it
+                 is a Tech Provider, and without which the CRM cannot send a
+                 single message. -->
+            <div class="flex flex-col gap-2">
+              <div class="text-p-sm-medium text-ink-gray-7">
+                {{ __('Add a number with its credentials') }}
+              </div>
+              <p class="text-p-sm text-ink-gray-6">
+                {{
+                  __(
+                    'For the test number Meta lends the app, from App Dashboard → WhatsApp → API Setup. Use a permanent System User token, not the temporary one, or it stops working halfway through. Clients connect by scanning the QR instead.',
+                  )
+                }}
+              </p>
+              <div class="grid grid-cols-2 gap-3">
+                <FormControl
+                  v-model="manual.phone_number_id"
+                  type="text"
+                  :label="__('Phone number ID')"
+                />
+                <FormControl
+                  v-model="manual.waba_id"
+                  type="text"
+                  :label="__('WhatsApp Business Account ID')"
+                />
+                <FormControl
+                  v-model="manual.token"
+                  type="password"
+                  :label="__('Access token')"
+                />
+                <FormControl
+                  v-model="manual.account_name"
+                  type="text"
+                  :label="__('Name (optional)')"
+                />
+              </div>
+              <div>
+                <Button
+                  variant="solid"
+                  :label="__('Add number')"
+                  :loading="addingAccount"
+                  @click="addAccount"
+                />
+              </div>
+            </div>
+          </div>
+        </details>
       </template>
     </div>
+
+    <!-- stopping a number stops its conversations here: asked, not assumed -->
+    <Dialog
+      v-model="confirmingStop"
+      :options="{
+        title: __('Stop using {0}?', [stoppingAccount]),
+        actions: [
+          {
+            label: __('Stop using it'),
+            theme: 'red',
+            variant: 'solid',
+            loading: stopping,
+            onClick: stopNumber,
+          },
+        ],
+      }"
+    >
+      <template #body-content>
+        <p class="text-p-base text-ink-gray-6">
+          {{
+            __(
+              'The CRM stops sending and receiving on this number. The WhatsApp Business app on the phone is not touched, and every message stays where it is. Scanning the QR again brings it back.',
+            )
+          }}
+        </p>
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { call, createResource, FormControl, toast } from 'frappe-ui'
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import { call, createResource, Dropdown, FormControl, toast } from 'frappe-ui'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { refreshWhatsappState } from '@/composables/whatsapp'
 import {
   listenForSignup,
@@ -434,6 +519,20 @@ import {
 } from '@/utils/whatsappSignup'
 
 const connecting = ref(false)
+
+const status = createResource({
+  url: 'crm.integrations.whatsapp.api.get_status',
+  auto: true,
+})
+
+// what the server decided to send: the technical half only goes to
+// administrators, so this is also what the screen shows
+const isAdmin = computed(() => Boolean(status.data?.is_admin))
+
+// a number taken out of use keeps its row, for the history it carries
+function isActive(account) {
+  return account.status !== 'Inactive'
+}
 
 const manual = ref({
   phone_number_id: '',
@@ -473,9 +572,10 @@ function addAccount() {
   })
 }
 
+// Both of these are an administrator's, on the server as on the screen: for
+// anybody else they are never asked for.
 const webhook = createResource({
   url: 'crm.integrations.whatsapp.api.get_webhook',
-  auto: true,
 })
 
 // The signup flow runs on facebook.com and reports itself back to the hub page.
@@ -484,8 +584,18 @@ const webhook = createResource({
 // sentence that says why.
 const attempts = createResource({
   url: 'crm.integrations.whatsapp.api.recent_signup_attempts',
-  auto: true,
 })
+
+watch(
+  isAdmin,
+  (admin) => {
+    if (!admin) return
+    if (!webhook.fetched && !webhook.loading) webhook.fetch()
+    if (!attempts.fetched && !attempts.loading) attempts.fetch()
+  },
+  { immediate: true },
+)
+
 const configuringWebhook = ref(false)
 
 function configureWebhook() {
@@ -506,11 +616,6 @@ function configureWebhook() {
     },
   })
 }
-
-const status = createResource({
-  url: 'crm.integrations.whatsapp.api.get_status',
-  auto: true,
-})
 
 // the ids that belong to the WhatsApp app itself. They can also come from the
 // bench config, which wins; this is the way in on a host where the bench is not
@@ -582,6 +687,28 @@ function recheckDelivery(name) {
       toast.error(e.messages?.[0] || __('Could not check the number'))
     },
   })
+}
+
+// the menu of a number: checking the route messages come back on is a repair
+// tool, and an administrator's; stopping a number is anybody's who manages it
+function accountActions(account) {
+  if (!isActive(account)) return []
+  return [
+    ...(isAdmin.value
+      ? [
+          {
+            label: __('Check incoming messages'),
+            icon: 'activity',
+            onClick: () => recheckDelivery(account.name),
+          },
+        ]
+      : []),
+    {
+      label: __('Stop using this number'),
+      icon: 'power',
+      onClick: () => askToStop(account.name),
+    },
+  ]
 }
 
 // What Embedded Signup reported about the account the person picked. It comes
@@ -728,18 +855,34 @@ function setDefault(name) {
   })
 }
 
-function disconnect(name) {
+// stopping a number switches it off; nothing is deleted, because the chat
+// history belongs to it
+const confirmingStop = ref(false)
+const stoppingAccount = ref('')
+const stopping = ref(false)
+
+function askToStop(name) {
+  stoppingAccount.value = name
+  confirmingStop.value = true
+}
+
+function stopNumber() {
+  stopping.value = true
   createResource({
     url: 'crm.integrations.whatsapp.api.disconnect',
-    params: { name },
+    params: { name: stoppingAccount.value },
     auto: true,
     onSuccess: () => {
+      stopping.value = false
+      confirmingStop.value = false
       toast.success(__('This number is no longer in use'))
       status.reload()
       refreshWhatsappState()
     },
-    onError: (e) =>
-      toast.error(e.messages?.[0] || __('Could not stop this number')),
+    onError: (e) => {
+      stopping.value = false
+      toast.error(e.messages?.[0] || __('Could not stop this number'))
+    },
   })
 }
 </script>
