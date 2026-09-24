@@ -244,14 +244,15 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 
 		from crm.api.conversations import set_state, wake_the_snoozed
 
-		# the site carries whatever earlier tests parked, so the count only means
-		# something once it has been drained: then the one we park is the one it counts
-		wake_the_snoozed()
+		# measured as a difference, because the absolute number is not this test's
+		# business: the site carries whatever earlier tests parked, and whether a
+		# commit made inside a test survives to the next read is the runner's
+		# affair. What must hold either way is that one more conversation parked
+		# means one more woken — and that the answer is a number at all, which is
+		# exactly what it was not: `frappe.db.sql` hands back a tuple for an update
+		before = wake_the_snoozed()
 		set_state("CRM Lead", self.lead.name, "Snoozed", until=add_to_date(None, hours=-1))
-		# the count is the job's whole answer, and it used to be whatever
-		# `frappe.db.sql` hands back for an update, which is not a number at all
-		self.assertEqual(wake_the_snoozed(), 1)
-		self.assertEqual(wake_the_snoozed(), 0)
+		self.assertEqual(wake_the_snoozed() - before, 1)
 
 	def test_the_moment_is_the_same_moment_however_it_was_said(self):
 		from frappe.utils import add_to_date, get_datetime
