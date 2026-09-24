@@ -63,13 +63,39 @@ def remember_what_the_person_carried() -> None:
 			)
 
 
+TRIGGER = "Lead Status Changed"
+
+
+def automations_on_the_lead_status() -> list[str]:
+	"""Both places a trigger can live.
+
+	Triggers are a child table -- an automation can wait for a new lead *and* for
+	a tag *and* for a stage change -- while `CRM Automation.trigger_event` is the
+	single field kept for the ones saved before that table existed. Asking only
+	the parent field finds the old automations and silently misses every modern
+	one, which is the failure this whole function exists to prevent.
+	"""
+	names = set(
+		frappe.get_all(
+			"CRM Automation",
+			filters={"trigger_event": TRIGGER, "enabled": 1},
+			pluck="name",
+		)
+	)
+	names.update(
+		frappe.get_all(
+			"CRM Automation Trigger",
+			filters={"trigger_event": TRIGGER, "parenttype": "CRM Automation"},
+			pluck="parent",
+		)
+	)
+	# a child row does not know whether its automation is on
+	return sorted(name for name in names if frappe.db.get_value("CRM Automation", name, "enabled"))
+
+
 def retire_the_status_automations() -> None:
 	"""Disable what can no longer fire, and say which ones, by name."""
-	automations = frappe.get_all(
-		"CRM Automation",
-		filters={"trigger_event": "Lead Status Changed", "enabled": 1},
-		pluck="name",
-	)
+	automations = automations_on_the_lead_status()
 	if not automations:
 		return
 
