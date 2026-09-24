@@ -10,16 +10,12 @@ describe('which views a list has built in', () => {
     }
   })
 
-  it('knows the Inbox is a view of People', () => {
-    // left out of this list, the router reads «inbox» as the name of a saved
-    // view, finds none, and sends you back to the list — which is what made
-    // clicking the Inbox look like nothing happening at all
-    expect(isStandardViewType('Leads', 'inbox')).toBe(true)
-  })
-
-  it('does not offer it to lists with no conversation on them', () => {
-    expect(isStandardViewType('Deals', 'inbox')).toBe(false)
-    expect(isStandardViewType('Tasks', 'inbox')).toBe(false)
+  it('does not claim one nobody has', () => {
+    // left out of this list, a view type reads as the name of a saved view: the
+    // router finds none and sends you back to the list, which looks like the
+    // click doing nothing at all. That is how the Inbox was broken.
+    expect(isStandardViewType('Leads', 'inbox')).toBe(false)
+    expect(isStandardViewType('Leads', 'whatever')).toBe(false)
   })
 
   it('survives a route it has never heard of', () => {

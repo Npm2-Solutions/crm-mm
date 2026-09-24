@@ -27,8 +27,13 @@
         </Dropdown>
       </div>
     </div>
+    <!--
+      The same card a logged call gets: a note and a call are both something
+      that happened, written down — and two surfaces for one kind of thing made
+      the stream read as two streams laid on top of each other.
+    -->
     <div
-      class="rounded bg-surface-gray-1 px-3 py-[7.5px] text-base leading-6 transition-all duration-300 ease-in-out"
+      class="rounded-md border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-[7.5px] text-base leading-6 text-ink-gray-9 transition-all duration-300 ease-in-out"
     >
       <template v-if="editing">
         <RichTextField

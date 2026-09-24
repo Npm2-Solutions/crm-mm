@@ -156,10 +156,37 @@
             </div>
           </div>
 
-          <!-- addressed to nobody: the full width, and a header that says what it is -->
-          <div v-else class="px-3 sm:px-4">
+          <!--
+            Addressed to nobody: the full width, on a thread.
+
+            A note and a field that changed are things that happened *to* the
+            record, one after the other — so they read as a timeline, with the
+            line running between them and the icon sitting on it. In the mixed
+            view the line is left out: drawn down the side of a chat it would be
+            a margin nobody asked for.
+          -->
+          <div
+            v-else
+            class="px-3 sm:px-4"
+            :class="
+              channel === 'all'
+                ? ''
+                : 'grid grid-cols-[28px_minmax(0,1fr)] gap-2 sm:gap-3'
+            "
+          >
+            <div
+              v-if="channel !== 'all'"
+              class="relative z-0 flex justify-center before:absolute before:left-1/2 before:top-0 before:-z-[1] before:h-full before:border-l before:border-outline-elevation-2"
+            >
+              <span
+                class="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-base"
+              >
+                <component :is="iconFor(row.channel)" class="size-3" />
+              </span>
+            </div>
             <div class="flex items-start gap-2 py-1.5">
               <span
+                v-if="channel === 'all'"
                 class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-white"
               >
                 <component :is="iconFor(row.channel)" class="size-3" />

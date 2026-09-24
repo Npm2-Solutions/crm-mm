@@ -28,7 +28,7 @@
     v-model:updatedPageCount="updatedPageCount"
     doctype="CRM Lead"
     :options="{
-      allowedViews: ['list', 'group_by', 'inbox'],
+      allowedViews: ['list', 'group_by'],
     }"
   />
   <KanbanView
@@ -235,22 +235,6 @@
       </div>
     </template>
   </KanbanView>
-  <!--
-    The Inbox: the same people, the same filters, the same saved views — read
-    in the order they last said something. Two ways of looking at one list, not
-    two lists.
-
-    Straight from the resource rather than through `rows`, which turns every
-    value into a table cell: right for a table, and not what a conversation row
-    is made of.
-  -->
-  <InboxView
-    v-else-if="route.params.viewType == 'inbox'"
-    :rows="leads.data?.data || []"
-    :loading="leads.loading"
-    @open="openPerson"
-    @loadMore="() => loadMore++"
-  />
   <LeadsListView
     v-else-if="leads.data && rows.length"
     ref="leadsListView"
@@ -301,7 +285,6 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import LeadsListView from '@/components/ListViews/LeadsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import KanbanView from '@/components/Kanban/KanbanView.vue'
-import InboxView from '@/components/ListViews/InboxView.vue'
 import LeadModal from '@/components/Modals/LeadModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import { useDoctypeModal } from '@/composables/doctypeModal'
@@ -315,7 +298,7 @@ import { formatDate, timeAgo, website, formatTime } from '@/utils'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
 import { Avatar, Tooltip, Dropdown } from 'frappe-ui'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ref, computed, reactive, h } from 'vue'
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
@@ -329,7 +312,6 @@ const { capture } = useTelemetry()
 const { showModal } = useDoctypeModal()
 
 const route = useRoute()
-const router = useRouter()
 
 const leadsListView = ref(null)
 const showLeadModal = ref(false)
@@ -537,17 +519,6 @@ function parseRows(rows, columns = []) {
     _rows['_task_count'] = lead._task_count
     _rows['_comment_count'] = lead._comment_count
     return _rows
-  })
-}
-
-// Opening somebody from the Inbox lands on their conversation, and carries the
-// view with it: the column beside the record is then this same list, and going
-// back goes back to where you were.
-function openPerson(row) {
-  router.push({
-    name: 'Lead',
-    params: { leadId: row.name },
-    query: { view: route.query.view, viewType: 'inbox' },
   })
 }
 

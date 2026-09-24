@@ -135,6 +135,12 @@
         />
       </IconPicker>
     </div>
+    <!--
+      One line, and as many as the message needs — up to a point, after which
+      the chat above would be the one giving way. Focus used to jump it to six
+      rows whatever was in it, so a «ok» got five empty lines under it and the
+      conversation got pushed off screen to hold them.
+    -->
     <Textarea
       ref="textareaRef"
       v-model="content"
@@ -142,8 +148,6 @@
       class="min-h-8 w-full"
       :rows="rows"
       :placeholder="placeholder"
-      @focus="rows = 6"
-      @blur="rows = 1"
       @keydown.enter.stop="(e) => sendTextMessage(e)"
     />
   </div>
@@ -178,11 +182,20 @@ const reply = defineModel('reply', { type: Object, default: () => ({}) })
 
 const { capture } = useTelemetry()
 
-const rows = ref(1)
 const textareaRef = ref(null)
 const emoji = ref('')
 
 const content = ref('')
+
+// As tall as what is in it: one line for «ok», six at most, because past that
+// the composer would be eating the conversation it belongs to.
+const MOST = 6
+const rows = computed(() => {
+  const written = String(content.value || '')
+  if (!written) return 1
+  const lines = written.split('\n').length
+  return Math.min(Math.max(lines, 1), MOST)
+})
 const placeholder = ref(__('Type your message here...'))
 const fileType = ref('')
 

@@ -338,6 +338,9 @@ scheduler_events = {
 	"hourly": [
 		"crm.api.event.trigger_hourly_event_notifications",
 		"crm.integrations.meta.conversions.flush",
+		# a conversation parked until this morning has to come back on its own,
+		# or «rimanda a domani» would be «nascondi per sempre»
+		"crm.api.conversations.wake_the_snoozed",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",

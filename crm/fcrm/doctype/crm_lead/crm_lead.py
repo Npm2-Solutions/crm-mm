@@ -39,7 +39,10 @@ class CRMLead(Document):
 
 		annual_revenue: DF.Currency
 		communication_status: DF.Link | None
+		conversation_assigned_to: DF.Link | None
 		conversation_seen_by: DF.Link | None
+		conversation_snoozed_until: DF.Datetime | None
+		conversation_status: DF.Literal["Open", "Handled"]
 		conversation_unread: DF.Check
 		conversation_seen_until: DF.Datetime | None
 		converted: DF.Check
