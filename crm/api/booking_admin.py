@@ -38,6 +38,7 @@ from crm.scheduling.availability import (
 	staff_working_hours,
 )
 from crm.scheduling.timeutils import UTC, parse_date, parse_utc, scheduling_tz, to_system_naive
+from crm.utils import count_field
 
 MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
@@ -88,8 +89,22 @@ def get_matrix() -> dict:
 			"default_price",
 			"currency",
 			"staff_selection",
+			"max_participants",
 		],
 		order_by="category asc, service_name asc",
+	)
+	# the services page is this grid: it also says what is coming up
+	upcoming = dict(
+		frappe.get_all(
+			"CRM Appointment",
+			filters={
+				"status": ["in", ("Scheduled", "Confirmed")],
+				"starts_on": [">=", frappe.utils.now_datetime()],
+			},
+			fields=["service", count_field()],
+			group_by="service",
+			as_list=True,
+		)
 	)
 	rows = frappe.get_all(
 		"CRM Service Staff",
@@ -111,6 +126,7 @@ def get_matrix() -> dict:
 	profiles = {u: staff_profile(u) for u in team}
 	for service in services:
 		service["cells"] = cells.get(service.name, {})
+		service["upcoming_count"] = upcoming.get(service.name, 0)
 		online = [
 			u
 			for u, c in service["cells"].items()
@@ -584,6 +600,14 @@ def get_online_setup() -> dict:
 	online_services = {s.name for s in services if cint(s.bookable_online)}
 	users = _bookable_people()
 	people = _people(users)
+	profiles = {
+		row.user: row
+		for row in frappe.get_all(
+			"CRM Staff Schedule",
+			filters={"user": ["in", users or [""]]},
+			fields=["user", "public_title", "public_bio"],
+		)
+	}
 	team = []
 	for user in users:
 		online = staff_profile(user)["online"]
@@ -593,6 +617,8 @@ def get_online_setup() -> dict:
 			{
 				**people.get(user, {"user": user, "full_name": user}),
 				"online": online,
+				"public_title": (profiles.get(user) or {}).get("public_title") or "",
+				"public_bio": (profiles.get(user) or {}).get("public_bio") or "",
 				"services": {name: flag for name, flag in mine.items()},
 				"bookable": bookable if online and is_open else [],
 				"reason": _why_not_online(is_open, online, len(mine), bookable),
@@ -629,6 +655,23 @@ def set_person_online(user: str, online: int | str) -> dict:
 		frappe.get_doc(
 			{"doctype": "CRM Staff Schedule", "user": user, "enabled": 0, "bookable_online": 0}
 		).insert()
+	return get_online_setup()
+
+
+@frappe.whitelist(methods=["POST"])
+def set_person_profile(user: str, public_title: str | None = None, public_bio: str | None = None) -> dict:
+	"""What the booking page says about a professional."""
+	_check_manager()
+	values = {
+		"public_title": (public_title or "").strip() or None,
+		"public_bio": (public_bio or "").strip() or None,
+	}
+	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})
+	if name:
+		frappe.db.set_value("CRM Staff Schedule", name, values)
+	else:
+		# no schedule yet: a switched-off one keeps the studio hours
+		frappe.get_doc({"doctype": "CRM Staff Schedule", "user": user, "enabled": 0, **values}).insert()
 	return get_online_setup()
 
 

@@ -140,8 +140,16 @@
             <div class="flex items-center gap-3">
               <UserAvatar :user="person.user" size="md" class="shrink-0" />
               <div class="min-w-0 flex-1">
-                <div class="truncate text-p-base-medium text-ink-gray-8">
-                  {{ person.full_name }}
+                <div class="flex items-baseline gap-2">
+                  <span class="truncate text-p-base-medium text-ink-gray-8">
+                    {{ person.full_name }}
+                  </span>
+                  <span
+                    v-if="person.public_title"
+                    class="truncate text-p-sm text-ink-gray-5"
+                  >
+                    {{ person.public_title }}
+                  </span>
                 </div>
                 <div
                   class="flex items-center gap-1 text-p-sm"
@@ -168,6 +176,13 @@
                   }}
                 </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                :label="__('Profile')"
+                :tooltip="__('Title and bio on the booking page')"
+                @click="editProfile(person)"
+              />
               <Switch
                 :modelValue="person.online"
                 :disabled="busy"
@@ -216,13 +231,45 @@
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Hours and days off: Agenda → Team rota. Own price or length for a service: Agenda → Who does what.',
+              'Hours and days off: Agenda → Team rota. Own price or length for a service: Agenda → Services.',
             )
           }}
         </p>
       </section>
     </div>
   </div>
+
+  <Dialog
+    v-model="showProfile"
+    :options="{ title: __('{0} on the booking page', [profile.full_name]) }"
+  >
+    <template #body-content>
+      <div class="flex flex-col gap-3">
+        <FormControl
+          v-model="profile.public_title"
+          type="text"
+          :label="__('Title')"
+          :placeholder="__('e.g. Physiotherapist')"
+        />
+        <FormControl
+          v-model="profile.public_bio"
+          type="textarea"
+          :rows="3"
+          :label="__('Short bio')"
+          :placeholder="__('A line clients read before choosing them')"
+        />
+      </div>
+    </template>
+    <template #actions>
+      <Button
+        class="w-full"
+        variant="solid"
+        :label="__('Save')"
+        :loading="busy"
+        @click="saveProfile"
+      />
+    </template>
+  </Dialog>
 
   <Dialog
     v-model="showCheck"
@@ -240,8 +287,15 @@
 import UserAvatar from '@/components/UserAvatar.vue'
 import AvailabilityCheck from '@/components/Settings/Booking/AvailabilityCheck.vue'
 import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
-import { createResource, call, Dialog, Switch, toast } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import {
+  createResource,
+  call,
+  Dialog,
+  FormControl,
+  Switch,
+  toast,
+} from 'frappe-ui'
+import { computed, reactive, ref } from 'vue'
 
 const setup = createResource({
   url: 'crm.api.booking_admin.get_online_setup',
@@ -265,6 +319,33 @@ function takes(person, service) {
 
 function countLabel(n) {
   return n === 1 ? __('1 service') : __('{0} services', [n])
+}
+
+const showProfile = ref(false)
+const profile = reactive({
+  user: '',
+  full_name: '',
+  public_title: '',
+  public_bio: '',
+})
+
+function editProfile(person) {
+  Object.assign(profile, {
+    user: person.user,
+    full_name: person.full_name,
+    public_title: person.public_title || '',
+    public_bio: person.public_bio || '',
+  })
+  showProfile.value = true
+}
+
+async function saveProfile() {
+  await run('set_person_profile', {
+    user: profile.user,
+    public_title: profile.public_title,
+    public_bio: profile.public_bio,
+  })
+  showProfile.value = false
 }
 
 function toggle(person, service) {

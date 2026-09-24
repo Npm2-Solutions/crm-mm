@@ -1126,13 +1126,24 @@ def list_schedules() -> list[dict]:
 
 
 @frappe.whitelist()
-def get_schedule(user: str) -> dict:
+def get_schedule(user: str = "") -> dict:
 	_check_manager()
-	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})
+	config = frappe.get_cached_doc("CRM Scheduling Settings")
+	studio = {
+		"default_availability": [
+			{"workday": row.workday, "start_time": hhmm(row.start_time), "end_time": hhmm(row.end_time)}
+			for row in config.default_availability
+		],
+		"default_holiday_list": config.default_holiday_list,
+		"full_name": (frappe.db.get_value("User", user, "full_name") if user else "") or user,
+	}
+	name = frappe.db.get_value("CRM Staff Schedule", {"user": user}) if user else None
 	if not name:
 		return {
+			**studio,
 			"user": user,
-			"enabled": 1,
+			# no schedule yet: they work the studio hours
+			"enabled": 0,
 			"max_daily_appointments": 0,
 			"max_weekly_appointments": 0,
 			"bookable_online": 1,
@@ -1144,6 +1155,7 @@ def get_schedule(user: str) -> dict:
 		}
 	doc = frappe.get_doc("CRM Staff Schedule", name)
 	return {
+		**studio,
 		"name": doc.name,
 		"user": doc.user,
 		"enabled": doc.enabled,
@@ -1182,9 +1194,6 @@ def save_schedule(schedule: str | dict) -> dict:
 		"enabled": cint(payload.get("enabled", 1)),
 		"max_daily_appointments": cint(payload.get("max_daily_appointments")),
 		"max_weekly_appointments": cint(payload.get("max_weekly_appointments")),
-		"bookable_online": cint(payload.get("bookable_online", 1)),
-		"public_title": payload.get("public_title") or None,
-		"public_bio": payload.get("public_bio") or None,
 		"holiday_list": payload.get("holiday_list") or None,
 		"availability": [
 			{
@@ -1207,6 +1216,15 @@ def save_schedule(schedule: str | dict) -> dict:
 			if row.get("date")
 		],
 	}
+	# the online side (bookable, title, bio) lives in Online booking: a rota save
+	# that does not carry it leaves it alone
+	if "bookable_online" in payload:
+		values["bookable_online"] = cint(payload.get("bookable_online"))
+	for key in ("public_title", "public_bio"):
+		if key in payload:
+			values[key] = payload.get(key) or None
+	if values["enabled"] and not values["availability"]:
+		frappe.throw(_("Add at least one time slot, or use the studio hours"))
 	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})
 	if name:
 		doc = frappe.get_doc("CRM Staff Schedule", name)
