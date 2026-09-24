@@ -1,21 +1,14 @@
 <template>
-  <div class="flex pr-3">
-    <div class="z-20 ml-2 flex items-center justify-center">
-      <Button
-        class="size-7"
-        variant="ghost"
-        @click="sidebarOpened = !sidebarOpened"
-      >
-        <MenuIcon class="h-4 text-ink-gray-9" />
-      </Button>
-    </div>
-    <div id="app-header" class="flex-1" />
+  <!-- The hamburger used to live here. The drawer it opened is now the "More"
+       tab at the bottom, within thumb reach, so the header gives all of its
+       width — all 390px of it on a phone — to the page's own breadcrumbs and
+       actions. -->
+  <div class="flex pl-2 pr-3 pt-safe">
+    <div id="app-header" class="min-w-0 flex-1" />
   </div>
   <CallUI class="mr-3 mt-2" />
 </template>
 
 <script setup>
-import MenuIcon from '@/components/Icons/MenuIcon.vue'
 import CallUI from '@/components/Telephony/CallUI.vue'
-import { mobileSidebarOpened as sidebarOpened } from '@/composables/settings'
 </script>

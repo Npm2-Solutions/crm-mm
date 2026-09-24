@@ -152,7 +152,6 @@
   </div>
 
   <template v-if="!mobile">
-    <Settings />
     <HelpModal
       v-if="showHelpModal"
       v-model="showHelpModal"
@@ -203,7 +202,7 @@ import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import HelpIcon from '@/components/Icons/HelpIcon.vue'
 import Notifications from '@/components/Notifications.vue'
-import Settings from '@/components/Settings/Settings.vue'
+import { currentNavKey } from '@/utils/navigation'
 import { viewsStore } from '@/stores/views'
 import {
   unreadNotificationsCount,
@@ -262,7 +261,6 @@ const links = [
     label: 'Dashboard',
     icon: LucideLayoutDashboard,
     to: 'Dashboard',
-    condition: () => !props.mobile,
   },
   {
     // the people. "Lead" is what one of them is at the start, not what they
@@ -312,7 +310,6 @@ const links = [
     label: 'Calendar',
     icon: CalendarIcon,
     to: 'Calendar',
-    condition: () => !props.mobile,
   },
   {
     label: 'Call Logs',
@@ -419,9 +416,7 @@ function getIcon(routeName, icon) {
 // The Inbox is the exception, because it shares its route with People: what
 // tells them apart is which view of that route is open.
 function currentRouteKey() {
-  if (route.name === 'Leads' && route.params.viewType === 'inbox')
-    return 'Inbox'
-  return route.query.view || route.name
+  return currentNavKey(route)
 }
 
 // Set the highlight on click rather than waiting for the route, since route

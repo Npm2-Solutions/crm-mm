@@ -3,6 +3,7 @@ import { call } from 'frappe-ui'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
 import { viewsStore } from '@/stores/views'
+import { isMobileView } from '@/composables/breakpoints'
 
 let personaChecked = false
 export const PERSONA_DONE_KEY = 'crm_persona_captured'
@@ -204,7 +205,7 @@ async function leadOwning(contactId) {
 }
 
 const handleMobileView = (componentName) => {
-  return window.innerWidth < 768 ? `Mobile${componentName}` : componentName
+  return isMobileView.value ? `Mobile${componentName}` : componentName
 }
 
 let router = createRouter({

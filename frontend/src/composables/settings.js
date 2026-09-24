@@ -1,8 +1,10 @@
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 export const mobileSidebarOpened = ref(false)
 
-export const isMobileView = computed(() => window.innerWidth < 768)
+// Re-exported so the ~15 existing `from '@/composables/settings'` imports keep
+// working; the reactive definition lives in one place.
+export { isMobileView, MOBILE_BREAKPOINT } from '@/composables/breakpoints'
 
 export const showSettings = ref(false)
 

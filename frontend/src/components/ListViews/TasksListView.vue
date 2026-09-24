@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <ListView
+    :class="{ '!w-full': isMobileView }"
     :columns="columns"
     :rows="rows"
     :options="{
@@ -13,6 +14,7 @@
     @update:selections="(selections) => emit('selectionsChanged', selections)"
   >
     <ListHeader
+      v-if="!isMobileView"
       class="mx-3 sm:mx-5"
       @columnWidthUpdated="emit('columnWidthUpdated')"
     >
@@ -35,7 +37,8 @@
         </Button>
       </ListHeaderItem>
     </ListHeader>
-    <ListRows
+    <component
+      :is="isMobileView ? MobileListRows : ListRows"
       v-slot="{ idx, column, item, row }"
       class="mx-3 sm:mx-5"
       :rows="rows"
@@ -154,8 +157,10 @@
           </div>
         </template>
       </ListRowItem>
-    </ListRows>
-    <ListSelectBanner>
+    </component>
+    <ListSelectBanner
+      :class="{ '!min-w-0 max-w-[calc(100vw-1.5rem)]': isMobileView }"
+    >
       <template #actions="{ selections, unselectAll }">
         <Dropdown
           :options="listBulkActionsRef.bulkActions(selections, unselectAll)"
@@ -191,6 +196,7 @@ import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import RatingInput from '@/components/Controls/RatingInput.vue'
 import ListBulkActions from '@/components/ListBulkActions.vue'
 import ListRows from '@/components/ListViews/ListRows.vue'
+import MobileListRows from '@/components/ListViews/MobileListRows.vue'
 import {
   formatDate,
   isTranslatable,
@@ -209,6 +215,7 @@ import {
   Tooltip,
 } from 'frappe-ui'
 import { sessionStore } from '@/stores/session'
+import { isMobileView } from '@/composables/breakpoints'
 import { ref, computed, watch } from 'vue'
 
 defineProps({

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col gap-2 my-2 w-[470px] rounded-lg bg-surface-elevation-2 shadow-2xl ring-1 ring-black p-3 ring-opacity-5 focus:outline-none"
+    class="my-2 flex w-[calc(100vw_-_2rem)] flex-col gap-2 rounded-lg bg-surface-elevation-2 p-3 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none sm:w-[470px]"
   >
     <div class="text-base text-ink-gray-5">{{ __('Assign To') }}</div>
     <Link

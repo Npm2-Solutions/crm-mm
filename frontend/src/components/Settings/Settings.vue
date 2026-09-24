@@ -6,10 +6,38 @@
     @close="activeSettingsPage = ''"
   >
     <template #body>
-      <div class="flex h-[calc(100vh_-_8rem)] bg-surface-gray-1">
+      <!-- Two panes side by side on a desktop. On a phone they do not fit, so it
+           becomes a list that pushes to a page and comes back. -->
+      <div
+        class="flex bg-surface-gray-1"
+        :class="
+          isMobileView ? 'h-[calc(100dvh_-_4rem)]' : 'h-[calc(100vh_-_8rem)]'
+        "
+      >
         <div
-          class="flex flex-col m-1 rounded-l-lg w-56 shrink-0 bg-surface-gray-1 overflow-y-auto"
+          class="m-1 flex shrink-0 flex-col overflow-y-auto rounded-l-lg bg-surface-gray-1"
+          :class="
+            isMobileView
+              ? ['w-full rounded-lg', { hidden: showingDetail }]
+              : 'w-56'
+          "
         >
+          <!-- The `#body` slot suppresses the dialog's own chrome, so on a phone
+               — where there is no backdrop left to tap — this is the only way out. -->
+          <div
+            v-if="isMobileView"
+            class="flex items-center justify-between px-2 py-1.5"
+          >
+            <span class="text-base-medium text-ink-gray-9">
+              {{ __('Settings') }}
+            </span>
+            <Button
+              variant="ghost"
+              icon="x"
+              :aria-label="__('Close')"
+              @click="showSettings = false"
+            />
+          </div>
           <template v-for="(tab, i) in tabs" :key="tab.label">
             <div v-if="!tab.hideLabel && i != 0" class="mx-1 mb-0.5 mt-[5px]" />
             <div
@@ -28,7 +56,7 @@
                 :class="
                   activeTab?.label != item.label && 'hover:!bg-surface-gray-3'
                 "
-                @click="activeSettingsPage = item.label"
+                @click="openSettingsPage(item.label)"
               >
                 <template #prefix>
                   <Icon :icon="item.icon" class="size-4 text-ink-gray-7" />
@@ -38,8 +66,23 @@
           </template>
         </div>
         <div
-          class="flex flex-col flex-1 overflow-y-auto bg-surface-elevation-2"
+          class="flex flex-1 flex-col overflow-y-auto bg-surface-elevation-2"
+          :class="{ hidden: isMobileView && !showingDetail }"
         >
+          <div
+            v-if="isMobileView"
+            class="sticky top-0 z-10 flex items-center gap-1 border-b border-outline-gray-1 bg-surface-elevation-2 px-2 py-1.5"
+          >
+            <Button
+              variant="ghost"
+              icon="chevron-left"
+              :aria-label="__('Back')"
+              @click="showingDetail = false"
+            />
+            <span class="truncate text-base-medium text-ink-gray-9">
+              {{ __(activeTab?.label || 'Settings') }}
+            </span>
+          </div>
           <component :is="activeTab.component" v-if="activeTab" />
         </div>
       </div>
@@ -117,10 +160,11 @@ import { usersStore } from '@/stores/users'
 import {
   showSettings,
   activeSettingsPage,
+  isMobileView,
   disableSettingModalOutsideClick,
 } from '@/composables/settings'
 import { isWhatsappInstalled } from '@/composables/whatsapp'
-import { Dialog, Avatar, SidebarItem } from 'frappe-ui'
+import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
 import { ref, markRaw, computed, watch, h } from 'vue'
 import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import ShieldCheck from '~icons/lucide/shield-check'
@@ -454,7 +498,27 @@ function setActiveTab(tabName) {
     tabs.value[0].items[0]
 }
 
-watch(activeSettingsPage, (activePage) => setActiveTab(activePage))
+// Which pane a phone is looking at. Ignored on anything wider, where both are
+// always on screen.
+const showingDetail = ref(false)
+
+watch(showSettings, (open) => {
+  if (open) showingDetail.value = !!activeSettingsPage.value
+})
+
+watch(activeSettingsPage, (activePage) => {
+  setActiveTab(activePage)
+  // Covers the deep link and the callers that jump straight to a page, such as
+  // the sidebar's "Invite User".
+  if (activePage) showingDetail.value = true
+})
+
+// Tapping a row has to push to the detail even when it is the row you were last
+// on: `activeSettingsPage` does not change then, so the watch above never fires.
+function openSettingsPage(label) {
+  activeSettingsPage.value = label
+  showingDetail.value = true
+}
 
 // deep link: /crm?settings=<page label> opens the modal on that page (used by
 // OAuth callbacks, e.g. the Meta Lead Ads connect flow)

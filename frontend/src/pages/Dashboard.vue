@@ -12,7 +12,7 @@
           @click="dashboardItems.reload"
         />
         <Button
-          v-if="!editing && isAdmin()"
+          v-if="!editing && isAdmin() && !isMobileView"
           :label="__('Edit')"
           :iconLeft="LucidePenLine"
           @click="enableEditing"
@@ -41,7 +41,7 @@
       </template>
     </LayoutHeader>
 
-    <div class="p-5 pb-2 flex items-center gap-4">
+    <div class="flex flex-wrap items-center gap-2 p-3 pb-2 sm:gap-4 sm:p-5">
       <Dropdown
         v-if="!showDatePicker"
         v-model="preset"
@@ -60,7 +60,7 @@
       <DateRangePicker
         v-else
         ref="datePickerRef"
-        class="!w-48"
+        class="w-full sm:!w-48"
         :value="filters.period"
         variant="outline"
         :placeholder="__('Period')"
@@ -84,7 +84,7 @@
       </DateRangePicker>
       <Link
         v-if="isAdmin() || isManager()"
-        class="form-control w-48"
+        class="form-control w-full sm:w-48"
         variant="outline"
         :value="filters.user && getUser(filters.user).full_name"
         doctype="User"
@@ -143,6 +143,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Link from '@/components/Controls/Link.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { usersStore } from '@/stores/users'
 import { copy } from '@/utils'
 import {
