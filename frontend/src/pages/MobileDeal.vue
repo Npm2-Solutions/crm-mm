@@ -1,14 +1,30 @@
 <template>
   <LayoutHeader>
     <header
-      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
+      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2 pr-1"
     >
-      <Breadcrumbs :items="breadcrumbs">
+      <Breadcrumbs class="min-w-0" :items="breadcrumbs">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
-      <div class="absolute right-0">
+      <!-- One bar, not two: the assignee and the actions had a second 48px
+           strip of their own under this one, for no more than they fit here. -->
+      <div class="flex shrink-0 items-center gap-1.5">
+        <AssignTo
+          v-if="doc.name"
+          v-model="assignees.data"
+          doctype="CRM Deal"
+          :docname="dealId"
+        />
+        <CustomActions
+          v-if="document._actions?.length"
+          :actions="document._actions"
+        />
+        <CustomActions
+          v-if="document.actions?.length"
+          :actions="document.actions"
+        />
         <Dropdown v-if="doc" :options="statuses">
           <template #default="{ open }">
             <Button
@@ -25,22 +41,6 @@
       </div>
     </header>
   </LayoutHeader>
-  <div
-    v-if="doc.name"
-    class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
-  >
-    <AssignTo v-model="assignees.data" doctype="CRM Deal" :docname="dealId" />
-    <div class="flex items-center gap-2">
-      <CustomActions
-        v-if="document._actions?.length"
-        :actions="document._actions"
-      />
-      <CustomActions
-        v-if="document.actions?.length"
-        :actions="document.actions"
-      />
-    </div>
-  </div>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
     <Tabs
       v-model="tabIndex"
