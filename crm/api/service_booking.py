@@ -574,7 +574,7 @@ def book(
 			appointment.append("participants", row)
 		if notes:
 			appointment.customer_notes = "\n".join(
-				filter(None, [appointment.customer_notes, f"{full_name}: {notes}"])
+				[part for part in (appointment.customer_notes, f"{full_name}: {notes}") if part]
 			)
 		appointment.flags.ignore_permissions = True
 		appointment.save(ignore_permissions=True)

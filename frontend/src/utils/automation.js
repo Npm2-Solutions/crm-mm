@@ -822,12 +822,14 @@ export function triggerSummary(trigger) {
   if (config.tag) parts.push(__('tag «{0}»', [config.tag]))
   if (config.link) parts.push(__('link «{0}»', [config.link]))
   if (config.date_field) {
+    // nothing to translate in «{0} {1} {2}»: the words are in the parts, and
+    // the direction is already translated on its own
     parts.push(
-      __('{0} {1} {2}', [
+      [
         config.date_field,
         config.offset_days || 0,
         __(config.direction || 'before'),
-      ]),
+      ].join(' '),
     )
   }
   const groups = cleanGroups(trigger?.condition_groups)

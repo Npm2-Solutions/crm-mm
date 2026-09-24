@@ -335,7 +335,9 @@ def get_data(
 			columns = _list.default_list_data().get("columns")
 
 		# check if rows has all keys from columns if not add them
-		for column in columns:
+		# iterate over a copy: the hidden ones are removed below, and removing from
+		# the list being walked makes the loop skip whatever follows them
+		for column in list(columns):
 			if column.get("key") not in rows:
 				rows.append(column.get("key"))
 			column["label"] = _(column.get("label"))
