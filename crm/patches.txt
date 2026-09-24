@@ -52,3 +52,4 @@ crm.patches.v1_0.file_the_messages_that_had_no_record
 crm.patches.v1_0.nobody_is_called_guest
 crm.patches.v1_0.one_booking_system
 crm.patches.v1_0.what_was_last_said_to_each_person
+crm.patches.v1_0.the_sale_state_leaves_the_person
