@@ -14,23 +14,36 @@
       </Dropdown>
     </template>
     <template #right-header>
-      <Button
-        v-if="status.data?.enabled && siteUrl"
-        variant="ghost"
-        :label="__('Open the site')"
-        iconLeft="external-link"
-        @click="openExternal(siteUrl)"
-      />
-      <Button
-        variant="ghost"
-        :label="__('Settings')"
-        iconLeft="settings"
-        @click="openWebsiteSettings"
-      />
+      <!-- Two labelled buttons plus the site picker run past 390px and take the
+           header's own title with them. On a phone they fold into the kebab and
+           only the one thing you came to do keeps its button. -->
+      <Dropdown v-if="isMobileView" :options="headerActions">
+        <Button
+          variant="ghost"
+          icon="more-horizontal"
+          :aria-label="__('More')"
+        />
+      </Dropdown>
+      <template v-else>
+        <Button
+          v-if="status.data?.enabled && siteUrl"
+          variant="ghost"
+          :label="__('Open the site')"
+          iconLeft="external-link"
+          @click="openExternal(siteUrl)"
+        />
+        <Button
+          variant="ghost"
+          :label="__('Settings')"
+          iconLeft="settings"
+          @click="openWebsiteSettings"
+        />
+      </template>
       <Button
         v-if="tab === 'pages' && ready"
         variant="solid"
-        :label="__('New page')"
+        :label="isMobileView ? undefined : __('New page')"
+        :aria-label="__('New page')"
         iconLeft="plus"
         @click="startNewPage"
       />
@@ -475,6 +488,7 @@ import {
   activeSettingsPage,
   activeSettingsSite,
 } from '@/composables/settings'
+import { isMobileView } from '@/composables/breakpoints'
 import { usersStore } from '@/stores/users'
 import {
   createResource,
@@ -567,6 +581,24 @@ const ready = computed(
   () => status.data?.builder_installed && status.data?.enabled,
 )
 const siteUrl = computed(() => currentSite.value?.url || '')
+
+// The same two actions the desktop header shows as buttons.
+const headerActions = computed(() =>
+  [
+    status.data?.enabled && siteUrl.value
+      ? {
+          label: __('Open the site'),
+          icon: 'external-link',
+          onClick: () => openExternal(siteUrl.value),
+        }
+      : null,
+    {
+      label: __('Settings'),
+      icon: 'settings',
+      onClick: () => openWebsiteSettings(),
+    },
+  ].filter(Boolean),
+)
 const siteName = computed(() => window.location.hostname)
 
 const pages = createResource({
