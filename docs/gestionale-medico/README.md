@@ -136,6 +136,46 @@ Scriverli da zero si può, i tracciati sono pubblici. Ma vuol dire rispondere, p
 tutti i clienti, di ogni scarto e di ogni cambio di specifiche. Si rivaluta dopo,
 con i numeri: quando il costo per invio supera il costo di tenerli.
 
+## Persona, deal, paziente: tre cose diverse
+
+Oggi nel CRM:
+
+- **la persona** (`CRM Lead`, *People* nel menu) è chiunque vi abbia contattato,
+  una scheda per essere umano, per sempre. Il `Contact` è solo la sua rubrica: la
+  pagina di un contatto porta alla persona (`frontend/src/router.js`);
+- **il deal** è una vendita da seguire, con uno stato su una pipeline. Una persona
+  ne ha zero, uno o tanti, mai due aperti insieme.
+
+**Una persona può non avere nessun deal.** Chi prenota da `/prenota` o da una
+piattaforma diventa persona e appuntamento, senza deal
+(`find_or_create_person`). Chi compila un modulo del sito o di Meta diventa
+persona e deal, perché qualcuno lo deve richiamare (`open_deal_for_inquiry`, da
+`crm/api/form.py` e `crm/integrations/meta/leads.py`).
+
+In un centro medico il deal serve per le richieste da richiamare e per le cure
+con un preventivo (impianti, ortodonzia, medicina estetica, chirurgia, check-up,
+convenzioni con aziende). Per chi prenota una visita non serve: molti pazienti
+non avranno mai un deal.
+
+**Il paziente è la terza cosa, e bisogna saperlo:** cartella e fatture vanno
+conservate anche se la persona chiede di essere cancellata, il medico vede i
+pazienti e chi fa marketing no, e "nuovi pazienti al mese" è il numero che il
+centro guarda. La regola: **si diventa paziente alla prima accettazione**, cioè
+la prima volta che si entra, non quando si prenota. Chi prenota e non si
+presenta resta una persona. Deal e paziente sono indipendenti:
+
+| | Con un deal | Senza deal |
+|---|---|---|
+| **Paziente** | paziente con un preventivo aperto | paziente che prenota le sue visite |
+| **Non ancora paziente** | richiesta da una pubblicità, da richiamare | chi ha scritto o prenotato ma non è mai venuto |
+
+**La prima visita chiude il deal come vinto, da sola.** Il report delle
+inserzioni Meta conta come clienti i deal vinti (`cost_per_won` in
+`crm/integrations/meta/insights.py`), ma in un centro medico nessuno li segnerà a
+mano. Se la prima accettazione chiude come vinto il deal aperto della persona, il
+report dice quanto costa un nuovo paziente per ogni inserzione, senza lavoro in
+più per la segreteria.
+
 ## Il modello dati, prima versione
 
 ```
