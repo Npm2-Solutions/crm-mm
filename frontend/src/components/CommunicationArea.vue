@@ -1,12 +1,15 @@
 <template>
   <!--
-    Nothing is open: the bar, and the three ways of writing on it. Clicking it
-    is what opens the editor — an email or a note is usually one sentence, and
-    meeting it with a toolbar and a subject line asks for a letter.
+    Nothing is open: the line you write on. Clicking it is what opens the editor
+    — an email or a comment is usually one sentence, and meeting it with a
+    toolbar and a subject line asks for a letter.
+
+    The channel strip is not here: it is mounted once above this whole region,
+    so it survives an editor opening. See Activities.vue.
   -->
   <ComposerBar
     v-if="!showEmailBox && !showCommentBox && !showWhatsAppBox"
-    v-model:channel="way"
+    :channel="way"
     @open="openWay"
   />
   <div
@@ -122,11 +125,24 @@ const { getUser } = usersStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 
+// The channels somebody can write in. «all» and «call» are for reading only,
+// so they leave the line set to whatever it was.
+const WAYS_OF_WRITING = ['email', 'sms', 'whatsapp', 'comment']
+
 const showEmailBox = ref(false)
 const showCommentBox = ref(false)
 
-// «All» opens nothing by itself: on a mixed stream there is no obvious channel
-// to be writing in, and a composer that springs open steals the scroll.
+// One box at a time: three open editors on the same record is nobody's idea of
+// a conversation. Which way the line is set to write is remembered while the
+// record is open, so somebody writing comments all afternoon is not put back on
+// email every time. Declared here rather than beside `openWay`: the watch below
+// is `immediate`, so it reads this while the setup body is still running.
+const way = ref('email')
+
+// A reading-only channel («all», «call») opens nothing by itself: there is no
+// obvious channel to be writing in, and a composer that springs open steals the
+// scroll. A channel with a box of its own closes what is open here, so an email
+// editor is not left standing underneath a WhatsApp conversation.
 watch(
   () => props.channel,
   (channel) => {
@@ -136,7 +152,11 @@ watch(
     } else if (channel === 'comment') {
       showEmailBox.value = false
       showCommentBox.value = true
+    } else if (channel === 'whatsapp' || channel === 'sms') {
+      showEmailBox.value = false
+      showCommentBox.value = false
     }
+    if (WAYS_OF_WRITING.includes(channel)) way.value = channel
   },
   { immediate: true },
 )
@@ -340,12 +360,6 @@ async function submitComment() {
   capture('comment_sent', { doctype: props.doctype })
   updateOnboardingStep('add_first_comment')
 }
-
-// one box at a time: three open editors on the same record is nobody's idea of
-// a conversation
-// Which way the bar is set to write. Remembered while the record is open, so
-// somebody writing notes all afternoon is not put back on email every time.
-const way = ref('email')
 
 function openWay(which) {
   way.value = which
