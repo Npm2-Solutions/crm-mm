@@ -57,7 +57,7 @@ stop**. Nessuna esclude le altre, nessuna è obbligatoria.
 | 1 | **Informazione medica** | Si salva il primo dato clinico sulla persona, di qualunque tipo: una nota, un'anamnesi, un'allergia, un parametro, un documento clinico, un consenso a un trattamento, un referto | il medico che apre la scheda e scrive |
 | 2 | **Accettazione** | La segreteria registra l'arrivo al banco | i centri con la segreteria |
 | 3 | **Appuntamento svolto** | L'appuntamento è segnato come svolto (`Completed`, o il partecipante `Attended`), anche con il "sì" del promemoria di fine giornata | chi usa l'agenda |
-| 4 | **Fattura sanitaria** | Si conferma la prima `CRM Invoice` alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, prima il flag restava sempre a 0) | chi fa solo le fatture |
+| 4 | **Fattura sanitaria** | Si conferma la prima `CRM Invoice` alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, in `develop` dal 25/09/2026; prima il flag restava sempre a 0) | chi fa solo le fatture |
 | 5 | **Importazione** | Si importano i pazienti dal vecchio gestionale | il primo giorno |
 | 6 | **A mano** | Qualcuno preme "Segna come paziente" sulla pagina della persona | i casi che nessuna regola vede |
 
