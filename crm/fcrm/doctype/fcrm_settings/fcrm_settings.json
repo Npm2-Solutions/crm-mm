@@ -17,7 +17,7 @@
   "activity_timeline_section",
   "crm_timeline_timestamp_format",
   "crm_timeline_sort_order",
-  "conversation_badge_clears",
+  "whatsapp_read_receipts",
   "currency_tab",
   "currency",
   "exchange_rate_provider_section",
@@ -214,12 +214,11 @@
    "options": "Oldest First\nNewest First"
   },
   {
-   "default": "When seen",
-   "description": "When the count of waiting messages on a conversation goes away",
-   "fieldname": "conversation_badge_clears",
-   "fieldtype": "Select",
-   "label": "Conversation Badge Clears",
-   "options": "When seen\nWhen answered"
+   "default": "0",
+   "description": "Tell WhatsApp their messages have been read when a chat is opened here. The customer sees the blue ticks.",
+   "fieldname": "whatsapp_read_receipts",
+   "fieldtype": "Check",
+   "label": "Send WhatsApp Read Receipts"
   },
   {
    "default": "0",

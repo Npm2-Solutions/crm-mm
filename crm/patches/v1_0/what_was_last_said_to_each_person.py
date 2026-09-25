@@ -14,7 +14,7 @@ into. Nothing is marked read: what was never seen should still be waiting.
 
 import frappe
 
-from crm.api.conversations import RECORDS, available_channels, refresh_waiting_flags, remember
+from crm.api.conversations import RECORDS, available_channels, remember
 
 
 def execute():
@@ -39,6 +39,16 @@ def execute():
 			frappe.log_error(frappe.get_traceback(), f"Conversations: could not read back {doctype} {name}")
 	frappe.db.commit()
 
-	# and the flag the Inbox filters on, for everybody at once — including the
-	# people who have no conversation and are therefore waiting on nothing
-	refresh_waiting_flags()
+	# and the pile: a conversation whose last word is theirs is one nobody here
+	# has dealt with. Everything else starts read, because saying «unread» about
+	# six months of history somebody has already worked through would be asking
+	# them to clear a list they have already cleared.
+	for doctype in RECORDS:
+		frappe.db.sql(  # nosemgrep
+			f"""
+			update `tab{doctype}`
+			set conversation_unread = case
+				when last_conversation_direction = 'Incoming' then 1 else 0 end
+			"""
+		)
+	frappe.db.commit()

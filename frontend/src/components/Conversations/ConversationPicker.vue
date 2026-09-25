@@ -7,7 +7,7 @@
 -->
 <template>
   <div
-    class="flex w-80 shrink-0 flex-col overflow-hidden border-r bg-surface-white"
+    class="flex w-full shrink-0 flex-col overflow-hidden bg-surface-white sm:w-80 sm:border-r"
   >
     <div class="flex shrink-0 flex-col gap-2 border-b px-3 py-2.5">
       <TextInput

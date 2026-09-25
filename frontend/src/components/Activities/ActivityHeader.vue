@@ -1,9 +1,20 @@
 <template>
+  <!--
+    One row while it fits, two when it does not.
+
+    It was a single line that never wrapped: the title, four channel pills with
+    their counts, and a button, all squeezing each other on a pane that is not
+    wide. And the row was inset forty pixels while the messages under it start
+    at sixteen, so the header floated on a different grid from the conversation
+    it belongs to.
+  -->
   <div
     v-if="title !== 'Data'"
-    class="flex items-center justify-between text-lg-medium sm:mx-10 sm:mb-4 sm:mt-8"
+    class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 pb-3 pt-5 text-lg-medium sm:px-4 sm:pb-4 sm:pt-6"
   >
-    <div class="flex h-8 items-center text-2xl-semibold text-ink-gray-8">
+    <div
+      class="flex h-8 shrink-0 items-center text-xl-semibold text-ink-gray-8"
+    >
       {{ __(title) }}
     </div>
     <!--
@@ -11,14 +22,19 @@
       WhatsApp and then typing into an email composer was the whole reason the
       four tabs existed.
     -->
-    <div v-if="title == 'Activity'" class="flex items-center gap-2">
+    <div
+      v-if="title == 'Activity'"
+      class="flex min-w-0 flex-1 items-center justify-end gap-2"
+    >
+      <!-- scrolls rather than compresses: a pill squeezed until its count
+           touches its label is a pill nobody can read -->
       <div
-        class="flex items-center gap-0.5 rounded-lg bg-surface-gray-2 p-0.5 text-p-sm"
+        class="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-lg bg-surface-gray-2 p-0.5 text-p-sm [&::-webkit-scrollbar]:h-0"
       >
         <button
           v-for="option in channelOptions"
           :key="option.key"
-          class="flex items-center gap-1.5 rounded-md px-2 py-1"
+          class="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1"
           :class="
             channel === option.key
               ? 'bg-surface-white text-ink-gray-8 shadow-sm'

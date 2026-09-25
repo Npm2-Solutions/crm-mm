@@ -133,26 +133,6 @@
               >
                 <EmailArea :activity="row.item" :modalRef="modalRef" />
               </div>
-
-              <!--
-              The channel, under the bubble instead of pinned to its corner.
-
-              A badge on the corner had nothing to sit on that was not already
-              taken — the failed/Retry pair on one side, a reaction on the other
-              — and it collided with whichever it met. Here it cannot collide
-              with anything, it reads as words rather than as a symbol to
-              decode, and it takes the side the message is on.
-            -->
-              <div
-                v-if="channel === 'all'"
-                class="flex items-center gap-1 px-1 pt-0.5 text-p-xs text-ink-gray-5"
-                :class="
-                  row.direction === 'out' ? 'justify-end' : 'justify-start'
-                "
-              >
-                <component :is="iconFor(row.channel)" class="size-3" />
-                <span>{{ __(labelFor(row)) }}</span>
-              </div>
             </div>
           </div>
 
@@ -345,20 +325,6 @@ const LABELS = {
   email: 'Email',
   comment: 'Comment',
   call: 'Call',
-}
-
-function labelFor(row) {
-  const what = LABELS[row.channel] || 'Activity'
-  // A call is not sent or received, it is made or taken. The side already says
-  // which; the caption says it in words for anyone who reads before looking.
-  if (row.channel === 'call') {
-    if (row.direction === 'out') return `${what} — outgoing`
-    if (row.direction === 'in') return `${what} — incoming`
-    return what
-  }
-  if (row.direction === 'out') return `${what} — sent`
-  if (row.direction === 'in') return `${what} — received`
-  return what
 }
 </script>
 

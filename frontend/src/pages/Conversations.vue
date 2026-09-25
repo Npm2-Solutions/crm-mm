@@ -34,8 +34,15 @@
     </template>
   </LayoutHeader>
 
+  <!--
+    Three panes side by side is a desk, not a phone. At 390 pixels the list
+    alone took 320 of them and the conversation got a sliver — so on a phone the
+    three become one at a time: the list, then the thread with a way back, and
+    the person behind a button.
+  -->
   <div class="flex flex-1 overflow-hidden">
     <ConversationPicker
+      v-if="!isMobileView || !chosen"
       v-model:state="state"
       v-model:search="search"
       :rows="rows"
@@ -47,6 +54,18 @@
     />
 
     <div v-if="chosen" class="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <!-- the way back, and the way to the person: on a phone they are the only
+         two things the other panes can be reached by -->
+      <div
+        v-if="isMobileView"
+        class="flex h-11 shrink-0 items-center gap-2 border-b px-2"
+      >
+        <Button variant="ghost" icon="arrow-left" @click="back()" />
+        <span class="min-w-0 flex-1 truncate text-base font-medium">
+          {{ nameOf(personOf(chosen)) }}
+        </span>
+        <Button variant="ghost" icon="info" @click="showPerson = true" />
+      </div>
       <!--
         The Activity tab of that person, whole: the channel picker, the stream
         and the composer, with everything they already know about replies,
@@ -60,8 +79,9 @@
         @afterSave="reload()"
       />
     </div>
+    <!-- on a phone the list *is* the empty state, so there is nothing to say -->
     <div
-      v-else
+      v-else-if="!isMobileView"
       class="flex flex-1 flex-col items-center justify-center gap-2 text-ink-gray-4"
     >
       <InboxIcon class="h-8 w-8" />
@@ -72,11 +92,24 @@
     </div>
 
     <ConversationAside
-      v-if="chosen"
+      v-if="chosen && !isMobileView"
       :person="personOf(chosen)"
       @changed="reload()"
     />
   </div>
+
+  <!-- and on a phone it slides in over the conversation, because there is no
+     third column to put it in -->
+  <Dialog v-model="showPerson" :options="{ size: 'sm' }">
+    <template #body>
+      <ConversationAside
+        v-if="chosen"
+        class="!w-full !border-l-0"
+        :person="personOf(chosen)"
+        @changed="reload()"
+      />
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -86,7 +119,8 @@ import ConversationPicker from '@/components/Conversations/ConversationPicker.vu
 import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
-import { Breadcrumbs, createResource, debounce } from 'frappe-ui'
+import { isMobileView } from '@/composables/settings'
+import { Breadcrumbs, Dialog, createResource, debounce } from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -98,7 +132,7 @@ const { $socket } = globalStore()
 // works and a conversation can be linked to — without the page being rebuilt
 // around it, which is the whole point of this screen.
 const chosen = computed(() => route.query.person || '')
-const state = ref('open')
+const state = ref('unread')
 const search = ref('')
 const pageLength = ref(40)
 
@@ -121,26 +155,42 @@ const unread = createResource({
   }),
 })
 
+const showPerson = ref(false)
+
 function personOf(name) {
   return rows.value.find((row) => row.name === name) || { name }
 }
 
-const seen = createResource({ url: 'crm.api.conversations.mark_seen' })
+function nameOf(person) {
+  return person?.lead_name || person?.organization || person?.name || ''
+}
+
+// Back to the list, which on a phone is the pane this one replaced.
+function back() {
+  showPerson.value = false
+  router.replace({ name: 'Conversations' })
+}
+
+// Opening a chat does not mark it read — looking is not dealing with it. What
+// it can do, if the site has said so, is tell WhatsApp the messages have been
+// read, which is a different promise made to a different person.
+const acknowledge = createResource({
+  url: 'crm.api.conversations.acknowledge',
+})
 
 function choose(row) {
   if (row.name === chosen.value) return
   router.replace({ name: 'Conversations', query: { person: row.name } })
 }
 
-// Opening one is reading it. Told to the server because the list is shared: a
-// colleague looking at the same screen should see the same thing.
 watch(
   chosen,
   (name) => {
     if (!name) return
-    seen
-      .submit({ reference_doctype: 'CRM Lead', reference_name: name })
-      .then(() => unread.fetch())
+    acknowledge.submit({
+      reference_doctype: 'CRM Lead',
+      reference_name: name,
+    })
   },
   { immediate: true },
 )

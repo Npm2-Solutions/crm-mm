@@ -534,10 +534,15 @@ def outgoing_media(attach: str, content_type: str) -> str:
 def create_whatsapp_message(
 	reference_doctype: str,
 	reference_name: str,
-	message: str,
-	to: str,
-	attach: str,
-	reply_to: str,
+	message: str = "",
+	# Optional because the record knows who it is for: `whatsapp_recipient`
+	# reads the number from it. The chat stopped sending one — there is one
+	# number per person, so there was nothing to choose — and a parameter with
+	# no default then made every send a 500 about a missing argument, which is
+	# not an error anybody could act on.
+	to: str | None = None,
+	attach: str = "",
+	reply_to: str = "",
 	content_type: str = "text",
 ):
 	validate_access(reference_doctype, reference_name)
