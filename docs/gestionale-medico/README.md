@@ -28,14 +28,14 @@ attraversa due fasi, e **due mestieri** che lavorano su di lei.
 ### Le due fasi della persona
 
 ```
-  CONTATTO  ───────────── prima visita ─────────────►  PAZIENTE
-  da conquistare         il primo segno che             da curare
-  lo segue il marketing  è venuto davvero               lo segue il centro,
-  con i deal                                            con agenda e visite
+  CONTATTO  ────────── la prima regola che scatta ──────────►  PAZIENTE
+  da conquistare     un dato medico, l'arrivo, la visita,       da curare
+  lo segue il        la fattura…                                lo segue il centro,
+  marketing, con i deal                                         con agenda e visite
 ```
 
-- Il passaggio è **la prima visita**, non la prenotazione: chi prenota e non si
-  presenta resta un contatto.
+- Il passaggio è **il primo dato medico o il primo segno che la persona è
+  venuta**, non la prenotazione: chi prenota e non si presenta resta un contatto.
 - È automatico: nessuno deve ricordarsi di "convertire" qualcuno.
 - La persona non cambia scheda. Le si aggiunge la **scheda paziente** (consensi,
   tutore, dossier) e da quel momento compare fra i **Pazienti**.
@@ -48,29 +48,40 @@ persona chiede di essere cancellata, il medico vede i pazienti e il marketing no
 
 Ogni centro lavora a modo suo: c'è quello con la segreteria che accoglie, quello
 dove c'è solo il medico che apre la scheda della persona e comincia a scrivere,
-quello che segna tutto in agenda e quello che fa solo le fatture. Quindi **ci sono
-tutte le strade**, nessuna esclude le altre e nessuna è obbligatoria. La persona
-diventa paziente al **primo segno che è venuta**, qualunque arrivi prima:
+quello che segna tutto in agenda e quello che fa solo le fatture. Quindi non c'è
+un passaggio obbligato ma **una lista di regole: la prima che scatta converte, e
+stop**. Nessuna esclude le altre, nessuna è obbligatoria.
 
-| Come lavora il centro | Il segno | Gesto in più richiesto |
-|---|---|---|
-| Solo il medico, che apre la scheda e scrive | Il medico salva la prima visita o nota clinica | nessuno: scrivere è già il gesto |
-| Segreteria che accoglie | L'accettazione: l'arrivo registrato al banco | nessuno: è il suo lavoro |
-| Agenda usata con gli stati | L'appuntamento segnato come svolto (`Completed`, o il partecipante `Attended`) | nessuno |
-| Chi fa le fatture | La prima `CRM Invoice` confermata alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, prima il flag restava sempre a 0) | nessuno: la fattura è obbligatoria comunque |
-| Passaggio dal vecchio gestionale | L'importazione dei pazienti | nessuno |
-| Un caso che nessuna regola vede | A mano: "Segna come paziente" sulla pagina della persona | un clic, solo quando serve |
+| # | Regola | Scatta quando | Tipica di |
+|---|---|---|---|
+| 1 | **Informazione medica** | Si salva il primo dato clinico sulla persona, di qualunque tipo: una nota, un'anamnesi, un'allergia, un parametro, un documento clinico, un consenso a un trattamento, un referto | il medico che apre la scheda e scrive |
+| 2 | **Accettazione** | La segreteria registra l'arrivo al banco | i centri con la segreteria |
+| 3 | **Appuntamento svolto** | L'appuntamento è segnato come svolto (`Completed`, o il partecipante `Attended`), anche con il "sì" del promemoria di fine giornata | chi usa l'agenda |
+| 4 | **Fattura sanitaria** | Si conferma la prima `CRM Invoice` alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, prima il flag restava sempre a 0) | chi fa solo le fatture |
+| 5 | **Importazione** | Si importano i pazienti dal vecchio gestionale | il primo giorno |
+| 6 | **A mano** | Qualcuno preme "Segna come paziente" sulla pagina della persona | i casi che nessuna regola vede |
 
-La fattura è il segno più affidabile di tutti: è obbligatoria, la fa una persona,
-e la fatturazione la fa già nascere dall'appuntamento. Una fattura non sanitaria
-(un corso, un abbonamento) non rende nessuno paziente.
+**La regola 1 non chiede che la persona sia venuta, e va bene così.** Dal momento
+in cui il centro conserva un dato sanitario su qualcuno, quel dato va trattato da
+dato di un paziente: lo vedono solo i ruoli clinici, si conserva, non si usa per il
+marketing. Un file arrivato su WhatsApp resta nella conversazione e non conta
+finché qualcuno non lo porta nella sezione "Clinica".
 
-**Sei strade, una porta.** Tutte chiamano la stessa funzione, che non fa danni se
-chiamata due volte: la prima strada che arriva crea la scheda paziente, le altre
-trovano la porta già aperta e non fanno niente. La funzione scrive "paziente dal
-12/10/2026, prima fattura", chiude come vinto il deal aperto della pipeline "Nuovi
-pazienti" e lancia un evento "Diventato paziente" per le automazioni (benvenuto,
-richiesta di recensione dopo una settimana…).
+**La prima che scatta, e stop.** Tutte le regole chiamano la stessa funzione, e la
+sua prima riga è "è già paziente? allora esci". La prima regola che arriva crea la
+scheda paziente e scrive quale regola è scattata, quando e per mano di chi
+("paziente dal 12/10/2026: primo dato clinico, allergia inserita dalla
+dott.ssa Rossi"); le altre, dopo, non fanno più niente. Nello stesso momento la
+funzione chiude come vinto il deal aperto della pipeline "Nuovi pazienti" e lancia
+l'evento "Diventato paziente" per le automazioni (benvenuto, richiesta di
+recensione dopo una settimana…).
+
+**La stessa lista vale anche all'indietro.** Quando si accende il modulo su un
+sito che ha già mesi di appuntamenti e fatture, un lavoro una tantum scorre le
+persone e applica le regole nell'ordine della tabella, fermandosi alla prima che
+trova. Nessuno deve segnare a mano i pazienti di prima.
+
+Una fattura non sanitaria (un corso, un abbonamento) non rende nessuno paziente.
 
 Quello che cambia per chi lavora:
 
@@ -125,10 +136,10 @@ leggersi "Richieste" senza toccare gli altri clienti.
 Separare non basta: la dualità si gestisce nei tre punti in cui un mondo passa la
 persona all'altro.
 
-1. **Dal marketing al centro: la prima visita chiude il deal.** La pipeline "Nuovi
+1. **Dal marketing al centro: diventare paziente chiude il deal.** La pipeline "Nuovi
    pazienti" va da richiesta a contattato, ad appuntamento fissato, a venuto
-   (vinto) o perso. La prenotazione sposta il deal su "appuntamento fissato", il
-   primo segno di presenza su "venuto". Così il report delle inserzioni Meta, che
+   (vinto) o perso. La prenotazione sposta il deal su "appuntamento fissato", la
+   conversione a paziente su "venuto". Così il report delle inserzioni Meta, che
    conta i deal vinti (`cost_per_won` in `crm/integrations/meta/insights.py`), dice
    quanto costa un nuovo paziente, senza lavoro in più per nessuno. Con le
    automazioni di oggi non si fa: i trigger degli appuntamenti lavorano sulla
@@ -302,7 +313,7 @@ firma o lo consegna e restituisce l'esito
 CRM Lead (la persona, com'è oggi)
   ├─1:1─ anagrafica fiscale (fatturazione) ── codice fiscale, indirizzo;
   │                                           la leggono fattura e clinica
-  └─1:1─ Paziente (clinica) ─── nasce da solo al primo segno di presenza:
+  └─1:1─ Paziente (clinica) ─── nasce da solo alla prima regola che scatta:
             │                    paziente dal, motivo, tutore o genitore
             │                    (un'altra persona), consenso al dossier
             ├── Consenso ×N ─── tipo, versione del testo, firmato il, come, PDF
@@ -317,7 +328,7 @@ CRM Appointment (l'agenda, com'è oggi)
   └── CRM Invoice (fatturazione, com'è oggi) ── la prima con una riga sanitaria
                                                 fa diventare paziente
 
-CRM Deal (com'è oggi): il primo segno di presenza chiude come vinto quello aperto
+CRM Deal (com'è oggi): la conversione a paziente chiude come vinto quello aperto
 ```
 
 Perché così:
@@ -343,13 +354,19 @@ Perché così:
   profiles". È il punto più delicato del modello, perché oggi `find_person`
   riconosce una persona da email e telefono, e in una famiglia li condividono. Si
   decide in fase 0.
-- **Una porta sola per diventare paziente.** Una funzione che non fa danni se
-  chiamata due volte (`ensure_patient(persona, motivo)`), chiamata dai
-  `doc_events` di visita, accettazione, appuntamento (`Completed` o `Attended`) e
-  fattura (`on_submit` con una riga `is_healthcare`), dall'importazione e dal
-  bottone "Segna come paziente". Un vincolo di unicità sulla persona impedisce due
-  schede paziente anche se due eventi arrivano insieme. L'evento "Diventato paziente" si aggiunge a `EVENT_TO_TRIGGER` in
-  `crm/automation/engine.py`.
+- **Una lista di regole, una porta sola.** Le sei regole stanno in un file solo
+  (per esempio `crm/clinica/diventa_paziente.py`), nell'ordine della tabella, e
+  chiamano tutte la stessa funzione (`ensure_patient(persona, regola, origine)`),
+  la cui prima riga è "è già paziente? esci". Le chiamano: la classe base di tutti
+  i DocType clinici al primo inserimento (così un DocType clinico nuovo è coperto
+  senza ricordarsene, e un test controlla che tutti ereditino da lì), i
+  `doc_events` di accettazione, appuntamento (`Completed` o `Attended`) e fattura
+  (`on_submit` con una riga `is_healthcare`), l'importazione e il bottone "Segna
+  come paziente". Un vincolo di unicità sulla persona impedisce due schede paziente
+  anche se due regole scattano insieme. Il recupero all'indietro usa la stessa
+  lista, e la scelta della regola che vince è una funzione pura, testata con
+  `unittest` come `crm/scheduling/booking_rules.py`. L'evento "Diventato paziente"
+  si aggiunge a `EVENT_TO_TRIGGER` in `crm/automation/engine.py`.
 
 Le scelte Frappe che contano:
 
@@ -389,8 +406,8 @@ prova con il centro pilota.
 
 | Fase | Cosa | sp | Da qui il centro pilota può… |
 |---|---|---|---|
-| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; ruoli Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo e la forma dedotta dagli erogatori; lettura delle fatture tolta a Sales User; l'anagrafica fiscale sola, letta dalla fattura; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la porta unica, con tutte le strade (visita, appuntamento, fattura, importazione, a mano); consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 3–4 | …lavorare dalla pagina della persona, medico compreso, senza riscrivere il codice fiscale |
-| **1 — Le cuciture** | Il primo segno di presenza che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; l'accettazione con la sala d'attesa, per chi ha la segreteria; visita, accettazione e fattura che chiudono l'appuntamento; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
+| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; ruoli Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo e la forma dedotta dagli erogatori; lettura delle fatture tolta a Sales User; l'anagrafica fiscale sola, letta dalla fattura; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la lista delle regole e la porta unica (informazione medica, appuntamento, fattura, importazione, a mano), con il recupero una tantum sui dati che ci sono già; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 3–4 | …lavorare dalla pagina della persona, medico compreso, senza riscrivere il codice fiscale |
+| **1 — Le cuciture** | La conversione a paziente che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; l'accettazione con la sala d'attesa, per chi ha la segreteria, che entra nella lista delle regole; visita, accettazione e fattura che chiudono l'appuntamento; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
 | **2 — Cartella e referti** | Modelli per specialità; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; registro degli accessi; dossier e oscuramento; consegna del referto | 4–5 | …spegnere il vecchio gestionale |
 | **3 — Paziente ed extra** | Area paziente (referti, fatture, questionario prima della visita); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
 | **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
