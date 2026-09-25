@@ -51,10 +51,18 @@
         class="flex-1 pb-4"
         @reload="all_activities.reload()"
       >
+        <!--
+          What the record did to itself: one quiet line. It used to be set in
+          the same size as a message and timed in a different unit — «23 hours
+          ago» beside a bubble stamped «11:07 am» — so the eye read two streams
+          laid over each other instead of one history.
+        -->
         <template #other="{ item }">
-          <div class="flex items-center justify-stretch gap-2 py-1 text-base">
+          <div
+            class="flex items-center justify-stretch gap-2 py-1 text-p-sm text-ink-gray-6"
+          >
             <div class="inline-flex flex-wrap items-center gap-1.5">
-              <span class="font-medium text-ink-gray-8">
+              <span class="font-medium text-ink-gray-7">
                 {{ item.owner_name }}
               </span>
               <span class="text-ink-gray-5">{{ __(item.type) }}</span>
@@ -78,7 +86,12 @@
               </span>
             </div>
             <div class="ml-auto whitespace-nowrap">
-              <TimelineTimestamp :date="item.creation" />
+              <TimelineTimestamp
+                :date="item.creation"
+                exact
+                format="hh:mm a"
+                className="text-p-xs text-ink-gray-4"
+              />
             </div>
           </div>
         </template>

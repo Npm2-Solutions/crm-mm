@@ -8,7 +8,7 @@
     >
       <div
         :id="sms.name"
-        class="relative max-w-[90%] rounded-md p-1.5 pl-2 text-base shadow-sm"
+        class="relative min-w-0 max-w-full break-words rounded-md p-1.5 pl-2 text-base shadow-sm"
         :class="
           sms.type == 'Outgoing'
             ? 'bg-surface-gray-2 text-ink-gray-9'
@@ -25,8 +25,17 @@
         <div
           class="mt-1 flex items-center justify-end gap-1 text-xs text-ink-gray-4"
         >
+          <!--
+            An SMS bubble is grey, and so is a lot of other things: the icon is
+            how it says which channel it is, now that the stream no longer
+            writes a line of text under every message to say so.
+          -->
+          <SMSIcon class="size-3" />
+          <!-- the clock, like every other bubble: the day is on the date chip
+             above, and «23 hours ago» beside «11:07 am» is two units for one
+             question -->
           <Tooltip :text="formatDate(sms.creation)">
-            <span>{{ timeAgo(sms.creation) }}</span>
+            <span>{{ formatDate(sms.creation, 'hh:mm a') }}</span>
           </Tooltip>
           <span v-if="sms.type == 'Outgoing'">· {{ __(sms.status) }}</span>
         </div>
@@ -35,7 +44,8 @@
   </div>
 </template>
 <script setup>
-import { formatDate, timeAgo } from '@/utils'
+import SMSIcon from '@/components/Icons/SMSIcon.vue'
+import { formatDate } from '@/utils'
 import { Tooltip } from 'frappe-ui'
 
 defineProps({
