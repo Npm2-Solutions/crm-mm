@@ -83,7 +83,8 @@ commercialista del centro pilota prima di essere scritte nel codice.
   provider intercambiabili (manuale, OpenAPI.it o uno proprio) [V]
   ([repo](https://github.com/Solede-SA/italian_invoice),
   [connettore OpenAPI.it](https://github.com/Solede-SA/openapi)). È pensata per
-  ERPNext [I]: da noi vale come codice da cui prendere, non come app da installare.
+  ERPNext [I]. Superata: la fatturazione è stata scritta in casa (`crm/invoicing` e
+  `crm/tessera_sanitaria`, in `develop` dal 25/09/2026).
 - Altre: `frappe-fab-italy-edi` (AGPL, 3 commit ad aprile 2026, dipende da
   `erpnext_italy`), `erpnext_fattura_elettronica` (ferma dal 2019), `eu_einvoice`
   di ALYF (solo formati tedeschi ed europei, niente FatturaPA) [V].
@@ -275,10 +276,14 @@ commercialista del centro pilota prima di essere scritte nel codice.
 | **Firma dei referti** | Firma autografa sul PDF stampato [I] | Firma qualificata PAdES, necessaria per il Fascicolo (§2.5) [V] |
 
 - Per Aruba, A-Cube e Fatture in Cloud non è stato trovato nessun connettore Frappe
-  [I].
+  [I]. La fatturazione in `develop` parla con un intermediario in
+  `crm/invoicing/sdi/itala.py`: dal nome, ITALA S.r.l., la stessa società di
+  sistema-ts-api.it [I].
 - **Non coperti da questa ricerca:** i fornitori di firma avanzata e qualificata,
-  da scegliere prima della fase 2, e la conservazione a norma delle fatture, che
-  spetta alla fatturazione che c'è già (da verificare che la faccia).
+  da scegliere prima della fase 2. La conservazione a norma delle fatture la
+  gestisce già la fatturazione, divisa fra ramo SdI e ramo fuori SdI
+  ([guida](../../.pi/feats/fatturazione/guida.md), "La conservazione si divide in
+  due").
 
 ---
 
@@ -315,7 +320,7 @@ Doctolib da 139 € e AlfaDocs da 109 € al mese, secondo un concorrente [V]
 | Area | Cosa serve | Dove, nella [proposta](./README.md#le-fasi) |
 |---|---|---|
 | Front office | Agenda multi-sede e multi-specialista con stanze e attrezzature, prenotazione online sincronizzata con i portali, promemoria e richiami | **c'è già** |
-| Front office | Code in accettazione | fase 1 |
+| Front office | Code in accettazione | fase 3, se serve |
 | Paziente | Codice fiscale letto dal codice a barre della tessera sanitaria, registro dei consensi (cura, dossier, referti online, marketing) | fase 0 |
 | Cassa | Listini per convenzione, acconti, pacchetti; fattura PDF con natura N4 e bollo; SDI solo verso aziende e fondi; Sistema TS con opposizione e tracciabilità; POS e cassa | la fatturazione che c'è già; i preventivi sono i deal (fase 1) |
 | Clinica | Modelli per specialità e referti, firma avanzata per i consensi e qualificata per i referti, referti online, portale del paziente, log degli accessi per 24 mesi | fasi 2 e 3 |
