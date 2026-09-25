@@ -38,7 +38,10 @@ l'agenzia. Serve una gestione dei ruoli propria del CRM.
   l'insieme `MANAGER_ROLES` copiato in **16 file**.
 - Per entrare nel CRM serve Sales User, Sales Manager o System Manager
   (`crm.api.check_app_permission`). La fatturazione ha i suoi ruoli, Invoicing
-  Manager e Invoicing User.
+  Manager e Invoicing User, ma Sales User può leggere ed esportare tutte le
+  fatture, e dalla PR #101 la cronologia della persona le mostra a chiunque apra
+  la scheda (`invoices_on` in `crm/api/activities.py` usa `frappe.get_all`, che
+  salta i permessi). Mostra intestazione, importi e stati, non le righe.
 
 **Proposta.**
 
