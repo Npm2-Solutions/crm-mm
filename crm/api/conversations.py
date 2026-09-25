@@ -402,12 +402,17 @@ def people(
 	frappe.has_permission("CRM Lead", "read", throw=True)
 
 	conditions = frappe.parse_json(filters) if isinstance(filters, str) else dict(filters or {})
-	conditions.update(conditions_for(view or "open"))
+	search = (search or "").strip()
+	# A name somebody types is a person they want, not a person filed where they
+	# happen to be standing. Searching inside the current view is how you look
+	# for a customer, find nothing, and conclude the CRM has lost them — when
+	# they were simply marked as dealt with last week.
+	if not search:
+		conditions.update(conditions_for(view or "open"))
 	if waiting in (True, 1, "1", "true", "True"):
 		conditions["conversation_unread"] = 1
 
 	or_conditions = {}
-	search = (search or "").strip()
 	if search:
 		like = f"%{search}%"
 		or_conditions = {
@@ -435,75 +440,41 @@ HANDLED = "Handled"
 # nobody has touched since April.
 NEWEST_FIRST = "conversation_unread desc, last_conversation_on desc, modified desc"
 
-# The views. Every inbox worth using has these few, and they are worth naming in
-# one place: «da rispondere» has to mean the same thing to the list, to the
-# number beside it, and to anything that asks later.
+# The views. Four, because a fifth would be a way of asking something these
+# four already answer — and a menu you have to read is a menu that slows you
+# down every morning.
 #
-# They are all the same list under the same order — the base one is what a chat
-# app shows, everything that is not filed away — and each of the others narrows
-# it by one honest question.
-VIEWS = (
-	# what a phone shows: everything still going on
-	"open",
-	# they spoke last and nobody answered. Not the same as unread: you can have
-	# read something this morning and still owe the answer, and that one is the
-	# one that costs money
-	"unanswered",
-	# the badge: arrived and nobody has said they have read it
-	"unread",
-	"mine",
-	"unassigned",
-	"snoozed",
-	"handled",
-	# including what has been dealt with and put off: the archive
-	"all",
-)
+# They are all the same list under the same order. The base one is what a chat
+# app shows: everything still going on, whoever is waiting at the top. The other
+# three exist because without them a button leads nowhere — «gestita» and
+# «rimanda» would make a conversation vanish with no way back to it.
+VIEWS = ("open", "unanswered", "snoozed", "handled")
 
 LIVE = {"conversation_status": OPEN, "conversation_snoozed_until": ["is", "not set"]}
 
 
-def conditions_for(view: str, user: str | None = None) -> dict:
-	"""The filter one view is.
-
-	A function rather than a table because «mine» depends on who is asking, and
-	a table that quietly needs a parameter is a table that gets it wrong once.
-	"""
-	user = user or frappe.session.user
+def conditions_for(view: str) -> dict:
+	"""The filter one view is."""
 	if view == "unanswered":
+		# they spoke last and nobody answered. Not «unread»: you can have read
+		# something this morning and still owe the answer, and that one is the
+		# one that costs money. Unread is not a view of its own because the base
+		# list already puts it on top and marks it.
 		return {**LIVE, "last_conversation_direction": "Incoming"}
-	if view == "unread":
-		return {**LIVE, "conversation_unread": 1}
-	if view == "mine":
-		return {**LIVE, "conversation_assigned_to": user}
-	if view == "unassigned":
-		return {**LIVE, "conversation_assigned_to": ["is", "not set"]}
 	if view == "snoozed":
 		return {"conversation_snoozed_until": ["is", "set"]}
 	if view == "handled":
 		return {"conversation_status": HANDLED}
-	if view == "all":
-		return {}
 	return dict(LIVE)
 
 
-# What each view's filter looks like in SQL, so all the numbers above the list
-# can be counted in one pass over the table instead of one query per view.
+# The same four in SQL, so the numbers above the list can be counted in one pass
+# over the table instead of one query per view.
 COUNTABLE = {
 	"open": "conversation_status = 'Open' and conversation_snoozed_until is null",
 	"unanswered": (
 		"conversation_status = 'Open' and conversation_snoozed_until is null "
 		"and last_conversation_direction = 'Incoming'"
-	),
-	"unread": (
-		"conversation_status = 'Open' and conversation_snoozed_until is null and conversation_unread = 1"
-	),
-	"mine": (
-		"conversation_status = 'Open' and conversation_snoozed_until is null "
-		"and conversation_assigned_to = %(user)s"
-	),
-	"unassigned": (
-		"conversation_status = 'Open' and conversation_snoozed_until is null "
-		"and (conversation_assigned_to is null or conversation_assigned_to = '')"
 	),
 	"snoozed": "conversation_snoozed_until is not null",
 	"handled": "conversation_status = 'Handled'",
@@ -514,20 +485,16 @@ COUNTABLE = {
 def counts() -> dict:
 	"""How many are in each view, in one sweep.
 
-	One query with a sum per view rather than one query per view: they are seven
-	different questions about the same rows, and asking the table seven times to
-	draw one menu is six times too many.
+	One query with a sum per view rather than one query per view: they are four
+	different questions about the same rows, and asking the table four times to
+	draw one menu is three times too many.
 	"""
 	if not frappe.has_permission("CRM Lead", "read"):
 		return {}
 	sums = ", ".join(
 		f"sum(case when {clause} then 1 else 0 end) as `{view}`" for view, clause in COUNTABLE.items()
 	)
-	row = frappe.db.sql(  # nosemgrep
-		f"select {sums}, count(name) as `all` from `tabCRM Lead`",
-		{"user": frappe.session.user},
-		as_dict=True,
-	)
+	row = frappe.db.sql(f"select {sums} from `tabCRM Lead`", as_dict=True)  # nosemgrep
 	return {key: int(value or 0) for key, value in (row[0] if row else {}).items()}
 
 

@@ -294,36 +294,40 @@ class TestTheViews(FrappeTestCase):
 
 		return [row.name for row in people(view=view, limit=500)]
 
-	def test_waiting_for_a_reply_is_not_the_same_as_unread(self):
+	def test_reading_something_does_not_settle_it(self):
 		from crm.api.conversations import mark_read
 
-		# read this morning, still owed an answer: out of «unread», still in
-		# «unanswered» — which is the one that costs money
+		# read this morning, still owed an answer: the badge goes, «in attesa di
+		# risposta» does not — which is the one that costs money
 		mark_read("CRM Lead", self.them.name)
-		self.assertNotIn(self.them.name, self._in("unread"))
+		self.assertFalse(frappe.db.get_value("CRM Lead", self.them.name, "conversation_unread"))
 		self.assertIn(self.them.name, self._in("unanswered"))
 
 	def test_our_own_last_word_is_not_waiting_for_anything(self):
 		self.assertNotIn(self.us.name, self._in("unanswered"))
 		self.assertIn(self.us.name, self._in("open"))
 
-	def test_mine_and_nobodys_are_two_halves_of_the_same_pile(self):
-		from crm.api.conversations import set_state
-
-		set_state("CRM Lead", self.them.name, "Open", assign_to=frappe.session.user)
-		self.assertIn(self.them.name, self._in("mine"))
-		self.assertNotIn(self.them.name, self._in("unassigned"))
-		self.assertIn(self.us.name, self._in("unassigned"))
-
 	def test_what_is_filed_away_is_out_of_every_live_view(self):
 		from crm.api.conversations import HANDLED, set_state
 
 		set_state("CRM Lead", self.them.name, HANDLED)
-		for view in ("open", "unanswered", "unread", "unassigned"):
+		for view in ("open", "unanswered"):
 			self.assertNotIn(self.them.name, self._in(view), view)
 		self.assertIn(self.them.name, self._in("handled"))
 		# and «everything» means everything
 		self.assertIn(self.them.name, self._in("all"))
+
+	def test_a_name_is_looked_for_everywhere_whatever_view_is_open(self):
+		"""Searching inside the current view is how a CRM loses a customer.
+
+		You look for somebody, find nothing, and conclude they are not there —
+		when they were simply marked as dealt with last week.
+		"""
+		from crm.api.conversations import HANDLED, people, set_state
+
+		set_state("CRM Lead", self.them.name, HANDLED)
+		found = [row.name for row in people(view="open", search="Aspetta", limit=500)]
+		self.assertIn(self.them.name, found)
 
 	def test_the_numbers_beside_the_views_agree_with_the_views(self):
 		from crm.api.conversations import COUNTABLE, counts

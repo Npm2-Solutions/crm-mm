@@ -29,6 +29,11 @@
             <span v-if="countOf(view)" class="text-p-sm text-ink-gray-5">
               {{ countOf(view) }}
             </span>
+            <!-- while searching, the view is not what is on screen: a name you
+               type is looked for everywhere, so saying «Aperte» would be a lie -->
+            <span v-if="search" class="text-p-xs italic text-ink-gray-4">
+              {{ __('everywhere') }}
+            </span>
             <component
               :is="open ? LucideChevronUp : LucideChevronDown"
               class="ml-auto size-4 shrink-0 text-ink-gray-5"
@@ -90,18 +95,19 @@ const emit = defineEmits(['open', 'loadMore'])
 const view = defineModel('view', { type: String, default: 'open' })
 const search = defineModel('search', { type: String, default: '' })
 
+// Four. A fifth would be a way of asking something these four already answer,
+// and a menu you have to read is a menu that slows you down every morning.
+//
 // «Waiting for a reply» is not «unread»: you can have read something this
-// morning and still owe the answer, and that one is what costs money. Keeping
-// both is the whole reason this is a selector and not a switch.
+// morning and still owe the answer, and that one is what costs money. Unread is
+// not a view of its own because the base list already puts it on top and marks
+// it. Snoozed and handled are here because without them the two buttons in the
+// panel would make a conversation vanish with no way back to it.
 const VIEWS = [
   { value: 'open', label: 'Open' },
   { value: 'unanswered', label: 'Waiting for a reply' },
-  { value: 'unread', label: 'Unread' },
-  { value: 'mine', label: 'Assigned to me' },
-  { value: 'unassigned', label: 'Nobody assigned' },
   { value: 'snoozed', label: 'Put off until later' },
   { value: 'handled', label: 'Dealt with' },
-  { value: 'all', label: 'Everything' },
 ]
 
 function labelOf(which) {
@@ -125,15 +131,10 @@ const viewOptions = computed(() =>
 // would be wrong in most of them.
 const empty = computed(() => {
   if (search.value) return __('Nobody matches that')
-  if (view.value === 'open')
-    return __('Nothing open. Everything is dealt with.')
   if (view.value === 'unanswered') return __('Nobody is waiting for an answer')
-  if (view.value === 'unread') return __('Nothing left to read')
-  if (view.value === 'mine') return __('Nothing assigned to you')
-  if (view.value === 'unassigned') return __('Everything has somebody on it')
   if (view.value === 'snoozed') return __('Nothing put off for later')
   if (view.value === 'handled') return __('Nothing dealt with yet')
-  return __('No conversations yet')
+  return __('Nothing open. Everything is dealt with.')
 })
 
 function onScroll(event) {
