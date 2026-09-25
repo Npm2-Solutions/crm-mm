@@ -46,24 +46,28 @@ persona chiede di essere cancellata, il medico vede i pazienti e il marketing no
 
 ### Come si diventa paziente: da soli, qualunque sia il modo di lavorare
 
-Molti centri non hanno una segreteria: c'è solo il medico, che apre la scheda della
-persona e comincia a scrivere. Quindi nessun bottone "converti" e nessun passaggio
-obbligato. La persona diventa paziente al **primo segno che è venuta**, qualunque
-arrivi prima:
+Ogni centro lavora a modo suo: c'è quello con la segreteria che accoglie, quello
+dove c'è solo il medico che apre la scheda della persona e comincia a scrivere,
+quello che segna tutto in agenda e quello che fa solo le fatture. Quindi **ci sono
+tutte le strade**, nessuna esclude le altre e nessuna è obbligatoria. La persona
+diventa paziente al **primo segno che è venuta**, qualunque arrivi prima:
 
 | Come lavora il centro | Il segno | Gesto in più richiesto |
 |---|---|---|
 | Solo il medico, che apre la scheda e scrive | Il medico salva la prima visita o nota clinica | nessuno: scrivere è già il gesto |
+| Segreteria che accoglie | L'accettazione: l'arrivo registrato al banco | nessuno: è il suo lavoro |
 | Agenda usata con gli stati | L'appuntamento segnato come svolto (`Completed`, o il partecipante `Attended`) | nessuno |
-| Chi fa solo le fatture | La prima `CRM Invoice` confermata alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, prima il flag restava sempre a 0) | nessuno: la fattura è obbligatoria comunque |
+| Chi fa le fatture | La prima `CRM Invoice` confermata alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, prima il flag restava sempre a 0) | nessuno: la fattura è obbligatoria comunque |
 | Passaggio dal vecchio gestionale | L'importazione dei pazienti | nessuno |
+| Un caso che nessuna regola vede | A mano: "Segna come paziente" sulla pagina della persona | un clic, solo quando serve |
 
 La fattura è il segno più affidabile di tutti: è obbligatoria, la fa una persona,
 e la fatturazione la fa già nascere dall'appuntamento. Una fattura non sanitaria
 (un corso, un abbonamento) non rende nessuno paziente.
 
-**Quattro strade, una porta.** Tutte chiamano la stessa funzione, che non fa danni
-se chiamata due volte: crea la scheda paziente se non c'è, scrive "paziente dal
+**Sei strade, una porta.** Tutte chiamano la stessa funzione, che non fa danni se
+chiamata due volte: la prima strada che arriva crea la scheda paziente, le altre
+trovano la porta già aperta e non fanno niente. La funzione scrive "paziente dal
 12/10/2026, prima fattura", chiude come vinto il deal aperto della pipeline "Nuovi
 pazienti" e lancia un evento "Diventato paziente" per le automazioni (benvenuto,
 richiesta di recensione dopo una settimana…).
@@ -79,10 +83,10 @@ Quello che cambia per chi lavora:
   e dal codice fiscale si ricavano da soli data di nascita e sesso (e il comune,
   con la tabella dei codici catastali; il controllo del codice c'è già in
   `crm/invoicing/engine/codice_fiscale.py`).
-- **Visita e fattura chiudono l'appuntamento.** Se la persona aveva un
-  appuntamento oggi con quel medico, salvare la visita lo segna come svolto; lo
-  stesso fa la fattura nata da un appuntamento. Presenze e no-show restano giusti
-  anche dove nessuno aggiorna l'agenda.
+- **Visita, accettazione e fattura chiudono l'appuntamento.** Se la persona aveva
+  un appuntamento oggi, salvare la visita, registrare l'arrivo al banco o emettere
+  la fattura nata da quell'appuntamento lo segna come svolto. Presenze e no-show
+  restano giusti anche dove nessuno aggiorna l'agenda.
 - **Chi non segna niente riceve una domanda.** A fine giornata, per gli
   appuntamenti passati senza esito e senza fattura, un promemoria al medico:
   "sono venuti?", un clic sì o no. Senza risposta la persona resta contatto:
@@ -168,7 +172,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 | Area | Oggi nel repo | Cosa manca per un centro medico |
 |---|---|---|
 | Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare | La scheda paziente (consensi, tutore o genitore per i minori, dossier). Sulla persona **non c'è nessun indirizzo** e nessun codice fiscale |
-| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano dal dialogo dell'appuntamento | La visita e la fattura che chiudono da sole l'appuntamento |
+| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano dal dialogo dell'appuntamento | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | **Il codice fiscale e l'indirizzo non si ricordano.** `compila_da_controparte` prende dalla persona solo nome e cognome, quindi al paziente che torna si riscrivono ogni volta. Vedi [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:565`) **ma non registrata**. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | Consensi registrati (quale testo, quale versione, quando, come): marketing, dossier, referti online |
 | Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
@@ -267,8 +271,9 @@ Le regole:
 
 Le giornate tipo vanno nella SPA `/crm`, dove il centro lavora già:
 
-- **Segreteria, dove c'è:** agenda, poi la coda "Dall'agenda, non ancora
-  fatturati" (che c'è già), poi il prossimo appuntamento.
+- **Segreteria, dove c'è:** agenda, poi l'accettazione quando il paziente arriva
+  (dati controllati, consensi firmati al banco, sala d'attesa), poi la coda
+  "Dall'agenda, non ancora fatturati" (che c'è già), poi il prossimo appuntamento.
 - **Medico:** la mia giornata, poi la pagina della persona (storia, allegati,
   consensi), poi la visita sul modello della sua specialità, poi il referto. Nei
   centri con un erogatore solo fa tutto da lì, fattura compresa.
@@ -307,6 +312,8 @@ CRM Lead (la persona, com'è oggi)
                   └── Referto ── PDF, firma, consegna
 
 CRM Appointment (l'agenda, com'è oggi)
+  ├── Accettazione (clinica, facoltativa) ── arrivo, dati controllati, consensi
+  │                                          firmati al banco, sala d'attesa
   └── CRM Invoice (fatturazione, com'è oggi) ── la prima con una riga sanitaria
                                                 fa diventare paziente
 
@@ -324,9 +331,10 @@ Perché così:
 - **La visita appende al paziente**, perché in molti centri l'accettazione non
   c'è. Il medico apre la persona e scrive; se c'era un appuntamento, la visita lo
   trova e lo chiude.
-- **Niente accettazione separata.** Cosa è stato fatto davvero e chi paga li
-  registra già la fattura, che nasce dall'appuntamento; una seconda scheda
-  amministrativa sarebbe un doppione.
+- **L'accettazione resta, facoltativa, e non duplica la fattura.** Registra
+  l'arrivo: a che ora, dati controllati, consensi firmati al banco, chi è in sala
+  d'attesa. Cosa è stato fatto davvero e chi paga restano sulla fattura, che nasce
+  già dall'appuntamento: scriverli due volte sarebbe un doppione.
 - **Visita e fattura sono DocType diversi** con permessi diversi: la segreteria
   fattura e non legge la cartella. È quello che chiede il Garante per il dossier
   sanitario: i dati sulla salute separati dagli altri dati personali.
@@ -337,10 +345,10 @@ Perché così:
   decide in fase 0.
 - **Una porta sola per diventare paziente.** Una funzione che non fa danni se
   chiamata due volte (`ensure_patient(persona, motivo)`), chiamata dai
-  `doc_events` di visita, appuntamento (`Completed` o `Attended`) e fattura
-  (`on_submit` con una riga `is_healthcare`), e dall'importazione. Un vincolo di
-  unicità sulla persona impedisce due schede paziente anche se due eventi arrivano
-  insieme. L'evento "Diventato paziente" si aggiunge a `EVENT_TO_TRIGGER` in
+  `doc_events` di visita, accettazione, appuntamento (`Completed` o `Attended`) e
+  fattura (`on_submit` con una riga `is_healthcare`), dall'importazione e dal
+  bottone "Segna come paziente". Un vincolo di unicità sulla persona impedisce due
+  schede paziente anche se due eventi arrivano insieme. L'evento "Diventato paziente" si aggiunge a `EVENT_TO_TRIGGER` in
   `crm/automation/engine.py`.
 
 Le scelte Frappe che contano:
@@ -381,13 +389,13 @@ prova con il centro pilota.
 
 | Fase | Cosa | sp | Da qui il centro pilota può… |
 |---|---|---|---|
-| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; ruoli Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo e la forma dedotta dagli erogatori; lettura delle fatture tolta a Sales User; l'anagrafica fiscale sola, letta dalla fattura; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la porta unica, con le quattro strade; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 3–4 | …lavorare dalla pagina della persona, medico compreso, senza riscrivere il codice fiscale |
-| **1 — Le cuciture** | Il primo segno di presenza che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; visita e fattura che chiudono l'appuntamento; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; dashboard del centro | 2 | …sapere quanto costa un nuovo paziente, per inserzione |
+| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; ruoli Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo e la forma dedotta dagli erogatori; lettura delle fatture tolta a Sales User; l'anagrafica fiscale sola, letta dalla fattura; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la porta unica, con tutte le strade (visita, appuntamento, fattura, importazione, a mano); consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 3–4 | …lavorare dalla pagina della persona, medico compreso, senza riscrivere il codice fiscale |
+| **1 — Le cuciture** | Il primo segno di presenza che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; l'accettazione con la sala d'attesa, per chi ha la segreteria; visita, accettazione e fattura che chiudono l'appuntamento; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
 | **2 — Cartella e referti** | Modelli per specialità; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; registro degli accessi; dossier e oscuramento; consegna del referto | 4–5 | …spegnere il vecchio gestionale |
 | **3 — Paziente ed extra** | Area paziente (referti, fatture, questionario prima della visita); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
 | **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
 
-**Fasi 0–2: 9–11 sp, circa due mesi e mezzo per una persona.** Le prime due
+**Fasi 0–2: 9–12 sp, circa due mesi e mezzo per una persona.** Le prime due
 risolvono la dualità; la terza è il gestionale clinico vero e proprio.
 
 ## Le domande da chiudere prima
