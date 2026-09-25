@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
+  <div class="flex items-end gap-2 px-3 py-2.5 sm:px-4" v-bind="$attrs">
     <Textarea
       ref="textareaRef"
       v-model="content"
