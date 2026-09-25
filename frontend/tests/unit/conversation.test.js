@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CHANNELS,
   buildStream,
   channelOf,
   countByChannel,
   dayLabel,
   directionOf,
+  groupByDay,
   isConversational,
   isStageChange,
   speakerOf,
-  groupByDay,
 } from '@/utils/conversation'
 
 const wa = (name, type, creation) => ({
@@ -321,5 +322,22 @@ describe('dayLabel', () => {
     expect(
       dayLabel('2026-04-01', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
     ).toBe('2026-04-01')
+  })
+})
+
+describe('CHANNELS', () => {
+  it('offers a view for every channel a row can belong to', () => {
+    // The selector and `channelOf` have to agree: a channel that rows can be
+    // sorted into but that the selector never offers is a pile of messages
+    // nobody can reach — which is what the call register was when it lived one
+    // level up, in a tab of its own.
+    const offered = new Set(CHANNELS.map((c) => c.key))
+    for (const key of ['email', 'whatsapp', 'sms', 'comment', 'call']) {
+      expect(offered.has(key)).toBe(true)
+    }
+  })
+
+  it('opens on everything', () => {
+    expect(CHANNELS[0].key).toBe('all')
   })
 })

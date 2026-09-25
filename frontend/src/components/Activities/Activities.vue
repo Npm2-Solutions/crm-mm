@@ -163,37 +163,6 @@
       <div v-else-if="title == 'Tasks'" class="px-3 pb-3 sm:px-10 sm:pb-5">
         <TaskArea :modalRef="modalRef" :tasks="activities" :doctype="doctype" />
       </div>
-      <div v-else-if="title == 'Calls'" class="activity">
-        <div v-for="(call, i) in activities" :key="call.name">
-          <div
-            class="activity grid grid-cols-[30px_minmax(auto,_1fr)] gap-4 px-3 sm:px-10"
-          >
-            <div
-              class="z-0 relative flex justify-center before:absolute before:left-[50%] before:-z-[1] before:top-0 before:border-l before:border-outline-elevation-2"
-              :class="
-                i != activities.length - 1 ? 'before:h-full' : 'before:h-4'
-              "
-            >
-              <div
-                class="flex h-8 w-7 items-center justify-center bg-surface-base text-ink-gray-8"
-              >
-                <MissedCallIcon
-                  v-if="call.status == 'No Answer'"
-                  class="text-ink-red-8"
-                />
-                <DeclinedCallIcon v-else-if="call.status == 'Busy'" />
-                <component
-                  :is="
-                    call.type == 'Incoming' ? InboundCallIcon : OutboundCallIcon
-                  "
-                  v-else
-                />
-              </div>
-            </div>
-            <CallArea class="mb-4" :activity="call" />
-          </div>
-        </div>
-      </div>
       <div
         v-else-if="title == 'Attachments'"
         class="px-3 pb-3 sm:px-10 sm:pb-5"
@@ -493,9 +462,21 @@
     />
   </div>
   <div>
-    <!-- Picking a channel changes what you read and what you write in. Typing an
-         email into a box while reading a WhatsApp conversation was half the
-         reason the four tabs existed. -->
+    <!--
+      Picking a channel changes what you read and what you write in. Typing an
+      email into a box while reading a WhatsApp conversation was half the reason
+      the four tabs existed.
+
+      The strip is mounted here, once, above every box — not inside them. Inside
+      the collapsed bar it vanished the moment an editor opened, so the ordinary
+      mistake of picking the wrong channel could only be undone by discarding
+      what was open. One click across, and the box changes under it.
+    -->
+    <ChannelSwitcher
+      v-if="title == 'Activity'"
+      :channel="channel"
+      @pick="(which) => (channel = which)"
+    />
     <CommunicationArea
       v-if="
         ['Emails', 'Comments'].includes(title) ||
@@ -571,7 +552,6 @@ import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
 import EmailIcon from '@/components/Icons/EmailIcon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
-import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
@@ -594,6 +574,7 @@ import MissedCallIcon from '@/components/Icons/MissedCallIcon.vue'
 import DeclinedCallIcon from '@/components/Icons/DeclinedCallIcon.vue'
 import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
 import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
+import ChannelSwitcher from '@/components/Activities/ChannelSwitcher.vue'
 import CommunicationArea from '@/components/CommunicationArea.vue'
 import ConversationView from '@/components/Activities/ConversationView.vue'
 import WhatsappTemplateSelectorModal from '@/components/Modals/WhatsappTemplateSelectorModal.vue'
@@ -851,9 +832,6 @@ const activities = computed(() => {
     _activities = all_activities.data.versions.filter(
       (activity) => activity.activity_type === 'comment',
     )
-  } else if (title.value == 'Calls') {
-    if (!all_activities.data?.calls) return []
-    return sortByCreation(all_activities.data.calls, isNewestFirst.value)
   } else if (title.value == 'Tasks') {
     if (!all_activities.data?.tasks) return []
     return sortByModified(all_activities.data.tasks)
@@ -938,8 +916,6 @@ const emptyText = computed(() => {
     text = 'No Comments Found'
   } else if (title.value == 'Data') {
     text = 'No Data Fields Added Yet'
-  } else if (title.value == 'Calls') {
-    text = 'No Call History'
   } else if (title.value == 'Notes') {
     text = 'No Notes Found'
   } else if (title.value == 'Tasks') {
@@ -964,8 +940,6 @@ const emptyTextDescription = computed(() => {
     description = 'Be the first to add one.'
   } else if (title.value == 'Data') {
     description = 'No data fields have been added yet.'
-  } else if (title.value == 'Calls') {
-    description = 'No recent calls to display. Log a call or call someone now!'
   } else if (title.value == 'Notes') {
     description = 'Nothing here for now. Add a note to keep track of things.'
   } else if (title.value == 'Tasks') {
@@ -990,8 +964,6 @@ const emptyTextIcon = computed(() => {
     icon = CommentIcon
   } else if (title.value == 'Data') {
     icon = DetailsIcon
-  } else if (title.value == 'Calls') {
-    icon = PhoneIcon
   } else if (title.value == 'Notes') {
     icon = NoteIcon
   } else if (title.value == 'Tasks') {

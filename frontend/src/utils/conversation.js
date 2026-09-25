@@ -25,6 +25,11 @@ export const CHANNELS = [
   { key: 'whatsapp', label: 'WhatsApp', bubbles: true },
   { key: 'sms', label: 'SMS', bubbles: true },
   { key: 'comment', label: 'Comments' },
+  // The call register, which was a tab of its own. What somebody asks of a
+  // record is what has been said to this person and in what order, and a phone
+  // call is one of the things said — it does not belong one level up from the
+  // conversation it is part of.
+  { key: 'call', label: 'Calls' },
 ]
 
 /**
