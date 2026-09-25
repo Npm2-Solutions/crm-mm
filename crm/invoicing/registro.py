@@ -73,7 +73,7 @@ def da_record(record: dict) -> Professione:
 		tipo_ritenuta=record.get("withholding_type") or "RT01",
 		causale_pagamento=record.get("payment_reason") or "A",
 		aliquota_iva_default=_decimale(record.get("default_vat_rate")) or Decimal("22.00"),
-		da_verificare=tuple(filter(None, (record.get("needs_verification") or "").splitlines())),
+		da_verificare=tuple(r for r in (record.get("needs_verification") or "").splitlines() if r),
 		note=record.get("notes") or "",
 	)
 

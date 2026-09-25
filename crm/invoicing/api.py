@@ -268,8 +268,7 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 	if not service_provider:
 		frappe.throw(
 			_(
-				"No provider for this appointment: the qualification decides the expense type and the "
-				"VAT regime, so it cannot be left to a default"
+				"No provider for this appointment: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
 			)
 		)
 
@@ -364,9 +363,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		not emittente.get("conservation_service"),
 		_("Preservation of the SdI documents"),
 		_(
-			"Ten years is mandatory, and transmitting does not provide it. The Agenzia's service "
-			"is free but needs an explicit adhesion in Fatture e Corrispettivi, and it only covers "
-			"invoices from that day on."
+			"Ten years is mandatory, and transmitting does not provide it. The Agenzia's service is free but needs an explicit adhesion in Fatture e Corrispettivi, and it only covers invoices from that day on."
 		),
 		"conservation_service",
 	)
@@ -374,9 +371,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		emittente.get("document_mode") == "elettronica_extra_sdi" and not emittente.get("conservation_local"),
 		_("Preservation of the documents outside the SdI"),
 		_(
-			"Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's "
-			"free service cannot reach them. Either name a provider for these, or switch back to a "
-			"paper original and keep that."
+			"Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Either name a provider for these, or switch back to a paper original and keep that."
 		),
 		"conservation_local",
 	)
@@ -384,8 +379,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		emittente.get("sdi_mode") == "provider" and not emittente.get("sdi_endpoint"),
 		_("Transmission channel"),
 		_(
-			"The channel is set to an accredited provider but has no endpoint: the XML is written "
-			"and nothing carries it. Configure it, or fall back to export and upload by hand."
+			"The channel is set to an accredited provider but has no endpoint: the XML is written and nothing carries it. Configure it, or fall back to export and upload by hand."
 		),
 		"sdi_endpoint",
 	)
@@ -395,9 +389,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		and not connessione.in_produzione(emittente),
 		_("Still on the sandbox"),
 		_(
-			"The channel is configured and working, but aimed at the provider's sandbox: "
-			"documents sent from here reach nobody. Switch the environment to production "
-			"once the rehearsal is done."
+			"The channel is configured and working, but aimed at the provider's sandbox: documents sent from here reach nobody. Switch the environment to production once the rehearsal is done."
 		),
 		"provider_environment",
 	)
@@ -407,9 +399,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		and not connessione.segreto(emittente, "sdi_webhook_secret"),
 		_("Webhook secret"),
 		_(
-			"Without it the provider has no authenticated way to push notices here, so "
-			"nobody learns whether an invoice was accepted until somebody looks by hand - "
-			"which is the failure an intermediary was chosen to prevent."
+			"Without it the provider has no authenticated way to push notices here, so nobody learns whether an invoice was accepted until somebody looks by hand - which is the failure an intermediary was chosen to prevent."
 		),
 		"sdi_webhook_secret",
 	)
@@ -508,6 +498,10 @@ def invoice_channel(invoice: str) -> dict:
 	}
 
 
+# nosemgrep: guest-whitelisted-method — guest by necessity: the accredited provider
+# pushes notices from its own infrastructure and has no session here. It is not
+# unauthenticated: every delivery presents a per-company shared secret, compared in
+# constant time, and a refused one is told nothing about why. See sdi/webhook.py.
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def provider_webhook():
 	"""The provider's way in with a notice. Guest by necessity, secret by design.
@@ -556,8 +550,7 @@ def webhook_endpoint(company: str) -> dict:
 		"configured": configurato,
 		"header": "X-Provider-Token",
 		"hint": _(
-			"In the provider's configuration set the authentication token to the secret you "
-			"generated here, as a header named X-Acube-Token or as a query parameter named token."
+			"In the provider's configuration set the authentication token to the secret you generated here, as a header named X-Acube-Token or as a query parameter named token."
 		),
 	}
 
@@ -579,8 +572,7 @@ def generate_webhook_secret(company: str) -> dict:
 		"secret": segreto,
 		**webhook_endpoint(company),
 		"warning": _(
-			"Copy it now: it is stored encrypted and will not be shown again. Any secret "
-			"configured at the provider before this call has just stopped working."
+			"Copy it now: it is stored encrypted and will not be shown again. Any secret configured at the provider before this call has just stopped working."
 		),
 	}
 

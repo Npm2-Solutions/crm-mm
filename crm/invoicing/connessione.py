@@ -110,7 +110,7 @@ def _accedi(emittente: dict, sessione) -> str:
 			timeout=TIMEOUT,
 		)
 	except Exception as errore:
-		raise ErroreProvider(_("The provider's login is unreachable: {0}").format(errore)) from None
+		raise ErroreProvider(_("The provider's login is unreachable: {0}").format(str(errore))) from None
 
 	if risposta.status_code != 200:
 		# The status code is the whole diagnosis worth keeping. The body of a refused
@@ -212,7 +212,7 @@ def posta(emittente: dict, url: str, contenuto, tipo: str = "application/xml"):
 	except ErroreProvider:
 		raise
 	except Exception as errore:
-		raise ErroreProvider(_("The provider is unreachable: {0}").format(errore)) from None
+		raise ErroreProvider(_("The provider is unreachable: {0}").format(str(errore))) from None
 
 	# Their contract hands a token back on ordinary calls. Taking it here is what
 	# makes the next call free rather than another login.
@@ -222,7 +222,7 @@ def posta(emittente: dict, url: str, contenuto, tipo: str = "application/xml"):
 
 def etichetta_ambiente(emittente: dict) -> str:
 	"""What to append to a message so a sandbox send can never read as a real one."""
-	return "" if in_produzione(emittente) else _(" [SANDBOX - this document reached nobody]")
+	return "" if in_produzione(emittente) else " " + _("[SANDBOX - this document reached nobody]")
 
 
 def leggi(emittente: dict, url: str, parametri: dict | None = None):
@@ -246,7 +246,7 @@ def leggi(emittente: dict, url: str, parametri: dict | None = None):
 	except ErroreProvider:
 		raise
 	except Exception as errore:
-		raise ErroreProvider(_("The provider is unreachable: {0}").format(errore)) from None
+		raise ErroreProvider(_("The provider is unreachable: {0}").format(str(errore))) from None
 
 	raccogli_token(emittente, risposta)
 	return risposta

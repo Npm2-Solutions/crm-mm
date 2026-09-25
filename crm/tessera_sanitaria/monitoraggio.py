@@ -17,7 +17,7 @@ from datetime import timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import getdate, now_datetime
+from frappe.utils import cint, getdate, now_datetime
 
 from crm.invoicing.monitoraggio import avvisa
 from crm.tessera_sanitaria.engine.tracciato import scadenza_invio
@@ -39,7 +39,7 @@ def controlla_certificati() -> list[dict]:
 	"""
 	from crm.tessera_sanitaria.engine.tracciato import Cifratore
 
-	giorni = frappe.db.get_single_value("CRM Invoicing Settings", "certificate_warning_days") or 90
+	giorni = cint(frappe.db.get_single_value("CRM Invoicing Settings", "certificate_warning_days")) or 90
 	rilievi: list[dict] = []
 	for azienda in _aziende_sanitarie():
 		if not azienda.get("ts_certificate"):
@@ -83,7 +83,7 @@ def controlla_silenzio() -> list[dict]:
 	the moment the intermediary takes it until the real Sistema TS outcome comes
 	back - and if that outcome never comes, nothing else in the system will say so.
 	"""
-	giorni = frappe.db.get_single_value("CRM Invoicing Settings", "ts_silence_days") or 30
+	giorni = cint(frappe.db.get_single_value("CRM Invoicing Settings", "ts_silence_days")) or 30
 	soglia = now_datetime() - timedelta(days=giorni)
 	rilievi: list[dict] = []
 	for azienda in _aziende_sanitarie():

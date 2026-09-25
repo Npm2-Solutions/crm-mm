@@ -56,6 +56,8 @@ def dopo_installazione() -> None:
 	crea_ruoli()
 	semina_qualifiche()
 	imposta_predefiniti()
+	# nosemgrep: frappe-manual-commit — no request here, and a later failure must not
+	# undo the seeding: a half-created register is worse than none.
 	frappe.db.commit()
 
 

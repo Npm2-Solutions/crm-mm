@@ -143,8 +143,7 @@ _ELENCO: list[Professione] = [
 		cassa=TipoCassa.AVVOCATI,
 		percentuale="4.00",
 		cassa_obbligatoria=True,
-		note="Cassa Forense contributo integrativo 4%: mandatory, part of the VAT base, not "
-		"subject to withholding.",
+		note="Cassa Forense contributo integrativo 4%: mandatory, part of the VAT base, not subject to withholding.",
 	),
 	_professionale(
 		"commercialista",
@@ -229,9 +228,7 @@ _ELENCO: list[Professione] = [
 			"the ENASARCO rate and the split between principal and agent",
 			"the withholding base: 50% or 20% of the commission depending on the arrangement",
 		),
-		note="Commissions do not follow the professional pattern: the withholding is 23% of a "
-		"reduced base, and ENASARCO is a contribution split with the principal, not a rivalsa "
-		"charged to the client. Configure it explicitly.",
+		note="Commissions do not follow the professional pattern: the withholding is 23% of a reduced base, and ENASARCO is a contribution split with the principal, not a rivalsa charged to the client. Configure it explicitly.",
 	),
 	_professionale(
 		"psicologo_del_lavoro",
@@ -239,26 +236,21 @@ _ELENCO: list[Professione] = [
 		cassa=TipoCassa.ENPAP,
 		percentuale="2.00",
 		cassa_obbligatoria=True,
-		note="Organisational assessment, training and selection are not diagnosis or care: they "
-		"are taxable and go through the SdI. The clinical work of the same professional does not "
-		"- that is the `psicologo` entry.",
+		note="Organisational assessment, training and selection are not diagnosis or care: they are taxable and go through the SdI. The clinical work of the same professional does not - that is the `psicologo` entry.",
 	),
 	# ============================================ non-regulated professionals
 	_professionale(
 		"consulente",
 		"Consulente (non-regulated profession)",
 		categoria=Categoria.NON_ORDINISTICA,
-		note="Marketing, management, IT, training: taxable at 22%, SdI, optional INPS 4% rivalsa, "
-		"20% withholding towards a withholding agent.",
+		note="Marketing, management, IT, training: taxable at 22%, SdI, optional INPS 4% rivalsa, 20% withholding towards a withholding agent.",
 	),
 	_professionale(
 		"formatore",
 		"Formatore / docente",
 		categoria=Categoria.NON_ORDINISTICA,
 		verificare=("exemption under art. 10 n. 20 for school-recognised training",),
-		note="Training is taxable as a rule. The art. 10 n. 20 exemption is narrow - recognised "
-		"bodies and school or vocational education - and it is decided in the service card, "
-		"never inferred from the word 'course'.",
+		note="Training is taxable as a rule. The art. 10 n. 20 exemption is narrow - recognised bodies and school or vocational education - and it is decided in the service card, never inferred from the word 'course'.",
 	),
 	_professionale(
 		"sviluppatore",
@@ -269,8 +261,7 @@ _ELENCO: list[Professione] = [
 		"designer",
 		"Designer / creativo",
 		categoria=Categoria.NON_ORDINISTICA,
-		note="Assignment of copyright in a work of the mind follows a different pattern "
-		"(causale B, reduced base): it goes on its own line with its own service card.",
+		note="Assignment of copyright in a work of the mind follows a different pattern (causale B, reduced base): it goes on its own line with its own service card.",
 	),
 	# ============================================================== companies
 	_professionale(
@@ -280,8 +271,7 @@ _ELENCO: list[Professione] = [
 		cassa=None,
 		percentuale=None,
 		ritenuta=False,
-		note="A company is not subject to the withholding on self-employment income and has no "
-		"professional fund to charge. The plain case, and the most common one in a CRM.",
+		note="A company is not subject to the withholding on self-employment income and has no professional fund to charge. The plain case, and the most common one in a CRM.",
 	),
 	_professionale(
 		"associazione_professionale",
@@ -292,8 +282,7 @@ _ELENCO: list[Professione] = [
 		ritenuta=True,
 		tipo_ritenuta=TipoRitenuta.PERSONE_GIURIDICHE,
 		verificare=("the fund of the associated professionals and the rate to charge",),
-		note="An association keeps the withholding but as a legal person (RT02). The fund "
-		"depends on the professionals it groups.",
+		note="An association keeps the withholding but as a legal person (RT02). The fund depends on the professionals it groups.",
 	),
 	_professionale(
 		"ente_non_commerciale",
@@ -323,10 +312,7 @@ def professione(codice: str | None) -> Professione:
 		return PROFESSIONI[codice]
 	except KeyError:
 		raise KeyError(
-			f"qualification {codice!r} is not in the register. The catalogue never infers: add it "
-			"as a CRM Professional Qualification record, after the accountant has verified it. "
-			"A healthcare qualification needs the Sistema TS module, which adds thirty-six more. "
-			f"Known here: {', '.join(sorted(PROFESSIONI))}"
+			f"qualification {codice!r} is not in the register. The catalogue never infers: add it as a CRM Professional Qualification record, after the accountant has verified it. A healthcare qualification needs the Sistema TS module, which adds thirty-six more. Known here: {', '.join(sorted(PROFESSIONI))}"
 		) from None
 
 

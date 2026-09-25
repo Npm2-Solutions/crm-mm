@@ -21,7 +21,7 @@ import hashlib
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate
+from frappe.utils import cint, getdate
 
 from crm.invoicing import documento, estensioni, pdf, xml_sdi
 from crm.invoicing.engine import fatturapa
@@ -86,7 +86,7 @@ class CRMInvoice(Document):
 		# The PDF comes last: the XML has to exist before it can ride inside it. It
 		# never raises - an invoice the client cannot be handed is worse than one
 		# whose PDF has to be produced again from the form.
-		if frappe.db.get_single_value("CRM Invoicing Settings", "attach_pdf"):
+		if cint(frappe.db.get_single_value("CRM Invoicing Settings", "attach_pdf")):
 			pdf.genera_e_allega(self)
 
 	def before_cancel(self):
@@ -152,7 +152,7 @@ class CRMInvoice(Document):
 			self.billing_name = (
 				record.get("organization_name")
 				or record.get("organization")
-				or " ".join(filter(None, [record.get("first_name"), record.get("last_name")])).strip()
+				or " ".join(p for p in (record.get("first_name"), record.get("last_name")) if p).strip()
 				or record.get("name")
 			)
 		if self.recipient_type == TipoDestinatario.PERSONA_FISICA:

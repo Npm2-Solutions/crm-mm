@@ -52,7 +52,7 @@ class CRMInvoicingCompany(Document):
 		It is checked on the worst case - a six-digit counter - because document
 		number 100,000 arrives in November, not in January.
 		"""
-		for serie in filter(None, (self.series_electronic, self.series_healthcare)):
+		for serie in (s for s in (self.series_electronic, self.series_healthcare) if s):
 			try:
 				valida_formato(self.number_format or "{anno}/{serie}/{numero}", serie, 2026)
 			except FormatoNonCompatibile as errore:

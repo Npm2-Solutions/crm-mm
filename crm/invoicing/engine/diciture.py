@@ -86,8 +86,7 @@ def forfettario(includi_ritenuta: bool = True) -> list[str]:
 	fields: irrelevant on the PDF, relevant to the Sistema TS.
 	"""
 	righe = [
-		"Operazione senza applicazione dell'IVA ai sensi dell'art. 1, commi da 54 a 89, "
-		"della L. 190/2014 - regime forfettario."
+		"Operazione senza applicazione dell'IVA ai sensi dell'art. 1, commi da 54 a 89, della L. 190/2014 - regime forfettario."
 	]
 	if includi_ritenuta:
 		righe.append(
@@ -112,16 +111,10 @@ def bollo_virtuale(
 	"""
 	if not numero_autorizzazione or not data_autorizzazione:
 		raise ValueError(
-			"virtual stamp duty without the authorisation details: number and date are mandatory "
-			"in the wording (art. 15 DPR 642/72). Until the authorisation has been issued, the "
-			"document goes out with a physical stamp on the original"
+			"virtual stamp duty without the authorisation details: number and date are mandatory in the wording (art. 15 DPR 642/72). Until the authorisation has been issued, the document goes out with a physical stamp on the original"
 		)
 	sede = f", Direzione Provinciale di {ufficio}" if ufficio else ""
-	return (
-		f"Imposta di bollo di EUR {importo:.2f} assolta in modo virtuale ai sensi dell'"
-		f"{BOLLO_VIRTUALE.testo(data_documento)} - Autorizzazione dell'Agenzia delle Entrate"
-		f"{sede}, n. {numero_autorizzazione} del {data_autorizzazione.strftime('%d/%m/%Y')}."
-	)
+	return f"Imposta di bollo di EUR {importo:.2f} assolta in modo virtuale ai sensi dell'{BOLLO_VIRTUALE.testo(data_documento)} - Autorizzazione dell'Agenzia delle Entrate{sede}, n. {numero_autorizzazione} del {data_autorizzazione.strftime('%d/%m/%Y')}."
 
 
 def bollo_su_originale(
@@ -138,14 +131,9 @@ def bollo_su_originale(
 	if identificativo and data_contrassegno:
 		if data_contrassegno > data_documento:
 			raise ValueError(
-				f"the stamp is dated {data_contrassegno.strftime('%d/%m/%Y')}, later than the "
-				f"invoice of {data_documento.strftime('%d/%m/%Y')}: it must be of the same date "
-				"or earlier"
+				f"the stamp is dated {data_contrassegno.strftime('%d/%m/%Y')}, later than the invoice of {data_documento.strftime('%d/%m/%Y')}: it must be of the same date or earlier"
 			)
-		return (
-			f"Imposta di bollo di EUR {importo:.2f} assolta sull'originale - contrassegno "
-			f"n. {identificativo} del {data_contrassegno.strftime('%d/%m/%Y')}."
-		)
+		return f"Imposta di bollo di EUR {importo:.2f} assolta sull'originale - contrassegno n. {identificativo} del {data_contrassegno.strftime('%d/%m/%Y')}."
 	return (
 		f"Imposta di bollo di EUR {importo:.2f} assolta sull'originale cartaceo, conservato presso lo studio."
 	)
@@ -186,10 +174,7 @@ def niente_ritenuta() -> str:
 	"""Towards a natural person there is **never** a withholding: they are not a
 	withholding agent (art. 23, c. 1, DPR 600/73). No wording is required - this
 	exists only for templates that ask for it explicitly."""
-	return (
-		"Operazione non soggetta a ritenuta d'acconto: il committente non riveste la "
-		"qualifica di sostituto d'imposta."
-	)
+	return "Operazione non soggetta a ritenuta d'acconto: il committente non riveste la qualifica di sostituto d'imposta."
 
 
 def inversione_contabile(natura: str | None = None) -> str:
@@ -203,26 +188,17 @@ def inversione_contabile(natura: str | None = None) -> str:
 
 def scissione_pagamenti(data_documento: date) -> str:
 	"""Split payment: the VAT is shown but paid to the Treasury by the client."""
-	return (
-		"Scissione dei pagamenti ai sensi dell'"
-		f"{SPLIT_PAYMENT.testo(data_documento)}: IVA versata dal committente."
-	)
+	return f"Scissione dei pagamenti ai sensi dell'{SPLIT_PAYMENT.testo(data_documento)}: IVA versata dal committente."
 
 
 def fuori_campo_territoriale(data_documento: date) -> str:
 	"""Cross-border B2B service: outside the scope of Italian VAT."""
-	return (
-		f"Operazione non soggetta ad IVA ai sensi dell'{FUORI_CAMPO_TERRITORIALE.testo(data_documento)} "
-		"- inversione contabile a carico del committente."
-	)
+	return f"Operazione non soggetta ad IVA ai sensi dell'{FUORI_CAMPO_TERRITORIALE.testo(data_documento)} - inversione contabile a carico del committente."
 
 
 def anticipazione(data_documento: date) -> str:
 	"""Advances in the client's name and on the client's behalf: outside the base."""
-	return (
-		"Somme escluse dalla base imponibile ai sensi dell'"
-		f"{ANTICIPAZIONI.testo(data_documento)} - anticipazioni in nome e per conto del cliente."
-	)
+	return f"Somme escluse dalla base imponibile ai sensi dell'{ANTICIPAZIONI.testo(data_documento)} - anticipazioni in nome e per conto del cliente."
 
 
 def opposizione() -> str:
@@ -234,10 +210,7 @@ def opposizione() -> str:
 	a reference to exercising the opposition for pre-filled-return purposes, nothing
 	else. Anything more descriptive turns the invoice into a disclosure.
 	"""
-	return (
-		"Il soggetto ha manifestato opposizione all'utilizzo dei dati della presente spesa ai "
-		"fini della dichiarazione dei redditi precompilata."
-	)
+	return "Il soggetto ha manifestato opposizione all'utilizzo dei dati della presente spesa ai fini della dichiarazione dei redditi precompilata."
 
 
 def pagamento(codice: str | None, tracciato: bool | None) -> str:

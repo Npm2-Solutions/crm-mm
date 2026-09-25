@@ -186,15 +186,11 @@ def natura_territoriale(
 		if controparte_soggetto_iva:
 			return (
 				"N2.1",
-				"Cross-border B2B service: art. 7-ter puts the general rule outside the scope of "
-				"Italian VAT, with the reverse charge on the client. Services connected to real "
-				"estate, transport, catering and admission to events follow arts. 7-quater and "
-				"7-quinquies instead - confirm it on the service card.",
+				"Cross-border B2B service: art. 7-ter puts the general rule outside the scope of Italian VAT, with the reverse charge on the client. Services connected to real estate, transport, catering and admission to events follow arts. 7-quater and 7-quinquies instead - confirm it on the service card.",
 			)
 		return (
 			None,
-			"Cross-border service to a private individual: as a general rule Italian VAT still "
-			"applies, and the OSS regime may come into play. Confirm the treatment before issuing.",
+			"Cross-border service to a private individual: as a general rule Italian VAT still applies, and the OSS regime may come into play. Confirm the treatment before issuing.",
 		)
 	return None, ""
 
@@ -251,8 +247,7 @@ def classifica_riga(
 		errori.append("service not in the catalogue: a service without a card is not billable")
 	if not riga.erogatore_qualifica:
 		errori.append(
-			"no performer on the line: without a qualification neither the expense type nor the "
-			"VAT regime can be determined"
+			"no performer on the line: without a qualification neither the expense type nor the VAT regime can be determined"
 		)
 		return _riga_semplice()
 
@@ -267,16 +262,12 @@ def classifica_riga(
 	# profession). The catalogue can only narrow it, never widen it.
 	if riga.esente_iva and not prof.esente_iva:
 		errori.append(
-			f"the catalogue declares the service exempt, but {prof.etichetta!r} is not a health "
-			"profession for exemption purposes: the service is TAXABLE at the ordinary rate and "
-			"the electronic invoice through the SdI is MANDATORY (Risoluzione AdE n. 9 del 24 "
-			"febbraio 2026). Correct the service card"
+			f"the catalogue declares the service exempt, but {prof.etichetta!r} is not a health profession for exemption purposes: the service is TAXABLE at the ordinary rate and the electronic invoice through the SdI is MANDATORY (Risoluzione AdE n. 9 del 24 febbraio 2026). Correct the service card"
 		)
 	esente = riga.esente_iva and prof.esente_iva
 	if not riga.esente_iva and prof.esente_iva and riga.is_sanitaria:
 		avvisi.append(
-			f"service declared taxable although performed by {prof.etichetta!r}: possible (cosmetic "
-			"surgery, for instance), but it has to be confirmed in the catalogue"
+			f"service declared taxable although performed by {prof.etichetta!r}: possible (cosmetic surgery, for instance), but it has to be confirmed in the catalogue"
 		)
 
 	# ------------------------------------------------------------------ routing
@@ -305,8 +296,7 @@ def classifica_riga(
 		and riga.is_sanitaria
 	):
 		avvisi.append(
-			f"{prof.etichetta!r}: the service is NOT exempt and the electronic invoice through the "
-			"SdI is mandatory towards the patient too. No Sistema TS report"
+			f"{prof.etichetta!r}: the service is NOT exempt and the electronic invoice through the SdI is mandatory towards the patient too. No Sistema TS report"
 		)
 
 	# ------------------------------------------------------------- expense type
@@ -400,10 +390,7 @@ def classifica(
 		# by express provision. "Take the stricter rule" does not resolve it - the
 		# only way out is to split the document.
 		errori.append(
-			"mixed document cannot be issued: it holds lines for which the electronic invoice "
-			"through the SdI is FORBIDDEN (exempt healthcare service towards a natural person) "
-			"and lines for which it is MANDATORY by express provision (Ris. AdE n. 9 del 24 "
-			"febbraio 2026: osteopath, chiropractor, kinesiologist). Issue two separate documents"
+			"mixed document cannot be issued: it holds lines for which the electronic invoice through the SdI is FORBIDDEN (exempt healthcare service towards a natural person) and lines for which it is MANDATORY by express provision (Ris. AdE n. 9 del 24 febbraio 2026: osteopath, chiropractor, kinesiologist). Issue two separate documents"
 		)
 
 	if vietato and not obbligo_esplicito:
@@ -414,9 +401,7 @@ def classifica(
 		sdi_consentito = False
 		if len(da_valutare) > 1 and obbligatorio:
 			avvisi.append(
-				"a single healthcare line towards a natural person takes the whole document out of "
-				"the SdI channel: only the healthcare share goes to the Sistema TS. To keep the "
-				"non-healthcare line in an electronic invoice, issue it on a separate document"
+				"a single healthcare line towards a natural person takes the whole document out of the SdI channel: only the healthcare share goes to the Sistema TS. To keep the non-healthcare line in an electronic invoice, issue it on a separate document"
 			)
 	elif obbligatorio:
 		canale = Canale.SDI
@@ -446,15 +431,11 @@ def guardia_sdi(esito: EsitoClassificazione) -> None:
 	if esito.sdi_consentito:
 		return
 	motivi = [
-		f"line {i}: {e.riga.descrizione_fiscale} - performed by {e.riga.erogatore_qualifica!r}, "
-		"exempt healthcare service towards a natural person"
+		f"line {i}: {e.riga.descrizione_fiscale} - performed by {e.riga.erogatore_qualifica!r}, exempt healthcare service towards a natural person"
 		for i, e in enumerate(esito.righe, start=1)
 		if e.regola_sdi == RegolaSdI.VIETATO
 	]
 	raise GuardiaSdI(
-		"Sending to the SdI is not allowed: since 2026 the electronic invoice through the Sistema "
-		"di Interscambio for healthcare services towards natural persons is structurally forbidden "
-		"(D.Lgs. 12 giugno 2025 n. 81, art. 10-bis D.L. 119/2018). The patient receives the invoice "
-		"as a PDF and the expense is reported to the Sistema TS.",
+		"Sending to the SdI is not allowed: since 2026 the electronic invoice through the Sistema di Interscambio for healthcare services towards natural persons is structurally forbidden (D.Lgs. 12 giugno 2025 n. 81, art. 10-bis D.L. 119/2018). The patient receives the invoice as a PDF and the expense is reported to the Sistema TS.",
 		motivi,
 	)

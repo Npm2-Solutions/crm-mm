@@ -122,9 +122,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		dal=2015,
 		cassa=TipoCassa.ENPAM,
 		percentuale=None,
-		note="ENPAM provides for no contributo integrativo to charge the patient: nothing "
-		"goes on the invoice. The 2% and 4% people quote belong to the Fondo della Medicina "
-		"convenzionata, which the commissioning facilities pay.",
+		note="ENPAM provides for no contributo integrativo to charge the patient: nothing goes on the invoice. The 2% and 4% people quote belong to the Fondo della Medicina convenzionata, which the commissioning facilities pay.",
 	),
 	_sanitaria(
 		"odontoiatra",
@@ -144,8 +142,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		sdi=RegolaSdI.AMMESSO,
 		cassa=TipoCassa.ENPAM,
 		percentuale=None,
-		note="Not bound to the Sistema TS for invoices issued to the employer: the recipient "
-		"is a VAT subject, so the document goes to the SdI.",
+		note="Not bound to the Sistema TS for invoices issued to the employer: the recipient is a VAT subject, so the document goes to the SdI.",
 	),
 	# ================================================== healthcare, since 2016
 	_sanitaria(
@@ -191,8 +188,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		cassa=TipoCassa.ENPAV,
 		percentuale="2.00",
 		cassa_obbligatoria=True,
-		note="Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., "
-		"STP) have the option, not the duty.",
+		note="Its own deadline in mid-March: a separate batch. Veterinary companies (S.r.l., STP) have the option, not the duty.",
 	),
 	_sanitaria(
 		"ottico",
@@ -296,9 +292,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		SoggettoInviante.PROFESSIONISTA_SANITARIO,
 		dal=2016,
 		verificare=("the Sistema TS category it is enrolled under, and the tipoSpesa to use",),
-		note="Arte ausiliaria ex art. 99 R.D. 1265/1934: the service is EXEMPT under art. 10 "
-		"n. 18, the electronic invoice through the SdI is FORBIDDEN, the Sistema TS report is "
-		"DUE (Ris. AdE 9/2026).",
+		note="Arte ausiliaria ex art. 99 R.D. 1265/1934: the service is EXEMPT under art. 10 n. 18, the electronic invoice through the SdI is FORBIDDEN, the Sistema TS report is DUE (Ris. AdE 9/2026).",
 	),
 	_sanitaria(
 		"osteopata",
@@ -309,10 +303,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		obbligo_ts=False,
 		dal=None,
 		sdi=RegolaSdI.OBBLIGATORIO,
-		note="Ris. AdE 9/2026: TAXABLE at the ordinary rate, electronic invoice through the SdI "
-		"MANDATORY, no Sistema TS report. The profession is identified by L. 3/2018 and was "
-		"listed among the technical prevention professions by the DM of 18 July 2024, but the "
-		"process is not complete: until it is, no exemption and no SdI ban.",
+		note="Ris. AdE 9/2026: TAXABLE at the ordinary rate, electronic invoice through the SdI MANDATORY, no Sistema TS report. The profession is identified by L. 3/2018 and was listed among the technical prevention professions by the DM of 18 July 2024, but the process is not complete: until it is, no exemption and no SdI ban.",
 	),
 	_sanitaria(
 		"chiropratico",
@@ -336,8 +327,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		sdi=RegolaSdI.OBBLIGATORIO,
 		cassa=None,
 		percentuale=None,
-		note="Ris. AdE 9/2026: NOT a health profession. Ordinary 22% VAT, SdI mandatory, no "
-		"Sistema TS report.",
+		note="Ris. AdE 9/2026: NOT a health profession. Ordinary 22% VAT, SdI mandatory, no Sistema TS report.",
 	),
 	# ==================================================== healthcare facilities
 	_sanitaria(
@@ -348,9 +338,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 		riferimento=ESENZIONE_STRUTTURA,
 		cassa=None,
 		percentuale=None,
-		note="Needs the Codice Proprietario codiceRegione-codiceAsl-codiceSSA. An S.r.l. "
-		"invoicing the patient is a bound subject ONLY if accredited or authorised under "
-		"art. 8-ter; otherwise it is not one at all.",
+		note="Needs the Codice Proprietario codiceRegione-codiceAsl-codiceSSA. An S.r.l. invoicing the patient is a bound subject ONLY if accredited or authorised under art. 8-ter; otherwise it is not one at all.",
 	),
 	_sanitaria(
 		"struttura_accreditata",

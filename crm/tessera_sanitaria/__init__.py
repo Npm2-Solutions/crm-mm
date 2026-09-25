@@ -87,9 +87,7 @@ def controlli(emittente: dict) -> list[dict]:
 					emittente.get("ts_mode") == "provider" and not emittente.get("ts_provider_endpoint"),
 					_("Sistema TS channel"),
 					_(
-						"The Sistema TS is set to go through the provider but has no endpoint: the "
-						"tracciato is built and nothing carries it. Configure it, or fall back to "
-						"export and upload from the portal."
+						"The Sistema TS is set to go through the provider but has no endpoint: the tracciato is built and nothing carries it. Configure it, or fall back to export and upload from the portal."
 					),
 					"ts_provider_endpoint",
 				),
