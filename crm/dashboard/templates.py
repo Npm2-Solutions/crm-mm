@@ -87,6 +87,8 @@ TEMPLATES: tuple[Template, ...] = (
 					"calls_missed",
 					"meta_cost_per_customer",
 				),
+				# only where the practice invoices, and only for managers
+				Line.of(KPI, "invoiced_revenue", "invoicing_to_do", "appointments_to_invoice"),
 				Line.of(CHART, "sales_trend", "funnel_conversion"),
 				Line.of(LIST, "conversations_waiting_list", "appointments_upcoming", "deals_closing_soon"),
 				Line.of(LIST, "tasks_due_list", "callbacks_list", "deals_stale"),
@@ -139,6 +141,36 @@ TEMPLATES: tuple[Template, ...] = (
 				Line.of(CHART, "deals_by_source", "deals_by_salesperson"),
 				Line.of(LIST, "deals_closing_soon", "deals_stale", "deals_recently_won"),
 				Line.of(TABLE, "team_leaderboard"),
+			),
+		),
+	),
+	Template(
+		"invoicing",
+		_lt("Invoicing"),
+		_lt("What was invoiced, what is waiting to be sent, and what the agenda has not billed yet"),
+		"receipt-text",
+		period="this_month",
+		managers_only=True,
+		sequence=25,
+		sections=(
+			section(
+				Line.of(KPI, "invoiced_revenue", "invoices_issued", "average_invoice", "credit_notes"),
+				Line.of(CHART, "invoiced_trend", "sdi_outcomes"),
+				Line.of(CHART, "invoiced_by_service", "invoiced_by_client"),
+				Line.of(CHART, "invoiced_by_provider"),
+			),
+			section(
+				Line.of(KPI, "invoicing_to_do", "sdi_rejected", "appointments_to_invoice"),
+				Line.of(LIST, "invoicing_to_do_list", "appointments_to_invoice_list"),
+				heading=_lt("To do"),
+			),
+			section(
+				Line.of(KPI, "ts_to_send", "ts_rejected", "ts_reported"),
+				heading=_lt("Sistema TS"),
+			),
+			section(
+				Line.of(KPI, "supplier_invoices_received", "supplier_invoices_to_register"),
+				heading=_lt("Supplier invoices"),
 			),
 		),
 	),

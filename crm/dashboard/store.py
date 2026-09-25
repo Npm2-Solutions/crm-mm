@@ -340,13 +340,15 @@ def ensure_defaults() -> None:
 	create_template_dashboards()
 
 
-def create_template_dashboards() -> list[str]:
-	"""A shared dashboard for every template that does not have one yet."""
+def create_template_dashboards(only: tuple[str, ...] | None = None) -> list[str]:
+	"""A shared dashboard for every template (or those in ``only``) that does not have one yet."""
 	ensure_manager_dashboard()
 	have = set(frappe.get_all(DOCTYPE, filters={"private": 0}, pluck="template"))
 	made = []
 	for template in templates.TEMPLATES:
 		if template.id in have or template.id == "overview":
+			continue
+		if only is not None and template.id not in only:
 			continue
 		doc = frappe.new_doc(DOCTYPE)
 		doc.template = template.id
