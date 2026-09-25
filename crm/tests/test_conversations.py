@@ -134,7 +134,9 @@ class TestTheColumnBesideARecord(FrappeTestCase):
 
 		frappe.db.set_value("CRM Lead", self.wrote.name, "conversation_unread", 1, update_modified=False)
 		frappe.db.set_value("CRM Lead", self.silent.name, "conversation_unread", 0, update_modified=False)
-		waiting = [row.name for row in people(view="unread", limit=200)]
+		# the badge is a flag on the base list, not a view of its own: the pile
+		# sits on top of «open» and is marked there
+		waiting = [row.name for row in people(waiting=True, limit=200)]
 		self.assertIn(self.wrote.name, waiting)
 		self.assertNotIn(self.silent.name, waiting)
 
@@ -314,8 +316,17 @@ class TestTheViews(FrappeTestCase):
 		for view in ("open", "unanswered"):
 			self.assertNotIn(self.them.name, self._in(view), view)
 		self.assertIn(self.them.name, self._in("handled"))
-		# and «everything» means everything
-		self.assertIn(self.them.name, self._in("all"))
+
+	def test_a_view_nobody_defined_says_so(self):
+		"""A stale name must not be answered with the base list.
+
+		Falling back to «open» is how a renamed view passes unnoticed: the caller
+		asks for a pile and silently gets everything still going on.
+		"""
+		from crm.api.conversations import people
+
+		with self.assertRaises(frappe.ValidationError):
+			people(view="unread", limit=1)
 
 	def test_a_name_is_looked_for_everywhere_whatever_view_is_open(self):
 		"""Searching inside the current view is how a CRM loses a customer.
@@ -496,11 +507,9 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 			return [row.name for row in people(view=state, limit=200)]
 
 		self.assertIn(self.lead.name, named("handled"))
-		self.assertNotIn(self.lead.name, named("unread"))
+		self.assertNotIn(self.lead.name, named("open"))
 		self.assertIn(parked.name, named("snoozed"))
-		self.assertNotIn(parked.name, named("unread"))
-		self.assertIn(self.lead.name, named("all"))
-		self.assertIn(parked.name, named("all"))
+		self.assertNotIn(parked.name, named("open"))
 
 
 class TestTheConversationOfARealPerson(FrappeTestCase):

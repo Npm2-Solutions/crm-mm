@@ -39,23 +39,26 @@ describe('isRealStatus', () => {
 describe('worstStatus', () => {
   it('says nothing when neither channel applies', () => {
     expect(
-      worstStatus({ sdi_status: 'non_applicabile', ts_status: 'non_applicabile' }),
+      worstStatus({
+        sdi_status: 'non_applicabile',
+        ts_status: 'non_applicabile',
+      }),
     ).toBe('')
   })
 
   it('a refusal outranks a success on the other channel', () => {
-    expect(worstStatus({ sdi_status: 'consegnata', ts_status: 'scartato' })).toBe(
-      'scartato',
-    )
+    expect(
+      worstStatus({ sdi_status: 'consegnata', ts_status: 'scartato' }),
+    ).toBe('scartato')
     expect(worstStatus({ sdi_status: 'scartata', ts_status: 'accolto' })).toBe(
       'scartata',
     )
   })
 
   it('otherwise the SdI state is the one shown', () => {
-    expect(worstStatus({ sdi_status: 'inviato', ts_status: 'da_inviare' })).toBe(
-      'inviato',
-    )
+    expect(
+      worstStatus({ sdi_status: 'inviato', ts_status: 'da_inviare' }),
+    ).toBe('inviato')
   })
 
   it('falls back to whichever channel is in play', () => {
@@ -91,13 +94,15 @@ describe('formatEuro', () => {
 
 describe('invoiceLabel', () => {
   it('a draft says so instead of showing a number it has not been given', () => {
-    expect(invoiceLabel({ docstatus: 0, name: 'new-crm-invoice-1' })).toBe('Draft')
+    expect(invoiceLabel({ docstatus: 0, name: 'new-crm-invoice-1' })).toBe(
+      'Draft',
+    )
   })
 
   it('otherwise it is the number on the document', () => {
-    expect(invoiceLabel({ docstatus: 1, document_number: '12', name: 'INV-1' })).toBe(
-      '12',
-    )
+    expect(
+      invoiceLabel({ docstatus: 1, document_number: '12', name: 'INV-1' }),
+    ).toBe('12')
   })
 
   it('falls back to the record name when there is no number yet', () => {

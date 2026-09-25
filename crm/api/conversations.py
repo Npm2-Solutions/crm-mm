@@ -454,7 +454,14 @@ LIVE = {"conversation_status": OPEN, "conversation_snoozed_until": ["is", "not s
 
 
 def conditions_for(view: str) -> dict:
-	"""The filter one view is."""
+	"""The filter one view is.
+
+	An unrecognised name is an error rather than the base list. Falling back to
+	«open» is how a renamed view passes unnoticed: the caller asks for a pile,
+	silently gets everything still going on, and nothing says so — the failure
+	develop had already paid for once, when a stale `open` was answered with the
+	whole address book. Wrong name, loud answer.
+	"""
 	if view == "unanswered":
 		# they spoke last and nobody answered. Not «unread»: you can have read
 		# something this morning and still owe the answer, and that one is the
@@ -465,6 +472,8 @@ def conditions_for(view: str) -> dict:
 		return {"conversation_snoozed_until": ["is", "set"]}
 	if view == "handled":
 		return {"conversation_status": HANDLED}
+	if view != "open":
+		frappe.throw(frappe._("Unknown conversation view {0}. Known: {1}").format(view, ", ".join(VIEWS)))
 	return dict(LIVE)
 
 

@@ -325,7 +325,10 @@
                   </span>
                 </div>
                 <div class="flex shrink-0 items-center gap-2">
-                  <Badge :theme="invoiceStatusTheme(row.status)" :label="row.status" />
+                  <Badge
+                    :theme="invoiceStatusTheme(row.status)"
+                    :label="row.status"
+                  />
                   <Button
                     v-if="row.file"
                     variant="subtle"
