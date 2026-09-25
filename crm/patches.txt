@@ -57,3 +57,4 @@ crm.patches.v1_0.the_sale_state_leaves_the_person
 crm.patches.v1_0.which_messages_were_typed_on_the_phone
 crm.patches.v1_0.a_dashboard_for_every_module
 crm.patches.v1_0.seed_invoicing_register #09-09-2026
+crm.patches.v1_0.an_invoicing_dashboard
