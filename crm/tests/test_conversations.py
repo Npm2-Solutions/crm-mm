@@ -134,7 +134,7 @@ class TestTheColumnBesideARecord(FrappeTestCase):
 
 		frappe.db.set_value("CRM Lead", self.wrote.name, "conversation_unread", 1, update_modified=False)
 		frappe.db.set_value("CRM Lead", self.silent.name, "conversation_unread", 0, update_modified=False)
-		waiting = [row.name for row in people(waiting=True, limit=200)]
+		waiting = [row.name for row in people(view="unread", limit=200)]
 		self.assertIn(self.wrote.name, waiting)
 		self.assertNotIn(self.silent.name, waiting)
 
@@ -246,7 +246,7 @@ class TestThePileIsWhatNobodyHasReadYet(FrappeTestCase):
 			update_modified=False,
 		)
 
-		order = [row.name for row in people(state="open", limit=200)]
+		order = [row.name for row in people(view="open", limit=200)]
 		# both are there — filtering the answered one out would leave a list
 		# with holes in it, where somebody you spoke to this morning vanished
 		self.assertIn(answered.name, order)
@@ -259,7 +259,78 @@ class TestThePileIsWhatNobodyHasReadYet(FrappeTestCase):
 
 		self._sms("Incoming", "ci sei?")
 		set_state("CRM Lead", self.lead.name, HANDLED)
-		self.assertNotIn(self.lead.name, [row.name for row in people(state="open", limit=200)])
+		self.assertNotIn(self.lead.name, [row.name for row in people(view="open", limit=200)])
+
+
+class TestTheViews(FrappeTestCase):
+	"""Every inbox worth using has these few, and each one is one honest question."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.them = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Aspetta", "last_name": "Prova"}
+		).insert(ignore_permissions=True)
+		self.us = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Risposto", "last_name": "Prova"}
+		).insert(ignore_permissions=True)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.them.name,
+			{"last_conversation_direction": "Incoming", "conversation_unread": 1},
+			update_modified=False,
+		)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.us.name,
+			{"last_conversation_direction": "Outgoing", "conversation_unread": 0},
+			update_modified=False,
+		)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _in(self, view):
+		from crm.api.conversations import people
+
+		return [row.name for row in people(view=view, limit=500)]
+
+	def test_waiting_for_a_reply_is_not_the_same_as_unread(self):
+		from crm.api.conversations import mark_read
+
+		# read this morning, still owed an answer: out of «unread», still in
+		# «unanswered» — which is the one that costs money
+		mark_read("CRM Lead", self.them.name)
+		self.assertNotIn(self.them.name, self._in("unread"))
+		self.assertIn(self.them.name, self._in("unanswered"))
+
+	def test_our_own_last_word_is_not_waiting_for_anything(self):
+		self.assertNotIn(self.us.name, self._in("unanswered"))
+		self.assertIn(self.us.name, self._in("open"))
+
+	def test_mine_and_nobodys_are_two_halves_of_the_same_pile(self):
+		from crm.api.conversations import set_state
+
+		set_state("CRM Lead", self.them.name, "Open", assign_to=frappe.session.user)
+		self.assertIn(self.them.name, self._in("mine"))
+		self.assertNotIn(self.them.name, self._in("unassigned"))
+		self.assertIn(self.us.name, self._in("unassigned"))
+
+	def test_what_is_filed_away_is_out_of_every_live_view(self):
+		from crm.api.conversations import HANDLED, set_state
+
+		set_state("CRM Lead", self.them.name, HANDLED)
+		for view in ("open", "unanswered", "unread", "unassigned"):
+			self.assertNotIn(self.them.name, self._in(view), view)
+		self.assertIn(self.them.name, self._in("handled"))
+		# and «everything» means everything
+		self.assertIn(self.them.name, self._in("all"))
+
+	def test_the_numbers_beside_the_views_agree_with_the_views(self):
+		from crm.api.conversations import COUNTABLE, counts
+
+		tally = counts()
+		for view in COUNTABLE:
+			self.assertEqual(tally.get(view), len(self._in(view)), view)
 
 
 class TestReadReceiptsAreSomebodyElsesScreen(FrappeTestCase):
@@ -418,7 +489,7 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 		set_state("CRM Lead", self.lead.name, HANDLED)
 
 		def named(state):
-			return [row.name for row in people(state=state, limit=200)]
+			return [row.name for row in people(view=state, limit=200)]
 
 		self.assertIn(self.lead.name, named("handled"))
 		self.assertNotIn(self.lead.name, named("unread"))
