@@ -49,6 +49,26 @@
         row off the list was to reply — and a conversation that ends with their
         «grazie» needs no reply, so it stayed there for good.
       -->
+      <!--
+        Read, and off the pile. It only ever happens because somebody says so:
+        it used to happen by itself the moment a chat was opened, which is how a
+        count becomes noise — you glance to see who it was, the number goes, and
+        what you had not dealt with looks like what you had.
+      -->
+      <Button
+        v-if="person.conversation_unread"
+        :label="__('Mark as read')"
+        iconLeft="eye"
+        :loading="reading"
+        @click="setRead(true)"
+      />
+      <Button
+        v-else
+        :label="__('Mark as unread')"
+        iconLeft="eye-off"
+        :loading="reading"
+        @click="setRead(false)"
+      />
       <Button
         v-if="person.conversation_status !== 'Handled'"
         :label="__('Mark as handled')"
@@ -145,6 +165,25 @@ function at(days, hour) {
     .minute(0)
     .second(0)
     .format('YYYY-MM-DD HH:mm:ss')
+}
+
+const reading = ref(false)
+const read = createResource({ url: 'crm.api.conversations.mark_read' })
+const unread = createResource({ url: 'crm.api.conversations.mark_unread' })
+
+function setRead(yes) {
+  reading.value = true
+  const what = yes ? read : unread
+  what
+    .submit({
+      reference_doctype: 'CRM Lead',
+      reference_name: props.person.name,
+    })
+    .then(() => emit('changed'))
+    .catch((error) =>
+      toast.error(error.messages?.[0] || __('Could not save that')),
+    )
+    .finally(() => (reading.value = false))
 }
 
 const state = createResource({ url: 'crm.api.conversations.set_state' })

@@ -129,23 +129,19 @@
       <div class="flex gap-4 items-center justify-between py-3 px-2">
         <div class="flex flex-col">
           <div class="text-p-base font-medium text-ink-gray-7 truncate">
-            {{ __('A conversation stops waiting') }}
+            {{ __('Send WhatsApp read receipts') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'When the count of unanswered messages disappears from the Inbox',
+                'When a chat is opened here, tell WhatsApp the messages have been read. The customer sees the blue ticks.',
               )
             }}
           </div>
         </div>
         <div>
-          <FormControl
-            v-model="settings.doc.conversation_badge_clears"
-            type="select"
-            class="w-40"
-            :options="badgeClearsOptions"
-            :placeholder="__('When seen')"
+          <Switch
+            v-model="settings.doc.whatsapp_read_receipts"
             @update:modelValue="save()"
           />
         </div>
@@ -159,14 +155,6 @@ import { getSettings } from '@/stores/settings'
 import { FormControl, Switch, toast } from 'frappe-ui'
 
 const { _settings: settings } = getSettings()
-
-// Two defensible answers, so it is a choice rather than an argument: opening a
-// conversation is what a mailbox means by read, replying is what a customer
-// means by it.
-const badgeClearsOptions = [
-  { label: __('When somebody opens it'), value: 'When seen' },
-  { label: __('When somebody replies'), value: 'When answered' },
-]
 
 const timestampFormatOptions = [
   { label: __('Relative'), value: 'Relative' },

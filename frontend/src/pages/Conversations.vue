@@ -98,7 +98,7 @@ const { $socket } = globalStore()
 // works and a conversation can be linked to — without the page being rebuilt
 // around it, which is the whole point of this screen.
 const chosen = computed(() => route.query.person || '')
-const state = ref('open')
+const state = ref('unread')
 const search = ref('')
 const pageLength = ref(40)
 
@@ -125,22 +125,26 @@ function personOf(name) {
   return rows.value.find((row) => row.name === name) || { name }
 }
 
-const seen = createResource({ url: 'crm.api.conversations.mark_seen' })
+// Opening a chat does not mark it read — looking is not dealing with it. What
+// it can do, if the site has said so, is tell WhatsApp the messages have been
+// read, which is a different promise made to a different person.
+const acknowledge = createResource({
+  url: 'crm.api.conversations.acknowledge',
+})
 
 function choose(row) {
   if (row.name === chosen.value) return
   router.replace({ name: 'Conversations', query: { person: row.name } })
 }
 
-// Opening one is reading it. Told to the server because the list is shared: a
-// colleague looking at the same screen should see the same thing.
 watch(
   chosen,
   (name) => {
     if (!name) return
-    seen
-      .submit({ reference_doctype: 'CRM Lead', reference_name: name })
-      .then(() => unread.fetch())
+    acknowledge.submit({
+      reference_doctype: 'CRM Lead',
+      reference_name: name,
+    })
   },
   { immediate: true },
 )

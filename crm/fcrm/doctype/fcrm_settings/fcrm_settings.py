@@ -31,7 +31,6 @@ class FCRMSettings(Document):
 		auto_update_expected_deal_value: DF.Check
 		brand_logo: DF.Attach | None
 		brand_name: DF.Data | None
-		conversation_badge_clears: DF.Literal["When seen", "When answered"]
 		currency: DF.Link | None
 		default_calendar_view: DF.Literal["Daily", "Weekly", "Monthly"]
 		dropdown_items: DF.Table[CRMDropdownItem]
@@ -42,16 +41,8 @@ class FCRMSettings(Document):
 			"frankfurter.app", "fawazahmed-exchange-api", "exchangerate.host", "exchangerate-api"
 		]
 		update_timestamp_on_new_communication: DF.Check
+		whatsapp_read_receipts: DF.Check
 	# end: auto-generated types
-
-	def on_update(self):
-		# «still waiting» is defined by the choice above, so the flag every list
-		# filters on has to be redone the moment somebody changes it — otherwise
-		# the Inbox keeps answering yesterday's question
-		if self.has_value_changed("conversation_badge_clears"):
-			from crm.api.conversations import refresh_waiting_flags
-
-			frappe.enqueue(refresh_waiting_flags, queue="short", enqueue_after_commit=True)
 
 	@frappe.whitelist()
 	def restore_defaults(self, force: bool = False):

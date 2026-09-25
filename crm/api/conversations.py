@@ -181,18 +181,6 @@ def remember(reference_doctype: str, reference_name: str) -> None:
 		"last_conversation_preview": snippet(newest.text) if newest else None,
 		"last_answered_on": last_answer(where),
 	}
-	# the cutoff is not among the values being written, and «still waiting» is a
-	# comparison against it: read it rather than let it come back as unset, which
-	# would call every answered conversation waiting again
-	cutoff = cutoff_field()
-	if cutoff not in values:
-		values_with_cutoff = dict(values)
-		values_with_cutoff[cutoff] = frappe.db.get_value(reference_doctype, reference_name, cutoff)
-	else:
-		values_with_cutoff = values
-	values["conversation_unread"] = (
-		1 if is_waiting(reference_doctype, reference_name, values_with_cutoff) else 0
-	)
 	frappe.db.set_value(reference_doctype, reference_name, values, update_modified=False)
 
 	# a message on a deal is a message with that person: the row they appear as
@@ -239,7 +227,7 @@ def they_wrote(doc) -> bool:
 	return doc.get("type") == "Incoming"
 
 
-def reopen(reference_doctype: str, reference_name: str) -> None:
+def on_the_pile(reference_doctype: str, reference_name: str) -> None:
 	"""They wrote again: whatever we had decided about this, it is open now.
 
 	Decided from the message that just arrived rather than from the recomputed
@@ -252,7 +240,13 @@ def reopen(reference_doctype: str, reference_name: str) -> None:
 		frappe.db.set_value(
 			doctype,
 			name,
-			{"conversation_status": OPEN, "conversation_snoozed_until": None},
+			{
+				"conversation_status": OPEN,
+				"conversation_snoozed_until": None,
+				# and unread, which is now a fact rather than a calculation: it
+				# goes only when somebody says they have read it
+				"conversation_unread": 1,
+			},
 			update_modified=False,
 		)
 
@@ -261,7 +255,7 @@ def on_message(doc, method: str | None = None) -> None:
 	"""A WhatsApp or SMS message was written."""
 	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
 	if they_wrote(doc) and doc.get("reference_doctype") in RECORDS:
-		quiet(reopen, doc.reference_doctype, doc.reference_name)
+		quiet(on_the_pile, doc.reference_doctype, doc.reference_name)
 
 
 def on_communication(doc, method: str | None = None) -> None:
@@ -270,81 +264,12 @@ def on_communication(doc, method: str | None = None) -> None:
 		return
 	quietly(doc.get("reference_doctype"), doc.get("reference_name"))
 	if they_wrote(doc) and doc.get("reference_doctype") in RECORDS:
-		quiet(reopen, doc.reference_doctype, doc.reference_name)
+		quiet(on_the_pile, doc.reference_doctype, doc.reference_name)
 
 
 # --- how many are still waiting ----------------------------------------------
 
-SEEN = "When seen"
-ANSWERED = "When answered"
-
-
-def badge_clears() -> str:
-	"""What makes the count go away: opening the conversation, or replying.
-
-	Two defensible answers, so it is a setting rather than an argument. Opening
-	is what a mailbox means by read; replying is what a customer means by it.
-	"""
-	chosen = frappe.db.get_single_value("FCRM Settings", "conversation_badge_clears")
-	return ANSWERED if chosen == ANSWERED else SEEN
-
-
-def cutoff_field() -> str:
-	return "last_answered_on" if badge_clears() == ANSWERED else "conversation_seen_until"
-
-
-def is_waiting(reference_doctype: str, reference_name: str, values: dict | None = None) -> bool:
-	"""Is somebody still waiting on an answer from us?
-
-	Kept as a stored flag rather than worked out when the list is drawn, because
-	«show me the ones still waiting» has to be a filter the list can run — over
-	every person, not over the twenty on screen. It is a comparison between two
-	dates, so refreshing it for a whole site is one statement.
-	"""
-	values = dict(values or {})
-	if not values:
-		values = (
-			frappe.db.get_value(
-				reference_doctype,
-				reference_name,
-				[
-					"last_conversation_direction",
-					"last_conversation_on",
-					"last_answered_on",
-					"conversation_seen_until",
-				],
-				as_dict=True,
-			)
-			or {}
-		)
-	if values.get("last_conversation_direction") != "Incoming":
-		return False
-	said_on = values.get("last_conversation_on")
-	if not said_on:
-		return False
-	cutoff = values.get(cutoff_field())
-	return not cutoff or said_on > cutoff
-
-
-def refresh_waiting_flags() -> None:
-	"""Redo the flag on every person, after the setting that defines it changed.
-
-	One statement per doctype: what counts as waiting is a comparison between
-	two columns, so there is nothing to walk.
-	"""
-	cutoff = cutoff_field()
-	for doctype in RECORDS:
-		frappe.db.sql(  # nosemgrep: frappe-sql-format-injection — RECORDS is ours, nothing is interpolated from input
-			f"""
-			update `tab{doctype}`
-			set conversation_unread = case
-				when last_conversation_direction = 'Incoming'
-					and last_conversation_on is not null
-					and (`{cutoff}` is null or last_conversation_on > `{cutoff}`)
-				then 1 else 0 end
-			"""
-		)
-	frappe.db.commit()  # nosemgrep: frappe-manual-commit — enqueued job and patch: no request will commit this
+# --- how many are still waiting ----------------------------------------------
 
 
 @frappe.whitelist()
@@ -369,7 +294,7 @@ def unread(records: list | str | None = None) -> dict:
 	if not wanted:
 		return {}
 
-	field = cutoff_field()
+	field = "conversation_seen_until"
 	cutoffs: dict[tuple[str, str], str | None] = {}
 	by_doctype: dict[str, list[str]] = {}
 	for doctype, name in wanted:
@@ -509,9 +434,15 @@ HANDLED = "Handled"
 # Kept here rather than in the browser so «open» means the same thing to the list,
 # to the count above it and to anything that asks later.
 STATES = {
-	"open": {"conversation_status": OPEN, "conversation_snoozed_until": ["is", "not set"]},
-	"handled": {"conversation_status": HANDLED},
+	# The pile: somebody wrote and nobody here has said they have read it. It
+	# used to mean «not handled», which on a live site is everybody — a default
+	# view that shows the whole address book is not a pile, it is the list again.
+	"unread": {
+		"conversation_unread": 1,
+		"conversation_snoozed_until": ["is", "not set"],
+	},
 	"snoozed": {"conversation_snoozed_until": ["is", "set"]},
+	"handled": {"conversation_status": HANDLED},
 	"all": {},
 }
 
@@ -612,17 +543,23 @@ def set_state(
 
 
 @frappe.whitelist(methods=["POST"])
-def mark_seen(reference_doctype: str, reference_name: str) -> dict:
-	"""Somebody opened this conversation. Everything said until now is seen."""
+def mark_read(reference_doctype: str, reference_name: str) -> dict:
+	"""Read, and off the pile. Only ever because somebody said so.
+
+	It used to happen by itself, the moment a conversation was opened — and that
+	is how a badge becomes noise: you glance at a chat to see who it was, the
+	count goes, and the thing you had not dealt with is indistinguishable from
+	the thing you had. Looking is not dealing with it.
+	"""
 	if reference_doctype not in RECORDS:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
 	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
 	seen = now()
-	values = {"conversation_seen_until": seen, "conversation_seen_by": frappe.session.user}
-	# under the other setting, opening a conversation is not what settles it:
-	# the person is still waiting until somebody writes back
-	if badge_clears() == SEEN:
-		values["conversation_unread"] = 0
+	values = {
+		"conversation_seen_until": seen,
+		"conversation_seen_by": frappe.session.user,
+		"conversation_unread": 0,
+	}
 	# and on the person, when it was opened from one of their deals: the badge
 	# that was showing is theirs
 	for doctype, name in also_the_person(reference_doctype, reference_name):
@@ -640,10 +577,53 @@ def mark_unread(reference_doctype: str, reference_name: str) -> dict:
 		frappe.db.set_value(
 			doctype,
 			name,
-			{"conversation_seen_until": None, "conversation_seen_by": None},
+			{
+				"conversation_seen_until": None,
+				"conversation_seen_by": None,
+				"conversation_unread": 1,
+			},
 			update_modified=False,
 		)
-		frappe.db.set_value(
-			doctype, name, "conversation_unread", 1 if is_waiting(doctype, name) else 0, update_modified=False
-		)
 	return {"seen_until": None}
+
+
+@frappe.whitelist(methods=["POST"])
+def acknowledge(reference_doctype: str, reference_name: str) -> dict:
+	"""Tell WhatsApp their messages have been read, if the site wants that.
+
+	A different thing from the badge, and that is the point of separating them:
+	the badge is ours to manage, the blue ticks are something the customer sees
+	on their own phone. Turning up unannounced on somebody's screen because a
+	colleague glanced at a list is a promise the CRM should not make by itself.
+	"""
+	if not frappe.db.get_single_value("FCRM Settings", "whatsapp_read_receipts"):
+		return {"acknowledged": 0}
+	if reference_doctype not in RECORDS:
+		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
+	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
+	if not frappe.db.exists("DocType", "WhatsApp Message"):
+		return {"acknowledged": 0}
+
+	waiting = frappe.get_all(
+		"WhatsApp Message",
+		filters={
+			"reference_doctype": reference_doctype,
+			"reference_name": reference_name,
+			"type": "Incoming",
+			"status": ["!=", "marked as read"],
+			"message_id": ["is", "set"],
+		},
+		pluck="name",
+		order_by="creation desc",
+		# the recent ones: Meta refuses a receipt for a message old enough, and
+		# working through two years of history to be told so is nobody's morning
+		limit=20,
+	)
+	told = 0
+	for name in waiting:
+		try:
+			frappe.get_doc("WhatsApp Message", name).send_read_receipt()
+			told += 1
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "WhatsApp: read receipt refused")
+	return {"acknowledged": told}
