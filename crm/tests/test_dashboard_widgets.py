@@ -10,6 +10,8 @@ column renamed under a widget, a join that no longer exists — they all fail
 here, by name, instead of as a blank tile on somebody's dashboard.
 """
 
+import datetime
+
 import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.tests.utils import make_test_records
@@ -222,3 +224,175 @@ class TestSalesNumbers(IntegrationTestCase):
 		self.assertEqual(self.answer("won_deals", user=SALES_USER)["value"], 2)
 		self.assertEqual(self.answer("won_value", user=SALES_USER)["value"], 5000)
 		self.assertEqual(self.answer("deals_open", user=SALES_USER)["value"], 0)
+
+
+class TestInvoicingNumbers(IntegrationTestCase):
+	"""Documents written straight to the table, and what the invoicing widgets make of them.
+
+	The fiscal engine is ``crm.invoicing``'s to test; here the question is only which
+	documents count. March 2025 again, with one sale in February for the comparison.
+	Every invoice and appointment on the site is set aside first (rolled back at the
+	end), because the widgets about the present count all of them.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		frappe.set_user("Administrator")
+		for doctype in ("CRM Invoice", "CRM Invoice Item", "CRM Appointment"):
+			frappe.db.delete(doctype)
+
+		visit, check, physio = "Visita", "Controllo", "Fisioterapia"
+		bianchi, neri = "Dott. Bianchi", "Dott. Neri"
+		invoice = cls.invoice
+		invoice("A", "TD01", "2025-03-05", 1000, 1220, "consegnata", "Rossi", [(visit, bianchi, 1000)])
+		invoice("B", "TD01", "2025-03-10", 500, 610, "inviato", "Verdi", [(check, neri, 500)])
+		# a credit note takes 200 of the visit back
+		invoice("C", "TD04", "2025-03-15", 200, 244, "consegnata", "Rossi", [(visit, bianchi, 200)])
+		# rejected: counts as not issued, and is the first thing to do
+		invoice("D", "TD01", "2025-03-20", 300, 300, "scartata", "Gialli", [(visit, bianchi, 300)])
+		invoice("E", "TD01", "2025-02-10", 800, 976, "consegnata", "Rossi", [(visit, bianchi, 800)])
+		invoice(
+			"F", "TD01", "2025-03-25", 999, 999, "da_inviare", "Bozza", [(visit, bianchi, 999)], docstatus=0
+		)
+		invoice(
+			"G",
+			"TD01",
+			"2025-03-28",
+			777,
+			777,
+			"consegnata",
+			"Annullata",
+			[(visit, bianchi, 777)],
+			docstatus=2,
+		)
+		# a reverse-charge integration is a purchase: at the SdI, but not a sale
+		invoice("H", "TD17", "2025-03-12", 400, 488, "consegnata", "Fornitore", [(None, None, 400)])
+		# healthcare, outside the SdI, still to be reported to the Sistema TS
+		invoice(
+			"I",
+			"TD01",
+			"2025-03-18",
+			250,
+			250,
+			"non_applicabile",
+			"Blu",
+			[(physio, neri, 250)],
+			ts="da_inviare",
+		)
+		invoice("J", "TD01", "2025-03-22", 150, 183, "da_inviare", "Verdi", [(check, neri, 150)])
+
+		now = frappe.utils.now_datetime()
+		cls.appointment("done", now - datetime.timedelta(days=2), "Completed")
+		cls.appointment("invoiced", now - datetime.timedelta(days=3), "Completed")
+		cls.appointment("cancelled", now - datetime.timedelta(days=2), "Cancelled")
+		cls.appointment("long ago", now - datetime.timedelta(days=60), "Completed")
+		cls.appointment("tomorrow", now + datetime.timedelta(days=1), "Scheduled")
+		invoice("K", "TD01", "2024-12-01", 90, 90, "consegnata", "Viola", [(visit, bianchi, 90)])
+		frappe.db.set_value("CRM Invoice", "TEST-DASH-K", "appointment", "TEST-DASH-APPT-invoiced")
+
+	@classmethod
+	def tearDownClass(cls):
+		frappe.db.rollback()
+		super().tearDownClass()
+
+	@staticmethod
+	def invoice(key, kind, day, net, gross, sdi, billing, lines, docstatus=1, ts="non_applicabile"):
+		name = f"TEST-DASH-{key}"
+		frappe.get_doc(
+			{
+				"doctype": "CRM Invoice",
+				"name": name,
+				"document_type": kind,
+				"posting_date": day,
+				"payment_date": day,
+				"net_total": net,
+				"grand_total": gross,
+				"net_payable": gross,
+				"sdi_status": sdi,
+				"ts_status": ts,
+				"channel": "pdf_ts" if ts != "non_applicabile" else "sdi",
+				"billing_name": billing,
+				"docstatus": docstatus,
+			}
+		).db_insert()
+		for index, (service, provider, amount) in enumerate(lines, start=1):
+			frappe.get_doc(
+				{
+					"doctype": "CRM Invoice Item",
+					"name": f"{name}-{index}",
+					"parent": name,
+					"parenttype": "CRM Invoice",
+					"parentfield": "items",
+					"idx": index,
+					"billable_service": service,
+					"service_provider": provider,
+					"qty": 1,
+					"rate": amount,
+					"amount": amount,
+				}
+			).db_insert()
+
+	@staticmethod
+	def appointment(key, starts_on, status):
+		frappe.get_doc(
+			{
+				"doctype": "CRM Appointment",
+				"name": f"TEST-DASH-APPT-{key}",
+				"title": key,
+				"starts_on": starts_on,
+				"ends_on": starts_on + datetime.timedelta(hours=1),
+				"status": status,
+			}
+		).db_insert()
+
+	def answer(self, widget_id, **config):
+		widget = registry.get(widget_id)
+		ctx = Context.build(*MARCH, scope=widget.scope, config=widget.clean_config(config))
+		return widget.fn(ctx)
+
+	def test_invoiced_is_sales_less_credit_notes(self):
+		# 1000 + 500 + 250 + 150 sold, 200 taken back; the rejected, the draft, the
+		# cancelled and the purchase are not revenue
+		invoiced = self.answer("invoiced_revenue")
+		self.assertEqual((invoiced["value"], invoiced["previous"]), (1700, 800))
+		self.assertEqual(invoiced["currency"], "EUR")
+		self.assertEqual(
+			self.answer("invoiced_revenue", measure="gross")["value"], 1220 + 610 + 250 + 183 - 244
+		)
+
+	def test_documents_and_their_average(self):
+		issued = self.answer("invoices_issued")
+		self.assertEqual((issued["value"], issued["previous"]), (4, 1))
+		self.assertEqual(self.answer("average_invoice")["value"], 475)
+		notes = self.answer("credit_notes")
+		self.assertEqual((notes["value"], notes["previous"]), (1, 0))
+
+	def test_what_is_waiting_puts_the_rejected_first(self):
+		self.assertEqual(self.answer("invoicing_to_do")["value"], 3)
+		self.assertEqual(self.answer("sdi_rejected")["value"], 1)
+		self.assertEqual(self.answer("ts_to_send")["value"], 1)
+		waiting = self.answer("invoicing_to_do_list")
+		self.assertEqual(waiting["total"], 3)
+		# the SdI rejection first (five days to fix it), then what is still to send
+		self.assertEqual([item["title"] for item in waiting["items"]], ["Gialli", "Verdi", "Blu"])
+		self.assertEqual(waiting["items"][0]["badge"]["color"], "red")
+
+	def test_where_the_invoices_stand_at_the_sdi(self):
+		slices = {slice_["label"]: slice_["value"] for slice_ in self.answer("sdi_outcomes")["slices"]}
+		# A, C and the integration H accepted; B waiting; J to send; D rejected
+		self.assertEqual(slices, {"Accepted": 3, "Waiting for the SdI": 1, "To send": 1, "Rejected": 1})
+
+	def test_lines_by_service_provider_and_client(self):
+		def bars(widget_id):
+			answer = self.answer(widget_id)
+			return dict(zip(answer["x"]["values"], answer["series"][0]["values"], strict=True))
+
+		self.assertEqual(bars("invoiced_by_service"), {"Visita": 800, "Controllo": 650, "Fisioterapia": 250})
+		self.assertEqual(bars("invoiced_by_provider"), {"Dott. Neri": 900, "Dott. Bianchi": 800})
+		self.assertEqual(bars("invoiced_by_client"), {"Rossi": 800, "Verdi": 650, "Blu": 250})
+
+	def test_appointments_that_happened_and_were_not_invoiced(self):
+		self.assertEqual(self.answer("appointments_to_invoice")["value"], 1)
+		listed = self.answer("appointments_to_invoice_list")
+		self.assertEqual([item["title"] for item in listed["items"]], ["done"])
