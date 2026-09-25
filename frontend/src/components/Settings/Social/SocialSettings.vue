@@ -11,9 +11,11 @@
 -->
 <template>
   <div
-    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
+    class="flex h-full flex-col gap-6 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 text-ink-gray-8"
   >
-    <div class="flex items-start justify-between gap-3 px-2">
+    <div
+      class="flex flex-col items-stretch gap-3 px-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
+    >
       <div class="flex min-w-0 flex-1 flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
           {{ __('Social Planner') }}

@@ -9,7 +9,7 @@
 -->
 <template>
   <div
-    class="flex h-full flex-col gap-5 overflow-y-auto py-8 px-6 text-ink-gray-8"
+    class="flex h-full flex-col gap-5 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 text-ink-gray-8"
   >
     <div class="flex flex-col gap-1 px-2">
       <h2 class="flex items-center gap-2 text-2xl-semibold leading-none h-5">

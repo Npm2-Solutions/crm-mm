@@ -167,8 +167,35 @@
           />
         </div>
 
+        <!--
+          Nothing loaded and nothing to say. The empty state below is gated on
+          `current`, which stays null when `get_dashboards` fails — so a backend
+          that is a deploy behind the frontend, or any error at all, left a white
+          page with no explanation and no way out.
+        -->
         <div
-          v-else-if="!items.length && current"
+          v-else-if="!current"
+          class="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center"
+        >
+          <span
+            class="grid size-12 place-items-center rounded-full bg-surface-gray-2"
+          >
+            <LucideLayoutDashboard class="size-5 text-ink-gray-6" />
+          </span>
+          <div class="text-base font-medium text-ink-gray-8">
+            {{ __('Could not load the dashboards') }}
+          </div>
+          <div class="max-w-sm text-p-sm text-ink-gray-5">
+            {{
+              dashboards.error?.messages?.[0] ||
+              __('Reload the page, and tell us if it keeps happening.')
+            }}
+          </div>
+          <Button :label="__('Try again')" @click="dashboards.reload()" />
+        </div>
+
+        <div
+          v-else-if="!items.length"
           class="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center"
         >
           <span
