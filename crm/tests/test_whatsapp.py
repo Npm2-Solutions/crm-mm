@@ -632,6 +632,59 @@ class TestACallLoggedByHandKnowsWhoWasOnIt(FrappeTestCase):
 		self.assertFalse(doc.to)
 
 
+class TestTheChatCallsItTheWayThePageDoes(FrappeTestCase):
+	"""The page sends what it sends, and the endpoint has to accept exactly that.
+
+	The chat stopped sending a recipient — there is one number per person, so
+	there was nothing to choose, and the record already knows it. But the
+	parameter had no default, so every send answered «Internal Server Error»
+	about a missing argument: the one kind of failure nobody can act on.
+	"""
+
+	def test_sending_without_a_recipient_is_a_call_the_endpoint_accepts(self):
+		import inspect
+
+		from crm.api.whatsapp import create_whatsapp_message
+
+		# exactly the payload WhatsAppBox posts
+		sent = {
+			"reference_doctype",
+			"reference_name",
+			"message",
+			"attach",
+			"reply_to",
+			"content_type",
+		}
+		signature = inspect.signature(create_whatsapp_message)
+		required = {
+			name
+			for name, parameter in signature.parameters.items()
+			if parameter.default is inspect.Parameter.empty
+		}
+		self.assertTrue(
+			required <= sent,
+			f"the page does not send {required - sent}, so every send would fail",
+		)
+
+	def test_the_number_is_still_decided_and_still_checked(self):
+		# optional does not mean ignored: a number that is not this person's is
+		# refused rather than quietly corrected
+		from crm.api.whatsapp import whatsapp_recipient
+
+		lead = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Destinatario",
+				"last_name": "Prova",
+				"mobile_no": "+393480000001",
+			}
+		).insert(ignore_permissions=True)
+		self.assertEqual(whatsapp_recipient("CRM Lead", lead.name), "+393480000001")
+		with self.assertRaises(frappe.ValidationError):
+			whatsapp_recipient("CRM Lead", lead.name, "+393489999999")
+		frappe.db.rollback()
+
+
 class TestMediaSentFromThePhone(FrappeTestCase):
 	"""A photo, a voice note or a document arrives as an id, not as a file.
 
