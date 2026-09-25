@@ -13,7 +13,14 @@
     :smsBox="smsBox"
     :modalRef="modalRef"
   />
-  <FadedScrollableDiv class="flex flex-col h-full overflow-y-auto">
+  <!--
+    A plain scroller. It used to be a faded one — a mask that dissolves the top
+    and bottom few pixels into nothing — and over WhatsApp's paper that does not
+    read as softness, it reads as a smear: the wallpaper itself fades out, so
+    the conversation looks like it is printed on something dirty. What the fade
+    was buying was a soft edge; what it was costing was the whole backdrop.
+  -->
+  <div class="flex h-full flex-col overflow-y-auto">
     <div
       v-if="all_activities?.loading"
       class="flex flex-1 flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-4"
@@ -484,7 +491,7 @@
       :icon="emptyTextIcon"
       :top="top"
     />
-  </FadedScrollableDiv>
+  </div>
   <div>
     <!-- Picking a channel changes what you read and what you write in. Typing an
          email into a box while reading a WhatsApp conversation was half the
@@ -586,7 +593,6 @@ import MissedCallIcon from '@/components/Icons/MissedCallIcon.vue'
 import DeclinedCallIcon from '@/components/Icons/DeclinedCallIcon.vue'
 import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
 import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
-import FadedScrollableDiv from '@/components/FadedScrollableDiv.vue'
 import CommunicationArea from '@/components/CommunicationArea.vue'
 import ConversationView from '@/components/Activities/ConversationView.vue'
 import WhatsappTemplateSelectorModal from '@/components/Modals/WhatsappTemplateSelectorModal.vue'
