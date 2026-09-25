@@ -18,12 +18,13 @@ significano qualcosa.
 
 ## Come funziona
 
-**Un catalogo di widget per ogni modulo.** 147 widget in 15 categorie, ognuno
+**Un catalogo di widget per ogni modulo.** 166 widget in 16 categorie, ognuno
 una funzione Python che risponde a una domanda precisa per il periodo scelto:
 
 | Categoria | Widget | Qualche esempio |
 |---|---|---|
 | Vendite | 23 | Ricavo vinto, tasso di vittoria (in punti), pipeline ponderata, previsione per mese, imbuto, motivi di perdita |
+| Fatturazione | 19 | Fatturato, fatture emesse, note di credito, cose da fare (da inviare, scartate dallo SdI o dal Sistema TS), appuntamenti da fatturare, fatturato per servizio, professionista e cliente, fatture dei fornitori |
 | Persone | 8 | Nuove persone, da dove arrivano, clienti di ritorno |
 | Conversazioni | 14 | In attesa di risposta, tempo di risposta, a che ora scrivono, conversazioni aperte per persona |
 | WhatsApp | 10 | Ricevuti/inviati, tasso di lettura, non consegnati da rimandare, template inviati |
@@ -38,8 +39,8 @@ una funzione Python che risponde a una domanda precisa per il periodo scelto:
 | Attivita' | 9 | Da fare oggi, scadute, completate |
 | Squadra | 2 | Classifica e carico per persona |
 
-Sette forme: numero (78), grafico a linee o barre (28), lista (18), ciambella
-(10), tabella (9), mappa di calore giorno per ora (3), imbuto (1).
+Sette forme: numero (90), grafico a linee o barre (32), lista (20), ciambella
+(11), tabella (9), mappa di calore giorno per ora (3), imbuto (1).
 
 **Ogni widget dice di cosa ha bisogno** (`requires=("whatsapp",)`). Il sito sa
 quali parti usa davvero (`crm/dashboard/features.py`: un flag o un `exists` a
@@ -47,8 +48,8 @@ testa, calcolati una volta per richiesta), e **la libreria offre prima quello a
 cui il sito sa rispondere**. Il resto compare sotto, col lucchetto e il pulsante
 "Configura WhatsApp" che apre la pagina giusta delle impostazioni.
 
-**Nove dashboard pronte**, una per modulo: Panoramica, La mia giornata, Vendite,
-Conversazioni, Agenda, Telefono, Marketing, Attivita', Squadra. Un modello e'
+**Dieci dashboard pronte**, una per modulo: Panoramica, La mia giornata, Vendite,
+Fatturazione, Conversazioni, Agenda, Telefono, Marketing, Attivita', Squadra. Un modello e'
 fatto di righe di widget, non di posizioni: viene impaginato per chi guarda,
 con i soli widget a cui il suo sito e il suo ruolo sanno rispondere. Una
 sezione vuota sparisce col suo titolo, una riga con dei buchi divide la
@@ -78,7 +79,7 @@ elimina.
 - Le dashboard **del team** le vedono tutti e le cambiano i manager; le
   **private** sono di chi le ha fatte, venditori compresi, e nessun altro le vede
   (permission query e `has_permission`, come per le notifiche).
-- I 35 widget **da manager** (spesa pubblicitaria, carico della squadra, classifiche)
+- I 54 widget **da manager** (spesa pubblicitaria, carico della squadra, classifiche)
   non arrivano a un venditore, nemmeno nel catalogo.
 - Il filtro "persona" segue la gerarchia (`crm/permissions/org_hierarchy.py`):
   un responsabile vede i suoi, un venditore solo se stesso.
@@ -92,7 +93,7 @@ elimina.
   finisce il giorno prima. Il delta e' verde o rosso secondo se salire e' una
   buona notizia (le chiamate perse che salgono sono rosse), ed e' **in punti**
   per i tassi: da 50% a 60,5% e' "+10,5 pts", non "+21%".
-- I 39 widget **"Adesso"** (in attesa di risposta, pipeline aperta, appuntamenti
+- I 47 widget **"Adesso"** (in attesa di risposta, pipeline aperta, appuntamenti
   di oggi) non dipendono dal periodo e lo dicono con un badge.
 - Importi convertiti nella valuta del CRM col cambio della trattativa, come
   faceva la dashboard di prima. Formati nella lingua di chi legge.
@@ -119,6 +120,38 @@ Le regole sono quelle della data visualization, non del gusto:
   neutro.
 - Il testo non prende mai il colore di una serie; i tooltip escapano quello che
   arriva dai dati (il nome di una campagna lo scrive chiunque in un URL).
+
+## La fatturazione
+
+Quando il sito fattura (un'azienda emittente configurata, o documenti gia'
+emessi) compaiono la dashboard **Fatturazione** e, nella Panoramica, una riga con
+fatturato, cose da fare e appuntamenti da fatturare. E' tutto per i manager, come
+la pagina Fatture, e conta lo studio intero: una fattura e' dello studio, non del
+venditore che guarda.
+
+- **Il fatturato e' l'imponibile** (`net_total`: niente IVA, bollo o cassa), o il
+  totale del documento se il widget e' impostato cosi'. Le note di credito
+  (TD04, TD08) tolgono il loro importo; autofatture e integrazioni (TD16-TD23,
+  TD26-TD28) sono acquisti e restano fuori. Una fattura **scartata dallo SdI conta
+  come non emessa** (Circolare 13/E del 2018) finche' non riparte.
+- **Non c'e' "incassato" ne' "scaduto", ed e' voluto.** Il modulo registra quando
+  una spesa sanitaria e' stata pagata, per il Sistema TS, e `payment_date` vale la
+  data della fattura se nessuno la cambia: non registra se il cliente ha saldato.
+  Un "da incassare" sarebbe un numero inventato.
+- **Da fare** e' quello che elenca `crm.invoicing.api.pending_actions`: fatture
+  emesse da inviare allo SdI o al Sistema TS, o rimandate indietro. Nella lista
+  vengono prima gli scarti dello SdI, che hanno cinque giorni per ripartire.
+- **Appuntamenti da fatturare**: quelli avvenuti negli ultimi giorni (30 di
+  default, si cambia nelle impostazioni del widget) senza una fattura collegata,
+  come la coda di `api.appointments_to_invoice`.
+- **Fatturato per professionista** compare solo in un centro (piu' di un
+  professionista attivo), **Sistema TS** solo in uno studio sanitario, **fatture dei
+  fornitori** solo se il sito le riceve.
+- Importi in euro, come ogni documento FatturaPA che il modulo scrive.
+
+Le dashboard dei modelli nascono una volta, quando un sito non ne ha: la patch
+`an_invoicing_dashboard` aggiunge la Fatturazione ai siti che hanno gia' le altre,
+e soltanto quella, cosi' una dashboard cancellata apposta resta cancellata.
 
 ## Come si aggiunge un widget
 
@@ -158,19 +191,20 @@ numeri nuovi.
 | `crm/dashboard/context.py` | Periodo, periodo prima, chi si conta (gerarchia), opzioni pulite |
 | `crm/dashboard/charts.py` | Le forme delle risposte — pure, testate con `unittest` |
 | `crm/dashboard/features.py` | Quali parti del gestionale il sito usa |
-| `crm/dashboard/templates.py` | Le nove dashboard pronte, a righe |
+| `crm/dashboard/templates.py` | Le dieci dashboard pronte, a righe |
 | `crm/dashboard/layout.py` | Da righe a posizioni sulla griglia; pulizia dei layout salvati |
 | `crm/dashboard/store.py` | Dashboard su disco: modelli che seguono il sito, permessi |
 | `crm/dashboard/widgets/*.py` | I widget, un file per modulo |
 | `crm/api/dashboard.py` | Elenco, layout, catalogo, dati di piu' widget in una richiesta, salvataggi |
 | `crm/patches/v1_0/a_dashboard_for_every_module.py` | La "Manager Dashboard" diventa la Panoramica; nascono le altre |
+| `crm/patches/v1_0/an_invoicing_dashboard.py` | La dashboard Fatturazione sui siti che hanno gia' le altre |
 | `frontend/src/pages/Dashboard.vue` | La pagina: scelta, periodo, persona, modifica |
 | `frontend/src/components/Dashboard/` | Griglia, libreria, dialoghi, cornice e le sette forme di widget |
 | `frontend/src/utils/dashboard.js` | Periodi, formati, griglia, ricerca — puri, testati |
 | `frontend/src/utils/dashboardCharts.js` | Palette e opzioni ECharts — pure, testate |
 
-Test: `crm/tests/test_dashboard_widgets.py` (ogni widget su MariaDB, e i KPI di
-vendita su trattative note), `test_dashboard_layout.py` (pure),
+Test: `crm/tests/test_dashboard_widgets.py` (ogni widget su MariaDB, i KPI di
+vendita su trattative note e quelli della fatturazione su documenti noti), `test_dashboard_layout.py` (pure),
 `test_dashboard_store.py` (modelli e permessi), `frontend/tests/unit/dashboard.test.js`.
 
 ## Non incluso

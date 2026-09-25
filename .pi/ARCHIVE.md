@@ -230,8 +230,9 @@ aperto di quella pipeline — la stessa semantica di GoHighLevel.
 > **Completato** (24/09/2026). Documento di progetto:
 > [docs/progetto-ghl/28-dashboard.md](../docs/progetto-ghl/28-dashboard.md).
 
-147 widget in 15 categorie (`crm/dashboard/widgets/`), nove dashboard pronte che
+166 widget in 16 categorie (`crm/dashboard/widgets/`), dieci dashboard pronte che
 seguono il sito finche' nessuno le risistema, builder a griglia nel frontend.
+La fatturazione si e' aggiunta dopo (25/09/2026): 19 widget e la sua dashboard.
 
 ### Decisioni
 
@@ -245,6 +246,8 @@ seguono il sito finche' nessuno le risistema, builder a griglia nel frontend.
 | Delta dei tassi in punti | Da 50% a 60,5% e' "+10,5 pts": "+21%" di un percentuale non lo legge giusto nessuno |
 | Colore per nome agli stati noti | Assegnati in ordine, "No show" e "Chiamate perse" uscivano verdi; le combinazioni sono validate per daltonismo nei due temi |
 | Griglia di frappe-ui con `responsive` spento | Sotto 768px di griglia passava a una colonna e restituiva quelle posizioni come nuove: il salvataggio le avrebbe tenute |
+| Nella fatturazione niente "incassato" ne' "scaduto" | Il modulo non registra i pagamenti: `payment_date` vale la data della fattura se nessuno la cambia. Un "da incassare" sarebbe un numero inventato |
+| Il fatturato e' l'imponibile, note di credito sottratte | E' il numero che un titolare chiama fatturato; autofatture e integrazioni sono acquisti, e una fattura scartata dallo SdI conta come non emessa |
 
 ---
 
