@@ -1,8 +1,9 @@
 # Il gestionale per i centri medici: come farlo stare in Frappe
 
-**Stato:** 📐 proposta (25/09/2026). Prima di scrivere codice vanno chiuse le
-[cinque domande](#le-cinque-domande-da-chiudere-prima) in fondo. Gli obblighi di
-legge, i gestionali concorrenti e l'ecosistema Frappe, con le fonti, sono in
+**Stato:** 📐 proposta (25/09/2026, rivista lo stesso giorno). La fatturazione, e
+con lei l'invio al Sistema TS, c'è già ed è fuori da questa proposta. Prima di
+scrivere codice vanno chiuse le [cinque domande](#le-cinque-domande-da-chiudere-prima)
+in fondo. Obblighi, concorrenti ed ecosistema Frappe, con le fonti, sono in
 [ricerca.md](./ricerca.md).
 
 ## Il problema in una riga
@@ -10,24 +11,115 @@ legge, i gestionali concorrenti e l'ecosistema Frappe, con le fonti, sono in
 Il CRM oggi fa molto bene il **prima** della visita: trova la persona, la fa
 prenotare (dal sito, da MioDottore, al telefono), le ricorda l'appuntamento, dice
 quanto è costato acquisirla. Un gestionale medico è soprattutto il **durante** e il
-**dopo**: accettazione, cartella, referto, fattura, invio al Sistema TS, compensi
-dei medici.
+**dopo**: accettazione, visita, cartella, referto, richiami.
 
-Sono due prodotti che hanno in comune due cose sole, **la persona e l'agenda**. La
-difficoltà non è Frappe: è che il confine fra i due non è ancora tracciato. Questo
-documento lo traccia.
+CRM e centro medico hanno in comune due cose sole, **la persona e l'agenda**. La
+difficoltà non è Frappe: è decidere dove passa il confine, chi vede cosa e come i
+due mondi si passano la persona. Questo documento lo decide.
+
+## La dualità: una persona, due mestieri
+
+Non sono due sistemi e non sono due anagrafiche. È **una persona sola** che
+attraversa due fasi, e **due mestieri** che lavorano su di lei.
+
+### Le due fasi della persona
+
+```
+  CONTATTO  ───────────── prima visita ─────────────►  PAZIENTE
+  da conquistare         la segreteria segna            da curare
+  lo segue il marketing  "arrivato"                     lo segue il centro,
+  con i deal                                            con agenda e visite
+```
+
+- Il passaggio è **la prima visita**, non la prenotazione: chi prenota e non si
+  presenta resta un contatto.
+- È automatico: nessuno deve ricordarsi di "convertire" qualcuno.
+- La persona non cambia scheda. Le si aggiunge la **scheda paziente** (codice
+  fiscale, nascita, consensi) e da quel momento compare fra i **Pazienti**.
+
+Saperlo serve davvero: cartella e documenti clinici vanno conservati anche se la
+persona chiede di essere cancellata, il medico vede i pazienti e il marketing no, e
+"nuovi pazienti al mese" è il numero che il centro guarda.
+
+### Due mestieri, due facce dello stesso CRM
+
+Stesso sito, stessa persona: menu, schede e numeri cambiano con il ruolo.
+
+| | Marketing (voi, o chi fa commerciale nel centro) | Centro (segreteria, medici, direzione) |
+|---|---|---|
+| Menu | Persone, Richieste (i deal), Automazioni, Meta, Social, Sito | Agenda, Pazienti, Conversazioni |
+| Scheda della persona | da dove arriva, deal, campagne, conversazioni | appuntamenti, visite, documenti, consensi, conversazioni |
+| Dashboard | richieste, costo per nuovo paziente per inserzione | appuntamenti di oggi, no-show, occupazione, nuovi pazienti |
+| Non vede | visite, referti, dati clinici | — |
+
+Nel codice il meccanismo c'è già: le voci del menu (`AppSidebar.vue`) e le schede
+della persona (`frontend/src/pages/Lead.vue`) hanno una `condition` ciascuna, oggi
+usata solo per "è manager". Mancano i ruoli: oggi esistono solo Sales User e Sales
+Manager.
+
+**I nomi si cambiano per sito, senza codice.** Frappe aggiunge alle traduzioni
+delle app quelle del DocType `Translation` del sito (`get_all_translations`), e la
+SPA le riceve da `crm.api.get_translations`. Sul sito di un centro "Deals" può
+leggersi "Richieste" senza toccare gli altri clienti.
+
+### Le tre cuciture fra i due mondi
+
+Separare non basta: la dualità si gestisce nei tre punti in cui un mondo passa la
+persona all'altro.
+
+1. **Dal marketing al centro: la prima visita chiude il deal.** La pipeline "Nuovi
+   pazienti" va da richiesta a contattato, ad appuntamento fissato, a venuto
+   (vinto) o perso. La prenotazione sposta il deal su "appuntamento fissato", la
+   prima visita su "venuto". Così il report delle inserzioni Meta, che conta i deal
+   vinti (`cost_per_won` in `crm/integrations/meta/insights.py`), dice quanto costa
+   un nuovo paziente, senza lavoro in più per la segreteria. Con le automazioni di
+   oggi non si fa: i trigger degli appuntamenti lavorano sulla persona, non sul
+   deal (`resolve_reference` in `crm/automation/engine.py`). Serve un piccolo
+   aggancio nel codice.
+2. **Dal centro al marketing: il richiamo.** Pazienti che non vengono da un anno,
+   controlli da ripetere, recensioni. Solo con il consenso al marketing, e
+   scegliendo i destinatari su dati amministrativi (ultima visita, servizio
+   prenotato), **mai su dati clinici** (diagnosi, referti). Il marketing vede "non
+   viene da 14 mesi", non il perché.
+3. **Le conversazioni: un WhatsApp solo, due usi.** Lo stesso numero serve a chi
+   chiede informazioni e a chi sposta un appuntamento. La segreteria risponde ai
+   pazienti, il marketing alle richieste nuove, e in chat non passano contenuti
+   clinici: i referti viaggiano su un canale protetto.
+
+### Due pipeline, e molti pazienti senza deal
+
+Oggi chi prenota da `/prenota` o da una piattaforma diventa persona e
+appuntamento, **senza deal** (`find_or_create_person`). Chi compila un modulo del
+sito o di Meta diventa persona e deal, perché qualcuno lo deve richiamare
+(`open_deal_for_inquiry`). Una richiesta nuova non apre un secondo deal se ce n'è
+già uno aperto (`open_deal_of`); a mano sì.
+
+Per un centro medico bastano due pipeline, che il CRM supporta già
+([guida](../../.pi/feats/pipelines/guide.md)):
+
+- **Nuovi pazienti:** le richieste da pubblicità, moduli e telefonate, da
+  richiamare fino alla prima visita.
+- **Preventivi:** le cure costose (impianti, ortodonzia, medicina estetica,
+  chirurgia, check-up), da preventivo consegnato ad accettato o rifiutato.
+
+Il paziente che prenota le sue visite non ha deal, ed è giusto così:
+
+| | Con un deal | Senza deal |
+|---|---|---|
+| **Paziente** | paziente con un preventivo aperto | paziente che prenota le sue visite |
+| **Contatto** | richiesta da una pubblicità, da richiamare | chi ha scritto o prenotato ma non è mai venuto |
 
 ## Cosa c'è già e cosa manca
 
 | Area | Oggi nel repo | Cosa manca per un centro medico |
 |---|---|---|
-| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare | Codice fiscale, nascita, residenza (sulla persona **non c'è nessun indirizzo**), tessera sanitaria, genitore o tutore per i minori |
-| Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:565`) **ma non registrata**. L'hook `user_data_fields` è commentato | Consensi registrati (quale testo, quale versione, quando, come), opposizione all'invio STS, consenso al dossier |
-| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati | Lo stato "arrivato", l'accettazione, le prestazioni *eseguite* (spesso diverse dalle prenotate), i listini per convenzione |
-| Soldi | Niente. `total_amount` è il valore prenotato, non l'incassato. ERPNext crea clienti e preventivi, non fatture | Fattura sanitaria, incassi e acconti, note di credito, chiusura cassa, invio STS, fattura elettronica ai fondi e alle aziende, compensi dei medici |
+| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare | La scheda paziente: codice fiscale, nascita, residenza (sulla persona **non c'è nessun indirizzo**), tessera sanitaria, genitore o tutore per i minori |
+| Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:565`) **ma non registrata**. L'hook `user_data_fields` è commentato | Consensi registrati (quale testo, quale versione, quando, come): marketing, dossier, referti online |
+| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati | Lo stato "arrivato", l'accettazione, le prestazioni *eseguite* (spesso diverse dalle prenotate) |
+| Fatturazione | C'è già, fuori da questo progetto | Riceve dall'accettazione le prestazioni eseguite |
 | Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
-| Ruoli | System Manager, Sales Manager, Sales User. Ogni utente vede tutti gli appuntamenti | Segreteria, Medico, Direzione sanitaria, Amministrazione. Chi fa marketing non vede la clinica |
-| Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "settore medico" che accende menu, pagine, impostazioni, widget e job |
+| Ruoli | System Manager, Sales Manager, Sales User. Ogni utente vede tutti gli appuntamenti | Segreteria, Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo |
+| Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
 
 Il resto (conversazioni su tutti i canali, automazioni, prenotazione online,
 telefono, dashboard, sito) è più avanti di quello che offrono i gestionali medici
@@ -43,35 +135,31 @@ Desk, non ha una traduzione italiana e non risulta usata in Italia (dettagli e
 fonti in [ricerca.md](./ricerca.md#1-lecosistema-frappe)). Non conviene adottarla,
 per tre motivi.
 
-1. **Porta una seconda agenda.** `Patient Appointment`, `Healthcare Practitioner`,
-   `Practitioner Schedule`, `Healthcare Service Unit`: un'agenda e un'anagrafica
-   parallele a quelle appena unificate ([sistema-unico](../prenotazioni/sistema-unico.md)).
-   Due agende sono il problema che avete appena finito di risolvere.
+1. **Porta una seconda agenda e una seconda anagrafica.** `Patient`,
+   `Patient Appointment`, `Healthcare Practitioner`, `Practitioner Schedule`,
+   `Healthcare Service Unit`: proprio la dualità da evitare, accanto
+   all'agenda appena unificata ([sistema-unico](../prenotazioni/sistema-unico.md)).
 2. **Vuole ERPNext su ogni sito.** Un server da $40 regge 8–12 siti perché il limite
    è la RAM e lo scheduler di ogni sito ([25](../progetto-ghl/25-costo-hosting.md)).
    ERPNext più Marley su ogni sito medico cambiano quel conto.
-3. **Non sa niente dell'Italia.** Niente Sistema TS, esenzione IVA sanitaria, bollo,
-   divieto di mandare allo SDI le fatture sanitarie ai privati. Andrebbe scritto
-   comunque, dentro un'interfaccia Desk che il medico non userebbe.
+3. **Non sa niente dell'Italia** (Sistema TS, esenzione IVA sanitaria, bollo,
+   divieto SDI per le fatture ai pazienti), e il medico dovrebbe lavorare nel Desk.
 
 Da Marley si prende **il modello dati come riferimento** (come separa appuntamento,
 incontro clinico, procedura e referto) e, dove serve, singoli pezzi di codice: la
 GPL-3 si combina con la vostra AGPL-3. L'app intera no.
 
-**ERPNext** resta un'opzione *a valle* per il cliente grande che vuole la
-contabilità vera: l'integrazione c'è già, sullo stesso sito o su uno remoto. Il
-poliambulatorio privato tipico tiene la contabilità dal commercialista e al
-gestionale chiede fatture, incassi, invio STS ed export. Se un cliente lo
-installa, c'è una trappola: il core di ERPNext genera da solo l'XML della fattura
-elettronica a ogni fattura di una società italiana (`erpnext/regional/italy`), e
-per le fatture ai pazienti va spento, perché non devono mai andare allo SDI.
+Se la vostra fatturazione passa da ERPNext, una trappola da conoscere: il core
+genera da solo l'XML della fattura elettronica a ogni fattura di una società
+italiana (`erpnext/regional/italy`), e per le fatture ai pazienti va spento, perché
+non devono mai andare allo SDI ([ricerca §1.3](./ricerca.md#13-erpnext-e-la-fattura-elettronica-italiana)).
 
 ## Decisione 2 — Un verticale dentro `crm`, con le regole di un'app separata
 
 | | Dove sta il codice | Pro | Contro |
 |---|---|---|---|
-| **A** | Moduli Frappe nuovi dentro l'app `crm` | Un repo, una SPA, una PR per funzione. Sono fatti così anche agenda, automazioni, dashboard e piattaforme | Le tabelle sanitarie esistono (vuote) anche sui siti non medici. Serve disciplina sui confini |
-| **B** | App separata con la sua SPA, come Helpdesk o LMS | Isolamento totale | Due SPA: la segretaria salta fra `/crm` e `/clinica` per prenotare e poi fatturare lo stesso paziente |
+| **A** | Un modulo Frappe nuovo dentro l'app `crm` | Un repo, una SPA, una PR per funzione. Sono fatti così anche agenda, automazioni, dashboard e piattaforme | Le tabelle sanitarie esistono (vuote) anche sui siti non medici. Serve disciplina sui confini |
+| **B** | App separata con la sua SPA, come Helpdesk o LMS | Isolamento totale | Due SPA, cioè di nuovo la dualità: la segretaria salta fra `/crm` e `/clinica` per lo stesso paziente |
 | **C** | App separata per il backend, pagine nella SPA del CRM | Tabelle solo sui siti medici | Ogni funzione vive in due repo: due PR e due CI da tenere allineate |
 
 **Proposta: A, con le regole di B.**
@@ -92,19 +180,18 @@ suoi dati.
 
 Le regole:
 
-1. **Due moduli Frappe nuovi.** `Clinica` contiene paziente, consensi, visite,
-   referti e modelli di cartella. `Amministrazione` contiene accettazione, fatture,
-   incassi, invio STS, compensi e convenzioni. Le cartelle sono `crm/clinica/` e
-   `crm/amministrazione/`, con le voci in `modules.txt`.
-2. **Dipendenza a senso unico.** I moduli nuovi importano da `crm`, il resto di
-   `crm` non importa mai da loro. Si agganciano con `doc_events` in `hooks.py` e
-   con i punti di estensione che esistono già: trigger delle automazioni, widget e
-   feature della dashboard. Un test che scorre gli import fa rispettare la regola.
-3. **Un interruttore per sito, "Settore: medico".** Accende le voci di menu
-   (`AppSidebar.vue` ha già una `condition` per voce), i gruppi delle impostazioni
-   (`Settings.vue` idem), i widget (`features.py`) e i job. **Ogni job schedulato
-   del modulo esce subito se il sito non è medico**: lo scheduler di ogni sito è
-   ciò che decide quanti siti stanno su un server.
+1. **Un modulo Frappe nuovo, `Clinica`:** paziente, consensi, accettazione,
+   visite, referti e modelli di cartella. Cartella `crm/clinica/`, voce in
+   `modules.txt`.
+2. **Dipendenza a senso unico.** Il modulo importa da `crm`, il resto di `crm` non
+   importa mai da lui. Si aggancia con `doc_events` in `hooks.py` e con i punti di
+   estensione che esistono già: trigger delle automazioni, widget e feature della
+   dashboard. Un test che scorre gli import fa rispettare la regola.
+3. **Un interruttore per sito, "centro medico".** Accende le voci di menu, i gruppi
+   delle impostazioni (`Settings.vue` ha la stessa `condition` del menu), i widget
+   (`features.py`) e i job. **Ogni job schedulato del modulo esce subito se il sito
+   non è medico**: lo scheduler di ogni sito è ciò che decide quanti siti stanno su
+   un server.
 4. **Nessun dato clinico fuori dai DocType clinici.** Niente su `CRM Lead`, nelle
    note, nella timeline, nei messaggi WhatsApp o nelle automazioni. La timeline
    della persona può dire "visita del 12/10, referto consegnato", mai cosa c'è
@@ -115,96 +202,46 @@ Le regole:
 
 ## Decisione 3 — La SPA per chi lavora, il Desk per chi configura
 
-Le tre giornate tipo vanno nella SPA `/crm`, dove il centro lavora già:
+Le giornate tipo vanno nella SPA `/crm`, dove il centro lavora già:
 
-- **Segreteria:** agenda, poi "arrivato", poi accettazione, incasso e fattura, poi
-  il prossimo appuntamento.
+- **Segreteria:** agenda, poi "arrivato", poi accettazione (e la fattura, con
+  quello che usate già), poi il prossimo appuntamento.
 - **Medico:** la mia giornata, poi la scheda del paziente (storia, allegati,
   consensi), poi la visita sul modello della sua specialità, poi il referto.
-- **Direzione:** incassato, prodotto per medico, STS inviato e da inviare,
-  consensi mancanti.
+- **Direzione:** appuntamenti, nuovi pazienti, prodotto per medico, consensi
+  mancanti.
+- **Marketing:** richieste, pipeline, campagne e costo per nuovo paziente.
 
-La configurazione all'inizio sta nel **Desk** (`/app`): modelli di cartella,
-listini e convenzioni, sezionali, credenziali STS, regole dei compensi. Frappe
-genera quelle schermate dai DocType, gratis, e le usate voi per configurare il
-cliente. Nella SPA si porta solo ciò che il centro tocca davvero ogni settimana.
+La configurazione all'inizio sta nel **Desk** (`/app`): modelli di cartella, testi
+dei consensi, ruoli. Frappe genera quelle schermate dai DocType, gratis, e le usate
+voi per configurare il cliente. Nella SPA si porta solo ciò che il centro tocca
+davvero ogni settimana.
 
 ## Decisione 4 — I "tubi" regolati si comprano
 
-Fattura elettronica verso lo SDI (per fondi, assicurazioni e aziende), invio al
-Sistema TS, firma qualificata dei referti, conservazione a norma: **ognuno dietro
-un adattatore**, come i connettori di `crm/booking_platforms/`, con un
-intermediario dietro. Il gestionale produce i dati giusti (righe STS, XML
-FatturaPA, PDF), l'intermediario li consegna, li conserva e restituisce gli esiti.
-Per il Sistema TS ci sono API REST pronte (A-Cube, sistema-ts-api.it), per lo SDI
-Aruba e OpenAPI.it; l'app `italian_invoice` di Solede (AGPL, v16) ha già un
-provider OpenAPI.it da cui prendere. Il confronto è in
-[ricerca.md](./ricerca.md#3-i-tubi-regolati-sdi-sistema-ts-firma).
-
-Scriverli da zero si può, i tracciati sono pubblici. Ma vuol dire rispondere, per
-tutti i clienti, di ogni scarto e di ogni cambio di specifiche. Si rivaluta dopo,
-con i numeri: quando il costo per invio supera il costo di tenerli.
-
-## Persona, deal, paziente: tre cose diverse
-
-Oggi nel CRM:
-
-- **la persona** (`CRM Lead`, *People* nel menu) è chiunque vi abbia contattato,
-  una scheda per essere umano, per sempre. Il `Contact` è solo la sua rubrica: la
-  pagina di un contatto porta alla persona (`frontend/src/router.js`);
-- **il deal** è una vendita da seguire, con uno stato su una pipeline. Una persona
-  ne ha zero, uno o tanti nel tempo; una richiesta nuova non ne apre un secondo se
-  ce n'è già uno aperto (`open_deal_of`), ma a mano lo si può fare.
-
-**Una persona può non avere nessun deal.** Chi prenota da `/prenota` o da una
-piattaforma diventa persona e appuntamento, senza deal
-(`find_or_create_person`). Chi compila un modulo del sito o di Meta diventa
-persona e deal, perché qualcuno lo deve richiamare (`open_deal_for_inquiry`, da
-`crm/api/form.py` e `crm/integrations/meta/leads.py`).
-
-In un centro medico il deal serve per le richieste da richiamare e per le cure
-con un preventivo (impianti, ortodonzia, medicina estetica, chirurgia, check-up,
-convenzioni con aziende). Per chi prenota una visita non serve: molti pazienti
-non avranno mai un deal.
-
-**Il paziente è la terza cosa, e bisogna saperlo:** cartella e fatture vanno
-conservate anche se la persona chiede di essere cancellata, il medico vede i
-pazienti e chi fa marketing no, e "nuovi pazienti al mese" è il numero che il
-centro guarda. La regola: **si diventa paziente alla prima accettazione**, cioè
-la prima volta che si entra, non quando si prenota. Chi prenota e non si
-presenta resta una persona. Deal e paziente sono indipendenti:
-
-| | Con un deal | Senza deal |
-|---|---|---|
-| **Paziente** | paziente con un preventivo aperto | paziente che prenota le sue visite |
-| **Non ancora paziente** | richiesta da una pubblicità, da richiamare | chi ha scritto o prenotato ma non è mai venuto |
-
-**La prima visita chiude il deal come vinto, da sola.** Il report delle
-inserzioni Meta conta come clienti i deal vinti (`cost_per_won` in
-`crm/integrations/meta/insights.py`), ma in un centro medico nessuno li segnerà a
-mano. Se la prima accettazione chiude come vinto il deal aperto della persona, il
-report dice quanto costa un nuovo paziente per ogni inserzione, senza lavoro in
-più per la segreteria.
+Fattura e Sistema TS li avete già. Restano la **firma dei referti** e, quando
+servirà, il **Fascicolo sanitario**: stesso principio, un adattatore con un
+intermediario dietro, come i connettori di `crm/booking_platforms/`. Il gestionale
+produce il documento giusto, l'intermediario lo firma o lo consegna e restituisce
+l'esito ([ricerca §3](./ricerca.md#3-i-tubi-regolati-sdi-sistema-ts-firma)).
 
 ## Il modello dati, prima versione
 
 ```
 CRM Lead (la persona, com'è oggi)
-  └─1:1─ Paziente ─── codice fiscale, nascita, residenza, tessera sanitaria,
-            │          tutore o pagante (un'altra persona), opposizione STS,
+  └─1:1─ Paziente ─── nasce alla prima visita: codice fiscale, nascita, residenza,
+            │          tessera sanitaria, tutore o pagante (un'altra persona),
             │          consenso al dossier
             ├── Consenso ×N ─── tipo, versione del testo, firmato il, come, PDF
             └── Documento ×N ── esami portati dal paziente (file privati)
 
 CRM Appointment (l'agenda, com'è oggi)
-  └─1:N─ Accettazione ─── chi è arrivato, prestazioni eseguite, medico,
-            │              chi paga (paziente, fondo, azienda), prezzi da listino
-            │              o da convenzione
+  └─1:N─ Accettazione ─── chi è arrivato, prestazioni eseguite, medico, chi paga
             ├── Visita ──────── dati clinici sul modello della specialità
             │     └── Referto ── PDF, firma, consegna
-            └── Fattura sanitaria ── Incasso ×N (metodo, tracciabile sì/no)
-                  ├──► riga dell'invio STS (obbligo annuale; meglio un invio al mese)
-                  └──► riga del prospetto compensi (mensile, per medico)
+            └──► la fatturazione che usate già: le prestazioni eseguite ne sono le righe
+
+CRM Deal (com'è oggi): la prima accettazione chiude come vinto quello aperto
 ```
 
 Perché così:
@@ -213,8 +250,8 @@ Perché così:
   persone sono pazienti (il lead da Meta che non è mai venuto), i permessi sono
   diversi, e `CRM Lead` è il DocType più letto del core (il solo `mobile_no`
   compare in 201 punti, doc 18): il verticale non deve toccarlo.
-- **L'accettazione separa l'agenda dai soldi.** `CRM Appointment` resta agenda e
-  basta. L'accettazione registra cosa è stato fatto davvero, vale anche senza
+- **L'accettazione separa l'agenda dalla fattura.** `CRM Appointment` resta agenda
+  e basta. L'accettazione registra cosa è stato fatto davvero, vale anche senza
   appuntamento (chi entra senza prenotare), e in un appuntamento di gruppo ce n'è
   una per partecipante.
 - **Visita e accettazione sono due DocType** perché la segreteria deve vedere
@@ -230,15 +267,9 @@ Perché così:
 Le scelte Frappe che contano:
 
 - **Submittable** tutto ciò che, una volta chiuso, non si riscrive: visita
-  firmata, referto, fattura, nota di credito, invio STS, consenso. La correzione è
-  *annulla e modifica*, e Frappe tiene le due versioni collegate. È esattamente
-  quello che serve a una cartella clinica, che si integra ma non si riscrive.
-- **Il numero di fattura si assegna al submit, non al primo salvataggio.** Frappe
-  dà il nome al documento quando lo inserisce: una bozza cancellata può lasciare un
-  buco nella numerazione, e le bozze salvate in ordine diverso da quello di
-  emissione rompono l'ordine fra numeri e date. Il nome del documento resta
-  interno; il numero fiscale è un campo, con un contatore per sezionale preso sotto
-  lock al submit.
+  firmata, referto, consenso. La correzione è *annulla e modifica*, e Frappe tiene
+  le due versioni collegate. È esattamente quello che serve a una cartella
+  clinica, che si integra ma non si riscrive.
 - **Registro degli accessi.** Con `track_views` sul DocType Frappe scrive un View
   Log per ogni apertura, **ma solo dal form del Desk**
   (`frappe.desk.form.load.getdoc` chiama `doc.add_viewed()`). La SPA carica i
@@ -260,62 +291,56 @@ Le scelte Frappe che contano:
   specialità vuol dire nuovo record, nessun deploy. I valori stanno in un campo
   JSON della visita; le poche cose che servono alle statistiche (diagnosi,
   parametri vitali) sono colonne vere.
-- **Print format Jinja e carta intestata per studio** per fattura, referto e
-  consenso.
-- **Le regole fiscali sono funzioni pure, testate** con `unittest` semplice come
-  `crm/scheduling/booking_rules.py`: soglia del bollo, esenzione, numerazione,
-  tracciato STS.
+- **Print format Jinja e carta intestata per studio** per referto e consenso.
 
 ## Le fasi
 
 Stime in settimane-persona (sp) per un senior Frappe, come in
 [08](../progetto-ghl/08-roadmap.md). Il collo di bottiglia non sarà il codice ma la
-validazione con il centro pilota e con il suo commercialista.
+prova con il centro pilota.
 
 | Fase | Cosa | sp | Da qui il centro pilota può… |
 |---|---|---|---|
-| **0 — Fondamenta** | Interruttore "settore medico"; ruoli Segreteria, Medico, Direzione sanitaria, Amministrazione e permessi sull'agenda; paziente con codice fiscale validato; consensi registrati, compreso quello di `/prenota`; registro degli accessi; persone collegate (genitore e figlio) | 2–3 | …importare le anagrafiche dal gestionale di oggi |
-| **1 — Accettazione e cassa** | Da "arrivato" all'accettazione; prestazioni eseguite; fattura sanitaria in PDF (righe esenti e righe al 22%, perché estetica e medico-legale non sono esenti; bollo; pagamento tracciabile) e note di credito; incassi e acconti; chiusura cassa; invio STS con opposizione e tracciabilità; widget e report degli incassi | 4–5 | …smettere di fatturare con il vecchio gestionale |
-| **2 — Cartella e referti** | Modelli per specialità; visita; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; allegati; dossier e oscuramento; consegna del referto | 5–6 | …spegnere il vecchio gestionale |
-| **3 — Amministrazione** | Compensi dei medici; convenzioni e fondi (listino dedicato, forma diretta con fattura elettronica al fondo); export per il commercialista; prima nota | 3–4 | …chiudere il mese dal gestionale |
-| **4 — Paziente ed extra** | Area paziente (referti, fatture, questionario prima della visita); richiami clinici con le automazioni; televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); preventivi e piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
+| **0 — Le due facce** | Interruttore "centro medico"; ruoli Segreteria, Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo; scheda paziente creata alla prima visita, con codice fiscale validato; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 2–3 | …importare i pazienti e dare a ognuno la sua vista |
+| **1 — Le cuciture** | Da "arrivato" all'accettazione, con le prestazioni eseguite passate alla fatturazione; pipeline "Nuovi pazienti" e "Preventivi"; la prima visita che chiude il deal; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
+| **2 — Cartella e referti** | Modelli per specialità; visita; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; allegati; registro degli accessi; dossier e oscuramento; consegna del referto | 5–6 | …spegnere il vecchio gestionale |
+| **3 — Paziente ed extra** | Area paziente (referti, questionario prima della visita); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
 | **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
 
-**Fasi 0–2: 11–14 sp, circa tre mesi per una persona.** È il minimo per sostituire
-il gestionale di un poliambulatorio privato. La cassa viene prima della cartella
-perché fattura e invio STS sono obbligatori e quotidiani, mentre molti medici
-privati i referti oggi li scrivono in Word e possono continuare ancora qualche
-settimana.
+**Fasi 0–2: 9–12 sp, due mesi e mezzo circa per una persona.** Le prime due
+risolvono la dualità; la terza è il gestionale clinico vero e proprio.
 
 ## Le cinque domande da chiudere prima
 
-1. **Chi emette la fattura?** Il centro, che poi paga i medici a percentuale,
-   oppure ogni medico con la sua partita IVA, con il centro che fattura per conto
-   loro? Nel secondo caso gli emittenti sono tanti, ognuno con numerazione e invio
-   STS suoi, e il modello della fase 1 cambia.
-2. **Quali specialità hanno i primi clienti?** Il poliambulatorio "visite e
-   referti" è il caso semplice. Odontoiatria (odontogramma, preventivi, piani di
-   cura), fisioterapia (cicli di sedute) e medicina del lavoro (aziende clienti,
-   protocolli, giudizi di idoneità) sono mondi a sé.
-3. **Solo privati, o anche accreditati con il Servizio sanitario?** Proposta: solo
-   privati, più fondi e assicurazioni. L'accreditamento porta ricetta
-   dematerializzata, flussi regionali e CUP: è un altro progetto.
+1. **Chi fa il marketing per il centro?** Voi come agenzia, qualcuno del centro, o
+   entrambi? Decide i ruoli e chi vede cosa: i vostri utenti sui siti dei clienti
+   non devono vedere dati clinici.
+2. **Dove fate la fatturazione oggi?** In un altro programma o dentro Frappe?
+   Decide come l'accettazione le passa le prestazioni eseguite.
+3. **Che centri sono i primi clienti?** Il poliambulatorio "visite e referti" è il
+   caso semplice. Odontoiatria (odontogramma, preventivi, piani di cura),
+   fisioterapia (cicli di sedute) e medicina del lavoro (aziende clienti,
+   protocolli, giudizi di idoneità) sono mondi a sé. Proposta: solo privati;
+   l'accreditamento con il Servizio sanitario (ricetta dematerializzata, flussi
+   regionali, CUP) è un altro progetto.
 4. **I medici condividono la cartella?** Se sì è un dossier sanitario (consenso
    specifico, oscuramento, registro degli accessi); se no ognuno vede solo i suoi
    pazienti. La regola la decide il direttore sanitario.
 5. **Il pilota sostituisce il gestionale di oggi o lo affianca per un periodo?**
-   Decide quanto pesa l'importazione: anagrafiche, appuntamenti futuri, storico
-   delle fatture, cartelle.
+   Decide quanto pesa l'importazione: anagrafiche, appuntamenti futuri, cartelle.
 
 ## Cosa non fare
 
-- **Installare Marley Health o ERPNext "per avere tutto".** Due agende, due
-  anagrafiche e un'interfaccia che i medici non useranno.
+- **Due anagrafiche**, una per il CRM e una per il centro. La persona è una sola;
+  il paziente è una scheda in più, non una persona in più.
+- **Installare Marley Health o ERPNext "per avere tutto".** Sarebbe proprio la
+  seconda anagrafica, con una seconda agenda e un'interfaccia che i medici non
+  useranno.
 - **Mettere campi clinici su `CRM Lead`.** Li vedrebbe chiunque veda le persone,
   compreso chi fa marketing, compresi i vostri utenti d'agenzia sui siti dei
   clienti.
+- **Scegliere i destinatari di una campagna su dati clinici.**
 - **Un DocType per specialità.** Diventano venti, tutti da migrare a ogni modifica.
-- **Scrivere da zero SDI, invio STS e firma qualificata come primo passo.**
 - **Rincorrere GipoNext o AlfaDocs funzione per funzione.** Si parte da quello che
   la segreteria del pilota fa dieci volte al giorno.
 
@@ -338,8 +363,7 @@ come prodotto va sentito un legale ([ricerca §2.6](./ricerca.md#26-dispositivo-
 ## Come si parte davvero
 
 1. Un giorno seduti nella segreteria del centro pilota: cosa fanno con il
-   gestionale di oggi, in che ordine, quante volte al giorno.
-2. Il commercialista del pilota valida le regole fiscali della fase 1 **prima**
-   che vengano scritte.
-3. Le cinque domande qui sopra, chiuse con il committente.
-4. Fase 0.
+   gestionale di oggi, in che ordine, quante volte al giorno, e chi risponde a
+   quale messaggio.
+2. Le cinque domande qui sopra, chiuse con il committente.
+3. Fase 0.
