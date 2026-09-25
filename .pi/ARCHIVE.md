@@ -251,6 +251,35 @@ La fatturazione si e' aggiunta dopo (25/09/2026): 19 widget e la sua dashboard.
 
 ---
 
+## Google Calendar — gli appuntamenti in sola uscita
+
+> **Completato** (25/09/2026). Documento di progetto:
+> [docs/progetto-ghl/13-google-calendar.md](../docs/progetto-ghl/13-google-calendar.md).
+
+Chi collega Google dal popup vede i propri appuntamenti nel proprio account, in un
+calendario a parte creato dal CRM. Nuovi, spostati e annullati arrivano con un job
+dopo il commit; ogni ora un riallineamento recupera quello che manca e toglie quello
+che non c'è più. Da Google non torna niente.
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Non la sincronizzazione `Event` ↔ `Google Calendar` del framework | Manda i partecipanti, cioe' i clienti, come invitati con `sendUpdates="all"`: ogni appuntamento farebbe partire un invito Google. E rilegge Google nel CRM |
+| Un calendario a parte, non quello principale | Si colora, si nasconde e si condivide da solo; gli eventi personali non si mescolano; il riallineamento tocca solo eventi col marcatore del CRM |
+| Id dell'evento scelto dal CRM (digest del nome) | Un retry o due job in gara non fanno doppioni, e non serve una tabella che ricordi quale evento e' di quale appuntamento |
+| Evento ritrovato anche per l'appuntamento che porta | Se Google tiene nel cestino un id e non lo ridà, l'evento vive sotto un id di Google e viene aggiornato li' |
+| `crm_calendar_id` accanto a `google_calendar_id`, non al suo posto | Quello e' del pull del framework: condividerlo riporterebbe le copie nel CRM come Event |
+| Un'impronta del contenuto su ogni evento | Il riallineamento orario scrive solo cio' che e' cambiato nel CRM; una modifica fatta a mano su Google resta fino alla prossima modifica dell'appuntamento, che la sovrascrive |
+| Un token revocato spegne la copia | Ogni salvataggio riproverebbe e fallirebbe uguale; si riaccende alla nuova connessione |
+
+Trovato per strada: la prima connessione di un sito gestito falliva ("Enable Google
+API in Google Settings", il record veniva creato prima di compilare le impostazioni),
+la disconnessione non spegneva il record (`enabled` al posto di `enable`) e due persone
+con lo stesso nome non potevano collegarsi entrambe. Corretti, con i test.
+
+---
+
 ## Debito semgrep — 102 finding a zero
 
 > **Completato.** La scansione completa (`semgrep scan` con le regole Frappe e

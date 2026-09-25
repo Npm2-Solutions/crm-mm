@@ -79,6 +79,15 @@ they run as evaluated strings in the browser.
 | `crm/api/booking_platforms.py` | Webhook in, busy feed out, settings API |
 | `docs/prenotazioni/` | User guide + platform API research |
 
+### Google Calendar
+| File | Role |
+|---|---|
+| `crm/integrations/google/oauth.py` | One-click connection (popup, hub relay), token on the framework's `Google Calendar` |
+| `crm/integrations/google/calendar_mirror.py` | Pure: who gets a copy of an appointment, the Google event, the reconcile, the REST client — tested with plain `unittest` and a fake Google |
+| `crm/integrations/google/sync.py` | One-way copy of each user's appointments into their Google account: hooks, jobs, hourly reconcile |
+| `crm/integrations/google/api.py` | Settings screen: status, sync now, disconnect |
+| `docs/progetto-ghl/13-google-calendar.md` | What it does and why |
+
 ---
 
 ## Tests
