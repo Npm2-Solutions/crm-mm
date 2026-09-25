@@ -15,10 +15,14 @@ from frappe.tests import IntegrationTestCase
 from frappe.tests.utils import make_test_records
 from frappe.utils import add_days, get_first_day, get_last_day, nowdate
 
-from crm.dashboard import features, registry
+from crm.dashboard import registry
 from crm.dashboard.context import Context
 
 SALES_USER = "crm.user1@example.com"
+
+#: Features whose data lives in another app entirely. Without that app there is no
+#: table to query, and no answer a widget could give.
+DOCTYPE_DI_UN_ALTRA_APP = {"whatsapp": "WhatsApp Message"}
 
 
 class TestDashboardWidgets(IntegrationTestCase):
@@ -44,21 +48,22 @@ class TestDashboardWidgets(IntegrationTestCase):
 		super().tearDownClass()
 
 	def skip_if_unavailable(self, widget):
-		"""Skip a widget whose app is not installed here, by the product's own rule.
+		"""Skip only what this site physically cannot answer: a missing app's table.
 
-		`store.availability` is what decides whether a viewer may have a widget at all,
-		and a widget whose feature is off is never rendered: the dashboard shows the
-		reason instead. Calling its query anyway tests a path that does not exist in
-		production and fails on a table the site has no reason to own - the WhatsApp
-		widgets read `tabWhatsApp Message`, which belongs to `frappe_whatsapp`, an app
-		this suite does not install.
+		A feature merely switched off is **not** a reason to skip. Those widgets query
+		doctypes the CRM owns, answer zero, and are exactly the kind of thing this net
+		is here to catch. Skipping on `features.missing` alone traded thirty errors for
+		two hundred and forty-nine skips, which is not a green suite, it is a quieter
+		one.
 
-		The skip is loud on purpose: the run says which widgets went uncovered, so a
-		hole in the net is visible rather than assumed away.
+		What genuinely cannot be asked is a widget whose table belongs to an app that is
+		not installed: the WhatsApp widgets read `tabWhatsApp Message`, which ships with
+		`frappe_whatsapp`. The skip is loud, and names what is missing.
 		"""
-		assente = features.missing(widget.requires)
-		if assente:
-			self.skipTest(f"{widget.id}: needs {', '.join(assente)}, not available on this site")
+		for chiave in widget.requires:
+			doctype = DOCTYPE_DI_UN_ALTRA_APP.get(chiave)
+			if doctype and not frappe.db.exists("DocType", doctype):
+				self.skipTest(f"{widget.id}: {doctype} is not installed on this site")
 
 	def answer(self, widget_id, user=None, config=None, **dates):
 		widget = registry.get(widget_id)

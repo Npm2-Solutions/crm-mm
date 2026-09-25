@@ -488,7 +488,13 @@ class ScartoTest(InvoicingBase):
 	def test_la_conservazione_compare_fra_le_cose_che_mancano(self):
 		voci = api.onboarding_checklist(self.azienda.name)
 		titoli = [v["title"] for v in voci]
-		self.assertIn("Digital preservation", titoli)
+		# One row became two - inside the SdI and outside it - because the two carry
+		# different retention duties. What this pins is that the duty is on the list,
+		# not which of the two branches this company happens to be missing.
+		self.assertTrue(
+			any(titolo.startswith("Preservation of the") for titolo in titoli),
+			f"no preservation row in the checklist: {titoli}",
+		)
 
 
 class DueRamiTest(InvoicingBase):
