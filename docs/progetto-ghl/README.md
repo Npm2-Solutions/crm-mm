@@ -59,7 +59,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [27](./27-impostazioni-canali-integrazioni.md) | Impostazioni: WhatsApp, Social Planner e Integrazioni separati | ✅ fatto | Il gruppo "Meta & Messaging" diventa tre spazi; Meta è una pagina con schede sotto Integrazioni; il Social Planner parte dalle sorgenti. App, webhook, token e log grezzi solo agli amministratori — anche lato server — e i token non finiscono più nei messaggi d'errore |
 | [26](./26-lo-stato-sta-sulla-trattativa.md) | Lo stato della vendita sta sulla trattativa | ✅ fatto | La crepa del doc 21: avendo fatto coincidere la persona con il lead, il ciclo di qualifica era uno solo per vita. Lo stato passa sulla trattativa — una scala sola — e chi torna dopo una trattativa chiusa ne apre una nuova |
 | [25](./25-costo-hosting.md) | Quanto costa tenerci i clienti sopra | 📊 stima | Un server condiviso invece di un piano per sito: quale taglio, quanti siti ci stanno e perche'. Il carico di cron per sito e' quello che decide il numero, non il prezzo del server |
-| [28](./28-dashboard.md) | La dashboard: un cruscotto per ogni parte del gestionale | ✅ fatto | 147 widget in 15 categorie e nove dashboard pronte che seguono il sito: chi collega WhatsApp trova i suoi numeri senza toccare niente. Builder a griglia, colori che seguono la cosa e non il suo posto |
+| [28](./28-dashboard.md) | La dashboard: un cruscotto per ogni parte del gestionale | ✅ fatto | 166 widget in 16 categorie, fatturazione compresa, e dieci dashboard pronte che seguono il sito: chi collega WhatsApp trova i suoi numeri senza toccare niente. Builder a griglia, colori che seguono la cosa e non il suo posto |
 
 ## Architettura complessiva
 
