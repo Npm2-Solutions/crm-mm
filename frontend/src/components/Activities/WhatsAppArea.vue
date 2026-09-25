@@ -6,14 +6,21 @@
       :key="whatsapp.name"
       class="activity group flex gap-2"
       :class="[
-        whatsapp.type == 'Outgoing' ? 'flex-row-reverse' : '',
-        whatsapp.reaction ? 'mb-7' : 'mb-3',
+        whatsapp.type == 'Outgoing' && !bare ? 'flex-row-reverse' : '',
+        bare ? '' : whatsapp.reaction ? 'mb-7' : 'mb-3',
       ]"
     >
       <div
         :id="whatsapp.name"
-        class="group/message wa-bubble relative min-w-0 max-w-full break-words rounded-lg p-1.5 pl-2 text-base shadow-sm"
-        :class="whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in'"
+        class="group/message relative min-w-0 max-w-full break-words text-base"
+        :class="
+          bare
+            ? 'w-full'
+            : [
+                'wa-bubble rounded-lg p-1.5 pl-2 shadow-sm',
+                whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in',
+              ]
+        "
       >
         <div
           v-if="hasFailed(whatsapp)"
@@ -263,6 +270,9 @@ import { ref } from 'vue'
 
 defineProps({
   messages: { type: Array, default: () => [] },
+  // inside the mixed chat the bubble is drawn by the house component, so this
+  // one renders only what it alone knows: the message, its ticks, its retry
+  bare: { type: Boolean, default: false },
 })
 
 const list = defineModel({ type: Object })

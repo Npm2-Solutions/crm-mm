@@ -43,10 +43,11 @@
   <div class="flex flex-1 overflow-hidden">
     <ConversationPicker
       v-if="!isMobileView || !chosen"
-      v-model:state="state"
+      v-model:view="view"
       v-model:search="search"
       :rows="rows"
       :unread="unread.data || {}"
+      :counts="counts.data || {}"
       :loading="people.loading"
       :active="chosen"
       @open="choose"
@@ -132,7 +133,7 @@ const { $socket } = globalStore()
 // works and a conversation can be linked to — without the page being rebuilt
 // around it, which is the whole point of this screen.
 const chosen = computed(() => route.query.person || '')
-const state = ref('unread')
+const view = ref('open')
 const search = ref('')
 const pageLength = ref(40)
 
@@ -140,13 +141,20 @@ const people = createResource({
   url: 'crm.api.conversations.people',
   makeParams: () => ({
     search: search.value,
-    state: state.value,
+    view: view.value,
     limit: pageLength.value,
   }),
   auto: true,
 })
 
 const rows = computed(() => people.data || [])
+
+// How many are in each view, for the numbers in the selector. One sweep over
+// the table for all of them, not one query per line of the menu.
+const counts = createResource({
+  url: 'crm.api.conversations.counts',
+  auto: true,
+})
 
 const unread = createResource({
   url: 'crm.api.conversations.unread',
@@ -207,7 +215,7 @@ const searchLater = debounce(() => {
 }, 300)
 
 watch(search, searchLater)
-watch(state, () => {
+watch(view, () => {
   pageLength.value = 40
   people.reload()
 })
@@ -222,6 +230,7 @@ function loadMore() {
 function reload() {
   people.reload()
   unread.fetch()
+  counts.reload()
 }
 
 // a message arriving reorders this list, so it has to be told

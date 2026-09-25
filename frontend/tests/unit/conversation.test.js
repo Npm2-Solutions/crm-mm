@@ -6,7 +6,8 @@ import {
   dayLabel,
   directionOf,
   isConversational,
-  collapseRuns,
+  isStageChange,
+  speakerOf,
   groupByDay,
 } from '@/utils/conversation'
 
@@ -241,69 +242,68 @@ describe('groupByDay', () => {
   })
 })
 
-describe('a long run of one channel', () => {
-  const row = (name, channel) => ({
-    key: `k:${name}`,
-    channel,
-    at: '2026-09-22 10:00:00',
-  })
-  const many = (channel, howMany) =>
-    Array.from({ length: howMany }, (_, i) => row(`${channel}${i}`, channel))
-
-  it('is folded into one row that can be opened', () => {
-    const folded = collapseRuns(many('whatsapp', 12))
-    expect(folded).toHaveLength(1)
-    expect(folded[0].kind).toBe('run')
-    expect(folded[0].channel).toBe('whatsapp')
-    expect(folded[0].rows).toHaveLength(12)
+describe('what happened, as opposed to what was said', () => {
+  it('knows the things that are not messages', () => {
+    expect(channelOf({ activity_type: 'appointment' })).toBe('appointment')
+    expect(channelOf({ activity_type: 'task' })).toBe('task')
+    expect(channelOf({ activity_type: 'note' })).toBe('note')
+    expect(channelOf({ activity_type: 'event' })).toBe('event')
   })
 
-  it('leaves a short run alone, because it is not in the way', () => {
-    const folded = collapseRuns(many('whatsapp', 4))
-    expect(folded).toHaveLength(4)
-    expect(folded.every((entry) => entry.kind !== 'run')).toBe(true)
+  it('gives none of them a side, because none is addressed to anybody', () => {
+    for (const type of ['appointment', 'task', 'note', 'event']) {
+      expect(directionOf({ activity_type: type })).toBe('internal')
+    }
   })
 
-  it('does not swallow what happened in between', () => {
-    // the point of the mixed view is seeing the call that interrupted the chat
-    const folded = collapseRuns([
-      ...many('whatsapp', 6),
-      row('call', 'call'),
-      ...many('whatsapp', 7),
-    ])
-    expect(folded.map((entry) => entry.kind || 'row')).toEqual([
-      'run',
-      'row',
-      'run',
-    ])
+  it('tells a move down the pipeline from a phone number being corrected', () => {
+    expect(
+      isStageChange({ activity_type: 'changed', data: { field: 'status' } }),
+    ).toBe(true)
+    expect(
+      isStageChange({ activity_type: 'changed', data: { field: 'mobile_no' } }),
+    ).toBe(false)
+    expect(isStageChange({ activity_type: 'comment' })).toBe(false)
+    expect(isStageChange(undefined)).toBe(false)
+  })
+})
+
+describe('who said it', () => {
+  it('is us when it went out, whatever channel it left by', () => {
+    expect(
+      speakerOf({ activity_type: 'whatsapp', type: 'Outgoing' }, 'Marco'),
+    ).toBe('Marco')
+    expect(speakerOf({ activity_type: 'sms', type: 'Outgoing' })).toBe('You')
   })
 
-  it('does not fold a channel into another one', () => {
-    const folded = collapseRuns([...many('whatsapp', 6), ...many('email', 6)])
-    expect(folded.map((entry) => entry.channel)).toEqual(['whatsapp', 'email'])
+  it('is them, by whatever name the channel knows them', () => {
+    expect(
+      speakerOf({
+        activity_type: 'whatsapp',
+        type: 'Incoming',
+        profile_name: 'Mario Rossi',
+      }),
+    ).toBe('Mario Rossi')
+    expect(
+      speakerOf({
+        activity_type: 'communication',
+        data: {
+          sent_or_received: 'Received',
+          sender_full_name: 'Anna Bianchi',
+        },
+      }),
+    ).toBe('Anna Bianchi')
   })
 
-  it('leaves alone what belongs to no thread', () => {
-    // a field that changed is not part of anybody's conversation, and folding
-    // it away with one would say it was
-    const folded = collapseRuns([
-      ...many('whatsapp', 6),
-      { key: 'k:changed', channel: '', at: '2026-09-22 11:00:00' },
-      ...many('whatsapp', 6),
-    ])
-    expect(folded).toHaveLength(3)
-    expect(folded[1].key).toBe('k:changed')
+  it('is whoever wrote it, for something addressed to nobody', () => {
+    expect(speakerOf({ activity_type: 'comment', owner_name: 'Giulia' })).toBe(
+      'Giulia',
+    )
   })
 
-  it('carries the time of the last thing said, so the day still sorts', () => {
-    const rows = many('whatsapp', 6)
-    rows[5].at = '2026-09-22 23:00:00'
-    expect(collapseRuns(rows)[0].at).toBe('2026-09-22 23:00:00')
-  })
-
-  it('survives nothing at all', () => {
-    expect(collapseRuns()).toEqual([])
-    expect(collapseRuns(null)).toEqual([])
+  it('says nothing rather than something wrong', () => {
+    expect(speakerOf({ activity_type: 'whatsapp', type: 'Incoming' })).toBe('')
+    expect(speakerOf({})).toBe('')
   })
 })
 

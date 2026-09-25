@@ -1,52 +1,40 @@
+<!-- eslint-disable vue/no-v-html -->
 <!--
-  One stream, four channels, and a selector above it.
+  Everything said to this person, in one chat.
 
-  Email, WhatsApp, SMS and comments each had a tab of their own, so the question
-  anybody actually asks of a record — what has been said to this person, and in
-  what order — could only be answered by opening four tabs and remembering three
-  of them.
+  «All» is a chat, not a report: whatever the channel, a message somebody sent
+  is a bubble on their side and a message we sent is a bubble on ours. That is
+  the one arrangement everybody already knows how to read, and it is the reason
+  somebody can work a whole day from this one view without opening the others.
 
-  This component does the **arranging** and nothing else: which rows, in what
-  order, on which side, with which badge. What a message looks like inside its
-  bubble is still each channel's own component, because those already know about
-  replies, reactions, attachments, failed sends and retries, and rewriting that
-  to gain a layout would have lost all of it.
+  Two encodings, each meaning one thing and never the other:
 
-  Two shapes, and the rule is not decoration:
+  - **the side and the fill** say who — theirs on the left in white, ours on
+    the right in grey. Always, on every channel.
+  - **the colour** says which channel — green WhatsApp, blue email, violet SMS
+    — and it lives on the edge of the bubble and its little icon, never on the
+    fill. Tinting the fill by channel would make colour mean two things at once
+    and a long chat a colour chart.
 
-  - a message **between two people** has a direction, so it gets a side. Sent on
-    the right, received on the left, the way every chat has taught everybody to
-    read.
-  - a comment, a note, a field that changed is addressed to **nobody**. Giving it
-    a side would invent a sender and a recipient, so it takes the full width.
+  What is **not** addressed to anybody does not get a side: a note we wrote each
+  other, a field that changed, all of that sits in the middle of the chat the
+  way a messenger puts its own notices there. The note is amber, because it is
+  the one thing here the customer will never see.
 
-  The channel badge sits **on the bubble**, at its outer corner, and not in a
-  column down the left. A column only works while everything is left-aligned:
-  the moment half the rows are on the right, the icon is nowhere near the thing
-  it describes.
+  Each channel on its own then gets the view that suits it: WhatsApp its own
+  paper and its own green, comments a timeline with a thread down the side, and
+  email full-width cards — an email thread was never a chat.
 -->
 <template>
-  <!--
-    The conversation takes the pane it was given.
-
-    It used to be capped at a reading column and centred, which on the narrow
-    pane of a record meant a chat squeezed into the middle with empty margins on
-    both sides — the width was spent on nothing. The cap belongs on the
-    **bubble**, where it keeps a line readable; the column itself is the pane,
-    the way every messenger draws one.
-  -->
-  <div class="min-h-full" :class="wallpaper ? 'wa-wallpaper' : ''">
-    <div class="flex w-full flex-col">
+  <div
+    class="min-h-full"
+    :class="wallpaper ? 'wa-wallpaper' : 'bg-surface-gray-1'"
+  >
+    <div class="flex w-full flex-col pb-2">
       <!--
-        One block per day, with the date pinned inside it.
-
-        A long conversation is a wall of times with no dates: «12:57» says
-        nothing about whether that was today or in April. The date is pinned
-        inside its own day rather than alongside every other date in one list —
-        sticky siblings all pin to the same line, so yesterday's date stayed on
-        screen underneath today's instead of giving way to it. Bounded by its
-        day, a date is carried off the top as that day ends and the next one
-        takes its place.
+        One block per day, with the date pinned inside it. Sticky siblings all
+        pin to the same line and pile up there, so yesterday's date stayed on
+        screen underneath today's instead of giving way to it.
       -->
       <div
         v-for="group in days"
@@ -54,8 +42,6 @@
         class="flex flex-col"
         :class="channel === 'all' ? 'gap-1' : 'gap-1.5'"
       >
-        <!-- a row with no time has no day to show, and an empty chip is worse
-           than none -->
         <div
           v-if="group.day"
           class="sticky top-0 z-20 flex justify-center py-2"
@@ -67,122 +53,238 @@
           </span>
         </div>
 
-        <template v-for="row in rowsOf(group)" :key="row.key">
-          <!--
-            A long run of one channel, folded.
+        <!-- comments on their own: a thread, not a chat, because a note is
+           addressed to nobody and a side would invent a recipient -->
+        <template v-if="channel === 'comment'">
+          <div class="flex flex-col px-3 sm:px-4">
+            <TimelineEntry
+              v-for="row in group.rows"
+              :key="row.key"
+              :channel="row.channel"
+              :icon="iconFor(row.channel)"
+            >
+              <CommentArea
+                v-if="row.channel === 'comment'"
+                :activity="row.item"
+                @reload="emit('reload')"
+              />
+              <slot v-else name="other" :item="row.item" :row="row" />
+            </TimelineEntry>
+          </div>
+        </template>
 
-            Forty WhatsApp bubbles in a row bury the email, the call and the
-            note that happened around them — and seeing what happened around
-            them is the whole reason for reading everything together.
-          -->
-          <button
-            v-if="row.kind === 'run'"
-            class="mx-auto my-1 flex items-center gap-2 rounded-full border border-outline-gray-2 bg-surface-white px-3 py-1 text-p-xs text-ink-gray-6 shadow-sm transition-colors hover:bg-surface-gray-2"
-            @click="open(row.key)"
-          >
-            <component :is="iconFor(row.channel)" class="size-3" />
-            <span>{{ runLabel(row) }}</span>
-            <span class="text-ink-gray-4">{{ span(row) }}</span>
-            <LucideChevronDown class="size-3" />
-          </button>
-          <button
-            v-else-if="row.kind === 'run-open'"
-            class="mx-auto my-1 flex items-center gap-2 rounded-full px-3 py-1 text-p-xs text-ink-gray-5 transition-colors hover:bg-surface-gray-2"
-            @click="fold(row.key)"
-          >
-            <LucideChevronUp class="size-3" />
-            <span>{{ __('Fold these back') }}</span>
-          </button>
-          <!-- a message: one side or the other -->
+        <!-- email on its own: full width, because a thread is not a chat -->
+        <template v-else-if="channel === 'email'">
+          <div class="flex flex-col gap-2 px-3 sm:px-4">
+            <div
+              v-for="row in group.rows"
+              :key="row.key"
+              class="rounded-lg border bg-surface-white p-3"
+              :class="
+                row.direction === 'in'
+                  ? 'border-l-2 border-outline-blue-3'
+                  : 'border-outline-gray-2'
+              "
+            >
+              <EmailArea :activity="row.item" :modalRef="modalRef" />
+            </div>
+          </div>
+        </template>
+
+        <template v-for="row in group.rows" v-else :key="row.key">
+          <!-- said to somebody: a side, and the colour of the channel it went by -->
           <div
-            v-else-if="row.direction !== 'internal'"
+            v-if="row.direction !== 'internal'"
             class="flex px-3 sm:px-4"
             :class="row.direction === 'out' ? 'justify-end' : 'justify-start'"
           >
-            <!-- and inside the pane, a bubble stops short of filling it: the
-             other side has to have somewhere to be, and a line of ~80
-             characters is where reading stays comfortable -->
             <div class="relative min-w-0 max-w-[min(80%,42rem)]">
-              <SMSArea v-if="row.channel === 'sms'" :messages="[row.item]" />
+              <!--
+                WhatsApp keeps its own bubble in its own view: the green and the
+                paper are what make that view a WhatsApp conversation rather than
+                a list of messages. In the mixed chat it takes the house style
+                like everything else, so one channel does not shout over four.
+              -->
               <WhatsAppArea
-                v-else-if="row.channel === 'whatsapp'"
+                v-if="row.channel === 'whatsapp' && channel === 'whatsapp'"
                 v-model="whatsappMessages"
                 v-model:reply="reply"
                 :messages="[row.item]"
               />
-              <!--
-              A call reads as a bubble like everything else — same shape, same
-              side, so the eye follows one conversation. A different surface,
-              not a different green: borrowing WhatsApp's colour for a phone
-              call would say the call happened on WhatsApp.
-            -->
-              <div
-                v-else-if="row.channel === 'call'"
-                class="rounded-lg border border-outline-gray-2 bg-surface-gray-1 p-2"
-              >
-                <CallArea :activity="row.item" />
-              </div>
-              <div
+              <SMSArea
+                v-else-if="row.channel === 'sms' && channel === 'sms'"
+                :messages="[row.item]"
+              />
+              <ChatBubble
                 v-else
-                class="rounded-lg border bg-surface-white p-3"
-                :class="
-                  row.direction === 'out'
-                    ? 'border-outline-blue-1'
-                    : 'border-outline-gray-2'
-                "
+                :channel="row.channel"
+                :icon="iconFor(row.channel)"
+                :mine="row.direction === 'out'"
+                :speaker="speakerOf(row.item, me)"
+                :time="row.at ? dayjs(row.at).format('HH:mm') : ''"
               >
-                <EmailArea :activity="row.item" :modalRef="modalRef" />
-              </div>
+                <WhatsAppArea
+                  v-if="row.channel === 'whatsapp'"
+                  v-model="whatsappMessages"
+                  v-model:reply="reply"
+                  bare
+                  :messages="[row.item]"
+                />
+                <SMSArea
+                  v-else-if="row.channel === 'sms'"
+                  bare
+                  :messages="[row.item]"
+                />
+                <CallArea
+                  v-else-if="row.channel === 'call'"
+                  :activity="row.item"
+                />
+                <EmailArea v-else :activity="row.item" :modalRef="modalRef" />
+              </ChatBubble>
             </div>
           </div>
 
           <!--
-            Addressed to nobody: the full width, on a thread.
-
-            A note and a field that changed are things that happened *to* the
-            record, one after the other — so they read as a timeline, with the
-            line running between them and the icon sitting on it. In the mixed
-            view the line is left out: drawn down the side of a chat it would be
-            a margin nobody asked for.
+            Addressed to nobody, so it sits in the middle — the way a messenger
+            puts its own notices between the messages. These are the other half
+            of the history: what was actually *done* between one message and the
+            next, which is what the New menu at the top creates.
           -->
-          <div
-            v-else
-            class="px-3 sm:px-4"
-            :class="
-              channel === 'all'
-                ? ''
-                : 'grid grid-cols-[28px_minmax(0,1fr)] gap-2 sm:gap-3'
-            "
+          <HappenedCard
+            v-else-if="row.channel === 'comment'"
+            kind="note"
+            :icon="iconFor('comment')"
+            card
           >
+            <CommentArea :activity="row.item" @reload="emit('reload')" />
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'note'"
+            kind="note"
+            :icon="NoteIcon"
+            :title="__('Note')"
+            :when="timeOf(row)"
+            card
+          >
+            <div class="font-medium">{{ row.item.data?.title }}</div>
             <div
-              v-if="channel !== 'all'"
-              class="relative z-0 flex justify-center before:absolute before:left-1/2 before:top-0 before:-z-[1] before:h-full before:border-l before:border-outline-elevation-2"
-            >
-              <span
-                class="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-base"
-              >
-                <component :is="iconFor(row.channel)" class="size-3" />
+              v-if="row.item.data?.content"
+              class="prose-sm max-w-none text-ink-gray-7"
+              v-html="sanitizeHTML(row.item.data.content)"
+            />
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'appointment'"
+            kind="appointment"
+            :icon="CalendarIcon"
+            :title="__('Appointment')"
+            :when="whenOf(row.item.data?.starts_on)"
+            card
+          >
+            <div class="flex items-center gap-2">
+              <span class="font-medium">
+                {{ row.item.data?.title || row.item.data?.service }}
               </span>
+              <Badge
+                v-if="row.item.data?.status"
+                size="sm"
+                :theme="appointmentTheme(row.item.data.status)"
+                :label="__(row.item.data.status)"
+              />
             </div>
-            <div class="flex items-start gap-2 py-1.5">
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'event'"
+            kind="event"
+            :icon="CalendarIcon"
+            :title="__('Event')"
+            :when="whenOf(row.item.data?.starts_on)"
+            card
+          >
+            <span class="font-medium">{{ row.item.data?.subject }}</span>
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'task'"
+            kind="task"
+            :icon="TaskIcon"
+            :title="__('Task')"
+            :when="timeOf(row)"
+            card
+          >
+            <div class="flex items-center gap-2">
               <span
-                v-if="channel === 'all'"
-                class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-white"
+                class="font-medium"
+                :class="
+                  row.item.data?.status === 'Done'
+                    ? 'text-ink-gray-5 line-through'
+                    : ''
+                "
               >
-                <component :is="iconFor(row.channel)" class="size-3" />
+                {{ row.item.data?.title }}
               </span>
-              <div class="min-w-0 flex-1">
-                <CommentArea
-                  v-if="row.channel === 'comment'"
-                  :activity="row.item"
-                  @reload="emit('reload')"
-                />
-                <!-- everything the record did to itself: the caller renders those,
-                 because it already knows how -->
-                <slot v-else name="other" :item="row.item" :row="row" />
-              </div>
+              <Badge
+                v-if="row.item.data?.status"
+                size="sm"
+                :theme="row.item.data.status === 'Done' ? 'green' : 'gray'"
+                :label="__(row.item.data.status)"
+              />
             </div>
-          </div>
+          </HappenedCard>
+
+          <!--
+            An invoice. The one row here that is money, so it says the amount at
+            a size somebody can read from across the desk, and the badge is the
+            only colour on it: a refused transmission is the single state in this
+            whole stream that is somebody's job to fix today.
+          -->
+          <HappenedCard
+            v-else-if="row.channel === 'invoice'"
+            kind="invoice"
+            :icon="MoneyIcon"
+            :title="invoiceTitle(row.item.data)"
+            :when="timeOf(row)"
+            card
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-lg font-semibold text-ink-gray-8">
+                {{ amountOf(row.item.data) }}
+              </span>
+              <Badge
+                v-if="statusOf(row.item.data)"
+                size="sm"
+                :theme="invoiceStatusTheme(statusOf(row.item.data))"
+                :label="statusOf(row.item.data)"
+              />
+              <Badge
+                v-if="row.item.data?.docstatus === 0"
+                size="sm"
+                theme="gray"
+                :label="__('Draft')"
+              />
+            </div>
+          </HappenedCard>
+
+          <!--
+            The stage moved. Every other field that changes is bookkeeping and
+            reads as one quiet line; this one is the point of the whole record,
+            so it is the line the eye is allowed to stop on.
+          -->
+          <HappenedCard
+            v-else-if="isStageChange(row.item)"
+            kind="stage"
+            :icon="iconFor('')"
+            :when="timeOf(row)"
+          >
+            <slot name="other" :item="row.item" :row="row" />
+          </HappenedCard>
+
+          <HappenedCard v-else :when="timeOf(row)">
+            <slot name="other" :item="row.item" :row="row" />
+          </HappenedCard>
         </template>
       </div>
     </div>
@@ -201,17 +303,32 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
-import LucideChevronDown from '~icons/lucide/chevron-down'
-import LucideChevronUp from '~icons/lucide/chevron-up'
+import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
+import ChatBubble from '@/components/Activities/ChatBubble.vue'
+import HappenedCard from '@/components/Activities/HappenedCard.vue'
+import MoneyIcon from '@/components/Icons/MoneyIcon.vue'
+import NoteIcon from '@/components/Icons/NoteIcon.vue'
+import TaskIcon from '@/components/Icons/TaskIcon.vue'
+import TimelineEntry from '@/components/Activities/TimelineEntry.vue'
 import {
   buildStream,
-  collapseRuns,
   dayLabel,
   groupByDay,
+  isStageChange,
+  speakerOf,
 } from '@/utils/conversation'
+import {
+  formatEuro,
+  invoiceLabel,
+  invoiceStatusTheme,
+  isCreditNote,
+  worstStatus,
+} from '@/utils/invoicing'
+import { sanitizeHTML } from '@/utils'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
-import { dayjs } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { usersStore } from '@/stores/users'
+import { Badge, dayjs } from 'frappe-ui'
+import { computed } from 'vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -228,8 +345,12 @@ const reply = defineModel('reply', { type: Object, default: () => ({}) })
 const emit = defineEmits(['reload'])
 
 const { isNewestFirst } = useTimelinePreferences()
+const { getUser } = usersStore()
 
-const today = computed(() => dayjs().format('YYYY-MM-DD'))
+// What our own messages are signed with. The logged-in user's own name rather
+// than «You», because a shared inbox is read by more than one person and «You»
+// is then a different person on every screen.
+const me = computed(() => getUser()?.full_name || __('You'))
 
 const days = computed(() =>
   groupByDay(
@@ -239,58 +360,54 @@ const days = computed(() =>
     }),
   ).map((group) => ({
     ...group,
-    // Folding belongs to the mixed view: in a single channel every row is the
-    // same channel, and folding a WhatsApp conversation inside the WhatsApp
-    // view would fold the view into a button.
-    //
-    // And never today. What happened today is what somebody came to read, and
-    // answering that with a door is not an improvement.
-    rows:
-      props.channel === 'all' && group.day && group.day !== today.value
-        ? collapseRuns(group.rows)
-        : group.rows,
+    rows: group.rows,
   })),
 )
 
-// Which folded runs somebody has opened. Forgotten on the way out on purpose:
-// it is a glance at one thread, not a preference about the page.
-const opened = ref(new Set())
-
-function open(key) {
-  opened.value = new Set(opened.value).add(key)
+// The clock, for the things that sit in the middle: the day is already written
+// on the chip above them.
+function timeOf(row) {
+  return row.at ? dayjs(row.at).format('HH:mm') : ''
 }
 
-function fold(key) {
-  const rest = new Set(opened.value)
-  rest.delete(key)
-  opened.value = rest
+// An appointment is the one thing here whose moment is not its own creation, so
+// it says the date as well: «mer 8 ott, 15:00» is the fact, and the chip above
+// only says which day it was booked on.
+function whenOf(at) {
+  return at ? dayjs(at).format('ddd D MMM, HH:mm') : ''
 }
 
-// An opened run becomes its own rows, with a line above them to put them back.
-function rowsOf(group) {
-  const out = []
-  for (const entry of group.rows) {
-    if (entry.kind !== 'run' || !opened.value.has(entry.key)) {
-      out.push(entry)
-      continue
-    }
-    out.push({ ...entry, kind: 'run-open' })
-    out.push(...entry.rows)
-  }
-  return out
+const APPOINTMENT_THEMES = {
+  Scheduled: 'blue',
+  Confirmed: 'green',
+  Completed: 'gray',
+  Cancelled: 'red',
+  'No Show': 'orange',
 }
 
-// «12 messaggi WhatsApp» — the count first, because the count is why it is
-// folded, and the channel second so the eye can skip the ones it does not want.
-function runLabel(row) {
-  return __('{0} {1} messages', [row.rows.length, LABELS[row.channel] || ''])
+function appointmentTheme(status) {
+  return APPOINTMENT_THEMES[status] || 'gray'
 }
 
-// «9:14 → 11:02»: enough to tell whether it was a conversation or a burst.
-function span(row) {
-  const first = dayjs(row.rows[0].at).format('HH:mm')
-  const last = dayjs(row.rows[row.rows.length - 1].at).format('HH:mm')
-  return first === last ? first : `${first} → ${last}`
+// «Fattura n. 12» rather than «CRM Invoice / INV-2026-00012»: the number is what
+// somebody quotes on the phone, and a credit note has to say it is one, because
+// the amount alone reads as money coming in either way.
+function invoiceTitle(invoice) {
+  const kind = isCreditNote(invoice?.document_type)
+    ? __('Credit note')
+    : __('Invoice')
+  const number = invoiceLabel(invoice)
+  return number ? `${kind} ${number}` : kind
+}
+
+function amountOf(invoice) {
+  const total = invoice?.grand_total ?? invoice?.net_payable
+  const signed = isCreditNote(invoice?.document_type) ? -Math.abs(total) : total
+  return formatEuro(signed)
+}
+
+function statusOf(invoice) {
+  return worstStatus(invoice || {})
 }
 
 // `Today` and `Yesterday` are what somebody is actually asking when they look
@@ -317,14 +434,6 @@ const ICONS = {
 
 function iconFor(channel) {
   return ICONS[channel] || DotIcon
-}
-
-const LABELS = {
-  whatsapp: 'WhatsApp',
-  sms: 'SMS',
-  email: 'Email',
-  comment: 'Comment',
-  call: 'Call',
 }
 </script>
 

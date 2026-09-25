@@ -381,7 +381,7 @@ ROW = (
 @frappe.whitelist()
 def people(
 	search: str = "",
-	state: str = "all",
+	view: str = "open",
 	waiting: bool | int | str = False,
 	filters: dict | str | None = None,
 	limit: int = 30,
@@ -402,19 +402,17 @@ def people(
 	frappe.has_permission("CRM Lead", "read", throw=True)
 
 	conditions = frappe.parse_json(filters) if isinstance(filters, str) else dict(filters or {})
-	# Never `.get(state, STATES["all"])`: an unknown state falling back to "all" is how
-	# a rename of one of these keys passes unnoticed - the caller asks for a pile and
-	# silently gets the whole address book, which is the exact thing the comment on
-	# `unread` is about. Wrong name, loud answer.
-	stato = state or "all"
-	if stato not in STATES:
-		frappe.throw(frappe._("Unknown conversation state {0}. Known: {1}").format(stato, ", ".join(STATES)))
-	conditions.update(STATES[stato])
+	search = (search or "").strip()
+	# A name somebody types is a person they want, not a person filed where they
+	# happen to be standing. Searching inside the current view is how you look
+	# for a customer, find nothing, and conclude the CRM has lost them — when
+	# they were simply marked as dealt with last week.
+	if not search:
+		conditions.update(conditions_for(view or "open"))
 	if waiting in (True, 1, "1", "true", "True"):
 		conditions["conversation_unread"] = 1
 
 	or_conditions = {}
-	search = (search or "").strip()
 	if search:
 		like = f"%{search}%"
 		or_conditions = {
@@ -429,7 +427,7 @@ def people(
 		fields=list(ROW),
 		filters=conditions,
 		or_filters=or_conditions,
-		order_by="last_conversation_on desc, modified desc",
+		order_by=NEWEST_FIRST,
 		limit_page_length=min(int(limit), 200),
 	)
 
@@ -437,21 +435,76 @@ def people(
 OPEN = "Open"
 HANDLED = "Handled"
 
-# The four questions asked of a list of conversations, and the filter each one is.
-# Kept here rather than in the browser so «open» means the same thing to the list,
-# to the count above it and to anything that asks later.
-STATES = {
-	# The pile: somebody wrote and nobody here has said they have read it. It
-	# used to mean «not handled», which on a live site is everybody — a default
-	# view that shows the whole address book is not a pile, it is the list again.
-	"unread": {
-		"conversation_unread": 1,
-		"conversation_snoozed_until": ["is", "not set"],
-	},
-	"snoozed": {"conversation_snoozed_until": ["is", "set"]},
-	"handled": {"conversation_status": HANDLED},
-	"all": {},
+# Who is waiting first, then whoever spoke last — and «spoke» counts both sides,
+# because a conversation you answered five minutes ago is more alive than one
+# nobody has touched since April.
+NEWEST_FIRST = "conversation_unread desc, last_conversation_on desc, modified desc"
+
+# The views. Four, because a fifth would be a way of asking something these
+# four already answer — and a menu you have to read is a menu that slows you
+# down every morning.
+#
+# They are all the same list under the same order. The base one is what a chat
+# app shows: everything still going on, whoever is waiting at the top. The other
+# three exist because without them a button leads nowhere — «gestita» and
+# «rimanda» would make a conversation vanish with no way back to it.
+VIEWS = ("open", "unanswered", "snoozed", "handled")
+
+LIVE = {"conversation_status": OPEN, "conversation_snoozed_until": ["is", "not set"]}
+
+
+def conditions_for(view: str) -> dict:
+	"""The filter one view is.
+
+	An unrecognised name is an error rather than the base list. Falling back to
+	«open» is how a renamed view passes unnoticed: the caller asks for a pile,
+	silently gets everything still going on, and nothing says so — the failure
+	develop had already paid for once, when a stale `open` was answered with the
+	whole address book. Wrong name, loud answer.
+	"""
+	if view == "unanswered":
+		# they spoke last and nobody answered. Not «unread»: you can have read
+		# something this morning and still owe the answer, and that one is the
+		# one that costs money. Unread is not a view of its own because the base
+		# list already puts it on top and marks it.
+		return {**LIVE, "last_conversation_direction": "Incoming"}
+	if view == "snoozed":
+		return {"conversation_snoozed_until": ["is", "set"]}
+	if view == "handled":
+		return {"conversation_status": HANDLED}
+	if view != "open":
+		frappe.throw(frappe._("Unknown conversation view {0}. Known: {1}").format(view, ", ".join(VIEWS)))
+	return dict(LIVE)
+
+
+# The same four in SQL, so the numbers above the list can be counted in one pass
+# over the table instead of one query per view.
+COUNTABLE = {
+	"open": "conversation_status = 'Open' and conversation_snoozed_until is null",
+	"unanswered": (
+		"conversation_status = 'Open' and conversation_snoozed_until is null "
+		"and last_conversation_direction = 'Incoming'"
+	),
+	"snoozed": "conversation_snoozed_until is not null",
+	"handled": "conversation_status = 'Handled'",
 }
+
+
+@frappe.whitelist()
+def counts() -> dict:
+	"""How many are in each view, in one sweep.
+
+	One query with a sum per view rather than one query per view: they are four
+	different questions about the same rows, and asking the table four times to
+	draw one menu is three times too many.
+	"""
+	if not frappe.has_permission("CRM Lead", "read"):
+		return {}
+	sums = ", ".join(
+		f"sum(case when {clause} then 1 else 0 end) as `{view}`" for view, clause in COUNTABLE.items()
+	)
+	row = frappe.db.sql(f"select {sums} from `tabCRM Lead`", as_dict=True)  # nosemgrep
+	return {key: int(value or 0) for key, value in (row[0] if row else {}).items()}
 
 
 def wake_the_snoozed() -> int:

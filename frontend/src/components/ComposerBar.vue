@@ -8,6 +8,11 @@
 
   The channel picker sits on the left of the bar rather than above it: they are
   one thing — what you are writing, and where it goes.
+
+  Only ways of writing **to the customer** live here. A note, a task, an event,
+  a logged call are things you do *about* somebody, not things you say to them,
+  and they all live on the one button at the top. Two places to start the same
+  kind of thing is how somebody ends up hunting for the one they used last time.
 -->
 <template>
   <div class="flex items-center gap-2 border-t px-3 py-2 sm:px-4">
@@ -40,7 +45,7 @@
 </template>
 
 <script setup>
-import CommentIcon from '@/components/Icons/CommentIcon.vue'
+import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import { whatsappEnabled } from '@/composables/whatsapp'
@@ -62,11 +67,10 @@ const WAYS = [
     placeholder: 'Write an email…',
   },
   {
-    key: 'comment',
-    label: 'Comment',
-    icon: CommentIcon,
-    // a comment is for the people here, and the placeholder should say so
-    placeholder: 'Leave a note for your team…',
+    key: 'sms',
+    label: 'SMS',
+    icon: SMSIcon,
+    placeholder: 'Write a text message…',
   },
   {
     key: 'whatsapp',

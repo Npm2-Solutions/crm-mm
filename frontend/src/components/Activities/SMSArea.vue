@@ -3,16 +3,24 @@
     <div
       v-for="sms in messages"
       :key="sms.name"
-      class="activity group mb-3 flex gap-2"
-      :class="sms.type == 'Outgoing' ? 'flex-row-reverse' : ''"
+      class="activity group flex gap-2"
+      :class="[
+        bare ? '' : 'mb-3',
+        sms.type == 'Outgoing' && !bare ? 'flex-row-reverse' : '',
+      ]"
     >
       <div
         :id="sms.name"
-        class="relative min-w-0 max-w-full break-words rounded-md p-1.5 pl-2 text-base shadow-sm"
+        class="relative min-w-0 max-w-full break-words text-base text-ink-gray-9"
         :class="
-          sms.type == 'Outgoing'
-            ? 'bg-surface-gray-2 text-ink-gray-9'
-            : 'bg-surface-gray-1 text-ink-gray-9'
+          bare
+            ? 'w-full'
+            : [
+                'rounded-md p-1.5 pl-2 shadow-sm',
+                sms.type == 'Outgoing'
+                  ? 'bg-surface-gray-2'
+                  : 'bg-surface-gray-1',
+              ]
         "
       >
         <Badge
@@ -50,5 +58,7 @@ import { Tooltip } from 'frappe-ui'
 
 defineProps({
   messages: { type: Array, default: () => [] },
+  // the house component draws the bubble in the mixed chat
+  bare: { type: Boolean, default: false },
 })
 </script>

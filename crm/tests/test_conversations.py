@@ -134,6 +134,8 @@ class TestTheColumnBesideARecord(FrappeTestCase):
 
 		frappe.db.set_value("CRM Lead", self.wrote.name, "conversation_unread", 1, update_modified=False)
 		frappe.db.set_value("CRM Lead", self.silent.name, "conversation_unread", 0, update_modified=False)
+		# the badge is a flag on the base list, not a view of its own: the pile
+		# sits on top of «open» and is marked there
 		waiting = [row.name for row in people(waiting=True, limit=200)]
 		self.assertIn(self.wrote.name, waiting)
 		self.assertNotIn(self.silent.name, waiting)
@@ -216,22 +218,134 @@ class TestThePileIsWhatNobodyHasReadYet(FrappeTestCase):
 		mark_read("CRM Lead", self.lead.name)
 		self.assertNotIn(key, unread([["CRM Lead", self.lead.name]]))
 
-	def test_the_pile_is_what_the_default_view_asks_for(self):
-		from crm.api.conversations import mark_read, people
+	def test_whoever_is_waiting_is_at_the_top_not_on_their_own(self):
+		"""Sorted, not filtered — the way a chat app does it."""
+		from frappe.utils import add_to_date
 
-		quiet_one = frappe.get_doc(
-			{"doctype": "CRM Lead", "first_name": "Muto", "last_name": "Prova"}
+		from crm.api.conversations import people, remember
+
+		answered = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Risposto", "last_name": "Prova"}
 		).insert(ignore_permissions=True)
+		# spoken to a minute ago, and settled: recent, but nobody is waiting
+		frappe.db.set_value(
+			"CRM Lead",
+			answered.name,
+			{
+				"last_conversation_on": add_to_date(None, minutes=-1),
+				"last_conversation_direction": "Outgoing",
+				"conversation_unread": 0,
+			},
+			update_modified=False,
+		)
+		# and somebody who wrote yesterday and is still waiting
 		self._sms("Incoming", "ci sei?")
+		remember("CRM Lead", self.lead.name)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.lead.name,
+			{"last_conversation_on": add_to_date(None, days=-1)},
+			update_modified=False,
+		)
 
-		pile = [row.name for row in people(state="unread", limit=200)]
-		self.assertIn(self.lead.name, pile)
-		# somebody who has never written is not on the pile — that was the bug:
-		# the default view showed the whole address book
-		self.assertNotIn(quiet_one.name, pile)
+		order = [row.name for row in people(view="open", limit=200)]
+		# both are there — filtering the answered one out would leave a list
+		# with holes in it, where somebody you spoke to this morning vanished
+		self.assertIn(answered.name, order)
+		self.assertIn(self.lead.name, order)
+		# and the one waiting comes first, although it is the older message
+		self.assertLess(order.index(self.lead.name), order.index(answered.name))
 
-		mark_read("CRM Lead", self.lead.name)
-		self.assertNotIn(self.lead.name, [row.name for row in people(state="unread", limit=200)])
+	def test_what_you_dealt_with_leaves_the_list(self):
+		from crm.api.conversations import HANDLED, people, set_state
+
+		self._sms("Incoming", "ci sei?")
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		self.assertNotIn(self.lead.name, [row.name for row in people(view="open", limit=200)])
+
+
+class TestTheViews(FrappeTestCase):
+	"""Every inbox worth using has these few, and each one is one honest question."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.them = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Aspetta", "last_name": "Prova"}
+		).insert(ignore_permissions=True)
+		self.us = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Risposto", "last_name": "Prova"}
+		).insert(ignore_permissions=True)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.them.name,
+			{"last_conversation_direction": "Incoming", "conversation_unread": 1},
+			update_modified=False,
+		)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.us.name,
+			{"last_conversation_direction": "Outgoing", "conversation_unread": 0},
+			update_modified=False,
+		)
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def _in(self, view):
+		from crm.api.conversations import people
+
+		return [row.name for row in people(view=view, limit=500)]
+
+	def test_reading_something_does_not_settle_it(self):
+		from crm.api.conversations import mark_read
+
+		# read this morning, still owed an answer: the badge goes, «in attesa di
+		# risposta» does not — which is the one that costs money
+		mark_read("CRM Lead", self.them.name)
+		self.assertFalse(frappe.db.get_value("CRM Lead", self.them.name, "conversation_unread"))
+		self.assertIn(self.them.name, self._in("unanswered"))
+
+	def test_our_own_last_word_is_not_waiting_for_anything(self):
+		self.assertNotIn(self.us.name, self._in("unanswered"))
+		self.assertIn(self.us.name, self._in("open"))
+
+	def test_what_is_filed_away_is_out_of_every_live_view(self):
+		from crm.api.conversations import HANDLED, set_state
+
+		set_state("CRM Lead", self.them.name, HANDLED)
+		for view in ("open", "unanswered"):
+			self.assertNotIn(self.them.name, self._in(view), view)
+		self.assertIn(self.them.name, self._in("handled"))
+
+	def test_a_view_nobody_defined_says_so(self):
+		"""A stale name must not be answered with the base list.
+
+		Falling back to «open» is how a renamed view passes unnoticed: the caller
+		asks for a pile and silently gets everything still going on.
+		"""
+		from crm.api.conversations import people
+
+		with self.assertRaises(frappe.ValidationError):
+			people(view="unread", limit=1)
+
+	def test_a_name_is_looked_for_everywhere_whatever_view_is_open(self):
+		"""Searching inside the current view is how a CRM loses a customer.
+
+		You look for somebody, find nothing, and conclude they are not there —
+		when they were simply marked as dealt with last week.
+		"""
+		from crm.api.conversations import HANDLED, people, set_state
+
+		set_state("CRM Lead", self.them.name, HANDLED)
+		found = [row.name for row in people(view="open", search="Aspetta", limit=500)]
+		self.assertIn(self.them.name, found)
+
+	def test_the_numbers_beside_the_views_agree_with_the_views(self):
+		from crm.api.conversations import COUNTABLE, counts
+
+		tally = counts()
+		for view in COUNTABLE:
+			self.assertEqual(tally.get(view), len(self._in(view)), view)
 
 
 class TestReadReceiptsAreSomebodyElsesScreen(FrappeTestCase):
@@ -390,14 +504,12 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 		set_state("CRM Lead", self.lead.name, HANDLED)
 
 		def named(state):
-			return [row.name for row in people(state=state, limit=200)]
+			return [row.name for row in people(view=state, limit=200)]
 
 		self.assertIn(self.lead.name, named("handled"))
-		self.assertNotIn(self.lead.name, named("unread"))
+		self.assertNotIn(self.lead.name, named("open"))
 		self.assertIn(parked.name, named("snoozed"))
-		self.assertNotIn(parked.name, named("unread"))
-		self.assertIn(self.lead.name, named("all"))
-		self.assertIn(parked.name, named("all"))
+		self.assertNotIn(parked.name, named("open"))
 
 
 class TestTheConversationOfARealPerson(FrappeTestCase):
@@ -471,3 +583,33 @@ class TestTheConversationOfARealPerson(FrappeTestCase):
 		# the person moves up the Inbox, not only the negotiation
 		self.assertTrue(frappe.db.get_value("CRM Lead", self.lead.name, "last_conversation_on"))
 		self.assertEqual(unread([["CRM Lead", self.lead.name]]).get(f"CRM Lead:{self.lead.name}"), 1)
+
+
+class TestWhereAnInvoiceSitsInTheHistory(FrappeTestCase):
+	"""An invoice's place in the stream is its own date, not the day it was typed.
+
+	The posting date is the date printed on the document and the one somebody
+	looks for it under, so an invoice entered today for the 20th belongs on the
+	20th. When the two agree the creation time is kept — midnight would float
+	today's invoice above the whole day's messages.
+	"""
+
+	def test_a_backdated_invoice_sits_on_the_date_it_carries(self):
+		from frappe.utils import get_datetime
+
+		from crm.api.activities import invoice_moment
+
+		row = frappe._dict({"posting_date": "2026-09-20", "creation": "2026-09-25 14:32:00"})
+		self.assertEqual(invoice_moment(row), get_datetime("2026-09-20"))
+
+	def test_an_invoice_written_on_its_own_date_keeps_the_hour(self):
+		from crm.api.activities import invoice_moment
+
+		row = frappe._dict({"posting_date": "2026-09-25", "creation": "2026-09-25 14:32:00"})
+		self.assertEqual(invoice_moment(row), "2026-09-25 14:32:00")
+
+	def test_without_a_posting_date_it_sits_where_it_was_written(self):
+		from crm.api.activities import invoice_moment
+
+		row = frappe._dict({"posting_date": None, "creation": "2026-09-25 14:32:00"})
+		self.assertEqual(invoice_moment(row), "2026-09-25 14:32:00")
