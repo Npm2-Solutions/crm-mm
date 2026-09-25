@@ -23,7 +23,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate
 
-from crm.invoicing import documento, pdf, ts, xml_sdi
+from crm.invoicing import documento, estensioni, pdf, xml_sdi
 from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
@@ -227,17 +227,14 @@ class CRMInvoice(Document):
 		)
 
 	def verifica_tracciato(self, preparato):
-		"""Check the Sistema TS rules now, not in January."""
-		esito = ts.verifica(self, preparato["azienda"])
-		if esito.errori or esito.avvisi:
-			documento.registra(
-				self,
-				"ts_prepared",
-				"\n".join(esito.errori + esito.avvisi),
-				stato="errori" if esito.errori else "avvisi",
-			)
-		if esito.errori:
-			self.db_set("warnings", "\n".join(esito.errori), update_modified=False)
+		"""Run whatever the installed modules want checked on this document.
+
+		The Sistema TS rules used to be checked here by name, which made the invoice
+		controller import a module it has no business knowing about - and stop loading
+		the day that module is not installed. Now a module that adds a duty registers
+		the checking of it, and a system with no healthcare simply has nothing to run.
+		"""
+		estensioni.verifiche(self, preparato)
 
 	# ------------------------------------------------------------------- the guard
 

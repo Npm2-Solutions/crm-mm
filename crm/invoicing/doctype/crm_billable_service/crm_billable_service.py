@@ -14,13 +14,12 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-from crm.invoicing.engine.codici import DESCRIZIONE_TIPO_SPESA, NATURE_RITIRATE
+from crm.invoicing.engine.codici import NATURE_RITIRATE
 
 
 class CRMBillableService(Document):
 	def validate(self):
 		self.valida_iva()
-		self.valida_sistema_ts()
 
 	def valida_iva(self):
 		if self.vat_exempt:
@@ -49,19 +48,3 @@ class CRMBillableService(Document):
 			)
 		if self.is_advance and not self.vat_nature:
 			self.vat_nature = "N1"
-
-	def valida_sistema_ts(self):
-		if self.ts_expense_type and not self.is_healthcare:
-			frappe.throw(
-				_(
-					"A tipoSpesa on a service that is not healthcare: the Sistema TS only knows "
-					"healthcare expenses. Either the service is healthcare or the code does not belong."
-				)
-			)
-		if self.ts_expense_flag and self.ts_expense_type not in ("TK", "SR"):
-			frappe.throw(
-				_(
-					"flagTipoSpesa is only admitted with TK (emergency room) or SR (intramoenia), "
-					"not with {0}"
-				).format(DESCRIZIONE_TIPO_SPESA.get(self.ts_expense_type, "-"))
-			)

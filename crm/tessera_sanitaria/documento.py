@@ -268,7 +268,7 @@ def segna_esito(invio: str, codice: str, messaggio: str = "", protocollo: str = 
 	the mandate status is recorded, because invoicing must not stop for a broken
 	last mile.
 	"""
-	from crm.invoicing.engine.codici import (
+	from crm.tessera_sanitaria.engine.codici import (
 		CODICE_DELEGA_ASSENTE,
 		CODICE_DELEGA_PRESENTE,
 		descrivi_esito,

@@ -463,7 +463,7 @@ async function fatturaIncontro(incontro) {
     emettendo.value = ''
   }
 }
-const tsStatus = createResource({ url: 'crm.invoicing.api.ts_status' })
+const tsStatus = createResource({ url: 'crm.tessera_sanitaria.api.ts_status' })
 const submissions = createListResource({
   doctype: 'CRM TS Submission',
   fields: [
@@ -557,7 +557,7 @@ async function transmit(row) {
 async function report(row) {
   sending.value = row.name
   try {
-    const result = await call('crm.invoicing.api.send_to_ts', {
+    const result = await call('crm.tessera_sanitaria.api.send_to_ts', {
       invoice: row.name,
     })
     // A rejection is an answer, not a crash: it says which code came back, and
@@ -575,10 +575,13 @@ async function report(row) {
 async function prepareTs() {
   preparing.value = true
   try {
-    lastPrepared.value = await call('crm.invoicing.api.prepare_ts_submission', {
-      company: company.value,
-      year: year.value,
-    })
+    lastPrepared.value = await call(
+      'crm.tessera_sanitaria.api.prepare_ts_submission',
+      {
+        company: company.value,
+        year: year.value,
+      },
+    )
     toast.success(
       __('{0} documents packaged', [lastPrepared.value?.count || 0]),
     )

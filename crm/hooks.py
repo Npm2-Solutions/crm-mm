@@ -194,6 +194,12 @@ doc_events = {
 	"CRM Professional Qualification": {
 		"validate": "crm.tessera_sanitaria.qualifica.valida",
 	},
+	"CRM Billable Service": {
+		"validate": "crm.tessera_sanitaria.qualifica.valida_servizio",
+	},
+	"CRM Invoicing Company": {
+		"validate": "crm.tessera_sanitaria.qualifica.valida_azienda",
+	},
 	"Contact": {
 		"validate": ["crm.api.contact.validate"],
 		# created by a webhook, a form, a booking: nobody was logged in, and

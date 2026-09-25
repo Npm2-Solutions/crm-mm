@@ -17,7 +17,6 @@ from frappe import _
 from frappe.model.document import Document
 
 from crm.invoicing.engine import codice_fiscale as cf
-from crm.invoicing.engine.codici import SOGGETTI_CON_CODICE_PROPRIETARIO, SoggettoInviante
 from crm.invoicing.engine.numerazione import FormatoNonCompatibile, valida_formato
 
 
@@ -26,7 +25,6 @@ class CRMInvoicingCompany(Document):
 		self.valida_identificativi()
 		self.valida_numerazione()
 		self.valida_bollo()
-		self.valida_sistema_ts()
 		self.unica_predefinita()
 
 	def valida_identificativi(self):
@@ -79,33 +77,6 @@ class CRMInvoicingCompany(Document):
 					"issue with a physical stamp on the original."
 				)
 			)
-
-	def valida_sistema_ts(self):
-		categoria = self.sender_category or SoggettoInviante.NON_SANITARIO
-		if categoria == SoggettoInviante.NON_SANITARIO:
-			return
-		if categoria in SOGGETTI_CON_CODICE_PROPRIETARIO:
-			if not (self.region_code and self.asl_code and self.ssa_code):
-				frappe.throw(
-					_(
-						"A {0} needs the full Codice Proprietario (codiceRegione-codiceAsl-codiceSSA) "
-						"from its 'Abilitazione al Sistema TS' document"
-					).format(categoria)
-				)
-		elif any((self.region_code, self.asl_code, self.ssa_code)):
-			frappe.throw(
-				_(
-					"A {0} transmits as a natural person: codiceRegione, codiceAsl and codiceSSA have "
-					"to be empty, only the codice fiscale is used"
-				).format(categoria)
-			)
-		# Deliberately not a throw. The intended mode is the centre's own credentials,
-		# and a centre is set up before its credentials arrive - blocking the save
-		# would stop onboarding at a field that will be filled next week. The gap
-		# shows in the checklist, and the send refuses on its own until it is closed.
-		# Nothing about invoicing waits on any of it.
-		if not self.fiscal_code and not self.tax_id:
-			frappe.throw(_("The Sistema TS needs a codice fiscale or a VAT number for the owner"))
 
 	def unica_predefinita(self):
 		if not self.is_default:

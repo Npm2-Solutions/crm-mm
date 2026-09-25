@@ -51,6 +51,7 @@ def registra() -> None:
 	registra_motore()
 	estensioni.registra_risolutore(registro_sanitario.risolutore())
 	estensioni.registra_controlli(controlli)
+	estensioni.registra_verifica(verifica_tracciato)
 
 
 def controlli(emittente: dict) -> list[dict]:
@@ -109,3 +110,25 @@ def controlli(emittente: dict) -> list[dict]:
 			}
 		)
 	return voci
+
+
+def verifica_tracciato(doc, preparato) -> None:
+	"""Check the Sistema TS tracciato while the document is still a draft.
+
+	In January, with four thousand rows behind it, a rejected row costs a search
+	through a year. Here it costs a correction with the client still in the room.
+	"""
+	from crm.invoicing import documento
+
+	from . import documento as ts
+
+	esito = ts.verifica(doc, preparato["azienda"])
+	if esito.errori or esito.avvisi:
+		documento.registra(
+			doc,
+			"ts_prepared",
+			"\n".join(esito.errori + esito.avvisi),
+			stato="errori" if esito.errori else "avvisi",
+		)
+	if esito.errori:
+		doc.db_set("warnings", "\n".join(esito.errori), update_modified=False)

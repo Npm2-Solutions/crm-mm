@@ -13,6 +13,42 @@ The Sistema TS has its own watches, in its own module, for its own deadlines.
 from __future__ import annotations
 
 import frappe
+from frappe import _
+from frappe.utils import getdate
+
+
+def avvisa(titolo: str, azienda: str, dettaglio: str) -> None:
+	"""One notification per condition, per company, per day.
+
+	`notification_text` carries the stable half - the condition and who it is about -
+	so it can be deduplicated; the detail, which moves as documents are added, goes
+	in the message. An alert repeated every hour is noise, and noise is how the one
+	that mattered gets scrolled past.
+	"""
+	testo = f"{titolo} - {azienda}"
+	if frappe.db.exists(
+		"CRM Notification",
+		{"type": "Invoicing", "notification_text": testo, "creation": [">=", getdate()]},
+	):
+		return
+	destinatari = frappe.get_all(
+		"Has Role", filters={"role": "Invoicing Manager", "parenttype": "User"}, pluck="parent"
+	)
+	for utente in destinatari:
+		if not frappe.db.get_value("User", utente, "enabled"):
+			continue
+		frappe.get_doc(
+			{
+				"doctype": "CRM Notification",
+				"from_user": "Administrator",
+				"to_user": utente,
+				"type": "Invoicing",
+				"notification_text": testo,
+				"message": dettaglio,
+				"notification_type_doctype": "CRM Invoicing Company",
+				"notification_type_doc": azienda,
+			}
+		).insert(ignore_permissions=True)
 
 
 def leggi_ricevute() -> list[dict]:

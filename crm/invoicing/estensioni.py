@@ -80,6 +80,29 @@ def arricchitore():
 	return _arricchitore
 
 
+#: Extra checks to run while a document is being edited. A module that adds a
+#: duty adds the checking of it: invoicing has no way to explain a rule it does
+#: not own, and a controller that imports one is a controller that stops loading
+#: the day that module is not installed.
+_verifiche: list = []
+
+
+def registra_verifica(funzione) -> None:
+	"""Contribute a check that runs on validate. Called once, when a module loads."""
+	if funzione not in _verifiche:
+		_verifiche.append(funzione)
+
+
+def dimentica_verifiche() -> None:
+	_verifiche.clear()
+
+
+def verifiche(doc, preparato) -> None:
+	"""Run every registered check. One failing never hides the rest."""
+	for funzione in _verifiche:
+		funzione(doc, preparato)
+
+
 #: Extra rows for the onboarding checklist. A module that adds a duty adds the gap
 #: that comes with it, rather than invoicing carrying a list of other people's
 #: obligations it cannot explain.

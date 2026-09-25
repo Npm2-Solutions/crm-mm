@@ -96,7 +96,9 @@ async function scansiona() {
 async function sonda(company) {
   sondaggio.value = true
   try {
-    const esito = await call('crm.invoicing.api.probe_delegation', { company })
+    const esito = await call('crm.tessera_sanitaria.api.probe_delegation', {
+      company,
+    })
     // Not probed is an answer too: it needs one document waiting to send.
     if (esito.probed) toast.success(esito.summary)
     else toast.info(esito.reason)

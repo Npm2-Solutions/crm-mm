@@ -31,8 +31,9 @@ from frappe import _
 from frappe.utils import getdate
 from frappe.utils.password import get_decrypted_password
 
-from crm.invoicing import connessione, documento, ts
+from crm.invoicing import connessione, documento
 from crm.invoicing.engine import busta
+from crm.tessera_sanitaria import documento as ts
 from crm.tessera_sanitaria.engine.codici import (
 	CODICE_DELEGA_ASSENTE,
 	CODICE_DELEGA_PRESENTE,
