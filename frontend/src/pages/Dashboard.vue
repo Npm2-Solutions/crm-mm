@@ -708,8 +708,9 @@ function navigate(target) {
   if (target.route) router.push(target.route)
 }
 
+// the modal finds a page by its untranslated key or name, in every language
 function openSettings(page) {
-  activeSettingsPage.value = __(page)
+  activeSettingsPage.value = page
   showSettings.value = true
 }
 
