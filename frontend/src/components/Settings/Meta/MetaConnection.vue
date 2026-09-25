@@ -28,7 +28,7 @@
           }}
         </span>
       </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormControl
           v-model="appForm.app_id"
           type="text"
@@ -73,7 +73,7 @@
          does. Nothing to copy by hand. -->
     <div
       v-if="webhookBroken"
-      class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+      class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
     >
       <div class="flex flex-col">
         <span class="text-p-base-medium text-ink-gray-7">
@@ -99,7 +99,7 @@
 
     <!-- the account -->
     <div
-      class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
+      class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-outline-gray-2 p-4"
     >
       <div class="flex min-w-0 flex-1 items-center gap-3">
         <FacebookIcon class="size-8 shrink-0" />
@@ -210,7 +210,7 @@
       v-if="connected"
       class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
     >
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex min-w-0 flex-col">
           <span class="text-p-base-medium text-ink-gray-7">{{
             __('Your Pages')
@@ -223,7 +223,7 @@
             }}
           </span>
         </div>
-        <div class="flex shrink-0 gap-2">
+        <div class="flex flex-wrap gap-2 sm:shrink-0">
           <Button
             icon="refresh-cw"
             :tooltip="__('Read the Pages again from Facebook')"

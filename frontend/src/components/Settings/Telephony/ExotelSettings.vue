@@ -39,7 +39,7 @@
     <template #content>
       <div v-if="exotel.doc" class="h-full">
         <div v-if="exotel.doc.enabled" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormControl
               v-model="exotel.doc.api_key"
               :label="__('API Key')"

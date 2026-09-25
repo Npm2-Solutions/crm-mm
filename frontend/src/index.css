@@ -56,6 +56,28 @@
   }
 }
 
+/* A tab strip wider than the screen.
+   frappe-ui's TabButtons puts `overflow-hidden` on the strip itself, so tabs
+   past the edge are not merely off screen — they are clipped, with nothing to
+   scroll and no way to reach them. On a 390px phone that hid "Lead quality"
+   in Meta and "Online" in a service. The marker goes on the TabButtons, which
+   forwards it to its root; the strip is the child, and it is let out to its
+   natural width so the row scrolls instead of cutting. Inert wherever the tabs
+   already fit, so it costs a desktop nothing. */
+[data-tabs-scroll] {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-tabs-scroll]::-webkit-scrollbar {
+  display: none;
+}
+
+[data-tabs-scroll] > * {
+  min-width: max-content;
+}
+
 /* Reka menu content (e.g. the kebab menu inside PrimaryDropdown) portals to
    <body> without a z-index, so it falls behind frappe-ui Popover content
    (z-[100]). Lift menus above popovers so nested menus stay visible. */

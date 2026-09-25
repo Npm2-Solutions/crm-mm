@@ -42,7 +42,7 @@
       </div>
     </div>
     <div class="overflow-y-auto px-2">
-      <div class="grid grid-cols-2 gap-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <FormControl
             v-model="assignmentRuleData.assignmentRuleName"

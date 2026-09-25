@@ -55,7 +55,7 @@
             />
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <template v-for="field in incomingOutgoingFields" :key="field.name">
             <div
               v-if="field.condition ? field.condition(state) : true"

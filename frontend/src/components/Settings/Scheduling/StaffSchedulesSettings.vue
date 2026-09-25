@@ -64,12 +64,14 @@
     <div class="flex-1 overflow-auto px-2">
       <div
         v-if="rota.data?.team?.length"
-        class="min-w-[760px] rounded-lg border border-outline-gray-2"
+        class="min-w-[560px] rounded-lg border border-outline-gray-2 sm:min-w-[760px]"
       >
         <div
-          class="grid grid-cols-[200px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-2 bg-surface-gray-1 text-p-xs text-ink-gray-5"
+          class="grid grid-cols-[116px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-2 bg-surface-gray-1 text-p-xs text-ink-gray-5 sm:grid-cols-[200px_repeat(7,minmax(0,1fr))]"
         >
-          <div class="px-3 py-2">{{ __('Professional') }}</div>
+          <div class="sticky left-0 z-10 bg-surface-gray-1 px-3 py-2">
+            {{ __('Professional') }}
+          </div>
           <div
             v-for="day in rota.data.days"
             :key="day"
@@ -82,10 +84,12 @@
         <div
           v-for="person in rota.data.team"
           :key="person.user"
-          class="grid cursor-pointer grid-cols-[200px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-1 last:border-b-0 hover:bg-surface-gray-1"
+          class="grid cursor-pointer grid-cols-[116px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-1 last:border-b-0 hover:bg-surface-gray-1 sm:grid-cols-[200px_repeat(7,minmax(0,1fr))]"
           @click="openEditor(person.user)"
         >
-          <div class="flex min-w-0 items-center gap-2 px-3 py-2">
+          <div
+            class="sticky left-0 z-10 flex min-w-0 items-center gap-2 bg-surface-white px-3 py-2"
+          >
             <UserAvatar :user="person.user" size="sm" class="shrink-0" />
             <div class="min-w-0">
               <div class="truncate text-p-sm-medium text-ink-gray-8">
@@ -280,7 +284,7 @@
           <h3 class="text-p-base-medium text-ink-gray-8">
             {{ __('Limits') }}
           </h3>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormControl
               v-model.number="form.max_daily_appointments"
               type="number"

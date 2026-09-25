@@ -44,7 +44,7 @@
       <div
         v-for="source in sources.data || []"
         :key="source.key"
-        class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-outline-gray-2 p-4"
       >
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <span class="flex shrink-0 -space-x-1.5">

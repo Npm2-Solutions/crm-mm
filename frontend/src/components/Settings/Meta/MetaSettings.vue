@@ -31,7 +31,7 @@
     </div>
 
     <div class="px-2">
-      <TabButtons v-model="tab" :buttons="tabs" />
+      <TabButtons v-model="tab" :buttons="tabs" data-tabs-scroll />
     </div>
 
     <MetaConnection

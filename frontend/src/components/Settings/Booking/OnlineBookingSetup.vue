@@ -66,7 +66,9 @@
 
       <!-- 2. the services -->
       <section class="flex flex-col gap-2">
-        <div class="flex items-baseline justify-between">
+        <div
+          class="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between"
+        >
           <h3 class="text-p-base-medium text-ink-gray-8">
             {{ __('Services clients can book') }}
           </h3>
@@ -125,7 +127,9 @@
 
       <!-- 3. the people -->
       <section class="flex flex-col gap-2">
-        <div class="flex items-baseline justify-between">
+        <div
+          class="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between"
+        >
           <h3 class="text-p-base-medium text-ink-gray-8">
             {{ __('People clients can book') }}
           </h3>

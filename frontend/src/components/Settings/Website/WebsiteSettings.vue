@@ -83,7 +83,7 @@
           <Switch v-model="form.enabled" size="sm" />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.site_name"
             type="text"
@@ -102,7 +102,7 @@
             "
           />
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.site_title"
             type="text"
@@ -156,7 +156,7 @@
             @update="(url) => (form.favicon = url)"
           />
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.primary_color"
             type="text"
@@ -242,7 +242,7 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Footer & legal') }}
         </h3>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.company_name"
             type="text"
@@ -260,7 +260,7 @@
           :rows="2"
           :label="__('Address')"
         />
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl v-model="form.email" type="text" :label="__('Email')" />
           <FormControl v-model="form.phone" type="text" :label="__('Phone')" />
           <FormControl
@@ -277,7 +277,7 @@
           :rows="2"
           :label="__('Footer text')"
         />
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.privacy_route"
             type="text"
@@ -379,7 +379,7 @@
             )
           }}
         </p>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.ga4_id"
             type="text"

@@ -114,7 +114,7 @@
           <div class="mb-2 text-p-sm-medium uppercase text-ink-gray-5">
             {{ sectorLabel(group.sector) }}
           </div>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button
               v-for="platform in group.platforms"
               :key="platform.key"
@@ -185,7 +185,7 @@
           </a>
         </div>
 
-        <div class="grid grid-cols-3 items-end gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 items-end gap-3">
           <FormControl
             v-model="form.connection_name"
             type="text"
@@ -201,7 +201,7 @@
         <!-- credentials -->
         <div
           v-if="fields.length"
-          class="grid grid-cols-2 gap-3 rounded-lg border border-outline-gray-2 p-3"
+          class="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-lg border border-outline-gray-2 p-3"
         >
           <template v-for="field in fields" :key="field">
             <div v-if="field === 'inbound_email_account'">
@@ -264,7 +264,7 @@
         </div>
 
         <!-- sync options -->
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <FormControl
             v-model.number="form.sync_window_days"
             type="number"

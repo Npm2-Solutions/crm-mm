@@ -49,13 +49,18 @@
 
   <Dialog v-model="showEditor" :options="{ title: editorTitle, size: '3xl' }">
     <template #body-content>
-      <TabButtons v-model="editorTab" :buttons="editorTabs" class="mb-4" />
+      <TabButtons
+        v-model="editorTab"
+        :buttons="editorTabs"
+        class="mb-4"
+        data-tabs-scroll
+      />
       <div
         class="-mx-1 flex h-[min(540px,62vh)] flex-col gap-4 overflow-y-auto px-1 pb-1"
       >
         <!-- what it is and what it costs -->
         <template v-if="editorTab === 'details'">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormControl
               v-model="form.service_name"
               type="text"
@@ -150,7 +155,7 @@
 
         <!-- who delivers it: the service's row of the grid; own settings are set there -->
         <template v-else-if="editorTab === 'team'">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormControl
               v-model="form.staff_selection"
               type="select"
@@ -256,7 +261,7 @@
         <!-- what it occupies -->
         <template v-else-if="editorTab === 'space'">
           <!-- participants -->
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormControl
               v-model.number="form.min_participants"
               type="number"
@@ -332,7 +337,7 @@
 
         <!-- when -->
         <template v-else-if="editorTab === 'hours'">
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <FormControl
               v-model.number="form.slot_interval"
               type="number"

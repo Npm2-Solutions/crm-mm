@@ -109,7 +109,7 @@
 
       <!-- the editor -->
       <div v-else class="flex flex-col gap-4">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormControl
             v-model="draft.script_name"
             :label="__('Name')"
@@ -122,7 +122,7 @@
             :options="serviceOptions"
           />
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormControl
             v-model="draft.description"
             :label="__('When to use it')"

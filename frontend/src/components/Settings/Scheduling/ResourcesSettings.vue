@@ -76,7 +76,7 @@
   <Dialog v-model="showEditor" :options="{ title: editorTitle, size: '2xl' }">
     <template #body-content>
       <div class="flex flex-col gap-3">
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="form.resource_name"
             type="text"
@@ -90,7 +90,7 @@
             :options="typeOptions"
           />
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model.number="form.capacity"
             type="number"
@@ -111,7 +111,7 @@
             :label="__('Location')"
           />
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model.number="form.hourly_rate"
             type="number"

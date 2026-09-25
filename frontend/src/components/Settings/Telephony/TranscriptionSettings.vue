@@ -84,7 +84,7 @@
             {{ __('Endpoint') }}
           </div>
 
-          <div class="grid grid-cols-2 gap-4 px-2 py-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2 py-3">
             <FormControl
               v-model="settings.doc.base_url"
               :label="__('Base URL')"

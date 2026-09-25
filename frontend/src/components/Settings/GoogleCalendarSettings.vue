@@ -17,7 +17,7 @@
 
     <div class="flex-1 overflow-y-auto px-2">
       <div
-        class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-outline-gray-2 p-4"
       >
         <div class="flex flex-col">
           <span class="text-p-base-medium text-ink-gray-7">

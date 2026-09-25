@@ -39,7 +39,7 @@
     <template #content>
       <div v-if="twilio.doc" class="h-full">
         <div v-if="twilio.doc.enabled" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormControl
               v-model="twilio.doc.account_sid"
               :label="__('Account SID')"

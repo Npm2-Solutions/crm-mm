@@ -169,7 +169,7 @@
           :label="__('Name')"
           required
         />
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model="listForm.currency"
             type="text"
@@ -218,7 +218,7 @@
   <Dialog v-model="showRuleEditor" :options="{ title: ruleTitle, size: '2xl' }">
     <template #body-content>
       <div class="flex flex-col gap-3">
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model="ruleForm.service"
             type="select"
@@ -232,7 +232,7 @@
             :placeholder="__('Evening rate')"
           />
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model.number="ruleForm.price"
             type="number"
@@ -258,7 +258,7 @@
           <p class="mb-3 text-p-xs text-ink-gray-5">
             {{ __('Leave a condition empty to mean "any".') }}
           </p>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Link
               doctype="User"
               :modelValue="ruleForm.staff"
@@ -273,7 +273,7 @@
               :options="resourceOptions"
             />
           </div>
-          <div class="mt-3 grid grid-cols-3 gap-3">
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
             <FormControl
               v-model="ruleForm.weekday"
               type="select"
@@ -291,7 +291,7 @@
               :label="__('To')"
             />
           </div>
-          <div class="mt-3 grid grid-cols-4 gap-3">
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-4 gap-3">
             <FormControl
               v-model.number="ruleForm.min_participants"
               type="number"

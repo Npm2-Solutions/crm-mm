@@ -11,7 +11,7 @@
   <div class="flex flex-col gap-4 px-2">
     <div
       v-if="status.data && !connected"
-      class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6"
+      class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-dashed border-outline-gray-2 p-6"
     >
       <span class="text-p-base text-ink-gray-5">
         {{
@@ -30,7 +30,7 @@
       <!-- the leads that asked to be contacted and never reached anybody -->
       <div
         v-if="failureCount"
-        class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
       >
         <div class="flex min-w-0 flex-col">
           <span class="text-p-base-medium text-ink-gray-8">
@@ -52,7 +52,7 @@
         />
       </div>
 
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <span class="text-p-sm text-ink-gray-5">
           {{
             __(
@@ -321,7 +321,7 @@
           <div
             v-for="q in mappingQuestions"
             :key="q.key"
-            class="grid grid-cols-2 items-center gap-3"
+            class="grid grid-cols-1 sm:grid-cols-2 items-center gap-3"
           >
             <div class="min-w-0">
               <div class="flex items-center gap-2">

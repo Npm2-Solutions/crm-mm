@@ -74,7 +74,7 @@
               "
               autocomplete="off"
             />
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormControl
                 v-model="erpnextCRMSettingsResource.doc.api_key"
                 :label="__('API Key')"

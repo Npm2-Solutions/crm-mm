@@ -27,7 +27,7 @@
 
     <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-2">
       <div
-        class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
       >
         {{
           __(
@@ -47,7 +47,7 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Look of the page') }}
         </h3>
-        <div class="grid grid-cols-[1fr_320px] gap-5">
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
           <div class="flex flex-col gap-4">
             <FormControl
               v-model="form.booking_page_title"
@@ -60,7 +60,7 @@
                   : __('Empty = \'Book an appointment\'')
               "
             />
-            <div class="flex items-center gap-4">
+            <div class="flex flex-wrap items-center gap-4">
               <div
                 class="flex size-14 shrink-0 items-center justify-center rounded-lg border border-outline-gray-2 bg-surface-gray-1"
               >
@@ -72,7 +72,7 @@
                 />
                 <span v-else class="lucide-image size-5 text-ink-gray-4" />
               </div>
-              <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div class="flex min-w-[9rem] flex-1 flex-col gap-0.5">
                 <span class="text-p-sm-medium text-ink-gray-8">{{
                   __('Logo')
                 }}</span>
@@ -199,7 +199,7 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Links, QR code and embed') }}
         </h3>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model="link.category"
             type="select"
@@ -220,7 +220,7 @@
             :options="staffOptions"
           />
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model="link.utm_source"
             type="text"
@@ -283,7 +283,7 @@
             }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
           <RuleField
             v-for="item in DEFAULT_RULES"
             :key="item.key"

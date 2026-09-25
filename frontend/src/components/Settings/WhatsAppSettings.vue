@@ -120,7 +120,7 @@
              own messages. -->
         <div
           v-if="isAdmin && webhook.data?.is_hub && !webhook.data?.complete"
-          class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+          class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
         >
           <div class="flex flex-col">
             <span class="text-p-base-medium text-ink-gray-7">
@@ -445,7 +445,7 @@
                   )
                 }}
               </p>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormControl
                   v-model="manual.phone_number_id"
                   type="text"

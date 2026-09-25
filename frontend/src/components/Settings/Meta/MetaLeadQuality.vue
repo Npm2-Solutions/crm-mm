@@ -21,7 +21,7 @@
     <div class="flex flex-col gap-4">
       <div
         v-if="status.data && !connected"
-        class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6"
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-dashed border-outline-gray-2 p-6"
       >
         <span class="text-p-base text-ink-gray-5">
           {{ __('Connect your Meta account first.') }}

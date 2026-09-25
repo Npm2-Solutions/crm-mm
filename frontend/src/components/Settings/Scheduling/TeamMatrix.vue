@@ -173,7 +173,7 @@
             ])
           }}
         </p>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormControl
             v-model.number="editing.values.duration"
             type="number"
@@ -188,7 +188,7 @@
             :description="__('Lower is picked first')"
           />
         </div>
-        <div class="grid grid-cols-2 items-end gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 items-end gap-3">
           <label class="flex h-7 items-center gap-2 text-sm text-ink-gray-7">
             <Switch v-model="editing.values.custom_price" size="sm" />
             {{ __('Own price') }}

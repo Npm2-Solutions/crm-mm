@@ -19,7 +19,7 @@
     <div class="flex flex-col gap-4">
       <div
         v-if="status.data && !connected"
-        class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6"
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-dashed border-outline-gray-2 p-6"
       >
         <span class="text-p-base text-ink-gray-5">
           {{
@@ -37,11 +37,11 @@
       <template v-else-if="connected">
         <!-- which accounts' money we are allowed to look at -->
         <div class="rounded-lg border border-outline-gray-2 p-4">
-          <div class="flex items-center justify-between gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-p-base-medium text-ink-gray-7">
               {{ __('Ad accounts') }}
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               <Button
                 size="sm"
                 :label="__('Find my ad accounts')"

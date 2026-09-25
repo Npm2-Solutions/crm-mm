@@ -7,6 +7,7 @@
          week of closed days -->
     <template v-if="anyTimeLabel">
       <TabButtons
+        data-tabs-scroll
         :modelValue="restricted ? 'set' : 'any'"
         :buttons="[
           { label: anyTimeLabel, value: 'any' },

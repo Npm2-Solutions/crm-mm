@@ -50,7 +50,7 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('New appointments') }}
         </h3>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <FormControl
             v-model.number="form.default_duration"
             type="number"

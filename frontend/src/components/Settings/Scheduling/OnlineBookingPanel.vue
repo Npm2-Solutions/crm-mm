@@ -130,7 +130,7 @@
     </div>
 
     <!-- when -->
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <FormControl
         v-model="form.booking_opens_on"
         type="date"
@@ -148,7 +148,7 @@
       <div class="mb-2 text-p-sm-medium text-ink-gray-6">
         {{ __('Capacity of this service') }}
       </div>
-      <div class="grid grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <FormControl
           v-model.number="form.max_bookings_per_day"
           type="number"
@@ -175,7 +175,7 @@
       <div class="mb-2 text-p-sm-medium text-ink-gray-6">
         {{ __('Clients') }}
       </div>
-      <div class="grid grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <FormControl
           v-model="form.customer_eligibility"
           type="select"
@@ -209,7 +209,7 @@
       <div class="mb-2 text-p-sm-medium text-ink-gray-6">
         {{ __('Booking form') }}
       </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormControl
           v-model="form.online_question"
           type="text"
