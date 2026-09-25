@@ -302,8 +302,13 @@ doc_events = {
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",
 			"crm.booking_platforms.sync.on_appointment_change",
+			# the professionals' own Google Calendar: a copy that only goes out
+			"crm.integrations.google.sync.on_appointment_change",
 		],
-		"on_trash": ["crm.booking_platforms.sync.on_appointment_change"],
+		"on_trash": [
+			"crm.booking_platforms.sync.on_appointment_change",
+			"crm.integrations.google.sync.on_appointment_change",
+		],
 	},
 	"Sales Order": {
 		"before_validate": [
@@ -373,6 +378,9 @@ scheduler_events = {
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
 		"crm.integrations.meta.leads.reconcile_synced_pages",
+		# a push that failed, a worker that restarted, an event edited in Google:
+		# each connected calendar is made to match the CRM again
+		"crm.integrations.google.sync.sync_all",
 	],
 	"cron": {
 		"* * * * *": ["crm.automation.engine.process_due_enrollments"],
@@ -462,6 +470,7 @@ after_migrate = [
 	"crm.install.add_default_scripts",
 	"crm.install.add_web_form_custom_fields",
 	"crm.install.add_builder_page_custom_fields",
+	"crm.install.add_google_calendar_custom_fields",
 ]
 
 standard_dropdown_items = [

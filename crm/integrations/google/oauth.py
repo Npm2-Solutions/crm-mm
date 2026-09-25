@@ -9,8 +9,10 @@ hub (Google, like Meta, matches redirect URIs exactly and has no wildcards).
 The hub relays the authorization code to the site named in the signed state,
 which exchanges it and stores the refresh token for that user.
 
-The token is written into the framework's own `Google Calendar` doctype, so the
-existing calendar sync and the booking busy-check keep working untouched.
+The token is written into the framework's own `Google Calendar` doctype. From
+there the CRM copies each user's appointments into their Google account, one way
+only (`crm.integrations.google.sync`), and the booking busy-check can ask Google
+when they are free. The framework's two-way sync is switched off on these records.
 
 Config keys (common_site_config.json, shared by every site):
     google_client_id, google_client_secret
@@ -32,7 +34,9 @@ from frappe.utils import get_url
 CALLBACK_PATH = "/api/method/crm.integrations.google.oauth.callback"
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
-# full calendar access: the framework's sync both reads and writes events
+# the CRM makes a calendar of its own and writes the appointments into it; the
+# booking busy-check reads free/busy. A narrower scope would also break the
+# framework's token refresh, which always asks for this one.
 SCOPES = ("https://www.googleapis.com/auth/calendar",)
 STATE_TTL = 900
 TIMEOUT = 30
@@ -132,7 +136,11 @@ def get_login_url() -> dict:
 
 
 def ensure_calendar_record() -> str:
-	"""One Google Calendar document per user, created on first connect."""
+	"""One Google Calendar document per user, created on first connect.
+
+	Nothing is copied until Google hands over a token: `store_tokens` switches the
+	copy on. The framework's pull stays off for good: nothing comes back from Google.
+	"""
 	name = frappe.db.get_value("Google Calendar", {"user": frappe.session.user})
 	if name:
 		return name
@@ -145,6 +153,8 @@ def ensure_calendar_record() -> str:
 			"calendar_name": _calendar_record_name(frappe.session.user),
 			"user": frappe.session.user,
 			"enable": 1,
+			"push_to_google_calendar": 0,
+			"pull_from_google_calendar": 0,
 		}
 	)
 	doc.insert(ignore_permissions=True)
@@ -183,10 +193,19 @@ def callback(code: str | None = None, state: str | None = None, **kwargs):
 		tokens = exchange_code(code)
 		store_tokens(parsed.get("cal"), tokens)
 		frappe.db.commit()
-		_redirect_back()
 	except Exception as exc:
 		frappe.log_error(frappe.get_traceback(), "Google Calendar: connection failed")
 		_redirect_back(error=str(exc)[:200])
+		return
+
+	try:
+		from crm.integrations.google.sync import queue_sync
+
+		# the appointments show up in Google within a minute, not at the next hourly pass
+		queue_sync(frappe.session.user)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Google Calendar: first sync not queued")
+	_redirect_back()
 
 
 def exchange_code(code: str) -> dict:
@@ -231,7 +250,11 @@ def sync_google_settings() -> None:
 
 
 def store_tokens(calendar: str | None, tokens: dict) -> None:
-	"""Write the refresh token where the framework's calendar sync expects it."""
+	"""Keep the refresh token on the user's `Google Calendar` and switch the copy on.
+
+	One way only: the CRM writes into Google (`push`), the framework never reads
+	Google back into the CRM (`pull`).
+	"""
 	sync_google_settings()
 
 	name = calendar or frappe.db.get_value("Google Calendar", {"user": frappe.session.user})
@@ -242,7 +265,16 @@ def store_tokens(calendar: str | None, tokens: dict) -> None:
 		frappe.throw(_("This calendar belongs to another user"), frappe.PermissionError)
 	doc.refresh_token = tokens["refresh_token"]
 	doc.enable = 1
+	doc.push_to_google_calendar = 1
+	doc.pull_from_google_calendar = 0
+	if doc.meta.has_field("crm_sync_error"):
+		doc.crm_sync_error = None
 	doc.save(ignore_permissions=True)
+
+	from crm.integrations.google.sync import forget_token
+
+	# a token of the account connected before must not be used for this one
+	forget_token(doc.name)
 
 
 def _relay_to_site(site: str, code: str | None, state: str, kwargs: dict) -> None:

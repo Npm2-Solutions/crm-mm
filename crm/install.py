@@ -32,6 +32,7 @@ def after_install(force=False):
 	add_email_template_custom_fields()
 	add_email_account_custom_field()
 	add_web_form_custom_fields()
+	add_google_calendar_custom_fields()
 	add_whatsapp_custom_fields()
 	add_default_industries()
 	add_default_lead_sources()
@@ -484,6 +485,67 @@ def add_web_form_custom_fields():
 		}
 	)
 	frappe.clear_cache(doctype="Web Form")
+
+
+def add_google_calendar_custom_fields():
+	"""Where the copy of the appointments in Google keeps its state, on the framework's
+	per-user `Google Calendar`: the calendar it writes to, and how the last sync went.
+
+	`crm_calendar_id` is not the framework's `google_calendar_id`: that one belongs to
+	the framework's own two-way sync, and sharing it would read the CRM's copies back
+	into the CRM as Events.
+	"""
+	fields = ("crm_calendar_id", "crm_synced_events", "crm_last_sync", "crm_sync_error")
+	meta = frappe.get_meta("Google Calendar")
+	if all(meta.has_field(field) for field in fields):
+		return
+	click.secho("* Installing Custom Fields in Google Calendar")
+	create_custom_fields(
+		{
+			"Google Calendar": [
+				{
+					"fieldname": "crm_section",
+					"fieldtype": "Section Break",
+					"label": "CRM",
+					"insert_after": "push_to_google_calendar",
+				},
+				{
+					"fieldname": "crm_calendar_id",
+					"fieldtype": "Data",
+					"label": "CRM Calendar ID",
+					"insert_after": "crm_section",
+					"read_only": 1,
+				},
+				{
+					"fieldname": "crm_synced_events",
+					"fieldtype": "Int",
+					"label": "Appointments in Google",
+					"insert_after": "crm_calendar_id",
+					"read_only": 1,
+				},
+				{
+					"fieldname": "crm_column",
+					"fieldtype": "Column Break",
+					"insert_after": "crm_synced_events",
+				},
+				{
+					"fieldname": "crm_last_sync",
+					"fieldtype": "Datetime",
+					"label": "Last Sync",
+					"insert_after": "crm_column",
+					"read_only": 1,
+				},
+				{
+					"fieldname": "crm_sync_error",
+					"fieldtype": "Small Text",
+					"label": "Sync Error",
+					"insert_after": "crm_last_sync",
+					"read_only": 1,
+				},
+			]
+		}
+	)
+	frappe.clear_cache(doctype="Google Calendar")
 
 
 def add_builder_page_custom_fields():
