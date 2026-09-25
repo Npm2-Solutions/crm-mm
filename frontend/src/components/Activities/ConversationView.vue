@@ -73,6 +73,28 @@
           </div>
         </template>
 
+        <!--
+          The call register. A call has no text to read, so a bubble would be a
+          speech balloon with no speech in it: what there is to know is who,
+          which way, how long, and whether there is a recording — which is a
+          row, on a thread, the way the Calls tab showed it before it stopped
+          being a tab of its own.
+        -->
+        <template v-else-if="channel === 'call'">
+          <div class="flex flex-col px-3 sm:px-4">
+            <TimelineEntry
+              v-for="row in group.rows"
+              :key="row.key"
+              :channel="row.channel"
+              :icon="callIconFor(row.item)"
+              :incoming="row.direction === 'in'"
+            >
+              <CallArea v-if="row.channel === 'call'" :activity="row.item" />
+              <slot v-else name="other" :item="row.item" :row="row" />
+            </TimelineEntry>
+          </div>
+        </template>
+
         <!-- email on its own: full width, because a thread is not a chat -->
         <template v-else-if="channel === 'email'">
           <div class="flex flex-col gap-2 px-3 sm:px-4">
@@ -293,6 +315,10 @@
 
 <script setup>
 import CallArea from '@/components/Activities/CallArea.vue'
+import MissedCallIcon from '@/components/Icons/MissedCallIcon.vue'
+import DeclinedCallIcon from '@/components/Icons/DeclinedCallIcon.vue'
+import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
+import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
 import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'
@@ -434,6 +460,15 @@ const ICONS = {
 
 function iconFor(channel) {
   return ICONS[channel] || DotIcon
+}
+
+// On the register the icon carries the outcome, not merely «a call»: missed and
+// answered are the two things somebody scanning a register is looking for, and
+// one phone glyph for both makes them look through every row to find out.
+function callIconFor(item) {
+  if (item?.status === 'No Answer') return MissedCallIcon
+  if (item?.status === 'Busy') return DeclinedCallIcon
+  return item?.type === 'Incoming' ? InboundCallIcon : OutboundCallIcon
 }
 </script>
 

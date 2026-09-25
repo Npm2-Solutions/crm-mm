@@ -449,11 +449,6 @@ const tabs = computed(() => {
       icon: EventIcon,
     },
     {
-      name: 'Calls',
-      label: __('Calls'),
-      icon: PhoneIcon,
-    },
-    {
       name: 'Tasks',
       label: __('Tasks'),
       icon: TaskIcon,
