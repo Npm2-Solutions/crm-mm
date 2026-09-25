@@ -163,7 +163,7 @@
               </span>
               <span class="text-p-sm text-ink-gray-5">
                 {{ dayjs(row.posting_date).format('DD/MM/YYYY') }} ·
-                {{ formatCurrency(row.grand_total) }}
+                {{ formatEuro(row.grand_total) }}
                 <template v-if="row.channel">
                   · {{ channelLabel(row.channel) }}
                 </template>
@@ -181,12 +181,12 @@
               />
               <Badge
                 v-if="row.sdi_status && row.sdi_status !== 'non_applicabile'"
-                :theme="statusTheme(row.sdi_status)"
+                :theme="invoiceStatusTheme(row.sdi_status)"
                 :label="'SdI: ' + row.sdi_status"
               />
               <Badge
                 v-if="row.ts_status && row.ts_status !== 'non_applicabile'"
-                :theme="statusTheme(row.ts_status)"
+                :theme="invoiceStatusTheme(row.ts_status)"
                 :label="'TS: ' + row.ts_status"
               />
               <!-- The transmit action does not exist on a document that cannot
@@ -325,7 +325,7 @@
                   </span>
                 </div>
                 <div class="flex shrink-0 items-center gap-2">
-                  <Badge :theme="statusTheme(row.status)" :label="row.status" />
+                  <Badge :theme="invoiceStatusTheme(row.status)" :label="row.status" />
                   <Button
                     v-if="row.file"
                     variant="subtle"
@@ -345,6 +345,7 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { formatDate } from '@/utils'
+import { formatEuro, invoiceStatusTheme } from '@/utils/invoicing'
 import {
   createListResource,
   createResource,
@@ -503,21 +504,6 @@ function channelLabel(channel) {
     pdf_ts: __('PDF + Sistema TS'),
     pdf_solo: __('PDF only'),
   }[channel]
-}
-
-function statusTheme(status) {
-  if (['accolto', 'consegnata', 'scaricato'].includes(status)) return 'green'
-  if (['scartato', 'scartata', 'errore', 'mancata_consegna'].includes(status))
-    return 'red'
-  if (['inviato', 'pronto', 'pronto_export'].includes(status)) return 'blue'
-  return 'orange'
-}
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat('it-IT', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(value || 0)
 }
 
 function openDesk(route) {

@@ -574,3 +574,33 @@ class TestTheConversationOfARealPerson(FrappeTestCase):
 		# the person moves up the Inbox, not only the negotiation
 		self.assertTrue(frappe.db.get_value("CRM Lead", self.lead.name, "last_conversation_on"))
 		self.assertEqual(unread([["CRM Lead", self.lead.name]]).get(f"CRM Lead:{self.lead.name}"), 1)
+
+
+class TestWhereAnInvoiceSitsInTheHistory(FrappeTestCase):
+	"""An invoice's place in the stream is its own date, not the day it was typed.
+
+	The posting date is the date printed on the document and the one somebody
+	looks for it under, so an invoice entered today for the 20th belongs on the
+	20th. When the two agree the creation time is kept — midnight would float
+	today's invoice above the whole day's messages.
+	"""
+
+	def test_a_backdated_invoice_sits_on_the_date_it_carries(self):
+		from frappe.utils import get_datetime
+
+		from crm.api.activities import invoice_moment
+
+		row = frappe._dict({"posting_date": "2026-09-20", "creation": "2026-09-25 14:32:00"})
+		self.assertEqual(invoice_moment(row), get_datetime("2026-09-20"))
+
+	def test_an_invoice_written_on_its_own_date_keeps_the_hour(self):
+		from crm.api.activities import invoice_moment
+
+		row = frappe._dict({"posting_date": "2026-09-25", "creation": "2026-09-25 14:32:00"})
+		self.assertEqual(invoice_moment(row), "2026-09-25 14:32:00")
+
+	def test_without_a_posting_date_it_sits_where_it_was_written(self):
+		from crm.api.activities import invoice_moment
+
+		row = frappe._dict({"posting_date": None, "creation": "2026-09-25 14:32:00"})
+		self.assertEqual(invoice_moment(row), "2026-09-25 14:32:00")

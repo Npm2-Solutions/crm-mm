@@ -236,6 +236,39 @@
           </HappenedCard>
 
           <!--
+            An invoice. The one row here that is money, so it says the amount at
+            a size somebody can read from across the desk, and the badge is the
+            only colour on it: a refused transmission is the single state in this
+            whole stream that is somebody's job to fix today.
+          -->
+          <HappenedCard
+            v-else-if="row.channel === 'invoice'"
+            kind="invoice"
+            :icon="MoneyIcon"
+            :title="invoiceTitle(row.item.data)"
+            :when="timeOf(row)"
+            card
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-lg font-semibold text-ink-gray-8">
+                {{ amountOf(row.item.data) }}
+              </span>
+              <Badge
+                v-if="statusOf(row.item.data)"
+                size="sm"
+                :theme="invoiceStatusTheme(statusOf(row.item.data))"
+                :label="statusOf(row.item.data)"
+              />
+              <Badge
+                v-if="row.item.data?.docstatus === 0"
+                size="sm"
+                theme="gray"
+                :label="__('Draft')"
+              />
+            </div>
+          </HappenedCard>
+
+          <!--
             The stage moved. Every other field that changes is bookkeeping and
             reads as one quiet line; this one is the point of the whole record,
             so it is the line the eye is allowed to stop on.
@@ -273,6 +306,7 @@ import DotIcon from '@/components/Icons/DotIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import ChatBubble from '@/components/Activities/ChatBubble.vue'
 import HappenedCard from '@/components/Activities/HappenedCard.vue'
+import MoneyIcon from '@/components/Icons/MoneyIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import TimelineEntry from '@/components/Activities/TimelineEntry.vue'
@@ -283,6 +317,13 @@ import {
   isStageChange,
   speakerOf,
 } from '@/utils/conversation'
+import {
+  formatEuro,
+  invoiceLabel,
+  invoiceStatusTheme,
+  isCreditNote,
+  worstStatus,
+} from '@/utils/invoicing'
 import { sanitizeHTML } from '@/utils'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { usersStore } from '@/stores/users'
@@ -346,6 +387,27 @@ const APPOINTMENT_THEMES = {
 
 function appointmentTheme(status) {
   return APPOINTMENT_THEMES[status] || 'gray'
+}
+
+// «Fattura n. 12» rather than «CRM Invoice / INV-2026-00012»: the number is what
+// somebody quotes on the phone, and a credit note has to say it is one, because
+// the amount alone reads as money coming in either way.
+function invoiceTitle(invoice) {
+  const kind = isCreditNote(invoice?.document_type)
+    ? __('Credit note')
+    : __('Invoice')
+  const number = invoiceLabel(invoice)
+  return number ? `${kind} ${number}` : kind
+}
+
+function amountOf(invoice) {
+  const total = invoice?.grand_total ?? invoice?.net_payable
+  const signed = isCreditNote(invoice?.document_type) ? -Math.abs(total) : total
+  return formatEuro(signed)
+}
+
+function statusOf(invoice) {
+  return worstStatus(invoice || {})
 }
 
 // `Today` and `Yesterday` are what somebody is actually asking when they look

@@ -6,6 +6,7 @@ from frappe import _
 from frappe.desk.form.load import get_docinfo
 from frappe.query_builder import JoinType
 from frappe.translate import get_translated_doctypes
+from frappe.utils import get_datetime, getdate
 
 from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_call_log.crm_call_log import parse_call_log
@@ -661,14 +662,95 @@ def notes_on(doctype: str, name: str) -> list[dict]:
 	]
 
 
-def everything_else_on(doctype: str, name: str) -> list[dict]:
-	"""The four above, gathered. Each one is allowed to fail on its own.
+def invoice_moment(row) -> str:
+	"""Where an invoice sits: on the date printed on it, at the hour it was written.
 
-	A site without the booking app, or with an older Event doctype, should lose
-	that one row type and keep the history — not lose the history.
+	The posting date is the invoice's real date — the one on the document, the one
+	somebody looks for it under — so an invoice entered today for the 20th belongs
+	on the 20th. When the two agree, the creation time is kept, because midnight
+	would float today's invoice above the whole day's messages.
+	"""
+	created = get_datetime(row.creation)
+	if not row.posting_date:
+		return row.creation
+	if getdate(row.posting_date) == created.date():
+		return row.creation
+	return get_datetime(row.posting_date)
+
+
+def invoices_on(doctype: str, name: str) -> list[dict]:
+	"""Invoices issued to this person.
+
+	Money is the loudest thing that happens on a record and it had no place in
+	the history at all: an invoice lived on its own page, so the one fact that
+	says the relationship became a paying one could not be read beside the
+	conversation that produced it.
+
+	The link is written twice — `party_type`/`party` like an appointment, and a
+	plain `deal` link — so both are read: an invoice raised from a deal never
+	shows up on the deal it came from otherwise.
+	"""
+	if not frappe.db.exists("DocType", "CRM Invoice"):
+		return []
+	fields = [
+		"name",
+		"document_type",
+		"document_number",
+		"posting_date",
+		"grand_total",
+		"net_payable",
+		"sdi_status",
+		"ts_status",
+		"docstatus",
+		"creation",
+		"owner",
+	]
+	# Gathered as two lookups rather than one `or_filters`: a multi-key dict in
+	# `or_filters` is flattened into independent OR conditions, so asking for
+	# «party_type = CRM Deal and party = this one, or deal = this one» would in
+	# fact ask for every invoice raised against any deal at all.
+	billed = set(
+		frappe.get_all(
+			"CRM Invoice",
+			filters={"party_type": doctype, "party": name},
+			pluck="name",
+			limit_page_length=0,
+		)
+	)
+	if doctype == "CRM Deal":
+		billed |= set(
+			frappe.get_all("CRM Invoice", filters={"deal": name}, pluck="name", limit_page_length=0)
+		)
+	if not billed:
+		return []
+	rows = frappe.get_all(
+		"CRM Invoice",
+		filters={"name": ["in", sorted(billed)]},
+		fields=fields,
+		limit_page_length=0,
+	)
+	return [
+		{
+			"name": row.name,
+			"activity_type": "invoice",
+			"creation": invoice_moment(row),
+			"owner": row.owner,
+			"data": dict(row),
+			"is_lead": doctype == "CRM Lead",
+		}
+		for row in rows
+	]
+
+
+def everything_else_on(doctype: str, name: str) -> list[dict]:
+	"""The gatherers above, gathered. Each one is allowed to fail on its own.
+
+	A site without the booking app, without invoicing, or with an older Event
+	doctype, should lose that one row type and keep the history — not lose the
+	history.
 	"""
 	gathered = []
-	for gather in (appointments_on, events_on, tasks_on, notes_on):
+	for gather in (appointments_on, events_on, tasks_on, notes_on, invoices_on):
 		try:
 			gathered += gather(doctype, name)
 		except Exception:

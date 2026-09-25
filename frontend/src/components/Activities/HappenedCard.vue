@@ -82,6 +82,14 @@ const TONES = {
     fill: 'bg-surface-white',
     ink: 'text-ink-gray-7',
   },
+  // money. A white card like the rest — the colour on an invoice belongs on its
+  // state, where it means «this one was refused», not on the surface, where it
+  // would only mean «this one is an invoice».
+  invoice: {
+    edge: 'border-outline-gray-3',
+    fill: 'bg-surface-white',
+    ink: 'text-ink-gray-7',
+  },
   // the move that is the point of the whole record
   stage: {
     edge: 'border-outline-gray-2',
