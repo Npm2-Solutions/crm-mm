@@ -498,11 +498,11 @@ def invoice_channel(invoice: str) -> dict:
 	}
 
 
-# nosemgrep: guest-whitelisted-method — guest by necessity: the accredited provider
-# pushes notices from its own infrastructure and has no session here. It is not
-# unauthenticated: every delivery presents a per-company shared secret, compared in
-# constant time, and a refused one is told nothing about why. See sdi/webhook.py.
-@frappe.whitelist(allow_guest=True, methods=["POST"])
+# Guest by necessity: the accredited provider pushes notices from its own
+# infrastructure and has no session here. It is not unauthenticated - every delivery
+# presents a per-company shared secret, compared in constant time, and a refused one
+# is told nothing about why. See crm/invoicing/sdi/webhook.py.
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def provider_webhook():
 	"""The provider's way in with a notice. Guest by necessity, secret by design.
 

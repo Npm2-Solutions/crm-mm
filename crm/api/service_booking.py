@@ -224,7 +224,7 @@ def page_branding(config=None) -> dict:
 	from crm.scheduling.branding import accent_vars
 
 	config = config or settings()
-	brand = frappe.db.get_value("FCRM Settings", None, ["brand_logo", "favicon"], as_dict=True) or {}
+	brand = frappe.db.get_single_value("FCRM Settings", ["brand_logo", "favicon"], as_dict=True) or {}
 	logo = config.get("booking_page_logo") or brand.get("brand_logo") or ""
 	return {
 		"title": page_title(config),
