@@ -7,7 +7,7 @@
 -->
 <template>
   <div
-    class="flex w-72 shrink-0 flex-col gap-4 overflow-y-auto border-l bg-surface-white p-4"
+    class="flex w-full shrink-0 flex-col gap-4 overflow-y-auto bg-surface-white p-4 sm:w-72 sm:border-l"
   >
     <div class="flex flex-col items-center gap-2 text-center">
       <Avatar size="2xl" :label="title" :image="person.image" />
