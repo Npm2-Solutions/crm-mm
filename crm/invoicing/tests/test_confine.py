@@ -58,8 +58,7 @@ class ConfineTest(UnitTestCase):
 		"""
 		from crm.invoicing import estensioni
 
-		estensioni.dimentica_risolutore()
-		try:
+		with estensioni.senza_estensioni():
 			risolvi = estensioni.risolutore()
 			avvocato = risolvi("avvocato")
 			self.assertEqual(avvocato.cassa, "TC01")
@@ -68,8 +67,6 @@ class ConfineTest(UnitTestCase):
 			# And nothing here claims a duty towards a system it has never heard of.
 			self.assertFalse(avvocato.comunicazione_esterna)
 			self.assertIsNone(avvocato.soggetto_comunicazione)
-		finally:
-			estensioni.dimentica_risolutore()
 
 	def test_una_qualifica_sanitaria_non_si_risolve_senza_il_suo_modulo(self):
 		"""And it is refused rather than guessed.
@@ -80,12 +77,30 @@ class ConfineTest(UnitTestCase):
 		"""
 		from crm.invoicing import estensioni
 
-		estensioni.dimentica_risolutore()
-		try:
+		with estensioni.senza_estensioni():
 			with self.assertRaises(KeyError):
 				estensioni.risolutore()("massoterapista")
+
+	def test_il_blocco_senza_estensioni_rimette_tutto_a_posto(self):
+		"""The isolation must be a loan, not a demolition.
+
+		The registries are process-wide. The two tests above need invoicing bare, and the
+		first version of them took it bare and left it that way: every later test in the
+		same process - a whole DB-backed suite - then asked for an osteopath and was told,
+		correctly, that nobody had ever registered one.
+		"""
+		from crm.invoicing import estensioni
+
+		def segnaposto(codice: str):
+			raise KeyError(codice)
+
+		estensioni.registra_risolutore(segnaposto)
+		try:
+			with estensioni.senza_estensioni():
+				self.assertNotIn(segnaposto, estensioni._risolutori)
+			self.assertIn(segnaposto, estensioni._risolutori)
 		finally:
-			estensioni.dimentica_risolutore()
+			estensioni._risolutori.remove(segnaposto)
 
 
 class FormaStudioTest(UnitTestCase):
