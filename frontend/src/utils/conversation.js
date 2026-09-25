@@ -91,6 +91,26 @@ export function directionOf(item) {
   return 'internal'
 }
 
+/**
+ * Who said it, for the line above the message.
+ *
+ * In a mixed history the side of the screen cannot carry this: left and right
+ * mean «them» and «us» inside *one* conversation, and a history holds four of
+ * them plus everything the record did to itself. So it is written, once, in
+ * words — and the arrangement stops having to encode it.
+ */
+export function speakerOf(item, me = '') {
+  const channel = channelOf(item)
+  const direction = directionOf(item)
+  if (direction === 'out') return me || 'You'
+  if (channel === 'whatsapp' || channel === 'sms')
+    return item.profile_name || item.from || ''
+  if (channel === 'email')
+    return item.data?.sender_full_name || item.data?.sender || item.sender || ''
+  if (channel === 'call') return item._caller?.label || ''
+  return item.owner_name || item.owner || ''
+}
+
 /** Does this one read as a chat bubble, or as a full-width card? */
 export function isConversational(item) {
   return directionOf(item) !== 'internal'
@@ -183,52 +203,6 @@ export function groupByDay(rows = []) {
     out.push({ key: `day:${day}:${out.length}`, day, rows: [row] })
   }
   return out
-}
-
-/**
- * A long run of one channel, folded into a single row that opens.
- *
- * In the mixed view a WhatsApp conversation is forty bubbles in a row, and the
- * email, the call and the note that happened around it are somewhere inside
- * them. The reason to read everything together is to see *what happened*, and
- * forty of one thing buries the other four.
- *
- * Only runs of the same channel, only when there are enough of them to be in
- * the way, and never today's — what happened today is what somebody came to
- * read, and making them click for it would be answering a question with a door.
- *
- * @param {Array} rows      one day's rows, in order
- * @param {{least?: number}} options  how many in a row before folding
- */
-export function collapseRuns(rows = [], options = {}) {
-  const least = options.least || 5
-  const out = []
-  for (const row of rows || []) {
-    const last = out[out.length - 1]
-    if (last?.kind === 'run' && last.channel === row.channel) {
-      last.rows.push(row)
-      continue
-    }
-    // a row with no channel of its own — a field that changed, a note — is not
-    // part of anybody's thread, and folding it away with one would say it was
-    if (!row.channel) {
-      out.push(row)
-      continue
-    }
-    out.push({ kind: 'run', channel: row.channel, rows: [row] })
-  }
-
-  return out
-    .map((entry) => {
-      if (entry.kind !== 'run') return entry
-      if (entry.rows.length < least) return entry.rows
-      return {
-        ...entry,
-        key: `run:${entry.rows[0].key}:${entry.rows.length}`,
-        at: entry.rows[entry.rows.length - 1].at,
-      }
-    })
-    .flat()
 }
 
 /** `Today`, `Yesterday`, or the date itself — the label on a day marker. */
