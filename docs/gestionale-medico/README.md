@@ -26,8 +26,8 @@ attraversa due fasi, e **due mestieri** che lavorano su di lei.
 
 ```
   CONTATTO  ───────────── prima visita ─────────────►  PAZIENTE
-  da conquistare         la segreteria segna            da curare
-  lo segue il marketing  "arrivato"                     lo segue il centro,
+  da conquistare         il primo segno che             da curare
+  lo segue il marketing  è venuto davvero               lo segue il centro,
   con i deal                                            con agenda e visite
 ```
 
@@ -40,6 +40,45 @@ attraversa due fasi, e **due mestieri** che lavorano su di lei.
 Saperlo serve davvero: cartella e documenti clinici vanno conservati anche se la
 persona chiede di essere cancellata, il medico vede i pazienti e il marketing no, e
 "nuovi pazienti al mese" è il numero che il centro guarda.
+
+### Come si diventa paziente: da soli, qualunque sia il modo di lavorare
+
+Molti centri non hanno una segreteria che fa l'accettazione: c'è solo il medico,
+che apre la scheda della persona e comincia a scrivere. Quindi nessun bottone
+"converti" e nessun passaggio obbligato. La persona diventa paziente al **primo
+segno che è venuta**, qualunque arrivi prima:
+
+| Come lavora il centro | Il segno | Gesto in più richiesto |
+|---|---|---|
+| Solo il medico, che apre la scheda e scrive | Il medico salva la prima visita o nota clinica | nessuno: scrivere è già il gesto |
+| Agenda usata con gli stati | L'appuntamento segnato come svolto (`Completed`, o il partecipante `Attended`) | nessuno |
+| Segreteria che fa l'accettazione | L'accettazione | nessuno |
+| Passaggio dal vecchio gestionale | L'importazione dei pazienti | nessuno |
+
+**Quattro strade, una porta.** Tutte chiamano la stessa funzione, che non fa danni
+se chiamata due volte: crea la scheda paziente se non c'è, scrive "paziente dal
+12/10/2026, prima visita", chiude come vinto il deal aperto della pipeline "Nuovi
+pazienti" e lancia un evento "Diventato paziente" per le automazioni (benvenuto,
+richiesta di recensione dopo una settimana…).
+
+Quello che cambia per chi lavora:
+
+- **Il medico vede una pagina sola.** Sulla pagina della persona compare la
+  sezione "Clinica", solo per i ruoli clinici. Salvare la prima volta basta:
+  sotto, il gestionale crea la scheda paziente e la collega. I dati restano in
+  DocType separati per i permessi, ma la pagina è una.
+- **Niente campi obbligatori per diventare paziente.** Codice fiscale, nascita e
+  residenza si completano quando capita. La scheda dice cosa manca senza bloccare
+  chi scrive, e dal codice fiscale si ricavano da soli data di nascita e sesso (e il
+  comune, con la tabella dei codici catastali).
+- **Salvare la visita chiude l'appuntamento di oggi.** Se la persona aveva un
+  appuntamento oggi con quel medico, la visita lo segna come svolto: presenze e
+  no-show restano giusti anche dove nessuno aggiorna l'agenda.
+- **Chi non segna niente riceve una domanda.** A fine giornata, per gli
+  appuntamenti passati senza esito, un promemoria al medico: "sono venuti?", un
+  clic sì o no. Senza risposta la persona resta contatto: meglio un paziente in
+  meno che un no-show contato come paziente.
+- **Paziente si resta.** Non si torna contatto, perché la cartella va conservata.
 
 ### Due mestieri, due facce dello stesso CRM
 
@@ -115,8 +154,8 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 |---|---|---|
 | Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare | La scheda paziente: codice fiscale, nascita, residenza (sulla persona **non c'è nessun indirizzo**), tessera sanitaria, genitore o tutore per i minori |
 | Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:565`) **ma non registrata**. L'hook `user_data_fields` è commentato | Consensi registrati (quale testo, quale versione, quando, come): marketing, dossier, referti online |
-| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati | Lo stato "arrivato", l'accettazione, le prestazioni *eseguite* (spesso diverse dalle prenotate) |
-| Fatturazione | C'è già, fuori da questo progetto | Riceve dall'accettazione le prestazioni eseguite |
+| Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. Gli stati `Completed` e `Attended` si segnano a mano dal dialogo dell'appuntamento | La visita che chiude da sola l'appuntamento; l'accettazione, facoltativa, per i centri con segreteria; le prestazioni *eseguite* (spesso diverse dalle prenotate) |
+| Fatturazione | C'è già, fuori da questo progetto | Riceve le prestazioni eseguite, dall'accettazione o dall'appuntamento |
 | Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
 | Ruoli | System Manager, Sales Manager, Sales User. Ogni utente vede tutti gli appuntamenti | Segreteria, Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo |
 | Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
@@ -204,10 +243,11 @@ Le regole:
 
 Le giornate tipo vanno nella SPA `/crm`, dove il centro lavora già:
 
-- **Segreteria:** agenda, poi "arrivato", poi accettazione (e la fattura, con
-  quello che usate già), poi il prossimo appuntamento.
-- **Medico:** la mia giornata, poi la scheda del paziente (storia, allegati,
-  consensi), poi la visita sul modello della sua specialità, poi il referto.
+- **Segreteria, dove c'è:** agenda, poi "arrivato", poi accettazione (e la
+  fattura, con quello che usate già), poi il prossimo appuntamento.
+- **Medico:** la mia giornata, poi la scheda della persona (storia, allegati,
+  consensi), poi la visita sul modello della sua specialità, poi il referto. Nei
+  centri senza segreteria fa tutto da lì: apre la scheda, scrive, salva.
 - **Direzione:** appuntamenti, nuovi pazienti, prodotto per medico, consensi
   mancanti.
 - **Marketing:** richieste, pipeline, campagne e costo per nuovo paziente.
@@ -229,19 +269,20 @@ l'esito ([ricerca §3](./ricerca.md#3-i-tubi-regolati-sdi-sistema-ts-firma)).
 
 ```
 CRM Lead (la persona, com'è oggi)
-  └─1:1─ Paziente ─── nasce alla prima visita: codice fiscale, nascita, residenza,
-            │          tessera sanitaria, tutore o pagante (un'altra persona),
-            │          consenso al dossier
+  └─1:1─ Paziente ─── nasce da sola al primo segno di presenza: codice fiscale,
+            │          nascita, residenza, tessera sanitaria, tutore o pagante
+            │          (un'altra persona), consenso al dossier
             ├── Consenso ×N ─── tipo, versione del testo, firmato il, come, PDF
-            └── Documento ×N ── esami portati dal paziente (file privati)
+            ├── Documento ×N ── esami portati dal paziente (file privati)
+            └── Visita ×N ───── dati clinici sul modello della specialità,
+                  │              collegata all'appuntamento se c'è
+                  └── Referto ── PDF, firma, consegna
 
 CRM Appointment (l'agenda, com'è oggi)
-  └─1:N─ Accettazione ─── chi è arrivato, prestazioni eseguite, medico, chi paga
-            ├── Visita ──────── dati clinici sul modello della specialità
-            │     └── Referto ── PDF, firma, consegna
-            └──► la fatturazione che usate già: le prestazioni eseguite ne sono le righe
+  └── Accettazione (facoltativa, per chi ha la segreteria) ── prestazioni eseguite,
+        chi paga ──► la fatturazione che usate già
 
-CRM Deal (com'è oggi): la prima accettazione chiude come vinto quello aperto
+CRM Deal (com'è oggi): il primo segno di presenza chiude come vinto quello aperto
 ```
 
 Perché così:
@@ -250,14 +291,23 @@ Perché così:
   persone sono pazienti (il lead da Meta che non è mai venuto), i permessi sono
   diversi, e `CRM Lead` è il DocType più letto del core (il solo `mobile_no`
   compare in 201 punti, doc 18): il verticale non deve toccarlo.
-- **L'accettazione separa l'agenda dalla fattura.** `CRM Appointment` resta agenda
-  e basta. L'accettazione registra cosa è stato fatto davvero, vale anche senza
-  appuntamento (chi entra senza prenotare), e in un appuntamento di gruppo ce n'è
-  una per partecipante.
+- **La visita appende al paziente, non all'accettazione**, perché in molti centri
+  l'accettazione non c'è. Il medico apre la persona e scrive; se c'era un
+  appuntamento, la visita lo trova e lo chiude.
+- **L'accettazione è facoltativa.** Serve ai centri con una segreteria: registra
+  cosa è stato fatto davvero e chi paga, vale anche senza appuntamento (chi entra
+  senza prenotare), e in un appuntamento di gruppo ce n'è una per partecipante.
+  `CRM Appointment` resta agenda e basta.
 - **Visita e accettazione sono due DocType** perché la segreteria deve vedere
   l'una e non l'altra. Un permesso per DocType è più semplice e più sicuro di un
   permesso per campo, ed è quello che chiede il Garante per il dossier sanitario:
   i dati sulla salute separati dagli altri dati personali.
+- **Una porta sola per diventare paziente.** Una funzione che non fa danni se
+  chiamata due volte (`ensure_patient(persona, motivo)`), chiamata dai
+  `doc_events` di visita, appuntamento (`Completed` o `Attended`) e accettazione, e
+  dall'importazione. Un vincolo di unicità sulla persona impedisce due schede
+  paziente anche se due eventi arrivano insieme. L'evento "Diventato paziente" si
+  aggiunge a `EVENT_TO_TRIGGER` in `crm/automation/engine.py`.
 - **Paziente, pagante e chi prenota possono essere tre persone diverse:** il
   bambino, il genitore che paga, la nonna che telefona. Jane li chiama "related
   profiles". È il punto più delicato del modello, perché oggi `find_person`
@@ -301,9 +351,9 @@ prova con il centro pilota.
 
 | Fase | Cosa | sp | Da qui il centro pilota può… |
 |---|---|---|---|
-| **0 — Le due facce** | Interruttore "centro medico"; ruoli Segreteria, Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo; scheda paziente creata alla prima visita, con codice fiscale validato; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 2–3 | …importare i pazienti e dare a ognuno la sua vista |
-| **1 — Le cuciture** | Da "arrivato" all'accettazione, con le prestazioni eseguite passate alla fatturazione; pipeline "Nuovi pazienti" e "Preventivi"; la prima visita che chiude il deal; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
-| **2 — Cartella e referti** | Modelli per specialità; visita; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; allegati; registro degli accessi; dossier e oscuramento; consegna del referto | 5–6 | …spegnere il vecchio gestionale |
+| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; ruoli Segreteria, Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la porta unica per diventare paziente, con le quattro strade; codice fiscale che compila nascita e sesso; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 3–4 | …lavorare dalla pagina della persona, medico compreso |
+| **1 — Le cuciture** | Il primo segno di presenza che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; accettazione facoltativa con le prestazioni eseguite passate alla fatturazione; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
+| **2 — Cartella e referti** | Modelli per specialità; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; registro degli accessi; dossier e oscuramento; consegna del referto | 4–5 | …spegnere il vecchio gestionale |
 | **3 — Paziente ed extra** | Area paziente (referti, questionario prima della visita); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
 | **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
 
@@ -362,8 +412,8 @@ come prodotto va sentito un legale ([ricerca §2.6](./ricerca.md#26-dispositivo-
 
 ## Come si parte davvero
 
-1. Un giorno seduti nella segreteria del centro pilota: cosa fanno con il
-   gestionale di oggi, in che ordine, quante volte al giorno, e chi risponde a
-   quale messaggio.
+1. Un giorno nel centro pilota, accanto a chi apre la scheda del paziente
+   (segreteria o medico): cosa fanno con il gestionale di oggi, in che ordine,
+   quante volte al giorno, e chi risponde a quale messaggio.
 2. Le cinque domande qui sopra, chiuse con il committente.
 3. Fase 0.
