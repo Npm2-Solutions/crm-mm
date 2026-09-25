@@ -429,7 +429,7 @@ def people(
 		fields=list(ROW),
 		filters=conditions,
 		or_filters=or_conditions,
-		order_by="last_conversation_on desc, modified desc",
+		order_by=NEWEST_FIRST,
 		limit_page_length=min(int(limit), 200),
 	)
 
@@ -441,17 +441,24 @@ HANDLED = "Handled"
 # Kept here rather than in the browser so «open» means the same thing to the list,
 # to the count above it and to anything that asks later.
 STATES = {
-	# The pile: somebody wrote and nobody here has said they have read it. It
-	# used to mean «not handled», which on a live site is everybody — a default
-	# view that shows the whole address book is not a pile, it is the list again.
-	"unread": {
-		"conversation_unread": 1,
+	# What is in front of you: everything except what you have dealt with and
+	# what you put off on purpose. Not filtered down to the unanswered ones —
+	# that was a list with holes in it, where somebody you spoke to this morning
+	# had simply vanished. WhatsApp does not filter either: it *sorts*, and the
+	# ones waiting on you are the ones at the top.
+	"open": {
+		"conversation_status": OPEN,
 		"conversation_snoozed_until": ["is", "not set"],
 	},
 	"snoozed": {"conversation_snoozed_until": ["is", "set"]},
 	"handled": {"conversation_status": HANDLED},
 	"all": {},
 }
+
+# Who is waiting first, then whoever spoke last — and «spoke» counts both
+# sides, because a conversation you answered five minutes ago is more alive
+# than one nobody has touched since April.
+NEWEST_FIRST = "conversation_unread desc, last_conversation_on desc, modified desc"
 
 
 def wake_the_snoozed() -> int:

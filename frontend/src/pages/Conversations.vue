@@ -132,7 +132,7 @@ const { $socket } = globalStore()
 // works and a conversation can be linked to — without the page being rebuilt
 // around it, which is the whole point of this screen.
 const chosen = computed(() => route.query.person || '')
-const state = ref('unread')
+const state = ref('open')
 const search = ref('')
 const pageLength = ref(40)
 

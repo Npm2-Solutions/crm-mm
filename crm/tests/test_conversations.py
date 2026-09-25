@@ -216,22 +216,50 @@ class TestThePileIsWhatNobodyHasReadYet(FrappeTestCase):
 		mark_read("CRM Lead", self.lead.name)
 		self.assertNotIn(key, unread([["CRM Lead", self.lead.name]]))
 
-	def test_the_pile_is_what_the_default_view_asks_for(self):
-		from crm.api.conversations import mark_read, people
+	def test_whoever_is_waiting_is_at_the_top_not_on_their_own(self):
+		"""Sorted, not filtered — the way a chat app does it."""
+		from frappe.utils import add_to_date
 
-		quiet_one = frappe.get_doc(
-			{"doctype": "CRM Lead", "first_name": "Muto", "last_name": "Prova"}
+		from crm.api.conversations import people, remember
+
+		answered = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Risposto", "last_name": "Prova"}
 		).insert(ignore_permissions=True)
+		# spoken to a minute ago, and settled: recent, but nobody is waiting
+		frappe.db.set_value(
+			"CRM Lead",
+			answered.name,
+			{
+				"last_conversation_on": add_to_date(None, minutes=-1),
+				"last_conversation_direction": "Outgoing",
+				"conversation_unread": 0,
+			},
+			update_modified=False,
+		)
+		# and somebody who wrote yesterday and is still waiting
 		self._sms("Incoming", "ci sei?")
+		remember("CRM Lead", self.lead.name)
+		frappe.db.set_value(
+			"CRM Lead",
+			self.lead.name,
+			{"last_conversation_on": add_to_date(None, days=-1)},
+			update_modified=False,
+		)
 
-		pile = [row.name for row in people(state="unread", limit=200)]
-		self.assertIn(self.lead.name, pile)
-		# somebody who has never written is not on the pile — that was the bug:
-		# the default view showed the whole address book
-		self.assertNotIn(quiet_one.name, pile)
+		order = [row.name for row in people(state="open", limit=200)]
+		# both are there — filtering the answered one out would leave a list
+		# with holes in it, where somebody you spoke to this morning vanished
+		self.assertIn(answered.name, order)
+		self.assertIn(self.lead.name, order)
+		# and the one waiting comes first, although it is the older message
+		self.assertLess(order.index(self.lead.name), order.index(answered.name))
 
-		mark_read("CRM Lead", self.lead.name)
-		self.assertNotIn(self.lead.name, [row.name for row in people(state="unread", limit=200)])
+	def test_what_you_dealt_with_leaves_the_list(self):
+		from crm.api.conversations import HANDLED, people, set_state
+
+		self._sms("Incoming", "ci sei?")
+		set_state("CRM Lead", self.lead.name, HANDLED)
+		self.assertNotIn(self.lead.name, [row.name for row in people(state="open", limit=200)])
 
 
 class TestReadReceiptsAreSomebodyElsesScreen(FrappeTestCase):
