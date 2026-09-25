@@ -62,7 +62,14 @@
         note, a file. Picking a channel narrows it to that channel's one button,
         because then the question is already answered.
       -->
-      <Dropdown v-if="channel === 'all'" :options="defaultActions" @click.stop>
+      <!--
+        Everything that is not a message starts here, and it is here whatever
+        the stream is filtered to: a note, a task, an event, a logged call are
+        things you do *about* somebody rather than say to them, and hiding the
+        menu behind one particular filter made them feel like they belonged to
+        it.
+      -->
+      <Dropdown :options="defaultActions" @click.stop>
         <template #default="{ open }">
           <Button
             variant="solid"
@@ -73,13 +80,6 @@
           />
         </template>
       </Dropdown>
-      <Button
-        v-else
-        variant="solid"
-        iconLeft="plus"
-        :label="__(newLabel)"
-        @click="startNew"
-      />
     </div>
     <MultiActionButton
       v-else-if="title == 'Calls'"
@@ -185,23 +185,6 @@ const channelOptions = computed(() =>
 )
 
 // One button, and it writes in the channel you are reading.
-const NEW_LABEL = {
-  all: 'New',
-  email: 'New Email',
-  whatsapp: 'New Message',
-  sms: 'New SMS',
-  comment: 'New Comment',
-}
-
-const newLabel = computed(() => NEW_LABEL[channel.value] || 'New')
-
-function startNew() {
-  if (channel.value === 'whatsapp') return props.whatsappBox?.show?.()
-  if (channel.value === 'sms') return props.smsBox?.show?.()
-  if (channel.value === 'comment') return (emailBox.value.showComment = true)
-  emailBox.value.show = true
-}
-
 const { makeCall } = globalStore()
 
 const tabIndex = defineModel({ type: Number })

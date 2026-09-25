@@ -172,6 +172,7 @@ def get_deal_activities(name: str):
 	notes = notes + get_linked_notes(name) + get_linked_calls(name).get("notes", [])
 	tasks = tasks + get_linked_tasks(name) + get_linked_calls(name).get("tasks", [])
 	attachments = attachments + get_attachments("CRM Deal", name)
+	activities += everything_else_on("CRM Deal", name)
 
 	activities.sort(key=lambda x: x["creation"], reverse=True)
 	activities = handle_multiple_versions(activities)
@@ -294,6 +295,8 @@ def get_lead_activities(name: str):
 	notes = get_linked_notes(name) + get_linked_calls(name).get("notes", [])
 	tasks = get_linked_tasks(name) + get_linked_calls(name).get("tasks", [])
 	attachments = get_attachments("CRM Lead", name)
+
+	activities += everything_else_on("CRM Lead", name)
 
 	deal_activities, deal_calls = get_conversation_on_deals(name)
 	activities += deal_activities
@@ -537,3 +540,137 @@ def parse_attachment_log(html: str, type: str):
 
 def is_translatable(doctype: str) -> bool:
 	return doctype in get_translated_doctypes()
+
+
+# --- everything else that happens to a person ---------------------------------
+#
+# A history that holds only what was *said* is half a history. An appointment
+# booked, a task somebody set themselves, a meeting put in the calendar, a note
+# written on the record: those are the things that happened between one message
+# and the next, and reading the messages without them is reading a conversation
+# with the actions cut out.
+
+
+def appointments_on(doctype: str, name: str) -> list[dict]:
+	"""Appointments this person is a participant of.
+
+	The link lives on the participants table rather than on the appointment, so
+	a meeting with three people is one appointment on three records rather than
+	three appointments.
+	"""
+	if not frappe.db.exists("DocType", "CRM Appointment"):
+		return []
+	booked = frappe.get_all(
+		"CRM Appointment Participant",
+		filters={"party_type": doctype, "party": name},
+		pluck="parent",
+		limit_page_length=0,
+	)
+	if not booked:
+		return []
+	rows = frappe.get_all(
+		"CRM Appointment",
+		filters={"name": ["in", booked]},
+		fields=["name", "title", "service", "status", "starts_on", "ends_on", "creation", "owner"],
+		limit_page_length=0,
+	)
+	return [
+		{
+			"name": row.name,
+			"activity_type": "appointment",
+			# when it *is*, not when it was written down: an appointment belongs
+			# in the history at the moment it happens, the way a call does
+			"creation": row.starts_on or row.creation,
+			"owner": row.owner,
+			"data": dict(row),
+			"is_lead": doctype == "CRM Lead",
+		}
+		for row in rows
+	]
+
+
+def events_on(doctype: str, name: str) -> list[dict]:
+	"""Calendar events put against this record."""
+	rows = frappe.get_all(
+		"Event",
+		filters={"reference_docname": name, "reference_doctype": doctype},
+		fields=["name", "subject", "starts_on", "ends_on", "event_category", "creation", "owner"],
+		limit_page_length=0,
+	)
+	return [
+		{
+			"name": row.name,
+			"activity_type": "event",
+			"creation": row.starts_on or row.creation,
+			"owner": row.owner,
+			"data": dict(row),
+			"is_lead": doctype == "CRM Lead",
+		}
+		for row in rows
+	]
+
+
+def tasks_on(doctype: str, name: str) -> list[dict]:
+	"""Tasks set on this record, as they were set.
+
+	A task that is done still belongs where it was created: it is what somebody
+	decided to do about this person that day, and moving it to the day it was
+	ticked off would lose the decision.
+	"""
+	rows = frappe.get_all(
+		"CRM Task",
+		filters={"reference_docname": name, "reference_doctype": doctype},
+		fields=["name", "title", "status", "priority", "due_date", "creation", "owner", "assigned_to"],
+		limit_page_length=0,
+	)
+	return [
+		{
+			"name": row.name,
+			"activity_type": "task",
+			"creation": row.creation,
+			"owner": row.owner,
+			"data": dict(row),
+			"is_lead": doctype == "CRM Lead",
+		}
+		for row in rows
+	]
+
+
+def notes_on(doctype: str, name: str) -> list[dict]:
+	"""Notes written on this record.
+
+	They had a tab of their own and nowhere else, so something written down
+	about a person could not be read beside the conversation it was about.
+	"""
+	rows = frappe.get_all(
+		"FCRM Note",
+		filters={"reference_docname": name, "reference_doctype": doctype},
+		fields=["name", "title", "content", "creation", "owner"],
+		limit_page_length=0,
+	)
+	return [
+		{
+			"name": row.name,
+			"activity_type": "note",
+			"creation": row.creation,
+			"owner": row.owner,
+			"data": dict(row),
+			"is_lead": doctype == "CRM Lead",
+		}
+		for row in rows
+	]
+
+
+def everything_else_on(doctype: str, name: str) -> list[dict]:
+	"""The four above, gathered. Each one is allowed to fail on its own.
+
+	A site without the booking app, or with an older Event doctype, should lose
+	that one row type and keep the history — not lose the history.
+	"""
+	gathered = []
+	for gather in (appointments_on, events_on, tasks_on, notes_on):
+		try:
+			gathered += gather(doctype, name)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), f"Activities: {gather.__name__} did not run")
+	return gathered

@@ -6,6 +6,7 @@ import {
   dayLabel,
   directionOf,
   isConversational,
+  isStageChange,
   speakerOf,
   groupByDay,
 } from '@/utils/conversation'
@@ -238,6 +239,32 @@ describe('groupByDay', () => {
   it('survives nothing at all', () => {
     expect(groupByDay()).toEqual([])
     expect(groupByDay(null)).toEqual([])
+  })
+})
+
+describe('what happened, as opposed to what was said', () => {
+  it('knows the things that are not messages', () => {
+    expect(channelOf({ activity_type: 'appointment' })).toBe('appointment')
+    expect(channelOf({ activity_type: 'task' })).toBe('task')
+    expect(channelOf({ activity_type: 'note' })).toBe('note')
+    expect(channelOf({ activity_type: 'event' })).toBe('event')
+  })
+
+  it('gives none of them a side, because none is addressed to anybody', () => {
+    for (const type of ['appointment', 'task', 'note', 'event']) {
+      expect(directionOf({ activity_type: type })).toBe('internal')
+    }
+  })
+
+  it('tells a move down the pipeline from a phone number being corrected', () => {
+    expect(
+      isStageChange({ activity_type: 'changed', data: { field: 'status' } }),
+    ).toBe(true)
+    expect(
+      isStageChange({ activity_type: 'changed', data: { field: 'mobile_no' } }),
+    ).toBe(false)
+    expect(isStageChange({ activity_type: 'comment' })).toBe(false)
+    expect(isStageChange(undefined)).toBe(false)
   })
 })
 

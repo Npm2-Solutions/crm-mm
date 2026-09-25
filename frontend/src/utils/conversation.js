@@ -52,6 +52,13 @@ export function channelOf(item) {
   if (type === 'communication') return 'email'
   if (type === 'comment') return 'comment'
   if (type === 'incoming_call' || type === 'outgoing_call') return 'call'
+  // things that happened rather than things that were said. They take no side
+  // — an appointment is addressed to nobody — but they are the half of the
+  // history that says what was actually done between one message and the next.
+  if (type === 'appointment') return 'appointment'
+  if (type === 'event') return 'event'
+  if (type === 'task') return 'task'
+  if (type === 'note') return 'note'
   // A call is the one row whose channel is derived rather than stored: without
   // a readable `type` the backend writes no `activity_type` at all, and the
   // call would quietly leave the conversation instead of taking a side in it.
@@ -109,6 +116,20 @@ export function speakerOf(item, me = '') {
     return item.data?.sender_full_name || item.data?.sender || item.sender || ''
   if (channel === 'call') return item._caller?.label || ''
   return item.owner_name || item.owner || ''
+}
+
+/**
+ * Did this change where the person stands in the pipeline?
+ *
+ * Every other field that changes is bookkeeping — a phone number corrected, a
+ * source filled in — and reads as one quiet line. The stage is the one that is
+ * the point of the whole record, so it is worth telling apart from the rest.
+ */
+const STAGE_FIELDS = new Set(['status', 'deal_status', 'lead_status'])
+
+export function isStageChange(item) {
+  if (item?.activity_type !== 'changed') return false
+  return STAGE_FIELDS.has(item?.data?.field || item?.field || '')
 }
 
 /** Does this one read as a chat bubble, or as a full-width card? */

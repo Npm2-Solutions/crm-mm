@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-html -->
 <!--
   Everything said to this person, in one chat.
 
@@ -145,23 +146,112 @@
 
           <!--
             Addressed to nobody, so it sits in the middle — the way a messenger
-            puts its own notices between the messages. A note is amber: it is
-            the one thing in this chat the customer will never see.
+            puts its own notices between the messages. These are the other half
+            of the history: what was actually *done* between one message and the
+            next, which is what the New menu at the top creates.
           -->
-          <div v-else class="flex justify-center px-3 py-1 sm:px-4">
+          <HappenedCard
+            v-else-if="row.channel === 'comment'"
+            kind="note"
+            :icon="iconFor('comment')"
+            card
+          >
+            <CommentArea :activity="row.item" @reload="emit('reload')" />
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'note'"
+            kind="note"
+            :icon="NoteIcon"
+            :title="__('Note')"
+            :when="timeOf(row)"
+            card
+          >
+            <div class="font-medium">{{ row.item.data?.title }}</div>
             <div
-              v-if="row.channel === 'comment'"
-              class="w-full max-w-[min(92%,44rem)] rounded-lg border border-outline-amber-2 bg-surface-amber-1 px-3 py-2"
-            >
-              <CommentArea :activity="row.item" @reload="emit('reload')" />
+              v-if="row.item.data?.content"
+              class="prose-sm max-w-none text-ink-gray-7"
+              v-html="sanitizeHTML(row.item.data.content)"
+            />
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'appointment'"
+            kind="appointment"
+            :icon="CalendarIcon"
+            :title="__('Appointment')"
+            :when="whenOf(row.item.data?.starts_on)"
+            card
+          >
+            <div class="flex items-center gap-2">
+              <span class="font-medium">
+                {{ row.item.data?.title || row.item.data?.service }}
+              </span>
+              <Badge
+                v-if="row.item.data?.status"
+                size="sm"
+                :theme="appointmentTheme(row.item.data.status)"
+                :label="__(row.item.data.status)"
+              />
             </div>
-            <div
-              v-else
-              class="flex w-full max-w-[min(92%,44rem)] items-center gap-2 rounded-full bg-surface-gray-2 px-3 py-1 text-p-xs text-ink-gray-6"
-            >
-              <slot name="other" :item="row.item" :row="row" />
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'event'"
+            kind="event"
+            :icon="CalendarIcon"
+            :title="__('Event')"
+            :when="whenOf(row.item.data?.starts_on)"
+            card
+          >
+            <span class="font-medium">{{ row.item.data?.subject }}</span>
+          </HappenedCard>
+
+          <HappenedCard
+            v-else-if="row.channel === 'task'"
+            kind="task"
+            :icon="TaskIcon"
+            :title="__('Task')"
+            :when="timeOf(row)"
+            card
+          >
+            <div class="flex items-center gap-2">
+              <span
+                class="font-medium"
+                :class="
+                  row.item.data?.status === 'Done'
+                    ? 'text-ink-gray-5 line-through'
+                    : ''
+                "
+              >
+                {{ row.item.data?.title }}
+              </span>
+              <Badge
+                v-if="row.item.data?.status"
+                size="sm"
+                :theme="row.item.data.status === 'Done' ? 'green' : 'gray'"
+                :label="__(row.item.data.status)"
+              />
             </div>
-          </div>
+          </HappenedCard>
+
+          <!--
+            The stage moved. Every other field that changes is bookkeeping and
+            reads as one quiet line; this one is the point of the whole record,
+            so it is the line the eye is allowed to stop on.
+          -->
+          <HappenedCard
+            v-else-if="isStageChange(row.item)"
+            kind="stage"
+            :icon="iconFor('')"
+            :when="timeOf(row)"
+          >
+            <slot name="other" :item="row.item" :row="row" />
+          </HappenedCard>
+
+          <HappenedCard v-else :when="timeOf(row)">
+            <slot name="other" :item="row.item" :row="row" />
+          </HappenedCard>
         </template>
       </div>
     </div>
@@ -180,18 +270,24 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
+import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import ChatBubble from '@/components/Activities/ChatBubble.vue'
+import HappenedCard from '@/components/Activities/HappenedCard.vue'
+import NoteIcon from '@/components/Icons/NoteIcon.vue'
+import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import TimelineEntry from '@/components/Activities/TimelineEntry.vue'
 import {
   buildStream,
   dayLabel,
   groupByDay,
+  isStageChange,
   speakerOf,
 } from '@/utils/conversation'
+import { sanitizeHTML } from '@/utils'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { usersStore } from '@/stores/users'
-import { dayjs } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { Badge, dayjs } from 'frappe-ui'
+import { computed } from 'vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -227,17 +323,29 @@ const days = computed(() =>
   })),
 )
 
-// The line above a message, and only where the message has none of its own.
-// An email, a call and a note already say who and when inside their own
-// component; saying it twice is how a card ends up taller than what it holds.
-const SAYS_ITS_OWN = new Set(['email', 'comment', 'call'])
+// The clock, for the things that sit in the middle: the day is already written
+// on the chip above them.
+function timeOf(row) {
+  return row.at ? dayjs(row.at).format('HH:mm') : ''
+}
 
-function headerOf(row) {
-  if (SAYS_ITS_OWN.has(row.channel)) return { speaker: '', time: '' }
-  return {
-    speaker: speakerOf(row.item, me.value),
-    time: row.at ? dayjs(row.at).format('HH:mm') : '',
-  }
+// An appointment is the one thing here whose moment is not its own creation, so
+// it says the date as well: «mer 8 ott, 15:00» is the fact, and the chip above
+// only says which day it was booked on.
+function whenOf(at) {
+  return at ? dayjs(at).format('ddd D MMM, HH:mm') : ''
+}
+
+const APPOINTMENT_THEMES = {
+  Scheduled: 'blue',
+  Confirmed: 'green',
+  Completed: 'gray',
+  Cancelled: 'red',
+  'No Show': 'orange',
+}
+
+function appointmentTheme(status) {
+  return APPOINTMENT_THEMES[status] || 'gray'
 }
 
 // `Today` and `Yesterday` are what somebody is actually asking when they look
@@ -264,14 +372,6 @@ const ICONS = {
 
 function iconFor(channel) {
   return ICONS[channel] || DotIcon
-}
-
-const LABELS = {
-  whatsapp: 'WhatsApp',
-  sms: 'SMS',
-  email: 'Email',
-  comment: 'Comment',
-  call: 'Call',
 }
 </script>
 

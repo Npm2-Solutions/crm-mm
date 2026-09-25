@@ -116,7 +116,7 @@ const reload = defineModel('reload', { type: Boolean })
 const whatsapp = defineModel('whatsapp', { type: Object, default: () => ({}) })
 const reply = defineModel('reply', { type: Object, default: () => ({}) })
 
-const emit = defineEmits(['scroll', 'template'])
+const emit = defineEmits(['scroll', 'template', 'channel'])
 
 const { getUser } = usersStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
@@ -352,6 +352,9 @@ function openWay(which) {
   if (which === 'whatsapp') {
     whatsappEverOpened.value = true
   }
+  // SMS has a box of its own, mounted by the caller when the channel is SMS:
+  // choosing it here is choosing the channel, and the stream follows.
+  emit('channel', which)
   const boxes = {
     email: showEmailBox,
     comment: showCommentBox,

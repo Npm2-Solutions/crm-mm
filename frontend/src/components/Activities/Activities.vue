@@ -509,6 +509,7 @@
       :channel="channel"
       :doctype="doctype"
       @scroll="scroll"
+      @channel="(which) => (channel = which)"
       @template="showWhatsappTemplates = true"
     />
     <WhatsAppBox
