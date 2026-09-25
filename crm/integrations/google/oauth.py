@@ -136,16 +136,26 @@ def ensure_calendar_record() -> str:
 	name = frappe.db.get_value("Google Calendar", {"user": frappe.session.user})
 	if name:
 		return name
+	# the framework refuses to save a `Google Calendar` while `Google Settings` is off,
+	# which on a fresh site it is until the first connection
+	sync_google_settings()
 	doc = frappe.get_doc(
 		{
 			"doctype": "Google Calendar",
-			"calendar_name": frappe.utils.get_fullname(frappe.session.user),
+			"calendar_name": _calendar_record_name(frappe.session.user),
 			"user": frappe.session.user,
-			"enabled": 1,
+			"enable": 1,
 		}
 	)
 	doc.insert(ignore_permissions=True)
 	return doc.name
+
+
+def _calendar_record_name(user: str) -> str:
+	"""The record is named after its `calendar_name`, which is unique: two people with
+	the same name are told apart by their e-mail."""
+	name = frappe.utils.get_fullname(user)
+	return name if not frappe.db.exists("Google Calendar", name) else f"{name} ({user})"
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])  # nosemgrep: guest-whitelisted-method
@@ -197,26 +207,32 @@ def exchange_code(code: str) -> dict:
 	return data
 
 
-def store_tokens(calendar: str | None, tokens: dict) -> None:
-	"""Write the refresh token where the framework's calendar sync expects it.
+def sync_google_settings() -> None:
+	"""Fill `Google Settings` from the bench config.
 
-	`Google Settings` is filled from the bench config too: without client id and
-	secret there, the framework cannot refresh the token later.
+	The framework reads client id and secret from there to refresh a token, and it
+	refuses to save a `Google Calendar` while the settings are switched off.
 	"""
-	if is_managed():
-		settings = frappe.get_doc("Google Settings")
-		changed = False
-		if settings.client_id != client_id():
-			settings.client_id = client_id()
-			changed = True
-		if not settings.get_password("client_secret", raise_exception=False):
-			settings.client_secret = client_secret()
-			changed = True
-		if not settings.enable:
-			settings.enable = 1
-			changed = True
-		if changed:
-			settings.save(ignore_permissions=True)
+	if not is_managed():
+		return
+	settings = frappe.get_doc("Google Settings")
+	changed = False
+	if settings.client_id != client_id():
+		settings.client_id = client_id()
+		changed = True
+	if not settings.get_password("client_secret", raise_exception=False):
+		settings.client_secret = client_secret()
+		changed = True
+	if not settings.enable:
+		settings.enable = 1
+		changed = True
+	if changed:
+		settings.save(ignore_permissions=True)
+
+
+def store_tokens(calendar: str | None, tokens: dict) -> None:
+	"""Write the refresh token where the framework's calendar sync expects it."""
+	sync_google_settings()
 
 	name = calendar or frappe.db.get_value("Google Calendar", {"user": frappe.session.user})
 	if not name:
@@ -225,7 +241,7 @@ def store_tokens(calendar: str | None, tokens: dict) -> None:
 	if doc.user != frappe.session.user:
 		frappe.throw(_("This calendar belongs to another user"), frappe.PermissionError)
 	doc.refresh_token = tokens["refresh_token"]
-	doc.enabled = 1
+	doc.enable = 1
 	doc.save(ignore_permissions=True)
 
 

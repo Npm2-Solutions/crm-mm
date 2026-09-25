@@ -33,13 +33,17 @@ def get_status() -> dict:
 @frappe.whitelist(methods=["POST"])
 def disconnect() -> dict:
 	"""Unlink this user's calendar. The events already in Google stay there."""
+	from crm.integrations.google.oauth import sync_google_settings
+
 	name = frappe.db.get_value("Google Calendar", {"user": frappe.session.user})
 	if not name:
 		return get_status()
 	doc = frappe.get_doc("Google Calendar", name)
 	if doc.user != frappe.session.user:
 		frappe.throw(_("This calendar belongs to another user"), frappe.PermissionError)
+	# the framework refuses to save the record while `Google Settings` is off
+	sync_google_settings()
 	doc.refresh_token = ""
-	doc.enabled = 0
+	doc.enable = 0
 	doc.save(ignore_permissions=True)
 	return get_status()
