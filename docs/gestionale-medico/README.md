@@ -36,9 +36,12 @@ rifatto, va collegato.**
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext, per ora
 
-Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé (stato e
-versioni in [ricerca.md](./ricerca.md#1-lecosistema-frappe)). Non conviene
-adottarlo, per tre motivi.
+Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
+Earthians: viva (v16.6.1 del 22/09/2026), GPL-3, circa 130 DocType, gratuita sul
+marketplace di Frappe Cloud. Ma vuole ERPNext, ha l'interfaccia per lo più nel
+Desk, non ha una traduzione italiana e non risulta usata in Italia (dettagli e
+fonti in [ricerca.md](./ricerca.md#1-lecosistema-frappe)). Non conviene adottarla,
+per tre motivi.
 
 1. **Porta una seconda agenda.** `Patient Appointment`, `Healthcare Practitioner`,
    `Practitioner Schedule`, `Healthcare Service Unit`: un'agenda e un'anagrafica
@@ -52,12 +55,16 @@ adottarlo, per tre motivi.
    comunque, dentro un'interfaccia Desk che il medico non userebbe.
 
 Da Marley si prende **il modello dati come riferimento** (come separa appuntamento,
-incontro clinico, procedura e referto), non il codice.
+incontro clinico, procedura e referto) e, dove serve, singoli pezzi di codice: la
+GPL-3 si combina con la vostra AGPL-3. L'app intera no.
 
 **ERPNext** resta un'opzione *a valle* per il cliente grande che vuole la
 contabilità vera: l'integrazione c'è già, sullo stesso sito o su uno remoto. Il
 poliambulatorio privato tipico tiene la contabilità dal commercialista e al
-gestionale chiede fatture, incassi, invio STS ed export.
+gestionale chiede fatture, incassi, invio STS ed export. Se un cliente lo
+installa, c'è una trappola: il core di ERPNext genera da solo l'XML della fattura
+elettronica a ogni fattura di una società italiana (`erpnext/regional/italy`), e
+per le fatture ai pazienti va spento, perché non devono mai andare allo SDI.
 
 ## Decisione 2 — Un verticale dentro `crm`, con le regole di un'app separata
 
@@ -129,7 +136,9 @@ Sistema TS, firma qualificata dei referti, conservazione a norma: **ognuno dietr
 un adattatore**, come i connettori di `crm/booking_platforms/`, con un
 intermediario dietro. Il gestionale produce i dati giusti (righe STS, XML
 FatturaPA, PDF), l'intermediario li consegna, li conserva e restituisce gli esiti.
-Chi sono gli intermediari e cosa offrono via API è in
+Per il Sistema TS ci sono API REST pronte (A-Cube, sistema-ts-api.it), per lo SDI
+Aruba e OpenAPI.it; l'app `italian_invoice` di Solede (AGPL, v16) ha già un
+provider OpenAPI.it da cui prendere. Il confronto è in
 [ricerca.md](./ricerca.md#3-i-tubi-regolati-sdi-sistema-ts-firma).
 
 Scriverli da zero si può, i tracciati sono pubblici. Ma vuol dire rispondere, per
@@ -144,7 +153,8 @@ Oggi nel CRM:
   una scheda per essere umano, per sempre. Il `Contact` è solo la sua rubrica: la
   pagina di un contatto porta alla persona (`frontend/src/router.js`);
 - **il deal** è una vendita da seguire, con uno stato su una pipeline. Una persona
-  ne ha zero, uno o tanti, mai due aperti insieme.
+  ne ha zero, uno o tanti nel tempo; una richiesta nuova non ne apre un secondo se
+  ce n'è già uno aperto (`open_deal_of`), ma a mano lo si può fare.
 
 **Una persona può non avere nessun deal.** Chi prenota da `/prenota` o da una
 piattaforma diventa persona e appuntamento, senza deal
@@ -202,8 +212,7 @@ Perché così:
 - **Il paziente è un DocType a parte, non campi su `CRM Lead`.** Non tutte le
   persone sono pazienti (il lead da Meta che non è mai venuto), i permessi sono
   diversi, e `CRM Lead` è il DocType più letto del core (il solo `mobile_no`
-  compare in 201 punti, doc 18): il verticale non deve toccarlo. Si diventa
-  paziente alla prima accettazione.
+  compare in 201 punti, doc 18): il verticale non deve toccarlo.
 - **L'accettazione separa l'agenda dai soldi.** `CRM Appointment` resta agenda e
   basta. L'accettazione registra cosa è stato fatto davvero, vale anche senza
   appuntamento (chi entra senza prenotare), e in un appuntamento di gruppo ce n'è
@@ -266,10 +275,11 @@ validazione con il centro pilota e con il suo commercialista.
 | Fase | Cosa | sp | Da qui il centro pilota può… |
 |---|---|---|---|
 | **0 — Fondamenta** | Interruttore "settore medico"; ruoli Segreteria, Medico, Direzione sanitaria, Amministrazione e permessi sull'agenda; paziente con codice fiscale validato; consensi registrati, compreso quello di `/prenota`; registro degli accessi; persone collegate (genitore e figlio) | 2–3 | …importare le anagrafiche dal gestionale di oggi |
-| **1 — Accettazione e cassa** | Da "arrivato" all'accettazione; prestazioni eseguite; fattura sanitaria in PDF (esenzione, bollo, pagamento tracciabile) e note di credito; incassi e acconti; chiusura cassa; invio STS; widget e report degli incassi | 4–5 | …smettere di fatturare con il vecchio gestionale |
+| **1 — Accettazione e cassa** | Da "arrivato" all'accettazione; prestazioni eseguite; fattura sanitaria in PDF (righe esenti e righe al 22%, perché estetica e medico-legale non sono esenti; bollo; pagamento tracciabile) e note di credito; incassi e acconti; chiusura cassa; invio STS con opposizione e tracciabilità; widget e report degli incassi | 4–5 | …smettere di fatturare con il vecchio gestionale |
 | **2 — Cartella e referti** | Modelli per specialità; visita; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; allegati; dossier e oscuramento; consegna del referto | 5–6 | …spegnere il vecchio gestionale |
 | **3 — Amministrazione** | Compensi dei medici; convenzioni e fondi (listino dedicato, forma diretta con fattura elettronica al fondo); export per il commercialista; prima nota | 3–4 | …chiudere il mese dal gestionale |
 | **4 — Paziente ed extra** | Area paziente (referti, fatture, questionario prima della visita); richiami clinici con le automazioni; televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); preventivi e piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
+| **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
 
 **Fasi 0–2: 11–14 sp, circa tre mesi per una persona.** È il minimo per sostituire
 il gestionale di un poliambulatorio privato. La cassa viene prima della cartella
@@ -285,11 +295,11 @@ settimana.
    STS suoi, e il modello della fase 1 cambia.
 2. **Quali specialità hanno i primi clienti?** Il poliambulatorio "visite e
    referti" è il caso semplice. Odontoiatria (odontogramma, preventivi, piani di
-   cura) e fisioterapia (cicli di sedute) sono mondi a sé.
+   cura), fisioterapia (cicli di sedute) e medicina del lavoro (aziende clienti,
+   protocolli, giudizi di idoneità) sono mondi a sé.
 3. **Solo privati, o anche accreditati con il Servizio sanitario?** Proposta: solo
    privati, più fondi e assicurazioni. L'accreditamento porta ricetta
-   dematerializzata, flussi regionali, CUP e obblighi verso il Fascicolo sanitario:
-   è un altro progetto.
+   dematerializzata, flussi regionali e CUP: è un altro progetto.
 4. **I medici condividono la cartella?** Se sì è un dossier sanitario (consenso
    specifico, oscuramento, registro degli accessi); se no ognuno vede solo i suoi
    pazienti. La regola la decide il direttore sanitario.
@@ -317,9 +327,13 @@ valutazione d'impatto (DPIA) per il modulo clinico, backup cifrati e dati in UE
 (Hetzner in Germania va bene). E un punto che si dimentica: **i vostri utenti
 d'agenzia sui siti dei clienti non devono avere ruoli clinici.**
 
-Un software che archivia, mostra e stampa dati clinici non è un dispositivo
-medico. Lo diventa se calcola dosi o suggerisce diagnosi (regolamento MDR
-2017/745, linee guida MDCG 2019-11): quelle funzioni restano fuori.
+Un software per accettazione, agenda, fatture e cartella al posto della carta non è
+un dispositivo medico. Lo diventa se suggerisce dosaggi o segnala interazioni fra
+farmaci (linee guida MDCG 2019-11, rev. giugno 2025): quelle funzioni restano
+fuori. Più avanti c'è lo Spazio europeo dei dati sanitari (regolamento UE
+2025/327): i sistemi di cartella elettronica dovranno autocertificarsi e avere la
+marcatura CE, con date fra il 2027 e il 2031. Prima di vendere il modulo clinico
+come prodotto va sentito un legale ([ricerca §2.6](./ricerca.md#26-dispositivo-medico-e-spazio-europeo-dei-dati-sanitari)).
 
 ## Come si parte davvero
 
