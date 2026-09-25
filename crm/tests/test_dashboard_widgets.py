@@ -20,6 +20,10 @@ from crm.dashboard.context import Context
 
 SALES_USER = "crm.user1@example.com"
 
+#: Features whose data lives in another app entirely. Without that app there is no
+#: table to query, and no answer a widget could give.
+DOCTYPE_DI_UN_ALTRA_APP = {"whatsapp": "WhatsApp Message"}
+
 
 class TestDashboardWidgets(IntegrationTestCase):
 	@classmethod
@@ -43,9 +47,28 @@ class TestDashboardWidgets(IntegrationTestCase):
 		frappe.db.rollback()
 		super().tearDownClass()
 
+	def skip_if_unavailable(self, widget):
+		"""Skip only what this site physically cannot answer: a missing app's table.
+
+		A feature merely switched off is **not** a reason to skip. Those widgets query
+		doctypes the CRM owns, answer zero, and are exactly the kind of thing this net
+		is here to catch. Skipping on `features.missing` alone traded thirty errors for
+		two hundred and forty-nine skips, which is not a green suite, it is a quieter
+		one.
+
+		What genuinely cannot be asked is a widget whose table belongs to an app that is
+		not installed: the WhatsApp widgets read `tabWhatsApp Message`, which ships with
+		`frappe_whatsapp`. The skip is loud, and names what is missing.
+		"""
+		for chiave in widget.requires:
+			doctype = DOCTYPE_DI_UN_ALTRA_APP.get(chiave)
+			if doctype and not frappe.db.exists("DocType", doctype):
+				self.skipTest(f"{widget.id}: {doctype} is not installed on this site")
+
 	def answer(self, widget_id, user=None, config=None, **dates):
 		widget = registry.get(widget_id)
 		self.assertIsNotNone(widget, widget_id)
+		self.skip_if_unavailable(widget)
 		ctx = Context.build(
 			dates.get("from_date", self.from_date),
 			dates.get("to_date", self.to_date),

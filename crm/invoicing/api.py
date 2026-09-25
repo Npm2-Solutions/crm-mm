@@ -420,6 +420,7 @@ def onboarding_checklist(company: str) -> list[dict]:
 		_("A service without a card is not billable."),
 	)
 	voci.extend(estensioni.controlli_aggiuntivi(emittente))
+	return voci
 
 
 @frappe.whitelist()

@@ -536,8 +536,8 @@
    "label": "Sistema di Interscambio"
   },
   {
-   "default": "provider",
-   "description": "provider posts the file to an accredited intermediary, which is the default because somebody has to watch the channel and answer for it. pec sends it from the practice's own certified mailbox - free, but the mailbox is then yours to read. export writes the file and hands it over, and stays the tested fallback for both.",
+   "default": "export",
+   "description": "Export produces the file and asks nothing: it is what a practice that has not signed with a provider yet can use on day one. PEC and provider each need their own configuration, and the onboarding checklist says which.",
    "fieldname": "sdi_mode",
    "fieldtype": "Select",
    "label": "Transmission",

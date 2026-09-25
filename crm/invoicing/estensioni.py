@@ -14,6 +14,8 @@ working unchanged when nobody does.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+
 from crm.invoicing.engine import professioni
 from crm.invoicing.engine.qualifica import Risolutore
 
@@ -28,11 +30,6 @@ def registra_risolutore(funzione: Risolutore) -> None:
 	"""Add a register. The last one registered is asked first."""
 	if funzione not in _risolutori:
 		_risolutori.append(funzione)
-
-
-def dimentica_risolutore() -> None:
-	"""Back to the shipped register alone. For tests that need the bare module."""
-	_risolutori.clear()
 
 
 def risolutore() -> Risolutore:
@@ -70,11 +67,6 @@ def registra_arricchitore(funzione) -> None:
 	_arricchitore = funzione
 
 
-def dimentica_arricchitore() -> None:
-	global _arricchitore
-	_arricchitore = None
-
-
 def arricchitore():
 	"""The registered enricher, or nothing - which means nothing to report."""
 	return _arricchitore
@@ -91,10 +83,6 @@ def registra_verifica(funzione) -> None:
 	"""Contribute a check that runs on validate. Called once, when a module loads."""
 	if funzione not in _verifiche:
 		_verifiche.append(funzione)
-
-
-def dimentica_verifiche() -> None:
-	_verifiche.clear()
 
 
 def verifiche(doc, preparato) -> None:
@@ -115,13 +103,39 @@ def registra_controlli(funzione) -> None:
 		_controlli.append(funzione)
 
 
-def dimentica_controlli() -> None:
-	_controlli.clear()
-
-
 def controlli_aggiuntivi(emittente: dict) -> list[dict]:
 	"""Every registered module's gaps for this company, in registration order."""
 	voci: list[dict] = []
 	for funzione in _controlli:
 		voci.extend(funzione(emittente) or [])
 	return voci
+
+
+@contextmanager
+def senza_estensioni():
+	"""Invoicing on its own for the length of a block, and put back exactly as found.
+
+	A test that needs the bare module must not leave the module bare. These registries
+	are process-wide - one list, filled once when the app loads - so emptying one
+	without putting it back does not isolate a test, it breaks every test that runs
+	after it, and in a worker it breaks the site.
+
+	That is not hypothetical either: clearing the resolvers and not restoring them
+	cost sixty-one errors in the one suite that runs everything in a single process,
+	all of them reading "qualification 'osteopata' is not in the register" - which was
+	true, because a test three modules earlier had thrown the register away.
+	"""
+	global _arricchitore
+	risolutori, arricchitore = list(_risolutori), _arricchitore
+	verifiche_precedenti, controlli_precedenti = list(_verifiche), list(_controlli)
+	_risolutori.clear()
+	_verifiche.clear()
+	_controlli.clear()
+	_arricchitore = None
+	try:
+		yield
+	finally:
+		_risolutori[:] = risolutori
+		_verifiche[:] = verifiche_precedenti
+		_controlli[:] = controlli_precedenti
+		_arricchitore = arricchitore
