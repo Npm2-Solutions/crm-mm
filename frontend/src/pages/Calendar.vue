@@ -12,16 +12,7 @@
           { label: __('Agenda'), value: 'agenda' },
         ]"
       />
-      <Tooltip
-        v-if="!isMobileView"
-        :text="
-          googleConnection.data?.connected
-            ? __('Google Calendar connected — busy slots block bookings')
-            : __(
-                'Connect your Google Calendar to block busy slots on booking pages',
-              )
-        "
-      >
+      <Tooltip v-if="!isMobileView" :text="googleTooltip">
         <Button
           :variant="googleConnection.data?.connected ? 'subtle' : 'outline'"
           :label="
@@ -30,7 +21,11 @@
               : __('Connect Google Calendar')
           "
           @click="connectGoogle"
-        />
+        >
+          <template v-if="googleConnection.data?.sync?.error" #suffix>
+            <span class="h-1.5 w-1.5 rounded-full bg-surface-red-5" />
+          </template>
+        </Button>
       </Tooltip>
       <ShortcutTooltip :label="__('Create Event')" combo="Mod+E">
         <Button
@@ -355,6 +350,8 @@ import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
 import { isMobileView } from '@/composables/breakpoints'
+import { openOAuthPopup, onOAuthResult } from '@/composables/oauthPopup'
+import { activeSettingsPage, showSettings } from '@/composables/settings'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { appointmentColor, formatMinutes } from '@/utils/scheduler'
 import {
@@ -389,22 +386,40 @@ const googleConnection = createResource({
   auto: true,
 })
 
+const googleTooltip = computed(() => {
+  const status = googleConnection.data
+  if (!status?.connected) {
+    return __('Connect your Google Calendar to see your appointments there')
+  }
+  return (
+    status.sync?.error ||
+    __('Your appointments are copied to your Google Calendar')
+  )
+})
+
+// the same Google window as in Settings; once connected, the button leads to the
+// settings page with the state of the copy
 function connectGoogle() {
   if (googleConnection.data?.connected) {
-    toast.success(__('Google Calendar is already connected'))
+    activeSettingsPage.value = 'Google Calendar'
+    showSettings.value = true
     return
   }
   createResource({
     url: 'crm.integrations.google.oauth.get_login_url',
     auto: true,
-    onSuccess: (data) => {
-      window.location.href = data.login_url
-    },
+    onSuccess: (data) => openOAuthPopup(data.login_url, 'crm-google-oauth'),
     onError: (e) => {
       toast.error(e.messages?.[0] || __('Could not start the connection'))
     },
   })
 }
+
+onOAuthResult('google', ({ error }) => {
+  if (error) toast.error(error)
+  else toast.success(__('Calendar connected'))
+  googleConnection.reload()
+})
 const { settings } = getSettings()
 const { users, getUser } = usersStore()
 const route = useRoute()
