@@ -45,6 +45,10 @@ class TestDashboardStore(IntegrationTestCase):
 		self.assertIn("team", self.names(api.get_dashboards()["dashboards"]))
 
 	def test_a_template_dashboard_follows_the_site(self):
+		# a site without an agenda, whatever other tests left behind (rolled back in tearDown)
+		frappe.db.delete("CRM Appointment")
+		frappe.db.set_value("CRM Service", {"enabled": 1}, "enabled", 0)
+		features.forget()
 		store.ensure_defaults()
 		overview = lambda: [item["name"] for item in store.load(store.MANAGER_DASHBOARD)["layout"]]  # noqa: E731
 		self.assertNotIn("appointments_today", overview())
