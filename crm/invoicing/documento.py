@@ -16,7 +16,7 @@ from decimal import Decimal
 
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate
+from frappe.utils import cint, flt, getdate
 
 from crm.invoicing import estensioni
 from crm.invoicing.engine import calcolo as motore
@@ -82,13 +82,19 @@ def applica_scheda(riga, dati: dict) -> None:
 		riga.rate = dati["default_rate"]
 	if not riga.service_provider and dati.get("default_provider"):
 		riga.service_provider = dati["default_provider"]
-	for campo, chiave in (
-		("is_healthcare", "is_healthcare"),
-		("vat_exempt", "vat_exempt"),
-		("is_advance", "is_advance"),
-	):
-		if riga.get(campo) is None:
-			riga.set(campo, dati.get(chiave))
+	# These three are the card's answer, not the line's, and they are copied on every
+	# save. The card is where an accountant signed the exemption off; a line holding a
+	# different answer is a divergence nobody can audit, so they are read-only on the
+	# grid and this is the only thing that writes them.
+	#
+	# The first version guarded the copy with `if riga.get(campo) is None`, meaning to
+	# leave a deliberate choice alone. A Check field on a new row is **0, never None**,
+	# so the guard was always true and the copy never ran: every healthcare line
+	# reached the engine as ordinary, and an exempt session towards a natural person
+	# was routed to the SdI - the precise mistake the guard in `classificazione`
+	# exists to make impossible. It took a suite that needs a site to see it.
+	for campo in ("is_healthcare", "vat_exempt", "is_advance"):
+		riga.set(campo, cint(dati.get(campo)))
 	if riga.vat_rate in (None, 0) and not riga.vat_exempt and dati.get("vat_rate"):
 		riga.vat_rate = dati["vat_rate"]
 	if not riga.vat_nature and dati.get("vat_nature"):

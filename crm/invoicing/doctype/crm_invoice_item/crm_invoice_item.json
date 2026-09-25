@@ -123,17 +123,20 @@
   {
    "fieldname": "is_healthcare",
    "fieldtype": "Check",
-   "label": "Healthcare"
+   "label": "Healthcare",
+   "read_only": 1
   },
   {
    "fieldname": "vat_exempt",
    "fieldtype": "Check",
-   "label": "Exempt"
+   "label": "Exempt",
+   "read_only": 1
   },
   {
    "fieldname": "is_advance",
    "fieldtype": "Check",
-   "label": "Advance (art. 15)"
+   "label": "Advance (art. 15)",
+   "read_only": 1
   },
   {
    "fieldname": "column_vat",
