@@ -1,0 +1,224 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-09-22 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "provider_id",
+  "sdi_identifier",
+  "sdi_filename",
+  "column_head",
+  "received_on",
+  "status",
+  "party_section",
+  "supplier_name",
+  "supplier_tax_id",
+  "column_party",
+  "supplier_fiscal_code",
+  "document_section",
+  "document_type",
+  "document_number",
+  "document_date",
+  "column_document",
+  "total_amount",
+  "currency",
+  "file_section",
+  "xml_file",
+  "payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "CRM Invoicing Company",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "provider_id",
+   "fieldtype": "Data",
+   "label": "Provider reference",
+   "read_only": 1,
+   "unique": 1,
+   "description": "The intermediary's own id for this record. Unique because it is what stops the same invoice being filed twice when a webhook and a sweep both bring it."
+  },
+  {
+   "fieldname": "sdi_identifier",
+   "fieldtype": "Data",
+   "label": "SdI identifier",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sdi_filename",
+   "fieldtype": "Data",
+   "label": "File name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "received_on",
+   "fieldtype": "Datetime",
+   "label": "Received on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "ricevuta\nletta\nregistrata\nrifiutata",
+   "default": "ricevuta",
+   "in_standard_filter": 1,
+   "description": "What has been done with it here. It says nothing about the SdI, which already delivered it - this is the desk's own state."
+  },
+  {
+   "fieldname": "party_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "supplier_tax_id",
+   "fieldtype": "Data",
+   "label": "VAT number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_party",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_fiscal_code",
+   "fieldtype": "Data",
+   "label": "Fiscal code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "document_section",
+   "fieldtype": "Section Break",
+   "label": "Document"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Data",
+   "label": "Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "document_number",
+   "fieldtype": "Data",
+   "label": "Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "document_date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_document",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Data",
+   "label": "Currency",
+   "read_only": 1,
+   "default": "EUR"
+  },
+  {
+   "fieldname": "file_section",
+   "fieldtype": "Section Break",
+   "label": "The document itself"
+  },
+  {
+   "fieldname": "xml_file",
+   "fieldtype": "Attach",
+   "label": "XML",
+   "read_only": 1,
+   "description": "The original FatturaPA as it was delivered. This is the record; everything else on this form is a convenience read off it."
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Small Text",
+   "label": "Provider data",
+   "read_only": 1,
+   "hidden": 1,
+   "description": "What the intermediary parsed, kept verbatim. Not re-parsed here: the XML above is authoritative and this is only what saved the desk a click."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-22 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Supplier Invoice",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "document_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "supplier_name",
+ "track_changes": 1
+}

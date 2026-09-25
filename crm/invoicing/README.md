@@ -1,0 +1,512 @@
+# Invoicing
+
+Electronic invoicing for **every kind of service**, healthcare included. It issues
+the document, computes it, numbers it, writes the FatturaPA XML, reports healthcare
+expenses to the Sistema TS, and refuses — with a 403, server-side — to send a
+healthcare invoice for a natural person through the SdI.
+
+The guiding principle is the one the module inherits: **the choices that decide
+fiscal correctness are data, the engine is code.** The exemption of a service, the
+qualification of whoever performs it, the fund and its rate, the numbering format:
+all of it lives in doctypes a practice owner edits, never in Python. The engine
+never infers, and there is no silent default anywhere in it.
+
+---
+
+## Where this comes from, and what changed
+
+The design is a port of a module built for GoHighLevel — a US-hosted CRM. Half of
+that architecture existed to work around where the data had to live. This system
+runs on its own infrastructure in Europe, so those workarounds are gone and what
+they were protecting is simply true by construction.
+
+| The GHL design | Here | Why |
+|---|---|---|
+| Patient registry in a **separate encrypted vault**, outside the CRM | Native doctypes | The CRM *is* the European system of record. There is no second system to keep the data out of. |
+| **Four opaque fields** on the contact, and a client that raises if anything else is written | The full billing profile on the record | Nothing is being kept from a processor abroad. |
+| **The PDF never enters the CRM**: signed opaque token, short expiry, second factor, 45-day cap | The document is attached to its record; delivery expiry is a setting, default off | The 45 days existed because the file lived outside the controller's systems. |
+| **Double opt-in** on the address before the first send | Ordinary CRM email | The Garante's December 2025 finding was about sending health documents through a third-party channel. |
+| Appointments **stay in the GHL calendar**; the arrangement is an art. 9 processing to be declared, covered by transfer clauses and a documented TIA | `CRM Appointment`, next to everything else | Nothing crosses a border, so there is nothing to declare. The agenda proposes the service and the provider directly. |
+| Row-level security, per-tenant envelope encryption, blind indexes, an application guard that fails tests when a query forgets `tenant_id` | Frappe roles and permissions | Multi-tenancy was the threat model. One site is one practice. |
+| SdI through a paid API that converts **JSON to XML** | The XML is generated here, and the practice's own PEC mailbox can transmit it | Buying the conversion made sense when there was nowhere to run it. Owning the format means issuing, inspecting and keeping a document without a round trip — and with a mailbox of its own, no intermediary has to hold the documents at all. |
+| A courtesy PDF that **never entered the CRM** | PDF/A-3b attached to its record, with the XML riding inside it | The file lived outside the controller's systems, so it had to be kept out. Here it lives with the record it belongs to. |
+| **Healthcare only** | Every service | A CRM invoices a physiotherapist and a marketing agency from the same screen; the answer has to come from the same place. |
+
+What did **not** change is everything the original had actually solved: the triple,
+the 403, the order of the arithmetic, the two Sistema TS schemas, and the refusal
+to guess.
+
+---
+
+## Architecture
+
+**Two modules, one direction.**
+
+```
+crm/invoicing/            issues, calculates, formats, preserves, transmits
+   engine/                pure Python, no Frappe - the auditable core
+   sdi/                   export, PEC, the accredited provider, the inbound door
+   estensioni.py          where another module plugs in
+
+crm/tessera_sanitaria/    the healthcare half, which extends the above
+   engine/                the register, the tracciato, the spesa codes
+```
+
+Invoicing knows nothing about healthcare: no professions, no spesa types, no
+delega, no patients. It issues documents for any sector. The Sistema TS module adds
+the healthcare half and registers itself through three seams — a resolver for
+qualifications, an enricher for the secondary reporting code, and extra onboarding
+checks. `crm/hooks.py` is what decides the module is installed; **removing that one
+line leaves a working invoicing system**, and a test enforces that invoicing never
+imports the other way round.
+
+The point is that lifting the second module into its own Frappe app later is a move
+and not a rewrite.
+
+Inside invoicing, the engine is the part that matters: pure Python, no database, no
+site. A rule that decides whether somebody gets fined is provable with a checkout
+and an interpreter, which is what makes it auditable by an accountant rather than
+only by a developer.
+
+## The form asks only what it cannot work out
+
+Two axes, and they are independent. **Which module** decides what exists; **solo or
+centre** decides what you are asked.
+
+|  | Solo | Centre |
+|---|---|---|
+| No Sistema TS | consultant, developer | firm, agency |
+| With Sistema TS | osteopath, psychologist | poliambulatorio |
+
+The field that flips is `service_provider`. Whoever performed a service decides the
+VAT regime, the fund, and — where the healthcare module is installed — whether the
+SdI may carry the document at all. In a centre that makes it the most important
+field on the line. For somebody working alone it is the same name every time, on a
+field with exactly one possible value, and asking is friction sixty times a day.
+
+So it is **derived, never configured**: `api.practice_shape` counts the enabled
+providers. One, and the field is hidden and pre-filled. Two, and it comes back. The
+practice that hires its second physiotherapist never has to remember a setting.
+Zero is not one — an empty register must not read as "solo" and quietly pre-fill
+nothing, which is exactly the qualification the engine refuses to guess.
+
+Hidden rather than read-only, because a locked field still takes a column and still
+invites a click.
+
+## The invoice is born from the appointment
+
+The agenda already knows the three things routing depends on — who the client is,
+who performed, which service — plus the date. Retyping them into a form is the
+difference between a system somebody uses between patients and one they stop using
+by Thursday. A centre with six practitioners issues around sixty documents a day;
+at that rate every extra interaction costs a minute a day.
+
+`api.appointments_to_invoice` is the queue: appointments that happened and produced
+no document. Past only — a list that shows tomorrow's bookings is a list nobody
+trusts. `api.issue_from_appointment` opens the draft with all four fields already
+in place.
+
+**And the document says where it is going before it is issued.** `api.invoice_channel`
+returns the destination in words, what is blocking it, and whether it can be issued
+at all, so the interface can show it beside the line that caused it rather than in a
+dialog at the end. A document that turns out to be un-issuable at submit has already
+cost the time of whoever typed it, with the client still in the room.
+
+---
+
+## Where it is configured
+
+**Settings → Invoicing**, in the CRM's own modal: the issuing company, the
+qualification register, the service cards, the providers, the provider connection,
+and the switches that apply to every document. The screens render each DocType's own
+layout, so the help text under a field is the description written on the field — a
+rule explained once cannot drift away from the interface that shows it.
+
+The company is split into tabs by subject rather than being one long form, so the
+healthcare configuration and the Sistema TS channel have their own screen: *Company*,
+*Invoicing*, *Documents* (form and preservation), *Transmission* (the SdI) and
+*Healthcare*.
+
+**Provider connection** is the one panel that is not rendered from meta, because two
+things there cannot be fields: the webhook URL, which is built rather than stored,
+and the secret, which is shown exactly once. A value that can be read back out of a
+settings screen is one that can be read out of a screenshot.
+
+`/crm/fatture` stays the operator's console: what has been issued, and what still
+has a button waiting. Nothing is configured from there.
+
+---
+
+## The triple, and the two symmetrical mistakes
+
+Routing is not decided by "is this healthcare". It is decided by
+
+```
+(service, qualification of whoever performs it, kind of recipient)
+   -> {exempt | taxable} x {SdI forbidden | SdI mandatory} x {Sistema TS yes | no}
+```
+
+because **Risoluzione AdE n. 9 del 24 febbraio 2026** closed four cases with
+counter-intuitive answers:
+
+| Qualification | VAT | Electronic invoice via SdI | Sistema TS |
+|---|---|---|---|
+| Osteopata | taxable, ordinary rate | **mandatory** | no |
+| Chiropratico | taxable | **mandatory** | no |
+| Chinesiologo | taxable 22% | **mandatory** | no |
+| Massoterapista | exempt art. 10 n. 18 | **forbidden** | yes |
+
+So a multi-specialty practice runs two opposite regimes on one legal person. The
+mistake everybody guards against — sending a healthcare invoice to the SdI — is a
+privacy breach. The mistake nobody guards against is **not** sending the
+osteopath's, and it is born precisely from a guard written too wide.
+
+`guardia_sdi` is a `PermissionError`, so `crm.invoicing.api.send_to_sdi` answers
+**403**. It is not a UI flag: it holds for every user and every override, and in
+the interface the action does not exist at all on those documents. A greyed-out
+button invites somebody to go looking for how to turn it on.
+
+---
+
+## The arithmetic, in order
+
+`fee → fund levy → VAT → stamp-duty threshold → re-charge → withholding`
+
+The order is fixed and tested, because the boundary is where it goes wrong: 76 € of
+fee with the 2% ENPAP levy makes 77.52 and the stamp duty is due; 75 € makes 76.50
+and it is not; at exactly 77.47 it is **not** due — the threshold is passed, not
+reached.
+
+Four things almost everybody gets wrong, and which the engine gets right:
+
+- **ENPAM provides no contributo integrativo to charge the patient.** Nothing goes
+  on the invoice.
+- **Re-charging the stamp duty is not an art. 15 exclusion.** Risposta AdE 428/2022:
+  it is part of the compensation, so it follows the VAT regime of the service and
+  counts towards revenue.
+- **The contributo integrativo enters the VAT base**, and therefore the stamp-duty
+  threshold and the amount reported to the Sistema TS.
+- **The contributo integrativo is not subject to the withholding; the optional INPS
+  4% rivalsa is.** Getting this backwards produces a certification that does not
+  reconcile.
+
+The invariant: **the total on the document and the sum reported to the Sistema TS
+coincide**, with the single exception of a stamp duty paid in cash.
+
+Beyond the original scope, the engine also carries withholding (`DatiRitenuta`),
+split payment, reverse charge, non-taxable and out-of-scope treatments, art. 15
+advances, per-line discounts, and multi-rate VAT summaries — the things a
+non-healthcare invoice needs.
+
+---
+
+## Transmission
+
+The XML is built and checked here; a channel only adds the accredited way in.
+
+| Channel | What it needs | Who holds the documents |
+|---|---|---|
+| `export` | nothing | nobody — the file is handed over |
+| `pec` | the practice's own certified mailbox | nobody |
+| `provider` | an accredited intermediary's API | the provider |
+
+**`provider` is the default**, and the reason is not technical. All three routes
+issue an invoice that is equally valid; they differ in who is on the hook when the
+channel goes quiet. PEC costs nothing extra and needs nobody's accreditation, but it
+only works if somebody reads that mailbox — and a practice that has just been told
+its invoicing is automatic does not read it. The notice arrives, nobody opens it,
+the five days run out, and the complaint lands on whoever sold the system. An
+intermediary is the paid answer to that: it watches the channel, and it answers for
+it.
+
+`export` is still the floor everything else stands on: an unrecognised channel code
+resolves to it rather than raising, so a mistyped configuration leaves the invoice
+transmissible by hand instead of stuck. `pec` is the route the original design could
+not take, because it had no mailbox of its own to send from.
+
+What the default does **not** do is fall back quietly. A company set to `provider`
+with no endpoint yet still builds and stores its XML, but the send refuses and says
+which piece is missing, and the onboarding checklist carries the gap until it is
+closed. A channel that pretends to have sent is worse than one that stops.
+
+Two details decide whether PEC works at all. **Only the first invoice goes to
+`sdi01@pec.fatturapa.it`** — the delivery receipt names the address to use from
+then on, and mail to the old one is not answered, so the address is learned and
+stored rather than hard-coded. And **an invoice to a public administration has to
+carry a qualified signature**: mandatory on FPA12, optional on FPR12. Sending an
+unsigned PA invoice comes back as `00102` with the five days already running, so
+the channel refuses instead and says what is missing.
+
+### The provider contract, and the one thing still unverified
+
+No vendor is wired in. `sdi/provider.py` posts the built XML and reads an identifier
+back; endpoint, login URL and the field that identifier hides in are configuration,
+with the defaults seeded to the provider this system ships with. Clearing the login
+URL is a real choice and asks for HTTP Basic instead.
+
+Being authenticated and staying that way is `acube.py`, shared with the Sistema TS
+channel: the token is good for a day and is cached per company **and environment**,
+so a switch to production cannot reuse a sandbox token and read as bad credentials.
+One 401 renews and retries; a second is a real authentication problem.
+
+The shape was checked (17 September 2026) against the published API and matches on
+every point that matters: raw XML with `Content-Type: application/xml`, `202
+Accepted`, `{"uuid": …}` in the body, and a login taking `{"email", "password",
+"environment"}` and answering `{"token": …}`.
+
+**The environment is not a detail.** A sandbox document reached nobody, and the only
+thing separating it from a real invoice is which switch was set months ago. So it
+defaults to sandbox, it is stamped on each document rather than read back from the
+company, it is appended to every message a sandbox send produces, and it sits at the
+top of its settings panel rather than inside a fieldset — it is the one setting whose
+wrong value produces no error anywhere.
+
+What is still unverified is **the webhook payload's shape**. The provider documents
+its event names, not the envelope around them, and this was written without a real
+delivery to read. So nothing insists on a shape: `engine/busta.py` looks in several
+plausible places, refuses to guess when a notice is absent, and records what it could
+not act on by the *names* of the keys it saw and never their values — the same door
+takes `supplier-invoice`, and that one carries somebody's healthcare document. The
+first real delivery is what closes this, and the log is written to tell you.
+
+### The door notices come back through
+
+A public endpoint, so the design is mostly about who may knock:
+
+* **one shared secret per company**, compared in constant time, presented as a header
+  or a query parameter because the provider's configuration chooses between them.
+  Every candidate is checked even after one matches, so a caller cannot time how far
+  down the list its guess landed;
+* **a refused delivery is told nothing.** Unknown company, wrong secret and junk body
+  get the same answer. An endpoint that explains itself to strangers is an
+  enumeration oracle;
+* **a company that never generated a secret cannot be opened** by a caller presenting
+  nothing — an empty stored secret matches nothing, deliberately;
+* **the body is never trusted for identity.** Which invoice a notice answers is
+  resolved the way every channel resolves it, by the file name the SdI put on it.
+
+The status code is the contract with the provider's retry queue, which retries
+fifteen times over about ten hours on anything but a 200. So a delivery that was
+understood returns 200 even when there was nothing to apply — the same bytes would
+reach the same answer — and only an unexpected failure returns 500.
+
+### What transmitting does not do
+
+Sending the file is the easy half. Three things are not done by it, and only the
+first two are code:
+
+* **the notices have to be read.** Until `RC` or `MC` arrives nobody knows whether
+  the invoice is issued. On the PEC route nothing pushes, so the daily sweep reads
+  the mailbox;
+* **a rejection has to be answered within five days.** `NS` means the invoice
+  **counts as not issued**, and the Agenzia's preferred route is to resend it with
+  the **same number and the same date** (Circolare 13/E del 2 luglio 2018). So
+  `api.reopen_rejected` puts the document back in draft keeping its number — that
+  is not rewriting history, the document does not exist yet — and discards the XML,
+  because the SdI refuses a file name it has already seen;
+* **ten years of compliant preservation**, which transmitting never provides. The
+  Agenzia's service is free and keeps documents for fifteen years, but it needs an
+  **explicit adhesion** in Fatture e Corrispettivi and only covers invoices from
+  that day on. It is a form to sign once, not a product to buy — which is why it is
+  a field on the company and a line in the onboarding checklist rather than a
+  reason to hire an intermediary.
+
+### The notices
+
+Six kinds come back, and only one is good news. `MC` is the one that gets misread:
+it is not a failure, the invoice is fiscally issued and sits in the client's
+reserved area — what is owed is telling the client, because the SdI will not, and
+the module raises exactly that alert.
+
+Applying a notice is idempotent by file name: a PEC mailbox re-delivers and a
+webhook retries. On the PEC route nothing pushes, so the daily sweep reads the
+mailbox — an unread inbox leaves every invoice in `inviato`, which looks exactly
+like nothing being wrong.
+
+---
+
+## The document the client keeps
+
+PDF/A-3b, and the conformance is **measured**. The module builds the structure —
+uncompressed XMP with `pdfaid`, an sRGB OutputIntent, neutral metadata, dates and
+file identifier derived from the document rather than the clock — and then re-reads
+what it produced. With no ICC profile available it declares a plain PDF, because
+without an OutputIntent it would not be PDF/A and declaring it anyway is a false
+declaration.
+
+Part 3 rather than 1 for two reasons: the renderer emits modern PDF with
+transparency, which part 1 forbids; and part 3 is the one that lets the FatturaPA
+file ride inside the document a human reads, as a properly declared associated file.
+
+It leans on `pypdf` and `pillow`, both of which come from Frappe — nothing is
+added to this app's dependencies. If either is missing the file is stored exactly
+as rendered and says so, rather than claiming a conformance it did not reach.
+
+The PDF is generated **once**. The renderer is not byte-stable across versions, so
+regenerating is not a recovery path: the file handed over is the one stored, and the
+SHA-256 taken at creation is what proves it years later. The file name stays neutral
+— `fattura_psicoterapia_rossi_marzo.pdf` tells the diagnosis to anyone who glances
+at a downloads folder.
+
+---
+
+## Two branches, two retention duties
+
+The same practice that cannot send its physiotherapy invoices to the SdI sends its
+gym memberships, its lectures and its insurance reports through it, so **retention
+is not one company-wide setting**. It splits exactly where the triple already split
+routing:
+
+| Branch | Preserved by | Configured in |
+|---|---|---|
+| Documents that transit the SdI | the Agenzia's free service, or a provider | `conservation_service` |
+| Documents that never transit it | somebody the practice pays, or paper | `document_mode` + `conservation_local` |
+
+The asymmetry has one cause: **the Agenzia preserves only what passed through the
+SdI**. The free service is real and it is enough — for the branch it covers. The
+healthcare branch, which the SdI is forbidden to carry, falls outside it entirely,
+and that is the point at which conservation stops being free.
+
+So `document_mode` asks about that second branch only. Under
+`elettronica_extra_sdi` those documents are born electronic and somebody has to be
+paid to keep them for ten years; under `analogico_con_copia` the paper original is
+what gets kept, in two exemplars, and nobody has to be. The retention wording on the
+document (`diciture.conservazione_elettronica`) and the second exemplar in the print
+format both follow that branch, never the SdI one: an electronic invoice has no
+second copy, and saying it is preserved under D.M. 17 giugno 2014 when the Agenzia
+is the one preserving it is a claim about the wrong custodian.
+
+`api.onboarding_checklist` asks for both, separately, and only when they are owed —
+the local preserver appears as a gap only if the practice chose
+`elettronica_extra_sdi` and named nobody.
+
+---
+
+## Numbering
+
+`numDocumento` accepts at most **20 characters** of `[A-Za-z0-9_./-]`. No spaces, no
+`#`, no accents, no `:`. A format chosen after the fact turns out in January not to
+pass, and by then it is thousands of rows — so it is validated when the company is
+saved, on the worst case of a six-digit counter.
+
+The number is assigned on submit, with the counter row locked, inside the
+transaction that saves the document. A number assigned and not used is a gap, and
+the Agenzia rejected numbering with gaps (Risposta n. 505 del 29 ottobre 2020).
+
+---
+
+## Sistema TS
+
+One pipeline, four submission modes, and only the last ten centimetres change.
+
+| Mode | What it needs | Who transmits |
+|---|---|---|
+| `credenziali_studio` | the centre's own user, password and PINCODE, **no active mandate** | this system, directly |
+| `intermediario` | an Entratel accountant **with** an active mandate | this system, on the `/entrate/` channel |
+| `provider` | an endpoint on the accredited intermediary | the provider, under its own accreditation |
+| `export` | nothing | the centre, from the portal |
+
+**`credenziali_studio` is the default**, and the reason is commercial before it is
+technical. It costs nothing per document, and that is what makes *unlimited
+healthcare invoicing* a product rather than a loss: a centre with six practitioners
+reports around sixteen thousand lines a year, and metering those would either show
+up in the price or eat the margin. The credentials belong to the centre and are
+entered by the centre, from its own settings. A credential you do not hold is an
+incident you cannot have.
+
+`provider` is the answer for the centre that **cannot** take the direct route —
+where the accountant holds an active mandate, transmitting in the centre's own name
+comes back as `105`. That is a real segment, and being able to serve it is a
+difference worth having.
+
+Which modes need the centre's own credentials is one definition
+(`tracciato.richiede_credenziali`), pinned by a test, because two places disagreeing
+about it blocks a save at a field that can never be filled — and because every mode
+in that set makes a centre hand over its fiscal identity, which should never grow by
+accident.
+
+The default is not enforced at save time. A centre is set up before its credentials
+arrive, so blocking the save would stop onboarding at a field that will be filled
+next week: the gap shows in the checklist, the send refuses on its own until it is
+closed, and **nothing about invoicing waits on any of it**.
+
+`export` stays the universal plan B and stays tested even when every company is on
+automatic. The truth about the mandate is not asked for — practices answer it wrong
+without meaning to, they simply do not know. It is probed (`api.probe_delegation`):
+rejection `105` means there is no mandate, `106` means there is one, and the company
+is moved to match.
+
+Transmission is synchronous, one document per call (`api.send_to_ts`), because the
+answer then comes back the same day rather than on 20 January with four thousand
+rows behind it — and because it is what makes the probe possible at all.
+Authentication is **preemptive** HTTP Basic: the service issues no 401 challenge.
+Credentials never reach a log or an error message. A rejection that says something
+about the configuration — an expired PINCODE, `105`, `106` — sends the company back
+to `export` with an alert rather than retrying, because **invoicing must not stop
+for a broken last mile**.
+
+Two schemas, not one with a switch. The synchronous one is namespaced and puts
+`voceSpesa` before the closing flags; the attached file has no namespace at all, one
+`proprietario` per file, and a mandatory `flagOperazione`. `xs:sequence` makes the
+order binding.
+
+Encryption is RSA 1024 with PKCS#1 v1.5, and it happens **at send time, always**:
+the ciphertext is randomised (never a key or an index) and it is not storable (the
+certificate is reissued). Without a certificate the file is still built — `export`
+has to work on day one — but with a stand-in that writes `NONCIFRATO` into the
+field, so a file that is not ready to send can never be mistaken for one that is.
+
+---
+
+## Watching for silence
+
+In invoicing, no news is not good news. The daily job looks for absence, not for
+errors:
+
+- the `SanitelCF.cer` certificate expired or reissued — **every** submission then
+  fails with code `002`, quietly;
+- no accepted submission for N days with documents waiting;
+- the annual deadline approaching with something still outstanding — 31 January,
+  and mid-March for vets, who therefore get their own batch.
+
+---
+
+## What this module does not decide
+
+- **Paper or electronic, for the branch outside the SdI** (`document_mode`): two
+  product configurations with different costs, not a detail. The module scopes the
+  question and prices it, and refuses to answer it — whether a practice wants a
+  paid preserver or a filing cabinet is a commercial decision. See *Two branches,
+  two retention duties*.
+- **The exemption, profession by profession.** The register ships as a documented
+  starting point with `needs_verification` marking every point an accountant has to
+  close before go-live. `crm.invoicing.api.onboarding_checklist` returns them as a
+  live list that says what each gap costs.
+- **The element names and date format of the Sistema TS tracciato.** They come from
+  the official kit and are worth re-checking against its XSDs before go-live.
+
+## Which specification this is built against
+
+FatturaPA **specifiche tecniche v1.9.1**, in force since 15 May 2026, schema
+`Schema_VFPR12` — so the root `versione` attribute stays `FPR12`/`FPA12`. What
+1.9.1 changed and where it lands here: the VAT Group control (rejection `00327`,
+in the notice table), the `ESENZSPORT` marker for amateur sports income (a
+`TipoDato` in `AltriDatiGestionali`, which `Linea` already carries), the
+destination-code registry cap moving from 100 to 300 (registry-side, nothing in
+the XML), and the accreditation rules for the web service and SFTP channels —
+which is exactly the part a provider sells and the PEC route does not need.
+
+Size limits: **5 MB per file** on every channel (rejection `00003`, checked when
+the XML is written) and **30 MB per PEC message**, attachment included, because
+that message can carry a zip of several invoices.
+
+Sources checked on 10 September 2026: fatturapa.gov.it (transmission channels)
+and the Agenzia delle Entrate page for specifiche tecniche v1.9.1. Worth
+re-reading before go-live — this is the part of the module that moves.
+
+---
+
+*Not tax or legal advice. The provider's endpoints, the Sistema TS kit and the
+FatturaPA technical specification should be taken from their current versions, and
+every legal reference is doubled with the Testi Unici applicable from 1 January
+2027.*

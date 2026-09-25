@@ -1,0 +1,157 @@
+{
+ "actions": [],
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_section",
+  "enabled",
+  "default_company",
+  "column_general",
+  "healthcare_enabled",
+  "advances_in_stamp_base",
+  "delivery_section",
+  "attach_pdf",
+  "email_on_submit",
+  "column_delivery",
+  "retention_days",
+  "monitoring_section",
+  "ts_silence_days",
+  "column_monitoring",
+  "certificate_warning_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_section",
+   "fieldtype": "Section Break",
+   "label": "General"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Invoicing enabled"
+  },
+  {
+   "fieldname": "default_company",
+   "fieldtype": "Link",
+   "label": "Default company",
+   "options": "CRM Invoicing Company"
+  },
+  {
+   "fieldname": "column_general",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Turns on the Sistema TS reporting and the SdI ban on healthcare services towards natural persons. The ban itself is server-side and cannot be switched off.",
+   "fieldname": "healthcare_enabled",
+   "fieldtype": "Check",
+   "label": "Healthcare branch enabled"
+  },
+  {
+   "default": "1",
+   "description": "The prevailing reading of nota 2 lett. a), and not a settled point. Left as a switch, and the calculation says so when it is what tips the balance.",
+   "fieldname": "advances_in_stamp_base",
+   "fieldtype": "Check",
+   "label": "Count art. 15 advances in the stamp-duty threshold"
+  },
+  {
+   "fieldname": "delivery_section",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "default": "1",
+   "description": "The system of record is here, in Europe. The document lives with its record instead of behind a signed link to somewhere else.",
+   "fieldname": "attach_pdf",
+   "fieldtype": "Check",
+   "label": "Attach the PDF to the invoice"
+  },
+  {
+   "fieldname": "email_on_submit",
+   "fieldtype": "Check",
+   "label": "Email the client on issue"
+  },
+  {
+   "fieldname": "column_delivery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "0 means no expiry. The 45-day cap of the original design existed because the file lived outside the controller's systems; here it does not.",
+   "fieldname": "retention_days",
+   "fieldtype": "Int",
+   "label": "Keep the download link open for (days)"
+  },
+  {
+   "fieldname": "monitoring_section",
+   "fieldtype": "Section Break",
+   "label": "Monitoring"
+  },
+  {
+   "default": "30",
+   "description": "The most dangerous failure in this domain produces no error: it produces absence, and absence surfaces in January.",
+   "fieldname": "ts_silence_days",
+   "fieldtype": "Int",
+   "label": "Alert after N days with no accepted TS submission"
+  },
+  {
+   "fieldname": "column_monitoring",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "90",
+   "fieldname": "certificate_warning_days",
+   "fieldtype": "Int",
+   "label": "Warn N days before the TS certificate expires"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Invoicing Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

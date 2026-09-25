@@ -681,7 +681,7 @@ def platform_connections(ctx: Context):
 	labels = {"Connected": _("Connected"), "Error": _("Error"), "Not configured": _("Not configured")}
 	items = []
 	for row in rows:
-		seen = max(filter(None, (row.last_sync, row.last_webhook)), default=None)
+		seen = max((v for v in (row.last_sync, row.last_webhook) if v), default=None)
 		items.append(
 			{
 				"title": row.name,

@@ -1,0 +1,275 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:service_name",
+ "creation": "2026-09-09 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "identity_section",
+  "service_name",
+  "fiscal_description",
+  "column_identity",
+  "enabled",
+  "default_rate",
+  "uom",
+  "link_section",
+  "crm_service",
+  "column_link",
+  "crm_product",
+  "vat_section",
+  "is_healthcare",
+  "vat_exempt",
+  "exemption_reference",
+  "column_vat",
+  "vat_rate",
+  "vat_nature",
+  "is_advance",
+  "ts_section",
+  "ts_expense_type",
+  "column_ts",
+  "ts_expense_flag",
+  "options_section",
+  "subject_to_stamp_duty",
+  "default_provider",
+  "column_options",
+  "verified_by_accountant",
+  "verified_on",
+  "notes_section",
+  "verification_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "identity_section",
+   "fieldtype": "Section Break",
+   "label": "Service"
+  },
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "description": "What the client reads. On a healthcare document it is also what leaks: keep it to the service, not the specialty.",
+   "fieldname": "fiscal_description",
+   "fieldtype": "Small Text",
+   "label": "Description on the invoice",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_identity",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "default_rate",
+   "fieldtype": "Currency",
+   "label": "Default price"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "link_section",
+   "fieldtype": "Section Break",
+   "label": "Linked records"
+  },
+  {
+   "fieldname": "crm_service",
+   "fieldtype": "Link",
+   "label": "Bookable service",
+   "options": "CRM Service"
+  },
+  {
+   "fieldname": "column_link",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "crm_product",
+   "fieldtype": "Link",
+   "label": "Product",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "vat_section",
+   "fieldtype": "Section Break",
+   "label": "VAT treatment"
+  },
+  {
+   "description": "One healthcare line towards a natural person takes the whole document out of the SdI channel.",
+   "fieldname": "is_healthcare",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Healthcare service"
+  },
+  {
+   "fieldname": "vat_exempt",
+   "fieldtype": "Check",
+   "label": "Exempt"
+  },
+  {
+   "depends_on": "eval:doc.vat_exempt",
+   "fieldname": "exemption_reference",
+   "fieldtype": "Small Text",
+   "label": "Exemption reference"
+  },
+  {
+   "fieldname": "column_vat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "22",
+   "depends_on": "eval:!doc.vat_exempt",
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT rate"
+  },
+  {
+   "description": "Set it when the line carries no VAT for a reason other than the art. 10 exemption: reverse charge, out of scope, non-taxable. Never guessed.",
+   "fieldname": "vat_nature",
+   "fieldtype": "Select",
+   "label": "Natura",
+   "options": "\nN1\nN2.1\nN2.2\nN3.1\nN3.2\nN3.3\nN3.4\nN3.5\nN3.6\nN4\nN5\nN6.1\nN6.2\nN6.3\nN6.4\nN6.5\nN6.6\nN6.7\nN6.8\nN6.9\nN7"
+  },
+  {
+   "description": "Outside the taxable base altogether. Not the same as exempt.",
+   "fieldname": "is_advance",
+   "fieldtype": "Check",
+   "label": "Advance in the client's name (art. 15)"
+  },
+  {
+   "depends_on": "eval:doc.is_healthcare",
+   "fieldname": "ts_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema TS"
+  },
+  {
+   "description": "TK Ticket (quota fissa e/o di partecipazione al costo) · FC Farmaco, anche omeopatico, e dispositivo medico CE · FV Farmaco per uso veterinario · AD Acquisto o affitto di dispositivo medico CE · AS Spesa sanitaria relativa ad assistenza domiciliare integrata · SR Spesa prestazione sanitaria: intramoenia · CT Spesa per certificazione medica · PI Spesa prestazione sanitaria: protesica e integrativa · IC Spesa per dispositivi, chirurgia estetica e altre prestazioni · AA Altre spese - quota NON a carico del contribuente o spesa non sanitaria · SP Spesa prestazione sanitaria del professionista sanitario (DM 8/8/2018) · SV Spesa veterinaria",
+   "fieldname": "ts_expense_type",
+   "fieldtype": "Select",
+   "label": "tipoSpesa",
+   "options": "\nTK\nFC\nFV\nAD\nAS\nSR\nCT\nPI\nIC\nAA\nSP\nSV"
+  },
+  {
+   "fieldname": "column_ts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "1 only with TK (emergency room), 2 only with SR (intramoenia).",
+   "fieldname": "ts_expense_flag",
+   "fieldtype": "Select",
+   "label": "flagTipoSpesa",
+   "options": "\n1\n2"
+  },
+  {
+   "fieldname": "options_section",
+   "fieldtype": "Section Break",
+   "label": "Options"
+  },
+  {
+   "default": "1",
+   "fieldname": "subject_to_stamp_duty",
+   "fieldtype": "Check",
+   "label": "Subject to stamp duty"
+  },
+  {
+   "fieldname": "default_provider",
+   "fieldtype": "Link",
+   "label": "Default provider",
+   "options": "CRM Service Provider"
+  },
+  {
+   "fieldname": "column_options",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Until this is ticked the service can be invoiced, but the exemption on it is an assumption nobody has confirmed.",
+   "fieldname": "verified_by_accountant",
+   "fieldtype": "Check",
+   "label": "Verified by the accountant"
+  },
+  {
+   "depends_on": "eval:doc.verified_by_accountant",
+   "fieldname": "verified_on",
+   "fieldtype": "Date",
+   "label": "Verified on"
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "verification_notes",
+   "fieldtype": "Small Text",
+   "label": "Verification notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Billable Service",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User"
+  }
+ ],
+ "quick_entry": 1,
+ "row_format": "Dynamic",
+ "search_fields": "fiscal_description",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "service_name",
+ "track_changes": 1
+}

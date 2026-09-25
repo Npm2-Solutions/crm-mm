@@ -14,7 +14,12 @@ from crm.fcrm.doctype.crm_products.crm_products import create_product_details_sc
 
 
 def before_install():
-	pass
+	# The invoicing doctypes grant permissions to roles that do not ship with
+	# Frappe. A DocPerm pointing at a Role that does not exist yet fails link
+	# validation during the sync, so the roles are created before it runs.
+	from crm.invoicing.install import crea_ruoli
+
+	crea_ruoli()
 
 
 def after_install(force=False):
@@ -39,7 +44,26 @@ def after_install(force=False):
 	create_assignment_rule_custom_fields()
 	add_assignment_rule_property_setters()
 	seed_default_rules_and_mappings()
+	seed_invoicing()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
+
+
+def seed_invoicing():
+	"""Roles and the qualification register.
+
+	The register ships as records rather than as a fixture, because a practice that
+	corrects an entry has to keep the correction across every migration.
+	"""
+	from crm.invoicing.install import crea_ruoli, imposta_predefiniti, semina_qualifiche
+
+	crea_ruoli()
+	semina_qualifiche()
+
+	# The healthcare half of the same register, from the module that owns it.
+	from crm.tessera_sanitaria.install import semina_qualifiche as semina_sanitarie
+
+	semina_sanitarie()
+	imposta_predefiniti()
 
 
 def add_default_lead_statuses():

@@ -59,7 +59,7 @@ import {
   toast,
   ErrorMessage,
 } from 'frappe-ui'
-import { getRandom } from '@/utils'
+import { buildTabs } from '@/utils/settingsTabs'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -94,55 +94,5 @@ const data = createDocumentResource({
   },
 })
 
-const tabs = computed(() => {
-  if (!fields.data) return []
-  let _tabs = []
-  let fieldsData = fields.data
-
-  if (fieldsData[0].type != 'Tab Break') {
-    let _sections = []
-    if (fieldsData[0].type != 'Section Break') {
-      _sections.push({
-        name: 'first_section',
-        columns: [{ name: 'first_column', fields: [] }],
-      })
-    }
-    _tabs.push({ name: 'first_tab', sections: _sections })
-  }
-
-  fieldsData.forEach((field) => {
-    let last_tab = _tabs[_tabs.length - 1]
-    let _sections = _tabs.length ? last_tab.sections : []
-    if (field.fieldtype === 'Tab Break') {
-      _tabs.push({
-        label: field.label,
-        name: field.fieldname,
-        sections: [
-          {
-            name: 'section_' + getRandom(),
-            columns: [{ name: 'column_' + getRandom(), fields: [] }],
-          },
-        ],
-      })
-    } else if (field.fieldtype === 'Section Break') {
-      _sections.push({
-        label: field.label,
-        name: field.fieldname,
-        hideBorder: field.hide_border,
-        columns: [{ name: 'column_' + getRandom(), fields: [] }],
-      })
-    } else if (field.fieldtype === 'Column Break') {
-      _sections[_sections.length - 1].columns.push({
-        name: field.fieldname,
-        fields: [],
-      })
-    } else {
-      let last_section = _sections[_sections.length - 1]
-      let last_column = last_section.columns[last_section.columns.length - 1]
-      last_column.fields.push(field)
-    }
-  })
-
-  return _tabs
-})
+const tabs = computed(() => buildTabs(fields.data))
 </script>

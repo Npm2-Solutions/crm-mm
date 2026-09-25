@@ -189,6 +189,17 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+	# The healthcare rules on a qualification belong to the module that can explain
+	# them, not to a DocType that also serves lawyers and engineers.
+	"CRM Professional Qualification": {
+		"validate": "crm.tessera_sanitaria.qualifica.valida",
+	},
+	"CRM Billable Service": {
+		"validate": "crm.tessera_sanitaria.qualifica.valida_servizio",
+	},
+	"CRM Invoicing Company": {
+		"validate": "crm.tessera_sanitaria.qualifica.valida_azienda",
+	},
 	"Contact": {
 		"validate": ["crm.api.contact.validate"],
 		# created by a webhook, a form, a booking: nobody was logged in, and
@@ -354,6 +365,10 @@ scheduler_events = {
 		"crm.api.tracking.purge_old_data",
 		"crm.telemetry.capture_feature_state",
 		"crm.telephony.transcription.expire_transcripts",
+		# Invoicing fails quietly and annually: an expired Sistema TS certificate,
+		# a button nobody pressed. The sweep looks for absence, not for errors.
+		"crm.invoicing.monitoraggio.giornaliero",
+		"crm.tessera_sanitaria.monitoraggio.giornaliero",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
@@ -495,3 +510,21 @@ standard_dropdown_items = [
 		"is_standard": 1,
 	},
 ]
+
+
+# ---------------------------------------------------------------------------
+# Which modules extend invoicing.
+#
+# `crm.invoicing` issues, calculates, formats and transmits documents for any
+# sector, and knows nothing about healthcare. `crm.tessera_sanitaria` adds the
+# healthcare half and plugs itself in through `crm.invoicing.estensioni`.
+#
+# The wiring lives here, in the app, because deciding which modules an
+# installation has is the app's job - not something either module gets to assume
+# about the other. Removing this line leaves a working invoicing system; that is
+# the whole point of the arrangement.
+from crm.invoicing import registra as _registra_fatturazione
+from crm.tessera_sanitaria import registra as _registra_tessera_sanitaria
+
+_registra_fatturazione()
+_registra_tessera_sanitaria()
