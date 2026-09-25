@@ -498,7 +498,10 @@ function setActiveTab(tabName) {
     (tabName &&
       (items.find((item) => itemId(item) === tabName) ||
         items.find((item) => item.aliases?.includes(tabName)) ||
-        items.find((item) => item.label === tabName))) ||
+        items.find((item) => item.label === tabName) ||
+        // the untranslated name of a page without a key ("Telephony"), asked
+        // for by a screen outside the modal in a language that translates it
+        items.find((item) => item.label === __(tabName)))) ||
     tabs.value[0].items[0]
 }
 
