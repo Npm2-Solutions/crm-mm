@@ -5,6 +5,8 @@
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
 scrivere codice vanno chiuse le [domande](#le-domande-da-chiudere-prima) in fondo.
+Le richieste puntuali (livelli, Sito senza Builder, moduli con firma, archivio,
+area cliente), verificate sul codice, sono in [requisiti.md](./requisiti.md).
 Obblighi, concorrenti ed ecosistema Frappe, con le fonti, sono in
 [ricerca.md](./ricerca.md).
 
@@ -187,7 +189,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | **Il codice fiscale e l'indirizzo non si ricordano.** `compila_da_controparte` prende dalla persona solo nome e cognome, quindi al paziente che torna si riscrivono ogni volta. Vedi [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:565`) **ma non registrata**. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | Consensi registrati (quale testo, quale versione, quando, come): marketing, dossier, referti online |
 | Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
-| Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`) | Medico, Direzione sanitaria, Marketing. Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
+| Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`) | Tre livelli (Segreteria, Manager amministrativo, Operatore) con la gestione dei ruoli nel CRM; System Manager e Administrator solo all'agenzia, mentre oggi l'"Admin" del CRM **è** System Manager ([requisiti §1](./requisiti.md#1-tre-livelli-e-il-site-resta-vostro)). Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
 | Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
 
 Il resto (conversazioni su tutti i canali, automazioni, prenotazione online,
@@ -285,10 +287,10 @@ Le giornate tipo vanno nella SPA `/crm`, dove il centro lavora già:
 - **Segreteria, dove c'è:** agenda, poi l'accettazione quando il paziente arriva
   (dati controllati, consensi firmati al banco, sala d'attesa), poi la coda
   "Dall'agenda, non ancora fatturati" (che c'è già), poi il prossimo appuntamento.
-- **Medico:** la mia giornata, poi la pagina della persona (storia, allegati,
+- **Operatore** (medico, nutrizionista, fisioterapista…): la mia giornata, poi la pagina della persona (storia, allegati,
   consensi), poi la visita sul modello della sua specialità, poi il referto. Nei
   centri con un erogatore solo fa tutto da lì, fattura compresa.
-- **Direzione:** appuntamenti, nuovi pazienti, prodotto per medico, consensi
+- **Manager amministrativo:** appuntamenti, nuovi pazienti, prodotto per medico, consensi
   mancanti, cosa resta da fatturare.
 - **Marketing:** richieste, pipeline, campagne e costo per nuovo paziente.
 
@@ -406,14 +408,15 @@ prova con il centro pilota.
 
 | Fase | Cosa | sp | Da qui il centro pilota può… |
 |---|---|---|---|
-| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; ruoli Medico, Direzione sanitaria, Marketing, con menu e schede per ruolo e la forma dedotta dagli erogatori; lettura delle fatture tolta a Sales User; l'anagrafica fiscale sola, letta dalla fattura; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la lista delle regole e la porta unica (informazione medica, appuntamento, fattura, importazione, a mano), con il recupero una tantum sui dati che ci sono già; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 3–4 | …lavorare dalla pagina della persona, medico compreso, senza riscrivere il codice fiscale |
+| **0 — Le due facce e il paziente automatico** | Interruttore "centro medico"; i tre livelli come Role Profile, con la gestione dei ruoli nel CRM e System Manager solo all'agenzia; menu e schede per livello e la forma dedotta dagli erogatori; Sito nascosto senza Builder; lettura delle fatture tolta a Sales User; l'anagrafica fiscale sola, letta dalla fattura; la sezione "Clinica" sulla pagina della persona, con una visita semplice (testo e allegati); la lista delle regole e la porta unica (informazione medica, appuntamento, fattura, importazione, a mano), con il recupero una tantum sui dati che ci sono già; consensi registrati, compreso quello di `/prenota`; persone collegate (genitore e figlio) | 4,5–6 | …lavorare dalla pagina della persona, medico compreso, senza riscrivere il codice fiscale |
 | **1 — Le cuciture** | La conversione a paziente che chiude il deal; pipeline "Nuovi pazienti" e "Preventivi"; l'evento "Diventato paziente" nelle automazioni; l'accettazione con la sala d'attesa, per chi ha la segreteria, che entra nella lista delle regole; visita, accettazione e fattura che chiudono l'appuntamento; il promemoria di fine giornata "sono venuti?"; richiami ai pazienti con consenso; dashboard del centro | 2–3 | …sapere quanto costa un nuovo paziente, per inserzione |
-| **2 — Cartella e referti** | Modelli per specialità; referto in PDF con firma (prima semplice su tablet, poi avanzata); consensi informati per prestazione; registro degli accessi; dossier e oscuramento; consegna del referto | 4–5 | …spegnere il vecchio gestionale |
-| **3 — Paziente ed extra** | Area paziente (referti, fatture, questionario prima della visita); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
+| **2 — Cartella, moduli e referti** | Cartella completa sul modello della specialità; il builder dei moduli del centro con la firma come componente (privacy, consensi, anamnesi) e il registro dei consensi; referto in PDF con firma (prima semplice su tablet, poi avanzata); archivio clinico dei documenti; registro degli accessi; dossier e oscuramento; consegna del referto | 7–9 | …spegnere il vecchio gestionale |
+| **3 — Area cliente ed extra** | Area cliente: appuntamenti, piani (nutrizionale, dieta, allenamento), documenti, comunicazioni dell'operatore, fatture, moduli da firmare (5–7 sp, [requisiti §6](./requisiti.md#6-area-cliente)); televisita; magazzino dei consumabili; cicli di sedute (fisioterapia); piani di cura (odontoiatria) | a scelta | …vendere il pacchetto completo |
 | **Da tenere d'occhio** | Fascicolo sanitario 2.0: dal 31/03/2026 riguarda sulla carta anche le prestazioni private, ma per le strutture non accreditate l'obbligo è contestato e non sanzionato. Quando lo diventerà servono referti in CDA2, firma qualificata e un software accreditato dal Ministero ([ricerca §2.7](./ricerca.md#27-fascicolo-sanitario-elettronico-fse-20)) | — | — |
 
-**Fasi 0–2: 9–12 sp, circa due mesi e mezzo per una persona.** Le prime due
-risolvono la dualità; la terza è il gestionale clinico vero e proprio.
+**Fasi 0–2: 14–18 sp, tre-quattro mesi per una persona.** Le prime due
+risolvono la dualità; la terza è il gestionale clinico vero e proprio. Le stime
+sono indicative e si rifanno dopo le decisioni in [requisiti.md](./requisiti.md).
 
 ## Le domande da chiudere prima
 
