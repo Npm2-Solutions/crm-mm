@@ -56,6 +56,12 @@ l'agenzia. Serve una gestione dei ruoli propria del CRM.
   permette più profili per utente (`User.role_profiles`), che è esattamente il
   titolare che visita: *Manager amministrativo* più *Operatore*. Il CRM mostra e
   assegna **livelli**, mai ruoli.
+- **O tutto dai livelli, o niente**: a ogni salvataggio dell'utente Frappe rifà i
+  ruoli dai profili (`populate_role_profile_roles` in `user.py`), e un ruolo messo
+  a mano sparisce. Gli utenti dell'agenzia quindi non hanno profili del centro, e
+  il CRM rifiuta un profilo che contenga System Manager. Il CRM lo sa già in parte:
+  `remove_crm_roles_from_user` non tocca chi ha un profilo
+  ([ricerca per il design §5](./ricerca-design.md#5-i-mattoni-frappe)).
 - **Sotto, i ruoli restano capacità**: quelli che ci sono (Sales User, Sales
   Manager, Invoicing Manager…) più quelli nuovi (per esempio *CRM Admin* al posto
   di System Manager nei controlli del CRM, e un ruolo clinico per l'operatore).
@@ -200,10 +206,13 @@ e un token in `/prenota` (sposta o annulla). Frappe ha già gli utenti del sito
 **Proposta.**
 
 - **Chi entra**: il cliente come utente del sito, non del CRM, collegato alla sua
-  persona. Si entra con email e codice monouso, senza password da ricordare. È
-  anche quello che chiedono le linee guida del Garante sui referti online
-  (consenso, accesso protetto, possibilità di escludere singoli referti:
-  [ricerca §2.4](./ricerca.md#24-privacy-e-dati-sanitari)).
+  persona. Si entra con email e codice monouso, senza password da ricordare, e
+  dalla volta dopo, se vuole, col viso o l'impronta (passkey). Per scaricare un
+  referto si rientra. È anche quello che chiedono le linee guida del Garante sui
+  referti online (consenso, accesso protetto, possibilità di escludere singoli
+  referti, 45 giorni online:
+  [ricerca §2.4](./ricerca.md#24-privacy-e-dati-sanitari),
+  [ricerca per il design §3](./ricerca-design.md#3-firma-e-area-cliente)).
 - **Cosa vede**, in sezioni che il centro accende o spegne:
 
   | Sezione | Contenuto |
@@ -221,14 +230,17 @@ e un token in `/prenota` (sposta o annulla). Frappe ha già gli utenti del sito
 - **La notifica non porta il contenuto**: "hai un nuovo messaggio nella tua area"
   via WhatsApp o email, con il testo neutro. Dentro la chat non passano dati
   clinici (terza cucitura della [proposta](./README.md#le-tre-cuciture-fra-i-due-mondi)).
-- **Com'è fatta**: come `/prenota`, una pagina del sito con il nome, il logo e il
-  colore dello studio (`crm/www/prenota.html` è Jinja con JavaScript semplice,
-  senza la SPA), pensata per il telefono. Le API rispondono solo per "la mia
-  persona". Gli accessi si registrano come quelli della cartella.
+- **Com'è fatta**: con il nome, il logo e il colore dello studio, come
+  `/prenota`, ma come **app a parte** (una seconda app Vite su `/area`, come l'app
+  dei dipendenti di HRMS) e non in Jinja: moduli e firma devono essere gli stessi
+  componenti del CRM, e la SPA del CRM respinge chi non è dello staff
+  (`check_app_permission`). Le API (`crm/api/portal.py`) rispondono solo per "la
+  mia persona", ricavata sul server. Gli accessi si registrano come quelli della
+  cartella ([design](./design.md#larea-cliente)).
 
 **Da decidere insieme.**
 
-- Codice monouso via email, SMS o WhatsApp?
+- Codice monouso via email o SMS? WhatsApp resta per gli avvisi senza contenuto.
 - Quali piani per primi: nutrizione, allenamento, entrambi? Chi li scrive, e da
   quali modelli si parte?
 - Le comunicazioni vanno solo dall'operatore al paziente, o il paziente può
@@ -244,6 +256,7 @@ e un token in `/prenota` (sposta o annulla). Frappe ha già gli utenti del sito
 | Tre livelli, gestione ruoli nel CRM, le 16 copie di `MANAGER_ROLES` in un posto solo | 1,5–2 |
 | Sito nascosto senza Builder | 0,1 |
 | Builder dei moduli del centro, componente firma, PDF, registro dei consensi | 3–4 |
+| Firma avanzata con un fornitore (adattatore, codice SMS, kit dell'erogatore) | 1 |
 | Archivio clinico dei documenti | 1–1,5 |
-| Area cliente con appuntamenti, documenti, comunicazioni, fatture | 3–4 |
+| Area cliente con appuntamenti, documenti, comunicazioni, fatture, "Prepara la visita", passkey | 4–5 |
 | Piani (modelli, editor per l'operatore, vista nell'area cliente) | 2–3 |
