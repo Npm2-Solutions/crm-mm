@@ -320,7 +320,7 @@ Doctolib da 139 € e AlfaDocs da 109 € al mese, secondo un concorrente [V]
 | Area | Cosa serve | Dove, nella [proposta](./README.md#le-fasi) |
 |---|---|---|
 | Front office | Agenda multi-sede e multi-specialista con stanze e attrezzature, prenotazione online sincronizzata con i portali, promemoria e richiami | **c'è già** |
-| Front office | Code in accettazione | fase 3, se serve |
+| Front office | Code in accettazione | fase 1, con l'accettazione |
 | Paziente | Codice fiscale letto dal codice a barre della tessera sanitaria, registro dei consensi (cura, dossier, referti online, marketing) | fase 0 |
 | Cassa | Listini per convenzione, acconti, pacchetti; fattura PDF con natura N4 e bollo; SDI solo verso aziende e fondi; Sistema TS con opposizione e tracciabilità; POS e cassa | la fatturazione che c'è già; i preventivi sono i deal (fase 1) |
 | Clinica | Modelli per specialità e referti, firma avanzata per i consensi e qualificata per i referti, referti online, portale del paziente, log degli accessi per 24 mesi | fasi 2 e 3 |
