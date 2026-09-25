@@ -176,3 +176,81 @@ class RiferimentiStringaTest(UnitTestCase):
 			[],
 			"hooks.py points at code that does not exist:\n" + "\n".join(mancanti),
 		)
+
+
+def _promette_un_valore(nodo: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+	"""Annotated with a return type that is not `None`."""
+	if nodo.returns is None:
+		return False
+	return ast.unparse(nodo.returns) not in ("None", "typing.NoReturn", "NoReturn")
+
+
+def _e_astratta(nodo: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+	"""A body that is only a docstring, `...`, `pass` or a `raise`.
+
+	A base class declaring what its subclasses must return is not a function that
+	forgot to return - it is the declaration itself.
+	"""
+	corpo = [
+		r
+		for r in nodo.body
+		if not (
+			isinstance(r, ast.Expr) and isinstance(r.value, ast.Constant) and isinstance(r.value.value, str)
+		)
+	]
+	return all(
+		isinstance(r, ast.Raise)
+		or isinstance(r, ast.Pass)
+		or (isinstance(r, ast.Expr) and isinstance(r.value, ast.Constant) and r.value.value is Ellipsis)
+		for r in corpo
+	)
+
+
+def _restituisce_qualcosa(nodo) -> bool:
+	"""A `return <value>` that belongs to this function and not to a nested one."""
+
+	def propri(n):
+		for figlio in ast.iter_child_nodes(n):
+			if isinstance(figlio, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
+				continue
+			if isinstance(figlio, ast.Return) and figlio.value is not None:
+				yield figlio
+			yield from propri(figlio)
+
+	return any(True for _ in propri(nodo))
+
+
+class PromesseDiRitornoTest(UnitTestCase):
+	"""A function annotated `-> list[dict]` that returns nothing at all.
+
+	Python does not care and neither does a linter: the caller gets `None` and
+	fails somewhere else entirely, or - worse - does not fail. `onboarding_checklist`
+	built its whole list of what a practice is still missing and then ended without
+	a `return`, so the screen that exists to say what is missing said nothing, in
+	every installation, and the suite that covers it needs a bench to run.
+	"""
+
+	def test_chi_promette_un_valore_lo_restituisce(self):
+		colpevoli = []
+		for file in sorted((RADICE / "crm").rglob("*.py")):
+			try:
+				albero = ast.parse(file.read_text())
+			except SyntaxError:  # nothing here parses the frontend's build output
+				continue
+			for nodo in ast.walk(albero):
+				if not isinstance(nodo, ast.FunctionDef | ast.AsyncFunctionDef):
+					continue
+				if not _promette_un_valore(nodo) or _e_astratta(nodo):
+					continue
+				if not _restituisce_qualcosa(nodo):
+					colpevoli.append(
+						f"{file.relative_to(RADICE)}:{nodo.lineno} {nodo.name}() -> "
+						f"{ast.unparse(nodo.returns)}"
+					)
+
+		self.assertEqual(
+			colpevoli,
+			[],
+			"these functions promise a value and never return one; the caller gets None:\n"
+			+ "\n".join(colpevoli),
+		)

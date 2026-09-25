@@ -35,7 +35,11 @@ jobs:
                 options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
 
         env:
-            BASE_BRANCH: ${{ github.base_ref || github.ref_name }}
+            # Never `github.ref_name`: outside a pull_request `base_ref` is empty, so a
+            # hand-started run took the branch under test as its own base and looked for
+            # it in the base repo, where it does not exist. No run in this repository has
+            # ever started from a pull_request event, so that was every run.
+            BASE_BRANCH: ${{ github.base_ref || github.event.repository.default_branch }}
             BENCH_PATH: /home/runner/frappe-bench
 
         steps:
@@ -91,7 +95,11 @@ jobs:
                   mkdir sites/test_site
                   cp "${GITHUB_WORKSPACE}/pr-crm/.github/helper/site_config.json" sites/test_site/site_config.json
                   sed -i 's/watch:/# watch:/g; s/schedule:/# schedule:/g; s/socketio:/# socketio:/g; s/redis_socketio:/# redis_socketio:/g' Procfile
-                  bench get-app crm "https://github.com/frappe/crm" --branch "$BASE_BRANCH"
+                  # This repository, not upstream. Installing frappe/crm here and then
+                  # rsyncing this fork over it tested a migration nobody will ever run,
+                  # and left the one that matters - this fork's base branch to the PR -
+                  # covered by nothing. That is the lane a seeder crash reached develop through.
+                  bench get-app crm "${{ github.server_url }}/${{ github.repository }}" --branch "$BASE_BRANCH"
                   bench setup requirements --dev
                   bench start &>> "$BENCH_PATH/bench_start.log" &
                   CI=Yes bench build --app frappe &

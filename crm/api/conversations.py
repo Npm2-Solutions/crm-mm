@@ -402,7 +402,14 @@ def people(
 	frappe.has_permission("CRM Lead", "read", throw=True)
 
 	conditions = frappe.parse_json(filters) if isinstance(filters, str) else dict(filters or {})
-	conditions.update(STATES.get(state or "all", STATES["all"]))
+	# Never `.get(state, STATES["all"])`: an unknown state falling back to "all" is how
+	# a rename of one of these keys passes unnoticed - the caller asks for a pile and
+	# silently gets the whole address book, which is the exact thing the comment on
+	# `unread` is about. Wrong name, loud answer.
+	stato = state or "all"
+	if stato not in STATES:
+		frappe.throw(frappe._("Unknown conversation state {0}. Known: {1}").format(stato, ", ".join(STATES)))
+	conditions.update(STATES[stato])
 	if waiting in (True, 1, "1", "true", "True"):
 		conditions["conversation_unread"] = 1
 

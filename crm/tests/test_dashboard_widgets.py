@@ -15,7 +15,7 @@ from frappe.tests import IntegrationTestCase
 from frappe.tests.utils import make_test_records
 from frappe.utils import add_days, get_first_day, get_last_day, nowdate
 
-from crm.dashboard import registry
+from crm.dashboard import features, registry
 from crm.dashboard.context import Context
 
 SALES_USER = "crm.user1@example.com"
@@ -43,9 +43,27 @@ class TestDashboardWidgets(IntegrationTestCase):
 		frappe.db.rollback()
 		super().tearDownClass()
 
+	def skip_if_unavailable(self, widget):
+		"""Skip a widget whose app is not installed here, by the product's own rule.
+
+		`store.availability` is what decides whether a viewer may have a widget at all,
+		and a widget whose feature is off is never rendered: the dashboard shows the
+		reason instead. Calling its query anyway tests a path that does not exist in
+		production and fails on a table the site has no reason to own - the WhatsApp
+		widgets read `tabWhatsApp Message`, which belongs to `frappe_whatsapp`, an app
+		this suite does not install.
+
+		The skip is loud on purpose: the run says which widgets went uncovered, so a
+		hole in the net is visible rather than assumed away.
+		"""
+		assente = features.missing(widget.requires)
+		if assente:
+			self.skipTest(f"{widget.id}: needs {', '.join(assente)}, not available on this site")
+
 	def answer(self, widget_id, user=None, config=None, **dates):
 		widget = registry.get(widget_id)
 		self.assertIsNotNone(widget, widget_id)
+		self.skip_if_unavailable(widget)
 		ctx = Context.build(
 			dates.get("from_date", self.from_date),
 			dates.get("to_date", self.to_date),

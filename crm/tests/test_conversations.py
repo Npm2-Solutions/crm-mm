@@ -393,9 +393,9 @@ class TestWhatWeDecidedAboutAConversation(FrappeTestCase):
 			return [row.name for row in people(state=state, limit=200)]
 
 		self.assertIn(self.lead.name, named("handled"))
-		self.assertNotIn(self.lead.name, named("open"))
+		self.assertNotIn(self.lead.name, named("unread"))
 		self.assertIn(parked.name, named("snoozed"))
-		self.assertNotIn(parked.name, named("open"))
+		self.assertNotIn(parked.name, named("unread"))
 		self.assertIn(self.lead.name, named("all"))
 		self.assertIn(parked.name, named("all"))
 
