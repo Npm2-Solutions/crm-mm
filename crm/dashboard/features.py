@@ -115,6 +115,34 @@ def _website() -> bool:
 	return bool(frappe.db.get_single_value("CRM Website Settings", "enabled"))
 
 
+def _invoicing() -> bool:
+	# an issuing company set up, or documents issued before it was switched off
+	return bool(
+		frappe.db.exists("CRM Invoicing Company", {"enabled": 1})
+		or frappe.db.exists("CRM Invoice", {"docstatus": 1})
+	)
+
+
+def _sistema_ts() -> bool:
+	# a healthcare practice, which owes the Sistema TS its patients' expenses
+	return bool(
+		frappe.db.exists("CRM Invoicing Company", {"enabled": 1, "sender_category": ("!=", "non_sanitario")})
+		or frappe.db.exists("CRM Invoice", {"ts_status": ("not in", ("non_applicabile", ""))})
+	)
+
+
+def _centre() -> bool:
+	# more than one person performs what is invoiced (``crm.invoicing.api.practice_shape``)
+	return frappe.db.count("CRM Service Provider", {"enabled": 1}) > 1
+
+
+def _supplier_invoices() -> bool:
+	return bool(
+		frappe.db.exists("CRM Invoicing Company", {"enabled": 1, "sdi_flow": "entrambi"})
+		or frappe.db.exists("CRM Supplier Invoice")
+	)
+
+
 FEATURES: dict[str, Feature] = {
 	feature.key: feature
 	for feature in (
@@ -208,6 +236,34 @@ FEATURES: dict[str, Feature] = {
 			_sla,
 		),
 		Feature("website", _lt("Website"), _lt("Turn on the website"), "Website", _website),
+		Feature(
+			"invoicing",
+			_lt("Invoicing"),
+			_lt("Set up the issuing company to start invoicing"),
+			"Issuing company",
+			_invoicing,
+		),
+		Feature(
+			"sistema_ts",
+			_lt("Sistema TS"),
+			_lt("For healthcare practices, which report their patients' expenses to the Sistema TS"),
+			"Issuing company",
+			_sistema_ts,
+		),
+		Feature(
+			"centre",
+			_lt("Several providers"),
+			_lt("Add a second provider to compare who invoices what"),
+			"Providers",
+			_centre,
+		),
+		Feature(
+			"supplier_invoices",
+			_lt("Supplier invoices"),
+			_lt("Receive your suppliers' invoices through the provider to see them here"),
+			"Provider connection",
+			_supplier_invoices,
+		),
 	)
 }
 

@@ -11,6 +11,7 @@ from crm.dashboard.widgets import (
 	automations,
 	calls,
 	conversations,
+	invoicing,
 	marketing,
 	people,
 	sales,
