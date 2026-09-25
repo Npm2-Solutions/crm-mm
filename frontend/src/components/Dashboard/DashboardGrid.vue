@@ -145,6 +145,11 @@ function mobileHeight(item) {
   const kind = kindOf(item)
   if (kind === 'number') return '128px'
   if (item.name === 'heading') return '40px'
+  // A list or a table is as tall as what it has to say. Keeping the height the
+  // desktop grid stored left three rows sitting above 300px of white, and put
+  // a second scroll inside the page's own — the thing every phone list gets
+  // wrong. A chart still needs a height given to it; these do not.
+  if (kind === 'list' || kind === 'table') return 'auto'
   // the stored height is in grid rows; below ~280px a chart stops being
   // readable once it is the full width of a phone
   return `${Math.max((item.layout?.h || 6) * ROW_HEIGHT, 280)}px`
