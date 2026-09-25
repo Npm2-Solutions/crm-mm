@@ -9,6 +9,7 @@ import { computed } from 'vue'
 export function categoryMeta(key) {
   const categories = {
     sales: { label: __('Sales'), icon: 'handshake' },
+    invoicing: { label: __('Invoicing'), icon: 'receipt-text' },
     people: { label: __('People'), icon: 'users' },
     conversations: { label: __('Conversations'), icon: 'messages-square' },
     whatsapp: { label: __('WhatsApp'), icon: 'message-circle' },

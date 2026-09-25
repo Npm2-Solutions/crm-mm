@@ -39,6 +39,7 @@ SCOPES = ("team", "me", "site")
 # Order of the library's sections. The browser owns the icons and the labels.
 CATEGORIES = (
 	"sales",
+	"invoicing",
 	"people",
 	"conversations",
 	"whatsapp",
