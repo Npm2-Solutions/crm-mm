@@ -55,7 +55,7 @@ arrivi prima:
 |---|---|---|
 | Solo il medico, che apre la scheda e scrive | Il medico salva la prima visita o nota clinica | nessuno: scrivere è già il gesto |
 | Agenda usata con gli stati | L'appuntamento segnato come svolto (`Completed`, o il partecipante `Attended`) | nessuno |
-| Chi fa solo le fatture | La prima `CRM Invoice` confermata alla persona con una riga sanitaria (`is_healthcare` sulla scheda del servizio) | nessuno: la fattura è obbligatoria comunque |
+| Chi fa solo le fatture | La prima `CRM Invoice` confermata alla persona con una riga sanitaria (`is_healthcare` sulla riga, copiato dalla scheda del servizio: la copia funziona dalla PR #102, prima il flag restava sempre a 0) | nessuno: la fattura è obbligatoria comunque |
 | Passaggio dal vecchio gestionale | L'importazione dei pazienti | nessuno |
 
 La fattura è il segno più affidabile di tutti: è obbligatoria, la fa una persona,
