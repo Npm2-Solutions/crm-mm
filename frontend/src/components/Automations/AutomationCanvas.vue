@@ -17,7 +17,7 @@
             v-for="(trigger, index) in draft.triggers"
             :key="trigger.id"
             data-node
-            class="w-[320px] cursor-pointer rounded-lg border bg-surface-white px-3 py-2.5 shadow-sm transition-colors"
+            class="w-[320px] cursor-pointer rounded-lg border bg-surface-elevation-2 px-3 py-2.5 shadow-sm transition-colors dark:bg-surface-gray-2"
             :class="
               editor.selectedId.value === `trigger:${trigger.id}`
                 ? 'border-outline-gray-4 ring-2 ring-outline-gray-3'
@@ -83,7 +83,7 @@
       class="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center"
     >
       <div
-        class="pointer-events-auto flex items-center gap-0.5 rounded-full border border-outline-gray-2 bg-surface-white px-1.5 py-1 shadow-sm"
+        class="pointer-events-auto flex items-center gap-0.5 rounded-full border border-outline-gray-2 bg-surface-elevation-2 px-1.5 py-1 shadow-sm dark:bg-surface-gray-2"
       >
         <Button
           variant="ghost"

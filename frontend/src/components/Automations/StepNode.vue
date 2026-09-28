@@ -1,7 +1,7 @@
 <template>
   <div
     data-node
-    class="w-[320px] cursor-pointer rounded-lg border bg-surface-white px-3 py-2.5 shadow-sm transition-colors"
+    class="w-[320px] cursor-pointer rounded-lg border bg-surface-elevation-2 px-3 py-2.5 shadow-sm transition-colors dark:bg-surface-gray-2"
     :class="[
       selected
         ? 'border-outline-gray-4 ring-2 ring-outline-gray-3'

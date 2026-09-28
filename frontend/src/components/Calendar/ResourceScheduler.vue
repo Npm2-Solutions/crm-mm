@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <!-- column headers -->
-    <div class="flex border-b border-outline-gray-2 bg-surface-white">
+    <div class="flex border-b border-outline-gray-2 bg-surface-base">
       <div class="w-14 shrink-0 border-r border-outline-gray-2" />
       <div class="flex flex-1 overflow-hidden">
         <div
@@ -53,7 +53,7 @@
     <div ref="scrollArea" class="flex flex-1 overflow-auto">
       <!-- time gutter -->
       <div
-        class="relative w-14 shrink-0 border-r border-outline-gray-2 bg-surface-white"
+        class="relative w-14 shrink-0 border-r border-outline-gray-2 bg-surface-base"
         :style="{ height: gridHeight }"
       >
         <div
@@ -131,7 +131,7 @@
               />
               <span
                 v-if="sourceTag(block)"
-                class="ml-auto shrink-0 truncate rounded bg-surface-white px-1 text-p-xs text-ink-gray-6"
+                class="ml-auto shrink-0 truncate rounded bg-surface-elevation-2 px-1 text-p-xs text-ink-gray-6"
                 :title="block.external_platform || __('Booked online')"
               >
                 {{ sourceTag(block) }}

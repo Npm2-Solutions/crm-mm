@@ -49,7 +49,7 @@
             <span
               v-for="platform in source.platforms"
               :key="platform"
-              class="flex size-7 items-center justify-center rounded-full text-xs font-semibold text-white ring-2 ring-surface-white"
+              class="flex size-7 items-center justify-center rounded-full text-xs font-semibold text-white ring-2 ring-[color:var(--surface-elevation-2)]"
               :style="{ backgroundColor: platformColor(platform) }"
             >
               {{ platformInitial(platform) }}

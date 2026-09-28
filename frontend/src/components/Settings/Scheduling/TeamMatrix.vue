@@ -6,10 +6,10 @@
         v-if="matrix.data?.services?.length"
         class="w-max border-separate border-spacing-0 text-p-sm"
       >
-        <thead class="sticky top-0 z-10 bg-surface-white">
+        <thead class="sticky top-0 z-10 bg-surface-elevation-2">
           <tr>
             <th
-              class="sticky left-0 z-20 w-[300px] min-w-[300px] border-b border-outline-gray-2 bg-surface-white px-3 py-2 text-left align-bottom text-p-xs font-medium text-ink-gray-5"
+              class="sticky left-0 z-20 w-[300px] min-w-[300px] border-b border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 text-left align-bottom text-p-xs font-medium text-ink-gray-5"
             >
               {{ __('Service') }}
             </th>
@@ -51,10 +51,10 @@
             <tr
               v-for="service in group.services"
               :key="service.name"
-              class="hover:bg-surface-gray-1"
+              class="group hover:bg-surface-gray-1"
             >
               <td
-                class="sticky left-0 border-b border-outline-gray-1 bg-surface-white px-3 py-2"
+                class="sticky left-0 border-b border-outline-gray-1 bg-surface-elevation-2 px-3 py-2 group-hover:bg-surface-gray-1"
               >
                 <div class="flex items-center gap-2">
                   <span
