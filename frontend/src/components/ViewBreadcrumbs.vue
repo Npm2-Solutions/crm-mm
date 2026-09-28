@@ -6,7 +6,7 @@
       :class="[
         viewControls && viewControls.viewsDropdownOptions
           ? 'text-ink-gray-5 hover:text-ink-gray-7'
-          : 'text-ink-gray-7',
+          : 'text-ink-gray-9',
       ]"
     >
       {{ __(label || routeName) }}

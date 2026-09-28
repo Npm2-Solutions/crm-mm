@@ -17,7 +17,8 @@
       />
     </template>
   </LayoutHeader>
-  <div class="flex flex-col overflow-hidden text-ink-gray-9">
+  <!-- the empty state centres in what is below the header, not in 106px -->
+  <div class="flex flex-1 flex-col overflow-hidden text-ink-gray-9">
     <div
       v-if="notifications.data?.length"
       class="divide-y divide-outline-gray-1 overflow-y-auto text-base"

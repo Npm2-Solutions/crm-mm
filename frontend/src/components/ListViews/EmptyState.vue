@@ -46,14 +46,15 @@ const computedDescription = computed(() => {
       )
 })
 
+// a third of a phone is 130px: the sentence ran to four lines
 const widthClass = computed(() => {
   switch (props.width) {
     case 'sm':
-      return 'w-2/12'
+      return 'w-8/12 sm:w-2/12'
     case 'lg':
-      return 'w-8/12'
+      return 'w-10/12 sm:w-8/12'
     default:
-      return 'w-4/12'
+      return 'w-10/12 max-w-sm sm:w-4/12'
   }
 })
 </script>

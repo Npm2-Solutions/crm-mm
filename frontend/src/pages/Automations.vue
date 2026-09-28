@@ -25,7 +25,7 @@
       <div class="flex flex-wrap items-center gap-2">
         <FormControl
           v-model="query"
-          class="w-64"
+          class="w-full sm:w-64"
           type="text"
           :placeholder="__('Search automations')"
         />

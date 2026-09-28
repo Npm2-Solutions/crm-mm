@@ -193,7 +193,7 @@ watch(
 const reload = ref(false)
 
 const breadcrumbs = computed(() => {
-  let items = [{ label: __('Leads'), route: { name: 'Leads' } }]
+  let items = [{ label: __('People'), route: { name: 'Leads' } }]
 
   if (route.query.view || route.query.viewType) {
     let view = getView(route.query.view, route.query.viewType, 'CRM Lead')

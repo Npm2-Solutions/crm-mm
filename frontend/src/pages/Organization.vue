@@ -161,10 +161,15 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
+        <!-- the list's own copy sent people to a Create button this page
+             does not have -->
         <EmptyState
           v-if="!rows.length"
           :icon="tab.icon"
           :name="__(tab.label)"
+          :description="
+            __('No {0} linked to this organization yet.', [__(tab.label)])
+          "
         />
       </template>
     </Tabs>

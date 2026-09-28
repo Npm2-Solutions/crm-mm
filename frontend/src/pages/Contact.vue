@@ -151,7 +151,12 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <EmptyState v-if="!rows.length" :icon="tab.icon" name="Deals" />
+        <EmptyState
+          v-if="!rows.length"
+          :icon="tab.icon"
+          name="Deals"
+          :description="__('No deals linked to this contact yet.')"
+        />
       </template>
     </Tabs>
   </div>
