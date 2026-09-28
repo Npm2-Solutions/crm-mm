@@ -306,6 +306,36 @@ describe('who said it', () => {
     expect(speakerOf({ activity_type: 'whatsapp', type: 'Incoming' })).toBe('')
     expect(speakerOf({})).toBe('')
   })
+
+  it('a bare number is the last resort, not the first', () => {
+    // WhatsApp supplies a profile name only when the person publishes one, so
+    // incoming messages used to be signed «393295824118» on a record whose
+    // whole point is knowing whose number that is.
+    const incoming = {
+      activity_type: 'whatsapp',
+      type: 'Incoming',
+      from: '393295824118',
+    }
+    expect(speakerOf(incoming, 'Marco', 'Mario Rossi')).toBe('Mario Rossi')
+    expect(
+      speakerOf(
+        { ...incoming, profile_name: 'Mario R.' },
+        'Marco',
+        'Mario Rossi',
+      ),
+    ).toBe('Mario R.')
+    expect(speakerOf(incoming, 'Marco')).toBe('393295824118')
+  })
+
+  it('our own messages are never signed with the other person', () => {
+    expect(
+      speakerOf(
+        { activity_type: 'whatsapp', type: 'Outgoing' },
+        'Marco',
+        'Mario Rossi',
+      ),
+    ).toBe('Marco')
+  })
 })
 
 describe('dayLabel', () => {
@@ -339,5 +369,41 @@ describe('CHANNELS', () => {
 
   it('opens on everything', () => {
     expect(CHANNELS[0].key).toBe('all')
+  })
+})
+
+describe('buildStream runs', () => {
+  const at = (n) => `2026-09-24 11:0${n}:00`
+  const wa = (n, type) => ({
+    name: `m${n}`,
+    activity_type: 'whatsapp',
+    type,
+    creation: at(n),
+  })
+
+  it('signs the first of a run and not the rest', () => {
+    const rows = buildStream([
+      wa(1, 'Incoming'),
+      wa(2, 'Incoming'),
+      wa(3, 'Incoming'),
+    ])
+    expect(rows.map((r) => r.startsRun)).toEqual([true, false, false])
+  })
+
+  it('a reply starts a new run, and so does the answer to it', () => {
+    const rows = buildStream([
+      wa(1, 'Incoming'),
+      wa(2, 'Outgoing'),
+      wa(3, 'Incoming'),
+    ])
+    expect(rows.map((r) => r.startsRun)).toEqual([true, true, true])
+  })
+
+  it('a change of channel breaks the run even on the same side', () => {
+    const rows = buildStream([
+      wa(1, 'Incoming'),
+      { name: 's2', activity_type: 'sms', type: 'Incoming', creation: at(2) },
+    ])
+    expect(rows.map((r) => r.startsRun)).toEqual([true, true])
   })
 })

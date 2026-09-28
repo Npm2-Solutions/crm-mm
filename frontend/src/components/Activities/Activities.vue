@@ -54,6 +54,7 @@
         v-model:reply="replyMessage"
         :items="conversationItems"
         :channel="channel"
+        :them="them"
         :modalRef="modalRef"
         class="flex-1 pb-4"
         @reload="all_activities.reload()"
@@ -788,6 +789,15 @@ const conversationItems = computed(() => {
 })
 
 const channelCounts = computed(() => countByChannel(conversationItems.value))
+
+// Whose record this is, for the messages that arrive without a name on them.
+const them = computed(
+  () =>
+    doc.value?.lead_name ||
+    doc.value?.organization ||
+    [doc.value?.first_name, doc.value?.last_name].filter(Boolean).join(' ') ||
+    '',
+)
 
 function get_activities() {
   if (!all_activities.data?.versions) return []

@@ -65,6 +65,7 @@
             >
               <CommentArea
                 v-if="row.channel === 'comment'"
+                bare
                 :activity="row.item"
                 @reload="emit('reload')"
               />
@@ -114,9 +115,29 @@
         </template>
 
         <template v-for="row in group.rows" v-else :key="row.key">
-          <!-- said to somebody: a side, and the colour of the channel it went by -->
+          <!--
+            A call has no words, so it gets no balloon: a balloon with nothing
+            said in it is a speech bubble with no speech. Every messenger puts
+            calls in the middle, as a notice — who rang, which way, how long —
+            and so does this.
+          -->
+          <HappenedCard
+            v-if="row.channel === 'call'"
+            kind="call"
+            :icon="callIconFor(row.item)"
+            :title="
+              row.direction === 'out' ? __('Outbound call') : __('Inbound call')
+            "
+            :when="timeOf(row)"
+            card
+          >
+            <CallArea :activity="row.item" bare />
+          </HappenedCard>
+
+          <!-- said to somebody: a side, a tail pointing to it, and the tint of
+             the channel it came by -->
           <div
-            v-if="row.direction !== 'internal'"
+            v-else-if="row.direction !== 'internal'"
             class="flex px-3 sm:px-4"
             :class="row.direction === 'out' ? 'justify-end' : 'justify-start'"
           >
@@ -142,8 +163,10 @@
                 :channel="row.channel"
                 :icon="iconFor(row.channel)"
                 :mine="row.direction === 'out'"
-                :speaker="speakerOf(row.item, me)"
-                :time="row.at ? dayjs(row.at).format('HH:mm') : ''"
+                :speaker="row.startsRun ? speakerOf(row.item, me, them) : ''"
+                :time="timeOf(row)"
+                :phone="Boolean(row.item?.written_on_the_phone)"
+                :status="row.item?.status || ''"
               >
                 <WhatsAppArea
                   v-if="row.channel === 'whatsapp'"
@@ -157,11 +180,12 @@
                   bare
                   :messages="[row.item]"
                 />
-                <CallArea
-                  v-else-if="row.channel === 'call'"
+                <EmailArea
+                  v-else
+                  bare
                   :activity="row.item"
+                  :modalRef="modalRef"
                 />
-                <EmailArea v-else :activity="row.item" :modalRef="modalRef" />
               </ChatBubble>
             </div>
           </div>
@@ -178,7 +202,7 @@
             :icon="iconFor('comment')"
             card
           >
-            <CommentArea :activity="row.item" @reload="emit('reload')" />
+            <CommentArea bare :activity="row.item" @reload="emit('reload')" />
           </HappenedCard>
 
           <HappenedCard
@@ -360,6 +384,10 @@ const props = defineProps({
   items: { type: Array, default: () => [] },
   channel: { type: String, default: 'all' },
   modalRef: { type: Object, default: null },
+  // whose record this is. WhatsApp only supplies a profile name when the person
+  // publishes one, and a bare number standing where a name goes is unreadable
+  // on a record that knows exactly whose number it is.
+  them: { type: String, default: '' },
 })
 
 const whatsappMessages = defineModel('whatsappMessages', {

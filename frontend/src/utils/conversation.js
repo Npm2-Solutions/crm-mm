@@ -112,12 +112,17 @@ export function directionOf(item) {
  * them plus everything the record did to itself. So it is written, once, in
  * words — and the arrangement stops having to encode it.
  */
-export function speakerOf(item, me = '') {
+export function speakerOf(item, me = '', them = '') {
   const channel = channelOf(item)
   const direction = directionOf(item)
   if (direction === 'out') return me || 'You'
   if (channel === 'whatsapp' || channel === 'sms')
-    return item.profile_name || item.from || ''
+    // WhatsApp hands over a profile name only when the person publishes one, so
+    // the usual fallback was the raw number — fifteen digits standing where a
+    // name goes, on a record that knows perfectly well whose number it is. The
+    // record's own name comes first; the number is what is left when nothing
+    // else knows either.
+    return item.profile_name || them || item.from || ''
   if (channel === 'email')
     return item.data?.sender_full_name || item.data?.sender || item.sender || ''
   if (channel === 'call') return item._caller?.label || ''
@@ -178,7 +183,7 @@ export function buildStream(items = [], options = {}) {
     return channelOf(item) === channel
   })
 
-  return kept
+  const rows = kept
     .map((item) => ({
       key: `${channelOf(item) || item.activity_type || 'item'}:${item.name}`,
       item,
@@ -187,6 +192,23 @@ export function buildStream(items = [], options = {}) {
       at: item.creation || item.communication_date || null,
     }))
     .sort((a, b) => direction * (new Date(a.at) - new Date(b.at)))
+
+  // Who said it, written once per run rather than once per message.
+  //
+  // Somebody sending four lines in a row is one person talking, and signing
+  // each of the four with their name turns a two-word message into three
+  // stacked rows — the name, the words, the clock — which is how a chat starts
+  // reading like a table. A run breaks when the channel changes, when the side
+  // changes, or when something else happens in between.
+  let previous = null
+  for (const row of rows) {
+    row.startsRun =
+      !previous ||
+      previous.channel !== row.channel ||
+      previous.direction !== row.direction
+    previous = row
+  }
+  return rows
 }
 
 /** How many there are per channel, for the count beside each selector chip. */

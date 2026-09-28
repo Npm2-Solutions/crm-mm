@@ -90,6 +90,12 @@ const TONES = {
     fill: 'bg-surface-white',
     ink: 'text-ink-gray-7',
   },
+  // a call: it happened, it has no words, and grey is what an event looks like
+  call: {
+    edge: 'border-outline-gray-3',
+    fill: 'bg-surface-white',
+    ink: 'text-ink-gray-7',
+  },
   // the move that is the point of the whole record
   stage: {
     edge: 'border-outline-gray-2',
