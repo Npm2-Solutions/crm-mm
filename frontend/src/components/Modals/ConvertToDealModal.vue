@@ -48,7 +48,7 @@
 
       <div v-if="dealTabs.data?.length" class="h-px w-full border-t my-6" />
 
-      <div autofocus>
+      <div ref="fieldsBox" autofocus>
         <FieldLayout
           v-if="dealTabs.data?.length"
           :tabs="dealTabs.data"
@@ -66,6 +66,7 @@
   </Dialog>
 </template>
 <script setup>
+import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
@@ -88,6 +89,11 @@ const props = defineProps({
 })
 
 const show = defineModel({ type: Boolean })
+
+// the cursor in the first field once the layout is drawn: the marker above
+// alone left it on the button that opened the dialog, behind it
+const fieldsBox = ref(null)
+useFirstFieldFocus(fieldsBox, show)
 
 const router = useRouter()
 
