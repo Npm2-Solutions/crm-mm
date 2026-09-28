@@ -5,9 +5,9 @@
         v-if="groupIndex > 0"
         class="flex items-center gap-2 text-xs font-medium uppercase text-ink-gray-4"
       >
-        <div class="h-px flex-1 bg-outline-gray-2" />
+        <div class="h-px flex-1 bg-[var(--outline-gray-2)]" />
         {{ __('or') }}
-        <div class="h-px flex-1 bg-outline-gray-2" />
+        <div class="h-px flex-1 bg-[var(--outline-gray-2)]" />
       </div>
       <div
         class="rounded-md border border-outline-gray-2 bg-surface-elevation-2 p-2"

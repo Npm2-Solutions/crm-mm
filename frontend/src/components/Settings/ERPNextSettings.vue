@@ -135,7 +135,7 @@
                 class="border-b-2 pb-2 text-p-sm"
                 :class="
                   activeSettingsTab === tab.name
-                    ? 'border-ink-gray-8 text-ink-gray-8'
+                    ? 'border-[color:var(--ink-gray-8)] text-ink-gray-8'
                     : 'border-transparent text-ink-gray-5'
                 "
                 role="tab"
@@ -342,7 +342,7 @@
                     class="flex items-center gap-1 whitespace-nowrap border-b-2 px-0 pb-2 text-p-sm"
                     :class="
                       activeProductSyncLogTab === section.name
-                        ? 'border-ink-gray-8 text-ink-gray-8'
+                        ? 'border-[color:var(--ink-gray-8)] text-ink-gray-8'
                         : 'border-transparent text-ink-gray-5'
                     "
                     role="tab"

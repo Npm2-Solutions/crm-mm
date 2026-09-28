@@ -16,7 +16,7 @@
 
           <!-- branching steps carry their own columns of nested flows -->
           <template v-if="isBranching(step.type)">
-            <div class="h-4 w-px bg-outline-gray-3" />
+            <div class="h-4 w-px bg-[var(--outline-gray-3)]" />
             <div
               class="flex w-full items-stretch justify-center gap-4 overflow-x-auto pb-1"
             >

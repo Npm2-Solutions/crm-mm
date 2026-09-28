@@ -29,7 +29,7 @@
       <div
         class="flex items-center gap-2 p-2 rounded-md ring-1 ring-outline-gray-3 text-ink-gray-6"
       >
-        <CircleAlert class="w-5 h-6 w-min-5 w-max-5 min-h-5 max-w-5" />
+        <CircleAlert class="w-5 h-6 min-w-5 min-h-5 max-w-5" />
         <div class="text-xs text-wrap">
           {{ selectedService.info }}
           <a :href="selectedService.link" target="_blank" class="underline">
