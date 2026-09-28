@@ -7,8 +7,15 @@
   the configuration they depend on, not on an invoice.
 -->
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex flex-col gap-1">
+  <!--
+    One scroll for the whole page. The fields had a scroller of their own
+    squeezed between the header and Maintenance: about 400px, the explanations
+    cut mid-line, and Update floating halfway down the screen.
+  -->
+  <div
+    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
+  >
+    <div class="flex flex-col gap-1 px-2">
       <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
         {{ __('Invoicing') }}
       </h2>
@@ -21,14 +28,17 @@
       </p>
     </div>
 
-    <div class="min-h-0 flex-1">
+    <div class="px-2">
       <DocFields
         doctype="CRM Invoicing Settings"
         docname="CRM Invoicing Settings"
+        :scroll="false"
       />
     </div>
 
-    <div class="flex flex-col gap-3 border-t border-outline-gray-2 pt-4">
+    <div
+      class="mx-2 flex flex-col gap-3 border-t border-outline-elevation-2 pt-4"
+    >
       <div class="text-p-base-medium text-ink-gray-7">
         {{ __('Maintenance') }}
       </div>

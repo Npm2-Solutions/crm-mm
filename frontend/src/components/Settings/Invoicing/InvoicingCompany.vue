@@ -8,7 +8,7 @@
 -->
 <template>
   <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-start justify-between gap-4 px-2">
       <div class="flex flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
           {{ __('Issuing company') }}
@@ -28,7 +28,7 @@
           </Button>
         </Dropdown>
         <Button
-          variant="subtle"
+          variant="solid"
           :label="__('New company')"
           iconLeft="plus"
           @click="nuova"
@@ -40,7 +40,7 @@
          document nobody opens: it gets shorter. -->
     <div
       v-if="checklist.data?.length"
-      class="flex flex-col gap-2 rounded-xl border border-outline-amber-2 bg-surface-amber-1 px-4 py-3"
+      class="mx-2 flex flex-col gap-2 rounded-xl border border-outline-amber-2 bg-surface-amber-1 px-4 py-3"
     >
       <span class="text-p-base-medium text-ink-gray-8">
         {{ __('Still missing') }}
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <div class="min-h-0 flex-1">
+    <div class="min-h-0 flex-1 px-2">
       <DocFields
         v-if="corrente || creando"
         :key="corrente || 'nuova'"

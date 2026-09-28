@@ -25,13 +25,9 @@
 
     <slot name="banner" />
 
-    <div class="flex flex-col gap-2 px-2">
-      <FormControl
-        v-if="rows.data?.length > 8"
-        v-model="filtro"
-        type="text"
-        :placeholder="__('Search')"
-      />
+    <!-- the empty wrapper still took its gap: the list sat 50px down -->
+    <div v-if="rows.data?.length > 8" class="flex flex-col gap-2 px-2">
+      <FormControl v-model="filtro" type="text" :placeholder="__('Search')" />
     </div>
 
     <div class="flex-1 overflow-y-auto px-2">
