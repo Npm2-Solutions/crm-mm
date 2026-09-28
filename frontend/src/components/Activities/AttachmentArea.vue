@@ -2,7 +2,7 @@
   <div v-if="attachments.length">
     <div v-for="(attachment, i) in attachments" :key="attachment.name">
       <div
-        class="activity flex justify-between gap-2 hover:bg-surface-sidebar rounded text-base p-2.5 cursor-pointer"
+        class="activity flex justify-between gap-2 hover:bg-surface-gray-1 rounded text-base p-2.5 cursor-pointer"
         @click="openFile(attachment)"
       >
         <div class="flex gap-2 truncate">

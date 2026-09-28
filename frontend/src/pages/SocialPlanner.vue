@@ -95,7 +95,7 @@
            narrower than the time on the chip inside it. Same month, listed. -->
       <div
         v-if="isMobileView"
-        class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
+        class="divide-y divide-outline-elevation-2 overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
       >
         <div
           v-if="!scheduledDays.length"
@@ -128,7 +128,7 @@
                 <span
                   v-for="platform in chipPlatforms(post)"
                   :key="platform"
-                  class="size-2.5 rounded-full ring-1 ring-white"
+                  class="size-2.5 rounded-full ring-1 ring-outline-base"
                   :style="{ backgroundColor: platformColor(platform) }"
                 />
               </span>
@@ -161,7 +161,7 @@
           <div
             v-for="(cell, i) in cells"
             :key="cell.key"
-            class="group relative flex min-h-[7rem] cursor-pointer flex-col gap-1 border-outline-gray-1 p-1.5 transition-colors hover:bg-surface-gray-1"
+            class="group relative flex min-h-[7rem] cursor-pointer flex-col gap-1 border-outline-elevation-2 p-1.5 transition-colors hover:bg-surface-gray-1"
             :class="[
               i % 7 != 6 && 'border-r',
               i < 35 && 'border-b',
@@ -201,7 +201,7 @@
                   <span
                     v-for="platform in chipPlatforms(post)"
                     :key="platform"
-                    class="size-2.5 rounded-full ring-1 ring-white"
+                    class="size-2.5 rounded-full ring-1 ring-outline-base"
                     :style="{ backgroundColor: platformColor(platform) }"
                   />
                 </span>
@@ -228,7 +228,7 @@
           {{ __('Drafts & pending approval') }}
         </div>
         <div
-          class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2"
+          class="divide-y divide-outline-elevation-2 overflow-hidden rounded-xl border border-outline-gray-2"
         >
           <div
             v-for="post in unscheduled"
@@ -248,7 +248,7 @@
               <span
                 v-for="platform in chipPlatforms(post)"
                 :key="platform"
-                class="size-3 rounded-full ring-1 ring-white"
+                class="size-3 rounded-full ring-1 ring-outline-base"
                 :style="{ backgroundColor: platformColor(platform) }"
               />
             </span>
@@ -275,7 +275,7 @@
             <span
               v-for="platform in chipPlatforms(post)"
               :key="platform"
-              class="size-3 rounded-full ring-1 ring-white"
+              class="size-3 rounded-full ring-1 ring-outline-base"
               :style="{ backgroundColor: platformColor(platform) }"
             />
           </span>

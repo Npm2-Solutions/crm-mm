@@ -698,6 +698,14 @@ function checkChange(value, df) {
   border-color: transparent;
 }
 
+/* The ghost inputs get no placeholder colour from frappe-ui, so the forms
+   plugin's own grey showed through — a different grey from the empty selects
+   beside them, and in dark a lighter one. One grey for every empty field. */
+:deep(.form-control input::placeholder),
+:deep(textarea.form-control::placeholder) {
+  color: var(--ink-gray-4);
+}
+
 :deep(.form-control button) {
   gap: 0;
 }

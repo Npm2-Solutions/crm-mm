@@ -161,7 +161,7 @@
                 :key="slot"
                 class="rounded-md border px-2.5 py-1 text-p-sm"
                 :style="
-                  i === 1
+                  i === 1 && accent
                     ? {
                         background: accent,
                         color: accentInk,
@@ -170,9 +170,11 @@
                     : {}
                 "
                 :class="
-                  i === 1
-                    ? ''
-                    : 'border-outline-gray-2 bg-surface-elevation-2 text-ink-gray-8'
+                  i !== 1
+                    ? 'border-outline-gray-2 bg-surface-elevation-2 text-ink-gray-8'
+                    : accent
+                      ? ''
+                      : 'border-transparent bg-surface-gray-10 text-ink-base'
                 "
               >
                 {{ slot }}
@@ -180,7 +182,8 @@
             </div>
             <span
               class="rounded-md px-3 py-1.5 text-center text-p-sm-medium"
-              :style="{ background: accent, color: accentInk }"
+              :class="accent ? '' : 'bg-surface-gray-10 text-ink-base'"
+              :style="accent ? { background: accent, color: accentInk } : {}"
             >
               {{ __('Confirm booking') }}
             </span>
@@ -545,8 +548,11 @@ createResource({
 
 const brand = reactive({ name: '', logo: '' })
 const logo = computed(() => form.booking_page_logo || brand.logo)
-const accent = computed(() => hexColour(form.booking_page_color) || '#171717')
-const accentInk = computed(() => readableInk(accent.value))
+// No colour of its own: the page falls back to near-black in light and
+// near-white in dark (prenota.html), and so does the preview — with the
+// inverting grey rather than a black that vanished on the dark card.
+const accent = computed(() => hexColour(form.booking_page_color))
+const accentInk = computed(() => accent.value && readableInk(accent.value))
 
 const summary = createResource({
   url: 'crm.api.booking_admin.get_inheritance_summary',

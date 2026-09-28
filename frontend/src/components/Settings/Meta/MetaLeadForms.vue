@@ -154,7 +154,7 @@
 
           <div
             v-if="page.forms.length"
-            class="mt-3 divide-y divide-outline-gray-1 border-t border-outline-gray-1"
+            class="mt-3 divide-y divide-outline-elevation-2 border-t border-outline-elevation-2"
           >
             <div
               v-for="form in page.forms"

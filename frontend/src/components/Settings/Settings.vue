@@ -69,7 +69,7 @@
         >
           <div
             v-if="isMobileView"
-            class="sticky top-0 z-10 flex items-center gap-1 border-b border-outline-gray-1 bg-surface-elevation-2 px-2 py-1.5"
+            class="sticky top-0 z-10 flex items-center gap-1 border-b border-outline-elevation-2 bg-surface-elevation-2 px-2 py-1.5"
           >
             <Button
               variant="ghost"

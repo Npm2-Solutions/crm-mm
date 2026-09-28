@@ -73,7 +73,7 @@
         <div
           v-for="person in rota.data.team"
           :key="person.user"
-          class="grid cursor-pointer grid-cols-[200px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-1 last:border-b-0 hover:bg-surface-gray-1"
+          class="grid cursor-pointer grid-cols-[200px_repeat(7,minmax(0,1fr))] border-b border-outline-elevation-2 last:border-b-0 hover:bg-surface-gray-1"
           @click="openEditor(person.user)"
         >
           <div class="flex min-w-0 items-center gap-2 px-3 py-2">
@@ -90,7 +90,7 @@
           <div
             v-for="cell in person.days"
             :key="cell.date"
-            class="flex flex-col gap-1 border-l border-outline-gray-1 px-1.5 py-2"
+            class="flex flex-col gap-1 border-l border-outline-elevation-2 px-1.5 py-2"
           >
             <div
               v-for="(w, i) in cell.windows"

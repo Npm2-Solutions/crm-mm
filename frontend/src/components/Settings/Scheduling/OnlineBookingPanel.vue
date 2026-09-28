@@ -74,7 +74,7 @@
         }}
       </p>
       <div
-        class="divide-y divide-outline-gray-1 rounded-md border border-outline-gray-2"
+        class="divide-y divide-outline-elevation-2 rounded-md border border-outline-gray-2"
       >
         <div
           v-for="rule in INHERITED_RULES"

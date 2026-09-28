@@ -51,6 +51,14 @@
   }
 }
 
+/* Native controls — scrollbars, date and time pickers, the audio player —
+   draw themselves from `color-scheme`, not from our tokens: without it a dark
+   CRM had light scrollbars and a white calendar popping out of every date
+   field. frappe-ui sets it on its own text inputs only. */
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
 /* Reka menu content (e.g. the kebab menu inside PrimaryDropdown) portals to
    <body> without a z-index, so it falls behind frappe-ui Popover content
    (z-[100]). Lift menus above popovers so nested menus stay visible. */

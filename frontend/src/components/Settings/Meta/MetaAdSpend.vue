@@ -71,7 +71,7 @@
             <div
               v-for="account in accountList"
               :key="account.account_id"
-              class="flex items-center justify-between gap-3 rounded-md border border-outline-gray-1 p-3"
+              class="flex items-center justify-between gap-3 rounded-md border border-outline-elevation-2 p-3"
             >
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
@@ -180,7 +180,7 @@
           <div v-if="rows.length" class="mt-3 overflow-x-auto">
             <table class="w-full text-p-sm">
               <thead class="text-ink-gray-5">
-                <tr class="border-b border-outline-gray-1 text-left">
+                <tr class="border-b border-outline-elevation-2 text-left">
                   <th class="py-2 pr-3 font-medium">{{ __('Ad') }}</th>
                   <th class="py-2 px-2 text-right font-medium">
                     {{ __('Spend') }}
@@ -205,7 +205,7 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-outline-gray-1">
+              <tbody class="divide-y divide-outline-elevation-2">
                 <tr v-for="row in rows" :key="row.ad_id">
                   <td class="py-2 pr-3">
                     <div class="flex items-center gap-2">

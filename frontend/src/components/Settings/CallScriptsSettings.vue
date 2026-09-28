@@ -75,7 +75,7 @@
         </div>
         <div
           v-else
-          class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+          class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
           <button
             v-for="s in scripts.data"

@@ -1,10 +1,7 @@
 <template>
   <div
     class="flex flex-col"
-    :class="{
-      'border border-outline-gray-1 rounded-lg': hasTabs,
-      'border-outline-elevation-2': hasTabs,
-    }"
+    :class="{ 'rounded-lg border border-outline-elevation-2': hasTabs }"
   >
     <Tabs
       v-model="selectedTabIndex"

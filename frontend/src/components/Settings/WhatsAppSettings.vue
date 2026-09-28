@@ -157,7 +157,7 @@
           </h3>
           <div
             v-if="status.data.accounts?.length"
-            class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+            class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
           >
             <div v-for="account in status.data.accounts" :key="account.name">
               <div class="flex items-center gap-3 px-3 py-2.5">
@@ -375,7 +375,7 @@
               <div class="mb-1 text-p-sm-medium text-ink-gray-7">
                 {{ __('Last connection attempts') }}
               </div>
-              <div class="flex flex-col divide-y divide-outline-gray-1">
+              <div class="flex flex-col divide-y divide-outline-elevation-2">
                 <div
                   v-for="row in attempts.data.attempts"
                   :key="row.creation"
