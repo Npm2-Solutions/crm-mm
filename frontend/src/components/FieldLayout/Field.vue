@@ -66,29 +66,30 @@
         <IndicatorIcon :class="field.prefix" />
       </template>
     </FormControl>
-    <div v-else-if="field.fieldtype == 'Check'" class="flex items-center gap-2">
-      <FormControl
-        v-model="data[field.fieldname]"
-        class="form-control"
-        type="checkbox"
-        :disabled="Boolean(field.read_only)"
-        :description="field.description"
-        @change="(e) => fieldChange(e.target.checked, field)"
-      />
-      <label
-        class="text-sm text-ink-gray-5"
-        @click="
-          () => {
-            if (!Boolean(field.read_only)) {
-              data[field.fieldname] = !data[field.fieldname]
-            }
-          }
-        "
-      >
-        {{ __(field.label) }}
-        <span v-if="field.mandatory" class="text-ink-red-6">*</span>
-      </label>
-    </div>
+    <!--
+      The checkbox draws its own label beside the box and the description under
+      both. Handed only the description, it stacked box and description in one
+      column and a separate label squeezed itself into a sliver on the right —
+      «Healthcare branch enabled» in three lines of 70px. The separate label also
+      flipped the value without going through fieldChange; the real one clicks
+      the box, and the box reports the change.
+    -->
+    <FormControl
+      v-else-if="field.fieldtype == 'Check'"
+      v-model="data[field.fieldname]"
+      class="form-control"
+      type="checkbox"
+      :label="__(field.label)"
+      :required="
+        Boolean(
+          field.reqd ||
+            (field.mandatory_depends_on && field.mandatory_via_depends_on),
+        )
+      "
+      :disabled="Boolean(field.read_only)"
+      :description="field.description"
+      @change="(e) => fieldChange(e.target.checked, field)"
+    />
     <div
       v-else-if="['Link', 'Dynamic Link'].includes(field.fieldtype)"
       class="flex gap-1"
