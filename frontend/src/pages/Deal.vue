@@ -497,9 +497,13 @@ watch(
   () => doc.value.organization,
   (org) => {
     if (org && !organizationDocument.value?.doc) {
+      // A second load, for the side panel. A deal whose organization was
+      // deleted still opens: it shows the panel empty rather than a toast
+      // reading «CRM Organization Blu Design not found» on arrival.
       let { document: _organizationDocument } = useDocument(
         'CRM Organization',
         org,
+        { onError: () => {} },
       )
       organizationDocument.value = _organizationDocument
     }
