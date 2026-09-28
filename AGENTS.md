@@ -89,7 +89,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **460 tests · ~9s** — all must pass before committing
+- **467 tests · ~11s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
