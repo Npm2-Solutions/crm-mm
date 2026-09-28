@@ -1,8 +1,29 @@
+import { getSettings } from '@/stores/settings'
+import { laterLabel, momentLabel } from '@/utils/conversation'
+import { appLocale } from '@/utils/locale'
 import { createResource, dayjs, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
+// What an «Undo» puts back: the decision and whether it was read, as they were
+// a moment before — and when anything was last said, which is how the server
+// knows not to bury a message that arrived in between.
+const UNDOABLE = [
+  'conversation_status',
+  'conversation_snoozed_until',
+  'conversation_unread',
+  'conversation_seen_until',
+  'conversation_seen_by',
+  'last_conversation_on',
+]
+
+/** Whether this site sends WhatsApp read receipts — the blue ticks. */
+export function readReceipts() {
+  const { _settings } = getSettings()
+  return computed(() => Boolean(_settings.doc?.whatsapp_read_receipts))
+}
+
 /**
- * What we decide about a conversation: read, dealt with, put off, whose it is.
+ * What we decide about a conversation: read, handled, put off, whose it is.
  *
  * One place for the four, because the header and the panel both ask them and
  * two copies of «what does snoozing mean» drift. They also have to agree with
@@ -11,18 +32,24 @@ import { computed, ref } from 'vue'
  * conversation somebody had put off until Monday, the moment it was given to a
  * colleague.
  *
+ * The two decisions that take a conversation out of the list say where it
+ * went, and offer the way back: a row that leaves with no word is a person the
+ * list has lost.
+ *
  * @param {import('vue').Ref<object>} person  the row: name and conversation_*
  * @param {() => void} changed                 called after any change lands
  */
 export function useConversationState(person, changed) {
   // which of the buttons is waiting for the server
   const busy = ref('')
+  const receipts = readReceipts()
 
   const markRead = createResource({ url: 'crm.api.conversations.mark_read' })
   const markUnread = createResource({
     url: 'crm.api.conversations.mark_unread',
   })
   const setState = createResource({ url: 'crm.api.conversations.set_state' })
+  const restore = createResource({ url: 'crm.api.conversations.restore' })
 
   function run(key, resource, params = {}) {
     busy.value = key
@@ -32,10 +59,14 @@ export function useConversationState(person, changed) {
         reference_name: person.value.name,
         ...params,
       })
-      .then(() => changed?.())
-      .catch((error) =>
-        toast.error(error.messages?.[0] || __('Could not save that')),
-      )
+      .then((answer) => {
+        changed?.()
+        return answer
+      })
+      .catch((error) => {
+        toast.error(error.messages?.[0] || __('Could not save that'))
+        return null
+      })
       .finally(() => (busy.value = ''))
   }
 
@@ -47,18 +78,66 @@ export function useConversationState(person, changed) {
     () => person.value?.conversation_snoozed_until || '',
   )
 
-  // Read, and off the pile. It only ever happens because somebody says so:
-  // looking at a chat is not dealing with it.
-  function setRead(yes) {
-    return run('read', yes ? markRead : markUnread)
+  // Read, and off the pile. It only ever happens because somebody says so —
+  // or answers: looking at a chat is not dealing with it.
+  async function setRead(yes) {
+    const answer = await run('read', yes ? markRead : markUnread)
+    if (yes && answer?.receipts) {
+      toast.success(__('Marked as read'), {
+        description: __('Blue ticks sent on WhatsApp.'),
+      })
+    }
   }
 
-  function decide(state, until = null) {
-    return run(state === 'Snoozed' ? 'snooze' : 'state', setState, {
-      state,
-      until,
-      assign_to: null,
-    })
+  // The row as it is now, for the way back. Nothing to go back to before the
+  // conversation has been read from the server at least once.
+  function snapshot() {
+    if (!person.value || !('conversation_status' in person.value)) return null
+    return Object.fromEntries(
+      UNDOABLE.map((key) => [key, person.value[key] ?? null]),
+    )
+  }
+
+  function undo(name, was) {
+    busy.value = 'state'
+    restore
+      .submit({
+        reference_doctype: 'CRM Lead',
+        reference_name: name,
+        was,
+      })
+      .then(() => changed?.())
+      .catch((error) =>
+        toast.error(error.messages?.[0] || __('Could not undo that')),
+      )
+      .finally(() => (busy.value = ''))
+  }
+
+  async function decide(state, until = null) {
+    const name = person.value.name
+    const was = snapshot()
+    const answer = await run(
+      state === 'Snoozed' ? 'snooze' : 'state',
+      setState,
+      { state, until, assign_to: null },
+    )
+    if (!answer) return
+
+    const back = was
+      ? { action: { label: __('Undo'), onClick: () => undo(name, was) } }
+      : {}
+    const ticks = answer.receipts ? ' ' + __('Blue ticks sent.') : ''
+    if (state === 'Handled') {
+      toast.success(__('Marked as handled'), {
+        description: __('Back in Open when they write.') + ticks,
+        ...back,
+      })
+    } else if (state === 'Snoozed') {
+      toast.success(__('Put off until {0}', [whenBack(until)]), {
+        description: __('Back in Open then, or sooner if they write.'),
+        ...back,
+      })
+    }
   }
 
   // Whose it is, without touching what was decided about it: a parked
@@ -83,38 +162,47 @@ export function useConversationState(person, changed) {
       .format('YYYY-MM-DD HH:mm:ss')
   }
 
+  function whenBack(until) {
+    return laterLabel(until, dayjs().format('YYYY-MM-DD HH:mm:ss'), appLocale())
+  }
+
   // Tomorrow morning, in three days, next week: the moments somebody actually
   // means by «later», rather than a date picker for a decision that takes a
-  // second.
-  const snoozeOptions = computed(() => [
-    {
-      label: __('Tomorrow morning'),
-      icon: 'lucide-sunrise',
-      onClick: () => decide('Snoozed', at(1, 9)),
-    },
-    {
-      label: __('In three days'),
-      icon: 'lucide-calendar-days',
-      onClick: () => decide('Snoozed', at(3, 9)),
-    },
-    {
-      label: __('Next week'),
-      icon: 'lucide-calendar-range',
-      onClick: () => decide('Snoozed', at(7, 9)),
-    },
-    ...(snoozedUntil.value
-      ? [
-          {
-            label: __('Bring it back now'),
-            icon: 'lucide-rotate-ccw',
-            onClick: () => decide('Open'),
-          },
-        ]
-      : []),
-  ])
+  // second. Each says the moment it means, and the heading says what «later»
+  // does to the conversation meanwhile.
+  const snoozeOptions = computed(() => {
+    const choices = [
+      [__('Tomorrow morning'), 'lucide-sunrise', at(1, 9)],
+      [__('In three days'), 'lucide-calendar-days', at(3, 9)],
+      [__('Next week'), 'lucide-calendar-range', at(7, 9)],
+    ]
+    return [
+      {
+        group: __('Back in Open then, or when they write'),
+        options: [
+          ...choices.map(([label, icon, moment]) => ({
+            label,
+            icon,
+            description: momentLabel(moment, appLocale()),
+            onClick: () => decide('Snoozed', moment),
+          })),
+          ...(snoozedUntil.value
+            ? [
+                {
+                  label: __('Bring it back now'),
+                  icon: 'lucide-rotate-ccw',
+                  onClick: () => decide('Open'),
+                },
+              ]
+            : []),
+        ],
+      },
+    ]
+  })
 
   return {
     busy,
+    receipts,
     unread,
     handled,
     snoozedUntil,
