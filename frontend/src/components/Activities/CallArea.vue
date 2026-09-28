@@ -1,14 +1,48 @@
 <template>
-  <div>
-    <!--
-      Bare means the centred notice above already says who, which way and when.
-      What is left is what only a call has: how long it lasted, how it ended,
-      and the recording.
-    -->
+  <!--
+    Bare: one line inside the notice in the chat. A call has no words, so what
+    there is to say fits in a sentence — which way it went, how long it lasted
+    or how it ended, and the recording if there is one. It was a title, a date
+    badge, a duration badge and a status badge in a card: four shapes for one
+    sentence, one of them repeating the date on the marker above it.
+  -->
+  <div v-if="bare" class="min-w-0">
     <div
-      v-if="!bare"
-      class="mb-1 flex items-center justify-stretch gap-2 py-1 text-base"
+      class="flex cursor-pointer flex-wrap items-center gap-x-1.5 gap-y-0.5"
+      @click="showCallLogDetailModal = true"
     >
+      <span>{{ headline }}</span>
+      <template v-if="call.status == 'Completed' && call._duration">
+        <span aria-hidden="true">·</span>
+        <span class="tabular-nums">{{ call._duration }}</span>
+      </template>
+      <template v-else-if="outcome && outcome !== headline">
+        <span aria-hidden="true">·</span>
+        <span>{{ outcome }}</span>
+      </template>
+      <button
+        v-if="call.recording_url"
+        class="ml-0.5 inline-flex items-center gap-1 rounded px-1 font-medium text-ink-gray-8 hover:bg-surface-gray-3"
+        @click.stop="call.show_recording = !call.show_recording"
+      >
+        <PlayIcon class="size-3" />
+        {{ call.show_recording ? __('Hide') : __('Listen') }}
+      </button>
+    </div>
+    <div
+      v-if="call.show_recording && callLog?.data?.recording_url_path"
+      class="mt-2"
+      @click.stop
+    >
+      <AudioPlayer :src="callLog.data.recording_url_path" />
+    </div>
+    <CallLogDetailModal
+      v-model="showCallLogDetailModal"
+      v-model:callLog="callLog"
+    />
+  </div>
+  <div v-else>
+    <div class="mb-1 flex items-center justify-stretch gap-2 py-1 text-base">
       <div class="inline-flex items-center flex-wrap gap-1 text-ink-gray-5">
         <Avatar
           :image="call._caller.image"
@@ -29,15 +63,10 @@
       </div>
     </div>
     <div
-      class="flex flex-col gap-2 cursor-pointer text-ink-gray-9"
-      :class="
-        bare
-          ? ''
-          : 'rounded-md border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-2.5'
-      "
+      class="flex cursor-pointer flex-col gap-2 rounded-md border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-2.5 text-ink-gray-9"
       @click="showCallLogDetailModal = true"
     >
-      <div v-if="!bare" class="flex items-center justify-between">
+      <div class="flex items-center justify-between">
         <div class="inline-flex gap-2 items-center text-base-medium">
           <div>
             {{
@@ -64,7 +93,7 @@
         </div>
       </div>
       <div class="flex items-center flex-wrap gap-2">
-        <Badge v-if="!bare" :label="formatDate(call.creation, 'MMM D, dddd')">
+        <Badge :label="formatDate(call.creation, 'MMM D, dddd')">
           <template #prefix>
             <CalendarIcon class="size-3" />
           </template>
@@ -118,7 +147,7 @@ import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
 import { getCallStatusLabel, statusColorMap } from '@/utils/callLog.js'
 import { formatDate } from '@/utils'
 import { Avatar, Badge, createResource } from 'frappe-ui'
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const props = defineProps({
   activity: { type: Object, default: () => ({}) },
@@ -127,6 +156,23 @@ const props = defineProps({
 })
 
 const call = reactive(props.activity)
+
+// Which way, and — when nobody picked up — that first: a missed call is the
+// one line in a chat somebody has to do something about.
+const headline = computed(() => {
+  const incoming = call.type == 'Incoming'
+  if (call.status == 'No Answer')
+    return incoming ? __('Missed call') : __('Call not answered')
+  if (call.status == 'Busy')
+    return incoming ? __('Call declined') : __('Line busy')
+  return incoming ? __('Incoming call') : __('Outgoing call')
+})
+
+const outcome = computed(() =>
+  ['No Answer', 'Busy', 'Completed'].includes(call.status)
+    ? ''
+    : getCallStatusLabel(call.status, call.type),
+)
 
 const callLog = createResource({
   url: 'crm.fcrm.doctype.crm_call_log.crm_call_log.get_call_log',

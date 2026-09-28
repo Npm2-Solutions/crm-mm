@@ -1,41 +1,53 @@
 <!--
-  One message in the mixed chat: a speech balloon, with the tail on the side it
-  came from.
+  One message in the mixed chat: a speech balloon, on the side it came from.
 
-  What went wrong before: this drew a name, a channel icon and a clock, and then
-  put a whole message component inside — which drew its own name and its own
-  clock. Every message carried two timestamps in two different formats and a
-  border around a border. A bubble is a frame; a frame around a frame is not a
-  design, it is a mistake left in.
+  The rule from before stays, because it was right: **the bubble owns the
+  chrome, the slot owns the words.** Who, when, whether it arrived, whether it
+  was typed on somebody's phone, whether it failed — all drawn here, once, in
+  one format. What goes in the slot is the message and nothing else.
 
-  So the rule here is one line long: **the bubble owns the chrome, the slot owns
-  the words.** Who, when, whether it was delivered, whether it was typed on
-  somebody's phone — all of that is drawn here, once, in one place, in one
-  format. What goes in the slot is the message and nothing else.
+  What changed is what the colour means. The fill had been made to say the
+  channel — green WhatsApp, blue email — with ours «one shade deeper» than
+  theirs. On screen the two shades were one per cent of lightness apart, so in
+  a conversation that is mostly WhatsApp every bubble was the same green and
+  the side was left saying who spoke on its own. That is the one question a
+  chat has to answer at a glance, and it is the question every messenger
+  answers with the fill: theirs light, ours tinted. So here:
 
-  Two encodings, each meaning one thing:
+  - **the fill says who.** Theirs on the raised surface, ours in the house
+    blue — the same for every channel, so the eye learns it once.
+  - **the channel says itself in its mark**: the glyph beside the clock, in the
+    channel's own colour. It is read when you look for it, which is how often
+    anybody needs to know which way a message went.
 
-  - **the side, and the tail pointing to it**, say who. Theirs on the left,
-    ours on the right. It is the oldest convention in messaging and it costs
-    nothing to read.
-  - **the fill** says which channel. A mixed chat has to say where each message
-    came from on every single row, and a tint carries that without adding a
-    mark to read. Ours is a shade deeper than theirs, so the two axes never
-    collide.
+  A run of messages from one side is one voice: the tail and the name go on the
+  first of them, and the rest sit close underneath, the way every messenger
+  stacks them.
 -->
 <template>
-  <div class="relative" :class="mine ? 'pr-1.5' : 'pl-1.5'">
+  <div
+    class="group/bubble relative flex min-w-0 max-w-full"
+    :class="[mine ? 'justify-end' : 'justify-start', reaction ? 'mb-3' : '']"
+  >
     <div
-      class="relative rounded-2xl px-3 py-2 shadow-sm"
-      :class="[fill, mine ? 'rounded-tr-sm' : 'rounded-tl-sm']"
+      class="relative min-w-0 rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
+      :class="[
+        mine
+          ? 'bg-surface-blue-3'
+          : 'bg-surface-elevation-2 shadow-sm dark:bg-surface-gray-2',
+        tail ? (mine ? 'rounded-tr-md' : 'rounded-tl-md') : '',
+        failed ? 'ring-1 ring-inset ring-outline-red-3' : '',
+      ]"
     >
       <!--
-        The tail. `bg-inherit` is the whole trick: it takes the bubble's own
-        fill, so one tail serves every channel and can never drift out of
-        step with the colour it hangs off. Clipped to a triangle rather than
-        rotated, because a rotated square pokes a corner out the other side.
+        The tail, on the first of a run only. `bg-inherit` is the whole trick:
+        it takes the bubble's own fill, so one tail serves every side and can
+        never drift out of step with the colour it hangs off. Clipped to a
+        triangle rather than rotated, because a rotated square pokes a corner
+        out the other side.
       -->
       <span
+        v-if="tail"
         aria-hidden="true"
         class="absolute top-0 size-2.5 bg-inherit"
         :class="
@@ -46,52 +58,102 @@
       />
 
       <!--
-        Their name, on their side only. Ours needs none: the side already says
-        it, and a chat that signs every one of your own messages with your own
-        name is a chat nobody would use.
+        A name only where the side does not already say it: somebody other
+        than the person this conversation is with, or a colleague answering
+        for us. Signing every message of a one-to-one chat with the name that
+        is already in the header is a line of noise per message.
       -->
       <div
-        v-if="speaker && !mine"
+        v-if="speaker"
         class="mb-0.5 truncate text-p-xs font-medium"
-        :class="ink"
+        :class="mine ? 'text-ink-blue-8' : 'text-ink-gray-7'"
       >
         {{ speaker }}
       </div>
 
-      <div class="min-w-0 break-words text-base text-ink-gray-9">
-        <slot />
-      </div>
-
       <!--
-        The one footer. It floats to the end of the last line the way a chat's
-        does, so a three-word message stays three words wide instead of being
-        stretched to fit a clock underneath it.
+        The words and the footer share a line while they fit and part when they
+        do not — a flex row that wraps: «ok» keeps its clock beside it, a
+        paragraph or an email takes the width and the clock drops to the corner
+        underneath, the way WhatsApp itself does it.
       -->
-      <div
-        class="-mb-1 ml-2 flex items-center justify-end gap-1 text-p-xs leading-none text-ink-gray-5"
-      >
-        <component
-          :is="icon"
-          v-if="icon"
-          class="size-3 shrink-0"
-          :class="ink"
-        />
+      <div class="flex flex-wrap items-end gap-x-3">
+        <div class="min-w-0 break-words">
+          <slot />
+        </div>
+
         <!--
+          The one footer. A failed send says so here, in words and in the
+          bubble's own space: it used to be a badge and a button pinned over
+          the top corner, sitting on the first word of the message and on its
+          clock.
+        -->
+        <div
+          class="-mb-0.5 ml-auto flex shrink-0 items-center gap-1 pt-1 text-p-xs leading-none text-ink-gray-5"
+        >
+          <span v-if="failed" class="mr-auto flex items-center gap-1.5 pr-2">
+            <Tooltip :text="failure || __('The message did not reach them')">
+              <span class="flex items-center gap-1 text-ink-red-6">
+                <span class="lucide-circle-alert size-3.5" aria-hidden="true" />
+                {{ __('Not delivered') }}
+              </span>
+            </Tooltip>
+            <button
+              v-if="retryable"
+              class="rounded font-medium text-ink-red-6 underline underline-offset-2 hover:text-ink-red-7 disabled:opacity-60"
+              :disabled="retrying"
+              @click="emit('retry')"
+            >
+              {{ retrying ? __('Sending…') : __('Retry') }}
+            </button>
+          </span>
+          <Tooltip v-if="icon && label" :text="label">
+            <component :is="icon" class="size-3 shrink-0" :class="ink" />
+          </Tooltip>
+          <!--
           Typed on somebody's phone rather than in here. The same number is used
           from the CRM and from the WhatsApp app in a pocket, and both halves
           land in this one chat; without the mark, «did I answer this, or did a
           colleague answer from his phone?» has no answer a week later.
         -->
-        <Tooltip v-if="phone" :text="__('Sent from the phone')">
-          <LucideSmartphone class="size-3 shrink-0" />
-        </Tooltip>
-        <span class="shrink-0 tabular-nums">{{ time }}</span>
-        <CheckIcon v-if="tick === 'one'" class="size-3.5 shrink-0" />
-        <DoubleCheckIcon
-          v-else-if="tick"
-          class="size-3.5 shrink-0"
-          :class="tick === 'read' ? 'text-ink-blue-5' : ''"
-        />
+          <Tooltip v-if="phone" :text="__('Sent from the phone')">
+            <span
+              class="lucide-smartphone size-3 shrink-0"
+              aria-hidden="true"
+            />
+          </Tooltip>
+          <Tooltip :text="moment">
+            <span class="shrink-0 tabular-nums">{{ time }}</span>
+          </Tooltip>
+          <CheckIcon v-if="tick === 'one'" class="size-3.5 shrink-0" />
+          <DoubleCheckIcon
+            v-else-if="tick"
+            class="size-3.5 shrink-0"
+            :class="tick === 'read' ? 'text-ink-blue-7' : ''"
+          />
+        </div>
+      </div>
+
+      <!-- a reaction sits on the bottom edge, where every messenger puts it -->
+      <span
+        v-if="reaction"
+        class="absolute -bottom-3 flex h-6 min-w-6 items-center justify-center rounded-full bg-surface-elevation-2 px-1 text-sm leading-none shadow-sm ring-1 ring-outline-gray-1"
+        :class="mine ? 'right-3' : 'left-3'"
+      >
+        {{ reaction }}
+      </span>
+
+      <!--
+        What can be done to it — answer, react — beside the bubble on its outer
+        side, and only when the pointer is on it: a toolbar on every message is
+        a toolbar nobody reads past.
+      -->
+      <div
+        v-if="$slots.actions"
+        class="absolute top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/bubble:opacity-100"
+        :class="mine ? 'right-full mr-1.5' : 'left-full ml-1.5'"
+      >
+        <slot name="actions" />
       </div>
     </div>
   </div>
@@ -105,28 +167,34 @@ import { computed } from 'vue'
 
 const props = defineProps({
   channel: { type: String, default: '' },
+  // the channel's glyph, and its name for the tooltip; left out where every
+  // bubble is the same channel and the mark would say nothing
   icon: { type: [Object, Function], default: null },
+  label: { type: String, default: '' },
   // ours, or theirs
   mine: { type: Boolean, default: false },
+  // the first of a run carries the tail
+  tail: { type: Boolean, default: true },
   speaker: { type: String, default: '' },
   time: { type: String, default: '' },
+  // the whole moment, for the tooltip on the clock
+  moment: { type: String, default: '' },
   // written from the WhatsApp app rather than from here
   phone: { type: Boolean, default: false },
   // what the carrier said happened to it, in the carrier's own words
   status: { type: String, default: '' },
+  failed: { type: Boolean, default: false },
+  // why, when the carrier said
+  failure: { type: String, default: '' },
+  retryable: { type: Boolean, default: false },
+  retrying: { type: Boolean, default: false },
+  reaction: { type: String, default: '' },
 })
+
+const emit = defineEmits(['retry'])
 
 // Written out in full rather than built from the channel name, because Tailwind
 // reads the source for class names and never sees one that is assembled.
-// Theirs is the light shade, ours one step deeper — the same hue either way, so
-// the fill never has to be read twice to work out which channel it is.
-const FILLS = {
-  whatsapp: { in: 'bg-surface-green-1', out: 'bg-surface-green-2' },
-  email: { in: 'bg-surface-blue-1', out: 'bg-surface-blue-2' },
-  sms: { in: 'bg-surface-violet-1', out: 'bg-surface-violet-2' },
-  call: { in: 'bg-surface-gray-2', out: 'bg-surface-gray-3' },
-}
-
 const INKS = {
   whatsapp: 'text-ink-green-7',
   email: 'text-ink-blue-7',
@@ -134,21 +202,16 @@ const INKS = {
   call: 'text-ink-gray-6',
 }
 
-const fill = computed(() => {
-  const pair = FILLS[props.channel]
-  if (!pair) return props.mine ? 'bg-surface-gray-3' : 'bg-surface-gray-2'
-  return props.mine ? pair.out : pair.in
-})
-
 const ink = computed(() => INKS[props.channel] || 'text-ink-gray-6')
 
 // Only on what we sent: a tick on something they sent us would be claiming we
-// delivered it to ourselves.
+// delivered it to ourselves. Nothing on a failed one — the footer says why.
 const tick = computed(() => {
-  if (!props.mine) return ''
-  if (props.status === 'read') return 'read'
-  if (props.status === 'delivered') return 'delivered'
-  if (['sent', 'Success'].includes(props.status)) return 'one'
+  if (!props.mine || props.failed) return ''
+  const status = String(props.status || '').toLowerCase()
+  if (status === 'read') return 'read'
+  if (status === 'delivered') return 'delivered'
+  if (['sent', 'success'].includes(status)) return 'one'
   return ''
 })
 </script>

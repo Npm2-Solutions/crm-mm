@@ -1,70 +1,90 @@
 <template>
   <div>
-    <div
-      v-for="sms in messages"
-      :key="sms.name"
-      class="activity group flex gap-2"
-      :class="[
-        bare ? '' : 'mb-3',
-        sms.type == 'Outgoing' && !bare ? 'flex-row-reverse' : '',
-      ]"
-    >
+    <!-- inside the mixed chat the house bubble draws the frame, the clock and
+       a failure; what is left is what was written -->
+    <template v-if="bare">
       <div
+        v-for="sms in messages"
         :id="sms.name"
-        class="relative min-w-0 max-w-full break-words text-base text-ink-gray-9"
-        :class="
-          bare
-            ? 'w-full'
-            : [
-                'rounded-md p-1.5 pl-2 shadow-sm',
-                sms.type == 'Outgoing'
-                  ? 'bg-surface-gray-2'
-                  : 'bg-surface-gray-1',
-              ]
-        "
+        :key="sms.name"
+        class="whitespace-pre-wrap break-words"
       >
-        <Badge
-          v-if="['Failed', 'Undelivered'].includes(sms.status)"
-          theme="red"
-          :label="__(sms.status)"
-          class="absolute -top-2 right-0"
-        />
-        <div class="whitespace-pre-wrap break-words">{{ sms.message }}</div>
-        <!--
-          Bare means the house bubble is drawing the frame, and the frame
-          includes the clock. Leaving this one in was how every message in the
-          mixed chat ended up stamped twice, in two different formats.
-        -->
+        {{ sms.message }}
+      </div>
+    </template>
+
+    <template v-else>
+      <div
+        v-for="sms in messages"
+        :key="sms.name"
+        class="activity flex"
+        :class="sms.type == 'Outgoing' ? 'justify-end' : 'justify-start'"
+      >
         <div
-          v-if="!bare"
-          class="mt-1 flex items-center justify-end gap-1 text-xs text-ink-gray-4"
+          :id="sms.name"
+          class="relative min-w-0 max-w-full rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
+          :class="[
+            sms.type == 'Outgoing'
+              ? 'bg-surface-blue-3'
+              : 'bg-surface-elevation-2 shadow-sm dark:bg-surface-gray-2',
+            failed(sms) ? 'ring-1 ring-inset ring-outline-red-3' : '',
+          ]"
         >
-          <!--
-            An SMS bubble is grey, and so is a lot of other things: the icon is
-            how it says which channel it is, now that the stream no longer
-            writes a line of text under every message to say so.
-          -->
-          <SMSIcon class="size-3" />
-          <!-- the clock, like every other bubble: the day is on the date chip
-             above, and «23 hours ago» beside «11:07 am» is two units for one
-             question -->
-          <Tooltip :text="formatDate(sms.creation)">
-            <span>{{ formatDate(sms.creation, 'hh:mm a') }}</span>
-          </Tooltip>
-          <span v-if="sms.type == 'Outgoing'">· {{ __(sms.status) }}</span>
+          <div class="flex flex-wrap items-end gap-x-2">
+            <div class="min-w-0 whitespace-pre-wrap break-words">
+              {{ sms.message }}
+            </div>
+            <div
+              class="-mb-0.5 ml-auto flex shrink-0 items-center gap-1 pt-0.5 text-p-xs leading-none text-ink-gray-5"
+            >
+              <!-- what the carrier said, in its own space rather than on a
+                 badge pinned over the words -->
+              <Tooltip
+                v-if="failed(sms)"
+                :text="
+                  sms.error_message || __('The message did not reach them')
+                "
+              >
+                <span class="flex items-center gap-1 text-ink-red-6">
+                  <span
+                    class="lucide-circle-alert size-3.5"
+                    aria-hidden="true"
+                  />
+                  {{ __(sms.status) }}
+                </span>
+              </Tooltip>
+              <Tooltip :text="formatDate(sms.creation, 'ddd, D MMM YYYY')">
+                <span class="tabular-nums">{{ clockOf(sms.creation) }}</span>
+              </Tooltip>
+              <span
+                v-if="sms.type == 'Outgoing' && !failed(sms) && sms.status"
+                class="text-ink-gray-4"
+              >
+                · {{ __(sms.status) }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 <script setup>
-import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import { formatDate } from '@/utils'
-import { Tooltip } from 'frappe-ui'
+import { clockOf as clock, hasFailed } from '@/utils/conversation'
+import { Tooltip, dayjsLocal } from 'frappe-ui'
 
 defineProps({
   messages: { type: Array, default: () => [] },
   // the house component draws the bubble in the mixed chat
   bare: { type: Boolean, default: false },
 })
+
+function failed(sms) {
+  return hasFailed({ ...sms, activity_type: 'sms' })
+}
+
+function clockOf(at) {
+  return at ? clock(dayjsLocal(at).format('YYYY-MM-DD HH:mm:ss')) : ''
+}
 </script>
