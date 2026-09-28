@@ -16,9 +16,7 @@
     <div
       class="flex items-center gap-2 p-2 rounded-md ring-1 ring-outline-gray-3"
     >
-      <CircleAlert
-        class="size-6 text-ink-gray-4 w-min-5 w-max-5 min-h-5 max-w-5"
-      />
+      <CircleAlert class="size-6 text-ink-gray-4 min-w-5 min-h-5 max-w-5" />
       <div class="text-xs text-ink-gray-6 text-wrap">
         {{ info.description }}
         <a :href="info.link" target="_blank" class="underline">

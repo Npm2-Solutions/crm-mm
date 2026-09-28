@@ -13,7 +13,7 @@
         <div
           v-for="r in reactionEmojis"
           :key="r"
-          class="size-5 cursor-pointer rounded-full bg-surface-transparent text-2xl"
+          class="size-5 cursor-pointer rounded-full bg-transparent text-2xl"
           @click="() => (emoji = r) && togglePopover()"
         >
           <button>
