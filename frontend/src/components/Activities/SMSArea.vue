@@ -30,7 +30,13 @@
           class="absolute -top-2 right-0"
         />
         <div class="whitespace-pre-wrap break-words">{{ sms.message }}</div>
+        <!--
+          Bare means the house bubble is drawing the frame, and the frame
+          includes the clock. Leaving this one in was how every message in the
+          mixed chat ended up stamped twice, in two different formats.
+        -->
         <div
+          v-if="!bare"
           class="mt-1 flex items-center justify-end gap-1 text-xs text-ink-gray-4"
         >
           <!--

@@ -191,7 +191,16 @@
               v-html="formatWhatsAppMessage(whatsapp.message)"
             />
           </div>
-          <div class="-mb-1 flex shrink-0 items-end gap-1 text-ink-gray-5">
+          <!--
+            Bare means the house bubble is drawing the frame, and the frame
+            carries the clock, the ticks and the phone mark itself. Leaving this
+            one in was how every message in the mixed chat ended up stamped
+            twice, in two different formats, with a border around a border.
+          -->
+          <div
+            v-if="!bare"
+            class="-mb-1 flex shrink-0 items-end gap-1 text-ink-gray-5"
+          >
             <!--
               Written on the phone, not here.
 

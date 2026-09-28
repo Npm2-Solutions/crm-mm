@@ -65,9 +65,32 @@
             >
               <CommentArea
                 v-if="row.channel === 'comment'"
+                bare
                 :activity="row.item"
                 @reload="emit('reload')"
               />
+              <slot v-else name="other" :item="row.item" :row="row" />
+            </TimelineEntry>
+          </div>
+        </template>
+
+        <!--
+          The call register. A call has no text to read, so a bubble would be a
+          speech balloon with no speech in it: what there is to know is who,
+          which way, how long, and whether there is a recording — which is a
+          row, on a thread, the way the Calls tab showed it before it stopped
+          being a tab of its own.
+        -->
+        <template v-else-if="channel === 'call'">
+          <div class="flex flex-col px-3 sm:px-4">
+            <TimelineEntry
+              v-for="row in group.rows"
+              :key="row.key"
+              :channel="row.channel"
+              :icon="callIconFor(row.item)"
+              :incoming="row.direction === 'in'"
+            >
+              <CallArea v-if="row.channel === 'call'" :activity="row.item" />
               <slot v-else name="other" :item="row.item" :row="row" />
             </TimelineEntry>
           </div>
@@ -92,9 +115,29 @@
         </template>
 
         <template v-for="row in group.rows" v-else :key="row.key">
-          <!-- said to somebody: a side, and the colour of the channel it went by -->
+          <!--
+            A call has no words, so it gets no balloon: a balloon with nothing
+            said in it is a speech bubble with no speech. Every messenger puts
+            calls in the middle, as a notice — who rang, which way, how long —
+            and so does this.
+          -->
+          <HappenedCard
+            v-if="row.channel === 'call'"
+            kind="call"
+            :icon="callIconFor(row.item)"
+            :title="
+              row.direction === 'out' ? __('Outbound call') : __('Inbound call')
+            "
+            :when="timeOf(row)"
+            card
+          >
+            <CallArea :activity="row.item" bare />
+          </HappenedCard>
+
+          <!-- said to somebody: a side, a tail pointing to it, and the tint of
+             the channel it came by -->
           <div
-            v-if="row.direction !== 'internal'"
+            v-else-if="row.direction !== 'internal'"
             class="flex px-3 sm:px-4"
             :class="row.direction === 'out' ? 'justify-end' : 'justify-start'"
           >
@@ -120,8 +163,10 @@
                 :channel="row.channel"
                 :icon="iconFor(row.channel)"
                 :mine="row.direction === 'out'"
-                :speaker="speakerOf(row.item, me)"
-                :time="row.at ? dayjs(row.at).format('HH:mm') : ''"
+                :speaker="row.startsRun ? speakerOf(row.item, me, them) : ''"
+                :time="timeOf(row)"
+                :phone="Boolean(row.item?.written_on_the_phone)"
+                :status="row.item?.status || ''"
               >
                 <WhatsAppArea
                   v-if="row.channel === 'whatsapp'"
@@ -135,11 +180,12 @@
                   bare
                   :messages="[row.item]"
                 />
-                <CallArea
-                  v-else-if="row.channel === 'call'"
+                <EmailArea
+                  v-else
+                  bare
                   :activity="row.item"
+                  :modalRef="modalRef"
                 />
-                <EmailArea v-else :activity="row.item" :modalRef="modalRef" />
               </ChatBubble>
             </div>
           </div>
@@ -156,7 +202,7 @@
             :icon="iconFor('comment')"
             card
           >
-            <CommentArea :activity="row.item" @reload="emit('reload')" />
+            <CommentArea bare :activity="row.item" @reload="emit('reload')" />
           </HappenedCard>
 
           <HappenedCard
@@ -293,6 +339,10 @@
 
 <script setup>
 import CallArea from '@/components/Activities/CallArea.vue'
+import MissedCallIcon from '@/components/Icons/MissedCallIcon.vue'
+import DeclinedCallIcon from '@/components/Icons/DeclinedCallIcon.vue'
+import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
+import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
 import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'
@@ -334,6 +384,10 @@ const props = defineProps({
   items: { type: Array, default: () => [] },
   channel: { type: String, default: 'all' },
   modalRef: { type: Object, default: null },
+  // whose record this is. WhatsApp only supplies a profile name when the person
+  // publishes one, and a bare number standing where a name goes is unreadable
+  // on a record that knows exactly whose number it is.
+  them: { type: String, default: '' },
 })
 
 const whatsappMessages = defineModel('whatsappMessages', {
@@ -434,6 +488,15 @@ const ICONS = {
 
 function iconFor(channel) {
   return ICONS[channel] || DotIcon
+}
+
+// On the register the icon carries the outcome, not merely «a call»: missed and
+// answered are the two things somebody scanning a register is looking for, and
+// one phone glyph for both makes them look through every row to find out.
+function callIconFor(item) {
+  if (item?.status === 'No Answer') return MissedCallIcon
+  if (item?.status === 'Busy') return DeclinedCallIcon
+  return item?.type === 'Incoming' ? InboundCallIcon : OutboundCallIcon
 }
 </script>
 

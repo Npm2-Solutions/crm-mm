@@ -2,7 +2,7 @@
 <template>
   <div
     v-if="reply?.message"
-    class="flex items-center justify-around gap-2 px-3 pt-2 sm:px-10"
+    class="flex items-center justify-around gap-2 px-3 pt-2 sm:px-4"
   >
     <div
       class="mb-1 ml-13 flex-1 cursor-pointer rounded border-0 border-l-4 border-green-500 bg-surface-gray-2 p-2 text-base text-ink-gray-5"
@@ -51,7 +51,7 @@
   -->
   <div
     v-if="recording || voiceNote"
-    class="flex items-center gap-3 px-3 py-2.5 sm:px-10"
+    class="flex items-center gap-3 px-3 py-2.5 sm:px-4"
   >
     <button
       class="lucide-trash-2 size-4.5 shrink-0 cursor-pointer text-ink-gray-5 hover:text-ink-red-4"
@@ -90,7 +90,7 @@
     </template>
   </div>
 
-  <div v-else class="flex items-end gap-2 px-3 py-2.5 sm:px-10" v-bind="$attrs">
+  <div v-else class="flex items-end gap-2 px-3 py-2.5 sm:px-4" v-bind="$attrs">
     <div class="flex h-8 items-center gap-2">
       <!-- `private: false` is load-bearing. frappe_whatsapp hands Meta a link and
            Meta fetches it anonymously; a private Frappe file answers that fetch

@@ -1,13 +1,25 @@
 <template>
+  <!--
+    Bare means this is sitting inside the house bubble, which already draws the
+    card, the sender and the clock. What stays is what only an email has: the
+    subject, who else it went to, the body, and the two reply buttons — losing
+    those would push anybody who lives in «All» back out to the email view to
+    answer a message they are already reading.
+  -->
   <div
-    class="cursor-pointer flex flex-col rounded-md shadow-sm bg-surface-elevation-1 px-3 py-1.5 text-base transition-all duration-300 ease-in-out"
+    class="flex flex-col text-base transition-all duration-300 ease-in-out"
+    :class="
+      bare
+        ? ''
+        : 'cursor-pointer rounded-md bg-surface-elevation-1 px-3 py-1.5 shadow-sm'
+    "
   >
     <div
       class="-mb-0.5 flex items-center justify-between gap-2 truncate text-ink-gray-9"
     >
       <div class="flex items-center gap-2 truncate">
-        <span>{{ activity.data.sender_full_name }}</span>
-        <span class="sm:flex hidden text-sm text-ink-gray-5">
+        <span v-if="!bare">{{ activity.data.sender_full_name }}</span>
+        <span v-if="!bare" class="sm:flex hidden text-sm text-ink-gray-5">
           {{ '<' + activity.data.sender + '>' }}
         </span>
         <Badge
@@ -24,7 +36,7 @@
           variant="subtle"
           :theme="status.color"
         />
-        <TimelineTimestamp :date="activity.communication_date" />
+        <TimelineTimestamp v-if="!bare" :date="activity.communication_date" />
         <div class="flex gap-0.5">
           <Button
             :tooltip="__('Reply')"
@@ -84,6 +96,8 @@ import { reactive, computed } from 'vue'
 const props = defineProps({
   activity: { type: Object, default: () => ({}) },
   emailBox: { type: Object, default: () => ({}) },
+  // the house bubble draws the card, the sender and the clock in the mixed chat
+  bare: { type: Boolean, default: false },
 })
 
 const emailBox = reactive(props.emailBox)

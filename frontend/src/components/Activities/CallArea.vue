@@ -1,6 +1,14 @@
 <template>
   <div>
-    <div class="mb-1 flex items-center justify-stretch gap-2 py-1 text-base">
+    <!--
+      Bare means the centred notice above already says who, which way and when.
+      What is left is what only a call has: how long it lasted, how it ended,
+      and the recording.
+    -->
+    <div
+      v-if="!bare"
+      class="mb-1 flex items-center justify-stretch gap-2 py-1 text-base"
+    >
       <div class="inline-flex items-center flex-wrap gap-1 text-ink-gray-5">
         <Avatar
           :image="call._caller.image"
@@ -21,10 +29,15 @@
       </div>
     </div>
     <div
-      class="flex flex-col gap-2 border cursor-pointer border-outline-elevation-2 rounded-md bg-surface-elevation-1 px-3 py-2.5 text-ink-gray-9"
+      class="flex flex-col gap-2 cursor-pointer text-ink-gray-9"
+      :class="
+        bare
+          ? ''
+          : 'rounded-md border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-2.5'
+      "
       @click="showCallLogDetailModal = true"
     >
-      <div class="flex items-center justify-between">
+      <div v-if="!bare" class="flex items-center justify-between">
         <div class="inline-flex gap-2 items-center text-base-medium">
           <div>
             {{
@@ -51,7 +64,7 @@
         </div>
       </div>
       <div class="flex items-center flex-wrap gap-2">
-        <Badge :label="formatDate(call.creation, 'MMM D, dddd')">
+        <Badge v-if="!bare" :label="formatDate(call.creation, 'MMM D, dddd')">
           <template #prefix>
             <CalendarIcon class="size-3" />
           </template>
@@ -109,6 +122,8 @@ import { reactive, ref } from 'vue'
 
 const props = defineProps({
   activity: { type: Object, default: () => ({}) },
+  // the centred notice in the chat already says who, which way and when
+  bare: { type: Boolean, default: false },
 })
 
 const call = reactive(props.activity)

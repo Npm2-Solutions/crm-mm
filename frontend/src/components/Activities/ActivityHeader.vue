@@ -81,11 +81,6 @@
         </template>
       </Dropdown>
     </div>
-    <MultiActionButton
-      v-else-if="title == 'Calls'"
-      variant="solid"
-      :options="callActions"
-    />
     <Button
       v-else-if="title == 'Events'"
       variant="solid"
@@ -131,7 +126,6 @@
   </div>
 </template>
 <script setup>
-import MultiActionButton from '@/components/MultiActionButton.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'
@@ -141,6 +135,7 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
+import { CHANNELS } from '@/utils/conversation'
 import { globalStore } from '@/stores/global'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
@@ -160,26 +155,27 @@ const props = defineProps({
 
 const channel = defineModel('channel', { type: String, default: 'all' })
 
-// Only the channels this site actually has. An SMS chip on a CRM with no
-// Twilio is a promise it cannot keep.
+// What each channel looks like up here, and what has to be switched on for it
+// to be offered at all: an SMS chip on a CRM with no Twilio is a promise it
+// cannot keep.
+//
+// The *list* is not here. It comes from CHANNELS, the same list the stream sorts
+// rows into, because this pill strip used to hold a second copy of it — and a
+// copy is how a channel ends up sorted into a pile that nothing offers a way to
+// open, which is exactly what happened to the calls.
+const DECORATION = {
+  email: { icon: Email2Icon },
+  whatsapp: { icon: WhatsAppIcon, condition: () => whatsappEnabled.value },
+  sms: { icon: SMSIcon, condition: () => smsEnabled.value },
+  comment: { icon: CommentIcon },
+  call: { icon: PhoneIcon },
+}
+
 const channelOptions = computed(() =>
-  [
-    { key: 'all', label: 'All' },
-    { key: 'email', label: 'Email', icon: Email2Icon },
-    {
-      key: 'whatsapp',
-      label: 'WhatsApp',
-      icon: WhatsAppIcon,
-      condition: () => whatsappEnabled.value,
-    },
-    {
-      key: 'sms',
-      label: 'SMS',
-      icon: SMSIcon,
-      condition: () => smsEnabled.value,
-    },
-    { key: 'comment', label: 'Comments', icon: CommentIcon },
-  ]
+  CHANNELS.map((channel) => ({
+    ...channel,
+    ...(DECORATION[channel.key] || {}),
+  }))
     .filter((option) => !option.condition || option.condition())
     .map((option) => ({ ...option, count: props.counts?.[option.key] || 0 })),
 )
@@ -258,24 +254,4 @@ const defaultActions = computed(() => {
 function getTabIndex(name) {
   return props.tabs.findIndex((tab) => tab.name === name)
 }
-
-const callActions = computed(() => {
-  let actions = [
-    {
-      label: __('Log a Call'),
-      icon: 'plus',
-      onClick: () => props.modalRef.createCallLog(),
-    },
-    {
-      label: __('Make a Call'),
-      icon: h(PhoneIcon, { class: 'h-4 w-4' }),
-      onClick: () => makeCall(props.doc.mobile_no),
-      condition: () => callEnabled.value,
-    },
-  ]
-
-  return actions.filter((action) =>
-    action.condition ? action.condition() : true,
-  )
-})
 </script>

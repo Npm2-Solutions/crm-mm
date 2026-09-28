@@ -32,8 +32,18 @@
       that happened, written down — and two surfaces for one kind of thing made
       the stream read as two streams laid on top of each other.
     -->
+    <!--
+      Bare means the card in the chat is already the box. Drawing a second one
+      inside it gave every internal comment a white panel inside an amber panel
+      inside the stream — three frames for one sentence.
+    -->
     <div
-      class="rounded-md border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-[7.5px] text-base leading-6 text-ink-gray-9 transition-all duration-300 ease-in-out"
+      class="text-base leading-6 text-ink-gray-9 transition-all duration-300 ease-in-out"
+      :class="
+        bare
+          ? ''
+          : 'rounded-md border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-[7.5px]'
+      "
     >
       <template v-if="editing">
         <RichTextField
@@ -81,6 +91,8 @@ import { computed, ref } from 'vue'
 
 const props = defineProps({
   activity: { type: Object, default: () => ({}) },
+  // the card in the chat is already the box
+  bare: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['reload'])
