@@ -29,8 +29,12 @@
 }
 
 @layer components {
+  /* `break-words`, not `break-all`: long links and codes still wrap, but an
+     ordinary word no longer splits wherever the line ends — «diff|erentiators»,
+     «compari|son» in every note, comment, email and template. Code keeps
+     `break-all`, where there are no words to respect. */
   .prose-f {
-    @apply break-all
+    @apply break-words
 			max-w-none
 			prose
 			prose-code:break-all
