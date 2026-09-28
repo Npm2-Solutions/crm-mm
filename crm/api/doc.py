@@ -334,6 +334,16 @@ def get_data(
 			rows = default_rows
 			columns = _list.default_list_data().get("columns")
 
+		# The columns the controller itself declares are shown even when their
+		# field is hidden: Frappe core hides `Contact.full_name`, a computed field,
+		# and dropping it left the contact list without a name column — each
+		# contact known only by its email.
+		declared = (
+			{c.get("key") for c in _list.default_list_data().get("columns", [])}
+			if hasattr(_list, "default_list_data")
+			else set()
+		)
+
 		# check if rows has all keys from columns if not add them
 		# iterate over a copy: the hidden ones are removed below, and removing from
 		# the list being walked makes the loop skip whatever follows them
@@ -347,7 +357,7 @@ def get_data(
 
 			# remove column if column.hidden is True
 			column_meta = meta.get_field(column.get("key"))
-			if column_meta and column_meta.get("hidden"):
+			if column_meta and column_meta.get("hidden") and column.get("key") not in declared:
 				columns.remove(column)
 
 		# check if rows has group_by_field if not add it
