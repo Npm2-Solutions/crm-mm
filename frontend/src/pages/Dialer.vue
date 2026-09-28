@@ -67,15 +67,15 @@
             />
           </template>
 
-          <!-- the original lead/deal queue -->
-          <template v-else>
-            <FormControl
-              v-model="form.status"
-              type="select"
-              :label="__('With status')"
-              :options="statusSelectOptions"
-            />
-          </template>
+          <!-- a queue of deals, narrowed by stage; people have no stage since
+               the sale's status moved onto the deal (doc 26) -->
+          <FormControl
+            v-else-if="form.source === 'CRM Deal'"
+            v-model="form.status"
+            type="select"
+            :label="__('With status')"
+            :options="statusSelectOptions"
+          />
 
           <FormControl
             v-model="form.limit"
@@ -301,11 +301,13 @@ import {
 import { ref, reactive, computed, watch } from 'vue'
 
 const { makeCall } = globalStore()
-const { leadStatuses, dealStatuses } = statusesStore()
+const { dealStatuses } = statusesStore()
 
+// «Records» was the default here, and it is not one of the options: the select
+// showed «Select option», and building the queue without touching it sent the
+// server a doctype called «Records».
 const form = reactive({
-  source: 'Records',
-  doctype: 'CRM Lead',
+  source: 'CRM Lead',
   status: '',
   limit: 20,
   includeUpcoming: false,
@@ -351,7 +353,7 @@ watch(answeringEnabled, preferCallbacks)
 
 const sourceOptions = [
   { label: __('Callbacks'), value: 'Callbacks' },
-  { label: __('Leads'), value: 'CRM Lead' },
+  { label: __('People'), value: 'CRM Lead' },
   { label: __('Deals'), value: 'CRM Deal' },
 ]
 
@@ -377,14 +379,10 @@ const outcomeHint = computed(() => {
   return ''
 })
 
-const statusSelectOptions = computed(() => {
-  const statuses =
-    form.source == 'CRM Lead' ? leadStatuses.data : dealStatuses.data
-  return [
-    { label: __('Any'), value: '' },
-    ...(statuses || []).map((s) => ({ label: s.name, value: s.name })),
-  ]
-})
+const statusSelectOptions = computed(() => [
+  { label: __('Any'), value: '' },
+  ...(dealStatuses.data || []).map((s) => ({ label: s.name, value: s.name })),
+])
 
 watch(
   () => (session.data ? current.value?.idx : null),
@@ -443,7 +441,7 @@ function createSession() {
     params: {
       source: isCallbackRound.value ? 'Callbacks' : 'Records',
       doctype: isCallbackRound.value ? undefined : form.source,
-      status: isCallbackRound.value ? undefined : form.status || null,
+      status: form.source === 'CRM Deal' ? form.status || null : undefined,
       include_upcoming: isCallbackRound.value ? form.includeUpcoming : false,
       limit: form.limit || 20,
     },
