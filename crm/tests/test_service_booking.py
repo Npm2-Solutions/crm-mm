@@ -67,6 +67,35 @@ class TestServiceBooking(SchedulingCase):
 		finally:
 			frappe.set_user("Administrator")
 
+	# -- branding ----------------------------------------------------------------
+
+	def test_the_public_page_wears_the_crm_brand(self):
+		# A reader of two fields that asked `get_single_value` for a list with
+		# `as_dict` raised every time; /prenota caught it and went out with no
+		# logo, no favicon and no colours, on every site, without a word.
+		frappe.db.set_single_value("FCRM Settings", "brand_logo", "/files/studio-logo.png")
+		frappe.db.set_single_value("FCRM Settings", "favicon", "/files/studio-icon.png")
+		branding = SB.page_branding({"booking_page_color": "#30A46C"})
+		self.assertEqual(branding["logo"], "/files/studio-logo.png")
+		self.assertEqual(branding["favicon"], "/files/studio-icon.png")
+		self.assertEqual(branding["css"]["--accent"], "#30a46c")
+
+	def test_a_logo_of_the_page_itself_wins_over_the_brand(self):
+		frappe.db.set_single_value("FCRM Settings", "brand_logo", "/files/studio-logo.png")
+		frappe.db.set_single_value("FCRM Settings", "favicon", "")
+		branding = SB.page_branding({"booking_page_logo": "/files/booking.png"})
+		self.assertEqual(branding["logo"], "/files/booking.png")
+		# no favicon of its own: the page's logo stands in, not an empty tab
+		self.assertEqual(branding["favicon"], "/files/booking.png")
+
+	def test_the_scheduling_settings_page_loads(self):
+		# the same reader broke the settings page that shows the fallback brand
+		from crm.api.appointments import get_scheduling_settings
+
+		frappe.db.set_single_value("FCRM Settings", "brand_name", "Studio Luce")
+		data = get_scheduling_settings()
+		self.assertEqual(data["brand"]["name"], "Studio Luce")
+
 	# -- catalogue -------------------------------------------------------------
 
 	def test_catalog_lists_only_bookable_services_and_hides_staff_emails(self):
