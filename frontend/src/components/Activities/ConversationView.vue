@@ -343,7 +343,7 @@
                   v-if="statusOf(row.item.data)"
                   size="sm"
                   :theme="invoiceStatusTheme(statusOf(row.item.data))"
-                  :label="statusOf(row.item.data)"
+                  :label="statusLabel(statusOf(row.item.data))"
                 />
                 <Badge
                   v-if="row.item.data?.docstatus === 0"
@@ -434,6 +434,7 @@ import {
   formatEuro,
   invoiceLabel,
   invoiceStatusTheme,
+  statusLabel,
   isCreditNote,
   worstStatus,
 } from '@/utils/invoicing'

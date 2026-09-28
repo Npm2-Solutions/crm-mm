@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  statusLabel,
   formatEuro,
   invoiceLabel,
   invoiceStatusTheme,
@@ -24,6 +25,20 @@ describe('invoiceStatusTheme', () => {
   it('is blue on the way and orange while it is still ours', () => {
     expect(invoiceStatusTheme('inviato')).toBe('blue')
     expect(invoiceStatusTheme('da_inviare')).toBe('orange')
+  })
+})
+
+describe('statusLabel', () => {
+  it('reads a state as words, in the words of the portal', () => {
+    expect(statusLabel('da_inviare')).toBe('Da inviare')
+    expect(statusLabel('mancata_consegna')).toBe('Mancata consegna')
+    expect(statusLabel('scartata')).toBe('Scartata')
+    expect(statusLabel('pronto_export')).toBe('Pronto export')
+  })
+
+  it('has nothing to say about nothing', () => {
+    expect(statusLabel('')).toBe('')
+    expect(statusLabel(null)).toBe('')
   })
 })
 
