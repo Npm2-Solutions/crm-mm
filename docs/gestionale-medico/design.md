@@ -31,11 +31,14 @@ chi guarda decide cosa vede, e il paziente, dalla sua area, è il quarto sguardo
 
 ● vede tutto · ○ vede che c'è, non cosa c'è · — non lo vede
 
-Il filo esiste già: dalla PR #101 la cronologia della persona è "una chat sola",
-con una grammatica visiva precisa (il lato dice chi scrive, il colore il canale, la
-nota interna sta in mezzo in ambra). Il design la estende con un terzo asse, **chi
-può vederlo**: un nodo clinico porta il lucchetto e compare solo nello sguardo
-degli operatori; un nodo "visibile al paziente" compare anche nella sua area.
+Il filo esiste già: dalla PR #101 la cronologia della persona è "una chat sola", e
+dalla PR #104 ha la grammatica di un messenger: il riempimento dice chi scrive
+(loro a sinistra in bianco, noi a destra nel blu di casa, su ogni canale), il glifo
+accanto all'ora dice il canale, la nota interna sta in mezzo in ambra
+([doc 17](../progetto-ghl/17-timeline-unificata.md)). Il design la estende con un
+terzo asse, **chi può vederlo**: un nodo clinico porta il lucchetto e compare solo
+nello sguardo degli operatori; un nodo "visibile al paziente" compare anche nella
+sua area.
 
 ## Gli otto principi
 
