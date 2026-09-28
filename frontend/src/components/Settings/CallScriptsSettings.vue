@@ -66,9 +66,11 @@
           <p class="text-p-base text-ink-gray-6">
             {{ __('No scripts yet.') }}
           </p>
+          <!-- the header's «New script» is the primary action; this one is
+               the same thing said closer to the empty list -->
           <Button
             class="mt-3"
-            variant="solid"
+            variant="subtle"
             :label="__('Write the first one')"
             @click="newScript"
           />

@@ -60,7 +60,13 @@
               {{ __('Change language of the application.') }}
             </span>
           </div>
-          <Link v-model="user.doc.language" doctype="Language" class="w-40" />
+          <!-- empty means «the system's language», and said nothing -->
+          <Link
+            v-model="user.doc.language"
+            doctype="Language"
+            class="w-40"
+            :placeholder="__('System default')"
+          />
         </div>
         <div class="flex items-center justify-between mt-6">
           <div class="flex flex-col gap-1">

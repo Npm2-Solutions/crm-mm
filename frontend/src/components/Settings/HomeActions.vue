@@ -10,7 +10,7 @@
           {{ __('Configure actions that appear on the home dropdown') }}
         </p>
       </div>
-      <div class="flex item-center space-x-2 w-3/12 justify-end">
+      <div class="flex items-start space-x-2 w-3/12 justify-end">
         <Button
           v-if="document.isDirty"
           :label="__('Update')"
