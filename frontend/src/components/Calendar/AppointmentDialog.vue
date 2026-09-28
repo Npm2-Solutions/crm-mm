@@ -377,6 +377,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
+import { appLocale } from '@/utils/locale'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -510,7 +511,7 @@ const conflictCheck = createResource({
 const priceLabel = computed(() => {
   const data = quote.data
   if (!data) return '—'
-  const total = new Intl.NumberFormat(undefined, {
+  const total = new Intl.NumberFormat(appLocale(), {
     style: 'currency',
     currency: data.currency || 'EUR',
   }).format(data.total || 0)

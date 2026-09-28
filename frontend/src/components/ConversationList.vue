@@ -113,6 +113,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { usersStore } from '@/stores/users'
 import { laterLabel, listTime } from '@/utils/conversation'
 import { Tooltip, dayjsLocal } from 'frappe-ui'
+import { appLocale } from '@/utils/locale'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -156,11 +157,19 @@ function local(at) {
 }
 
 function when(at) {
-  return listTime(local(at), dayjsLocal().format('YYYY-MM-DD HH:mm:ss'))
+  return listTime(
+    local(at),
+    dayjsLocal().format('YYYY-MM-DD HH:mm:ss'),
+    appLocale(),
+  )
 }
 
 function later(at) {
-  return laterLabel(local(at), dayjsLocal().format('YYYY-MM-DD HH:mm:ss'))
+  return laterLabel(
+    local(at),
+    dayjsLocal().format('YYYY-MM-DD HH:mm:ss'),
+    appLocale(),
+  )
 }
 
 // A person with no conversation is not an error: it is most of the list on the

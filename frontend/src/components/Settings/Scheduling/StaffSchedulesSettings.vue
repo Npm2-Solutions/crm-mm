@@ -317,6 +317,7 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 import { hhmm } from '@/utils/scheduler'
+import { appLocale } from '@/utils/locale'
 
 const weekStart = ref('')
 const todayIso = new Date().toISOString().slice(0, 10)
@@ -341,7 +342,7 @@ function shiftWeek(days) {
 const weekLabel = computed(() => {
   const days = rota.data?.days
   if (!days?.length) return ''
-  const fmt = new Intl.DateTimeFormat(undefined, {
+  const fmt = new Intl.DateTimeFormat(appLocale(), {
     day: 'numeric',
     month: 'short',
     timeZone: 'UTC',
@@ -350,7 +351,7 @@ const weekLabel = computed(() => {
 })
 
 function dayLabel(day) {
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(appLocale(), {
     weekday: 'short',
     day: 'numeric',
     timeZone: 'UTC',

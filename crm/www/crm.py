@@ -79,6 +79,8 @@ def get_boot():
 			"is_fc_site": is_fc_site(),
 			"translated_doctypes": get_translated_doctypes(),
 			"translated_messages": get_messages_for_boot(),
+			# the language the words above are in, so dates and numbers speak it too
+			"lang": frappe.local.lang,
 			"timezone": {
 				"system": get_system_timezone(),
 				"user": frappe.db.get_value("User", frappe.session.user, "time_zone")
