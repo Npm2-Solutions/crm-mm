@@ -1,13 +1,13 @@
 <template>
   <Dialog v-model="show" :options="{ size: '4xl' }">
     <template #body>
-      <div class="flex flex-col bg-surface-elevation-2">
+      <div class="flex flex-col bg-surface-elevation-1">
         <!-- header -->
         <div
           class="flex items-start justify-between gap-3 border-b border-outline-gray-2 px-5 py-4"
         >
           <div class="min-w-0">
-            <h3 class="truncate text-lg-semibold text-ink-gray-9">
+            <h3 class="truncate text-2xl-semibold text-ink-gray-9">
               {{ form.name ? __('Appointment') : __('New appointment') }}
               <span v-if="form.name" class="text-ink-gray-5"
                 >· {{ form.name }}</span
@@ -41,9 +41,12 @@
                 :options="serviceOptions"
                 @update:modelValue="onServiceChange"
               />
-              <div class="grid grid-cols-3 gap-2">
+              <!-- on a phone the date gets a row of its own: in a third of it,
+                   it read «2026-09» -->
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <FormControl
                   v-model="form.date"
+                  class="col-span-2 sm:col-span-1"
                   type="date"
                   :label="__('Date')"
                 />
@@ -85,7 +88,7 @@
             <!-- professionals -->
             <section class="flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <FormLabel :label="__('Professionals')" />
+                <FormLabel size="md" :label="__('Professionals')" />
                 <Button
                   size="sm"
                   variant="ghost"
@@ -113,7 +116,7 @@
 
             <!-- rooms & equipment -->
             <section class="flex flex-col gap-2">
-              <FormLabel :label="__('Rooms & equipment')" />
+              <FormLabel size="md" :label="__('Rooms & equipment')" />
               <div
                 v-for="(row, i) in form.resources"
                 :key="i"
@@ -151,7 +154,7 @@
             <!-- participants -->
             <section class="flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <FormLabel :label="__('Participants')" />
+                <FormLabel size="md" :label="__('Participants')" />
                 <span class="text-p-xs text-ink-gray-5">
                   {{ form.participants.length }}/{{ maxParticipants }}
                 </span>
@@ -192,11 +195,19 @@
                     type="select"
                     :options="attendanceOptions"
                   />
+                  <!-- with a value in it the placeholder was gone, and «0» stood
+                       there with nothing to say it was money -->
                   <FormControl
                     v-model.number="row.amount"
                     type="number"
                     :placeholder="__('Amount')"
-                  />
+                  >
+                    <template #prefix>
+                      <span class="text-p-sm text-ink-gray-5">
+                        {{ currencySymbol }}
+                      </span>
+                    </template>
+                  </FormControl>
                 </div>
               </div>
               <Button
@@ -212,7 +223,7 @@
 
             <!-- price -->
             <section class="flex flex-col gap-2">
-              <FormLabel :label="__('Price')" />
+              <FormLabel size="md" :label="__('Price')" />
               <FormControl
                 v-model="form.price_list"
                 type="select"
@@ -293,7 +304,7 @@
 
             <!-- repeat -->
             <section v-if="form.name" class="flex flex-col gap-2">
-              <FormLabel :label="__('Repeat')" />
+              <FormLabel size="md" :label="__('Repeat')" />
               <div class="grid grid-cols-[1fr_80px_auto] items-end gap-2">
                 <FormControl
                   v-model="repeat.rule"
@@ -507,6 +518,17 @@ const slots = createResource({
 const conflictCheck = createResource({
   url: 'crm.api.appointments.check_conflicts',
 })
+
+// the quote's currency as a sign, for the amount each participant pays
+const currencySymbol = computed(
+  () =>
+    new Intl.NumberFormat(appLocale(), {
+      style: 'currency',
+      currency: quote.data?.currency || 'EUR',
+    })
+      .formatToParts(0)
+      .find((part) => part.type === 'currency')?.value || '',
+)
 
 const priceLabel = computed(() => {
   const data = quote.data
