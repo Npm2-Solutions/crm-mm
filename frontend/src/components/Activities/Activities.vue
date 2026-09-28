@@ -56,52 +56,45 @@
         :channel="channel"
         :them="them"
         :modalRef="modalRef"
-        class="flex-1 pb-4"
+        :emailBox="emailBox"
+        class="flex-1"
         @reload="all_activities.reload()"
       >
         <!--
-          What the record did to itself: one quiet line. It used to be set in
-          the same size as a message and timed in a different unit — «23 hours
-          ago» beside a bubble stamped «11:07 am» — so the eye read two streams
-          laid over each other instead of one history.
+          What the record did to itself: one quiet line, a sentence with the
+          values in ink. The notice around it carries the clock — it used to
+          carry one here as well, so every change was timed twice.
         -->
         <template #other="{ item }">
-          <div
-            class="flex items-center justify-stretch gap-2 py-1 text-p-sm text-ink-gray-6"
-          >
-            <div class="inline-flex flex-wrap items-center gap-1.5">
-              <span class="font-medium text-ink-gray-7">
-                {{ item.owner_name }}
-              </span>
-              <span class="text-ink-gray-5">{{ __(item.type) }}</span>
-              <span v-if="item.data?.field_label" class="text-ink-gray-8">
-                {{ __(item.data.field_label) }}
-              </span>
-              <span v-if="item.value" class="text-ink-gray-5">
-                {{ __(item.value) }}
-              </span>
-              <span v-if="item.data?.old_value" class="text-ink-gray-8">
-                {{ item.data.old_value }}
-              </span>
-              <span v-if="item.to" class="text-ink-gray-5">
-                {{ __(item.to) }}
-              </span>
-              <span v-if="item.data?.value" class="text-ink-gray-8">
-                {{ item.data.value }}
-              </span>
-              <span v-if="item.data?.file_name" class="text-ink-gray-8">
-                {{ item.data.file_name }}
-              </span>
-            </div>
-            <div class="ml-auto whitespace-nowrap">
-              <TimelineTimestamp
-                :date="item.creation"
-                exact
-                format="hh:mm a"
-                className="text-p-xs text-ink-gray-4"
-              />
-            </div>
-          </div>
+          <span class="inline-flex flex-wrap items-center gap-x-1">
+            <span class="font-medium text-ink-gray-7">
+              {{ item.owner_name }}
+            </span>
+            <span>{{ __(item.type) }}</span>
+            <span v-if="item.data?.field_label" class="text-ink-gray-8">
+              {{ __(item.data.field_label) }}
+            </span>
+            <span v-if="item.value">{{ __(item.value) }}</span>
+            <span
+              v-if="item.data?.old_value"
+              class="max-w-40 truncate text-ink-gray-8"
+            >
+              {{ item.data.old_value }}
+            </span>
+            <span v-if="item.to">{{ __(item.to) }}</span>
+            <span
+              v-if="item.data?.value"
+              class="max-w-40 truncate text-ink-gray-8"
+            >
+              {{ item.data.value }}
+            </span>
+            <span
+              v-if="item.data?.file_name"
+              class="max-w-48 truncate text-ink-gray-8"
+            >
+              {{ item.data.file_name }}
+            </span>
+          </span>
         </template>
       </ConversationView>
       <div v-else-if="title == 'WhatsApp' && whatsappMessages.data?.length">
@@ -856,11 +849,17 @@ const activities = computed(() => {
   _activities.forEach((activity) => {
     activity.icon = timelineIcon(activity.activity_type, activity.is_lead)
 
+    // A message says which way it went in its own `type`, and the bookkeeping
+    // below — written for field changes — sets `type` to ''. The SMS were not
+    // on this list, so every text we sent was drawn as one they sent us.
     if (
-      activity.activity_type == 'incoming_call' ||
-      activity.activity_type == 'outgoing_call' ||
-      activity.activity_type == 'communication' ||
-      activity.activity_type == 'whatsapp'
+      [
+        'incoming_call',
+        'outgoing_call',
+        'communication',
+        'whatsapp',
+        'sms',
+      ].includes(activity.activity_type)
     )
       return
 

@@ -1,15 +1,29 @@
 import { describe, expect, it } from 'vitest'
 import {
   CHANNELS,
+  TONES,
+  WAYS,
   buildStream,
   channelOf,
+  clockOf,
+  colleagueOf,
   countByChannel,
   dayLabel,
   directionOf,
   groupByDay,
+  hasFailed,
+  initialsOf,
   isConversational,
   isStageChange,
+  laterLabel,
+  listTime,
+  momentLabel,
+  replyChannel,
+  smsSegments,
   speakerOf,
+  timeKey,
+  toneOf,
+  wallClock,
 } from '@/utils/conversation'
 
 const wa = (name, type, creation) => ({
@@ -339,19 +353,46 @@ describe('who said it', () => {
 })
 
 describe('dayLabel', () => {
+  // Wednesday 23 September 2026, late morning
+  const now = '2026-09-23 11:00:00'
+
   it('says Today and Yesterday, which is what a reader is actually asking', () => {
-    expect(
-      dayLabel('2026-09-23', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
-    ).toBe('Today')
-    expect(
-      dayLabel('2026-09-22', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
-    ).toBe('Yesterday')
+    expect(dayLabel('2026-09-23', now, 'en')).toBe('Today')
+    expect(dayLabel('2026-09-22', now, 'en')).toBe('Yesterday')
+    // in the reader's language, from the browser: «Yesterday» never had an
+    // Italian translation in the catalogue, and «Ieri» needs none this way
+    expect(dayLabel('2026-09-23', now, 'it')).toBe('Oggi')
+    expect(dayLabel('2026-09-22', now, 'it')).toBe('Ieri')
   })
 
-  it('gives the date itself for anything older', () => {
-    expect(
-      dayLabel('2026-04-01', '2026-09-23 11:00:00', '2026-09-22 11:00:00'),
-    ).toBe('2026-04-01')
+  it('says tomorrow for an appointment that is tomorrow', () => {
+    expect(dayLabel('2026-09-24', now, 'it')).toBe('Domani')
+  })
+
+  it('gives the weekday for the rest of the past week', () => {
+    expect(dayLabel('2026-09-19', now, 'it')).toBe('Sabato')
+    expect(dayLabel('2026-09-17', now, 'en')).toBe('Thursday')
+  })
+
+  it('gives the date for anything older, with the year once it is not this one', () => {
+    expect(dayLabel('2026-08-16', now, 'it')).toBe('Domenica 16 agosto')
+    expect(dayLabel('2025-12-24', now, 'it')).toBe('24 dicembre 2025')
+  })
+
+  it('never shows the raw ISO date a reader has to decode', () => {
+    expect(dayLabel('2026-04-01', now, 'it')).not.toMatch(/\d{4}-\d{2}/)
+  })
+
+  it('counts days by the calendar, not by 24-hour blocks', () => {
+    // twenty minutes apart, and yet yesterday
+    expect(dayLabel('2026-09-22 23:50:00', '2026-09-23 00:10:00', 'it')).toBe(
+      'Ieri',
+    )
+  })
+
+  it('falls back to what it was given rather than to nothing', () => {
+    expect(dayLabel('', now, 'it')).toBe('')
+    expect(dayLabel('not a date', now, 'it')).toBe('not a date')
   })
 })
 
@@ -405,5 +446,342 @@ describe('buildStream runs', () => {
       { name: 's2', activity_type: 'sms', type: 'Incoming', creation: at(2) },
     ])
     expect(rows.map((r) => r.startsRun)).toEqual([true, true])
+  })
+})
+
+describe('buildStream runs, across what breaks them', () => {
+  const wa = (n, type, creation) => ({
+    name: `m${n}`,
+    activity_type: 'whatsapp',
+    type,
+    creation,
+  })
+
+  it('knows where a run ends as well as where it starts', () => {
+    const rows = buildStream([
+      wa(1, 'Incoming', '2026-09-24 11:01:00'),
+      wa(2, 'Incoming', '2026-09-24 11:02:00'),
+      wa(3, 'Outgoing', '2026-09-24 11:03:00'),
+    ])
+    expect(rows.map((r) => r.endsRun)).toEqual([false, true, true])
+  })
+
+  it('midnight breaks a run: the date marker sits between the two', () => {
+    const rows = buildStream([
+      wa(1, 'Incoming', '2026-09-23 23:58:00'),
+      wa(2, 'Incoming', '2026-09-24 00:01:00'),
+    ])
+    expect(rows.map((r) => r.startsRun)).toEqual([true, true])
+  })
+
+  it('a call in the middle breaks a run: it is not a balloon', () => {
+    const rows = buildStream([
+      wa(1, 'Incoming', '2026-09-24 11:01:00'),
+      {
+        name: 'c1',
+        activity_type: 'incoming_call',
+        type: 'Incoming',
+        creation: '2026-09-24 11:02:00',
+      },
+      wa(2, 'Incoming', '2026-09-24 11:03:00'),
+    ])
+    expect(rows.map((r) => r.bubble)).toEqual([true, false, true])
+    expect(rows[2].startsRun).toBe(true)
+  })
+})
+
+describe('buildStream keys and order', () => {
+  it('gives every row its own key, even the ones without a name', () => {
+    // an email, a field that changed: none of them carries a `name`, and two
+    // rows with one key is how Vue patches the wrong one
+    const rows = buildStream([
+      email(undefined, 'Received', '2026-09-24 10:00:00'),
+      email(undefined, 'Sent', '2026-09-24 10:05:00'),
+      { activity_type: 'changed', creation: '2026-09-24 10:06:00' },
+      { activity_type: 'changed', creation: '2026-09-24 10:06:00' },
+    ])
+    expect(new Set(rows.map((r) => r.key)).size).toBe(4)
+  })
+
+  it('sorts without asking the browser to parse a date', () => {
+    // mixed shapes: microseconds, a `T`, none — all read the same way
+    const rows = buildStream([
+      comment('c', '2026-09-24T10:00:00'),
+      comment('a', '2026-09-24 09:00:00.123456'),
+      comment('b', '2026-09-24 09:30:00'),
+    ])
+    expect(rows.map((r) => r.item.name)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('puts a row with no time at the end, whichever way it reads', () => {
+    const items = [
+      comment('late', '2026-09-24 10:00:00'),
+      comment('none', null),
+      comment('early', '2026-09-24 09:00:00'),
+    ]
+    expect(buildStream(items).map((r) => r.item.name)).toEqual([
+      'early',
+      'late',
+      'none',
+    ])
+    expect(
+      buildStream(items, { newestFirst: true }).map((r) => r.item.name),
+    ).toEqual(['late', 'early', 'none'])
+  })
+
+  it('files a row under the reader’s day, not the server’s', () => {
+    const rows = buildStream([comment('a', '2026-09-23 23:30:00')], {
+      localize: () => '2026-09-24 00:30:00',
+    })
+    expect(groupByDay(rows)[0].day).toBe('2026-09-24')
+  })
+})
+
+describe('timeKey and wallClock', () => {
+  it('folds the two shapes of a timestamp into one that sorts', () => {
+    expect(timeKey('2026-09-24T10:00:00')).toBe('2026-09-24 10:00:00')
+    expect(timeKey(null)).toBe('')
+  })
+
+  it('reads the server’s timestamp by its parts', () => {
+    const date = wallClock('2026-08-16 03:17:42.123456')
+    expect(date.getFullYear()).toBe(2026)
+    expect(date.getMonth()).toBe(7)
+    expect(date.getDate()).toBe(16)
+    expect(date.getHours()).toBe(3)
+    expect(date.getMinutes()).toBe(17)
+  })
+
+  it('says nothing rather than something invented', () => {
+    expect(wallClock('')).toBe(null)
+    expect(wallClock('yesterday')).toBe(null)
+  })
+})
+
+describe('clockOf', () => {
+  it('is the time and nothing else: the day is on the marker', () => {
+    expect(clockOf('2026-08-16 14:05:00', 'it')).toBe('14:05')
+    expect(clockOf('2026-08-16 14:05:00', 'en-US')).toMatch(/02:05\sPM/)
+  })
+
+  it('has no clock to give for a bare date', () => {
+    expect(clockOf('2026-08-16', 'it')).toBe('')
+  })
+})
+
+describe('listTime', () => {
+  const now = '2026-09-23 11:00:00'
+
+  it('is the clock today, and a word for yesterday', () => {
+    expect(listTime('2026-09-23 09:12:00', now, 'it')).toBe('09:12')
+    expect(listTime('2026-09-22 18:00:00', now, 'it')).toBe('Ieri')
+  })
+
+  it('is the weekday this week and the date after that', () => {
+    expect(listTime('2026-09-19 18:00:00', now, 'it')).toBe('sab')
+    expect(listTime('2026-08-16 18:00:00', now, 'it')).toBe('16 ago')
+    expect(listTime('2025-12-24 18:00:00', now, 'it')).toBe('24/12/25')
+  })
+
+  it('is empty rather than wrong', () => {
+    expect(listTime('', now, 'it')).toBe('')
+  })
+})
+
+describe('laterLabel', () => {
+  const now = '2026-09-23 11:00:00'
+
+  it('says when a conversation comes back, as briefly as it can', () => {
+    expect(laterLabel('2026-09-23 17:00:00', now, 'it')).toBe('17:00')
+    expect(laterLabel('2026-09-24 09:00:00', now, 'it')).toBe('Domani 09:00')
+    expect(laterLabel('2026-09-26 09:00:00', now, 'it')).toBe('sab 09:00')
+    expect(laterLabel('2026-10-12 09:00:00', now, 'it')).toBe('12 ott 09:00')
+  })
+})
+
+describe('replyChannel', () => {
+  it('answers where they last wrote from', () => {
+    // doc 17's rule, which the composer never kept: it opened on email for a
+    // customer who has only ever written on WhatsApp
+    expect(
+      replyChannel([
+        email('e1', 'Received', '2026-09-20 10:00:00'),
+        wa('w1', 'Incoming', '2026-09-22 10:00:00'),
+        email('e2', 'Sent', '2026-09-23 10:00:00'),
+      ]),
+    ).toBe('whatsapp')
+  })
+
+  it('falls back to where the conversation last went', () => {
+    expect(
+      replyChannel([
+        wa('w1', 'Outgoing', '2026-09-20 10:00:00'),
+        email('e1', 'Sent', '2026-09-22 10:00:00'),
+      ]),
+    ).toBe('email')
+  })
+
+  it('never lands on a way this site cannot write in', () => {
+    // WhatsApp switched off: its messages are history, not somewhere to answer
+    expect(
+      replyChannel(
+        [
+          email('e1', 'Received', '2026-09-20 10:00:00'),
+          wa('w1', 'Incoming', '2026-09-22 10:00:00'),
+        ],
+        ['email', 'comment'],
+      ),
+    ).toBe('email')
+  })
+
+  it('does not take a note for a conversation', () => {
+    expect(
+      replyChannel([
+        wa('w1', 'Incoming', '2026-09-20 10:00:00'),
+        comment('c1', '2026-09-22 10:00:00'),
+      ]),
+    ).toBe('whatsapp')
+  })
+
+  it('with nothing said yet, opens on the first way the person can be reached by', () => {
+    expect(replyChannel([], WAYS)).toBe('whatsapp')
+    expect(replyChannel([], WAYS, { phone: false, email: true })).toBe('email')
+    expect(replyChannel([], ['email', 'comment'])).toBe('email')
+  })
+})
+
+describe('hasFailed', () => {
+  it('reads each carrier’s own word for it', () => {
+    expect(hasFailed({ activity_type: 'whatsapp', status: 'failed' })).toBe(
+      true,
+    )
+    expect(hasFailed({ activity_type: 'whatsapp', status: 'Failed' })).toBe(
+      true,
+    )
+    expect(hasFailed({ activity_type: 'sms', status: 'Undelivered' })).toBe(
+      true,
+    )
+    expect(
+      hasFailed({
+        activity_type: 'communication',
+        data: { delivery_status: 'Error' },
+      }),
+    ).toBe(true)
+  })
+
+  it('is not alarmed by a message that simply arrived', () => {
+    expect(hasFailed({ activity_type: 'whatsapp', status: 'read' })).toBe(false)
+    expect(hasFailed({ activity_type: 'comment', status: 'failed' })).toBe(
+      false,
+    )
+  })
+})
+
+describe('colleagueOf', () => {
+  const out = (owner, extra = {}) => ({
+    activity_type: 'whatsapp',
+    type: 'Outgoing',
+    owner,
+    ...extra,
+  })
+
+  it('names a colleague who answered', () => {
+    expect(colleagueOf(out('giulia@studio.it'), 'marco@studio.it')).toBe(
+      'giulia@studio.it',
+    )
+  })
+
+  it('does not sign the reader’s own messages, nor the machine’s', () => {
+    expect(colleagueOf(out('marco@studio.it'), 'marco@studio.it')).toBe('')
+    expect(colleagueOf(out('Administrator'), 'marco@studio.it')).toBe('')
+    expect(
+      colleagueOf(
+        out('giulia@studio.it', { written_on_the_phone: 1 }),
+        'marco@studio.it',
+      ),
+    ).toBe('')
+  })
+
+  it('reads an email’s sender, which is all an email says about who wrote it', () => {
+    expect(
+      colleagueOf(
+        {
+          activity_type: 'communication',
+          data: { sent_or_received: 'Sent', sender: 'giulia@studio.it' },
+        },
+        'marco@studio.it',
+      ),
+    ).toBe('giulia@studio.it')
+  })
+
+  it('has nothing to say about what they sent', () => {
+    expect(
+      colleagueOf({ activity_type: 'whatsapp', type: 'Incoming', owner: 'x' }),
+    ).toBe('')
+  })
+})
+
+describe('smsSegments', () => {
+  it('counts a plain message as one', () => {
+    expect(smsSegments('Ci vediamo domani alle 10')).toEqual({
+      characters: 25,
+      segments: 1,
+      perSegment: 160,
+      unicode: false,
+    })
+  })
+
+  it('makes it two past 160, at 153 a piece', () => {
+    const long = smsSegments('a'.repeat(161))
+    expect(long.segments).toBe(2)
+    expect(long.perSegment).toBe(153)
+  })
+
+  it('counts the euro and the brackets twice, as the carrier does', () => {
+    expect(smsSegments('€10').characters).toBe(4)
+  })
+
+  it('knows an Italian È is not in the SMS alphabet', () => {
+    // the one that costs money without anybody noticing: 70 a segment, not 160
+    const text = smsSegments('È possibile prenotare?')
+    expect(text.unicode).toBe(true)
+    expect(text.perSegment).toBe(70)
+    expect(smsSegments('è possibile').unicode).toBe(false)
+  })
+
+  it('counts an emoji as the two units it takes', () => {
+    expect(smsSegments('ok 👍').characters).toBe(5)
+  })
+
+  it('is nothing for nothing', () => {
+    expect(smsSegments('').segments).toBe(0)
+  })
+})
+
+describe('faces', () => {
+  it('gives the same person the same tint every time', () => {
+    expect(toneOf('Alessandro Colombo')).toBe(toneOf('Alessandro Colombo'))
+    const tones = new Set(
+      ['Anna', 'Bruno', 'Carla', 'Dario', 'Elena', 'Fabio', 'Gina'].map(toneOf),
+    )
+    expect(tones.size).toBeGreaterThan(1)
+    for (const tone of tones) expect(tone).toBeLessThan(TONES)
+  })
+
+  it('writes two initials, or one for one word', () => {
+    expect(initialsOf('Alessandro Colombo')).toBe('AC')
+    expect(initialsOf('Maria De Luca')).toBe('ML')
+    expect(initialsOf('Atelier')).toBe('A')
+    expect(initialsOf('  élodie   durand ')).toBe('ÉD')
+    expect(initialsOf('')).toBe('')
+    expect(initialsOf('+39 390 648')).toBe('36')
+  })
+})
+
+describe('momentLabel', () => {
+  it('says the whole moment, in the reader’s words', () => {
+    expect(momentLabel('2026-10-07 15:00:00', 'it')).toBe('mer 7 ott, 15:00')
+    expect(momentLabel('2026-10-07', 'it')).toBe('mer 7 ott')
+    expect(momentLabel('', 'it')).toBe('')
   })
 })

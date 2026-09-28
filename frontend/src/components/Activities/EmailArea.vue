@@ -40,6 +40,7 @@
         <div class="flex gap-0.5">
           <Button
             :tooltip="__('Reply')"
+            :aria-label="__('Reply')"
             variant="ghost"
             class="text-ink-gray-7"
             :icon="ReplyIcon"
@@ -47,6 +48,7 @@
           />
           <Button
             :tooltip="__('Reply All')"
+            :aria-label="__('Reply All')"
             variant="ghost"
             :icon="ReplyAllIcon"
             class="text-ink-gray-7"

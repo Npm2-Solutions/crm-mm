@@ -1,6 +1,40 @@
 <template>
   <div :id="activity.name">
-    <div class="mb-1 flex items-center justify-stretch gap-2 py-1 text-base">
+    <!--
+      Inside the chat: one line — who, that it is a note for the team, when.
+      «Administrator added a comment · 2 hours ago» said the kind of thing in a
+      sentence and the time in a different unit from every clock around it.
+    -->
+    <div
+      v-if="bare"
+      class="mb-1 flex min-w-0 items-center gap-1.5 text-p-xs text-ink-amber-8"
+    >
+      <CommentIcon class="size-3.5 shrink-0" />
+      <span class="min-w-0 truncate font-medium">
+        {{ activity.owner_name }}
+      </span>
+      <span class="shrink-0 text-ink-amber-7">· {{ __('Internal note') }}</span>
+      <span class="ml-auto shrink-0 tabular-nums text-ink-gray-5">
+        {{ time }}
+      </span>
+      <Dropdown
+        v-if="isOwner && !editing"
+        :options="menuOptions"
+        placement="right"
+        @click="confirmingDelete = false"
+      >
+        <Button
+          icon="lucide-more-horizontal"
+          variant="ghost"
+          class="!h-5 !w-5 -mr-1"
+          :aria-label="__('Options')"
+        />
+      </Dropdown>
+    </div>
+    <div
+      v-else
+      class="mb-1 flex items-center justify-stretch gap-2 py-1 text-base"
+    >
       <div class="inline-flex items-center flex-wrap gap-1 text-ink-gray-5">
         <UserAvatar class="mr-1" :user="activity.owner" size="md" />
         <span class="font-medium text-ink-gray-8">
@@ -81,6 +115,7 @@
 </template>
 <script setup>
 import UserAvatar from '@/components/UserAvatar.vue'
+import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import AttachmentItem from '@/components/AttachmentItem.vue'
 import RichTextField from '@/components/RichTextField.vue'
 import { Dropdown, Button, call, toast } from 'frappe-ui'
@@ -93,6 +128,8 @@ const props = defineProps({
   activity: { type: Object, default: () => ({}) },
   // the card in the chat is already the box
   bare: { type: Boolean, default: false },
+  // the clock, in the chat's own format — the day is on the marker above
+  time: { type: String, default: '' },
 })
 
 const emit = defineEmits(['reload'])

@@ -32,7 +32,7 @@
 
     <div class="min-w-0 pb-3">
       <div
-        class="overflow-hidden rounded-lg border border-l-2 bg-surface-white"
+        class="overflow-hidden rounded-lg border border-l-2 bg-surface-elevation-2 shadow-sm dark:bg-surface-gray-2"
         :class="[tone.edge, tone.card]"
       >
         <!--
