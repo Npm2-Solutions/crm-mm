@@ -52,7 +52,7 @@
         -->
         <div
           v-if="!sessions.length && !events.length"
-          class="flex flex-col items-start gap-2 rounded-md border border-outline-gray-2 bg-surface-gray-1 px-3 py-3"
+          class="mb-4 flex flex-col items-start gap-2 rounded-md border border-outline-gray-2 bg-surface-gray-1 px-3 py-3"
         >
           <div
             class="flex items-center gap-2 text-p-base-medium text-ink-gray-7"

@@ -39,8 +39,13 @@
           :disabled="isCreateDisabled"
           @click="newEvent"
         >
+          <!-- on a phone the words go: two identical «+» side by side said
+               nothing about which was which -->
           <template #prefix
-            ><span class="lucide-plus h-4" aria-hidden="true"
+            ><span
+              class="h-4"
+              :class="isMobileView ? 'lucide-calendar-plus' : 'lucide-plus'"
+              aria-hidden="true"
           /></template>
         </Button>
       </ShortcutTooltip>
@@ -51,7 +56,10 @@
         @click="newAppointment()"
       >
         <template #prefix
-          ><span class="lucide-plus h-4" aria-hidden="true"
+          ><span
+            class="h-4"
+            :class="isMobileView ? 'lucide-user-plus' : 'lucide-plus'"
+            aria-hidden="true"
         /></template>
       </Button>
     </template>

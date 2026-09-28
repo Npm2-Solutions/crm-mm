@@ -2,12 +2,12 @@
   <div
     class="flex flex-col items-center justify-center min-h-screen bg-surface-gray-1"
   >
-    <div class="text-center max-w-md">
-      <h1 class="text-ink-gray-5 text-4xl-semibold">
+    <div class="w-full max-w-md px-6 text-center">
+      <h1 class="text-ink-gray-8 text-4xl-semibold">
         {{ __('Access Denied') }}
       </h1>
-      <div class="border-t w-full my-[15px]" />
-      <p class="text-ink-gray-4 text-p-base">
+      <div class="border-t border-outline-gray-2 w-full my-[15px]" />
+      <p class="text-ink-gray-6 text-p-base">
         {{
           __(
             'You do not have enough permissions to access Frappe CRM. Please contact your administrator if you believe this is an error.',

@@ -32,9 +32,11 @@
           <!-- A <button> cannot be nested inside the row's <a>.
                `@click.stop.prevent` on a plain wrapper is how frappe-ui's own
                ListRow keeps the checkbox from following the link. -->
+          <!-- the box is 14px; its hit area is the full height of the row,
+               so a near miss selects instead of opening the record -->
           <div
             v-if="selectable"
-            class="flex pt-0.5"
+            class="-my-3 -mr-2 flex items-start py-3.5 pr-2"
             @click.stop.prevent="toggle(row)"
           >
             <Checkbox
@@ -86,10 +88,12 @@
                   {{ __(column.label) }}
                 </dt>
                 <dd class="mt-0.5 min-w-0 text-ink-gray-8">
+                  <!-- under its own label a value starts on the left: the
+                       table's right alignment («$ 0.00») left it adrift -->
                   <slot
                     v-bind="{
                       idx: column._idx,
-                      column,
+                      column: { ...column, align: 'left' },
                       item: row[column.key],
                       row,
                     }"
