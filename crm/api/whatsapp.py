@@ -216,6 +216,12 @@ def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 	for template_message in template_messages:
 		# Find the template that this message is using
 		if not frappe.db.exists("WhatsApp Templates", template_message["template"]):
+			# A template deleted since, or one this site never had. Left as it
+			# was, its key reached the bubble as if it were the message:
+			# «conferma_appuntamento». Say what it is instead.
+			key = template_message["template"]
+			template_message["template_name"] = key
+			template_message["template"] = _("Template «{0}» — its text is no longer available").format(key)
 			continue
 		template = frappe.get_doc("WhatsApp Templates", template_message["template"])
 

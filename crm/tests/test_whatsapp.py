@@ -746,3 +746,41 @@ class TestMediaSentFromThePhone(FrappeTestCase):
 		self.assertEqual(media_file_name("MSG1", "image", "image/jpeg", {}), "image-MSG1.jpeg")
 		self.assertEqual(media_file_name("MSG1", "audio", "audio/ogg; codecs=opus", {}), "audio-MSG1.ogg")
 		self.assertEqual(media_file_name("MSG1", "video", "", {}), "video-MSG1.bin")
+
+
+class TestTemplateThatIsGone(FrappeTestCase):
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_a_message_whose_template_is_gone_does_not_show_its_key(self):
+		"""A template deleted since the message went out left its key in the
+		bubble, as if «conferma_appuntamento» were what the client was sent."""
+		from crm.api.whatsapp import get_whatsapp_messages
+		from crm.integrations.whatsapp.api import whatsapp_installed
+
+		if not whatsapp_installed():
+			self.skipTest("frappe_whatsapp is not installed on this bench")
+
+		lead = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Template", "last_name": "Gone"}).insert()
+		message = frappe.get_doc(
+			{
+				"doctype": "WhatsApp Message",
+				"type": "Outgoing",
+				"message_type": "Template",
+				"content_type": "text",
+				"message": "Template message",
+				"template": "a_template_nobody_has",
+				"message_id": frappe.generate_hash(length=20),
+				"to": "393400000009",
+				"from": "393883768154",
+				"reference_doctype": "CRM Lead",
+				"reference_name": lead.name,
+			}
+		)
+		message.db_insert()
+
+		rows = [m for m in get_whatsapp_messages("CRM Lead", lead.name) if m.get("name") == message.name]
+		self.assertEqual(len(rows), 1)
+		self.assertNotEqual(rows[0]["template"], "a_template_nobody_has")
+		self.assertIn("a_template_nobody_has", rows[0]["template"])
+		self.assertEqual(rows[0]["template_name"], "a_template_nobody_has")
