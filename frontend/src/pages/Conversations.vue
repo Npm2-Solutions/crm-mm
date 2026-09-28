@@ -199,13 +199,6 @@ function back() {
   router.replace({ name: 'Conversations' })
 }
 
-// Opening a chat does not mark it read — looking is not dealing with it. What
-// it can do, if the site has said so, is tell WhatsApp the messages have been
-// read, which is a different promise made to a different person.
-const acknowledge = createResource({
-  url: 'crm.api.conversations.acknowledge',
-})
-
 function choose(row) {
   if (row.name === chosen.value) return
   router.replace({ name: 'Conversations', query: { person: row.name } })
@@ -216,11 +209,9 @@ watch(
   (name) => {
     showPerson.value = false
     if (!name) return
+    // Opening a chat changes nothing, for anybody: not the badge, not the blue
+    // ticks. Looking is not reading.
     person.fetch()
-    acknowledge.submit({
-      reference_doctype: 'CRM Lead',
-      reference_name: name,
-    })
   },
   { immediate: true },
 )

@@ -300,25 +300,6 @@ const props = defineProps({
   leadId: { type: String, required: true },
 })
 
-// Opening a record does not mark its conversation read: glancing at a chat to
-// see who it was is not dealing with it, and a badge that goes on a glance is a
-// badge you learn to ignore. What this does — if the site has turned it on — is
-// tell WhatsApp their messages have been read, which is a different promise
-// made to a different person.
-const acknowledge = createResource({
-  url: 'crm.api.conversations.acknowledge',
-})
-watch(
-  () => props.leadId,
-  (name) =>
-    name &&
-    acknowledge.submit({
-      reference_doctype: 'CRM Lead',
-      reference_name: name,
-    }),
-  { immediate: true },
-)
-
 const reload = ref(false)
 const activities = ref(null)
 const errorTitle = ref('')
