@@ -58,7 +58,7 @@
    "in_standard_filter": 1,
    "label": "From Number",
    "reqd": 1,
-   "description": "Whatever the network reported as the caller. Deliberately not phone-validated: a caller who withholds their number arrives as a word - Twilio sends 'anonymous' - and refusing to store it loses the whole call."
+   "description": "The caller's number as the carrier reported it. A caller who hides their number shows as \"anonymous\"."
   },
   {
    "fieldname": "status",
@@ -258,7 +258,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-24 10:15:00.000000",
+ "modified": "2026-09-28 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Call Log",

@@ -1,9 +1,17 @@
 <template>
   <div class="flex flex-col gap-2 truncate">
+    <!-- with none set, «Add Notification» was dark text in an input's box —
+         it read as a value already chosen, beside grey placeholders -->
     <div
-      class="inline-flex items-center cursor-pointer transition-colors focus:outline-none shrink-0 text-ink-gray-8 bg-surface-base border border-outline-gray-2 hover:border-outline-gray-3 active:border-outline-gray-3 active:bg-surface-gray-4 focus-visible:ring focus-visible:ring-outline-gray-3 h-7 text-base px-2 rounded"
+      class="inline-flex items-center gap-1.5 cursor-pointer transition-colors focus:outline-none shrink-0 bg-surface-base border border-outline-gray-2 hover:border-outline-gray-3 active:border-outline-gray-3 active:bg-surface-gray-4 focus-visible:ring focus-visible:ring-outline-gray-3 h-7 text-base px-2 rounded"
+      :class="notifications?.length ? 'text-ink-gray-8' : 'text-ink-gray-4'"
       @click="addShowNotifications"
     >
+      <span
+        v-if="!notifications?.length"
+        class="lucide-plus size-3.5 shrink-0"
+        aria-hidden="true"
+      />
       <div class="truncate">
         {{ notificationSummary }}
       </div>

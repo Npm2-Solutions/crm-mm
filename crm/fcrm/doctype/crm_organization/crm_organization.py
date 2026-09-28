@@ -72,7 +72,7 @@ class CRMOrganization(Document):
 				"label": "Annual Revenue",
 				"type": "Currency",
 				"key": "annual_revenue",
-				"width": "14rem",
+				"width": "12rem",
 			},
 			{
 				"label": "Last Modified",

@@ -206,7 +206,7 @@
    "search_index": 1
   },
   {
-   "description": "Set from the deal stage -- change it to move the deal to another pipeline",
+   "description": "Follows the deal's stage. Change it to move the deal to another pipeline.",
    "fieldname": "pipeline",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -837,7 +837,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-04 12:34:10.808282",
+ "modified": "2026-09-28 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",
