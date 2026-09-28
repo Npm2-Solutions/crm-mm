@@ -25,13 +25,11 @@
             />
           </div>
         </div>
-        <div>
-          <FieldLayout
-            v-if="tabs.data"
-            autofocus
-            :tabs="tabs.data"
-            :data="lead.doc"
-          />
+        <!-- always here, so the dialog finds it on open even while the
+             layout is still loading: without it the first tabbable — the
+             manager's layout button — took the focus and opened its tooltip -->
+        <div autofocus>
+          <FieldLayout v-if="tabs.data" :tabs="tabs.data" :data="lead.doc" />
           <ErrorMessage v-if="error" class="mt-4" :message="__(error)" />
         </div>
       </div>

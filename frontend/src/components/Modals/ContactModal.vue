@@ -25,13 +25,14 @@
             />
           </div>
         </div>
-        <FieldLayout
-          v-if="tabs.data?.length"
-          autofocus
-          :tabs="tabs.data"
-          :data="_contact.doc"
-          doctype="Contact"
-        />
+        <div autofocus>
+          <FieldLayout
+            v-if="tabs.data?.length"
+            :tabs="tabs.data"
+            :data="_contact.doc"
+            doctype="Contact"
+          />
+        </div>
         <ErrorMessage v-if="error" class="mt-6" :message="__(error)" />
       </div>
       <div class="px-4 pb-7 pt-4 sm:px-6">

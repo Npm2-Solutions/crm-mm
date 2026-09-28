@@ -49,13 +49,14 @@
             v-if="hasOrganizationSections || hasContactSections"
             class="h-px w-full border-t my-5"
           />
-          <FieldLayout
-            v-if="tabs.data?.length"
-            autofocus
-            :tabs="tabs.data"
-            :data="deal.doc"
-            doctype="CRM Deal"
-          />
+          <div autofocus>
+            <FieldLayout
+              v-if="tabs.data?.length"
+              :tabs="tabs.data"
+              :data="deal.doc"
+              doctype="CRM Deal"
+            />
+          </div>
           <ErrorMessage v-if="error" class="mt-4" :message="__(error)" />
         </div>
       </div>
