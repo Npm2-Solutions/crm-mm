@@ -326,6 +326,7 @@
 <script setup>
 import { createResource, LoadingIndicator, Switch, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
+import { appLocale } from '@/utils/locale'
 
 // loaded once by the page around the tabs
 const props = defineProps({
@@ -430,7 +431,7 @@ function syncNow(days) {
 
 function money(value, currency) {
   if (value === null || value === undefined) return '—'
-  const amount = Number(value).toLocaleString(undefined, {
+  const amount = Number(value).toLocaleString(appLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })

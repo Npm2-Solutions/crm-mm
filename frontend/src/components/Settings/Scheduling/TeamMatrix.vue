@@ -245,6 +245,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
+import { appLocale } from '@/utils/locale'
 
 const props = defineProps({
   query: { type: String, default: '' },
@@ -309,7 +310,7 @@ function cellTitle(service, user) {
 
 function formatMoney(value, currency) {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(appLocale(), {
       style: 'currency',
       currency: currency || 'EUR',
       maximumFractionDigits: 0,

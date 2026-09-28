@@ -345,6 +345,7 @@ import {
 import { useElementSize, useIntervalFn, useNow } from '@vueuse/core'
 import { computed, h, markRaw, nextTick, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { appLocale } from '@/utils/locale'
 
 const LAST_OPENED = 'crm_dashboard_last'
 // a dashboard left open on a screen stays current without anyone touching it
@@ -357,8 +358,8 @@ const router = useRouter()
 const { users, getUser, isManager, isAdmin } = usersStore()
 const { $dialog } = globalStore()
 
-// numbers and dates in the reader's own locale, as the rest of the app does
-const locale = undefined
+// numbers and dates in the language the words are in
+const locale = appLocale()
 
 const current = ref(null)
 const items = ref([])

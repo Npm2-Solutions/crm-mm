@@ -73,6 +73,7 @@
 import { formatDate } from '@/utils'
 import { clockOf as clock, hasFailed } from '@/utils/conversation'
 import { Tooltip, dayjsLocal } from 'frappe-ui'
+import { appLocale } from '@/utils/locale'
 
 defineProps({
   messages: { type: Array, default: () => [] },
@@ -85,6 +86,8 @@ function failed(sms) {
 }
 
 function clockOf(at) {
-  return at ? clock(dayjsLocal(at).format('YYYY-MM-DD HH:mm:ss')) : ''
+  return at
+    ? clock(dayjsLocal(at).format('YYYY-MM-DD HH:mm:ss'), appLocale())
+    : ''
 }
 </script>

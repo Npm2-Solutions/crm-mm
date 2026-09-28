@@ -498,6 +498,7 @@ import {
   toast,
 } from 'frappe-ui'
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { appLocale } from '@/utils/locale'
 
 const { isManager } = usersStore()
 const { $socket } = globalStore()
@@ -539,7 +540,7 @@ function startOfMonth(d) {
 }
 
 const monthLabel = computed(() =>
-  current.value.toLocaleDateString(undefined, {
+  current.value.toLocaleDateString(appLocale(), {
     month: 'long',
     year: 'numeric',
   }),
@@ -552,7 +553,7 @@ const scheduledDays = computed(() =>
 )
 
 function dayLabel(date) {
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(appLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -692,7 +693,7 @@ const dayTitle = ref('')
 const dayPosts = ref([])
 
 function openDay(cell) {
-  dayTitle.value = cell.date.toLocaleDateString(undefined, {
+  dayTitle.value = cell.date.toLocaleDateString(appLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

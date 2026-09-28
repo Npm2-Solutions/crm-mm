@@ -306,8 +306,9 @@ export function groupByDay(rows = []) {
 //
 // Everything below takes the moment it calls «now» as an argument instead of
 // reading the clock, so «today» means the same thing in a test as on screen, and
-// a locale, so the words are the reader's: `undefined` is the browser's own,
-// which is what the dashboard writes its dates in too.
+// a locale, so the words are the reader's: callers pass `appLocale()`, the
+// language the rest of the CRM speaks to them (`undefined` falls back to the
+// browser's own).
 
 /**
  * A timestamp as the server writes it, read into a `Date` on the wall clock.

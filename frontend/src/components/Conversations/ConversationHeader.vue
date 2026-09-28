@@ -126,6 +126,7 @@ import { useConversationState } from '@/composables/conversationState'
 import { laterLabel as later } from '@/utils/conversation'
 import { Badge, Dropdown, dayjsLocal } from 'frappe-ui'
 import { computed, toRef } from 'vue'
+import { appLocale } from '@/utils/locale'
 
 const props = defineProps({
   person: { type: Object, default: () => ({}) },
@@ -163,6 +164,6 @@ const subtitle = computed(() =>
 // the moment it comes back, on the reader's clock
 function laterLabel(at) {
   const local = (value) => dayjsLocal(value).format('YYYY-MM-DD HH:mm:ss')
-  return later(local(at), local())
+  return later(local(at), local(), appLocale())
 }
 </script>

@@ -439,6 +439,7 @@ import {
 } from '@/utils/invoicing'
 import { Badge, dayjsLocal } from 'frappe-ui'
 import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
+import { appLocale } from '@/utils/locale'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -469,9 +470,9 @@ const { retrying, retry, react, answer } = useWhatsAppActions({
   reply,
 })
 
-// Dates and clocks in the reader's own words, from the browser — the way the
-// dashboard writes its dates, and the way the rest of the app formats numbers.
-const LOCALE = undefined
+// Dates and clocks in the language the rest of the screen is written in — the
+// user's, not the browser's — the way the dashboard writes its dates.
+const LOCALE = appLocale()
 
 // The server writes its own clock; the reader lives on theirs. Everything is
 // moved onto the reader's before it is filed under a day or given a time, so a

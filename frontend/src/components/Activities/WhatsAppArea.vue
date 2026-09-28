@@ -150,6 +150,7 @@ import { useWhatsAppActions } from '@/composables/whatsappActions'
 import { formatDate } from '@/utils'
 import { clockOf as clock, hasFailed as failed } from '@/utils/conversation'
 import { Tooltip, dayjsLocal } from 'frappe-ui'
+import { appLocale } from '@/utils/locale'
 
 defineProps({
   messages: { type: Array, default: () => [] },
@@ -173,7 +174,9 @@ function hasFailed(message) {
 
 // the reader's clock, in the reader's words — the day is on the marker above
 function clockOf(at) {
-  return at ? clock(dayjsLocal(at).format('YYYY-MM-DD HH:mm:ss')) : ''
+  return at
+    ? clock(dayjsLocal(at).format('YYYY-MM-DD HH:mm:ss'), appLocale())
+    : ''
 }
 
 function scrollToMessage(name) {

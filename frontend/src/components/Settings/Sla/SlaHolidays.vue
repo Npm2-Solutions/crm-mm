@@ -182,6 +182,7 @@ import { ConfirmDelete, getGridTemplateColumnsForTable } from '../../../utils'
 import { slaData, slaDataErrors } from './utils'
 import { ref } from 'vue'
 import WorkDayModal from './WorkDayModal.vue'
+import { appLocale } from '@/utils/locale'
 
 const dialog = ref({
   show: false,
@@ -291,7 +292,7 @@ const formatTime = (time) => {
   const date = new Date()
   date.setHours(parseInt(hours) || 0, parseInt(minutes) || 0, 0)
 
-  return date.toLocaleTimeString([], {
+  return date.toLocaleTimeString(appLocale(), {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
