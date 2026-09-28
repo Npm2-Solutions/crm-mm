@@ -82,7 +82,7 @@ const TONES = {
   whatsapp: {
     chip: 'bg-surface-green-1',
     edge: 'border-outline-green-3',
-    ink: 'text-ink-green-5',
+    ink: 'text-ink-green-7',
     card: '',
   },
   email: {

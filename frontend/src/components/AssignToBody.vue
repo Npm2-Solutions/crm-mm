@@ -17,9 +17,14 @@
     >
       <template #target="{ togglePopover }">
         <div
-          class="w-full min-h-12 flex flex-wrap items-center gap-1.5 p-1.5 pb-5 rounded-lg bg-surface-gray-2 cursor-text"
+          class="w-full min-h-12 flex flex-wrap items-center gap-1.5 p-1.5 rounded-lg bg-surface-gray-2 cursor-text"
           @click.stop="togglePopover"
         >
+          <!-- with nobody assigned the box was an empty grey rectangle that
+               looked broken; it says what it is for -->
+          <span v-if="!assignees.length" class="px-1 text-base text-ink-gray-4">
+            {{ __('Search people…') }}
+          </span>
           <Tooltip
             v-for="assignee in assignees"
             :key="assignee.name"

@@ -99,7 +99,7 @@
                 </div>
                 <div
                   v-if="account.sync_enabled && account.last_error"
-                  class="mt-1 text-p-sm text-ink-red-5"
+                  class="mt-1 text-p-sm text-ink-red-8"
                 >
                   {{ account.last_error }}
                 </div>
@@ -139,7 +139,7 @@
           v-if="stopped.length"
           class="rounded-lg border border-outline-red-1 bg-surface-red-1 p-4"
         >
-          <div class="text-p-base-medium text-ink-red-5">
+          <div class="text-p-base-medium text-ink-red-8">
             {{
               __('{0} ads that were bringing leads are not running', [
                 stopped.length,
@@ -285,7 +285,7 @@
             </table>
             <div
               v-if="totals?.mixed_currencies"
-              class="mt-2 text-p-sm text-ink-orange-5"
+              class="mt-2 text-p-sm text-ink-orange-8"
             >
               {{
                 __(
@@ -441,6 +441,6 @@ function money(value, currency) {
 // green pays for itself, red does not; no colour when there is nothing to judge
 function roasClass(roas) {
   if (roas === null || roas === undefined) return 'text-ink-gray-4'
-  return roas >= 1 ? 'text-ink-green-6' : 'text-ink-red-5'
+  return roas >= 1 ? 'text-ink-green-8' : 'text-ink-red-8'
 }
 </script>

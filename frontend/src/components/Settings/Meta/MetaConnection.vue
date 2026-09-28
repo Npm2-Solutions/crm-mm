@@ -86,7 +86,7 @@
             )
           }}
         </span>
-        <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
+        <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-8">
           {{ webhook.data.error }}
         </span>
       </div>
@@ -123,7 +123,7 @@
           <!-- nothing renews the token: say so while reconnecting is a click -->
           <span
             v-if="connected && expiry?.expired"
-            class="text-p-sm text-ink-red-5"
+            class="text-p-sm text-ink-red-8"
           >
             {{
               __(
@@ -142,7 +142,7 @@
               )
             }}
           </span>
-          <span v-if="metaError" class="text-p-sm text-ink-red-5">
+          <span v-if="metaError" class="text-p-sm text-ink-red-8">
             {{ metaError }}
           </span>
         </div>
@@ -181,7 +181,7 @@
       v-if="connected && missingScopes.length"
       class="flex flex-col gap-2 rounded-lg border border-outline-red-1 bg-surface-red-1 p-4"
     >
-      <div class="text-p-base-medium text-ink-red-5">
+      <div class="text-p-base-medium text-ink-red-8">
         {{ __('Facebook did not grant everything this CRM needs') }}
       </div>
       <div class="text-p-sm text-ink-gray-6">
@@ -337,7 +337,7 @@
       </template>
 
       <div v-else class="flex flex-col gap-1 text-p-sm">
-        <span class="text-ink-red-5">
+        <span class="text-ink-red-8">
           {{ __('Facebook granted the CRM no Page.') }}
         </span>
         <span class="text-ink-gray-5">

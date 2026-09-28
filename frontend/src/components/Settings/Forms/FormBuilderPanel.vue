@@ -570,7 +570,7 @@
                         class="mb-1.5 text-sm text-ink-gray-5"
                       >
                         {{ f.label
-                        }}<span v-if="fieldRequired(f)" class="text-ink-red-5"
+                        }}<span v-if="fieldRequired(f)" class="text-ink-red-6"
                           >*</span
                         >
                       </div>
@@ -608,7 +608,7 @@
                         />
                         <span class="text-sm text-ink-gray-5"
                           >{{ f.label
-                          }}<span v-if="fieldRequired(f)" class="text-ink-red-5"
+                          }}<span v-if="fieldRequired(f)" class="text-ink-red-6"
                             >*</span
                           ></span
                         >

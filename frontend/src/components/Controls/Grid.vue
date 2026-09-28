@@ -48,7 +48,7 @@
                 field.reqd ||
                 (field.mandatory_depends_on && field.mandatory_via_depends_on)
               "
-              class="text-ink-red-5"
+              class="text-ink-red-6"
               >*</span
             >
           </div>

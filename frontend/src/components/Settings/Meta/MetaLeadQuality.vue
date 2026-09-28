@@ -78,7 +78,7 @@
 
           <div
             v-if="conversions.data?.last_error"
-            class="text-p-sm text-ink-red-5"
+            class="text-p-sm text-ink-red-8"
           >
             {{ conversions.data.last_error }}
           </div>
@@ -104,8 +104,8 @@
                 class="text-2xl-semibold"
                 :class="
                   conversions.data?.enough
-                    ? 'text-ink-green-6'
-                    : 'text-ink-orange-5'
+                    ? 'text-ink-green-8'
+                    : 'text-ink-orange-8'
                 "
               >
                 {{
@@ -127,7 +127,7 @@
               {{ __('{0} waiting', [conversions.data?.pending ?? 0]) }}
               <template v-if="conversions.data?.failed">
                 ·
-                <span class="text-ink-red-5">{{
+                <span class="text-ink-red-8">{{
                   __('{0} failed', [conversions.data.failed])
                 }}</span>
               </template>
