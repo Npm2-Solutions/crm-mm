@@ -64,6 +64,30 @@ class TestDashboardStore(IntegrationTestCase):
 		features.forget()
 		self.assertIn("appointments_today", overview())
 
+	def test_what_the_site_cannot_answer_yet_is_offered_to_managers(self):
+		# a site that does not invoice (rolled back in tearDown)
+		for doctype in ("CRM Invoice", "CRM Invoicing Company"):
+			frappe.db.delete(doctype)
+		features.forget()
+		store.ensure_defaults()
+
+		frappe.set_user(MANAGER)
+		rows = api.get_dashboards()["dashboards"]
+		invoicing = next(row for row in rows if row["template"] == "invoicing")
+		self.assertFalse(invoicing["available"])
+		# invoicing itself first: the Sistema TS only matters once invoicing is on
+		self.assertEqual(invoicing["setup"][0]["key"], "invoicing")
+		opened = api.get_dashboard_layout(invoicing["name"])
+		self.assertEqual(opened["layout"], [])
+		self.assertEqual(opened["setup"][0]["settings"], "Issuing company")
+		self.assertIn("Invoiced", opened["preview"])
+
+		# a salesperson cannot switch a module on: nothing is offered to them
+		frappe.set_user(SALES_USER)
+		rows = api.get_dashboards()["dashboards"]
+		self.assertNotIn("invoicing", self.names(rows))
+		self.assertFalse([row for row in rows if row.get("setup")])
+
 	def test_a_section_without_widgets_loses_its_heading(self):
 		layout_ = templates.build(
 			templates.get("conversations"), lambda widget: widget.category != "whatsapp"

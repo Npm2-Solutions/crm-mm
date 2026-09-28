@@ -19,6 +19,7 @@ are the ones who can do something about it.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from typing import Any
 
 import frappe
@@ -146,6 +147,36 @@ def resolve(doc) -> list[dict[str, Any]]:
 	return resolved
 
 
+def unlocks(template: templates.Template, manager: bool) -> list[dict[str, Any]]:
+	"""The features that would each, on their own, bring some of ``template`` to this viewer.
+
+	The one that brings most first: for the invoicing dashboard that is invoicing
+	itself, not the Sistema TS, which only matters once invoicing is on.
+	"""
+	counts: Counter[str] = Counter()
+	for widget_id in template.widget_ids():
+		widget = registry.get(widget_id)
+		if not widget or widget.retired or (widget.managers_only and not manager):
+			continue
+		missing = features.missing(widget.requires)
+		if len(missing) == 1:
+			counts[missing[0]] += 1
+	return [features.describe(key) for key, _count in counts.most_common()]
+
+
+def preview(template: templates.Template, manager: bool) -> list[str]:
+	"""What ``template`` holds for this viewer, by title, in order."""
+	titles: list[str] = []
+	for widget_id in template.widget_ids():
+		widget = registry.get(widget_id)
+		if not widget or widget.retired or (widget.managers_only and not manager):
+			continue
+		title = str(widget.title)
+		if title not in titles:
+			titles.append(title)
+	return titles
+
+
 def title_of(doc) -> str:
 	if doc.title:
 		return doc.title
@@ -157,9 +188,14 @@ def summary(doc, *, with_availability: bool = True) -> dict[str, Any]:
 	template = templates.get(doc.template)
 	managed = is_managed(doc)
 	available = True
+	setup: list[dict[str, Any]] = []
 	if with_availability and managed:
 		available = any(item["name"] not in layout.STRUCTURAL for item in templates.build(template, showable))
-	return {
+		# a manager is shown what the site could switch on, and where; a salesperson
+		# cannot switch anything on, so for them it stays out of sight
+		if not available and is_manager():
+			setup = unlocks(template, manager=True)
+	out = {
 		"name": doc.name,
 		"title": title_of(doc),
 		"icon": doc.icon or (template.icon if template else "layout-dashboard"),
@@ -172,6 +208,11 @@ def summary(doc, *, with_availability: bool = True) -> dict[str, Any]:
 		"available": available,
 		"sequence": doc.sequence or 0,
 	}
+	if template:
+		out["description"] = str(template.description)
+	if setup:
+		out["setup"] = setup
+	return out
 
 
 def visible_dashboards() -> list[dict[str, Any]]:
@@ -205,7 +246,16 @@ def visible_dashboards() -> list[dict[str, Any]]:
 
 def load(name: str) -> dict[str, Any]:
 	doc = get_viewable(name)
-	return {**summary(doc, with_availability=False), "layout": resolve(doc)}
+	items = resolve(doc)
+	out = {**summary(doc, with_availability=False), "layout": items}
+	empty = not any(item["name"] not in layout.STRUCTURAL for item in items)
+	if empty and is_managed(doc) and is_manager():
+		# a template the site cannot answer yet opens on what it will show, and how to get there
+		template = templates.get(doc.template)
+		out["available"] = False
+		out["setup"] = unlocks(template, manager=True)
+		out["preview"] = preview(template, manager=True)
+	return out
 
 
 # -- writing ------------------------------------------------------------------------
