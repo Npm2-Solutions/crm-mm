@@ -186,6 +186,7 @@ def get_whatsapp_messages(reference_doctype: str, reference_name: str):
 			filters={"reference_doctype": doctype, "reference_name": docname},
 			fields=[
 				"name",
+				"owner",
 				"type",
 				"to",
 				"from",

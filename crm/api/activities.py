@@ -25,6 +25,8 @@ def get_activities(name: str):
 def communication_activity(communication, is_lead: bool) -> dict:
 	return {
 		"activity_type": "communication",
+		# a key for the row: without it every email in a stream had the same one
+		"name": communication.name,
 		"communication_type": communication.communication_type,
 		"communication_date": communication.communication_date or communication.creation,
 		"creation": communication.creation,

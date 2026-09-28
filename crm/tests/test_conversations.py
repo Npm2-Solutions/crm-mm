@@ -141,6 +141,49 @@ class TestTheColumnBesideARecord(FrappeTestCase):
 		self.assertNotIn(self.silent.name, waiting)
 
 
+class TestAConversationOpenedFromALink(FrappeTestCase):
+	"""A link can name anybody; the list only holds the top of one view."""
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.lead = frappe.get_doc(
+			{
+				"doctype": "CRM Lead",
+				"first_name": "Alessandro",
+				"last_name": "Colombo",
+				"mobile_no": "+393906480180",
+				"email": "alessandro.colombo@example.com",
+			}
+		).insert(ignore_permissions=True)
+		# handled last week: in no live view, so never among the rows on screen
+		frappe.db.set_value("CRM Lead", self.lead.name, "conversation_status", "Handled")
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_the_header_has_a_name_to_say(self):
+		from crm.api.conversations import person
+
+		row = person(self.lead.name)
+		self.assertEqual(row.lead_name, "Alessandro Colombo")
+		self.assertEqual(row.mobile_no, "+393906480180")
+		self.assertEqual(row.email, "alessandro.colombo@example.com")
+		self.assertEqual(row.conversation_status, "Handled")
+
+	def test_it_is_the_same_row_the_list_draws(self):
+		from crm.api.conversations import ROW, people, person
+
+		self.assertEqual(set(person(self.lead.name)), set(ROW))
+		listed = next(row for row in people(search="Colombo") if row.name == self.lead.name)
+		self.assertEqual(person(self.lead.name), listed)
+
+	def test_a_link_to_nobody_says_so(self):
+		from crm.api.conversations import person
+
+		with self.assertRaises(frappe.DoesNotExistError):
+			person("CRM-LEAD-NOBODY")
+
+
 class TestThePileIsWhatNobodyHasReadYet(FrappeTestCase):
 	"""The badge is a fact now, not a calculation.
 
