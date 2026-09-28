@@ -16,8 +16,19 @@ const EVERYWHERE = ['list', 'kanban', 'group_by']
 // the list — which looks like the click doing nothing at all.
 const ONLY_HERE = {}
 
+// And the other way round. People had a board grouped by the sale's status;
+// the status moved onto the deal (doc 26) and the board went with it — the
+// board is Deals, People is a list. Its switch was hidden, but the address
+// still drew it, grouped by a field nobody fills any more, every card titled
+// with the record's id. Not named here, «kanban» on People reads as a saved
+// view, finds none, and lands on the list.
+const NOT_HERE = { Leads: ['kanban'] }
+
 export function standardViewTypesFor(routeName) {
-  return [...EVERYWHERE, ...(ONLY_HERE[routeName] || [])]
+  const excluded = NOT_HERE[routeName] || []
+  return [...EVERYWHERE, ...(ONLY_HERE[routeName] || [])].filter(
+    (type) => !excluded.includes(type),
+  )
 }
 
 export function isStandardViewType(routeName, viewType) {

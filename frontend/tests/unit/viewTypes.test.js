@@ -3,11 +3,17 @@ import { isStandardViewType, standardViewTypesFor } from '@/utils/viewTypes'
 
 describe('which views a list has built in', () => {
   it('gives every list the three it has always had', () => {
-    for (const where of ['Leads', 'Deals', 'Contacts', 'Tasks']) {
+    for (const where of ['Deals', 'Contacts', 'Tasks']) {
       expect(standardViewTypesFor(where)).toEqual(
         expect.arrayContaining(['list', 'kanban', 'group_by']),
       )
     }
+  })
+
+  it('gives People no board: the status it grouped by is on the deal now', () => {
+    expect(standardViewTypesFor('Leads')).toEqual(['list', 'group_by'])
+    expect(isStandardViewType('Leads', 'kanban')).toBe(false)
+    expect(isStandardViewType('Deals', 'kanban')).toBe(true)
   })
 
   it('does not claim one nobody has', () => {
