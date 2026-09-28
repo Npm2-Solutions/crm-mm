@@ -2,17 +2,20 @@
   <!--
     One row while it fits, two when it does not.
 
-    It was a single line that never wrapped: the title, four channel pills with
-    their counts, and a button, all squeezing each other on a pane that is not
-    wide. And the row was inset forty pixels while the messages under it start
-    at sixteen, so the header floated on a different grid from the conversation
-    it belongs to.
+    On Activity the row is the channel picker and the New button, and nothing
+    else. It used to open with the word «Activity» in large type — under a tab
+    that already says «Activity», beside a list whose header says whose chat it
+    is — and those seventy pixels were the ones the last pill needed: on the
+    Conversations page «Comments» was cut to «Comme…».
   -->
   <div
     v-if="title !== 'Data'"
-    class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 pb-3 pt-5 text-lg-medium sm:px-4 sm:pb-4 sm:pt-6"
+    ref="header"
+    class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 text-lg-medium sm:px-4"
+    :class="title == 'Activity' ? 'py-2.5' : 'pb-3 pt-5 sm:pb-4 sm:pt-6'"
   >
     <div
+      v-if="title != 'Activity'"
       class="flex h-8 shrink-0 items-center text-xl-semibold text-ink-gray-8"
     >
       {{ __(title) }}
@@ -24,56 +27,63 @@
     -->
     <div
       v-if="title == 'Activity'"
-      class="flex min-w-0 flex-1 items-center justify-end gap-2"
+      class="flex min-w-0 flex-1 items-center justify-between gap-2"
     >
       <!-- scrolls rather than compresses: a pill squeezed until its count
            touches its label is a pill nobody can read -->
       <div
         class="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-lg bg-surface-gray-2 p-0.5 text-p-sm [&::-webkit-scrollbar]:h-0"
+        role="tablist"
       >
-        <button
+        <Tooltip
           v-for="option in channelOptions"
           :key="option.key"
-          class="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1"
-          :class="
-            channel === option.key
-              ? 'bg-surface-white text-ink-gray-8 shadow-sm'
-              : 'text-ink-gray-6 hover:text-ink-gray-8'
-          "
-          @click="channel = option.key"
+          :text="compact && channel !== option.key ? __(option.label) : ''"
         >
-          <component :is="option.icon" v-if="option.icon" class="size-3.5" />
-          <span>{{ __(option.label) }}</span>
-          <span v-if="option.count" class="text-ink-gray-4">
-            {{ option.count }}
-          </span>
-        </button>
+          <button
+            class="flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 transition-colors"
+            :class="
+              channel === option.key
+                ? 'bg-surface-elevation-2 text-ink-gray-9 shadow-sm dark:bg-surface-gray-4'
+                : 'text-ink-gray-6 hover:text-ink-gray-9'
+            "
+            role="tab"
+            :aria-selected="channel === option.key"
+            :aria-label="__(option.label)"
+            @click="channel = option.key"
+          >
+            <component
+              :is="option.icon"
+              v-if="option.icon"
+              class="size-3.5 shrink-0"
+            />
+            <!--
+              Narrow, the pills that are not chosen keep their icon and their
+              count and lose their word — the chosen one says where you are.
+            -->
+            <span v-if="!compact || channel === option.key || !option.icon">
+              {{ __(option.label) }}
+            </span>
+            <span
+              v-if="option.count"
+              class="tabular-nums text-ink-gray-4"
+              :class="channel === option.key ? 'text-ink-gray-5' : ''"
+            >
+              {{ option.count }}
+            </span>
+          </button>
+        </Tooltip>
       </div>
-      <!-- templates are the only way to open a conversation that has gone cold
-           past 24 hours, so the button belongs beside the WhatsApp channel -->
-      <Button
-        v-if="channel === 'whatsapp'"
-        :label="__('Send Template')"
-        @click="showWhatsappTemplates = true"
-      />
-      <!--
-        On «All» there is no one channel to be writing in, so the button is the
-        menu it used to be — an email, a comment, an event, a call, a task, a
-        note, a file. Picking a channel narrows it to that channel's one button,
-        because then the question is already answered.
-      -->
       <!--
         Everything that is not a message starts here, and it is here whatever
         the stream is filtered to: a note, a task, an event, a logged call are
-        things you do *about* somebody rather than say to them, and hiding the
-        menu behind one particular filter made them feel like they belonged to
-        it.
+        things you do *about* somebody rather than say to them.
       -->
       <Dropdown :options="defaultActions" @click.stop>
         <template #default="{ open }">
           <Button
             variant="solid"
-            class="flex items-center gap-1"
+            class="flex shrink-0 items-center gap-1"
             :label="__('New')"
             iconLeft="plus"
             :iconRight="open ? 'chevron-up' : 'chevron-down'"
@@ -140,18 +150,21 @@ import { globalStore } from '@/stores/global'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { callEnabled } from '@/composables/telephony'
-import { Dropdown } from 'frappe-ui'
-import { computed, h } from 'vue'
+import { useElementSize } from '@vueuse/core'
+import { Dropdown, Tooltip } from 'frappe-ui'
+import { computed, h, ref } from 'vue'
 
 const props = defineProps({
   tabs: { type: Array, default: () => [] },
   title: { type: String, default: '' },
   doc: { type: Object, default: () => ({}) },
   modalRef: { type: Object, default: () => ({}) },
-  whatsappBox: { type: Object, default: () => ({}) },
-  smsBox: { type: Object, default: () => ({}) },
   counts: { type: Object, default: () => ({}) },
 })
+
+// «write in this channel»: the composer is below, and it decides what opening
+// one means
+const emit = defineEmits(['write'])
 
 const channel = defineModel('channel', { type: String, default: 'all' })
 
@@ -174,33 +187,46 @@ const DECORATION = {
 const channelOptions = computed(() =>
   CHANNELS.map((channel) => ({
     ...channel,
-    ...(DECORATION[channel.key] || {}),
+    ...DECORATION[channel.key],
   }))
     .filter((option) => !option.condition || option.condition())
     .map((option) => ({ ...option, count: props.counts?.[option.key] || 0 })),
 )
 
-// One button, and it writes in the channel you are reading.
+// Measured on the row itself, not on the window: the same header sits in a
+// record's wide tab and in the middle column of the Conversations page, and
+// only the room it actually has says whether six words fit.
+const header = ref(null)
+const { width } = useElementSize(header)
+const compact = computed(() => width.value > 0 && width.value < 660)
+
 const { makeCall } = globalStore()
 
-const tabIndex = defineModel({ type: Number })
-const showWhatsappTemplates = defineModel('showWhatsappTemplates', {
-  type: Boolean,
-})
 const showFilesUploader = defineModel('showFilesUploader', { type: Boolean })
-const emailBox = defineModel('emailBox', { type: Object, default: () => ({}) })
 
 const defaultActions = computed(() => {
   let actions = [
     {
+      icon: h(WhatsAppIcon, { class: 'h-4 w-4' }),
+      label: __('WhatsApp Message'),
+      onClick: () => emit('write', 'whatsapp'),
+      condition: () => whatsappEnabled.value,
+    },
+    {
       icon: h(Email2Icon, { class: 'h-4 w-4' }),
       label: __('Email'),
-      onClick: () => (emailBox.value.show = true),
+      onClick: () => emit('write', 'email'),
+    },
+    {
+      icon: h(SMSIcon, { class: 'h-4 w-4' }),
+      label: __('SMS'),
+      onClick: () => emit('write', 'sms'),
+      condition: () => smsEnabled.value,
     },
     {
       icon: h(CommentIcon, { class: 'h-4 w-4' }),
       label: __('Comment'),
-      onClick: () => (emailBox.value.showComment = true),
+      onClick: () => emit('write', 'comment'),
     },
     {
       icon: h(EventIcon, { class: 'h-4 w-4' }),
@@ -233,25 +259,9 @@ const defaultActions = computed(() => {
       label: __('Upload Attachment'),
       onClick: () => (showFilesUploader.value = true),
     },
-    {
-      icon: h(WhatsAppIcon, { class: 'h-4 w-4' }),
-      label: __('WhatsApp Message'),
-      onClick: () => (tabIndex.value = getTabIndex('WhatsApp')),
-      condition: () => whatsappEnabled.value,
-    },
-    {
-      icon: h(SMSIcon, { class: 'h-4 w-4' }),
-      label: __('SMS'),
-      onClick: () => (tabIndex.value = getTabIndex('SMS')),
-      condition: () => smsEnabled.value,
-    },
   ]
   return actions.filter((action) =>
     action.condition ? action.condition() : true,
   )
 })
-
-function getTabIndex(name) {
-  return props.tabs.findIndex((tab) => tab.name === name)
-}
 </script>
