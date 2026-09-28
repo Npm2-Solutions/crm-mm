@@ -47,9 +47,15 @@
                 · {{ __('last activity') }}
                 {{ timeAgo(latest(conn.last_sync, conn.last_webhook)) }}
               </span>
-              <span v-if="conn.status === 'Error' && conn.last_error">
-                · {{ conn.last_error }}
-              </span>
+            </div>
+            <!-- the reason it failed is what somebody opens this for: its own
+                 lines, not the truncated tail of the subtitle -->
+            <div
+              v-if="conn.status === 'Error' && conn.last_error"
+              class="mt-0.5 line-clamp-2 text-p-sm text-ink-red-8"
+              :title="conn.last_error"
+            >
+              {{ conn.last_error }}
             </div>
           </div>
           <span class="shrink-0 text-p-sm text-ink-gray-5">
