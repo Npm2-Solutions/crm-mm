@@ -23,14 +23,18 @@
             :options="from"
           />
         </div>
+        <!-- a long address could not shrink, and pushed CC and BCC out of the
+             card on a phone: the recipients give way, the two buttons do not -->
         <div
-          class="mx-4 flex items-center gap-2"
+          class="mx-4 flex items-start gap-2"
           :class="from.length ? '' : 'border-t pt-2.5'"
         >
-          <span class="text-xs text-ink-gray-4 mr-2">{{ __('TO') }}:</span>
+          <span class="mr-2 mt-1.5 shrink-0 text-xs text-ink-gray-4">
+            {{ __('TO') }}:
+          </span>
           <EmailMultiSelect
             v-model="toEmails"
-            class="flex-1"
+            class="min-w-0 flex-1"
             variant="ghost"
             :validate="validateEmail"
             :fetchContacts="true"
@@ -38,7 +42,7 @@
               (value) => __('{0} is an invalid email address', [value])
             "
           />
-          <div class="flex gap-1.5">
+          <div class="flex shrink-0 gap-1.5">
             <Button
               :label="__('CC')"
               variant="ghost"
@@ -66,7 +70,7 @@
           <EmailMultiSelect
             ref="ccInput"
             v-model="ccEmails"
-            class="flex-1"
+            class="min-w-0 flex-1"
             variant="ghost"
             :fetchContacts="true"
             :validate="validateEmail"
@@ -80,7 +84,7 @@
           <EmailMultiSelect
             ref="bccInput"
             v-model="bccEmails"
-            class="flex-1"
+            class="min-w-0 flex-1"
             variant="ghost"
             :fetchContacts="true"
             :validate="validateEmail"
@@ -93,7 +97,7 @@
           <span class="text-xs text-ink-gray-4">{{ __('SUBJECT') }}:</span>
           <input
             v-model="subject"
-            class="flex-1 border-none text-ink-gray-9 text-base bg-surface-base hover:bg-surface-base focus:border-none focus:!shadow-none focus-visible:!ring-0"
+            class="flex-1 border-none text-ink-gray-9 text-base bg-transparent hover:bg-transparent focus:border-none focus:!shadow-none focus-visible:!ring-0"
           />
         </div>
       </div>
@@ -123,7 +127,7 @@
         <div
           class="flex justify-between gap-2 overflow-hidden border-t px-4 py-2.5"
         >
-          <div class="flex gap-1 items-center overflow-x-auto">
+          <div class="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
             <Button
               :tooltip="__('Insert Email Template')"
               variant="ghost"
@@ -161,12 +165,16 @@
               />
             </IconPicker>
           </div>
-          <div class="mt-2 flex items-center justify-end space-x-2 sm:mt-0">
+          <div class="flex shrink-0 items-center justify-end space-x-2">
             <Button v-bind="discardButtonProps || {}" :label="__('Discard')" />
             <Button
               variant="solid"
               v-bind="submitButtonProps || {}"
-              :label="`${__('Send')} (${submitShortcutLabel})`"
+              :label="
+                isMobileView
+                  ? __('Send')
+                  : `${__('Send')} (${submitShortcutLabel})`
+              "
             />
           </div>
         </div>
@@ -203,6 +211,7 @@ import {
 import { useTelemetry } from 'frappe-ui/frappe'
 import { useDocument } from '@/data/document'
 import { validateEmail, submitShortcutLabel } from '@/utils'
+import { isMobileView } from '@/composables/breakpoints'
 import Paragraph from '@tiptap/extension-paragraph'
 import { ref, computed, nextTick, inject, watch } from 'vue'
 

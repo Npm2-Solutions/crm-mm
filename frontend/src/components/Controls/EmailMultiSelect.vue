@@ -8,6 +8,7 @@
         :label="value"
         theme="gray"
         variant="subtle"
+        class="max-w-full"
         :class="{
           'rounded bg-surface-base hover:!bg-surface-gray-1 focus-visible:ring-outline-gray-4':
             variant === 'subtle',
@@ -22,7 +23,7 @@
           />
         </template>
       </Button>
-      <div class="flex-1">
+      <div class="min-w-0 flex-1">
         <ComboboxRoot
           :model-value="tempSelection"
           :open="showOptions"
@@ -34,7 +35,7 @@
             class="flex h-7 max-w-full w-auto items-center gap-2 rounded px-2 py-1 border border-transparent"
             :class="[
               variant == 'ghost'
-                ? 'bg-surface-base hover:bg-surface-base'
+                ? 'bg-transparent hover:bg-transparent'
                 : 'bg-surface-gray-2 hover:bg-surface-gray-3',
               inputClass,
             ]"
