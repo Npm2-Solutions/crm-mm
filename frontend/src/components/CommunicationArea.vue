@@ -86,6 +86,7 @@ import EmailEditor from '@/components/EmailEditor.vue'
 import CommentBox from '@/components/CommentBox.vue'
 import { isContentEmpty } from '@/utils'
 import { usersStore } from '@/stores/users'
+import { markAnswered } from '@/composables/conversationState'
 import { useStorage } from '@vueuse/core'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
 import { call, createResource, toast } from 'frappe-ui'
@@ -282,6 +283,8 @@ async function submitEmail() {
   attachments.value = []
   reload.value = true
   emit('scroll')
+  // an email is an answer too — a note to colleagues is not
+  markAnswered(props.doctype, doc.value.name)
   capture('email_sent', { doctype: props.doctype })
   updateOnboardingStep('send_first_email')
 }

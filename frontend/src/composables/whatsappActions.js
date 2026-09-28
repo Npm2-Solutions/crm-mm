@@ -1,3 +1,4 @@
+import { markAnswered } from '@/composables/conversationState'
 import { formatWhatsAppMessage } from '@/utils/whatsappText'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource, toast } from 'frappe-ui'
@@ -52,6 +53,8 @@ export function useWhatsAppActions({ list, reply }) {
       onSuccess() {
         capture('whatsapp_react_on_message')
         list.value?.reload?.()
+        // a 👍 on their message is an answer to it
+        markAnswered(message.reference_doctype, message.reference_name)
       },
       onError(error) {
         toast.error(
