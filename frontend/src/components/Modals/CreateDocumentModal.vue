@@ -26,7 +26,12 @@
           </div>
         </div>
         <div v-if="tabs.data">
-          <FieldLayout :tabs="tabs.data" :data="_data.doc" :doctype="doctype" />
+          <FieldLayout
+            autofocus
+            :tabs="tabs.data"
+            :data="_data.doc"
+            :doctype="doctype"
+          />
           <ErrorMessage class="mt-2" :message="error" />
         </div>
       </div>

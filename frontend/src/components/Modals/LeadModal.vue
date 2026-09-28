@@ -26,7 +26,12 @@
           </div>
         </div>
         <div>
-          <FieldLayout v-if="tabs.data" :tabs="tabs.data" :data="lead.doc" />
+          <FieldLayout
+            v-if="tabs.data"
+            autofocus
+            :tabs="tabs.data"
+            :data="lead.doc"
+          />
           <ErrorMessage v-if="error" class="mt-4" :message="__(error)" />
         </div>
       </div>

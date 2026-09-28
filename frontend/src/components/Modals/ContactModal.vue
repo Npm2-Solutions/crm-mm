@@ -27,6 +27,7 @@
         </div>
         <FieldLayout
           v-if="tabs.data?.length"
+          autofocus
           :tabs="tabs.data"
           :data="_contact.doc"
           doctype="Contact"

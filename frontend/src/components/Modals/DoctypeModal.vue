@@ -37,6 +37,7 @@
         <div>
           <FieldLayout
             v-if="layout.data"
+            autofocus
             :tabs="layout.data"
             :data="doc"
             :doctype="doctype"

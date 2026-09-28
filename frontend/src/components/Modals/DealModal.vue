@@ -51,6 +51,7 @@
           />
           <FieldLayout
             v-if="tabs.data?.length"
+            autofocus
             :tabs="tabs.data"
             :data="deal.doc"
             doctype="CRM Deal"
