@@ -24,7 +24,16 @@
       </div>
     </div>
 
-    <div class="flex-1 flex flex-col overflow-y-auto">
+    <!-- the fields read the settings document, which is not there until it
+         has loaded: drawn before that, the first one threw and the section
+         stayed blank -->
+    <div
+      v-if="!settings.doc"
+      class="flex flex-1 items-center justify-center text-ink-gray-5"
+    >
+      <LoadingIndicator class="size-5" />
+    </div>
+    <div v-else class="flex-1 flex flex-col overflow-y-auto">
       <div class="flex items-center justify-between gap-4 py-3 px-2">
         <div class="flex flex-col">
           <div class="text-p-base-medium text-ink-gray-7 truncate">
@@ -146,7 +155,13 @@
 <script setup>
 import Link from '@/components/Controls/Link.vue'
 import { getMeta } from '@/stores/meta'
-import { Select, Button, toast, createDocumentResource } from 'frappe-ui'
+import {
+  Select,
+  Button,
+  LoadingIndicator,
+  toast,
+  createDocumentResource,
+} from 'frappe-ui'
 import { computed } from 'vue'
 
 const { getFields } = getMeta('System Settings')
