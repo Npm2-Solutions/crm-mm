@@ -55,6 +55,13 @@ con i soli widget a cui il suo sito e il suo ruolo sanno rispondere. Una
 sezione vuota sparisce col suo titolo, una riga con dei buchi divide la
 larghezza fra chi resta.
 
+**Un modulo non ancora attivo non sparisce.** Un manager trova le dashboard a
+cui il sito non sa ancora rispondere nel selettore, sotto "Da configurare":
+aprendone una vede cosa conterra' e il pulsante che porta alla pagina giusta
+delle impostazioni (per la Fatturazione, l'azienda emittente). Chiusa quella
+pagina, la dashboard si riempie da sola. A un venditore non viene offerto
+niente: non puo' attivare un modulo.
+
 **Una dashboard fatta da un modello lo segue finche' nessuno la risistema.** Chi
 collega WhatsApp trova la sezione WhatsApp sulle Conversazioni alla prossima
 apertura, senza toccare niente. Salvata a mano diventa sua; "Torna al modello"
