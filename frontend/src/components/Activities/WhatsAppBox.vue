@@ -1,28 +1,37 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div
-    v-if="reply?.message"
-    class="flex items-center justify-around gap-2 px-3 pt-2 sm:px-4"
-  >
+  <!--
+    The message being answered, quoted above the line — the same small copy of
+    a bubble the conversation shows once it is sent.
+  -->
+  <div v-if="reply?.message" class="flex items-start gap-2 px-3 pt-2">
     <div
-      class="mb-1 ml-13 flex-1 cursor-pointer rounded border-0 border-l-4 border-green-500 bg-surface-gray-2 p-2 text-base text-ink-gray-5"
-      :class="reply.type == 'Incoming' ? 'border-green-500' : 'border-blue-400'"
+      class="min-w-0 flex-1 rounded-md border-l-4 bg-surface-alpha-gray-2 px-2 py-1.5"
+      :class="
+        reply.type == 'Incoming'
+          ? 'border-outline-gray-4'
+          : 'border-outline-blue-4'
+      "
     >
       <div
-        class="mb-1 text-sm-bold"
+        class="text-p-xs font-medium"
         :class="
-          reply.type == 'Incoming' ? 'text-ink-green-5' : 'text-ink-blue-link'
+          reply.type == 'Incoming' ? 'text-ink-gray-7' : 'text-ink-blue-8'
         "
       >
         {{ reply.from_name || __('You') }}
       </div>
       <div
-        class="max-h-12 overflow-hidden"
+        class="line-clamp-2 text-p-sm text-ink-gray-6"
         v-html="sanitizeHTML(reply.message)"
       />
     </div>
-
-    <Button variant="ghost" icon="lucide-x" @click="reply = {}" />
+    <Button
+      variant="ghost"
+      icon="lucide-x"
+      :aria-label="__('Cancel reply')"
+      @click="reply = {}"
+    />
   </div>
   <!-- WhatsApp only lets a business write freely for 24 hours after the
        customer's last message; outside that window Meta delivers an approved
@@ -31,9 +40,11 @@
        as the incoming messages that reached us. -->
   <div
     v-if="!windowOpen"
-    class="mx-3 mb-1 flex items-center justify-between gap-3 rounded border border-outline-amber-2 bg-surface-amber-1 px-3 py-2 sm:mx-10"
+    class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2"
   >
-    <span class="text-p-sm text-ink-gray-7">{{ windowNotice }}</span>
+    <span class="min-w-0 flex-1 text-p-sm text-ink-amber-8">
+      {{ windowNotice }}
+    </span>
     <Button
       size="sm"
       :label="__('Send a template')"
@@ -51,12 +62,13 @@
   -->
   <div
     v-if="recording || voiceNote"
-    class="flex items-center gap-3 px-3 py-2.5 sm:px-4"
+    class="flex items-center gap-3 px-3 py-2.5"
   >
-    <button
-      class="lucide-trash-2 size-4.5 shrink-0 cursor-pointer text-ink-gray-5 hover:text-ink-red-4"
-      :title="__('Discard')"
-      aria-hidden="true"
+    <Button
+      variant="ghost"
+      icon="lucide-trash-2"
+      :aria-label="__('Discard')"
+      :tooltip="__('Discard')"
       @click="discardRecording"
     />
 
@@ -64,7 +76,7 @@
       <span
         class="size-2 shrink-0 animate-pulse rounded-full bg-surface-red-5"
       />
-      <span class="shrink-0 text-p-base tabular-nums text-ink-red-5">
+      <span class="shrink-0 text-p-base tabular-nums text-ink-red-6">
         {{ recordingLabel }}
       </span>
       <span class="truncate text-p-sm text-ink-gray-5">
@@ -90,8 +102,8 @@
     </template>
   </div>
 
-  <div v-else class="flex items-end gap-2 px-3 py-2.5 sm:px-4" v-bind="$attrs">
-    <div class="flex h-8 items-center gap-2">
+  <div v-else class="flex items-end gap-1 px-1.5 pb-1.5 pt-1" v-bind="$attrs">
+    <div class="flex h-9 shrink-0 items-center">
       <!-- `private: false` is load-bearing. frappe_whatsapp hands Meta a link and
            Meta fetches it anonymously; a private Frappe file answers that fetch
            with a login page, so the message fails every time. FileUploader
@@ -102,22 +114,16 @@
         @success="(file) => uploadFile(file)"
       >
         <template #default="{ openFileSelector }">
-          <div class="flex items-center space-x-2">
-            <Dropdown :options="uploadOptions(openFileSelector)">
-              <span
-                class="lucide-plus size-4.5 cursor-pointer text-ink-gray-5"
-                aria-hidden="true"
-              />
-            </Dropdown>
-          </div>
+          <Dropdown :options="uploadOptions(openFileSelector)">
+            <Button
+              variant="ghost"
+              icon="lucide-paperclip"
+              :aria-label="__('Attach a file')"
+              :tooltip="__('Attach a file')"
+            />
+          </Dropdown>
         </template>
       </FileUploader>
-      <button
-        class="lucide-mic size-4.5 cursor-pointer text-ink-gray-5"
-        :title="__('Record a voice message')"
-        aria-hidden="true"
-        @click="startRecording"
-      />
       <IconPicker
         v-slot="{ togglePopover }"
         v-model="emoji"
@@ -129,11 +135,26 @@
           }
         "
       >
-        <SmileIcon
-          class="flex size-4.5 cursor-pointer rounded-sm text-2xl leading-none text-ink-gray-4"
+        <Button
+          variant="ghost"
+          :aria-label="__('Emoji')"
+          :tooltip="__('Emoji')"
           @click="togglePopover"
-        />
+        >
+          <template #icon>
+            <SmileIcon class="size-4 text-ink-gray-6" />
+          </template>
+        </Button>
       </IconPicker>
+      <!-- the only way to open a conversation that has gone quiet for a day,
+           so it lives beside the line, not behind a menu -->
+      <Button
+        variant="ghost"
+        icon="lucide-file-text"
+        :aria-label="__('Send a template')"
+        :tooltip="__('Send a template')"
+        @click="emit('template')"
+      />
     </div>
     <!--
       One line, and as many as the message needs — up to a point, after which
@@ -144,12 +165,35 @@
     <Textarea
       ref="textareaRef"
       v-model="content"
-      type="textarea"
-      class="min-h-8 w-full"
+      variant="ghost"
+      class="min-h-9 w-full resize-none bg-transparent py-2 text-p-base text-ink-gray-9 placeholder-ink-gray-4"
       :rows="rows"
       :placeholder="placeholder"
       @keydown.enter.stop="(e) => sendTextMessage(e)"
     />
+    <!--
+      The microphone while there is nothing written, the arrow once there is:
+      the one button WhatsApp keeps in that corner. Enter still sends; the arrow
+      is for whoever does not know that, and on a phone there is no Enter.
+    -->
+    <div class="flex h-9 shrink-0 items-center">
+      <Button
+        v-if="content.trim()"
+        variant="solid"
+        icon="lucide-send-horizontal"
+        :aria-label="__('Send')"
+        :tooltip="__('Send')"
+        @click="sendTyped"
+      />
+      <Button
+        v-else
+        variant="ghost"
+        icon="lucide-mic"
+        :aria-label="__('Record a voice message')"
+        :tooltip="__('Record a voice message')"
+        @click="startRecording"
+      />
+    </div>
   </div>
 </template>
 
@@ -157,6 +201,7 @@
 import IconPicker from '@/components/IconPicker.vue'
 import SmileIcon from '@/components/Icons/SmileIcon.vue'
 import { sanitizeHTML } from '@/utils'
+import { isMobileView } from '@/composables/breakpoints'
 import { useTelemetry } from 'frappe-ui/frappe'
 import {
   Button,
@@ -196,7 +241,11 @@ const rows = computed(() => {
   const lines = written.split('\n').length
   return Math.min(Math.max(lines, 1), MOST)
 })
-const placeholder = ref(__('Type your message here...'))
+const placeholder = computed(() =>
+  reply.value?.message
+    ? __('Write your reply…')
+    : __('Write a WhatsApp message…'),
+)
 const fileType = ref('')
 
 // --- the 24-hour window -----------------------------------------------------
@@ -420,10 +469,20 @@ function uploadFile(file) {
   capture('whatsapp_upload_file')
 }
 
+// Enter sends at a desk. On a phone it is the key for a new line, the way it is
+// in WhatsApp itself — there the arrow is how a message leaves — and a word
+// being composed in an input method is not finished until it says so.
 function sendTextMessage(event) {
-  if (event.shiftKey) return
+  if (event.shiftKey || event.isComposing || isMobileView.value) return
+  event.preventDefault()
+  sendTyped()
+}
+
+// Enter and the arrow send the same way. Focus stays on the line: somebody who
+// has just sent «un attimo» is about to send the next thing.
+function sendTyped() {
+  if (!content.value.trim()) return
   sendWhatsAppMessage()
-  textareaRef.value.el?.blur()
   content.value = ''
   capture('whatsapp_send_message')
 }

@@ -251,6 +251,17 @@ const bcc = ref(false)
 const emoji = ref('')
 
 const subject = ref(props.subject)
+
+// The same trap as the To field below, for the subject: it is proposed from the
+// record, the record is usually still loading when the composer is set up, and
+// a copy taken once read «(#undefined)» for good. It follows the proposal until
+// somebody writes a subject of their own — then it is theirs.
+watch(
+  () => props.subject,
+  (proposed, before) => {
+    if (subject.value === before) subject.value = proposed
+  },
+)
 const fromEmail = ref('')
 const toEmails = ref(modelValue.value.email ? [modelValue.value.email] : [])
 

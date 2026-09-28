@@ -1,17 +1,13 @@
 <template>
   <ActivityHeader
-    v-model="tabIndex"
-    v-model:showWhatsappTemplates="showWhatsappTemplates"
     v-model:showFilesUploader="showFilesUploader"
-    v-model:emailBox="emailBox"
     v-model:channel="channel"
     :counts="channelCounts"
     :tabs="tabs"
     :title="title"
     :doc="doc"
-    :whatsappBox="whatsappBox"
-    :smsBox="smsBox"
     :modalRef="modalRef"
+    @write="write"
   />
   <!--
     A plain scroller. It used to be a faded one — a mask that dissolves the top
@@ -455,42 +451,78 @@
       :top="top"
     />
   </div>
-  <div>
-    <!--
-      Picking a channel changes what you read and what you write in. Typing an
-      email into a box while reading a WhatsApp conversation was half the reason
-      the four tabs existed.
+  <!--
+    The composer: one box, with the ways of writing as its tabs.
 
-      The strip is mounted here, once, above every box — not inside them. Inside
-      the collapsed bar it vanished the moment an editor opened, so the ordinary
-      mistake of picking the wrong channel could only be undone by discarding
-      what was open. One click across, and the box changes under it.
-    -->
-    <ChannelSwitcher
-      v-if="title == 'Activity'"
-      :channel="channel"
-      @pick="(which) => (channel = which)"
-    />
-    <CommunicationArea
-      v-if="
-        ['Emails', 'Comments'].includes(title) ||
-        (title == 'Activity' && !['whatsapp', 'sms'].includes(channel))
+    What you read and what you write in are two questions, and they had been
+    welded into one: picking WhatsApp in the strip turned the whole stream into
+    the WhatsApp view, so answering on WhatsApp from «All» cost you «All». Now
+    reading a channel still sets the box to it — a picker that changes what you
+    read and not what you write in is a picker that gets ignored — but in «All»
+    the box is free, and it opens where you were last written to.
+  -->
+  <div
+    v-if="title == 'Activity'"
+    class="shrink-0 bg-surface-gray-2 px-3 pb-3 pt-2 dark:bg-surface-base sm:px-4"
+  >
+    <div
+      class="overflow-hidden rounded-xl border shadow-sm transition-colors"
+      :class="
+        way === 'comment'
+          ? 'border-outline-amber-3 bg-surface-amber-1'
+          : 'border-outline-gray-2 bg-surface-elevation-2 dark:bg-surface-gray-1'
       "
+    >
+      <ChannelSwitcher :way="way" @pick="pickWay" />
+      <!-- a wrapper for v-show: the area has more than one root, and a
+           directive on a component like that is silently ignored -->
+      <div v-show="way === 'email' || way === 'comment'">
+        <CommunicationArea
+          ref="emailBox"
+          v-model="doc"
+          v-model:reload="reload_email"
+          :way="way === 'comment' ? 'comment' : 'email'"
+          :doctype="doctype"
+          @scroll="scroll"
+        />
+      </div>
+      <!-- each box is mounted the first time it is used and kept afterwards,
+           so a half-written message is still there after a look at another
+           channel -->
+      <div v-if="whatsappEnabled && used.whatsapp" v-show="way === 'whatsapp'">
+        <WhatsAppBox
+          ref="whatsappBox"
+          v-model="doc"
+          v-model:reply="replyMessage"
+          v-model:whatsapp="whatsappMessages"
+          :doctype="doctype"
+          @scroll="scroll"
+          @template="showWhatsappTemplates = true"
+        />
+      </div>
+      <div v-if="used.sms" v-show="way === 'sms'">
+        <SMSBox
+          ref="smsBox"
+          v-model="doc"
+          v-model:sms="smsMessages"
+          :doctype="doctype"
+          @scroll="scroll"
+        />
+      </div>
+    </div>
+  </div>
+  <div v-else>
+    <CommunicationArea
+      v-if="['Emails', 'Comments'].includes(title)"
       ref="emailBox"
       v-model="doc"
       v-model:reload="reload_email"
-      v-model:whatsapp="whatsappMessages"
-      v-model:reply="replyMessage"
-      :channel="channel"
+      :way="title == 'Comments' ? 'comment' : 'email'"
       :doctype="doctype"
       @scroll="scroll"
-      @channel="(which) => (channel = which)"
-      @template="showWhatsappTemplates = true"
     />
     <WhatsAppBox
-      v-if="
-        title == 'WhatsApp' || (title == 'Activity' && channel == 'whatsapp')
-      "
+      v-if="title == 'WhatsApp'"
       ref="whatsappBox"
       v-model="doc"
       v-model:reply="replyMessage"
@@ -500,7 +532,7 @@
       @template="showWhatsappTemplates = true"
     />
     <SMSBox
-      v-if="title == 'SMS' || (title == 'Activity' && channel == 'sms')"
+      v-if="title == 'SMS'"
       ref="smsBox"
       v-model="doc"
       v-model:sms="smsMessages"
@@ -579,7 +611,7 @@ import { startCase } from '@/utils'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
-import { countByChannel } from '@/utils/conversation'
+import { WAYS, countByChannel, replyChannel } from '@/utils/conversation'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { useDocument } from '@/data/document'
@@ -588,6 +620,7 @@ import { Button, createResource, toast } from 'frappe-ui'
 import { useElementVisibility } from '@vueuse/core'
 import {
   ref,
+  reactive,
   computed,
   h,
   markRaw,
@@ -1021,10 +1054,6 @@ function timelineIcon(activity_type, is_lead) {
   return markRaw(icon)
 }
 
-const emailBox = ref(null)
-const whatsappBox = ref(null)
-const smsBox = ref(null)
-
 watch([reload, reload_email], ([reload_value, reload_email_value]) => {
   if (reload_value || reload_email_value) {
     all_activities.reload()
@@ -1050,6 +1079,87 @@ function scroll(hash) {
     }
   }, 500)
 }
+
+// -- writing ---------------------------------------------------------------------
+
+// the three boxes, for opening one from outside it
+const emailBox = ref(null)
+const whatsappBox = ref(null)
+const smsBox = ref(null)
+
+// The ways this site can write in, in the order the composer offers them.
+const ways = computed(() =>
+  WAYS.filter(
+    (one) =>
+      (one !== 'whatsapp' || whatsappEnabled.value) &&
+      (one !== 'sms' || smsEnabled.value),
+  ),
+)
+
+// Where the box opens when nobody has chosen: where they last wrote from. The
+// rule doc 17 set and the composer never kept — it opened on email for a
+// customer who has only ever written on WhatsApp.
+const suggestedWay = computed(() =>
+  replyChannel(conversationItems.value, ways.value, {
+    phone: Boolean(doc.value?.mobile_no),
+    email: Boolean(doc.value?.email),
+  }),
+)
+
+const way = ref('')
+// chosen by hand, and then not moved again by the conversation filling in
+const wayChosen = ref(false)
+// which boxes have been opened, so they stay mounted and keep their drafts
+const used = reactive({})
+
+watch(
+  [channel, suggestedWay, ways],
+  () => {
+    if (ways.value.includes(channel.value)) way.value = channel.value
+    else if (!wayChosen.value || !ways.value.includes(way.value))
+      way.value = suggestedWay.value
+  },
+  { immediate: true },
+)
+
+watch(way, (value) => value && (used[value] = true), { immediate: true })
+
+// Picked in the composer. Reading one channel while writing in another is the
+// mismatch the picker exists to prevent, so a channel view follows the pick;
+// «All» and the call register stay where they are — «All» is where every
+// channel is, and answering from it should not take it away.
+function pickWay(which, { open = true } = {}) {
+  wayChosen.value = true
+  way.value = which
+  if (ways.value.includes(channel.value) && channel.value !== which)
+    channel.value = which
+  if (!open) return
+  // chosen by hand is chosen to write: the line opens into its editor
+  nextTick(() => {
+    if (which === 'email' || which === 'comment') emailBox.value?.open?.(which)
+    else if (which === 'whatsapp') whatsappBox.value?.show?.()
+    else if (which === 'sms') smsBox.value?.show?.()
+  })
+}
+
+// From the New menu, which also lives on the other tabs.
+function write(which) {
+  if (title.value !== 'Activity') changeTabTo('activity')
+  nextTick(() => pickWay(which))
+}
+
+// Answering a WhatsApp message is writing on WhatsApp, wherever the Reply was
+// pressed; and «Reply» on an email opens the email editor, so the box has to be
+// the email one for it to be seen.
+watch(replyMessage, (message) => {
+  if (message?.message) pickWay('whatsapp', { open: false })
+})
+watch(
+  () => emailBox.value?.show,
+  (open) => {
+    if (open && way.value !== 'email') pickWay('email', { open: false })
+  },
+)
 
 defineExpose({ emailBox, all_activities, changeTabTo, showFilesTab })
 </script>

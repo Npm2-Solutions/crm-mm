@@ -1,29 +1,64 @@
 <template>
-  <div class="flex items-end gap-2 px-3 py-2.5 sm:px-4" v-bind="$attrs">
-    <Textarea
-      ref="textareaRef"
-      v-model="content"
-      type="textarea"
-      class="min-h-8 w-full"
-      :rows="rows"
-      :placeholder="__('Type your SMS here...')"
-      @focus="rows = 4"
-      @blur="rows = 1"
-      @keydown.enter.stop="(e) => sendTextMessage(e)"
-    />
-    <Button
-      variant="solid"
-      :label="__('Send')"
-      :disabled="!content.trim()"
-      @click="sendSMS"
-    />
+  <div class="px-1.5 pb-1.5 pt-1" v-bind="$attrs">
+    <div class="flex items-end gap-1">
+      <Textarea
+        ref="textareaRef"
+        v-model="content"
+        variant="ghost"
+        class="min-h-9 w-full resize-none bg-transparent py-2 text-p-base text-ink-gray-9 placeholder-ink-gray-4"
+        :rows="rows"
+        :placeholder="__('Write a text message…')"
+        @keydown.enter.stop="(e) => sendTextMessage(e)"
+      />
+      <div class="flex h-9 shrink-0 items-center">
+        <Button
+          variant="solid"
+          icon="lucide-send-horizontal"
+          :aria-label="__('Send')"
+          :tooltip="__('Send')"
+          :disabled="!content.trim()"
+          @click="sendSMS"
+        />
+      </div>
+    </div>
+    <!--
+      The one message whose length costs money, so it says how long it is the
+      way the carrier counts it: past 160 characters it is two messages, and a
+      single «È» — which the SMS alphabet does not have — makes it 70 a message
+      without anybody noticing.
+    -->
+    <div
+      v-if="content"
+      class="flex items-center justify-end gap-2 px-2 pb-0.5 text-p-xs tabular-nums text-ink-gray-5"
+    >
+      <Tooltip
+        v-if="length.unicode"
+        :text="
+          __(
+            'A character outside the SMS alphabet (an emoji, or È) makes every message hold 70 characters instead of 160.',
+          )
+        "
+      >
+        <span class="text-ink-amber-7">{{ __('Special characters') }}</span>
+      </Tooltip>
+      <span>
+        {{ length.characters }}/{{ length.perSegment * length.segments }}
+      </span>
+      <span v-if="length.segments > 1" class="font-medium text-ink-gray-7">
+        {{ __('{0} messages', [length.segments]) }}
+      </span>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { isMobileView } from '@/composables/breakpoints'
+import { smsSegments } from '@/utils/conversation'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { createResource, Textarea, toast } from 'frappe-ui'
-import { ref, nextTick } from 'vue'
+import { createResource, Textarea, Tooltip, toast } from 'frappe-ui'
+import { computed, ref, nextTick } from 'vue'
+
+defineOptions({ inheritAttrs: false })
 
 const props = defineProps({
   doctype: { type: String, default: '' },
@@ -34,18 +69,25 @@ const sms = defineModel('sms', { type: Object, default: () => ({}) })
 
 const { capture } = useTelemetry()
 
-const rows = ref(1)
 const textareaRef = ref(null)
 const content = ref('')
+
+// as tall as what is in it, up to six lines
+const rows = computed(() =>
+  Math.min(Math.max(String(content.value || '').split('\n').length, 1), 6),
+)
+
+const length = computed(() => smsSegments(content.value))
 
 function show() {
   nextTick(() => textareaRef.value.el.focus())
 }
 
+// Enter sends at a desk; on a phone it is a new line, and the arrow sends.
 function sendTextMessage(event) {
-  if (event.shiftKey) return
+  if (event.shiftKey || event.isComposing || isMobileView.value) return
+  event.preventDefault()
   sendSMS()
-  textareaRef.value.el?.blur()
 }
 
 function sendSMS() {
@@ -64,6 +106,8 @@ function sendSMS() {
     auto: true,
     onSuccess: () => sms.value.reload(),
     onError: (error) => {
+      // what was written is not lost to a failed send
+      content.value = content.value || message
       toast.error(error.messages?.[0] || __('Failed to send SMS'))
     },
   })
