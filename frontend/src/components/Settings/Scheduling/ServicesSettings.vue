@@ -14,12 +14,6 @@
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-2">
-        <FormControl
-          v-model="query"
-          type="text"
-          class="w-44"
-          :placeholder="__('Filter services…')"
-        />
         <Button
           :label="__('Online booking')"
           icon-left="lucide-globe"
@@ -33,6 +27,24 @@
           @click="openEditor()"
         />
       </div>
+    </div>
+
+    <!-- the filter belongs to the table: in the header it squeezed the
+         description into a 260px column -->
+    <div class="-mb-3 px-2">
+      <FormControl
+        v-model="query"
+        type="text"
+        class="w-full sm:w-64"
+        :placeholder="__('Filter services…')"
+      >
+        <template #prefix>
+          <span
+            class="lucide-search size-4 text-ink-gray-4"
+            aria-hidden="true"
+          />
+        </template>
+      </FormControl>
     </div>
 
     <TeamMatrix
