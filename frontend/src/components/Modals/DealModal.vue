@@ -49,7 +49,7 @@
             v-if="hasOrganizationSections || hasContactSections"
             class="h-px w-full border-t my-5"
           />
-          <div autofocus>
+          <div ref="fieldsBox" autofocus>
             <FieldLayout
               v-if="tabs.data?.length"
               :tabs="tabs.data"
@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { usersStore } from '@/stores/users'
@@ -106,6 +107,11 @@ const { pipelines, getStageNames, getPipelineOfStage, defaultPipeline } =
   pipelinesStore()
 
 const show = defineModel({ type: Boolean })
+
+// the cursor in the first field once the layout is drawn: the marker above
+// alone left it on the button that opened the dialog, behind it
+const fieldsBox = ref(null)
+useFirstFieldFocus(fieldsBox, show)
 const router = useRouter()
 const error = ref(null)
 

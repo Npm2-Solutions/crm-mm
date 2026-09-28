@@ -1,5 +1,15 @@
 <template>
-  <div v-if="field.visible" class="field">
+  <!-- `data-required`: what a form that opens puts its cursor in first -->
+  <div
+    v-if="field.visible"
+    class="field"
+    :data-required="
+      field.reqd ||
+      (field.mandatory_depends_on && field.mandatory_via_depends_on)
+        ? ''
+        : undefined
+    "
+  >
     <div
       v-if="
         field.fieldtype != 'Check' &&

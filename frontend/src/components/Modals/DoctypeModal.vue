@@ -34,7 +34,7 @@
             />
           </div>
         </div>
-        <div autofocus>
+        <div ref="fieldsBox" autofocus>
           <FieldLayout
             v-if="layout.data"
             :tabs="layout.data"
@@ -60,6 +60,7 @@
 </template>
 
 <script setup>
+import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import CustomActions from '@/components/CustomActions.vue'
@@ -81,6 +82,11 @@ const props = defineProps({
 })
 
 const show = defineModel({ type: Boolean })
+
+// the cursor in the first field once the layout is drawn: the marker above
+// alone left it on the button that opened the dialog, behind it
+const fieldsBox = ref(null)
+useFirstFieldFocus(fieldsBox, show)
 
 const emit = defineEmits(['afterInsert', 'afterUpdate'])
 

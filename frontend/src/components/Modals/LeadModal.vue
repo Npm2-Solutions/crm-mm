@@ -28,7 +28,7 @@
         <!-- always here, so the dialog finds it on open even while the
              layout is still loading: without it the first tabbable — the
              manager's layout button — took the focus and opened its tooltip -->
-        <div autofocus>
+        <div ref="fieldsBox" autofocus>
           <FieldLayout v-if="tabs.data" :tabs="tabs.data" :data="lead.doc" />
           <ErrorMessage v-if="error" class="mt-4" :message="__(error)" />
         </div>
@@ -56,6 +56,7 @@
 </template>
 
 <script setup>
+import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { usersStore } from '@/stores/users'
@@ -77,6 +78,11 @@ const { getUser, isManager } = usersStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const show = defineModel({ type: Boolean })
+
+// the cursor in the first field once the layout is drawn: the marker above
+// alone left it on the button that opened the dialog, behind it
+const fieldsBox = ref(null)
+useFirstFieldFocus(fieldsBox, show)
 const router = useRouter()
 const error = ref(null)
 const isLeadCreating = ref(false)
