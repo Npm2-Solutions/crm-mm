@@ -31,212 +31,8 @@
       allowedViews: ['list', 'group_by'],
     }"
   />
-  <KanbanView
-    v-if="route.params.viewType == 'kanban'"
-    v-model="leads"
-    :options="{
-      getRoute: (row) => ({
-        name: 'Lead',
-        params: { leadId: row.name },
-        query: { view: route.query.view, viewType: route.params.viewType },
-      }),
-      onNewClick: (column) => onNewClick(column),
-    }"
-    @update="(data) => viewControls.updateKanbanSettings(data)"
-    @loadMore="(columnName) => viewControls.loadMoreKanban(columnName)"
-  >
-    <template #title="{ titleField, itemName }">
-      <div class="flex items-center gap-2">
-        <div v-if="titleField === 'status'">
-          <IndicatorIcon :class="getRow(itemName, titleField).color" />
-        </div>
-        <div
-          v-else-if="
-            titleField === 'organization' && getRow(itemName, titleField).label
-          "
-        >
-          <Avatar
-            class="flex items-center"
-            :image="getRow(itemName, titleField).logo"
-            :label="getRow(itemName, titleField).label"
-            size="sm"
-          />
-        </div>
-        <div
-          v-else-if="
-            titleField === 'lead_name' && getRow(itemName, titleField).label
-          "
-        >
-          <Avatar
-            class="flex items-center"
-            :image="getRow(itemName, titleField).image"
-            :label="getRow(itemName, titleField).image_label"
-            size="sm"
-          />
-        </div>
-        <div
-          v-else-if="
-            titleField === 'lead_owner' &&
-            getRow(itemName, titleField).full_name
-          "
-        >
-          <Avatar
-            class="flex items-center"
-            :image="getRow(itemName, titleField).user_image"
-            :label="getRow(itemName, titleField).full_name"
-            size="sm"
-          />
-        </div>
-        <div v-else-if="titleField === 'mobile_no'">
-          <PhoneIcon class="h-4 w-4" />
-        </div>
-        <div
-          v-if="
-            [
-              'modified',
-              'creation',
-              'first_response_time',
-              'first_responded_on',
-              'response_by',
-            ].includes(titleField)
-          "
-          class="truncate text-base"
-        >
-          <Tooltip :text="getRow(itemName, titleField).label">
-            <div>{{ getRow(itemName, titleField).timeAgo }}</div>
-          </Tooltip>
-        </div>
-        <div v-else-if="titleField === 'sla_status'" class="truncate text-base">
-          <Badge
-            v-if="getRow(itemName, titleField).value"
-            :variant="'subtle'"
-            :theme="getRow(itemName, titleField).color"
-            size="md"
-            :label="getRow(itemName, titleField).value"
-          />
-        </div>
-        <div
-          v-else-if="getRow(itemName, titleField).label"
-          class="truncate text-base"
-        >
-          {{ getRow(itemName, titleField).label }}
-        </div>
-        <div v-else class="text-ink-gray-4">{{ __('No Title') }}</div>
-      </div>
-    </template>
-    <template #fields="{ fieldName, itemName }">
-      <div
-        v-if="getRow(itemName, fieldName).label"
-        class="truncate flex items-center gap-2"
-      >
-        <div v-if="fieldName === 'status'">
-          <IndicatorIcon :class="getRow(itemName, fieldName).color" />
-        </div>
-        <div
-          v-else-if="
-            fieldName === 'organization' && getRow(itemName, fieldName).label
-          "
-        >
-          <Avatar
-            class="flex items-center"
-            :image="getRow(itemName, fieldName).logo"
-            :label="getRow(itemName, fieldName).label"
-            size="xs"
-          />
-        </div>
-        <div v-else-if="fieldName === 'lead_name'">
-          <Avatar
-            v-if="getRow(itemName, fieldName).label"
-            class="flex items-center"
-            :image="getRow(itemName, fieldName).image"
-            :label="getRow(itemName, fieldName).image_label"
-            size="xs"
-          />
-        </div>
-        <div v-else-if="fieldName === 'lead_owner'">
-          <Avatar
-            v-if="getRow(itemName, fieldName).full_name"
-            class="flex items-center"
-            :image="getRow(itemName, fieldName).user_image"
-            :label="getRow(itemName, fieldName).full_name"
-            size="xs"
-          />
-        </div>
-        <div
-          v-if="
-            [
-              'modified',
-              'creation',
-              'first_response_time',
-              'first_responded_on',
-              'response_by',
-            ].includes(fieldName)
-          "
-          class="truncate text-base"
-        >
-          <Tooltip :text="getRow(itemName, fieldName).label">
-            <div>{{ getRow(itemName, fieldName).timeAgo }}</div>
-          </Tooltip>
-        </div>
-        <div v-else-if="fieldName === 'sla_status'" class="truncate text-base">
-          <Badge
-            v-if="getRow(itemName, fieldName).value"
-            :variant="'subtle'"
-            :theme="getRow(itemName, fieldName).color"
-            size="md"
-            :label="getRow(itemName, fieldName).value"
-          />
-        </div>
-        <div
-          v-else-if="fieldName === '_assign'"
-          class="flex items-center truncate"
-        >
-          <MultipleAvatar
-            :avatars="getRow(itemName, fieldName).label"
-            size="xs"
-          />
-        </div>
-        <div v-else class="truncate text-base">
-          {{ getRow(itemName, fieldName).label }}
-        </div>
-      </div>
-    </template>
-    <template #actions="{ itemName }">
-      <div class="flex gap-2 items-center justify-between">
-        <div class="text-ink-gray-5 flex items-center gap-1.5">
-          <EmailAtIcon class="h-4 w-4" />
-          <span v-if="getRow(itemName, '_email_count').label">
-            {{ getRow(itemName, '_email_count').label }}
-          </span>
-          <span class="text-4xl leading-[0]"> &middot; </span>
-          <NoteIcon class="h-4 w-4" />
-          <span v-if="getRow(itemName, '_note_count').label">
-            {{ getRow(itemName, '_note_count').label }}
-          </span>
-          <span class="text-4xl leading-[0]"> &middot; </span>
-          <TaskIcon class="h-4 w-4" />
-          <span v-if="getRow(itemName, '_task_count').label">
-            {{ getRow(itemName, '_task_count').label }}
-          </span>
-          <span class="text-4xl leading-[0]"> &middot; </span>
-          <CommentIcon class="h-4 w-4" />
-          <span v-if="getRow(itemName, '_comment_count').label">
-            {{ getRow(itemName, '_comment_count').label }}
-          </span>
-        </div>
-        <Dropdown
-          class="flex items-center gap-2"
-          :options="actions(itemName)"
-          variant="ghost"
-          @click.stop.prevent
-        >
-          <Button icon="lucide-plus" variant="ghost" />
-        </Dropdown>
-      </div>
-    </template>
-  </KanbanView>
   <LeadsListView
-    v-else-if="leads.data && rows.length"
+    v-if="leads.data && rows.length"
     ref="leadsListView"
     v-model="leads.data.page_length_count"
     v-model:list="leads"
@@ -272,46 +68,27 @@
 
 <script setup>
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
-import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import CustomActions from '@/components/CustomActions.vue'
-import EmailAtIcon from '@/components/Icons/EmailAtIcon.vue'
-import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
-import NoteIcon from '@/components/Icons/NoteIcon.vue'
-import TaskIcon from '@/components/Icons/TaskIcon.vue'
-import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import LeadsListView from '@/components/ListViews/LeadsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
-import KanbanView from '@/components/Kanban/KanbanView.vue'
 import LeadModal from '@/components/Modals/LeadModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
-import { useDoctypeModal } from '@/composables/doctypeModal'
 import { getMeta } from '@/stores/meta'
-import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { statusesStore } from '@/stores/statuses'
-import { callEnabled } from '@/composables/telephony'
 import { useBroadcast } from '@/composables/useBroadcast'
 import { formatDate, timeAgo, website, formatTime } from '@/utils'
 import { timestampCell } from '@/composables/useTimelinePreferences'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
-import { Avatar, Tooltip, Dropdown } from 'frappe-ui'
-import { useRoute } from 'vue-router'
 import { ref, computed, reactive, h } from 'vue'
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Lead')
-const { makeCall } = globalStore()
 const { getUser } = usersStore()
 const { getLeadStatus } = statusesStore()
 const { on } = useBroadcast()
-const { updateOnboardingStep } = useOnboarding('frappecrm')
-const { capture } = useTelemetry()
-const { showModal } = useDoctypeModal()
-
-const route = useRoute()
 
 const leadsListView = ref(null)
 const showLeadModal = ref(false)
@@ -329,16 +106,6 @@ const triggerResize = ref(1)
 const updatedPageCount = ref(20)
 const viewControls = ref(null)
 
-function getRow(name, field) {
-  function getValue(value) {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      return value
-    }
-    return { label: value }
-  }
-  return getValue(rows.value?.find((row) => row.name == name)[field])
-}
-
 // Rows
 const rows = computed(() => {
   if (!leads.value?.data?.data) return []
@@ -349,8 +116,6 @@ const rows = computed(() => {
       leads.value?.data.group_by_field,
       leads.value.data.columns,
     )
-  } else if (leads.value.data.view_type === 'kanban') {
-    return getKanbanRows(leads.value.data.data, leads.value.data.fields)
   } else {
     return parseRows(leads.value?.data.data, leads.value.data.columns)
   }
@@ -402,16 +167,6 @@ function getGroupedByRows(listRows, groupByField, columns) {
   })
 
   return groupedRows || listRows
-}
-
-function getKanbanRows(data, columns) {
-  let _rows = []
-  data.forEach((column) => {
-    column.data?.forEach((row) => {
-      _rows.push(row)
-    })
-  })
-  return parseRows(_rows, columns)
 }
 
 function parseRows(rows, columns = []) {
@@ -520,80 +275,5 @@ function parseRows(rows, columns = []) {
     _rows['_comment_count'] = lead._comment_count
     return _rows
   })
-}
-
-function onNewClick(column) {
-  let column_field = leads.value.params.column_field
-
-  if (column_field) {
-    defaults[column_field] = column.column.name
-  }
-
-  showLeadModal.value = true
-}
-
-function actions(itemName) {
-  let mobile_no = getRow(itemName, 'mobile_no')?.label || ''
-  let actions = [
-    {
-      icon: h(PhoneIcon, { class: 'h-4 w-4' }),
-      label: __('Make a Call'),
-      onClick: () => makeCall(mobile_no),
-      condition: () => mobile_no && callEnabled.value,
-    },
-    {
-      icon: h(NoteIcon, { class: 'h-4 w-4' }),
-      label: __('New Note'),
-      onClick: () => showNote(itemName),
-    },
-    {
-      icon: h(TaskIcon, { class: 'h-4 w-4' }),
-      label: __('New Task'),
-      onClick: () => showTask(itemName),
-    },
-  ]
-  return actions.filter((action) =>
-    action.condition ? action.condition() : true,
-  )
-}
-
-function showNote(name) {
-  showModal({
-    doctype: 'FCRM Note',
-    title: 'Note',
-    defaults: {
-      reference_doctype: 'CRM Lead',
-      reference_docname: name,
-    },
-    callbacks: {
-      afterInsert: (d) => after(d, true),
-      afterUpdate: after,
-    },
-  })
-}
-
-function showTask(name) {
-  showModal({
-    doctype: 'CRM Task',
-    title: 'Task',
-    defaults: {
-      reference_doctype: 'CRM Lead',
-      reference_docname: name,
-    },
-    callbacks: {
-      afterInsert: (d) => after(d, true),
-      afterUpdate: after,
-    },
-  })
-}
-
-function after(d, isNew = false) {
-  let a = d.doctype == 'FCRM Note' ? 'note' : 'task'
-  if (isNew) {
-    updateOnboardingStep('create_first_' + a)
-    capture(a + '_created')
-  } else {
-    capture(a + '_updated')
-  }
 }
 </script>
