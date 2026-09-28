@@ -25,7 +25,7 @@
       </div>
       <div
         v-if="hierarchyEnabled && canEdit"
-        class="flex item-center space-x-2 w-3/12 justify-end"
+        class="flex items-start space-x-2 w-3/12 justify-end"
       >
         <Button
           :label="__('Disable')"
@@ -64,14 +64,14 @@
           <span class="text-center text-p-base text-ink-gray-6">
             {{ __('Restrict visibility using a reporting tree') }}
           </span>
-          <Button
-            variant="solid"
-            :loading="fcrmSettings.setValue.loading"
-            @click="toggleEnable(false)"
-          >
-            {{ __('Enable') }}
-          </Button>
         </div>
+        <Button
+          variant="solid"
+          :loading="fcrmSettings.setValue.loading"
+          @click="toggleEnable(false)"
+        >
+          {{ __('Enable') }}
+        </Button>
       </div>
     </div>
 

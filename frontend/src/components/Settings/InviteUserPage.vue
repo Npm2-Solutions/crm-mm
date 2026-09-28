@@ -13,7 +13,7 @@
           }}
         </p>
       </div>
-      <div class="flex item-center space-x-2 w-3/12 justify-end">
+      <div class="flex items-start space-x-2 w-3/12 justify-end">
         <Button
           :label="__('Send Invites')"
           variant="solid"

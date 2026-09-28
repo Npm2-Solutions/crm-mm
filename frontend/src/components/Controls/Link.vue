@@ -190,10 +190,12 @@ function clearValue(close) {
   close()
 }
 
+// frappe-ui labels its own inputs at text-base whatever their size: a Link at
+// 12px beside a select at 14 made one form row look like two
 const labelClasses = computed(() => {
   return [
     {
-      sm: 'text-xs',
+      sm: 'text-base',
       md: 'text-base',
     }[attrs.size || 'sm'],
     'text-ink-gray-5',

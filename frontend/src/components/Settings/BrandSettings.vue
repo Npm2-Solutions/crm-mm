@@ -10,7 +10,7 @@
           {{ __('Configure your brand name, logo and favicon') }}
         </p>
       </div>
-      <div class="flex item-center space-x-2 w-3/12 justify-end">
+      <div class="flex items-start space-x-2 w-3/12 justify-end">
         <Button
           v-if="settings.isDirty"
           :label="__('Update')"
@@ -59,8 +59,10 @@
             <ImageIcon v-else class="size-5 text-ink-gray-4" />
           </div>
           <div class="flex flex-1 flex-col gap-1">
-            <span class="text-base-medium">{{ __('Brand Logo') }}</span>
-            <span class="text-p-base text-ink-gray-6">
+            <span class="text-p-base-medium text-ink-gray-7">{{
+              __('Brand Logo')
+            }}</span>
+            <span class="text-p-sm text-ink-gray-5">
               {{
                 __(
                   'Appears in the left sidebar. Recommended size is 32x32 px in PNG or SVG',
@@ -94,8 +96,10 @@
             <ImageIcon v-else class="size-5 text-ink-gray-4" />
           </div>
           <div class="flex flex-1 flex-col gap-1">
-            <span class="text-base-medium">{{ __('Favicon') }}</span>
-            <span class="text-p-base text-ink-gray-6">
+            <span class="text-p-base-medium text-ink-gray-7">{{
+              __('Favicon')
+            }}</span>
+            <span class="text-p-sm text-ink-gray-5">
               {{
                 __(
                   'Appears next to the title in your browser tab. Recommended size is 32x32 px in PNG or ICO',

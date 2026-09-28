@@ -38,7 +38,10 @@
               @click="showSettings = false"
             />
           </div>
-          <template v-for="(tab, i) in tabs" :key="tab.label">
+          <!-- One box per group: a sticky label sticks only inside its own
+               parent, and with every label in one scroller they all stayed
+               pinned and piled up — «Automation & Rules» over «Invoicing». -->
+          <div v-for="(tab, i) in tabs" :key="tab.label">
             <div v-if="!tab.hideLabel && i != 0" class="mx-1 mb-0.5 mt-[5px]" />
             <div
               v-if="!tab.hideLabel"
@@ -61,7 +64,7 @@
                 </template>
               </SidebarItem>
             </nav>
-          </template>
+          </div>
         </div>
         <div
           class="flex flex-1 flex-col overflow-y-auto bg-surface-elevation-2"
