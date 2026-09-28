@@ -120,18 +120,28 @@
           v-else-if="channel === 'email'"
           class="flex flex-col gap-2 px-3 pt-2 sm:px-4"
         >
-          <div
-            v-for="row in group.rows"
-            :key="row.key"
-            class="activity rounded-lg border bg-surface-elevation-2 p-3 shadow-sm dark:bg-surface-gray-2"
-            :class="
-              row.direction === 'in'
-                ? 'border-l-2 border-outline-blue-3'
-                : 'border-outline-gray-2'
-            "
-          >
-            <EmailArea :activity="row.item" :emailBox="emailBox" />
-          </div>
+          <template v-for="row in group.rows" :key="row.key">
+            <NewMessagesLine
+              v-if="lineAt(row, true)"
+              class="!px-0"
+              v-bind="lineProps"
+            />
+            <div
+              class="activity rounded-lg border bg-surface-elevation-2 p-3 shadow-sm dark:bg-surface-gray-2"
+              :class="
+                row.direction === 'in'
+                  ? 'border-l-2 border-outline-blue-3'
+                  : 'border-outline-gray-2'
+              "
+            >
+              <EmailArea :activity="row.item" :emailBox="emailBox" />
+            </div>
+            <NewMessagesLine
+              v-if="lineAt(row, false)"
+              class="!px-0"
+              v-bind="lineProps"
+            />
+          </template>
         </div>
 
         <template v-else>
@@ -141,6 +151,7 @@
             class="activity"
             :class="spacingOf(row)"
           >
+            <NewMessagesLine v-if="lineAt(row, true)" v-bind="lineProps" />
             <!-- said to somebody: a side, and on the first of a run a tail
                pointing to it -->
             <div
@@ -371,6 +382,7 @@
             <HappenedCard v-else :when="timeOf(row)">
               <slot name="other" :item="row.item" :row="row" />
             </HappenedCard>
+            <NewMessagesLine v-if="lineAt(row, false)" v-bind="lineProps" />
           </div>
         </template>
       </section>
@@ -398,6 +410,7 @@ import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
 import HappenedCard from '@/components/Activities/HappenedCard.vue'
 import MessageActions from '@/components/Activities/MessageActions.vue'
+import NewMessagesLine from '@/components/Activities/NewMessagesLine.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'
 import TimelineEntry from '@/components/Activities/TimelineEntry.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
@@ -428,6 +441,7 @@ import {
   hasFailed,
   isStageChange,
   momentLabel as moment,
+  newSince,
   speakerOf,
 } from '@/utils/conversation'
 import {
@@ -454,6 +468,9 @@ const props = defineProps({
   // publishes one, and a bare number standing where a name goes is unreadable
   // on a record that knows exactly whose number it is.
   them: { type: String, default: '' },
+  // where the new messages begin: `{ since, unread, receipts }`, from the
+  // conversations screen, or nothing where there is no such line to draw
+  newMessages: { type: Object, default: null },
 })
 
 const whatsappMessages = defineModel('whatsappMessages', {
@@ -501,6 +518,29 @@ const days = computed(() => {
 function labelOf(day) {
   return days.value.find((group) => group.day === day)?.label || ''
 }
+
+// Where the line goes, measured over what is on screen: a channel picked in
+// the selector shows its own new messages and no line for the others'.
+const newLine = computed(() => {
+  const about = props.newMessages
+  if (!about) return null
+  return newSince(
+    days.value.flatMap((group) => group.rows),
+    about.since ? localOf(about.since) : null,
+    { newestFirst: isNewestFirst.value },
+  )
+})
+
+function lineAt(row, above) {
+  return newLine.value?.key === row.key && newLine.value.above === above
+}
+
+const lineProps = computed(() => ({
+  count: newLine.value?.count || 0,
+  unread: Boolean(props.newMessages?.unread),
+  whatsapp: Boolean(newLine.value?.channels.includes('whatsapp')),
+  receipts: Boolean(props.newMessages?.receipts),
+}))
 
 function timeOf(row) {
   return row.at ? clockOf(row.at, LOCALE) : ''

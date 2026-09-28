@@ -670,3 +670,38 @@ export function whyItLeft(row = {}, view = 'open', onlyUnread = false) {
   if (onlyUnread && !row?.conversation_unread) return 'read'
   return ''
 }
+
+/**
+ * Where the new messages begin, for the line in the conversation that says so.
+ *
+ * New is what they wrote after the conversation was last read — the cutoff the
+ * number on the row counts from. The caller measures it when the conversation
+ * is opened and holds it there while it stays open, so reading it, or
+ * answering, does not pull the line out from under the messages it points at.
+ * Only theirs count: what we wrote in between is not news to us.
+ *
+ * The line goes on the time side of the oldest new message: above it when the
+ * stream reads down, below it when the newest is on top.
+ *
+ * @param {Array} rows             the stream as shown (`buildStream`)
+ * @param {string|null} since      the cutoff on the reader's clock; null = never read
+ * @param {{newestFirst?: boolean}} options
+ * @returns {{key: string, above: boolean, count: number, channels: string[]} | null}
+ */
+export function newSince(rows = [], since = null, options = {}) {
+  const fresh = (rows || []).filter(
+    (row) =>
+      row.bubble &&
+      row.direction === 'in' &&
+      row.at &&
+      (!since || timeKey(row.at) > timeKey(since)),
+  )
+  if (!fresh.length) return null
+  const oldest = fresh.reduce((a, b) => (timeKey(b.at) < timeKey(a.at) ? b : a))
+  return {
+    key: oldest.key,
+    above: !options.newestFirst,
+    count: fresh.length,
+    channels: [...new Set(fresh.map((row) => row.channel))],
+  }
+}

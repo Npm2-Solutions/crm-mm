@@ -19,6 +19,7 @@ import {
   laterLabel,
   listTime,
   momentLabel,
+  newSince,
   replyChannel,
   smsSegments,
   speakerOf,
@@ -890,5 +891,64 @@ describe('whyItLeft', () => {
     const read = { ...open, conversation_unread: 0 }
     expect(whyItLeft(read, 'open', true)).toBe('read')
     expect(whyItLeft(read, 'open', false)).toBe('')
+  })
+})
+
+describe('newSince', () => {
+  const rows = (items, newestFirst = false) =>
+    buildStream(items, { newestFirst })
+
+  it('starts at the first thing they wrote after it was last read', () => {
+    const stream = rows([
+      wa('1', 'Incoming', '2026-09-28 09:00:00'),
+      wa('2', 'Outgoing', '2026-09-28 09:05:00'),
+      wa('3', 'Incoming', '2026-09-28 10:00:00'),
+      wa('4', 'Incoming', '2026-09-28 10:01:00'),
+    ])
+    expect(newSince(stream, '2026-09-28 09:30:00')).toEqual({
+      key: 'whatsapp:3',
+      above: true,
+      count: 2,
+      channels: ['whatsapp'],
+    })
+  })
+
+  it('does not count what we wrote', () => {
+    const stream = rows([
+      wa('1', 'Incoming', '2026-09-28 09:00:00'),
+      wa('2', 'Outgoing', '2026-09-28 10:00:00'),
+    ])
+    expect(newSince(stream, '2026-09-28 09:30:00')).toBeNull()
+  })
+
+  it('counts everything they wrote when nobody has ever read it', () => {
+    const stream = rows([
+      wa('1', 'Incoming', '2026-09-20 09:00:00'),
+      email('e', 'Received', '2026-09-21 09:00:00'),
+    ])
+    const line = newSince(stream, null)
+    expect(line.key).toBe('whatsapp:1')
+    expect(line.count).toBe(2)
+    expect(line.channels.sort()).toEqual(['email', 'whatsapp'])
+  })
+
+  it('goes below the oldest new one when the newest is on top', () => {
+    const stream = rows(
+      [
+        wa('1', 'Incoming', '2026-09-28 09:00:00'),
+        wa('3', 'Incoming', '2026-09-28 10:00:00'),
+        wa('4', 'Incoming', '2026-09-28 10:01:00'),
+      ],
+      true,
+    )
+    const line = newSince(stream, '2026-09-28 09:30:00', { newestFirst: true })
+    expect(line.key).toBe('whatsapp:3')
+    expect(line.above).toBe(false)
+  })
+
+  it('is nothing when nothing arrived since', () => {
+    const stream = rows([wa('1', 'Incoming', '2026-09-28 09:00:00')])
+    expect(newSince(stream, '2026-09-28 09:00:00')).toBeNull()
+    expect(newSince([], null)).toBeNull()
   })
 })

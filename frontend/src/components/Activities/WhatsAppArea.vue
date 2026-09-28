@@ -105,19 +105,33 @@
               <template
                 v-if="whatsapp.type == 'Outgoing' && !hasFailed(whatsapp)"
               >
-                <CheckIcon
+                <Tooltip
                   v-if="['sent', 'success'].includes(lower(whatsapp.status))"
-                  class="size-3.5"
-                />
-                <DoubleCheckIcon
+                  :text="__('Sent')"
+                >
+                  <span class="inline-flex">
+                    <CheckIcon class="size-3.5" />
+                  </span>
+                </Tooltip>
+                <Tooltip
                   v-else-if="
                     ['read', 'delivered'].includes(lower(whatsapp.status))
                   "
-                  class="size-3.5"
-                  :class="{
-                    'text-ink-blue-7': lower(whatsapp.status) == 'read',
-                  }"
-                />
+                  :text="
+                    lower(whatsapp.status) == 'read'
+                      ? __('Read by them')
+                      : __('Delivered to their phone')
+                  "
+                >
+                  <span class="inline-flex">
+                    <DoubleCheckIcon
+                      class="size-3.5"
+                      :class="{
+                        'text-ink-blue-7': lower(whatsapp.status) == 'read',
+                      }"
+                    />
+                  </span>
+                </Tooltip>
               </template>
             </div>
           </div>
