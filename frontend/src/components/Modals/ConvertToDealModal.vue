@@ -37,7 +37,7 @@
           doctype="CRM Organization"
           @change="(data) => (existingOrganization = data)"
         />
-        <div v-else class="mt-2.5 text-base">
+        <div v-else class="mt-2.5 text-p-sm text-ink-gray-5">
           {{
             __(
               'New organization will be created based on the data in details section',

@@ -15,7 +15,9 @@
         />
 
         <div v-if="creating">
-          <div class="mb-2 text-sm text-ink-gray-5">{{ __('Start from') }}</div>
+          <div class="mb-2 text-base text-ink-gray-5">
+            {{ __('Start from') }}
+          </div>
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <button
               v-for="option in starts"
@@ -38,7 +40,9 @@
                 <span class="block text-sm font-medium text-ink-gray-8">{{
                   option.title
                 }}</span>
-                <span class="line-clamp-2 block text-xs text-ink-gray-5">
+                <!-- no `block`: it came after `line-clamp-2` in the CSS and
+                     undid the clamp, so the cards had uneven heights -->
+                <span class="line-clamp-2 text-xs text-ink-gray-5">
                   {{
                     option.available === false
                       ? __('Nothing to show yet on this site')
@@ -51,7 +55,7 @@
         </div>
 
         <div v-if="creating && canShare" class="flex flex-col gap-2">
-          <div class="text-sm text-ink-gray-5">{{ __('Who sees it') }}</div>
+          <div class="text-base text-ink-gray-5">{{ __('Who sees it') }}</div>
           <div class="flex flex-wrap gap-2">
             <Button
               :variant="form.private ? 'solid' : 'outline'"

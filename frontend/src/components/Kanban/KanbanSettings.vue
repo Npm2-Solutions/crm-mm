@@ -8,7 +8,7 @@
   <Dialog v-model:open="showDialog" :title="__('Kanban Settings')">
     <template #default>
       <div>
-        <div class="text-base text-ink-gray-8 mb-2">
+        <div class="text-base text-ink-gray-5 mb-2">
           {{ __('Column Field') }}
         </div>
         <Combobox
@@ -18,14 +18,16 @@
           @update:selected-option="(f) => (columnField = f)"
         >
           <template #trigger="{ open, setOpen }">
+            <!-- a plain button did not look like something to pick from -->
             <Button
-              class="w-full !justify-start"
+              class="w-full !justify-between"
               :label="columnField.label"
+              iconRight="chevron-down"
               @click="setOpen(!open)"
             />
           </template>
         </Combobox>
-        <div class="text-base text-ink-gray-8 mb-2 mt-4">
+        <div class="text-base text-ink-gray-5 mb-2 mt-4">
           {{ __('Title Field') }}
         </div>
         <Combobox
@@ -34,16 +36,18 @@
           @update:selected-option="(f) => (titleField = f)"
         >
           <template #trigger="{ open, setOpen }">
+            <!-- a plain button did not look like something to pick from -->
             <Button
-              class="w-full !justify-start"
+              class="w-full !justify-between"
               :label="titleField.label"
+              iconRight="chevron-down"
               @click="setOpen(!open)"
             />
           </template>
         </Combobox>
       </div>
       <div class="mt-4">
-        <div class="text-base text-ink-gray-8 mb-2">
+        <div class="text-base text-ink-gray-5 mb-2">
           {{ __('Fields Order') }}
         </div>
         <Draggable

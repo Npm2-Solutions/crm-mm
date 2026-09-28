@@ -128,9 +128,7 @@
                       {{ used[widget.id] > 1 ? `✓ ×${used[widget.id]}` : '✓' }}
                     </span>
                   </span>
-                  <span
-                    class="mt-0.5 line-clamp-2 block text-xs text-ink-gray-5"
-                  >
+                  <span class="mt-0.5 line-clamp-2 text-xs text-ink-gray-5">
                     {{
                       widget.unavailable
                         ? widget.unavailable.message

@@ -3,7 +3,7 @@
     v-if="!sortValues?.size"
     :options="options"
     :model-value="null"
-    :placeholder="__('First Name')"
+    :placeholder="__('Search fields…')"
     @update:selected-option="(e) => setSort(e)"
   >
     <template #trigger="{ open, setOpen }">
@@ -99,7 +99,7 @@
                   class="[&>_div]:w-full"
                   :model-value="sort.fieldname"
                   :options="allSortOptions"
-                  :placeholder="__('First Name')"
+                  :placeholder="__('Search fields…')"
                   @update:selected-option="(e) => updateSort(e, i)"
                 >
                   <template #trigger="{ open, setOpen, displayValue }">
@@ -126,7 +126,7 @@
             <Combobox
               :options="options"
               :model-value="null"
-              :placeholder="__('First Name')"
+              :placeholder="__('Search fields…')"
               @update:selected-option="(e) => setSort(e)"
             >
               <template #trigger="{ open, setOpen }">

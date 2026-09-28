@@ -1,13 +1,15 @@
 <template>
   <Dialog v-model:open="show" :title="__('WhatsApp Templates')" :size="'4xl'">
     <template #default>
-      <div class="w-full flex items-center gap-2">
+      <!-- on a phone the button takes its own row: beside it the search
+           was crushed to «Welcome Mes» -->
+      <div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
         <TextInput
           ref="searchInput"
           v-model="search"
           class="w-full"
           type="text"
-          :placeholder="__('Welcome Message')"
+          :placeholder="__('Search templates')"
         >
           <template #prefix>
             <span
@@ -56,7 +58,7 @@
       </div>
       <div v-else class="mt-2">
         <div class="flex h-56 flex-col items-center justify-center gap-2 px-8">
-          <div class="text-lg text-ink-gray-4">
+          <div class="text-lg text-ink-gray-5">
             {{ __('No Templates Found') }}
           </div>
           <!--
@@ -81,12 +83,6 @@
                   )
             }}
           </p>
-          <Button
-            v-if="isManager()"
-            :label="__('Create New')"
-            class="mt-2"
-            @click="newWhatsappTemplate"
-          />
         </div>
       </div>
     </template>
