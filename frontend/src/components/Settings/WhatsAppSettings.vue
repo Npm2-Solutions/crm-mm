@@ -137,7 +137,7 @@
                     )
               }}
             </span>
-            <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-5">
+            <span v-if="webhook.data?.error" class="text-p-sm text-ink-red-8">
               {{ webhook.data.error }}
             </span>
           </div>
@@ -220,7 +220,7 @@
                 class="px-3 pb-3"
                 :class="
                   delivery[account.name].ok
-                    ? 'text-ink-green-5'
+                    ? 'text-ink-green-8'
                     : 'text-ink-gray-6'
                 "
               >
@@ -237,7 +237,7 @@
                     :key="problem.key"
                     class="flex flex-col"
                   >
-                    <span class="text-p-sm-medium text-ink-red-5">{{
+                    <span class="text-p-sm-medium text-ink-red-8">{{
                       problem.what
                     }}</span>
                     <span class="text-p-sm text-ink-gray-6">{{
@@ -386,9 +386,9 @@
                     <span
                       :class="
                         row.outcome === 'Error'
-                          ? 'text-ink-red-5'
+                          ? 'text-ink-red-8'
                           : row.outcome === 'Completed'
-                            ? 'text-ink-green-5'
+                            ? 'text-ink-green-8'
                             : 'text-ink-gray-7'
                       "
                     >
@@ -398,7 +398,7 @@
                       {{ row.current_step }}
                     </span>
                   </div>
-                  <div v-if="row.error_message" class="text-ink-red-5">
+                  <div v-if="row.error_message" class="text-ink-red-8">
                     {{ row.error_message }}
                   </div>
                   <!-- what we worked out about a code Meta does not document.

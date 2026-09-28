@@ -34,7 +34,7 @@
                 : __('Google is not configured yet — ask your provider.')
             }}
           </span>
-          <span v-if="googleError" class="text-p-sm text-ink-red-5">{{
+          <span v-if="googleError" class="text-p-sm text-ink-red-8">{{
             googleError
           }}</span>
         </div>

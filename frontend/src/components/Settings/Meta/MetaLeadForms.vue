@@ -116,7 +116,7 @@
                 it fails with "no page token", and reconnecting does not help
                 unless the dialog actually offers it.
               -->
-              <div v-if="!page.granted" class="mt-1 text-p-sm text-ink-red-5">
+              <div v-if="!page.granted" class="mt-1 text-p-sm text-ink-red-8">
                 {{
                   __(
                     'Facebook did not include this Page in the last connection, so nothing works on it. Reconnect and tick it in the dialog — if it is not offered there, its owner has to give you a role on the Page first.',
@@ -127,7 +127,7 @@
                    say so instead of just showing zero forms -->
               <div
                 v-if="page.last_form_sync_error"
-                class="mt-1 text-p-sm text-ink-red-5"
+                class="mt-1 text-p-sm text-ink-red-8"
               >
                 {{ __('Meta refused the forms') }}:
                 {{ page.last_form_sync_error }}
@@ -201,7 +201,7 @@
         v-else-if="pagesError"
         class="flex flex-col gap-1 rounded-lg border border-outline-gray-2 p-4 text-p-base"
       >
-        <span class="text-ink-red-5">{{
+        <span class="text-ink-red-8">{{
           __('The pages could not be read.')
         }}</span>
         <span class="text-p-sm text-ink-gray-5">{{ pagesError }}</span>
