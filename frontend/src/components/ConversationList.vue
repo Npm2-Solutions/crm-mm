@@ -10,15 +10,34 @@
   same thing forty times and never which of two rows came first.
 -->
 <template>
-  <div class="flex flex-col py-1">
+  <!--
+    Rows glide to where they go rather than jump there: a message arriving
+    moves its row to the top, and the eye can follow it — or see that the one
+    under the pointer is not the one that was there a moment ago.
+  -->
+  <TransitionGroup
+    tag="div"
+    class="flex flex-col py-1"
+    move-class="motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out"
+    enter-active-class="motion-safe:transition-opacity motion-safe:duration-300"
+    enter-from-class="opacity-0"
+  >
     <button
       v-for="row in rows"
       :key="row.name"
       class="mx-1.5 flex items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors"
-      :class="
-        row.name === active ? 'bg-surface-gray-3' : 'hover:bg-surface-gray-2'
-      "
+      :class="[
+        row.name === active ? 'bg-surface-gray-3' : 'hover:bg-surface-gray-2',
+        row.leaving && row.why ? 'opacity-70' : '',
+      ]"
       :aria-current="row.name === active ? 'true' : undefined"
+      :title="
+        row.leaving && row.why
+          ? __(
+              'No longer in this list: it goes when you open another conversation',
+            )
+          : undefined
+      "
       @click="emit('open', row)"
     >
       <PersonAvatar :name="titleOf(row)" :image="row.image" size="lg" />
@@ -52,7 +71,22 @@
             {{ when(row.last_conversation_on) }}
           </span>
         </div>
-        <div class="mt-0.5 flex items-center gap-1.5">
+        <!--
+          The one being read, when what was just decided about it takes it out
+          of this list: why, in place of the last message, until you move on.
+        -->
+        <div
+          v-if="row.leaving && row.why"
+          class="mt-0.5 flex items-center gap-1.5 text-p-sm text-ink-gray-6"
+        >
+          <span
+            class="size-3.5 shrink-0"
+            :class="LEAVING_ICONS[row.leaving_as] || 'lucide-arrow-right'"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 flex-1 truncate">{{ row.why }}</span>
+        </div>
+        <div v-else class="mt-0.5 flex items-center gap-1.5">
           <component
             :is="channelIcon(row.last_conversation_channel)"
             v-if="row.last_conversation_channel"
@@ -100,7 +134,7 @@
         </div>
       </div>
     </button>
-  </div>
+  </TransitionGroup>
 </template>
 
 <script setup>
@@ -132,6 +166,15 @@ const ICONS = {
   WhatsApp: WhatsAppIcon,
   SMS: SMSIcon,
   Email: Email2Icon,
+}
+
+// the mark beside why a row is leaving, one per reason (`whyItLeft`)
+const LEAVING_ICONS = {
+  handled: 'lucide-check',
+  snoozed: 'lucide-clock',
+  answered: 'lucide-reply',
+  read: 'lucide-check-check',
+  reopened: 'lucide-rotate-ccw',
 }
 
 function channelIcon(channel) {
@@ -178,11 +221,14 @@ function noWordsYet(row) {
   return row.last_conversation_on ? '' : __('No messages yet')
 }
 
+// The count, only on a row that is unread: the flag is the fact, and a number
+// left over from before somebody read it would argue with the header.
 function waiting(row) {
+  if (!row.conversation_unread) return 0
   return props.unread[`${props.doctype}:${row.name}`] || 0
 }
 
 function isUnread(row) {
-  return Boolean(row.conversation_unread || waiting(row))
+  return Boolean(row.conversation_unread)
 }
 </script>
