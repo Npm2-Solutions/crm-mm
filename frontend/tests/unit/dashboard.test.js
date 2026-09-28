@@ -7,6 +7,7 @@ import {
   formatDuration,
   formatRange,
   formatValue,
+  groupDashboards,
   groupByCategory,
   mobileOrder,
   newItem,
@@ -491,5 +492,38 @@ describe('charts', () => {
     expect(SEQUENTIAL.indexOf(heatColor(1, 100))).toBeGreaterThanOrEqual(1)
     // on a dark page the busiest cell is the lightest
     expect(heatColor(10, 10, true)).toBe(SEQUENTIAL[0])
+  })
+})
+
+describe('groupDashboards', () => {
+  const list = [
+    { name: 'overview', available: true, private: false },
+    { name: 'mine', available: true, private: true },
+    {
+      name: 'invoicing',
+      available: false,
+      private: false,
+      setup: [{ key: 'invoicing' }],
+    },
+    // a template a salesperson cannot answer: no setup is sent, it stays out
+    { name: 'phone', available: false, private: false },
+    { name: 'broken', available: false, private: true },
+  ]
+
+  it('puts what the site cannot answer yet in a group of its own', () => {
+    const groups = groupDashboards(list, 'overview')
+    expect(groups.shared.map((d) => d.name)).toEqual(['overview'])
+    expect(groups.mine.map((d) => d.name)).toEqual(['mine'])
+    expect(groups.waiting.map((d) => d.name)).toEqual(['invoicing'])
+  })
+
+  it('keeps the open dashboard listed, in the group it belongs to', () => {
+    expect(groupDashboards(list, 'broken').mine.map((d) => d.name)).toEqual([
+      'mine',
+      'broken',
+    ])
+    const groups = groupDashboards(list, 'invoicing')
+    expect(groups.waiting.map((d) => d.name)).toEqual(['invoicing'])
+    expect(groups.shared.map((d) => d.name)).toEqual(['overview'])
   })
 })
