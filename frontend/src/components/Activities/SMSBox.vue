@@ -53,6 +53,7 @@
 
 <script setup>
 import { isMobileView } from '@/composables/breakpoints'
+import { markAnswered } from '@/composables/conversationState'
 import { smsSegments } from '@/utils/conversation'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource, Textarea, Tooltip, toast } from 'frappe-ui'
@@ -104,7 +105,11 @@ function sendSMS() {
       message,
     },
     auto: true,
-    onSuccess: () => sms.value.reload(),
+    onSuccess: () => {
+      sms.value.reload()
+      // nobody answers what they have not read
+      markAnswered(props.doctype, doc.value.name)
+    },
     onError: (error) => {
       // what was written is not lost to a failed send
       content.value = content.value || message

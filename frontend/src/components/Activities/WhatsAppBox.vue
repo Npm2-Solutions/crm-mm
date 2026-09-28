@@ -202,6 +202,7 @@ import IconPicker from '@/components/IconPicker.vue'
 import SmileIcon from '@/components/Icons/SmileIcon.vue'
 import { sanitizeHTML } from '@/utils'
 import { isMobileView } from '@/composables/breakpoints'
+import { markAnswered } from '@/composables/conversationState'
 import { useTelemetry } from 'frappe-ui/frappe'
 import {
   Button,
@@ -508,7 +509,11 @@ async function sendWhatsAppMessage() {
     url: 'crm.api.whatsapp.create_whatsapp_message',
     params: args,
     auto: true,
-    onSuccess: () => whatsapp.value.reload(),
+    onSuccess: () => {
+      whatsapp.value.reload()
+      // nobody answers what they have not read
+      markAnswered(args.reference_doctype, args.reference_name)
+    },
     onError: (error) => {
       toast.error(error.messages?.[0] || __('Failed to send WhatsApp message'))
     },

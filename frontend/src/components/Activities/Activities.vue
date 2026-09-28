@@ -612,6 +612,7 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { WAYS, countByChannel, replyChannel } from '@/utils/conversation'
+import { markAnswered } from '@/composables/conversationState'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { useDocument } from '@/data/document'
@@ -790,7 +791,10 @@ function sendTemplate(template, templateParameters) {
     onError: (error) => {
       toast.error(error.messages?.[0] || __('Failed to send WhatsApp template'))
     },
-    onSuccess: () => whatsappMessages.reload(),
+    onSuccess: () => {
+      whatsappMessages.reload()
+      markAnswered(props.doctype, props.docname)
+    },
   })
 }
 

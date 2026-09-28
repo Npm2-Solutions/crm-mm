@@ -1,8 +1,11 @@
 import { getSettings } from '@/stores/settings'
 import { laterLabel, momentLabel } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
-import { createResource, dayjs, toast } from 'frappe-ui'
+import { call, createResource, dayjs, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
+
+// The records a conversation can be kept on.
+const RECORDS = ['CRM Lead', 'CRM Deal']
 
 // What an «Undo» puts back: the decision and whether it was read, as they were
 // a moment before — and when anything was last said, which is how the server
@@ -20,6 +23,31 @@ const UNDOABLE = [
 export function readReceipts() {
   const { _settings } = getSettings()
   return computed(() => Boolean(_settings.doc?.whatsapp_read_receipts))
+}
+
+/**
+ * A reply went from here: whoever wrote it had read what they were answering.
+ *
+ * Called by every composer — WhatsApp, a template, a reaction, SMS, email — and
+ * by nothing that sends on its own: a message an automation sends says nothing
+ * about anybody having read anything. Quiet, because it is bookkeeping about a
+ * message that has already gone; the conversation screen hears about it and
+ * redraws the row.
+ */
+export function markAnswered(doctype, name) {
+  if (!RECORDS.includes(doctype) || !name) return
+  call('crm.api.conversations.mark_read', {
+    reference_doctype: doctype,
+    reference_name: name,
+  })
+    .then((answer) =>
+      window.dispatchEvent(
+        new CustomEvent('crm:conversation-read', {
+          detail: { doctype, name, ...answer },
+        }),
+      ),
+    )
+    .catch(() => {})
 }
 
 /**
