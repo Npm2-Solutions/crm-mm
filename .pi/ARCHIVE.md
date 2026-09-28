@@ -267,12 +267,59 @@ aver riletto le ragioni dei commit precedenti e averle guardate a schermo.
 | Il riempimento dice chi (loro chiaro, noi blu), il glifo dice il canale | La tinta per canale dava due verdi a un punto di luminosita' di distanza: in una chat quasi tutta WhatsApp «chi ha parlato» restava affidato al solo lato |
 | Coda e nome sulla prima della serie | Una serie e' una voce; il nome solo dove il lato non basta (un collega, un altro mittente email) |
 | Separatori in linea, data flottante solo mentre si scorre | A riposo la data appiccicata copriva le parole del primo messaggio |
-| Date con `Intl` nella lingua del browser | «2026-08-16» non si legge; «Yesterday» non aveva traduzione italiana |
+| Date con `Intl` nella lingua dell'utente (`appLocale()`, vedi «Interfacce») | «2026-08-16» non si legge; «Yesterday» non aveva traduzione italiana. All'inizio era la lingua del browser: con un account inglese su un browser italiano le date uscivano in italiano sotto parole inglesi |
 | Il composer parte dal canale dell'ultimo messaggio ricevuto | Era la regola del doc 17 e non era mai stata applicata: partiva sempre dall'email |
 | Leggere e scrivere sono due stati | Rispondere su WhatsApp da «Tutto» non deve portare via «Tutto» |
 | La nota tinge di ambra tutto il composer | Nessuno deve scrivere una nota interna credendo di rispondere al cliente |
 | Nome e decisioni nell'intestazione del filo, pannello solo da 1400px | Aperta da link la conversazione mostrava l'id; a 1280px il pannello tagliava il nome |
 | L'assegnazione tiene lo stato che trova | Passava dalla porta di «apri» e toglieva il rinvio |
+
+---
+
+## Interfacce — il giro di tutte le schermate
+
+> **Completato** (28/09/2026). Ogni pagina, ogni sezione delle Impostazioni e i
+> modali principali, fotografati in chiaro, in scuro e su telefono (390px) con
+> Playwright, con gli errori della console e la misura dell'overflow; cinque
+> revisori hanno letto gli screenshot e riportato ogni difetto al suo file.
+
+Quello che c'era sotto era quasi sempre lo stesso: codice scritto contro una
+scala di token che non era più quella di frappe-ui, o classi che non generano
+CSS. Nessun controllo lo diceva, perché una classe valida che disegna il colore
+sbagliato è ancora una classe valida.
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Con i token v2 gli inchiostri colorati `-1..-4` non si usano per testo o icone | In v2 `ink-X-1` è il bianco e `-2..-4` sono le tinte 100–300: il codice arrivato dopo l'aggiornamento li usava col significato vecchio, e disegnava a 1,2–1,4:1. Si segue il Badge di frappe-ui: testo `-8` (ambra `-9`, che a `-8` resta a 3,7:1), icone `-7`, fondi `surface-X-2` |
+| Su una superficie rialzata il bordo è `outline-elevation-2`, non `outline-gray-1` | In scuro `outline-gray-1` e `surface-elevation-2` (il pannello delle Impostazioni) sono lo stesso grigio: ogni divisore spariva. In chiaro i due bordi sono identici |
+| Il corpo dei modali è `surface-elevation-1`, come il Dialog | La migrazione dei token aveva fatto di `surface-modal` un `elevation-2`: in scuro corpo e piede di due grigi diversi |
+| `hover:bg-surface-gray-1`, mai `hover:bg-surface-sidebar` | In scuro `surface-sidebar` è trasparente: l'hover non c'era |
+| `color-scheme: dark` sul tema scuro | Barre di scorrimento, calendari nativi e lettore audio si disegnano da soli e restavano chiari |
+| In `LayoutHeader` la sinistra cede, la destra no | Un titolo lungo spingeva le azioni oltre il bordo: su telefono l'editor delle automazioni era largo 777px e «Salva» irraggiungibile |
+| Date e numeri nella lingua dell'utente: il boot dà `window.lang`, `appLocale()` lo passa a `Intl` | Le parole seguivano l'utente Frappe e le date il browser. Un codice che `Intl` non conosce ricade sul browser invece di far fallire la formattazione. La fatturazione resta in it-IT |
+| Le varianti di pagina sulle schede toccano solo i figli diretti del Tabs | `[&_[role='tab']]:px-0` prendeva anche le chip dei canali e il composer, che sono `tablist` anch'essi |
+| «kanban» non è una vista di Persone | Tolta col doc 26, rispondeva ancora al suo indirizzo con le colonne di stati che nessuno compila |
+| Le colonne dichiarate dal controller restano anche se il campo è nascosto | Il core nasconde `Contact.full_name` e la lista dei contatti non aveva il nome |
+| `.prose-f` usa `break-words` | `break-all` spezzava ogni parola dove finiva la riga |
+| Gli stati della fattura si scrivono come parole (`statusLabel`) | Restano le parole dell'Agenzia, senza i trattini bassi del database |
+| Via la pagina Welcome | Uno stub di upstream che salutava «John Doe» con due pulsanti senza azione, a cui non portava niente |
+
+### Lasciato com'è, di proposito
+
+- **L'ordine dei campi dei form rapidi di persona e trattativa su telefono**:
+  tre colonne impilate si leggono per colonna («Salutation, Email, First
+  Name…»). È un layout per sito, modificabile dai manager; intrecciare le
+  colonne sparpaglierebbe i gruppi voluti (i social in una colonna). Va
+  deciso sul layout predefinito, con una patch che tocchi solo i siti che non
+  l'hanno cambiato.
+- **Eventi sovrapposti nel calendario di frappe-ui**: si coprono lasciando
+  frammenti («Tra», «Pac»). Il layout delle sovrapposizioni è di frappe-ui.
+- **Segnaposto troncati nei filtri rapidi** («Telephony Med»): la striscia
+  scorre in orizzontale per scelta di upstream.
+- **Piedi dei dialog**: alcuni hanno pulsanti a tutta larghezza, altri a destra;
+  è la convenzione di upstream, coerente dentro ogni tipo di modale.
 
 ---
 
