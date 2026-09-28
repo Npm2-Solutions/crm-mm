@@ -48,13 +48,14 @@
 
       <div v-if="dealTabs.data?.length" class="h-px w-full border-t my-6" />
 
-      <FieldLayout
-        v-if="dealTabs.data?.length"
-        autofocus
-        :tabs="dealTabs.data"
-        :data="deal.doc"
-        doctype="CRM Deal"
-      />
+      <div autofocus>
+        <FieldLayout
+          v-if="dealTabs.data?.length"
+          :tabs="dealTabs.data"
+          :data="deal.doc"
+          doctype="CRM Deal"
+        />
+      </div>
       <ErrorMessage class="mt-4" :message="error" />
     </template>
     <template #actions>

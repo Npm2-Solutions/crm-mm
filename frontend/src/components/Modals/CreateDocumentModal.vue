@@ -25,9 +25,9 @@
             />
           </div>
         </div>
-        <div v-if="tabs.data">
+        <div autofocus>
           <FieldLayout
-            autofocus
+            v-if="tabs.data"
             :tabs="tabs.data"
             :data="_data.doc"
             :doctype="doctype"
