@@ -134,7 +134,7 @@
           <div class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'When a chat is opened here, tell WhatsApp the messages have been read. The customer sees the blue ticks.',
+                'When somebody here marks a conversation read — with the button, by replying, or by marking it handled — tell WhatsApp, and the customer sees the blue ticks. Opening a chat never sends them.',
               )
             }}
           </div>

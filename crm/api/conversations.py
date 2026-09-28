@@ -17,6 +17,13 @@ Read state is kept on the person too, and it is **shared**, not per user. A CRM
 inbox is a shared desk: a message a colleague has already answered is not still
 waiting for you, and a badge that says it is would be the second thing you learn
 to ignore.
+
+And read is one moment, with everything that depends on it happening in it. A
+conversation becomes read when somebody here says so — the button, a reply
+written from the composer, marking it handled — and never because it was
+opened. Then, and only then, the badge goes for everybody, who read it and when
+is written down, and, where the site has asked for it, WhatsApp is told: the blue
+ticks on the customer's phone. Looking is not reading, on either side of the chat.
 """
 
 import html
@@ -24,7 +31,7 @@ import re
 from datetime import date, datetime
 
 import frappe
-from frappe.utils import get_datetime, now
+from frappe.utils import add_to_date, cint, get_datetime, now, now_datetime
 
 from crm.scheduling.timeutils import to_system_naive
 
@@ -269,8 +276,6 @@ def on_communication(doc, method: str | None = None) -> None:
 
 # --- how many are still waiting ----------------------------------------------
 
-# --- how many are still waiting ----------------------------------------------
-
 
 @frappe.whitelist()
 def unread(records: list | str | None = None) -> dict:
@@ -282,6 +287,13 @@ def unread(records: list | str | None = None) -> dict:
 	Counted rather than stored, because the cutoff moves: the same conversation
 	is unread or not depending on a setting, and a stored counter would have to
 	be rewritten on every record the day somebody changes it.
+
+	Only for the ones marked unread. The flag is the fact — a message arriving
+	sets it, somebody reading clears it — and the number is how many arrived
+	since anybody last read it. Counting past the flag put a number on rows the
+	header called read. And one marked unread again with nothing new since has
+	the flag and no number: a dot on the row, not a count of everything they
+	ever wrote.
 	"""
 	records = frappe.parse_json(records) if isinstance(records, str) else (records or [])
 	wanted: set[tuple[str, str]] = set()
@@ -303,7 +315,10 @@ def unread(records: list | str | None = None) -> dict:
 		if not frappe.has_permission(doctype, "read"):
 			continue
 		for row in frappe.get_all(
-			doctype, filters={"name": ["in", names]}, fields=["name", field], limit_page_length=0
+			doctype,
+			filters={"name": ["in", names], "conversation_unread": 1},
+			fields=["name", field],
+			limit_page_length=0,
 		):
 			cutoffs[(doctype, row.name)] = row.get(field)
 	if not cutoffs:
@@ -373,6 +388,9 @@ ROW = (
 	"last_conversation_direction",
 	"last_conversation_preview",
 	"conversation_unread",
+	# who read it and when: the header says so, rather than a bare «read»
+	"conversation_seen_until",
+	"conversation_seen_by",
 	"conversation_status",
 	"conversation_snoozed_until",
 	"conversation_assigned_to",
@@ -410,8 +428,10 @@ def people(
 	# they were simply marked as dealt with last week.
 	if not search:
 		conditions.update(conditions_for(view or "open"))
-	if waiting in (True, 1, "1", "true", "True"):
-		conditions["conversation_unread"] = 1
+		# and «only unread» narrows a view, not a search, for the same reason: a
+		# name typed is somebody wanted, read or not
+		if waiting in (True, 1, "1", "true", "True"):
+			conditions["conversation_unread"] = 1
 
 	or_conditions = {}
 	if search:
@@ -452,17 +472,24 @@ def person(name: str) -> dict:
 OPEN = "Open"
 HANDLED = "Handled"
 
-# Who is waiting first, then whoever spoke last — and «spoke» counts both sides,
-# because a conversation you answered five minutes ago is more alive than one
-# nobody has touched since April.
-NEWEST_FIRST = "conversation_unread desc, last_conversation_on desc, modified desc"
+# Whoever spoke last first — and «spoke» counts both sides, because a
+# conversation you answered five minutes ago is more alive than one nobody has
+# touched since April.
+#
+# And nothing ahead of that. Unread used to come first, which made reading a
+# thing that moved rows: you marked a conversation read and it dropped below
+# everything still unread — out of sight, and the row you were on was no longer
+# where you had left it. A row moves when somebody says something, the way it
+# does in every messenger, and never because of a button somebody here pressed.
+# What is unread is marked on the row, and has a filter of its own.
+NEWEST_FIRST = "last_conversation_on desc, modified desc"
 
 # The views. Four, because a fifth would be a way of asking something these
 # four already answer — and a menu you have to read is a menu that slows you
 # down every morning.
 #
 # They are all the same list under the same order. The base one is what a chat
-# app shows: everything still going on, whoever is waiting at the top. The other
+# app shows: everything still going on, whoever spoke last at the top. The other
 # three exist because without them a button leads nowhere — «gestita» and
 # «rimanda» would make a conversation vanish with no way back to it.
 VIEWS = ("open", "unanswered", "snoozed", "handled")
@@ -482,8 +509,8 @@ def conditions_for(view: str) -> dict:
 	if view == "unanswered":
 		# they spoke last and nobody answered. Not «unread»: you can have read
 		# something this morning and still owe the answer, and that one is the
-		# one that costs money. Unread is not a view of its own because the base
-		# list already puts it on top and marks it.
+		# one that costs money. Unread is not a view but a filter over any of
+		# them — the unread among the open, among the parked, among the settled.
 		return {**LIVE, "last_conversation_direction": "Incoming"}
 	if view == "snoozed":
 		return {"conversation_snoozed_until": ["is", "set"]}
@@ -509,18 +536,22 @@ COUNTABLE = {
 
 @frappe.whitelist()
 def counts() -> dict:
-	"""How many are in each view, in one sweep.
+	"""How many are in each view, and how many of those are unread, in one sweep.
 
-	One query with a sum per view rather than one query per view: they are four
-	different questions about the same rows, and asking the table four times to
-	draw one menu is three times too many.
+	One query with a sum per question rather than one query per view: they are
+	eight questions about the same rows, and asking the table eight times to draw
+	one menu is seven times too many. The unread ones are `<view>_unread`, for the
+	number on the filter that narrows the open view to them.
 	"""
 	if not frappe.has_permission("CRM Lead", "read"):
 		return {}
-	sums = ", ".join(
-		f"sum(case when {clause} then 1 else 0 end) as `{view}`" for view, clause in COUNTABLE.items()
-	)
-	row = frappe.db.sql(f"select {sums} from `tabCRM Lead`", as_dict=True)  # nosemgrep
+	sums = []
+	for view, clause in COUNTABLE.items():
+		sums.append(f"sum(case when {clause} then 1 else 0 end) as `{view}`")
+		sums.append(
+			f"sum(case when ({clause}) and conversation_unread = 1 then 1 else 0 end) as `{view}_unread`"
+		)
+	row = frappe.db.sql(f"select {', '.join(sums)} from `tabCRM Lead`", as_dict=True)  # nosemgrep
 	return {key: int(value or 0) for key, value in (row[0] if row else {}).items()}
 
 
@@ -593,19 +624,22 @@ def set_state(
 	it runs inside a request or under test, so naming only the browser's shape
 	did not document a contract — it made an ordinary Python call to a function
 	of ours illegal, and left every caller to remember to stringify a date first.
+
+	Handled means read, too: a count left on something somebody has just closed
+	would be the badge arguing with the person — so it is one of the moments the
+	blue ticks can go. Only the move *into* handled reads it. Handing a settled
+	conversation to a colleague comes through here as well, and giving something
+	away is not reading it.
 	"""
 	if reference_doctype not in RECORDS:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
 	frappe.has_permission(reference_doctype, "write", doc=reference_name, throw=True)
 
+	settled = frappe.db.get_value(reference_doctype, reference_name, "conversation_status") == HANDLED
+
 	values = {"conversation_status": OPEN, "conversation_snoozed_until": None}
 	if state == HANDLED:
 		values["conversation_status"] = HANDLED
-		# handled means read: leaving a count on something somebody has just
-		# closed would be the badge arguing with the person
-		values["conversation_seen_until"] = now()
-		values["conversation_seen_by"] = frappe.session.user
-		values["conversation_unread"] = 0
 	elif state == "Snoozed":
 		# settled into one shape here rather than stored as it came, so what is parked
 		# — and what comes back in the answer — does not depend on who did the asking
@@ -616,7 +650,36 @@ def set_state(
 
 	for doctype, name in also_the_person(reference_doctype, reference_name):
 		frappe.db.set_value(doctype, name, values, update_modified=False)
-	return {"state": values["conversation_status"], "until": values["conversation_snoozed_until"]}
+
+	answer = {"state": values["conversation_status"], "until": values["conversation_snoozed_until"]}
+	if state == HANDLED and not settled and is_unread(reference_doctype, reference_name):
+		answer.update(read_now(reference_doctype, reference_name))
+	return answer
+
+
+# --- read ----------------------------------------------------------------------
+
+
+def is_unread(reference_doctype: str, reference_name: str) -> bool:
+	"""Is anything here still unread — on this record, or on the person it is a deal of?"""
+	return any(
+		cint(frappe.db.get_value(doctype, name, "conversation_unread"))
+		for doctype, name in also_the_person(reference_doctype, reference_name)
+	)
+
+
+def read_now(reference_doctype: str, reference_name: str) -> dict:
+	"""Read, now, by whoever is asking — and WhatsApp told, where that is wanted.
+
+	On the record and on its person, when it is one of their deals: the badge
+	that was showing is theirs.
+	"""
+	seen = now()
+	who = frappe.session.user
+	values = {"conversation_seen_until": seen, "conversation_seen_by": who, "conversation_unread": 0}
+	for doctype, name in also_the_person(reference_doctype, reference_name):
+		frappe.db.set_value(doctype, name, values, update_modified=False)
+	return {"seen_until": seen, "seen_by": who, "receipts": tell_whatsapp(reference_doctype, reference_name)}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -627,80 +690,232 @@ def mark_read(reference_doctype: str, reference_name: str) -> dict:
 	is how a badge becomes noise: you glance at a chat to see who it was, the
 	count goes, and the thing you had not dealt with is indistinguishable from
 	the thing you had. Looking is not dealing with it.
+
+	Said by the button, by marking it handled, and by answering from the
+	composer — nobody replies to what they have not read. Not by a message an
+	automation sends: nobody read anything for that one.
+
+	With nothing new since it was last read, nothing happens: the second reply in
+	a row does not make its writer the one who read the conversation, and does
+	not tell WhatsApp twice.
 	"""
 	if reference_doctype not in RECORDS:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
 	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
-	seen = now()
-	values = {
-		"conversation_seen_until": seen,
-		"conversation_seen_by": frappe.session.user,
-		"conversation_unread": 0,
-	}
-	# and on the person, when it was opened from one of their deals: the badge
-	# that was showing is theirs
-	for doctype, name in also_the_person(reference_doctype, reference_name):
-		frappe.db.set_value(doctype, name, values, update_modified=False)
-	return {"seen_until": seen}
+	if not is_unread(reference_doctype, reference_name):
+		seen = (
+			frappe.db.get_value(
+				reference_doctype,
+				reference_name,
+				["conversation_seen_until", "conversation_seen_by"],
+				as_dict=True,
+			)
+			or {}
+		)
+		return {
+			"seen_until": seen.get("conversation_seen_until"),
+			"seen_by": seen.get("conversation_seen_by"),
+			"receipts": 0,
+		}
+	return read_now(reference_doctype, reference_name)
 
 
 @frappe.whitelist(methods=["POST"])
 def mark_unread(reference_doctype: str, reference_name: str) -> dict:
-	"""Put it back in the pile — the one way to undo the line above."""
+	"""Back on the pile: a flag for the team, not a rewind.
+
+	Only the flag. The moment it was read stays where it was, so the number on
+	the row is still what arrived since then — nothing, until they write again —
+	instead of every message they ever sent, which is what forgetting the moment
+	used to count. And the blue ticks, if they went, stay: a receipt cannot be
+	taken back from somebody's phone.
+	"""
 	if reference_doctype not in RECORDS:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
 	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
 	for doctype, name in also_the_person(reference_doctype, reference_name):
-		frappe.db.set_value(
-			doctype,
-			name,
-			{
-				"conversation_seen_until": None,
-				"conversation_seen_by": None,
-				"conversation_unread": 1,
-			},
-			update_modified=False,
-		)
-	return {"seen_until": None}
+		frappe.db.set_value(doctype, name, "conversation_unread", 1, update_modified=False)
+	return {"unread": 1}
 
 
 @frappe.whitelist(methods=["POST"])
-def acknowledge(reference_doctype: str, reference_name: str) -> dict:
-	"""Tell WhatsApp their messages have been read, if the site wants that.
+def restore(reference_doctype: str, reference_name: str, was: dict | str) -> dict:
+	"""Undo: the conversation as it was before the last decision about it.
 
-	A different thing from the badge, and that is the point of separating them:
-	the badge is ours to manage, the blue ticks are something the customer sees
-	on their own phone. Turning up unannounced on somebody's screen because a
-	colleague glanced at a list is a promise the CRM should not make by itself.
+	«Handled» and «later» take a row out of the list, and a button that makes
+	something leave needs a way back that is not a hunt through another view.
+	`was` is the row as the screen had it before — its decision, whether it was
+	read and by whom, and when anything was last said. That last one is the
+	guard: if they wrote in the meantime, the conversation is open and unread
+	because of it, and putting the old state back would bury their message under
+	«handled». Then nothing is undone, and the answer says why.
+
+	What it cannot put back are the blue ticks: they are on the customer's phone.
 	"""
-	if not frappe.db.get_single_value("FCRM Settings", "whatsapp_read_receipts"):
-		return {"acknowledged": 0}
 	if reference_doctype not in RECORDS:
 		frappe.throw(frappe._("Not a conversation"), frappe.ValidationError)
-	frappe.has_permission(reference_doctype, "read", doc=reference_name, throw=True)
-	if not frappe.db.exists("DocType", "WhatsApp Message"):
-		return {"acknowledged": 0}
+	frappe.has_permission(reference_doctype, "write", doc=reference_name, throw=True)
+	was = frappe.parse_json(was) if isinstance(was, str) else dict(was or {})
 
-	waiting = frappe.get_all(
-		"WhatsApp Message",
-		filters={
-			"reference_doctype": reference_doctype,
-			"reference_name": reference_name,
-			"type": "Incoming",
-			"status": ["!=", "marked as read"],
-			"message_id": ["is", "set"],
-		},
-		pluck="name",
-		order_by="creation desc",
-		# the recent ones: Meta refuses a receipt for a message old enough, and
-		# working through two years of history to be told so is nobody's morning
-		limit=20,
+	heard = frappe.db.get_value(reference_doctype, reference_name, "last_conversation_on")
+	before = was.get("last_conversation_on")
+	if heard and (not before or get_datetime(heard) > get_datetime(before)):
+		frappe.throw(
+			frappe._("Something new was said in the meantime, so it stays as it is now."),
+			frappe.ValidationError,
+		)
+
+	status = was.get("conversation_status") or OPEN
+	if status not in (OPEN, HANDLED):
+		frappe.throw(frappe._("Not a conversation state: {0}").format(status), frappe.ValidationError)
+	parked = was.get("conversation_snoozed_until")
+	seen = get_datetime(was["conversation_seen_until"]) if was.get("conversation_seen_until") else None
+	who = was.get("conversation_seen_by")
+	values = {
+		"conversation_status": status,
+		"conversation_snoozed_until": _a_moment(parked) if parked else None,
+		"conversation_unread": 1 if cint(was.get("conversation_unread")) else 0,
+		# never ahead of now: a moment in the future would hide what has not arrived yet
+		"conversation_seen_until": min(seen, now_datetime()) if seen else None,
+		"conversation_seen_by": who if who and frappe.db.exists("User", who) else None,
+	}
+	for doctype, name in also_the_person(reference_doctype, reference_name):
+		frappe.db.set_value(doctype, name, values, update_modified=False)
+	return {"state": status, "until": values["conversation_snoozed_until"]}
+
+
+# --- the blue ticks ------------------------------------------------------------
+#
+# What the customer sees on their own phone, so it goes at the moment the CRM
+# says the conversation was read, and at no other. It used to go when a chat was
+# *opened*, while the badge stayed — opening is not reading — so the customer
+# was told somebody had read them while the CRM said nobody had: two answers to
+# one question, given to two people, at two different moments.
+
+# How frappe_whatsapp writes it down on a message, so a receipt it sent and one
+# sent from here read the same.
+READ_BY_US = "marked as read"
+
+# Meta takes a receipt for a message up to thirty days old, and asking about
+# older ones only fills the error log with its refusals.
+RECEIPTS_REACH_DAYS = 30
+
+RECEIPT_TIMEOUT = 15
+
+
+def receipts_wanted() -> bool:
+	"""Has this site asked for the blue ticks, and can it send them?"""
+	return bool(frappe.db.get_single_value("FCRM Settings", "whatsapp_read_receipts")) and bool(
+		frappe.db.exists("DocType", "WhatsApp Message")
 	)
-	told = 0
-	for name in waiting:
-		try:
-			frappe.get_doc("WhatsApp Message", name).send_read_receipt()
-			told += 1
-		except Exception:
-			frappe.log_error(frappe.get_traceback(), "WhatsApp: read receipt refused")
-	return {"acknowledged": told}
+
+
+def still_unacknowledged(where: list[tuple[str, str]]) -> list[str]:
+	"""The newest thing they wrote on WhatsApp, per number of ours, not yet marked read.
+
+	One per number, because WhatsApp marks everything before it in the same chat
+	as read too. Twenty receipts for twenty messages say the same thing twenty
+	times; the one for the last says it once — and the old way, twenty requests
+	in a row inside somebody's click, was the click waiting on Meta twenty times.
+	"""
+	base = {
+		**belongs_to(where),
+		"type": "Incoming",
+		"message_id": ["is", "set"],
+		"creation": [">", add_to_date(now_datetime(), days=-RECEIPTS_REACH_DAYS)],
+	}
+	if frappe.get_meta("WhatsApp Message").has_field("whatsapp_account"):
+		accounts = {
+			account or ""
+			for account in frappe.get_all("WhatsApp Message", filters=base, pluck="whatsapp_account")
+		}
+		per_number = [{**base, "whatsapp_account": account or ["is", "not set"]} for account in accounts]
+	else:
+		per_number = [base]
+
+	latest = []
+	for filters in per_number:
+		rows = frappe.get_all(
+			"WhatsApp Message",
+			filters=filters,
+			fields=["name", "status"],
+			order_by="creation desc",
+			limit=1,
+		)
+		if rows and rows[0].status != READ_BY_US and rows[0].name not in latest:
+			latest.append(rows[0].name)
+	return latest
+
+
+def tell_whatsapp(reference_doctype: str, reference_name: str) -> int:
+	"""Queue the blue ticks for this person, if the site wants them. How many.
+
+	The person's whole conversation, their deals included, because that is the
+	conversation that was just read.
+
+	Queued, and after the commit: this runs inside somebody's click, and a round
+	trip to Meta is not something a click should wait on — nor something to send
+	for a read the database then rolled back.
+	"""
+	if not receipts_wanted():
+		return 0
+	person = person_of(reference_doctype, reference_name) or (reference_doctype, reference_name)
+	latest = still_unacknowledged(scope(*person))
+	for message in latest:
+		frappe.enqueue(
+			"crm.api.conversations.send_read_receipt",
+			queue="short",
+			message=message,
+			enqueue_after_commit=True,
+		)
+	return len(latest)
+
+
+def whatsapp_account(name: str | None):
+	"""The account a message came in on, or the one incoming messages default to."""
+	if not frappe.db.exists("DocType", "WhatsApp Account"):
+		return None
+	if not (name and frappe.db.exists("WhatsApp Account", name)):
+		name = frappe.db.get_value("WhatsApp Account", {"is_default_incoming": 1}, "name")
+	return frappe.get_cached_doc("WhatsApp Account", name) if name else None
+
+
+def send_read_receipt(message: str) -> bool:
+	"""Tell WhatsApp we have read up to this message. Runs in the background.
+
+	Our own request rather than the method on the message: that one saves the
+	message to write the answer down, and saving an incoming message runs what
+	runs when one arrives — its number is looked up again, which can file it on
+	another record than the chat it is shown in. Writing the status straight to
+	the row says the same thing and nothing else.
+	"""
+	fields = ["type", "message_id", "status"]
+	if frappe.get_meta("WhatsApp Message").has_field("whatsapp_account"):
+		fields.append("whatsapp_account")
+	row = frappe.db.get_value("WhatsApp Message", message, fields, as_dict=True)
+	if not row or row.type != "Incoming" or not row.message_id or row.status == READ_BY_US:
+		return False
+	account = whatsapp_account(row.get("whatsapp_account"))
+	if not account:
+		return False
+
+	import requests
+
+	try:
+		answer = requests.post(
+			f"{account.url}/{account.version}/{account.phone_id}/messages",
+			headers={"Authorization": f"Bearer {account.get_password('token')}"},
+			json={"messaging_product": "whatsapp", "status": "read", "message_id": row.message_id},
+			timeout=RECEIPT_TIMEOUT,
+		)
+		told = answer.status_code == 200 and bool((answer.json() or {}).get("success"))
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "WhatsApp: read receipt not sent")
+		return False
+	if not told:
+		frappe.log_error(
+			f"{message}: {answer.status_code} {answer.text[:500]}", "WhatsApp: read receipt refused"
+		)
+		return False
+	frappe.db.set_value("WhatsApp Message", message, "status", READ_BY_US, update_modified=False)
+	return True

@@ -215,7 +215,7 @@
   },
   {
    "default": "0",
-   "description": "Tell WhatsApp their messages have been read when a chat is opened here. The customer sees the blue ticks.",
+   "description": "Tell WhatsApp a customer's messages have been read at the moment somebody here marks the conversation read: with the button, by replying from the CRM, or by marking it handled. Opening a chat never sends them. The customer sees the blue ticks.",
    "fieldname": "whatsapp_read_receipts",
    "fieldtype": "Check",
    "label": "Send WhatsApp Read Receipts"
@@ -232,7 +232,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-03-27 18:02:14.802197",
+ "modified": "2026-09-28 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",
