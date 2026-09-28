@@ -391,3 +391,86 @@ che li usavano erano trasparenti. Nella chat ora ci sono i token veri
 (`surface-elevation-2`, `surface-base`, `ink-base`). E la carta da parati di
 WhatsApp segue il tema dell'app (`[data-theme="dark"]`) invece di quello del
 computer.
+
+### Leggere è un momento solo
+
+Nel pannello delle conversazioni «letto» voleva dire due cose, in due momenti
+diversi. Le spunte blu partivano quando la chat veniva *aperta*, se
+l'impostazione era accesa; il badge restava finché qualcuno premeva «segna come
+letta». Così il cliente sapeva di essere stato letto mentre il CRM diceva che
+nessuno l'aveva fatto, e a un collega bastava scorrere la lista per mandare
+conferme a nome di tutti. Segnarla letta, poi, spostava la riga: l'ordine
+metteva i non letti in cima, e la conversazione appena letta finiva sotto tutte
+le altre, fuori dallo schermo.
+
+Ora letto è un momento solo, e ha tre porte: il pulsante «Segna come letta»,
+una risposta scritta dal CRM (WhatsApp, template, reazione, SMS, email; non una
+nota interna, non un messaggio mandato da un'automazione) e «Gestita». Aprire
+una conversazione non è una di queste.
+
+| Quando | Badge (per tutto il team) | La riga nella lista | Spunte blu al cliente, se attive |
+|---|---|---|---|
+| Apri la conversazione | Non cambia | Non si muove | No |
+| Arriva un loro messaggio | Si accende; il numero conta quelli arrivati dall'ultima lettura | Sale in cima; se era gestita o rimandata torna fra le Aperte | No |
+| Rispondi dal CRM | Si spegne: «Letta da te · ora» | Sale in cima, perché è un messaggio | Sì |
+| «Segna come letta» | Si spegne | Resta dov'è | Sì |
+| «Gestita» | Si spegne, se c'era qualcosa da leggere | Resta velata al suo posto, «Gestita · torna quando scrivono», finché non passi a un'altra; il toast ha Annulla | Sì, se c'era qualcosa da leggere |
+| «Rimanda» | Non cambia | Come sopra, «Rimandata a domani 09:00» | No |
+| «Segna come da leggere» | Torna il pallino, senza numero | Resta dov'è | Quelle già partite restano |
+| Assegni la conversazione | Non cambia | Non si muove | No |
+| Scrive un'automazione | Non cambia | Sale in cima | No |
+
+L'ordine della lista è solo per ultimo messaggio, da una parte o dall'altra:
+una riga si sposta quando qualcuno dice qualcosa, mai perché qualcuno ha
+premuto un pulsante. I non letti sono in grassetto, con il numero o il
+pallino, e hanno un filtro loro, «Non lette», accanto al selettore della vista:
+restringe la vista aperta (le non lette fra le aperte, fra le rimandate, fra
+le gestite), mai una ricerca, perché un nome cercato è qualcuno che serve,
+letto o no. Anche il selettore dice cosa contiene ogni vista e cosa fa tornare
+una conversazione fuori da lì.
+
+**La riga che se ne va.** Gestita, rimandata, letta mentre la lista mostra solo
+le non lette: sul server la conversazione esce dalla vista. Toglierla anche
+dallo schermo, sotto il puntatore, faceva scivolare al suo posto quella sotto,
+e il clic successivo cadeva su qualcuno che nessuno aveva scelto. Resta
+quindi dov'era, velata, con il motivo al posto dell'ultimo messaggio, e se ne
+va quando apri un'altra conversazione, cambi vista o cerchi (anche il pulsante
+«Aggiorna» la toglie). Gli spostamenti della lista sono animati, perché l'occhio
+li possa seguire.
+
+**Annulla.** «Gestita» e «Rimanda» hanno un toast che dice dove è andata la
+conversazione e quando torna, con Annulla, che la rimette com'era: stato, letta
+o no, da chi e da quando. Tranne le spunte blu, che sono sul telefono del
+cliente. E se nel frattempo è arrivato un messaggio l'Annulla non fa nulla, e
+lo dice: rimettere «gestita» sopra un messaggio appena arrivato lo
+nasconderebbe.
+
+**Dove iniziano i nuovi.** Nel filo una riga «2 nuovi messaggi» sta sopra il
+primo messaggio arrivato dopo l'ultima lettura. Il punto si prende quando apri
+la conversazione e resta fermo finché è aperta: leggerla o rispondere non tira
+via la riga da sotto i messaggi a cui punta. È blu finché la conversazione è
+da leggere e grigia dopo. Quando fra i nuovi c'è WhatsApp dice la cosa che lo
+schermo non mostra, cioè se il cliente viene avvisato: «vedrà le spunte blu
+quando rispondi o la segni come letta», «letta · ha le spunte blu», oppure,
+con le conferme spente, «da questo CRM non riceve spunte blu». Sulle nostre
+spunte, un tooltip dice cosa significano: inviato, consegnato, letto.
+
+**Chi l'ha letta.** Nell'intestazione, al posto del pulsante, «Letta da Mario ·
+10:32»; il menu sotto ha il momento per intero e «Segna come da leggere»,
+che spiega che le spunte già inviate restano. Il pulsante «Segna come letta»
+ha il blu del pallino e del contatore che spegne: su telefono, dove sono due
+icone, azione da fare e stato raggiunto non si confondono.
+
+**Le spunte blu.** Una sola richiesta per numero WhatsApp, per l'ultimo
+messaggio loro (WhatsApp segna letti anche i precedenti della stessa chat),
+sull'intera conversazione della persona, trattative comprese. È in coda dopo il
+commit, perché il clic non aspetti Meta e perché non parta una conferma per una
+lettura poi annullata dal database. Solo per messaggi entro i 30 giorni, oltre
+i quali Meta rifiuta. La richiesta la fa il CRM e scrive lo stato sulla riga:
+il metodo di frappe_whatsapp risalvava il messaggio in arrivo, e salvarlo
+ricerca di nuovo il numero, cosa che può spostarlo su un altro record.
+
+**Rispondere non è gestire.** Dopo una risposta la conversazione è letta, esce
+da «In attesa di risposta» perché l'ultima parola è nostra, ma resta fra le
+Aperte: si può rispondere a una domanda e dovere ancora la cosa promessa.
+Toglierla dal mucchio è «Gestita».

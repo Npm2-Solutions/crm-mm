@@ -323,6 +323,44 @@ sbagliato è ancora una classe valida.
 
 ---
 
+## Conversazioni — leggere è un momento solo
+
+> **Completato** (28/09/2026). Cosa succede quando si guarda, si legge, si
+> risponde, si gestisce e si rimanda una conversazione, e quando il cliente
+> riceve le spunte blu: la tabella completa è nel doc 17, «Leggere è un momento
+> solo».
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Letta ha tre porte: il pulsante, una risposta scritta dal CRM, «Gestita». Aprire non è una | Le spunte blu partivano all'apertura mentre il badge restava: il cliente sapeva di essere stato letto mentre il CRM diceva di no, e a un collega bastava scorrere la lista |
+| Le spunte partono nello stesso momento in cui si spegne il badge, mai da sole | Un solo significato di «letto», per il team e per il cliente |
+| Una conferma per numero, per l'ultimo messaggio, in coda dopo il commit | WhatsApp segna letti anche i precedenti; venti richieste di fila dentro un clic erano venti attese di Meta |
+| La conferma è una nostra richiesta, non `WhatsAppMessage.send_read_receipt()` | Quel metodo risalva il messaggio in arrivo, e salvarlo ricerca il numero: poteva spostarlo su un altro record |
+| La risposta di un'automazione non legge | Nessuno ha letto niente |
+| Rispondere legge ma non gestisce | Si può rispondere e dovere ancora qualcosa; «In attesa di risposta» si svuota da sola, «Aperte» no |
+| Ordine solo per ultimo messaggio; i non letti hanno un filtro, non la cima | Coi non letti in cima, segnarne una letta la faceva sparire sotto le altre |
+| «Da leggere» rimette solo il flag e tiene il momento della lettura | Azzerare il momento trasformava il numero sulla riga in tutti i messaggi mai ricevuti |
+| Il numero sulla riga solo se la conversazione è da leggere | Un numero su una riga che l'intestazione dice letta sono due risposte a una domanda |
+| La riga che esce dalla vista resta, velata e col motivo, finché non si passa ad altro | Toglierla sotto il puntatore faceva slittare la lista e il clic successivo cadeva sulla persona sbagliata |
+| Gestita e Rimanda hanno Annulla; l'Annulla rifiuta se nel frattempo è arrivato un messaggio | Rimettere «gestita» sopra un messaggio nuovo lo nasconderebbe |
+| Gestita legge solo entrando in gestita | Assegnare una conversazione già gestita passa dallo stesso endpoint: dare via una cosa non è leggerla |
+| La riga «N nuovi messaggi» si misura all'apertura e resta ferma | Leggere o rispondere non deve portare via la riga dai messaggi a cui punta |
+| «Segna come letta» è blu | Su telefono è un'icona come «Letta»: il blu del contatore distingue la cosa da fare da quella fatta |
+| Nell'intestazione lo stato sta sotto il nome | Accanto al nome lo schiacciava: «Gi…» con «Back tomorrow 09:00» |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/api/conversations.py` | `mark_read` (con le spunte), `mark_unread` (solo il flag), `restore`, `send_read_receipt`, conteggi `<vista>_unread`; via `acknowledge` |
+| `frontend/src/utils/conversation.js` | `keepInPlace`, `whyItLeft`, `newSince` — puri, testati |
+| `frontend/src/composables/conversationState.js` | `markAnswered` per i composer, toast con Annulla, menu di «Letta» |
+| `frontend/src/components/Activities/NewMessagesLine.vue` | La riga dei nuovi messaggi e la didascalia sulle spunte |
+
+---
+
 ## Debito semgrep — 102 finding a zero
 
 > **Completato.** La scansione completa (`semgrep scan` con le regole Frappe e
