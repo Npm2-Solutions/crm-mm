@@ -224,12 +224,14 @@ def page_branding(config=None) -> dict:
 	from crm.scheduling.branding import accent_vars
 
 	config = config or settings()
-	brand = frappe.db.get_single_value("FCRM Settings", ["brand_logo", "favicon"], as_dict=True) or {}
-	logo = config.get("booking_page_logo") or brand.get("brand_logo") or ""
+	# one field per read: `get_single_value` takes a single fieldname. Handed a
+	# list and `as_dict` it raised, the page caught it, and every public booking
+	# page went out with no logo, no favicon and no colours of its own
+	logo = config.get("booking_page_logo") or frappe.db.get_single_value("FCRM Settings", "brand_logo") or ""
 	return {
 		"title": page_title(config),
 		"logo": logo,
-		"favicon": brand.get("favicon") or logo,
+		"favicon": frappe.db.get_single_value("FCRM Settings", "favicon") or logo,
 		"css": accent_vars(config.get("booking_page_color")),
 	}
 
