@@ -24,7 +24,8 @@
         <div
           class="inline-flex items-center justify-center border-r border-outline-gray-2 py-2 px-1 w-12"
         >
-          {{ __('Number') }}
+          <!-- «Number» ran out of its 48px into the next heading -->
+          {{ __('No.') }}
         </div>
         <div
           class="grid w-full truncate"

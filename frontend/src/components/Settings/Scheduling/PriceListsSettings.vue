@@ -24,7 +24,9 @@
     <div class="flex flex-1 gap-4 overflow-hidden px-2">
       <!-- price lists -->
       <div class="w-64 shrink-0 overflow-y-auto">
+        <!-- an empty bordered list drew a stray hairline over the empty state -->
         <div
+          v-if="priceLists.data?.length"
           class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
           <div
@@ -147,7 +149,10 @@
               )
             }}
           </div>
-          <div v-else-if="!selected" class="px-1 text-p-sm text-ink-gray-5">
+          <div
+            v-else-if="!selected && priceLists.data?.length"
+            class="px-1 text-p-sm text-ink-gray-5"
+          >
             {{ __('Pick a price list on the left.') }}
           </div>
         </div>

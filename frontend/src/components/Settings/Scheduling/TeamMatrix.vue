@@ -359,7 +359,8 @@ function describe(service) {
   if (service.upcoming_count) {
     parts.push(__('{0} upcoming', [service.upcoming_count]))
   }
-  return parts.join(' · ')
+  // a service with no staff rule set gave «30 min ·  · 50 €»
+  return parts.filter(Boolean).join(' · ')
 }
 
 function rowActions(service) {

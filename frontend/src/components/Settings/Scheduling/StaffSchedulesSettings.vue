@@ -55,10 +55,10 @@
     <div class="flex-1 overflow-auto px-2">
       <div
         v-if="rota.data?.team?.length"
-        class="min-w-[760px] rounded-lg border border-outline-gray-2"
+        class="min-w-[680px] rounded-lg border border-outline-gray-2"
       >
         <div
-          class="grid grid-cols-[200px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-2 bg-surface-gray-1 text-p-xs text-ink-gray-5"
+          class="grid grid-cols-[160px_repeat(7,minmax(0,1fr))] border-b border-outline-gray-2 bg-surface-gray-1 text-p-xs text-ink-gray-5"
         >
           <div class="px-3 py-2">{{ __('Professional') }}</div>
           <div
@@ -73,7 +73,7 @@
         <div
           v-for="person in rota.data.team"
           :key="person.user"
-          class="grid cursor-pointer grid-cols-[200px_repeat(7,minmax(0,1fr))] border-b border-outline-elevation-2 last:border-b-0 hover:bg-surface-gray-1"
+          class="grid cursor-pointer grid-cols-[160px_repeat(7,minmax(0,1fr))] border-b border-outline-elevation-2 last:border-b-0 hover:bg-surface-gray-1"
           @click="openEditor(person.user)"
         >
           <div class="flex min-w-0 items-center gap-2 px-3 py-2">
@@ -102,7 +102,7 @@
                   : 'bg-surface-green-2 text-ink-green-8'
               "
             >
-              {{ w[0] }}–{{ w[1] }}
+              {{ windowLabel(w) }}
             </div>
             <div
               v-if="cell.state === 'closed'"
@@ -349,6 +349,13 @@ const weekLabel = computed(() => {
   })
   return `${fmt.format(new Date(days[0] + 'T00:00:00Z'))} – ${fmt.format(new Date(days[6] + 'T00:00:00Z'))}`
 })
+
+// A window that runs to midnight comes back as «…–00:00», and a whole day as
+// «00:00–00:00» — which, in a green «working» chip, reads as zero hours.
+function windowLabel([start, end]) {
+  if (start === '00:00' && end === '00:00') return __('All day')
+  return `${start}–${end === '00:00' ? '24:00' : end}`
+}
 
 function dayLabel(day) {
   return new Intl.DateTimeFormat(appLocale(), {
