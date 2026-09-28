@@ -2,13 +2,16 @@
   <LayoutHeader>
     <template #left-header>
       <div class="flex min-w-0 items-center gap-2">
-        <Breadcrumbs :items="breadcrumbs" />
+        <!-- on a phone the title needs the room; the way back is in the ⋯ menu -->
+        <Breadcrumbs v-if="!isMobileView" :items="breadcrumbs" />
         <input
           v-model="draft.title"
           :placeholder="__('Untitled automation')"
           class="min-w-0 max-w-64 border-0 bg-transparent p-0 text-base font-medium text-ink-gray-8 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
         />
+        <!-- on a phone the «Live» switch right underneath already says it -->
         <Badge
+          v-if="!isMobileView"
           :label="draft.enabled ? __('Active') : __('Draft')"
           :theme="draft.enabled ? 'green' : 'gray'"
           size="sm"
@@ -29,7 +32,11 @@
           :options="issueOptions"
           placement="right"
         >
-          <Button variant="ghost" :label="issueLabel">
+          <Button
+            variant="ghost"
+            :label="isMobileView ? String(issues.length) : issueLabel"
+            :aria-label="issueLabel"
+          >
             <template #prefix>
               <FeatherIcon
                 name="alert-triangle"
@@ -39,18 +46,26 @@
             </template>
           </Button>
         </Dropdown>
+        <!-- on a phone the words go and the icons stay, so Save still fits -->
         <Button
           v-if="draft.name"
           :variant="showStats ? 'subtle' : 'ghost'"
-          :label="__('Stats')"
+          :label="isMobileView ? undefined : __('Stats')"
+          :icon="isMobileView ? 'lucide-bar-chart-2' : undefined"
+          :aria-label="__('Stats')"
           @click="toggleStats"
         >
-          <template #prefix>
+          <template v-if="!isMobileView" #prefix>
             <FeatherIcon name="bar-chart-2" class="size-4" />
           </template>
         </Button>
-        <Button :label="__('Test run')" @click="showPreview = true">
-          <template #prefix>
+        <Button
+          :label="isMobileView ? undefined : __('Test run')"
+          :icon="isMobileView ? 'lucide-play' : undefined"
+          :aria-label="__('Test run')"
+          @click="showPreview = true"
+        >
+          <template v-if="!isMobileView" #prefix>
             <FeatherIcon name="play" class="size-4" />
           </template>
         </Button>
@@ -245,6 +260,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import RunPreviewDialog from '@/components/Automations/RunPreviewDialog.vue'
 import StepPanel from '@/components/Automations/StepPanel.vue'
 import TriggerPanel from '@/components/Automations/TriggerPanel.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import {
   Badge,
   Breadcrumbs,
@@ -544,7 +560,10 @@ function load(name) {
         steps: normalizeSteps(data.steps || []),
       })
       saved.value = JSON.stringify(payload())
-      selectedId.value = `trigger:${draft.triggers[0].id}`
+      // On a phone the panel covers the whole canvas: an automation that
+      // already exists opens on its flow, not on its trigger.
+      if (!isMobileView.value)
+        selectedId.value = `trigger:${draft.triggers[0].id}`
     },
     onError: (error) => {
       toast.error(error.messages?.[0] || __('Could not load the automation'))

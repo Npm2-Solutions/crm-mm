@@ -7,12 +7,15 @@
     @wheel="onWheel"
   >
     <div
-      class="mx-auto w-max px-16 py-10"
+      class="mx-auto w-max px-4 py-6 sm:px-16 sm:py-10"
       :style="{ transform: `scale(${zoom})`, transformOrigin: 'top center' }"
     >
       <div class="flex flex-col items-center">
-        <!-- triggers: any of them puts a record into this automation -->
-        <div class="flex flex-wrap items-stretch justify-center gap-3">
+        <!-- triggers: any of them puts a record into this automation; on a
+             phone they stack, so the flow stays one column wide -->
+        <div
+          class="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-center"
+        >
           <div
             v-for="(trigger, index) in draft.triggers"
             :key="trigger.id"
