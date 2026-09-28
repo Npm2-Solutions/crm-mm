@@ -303,6 +303,28 @@ export function mobileOrder(items) {
     )
 }
 
+// -- the switcher --------------------------------------------------------------------
+
+// The switcher's groups: the team's dashboards, the viewer's own, and — for a
+// manager — the ready-made ones the site cannot answer yet, which the server
+// sends with what to switch on (`setup`). The one open stays listed even when it
+// has nothing to show.
+export function groupDashboards(list, currentName) {
+  const waiting = list.filter(
+    (dashboard) => !dashboard.available && dashboard.setup?.length,
+  )
+  const ready = list.filter(
+    (dashboard) =>
+      (dashboard.available || dashboard.name === currentName) &&
+      !waiting.includes(dashboard),
+  )
+  return {
+    shared: ready.filter((dashboard) => !dashboard.private),
+    mine: ready.filter((dashboard) => dashboard.private),
+    waiting,
+  }
+}
+
 // -- the catalogue -----------------------------------------------------------------
 
 function fold(text) {

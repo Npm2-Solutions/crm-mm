@@ -168,6 +168,56 @@
         </div>
 
         <div
+          v-else-if="!items.length && current?.setup?.length"
+          class="flex h-full flex-col items-center justify-center gap-4 px-6 py-16 text-center"
+        >
+          <span
+            class="grid size-12 place-items-center rounded-full bg-surface-gray-2"
+          >
+            <Icon
+              :icon="current.icon || 'layout-dashboard'"
+              class="size-5 text-ink-gray-6"
+            />
+          </span>
+          <div class="flex flex-col items-center gap-1">
+            <div class="text-base font-medium text-ink-gray-8">
+              {{ __('{0} is not set up yet', [current.title]) }}
+            </div>
+            <div class="max-w-md text-p-sm text-ink-gray-5">
+              {{ current.setup[0].hint }}
+            </div>
+          </div>
+          <div
+            v-if="current.preview?.length"
+            class="flex max-w-2xl flex-col items-center gap-2"
+          >
+            <div class="text-xs text-ink-gray-5">
+              {{ __('Once it is set up, this dashboard shows') }}
+            </div>
+            <div class="flex flex-wrap justify-center gap-1.5">
+              <span
+                v-for="title in current.preview.slice(0, PREVIEW)"
+                :key="title"
+                class="rounded-full bg-surface-gray-2 px-2 py-0.5 text-xs text-ink-gray-7"
+              >
+                {{ title }}
+              </span>
+              <span
+                v-if="current.preview.length > PREVIEW"
+                class="px-1 py-0.5 text-xs text-ink-gray-5"
+              >
+                {{ __('and {0} more', [current.preview.length - PREVIEW]) }}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="solid"
+            :label="__('Set up {0}', [current.setup[0].label])"
+            @click="setUp(current.setup[0])"
+          />
+        </div>
+
+        <div
           v-else-if="!items.length && current"
           class="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center"
         >
@@ -278,6 +328,7 @@ import { usersStore } from '@/stores/users'
 import {
   DEFAULT_PERIOD,
   duplicateItem,
+  groupDashboards,
   newItem,
   periodRange,
   toSavedLayout,
@@ -298,6 +349,8 @@ import { useRoute, useRouter } from 'vue-router'
 const LAST_OPENED = 'crm_dashboard_last'
 // a dashboard left open on a screen stays current without anyone touching it
 const AUTO_REFRESH = 5 * 60 * 1000
+// how many of a not-yet-set-up dashboard's widgets are named before "and N more"
+const PREVIEW = 12
 
 const route = useRoute()
 const router = useRouter()
@@ -383,17 +436,18 @@ const switcherOptions = computed(() => {
     icon: iconOf(dashboard.icon),
     onClick: () => openDashboard(dashboard.name),
   })
-  // a template the site cannot answer yet stays out of the way
-  const shown = list.value.filter(
-    (dashboard) =>
-      dashboard.available || dashboard.name === current.value?.name,
+  // what the site cannot answer yet is offered apart, to a manager, with how
+  // to switch it on — a module nobody can find is a module nobody sets up
+  const { shared, mine, waiting } = groupDashboards(
+    list.value,
+    current.value?.name,
   )
-  const shared = shown.filter((dashboard) => !dashboard.private)
-  const mine = shown.filter((dashboard) => dashboard.private)
   const groups = []
   if (shared.length)
     groups.push({ group: __('Team'), items: shared.map(entry) })
   if (mine.length) groups.push({ group: __('Mine'), items: mine.map(entry) })
+  if (waiting.length)
+    groups.push({ group: __('Not set up yet'), items: waiting.map(entry) })
   groups.push({
     group: '',
     hideLabel: true,
@@ -719,6 +773,14 @@ function setUp(feature) {
   if (feature.key === 'automations') return router.push({ name: 'Automations' })
   if (feature.settings) openSettings(feature.settings)
 }
+
+// back from the settings, a dashboard that had nothing to show asks again:
+// whoever just set the module up expects to see it
+watch(showSettings, (open) => {
+  if (open || !current.value || current.value.available !== false) return
+  dashboards.reload()
+  openDashboard(current.value.name, { replace: true })
+})
 
 // -- managing dashboards ------------------------------------------------------------
 
