@@ -1,6 +1,11 @@
 import { createResource } from 'frappe-ui'
 import { noValueFieldTypes, standardFieldsMeta } from '@/utils/model.js'
-import { formatCurrency, formatNumber } from '@/utils/numberFormat.js'
+import {
+  cint,
+  flt,
+  formatCurrency,
+  formatNumber,
+} from '@/utils/numberFormat.js'
 import { computed, reactive } from 'vue'
 
 const doctypesMeta = reactive({})
@@ -31,9 +36,13 @@ export function getMeta(doctype) {
     meta.fetch()
   }
 
+  // As the desk writes a percent: the number at its precision, without the
+  // trailing zeros a float is padded with — «70%», not «70.000%».
   function getFormattedPercent(fieldname, doc) {
-    let value = getFormattedFloat(fieldname, doc)
-    return value + '%'
+    let df = doctypesMeta[doctype]?.fields.find((f) => f.fieldname == fieldname)
+    let precision =
+      df?.precision || cint(window.sysdefaults?.float_precision) || 2
+    return flt(doc[fieldname], precision) + '%'
   }
 
   function getFormattedFloat(fieldname, doc) {
