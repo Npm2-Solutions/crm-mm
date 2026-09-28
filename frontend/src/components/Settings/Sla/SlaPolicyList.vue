@@ -70,7 +70,7 @@
             :key="sla.name"
           >
             <div
-              class="grid grid-cols-7 items-center gap-4 cursor-pointer hover:bg-surface-sidebar rounded"
+              class="grid grid-cols-7 items-center gap-4 cursor-pointer hover:bg-surface-gray-1 rounded"
             >
               <div
                 class="w-full pl-2 col-span-5 flex items-center h-14 gap-2"

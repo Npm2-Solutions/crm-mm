@@ -37,7 +37,7 @@
           <hr class="mt-2 mx-2 border-outline-gray-2" />
           <div v-for="(pipeline, index) in pipelines.data" :key="pipeline.name">
             <div
-              class="grid grid-cols-8 items-center gap-4 cursor-pointer hover:bg-surface-sidebar rounded"
+              class="grid grid-cols-8 items-center gap-4 cursor-pointer hover:bg-surface-gray-1 rounded"
             >
               <div
                 class="w-full pl-2 col-span-5 flex items-center h-14 gap-2"

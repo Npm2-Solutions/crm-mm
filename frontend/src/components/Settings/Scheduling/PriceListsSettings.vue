@@ -25,7 +25,7 @@
       <!-- price lists -->
       <div class="w-64 shrink-0 overflow-y-auto">
         <div
-          class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+          class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
           <div
             v-for="list in priceLists.data || []"
@@ -95,7 +95,7 @@
         <div class="flex-1 overflow-y-auto">
           <div
             v-if="prices.data?.length"
-            class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+            class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
           >
             <div
               v-for="rule in prices.data"

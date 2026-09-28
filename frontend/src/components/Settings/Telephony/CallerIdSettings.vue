@@ -73,7 +73,7 @@
         </div>
 
         <div
-          class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+          class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
           <div v-for="row in callerIds.data" :key="row.name" class="px-4 py-3">
             <div class="flex items-start justify-between gap-4">

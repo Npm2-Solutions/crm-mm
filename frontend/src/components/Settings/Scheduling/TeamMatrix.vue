@@ -54,7 +54,7 @@
               class="group hover:bg-surface-gray-1"
             >
               <td
-                class="sticky left-0 border-b border-outline-gray-1 bg-surface-elevation-2 px-3 py-2 group-hover:bg-surface-gray-1"
+                class="sticky left-0 border-b border-outline-elevation-2 bg-surface-elevation-2 px-3 py-2 group-hover:bg-surface-gray-1"
               >
                 <div class="flex items-center gap-2">
                   <span
@@ -104,7 +104,7 @@
               <td
                 v-for="person in matrix.data.staff"
                 :key="person.user"
-                class="border-b border-outline-gray-1 p-1 text-center"
+                class="border-b border-outline-elevation-2 p-1 text-center"
               >
                 <button
                   class="group mx-auto flex h-8 w-full max-w-[96px] items-center justify-center gap-1 rounded border text-p-xs"

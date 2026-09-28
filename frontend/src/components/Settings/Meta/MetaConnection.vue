@@ -318,7 +318,7 @@
 
         <!-- the same Pages publish, with a switch of their own elsewhere -->
         <div
-          class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-gray-1 pt-3 text-p-sm text-ink-gray-5"
+          class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-elevation-2 pt-3 text-p-sm text-ink-gray-5"
         >
           <span>
             {{
@@ -367,7 +367,9 @@
         </span>
         <Badge :label="__('Administrators only')" theme="gray" size="sm" />
       </summary>
-      <div class="mt-3 flex flex-col divide-y divide-outline-gray-1 text-p-sm">
+      <div
+        class="mt-3 flex flex-col divide-y divide-outline-elevation-2 text-p-sm"
+      >
         <div class="flex justify-between gap-4 py-2">
           <span class="text-ink-gray-5">{{ __('Meta app') }}</span>
           <span class="text-right text-ink-gray-8">

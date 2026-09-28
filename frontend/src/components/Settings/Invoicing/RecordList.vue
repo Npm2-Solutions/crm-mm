@@ -37,7 +37,7 @@
     <div class="flex-1 overflow-y-auto px-2">
       <div
         v-if="visibili.length"
-        class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+        class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
       >
         <div
           v-for="row in visibili"

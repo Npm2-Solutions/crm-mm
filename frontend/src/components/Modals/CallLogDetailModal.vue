@@ -483,19 +483,16 @@ watch(
 </script>
 
 <style scoped>
+/* the player takes the theme's grey, not a light one of its own */
 .audio-control {
   height: 36px;
   outline: none;
   border-radius: 10px;
   cursor: pointer;
-  background-color: rgb(237, 237, 237);
-}
-
-audio::-webkit-media-controls-panel {
-  background-color: rgb(237, 237, 237) !important;
+  background-color: var(--surface-gray-2);
 }
 
 .audio-control::-webkit-media-controls-panel {
-  background-color: white;
+  background-color: var(--surface-gray-2);
 }
 </style>
