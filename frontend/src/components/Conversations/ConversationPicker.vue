@@ -13,30 +13,36 @@
 -->
 <template>
   <div
-    class="flex w-full shrink-0 flex-col overflow-hidden bg-surface-white sm:w-80 sm:border-r"
+    class="flex w-full shrink-0 flex-col overflow-hidden bg-surface-base sm:w-80 sm:border-r"
   >
-    <div class="flex shrink-0 flex-col gap-2 border-b px-3 py-2.5">
+    <div class="flex shrink-0 flex-col gap-2 px-3 pb-2 pt-2.5">
       <Dropdown :options="viewOptions" placement="left">
         <template #default="{ open }">
           <button
-            class="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left transition-colors hover:bg-surface-gray-2"
+            class="flex max-w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-surface-gray-2"
           >
             <span
-              class="min-w-0 truncate text-base font-medium text-ink-gray-8"
+              class="min-w-0 truncate text-lg font-semibold text-ink-gray-9"
             >
               {{ __(labelOf(view)) }}
             </span>
-            <span v-if="countOf(view)" class="text-p-sm text-ink-gray-5">
+            <span
+              v-if="countOf(view) && !search"
+              class="shrink-0 rounded-full bg-surface-gray-2 px-1.5 text-p-xs font-medium tabular-nums text-ink-gray-6"
+            >
               {{ countOf(view) }}
             </span>
             <!-- while searching, the view is not what is on screen: a name you
                type is looked for everywhere, so saying «Aperte» would be a lie -->
-            <span v-if="search" class="text-p-xs italic text-ink-gray-4">
+            <span
+              v-if="search"
+              class="shrink-0 text-p-xs italic text-ink-gray-5"
+            >
               {{ __('everywhere') }}
             </span>
             <component
               :is="open ? LucideChevronUp : LucideChevronDown"
-              class="ml-auto size-4 shrink-0 text-ink-gray-5"
+              class="size-4 shrink-0 text-ink-gray-5"
             />
           </button>
         </template>
@@ -65,9 +71,13 @@
       </div>
       <div
         v-else-if="!rows.length"
-        class="px-4 py-8 text-center text-p-sm text-ink-gray-4"
+        class="flex flex-col items-center gap-2 px-6 py-10 text-center"
       >
-        {{ empty }}
+        <span
+          class="lucide-message-circle-check size-6 text-ink-gray-4"
+          aria-hidden="true"
+        />
+        <span class="text-p-sm text-ink-gray-5">{{ empty }}</span>
       </div>
     </div>
   </div>

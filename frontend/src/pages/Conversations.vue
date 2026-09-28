@@ -38,7 +38,9 @@
     Three panes side by side is a desk, not a phone. At 390 pixels the list
     alone took 320 of them and the conversation got a sliver — so on a phone the
     three become one at a time: the list, then the thread with a way back, and
-    the person behind a button.
+    the person behind a button. And on a laptop the third pane waits behind the
+    same button: at 1024 pixels the sidebar, the list and the panel left the
+    conversation 176 pixels to be read in.
   -->
   <div class="flex flex-1 overflow-hidden">
     <ConversationPicker
@@ -55,18 +57,15 @@
     />
 
     <div v-if="chosen" class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <!-- the way back, and the way to the person: on a phone they are the only
-         two things the other panes can be reached by -->
-      <div
-        v-if="isMobileView"
-        class="flex h-11 shrink-0 items-center gap-2 border-b px-2"
-      >
-        <Button variant="ghost" icon="arrow-left" @click="back()" />
-        <span class="min-w-0 flex-1 truncate text-base font-medium">
-          {{ nameOf(personOf(chosen)) }}
-        </span>
-        <Button variant="ghost" icon="info" @click="showPerson = true" />
-      </div>
+      <ConversationHeader
+        :person="current"
+        :back="isMobileView"
+        :details="!roomForPanel"
+        :wide="!isMobileView"
+        @back="back()"
+        @details="showPerson = true"
+        @changed="reload()"
+      />
       <!--
         The Activity tab of that person, whole: the channel picker, the stream
         and the composer, with everything they already know about replies,
@@ -83,30 +82,32 @@
     <!-- on a phone the list *is* the empty state, so there is nothing to say -->
     <div
       v-else-if="!isMobileView"
-      class="flex flex-1 flex-col items-center justify-center gap-2 text-ink-gray-4"
+      class="flex flex-1 flex-col items-center justify-center gap-2 bg-surface-gray-2 text-center dark:bg-surface-base"
     >
-      <InboxIcon class="h-8 w-8" />
-      <span class="text-lg font-medium">{{ __('Pick a conversation') }}</span>
-      <span class="text-sm">
+      <InboxIcon class="mb-1 size-8 text-ink-gray-4" />
+      <span class="text-lg font-medium text-ink-gray-7">
+        {{ __('Pick a conversation') }}
+      </span>
+      <span class="max-w-xs text-p-sm text-ink-gray-5">
         {{ __('Everything said to this business, in one place.') }}
       </span>
     </div>
 
     <ConversationAside
-      v-if="chosen && !isMobileView"
-      :person="personOf(chosen)"
+      v-if="chosen && roomForPanel"
+      :person="current"
       @changed="reload()"
     />
   </div>
 
-  <!-- and on a phone it slides in over the conversation, because there is no
-     third column to put it in -->
+  <!-- and where there is no room for a third column, it comes in over the
+     conversation -->
   <Dialog v-model="showPerson" :options="{ size: 'sm' }">
     <template #body>
       <ConversationAside
         v-if="chosen"
         class="!w-full !border-l-0"
-        :person="personOf(chosen)"
+        :person="current"
         @changed="reload()"
       />
     </template>
@@ -116,11 +117,12 @@
 <script setup>
 import Activities from '@/components/Activities/Activities.vue'
 import ConversationAside from '@/components/Conversations/ConversationAside.vue'
+import ConversationHeader from '@/components/Conversations/ConversationHeader.vue'
 import ConversationPicker from '@/components/Conversations/ConversationPicker.vue'
 import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
-import { isMobileView } from '@/composables/settings'
+import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import { Breadcrumbs, Dialog, createResource, debounce } from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -165,13 +167,31 @@ const unread = createResource({
 
 const showPerson = ref(false)
 
-function personOf(name) {
-  return rows.value.find((row) => row.name === name) || { name }
-}
+// A third column only where it leaves the conversation room to be read in: at
+// 1280 pixels the sidebar, the list and the panel left the middle 430, and the
+// name in the header was the first thing cut.
+const roomForPanel = computed(() => viewportWidth.value >= 1400)
 
-function nameOf(person) {
-  return person?.lead_name || person?.organization || person?.name || ''
-}
+// The person whose conversation is open, read on its own rather than looked up
+// among the rows on screen. The list holds the top of one view; a link — from
+// the dashboard, a notification, a colleague — can name anybody, and looking
+// only there is how the header came to say «CRM-LEAD-2026-00128».
+const person = createResource({
+  url: 'crm.api.conversations.person',
+  makeParams: () => ({ name: chosen.value }),
+})
+
+// The freshest of the two copies: the one read for this conversation once it
+// has arrived, the row from the list until then, and the bare name before
+// either — never somebody else's.
+const current = computed(() => {
+  if (person.data?.name === chosen.value) return person.data
+  return (
+    rows.value.find((row) => row.name === chosen.value) || {
+      name: chosen.value,
+    }
+  )
+})
 
 // Back to the list, which on a phone is the pane this one replaced.
 function back() {
@@ -194,7 +214,9 @@ function choose(row) {
 watch(
   chosen,
   (name) => {
+    showPerson.value = false
     if (!name) return
+    person.fetch()
     acknowledge.submit({
       reference_doctype: 'CRM Lead',
       reference_name: name,
@@ -231,6 +253,7 @@ function reload() {
   people.reload()
   unread.fetch()
   counts.reload()
+  if (chosen.value) person.fetch()
 }
 
 // a message arriving reorders this list, so it has to be told
