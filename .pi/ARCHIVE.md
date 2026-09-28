@@ -305,6 +305,7 @@ sbagliato è ancora una classe valida.
 | `.prose-f` usa `break-words` | `break-all` spezzava ogni parola dove finiva la riga |
 | Gli stati della fattura si scrivono come parole (`statusLabel`) | Restano le parole dell'Agenzia, senza i trattini bassi del database |
 | Via la pagina Welcome | Uno stub di upstream che salutava «John Doe» con due pulsanti senza azione, a cui non portava niente |
+| Nei modali di creazione il cursore va nel primo campo obbligatorio in cui si scrive (`useFirstFieldFocus`), aspettando che il layout sia disegnato | Il solo marcatore `<div autofocus>` toglieva a Reka il primo focus (niente più tooltip sul pulsante dell'intestazione), ma frappe-ui cerca il campo nel momento in cui il modale si apre e i campi arrivano dopo, col layout: il focus restava sul pulsante che apre il modale, dietro di esso, e Tab camminava sulla pagina sotto. Il messaggio di Chrome «Autofocus processing was blocked…» è informativo: dice che l'autofocus nativo non è partito, perché il focus lo mette il codice |
 
 ### Lasciato com'è, di proposito
 
