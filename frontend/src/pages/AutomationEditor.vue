@@ -34,7 +34,7 @@
               <FeatherIcon
                 name="alert-triangle"
                 class="size-4"
-                :class="blocking ? 'text-ink-red-3' : 'text-ink-amber-3'"
+                :class="blocking ? 'text-ink-red-7' : 'text-ink-amber-7'"
               />
             </template>
           </Button>

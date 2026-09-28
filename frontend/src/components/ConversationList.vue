@@ -88,7 +88,7 @@
           -->
           <span
             v-if="waiting(row)"
-            class="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-surface-blue-7 px-1.5 text-2xs font-semibold tabular-nums text-ink-base"
+            class="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-surface-blue-7 px-1.5 text-2xs font-semibold tabular-nums text-ink-blue-1"
           >
             {{ waiting(row) }}
           </span>

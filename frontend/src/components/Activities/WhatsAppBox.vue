@@ -42,7 +42,7 @@
     v-if="!windowOpen"
     class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2"
   >
-    <span class="min-w-0 flex-1 text-p-sm text-ink-amber-8">
+    <span class="min-w-0 flex-1 text-p-sm text-ink-amber-9">
       {{ windowNotice }}
     </span>
     <Button

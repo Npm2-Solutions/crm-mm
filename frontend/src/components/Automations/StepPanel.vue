@@ -353,7 +353,7 @@
             :label="__('Jump to the step labelled')"
             :options="labelOptions"
           />
-          <p v-if="!labelOptions.length" class="text-xs text-ink-amber-3">
+          <p v-if="!labelOptions.length" class="text-xs text-ink-amber-8">
             {{
               __('No step carries a label yet — set one on the target step.')
             }}
@@ -447,7 +447,7 @@
             />
             <span
               class="text-xs"
-              :class="splitTotal === 100 ? 'text-ink-gray-5' : 'text-ink-red-3'"
+              :class="splitTotal === 100 ? 'text-ink-gray-5' : 'text-ink-red-8'"
             >
               {{ __('total') }} {{ splitTotal }}%
             </span>

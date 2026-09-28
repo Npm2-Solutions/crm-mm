@@ -93,14 +93,14 @@
         >
           <span v-if="failed" class="mr-auto flex items-center gap-1.5 pr-2">
             <Tooltip :text="failure || __('The message did not reach them')">
-              <span class="flex items-center gap-1 text-ink-red-6">
+              <span class="flex items-center gap-1 text-ink-red-8">
                 <span class="lucide-circle-alert size-3.5" aria-hidden="true" />
                 {{ __('Not delivered') }}
               </span>
             </Tooltip>
             <button
               v-if="retryable"
-              class="rounded font-medium text-ink-red-6 underline underline-offset-2 hover:text-ink-red-7 disabled:opacity-60"
+              class="rounded font-medium text-ink-red-8 underline underline-offset-2 hover:text-ink-red-9 disabled:opacity-60"
               :disabled="retrying"
               @click="emit('retry')"
             >

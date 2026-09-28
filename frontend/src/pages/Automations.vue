@@ -59,7 +59,7 @@
             class="grid size-9 shrink-0 place-items-center rounded-md"
             :class="
               row.enabled
-                ? 'bg-surface-green-1 text-ink-green-3'
+                ? 'bg-surface-green-2 text-ink-green-7'
                 : 'bg-surface-gray-2 text-ink-gray-6'
             "
           >

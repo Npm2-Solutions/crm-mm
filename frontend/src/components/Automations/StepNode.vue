@@ -33,7 +33,7 @@
             v-if="issues.length"
             name="alert-triangle"
             class="size-3.5 shrink-0"
-            :class="hasError ? 'text-ink-red-3' : 'text-ink-amber-3'"
+            :class="hasError ? 'text-ink-red-7' : 'text-ink-amber-7'"
             :title="issues.map((issue) => issue.message).join('\n')"
           />
         </div>
@@ -65,7 +65,7 @@
       <span class="flex items-center gap-1">
         <FeatherIcon name="check-circle" class="size-3" />{{ stats.success }}
       </span>
-      <span v-if="stats.failed" class="flex items-center gap-1 text-ink-red-3">
+      <span v-if="stats.failed" class="flex items-center gap-1 text-ink-red-8">
         <FeatherIcon name="alert-triangle" class="size-3" />{{ stats.failed }}
       </span>
       <span v-if="stats.skipped" class="flex items-center gap-1">
@@ -73,7 +73,7 @@
           stats.skipped
         }}
       </span>
-      <span v-if="stats.here" class="flex items-center gap-1 text-ink-blue-3">
+      <span v-if="stats.here" class="flex items-center gap-1 text-ink-blue-8">
         <FeatherIcon name="user" class="size-3" />{{ stats.here }}
         {{ __('here now') }}
       </span>

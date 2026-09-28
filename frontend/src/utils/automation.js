@@ -451,11 +451,11 @@ export const MERGE_FIELDS = [
 
 /** Full class strings per theme — Tailwind only sees literals, not templates. */
 export const ICON_CLASSES = {
-  blue: 'bg-surface-blue-1 text-ink-blue-3',
-  green: 'bg-surface-green-1 text-ink-green-3',
-  red: 'bg-surface-red-1 text-ink-red-3',
-  orange: 'bg-surface-amber-1 text-ink-amber-3',
-  purple: 'bg-surface-violet-1 text-ink-violet-1',
+  blue: 'bg-surface-blue-2 text-ink-blue-7',
+  green: 'bg-surface-green-2 text-ink-green-7',
+  red: 'bg-surface-red-2 text-ink-red-7',
+  orange: 'bg-surface-amber-2 text-ink-amber-7',
+  purple: 'bg-surface-violet-2 text-ink-violet-7',
   gray: 'bg-surface-gray-2 text-ink-gray-7',
 }
 

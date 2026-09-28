@@ -115,8 +115,8 @@ const LOG_ICONS = {
 }
 
 const LOG_COLORS = {
-  Success: 'text-ink-green-3',
-  Failed: 'text-ink-red-3',
+  Success: 'text-ink-green-7',
+  Failed: 'text-ink-red-7',
   Skipped: 'text-ink-gray-5',
 }
 
