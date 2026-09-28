@@ -19,6 +19,7 @@
   <div
     class="flex items-center gap-3 px-3 py-2 sm:px-4"
     role="separator"
+    data-new-line
     :aria-label="caption ? `${title}. ${caption}` : title"
   >
     <span
