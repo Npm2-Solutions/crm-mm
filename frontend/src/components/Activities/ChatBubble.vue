@@ -125,12 +125,17 @@
           <Tooltip :text="moment">
             <span class="shrink-0 tabular-nums">{{ time }}</span>
           </Tooltip>
-          <CheckIcon v-if="tick === 'one'" class="size-3.5 shrink-0" />
-          <DoubleCheckIcon
-            v-else-if="tick"
-            class="size-3.5 shrink-0"
-            :class="tick === 'read' ? 'text-ink-blue-7' : ''"
-          />
+          <!-- what the ticks mean, for whoever has never had to learn it -->
+          <Tooltip v-if="tick" :text="tickLabel(tick)">
+            <span class="inline-flex shrink-0">
+              <CheckIcon v-if="tick === 'one'" class="size-3.5" />
+              <DoubleCheckIcon
+                v-else
+                class="size-3.5"
+                :class="tick === 'read' ? 'text-ink-blue-7' : ''"
+              />
+            </span>
+          </Tooltip>
         </div>
       </div>
 
@@ -203,6 +208,12 @@ const INKS = {
 }
 
 const ink = computed(() => INKS[props.channel] || 'text-ink-gray-6')
+
+function tickLabel(which) {
+  if (which === 'read') return __('Read by them')
+  if (which === 'delivered') return __('Delivered to their phone')
+  return __('Sent')
+}
 
 // Only on what we sent: a tick on something they sent us would be claiming we
 // delivered it to ourselves. Nothing on a failed one — the footer says why.

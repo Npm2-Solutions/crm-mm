@@ -53,6 +53,7 @@
         :them="them"
         :modalRef="modalRef"
         :emailBox="emailBox"
+        :newMessages="newMessages"
         class="flex-1"
         @reload="all_activities.reload()"
       >
@@ -641,6 +642,9 @@ const props = defineProps({
   doctype: { type: String, default: 'CRM Lead' },
   docname: { type: String, default: '' },
   tabs: { type: Array, default: () => [] },
+  // where the new messages begin, for the line that says so — from the
+  // conversations screen, which knows when the conversation was last read
+  newMessages: { type: Object, default: null },
 })
 
 const emit = defineEmits(['beforeSave', 'afterSave'])

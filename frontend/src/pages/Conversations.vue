@@ -78,6 +78,7 @@
         :key="chosen"
         doctype="CRM Lead"
         :docname="chosen"
+        :newMessages="newMessages"
         @afterSave="reload()"
       />
     </div>
@@ -125,6 +126,7 @@ import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
 import { isMobileView, viewportWidth } from '@/composables/breakpoints'
+import { readReceipts } from '@/composables/conversationState'
 import { keepInPlace, laterLabel, whyItLeft } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
 import {
@@ -279,6 +281,55 @@ watch(
     // ticks. Looking is not reading.
     person.fetch()
   },
+  { immediate: true },
+)
+
+// What was new when the conversation was opened: the cutoff the line in the
+// thread is drawn at, taken once and held while it stays open — reading it, or
+// answering, must not pull the line from under the messages it points at. And
+// the line shows once there has been something unread while it was open, and
+// stays: a message arriving as you read draws it, marking it read greys it.
+const opened = ref({ name: '', ready: false, since: null, sawUnread: false })
+watch(
+  () => [chosen.value, person.data?.name, person.data?.conversation_unread],
+  () => {
+    const name = chosen.value
+    if (opened.value.name !== name) {
+      opened.value = { name, ready: false, since: null, sawUnread: false }
+    }
+    const data = person.data?.name === name ? person.data : null
+    if (!data) return
+    if (!opened.value.ready) {
+      opened.value = {
+        name,
+        ready: true,
+        since: data.conversation_seen_until || null,
+        sawUnread: Boolean(data.conversation_unread),
+      }
+    } else if (data.conversation_unread && !opened.value.sawUnread) {
+      opened.value = { ...opened.value, sawUnread: true }
+    }
+  },
+  { immediate: true },
+)
+
+const receipts = readReceipts()
+
+// For the line in the thread: where new begins, whether it is still unread, and
+// whether the customer is told when it is read.
+const newMessages = computed(() =>
+  opened.value.ready && opened.value.sawUnread
+    ? {
+        since: opened.value.since,
+        unread: Boolean(current.value.conversation_unread),
+        receipts: receipts.value,
+      }
+    : null,
+)
+
+watch(
+  () => rows.value.map((row) => row.name).join(','),
+  (names) => names && unread.fetch(),
   { immediate: true },
 )
 
