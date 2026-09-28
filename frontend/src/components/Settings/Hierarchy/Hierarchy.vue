@@ -178,7 +178,7 @@
     </Dialog>
     <Dialog v-model:open="showRemoveDialog" :size="'md'">
       <template #body>
-        <div class="bg-surface-elevation-2 px-4 pb-6 pt-5 sm:px-6">
+        <div class="bg-surface-elevation-1 px-4 pb-6 pt-5 sm:px-6">
           <div class="mb-4 flex items-center justify-between">
             <h3 class="text-3xl-semibold leading-6 text-ink-gray-9">
               {{ __('Delete') }}
@@ -207,7 +207,7 @@
             </template>
           </div>
         </div>
-        <div class="bg-surface-elevation-2 px-4 pb-6 pt-0 sm:px-6">
+        <div class="bg-surface-elevation-1 px-4 pb-6 pt-0 sm:px-6">
           <div class="flex w-full justify-end gap-2">
             <template v-if="checkTargetChild">
               <Button

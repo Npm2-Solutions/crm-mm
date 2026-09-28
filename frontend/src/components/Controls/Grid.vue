@@ -85,7 +85,7 @@
               "
             >
               <div
-                class="grid-row-checkbox inline-flex h-9.5 items-center bg-surface-base justify-center border-r border-outline-elevation-2 p-2 w-12"
+                class="grid-row-checkbox inline-flex h-9.5 items-center justify-center border-r border-outline-elevation-2 p-2 w-12"
               >
                 <Checkbox
                   class="cursor-pointer duration-300"
@@ -94,7 +94,7 @@
                 />
               </div>
               <div
-                class="flex h-9.5 items-center justify-center bg-surface-base border-r border-outline-elevation-2 py-2 px-1 text-sm text-ink-gray-8 w-12"
+                class="flex h-9.5 items-center justify-center border-r border-outline-elevation-2 py-2 px-1 text-sm text-ink-gray-8 w-12"
               >
                 {{ index + 1 }}
               </div>
@@ -190,7 +190,7 @@
                       </Link>
                       <div
                         v-else-if="field.fieldtype === 'Check'"
-                        class="flex h-full bg-surface-base justify-center items-center"
+                        class="flex h-full justify-center items-center"
                       >
                         <Checkbox
                           v-model="row[field.fieldname]"
