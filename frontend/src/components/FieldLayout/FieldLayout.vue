@@ -8,8 +8,8 @@
       as="div"
       :tabs="processedTabs"
       :class="[
-        !hasTabs ? `[&_[role='tablist']]:hidden` : '',
-        `[&_[role='tablist']::-webkit-scrollbar]:h-0 [&_[role='tab']]:shrink-0 [&_[role='tabpanel']]:overflow-visible !overflow-visible`,
+        !hasTabs ? `[&>[role='tablist']]:hidden` : '',
+        `[&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tabpanel']]:overflow-visible !overflow-visible`,
       ]"
     >
       <template #tab-panel="{ tab }">

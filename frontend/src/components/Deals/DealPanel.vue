@@ -68,7 +68,7 @@
           v-model="tabIndex"
           as="div"
           :tabs="tabs"
-          class="flex flex-1 flex-col overflow-hidden [&_[role='tab']]:px-0 [&_[role='tab']]:shrink-0 [&_[role='tablist']]:px-4 [&_[role='tablist']::-webkit-scrollbar]:h-0 [&_[role='tablist']]:min-h-[45px] [&_[role='tablist']]:gap-6 [&_[role='tabpanel']:not([hidden])]:flex [&_[role='tabpanel']:not([hidden])]:grow"
+          class="flex flex-1 flex-col overflow-hidden [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-4 [&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-6 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
         >
           <template #tab-panel>
             <Activities
