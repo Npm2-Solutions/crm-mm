@@ -251,6 +251,31 @@ La fatturazione si e' aggiunta dopo (25/09/2026): 19 widget e la sua dashboard.
 
 ---
 
+## Chat — chi, dove, quando
+
+> **Completato** (28/09/2026). Documento di progetto:
+> [docs/progetto-ghl/17-timeline-unificata.md](../docs/progetto-ghl/17-timeline-unificata.md),
+> sezione «La chat rifatta».
+
+Redesign della vista «Tutto», del composer e della pagina Conversazioni, dopo
+aver riletto le ragioni dei commit precedenti e averle guardate a schermo.
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Il riempimento dice chi (loro chiaro, noi blu), il glifo dice il canale | La tinta per canale dava due verdi a un punto di luminosita' di distanza: in una chat quasi tutta WhatsApp «chi ha parlato» restava affidato al solo lato |
+| Coda e nome sulla prima della serie | Una serie e' una voce; il nome solo dove il lato non basta (un collega, un altro mittente email) |
+| Separatori in linea, data flottante solo mentre si scorre | A riposo la data appiccicata copriva le parole del primo messaggio |
+| Date con `Intl` nella lingua del browser | «2026-08-16» non si legge; «Yesterday» non aveva traduzione italiana |
+| Il composer parte dal canale dell'ultimo messaggio ricevuto | Era la regola del doc 17 e non era mai stata applicata: partiva sempre dall'email |
+| Leggere e scrivere sono due stati | Rispondere su WhatsApp da «Tutto» non deve portare via «Tutto» |
+| La nota tinge di ambra tutto il composer | Nessuno deve scrivere una nota interna credendo di rispondere al cliente |
+| Nome e decisioni nell'intestazione del filo, pannello solo da 1400px | Aperta da link la conversazione mostrava l'id; a 1280px il pannello tagliava il nome |
+| L'assegnazione tiene lo stato che trova | Passava dalla porta di «apri» e toglieva il rinvio |
+
+---
+
 ## Debito semgrep — 102 finding a zero
 
 > **Completato.** La scansione completa (`semgrep scan` con le regole Frappe e

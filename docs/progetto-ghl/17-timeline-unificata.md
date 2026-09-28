@@ -273,3 +273,118 @@ un canale in cui si stia scrivendo, quindi la domanda «cosa vuoi creare» e'
 ancora aperta: email, commento, evento, chiamata, attivita', nota, file.
 Scegliendo un canale il menu si stringe all'unico pulsante di quel canale,
 perche' li' la domanda ha gia' una risposta.
+
+## La chat rifatta: chi, dove, quando (28/09/2026)
+
+Le sezioni sopra raccontano come la vista «Tutto» e' diventata una chat. Questa
+racconta cosa non funzionava ancora guardandola, e cosa si e' deciso — anche
+dove una decisione precedente e' stata rovesciata, con il perche'.
+
+### Il riempimento dice chi, l'icona dice il canale
+
+Due commit di fila avevano dato al colore due significati opposti: prima «il
+riempimento dice chi, il colore del canale sta sul bordo», poi «la tinta dice il
+canale, la nostra e' un tono sotto la loro». Sullo schermo la seconda regola
+dava due verdi a un punto percentuale di luminosita' di distanza
+(`surface-green-1` contro `-2`): in una conversazione quasi tutta WhatsApp ogni
+bolla era dello stesso verde, e a dire chi aveva parlato restava solo il lato.
+
+Chi ha parlato e' la domanda a cui una chat risponde a colpo d'occhio, e ogni
+messenger ci risponde col riempimento. Quindi:
+
+| Cosa | Come |
+|---|---|
+| **loro** | a sinistra, sulla superficie rialzata (bianco; in scuro un grigio sopra il fondo) |
+| **noi** | a destra, nel blu di casa (`surface-blue-3`) — uguale su ogni canale |
+| **il canale** | il suo glifo accanto all'ora, nel suo colore: verde WhatsApp, blu email, viola SMS |
+| **la nota** | ambra, in mezzo: l'unica cosa che il cliente non vedra' mai |
+
+La vista WhatsApp tiene i colori di WhatsApp (bianco/verde sulla carta da
+parati): li' e' casa sua, e la differenza fra le due viste e' proprio questa.
+
+### La serie e' una voce
+
+La coda della nuvoletta e il nome stanno sulla prima di una serie; le altre si
+stringono sotto, a due pixel, come in ogni messenger. La serie si spezza quando
+cambia il lato, il canale, il giorno, o quando in mezzo succede altro. Il nome
+compare solo dove il lato non basta: un'email scritta da qualcun altro dalla loro
+parte, o un collega che ha risposto per noi — mai chi sta leggendo, mai
+«Administrator».
+
+L'ora sta accanto al testo quando ci sta, sotto quando il messaggio e' lungo: una
+riga flex che va a capo, cosi' un «ok» non occupa piu' due righe.
+
+### Un invio fallito lo dice dentro la nuvoletta
+
+Il badge «failed» e il pulsante «Retry» erano posizionati in assoluto sull'angolo
+alto: coprivano la prima parola del messaggio e l'ora. Ora «Non consegnato ·
+Riprova» sta nel piede della nuvoletta, con un bordo rosso sottile. Rispondi,
+reagisci e riprova vivono in un composable solo (`useWhatsAppActions`), usato
+dalla vista WhatsApp e dalla chat mista: erano due copie, ed e' cosi' che il
+badge era finito sopra le parole in una e non nell'altra.
+
+Nella vista «Tutto» un SMS inviato risultava ricevuto: la routine che prepara le
+righe dei cambi di campo azzerava `type`, che per un messaggio e' la direzione.
+Gli SMS ora ne sono esclusi come gia' lo erano WhatsApp, email e chiamate.
+
+### Le date nella lingua di chi legge
+
+«2026-08-16» sui separatori e' diventato «Domenica 16 agosto»: Oggi, Ieri, il
+giorno della settimana per l'ultima settimana, la data (con l'anno solo se non e'
+quest'anno) dopo. Le parole vengono dal browser (`Intl`), come le date della
+dashboard: «Yesterday» nel catalogo italiano non aveva nemmeno una traduzione.
+Gli orari si leggono sul fuso di chi guarda, e le stringhe del server non passano
+piu' da `new Date(...)`, che Safari vecchio legge come data non valida.
+
+Il separatore sta dove il giorno comincia e non copre niente. La data appiccicata
+in alto c'e' solo mentre si scorre e sparisce appena ci si ferma: prima restava
+sopra il primo messaggio anche a riposo, sulle sue parole.
+
+### Si risponde dove ti hanno scritto
+
+La regola di questo documento — «nella vista Tutto il composer parte dal canale
+dell'ultimo messaggio ricevuto» — non era mai stata applicata: il composer
+partiva sempre dall'email, anche per un cliente che ha sempre e solo scritto su
+WhatsApp. Ora `replyChannel()` sceglie l'ultimo canale da cui hanno scritto,
+poi quello dove la conversazione e' andata per ultima, poi il primo che la
+persona puo' ricevere (niente numero, niente WhatsApp).
+
+Leggere e scrivere sono tornati due domande. Scegliere un canale nelle pillole
+imposta anche il composer; ma scegliere un canale nel composer, stando su
+«Tutto», non ti porta via «Tutto». Il composer e' una scheda sola con i canali
+come linguette; la nota la tinge di ambra, cosi' nessuno scrive un commento
+interno credendo di rispondere, o viceversa.
+
+Due difetti trovati facendolo: i pulsanti «Rispondi» delle email dentro la chat
+non aprivano niente (ricevevano un oggetto vuoto al posto del composer), e
+l'oggetto proposto diventava «(#undefined)» quando l'editor si montava prima che
+la scheda fosse caricata. Il contatore dei caratteri SMS chiesto sopra c'e': un
+«È» — che l'alfabeto SMS non ha — porta ogni messaggio da 160 a 70 caratteri, e
+il composer lo dice.
+
+### Conversazioni: il nome sopra il filo
+
+Aperta da un link, una conversazione mostrava «CRM-LEAD-2026-00128» dove va il
+nome, perche' la persona veniva cercata solo fra le quaranta righe caricate. Ora
+c'e' `crm.api.conversations.person`. Il nome sta nell'intestazione sopra il
+filo, con accanto le decisioni che prima erano sul bordo opposto dello schermo:
+segna come letta, rimanda, gestita. Il pannello a destra resta per chi e' e come
+raggiungerlo, e compare solo sopra i 1400 pixel: a 1280 lasciava alla
+conversazione 430 pixel e tagliava il nome; sotto, e' dietro un pulsante.
+
+Assegnare una conversazione rimandata la riportava in lista: passava dalla stessa
+porta di «apri». Ora l'assegnazione tiene lo stato che trova.
+
+Nella lista: l'ora di un messenger (14:32, Ieri, sab, 12 ago) invece di «3 days
+ago» su ogni riga; iniziali su una tinta che resta alla persona invece di
+quaranta cerchi grigi con una lettera; il contatore dei non letti in un blu
+leggibile — era testo scuro su verde chiaro, perche' `text-ink-white` non esiste.
+
+### I token che non esistono
+
+`bg-surface-white` e `text-ink-white` non sono token di frappe-ui e non generano
+CSS: la pillola selezionata, le schede degli appuntamenti, i pannelli e i badge
+che li usavano erano trasparenti. Nella chat ora ci sono i token veri
+(`surface-elevation-2`, `surface-base`, `ink-base`). E la carta da parati di
+WhatsApp segue il tema dell'app (`[data-theme="dark"]`) invece di quello del
+computer.
