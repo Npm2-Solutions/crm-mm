@@ -110,7 +110,7 @@
           <!-- eslint-disable vue/no-v-html -->
           <div
             v-if="getRow(itemName, fieldName).label"
-            class="prose-f prose-sm max-w-none flex-1 overflow-hidden"
+            class="prose-f prose-sm max-w-none flex-1 overflow-hidden [&_p]:truncate"
             v-html="sanitizeHTML(getRow(itemName, fieldName).label)"
           />
           <!-- eslint-enable vue/no-v-html -->
