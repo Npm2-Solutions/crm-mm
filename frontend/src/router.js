@@ -187,11 +187,6 @@ const routes = [
     props: true,
   },
   {
-    path: '/welcome',
-    name: 'Welcome',
-    component: () => import('@/pages/Welcome.vue'),
-  },
-  {
     path: '/onboarding',
     name: 'Onboarding',
     component: () => import('@/pages/PersonaForm.vue'),
