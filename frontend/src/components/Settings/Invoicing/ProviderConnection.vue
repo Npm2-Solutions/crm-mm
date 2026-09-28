@@ -128,7 +128,7 @@
           <span class="text-p-sm-medium text-ink-gray-8">{{ avviso }}</span>
           <div class="flex items-center gap-2">
             <div
-              class="flex-1 select-all break-all rounded bg-surface-white px-2 py-1 font-mono text-p-sm"
+              class="flex-1 select-all break-all rounded bg-surface-elevation-2 px-2 py-1 font-mono text-p-sm text-ink-gray-9"
             >
               {{ segreto }}
             </div>

@@ -95,7 +95,7 @@
            narrower than the time on the chip inside it. Same month, listed. -->
       <div
         v-if="isMobileView"
-        class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-white shadow-sm"
+        class="divide-y divide-outline-gray-1 overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
       >
         <div
           v-if="!scheduledDays.length"
@@ -144,7 +144,7 @@
       <!-- month grid -->
       <div
         v-else
-        class="overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-white shadow-sm"
+        class="overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-elevation-2 shadow-sm"
       >
         <div
           class="grid grid-cols-7 border-b border-outline-gray-2 bg-surface-gray-1"
@@ -174,7 +174,7 @@
                 class="flex size-6 items-center justify-center rounded-full text-xs"
                 :class="
                   cell.isToday
-                    ? 'bg-surface-gray-7 font-semibold text-ink-white'
+                    ? 'bg-surface-gray-7 font-semibold text-ink-base'
                     : cell.inMonth
                       ? 'text-ink-gray-7'
                       : 'text-ink-gray-4'
@@ -233,7 +233,7 @@
           <div
             v-for="post in unscheduled"
             :key="post.name"
-            class="flex cursor-pointer items-center gap-3 bg-surface-white px-3 py-2.5 hover:bg-surface-gray-1"
+            class="flex cursor-pointer items-center gap-3 bg-surface-elevation-2 px-3 py-2.5 hover:bg-surface-gray-1"
             @click="openComposer(post)"
           >
             <Badge
@@ -310,7 +310,7 @@
               class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors"
               :class="
                 isSelected(account.name)
-                  ? 'border-outline-gray-4 bg-surface-gray-7 text-ink-white'
+                  ? 'border-outline-gray-4 bg-surface-gray-7 text-ink-base'
                   : 'border-outline-gray-2 text-ink-gray-7 hover:bg-surface-gray-1'
               "
               @click="toggleAccount(account.name)"
@@ -666,7 +666,7 @@ function chipClass(status) {
       Published: 'bg-surface-green-1 text-ink-green-4 hover:bg-surface-green-2',
       Failed: 'bg-surface-red-1 text-ink-red-4 hover:bg-surface-red-2',
       Draft:
-        'bg-surface-white text-ink-gray-5 border border-dashed border-outline-gray-2 hover:bg-surface-gray-1',
+        'bg-surface-elevation-2 text-ink-gray-5 border border-dashed border-outline-gray-2 hover:bg-surface-gray-1',
       Cancelled: 'bg-surface-gray-1 text-ink-gray-4 line-through',
     }[status] || 'bg-surface-gray-1'
   )

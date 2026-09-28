@@ -9,7 +9,9 @@
         {{ __('or') }}
         <div class="h-px flex-1 bg-outline-gray-2" />
       </div>
-      <div class="rounded-md border border-outline-gray-2 bg-surface-white p-2">
+      <div
+        class="rounded-md border border-outline-gray-2 bg-surface-elevation-2 p-2"
+      >
         <div class="flex flex-col gap-2">
           <template v-for="(condition, index) in group" :key="index">
             <div

@@ -73,7 +73,7 @@
           >
             <template #item="{ element: stage }">
               <div
-                class="flex items-center gap-2 rounded border border-outline-gray-2 bg-surface-white px-2 py-1.5"
+                class="flex items-center gap-2 rounded border border-outline-gray-2 bg-surface-elevation-2 px-2 py-1.5"
               >
                 <DragVerticalIcon
                   class="stage-handle h-3.5 cursor-grab text-ink-gray-5"

@@ -172,7 +172,7 @@
                 :class="
                   i === 1
                     ? ''
-                    : 'border-outline-gray-2 bg-surface-white text-ink-gray-8'
+                    : 'border-outline-gray-2 bg-surface-elevation-2 text-ink-gray-8'
                 "
               >
                 {{ slot }}
@@ -260,7 +260,7 @@
             v-if="qr"
             :src="qr"
             :alt="__('QR code')"
-            class="size-32 shrink-0 rounded border border-outline-gray-2 bg-surface-white p-1"
+            class="size-32 shrink-0 rounded border border-outline-gray-2 bg-white p-1"
           />
         </div>
       </section>

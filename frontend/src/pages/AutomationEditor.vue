@@ -216,7 +216,7 @@
     <!-- side panel -->
     <aside
       v-if="tab === 'builder' && selectedId"
-      class="absolute inset-y-0 right-0 z-10 w-full max-w-[400px] border-l border-outline-gray-2 bg-surface-white shadow-lg sm:static sm:z-auto sm:shadow-none"
+      class="absolute inset-y-0 right-0 z-10 w-full max-w-[400px] border-l border-outline-gray-2 bg-surface-base shadow-lg sm:static sm:z-auto sm:shadow-none"
     >
       <TriggerPanel v-if="selectedTrigger" />
       <StepPanel v-else-if="selectedStep" />

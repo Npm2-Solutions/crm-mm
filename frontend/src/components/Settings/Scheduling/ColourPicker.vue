@@ -6,7 +6,7 @@
         v-for="colour in COLOURS"
         :key="colour"
         type="button"
-        class="size-6 rounded-full ring-offset-2 ring-offset-surface-modals transition"
+        class="size-6 rounded-full ring-offset-2 ring-offset-[color:var(--surface-elevation-2)] transition"
         :class="
           same(modelValue, colour)
             ? 'ring-2 ring-outline-gray-5'

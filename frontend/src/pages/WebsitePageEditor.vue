@@ -6,7 +6,7 @@
          panels, so anything more here would just be a second set of chrome over the same
          canvas. Back, where you are, and whether it is live — that is all this needs. -->
     <header
-      class="flex h-9 shrink-0 items-center gap-2 border-b border-outline-gray-2 bg-surface-white px-2"
+      class="flex h-9 shrink-0 items-center gap-2 border-b border-outline-gray-2 bg-surface-base px-2"
     >
       <Button variant="ghost" size="sm" icon="arrow-left" @click="back">
         <template #default>
