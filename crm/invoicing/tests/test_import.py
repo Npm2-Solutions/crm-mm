@@ -27,6 +27,7 @@ happened to four calls the day the Sistema TS endpoints moved out of invoicing.
 from __future__ import annotations
 
 import ast
+import json
 import pathlib
 
 from crm.invoicing.tests.base import UnitTestCase
@@ -254,3 +255,35 @@ class PromesseDiRitornoTest(UnitTestCase):
 			"these functions promise a value and never return one; the caller gets None:\n"
 			+ "\n".join(colpevoli),
 		)
+
+
+class DocTypeNelSuoModuloTest(UnitTestCase):
+	"""Ogni doctype sta nella cartella del modulo che dichiara, e il modulo esiste.
+
+	Una quarta specie di riferimento: Frappe cerca un doctype in
+	`crm/<modulo>/doctype/<nome>/`, il JSON dice di che modulo e', `modules.txt`
+	dice quali moduli ci sono. Quando il Sistema TS e' uscito dalla fatturazione
+	il suo doctype ha cambiato cartella ma ha continuato a dire «Invoicing», e
+	«Tessera Sanitaria» non e' mai entrato in `modules.txt`: nessun sito nuovo ha
+	avuto la tabella, la pagina Fatture rispondeva 500, e nessun test se n'e'
+	accorto, perche' giravano su un sito dove la tabella c'era gia'.
+	"""
+
+	def test_ogni_doctype_sta_nel_modulo_che_dichiara(self):
+		moduli = {
+			riga.strip() for riga in (RADICE / "crm" / "modules.txt").read_text().splitlines() if riga.strip()
+		}
+		fuori_posto = []
+		for percorso in sorted((RADICE / "crm").glob("**/doctype/*/*.json")):
+			if percorso.stem != percorso.parent.name:
+				continue
+			dati = json.loads(percorso.read_text())
+			if dati.get("doctype") != "DocType":
+				continue
+			modulo = dati.get("module", "")
+			# crm/<modulo>/doctype/<nome>/<nome>.json, e il nome della cartella e'
+			# il modulo passato da frappe.scrub
+			cartella = percorso.parents[2].name
+			if modulo not in moduli or cartella != modulo.replace(" ", "_").replace("-", "_").lower():
+				fuori_posto.append(f"{percorso.relative_to(RADICE)} dichiara «{modulo}»")
+		self.assertEqual(fuori_posto, [])
