@@ -29,7 +29,8 @@
         icon="lucide-refresh-ccw"
         :loading="people.loading"
         :tooltip="__('Refresh')"
-        @click="reload()"
+        :aria-label="__('Refresh')"
+        @click="refreshList()"
       />
     </template>
   </LayoutHeader>
@@ -47,6 +48,7 @@
       v-if="!isMobileView || !chosen"
       v-model:view="view"
       v-model:search="search"
+      v-model:onlyUnread="onlyUnread"
       :rows="rows"
       :unread="unread.data || {}"
       :counts="counts.data || {}"
@@ -123,7 +125,15 @@ import InboxIcon from '@/components/Icons/InboxIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
 import { isMobileView, viewportWidth } from '@/composables/breakpoints'
-import { Breadcrumbs, Dialog, createResource, debounce } from 'frappe-ui'
+import { keepInPlace, laterLabel, whyItLeft } from '@/utils/conversation'
+import { appLocale } from '@/utils/locale'
+import {
+  Breadcrumbs,
+  Dialog,
+  createResource,
+  dayjsLocal,
+  debounce,
+} from 'frappe-ui'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -137,6 +147,8 @@ const { $socket } = globalStore()
 const chosen = computed(() => route.query.person || '')
 const view = ref('open')
 const search = ref('')
+// only the unread, among the view that is open
+const onlyUnread = ref(false)
 const pageLength = ref(40)
 
 const people = createResource({
@@ -144,12 +156,64 @@ const people = createResource({
   makeParams: () => ({
     search: search.value,
     view: view.value,
+    waiting: onlyUnread.value ? 1 : 0,
     limit: pageLength.value,
   }),
   auto: true,
 })
 
-const rows = computed(() => people.data || [])
+// What the list shows: what the server sent, with the conversation being read
+// kept where it was when something just decided about it takes it out of this
+// list (`keepInPlace`) — handled, put off, read while only the unread are
+// shown. Tied to the list it was kept in: another view, a search or the unread
+// filter is another list, one it never was a row of.
+const shown = ref([])
+const listKey = computed(() =>
+  JSON.stringify([view.value, search.value.trim(), onlyUnread.value]),
+)
+let shownFor = ''
+watch(
+  () => people.data,
+  (next) => {
+    shown.value =
+      shownFor === listKey.value
+        ? keepInPlace(next || [], shown.value, chosen.value)
+        : [...(next || [])]
+    shownFor = listKey.value
+  },
+  { immediate: true },
+)
+
+// The rows, the open one as it is now rather than as the list last drew it —
+// and, when it is leaving, why.
+const rows = computed(() =>
+  shown.value.map((row) => {
+    if (row.name !== chosen.value) return row
+    const now =
+      person.data?.name === row.name ? { ...row, ...person.data } : row
+    if (!row.leaving) return now
+    const why = whyItLeft(now, view.value, onlyUnread.value)
+    return { ...now, leaving_as: why, why: whyLabel(why, now) }
+  }),
+)
+
+function whyLabel(why, row) {
+  if (why === 'handled') return __('Handled · back when they write')
+  if (why === 'snoozed') {
+    const local = (at) =>
+      dayjsLocal(at || undefined).format('YYYY-MM-DD HH:mm:ss')
+    const when = laterLabel(
+      local(row.conversation_snoozed_until),
+      local(),
+      appLocale(),
+    )
+    return __('Put off until {0}', [when])
+  }
+  if (why === 'answered') return __('Answered · no longer waiting')
+  if (why === 'read') return __('Read')
+  if (why === 'reopened') return __('Back in Open')
+  return ''
+}
 
 // How many are in each view, for the numbers in the selector. One sweep over
 // the table for all of them, not one query per line of the menu.
@@ -208,17 +272,13 @@ watch(
   chosen,
   (name) => {
     showPerson.value = false
+    // moving on is when a row that was leaving finally goes
+    shown.value = shown.value.filter((row) => !row.leaving || row.name === name)
     if (!name) return
     // Opening a chat changes nothing, for anybody: not the badge, not the blue
     // ticks. Looking is not reading.
     person.fetch()
   },
-  { immediate: true },
-)
-
-watch(
-  () => rows.value.map((row) => row.name).join(','),
-  (names) => names && unread.fetch(),
   { immediate: true },
 )
 
@@ -228,7 +288,7 @@ const searchLater = debounce(() => {
 }, 300)
 
 watch(search, searchLater)
-watch(view, () => {
+watch([view, onlyUnread], () => {
   pageLength.value = 40
   people.reload()
 })
@@ -247,16 +307,25 @@ function reload() {
   if (chosen.value) person.fetch()
 }
 
-// a message arriving reorders this list, so it has to be told
+// the button: the list as it is, without the row that was on its way out
+function refreshList() {
+  shown.value = shown.value.filter((row) => !row.leaving)
+  reload()
+}
+
+// a message arriving reorders this list, so it has to be told — and so does a
+// reply sent from the composer, which is also the moment it was read
 const refresh = debounce(() => reload(), 400)
 
 onMounted(() => {
   $socket.on('crm_sms_message', refresh)
   $socket.on('whatsapp_message', refresh)
+  window.addEventListener('crm:conversation-read', refresh)
 })
 
 onBeforeUnmount(() => {
   $socket.off('crm_sms_message', refresh)
   $socket.off('whatsapp_message', refresh)
+  window.removeEventListener('crm:conversation-read', refresh)
 })
 </script>

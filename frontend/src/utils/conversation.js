@@ -612,3 +612,61 @@ export function initialsOf(name) {
   const last = [...lastWord].find((char) => /\p{L}|\p{N}/u.test(char)) || ''
   return (first + last).toLocaleUpperCase()
 }
+
+// -- while somebody works through the list ------------------------------------
+
+/**
+ * The rows on screen after a reload, with the one being read kept where it was.
+ *
+ * A decision about the conversation you are in — handled, put off, read while
+ * the list shows only the unread — takes it out of the view on the server.
+ * Taking it off the screen as well, from under the pointer, is how a list
+ * loses somebody: the row vanishes, the one below slides into its place, and
+ * the next click lands on a person nobody chose. So it stays at the height it
+ * had, marked as leaving, until you move on — another conversation, another
+ * view, a search.
+ *
+ * @param {Array} next    the rows the server has just sent
+ * @param {Array} shown   the rows on screen until now, a leaving one included
+ * @param {string} active the conversation being read
+ * @returns {Array} the rows to show; the kept one carries `leaving: true`
+ */
+export function keepInPlace(next = [], shown = [], active = '') {
+  const rows = [...(next || [])]
+  if (!active || rows.some((row) => row.name === active)) return rows
+  const at = (shown || []).findIndex((row) => row.name === active)
+  if (at < 0) return rows
+  return [
+    ...rows.slice(0, at),
+    { ...shown[at], leaving: true },
+    ...rows.slice(at),
+  ]
+}
+
+/**
+ * Why the conversation being read is no longer in the view on screen — the
+ * words on the row it leaves behind. Empty when the view still holds it, or
+ * when it only slid past the end of the page.
+ *
+ * @param {object} row          the conversation, as it is now
+ * @param {string} view         open | unanswered | snoozed | handled
+ * @param {boolean} onlyUnread  whether the list shows only the unread
+ * @returns {'' | 'handled' | 'snoozed' | 'answered' | 'reopened' | 'read'}
+ */
+export function whyItLeft(row = {}, view = 'open', onlyUnread = false) {
+  const handled = row?.conversation_status === 'Handled'
+  const parked = Boolean(row?.conversation_snoozed_until)
+  if (view === 'handled' && !handled) return 'reopened'
+  if (view === 'snoozed' && !parked) return handled ? 'handled' : 'reopened'
+  if (view === 'open' || view === 'unanswered') {
+    if (handled) return 'handled'
+    if (parked) return 'snoozed'
+    if (
+      view === 'unanswered' &&
+      row?.last_conversation_direction !== 'Incoming'
+    )
+      return 'answered'
+  }
+  if (onlyUnread && !row?.conversation_unread) return 'read'
+  return ''
+}

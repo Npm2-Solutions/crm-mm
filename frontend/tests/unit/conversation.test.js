@@ -15,6 +15,7 @@ import {
   initialsOf,
   isConversational,
   isStageChange,
+  keepInPlace,
   laterLabel,
   listTime,
   momentLabel,
@@ -24,6 +25,7 @@ import {
   timeKey,
   toneOf,
   wallClock,
+  whyItLeft,
 } from '@/utils/conversation'
 
 const wa = (name, type, creation) => ({
@@ -783,5 +785,110 @@ describe('momentLabel', () => {
     expect(momentLabel('2026-10-07 15:00:00', 'it')).toBe('mer 7 ott, 15:00')
     expect(momentLabel('2026-10-07', 'it')).toBe('mer 7 ott')
     expect(momentLabel('', 'it')).toBe('')
+  })
+})
+
+describe('keepInPlace', () => {
+  const row = (name) => ({ name })
+  const names = (rows) => rows.map((r) => (r.leaving ? `(${r.name})` : r.name))
+
+  it('shows what the server sent when the one being read is still in it', () => {
+    const next = [row('b'), row('a'), row('c')]
+    expect(
+      names(keepInPlace(next, [row('a'), row('b'), row('c')], 'a')),
+    ).toEqual(['b', 'a', 'c'])
+  })
+
+  it('keeps the one being read at the height it had when it leaves', () => {
+    const shown = [row('a'), row('b'), row('c'), row('d')]
+    const next = [row('a'), row('c'), row('d')]
+    expect(names(keepInPlace(next, shown, 'b'))).toEqual(['a', '(b)', 'c', 'd'])
+  })
+
+  it('keeps it there across the reloads that follow', () => {
+    const shown = keepInPlace(
+      [row('a'), row('c')],
+      [row('a'), row('b'), row('c')],
+      'b',
+    )
+    expect(
+      names(keepInPlace([row('x'), row('a'), row('c')], shown, 'b')),
+    ).toEqual(['x', '(b)', 'a', 'c'])
+  })
+
+  it('lets it go back to being an ordinary row when it comes back', () => {
+    const shown = [row('a'), { ...row('b'), leaving: true }, row('c')]
+    const back = keepInPlace([row('a'), row('b'), row('c')], shown, 'b')
+    expect(back.find((r) => r.name === 'b').leaving).toBeUndefined()
+  })
+
+  it('keeps nothing for a row nobody is reading', () => {
+    expect(names(keepInPlace([row('a')], [row('a'), row('b')], ''))).toEqual([
+      'a',
+    ])
+    expect(names(keepInPlace([row('a')], [row('a'), row('b')], 'z'))).toEqual([
+      'a',
+    ])
+  })
+
+  it('puts it at the end when the list got shorter than where it was', () => {
+    const shown = [row('a'), row('b'), row('c'), row('d')]
+    expect(names(keepInPlace([row('a')], shown, 'd'))).toEqual(['a', '(d)'])
+  })
+
+  it('does not change the rows it was given', () => {
+    const next = [row('a')]
+    const shown = [row('a'), row('b')]
+    keepInPlace(next, shown, 'b')
+    expect(next).toHaveLength(1)
+    expect(shown[1].leaving).toBeUndefined()
+  })
+})
+
+describe('whyItLeft', () => {
+  const open = {
+    conversation_status: 'Open',
+    conversation_snoozed_until: null,
+    conversation_unread: 1,
+    last_conversation_direction: 'Incoming',
+  }
+
+  it('says nothing while the view still holds it', () => {
+    expect(whyItLeft(open, 'open')).toBe('')
+    expect(whyItLeft(open, 'unanswered')).toBe('')
+    expect(whyItLeft(open, 'open', true)).toBe('')
+  })
+
+  it('handled takes it out of the live views', () => {
+    const handled = { ...open, conversation_status: 'Handled' }
+    expect(whyItLeft(handled, 'open')).toBe('handled')
+    expect(whyItLeft(handled, 'unanswered')).toBe('handled')
+    expect(whyItLeft(handled, 'handled')).toBe('')
+  })
+
+  it('put off takes it out of the live views until it is back', () => {
+    const parked = {
+      ...open,
+      conversation_snoozed_until: '2026-10-01 09:00:00',
+    }
+    expect(whyItLeft(parked, 'open')).toBe('snoozed')
+    expect(whyItLeft(parked, 'snoozed')).toBe('')
+    expect(whyItLeft(open, 'snoozed')).toBe('reopened')
+  })
+
+  it('put back takes it out of the handled ones', () => {
+    expect(whyItLeft(open, 'handled')).toBe('reopened')
+  })
+
+  it('answered takes it out of the ones waiting for a reply', () => {
+    const answered = { ...open, last_conversation_direction: 'Outgoing' }
+    expect(whyItLeft(answered, 'unanswered')).toBe('answered')
+    expect(whyItLeft(answered, 'open')).toBe('')
+  })
+
+  it('read takes it out of the unread, and only there', () => {
+    const read = { ...open, conversation_unread: 0 }
+    expect(whyItLeft(read, 'open', true)).toBe('read')
+    expect(whyItLeft(read, 'open', false)).toBe('')
   })
 })
