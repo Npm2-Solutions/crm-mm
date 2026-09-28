@@ -1071,6 +1071,11 @@ watch([reload, reload_email], ([reload_value, reload_email_value]) => {
   }
 })
 
+// Whether the conversation has opened on where its new messages begin: the
+// first time, and only the first — after that a scroll is a message sent or
+// arrived, and belongs at the end.
+let landedOnNew = false
+
 function scroll(hash) {
   if (['tasks', 'notes', 'events'].includes(route.hash?.slice(1))) return
   setTimeout(() => {
@@ -1078,6 +1083,15 @@ function scroll(hash) {
     if (!hash) {
       let e = document.getElementsByClassName('activity')
       el = isNewestFirst.value ? e[0] : e[e.length - 1]
+      // Fifteen new messages and the thread opened on the last of them: the
+      // first fourteen were above, unread, with nothing saying so. A thread
+      // that reads down opens on the line where the new ones begin, the way
+      // every messenger does; one that reads up already has them on top.
+      const line = document.querySelector('[data-new-line]')
+      if (line && !landedOnNew && !isNewestFirst.value) {
+        landedOnNew = true
+        el = line
+      }
     } else {
       el = document.getElementById(hash)
     }

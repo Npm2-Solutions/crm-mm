@@ -449,7 +449,10 @@ nasconderebbe.
 primo messaggio arrivato dopo l'ultima lettura. Il punto si prende quando apri
 la conversazione e resta fermo finché è aperta: leggerla o rispondere non tira
 via la riga da sotto i messaggi a cui punta. È blu finché la conversazione è
-da leggere e grigia dopo. Quando fra i nuovi c'è WhatsApp dice la cosa che lo
+da leggere e grigia dopo. E la conversazione si apre lì, non in fondo: con
+quindici messaggi nuovi i primi quattordici stavano sopra lo schermo, senza
+niente a dirlo. Solo la prima volta: dopo, uno scorrimento è un messaggio
+mandato o arrivato, e il suo posto è in fondo. Quando fra i nuovi c'è WhatsApp dice la cosa che lo
 schermo non mostra, cioè se il cliente viene avvisato: «vedrà le spunte blu
 quando rispondi o la segni come letta», «letta · ha le spunte blu», oppure,
 con le conferme spente, «da questo CRM non riceve spunte blu». Sulle nostre
