@@ -11,6 +11,10 @@ from crm.utils import seconds_to_duration
 
 
 class CRMCallLog(Document):
+	# `from` is plain Data, deliberately not a Phone field: whatever the network
+	# reported as the caller is stored as it came. A caller who withholds their
+	# number arrives as a word (Twilio sends "anonymous"), and refusing to store
+	# it would lose the whole call.
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 

@@ -155,7 +155,11 @@
       class="flex items-center justify-between border-t border-outline-gray-2 px-4 py-3"
     >
       <span class="text-xs text-ink-gray-5">
-        {{ __('{0} trigger(s)', [draft.triggers.length]) }}
+        {{
+          draft.triggers.length === 1
+            ? __('1 trigger')
+            : __('{0} triggers', [draft.triggers.length])
+        }}
       </span>
       <Button
         variant="ghost"

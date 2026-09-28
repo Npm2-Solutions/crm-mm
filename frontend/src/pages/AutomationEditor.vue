@@ -4,9 +4,12 @@
       <div class="flex min-w-0 items-center gap-2">
         <!-- on a phone the title needs the room; the way back is in the ⋯ menu -->
         <Breadcrumbs v-if="!isMobileView" :items="breadcrumbs" />
+        <!-- as wide as the title, not the input's default 20 characters, so
+             the status badge sits right after it -->
         <input
           v-model="draft.title"
           :placeholder="__('Untitled automation')"
+          :size="Math.max((draft.title || __('Untitled automation')).length, 8)"
           class="min-w-0 max-w-64 border-0 bg-transparent p-0 text-base font-medium text-ink-gray-8 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
         />
         <!-- on a phone the «Live» switch right underneath already says it -->
@@ -373,7 +376,11 @@ const issues = computed(() => validateAutomation(draft))
 
 const blocking = computed(() => hasErrors(issues.value))
 
-const issueLabel = computed(() => __('{0} issue(s)', [issues.value.length]))
+const issueLabel = computed(() =>
+  issues.value.length === 1
+    ? __('1 issue')
+    : __('{0} issues', [issues.value.length]),
+)
 
 const issueOptions = computed(() =>
   issues.value.slice(0, 12).map((issue) => ({
@@ -611,7 +618,9 @@ async function save() {
 async function togglePublish(enabled) {
   if (enabled && issues.value.length) {
     toast.error(
-      __('Fix the {0} issue(s) before going live', [issues.value.length]),
+      issues.value.length === 1
+        ? __('Fix the issue before going live')
+        : __('Fix the {0} issues before going live', [issues.value.length]),
     )
     return
   }

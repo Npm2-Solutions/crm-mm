@@ -78,7 +78,8 @@ class CRMTask(Document):
 				"label": "Due Date",
 				"type": "Date",
 				"key": "due_date",
-				"width": "8rem",
+				# «25 Sep, 12:27 pm» and its icon: at 8rem the am/pm was cut off
+				"width": "10rem",
 			},
 			{
 				"label": "Assigned To",
