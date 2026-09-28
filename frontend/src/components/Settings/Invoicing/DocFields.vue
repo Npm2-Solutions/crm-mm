@@ -9,7 +9,7 @@
   front of whoever is about to get it wrong.
 -->
 <template>
-  <div class="flex h-full flex-col gap-4">
+  <div class="flex flex-col gap-4" :class="scroll ? 'h-full' : ''">
     <div
       v-if="fields.loading || doc.get?.loading"
       class="flex flex-1 items-center justify-center"
@@ -17,7 +17,7 @@
       <LoadingIndicator class="size-6" />
     </div>
     <template v-else>
-      <div class="flex-1 overflow-y-auto">
+      <div :class="scroll ? 'flex-1 overflow-y-auto' : ''">
         <FieldLayout
           v-if="tabs.length"
           :tabs="tabs"
@@ -63,6 +63,9 @@ const props = defineProps({
   doctype: { type: String, required: true },
   docname: { type: String, default: '' },
   defaults: { type: Object, default: () => ({}) },
+  // the fields scroll inside the section with the save bar pinned under them;
+  // off, they take their own height and the page around them scrolls
+  scroll: { type: Boolean, default: true },
 })
 const emit = defineEmits(['saved'])
 

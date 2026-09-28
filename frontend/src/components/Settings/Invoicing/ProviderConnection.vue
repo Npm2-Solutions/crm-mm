@@ -13,7 +13,7 @@
 -->
 <template>
   <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-start justify-between gap-4 px-2">
       <div class="flex flex-col gap-1">
         <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
           {{ __('Provider connection') }}
@@ -35,7 +35,7 @@
 
     <div
       v-if="azienda"
-      class="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto"
+      class="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-2"
     >
       <!-- The environment. Loud on purpose: it is the only switch whose wrong
            value produces no error anywhere. -->
