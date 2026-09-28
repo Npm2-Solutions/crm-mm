@@ -331,8 +331,11 @@ Gli SMS ora ne sono esclusi come gia' lo erano WhatsApp, email e chiamate.
 
 «2026-08-16» sui separatori e' diventato «Domenica 16 agosto»: Oggi, Ieri, il
 giorno della settimana per l'ultima settimana, la data (con l'anno solo se non e'
-quest'anno) dopo. Le parole vengono dal browser (`Intl`), come le date della
-dashboard: «Yesterday» nel catalogo italiano non aveva nemmeno una traduzione.
+quest'anno) dopo. Le parole vengono da `Intl`, nella lingua dell'utente del CRM
+(`appLocale()`, dal boot) come le date della dashboard: «Yesterday» nel catalogo
+italiano non aveva nemmeno una traduzione. Una prima versione usava la lingua del
+browser, e un account inglese su un browser italiano leggeva le date in italiano
+sotto parole inglesi.
 Gli orari si leggono sul fuso di chi guarda, e le stringhe del server non passano
 piu' da `new Date(...)`, che Safari vecchio legge come data non valida.
 
