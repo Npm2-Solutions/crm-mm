@@ -11,8 +11,12 @@
   <div
     v-if="title !== 'Data'"
     ref="header"
-    class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 text-lg-medium sm:px-4"
-    :class="title == 'Activity' ? 'py-2.5' : 'pb-3 pt-5 sm:pb-4 sm:pt-6'"
+    class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 text-lg-medium"
+    :class="
+      title == 'Activity'
+        ? 'py-2.5 sm:px-4'
+        : 'pb-3 pt-5 sm:px-10 sm:pb-4 sm:pt-6'
+    "
   >
     <div
       v-if="title != 'Activity'"

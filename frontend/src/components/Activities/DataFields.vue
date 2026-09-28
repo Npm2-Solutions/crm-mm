@@ -1,8 +1,9 @@
 <template>
   <div
-    class="my-3 flex items-center justify-between text-lg-medium sm:mb-4 sm:mt-8"
+    class="mb-3 mt-5 flex items-center justify-between text-lg-medium sm:mb-4 sm:mt-6"
   >
-    <div class="flex h-8 items-center text-2xl-semibold text-ink-gray-8">
+    <!-- the same size and place as the titles of the other tabs -->
+    <div class="flex h-8 items-center text-xl-semibold text-ink-gray-8">
       {{ __('Data') }}
       <Badge
         v-if="document.isDirty"

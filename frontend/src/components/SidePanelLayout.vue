@@ -50,7 +50,10 @@
                         class="w-[35%] min-w-20 shrink-0 flex items-center gap-0.5"
                         :class="{ 'pt-[9px]': isTextareaField(field) }"
                       >
-                        <div class="truncate text-sm text-ink-gray-5">
+                        <!-- two lines rather than «No. of Employe…» -->
+                        <div
+                          class="line-clamp-2 break-words text-sm text-ink-gray-5"
+                        >
                           {{ __(field.label) }}
                         </div>
                         <div
@@ -698,6 +701,11 @@ function checkChange(value, df) {
   border-color: transparent;
 }
 
+/* a borderless textarea's resize grip floated on its own beside the label */
+:deep(textarea.form-control) {
+  resize: none;
+}
+
 /* The ghost inputs get no placeholder colour from frappe-ui, so the forms
    plugin's own grey showed through — a different grey from the empty selects
    beside them, and in dark a lighter one. One grey for every empty field. */
@@ -739,10 +747,7 @@ function checkChange(value, df) {
   padding-right: 9px !important;
 }
 
-.sections .section .column {
-  max-height: 300px;
-}
-.sections .section:last-of-type .column {
-  max-height: none;
-}
+/* No cap per section: the panel scrolls as a whole already. At 300px each
+   section had a scroller of its own, and a Details section of 346px cut
+   «Source» in half and hid «Lead Owner» — with empty space below it. */
 </style>
