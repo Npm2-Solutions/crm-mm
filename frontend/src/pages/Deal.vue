@@ -80,12 +80,19 @@
       </template>
     </Tabs>
     <Resizer side="right" class="flex flex-col justify-between border-l">
-      <div
-        class="flex h-[45px] cursor-copy items-center border-b px-5 py-2.5 text-lg-medium text-ink-gray-9"
+      <!-- The record's id, for copying: it was styled as the panel's title,
+           in bigger type than the name right under it. -->
+      <button
+        class="group flex h-[45px] shrink-0 cursor-copy items-center gap-1.5 border-b px-5 py-2.5 text-left text-p-sm tabular-nums text-ink-gray-5 hover:text-ink-gray-7"
+        :title="__('Copy')"
         @click="copyToClipboard(dealId)"
       >
-        {{ __(dealId) }}
-      </div>
+        <span class="truncate">{{ dealId }}</span>
+        <span
+          class="lucide-copy size-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+          aria-hidden="true"
+        />
+      </button>
       <div class="flex items-center justify-start gap-5 border-b p-5">
         <Tooltip :text="__('Organization Logo')">
           <div class="group relative size-12">
