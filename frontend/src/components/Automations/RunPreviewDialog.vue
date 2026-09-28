@@ -100,23 +100,23 @@ const props = defineProps({
 const show = defineModel({ type: Boolean, default: false })
 
 const STATUS_STYLE = {
-  'Would run': { icon: 'play', classes: 'bg-surface-blue-1 text-ink-blue-3' },
+  'Would run': { icon: 'play', classes: 'bg-surface-blue-2 text-ink-blue-7' },
   Skipped: {
     icon: 'corner-down-right',
     classes: 'bg-surface-gray-2 text-ink-gray-6',
   },
-  Wait: { icon: 'clock', classes: 'bg-surface-amber-1 text-ink-amber-3' },
-  Branch: { icon: 'git-branch', classes: 'bg-surface-blue-1 text-ink-blue-3' },
-  Goal: { icon: 'target', classes: 'bg-surface-violet-1 text-ink-violet-1' },
+  Wait: { icon: 'clock', classes: 'bg-surface-amber-2 text-ink-amber-7' },
+  Branch: { icon: 'git-branch', classes: 'bg-surface-blue-2 text-ink-blue-7' },
+  Goal: { icon: 'target', classes: 'bg-surface-violet-2 text-ink-violet-7' },
   Jump: {
     icon: 'corner-down-right',
-    classes: 'bg-surface-violet-1 text-ink-violet-1',
+    classes: 'bg-surface-violet-2 text-ink-violet-7',
   },
-  Exited: { icon: 'log-out', classes: 'bg-surface-red-1 text-ink-red-3' },
-  End: { icon: 'check-circle', classes: 'bg-surface-green-1 text-ink-green-3' },
+  Exited: { icon: 'log-out', classes: 'bg-surface-red-2 text-ink-red-7' },
+  End: { icon: 'check-circle', classes: 'bg-surface-green-2 text-ink-green-7' },
   Failed: {
     icon: 'alert-triangle',
-    classes: 'bg-surface-red-1 text-ink-red-3',
+    classes: 'bg-surface-red-2 text-ink-red-7',
   },
 }
 

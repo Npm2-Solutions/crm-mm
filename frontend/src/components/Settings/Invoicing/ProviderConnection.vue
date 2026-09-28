@@ -99,7 +99,7 @@
         <div class="flex items-center justify-between gap-3">
           <span
             class="text-p-sm"
-            :class="armato ? 'text-ink-green-3' : 'text-ink-amber-3'"
+            :class="armato ? 'text-ink-green-8' : 'text-ink-amber-8'"
           >
             {{
               armato

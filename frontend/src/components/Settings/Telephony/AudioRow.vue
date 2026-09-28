@@ -10,7 +10,7 @@
         :href="url"
         target="_blank"
         rel="noopener"
-        class="mt-1 truncate text-p-sm text-ink-blue-3 hover:underline"
+        class="mt-1 truncate text-p-sm text-ink-blue-8 hover:underline"
       >
         {{ fileName }}
       </a>

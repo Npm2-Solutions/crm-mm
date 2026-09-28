@@ -85,7 +85,7 @@
             />
             <span
               v-if="chosenCallerId && !chosenCallerId.routes_to_crm"
-              class="w-56 text-right text-p-sm text-ink-red-3"
+              class="w-56 text-right text-p-sm text-ink-red-8"
             >
               {{ __('Incoming calls to this number do not reach the CRM.') }}
             </span>

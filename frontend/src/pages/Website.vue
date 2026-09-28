@@ -312,7 +312,7 @@
             routeCheck.reason || __('Where the page answers, after the domain.')
           "
         />
-        <p v-if="routeCheck.reason" class="text-p-sm text-ink-red-4">
+        <p v-if="routeCheck.reason" class="text-p-sm text-ink-red-8">
           {{ routeCheck.reason }}
           <button
             v-if="routeCheck.suggestion"

@@ -429,7 +429,7 @@
             <div
               v-for="err in targetErrors"
               :key="err"
-              class="mt-1 text-ink-red-4"
+              class="mt-1 text-ink-red-8"
             >
               {{ err }}
             </div>
@@ -662,9 +662,9 @@ function chipClass(status) {
     {
       Scheduled: 'bg-surface-gray-1 text-ink-gray-8 hover:bg-surface-gray-2',
       'Pending Approval':
-        'bg-surface-amber-1 text-ink-amber-3 hover:bg-surface-amber-2',
-      Published: 'bg-surface-green-1 text-ink-green-4 hover:bg-surface-green-2',
-      Failed: 'bg-surface-red-1 text-ink-red-4 hover:bg-surface-red-2',
+        'bg-surface-amber-1 text-ink-amber-9 hover:bg-surface-amber-2',
+      Published: 'bg-surface-green-1 text-ink-green-8 hover:bg-surface-green-2',
+      Failed: 'bg-surface-red-1 text-ink-red-8 hover:bg-surface-red-2',
       Draft:
         'bg-surface-elevation-2 text-ink-gray-5 border border-dashed border-outline-gray-2 hover:bg-surface-gray-1',
       Cancelled: 'bg-surface-gray-1 text-ink-gray-4 line-through',

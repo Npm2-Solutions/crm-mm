@@ -520,7 +520,7 @@
             class="flex flex-col items-center gap-3 py-10 text-center"
           >
             <div
-              class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-green-2 text-ink-green-3"
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-green-2 text-ink-green-7"
             >
               <LucideCheck class="h-6 w-6" />
             </div>

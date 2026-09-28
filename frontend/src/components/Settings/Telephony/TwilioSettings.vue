@@ -95,7 +95,7 @@
               <div
                 v-if="connection"
                 class="text-p-sm truncate"
-                :class="connection.ok ? 'text-ink-green-3' : 'text-ink-red-3'"
+                :class="connection.ok ? 'text-ink-green-8' : 'text-ink-red-8'"
               >
                 {{
                   connection.ok
@@ -222,7 +222,7 @@
             </div>
             <p
               v-if="trunk.phone_numbers?.length"
-              class="mt-1.5 text-p-sm text-ink-red-3"
+              class="mt-1.5 text-p-sm text-ink-red-8"
             >
               {{
                 __(
