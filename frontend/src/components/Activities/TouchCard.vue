@@ -62,6 +62,20 @@ const props = defineProps({
 // A lead ad fills the same three slots with an ad, an ad set and a campaign.
 // "Content: Promo Autunno" is the right value under the wrong word, so the
 // words follow where the person came from.
+// The store keeps GA's placeholders — «(none)», «(direct)» — so the
+// source / medium pairs in the reports read the way marketers expect; on the
+// card they are a row saying nothing. So is a source that is only the badge's
+// category again: «CRM UI» over «Source crm_ui».
+const PLACEHOLDERS = ['(none)', '(not set)', '(direct)']
+
+function says(value, category) {
+  if (!value || PLACEHOLDERS.includes(value)) return false
+  const slug = String(category || '')
+    .toLowerCase()
+    .replace(/ /g, '_')
+  return value !== slug
+}
+
 const rows = computed(() => {
   const t = props.touch || {}
   const fromAnAd = t.landing_page === 'lead_ad_form'
@@ -76,6 +90,6 @@ const rows = computed(() => {
       value: fromAnAd ? __('Lead form') : t.landing_page,
     },
     { label: __('Referrer'), value: t.referrer },
-  ].filter((row) => row.value)
+  ].filter((row) => says(row.value, t.category))
 })
 </script>
