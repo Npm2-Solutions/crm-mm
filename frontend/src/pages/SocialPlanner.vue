@@ -300,7 +300,7 @@
     <template #body-content>
       <div class="flex flex-col gap-4">
         <div>
-          <div class="mb-1.5 text-xs font-medium text-ink-gray-5">
+          <div class="mb-1.5 text-base text-ink-gray-5">
             {{ __('Profiles') }}
           </div>
           <div class="flex flex-wrap gap-1.5">
@@ -405,9 +405,13 @@
         </details>
 
         <div class="grid grid-cols-2 gap-3">
+          <!-- frappe-ui's picker, not the browser's: that one wrote
+               «mm/dd/yyyy, --:-- --» whatever the language, drew itself in the
+               browser's colours, and its value was taken for server time
+               whatever the reader's time zone -->
           <FormControl
             v-model="form.scheduled_at"
-            type="datetime-local"
+            type="datetime"
             :label="__('Schedule at')"
           />
           <FormControl
@@ -468,8 +472,10 @@
               :label="__('Schedule')"
               @click="save('Scheduled')"
             />
+            <!-- one primary action: two solid buttons side by side, black
+                 and green, left the eye nowhere to go -->
             <Button
-              variant="solid"
+              variant="subtle"
               theme="green"
               :label="__('Publish now')"
               @click="publishNow"
@@ -733,10 +739,11 @@ function openComposer(post = null, date = null) {
   form.content = post?.content || ''
   form.media = post?.media || ''
   form.recurrence = post?.recurrence || 'None'
+  // the picker reads and writes the server's own «YYYY-MM-DD HH:mm:ss»
   form.scheduled_at = post?.scheduled_at
-    ? post.scheduled_at.slice(0, 16).replace(' ', 'T')
+    ? post.scheduled_at
     : date
-      ? toDateStr(date) + 'T09:00'
+      ? toDateStr(date) + ' 09:00:00'
       : ''
   form.targets = (post?.targets || []).map((t) => ({
     account: t.account,
@@ -766,9 +773,7 @@ function payload(status) {
       content: form.content,
       media: form.media,
       recurrence: form.recurrence,
-      scheduled_at: form.scheduled_at
-        ? form.scheduled_at.replace('T', ' ') + ':00'
-        : null,
+      scheduled_at: form.scheduled_at || null,
       targets: form.targets,
     },
   }

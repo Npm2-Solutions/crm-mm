@@ -54,7 +54,7 @@
                     trigger="button"
                     :model-value="f.field.fieldname"
                     :options="filterFieldOptions"
-                    :placeholder="__('First Name')"
+                    :placeholder="__('Search fields…')"
                     @update:selected-option="(e) => updateFilter(e, i)"
                   />
                 </div>
@@ -88,7 +88,7 @@
                       trigger="button"
                       :model-value="f.field.fieldname"
                       :options="filterFieldOptions"
-                      :placeholder="__('First Name')"
+                      :placeholder="__('Search fields…')"
                       @update:selected-option="(e) => updateFilter(e, i)"
                     />
                   </div>
@@ -131,7 +131,7 @@
             <Combobox
               :model-value="null"
               :options="availableFilters"
-              :placeholder="__('First Name')"
+              :placeholder="__('Search fields…')"
               @update:selected-option="(e) => setfilter(e)"
             >
               <template #trigger="{ open, setOpen }">
