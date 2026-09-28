@@ -81,7 +81,9 @@
               </span>
             </div>
             <div
-              v-for="incontro in daFatturare.data.slice(0, 8)"
+              v-for="incontro in allAppointments
+                ? daFatturare.data
+                : daFatturare.data.slice(0, 8)"
               :key="incontro.name"
               class="flex items-center justify-between gap-3 border-t border-outline-blue-2 pt-2 first:border-0 first:pt-0"
             >
@@ -90,7 +92,7 @@
                   {{ incontro.title || incontro.name }}
                 </div>
                 <div class="text-p-xs text-ink-gray-5">
-                  {{ formatDate(incontro.starts_on) }}
+                  {{ formatDate(incontro.starts_on, 'DD/MM/YYYY HH:mm') }}
                 </div>
               </div>
               <Button
@@ -100,6 +102,19 @@
                 @click="fatturaIncontro(incontro)"
               />
             </div>
+            <!-- the count above said sixteen and eight were listed, with no
+                 way to reach the other eight -->
+            <Button
+              v-if="daFatturare.data.length > 8"
+              variant="ghost"
+              class="self-start"
+              :label="
+                allAppointments
+                  ? __('Show fewer')
+                  : __('Show all ({0})', [daFatturare.data.length])
+              "
+              @click="allAppointments = !allAppointments"
+            />
           </div>
 
           <!-- A button not pressed produces no error: it produces absence, and
@@ -114,7 +129,7 @@
           <div
             v-for="row in pending.data || []"
             :key="row.action + row.name"
-            class="flex items-center justify-between gap-3 rounded-xl border border-outline-gray-2 px-4 py-3"
+            class="flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
             <div class="flex min-w-0 flex-col">
               <span class="truncate text-p-base-medium text-ink-gray-8">
@@ -125,10 +140,10 @@
                 {{ dayjs(row.posting_date).format('DD/MM/YYYY') }}
               </span>
             </div>
-            <div class="flex shrink-0 items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
               <Badge
                 :theme="row.state.startsWith('scart') ? 'red' : 'orange'"
-                :label="row.state"
+                :label="statusLabel(row.state)"
               />
               <!-- Reporting is only offered when somebody here can actually do
                    it. On an export company the file is prepared and uploaded
@@ -154,7 +169,7 @@
           <div
             v-for="row in invoices.data || []"
             :key="row.name"
-            class="flex items-center justify-between gap-3 rounded-xl border border-outline-gray-2 px-4 py-3"
+            class="flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
             <div class="flex min-w-0 flex-col">
               <span class="truncate text-p-base-medium text-ink-gray-8">
@@ -169,7 +184,7 @@
                 </template>
               </span>
             </div>
-            <div class="flex shrink-0 items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
               <!-- On a draft, where it will go matters more than where it has
                    been: a document that turns out to be un-issuable at submit
                    has already cost the time of whoever typed it, with the client
@@ -182,12 +197,12 @@
               <Badge
                 v-if="row.sdi_status && row.sdi_status !== 'non_applicabile'"
                 :theme="invoiceStatusTheme(row.sdi_status)"
-                :label="'SdI: ' + row.sdi_status"
+                :label="'SdI: ' + statusLabel(row.sdi_status)"
               />
               <Badge
                 v-if="row.ts_status && row.ts_status !== 'non_applicabile'"
                 :theme="invoiceStatusTheme(row.ts_status)"
-                :label="'TS: ' + row.ts_status"
+                :label="'TS: ' + statusLabel(row.ts_status)"
               />
               <!-- The transmit action does not exist on a document that cannot
                    take that channel. A greyed-out button invites somebody to go
@@ -250,7 +265,9 @@
                   :key="key"
                   class="rounded-lg bg-surface-gray-2 px-3 py-2"
                 >
-                  <div class="text-p-sm text-ink-gray-5">{{ key }}</div>
+                  <div class="text-p-sm text-ink-gray-5">
+                    {{ statusLabel(key) }}
+                  </div>
                   <div class="text-lg font-semibold text-ink-gray-8">
                     {{ count }}
                   </div>
@@ -308,7 +325,7 @@
               <div
                 v-for="row in submissions.data || []"
                 :key="row.name"
-                class="flex items-center justify-between gap-3 rounded-xl border border-outline-gray-2 px-4 py-3"
+                class="flex flex-col gap-2 rounded-xl border border-outline-gray-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
               >
                 <div class="flex min-w-0 flex-col">
                   <span class="truncate text-p-base-medium text-ink-gray-8">
@@ -324,10 +341,10 @@
                     }}
                   </span>
                 </div>
-                <div class="flex shrink-0 items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
                   <Badge
                     :theme="invoiceStatusTheme(row.status)"
-                    :label="row.status"
+                    :label="statusLabel(row.status)"
                   />
                   <Button
                     v-if="row.file"
@@ -348,7 +365,7 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { formatDate } from '@/utils'
-import { formatEuro, invoiceStatusTheme } from '@/utils/invoicing'
+import { formatEuro, invoiceStatusTheme, statusLabel } from '@/utils/invoicing'
 import {
   createListResource,
   createResource,
@@ -449,6 +466,7 @@ const forma = createResource({
 })
 
 const emettendo = ref('')
+const allAppointments = ref(false)
 
 async function fatturaIncontro(incontro) {
   emettendo.value = incontro.name

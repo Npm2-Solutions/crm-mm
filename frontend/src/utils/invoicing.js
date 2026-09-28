@@ -22,6 +22,20 @@ export function invoiceStatusTheme(status) {
   return 'orange'
 }
 
+/**
+ * A state as a word, not as a key: «Da inviare», not «da_inviare».
+ *
+ * The words stay the Agenzia's — they are what a portal receipt says — but the
+ * underscores and the lower case were the database's, and they reached the
+ * badges as they were.
+ */
+export function statusLabel(status) {
+  const words = String(status || '')
+    .replace(/_/g, ' ')
+    .trim()
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
 /** Whether a state is worth showing at all. */
 export function isRealStatus(status) {
   return Boolean(status) && status !== 'non_applicabile'
