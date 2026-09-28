@@ -7,6 +7,7 @@ from crm.integrations.twilio.utils import get_public_url
 
 SMS_FIELDS = [
 	"name",
+	"owner",
 	"type",
 	"to",
 	"from",

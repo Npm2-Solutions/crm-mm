@@ -367,6 +367,7 @@ ROW = (
 	"image",
 	"organization",
 	"mobile_no",
+	"email",
 	"last_conversation_on",
 	"last_conversation_channel",
 	"last_conversation_direction",
@@ -430,6 +431,22 @@ def people(
 		order_by=NEWEST_FIRST,
 		limit_page_length=min(int(limit), 200),
 	)
+
+
+@frappe.whitelist()
+def person(name: str) -> dict:
+	"""One row of the list, for a conversation opened from a link.
+
+	The list holds the forty people at the top of the view that is open, and a
+	link — from the dashboard, a notification, a colleague — can name anybody.
+	Looking them up only among the rows on screen is how the header came to say
+	«CRM-LEAD-2026-00128» where a name goes, over a conversation with somebody
+	whose name the CRM knows perfectly well.
+	"""
+	if not frappe.db.exists("CRM Lead", name):
+		frappe.throw(frappe._("This conversation no longer exists"), frappe.DoesNotExistError)
+	frappe.has_permission("CRM Lead", "read", doc=name, throw=True)
+	return frappe.db.get_value("CRM Lead", name, list(ROW), as_dict=True) or {}
 
 
 OPEN = "Open"
