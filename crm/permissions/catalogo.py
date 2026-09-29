@@ -210,7 +210,9 @@ CAPACITA = (
 	_c("email.account_centro", manager=CENTRO),
 	_c("canali.configura", manager=CENTRO, descrizione="WhatsApp numbers and the centre's other channels"),
 	_c("dati_prova.gestisci", manager=CENTRO),
-	_c("piano.vedi", scrive=False, manager=CENTRO, descrizione="The plan, its modules and this month's usage"),
+	_c(
+		"piano.vedi", scrive=False, manager=CENTRO, descrizione="The plan, its modules and this month's usage"
+	),
 	_c("piano.amplia", manager=CENTRO, descrizione="Start the trial of a module"),
 	# Phone
 	_c(

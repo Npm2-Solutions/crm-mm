@@ -98,14 +98,26 @@ def start_trial(module: str) -> dict:
 	)
 	# the centre may start a trial, not write the plan: this one change, on its behalf
 	piano.save(ignore_permissions=True)
-	_avvisa_agenzia(piano, noti[module].etichetta)
-	return get_plan()
+	risposta = get_plan()
+	risposta["agency_notified"] = _avvisa_agenzia(piano, noti[module].etichetta)
+	return risposta
 
 
-def _avvisa_agenzia(piano, modulo: str) -> None:
+def _avvisa_agenzia(piano, modulo: str) -> bool:
+	"""Tell the agency. The trial has started either way: a mail that could not go
+	out is said on screen, so the centre can tell them another way."""
 	destinatari = [piano.agency_email] if piano.agency_email else _system_managers()
 	if not destinatari:
-		return
+		return False
+	try:
+		_manda_richiesta(destinatari, modulo)
+	except Exception:
+		frappe.log_error(title="Plan: the agency could not be told about a trial")
+		return False
+	return True
+
+
+def _manda_richiesta(destinatari: list[str], modulo: str) -> None:
 	chi = frappe.utils.get_fullname(frappe.session.user)
 	frappe.sendmail(
 		recipients=destinatari,

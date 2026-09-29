@@ -151,6 +151,14 @@ def assegna_livelli(user: str, chiavi: list[str]) -> None:
 	crm = profili_crm()
 	altri = [riga.role_profile for riga in doc.role_profiles if riga.role_profile not in crm]
 	nuovi = [livelli.livello(chiave).profilo for chiave in chiavi]
+	persi = ruoli_che_si_perderebbero(doc, altri + nuovi)
+	if persi:
+		frappe.throw(
+			_(
+				"{0} also has roles the levels do not carry ({1}): giving levels would take them away. "
+				"The agency sets their access, from the Desk."
+			).format(user, ", ".join(sorted(persi)))
+		)
 	doc.set("role_profiles", [{"role_profile": profilo} for profilo in altri + nuovi])
 	# the deprecated single field still holds the first profile of before, and Frappe
 	# puts it back into the table at save when it is not there
@@ -160,6 +168,25 @@ def assegna_livelli(user: str, chiavi: list[str]) -> None:
 	_moduli_desk(doc, chiavi)
 	doc.save(ignore_permissions=True)
 	livelli.dimentica_cache()
+
+
+def ruoli_che_si_perderebbero(doc, profili: list[str]) -> set[str]:
+	"""The roles ``doc`` would lose if its profiles became ``profili``.
+
+	Frappe rebuilds a profiled user's roles from their profiles: whatever the
+	profiles do not carry goes. For the CRM's own roles that is the point - a new
+	level replaces the old one's - but another app's role, or the agency's System
+	Manager, must never go as a side effect of giving someone a level.
+	"""
+	restano: set[str] = set()
+	for profilo in profili:
+		restano |= set(
+			frappe.get_all(
+				"Has Role", filters={"parenttype": "Role Profile", "parent": profilo}, pluck="role"
+			)
+		)
+	del_crm = set(livelli.ruoli_registrati()) - livelli.RUOLI_AGENZIA
+	return {riga.role for riga in doc.roles} - restano - del_crm - livelli.RUOLI_AUTOMATICI
 
 
 def togli_dal_crm(user: str) -> None:

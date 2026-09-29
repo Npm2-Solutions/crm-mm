@@ -137,7 +137,9 @@ def invite_by_email(emails: str, role: str | None = None, levels: str | list | N
 
 	chiavi = []
 	if levels:
-		chiavi = utenti.verifica_livelli(frappe.parse_json(levels) if isinstance(levels, str) else levels)
+		from crm.api.user import _chiavi
+
+		chiavi = utenti.verifica_livelli(_chiavi(levels))
 	else:
 		role = role or "Sales User"
 		user_roles = frappe.get_roles(frappe.session.user)
