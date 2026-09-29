@@ -35,7 +35,7 @@
         </div>
         <ErrorMessage v-if="error" class="mt-6" :message="__(error)" />
       </div>
-      <div class="px-4 pb-7 pt-4 sm:px-6">
+      <div class="dialog-footer px-4 pb-7 pt-4 sm:px-6">
         <div class="space-y-2">
           <Button
             class="w-full"

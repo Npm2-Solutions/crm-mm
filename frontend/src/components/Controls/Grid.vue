@@ -4,13 +4,19 @@
       {{ __(label) }}
     </div>
 
+    <!-- On a phone every column keeps a width a value can be read in, and
+         the table scrolls sideways: sharing 340px, six columns came down to
+         two letters each («La…», «Ty…»). The header and the rows each carry
+         the whole table's width. -->
     <div
       v-if="fields?.length"
       class="rounded border border-outline-elevation-2"
+      :class="{ 'overflow-x-auto': isMobileView }"
     >
       <!-- Header -->
       <div
         class="grid-header flex items-center rounded-t-[7px] bg-surface-gray-2 text-ink-gray-5 truncate"
+        :style="{ minWidth: tableMinWidth }"
       >
         <div
           class="inline-flex items-center justify-center border-r border-outline-gray-2 h-8 p-2 w-12"
@@ -68,6 +74,7 @@
         <Draggable
           v-model="rows"
           class="w-full"
+          :style="{ minWidth: tableMinWidth }"
           :delay="isTouchScreenDevice() ? 200 : 0"
           group="rows"
           item-key="name"
@@ -221,7 +228,7 @@
                         v-else-if="field.fieldtype === 'Datetime'"
                         :value="row[field.fieldname]"
                         variant="outline"
-                        :format="getFormat('', '', true, true, false)"
+                        :format="datetimeFormat()"
                         input-class="border-none text-sm text-ink-gray-8"
                         @change="(v) => fieldChange(v, field, row)"
                       />
@@ -489,6 +496,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import {
   getRandom,
   getFormat,
+  datetimeFormat,
   isTouchScreenDevice,
   interpolateTemplate,
 } from '@/utils'
@@ -497,6 +505,7 @@ import { usersStore } from '@/stores/users'
 import { getMeta } from '@/stores/meta'
 import { parseLinkFilters } from '@/utils/fieldTransforms'
 import { createDocument } from '@/composables/document'
+import { isMobileView } from '@/composables/settings'
 import {
   FormControl,
   Checkbox,
@@ -659,9 +668,23 @@ const gridTemplateColumns = computed(() => {
       const gs = gridViewSettings.length
         ? gridViewSettings.find((g) => g.fieldname === f.fieldname)
         : f
-      return `minmax(0, ${gs?.columns || 2}fr)`
+      const share = gs?.columns || 2
+      return `minmax(${isMobileView.value ? share * 3.5 : 0}rem, ${share}fr)`
     })
     .join(' ')
+})
+
+// the three fixed columns (select, number, edit) and every field's minimum
+const tableMinWidth = computed(() => {
+  if (!isMobileView.value || !fields.value?.length) return undefined
+  let gridViewSettings = getGridViewSettings(props.parentDoctype)
+  const rem = fields.value.reduce((sum, f) => {
+    const gs = gridViewSettings.length
+      ? gridViewSettings.find((g) => g.fieldname === f.fieldname)
+      : f
+    return sum + (gs?.columns || 2) * 3.5
+  }, 9)
+  return `${rem}rem`
 })
 
 const allRowsSelected = computed(() => {

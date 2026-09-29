@@ -214,3 +214,25 @@
     border-radius: 0;
   }
 }
+
+/* A dialog on a phone.
+
+   A long form — a new lead, a new deal — is taller than the screen, and the
+   dialog scrolls as a whole: its Create button came into view only at the very
+   end. The row of actions (`.dialog-footer`) stays at the bottom of the screen
+   while the form scrolls under it. frappe-ui clips the dialog with
+   `overflow: hidden`, which makes it a scroll box of its own and keeps anything
+   sticky inside it from sticking; `clip` cuts the same corners without that. */
+@media (max-width: 767px) {
+  .dialog-content {
+    overflow: clip;
+  }
+  .dialog-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-top: 1px solid var(--outline-elevation-2);
+    background-color: var(--surface-elevation-1);
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+}

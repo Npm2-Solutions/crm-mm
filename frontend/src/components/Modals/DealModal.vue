@@ -60,7 +60,7 @@
           <ErrorMessage v-if="error" class="mt-4" :message="__(error)" />
         </div>
       </div>
-      <div class="px-4 pb-7 pt-4 sm:px-6">
+      <div class="dialog-footer px-4 pb-7 pt-4 sm:px-6">
         <div class="flex flex-row-reverse gap-2">
           <Button
             variant="solid"

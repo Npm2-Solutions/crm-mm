@@ -182,7 +182,7 @@
 
       <div
         v-if="!callLog?.data?._lead && !callLog?.data?._deal"
-        class="px-4 pb-7 pt-4 sm:px-6"
+        class="dialog-footer px-4 pb-7 pt-4 sm:px-6"
       >
         <Button
           class="w-full"
