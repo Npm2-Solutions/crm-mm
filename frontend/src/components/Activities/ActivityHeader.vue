@@ -95,16 +95,20 @@
         </template>
       </Dropdown>
     </div>
-    <Button
-      v-else-if="title == 'Events'"
-      variant="solid"
-      @click="modalRef.showEvent()"
-    >
-      <template #prefix>
-        <EventIcon class="h-4 w-4" />
-      </template>
-      <span>{{ __('Schedule an Event') }}</span>
-    </Button>
+    <div v-else-if="title == 'Events'" class="flex items-center gap-2">
+      <Button v-if="canBook" @click="bookAppointment">
+        <template #prefix>
+          <span class="lucide-calendar-plus size-4" aria-hidden="true" />
+        </template>
+        <span>{{ __('Book an appointment') }}</span>
+      </Button>
+      <Button variant="solid" @click="modalRef.showEvent()">
+        <template #prefix>
+          <EventIcon class="h-4 w-4" />
+        </template>
+        <span>{{ __('Schedule an Event') }}</span>
+      </Button>
+    </div>
     <Button
       v-else-if="title == 'Notes'"
       variant="solid"
@@ -154,9 +158,11 @@ import { globalStore } from '@/stores/global'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { callEnabled } from '@/composables/telephony'
+import { useSchedulerMeta } from '@/composables/scheduling'
 import { useElementSize } from '@vueuse/core'
 import { Dropdown, Tooltip } from 'frappe-ui'
 import { computed, h, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   tabs: { type: Array, default: () => [] },
@@ -205,6 +211,27 @@ const { width } = useElementSize(header)
 const compact = computed(() => width.value > 0 && width.value < 660)
 
 const { makeCall } = globalStore()
+const router = useRouter()
+const scheduling = useSchedulerMeta()
+
+// who an appointment would be for: the person, or the person behind a deal
+const person = computed(() =>
+  props.doc?.doctype === 'CRM Deal' || props.doc?.lead
+    ? props.doc.lead
+    : props.doc?.name,
+)
+
+// something to book, and somebody to book it for
+const canBook = computed(
+  () => Boolean(person.value) && (scheduling.data?.services || []).length > 0,
+)
+
+function bookAppointment() {
+  router.push({
+    name: 'Calendar',
+    query: { new: 'appointment', party: person.value },
+  })
+}
 
 const showFilesUploader = defineModel('showFilesUploader', { type: Boolean })
 
@@ -236,6 +263,18 @@ const defaultActions = computed(() => {
       icon: h(EventIcon, { class: 'h-4 w-4' }),
       label: __('Schedule an Event'),
       onClick: () => props.modalRef.showEvent(),
+    },
+    // Booking starts from the person as often as from the calendar: «she
+    // called to book». It opens the calendar — where the free times are — with
+    // a new appointment already for them.
+    {
+      icon: h('span', {
+        class: 'lucide-calendar-plus size-4',
+        'aria-hidden': 'true',
+      }),
+      label: __('Book an appointment'),
+      onClick: bookAppointment,
+      condition: () => canBook.value,
     },
     {
       icon: h(PhoneIcon, { class: 'h-4 w-4' }),

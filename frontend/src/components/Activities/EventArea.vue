@@ -1,5 +1,69 @@
 <template>
-  <div v-if="events.length">
+  <div v-if="events.length || appointments.length" class="pt-1">
+    <!--
+      A person's appointments, beside their events.
+
+      This tab listed Event records only, and an appointment is not one: what
+      a client had booked — the next visit, the cycle of treatments — could be
+      found on the calendar and nowhere on the client. The next ones come
+      first, soonest at the top; the past ones after, latest first.
+    -->
+    <section v-if="appointments.length" class="mb-6 px-3 sm:px-10">
+      <template v-for="group in appointmentGroups" :key="group.key">
+        <div
+          v-if="group.rows.length"
+          class="mb-2 mt-3 text-p-sm font-medium text-ink-gray-5 first:mt-0"
+        >
+          {{ group.label }}
+        </div>
+        <div class="flex flex-col gap-2">
+          <button
+            v-for="appointment in group.rows"
+            :key="appointment.name"
+            type="button"
+            class="flex w-full items-center gap-3 rounded-lg border border-outline-elevation-2 bg-surface-elevation-1 px-3 py-2.5 text-left transition-colors hover:border-outline-gray-3"
+            @click="openAppointment(appointment.name)"
+          >
+            <span
+              class="w-[3px] self-stretch rounded-full"
+              :style="{
+                backgroundColor:
+                  appointment.status === 'Cancelled'
+                    ? 'var(--ink-gray-4)'
+                    : appointment.color || 'var(--ink-blue-5)',
+              }"
+            />
+            <span class="min-w-0 flex-1">
+              <span
+                class="block truncate text-base"
+                :class="
+                  appointment.status === 'Cancelled'
+                    ? 'text-ink-gray-5 line-through'
+                    : 'text-ink-gray-8'
+                "
+              >
+                {{ appointment.service }}
+              </span>
+              <span class="block truncate text-p-sm text-ink-gray-5">
+                {{ when(appointment) }}
+              </span>
+            </span>
+            <Badge
+              variant="subtle"
+              :theme="STATUS_THEME[appointment.status] || 'gray'"
+              :label="__(appointment.status)"
+            />
+          </button>
+        </div>
+      </template>
+    </section>
+
+    <div
+      v-if="appointments.length && events.length"
+      class="mb-3 px-3 text-p-sm font-medium text-ink-gray-5 sm:px-10"
+    >
+      {{ __('Events') }}
+    </div>
     <div
       v-for="(event, i) in events"
       :key="event.name"
@@ -84,12 +148,16 @@ import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import { useEvent, showEventModal, activeEvent } from '@/composables/event'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
-import { Avatar } from 'frappe-ui'
+import { Avatar, Badge, createResource, dayjs } from 'frappe-ui'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   doctype: { type: String, default: '' },
   docname: { type: String, default: '' },
 })
+
+const router = useRouter()
 
 function showEvent(e = {}) {
   showEventModal.value = true
@@ -100,4 +168,53 @@ const { events, startEndTime, startDate } = useEvent({
   doctype: props.doctype,
   docname: props.docname,
 })
+
+// grey for cancelled, as its block on the calendar is
+const STATUS_THEME = {
+  Scheduled: 'blue',
+  Confirmed: 'green',
+  Completed: 'gray',
+  'No Show': 'red',
+  Cancelled: 'gray',
+}
+
+const booked = createResource({
+  url: 'crm.api.appointments.get_person_appointments',
+  params: { doctype: props.doctype, name: props.docname },
+  cache: ['person-appointments', props.doctype, props.docname],
+  auto: true,
+})
+
+const appointments = computed(() => booked.data || [])
+
+const appointmentGroups = computed(() => {
+  const now = dayjs()
+  const upcoming = appointments.value
+    .filter((row) => dayjs(row.ends_on).isAfter(now))
+    .sort((a, b) => dayjs(a.starts_on).diff(dayjs(b.starts_on)))
+  const past = appointments.value.filter(
+    (row) => !dayjs(row.ends_on).isAfter(now),
+  )
+  return [
+    { key: 'upcoming', label: __('Coming up'), rows: upcoming },
+    { key: 'past', label: __('Earlier'), rows: past },
+  ]
+})
+
+function when(row) {
+  const start = dayjs(row.starts_on)
+  return `${start.format('ddd D MMM YYYY')} · ${start.format('HH:mm')} – ${dayjs(row.ends_on).format('HH:mm')}`
+}
+
+// on the calendar, open: where it can be moved, changed or cancelled
+function openAppointment(name) {
+  const row = appointments.value.find((one) => one.name === name)
+  router.push({
+    name: 'Calendar',
+    query: {
+      appointment: name,
+      date: row ? dayjs(row.starts_on).format('YYYY-MM-DD') : undefined,
+    },
+  })
+}
 </script>
