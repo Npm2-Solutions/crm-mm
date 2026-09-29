@@ -1,5 +1,10 @@
 <template>
-  <div class="flex overflow-x-auto h-full">
+  <!--
+    On a phone a column is nearly the width of the screen, and a swipe lands on
+    the next one: the columns were 288px wide there, so every swipe stopped
+    wherever the finger let go, with the next column cut in half at the edge.
+  -->
+  <div class="flex h-full snap-x snap-mandatory overflow-x-auto md:snap-none">
     <Draggable
       v-if="columns"
       :list="columns"
@@ -11,7 +16,7 @@
       <template #item="{ element: column }">
         <div
           v-if="!column.column.delete"
-          class="flex flex-col gap-2.5 min-w-72 w-72 hover:bg-surface-gray-2 rounded-lg p-2.5"
+          class="flex w-[85vw] min-w-[85vw] snap-start scroll-ml-2 flex-col gap-2.5 rounded-lg p-2.5 hover:bg-surface-gray-2 md:w-72 md:min-w-72"
         >
           <div class="flex gap-2 items-center group justify-between">
             <div class="flex items-center text-base">
@@ -55,10 +60,13 @@
             <div class="flex">
               <Dropdown :options="actions(column)">
                 <template #default>
+                  <!-- shown with the pointer on the column, and always where
+                       there is no pointer to put there -->
                   <Button
-                    class="opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity"
+                    class="pointer-events-none opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100"
                     icon="lucide-more-horizontal"
                     variant="ghost"
+                    :aria-label="__('Column options')"
                   />
                 </template>
               </Dropdown>

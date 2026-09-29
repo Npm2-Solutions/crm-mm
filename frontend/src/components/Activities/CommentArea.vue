@@ -26,7 +26,7 @@
         <Button
           icon="lucide-more-horizontal"
           variant="ghost"
-          class="!h-5 !w-5 -mr-1"
+          class="touch-target !h-5 !w-5 -mr-1"
           :aria-label="__('Options')"
         />
       </Dropdown>

@@ -1,5 +1,8 @@
 <template>
-  <div ref="scrollContainer" class="mx-3 h-full overflow-y-auto">
+  <!-- padding, not margin: the checkbox's hit area reaches into it, out to
+       the edge of the screen, and a scroll box clips what goes past its own
+       padding -->
+  <div ref="scrollContainer" class="h-full overflow-y-auto px-3">
     <template v-for="group in groups" :key="group.group ?? '__ungrouped__'">
       <ListGroupHeader v-if="group.group !== undefined" :group="group">
         <div
@@ -32,11 +35,12 @@
           <!-- A <button> cannot be nested inside the row's <a>.
                `@click.stop.prevent` on a plain wrapper is how frappe-ui's own
                ListRow keeps the checkbox from following the link. -->
-          <!-- the box is 14px; its hit area is the full height of the row,
-               so a near miss selects instead of opening the record -->
+          <!-- the box is 14px; its hit area is the full height of the row and
+               runs from the edge of the screen, so a near miss selects instead
+               of opening the record -->
           <div
             v-if="selectable"
-            class="-my-3 -mr-2 flex items-start py-3.5 pr-2"
+            class="-my-3 -ml-3 -mr-2 flex items-start py-3.5 pl-3 pr-2"
             @click.stop.prevent="toggle(row)"
           >
             <Checkbox

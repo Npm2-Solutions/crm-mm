@@ -125,7 +125,7 @@
                   <router-link
                     v-if="recordRoute(current)"
                     :to="recordRoute(current)"
-                    class="text-lg font-medium text-ink-gray-9 hover:underline"
+                    class="-my-1 inline-block py-1 text-lg font-medium text-ink-gray-9 hover:underline"
                   >
                     {{ current.display_name }}
                   </router-link>

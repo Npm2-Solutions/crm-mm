@@ -33,7 +33,7 @@
                 <div class="flex cursor-pointer items-center gap-0.5">
                   <Button
                     variant="ghost"
-                    class="!h-5 w-5 !p-1"
+                    class="!h-5 w-5 !p-1 max-md:!h-7 max-md:!w-7"
                     @click="editColumn(element)"
                   >
                     <template #icon>
@@ -42,7 +42,7 @@
                   </Button>
                   <Button
                     variant="ghost"
-                    class="!h-5 w-5 !p-1"
+                    class="!h-5 w-5 !p-1 max-md:!h-7 max-md:!w-7"
                     @click="removeColumn(element)"
                   >
                     <template #icon>
