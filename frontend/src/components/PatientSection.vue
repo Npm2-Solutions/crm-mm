@@ -59,6 +59,34 @@
               }}
             </div>
           </template>
+          <!-- who signs and decides for them: a minor needs somebody, and the
+               age comes from the codice fiscale, never typed -->
+          <div
+            v-if="status.data.representatives?.length"
+            class="text-p-sm text-ink-gray-6"
+          >
+            {{
+              __('Signs and decides for them: {0}', [
+                status.data.representatives.map((r) => r.label).join(', '),
+              ])
+            }}
+          </div>
+          <div
+            v-else-if="status.data.minor"
+            class="flex items-start gap-1.5 rounded bg-surface-amber-1 px-2 py-1.5 text-p-sm text-ink-amber-8"
+          >
+            <span
+              class="lucide-triangle-alert mt-0.5 size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span class="min-w-0">
+              {{
+                __(
+                  'A minor: under Linked people, say which parent or guardian signs and decides for them.',
+                )
+              }}
+            </span>
+          </div>
         </div>
       </CollapsibleSection>
     </div>

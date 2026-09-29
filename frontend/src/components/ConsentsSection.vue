@@ -73,6 +73,15 @@
           "
           :options="channelOptions"
         />
+        <!-- a parent answers for a minor child: somebody linked to them, and
+             the register says who -->
+        <FormControl
+          v-if="dialog.mode === 'record' && answeredByOptions.length > 1"
+          v-model="dialog.givenBy"
+          type="select"
+          :label="__('Who answered?')"
+          :options="answeredByOptions"
+        />
         <FormControl
           v-model="dialog.note"
           type="textarea"
@@ -165,6 +174,16 @@ const CHANNEL_LABELS = {
   Imported: __('Imported'),
 }
 
+const answeredByOptions = computed(() => [
+  { label: __('The person themselves'), value: '' },
+  ...(consents.data?.answered_by || []).map((person) => ({
+    label: person.represents
+      ? __('{0}, who acts for them', [person.label])
+      : person.label,
+    value: person.name,
+  })),
+])
+
 const channelOptions = computed(() =>
   (consents.data?.channels || []).map((value) => ({
     label: CHANNEL_LABELS[value] || value,
@@ -189,10 +208,13 @@ function stateDetail(current) {
       channel(current.withdrawal_channel).toLowerCase(),
     ])
   }
-  return __('on {0}, {1}', [
+  const when = __('on {0}, {1}', [
     formatDate(current.answered_on, '', true),
     channel(current.channel).toLowerCase(),
   ])
+  return current.given_by_name
+    ? __('{0}, by {1}', [when, current.given_by_name])
+    : when
 }
 
 function dot(type) {
@@ -219,6 +241,7 @@ const dialog = reactive({
   type: null,
   title: '',
   channel: 'At the desk',
+  givenBy: '',
   note: '',
   error: '',
   saving: '',
@@ -234,6 +257,7 @@ function open(type, mode) {
         ? __('Record an answer: {0}', [type.label])
         : __('Withdraw: {0}', [type.label]),
     channel: 'At the desk',
+    givenBy: '',
     note: '',
     error: '',
     saving: '',
@@ -262,7 +286,7 @@ async function send(method, extra, saving) {
 }
 
 function record(status) {
-  send('record_consent', { status }, status)
+  send('record_consent', { status, given_by: dialog.givenBy || null }, status)
 }
 
 function withdraw() {

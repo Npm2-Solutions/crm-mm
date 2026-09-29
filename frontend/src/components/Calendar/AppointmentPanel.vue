@@ -360,6 +360,13 @@
               :placeholder="__('Who is it for?')"
               @update:modelValue="(value) => pickParty(row, value)"
             />
+            <!-- booked by somebody else: the contact below is theirs -->
+            <div
+              v-if="row.party && row.booked_by_name"
+              class="mt-1 truncate text-p-sm text-ink-gray-6"
+            >
+              {{ __('Booked by {0}', [row.booked_by_name]) }}
+            </div>
             <div
               v-if="row.party && (row.phone || row.email)"
               class="mt-1 truncate text-p-sm text-ink-gray-5"
@@ -1258,7 +1265,9 @@ function addParticipant() {
   form.participants.push(participantRow())
 }
 
-const partyDetails = createResource({ url: 'frappe.client.get_value' })
+const partyDetails = createResource({
+  url: 'crm.persone.collegate.get_contact_for',
+})
 
 function pickParty(row, value) {
   row.party_type = 'CRM Lead'
@@ -1267,19 +1276,21 @@ function pickParty(row, value) {
     row.participant_name = ''
     row.email = ''
     row.phone = ''
+    row.booked_by = ''
+    row.booked_by_name = ''
     return
   }
+  // a child without a contact of their own is reached through whoever books for
+  // them: the reminders go to the parent
   partyDetails.submit(
-    {
-      doctype: 'CRM Lead',
-      filters: { name: value },
-      fieldname: ['lead_name', 'email', 'mobile_no'],
-    },
+    { lead: value },
     {
       onSuccess: (data) => {
         row.participant_name = data?.lead_name || value
         row.email = data?.email || ''
-        row.phone = data?.mobile_no || ''
+        row.phone = data?.phone || ''
+        row.booked_by = data?.booked_by || ''
+        row.booked_by_name = data?.booked_by_name || ''
       },
       onError: () => (row.participant_name = value),
     },
@@ -1304,6 +1315,8 @@ function loadInto(data) {
         phone: row.phone || '',
         status: row.status || 'Booked',
         amount: row.amount || 0,
+        booked_by: row.booked_by || '',
+        booked_by_name: row.booked_by_name || '',
         manual: !row.party && Boolean(row.participant_name),
       }),
     ),
