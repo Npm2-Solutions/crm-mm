@@ -29,6 +29,7 @@ from crm.permissions.livelli import (
 	registra_livello,
 	registra_livello_implicito,
 	registra_modulo_piano,
+	registra_requisito,
 	registra_ruolo,
 	ruoli_del_livello,
 	ruoli_registrati,
@@ -120,11 +121,12 @@ LIVELLI = (
 #: Roles the CRM brings, and what they are for. The roles are never shown: people
 #: get levels.
 RUOLI = (
-	("System Manager", "Manages the site: the agency."),
-	("Sales Manager", "Configures the CRM: pipelines, views, services, users."),
-	("Sales User", "Works on people, deals, conversations and the agenda."),
-	("Front Desk", "Front desk: sees the whole centre's people and agenda."),
-	("Practitioner", "Sees their own agenda, clients or patients."),
+	# (role, what it is for, whether Frappe creates it by itself)
+	("System Manager", "Manages the site: the agency.", True),
+	("Sales Manager", "Configures the CRM: pipelines, views, services, users.", True),
+	("Sales User", "Works on people, deals, conversations and the agenda.", True),
+	("Front Desk", "Front desk: sees the whole centre's people and agenda.", False),
+	("Practitioner", "Sees their own agenda, clients or patients.", False),
 )
 
 #: Users from before levels, by their widest role. The migration gives them
@@ -135,8 +137,16 @@ IMPLICITI = (
 )
 
 
-def _c(nome, piano=BASE, scrive=True, descrizione="", **livelli):
-	return Capacita(nome, piano=piano, scrive=scrive, descrizione=descrizione), livelli
+def _c(nome, piano=BASE, scrive=True, descrizione="", requisito=None, **livelli):
+	return Capacita(nome, piano=piano, scrive=scrive, descrizione=descrizione, requisito=requisito), livelli
+
+
+def builder_installato() -> bool:
+	"""Whether Frappe Builder is on this bench: installing it is the agency's job, not
+	a switch the centre has, so without it the site pages are nobody's."""
+	import frappe
+
+	return "builder" in frappe.get_installed_apps()
 
 
 CAPACITA = (
@@ -271,7 +281,13 @@ CAPACITA = (
 	_c("moduli_lead.gestisci", piano=MARKETING, manager=CENTRO, descrizione="Web forms for leads"),
 	_c("campagne.gestisci", piano=MARKETING, manager=CENTRO),
 	_c("numeri.marketing", piano=MARKETING, scrive=False, manager=CENTRO),
-	_c("sito.gestisci", piano=MARKETING, manager=CENTRO, descrizione="Pages, showcase and site settings"),
+	_c(
+		"sito.gestisci",
+		piano=MARKETING,
+		requisito="builder",
+		manager=CENTRO,
+		descrizione="Pages, showcase and site settings: only where Frappe Builder is installed",
+	),
 )
 
 #: The agency's: keys, webhooks, raw logs, code, the plan. Never a level's.
@@ -318,8 +334,8 @@ def livelli_iniziali(ruoli: set[str], gerarchia: bool) -> list[str] | None:
 def registra() -> None:
 	for modulo in MODULI:
 		registra_modulo_piano(modulo)
-	for nome, descrizione in RUOLI:
-		registra_ruolo(nome, descrizione)
+	for nome, descrizione, di_frappe in RUOLI:
+		registra_ruolo(nome, descrizione, di_frappe=di_frappe)
 	for livello, ruoli in LIVELLI:
 		registra_livello(livello, ruoli)
 	for ruolo, livello in IMPLICITI:
@@ -328,3 +344,4 @@ def registra() -> None:
 		registra_capacita(capacita, livelli)
 	for capacita in TECNICHE:
 		registra_capacita(capacita)
+	registra_requisito("builder", builder_installato)

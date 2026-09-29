@@ -392,7 +392,7 @@ const tabs = computed(() => {
           component: markRaw(InvoicingDefaults),
         },
       ],
-      condition: () => isManager(),
+      condition: () => puo('fatture.configura'),
     },
     {
       // the agenda setup, in the order you configure it: what you sell, what it
@@ -492,7 +492,9 @@ const tabs = computed(() => {
           component: markRaw(WebsiteSettings),
         },
       ],
-      condition: () => isManager(),
+      // only where Frappe Builder is installed: installing it is the agency's
+      // job on the bench, not a switch the centre has
+      condition: () => puo('sito.gestisci'),
     },
     {
       label: __('Customization'),
