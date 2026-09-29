@@ -264,17 +264,21 @@ class CRMCallLog(Document):
 		return d
 
 
+def _user_label(user: str | None) -> tuple:
+	"""Name and picture of whoever took or made the call. A user deleted since then
+	leaves the call with no name, not the whole list broken."""
+	if not user:
+		return (None, None)
+	return frappe.db.get_value("User", user, ["full_name", "user_image"]) or (user, None)
+
+
 def parse_call_log(call):
 	call["show_recording"] = False
 	call["_duration"] = seconds_to_duration(call.get("duration"))
 	if call.get("type") == "Incoming":
 		call["activity_type"] = "incoming_call"
 		contact = find_contact_by_phone_number(call.get("from"))
-		receiver = (
-			frappe.db.get_values("User", call.get("receiver"), ["full_name", "user_image"])[0]
-			if call.get("receiver")
-			else [None, None]
-		)
+		receiver = _user_label(call.get("receiver"))
 		call["_caller"] = {
 			"label": contact.get("full_name", "Unknown"),
 			"image": contact.get("image"),
@@ -286,11 +290,7 @@ def parse_call_log(call):
 	elif call.get("type") == "Outgoing":
 		call["activity_type"] = "outgoing_call"
 		contact = find_contact_by_phone_number(call.get("to"))
-		caller = (
-			frappe.db.get_values("User", call.get("caller"), ["full_name", "user_image"])[0]
-			if call.get("caller")
-			else [None, None]
-		)
+		caller = _user_label(call.get("caller"))
 		call["_caller"] = {
 			"label": caller[0],
 			"image": caller[1],
