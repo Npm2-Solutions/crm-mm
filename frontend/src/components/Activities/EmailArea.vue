@@ -37,7 +37,7 @@
           :theme="status.color"
         />
         <TimelineTimestamp v-if="!bare" :date="activity.communication_date" />
-        <div class="flex gap-0.5">
+        <div v-if="puo('conversazioni.usa')" class="flex gap-0.5">
           <Button
             :tooltip="__('Reply')"
             :aria-label="__('Reply')"
@@ -93,6 +93,7 @@ import AttachmentItem from '@/components/AttachmentItem.vue'
 import EmailContent from '@/components/Activities/EmailContent.vue'
 import { Badge } from 'frappe-ui'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
+import { usersStore } from '@/stores/users'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -101,6 +102,8 @@ const props = defineProps({
   // the house bubble draws the card, the sender and the clock in the mixed chat
   bare: { type: Boolean, default: false },
 })
+
+const { puo } = usersStore()
 
 // The composer knows who a reply goes to and from which mailbox; this only
 // says which email, and whether to everybody on it.

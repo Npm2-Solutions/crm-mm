@@ -7,6 +7,7 @@
         {{ note.title }}
       </div>
       <Dropdown
+        v-if="puo('note.scrivi')"
         :options="[
           {
             label: __('Edit'),
@@ -69,7 +70,7 @@ defineProps({
 
 const notes = defineModel({ type: Object })
 
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 
 async function deleteNote(name) {
   await toast.promise(

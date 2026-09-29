@@ -83,7 +83,11 @@
         the stream is filtered to: a note, a task, an event, a logged call are
         things you do *about* somebody rather than say to them.
       -->
-      <Dropdown :options="defaultActions" @click.stop>
+      <Dropdown
+        v-if="defaultActions.length"
+        :options="defaultActions"
+        @click.stop
+      >
         <template #default="{ open }">
           <Button
             variant="solid"
@@ -96,43 +100,58 @@
       </Dropdown>
     </div>
     <div v-else-if="title == 'Events'" class="flex items-center gap-2">
-      <Button v-if="canBook" @click="bookAppointment">
+      <Button v-if="canBook && puo('agenda.prenota')" @click="bookAppointment">
         <template #prefix>
           <span class="lucide-calendar-plus size-4" aria-hidden="true" />
         </template>
         <span>{{ __('Book an appointment') }}</span>
       </Button>
-      <Button variant="solid" @click="modalRef.showEvent()">
+      <Button
+        v-if="puo('agenda.prenota')"
+        variant="solid"
+        @click="modalRef.showEvent()"
+      >
         <template #prefix>
           <EventIcon class="h-4 w-4" />
         </template>
         <span>{{ __('Schedule an Event') }}</span>
       </Button>
     </div>
-    <Button
-      v-else-if="title == 'Notes'"
-      variant="solid"
-      :label="__('New Note')"
-      iconLeft="plus"
-      @click="modalRef.showNote()"
-    />
-    <Button
-      v-else-if="title == 'Tasks'"
-      variant="solid"
-      :label="__('New Task')"
-      iconLeft="plus"
-      @click="modalRef.showTask()"
-    />
-    <Button
-      v-else-if="title == 'Attachments'"
-      variant="solid"
-      :label="__('Upload Attachment')"
-      iconLeft="plus"
-      @click="showFilesUploader = true"
-    />
+    <!-- each tab offers to add only what the level may add (doc 30) -->
+    <template v-else-if="title == 'Notes'">
+      <Button
+        v-if="puo('note.scrivi')"
+        variant="solid"
+        :label="__('New Note')"
+        iconLeft="plus"
+        @click="modalRef.showNote()"
+      />
+    </template>
+    <template v-else-if="title == 'Tasks'">
+      <Button
+        v-if="!solaLettura()"
+        variant="solid"
+        :label="__('New Task')"
+        iconLeft="plus"
+        @click="modalRef.showTask()"
+      />
+    </template>
+    <template v-else-if="title == 'Attachments'">
+      <Button
+        v-if="canWrite"
+        variant="solid"
+        :label="__('Upload Attachment')"
+        iconLeft="plus"
+        @click="showFilesUploader = true"
+      />
+    </template>
     <!-- the record's buttons live in the record: signing is not a «New» -->
     <div v-else-if="title == 'Clinic'" />
-    <Dropdown v-else :options="defaultActions" @click.stop>
+    <Dropdown
+      v-else-if="defaultActions.length"
+      :options="defaultActions"
+      @click.stop
+    >
       <template #default="{ open }">
         <Button
           variant="solid"
@@ -161,6 +180,7 @@ import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { callEnabled } from '@/composables/telephony'
 import { useSchedulerMeta } from '@/composables/scheduling'
+import { usersStore } from '@/stores/users'
 import { useElementSize } from '@vueuse/core'
 import { Dropdown, Tooltip } from 'frappe-ui'
 import { computed, h, ref } from 'vue'
@@ -172,7 +192,11 @@ const props = defineProps({
   doc: { type: Object, default: () => ({}) },
   modalRef: { type: Object, default: () => ({}) },
   counts: { type: Object, default: () => ({}) },
+  // whether the record may be changed: attaching a file writes it
+  canWrite: { type: Boolean, default: true },
 })
+
+const { puo, solaLettura } = usersStore()
 
 // «write in this channel»: the composer is below, and it decides what opening
 // one means
@@ -188,12 +212,15 @@ const channel = defineModel('channel', { type: String, default: 'all' })
 // rows into, because this pill strip used to hold a second copy of it — and a
 // copy is how a channel ends up sorted into a pile that nothing offers a way to
 // open, which is exactly what happened to the calls.
+//
+// And what the level reads (doc 30): Marketing and Accounting see the person,
+// not their emails, the team's comments or the calls.
 const DECORATION = {
-  email: { icon: Email2Icon },
+  email: { icon: Email2Icon, condition: () => puo('conversazioni.vedi') },
   whatsapp: { icon: WhatsAppIcon, condition: () => whatsappEnabled.value },
   sms: { icon: SMSIcon, condition: () => smsEnabled.value },
-  comment: { icon: CommentIcon },
-  call: { icon: PhoneIcon },
+  comment: { icon: CommentIcon, condition: () => puo('note.vedi') },
+  call: { icon: PhoneIcon, condition: () => puo('telefono.registro') },
 }
 
 const channelOptions = computed(() =>
@@ -237,24 +264,29 @@ function bookAppointment() {
 
 const showFilesUploader = defineModel('showFilesUploader', { type: Boolean })
 
+// writing to somebody, or a comment for the team: the composer's, and the
+// level's (doc 30). Marketing and Accounting read the person, not with them.
+const converses = computed(() => puo('conversazioni.usa'))
+
 const defaultActions = computed(() => {
   let actions = [
     {
       icon: h(WhatsAppIcon, { class: 'h-4 w-4' }),
       label: __('WhatsApp Message'),
       onClick: () => emit('write', 'whatsapp'),
-      condition: () => whatsappEnabled.value,
+      condition: () => whatsappEnabled.value && converses.value,
     },
     {
       icon: h(Email2Icon, { class: 'h-4 w-4' }),
       label: __('Email'),
       onClick: () => emit('write', 'email'),
+      condition: () => converses.value,
     },
     {
       icon: h(SMSIcon, { class: 'h-4 w-4' }),
       label: __('SMS'),
       onClick: () => emit('write', 'sms'),
-      condition: () => smsEnabled.value,
+      condition: () => smsEnabled.value && converses.value,
     },
     // what the composer calls it: an «Internal note» for the team. «Comment»
     // sat two rows above «Note», which is something else (a Notes record)
@@ -262,11 +294,13 @@ const defaultActions = computed(() => {
       icon: h(CommentIcon, { class: 'h-4 w-4' }),
       label: __('Internal note'),
       onClick: () => emit('write', 'comment'),
+      condition: () => converses.value,
     },
     {
       icon: h(EventIcon, { class: 'h-4 w-4' }),
       label: __('Schedule an Event'),
       onClick: () => props.modalRef.showEvent(),
+      condition: () => puo('agenda.prenota'),
     },
     // Booking starts from the person as often as from the calendar: «she
     // called to book». It opens the calendar — where the free times are — with
@@ -278,12 +312,13 @@ const defaultActions = computed(() => {
       }),
       label: __('Book an appointment'),
       onClick: bookAppointment,
-      condition: () => canBook.value,
+      condition: () => canBook.value && puo('agenda.prenota'),
     },
     {
       icon: h(PhoneIcon, { class: 'h-4 w-4' }),
       label: __('Log a Call'),
       onClick: () => props.modalRef.createCallLog(),
+      condition: () => puo('telefono.chiama'),
     },
     {
       icon: h(PhoneIcon, { class: 'h-4 w-4' }),
@@ -295,16 +330,19 @@ const defaultActions = computed(() => {
       icon: h(NoteIcon, { class: 'h-4 w-4' }),
       label: __('Note'),
       onClick: () => props.modalRef.showNote(),
+      condition: () => puo('note.scrivi'),
     },
     {
       icon: h(TaskIcon, { class: 'h-4 w-4' }),
       label: __('Task'),
       onClick: () => props.modalRef.showTask(),
+      condition: () => !solaLettura(),
     },
     {
       icon: h(AttachmentIcon, { class: 'h-4 w-4' }),
       label: __('Upload Attachment'),
       onClick: () => (showFilesUploader.value = true),
+      condition: () => props.canWrite,
     },
   ]
   return actions.filter((action) =>

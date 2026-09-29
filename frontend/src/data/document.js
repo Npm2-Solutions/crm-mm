@@ -6,7 +6,7 @@ import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { runSequentially, parseAssignees, sanitizeText } from '@/utils'
 import { findMissingMandatory } from '@/utils/fieldTransforms'
 import { createDocumentResource, createResource, toast } from 'frappe-ui'
-import { ref, reactive, getCurrentInstance } from 'vue'
+import { ref, reactive, computed, getCurrentInstance } from 'vue'
 
 const documentsCache = {}
 const controllersCache = {}
@@ -134,7 +134,7 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
 
   if (!permissionsCache[doctype][docname || '']) {
     permissionsCache[doctype][docname || ''] = createResource({
-      url: 'frappe.client.get_doc_permissions',
+      url: 'crm.api.doc.get_doc_permissions',
       cache: `permissions:${doctype}:${docname}`,
       auto: docname ? true : false,
       params: {
@@ -376,6 +376,13 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
     document: documentsCache[doctype][docname || ''],
     assignees: assigneesCache[doctype][docname || ''],
     permissions: permissionsCache[doctype][docname || ''],
+    // As the server judges it: a level that sees a record but may not change it
+    // (doc 30) gets it to read. Until the answer comes, it is writable as always.
+    canWrite: computed(
+      () =>
+        permissionsCache[doctype][docname || '']?.data?.permissions?.write !==
+        0,
+    ),
     scripts,
     error,
     getControllers,

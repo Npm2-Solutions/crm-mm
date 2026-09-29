@@ -1,6 +1,7 @@
 <template>
   <!-- While running, show only a spinner (no crawl details). -->
   <Button
+    v-if="canWrite"
     :label="running ? '' : __('Enrich')"
     :loading="running"
     :disabled="running"
@@ -19,6 +20,7 @@ import { Button, FeatherIcon, call, toast } from 'frappe-ui'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { globalStore } from '@/stores/global'
 import { organizationsStore } from '@/stores/organizations'
+import { useDocument } from '@/data/document'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -27,6 +29,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['done'])
+
+// it writes what it finds on the record
+const { canWrite } = useDocument(props.doctype, props.docname)
 
 const { $socket } = globalStore()
 const { organizations } = organizationsStore()

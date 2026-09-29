@@ -1,5 +1,5 @@
 <template>
-  <Popover placement="bottom-end">
+  <Popover v-if="canAssign" placement="bottom-end">
     <template #target="{ togglePopover }">
       <div class="flex items-center" @click="togglePopover">
         <component
@@ -22,11 +22,14 @@
       />
     </template>
   </Popover>
+  <!-- who it is with, for whoever may not change it -->
+  <MultipleAvatar v-else-if="assignees?.length" :avatars="assignees" />
 </template>
 <script setup>
 import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import AssignToBody from '@/components/AssignToBody.vue'
 import { useDocument } from '@/data/document'
+import { usersStore } from '@/stores/users'
 import { toast, Popover } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -35,7 +38,17 @@ const props = defineProps({
   docname: { type: String, default: '' },
 })
 
-const { document } = useDocument(props.doctype, props.docname)
+const { document, canWrite } = useDocument(props.doctype, props.docname)
+const { puo } = usersStore()
+
+// Assigning a person or a deal hands it to somebody (doc 30): the capability,
+// on a record the session may change. The server asks the same.
+const canAssign = computed(
+  () =>
+    canWrite.value &&
+    (!['CRM Lead', 'CRM Deal'].includes(props.doctype) ||
+      puo('persone.assegna')),
+)
 
 const assignees = defineModel({ type: Array, default: () => [] })
 

@@ -36,7 +36,7 @@
         </template>
       </Dropdown>
       <Button
-        v-else
+        v-else-if="canOpenDeal"
         :label="__('New Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -91,6 +91,7 @@
               />
               <component
                 :is="doc.image ? Dropdown : 'div'"
+                v-if="canWrite"
                 v-bind="
                   doc.image
                     ? {
@@ -146,6 +147,7 @@
                 />
 
                 <Button
+                  v-if="puo('conversazioni.usa')"
                   :tooltip="__('Send an Email')"
                   :icon="Email2Icon"
                   @click="
@@ -167,6 +169,7 @@
                 />
 
                 <Button
+                  v-if="canWrite"
                   :tooltip="__('Attach a File')"
                   :icon="AttachmentIcon"
                   @click="showFilesUploader = true"
@@ -335,18 +338,31 @@ const dealOptions = computed(() => [
     label: deal.organization || deal.name,
     onClick: () => router.push({ name: 'Deal', params: { dealId: deal.name } }),
   })),
-  {
-    label: __('New Deal'),
-    icon: 'plus',
-    onClick: () => (showConvertToDealModal.value = true),
-  },
+  ...(canOpenDeal.value
+    ? [
+        {
+          label: __('New Deal'),
+          icon: 'plus',
+          onClick: () => (showConvertToDealModal.value = true),
+        },
+      ]
+    : []),
 ])
 const showFilesUploader = ref(false)
 
-const { triggerOnRender, assignees, permissions, document, scripts, error } =
-  useDocument('CRM Lead', props.leadId)
+const {
+  triggerOnRender,
+  assignees,
+  permissions,
+  document,
+  scripts,
+  error,
+  canWrite,
+} = useDocument('CRM Lead', props.leadId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
+// opening a deal writes the person too (doc 30): whoever reads it does not
+const canOpenDeal = computed(() => canWrite.value && puo('trattative.scrivi'))
 
 const doc = computed(() => document.doc || {})
 
@@ -450,6 +466,7 @@ const tabs = computed(() => {
       name: 'Events',
       label: __('Events'),
       icon: EventIcon,
+      condition: () => puo('agenda.vedi'),
     },
     {
       name: 'Tasks',
@@ -460,6 +477,7 @@ const tabs = computed(() => {
       name: 'Notes',
       label: __('Notes'),
       icon: NoteIcon,
+      condition: () => puo('note.vedi'),
     },
     {
       name: 'Attachments',
