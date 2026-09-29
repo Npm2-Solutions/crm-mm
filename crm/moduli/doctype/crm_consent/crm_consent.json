@@ -1,0 +1,244 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-09-29 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "consent_type",
+  "status",
+  "column_answer",
+  "answered_on",
+  "channel",
+  "recorded_by",
+  "source_section",
+  "source_doctype",
+  "source_name",
+  "column_source",
+  "ip_address",
+  "user_agent",
+  "text_section",
+  "text",
+  "text_version",
+  "column_text",
+  "note",
+  "attachment",
+  "withdrawal_section",
+  "withdrawn_on",
+  "withdrawal_channel",
+  "column_withdrawal",
+  "withdrawn_by",
+  "withdrawal_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "reqd": 1,
+   "set_only_once": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consent_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Consent",
+   "options": "CRM Consent Type",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Given\nRefused\nWithdrawn",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_answer",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "answered_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Answered on",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "How",
+   "options": "Online booking\nWeb form\nAt the desk\nOn paper\nBy phone\nBy email\nImported",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "recorded_by",
+   "fieldtype": "Link",
+   "label": "Recorded by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Where it comes from"
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Link",
+   "label": "From",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Record",
+   "options": "source_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user_agent",
+   "fieldtype": "Small Text",
+   "label": "Browser",
+   "read_only": 1
+  },
+  {
+   "fieldname": "text_section",
+   "fieldtype": "Section Break",
+   "label": "What they answered"
+  },
+  {
+   "fieldname": "text",
+   "fieldtype": "Small Text",
+   "label": "Text",
+   "read_only": 1
+  },
+  {
+   "fieldname": "text_version",
+   "fieldtype": "Int",
+   "label": "Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_text",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Signed paper",
+   "set_only_once": 1
+  },
+  {
+   "depends_on": "eval:doc.status=='Withdrawn'",
+   "fieldname": "withdrawal_section",
+   "fieldtype": "Section Break",
+   "label": "Withdrawal"
+  },
+  {
+   "fieldname": "withdrawn_on",
+   "fieldtype": "Datetime",
+   "label": "Withdrawn on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withdrawal_channel",
+   "fieldtype": "Select",
+   "label": "How",
+   "options": "\nOnline booking\nWeb form\nAt the desk\nOn paper\nBy phone\nBy email\nImported",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_withdrawal",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "withdrawn_by",
+   "fieldtype": "Link",
+   "label": "Recorded by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withdrawal_note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-29 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Moduli",
+ "name": "CRM Consent",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  },
+  {
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager"
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "lead_name,consent_type",
+ "show_title_field_in_link": 1,
+ "sort_field": "answered_on",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lead_name",
+ "track_changes": 1
+}

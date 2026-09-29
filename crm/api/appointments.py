@@ -1351,6 +1351,7 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		"booking_page_intro",
 		"privacy_policy_url",
 		"require_privacy_consent",
+		"ask_marketing_consent",
 		"notify_staff_on_booking",
 		"send_client_confirmation",
 		"max_active_per_customer",

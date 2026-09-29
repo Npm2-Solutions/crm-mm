@@ -365,7 +365,7 @@
         catalog: null, step: "service", query: "", category: "",
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
-        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
@@ -632,7 +632,14 @@
           const text = S.catalog.privacy_policy_url
             ? h("span", {}, T("consent"), h("a", { href: S.catalog.privacy_policy_url, target: "_blank", rel: "noopener" }, T("privacy")), h("span", { class: "req" }, " *"))
             : h("span", {}, T("consentPlain"), h("span", { class: "req" }, " *"));
-          form.append(h("label", { class: "check", for: "f-consent" }, cb, text));
+          form.append(h("label", { class: "check", for: "f-consent", id: "f-consent-label" }, cb, text));
+        }
+        // optional and never ticked for them: a consent has to be given, not left in place
+        if (S.catalog.marketing_consent) {
+          const mk = h("input", { type: "checkbox", id: "f-marketing" });
+          mk.checked = S.form.marketing;
+          mk.addEventListener("change", (e) => (S.form.marketing = e.target.checked));
+          form.append(h("label", { class: "check", for: "f-marketing" }, mk, h("span", {}, S.catalog.marketing_consent.text)));
         }
         form.append(h("div", { class: "actions" },
           h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
@@ -647,12 +654,16 @@
           S.error = T("required"); render(); return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { S.error = T("invalidEmail"); render(); return; }
+        // the words the person ticked, as they read them, before the form redraws:
+        // they go in the consent register
+        const consentText = f.consent ? ($("f-consent-label")?.innerText || "").replace(/\s*\*\s*$/, "") : "";
         S.busy = true; S.error = ""; render();
         try {
           const params = new URLSearchParams(location.search);
           S.result = await api("book", {
             service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
             staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
+            consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
             crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
           }, true);
           S.busy = false;
@@ -705,7 +716,7 @@
       function restart() {
         history.replaceState(null, "", location.pathname);
         Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, result: null, manage: null, moving: false, seats: 1 });
-        S.form.notes = ""; S.form.consent = false;
+        S.form.notes = ""; S.form.consent = false; S.form.marketing = false;
         go("service");
       }
 

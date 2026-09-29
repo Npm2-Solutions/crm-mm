@@ -123,6 +123,7 @@ class CRMLead(Document):
 		lead_owner: DF.Link | None
 		lost_notes: DF.Text | None
 		lost_reason: DF.Link | None
+		marketing_consent: DF.Literal["", "Given", "Refused", "Withdrawn"]
 		middle_name: DF.Data | None
 		mobile_no: DF.Data | None
 		naming_series: DF.Literal["CRM-LEAD-.YYYY.-"]
