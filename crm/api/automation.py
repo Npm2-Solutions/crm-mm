@@ -295,7 +295,7 @@ def _builder_fields(doctype: str) -> list[dict]:
 @frappe.whitelist()
 def get_builder_meta() -> dict:
 	"""Everything the visual builder needs: palette, triggers, fields, templates, people."""
-	from crm.automation.engine import CONDITION_OPERATORS, GOAL_EVENTS, TRIGGER_EVENTS, WAIT_MODES
+	from crm.automation.engine import CONDITION_OPERATORS, GOAL_EVENTS, WAIT_MODES, trigger_offerti
 
 	email_templates = []
 	if frappe.db.exists("DocType", "Email Template"):
@@ -319,7 +319,7 @@ def get_builder_meta() -> dict:
 	)
 	return {
 		"step_types": list(STEP_TYPES),
-		"trigger_events": TRIGGER_EVENTS,
+		"trigger_events": trigger_offerti(),
 		"condition_operators": list(CONDITION_OPERATORS),
 		"goal_events": list(GOAL_EVENTS),
 		"wait_modes": list(WAIT_MODES),
