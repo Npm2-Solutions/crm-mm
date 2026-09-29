@@ -33,7 +33,11 @@ RUOLI = (
 		"Issues, cancels and transmits invoices, and configures the register.",
 		("manager",),
 	),
-	("Invoicing User", "Reads invoices and the register.", ("segreteria", "manager")),
+	(
+		"Invoicing User",
+		"Issues invoices and records payments; cancels nothing, transmits only when allowed.",
+		("segreteria", "manager"),
+	),
 )
 
 CAPACITA = (

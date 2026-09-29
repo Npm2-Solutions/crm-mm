@@ -12,6 +12,7 @@
     </template>
     <template #right-header>
       <Button
+        v-if="puo('fatture.configura')"
         variant="ghost"
         :label="__('Settings')"
         iconLeft="settings"
@@ -43,7 +44,7 @@
             )
           }}
         </span>
-        <div>
+        <div v-if="puo('fatture.configura')">
           <Button
             variant="solid"
             :label="__('Create the company')"
@@ -379,6 +380,10 @@ import {
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 import { activeSettingsPage, showSettings } from '@/composables/settings'
+import { usersStore } from '@/stores/users'
+
+// the front desk issues invoices; configuring invoicing is the manager's
+const { puo } = usersStore()
 
 const tab = ref('todo')
 const company = ref('')

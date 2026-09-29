@@ -27,15 +27,25 @@ from crm.permissions.livelli import ATTIVO, PROVA, carica
 # Roles and Role Profiles, from the registry.
 
 
+def assicura_ruoli() -> None:
+	"""Every role the CRM brings as a Role record, and nothing else.
+
+	Also before the doctypes sync: a DocPerm pointing at a role that does not exist
+	yet fails link validation, and the invoices give Practitioner their own. The
+	roles Frappe creates by itself are left to Frappe.
+	"""
+	carica()
+	for nome, descrizione in livelli.ruoli_da_creare().items():
+		_assicura_ruolo(nome, descrizione)
+
+
 def sincronizza() -> None:
 	"""Every registered role and level as Role and Role Profile. Idempotent.
 
 	Runs at install, at every migrate and before the first levels are given: the
 	registry is code, the profiles are records, and the records follow the code.
 	"""
-	carica()
-	for nome, descrizione in livelli.ruoli_registrati().items():
-		_assicura_ruolo(nome, descrizione)
+	assicura_ruoli()
 	for livello in livelli.livelli():
 		_assicura_profilo(livello)
 

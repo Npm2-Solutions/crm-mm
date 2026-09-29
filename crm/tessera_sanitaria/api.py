@@ -26,8 +26,10 @@ def send_to_ts(invoice: str, operation: str = "") -> dict:
 	at the file instead - and a failure here never touches the invoice, which the
 	patient already has.
 	"""
+	from crm.permissions.livelli import verifica_nel_crm
 	from crm.tessera_sanitaria import trasporto as trasporto_ts
 
+	verifica_nel_crm("fatture.invia", messaggio=_("You are not allowed to transmit invoices"))
 	return trasporto_ts.invia_documento(invoice, operation or None)
 
 
