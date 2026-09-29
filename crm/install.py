@@ -18,8 +18,11 @@ def before_install():
 	# Frappe. A DocPerm pointing at a Role that does not exist yet fails link
 	# validation during the sync, so the roles are created before it runs.
 	from crm.invoicing.install import crea_ruoli
+	from crm.permissions.utenti import assicura_ruoli
 
 	crea_ruoli()
+	# the levels' roles too: the invoices give Practitioner a permission of its own
+	assicura_ruoli()
 
 
 def after_install(force=False):

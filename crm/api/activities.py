@@ -696,6 +696,11 @@ def invoices_on(doctype: str, name: str) -> list[dict]:
 	"""
 	if not frappe.db.exists("DocType", "CRM Invoice"):
 		return []
+	# An invoice line says what was done, and that can be health data: the history
+	# shows invoices to whoever reads them, and only those - the practitioner the
+	# ones of their own services. `get_list` applies both rules.
+	if not frappe.has_permission("CRM Invoice", "read"):
+		return []
 	fields = [
 		"name",
 		"document_type",
@@ -714,7 +719,7 @@ def invoices_on(doctype: str, name: str) -> list[dict]:
 	# «party_type = CRM Deal and party = this one, or deal = this one» would in
 	# fact ask for every invoice raised against any deal at all.
 	billed = set(
-		frappe.get_all(
+		frappe.get_list(
 			"CRM Invoice",
 			filters={"party_type": doctype, "party": name},
 			pluck="name",
@@ -723,11 +728,11 @@ def invoices_on(doctype: str, name: str) -> list[dict]:
 	)
 	if doctype == "CRM Deal":
 		billed |= set(
-			frappe.get_all("CRM Invoice", filters={"deal": name}, pluck="name", limit_page_length=0)
+			frappe.get_list("CRM Invoice", filters={"deal": name}, pluck="name", limit_page_length=0)
 		)
 	if not billed:
 		return []
-	rows = frappe.get_all(
+	rows = frappe.get_list(
 		"CRM Invoice",
 		filters={"name": ["in", sorted(billed)]},
 		fields=fields,

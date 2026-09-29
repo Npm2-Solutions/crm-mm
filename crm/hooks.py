@@ -169,6 +169,8 @@ permission_query_conditions = {
 	"CRM Task": "crm.permissions.org_hierarchy.get_task_permission_query_conditions",
 	"CRM Notification": "crm.fcrm.doctype.crm_notification.crm_notification.get_permission_query_conditions",
 	"CRM Dashboard": "crm.fcrm.doctype.crm_dashboard.crm_dashboard.get_permission_query_conditions",
+	# the practitioner reads the invoices of their own services
+	"CRM Invoice": "crm.invoicing.permessi.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -179,6 +181,7 @@ has_permission = {
 	"CRM Task": "crm.permissions.org_hierarchy.has_task_permission",
 	"CRM Notification": "crm.fcrm.doctype.crm_notification.crm_notification.has_permission",
 	"CRM Dashboard": "crm.fcrm.doctype.crm_dashboard.crm_dashboard.has_permission",
+	"CRM Invoice": "crm.invoicing.permessi.has_permission",
 }
 
 # DocType Class

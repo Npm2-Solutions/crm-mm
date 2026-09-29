@@ -16,7 +16,7 @@ from crm.invoicing.engine.professioni import Professione, elenco
 
 RUOLI = (
 	("Invoicing Manager", "Issues, cancels and transmits invoices, and configures the register."),
-	("Invoicing User", "Reads invoices and the register."),
+	("Invoicing User", "Issues invoices and records payments; cancels nothing, transmits only when allowed."),
 )
 
 

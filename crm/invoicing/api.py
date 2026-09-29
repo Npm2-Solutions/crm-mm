@@ -28,6 +28,14 @@ def _fattura(name: str):
 	return fattura
 
 
+def _verifica_invio() -> None:
+	"""Transmitting is its own capability: the front desk issues invoices, and sends
+	them to the SdI or the Sistema TS only where the manager allowed it (doc 30)."""
+	from crm.permissions.livelli import verifica_nel_crm
+
+	verifica_nel_crm("fatture.invia", messaggio=_("You are not allowed to transmit invoices"))
+
+
 @frappe.whitelist(methods=["POST"])
 def preview(invoice: str) -> dict:
 	"""Classification and totals of a draft, without saving anything.
@@ -79,6 +87,7 @@ def send_to_sdi(invoice: str) -> dict:
 
 	fattura = _fattura(invoice)
 	fattura.check_permission("submit")
+	_verifica_invio()
 	if fattura.docstatus != 1:
 		frappe.throw(_("Only an issued invoice can be transmitted"))
 
