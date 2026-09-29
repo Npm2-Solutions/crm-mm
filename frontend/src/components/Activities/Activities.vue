@@ -16,7 +16,7 @@
     the conversation looks like it is printed on something dirty. What the fade
     was buying was a soft edge; what it was costing was the whole backdrop.
   -->
-  <div class="flex h-full flex-col overflow-y-auto">
+  <div ref="scroller" class="flex h-full flex-col overflow-y-auto">
     <div
       v-if="all_activities?.loading"
       class="flex flex-1 flex-col items-center justify-center gap-3 text-2xl-medium text-ink-gray-4"
@@ -38,6 +38,7 @@
         (filesWithoutTab.length && title == 'Notes')
       "
       class="activities flex flex-1 flex-col"
+      :class="{ invisible: !settled }"
     >
       <!--
         The Activity tab is the conversation now: email, WhatsApp, SMS, comments
@@ -484,7 +485,7 @@
           v-model:reload="reload_email"
           :way="way === 'comment' ? 'comment' : 'email'"
           :doctype="doctype"
-          @scroll="scroll"
+          @scroll="followMine"
         />
       </div>
       <!-- each box is mounted the first time it is used and kept afterwards,
@@ -497,7 +498,7 @@
           v-model:reply="replyMessage"
           v-model:whatsapp="whatsappMessages"
           :doctype="doctype"
-          @scroll="scroll"
+          @scroll="followMine"
           @template="showWhatsappTemplates = true"
         />
       </div>
@@ -507,7 +508,7 @@
           v-model="doc"
           v-model:sms="smsMessages"
           :doctype="doctype"
-          @scroll="scroll"
+          @scroll="followMine"
         />
       </div>
     </div>
@@ -520,7 +521,7 @@
       v-model:reload="reload_email"
       :way="title == 'Comments' ? 'comment' : 'email'"
       :doctype="doctype"
-      @scroll="scroll"
+      @scroll="followMine"
     />
     <WhatsAppBox
       v-if="title == 'WhatsApp'"
@@ -529,7 +530,7 @@
       v-model:reply="replyMessage"
       v-model:whatsapp="whatsappMessages"
       :doctype="doctype"
-      @scroll="scroll"
+      @scroll="followMine"
       @template="showWhatsappTemplates = true"
     />
     <SMSBox
@@ -538,7 +539,7 @@
       v-model="doc"
       v-model:sms="smsMessages"
       :doctype="doctype"
-      @scroll="scroll"
+      @scroll="followMine"
     />
   </div>
   <WhatsappTemplateSelectorModal
@@ -620,6 +621,7 @@ import { useDocument } from '@/data/document'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { Button, createResource, toast } from 'frappe-ui'
 import { useElementVisibility } from '@vueuse/core'
+import { useConversationScroll } from '@/composables/conversationScroll'
 import {
   ref,
   reactive,
@@ -1071,35 +1073,60 @@ watch([reload, reload_email], ([reload_value, reload_email_value]) => {
   }
 })
 
-// Whether the conversation has opened on where its new messages begin: the
-// first time, and only the first — after that a scroll is a message sent or
-// arrived, and belongs at the end.
-let landedOnNew = false
+// -- where the conversation sits ------------------------------------------------
+
+// The lists read from their end: the conversation and the channels in it. The
+// others — notes, tasks, files — open at their top.
+const READ_FROM_THE_END = [
+  'Activity',
+  'Emails',
+  'Comments',
+  'Calls',
+  'WhatsApp',
+  'SMS',
+]
+const readsFromTheEnd = computed(() => READ_FROM_THE_END.includes(title.value))
+
+// Every part of the conversation has come in at least once — the history,
+// WhatsApp, SMS. Shown before that, it showed the part that came first and
+// jumped when the rest arrived.
+function came(resource) {
+  return resource.data != null || Boolean(resource.error)
+}
+const arrived = computed(
+  () =>
+    came(all_activities) &&
+    (!whatsappEnabled.value || came(whatsappMessages)) &&
+    (!smsEnabled.value || came(smsMessages)),
+)
+
+const scroller = ref(null)
+const { settled, follow, reopen } = useConversationScroll(scroller, {
+  newestFirst: isNewestFirst,
+  readsFromTheEnd,
+  arrived,
+})
+watch(arrived, (yes) => yes && follow())
+
+// another tab or another channel is another list, opened where it is read
+watch([title, channel], () => reopen())
 
 function scroll(hash) {
   if (['tasks', 'notes', 'events'].includes(route.hash?.slice(1))) return
+  if (!hash) return follow()
+  // a link to one message: that message, once it is drawn
   setTimeout(() => {
-    let el
-    if (!hash) {
-      let e = document.getElementsByClassName('activity')
-      el = isNewestFirst.value ? e[0] : e[e.length - 1]
-      // Fifteen new messages and the thread opened on the last of them: the
-      // first fourteen were above, unread, with nothing saying so. A thread
-      // that reads down opens on the line where the new ones begin, the way
-      // every messenger does; one that reads up already has them on top.
-      const line = document.querySelector('[data-new-line]')
-      if (line && !landedOnNew && !isNewestFirst.value) {
-        landedOnNew = true
-        el = line
-      }
-    } else {
-      el = document.getElementById(hash)
-    }
+    const el = document.getElementById(hash)
     if (el && !useElementVisibility(el).value) {
-      el.scrollIntoView({ behavior: 'smooth' })
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       el.focus()
     }
-  }, 500)
+  }, 300)
+}
+
+// what somebody has just sent is followed wherever they were reading
+function followMine() {
+  follow({ mine: true })
 }
 
 // -- writing ---------------------------------------------------------------------

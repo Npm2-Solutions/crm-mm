@@ -700,7 +700,15 @@ function dayAtTheTop() {
   return markerGone ? labelOf(current.dataset.day) : ''
 }
 
+// Only while somebody is scrolling: the conversation placing itself when it
+// opens is a scroll too, and it flashed the date over the first messages.
+let lastTouched = 0
+function touched() {
+  lastTouched = Date.now()
+}
+
 function onScroll() {
+  if (Date.now() - lastTouched > 1000) return
   if (frame) return
   frame = requestAnimationFrame(() => {
     frame = 0
@@ -711,13 +719,18 @@ function onScroll() {
   })
 }
 
+const TOUCHES = ['wheel', 'touchmove', 'keydown', 'mousedown']
+
 onMounted(() => {
   scroller = scrollParentOf(root.value)
   scroller?.addEventListener('scroll', onScroll, { passive: true })
+  for (const type of TOUCHES)
+    scroller?.addEventListener(type, touched, { passive: true })
 })
 
 onBeforeUnmount(() => {
   scroller?.removeEventListener('scroll', onScroll)
+  for (const type of TOUCHES) scroller?.removeEventListener(type, touched)
   clearTimeout(settle)
   if (frame) cancelAnimationFrame(frame)
 })
@@ -738,6 +751,9 @@ onBeforeUnmount(() => {
 
   Dark by the app's theme. It followed `prefers-color-scheme`, so a CRM set to
   dark on a laptop left in light mode showed a cream wallpaper in a black app.
+  Written without `:global()`: Vue compiled `:global([data-theme='dark'])
+  .wa-wallpaper` to `[data-theme=dark]` alone, and the dark paper went on the
+  page's <html> instead.
 */
 .wa-wallpaper {
   background-color: #efeae2;
@@ -751,7 +767,4 @@ onBeforeUnmount(() => {
   background-color: #0b141a;
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><g fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><g transform='translate(12 18) rotate(-4) scale(0.8)'><path d='M0 4a4 4 0 0 1 4-4h26a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H12l-7 7v-7H4a4 4 0 0 1-4-4z'/></g><g transform='translate(118 44) rotate(-14) scale(0.75)'><path d='M11 0l3.4 7.2 7.6 1-5.5 5.6L18 21l-7-3.9L4 21l1.5-7.2L0 8.2l7.6-1z'/></g><g transform='translate(214 10) rotate(9) scale(0.8)'><path d='M0 9L22 0l-8 21-3.5-8z'/><path d='M10.5 13L22 0'/></g><g transform='translate(62 92) rotate(0) scale(0.8)'><circle cx='11' cy='11' r='11'/><path d='M7 7.5v1.5M15 7.5v1.5'/><path d='M5.5 13.5a6.5 6.5 0 0 0 11 0'/></g><g transform='translate(166 116) rotate(11) scale(0.8)'><path d='M12 20S0 13 0 6.5A6.5 6.5 0 0 1 12 3a6.5 6.5 0 0 1 12 3.5C24 13 12 20 12 20z'/></g><g transform='translate(252 78) rotate(-7) scale(0.75)'><rect x='0' y='4' width='26' height='18' rx='3'/><path d='M8 4l2-3h6l2 3'/><circle cx='13' cy='13' r='5'/></g><g transform='translate(8 150) rotate(5) scale(0.8)'><path d='M0 2h18v10a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7z'/><path d='M18 5h3a3.5 3.5 0 0 1 0 7h-3'/></g><g transform='translate(108 168) rotate(-9) scale(0.8)'><path d='M14 1v14'/><path d='M14 1c0 4 3 3.5 5 5'/><circle cx='10' cy='15.5' r='4'/></g><g transform='translate(206 196) rotate(3) scale(0.75)'><circle cx='11' cy='11' r='11'/><path d='M11 5v6l4 3'/></g><g transform='translate(268 152) rotate(7) scale(0.7)'><path d='M0 4a4 4 0 0 1 4-4h26a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H12l-7 7v-7H4a4 4 0 0 1-4-4z'/></g><g transform='translate(40 236) rotate(13) scale(0.8)'><path d='M11 0l3.4 7.2 7.6 1-5.5 5.6L18 21l-7-3.9L4 21l1.5-7.2L0 8.2l7.6-1z'/></g><g transform='translate(140 262) rotate(-11) scale(0.75)'><path d='M0 9L22 0l-8 21-3.5-8z'/><path d='M10.5 13L22 0'/></g><g transform='translate(232 268) rotate(4) scale(0.75)'><circle cx='11' cy='11' r='11'/><path d='M7 7.5v1.5M15 7.5v1.5'/><path d='M5.5 13.5a6.5 6.5 0 0 0 11 0'/></g><g transform='translate(70 62) rotate(-8) scale(0.6)'><path d='M12 20S0 13 0 6.5A6.5 6.5 0 0 1 12 3a6.5 6.5 0 0 1 12 3.5C24 13 12 20 12 20z'/></g><g transform='translate(152 20) rotate(6) scale(0.6)'><circle cx='11' cy='11' r='11'/><path d='M11 5v6l4 3'/></g><g transform='translate(176 224) rotate(-5) scale(0.62)'><path d='M0 2h18v10a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7z'/><path d='M18 5h3a3.5 3.5 0 0 1 0 7h-3'/></g><g transform='translate(274 232) rotate(8) scale(0.62)'><path d='M14 1v14'/><path d='M14 1c0 4 3 3.5 5 5'/><circle cx='10' cy='15.5' r='4'/></g><g transform='translate(96 126) rotate(5) scale(0.6)'><rect x='0' y='4' width='26' height='18' rx='3'/><path d='M8 4l2-3h6l2 3'/><circle cx='13' cy='13' r='5'/></g></g></svg>");
 }
-  Written without `:global()`: Vue compiled `:global([data-theme='dark'])
-  .wa-wallpaper` to `[data-theme=dark]` alone, and the dark paper went on the
-  page's <html> instead.
 </style>
