@@ -111,8 +111,8 @@ export function useConversationScroll(
     moved = true
   }
 
-  // the end moved under somebody reading at it — a picture loaded, the
-  // composer grew — and they stay at it
+  // the end moved under somebody reading at it — a picture loaded, an email
+  // grew to its height, the composer grew — and they stay at it
   function keep() {
     const el = scroller.value
     if (!el || !settled.value || !readsFromTheEnd.value) return
@@ -122,6 +122,19 @@ export function useConversationScroll(
 
   const USER = ['wheel', 'touchmove', 'keydown', 'mousedown']
   let resizes = null
+  let changes = null
+
+  // The scroller and what is in it. Its own size moves when the composer
+  // grows; the conversation's height moves when something in it does — an
+  // email is drawn in a frame 40px tall that takes its real height only once
+  // it has loaded, which is after the `load` caught below has been handled.
+  // Watching the scroller alone missed it, and a chat ending in an email
+  // opened with that email cut off by the composer.
+  function watchSizes(el) {
+    resizes.disconnect()
+    resizes.observe(el)
+    for (const child of el.children) resizes.observe(child)
+  }
 
   onMounted(() => {
     const el = scroller.value
@@ -132,12 +145,16 @@ export function useConversationScroll(
     // `load` does not bubble, but it can be caught on its way down
     el.addEventListener('load', keep, true)
     resizes = new ResizeObserver(keep)
-    resizes.observe(el)
+    watchSizes(el)
+    // what it holds changes: the list replaces «Loading…», a tab another
+    changes = new MutationObserver(() => watchSizes(el))
+    changes.observe(el, { childList: true })
   })
 
   onBeforeUnmount(() => {
     const el = scroller.value
     resizes?.disconnect()
+    changes?.disconnect()
     if (!el) return
     el.removeEventListener('scroll', onScroll)
     for (const type of USER) el.removeEventListener(type, onUser)
