@@ -4,3 +4,4 @@ Domain Enrichment
 Invoicing
 Tessera Sanitaria
 Moduli
+Clinica
