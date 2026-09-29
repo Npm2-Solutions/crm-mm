@@ -160,6 +160,24 @@
               </span>
             </span>
           </label>
+          <!-- a recall, a newsletter, a review request: marketing needs the yes -->
+          <label class="flex items-start gap-2 text-sm text-ink-gray-7">
+            <Switch
+              v-model="draft.marketing_consent"
+              size="sm"
+              class="mt-0.5"
+            />
+            <span>
+              {{ __('Only people who agreed to marketing') }}
+              <span class="block text-xs text-ink-gray-5">
+                {{
+                  __(
+                    'Whoever did not is skipped, and it says so in the runs; a message is not sent if the consent was withdrawn meanwhile.',
+                  )
+                }}
+              </span>
+            </span>
+          </label>
         </div>
 
         <div class="rounded-lg border border-outline-gray-2 p-3">
@@ -321,6 +339,7 @@ const emptyDraft = () => ({
   triggers: [newTrigger()],
   allow_reenrollment: false,
   exit_on_reply: false,
+  marketing_consent: false,
   time_window_enabled: false,
   window_start: '',
   window_end: '',
@@ -543,6 +562,7 @@ function payload() {
     triggers: serializeTriggers(draft.triggers),
     allow_reenrollment: draft.allow_reenrollment,
     exit_on_reply: draft.exit_on_reply,
+    marketing_consent: draft.marketing_consent,
     time_window_enabled: draft.time_window_enabled,
     window_start: draft.window_start,
     window_end: draft.window_end,
@@ -561,6 +581,7 @@ function load(name) {
         enabled: Boolean(data.enabled),
         allow_reenrollment: Boolean(data.allow_reenrollment),
         exit_on_reply: Boolean(data.exit_on_reply),
+        marketing_consent: Boolean(data.marketing_consent),
         time_window_enabled: Boolean(data.time_window_enabled),
         triggers: normalizeTriggers(data),
         window_days: data.window_days || [],

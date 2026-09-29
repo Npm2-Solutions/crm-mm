@@ -8,7 +8,7 @@
           size="sm"
           :variant="filter === status ? 'solid' : 'outline'"
           :label="__(status)"
-          @click="(filter = status), enrollments.reload()"
+          @click="((filter = status), enrollments.reload())"
         />
       </div>
       <Button
@@ -98,13 +98,23 @@ const props = defineProps({
   automation: { type: String, required: true },
 })
 
-const STATUSES = ['All', 'Active', 'Waiting', 'Completed', 'Exited', 'Failed']
+const STATUSES = [
+  'All',
+  'Active',
+  'Waiting',
+  'Completed',
+  'Exited',
+  'Skipped',
+  'Failed',
+]
 
 const THEMES = {
   Active: 'blue',
   Waiting: 'orange',
   Completed: 'green',
   Exited: 'gray',
+  // not let in: no marketing consent
+  Skipped: 'gray',
   Failed: 'red',
 }
 

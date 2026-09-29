@@ -13,6 +13,7 @@
   "triggers",
   "allow_reenrollment",
   "exit_on_reply",
+  "marketing_consent",
   "description",
   "config_section",
   "trigger_condition",
@@ -77,6 +78,13 @@
    "fieldname": "exit_on_reply",
    "fieldtype": "Check",
    "label": "Exit on Reply"
+  },
+  {
+   "default": "0",
+   "description": "Whoever did not agree to marketing is skipped, and a message is not sent if the consent was withdrawn meanwhile.",
+   "fieldname": "marketing_consent",
+   "fieldtype": "Check",
+   "label": "Only people who agreed to marketing"
   },
   {
    "fieldname": "description",
@@ -160,7 +168,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-09-29 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Automation",

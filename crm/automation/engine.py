@@ -346,6 +346,30 @@ def exit_enrollments_on_reply(ref_doctype: str, ref_name: str) -> None:
 			enr.save(ignore_permissions=True)
 
 
+def consenso_marketing(ref_doctype: str, ref_name: str) -> bool:
+	"""Whether the person behind the record agreed to marketing (the consent register)."""
+	from crm.moduli import consensi
+
+	lead = ref_name if ref_doctype == "CRM Lead" else frappe.db.get_value(ref_doctype, ref_name, "lead")
+	return bool(lead) and consensi.ha_il_consenso(lead, "marketing")
+
+
+def salta_per_il_consenso(automation_name: str, ref_doctype: str, ref_name: str) -> None:
+	"""Not let in, and it says so in the runs: once per person. It never counts as
+	having been through it, so the person who says yes later gets in."""
+	gia = {
+		"automation": automation_name,
+		"reference_doctype": ref_doctype,
+		"reference_name": ref_name,
+		"status": "Skipped",
+	}
+	if frappe.db.exists("CRM Automation Enrollment", gia):
+		return
+	skipped = frappe.get_doc({"doctype": "CRM Automation Enrollment", **gia, "current_step": 0})
+	log_step(skipped, 0, "trigger", "Skipped", _("No marketing consent"))
+	skipped.insert(ignore_permissions=True)
+
+
 def enroll(
 	automation_name: str,
 	ref_doctype: str,
@@ -372,6 +396,9 @@ def enroll(
 	}
 	if automation.allow_reenrollment:
 		existing_filters["status"] = ["in", ["Active", "Waiting"]]
+	else:
+		# skipped for want of consent is not having been through it
+		existing_filters["status"] = ["!=", "Skipped"]
 	if frappe.db.exists("CRM Automation Enrollment", existing_filters):
 		return None
 
@@ -383,6 +410,10 @@ def enroll(
 	)
 	groups = condition_groups_of(source)
 	if groups and not evaluate_condition_groups(groups, ref_doc):
+		return None
+
+	if automation.get("marketing_consent") and not consenso_marketing(ref_doctype, ref_name):
+		salta_per_il_consenso(automation_name, ref_doctype, ref_name)
 		return None
 
 	enrollment = frappe.get_doc(
@@ -633,6 +664,22 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 			gate = op.get("gate")
 			if gate and not evaluate_condition_groups(gate, ref_doc, state):
 				log_step(enrollment, enrollment.current_step, step_type, "Skipped", _("Condition not met"))
+				enrollment.current_step += 1
+				continue
+
+			if (
+				step_type in COMMUNICATION_TYPES
+				and automation.get("marketing_consent")
+				and not consenso_marketing(enrollment.reference_doctype, enrollment.reference_name)
+			):
+				# withdrawn since it got in: nothing leaves without the yes
+				log_step(
+					enrollment,
+					enrollment.current_step,
+					step_type,
+					"Skipped",
+					_("No marketing consent: not sent"),
+				)
 				enrollment.current_step += 1
 				continue
 
