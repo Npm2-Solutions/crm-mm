@@ -984,9 +984,9 @@ def step_assign(step, ref_doc) -> str:
 		return _("Skipped: no valid user to assign")
 
 	if step.get("only_if_unassigned"):
-		from crm.api.doc import get_assigned_users
+		from crm.api.doc import assigned_users_of
 
-		if get_assigned_users(ref_doc.doctype, ref_doc.name):
+		if assigned_users_of(ref_doc.doctype, ref_doc.name):
 			return _("Skipped: already assigned")
 
 	user = users[0]
@@ -1119,11 +1119,11 @@ def step_remove_from_workflow(step, ref_doc) -> str:
 
 
 def step_notify(step, ref_doc) -> str:
-	from crm.api.doc import get_assigned_users
+	from crm.api.doc import assigned_users_of
 	from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
 
 	message = render(step.get("message") or "", ref_doc)
-	users = get_assigned_users(ref_doc.doctype, ref_doc.name) or []
+	users = assigned_users_of(ref_doc.doctype, ref_doc.name) or []
 	owner = ref_doc.get("lead_owner") or ref_doc.get("deal_owner")
 	if owner and owner not in users:
 		users.append(owner)

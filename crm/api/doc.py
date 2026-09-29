@@ -608,6 +608,22 @@ def remove_assignments(doctype: str, name: str, assignees: str | list, ignore_pe
 
 @frappe.whitelist()
 def get_assigned_users(doctype: str, name: str | int, default_assigned_to: str | None = None):
+	frappe.has_permission(doctype, "read", name, throw=True)
+
+	users = assigned_users_of(doctype, name)
+
+	# if users is empty, add default_assigned_to
+	if not users and default_assigned_to:
+		users = [default_assigned_to]
+	return users
+
+
+def assigned_users_of(doctype: str, name: str | int) -> list[str]:
+	"""Who a document is assigned to, with no permission check.
+
+	For the server's own callers: an inbound WhatsApp or SMS arrives as Guest and
+	still has to reach whoever the lead is with.
+	"""
 	assigned_users = frappe.get_all(
 		"ToDo",
 		fields=["allocated_to"],
@@ -618,13 +634,7 @@ def get_assigned_users(doctype: str, name: str | int, default_assigned_to: str |
 		},
 		pluck="allocated_to",
 	)
-
-	users = list(set(assigned_users))
-
-	# if users is empty, add default_assigned_to
-	if not users and default_assigned_to:
-		users = [default_assigned_to]
-	return users
+	return list(set(assigned_users))
 
 
 @frappe.whitelist()
@@ -683,6 +693,8 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 	except frappe.DoesNotExistError:
 		return []
 
+	frappe.has_permission(doctype, "read", doc, throw=True)
+
 	linked_docs = get_linked_docs(doc)
 	dynamic_linked_docs = get_dynamic_linked_docs(doc)
 
@@ -697,6 +709,10 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 		try:
 			data = frappe.get_doc(doc["reference_doctype"], doc["reference_docname"])
 		except (frappe.DoesNotExistError, frappe.ValidationError):
+			continue
+
+		# linked is not the same as readable: a person's deal can belong to somebody else
+		if not frappe.has_permission(data.doctype, "read", data):
 			continue
 
 		title = data.get("title")
