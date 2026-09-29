@@ -41,6 +41,8 @@
         </ShortcutTooltip>
       </div>
     </div>
+    <!-- appointment or event, while it is new (Calendar.vue) -->
+    <slot name="kind" />
 
     <!-- Event Details -->
     <div v-if="mode == 'details'" class="flex flex-col flex-1 overflow-y-auto">
@@ -571,6 +573,7 @@ import {
   parseEventDoc,
 } from '@/composables/event'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { NAMED_HEX } from '@/utils/calendarColors'
 import {
   TextInput,
   Switch,
@@ -963,15 +966,19 @@ const formattedDateTime = computed(() => {
   return `${start} - ${end} ${date.format('ddd, D MMM YYYY')}`
 })
 
+// Saved as the colour's hex. It used to be saved as the CSS variable behind
+// it («var(--ink-amber-7)»), which the calendar does not read — every event
+// was drawn green whatever was picked — and which means nothing outside this
+// page, in Frappe's own calendar or in a sync.
 const colors = Object.keys(colorMap).map((color) => ({
-  label: color.charAt(0).toUpperCase() + color.slice(1),
-  value: colorMap[color].color,
+  label: __(color.charAt(0).toUpperCase() + color.slice(1)),
+  value: NAMED_HEX[color] || colorMap[color].color,
   icon: h('div', {
     class: '!size-2.5 rounded-full',
     style: { backgroundColor: colorMap[color].color },
   }),
   onClick: () => {
-    _event.value.color = colorMap[color].color
+    _event.value.color = NAMED_HEX[color] || colorMap[color].color
     sync()
   },
 }))

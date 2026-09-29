@@ -32,36 +32,25 @@
           @click="connectGoogle"
         />
       </Tooltip>
-      <ShortcutTooltip :label="__('Create Event')" combo="Mod+E">
+      <!--
+        One way in. There were two buttons, «Event» and «Appointment», for two
+        things that land in the same calendar, and a click on an empty slot
+        always made an event. Now «New» opens the panel on whatever was made
+        last, and the panel's first line switches between the two.
+      -->
+      <ShortcutTooltip :label="__('New')" combo="Mod+E">
         <Button
-          :label="isMobileView ? undefined : __('Event')"
-          :aria-label="__('Event')"
+          variant="solid"
+          :label="isMobileView ? undefined : __('New')"
+          :aria-label="__('New')"
           :disabled="isCreateDisabled"
-          @click="newEvent"
+          @click="startNew()"
         >
-          <!-- on a phone the words go: two identical «+» side by side said
-               nothing about which was which -->
-          <template #prefix
-            ><span
-              class="h-4"
-              :class="isMobileView ? 'lucide-calendar-plus' : 'lucide-plus'"
-              aria-hidden="true"
-          /></template>
+          <template #prefix>
+            <span class="lucide-plus h-4" aria-hidden="true" />
+          </template>
         </Button>
       </ShortcutTooltip>
-      <Button
-        variant="solid"
-        :label="isMobileView ? undefined : __('Appointment')"
-        :aria-label="__('Appointment')"
-        @click="newAppointment()"
-      >
-        <template #prefix
-          ><span
-            class="h-4"
-            :class="isMobileView ? 'lucide-user-plus' : 'lucide-plus'"
-            aria-hidden="true"
-        /></template>
-      </Button>
     </template>
   </LayoutHeader>
 
@@ -107,8 +96,8 @@
       @update:modelValue="reloadScheduler"
     />
     <span class="grow" />
-    <span v-if="appointmentCount" class="text-p-sm text-ink-gray-5">
-      {{ appointmentCount }} {{ __('appointments') }}
+    <span v-if="countLabel" class="text-p-sm text-ink-gray-5">
+      {{ countLabel }}
     </span>
     <Button
       v-if="hasFilters"
@@ -118,80 +107,87 @@
     />
   </div>
 
-  <!-- agenda: one column per professional or per room -->
-  <div
-    v-if="viewMode === 'agenda'"
-    class="flex h-full flex-col overflow-hidden"
-  >
-    <div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
-      <Button
-        variant="ghost"
-        icon="lucide-chevron-left"
-        @click="shiftDay(-1)"
-      />
-      <Button
-        :label="__('Today')"
-        variant="ghost"
-        @click="agendaDate = today()"
-      />
-      <Button
-        variant="ghost"
-        icon="lucide-chevron-right"
-        @click="shiftDay(1)"
-      />
-      <DatePicker
-        :modelValue="agendaDate"
-        :clearable="false"
-        @update:modelValue="(value) => setAgendaDate(value)"
-      >
-        <template #target="{ togglePopover }">
-          <Button
-            variant="ghost"
-            class="text-base-medium text-ink-gray-7"
-            :label="agendaLabel"
-            iconRight="chevron-down"
-            @click="togglePopover"
+  <!--
+    The agenda (one column per professional or per room) or the calendar
+    (month, week, day: appointments and events together), and beside either
+    one the panel of what is open.
+  -->
+  <div class="flex h-full overflow-hidden">
+    <div
+      v-if="viewMode === 'agenda'"
+      class="flex min-w-0 flex-1 flex-col overflow-hidden"
+    >
+      <div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
+        <Button
+          variant="ghost"
+          icon="lucide-chevron-left"
+          @click="shiftDay(-1)"
+        />
+        <Button
+          :label="__('Today')"
+          variant="ghost"
+          @click="agendaDate = today()"
+        />
+        <Button
+          variant="ghost"
+          icon="lucide-chevron-right"
+          @click="shiftDay(1)"
+        />
+        <DatePicker
+          :modelValue="agendaDate"
+          :clearable="false"
+          @update:modelValue="(value) => setAgendaDate(value)"
+        >
+          <template #target="{ togglePopover }">
+            <Button
+              variant="ghost"
+              class="text-base-medium text-ink-gray-7"
+              :label="agendaLabel"
+              iconRight="chevron-down"
+              @click="togglePopover"
+            />
+          </template>
+        </DatePicker>
+        <span class="grow" />
+        <TabButtons
+          v-model="columnMode"
+          :buttons="[
+            { label: __('By professional'), value: 'staff' },
+            { label: __('By room'), value: 'resource' },
+          ]"
+        />
+        <!-- in a box of its own: the select takes all the width it is given,
+             and on its own it took a whole row -->
+        <div class="w-32 shrink-0">
+          <FormControl
+            v-model="zoom"
+            type="select"
+            :aria-label="__('Zoom')"
+            :options="[
+              { label: __('Compact'), value: 0.7 },
+              { label: __('Normal'), value: 1.1 },
+              { label: __('Detailed'), value: 1.8 },
+            ]"
           />
-        </template>
-      </DatePicker>
-      <span class="grow" />
-      <TabButtons
-        v-model="columnMode"
-        :buttons="[
-          { label: __('By professional'), value: 'staff' },
-          { label: __('By room'), value: 'resource' },
-        ]"
-      />
-      <FormControl
-        v-model="zoom"
-        type="select"
-        class="w-28"
-        :options="[
-          { label: __('Compact'), value: 0.7 },
-          { label: __('Normal'), value: 1.1 },
-          { label: __('Detailed'), value: 1.8 },
-        ]"
+        </div>
+      </div>
+      <ResourceScheduler
+        class="flex-1"
+        :mode="columnMode"
+        :date="agendaDate"
+        :appointments="appointments"
+        :columnDefs="schedulerColumns"
+        :serviceColors="serviceColors"
+        :selected="selectedAppointment"
+        :pxPerMinute="Number(zoom)"
+        @select="(name) => openAppointment(name)"
+        @edit="(name) => openAppointment(name, 'edit')"
+        @create="onGridCreate"
+        @move="onGridMove"
       />
     </div>
-    <ResourceScheduler
-      class="flex-1"
-      :mode="columnMode"
-      :date="agendaDate"
-      :appointments="appointments"
-      :columnDefs="schedulerColumns"
-      :serviceColors="serviceColors"
-      :selected="selectedAppointment"
-      :pxPerMinute="Number(zoom)"
-      @select="selectedAppointment = $event"
-      @edit="(name) => openAppointment(name)"
-      @create="onGridCreate"
-      @move="onGridMove"
-    />
-  </div>
-
-  <!-- calendar: month / week / day, appointments and events together -->
-  <div v-else class="flex h-full overflow-hidden">
     <Calendar
+      v-else
       ref="calendar"
       class="min-w-0 flex-1 overflow-hidden"
       :config="{
@@ -205,7 +201,7 @@
       :events="calendarItems"
       :onClick="showDetails"
       :onDblClick="editDetails"
-      :onCellClick="newEvent"
+      :onCellClick="startNew"
       @create="(event) => createEvent(event)"
       @update="(event) => updateEvent(event, true)"
       @delete="(eventID) => deleteEvent(eventID)"
@@ -312,11 +308,14 @@
       </template>
     </Calendar>
 
-    <!-- Event Panel Container -->
+    <!--
+      One side panel, for an event or an appointment, in the agenda as in the
+      calendar. An appointment used to open in a dialog over everything.
+    -->
     <div
-      class="overflow-hidden flex-none transition-all duration-300 ease-in-out flex flex-col"
+      class="flex flex-none flex-col overflow-hidden transition-all duration-300 ease-in-out"
       :class="
-        showEventPanel
+        panelOpen
           ? 'w-full border-l bg-surface-base sm:w-[352px]'
           : 'w-0 border-l-0'
       "
@@ -327,7 +326,7 @@
         v-model="showEventPanel"
         v-model:event="event"
         :mode="mode"
-        @new="newEvent"
+        @new="startNew"
         @save="saveEvent"
         @edit="editDetails"
         @delete="deleteEvent"
@@ -335,21 +334,41 @@
         @details="showDetails"
         @close="close"
         @sync="syncEvent"
-      />
+      >
+        <template #kind>
+          <KindSwitch
+            v-if="mode === 'new' && hasServices"
+            :modelValue="'event'"
+            @update:modelValue="switchKind"
+          />
+        </template>
+      </CalendarEventPanel>
+      <AppointmentPanel
+        v-else-if="appointmentPanel.mode"
+        :mode="appointmentPanel.mode"
+        :name="appointmentPanel.name"
+        :seed="appointmentPanel.seed"
+        :meta="meta.data || {}"
+        @mode="onAppointmentMode"
+        @saved="reloadScheduler"
+        @deleted="onAppointmentDeleted"
+        @close="closeAppointment"
+      >
+        <template #kind>
+          <KindSwitch
+            v-if="appointmentPanel.mode === 'new'"
+            :modelValue="'appointment'"
+            @update:modelValue="switchKind"
+          />
+        </template>
+      </AppointmentPanel>
     </div>
   </div>
-
-  <AppointmentDialog
-    v-model="showAppointmentDialog"
-    :seed="appointmentSeed"
-    :meta="meta.data || {}"
-    @saved="onAppointmentSaved"
-    @deleted="onAppointmentSaved"
-  />
 </template>
 <script setup>
-import AppointmentDialog from '@/components/Calendar/AppointmentDialog.vue'
+import AppointmentPanel from '@/components/Calendar/AppointmentPanel.vue'
 import CalendarEventPanel from '@/components/Calendar/CalendarEventPanel.vue'
+import KindSwitch from '@/components/Calendar/KindSwitch.vue'
 import MultiSelectFilter from '@/components/Calendar/MultiSelectFilter.vue'
 import ResourceScheduler from '@/components/Calendar/ResourceScheduler.vue'
 import { sourceTag } from '@/utils/onlineBooking'
@@ -364,7 +383,14 @@ import { globalStore } from '@/stores/global'
 import { getSettings } from '@/stores/settings'
 import { isMobileView } from '@/composables/breakpoints'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
-import { appointmentColor, formatMinutes } from '@/utils/scheduler'
+import { useSchedulerMeta } from '@/composables/scheduling'
+import { formatMinutes } from '@/utils/scheduler'
+import {
+  NAMED_HEX,
+  appointmentCalendarColor,
+  calendarColorName,
+  registerCalendarColors,
+} from '@/utils/calendarColors'
 import {
   Calendar,
   createListResource,
@@ -374,6 +400,7 @@ import {
   TabButtons,
   Tooltip,
   CalendarActiveEvent as activeEvent,
+  CalendarColorMap,
   call,
   toast,
 } from 'frappe-ui'
@@ -417,6 +444,9 @@ const { settings } = getSettings()
 const { users, getUser } = usersStore()
 const route = useRoute()
 
+// grey and red, which the calendar does not know by itself
+registerCalendarColors(CalendarColorMap)
+
 const modeMap = {
   Daily: 'Day',
   Weekly: 'Week',
@@ -451,8 +481,6 @@ const columnMode = ref('staff')
 const zoom = ref(1.1)
 const agendaDate = ref(today())
 const selectedAppointment = ref('')
-const showAppointmentDialog = ref(false)
-const appointmentSeed = ref({})
 
 const filters = reactive({
   services: [],
@@ -462,11 +490,7 @@ const filters = reactive({
   sources: [],
 })
 
-const meta = createResource({
-  url: 'crm.api.appointments.get_scheduler_meta',
-  cache: 'crm-scheduler-meta',
-  auto: true,
-})
+const meta = useSchedulerMeta()
 
 const scheduler = createResource({
   url: 'crm.api.appointments.get_calendar',
@@ -474,7 +498,6 @@ const scheduler = createResource({
 })
 
 const appointments = computed(() => scheduler.data?.appointments || [])
-const appointmentCount = computed(() => appointments.value.length)
 
 const serviceColors = computed(() =>
   Object.fromEntries(
@@ -627,28 +650,146 @@ const appointmentItems = computed(() =>
     toTime: dayjs(appointment.ends_on).format('HH:mm'),
     isFullDay: false,
     location: appointment.location,
-    color: appointmentColor(appointment, serviceColors.value),
+    color: appointmentCalendarColor(appointment, serviceColors.value),
     attending: 'Yes',
   })),
 )
 
+// Events have no service, no professional, no room, no status of their own:
+// a filter on any of those is a question about appointments, and events that
+// matched nothing in it kept showing as if they had.
+const shownEvents = computed(() =>
+  hasFilters.value ? [] : Array.isArray(events.data) ? events.data : [],
+)
+
 const calendarItems = computed(() => [
-  ...(Array.isArray(events.data) ? events.data : []),
+  ...shownEvents.value,
   ...appointmentItems.value,
 ])
 
-function newAppointment(seed = {}) {
-  appointmentSeed.value = { ...seed }
-  showAppointmentDialog.value = true
+const countLabel = computed(() => {
+  const booked = appointments.value.length
+  const planned = shownEvents.value.filter((ev) => !isTempEvent(ev.id)).length
+  const parts = []
+  if (booked)
+    parts.push(
+      booked === 1 ? __('1 appointment') : __('{0} appointments', [booked]),
+    )
+  if (planned && viewMode.value === 'calendar')
+    parts.push(planned === 1 ? __('1 event') : __('{0} events', [planned]))
+  return parts.join(' · ')
+})
+
+// ---------------------------------------------------------------------------
+// the side panel: an event, or an appointment
+// ---------------------------------------------------------------------------
+
+// `mode` is details, edit or new; '' when no appointment is open
+const appointmentPanel = reactive({ mode: '', name: '', seed: {} })
+
+const panelOpen = computed(
+  () => showEventPanel.value || Boolean(appointmentPanel.mode),
+)
+
+const hasServices = computed(() => (meta.data?.services || []).length > 0)
+
+// What «New» makes: what was made last, remembered in this browser. On a
+// calendar without services there is nothing to book, only events.
+const KIND_KEY = 'crmCalendarNewKind'
+function rememberedKind() {
+  try {
+    return localStorage.getItem(KIND_KEY) === 'event' ? 'event' : 'appointment'
+  } catch {
+    return 'appointment'
+  }
+}
+const newKind = ref(rememberedKind())
+watch(newKind, (kind) => {
+  try {
+    localStorage.setItem(KIND_KEY, kind)
+  } catch {
+    // private window: it is only a preference
+  }
+})
+
+// where the last «New» was asked for, for switching kinds without losing it
+let newAt = {}
+
+/**
+ * Something new, from «New», Mod+E, or a click on an empty slot. `at` is the
+ * slot: a date, a time (in whatever form the calendar gives it), all day or
+ * not. A click on the all-day row is an event: an appointment has hours.
+ */
+function startNew(at = {}) {
+  const fromTime = at.time ? getFromToTime(at.time)[0] : nextQuarter()
+  newAt = {
+    date: dayjs(at.date || undefined).format('YYYY-MM-DD'),
+    time: fromTime,
+    isFullDay: Boolean(at.isFullDay),
+  }
+  const kind = hasServices.value && !newAt.isFullDay ? newKind.value : 'event'
+  if (kind === 'appointment') openNewAppointment(newAt)
+  else {
+    closeAppointment()
+    newEvent(newAt)
+  }
 }
 
-function openAppointment(name) {
-  appointmentSeed.value = { name }
-  showAppointmentDialog.value = true
+// With no slot clicked, the next quarter of an hour: rounding down, as the
+// slot picker does, proposed a time already gone.
+function nextQuarter() {
+  const now = dayjs()
+  return formatMinutes(Math.ceil((now.hour() * 60 + now.minute()) / 15) * 15)
+}
+
+// The first line of a new one switched: the same day and time, the other kind.
+function switchKind(kind) {
+  newKind.value = kind
+  if (kind === 'appointment') {
+    close()
+    openNewAppointment(newAt)
+  } else {
+    closeAppointment()
+    newEvent(newAt)
+  }
+}
+
+function openNewAppointment(seed = {}) {
+  close()
+  newAt = { ...newAt, ...seed }
+  appointmentPanel.seed = { ...seed }
+  appointmentPanel.name = ''
+  appointmentPanel.mode = 'new'
+}
+
+function openAppointment(name, mode = 'details') {
+  close()
+  selectedAppointment.value = name
+  appointmentPanel.name = name
+  appointmentPanel.mode = mode
+}
+
+function closeAppointment() {
+  appointmentPanel.mode = ''
+  appointmentPanel.name = ''
+  selectedAppointment.value = ''
+}
+
+function onAppointmentMode(mode, name) {
+  if (name) {
+    appointmentPanel.name = name
+    selectedAppointment.value = name
+  }
+  appointmentPanel.mode = mode
+}
+
+function onAppointmentDeleted() {
+  closeAppointment()
+  reloadScheduler()
 }
 
 function onGridCreate({ date, minutes, mode, key }) {
-  newAppointment({
+  openNewAppointment({
     date,
     time: formatMinutes(minutes),
     staff: mode === 'staff' ? key : undefined,
@@ -713,10 +854,6 @@ function onGridMove({ name, startsOn, endsOn, mode, from, to }) {
     },
     onError: (e) => toast.error(e.messages?.[0] || __('Could not reassign it')),
   })
-}
-
-function onAppointmentSaved() {
-  reloadScheduler()
 }
 
 watch([viewMode, agendaDate], reloadScheduler)
@@ -791,7 +928,9 @@ const events = createListResource({
         isFullDay: ev.all_day,
         eventType: ev.event_type,
         location: ev.location,
-        color: ev.color,
+        // stored as a hex, a design-system variable or a name: the calendar
+        // reads only names and seven hex values, and drew the rest green
+        color: calendarColorName(ev.color),
         attending: ev.attending,
         referenceDoctype: ev.reference_doctype,
         referenceDocname: ev.reference_docname,
@@ -809,8 +948,10 @@ const event = ref({})
 const mode = ref('')
 const lastRange = ref(null)
 
-const isCreateDisabled = computed(() =>
-  ['edit', 'new', 'duplicate'].includes(mode.value),
+const isCreateDisabled = computed(
+  () =>
+    ['edit', 'new', 'duplicate'].includes(mode.value) ||
+    ['edit', 'new'].includes(appointmentPanel.mode),
 )
 
 // Temp event helpers
@@ -824,6 +965,7 @@ function removeTempEvents() {
 function openEvent(e, nextMode, reloadEvent = false) {
   const _e = e?.calendarEvent || e
   if (!_e?.id || isTempEvent(_e.id)) return
+  closeAppointment()
   removeTempEvents()
   showEventPanel.value = true
   event.value = { id: _e.id, reloadEvent }
@@ -994,7 +1136,10 @@ function syncEvent(eventID, _event) {
   if (!eventID || !Array.isArray(events.data)) return
   const target = events.data.find((event) => event.id === eventID)
   if (!target) return
-  Object.assign(target, _event)
+  // the panel's own copy is the same object for a new event: its colour stays
+  // what it will be saved as, and the calendar resolves it
+  if (target === _event) return
+  Object.assign(target, _event, { color: calendarColorName(_event.color) })
 }
 
 async function handleRangeChange(range) {
@@ -1022,6 +1167,21 @@ onMounted(async () => {
   const { eventId, date, appointment } = route.query
   if (appointment) {
     openAppointment(appointment)
+    // on its day, not on this week's
+    if (date) {
+      await nextTick()
+      calendar.value?.onMonthYearChange?.(dayjs(date).toDate())
+    }
+  }
+  // «Book an appointment» on a person: a new appointment, for them. The query
+  // stays in the address — the page is keyed on it, and taking it away
+  // rebuilds the page without the panel it had just opened.
+  if (route.query.new === 'appointment') {
+    openNewAppointment({
+      date: date || today(),
+      time: nextQuarter(),
+      party: route.query.party || undefined,
+    })
   }
   if (eventId && date) {
     await events.promise
@@ -1046,12 +1206,7 @@ useKeyboardShortcuts({
         !e.altKey &&
         e.key.toLowerCase() === 'e',
       guard: () => !isCreateDisabled.value,
-      action: () =>
-        newEvent({
-          date: dayjs().format('YYYY-MM-DD'),
-          time: dayjs().format('HH:mm'),
-          isFullDay: false,
-        }),
+      action: () => startNew(),
     },
   ],
 })
@@ -1059,7 +1214,6 @@ useKeyboardShortcuts({
 function showDetails(e, reloadEvent = false) {
   const id = (e?.calendarEvent || e)?.id
   if (isAppointmentId(id)) {
-    selectedAppointment.value = appointmentName(id)
     openAppointment(appointmentName(id))
     return
   }
@@ -1069,7 +1223,7 @@ function showDetails(e, reloadEvent = false) {
 function editDetails(e) {
   const id = (e?.calendarEvent || e)?.id
   if (isAppointmentId(id)) {
-    openAppointment(appointmentName(id))
+    openAppointment(appointmentName(id), 'edit')
     return
   }
   openEvent(e, 'edit')
@@ -1090,7 +1244,8 @@ function buildTempEvent(e = {}, duplicate = false) {
     location: e.location || '',
     isFullDay: e.isFullDay || false,
     eventType: e.eventType || 'Private',
-    color: e.color || 'green',
+    // as the panel saves it: the hex, which the calendar reads as green
+    color: e.color || NAMED_HEX.green,
     attending: e.attending || 'Yes',
     event_participants: e.event_participants || [],
     notifications: e.notifications || [],
@@ -1098,6 +1253,7 @@ function buildTempEvent(e = {}, duplicate = false) {
 }
 
 function newEvent(e = {}, duplicate = false) {
+  closeAppointment()
   removeTempEvents()
 
   let base = { ...e }

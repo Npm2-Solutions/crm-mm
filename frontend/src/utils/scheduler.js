@@ -138,6 +138,32 @@ export function formatMinutes(minutes) {
   return `${String(hours).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
 
+// `"09:30"` → `570`, or `null` for anything that is not a time
+function clockMinutes(time) {
+  const match = /^(\d{1,2}):(\d{2})/.exec(String(time ?? ''))
+  if (!match) return null
+  return Number(match[1]) * 60 + Number(match[2])
+}
+
+/**
+ * `"09:30"` plus `45` minutes → `"10:15"` — the end of an appointment from its
+ * start and its length. It stops at the end of the day: a booking made here
+ * does not run past midnight.
+ */
+export function addMinutes(time, minutes) {
+  const start = clockMinutes(time)
+  if (start === null) return ''
+  return formatMinutes(Math.min(start + (Number(minutes) || 0), 23 * 60 + 59))
+}
+
+/** Minutes from one `HH:MM` to a later one; `0` when it is not later. */
+export function minutesBetween(from, to) {
+  const start = clockMinutes(from)
+  const end = clockMinutes(to)
+  if (start === null || end === null) return 0
+  return Math.max(end - start, 0)
+}
+
 /** `"2026-09-03"` + `585` → a local `Date`. */
 export function dateAtMinutes(isoDate, minutes) {
   const [year, month, day] = String(isoDate).slice(0, 10).split('-').map(Number)

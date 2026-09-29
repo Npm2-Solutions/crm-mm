@@ -1,4 +1,5 @@
 import {
+  addMinutes,
   appointmentColor,
   blockStyle,
   buildTimeAxis,
@@ -7,6 +8,7 @@ import {
   formatMinutes,
   layoutLanes,
   minutesAtRatio,
+  minutesBetween,
   minutesFromMidnight,
   snapMinutes,
   unassigned,
@@ -206,5 +208,32 @@ describe('appointmentColor', () => {
   it('falls back to a status colour when nothing is set', () => {
     expect(appointmentColor({ status: 'Cancelled' }, {})).toBe('#E24C4C')
     expect(appointmentColor({}, {})).toBe('#4C7EFF')
+  })
+})
+
+describe('addMinutes', () => {
+  it('puts the end after the start', () => {
+    expect(addMinutes('09:30', 45)).toBe('10:15')
+    expect(addMinutes('9:05', 60)).toBe('10:05')
+  })
+
+  it('stops at the end of the day', () => {
+    expect(addMinutes('23:30', 90)).toBe('23:59')
+  })
+
+  it('has nothing to say about what is not a time', () => {
+    expect(addMinutes('', 30)).toBe('')
+    expect(addMinutes(null, 30)).toBe('')
+  })
+})
+
+describe('minutesBetween', () => {
+  it('is the length from one time to a later one', () => {
+    expect(minutesBetween('09:30', '10:15')).toBe(45)
+  })
+
+  it('is nothing backwards, or without times', () => {
+    expect(minutesBetween('10:00', '09:00')).toBe(0)
+    expect(minutesBetween('', '09:00')).toBe(0)
   })
 })
