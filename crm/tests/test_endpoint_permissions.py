@@ -19,7 +19,12 @@ from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
 from crm.api.contact import get_linked_deals
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
-from crm.integrations.api import get_recording_url
+from crm.integrations.api import (
+	find_contact_by_phone_number,
+	get_contact_by_phone_number,
+	get_contact_lead_or_deal_from_number,
+	get_recording_url,
+)
 from crm.permissions.test_org_hierarchy import make_deal, make_hierarchy_node, make_lead, make_user
 from crm.telephony.transcription import get_transcript, transcribe_now
 from crm.tests.test_scheduling import SchedulingCase
@@ -222,6 +227,65 @@ class TestContactDeals(PermissionTestCase):
 	def test_a_website_user_reads_no_contacts_deals(self):
 		with self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
 			get_linked_deals(self.contact)
+
+
+LEAD_NUMBER = "+39 333 123 4567"
+DEAL_NUMBER = "+39 333 222 3344"
+
+
+class TestPhoneLookups(PermissionTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.lead = (
+			frappe.get_doc(
+				{
+					"doctype": "CRM Lead",
+					"first_name": "Mario",
+					"last_name": "Rossi",
+					"mobile_no": LEAD_NUMBER,
+					"lead_owner": REP,
+				}
+			)
+			.insert(ignore_permissions=True)
+			.name
+		)
+		cls.contact = make_contact("Anna", "Neri", DEAL_NUMBER)
+		cls.deal = make_deal_with(REP, cls.contact)
+
+	def test_whoever_may_read_the_lead_learns_whose_number_it_is(self):
+		for user in (REP, MANAGER):
+			with self.set_user(user):
+				found = get_contact_by_phone_number(LEAD_NUMBER)
+			self.assertEqual(found["lead"], self.lead)
+			self.assertEqual(found["full_name"], "Mario Rossi")
+
+	def test_a_lead_out_of_sight_answers_like_a_number_nobody_has(self):
+		for user in (OUTSIDER, PATIENT):
+			with self.set_user(user):
+				# what get_contact answers for an unknown number: the number it searched
+				self.assertEqual(get_contact_by_phone_number(LEAD_NUMBER), {"mobile_no": "3331234567"})
+
+	def test_a_contacts_deal_is_named_only_to_whoever_may_read_it(self):
+		with self.set_user(REP):
+			self.assertEqual(get_contact_by_phone_number(DEAL_NUMBER)["deal"], self.deal)
+		with self.set_user(OUTSIDER):
+			found = get_contact_by_phone_number(DEAL_NUMBER)
+		self.assertEqual(found["name"], self.contact)
+		self.assertNotIn("deal", found)
+		with self.set_user(PATIENT):
+			self.assertEqual(get_contact_by_phone_number(DEAL_NUMBER), {"mobile_no": "3332223344"})
+
+	def test_webhooks_still_file_calls_and_messages_as_guest(self):
+		with self.set_user("Guest"):
+			self.assertEqual(find_contact_by_phone_number(LEAD_NUMBER)["lead"], self.lead)
+			self.assertEqual(get_contact_lead_or_deal_from_number(LEAD_NUMBER), (self.lead, "CRM Lead"))
+
+	def test_whose_number_it_is_is_asked_over_http_only_through_the_checked_lookup(self):
+		with self.set_user(PATIENT):
+			frappe.is_whitelisted(get_contact_by_phone_number)
+			with self.assertRaises(frappe.PermissionError):
+				frappe.is_whitelisted(get_contact_lead_or_deal_from_number)
 
 
 def make_call_log(links=(), **fields):
