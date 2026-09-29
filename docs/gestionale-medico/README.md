@@ -8,7 +8,10 @@ scrivere codice vanno chiuse le [domande](#le-domande-da-chiudere-prima) in fond
 Le richieste puntuali (livelli, Sito senza Builder, moduli con firma, archivio,
 area cliente), verificate sul codice, sono in [requisiti.md](./requisiti.md).
 Obblighi, concorrenti ed ecosistema Frappe, con le fonti, sono in
-[ricerca.md](./ricerca.md).
+[ricerca.md](./ricerca.md). Il design, con i tre strati (CRM, fatturazione,
+clinica), è in [design.md](./design.md); il listino proposto in
+[listino.md](./listino.md); ruoli e permessi nel
+[doc 30](../progetto-ghl/30-ruoli-e-permessi.md).
 
 ## Il problema in una riga
 
@@ -262,8 +265,11 @@ nella v14 con Healthcare, Education e Agriculture
 
 Le regole:
 
-1. **Un modulo nuovo, `crm/clinica/`:** scheda paziente, consensi, visite, referti
-   e modelli di cartella. Si registra da `hooks.py` come la tessera sanitaria.
+1. **Un modulo nuovo, `crm/clinica/`:** scheda paziente, cartella (visite,
+   referti, archivio), piani, area cliente e assistente. Si registra da
+   `hooks.py` come la tessera sanitaria. Il motore dei modelli con la firma e il
+   registro dei consensi stanno invece nel CRM (`crm/moduli`), perché servono a
+   ogni cliente ([i tre strati](./design.md#tre-strati-crm-fatturazione-clinica)).
 2. **Dipendenza a senso unico.** La clinica importa da `crm` e dalla fatturazione;
    né `crm` né la fatturazione importano la clinica. Un `test_confine.py` come
    quello della fatturazione.

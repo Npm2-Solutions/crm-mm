@@ -127,6 +127,13 @@ Un modulo, una scheda clinica e un piano sono lo stesso oggetto con tre usi:
 | Scheda clinica | l'operatore | cartella | visita nutrizionale, valutazione fisioterapica |
 | Piano | l'operatore, il paziente lo segue | area cliente | dieta, allenamento, esercizi a casa |
 
+**Il motore sta nel CRM, non nella clinica.** Anche una palestra o uno studio
+legale hanno privacy, contratti e preventivi da far firmare: modelli,
+compilazioni, firme e PDF/A servono a ogni cliente e stanno in `crm/moduli`
+([i tre strati](#tre-strati-crm-fatturazione-clinica)). La clinica aggiunge la
+scheda clinica e il piano, i suoi componenti (mappa del corpo, foto clinica, pasto
+e alimento, esercizio) e il marchio "dato clinico" descritto qui sotto.
+
 - **I componenti**: testo, numero, scelta, sì/no, data, scala 0–10, tabella,
   testo da leggere, calcolo (per esempio il BMI da peso e altezza), questionario a
   punteggio con fasce, destra e sinistra affiancate, frasi pronte che scrivono il
@@ -397,20 +404,74 @@ automatici, analisi delle emozioni dalla voce.
   scriverlo da solo), e il View Log si tiene 24 mesi. È anche il "componente di
   registrazione" che lo spazio europeo dei dati sanitari chiederà.
 
+## Tre strati: CRM, fatturazione, clinica
+
+Una parte del lavoro serve a ogni cliente del CRM, non solo ai centri medici.
+Quindi nella clinica non va tutto:
+
+| Strato | Cosa ci va | Per chi |
+|---|---|---|
+| CRM | livelli e ruoli ([doc 30](../progetto-ghl/30-ruoli-e-permessi.md)), Sito nascosto senza Builder, fatture viste solo da chi deve, registro dei consensi, modelli e firme (`crm/moduli`) | tutti i clienti |
+| Fatturazione (c'è già) | l'anagrafica fiscale della persona | chi fattura |
+| Clinica (nuova, `crm/clinica`) | paziente e regole per diventarlo, cartella, referti, archivio, dossier, piani, area cliente, assistente | solo i centri medici |
+
+- **Anche i consensi stanno nel CRM.** Il consenso al marketing serve a tutti; la
+  clinica aggiunge dossier, referti online e uso dell'IA.
+- **La clinica si aggancia al CRM come il Sistema TS alla fatturazione**, senza
+  che il CRM la conosca:
+  - una riga in `crm/hooks.py` (`registra()`): senza quella riga il CRM è quello
+    di oggi;
+  - un interruttore "centro medico" per sito: il codice c'è su tutti i siti, ma
+    menu, scheda della persona, eventi e job si accendono solo dove serve;
+  - le liste oggi scritte a mano diventano aperte, come fa
+    `crm/invoicing/estensioni.py`: la cronologia (`everything_else_on`, per le
+    visite col lucchetto), le automazioni (`EVENT_TO_TRIGGER`, per "Diventato
+    paziente"), la dashboard (`features.py` e i widget con `requires`), l'avvio
+    (`get_boot()`, che dice al frontend se la clinica è accesa e che cosa può
+    fare l'utente);
+  - nel frontend la scheda "Clinica" è una voce in più della lista `tabs` di
+    `Lead.vue`, e le pagine cliniche si caricano solo quando servono;
+  - l'area cliente è una seconda app nello stesso repo, su `/area`.
+- **Un modulo, non un'app a parte**: il frontend del CRM è uno, e la cartella vive
+  sulla pagina della persona ([README, decisione 2](./README.md#decisione-2--un-verticale-dentro-crm-con-le-regole-di-unapp-separata)).
+  Con il confine controllato da un test, staccarla un giorno sarà un trasloco, non
+  una riscrittura.
+
+```
+crm/moduli/            per tutti: modelli, compilazioni, firme, PDF/A
+crm/clinica/
+  __init__.py          registra(): regole, eventi, cronologia, widget
+  regole.py            le regole per diventare paziente, testabili senza un sito
+  paziente.py          ensure_patient() e il recupero dei dati che ci sono già
+  cartella/            visite, referti, archivio, accessi, dossier
+  piani/               piani, alimenti, esercizi, check-in
+  area/                le API dell'area cliente, solo "la mia persona"
+  doctype/             Clinic Patient, Clinic Record, Clinic Plan…
+  tests/               test_confine: né il CRM né la fatturazione la importano
+frontend/src/clinica/  la sezione Clinica e i piani
+area/                  l'app del paziente
+```
+
 ## Il modello dati
 
-Nel modulo `crm/clinica`, DocType con prefisso `Clinic`:
+Nel CRM, in `crm/moduli`, i DocType che servono a ogni cliente, con il prefisso
+`CRM` come il resto del codice:
+
+| DocType | Che cos'è | Campi che contano |
+|---|---|---|
+| `CRM Form Template` | il modello, in lavorazione | uso (modulo; con la clinica anche scheda e piano), specialità, dato clinico sì/no, quando si chiede, validità |
+| `CRM Form Template Version` | una versione pubblicata, immutabile | schema JSON, testo legale, firme richieste e livello, impronta SHA-256, pubblicata il |
+| `CRM Form Request` | un modulo da compilare | versione, persona, appuntamento, canale (tablet, link, carta), token, scadenza, stato |
+| `CRM Form` | un modulo compilato e firmato (submittable) | versione, valori, PDF/A e impronta, compilato da (paziente o staff) |
+| `CRM Signature` | tabella figlia di `CRM Form` e, nella clinica, di `Clinic Record` | chi, in che veste, livello, metodo, ora, IP, dispositivo, id del fornitore |
+| `CRM Audit Log` | il registro che si aggiunge soltanto | documento, evento, ora, IP, dispositivo, impronta dell'evento precedente |
+| `CRM Consent` | il registro dei consensi | tipo, stato, versione del testo, da quale modulo, revocato il |
+
+Nella clinica, in `crm/clinica`, con il prefisso `Clinic`:
 
 | DocType | Che cos'è | Campi che contano |
 |---|---|---|
 | `Clinic Patient` | la scheda paziente, uno a uno con `CRM Lead` | paziente dal, regola, origine, tutore o pagante, consenso al dossier |
-| `Clinic Template` | il modello, in lavorazione | uso (modulo, scheda, piano), specialità, dato clinico sì/no, quando si chiede, validità |
-| `Clinic Template Version` | una versione pubblicata, immutabile | schema JSON, testo legale, firme richieste e livello, impronta SHA-256, pubblicata il |
-| `Clinic Form Request` | un modulo da compilare | versione, persona, appuntamento, canale (tablet, link, carta), token, scadenza, stato |
-| `Clinic Form` | un modulo compilato e firmato (submittable) | versione, valori, PDF/A e impronta, compilato da (paziente o staff) |
-| `Clinic Signature` | tabella figlia di `Clinic Form` e `Clinic Record` | chi, in che veste, livello, metodo, ora, IP, dispositivo, id del fornitore |
-| `Clinic Event Log` | il registro che si aggiunge soltanto | documento, evento, ora, IP, dispositivo, impronta dell'evento precedente |
-| `Clinic Consent` | il registro dei consensi | tipo, stato, versione del testo, da quale modulo, revocato il |
 | `Clinic Record` | una voce di cartella: visita, nota, misura (submittable, poi solo aggiunte) | versione, operatore (l'erogatore), appuntamento, valori, chi la vede, colonne per le statistiche |
 | `Clinic Document` | l'archivio | tipo, file privato, data, provenienza, visibile al paziente, online fino al |
 | `Clinic Plan` | un piano | tipo, versione del modello, operatore, periodo, pubblicato; tabelle dei momenti e delle voci |
@@ -451,6 +512,20 @@ Fasi 0–3: 21–27 settimane-persona; con l'assistente 24–31. Stime indicativ
 rifare dopo le decisioni aperte. `Web Form Request` chiede Frappe v16.35: il minimo
 in `pyproject.toml` (oggi qualunque 16.x) va alzato.
 
+Livelli, Sito, fatture, consensi, modelli e firma sono del CRM: sono PR del CRM,
+utili a ogni cliente anche prima che la clinica esista. La fase 0 si divide in
+PR piccole, ognuna utile da sola:
+
+1. i livelli e la gestione dei ruoli nel CRM ([doc 30](../progetto-ghl/30-ruoli-e-permessi.md));
+2. il Sito nascosto senza Builder, e le fatture viste solo da chi deve;
+3. l'anagrafica fiscale sola, nella fatturazione;
+4. il registro dei consensi, compreso quello di `/prenota`;
+5. lo scheletro della clinica: interruttore, `registra()`, test di confine,
+   scheda paziente e regole per diventarlo, con il recupero sui dati che ci sono
+   già;
+6. la sezione Clinica sulla persona, con una visita semplice e il registro degli
+   accessi.
+
 ## Da decidere
 
 1. Chi fa il marketing per il centro: voi, il centro, o entrambi?
@@ -476,5 +551,5 @@ in `pyproject.toml` (oggi qualunque 16.x) va alzato.
     pazienti e PDF dei piani fra gli usi ammessi; conversione dei formati; il
     dataset come fonte dei file; partner e rivenditori; garanzia sui diritti,
     legge applicabile e foro.
-10. Una libreria base di esercizi di fisioterapia girata una volta da voi, con un
+11. Una libreria base di esercizi di fisioterapia girata una volta da voi, con un
     fisioterapista, che resta vostra e va a tutti i centri?
