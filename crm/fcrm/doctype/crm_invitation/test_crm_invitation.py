@@ -71,6 +71,17 @@ class TestCRMInvitation(IntegrationTestCase):
 		self.assertTrue(invitation.email_sent_at)
 		self.assertTrue(key)
 
+	def test_an_expired_invitation_can_be_sent_again(self):
+		invitation, _key = self.invite("newcomer@example.com")
+		frappe.db.set_value("CRM Invitation", invitation.name, "status", "Expired")
+
+		frappe.set_user(SALES_MANAGER)
+		with patch.object(frappe, "sendmail"):
+			result = invite_by_email("newcomer@example.com", "Sales User")
+
+		self.assertEqual(result["to_invite"], ["newcomer@example.com"])
+		self.assertEqual(result["existing_invites"], [])
+
 	def test_a_new_user_accepts_and_is_sent_to_set_a_password(self):
 		invitation, key = self.invite("newcomer@example.com", "Sales Manager", by=SYSTEM_MANAGER)
 
