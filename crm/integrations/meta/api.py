@@ -175,6 +175,10 @@ def get_webhook_subscription() -> dict:
 	check_system_manager()
 	if not is_hub():
 		return {"configured": True, "managed_by_hub": True, "callback_url": hub_url() + WEBHOOK_PATH}
+	# no app yet: there is nothing to ask Meta, and the settings page asks this
+	# as soon as an administrator opens it — `_app_token` threw at every visit
+	if not get_app_id() or not get_app_secret():
+		return {"configured": False, "app_missing": True}
 	try:
 		data = graph_get(f"{get_app_id()}/subscriptions", _app_token())
 	except MetaAPIError as exc:
