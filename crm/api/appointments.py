@@ -166,7 +166,68 @@ def get_calendar(
 		appointments = [a for a in appointments if wanted_resources & {r["resource"] for r in a["resources"]}]
 
 	events = _plain_events(from_dt, to_dt) if sbool(include_events) else []
-	return {"appointments": appointments, "events": events}
+	from crm.permissions.seguono import shows_busy_time
+
+	busy = (
+		_busy_time(from_dt, to_dt, {row["name"] for row in rows}, wanted_staff, wanted_resources)
+		if shows_busy_time()
+		else []
+	)
+	return {"appointments": appointments, "events": events, "busy": busy}
+
+
+def _busy_time(from_dt, to_dt, seen: set[str], wanted_staff: set, wanted_resources: set) -> list[dict]:
+	"""The rest of the agenda as busy time: when, who works it, which room - never who
+	comes or why. For whoever sees only part of the agenda in full: sales book for
+	their people into everybody's day."""
+	rows = [
+		row
+		for row in frappe.get_all(
+			"CRM Appointment",
+			filters={"starts_on": ["<", to_dt], "ends_on": [">", from_dt], "status": ["!=", "Cancelled"]},
+			fields=["name", "starts_on", "ends_on"],
+			limit_page_length=0,
+		)
+		if row.name not in seen
+	]
+	if not rows:
+		return []
+	names = [row.name for row in rows]
+	staff: dict[str, list[str]] = {}
+	for entry in frappe.get_all(
+		"CRM Appointment Staff",
+		filters={"parent": ["in", names], "parenttype": "CRM Appointment"},
+		fields=["parent", "user"],
+		limit_page_length=0,
+	):
+		staff.setdefault(entry.parent, []).append(entry.user)
+	resources: dict[str, list[str]] = {}
+	for entry in frappe.get_all(
+		"CRM Appointment Resource",
+		filters={"parent": ["in", names], "parenttype": "CRM Appointment"},
+		fields=["parent", "resource"],
+		limit_page_length=0,
+	):
+		resources.setdefault(entry.parent, []).append(entry.resource)
+	busy = []
+	for row in rows:
+		who = staff.get(row.name, [])
+		where = resources.get(row.name, [])
+		if wanted_staff and not wanted_staff & set(who):
+			continue
+		if wanted_resources and not wanted_resources & set(where):
+			continue
+		busy.append(
+			{
+				"starts_on": str(row.starts_on),
+				"ends_on": str(row.ends_on),
+				"start_utc": from_system_naive(str(row.starts_on)).isoformat(),
+				"end_utc": from_system_naive(str(row.ends_on)).isoformat(),
+				"staff": [{"user": user} for user in who],
+				"resources": [{"resource": resource} for resource in where],
+			}
+		)
+	return busy
 
 
 def _decorate(rows: list[dict]) -> list[dict]:
@@ -723,10 +784,14 @@ def get_workload(start: str, end: str) -> dict:
 	Feeds the utilisation strip at the top of the resource view: the point of
 	tracking rooms and equipment is knowing what is actually being used.
 	"""
+	from crm.permissions.seguono import shows_busy_time
+
 	first, last = parse_date(start), parse_date(end)
 	from_dt = datetime.datetime.combine(first, datetime.time.min)
 	to_dt = datetime.datetime.combine(last + datetime.timedelta(days=1), datetime.time.min)
-	rows = frappe.get_list(
+	# minutes per person and room say no more than the busy time: whoever is shown
+	# the rest of the agenda as busy gets the load of all of it
+	rows = (frappe.get_all if shows_busy_time() else frappe.get_list)(
 		"CRM Appointment",
 		filters={
 			"status": ["in", ACTIVE_STATUSES],
