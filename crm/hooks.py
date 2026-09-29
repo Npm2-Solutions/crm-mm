@@ -227,6 +227,9 @@ has_permission = {
 	"CRM Sales Hierarchy": "crm.permissions.documenti.has_permission",
 	"CRM Service Level Agreement": "crm.permissions.documenti.has_permission",
 	"ERPNext CRM Settings": "crm.permissions.documenti.has_permission",
+	"Email Template": "crm.permissions.documenti.has_permission",
+	"Assignment Rule": "crm.permissions.documenti.has_permission",
+	"Data Import": "crm.permissions.documenti.has_permission",
 }
 
 # DocType Class
@@ -548,6 +551,8 @@ after_migrate = [
 	"crm.moduli.consensi.assicura_tipi",
 	# the access logs of the clinical record are kept two years at least
 	"crm.clinica.cartella.proteggi_registro_accessi",
+	# the core documents the Manager's pages write: templates, rules, imports
+	"crm.permissions.documenti.concedi_documenti_del_core",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)
