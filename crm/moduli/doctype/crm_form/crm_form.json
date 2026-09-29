@@ -1,0 +1,268 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-30 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "lead",
+  "lead_name",
+  "given_by",
+  "column_head",
+  "template",
+  "template_version",
+  "version",
+  "clinical",
+  "filling_section",
+  "channel",
+  "appointment",
+  "column_filling",
+  "filled_by",
+  "signed_on",
+  "answers_section",
+  "answers",
+  "alerts",
+  "schema_hash",
+  "answers_hash",
+  "document_section",
+  "pdf_file",
+  "column_document",
+  "pdf_hash",
+  "pdf_conformance",
+  "signatures_section",
+  "signatures",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Form",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "given_by",
+   "fieldtype": "Link",
+   "label": "Answered by",
+   "options": "CRM Lead",
+   "description": "A parent or guardian who answered and signed for the person."
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Template",
+   "options": "CRM Form Template",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "template_version",
+   "fieldtype": "Link",
+   "label": "Version",
+   "options": "CRM Form Template Version",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Int",
+   "label": "Version number",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "clinical",
+   "fieldtype": "Check",
+   "label": "Health data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "filling_section",
+   "fieldtype": "Section Break",
+   "label": "Filling"
+  },
+  {
+   "default": "At the desk",
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Where",
+   "options": "At the desk\nTablet\nLink\nOn paper"
+  },
+  {
+   "fieldname": "appointment",
+   "fieldtype": "Link",
+   "label": "Appointment",
+   "options": "CRM Appointment"
+  },
+  {
+   "fieldname": "column_filling",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "filled_by",
+   "fieldtype": "Link",
+   "label": "With",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Signed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "answers_section",
+   "fieldtype": "Section Break",
+   "label": "Answers"
+  },
+  {
+   "fieldname": "answers",
+   "fieldtype": "JSON",
+   "label": "Answers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "alerts",
+   "fieldtype": "JSON",
+   "label": "Warnings for the operator",
+   "read_only": 1
+  },
+  {
+   "fieldname": "schema_hash",
+   "fieldtype": "Data",
+   "label": "What it asked (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "answers_hash",
+   "fieldtype": "Data",
+   "label": "The answers (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "document_section",
+   "fieldtype": "Section Break",
+   "label": "The document"
+  },
+  {
+   "fieldname": "pdf_file",
+   "fieldtype": "Attach",
+   "label": "PDF",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_document",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pdf_hash",
+   "fieldtype": "Data",
+   "label": "PDF SHA-256",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pdf_conformance",
+   "fieldtype": "Data",
+   "label": "Conformance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signatures_section",
+   "fieldtype": "Section Break",
+   "label": "Signatures"
+  },
+  {
+   "fieldname": "signatures",
+   "fieldtype": "Table",
+   "label": "Signatures",
+   "options": "CRM Signature",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "CRM Form",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 12:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "Moduli",
+ "name": "CRM Form",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "FRM-.YYYY.-.#####",
+ "naming_rule": "Expression (old style)",
+ "is_submittable": 1,
+ "track_changes": 1,
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "lead_name",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "write": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "submit": 1,
+   "write": 1,
+   "print": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Sales User",
+   "submit": 1,
+   "write": 1,
+   "print": 1
+  }
+ ]
+}

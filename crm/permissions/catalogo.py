@@ -222,6 +222,16 @@ CAPACITA = (
 	_c("consensi.configura", manager=CENTRO, descrizione="The kinds of consent and their texts"),
 	# Forms to fill and sign (docs/gestionale-medico, phase 2): what they ask, in versions
 	_c("moduli.configura", manager=CENTRO, descrizione="The centre's form templates and their versions"),
+	# a person's forms follow the person, like their consents
+	_c("moduli.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
+	_c(
+		"moduli.compila",
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		commerciale=TEAM,
+		descrizione="Fill a form with a person and have it signed",
+	),
 	_c("trattative.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
 	_c("trattative.scrivi", segreteria=CENTRO, manager=CENTRO, commerciale=TEAM),
 	_c("pipeline.configura", manager=CENTRO),

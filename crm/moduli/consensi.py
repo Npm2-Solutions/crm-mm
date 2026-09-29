@@ -136,6 +136,7 @@ def registra_risposta(
 	canale: str = "At the desk",
 	*,
 	testo: str | None = None,
+	versione_testo: int | None = None,
 	fonte: tuple[str, str] | None = None,
 	nota: str | None = None,
 	allegato: str | None = None,
@@ -147,7 +148,8 @@ def registra_risposta(
 
 	``testo`` is for a page that shows its own words (the privacy tick of
 	/prenota, in the visitor's language); otherwise the kind's current text and
-	its version are copied onto the answer. ``dato_da`` is the person who
+	its version are copied onto the answer. A signed form passes the words its
+	version froze, with ``versione_testo``: the version of the kind they were. ``dato_da`` is the person who
 	answered for them: the parent of a minor child, whoever booked for them.
 	"""
 	if dato_da == lead:
@@ -180,8 +182,8 @@ def registra_risposta(
 			"ip_address": ip,
 			"user_agent": (browser or "")[:500] or None,
 			"text": testo or tipo.text,
-			# a page's own words are not a version of the kind's text
-			"text_version": None if testo else tipo.text_version,
+			# a page's own words are not a version of the kind's text; a form's are
+			"text_version": versione_testo if testo else tipo.text_version,
 			"note": nota,
 			"attachment": allegato,
 			"given_by": dato_da,
