@@ -95,6 +95,9 @@ they run as evaluated strings in the browser.
 | `crm/moduli/pdf.py` + `templates/modulo_firmato.html` | The signed form's PDF/A with its evidence page, made once |
 | `crm/moduli/traccia.py` | `CRM Audit Log`: a document's events, each chained to the one before |
 | `frontend/src/pages/FormFill.vue`, `components/Moduli/FormsArea.vue`, `SignaturePad.vue` | Filling and signing, the person's Forms tab, the stroke as a PNG |
+| `crm/moduli/richieste.py` | `CRM Form Request`: forms filled on their own — a link by email (code to the same address) or the desk's tablet; the guest calls |
+| `crm/www/modulo.*` + `crm/public/js/moduli_engine.js` | The `/modulo/<link>` page; the engine is `frontend/src/utils/moduli.js` copied (`yarn sync-moduli-engine`, a test keeps them equal) |
+| `frontend/src/components/Moduli/SendFormsDialog.vue`, `RequestRow.vue` | "On their own": send a link or hand the tablet over; what was sent and where it is |
 
 The browser and the server evaluate a form the same way: a question looks only at
 the ones before it (to show, compute, score), a hidden answer does not count, and
