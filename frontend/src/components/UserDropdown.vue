@@ -59,6 +59,7 @@ import {
 } from '@/composables/settings'
 import { showAboutModal } from '@/composables/modals'
 import { confirmLoginToFrappeCloud } from '@/composables/frappecloud'
+import { safeDropdownIcon, safeDropdownRoute } from '@/utils/dropdownItems'
 import { createResource, Dropdown } from 'frappe-ui'
 import { computed, h, markRaw } from 'vue'
 
@@ -95,9 +96,8 @@ const dropdownItems = computed(() => {
   items.forEach((item) => {
     if (item.hidden) return
     if (item.type !== 'Separator') {
-      _dropdownItems[_dropdownItems.length - 1].items.push(
-        dropdownItemObj(item),
-      )
+      const option = dropdownItemObj(item)
+      if (option) _dropdownItems[_dropdownItems.length - 1].items.push(option)
     } else {
       _dropdownItems.push({
         group: '',
@@ -112,21 +112,23 @@ const dropdownItems = computed(() => {
 
 function dropdownItemObj(item) {
   let _item = JSON.parse(JSON.stringify(item))
-  let icon = _item.icon || 'external-link'
-  if (typeof icon === 'string' && icon.startsWith('<svg')) {
-    icon = markRaw(h('div', { innerHTML: icon }))
-  }
-  _item.icon = icon
+  // Home Actions are edited by Sales Managers and opened by everyone: the icon
+  // is only ever a Feather name, never markup (see utils/dropdownItems.js)
+  _item.icon = safeDropdownIcon(_item.icon)
 
   if (_item.is_standard) {
     return getStandardItem(_item)
   }
 
+  // a route that would run script rather than navigate stays out of the menu
+  const route = safeDropdownRoute(_item.route)
+  if (!route) return null
+
   return {
     icon: _item.icon,
     label: __(_item.label),
     onClick: () =>
-      window.open(_item.route, _item.open_in_new_window ? '_blank' : ''),
+      window.open(route, _item.open_in_new_window ? '_blank' : '', 'noopener'),
   }
 }
 
