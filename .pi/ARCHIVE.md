@@ -1027,3 +1027,40 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `frontend/src/stores/users.js`, `composables/levels.js` | `puo()`, `ambito()`, i livelli offerti |
 | `frontend/src/components/Settings/Users.vue`, `InviteUserPage.vue`, `LevelPicker.vue`, `PlanSettings.vue`, `Modals/UserAccessModal.vue`, `Modals/AddExistingUserModal.vue` | Utenti, inviti, accesso, piano |
 | `crm/permissions/test_livelli.py`, `test_utenti.py` | La matrice senza sito; i livelli su utenti veri |
+
+---
+
+## Il sito senza Builder, le fatture a chi deve
+
+> **Completato** (29/09/2026). La seconda PR della fase 0 del gestionale medico.
+> Senza Frappe Builder la parte Sito non esiste per nessuno; le fatture le leggono
+> Segreteria, Manager e, delle sue prestazioni, l'Operatore; il Commerciale e il
+> Sales User di prima non più, neanche nella cronologia della persona.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Le capacità possono avere un **requisito** (`requisito="builder"`), controllato da una funzione registrata | Installare Builder è un lavoro sul bench, dell'agenzia: senza, `sito.gestisci` non è di nessuno, agenzia compresa, e menu, impostazioni e rotte lo sanno dall'avvio |
+| Le rotte dichiarano `meta.richiede` e la guardia del router la controlla | Una pagina tolta dal menu si apriva ancora dall'indirizzo; è il meccanismo della PR 3 del doc 30, qui per sito e fatture |
+| Il Sales User perde la lettura di CRM Invoice, del suo registro e delle fatture passive | Una riga di fattura dice cosa è stato fatto ("seduta di psicoterapia"): è un dato sanitario. I cataloghi (servizi fatturabili, erogatori, qualifiche) restano leggibili: non dicono niente di nessuno |
+| L'Invoicing User emette (create, write, submit) e non annulla | La Segreteria emette e incassa (doc 30); annullare e le note di credito restano all'Invoicing Manager |
+| La trasmissione a SdI e Sistema TS chiede `fatture.invia` | È "a scelta" per la Segreteria: emettere non vuol dire spedire. Chi lavora solo dal Desk con un ruolo della fatturazione, fuori dai livelli, trasmette come prima (`verifica_nel_crm`) |
+| L'Operatore ha un permesso di lettura su CRM Invoice, ristretto per record alle fatture con una sua riga | `permission_query_conditions` e `has_permission` in `crm/invoicing/permessi.py`, dalla stessa regola; l'ambito restringe e non allarga, e non tocca chi è fuori dai livelli |
+| La cronologia chiede le fatture con `get_list`, e a chi non le legge non le chiede affatto | Prima `get_all` saltava i permessi |
+| I ruoli dei livelli si creano prima della sincronizzazione dei DocType (`before_install`, patch `pre_model_sync`) | CRM Invoice nomina Practitioner, e una DocPerm su un ruolo che non esiste ancora fallisce. I ruoli che Frappe crea da sé (Sales User, Sales Manager, System Manager) restano a Frappe |
+| La pagina Fatture nasconde "Impostazioni" a chi non configura la fatturazione | La Segreteria lavora nella pagina, la configurazione è del Manager |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/permissions/livelli.py`, `catalogo.py`, `utenti.py` | Requisiti; `verifica_nel_crm`; `assicura_ruoli` prima della sincronizzazione |
+| `crm/invoicing/doctype/crm_invoice/`, `crm_invoice_log/`, `crm_supplier_invoice/` | Permessi |
+| `crm/invoicing/permessi.py`, `crm/hooks.py` | Le fatture dell'Operatore |
+| `crm/invoicing/api.py`, `crm/tessera_sanitaria/api.py` | `fatture.invia` per trasmettere |
+| `crm/api/activities.py` | La cronologia con i permessi |
+| `crm/dashboard/features.py` | "website" richiede Builder |
+| `crm/install.py`, `crm/patches/v1_0/create_level_roles.py` | I ruoli prima della sincronizzazione |
+| `frontend/src/router.js`, `Layouts/AppSidebar.vue`, `Settings/Settings.vue`, `pages/Invoices.vue` | Rotte protette, menu e impostazioni per capacità |
+| `crm/tests/test_invoice_access.py`, `crm/permissions/test_livelli.py` | I test |

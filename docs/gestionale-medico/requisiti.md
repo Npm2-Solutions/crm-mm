@@ -8,7 +8,7 @@ come lo farei e cosa resta da decidere. Il quadro generale è nella
 | # | Richiesta | Oggi | Dove va |
 |---|---|---|---|
 | 1 | Tre livelli: Segreteria, Manager amministrativo, Operatore; System Manager e Administrator solo a chi gestisce il site | ⚠️ tre livelli ci sono, ma sono di vendita, e il più alto **è** System Manager | fase 0 |
-| 2 | Senza Frappe Builder la parte Sito sparisce | ❌ la voce resta visibile ai manager | fase 0 |
+| 2 | Senza Frappe Builder la parte Sito sparisce | ✅ fatto il 29/09/2026 | fase 0 |
 | 3 | Cartella clinica completa per paziente | ❌ niente | fasi 0 e 2 |
 | 4 | Modulistica da un builder del CRM, con la firma come componente, privacy compresa | ⚠️ un builder c'è, ma per i lead; la firma è esclusa | fase 2 |
 | 5 | Archivio di referti e documenti del cliente | ⚠️ allegati privati sulla persona, senza tipi né registro accessi | fase 2 |
@@ -103,6 +103,12 @@ senza Builder: via la voce di menu, via il gruppo nelle impostazioni, la rotta
 `/sito` rimanda alla home, e spariscono i widget e i trigger che parlano del sito.
 Il frontend deve saperlo all'avvio (un flag nel boot o nei dati di sessione).
 Mezza giornata di lavoro.
+
+**Fatto (29/09/2026).** La capacità `sito.gestisci` ha un requisito, "builder": dove
+Builder non è installato non è di nessuno, nemmeno dell'agenzia. Menu, gruppo nelle
+impostazioni e rotte `/sito` la chiedono, e un indirizzo digitato rimanda alla home.
+La funzione "website" del cruscotto richiede Builder anche lei. Nessun widget né
+trigger dipendeva dal sito.
 
 ---
 
