@@ -119,7 +119,14 @@
               doctype="CRM Organization"
               :docname="organization.doc.name"
               @reload="sections.reload"
-            />
+            >
+              <template #after>
+                <BillingProfileSection
+                  partyType="CRM Organization"
+                  :party="organization.doc.name"
+                />
+              </template>
+            </SidePanelLayout>
           </div>
         </div>
         <DealsListView
@@ -152,6 +159,7 @@
 
 <script setup>
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
+import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'

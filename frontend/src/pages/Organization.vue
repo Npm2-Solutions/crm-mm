@@ -119,7 +119,14 @@
           :docname="organization.doc.name"
           @reload="sections.reload"
           @beforeFieldChange="beforeFieldChange"
-        />
+        >
+          <template #after>
+            <BillingProfileSection
+              partyType="CRM Organization"
+              :party="organization.doc.name"
+            />
+          </template>
+        </SidePanelLayout>
       </div>
     </Resizer>
     <Tabs
@@ -192,6 +199,7 @@
 import ErrorPage from '@/components/ErrorPage.vue'
 import Resizer from '@/components/Resizer.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
+import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
