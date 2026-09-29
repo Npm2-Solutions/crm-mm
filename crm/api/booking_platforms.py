@@ -28,10 +28,10 @@ from frappe.utils import cint, get_url
 from crm.booking_platforms import catalog, get_provider, provider_class
 from crm.booking_platforms.base import InvalidSignature, NotSupported, PlatformError
 from crm.fcrm.doctype.crm_booking_connection.crm_booking_connection import connection_for_token
+from crm.permissions.livelli import puo, verifica
 from crm.scheduling.timeutils import UTC, from_system_naive, to_system_naive
 from crm.utils import count_field
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 SECRET_FIELDS = ("client_secret", "api_key", "refresh_token", "webhook_secret")
 PLAIN_FIELDS = (
 	"connection_name",
@@ -54,7 +54,8 @@ INT_FIELDS = ("sync_window_days", "lookback_days")
 
 
 def _is_admin() -> bool:
-	return "System Manager" in frappe.get_roles()
+	# connectors still in testing are the agency's to try
+	return puo("tecnico.integrazioni")
 
 
 def _check_platform(platform: str | None):
@@ -72,8 +73,7 @@ def _check_connection(name: str):
 
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can manage booking platforms"), frappe.PermissionError)
+	verifica("piattaforme.configura", messaggio=_("Only sales managers can manage booking platforms"))
 
 
 # --------------------------------------------------------------------------

@@ -131,8 +131,9 @@ def delete(name: str | int):
 
 @frappe.whitelist()
 def public(name: str | int, value: bool | int):
-	if frappe.session.user != "Administrator" and "Sales Manager" not in frappe.get_roles():
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("viste.configura", messaggio=_("Not permitted"))
 
 	doc = frappe.get_doc("CRM View Settings", name)
 	if doc.pinned:
@@ -151,12 +152,14 @@ def pin(name: str | int, value: bool | int):
 
 
 def check_permission(doc):
-	"""Administrator and System Manager can edit any view.
-	If view is public, Sales Manager can edit.
+	"""The agency can edit any view.
+	If view is public, whoever configures views can edit.
 	If view is private, only the view owner can edit."""
-	if frappe.session.user == "Administrator" or "System Manager" in frappe.get_roles():
+	from crm.permissions.livelli import e_agenzia, puo
+
+	if e_agenzia(frappe.session.user):
 		pass
-	elif doc.public and "Sales Manager" in frappe.get_roles():
+	elif doc.public and puo("viste.configura"):
 		pass
 	elif doc.user and doc.user == frappe.session.user:
 		pass

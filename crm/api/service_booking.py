@@ -236,6 +236,12 @@ def page_branding(config=None) -> dict:
 	}
 
 
+def _puo(capacita: str) -> bool:
+	from crm.permissions.livelli import puo
+
+	return frappe.session.user != "Guest" and puo(capacita)
+
+
 # nosemgrep: guest-whitelisted-method — the /prenota menu; services marked direct-link-only stay out
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> dict:
@@ -256,7 +262,7 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 	for name in names:
 		services.append(_service_card(frappe.get_cached_doc("CRM Service", name)))
 	# the link builder in Settings needs the link-only services too
-	show_hidden = cint(include_hidden) and bool({"System Manager", "Sales Manager"} & set(frappe.get_roles()))
+	show_hidden = cint(include_hidden) and _puo("prenotazione_online.configura")
 	services = [
 		card
 		for card in services

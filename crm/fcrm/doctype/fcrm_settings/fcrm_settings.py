@@ -51,12 +51,16 @@ class FCRMSettings(Document):
 	# or seed demo users and records into a live site
 	@frappe.whitelist(methods=["POST"])
 	def restore_defaults(self, force: bool = False):
-		frappe.only_for(["Sales Manager", "System Manager"], True)
+		from crm.permissions.livelli import verifica
+
+		verifica("impostazioni.generali")
 		after_install(force)
 
 	@frappe.whitelist(methods=["POST"])
 	def restore_demo_data(self):
-		frappe.only_for(["Sales Manager", "System Manager"], True)
+		from crm.permissions.livelli import verifica
+
+		verifica("dati_prova.gestisci")
 		create_demo_data()
 
 	def validate(self):

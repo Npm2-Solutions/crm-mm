@@ -18,6 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, sbool
 
+from crm.permissions.livelli import CENTRO, puo, verifica
 from crm.scheduling import pricing
 from crm.scheduling.availability import (
 	ACTIVE_STATUSES,
@@ -36,13 +37,17 @@ from crm.scheduling.timeutils import (
 )
 from crm.utils import count_field
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 MAX_RANGE_DAYS = 92
 
 
-def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can change the scheduling setup"), frappe.PermissionError)
+def _check(capacita: str) -> None:
+	"""Services, prices and the studio's rules are the Manager's; rota, rooms and
+	equipment the front desk's too (doc 30)."""
+	verifica(
+		capacita,
+		messaggio=_("Only sales managers can change the scheduling setup"),
+		ambito_minimo=CENTRO,
+	)
 
 
 def _check_reader():
@@ -395,7 +400,7 @@ def get_scheduler_meta() -> dict:
 			"default_price_list": pricing.default_price_list(),
 			"default_duration": cint(config.default_duration) or 30,
 			"allow_override": cint(config.allow_override),
-			"can_override": bool(MANAGER_ROLES & set(frappe.get_roles())),
+			"can_override": puo("agenda.sovrapponi"),
 		},
 	}
 
@@ -763,7 +768,7 @@ def get_workload(start: str, end: str) -> dict:
 
 @frappe.whitelist()
 def list_services() -> list[dict]:
-	_check_manager()
+	_check("agenda.configura")
 	rows = frappe.get_all(
 		"CRM Service",
 		fields=[
@@ -800,7 +805,7 @@ def list_services() -> list[dict]:
 
 @frappe.whitelist()
 def get_service(name: str) -> dict:
-	_check_manager()
+	_check("agenda.configura")
 	doc = frappe.get_doc("CRM Service", name)
 	data = doc.as_dict()
 	data.update(online_rule_state(doc))
@@ -834,7 +839,7 @@ def online_rule_state(service) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def save_service(service: str | dict, name: str | None = None) -> dict:
-	_check_manager()
+	_check("agenda.configura")
 	payload = _loads(service)
 	values = {
 		key: payload.get(key)
@@ -958,13 +963,13 @@ def _staff_row(row: dict) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def delete_service(name: str) -> None:
-	_check_manager()
+	_check("agenda.configura")
 	frappe.delete_doc("CRM Service", name)
 
 
 @frappe.whitelist()
 def list_resources() -> list[dict]:
-	_check_manager()
+	_check("agenda.turni")
 	return frappe.get_all(
 		"CRM Resource",
 		fields=[
@@ -985,7 +990,7 @@ def list_resources() -> list[dict]:
 
 @frappe.whitelist()
 def get_resource(name: str) -> dict:
-	_check_manager()
+	_check("agenda.turni")
 	doc = frappe.get_doc("CRM Resource", name)
 	data = doc.as_dict()
 	data["availability"] = [
@@ -997,7 +1002,7 @@ def get_resource(name: str) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def save_resource(resource: str | dict, name: str | None = None) -> dict:
-	_check_manager()
+	_check("agenda.turni")
 	payload = _loads(resource)
 	values = {
 		"resource_name": (payload.get("resource_name") or "").strip(),
@@ -1036,13 +1041,13 @@ def save_resource(resource: str | dict, name: str | None = None) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def delete_resource(name: str) -> None:
-	_check_manager()
+	_check("agenda.turni")
 	frappe.delete_doc("CRM Resource", name)
 
 
 @frappe.whitelist()
 def list_price_lists() -> list[dict]:
-	_check_manager()
+	_check("agenda.configura")
 	rows = frappe.get_all(
 		"CRM Price List",
 		fields=["name", "price_list_name", "enabled", "is_default", "currency", "valid_from", "valid_upto"],
@@ -1063,7 +1068,7 @@ def list_price_lists() -> list[dict]:
 
 @frappe.whitelist(methods=["POST"])
 def save_price_list(price_list: str | dict, name: str | None = None) -> dict:
-	_check_manager()
+	_check("agenda.configura")
 	payload = _loads(price_list)
 	values = {
 		"price_list_name": (payload.get("price_list_name") or "").strip(),
@@ -1088,13 +1093,13 @@ def save_price_list(price_list: str | dict, name: str | None = None) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def delete_price_list(name: str) -> None:
-	_check_manager()
+	_check("agenda.configura")
 	frappe.delete_doc("CRM Price List", name)
 
 
 @frappe.whitelist()
 def list_prices(price_list: str, service: str | None = None) -> list[dict]:
-	_check_manager()
+	_check("agenda.configura")
 	filters = {"price_list": price_list}
 	if service:
 		filters["service"] = service
@@ -1126,7 +1131,7 @@ def list_prices(price_list: str, service: str | None = None) -> list[dict]:
 
 @frappe.whitelist(methods=["POST"])
 def save_price(price: str | dict, name: str | None = None) -> dict:
-	_check_manager()
+	_check("agenda.configura")
 	payload = _loads(price)
 	values = {
 		"price_list": payload.get("price_list"),
@@ -1159,13 +1164,13 @@ def save_price(price: str | dict, name: str | None = None) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def delete_price(name: str) -> None:
-	_check_manager()
+	_check("agenda.configura")
 	frappe.delete_doc("CRM Service Price", name)
 
 
 @frappe.whitelist()
 def list_schedules() -> list[dict]:
-	_check_manager()
+	_check("agenda.turni")
 	rows = frappe.get_all(
 		"CRM Staff Schedule",
 		fields=["name", "user", "enabled", "max_daily_appointments", "holiday_list"],
@@ -1188,7 +1193,7 @@ def list_schedules() -> list[dict]:
 
 @frappe.whitelist()
 def get_schedule(user: str = "") -> dict:
-	_check_manager()
+	_check("agenda.turni")
 	config = frappe.get_cached_doc("CRM Scheduling Settings")
 	studio = {
 		"default_availability": [
@@ -1245,7 +1250,7 @@ def get_schedule(user: str = "") -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def save_schedule(schedule: str | dict) -> dict:
-	_check_manager()
+	_check("agenda.turni")
 	payload = _loads(schedule)
 	user = payload.get("user")
 	if not user:
@@ -1301,7 +1306,7 @@ def save_schedule(schedule: str | dict) -> dict:
 
 @frappe.whitelist()
 def get_scheduling_settings() -> dict:
-	_check_manager()
+	_check("agenda.configura")
 	doc = frappe.get_doc("CRM Scheduling Settings")
 	data = doc.as_dict()
 	data["default_availability"] = [
@@ -1322,7 +1327,7 @@ def get_scheduling_settings() -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
-	_check_manager()
+	_check("agenda.configura")
 	payload = _loads(scheduling_settings)
 	doc = frappe.get_doc("CRM Scheduling Settings")
 	for key in (

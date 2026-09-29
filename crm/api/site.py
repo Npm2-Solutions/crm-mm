@@ -21,7 +21,6 @@ from frappe.utils import cint
 from crm.api.site_routes import normalise_route, route_conflict, slugify, unique_slug
 from crm.utils import count_field
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 PAGE_DOCTYPE = "Builder Page"
 SETTINGS = "CRM Website Settings"
 SITE = "CRM Web Site"
@@ -75,7 +74,9 @@ EDITABLE_SHOWCASE_FIELDS = (
 
 
 def is_manager() -> bool:
-	return bool(MANAGER_ROLES & set(frappe.get_roles()))
+	from crm.permissions.livelli import puo
+
+	return puo("sito.gestisci")
 
 
 def check_manager():

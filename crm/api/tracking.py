@@ -756,8 +756,9 @@ def _stats() -> dict:
 
 
 def _check_manager() -> None:
-	if not set(frappe.get_roles()) & {"System Manager", "Sales Manager"}:
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("tracciamento.gestisci", messaggio=_("Not permitted"))
 
 
 # ---------------------------------------------------------------------------

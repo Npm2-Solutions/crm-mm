@@ -37,12 +37,11 @@ SCOPES = ("https://www.googleapis.com/auth/calendar",)
 STATE_TTL = 900
 TIMEOUT = 30
 
-MANAGER_ROLES = {"System Manager", "Sales Manager", "Sales User"}
-
 
 def _check_user():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("You cannot connect a calendar"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("google_calendar.proprio", messaggio=_("You cannot connect a calendar"))
 
 
 def client_id() -> str:

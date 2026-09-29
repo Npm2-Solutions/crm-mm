@@ -15,13 +15,12 @@ from crm.api.doc import assigned_users_of
 from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
+from crm.permissions.livelli import puo
 from crm.utils import to_e164
-
-ALLOWED_WHATSAPP_ROLES = ["System Manager", "Sales Manager", "Sales User"]
 
 
 def validate_access(reference_doctype=None, reference_name=None, permtype="read"):
-	if not any(role in ALLOWED_WHATSAPP_ROLES for role in frappe.get_roles()):
+	if not puo("conversazioni.usa"):
 		frappe.throw(_("Only sales users can access WhatsApp features."), frappe.PermissionError)
 
 	if reference_doctype and reference_name:

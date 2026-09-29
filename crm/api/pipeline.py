@@ -21,8 +21,6 @@ from crm.fcrm.doctype.crm_pipeline.crm_pipeline import (
 )
 from crm.utils import count_field, is_frappe_version
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
-
 DEFAULT_PIPELINE_NAME = "Sales"
 
 DEFAULT_STAGES = [
@@ -52,8 +50,9 @@ def create_default_pipeline() -> str:
 
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can manage pipelines"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("pipeline.configura", messaggio=_("Only sales managers can manage pipelines"))
 
 
 def _parse(value, fallback):

@@ -22,6 +22,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt
 
+from crm.permissions.livelli import CENTRO, verifica
 from crm.scheduling import booking_rules as rules_mod
 from crm.scheduling import intervals as iv
 from crm.scheduling.availability import (
@@ -40,12 +41,9 @@ from crm.scheduling.availability import (
 from crm.scheduling.timeutils import UTC, parse_date, parse_utc, scheduling_tz, to_system_naive
 from crm.utils import count_field
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
-
-def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can change the booking setup"), frappe.PermissionError)
+def _check(capacita: str) -> None:
+	verifica(capacita, messaggio=_("Only sales managers can change the booking setup"), ambito_minimo=CENTRO)
 
 
 def _people(users) -> dict[str, dict]:
@@ -75,7 +73,7 @@ def _team() -> list[str]:
 @frappe.whitelist()
 def get_matrix() -> dict:
 	"""Services (by category) by professionals, with every cell's own settings."""
-	_check_manager()
+	_check("agenda.configura")
 	services = frappe.get_all(
 		"CRM Service",
 		fields=[
@@ -156,7 +154,7 @@ def _service_warnings(service, online_staff) -> list[str]:
 @frappe.whitelist(methods=["POST"])
 def set_cell(service: str, user: str, enabled: int | str = 1, values: str | dict | None = None) -> dict:
 	"""Switch one professional on/off for one service, or change their own settings."""
-	_check_manager()
+	_check("agenda.configura")
 	doc = frappe.get_doc("CRM Service", service)
 	values = frappe.parse_json(values) if isinstance(values, str) else (values or {})
 	existing = next((row for row in doc.staff if row.user == user), None)
@@ -175,7 +173,7 @@ def set_cell(service: str, user: str, enabled: int | str = 1, values: str | dict
 @frappe.whitelist(methods=["POST"])
 def set_row(service: str, users: str | list, enabled: int | str = 1) -> dict:
 	"""A whole row at once: these professionals deliver (or stop delivering) the service."""
-	_check_manager()
+	_check("agenda.configura")
 	users = frappe.parse_json(users) if isinstance(users, str) else users
 	doc = frappe.get_doc("CRM Service", service)
 	present = {row.user for row in doc.staff}
@@ -193,7 +191,7 @@ def set_row(service: str, users: str | list, enabled: int | str = 1) -> dict:
 @frappe.whitelist(methods=["POST"])
 def set_column(user: str, services: str | list, enabled: int | str = 1) -> dict:
 	"""A whole column: this professional delivers (or stops delivering) these services."""
-	_check_manager()
+	_check("agenda.configura")
 	services = frappe.parse_json(services) if isinstance(services, str) else services
 	errors = []
 	for service in services:
@@ -219,7 +217,7 @@ def set_column(user: str, services: str | list, enabled: int | str = 1) -> dict:
 @frappe.whitelist(methods=["POST"])
 def copy_column(source: str, target: str) -> dict:
 	"""Give ``target`` the same services (and own settings) as ``source``."""
-	_check_manager()
+	_check("agenda.configura")
 	for name in frappe.get_all(
 		"CRM Service Staff", filters={"user": source, "parenttype": "CRM Service"}, pluck="parent"
 	):
@@ -251,7 +249,7 @@ def copy_column(source: str, target: str) -> dict:
 @frappe.whitelist()
 def get_team_rota(start: str | None = None) -> dict:
 	"""Every professional's week (from ``start``'s Monday) with hours, time off and load."""
-	_check_manager()
+	_check("agenda.turni")
 	tz = scheduling_tz()
 	first = parse_date(start) if start else datetime.datetime.now(tz).date()
 	first -= datetime.timedelta(days=first.weekday())
@@ -349,7 +347,7 @@ def _reason(code: str, text: str, fix: str = "") -> dict:
 @frappe.whitelist()
 def explain_slot(service: str, start: str, online: int | str = 1) -> dict:
 	"""Why a service can (or cannot) be booked at ``start``, professional by professional."""
-	_check_manager()
+	_check("agenda.configura")
 	from crm.api.service_booking import _online_staff, _rules, _service_booked, limit_message
 
 	doc = frappe.get_cached_doc("CRM Service", service)
@@ -579,7 +577,7 @@ def _why_not_online(is_open: bool, online: bool, delivers: int, bookable: list) 
 def get_online_setup() -> dict:
 	"""Everything that decides whether a client can book someone, together:
 	the page open, which services are online, who takes each of them online."""
-	_check_manager()
+	_check("prenotazione_online.configura")
 	is_open = bool(cint(settings().get("online_booking_enabled")))
 	services = frappe.get_all(
 		"CRM Service",
@@ -635,7 +633,7 @@ def get_online_setup() -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def set_booking_open(enabled: int | str) -> dict:
-	_check_manager()
+	_check("prenotazione_online.configura")
 	frappe.db.set_single_value("CRM Scheduling Settings", "online_booking_enabled", cint(enabled))
 	if hasattr(frappe.local, "crm_scheduling_settings"):
 		del frappe.local.crm_scheduling_settings
@@ -645,7 +643,7 @@ def set_booking_open(enabled: int | str) -> dict:
 @frappe.whitelist(methods=["POST"])
 def set_person_online(user: str, online: int | str) -> dict:
 	"""Clients can (or cannot) book this professional at all."""
-	_check_manager()
+	_check("prenotazione_online.configura")
 	name = frappe.db.get_value("CRM Staff Schedule", {"user": user})
 	if name:
 		frappe.db.set_value("CRM Staff Schedule", name, "bookable_online", cint(online))
@@ -661,7 +659,7 @@ def set_person_online(user: str, online: int | str) -> dict:
 @frappe.whitelist(methods=["POST"])
 def set_person_profile(user: str, public_title: str | None = None, public_bio: str | None = None) -> dict:
 	"""What the booking page says about a professional."""
-	_check_manager()
+	_check("prenotazione_online.configura")
 	values = {
 		"public_title": (public_title or "").strip() or None,
 		"public_bio": (public_bio or "").strip() or None,
@@ -677,7 +675,7 @@ def set_person_profile(user: str, public_title: str | None = None, public_bio: s
 
 @frappe.whitelist(methods=["POST"])
 def set_service_online(service: str, online: int | str) -> dict:
-	_check_manager()
+	_check("prenotazione_online.configura")
 	doc = frappe.get_doc("CRM Service", service)
 	doc.bookable_online = cint(online)
 	doc.save()
@@ -689,7 +687,7 @@ def set_person_service_online(user: str, service: str, online: int | str) -> dic
 	"""Clients can book this professional for this service. Switching it on adds
 	them to the service when they do not deliver it yet; switching it off keeps
 	them on it for bookings made by the practice."""
-	_check_manager()
+	_check("prenotazione_online.configura")
 	doc = frappe.get_doc("CRM Service", service)
 	row = next((r for r in doc.staff if r.user == user), None)
 	if row:
@@ -711,7 +709,7 @@ def set_person_service_online(user: str, service: str, online: int | str) -> dic
 def get_inheritance_summary() -> dict:
 	"""For each inheritable rule: how many online services follow the default,
 	and which ones set their own value — shown next to the default before saving."""
-	_check_manager()
+	_check("prenotazione_online.configura")
 	summary = {key: {"inherit": 0, "own": []} for key in rules_mod.INHERITED}
 	for name in frappe.get_all("CRM Service", filters={"bookable_online": 1}, pluck="name"):
 		doc = frappe.get_cached_doc("CRM Service", name)

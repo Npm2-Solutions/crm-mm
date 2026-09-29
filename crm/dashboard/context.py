@@ -33,12 +33,12 @@ from frappe.utils import getdate, now_datetime, nowdate
 
 from crm.dashboard import periods
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
-
 
 def is_manager(user: str | None = None) -> bool:
-	user = user or frappe.session.user
-	return user == "Administrator" or bool(MANAGER_ROLES & set(frappe.get_roles(user)))
+	"""Who shares dashboards and sees the centre's numbers: the Manager, and the agency."""
+	from crm.permissions.livelli import puo
+
+	return puo("dashboard.condivise", user or frappe.session.user)
 
 
 def team_of(user: str) -> list[str] | None:

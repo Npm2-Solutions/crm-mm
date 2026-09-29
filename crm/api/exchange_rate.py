@@ -140,12 +140,9 @@ def _raise_exchange_rate_error(from_currency: str, to_currency: str, date: str, 
 	)
 
 	if api_used == "frankfurter":
-		user = frappe.session.user
-		is_manager = (
-			"System Manager" in frappe.get_roles(user)
-			or "Sales Manager" in frappe.get_roles(user)
-			or user == "Administrator"
-		)
+		from crm.permissions.livelli import puo
+
+		is_manager = puo("impostazioni.generali")
 		if not is_manager:
 			frappe.throw(
 				_(

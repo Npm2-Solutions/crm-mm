@@ -262,9 +262,9 @@ def _seed_hidden_fields(document_type: str) -> list[dict]:
 def _check_manager():
 	"""CRM forms are managed by CRM managers, not Website Managers. Gate here and
 	then write the Web Form with ignore_permissions (the role mismatch, in code)."""
-	roles = set(frappe.get_roles())
-	if not roles & {"System Manager", "Sales Manager"}:
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("moduli_lead.gestisci", messaggio=_("Not permitted"))
 
 
 @frappe.whitelist()

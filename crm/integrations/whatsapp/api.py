@@ -44,12 +44,11 @@ from crm.utils import check_system_manager, is_system_manager
 
 RELAY_TIMEOUT = 15
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
-
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can manage WhatsApp"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("canali.configura", messaggio=_("Only sales managers can manage WhatsApp"))
 
 
 def whatsapp_installed() -> bool:

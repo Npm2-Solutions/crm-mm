@@ -478,12 +478,11 @@ def _ics_attachment(cal, booking) -> dict:
 
 # --- Settings-modal administration (manager only) --------------------------
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
-
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can manage booking calendars"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("prenotazione_online.configura", messaggio=_("Only sales managers can manage booking calendars"))
 
 
 @frappe.whitelist()

@@ -138,11 +138,14 @@ def missing_scopes() -> list[str]:
 	return sorted(set(scopes()) - granted)
 
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
+def _is_manager() -> bool:
+	from crm.permissions.livelli import puo
+
+	return puo("meta.gestisci")
 
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
+	if not _is_manager():
 		frappe.throw(_("Only sales managers can manage the Meta integration"), frappe.PermissionError)
 
 

@@ -21,14 +21,18 @@ ALLOWED_EMBEDDING_DOMAIN_RE = re.compile(
 )
 
 
+def _puo(capacita: str) -> bool:
+	from crm.permissions.livelli import puo
+
+	return puo(capacita)
+
+
 def get_context(context):
 	route = resolve_route()
 	filters = {"route": route, "crm_published": 1, "doc_type": ["in", ALLOWED_DOCTYPES]}
 	name = frappe.db.get_value("Web Form", filters)
 	# let CRM managers preview an unpublished (draft) form; guests only see published
-	is_author = frappe.session.user != "Guest" and bool(
-		set(frappe.get_roles()) & {"System Manager", "Sales Manager"}
-	)
+	is_author = frappe.session.user != "Guest" and _puo("moduli_lead.gestisci")
 	if not name and is_author:
 		name = frappe.db.get_value("Web Form", {"route": route, "doc_type": ["in", ALLOWED_DOCTYPES]})
 	if not name:
