@@ -424,6 +424,35 @@ Fatta il 29/09/2026 (fase 1), in `crm/clinica/pipeline.py`:
   all'accensione, non chiudono deal e non fanno partire automazioni: non sono una
   notizia.
 
+### La seconda cucitura: la giornata della segreteria
+
+Fatta il 29/09/2026 (fase 1), in `crm/scheduling/esiti.py`, `crm/api/oggi.py` e nella
+pagina **Oggi** (`/crm/oggi`, per chi ha `agenda.presenze`):
+
+- **L'accettazione.** Al banco si dice che qualcuno è arrivato: il partecipante
+  passa a "Arrived" e la sala d'attesa conta da quel momento. Con la clinica accesa
+  è la regola 2 per diventare paziente, con l'ora dell'arrivo; il recupero dei dati
+  di prima la legge anche lui.
+- **L'appuntamento si chiude da solo** quando ognuno dei suoi partecipanti è venuto
+  o no: Completed, o No Show se non è venuto nessuno. Lo dicono la segreteria o il
+  medico, la visita scritta per quell'appuntamento e la fattura emessa da lui (solo
+  a appuntamento iniziato: una fattura fatta prima non dice niente). Un esito si
+  può disfare, e l'appuntamento si riapre.
+- **Chi lo dice**: `agenda.presenze` del doc 30, la segreteria e il manager per
+  tutti gli appuntamenti, l'operatore per quelli che lavora.
+- **Fine giornata.** Finito l'ultimo appuntamento, chi era in sala d'attesa e
+  nessuno ha segnato conta come venuto, e la segreteria riceve una notifica, una
+  volta al giorno: "N appuntamenti di oggi non hanno un esito: sono venuti?". La
+  notifica apre la pagina Oggi.
+- **La pagina Oggi**: quanti attesi, in sala, venuti e non venuti; la sala
+  d'attesa con i minuti; gli appuntamenti del giorno, con "accetta", "è venuto",
+  "non è venuto" e "annulla"; gli ultimi sette giorni rimasti senza esito; e
+  quanti appuntamenti sono ancora da fatturare, per chi fattura. Il giorno è
+  quello del centro, non del browser. Sul telefono nome e pulsanti stanno su due
+  righe.
+
+Resta alla fase 2 "i moduli da firmare oggi", che aspetta la firma.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da

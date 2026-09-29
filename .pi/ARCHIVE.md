@@ -1441,3 +1441,21 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | "Became Patient" registrato dalla clinica (`registra_evento`), offerto solo con la clinica accesa | Il CRM non importa la clinica; le opzioni del Select lo accettano ovunque, ma il costruttore lo offre solo dove ha senso |
 | Il costo di un nuovo paziente conta chi è arrivato dagli annunci (`facebook_ad_id`) | La spesa divisa per tutti i pazienti, anche quelli arrivati dal passaparola, lo farebbe sembrare più basso |
 | La prenotazione sposta solo le richieste più indietro | Una richiesta che qualcuno ha già portato avanti a mano non torna indietro |
+
+## Fase 1, la seconda cucitura: la giornata della segreteria
+
+> **Completato** (29/09/2026). L'accettazione con la sala d'attesa, l'appuntamento che
+> si chiude da solo, il "sono venuti?" di fine giornata e la pagina Oggi.
+> `docs/gestionale-medico/README.md`, "La seconda cucitura".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| "Arrived" è uno stato del partecipante, con l'ora | La sala d'attesa è di una persona, non dell'appuntamento: in un gruppo arrivano in momenti diversi |
+| L'appuntamento si chiude dai suoi partecipanti (`close_from_attendance`) | La visita, l'accettazione e la fattura chiudono l'appuntamento senza che qualcuno se ne ricordi |
+| Una fattura fatta prima dell'appuntamento non dice che la persona è venuta | Si fattura anche in anticipo: l'esito sarebbe falso |
+| Fine giornata ogni ora, dopo l'ultimo appuntamento, una volta al giorno | Gli orari dei centri cambiano: un'ora fissa arriverebbe durante le visite o troppo tardi |
+| Chi è in sala d'attesa e nessuno ha segnato conta come venuto | È arrivato: lasciarlo "in attesa" per sempre non dice il vero a nessuno |
+| La giornata è quella del server | Un browser in un altro fuso mostrerebbe gli arrivi di domani |
+| La notifica apre la pagina Oggi (tipo "Agenda") | Le notifiche sapevano aprire solo persone e trattative |

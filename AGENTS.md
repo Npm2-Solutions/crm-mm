@@ -137,6 +137,13 @@ of their own, linked to the parent, never the parent's record.
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 
+### The desk's day
+| File | Role |
+|---|---|
+| `crm/scheduling/esiti.py` | How an appointment went: check-in (`Arrived`, `arrived_at`), who may mark (`agenda.presenze`), visit and invoice close it, the end-of-day "did they come?" |
+| `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The Today page: arrivals, waiting room, days left open, what is left to invoice |
+| `frontend/src/utils/oggi.js` | Pure: waiting time, next outcomes, summary, days — tested |
+
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
 (`tests/test_confine.py`); it hooks on through doc_events, `crm_timeline_gatherers`
 and the registries (`engine.registra_evento`, dashboard features and widgets).
