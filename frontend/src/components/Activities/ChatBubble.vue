@@ -37,7 +37,8 @@
       met and the shadow stopping at the join.
     -->
     <div
-      class="bubble-lift relative min-w-0 rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
+      tabindex="-1"
+      class="bubble-lift relative min-w-0 rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9 outline-none"
       :class="[
         mine
           ? 'bg-surface-blue-3'
@@ -144,11 +145,12 @@
       <!--
         What can be done to it — answer, react — beside the bubble on its outer
         side, and only when the pointer is on it: a toolbar on every message is
-        a toolbar nobody reads past.
+        a toolbar nobody reads past. Where there is no pointer, a tap on the
+        bubble shows it: the bubble takes the focus, and a finger cannot hover.
       -->
       <div
         v-if="$slots.actions"
-        class="absolute top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/bubble:opacity-100"
+        class="absolute top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/bubble:opacity-100 group-hover/bubble:opacity-100"
         :class="mine ? 'right-full mr-1.5' : 'left-full ml-1.5'"
       >
         <slot name="actions" />

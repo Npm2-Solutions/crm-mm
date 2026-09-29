@@ -4,8 +4,10 @@
     :class="tall ? 'h-9' : 'h-7'"
   >
     <div class="h-full w-px bg-[var(--outline-gray-3)]" />
+    <!-- shown on hover with a mouse; a touch screen has no hover, so there it
+         is always shown, with a ring round it a finger can find -->
     <button
-      class="absolute grid size-5 place-items-center rounded-full border border-outline-gray-2 bg-surface-elevation-2 text-ink-gray-6 shadow-sm dark:bg-surface-gray-2 transition group-hover/connector:opacity-100 hover:bg-surface-gray-2 focus:opacity-100"
+      class="touch-target absolute grid size-5 place-items-center rounded-full border border-outline-gray-2 bg-surface-elevation-2 text-ink-gray-6 shadow-sm dark:bg-surface-gray-2 transition group-hover/connector:opacity-100 hover:bg-surface-gray-2 focus:opacity-100 [@media(hover:none)]:opacity-100"
       :class="always ? 'opacity-100' : 'opacity-0'"
       :title="__('Add a step here')"
       @click.stop="$emit('insert')"

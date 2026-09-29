@@ -10,7 +10,7 @@
           v-model="draft.title"
           :placeholder="__('Untitled automation')"
           :size="Math.max((draft.title || __('Untitled automation')).length, 8)"
-          class="min-w-0 max-w-64 border-0 bg-transparent p-0 text-base font-medium text-ink-gray-8 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
+          class="h-8 min-w-0 max-w-64 border-0 bg-transparent p-0 text-base font-medium text-ink-gray-8 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
         />
         <!-- on a phone the «Live» switch right underneath already says it -->
         <Badge

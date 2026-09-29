@@ -31,8 +31,10 @@
           @update:open="(o) => (showOptions = o)"
           @update:modelValue="onSelect"
         >
+          <!-- no vertical padding: the input fills the box, so a tap
+               anywhere on it opens the keyboard, not just on its middle 18px -->
           <ComboboxAnchor
-            class="flex h-7 max-w-full w-auto items-center gap-2 rounded px-2 py-1 border border-transparent"
+            class="flex h-7 max-w-full w-auto items-center gap-2 rounded px-2 border border-transparent"
             :class="[
               variant == 'ghost'
                 ? 'bg-transparent hover:bg-transparent'

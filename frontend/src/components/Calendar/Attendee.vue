@@ -9,8 +9,10 @@
         @update:open="(o) => (showOptions = o)"
         @update:modelValue="onSelect"
       >
+        <!-- no vertical padding: the input fills the box, so a tap anywhere
+             on it opens the keyboard -->
         <ComboboxAnchor
-          class="flex w-full text-base items-center gap-1 rounded border border-outline-gray-2 bg-surface-base hover:border-outline-gray-3 focus:border-outline-gray-4 focus:ring-0 focus-visible:ring-2 focus-visible:ring-outline-gray-3 px-2 py-1"
+          class="flex w-full text-base items-center gap-1 rounded border border-outline-gray-2 bg-surface-base hover:border-outline-gray-3 focus:border-outline-gray-4 focus:ring-0 focus-visible:ring-2 focus-visible:ring-outline-gray-3 px-2"
           :class="[size === 'sm' ? 'h-7' : 'h-8 ', inputClass]"
           @click="showOptions = true"
         >

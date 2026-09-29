@@ -37,9 +37,11 @@
           whatsapp.reaction ? 'mb-4' : '',
         ]"
       >
+        <!-- focusable, so a tap shows what can be done to it (see below) -->
         <div
           :id="whatsapp.name"
-          class="wa-bubble bubble-lift relative min-w-0 max-w-full rounded-lg px-2 pb-1 pt-1.5 text-base"
+          tabindex="-1"
+          class="wa-bubble bubble-lift relative min-w-0 max-w-full rounded-lg px-2 pb-1 pt-1.5 text-base outline-none"
           :class="[
             whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in',
             tailOf(index)
@@ -148,9 +150,15 @@
             {{ whatsapp.reaction }}
           </span>
         </div>
+        <!--
+          Reply and react show with the pointer on the message, and — where
+          there is no pointer, on a phone — once the message is tapped: they
+          were hover-only, and a finger cannot hover, so nobody on a phone
+          could answer a message by quoting it.
+        -->
         <MessageActions
           v-if="!hasFailed(whatsapp)"
-          class="opacity-0 transition-opacity focus-within:opacity-100 group-hover/bubble:opacity-100"
+          class="opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/bubble:opacity-100 group-hover/bubble:opacity-100"
           @reply="answer(whatsapp)"
           @react="(emoji) => react(whatsapp, emoji)"
         />

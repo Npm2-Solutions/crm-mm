@@ -95,7 +95,8 @@
           @click="setZoom(zoom - 0.1)"
         />
         <button
-          class="min-w-12 rounded px-1 text-xs text-ink-gray-6 hover:bg-surface-gray-2"
+          class="h-7 min-w-12 rounded px-1 text-xs text-ink-gray-6 hover:bg-surface-gray-2"
+          :aria-label="__('Reset zoom')"
           @click="setZoom(1)"
         >
           {{ Math.round(zoom * 100) }}%
