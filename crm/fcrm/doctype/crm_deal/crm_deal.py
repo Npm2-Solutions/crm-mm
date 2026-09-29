@@ -695,6 +695,10 @@ def create_contact(doc):
 
 @frappe.whitelist()
 def create_deal(doc: dict):
+	# first, before anything is made: the person and the organization below are
+	# inserted with ignore_permissions, and so is the deal, on the strength of this
+	frappe.has_permission("CRM Deal", "create", throw=True)
+
 	deal = frappe.new_doc("CRM Deal")
 
 	contact = doc.get("contact")
