@@ -14,7 +14,9 @@ SMS, every visitor's journey (doc 30, "Come stanno le cose oggi"). Now:
   about nobody is everybody's who converses, as a call is;
 - **the tracking** about the people one sees; the anonymous traffic to whoever
   handles tracking;
-- **the old booking pages' bookings** about the people one sees, or taken by them.
+- **the old booking pages' bookings** about the people one sees, or taken by them;
+- **the emails** about a person or a deal to whoever converses (PR 4), and **the
+  address book** not at all to whoever sees people masked.
 
 The bricks are `org_hierarchy`'s: one condition for the list and for the record.
 Somebody outside the levels, on the Desk with roles only, keeps the rules of their roles.
@@ -121,7 +123,7 @@ def _message_conditions(user: str | None, doctype: str):
 	if not livelli.nel_crm(user):
 		return None
 	DT = frappe.qb.DocType(doctype)
-	if not livelli.puo("conversazioni.usa", user):
+	if not livelli.puo("conversazioni.vedi", user):
 		return DT.name.isnull()
 	if oh.sees_everyone(user):
 		return None
@@ -210,3 +212,48 @@ def get_booking_permission_query_conditions(user: str | None = None) -> str:
 
 def has_booking_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
 	return _riga_visibile(doc, "CRM Booking", _booking_conditions(user))
+
+
+# ---------------------------------------------------------------- the emails
+
+
+def _email_conditions(user: str | None):
+	"""Emails about a person or a deal are conversations: whoever does not converse
+	(Marketing, Accounting, the medical director) does not read them. The rest of the
+	rule is Frappe's: an email follows the record it is about."""
+	user = user or frappe.session.user
+	if not livelli.nel_crm(user) or livelli.puo("conversazioni.vedi", user):
+		return None
+	C = frappe.qb.DocType("Communication")
+	return IfNull(C.reference_doctype, "").notin(oh._ABOUT)
+
+
+def get_communication_permission_query_conditions(user: str | None = None) -> str:
+	return _sql(_email_conditions(user))
+
+
+def has_communication_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	user = user or frappe.session.user
+	if not livelli.nel_crm(user) or livelli.puo("conversazioni.vedi", user):
+		return True
+	return doc.get("reference_doctype") not in oh._ABOUT
+
+
+# ------------------------------------------------------------- the address book
+
+
+def _nasconde_i_recapiti(user: str) -> bool:
+	"""Who sees people with email and phone masked (Marketing). An address book entry
+	is little else than those: they do not read it at all."""
+	return livelli.nel_crm(user) and livelli.ambito("persone.vedi", user) == livelli.MASCHERATO
+
+
+def get_contact_permission_query_conditions(user: str | None = None) -> str:
+	user = user or frappe.session.user
+	if not _nasconde_i_recapiti(user):
+		return ""
+	return _sql(frappe.qb.DocType("Contact").name.isnull())
+
+
+def has_contact_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	return not _nasconde_i_recapiti(user or frappe.session.user)

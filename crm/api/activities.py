@@ -22,6 +22,52 @@ def get_activities(name: str):
 		frappe.throw(_("Document not found"), frappe.DoesNotExistError)
 
 
+#: What each kind of row asks for besides seeing the record (doc 30): emails are
+#: conversations, notes and the team's comments are internal notes, appointments
+#: are the agenda. However a row is gathered, whoever lacks its capability does not
+#: get it.
+_RIGHE_CAPACITA = {
+	"communication": "conversazioni.vedi",
+	"comment": "note.vedi",
+	"note": "note.vedi",
+	"appointment": "agenda.vedi",
+}
+
+
+def per_il_livello(doctype: str, activities, calls, notes, tasks, attachments):
+	"""The history as the session's level may read it.
+
+	Rows of a kind the level lacks go (Marketing reads people, not their emails,
+	calls or notes), and a change to a masked field keeps its values masked.
+	"""
+	from frappe.model.utils.mask import mask_field_value
+
+	from crm.permissions import livelli
+
+	user = frappe.session.user
+	if livelli.nel_crm(user):
+		negate = {tipo for tipo, capacita in _RIGHE_CAPACITA.items() if not livelli.puo(capacita, user)}
+		activities = [a for a in activities if a.get("activity_type") not in negate]
+		if not livelli.puo("telefono.registro", user):
+			calls = []
+		if not livelli.puo("note.vedi", user):
+			notes = []
+
+	mascherati = {df.fieldname: df for df in frappe.get_meta(doctype).get_masked_fields()}
+	if mascherati:
+		# a change grouped with others sits in `other_versions` of the first one
+		for activity in activities:
+			for versione in (activity, *(activity.get("other_versions") or ())):
+				data = versione.get("data")
+				df = mascherati.get(data.get("field")) if isinstance(data, dict) else None
+				if not df:
+					continue
+				for chiave in ("value", "old_value"):
+					if data.get(chiave):
+						data[chiave] = mask_field_value(df, data[chiave])
+	return activities, calls, notes, tasks, attachments
+
+
 def communication_activity(communication, is_lead: bool) -> dict:
 	return {
 		"activity_type": "communication",
@@ -180,7 +226,7 @@ def get_deal_activities(name: str):
 	activities.sort(key=lambda x: x["creation"], reverse=True)
 	activities = handle_multiple_versions(activities)
 
-	return activities, calls, notes, tasks, attachments
+	return per_il_livello("CRM Deal", activities, calls, notes, tasks, attachments)
 
 
 def get_lead_activities(name: str):
@@ -308,7 +354,7 @@ def get_lead_activities(name: str):
 	activities.sort(key=lambda x: x["creation"], reverse=True)
 	activities = handle_multiple_versions(activities)
 
-	return activities, calls, notes, tasks, attachments
+	return per_il_livello("CRM Lead", activities, calls, notes, tasks, attachments)
 
 
 def get_conversation_on_deals(lead: str):

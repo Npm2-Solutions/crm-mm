@@ -29,12 +29,15 @@ def _get_recording_credentials(telephony_medium: str) -> tuple | None:
 
 @frappe.whitelist()
 def is_call_integration_enabled():
+	from crm.permissions import livelli
 	from crm.telephony import providers
 
 	descriptors = [provider.as_dict() for provider in providers.all_providers()]
+	# the call buttons are for who calls: Marketing and Accounting do not (doc 30)
+	chiama = not livelli.nel_crm() or livelli.puo("telefono.chiama")
 	return {
 		# name -> bool, the shape the call button has always read
-		"integrations": {row["name"]: row["enabled"] for row in descriptors},
+		"integrations": {row["name"]: bool(row["enabled"] and chiama) for row in descriptors},
 		# the full list, so the medium picker learns about a new carrier from the
 		# registry instead of from a hardcoded array in the frontend
 		"providers": descriptors,
