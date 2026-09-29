@@ -5,8 +5,12 @@
 
 The avatar menu is opened by everyone, System Managers included, and a Sales
 Manager can edit it. These pin the two rules — the icon is a Feather name, the
-route a path or an http(s) link — on both ways a row can be saved.
+route a path or an http(s) link — on both ways a row can be saved, and the patch
+that cleans rows stored before the rules existed.
 """
+
+import contextlib
+import io
 
 import frappe
 import frappe.client
@@ -14,6 +18,7 @@ from frappe.tests import IntegrationTestCase, UnitTestCase
 
 from crm.fcrm.doctype.crm_dropdown_item.crm_dropdown_item import is_allowed_icon, is_safe_route
 from crm.fcrm.doctype.fcrm_settings.fcrm_settings import sync_table
+from crm.patches.v1_0 import clean_unsafe_dropdown_items
 
 MARKUP_ICON = "<svg><image href=x onerror=alert(document.cookie)>"
 SCRIPT_ROUTE = "javascript:alert(document.cookie)"
@@ -168,3 +173,35 @@ class TestCRMDropdownItem(IntegrationTestCase):
 				self.assertTrue(is_safe_route(item.get("route")) or item.get("type") == "Separator")
 		# what every migrate runs: it saves the settings
 		sync_table("dropdown_items", "standard_dropdown_items")
+
+	def test_patch_cleans_rows_stored_before_the_rules(self):
+		frappe.set_user("Administrator")
+		settings = frappe.get_doc("FCRM Settings")
+		for label in ("Markup", "Script", "Fine"):
+			settings.append("dropdown_items", {"label": label, "type": "Route", "route": "/crm"})
+		settings.append("dropdown_items", {"type": "Separator"})
+		settings.save()
+		markup, script, fine, separator = settings.dropdown_items[-4:]
+
+		# written straight to the table, the way they got in before
+		frappe.db.set_value("CRM Dropdown Item", markup.name, "icon", MARKUP_ICON)
+		frappe.db.set_value("CRM Dropdown Item", script.name, "route", SCRIPT_ROUTE)
+		frappe.db.set_value("CRM Dropdown Item", fine.name, {"icon": "book", "route": "https://frappe.io"})
+		frappe.db.set_value("CRM Dropdown Item", separator.name, "route", SCRIPT_ROUTE)
+
+		with contextlib.redirect_stdout(io.StringIO()) as printed:
+			clean_unsafe_dropdown_items.execute()
+
+		fields = ["icon", "route", "hidden"]
+		self.assertEqual(frappe.db.get_value("CRM Dropdown Item", markup.name, fields), (None, "/crm", 0))
+		self.assertEqual(frappe.db.get_value("CRM Dropdown Item", script.name, fields), (None, None, 1))
+		self.assertEqual(
+			frappe.db.get_value("CRM Dropdown Item", fine.name, fields), ("book", "https://frappe.io", 0)
+		)
+		# a separator never opens its route: cleared, but left where it divides the menu
+		self.assertEqual(frappe.db.get_value("CRM Dropdown Item", separator.name, fields), (None, None, 0))
+		self.assertIn(f"row #{markup.idx}: removed icon {MARKUP_ICON!r}", printed.getvalue())
+		self.assertIn(f"row #{script.idx}: removed route {SCRIPT_ROUTE!r}", printed.getvalue())
+
+		# and the settings save again
+		frappe.get_doc("FCRM Settings").save()
