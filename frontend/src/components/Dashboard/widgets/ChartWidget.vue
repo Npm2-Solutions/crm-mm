@@ -13,7 +13,7 @@
       :class="stacked ? 'flex-col' : 'items-center'"
     >
       <div class="relative min-h-0 min-w-0 flex-1 self-stretch">
-        <ECharts :options="options" class="h-full w-full" />
+        <EChart :options="options" class="h-full w-full" />
         <div
           class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
         >
@@ -54,7 +54,7 @@
     </div>
 
     <div v-else class="h-full w-full px-3 pb-2">
-      <ECharts :options="options" class="h-full w-full" />
+      <EChart :options="options" class="h-full w-full" />
     </div>
   </div>
 </template>
@@ -67,8 +67,8 @@ import {
   donutOptions,
   seriesColors,
 } from '@/utils/dashboardCharts'
+import EChart from '@/components/Dashboard/EChart.vue'
 import { useElementSize } from '@vueuse/core'
-import { ECharts } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
 const props = defineProps({
