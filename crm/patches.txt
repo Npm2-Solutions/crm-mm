@@ -70,4 +70,4 @@ crm.patches.v1_0.billing_details_from_past_invoices
 crm.patches.v1_0.guardians_become_linked_people
 crm.patches.v1_0.contact_details_for_users_outside_levels
 crm.patches.v1_0.last_visit_from_appointments
-crm.patches.v1_0.medical_centre_where_the_clinic_is_on
+crm.clinica.patches.medical_centre_where_the_clinic_is_on
