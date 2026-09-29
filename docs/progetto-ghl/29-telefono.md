@@ -11,7 +11,7 @@ Ma nessuno l'aveva mai passato schermata per schermata con un telefono in mano,
 ed è lì che vengono fuori le cose che su un monitor non si vedono:
 
 - **Cose che esistono solo al passaggio del mouse.** Su un telefono il mouse
-  non c'è: le azioni su un messaggio (rispondere, reagire, copiare), il menu
+  non c'è: le azioni su un messaggio (rispondere citandolo, reagire), il menu
   delle colonne del kanban e il «+» fra i passi di un'automazione non
   comparivano mai.
 - **Titoli ad altezza fissa.** In quasi quaranta pagine delle impostazioni il
