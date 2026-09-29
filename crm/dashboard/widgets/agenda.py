@@ -87,6 +87,27 @@ def today_bounds(ctx: Context) -> tuple[datetime.datetime, datetime.datetime]:
 
 
 @widget(
+	"recall_due",
+	category="agenda",
+	kind="number",
+	title=_lt("To recall"),
+	description=_lt("People whose last visit was over a year ago and who agreed to marketing"),
+	live=True,
+	requires=AGENDA,
+	keywords=("recall", "follow-up", "patients", "last visit"),
+)
+def recall_due(ctx: Context):
+	"""The second seam (docs/gestionale-medico): who to invite back, chosen by when
+	they last came and by their yes, never by what they came for."""
+	Lead = DocType("CRM Lead")
+	soglia = ctx.today - datetime.timedelta(days=365)
+	value = total(
+		Lead, Lead.last_visit.isnotnull(), Lead.last_visit <= soglia, Lead.marketing_consent == "Given"
+	)
+	return charts.number(value, route={"name": "Leads"})
+
+
+@widget(
 	"appointments_today",
 	category="agenda",
 	kind="number",

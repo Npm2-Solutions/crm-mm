@@ -397,10 +397,13 @@ def create_template_dashboards(only: tuple[str, ...] | None = None) -> list[str]
 	ensure_manager_dashboard()
 	have = set(frappe.get_all(DOCTYPE, filters={"private": 0}, pluck="template"))
 	made = []
-	for template in templates.TEMPLATES:
+	for template in templates.tutti():
 		if template.id in have or template.id == "overview":
 			continue
 		if only is not None and template.id not in only:
+			continue
+		if features.missing(template.requires):
+			# a module the site does not use: it comes when the module is switched on
 			continue
 		doc = frappe.new_doc(DOCTYPE)
 		doc.template = template.id

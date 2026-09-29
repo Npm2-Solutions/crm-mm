@@ -60,6 +60,9 @@ class Template:
 	only_mine: bool = False
 	managers_only: bool = False
 	sequence: int = 100
+	#: Features the site must use for the template to become a dashboard on its own
+	#: (the clinic's): offered all the same, like any template the site cannot answer.
+	requires: tuple[str, ...] = ()
 
 	def widget_ids(self) -> list[str]:
 		return [name for section in self.sections for line in section.lines for name in line.widgets]
@@ -379,6 +382,20 @@ TEMPLATES: tuple[Template, ...] = (
 )
 
 BY_ID = {template.id: template for template in TEMPLATES}
+
+#: Templates another module adds (the clinic's centre dashboard): the CRM names none.
+_AGGIUNTI: list[Template] = []
+
+
+def registra(template: Template) -> None:
+	if template.id not in BY_ID:
+		_AGGIUNTI.append(template)
+		BY_ID[template.id] = template
+
+
+def tutti() -> tuple[Template, ...]:
+	"""The CRM's templates, and those the modules added."""
+	return TEMPLATES + tuple(_AGGIUNTI)
 
 
 def get(template_id: str | None) -> Template | None:
