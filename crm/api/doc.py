@@ -20,6 +20,20 @@ COUNT_NAME = (
 	else "count(name) as total_count"
 )
 
+MANAGER_ROLES = {"System Manager", "Sales Manager"}
+
+# The list pages that show quick filters (ViewControls.vue). Changing them writes a
+# Property Setter on the doctype, so the endpoint reaches these and nothing else.
+QUICK_FILTER_DOCTYPES = (
+	"CRM Lead",
+	"CRM Deal",
+	"Contact",
+	"CRM Organization",
+	"CRM Task",
+	"CRM Call Log",
+	"FCRM Note",
+)
+
 
 @frappe.whitelist()
 def sort_options(doctype: str):
@@ -203,6 +217,11 @@ def get_quick_filters(doctype: str, cached: bool = True):
 
 @frappe.whitelist()
 def update_quick_filters(quick_filters: str, old_filters: str, doctype: str):
+	if not MANAGER_ROLES & set(frappe.get_roles()):
+		frappe.throw(_("Only sales managers can change the quick filters"), frappe.PermissionError)
+	if doctype not in QUICK_FILTER_DOCTYPES:
+		frappe.throw(_("Quick filters can't be changed on {0}").format(doctype), frappe.PermissionError)
+
 	quick_filters = json.loads(quick_filters)
 	old_filters = json.loads(old_filters)
 
