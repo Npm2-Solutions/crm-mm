@@ -239,10 +239,12 @@
               <div class="mb-1.5 text-xs text-ink-gray-5">
                 {{ fieldLabel(field) }}
               </div>
-              <Link
-                doctype="Email Account"
-                :modelValue="form.inbound_email_account"
-                @update:modelValue="(v) => (form.inbound_email_account = v)"
+              <!-- Email Account is System Manager's in Frappe: the names
+                   come from the CRM, which gives them to whoever works in it -->
+              <FormControl
+                v-model="form.inbound_email_account"
+                type="select"
+                :options="inboxOptions"
               />
             </div>
             <FormControl
@@ -538,6 +540,20 @@ const platforms = createResource({
   cache: 'crm-booking-platforms',
   auto: true,
 })
+// the inboxes a platform's booking emails can arrive in
+const inboxes = createResource({
+  url: 'crm.api.settings.list_email_accounts',
+  params: { incoming: 1 },
+  cache: 'crm-incoming-email-accounts',
+  auto: true,
+})
+const inboxOptions = computed(() => [
+  { label: __('Choose an inbox'), value: '' },
+  ...(inboxes.data || []).map((a) => ({
+    label: a.email_id ? `${a.name} (${a.email_id})` : a.name,
+    value: a.name,
+  })),
+])
 
 // -- list ---------------------------------------------------------------------
 

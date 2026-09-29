@@ -123,7 +123,7 @@ import {
   Button,
   Combobox,
   createDocumentResource,
-  createListResource,
+  createResource,
   toast,
 } from 'frappe-ui'
 import { computed, inject } from 'vue'
@@ -134,11 +134,12 @@ const { user: sessionUser } = inject('session')
 
 const user = createDocumentResource({ doctype: 'User', name: sessionUser })
 
-const emails = createListResource({
-  doctype: 'Email Account',
+// Email Account is System Manager's in Frappe: the CRM hands out names and
+// addresses of the accounts that send, to everybody who works in it
+const emails = createResource({
+  url: 'crm.api.settings.list_email_accounts',
+  params: { outgoing: 1 },
   cache: 'Outgoing Email Accounts',
-  fields: ['name', 'email_id'],
-  filters: { enable_outgoing: 1 },
   auto: true,
 })
 

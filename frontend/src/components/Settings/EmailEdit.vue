@@ -134,7 +134,7 @@ const fields = computed(() => {
 const error = ref()
 const loading = ref(false)
 async function updateAccount() {
-  error.value = validateInputs(state, isCustomService.value)
+  error.value = validateInputs(state, isCustomService.value, true)
   if (error.value) return
   const old = { ...props.accountData }
   const updatedEmailAccount = { ...state }
@@ -152,32 +152,30 @@ async function updateAccount() {
     return
   }
 
-  if (nameChanged) {
-    try {
-      loading.value = true
-      await callRenameDoc()
-      succesHandler()
-    } catch {
-      errorHandler()
-    }
-  }
-  if (otherFieldsChanged) {
-    try {
-      loading.value = true
-      await callSetValue(values)
-      succesHandler()
-    } catch {
-      errorHandler()
-    }
+  try {
+    loading.value = true
+    await call('crm.api.settings.update_email_account', {
+      name: props.accountData.name || props.accountData.email_account_name,
+      data: {
+        ...values,
+        ...(nameChanged
+          ? { email_account_name: state.email_account_name }
+          : {}),
+      },
+    })
+    succesHandler()
+  } catch {
+    errorHandler()
   }
 }
 
 const isDirty = computed(() => {
   return (
     state.email_id !== props.accountData.email_id ||
-    state.api_key !== props.accountData.api_key ||
-    state.api_secret !== props.accountData.api_secret ||
-    state.password !== props.accountData.password ||
+    // the list never carries a password or a key: typing one is the change
+    Boolean(state.api_key) ||
+    Boolean(state.api_secret) ||
+    Boolean(state.password) ||
     state.enable_incoming !== props.accountData.enable_incoming ||
     state.enable_outgoing !== props.accountData.enable_outgoing ||
     state.default_outgoing !== props.accountData.default_outgoing ||
@@ -185,24 +183,6 @@ const isDirty = computed(() => {
     state.frappe_mail_site !== props.accountData.frappe_mail_site
   )
 })
-
-async function callRenameDoc() {
-  const d = await call('frappe.client.rename_doc', {
-    doctype: 'Email Account',
-    old_name: props.accountData.email_account_name,
-    new_name: state.email_account_name,
-  })
-  return d
-}
-
-async function callSetValue(values) {
-  const d = await call('frappe.client.set_value', {
-    doctype: 'Email Account',
-    name: state.email_account_name,
-    fieldname: values,
-  })
-  return d.name
-}
 
 function succesHandler() {
   emit('update:step', 'email-list')
