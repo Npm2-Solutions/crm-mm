@@ -12,7 +12,7 @@
         :class="
           kindOf(item) === 'number' ? 'basis-[calc(50%_-_0.375rem)]' : 'w-full'
         "
-        :style="{ height: mobileHeight(item) }"
+        :style="mobileSize(item)"
       >
         <DashboardItem
           :item="item"
@@ -139,6 +139,14 @@ const byKey = computed(() =>
 
 function kindOf(item) {
   return props.answers[item.layout.i]?.kind || item.type
+}
+
+// A number sets its own height, from 128px up, so a two-line title and a
+// comparison on a line of its own fit whole; the two in a row grow together.
+// Everything else keeps the height it is given.
+function mobileSize(item) {
+  if (kindOf(item) === 'number') return { minHeight: mobileHeight(item) }
+  return { height: mobileHeight(item) }
 }
 
 function mobileHeight(item) {

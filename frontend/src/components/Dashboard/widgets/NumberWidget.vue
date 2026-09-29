@@ -6,7 +6,11 @@
     >
       {{ value }}
     </div>
-    <div class="flex min-w-0 items-center gap-1.5 text-xs">
+    <!-- on a phone «vs 14,1 M before» goes under the change, whole, instead
+         of being cut beside it -->
+    <div
+      class="flex min-w-0 items-center gap-1.5 text-xs max-md:flex-wrap max-md:gap-y-0.5"
+    >
       <WidgetBadge v-if="badge" :badge="badge" />
       <span
         v-if="delta"

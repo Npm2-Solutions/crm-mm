@@ -102,15 +102,20 @@
             <div>{{ getRow(itemName, fieldName).timeAgo }}</div>
           </Tooltip>
         </div>
+        <!-- two lines and an ellipsis. The card holds every field in a
+             `truncate` row, so the description inherited `nowrap` and ran on
+             one line past the card's edge, cut mid-word: it wraps again here,
+             and the clamp sits on this box, not on the prose (which is a
+             `flow-root` block a clamp does not reach) -->
         <div
           v-else-if="fieldName == 'description'"
-          class="truncate text-base max-h-44"
+          class="line-clamp-2 min-w-0 whitespace-normal break-words text-base"
         >
           <!-- content is passed through sanitizeHTML() (DOMPurify) before rendering, so v-html is safe here -->
           <!-- eslint-disable vue/no-v-html -->
           <div
             v-if="getRow(itemName, fieldName).label"
-            class="prose-f prose-sm max-w-none flex-1 overflow-hidden [&_p]:truncate"
+            class="prose-f prose-sm max-w-none [&_p]:my-0"
             v-html="sanitizeHTML(getRow(itemName, fieldName).label)"
           />
           <!-- eslint-enable vue/no-v-html -->

@@ -45,7 +45,7 @@
       </button>
       <div v-else class="flex flex-col gap-1 px-3 pt-1.5">
         <div v-if="from.length" class="flex items-center gap-2">
-          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5 max-md:w-12">
             {{ __('From') }}
           </span>
           <FormControl
@@ -58,7 +58,9 @@
         </div>
         <!-- a long address gives way; CC, BCC and the fold do not -->
         <div class="flex items-start gap-2">
-          <span class="mt-1.5 w-14 shrink-0 text-p-sm text-ink-gray-5">
+          <span
+            class="mt-1.5 w-14 shrink-0 text-p-sm text-ink-gray-5 max-md:w-12"
+          >
             {{ __('To') }}
           </span>
           <EmailMultiSelect
@@ -97,7 +99,7 @@
           </div>
         </div>
         <div v-if="cc" class="flex items-center gap-2">
-          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5 max-md:w-12">
             {{ __('CC') }}
           </span>
           <EmailMultiSelect
@@ -113,7 +115,7 @@
           />
         </div>
         <div v-if="bcc" class="flex items-center gap-2">
-          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5 max-md:w-12">
             {{ __('BCC') }}
           </span>
           <EmailMultiSelect
@@ -129,7 +131,7 @@
           />
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5 max-md:w-12">
             {{ __('Subject') }}
           </span>
           <input
