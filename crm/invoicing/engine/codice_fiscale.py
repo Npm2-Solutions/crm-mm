@@ -364,6 +364,16 @@ def separa_partita_iva_ue(valore: str | None) -> tuple[str | None, str]:
 	return None, pulito
 
 
+def formato_iva_noto(paese: str | None) -> bool:
+	"""True when this module knows how a VAT number of `paese` is written.
+
+	For who stores a number rather than transmits it: a format it knows and the
+	number does not follow is a typo, one it does not know is simply not checked.
+	"""
+	stato = (paese or "").upper()
+	return ("EL" if stato == "GR" else stato) in _FORMATI_IVA_UE
+
+
 def partita_iva_ue_valida(valore: str | None, paese: str | None = None) -> bool:
 	"""Format check of an EU VAT number.
 
