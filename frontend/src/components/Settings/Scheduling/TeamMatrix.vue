@@ -61,8 +61,10 @@
                     class="size-2.5 shrink-0 rounded-full"
                     :style="{ backgroundColor: service.color || '#4C7EFF' }"
                   />
+                  <!-- as tall as the row's first line, not just the text: a
+                       finger aimed at a 21px name missed it -->
                   <button
-                    class="min-w-0 truncate text-left text-p-base-medium text-ink-gray-8 hover:underline"
+                    class="-my-1.5 min-w-0 truncate py-1.5 text-left text-p-base-medium text-ink-gray-8 hover:underline"
                     :class="service.enabled ? '' : 'line-through opacity-60'"
                     @click="emit('edit', service)"
                   >

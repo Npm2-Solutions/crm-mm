@@ -11,7 +11,10 @@
           class="cursor-pointer -ml-4 hover:bg-transparent focus:bg-transparent focus:outline-none focus:ring-0 active:bg-transparent text-2xl-semibold hover:opacity-70 !pr-0 !max-w-96 !justify-start"
           @click="draft = null"
         />
-        <h2 v-else class="text-2xl-semibold leading-none h-5">
+        <h2
+          v-else
+          class="text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Call Scripts') }}
         </h2>
       </div>

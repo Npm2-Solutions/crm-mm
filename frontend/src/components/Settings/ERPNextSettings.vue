@@ -5,11 +5,16 @@
   >
     <template #title>
       <div class="flex gap-2 items-center">
-        <h2 class="flex text-2xl-semibold leading-none h-5">
+        <h2 class="flex text-2xl-semibold leading-tight md:h-5 md:leading-none">
           {{ __('ERPNext Settings') }}
         </h2>
         <Tooltip text="View documentation">
-          <a href="https://docs.frappe.io/crm/erpnext" target="_blank">
+          <a
+            class="touch-target"
+            href="https://docs.frappe.io/crm/erpnext"
+            target="_blank"
+            :aria-label="__('View documentation')"
+          >
             <lucide-circle-question-mark class="h-4 w-4 text-ink-gray-6" />
           </a>
         </Tooltip>

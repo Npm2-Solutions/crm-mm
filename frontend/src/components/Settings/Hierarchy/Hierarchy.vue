@@ -1,15 +1,23 @@
 <template>
-  <div class="flex h-full flex-col gap-4 p-6 text-ink-gray-8">
-    <div class="flex justify-between px-2 pt-2">
-      <div class="flex flex-col gap-1 w-9/12">
+  <div
+    class="flex h-full flex-col gap-4 p-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex justify-between px-2 pt-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
+      <div class="flex flex-col gap-1 w-9/12 max-md:w-full">
         <div class="flex gap-2 items-center">
-          <h2 class="flex text-2xl-semibold leading-none h-5">
+          <h2
+            class="flex text-2xl-semibold leading-tight md:h-5 md:leading-none"
+          >
             {{ __('Sales Hierarchy') }}
           </h2>
           <Tooltip :text="__('View documentation')">
             <a
+              class="touch-target"
               href="https://docs.frappe.io/crm/settings/sales-hierarchy"
               target="_blank"
+              :aria-label="__('View documentation')"
             >
               <LucideCircleQuestionMark class="h-4 w-4 text-ink-gray-6" />
             </a>
@@ -25,7 +33,7 @@
       </div>
       <div
         v-if="hierarchyEnabled && canEdit"
-        class="flex items-start space-x-2 w-3/12 justify-end"
+        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
       >
         <Button
           :label="__('Disable')"

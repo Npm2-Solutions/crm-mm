@@ -1,16 +1,24 @@
 <template>
-  <div class="flex h-full flex-col gap-6 px-6 py-8 text-ink-gray-8">
+  <div
+    class="flex h-full flex-col gap-6 px-6 py-8 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
     <!-- Header -->
-    <div class="flex justify-between px-2 text-ink-gray-8">
+    <div
+      class="flex justify-between px-2 text-ink-gray-8 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Brand Settings') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{ __('Configure your brand name, logo and favicon') }}
         </p>
       </div>
-      <div class="flex items-start space-x-2 w-3/12 justify-end">
+      <div
+        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
+      >
         <Button
           v-if="settings.isDirty"
           :label="__('Update')"
@@ -24,9 +32,13 @@
     <!-- Fields -->
     <div class="flex flex-1 flex-col p-2 gap-4 overflow-y-auto">
       <!-- Brand Anm -->
-      <div class="flex items-center justify-between gap-8">
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
+      <!-- on a phone the field goes under its label: beside it, it had room
+           for «Enter Brand N» -->
+      <div
+        class="flex items-center justify-between gap-8 max-md:flex-col max-md:items-stretch max-md:gap-2"
+      >
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Brand Name') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">
@@ -36,6 +48,7 @@
         <div class="flex items-center gap-2">
           <FormControl
             v-model="settings.doc.brand_name"
+            class="max-md:flex-1"
             type="text"
             size="md"
             :placeholder="__('Enter Brand Name')"

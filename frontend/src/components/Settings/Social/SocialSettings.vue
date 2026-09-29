@@ -11,11 +11,15 @@
 -->
 <template>
   <div
-    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
+    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
-    <div class="flex items-start justify-between gap-3 px-2">
+    <div
+      class="flex items-start justify-between gap-3 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Social Planner') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -42,7 +46,7 @@
       <div
         v-for="source in sources.data || []"
         :key="source.key"
-        class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
+        class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4 max-md:flex-col max-md:items-start"
       >
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <span class="flex shrink-0 -space-x-1.5">

@@ -7,11 +7,14 @@
   >
     <template #body>
       <!-- Two panes side by side on a desktop. On a phone they do not fit, so it
-           becomes a list that pushes to a page and comes back. -->
+           becomes a list that pushes to a page and comes back, and it takes
+           the whole screen (`.settings-modal` in index.css): as a card it
+           kept frappe-ui's margins, 16px a side and 48px above, and was 32px
+           taller than the screen, with its bottom row cut off. -->
       <div
-        class="flex bg-surface-gray-1"
+        class="settings-modal flex bg-surface-gray-1"
         :class="
-          isMobileView ? 'h-[calc(100dvh_-_4rem)]' : 'h-[calc(100vh_-_8rem)]'
+          isMobileView ? 'h-app pb-safe pt-safe' : 'h-[calc(100vh_-_8rem)]'
         "
       >
         <div

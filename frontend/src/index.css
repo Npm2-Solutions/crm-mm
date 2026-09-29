@@ -200,3 +200,17 @@
     inset: -10px -8px;
   }
 }
+
+/* The settings on a phone: a screen of their own, not a card floating over the
+   page. frappe-ui gives a dialog no class of its own, so it is found by what it
+   holds. */
+@media (max-width: 767px) {
+  .dialog-scroll-container > div:has(> .dialog-content > .settings-modal) {
+    padding: 0;
+  }
+  .dialog-content:has(> .settings-modal) {
+    margin: 0;
+    max-width: none;
+    border-radius: 0;
+  }
+}

@@ -11,10 +11,16 @@
   server does not send it to anybody else.
 -->
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-3 px-2">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex items-start justify-between gap-3 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex min-w-0 flex-1 flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('WhatsApp') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -116,7 +122,7 @@
              own messages. -->
         <div
           v-if="isAdmin && webhook.data?.is_hub && !webhook.data?.complete"
-          class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+          class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4 max-md:flex-col max-md:items-start"
         >
           <div class="flex flex-col">
             <span class="text-p-base-medium text-ink-gray-7">
@@ -278,7 +284,7 @@
           class="group rounded-lg border border-outline-gray-2 p-4"
         >
           <summary
-            class="flex cursor-pointer list-none items-center justify-between gap-2 text-p-base-medium text-ink-gray-7"
+            class="flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 text-p-base-medium text-ink-gray-7"
           >
             <span class="flex items-center gap-1.5">
               <FeatherIcon

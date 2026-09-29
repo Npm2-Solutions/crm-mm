@@ -1,8 +1,14 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex justify-between px-2 text-ink-gray-8">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex justify-between px-2 text-ink-gray-8 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Dashboard') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -13,7 +19,9 @@
           }}
         </p>
       </div>
-      <div class="flex items-start space-x-2 w-3/12 justify-end">
+      <div
+        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
+      >
         <Button
           v-if="settings.isDirty"
           :label="__('Update')"
@@ -25,12 +33,12 @@
     </div>
 
     <div class="flex-1 flex flex-col overflow-y-auto">
-      <div class="flex items-center justify-between py-3 px-2">
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
+      <div class="flex items-center justify-between gap-4 py-3 px-2">
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Enable Forecasting') }}
           </div>
-          <div class="text-p-sm text-ink-gray-5 truncate">
+          <div class="text-p-sm text-ink-gray-5">
             {{
               __(
                 'Makes "Expected Closure Date" and "Expected Deal Value" mandatory for deal value forecasting',
@@ -43,12 +51,12 @@
         </div>
       </div>
       <div class="h-px border-t mx-2 border-outline-elevation-2" />
-      <div class="flex items-center justify-between py-3 px-2">
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
+      <div class="flex items-center justify-between gap-4 py-3 px-2">
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Auto Update Expected Deal Value') }}
           </div>
-          <div class="text-p-sm text-ink-gray-5 truncate">
+          <div class="text-p-sm text-ink-gray-5">
             {{
               __(
                 'Automatically update "Expected Deal Value" based on the total value of associated products in a deal',
@@ -65,8 +73,8 @@
       </div>
       <div class="h-px border-t mx-2 border-outline-elevation-2" />
       <div class="flex items-center justify-between gap-8 py-3 px-2">
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Dashboard Currency') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">
@@ -94,8 +102,8 @@
       </div>
       <div class="h-px border-t mx-2 border-outline-elevation-2" />
       <div class="flex items-center justify-between gap-8 py-3 px-2">
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Exchange Rate Provider') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">
@@ -130,8 +138,8 @@
         v-if="requiresAccessKey"
         class="flex items-center justify-between gap-8 p-3"
       >
-        <div class="flex flex-col">
-          <div class="text-p-base-medium text-ink-gray-7 truncate">
+        <div class="flex min-w-0 flex-col">
+          <div class="text-p-base-medium text-ink-gray-7">
             {{ __('Access Key') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">

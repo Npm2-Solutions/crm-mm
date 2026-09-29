@@ -19,7 +19,7 @@
     <div class="flex flex-col gap-4">
       <div
         v-if="status.data && !connected"
-        class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6"
+        class="flex items-center justify-between gap-3 rounded-lg border border-dashed border-outline-gray-2 p-6 max-md:flex-col max-md:items-start"
       >
         <span class="text-p-base text-ink-gray-5">
           {{
