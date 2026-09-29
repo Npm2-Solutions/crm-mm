@@ -31,7 +31,7 @@ def get_notifications():
 				"notification_type_doc": notification.notification_type_doc,
 				"reference_doctype": ("deal" if notification.reference_doctype == "CRM Deal" else "lead"),
 				"reference_name": notification.reference_name,
-				"route_name": ("Deal" if notification.reference_doctype == "CRM Deal" else "Lead"),
+				"route_name": _route_of(notification),
 			}
 		)
 
@@ -52,6 +52,13 @@ def mark_as_read(doc: str | None = None):
 		d = frappe.get_doc("CRM Notification", n.name)
 		d.read = True
 		d.save()
+
+
+def _route_of(notification) -> str:
+	# "did they come?" opens the desk's day, where the answers are given
+	if notification.type == "Agenda":
+		return "Today"
+	return "Deal" if notification.reference_doctype == "CRM Deal" else "Lead"
 
 
 def get_hash(notification):
