@@ -312,6 +312,13 @@ export const TRIGGER_CATALOG = {
     doctype: 'CRM Lead',
     hint: 'The lead moves to another status.',
   },
+  // offered where the clinic is on: the server lists it only there
+  'Became Patient': {
+    category: 'lead',
+    icon: 'user-check',
+    doctype: 'CRM Lead',
+    hint: 'The person becomes a patient of the centre: first visit, first healthcare invoice, first clinical note.',
+  },
   'Deal Created': {
     category: 'deal',
     icon: 'briefcase',

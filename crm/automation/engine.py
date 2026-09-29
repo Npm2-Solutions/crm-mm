@@ -96,6 +96,29 @@ EVENT_TO_TRIGGER = {
 
 TRIGGER_EVENTS = list(EVENT_TO_TRIGGER.values())
 
+#: When a trigger a module added is offered: the clinic's "Became Patient" only
+#: where the clinic is on. The CRM names none of them.
+_OFFERTO: dict = {}
+
+
+def registra_evento(evento: str, trigger: str, disponibile=None) -> None:
+	"""An event another module raises, and the trigger automations listen to it by.
+
+	``disponibile`` says whether the builder offers it on this site; a module that
+	is off raises nothing, and an automation already listening simply waits.
+	"""
+	EVENT_TO_TRIGGER.setdefault(evento, trigger)
+	if trigger not in TRIGGER_EVENTS:
+		TRIGGER_EVENTS.append(trigger)
+	if disponibile:
+		_OFFERTO[trigger] = disponibile
+
+
+def trigger_offerti() -> list[str]:
+	"""The triggers the builder offers here."""
+	return [trigger for trigger in TRIGGER_EVENTS if trigger not in _OFFERTO or _OFFERTO[trigger]()]
+
+
 REPLY_EVENTS = ("sms_received", "whatsapp_received", "email_replied")
 
 ACTION_TYPES = (
