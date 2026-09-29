@@ -23,7 +23,3 @@ class ClinicPatient(Document):
 		if self.rule not in regole.PER_VALORE:
 			frappe.throw(_("Unknown rule: {0}").format(self.rule))
 		self.patient_since = self.patient_since or now_datetime()
-		if self.guardian and self.guardian == self.lead:
-			frappe.throw(_("A person is not their own guardian"))
-		if not self.guardian:
-			self.guardian_relation = None
