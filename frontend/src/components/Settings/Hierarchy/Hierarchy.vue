@@ -74,12 +74,16 @@
           </span>
         </div>
         <Button
+          v-if="canEdit"
           variant="solid"
           :loading="fcrmSettings.setValue.loading"
           @click="toggleEnable(false)"
         >
           {{ __('Enable') }}
         </Button>
+        <span v-else class="text-center text-p-sm text-ink-gray-5">
+          {{ __('Only a System Manager can turn it on') }}
+        </span>
       </div>
     </div>
 

@@ -5,8 +5,25 @@ import json
 
 import frappe
 from frappe.tests import IntegrationTestCase
+from frappe.utils import cint
 
 FORECASTING_FIELDS = ["expected_closure_date", "probability", "expected_deal_value"]
+
+SALES_MANAGER = "hierarchy.switch.manager@example.com"
+SYSTEM_MANAGER = "hierarchy.switch.admin@example.com"
+
+
+def make_user(email: str, role: str):
+	if not frappe.db.exists("User", email):
+		frappe.get_doc(
+			{
+				"doctype": "User",
+				"email": email,
+				"first_name": email.split("@")[0],
+				"send_welcome_email": 0,
+				"roles": [{"role": role}],
+			}
+		).insert(ignore_permissions=True)
 
 
 class TestFCRMSettings(IntegrationTestCase):
@@ -107,3 +124,63 @@ class TestFCRMSettings(IntegrationTestCase):
 		fields = self.get_quick_entry_fields()
 		for field in FORECASTING_FIELDS:
 			self.assertIn(field, fields)
+
+
+class TestSalesHierarchySwitch(IntegrationTestCase):
+	"""Only a System Manager turns the sales hierarchy on or off: a Sales Manager can
+	write FCRM Settings, and one placed in the tree could otherwise lift their own limit."""
+
+	def setUp(self):
+		make_user(SALES_MANAGER, "Sales Manager")
+		make_user(SYSTEM_MANAGER, "System Manager")
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def stored(self) -> int:
+		return cint(frappe.db.get_single_value("FCRM Settings", "enable_sales_hierarchy", cache=False))
+
+	def set_up_switch(self, value: int):
+		"""As code does it on purpose: with permissions off."""
+		settings = frappe.get_single("FCRM Settings")
+		settings.enable_sales_hierarchy = value
+		settings.save(ignore_permissions=True)
+
+	def flip(self, value: int):
+		"""As the settings page does it: frappe.client.set_value."""
+		frappe.client.set_value("FCRM Settings", "FCRM Settings", {"enable_sales_hierarchy": value})
+
+	def test_a_sales_manager_cannot_turn_it_off(self):
+		self.set_up_switch(1)
+		frappe.set_user(SALES_MANAGER)
+		with self.assertRaises(frappe.PermissionError):
+			self.flip(0)
+		frappe.set_user("Administrator")
+		self.assertEqual(self.stored(), 1)
+
+	def test_a_sales_manager_cannot_turn_it_on(self):
+		self.set_up_switch(0)
+		frappe.set_user(SALES_MANAGER)
+		with self.assertRaises(frappe.PermissionError):
+			self.flip(1)
+		frappe.set_user("Administrator")
+		self.assertEqual(self.stored(), 0)
+
+	def test_a_sales_manager_still_changes_the_other_settings(self):
+		self.set_up_switch(1)
+		frappe.set_user(SALES_MANAGER)
+		frappe.client.set_value("FCRM Settings", "FCRM Settings", {"brand_name": "Studio Rossi"})
+		frappe.set_user("Administrator")
+		self.assertEqual(
+			frappe.db.get_single_value("FCRM Settings", "brand_name", cache=False), "Studio Rossi"
+		)
+		self.assertEqual(self.stored(), 1)
+
+	def test_a_system_manager_turns_it_on_and_off(self):
+		self.set_up_switch(0)
+		frappe.set_user(SYSTEM_MANAGER)
+		self.flip(1)
+		self.assertEqual(self.stored(), 1)
+		self.flip(0)
+		self.assertEqual(self.stored(), 0)
