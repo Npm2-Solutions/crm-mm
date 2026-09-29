@@ -1,7 +1,7 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-"""Which invoices someone reads (doc 30).
+"""Which invoices, and whose billing details, someone reads (doc 30).
 
 The document permissions say who reads invoices at all: the front desk and the
 manager through the invoicing roles, the practitioner through Practitioner. A line
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import frappe
 
-from crm.permissions import livelli
+from crm.permissions import livelli, org_hierarchy
 
 
 def _suoi(user: str) -> bool:
@@ -50,3 +50,26 @@ def has_permission(doc, ptype: str | None = None, user: str | None = None) -> bo
 		return True
 	erogatori = set(_erogatori(user))
 	return any(riga.service_provider in erogatori for riga in doc.get("items") or [])
+
+
+# ------------------------------------------------------------ billing details
+
+
+def get_profile_permission_query_conditions(user: str | None = None) -> str:
+	"""A person's billing details follow the person: listed to whoever sees them.
+
+	The document permissions already say who reads billing details at all - the
+	invoicing roles and the practitioner, not marketing - and this says whose.
+	"""
+	visibili = org_hierarchy.visible_leads(user)
+	if visibili is None:
+		return ""
+	profilo = frappe.qb.DocType("CRM Billing Profile")
+	condizione = (profilo.party_type != "CRM Lead") | profilo.party.isin(visibili)
+	return condizione.get_sql(with_namespace=True, quote_char="`", secondary_quote_char="'")
+
+
+def has_profile_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	if not (doc.get("party_type") and doc.get("party")):
+		return True
+	return bool(frappe.has_permission(doc.party_type, "read", doc=doc.party, user=user))

@@ -1,0 +1,246 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-09-29 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "party_section",
+  "party_type",
+  "party",
+  "column_party",
+  "party_name",
+  "billing_name",
+  "identifiers_section",
+  "fiscal_code",
+  "tax_id",
+  "column_identifiers",
+  "recipient_code",
+  "pec",
+  "address_section",
+  "address_line",
+  "civic_number",
+  "postal_code",
+  "column_address",
+  "city",
+  "province",
+  "country",
+  "registry_section",
+  "birth_date",
+  "column_registry",
+  "sex",
+  "source_section",
+  "filled_from_invoice"
+ ],
+ "fields": [
+  {
+   "fieldname": "party_section",
+   "fieldtype": "Section Break",
+   "label": "Whose"
+  },
+  {
+   "default": "CRM Lead",
+   "fieldname": "party_type",
+   "fieldtype": "Select",
+   "label": "Belongs to",
+   "options": "CRM Lead\nCRM Organization",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Record",
+   "options": "party_type",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "column_party",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "party_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "description": "For a company or an office: the name as it is registered. A person's invoice carries their first name and surname instead.",
+   "fieldname": "billing_name",
+   "fieldtype": "Data",
+   "label": "Name on the invoice"
+  },
+  {
+   "fieldname": "identifiers_section",
+   "fieldtype": "Section Break",
+   "label": "Identifiers"
+  },
+  {
+   "fieldname": "fiscal_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Codice fiscale",
+   "length": 16
+  },
+  {
+   "fieldname": "tax_id",
+   "fieldtype": "Data",
+   "label": "Partita IVA / VAT number"
+  },
+  {
+   "fieldname": "column_identifiers",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Seven characters for the SdI, six for the public administration.",
+   "fieldname": "recipient_code",
+   "fieldtype": "Data",
+   "label": "Codice destinatario",
+   "length": 7
+  },
+  {
+   "fieldname": "pec",
+   "fieldtype": "Data",
+   "label": "PEC",
+   "options": "Email"
+  },
+  {
+   "fieldname": "address_section",
+   "fieldtype": "Section Break",
+   "label": "Address"
+  },
+  {
+   "fieldname": "address_line",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "civic_number",
+   "fieldtype": "Data",
+   "label": "Number"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal code"
+  },
+  {
+   "fieldname": "column_address",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "description": "Two letters, e.g. MI.",
+   "fieldname": "province",
+   "fieldtype": "Data",
+   "label": "Province",
+   "length": 2
+  },
+  {
+   "default": "IT",
+   "description": "Two letters, e.g. IT.",
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country",
+   "length": 2
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "registry_section",
+   "fieldtype": "Section Break",
+   "label": "From the codice fiscale"
+  },
+  {
+   "fieldname": "birth_date",
+   "fieldtype": "Date",
+   "label": "Date of birth",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_registry",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sex",
+   "fieldtype": "Select",
+   "label": "Sex",
+   "options": "\nM\nF",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Where it comes from"
+  },
+  {
+   "description": "The confirmed invoice that last filled an empty field here.",
+   "fieldname": "filled_from_invoice",
+   "fieldtype": "Link",
+   "label": "Last completed by",
+   "options": "CRM Invoice",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-29 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM Billing Profile",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "share": 1,
+   "write": 1,
+   "role": "System Manager"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Invoicing User",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Practitioner",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "party_name,fiscal_code,tax_id",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "party_name",
+ "track_changes": 1
+}

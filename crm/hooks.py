@@ -171,6 +171,8 @@ permission_query_conditions = {
 	"CRM Dashboard": "crm.fcrm.doctype.crm_dashboard.crm_dashboard.get_permission_query_conditions",
 	# the practitioner reads the invoices of their own services
 	"CRM Invoice": "crm.invoicing.permessi.get_permission_query_conditions",
+	# a person's billing details follow the person
+	"CRM Billing Profile": "crm.invoicing.permessi.get_profile_permission_query_conditions",
 }
 
 has_permission = {
@@ -182,6 +184,7 @@ has_permission = {
 	"CRM Notification": "crm.fcrm.doctype.crm_notification.crm_notification.has_permission",
 	"CRM Dashboard": "crm.fcrm.doctype.crm_dashboard.crm_dashboard.has_permission",
 	"CRM Invoice": "crm.invoicing.permessi.has_permission",
+	"CRM Billing Profile": "crm.invoicing.permessi.has_profile_permission",
 }
 
 # DocType Class

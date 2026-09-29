@@ -23,7 +23,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, getdate
 
-from crm.invoicing import documento, estensioni, pdf, xml_sdi
+from crm.invoicing import anagrafica, documento, estensioni, pdf, xml_sdi
 from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
@@ -88,6 +88,9 @@ class CRMInvoice(Document):
 		# whose PDF has to be produced again from the form.
 		if cint(frappe.db.get_single_value("CRM Invoicing Settings", "attach_pdf")):
 			pdf.genera_e_allega(self)
+		# what was confirmed here fills the client's profile where it is empty, so
+		# the next invoice asks nothing. It never raises.
+		anagrafica.completa_da_fattura(self)
 
 	def before_cancel(self):
 		"""An issued document that has already left is corrected, not cancelled."""
@@ -138,15 +141,19 @@ class CRMInvoice(Document):
 			self.payment_date = self.posting_date
 
 	def compila_da_controparte(self):
-		"""Pull the billing profile from the linked record, once.
+		"""Pull the client's details from the linked record and its profile.
 
 		Only empty fields are filled: what is on the invoice is what was confirmed,
-		and re-pulling would quietly undo a correction made at the desk.
+		and re-pulling would quietly undo a correction made at the desk. The
+		codice fiscale and the address come from the client's fiscal profile, the
+		one place they are written (`crm.invoicing.anagrafica`); the name from the
+		record itself.
 		"""
 		if not (self.party_type and self.party):
 			return
 		if not frappe.db.exists(self.party_type, self.party):
 			return
+		anagrafica.compila_fattura(self)
 		record = frappe.get_cached_doc(self.party_type, self.party).as_dict()
 		if not self.billing_name:
 			self.billing_name = (
