@@ -21,6 +21,7 @@ from crm.permissions.livelli import (
 	Capacita,
 	Livello,
 	ModuloPiano,
+	concedi,
 	registra_capacita,
 	registra_livello,
 	registra_modulo_piano,
@@ -76,6 +77,49 @@ CAPACITA = (
 		),
 		{"manager": CENTRO, DIREZIONE: CENTRO},
 	),
+	# the record (doc 30, "Vedere la cartella"): the practitioner their patients -
+	# everybody's with the dossier consent - the medical director all of it
+	(
+		Capacita("clinica.vedi", PIANO, scrive=False, clinica=True, descrizione="Read the clinical record"),
+		{"operatore": SUOI, DIREZIONE: CENTRO},
+	),
+	(
+		Capacita("clinica.scrivi", PIANO, clinica=True, descrizione="Write and sign visits and notes"),
+		{"operatore": SUOI},
+	),
+	(
+		Capacita(
+			"clinica.traccia",
+			PIANO,
+			scrive=False,
+			clinica=True,
+			descrizione="Know that a visit happened, not what was said",
+		),
+		{"segreteria": CENTRO},
+	),
+	(
+		Capacita(
+			"clinica.accessi",
+			PIANO,
+			scrive=False,
+			clinica=True,
+			descrizione="Who opened a patient's record, and when: not what they read",
+		),
+		{"manager": CENTRO, DIREZIONE: CENTRO},
+	),
+)
+
+#: The CRM's capabilities the medical director has: people and consents, the
+#: agenda to read, their own calendar, dashboards and operational numbers.
+CRM_DELLA_DIREZIONE = (
+	"persone.vedi",
+	"consensi.vedi",
+	"consensi.raccogli",
+	"agenda.vedi",
+	"google_calendar.proprio",
+	"dashboard.personali",
+	"numeri.operativi",
+	"profilo.proprio",
 )
 
 DOSSIER = TipoConsenso(
@@ -130,5 +174,8 @@ def registra() -> None:
 	registra_livello(LIVELLO_DIREZIONE, ("Sales User", "Practitioner", "Medical Director"))
 	for capacita, concessioni in CAPACITA:
 		registra_capacita(capacita, concessioni)
+	# what the medical director does of the CRM's own (doc 30, the Dir column)
+	for nome in CRM_DELLA_DIREZIONE:
+		concedi(nome, {DIREZIONE: CENTRO})
 	registra_tipo(DOSSIER)
 	registra_tipo(REFERTI_ONLINE)

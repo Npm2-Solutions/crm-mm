@@ -175,6 +175,8 @@ permission_query_conditions = {
 	"CRM Billing Profile": "crm.invoicing.permessi.get_profile_permission_query_conditions",
 	# and so do their consents
 	"CRM Consent": "crm.moduli.consensi.get_permission_query_conditions",
+	# the clinical record: its author, the medical director, the dossier
+	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -188,6 +190,7 @@ has_permission = {
 	"CRM Invoice": "crm.invoicing.permessi.has_permission",
 	"CRM Billing Profile": "crm.invoicing.permessi.has_profile_permission",
 	"CRM Consent": "crm.moduli.consensi.has_permission",
+	"Clinic Record": "crm.clinica.cartella.has_permission",
 }
 
 # DocType Class
@@ -337,6 +340,13 @@ doc_events = {
 	},
 	"CRM Plan": {
 		"on_update": ["crm.clinica.eventi.piano_aggiornato"],
+	},
+	"Log Settings": {
+		"validate": ["crm.clinica.cartella.valida_impostazioni_log"],
+	},
+	# a file attached to the clinical record is private, whatever the upload asked
+	"File": {
+		"before_insert": ["crm.clinica.cartella.allegato_privato"],
 	},
 	"Sales Order": {
 		"before_validate": [
@@ -499,6 +509,14 @@ after_migrate = [
 	"crm.install.add_builder_page_custom_fields",
 	# the kinds of consent the modules registered, never overwriting the centre's text
 	"crm.moduli.consensi.assicura_tipi",
+	# the access logs of the clinical record are kept two years at least
+	"crm.clinica.cartella.proteggi_registro_accessi",
+]
+
+# Rows other modules add to a record's history (`crm.api.activities`)
+crm_timeline_gatherers = [
+	# a padlock for each visit, for who may know of it
+	"crm.clinica.cartella.visite_su",
 ]
 
 standard_dropdown_items = [
