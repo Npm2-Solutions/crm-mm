@@ -207,6 +207,22 @@ has_permission = {
 	"CRM Visitor": "crm.permissions.seguono.has_visitor_permission",
 	"CRM Tracking Event": "crm.permissions.seguono.has_tracking_event_permission",
 	"CRM Booking": "crm.permissions.seguono.has_booking_permission",
+	# what the screens keep for the manager is written with a capability, not a role
+	"CRM Service": "crm.permissions.documenti.has_permission",
+	"CRM Service Price": "crm.permissions.documenti.has_permission",
+	"CRM Price List": "crm.permissions.documenti.has_permission",
+	"CRM Scheduling Settings": "crm.permissions.documenti.has_permission",
+	"CRM Holiday List": "crm.permissions.documenti.has_permission",
+	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
+	"CRM Resource": "crm.permissions.documenti.has_permission",
+	"CRM Booking Calendar": "crm.permissions.documenti.has_permission",
+	"CRM Lead Status": "crm.permissions.documenti.has_permission",
+	"CRM Deal Status": "crm.permissions.documenti.has_permission",
+	"CRM Communication Status": "crm.permissions.documenti.has_permission",
+	"CRM View Settings": "crm.permissions.documenti.has_permission",
+	"WhatsApp Templates": "crm.permissions.documenti.has_permission",
+	"WhatsApp Settings": "crm.permissions.documenti.has_permission",
+	"CRM Telephony Agent": "crm.permissions.documenti.has_permission",
 }
 
 # DocType Class
