@@ -187,12 +187,14 @@
    "fieldtype": "Data",
    "in_standard_filter": 1,
    "label": "Primary email",
+   "mask": 1,
    "options": "Email"
   },
   {
    "fieldname": "mobile_no",
    "fieldtype": "Data",
    "label": "Primary mobile no",
+   "mask": 1,
    "options": "Phone"
   },
   {
@@ -319,6 +321,7 @@
    "fieldname": "phone",
    "fieldtype": "Data",
    "label": "Primary phone",
+   "mask": 1,
    "options": "Phone"
   },
   {
@@ -850,6 +853,7 @@
    "email": 1,
    "export": 1,
    "import": 1,
+   "mask": 1,
    "print": 1,
    "read": 1,
    "report": 1,
@@ -881,6 +885,10 @@
    "role": "Sales User",
    "share": 1,
    "write": 1
+  },
+  {
+   "mask": 1,
+   "role": "Contact Details"
   }
  ],
  "row_format": "Dynamic",
