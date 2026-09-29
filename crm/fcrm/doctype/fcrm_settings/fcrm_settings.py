@@ -54,8 +54,14 @@ class FCRMSettings(Document):
 
 	def validate(self):
 		self.do_not_allow_to_delete_if_standard()
+		self.validate_dropdown_items()
 		self.setup_forecasting()
 		self.make_currency_read_only()
+
+	def validate_dropdown_items(self):
+		# a child's own validate() does not run when its parent is saved
+		for item in self.dropdown_items:
+			item.validate_icon_and_route()
 
 	def do_not_allow_to_delete_if_standard(self):
 		if not self.has_value_changed("dropdown_items"):
