@@ -281,8 +281,40 @@ def parse_call_log(call):
 	return call
 
 
+def check_call_log_permission(call_log: str | CRMCallLog, ptype: str = "read") -> CRMCallLog:
+	"""The call log, if the session user may see it — a PermissionError if not.
+
+	CRM Call Log has no rule of its own: every Sales User reads every call log, so
+	its own permission only says that somebody works in the CRM. Whose call it is
+	comes from the lead or deal it was about. The call sits on the timeline of each
+	record it is linked to, so being able to read any one of them is enough.
+
+	Whoever was on the call can always open it: an incoming call is answered by
+	whoever is free, not by the lead's owner.
+	"""
+	doc = call_log if isinstance(call_log, Document) else frappe.get_doc("CRM Call Log", call_log)
+	doc.check_permission(ptype)
+
+	if frappe.session.user in (doc.caller, doc.receiver):
+		return doc
+
+	# telephony files the lead or deal under `links`, a call logged by hand under `reference_*`
+	records = {(doc.reference_doctype, doc.reference_docname)}
+	records.update((link.link_doctype, link.link_name) for link in doc.links)
+	records = [
+		(doctype, name)
+		for doctype, name in records
+		if doctype in ("CRM Lead", "CRM Deal") and name and frappe.db.exists(doctype, name)
+	]
+	if records and not any(frappe.has_permission(doctype, "read", name) for doctype, name in records):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	return doc
+
+
 @frappe.whitelist()
 def get_call_log(name: str):
+	check_call_log_permission(name)
 	call = frappe.get_cached_doc(
 		"CRM Call Log",
 		name,

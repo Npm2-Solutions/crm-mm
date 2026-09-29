@@ -379,11 +379,12 @@ def get_recording_url(call_log_name: str):
 	Accept-Ranges/Content-Length set. Without range support the HTML <audio> element can't
 	read the recording's duration (shows 0:00) or seek within it.
 	"""
+	from crm.fcrm.doctype.crm_call_log.crm_call_log import check_call_log_permission
+
 	if not call_log_name or not frappe.db.exists("CRM Call Log", call_log_name):
 		frappe.throw(_("Call log not found"), frappe.DoesNotExistError)
 
-	log = frappe.get_doc("CRM Call Log", call_log_name)
-	log.check_permission("read")
+	log = check_call_log_permission(call_log_name)
 
 	if not log.recording_url:
 		frappe.throw(_("Recording URL not found"), frappe.DoesNotExistError)
