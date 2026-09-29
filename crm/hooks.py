@@ -404,7 +404,11 @@ doc_events = {
 	},
 	# the clinic listens to invoicing; invoicing never hears of the clinic
 	"CRM Invoice": {
-		"on_submit": ["crm.clinica.eventi.fattura_confermata"],
+		"on_submit": [
+			# issued from an appointment: the person came
+			"crm.scheduling.esiti.fattura_emessa",
+			"crm.clinica.eventi.fattura_confermata",
+		],
 	},
 	"CRM Plan": {
 		"on_update": ["crm.clinica.eventi.piano_aggiornato"],
@@ -468,6 +472,8 @@ scheduler_events = {
 		# a conversation parked until this morning has to come back on its own,
 		# or «rimanda a domani» would be «nascondi per sempre»
 		"crm.api.conversations.wake_the_snoozed",
+		# once the day's last appointment ended: "did they come?"
+		"crm.scheduling.esiti.fine_giornata",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
