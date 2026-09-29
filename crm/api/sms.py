@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 
-from crm.api.whatsapp import validate_access
+from crm.api.whatsapp import may_converse, validate_access
 from crm.integrations.twilio.twilio_handler import Twilio
 from crm.integrations.twilio.utils import get_public_url
 
@@ -22,7 +22,7 @@ SMS_FIELDS = [
 
 @frappe.whitelist()
 def is_sms_enabled() -> bool:
-	return bool(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))
+	return may_converse() and bool(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))
 
 
 @frappe.whitelist()
