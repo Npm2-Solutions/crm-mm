@@ -348,10 +348,12 @@ async function submitComment() {
     content: was.text,
     attachments: was.files.map((x) => x.name),
   })
+  // a note, as the composer calls it: «Comment sent» came up under a box
+  // that said «Write a note for the team»
   toast.promise(sent, {
-    loading: __('Sending comment...'),
-    success: __('Comment sent'),
-    error: (e) => e?.messages?.[0] || __('Failed to send comment!'),
+    loading: __('Adding note…'),
+    success: __('Note added'),
+    error: (e) => e?.messages?.[0] || __('Could not add the note'),
   })
   try {
     await sent

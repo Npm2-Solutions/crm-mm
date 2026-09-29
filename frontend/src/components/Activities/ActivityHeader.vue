@@ -254,9 +254,11 @@ const defaultActions = computed(() => {
       onClick: () => emit('write', 'sms'),
       condition: () => smsEnabled.value,
     },
+    // what the composer calls it: an «Internal note» for the team. «Comment»
+    // sat two rows above «Note», which is something else (a Notes record)
     {
       icon: h(CommentIcon, { class: 'h-4 w-4' }),
-      label: __('Comment'),
+      label: __('Internal note'),
       onClick: () => emit('write', 'comment'),
     },
     {
