@@ -172,3 +172,39 @@ class IlCruscotto(CucitureCase):
 			patients_from_ads(Context.build(add_days(nowdate(), -7), nowdate(), scope="site", config={})),
 			1,
 		)
+
+
+class LAccettazione(CucitureCase):
+	"""Rule 2: the desk checks somebody in, and they are a patient from that moment."""
+
+	def test_chi_arriva_al_banco_e_un_paziente(self):
+		from crm.scheduling import esiti
+
+		incontro = self.appuntamento(self.mario, self.tomorrow(10))
+		riga = incontro.participants[0].name
+		esiti.segna(incontro.name, riga, "Arrived")
+		scheda = self.scheda(self.mario)
+		self.assertEqual(scheda.rule, regole.ACCETTAZIONE.valore)
+		self.assertEqual(
+			scheda.patient_since,
+			frappe.db.get_value("CRM Appointment Participant", riga, "arrived_at"),
+		)
+
+	def test_la_visita_chiude_l_appuntamento(self):
+		incontro = self.appuntamento(self.mario, self.ieri())
+		frappe.get_doc(
+			{
+				"doctype": "Clinic Record",
+				"lead": self.mario.name,
+				"kind": "Visit",
+				"content": "<p>Controllo.</p>",
+				"appointment": incontro.name,
+				"practitioner": self.doctor,
+			}
+		).insert(ignore_permissions=True)
+		self.assertEqual(frappe.db.get_value("CRM Appointment", incontro.name, "status"), "Completed")
+		self.assertEqual(
+			frappe.db.get_value("CRM Appointment Participant", incontro.participants[0].name, "status"),
+			"Attended",
+		)
+		self.assertEqual(self.scheda(self.mario).rule, regole.INFORMAZIONE_MEDICA.valore)
