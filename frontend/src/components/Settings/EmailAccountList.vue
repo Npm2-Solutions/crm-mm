@@ -64,18 +64,15 @@
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import EmptyState from '../ListViews/EmptyState.vue'
 import EmailAccountCard from './EmailAccountCard.vue'
-import { createListResource } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 
 const emit = defineEmits(['update:step'])
 
-const emailAccounts = createListResource({
-  doctype: 'Email Account',
-  cache: true,
-  fields: ['*'],
-  filters: {
-    email_id: ['Not Like', '%example%'],
-  },
-  pageLength: 10,
+// Email Account is a core document Frappe keeps to System Manager: the CRM
+// lists the centre's accounts to whoever has the capability (doc 30)
+const emailAccounts = createResource({
+  url: 'crm.api.settings.get_email_accounts',
+  cache: 'crm-email-accounts',
   auto: true,
   onSuccess: (accounts) => {
     // convert 0 to false to handle boolean fields

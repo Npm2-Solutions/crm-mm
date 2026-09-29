@@ -173,7 +173,8 @@ export const emailIcon = {
   'Frappe Mail': LogoFrappeMail,
 }
 
-export function validateInputs(state, isCustom) {
+// `editing`: the account keeps the password and key it has; typing one replaces it
+export function validateInputs(state, isCustom, editing = false) {
   if (!state.email_account_name) {
     return __('Account name is required')
   }
@@ -184,10 +185,10 @@ export function validateInputs(state, isCustom) {
   if (!validEmail) {
     return __('Invalid email ID')
   }
-  if (!isCustom && !state.password) {
+  if (!isCustom && !state.password && !editing) {
     return __('Password is required')
   }
-  if (isCustom) {
+  if (isCustom && !editing) {
     if (!state.api_key) {
       return __('API key is required')
     }
