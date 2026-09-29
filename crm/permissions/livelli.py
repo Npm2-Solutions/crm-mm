@@ -589,7 +589,7 @@ def richiede(*nomi: str) -> Callable:
 def dimentica_cache() -> None:
 	"""Forget what was worked out in this request: levels or the plan changed."""
 	frappe = _frappe()
-	for nome in ("crm_capacita", "crm_moduli_attivi", "crm_requisiti"):
+	for nome in ("crm_capacita", "crm_moduli_attivi", "crm_requisiti", "crm_ambiti"):
 		try:
 			delattr(frappe.local, nome)
 		except AttributeError:

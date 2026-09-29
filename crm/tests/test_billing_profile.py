@@ -260,13 +260,20 @@ class ChiLoVede(ProfileBase):
 		self.assertEqual(risposta["values"]["city"], "Napoli")
 
 	def test_seguono_la_persona(self):
-		"""Billing details of a person the desk does not see stay out of reach."""
-		self.come(DESK)
+		"""Billing details of a person the practitioner does not look after stay out of
+		reach; the front desk sees the whole centre (doc 30), theirs included."""
+		sua = self.persona("Carla", "Gialli", lead_owner=DOCTOR)
+		self.profilo(sua.name, city="Torino")
+		self.come(DOCTOR)
 		with self.assertRaises(frappe.PermissionError):
 			anagrafica.get_billing_profile("CRM Lead", self.mario.name)
 		visibili = frappe.get_list("CRM Billing Profile", pluck="party")
-		self.assertIn(self.del_desk.name, visibili)
+		self.assertIn(sua.name, visibili)
 		self.assertNotIn(self.mario.name, visibili)
+		self.come(DESK)
+		visibili = frappe.get_list("CRM Billing Profile", pluck="party")
+		self.assertIn(self.mario.name, visibili)
+		self.assertIn(self.del_desk.name, visibili)
 
 	def test_il_primo_dato_crea_il_profilo(self):
 		nuova = self.persona("Paola", "Neri", lead_owner=DESK)

@@ -1,28 +1,84 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
+"""Which people and deals a user sees, and what follows them.
+
+**The scope comes from the level** (doc 30, "L'ambito: su quali record"): the
+capability that shows people (`persone.vedi`) or deals (`trattative.vedi`) says on
+which records. The whole centre - front desk, manager, medical director; the team in
+the sales hierarchy - sales; their own - the practitioner, who also sees the people
+they look after: an appointment with them, their patients. A place in the hierarchy
+narrows it: whoever sits in the tree sees their team, as a Sales Manager there did.
+Somebody working from the Desk with roles only, outside the levels, keeps the rule of
+before: their records, their subtree, everything for a Sales Manager outside the tree.
+
+**What belongs to a person follows the person**: calls, notes and tasks here; the
+agenda, the messages and the tracking in `crm.permissions.seguono`. One condition
+for the list and for the record, so the two never disagree.
+"""
+
 import frappe
 from frappe.query_builder.functions import IfNull
+from frappe.utils import add_days, now_datetime
 from frappe.utils.caching import request_cache
+
+from crm.permissions import livelli
 
 _OWNER_FIELD = {
 	"CRM Lead": "lead_owner",
 	"CRM Deal": "deal_owner",
 }
 
+#: The capability whose scope says how far a user sees each kind of record.
+_CAPACITA = {
+	"CRM Lead": "persone.vedi",
+	"CRM Deal": "trattative.vedi",
+}
+
+#: A user who may not see a kind of record at all: not even their own.
+NIENTE = "niente"
+
+#: How long a closed assignment still opens the record: the work is done, the
+#: follow-up is not; for ever would be a key nobody remembers giving.
+GIORNI_ASSEGNAZIONE_CHIUSA = 90
+
 
 def hierarchy_enabled() -> bool:
 	return bool(frappe.db.get_single_value("FCRM Settings", "enable_sales_hierarchy"))
 
 
-def _scope(user: str) -> bool | None:
-	"""``None`` when the user sees every record, otherwise whether they are in the tree."""
+def _scope(user: str, doctype: str = "CRM Lead"):
+	"""How far ``user`` sees ``doctype``: ``None`` everything, ``NIENTE`` nothing,
+	otherwise whether they see their subtree (``True``) or only their own (``False``).
+
+	Worked out once per request: one list asks it for every subquery it builds.
+	`livelli.dimentica_cache` forgets it with the rest.
+	"""
+	cache = getattr(frappe.local, "crm_ambiti", None)
+	if cache is None:
+		cache = frappe.local.crm_ambiti = {}
+	if (user, doctype) not in cache:
+		cache[(user, doctype)] = _work_out_scope(user, doctype)
+	return cache[(user, doctype)]
+
+
+def _work_out_scope(user: str, doctype: str):
 	if user == "Administrator":
 		return None
 
 	roles = frappe.get_roles(user)
 	if "System Manager" in roles:
 		return None
+
+	if livelli.nel_crm(user):
+		ambito = livelli.ambito(_CAPACITA[doctype], user)
+		if ambito not in (livelli.CENTRO, livelli.MASCHERATO, livelli.TEAM, livelli.SUOI):
+			return NIENTE
+		# a place in the sales hierarchy narrows whatever the level says: whoever
+		# sits in the tree sees their team - the team lead, as a Sales Manager did
+		if hierarchy_enabled() and _in_hierarchy(user):
+			return True
+		return None if ambito in (livelli.CENTRO, livelli.MASCHERATO) else False
 
 	in_tree = hierarchy_enabled() and _in_hierarchy(user)
 
@@ -33,6 +89,39 @@ def _scope(user: str) -> bool | None:
 	return in_tree
 
 
+def _in_care_of(user: str, doctype: str) -> bool:
+	"""Whether ``user`` also sees the people they look after: a practitioner does."""
+	return (
+		doctype == "CRM Lead"
+		and livelli.nel_crm(user)
+		and livelli.ambito(_CAPACITA[doctype], user) == livelli.SUOI
+	)
+
+
+def _in_care(user: str, DT):
+	"""The people ``user`` looks after: an appointment with them, and whatever a module
+	adds (`crm_people_in_care`: the clinic's patients of theirs)."""
+	Part = frappe.qb.DocType("CRM Appointment Participant").as_("_care_part")
+	Staff = frappe.qb.DocType("CRM Appointment Staff").as_("_care_staff")
+	condition = DT.name.isin(
+		frappe.qb.from_(Part)
+		.join(Staff)
+		.on(Staff.parent == Part.parent)
+		.select(Part.party)
+		.where(
+			(Part.parenttype == "CRM Appointment")
+			& (Part.party_type == "CRM Lead")
+			& (Staff.parenttype == "CRM Appointment")
+			& (Staff.user == user)
+		)
+	)
+	for method in frappe.get_hooks("crm_people_in_care"):
+		extra = frappe.get_attr(method)(user)
+		if extra is not None:
+			condition = condition | DT.name.isin(extra)
+	return condition
+
+
 def _theirs(field, user: str, in_tree: bool):
 	"""The field names the user themselves or, in the tree, any member of their subtree."""
 	if in_tree:
@@ -41,29 +130,43 @@ def _theirs(field, user: str, in_tree: bool):
 
 
 def _assigned(doctype: str, DT, user: str, in_tree: bool):
-	"""The record is assigned by ToDo to the user or, in the tree, any member of their subtree."""
+	"""The record is assigned by ToDo to the user or, in the tree, any member of their
+	subtree: an open assignment, or one closed in the last few weeks."""
 	Todo = frappe.qb.DocType("ToDo").as_("_todo")
+	chiusa_da_poco = (Todo.status == "Closed") & (
+		Todo.modified >= add_days(now_datetime(), -GIORNI_ASSEGNAZIONE_CHIUSA)
+	)
 	return DT.name.isin(
 		frappe.qb.from_(Todo)
 		.select(Todo.reference_name)
 		.where(
 			(Todo.reference_type == doctype)
-			& (Todo.status != "Cancelled")
+			& ((Todo.status == "Open") | chiusa_da_poco)
 			& _theirs(Todo.allocated_to, user, in_tree)
 		)
 	)
 
 
+def _nothing(DT):
+	return DT.name.isnull()
+
+
 def _permission_query_conditions(user: str | None, doctype: str):
 	user = user or frappe.session.user
-	in_tree = _scope(user)
+	in_tree = _scope(user, doctype)
 	if in_tree is None:
 		return ""
 
-	# Sales User default: own records and records directly assigned to them.
-	# In the tree, their subtree's records as well.
 	DT = frappe.qb.DocType(doctype)
-	return _theirs(DT[_OWNER_FIELD[doctype]], user, in_tree) | _assigned(doctype, DT, user, in_tree)
+	if in_tree == NIENTE:
+		return _nothing(DT)
+
+	# their own records and the ones assigned to them; in the tree, their subtree's
+	# as well; a practitioner, the people they look after
+	condition = _theirs(DT[_OWNER_FIELD[doctype]], user, in_tree) | _assigned(doctype, DT, user, in_tree)
+	if _in_care_of(user, doctype):
+		condition = condition | _in_care(user, DT)
+	return condition
 
 
 def _as_sql(condition) -> str:
@@ -113,13 +216,19 @@ _ABOUT = ("CRM Lead", "CRM Deal")
 _ALIAS = {"CRM Lead": "_lead", "CRM Deal": "_deal"}
 
 
-def _visible(doctype: str, user: str, in_tree: bool):
-	"""The leads (or deals) the user sees, as a subquery.
+def _visible(doctype: str, user: str):
+	"""The leads (or deals) the user sees, as a subquery - all of them when they see
+	them all.
 
 	Shared ones included: a share opens a lead whatever the hierarchy says, both in
 	the list and on its page, and its calls, notes and tasks come along with it.
 	"""
 	DT = frappe.qb.DocType(doctype).as_(_ALIAS[doctype])
+	in_tree = _scope(user, doctype)
+	if in_tree is None:
+		return frappe.qb.from_(DT).select(DT.name)
+	if in_tree == NIENTE:
+		return frappe.qb.from_(DT).select(DT.name).where(_nothing(DT))
 	Share = frappe.qb.DocType("DocShare").as_("_share")
 	shared = (
 		frappe.qb.from_(Share)
@@ -130,15 +239,14 @@ def _visible(doctype: str, user: str, in_tree: bool):
 			& ((Share.user == user) | (Share.everyone == 1))
 		)
 	)
-	return (
-		frappe.qb.from_(DT)
-		.select(DT.name)
-		.where(
-			_theirs(DT[_OWNER_FIELD[doctype]], user, in_tree)
-			| _assigned(doctype, DT, user, in_tree)
-			| DT.name.isin(shared)
-		)
+	condition = (
+		_theirs(DT[_OWNER_FIELD[doctype]], user, in_tree)
+		| _assigned(doctype, DT, user, in_tree)
+		| DT.name.isin(shared)
 	)
+	if _in_care_of(user, doctype):
+		condition = condition | _in_care(user, DT)
+	return frappe.qb.from_(DT).select(DT.name).where(condition)
 
 
 def visible_leads(user: str | None = None):
@@ -148,16 +256,28 @@ def visible_leads(user: str | None = None):
 	the same rule as the list of people, shares included, so the two never disagree.
 	"""
 	user = user or frappe.session.user
-	in_tree = _scope(user)
-	if in_tree is None:
+	if _scope(user, "CRM Lead") is None:
 		return None
-	return _visible("CRM Lead", user, in_tree)
+	return _visible("CRM Lead", user)
 
 
-def _about_visible(doctype_field, name_field, user: str, in_tree: bool):
+def sees_everyone(user: str | None = None) -> bool:
+	"""Whether ``user`` sees every lead and every deal: nothing to filter."""
+	user = user or frappe.session.user
+	return _scope(user, "CRM Lead") is None and _scope(user, "CRM Deal") is None
+
+
+def _about(doctype: str, doctype_field, name_field, user: str):
+	in_tree = _scope(user, doctype)
+	if in_tree is None:
+		return doctype_field == doctype
+	return (doctype_field == doctype) & name_field.isin(_visible(doctype, user))
+
+
+def _about_visible(doctype_field, name_field, user: str):
 	"""The record points at a lead or a deal the user sees."""
-	return ((doctype_field == "CRM Lead") & name_field.isin(_visible("CRM Lead", user, in_tree))) | (
-		(doctype_field == "CRM Deal") & name_field.isin(_visible("CRM Deal", user, in_tree))
+	return _about("CRM Lead", doctype_field, name_field, user) | _about(
+		"CRM Deal", doctype_field, name_field, user
 	)
 
 
@@ -177,8 +297,8 @@ def _call_visible(Call, user: str, in_tree: bool):
 		_theirs(Call.caller, user, in_tree)
 		| _theirs(Call.receiver, user, in_tree)
 		| _theirs(Call.owner, user, in_tree)
-		| _about_visible(Call.reference_doctype, Call.reference_docname, user, in_tree)
-		| Call.name.isin(linked.where(_about_visible(Link.link_doctype, Link.link_name, user, in_tree)))
+		| _about_visible(Call.reference_doctype, Call.reference_docname, user)
+		| Call.name.isin(linked.where(_about_visible(Link.link_doctype, Link.link_name, user)))
 		| ~(
 			_about_someone(Call.reference_doctype, Call.reference_docname)
 			| Call.name.isin(linked.where(Link.link_doctype.isin(_ABOUT)))
@@ -210,9 +330,10 @@ def _on_hidden_call(DT, doctype: str, user: str, in_tree: bool):
 
 def _activity_conditions(user: str | None, doctype: str):
 	user = user or frappe.session.user
-	in_tree = _scope(user)
-	if in_tree is None:
+	if sees_everyone(user):
 		return ""
+	# their own, or their team's when they see the team's people
+	in_tree = _scope(user, "CRM Lead") is True
 
 	DT = frappe.qb.DocType(doctype)
 	if doctype == "CRM Call Log":
@@ -226,7 +347,7 @@ def _activity_conditions(user: str | None, doctype: str):
 		theirs = theirs | _theirs(DT.assigned_to, user, in_tree) | _assigned(doctype, DT, user, in_tree)
 	return (
 		theirs
-		| _about_visible(DT.reference_doctype, DT.reference_docname, user, in_tree)
+		| _about_visible(DT.reference_doctype, DT.reference_docname, user)
 		| ~(
 			_about_someone(DT.reference_doctype, DT.reference_docname)
 			| _on_hidden_call(DT, doctype, user, in_tree)
@@ -267,19 +388,13 @@ def visible_owners(user: str | None = None) -> list[str] | None:
 	does not show up in two people's numbers.
 	"""
 	user = user or frappe.session.user
-	if user == "Administrator":
+	in_tree = _scope(user, "CRM Lead")
+	if in_tree is None:
 		return None
 
-	roles = frappe.get_roles(user)
-	if "System Manager" in roles:
-		return None
-
-	if hierarchy_enabled() and _in_hierarchy(user):
+	if in_tree is True:
 		members = {row[0] for row in _team_mem_query(user).run() if row[0]}
 		return sorted(members | {user})
-
-	if "Sales Manager" in roles:
-		return None
 
 	return [user]
 
