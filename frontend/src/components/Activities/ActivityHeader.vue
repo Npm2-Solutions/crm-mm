@@ -130,6 +130,8 @@
       iconLeft="plus"
       @click="showFilesUploader = true"
     />
+    <!-- the record's buttons live in the record: signing is not a «New» -->
+    <div v-else-if="title == 'Clinic'" />
     <Dropdown v-else :options="defaultActions" @click.stop>
       <template #default="{ open }">
         <Button

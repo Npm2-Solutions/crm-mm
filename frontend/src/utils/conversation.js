@@ -71,6 +71,8 @@ export function channelOf(item) {
   if (type === 'task') return 'task'
   if (type === 'note') return 'note'
   if (type === 'invoice') return 'invoice'
+  // a visit: that it happened and who saw them, behind a padlock
+  if (type === 'clinical') return 'clinical'
   // A call is the one row whose channel is derived rather than stored: without
   // a readable `type` the backend writes no `activity_type` at all, and the
   // call would quietly leave the conversation instead of taking a side in it.
