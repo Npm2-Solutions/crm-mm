@@ -234,6 +234,11 @@ function scrollToMessage(name) {
   Dark by the app's theme, not the computer's. They followed
   `prefers-color-scheme`, so a CRM switched to dark on a laptop left in light
   mode showed WhatsApp's white bubbles on a dark page, and the other way round.
+
+  Written `[data-theme='dark'] .wa-in`, which Vue scopes on its last part.
+  They were `:global([data-theme='dark']) .wa-in`, and Vue compiles that to
+  `[data-theme=dark]` alone: the dark colours landed on the page's <html> and
+  the bubbles stayed light.
 */
 .wa-bubble {
   color: #111b21;
@@ -244,13 +249,13 @@ function scrollToMessage(name) {
 .wa-out {
   background-color: #d9fdd3;
 }
-:global([data-theme='dark']) .wa-bubble {
+[data-theme='dark'] .wa-bubble {
   color: #e9edef;
 }
-:global([data-theme='dark']) .wa-in {
+[data-theme='dark'] .wa-in {
   background-color: #202c33;
 }
-:global([data-theme='dark']) .wa-out {
+[data-theme='dark'] .wa-out {
   background-color: #005c4b;
 }
 
