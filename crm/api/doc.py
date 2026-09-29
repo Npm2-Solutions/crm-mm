@@ -589,21 +589,16 @@ def get_records_based_on_order(doctype, rows, filters, page_length, order):
 
 
 @frappe.whitelist()
-def remove_assignments(doctype: str, name: str, assignees: str | list, ignore_permissions: bool = False):
+def remove_assignments(doctype: str, name: str, assignees: str | list):
 	assignees = frappe.parse_json(assignees)
 
 	if not assignees:
 		return
 
+	# no ignore_permissions from the caller: cancelling an assignment also clears
+	# lead_owner / deal_owner (crm.api.todo), which decides who sees the record
 	for assign_to in assignees:
-		set_status(
-			doctype,
-			name,
-			todo=None,
-			assign_to=assign_to,
-			status="Cancelled",
-			ignore_permissions=ignore_permissions,
-		)
+		set_status(doctype, name, todo=None, assign_to=assign_to, status="Cancelled")
 
 
 @frappe.whitelist()

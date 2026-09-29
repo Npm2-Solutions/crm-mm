@@ -9,6 +9,8 @@ endpoint here is tried by someone it belongs to, by a Sales User outside the
 sales hierarchy, and by a logged-in user with no CRM role at all.
 """
 
+import inspect
+import json
 from unittest.mock import MagicMock, patch
 
 import frappe
@@ -17,7 +19,7 @@ from frappe.utils.nestedset import rebuild_tree
 
 from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
 from crm.api.contact import get_linked_deals
-from crm.api.doc import assigned_users_of, get_assigned_users, get_linked_docs_of_document
+from crm.api.doc import assigned_users_of, get_assigned_users, get_linked_docs_of_document, remove_assignments
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
 from crm.integrations.api import (
@@ -328,6 +330,37 @@ class TestLinkedDocsAndAssignees(PermissionTestCase):
 	def test_a_record_that_is_gone_has_nothing_linked(self):
 		with self.set_user(REP):
 			self.assertEqual(get_linked_docs_of_document("CRM Lead", "CRM-LEAD-GONE"), [])
+
+
+class TestRemoveAssignments(PermissionTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		# a lead is assigned to its owner as it is made
+		cls.lead = make_lead(REP).name
+
+	def test_the_caller_cannot_ask_to_skip_permissions(self):
+		self.assertNotIn("ignore_permissions", inspect.signature(remove_assignments).parameters)
+
+	def test_nobody_outside_the_lead_unassigns_it(self):
+		for user in (OUTSIDER, PATIENT):
+			# the way a request reaches it, asking for ignore_permissions all the same
+			with self.set_user(user), self.assertRaises(frappe.PermissionError):
+				frappe.call(
+					remove_assignments,
+					doctype="CRM Lead",
+					name=self.lead,
+					assignees=json.dumps([REP]),
+					ignore_permissions=True,
+				)
+		self.assertEqual(frappe.db.get_value("CRM Lead", self.lead, "lead_owner"), REP)
+		self.assertEqual(assigned_users_of("CRM Lead", self.lead), [REP])
+
+	def test_whoever_may_read_the_lead_unassigns_it(self):
+		with self.set_user(MANAGER):
+			remove_assignments("CRM Lead", self.lead, json.dumps([REP]))
+		self.assertEqual(assigned_users_of("CRM Lead", self.lead), [])
+		self.assertFalse(frappe.db.get_value("CRM Lead", self.lead, "lead_owner"))
 
 
 def make_call_log(links=(), **fields):
