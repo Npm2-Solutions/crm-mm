@@ -100,9 +100,16 @@ def modulo_firmato(doc, method=None) -> None:
 			regole.INFORMAZIONE_MEDICA,
 			quando=get_datetime(doc.signed_on),
 			fonte=(doc.doctype, doc.name),
-			da=doc.get("filled_by") or frappe.session.user,
+			# signed from a link or the tablet nobody was logged in: whoever sent it
+			da=doc.get("filled_by") or _mandato_da(doc),
 		),
 	)
+
+
+def _mandato_da(doc) -> str | None:
+	if not doc.get("request"):
+		return None
+	return frappe.db.get_value("CRM Form Request", doc.request, "sent_by")
 
 
 def piano_aggiornato(doc, method=None) -> None:
