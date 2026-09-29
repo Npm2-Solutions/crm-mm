@@ -173,10 +173,12 @@
                   v-model="whatsappMessages"
                   v-model:reply="reply"
                   :messages="[row.item]"
+                  :tail="row.startsRun"
                 />
                 <SMSArea
                   v-else-if="channel === 'sms' && row.channel === 'sms'"
                   :messages="[row.item]"
+                  :tail="row.startsRun"
                 />
                 <ChatBubble
                   v-else

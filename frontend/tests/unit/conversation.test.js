@@ -20,6 +20,7 @@ import {
   listTime,
   momentLabel,
   newSince,
+  opensRun,
   replyChannel,
   smsSegments,
   speakerOf,
@@ -950,5 +951,39 @@ describe('newSince', () => {
     const stream = rows([wa('1', 'Incoming', '2026-09-28 09:00:00')])
     expect(newSince(stream, '2026-09-28 09:00:00')).toBeNull()
     expect(newSince([], null)).toBeNull()
+  })
+})
+
+describe('opensRun', () => {
+  const m = (type, creation) => ({ type, creation })
+
+  it('opens with the first message, and whenever the side changes', () => {
+    const list = [
+      m('Incoming', '2026-09-28 09:00:00'),
+      m('Incoming', '2026-09-28 09:01:00'),
+      m('Outgoing', '2026-09-28 09:02:00'),
+      m('Outgoing', '2026-09-28 09:03:00'),
+      m('Incoming', '2026-09-28 09:04:00'),
+    ]
+    expect(list.map((_, i) => opensRun(list, i))).toEqual([
+      true,
+      false,
+      true,
+      false,
+      true,
+    ])
+  })
+
+  it('opens again on a new day, even on the same side', () => {
+    const list = [
+      m('Incoming', '2026-09-27 23:59:00'),
+      m('Incoming', '2026-09-28 00:01:00'),
+    ]
+    expect(opensRun(list, 1)).toBe(true)
+  })
+
+  it('is nothing where there is no message', () => {
+    expect(opensRun([], 0)).toBe(false)
+    expect(opensRun(undefined, 0)).toBe(false)
   })
 })

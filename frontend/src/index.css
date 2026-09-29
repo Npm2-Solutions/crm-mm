@@ -29,6 +29,47 @@
 }
 
 @layer components {
+  /* A speech bubble's tail, drawn as part of the bubble.
+
+     It was a triangle laid against a rounded corner. Where the curve of the
+     corner turned away from the triangle's straight edge there was a notch,
+     and the bubble's shadow — which a clipped triangle cannot carry — stopped
+     at the join: the tail looked stuck on. Now the corner it hangs from is
+     square (the component says `rounded-tl-none` / `rounded-tr-none`), the
+     tail is WhatsApp's curved point continuing the bubble's top edge, it takes
+     the bubble's own fill, and it reaches one pixel under the bubble so no
+     rounding at a fractional position can open a hairline between the two.
+     The shadow is `.bubble-lift`: a drop-shadow filter follows whatever the
+     bubble paints, tail included. */
+  .bubble-tail-in,
+  .bubble-tail-out {
+    position: relative;
+  }
+  .bubble-tail-in::before,
+  .bubble-tail-out::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 9px;
+    height: 13px;
+    background: inherit;
+  }
+  .bubble-tail-in::before {
+    left: -8px;
+    clip-path: path(
+      'M1.533 2.568L9 12.527V0H2.812C1.042 0 .474 1.156 1.533 2.568z'
+    );
+  }
+  .bubble-tail-out::before {
+    right: -8px;
+    clip-path: path(
+      'M6.188 0H0v12.527L7.467 2.568C8.526 1.156 7.958 0 6.188 0z'
+    );
+  }
+  .bubble-lift {
+    filter: drop-shadow(0 1px 0.5px rgb(11 20 26 / 0.13));
+  }
+
   /* `break-words`, not `break-all`: long links and codes still wrap, but an
      ordinary word no longer splits wherever the line ends — «diff|erentiators»,
      «compari|son» in every note, comment, email and template. Code keeps

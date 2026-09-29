@@ -29,34 +29,27 @@
     class="group/bubble relative flex min-w-0 max-w-full"
     :class="[mine ? 'justify-end' : 'justify-start', reaction ? 'mb-3' : '']"
   >
+    <!--
+      The tail, on the first of a run only, is part of the bubble's own shape:
+      the corner it hangs from is square and `bubble-tail-*` continues the top
+      edge into WhatsApp's curved point, in the bubble's fill (index.css). It
+      was a triangle laid against a rounded corner, with a notch where the two
+      met and the shadow stopping at the join.
+    -->
     <div
-      class="relative min-w-0 rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
+      class="bubble-lift relative min-w-0 rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
       :class="[
         mine
           ? 'bg-surface-blue-3'
-          : 'bg-surface-elevation-2 shadow-sm dark:bg-surface-gray-2',
-        tail ? (mine ? 'rounded-tr-md' : 'rounded-tl-md') : '',
+          : 'bg-surface-elevation-2 dark:bg-surface-gray-2',
+        tail
+          ? mine
+            ? 'bubble-tail-out rounded-tr-none'
+            : 'bubble-tail-in rounded-tl-none'
+          : '',
         failed ? 'ring-1 ring-inset ring-outline-red-3' : '',
       ]"
     >
-      <!--
-        The tail, on the first of a run only. `bg-inherit` is the whole trick:
-        it takes the bubble's own fill, so one tail serves every side and can
-        never drift out of step with the colour it hangs off. Clipped to a
-        triangle rather than rotated, because a rotated square pokes a corner
-        out the other side.
-      -->
-      <span
-        v-if="tail"
-        aria-hidden="true"
-        class="absolute top-0 size-2.5 bg-inherit"
-        :class="
-          mine
-            ? '-right-[9px] [clip-path:polygon(0_0,100%_0,0_100%)]'
-            : '-left-[9px] [clip-path:polygon(0_0,100%_0,100%_100%)]'
-        "
-      />
-
       <!--
         A name only where the side does not already say it: somebody other
         than the person this conversation is with, or a colleague answering
