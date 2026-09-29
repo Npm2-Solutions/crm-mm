@@ -247,7 +247,13 @@ function useRecipe(recipe) {
   create({
     title: __(recipe.title),
     description: __(recipe.description),
-    triggers: [newTrigger(recipe.trigger_event)],
+    triggers: [
+      {
+        ...newTrigger(recipe.trigger_event),
+        config: recipe.trigger_config || {},
+      },
+    ],
+    marketing_consent: Boolean(recipe.marketing_consent),
     steps: recipe.build(),
   })
 }
