@@ -152,6 +152,8 @@ onMounted(() => {
 })
 
 function getRoute(notification) {
+  // «did they come?» opens the desk's day
+  if (notification.route_name === 'Today') return { name: 'Today' }
   let params = {
     leadId: notification.reference_name,
   }
