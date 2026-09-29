@@ -1143,3 +1143,42 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/hooks.py`, `crm/install.py`, `crm/registrazione.py`, `crm/modules.txt`, `crm/api/doc.py` | Il cablaggio |
 | `frontend/src/components/ConsentsSection.vue`, `Settings/ConsentsSettings.vue` | La sezione sulla persona, la pagina dei testi |
 | `crm/moduli/tests/test_registro.py`, `crm/tests/test_consents.py` | I test: 9 senza sito, 16 sul sito |
+
+## Lo scheletro della clinica
+
+> **Completato** (29/09/2026). La quinta PR della fase 0 del gestionale medico.
+> Un modulo `crm/clinica` acceso dal piano, la scheda paziente che nasce dalla
+> prima regola che scatta, il recupero sui dati che ci sono già, il livello
+> Direzione sanitaria, e un confine controllato da un test.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| L'interruttore "centro medico" è il modulo "clinica" del piano, spento di serie | Una chiave sola per tutto: capacità, regole, consensi e job della clinica si accendono con il piano, e lo accende l'agenzia |
+| `clinica_accesa()` registra i moduli prima di chiedere al piano | Il registro conta come acceso un modulo che nessuno ha dichiarato: un worker che non avesse importato gli hook avrebbe acceso la clinica ovunque |
+| Una porta sola, `assicura_paziente`, per tutte le regole | La prima che scatta scrive la scheda, le altre non fanno niente; due richieste insieme si fermano sull'indice unico, non su una seconda scheda |
+| Regole di oggi: appuntamento svolto, fattura sanitaria, importazione, a mano | Il primo dato clinico arriva con la sezione Clinica (PR 6), l'accettazione con la fase 1 |
+| Chi non si è presentato resta contatto, anche su un appuntamento completato | Meglio un paziente in meno che un no-show contato come paziente |
+| Un servizio fatturato come non sanitario non fa pazienti | Come la sua fattura: un corso di yoga in un centro misto non è una visita |
+| Il recupero segue il tempo, non l'ordine della tabella | "Paziente dal" deve essere il primo fatto: una fattura di gennaio e un appuntamento di marzo fanno un paziente da gennaio. A parità decide la tabella |
+| Il recupero parte da solo, una volta, quando il piano accende la clinica | Nessuno deve segnare a mano i pazienti di prima; ritrovarli di nuovo è un'azione del Manager (`find_patients`) |
+| Niente campo "paziente" sulla persona | Chi è paziente è un dato sanitario: sulla persona lo leggerebbero anche marketing e commerciale. La scheda è un documento a sé, con i suoi permessi |
+| I consensi della clinica (dossier, referti online) chiedono `pazienti.vedi` per essere visti, anche in lista | Una risposta sul dossier dice già che la persona è paziente |
+| Una regola che fallisce non ferma l'appuntamento né la fattura | Si scrive nel log; sarebbe la cosa sbagliata al contrario |
+| La persona che è paziente non si cancella | La cartella va conservata anche se la persona chiede l'oblio; lo si dice a parole |
+| Il ruolo Medical Director si crea prima della sincronizzazione (la patch dei ruoli dei livelli, rilanciata) | La scheda paziente lo nomina nei permessi |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/clinica/__init__.py` | `registra()`: modulo del piano, ruolo e livello Direzione sanitaria, capacità, consensi della clinica |
+| `crm/clinica/regole.py` | Le regole, pure: presente o no, la prima nel tempo |
+| `crm/clinica/paziente.py` | La porta unica, il recupero, le chiamate della pagina |
+| `crm/clinica/eventi.py` | Appuntamento, fattura, piano, cancellazione |
+| `crm/clinica/doctype/clinic_patient/` | La scheda paziente |
+| `crm/moduli/registro.py`, `consensi.py`, `crm_consent_type` | Il modulo del piano e la capacità di un tipo di consenso |
+| `crm/hooks.py`, `crm/registrazione.py`, `crm/modules.txt`, `crm/patches.txt` | Il cablaggio |
+| `frontend/src/components/PatientSection.vue`, `pages/Lead.vue`, `MobileLead.vue` | La sezione "Patient" sulla persona |
+| `crm/clinica/tests/` | Confine e regole senza sito (13), la scheda sul sito (16) |

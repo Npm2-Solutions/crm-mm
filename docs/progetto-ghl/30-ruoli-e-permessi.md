@@ -259,6 +259,8 @@ dell'agenzia.
 | Aprire una cartella fuori équipe, scrivendo il motivo | — | ✓ | — | — | — | — | ✓ |
 | Oscurare un episodio su richiesta del paziente | — | — | — | — | — | — | ✓ |
 | Moduli da firmare e consensi: raccoglierli, vedere lo stato | ✓ | ✓ | vede lo stato | — | — | — | ✓ |
+| Sapere chi è paziente, da quando e perché; segnarlo a mano (dal 29/09/2026) | ✓ | i suoi | ✓ | — | — | — | ✓ |
+| Ritrovare i pazienti negli appuntamenti e nelle fatture di prima | — | — | ✓ | — | — | — | ✓ |
 | Modelli clinici (builder) | — | — | — | — | — | — | ✓ |
 | Moduli non clinici: privacy, contratti, preventivi | — | — | ✓ | — | — | — | ✓ |
 | Piani: alimentazione, allenamento, esercizi | — | secondo la qualifica | — | — | — | — | vede |

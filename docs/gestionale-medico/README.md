@@ -5,8 +5,9 @@
 29/09/2026; il Sito nascosto senza Builder e le fatture lette solo da chi deve,
 anche nella cronologia della persona, lo stesso giorno; poi
 [l'anagrafica fiscale sola](#unanagrafica-fiscale-sola), letta dalla fattura e
-completata da quella confermata; e [il registro dei consensi](#il-registro-dei-consensi),
-con quello di `/prenota`. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
+completata da quella confermata; [il registro dei consensi](#il-registro-dei-consensi),
+con quello di `/prenota`; e [lo scheletro della clinica](#lo-scheletro-della-clinica), con
+la scheda paziente che nasce dalle regole. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
 `develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
@@ -93,6 +94,12 @@ persone e applica le regole nell'ordine della tabella, fermandosi alla prima che
 trova. Nessuno deve segnare a mano i pazienti di prima.
 
 Una fattura non sanitaria (un corso, un abbonamento) non rende nessuno paziente.
+
+**Com'è fatto (29/09/2026), nello scheletro della clinica.** Il recupero non usa
+l'ordine della tabella ma quello del tempo: per ogni persona vince il fatto che
+sarebbe scattato per primo se la clinica fosse stata accesa da sempre, e "paziente
+dal" è la sua data; a parità di momento decide la tabella. Una fattura di gennaio e
+un appuntamento di marzo fanno un paziente da gennaio.
 
 Quello che cambia per chi lavora:
 
@@ -281,6 +288,40 @@ Restano per dopo: le risposte che arrivano dalle piattaforme (MioDottore porta
 `marketing_consent` e `data_privacy_consent` sulle prenotazioni che gli mandiamo),
 i moduli web del CRM, e il collegamento "da quale modulo" quando arrivano i
 modelli firmati della fase 2.
+
+### Lo scheletro della clinica
+
+Fatto il 29/09/2026, in `crm/clinica` (Frappe module "Clinica"):
+
+- **L'interruttore è il piano.** Il modulo "clinica" del `CRM Plan` è spento di
+  serie; lo accende l'agenzia. Spento, nessuna regola converte nessuno e le
+  capacità della clinica non sono di nessuno. Acceso, parte una volta sola, in
+  background, il recupero dei pazienti dagli appuntamenti e dalle fatture che ci
+  sono già.
+- **La porta unica** è `paziente.assicura_paziente`: "è già paziente? allora
+  esci", poi la scheda (`Clinic Patient`, una per persona) con la regola, il
+  momento, il documento che l'ha fatta scattare e chi.
+- **Le regole di oggi**: appuntamento svolto (completato, o il partecipante
+  presente; chi non si è presentato resta contatto), fattura sanitaria confermata,
+  importazione (una scheda importata prende la regola da sola), a mano ("Mark as
+  patient" sulla pagina della persona). Il primo dato clinico arriva con la
+  sezione Clinica, l'accettazione con la fase 1. Un servizio che il centro fattura
+  come non sanitario (un corso) non fa pazienti, come la sua fattura.
+- **Chi lo sa**: segreteria, operatore (i suoi), manager e il nuovo livello
+  **Direzione sanitaria** (ruolo Medical Director). Il commerciale e il marketing
+  no: né la sezione "Patient", né i consensi della clinica (dossier, referti
+  online), che dicono già da soli che qualcuno è paziente. L'agenzia solo con un
+  accesso clinico; può però lanciare il recupero, che è un lavoro sui dati.
+- **Paziente si resta**: la persona che è paziente non si cancella, perché la
+  cartella va conservata; lo dice con parole sue invece di un collegamento rotto.
+- **Il confine è un test** (`crm/clinica/tests/test_confine.py`): né il CRM né
+  la fatturazione importano la clinica, che si aggancia con gli eventi dei
+  documenti (appuntamento, fattura, piano, cancellazione) e con i registri. Solo
+  `crm/registrazione.py` la nomina.
+
+Restano per le prossime PR la sezione Clinica con la visita e il registro degli
+accessi (PR 6), e nella fase 1 il deal che si chiude, l'evento per le automazioni
+e il widget "nuovi pazienti".
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
