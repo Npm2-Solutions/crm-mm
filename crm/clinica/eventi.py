@@ -91,14 +91,14 @@ def fattura_confermata(doc, method=None) -> None:
 def piano_aggiornato(doc, method=None) -> None:
 	"""The clinic was switched on: the patients already there are found once, in the
 	background, from the appointments and the invoices."""
-	from crm.permissions import livelli
-
-	livelli.dimentica_cache()
+	# the plan's own on_update already dropped its cached copy: this reads the new one
 	if paziente.clinica_accesa():
 		from crm.clinica import pipeline
 
 		# the two pipelines of a medical centre, where there are none yet
 		_senza_fermare(_("Medical centre pipelines not created"), doc, pipeline.crea_pipeline)
+		# and the centre's dashboard
+		_senza_fermare(_("Medical centre dashboard not created"), doc, _cruscotto_del_centro)
 	if paziente.clinica_accesa() and not frappe.db.get_default(paziente.RECUPERO_FATTO):
 		frappe.enqueue(
 			"crm.clinica.paziente.recupera",
@@ -107,6 +107,12 @@ def piano_aggiornato(doc, method=None) -> None:
 			deduplicate=True,
 			enqueue_after_commit=True,
 		)
+
+
+def _cruscotto_del_centro() -> None:
+	from crm.dashboard import store
+
+	store.create_template_dashboards(only=("medical_centre",))
 
 
 def persona_in_cancellazione(doc, method=None) -> None:
