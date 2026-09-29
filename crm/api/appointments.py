@@ -45,6 +45,14 @@ def _check_manager():
 		frappe.throw(_("Only sales managers can change the scheduling setup"), frappe.PermissionError)
 
 
+def _check_reader():
+	"""The editor's helpers answer questions about everyone's day: who is busy
+	when, which room is taken, whether a person already has an appointment. The
+	calendar says the same to whoever may read it, and only to them; the public
+	booking page has endpoints of its own."""
+	frappe.has_permission("CRM Appointment", "read", throw=True)
+
+
 def _loads(value):
 	"""Query strings arrive as JSON text; POST bodies arrive already decoded."""
 	if not isinstance(value, str):
@@ -408,6 +416,7 @@ def get_available_slots(
 	exclude_appointment: str | None = None,
 ) -> list[dict]:
 	"""Free slots for a service, as ISO-8601 UTC, with the assignment behind each."""
+	_check_reader()
 	first, last = parse_date(start_date), parse_date(end_date)
 	if last < first:
 		frappe.throw(_("End date must be on or after start date"))
@@ -435,6 +444,7 @@ def quote_price(
 	participants: int = 1,
 ) -> dict:
 	"""Live price preview while the appointment is still being edited."""
+	_check_reader()
 	price = pricing.resolve_price(
 		service,
 		parse_utc(when),
@@ -449,6 +459,7 @@ def quote_price(
 @frappe.whitelist()
 def check_conflicts(appointment: str | dict) -> list[str]:
 	"""Dry-run the conflict rules against an unsaved appointment."""
+	_check_reader()
 	payload = _loads(appointment)
 	doc = frappe.get_doc({"doctype": "CRM Appointment", **_normalize(payload)})
 	if payload.get("name"):

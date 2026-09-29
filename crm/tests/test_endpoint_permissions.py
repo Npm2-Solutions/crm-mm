@@ -9,6 +9,7 @@ endpoint here is tried by someone it belongs to, by a Sales User outside the
 sales hierarchy, and by a logged-in user with no CRM role at all.
 """
 
+import datetime
 import inspect
 import json
 from unittest.mock import MagicMock, patch
@@ -17,7 +18,14 @@ import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.utils.nestedset import rebuild_tree
 
-from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
+from crm.api.appointments import (
+	check_conflicts,
+	get_available_slots,
+	get_calendar,
+	get_scheduler_meta,
+	get_workload,
+	quote_price,
+)
 from crm.api.contact import get_linked_deals
 from crm.api.doc import assigned_users_of, get_assigned_users, get_linked_docs_of_document, remove_assignments
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
@@ -154,22 +162,32 @@ class TestCallLogs(PermissionTestCase):
 				transcribe_now(self.call)
 
 
-class TestAppointmentFeeds(SchedulingCase):
+class AppointmentCase(SchedulingCase):
 	"""The calendar has no sales hierarchy: it is the practice's day, the same for every Sales User."""
 
 	def setUp(self):
 		super().setUp()
 		make_people()
+		self.lead = make_lead(REP).name
 		self.make_service("Visita permessi", [REP])
-		start = self.tomorrow(10)
+		self.start = self.tomorrow(10)
 		self.make_appointment(
 			"Visita permessi",
-			start,
+			self.start,
 			[REP],
-			participants=[{"participant_name": "Mario Rossi", "phone": "+393331234567"}],
+			participants=[
+				{
+					"party_type": "CRM Lead",
+					"party": self.lead,
+					"participant_name": "Mario Rossi",
+					"phone": "+393331234567",
+				}
+			],
 		)
-		self.day = start.date().isoformat()
+		self.day = self.start.date().isoformat()
 
+
+class TestAppointmentFeeds(AppointmentCase):
 	def test_every_sales_user_reads_the_calendar(self):
 		for user in (REP, OUTSIDER):
 			with self.set_user(user):
@@ -187,6 +205,39 @@ class TestAppointmentFeeds(SchedulingCase):
 			"calendar by source": lambda: get_calendar(self.day, self.day, sources=["Internal", "Treatwell"]),
 			"workload": lambda: get_workload(self.day, self.day),
 			"scheduler meta": get_scheduler_meta,
+		}
+		for label, call in calls.items():
+			with self.subTest(label), self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
+				call()
+
+
+class TestAppointmentEditorHelpers(AppointmentCase):
+	def the_same_slot_again(self):
+		"""Mario Rossi and the rep, again, at the hour they are already booked for."""
+		return {
+			"service": "Visita permessi",
+			"starts_on": self.start.isoformat(),
+			"ends_on": (self.start + datetime.timedelta(hours=1)).isoformat(),
+			"staff": [{"user": REP}],
+			"participants": [{"party_type": "CRM Lead", "party": self.lead}],
+		}
+
+	def test_every_sales_user_uses_the_editors_helpers(self):
+		for user in (REP, OUTSIDER):
+			with self.set_user(user):
+				slots = get_available_slots("Visita permessi", self.day, self.day)
+				price = quote_price("Visita permessi", self.start.isoformat())
+				conflicts = check_conflicts(self.the_same_slot_again())
+			self.assertTrue(slots)
+			self.assertIn("total", price)
+			self.assertTrue(any("already has another appointment" in c for c in conflicts), conflicts)
+
+	def test_a_website_user_cannot_ask_who_is_busy_when(self):
+		calls = {
+			"slots": lambda: get_available_slots("Visita permessi", self.day, self.day),
+			"price": lambda: quote_price("Visita permessi", self.start.isoformat()),
+			# the answer would say when Mario Rossi has an appointment
+			"conflicts": lambda: check_conflicts(self.the_same_slot_again()),
 		}
 		for label, call in calls.items():
 			with self.subTest(label), self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
