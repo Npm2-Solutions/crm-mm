@@ -265,8 +265,8 @@ Un modulo, una scheda clinica e un piano sono lo stesso oggetto con tre usi:
   perché la sua licenza vieta gli usi medici. Per gli esercizi la libreria è
   exercises-dataset: 1.324 esercizi, ognuno con l'animazione e la miniatura, il
   muscolo principale e i secondari, l'attrezzo e le istruzioni in italiano. I dati
-  sono MIT; le animazioni sono di Gym visual, che ci ha autorizzati (va messo per
-  iscritto). Le animazioni non evidenziano i muscoli: lo fa la mappa del corpo
+  sono MIT; le animazioni sono di Gym visual, che ha autorizzato per iscritto
+  NPM2 Solutions (20/09/2026, vedi le decisioni). Le animazioni non evidenziano i muscoli: lo fa la mappa del corpo
   accanto, disegnata da noi con body-muscles (Apache 2.0). Everkinetic e
   free-exercise-db restano la riserva libera. Per la fisioterapia non
   c'è una libreria libera con le figure (dell'NHS si riusano i testi, non le
@@ -274,11 +274,15 @@ Un modulo, una scheda clinica e un piano sono lo stesso oggetto con tre usi:
 - **exercises-dataset, come si importa**:
   - i nomi sono solo in inglese: si traducono una volta e li rivede un trainer; le
     istruzioni in italiano ci sono già, anche divise in passi;
-  - le animazioni restano a 180×180, come chiede la nota del dataset, e sul
-    telefono si mostrano a quella misura;
-  - su ogni animazione compare "© Gym visual — https://gymvisual.com/";
-  - le 2.648 immagini non vanno nel repository né in ogni sito: una copia per
-    server, o in uno spazio dell'agenzia, a cui i siti puntano;
+  - le animazioni sono a 180×180; se Gym visual ci manda versioni più grandi,
+    l'autorizzazione copre anche quelle;
+  - l'attribuzione "© Gym visual — https://gymvisual.com/": l'autorizzazione dice
+    che a 180×180 non serve, ma poi parla della "medesima attribuzione" e vieta di
+    toglierla. Finché non è chiarito la mostriamo, sotto la lista degli esercizi;
+  - si vedono solo dentro il CRM e l'area cliente: niente raccolta scaricabile;
+  - l'autorizzazione permette repository, server, cloud, CDN e backup. Per il peso
+    conviene comunque una copia per server o un CDN, non 2.648 file in git né una
+    copia per ogni sito;
   - l'assistente non le tocca mai: la licenza di Gym visual vieta di usarle per
     addestrare un'IA o per generare contenuti;
   - del JSON (17 MB, dieci lingue) si importano italiano e inglese, e i muscoli
@@ -465,9 +469,12 @@ in `pyproject.toml` (oggi qualunque 16.x) va alzato.
 8. Registrare la visita mentre si svolge: mai, oppure con uno scribe che ha già il
    marchio CE?
 9. Dove gira il modello linguistico: AWS Bedrock a Milano o Vertex AI in UE?
-10. L'autorizzazione di Gym visual, per iscritto: deve coprire il CRM venduto a
-    più centri (la loro licenza standard vieta l'uso "in prodotti destinati alla
-    rivendita"), le immagini sui nostri server e l'uso a 180×180 con
-    l'attribuzione.
+10. L'autorizzazione di Gym visual a NPM2 Solutions (20/09/2026) copre la
+    rivendita a più centri, l'hosting e le misure, gratis e con i clienti attivi
+    salvi in caso di revoca. Prima della firma: chi firma per Gym visual;
+    l'attribuzione, su cui il punto 4 si contraddice; strutture sanitarie,
+    pazienti e PDF dei piani fra gli usi ammessi; conversione dei formati; il
+    dataset come fonte dei file; partner e rivenditori; garanzia sui diritti,
+    legge applicabile e foro.
 10. Una libreria base di esercizi di fisioterapia girata una volta da voi, con un
     fisioterapista, che resta vostra e va a tutti i centri?
