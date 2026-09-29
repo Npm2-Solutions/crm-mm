@@ -313,6 +313,36 @@ fra quello che decide il centro e quello che resta all'agenzia.
   consenso al dossier, gli oscuramenti e l'apertura con motivo.
 - Un'assegnazione chiusa non deve dare accesso per sempre.
 
+## Il piano del centro: la seconda chiave
+
+I centri comprano moduli, e un servizio dell'agenzia ne sblocca alcuni (la
+segreteria sblocca il telefono, le campagne il marketing). Quindi una capacità
+vale se servono **due chiavi**: il modulo è attivo nel piano del centro, e il
+livello della persona la prevede.
+
+- **Il piano** sta in un documento solo per sito (per esempio `CRM Piano`). Dice:
+  - la taglia (quante agende);
+  - i moduli attivi, e per ciascuno se lo paga il centro o se è incluso in un
+    servizio dell'agenzia;
+  - le date di prova e di scadenza.
+  Lo scrive solo l'agenzia, o la sua console.
+- **Ogni modulo, nel registro**, dice anche che cosa succede quando si spegne: i
+  suoi dati restano e diventano di sola lettura, e automazioni e campagne si
+  mettono in pausa. Non si cancella mai niente.
+- **Un modulo spento** si vede con un lucchetto e "Attiva" nella pagina del piano e
+  quando la pagina del modulo è vuota, non in ogni angolo del CRM.
+- **Il centro può ampliare da solo.** "Attiva" apre subito una prova di 14 giorni e
+  manda la richiesta all'agenzia, che la conferma e la fattura dal mese dopo. Il
+  pagamento automatico (Stripe) si aggiunge solo se serve.
+- **Un superamento della taglia non blocca mai niente.** Se le agende attive
+  superano quelle della taglia, il CRM avvisa e propone la taglia sopra, ma
+  appuntamenti e fatture funzionano.
+- **Consumi**: il CRM conta agende attive, messaggi WhatsApp e SMS, minuti di
+  telefono e firme avanzate, e li manda all'agenzia ogni mese per la fattura.
+- **La console dell'agenzia** può essere il vostro CRM: i centri come
+  organizzazioni, il piano come abbonamento, le fatture emesse con il modulo di
+  fatturazione che c'è già.
+
 ## Come si costruisce
 
 1. **Il registro**, `crm/permissions/livelli.py`. Ogni modulo lo chiama dal suo
@@ -321,7 +351,8 @@ fra quello che decide il centro e quello che resta all'agenzia.
    - le capacità, ciascuna con i ruoli che la danno;
    - i livelli a cui vanno di serie;
    - le sue pagine di impostazioni, divise fra centro e agenzia;
-   - le regole d'ambito dei suoi documenti.
+   - le regole d'ambito dei suoi documenti;
+   - il modulo del piano a cui appartiene, e cosa fa quando è spento.
 2. **I livelli come Role Profile**, generati dal registro all'installazione e a
    ogni migrazione, senza doppioni. Frappe rifà i ruoli di un utente dai suoi
    profili a ogni salvataggio, quindi o si passa tutto dai livelli o non funziona.
@@ -358,7 +389,7 @@ fra quello che decide il centro e quello che resta all'agenzia.
 | PR | Cosa | sp |
 |---|---|---|
 | 0 | I quattro problemi di sicurezza, ognuno a parte | 1–1,5 |
-| 1 | Registro, livelli, pagina Utenti e inviti, passaggio degli utenti | 1–1,5 |
+| 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | 1,5–2 |
 | 2 | Permessi dei documenti allineati; l'ambito che segue la persona | 1 |
 | 3 | Capacità nel frontend, rotte protette, impostazioni divise | 0,5–1 |
 | 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
