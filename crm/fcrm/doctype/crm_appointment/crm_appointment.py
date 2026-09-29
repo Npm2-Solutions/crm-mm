@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_to_date, cint, get_datetime
+from frappe.utils import add_to_date, cint, get_datetime, now_datetime
 
 from crm.permissions.livelli import puo
 from crm.scheduling import pricing
@@ -67,6 +67,8 @@ class CRMAppointment(Document):
 		self.participants_are_people()
 		self.validate_times()
 		self.validate_participants()
+		self.stamp_arrivals()
+		self.close_from_attendance()
 		self.set_title()
 		self.check_conflicts()
 		pricing.apply_to(self)
@@ -114,6 +116,26 @@ class CRMAppointment(Document):
 		if len(names) > 2:
 			who = _("{0} +{1}").format(who, len(names) - 2)
 		self.title = f"{self.service} — {who}" if who else self.service
+
+	# --- how it went ------------------------------------------------------
+
+	def stamp_arrivals(self):
+		"""The desk checked somebody in: the waiting room counts from now."""
+		for row in self.participants:
+			if row.status == "Arrived" and not row.arrived_at:
+				row.arrived_at = now_datetime()
+
+	def close_from_attendance(self):
+		"""The participants say how it went (docs/gestionale-medico, fase 1): once each
+		of them came or did not, it is Completed, or No Show when nobody came. The
+		visit, the check-in and the invoice close it this way, without somebody
+		remembering to. Cancelled stays cancelled, and one still waiting stays open."""
+		if self.status == "Cancelled":
+			return
+		attivi = [row for row in self.participants if row.status != "Cancelled"]
+		if not attivi or any(row.status in ("Booked", "Arrived") for row in attivi):
+			return
+		self.status = "Completed" if any(row.status == "Attended" for row in attivi) else "No Show"
 
 	# --- validation -------------------------------------------------------
 
