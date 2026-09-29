@@ -1,9 +1,12 @@
 # 30 — Ruoli e permessi: chi può fare cosa, modulo per modulo
 
 **Stato:** 🟢 PR 1 fatta (29/09/2026): registro, livelli di base, piano, pagina
-Utenti e inviti per livello, passaggio degli utenti di prima. Le PR 2–4 restano da
-fare ([com'è fatta la PR 1](#la-pr-1-comè-fatta)). Lo stato "di oggi" qui sotto è
-quello verificato prima della PR 1, sul commit `151cba6`.
+Utenti e inviti per livello, passaggio degli utenti di prima
+([com'è fatta](#la-pr-1-comè-fatta)). Della PR 2 sono fatte le fatture: il Sales
+User non le legge più, l'Operatore legge quelle delle sue prestazioni, la Segreteria
+le emette e le trasmette solo se il Manager glielo permette. Il resto delle PR 2–4
+resta da fare. Lo stato "di oggi" qui sotto è quello verificato prima della PR 1,
+sul commit `151cba6`.
 
 ## In una pagina
 
