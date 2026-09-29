@@ -1502,3 +1502,26 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Una versione non si modifica né si cancella; un modello pubblicato si spegne | Quel che è stato firmato ci punta |
 | Il marchio "dato clinico" lo registra la clinica | Il CRM non conosce la clinica; senza clinica il marchio prometterebbe una protezione che nessuno dà |
 | La pagina Forms tiene i moduli web e i modelli, ognuno a chi lo può costruire | Il design chiede un builder solo con due destinazioni |
+
+## Fase 2, compilare e firmare
+
+> **Completato** (30/09/2026). Il modulo compilato (`CRM Form`) con le firme
+> (`CRM Signature`), la firma semplice col dito, il PDF/A con la pagina delle prove,
+> i consensi nel registro, il registro degli eventi a catena (`CRM Audit Log`), la
+> scheda "Forms" della persona. `docs/gestionale-medico/README.md`, "Compilare e firmare".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Del tratto si tiene il PNG, non i punti con pressione e tempi | Sarebbero dati biometrici (Garante, 2014); la firma avanzata passa dal codice di un fornitore |
+| Firmare rifà tutti i controlli sul server | Il browser mostra le stesse regole, ma è il server che decide cosa si firma |
+| Un campo con firma avanzata o qualificata non si firma col dito | Il livello lo sceglie il modello; un tratto sullo schermo spacciato per firma avanzata sarebbe peggio che non firmare |
+| La firma porta l'impronta delle risposte, e il PDF quella dello schema e delle risposte | Si prova su cosa è stata messa, non solo che c'è |
+| Il PDF si fa una volta, con WeasyPrint e il motore PDF/A della fatturazione | wkhtmltopdf non c'è; il motore della fatturazione converte e verifica cosa ne esce |
+| Nessuna risorsa remota nel PDF: le firme dentro come immagini | Un PDF che scarica qualcosa smette di leggersi e dice a un terzo quando lo si apre |
+| Il registro degli eventi è una catena di impronte | Un evento tolto o cambiato si vede, e si vede dove |
+| I consensi del modulo portano la versione del testo congelata | Il registro dice su quali parole, e di quale versione, è stato dato il sì |
+| `CRM Form` numerato `FRM-.YYYY.-.#####`, non `format:` | Con `format:` il contatore `{#####}` di Frappe ha chiave vuota ed è condiviso da tutti |
+| La clinica dice chi legge i moduli con dati sanitari | Il CRM non conosce la clinica; senza clinica un modulo sanitario non esiste |
+| In sola lettura le risposte si mostrano in parole | I controlli disabilitati, tutti grigi, non dicevano cosa era stato risposto |
