@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-09-29 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "person",
+  "person_name",
+  "column_break_related",
+  "related_person",
+  "related_person_name",
+  "relation_section",
+  "relation",
+  "column_break_acts",
+  "pays",
+  "books",
+  "represents",
+  "note_section",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "person",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "reqd": 1,
+   "description": "The one looked after: the child, the ward"
+  },
+  {
+   "fetch_from": "person.lead_name",
+   "fieldname": "person_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_related",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "related_person",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Related person",
+   "options": "CRM Lead",
+   "reqd": 1,
+   "description": "The one who looks after them, when somebody does"
+  },
+  {
+   "fetch_from": "related_person.lead_name",
+   "fieldname": "related_person_name",
+   "fieldtype": "Data",
+   "label": "Their name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "relation_section",
+   "fieldtype": "Section Break",
+   "label": "What they are to them"
+  },
+  {
+   "default": "Other",
+   "fieldname": "relation",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Relation",
+   "options": "Parent\nChild\nLegal guardian\nWard\nPartner\nFamily member\nOther",
+   "reqd": 1,
+   "description": "What the related person is to the person"
+  },
+  {
+   "fieldname": "column_break_acts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "pays",
+   "fieldtype": "Check",
+   "label": "Pays for them",
+   "description": "Their invoices are made out to the related person"
+  },
+  {
+   "default": "0",
+   "fieldname": "books",
+   "fieldtype": "Check",
+   "label": "Books for them",
+   "description": "Books their appointments and gets the messages about them"
+  },
+  {
+   "default": "0",
+   "fieldname": "represents",
+   "fieldtype": "Check",
+   "label": "Acts for them",
+   "description": "Signs and decides for them: a parent for a minor child, a guardian for their ward"
+  },
+  {
+   "fieldname": "note_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-29 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Related Person",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "share": 1,
+   "write": 1,
+   "role": "System Manager"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Sales User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "person_name,related_person_name,relation",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "person_name",
+ "track_changes": 1
+}
