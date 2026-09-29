@@ -122,6 +122,8 @@ CRM_DELLA_DIREZIONE = (
 	"profilo.proprio",
 	# the informed consents and the clinical sheets are the director's to write
 	"moduli.configura",
+	"moduli.vedi",
+	"moduli.compila",
 )
 
 DOSSIER = TipoConsenso(
@@ -188,10 +190,19 @@ def registra() -> None:
 		concedi(nome, {DIREZIONE: CENTRO})
 	registra_tipo(DOSSIER)
 	registra_tipo(REFERTI_ONLINE)
-	# "health data" on a form template means something where the clinic is on
-	from crm.moduli import modelli
+	# "health data" on a form template means something where the clinic is on,
+	# and a form that records it is read by the care team only
+	from crm.moduli import compilazioni, modelli
 
 	modelli.registra_dato_clinico(clinica_accesa)
+	compilazioni.registra_lettore_clinico(legge_i_moduli_clinici)
+
+
+def legge_i_moduli_clinici(user: str | None = None) -> bool:
+	"""Who reads a form with health data: whoever reads or writes the record."""
+	from crm.permissions.livelli import puo
+
+	return puo("clinica.vedi", user) or puo("clinica.scrivi", user)
 
 
 def _cruscotto():

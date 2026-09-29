@@ -415,6 +415,10 @@ doc_events = {
 	"CRM Plan": {
 		"on_update": ["crm.clinica.eventi.piano_aggiornato"],
 	},
+	# rule 1 of becoming a patient: a signed form with health data
+	"CRM Form": {
+		"on_submit": ["crm.clinica.eventi.modulo_firmato"],
+	},
 	"Log Settings": {
 		"validate": ["crm.clinica.cartella.valida_impostazioni_log"],
 	},

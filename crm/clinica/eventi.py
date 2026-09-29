@@ -88,6 +88,23 @@ def fattura_confermata(doc, method=None) -> None:
 	)
 
 
+def modulo_firmato(doc, method=None) -> None:
+	"""Rule 1: a signed form that records health data makes the person a patient."""
+	if not doc.get("clinical") or not paziente.clinica_accesa():
+		return
+	_senza_fermare(
+		_("Patient not recorded from form {0}").format(doc.name),
+		doc,
+		lambda: paziente.assicura_paziente(
+			doc.lead,
+			regole.INFORMAZIONE_MEDICA,
+			quando=get_datetime(doc.signed_on),
+			fonte=(doc.doctype, doc.name),
+			da=doc.get("filled_by") or frappe.session.user,
+		),
+	)
+
+
 def piano_aggiornato(doc, method=None) -> None:
 	"""The clinic was switched on: the patients already there are found once, in the
 	background, from the appointments and the invoices."""
