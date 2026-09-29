@@ -114,9 +114,20 @@ def notify_agent(doc):
 			)
 
 
+def may_converse() -> bool:
+	"""Whether the session writes and reads conversations. Somebody outside levels,
+	on the Desk, keeps what their roles give; a level without the capability - the
+	medical director - is not shown channels it cannot open."""
+	from crm.permissions.livelli import nel_crm
+
+	return not nel_crm() or puo("conversazioni.usa")
+
+
 @frappe.whitelist()
 def is_whatsapp_enabled():
 	if not frappe.db.exists("DocType", "WhatsApp Settings"):
+		return False
+	if not may_converse():
 		return False
 	default_outgoing = frappe.get_cached_value(
 		"WhatsApp Settings", "WhatsApp Settings", "default_outgoing_account"
