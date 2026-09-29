@@ -41,7 +41,10 @@
           :disabled="readonly"
           @update:model-value="(value) => emit(value)"
         />
-        <div v-if="field.phrases?.length && !readonly" class="flex flex-wrap gap-1.5">
+        <div
+          v-if="field.phrases?.length && !readonly"
+          class="flex flex-wrap gap-1.5"
+        >
           <Button
             v-for="phrase in field.phrases"
             :key="phrase"
@@ -94,7 +97,9 @@
               class="flex size-4 shrink-0 items-center justify-center border"
               :class="[
                 field.multiple ? 'rounded' : 'rounded-full',
-                picked(option.value) ? 'border-outline-gray-5' : 'border-outline-gray-3',
+                picked(option.value)
+                  ? 'border-outline-gray-5'
+                  : 'border-outline-gray-3',
               ]"
             >
               <span
@@ -155,7 +160,9 @@
           step="1"
           :value="modelValue ?? ''"
           :disabled="readonly"
-          @input="(e) => emit(e.target.value === '' ? null : Number(e.target.value))"
+          @input="
+            (e) => emit(e.target.value === '' ? null : Number(e.target.value))
+          "
         />
         <div
           v-if="field.min_label || field.max_label"
@@ -193,7 +200,9 @@
               :inputmode="field.input === 'text' ? 'text' : 'decimal'"
               :value="modelValue?.[side] ?? ''"
               :disabled="readonly"
-              @input="(e) => emit({ ...(modelValue || {}), [side]: e.target.value })"
+              @input="
+                (e) => emit({ ...(modelValue || {}), [side]: e.target.value })
+              "
             />
             <span v-if="field.unit" class="shrink-0 text-base text-ink-gray-5">
               {{ field.unit }}
@@ -217,7 +226,10 @@
         <span class="text-lg font-semibold text-ink-gray-9">
           {{ workedOut ?? '—' }}
         </span>
-        <span v-if="field.unit && workedOut !== null" class="text-sm text-ink-gray-5">
+        <span
+          v-if="field.unit && workedOut !== null"
+          class="text-sm text-ink-gray-5"
+        >
           {{ field.unit }}
         </span>
       </div>
@@ -228,7 +240,13 @@
         >
           {{ workedOut ?? '—' }}
         </span>
-        <Badge v-if="band" :label="band" theme="blue" variant="subtle" size="md" />
+        <Badge
+          v-if="band"
+          :label="band"
+          theme="blue"
+          variant="subtle"
+          size="md"
+        />
         <span v-else-if="workedOut === null" class="text-sm text-ink-gray-5">
           {{ __('Worked out once every question it counts is answered') }}
         </span>
@@ -238,7 +256,9 @@
         v-else-if="field.type === 'consent'"
         class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 px-4 py-3"
       >
-        <p class="whitespace-pre-line text-p-base leading-relaxed text-ink-gray-7">
+        <p
+          class="whitespace-pre-line text-p-base leading-relaxed text-ink-gray-7"
+        >
           {{ consentText }}
         </p>
         <span
@@ -350,7 +370,16 @@ const emits = defineEmits(['update:modelValue'])
 const emit = (value) => emits('update:modelValue', value)
 
 // the kinds a signed form shows as words; the others show themselves
-const IN_WORDS = ['text', 'number', 'choice', 'yesno', 'date', 'scale', 'sides', 'attachment']
+const IN_WORDS = [
+  'text',
+  'number',
+  'choice',
+  'yesno',
+  'date',
+  'scale',
+  'sides',
+  'attachment',
+]
 const inWords = computed(() =>
   IN_WORDS.includes(props.field.type)
     ? props.field.type === 'date' && props.modelValue
@@ -395,7 +424,11 @@ const scaleMin = computed(() => Number(props.field.min ?? 0))
 const scaleMax = computed(() => Number(props.field.max ?? 10))
 const steps = computed(() => {
   const found = []
-  for (let n = scaleMin.value; n <= scaleMax.value && found.length <= 101; n++) {
+  for (
+    let n = scaleMin.value;
+    n <= scaleMax.value && found.length <= 101;
+    n++
+  ) {
     found.push(n)
   }
   return found
@@ -406,7 +439,9 @@ const consentText = computed(
   () =>
     props.field.text ||
     props.consentTexts[props.field.consent_type] ||
-    __('The words of this consent come from the register when the form is published.'),
+    __(
+      'The words of this consent come from the register when the form is published.',
+    ),
 )
 
 const levelLabel = computed(() =>

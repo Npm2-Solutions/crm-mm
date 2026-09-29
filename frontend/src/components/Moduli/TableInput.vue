@@ -2,7 +2,9 @@
   <div class="flex flex-col gap-2">
     <!-- rows scroll sideways on a phone, each column keeping a readable width -->
     <div v-if="rows.length" class="overflow-x-auto">
-      <table class="w-full min-w-max border-separate border-spacing-y-1.5 text-base">
+      <table
+        class="w-full min-w-max border-separate border-spacing-y-1.5 text-base"
+      >
         <thead>
           <tr class="text-left text-sm text-ink-gray-5">
             <th
@@ -17,7 +19,11 @@
         </thead>
         <tbody>
           <tr v-for="(row, index) in rows" :key="index">
-            <td v-for="column in columns" :key="column.id" class="px-1 align-top">
+            <td
+              v-for="column in columns"
+              :key="column.id"
+              class="px-1 align-top"
+            >
               <div
                 v-if="(column.type || 'text') === 'yesno'"
                 class="flex h-7 items-center"
@@ -25,7 +31,9 @@
                 <Checkbox
                   :model-value="row[column.id] === true"
                   :disabled="readonly"
-                  @update:model-value="(value) => setCell(index, column.id, value)"
+                  @update:model-value="
+                    (value) => setCell(index, column.id, value)
+                  "
                 />
               </div>
               <input
@@ -75,10 +83,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const rows = computed(() => (Array.isArray(props.modelValue) ? props.modelValue : []))
+const rows = computed(() =>
+  Array.isArray(props.modelValue) ? props.modelValue : [],
+)
 
 function setCell(index, key, value) {
-  const next = rows.value.map((row, i) => (i === index ? { ...row, [key]: value } : row))
+  const next = rows.value.map((row, i) =>
+    i === index ? { ...row, [key]: value } : row,
+  )
   emit('update:modelValue', next)
 }
 

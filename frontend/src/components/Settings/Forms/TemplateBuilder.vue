@@ -31,9 +31,17 @@
               : __('Version {0}', [meta.current_version_number])
           "
         />
-        <Badge v-else variant="subtle" theme="gray" size="sm" :label="__('Draft')" />
+        <Badge
+          v-else
+          variant="subtle"
+          theme="gray"
+          size="sm"
+          :label="__('Draft')"
+        />
       </div>
-      <div class="flex shrink-0 items-center gap-2 max-md:w-full max-md:flex-wrap">
+      <div
+        class="flex shrink-0 items-center gap-2 max-md:w-full max-md:flex-wrap"
+      >
         <Button
           v-if="tab === 'build'"
           :label="mode === 'edit' ? __('Try it') : __('Edit')"
@@ -54,7 +62,9 @@
           variant="solid"
           :label="__('Publish')"
           :disabled="publishing || nothingToPublish"
-          :tooltip="nothingToPublish ? __('Nothing changed since the last version') : ''"
+          :tooltip="
+            nothingToPublish ? __('Nothing changed since the last version') : ''
+          "
           @click="openPublish"
         />
       </div>
@@ -64,7 +74,10 @@
       <TabButtons v-model="tab" :buttons="tabs" />
     </div>
 
-    <div v-if="loaded" class="flex-1 overflow-y-auto px-6 pb-8 pt-5 max-md:px-3">
+    <div
+      v-if="loaded"
+      class="flex-1 overflow-y-auto px-6 pb-8 pt-5 max-md:px-3"
+    >
       <!-- BUILD -->
       <template v-if="tab === 'build' && mode === 'edit'">
         <div
@@ -130,7 +143,11 @@
                   {{ section.fields.length }}
                 </span>
                 <Dropdown :options="sectionMenu(section)">
-                  <Button class="touch-target" variant="ghost" icon="lucide-more-horizontal" />
+                  <Button
+                    class="touch-target"
+                    variant="ghost"
+                    icon="lucide-more-horizontal"
+                  />
                 </Dropdown>
               </div>
               <textarea
@@ -144,7 +161,11 @@
                 <TemplateConditions
                   v-model="section.show_if"
                   :label="__('Show the section only if')"
-                  :fields="conditionFields(fieldsBefore(schema, { section: section.id }))"
+                  :fields="
+                    conditionFields(
+                      fieldsBefore(schema, { section: section.id }),
+                    )
+                  "
                 />
               </div>
 
@@ -195,7 +216,10 @@
       </template>
 
       <!-- TRY IT: the same rules the person will meet -->
-      <div v-else-if="tab === 'build'" class="mx-auto flex max-w-2xl flex-col gap-5">
+      <div
+        v-else-if="tab === 'build'"
+        class="mx-auto flex max-w-2xl flex-col gap-5"
+      >
         <div
           class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-1 px-4 py-2.5 text-sm text-ink-gray-6 max-md:flex-col max-md:items-start"
         >
@@ -207,7 +231,11 @@
             }}
           </span>
           <div class="flex shrink-0 gap-2">
-            <Button size="sm" :label="__('Check it')" @click="previewChecked = true" />
+            <Button
+              size="sm"
+              :label="__('Check it')"
+              @click="previewChecked = true"
+            />
             <Button
               size="sm"
               :label="__('Clear the answers')"
@@ -233,18 +261,23 @@
         >
           {{
             previewState.missing.length === 1
-              ? __('One required answer is missing: the form would not be sent.')
+              ? __(
+                  'One required answer is missing: the form would not be sent.',
+                )
               : previewState.missing.length
-                ? __('{0} required answers are missing: the form would not be sent.', [
-                    previewState.missing.length,
-                  ])
+                ? __(
+                    '{0} required answers are missing: the form would not be sent.',
+                    [previewState.missing.length],
+                  )
                 : __('Complete: the form would be sent.')
           }}
           <template v-if="previewState.stops.length">
             {{
               previewState.stops.length === 1
                 ? __('The operator is warned once.')
-                : __('The operator is warned {0} times.', [previewState.stops.length])
+                : __('The operator is warned {0} times.', [
+                    previewState.stops.length,
+                  ])
             }}
           </template>
         </div>
@@ -296,7 +329,9 @@
           />
         </div>
         <div v-if="tpl.ask_on === 'Services'" class="flex flex-col gap-1.5">
-          <span class="text-sm text-ink-gray-5">{{ __('For these services') }}</span>
+          <span class="text-sm text-ink-gray-5">{{
+            __('For these services')
+          }}</span>
           <MultiSelectFilter
             v-model="tpl.services"
             class="self-start"
@@ -311,7 +346,11 @@
           <span>
             {{ __('On') }}
             <span class="block text-sm text-ink-gray-5">
-              {{ __('Off, it is not asked any more; what was signed on it stays.') }}
+              {{
+                __(
+                  'Off, it is not asked any more; what was signed on it stays.',
+                )
+              }}
             </span>
           </span>
         </label>
@@ -349,16 +388,28 @@
             />
             <span class="text-sm text-ink-gray-5">
               {{ formatDate(version.published_on) }} ·
-              {{ getUser(version.published_by)?.full_name || version.published_by }}
+              {{
+                getUser(version.published_by)?.full_name || version.published_by
+              }}
             </span>
           </div>
-          <p v-if="version.notes" class="whitespace-pre-line text-sm text-ink-gray-7">
+          <p
+            v-if="version.notes"
+            class="whitespace-pre-line text-sm text-ink-gray-7"
+          >
             {{ version.notes }}
           </p>
           <p v-if="version.asked_from" class="text-sm text-ink-gray-6">
-            {{ __('Asked again from {0}', [formatDate(version.asked_from, 'D MMM YYYY')]) }}
+            {{
+              __('Asked again from {0}', [
+                formatDate(version.asked_from, 'D MMM YYYY'),
+              ])
+            }}
           </p>
-          <code class="truncate text-xs text-ink-gray-4" :title="version.schema_hash">
+          <code
+            class="truncate text-xs text-ink-gray-4"
+            :title="version.schema_hash"
+          >
             SHA-256 {{ version.schema_hash }}
           </code>
         </div>
@@ -369,7 +420,10 @@
     </div>
   </div>
 
-  <Dialog v-model="showPublish" :options="{ title: __('Publish a new version') }">
+  <Dialog
+    v-model="showPublish"
+    :options="{ title: __('Publish a new version') }"
+  >
     <template #body-content>
       <div class="flex flex-col gap-4">
         <p class="text-p-base text-ink-gray-6">
@@ -377,9 +431,14 @@
             meta.current_version_number
               ? __(
                   'Version {0} will be filled from now on. What was signed on version {1} keeps its own words.',
-                  [meta.current_version_number + 1, meta.current_version_number],
+                  [
+                    meta.current_version_number + 1,
+                    meta.current_version_number,
+                  ],
                 )
-              : __('From now on people fill this version. It will not change: a change is a new version.')
+              : __(
+                  'From now on people fill this version. It will not change: a change is a new version.',
+                )
           }}
         </p>
         <FormControl
@@ -395,7 +454,11 @@
             <span>
               {{ __('Ask again whoever signed an earlier version') }}
               <span class="block text-sm text-ink-gray-5">
-                {{ __('For a change that matters to them, like a new consent text.') }}
+                {{
+                  __(
+                    'For a change that matters to them, like a new consent text.',
+                  )
+                }}
               </span>
             </span>
           </label>
@@ -539,7 +602,9 @@ function apply(data) {
 }
 
 async function load() {
-  const data = await call('crm.moduli.modelli.get_template', { name: props.name })
+  const data = await call('crm.moduli.modelli.get_template', {
+    name: props.name,
+  })
   apply(data)
   loaded.value = true
   await nextTick()
@@ -552,7 +617,10 @@ watch([schema, tpl], () => loaded.value && (dirty.value = true), { deep: true })
 // what is wrong, as the server will say it: the same rules, live
 const problems = computed(() => readyToPublish(schema.value))
 const nothingToPublish = computed(
-  () => !dirty.value && Boolean(meta.current_version_number) && !meta.unpublished_changes,
+  () =>
+    !dirty.value &&
+    Boolean(meta.current_version_number) &&
+    !meta.unpublished_changes,
 )
 function problemsOf(key) {
   return problems.value
@@ -628,7 +696,9 @@ function rename(field, key) {
     if (expanded.value === from) expanded.value = key
   } else {
     toast.error(
-      __('A key is lowercase letters, digits and _, starts with a letter, and is not taken'),
+      __(
+        'A key is lowercase letters, digits and _, starts with a letter, and is not taken',
+      ),
     )
   }
 }
@@ -655,7 +725,8 @@ function sectionMenu(section) {
       icon: 'lucide-trash-2',
       theme: 'red',
       onClick: () => {
-        if (!section.fields.length) return schema.value.sections.splice(index, 1)
+        if (!section.fields.length)
+          return schema.value.sections.splice(index, 1)
         $dialog({
           title: __('Remove the section?'),
           message: __('Its {0} questions go with it.', [section.fields.length]),
@@ -684,7 +755,9 @@ async function save() {
   try {
     const data = await call('crm.moduli.modelli.save_template', {
       name: props.name,
-      ...Object.fromEntries(SETTINGS.filter((k) => k !== 'services').map((k) => [k, tpl[k]])),
+      ...Object.fromEntries(
+        SETTINGS.filter((k) => k !== 'services').map((k) => [k, tpl[k]]),
+      ),
       clinical: tpl.clinical ? 1 : 0,
       enabled: tpl.enabled ? 1 : 0,
       services: JSON.stringify(tpl.services || []),
@@ -706,7 +779,12 @@ async function save() {
 }
 
 const showPublish = ref(false)
-const publishDraft = reactive({ notes: '', askAgain: false, askedFrom: '', error: '' })
+const publishDraft = reactive({
+  notes: '',
+  askAgain: false,
+  askedFrom: '',
+  error: '',
+})
 
 async function openPublish() {
   if (problems.value.length) {
@@ -749,7 +827,9 @@ function goBack() {
   if (!dirty.value) return emit('back')
   $dialog({
     title: __('Unsaved Changes'),
-    message: __('Are you sure you want to go back? Unsaved changes will be lost.'),
+    message: __(
+      'Are you sure you want to go back? Unsaved changes will be lost.',
+    ),
     variant: 'solid',
     actions: [
       {

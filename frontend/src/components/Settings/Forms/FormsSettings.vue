@@ -48,7 +48,10 @@ const { puo } = usersStore()
 const kinds = computed(() =>
   [
     puo('moduli_lead.gestisci') && { label: __('Web forms'), value: 'web' },
-    puo('moduli.configura') && { label: __('Forms to sign'), value: 'templates' },
+    puo('moduli.configura') && {
+      label: __('Forms to sign'),
+      value: 'templates',
+    },
   ].filter(Boolean),
 )
 

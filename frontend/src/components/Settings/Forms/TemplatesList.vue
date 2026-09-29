@@ -39,12 +39,16 @@
         v-else-if="!templates.data?.length"
         :title="__('No forms to sign yet')"
         :description="
-          __('Start from a privacy notice, a first visit history or an informed consent.')
+          __(
+            'Start from a privacy notice, a first visit history or an informed consent.',
+          )
         "
         :icon="h(LucideFileSignature)"
       />
       <div v-else class="w-full">
-        <div class="flex items-center p-2 text-sm text-ink-gray-5 max-md:hidden">
+        <div
+          class="flex items-center p-2 text-sm text-ink-gray-5 max-md:hidden"
+        >
           <div class="w-7/12">{{ __('Form') }}</div>
           <div class="w-5/12">{{ __('Status') }}</div>
         </div>
@@ -74,7 +78,9 @@
                 {{ summary(template) }}
               </div>
             </button>
-            <div class="flex w-5/12 min-w-0 items-center justify-between gap-2 max-md:w-full">
+            <div
+              class="flex w-5/12 min-w-0 items-center justify-between gap-2 max-md:w-full"
+            >
               <div class="flex min-w-0 flex-wrap items-center gap-1.5">
                 <Badge
                   v-for="badge in badges(template)"
@@ -100,7 +106,10 @@
     </div>
   </div>
 
-  <Dialog v-model="showCreate" :options="{ title: __('New form to sign'), size: 'xl' }">
+  <Dialog
+    v-model="showCreate"
+    :options="{ title: __('New form to sign'), size: 'xl' }"
+  >
     <template #body-content>
       <div class="flex flex-col gap-4">
         <FormControl
@@ -127,7 +136,9 @@
               <span class="text-base font-medium text-ink-gray-8">
                 {{ starter.title }}
               </span>
-              <span class="text-sm text-ink-gray-5">{{ starter.description }}</span>
+              <span class="text-sm text-ink-gray-5">{{
+                starter.description
+              }}</span>
             </button>
           </div>
         </div>
@@ -199,7 +210,9 @@ function summary(template) {
   ]
   if (template.specialty) parts.push(template.specialty)
   if (template.published_on) {
-    parts.push(__('published {0}', [formatDate(template.published_on, 'D MMM YYYY')]))
+    parts.push(
+      __('published {0}', [formatDate(template.published_on, 'D MMM YYYY')]),
+    )
   }
   return parts.join(' · ')
 }
@@ -231,7 +244,8 @@ function rowOptions(template) {
     {
       label: __('Duplicate'),
       icon: 'lucide-copy',
-      onClick: () => run('crm.moduli.modelli.duplicate_template', template, __('Copied')),
+      onClick: () =>
+        run('crm.moduli.modelli.duplicate_template', template, __('Copied')),
     },
     {
       label: template.enabled ? __('Switch off') : __('Switch on'),
@@ -248,7 +262,8 @@ function rowOptions(template) {
       label: __('Delete'),
       icon: 'lucide-trash-2',
       theme: 'red',
-      onClick: () => run('crm.moduli.modelli.delete_template', template, __('Deleted')),
+      onClick: () =>
+        run('crm.moduli.modelli.delete_template', template, __('Deleted')),
     },
   ].filter(Boolean)
 }

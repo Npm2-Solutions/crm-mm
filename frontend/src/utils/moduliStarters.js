@@ -61,8 +61,22 @@ export const STARTERS = [
           id: 'measures',
           title: __('About you'),
           fields: [
-            { id: 'weight', type: 'number', label: __('Weight'), unit: 'kg', min: 1, max: 400 },
-            { id: 'height', type: 'number', label: __('Height'), unit: 'cm', min: 30, max: 250 },
+            {
+              id: 'weight',
+              type: 'number',
+              label: __('Weight'),
+              unit: 'kg',
+              min: 1,
+              max: 400,
+            },
+            {
+              id: 'height',
+              type: 'number',
+              label: __('Height'),
+              unit: 'cm',
+              min: 30,
+              max: 250,
+            },
             {
               id: 'bmi',
               type: 'calc',
@@ -241,9 +255,24 @@ export const STARTERS = [
             id: 'weeks',
             title: __('In the last two weeks, how often…'),
             fields: [
-              { id: 'q1', type: 'choice', label: __('…did you sleep badly?'), options: often },
-              { id: 'q2', type: 'choice', label: __('…did you feel tired?'), options: often },
-              { id: 'q3', type: 'choice', label: __('…was it hard to concentrate?'), options: often },
+              {
+                id: 'q1',
+                type: 'choice',
+                label: __('…did you sleep badly?'),
+                options: often,
+              },
+              {
+                id: 'q2',
+                type: 'choice',
+                label: __('…did you feel tired?'),
+                options: often,
+              },
+              {
+                id: 'q3',
+                type: 'choice',
+                label: __('…was it hard to concentrate?'),
+                options: often,
+              },
               {
                 id: 'total',
                 type: 'score',

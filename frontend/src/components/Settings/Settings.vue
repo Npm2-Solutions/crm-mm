@@ -353,7 +353,8 @@ const tabs = computed(() => {
           component: markRaw(FormsSettings),
           icon: markRaw(LucideTextCursorInput),
           // the web forms, and the forms to fill and sign: one builder
-          condition: () => puo('moduli_lead.gestisci') || puo('moduli.configura'),
+          condition: () =>
+            puo('moduli_lead.gestisci') || puo('moduli.configura'),
         },
         {
           label: __('Tracked Links'),
