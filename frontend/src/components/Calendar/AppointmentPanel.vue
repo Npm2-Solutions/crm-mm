@@ -332,7 +332,27 @@
         <span class="lucide-user mt-2 size-4 shrink-0" aria-hidden="true" />
         <div class="min-w-0 flex-1">
           <template v-if="!row.manual">
+            <!-- once picked, the person by name: the picker could only show
+                 the record's id («CRM-LEAD-2026-00055») once its search had
+                 moved on. The × puts the picker back. -->
+            <div
+              v-if="row.party"
+              class="flex h-7 w-full items-center gap-2 rounded border border-outline-gray-2 bg-surface-base px-2 text-base text-ink-gray-8"
+            >
+              <span class="min-w-0 flex-1 truncate">
+                {{ row.participant_name || row.party }}
+              </span>
+              <button
+                type="button"
+                class="touch-target flex shrink-0 text-ink-gray-5 hover:text-ink-gray-8"
+                :aria-label="__('Choose someone else')"
+                @click="pickParty(row, '')"
+              >
+                <span class="lucide-x size-3.5" aria-hidden="true" />
+              </button>
+            </div>
             <Link
+              v-else
               class="w-full"
               doctype="CRM Lead"
               variant="outline"
@@ -349,7 +369,7 @@
             <button
               v-else-if="!row.party"
               type="button"
-              class="mt-1 text-p-sm text-ink-gray-5 hover:text-ink-gray-7 hover:underline"
+              class="mt-0.5 py-1 text-p-sm text-ink-gray-5 hover:text-ink-gray-7 hover:underline"
               @click="row.manual = true"
             >
               {{ __('Not in the CRM? Type a name') }}
