@@ -281,6 +281,22 @@ function dayOf(at) {
 }
 
 /**
+ * Whether a message opens a run — one side speaking, on one day — and so
+ * carries the bubble's tail. For the channel views, which draw one channel's
+ * messages as a plain list rather than the mixed stream `buildStream` makes
+ * (where `startsRun` says the same thing).
+ */
+export function opensRun(messages = [], index = 0) {
+  const here = messages?.[index]
+  if (!here) return false
+  const before = messages[index - 1]
+  if (!before) return true
+  return (
+    before.type !== here.type || dayOf(before.creation) !== dayOf(here.creation)
+  )
+}
+
+/**
  * The same stream, cut into one group per day.
  *
  * A long conversation is a wall of times with no dates: «12:57» tells you

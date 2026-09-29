@@ -15,18 +15,23 @@
 
     <template v-else>
       <div
-        v-for="sms in messages"
+        v-for="(sms, index) in messages"
         :key="sms.name"
         class="activity flex"
         :class="sms.type == 'Outgoing' ? 'justify-end' : 'justify-start'"
       >
         <div
           :id="sms.name"
-          class="relative min-w-0 max-w-full rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
+          class="bubble-lift relative min-w-0 max-w-full rounded-2xl px-3 pb-1.5 pt-2 text-base text-ink-gray-9"
           :class="[
             sms.type == 'Outgoing'
               ? 'bg-surface-blue-3'
-              : 'bg-surface-elevation-2 shadow-sm dark:bg-surface-gray-2',
+              : 'bg-surface-elevation-2 dark:bg-surface-gray-2',
+            tailOf(index)
+              ? sms.type == 'Outgoing'
+                ? 'bubble-tail-out rounded-tr-none'
+                : 'bubble-tail-in rounded-tl-none'
+              : '',
             failed(sms) ? 'ring-1 ring-inset ring-outline-red-3' : '',
           ]"
         >
@@ -71,15 +76,22 @@
 </template>
 <script setup>
 import { formatDate } from '@/utils'
-import { clockOf as clock, hasFailed } from '@/utils/conversation'
+import { clockOf as clock, hasFailed, opensRun } from '@/utils/conversation'
 import { Tooltip, dayjsLocal } from 'frappe-ui'
 import { appLocale } from '@/utils/locale'
 
-defineProps({
+const props = defineProps({
   messages: { type: Array, default: () => [] },
   // the house component draws the bubble in the mixed chat
   bare: { type: Boolean, default: false },
+  // whether the bubble carries its tail, when the caller knows; left out, each
+  // message works it out from the one before it
+  tail: { type: Boolean, default: null },
 })
+
+function tailOf(index) {
+  return props.tail ?? opensRun(props.messages, index)
+}
 
 function failed(sms) {
   return hasFailed({ ...sms, activity_type: 'sms' })

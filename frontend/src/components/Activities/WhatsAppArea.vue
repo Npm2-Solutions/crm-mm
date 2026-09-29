@@ -29,7 +29,7 @@
     -->
     <template v-else>
       <div
-        v-for="whatsapp in messages"
+        v-for="(whatsapp, index) in messages"
         :key="whatsapp.name"
         class="activity group/bubble flex items-center gap-1.5"
         :class="[
@@ -39,9 +39,14 @@
       >
         <div
           :id="whatsapp.name"
-          class="wa-bubble relative min-w-0 max-w-full rounded-lg px-2 pb-1 pt-1.5 text-base shadow-sm"
+          class="wa-bubble bubble-lift relative min-w-0 max-w-full rounded-lg px-2 pb-1 pt-1.5 text-base"
           :class="[
             whatsapp.type == 'Outgoing' ? 'wa-out' : 'wa-in',
+            tailOf(index)
+              ? whatsapp.type == 'Outgoing'
+                ? 'bubble-tail-out rounded-tr-none'
+                : 'bubble-tail-in rounded-tl-none'
+              : '',
             hasFailed(whatsapp) ? 'ring-1 ring-inset ring-outline-red-3' : '',
           ]"
         >
@@ -162,16 +167,28 @@ import WhatsAppContent from '@/components/Activities/WhatsAppContent.vue'
 import WhatsAppQuote from '@/components/Activities/WhatsAppQuote.vue'
 import { useWhatsAppActions } from '@/composables/whatsappActions'
 import { formatDate } from '@/utils'
-import { clockOf as clock, hasFailed as failed } from '@/utils/conversation'
+import {
+  clockOf as clock,
+  hasFailed as failed,
+  opensRun,
+} from '@/utils/conversation'
 import { Tooltip, dayjsLocal } from 'frappe-ui'
 import { appLocale } from '@/utils/locale'
 
-defineProps({
+const props = defineProps({
   messages: { type: Array, default: () => [] },
   // inside the mixed chat the bubble is drawn by the house component, so this
   // one renders only what it alone knows: the quote and the message
   bare: { type: Boolean, default: false },
+  // whether the bubble carries its tail, when the caller knows (one message
+  // at a time, from the stream); left out, each message works it out from the
+  // one before it
+  tail: { type: Boolean, default: null },
 })
+
+function tailOf(index) {
+  return props.tail ?? opensRun(props.messages, index)
+}
 
 const list = defineModel({ type: Object })
 const reply = defineModel('reply', { type: Object, default: () => ({}) })
