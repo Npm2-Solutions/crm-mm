@@ -18,10 +18,19 @@
 -->
 <template>
   <div class="flex justify-center px-3 sm:px-4">
-    <div
+    <!-- a card that stands for something with a page of its own opens it -->
+    <component
+      :is="opens ? 'button' : 'div'"
       v-if="card"
-      class="w-full max-w-md rounded-xl border px-3 py-2 shadow-sm"
-      :class="[tone.edge, tone.fill]"
+      :type="opens ? 'button' : undefined"
+      class="w-full max-w-md rounded-xl border px-3 py-2 text-left shadow-sm"
+      :class="[
+        tone.edge,
+        tone.fill,
+        opens &&
+          'transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3',
+      ]"
+      @click="opens && emit('open')"
     >
       <!-- a note brings its own header line, with its author and its menu -->
       <div
@@ -38,7 +47,7 @@
       <div class="min-w-0 break-words text-base text-ink-gray-8">
         <slot />
       </div>
-    </div>
+    </component>
 
     <div
       v-else
@@ -71,7 +80,11 @@ const props = defineProps({
   card: { type: Boolean, default: false },
   // a call nobody answered is the one line here somebody has to act on
   alarm: { type: Boolean, default: false },
+  // a click opens what it stands for (`open`): an appointment, an event
+  opens: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['open'])
 
 // The raised surface every notice sits on; a shade up from the chat's own
 // background in both themes, which `surface-white` — the token these used to
