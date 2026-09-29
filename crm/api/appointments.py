@@ -113,11 +113,11 @@ def get_calendar(
 		else:
 			filters["name"] = [
 				"in",
-				frappe.get_all("CRM Appointment", or_filters=or_filters, pluck="name", limit_page_length=0)
+				frappe.get_list("CRM Appointment", or_filters=or_filters, pluck="name", limit_page_length=0)
 				or [""],
 			]
 
-	rows = frappe.get_all(
+	rows = frappe.get_list(
 		"CRM Appointment",
 		filters=filters,
 		fields=[
@@ -296,7 +296,7 @@ def get_person_appointments(doctype: str, name: str) -> list[dict]:
 def get_scheduler_meta() -> dict:
 	"""Everything the calendar toolbar and the appointment editor need at once."""
 	config = settings()
-	services = frappe.get_all(
+	services = frappe.get_list(
 		"CRM Service",
 		filters={"enabled": 1},
 		fields=[
@@ -349,6 +349,8 @@ def get_scheduler_meta() -> dict:
 		service["resources"] = resources_by_service.get(service.name, [])
 
 	users = {u for service in services for u in [row["user"] for row in service["staff"]]}
+	# names and pictures of the staff, and which platforms are connected: a Sales
+	# User reads neither User nor CRM Booking Connection, and the calendar needs both
 	people = frappe.get_all(
 		"User",
 		filters={"name": ["in", list(users)]} if users else {"name": ["in", [""]]},
@@ -358,14 +360,14 @@ def get_scheduler_meta() -> dict:
 
 	return {
 		"services": services,
-		"resources": frappe.get_all(
+		"resources": frappe.get_list(
 			"CRM Resource",
 			filters={"enabled": 1},
 			fields=["name", "resource_name", "resource_type", "capacity", "seats", "color", "location"],
 			order_by="resource_type asc, resource_name asc",
 		),
 		"staff": people,
-		"price_lists": frappe.get_all(
+		"price_lists": frappe.get_list(
 			"CRM Price List",
 			filters={"enabled": 1},
 			fields=["name", "price_list_name", "currency", "is_default"],
@@ -699,7 +701,7 @@ def get_workload(start: str, end: str) -> dict:
 	first, last = parse_date(start), parse_date(end)
 	from_dt = datetime.datetime.combine(first, datetime.time.min)
 	to_dt = datetime.datetime.combine(last + datetime.timedelta(days=1), datetime.time.min)
-	rows = frappe.get_all(
+	rows = frappe.get_list(
 		"CRM Appointment",
 		filters={
 			"status": ["in", ACTIVE_STATUSES],
