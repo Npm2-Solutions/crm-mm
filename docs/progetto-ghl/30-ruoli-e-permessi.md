@@ -149,6 +149,8 @@ Valori:
 | Richieste e trattative | ✓ | vede le sue | ✓ | team | vede | vede il valore | — |
 | Configurare pipeline e fasi | — | — | ✓ | — | — | — | — |
 | Viste pubbliche, filtri rapidi, campi delle schede | — | — | ✓ | — | — | — | — |
+| Consensi: vedere lo stato, registrare una risposta o una revoca (dal 29/09/2026) | ✓ | suoi | ✓ | team | — | — | ✓ |
+| Tipi di consenso e i loro testi | — | — | ✓ | — | — | — | — |
 
 ### Conversazioni
 

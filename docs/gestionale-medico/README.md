@@ -5,7 +5,8 @@
 29/09/2026; il Sito nascosto senza Builder e le fatture lette solo da chi deve,
 anche nella cronologia della persona, lo stesso giorno; poi
 [l'anagrafica fiscale sola](#unanagrafica-fiscale-sola), letta dalla fattura e
-completata da quella confermata. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
+completata da quella confermata; e [il registro dei consensi](#il-registro-dei-consensi),
+con quello di `/prenota`. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
 `develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
@@ -195,7 +196,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 | Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare. Codice fiscale e indirizzo stanno nella sua [anagrafica fiscale](#unanagrafica-fiscale-sola) (29/09/2026) | La scheda paziente (consensi, tutore o genitore per i minori, dossier) |
 | Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
-| Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:567`) **ma non registrata**. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | Consensi registrati (quale testo, quale versione, quando, come): marketing, dossier, referti online |
+| Privacy | Il [registro dei consensi](#il-registro-dei-consensi) (29/09/2026): quale testo, quale versione, quando, come; la spunta privacy di `/prenota` ci finisce, e la pagina chiede anche il marketing se il centro vuole. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | I consensi della clinica: dossier, referti online, assistente |
 | Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
 | Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`), e dalla PR #101 le fatture compaiono anche nella cronologia della persona: `invoices_on` in `crm/api/activities.py` le legge con `frappe.get_all`, che salta i permessi (solo intestazione, importi e stati, niente righe) | Tre livelli (Segreteria, Manager amministrativo, Operatore) con la gestione dei ruoli nel CRM; System Manager e Administrator solo all'agenzia, mentre oggi l'"Admin" del CRM **è** System Manager ([requisiti §1](./requisiti.md#1-tre-livelli-e-il-site-resta-vostro)). Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
 | Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
@@ -243,6 +244,43 @@ sociale. Data di nascita e sesso si leggono dal codice fiscale, non si scrivono.
   il cognome o il sesso della persona, o che sta anche su un'altra, si segnala e
   non si blocca.
 - La sezione Clinica, quando arriva, mostra gli stessi campi (la PR 6).
+
+### Il registro dei consensi
+
+Fatto il 29/09/2026, nel CRM e non nella clinica, perché serve a tutti: in
+`crm/moduli`, dove andranno anche i modelli e le firme della fase 2.
+
+- **Un tipo di consenso** (`CRM Consent Type`) è una chiave che il codice chiede
+  ("possiamo scrivergli?") e un testo che la persona legge. Il testo è del centro,
+  lo controlla chi risponde della privacy, e ogni modifica è una versione nuova. I
+  moduli registrano i loro tipi come registrano le capacità: il CRM porta
+  l'informativa (presa visione, non si revoca) e il marketing; la clinica porterà
+  dossier, referti online e assistente. Il centro può aggiungerne di suoi (le foto
+  sui social).
+- **Una risposta** (`CRM Consent`) dice sì o no, quando, come (online, al banco,
+  su carta, al telefono, per email), su quali parole e con quale versione; da
+  quale prenotazione, con IP e browser se viene dal sito. Non si modifica mai: la
+  revoca si timbra sulla stessa riga, un nuovo sì è una riga nuova. Lo stato di
+  una persona è la sua ultima risposta.
+- **`/prenota`** registra la spunta dell'informativa con le parole che la pagina
+  ha mostrato, nella lingua del visitatore, e l'indirizzo dell'informativa. Se il
+  centro lo accende nelle impostazioni della prenotazione, chiede anche il
+  marketing: una casella facoltativa e mai spuntata in anticipo, col testo del
+  centro.
+- **Sulla pagina della persona** la sezione "Consents": lo stato di ogni tipo, e
+  un bottone per registrare una risposta o revocare. Revocare è facile quanto
+  dare (art. 7(3) GDPR): chi sente "non scrivetemi più" lo registra, commerciale
+  compreso. I testi si cambiano in Impostazioni › Consents, dal Manager.
+- **Il marketing si specchia sulla persona** (`marketing_consent`), così liste e
+  automazioni filtrano su "possiamo scrivergli" senza leggere il registro: è il
+  mattone dei richiami col consenso della fase 1.
+- Le risposte seguono la persona: le legge chi vede la persona, e se ne vanno
+  con lei quando la si cancella.
+
+Restano per dopo: le risposte che arrivano dalle piattaforme (MioDottore porta
+`marketing_consent` e `data_privacy_consent` sulle prenotazioni che gli mandiamo),
+i moduli web del CRM, e il collegamento "da quale modulo" quando arrivano i
+modelli firmati della fase 2.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
