@@ -34,6 +34,8 @@ _CAMPI_RIGA = (
 	"withdrawn_on",
 	"withdrawal_channel",
 	"recorded_by",
+	"given_by",
+	"given_by_name",
 	"creation",
 )
 
@@ -139,13 +141,17 @@ def registra_risposta(
 	allegato: str | None = None,
 	ip: str | None = None,
 	browser: str | None = None,
+	dato_da: str | None = None,
 ) -> str:
 	"""Write an answer, on the words the person read.
 
 	``testo`` is for a page that shows its own words (the privacy tick of
 	/prenota, in the visitor's language); otherwise the kind's current text and
-	its version are copied onto the answer.
+	its version are copied onto the answer. ``dato_da`` is the person who
+	answered for them: the parent of a minor child, whoever booked for them.
 	"""
+	if dato_da == lead:
+		dato_da = None
 	if stato not in (registro.DATO, registro.RIFIUTATO):
 		frappe.throw(_("An answer says yes or no; a withdrawal is recorded on the consent it withdraws"))
 	if canale not in registro.CANALI:
@@ -178,6 +184,7 @@ def registra_risposta(
 			"text_version": None if testo else tipo.text_version,
 			"note": nota,
 			"attachment": allegato,
+			"given_by": dato_da,
 		}
 	)
 	risposta.insert(ignore_permissions=True)
@@ -302,7 +309,28 @@ def get_consents(lead: str) -> dict:
 				"can_withdraw": puo_raccogliere and registro.puo_revocare(attuale, tipo.kind),
 			}
 		)
-	return {"types": tipi, "can_record": puo_raccogliere, "channels": list(registro.CANALI_A_MANO)}
+	return {
+		"types": tipi,
+		"can_record": puo_raccogliere,
+		"channels": list(registro.CANALI_A_MANO),
+		# who may answer for them: the people linked to them, whoever acts for them first
+		"answered_by": _chi_risponde_per(lead),
+	}
+
+
+def _chi_risponde_per(lead: str) -> list[dict]:
+	from crm.persone.collegate import collegate_a, rappresentanti_di
+
+	rappresentanti = rappresentanti_di(lead)
+	collegate = sorted(collegate_a(lead), key=lambda persona: persona not in rappresentanti)
+	return [
+		{
+			"name": persona,
+			"label": frappe.db.get_value("CRM Lead", persona, "lead_name") or persona,
+			"represents": persona in rappresentanti,
+		}
+		for persona in collegate
+	]
 
 
 def _per_scrivere(lead: str, canale: str, chiave: str) -> None:
@@ -322,11 +350,23 @@ def record_consent(
 	channel: str = "At the desk",
 	note: str | None = None,
 	attachment: str | None = None,
+	given_by: str | None = None,
 ) -> dict:
-	"""Record an answer given outside the CRM's pages: at the desk, on paper, on the phone."""
+	"""Record an answer given outside the CRM's pages: at the desk, on paper, on the phone.
+
+	``given_by`` is somebody linked to the person who answered for them - the parent
+	of a minor child - and nobody else.
+	"""
 	_per_scrivere(lead, channel, consent_type)
+	if given_by:
+		from crm.persone.collegate import collegate_a
+
+		if given_by not in collegate_a(lead):
+			frappe.throw(_("Only somebody linked to this person can answer for them"))
 	# a "no" from somebody who had said yes is written as the withdrawal it is
-	registra_risposta(lead, consent_type, status, channel, nota=note, allegato=attachment)
+	registra_risposta(
+		lead, consent_type, status, channel, nota=note, allegato=attachment, dato_da=given_by or None
+	)
 	return get_consents(lead)
 
 

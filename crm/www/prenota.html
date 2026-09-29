@@ -273,6 +273,10 @@
           stCancelled: "Annullata", stCompleted: "Completata", "stNo Show": "Assente", instructions: "Indicazioni", genericError: "Qualcosa è andato storto. Riprova.",
           required: "Compila i campi obbligatori.", invalidEmail: "Inserisci un'email valida.", poweredBy: "Prenotazione online",
           firstFree: "Primo orario libero", servicesOf: "Servizi di", allServices: "Tutti i servizi",
+          forWhom: "Per chi è l'appuntamento?", forMe: "Per me", forOther: "Per un'altra persona",
+          yourName: "Il tuo nome e cognome", otherName: "Nome e cognome di chi viene", youAre: "Tu sei",
+          relParent: "Il genitore", relGuardian: "Il tutore", relFamily: "Un familiare", relOther: "Altro",
+          otherHint: "I messaggi sull'appuntamento arrivano ai tuoi recapiti.", forLabel: "Per",
         },
         en: {
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
@@ -297,6 +301,10 @@
           stCancelled: "Cancelled", stCompleted: "Completed", "stNo Show": "No show", instructions: "Instructions", genericError: "Something went wrong. Please try again.",
           required: "Please fill in the required fields.", invalidEmail: "Please enter a valid email.", poweredBy: "Online booking",
           firstFree: "First free time", servicesOf: "Services by", allServices: "All services",
+          forWhom: "Who is the appointment for?", forMe: "For me", forOther: "For someone else",
+          yourName: "Your full name", otherName: "Their full name", youAre: "You are",
+          relParent: "Their parent", relGuardian: "Their legal guardian", relFamily: "A family member", relOther: "Other",
+          otherHint: "Messages about the appointment go to your contact details.", forLabel: "For",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -365,7 +373,7 @@
         catalog: null, step: "service", query: "", category: "",
         service: null, staff: "", staffName: "", seats: 1,
         month: null, days: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
-        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false },
+        form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false, for_other: false, for_name: "", for_relation: "Parent" },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
       };
@@ -620,7 +628,25 @@
         const svc = S.service;
         const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submit(); } });
         form.append(h("h2", {}, T("stepDetails")));
-        form.append(field("full_name", T("name"), { autocomplete: "name" }, true));
+        // a parent books for a child, a son for his mother: the appointment is theirs,
+        // the contact details stay the booker's
+        const other = S.form.for_other;
+        const pick = (value) => { if (S.form.for_other !== value) { S.form.for_other = value; render(); } };
+        form.append(h("label", { id: "f-for-label" }, T("forWhom")));
+        form.append(h("div", { class: "chips", role: "group", "aria-labelledby": "f-for-label" },
+          h("button", { type: "button", class: "chip", "aria-pressed": String(!other), onclick: () => pick(false) }, T("forMe")),
+          h("button", { type: "button", class: "chip", "aria-pressed": String(other), onclick: () => pick(true) }, T("forOther"))));
+        if (other) {
+          const relation = h("select", { id: "f-for_relation", name: "for_relation" },
+            ...[["Parent", "relParent"], ["Legal guardian", "relGuardian"], ["Family member", "relFamily"], ["Other", "relOther"]].map(([value, key]) =>
+              h("option", { value, selected: S.form.for_relation === value || null }, T(key))));
+          relation.addEventListener("change", (e) => (S.form.for_relation = e.target.value));
+          form.append(h("div", { class: "grid2" },
+            field("for_name", T("otherName"), { autocomplete: "off" }, true),
+            h("div", {}, h("label", { for: "f-for_relation" }, T("youAre")), relation)));
+        }
+        form.append(field("full_name", other ? T("yourName") : T("name"), { autocomplete: "name" }, true));
+        if (other) form.append(h("p", { class: "hint" }, T("otherHint")));
         form.append(h("div", { class: "grid2" },
           field("email", T("email"), { type: "email", autocomplete: "email", inputmode: "email" }, true),
           field("phone", T("phone"), { type: "tel", autocomplete: "tel", inputmode: "tel" }, !!svc.require_phone)));
@@ -644,13 +670,13 @@
         form.append(h("div", { class: "actions" },
           h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
           h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
-        setTimeout(() => $("f-full_name")?.focus(), 0);
+        setTimeout(() => $(other && !S.form.for_name ? "f-for_name" : "f-full_name")?.focus(), 0);
         return form;
       }
 
       async function submit() {
         const f = S.form, svc = S.service;
-        if (!f.full_name.trim() || !f.email.trim() || (svc.require_phone && !f.phone.trim()) || (svc.require_notes && !f.notes.trim()) || (S.catalog.require_consent && !f.consent)) {
+        if (!f.full_name.trim() || !f.email.trim() || (svc.require_phone && !f.phone.trim()) || (svc.require_notes && !f.notes.trim()) || (S.catalog.require_consent && !f.consent) || (f.for_other && !f.for_name.trim())) {
           S.error = T("required"); render(); return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { S.error = T("invalidEmail"); render(); return; }
@@ -664,6 +690,7 @@
             service: svc.id, start: S.slot.start, full_name: f.full_name, email: f.email, phone: f.phone, notes: f.notes,
             staff: S.staff, participants: S.seats, consent: f.consent ? 1 : 0, timezone: CLIENT_TZ,
             consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
+            for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
             crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
           }, true);
           S.busy = false;
@@ -688,6 +715,7 @@
         const dl = h("dl", { class: "kv" });
         const add = (k, v) => { if (v) dl.append(h("dt", {}, k), h("dd", {}, v)); };
         add(T("stepService"), b.service);
+        add(T("forLabel"), b.booked_for);
         add(T("when"), fmtFull.format(new Date(b.start)));
         add(T("duration"), duration(b.duration));
         add(T("with"), b.staff.join(", "));
@@ -716,7 +744,7 @@
       function restart() {
         history.replaceState(null, "", location.pathname);
         Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, result: null, manage: null, moving: false, seats: 1 });
-        S.form.notes = ""; S.form.consent = false; S.form.marketing = false;
+        S.form.notes = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
         go("service");
       }
 

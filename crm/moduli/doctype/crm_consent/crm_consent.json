@@ -14,6 +14,8 @@
   "answered_on",
   "channel",
   "recorded_by",
+  "given_by",
+  "given_by_name",
   "source_section",
   "source_doctype",
   "source_name",
@@ -96,6 +98,21 @@
    "fieldtype": "Link",
    "label": "Recorded by",
    "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "given_by",
+   "fieldtype": "Link",
+   "label": "Given by",
+   "options": "CRM Lead",
+   "read_only": 1,
+   "description": "Who answered for them: a parent, a guardian, whoever booked for them"
+  },
+  {
+   "fetch_from": "given_by.lead_name",
+   "fieldname": "given_by_name",
+   "fieldtype": "Data",
+   "label": "Given by (name)",
    "read_only": 1
   },
   {
@@ -206,7 +223,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-09-29 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Consent",
