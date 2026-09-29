@@ -16,6 +16,7 @@ from frappe.tests import IntegrationTestCase
 from frappe.utils.nestedset import rebuild_tree
 
 from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
+from crm.api.contact import get_linked_deals
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
 from crm.integrations.api import get_recording_url
@@ -198,6 +199,29 @@ class TestDealContacts(PermissionTestCase):
 		for user in (OUTSIDER, PATIENT):
 			with self.set_user(user), self.assertRaises(frappe.PermissionError):
 				get_deal_contacts(self.deal)
+
+
+class TestContactDeals(PermissionTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.contact = make_contact("Giulia", "Bianchi", "+39 333 765 4321")
+		cls.reps_deal = make_deal_with(REP, cls.contact)
+		cls.outsiders_deal = make_deal_with(OUTSIDER, cls.contact)
+
+	def test_a_contacts_deals_are_only_the_ones_the_user_may_read(self):
+		seen = {}
+		for user in ("Administrator", REP, MANAGER, OUTSIDER):
+			with self.set_user(user):
+				seen[user] = {d["name"] for d in get_linked_deals(self.contact)}
+		self.assertEqual(seen["Administrator"], {self.reps_deal, self.outsiders_deal})
+		self.assertEqual(seen[REP], {self.reps_deal})
+		self.assertEqual(seen[MANAGER], {self.reps_deal})
+		self.assertEqual(seen[OUTSIDER], {self.outsiders_deal})
+
+	def test_a_website_user_reads_no_contacts_deals(self):
+		with self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
+			get_linked_deals(self.contact)
 
 
 def make_call_log(links=(), **fields):
