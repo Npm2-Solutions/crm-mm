@@ -12,14 +12,12 @@ from crm.automation.engine import (
 	program_nodes,
 	validate_steps,
 )
+from crm.permissions.livelli import puo, verifica
 from crm.utils import count_field
-
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can manage automations"), frappe.PermissionError)
+	verifica("automazioni.gestisci", messaggio=_("Only sales managers can manage automations"))
 
 
 @frappe.whitelist()
@@ -97,7 +95,7 @@ def get_automation(name: str) -> dict:
 def _webhook_key(doc) -> str:
 	"""The key of the Inbound Webhook URL, for whoever builds the automation. Anyone
 	who can read an automation can open it; the key would let them fire it."""
-	if not MANAGER_ROLES & set(frappe.get_roles()):
+	if not puo("automazioni.gestisci"):
 		return ""
 	return doc.get_password("webhook_key", raise_exception=False) or ""
 

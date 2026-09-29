@@ -854,8 +854,8 @@ def execute_step(step: dict, ref_doc, enrollment=None) -> str:
 def _automation_jenv():
 	"""The Jinja environment automation text is rendered in — deliberately not Frappe's.
 
-	A Sales Manager can write automations (MANAGER_ROLES in crm/api/automation.py, and
-	the write permission on CRM Automation), and every message, subject, task title and
+	A Sales Manager can write automations (the `automazioni.gestisci` capability in
+	crm/api/automation.py, and the write permission on CRM Automation), and every message, subject, task title and
 	webhook body they save is rendered server-side. frappe.render_template() would hand
 	that text Frappe's safe-exec globals, where frappe.db.get_value and friends ignore
 	permissions: "{{ frappe.db.get_value(...) }}" in a message body would read any field

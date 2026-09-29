@@ -4,12 +4,12 @@ import frappe
 from frappe import _
 
 from crm.integrations.meta.redact import redact
-
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
+from crm.permissions.livelli import puo
 
 
 def _is_manager() -> bool:
-	return bool(MANAGER_ROLES & set(frappe.get_roles()))
+	"""Who approves and publishes: everyone else writes drafts to be approved."""
+	return puo("social.pubblica")
 
 
 def _check_manager():

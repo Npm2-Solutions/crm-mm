@@ -19,7 +19,6 @@ import re
 import frappe
 from frappe import _
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 EDITABLE_FIELDS = (
 	"template_name",
 	"category",
@@ -43,8 +42,9 @@ META_CATEGORIES = ("UTILITY", "MARKETING", "AUTHENTICATION")
 
 
 def _check_manager():
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can manage WhatsApp templates"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("modelli_messaggio.gestisci", messaggio=_("Only sales managers can manage WhatsApp templates"))
 
 
 def templates_available() -> bool:

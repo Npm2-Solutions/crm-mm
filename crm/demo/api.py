@@ -49,7 +49,9 @@ def create_demo_data(_args: dict | None = None):
 
 @frappe.whitelist()
 def clear_demo_data():
-	frappe.only_for(["Sales Manager", "System Manager"], True)
+	from crm.permissions.livelli import verifica
+
+	verifica("dati_prova.gestisci")
 
 	if not frappe.db.get_default(DEMO_STATE_KEY):
 		return

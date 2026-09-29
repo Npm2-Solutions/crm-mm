@@ -6,10 +6,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime
 
+from crm.permissions.livelli import puo
 from crm.scheduling import pricing
 from crm.scheduling.availability import find_conflicts, settings
-
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
 
 class CRMAppointment(Document):
@@ -166,7 +165,7 @@ class CRMAppointment(Document):
 			self.conflict_note = "\n".join(conflicts)
 			return
 		config = settings()
-		may_override = cint(config.allow_override) and bool(MANAGER_ROLES & set(frappe.get_roles()))
+		may_override = cint(config.allow_override) and puo("agenda.sovrapponi")
 		if cint(self.override_conflicts) and may_override:
 			self.conflict_note = "\n".join(conflicts)
 			return

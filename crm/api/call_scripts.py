@@ -12,12 +12,11 @@ gracefully into a plain reference document when a practice writes one long step.
 import frappe
 from frappe import _
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
-
 
 def _check_manager():
-	if not (MANAGER_ROLES & set(frappe.get_roles())):
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	from crm.permissions.livelli import verifica
+
+	verifica("telefono.copioni_scrivi", messaggio=_("Not permitted"))
 
 
 def _as_dict(doc) -> dict:

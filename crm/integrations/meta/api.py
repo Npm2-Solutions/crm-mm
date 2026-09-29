@@ -30,8 +30,8 @@ from crm.integrations.meta.insights import (
 )
 from crm.integrations.meta.leads import backfill_form, get_page_token
 from crm.integrations.meta.oauth import (
-	MANAGER_ROLES,
 	_check_manager,
+	_is_manager,
 	granted_scopes,
 	hub_url,
 	is_hub,
@@ -44,10 +44,6 @@ from crm.integrations.meta.oauth import (
 from crm.utils import check_system_manager, count_field, is_system_manager
 
 WEBHOOK_PATH = "/api/method/crm.integrations.meta.webhook.handle"
-
-
-def _is_manager() -> bool:
-	return bool(MANAGER_ROLES & set(frappe.get_roles()))
 
 
 @frappe.whitelist()

@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
+from crm.permissions.livelli import puo
 
 
 class CRMSocialPost(Document):
@@ -25,7 +25,7 @@ class CRMSocialPost(Document):
 		"""
 		if self.status not in ("Scheduled", "Published"):
 			return
-		if MANAGER_ROLES & set(frappe.get_roles()):
+		if puo("social.pubblica"):
 			return
 		before = self.get_doc_before_save()
 		if self.status == "Published" and before and before.status == "Published":

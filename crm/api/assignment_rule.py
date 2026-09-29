@@ -1,14 +1,13 @@
 import frappe
 from frappe import _
 
-MANAGER_ROLES = {"System Manager", "Sales Manager"}
+from crm.permissions.livelli import verifica
 
 
 @frappe.whitelist()
 def get_assignment_rules_list():
 	# frappe.get_all below reads past permissions: the settings page that asks is a manager's
-	if not MANAGER_ROLES & set(frappe.get_roles()):
-		frappe.throw(_("Only sales managers can see the assignment rules"), frappe.PermissionError)
+	verifica("assegnazione.regole", messaggio=_("Only sales managers can see the assignment rules"))
 
 	assignment_rules = []
 	for docname in frappe.get_all(
