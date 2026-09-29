@@ -1,5 +1,19 @@
-import numpy as np, wave
-SR=44100; DUR=136.81; N=int(SR*DUR)
+import numpy as np, wave, sys, json
+# usage: python3 audio.py [plan.json out.wav] — the plan comes from video.html (render.mjs writes it)
+SR=44100
+# the scene plan, as in video.html: (id, choreography, transition, slow-down, hold)
+PLAN_FULL=[('s-hook',7.6,'cut',1,0.3),('j1',3.2,'dive',1,0),('s-mkt',4.4,'blinds',1.3,1.0),('s-tel',3.8,'cloud',1.25,0.9),
+ ('j2',3.2,'dive',1,0),('s-chat',4.0,'zoom',1.3,1.0),('s-agenda',5.0,'push',1.3,1.0),('s-serv',3.6,'cloud',1.2,0.9),
+ ('j3',3.2,'dive',1,0),('s-clin',5.2,'wipeD',1.25,1.0),('s-ai',4.8,'cloud',1.25,1.0),
+ ('j4',3.2,'dive',1,0),('s-fatt',4.0,'blinds',1.3,1.0),('s-auto',3.4,'cloud',1.3,1.0),
+ ('j5',3.2,'dive',1,0),('s-acc',4.8,'push',1.25,1.0),('s-diet',4.8,'zoom',1.3,1.0),('s-ex',5.0,'cloud',1.3,1.0),
+ ('j6',3.2,'dive',1,0),('s-liv',5.0,'wipeV',1.3,1.0),('s-unl',3.4,'zoom',1,0.8),('s-app',4.6,'circle',1.2,1.0),('s-gdpr',4.2,'cloud',1.2,1.0),('s-out',4.8,None,1,1.5)]
+PLAN=[tuple(p) for p in json.load(open(sys.argv[1]))] if len(sys.argv)>1 else PLAN_FULL
+OUTWAV=sys.argv[2] if len(sys.argv)>2 else 'audio.wav'
+AT={}; SL={}; LEN={}; _a=0.0
+for _id,_d,_t,_s,_h in PLAN: AT[_id]=_a; SL[_id]=_s; LEN[_id]=_d*_s+_h; _a+=LEN[_id]
+TOTAL=_a
+DUR=TOTAL; N=int(SR*DUR)
 rng=np.random.default_rng(7)
 def midi(m): return 440*2**((m-69)/12)
 def env(n, a, d, s=0.0, r=None):
@@ -7,6 +21,7 @@ def env(n, a, d, s=0.0, r=None):
     return e*((1-s)*np.exp(-t/max(d,1e-4))+s)
 music=np.zeros((N,2)); sfx=np.zeros((N,2))
 def add(buf, t0, sig, pan=0.0, g=1.0):
+    if t0 is None: return
     i=int(t0*SR); 
     if i>=N: return
     sig=sig[:N-i]; l=np.cos((pan+1)*np.pi/4); r=np.sin((pan+1)*np.pi/4)
@@ -16,7 +31,10 @@ def lp(x, fc):
     # one-pole via cumulative filtering (vectorized using lfilter-like loop in chunks)
     from itertools import accumulate
     return np.array(list(accumulate(x, lambda p,v: a*p+(1-a)*v)))
-AT_OUT=130.51; AT_AI=56.29; AT_GD=124.47
+HOOK='s-hook' in AT
+AT_OUT=AT.get('s-out', AT.get('x-end', TOTAL))
+GROOVE=7.6 if HOOK else AT[PLAN[1][0]]           # drums and bass come in here
+ARP=3.5 if HOOK else 0.2
 # ---------- music: F, Dm, Bb, C at 120 bpm ----------
 CH=[[53,57,60,64],[50,57,60,65],[46,57,62,65],[48,55,60,64]]
 BASS=[41,38,34,36]
@@ -28,26 +46,26 @@ def pad(freqs, n):
             s+=np.sin(2*np.pi*ff*t+rng.random()*6)+0.25*np.sin(2*np.pi*2*ff*t)+0.08*np.sin(2*np.pi*3*ff*t)
     return s/(len(freqs)*3)
 bar=2.0; END=AT_OUT
-SOFT=[(AT_AI,AT_AI+7.0),(AT_GD,AT_GD+6.04)]
+SOFT=[(AT[s],AT[s]+LEN[s]) for s in ('s-ai','s-gdpr') if s in AT]
 soft=lambda t:any(a<=t<b for a,b in SOFT)
 k=0
 while k*bar<END:
     t0=k*bar; c=CH[k%4]; n=int(SR*(bar+0.6))
     e=env(n,0.35,10,0.9); e[int(SR*bar):]*=np.linspace(1,0,n-int(SR*bar))
-    add(music,t0,pad([midi(m) for m in c],n)*e,0,0.16 if (t0<7.6 or soft(t0)) else 0.12); k+=1
+    add(music,t0,pad([midi(m) for m in c],n)*e,0,0.16 if (t0<GROOVE or soft(t0)) else 0.12); k+=1
 arp_pat=[0,2,1,3,2,1,3,2]
-t0=3.5; k=0
+t0=ARP; k=0
 while t0<END:
     c=CH[int(t0//bar)%4]; m=c[arp_pat[k%8]]+12; n=int(SR*0.5); t=np.arange(n)/SR; f=midi(m)
     s_=(np.sin(2*np.pi*f*t)+0.3*np.sin(2*np.pi*2*f*t)*np.exp(-t*20))*env(n,0.004,0.16)
-    add(music,t0,s_,0.35 if k%2 else -0.35,0.05 if t0<7.6 else 0.07); t0+=0.25; k+=1
+    add(music,t0,s_,0.35 if k%2 else -0.35,0.05 if t0<GROOVE else 0.07); t0+=0.25; k+=1
 def kick():
     n=int(SR*0.4); t=np.arange(n)/SR; f=50+90*np.exp(-t*30)
     return np.sin(2*np.pi*np.cumsum(f)/SR)*np.exp(-t*9)
 def hat():
     n=int(SR*0.08); x=rng.standard_normal(n); x=x-lp(x,6000); return x*np.exp(-np.arange(n)/SR*60)
 HAT=hat(); KICK=kick()
-t0=7.6; k=0
+t0=GROOVE; k=0
 while t0<END:
     full=not soft(t0)
     b=BASS[int(t0//bar)%4]; n=int(SR*0.48); t=np.arange(n)/SR; f=midi(b)
@@ -79,20 +97,11 @@ def boom(g=0.35):
     return np.sin(2*np.pi*(45+60*np.exp(-t*25))*t)*np.exp(-t*4)*g
 pent=[65,69,72,74,77,81]
 def chime(ms, t0, g=0.08):
+    if t0 is None: return
     for j,m in enumerate(ms): add(sfx,t0+j*0.07,pluck(m+12,0.5),(j-1)*0.3,g)
 def ticks(t0, n, step, g=0.035, oct=12):
     for i in range(n): add(sfx,t0+i*step,pluck(pent[i%6]+oct,0.07),(-1)**i*0.4,g)
-# the scene plan, as in video.html: (id, choreography, transition, slow-down, hold)
-PLAN=[('s-hook',7.6,'cut',1,0.3),('j1',3.2,'dive',1,0),('s-mkt',4.4,'blinds',1.3,1.0),('s-tel',3.8,'cloud',1.25,0.9),
- ('j2',3.2,'dive',1,0),('s-chat',4.0,'zoom',1.3,1.0),('s-agenda',5.0,'push',1.3,1.0),('s-serv',3.6,'cloud',1.2,0.9),
- ('j3',3.2,'dive',1,0),('s-clin',5.2,'wipeD',1.25,1.0),('s-ai',4.8,'cloud',1.25,1.0),
- ('j4',3.2,'dive',1,0),('s-fatt',4.0,'blinds',1.3,1.0),('s-auto',3.4,'cloud',1.3,1.0),
- ('j5',3.2,'dive',1,0),('s-acc',4.8,'push',1.25,1.0),('s-diet',4.8,'zoom',1.3,1.0),('s-ex',5.0,'cloud',1.3,1.0),
- ('j6',3.2,'dive',1,0),('s-liv',5.0,'wipeV',1.3,1.0),('s-unl',3.4,'zoom',1,0.8),('s-app',4.6,'circle',1.2,1.0),('s-gdpr',4.2,'cloud',1.2,1.0),('s-out',4.8,None,1,1.5)]
-AT={}; SL={}; LEN={}; _a=0.0
-for _id,_d,_t,_s,_h in PLAN: AT[_id]=_a; SL[_id]=_s; LEN[_id]=_d*_s+_h; _a+=LEN[_id]
-TOTAL=_a
-def at(sc,t): return AT[sc]+t*SL[sc]
+def at(sc,t): return AT[sc]+t*SL[sc] if sc in AT else None
 # ---------- transitions: few, and each kind with its own sound ----------
 # Only the moves that open space get a sound: the chapter doors, the diagonal
 # wipes that cross the frame, the way into the dark. Pushes stay silent.
@@ -167,19 +176,24 @@ for i,(sc,d,ty,sl,h) in enumerate(PLAN):
         elif nxt=='s-out': swell(b, dur=1.4, notes=(53,60,65,69), g=0.18)
 for k in range(2,7): add(sfx,at('j%d'%k,0.55),boom(0.2),0,1)      # the stop lights up: felt, not a bell
 # ---------- the logo ----------
-for base in (0.15,at('s-out',0.3)):
+def snap(base):                                                  # the logo's pieces click together
+    if base is None: return
     add(sfx,base,pluck(53,0.2),-0.3,0.1); add(sfx,base+0.15,pluck(60,0.2),0.3,0.1); add(sfx,base+0.3,pluck(65,0.2),0,0.1)
-chime([72,77,81],0.85,0.07)
+snap(at('s-out',0.3)); chime([65,72,77,81],at('s-out',2.1),0.05)
 add(music,0.0,riser(1.2)*0.05,0,1)
-for i in range(7): add(sfx,5.55+i*0.08,pluck(pent[i%6]+12,0.1),(-1)**i*0.3,0.035)   # channels absorbed, quietly
-add(sfx,6.55,riser(1.05),0,0.22)
-add(sfx,7.6,boom(0.45),0,1); chime([65,72,77],7.62,0.06)
-chime([65,72,77,81],at('s-out',2.1),0.05)
+if HOOK:
+    snap(0.15); chime([72,77,81],0.85,0.07)
+    for i in range(7): add(sfx,5.55+i*0.08,pluck(pent[i%6]+12,0.1),(-1)**i*0.3,0.035)   # channels absorbed, quietly
+    add(sfx,6.55,riser(1.05),0,0.22)
+    add(sfx,7.6,boom(0.45),0,1); chime([65,72,77],7.62,0.06)
+# the ads: a low hit under the first words, the logo and a bell on the call to action
+add(sfx,at('x-hook',0.05),boom(0.3),0,1)
+snap(at('x-end',0.15)); chime([72,77,84],at('x-end',1.35),0.06)
 # ---------- interfaces: clicks and taps for what the hand does, one bell per real event ----------
 def tap(t0,g=0.08): add(sfx,t0,click()*0.6,0.1,g)
 for sc,t in [('s-ai',3.95),('s-tel',2.3),('s-mkt',1.45),('s-fatt',1.6),('s-liv',2.0),('s-liv',3.6)]: add(sfx,at(sc,t),click(),0.2,0.18)
 chime([77,84],at('s-mkt',2.6),0.05)                               # a request comes in
-for r in range(3):                                                 # the phone rings
+for r in range(3 if 's-tel' in AT else 0):                         # the phone rings
     for j,m in enumerate((81,77,81,77)): add(sfx,at('s-tel',0.85)+r*0.5*SL['s-tel']+j*0.08,pluck(m,0.08),0,0.03)
 chime([77,81,84],at('s-chat',2.85),0.05)                          # appointment confirmed
 add(sfx,at('s-agenda',2.3),pluck(62,0.3),0,0.04)                  # a slot frees up
@@ -213,6 +227,6 @@ fo=int(SR*0.6); bus[-fo:]*=np.linspace(1,0,fo)[:,None]
 bus=np.tanh(bus*1.3)
 bus/=np.max(np.abs(bus)); bus*=10**(-1.5/20)
 pcm=(bus*32767).astype(np.int16)
-with wave.open('audio.wav','wb') as w:
+with wave.open(OUTWAV,'wb') as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
 print('ok', len(pcm)/SR)

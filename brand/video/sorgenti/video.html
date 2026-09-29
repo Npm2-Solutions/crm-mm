@@ -707,6 +707,12 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
 </div>
 
 <script>
+// ?fmt=h (1920×1080, default) | v (1080×1920, reels and stories) | p (1080×1350, feed)
+// ?plan=full (default) | reel | ad-chat | ad-fatt | ad-app | ad-ex
+const Q = new URLSearchParams(location.search);
+const FMT = Q.get('fmt') || 'h', PLAN_NAME = Q.get('plan') || 'full';
+const [SW, SH] = { h: [1920, 1080], v: [1080, 1920], p: [1080, 1350] }[FMT];
+[document.documentElement, document.body].forEach((e) => { e.style.width = SW + 'px'; e.style.height = SH + 'px'; });
 const P = {
   users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   msg: '<path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/>',
@@ -822,7 +828,8 @@ const CHAP = [
 // [scene id, duration of its choreography, transition into the next one,
 //  slow-down of the choreography, extra hold at the end to read and look]
 // Interfaces to read get room; pure motion scenes stay quick and carry little text.
-const PLAN = [
+const PLANS = {
+  full: [
   ['s-hook', 7.6, 'cut', 1, 0.3],
   ['j1', 3.2, 'dive', 1, 0], ['s-mkt', 4.4, 'blinds', 1.3, 1.0], ['s-tel', 3.8, 'cloud', 1.25, 0.9],
   ['j2', 3.2, 'dive', 1, 0], ['s-chat', 4.0, 'zoom', 1.3, 1.0], ['s-agenda', 5.0, 'push', 1.3, 1.0], ['s-serv', 3.6, 'cloud', 1.2, 0.9],
@@ -831,7 +838,29 @@ const PLAN = [
   ['j5', 3.2, 'dive', 1, 0], ['s-acc', 4.8, 'push', 1.25, 1.0], ['s-diet', 4.8, 'zoom', 1.3, 1.0], ['s-ex', 5.0, 'cloud', 1.3, 1.0],
   ['j6', 3.2, 'dive', 1, 0], ['s-liv', 5.0, 'wipeV', 1.3, 1.0], ['s-unl', 3.4, 'zoom', 1, 0.8], ['s-app', 4.6, 'circle', 1.2, 1.0], ['s-gdpr', 4.2, 'cloud', 1.2, 1.0],
   ['s-out', 4.8, null, 1, 1.5],
-];
+],
+  // the vertical cut: one scene per stop, the ones a phone can read (the agenda and the
+  // marketing screens are too wide to stay legible at 1080 px)
+  reel: [
+    ['s-hook', 7.6, 'cloud', 1, 0.3],
+    ['s-chat', 4.0, 'zoom', 1.3, 1.0], ['s-clin', 5.2, 'push', 1.25, 1.0], ['s-fatt', 4.0, 'wipeV', 1.3, 1.0],
+    ['s-acc', 4.8, 'push', 1.25, 1.0], ['s-ex', 5.0, 'zoom', 1.3, 1.0], ['s-liv', 5.0, 'circle', 1.3, 1.0],
+    ['s-gdpr', 4.2, 'cloud', 1.2, 1.0], ['s-out', 4.8, null, 1, 1.5],
+  ],
+  'ad-chat': [['x-hook', 2.4, 'cloud', 1, 0.3], ['s-chat', 4.0, 'circle', 1.3, 1.2], ['x-end', 3.4, null, 1, 0.8]],
+  'ad-fatt': [['x-hook', 2.4, 'cloud', 1, 0.3], ['s-fatt', 4.0, 'circle', 1.3, 1.2], ['x-end', 3.4, null, 1, 0.8]],
+  'ad-app': [['x-hook', 2.4, 'cloud', 1, 0.3], ['s-acc', 4.8, 'circle', 1.25, 1.0], ['x-end', 3.4, null, 1, 0.8]],
+  'ad-ex': [['x-hook', 2.4, 'cloud', 1, 0.3], ['s-ex', 5.0, 'circle', 1.3, 1.0], ['x-end', 3.4, null, 1, 0.8]],
+};
+// what each ad says before and after the product
+const AD = {
+  'ad-chat': ['I pazienti confermano da soli.', 'Promemoria e conferme su WhatsApp, in automatico.'],
+  'ad-fatt': ['La fattura si fa da sola.', 'Dalla visita allo SdI e al Sistema TS.'],
+  'ad-app': ['I tuoi pazienti, con la loro app.', 'Documenti, firme e piani sul telefono.'],
+  'ad-ex': ['Gli esercizi a casa, finalmente seguiti.', 'Serie, animazioni e muscoli sul telefono del paziente.'],
+}[PLAN_NAME];
+const PLAN = PLANS[PLAN_NAME];
+window.PLAN_OUT = PLAN;
 const SLOW = PLAN.map((p) => p[3]);
 const DURS = PLAN.map((p) => p[1] * p[3] + p[4]);
 const CH_OF = { 's-mkt': 0, 's-tel': 0, 's-chat': 1, 's-agenda': 1, 's-serv': 1, 's-clin': 2, 's-ai': 2, 's-fatt': 3, 's-auto': 3, 's-acc': 4, 's-diet': 4, 's-ex': 4, 's-liv': 5, 's-unl': 5, 's-app': 5, 's-gdpr': 5 };
@@ -851,13 +880,30 @@ CHAP.forEach((c, k) => {
   document.getElementById('stage').appendChild(sec);
   [...sec.querySelectorAll('.kin')].forEach((el) => { el.innerHTML = el.textContent.split(' ').map((w) => `<span class="kw"><span>${w}</span></span>`).join(' '); K[el.id] = [...el.querySelectorAll('.kw > span')]; });
 });
+// the two ad scenes
+if (AD) {
+  const hook = document.createElement('section');
+  hook.className = 'scene dark'; hook.id = 'x-hook';
+  hook.innerHTML = `<div class="dots"></div><div class="blob" style="width:1400px;height:1400px;left:${SW / 2 - 700}px;top:${SH / 2 - 800}px;background:radial-gradient(circle,rgba(18,165,148,.32) 0%,rgba(18,165,148,0) 62%)"></div>
+    <div class="abs xm" style="left:${SW / 2 - 60}px;top:${SH * 0.3 - 110}px">${markSVG(106, '#5fe0cc', '#111413')}</div>
+    <div class="abs cap" style="left:70px;right:70px;top:${SH * 0.3 + 40}px;text-align:center;font-size:${FMT === 'p' ? 96 : 110}px;letter-spacing:-.045em;line-height:1.02"><span class="kin" id="xh">${AD[0]}</span></div>`;
+  const end = document.createElement('section');
+  end.className = 'scene dark'; end.id = 'x-end';
+  end.innerHTML = `<div class="dots"></div><div class="blob" style="width:1400px;height:1400px;left:${SW / 2 - 700}px;top:${SH / 2 - 800}px;background:radial-gradient(circle,rgba(18,165,148,.32) 0%,rgba(18,165,148,0) 62%)"></div>
+    <div class="abs" id="xl" style="left:0;right:0;top:${SH * 0.3}px;display:flex;justify-content:center;align-items:center;gap:26px">${markSVG(110, '#12a594', '#111413')}${wordSVG(78, '#ffffff', '#5fe0cc')}</div>
+    <div class="abs sub" style="left:80px;right:80px;top:${SH * 0.3 + 170}px;text-align:center;font-size:40px;color:rgba(255,255,255,.72)"><span class="kin" id="xs">${AD[1]}</span></div>
+    <div class="abs" style="left:0;right:0;top:${SH * 0.3 + 330}px;display:flex;justify-content:center"><div id="xcta" style="display:flex;align-items:center;gap:14px;background:var(--teal);color:#fff;font-size:40px;font-weight:700;padding:26px 44px;border-radius:999px;letter-spacing:-.01em">Richiedi una demo <span style="font-size:44px">→</span></div></div>
+    <div class="abs" style="left:0;right:0;bottom:90px;text-align:center;color:rgba(255,255,255,.55);font-size:28px;font-weight:500">Il gestionale per i centri medici · <b style="color:#fff">NPM2 Solutions Srl</b></div>`;
+  [hook, end].forEach((sec) => { document.getElementById('stage').appendChild(sec); sec.querySelectorAll('.kin').forEach((el) => { el.innerHTML = el.textContent.split(' ').map((w) => `<span class="kw"><span>${w}</span></span>`).join(' '); K[el.id] = [...el.querySelectorAll('.kw > span')]; }); });
+}
 // put the scenes in the order of the path, each inside a camera
 const stageEl = document.getElementById('stage'), firstOverlay = document.getElementById('cl');
 const SCN = PLAN.map(([id]) => document.getElementById(id));
 // the old chapter cards are not part of the path any more
 ['c1', 'c2', 'c3', 'c4', 'c5'].forEach((id) => document.getElementById(id)?.remove());
-SCN.forEach((sc) => {
-  stageEl.insertBefore(sc, firstOverlay);
+// every scene gets its camera, even the ones this plan leaves out (their code still runs at start)
+document.querySelectorAll('#stage > .scene').forEach((sc) => {
+  if (SCN.includes(sc)) stageEl.insertBefore(sc, firstOverlay);
   const cam = document.createElement('div'); cam.className = 'cam';
   while (sc.firstChild) cam.appendChild(sc.firstChild);
   sc.appendChild(cam);
@@ -1391,20 +1437,77 @@ function journey(k) {
 }
 CHAP.forEach((_, k) => (R['j' + (k + 1)] = journey(k)));
 
+// ---------- ad scenes ----------
+R['x-hook'] = (t) => {
+  const sc = $('x-hook'); sc.querySelector('.dots').style.transform = `translate(${-t * 16}px, ${-t * 8}px)`;
+  const m = sc.querySelector('.xm'), q = eback(pr(t, 0.05, 0.5));
+  S(m, { transform: `scale(${q})`, opacity: pr(t, 0.05, 0.15) });
+  m.querySelector('.crs').setAttribute('transform', `translate(53 61) rotate(${eio(pr(t, 0.4, 0.9)) * 90}) translate(-53 -61)`);
+  kinIn('xh', t, 0.25, 0.07, 0.6);
+};
+R['x-end'] = (t) => {
+  const sc = $('x-end'); sc.querySelector('.dots').style.transform = `translate(${-t * 16}px, ${-t * 8}px)`;
+  const l = $('xl'), q = eo5(pr(t, 0.1, 0.8));
+  S(l, { transform: `translateY(${(1 - q) * 40}px) scale(${lerp(0.9, 1, q)})`, opacity: pr(t, 0.1, 0.3) });
+  l.querySelector('.crs').setAttribute('transform', `translate(53 61) rotate(${eio(pr(t, 0.5, 1.0)) * 90}) translate(-53 -61)`);
+  kinIn('xs', t, 0.7, 0.05, 0.55);
+  const c = $('xcta'), cq = eback(pr(t, 1.3, 1.8)), ph = Math.max(0, t - 2) % 1.2 / 1.2;
+  S(c, { transform: `scale(${cq})`, opacity: pr(t, 1.3, 1.45), boxShadow: t > 2 ? `0 0 0 ${ph * 26}px rgba(18,165,148,${0.45 * (1 - ph)})` : 'none' });
+};
+
+// ---------- vertical and feed layouts: caption on top, the product below ----------
+let laidOut = FMT === 'h';
+function layoutPortrait() {
+  laidOut = true;
+  SCN.forEach((sc) => {
+    const cam = sc.querySelector(':scope > .cam'), id = sc.id;
+    if (id.startsWith('x-')) return;
+    sc.style.display = 'block'; // measure with the scene on screen: hidden boxes measure zero
+    if (id === 's-hook' || id === 's-out') {
+      // the logo scenes: move the middle of the landscape stage to the middle of the portrait one
+      const head = id === 's-hook' ? [...cam.children].find((e) => e.querySelector && e.querySelector('#hk1')) : null;
+      const ui = document.createElement('div'); ui.className = 'vui';
+      [...cam.children].forEach((e) => { if (e !== head && !e.classList.contains('dots')) ui.appendChild(e); });
+      cam.appendChild(ui);
+      const s = id === 's-hook' ? Math.min(0.72, SW / 1500) : 1;
+      S(ui, { position: 'absolute', left: 0, top: 0, width: '1920px', height: '1080px', transformOrigin: '0 0', transform: `translate(${SW / 2 - 960 * s}px, ${SH * (id === 's-hook' ? 0.36 : 0.5) - 540 * s}px) scale(${s})` });
+      if (head) { S(head, { left: '70px', right: '70px', top: SH * 0.62 + 'px', fontSize: '84px', lineHeight: '1.05' }); cam.appendChild(head); }
+      if (id === 's-out') { S($('mods'), { left: '440px', right: '440px', padding: '0' }); }
+      sc.style.display = 'none';
+      return;
+    }
+    const cap = [...cam.children].find((e) => e.classList.contains('left') || (e.classList.contains('abs') && e.querySelector('.cap')));
+    S(cap, { position: 'absolute', left: '80px', right: '80px', top: (FMT === 'v' ? 170 : 110) + 'px', bottom: 'auto', width: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '22px', textAlign: 'left' });
+    if (FMT === 'p') { cap.querySelectorAll('.sub').forEach((e) => (e.style.display = 'none')); cap.querySelectorAll('.cap').forEach((e) => (e.style.fontSize = '64px')); }
+    const ui = document.createElement('div'); ui.className = 'vui';
+    [...cam.children].forEach((e) => { if (e !== cap && !e.classList.contains('bgc') && !e.classList.contains('blob') && !e.classList.contains('dots')) ui.appendChild(e); });
+    cam.appendChild(ui);
+    S(ui, { position: 'absolute', left: 0, top: 0, width: '1920px', height: '1080px', transformOrigin: '0 0' });
+    const boxes = [];
+    const add = (e) => { if (e.classList.contains('zw')) [...e.children].forEach(add); else if (e.offsetWidth) boxes.push([e.offsetLeft, e.offsetTop, e.offsetLeft + e.offsetWidth, e.offsetTop + e.offsetHeight]); };
+    [...ui.children].forEach(add);
+    const bx = Math.min(...boxes.map((b) => b[0])), by = Math.min(...boxes.map((b) => b[1])), bw = Math.max(...boxes.map((b) => b[2])) - bx, bh = Math.max(...boxes.map((b) => b[3])) - by;
+    const top = cap.offsetTop + cap.offsetHeight + 60, bottom = SH - 70, room = bottom - top;
+    const s = Math.min((SW - 70) / bw, room / bh, 1.15);
+    S(ui, { transform: `translate(${(SW - bw * s) / 2 - bx * s}px, ${top + Math.max(0, room - bh * s) * 0.4 - by * s}px) scale(${s})` });
+    sc.style.display = 'none';
+  });
+}
+
 // ---------- compositor ----------
 const clUrl = SILURL('black');
 const setCloud = (el, size) => {
-  S(el, { webkitMaskImage: clUrl, webkitMaskRepeat: 'no-repeat', webkitMaskPosition: `${960 - size / 2}px ${540 - (size * VBH / VBW) * 0.58}px`, webkitMaskSize: `${size}px ${size * VBH / VBW}px` });
+  S(el, { webkitMaskImage: clUrl, webkitMaskRepeat: 'no-repeat', webkitMaskPosition: `${SW / 2 - size / 2}px ${SH / 2 - (size * VBH / VBW) * 0.58}px`, webkitMaskSize: `${size}px ${size * VBH / VBW}px` });
 };
 const clearMask = (el) => S(el, { webkitMaskImage: 'none' });
-const DARK = new Set(['s-hook', 's-ai', 's-gdpr', 's-out']);
-const NOBUG = new Set(['s-hook', 'j1', 'j2', 'j3', 'j4', 'j5', 'j6', 's-out']);
+const DARK = new Set(['s-hook', 's-ai', 's-gdpr', 's-out', 'x-hook', 'x-end']);
+const NOBUG = new Set(['s-hook', 'j1', 'j2', 'j3', 'j4', 'j5', 'j6', 's-out', 'x-hook', 'x-end']);
 // the path tracker, top centre
 $('trk').innerHTML = '<div class="knob"></div>' + CHAP.map((c, i) => `<div class="ti">${c.name}</div>`).join('');
 const trkItems = [...document.querySelectorAll('#trk .ti')];
 function tracker(top, t) {
   const trk = $('trk'), k = CH_OF[top];
-  if (k === undefined) { trk.style.display = 'none'; return; }
+  if (k === undefined || AD) { trk.style.display = 'none'; return; }
   trk.style.display = 'flex';
   const dark = DARK.has(top);
   trk.className = dark ? 'dk' : '';
@@ -1418,6 +1521,7 @@ function tracker(top, t) {
   trkItems.forEach((it, i) => (it.style.color = i === k && q > 0.5 ? '#fff' : i < k ? (dark ? 'var(--mint)' : 'var(--teal-d)') : dark ? 'rgba(255,255,255,.4)' : 'var(--faint)'));
 }
 function render(t) {
+  if (!laidOut) layoutPortrait();
   CK = null; CC = []; TOUCH = false;
   ['wA', 'wB', 'cl'].forEach((id) => ($(id).style.display = 'none'));
   document.querySelectorAll('.blind').forEach((b) => (b.style.display = 'none'));
@@ -1432,9 +1536,9 @@ function render(t) {
     sc.style.transform = ''; sc.style.boxShadow = ''; sc.style.zIndex = i; sc.style.opacity = 1; sc.style.clipPath = ''; clearMask(sc);
     if (!vis) return;
     if (inT === 'cloud') { const q = ei(pr(t, a - 0.15, a + 0.6)); if (q < 1) setCloud(sc, lerp(0, 9000, q)); }
-    if (inT === 'push') { const q = eo5(pr(t, a - 0.05, a + 0.55)); sc.style.transform = `translateX(${(1 - q) * 1920}px)`; sc.style.boxShadow = '-40px 0 80px rgba(0,0,0,.18)'; }
+    if (inT === 'push') { const q = eo5(pr(t, a - 0.05, a + 0.55)); sc.style.transform = `translateX(${(1 - q) * SW}px)`; sc.style.boxShadow = '-40px 0 80px rgba(0,0,0,.18)'; }
     if (inT === 'dive' || inT === 'circle') {
-      const [cx, cy] = inT === 'dive' ? [JX(+SCN[i - 1].id.slice(1) - 1), JY] : [960, 540];
+      const [cx, cy] = inT === 'dive' ? [JX(+SCN[i - 1].id.slice(1) - 1), JY] : [SW / 2, SH / 2];
       const q = eio(pr(t, a, a + 0.6)); if (q < 1) sc.style.clipPath = `circle(${q * 2300}px at ${cx}px ${cy}px)`;
     }
     if (inT === 'zoom') { const q = eo5(pr(t, a, a + 0.45)); S(sc, { opacity: pr(t, a, a + 0.3), transform: `scale(${lerp(0.94, 1, q)})` }); }
@@ -1458,18 +1562,18 @@ function render(t) {
     }
     if (ty === 'wipeD' && t > b - 0.36 && t < b + 0.42) {
       const q = eio(pr(t, b - 0.35, b + 0.35)), q2 = eio(pr(t, b - 0.28, b + 0.42));
-      S($('wA'), { display: 'block', left: '-400px', top: '-300px', width: '4200px', height: '1700px', transform: `translateX(${lerp(2300, -4400, q)}px) skewX(-18deg)`, zIndex: 40 });
-      S($('wB'), { display: 'block', left: '-400px', top: '-300px', width: '4200px', height: '1700px', transform: `translateX(${lerp(2700, -8300, q2)}px) skewX(-18deg)`, zIndex: 41 });
+      S($('wA'), { display: 'block', left: '-400px', top: '-300px', width: '4200px', height: SH + 620 + 'px', transform: `translateX(${lerp(2300, -4400, q)}px) skewX(-18deg)`, zIndex: 40 });
+      S($('wB'), { display: 'block', left: '-400px', top: '-300px', width: '4200px', height: SH + 620 + 'px', transform: `translateX(${lerp(2700, -8300, q2)}px) skewX(-18deg)`, zIndex: 41 });
     }
     if (ty === 'wipeV' && t > b - 0.36 && t < b + 0.36) {
       const q = eio(pr(t, b - 0.35, b + 0.35));
-      S($('wA'), { display: 'block', left: '-300px', top: '0px', width: '2520px', height: '2600px', transform: `translateY(${lerp(1300, -2900, q)}px) skewY(-8deg)`, zIndex: 40 });
+      S($('wA'), { display: 'block', left: '-300px', top: '0px', width: SW + 600 + 'px', height: SH * 2.4 + 'px', transform: `translateY(${lerp(SH + 220, -SH * 2.4 - 220, q)}px) skewY(-8deg)`, zIndex: 40 });
     }
     if (ty === 'blinds' && t > b - 0.45 && t < b + 0.5) {
       document.querySelectorAll('.blind').forEach((bl, j) => {
         const dir = j % 2 ? -1 : 1, d = j * 0.012;
         const qi = eo5(pr(t, b - 0.42 + d, b - 0.1 + d)), qo = ei(pr(t, b + 0.02 + d, b + 0.34 + d));
-        S(bl, { display: 'block', top: j * 135 + 'px', height: '136px', background: j % 2 ? 'var(--teal-d)' : 'var(--teal)', transform: `translateX(${(1 - qi) * dir * 1920 - qo * dir * 1920}px)` });
+        S(bl, { display: 'block', top: (j * SH) / 8 + 'px', height: SH / 8 + 1 + 'px', width: SW + 'px', background: j % 2 ? 'var(--teal-d)' : 'var(--teal)', transform: `translateX(${(1 - qi) * dir * SW - qo * dir * SW}px)` });
       });
     }
   });
