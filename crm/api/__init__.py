@@ -4,7 +4,7 @@ from frappe import _
 from frappe.core.api.file import get_max_file_size
 from frappe.rate_limiter import rate_limit
 from frappe.translate import get_all_translations
-from frappe.utils import cstr, split_emails, validate_email_address
+from frappe.utils import cstr, sha256_hash, split_emails, validate_email_address
 
 from crm.utils import is_frappe_version
 
@@ -84,7 +84,8 @@ def accept_invitation(key: str | None = None):
 	if not key:
 		frappe.throw(_("Invalid or expired key"))
 
-	result = frappe.db.get_all("CRM Invitation", filters={"key": key}, pluck="name")
+	# only the key's hash is stored
+	result = frappe.db.get_all("CRM Invitation", filters={"key": sha256_hash(key)}, pluck="name")
 	if not result:
 		frappe.throw(_("Invalid or expired key"))
 	invitation = frappe.get_doc("CRM Invitation", result[0])

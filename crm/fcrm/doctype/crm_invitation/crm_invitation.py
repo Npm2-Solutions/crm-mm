@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import sha256_hash
 
 INVITABLE_ROLES = ("Sales User", "Sales Manager", "System Manager")
 
@@ -29,9 +30,18 @@ class CRMInvitation(Document):
 	def before_insert(self):
 		frappe.utils.validate_email_address(self.email, True)
 
-		self.key = frappe.generate_hash(length=12)
+		self.set_key()
 		self.invited_by = frappe.session.user
 		self.status = "Pending"
+
+	def set_key(self):
+		# The key is a credential: it sets a new user's password and hands out a role. So it
+		# only goes into the link mailed to the invitee, and what is stored is its hash, as
+		# Frappe does for password reset keys: reading the record gives nothing that opens it.
+		self._key = frappe.generate_hash()
+		self.key = sha256_hash(self._key)
+		# `key` sits on a permlevel nobody has, which would reset it on a Desk or REST insert
+		self.flags.ignore_permlevel_for_fields = ["key"]
 
 	def validate(self):
 		# Whoever accepts a pending invitation gets its role, so it may only carry one its
@@ -45,10 +55,10 @@ class CRMInvitation(Document):
 			)
 
 	def after_insert(self):
-		self.invite_via_email()
+		self.invite_via_email(self._key)
 
-	def invite_via_email(self):
-		invite_link = frappe.utils.get_url(f"/api/method/crm.api.accept_invitation?key={self.key}")
+	def invite_via_email(self, key):
+		invite_link = frappe.utils.get_url(f"/api/method/crm.api.accept_invitation?key={key}")
 		if frappe.local.dev_server:
 			print(f"Invite link for {self.email}: {invite_link}")  # nosemgrep
 
@@ -155,4 +165,5 @@ def expire_invitations():
 	for invitation in invitations_to_expire:
 		invitation = frappe.get_doc("CRM Invitation", invitation.name)
 		invitation.status = "Expired"
+		invitation.key = None
 		invitation.save(ignore_permissions=True)
