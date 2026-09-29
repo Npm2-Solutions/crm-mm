@@ -32,7 +32,9 @@ class TestDashboardStore(IntegrationTestCase):
 	def test_a_new_site_gets_one_shared_dashboard_per_template(self):
 		store.ensure_defaults()
 		have = set(frappe.get_all("CRM Dashboard", filters={"private": 0}, pluck="template"))
-		self.assertEqual(have, {template.id for template in templates.TEMPLATES})
+		self.assertLessEqual({template.id for template in templates.TEMPLATES}, have)
+		# and those a module added, where the site uses it (the clinic's)
+		self.assertLessEqual(have, {template.id for template in templates.tutti()})
 		main = frappe.get_doc("CRM Dashboard", store.MANAGER_DASHBOARD)
 		self.assertEqual(main.template, "overview")
 		self.assertTrue(store.is_managed(main))

@@ -76,7 +76,7 @@ def get_widget_catalog() -> dict:
 					item["name"] not in grid.STRUCTURAL for item in templates.build(template, store.showable)
 				),
 			}
-			for template in templates.TEMPLATES
+			for template in templates.tutti()
 			if manager or not template.managers_only
 		],
 		"periods": list(store.PERIODS),
