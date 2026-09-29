@@ -9,7 +9,7 @@
 
 ```
 Settings modal → "Meta Lead Ads"
-  1. App ID/Secret (+ webhook URL e verify token da copiare nell'app Meta)
+  1. App ID/Secret (+ webhook registrato dal CRM sull'app Meta; il verify token è cifrato)
   2. "Connect with Facebook" → OAuth code flow (state firmato HMAC)
        code → user token → LONG-LIVED user token (~60gg)
        → /me/accounts → PAGE TOKEN per pagina (non scade) cifrati (Password)
