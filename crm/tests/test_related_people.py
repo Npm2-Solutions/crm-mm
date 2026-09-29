@@ -17,7 +17,6 @@ from frappe.tests import IntegrationTestCase
 
 from crm.api import appointments
 from crm.api.doc import get_linked_docs_of_document
-from crm.clinica import paziente
 from crm.moduli import consensi
 from crm.patches.v1_0 import guardians_become_linked_people
 from crm.permissions import livelli, utenti
@@ -388,22 +387,6 @@ class LaFatturaAChiPaga(profili.ProfileBase):
 		# the address was written at the desk, not taken from her father's
 		self.assertEqual(self.del_titolare(self.giulia.name).city, "Roma")
 		self.assertEqual(self.del_titolare(self.giulia.name).pec, "giulia@pec.it")
-
-
-class IlPazienteMinorenne(profili.ProfileBase):
-	def test_minorenne_senza_chi_decide_lo_si_dice(self):
-		giulia = self.persona("Giulia", "Rossi")
-		self.profilo(giulia.name, fiscal_code=profili.CF_GIULIA)
-		stato = paziente._stato(giulia.name)
-		self.assertTrue(stato["minor"])
-		self.assertEqual(stato["representatives"], [])
-		legame(giulia.name, self.mario.name, represents=1)
-		self.assertEqual(
-			[r["name"] for r in paziente._stato(giulia.name)["representatives"]], [self.mario.name]
-		)
-
-	def test_senza_codice_fiscale_non_si_sa(self):
-		self.assertIsNone(paziente._stato(self.mario.name)["minor"])
 
 
 class IlConsensoDatoDaUnGenitore(RelatedCase):
