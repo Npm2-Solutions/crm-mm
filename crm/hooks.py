@@ -289,10 +289,15 @@ doc_events = {
 			"crm.api.mirror.on_lead_updated",
 			"crm.integrations.meta.conversions.on_lead_updated",
 		],
-		"on_trash": ["crm.integrations.meta.leads.forget_person"],
+		"on_trash": [
+			"crm.integrations.meta.leads.forget_person",
+			# billing details are part of the person, not linked to it
+			"crm.invoicing.anagrafica.cancella_con_il_titolare",
+		],
 	},
 	"CRM Organization": {
 		"on_update": ["crm.api.mirror.on_organization_updated"],
+		"on_trash": ["crm.invoicing.anagrafica.cancella_con_il_titolare"],
 	},
 	"CRM Deal": {
 		"before_insert": [

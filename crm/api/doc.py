@@ -699,6 +699,11 @@ def getCounts(d, doctype):
 	return d
 
 
+#: Documents that belong to the record they point at: deleted with it by its
+#: `on_trash`, never offered for unlinking.
+DELETED_WITH_THEIR_RECORD = {"CRM Billing Profile"}
+
+
 @frappe.whitelist()
 def get_linked_docs_of_document(doctype: str, docname: str):
 	try:
@@ -726,6 +731,11 @@ def get_linked_docs_of_document(doctype: str, docname: str):
 
 		# linked is not the same as readable: a person's deal can belong to somebody else
 		if not frappe.has_permission(data.doctype, "read", data):
+			continue
+
+		# part of the record rather than linked to it: it goes with it, there is
+		# nothing to choose about it
+		if data.doctype in DELETED_WITH_THEIR_RECORD:
 			continue
 
 		title = data.get("title")

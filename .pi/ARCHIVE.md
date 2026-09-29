@@ -1087,6 +1087,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | L'anagrafica segue la persona: `org_hierarchy.visible_leads` per la lista, `has_permission` del record per il documento | La stessa regola della lista delle persone, condivisioni comprese |
 | Una patch fa completare le anagrafiche alle fatture già emesse, dalla più recente | Il paziente fatturato il mese scorso non deve ridire il suo codice fiscale il giorno in cui l'anagrafica arriva |
 | Nel pannello laterale uno slot `after` di `SidePanelLayout` | La sezione non è un campo della persona ma scorre con le altre; lo slot non cambia niente altrove |
+| L'anagrafica se ne va con la persona o l'organizzazione (`on_trash`), e non compare fra i documenti da scollegare | Fa parte del record: lasciata indietro fermava la cancellazione, perché Frappe non cancella quello a cui qualcosa punta, e un diritto all'oblio che si ferma al codice fiscale non lo è |
 
 ### File
 
@@ -1099,6 +1100,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/invoicing/engine/codice_fiscale.py` | `formato_iva_noto` |
 | `crm/invoicing/permessi.py`, `crm/permissions/org_hierarchy.py`, `crm/hooks.py` | L'anagrafica segue la persona |
 | `crm/patches/v1_0/billing_details_from_past_invoices.py` | Il recupero dalle fatture già emesse |
+| `crm/api/doc.py` | I documenti che se ne vanno col loro record non si propongono da scollegare |
 | `frontend/src/components/BillingProfileSection.vue`, `SidePanelLayout.vue`, `pages/Lead.vue`, `MobileLead.vue`, `Organization.vue`, `MobileOrganization.vue` | La sezione "Billing details" |
-| `crm/invoicing/tests/test_anagrafica.py`, `crm/tests/test_billing_profile.py` | I test: 24 senza sito, 19 sul sito |
+| `crm/invoicing/tests/test_anagrafica.py`, `crm/tests/test_billing_profile.py` | I test: 24 senza sito, 20 sul sito |
 
