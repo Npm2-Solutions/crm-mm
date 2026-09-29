@@ -1,8 +1,9 @@
 # 30 — Ruoli e permessi: chi può fare cosa, modulo per modulo
 
-**Stato:** 🟡 proposta (29/09/2026), da approvare prima della PR dei livelli.
-Lo stato di oggi è verificato sul codice di `develop` (commit `151cba6`, dopo i
-fix di sicurezza del 29/09); la proposta è da decidere insieme.
+**Stato:** 🟢 PR 1 fatta (29/09/2026): registro, livelli di base, piano, pagina
+Utenti e inviti per livello, passaggio degli utenti di prima. Le PR 2–4 restano da
+fare ([com'è fatta la PR 1](#la-pr-1-comè-fatta)). Lo stato "di oggi" qui sotto è
+quello verificato prima della PR 1, sul commit `151cba6`.
 
 ## In una pagina
 
@@ -411,12 +412,94 @@ livello della persona la prevede.
 | PR | Cosa | sp |
 |---|---|---|
 | 0 | I quattro problemi di sicurezza, ognuno a parte | ✅ fatto, 29/09 |
-| 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | 1,5–2 |
+| 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | ✅ fatto, 29/09 |
 | 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | 1 |
 | 3 | Capacità nel frontend, rotte protette, impostazioni divise | 0,5–1 |
 | 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
 
 Direzione sanitaria arriva con la clinica.
+
+## La PR 1, com'è fatta
+
+**Il registro** sta in `crm/permissions/livelli.py`: moduli del piano, livelli,
+ruoli, capacità con l'ambito che ogni livello riceve. Il calcolo (`calcola`) è puro
+e la matrice di questo documento si prova senza sito (`test_livelli.py`, 37 test).
+Ogni modulo registra la sua parte:
+
+- il CRM in `crm/permissions/catalogo.py`: i moduli Base, Marketing e Telefono, i
+  livelli di base e le capacità di persone, trattative, conversazioni, agenda,
+  telefono, marketing, cruscotti e impostazioni;
+- la fatturazione in `crm/invoicing/capacita.py`: i suoi due ruoli e le capacità
+  `fatture.*`. Il CRM non nomina mai una capacità della fatturazione.
+
+Il codice chiede `puo("fatture.emetti")`, o mette `@richiede(...)` sopra un metodo
+whitelisted; il frontend riceve capacità e ambiti con la pagina
+(`window.crm_permissions`) e chiede `puo()` allo store degli utenti.
+
+**I livelli**, come Role Profile con il prefisso `CRM `, così il CRM riscrive solo i
+profili suoi:
+
+| Livello | Profilo | Ruoli |
+|---|---|---|
+| Segreteria | CRM Front Desk | Sales User, Front Desk, Invoicing User |
+| Operatore | CRM Practitioner | Sales User, Practitioner |
+| Manager amministrativo | CRM Manager | Sales User, Sales Manager, Invoicing Manager, Invoicing User |
+| Commerciale (facoltativo) | CRM Sales | Sales User |
+
+Front Desk e Practitioner sono ruoli nuovi e per ora non portano permessi sui
+documenti: distinguono i livelli nelle capacità. I permessi dei documenti si
+allineano nella PR 2. Marketing, Amministrazione e Sola lettura arrivano con la PR 4
+(il registro sa già togliere le scritture a chi ha Sola lettura); Direzione
+sanitaria con la clinica.
+
+**Le capacità "a scelta"** (prenotare sopra un conflitto, inviare allo SdI e al
+Sistema TS, scrivere bozze social per la segreteria) non sono ruoli: Frappe rifà i
+ruoli dai profili a ogni salvataggio e un ruolo messo a mano sparirebbe. Stanno in
+`CRM User Capability`, una riga per persona e capacità, e il Manager le accende
+dalla finestra Accesso della persona.
+
+**Il piano** è `CRM Plan`, un documento solo, scritto solo dall'agenzia. Un modulo
+che il piano non elenca tiene il suo predefinito: quello che il CRM faceva già
+(Base, Marketing, Telefono) resta acceso, un modulo nuovo (la Clinica) nasce spento.
+Un modulo finito, prova scaduta o abbonamento chiuso, diventa di sola lettura: i
+dati restano, le scritture no. In Impostazioni › Piano il Manager vede taglia,
+agende attive del mese, moduli e consumi, e fa partire da solo 14 giorni di prova di
+un modulo che non ha: la richiesta va all'agenzia per email.
+
+**Gli utenti.** La pagina Utenti mostra i livelli di ognuno e li cambia dalla
+finestra Accesso; l'invito e "Aggiungi utente esistente" scelgono i livelli. Il
+Manager dà ogni livello, anche Manager, ma non tocca gli utenti dell'agenzia e non
+si toglie il livello Manager da solo. `update_user_role` resta per chi lo chiama
+ancora e dà il livello che corrisponde al ruolo; System Manager resta dell'agenzia.
+
+**Il passaggio degli utenti di prima** (patch `give_users_their_levels`):
+
+- Sales Manager diventa Manager amministrativo;
+- Sales User diventa Segreteria, oppure Commerciale se il sito ha la gerarchia di
+  vendita accesa: lì le persone devono vedere solo il loro team;
+- System Manager non si tocca: è l'agenzia;
+- non si tocca nemmeno chi ha un ruolo di un'altra app, o un ruolo che i livelli
+  scelti non portano (un Sales User che era anche Invoicing Manager): con i profili
+  Frappe glielo toglierebbe. Chi resta così conta per i livelli che i suoi ruoli
+  implicano (Sales Manager → Manager, Sales User → Commerciale), e la pagina Utenti
+  li mostra in corsivo finché qualcuno non sceglie i livelli.
+
+Da verificare sito per sito, come diceva il passaggio qui sopra.
+
+**Le 19 copie di `MANAGER_ROLES`** sono diventate capacità con un nome: servizi,
+listini e regole dello studio (`agenda.configura`), turni e sale (`agenda.turni`,
+che adesso ha anche la Segreteria), prenotazione online, piattaforme, automazioni,
+pipeline, copioni, social, sito, moduli per i lead, tracciamento, viste, regole di
+assegnazione, Meta, numeri e modelli WhatsApp, Google Calendar, cruscotti condivisi.
+Per chi ha i ruoli di prima le risposte non cambiano. Resta ERPNext, che passa
+all'agenzia con la PR 3 insieme alla sua pagina delle impostazioni.
+
+**Un bug trovato strada facendo.** Fuori dal developer mode Frappe tiene gli hook
+nella sua cache, e un processo che li trova lì non importa mai `crm/hooks.py`:
+lì stava la sola registrazione dei moduli. In quei processi "fisioterapista" non
+era nel registro delle qualifiche e i controlli del Sistema TS non giravano.
+Adesso registra tutto `crm/registrazione.py`, anche da `before_request` e
+`before_job`.
 
 ## Da decidere
 
