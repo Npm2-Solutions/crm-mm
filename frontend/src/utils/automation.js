@@ -1089,6 +1089,35 @@ export const RECIPES = [
     ],
   },
   {
+    // the second seam: from the centre to marketing, only with the yes
+    key: 'recall',
+    title: 'Recall after a year',
+    description:
+      'Whoever last came a year ago, and agreed to marketing, is invited to book again.',
+    icon: 'rotate-ccw',
+    trigger_event: 'Date Reminder',
+    trigger_config: {
+      doctype: 'CRM Lead',
+      date_field: 'last_visit',
+      direction: 'after',
+      offset_days: 365,
+    },
+    marketing_consent: true,
+    build: () => [
+      newStep('send_email', {
+        subject: 'Time for your check-up, {{ first_name }}',
+        message:
+          'Hi {{ first_name }}, it has been a year since your last visit. Shall we book the next one?',
+      }),
+      newStep('wait', { mode: 'duration', days: 7, hours: 0, minutes: 0 }),
+      newStep('goal', { event: 'booking_booked', outcome: 'end' }),
+      newStep('create_task', {
+        title: 'Call {{ lead_name }} for the recall',
+        due_in_days: 1,
+      }),
+    ],
+  },
+  {
     key: 'no_show',
     title: 'No-show follow-up',
     description:
