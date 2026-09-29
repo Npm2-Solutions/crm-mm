@@ -382,6 +382,27 @@ class TestCRMInvitation(IntegrationTestCase):
 		self.assertNotIn("Sales Manager", frappe.get_roles("existing@example.com"))
 		self.assertNotIn("Sales Manager", frappe.get_roles(SALES_USER))
 
+	# Invitations sent before the fix
+
+	def test_the_patch_expires_invitations_whose_key_was_readable(self):
+		"""Every Sales User could read those keys: none of them may still open anything."""
+		from crm.patches.v1_0.expire_invitations_with_readable_keys import execute
+
+		readable = legacy_invitation("legacy@example.com", key="0123456789ab")
+		already_expired = legacy_invitation("stale@example.com", key="ba9876543210", status="Expired")
+		_recent, key = self.invite("recent@example.com")
+
+		execute()
+
+		for name in (readable, already_expired):
+			self.assertEqual(
+				frappe.db.get_value("CRM Invitation", name, ["status", "key"]), ("Expired", None)
+			)
+		frappe.set_user("Guest")
+		self.assertRaises(frappe.ValidationError, accept_invitation, key="0123456789ab")
+		accept_invitation(key=key)  # sent after the fix: untouched
+		self.assertTrue(frappe.db.exists("User", "recent@example.com"))
+
 
 def make_user(email, *roles):
 	if not frappe.db.exists("User", email):
@@ -408,3 +429,13 @@ def report_view(**params):
 	"""What the Desk report view (`frappe.desk.reportview.get`) answers to a request with these params."""
 	frappe.local.form_dict = frappe._dict(params)
 	return reportview.get()
+
+
+def legacy_invitation(email, key, status="Pending"):
+	"""An invitation as the code before the fix left it, its key stored as is."""
+	with patch.object(frappe, "sendmail"):
+		invitation = frappe.get_doc(doctype="CRM Invitation", email=email, role="Sales User").insert()
+	frappe.db.set_value(
+		"CRM Invitation", invitation.name, {"key": key, "status": status}, update_modified=False
+	)
+	return invitation.name
