@@ -1,4 +1,11 @@
 @import 'frappe-ui/style.css';
+/* The editor's own rules — no outline of its own, the caret's colour, the
+   placeholder, a selected picture's frame. frappe-ui imports them from its
+   editor entry, but the package declares only CSS and Vue files as having side
+   effects, so the bundler treated that entry as pure and dropped the import:
+   none of it ever reached the page. Every editor in the CRM — notes, comments,
+   emails — drew the browser's 2px grey focus ring round its text instead. */
+@import 'frappe-ui/editor-style.css';
 
 @layer utilities {
   /* The mobile shell measures itself against the *visible* viewport. `100vh` on a
