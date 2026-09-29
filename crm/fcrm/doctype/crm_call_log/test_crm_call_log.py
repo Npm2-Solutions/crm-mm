@@ -212,6 +212,15 @@ class TestCRMCallLog(IntegrationTestCase):
 		self.assertEqual(parsed["from"], "+1234567890")
 		self.assertEqual(parsed["to"], "+0987654321")
 
+	def test_a_call_with_a_deleted_user_still_lists(self):
+		"""A demo call, or an old one, can name a user who is gone."""
+		parsed = parse_call_log(
+			{"type": "Incoming", "from": "+1234567890", "receiver": "gone@example.com", "duration": 5}
+		)
+		self.assertEqual(parsed["_receiver"]["label"], "gone@example.com")
+		parsed = parse_call_log({"type": "Outgoing", "to": "+1234567890", "caller": "gone@example.com"})
+		self.assertEqual(parsed["_caller"]["label"], "gone@example.com")
+
 	def test_parse_call_log_outgoing(self):
 		"""Test parse_call_log function with outgoing call"""
 		call_data = {
