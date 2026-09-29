@@ -1,0 +1,287 @@
+{
+  "_what": "The cases the server (crm/moduli/schema.py) and the browser (frontend/src/utils/moduli.js) must agree on. Both test suites read this file.",
+  "conditions": [
+    {"name": "yes equals 1", "groups": [[{"field": "a", "operator": "equals", "value": "1"}]], "values": {"a": true}, "expected": true},
+    {"name": "no is not 1", "groups": [[{"field": "a", "operator": "equals", "value": "1"}]], "values": {"a": false}, "expected": false},
+    {"name": "no equals 0", "groups": [[{"field": "a", "operator": "equals", "value": "0"}]], "values": {"a": false}, "expected": true},
+    {"name": "numbers compare as numbers", "groups": [[{"field": "n", "operator": "equals", "value": "5.0"}]], "values": {"n": 5}, "expected": true},
+    {"name": "text equals", "groups": [[{"field": "s", "operator": "equals", "value": "Rossi"}]], "values": {"s": "Rossi"}, "expected": true},
+    {"name": "unanswered is not different either", "groups": [[{"field": "s", "operator": "not_equals", "value": "Rossi"}]], "values": {}, "expected": false},
+    {"name": "a no is an answer", "groups": [[{"field": "a", "operator": "is_set"}]], "values": {"a": false}, "expected": true},
+    {"name": "empty text is not set", "groups": [[{"field": "s", "operator": "is_not_set"}]], "values": {"s": ""}, "expected": true},
+    {"name": "an empty list is not set", "groups": [[{"field": "m", "operator": "is_set"}]], "values": {"m": []}, "expected": false},
+    {"name": "an empty side pair is not set", "groups": [[{"field": "k", "operator": "is_set"}]], "values": {"k": {"left": null, "right": ""}}, "expected": false},
+    {"name": "contains ignores case", "groups": [[{"field": "s", "operator": "contains", "value": "TESTA"}]], "values": {"s": "Mal di testa"}, "expected": true},
+    {"name": "a multiple choice equals one of its choices", "groups": [[{"field": "m", "operator": "equals", "value": "B"}]], "values": {"m": ["A", "B"]}, "expected": true},
+    {"name": "a multiple choice is not a choice it has", "groups": [[{"field": "m", "operator": "not_equals", "value": "B"}]], "values": {"m": ["A", "B"]}, "expected": false},
+    {"name": "a multiple choice is not a choice it lacks", "groups": [[{"field": "m", "operator": "not_equals", "value": "C"}]], "values": {"m": ["A", "B"]}, "expected": true},
+    {"name": "greater than a decimal", "groups": [[{"field": "n", "operator": "greater_than", "value": "9.5"}]], "values": {"n": 10}, "expected": true},
+    {"name": "typed decimals with a comma", "groups": [[{"field": "n", "operator": "less_than", "value": "10"}]], "values": {"n": "9,5"}, "expected": true},
+    {"name": "words are not bigger", "groups": [[{"field": "s", "operator": "greater_than", "value": "3"}]], "values": {"s": "many"}, "expected": false},
+    {"name": "dates compare", "groups": [[{"field": "d", "operator": "greater_than", "value": "2026-02-28"}]], "values": {"d": "2026-03-01"}, "expected": true},
+    {"name": "dates compare the other way", "groups": [[{"field": "d", "operator": "less_than", "value": "2026-02-28"}]], "values": {"d": "2026-03-01"}, "expected": false},
+    {"name": "any group", "groups": [[{"field": "a", "operator": "equals", "value": "1"}], [{"field": "b", "operator": "equals", "value": "2"}]], "values": {"a": false, "b": 2}, "expected": true},
+    {"name": "all in a group", "groups": [[{"field": "a", "operator": "equals", "value": "1"}, {"field": "b", "operator": "equals", "value": "2"}]], "values": {"a": true, "b": 3}, "expected": false},
+    {"name": "an empty group asks nothing", "groups": [[]], "values": {}, "expected": true},
+    {"name": "no groups ask nothing", "groups": [], "values": {}, "expected": true},
+    {"name": "null asks nothing", "groups": null, "values": {}, "expected": true},
+    {"name": "a row without its question asks nothing", "groups": [[{"field": "", "operator": "equals", "value": "1"}]], "values": {}, "expected": true},
+    {"name": "a list is not a value to compare with", "groups": [[{"field": "s", "operator": "equals", "value": ["A"]}]], "values": {"s": "A"}, "expected": false},
+    {"name": "not different from a list either", "groups": [[{"field": "m", "operator": "not_equals", "value": ["A"]}]], "values": {"m": ["A"]}, "expected": false},
+    {"name": "a pair of sides is not a word", "groups": [[{"field": "k", "operator": "contains", "value": "1"}]], "values": {"k": {"left": 1}}, "expected": false}
+  ],
+  "formulas": [
+    {"formula": "weight / (height / 100) ^ 2", "values": {"weight": 70, "height": 175}, "decimals": 1, "expected": 22.9},
+    {"formula": "2 + 3 * 4", "values": {}, "expected": 14},
+    {"formula": "(2 + 3) * 4", "values": {}, "expected": 20},
+    {"formula": "-2 ^ 2", "values": {}, "expected": -4},
+    {"formula": "2 ^ -1", "values": {}, "expected": 0.5},
+    {"formula": "2 ^ 3 ^ 2", "values": {}, "expected": 512},
+    {"formula": "10 / 3", "values": {}, "expected": 3.33},
+    {"formula": "10 / 3", "values": {}, "decimals": 0, "expected": 3},
+    {"formula": "10 / 0", "values": {}, "expected": null},
+    {"formula": "a + 1", "values": {}, "expected": null},
+    {"formula": "a + 1", "values": {"a": "4,5"}, "expected": 5.5},
+    {"formula": "a + 1", "values": {"a": true}, "expected": null},
+    {"formula": "round(2.5)", "values": {}, "expected": 3},
+    {"formula": "round(-2.5)", "values": {}, "expected": -2},
+    {"formula": "round(1.25, 1)", "values": {}, "expected": 1.3},
+    {"formula": "min(3, 1, 2) + max(a, b)", "values": {"a": 4, "b": 7}, "expected": 8},
+    {"formula": "abs(-3) + sqrt(16)", "values": {}, "expected": 7},
+    {"formula": "sqrt(-1)", "values": {}, "expected": null},
+    {"formula": "(0 - 8) ^ (1 / 3)", "values": {}, "expected": null},
+    {"formula": "2 +", "values": {}, "expected": null},
+    {"formula": "(1", "values": {}, "expected": null},
+    {"formula": "foo(1)", "values": {}, "expected": null},
+    {"formula": "1 $ 2", "values": {}, "expected": null},
+    {"formula": "1e3", "values": {}, "expected": null},
+    {"formula": "", "values": {}, "expected": null}
+  ],
+  "schemas": {
+    "visit": {
+      "sections": [
+        {"id": "general", "title": "About you", "fields": [
+          {"id": "weight", "type": "number", "label": "Weight", "unit": "kg", "required": true},
+          {"id": "height", "type": "number", "label": "Height", "unit": "cm", "required": true},
+          {"id": "bmi", "type": "calc", "label": "BMI", "formula": "weight / (height / 100) ^ 2", "decimals": 1},
+          {"id": "smoker", "type": "yesno", "label": "Do you smoke?"},
+          {"id": "cigarettes", "type": "number", "label": "How many a day?", "required": true,
+           "show_if": [[{"field": "smoker", "operator": "equals", "value": "1"}]]}
+        ]},
+        {"id": "risks", "title": "Before the treatment",
+         "show_if": [[{"field": "bmi", "operator": "greater_than", "value": "25"}]],
+         "fields": [
+          {"id": "pacemaker", "type": "yesno", "label": "Do you have a pacemaker?",
+           "stop_if": [[{"field": "pacemaker", "operator": "equals", "value": "1"}]], "stop_message": "No shock waves"},
+          {"id": "notes", "type": "text", "label": "Notes",
+           "required_if": [[{"field": "pacemaker", "operator": "equals", "value": "1"}]]}
+        ]},
+        {"id": "mood", "title": "Mood", "fields": [
+          {"id": "q1", "type": "choice", "label": "Little interest in doing things",
+           "options": [{"label": "Never", "score": 0}, {"label": "Some days", "score": 1}, {"label": "Often", "score": 2}]},
+          {"id": "q2", "type": "scale", "label": "Tiredness", "min": 0, "max": 3},
+          {"id": "total", "type": "score", "label": "Total", "sources": ["q1", "q2"],
+           "bands": [{"from": 0, "to": 2, "label": "Minimal"}, {"from": 3, "to": 5, "label": "Moderate"}]}
+        ]}
+      ]
+    },
+    "consents": {
+      "sections": [
+        {"id": "privacy", "title": "Privacy", "fields": [
+          {"id": "notice", "type": "paragraph", "text": "We use your data to book and to treat you."},
+          {"id": "read", "type": "consent", "label": "I have read the notice", "consent_type": "privacy_notice", "must_accept": true},
+          {"id": "marketing", "type": "consent", "label": "News and offers", "consent_type": "marketing", "required": true},
+          {"id": "sign", "type": "signature", "label": "Signature", "signer": "patient", "required": true}
+        ]}
+      ]
+    },
+    "history": {
+      "sections": [
+        {"id": "s", "title": "History", "fields": [
+          {"id": "allergies", "type": "choice", "label": "Allergies", "multiple": true,
+           "options": [{"label": "Penicillin"}, {"label": "Latex"}, {"label": "None"}]},
+          {"id": "which", "type": "text", "label": "What happens",
+           "show_if": [[{"field": "allergies", "operator": "equals", "value": "Penicillin"}]]},
+          {"id": "drugs", "type": "table", "label": "Medications",
+           "columns": [{"id": "name", "label": "Name", "type": "text"}, {"id": "dose", "label": "Dose", "type": "text"}]},
+          {"id": "knee", "type": "sides", "label": "Knee flexion", "input": "number", "unit": "°"},
+          {"id": "more", "type": "text", "label": "Anything else",
+           "show_if": [[{"field": "drugs", "operator": "is_set"}]]}
+        ]}
+      ]
+    }
+  },
+  "evaluations": [
+    {
+      "name": "a slim non-smoker: no risks section, a moderate score",
+      "schema": "visit",
+      "values": {"weight": 70, "height": 175, "smoker": false, "q1": "Some days", "q2": 2},
+      "expected": {
+        "values": {"weight": 70, "height": 175, "bmi": 22.9, "smoker": false, "cigarettes": null, "pacemaker": null, "notes": null, "q1": "Some days", "q2": 2, "total": 3},
+        "sections": {"general": true, "risks": false, "mood": true},
+        "visible": {"weight": true, "height": true, "bmi": true, "smoker": true, "cigarettes": false, "pacemaker": false, "notes": false, "q1": true, "q2": true, "total": true},
+        "required": ["weight", "height"],
+        "missing": [],
+        "stops": [],
+        "bands": {"total": "Moderate"}
+      }
+    },
+    {
+      "name": "a smoker with a pacemaker: stop, and what becomes required",
+      "schema": "visit",
+      "values": {"weight": 90, "height": 170, "smoker": true, "pacemaker": true, "q1": "Never"},
+      "expected": {
+        "values": {"weight": 90, "height": 170, "bmi": 31.1, "smoker": true, "cigarettes": null, "pacemaker": true, "notes": null, "q1": "Never", "q2": null, "total": null},
+        "sections": {"general": true, "risks": true, "mood": true},
+        "visible": {"weight": true, "height": true, "bmi": true, "smoker": true, "cigarettes": true, "pacemaker": true, "notes": true, "q1": true, "q2": true, "total": true},
+        "required": ["weight", "height", "cigarettes", "notes"],
+        "missing": ["cigarettes", "notes"],
+        "stops": [{"field": "pacemaker", "message": "No shock waves"}],
+        "bands": {"total": null}
+      }
+    },
+    {
+      "name": "a hidden answer does not count",
+      "schema": "visit",
+      "values": {"weight": 70, "height": 175, "smoker": false, "cigarettes": 20},
+      "expected": {
+        "values": {"weight": 70, "height": 175, "bmi": 22.9, "smoker": false, "cigarettes": null, "pacemaker": null, "notes": null, "q1": null, "q2": null, "total": null},
+        "sections": {"general": true, "risks": false, "mood": true},
+        "visible": {"weight": true, "height": true, "bmi": true, "smoker": true, "cigarettes": false, "pacemaker": false, "notes": false, "q1": true, "q2": true, "total": true},
+        "required": ["weight", "height"],
+        "missing": [],
+        "stops": [],
+        "bands": {"total": null}
+      }
+    },
+    {
+      "name": "nothing answered yet",
+      "schema": "visit",
+      "values": {},
+      "expected": {
+        "values": {"weight": null, "height": null, "bmi": null, "smoker": null, "cigarettes": null, "pacemaker": null, "notes": null, "q1": null, "q2": null, "total": null},
+        "sections": {"general": true, "risks": false, "mood": true},
+        "visible": {"weight": true, "height": true, "bmi": true, "smoker": true, "cigarettes": false, "pacemaker": false, "notes": false, "q1": true, "q2": true, "total": true},
+        "required": ["weight", "height"],
+        "missing": ["weight", "height"],
+        "stops": [],
+        "bands": {"total": null}
+      }
+    },
+    {
+      "name": "a notice has to be accepted; a marketing no is an answer",
+      "schema": "consents",
+      "values": {"read": false, "marketing": false},
+      "expected": {
+        "values": {"notice": null, "read": false, "marketing": false, "sign": null},
+        "sections": {"privacy": true},
+        "visible": {"notice": true, "read": true, "marketing": true, "sign": true},
+        "required": ["read", "marketing", "sign"],
+        "missing": ["read", "sign"],
+        "stops": [],
+        "bands": {}
+      }
+    },
+    {
+      "name": "accepted and signed",
+      "schema": "consents",
+      "values": {"read": true, "marketing": false, "sign": "signed"},
+      "expected": {
+        "values": {"notice": null, "read": true, "marketing": false, "sign": "signed"},
+        "sections": {"privacy": true},
+        "visible": {"notice": true, "read": true, "marketing": true, "sign": true},
+        "required": ["read", "marketing", "sign"],
+        "missing": [],
+        "stops": [],
+        "bands": {}
+      }
+    },
+    {
+      "name": "a multiple choice, an empty table, one side",
+      "schema": "history",
+      "values": {"allergies": ["Latex", "Penicillin"], "drugs": [], "knee": {"left": 120, "right": null}},
+      "expected": {
+        "values": {"allergies": ["Latex", "Penicillin"], "which": null, "drugs": [], "knee": {"left": 120, "right": null}, "more": null},
+        "sections": {"s": true},
+        "visible": {"allergies": true, "which": true, "drugs": true, "knee": true, "more": false},
+        "required": [],
+        "missing": [],
+        "stops": [],
+        "bands": {}
+      }
+    }
+  ],
+  "validations": [
+    {"name": "not a form", "schema": {}, "expected": ["not_a_schema"]},
+    {"name": "the visit is valid", "schema": "visit", "expected": []},
+    {"name": "the consents are valid", "schema": "consents", "expected": []},
+    {"name": "the history is valid", "schema": "history", "expected": []},
+    {"name": "two questions, one key", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text", "label": "A"}, {"id": "a", "type": "text", "label": "B"}]}]}, "expected": ["invalid_id"]},
+    {"name": "a key with capitals", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "Name", "type": "text", "label": "Name"}]}]}, "expected": ["invalid_id"]},
+    {"name": "an unknown kind of field", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "hologram", "label": "A"}]}]}, "expected": ["unknown_type"]},
+    {"name": "a question without words", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text"}]}]}, "expected": ["missing_label"]},
+    {"name": "a choice without options", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "choice", "label": "A", "options": []}]}]}, "expected": ["missing_options"]},
+    {"name": "the same option twice", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "choice", "label": "A", "options": [{"label": "X"}, {"label": "X"}]}]}]}, "expected": ["duplicate_option"]},
+    {"name": "a score that is not a number", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "choice", "label": "A", "options": [{"label": "X", "score": "lots"}]}]}]}, "expected": ["invalid_score"]},
+    {"name": "a calculation looking ahead", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "c", "type": "calc", "label": "C", "formula": "a * 2"}, {"id": "a", "type": "number", "label": "A"}]}]}, "expected": ["later_reference"]},
+    {"name": "a calculation on a missing question", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "c", "type": "calc", "label": "C", "formula": "z * 2"}]}]}, "expected": ["unknown_reference"]},
+    {"name": "a calculation on words", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text", "label": "A"}, {"id": "c", "type": "calc", "label": "C", "formula": "a * 2"}]}]}, "expected": ["not_a_number_reference"]},
+    {"name": "a broken formula", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "c", "type": "calc", "label": "C", "formula": "2 +"}]}]}, "expected": ["invalid_formula"]},
+    {"name": "showing on a later answer", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text", "label": "A", "show_if": [[{"field": "b", "operator": "is_set"}]]},
+      {"id": "b", "type": "text", "label": "B"}]}]}, "expected": ["later_reference"]},
+    {"name": "stopping on a later answer is fine", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text", "label": "A", "stop_if": [[{"field": "b", "operator": "is_set"}]]},
+      {"id": "b", "type": "text", "label": "B"}]}]}, "expected": []},
+    {"name": "a section showing on an answer inside it", "schema": {"sections": [{"id": "s", "show_if": [[{"field": "a", "operator": "is_set"}]], "fields": [
+      {"id": "a", "type": "text", "label": "A"}]}]}, "expected": ["later_reference"]},
+    {"name": "a table is only given or not", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "t", "type": "table", "label": "T", "columns": [{"id": "x", "label": "X"}]},
+      {"id": "a", "type": "text", "label": "A", "show_if": [[{"field": "t", "operator": "equals", "value": "1"}]]}]}]}, "expected": ["invalid_operator"]},
+    {"name": "an unknown operator", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text", "label": "A"},
+      {"id": "b", "type": "text", "label": "B", "show_if": [[{"field": "a", "operator": "resembles", "value": "1"}]]}]}]}, "expected": ["invalid_operator"]},
+    {"name": "a text to read cannot be asked about", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "p", "type": "paragraph", "text": "Read me"},
+      {"id": "a", "type": "text", "label": "A", "show_if": [[{"field": "p", "operator": "is_set"}]]}]}]}, "expected": ["invalid_condition"]},
+    {"name": "a score counting words", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "text", "label": "A"},
+      {"id": "t", "type": "score", "label": "T", "sources": ["a"]}]}]}, "expected": ["invalid_source"]},
+    {"name": "a band upside down", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "scale", "label": "A"},
+      {"id": "t", "type": "score", "label": "T", "sources": ["a"], "bands": [{"from": 5, "to": 1, "label": "X"}]}]}]}, "expected": ["invalid_band"]},
+    {"name": "a scale going nowhere", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "scale", "label": "A", "min": 3, "max": 3}]}]}, "expected": ["invalid_scale"]},
+    {"name": "a number whose least is above its most", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "number", "label": "A", "min": 10, "max": 1}]}]}, "expected": ["min_above_max"]},
+    {"name": "too many decimals", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "number", "label": "A", "decimals": 9}]}]}, "expected": ["invalid_decimals"]},
+    {"name": "a signature by nobody", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "signature", "label": "A", "signer": "the cat"}]}]}, "expected": ["invalid_signer"]},
+    {"name": "a signature of an unknown level", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "signature", "label": "A", "level": "notarised"}]}]}, "expected": ["invalid_signature_level"]},
+    {"name": "a consent to nothing", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "consent", "label": "A"}]}]}, "expected": ["missing_consent_type"]},
+    {"name": "a text to read with no words", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "p", "type": "paragraph", "text": "  "}]}]}, "expected": ["missing_text"]},
+    {"name": "a table without columns", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "t", "type": "table", "label": "T"}]}]}, "expected": ["missing_columns"]},
+    {"name": "a column of an unknown kind", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "t", "type": "table", "label": "T", "columns": [{"id": "x", "label": "X", "type": "colour"}]}]}]}, "expected": ["invalid_column"]},
+    {"name": "sides of an unknown kind", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "k", "type": "sides", "label": "K", "input": "colour"}]}]}, "expected": ["invalid_sides_input"]},
+    {"name": "two problems, in the order met", "schema": {"sections": [{"id": "s", "fields": [
+      {"id": "a", "type": "choice", "options": []}]}]}, "expected": ["missing_label", "missing_options"]}
+  ]
+}
