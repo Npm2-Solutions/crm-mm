@@ -32,6 +32,8 @@
   "job_title",
   "source",
   "lead_owner",
+  "last_visit",
+  "last_service",
   "organization_tab",
   "section_break_uixv",
   "naming_series",
@@ -231,6 +233,20 @@
    "fieldtype": "Link",
    "label": "Lead Owner",
    "options": "User"
+  },
+  {
+   "description": "The last appointment they came to. Recalls pick people by it, never by the clinical record.",
+   "fieldname": "last_visit",
+   "fieldtype": "Date",
+   "label": "Last visit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_service",
+   "fieldtype": "Link",
+   "label": "Last service",
+   "options": "CRM Service",
+   "read_only": 1
   },
   {
    "fieldname": "source",
@@ -801,7 +817,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-09-29 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",
