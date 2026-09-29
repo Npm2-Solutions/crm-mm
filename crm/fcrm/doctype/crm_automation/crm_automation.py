@@ -64,7 +64,7 @@ class CRMAutomation(Document):
 			"Date Reminder",
 			"Inbound Webhook",
 		]
-		webhook_key: DF.Data | None
+		webhook_key: DF.Password | None
 		window_days: DF.JSON | None
 		window_end: DF.Time | None
 		window_start: DF.Time | None
@@ -77,6 +77,7 @@ class CRMAutomation(Document):
 		ensure_step_ids(steps)
 		self.steps = json.dumps(steps)
 		self.compiled_steps = json.dumps(compile_steps(steps))
+		# once saved the field holds a mask of asterisks, so a key is made only once
 		if "Inbound Webhook" in self.trigger_events() and not self.webhook_key:
 			self.webhook_key = frappe.generate_hash(length=32)
 
