@@ -465,7 +465,7 @@ Nel CRM, in `crm/moduli`, i DocType che servono a ogni cliente, con il prefisso
 | `CRM Form` | un modulo compilato e firmato (submittable) | versione, valori, PDF/A e impronta, compilato da (paziente o staff) |
 | `CRM Signature` | tabella figlia di `CRM Form` e, nella clinica, di `Clinic Record` | chi, in che veste, livello, metodo, ora, IP, dispositivo, id del fornitore |
 | `CRM Audit Log` | il registro che si aggiunge soltanto | documento, evento, ora, IP, dispositivo, impronta dell'evento precedente |
-| `CRM Consent` | il registro dei consensi | tipo, stato, versione del testo, da quale modulo, revocato il |
+| `CRM Consent` | il registro dei consensi (fatto il 29/09/2026, con `CRM Consent Type`) | tipo, stato, versione del testo, da quale modulo, revocato il |
 
 Nella clinica, in `crm/clinica`, con il prefisso `Clinic`:
 

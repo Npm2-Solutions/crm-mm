@@ -95,6 +95,17 @@ Code asks for a capability (`puo("fatture.emetti")`, `@richiede(...)`), never fo
 role name; the frontend asks `usersStore().puo(...)`. A new module registers its
 roles, levels and capabilities from its own `registra()`.
 
+### Consents and billing details (phase 0 of the medical centre project)
+| File | Role |
+|---|---|
+| `crm/moduli/registro.py` | Kinds of consent (each module registers its own), natures, channels, the current state — pure |
+| `crm/moduli/consensi.py` | The register: record, withdraw, state, who reads it, the person panel and settings calls |
+| `crm/invoicing/engine/anagrafica.py` | What an invoice takes from a fiscal profile and what a confirmed one gives back — pure |
+| `crm/invoicing/anagrafica.py` | `CRM Billing Profile`: whose profile an invoice uses, both directions, the panel calls |
+
+A person's billing details and consents follow the person (`org_hierarchy.visible_leads`)
+and are deleted with them (`on_trash`); an answer in the register is never edited.
+
 ## Mobile
 
 `isMobileView` (< 768px) picks the phone components, so what changes on a phone

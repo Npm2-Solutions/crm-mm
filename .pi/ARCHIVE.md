@@ -1104,3 +1104,42 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `frontend/src/components/BillingProfileSection.vue`, `SidePanelLayout.vue`, `pages/Lead.vue`, `MobileLead.vue`, `Organization.vue`, `MobileOrganization.vue` | La sezione "Billing details" |
 | `crm/invoicing/tests/test_anagrafica.py`, `crm/tests/test_billing_profile.py` | I test: 24 senza sito, 20 sul sito |
 
+
+## Il registro dei consensi
+
+> **Completato** (29/09/2026). La quarta PR della fase 0 del gestionale medico.
+> Chi ha accettato cosa, su quali parole, quando e come: un registro che cresce
+> soltanto, con quello di `/prenota`, la sezione sulla pagina della persona e i
+> testi nelle impostazioni.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Nel CRM, in un modulo nuovo `crm/moduli` (Frappe module "Moduli"), non nella clinica | Il consenso al marketing serve a una palestra quanto a una clinica; i modelli e le firme della fase 2 andranno nello stesso modulo |
+| I tipi si registrano in codice (`registro.registra_tipo`) e diventano record (`CRM Consent Type`) al migrate, senza mai sovrascrivere | Il codice chiede per chiave ("marketing"); il testo è del centro, controllato dal suo DPO, e una migrazione non deve rimettere quello di serie. Come le capacità, ogni modulo porta i suoi |
+| Due nature: consenso (si revoca) e presa visione (l'informativa, non si revoca) | L'informativa è informazione, non un consenso: non c'è niente da ritirare |
+| Una risposta non si modifica: la revoca si timbra sulla stessa riga, un nuovo sì è una riga nuova | Una prova del consenso (art. 7(1) GDPR) che si può modificare non prova niente. Lo stato è l'ultima risposta |
+| Ogni risposta tiene la sua copia del testo e la versione | Riscrivere il testo non riscrive quello che qualcuno ha accettato |
+| La spunta dell'informativa di `/prenota` si registra con le parole della pagina, nella lingua del visitatore, più l'indirizzo dell'informativa | La pagina è bilingue e il testo del tipo no: si tiene quello che la persona ha letto davvero. Da una pagina in cache che non le manda, il testo del tipo |
+| Il marketing su `/prenota` solo se il centro lo accende, facoltativo e mai spuntato | Un consenso si dà, non si trova già dato |
+| Un "no" di chi aveva detto sì è una revoca | Non due righe che si contraddicono |
+| Il marketing si specchia su `CRM Lead.marketing_consent` | Liste e automazioni leggono i campi della persona: è il mattone dei richiami col consenso della fase 1 |
+| Registrare e revocare a mano chiede `consensi.raccogli`, anche al commerciale | Chi sente "non scrivetemi più" lo deve poter scrivere: revocare è facile quanto dare (art. 7(3)) |
+| Le risposte seguono la persona e se ne vanno con lei | La stessa regola dell'anagrafica fiscale: fanno parte della persona |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/moduli/registro.py` | Le regole, pure: tipi, nature, canali, stato attuale |
+| `crm/moduli/__init__.py` | I due tipi del CRM: informativa e marketing |
+| `crm/moduli/consensi.py` | Registrare, revocare, lo stato, i permessi, le chiamate del pannello e delle impostazioni |
+| `crm/moduli/doctype/crm_consent_type/`, `crm_consent/` | I DocType |
+| `crm/api/service_booking.py`, `crm/www/prenota.html` | Le spunte di `/prenota` nel registro, la casella del marketing |
+| `crm/fcrm/doctype/crm_scheduling_settings/`, `crm/api/appointments.py`, `Settings/Booking/BookingPageSettings.vue` | "Ask for marketing consent" |
+| `crm/fcrm/doctype/crm_lead/` | `marketing_consent` |
+| `crm/permissions/catalogo.py` | `consensi.vedi`, `consensi.raccogli`, `consensi.configura` |
+| `crm/hooks.py`, `crm/install.py`, `crm/registrazione.py`, `crm/modules.txt`, `crm/api/doc.py` | Il cablaggio |
+| `frontend/src/components/ConsentsSection.vue`, `Settings/ConsentsSettings.vue` | La sezione sulla persona, la pagina dei testi |
+| `crm/moduli/tests/test_registro.py`, `crm/tests/test_consents.py` | I test: 9 senza sito, 16 sul sito |
