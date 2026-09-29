@@ -14,7 +14,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Invite users to access CRM. Specify their roles to control access and permissions',
+              'Invite people to the CRM, with the levels they will have: what they see and what they can do',
             )
           }}
         </p>
@@ -26,7 +26,10 @@
           :label="__('Send Invites')"
           variant="solid"
           :disabled="
-            !invitees.length || userExistMessage || inviteeExistMessage
+            !invitees.length ||
+            !chosenLevels.length ||
+            userExistMessage ||
+            inviteeExistMessage
           "
           :loading="inviteByEmail.loading"
           @click="inviteByEmail.submit()"
@@ -54,14 +57,14 @@
         >
           {{ userExistMessage || inviteeExistMessage }}
         </div>
-        <FormControl
-          v-model="role"
-          type="select"
-          class="mt-4"
-          :label="__('Invite As')"
-          :options="roleOptions"
-          :description="description"
-        />
+        <div class="mt-5 flex flex-col gap-2">
+          <div class="text-xs text-ink-gray-5">{{ __('Invite As') }}</div>
+          <LevelPicker
+            v-model="chosenLevels"
+            :levels="levels.data || []"
+            :disabled="inviteByEmail.loading"
+          />
+        </div>
       </div>
       <template v-if="pendingInvitations.data?.length && !invitees.length">
         <div class="flex flex-col gap-4">
@@ -78,9 +81,7 @@
                 <span class="text-ink-gray-8">
                   {{ user.email }}
                 </span>
-                <span class="text-ink-gray-5">
-                  ({{ roleMap[user.role] }})
-                </span>
+                <span class="text-ink-gray-5"> ({{ invitedAs(user) }}) </span>
               </div>
               <div>
                 <Button
@@ -103,6 +104,8 @@
   </div>
 </template>
 <script setup>
+import LevelPicker from '@/components/Settings/LevelPicker.vue'
+import { useLevels, levelLabels } from '@/composables/levels'
 import { validateEmail, convertArrayToString } from '@/utils'
 import { usersStore } from '@/stores/users'
 import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
@@ -112,15 +115,26 @@ import {
   createResource,
   FormControl,
 } from 'frappe-ui'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const { updateOnboardingStep } = useOnboarding('frappecrm')
-const { users, isAdmin } = usersStore()
+const { users } = usersStore()
 const { capture } = useTelemetry()
+const levels = useLevels()
 
 const invitees = ref([])
-const role = ref('Sales User')
+const chosenLevels = ref([])
 const error = ref(null)
+
+// Front desk until someone chooses otherwise: the level most people get
+watch(
+  () => levels.data,
+  (data) => {
+    if (!chosenLevels.value.length && data?.some((l) => l.key === 'segreteria'))
+      chosenLevels.value = ['segreteria']
+  },
+  { immediate: true },
+)
 
 const userExistMessage = computed(() => {
   const inviteesSet = new Set(invitees.value)
@@ -154,29 +168,18 @@ const inviteeExistMessage = computed(() => {
   ])
 })
 
-const description = computed(() => {
-  return {
-    'System Manager':
-      'Can manage all aspects of the CRM, including user management, customizations and settings.',
-    'Sales Manager':
-      'Can manage and invite new users, and create public & private views (reports).',
-    'Sales User':
-      'Can work with leads and deals and create private views (reports).',
-  }[role.value]
-})
-
-const roleOptions = computed(() => {
-  return [
-    { value: 'Sales User', label: __('Sales User') },
-    ...(isAdmin() ? [{ value: 'Sales Manager', label: __('Manager') }] : []),
-    ...(isAdmin() ? [{ value: 'System Manager', label: __('Admin') }] : []),
-  ]
-})
-
+// invitations from before levels carry a role
 const roleMap = {
   'Sales User': __('Sales User'),
   'Sales Manager': __('Manager'),
   'System Manager': __('Admin'),
+}
+
+function invitedAs(invitation) {
+  const keys = (invitation.levels || '').split('\n').filter(Boolean)
+  if (!keys.length) return roleMap[invitation.role] || invitation.role
+  const labels = levelLabels(levels.data)
+  return keys.map((key) => __(labels[key] || key)).join(', ')
 }
 
 const inviteByEmail = createResource({
@@ -184,11 +187,10 @@ const inviteByEmail = createResource({
   makeParams() {
     return {
       emails: convertArrayToString(invitees.value),
-      role: role.value,
+      levels: JSON.stringify(chosenLevels.value),
     }
   },
   onSuccess() {
-    role.value = 'Sales User'
     error.value = null
     invitees.value = []
     pendingInvitations.reload()
@@ -206,7 +208,7 @@ const pendingInvitations = createListResource({
   type: 'list',
   doctype: 'CRM Invitation',
   filters: { status: 'Pending' },
-  fields: ['name', 'email', 'role'],
+  fields: ['name', 'email', 'role', 'levels'],
   pageLength: 999,
   auto: true,
 })

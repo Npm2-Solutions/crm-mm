@@ -6,6 +6,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import sha256_hash
 
+from crm.permissions import livelli, utenti
+
 INVITABLE_ROLES = ("Sales User", "Sales Manager", "System Manager")
 
 
@@ -23,6 +25,7 @@ class CRMInvitation(Document):
 		email_sent_at: DF.Datetime | None
 		invited_by: DF.Link | None
 		key: DF.Data | None
+		levels: DF.SmallText | None
 		role: DF.Literal["", "Sales User", "Sales Manager", "System Manager"]
 		status: DF.Literal["", "Pending", "Accepted", "Expired"]
 	# end: auto-generated types
@@ -44,15 +47,34 @@ class CRMInvitation(Document):
 		self.flags.ignore_permlevel_for_fields = ["key"]
 
 	def validate(self):
-		# Whoever accepts a pending invitation gets its role, so it may only carry one its
-		# inviter could grant: the rule `invite_by_email` applies, enforced here for every
-		# way in (REST, Desk, code). Address, role and inviter can't change afterwards
-		# (set_only_once), and `accept` asks again in case the inviter lost the right.
-		if self.status == "Pending" and not can_grant_role(self.invited_by, self.role):
+		# Whoever accepts a pending invitation gets its levels (or, the old way, its role),
+		# so it may only carry what its inviter could grant: the rule `invite_by_email`
+		# applies, enforced here for every way in (REST, Desk, code). Address, levels,
+		# role and inviter can't change afterwards (set_only_once), and `accept` asks
+		# again in case the inviter lost the right.
+		if not self.status == "Pending":
+			return
+		if self.chiavi_livelli():
+			if not can_grant_levels(self.invited_by, self.chiavi_livelli()):
+				frappe.throw(
+					_("{0} is not allowed to invite users with these levels").format(self.invited_by),
+					frappe.PermissionError,
+				)
+		elif not self.role:
+			frappe.throw(_("An invitation needs at least one level"))
+		elif not can_grant_role(self.invited_by, self.role):
 			frappe.throw(
 				_("{0} is not allowed to invite users as {1}").format(self.invited_by, _(self.role)),
 				frappe.PermissionError,
 			)
+
+	def chiavi_livelli(self) -> list[str]:
+		return [riga.strip() for riga in (self.levels or "").splitlines() if riga.strip()]
+
+	def can_be_granted_by(self, user: str | None) -> bool:
+		if self.chiavi_livelli():
+			return can_grant_levels(user, self.chiavi_livelli())
+		return can_grant_role(user, self.role)
 
 	def after_insert(self):
 		self.invite_via_email(self._key)
@@ -76,12 +98,10 @@ class CRMInvitation(Document):
 
 	@frappe.whitelist()
 	def accept_invitation(self):
-		frappe.only_for(["System Manager", "Sales Manager"], True)
-		# accepting on the invitee's behalf hands out the role just as inviting does
-		if not can_grant_role(frappe.session.user, self.role):
-			frappe.throw(
-				_("You are not allowed to grant the role {0}").format(_(self.role)), frappe.PermissionError
-			)
+		livelli.verifica("utenti.gestisci")
+		# accepting on the invitee's behalf hands out the access just as inviting does
+		if not self.can_be_granted_by(frappe.session.user):
+			frappe.throw(_("You are not allowed to grant this access"), frappe.PermissionError)
 		if self.accept():
 			# the invitee was not around to set a password, mail them a link to do it
 			frappe.get_doc("User", self.email).send_welcome_mail_to_user()
@@ -91,18 +111,21 @@ class CRMInvitation(Document):
 			frappe.throw(_("Invalid or expired key"))
 
 		# checked when the invitation was sent, but the inviter may have lost the right since
-		if not can_grant_role(self.invited_by, self.role):
+		if not self.can_be_granted_by(self.invited_by):
 			frappe.throw(_("This invitation is no longer valid"), frappe.PermissionError)
 
 		user, is_new_user = self.create_user_if_not_exists()
-		user.append_roles(self.role)
-		if self.role == "System Manager":
-			user.append_roles("Sales Manager", "Sales User")
-		elif self.role == "Sales Manager":
-			user.append_roles("Sales User")
-		if self.role == "Sales User":
-			self.update_module_in_user(user, "FCRM")
-		user.save(ignore_permissions=True)
+		if self.chiavi_livelli():
+			utenti.assegna_livelli(user.name, self.chiavi_livelli())
+		else:
+			user.append_roles(self.role)
+			if self.role == "System Manager":
+				user.append_roles("Sales Manager", "Sales User")
+			elif self.role == "Sales Manager":
+				user.append_roles("Sales User")
+			if self.role == "Sales User":
+				self.update_module_in_user(user, "FCRM")
+			user.save(ignore_permissions=True)
 
 		self.status = "Accepted"
 		self.accepted_at = frappe.utils.now()
@@ -135,6 +158,22 @@ class CRMInvitation(Document):
 			return user, True
 
 		return frappe.get_doc("User", self.email), False
+
+
+def can_grant_levels(user: str | None, chiavi: list[str]) -> bool:
+	"""Whether `user` may invite someone with these levels.
+
+	Whoever manages users - a Manager, or the agency - gives any level this site
+	offers. Never System Manager: no level carries it.
+	"""
+	if not user or not chiavi:
+		return False
+	if not frappe.db.get_value("User", user, "enabled"):
+		return False
+	if not livelli.puo("utenti.gestisci", user):
+		return False
+	offerti = {livello.chiave for livello in utenti.livelli_offerti()}
+	return all(chiave in offerti for chiave in chiavi)
 
 
 def can_grant_role(user: str | None, role: str) -> bool:

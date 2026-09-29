@@ -64,3 +64,4 @@ crm.patches.v1_0.clean_unsafe_dropdown_items
 crm.patches.v1_0.expire_invitations_with_readable_keys
 crm.patches.v1_0.revoke_guest_select_outside_lookups
 crm.patches.v1_0.encrypt_integration_secrets
+crm.patches.v1_0.give_users_their_levels

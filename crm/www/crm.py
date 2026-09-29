@@ -87,8 +87,22 @@ def get_boot():
 				or get_system_timezone(),
 			},
 			"state_options": get_state_options(),
+			"crm_permissions": get_permissions(),
 		}
 	)
+
+
+def get_permissions() -> dict | None:
+	"""What the session may do, with the page: so no menu item appears late, or twice.
+
+	Never raises, like everything in the boot: without it the frontend asks for it.
+	"""
+	try:
+		from crm.api.session import session_permissions
+
+		return session_permissions() if frappe.session.user != "Guest" else None
+	except Exception:
+		return None
 
 
 def get_state_options() -> dict[str, list[str]]:
