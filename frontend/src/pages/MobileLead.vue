@@ -57,7 +57,11 @@
               @reload="sections.reload"
               @beforeFieldChange="saveChange"
               @afterFieldChange="reloadAssignees"
-            />
+            >
+              <template #after>
+                <BillingProfileSection partyType="CRM Lead" :party="leadId" />
+              </template>
+            </SidePanelLayout>
           </div>
         </div>
         <Activities
@@ -107,6 +111,7 @@ import Activities from '@/components/Activities/Activities.vue'
 import LucideRadar from '~icons/lucide/radar'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
+import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations } from '@/utils'

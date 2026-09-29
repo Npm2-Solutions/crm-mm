@@ -202,7 +202,11 @@
           @reload="sections.reload"
           @beforeFieldChange="saveChange"
           @afterFieldChange="reloadResources"
-        />
+        >
+          <template #after>
+            <BillingProfileSection partyType="CRM Lead" :party="leadId" />
+          </template>
+        </SidePanelLayout>
       </div>
     </Resizer>
   </div>
@@ -256,6 +260,7 @@ import LucideRadar from '~icons/lucide/radar'
 import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
+import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'

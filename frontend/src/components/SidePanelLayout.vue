@@ -409,6 +409,8 @@
         </div>
       </div>
     </template>
+    <!-- sections that are not fields of this record, in the same scroll -->
+    <slot name="after" />
   </div>
   <SidePanelModal
     v-if="showSidePanelModal"
