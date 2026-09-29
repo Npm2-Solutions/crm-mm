@@ -14,12 +14,13 @@ class CRMAppointmentParticipant(Document):
 		from frappe.types import DF
 
 		amount: DF.Currency | None
+		arrived_at: DF.Datetime | None
 		email: DF.Data | None
 		participant_name: DF.Data
 		party: DF.DynamicLink | None
 		party_type: DF.Literal["CRM Lead", "Contact", "CRM Deal"]
 		phone: DF.Data | None
-		status: DF.Literal["Booked", "Attended", "No Show", "Cancelled"]
+		status: DF.Literal["Booked", "Arrived", "Attended", "No Show", "Cancelled"]
 	# end: auto-generated types
 
 	pass
