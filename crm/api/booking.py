@@ -357,19 +357,25 @@ def find_or_create_person(
 
 	Shared by the Calendly-style pages, the service booking page and the
 	connectors importing bookings from external platforms.
+
+	A family shares an email and a phone, so the contact finds its owner and the
+	name says who the booking is for: the owner, one of the people linked to them,
+	or somebody new they book for - linked to them, without their contact
+	(`crm.persone.collegate`). Never another person's record.
 	"""
-	from crm.api.lead import find_person
 	from crm.api.tracking import attribute, record_conversion
+	from crm.persone.collegate import persona_per_conto, trova_per_nome
 
 	# a customer who books again is the same person, deal or no deal
-	existing = find_person(email=email, phone=phone)
-	if existing:
+	existing, owner = trova_per_nome(full_name, email=email, telefono=phone)
+	if owner:
 		# a returning invitee: their first touch is already recorded, but this visit
-		# is a new last touch, and the booking belongs on their journey
-		lead = frappe.get_doc("CRM Lead", existing)
+		# is a new last touch, and the booking belongs on their journey - the owner's,
+		# who was on the page, whoever the booking is for
+		lead = frappe.get_doc("CRM Lead", owner)
 		attribute(lead, visitor_id=crm_vid, session_id=crm_sid)
 		record_conversion(lead, "booking", full_name or "", reference=reference)
-		return existing
+		return existing or persona_per_conto(owner, full_name, fonte=_ensure_source(source))
 
 	from crm.api.form import _default_status
 

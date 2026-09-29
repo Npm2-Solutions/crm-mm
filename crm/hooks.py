@@ -175,6 +175,8 @@ permission_query_conditions = {
 	"CRM Billing Profile": "crm.invoicing.permessi.get_profile_permission_query_conditions",
 	# and so do their consents
 	"CRM Consent": "crm.moduli.consensi.get_permission_query_conditions",
+	# and the people they are linked to, from either side
+	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 }
@@ -190,6 +192,7 @@ has_permission = {
 	"CRM Invoice": "crm.invoicing.permessi.has_permission",
 	"CRM Billing Profile": "crm.invoicing.permessi.has_profile_permission",
 	"CRM Consent": "crm.moduli.consensi.has_permission",
+	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 }
 
@@ -299,9 +302,10 @@ doc_events = {
 			# a patient's record is kept: said before anything else is removed
 			"crm.clinica.eventi.persona_in_cancellazione",
 			"crm.integrations.meta.leads.forget_person",
-			# billing details and consents are part of the person, not linked to it
+			# billing details, consents and links are part of the person, not linked to it
 			"crm.invoicing.anagrafica.cancella_con_il_titolare",
 			"crm.moduli.consensi.cancella_con_la_persona",
+			"crm.persone.collegate.cancella_con_la_persona",
 		],
 	},
 	"CRM Organization": {
