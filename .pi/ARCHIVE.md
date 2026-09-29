@@ -956,3 +956,73 @@ console stampa l'SQL intero.
 | `crm/api/automation.py` | Chiave del webhook solo ai manager, confronto decifrato |
 | `crm/patches/v1_0/` | `drop_unique_index_on_booking_webhook_token` (pre), `revoke_guest_select_outside_lookups`, `encrypt_integration_secrets` |
 | `crm/tests/test_quick_filters.py`, `test_settings_methods.py`, `test_integration_secrets.py`, `test_assignment_rule_api.py`, `test_erpnext_deal_access.py`, e i test di FCRM Settings, form e automazioni | Per ogni fix: il ruolo che non deve fallisce, quello che deve riesce |
+
+---
+
+## Livelli, capacità e piano — la PR 1 del doc 30
+
+> **Completato** (29/09/2026). Il CRM assegna **livelli** (Segreteria, Operatore,
+> Manager amministrativo, e Commerciale facoltativo) invece di ruoli, e il codice
+> chiede **capacità** con un nome invece di confrontare ruoli. Una capacità vale se
+> il livello la dà e il suo modulo è attivo nel **piano** del centro. La matrice è
+> quella del [doc 30](../docs/progetto-ghl/30-ruoli-e-permessi.md), che ha la
+> sezione "La PR 1, com'è fatta". È il primo passo della fase 0 del gestionale
+> medico: la clinica porterà il suo livello (Direzione sanitaria) e le sue capacità
+> nello stesso registro.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Le capacità si calcolano dai **livelli**, non dai ruoli | Il doc 30 è una matrice livello per capacità: il registro la trascrive così com'è, e `calcola()` è una funzione pura che la prova senza sito. I ruoli restano i mattoni dei permessi sui documenti |
+| Chi non ha livelli conta per i livelli che i suoi ruoli implicano | Sales Manager → Manager, Sales User → Commerciale: con i ruoli di prima le risposte sono quelle di prima, e ogni `MANAGER_ROLES` sostituito continua a dire la stessa cosa |
+| La migrazione dà Segreteria al Sales User, Commerciale dove la gerarchia è accesa | Il doc 30 dice Segreteria "da verificare sito per sito"; un sito che ha acceso la gerarchia ha scelto che ognuno veda il suo team, e Commerciale lo conserva |
+| La migrazione non tocca chi perderebbe un ruolo | Frappe rifà i ruoli di un utente con profili dai profili, a ogni salvataggio: chi ha un ruolo di un'altra app, o un Invoicing Manager che la Segreteria non porta, resta com'è |
+| I profili si chiamano `CRM …` e il registro li riscrive a ogni migrate | Il codice è la fonte, i record lo seguono; il prefisso dice quali profili sono del CRM e quali no |
+| I ruoli dei profili si riscrivono sulle righe, non con `save()` | Salvare un Role Profile mette in coda un lavoro che risalva i suoi utenti e blocca il profilo finché un worker non l'ha fatto: un secondo migrate prima di allora avrebbe dovuto saltare la modifica. Gli utenti si risalvano subito, lì |
+| `role_profile_name` si svuota a ogni assegnazione | È il vecchio campo singolo, che Frappe tiene uguale al primo profilo e rimette nella tabella al salvataggio se non c'è: togliere un livello lo faceva tornare |
+| Le capacità "a scelta" sono righe di `CRM User Capability` | Un ruolo messo a mano su un utente con profili sparisce al salvataggio |
+| Il piano: un modulo non elencato tiene il suo predefinito | Quello che il CRM faceva già resta acceso, nessun sito perde niente il giorno dopo; un modulo nuovo nasce spento, così la clinica non compare in una palestra |
+| Un modulo finito diventa di sola lettura, non spento | Non si cancella mai niente (doc 30): restano le capacità che non scrivono |
+| La prova di 14 giorni la fa partire il Manager, e scrive nel piano per suo conto | Il piano è dell'agenzia; l'unica cosa che il centro fa da solo è provare un modulo che non ha, e l'agenzia lo sa per email |
+| Il Manager dà anche il livello Manager, ma non se lo toglie | Il doc 30: il Manager nomina gli altri Manager. Togliersi il livello da solo chiudeva fuori il centro dalla gestione degli utenti |
+| Gli utenti dell'agenzia non si toccano dal CRM | Hanno System Manager, che un livello non porta: dare loro un livello glielo toglierebbe. Li gestisce l'agenzia dal Desk |
+| Moduli del Desk: Segreteria e Operatore vedono quelli dell'app CRM | Come il Sales User di prima, ma fatturazione e Sistema TS compresi, che il vecchio blocco toglieva |
+
+### Il bug della registrazione
+
+`crm/hooks.py` registrava fatturazione e Sistema TS al momento dell'import. Fuori
+dal developer mode Frappe tiene gli hook nella sua cache (`client_cache`), e un
+processo che li trova lì non importa mai `hooks.py`: provato su un processo nuovo,
+`estensioni._risolutori` era vuoto, "fisioterapista" non era nel registro e la
+verifica del tracciato TS non era registrata. Adesso `crm/registrazione.py` registra
+tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
+`before_job` e da chi legge il registro dei livelli.
+
+### Lasciato com'è, di proposito
+
+- I permessi dei documenti non cambiano: Front Desk e Practitioner non portano
+  ancora DocPerm, e la Segreteria vede le persone come il Sales User di prima.
+  L'ambito che segue la persona e le fatture tolte al Sales User sono la PR 2.
+- Il frontend usa ancora `isManager()` quasi ovunque; menu, rotte e impostazioni
+  passano a `puo()` con la PR 3. Oggi `puo()` lo usano la pagina Utenti, gli inviti
+  e il Piano.
+- ERPNext resta a `MANAGER_ROLES`: passa all'agenzia con la sua pagina, nella PR 3.
+- Marketing, Amministrazione e Sola lettura sono la PR 4.
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/permissions/livelli.py`, `catalogo.py`, `utenti.py` | Il registro e il calcolo; la matrice del CRM; profili, assegnazione, migrazione |
+| `crm/invoicing/capacita.py`, `crm/invoicing/__init__.py` | La colonna della fatturazione |
+| `crm/registrazione.py`, `crm/hooks.py` | La registrazione in ogni processo; `after_migrate` sincronizza i profili |
+| `crm/fcrm/doctype/crm_plan/`, `crm_plan_module/`, `crm_user_capability/` | Il piano; le capacità a scelta |
+| `crm/api/user.py`, `crm/api/__init__.py`, `crm/api/session.py`, `crm/www/crm.py` | Livelli per utente, inviti per livello, capacità nella sessione e all'avvio |
+| `crm/fcrm/doctype/crm_invitation/` | Il campo `levels`; chi invita deve poterli dare, all'invio e all'accettazione |
+| `crm/api/plan.py` | Impostazioni › Piano, la prova di 14 giorni |
+| Una trentina di file di `crm/api`, `crm/integrations`, `crm/fcrm/doctype`, `crm/dashboard`, `crm/www`, `crm/demo` | `MANAGER_ROLES` e i controlli scritti a mano diventano capacità |
+| `crm/patches/v1_0/give_users_their_levels.py`, `crm/install.py` | Il passaggio degli utenti; i profili all'installazione |
+| `frontend/src/stores/users.js`, `composables/levels.js` | `puo()`, `ambito()`, i livelli offerti |
+| `frontend/src/components/Settings/Users.vue`, `InviteUserPage.vue`, `LevelPicker.vue`, `PlanSettings.vue`, `Modals/UserAccessModal.vue`, `Modals/AddExistingUserModal.vue` | Utenti, inviti, accesso, piano |
+| `crm/permissions/test_livelli.py`, `test_utenti.py` | La matrice senza sito; i livelli su utenti veri |

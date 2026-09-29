@@ -82,6 +82,19 @@ they run as evaluated strings in the browser.
 
 ---
 
+### Levels, capabilities and the plan (doc 30)
+| File | Role |
+|---|---|
+| `crm/permissions/livelli.py` | The registry: plan modules, levels, roles, capabilities with their scope. `puo()`, `ambito()`, `@richiede()`, pure `calcola()` |
+| `crm/permissions/catalogo.py` | The CRM's own levels and capabilities; `crm/invoicing/capacita.py` adds invoicing's |
+| `crm/permissions/utenti.py` | Role Profiles from the registry, giving levels, the migration of old users |
+| `crm/registrazione.py` | Every module registers here, once per process (`before_request`, `before_job`) |
+| `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability |
+
+Code asks for a capability (`puo("fatture.emetti")`, `@richiede(...)`), never for a
+role name; the frontend asks `usersStore().puo(...)`. A new module registers its
+roles, levels and capabilities from its own `registra()`.
+
 ## Mobile
 
 `isMobileView` (< 768px) picks the phone components, so what changes on a phone

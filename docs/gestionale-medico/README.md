@@ -1,6 +1,8 @@
 # Il gestionale per i centri medici: come farlo stare in Frappe
 
-**Stato:** 📐 proposta (25/09/2026), rivista dopo l'arrivo della fatturazione in
+**Stato:** 🚧 in costruzione. Fase 0: livelli, capacità e piano (la PR 1 del
+[doc 30](../progetto-ghl/30-ruoli-e-permessi.md#la-pr-1-comè-fatta)) fatti il
+29/09/2026. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
 `develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
