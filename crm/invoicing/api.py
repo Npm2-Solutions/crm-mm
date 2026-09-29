@@ -16,7 +16,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
-from crm.invoicing import connessione, documento, estensioni
+from crm.invoicing import anagrafica, connessione, documento, estensioni
 from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
@@ -288,7 +288,10 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 	if partecipante and partecipante.party_type and partecipante.party:
 		fattura.party_type = partecipante.party_type
 		fattura.party = partecipante.party
-		fattura.billing_name = partecipante.participant_name
+		# the name on the booking, unless somebody pays for them: then the invoice
+		# is made out to that person, name included
+		if not anagrafica.pagante_della_fattura(fattura):
+			fattura.billing_name = partecipante.participant_name
 	fattura.append(
 		"items",
 		{

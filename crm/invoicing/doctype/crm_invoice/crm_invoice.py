@@ -147,14 +147,20 @@ class CRMInvoice(Document):
 		and re-pulling would quietly undo a correction made at the desk. The
 		codice fiscale and the address come from the client's fiscal profile, the
 		one place they are written (`crm.invoicing.anagrafica`); the name from the
-		record itself.
+		record itself. When somebody pays for the client - a parent for a child -
+		all of it is theirs, and the causale says whose visit it was.
 		"""
 		if not (self.party_type and self.party):
 			return
 		if not frappe.db.exists(self.party_type, self.party):
 			return
 		anagrafica.compila_fattura(self)
-		record = frappe.get_cached_doc(self.party_type, self.party).as_dict()
+		# a child's visit is made out to the parent who pays for them, when one does
+		pagante = anagrafica.pagante_della_fattura(self)
+		record = frappe.get_cached_doc(*(("CRM Lead", pagante) if pagante else (self.party_type, self.party)))
+		record = record.as_dict()
+		if pagante and not self.causale:
+			self.causale = anagrafica.causale_per_conto(self)
 		if not self.billing_name:
 			self.billing_name = (
 				record.get("organization_name")

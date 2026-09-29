@@ -11,6 +11,11 @@ the person's page.
 **Whose profile.** The invoice's record says it: a person or an organization is
 itself; a contact is the person it belongs to; a deal is its organization when the
 invoice goes to a company or an office, and its person when it goes to a person.
+
+**Made out to whoever pays.** A child's visit goes to the parent who pays for them,
+when the desk has said one does (`crm.persone`): their profile, their name, and the
+child's name in the causale. The details come back to whichever of the two the
+confirmed invoice names.
 """
 
 from __future__ import annotations
@@ -49,6 +54,65 @@ def titolare_di(party_type: str | None, party: str | None, recipient_type: str |
 	return None
 
 
+def intestatario_di(fattura):
+	"""``(doctype, name)`` of whom the invoice is made out to: the client, or the one
+	person who pays for them.
+
+	Whoever pays, unless the invoice already names the client - their name or their
+	codice fiscale, written at the desk: then it is theirs, and nothing of the
+	parent's is mixed into it.
+	"""
+	titolare = titolare_di(fattura.get("party_type"), fattura.get("party"), fattura.get("recipient_type"))
+	tipo = fattura.get("recipient_type") or TipoDestinatario.PERSONA_FISICA
+	if not titolare or titolare[0] != "CRM Lead" or tipo != TipoDestinatario.PERSONA_FISICA:
+		return titolare
+	from crm.persone.collegate import pagante_di
+
+	pagante = pagante_di(titolare[1])
+	if not pagante or _nomina(fattura, titolare[1]):
+		return titolare
+	return "CRM Lead", pagante
+
+
+def _nomina(fattura, persona: str) -> bool:
+	"""The invoice already names this person: their codice fiscale, or their name."""
+	codice = (fattura.get("fiscal_code") or "").strip().upper()
+	if codice:
+		return codice == (
+			frappe.db.get_value(DOCTYPE, {"party_type": "CRM Lead", "party": persona}, "fiscal_code") or ""
+		)
+	scritto = " ".join(p for p in (fattura.get("first_name"), fattura.get("last_name")) if p) or fattura.get(
+		"billing_name"
+	)
+	if not scritto:
+		return False
+	nomi = frappe.db.get_value("CRM Lead", persona, list(_NOMI), as_dict=True) or {}
+	return motore.stessa_persona({"first_name": scritto}, nomi)
+
+
+def pagante_della_fattura(fattura) -> str | None:
+	"""The person who pays for the invoice's client, when it is made out to them."""
+	titolare = titolare_di(fattura.get("party_type"), fattura.get("party"), fattura.get("recipient_type"))
+	intestatario = intestatario_di(fattura)
+	return intestatario[1] if intestatario and intestatario != titolare else None
+
+
+def causale_per_conto(fattura) -> str | None:
+	"""Whom the service was for, on an invoice made out to whoever pays for them.
+
+	The document goes to the parent; the deduction and the patient's own records
+	need to know it was the child's visit.
+	"""
+	titolare = titolare_di(fattura.party_type, fattura.party, fattura.recipient_type)
+	if not titolare or titolare[0] != "CRM Lead":
+		return None
+	nome = frappe.db.get_value("CRM Lead", titolare[1], "lead_name")
+	if not nome:
+		return None
+	codice = frappe.db.get_value(DOCTYPE, {"party_type": "CRM Lead", "party": titolare[1]}, "fiscal_code")
+	return f"Prestazione resa a {nome}, codice fiscale {codice}" if codice else f"Prestazione resa a {nome}"
+
+
 def nome_del_profilo(party_type: str, party: str) -> str | None:
 	return frappe.db.get_value(DOCTYPE, {"party_type": party_type, "party": party})
 
@@ -65,12 +129,13 @@ def cancella_con_il_titolare(doc, method=None) -> None:
 
 
 def compila_fattura(fattura) -> None:
-	"""Fill what the invoice has left empty from its client's profile."""
-	titolare = titolare_di(fattura.party_type, fattura.party, fattura.recipient_type)
-	if not titolare:
+	"""Fill what the invoice has left empty from its client's profile - or from the
+	profile of whoever pays for them."""
+	intestatario = intestatario_di(fattura)
+	if not intestatario:
 		return
 	profilo = frappe.db.get_value(
-		DOCTYPE, {"party_type": titolare[0], "party": titolare[1]}, list(motore.CAMPI), as_dict=True
+		DOCTYPE, {"party_type": intestatario[0], "party": intestatario[1]}, list(motore.CAMPI), as_dict=True
 	)
 	if not profilo:
 		return
@@ -106,10 +171,17 @@ def _completa(fattura) -> str | None:
 	party_type, party = titolare
 	valori_fattura = {campo: fattura.get(campo) for campo in (*motore.CAMPI, "recipient_type", *_NOMI)}
 	if party_type == "CRM Lead" and fattura.recipient_type == TipoDestinatario.PERSONA_FISICA:
-		persona = frappe.db.get_value("CRM Lead", party, list(_NOMI), as_dict=True) or {}
-		if not motore.stessa_persona(valori_fattura, persona):
-			# made out to somebody else - a parent paying for a child: their codice
-			# fiscale is not this person's
+		# made out to the person, or to the parent who pays for them: the details
+		# go back to whichever of the two the invoice names, and to nobody when it
+		# names somebody else - their codice fiscale is not this person's
+		intestatario = intestatario_di(fattura)
+		candidati = dict.fromkeys(p for p in (intestatario and intestatario[1], party) if p)
+		for candidato in candidati:
+			persona = frappe.db.get_value("CRM Lead", candidato, list(_NOMI), as_dict=True) or {}
+			if motore.stessa_persona(valori_fattura, persona):
+				party = candidato
+				break
+		else:
 			return None
 
 	nome = nome_del_profilo(party_type, party)
