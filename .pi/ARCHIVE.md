@@ -464,3 +464,75 @@ quindi è finito negli `ignore` di `pyproject.toml` invece che nel codice.
 | `crm/integrations/whatsapp/signup.py` | `SIGNUP_HINTS` valutato al momento, non all'import |
 | `crm/integrations/meta/`, `crm/integrations/whatsapp/`, `crm/telephony/`, `crm/api/` | `str(exc)` nelle stringhe tradotte, commit manuali, endpoint ospiti motivati |
 | `pyproject.toml` | `UP038` fra gli ignore |
+
+---
+
+## Chat — scrivere, e vedere dove si scrive
+
+> **Completato** (29/09/2026). Il compositore è la stessa riga su ogni canale,
+> la chat si apre dove leggi, le nuvolette sono una forma sola. Il racconto
+> completo è nel doc 17, «Scrivere, e vedere dove si scrive».
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Nessuna riga che si trasforma in modulo: l'editor è sempre lì, una riga che cresce | Il modulo email restava aperto finché non si premeva Scarta, anche vuoto; WhatsApp aveva già la forma giusta |
+| Il focus si vede sul riquadro, nel colore del canale | Cliccare nella riga WhatsApp non cambiava niente, e il colore dice anche dove andrà il messaggio (ambra = nota interna) |
+| La firma si aggiunge all'invio, sopra la citazione; una riga la mostra e la toglie | Inserita al primo clic, faceva crescere la casella di quattro righe e la trasformava in bozza |
+| Scarta con Annulla; gli allegati si cancellano a Annulla scaduto | Il cestino sta accanto a Invia |
+| Inviare svuota subito, un errore rimette la bozza | Come in un messenger: aspettare il server con la casella chiusa non diceva cosa stava succedendo |
+| Bozze di ogni canale per persona e per scheda, il compositore si riapre sulla bozza | Una bozza WhatsApp si perdeva cambiando scheda; un messaggio in arrivo su un altro canale spostava il compositore mentre si scriveva |
+| Il foglio di stile dell'editor di frappe-ui importato da noi | Il bundler scartava il suo import (il pacchetto dichiara effetti collaterali solo per CSS e Vue): ogni editor aveva l'anello di focus grigio del browser |
+| Rispondere parte dalla nostra casella che ha ricevuto l'email, mai dal cliente | `fromEmail = email.sender` metteva l'indirizzo del cliente come mittente |
+| La riga del testo si rimette nell'editor, non solo nella bozza | L'editor scarta come eco un valore uguale all'ultimo che ha emesso: dopo un Annulla restava vuoto |
+| La chat resta nascosta finché non è arrivato tutto, poi compare già al suo posto | Compariva dalla cima e scorreva, e saltava all'arrivo di WhatsApp |
+| Lo scorrimento osserva anche il contenuto, non solo il contenitore | Un'email si allarga dopo il `load`, e l'ultima restava tagliata |
+| La punta della nuvoletta è un `::before` con `background: inherit` e `clip-path`, l'ombra un `drop-shadow` | Un triangolo appoggiato all'angolo lasciava il gradino e l'ombra si fermava alla giunzione |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `frontend/src/components/Activities/ComposerShell.vue` | Il riquadro del compositore, col focus nel colore del canale |
+| `frontend/src/components/CommunicationArea.vue`, `EmailEditor.vue`, `CommentBox.vue` | Email e nota come riga; firma all'invio; Scarta con Annulla; `open()` e `reply()` al posto del flag `show` |
+| `frontend/src/components/Activities/WhatsAppBox.vue`, `SMSBox.vue` | Testo prima degli strumenti; crescono davvero; bozze per scheda |
+| `frontend/src/utils/emailDraft.js` | Firma, citazione, indirizzi di risposta — puri, testati |
+| `frontend/src/composables/growingTextarea.js`, `drafts.js`, `conversationScroll.js` | Altezza misurata, bozze condivise, dove sta la conversazione |
+| `frontend/src/index.css` | Il foglio di stile dell'editor, la riga di testo, le punte delle nuvolette |
+
+---
+
+## Calendario — due cose, un modo solo
+
+> **Completato** (29/09/2026). Appuntamenti ed eventi restano due modelli, ma
+> si creano, si aprono e si modificano nello stesso modo. Doc 14, «Un
+> calendario, due cose».
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| Non fondere `CRM Appointment` ed `Event` | L'`Event` è quello che il framework sincronizza con Google, e l'appuntamento lo rispecchia già: fonderli voleva dire migrare i dati e rifare il sync, per nessun guadagno visibile |
+| Il criterio è il servizio: un appuntamento è un servizio per un cliente, un evento è tutto il resto | È la differenza che chi usa l'agenda ha già in testa, e decide quali righe servono |
+| Un «Nuovo» solo, che ricorda l'ultimo tipo, e un selettore come prima riga del pannello | Due pulsanti per due cose nello stesso calendario, e il clic sul vuoto che faceva sempre un evento |
+| Il clic su «tutto il giorno» è un evento | Un appuntamento ha un orario |
+| L'appuntamento nel pannello laterale, prima in lettura, lo stato a un clic | La finestra modale copriva il calendario e apriva ogni campo insieme; lo stato è la cosa che si cambia più spesso |
+| Eliminare propone di annullare | L'annullato resta nello storico e libera l'orario; eliminare non si annulla |
+| Ogni colore salvato va al più vicino dei sette del calendario; grigio e rosso aggiunti alla sua tabella | Il calendario conosce solo sette nomi e sette esadecimali, e il resto lo disegnava verde |
+| Il pannello evento salva l'esadecimale | Salvava `var(--ink-amber-7)`, che il calendario non legge e che fuori da questa pagina non significa niente |
+| Grigio e rosso hanno come `color` il proprio esadecimale | Il calendario confronta un esadecimale sconosciuto con il `color` di ogni voce: così un evento appena colorato è giusto anche prima di ricaricare |
+| Un filtro sugli appuntamenti nasconde gli eventi | Gli eventi non hanno servizio, professionista, sala, stato o fonte: restavano lì come se corrispondessero |
+| La query `?new=appointment&party=…` resta nell'indirizzo | La pagina ha come chiave l'indirizzo completo: toglierla la ricostruiva senza il pannello appena aperto |
+| La scheda «Eventi» della persona elenca anche i suoi appuntamenti | Quello che un cliente aveva prenotato si trovava solo sul calendario |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `frontend/src/components/Calendar/AppointmentPanel.vue` | Lettura e modifica dell'appuntamento; sostituisce `AppointmentDialog.vue` |
+| `frontend/src/components/Calendar/KindSwitch.vue` | Appuntamento o evento |
+| `frontend/src/pages/Calendar.vue` | Un «Nuovo», un pannello per tutto e due viste, colori, filtri, query dalla persona |
+| `frontend/src/utils/calendarColors.js` | Da qualsiasi colore al colore del calendario — puro, testato |
+| `crm/api/appointments.py` | `get_person_appointments`, testato in `test_scheduling.py` |
+| `frontend/src/components/Activities/EventArea.vue`, `ActivityHeader.vue` | Appuntamenti della persona, «Prenota un appuntamento» |
