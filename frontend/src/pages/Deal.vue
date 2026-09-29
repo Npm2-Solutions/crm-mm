@@ -187,6 +187,7 @@
                     class="h-7 px-3"
                     variant="ghost"
                     icon="lucide-plus"
+                    :aria-label="__('Add a contact')"
                     @click="togglePopover()"
                   />
                 </template>
