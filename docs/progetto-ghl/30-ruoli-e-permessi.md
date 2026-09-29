@@ -427,7 +427,7 @@ livello della persona la prevede.
 | 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | ✅ fatto, 29/09 |
 | 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | ✅ fatto, 29/09 |
 | 3 | Capacità nel frontend, rotte protette, impostazioni divise | ✅ fatto, 29/09 |
-| 3b | Le pagine del Manager che scrivono documenti del core: account e modelli email, regole di assegnazione, importazione | 0,5 |
+| 3b | Le pagine del Manager che scrivono documenti del core: account e modelli email, regole di assegnazione, importazione | ✅ fatto, 29/09 |
 | 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
 
 Direzione sanitaria arriva con la clinica.
@@ -617,11 +617,41 @@ prenotazione resta al Manager: è quello che si incolla nella piattaforma, e sen
 non si finisce di collegarla. Le condizioni delle regole di assegnazione scritte in
 Python restano dal Desk come prima: lo schermo le costruisce guidate.
 
-**Rimasto per la PR 3b.** Account email, modelli email, regole di assegnazione,
-importazione: lo schermo le dà al Manager, ma sono documenti del core che Frappe dà
-solo a System Manager, e il server li rifiuta (lo era già prima). Servono permessi o
-API del CRM con la capacità. Gli SLA sono un documento del CRM e il Manager li
-scriveva già: ora chiedono `assegnazione.regole`.
+**Rimasto per la PR 3b** (fatta, sotto). Account email, modelli email, regole di
+assegnazione, importazione: lo schermo le dava al Manager, ma sono documenti del
+core che Frappe dà solo a System Manager, e il server li rifiutava. Gli SLA sono un
+documento del CRM e il Manager li scriveva già: ora chiedono `assegnazione.regole`.
+
+## La PR 3b, com'è fatta
+
+Quattro pagine che lo schermo dà al Manager scrivevano documenti del core, che
+Frappe dà solo a System Manager: il server rispondeva di no.
+
+- **Modelli email, regole di assegnazione, importazione.** Un ruolo porta la regola
+  sul documento (Sales User per i modelli, Sales Manager per le regole e le
+  importazioni), messa una volta sola da `concedi_documenti_del_core` a ogni
+  migrazione, e la capacità della pagina la restringe come per gli altri documenti
+  del Manager (`modelli_messaggio.gestisci`, `assegnazione.regole`,
+  `persone.importa`). I modelli li leggono tutti, come prima.
+- **L'importazione** si fermava anche su un'altra porta: nessun ruolo aveva il
+  permesso "import" su persone, trattative, organizzazioni, attività e chiamate.
+  Ora ce l'hanno Sales Manager e System Manager, e un test porta un CSV fino alle
+  persone create.
+- **Gli account email** passano da API del CRM con `email.account_centro`: elenco
+  senza password né chiavi, aggiunta e modifica solo con i provider che la pagina
+  offre. Un account con server e porte suoi resta all'agenzia, dal Desk. Il profilo
+  di ognuno e le piattaforme di prenotazione scelgono un account da un elenco di
+  soli nomi e indirizzi, che ora funziona anche per chi non è System Manager.
+- **Le condizioni scritte in Python restano all'agenzia** (`tecnico.codice`). Lo
+  schermo delle regole di assegnazione e degli SLA costruisce condizioni guidate e
+  mandava anche il Python che il browser ne ricavava: chiunque salvasse una regola
+  poteva metterci qualsiasi Python. Ora per chi non è l'agenzia il server riscrive
+  il Python dalle condizioni guidate prima che qualcosa lo valuti
+  (`crm/permissions/condizioni.py`, puro, con i suoi test), e rifiuta quello che lo
+  schermo non sa costruire: campi che il documento non ha, operatori che non offre,
+  qualcosa di diverso da `and` e `or` fra due condizioni. Una condizione che
+  l'agenzia ha scritto dal Desk resta com'è, e il Manager può ancora spegnere la
+  regola. Le regole valgono per persone e trattative.
 
 ## Da decidere
 
