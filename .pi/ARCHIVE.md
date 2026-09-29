@@ -1366,6 +1366,7 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Le condizioni in Python le riscrive il server dalle condizioni guidate, in `before_validate` | Prima che qualcosa le valuti: lo SLA le prova con `safe_eval` nel suo `validate`. Il convertitore è una copia di quello del browser, più severo: campi del documento, operatori dello schermo, valori sempre fra virgolette, solo `and` e `or` |
 | Una condizione scritta dall'agenzia dal Desk resta, e il Manager può spegnere la regola | Il server riscrive solo quello che cambia; Python senza condizioni guidate dietro lo può cambiare solo l'agenzia |
 | In Frappe 16 `has_value_changed` dice True per ogni campo di un documento nuovo | Per un documento nuovo conta se il campo è dato (`_cambiato`) |
+| Il segreto del webhook della fatturazione chiede `fatture.segreti` | La fatturazione aveva già la sua capacità tecnica: ognuno chiede le sue |
 
 ### File
 

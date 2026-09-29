@@ -652,6 +652,9 @@ Frappe dà solo a System Manager: il server rispondeva di no.
   qualcosa di diverso da `and` e `or` fra due condizioni. Una condizione che
   l'agenzia ha scritto dal Desk resta com'è, e il Manager può ancora spegnere la
   regola. Le regole valgono per persone e trattative.
+- **Il segreto del webhook della fatturazione** chiede `fatture.segreti`, la
+  capacità tecnica che la fatturazione aveva già, al posto di `tecnico.integrazioni`:
+  il CRM non la nomina, la fatturazione non nomina quelle del CRM.
 
 ## Da decidere
 
