@@ -10,8 +10,10 @@
   >
     <div class="flex min-h-9 items-start justify-between gap-2 px-4 pt-3">
       <div class="flex min-w-0 items-center gap-1.5">
+        <!-- two lines on a phone: half a screen wide, «Waiting for an
+             answer» and «Appointments today» were cut to «Waiting for an ans…» -->
         <span
-          class="truncate text-sm font-medium text-ink-gray-7"
+          class="truncate text-sm font-medium text-ink-gray-7 max-md:line-clamp-2 max-md:whitespace-normal"
           :title="title"
         >
           {{ title }}
