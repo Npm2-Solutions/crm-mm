@@ -53,6 +53,17 @@ def nome_del_profilo(party_type: str, party: str) -> str | None:
 	return frappe.db.get_value(DOCTYPE, {"party_type": party_type, "party": party})
 
 
+def cancella_con_il_titolare(doc, method=None) -> None:
+	"""A person or an organization was deleted: their billing details go with them.
+
+	They are part of the record, not a document linked to it. Left behind they
+	would stop the deletion - Frappe refuses to delete what something still points
+	at - and a right to be forgotten that stops at the codice fiscale is not one.
+	"""
+	for nome in frappe.get_all(DOCTYPE, filters={"party_type": doc.doctype, "party": doc.name}, pluck="name"):
+		frappe.delete_doc(DOCTYPE, nome, ignore_permissions=True, force=True)
+
+
 def compila_fattura(fattura) -> None:
 	"""Fill what the invoice has left empty from its client's profile."""
 	titolare = titolare_di(fattura.party_type, fattura.party, fattura.recipient_type)

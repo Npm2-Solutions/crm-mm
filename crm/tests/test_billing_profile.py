@@ -14,6 +14,7 @@ from unittest.mock import patch
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from crm.api.doc import get_linked_docs_of_document
 from crm.invoicing import anagrafica
 from crm.patches.v1_0 import billing_details_from_past_invoices
 from crm.permissions import livelli, utenti
@@ -98,7 +99,7 @@ class LaFatturaLeggeIlProfilo(ProfileBase):
 
 	def test_la_trattativa_porta_alla_persona_o_all_organizzazione(self):
 		organizzazione = frappe.get_doc(
-			{"doctype": "CRM Organization", "organization_name": "Acme Profilo Srl"}
+			{"doctype": "CRM Organization", "organization_name": f"Acme {frappe.generate_hash(length=6)} Srl"}
 		).insert(ignore_permissions=True)
 		trattativa = frappe.get_doc(
 			{"doctype": "CRM Deal", "lead": self.mario.name, "organization": organizzazione.name}
@@ -185,6 +186,20 @@ class LaFatturaConfermataCompleta(ProfileBase):
 
 
 class IlProfilo(ProfileBase):
+	def test_se_ne_va_con_la_persona(self):
+		"""Part of the person: it neither stops the deletion nor outlives it."""
+		self.profilo(self.mario.name, fiscal_code=CF_PAZIENTE)
+		self.assertNotIn(
+			"CRM Billing Profile",
+			[d["doc"] for d in get_linked_docs_of_document("CRM Lead", self.mario.name)],
+		)
+		# an automation of the site may have enrolled the new person: not ours to test
+		frappe.db.delete(
+			"CRM Automation Enrollment", {"reference_doctype": "CRM Lead", "reference_name": self.mario.name}
+		)
+		frappe.delete_doc("CRM Lead", self.mario.name)
+		self.assertIsNone(self.del_titolare(self.mario.name))
+
 	def test_un_codice_sbagliato_non_si_salva(self):
 		with self.assertRaises(frappe.ValidationError):
 			self.profilo(self.mario.name, fiscal_code="RSSMRA80A01H501A")
@@ -205,10 +220,12 @@ class IlProfilo(ProfileBase):
 			frappe.get_doc({"doctype": "Gender", "gender": "Female"}).insert(ignore_permissions=True)
 		giulia = self.persona("Giulia", "Bianchi", gender="Female")
 		profilo = self.profilo(giulia.name, fiscal_code=CF_PAZIENTE)
-		avvisi = anagrafica.avvisi(profilo)
-		self.assertEqual(len(avvisi), 3, avvisi)
+		avvisi = " | ".join(anagrafica.avvisi(profilo))
+		self.assertIn("surname Bianchi", avvisi)
+		self.assertIn("first name Giulia", avvisi)
+		self.assertIn("sex", avvisi)
 		self.profilo(self.mario.name, fiscal_code=CF_PAZIENTE)
-		self.assertIn("Mario Rossi", " ".join(anagrafica.avvisi(profilo)))
+		self.assertIn("is on Mario Rossi", " | ".join(anagrafica.avvisi(profilo)))
 
 
 class ChiLoVede(ProfileBase):
