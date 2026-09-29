@@ -987,6 +987,7 @@ console stampa l'SQL intero.
 | La prova di 14 giorni la fa partire il Manager, e scrive nel piano per suo conto | Il piano è dell'agenzia; l'unica cosa che il centro fa da solo è provare un modulo che non ha, e l'agenzia lo sa per email |
 | Il Manager dà anche il livello Manager, ma non se lo toglie | Il doc 30: il Manager nomina gli altri Manager. Togliersi il livello da solo chiudeva fuori il centro dalla gestione degli utenti |
 | Gli utenti dell'agenzia non si toccano dal CRM | Hanno System Manager, che un livello non porta: dare loro un livello glielo toglierebbe. Li gestisce l'agenzia dal Desk |
+| Un livello non si dà a chi perderebbe un ruolo di un'altra app | `assegna_livelli` rifiuta e dice quali ruoli: pagina Utenti, invito accettato da chi ha già un account e migrazione passano tutti da lì. Il vecchio codice aggiungeva ruoli e basta, i profili li rifanno |
 | Moduli del Desk: Segreteria e Operatore vedono quelli dell'app CRM | Come il Sales User di prima, ma fatturazione e Sistema TS compresi, che il vecchio blocco toglieva |
 
 ### Il bug della registrazione
