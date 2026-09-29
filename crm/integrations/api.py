@@ -139,7 +139,6 @@ def add_task_to_call_log(call_sid: str, task: dict):
 	return _task
 
 
-@frappe.whitelist()
 def get_contact_lead_or_deal_from_number(number: str):
 	"""Whose number this is. The person, whenever there is one.
 
@@ -157,8 +156,11 @@ def get_contact_lead_or_deal_from_number(number: str):
 	A bare contact is still nowhere — no chat opens on it, the Contact page has
 	no activity at all, and the Inbox lists conversations by lead or deal — so
 	saying nobody stays better than handing the message to a dead end.
+
+	Not whitelisted: only the server asks it, filing a message that just arrived,
+	and over HTTP it would tell anyone whose number this is.
 	"""
-	contact = get_contact_by_phone_number(number)
+	contact = find_contact_by_phone_number(number)
 	if not contact.get("name"):
 		return None, None
 
@@ -232,17 +234,49 @@ def _known_source() -> str | None:
 
 @frappe.whitelist()
 def get_contact_by_phone_number(phone_number: str):
-	"""Get contact by phone number."""
+	"""Whose number this is, as far as the person asking may know.
+
+	The call screens ask it to put a name on the number that is ringing. A match
+	the user could not open comes back exactly like no match at all: a permission
+	error would name the record, and a phone number is just the thing someone
+	would try one after another to learn who is in the CRM.
+	"""
+	search = _phone_search(phone_number)
+	contact = get_contact(**search)
+
+	if contact.get("lead"):
+		visible = frappe.has_permission("CRM Lead", "read", contact["lead"])
+	elif contact.get("name"):
+		visible = frappe.has_permission("Contact", "read", contact["name"])
+		if visible and contact.get("deal") and not frappe.has_permission("CRM Deal", "read", contact["deal"]):
+			del contact["deal"]
+	else:
+		visible = True
+
+	return contact if visible else {"mobile_no": search["phone_number"]}
+
+
+def find_contact_by_phone_number(phone_number: str) -> dict:
+	"""Whose number this is, with no permission check.
+
+	For the server's own callers: a call or a message arrives through a webhook,
+	as Guest, and still has to be filed on the person it came from.
+	"""
+	return get_contact(**_phone_search(phone_number))
+
+
+def _phone_search(phone_number: str) -> dict:
+	"""How `get_contact` is asked about a number."""
 	number = parse_phone_number(phone_number)
 
 	if number.get("is_valid"):
-		return get_contact(number.get("national_number"), number.get("country"))
+		return {"phone_number": number.get("national_number"), "country": number.get("country")}
 
 	international = _as_international(phone_number)
 	if international.get("is_valid"):
-		return get_contact(international.get("national_number"), international.get("country"))
+		return {"phone_number": international.get("national_number"), "country": international.get("country")}
 
-	return get_contact(phone_number, number.get("country"), exact_match=True)
+	return {"phone_number": phone_number, "country": number.get("country"), "exact_match": True}
 
 
 def _as_international(phone_number: str) -> dict:
