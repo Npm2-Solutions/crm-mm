@@ -681,7 +681,6 @@ const all_activities = createResource({
   transform: ([versions, calls, notes, tasks, attachments]) => {
     return { versions, calls, notes, tasks, attachments }
   },
-  onSuccess: () => nextTick(() => scroll()),
   onError: (error) => {
     toast.error(error.messages?.[0] || __('Failed to load activities'))
   },
@@ -698,7 +697,6 @@ const whatsappMessages = createResource({
   },
   auto: false,
   transform: (data) => sortByCreation(data),
-  onSuccess: () => nextTick(() => scroll()),
 })
 
 watch(
@@ -718,7 +716,6 @@ const smsMessages = createResource({
   },
   auto: false,
   transform: (data) => sortByCreation(data),
-  onSuccess: () => nextTick(() => scroll()),
 })
 
 watch(
@@ -756,9 +753,12 @@ onMounted(() => {
     }
   })
 
+  // the address names a tab (#activity, written in lower case) or a message
+  // to scroll to; «Activity» never matched «activity», so the tab was taken
+  // for a message that does not exist
   nextTick(() => {
     const hash = route.hash.slice(1) || null
-    let tabNames = props.tabs?.map((tab) => tab.name)
+    let tabNames = props.tabs?.map((tab) => tab.name.toLowerCase())
     if (!tabNames?.includes(hash)) {
       scroll(hash)
     }
@@ -1099,7 +1099,19 @@ const { settled, follow, reopen } = useConversationScroll(scroller, {
   readsFromTheEnd,
   arrived,
 })
-watch(arrived, (yes) => yes && follow())
+
+// The three lists are made once per person and kept (`cache`): opening the
+// same person again hands back the same lists, already full, and with the
+// callbacks of the visit that made them — which moved a conversation no longer
+// on screen. `arrived` was true from the start, so nothing ever showed this
+// one, and a person opened for the second time had an empty Activity tab. The
+// conversation follows the lists itself, and is shown as soon as it is here
+// with them already arrived.
+watch(arrived, (yes) => yes && follow(), { immediate: true })
+watch(
+  () => [all_activities.data, whatsappMessages.data, smsMessages.data],
+  () => follow(),
+)
 
 // another tab or another channel is another list, opened where it is read
 watch([title, channel], () => reopen())
