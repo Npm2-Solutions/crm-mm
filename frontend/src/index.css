@@ -77,6 +77,36 @@
     filter: drop-shadow(0 1px 0.5px rgb(11 20 26 / 0.13));
   }
 
+  /* The words of an email or a note being written: the same line as a WhatsApp
+     message — the same size, the same padding — growing with what is written
+     and scrolling past two fifths of the screen.
+
+     No frame of its own. The editor used to sit in a bordered area inside the
+     composer's own border, a box in a box; the composer is what shows that it
+     is being written in, by taking its channel's colour (Activities.vue).
+
+     `.ProseMirror` in the selector because the editor's prose-v3 sets its own
+     size and line height with a single class, and this has to win. The
+     placeholder stays while the cursor is in the line, as a textarea's does:
+     the editor hides it on focus, so clicking into an email used to wipe the
+     one thing that said what the line was for. */
+  .ProseMirror.composer-text {
+    --prose-font-size: 14px;
+    min-height: 2.25rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 0.5rem 0.5rem;
+    line-height: 1.5;
+    color: var(--ink-gray-9);
+  }
+  .ProseMirror.composer-text p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--ink-gray-4);
+    pointer-events: none;
+  }
+
   /* `break-words`, not `break-all`: long links and codes still wrap, but an
      ordinary word no longer splits wherever the line ends — «diff|erentiators»,
      «compari|son» in every note, comment, email and template. Code keeps

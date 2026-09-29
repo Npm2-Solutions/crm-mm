@@ -6,7 +6,7 @@
         v-model="content"
         variant="ghost"
         class="min-h-9 w-full resize-none bg-transparent py-2 text-p-base text-ink-gray-9 placeholder-ink-gray-4"
-        :rows="rows"
+        :rows="1"
         :placeholder="__('Write a text message…')"
         @keydown.enter.stop="(e) => sendTextMessage(e)"
       />
@@ -15,7 +15,7 @@
           variant="solid"
           icon="lucide-send-horizontal"
           :aria-label="__('Send')"
-          :tooltip="__('Send')"
+          :tooltip="isMobileView ? __('Send') : `${__('Send')} (Enter)`"
           :disabled="!content.trim()"
           @click="sendSMS"
         />
@@ -54,6 +54,8 @@
 <script setup>
 import { isMobileView } from '@/composables/breakpoints'
 import { markAnswered } from '@/composables/conversationState'
+import { useDraft } from '@/composables/drafts'
+import { useGrowingTextarea } from '@/composables/growingTextarea'
 import { smsSegments } from '@/utils/conversation'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource, Textarea, Tooltip, toast } from 'frappe-ui'
@@ -71,17 +73,19 @@ const sms = defineModel('sms', { type: Object, default: () => ({}) })
 const { capture } = useTelemetry()
 
 const textareaRef = ref(null)
-const content = ref('')
+// kept per record, like every other draft
+const content = useDraft('smsDraft', props.doctype, doc.value.name)
 
 // as tall as what is in it, up to six lines
-const rows = computed(() =>
-  Math.min(Math.max(String(content.value || '').split('\n').length, 1), 6),
-)
+const { fit } = useGrowingTextarea(textareaRef, content)
 
 const length = computed(() => smsSegments(content.value))
 
 function show() {
-  nextTick(() => textareaRef.value.el.focus())
+  nextTick(() => {
+    fit()
+    textareaRef.value?.el?.focus()
+  })
 }
 
 // Enter sends at a desk; on a phone it is a new line, and the arrow sends.

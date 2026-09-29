@@ -26,10 +26,23 @@
         "
         role="tab"
         :aria-selected="option.key === way"
-        :aria-label="__(option.label)"
+        :aria-label="
+          drafted(option)
+            ? `${__(option.label)} · ${__('draft')}`
+            : __(option.label)
+        "
         @click="emit('pick', option.key)"
       >
-        <component :is="option.icon" class="size-4 shrink-0" />
+        <span class="relative shrink-0">
+          <component :is="option.icon" class="size-4" />
+          <!-- something half-written waits behind this tab -->
+          <span
+            v-if="drafted(option)"
+            class="absolute -right-0.5 -top-0.5 size-1.5 rounded-full"
+            :class="DOT[option.key]"
+            aria-hidden="true"
+          />
+        </span>
         <!--
           The label rides along on a wide screen. On a phone the icons alone
           carry it, and four icons plus four words is a strip that scrolls
@@ -56,10 +69,18 @@ import { WAYS } from '@/utils/conversation'
 import { Tooltip } from 'frappe-ui'
 import { computed } from 'vue'
 
-defineProps({
+const props = defineProps({
   // which way of writing is chosen
   way: { type: String, default: '' },
+  // the ways with something half-written in them
+  drafts: { type: Array, default: () => [] },
 })
+
+// A dot on the tab of a channel holding a draft — not on the chosen one,
+// whose draft is in plain sight in the box below it.
+function drafted(option) {
+  return option.key !== props.way && props.drafts.includes(option.key)
+}
 
 const emit = defineEmits(['pick'])
 
@@ -93,6 +114,13 @@ const ON = {
   email: 'bg-surface-blue-2 text-ink-blue-8',
   sms: 'bg-surface-violet-2 text-ink-violet-8',
   comment: 'bg-surface-amber-2 text-ink-amber-8',
+}
+
+const DOT = {
+  whatsapp: 'bg-surface-green-5',
+  email: 'bg-surface-blue-5',
+  sms: 'bg-surface-violet-5',
+  comment: 'bg-surface-amber-5',
 }
 
 const ways = computed(() =>
