@@ -86,12 +86,20 @@ def get_automation(name: str) -> dict:
 		"description": doc.description or "",
 		"steps": parse_json(doc.steps) or [],
 		"trigger_config": parse_json(doc.trigger_config),
-		"webhook_key": doc.webhook_key or "",
+		"webhook_key": _webhook_key(doc),
 		"time_window_enabled": doc.time_window_enabled,
 		"window_start": str(doc.window_start or ""),
 		"window_end": str(doc.window_end or ""),
 		"window_days": parse_json(doc.window_days) or [],
 	}
+
+
+def _webhook_key(doc) -> str:
+	"""The key of the Inbound Webhook URL, for whoever builds the automation. Anyone
+	who can read an automation can open it; the key would let them fire it."""
+	if not MANAGER_ROLES & set(frappe.get_roles()):
+		return ""
+	return doc.get_password("webhook_key", raise_exception=False) or ""
 
 
 @frappe.whitelist(methods=["POST"])
@@ -370,11 +378,12 @@ def inbound_webhook(automation: str, key: str) -> dict:
 	doc = frappe.get_doc("CRM Automation", automation)
 	trigger = next((row for row in doc.triggers if row.trigger_event == "Inbound Webhook"), None)
 	listens = bool(trigger) or doc.trigger_event == "Inbound Webhook"
+	webhook_key = doc.get_password("webhook_key", raise_exception=False) or ""
 	if (
 		not listens
 		or not doc.enabled
-		or not doc.webhook_key
-		or not hmac_mod.compare_digest(str(key), str(doc.webhook_key))
+		or not webhook_key
+		or not hmac_mod.compare_digest(str(key).encode(), webhook_key.encode())
 	):
 		frappe.throw(_("Invalid webhook"), frappe.PermissionError)
 

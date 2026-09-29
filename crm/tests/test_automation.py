@@ -641,3 +641,101 @@ class TestAutomationTriggers(IntegrationTestCase):
 		self.assertIsNotNone(get_enrollment(auto.name, from_web.name))
 		neither = make_lead(email="c@shop.test", mobile_no="+390000000005")
 		self.assertIsNone(get_enrollment(auto.name, neither.name))
+
+
+KEY_MANAGER = "automation.key.manager@example.com"
+KEY_SALES_USER = "automation.key.user@example.com"
+
+
+def make_user(email: str, role: str):
+	if not frappe.db.exists("User", email):
+		frappe.get_doc(
+			{
+				"doctype": "User",
+				"email": email,
+				"first_name": email.split("@")[0],
+				"send_welcome_email": 0,
+				"roles": [{"role": role}],
+			}
+		).insert(ignore_permissions=True)
+
+
+class TestInboundWebhookKey(IntegrationTestCase):
+	"""The key in an Inbound Webhook URL fires the automation for whoever holds it:
+	kept encrypted, handed to the managers who build the automation, to nobody else."""
+
+	def setUp(self):
+		make_user(KEY_MANAGER, "Sales Manager")
+		make_user(KEY_SALES_USER, "Sales User")
+		self.auto = make_automation(
+			"inbound", [{"type": "add_note", "comment": "hooked"}], trigger_event="Inbound Webhook"
+		)
+		self.key = self.auto.get_password("webhook_key")
+		self._form_dict = frappe.local.form_dict
+
+	def tearDown(self):
+		frappe.local.form_dict = self._form_dict
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def post(self, key: str, **payload):
+		from crm.api.automation import inbound_webhook
+
+		frappe.set_user("Guest")  # resets form_dict: the payload goes in after
+		frappe.local.form_dict = frappe._dict(payload)
+		try:
+			return inbound_webhook(automation=self.auto.name, key=key)
+		finally:
+			frappe.set_user("Administrator")
+
+	def test_the_key_is_made_once_and_kept_encrypted(self):
+		self.assertEqual(len(self.key), 32)
+		self.assertEqual(set(frappe.db.get_value("CRM Automation", self.auto.name, "webhook_key")), {"*"})
+		self.auto.reload()
+		self.auto.save()
+		self.assertEqual(self.auto.get_password("webhook_key"), self.key)
+
+	def test_a_sales_user_cannot_read_the_key(self):
+		from crm.api.automation import get_automation
+
+		frappe.set_user(KEY_SALES_USER)
+		self.assertNotEqual(frappe.client.get("CRM Automation", self.auto.name)["webhook_key"], self.key)
+		self.assertEqual(get_automation(self.auto.name)["webhook_key"], "")
+
+	def test_a_manager_gets_the_key_for_the_url(self):
+		from crm.api.automation import get_automation
+
+		frappe.set_user(KEY_MANAGER)
+		self.assertEqual(get_automation(self.auto.name)["webhook_key"], self.key)
+		# REST still gets the mask, even for them
+		self.assertNotEqual(frappe.client.get("CRM Automation", self.auto.name)["webhook_key"], self.key)
+
+	def test_the_webhook_accepts_its_key_only(self):
+		for wrong in ("wrong", "*" * len(self.key), "", "chiavé-sbagliata"):
+			with self.assertRaises(frappe.PermissionError, msg=wrong):
+				self.post(wrong, email="hook@example.com")
+		lead = self.post(self.key, email="hook@example.com")["lead"]
+		self.assertIsNotNone(get_enrollment(self.auto.name, lead))
+
+	def test_a_duplicate_gets_a_key_of_its_own(self):
+		from crm.api.automation import duplicate_automation
+
+		copy = duplicate_automation(self.auto.name)
+		copy_key = frappe.get_doc("CRM Automation", copy["name"]).get_password("webhook_key")
+		self.assertEqual(len(copy_key), 32)
+		self.assertNotEqual(copy_key, self.key)
+
+	def test_a_plain_text_key_from_before_is_encrypted_by_the_patch(self):
+		from frappe.utils.password import remove_encrypted_password
+
+		from crm.patches.v1_0.encrypt_integration_secrets import execute
+
+		remove_encrypted_password("CRM Automation", self.auto.name, "webhook_key")
+		frappe.db.set_value("CRM Automation", self.auto.name, "webhook_key", "plain-automation-key")
+		execute()
+
+		self.assertEqual(frappe.db.get_value("CRM Automation", self.auto.name, "webhook_key"), "*" * 20)
+		saved = frappe.get_doc("CRM Automation", self.auto.name)
+		self.assertEqual(saved.get_password("webhook_key"), "plain-automation-key")
+		# the URL an external system already has keeps working
+		self.assertTrue(self.post("plain-automation-key", email="old.url@example.com")["lead"])

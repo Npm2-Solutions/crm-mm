@@ -9,6 +9,7 @@ SECRETS = {
 	"CRM Exotel Settings": ("api_key", "webhook_verify_token"),
 	"ERPNext CRM Settings": ("api_key",),
 	"CRM Booking Connection": ("webhook_token",),
+	"CRM Automation": ("webhook_key",),
 }
 
 
