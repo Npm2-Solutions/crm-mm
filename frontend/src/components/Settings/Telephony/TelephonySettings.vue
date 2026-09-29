@@ -1,10 +1,12 @@
 <template>
-  <div class="flex h-full flex-col gap-6 px-6 py-8">
+  <div class="flex h-full flex-col gap-6 px-6 py-8 max-md:px-3 max-md:py-5">
     <!-- Header -->
-    <div class="flex justify-between px-2 text-ink-gray-8">
-      <div class="flex flex-col gap-1 w-9/12">
+    <div
+      class="flex justify-between px-2 text-ink-gray-8 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
+      <div class="flex flex-col gap-1 w-9/12 max-md:w-full">
         <h2
-          class="flex gap-2 text-2xl-semibold leading-none h-5 text-ink-gray-8"
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none text-ink-gray-8"
         >
           {{ __('Telephony Settings') }}
           <Badge
@@ -18,7 +20,9 @@
           {{ __('Configure telephony settings for your CRM') }}
         </p>
       </div>
-      <div class="flex items-start space-x-2 w-3/12 justify-end">
+      <div
+        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
+      >
         <Button
           v-if="isDirty"
           :loading="

@@ -73,7 +73,7 @@
          does. Nothing to copy by hand. -->
     <div
       v-if="webhookBroken"
-      class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4"
+      class="flex items-center justify-between gap-3 rounded-lg border border-outline-amber-2 bg-surface-amber-1 p-4 max-md:flex-col max-md:items-start"
     >
       <div class="flex flex-col">
         <span class="text-p-base-medium text-ink-gray-7">
@@ -99,7 +99,7 @@
 
     <!-- the account -->
     <div
-      class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4"
+      class="flex items-center justify-between gap-3 rounded-lg border border-outline-gray-2 p-4 max-md:flex-col max-md:items-start"
     >
       <div class="flex min-w-0 flex-1 items-center gap-3">
         <FacebookIcon class="size-8 shrink-0" />
@@ -356,7 +356,7 @@
       class="group rounded-lg border border-outline-gray-2 p-4"
     >
       <summary
-        class="flex cursor-pointer list-none items-center justify-between gap-2 text-p-base-medium text-ink-gray-7"
+        class="flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 text-p-base-medium text-ink-gray-7"
       >
         <span class="flex items-center gap-1.5">
           <FeatherIcon

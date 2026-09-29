@@ -1,8 +1,14 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4 px-2">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Team rota') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -21,7 +27,10 @@
       />
     </div>
 
-    <div class="flex items-center gap-2 px-2">
+    <!-- the legend goes on a line of its own when the week needs the room:
+         on a phone it squeezed «Sep 28 – Oct 4» into a column four lines
+         tall -->
+    <div class="flex flex-wrap items-center gap-2 px-2">
       <Button
         variant="ghost"
         icon="lucide-chevron-left"
@@ -33,9 +42,11 @@
         icon="lucide-chevron-right"
         @click="shiftWeek(7)"
       />
-      <span class="text-p-base-medium text-ink-gray-7">{{ weekLabel }}</span>
+      <span class="whitespace-nowrap text-p-base-medium text-ink-gray-7">{{
+        weekLabel
+      }}</span>
       <span class="grow" />
-      <span class="flex items-center gap-2 text-p-xs">
+      <span class="flex flex-wrap items-center gap-2 text-p-xs">
         <span class="rounded bg-surface-green-2 px-1.5 py-0.5 text-ink-green-8">
           {{ __('Working') }}
         </span>

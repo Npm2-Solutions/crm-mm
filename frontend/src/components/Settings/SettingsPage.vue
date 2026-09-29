@@ -1,7 +1,9 @@
 <template>
   <div class="flex h-full flex-col gap-6">
-    <div class="flex justify-between">
-      <div class="flex flex-col gap-1 w-9/12">
+    <div class="flex justify-between gap-3">
+      <div
+        class="flex flex-col gap-1 w-9/12 max-md:w-auto max-md:min-w-0 max-md:flex-1"
+      >
         <div class="flex gap-1 items-center">
           <Button
             v-if="back"
@@ -14,7 +16,7 @@
           />
           <h2
             v-else
-            class="flex gap-2 text-2xl-semibold leading-none h-5 text-ink-gray-8"
+            class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none text-ink-gray-8"
           >
             {{ title || __(doctype) }}
           </h2>
@@ -26,7 +28,9 @@
           />
         </div>
       </div>
-      <div class="flex items-start space-x-2 w-3/12 justify-end">
+      <div
+        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:shrink-0"
+      >
         <Button
           :loading="data.save.loading"
           :label="__('Update')"

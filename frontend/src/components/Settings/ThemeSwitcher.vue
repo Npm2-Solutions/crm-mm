@@ -1,7 +1,10 @@
+<!-- The three cards share the row evenly and clip their pictures: «System»
+     draws two windows, and at their natural width it pushed itself off a
+     phone's screen. -->
 <template>
   <div class="flex gap-3">
     <div
-      class="flex-1 rounded-lg border cursor-pointer"
+      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border"
       :class="
         theme == 'light'
           ? 'border-outline-gray-7'
@@ -51,7 +54,7 @@
       </div>
     </div>
     <div
-      class="flex-1 rounded-lg border cursor-pointer"
+      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border"
       :class="
         theme == 'dark' ? 'border-outline-gray-7' : 'border-outline-elevation-2'
       "
@@ -99,7 +102,7 @@
       </div>
     </div>
     <div
-      class="flex-1 rounded-lg border cursor-pointer"
+      class="min-w-0 flex-1 cursor-pointer overflow-hidden rounded-lg border"
       :class="
         theme == 'system'
           ? 'border-outline-gray-7'
@@ -109,7 +112,7 @@
     >
       <div class="flex">
         <div
-          class="flex flex-1 pl-5 pt-3.5 bg-surface-gray-2 rounded-tl-[10.5px]"
+          class="flex min-w-0 flex-1 pl-5 pt-3.5 bg-surface-gray-2 rounded-tl-[10.5px]"
         >
           <div class="bg-white rounded-tl-sm w-full">
             <div class="flex gap-[3px] py-[3px] px-1 border-b border-gray-100">
@@ -133,7 +136,7 @@
           </div>
         </div>
         <div
-          class="flex flex-1 pl-5 pt-3.5 bg-surface-gray-3 rounded-tr-[10.5px]"
+          class="flex min-w-0 flex-1 pl-5 pt-3.5 bg-surface-gray-3 rounded-tr-[10.5px]"
         >
           <div class="bg-gray-900 rounded-tl-sm w-full">
             <div class="flex gap-[3px] py-[3px] px-1 border-b border-gray-800">

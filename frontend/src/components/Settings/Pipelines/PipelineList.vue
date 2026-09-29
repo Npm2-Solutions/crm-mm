@@ -27,20 +27,24 @@
           :icon="KanbanIcon"
         />
         <template v-else>
+          <!-- eight even columns left «Stages» and «Deals» 30px each on a
+               phone, written over one another; there the numbers get what
+               they need and the name the rest. The header's gap is the rows'
+               own, so its labels sit over their numbers. -->
           <div
-            class="grid grid-cols-8 items-center gap-3 text-sm text-ink-gray-5 ml-2"
+            class="grid grid-cols-8 items-center gap-4 text-sm text-ink-gray-5 ml-2 max-md:mr-2 max-md:grid-cols-[minmax(0,1fr)_3.5rem_5.5rem] max-md:gap-3"
           >
-            <div class="col-span-5">{{ __('Pipeline') }}</div>
+            <div class="col-span-5 max-md:col-span-1">{{ __('Pipeline') }}</div>
             <div class="col-span-1">{{ __('Stages') }}</div>
             <div class="col-span-1">{{ __('Deals') }}</div>
           </div>
           <hr class="mt-2 mx-2 border-outline-gray-2" />
           <div v-for="(pipeline, index) in pipelines.data" :key="pipeline.name">
             <div
-              class="grid grid-cols-8 items-center gap-4 cursor-pointer hover:bg-surface-gray-1 rounded"
+              class="grid grid-cols-8 items-center gap-4 cursor-pointer hover:bg-surface-gray-1 rounded max-md:grid-cols-[minmax(0,1fr)_3.5rem_5.5rem] max-md:gap-3"
             >
               <div
-                class="w-full pl-2 col-span-5 flex items-center h-14 gap-2"
+                class="w-full min-w-0 pl-2 col-span-5 flex items-center h-14 gap-2 max-md:col-span-1"
                 @click="openPipeline(pipeline)"
               >
                 <div class="text-base-medium text-ink-gray-7 truncate">

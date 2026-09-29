@@ -1,8 +1,14 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4 px-2">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Booking platforms') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -48,6 +54,24 @@
                 {{ timeAgo(latest(conn.last_sync, conn.last_webhook)) }}
               </span>
             </div>
+            <!-- on a phone the count and the badges go under the name: in
+                 the row they left the name no room at all -->
+            <div class="mt-1 flex flex-wrap items-center gap-1.5 md:hidden">
+              <span class="text-p-sm text-ink-gray-5">
+                {{ conn.upcoming }} {{ __('upcoming') }}
+              </span>
+              <Badge
+                v-if="conn.platform_info?.stability === 'beta'"
+                :label="__('Beta')"
+                theme="gray"
+                size="sm"
+              />
+              <Badge
+                :label="statusLabel(conn)"
+                :theme="statusTheme(conn)"
+                size="sm"
+              />
+            </div>
             <!-- the reason it failed is what somebody opens this for: its own
                  lines, not the truncated tail of the subtitle -->
             <div
@@ -58,16 +82,18 @@
               {{ conn.last_error }}
             </div>
           </div>
-          <span class="shrink-0 text-p-sm text-ink-gray-5">
+          <span class="shrink-0 text-p-sm text-ink-gray-5 max-md:hidden">
             {{ conn.upcoming }} {{ __('upcoming') }}
           </span>
           <Badge
             v-if="conn.platform_info?.stability === 'beta'"
+            class="max-md:hidden"
             :label="__('Beta')"
             theme="gray"
             size="sm"
           />
           <Badge
+            class="max-md:hidden"
             :label="statusLabel(conn)"
             :theme="statusTheme(conn)"
             size="sm"
@@ -116,15 +142,18 @@
           <div class="mb-2 text-p-sm-medium uppercase text-ink-gray-5">
             {{ sectorLabel(group.sector) }}
           </div>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-3 gap-2 max-md:grid-cols-1">
             <button
               v-for="platform in group.platforms"
               :key="platform.key"
               class="flex flex-col items-start gap-1.5 rounded-lg border border-outline-gray-2 p-3 text-left hover:border-outline-gray-4 hover:bg-surface-gray-1"
               @click="startNew(platform)"
             >
-              <div class="flex w-full items-center justify-between gap-2">
-                <span class="text-p-base-medium text-ink-gray-8">
+              <!-- the badges go under a long name instead of over it -->
+              <div
+                class="flex w-full flex-wrap items-center justify-between gap-x-2 gap-y-1"
+              >
+                <span class="min-w-0 text-p-base-medium text-ink-gray-8">
                   {{ platform.label }}
                 </span>
                 <div class="flex gap-1">
@@ -187,7 +216,7 @@
           </a>
         </div>
 
-        <div class="grid grid-cols-3 items-end gap-3">
+        <div class="grid grid-cols-3 items-end gap-3 max-md:grid-cols-1">
           <FormControl
             v-model="form.connection_name"
             type="text"
@@ -266,7 +295,7 @@
         </div>
 
         <!-- sync options -->
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-4 gap-3 max-md:grid-cols-2">
           <FormControl
             v-model.number="form.sync_window_days"
             type="number"

@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-full flex-col gap-6 px-6 py-8 text-ink-gray-8">
+  <div
+    class="flex h-full flex-col gap-6 px-6 py-8 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
     <div class="flex items-center justify-between px-2">
       <div class="flex flex-col gap-1">
         <h2 class="flex h-5 gap-2 text-2xl-semibold leading-none">
@@ -258,7 +260,7 @@
           :rows="2"
           :label="__('Address')"
         />
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <FormControl v-model="form.email" type="text" :label="__('Email')" />
           <FormControl v-model="form.phone" type="text" :label="__('Phone')" />
           <FormControl

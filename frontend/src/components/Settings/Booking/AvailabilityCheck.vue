@@ -4,7 +4,9 @@
     :class="embedded ? '' : 'py-8 px-6'"
   >
     <div v-if="!embedded" class="flex flex-col gap-1 px-2">
-      <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+      <h2
+        class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+      >
         {{ __('Why is it not available?') }}
       </h2>
       <p class="text-p-base text-ink-gray-6">
@@ -16,11 +18,14 @@
       </p>
     </div>
 
+    <!-- on a phone: the service on a row of its own, then day and time, then
+         the switch and the button — five across left each a few letters -->
     <div
-      class="grid grid-cols-[1.4fr_1fr_0.7fr_auto_auto] items-end gap-3 px-2"
+      class="grid grid-cols-[1.4fr_1fr_0.7fr_auto_auto] items-end gap-3 px-2 max-md:grid-cols-2"
     >
       <FormControl
         v-model="service"
+        class="max-md:col-span-2"
         type="select"
         :label="__('Service')"
         :options="serviceOptions"

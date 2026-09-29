@@ -56,8 +56,9 @@
                       {{ fullName }}
                     </span>
                     <Button
-                      class="!px-1 !h-5"
+                      class="touch-target !px-1 !h-5"
                       variant="ghost"
+                      :aria-label="__('Edit name')"
                       @click="editFullName"
                     >
                       <EditIcon class="size-3.5" />

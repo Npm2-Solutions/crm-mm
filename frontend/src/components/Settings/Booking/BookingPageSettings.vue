@@ -1,8 +1,14 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4 px-2">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Page & rules') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -23,7 +29,7 @@
 
     <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-2">
       <div
-        class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7"
+        class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm text-ink-gray-7 max-md:flex-col max-md:items-start"
       >
         {{
           __(
@@ -43,7 +49,9 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Look of the page') }}
         </h3>
-        <div class="grid grid-cols-[1fr_320px] gap-5">
+        <!-- the preview goes under the fields on a phone: at 320px beside
+             them it ran off the screen -->
+        <div class="grid grid-cols-[1fr_320px] gap-5 max-md:grid-cols-1">
           <div class="flex flex-col gap-4">
             <FormControl
               v-model="form.booking_page_title"
@@ -198,7 +206,7 @@
         <h3 class="text-p-base-medium text-ink-gray-8">
           {{ __('Links, QR code and embed') }}
         </h3>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <FormControl
             v-model="link.category"
             type="select"
@@ -219,7 +227,7 @@
             :options="staffOptions"
           />
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <FormControl
             v-model="link.utm_source"
             type="text"
@@ -238,7 +246,7 @@
             :label="__('Embed height (px)')"
           />
         </div>
-        <div class="flex gap-4">
+        <div class="flex gap-4 max-md:flex-col">
           <div class="flex min-w-0 flex-1 flex-col gap-2">
             <CopyRow :label="__('Link')" :value="linkUrl" />
             <CopyRow
@@ -282,7 +290,7 @@
             }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div class="grid grid-cols-2 gap-x-4 gap-y-3 max-md:grid-cols-1">
           <RuleField
             v-for="item in DEFAULT_RULES"
             :key="item.key"
@@ -561,8 +569,11 @@ const summary = createResource({
 
 // -- link builder -------------------------------------------------------------
 
+// the public menu's own endpoint, which answers GET only: sent as frappe-ui's
+// default POST it was refused, and the link builder had nothing to offer
 const catalog = createResource({
   url: 'crm.api.service_booking.get_catalog',
+  method: 'GET',
   params: { include_hidden: 1 },
   auto: true,
 })

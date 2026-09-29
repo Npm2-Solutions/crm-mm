@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-full flex-col gap-6 p-8 text-ink-gray-8">
+  <div
+    class="flex h-full flex-col gap-6 p-8 text-ink-gray-8 max-md:px-5 max-md:py-5"
+  >
     <!-- Header -->
     <div class="flex justify-between">
       <div class="flex gap-1 -ml-4 w-9/12">
@@ -12,7 +14,9 @@
           @click="() => emit('updateStep', 'template-list')"
         />
       </div>
-      <div class="flex items-start space-x-4 w-3/12 justify-end">
+      <div
+        class="flex items-start space-x-4 w-3/12 justify-end max-md:w-auto max-md:justify-start"
+      >
         <div class="flex items-center space-x-2">
           <Switch v-model="template.enabled" size="sm" />
           <span class="text-sm text-ink-gray-7">{{ __('Enabled') }}</span>

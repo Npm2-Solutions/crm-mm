@@ -1,10 +1,12 @@
 <template>
   <div
     v-if="!getAssignmentRuleData.loading"
-    class="flex flex-col h-full gap-6 px-6 py-8 text-ink-gray-8"
+    class="flex flex-col h-full gap-6 px-6 py-8 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
-    <div class="flex justify-between px-2 w-full">
-      <div class="flex items-center gap-2">
+    <!-- the switch and Save go under a title too long to share the row: on
+         a phone «New Assignment Rule» ran into the switch -->
+    <div class="flex w-full flex-wrap items-center justify-between gap-3 px-2">
+      <div class="flex min-w-0 items-center gap-2">
         <Button
           variant="ghost"
           icon-left="lucide-chevron-left"

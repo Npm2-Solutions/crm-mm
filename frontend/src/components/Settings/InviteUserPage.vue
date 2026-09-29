@@ -1,8 +1,14 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex px-2 justify-between">
-      <div class="flex flex-col gap-1 w-9/12">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex px-2 justify-between max-md:flex-col max-md:items-start max-md:gap-3"
+    >
+      <div class="flex flex-col gap-1 w-9/12 max-md:w-full">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Send Invites To') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -13,7 +19,9 @@
           }}
         </p>
       </div>
-      <div class="flex items-start space-x-2 w-3/12 justify-end">
+      <div
+        class="flex items-start space-x-2 w-3/12 justify-end max-md:w-auto max-md:justify-start"
+      >
         <Button
           :label="__('Send Invites')"
           variant="solid"

@@ -12,10 +12,16 @@
   all day and reaches nobody.
 -->
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4 px-2">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Provider connection') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -40,7 +46,7 @@
       <!-- The environment. Loud on purpose: it is the only switch whose wrong
            value produces no error anywhere. -->
       <div
-        class="flex items-start justify-between gap-4 rounded-xl border px-4 py-3"
+        class="flex items-start justify-between gap-4 rounded-xl border px-4 py-3 max-md:flex-col max-md:items-start"
         :class="
           inProduzione
             ? 'border-outline-green-2 bg-surface-green-1'

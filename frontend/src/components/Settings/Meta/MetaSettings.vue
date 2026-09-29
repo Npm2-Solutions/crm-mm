@@ -9,10 +9,12 @@
 -->
 <template>
   <div
-    class="flex h-full flex-col gap-5 overflow-y-auto py-8 px-6 text-ink-gray-8"
+    class="flex h-full flex-col gap-5 overflow-y-auto py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div class="flex flex-col gap-1 px-2">
-      <h2 class="flex items-center gap-2 text-2xl-semibold leading-none h-5">
+      <h2
+        class="flex items-center gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+      >
         {{ __('Meta') }}
         <Badge
           v-if="status.data"
@@ -30,7 +32,8 @@
       </p>
     </div>
 
-    <div class="px-2">
+    <!-- four tabs are wider than a phone: there they scroll sideways -->
+    <div class="px-2 max-md:overflow-x-auto max-md:[scrollbar-width:none]">
       <TabButtons v-model="tab" :buttons="tabs" />
     </div>
 

@@ -1,8 +1,14 @@
 <template>
-  <div class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8">
-    <div class="flex items-start justify-between gap-4 px-2">
+  <div
+    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+  >
+    <div
+      class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
+    >
       <div class="flex flex-col gap-1">
-        <h2 class="flex gap-2 text-2xl-semibold leading-none h-5">
+        <h2
+          class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+        >
           {{ __('Online booking') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -85,21 +91,27 @@
               class="size-2.5 shrink-0 rounded-full"
               :style="{ backgroundColor: service.color || '#4C7EFF' }"
             />
-            <span class="min-w-0 flex-1 truncate text-p-base text-ink-gray-8">
-              {{ service.service_name }}
-            </span>
+            <!-- on a phone who can take it goes under the name: beside it,
+                 «Nobody bookable for it» left the name «Contro…» -->
             <span
-              v-if="service.bookable_online"
-              class="text-p-sm"
-              :class="
-                service.online_staff ? 'text-ink-gray-6' : 'text-ink-amber-8'
-              "
+              class="flex min-w-0 flex-1 flex-col md:flex-row md:items-center md:gap-3"
             >
-              {{
-                service.online_staff
-                  ? __('{0} bookable', [service.online_staff])
-                  : __('Nobody bookable for it')
-              }}
+              <span class="truncate text-p-base text-ink-gray-8 md:flex-1">
+                {{ service.service_name }}
+              </span>
+              <span
+                v-if="service.bookable_online"
+                class="text-p-sm md:shrink-0"
+                :class="
+                  service.online_staff ? 'text-ink-gray-6' : 'text-ink-amber-8'
+                "
+              >
+                {{
+                  service.online_staff
+                    ? __('{0} bookable', [service.online_staff])
+                    : __('Nobody bookable for it')
+                }}
+              </span>
             </span>
             <Switch
               :modelValue="Boolean(service.bookable_online)"
@@ -121,7 +133,9 @@
 
       <!-- 3. the people -->
       <section class="flex flex-col gap-2">
-        <div class="flex items-baseline justify-between">
+        <div
+          class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
+        >
           <h3 class="text-p-base-medium text-ink-gray-8">
             {{ __('People clients can book') }}
           </h3>
