@@ -262,9 +262,14 @@ Un modulo, una scheda clinica e un piano sono lo stesso oggetto con tre usi:
 - **Le librerie**: alimenti ed esercizi del centro. Per gli alimenti la BDA-IEO
   (per un software commerciale si chiede la licenza, a pagamento) e le tabelle
   libere CIQUAL e USDA per i buchi; Open Food Facts solo per i prodotti di marca,
-  perché la sua licenza vieta gli usi medici. Per gli esercizi, video girati dal
-  centro o un link YouTube o Vimeo: le librerie commerciali di solito non
-  permettono di rivenderli.
+  perché la sua licenza vieta gli usi medici. Per gli esercizi si parte gratis: i
+  dati di free-exercise-db (pubblico dominio: nomi, muscoli, attrezzi,
+  istruzioni), le illustrazioni di Everkinetic (CC BY-SA 4.0, tre fotogrammi che
+  fanno l'animazione, con l'autore sulla scheda) e i muscoli evidenziati su una
+  mappa del corpo disegnata da noi con body-muscles (Apache 2.0). Le GIF animate
+  che girano su GitHub non sono libere: sono di ExerciseDB o di Gym visual. Se
+  servono, ExerciseDB vende la licenza una tantum da 199 $. Per la fisioterapia i
+  video del centro restano i migliori, più un link YouTube o Vimeo.
 - **Chi scrive cosa**: la qualifica dell'erogatore decide. La dieta la firmano
   medico, biologo nutrizionista o dietista (su prescrizione del medico); il
   personal trainer no, perché dare diete è esercizio abusivo della professione;
@@ -392,7 +397,7 @@ Nel modulo `crm/clinica`, DocType con prefisso `Clinic`:
 | `Clinic Record` | una voce di cartella: visita, nota, misura (submittable, poi solo aggiunte) | versione, operatore (l'erogatore), appuntamento, valori, chi la vede, colonne per le statistiche |
 | `Clinic Document` | l'archivio | tipo, file privato, data, provenienza, visibile al paziente, online fino al |
 | `Clinic Plan` | un piano | tipo, versione del modello, operatore, periodo, pubblicato; tabelle dei momenti e delle voci |
-| `Clinic Food`, `Clinic Exercise` | le librerie | nutrienti e fonte con licenza; video o link, istruzioni |
+| `Clinic Food`, `Clinic Exercise` | le librerie | nutrienti e fonte con licenza; muscoli primari e secondari, fotogrammi, GIF o link, istruzioni, autore e licenza da mostrare |
 | `Clinic Plan Log` | un check-in del paziente | voce, esito (fatto, in parte, saltato), peso, fatica o dolore, foto, nota |
 | `Clinic Message` | un messaggio nell'area | autore, testo, letto il |
 | `Clinic AI Event` | il registro dell'assistente | funzione, modello, fornitore, regione, impronte, bozza e differenza con la nota firmata |
