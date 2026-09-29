@@ -350,7 +350,7 @@
 <script setup>
 import Link from '@/components/Controls/Link.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { hhmm } from '@/utils/scheduler'
 
 const WEEKDAYS = [
@@ -367,9 +367,6 @@ const priceLists = createResource({
   url: 'crm.api.appointments.list_price_lists',
   cache: 'crm-price-lists',
   auto: true,
-  onSuccess: (data) => {
-    if (!selected.value && data?.length) select(data[0].name)
-  },
 })
 
 function serviceName(name) {
@@ -398,6 +395,17 @@ function select(name) {
   selected.value = name
   prices.submit({ price_list: name })
 }
+
+// The first list is opened once the lists are here. Not in `onSuccess`: the
+// resource is kept (`cache`) and keeps the callback of the page that made it,
+// so opening these settings a second time selected nothing.
+watch(
+  () => priceLists.data,
+  (data) => {
+    if (!selected.value && data?.length) select(data[0].name)
+  },
+  { immediate: true },
+)
 
 const serviceOptions = computed(() =>
   (services.data || []).map((s) => ({ label: s.service_name, value: s.name })),
