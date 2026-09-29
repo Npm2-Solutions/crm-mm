@@ -127,7 +127,8 @@ def appuntamento_per_la_clinica(servizio: str | None) -> bool:
 
 
 def _presenze() -> list[dict]:
-	"""Every participant who came, with the appointment's service and start."""
+	"""Every participant who came or was checked in, with the appointment's service
+	and start."""
 	Appt = frappe.qb.DocType("CRM Appointment")
 	Part = frappe.qb.DocType("CRM Appointment Participant")
 	return (
@@ -142,12 +143,14 @@ def _presenze() -> list[dict]:
 			Part.status.as_("participant_status"),
 			Part.party_type,
 			Part.party,
+			Part.arrived_at,
 		)
 		.where(
 			(Part.parenttype == "CRM Appointment")
 			& (
 				(Appt.status == regole.APPUNTAMENTO_COMPLETATO)
 				| (Part.status == regole.PARTECIPANTE_PRESENTE)
+				| Part.arrived_at.isnotnull()
 			)
 		)
 		.run(as_dict=True)
@@ -184,17 +187,18 @@ def fatti_esistenti() -> dict[str, dict[str, tuple[datetime.datetime, tuple[str,
 
 	servizi: dict[str | None, bool] = {}
 	for riga in _presenze():
-		if not regole.presente(riga.status, riga.participant_status):
+		accolto = riga.arrived_at and riga.participant_status not in regole.PARTECIPANTE_ASSENTE
+		if not (accolto or regole.presente(riga.status, riga.participant_status)):
 			continue
 		if riga.service not in servizi:
 			servizi[riga.service] = appuntamento_per_la_clinica(riga.service)
-		if servizi[riga.service]:
-			annota(
-				persona_di(riga.party_type, riga.party),
-				regole.APPUNTAMENTO_SVOLTO,
-				riga.starts_on,
-				("CRM Appointment", riga.name),
-			)
+		if not servizi[riga.service]:
+			continue
+		persona = persona_di(riga.party_type, riga.party)
+		if accolto:
+			annota(persona, regole.ACCETTAZIONE, riga.arrived_at, ("CRM Appointment", riga.name))
+		if regole.presente(riga.status, riga.participant_status):
+			annota(persona, regole.APPUNTAMENTO_SVOLTO, riga.starts_on, ("CRM Appointment", riga.name))
 	for fattura in _fatture_sanitarie():
 		annota(
 			persona_di(fattura.party_type, fattura.party),

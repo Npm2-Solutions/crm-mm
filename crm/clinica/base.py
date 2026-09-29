@@ -25,3 +25,8 @@ class DocumentoClinico(Document):
 			fonte=(self.doctype, self.name),
 			da=self.get("practitioner") or frappe.session.user,
 		)
+		# written for an appointment: the person came, and the appointment closes
+		if self.get("appointment"):
+			from crm.scheduling import esiti
+
+			esiti.presente(self.appointment, self.get("lead"))
