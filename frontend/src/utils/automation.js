@@ -776,6 +776,10 @@ export function needsValue(operator) {
 }
 
 export function operatorsForFieldtype(fieldtype) {
+  // a file, a table, a signature: given or not, nothing to compare
+  if (fieldtype === 'Attach') {
+    return CONDITION_OPERATORS.filter((o) => VALUELESS_OPERATORS.includes(o.value))
+  }
   if (fieldtype === 'Check') {
     return CONDITION_OPERATORS.filter((o) =>
       ['equals', 'not_equals'].includes(o.value),

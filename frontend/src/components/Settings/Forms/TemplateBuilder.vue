@@ -1,0 +1,766 @@
+<template>
+  <div class="flex h-full flex-col text-ink-gray-8">
+    <!-- header: back with the title, where it stands, preview, save, publish -->
+    <div
+      class="flex items-center justify-between gap-3 px-6 pb-3 pt-8 max-md:flex-col max-md:items-start max-md:px-3 max-md:pt-5"
+    >
+      <div class="flex min-w-0 items-center gap-2">
+        <Button
+          variant="ghost"
+          icon-left="lucide-chevron-left"
+          :label="tpl.title || __('Untitled')"
+          size="md"
+          class="-ml-4 !max-w-96 !justify-start !pr-0 text-lg-semibold text-ink-gray-7 hover:bg-transparent hover:opacity-70 max-md:-ml-2"
+          @click="goBack"
+        />
+        <Badge
+          v-if="dirty"
+          variant="subtle"
+          theme="orange"
+          size="sm"
+          :label="__('Not Saved')"
+        />
+        <Badge
+          v-else-if="meta.current_version_number"
+          variant="subtle"
+          :theme="meta.unpublished_changes ? 'orange' : 'green'"
+          size="sm"
+          :label="
+            meta.unpublished_changes
+              ? __('Changes not published')
+              : __('Version {0}', [meta.current_version_number])
+          "
+        />
+        <Badge v-else variant="subtle" theme="gray" size="sm" :label="__('Draft')" />
+      </div>
+      <div class="flex shrink-0 items-center gap-2 max-md:w-full max-md:flex-wrap">
+        <Button
+          v-if="tab === 'build'"
+          :label="mode === 'edit' ? __('Try it') : __('Edit')"
+          @click="mode = mode === 'edit' ? 'preview' : 'edit'"
+        >
+          <template #prefix>
+            <LucideEye v-if="mode === 'edit'" class="size-4" />
+            <LucidePencil v-else class="size-4" />
+          </template>
+        </Button>
+        <Button
+          :disabled="!dirty"
+          :label="__('Save')"
+          :loading="saving"
+          @click="save"
+        />
+        <Button
+          variant="solid"
+          :label="__('Publish')"
+          :disabled="publishing || nothingToPublish"
+          :tooltip="nothingToPublish ? __('Nothing changed since the last version') : ''"
+          @click="openPublish"
+        />
+      </div>
+    </div>
+
+    <div class="px-6 max-md:px-3">
+      <TabButtons v-model="tab" :buttons="tabs" />
+    </div>
+
+    <div v-if="loaded" class="flex-1 overflow-y-auto px-6 pb-8 pt-5 max-md:px-3">
+      <!-- BUILD -->
+      <template v-if="tab === 'build' && mode === 'edit'">
+        <div
+          v-if="problems.length"
+          class="mb-4 flex flex-col gap-1.5 rounded-lg bg-surface-amber-1 px-4 py-3 text-sm text-ink-amber-7"
+        >
+          <div class="flex items-center gap-2 font-medium">
+            <LucideTriangleAlert class="size-4 shrink-0" />
+            {{
+              problems.length === 1
+                ? __('One thing to fix before publishing')
+                : __('{0} things to fix before publishing', [problems.length])
+            }}
+          </div>
+          <button
+            v-for="(problem, index) in problems.slice(0, 6)"
+            :key="index"
+            type="button"
+            class="text-left underline-offset-2 hover:underline"
+            @click="problem.field && (expanded = problem.field)"
+          >
+            {{ __(problem.message, problem.args) }}
+          </button>
+        </div>
+
+        <div class="mb-5 flex flex-col gap-2">
+          <input
+            v-model="tpl.title"
+            :placeholder="__('Form title')"
+            class="w-full border-0 bg-transparent p-0 text-2xl font-semibold leading-tight text-ink-gray-9 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
+          />
+          <textarea
+            v-model="tpl.description"
+            rows="1"
+            :placeholder="__('What it is for, for the staff')"
+            class="w-full resize-none border-0 bg-transparent p-0 text-base text-ink-gray-6 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
+          />
+        </div>
+
+        <Draggable
+          :list="schema.sections"
+          item-key="id"
+          handle=".section-handle"
+          class="flex flex-col gap-3"
+          ghost-class="opacity-40"
+          :animation="120"
+        >
+          <template #item="{ element: section }">
+            <div class="flex flex-col gap-2 rounded-lg bg-surface-gray-2 p-2.5">
+              <div class="flex items-center gap-2">
+                <DragVerticalIcon
+                  class="section-handle h-3.5 shrink-0 cursor-grab text-ink-gray-3"
+                />
+                <input
+                  v-model="section.title"
+                  :placeholder="__('Section title')"
+                  class="min-w-0 flex-1 border-0 bg-transparent p-0 text-base-medium text-ink-gray-9 placeholder:font-normal placeholder:italic placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
+                />
+                <span
+                  v-if="section.fields.length"
+                  class="shrink-0 rounded bg-surface-gray-3 px-1.5 py-0.5 text-xs leading-none text-ink-gray-5"
+                >
+                  {{ section.fields.length }}
+                </span>
+                <Dropdown :options="sectionMenu(section)">
+                  <Button class="touch-target" variant="ghost" icon="lucide-more-horizontal" />
+                </Dropdown>
+              </div>
+              <textarea
+                v-if="section.description !== undefined"
+                v-model="section.description"
+                rows="1"
+                :placeholder="__('A few words under the title')"
+                class="w-full resize-none border-0 bg-transparent px-5 py-0 text-sm text-ink-gray-6 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
+              />
+              <div v-if="section.show_if !== undefined" class="px-1">
+                <TemplateConditions
+                  v-model="section.show_if"
+                  :label="__('Show the section only if')"
+                  :fields="conditionFields(fieldsBefore(schema, { section: section.id }))"
+                />
+              </div>
+
+              <Draggable
+                :list="section.fields"
+                item-key="id"
+                group="template-fields"
+                handle=".drag-handle"
+                class="flex min-h-[34px] flex-col gap-1.5"
+                ghost-class="opacity-40"
+                :animation="120"
+              >
+                <template #item="{ element: field }">
+                  <TemplateFieldCard
+                    :field="field"
+                    :expanded="expanded === field.id"
+                    :before="fieldsBefore(schema, { field: field.id })"
+                    :all="allFields"
+                    :consent-types="meta.consent_types"
+                    :problems="problemsOf(field.id)"
+                    @toggle="expanded = expanded === field.id ? null : field.id"
+                    @remove="removeField(section, field)"
+                    @duplicate="duplicateField(section, field)"
+                    @rename="(key) => rename(field, key)"
+                  />
+                </template>
+              </Draggable>
+
+              <Dropdown :options="palette(section)">
+                <Button
+                  class="!h-8 w-full !bg-surface-elevation-2"
+                  variant="outline"
+                  icon-left="plus"
+                  :label="__('Add a question')"
+                />
+              </Dropdown>
+            </div>
+          </template>
+        </Draggable>
+
+        <Button
+          class="mt-3 !h-8 w-full"
+          variant="subtle"
+          icon-left="plus"
+          :label="__('Add a section')"
+          @click="addSection"
+        />
+      </template>
+
+      <!-- TRY IT: the same rules the person will meet -->
+      <div v-else-if="tab === 'build'" class="mx-auto flex max-w-2xl flex-col gap-5">
+        <div
+          class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-1 px-4 py-2.5 text-sm text-ink-gray-6 max-md:flex-col max-md:items-start"
+        >
+          <span>
+            {{
+              __(
+                'Answer as a person would: conditions, calculations and stops work as they will. Nothing is saved.',
+              )
+            }}
+          </span>
+          <div class="flex shrink-0 gap-2">
+            <Button size="sm" :label="__('Check it')" @click="previewChecked = true" />
+            <Button
+              size="sm"
+              :label="__('Clear the answers')"
+              @click="((previewValues = {}), (previewChecked = false))"
+            />
+          </div>
+        </div>
+        <h2 class="text-xl font-semibold text-ink-gray-9">{{ tpl.title }}</h2>
+        <FormRenderer
+          v-model="previewValues"
+          :schema="schema"
+          :consent-texts="consentTexts"
+          :show-missing="previewChecked"
+        />
+        <div
+          v-if="previewChecked"
+          class="rounded-lg px-4 py-3 text-sm"
+          :class="
+            previewState.missing.length
+              ? 'bg-surface-amber-1 text-ink-amber-7'
+              : 'bg-surface-green-1 text-ink-green-6'
+          "
+        >
+          {{
+            previewState.missing.length === 1
+              ? __('One required answer is missing: the form would not be sent.')
+              : previewState.missing.length
+                ? __('{0} required answers are missing: the form would not be sent.', [
+                    previewState.missing.length,
+                  ])
+                : __('Complete: the form would be sent.')
+          }}
+          <template v-if="previewState.stops.length">
+            {{
+              previewState.stops.length === 1
+                ? __('The operator is warned once.')
+                : __('The operator is warned {0} times.', [previewState.stops.length])
+            }}
+          </template>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div v-else-if="tab === 'settings'" class="flex max-w-2xl flex-col gap-5">
+        <FormControl
+          v-if="meta.uses.length > 1"
+          v-model="tpl.use"
+          type="select"
+          :label="__('Use')"
+          :options="meta.uses"
+        />
+        <label
+          v-if="meta.clinical_available || tpl.clinical"
+          class="flex items-start gap-2 text-base text-ink-gray-7"
+        >
+          <Switch v-model="tpl.clinical" class="mt-0.5 shrink-0" size="sm" />
+          <span>
+            {{ __('Health data') }}
+            <span class="block text-sm text-ink-gray-5">
+              {{
+                __(
+                  'Filling it records health data: only the care team reads it, and it makes the person a patient.',
+                )
+              }}
+            </span>
+          </span>
+        </label>
+        <FormControl
+          v-if="tpl.clinical || tpl.use !== 'Form'"
+          v-model="tpl.specialty"
+          :label="__('Specialty')"
+          :placeholder="__('Nutrition')"
+        />
+        <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+          <FormControl
+            v-model="tpl.ask_on"
+            type="select"
+            :label="__('Asked')"
+            :options="askOptions"
+          />
+          <FormControl
+            v-model="tpl.validity"
+            type="select"
+            :label="__('A signed one counts')"
+            :options="validityOptions"
+          />
+        </div>
+        <div v-if="tpl.ask_on === 'Services'" class="flex flex-col gap-1.5">
+          <span class="text-sm text-ink-gray-5">{{ __('For these services') }}</span>
+          <MultiSelectFilter
+            v-model="tpl.services"
+            class="self-start"
+            icon="lucide-stethoscope"
+            :label="__('Services')"
+            :options="meta.service_options"
+            :empty-text="__('No services yet')"
+          />
+        </div>
+        <label class="flex items-start gap-2 text-base text-ink-gray-7">
+          <Switch v-model="tpl.enabled" class="mt-0.5 shrink-0" size="sm" />
+          <span>
+            {{ __('On') }}
+            <span class="block text-sm text-ink-gray-5">
+              {{ __('Off, it is not asked any more; what was signed on it stays.') }}
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <!-- VERSIONS -->
+      <div v-else class="flex max-w-3xl flex-col gap-3">
+        <p class="text-p-base text-ink-gray-6">
+          {{
+            __(
+              'Each version is kept as it was published, with its SHA-256: what was filled on it points at it, and shows the exact words.',
+            )
+          }}
+        </p>
+        <EmptyState
+          v-if="!versions.length"
+          :title="__('Not published yet')"
+          :description="__('People fill a published version, never the draft.')"
+        />
+        <div
+          v-for="version in versions"
+          :key="version.name"
+          class="flex flex-col gap-1 rounded-lg border border-outline-gray-2 px-4 py-3"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-base font-medium text-ink-gray-8">
+              {{ __('Version {0}', [version.version]) }}
+            </span>
+            <Badge
+              v-if="version.name === meta.current_version"
+              :label="__('Current')"
+              theme="green"
+              variant="subtle"
+              size="sm"
+            />
+            <span class="text-sm text-ink-gray-5">
+              {{ formatDate(version.published_on) }} ·
+              {{ getUser(version.published_by)?.full_name || version.published_by }}
+            </span>
+          </div>
+          <p v-if="version.notes" class="whitespace-pre-line text-sm text-ink-gray-7">
+            {{ version.notes }}
+          </p>
+          <p v-if="version.asked_from" class="text-sm text-ink-gray-6">
+            {{ __('Asked again from {0}', [formatDate(version.asked_from, 'D MMM YYYY')]) }}
+          </p>
+          <code class="truncate text-xs text-ink-gray-4" :title="version.schema_hash">
+            SHA-256 {{ version.schema_hash }}
+          </code>
+        </div>
+      </div>
+    </div>
+    <div v-else class="flex flex-1 items-center justify-center">
+      <LoadingIndicator class="w-4" />
+    </div>
+  </div>
+
+  <Dialog v-model="showPublish" :options="{ title: __('Publish a new version') }">
+    <template #body-content>
+      <div class="flex flex-col gap-4">
+        <p class="text-p-base text-ink-gray-6">
+          {{
+            meta.current_version_number
+              ? __(
+                  'Version {0} will be filled from now on. What was signed on version {1} keeps its own words.',
+                  [meta.current_version_number + 1, meta.current_version_number],
+                )
+              : __('From now on people fill this version. It will not change: a change is a new version.')
+          }}
+        </p>
+        <FormControl
+          v-model="publishDraft.notes"
+          type="textarea"
+          :rows="3"
+          :label="__('What changed')"
+          :placeholder="__('For whoever reads the versions later')"
+        />
+        <template v-if="meta.current_version_number">
+          <label class="flex items-start gap-2 text-base text-ink-gray-7">
+            <Checkbox v-model="publishDraft.askAgain" class="mt-0.5" />
+            <span>
+              {{ __('Ask again whoever signed an earlier version') }}
+              <span class="block text-sm text-ink-gray-5">
+                {{ __('For a change that matters to them, like a new consent text.') }}
+              </span>
+            </span>
+          </label>
+          <FormControl
+            v-if="publishDraft.askAgain"
+            v-model="publishDraft.askedFrom"
+            type="date"
+            :label="__('From')"
+          />
+        </template>
+        <ErrorMessage :message="publishDraft.error" />
+      </div>
+    </template>
+    <template #actions>
+      <div class="dialog-footer flex justify-end gap-2">
+        <Button :label="__('Cancel')" @click="showPublish = false" />
+        <Button
+          variant="solid"
+          :label="__('Publish')"
+          :loading="publishing"
+          @click="publish"
+        />
+      </div>
+    </template>
+  </Dialog>
+</template>
+
+<script setup>
+import TemplateFieldCard from './TemplateFieldCard.vue'
+import TemplateConditions from './TemplateConditions.vue'
+import FormRenderer from '@/components/Moduli/FormRenderer.vue'
+import { componentIconName } from '@/components/Moduli/moduliIcons'
+import MultiSelectFilter from '@/components/Calendar/MultiSelectFilter.vue'
+import DragVerticalIcon from '@/components/Icons/DragVerticalIcon.vue'
+import {
+  componentList,
+  conditionFields,
+  evaluate,
+  fieldsBefore,
+  fieldsOf,
+  newField,
+  newSection,
+  readyToPublish,
+  renameKey,
+  takenKeys,
+  keyFromLabel,
+  usesOf,
+} from '@/utils/moduli'
+import { formatDate } from '@/utils'
+import EmptyState from '@/components/ListViews/EmptyState.vue'
+import { globalStore } from '@/stores/global'
+import { usersStore } from '@/stores/users'
+import LucideEye from '~icons/lucide/eye'
+import LucidePencil from '~icons/lucide/pencil'
+import LucideTriangleAlert from '~icons/lucide/triangle-alert'
+import Draggable from 'vuedraggable'
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Dialog,
+  Dropdown,
+  ErrorMessage,
+  FormControl,
+  LoadingIndicator,
+  Switch,
+  TabButtons,
+  call,
+  toast,
+} from 'frappe-ui'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
+
+const props = defineProps({ name: { type: String, required: true } })
+const emit = defineEmits(['back'])
+
+const { $dialog } = globalStore()
+const { getUser } = usersStore()
+
+const tabs = [
+  { label: __('Build'), value: 'build' },
+  { label: __('Settings'), value: 'settings' },
+  { label: __('Versions'), value: 'versions' },
+]
+const askOptions = [
+  { label: __('When somebody asks for it'), value: 'By hand' },
+  { label: __('At the first appointment'), value: 'First appointment' },
+  { label: __('For some services'), value: 'Services' },
+]
+const validityOptions = [
+  { label: __('For ever'), value: 'Forever' },
+  { label: __('For a year'), value: 'One year' },
+  { label: __('For one appointment'), value: 'Every appointment' },
+]
+
+const loaded = ref(false)
+const saving = ref(false)
+const publishing = ref(false)
+const dirty = ref(false)
+const tab = ref('build')
+const mode = ref('edit')
+const expanded = ref(null)
+const previewValues = ref({})
+const previewChecked = ref(false)
+const previewState = computed(() => evaluate(schema.value, previewValues.value))
+
+const tpl = reactive({})
+const schema = ref({ sections: [] })
+const versions = ref([])
+const meta = reactive({
+  uses: [],
+  clinical_available: false,
+  consent_types: [],
+  service_options: [],
+  current_version: null,
+  current_version_number: 0,
+  unpublished_changes: true,
+})
+
+const SETTINGS = [
+  'title',
+  'description',
+  'use',
+  'clinical',
+  'specialty',
+  'ask_on',
+  'validity',
+  'enabled',
+  'services',
+]
+
+function apply(data) {
+  for (const key of SETTINGS) tpl[key] = data[key]
+  tpl.clinical = Boolean(data.clinical)
+  tpl.enabled = Boolean(data.enabled)
+  tpl.services = data.services || []
+  schema.value = data.schema?.sections ? data.schema : { sections: [] }
+  versions.value = data.versions || []
+  for (const key of Object.keys(meta)) {
+    if (key in data) meta[key] = data[key]
+  }
+}
+
+async function load() {
+  const data = await call('crm.moduli.modelli.get_template', { name: props.name })
+  apply(data)
+  loaded.value = true
+  await nextTick()
+  dirty.value = false
+}
+load()
+
+watch([schema, tpl], () => loaded.value && (dirty.value = true), { deep: true })
+
+// what is wrong, as the server will say it: the same rules, live
+const problems = computed(() => readyToPublish(schema.value))
+const nothingToPublish = computed(
+  () => !dirty.value && Boolean(meta.current_version_number) && !meta.unpublished_changes,
+)
+function problemsOf(key) {
+  return problems.value
+    .filter((problem) => problem.field === key)
+    .map((problem) => __(problem.message, problem.args))
+}
+const allFields = computed(() => fieldsOf(schema.value))
+const consentTexts = computed(() =>
+  Object.fromEntries(meta.consent_types.map((type) => [type.key, type.text])),
+)
+
+// --- editing ------------------------------------------------------------------
+
+const GROUPS = ['Questions', 'Content', 'Signing']
+
+function palette(section) {
+  return GROUPS.map((group) => ({
+    group: __(group),
+    items: componentList()
+      .filter((kind) => kind.group === group)
+      .map((kind) => ({
+        label: __(kind.label),
+        icon: componentIconName(kind.type),
+        onClick: () => addField(section, kind.type),
+      })),
+  }))
+}
+
+function addField(section, type) {
+  const field = newField(type, schema.value)
+  section.fields.push(field)
+  expanded.value = field.id
+}
+
+function duplicateField(section, field) {
+  const copy = JSON.parse(JSON.stringify(field))
+  copy.id = keyFromLabel(field.label || field.id, takenKeys(schema.value))
+  section.fields.splice(section.fields.indexOf(field) + 1, 0, copy)
+  expanded.value = copy.id
+}
+
+function removeField(section, field) {
+  const uses = usesOf(schema.value, field.id)
+  const drop = () => {
+    section.fields.splice(section.fields.indexOf(field), 1)
+    if (expanded.value === field.id) expanded.value = null
+  }
+  if (!uses.length) return drop()
+  $dialog({
+    title: __('Remove the question?'),
+    message: __(
+      '{0} other parts of the form use its answer: their conditions or formulas will have to be fixed.',
+      [uses.length],
+    ),
+    variant: 'danger',
+    actions: [
+      {
+        label: __('Remove'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (close) => {
+          drop()
+          close()
+        },
+      },
+    ],
+  })
+}
+
+function rename(field, key) {
+  const from = field.id
+  if (renameKey(schema.value, from, key)) {
+    if (expanded.value === from) expanded.value = key
+  } else {
+    toast.error(
+      __('A key is lowercase letters, digits and _, starts with a letter, and is not taken'),
+    )
+  }
+}
+
+function addSection() {
+  schema.value.sections.push(newSection(schema.value))
+}
+
+function sectionMenu(section) {
+  const index = schema.value.sections.indexOf(section)
+  return [
+    section.description === undefined && {
+      label: __('Add a description'),
+      icon: 'lucide-align-left',
+      onClick: () => (section.description = ''),
+    },
+    section.show_if === undefined && {
+      label: __('Show only if…'),
+      icon: 'lucide-git-branch',
+      onClick: () => (section.show_if = null),
+    },
+    {
+      label: __('Remove the section'),
+      icon: 'lucide-trash-2',
+      theme: 'red',
+      onClick: () => {
+        if (!section.fields.length) return schema.value.sections.splice(index, 1)
+        $dialog({
+          title: __('Remove the section?'),
+          message: __('Its {0} questions go with it.', [section.fields.length]),
+          variant: 'danger',
+          actions: [
+            {
+              label: __('Remove'),
+              variant: 'solid',
+              theme: 'red',
+              onClick: (close) => {
+                schema.value.sections.splice(index, 1)
+                close()
+              },
+            },
+          ],
+        })
+      },
+    },
+  ].filter(Boolean)
+}
+
+// --- saving and publishing ----------------------------------------------------
+
+async function save() {
+  saving.value = true
+  try {
+    const data = await call('crm.moduli.modelli.save_template', {
+      name: props.name,
+      ...Object.fromEntries(SETTINGS.filter((k) => k !== 'services').map((k) => [k, tpl[k]])),
+      clinical: tpl.clinical ? 1 : 0,
+      enabled: tpl.enabled ? 1 : 0,
+      services: JSON.stringify(tpl.services || []),
+      schema: JSON.stringify(schema.value),
+    })
+    loaded.value = false
+    apply(data)
+    await nextTick()
+    loaded.value = true
+    dirty.value = false
+    toast.success(__('Saved'))
+    return true
+  } catch (error) {
+    toast.error(error.messages?.[0] || error.message)
+    return false
+  } finally {
+    saving.value = false
+  }
+}
+
+const showPublish = ref(false)
+const publishDraft = reactive({ notes: '', askAgain: false, askedFrom: '', error: '' })
+
+async function openPublish() {
+  if (problems.value.length) {
+    tab.value = 'build'
+    mode.value = 'edit'
+    toast.error(__('Fix what is listed before publishing'))
+    return
+  }
+  if (dirty.value && !(await save())) return
+  Object.assign(publishDraft, {
+    notes: '',
+    askAgain: false,
+    askedFrom: new Date().toISOString().slice(0, 10),
+    error: '',
+  })
+  showPublish.value = true
+}
+
+async function publish() {
+  publishing.value = true
+  publishDraft.error = ''
+  try {
+    const version = await call('crm.moduli.modelli.publish_template', {
+      name: props.name,
+      notes: publishDraft.notes || null,
+      asked_from: publishDraft.askAgain ? publishDraft.askedFrom : null,
+    })
+    showPublish.value = false
+    toast.success(__('Version {0} published', [version.version]))
+    loaded.value = false
+    await load()
+  } catch (error) {
+    publishDraft.error = error.messages?.join('\n') || error.message
+  } finally {
+    publishing.value = false
+  }
+}
+
+function goBack() {
+  if (!dirty.value) return emit('back')
+  $dialog({
+    title: __('Unsaved Changes'),
+    message: __('Are you sure you want to go back? Unsaved changes will be lost.'),
+    variant: 'solid',
+    actions: [
+      {
+        label: __('Go Back'),
+        variant: 'solid',
+        onClick: (close) => {
+          emit('back')
+          close()
+        },
+      },
+    ],
+  })
+}
+</script>
