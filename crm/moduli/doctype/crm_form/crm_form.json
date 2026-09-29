@@ -17,6 +17,7 @@
   "filling_section",
   "channel",
   "appointment",
+  "request",
   "column_filling",
   "filled_by",
   "signed_on",
@@ -119,6 +120,13 @@
    "options": "CRM Appointment"
   },
   {
+   "fieldname": "request",
+   "fieldtype": "Link",
+   "label": "From request",
+   "options": "CRM Form Request",
+   "read_only": 1
+  },
+  {
    "fieldname": "column_filling",
    "fieldtype": "Column Break"
   },
@@ -216,7 +224,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 12:30:00.000000",
+ "modified": "2026-09-30 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Form",
