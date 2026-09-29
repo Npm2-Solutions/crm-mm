@@ -15,9 +15,11 @@ import json
 from unittest.mock import MagicMock, patch
 
 import frappe
+from frappe.api.v1 import read_doc
 from frappe.tests import IntegrationTestCase
 from frappe.utils.nestedset import rebuild_tree
 
+from crm.api.activities import get_activities
 from crm.api.appointments import (
 	check_conflicts,
 	get_available_slots,
@@ -27,17 +29,26 @@ from crm.api.appointments import (
 	quote_price,
 )
 from crm.api.contact import get_linked_deals
-from crm.api.doc import assigned_users_of, get_assigned_users, get_linked_docs_of_document, remove_assignments
+from crm.api.doc import (
+	assigned_users_of,
+	get_assigned_users,
+	get_data,
+	get_linked_docs_of_document,
+	remove_assignments,
+)
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
 from crm.fcrm.doctype.crm_deal.crm_deal import create_deal
 from crm.integrations.api import (
+	add_note_to_call_log,
+	add_task_to_call_log,
 	find_contact_by_phone_number,
 	get_contact_by_phone_number,
 	get_contact_lead_or_deal_from_number,
 	get_recording_url,
 )
 from crm.permissions.test_org_hierarchy import make_deal, make_hierarchy_node, make_lead, make_user
+from crm.telephony.callbacks import pending_callbacks
 from crm.telephony.transcription import get_transcript, transcribe_now
 from crm.tests.test_scheduling import SchedulingCase
 
@@ -467,19 +478,197 @@ class TestSettingsRestore(PermissionTestCase):
 			create_demo_data.assert_not_called()
 
 
-def make_call_log(links=(), **fields):
-	doc = frappe.get_doc(
-		{
-			"doctype": "CRM Call Log",
-			"type": "Incoming",
-			"status": "Completed",
-			# not Manual: a call logged by hand fills its caller in from the session
-			"telephony_medium": "Twilio",
-			"from": "+393331234567",
-			"to": "+390212345678",
-			**fields,
+class TestCallsNotesAndTasks(PermissionTestCase):
+	"""Calls, notes and tasks are seen by whoever sees the lead or deal they are about.
+
+	Each record is checked twice, in the list and on its own the way /api/resource
+	opens it, and the two must agree.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.reps_lead = make_lead(REP).name
+		cls.outsiders_lead = make_lead(OUTSIDER).name
+
+		cls.records = {
+			"FCRM Note": {
+				"about nobody": make_note(),
+				"about the rep's lead": make_note("CRM Lead", cls.reps_lead),
+				"written during the rep's call": make_note(),
+			},
+			"CRM Task": {
+				"about nobody": make_task(),
+				"about the rep's lead": make_task("CRM Lead", cls.reps_lead, assigned_to=REP),
+				"for the outsider, about the rep's lead": make_task(
+					"CRM Lead", cls.reps_lead, assigned_to=OUTSIDER
+				),
+				"written during the rep's call": make_task(),
+			},
 		}
-	)
+		with cls.set_user(OUTSIDER):
+			cls.records["FCRM Note"]["the outsider's own, about the rep's lead"] = make_note(
+				"CRM Lead", cls.reps_lead
+			)
+
+		cls.records["CRM Call Log"] = {
+			"about nobody": make_call_log().name,
+			"on the rep's lead": make_call_log(
+				links=[
+					("CRM Lead", cls.reps_lead),
+					("FCRM Note", cls.records["FCRM Note"]["written during the rep's call"]),
+					("CRM Task", cls.records["CRM Task"]["written during the rep's call"]),
+				]
+			).name,
+			"the outsider took, on the rep's lead": make_call_log(
+				links=[("CRM Lead", cls.reps_lead)], receiver=OUTSIDER
+			).name,
+			"the rep took, on the outsider's lead": make_call_log(
+				links=[("CRM Lead", cls.outsiders_lead)], receiver=REP
+			).name,
+		}
+
+	def setUp(self):
+		frappe.db.savepoint("activities")
+
+	def tearDown(self):
+		frappe.db.rollback(save_point="activities")
+
+	def assertSees(self, user, hidden=()):
+		for doctype, records in self.records.items():
+			with self.set_user(user):
+				listed = set(
+					frappe.get_list(doctype, filters={"name": ["in", list(records.values())]}, pluck="name")
+				)
+			for label, name in records.items():
+				expected = (doctype, label) not in hidden
+				with self.subTest(user=user, doctype=doctype, record=label), self.set_user(user):
+					self.assertEqual(name in listed, expected, "in the list")
+					if expected:
+						read_doc(doctype, name)
+					else:
+						with self.assertRaises(frappe.PermissionError):
+							read_doc(doctype, name)
+
+	def test_the_leads_owner_and_their_manager_see_all_of_it(self):
+		self.assertSees(REP)
+		self.assertSees(MANAGER)
+
+	def test_a_sales_user_outside_the_hierarchy_sees_theirs_and_nobodys(self):
+		self.assertSees(
+			OUTSIDER,
+			hidden={
+				("CRM Call Log", "on the rep's lead"),
+				("FCRM Note", "about the rep's lead"),
+				("FCRM Note", "written during the rep's call"),
+				("CRM Task", "about the rep's lead"),
+				("CRM Task", "written during the rep's call"),
+			},
+		)
+
+	def test_a_website_user_reads_none_of_it(self):
+		for doctype, records in self.records.items():
+			with self.subTest(doctype), self.set_user(PATIENT):
+				with self.assertRaises(frappe.PermissionError):
+					frappe.get_list(doctype)
+				with self.assertRaises(frappe.PermissionError):
+					read_doc(doctype, records["about nobody"])
+
+	def test_a_shared_lead_brings_its_calls_notes_and_tasks(self):
+		frappe.share.add_docshare(
+			"CRM Lead", self.reps_lead, OUTSIDER, flags={"ignore_share_permission": True}
+		)
+		self.assertSees(OUTSIDER)
+
+	def test_the_leads_timeline_keeps_the_notes_and_tasks_of_its_calls(self):
+		with self.set_user(REP):
+			_activities, _calls, notes, tasks, _attachments = get_activities(self.reps_lead)
+		self.assertIn(self.records["FCRM Note"]["written during the rep's call"], {n.name for n in notes})
+		self.assertIn(self.records["CRM Task"]["written during the rep's call"], {t.name for t in tasks})
+
+	def test_linking_somebody_elses_note_to_your_own_call_does_not_reveal_it(self):
+		hidden_note = self.records["FCRM Note"]["written during the rep's call"]
+		hidden_task = self.records["CRM Task"]["written during the rep's call"]
+		links = [
+			{"link_doctype": "CRM Lead", "link_name": self.outsiders_lead},
+			{"link_doctype": "FCRM Note", "link_name": hidden_note},
+		]
+		with self.set_user(OUTSIDER), self.assertRaises(frappe.PermissionError):
+			frappe.get_doc({**CALL, "caller": OUTSIDER, "links": links}).insert()
+
+		# and a link that got there anyway still opens nothing
+		planted = make_call_log(
+			links=[("CRM Lead", self.outsiders_lead), ("FCRM Note", hidden_note), ("CRM Task", hidden_task)],
+			caller=OUTSIDER,
+		).name
+		with self.set_user(OUTSIDER):
+			call = get_call_log(planted)
+			_activities, _calls, notes, tasks, _attachments = get_activities(self.outsiders_lead)
+		self.assertEqual((call["_notes"], call["_tasks"]), ([], []))
+		self.assertNotIn(hidden_note, {n.name for n in notes})
+		self.assertNotIn(hidden_task, {t.name for t in tasks})
+
+	def test_the_agent_on_the_call_writes_its_note_and_task(self):
+		answered = self.records["CRM Call Log"]["the outsider took, on the rep's lead"]
+		with self.set_user(OUTSIDER):
+			note = add_note_to_call_log(answered, {"title": "Chiamata", "content": "Richiamare domani"})
+			task = add_task_to_call_log(
+				answered, {"title": "Richiamare", "status": "Todo", "priority": "Low"}
+			)
+		# whose lead it is sees them too, from the call
+		for doctype, name in (("FCRM Note", note.name), ("CRM Task", task.name)):
+			self.assertTrue(frappe.has_permission(doctype, "read", name, user=REP))
+
+		not_on_it = self.records["CRM Call Log"]["on the rep's lead"]
+		with self.set_user(OUTSIDER), self.assertRaises(frappe.PermissionError):
+			add_note_to_call_log(not_on_it, {"title": "Chiamata", "content": "…"})
+
+	def test_a_task_is_edited_through_a_call_only_by_whoever_may_edit_it(self):
+		answered = self.records["CRM Call Log"]["the outsider took, on the rep's lead"]
+		somebody_elses = self.records["CRM Task"]["about the rep's lead"]
+		with self.set_user(OUTSIDER), self.assertRaises(frappe.PermissionError):
+			add_task_to_call_log(answered, {"name": somebody_elses, "title": "Rubato"})
+		self.assertNotEqual(frappe.db.get_value("CRM Task", somebody_elses, "title"), "Rubato")
+
+	def test_assigning_a_task_shares_nothing(self):
+		# the assignee can read it by the rule, so frappe has no reason to share it
+		task = self.records["CRM Task"]["for the outsider, about the rep's lead"]
+		self.assertFalse(frappe.db.exists("DocShare", {"share_doctype": "CRM Task", "share_name": str(task)}))
+
+	def test_the_callback_queue_follows_the_call(self):
+		calls = self.records["CRM Call Log"]
+		for label in ("about nobody", "on the rep's lead"):
+			frappe.db.set_value(
+				"CRM Call Log",
+				calls[label],
+				{"callback_status": "Pending", "callback_due": frappe.utils.add_to_date(None, hours=-1)},
+			)
+		with self.set_user(OUTSIDER):
+			queued = {row.name for row in pending_callbacks()}
+		self.assertIn(calls["about nobody"], queued)
+		self.assertNotIn(calls["on the rep's lead"], queued)
+
+	def test_the_list_views_still_build(self):
+		with self.set_user(REP):
+			for doctype in self.records:
+				get_data(doctype, {}, "modified desc")
+			# a report column from the child table, next to the rule's own subqueries
+			frappe.get_list("CRM Call Log", fields=["name", "`tabDynamic Link`.`link_name`"])
+
+
+CALL = {
+	"doctype": "CRM Call Log",
+	"type": "Incoming",
+	"status": "Completed",
+	# not Manual: a call logged by hand fills its caller in from the session
+	"telephony_medium": "Twilio",
+	"from": "+393331234567",
+	"to": "+390212345678",
+}
+
+
+def make_call_log(links=(), **fields):
+	doc = frappe.get_doc({**CALL, **fields})
 	for doctype, name in links:
 		doc.append("links", {"link_doctype": doctype, "link_name": name})
 	return doc.insert(ignore_permissions=True)
@@ -496,3 +685,32 @@ def make_deal_with(owner, contact):
 	deal.append("contacts", {"contact": contact, "is_primary": 1})
 	deal.save(ignore_permissions=True)
 	return deal.name
+
+
+def make_note(reference_doctype=None, reference_docname=None):
+	"""Made by the session user, who owns it."""
+	doc = frappe.get_doc(
+		{
+			"doctype": "FCRM Note",
+			"title": "Nota",
+			"content": "<p>Il paziente richiama per l'esito dell'esame.</p>",
+			"reference_doctype": reference_doctype,
+			"reference_docname": reference_docname,
+		}
+	)
+	return doc.insert(ignore_permissions=True).name
+
+
+def make_task(reference_doctype=None, reference_docname=None, assigned_to=None):
+	doc = frappe.get_doc(
+		{
+			"doctype": "CRM Task",
+			"title": "Richiamare",
+			"status": "Todo",
+			"priority": "Medium",
+			"assigned_to": assigned_to,
+			"reference_doctype": reference_doctype,
+			"reference_docname": reference_docname,
+		}
+	)
+	return doc.insert(ignore_permissions=True).name

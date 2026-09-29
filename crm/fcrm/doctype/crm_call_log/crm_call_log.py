@@ -69,6 +69,28 @@ class CRMCallLog(Document):
 			self.telephony_medium = "Manual"
 		self.fill_in_who_was_on_the_call()
 
+	def validate(self):
+		self.link_only_what_the_user_can_read()
+
+	def link_only_what_the_user_can_read(self):
+		"""Linking reaches into what is linked: the call shows on that lead's timeline,
+		and a note or a task written during a call is seen only where all the calls
+		linking it are (crm.permissions.org_hierarchy). So a user links only what they
+		can read. Telephony links on nobody's behalf, and saves with ignore_permissions.
+		"""
+		if self.flags.ignore_permissions:
+			return
+		before = self.get_doc_before_save()
+		linked = {(row.link_doctype, str(row.link_name)) for row in (before.links if before else [])}
+		for row in self.links:
+			if not (row.link_doctype and row.link_name) or (row.link_doctype, str(row.link_name)) in linked:
+				continue
+			if not frappe.has_permission(row.link_doctype, "read", row.link_name):
+				frappe.throw(
+					_("You cannot link {0} {1} to a call").format(_(row.link_doctype), row.link_name),
+					frappe.PermissionError,
+				)
+
 	def fill_in_who_was_on_the_call(self):
 		"""A call logged by hand already knows who it was with.
 
@@ -281,40 +303,10 @@ def parse_call_log(call):
 	return call
 
 
-def check_call_log_permission(call_log: str | CRMCallLog, ptype: str = "read") -> CRMCallLog:
-	"""The call log, if the session user may see it — a PermissionError if not.
-
-	CRM Call Log has no rule of its own: every Sales User reads every call log, so
-	its own permission only says that somebody works in the CRM. Whose call it is
-	comes from the lead or deal it was about. The call sits on the timeline of each
-	record it is linked to, so being able to read any one of them is enough.
-
-	Whoever was on the call can always open it: an incoming call is answered by
-	whoever is free, not by the lead's owner.
-	"""
-	doc = call_log if isinstance(call_log, Document) else frappe.get_doc("CRM Call Log", call_log)
-	doc.check_permission(ptype)
-
-	if frappe.session.user in (doc.caller, doc.receiver):
-		return doc
-
-	# telephony files the lead or deal under `links`, a call logged by hand under `reference_*`
-	records = {(doc.reference_doctype, doc.reference_docname)}
-	records.update((link.link_doctype, link.link_name) for link in doc.links)
-	records = [
-		(doctype, name)
-		for doctype, name in records
-		if doctype in ("CRM Lead", "CRM Deal") and name and frappe.db.exists(doctype, name)
-	]
-	if records and not any(frappe.has_permission(doctype, "read", name) for doctype, name in records):
-		frappe.throw(_("Not permitted"), frappe.PermissionError)
-
-	return doc
-
-
 @frappe.whitelist()
 def get_call_log(name: str):
-	check_call_log_permission(name)
+	# whose call it is follows its lead or deal: crm.permissions.org_hierarchy
+	frappe.has_permission("CRM Call Log", "read", name, throw=True)
 	call = frappe.get_cached_doc(
 		"CRM Call Log",
 		name,
@@ -341,9 +333,12 @@ def get_call_log(name: str):
 	notes = []
 	tasks = []
 
+	# a note or a task is shown only to whoever may read it: a call anybody can
+	# link to anything, so the link alone would be a way to read somebody else's
 	if call.get("note"):
-		note = frappe.get_cached_doc("FCRM Note", call.get("note")).as_dict()
-		notes.append(note)
+		note = frappe.get_cached_doc("FCRM Note", call.get("note"))
+		if note.has_permission("read"):
+			notes.append(note.as_dict())
 
 	if call.get("reference_doctype") and call.get("reference_docname"):
 		if call.get("reference_doctype") == "CRM Lead":
@@ -354,11 +349,13 @@ def get_call_log(name: str):
 	if call.get("links"):
 		for link in call.get("links"):
 			if link.get("link_doctype") == "CRM Task":
-				task = frappe.get_cached_doc("CRM Task", link.get("link_name")).as_dict()
-				tasks.append(task)
+				task = frappe.get_cached_doc("CRM Task", link.get("link_name"))
+				if task.has_permission("read"):
+					tasks.append(task.as_dict())
 			elif link.get("link_doctype") == "FCRM Note":
-				note = frappe.get_cached_doc("FCRM Note", link.get("link_name")).as_dict()
-				notes.append(note)
+				note = frappe.get_cached_doc("FCRM Note", link.get("link_name"))
+				if note.has_permission("read"):
+					notes.append(note.as_dict())
 			elif link.get("link_doctype") == "CRM Lead":
 				call["_lead"] = link.get("link_name")
 			elif link.get("link_doctype") == "CRM Deal":
