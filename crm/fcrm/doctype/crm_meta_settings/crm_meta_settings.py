@@ -20,7 +20,7 @@ class CRMMetaSettings(Document):
 		connected_user_name: DF.Data | None
 		user_access_token: DF.Password | None
 		user_token_expires_at: DF.Datetime | None
-		webhook_verify_token: DF.Data | None
+		webhook_verify_token: DF.Password | None
 	# end: auto-generated types
 
 	def validate(self):

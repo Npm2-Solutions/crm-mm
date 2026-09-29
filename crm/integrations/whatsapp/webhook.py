@@ -31,7 +31,7 @@ import frappe
 import requests
 from werkzeug.wrappers import Response
 
-from crm.integrations.meta.client import get_settings, get_whatsapp_app_secret
+from crm.integrations.meta.client import get_webhook_verify_token, get_whatsapp_app_secret
 from crm.integrations.meta.relay import sign as relay_sign
 
 TIMEOUT = 15
@@ -49,11 +49,12 @@ def handle(**kwargs):
 
 
 def _verify_subscription(params):
-	settings = get_settings()
+	token = get_webhook_verify_token()
+	offered = str(params.get("hub.verify_token") or "")
 	if (
 		params.get("hub.mode") == "subscribe"
-		and settings.webhook_verify_token
-		and params.get("hub.verify_token") == settings.webhook_verify_token
+		and token
+		and hmac.compare_digest(offered.encode(), token.encode())
 	):
 		return Response(params.get("hub.challenge") or "", mimetype="text/plain")
 	return Response("verification failed", status=403, mimetype="text/plain")

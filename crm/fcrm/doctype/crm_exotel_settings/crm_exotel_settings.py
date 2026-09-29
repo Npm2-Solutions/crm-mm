@@ -17,12 +17,12 @@ class CRMExotelSettings(Document):
 		from frappe.types import DF
 
 		account_sid: DF.Data | None
-		api_key: DF.Data | None
+		api_key: DF.Password | None
 		api_token: DF.Password | None
 		enabled: DF.Check
 		record_call: DF.Check
 		subdomain: DF.Data | None
-		webhook_verify_token: DF.Data | None
+		webhook_verify_token: DF.Password | None
 	# end: auto-generated types
 
 	def validate(self):
@@ -34,7 +34,7 @@ class CRMExotelSettings(Document):
 				"https://{subdomain}/v1/Accounts/{sid}".format(
 					subdomain=self.subdomain, sid=self.account_sid
 				),
-				auth=(self.api_key, self.get_password("api_token")),
+				auth=(self.get_password("api_key"), self.get_password("api_token")),
 			)
 			if response.status_code != 200:
 				frappe.throw(

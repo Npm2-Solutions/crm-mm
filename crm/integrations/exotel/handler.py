@@ -1,3 +1,5 @@
+import hmac
+
 import frappe
 import requests
 from frappe import _
@@ -152,7 +154,7 @@ def make_a_call(to_number: str, from_number: str | None = None, caller_id: str |
 def get_exotel_endpoint(action=None, version="v1"):
 	settings = get_exotel_settings()
 	return "https://{api_key}:{api_token}@{subdomain}/{version}/Accounts/{sid}/{action}".format(
-		api_key=settings.api_key,
+		api_key=settings.get_password("api_key"),
 		api_token=settings.get_password("api_token"),
 		subdomain=settings.subdomain,
 		version=version,
@@ -170,7 +172,7 @@ def get_all_exophones():
 def get_status_updater_url():
 	from frappe.utils.data import get_url
 
-	webhook_verify_token = frappe.db.get_single_value("CRM Exotel Settings", "webhook_verify_token")
+	webhook_verify_token = get_webhook_verify_token()
 	return get_url(
 		f"api/method/crm.integrations.exotel.handler.handle_request"
 		f"?key={webhook_verify_token}&agent={frappe.session.user}"
@@ -181,12 +183,19 @@ def get_exotel_settings():
 	return frappe.get_single("CRM Exotel Settings")
 
 
+def get_webhook_verify_token() -> str:
+	"""The key Exotel sends back on its webhook. Kept encrypted, like the API key."""
+	return get_exotel_settings().get_password("webhook_verify_token", raise_exception=False) or ""
+
+
 def validate_request():
 	# workaround security since exotel does not support request signature
 	# /api/method/<exotel-integration-method>?key=<exotel-webhook=verify-token>
-	webhook_verify_token = frappe.db.get_single_value("CRM Exotel Settings", "webhook_verify_token")
+	webhook_verify_token = get_webhook_verify_token()
 	key = frappe.request.args.get("key")
-	is_valid = key and key == webhook_verify_token
+	is_valid = bool(
+		key and webhook_verify_token and hmac.compare_digest(key.encode(), webhook_verify_token.encode())
+	)
 
 	if not is_valid:
 		frappe.throw(_("Unauthorized request"), exc=frappe.PermissionError)

@@ -27,6 +27,7 @@ from frappe.utils import cint, get_url
 
 from crm.booking_platforms import catalog, get_provider, provider_class
 from crm.booking_platforms.base import InvalidSignature, NotSupported, PlatformError
+from crm.fcrm.doctype.crm_booking_connection.crm_booking_connection import connection_for_token
 from crm.scheduling.timeutils import UTC, from_system_naive, to_system_naive
 from crm.utils import count_field
 
@@ -107,11 +108,12 @@ def webhook(token: str | None = None, **kwargs):
 
 def feed_key(conn, user: str | None) -> str:
 	"""Per-professional key: knowing one professional's feed reveals nobody else's."""
-	return hashlib.sha256(f"{conn.webhook_token}:{user or '*'}".encode()).hexdigest()[:20]
+	token = conn.get_password("webhook_token")
+	return hashlib.sha256(f"{token}:{user or '*'}".encode()).hexdigest()[:20]
 
 
 def busy_feed_url(conn, user: str | None = None) -> str:
-	query = f"token={conn.webhook_token}&key={feed_key(conn, user)}"
+	query = f"token={conn.get_password('webhook_token')}&key={feed_key(conn, user)}"
 	if user:
 		query += f"&staff={frappe.utils.quote(user)}"
 	return get_url(f"/api/method/crm.api.booking_platforms.busy_feed?{query}")
@@ -127,11 +129,7 @@ def busy_feed(token: str, key: str, staff: str | None = None):
 	"""
 	from werkzeug.wrappers import Response
 
-	name = (
-		frappe.db.get_value("CRM Booking Connection", {"webhook_token": token, "enabled": 1})
-		if token
-		else None
-	)
+	name = connection_for_token(token)
 	if not name:
 		raise frappe.PermissionError
 	conn = frappe.get_doc("CRM Booking Connection", name)

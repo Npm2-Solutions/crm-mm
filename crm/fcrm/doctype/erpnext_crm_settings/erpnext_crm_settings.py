@@ -44,7 +44,7 @@ class ERPNextCRMSettings(Document):
 
 		from crm.fcrm.doctype.crm_product_sync_issue.crm_product_sync_issue import CRMProductSyncIssue
 
-		api_key: DF.Data | None
+		api_key: DF.Password | None
 		api_secret: DF.Password | None
 		create_customer_on_status_change: DF.Check
 		deal_status: DF.Link | None
@@ -340,7 +340,7 @@ def _can_read_items():
 
 def get_erpnext_site_client(erpnext_crm_settings):
 	site_url = erpnext_crm_settings.erpnext_site_url
-	api_key = erpnext_crm_settings.api_key
+	api_key = erpnext_crm_settings.get_password("api_key", raise_exception=False)
 	api_secret = erpnext_crm_settings.get_password("api_secret", raise_exception=False)
 
 	return FrappeClient(site_url, api_key=api_key, api_secret=api_secret)

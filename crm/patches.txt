@@ -4,6 +4,7 @@
 crm.patches.v1_0.move_crm_note_data_to_fcrm_note
 crm.patches.v1_0.rename_twilio_settings_to_crm_twilio_settings
 crm.patches.v1_0.create_invoicing_roles #09-09-2026
+crm.patches.v1_0.drop_unique_index_on_booking_webhook_token
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
@@ -62,3 +63,4 @@ crm.patches.v1_0.the_ts_submissions_have_a_module
 crm.patches.v1_0.clean_unsafe_dropdown_items
 crm.patches.v1_0.expire_invitations_with_readable_keys
 crm.patches.v1_0.revoke_guest_select_outside_lookups
+crm.patches.v1_0.encrypt_integration_secrets

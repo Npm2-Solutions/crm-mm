@@ -86,9 +86,9 @@
    "label": "Webhook"
   },
   {
-   "description": "Paste this as Verify Token when configuring the Webhooks product (Page \u2192 leadgen)",
+   "description": "Generated here and registered with Meta by the CRM (Settings \u2192 Meta \u2192 configure the webhook). Kept encrypted",
    "fieldname": "webhook_verify_token",
-   "fieldtype": "Data",
+   "fieldtype": "Password",
    "label": "Webhook Verify Token",
    "no_copy": 1,
    "read_only": 1
@@ -193,7 +193,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-08-31 20:00:00.000000",
+ "modified": "2026-09-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Meta Settings",
