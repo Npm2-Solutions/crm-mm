@@ -54,9 +54,13 @@
     </template>
   </LayoutHeader>
 
-  <!-- filters -->
+  <!-- filters. On a phone they are one row that scrolls sideways — wrapped,
+       the five of them took three rows, a seventh of the screen, above every
+       day — and they step aside while a panel is open, which takes the
+       screen below the header. -->
   <div
-    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5"
+    v-show="!(isMobileView && panelOpen)"
+    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0"
   >
     <MultiSelectFilter
       v-model="filters.services"
@@ -96,7 +100,7 @@
       @update:modelValue="reloadScheduler"
     />
     <span class="grow" />
-    <span v-if="countLabel" class="text-p-sm text-ink-gray-5">
+    <span v-if="countLabel" class="whitespace-nowrap text-p-sm text-ink-gray-5">
       {{ countLabel }}
     </span>
     <Button
