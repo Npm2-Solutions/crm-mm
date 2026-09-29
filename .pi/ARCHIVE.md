@@ -1182,3 +1182,42 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/hooks.py`, `crm/registrazione.py`, `crm/modules.txt`, `crm/patches.txt` | Il cablaggio |
 | `frontend/src/components/PatientSection.vue`, `pages/Lead.vue`, `MobileLead.vue` | La sezione "Patient" sulla persona |
 | `crm/clinica/tests/` | Confine e regole senza sito (13), la scheda sul sito (16) |
+
+## La sezione Clinica sulla persona
+
+> **Completato** (29/09/2026). La sesta PR della fase 0 del gestionale medico.
+> La scheda "Clinic" con la visita semplice (testo e allegati privati), la regola
+> 1 del paziente, chi legge cosa, il lucchetto nella cronologia e il registro
+> degli accessi tenuto due anni.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| `Clinic Record` è submittable: bozza dell'autore, firmata e poi solo aggiunte | Una cartella si integra, non si riscrive; "annulla" non c'è, c'è "Add to it" |
+| Chi legge: l'autore, la direzione, gli altri operatori solo col consenso al dossier; "Only me" resta dell'autore | Le linee guida del Garante sul dossier (4/6/2015): senza consenso ognuno vede solo quello che ha prodotto |
+| Un solo "Given" per consenso nel registro, ed è quello attuale | La condizione della lista chiede il dossier direttamente alla tabella: un secondo sì non scrive niente, un no dopo un sì è una revoca |
+| Il permesso "write" guarda lo stato salvato | Frappe controlla "write" anche mentre firma, con lo stato già a firmato in memoria: la firma in volo è ancora la bozza dell'autore |
+| Nessun permesso a System Manager sulla cartella | L'agenzia legge i dati clinici solo con un accesso a tempo, che verrà |
+| Ogni lettura dalla SPA passa da `get_record`, che scrive un View Log | Frappe lo scrive solo dal form del Desk |
+| Il View Log almeno 730 giorni, al migrate e a ogni salvataggio di Log Settings | Il Garante chiede 24 mesi; il default di Frappe per chi lo aggiunge è 180 giorni |
+| Allegati privati, o rifiutati | Il file è già scritto quando l'hook gira: meglio fermarlo che rietichettarlo |
+| La visita nel composer è testo semplice | L'editor ricco carica le immagini incollate come pubbliche: per un dato sanitario no |
+| La regola 1 sta nella classe base `DocumentoClinico`, e un test controlla che tutti i DocType clinici ne ereditino | Un DocType clinico nuovo è coperto senza ricordarsene |
+| La cronologia si apre con l'hook `crm_timeline_gatherers` | Il CRM non importa la clinica; un hook si legge dalla cache senza gli effetti dell'import |
+| Il manager apre la scheda per il solo registro degli accessi | Doc 30: vede chi e quando, non cosa; per lui non si registra nessuna lettura |
+| La direzione sanitaria riceve dalla clinica le capacità del CRM della sua colonna | Il livello nasce con la clinica; senza, la pagina della persona era vuota |
+| WhatsApp e SMS non compaiono a chi non può conversare | Prima le chiamate partivano e tornavano 403; chi lavora dal Desk, fuori dai livelli, resta com'era |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/clinica/doctype/clinic_record/`, `crm/clinica/base.py` | La visita e la regola 1 |
+| `crm/clinica/cartella.py` | Permessi, chiamate della scheda, registro degli accessi, nodo della cronologia, allegati privati, Log Settings |
+| `crm/clinica/__init__.py` | Capacità della cartella, le capacità del CRM alla direzione |
+| `crm/moduli/consensi.py` | Un solo "Given" per consenso |
+| `crm/api/activities.py`, `crm/hooks.py` | `crm_timeline_gatherers`; i permessi e gli hook della cartella |
+| `crm/api/whatsapp.py`, `crm/api/sms.py` | `may_converse` |
+| `frontend/src/components/Clinic/ClinicArea.vue`, `Activities/*`, `utils/conversation.js`, `pages/Lead.vue`, `MobileLead.vue` | La scheda Clinic e il lucchetto |
+| `crm/clinica/tests/test_cartella.py`, `test_confine.py`, `crm/tests/test_consents.py` | I test |
