@@ -22,8 +22,17 @@
         </span>
       </div>
 
+      <!-- signed: the answer in words, as on the PDF, not controls greyed out -->
+      <div
+        v-if="readonly && inWords !== null"
+        class="whitespace-pre-line rounded-md bg-surface-gray-1 px-3 py-2 text-base"
+        :class="inWords ? 'text-ink-gray-8' : 'text-ink-gray-4'"
+      >
+        {{ inWords || '—' }}
+      </div>
+
       <!-- text, with the phrases that write it -->
-      <template v-if="field.type === 'text'">
+      <template v-else-if="field.type === 'text'">
         <FormControl
           :type="field.multiline ? 'textarea' : 'text'"
           :rows="field.multiline ? 4 : undefined"
@@ -232,8 +241,15 @@
         <p class="whitespace-pre-line text-p-base leading-relaxed text-ink-gray-7">
           {{ consentText }}
         </p>
+        <span
+          v-if="readonly"
+          class="text-base font-medium"
+          :class="modelValue === true ? 'text-ink-gray-9' : 'text-ink-gray-6'"
+        >
+          {{ answerInWords(field, modelValue) || '—' }}
+        </span>
         <label
-          v-if="field.must_accept"
+          v-else-if="field.must_accept"
           class="touch-target flex items-center gap-2 text-base text-ink-gray-8"
         >
           <Checkbox
@@ -261,14 +277,29 @@
         </div>
       </div>
 
-      <div
-        v-else-if="field.type === 'signature'"
-        class="flex h-28 max-w-md items-end rounded-lg border border-dashed border-outline-gray-3 px-4 pb-3 text-sm text-ink-gray-5 max-md:max-w-none"
-      >
-        <span class="w-full border-t border-outline-gray-3 pt-1">
-          {{ signerLabel }}
-        </span>
-      </div>
+      <template v-else-if="field.type === 'signature'">
+        <!-- the template chose the level: only a simple one is drawn here -->
+        <div
+          v-if="(field.level || 'simple') !== 'simple' && !readonly"
+          class="flex max-w-md items-start gap-2 rounded-lg border border-dashed border-outline-gray-3 px-4 py-3 text-sm text-ink-gray-6 max-md:max-w-none"
+        >
+          <LucideSignature class="mt-0.5 size-4 shrink-0" />
+          {{
+            __(
+              'An {0} signature: it is signed with a signature provider, or on paper, not on this screen.',
+              [levelLabel],
+            )
+          }}
+        </div>
+        <SignaturePad
+          v-else
+          :model-value="modelValue"
+          :placeholder="signerLabel"
+          :readonly="readonly"
+          :missing="missing"
+          @update:model-value="(value) => emit(value)"
+        />
+      </template>
 
       <p v-if="missing" class="text-sm text-ink-red-4">
         {{
@@ -291,9 +322,13 @@
 </template>
 
 <script setup>
+import SignaturePad from '@/components/Moduli/SignaturePad.vue'
 import TableInput from '@/components/Moduli/TableInput.vue'
 import LucidePaperclip from '~icons/lucide/paperclip'
+import LucideSignature from '~icons/lucide/signature'
 import LucideTriangleAlert from '~icons/lucide/triangle-alert'
+import { answerInWords } from '@/utils/moduli'
+import { formatDate } from '@/utils'
 import { Badge, Button, Checkbox, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -313,6 +348,16 @@ const props = defineProps({
 
 const emits = defineEmits(['update:modelValue'])
 const emit = (value) => emits('update:modelValue', value)
+
+// the kinds a signed form shows as words; the others show themselves
+const IN_WORDS = ['text', 'number', 'choice', 'yesno', 'date', 'scale', 'sides', 'attachment']
+const inWords = computed(() =>
+  IN_WORDS.includes(props.field.type)
+    ? props.field.type === 'date' && props.modelValue
+      ? formatDate(props.modelValue, 'D MMM YYYY')
+      : answerInWords(props.field, props.modelValue)
+    : null,
+)
 
 const options = computed(() =>
   (props.field.options || [])
@@ -362,6 +407,10 @@ const consentText = computed(
     props.field.text ||
     props.consentTexts[props.field.consent_type] ||
     __('The words of this consent come from the register when the form is published.'),
+)
+
+const levelLabel = computed(() =>
+  props.field.level === 'qualified' ? __('qualified') : __('advanced'),
 )
 
 const signerLabel = computed(

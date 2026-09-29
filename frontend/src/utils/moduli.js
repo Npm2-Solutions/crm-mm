@@ -1239,3 +1239,41 @@ export function schemaCounts(schema) {
     questions: fieldsOf(schema).filter((field) => component(field.type)?.answer).length,
   }
 }
+
+/**
+ * An answer as a person reads it on paper: the signed form shows it this way,
+ * as its PDF does (`crm/moduli/pdf.py`, `risposta_in_parole`).
+ */
+export function answerInWords(field, value, band = null) {
+  if (isEmpty(value)) return ''
+  const unit = (text) => (field.unit ? `${text} ${field.unit}` : String(text))
+  switch (field.type) {
+    case 'number':
+    case 'calc':
+      return unit(value)
+    case 'score':
+      return band ? `${value} · ${band}` : String(value)
+    case 'yesno':
+      return value ? __('Yes') : __('No')
+    case 'consent':
+      return value ? __('Agreed') : __('Did not agree')
+    case 'choice':
+      return Array.isArray(value) ? value.join(', ') : String(value)
+    case 'scale': {
+      const ends = [field.min_label, field.max_label].filter(Boolean).join(' – ')
+      return ends ? `${value} (${ends})` : String(value)
+    }
+    case 'sides': {
+      const parts = []
+      if (!isEmpty(value.left)) parts.push(__('Left: {0}', [unit(value.left)]))
+      if (!isEmpty(value.right)) parts.push(__('Right: {0}', [unit(value.right)]))
+      return parts.join(' · ')
+    }
+    case 'attachment':
+      return (Array.isArray(value) ? value : [value])
+        .map((file) => String(file).split('/').pop())
+        .join(', ')
+    default:
+      return String(value)
+  }
+}

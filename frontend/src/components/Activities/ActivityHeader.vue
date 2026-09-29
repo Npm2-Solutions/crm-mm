@@ -146,7 +146,7 @@
       />
     </template>
     <!-- the record's buttons live in the record: signing is not a «New» -->
-    <div v-else-if="title == 'Clinic'" />
+    <div v-else-if="title == 'Clinic' || title == 'Forms'" />
     <Dropdown
       v-else-if="defaultActions.length"
       :options="defaultActions"
