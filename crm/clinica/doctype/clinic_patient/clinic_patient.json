@@ -16,11 +16,7 @@
   "source_name",
   "column_source",
   "recorded_by",
-  "note",
-  "family_section",
-  "guardian",
-  "column_family",
-  "guardian_relation"
+  "note"
  ],
  "fields": [
   {
@@ -98,33 +94,11 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note"
-  },
-  {
-   "fieldname": "family_section",
-   "fieldtype": "Section Break",
-   "label": "Parent or guardian",
-   "description": "For a minor, or somebody who is represented: the person who signs and decides for them."
-  },
-  {
-   "fieldname": "guardian",
-   "fieldtype": "Link",
-   "label": "Person",
-   "options": "CRM Lead"
-  },
-  {
-   "fieldname": "column_family",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "guardian_relation",
-   "fieldtype": "Select",
-   "label": "As",
-   "options": "\nParent\nLegal guardian\nOther"
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-29 14:00:00.000000",
+ "modified": "2026-09-29 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Patient",

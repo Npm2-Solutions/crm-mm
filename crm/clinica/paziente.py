@@ -244,6 +244,27 @@ def _stato(lead: str) -> dict:
 	return {
 		"patient": scheda,
 		"can_mark": not scheda and livelli.puo("pazienti.segna"),
+		**_chi_decide(lead),
+	}
+
+
+def _chi_decide(lead: str) -> dict:
+	"""Who signs and decides for them, and whether they are a minor who needs somebody.
+
+	The age comes from the codice fiscale, in the billing details: never typed.
+	"""
+	from crm.persone import collegate, legami
+
+	nascita = frappe.db.get_value(
+		"CRM Billing Profile", {"party_type": "CRM Lead", "party": lead}, "birth_date"
+	)
+	rappresentanti = collegate.rappresentanti_di(lead)
+	return {
+		"minor": legami.minorenne(frappe.utils.getdate(nascita) if nascita else None, frappe.utils.getdate()),
+		"representatives": [
+			{"name": persona, "label": frappe.db.get_value("CRM Lead", persona, "lead_name") or persona}
+			for persona in rappresentanti
+		],
 	}
 
 

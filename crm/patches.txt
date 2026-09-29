@@ -67,3 +67,4 @@ crm.patches.v1_0.revoke_guest_select_outside_lookups
 crm.patches.v1_0.encrypt_integration_secrets
 crm.patches.v1_0.give_users_their_levels
 crm.patches.v1_0.billing_details_from_past_invoices
+crm.patches.v1_0.guardians_become_linked_people
