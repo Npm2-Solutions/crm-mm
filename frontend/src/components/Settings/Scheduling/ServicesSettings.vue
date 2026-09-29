@@ -63,7 +63,10 @@
 
   <Dialog v-model="showEditor" :options="{ title: editorTitle, size: '3xl' }">
     <template #body-content>
-      <TabButtons v-model="editorTab" :buttons="editorTabs" class="mb-4" />
+      <!-- five tabs are wider than a 360px phone: there they scroll sideways -->
+      <div class="mb-4 max-md:overflow-x-auto max-md:[scrollbar-width:none]">
+        <TabButtons v-model="editorTab" :buttons="editorTabs" />
+      </div>
       <div
         class="-mx-1 flex h-[min(540px,62vh)] flex-col gap-4 overflow-y-auto px-1 pb-1"
       >
