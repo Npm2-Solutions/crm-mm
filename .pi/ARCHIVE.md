@@ -905,9 +905,10 @@ console stampa l'SQL intero.
 
 > **Completato** (29/09/2026). Sei punti di un audit — il primo letto nel
 > codice, gli altri da uno strumento automatico, tutti verificati prima di
-> toccarli — più uno trovato strada facendo: la chiave del webhook delle
-> automazioni. Un commit e dei test per ciascuno: chi non deve viene fermato,
-> chi deve continua a riuscire. Gli inviti, trovati nello stesso giro, sono in
+> toccarli — più due trovati strada facendo: la chiave del webhook delle
+> automazioni e le chiamate ERPNext che prendono il nome di una trattativa. Un
+> commit e dei test per ciascuno: chi non deve viene fermato, chi deve continua
+> a riuscire. Gli inviti, trovati nello stesso giro, sono in
 > «Inviti — la chiave del link è una credenziale»; i ripristini di FCRM
 > Settings in «Permessi degli endpoint».
 
@@ -925,6 +926,9 @@ console stampa l'SQL intero.
 | La patch dei segreti sposta i valori in chiaro in __Auth e maschera la colonna | Come fa Frappe salvando una Password: gli URL e le chiavi già dati ai fornitori continuano a funzionare |
 | Il token di verifica Meta non si mostra più | La schermata Meta registra il webhook da sé (*Configure it*), e dal doc 27 nessuna schermata lo mandava più; per incollarlo a mano un System Manager usa `frappe.client.get_password` |
 | `CRM Global Settings` in sola lettura per il Sales User | Lo scrivono solo `update_quick_filters`, l'installazione e una patch: con create e write al Sales User il controllo sull'endpoint era a una chiamata REST di distanza |
+| Le chiamate ERPNext che prendono il nome di una trattativa controllano che chi chiama la possa leggere | Leggevano con `frappe.get_doc` e `frappe.db`, che saltano i permessi: un Sales User nominava la trattativa di un altro e ne vedeva prodotti, prezzi e cliente, o la mandava a ERPNext come Prospect. `check_permission` applica anche la gerarchia |
+| Per fare l'offerta basta leggere la trattativa | Non la modifica: il Prospect mandato a ERPNext porta gli stessi dati che chi chiama già legge |
+| `check_customer_for_quotation` guarda la Quotation, non la trattativa | La chiama il modulo Sales Order di ERPNext, e chi lo compila può non vedere la trattativa nel CRM: deve poter leggere la Quotation e creare Sales Order, che è il passo che sta facendo |
 
 ### Lasciato com'è, di proposito
 
@@ -937,9 +941,6 @@ console stampa l'SQL intero.
   cliente, e chi li legge può già modificare quella prenotazione.
 - La copia del token di verifica che `upsert_account` scrive su `WhatsApp
   Account` è un campo di `frappe_whatsapp`, un'altra app.
-- `get_customer_link`, `get_quotation_url` e `prefill_quotation_items`
-  (ERPNext) prendono il nome di una trattativa e non controllano che l'utente
-  possa leggerla: è un controllo per record, fuori da questo giro.
 
 ### File
 
@@ -947,11 +948,11 @@ console stampa l'SQL intero.
 |---|---|
 | `crm/api/doc.py`, `crm_global_settings.json` | Filtri rapidi: manager, sette liste; Sales User in sola lettura |
 | `crm/fcrm/doctype/fcrm_settings/fcrm_settings.py`, `Hierarchy.vue` | Interruttore della gerarchia |
-| `crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py` | Ruolo sui metodi; `api_key` decifrata |
+| `crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py` | Ruolo sui metodi; `api_key` decifrata; `_readable_deal` davanti alle chiamate delle offerte |
 | `crm/api/form.py`, `FormBuilderPanel.vue`, `FieldCard.vue` | Liste apribili agli ospiti, System Manager, chi può aprire cosa |
 | `crm/api/exchange_rate.py`, `crm/integrations/meta/`, `crm/integrations/whatsapp/`, `crm/integrations/exotel/handler.py`, `crm/telephony/providers/exotel.py` | Segreti letti con `get_password`, confronti a tempo costante |
 | `crm/fcrm/doctype/crm_booking_connection/crm_booking_connection.py`, `crm/api/booking_platforms.py`, `crm/booking_platforms/sync.py` | `connection_for_token` |
 | `crm/api/assignment_rule.py` | Solo manager |
 | `crm/api/automation.py` | Chiave del webhook solo ai manager, confronto decifrato |
 | `crm/patches/v1_0/` | `drop_unique_index_on_booking_webhook_token` (pre), `revoke_guest_select_outside_lookups`, `encrypt_integration_secrets` |
-| `crm/tests/test_quick_filters.py`, `test_settings_methods.py`, `test_integration_secrets.py`, `test_assignment_rule_api.py`, e i test di FCRM Settings, form e automazioni | Per ogni fix: il ruolo che non deve fallisce, quello che deve riesce |
+| `crm/tests/test_quick_filters.py`, `test_settings_methods.py`, `test_integration_secrets.py`, `test_assignment_rule_api.py`, `test_erpnext_deal_access.py`, e i test di FCRM Settings, form e automazioni | Per ogni fix: il ruolo che non deve fallisce, quello che deve riesce |
