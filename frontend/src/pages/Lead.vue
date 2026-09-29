@@ -205,6 +205,7 @@
         >
           <template #after>
             <BillingProfileSection partyType="CRM Lead" :party="leadId" />
+            <ConsentsSection :lead="leadId" />
           </template>
         </SidePanelLayout>
       </div>
@@ -261,6 +262,7 @@ import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
+import ConsentsSection from '@/components/ConsentsSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'

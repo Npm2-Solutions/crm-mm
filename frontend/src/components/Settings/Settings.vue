@@ -97,6 +97,7 @@
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideNetwork from '~icons/lucide/network'
 import LucidePackage from '~icons/lucide/package'
+import LucideFileCheck from '~icons/lucide/file-check'
 import MonitorCogIcon from '~icons/lucide/monitor-cog'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
 import LucideSparkles from '~icons/lucide/sparkles'
@@ -167,6 +168,7 @@ import ProviderConnection from '@/components/Settings/Invoicing/ProviderConnecti
 import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
 import PlanSettings from '@/components/Settings/PlanSettings.vue'
+import ConsentsSettings from '@/components/Settings/ConsentsSettings.vue'
 import Icon from '@/components/Icon.vue'
 import { usersStore } from '@/stores/users'
 import {
@@ -276,6 +278,12 @@ const tabs = computed(() => {
           icon: LucidePackage,
           component: markRaw(PlanSettings),
           condition: () => puo('piano.vedi'),
+        },
+        {
+          label: __('Consents'),
+          icon: LucideFileCheck,
+          component: markRaw(ConsentsSettings),
+          condition: () => puo('consensi.configura'),
         },
       ],
       condition: () => isManager(),

@@ -488,6 +488,7 @@ const RuleField = defineComponent({
 
 const CHECKS = [
   'require_privacy_consent',
+  'ask_marketing_consent',
   'send_client_confirmation',
   'notify_staff_on_booking',
   'default_require_phone',
@@ -515,6 +516,7 @@ const FIELDS = [
 const saving = ref(false)
 const form = reactive({
   require_privacy_consent: true,
+  ask_marketing_consent: false,
   send_client_confirmation: true,
   notify_staff_on_booking: true,
   booking_page_title: '',
@@ -639,6 +641,13 @@ const checks = computed(() => [
     field: 'require_privacy_consent',
     label: __('Ask for privacy consent'),
     hint: __('A required checkbox with the link to the policy above.'),
+  },
+  {
+    field: 'ask_marketing_consent',
+    label: __('Ask for marketing consent'),
+    hint: __(
+      'An optional box, never ticked in advance, with the text of the Marketing consent. Who ticks it is in the consent register.',
+    ),
   },
   {
     field: 'send_client_confirmation',
