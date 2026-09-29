@@ -293,6 +293,8 @@ doc_events = {
 			"crm.integrations.meta.conversions.on_lead_updated",
 		],
 		"on_trash": [
+			# a patient's record is kept: said before anything else is removed
+			"crm.clinica.eventi.persona_in_cancellazione",
 			"crm.integrations.meta.leads.forget_person",
 			# billing details and consents are part of the person, not linked to it
 			"crm.invoicing.anagrafica.cancella_con_il_titolare",
@@ -324,8 +326,17 @@ doc_events = {
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",
 			"crm.booking_platforms.sync.on_appointment_change",
+			# who came becomes a patient, where the clinic is on
+			"crm.clinica.eventi.appuntamento_aggiornato",
 		],
 		"on_trash": ["crm.booking_platforms.sync.on_appointment_change"],
+	},
+	# the clinic listens to invoicing; invoicing never hears of the clinic
+	"CRM Invoice": {
+		"on_submit": ["crm.clinica.eventi.fattura_confermata"],
+	},
+	"CRM Plan": {
+		"on_update": ["crm.clinica.eventi.piano_aggiornato"],
 	},
 	"Sales Order": {
 		"before_validate": [

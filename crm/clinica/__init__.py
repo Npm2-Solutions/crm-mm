@@ -1,0 +1,134 @@
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+"""The clinic: patients, and in time their record, reports, plans and area.
+
+It hooks onto the CRM the way the Sistema TS hooks onto invoicing: the CRM never
+imports it (`tests/test_confine.py` checks), and without the line in
+`crm/registrazione.py` the CRM is what it was. The code is on every site; what
+it does is switched on per site by the plan's "clinic" module, off by default.
+
+Today: who is a patient, and how they became one (`regole.py`, `paziente.py`).
+The clinical record comes next, on the person's page.
+"""
+
+from __future__ import annotations
+
+from crm.moduli.registro import CONSENSO, TipoConsenso, registra_tipo
+from crm.permissions.livelli import (
+	CENTRO,
+	SUOI,
+	Capacita,
+	Livello,
+	ModuloPiano,
+	registra_capacita,
+	registra_livello,
+	registra_modulo_piano,
+	registra_ruolo,
+)
+
+#: The plan's module: off until the agency switches it on for a medical centre.
+PIANO = "clinica"
+DIREZIONE = "direzione"
+
+MODULO = ModuloPiano(
+	PIANO,
+	"Clinic",
+	predefinito=False,
+	descrizione="Patients, the clinical record, forms and consents with signature, the archive, "
+	"the patient area, plans",
+	ordine=2,
+)
+
+LIVELLO_DIREZIONE = Livello(
+	DIREZIONE,
+	"CRM Medical Director",
+	"Medical Director",
+	"Answers for the clinical side: sees every patient's record, decides who may open it, "
+	"builds the clinical templates.",
+	base=False,
+	piano=PIANO,
+	ordine=5,
+)
+
+#: Who is a patient is itself health data: the practitioner, the front desk, the
+#: manager and the medical director know it; marketing and sales do not.
+CAPACITA = (
+	(
+		Capacita(
+			"pazienti.vedi",
+			PIANO,
+			scrive=False,
+			clinica=True,
+			descrizione="Who is a patient, since when and why",
+		),
+		{"segreteria": CENTRO, "operatore": SUOI, "manager": CENTRO, DIREZIONE: CENTRO},
+	),
+	(
+		Capacita("pazienti.segna", PIANO, clinica=True, descrizione="Mark somebody as a patient by hand"),
+		{"segreteria": CENTRO, "operatore": SUOI, "manager": CENTRO, DIREZIONE: CENTRO},
+	),
+	(
+		Capacita(
+			"pazienti.recupera",
+			PIANO,
+			descrizione="Find the patients in the appointments and invoices already there",
+		),
+		{"manager": CENTRO, DIREZIONE: CENTRO},
+	),
+)
+
+DOSSIER = TipoConsenso(
+	chiave="health_dossier",
+	etichetta="Health dossier",
+	natura=CONSENSO,
+	piano=PIANO,
+	capacita="pazienti.vedi",
+	descrizione="Every practitioner of the centre may read the whole record, not only their own "
+	"visits (Garante, 4/6/2015).",
+	testi={
+		"it": (
+			"Acconsento alla costituzione del dossier sanitario: i professionisti del centro che mi "
+			"hanno in cura possono consultare tutte le informazioni cliniche raccolte su di me, non "
+			"solo le proprie. Posso revocare il consenso e oscurare singoli episodi."
+		),
+		"en": (
+			"I agree to a health dossier: the centre's practitioners who treat me may read all the "
+			"clinical information collected about me, not only their own. I can withdraw this "
+			"consent and hide single episodes."
+		),
+	},
+)
+
+REFERTI_ONLINE = TipoConsenso(
+	chiave="online_reports",
+	etichetta="Online reports",
+	natura=CONSENSO,
+	piano=PIANO,
+	capacita="pazienti.vedi",
+	descrizione="Reports delivered online, in the patient area (Garante, 2009).",
+	testi={
+		"it": (
+			"Chiedo di ricevere i miei referti online, nell'area riservata, e posso escludere "
+			"singoli esami. Posso revocare il consenso in qualsiasi momento."
+		),
+		"en": (
+			"I ask to receive my reports online, in my private area, and I can leave single tests "
+			"out. I can withdraw this consent at any time."
+		),
+	},
+)
+
+
+def registra() -> None:
+	registra_modulo_piano(MODULO)
+	registra_ruolo(
+		"Medical Director",
+		"Answers for the clinical side of the centre.",
+		livelli=(DIREZIONE,),
+	)
+	registra_livello(LIVELLO_DIREZIONE, ("Sales User", "Practitioner", "Medical Director"))
+	for capacita, concessioni in CAPACITA:
+		registra_capacita(capacita, concessioni)
+	registra_tipo(DOSSIER)
+	registra_tipo(REFERTI_ONLINE)
