@@ -3,9 +3,11 @@
 
 """Which modules this installation has, registered once per process.
 
-Invoicing takes its healthcare half through `crm.invoicing.estensioni`: a
-process-wide list that each module fills when it registers - so every process has
-to run the registration before it serves anything.
+Invoicing takes its healthcare half through `crm.invoicing.estensioni`, and the
+permission registry takes every module's roles, levels and capabilities through
+`crm.permissions.livelli`. Both are process-wide lists that each module fills when
+it registers - so every process has to run the registration before it serves
+anything.
 
 `crm/hooks.py` used to be the only place that did, at import. That is not enough:
 outside developer mode Frappe keeps the hooks in its cache, and a worker that finds
@@ -36,8 +38,10 @@ def carica(*args, **kwargs) -> None:
 	_caricato = True
 	try:
 		from crm.invoicing import registra as registra_fatturazione
+		from crm.permissions import catalogo
 		from crm.tessera_sanitaria import registra as registra_tessera_sanitaria
 
+		catalogo.registra()
 		registra_fatturazione()
 		registra_tessera_sanitaria()
 	except Exception:
