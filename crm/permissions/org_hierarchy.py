@@ -141,6 +141,19 @@ def _visible(doctype: str, user: str, in_tree: bool):
 	)
 
 
+def visible_leads(user: str | None = None):
+	"""The leads ``user`` sees, as a subquery, or ``None`` when they see them all.
+
+	For what belongs to a person and follows them - their billing details, say:
+	the same rule as the list of people, shares included, so the two never disagree.
+	"""
+	user = user or frappe.session.user
+	in_tree = _scope(user)
+	if in_tree is None:
+		return None
+	return _visible("CRM Lead", user, in_tree)
+
+
 def _about_visible(doctype_field, name_field, user: str, in_tree: bool):
 	"""The record points at a lead or a deal the user sees."""
 	return ((doctype_field == "CRM Lead") & name_field.isin(_visible("CRM Lead", user, in_tree))) | (
