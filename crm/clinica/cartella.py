@@ -210,6 +210,15 @@ def access_log(lead: str) -> list[dict]:
 	return righe
 
 
+def persone_in_cura(user: str):
+	"""The people ``user`` wrote a clinical record for: in their care, and so theirs
+	to see on the CRM's side too (`crm_people_in_care`)."""
+	if not paziente.clinica_accesa():
+		return None
+	cartella = frappe.qb.DocType(DOCTYPE).as_("_in_cura")
+	return frappe.qb.from_(cartella).select(cartella.lead).where(cartella.practitioner == user)
+
+
 # ---------------------------------------------------------------- the history
 
 

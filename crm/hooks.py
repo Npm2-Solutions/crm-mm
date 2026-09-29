@@ -179,6 +179,13 @@ permission_query_conditions = {
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
+	# the agenda, the messages, the tracking and the old bookings follow the person
+	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
+	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
+	"CRM SMS Message": "crm.permissions.seguono.get_sms_permission_query_conditions",
+	"CRM Visitor": "crm.permissions.seguono.get_visitor_permission_query_conditions",
+	"CRM Tracking Event": "crm.permissions.seguono.get_tracking_event_permission_query_conditions",
+	"CRM Booking": "crm.permissions.seguono.get_booking_permission_query_conditions",
 }
 
 has_permission = {
@@ -194,6 +201,12 @@ has_permission = {
 	"CRM Consent": "crm.moduli.consensi.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
+	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
+	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
+	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
+	"CRM Visitor": "crm.permissions.seguono.has_visitor_permission",
+	"CRM Tracking Event": "crm.permissions.seguono.has_tracking_event_permission",
+	"CRM Booking": "crm.permissions.seguono.has_booking_permission",
 }
 
 # DocType Class
@@ -521,6 +534,13 @@ after_migrate = [
 crm_timeline_gatherers = [
 	# a padlock for each visit, for who may know of it
 	"crm.clinica.cartella.visite_su",
+]
+
+# The people a practitioner looks after beyond their appointments
+# (`crm.permissions.org_hierarchy`): a subquery of leads, or None
+crm_people_in_care = [
+	# the patients they wrote a clinical record for
+	"crm.clinica.cartella.persone_in_cura",
 ]
 
 standard_dropdown_items = [
