@@ -26,6 +26,7 @@ from zoneinfo import ZoneInfo
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import IfNull
 from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, flt, get_url
 
@@ -477,14 +478,25 @@ def _seats(service, requested) -> int:
 
 
 def _client_history(service_name: str, email: str, phone: str, lead: str | None) -> rules_mod.ClientHistory:
-	"""The client's own non-cancelled appointments, matched by any identity."""
+	"""The client's own non-cancelled appointments.
+
+	Their record's, and the ones their email or phone booked without naming anybody.
+	A family shares a contact: the child's appointments, booked with the mother's
+	email, are the child's, not the mother's.
+	"""
 	appointment = frappe.qb.DocType("CRM Appointment")
 	participant = frappe.qb.DocType("CRM Appointment Participant")
 	matches = []
+	contact = []
 	if email:
-		matches.append(participant.email == email)
+		contact.append(participant.email == email)
 	if phone:
-		matches.append(participant.phone == phone)
+		contact.append(participant.phone == phone)
+	if contact:
+		by_contact = contact[0]
+		for extra in contact[1:]:
+			by_contact = by_contact | extra
+		matches.append(by_contact & (IfNull(participant.party, "") == ""))
 	if lead:
 		matches.append((participant.party_type == "CRM Lead") & (participant.party == lead))
 	if not matches:
@@ -555,8 +567,16 @@ def book(
 	crm_sid: str | None = None,
 	consent_text: str | None = None,
 	marketing_consent: int | str | None = None,
+	for_name: str | None = None,
+	for_relation: str | None = None,
 ) -> dict:
-	"""Book a service on a free slot; returns what the confirmation page shows."""
+	"""Book a service on a free slot; returns what the confirmation page shows.
+
+	``for_name`` is who the appointment is for, when it is not whoever books: a
+	child, a parent. They get a record of their own, linked to the one booking
+	and without their contact, which stays theirs (`crm.persone`); ``for_relation``
+	is what the one booking is to them.
+	"""
 	config = _config()
 	frappe.flags.in_service_booking_api = True
 	doc = _resolve_service(service)
@@ -564,6 +584,7 @@ def book(
 	frappe.db.get_value("CRM Service", doc.name, "name", for_update=True)
 
 	full_name = (full_name or "").strip()
+	for_name = " ".join((for_name or "").split())[:140]
 	email = _clean_email(email)
 	phone = _clean_phone(phone)
 	notes = (notes or "").strip()
@@ -585,10 +606,16 @@ def book(
 	if code := rules.check_time(start_utc, now, tz):
 		frappe.throw(limit_message(code))
 
-	from crm.api.lead import find_person
+	from crm.persone.collegate import cerca_per_conto, trova_per_nome
 
-	existing = find_person(email=email, phone=phone)
-	history = _client_history(doc.name, email, phone, existing)
+	# the limits count the person the appointment is for: a mother booking for two
+	# children books three people, not one person three times
+	existing, owner = trova_per_nome(full_name, email=email, telefono=phone)
+	if for_name:
+		patient = cerca_per_conto(existing or owner, for_name) if (existing or owner) else None
+		history = _client_history(doc.name, None, None, patient)
+	else:
+		history = _client_history(doc.name, email, phone, existing)
 	if code := rules.check_client(start_utc, now, tz, history):
 		frappe.throw(limit_message(code))
 
@@ -597,9 +624,10 @@ def book(
 	if not slot:
 		frappe.throw(_("This slot is no longer available. Please pick another one."))
 
-	from crm.api.booking import find_or_create_person
+	from crm.api.booking import _ensure_source, find_or_create_person
+	from crm.persone.collegate import persona_per_conto
 
-	lead = find_or_create_person(
+	booker = find_or_create_person(
 		full_name,
 		email,
 		phone,
@@ -609,8 +637,22 @@ def book(
 		medium="booking",
 		source_dimension="service_booking",
 	)
+	lead = (
+		persona_per_conto(booker, for_name, for_relation or "", fonte=_ensure_source(ONLINE_SOURCE))
+		if for_name
+		else booker
+	)
 	token = frappe.generate_hash(length=32)
-	rows = _participant_rows(full_name, email, phone, lead, token, seats, _valid_tz_name(timezone))
+	rows = _participant_rows(
+		for_name or full_name,
+		email,
+		phone,
+		lead,
+		token,
+		seats,
+		_valid_tz_name(timezone),
+		booked_by=booker if lead != booker else None,
+	)
 	status = "Scheduled" if _effective(doc).get("online_confirmation") == "Manual approval" else "Confirmed"
 
 	if slot.join_appointment:
@@ -641,7 +683,7 @@ def book(
 		)
 		appointment.insert(ignore_permissions=True)
 
-	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent)
+	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent, booker)
 	send_client_email(appointment, token, "booked")
 	notify_staff(appointment, _("New online booking"))
 	return public_view(appointment, token)
@@ -673,13 +715,18 @@ def _testo_della_spunta(testo: str | None, config) -> str:
 	return parole
 
 
-def _registra_consensi(lead, appointment, config, consent, consent_text, marketing) -> None:
+def _registra_consensi(lead, appointment, config, consent, consent_text, marketing, booker=None) -> None:
 	"""The ticks of the booking form, in the consent register.
 
 	The privacy tick was checked and never written down: nothing said what the
 	person had read, or when. Now it is an answer like any other, with the page's
 	words, the booking it came with and where it came from.
+
+	Booked for somebody else, the one booking read the notice for both: their own
+	data are on the page too. The marketing tick is theirs alone - they are the
+	one who gets the messages.
 	"""
+	booker = booker or lead
 	from crm.moduli import consensi
 
 	dove = {
@@ -691,19 +738,24 @@ def _registra_consensi(lead, appointment, config, consent, consent_text, marketi
 		else None,
 	}
 	if cint(config.get("require_privacy_consent")) and cint(consent):
-		consensi.registra_risposta(
-			lead, "privacy_notice", testo=_testo_della_spunta(consent_text, config), **dove
-		)
+		testo = _testo_della_spunta(consent_text, config)
+		consensi.registra_risposta(booker, "privacy_notice", testo=testo, **dove)
+		if lead != booker:
+			consensi.registra_risposta(lead, "privacy_notice", testo=testo, dato_da=booker, **dove)
 	if cint(marketing) and _marketing_offerto(config):
-		consensi.registra_risposta(lead, "marketing", **dove)
+		consensi.registra_risposta(booker, "marketing", **dove)
 
 
-def _participant_rows(full_name, email, phone, lead, token, seats, timezone=None) -> list[dict]:
+def _participant_rows(
+	full_name, email, phone, lead, token, seats, timezone=None, booked_by=None
+) -> list[dict]:
 	rows = [
 		{
 			"party_type": "CRM Lead",
 			"party": lead,
 			"participant_name": full_name,
+			# the contact is the booker's: the messages about the appointment reach them
+			"booked_by": booked_by,
 			"email": email,
 			"phone": phone,
 			"status": "Booked",
@@ -787,6 +839,8 @@ def public_view(appointment, token: str) -> dict:
 		"location": appointment.location or "",
 		"seats": len([r for r in mine if r.status != "Cancelled"]) or len(mine),
 		"client_name": mine[0].participant_name if mine else "",
+		# booked by somebody else: the page and the email say whose appointment it is
+		"booked_for": mine[0].participant_name if mine and mine[0].get("booked_by") else "",
 		"formatted_price": _money(amount, appointment.currency) if show_price else "",
 		"instructions": service.get("booking_instructions") or "",
 		"can_cancel": not cancel_block,
@@ -1015,11 +1069,18 @@ def send_client_email(appointment, token: str, kind: str) -> None:
 			"cancelled": _("Your booking has been cancelled"),
 		}.get(kind, _("Booking update"))
 		esc = frappe.utils.escape_html
+		# the email reaches whoever booked: hello to them, and whose appointment it is
+		booker = mine[0].get("booked_by")
+		hello = (frappe.db.get_value("CRM Lead", booker, "lead_name") if booker else None) or (
+			mine[0].participant_name or ""
+		)
 		lines = [
-			f"<p>{_('Hi {0},').format(esc(mine[0].participant_name or ''))}</p>",
+			f"<p>{_('Hi {0},').format(esc(hello))}</p>",
 			f"<p><b>{esc(heading)}</b></p>",
 			f"<p>{esc(view['service'])}<br>{when} ({esc(str(tz))})</p>",
 		]
+		if view["booked_for"]:
+			lines.append(f"<p>{_('The appointment is for {0}.').format(esc(view['booked_for']))}</p>")
 		if view["staff"]:
 			lines.append(f"<p>{_('With')}: {esc(', '.join(view['staff']))}</p>")
 		if view["location"]:

@@ -189,7 +189,7 @@ def _decorate(rows: list[dict]) -> list[dict]:
 		(
 			"CRM Appointment Participant",
 			"participants",
-			["party_type", "party", "participant_name", "email", "phone", "status", "amount"],
+			["party_type", "party", "participant_name", "booked_by", "email", "phone", "status", "amount"],
 		),
 		("CRM Appointment Resource", "resources", ["resource", "resource_type", "quantity"]),
 	):
@@ -202,6 +202,9 @@ def _decorate(rows: list[dict]) -> list[dict]:
 		):
 			parent = entry.pop("parent")
 			entry.pop("idx", None)
+			if entry.get("booked_by"):
+				# a child booked by their mother: the panel says so, and why the contact is hers
+				entry["booked_by_name"] = frappe.db.get_value("CRM Lead", entry["booked_by"], "lead_name")
 			by_name[parent][key].append(entry)
 	return rows
 
@@ -503,6 +506,7 @@ def _normalize(payload: dict) -> dict:
 			"access_token": row.get("access_token"),
 			"booked_online": cint(row.get("booked_online")),
 			"timezone": row.get("timezone"),
+			"booked_by": row.get("booked_by"),
 		}
 		for row in data.get("participants") or []
 		if row.get("participant_name") or row.get("party")
@@ -526,19 +530,24 @@ def save_appointment(appointment: str | dict, name: str | None = None) -> dict:
 		kept = {
 			(row.party_type, row.party or row.participant_name): row
 			for row in doc.participants
-			if row.get("access_token")
+			if row.get("access_token") or row.get("booked_by")
 		}
 		# child tables must be replaced wholesale, not merged
 		for table in ("staff", "participants", "resources"):
 			doc.set(table, [])
 		doc.update(values)
-		# an editor that never saw the online token must not wipe it
+		# an editor that never saw the online token, or who booked for whom, must
+		# not wipe them
 		for row in doc.participants:
 			old = kept.get((row.party_type, row.party or row.participant_name))
-			if old and not row.get("access_token"):
+			if not old:
+				continue
+			if not row.get("access_token"):
 				row.access_token = old.access_token
 				row.booked_online = old.booked_online
 				row.timezone = old.get("timezone")
+			if not row.get("booked_by"):
+				row.booked_by = old.get("booked_by")
 		doc.save()
 	else:
 		doc = frappe.get_doc({"doctype": "CRM Appointment", **values})
