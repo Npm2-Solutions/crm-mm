@@ -38,8 +38,14 @@ SCRITTURA = {
 	# the channels: everybody uses the templates, the manager writes them
 	"WhatsApp Templates": "modelli_messaggio.gestisci",
 	"WhatsApp Settings": "canali.configura",
-	# the phone: everybody their own line, the manager the others'
+	# the phone: everybody their own line, the manager the others' and the caller IDs
 	"CRM Telephony Agent": "telefono.configura",
+	"CRM Caller ID": "telefono.configura",
+	# the sales hierarchy: the Manager builds it (it was System Manager's)
+	"CRM Sales Hierarchy": "gerarchia.gestisci",
+	"CRM Service Level Agreement": "assegnazione.regole",
+	# the agency's, the whole page (PR 3): the Manager no longer writes it
+	"ERPNext CRM Settings": "tecnico.erpnext",
 }
 
 #: The documents that belong to one user, and the field that says whose: one's own

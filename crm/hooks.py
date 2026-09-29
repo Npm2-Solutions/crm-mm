@@ -223,6 +223,10 @@ has_permission = {
 	"WhatsApp Templates": "crm.permissions.documenti.has_permission",
 	"WhatsApp Settings": "crm.permissions.documenti.has_permission",
 	"CRM Telephony Agent": "crm.permissions.documenti.has_permission",
+	"CRM Caller ID": "crm.permissions.documenti.has_permission",
+	"CRM Sales Hierarchy": "crm.permissions.documenti.has_permission",
+	"CRM Service Level Agreement": "crm.permissions.documenti.has_permission",
+	"ERPNext CRM Settings": "crm.permissions.documenti.has_permission",
 }
 
 # DocType Class
