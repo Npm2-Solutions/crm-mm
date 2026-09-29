@@ -482,7 +482,8 @@ Nella clinica, in `crm/clinica`, con il prefisso `Clinic`:
 | `Clinic Access Grant` | l'accesso di supporto dell'agenzia | chi, perché, da, a, chiesto da |
 
 Da `crm/invoicing` si riusano l'erogatore (`CRM Service Provider`: il medico con la
-sua qualifica) e, da aggiungere lì, l'anagrafica fiscale della persona.
+sua qualifica) e l'anagrafica fiscale della persona (`CRM Billing Profile`, dal
+29/09/2026), con la data di nascita e il sesso letti dal codice fiscale.
 
 ## Le norme e il calendario
 

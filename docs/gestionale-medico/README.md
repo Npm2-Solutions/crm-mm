@@ -3,7 +3,9 @@
 **Stato:** 🚧 in costruzione. Fase 0: livelli, capacità e piano (la PR 1 del
 [doc 30](../progetto-ghl/30-ruoli-e-permessi.md#la-pr-1-comè-fatta)) fatti il
 29/09/2026; il Sito nascosto senza Builder e le fatture lette solo da chi deve,
-anche nella cronologia della persona, lo stesso giorno. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
+anche nella cronologia della persona, lo stesso giorno; poi
+[l'anagrafica fiscale sola](#unanagrafica-fiscale-sola), letta dalla fattura e
+completata da quella confermata. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
 `develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
@@ -190,9 +192,9 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 
 | Area | Oggi nel repo | Cosa manca per un centro medico |
 |---|---|---|
-| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare | La scheda paziente (consensi, tutore o genitore per i minori, dossier). Sulla persona **non c'è nessun indirizzo** e nessun codice fiscale |
+| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare. Codice fiscale e indirizzo stanno nella sua [anagrafica fiscale](#unanagrafica-fiscale-sola) (29/09/2026) | La scheda paziente (consensi, tutore o genitore per i minori, dossier) |
 | Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
-| Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | **Il codice fiscale e l'indirizzo non si ricordano.** `compila_da_controparte` prende dalla persona solo nome e cognome, quindi al paziente che torna si riscrivono ogni volta. Vedi [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
+| Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | La spunta privacy di `/prenota` viene controllata (`crm/api/service_booking.py:567`) **ma non registrata**. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | Consensi registrati (quale testo, quale versione, quando, come): marketing, dossier, referti online |
 | Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
 | Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`), e dalla PR #101 le fatture compaiono anche nella cronologia della persona: `invoices_on` in `crm/api/activities.py` le legge con `frappe.get_all`, che salta i permessi (solo intestazione, importi e stati, niente righe) | Tre livelli (Segreteria, Manager amministrativo, Operatore) con la gestione dei ruoli nel CRM; System Manager e Administrator solo all'agenzia, mentre oggi l'"Admin" del CRM **è** System Manager ([requisiti §1](./requisiti.md#1-tre-livelli-e-il-site-resta-vostro)). Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
@@ -219,6 +221,28 @@ un `CRM Billing Profile` uno a uno con la persona):
 È un pezzo della fatturazione, non della clinica, perché serve a tutti i settori;
 la clinica lo legge. Sta fuori da `CRM Lead` perché il marketing, che le persone
 le vede, il codice fiscale non ha bisogno di vederlo.
+
+**Com'è fatta (29/09/2026).** `CRM Billing Profile`, uno per persona e uno per
+organizzazione (un indice unico lo tiene anche nel database): codice fiscale,
+partita IVA, codice destinatario, PEC, indirizzo e, per un'azienda, la ragione
+sociale. Data di nascita e sesso si leggono dal codice fiscale, non si scrivono.
+
+- **La fattura lo legge** (`compila_da_controparte`): prende quello che ha lasciato
+  vuoto, l'indirizzo tutto insieme. Una trattativa porta alla persona se la
+  fattura è a una persona, alla sua organizzazione se è a un'azienda; un contatto
+  alla sua persona.
+- **La fattura confermata lo completa** dove è vuoto, e non sovrascrive mai. Non lo
+  fa se la fattura è intestata a un altro, come il genitore che paga per il figlio:
+  si confrontano le parole dei due nomi, così "Mario Rossi" scritto tutto nel nome
+  da un modulo web resta la stessa persona. Le fatture già emesse hanno fatto lo
+  stesso con una patch, dalla più recente.
+- **Sulla pagina della persona** (e dell'organizzazione) c'è la sezione "Billing
+  details" per chi ha `persone.dati_fiscali`: Segreteria, Manager, Operatore. Il
+  profilo segue la persona: lo legge chi vede la persona. Un codice fiscale che non
+  torna col suo carattere di controllo non si salva; uno che non torna con il nome,
+  il cognome o il sesso della persona, o che sta anche su un'altra, si segnala e
+  non si blocca.
+- La sezione Clinica, quando arriva, mostra gli stessi campi (la PR 6).
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
@@ -322,7 +346,7 @@ firma o lo consegna e restituisce l'esito
 
 ```
 CRM Lead (la persona, com'è oggi)
-  ├─1:1─ anagrafica fiscale (fatturazione) ── codice fiscale, indirizzo;
+  ├─1:1─ CRM Billing Profile (fatturazione) ── codice fiscale, indirizzo;
   │                                           la leggono fattura e clinica
   └─1:1─ Paziente (clinica) ─── nasce da solo alla prima regola che scatta:
             │                    paziente dal, motivo, tutore o genitore
