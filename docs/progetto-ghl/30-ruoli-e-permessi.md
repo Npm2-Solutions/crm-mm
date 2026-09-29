@@ -334,7 +334,8 @@ fra quello che decide il centro e quello che resta all'agenzia.
 ## Il piano del centro: la seconda chiave
 
 I centri comprano moduli, e un servizio dell'agenzia ne sblocca alcuni (la
-segreteria sblocca il telefono, le campagne il marketing). Quindi una capacità
+segreteria sblocca il telefono, le campagne il marketing; i prezzi sono nel
+[listino](../gestionale-medico/listino.md)). Quindi una capacità
 vale se servono **due chiavi**: il modulo è attivo nel piano del centro, e il
 livello della persona la prevede.
 
