@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "creation": "2026-09-29 15:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "size",
+  "column_break_size",
+  "agency_email",
+  "section_break_modules",
+  "modules",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "size",
+   "fieldtype": "Select",
+   "label": "Size",
+   "options": "\nSolo\nStudio\nCentre\nPolyclinic\nLarge",
+   "description": "How many agendas the plan covers: Solo 1, Studio up to 3, Centre up to 8, Polyclinic up to 15. An agenda is a practitioner with at least one appointment in the month."
+  },
+  {
+   "fieldname": "column_break_size",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "agency_email",
+   "fieldtype": "Data",
+   "label": "Agency email",
+   "options": "Email",
+   "description": "Where a centre's request to activate a module goes. Empty: to the site's System Managers."
+  },
+  {
+   "fieldname": "section_break_modules",
+   "fieldtype": "Section Break",
+   "label": "Modules",
+   "description": "A module not listed here keeps its default: what the CRM did before plans existed is on, a new module is off."
+  },
+  {
+   "fieldname": "modules",
+   "fieldtype": "Table",
+   "label": "Modules",
+   "options": "CRM Plan Module"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-29 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Plan",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
