@@ -15,10 +15,12 @@ import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.utils.nestedset import rebuild_tree
 
+from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.integrations.api import get_recording_url
 from crm.permissions.test_org_hierarchy import make_deal, make_hierarchy_node, make_lead, make_user
 from crm.telephony.transcription import get_transcript, transcribe_now
+from crm.tests.test_scheduling import SchedulingCase
 
 MANAGER = "manager@perm.test"
 REP = "rep@perm.test"
@@ -139,6 +141,45 @@ class TestCallLogs(PermissionTestCase):
 		for user in (OUTSIDER, PATIENT):
 			with self.set_user(user), self.assertRaises(frappe.PermissionError):
 				transcribe_now(self.call)
+
+
+class TestAppointmentFeeds(SchedulingCase):
+	"""The calendar has no sales hierarchy: it is the practice's day, the same for every Sales User."""
+
+	def setUp(self):
+		super().setUp()
+		make_people()
+		self.make_service("Visita permessi", [REP])
+		start = self.tomorrow(10)
+		self.make_appointment(
+			"Visita permessi",
+			start,
+			[REP],
+			participants=[{"participant_name": "Mario Rossi", "phone": "+393331234567"}],
+		)
+		self.day = start.date().isoformat()
+
+	def test_every_sales_user_reads_the_calendar(self):
+		for user in (REP, OUTSIDER):
+			with self.set_user(user):
+				feed = get_calendar(self.day, self.day, include_events=False)
+				workload = get_workload(self.day, self.day)
+				meta = get_scheduler_meta()
+			row = next(a for a in feed["appointments"] if a["service"] == "Visita permessi")
+			self.assertEqual([p["participant_name"] for p in row["participants"]], ["Mario Rossi"])
+			self.assertEqual(workload["staff"][REP], 60)
+			self.assertIn("Visita permessi", [s["name"] for s in meta["services"]])
+
+	def test_a_website_user_reads_none_of_it(self):
+		calls = {
+			"calendar": lambda: get_calendar(self.day, self.day),
+			"calendar by source": lambda: get_calendar(self.day, self.day, sources=["Internal", "Treatwell"]),
+			"workload": lambda: get_workload(self.day, self.day),
+			"scheduler meta": get_scheduler_meta,
+		}
+		for label, call in calls.items():
+			with self.subTest(label), self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
+				call()
 
 
 def make_call_log(links=(), **fields):
