@@ -100,6 +100,7 @@
 			<tr><td>{{ _("What it asked (SHA-256)") }}</td><td class="impronta">{{ versione.schema_hash }}</td></tr>
 			<tr><td>{{ _("The answers (SHA-256)") }}</td><td class="impronta">{{ doc.answers_hash }}</td></tr>
 			<tr><td>{{ _("Filled") }}</td><td>{{ canale }}{% if compilato_da %} · {{ _("with {0}").format(compilato_da) }}{% endif %}</td></tr>
+			<tr><td>{{ _("Who signed, known by") }}</td><td>{{ riconoscimento }}</td></tr>
 		</table>
 
 		{% for firma in firme %}

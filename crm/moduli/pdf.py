@@ -22,8 +22,8 @@ import frappe
 from frappe import _
 from frappe.utils import format_datetime, formatdate, get_fullname, get_system_timezone, getdate
 
+from crm.moduli import compilazioni, traccia
 from crm.moduli import schema as S
-from crm.moduli import traccia
 
 MODELLO_HTML = "crm/moduli/templates/modulo_firmato.html"
 
@@ -44,6 +44,7 @@ EVENTI = {
 	"opened": "Opened",
 	"code_sent": "Code sent",
 	"code_verified": "Code checked",
+	"filled": "Filled by the person, to sign at the desk",
 }
 
 
@@ -186,8 +187,9 @@ def contesto(doc, versione) -> dict:
 				"chi": get_fullname(evento.user) if evento.user else None,
 				"ip": evento.ip_address,
 			}
-			for evento in traccia.eventi(doc.doctype, doc.name)
+			for evento in compilazioni.eventi_del_modulo(doc)
 		],
+		"riconoscimento": compilazioni.riconoscimento(doc),
 		"_": _,
 	}
 
