@@ -90,6 +90,8 @@ website_route_rules = [
 	{"from_route": "/prenota/<path:prenota_path>", "to_route": "prenota"},
 	# hub-hosted WhatsApp Embedded Signup (one whitelisted domain for every site)
 	{"from_route": "/whatsapp-connect", "to_route": "whatsapp_connect"},
+	# forms to fill and sign at home, or on the desk's tablet: /modulo/<link>
+	{"from_route": "/modulo/<token>", "to_route": "modulo"},
 ]
 
 # Generators
@@ -176,6 +178,7 @@ permission_query_conditions = {
 	# and so do their consents
 	"CRM Consent": "crm.moduli.consensi.get_permission_query_conditions",
 	"CRM Form": "crm.moduli.compilazioni.get_permission_query_conditions",
+	"CRM Form Request": "crm.moduli.richieste.get_permission_query_conditions",
 	# and the people they are linked to, from either side
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
@@ -204,6 +207,7 @@ has_permission = {
 	"CRM Billing Profile": "crm.invoicing.permessi.has_profile_permission",
 	"CRM Consent": "crm.moduli.consensi.has_permission",
 	"CRM Form": "crm.moduli.compilazioni.has_permission",
+	"CRM Form Request": "crm.moduli.richieste.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",

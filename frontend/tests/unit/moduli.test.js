@@ -261,15 +261,38 @@ describe('a signed answer in words', () => {
     expect(answerInWords({ type: 'number', unit: 'kg' }, 70.5)).toBe('70.5 kg')
     expect(answerInWords({ type: 'yesno' }, false)).toBe('No')
     expect(answerInWords({ type: 'consent' }, true)).toBe('Agreed')
-    expect(answerInWords({ type: 'choice' }, ['Latex', 'Food'])).toBe('Latex, Food')
-    expect(answerInWords({ type: 'scale', min_label: 'None', max_label: 'Worst' }, 3)).toBe(
-      '3 (None – Worst)',
+    expect(answerInWords({ type: 'choice' }, ['Latex', 'Food'])).toBe(
+      'Latex, Food',
     )
-    expect(answerInWords({ type: 'sides', unit: '°' }, { left: 120, right: '' })).toBe(
-      'Left: 120 °',
-    )
+    expect(
+      answerInWords(
+        { type: 'scale', min_label: 'None', max_label: 'Worst' },
+        3,
+      ),
+    ).toBe('3 (None – Worst)')
+    expect(
+      answerInWords({ type: 'sides', unit: '°' }, { left: 120, right: '' }),
+    ).toBe('Left: 120 °')
     expect(answerInWords({ type: 'score' }, 4, 'Moderate')).toBe('4 · Moderate')
-    expect(answerInWords({ type: 'attachment' }, '/private/files/exam.pdf')).toBe('exam.pdf')
+    expect(
+      answerInWords({ type: 'attachment' }, '/private/files/exam.pdf'),
+    ).toBe('exam.pdf')
     expect(answerInWords({ type: 'text' }, null)).toBe('')
+  })
+})
+
+describe('the engine the /modulo page loads', () => {
+  it('is this very file, copied where the website serves it', () => {
+    const here = path.resolve(import.meta.dirname, '../..')
+    const source = fs.readFileSync(
+      path.join(here, 'src/utils/moduli.js'),
+      'utf8',
+    )
+    const served = fs.readFileSync(
+      path.join(here, '../crm/public/js/moduli_engine.js'),
+      'utf8',
+    )
+    // run `yarn sync-moduli-engine` after changing src/utils/moduli.js
+    expect(served === source).toBe(true)
   })
 })

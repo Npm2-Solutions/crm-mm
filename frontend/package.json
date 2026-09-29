@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/assets/crm/frontend/ && yarn copy-html-entry",
+    "build": "vite build --base=/assets/crm/frontend/ && yarn copy-html-entry && yarn sync-moduli-engine",
     "copy-html-entry": "cp ../crm/public/frontend/index.html ../crm/www/crm.html",
+    "sync-moduli-engine": "cp src/utils/moduli.js ../crm/public/js/moduli_engine.js",
     "serve": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
