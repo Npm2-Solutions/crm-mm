@@ -309,6 +309,11 @@ TECNICHE = (
 	Capacita("tecnico.erpnext", agenzia=True),
 	Capacita("tecnico.predefiniti", agenzia=True, descrizione="Site currency and formats"),
 	Capacita(
+		"tecnico.codice",
+		agenzia=True,
+		descrizione="Conditions written in Python, for assignment rules and SLAs",
+	),
+	Capacita(
 		"automazioni.webhook", piano=MARKETING, agenzia=True, descrizione="Steps that call an outside address"
 	),
 )

@@ -13,8 +13,12 @@ with roles only - keeps the rules of their roles.
 
 from __future__ import annotations
 
-import frappe
+import json
 
+import frappe
+from frappe import _
+
+from crm.permissions import condizioni as guidate
 from crm.permissions import livelli
 
 #: What writing each document asks for.
@@ -118,3 +122,73 @@ def concedi_documenti_del_core() -> None:
 		for ptype in ("write", "create", "delete"):
 			update_permission_property(doctype, ruolo, 0, ptype, 1, validate=False)
 		frappe.clear_cache(doctype=doctype)
+
+
+# ------------------------------------------------------------ guided conditions
+
+#: The documents that run a condition: the field naming the doctype it is about,
+#: how the condition reaches that document, each Python condition with the guided
+#: one the screen builds it from, and those only the agency writes.
+CONDIZIONI = {
+	"Assignment Rule": {
+		"di": "document_type",
+		"prefisso": None,
+		"guidate": {
+			"assign_condition": "assign_condition_json",
+			"unassign_condition": "unassign_condition_json",
+		},
+		"solo_python": ("close_condition",),
+		"documenti": ("CRM Lead", "CRM Deal"),
+	},
+	"CRM Service Level Agreement": {
+		"di": "apply_on",
+		"prefisso": "doc",
+		"guidate": {"condition": "condition_json"},
+		"solo_python": (),
+		"documenti": None,
+	},
+}
+
+
+def _cambiato(doc, campo: str) -> bool:
+	"""Changed by this save; for a new document, given at all. (Frappe's
+	`has_value_changed` answers True for every field of a new document.)"""
+	if doc.get_doc_before_save() is None:
+		return bool(doc.get(campo))
+	return doc.has_value_changed(campo)
+
+
+def scrivi_condizioni(doc, method=None) -> None:
+	"""`before_validate`: conditions written in Python are the agency's (doc 30).
+
+	For anybody else the server writes each condition from the guided one the
+	screen built, before anything evaluates it: whatever Python came with the
+	request is not kept. A condition the agency wrote from the Desk, with no guided
+	one, stays as it is; changing it is the agency's.
+	"""
+	user = frappe.session.user
+	if not livelli.nel_crm(user) or livelli.puo("tecnico.codice", user):
+		return
+	regole = CONDIZIONI[doc.doctype]
+	solo_agenzia = _("Conditions written in Python are set by the agency.")
+
+	riferimento = doc.get(regole["di"])
+	if regole["documenti"] and riferimento not in regole["documenti"]:
+		frappe.throw(_("Rules here are for people and deals."), frappe.PermissionError)
+	for campo in regole["solo_python"]:
+		if _cambiato(doc, campo):
+			frappe.throw(solo_agenzia, frappe.PermissionError)
+
+	campi = frappe.get_meta(riferimento).get_valid_columns() if riferimento else []
+	for python, guidata in regole["guidate"].items():
+		if not (_cambiato(doc, python) or _cambiato(doc, guidata)):
+			continue
+		try:
+			condizioni = json.loads(doc.get(guidata) or "[]")
+			scritta = guidate.in_python(condizioni, campi, regole["prefisso"])
+		except (ValueError, guidate.CondizioneNonValida) as errore:
+			frappe.throw(_("This condition cannot be saved: {0}").format(errore))
+		if not scritta and doc.get(python):
+			# Python with no guided condition behind it: the agency's, from the Desk
+			frappe.throw(solo_agenzia, frappe.PermissionError)
+		doc.set(python, scritta)
