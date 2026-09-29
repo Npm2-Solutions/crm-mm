@@ -46,7 +46,9 @@ const emit = defineEmits(['update:modelValue'])
 
 const groups = computed(() => {
   const base = props.levels.filter((l) => l.base)
-  const optional = props.levels.filter((l) => !l.base)
+  const optional = props.levels.filter((l) => !l.base && !l.additive)
+  // Read only adds to the levels above and takes their writes away
+  const additive = props.levels.filter((l) => l.additive)
   return [
     { key: 'base', title: '', levels: base },
     ...(optional.length
@@ -55,6 +57,15 @@ const groups = computed(() => {
             key: 'optional',
             title: __('Optional levels, for whoever needs them'),
             levels: optional,
+          },
+        ]
+      : []),
+    ...(additive.length
+      ? [
+          {
+            key: 'additive',
+            title: __('Added to the levels above'),
+            levels: additive,
           },
         ]
       : []),

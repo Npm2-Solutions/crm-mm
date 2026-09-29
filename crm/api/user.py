@@ -122,6 +122,8 @@ def get_levels() -> list[dict]:
 			"label": livello.etichetta,
 			"description": livello.descrizione,
 			"base": livello.base,
+			# Read only: added to another level, never alone
+			"additive": livello.aggiuntivo,
 			"optional": [
 				{"name": nome, "description": registrate[nome].descrizione}
 				for nome in livelli.a_scelta_dei_livelli([livello.chiave])

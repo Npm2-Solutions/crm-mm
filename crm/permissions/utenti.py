@@ -137,6 +137,9 @@ def verifica_livelli(chiavi: list[str]) -> list[str]:
 	for chiave in chiavi:
 		if chiave not in offerti:
 			frappe.throw(_("{0} is not a level that can be given here").format(frappe.bold(chiave)))
+	if all(livelli.livello(chiave).aggiuntivo for chiave in chiavi):
+		# Read only takes away; it needs a level to take from
+		frappe.throw(_("Read only goes with another level"))
 	return chiavi
 
 
@@ -240,6 +243,23 @@ def _moduli_desk(doc, chiavi: list[str]) -> None:
 		"block_modules",
 		[{"module": modulo} for modulo in frappe.get_all("Module Def", pluck="name") if modulo not in app],
 	)
+
+
+def recapiti_fuori_dai_livelli(doc, method=None) -> None:
+	"""`validate` of User: whoever works in the CRM outside the levels, with the roles
+	of before, counts as the level those roles imply (PR 1), and every such level sees
+	email and phone in full. They get the role that shows them (PR 4); a user with
+	levels gets it, or not, from the levels' profiles."""
+	carica()
+	if doc.name in ("Administrator", "Guest") or not frappe.db.exists("Role", livelli.RUOLO_RECAPITI):
+		return
+	crm = profili_crm()
+	if any(riga.role_profile in crm for riga in doc.get("role_profiles") or []):
+		return
+	ruoli = {riga.role for riga in doc.get("roles") or []}
+	if livelli.RUOLO_RECAPITI in ruoli or not ruoli & livelli.ruoli_di_accesso():
+		return
+	doc.append("roles", {"role": livelli.RUOLO_RECAPITI})
 
 
 def imposta_capacita(user: str, nome: str, attiva: bool) -> None:
