@@ -299,6 +299,42 @@ class TestCRMInvitation(IntegrationTestCase):
 					filters={"key": ["like", f"{stored[0]}%"]},
 				)
 
+	# Invitations are made through `invite_by_email` only, and only managers read them.
+
+	def test_invitations_are_only_created_through_invite_by_email(self):
+		for user in (SALES_MANAGER, SALES_USER):
+			with self.subTest(user=user):
+				frappe.set_user(user)
+				with patch.object(frappe, "sendmail"), self.assertRaises(frappe.PermissionError):
+					frappe.client.insert(
+						{"doctype": "CRM Invitation", "email": "x@example.com", "role": "Sales User"}
+					)
+
+	def test_sales_users_cannot_read_invitations(self):
+		self.invite("future.admin@example.com", "System Manager")
+
+		frappe.set_user(SALES_USER)
+		self.assertRaises(
+			frappe.PermissionError, frappe.client.get_list, "CRM Invitation", fields=["name", "email"]
+		)
+
+	def test_a_sales_user_cannot_take_over_a_pending_invitation(self):
+		"""The whole of exploit 2: list the pending keys, open a link, set the new admin's password."""
+		self.invite("future.admin@example.com", "System Manager")
+
+		frappe.set_user(SALES_USER)
+		try:
+			rows = frappe.client.get_list(
+				"CRM Invitation", fields=["key"], filters={"email": "future.admin@example.com"}
+			)
+		except frappe.PermissionError:
+			rows = []
+		for key in [row.get("key") for row in rows if row.get("key")]:
+			with self.watching_logins():
+				accept_invitation(key=key)
+
+		self.assertFalse(frappe.db.exists("User", "future.admin@example.com"))
+
 
 def make_user(email, *roles):
 	if not frappe.db.exists("User", email):
