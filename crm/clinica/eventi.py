@@ -27,6 +27,21 @@ def _senza_fermare(titolo: str, doc, funzione) -> None:
 		frappe.log_error(title=titolo, reference_doctype=doc.doctype, reference_name=doc.name)
 
 
+def appuntamento_creato(doc, method=None) -> None:
+	"""A booking moves the person's new patients deal to "appointment booked"."""
+	if doc.status in ("Cancelled", "No Show") or not paziente.clinica_accesa():
+		return
+	from crm.clinica import pipeline
+
+	def sposta():
+		for riga in doc.participants or []:
+			persona = paziente.persona_di(riga.party_type, riga.party)
+			if persona and riga.status != "Cancelled":
+				pipeline.prenotata(persona)
+
+	_senza_fermare(_("New patients deal not moved for appointment {0}").format(doc.name), doc, sposta)
+
+
 def appuntamento_aggiornato(doc, method=None) -> None:
 	"""Rule 3: the appointment was completed, or a participant came."""
 	if not any(regole.presente(doc.status, riga.status) for riga in doc.participants or []):
@@ -72,6 +87,11 @@ def piano_aggiornato(doc, method=None) -> None:
 	from crm.permissions import livelli
 
 	livelli.dimentica_cache()
+	if paziente.clinica_accesa():
+		from crm.clinica import pipeline
+
+		# the two pipelines of a medical centre, where there are none yet
+		_senza_fermare(_("Medical centre pipelines not created"), doc, pipeline.crea_pipeline)
 	if paziente.clinica_accesa() and not frappe.db.get_default(paziente.RECUPERO_FATTO):
 		frappe.enqueue(
 			"crm.clinica.paziente.recupera",

@@ -165,7 +165,14 @@ REFERTI_ONLINE = TipoConsenso(
 
 
 def registra() -> None:
+	from crm.automation.engine import registra_evento
+	from crm.clinica import pipeline
+	from crm.clinica.paziente import clinica_accesa
+
 	registra_modulo_piano(MODULO)
+	# "Became Patient", offered to the automations where the clinic is on
+	registra_evento(pipeline.EVENTO, pipeline.TRIGGER, disponibile=clinica_accesa)
+	_registra_dashboard(clinica_accesa)
 	registra_ruolo(
 		"Medical Director",
 		"Answers for the clinical side of the centre.",
@@ -179,3 +186,22 @@ def registra() -> None:
 		concedi(nome, {DIREZIONE: CENTRO})
 	registra_tipo(DOSSIER)
 	registra_tipo(REFERTI_ONLINE)
+
+
+def _registra_dashboard(clinica_accesa) -> None:
+	"""The "clinic" feature, and the widgets that need it (`crm.clinica.widgets`)."""
+	from frappe import _lt
+
+	from crm.dashboard.features import FEATURES, Feature
+
+	FEATURES.setdefault(
+		"clinic",
+		Feature(
+			"clinic",
+			_lt("Clinic"),
+			_lt("The clinic is a module of the plan: the agency switches it on"),
+			None,
+			clinica_accesa,
+		),
+	)
+	import crm.clinica.widgets  # registers the widgets

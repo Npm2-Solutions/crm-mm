@@ -389,7 +389,11 @@ doc_events = {
 		"on_update": ["crm.automation.engine.on_booking_updated"],
 	},
 	"CRM Appointment": {
-		"after_insert": ["crm.automation.engine.on_appointment_created"],
+		"after_insert": [
+			"crm.automation.engine.on_appointment_created",
+			# a booking moves the new patients deal, where the clinic is on
+			"crm.clinica.eventi.appuntamento_creato",
+		],
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",
 			"crm.booking_platforms.sync.on_appointment_change",
