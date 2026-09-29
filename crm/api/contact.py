@@ -178,9 +178,20 @@ def get_linked_deals(contact: str):
 		distinct=True,
 	)
 
+	# reading the person is not reading their deals: each one keeps its own owner
+	readable = set(
+		frappe.get_list(
+			"CRM Deal",
+			filters={"name": ["in", [d.parent for d in deal_names] or [""]]},
+			pluck="name",
+		)
+	)
+
 	# get deals data
 	deals = []
 	for d in deal_names:
+		if d.parent not in readable:
+			continue
 		deal = frappe.get_cached_doc(
 			"CRM Deal",
 			d.parent,
