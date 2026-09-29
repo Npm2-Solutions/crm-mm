@@ -426,7 +426,8 @@ livello della persona la prevede.
 | 0 | I quattro problemi di sicurezza, ognuno a parte | ✅ fatto, 29/09 |
 | 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | ✅ fatto, 29/09 |
 | 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | ✅ fatto, 29/09 |
-| 3 | Capacità nel frontend, rotte protette, impostazioni divise | 0,5–1 |
+| 3 | Capacità nel frontend, rotte protette, impostazioni divise | ✅ fatto, 29/09 |
+| 3b | Le pagine del Manager che scrivono documenti del core: account e modelli email, regole di assegnazione, importazione | 0,5 |
 | 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
 
 Direzione sanitaria arriva con la clinica.
@@ -569,6 +570,58 @@ Leggere non cambia, e chi è fuori dai livelli tiene i permessi dei suoi ruoli.
 - un'assegnazione chiusa apre il record per 90 giorni, poi non più;
 - `create_deal` inserisce la trattativa come l'utente, con i permessi per campo, e
   non la apre su una persona o un'organizzazione che l'utente non vede.
+
+## La PR 3, com'è fatta
+
+**Lo schermo chiede la capacità.** Menu, pagine e pulsanti chiedono `puo('…')`
+allo store degli utenti; `isManager()`, `isAdmin()` e `isSalesUser()` non ci sono
+più. Le rotte dichiarano `meta.richiede` e la guardia del router lo controlla: una
+pagina che il menu non mostra non si apre nemmeno dall'indirizzo, e si torna alla
+prima pagina che il livello apre (persone, agenda, conversazioni, fatture…). Anche
+la vista predefinita di un utente non porta più su una pagina che il suo livello non
+apre.
+
+**Ogni pagina delle impostazioni ha la sua capacità**, quella della tabella qui sopra:
+un gruppo compare se almeno una sua pagina compare. La Segreteria trova Profilo,
+Preferenze, turni e sale, Google Calendar e il suo telefono; l'Operatore i suoi
+turni ma non le sale, che sono di tutto il centro. La Gerarchia ora la costruisce il
+Manager (`gerarchia.gestisci`), non più System Manager, e mostra i livelli al posto
+di Sales Manager e Sales User.
+
+**La parte dell'agenzia** di una pagina sta su un livello di permesso a parte
+(permlevel 1, solo System Manager) e si vede con `tecnico.integrazioni`:
+
+- **Cruscotto**: la chiave del servizio di cambio. Il provider lo sceglie il centro;
+- **Telefono**: le credenziali di Twilio ed Exotel, l'app TwiML, i trunk SIP, il
+  test della connessione, e collegare o scollegare il provider. Al centro restano la
+  registrazione delle chiamate con il suo avviso e gli ID chiamante;
+- **Trascrizione**: l'indirizzo del servizio, la chiave, il modello e i limiti. Il
+  centro la accende, sceglie lingua, vocabolario e per quanto si tengono le
+  trascrizioni; se il servizio manca, glielo dice ("l'agenzia deve prima
+  configurarlo");
+- **Tracciamento**: lo script da mettere sul sito, i siti che possono mandare dati,
+  gli indirizzi esclusi e quanto si tiene la navigazione anonima. Al centro restano
+  i numeri e gli interruttori;
+- **Fatturazione, connessione al provider**: generare e ruotare il segreto del
+  webhook;
+- **ERPNext** e **Predefiniti** (valuta e formati del sito): tutta la pagina. ERPNext
+  lo scrive solo `tecnico.erpnext`, anche dall'API.
+
+Il livello di permesso fa due cose: la copia delle impostazioni che arriva al Manager
+non ha quei valori, e un suo salvataggio li lascia com'erano. Non copre
+`frappe.client.get_value` sui documenti singoli, che guarda il documento e non il
+campo: per questo i segreti restano anche campi Password, mascherati per tutti.
+
+**Diverso da come era scritto.** L'indirizzo del webhook delle piattaforme di
+prenotazione resta al Manager: è quello che si incolla nella piattaforma, e senza
+non si finisce di collegarla. Le condizioni delle regole di assegnazione scritte in
+Python restano dal Desk come prima: lo schermo le costruisce guidate.
+
+**Rimasto per la PR 3b.** Account email, modelli email, regole di assegnazione,
+importazione: lo schermo le dà al Manager, ma sono documenti del core che Frappe dà
+solo a System Manager, e il server li rifiuta (lo era già prima). Servono permessi o
+API del CRM con la capacità. Gli SLA sono un documento del CRM e il Manager li
+scriveva già: ora chiedono `assegnazione.regole`.
 
 ## Da decidere
 
