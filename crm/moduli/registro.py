@@ -54,6 +54,11 @@ class TipoConsenso:
 	descrizione: str = ""
 	#: A field of CRM Lead that mirrors the state, for lists and automations.
 	campo_persona: str | None = None
+	#: The plan module it belongs to: off there, it is not asked and not shown.
+	piano: str = "base"
+	#: What one must be able to do to see or record it, beyond ``consensi.vedi``:
+	#: an answer about a health dossier says the person is a patient.
+	capacita: str | None = None
 
 
 _tipi: dict[str, TipoConsenso] = {}

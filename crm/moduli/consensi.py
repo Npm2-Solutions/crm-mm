@@ -60,9 +60,33 @@ def assicura_tipi() -> None:
 				"text": registro.testo_per_lingua(tipo, lingua),
 				"description": tipo.descrizione,
 				"standard": 1,
+				"plan_module": tipo.piano,
 				"enabled": 1,
 			}
 		).insert(ignore_permissions=True)
+
+
+def _nel_piano(tipi: list[dict]) -> list[dict]:
+	"""The kinds whose plan module is on: a clinic's dossier is nothing to a gym."""
+	# registered first: the registry counts a module nobody declared as on
+	livelli.carica()
+	moduli = livelli.moduli_attivi()
+	return [
+		tipo
+		for tipo in tipi
+		if livelli.stato_modulo(tipo.get("plan_module") or "base", moduli) != livelli.SPENTO
+	]
+
+
+def puo_vedere(chiave: str) -> bool:
+	"""Whether the session may see this kind: some say more than they seem to.
+
+	An answer about a health dossier says the person is a patient, and sales and
+	marketing are not told who is one.
+	"""
+	livelli.carica()
+	tipo = registro.tipo(chiave)
+	return not (tipo and tipo.capacita) or livelli.puo(tipo.capacita)
 
 
 def _tipo(chiave: str):
@@ -198,18 +222,33 @@ def cancella_con_la_persona(doc, method=None) -> None:
 # ------------------------------------------------------------ who reads them
 
 
+def _tipi_nascosti(user: str | None = None) -> list[str]:
+	"""The kinds ``user`` may not see: a health dossier's answers, to sales."""
+	livelli.carica()
+	return [tipo.chiave for tipo in registro.tipi() if tipo.capacita and not livelli.puo(tipo.capacita, user)]
+
+
 def get_permission_query_conditions(user: str | None = None) -> str:
-	"""A person's consents follow the person: listed to whoever sees them."""
-	visibili = org_hierarchy.visible_leads(user)
-	if visibili is None:
-		return ""
+	"""A person's consents follow the person: listed to whoever sees them, and
+	only the kinds they may see."""
 	registro_consensi = frappe.qb.DocType(REGISTRO)
-	return registro_consensi.lead.isin(visibili).get_sql(
-		with_namespace=True, quote_char="`", secondary_quote_char="'"
-	)
+	condizioni = []
+	visibili = org_hierarchy.visible_leads(user)
+	if visibili is not None:
+		condizioni.append(registro_consensi.lead.isin(visibili))
+	if nascosti := _tipi_nascosti(user):
+		condizioni.append(registro_consensi.consent_type.notin(nascosti))
+	if not condizioni:
+		return ""
+	condizione = condizioni[0]
+	for altra in condizioni[1:]:
+		condizione = condizione & altra
+	return condizione.get_sql(with_namespace=True, quote_char="`", secondary_quote_char="'")
 
 
 def has_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	if doc.get("consent_type") in _tipi_nascosti(user):
+		return False
 	if not doc.get("lead"):
 		return True
 	return bool(frappe.has_permission("CRM Lead", "read", doc=doc.lead, user=user))
@@ -232,12 +271,16 @@ def get_consents(lead: str) -> dict:
 		per_tipo.setdefault(riga.consent_type, []).append(riga)
 	puo_raccogliere = livelli.puo("consensi.raccogli")
 	tipi = []
-	for tipo in frappe.get_all(
-		TIPO,
-		filters={"enabled": 1},
-		fields=["name", "label", "kind", "text", "text_version"],
-		order_by="creation asc",
+	for tipo in _nel_piano(
+		frappe.get_all(
+			TIPO,
+			filters={"enabled": 1},
+			fields=["name", "label", "kind", "text", "text_version", "plan_module"],
+			order_by="creation asc",
+		)
 	):
+		if not puo_vedere(tipo.name):
+			continue
 		attuale = registro.stato_attuale(per_tipo.get(tipo.name, []))
 		tipi.append(
 			{
@@ -253,9 +296,11 @@ def get_consents(lead: str) -> dict:
 	return {"types": tipi, "can_record": puo_raccogliere, "channels": list(registro.CANALI_A_MANO)}
 
 
-def _per_scrivere(lead: str, canale: str) -> None:
+def _per_scrivere(lead: str, canale: str, chiave: str) -> None:
 	livelli.verifica("consensi.raccogli")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
+	if not puo_vedere(chiave):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	if canale not in registro.CANALI_A_MANO:
 		frappe.throw(_("A consent recorded by hand is given at the desk, on paper, by phone or by email"))
 
@@ -270,7 +315,7 @@ def record_consent(
 	attachment: str | None = None,
 ) -> dict:
 	"""Record an answer given outside the CRM's pages: at the desk, on paper, on the phone."""
-	_per_scrivere(lead, channel)
+	_per_scrivere(lead, channel, consent_type)
 	if status == registro.RIFIUTATO and stato(lead, consent_type) == registro.DATO:
 		# "no" from somebody who had said yes is a withdrawal, and is written as one
 		revoca(lead, consent_type, channel, note)
@@ -284,7 +329,7 @@ def withdraw_consent(
 	lead: str, consent_type: str, channel: str = "At the desk", note: str | None = None
 ) -> dict:
 	"""Withdrawing is as easy as giving: whoever records answers records this too."""
-	_per_scrivere(lead, channel)
+	_per_scrivere(lead, channel, consent_type)
 	revoca(lead, consent_type, channel, note)
 	return get_consents(lead)
 
@@ -298,6 +343,7 @@ _CAMPI_TIPO = (
 	"kind",
 	"enabled",
 	"standard",
+	"plan_module",
 	"text",
 	"text_version",
 	"text_updated_on",
@@ -309,7 +355,7 @@ _CAMPI_TIPO = (
 def consent_types() -> list[dict]:
 	livelli.verifica("consensi.configura")
 	assicura_tipi()
-	return frappe.get_all(TIPO, fields=list(_CAMPI_TIPO), order_by="creation asc")
+	return _nel_piano(frappe.get_all(TIPO, fields=list(_CAMPI_TIPO), order_by="creation asc"))
 
 
 @frappe.whitelist(methods=["POST"])

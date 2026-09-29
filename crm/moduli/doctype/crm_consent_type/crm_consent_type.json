@@ -12,6 +12,7 @@
   "column_type",
   "enabled",
   "standard",
+  "plan_module",
   "text_section",
   "text",
   "column_text",
@@ -63,6 +64,14 @@
    "label": "Standard",
    "read_only": 1,
    "description": "Registered by a module: it can be switched off and rewritten, not deleted."
+  },
+  {
+   "default": "base",
+   "description": "The module of the plan it belongs to: where that module is off, it is not asked and not shown.",
+   "fieldname": "plan_module",
+   "fieldtype": "Data",
+   "label": "Plan module",
+   "read_only": 1
   },
   {
    "fieldname": "text_section",
