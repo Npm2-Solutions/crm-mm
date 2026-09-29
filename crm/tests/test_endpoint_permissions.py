@@ -1,0 +1,159 @@
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+"""Whitelisted endpoints answer only to whoever may see what they return.
+
+A patient portal is coming, and its patients log in as Website Users: every
+whitelisted method without a permission check is theirs to call. So each
+endpoint here is tried by someone it belongs to, by a Sales User outside the
+sales hierarchy, and by a logged-in user with no CRM role at all.
+"""
+
+from unittest.mock import MagicMock, patch
+
+import frappe
+from frappe.tests import IntegrationTestCase
+from frappe.utils.nestedset import rebuild_tree
+
+from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
+from crm.integrations.api import get_recording_url
+from crm.permissions.test_org_hierarchy import make_deal, make_hierarchy_node, make_lead, make_user
+from crm.telephony.transcription import get_transcript, transcribe_now
+
+MANAGER = "manager@perm.test"
+REP = "rep@perm.test"
+OUTSIDER = "outsider@perm.test"
+PATIENT = "patient@perm.test"
+
+
+def make_people():
+	"""
+	manager@perm.test   Sales Manager, top of the hierarchy
+	└── rep@perm.test   Sales User
+	outsider@perm.test  Sales User, not in the hierarchy
+	patient@perm.test   Website User: logged in, no CRM role
+	"""
+	make_user(MANAGER, roles=["Sales Manager", "Sales User"])
+	make_user(REP, roles=["Sales User"])
+	make_user(OUTSIDER, roles=["Sales User"])
+	make_user(PATIENT)
+
+	manager = make_hierarchy_node(MANAGER, is_group=1)
+	make_hierarchy_node(REP, reports_to=manager.name)
+	rebuild_tree("CRM Sales Hierarchy")
+
+	settings = frappe.get_single("FCRM Settings")
+	settings.enable_sales_hierarchy = 1
+	settings.save(ignore_permissions=True)
+
+
+class PermissionTestCase(IntegrationTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		make_people()
+
+
+class TestFixture(PermissionTestCase):
+	def test_the_patient_is_a_website_user_with_no_crm_role(self):
+		self.assertEqual(frappe.db.get_value("User", PATIENT, "user_type"), "Website User")
+		self.assertFalse({"Sales User", "Sales Manager", "System Manager"} & set(frappe.get_roles(PATIENT)))
+
+
+class TestCallLogs(PermissionTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.lead = make_lead(REP).name
+		# the way telephony files a call: the lead under `links`, nobody we test as on the line
+		cls.call = make_call_log(links=[("CRM Lead", cls.lead)]).name
+
+	def test_the_leads_owner_and_their_manager_open_the_call(self):
+		for user in (REP, MANAGER):
+			with self.set_user(user):
+				call = get_call_log(self.call)
+			self.assertEqual(call["name"], self.call)
+			self.assertEqual(call["_lead"], self.lead)
+
+	def test_a_sales_user_outside_the_hierarchy_cannot_open_the_call(self):
+		with self.set_user(OUTSIDER), self.assertRaises(frappe.PermissionError):
+			get_call_log(self.call)
+
+	def test_a_website_user_cannot_open_a_call(self):
+		unfiled = make_call_log().name
+		for name in (self.call, unfiled):
+			with self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
+				get_call_log(name)
+
+	def test_whoever_took_the_call_opens_it(self):
+		answered = make_call_log(links=[("CRM Lead", self.lead)], receiver=OUTSIDER).name
+		with self.set_user(OUTSIDER):
+			self.assertEqual(get_call_log(answered)["name"], answered)
+
+	def test_a_call_filed_on_nobody_opens_for_any_sales_user(self):
+		unfiled = make_call_log().name
+		with self.set_user(OUTSIDER):
+			self.assertEqual(get_call_log(unfiled)["name"], unfiled)
+
+	def test_a_call_logged_by_hand_follows_its_deal(self):
+		deal = make_deal(REP).name
+		logged = make_call_log(reference_doctype="CRM Deal", reference_docname=deal).name
+		with self.set_user(REP):
+			self.assertEqual(get_call_log(logged)["_deal"], deal)
+		with self.set_user(OUTSIDER), self.assertRaises(frappe.PermissionError):
+			get_call_log(logged)
+
+	def test_the_recording_plays_only_for_whoever_may_open_the_call(self):
+		frappe.db.set_value("CRM Call Log", self.call, "recording_url", "https://recordings.test/call.mp3")
+		upstream = MagicMock(status_code=200, headers={"Content-Type": "audio/mpeg"})
+		upstream.iter_content.return_value = iter([b"audio"])
+		with (
+			self.set_user(REP),
+			patch("crm.integrations.api._fetch_recording", return_value=upstream),
+			patch("frappe.get_request_header", return_value=None),
+		):
+			response = get_recording_url(self.call)
+		self.assertEqual(b"".join(response.response), b"audio")
+
+		for user in (OUTSIDER, PATIENT):
+			with (
+				self.set_user(user),
+				patch("crm.integrations.api._fetch_recording") as fetch,
+				self.assertRaises(frappe.PermissionError),
+			):
+				get_recording_url(self.call)
+			fetch.assert_not_called()
+
+	def test_the_transcript_reads_only_for_whoever_may_open_the_call(self):
+		frappe.db.set_value("CRM Call Log", self.call, "transcript", "Buongiorno, chiamo per l'esame.")
+		with self.set_user(REP):
+			self.assertEqual(get_transcript(self.call)["transcript"], "Buongiorno, chiamo per l'esame.")
+		for user in (OUTSIDER, PATIENT):
+			with self.set_user(user), self.assertRaises(frappe.PermissionError):
+				get_transcript(self.call)
+
+	def test_only_whoever_may_open_the_call_asks_for_a_transcript(self):
+		# the rep gets past the permission check to the provider not being set up
+		with self.set_user(REP), self.assertRaises(frappe.ValidationError):
+			transcribe_now(self.call)
+		for user in (OUTSIDER, PATIENT):
+			with self.set_user(user), self.assertRaises(frappe.PermissionError):
+				transcribe_now(self.call)
+
+
+def make_call_log(links=(), **fields):
+	doc = frappe.get_doc(
+		{
+			"doctype": "CRM Call Log",
+			"type": "Incoming",
+			"status": "Completed",
+			# not Manual: a call logged by hand fills its caller in from the session
+			"telephony_medium": "Twilio",
+			"from": "+393331234567",
+			"to": "+390212345678",
+			**fields,
+		}
+	)
+	for doctype, name in links:
+		doc.append("links", {"link_doctype": doctype, "link_name": name})
+	return doc.insert(ignore_permissions=True)
