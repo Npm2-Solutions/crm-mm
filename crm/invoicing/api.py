@@ -580,7 +580,7 @@ def generate_webhook_secret(company: str) -> dict:
 	# the provider's webhook is the agency's plumbing, like every integration's (doc 30)
 	from crm.permissions.livelli import verifica_nel_crm
 
-	verifica_nel_crm("tecnico.integrazioni")
+	verifica_nel_crm("fatture.segreti")
 	segreto = frappe.generate_hash(length=48)
 	azienda = frappe.get_doc("CRM Invoicing Company", company)
 	azienda.sdi_webhook_secret = segreto

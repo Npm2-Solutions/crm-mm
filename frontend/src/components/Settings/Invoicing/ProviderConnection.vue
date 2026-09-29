@@ -172,7 +172,8 @@ import {
 import { usersStore } from '@/stores/users'
 import { computed, ref, watch } from 'vue'
 
-const tecnico = usersStore().puo('tecnico.integrazioni')
+// the webhook's secret is the agency's: invoicing's own technical capability
+const tecnico = usersStore().puo('fatture.segreti')
 
 const azienda = ref('')
 const segreto = ref('')
