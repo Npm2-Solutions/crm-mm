@@ -111,6 +111,8 @@ import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import LucideRadar from '~icons/lucide/radar'
+import LucideStethoscope from '~icons/lucide/stethoscope'
+import { usersStore } from '@/stores/users'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
@@ -144,6 +146,7 @@ const { $dialog, $socket } = globalStore()
 const { doctypeMeta } = getMeta('CRM Lead')
 
 const route = useRoute()
+const { puo } = usersStore()
 const router = useRouter()
 
 const props = defineProps({
@@ -296,6 +299,15 @@ const tabs = computed(() => {
       name: 'Tracking',
       label: __('Tracking'),
       icon: LucideRadar,
+    },
+    // the clinical record, for whoever cares for the person: visits and notes,
+    // signed and then only added to. Where the plan has no clinic, no tab
+    {
+      name: 'Clinic',
+      label: __('Clinic'),
+      icon: LucideStethoscope,
+      condition: () =>
+        puo('clinica.vedi') || puo('clinica.scrivi') || puo('clinica.accessi'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))

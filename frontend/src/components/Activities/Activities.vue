@@ -30,6 +30,9 @@
     <div v-else-if="title == 'Tracking'" class="h-full">
       <AttributionArea :doctype="doctype" :docname="docname" />
     </div>
+    <div v-else-if="title == 'Clinic'" class="h-full overflow-y-auto">
+      <ClinicArea :lead="docname" />
+    </div>
     <div
       v-else-if="
         activities?.length ||
@@ -577,6 +580,7 @@ import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import EventArea from '@/components/Activities/EventArea.vue'
 import AttributionArea from '@/components/Activities/AttributionArea.vue'
+import ClinicArea from '@/components/Clinic/ClinicArea.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'

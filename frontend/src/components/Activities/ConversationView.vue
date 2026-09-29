@@ -372,6 +372,42 @@
             </HappenedCard>
 
             <!--
+              A visit. Health data: whoever may read it reads it in the Clinic
+              tab, where every reading is logged. Here there is only that it
+              happened and who saw the person, behind a padlock.
+            -->
+            <HappenedCard
+              v-else-if="row.channel === 'clinical'"
+              :icon="LockIcon"
+              :title="
+                row.item.data?.kind === 'Note'
+                  ? __('Clinical note')
+                  : __('Visit')
+              "
+              :when="timeOf(row)"
+              card
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-p-sm text-ink-gray-7">
+                  {{ row.item.data?.practitioner_name }}
+                </span>
+                <Badge
+                  v-if="row.item.data?.draft"
+                  size="sm"
+                  theme="gray"
+                  :label="__('Draft')"
+                />
+              </div>
+              <div class="mt-0.5 text-p-xs text-ink-gray-5">
+                {{
+                  row.item.data?.locked
+                    ? __('Only the care team reads it')
+                    : __('Read it in the Clinic tab')
+                }}
+              </div>
+            </HappenedCard>
+
+            <!--
               The stage moved. Every other field that changes is bookkeeping and
               reads as one quiet line; this one is the point of the whole
               record, so it is the line the eye is allowed to stop on.
@@ -676,6 +712,7 @@ function iconFor(channel) {
 // the mark of the one field change that is worth a line of its own; the size
 // comes from where it is used, as with every other icon here
 const StageIcon = () => h('span', { class: 'lucide-milestone' })
+const LockIcon = () => h('span', { class: 'lucide-lock' })
 
 function isMissed(item) {
   return item?.status === 'No Answer' && item?.type === 'Incoming'
