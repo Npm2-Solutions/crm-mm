@@ -387,6 +387,35 @@ class TestCreateDeal(PermissionTestCase):
 		self.assertEqual(before, after)
 
 
+class TestSettingsRestore(PermissionTestCase):
+	def test_managers_restore_defaults_and_demo_data(self):
+		settings = frappe.get_single("FCRM Settings")
+		with (
+			self.set_user(MANAGER),
+			patch("crm.fcrm.doctype.fcrm_settings.fcrm_settings.after_install") as after_install,
+			patch("crm.fcrm.doctype.fcrm_settings.fcrm_settings.create_demo_data") as create_demo_data,
+		):
+			settings.restore_defaults(force=True)
+			settings.restore_demo_data()
+		after_install.assert_called_once_with(True)
+		create_demo_data.assert_called_once_with()
+
+	def test_nobody_else_restores_anything(self):
+		settings = frappe.get_single("FCRM Settings")
+		for user in (REP, OUTSIDER, PATIENT):
+			with (
+				self.set_user(user),
+				patch("crm.fcrm.doctype.fcrm_settings.fcrm_settings.after_install") as after_install,
+				patch("crm.fcrm.doctype.fcrm_settings.fcrm_settings.create_demo_data") as create_demo_data,
+			):
+				with self.assertRaises(frappe.PermissionError):
+					settings.restore_defaults(force=True)
+				with self.assertRaises(frappe.PermissionError):
+					settings.restore_demo_data()
+			after_install.assert_not_called()
+			create_demo_data.assert_not_called()
+
+
 def make_call_log(links=(), **fields):
 	doc = frappe.get_doc(
 		{

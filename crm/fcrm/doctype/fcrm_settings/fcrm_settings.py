@@ -44,12 +44,17 @@ class FCRMSettings(Document):
 		whatsapp_read_receipts: DF.Check
 	# end: auto-generated types
 
-	@frappe.whitelist()
+	# run_doc_method only asks that the caller can read the settings, and every
+	# Sales User can: without these checks any of them could rewrite the defaults
+	# or seed demo users and records into a live site
+	@frappe.whitelist(methods=["POST"])
 	def restore_defaults(self, force: bool = False):
+		frappe.only_for(["Sales Manager", "System Manager"], True)
 		after_install(force)
 
-	@frappe.whitelist()
+	@frappe.whitelist(methods=["POST"])
 	def restore_demo_data(self):
+		frappe.only_for(["Sales Manager", "System Manager"], True)
 		create_demo_data()
 
 	def validate(self):
