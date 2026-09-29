@@ -199,16 +199,23 @@ class AppointmentCase(SchedulingCase):
 
 
 class TestAppointmentFeeds(AppointmentCase):
-	def test_every_sales_user_reads_the_calendar(self):
-		for user in (REP, OUTSIDER):
-			with self.set_user(user):
-				feed = get_calendar(self.day, self.day, include_events=False)
-				workload = get_workload(self.day, self.day)
-				meta = get_scheduler_meta()
-			row = next(a for a in feed["appointments"] if a["service"] == "Visita permessi")
-			self.assertEqual([p["participant_name"] for p in row["participants"]], ["Mario Rossi"])
-			self.assertEqual(workload["staff"][REP], 60)
-			self.assertIn("Visita permessi", [s["name"] for s in meta["services"]])
+	def test_who_works_the_appointment_reads_it_other_sales_see_busy_time(self):
+		"""The rep works it and reads it in full; a salesperson who does not sees it as
+		busy time - when, not who comes (doc 30, "Vedere l'agenda": libero e occupato)."""
+		with self.set_user(REP):
+			feed = get_calendar(self.day, self.day, include_events=False)
+		row = next(a for a in feed["appointments"] if a["service"] == "Visita permessi")
+		self.assertEqual([p["participant_name"] for p in row["participants"]], ["Mario Rossi"])
+		with self.set_user(OUTSIDER):
+			feed = get_calendar(self.day, self.day, include_events=False)
+			workload = get_workload(self.day, self.day)
+			meta = get_scheduler_meta()
+		self.assertNotIn("Visita permessi", [a["service"] for a in feed["appointments"]])
+		self.assertNotIn("Mario Rossi", frappe.as_json(feed))
+		# the rep's appointment, among whatever else the day holds
+		self.assertEqual(len([b for b in feed["busy"] if REP in {s["user"] for s in b["staff"]}]), 1)
+		self.assertEqual(workload["staff"][REP], 60)
+		self.assertIn("Visita permessi", [s["name"] for s in meta["services"]])
 
 	def test_a_website_user_reads_none_of_it(self):
 		calls = {
