@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<title>DottorCloud — design system</title>
+<link rel="stylesheet" href="tokens.css" />
+<style>
+@font-face { font-family: "Inter"; src: url(../video/sorgenti/fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { width: 1600px; background: var(--dc-bg); color: var(--dc-ink); font: var(--dc-body); -webkit-font-smoothing: antialiased; padding: 64px; }
+h2 { font: var(--dc-caption); text-transform: uppercase; letter-spacing: .08em; color: var(--dc-teal-dark); margin: 56px 0 18px; }
+.row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+.head { display: flex; justify-content: space-between; align-items: center; }
+.head img { height: 64px; }
+.head p { color: var(--dc-muted); font-size: 18px; max-width: 520px; text-align: right; }
+.sw { width: 164px; border-radius: var(--dc-radius-l); overflow: hidden; background: var(--dc-card); box-shadow: var(--dc-shadow-card); }
+.sw i { display: block; height: 96px; }
+.sw div { padding: 12px 14px; font-size: 14px; }
+.sw b { display: block; font-size: 15px; }
+.sw span { color: var(--dc-muted); font-family: ui-monospace, monospace; font-size: 13px; }
+.acc { width: 200px; border-radius: var(--dc-radius-l); background: var(--dc-card); box-shadow: var(--dc-shadow-card); padding: 14px; display: flex; gap: 12px; align-items: center; }
+.acc i { width: 44px; height: 44px; border-radius: 12px; display: block; flex: none; }
+.acc small { display: block; color: var(--dc-muted); font-size: 12px; }
+.type { background: var(--dc-card); border-radius: var(--dc-radius-l); box-shadow: var(--dc-shadow-card); padding: 28px 32px; flex: 1; }
+.type div { display: flex; align-items: baseline; gap: 24px; padding: 10px 0; border-bottom: 1px solid var(--dc-border); }
+.type div:last-child { border: 0; }
+.type code { width: 150px; flex: none; color: var(--dc-faint); font-size: 13px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; color: var(--dc-teal-dark); background: var(--dc-teal-soft); padding: 8px 16px; border-radius: var(--dc-radius-pill); }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--dc-radius-m); background: var(--dc-teal); color: #fff; font-weight: 600; }
+.btn.ink { background: var(--dc-ink); }
+.btn.ghost { background: #eef1f0; color: var(--dc-ink); }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: var(--dc-radius-pill); font-size: 14px; font-weight: 600; }
+.card { background: var(--dc-card); border-radius: var(--dc-radius-xl); box-shadow: var(--dc-shadow-card); border: 1px solid var(--dc-border); padding: 22px; width: 300px; }
+.circ { width: 52px; height: 52px; border-radius: 50%; background: var(--dc-teal-soft); color: var(--dc-teal-dark); display: grid; place-items: center; margin-bottom: 14px; }
+.float { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px; padding: 14px 22px 14px 14px; box-shadow: var(--dc-shadow-float); font-weight: 600; }
+.float i { width: 44px; height: 44px; border-radius: 12px; background: var(--dc-green-soft); color: var(--dc-green); display: grid; place-items: center; font-style: normal; font-size: 22px; }
+.float small { display: block; color: var(--dc-muted); font-weight: 500; font-size: 13px; }
+.dark { background: var(--dc-night); border-radius: var(--dc-radius-xl); padding: 32px; color: #fff; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.rule { background: var(--dc-card); border-radius: var(--dc-radius-l); box-shadow: var(--dc-shadow-card); padding: 22px 24px; }
+.rule b { display: block; font-size: 17px; margin-bottom: 6px; }
+.rule p { color: var(--dc-muted); font-size: 15px; }
+.curve { height: 80px; margin-bottom: 12px; }
+svg.ic { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+  <div class="head"><img src="../logo/dottorcloud-orizzontale.svg" alt="DottorCloud" /><p>Il piccolo design system dietro logo, video, presentazione e PDF. I valori stanno in <b>tokens.css</b> e <b>tokens.json</b>.</p></div>
+
+  <h2>Colori del marchio</h2>
+  <div class="row">
+    <div class="sw"><i style="background:var(--dc-teal)"></i><div><b>Verde acqua</b><span>#12A594</span></div></div>
+    <div class="sw"><i style="background:var(--dc-teal-dark)"></i><div><b>Verde scuro</b><span>#0B6F64</span></div></div>
+    <div class="sw"><i style="background:var(--dc-teal-soft)"></i><div><b>Verde chiaro</b><span>#E1F5F1</span></div></div>
+    <div class="sw"><i style="background:var(--dc-mint)"></i><div><b>Menta</b><span>#5FE0CC</span></div></div>
+    <div class="sw"><i style="background:var(--dc-night)"></i><div><b>Notte</b><span>#111413</span></div></div>
+    <div class="sw"><i style="background:var(--dc-ink)"></i><div><b>Inchiostro</b><span>#16201E</span></div></div>
+    <div class="sw"><i style="background:var(--dc-muted)"></i><div><b>Grigio testo</b><span>#5F6B69</span></div></div>
+    <div class="sw"><i style="background:var(--dc-bg);box-shadow:inset 0 -1px 0 var(--dc-border)"></i><div><b>Sfondo</b><span>#F4F7F6</span></div></div>
+  </div>
+
+  <h2>Accenti: uno per tipo di cosa, mai per decorare</h2>
+  <div class="row">
+    <div class="acc"><i style="background:var(--dc-blue)"></i><div><b>Blu</b><small>documenti, ecografie, i nostri messaggi</small></div></div>
+    <div class="acc"><i style="background:var(--dc-violet)"></i><div><b>Viola</b><small>esercizi, marketing</small></div></div>
+    <div class="acc"><i style="background:var(--dc-amber)"></i><div><b>Ambra</b><small>lista d'attesa, nutrizione, note interne</small></div></div>
+    <div class="acc"><i style="background:var(--dc-rose)"></i><div><b>Rosa</b><small>cardiologia, allergie, registrazione</small></div></div>
+    <div class="acc"><i style="background:var(--dc-green)"></i><div><b>Verde</b><small>fatto, confermato, WhatsApp</small></div></div>
+  </div>
+
+  <h2>Tipografia · Inter (in PowerPoint: Calibri)</h2>
+  <div class="row">
+    <div class="type">
+      <div><code>display 88/700</code><span style="font:var(--dc-display);letter-spacing:-.035em">Tutto il centro.</span></div>
+      <div><code>h1 36/700</code><span style="font:var(--dc-h1)">La fattura nasce dalla visita</span></div>
+      <div><code>h2 24/700</code><span style="font:var(--dc-h2)">Servizi del centro</span></div>
+      <div><code>body 16/400</code><span>Ogni servizio sa quanto dura, chi lo può fare e che stanza gli serve.</span></div>
+      <div><code>caption 13/600</code><span style="font:var(--dc-caption);text-transform:uppercase;letter-spacing:.05em;color:var(--dc-muted)">Prossimo appuntamento</span></div>
+    </div>
+  </div>
+
+  <h2>Componenti</h2>
+  <div class="row" style="align-items:center;gap:28px">
+    <span class="chip"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Agenda</span>
+    <span class="btn">Emetti e invia</span><span class="btn ink">Nuova persona</span><span class="btn ghost">Modifica</span>
+    <span class="pill" style="background:var(--dc-teal-soft);color:var(--dc-teal-dark)">Prenotata</span>
+    <span class="pill" style="background:var(--dc-blue-soft);color:var(--dc-blue)">Paziente</span>
+    <span class="pill" style="background:var(--dc-amber-soft);color:var(--dc-amber)">Nuova</span>
+    <span class="pill" style="background:var(--dc-green-soft);color:var(--dc-green)">✓ Confermato</span>
+  </div>
+  <div class="row" style="margin-top:28px;align-items:center;gap:28px">
+    <div class="card"><div class="circ"><svg class="ic" viewBox="0 0 24 24"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 12 0v-4"/><circle cx="20" cy="10" r="2"/></svg></div><b style="font-size:17px">Cartella clinica</b><p style="color:var(--dc-muted);font-size:14px;margin-top:4px">Scheda, note di visita, referti, consensi.</p></div>
+    <div class="float"><i>✓</i><div>Appuntamento confermato<small>Il paziente ha risposto "Sì"</small></div></div>
+    <div class="dark" style="display:flex;align-items:center;gap:22px"><img src="../logo/dottorcloud-orizzontale-negativo.svg" style="height:40px" /><span class="chip" style="background:rgba(95,224,204,.12);color:var(--dc-mint)">Presto</span></div>
+  </div>
+
+  <h2>Movimento</h2>
+  <div class="grid3">
+    <div class="rule"><svg class="curve" viewBox="0 0 200 80"><path d="M10 70 C 50 10, 70 12, 190 10" fill="none" stroke="#12a594" stroke-width="4"/></svg><b>Arrivo · 500 ms</b><p>Le cose entrano veloci e si posano (quint out). Le parole dei titoli salgono una alla volta, 60 ms l'una dall'altra.</p></div>
+    <div class="rule"><svg class="curve" viewBox="0 0 200 80"><path d="M10 70 C 60 -20, 100 0, 130 14 S 170 10, 190 10" fill="none" stroke="#12a594" stroke-width="4"/></svg><b>Pop · 250–500 ms</b><p>Solo per le cose piccole (spunte, badge, icone): un leggero rimbalzo oltre il punto d'arrivo.</p></div>
+    <div class="rule"><svg class="curve" viewBox="0 0 200 80"><path d="M10 70 C 90 70, 110 10, 190 10" fill="none" stroke="#12a594" stroke-width="4"/></svg><b>Camera e spostamenti · 800 ms</b><p>Accelera e rallenta (cubic in-out). Zooma sul prodotto, mai sui titoli; niente oscillazioni continue sul testo.</p></div>
+  </div>
+
+  <h2>Regole</h2>
+  <div class="grid3">
+    <div class="rule"><b>Il verde acqua domina</b><p>Il marchio e un'azione per schermata. Gli accenti dicono che tipo di cosa è, non abbelliscono.</p></div>
+    <div class="rule"><b>Tempo per leggere</b><p>Ogni riga resta ferma almeno 0,3 s per parola. Poco testo dove parla l'interfaccia.</p></div>
+    <div class="rule"><b>Suono con misura</b><p>Un campanello solo per gli eventi veri (confermato, inviato, firmato). Niente tintinnii sugli elementi che compaiono.</p></div>
+    <div class="rule"><b>Ombre morbide e tinte</b><p>Sempre tinte del verde scuro, mai nero puro. Le carte hanno un bordo sottile.</p></div>
+    <div class="rule"><b>Linguaggio</b><p>Italiano semplice, frasi corte, verbi. Niente prezzi, niente "rivoluzionario", niente inglesismi inutili.</p></div>
+    <div class="rule"><b>Il logo</b><p>Spazio libero pari alla croce. Mai sotto i 24 px: sotto si usa il marchio da solo. Vedi <b>../logo/README.md</b>.</p></div>
+  </div>
+</body>
+</html>
