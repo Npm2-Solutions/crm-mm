@@ -33,9 +33,14 @@
    "set_only_once": 1
   },
   {
+   "description": "SHA-256 of the key in the invitation link. The key itself only exists in the email to the invitee.",
    "fieldname": "key",
    "fieldtype": "Data",
-   "label": "Key"
+   "hidden": 1,
+   "label": "Key",
+   "no_copy": 1,
+   "permlevel": 1,
+   "read_only": 1
   },
   {
    "fieldname": "invited_by",
@@ -70,7 +75,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-09-29 12:10:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Invitation",

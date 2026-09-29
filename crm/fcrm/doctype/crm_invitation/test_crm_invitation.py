@@ -15,8 +15,10 @@ from urllib.parse import parse_qs, urlparse
 
 import frappe
 import frappe.client
+from frappe.api.v1 import read_doc
+from frappe.desk import reportview
 from frappe.tests import IntegrationTestCase
-from frappe.utils import add_days, now
+from frappe.utils import add_days, now, sha256_hash
 
 from crm.api import accept_invitation, invite_by_email
 
@@ -159,7 +161,9 @@ class TestCRMInvitation(IntegrationTestCase):
 
 		expire_invitations()
 
-		self.assertEqual(frappe.db.get_value("CRM Invitation", invitation.name, "status"), "Expired")
+		self.assertEqual(
+			frappe.db.get_value("CRM Invitation", invitation.name, ["status", "key"]), ("Expired", None)
+		)
 		self.assertRaises(frappe.ValidationError, accept_invitation, key=key)
 
 	# Who may hand out which role. Exploit 1: a Sales Manager invited their own
@@ -240,6 +244,61 @@ class TestCRMInvitation(IntegrationTestCase):
 			self.assertRaises(frappe.PermissionError, invitation.accept_invitation)
 		self.assertFalse(frappe.db.exists("User", "future.admin@example.com"))
 
+	# The key only ever reaches the invitee's inbox. Exploit 2: anyone who could
+	# read CRM Invitation, Sales Users included, could list every pending key.
+
+	def test_only_a_hash_of_the_key_is_stored(self):
+		"""Whoever reads the record — Administrator, a backup, the database — gets nothing that opens it."""
+		invitation, key = self.invite("future.admin@example.com", "System Manager")
+		stored = frappe.db.get_value("CRM Invitation", invitation.name, "key")
+
+		self.assertEqual(stored, sha256_hash(key))
+		frappe.set_user("Guest")
+		self.assertRaises(frappe.ValidationError, accept_invitation, key=stored)
+		self.assertFalse(frappe.db.exists("User", "future.admin@example.com"))
+
+	def test_an_invitation_made_on_the_desk_sends_a_working_link(self):
+		"""Nobody may write `key` (permlevel 1), yet inserting as a System Manager must keep it."""
+		frappe.set_user(SYSTEM_MANAGER)
+		invitation, key = self.make_invitation("newcomer@example.com", "Sales User")
+
+		self.assertEqual(frappe.db.get_value("CRM Invitation", invitation.name, "key"), sha256_hash(key))
+		frappe.set_user("Guest")
+		accept_invitation(key=key)
+		self.assertIn("Sales User", frappe.get_roles("newcomer@example.com"))
+
+	def test_readers_never_get_the_key_back(self):
+		"""Managers still list invitations (Settings → Invite User), without the key or its hash."""
+		invitation, key = self.invite("future.admin@example.com", "System Manager")
+		stored = frappe.db.get_value("CRM Invitation", invitation.name, "key")
+
+		for reader in (SALES_MANAGER, SYSTEM_MANAGER):
+			with self.subTest(reader=reader):
+				frappe.set_user(reader)
+				answers = [
+					# GET /api/resource/CRM Invitation, as the settings page and the Desk list do
+					frappe.client.get_list("CRM Invitation", fields=["*"]),
+					frappe.client.get_list("CRM Invitation", fields=["name", "email", "key"]),
+					# GET /api/resource/CRM Invitation/<name>
+					read_doc("CRM Invitation", invitation.name),
+					frappe.client.get("CRM Invitation", invitation.name),
+					frappe.client.get_value("CRM Invitation", ["name", "key"], invitation.name),
+					report_view(
+						doctype="CRM Invitation",
+						fields=["`tabCRM Invitation`.`name`", "`tabCRM Invitation`.`key`"],
+					),
+				]
+				self.assertTrue(any(invitation.name in frappe.as_json(answer) for answer in answers))
+				self.assertNotIn(key, frappe.as_json(answers))
+				self.assertNotIn(stored, frappe.as_json(answers))
+				# nor can the key be guessed a character at a time through a filter
+				self.assertRaises(
+					frappe.PermissionError,
+					frappe.client.get_list,
+					"CRM Invitation",
+					filters={"key": ["like", f"{stored[0]}%"]},
+				)
+
 
 def make_user(email, *roles):
 	if not frappe.db.exists("User", email):
@@ -260,3 +319,9 @@ def mailed_key(sendmail):
 	"""The key in the link mailed to the invitee: the one place it is meant to exist."""
 	link = sendmail.call_args.kwargs["args"]["invite_link"]
 	return parse_qs(urlparse(link).query)["key"][0]
+
+
+def report_view(**params):
+	"""What the Desk report view (`frappe.desk.reportview.get`) answers to a request with these params."""
+	frappe.local.form_dict = frappe._dict(params)
+	return reportview.get()
