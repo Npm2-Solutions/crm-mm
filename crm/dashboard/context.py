@@ -35,10 +35,25 @@ from crm.dashboard import periods
 
 
 def is_manager(user: str | None = None) -> bool:
-	"""Who shares dashboards and sees the centre's numbers: the Manager, and the agency."""
+	"""Who sees the centre's numbers and the managers' dashboards: the Manager, and the
+	agency. Read only on top of the Manager keeps it: it is reading."""
+	from crm.permissions.livelli import puo
+
+	return puo("dashboard.centro", user or frappe.session.user)
+
+
+def shares(user: str | None = None) -> bool:
+	"""Who shares dashboards with the team and changes the shared ones."""
 	from crm.permissions.livelli import puo
 
 	return puo("dashboard.condivise", user or frappe.session.user)
+
+
+def keeps_own(user: str | None = None) -> bool:
+	"""Who makes dashboards of their own: not Read only, which changes nothing."""
+	from crm.permissions.livelli import puo
+
+	return puo("dashboard.personali", user or frappe.session.user)
 
 
 def team_of(user: str) -> list[str] | None:

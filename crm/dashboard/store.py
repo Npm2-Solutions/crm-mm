@@ -26,7 +26,7 @@ import frappe
 from frappe import _
 
 from crm.dashboard import features, layout, registry, templates
-from crm.dashboard.context import is_manager
+from crm.dashboard.context import is_manager, keeps_own, shares
 
 DOCTYPE = "CRM Dashboard"
 MANAGER_DASHBOARD = "Manager Dashboard"
@@ -59,8 +59,8 @@ def can_view(doc, user: str | None = None) -> bool:
 def can_edit(doc, user: str | None = None) -> bool:
 	user = user or frappe.session.user
 	if doc.private:
-		return doc.user == user
-	return is_manager(user)
+		return doc.user == user and keeps_own(user)
+	return shares(user)
 
 
 def get_viewable(name: str):
@@ -193,7 +193,7 @@ def summary(doc, *, with_availability: bool = True) -> dict[str, Any]:
 		available = any(item["name"] not in layout.STRUCTURAL for item in templates.build(template, showable))
 		# a manager is shown what the site could switch on, and where; a salesperson
 		# cannot switch anything on, so for them it stays out of sight
-		if not available and is_manager():
+		if not available and shares():
 			setup = unlocks(template, manager=True)
 	out = {
 		"name": doc.name,
@@ -249,7 +249,7 @@ def load(name: str) -> dict[str, Any]:
 	items = resolve(doc)
 	out = {**summary(doc, with_availability=False), "layout": items}
 	empty = not any(item["name"] not in layout.STRUCTURAL for item in items)
-	if empty and is_managed(doc) and is_manager():
+	if empty and is_managed(doc) and shares():
 		# a template the site cannot answer yet opens on what it will show, and how to get there
 		template = templates.get(doc.template)
 		out["available"] = False
@@ -308,8 +308,10 @@ def update(name: str, **values) -> dict[str, Any]:
 def create(
 	title: str, *, private: bool = True, template: str | None = None, copy_of: str | None = None
 ) -> dict[str, Any]:
-	if not private and not is_manager():
+	if not private and not shares():
 		frappe.throw(_("Only managers can create a dashboard for the whole team"), frappe.PermissionError)
+	if private and not keeps_own():
+		frappe.throw(_("Your level does not make dashboards"), frappe.PermissionError)
 	doc = frappe.new_doc(DOCTYPE)
 	doc.title = (title or "").strip()[:140]
 	doc.private = 1 if private else 0

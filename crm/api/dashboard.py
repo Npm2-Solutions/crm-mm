@@ -6,7 +6,7 @@ from pypika.functions import Function
 
 from crm.dashboard import layout as grid
 from crm.dashboard import registry, store, templates
-from crm.dashboard.context import Context, is_manager
+from crm.dashboard.context import Context, is_manager, keeps_own, shares
 from crm.utils import sales_user_only
 
 
@@ -29,7 +29,9 @@ def get_dashboards() -> dict:
 	"""The dashboards the person can open. POST: the first call on a site creates the defaults."""
 	return {
 		"dashboards": store.visible_dashboards(),
-		"can_share": is_manager(),
+		"can_share": shares(),
+		# Read only opens the dashboards and makes none of its own
+		"can_create": keeps_own() or shares(),
 	}
 
 
