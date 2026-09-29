@@ -1,8 +1,9 @@
 <!--
   The person's forms: what they signed, what is half-filled, and a form to fill
-  now. Signed ones open read-only, with their PDF; a draft opens where it was
-  left. Like the consents, they follow the person: whoever sees the person sees
-  them, except the forms with health data, which are the care team's.
+  now, with them at the desk or on their own (a link by email, the desk's
+  tablet). Signed ones open read-only, with their PDF; a draft opens where it
+  was left. Like the consents, they follow the person: whoever sees the person
+  sees them, except the forms with health data, which are the care team's.
 -->
 <template>
   <div class="flex flex-col gap-4 px-8 py-6 max-md:px-4 max-md:py-4">
@@ -12,23 +13,43 @@
       <p class="min-w-0 text-p-base text-ink-gray-6">
         {{
           __(
-            'Privacy, consents, questionnaires: filled with the person and signed on the screen. A signed form is kept as it was, with its PDF.',
+            "Privacy, consents, questionnaires: filled with the person and signed on the screen, or on their own from a link or the desk's tablet. A signed form is kept as it was, with its PDF.",
           )
         }}
       </p>
-      <Dropdown
+      <div
         v-if="data?.can_fill && data.templates.length"
-        :options="templateOptions"
-        placement="right"
+        class="flex shrink-0 gap-2 max-md:flex-wrap"
       >
         <Button
-          class="shrink-0"
-          variant="solid"
-          icon-left="plus"
-          :label="__('Fill a form')"
-          :loading="starting"
+          icon-left="send"
+          :label="__('On their own')"
+          @click="showSend = true"
         />
-      </Dropdown>
+        <Dropdown :options="templateOptions" placement="right">
+          <Button
+            variant="solid"
+            icon-left="plus"
+            :label="__('Fill a form')"
+            :loading="starting"
+          />
+        </Dropdown>
+      </div>
+    </div>
+
+    <!-- what was sent and has not come back -->
+    <div v-if="waiting.length" class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-ink-gray-5">{{
+        __('Sent to fill')
+      }}</span>
+      <RequestRow
+        v-for="request in waiting"
+        :key="request.name"
+        :request="request"
+        :can-fill="data?.can_fill"
+        @withdraw="withdraw"
+        @open="open"
+      />
     </div>
 
     <div v-if="forms.loading && !data" class="flex justify-center py-10">
@@ -85,12 +106,44 @@
         </div>
       </button>
     </div>
+
+    <div v-if="earlier.length" class="flex flex-col gap-1">
+      <button
+        type="button"
+        class="touch-target flex w-fit items-center gap-1 text-sm text-ink-gray-5 hover:text-ink-gray-7"
+        @click="showEarlier = !showEarlier"
+      >
+        <LucideChevronRight
+          class="size-3.5 transition-transform"
+          :class="{ 'rotate-90': showEarlier }"
+        />
+        {{ __('Sent earlier ({0})', [earlier.length]) }}
+      </button>
+      <template v-if="showEarlier">
+        <RequestRow
+          v-for="request in earlier"
+          :key="request.name"
+          :request="request"
+          @open="open"
+        />
+      </template>
+    </div>
+
+    <SendFormsDialog
+      v-if="showSend"
+      v-model="showSend"
+      :lead="lead"
+      @sent="requests.reload()"
+    />
   </div>
 </template>
 
 <script setup>
 import EmptyState from '@/components/ListViews/EmptyState.vue'
+import RequestRow from '@/components/Moduli/RequestRow.vue'
+import SendFormsDialog from '@/components/Moduli/SendFormsDialog.vue'
 import { formatDate } from '@/utils'
+import LucideChevronRight from '~icons/lucide/chevron-right'
 import LucideFileCheck from '~icons/lucide/file-check'
 import LucideFilePen from '~icons/lucide/file-pen-line'
 import LucideFileSignature from '~icons/lucide/file-signature'
@@ -110,6 +163,8 @@ const props = defineProps({ lead: { type: String, required: true } })
 
 const router = useRouter()
 const starting = ref(false)
+const showSend = ref(false)
+const showEarlier = ref(false)
 
 const forms = createResource({
   url: 'crm.moduli.compilazioni.get_person_forms',
@@ -117,6 +172,21 @@ const forms = createResource({
   auto: true,
 })
 const data = computed(() => forms.data)
+
+const requests = createResource({
+  url: 'crm.moduli.richieste.get_requests',
+  params: { lead: props.lead },
+  auto: true,
+})
+const STILL_OUT = ['Sent', 'Opened', 'Filled']
+const waiting = computed(() =>
+  (requests.data || []).filter((request) => STILL_OUT.includes(request.status)),
+)
+const earlier = computed(() =>
+  (requests.data || []).filter(
+    (request) => !STILL_OUT.includes(request.status),
+  ),
+)
 
 const templateOptions = computed(() =>
   (data.value?.templates || []).map((template) => ({
@@ -126,13 +196,21 @@ const templateOptions = computed(() =>
   })),
 )
 
+const WHERE = {
+  Link: () => __('from a link'),
+  Tablet: () => __('on the tablet'),
+}
+
 function describe(form) {
   const parts = [__('version {0}', [form.version])]
   if (form.docstatus) {
-    parts.push(__('signed {0}', [formatDate(form.signed_on, 'D MMM YYYY, HH:mm')]))
+    parts.push(
+      __('signed {0}', [formatDate(form.signed_on, 'D MMM YYYY, HH:mm')]),
+    )
   } else {
     parts.push(__('started {0}', [formatDate(form.modified, 'D MMM YYYY')]))
   }
+  if (WHERE[form.channel]) parts.push(WHERE[form.channel]())
   if (form.filled_by_name) parts.push(__('with {0}', [form.filled_by_name]))
   return parts.join(' · ')
 }
@@ -153,6 +231,17 @@ async function start(template) {
     toast.error(error.messages?.[0] || error.message)
   } finally {
     starting.value = false
+  }
+}
+
+async function withdraw(request) {
+  try {
+    await call('crm.moduli.richieste.cancel_request', { name: request.name })
+    toast.success(__('Withdrawn: the link no longer opens it'))
+    requests.reload()
+    forms.reload()
+  } catch (error) {
+    toast.error(error.messages?.[0] || error.message)
   }
 }
 </script>

@@ -34,13 +34,27 @@
     <div v-if="!data" class="flex justify-center py-16">
       <LoadingIndicator class="w-5" />
     </div>
-    <div v-else class="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-6 max-md:px-4">
+    <div
+      v-else
+      class="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-6 max-md:px-4"
+    >
       <div class="flex flex-col gap-1">
         <h1 class="text-2xl font-semibold text-ink-gray-9">{{ data.title }}</h1>
         <p class="text-p-base text-ink-gray-6">
           {{ data.lead_name }} · {{ __('version {0}', [data.version]) }}
+          <template v-if="data.channel === 'Link'">
+            · {{ __('from a link') }}</template
+          >
+          <template v-else-if="data.channel === 'Tablet'">
+            · {{ __('on the tablet') }}</template
+          >
           <template v-if="signed">
-            · {{ __('signed {0}', [formatDate(data.signed_on, 'D MMM YYYY, HH:mm')]) }}
+            ·
+            {{
+              __('signed {0}', [
+                formatDate(data.signed_on, 'D MMM YYYY, HH:mm'),
+              ])
+            }}
           </template>
         </p>
       </div>
@@ -55,7 +69,8 @@
           {{ __('Warnings for the operator') }}
         </div>
         <span v-for="stop in stops" :key="stop.field">
-          {{ labelOf(stop.field) }}: {{ stop.message || __('Stop here and tell the operator') }}
+          {{ labelOf(stop.field) }}:
+          {{ stop.message || __('Stop here and tell the operator') }}
         </span>
       </div>
 
@@ -100,7 +115,11 @@
           @click="discard"
         />
         <div class="flex gap-2 max-md:w-full max-md:justify-end">
-          <Button :label="__('Save for later')" :loading="saving" @click="save" />
+          <Button
+            :label="__('Save for later')"
+            :loading="saving"
+            @click="save"
+          />
           <Button
             variant="solid"
             :label="__('Sign and finish')"
@@ -115,17 +134,29 @@
         v-if="signed"
         class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 px-4 py-4"
       >
-        <h2 class="text-base font-semibold text-ink-gray-8">{{ __('Evidence') }}</h2>
-        <dl class="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-sm max-md:grid-cols-1">
+        <h2 class="text-base font-semibold text-ink-gray-8">
+          {{ __('Evidence') }}
+        </h2>
+        <dl
+          class="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-sm max-md:grid-cols-1"
+        >
+          <dt class="text-ink-gray-5">{{ __('Who signed, known by') }}</dt>
+          <dd class="text-ink-gray-7">{{ data.recognised }}</dd>
           <dt class="text-ink-gray-5">{{ __('What it asked (SHA-256)') }}</dt>
-          <dd class="break-all font-mono text-xs text-ink-gray-7">{{ data.schema_hash }}</dd>
+          <dd class="break-all font-mono text-xs text-ink-gray-7">
+            {{ data.schema_hash }}
+          </dd>
           <dt class="text-ink-gray-5">{{ __('The answers (SHA-256)') }}</dt>
-          <dd class="break-all font-mono text-xs text-ink-gray-7">{{ data.answers_hash }}</dd>
+          <dd class="break-all font-mono text-xs text-ink-gray-7">
+            {{ data.answers_hash }}
+          </dd>
           <template v-if="data.pdf_hash">
             <dt class="text-ink-gray-5">{{ __('The PDF (SHA-256)') }}</dt>
             <dd class="break-all font-mono text-xs text-ink-gray-7">
               {{ data.pdf_hash }}
-              <span class="block font-sans text-ink-gray-5">{{ data.pdf_conformance }}</span>
+              <span class="block font-sans text-ink-gray-5">{{
+                data.pdf_conformance
+              }}</span>
             </dd>
           </template>
         </dl>
@@ -140,7 +171,9 @@
               {{ formatDate(event.occurred_on, 'D MMM YYYY, HH:mm:ss') }}
             </span>
             <span>{{ eventLabel(event.event) }}</span>
-            <span v-if="event.detail" class="text-ink-gray-5">· {{ event.detail }}</span>
+            <span v-if="event.detail" class="text-ink-gray-5"
+              >· {{ event.detail }}</span
+            >
           </div>
         </div>
       </section>
@@ -190,7 +223,8 @@ function apply(form) {
   givenBy.value = form.given_by || null
   const shown = { ...(form.answers || {}) }
   // a signed form shows its strokes where they were drawn
-  for (const signature of form.signatures || []) shown[signature.field] = signature.image
+  for (const signature of form.signatures || [])
+    shown[signature.field] = signature.image
   values.value = shown
 }
 
@@ -205,7 +239,11 @@ const crumbs = computed(() => [
   data.value?.lead
     ? {
         label: data.value.lead_name || data.value.lead,
-        route: { name: 'Lead', params: { leadId: data.value.lead }, hash: '#forms' },
+        route: {
+          name: 'Lead',
+          params: { leadId: data.value.lead },
+          hash: '#forms',
+        },
       }
     : { label: __('People'), route: { name: 'Leads' } },
   { label: data.value?.title || props.formId },
@@ -219,15 +257,24 @@ const stops = computed(() =>
 )
 
 function labelOf(key) {
-  return fieldsOf(data.value?.schema).find((field) => field.id === key)?.label || key
+  return (
+    fieldsOf(data.value?.schema).find((field) => field.id === key)?.label || key
+  )
 }
 
 const EVENTS = {
+  sent: __('Link sent'),
+  opened: __('Link opened'),
+  code_sent: __('Code sent'),
+  code_verified: __('Code checked'),
   created: __('Started'),
+  answers_saved: __('Answers saved'),
+  filled: __('Filled by the person'),
   signed: __('Signed'),
   pdf_generated: __('PDF made'),
   pdf_failed: __('PDF not made'),
   consent_recorded: __('Consent recorded'),
+  copy_downloaded: __('Copy downloaded'),
   cancelled: __('Cancelled'),
 }
 const eventLabel = (event) => EVENTS[event] || event
@@ -269,7 +316,10 @@ async function sign() {
   const strokes = Object.fromEntries(
     signatureFields.value
       .map((field) => [field.id, values.value[field.id]])
-      .filter(([, value]) => typeof value === 'string' && value.startsWith('data:image/png')),
+      .filter(
+        ([, value]) =>
+          typeof value === 'string' && value.startsWith('data:image/png'),
+      ),
   )
   signing.value = true
   try {
@@ -300,7 +350,9 @@ function discard() {
         variant: 'solid',
         theme: 'red',
         onClick: async (close) => {
-          await call('crm.moduli.compilazioni.discard_form', { name: props.formId })
+          await call('crm.moduli.compilazioni.discard_form', {
+            name: props.formId,
+          })
           close()
           router.push({ name: 'Lead', params: { leadId: data.value.lead } })
         },
