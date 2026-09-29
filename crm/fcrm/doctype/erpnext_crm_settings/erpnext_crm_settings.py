@@ -346,6 +346,19 @@ def get_erpnext_site_client(erpnext_crm_settings):
 	return FrappeClient(site_url, api_key=api_key, api_secret=api_secret)
 
 
+def _readable_deal(crm_deal: str):
+	"""The deal a quotation endpoint was asked about, if the caller may read it.
+
+	These endpoints take a deal name from the browser, and `frappe.get_doc` and
+	`frappe.db` read past permissions. A Sales User sees only their own and assigned
+	deals, and the sales hierarchy narrows it further (crm/permissions/org_hierarchy.py):
+	`check_permission` runs those rules too.
+	"""
+	deal = frappe.get_doc("CRM Deal", crm_deal)
+	deal.check_permission("read")
+	return deal
+
+
 def get_local_customer(crm_deal: str):
 	customer = frappe.db.exists("Customer", {"crm_deal": crm_deal})
 	if not customer:
@@ -355,6 +368,7 @@ def get_local_customer(crm_deal: str):
 
 @frappe.whitelist()
 def get_customer_link(crm_deal: str):
+	_readable_deal(crm_deal)
 	erpnext_crm_settings = _get_enabled_settings()
 
 	if not erpnext_crm_settings.is_erpnext_in_different_site:
@@ -381,6 +395,11 @@ def get_customer_link(crm_deal: str):
 
 @frappe.whitelist()
 def get_quotation_url(crm_deal: str, organization: str | None = None):
+	"""Reading the deal is enough to quote it: with ERPNext on another site this sends
+	the deal's details there as a Prospect, the same details the caller can read."""
+	_readable_deal(crm_deal)
+	if organization:
+		frappe.get_doc("CRM Organization", organization).check_permission("read")
 	erpnext_crm_settings = _get_enabled_settings()
 
 	contact = get_primary_contact(crm_deal)
@@ -455,7 +474,7 @@ def create_prospect_in_remote_site(crm_deal, erpnext_crm_settings):
 def prefill_quotation_items(crm_deal: str):
 	if not frappe.db.exists("CRM Deal", crm_deal):
 		return []
-	deal = frappe.get_doc("CRM Deal", crm_deal)
+	deal = _readable_deal(crm_deal)
 	items = []
 	for row in deal.products:
 		item_code = frappe.db.get_value("CRM Product", row.product_code, "erpnext_item_code")
@@ -557,7 +576,18 @@ def check_customer_for_deal(crm_deal: str):
 def check_customer_for_quotation(quotation: str):
 	"""Create/fetch the Customer for the CRM Deal behind a quotation. Called when a
 	Sales Order form is opened from a CRM Deal quotation that has no customer yet.
+
+	It creates a Customer and writes it on the deal, so it answers only whoever is
+	taking that step: able to read the quotation and to make a Sales Order. Not the
+	deal: the caller works in ERPNext and need not see the deal in the CRM.
 	"""
+	if not _is_erpnext_installed():
+		return None
+	if not (
+		frappe.has_permission("Quotation", "read", doc=quotation)
+		and frappe.has_permission("Sales Order", "create")
+	):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	crm_deal = frappe.db.get_value("Quotation", quotation, "crm_deal")
 	if not crm_deal:
 		return None
