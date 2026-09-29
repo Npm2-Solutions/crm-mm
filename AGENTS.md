@@ -85,7 +85,7 @@ they run as evaluated strings in the browser.
 ### Levels, capabilities and the plan (doc 30)
 | File | Role |
 |---|---|
-| `crm/permissions/livelli.py` | The registry: plan modules, levels, roles, capabilities with their scope. `puo()`, `ambito()`, `@richiede()`, pure `calcola()` |
+| `crm/permissions/livelli.py` | The registry: plan modules, levels, roles, capabilities with their scope. `puo()`, `ambito()`, `@richiede()`, pure `calcola()`. Every level carries `RUOLO_RECAPITI` (Contact Details) unless `recapiti=False` (Marketing): without it Frappe masks people's email and phone |
 | `crm/permissions/catalogo.py` | The CRM's own levels and capabilities; `crm/invoicing/capacita.py` adds invoicing's |
 | `crm/permissions/utenti.py` | Role Profiles from the registry, giving levels, the migration of old users |
 | `crm/registrazione.py` | Every module registers here, once per process (`before_request`, `before_job`) |
@@ -104,6 +104,11 @@ list and record); a new settings document gets its capability in `documenti.SCRI
 and the hook in `hooks.py`. On a settings page, what is the agency's (keys, endpoints,
 webhook secrets, a tag for a website) sits on permlevel 1, System Manager's only, the
 screen shows it on `puo('tecnico.integrazioni')` and its methods ask for that.
+People's email and phone carry Frappe's `mask`: `frappe.get_list` and the client
+get masked values for Marketing; code that sends reads `crm.utils.stored_value`.
+A record's page asks `useDocument(...).canWrite` (from `crm.api.doc.get_doc_permissions`,
+which asks the controllers too) before offering a write; reading and writing are
+separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |

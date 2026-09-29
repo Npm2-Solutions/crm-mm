@@ -428,7 +428,7 @@ livello della persona la prevede.
 | 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | ✅ fatto, 29/09 |
 | 3 | Capacità nel frontend, rotte protette, impostazioni divise | ✅ fatto, 29/09 |
 | 3b | Le pagine del Manager che scrivono documenti del core: account e modelli email, regole di assegnazione, importazione | ✅ fatto, 29/09 |
-| 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
+| 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | ✅ fatto, 29/09 |
 
 Direzione sanitaria arriva con la clinica.
 
@@ -656,6 +656,99 @@ Frappe dà solo a System Manager: il server rispondeva di no.
   capacità tecnica che la fatturazione aveva già, al posto di `tecnico.integrazioni`:
   il CRM non la nomina, la fatturazione non nomina quelle del CRM.
 
+## La PR 4, com'è fatta
+
+**Tre livelli nuovi**, facoltativi come il Commerciale:
+
+- **Marketing** (profilo `CRM Marketing`, si offre dove il piano ha il modulo
+  Marketing): automazioni, social, Meta, tracciamento, moduli, campagne, modelli di
+  messaggio, sito, numeri di marketing. Vede persone e trattative **con email e
+  telefoni mascherati**, e non legge conversazioni, chiamate, note, agenda,
+  consensi né fatture. Ha un ruolo suo, `Marketing`, che sui documenti del
+  marketing ha gli stessi diritti del Sales Manager;
+- **Amministrazione** (`CRM Accounting`): tutta la colonna della fatturazione,
+  i dati fiscali delle persone, persone, trattative e agenda da leggere, i numeri
+  economici e di marketing;
+- **Sola lettura** (`CRM Read Only`): si aggiunge a un altro livello e non porta
+  ruoli. Il registro gli toglie le capacità che scrivono, e un hook su ogni
+  documento gli nega creare, modificare, eliminare e condividere, anche con l'API;
+  restano le proprie notifiche e il proprio profilo. Da sola non si può dare.
+
+**La maschera è quella di Frappe.** Email, cellulare e telefono di persone e
+trattative hanno la proprietà `mask`, e li vede in chiaro solo chi ha il ruolo
+`Contact Details`: ogni livello lo porta, tranne Marketing e Sola lettura (il
+registro lo aggiunge da sé, `Livello.recapiti`). Frappe maschera la scheda, le
+liste, le esportazioni e i valori nei cambi della cronologia; un salvataggio non
+riscrive mai la maschera al posto del valore. Chi lavorava fuori dai livelli, con i
+ruoli di prima, riceve il ruolo con la migrazione e a ogni salvataggio: vedeva i
+recapiti e continua a vederli.
+
+**Cosa non maschera, e perché va bene.** Le letture del server
+(`frappe.db.get_value`, `frappe.get_all`) restano in chiaro: webhook, automazioni e
+invii leggono i numeri veri. Il ruolo Guest non serve a distinguerle: ce l'hanno
+tutti gli utenti collegati. Per prudenza il numero di un invio WhatsApp si legge
+con `crm.utils.stored_value`, che non passa da nessuna maschera. La rubrica del
+core (Contact) non si maschera, perché la regola varrebbe per tutto il sito: a chi
+vede le persone mascherate è negata del tutto.
+
+**Scrivere chiede la capacità, non basta vedere.** Tutti i livelli hanno Sales
+User, e Sales User può scrivere ed eliminare persone e trattative: una persona si
+crea e si modifica con `persone.scrivi`, si elimina con `persone.elimina` (il
+Manager); una trattativa con `trattative.scrivi`. Prima la Direzione sanitaria
+poteva modificare o eliminare una persona dall'API, e leggeva chiamate e note: non
+più.
+
+**Leggere ha la sua capacità, come per persone e trattative.** Email, WhatsApp e
+SMS si leggono con `conversazioni.vedi` e si scrivono con `conversazioni.usa`; le
+note, e i commenti interni della cronologia, si leggono con `note.vedi` e si
+scrivono con `note.scrivi`; le chiamate si leggono con `telefono.registro`. Così la
+Sola lettura, che perde le capacità che scrivono, legge quello che legge il suo
+livello. Rispondere su una persona o una trattativa chiede di conversare e di
+vederla, non di poterla modificare: l'Operatore risponde sulle sue trattative, che
+non modifica. Mandare un'email dalla scheda chiede `conversazioni.usa` anche
+all'API (il permesso "email" di Frappe).
+
+**Lo schermo chiede al server.** La scheda di una persona o di una trattativa chiede
+i permessi a `crm.api.doc.get_doc_permissions`, che per ogni scrittura interroga
+anche i controller: `frappe.client.get_doc_permissions` rispondeva con i soli ruoli.
+Chi non può modificare trova i campi in sola lettura e niente pulsanti che il
+server rifiuterebbe: arricchire, allegare, cambiare l'immagine, aprire una
+trattativa, cambiare fase o pipeline, aggiungere un contatto. Il menu "Nuovo" offre
+solo quello che il livello può fare: scrivere a qualcuno, un evento o un
+appuntamento (`agenda.prenota`), registrare una chiamata (`telefono.chiama`), una
+nota, un task (non in Sola lettura). I pulsanti di chiamata si vedono con
+`telefono.chiama`; i filtri dei canali della cronologia (email, chiamate, commenti)
+e i passi del "Getting started" solo a chi li legge o li può fare.
+
+**Leggere i numeri non è fare dashboard.** Vedere i numeri del centro e le dashboard
+del Manager è `dashboard.centro`, che non scrive; condividere e modificare quelle del
+team resta `dashboard.condivise`, farne di proprie `dashboard.personali`. Così la
+Sola lettura apre la dashboard (e un Manager in sola lettura tiene i suoi numeri)
+senza crearne. La pagina delle fatture è il registro del centro: la apre chi vede
+le fatture di tutto il centro (`fatture.vedi` con ambito centro, la Sola lettura
+compresa), e "Nuova fattura" e la coda da fatturare restano a chi emette. Una rotta
+può chiedere l'ambito di una capacità (`meta.ambito`), come il menu.
+
+**Assegnare chiede `persone.assegna`.** Frappe lascia assegnare a chiunque legga il
+documento: le sue chiamate `frappe.desk.form.assign_to.*` passano dal CRM
+(`override_whitelisted_methods`), che per persone e trattative chiede la capacità.
+Le regole di assegnazione chiamano le funzioni di Frappe direttamente, e restano
+come sono. Chi non assegna vede a chi è assegnata, senza poterlo cambiare.
+
+**Condiviso non vuol dire modificabile.** Il CRM condivide ogni persona e trattativa
+con il suo proprietario, in scrittura, e Frappe concede quello che è condiviso senza
+chiedere agli hook dei controller. Un salvataggio fatto per conto dell'utente (non
+quelli del server, con `ignore_permissions`) chiede quindi di nuovo: la capacità per
+persone, trattative e note, la Sola lettura per ogni documento.
+
+**Rimasto fuori.** Esportare solo chi ha il consenso (per ora il Marketing esporta
+mascherato), i testi della pagina `/prenota` e le dashboard condivise "di
+marketing": servono pezzi che non ci sono ancora, e il Manager li tiene. La casella
+delle conversazioni resta a chi risponde (`conversazioni.usa`): la Sola lettura
+legge le conversazioni dalla scheda della persona. Un ToDo scritto a mano con l'API
+assegna senza passare da `persone.assegna`: le regole di assegnazione scrivono i
+ToDo allo stesso modo, e un controllo lì le fermerebbe.
+
 ## Da decidere
 
 1. I tre livelli di base e i nomi: Segreteria, Operatore, Manager amministrativo?
@@ -667,7 +760,8 @@ Frappe dà solo a System Manager: il server rispondeva di no.
    trattativa. Basta così, o solo chi ha chiamato e il Manager?
 5. I numeri economici: solo Manager e Amministrazione? L'operatore vede i suoi?
 6. Il marketing lavora solo con i dati mascherati e senza leggere le conversazioni?
+   Per ora sì (PR 4): si cambia togliendo o dando il ruolo `Contact Details`.
 7. Nei centri medici serve il livello Commerciale?
-8. Sola lettura nella prima PR o dopo?
+8. Sola lettura nella prima PR o dopo? Arrivata con la PR 4.
 9. L'agenzia vede il non clinico per l'assistenza come oggi, o anche quello solo con
    un accesso a tempo?
