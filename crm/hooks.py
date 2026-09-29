@@ -247,6 +247,14 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+	# conditions written in Python are the agency's: the server writes the others
+	# from the guided conditions, before anything evaluates them
+	"Assignment Rule": {
+		"before_validate": "crm.permissions.documenti.scrivi_condizioni",
+	},
+	"CRM Service Level Agreement": {
+		"before_validate": "crm.permissions.documenti.scrivi_condizioni",
+	},
 	# The healthcare rules on a qualification belong to the module that can explain
 	# them, not to a DocType that also serves lawyers and engineers.
 	"CRM Professional Qualification": {
