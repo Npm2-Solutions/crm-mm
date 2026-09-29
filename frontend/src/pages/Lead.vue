@@ -284,7 +284,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning'
@@ -497,12 +497,11 @@ function deleteLead() {
   showDeleteLinkedDocModal.value = true
 }
 
+// «Send an email»: the Activity tab, its composer on email, the cursor in it.
+// It used to look for an «Emails» tab — gone since the channels became one
+// stream — so from any other tab the button did nothing at all.
 function openEmailBox() {
-  let currentTab = tabs.value[tabIndex.value]
-  if (!['Emails', 'Comments', 'Activities'].includes(currentTab.name)) {
-    activities.value.changeTabTo('emails')
-  }
-  nextTick(() => (activities.value.emailBox.show = true))
+  activities.value?.write?.('email')
 }
 
 function saveChange(data) {
