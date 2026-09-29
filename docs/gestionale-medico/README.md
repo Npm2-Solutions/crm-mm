@@ -323,7 +323,7 @@ Fatto il 29/09/2026, in `crm/clinica` (Frappe module "Clinica"):
   `crm/registrazione.py` la nomina.
 
 Restano per la fase 1 il deal che si chiude, l'evento per le automazioni e il
-widget "nuovi pazienti".
+widget "nuovi pazienti": fatti con [la prima cucitura](#la-prima-cucitura-diventare-paziente-chiude-il-deal).
 
 ### La sezione Clinica
 
@@ -397,6 +397,32 @@ e telefono sono di tutti.
   scheda paziente è diventato un legame: una patch sposta quello che c'era.
 - **Chi li vede**: un legame è delle due persone, lo vede chi vede una delle due; lo
   scrive chi scrive le persone, fra due persone che vede entrambe.
+
+### La prima cucitura: diventare paziente chiude il deal
+
+Fatta il 29/09/2026 (fase 1), in `crm/clinica/pipeline.py`:
+
+- **Le due pipeline nascono con la clinica.** Quando l'agenzia la accende, il CRM
+  crea "Nuovi pazienti" (richiesta, contattato, appuntamento fissato, venuto,
+  non venuto) e "Preventivi" (da fare, consegnato, accettato, rifiutato), nella
+  lingua del sito. Una pipeline con quel nome fatta a mano si usa così com'è. In
+  Impostazioni → Pipeline, la sezione "Centro medico" dice quali sono e dove una
+  prenotazione sposta la richiesta (`Clinic Settings`), e le crea se mancano.
+- **La prenotazione sposta la richiesta** aperta di "Nuovi pazienti" su
+  "appuntamento fissato"; una già più avanti resta dov'è, e le altre pipeline non
+  si toccano.
+- **Diventare paziente la vince**, con la data di chiusura di oggi. Il report delle
+  inserzioni Meta conta i deal vinti di ogni inserzione, e così dice quanto costa
+  un nuovo paziente; il widget "Cost per new patient" lo fa per tutto il periodo
+  (la spesa divisa per chi è arrivato dagli annunci ed è diventato paziente), e
+  "New patients" li conta. Un deal che non si salva non ferma il paziente: si
+  scrive nel log.
+- **Le automazioni lo sentono**: il trigger "Became Patient", sulla persona, con la
+  regola che l'ha fatto. Il costruttore lo offre solo dove la clinica è accesa: il
+  CRM non lo nomina, la clinica lo registra (`registra_evento`).
+- **Solo chi diventa paziente adesso.** I pazienti trovati nei dati di prima,
+  all'accensione, non chiudono deal e non fanno partire automazioni: non sono una
+  notizia.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
