@@ -1,0 +1,128 @@
+{#-
+	A signed form, as it is kept: generated once, at signing, and never again.
+
+	Its SHA-256 is recorded on the form, so years later it proves itself. Like the
+	invoice, it loads **no remote resource**: the signatures are embedded as images,
+	the fonts are the system's, and nothing is fetched when somebody opens it.
+
+	The last page is the evidence (design.md, "Le prove di ogni firma"): the
+	template and its version with the hash of what it asked, the hash of the
+	answers, who signed, as what, at what level, how, when by the server's clock,
+	from where, and the events of the form in order.
+-#}
+<!doctype html>
+<html lang="{{ lingua }}">
+<head>
+<meta charset="utf-8">
+<title>{{ titolo }}</title>
+<style>
+	@page { size: A4; margin: 18mm 16mm 18mm 16mm;
+		@bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #767676; }
+		@bottom-left { content: "{{ _('Form') }} {{ doc.name }}"; font-size: 8pt; color: #767676; } }
+	body { font-family: "DejaVu Sans", "Helvetica", sans-serif; color: #1a1a1a; font-size: 10pt; line-height: 1.45; }
+	h1 { font-size: 15pt; margin: 0 0 2pt; }
+	h2 { font-size: 11pt; margin: 18pt 0 6pt; padding-bottom: 3pt; border-bottom: 0.6pt solid #d4d4d4; }
+	.sommesso { color: #666; font-size: 9pt; }
+	.intestazione { display: flex; justify-content: space-between; gap: 16pt; margin-bottom: 10pt; }
+	.domanda { margin: 0 0 8pt; page-break-inside: avoid; }
+	.etichetta { font-size: 8.5pt; letter-spacing: .04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 1pt; }
+	.risposta { white-space: pre-wrap; }
+	.vuota { color: #9a9a9a; }
+	.testo { white-space: pre-wrap; background: #f6f6f6; padding: 7pt 9pt; border-radius: 3pt; margin: 0 0 8pt; }
+	table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+	th { text-align: left; font-weight: normal; color: #6b6b6b; border-bottom: 0.6pt solid #d4d4d4; padding: 2pt 4pt 3pt 0; }
+	td { border-bottom: 0.4pt solid #eee; padding: 3pt 4pt 3pt 0; vertical-align: top; }
+	.firma img { max-height: 70pt; max-width: 240pt; }
+	.firma .riga { border-top: 0.6pt solid #9a9a9a; width: 240pt; padding-top: 2pt; font-size: 8.5pt; color: #6b6b6b; }
+	.avviso { border: 0.8pt solid #d9534f; color: #a02622; padding: 5pt 8pt; border-radius: 3pt; margin: 4pt 0 8pt; }
+	.prove { page-break-before: always; font-size: 9pt; }
+	.prove td:first-child { width: 36%; color: #555; }
+	.impronta { font-family: "DejaVu Sans Mono", monospace; font-size: 7.5pt; word-break: break-all; }
+</style>
+</head>
+<body>
+	<div class="intestazione">
+		<div>
+			<h1>{{ titolo }}</h1>
+			<div class="sommesso">{{ _("Version {0}").format(versione.version) }}{% if centro %} · {{ centro }}{% endif %}</div>
+		</div>
+		<div class="sommesso" style="text-align: right">
+			<div><strong>{{ persona }}</strong></div>
+			{% if dato_da %}<div>{{ _("Answered by {0}").format(dato_da) }}</div>{% endif %}
+			<div>{{ _("Signed on {0}").format(firmato_il) }}</div>
+		</div>
+	</div>
+
+	{% for sezione in sezioni %}
+		{% if sezione.titolo %}<h2>{{ sezione.titolo }}</h2>{% endif %}
+		{% if sezione.descrizione %}<p class="sommesso">{{ sezione.descrizione }}</p>{% endif %}
+		{% for voce in sezione.voci %}
+			{% if voce.tipo == "paragraph" %}
+				<div class="testo">{{ voce.testo }}</div>
+			{% elif voce.tipo == "signature" %}
+				<div class="domanda firma">
+					{% if voce.immagine %}<img src="{{ voce.immagine }}" alt="">{% else %}<div class="vuota">{{ _("Not signed") }}</div>{% endif %}
+					<div class="riga">{{ voce.etichetta }}{% if voce.firmatario %} — {{ voce.firmatario }}{% endif %}</div>
+				</div>
+			{% elif voce.tipo == "consent" %}
+				<div class="domanda">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					<div class="testo">{{ voce.testo }}</div>
+					<div class="risposta"><strong>{{ voce.risposta }}</strong></div>
+				</div>
+			{% elif voce.tipo == "table" %}
+				<div class="domanda">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					{% if voce.righe %}
+					<table>
+						<tr>{% for colonna in voce.colonne %}<th>{{ colonna }}</th>{% endfor %}</tr>
+						{% for riga in voce.righe %}<tr>{% for cella in riga %}<td>{{ cella }}</td>{% endfor %}</tr>{% endfor %}
+					</table>
+					{% else %}<div class="vuota">—</div>{% endif %}
+				</div>
+			{% else %}
+				<div class="domanda">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					<div class="risposta {% if not voce.risposta %}vuota{% endif %}">{{ voce.risposta or "—" }}</div>
+				</div>
+			{% endif %}
+			{% if voce.avviso is not none %}
+				<div class="avviso">{{ voce.avviso or _("Stop here and tell the operator") }}</div>
+			{% endif %}
+		{% endfor %}
+	{% endfor %}
+
+	<div class="prove">
+		<h2>{{ _("Evidence") }}</h2>
+		<table>
+			<tr><td>{{ _("Form") }}</td><td>{{ doc.name }}</td></tr>
+			<tr><td>{{ _("Template") }}</td><td>{{ titolo }} · {{ _("version {0}").format(versione.version) }} · {{ _("published {0}").format(pubblicata_il) }}</td></tr>
+			<tr><td>{{ _("What it asked (SHA-256)") }}</td><td class="impronta">{{ versione.schema_hash }}</td></tr>
+			<tr><td>{{ _("The answers (SHA-256)") }}</td><td class="impronta">{{ doc.answers_hash }}</td></tr>
+			<tr><td>{{ _("Filled") }}</td><td>{{ canale }}{% if compilato_da %} · {{ _("with {0}").format(compilato_da) }}{% endif %}</td></tr>
+		</table>
+
+		{% for firma in firme %}
+		<h2>{{ _("Signature: {0}").format(firma.etichetta) }}</h2>
+		<table>
+			<tr><td>{{ _("Who") }}</td><td>{{ firma.chi }} ({{ firma.veste }})</td></tr>
+			<tr><td>{{ _("Level") }}</td><td>{{ firma.livello }} · {{ firma.metodo }}</td></tr>
+			<tr><td>{{ _("When, by the server's clock") }}</td><td>{{ firma.quando }}</td></tr>
+			<tr><td>{{ _("From") }}</td><td>{{ firma.ip or "—" }}</td></tr>
+			<tr><td>{{ _("Device") }}</td><td>{{ firma.dispositivo or "—" }}</td></tr>
+			<tr><td>{{ _("On the answers (SHA-256)") }}</td><td class="impronta">{{ firma.impronta }}</td></tr>
+		</table>
+		{% endfor %}
+
+		<h2>{{ _("What happened") }}</h2>
+		<table>
+			{% for evento in eventi %}
+			<tr><td>{{ evento.quando }}</td><td>{{ evento.cosa }}{% if evento.chi %} · {{ evento.chi }}{% endif %}{% if evento.ip %} · {{ evento.ip }}{% endif %}</td></tr>
+			{% endfor %}
+		</table>
+		<p class="sommesso" style="margin-top: 12pt">
+			{{ _("This document was generated once, when the form was signed. Its SHA-256 is recorded with the form: a copy that gives a different one is not this document.") }}
+		</p>
+	</div>
+</body>
+</html>
