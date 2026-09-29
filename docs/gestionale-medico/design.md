@@ -268,8 +268,9 @@ Un modulo, una scheda clinica e un piano sono lo stesso oggetto con tre usi:
   fanno l'animazione, con l'autore sulla scheda) e i muscoli evidenziati su una
   mappa del corpo disegnata da noi con body-muscles (Apache 2.0). Le GIF animate
   che girano su GitHub non sono libere: sono di ExerciseDB o di Gym visual. Se
-  servono, ExerciseDB vende la licenza una tantum da 199 $. Per la fisioterapia i
-  video del centro restano i migliori, più un link YouTube o Vimeo.
+  servono, ExerciseDB vende la licenza una tantum da 199 $. Per la fisioterapia non
+  c'è una libreria libera con le figure (dell'NHS si riusano i testi, non le
+  immagini né i video): restano i video del centro, più un link YouTube o Vimeo.
 - **Chi scrive cosa**: la qualifica dell'erogatore decide. La dieta la firmano
   medico, biologo nutrizionista o dietista (su prescrizione del medico); il
   personal trainer no, perché dare diete è esercizio abusivo della professione;
@@ -452,3 +453,5 @@ in `pyproject.toml` (oggi qualunque 16.x) va alzato.
 8. Registrare la visita mentre si svolge: mai, oppure con uno scribe che ha già il
    marchio CE?
 9. Dove gira il modello linguistico: AWS Bedrock a Milano o Vertex AI in UE?
+10. Una libreria base di esercizi di fisioterapia girata una volta da voi, con un
+    fisioterapista, che resta vostra e va a tutti i centri?
