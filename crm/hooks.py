@@ -175,6 +175,7 @@ permission_query_conditions = {
 	"CRM Billing Profile": "crm.invoicing.permessi.get_profile_permission_query_conditions",
 	# and so do their consents
 	"CRM Consent": "crm.moduli.consensi.get_permission_query_conditions",
+	"CRM Form": "crm.moduli.compilazioni.get_permission_query_conditions",
 	# and the people they are linked to, from either side
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
@@ -202,6 +203,7 @@ has_permission = {
 	"CRM Invoice": "crm.invoicing.permessi.has_permission",
 	"CRM Billing Profile": "crm.invoicing.permessi.has_profile_permission",
 	"CRM Consent": "crm.moduli.consensi.has_permission",
+	"CRM Form": "crm.moduli.compilazioni.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
