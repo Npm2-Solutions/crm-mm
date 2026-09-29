@@ -35,7 +35,8 @@
    "fieldname": "account_sid",
    "fieldtype": "Data",
    "label": "Account SID",
-   "mandatory_depends_on": "enabled"
+   "mandatory_depends_on": "enabled",
+   "permlevel": 1
   },
   {
    "depends_on": "enabled",
@@ -53,7 +54,8 @@
    "fieldtype": "Password",
    "in_list_view": 1,
    "label": "API Key",
-   "mandatory_depends_on": "enabled"
+   "mandatory_depends_on": "enabled",
+   "permlevel": 1
   },
   {
    "fieldname": "column_break_uxtz",
@@ -65,7 +67,8 @@
    "fieldtype": "Password",
    "in_list_view": 1,
    "label": "API Token",
-   "mandatory_depends_on": "enabled"
+   "mandatory_depends_on": "enabled",
+   "permlevel": 1
   },
   {
    "default": "0",
@@ -83,14 +86,16 @@
    "fieldname": "webhook_verify_token",
    "fieldtype": "Password",
    "label": "Webhook Verify Token",
-   "mandatory_depends_on": "enabled"
+   "mandatory_depends_on": "enabled",
+   "permlevel": 1
   },
   {
    "depends_on": "enabled",
    "fieldname": "subdomain",
    "fieldtype": "Data",
    "label": "Subdomain",
-   "mandatory_depends_on": "enabled"
+   "mandatory_depends_on": "enabled",
+   "permlevel": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -120,6 +125,12 @@
    "read": 1,
    "role": "Sales Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
    "write": 1
   }
  ],

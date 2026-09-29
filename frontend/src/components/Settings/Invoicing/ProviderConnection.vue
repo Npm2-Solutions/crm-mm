@@ -112,12 +112,18 @@
                 ? __(
                     'A secret is configured. The door only opens for the provider.',
                   )
-                : __(
-                    'No secret yet: the door stays shut and notices cannot arrive.',
-                  )
+                : tecnico
+                  ? __(
+                      'No secret yet: the door stays shut and notices cannot arrive.',
+                    )
+                  : __(
+                      'No secret yet: the agency generates it and sets it at the provider.',
+                    )
             }}
           </span>
+          <!-- the secret is the agency's plumbing, like every webhook's (doc 30) -->
           <Button
+            v-if="tecnico"
             variant="solid"
             :loading="generando"
             :label="armato ? __('Rotate secret') : __('Generate secret')"
@@ -163,7 +169,10 @@ import {
   Dropdown,
   toast,
 } from 'frappe-ui'
+import { usersStore } from '@/stores/users'
 import { computed, ref, watch } from 'vue'
+
+const tecnico = usersStore().puo('tecnico.integrazioni')
 
 const azienda = ref('')
 const segreto = ref('')

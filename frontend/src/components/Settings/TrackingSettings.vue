@@ -31,8 +31,18 @@
     </div>
 
     <div class="flex-1 flex flex-col gap-6 overflow-y-auto px-2">
-      <!-- the snippet: the one thing a new install actually has to do -->
-      <div>
+      <!-- the snippet: the one thing a new install actually has to do. Putting
+           it on the site is the agency's job (doc 30), with which sites may
+           send data, which addresses are left out and how long history is
+           kept; the centre gets the numbers and the rest of the switches -->
+      <p v-if="!tecnico" class="text-p-sm text-ink-gray-6">
+        {{
+          __(
+            'The agency puts the tracking script on your website, and decides which sites may send data and how long anonymous browsing is kept.',
+          )
+        }}
+      </p>
+      <div v-if="tecnico">
         <div class="flex flex-col gap-1">
           <span class="text-lg-semibold text-ink-gray-8">
             {{ __('Tracking script') }}
@@ -114,6 +124,7 @@
         </SettingsRow>
 
         <SettingsRow
+          v-if="tecnico"
           :label="__('Allowed origins')"
           :description="
             __(
@@ -182,6 +193,7 @@
         </SettingsRow>
 
         <SettingsRow
+          v-if="tecnico"
           :label="__('Excluded IPs')"
           :description="
             __(
@@ -198,6 +210,7 @@
         </SettingsRow>
 
         <SettingsRow
+          v-if="tecnico"
           :label="__('Retention')"
           :description="
             __(
@@ -220,6 +233,7 @@
 import SettingsRow from '@/components/Settings/SettingsRow.vue'
 import LucideCopy from '~icons/lucide/copy'
 import { copyToClipboard } from '@/utils'
+import { usersStore } from '@/stores/users'
 import {
   Button,
   FormControl,
@@ -232,6 +246,9 @@ import { useTelemetry } from 'frappe-ui/frappe'
 import { computed } from 'vue'
 
 const { capture } = useTelemetry()
+
+// the tag, the origins, the excluded addresses and the retention are the agency's
+const tecnico = usersStore().puo('tecnico.integrazioni')
 
 const settings = createDocumentResource({
   doctype: 'CRM Tracking Settings',

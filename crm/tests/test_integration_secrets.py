@@ -7,6 +7,10 @@ Whoever can read a settings document gets the mask, through REST and frappe.clie
 alike (and FCRM Settings is loaded in every browser). Only the code that talks to
 the provider decrypts them. For a Single, a field permission level would not do
 it: frappe.client.get_value and get_single_value check the doctype, not the field.
+
+The agency's keys also sit on permission level 1, System Manager's only (doc 30): a
+Manager's copy of the settings comes without them, and a save leaves them as they
+were. The mask stays underneath, for the paths that do not look at the level.
 """
 
 from unittest.mock import MagicMock, patch
@@ -88,7 +92,7 @@ class SecretsTestCase(IntegrationTestCase):
 
 	def assert_single_masked_for(self, user: str, doctype: str, fieldname: str, secret: str):
 		frappe.set_user(user)
-		self.assert_masked(frappe.client.get(doctype)[fieldname], secret)
+		self.assert_masked(frappe.client.get(doctype).get(fieldname), secret)
 		self.assert_masked(frappe.client.get_single_value(doctype, fieldname), secret)
 		self.assert_masked(frappe.client.get_value(doctype, fieldname)[fieldname], secret)
 		frappe.set_user("Administrator")
@@ -123,6 +127,38 @@ class TestSecretsAreNotHandedOut(SecretsTestCase):
 		save_single("ERPNext CRM Settings", enabled=0, api_key="erpnext-key")
 		for user in (SALES_USER, MANAGER):
 			self.assert_single_masked_for(user, "ERPNext CRM Settings", "api_key", "erpnext-key")
+
+	def test_the_agency_keys_do_not_reach_a_manager_at_all(self):
+		save_single("FCRM Settings", access_key="exchange-live-key")
+		save_single("CRM Exotel Settings", enabled=0, api_key="exotel-key", account_sid="exo-sid")
+		frappe.set_user(MANAGER)
+		# Frappe lists every field of the doctype: the value is what must not come
+		self.assertIsNone(frappe.client.get("FCRM Settings").get("access_key"))
+		exotel = frappe.client.get("CRM Exotel Settings")
+		self.assertIsNone(exotel.get("api_key"))
+		self.assertIsNone(exotel.get("account_sid"))
+
+	def test_a_manager_saving_the_settings_leaves_the_agency_keys_alone(self):
+		save_single("CRM Exotel Settings", enabled=0, account_sid="exo-sid", subdomain="api.exotel.com")
+		frappe.set_user(MANAGER)
+		exotel = frappe.get_doc(frappe.client.get("CRM Exotel Settings"))
+		exotel.record_call = 1
+		exotel.account_sid = "someone-else"
+		exotel.subdomain = "evil.example.com"
+		exotel.save()
+		frappe.set_user("Administrator")
+		frappe.clear_document_cache("CRM Exotel Settings", "CRM Exotel Settings")
+		saved = frappe.get_single("CRM Exotel Settings")
+		self.assertEqual(saved.record_call, 1)
+		self.assertEqual(saved.account_sid, "exo-sid")
+		self.assertEqual(saved.subdomain, "api.exotel.com")
+
+	def test_connecting_a_provider_is_the_agencys(self):
+		frappe.set_user(MANAGER)
+		exotel = frappe.get_doc(frappe.client.get("CRM Exotel Settings"))
+		exotel.enabled = 1
+		with self.assertRaises(frappe.PermissionError):
+			exotel.save()
 
 	def test_the_booking_webhook_token_is_masked_for_a_manager(self):
 		conn = make_connection()

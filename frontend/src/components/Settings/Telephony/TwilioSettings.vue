@@ -26,7 +26,12 @@
           variant="subtle"
           @click="twilio.reload()"
         />
-        <Button :label="__('Disable')" variant="subtle" @click="disable" />
+        <Button
+          v-if="tecnico"
+          :label="__('Disable')"
+          variant="subtle"
+          @click="disable"
+        />
         <Button
           variant="solid"
           :label="__('Update')"
@@ -39,97 +44,108 @@
     <template #content>
       <div v-if="twilio.doc" class="h-full">
         <div v-if="twilio.doc.enabled" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <FormControl
-              v-model="twilio.doc.account_sid"
-              :label="__('Account SID')"
-              type="text"
-              placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-              required
-              autocomplete="off"
+          <!-- the account, its app and its trunks are the agency's (doc 30);
+               the centre decides on recording and on its caller IDs -->
+          <p v-if="!tecnico" class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'The agency connects the Twilio account: its keys, the app and the SIP trunks. Here you decide whether calls are recorded and which numbers you call from.',
+              )
+            }}
+          </p>
+          <template v-if="tecnico">
+            <div class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+              <FormControl
+                v-model="twilio.doc.account_sid"
+                :label="__('Account SID')"
+                type="text"
+                placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                required
+                autocomplete="off"
+              />
+              <Password
+                v-model="twilio.doc.auth_token"
+                :label="__('Auth Token')"
+                placeholder="************"
+                required
+              />
+            </div>
+            <div
+              v-if="twilio.originalDoc?.account_sid && twilioApps.length > 0"
+              class="h-px border-t border-outline-elevation-2"
             />
-            <Password
-              v-model="twilio.doc.auth_token"
-              :label="__('Auth Token')"
-              placeholder="************"
-              required
-            />
-          </div>
-          <div
-            v-if="twilio.originalDoc?.account_sid && twilioApps.length > 0"
-            class="h-px border-t border-outline-elevation-2"
-          />
-          <div
-            v-if="twilio.originalDoc?.account_sid && twilioApps.length > 0"
-            class="flex items-center justify-between gap-8"
-          >
-            <div class="flex flex-col">
-              <div class="text-p-base-medium text-ink-gray-7 truncate">
-                {{ __('Twilio App Name') }}
+            <div
+              v-if="twilio.originalDoc?.account_sid && twilioApps.length > 0"
+              class="flex items-center justify-between gap-8"
+            >
+              <div class="flex flex-col">
+                <div class="text-p-base-medium text-ink-gray-7 truncate">
+                  {{ __('Twilio App Name') }}
+                </div>
+                <div class="text-p-sm text-ink-gray-5">
+                  {{ __('Select a Twilio app for your CRM') }}
+                </div>
               </div>
-              <div class="text-p-sm text-ink-gray-5">
-                {{ __('Select a Twilio app for your CRM') }}
+              <div class="flex items-center gap-2">
+                <Combobox v-model="twilio.doc.app_name" :options="twilioApps">
+                  <template #footer>
+                    <Button
+                      :label="__('Refresh Apps')"
+                      theme="gray"
+                      variant="subtle"
+                      class="w-full"
+                      icon-left="lucide-refresh-cw"
+                      :loading="twilio.fetchTwilioApps.loading"
+                      @click="twilio.fetchTwilioApps.fetch"
+                    />
+                  </template>
+                </Combobox>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <Combobox v-model="twilio.doc.app_name" :options="twilioApps">
-                <template #footer>
-                  <Button
-                    :label="__('Refresh Apps')"
-                    theme="gray"
-                    variant="subtle"
-                    class="w-full"
-                    icon-left="lucide-refresh-cw"
-                    :loading="twilio.fetchTwilioApps.loading"
-                    @click="twilio.fetchTwilioApps.fetch"
-                  />
-                </template>
-              </Combobox>
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex flex-col min-w-0">
+                <div class="text-p-base-medium text-ink-gray-7">
+                  {{ __('Connection') }}
+                </div>
+                <div
+                  v-if="connection"
+                  class="text-p-sm truncate"
+                  :class="connection.ok ? 'text-ink-green-8' : 'text-ink-red-8'"
+                >
+                  {{
+                    connection.ok
+                      ? __('Reached {0} ({1})', [
+                          connection.account,
+                          connection.status,
+                        ])
+                      : connection.error
+                  }}
+                </div>
+                <div v-else class="text-p-sm text-ink-gray-5">
+                  {{ __('Check the credentials actually reach your account.') }}
+                </div>
+              </div>
+              <Button
+                :label="__('Test')"
+                :loading="twilio.testConnection.loading"
+                @click="testConnection"
+              />
             </div>
-          </div>
-          <div class="flex items-center justify-between gap-4">
-            <div class="flex flex-col min-w-0">
-              <div class="text-p-base-medium text-ink-gray-7">
-                {{ __('Connection') }}
-              </div>
-              <div
-                v-if="connection"
-                class="text-p-sm truncate"
-                :class="connection.ok ? 'text-ink-green-8' : 'text-ink-red-8'"
-              >
-                {{
-                  connection.ok
-                    ? __('Reached {0} ({1})', [
-                        connection.account,
-                        connection.status,
-                      ])
-                    : connection.error
-                }}
-              </div>
-              <div v-else class="text-p-sm text-ink-gray-5">
-                {{ __('Check the credentials actually reach your account.') }}
-              </div>
-            </div>
-            <Button
-              :label="__('Test')"
-              :loading="twilio.testConnection.loading"
-              @click="testConnection"
-            />
-          </div>
 
-          <div
-            v-if="connection?.ok"
-            class="rounded-md bg-surface-gray-2 px-3 py-2"
-          >
-            <div class="text-p-sm text-ink-gray-6">
-              {{ __("Point your Twilio number's voice webhook here:") }}
+            <div
+              v-if="connection?.ok"
+              class="rounded-md bg-surface-gray-2 px-3 py-2"
+            >
+              <div class="text-p-sm text-ink-gray-6">
+                {{ __("Point your Twilio number's voice webhook here:") }}
+              </div>
+              <code class="text-p-sm text-ink-gray-8 break-all">
+                {{ connection.callback_url }}
+              </code>
             </div>
-            <code class="text-p-sm text-ink-gray-8 break-all">
-              {{ connection.callback_url }}
-            </code>
-          </div>
 
-          <div class="h-px border-t border-outline-elevation-2" />
+            <div class="h-px border-t border-outline-elevation-2" />
+          </template>
 
           <div class="flex items-center justify-between gap-4">
             <div class="flex flex-col min-w-0">
@@ -150,87 +166,89 @@
             />
           </div>
 
-          <div class="h-px border-t border-outline-elevation-2" />
+          <template v-if="tecnico">
+            <div class="h-px border-t border-outline-elevation-2" />
 
-          <div class="flex items-center justify-between gap-4">
-            <div class="flex flex-col min-w-0">
-              <div class="text-p-base-medium text-ink-gray-7">
-                {{ __('SIP Trunking') }}
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex flex-col min-w-0">
+                <div class="text-p-base-medium text-ink-gray-7">
+                  {{ __('SIP Trunking') }}
+                </div>
+                <div class="text-p-sm text-ink-gray-5">
+                  {{
+                    trunks.length
+                      ? __('{0} elastic SIP trunk(s) on this account', [
+                          trunks.length,
+                        ])
+                      : __(
+                          'Read the Elastic SIP trunks configured on this account.',
+                        )
+                  }}
+                </div>
               </div>
-              <div class="text-p-sm text-ink-gray-5">
-                {{
-                  trunks.length
-                    ? __('{0} elastic SIP trunk(s) on this account', [
-                        trunks.length,
-                      ])
-                    : __(
-                        'Read the Elastic SIP trunks configured on this account.',
-                      )
-                }}
-              </div>
+              <Button
+                :label="__('Refresh')"
+                icon-left="lucide-refresh-cw"
+                :loading="twilio.fetchSipTrunks.loading"
+                @click="twilio.fetchSipTrunks.fetch"
+              />
             </div>
-            <Button
-              :label="__('Refresh')"
-              icon-left="lucide-refresh-cw"
-              :loading="twilio.fetchSipTrunks.loading"
-              @click="twilio.fetchSipTrunks.fetch"
-            />
-          </div>
 
-          <div
-            v-for="trunk in trunks"
-            :key="trunk.sid"
-            class="rounded-md border border-outline-gray-2 px-3 py-2"
-          >
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-p-base-medium text-ink-gray-8 truncate">
-                {{ trunk.friendly_name || trunk.sid }}
-              </span>
-              <div class="flex shrink-0 gap-1">
-                <Badge
-                  v-if="trunk.secure"
-                  :label="__('Secure')"
-                  variant="subtle"
-                  theme="green"
-                />
-                <Badge
-                  :label="
-                    __('{0} number(s)', [trunk.phone_numbers?.length || 0])
-                  "
-                  variant="subtle"
-                  theme="gray"
-                />
-              </div>
-            </div>
-            <div class="mt-1 text-p-sm text-ink-gray-6">
-              {{ __('Termination') }}:
-              <code class="text-ink-gray-8">{{
-                trunk.termination_uri || '—'
-              }}</code>
-            </div>
             <div
-              v-for="url in trunk.origination_urls"
-              :key="url.sip_url"
-              class="text-p-sm text-ink-gray-6"
+              v-for="trunk in trunks"
+              :key="trunk.sid"
+              class="rounded-md border border-outline-gray-2 px-3 py-2"
             >
-              {{ __('Origination') }}:
-              <code class="text-ink-gray-8 break-all">{{ url.sip_url }}</code>
-              <span class="text-ink-gray-4">
-                (p{{ url.priority }}/w{{ url.weight
-                }}{{ url.enabled ? '' : __(', disabled') }})
-              </span>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-p-base-medium text-ink-gray-8 truncate">
+                  {{ trunk.friendly_name || trunk.sid }}
+                </span>
+                <div class="flex shrink-0 gap-1">
+                  <Badge
+                    v-if="trunk.secure"
+                    :label="__('Secure')"
+                    variant="subtle"
+                    theme="green"
+                  />
+                  <Badge
+                    :label="
+                      __('{0} number(s)', [trunk.phone_numbers?.length || 0])
+                    "
+                    variant="subtle"
+                    theme="gray"
+                  />
+                </div>
+              </div>
+              <div class="mt-1 text-p-sm text-ink-gray-6">
+                {{ __('Termination') }}:
+                <code class="text-ink-gray-8">{{
+                  trunk.termination_uri || '—'
+                }}</code>
+              </div>
+              <div
+                v-for="url in trunk.origination_urls"
+                :key="url.sip_url"
+                class="text-p-sm text-ink-gray-6"
+              >
+                {{ __('Origination') }}:
+                <code class="text-ink-gray-8 break-all">{{ url.sip_url }}</code>
+                <span class="text-ink-gray-4">
+                  (p{{ url.priority }}/w{{ url.weight
+                  }}{{ url.enabled ? '' : __(', disabled') }})
+                </span>
+              </div>
+              <p
+                v-if="trunk.phone_numbers?.length"
+                class="mt-1.5 text-p-sm text-ink-red-8"
+              >
+                {{
+                  __(
+                    'Calls to these numbers go straight to your SIP infrastructure — Twilio ignores their voice webhook, so the answering service cannot run on them.',
+                  )
+                }}
+              </p>
             </div>
-            <p
-              v-if="trunk.phone_numbers?.length"
-              class="mt-1.5 text-p-sm text-ink-red-8"
-            >
-              {{
-                __(
-                  'Calls to these numbers go straight to your SIP infrastructure — Twilio ignores their voice webhook, so the answering service cannot run on them.',
-                )
-              }}
-            </p>
-          </div>
+          </template>
 
           <div class="h-px border-t border-outline-elevation-2" />
 
@@ -285,12 +303,21 @@
               </span>
               <span class="text-center text-p-base text-ink-gray-6">
                 {{
-                  __(
-                    'Enable Twilio integration to make and receive calls directly from your CRM',
-                  )
+                  tecnico
+                    ? __(
+                        'Enable Twilio integration to make and receive calls directly from your CRM',
+                      )
+                    : __(
+                        'The agency connects Twilio, so that you can make and receive calls from the CRM.',
+                      )
                 }}
               </span>
-              <Button :label="__('Enable')" variant="solid" @click="enable" />
+              <Button
+                v-if="tecnico"
+                :label="__('Enable')"
+                variant="solid"
+                @click="enable"
+              />
             </div>
           </div>
         </div>
@@ -307,12 +334,16 @@
 <script setup>
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
+import { usersStore } from '@/stores/users'
 import { Badge, Combobox, FormControl, Switch } from 'frappe-ui'
 import { computed, ref } from 'vue'
 
 const emit = defineEmits(['updateStep'])
 
 const connection = ref(null)
+
+// keys, the TwiML app and the SIP trunks are the agency's
+const tecnico = usersStore().puo('tecnico.integrazioni')
 
 const { document: twilio } = useDocument(
   'CRM Twilio Settings',

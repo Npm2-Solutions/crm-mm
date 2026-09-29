@@ -7,6 +7,14 @@ from frappe.model.document import Document
 from twilio.rest import Client
 
 from crm.integrations.twilio.utils import get_public_url
+from crm.permissions import livelli
+
+# The account's keys, its TwiML app and its SIP trunks are the agency's; recording
+# and the caller IDs are the centre's (doc 30). The fields are split by permlevel,
+# the methods here by capability: Frappe runs a document's whitelisted method for
+# anyone who can read the document.
+TECNICO = "tecnico.integrazioni"
+CENTRO = "telefono.configura"
 
 
 class CRMTwilioSettings(Document):
@@ -36,6 +44,8 @@ class CRMTwilioSettings(Document):
 	friendly_resource_name = "Frappe CRM"  # System creates TwiML app & API keys with this name.
 
 	def validate(self):
+		if self.has_value_changed("enabled"):
+			livelli.verifica_nel_crm(TECNICO, messaggio=_("The agency connects and disconnects Twilio."))
 		old_account_sid = frappe.db.get_single_value("CRM Twilio Settings", "account_sid")
 		if self.account_sid != old_account_sid:
 			self.new_sid = True
@@ -52,7 +62,7 @@ class CRMTwilioSettings(Document):
 		twilio = Client(self.account_sid, self.get_password("auth_token"))
 		self.set_api_credentials(twilio)
 		self.set_application_credentials(twilio, self.app_name)
-		self.fetch_applications()
+		self._fetch_applications()
 
 	def validate_twilio_account(self):
 		try:
@@ -117,6 +127,10 @@ class CRMTwilioSettings(Document):
 
 	@frappe.whitelist()
 	def fetch_applications(self):
+		livelli.verifica(TECNICO)
+		self._fetch_applications()
+
+	def _fetch_applications(self):
 		twilio = self.validate_twilio_account()
 
 		if not twilio:
@@ -137,6 +151,7 @@ class CRMTwilioSettings(Document):
 		Worth its own button: without it the first sign that a key is wrong is a
 		call that silently fails to connect.
 		"""
+		livelli.verifica(TECNICO)
 		try:
 			twilio = Client(self.account_sid, self.get_password("auth_token"))
 			account = twilio.api.accounts(self.account_sid).fetch()
@@ -161,6 +176,7 @@ class CRMTwilioSettings(Document):
 		"""
 		from crm.telephony import caller_ids
 
+		livelli.verifica(CENTRO)
 		return caller_ids.sync("twilio")
 
 	@frappe.whitelist()
@@ -168,6 +184,7 @@ class CRMTwilioSettings(Document):
 		"""Read the account's Elastic SIP trunks and remember them for display."""
 		from crm.telephony import providers
 
+		livelli.verifica(TECNICO)
 		trunks = providers.get("twilio").list_sip_trunks()
 		frappe.db.set_single_value("CRM Twilio Settings", "sip_trunks", frappe.as_json(trunks))
 		return trunks
@@ -182,6 +199,7 @@ class CRMTwilioSettings(Document):
 		"""
 		from crm.telephony import providers
 
+		livelli.verifica(CENTRO)
 		if not phone_number:
 			frappe.throw(_("Enter the number to verify."))
 		return providers.get("twilio").start_caller_id_verification(phone_number, label)

@@ -732,18 +732,26 @@ def source_report(
 
 @frappe.whitelist()
 def get_snippet() -> dict:
-	"""The script tag to paste into a website, plus the current settings."""
+	"""The script tag to paste into a website, plus the current settings.
+
+	Putting the script on the site is the agency's job (doc 30): the centre's
+	Manager gets the numbers and the switches, not the tag.
+	"""
+	from crm.permissions.livelli import puo
+
 	_check_manager()
 	settings = get_tracking_settings()
-	base = get_url()
-	snippet = f'<script async src="{base}/assets/crm/js/tracker.js" data-crm="{base}"></script>'
-	return {
-		"snippet": snippet,
-		"script_url": f"{base}/assets/crm/js/tracker.js",
-		"endpoint": f"{base}/api/method/crm.api.tracking.collect",
-		"enabled": bool(settings.enabled),
-		"stats": _stats(),
-	}
+	risposta = {"enabled": bool(settings.enabled), "stats": _stats()}
+	if puo("tecnico.integrazioni"):
+		base = get_url()
+		risposta.update(
+			{
+				"snippet": f'<script async src="{base}/assets/crm/js/tracker.js" data-crm="{base}"></script>',
+				"script_url": f"{base}/assets/crm/js/tracker.js",
+				"endpoint": f"{base}/api/method/crm.api.tracking.collect",
+			}
+		)
+	return risposta
 
 
 def _stats() -> dict:

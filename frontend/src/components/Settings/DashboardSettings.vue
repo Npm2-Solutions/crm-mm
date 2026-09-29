@@ -126,7 +126,7 @@
             ]"
             :placeholder="__('Select Provider')"
             :disabled="!settings.doc?.currency"
-            @update:modelValue="() => (settings.doc.access_key = '')"
+            @update:modelValue="() => tecnico && (settings.doc.access_key = '')"
           />
         </div>
       </div>
@@ -134,8 +134,18 @@
         v-if="requiresAccessKey"
         class="h-px border-t mx-2 border-outline-elevation-2"
       />
+      <!-- the provider's key is the agency's (doc 30): the centre picks the
+           provider, the agency puts the key in -->
       <div
-        v-if="requiresAccessKey"
+        v-if="requiresAccessKey && !tecnico"
+        class="px-2 py-3 text-p-sm text-ink-gray-6"
+      >
+        {{
+          __('The agency sets the access key for {0}.', [providerMeta.label])
+        }}
+      </div>
+      <div
+        v-if="requiresAccessKey && tecnico"
         class="flex items-center justify-between gap-8 p-3"
       >
         <div class="flex min-w-0 flex-col">
@@ -179,6 +189,7 @@
 <script setup>
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
+import { usersStore } from '@/stores/users'
 import { useBroadcast } from '@/composables/useBroadcast'
 import { ErrorMessage, FormControl, Switch, toast } from 'frappe-ui'
 import { useRoute } from 'vue-router'
@@ -191,6 +202,9 @@ const { $dialog } = globalStore()
 const { send } = useBroadcast()
 
 const errorMessage = ref('')
+
+// keys and endpoints are the agency's
+const tecnico = usersStore().puo('tecnico.integrazioni')
 
 const PROVIDERS_REQUIRING_KEY = ['exchangerate.host', 'exchangerate-api']
 
@@ -221,7 +235,7 @@ function updateSettings() {
         errorMessage.value = __('Please select a currency before saving.')
         return errorMessage.value
       }
-      if (requiresAccessKey.value && !settings.doc.access_key) {
+      if (requiresAccessKey.value && tecnico && !settings.doc.access_key) {
         errorMessage.value = __('Please enter the {0} access key.', [
           providerMeta.value.label,
         ])

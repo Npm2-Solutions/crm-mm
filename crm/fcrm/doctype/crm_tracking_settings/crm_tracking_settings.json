@@ -101,7 +101,8 @@
    "description": "Anonymous sessions and events older than this are deleted nightly. History attached to a lead or deal is kept. 0 disables the cleanup.",
    "fieldname": "retention_days",
    "fieldtype": "Int",
-   "label": "Retention (days)"
+   "label": "Retention (days)",
+   "permlevel": 1
   },
   {
    "fieldname": "domains_section",
@@ -112,7 +113,8 @@
    "description": "One origin per line (https://www.example.com). The collect endpoint answers only these. Empty means any origin, which is what you want while testing.",
    "fieldname": "allowed_origins",
    "fieldtype": "Small Text",
-   "label": "Allowed Origins"
+   "label": "Allowed Origins",
+   "permlevel": 1
   },
   {
    "fieldname": "column_break_domains",
@@ -122,12 +124,13 @@
    "description": "One per line. Visits from these addresses are ignored \u2014 put your own office here so internal browsing doesn't land in the reports.",
    "fieldname": "excluded_ips",
    "fieldtype": "Small Text",
-   "label": "Excluded IPs"
+   "label": "Excluded IPs",
+   "permlevel": 1
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-06 10:00:00.000000",
+ "modified": "2026-09-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Tracking Settings",
@@ -150,6 +153,12 @@
    "read": 1,
    "role": "Sales Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
    "write": 1
   }
  ],

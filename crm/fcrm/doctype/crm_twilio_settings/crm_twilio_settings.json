@@ -36,7 +36,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Account SID",
-   "mandatory_depends_on": "eval: doc.enabled"
+   "mandatory_depends_on": "eval: doc.enabled",
+   "permlevel": 1
   },
   {
    "depends_on": "enabled",
@@ -64,7 +65,8 @@
    "fieldtype": "Password",
    "in_list_view": 1,
    "label": "Auth Token",
-   "mandatory_depends_on": "eval: doc.enabled"
+   "mandatory_depends_on": "eval: doc.enabled",
+   "permlevel": 1
   },
   {
    "depends_on": "enabled",
@@ -111,7 +113,8 @@
   {
    "fieldname": "app_name",
    "fieldtype": "Data",
-   "label": "App Name"
+   "label": "App Name",
+   "permlevel": 1
   },
   {
    "fieldname": "section_break_cghd",
@@ -121,20 +124,23 @@
    "fieldname": "twilio_apps",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Twilio Apps"
+   "label": "Twilio Apps",
+   "permlevel": 1
   },
   {
    "default": "1",
    "description": "Reject webhooks that are not signed by Twilio. The Account SID alone proves nothing — it appears in every request. Only turn this off to debug a proxy that rewrites the callback URL.",
    "fieldname": "verify_webhook_signature",
    "fieldtype": "Check",
-   "label": "Verify Webhook Signature"
+   "label": "Verify Webhook Signature",
+   "permlevel": 1
   },
   {
    "description": "Public address Twilio calls back on, e.g. https://crm.studio.it or an ngrok tunnel in development. Leave empty to use the site URL.",
    "fieldname": "webhook_base_url",
    "fieldtype": "Data",
-   "label": "Callback Base URL"
+   "label": "Callback Base URL",
+   "permlevel": 1
   },
   {
    "depends_on": "record_calls",
@@ -155,13 +161,14 @@
    "fieldtype": "Code",
    "options": "JSON",
    "label": "SIP Trunks",
+   "permlevel": 1,
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-03-06 15:56:05.387337",
+ "modified": "2026-09-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Twilio Settings",
@@ -191,16 +198,6 @@
    "create": 1,
    "delete": 1,
    "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "Sales Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "delete": 1,
-   "email": 1,
-   "permlevel": 1,
    "print": 1,
    "read": 1,
    "role": "Sales Manager",
