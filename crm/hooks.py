@@ -520,18 +520,20 @@ standard_dropdown_items = [
 
 
 # ---------------------------------------------------------------------------
-# Which modules extend invoicing.
+# Which modules this installation has.
 #
 # `crm.invoicing` issues, calculates, formats and transmits documents for any
 # sector, and knows nothing about healthcare. `crm.tessera_sanitaria` adds the
 # healthcare half and plugs itself in through `crm.invoicing.estensioni`.
 #
-# The wiring lives here, in the app, because deciding which modules an
-# installation has is the app's job - not something either module gets to assume
-# about the other. Removing this line leaves a working invoicing system; that is
-# the whole point of the arrangement.
-from crm.invoicing import registra as _registra_fatturazione
-from crm.tessera_sanitaria import registra as _registra_tessera_sanitaria
+# The wiring lives in `crm.registrazione`, in the app, because deciding which
+# modules an installation has is the app's job - not something either module gets
+# to assume about the other. It runs here, when the hooks load, and before every
+# request and job: outside developer mode Frappe serves hooks from its cache, and a
+# worker that finds them there never imports this file.
+before_request = ["crm.registrazione.carica"]
+before_job = ["crm.registrazione.carica"]
 
-_registra_fatturazione()
-_registra_tessera_sanitaria()
+from crm.registrazione import carica as _carica_moduli
+
+_carica_moduli()
