@@ -222,12 +222,15 @@
    end. The row of actions (`.dialog-footer`) stays at the bottom of the screen
    while the form scrolls under it. frappe-ui clips the dialog with
    `overflow: hidden`, which makes it a scroll box of its own and keeps anything
-   sticky inside it from sticking; `clip` cuts the same corners without that. */
+   sticky inside it from sticking; `clip` cuts the same corners without that.
+   A dialog built on frappe-ui's own `#actions` (a new event, a task) takes no
+   class of ours for that row: it is found by the classes frappe-ui gives it. */
 @media (max-width: 767px) {
   .dialog-content {
     overflow: clip;
   }
-  .dialog-footer {
+  .dialog-footer,
+  .dialog-content > div.px-4.pb-7.pt-4 {
     position: sticky;
     bottom: 0;
     z-index: 10;
