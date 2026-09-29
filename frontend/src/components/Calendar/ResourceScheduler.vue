@@ -93,6 +93,18 @@
               height: spanOf(band.from, band.to),
             }"
           />
+          <!-- busy: somebody else's appointment, when not who or why -->
+          <div
+            v-for="(band, i) in column.busy"
+            :key="`busy-${i}`"
+            class="pointer-events-none absolute inset-x-1 overflow-hidden rounded-md border border-dashed border-outline-gray-3 bg-surface-gray-2 px-1.5 py-1 text-p-xs text-ink-gray-5"
+            :style="{
+              top: offsetOf(band.startMinutes),
+              height: spanOf(band.startMinutes, band.endMinutes),
+            }"
+          >
+            {{ __('Busy') }}
+          </div>
           <!-- now -->
           <div
             v-if="nowMinutes !== null"
@@ -185,6 +197,8 @@ const props = defineProps({
   mode: { type: String, default: 'staff' },
   date: { type: String, required: true },
   appointments: { type: Array, default: () => [] },
+  /** The rest of the agenda, as busy time: `[{ starts_on, ends_on, staff, resources }]` */
+  busy: { type: Array, default: () => [] },
   /** `[{ key, label, caption, color, closed: [{ from, to }] }]` */
   columnDefs: { type: Array, default: () => [] },
   serviceColors: { type: Object, default: () => ({}) },
@@ -196,9 +210,9 @@ const emit = defineEmits(['select', 'edit', 'create', 'move'])
 
 const scrollArea = ref(null)
 
-/** Appointments of the shown day, projected onto the minute axis. */
-const dayItems = computed(() =>
-  props.appointments
+/** Rows of the shown day, projected onto the minute axis. */
+function onTheDay(rows) {
+  return rows
     .filter((a) => String(a.starts_on).slice(0, 10) === props.date)
     .map((a) => ({
       ...a,
@@ -207,10 +221,15 @@ const dayItems = computed(() =>
         minutesFromMidnight(a.ends_on),
         minutesFromMidnight(a.starts_on) + 10,
       ),
-    })),
-)
+    }))
+}
 
-const viewWindow = computed(() => visibleWindow(dayItems.value))
+const dayItems = computed(() => onTheDay(props.appointments))
+const dayBusy = computed(() => onTheDay(props.busy))
+
+const viewWindow = computed(() =>
+  visibleWindow([...dayItems.value, ...dayBusy.value]),
+)
 const axis = computed(() =>
   buildTimeAxis(
     Math.floor(viewWindow.value.startMinutes / 60),
@@ -234,10 +253,12 @@ const nowMinutes = computed(() => {
 const columns = computed(() => {
   const keys = props.columnDefs.map((c) => c.key)
   const buckets = columnsFor(dayItems.value, props.mode, keys)
+  const busyBuckets = columnsFor(dayBusy.value, props.mode, keys)
   return props.columnDefs.map((def) => {
     const blocks = layoutLanes(buckets.get(def.key) || [])
     return {
       ...def,
+      busy: busyBuckets.get(def.key) || [],
       count: blocks.filter((b) => b.status !== 'Cancelled').length,
       blocks: blocks.map((block) => ({
         ...block,
