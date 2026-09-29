@@ -22,6 +22,7 @@ from crm.integrations.meta.client import (
 	GRAPH_VERSION,
 	MetaAPIError,
 	get_settings,
+	get_webhook_verify_token,
 	get_whatsapp_app_id,
 	get_whatsapp_app_secret,
 	whatsapp_app_in_use,
@@ -285,8 +286,8 @@ def configure_webhook() -> dict:
 	check_system_manager()
 	if not is_hub():
 		frappe.throw(_("The webhook is configured centrally by your provider"))
-	settings = get_settings()
-	if not settings.webhook_verify_token:
+	verify_token = get_webhook_verify_token()
+	if not verify_token:
 		frappe.throw(_("Open Settings → Integrations → Meta once to generate a verify token"))
 	if not get_whatsapp_app_id() or not get_whatsapp_app_secret():
 		frappe.throw(_("Set whatsapp_app_id and whatsapp_app_secret in the bench config first"))
@@ -298,7 +299,7 @@ def configure_webhook() -> dict:
 				"object": "whatsapp_business_account",
 				"callback_url": get_url(WEBHOOK_PATH),
 				"fields": WEBHOOK_FIELDS,
-				"verify_token": settings.webhook_verify_token,
+				"verify_token": verify_token,
 				"include_values": "true",
 			},
 		)
@@ -607,7 +608,7 @@ def account_verify_token(phone_id: str) -> str | None:
 	shared value is kept where it is already in use, and anything else gets a
 	token of its own.
 	"""
-	shared = frappe.get_cached_value("CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token")
+	shared = get_webhook_verify_token()
 	if not shared:
 		# None and not "": the field is unique, and a second empty string
 		# collides exactly like a second copy of anything else would

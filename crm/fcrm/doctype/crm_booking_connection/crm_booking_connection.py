@@ -1,6 +1,8 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
+import hmac
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -74,7 +76,7 @@ class CRMBookingConnection(Document):
 		tenant_id: DF.Data | None
 		token_expires_on: DF.Datetime | None
 		webhook_secret: DF.Password | None
-		webhook_token: DF.Data | None
+		webhook_token: DF.Password | None
 	# end: auto-generated types
 
 	def validate(self):
@@ -117,7 +119,7 @@ class CRMBookingConnection(Document):
 
 	def webhook_url(self) -> str:
 		return frappe.utils.get_url(
-			f"/api/method/crm.api.booking_platforms.webhook?token={self.webhook_token}"
+			f"/api/method/crm.api.booking_platforms.webhook?token={self.get_password('webhook_token')}"
 		)
 
 	def store_token(self, token: str, expires_at) -> None:
@@ -130,3 +132,21 @@ class CRMBookingConnection(Document):
 		self.db_set("token_expires_on", to_system_naive(expires_at), update_modified=False)
 		self.access_token = token
 		self.token_expires_on = to_system_naive(expires_at)
+
+
+def connection_for_token(token: str | None) -> str | None:
+	"""The enabled connection a webhook token names, or None.
+
+	The token authenticates guest calls (bookings pushed in, the busy feed read out),
+	so it is kept encrypted and can no longer be looked up by value: each enabled
+	connection's token is compared instead, in constant time. A site has a handful.
+	"""
+	if not token:
+		return None
+	for name in frappe.get_all("CRM Booking Connection", filters={"enabled": 1}, pluck="name"):
+		stored = frappe.get_doc("CRM Booking Connection", name).get_password(
+			"webhook_token", raise_exception=False
+		)
+		if stored and hmac.compare_digest(stored.encode(), token.encode()):
+			return name
+	return None

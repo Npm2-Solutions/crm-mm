@@ -29,8 +29,9 @@ class ExotelProvider(TelephonyProvider):
 
 	def recording_credentials(self) -> tuple | None:
 		settings = frappe.get_single("CRM Exotel Settings")
+		key = settings.get_password("api_key", raise_exception=False)
 		token = settings.get_password("api_token", raise_exception=False)
-		return (settings.api_key, token) if settings.api_key and token else None
+		return (key, token) if key and token else None
 
 	def place_call(self, to_number: str, from_number: str | None = None) -> dict:
 		from crm.integrations.exotel.handler import make_a_call

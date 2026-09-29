@@ -27,7 +27,10 @@ def _mock_settings(provider: str, access_key: str = "") -> MagicMock:
 	"""Helper: build a fake FCRM Settings single document."""
 	settings = MagicMock()
 	settings.service_provider = provider
-	settings.access_key = access_key
+	# a Password field: read through get_password, never off the document
+	settings.get_password.side_effect = lambda fieldname, raise_exception=True: (
+		access_key if fieldname == "access_key" else None
+	)
 	return settings
 
 

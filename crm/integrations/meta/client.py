@@ -49,6 +49,12 @@ def get_settings():
 	return frappe.get_cached_doc("CRM Meta Settings")
 
 
+def get_webhook_verify_token() -> str:
+	"""The token Meta echoes back in the webhook handshake. Kept encrypted, so that
+	a manager who can open CRM Meta Settings sees it masked like the other secrets."""
+	return get_settings().get_password("webhook_verify_token", raise_exception=False) or ""
+
+
 def get_app_id() -> str:
 	"""App ID of the Meta app.
 

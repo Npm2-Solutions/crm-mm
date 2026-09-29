@@ -1009,6 +1009,18 @@ class TestOneClickWhereTheDomainAllowsIt(IntegrationTestCase):
 		self.assertIn("window.location.pathname", page)
 
 
+def set_shared_token(value: str):
+	"""The Meta verify token as CRM Meta Settings keeps it: encrypted, the field masked."""
+	from frappe.utils.password import remove_encrypted_password, set_encrypted_password
+
+	if value:
+		set_encrypted_password("CRM Meta Settings", "CRM Meta Settings", value, "webhook_verify_token")
+	else:
+		remove_encrypted_password("CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token")
+	frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "*" * len(value))
+	frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+
+
 class TestTheLastStepThatFailedAfterMetaFinished(IntegrationTestCase):
 	"""«Webhook Verify Token must be unique».
 
@@ -1024,11 +1036,8 @@ class TestTheLastStepThatFailedAfterMetaFinished(IntegrationTestCase):
 	def test_the_shared_token_stays_with_whoever_holds_it(self):
 		from crm.integrations.whatsapp.api import account_verify_token
 
-		shared = frappe.db.get_single_value("CRM Meta Settings", "webhook_verify_token")
-		if not shared:
-			frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "shared-token")
-			frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
-			shared = "shared-token"
+		shared = "shared-token"
+		set_shared_token(shared)
 
 		# Who holds the token is read off `WhatsApp Account`, frappe_whatsapp's own
 		# table, which a bench without that app does not have. What is under test is
@@ -1055,8 +1064,7 @@ class TestTheLastStepThatFailedAfterMetaFinished(IntegrationTestCase):
 	def test_a_second_number_does_not_take_a_token_that_is_taken(self):
 		from crm.integrations.whatsapp.api import account_verify_token
 
-		frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "shared-token")
-		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+		set_shared_token("shared-token")
 
 		# One account already holds the shared token. It would be a row of
 		# `WhatsApp Account` -- frappe_whatsapp's table, absent from a bench without
@@ -1087,8 +1095,7 @@ class TestTheLastStepThatFailedAfterMetaFinished(IntegrationTestCase):
 		collides exactly like a second copy of anything else."""
 		from crm.integrations.whatsapp.api import account_verify_token
 
-		frappe.db.set_single_value("CRM Meta Settings", "webhook_verify_token", "")
-		frappe.clear_document_cache("CRM Meta Settings", "CRM Meta Settings")
+		set_shared_token("")
 		self.assertIsNone(account_verify_token("PHONE_C"))
 
 

@@ -40,7 +40,7 @@ class TestPlatformSync(SchedulingCase):
 		super().tearDown()
 
 	def post(self, payload):
-		return sync.handle_webhook(self.conn.webhook_token, {}, json.dumps(payload).encode())
+		return sync.handle_webhook(self.conn.get_password("webhook_token"), {}, json.dumps(payload).encode())
 
 	def payload(self, **kw):
 		start = kw.pop("start", self.tomorrow(10))
@@ -102,14 +102,16 @@ class TestPlatformSync(SchedulingCase):
 		self.post(self.payload())  # the platform's own booking must not echo back
 		frappe.set_user("Guest")
 		response = API.busy_feed(
-			token=self.conn.webhook_token, key=API.feed_key(self.conn, self.doc), staff=self.doc
+			token=self.conn.get_password("webhook_token"),
+			key=API.feed_key(self.conn, self.doc),
+			staff=self.doc,
 		)
 		frappe.set_user("Administrator")
 		text = response.get_data(as_text=True)
 		self.assertEqual(text.count("BEGIN:VEVENT"), 1)
 		self.assertNotIn("Segreto", text)
 		with self.assertRaises(frappe.PermissionError):
-			API.busy_feed(token=self.conn.webhook_token, key="wrong", staff=self.doc)
+			API.busy_feed(token=self.conn.get_password("webhook_token"), key="wrong", staff=self.doc)
 
 	def test_email_cancellation_matches_by_client(self):
 		conn = frappe.get_doc(

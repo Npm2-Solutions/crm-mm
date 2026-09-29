@@ -15,6 +15,7 @@ from crm.integrations.meta.client import (
 	get_app_id,
 	get_app_secret,
 	get_settings,
+	get_webhook_verify_token,
 	graph_get,
 	graph_post,
 	is_managed_app,
@@ -145,12 +146,12 @@ def configure_webhook() -> dict:
 	Meta verifies the callback synchronously (GET handshake against this site),
 	so the site must be publicly reachable over HTTPS."""
 	check_system_manager()
-	settings = get_settings()
 	if not is_hub():
 		# one shared app has a single callback: the hub owns it, and it fans
 		# notifications out to the client site that owns each page
 		frappe.throw(_("The webhook is configured centrally by your provider"))
-	if not settings.webhook_verify_token:
+	verify_token = get_webhook_verify_token()
+	if not verify_token:
 		frappe.throw(_("Save the app settings first to generate a verify token"))
 	try:
 		graph_post(
@@ -160,7 +161,7 @@ def configure_webhook() -> dict:
 				"object": "page",
 				"callback_url": get_url(WEBHOOK_PATH),
 				"fields": "leadgen",
-				"verify_token": settings.webhook_verify_token,
+				"verify_token": verify_token,
 				"include_values": "true",
 			},
 		)

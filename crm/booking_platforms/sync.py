@@ -358,11 +358,9 @@ def sync_all():
 
 
 def handle_webhook(token: str, headers: dict, body: bytes, url: str = "") -> dict:
-	name = (
-		frappe.db.get_value("CRM Booking Connection", {"webhook_token": token, "enabled": 1})
-		if token
-		else None
-	)
+	from crm.fcrm.doctype.crm_booking_connection.crm_booking_connection import connection_for_token
+
+	name = connection_for_token(token)
 	if not name:
 		raise frappe.PermissionError
 	conn = frappe.get_doc("CRM Booking Connection", name)

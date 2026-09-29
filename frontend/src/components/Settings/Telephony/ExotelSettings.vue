@@ -40,10 +40,9 @@
       <div v-if="exotel.doc" class="h-full">
         <div v-if="exotel.doc.enabled" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
-            <FormControl
+            <Password
               v-model="exotel.doc.api_key"
               :label="__('API Key')"
-              type="text"
               placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
               required
               autocomplete="off"
@@ -62,10 +61,9 @@
               required
               autocomplete="off"
             />
-            <FormControl
+            <Password
               v-model="exotel.doc.webhook_verify_token"
               :label="__('Webhook Verify Token')"
-              type="text"
               placeholder="my_secure_token_123"
               required
               autocomplete="off"

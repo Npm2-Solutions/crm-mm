@@ -457,8 +457,9 @@ class TestCRMCallLog(IntegrationTestCase):
 	def test_recording_credentials_exotel_configured_returns_tuple(self):
 		"""Exotel with both key and token set yields the auth pair."""
 		settings = MagicMock()
-		settings.api_key = "exotel_key"
-		settings.get_password.return_value = "exotel_token"
+		# both are Password fields: read through get_password, never off the document
+		secrets = {"api_key": "exotel_key", "api_token": "exotel_token"}
+		settings.get_password.side_effect = lambda fieldname, raise_exception=True: secrets.get(fieldname)
 		with patch("crm.integrations.api.frappe.get_single", return_value=settings):
 			self.assertEqual(_get_recording_credentials("Exotel"), ("exotel_key", "exotel_token"))
 
