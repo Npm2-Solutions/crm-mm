@@ -68,6 +68,11 @@ SPENTO = "spento"
 #: The level that takes every write away from the levels it is added to.
 SOLA_LETTURA_LIVELLO = "sola_lettura"
 
+#: The role that shows people's email and phone numbers in full. Frappe masks the
+#: fields marked `mask` for whoever lacks the "mask" permission, and this role has
+#: it: every level carries it but those that work on masked data (Marketing).
+RUOLO_RECAPITI = "Contact Details"
+
 #: Roles that stay the agency's: whoever has them manages the site, not the centre.
 RUOLI_AGENZIA = frozenset({"System Manager"})
 
@@ -104,6 +109,12 @@ class Livello:
 	#: Whether it keeps the Desk's other modules. Front desk and practitioners work in
 	#: the CRM, and see only its modules there, as Sales Users always did.
 	desk: bool = False
+	#: Whether it sees people's email and phone numbers in full (`RUOLO_RECAPITI`).
+	#: Marketing works on masked data (doc 30).
+	recapiti: bool = True
+	#: Added to another level, never alone: Read only takes writes away and gives
+	#: nothing of its own.
+	aggiuntivo: bool = False
 
 
 @dataclass(frozen=True)
@@ -264,7 +275,11 @@ def livello_del_profilo(profilo: str) -> Livello | None:
 
 
 def ruoli_del_livello(chiave: str) -> frozenset[str]:
-	return frozenset(_r.ruoli_livello.get(chiave, ()))
+	ruoli = set(_r.ruoli_livello.get(chiave, ()))
+	registrato = _r.livelli.get(chiave)
+	if registrato and registrato.recapiti and not registrato.aggiuntivo:
+		ruoli.add(RUOLO_RECAPITI)
+	return frozenset(ruoli)
 
 
 def ruoli_registrati() -> dict[str, str]:
@@ -589,7 +604,7 @@ def richiede(*nomi: str) -> Callable:
 def dimentica_cache() -> None:
 	"""Forget what was worked out in this request: levels or the plan changed."""
 	frappe = _frappe()
-	for nome in ("crm_capacita", "crm_moduli_attivi", "crm_requisiti", "crm_ambiti"):
+	for nome in ("crm_capacita", "crm_moduli_attivi", "crm_requisiti", "crm_ambiti", "crm_sola_lettura"):
 		try:
 			delattr(frappe.local, nome)
 		except AttributeError:

@@ -18,13 +18,17 @@ from crm.permissions.livelli import (
 	A_SCELTA,
 	CENTRO,
 	LIBERO_OCCUPATO,
+	MASCHERATO,
 	RUOLI_AGENZIA,
 	RUOLI_AUTOMATICI,
+	RUOLO_RECAPITI,
+	SOLA_LETTURA_LIVELLO,
 	SUOI,
 	TEAM,
 	Capacita,
 	Livello,
 	ModuloPiano,
+	concedi,
 	registra_capacita,
 	registra_livello,
 	registra_livello_implicito,
@@ -40,6 +44,11 @@ SEGRETERIA = "segreteria"
 OPERATORE = "operatore"
 MANAGER = "manager"
 COMMERCIALE = "commerciale"
+# the optional levels of PR 4. The Marketing level shares its key with the plan
+# module it belongs to: they live in two registries
+LIV_MARKETING = "marketing"
+AMMINISTRAZIONE = "amministrazione"
+SOLA_LETTURA = SOLA_LETTURA_LIVELLO
 
 # Plan modules the CRM already had before plans existed: on unless the plan says
 # otherwise, so no site loses anything the day plans arrive.
@@ -116,6 +125,46 @@ LIVELLI = (
 		),
 		("Sales User",),
 	),
+	(
+		Livello(
+			LIV_MARKETING,
+			"CRM Marketing",
+			"Marketing",
+			"Campaigns, social, ads, tracking and automations, also the agency's: people "
+			"with email and phone masked, no conversations.",
+			base=False,
+			piano=MARKETING,
+			ordine=5,
+			recapiti=False,
+		),
+		("Sales User", "Marketing"),
+	),
+	(
+		Livello(
+			AMMINISTRAZIONE,
+			"CRM Accounting",
+			"Accounting",
+			"Accounting, in house or outside: invoices, the Sistema TS, payments, exports; "
+			"people and the agenda to read.",
+			base=False,
+			ordine=6,
+		),
+		("Sales User",),
+	),
+	(
+		Livello(
+			SOLA_LETTURA,
+			"CRM Read Only",
+			"Read only",
+			"Added to another level, takes every write away: an auditor, a consultant, a "
+			"trainee at the start.",
+			base=False,
+			ordine=9,
+			recapiti=False,
+			aggiuntivo=True,
+		),
+		(),
+	),
 )
 
 #: Roles the CRM brings, and what they are for. The roles are never shown: people
@@ -127,6 +176,7 @@ RUOLI = (
 	("Sales User", "Works on people, deals, conversations and the agenda.", True),
 	("Front Desk", "Front desk: sees the whole centre's people and agenda.", False),
 	("Practitioner", "Sees their own agenda, clients or patients.", False),
+	("Marketing", "Configures automations, social, Meta, tracking and forms.", False),
 )
 
 #: Users from before levels, by their widest role. The migration gives them
@@ -175,7 +225,33 @@ CAPACITA = (
 	_c("pipeline.configura", manager=CENTRO),
 	_c("viste.configura", manager=CENTRO, descrizione="Public views, quick filters, card fields"),
 	# Conversations
-	_c("conversazioni.usa", segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
+	# reading apart from writing, as for people and deals: Read only keeps the first
+	_c(
+		"conversazioni.vedi",
+		scrive=False,
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		commerciale=TEAM,
+		descrizione="Read email, WhatsApp and SMS",
+	),
+	_c(
+		"conversazioni.usa",
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		commerciale=TEAM,
+		descrizione="Write and answer email, WhatsApp and SMS",
+	),
+	_c(
+		"note.vedi",
+		scrive=False,
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		commerciale=TEAM,
+		descrizione="Read internal notes",
+	),
 	_c("note.scrivi", segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
 	_c("conversazioni.stato", segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
 	_c(
@@ -216,6 +292,13 @@ CAPACITA = (
 	# Dashboards and numbers
 	_c("dashboard.personali", segreteria=CENTRO, operatore=CENTRO, manager=CENTRO, commerciale=CENTRO),
 	_c("dashboard.condivise", manager=CENTRO),
+	# reading them: Read only on top of the Manager keeps the Manager's numbers
+	_c(
+		"dashboard.centro",
+		scrive=False,
+		manager=CENTRO,
+		descrizione="The centre's numbers and the managers' dashboards",
+	),
 	_c("numeri.operativi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
 	_c("numeri.economici", scrive=False, operatore=SUOI, manager=CENTRO),
 	_c("dashboard.filtro_persona", scrive=False, manager=CENTRO, commerciale=TEAM),
@@ -301,6 +384,41 @@ CAPACITA = (
 	),
 )
 
+#: The optional levels, column by column (doc 30, PR 4). Marketing sees people with
+#: email and phone masked and reads no conversation; Accounting reads people, deals
+#: and the agenda, and does the invoices (invoicing gives it its own column).
+DEL_MARKETING = {
+	"persone.vedi": MASCHERATO,
+	"persone.esporta": MASCHERATO,
+	"trattative.vedi": CENTRO,
+	"modelli_messaggio.usa": CENTRO,
+	"modelli_messaggio.gestisci": CENTRO,
+	"google_calendar.proprio": CENTRO,
+	"automazioni.vedi": CENTRO,
+	"automazioni.gestisci": CENTRO,
+	"social.bozze": CENTRO,
+	"social.pubblica": CENTRO,
+	"meta.gestisci": CENTRO,
+	"tracciamento.gestisci": CENTRO,
+	"moduli_lead.gestisci": CENTRO,
+	"campagne.gestisci": CENTRO,
+	"dashboard.personali": CENTRO,
+	"numeri.marketing": CENTRO,
+	"sito.gestisci": CENTRO,
+	"profilo.proprio": CENTRO,
+}
+DELL_AMMINISTRAZIONE = {
+	"persone.vedi": CENTRO,
+	"persone.dati_fiscali": CENTRO,
+	"trattative.vedi": CENTRO,
+	"agenda.vedi": CENTRO,
+	"google_calendar.proprio": CENTRO,
+	"dashboard.personali": CENTRO,
+	"numeri.economici": CENTRO,
+	"numeri.marketing": CENTRO,
+	"profilo.proprio": CENTRO,
+}
+
 #: The agency's: keys, webhooks, raw logs, code, the plan. Never a level's.
 TECNICHE = (
 	Capacita("piano.gestisci", agenzia=True, descrizione="The centre's plan"),
@@ -352,12 +470,22 @@ def registra() -> None:
 		registra_modulo_piano(modulo)
 	for nome, descrizione, di_frappe in RUOLI:
 		registra_ruolo(nome, descrizione, di_frappe=di_frappe)
+	# every level carries it but Marketing (`Livello.recapiti`); alone it opens nothing
+	registra_ruolo(
+		RUOLO_RECAPITI,
+		"Sees people's email and phone numbers in full: every level but Marketing.",
+		accesso=False,
+	)
 	for livello, ruoli in LIVELLI:
 		registra_livello(livello, ruoli)
 	for ruolo, livello in IMPLICITI:
 		registra_livello_implicito(ruolo, livello)
 	for capacita, livelli in CAPACITA:
 		registra_capacita(capacita, livelli)
+	for nome, ambito in DEL_MARKETING.items():
+		concedi(nome, {LIV_MARKETING: ambito})
+	for nome, ambito in DELL_AMMINISTRAZIONE.items():
+		concedi(nome, {AMMINISTRAZIONE: ambito})
 	for capacita in TECNICHE:
 		registra_capacita(capacita)
 	registra_requisito("builder", builder_installato)

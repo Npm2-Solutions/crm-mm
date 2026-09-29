@@ -103,7 +103,9 @@ class TestProfili(LevelsCase):
 
 class TestAssegnare(LevelsCase):
 	def test_il_livello_porta_i_suoi_ruoli_e_niente_altro(self):
-		self.assertEqual(roles_of(DESK), {"Sales User", "Front Desk", "Invoicing User"})
+		self.assertEqual(
+			roles_of(DESK), {"Sales User", "Front Desk", "Invoicing User", livelli.RUOLO_RECAPITI}
+		)
 		self.assertEqual(levels_of(DESK), ["segreteria"])
 
 	def test_un_ruolo_messo_a_mano_sparisce_al_salvataggio(self):

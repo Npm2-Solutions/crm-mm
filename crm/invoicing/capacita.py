@@ -31,37 +31,43 @@ RUOLI = (
 	(
 		"Invoicing Manager",
 		"Issues, cancels and transmits invoices, and configures the register.",
-		("manager",),
+		("manager", "amministrazione"),
 	),
 	(
 		"Invoicing User",
 		"Issues invoices and records payments; cancels nothing, transmits only when allowed.",
-		("segreteria", "manager"),
+		("segreteria", "manager", "amministrazione"),
 	),
 )
 
 CAPACITA = (
 	(
 		Capacita("fatture.vedi", PIANO, scrive=False),
-		{"segreteria": CENTRO, "operatore": SUOI, "manager": CENTRO},
+		{"segreteria": CENTRO, "operatore": SUOI, "manager": CENTRO, "amministrazione": CENTRO},
 	),
 	(
 		Capacita("fatture.emetti", PIANO, descrizione="From the appointment or new"),
-		{"segreteria": CENTRO, "manager": CENTRO},
+		{"segreteria": CENTRO, "manager": CENTRO, "amministrazione": CENTRO},
 	),
 	(
 		Capacita("fatture.incassi", PIANO, descrizione="Record payments"),
-		{"segreteria": CENTRO, "manager": CENTRO},
+		{"segreteria": CENTRO, "manager": CENTRO, "amministrazione": CENTRO},
 	),
-	(Capacita("fatture.annulla", PIANO, descrizione="Cancel, credit notes"), {"manager": CENTRO}),
+	(
+		Capacita("fatture.annulla", PIANO, descrizione="Cancel, credit notes"),
+		{"manager": CENTRO, "amministrazione": CENTRO},
+	),
 	(
 		Capacita("fatture.invia", PIANO, descrizione="Send to the SdI and the Sistema TS"),
-		{"segreteria": A_SCELTA, "manager": CENTRO},
+		{"segreteria": A_SCELTA, "manager": CENTRO, "amministrazione": CENTRO},
 	),
-	(Capacita("fatture.esporta", PIANO, scrive=False, descrizione="For the accountant"), {"manager": CENTRO}),
+	(
+		Capacita("fatture.esporta", PIANO, scrive=False, descrizione="For the accountant"),
+		{"manager": CENTRO, "amministrazione": CENTRO},
+	),
 	(
 		Capacita("fatture.configura", PIANO, descrizione="Company, register, services, providers, provider"),
-		{"manager": CENTRO},
+		{"manager": CENTRO, "amministrazione": CENTRO},
 	),
 )
 

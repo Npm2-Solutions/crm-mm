@@ -34,6 +34,7 @@ from crm.permissions.livelli import (
 )
 
 SEG, OP, MAN, COM = catalogo.SEGRETERIA, catalogo.OPERATORE, catalogo.MANAGER, catalogo.COMMERCIALE
+MKT, AMM = catalogo.LIV_MARKETING, catalogo.AMMINISTRAZIONE
 
 
 class RegistroCase(UnitTestCase):
@@ -84,26 +85,132 @@ class TestCatalogo(RegistroCase):
 			self.assertNotIn("System Manager", livelli.ruoli_del_livello(livello.chiave))
 
 	def test_ogni_livello_apre_il_crm(self):
+		"""Every level on its own; Read only is only ever added to another."""
 		accesso = livelli.ruoli_di_accesso()
 		for livello in livelli.livelli():
+			if livello.aggiuntivo:
+				self.assertEqual(livelli.ruoli_del_livello(livello.chiave), frozenset(), livello.chiave)
+				continue
 			self.assertTrue(accesso & livelli.ruoli_del_livello(livello.chiave), livello.chiave)
+
+	def test_i_recapiti_in_chiaro_tranne_il_marketing(self):
+		"""Frappe masks email and phone for whoever lacks the role (PR 4)."""
+		for livello in livelli.livelli():
+			chi_li_vede = livelli.RUOLO_RECAPITI in livelli.ruoli_del_livello(livello.chiave)
+			atteso = livello.chiave not in (catalogo.LIV_MARKETING, catalogo.SOLA_LETTURA)
+			self.assertEqual(chi_li_vede, atteso, livello.chiave)
+		self.assertNotIn(livelli.RUOLO_RECAPITI, livelli.ruoli_di_accesso())
 
 	def test_i_ruoli_della_fatturazione_da_soli_non_aprono_il_crm(self):
 		self.assertNotIn("Invoicing Manager", livelli.ruoli_di_accesso())
 		self.assertNotIn("Invoicing User", livelli.ruoli_di_accesso())
 
 	def test_i_ruoli_di_ogni_livello(self):
-		self.assertEqual(livelli.ruoli_del_livello(SEG), {"Sales User", "Front Desk", "Invoicing User"})
-		self.assertEqual(livelli.ruoli_del_livello(OP), {"Sales User", "Practitioner"})
+		R = livelli.RUOLO_RECAPITI
+		self.assertEqual(livelli.ruoli_del_livello(SEG), {"Sales User", "Front Desk", "Invoicing User", R})
+		self.assertEqual(livelli.ruoli_del_livello(OP), {"Sales User", "Practitioner", R})
 		self.assertEqual(
 			livelli.ruoli_del_livello(MAN),
-			{"Sales User", "Sales Manager", "Invoicing Manager", "Invoicing User"},
+			{"Sales User", "Sales Manager", "Invoicing Manager", "Invoicing User", R},
 		)
-		self.assertEqual(livelli.ruoli_del_livello(COM), {"Sales User"})
+		self.assertEqual(livelli.ruoli_del_livello(COM), {"Sales User", R})
+		self.assertEqual(livelli.ruoli_del_livello(MKT), {"Sales User", "Marketing"})
+		self.assertEqual(
+			livelli.ruoli_del_livello(AMM), {"Sales User", "Invoicing Manager", "Invoicing User", R}
+		)
+		self.assertEqual(livelli.ruoli_del_livello(catalogo.SOLA_LETTURA), frozenset())
+
+	def test_il_marketing_si_offre_con_il_suo_modulo(self):
+		self.assertEqual(livelli.livello(MKT).piano, catalogo.MARKETING)
 
 
 class TestMatrice(RegistroCase):
 	"""Column by column, the rows of doc 30 that differ most between levels."""
+
+	def test_marketing(self):
+		c = calcola([MKT])
+		self.assertEqual(c["persone.vedi"], livelli.MASCHERATO)
+		self.assertEqual(c["trattative.vedi"], CENTRO)
+		for sua in (
+			"automazioni.gestisci",
+			"social.pubblica",
+			"meta.gestisci",
+			"tracciamento.gestisci",
+			"moduli_lead.gestisci",
+			"modelli_messaggio.gestisci",
+			"numeri.marketing",
+		):
+			self.assertEqual(c[sua], CENTRO, sua)
+		for vietata in (
+			"persone.scrivi",
+			"trattative.scrivi",
+			"conversazioni.usa",
+			"note.scrivi",
+			"agenda.vedi",
+			"telefono.registro",
+			"consensi.vedi",
+			"fatture.vedi",
+			"numeri.economici",
+			"utenti.gestisci",
+		):
+			self.assertNotIn(vietata, c)
+
+	def test_amministrazione(self):
+		c = calcola([AMM])
+		self.assertEqual(c["persone.vedi"], CENTRO)
+		self.assertEqual(c["persone.dati_fiscali"], CENTRO)
+		self.assertEqual(c["agenda.vedi"], CENTRO)
+		for fattura in (
+			"fatture.vedi",
+			"fatture.emetti",
+			"fatture.incassi",
+			"fatture.annulla",
+			"fatture.invia",
+			"fatture.esporta",
+			"fatture.configura",
+		):
+			self.assertEqual(c[fattura], CENTRO, fattura)
+		self.assertEqual(c["numeri.economici"], CENTRO)
+		for vietata in (
+			"persone.scrivi",
+			"trattative.scrivi",
+			"conversazioni.usa",
+			"agenda.prenota",
+			"automazioni.gestisci",
+		):
+			self.assertNotIn(vietata, c)
+
+	def test_sola_lettura_si_aggiunge_e_toglie_le_scritture(self):
+		da_solo = calcola([catalogo.SOLA_LETTURA])
+		self.assertEqual(da_solo, {})
+		c = calcola([SEG, catalogo.SOLA_LETTURA])
+		self.assertEqual(c["persone.vedi"], CENTRO)
+		self.assertEqual(c["agenda.vedi"], CENTRO)
+		for scrittura in (
+			"persone.scrivi",
+			"agenda.prenota",
+			"fatture.emetti",
+			"conversazioni.usa",
+			"note.scrivi",
+			"persone.assegna",
+		):
+			self.assertNotIn(scrittura, c)
+
+	def test_sola_lettura_tiene_i_numeri_del_centro(self):
+		c = calcola([MAN, catalogo.SOLA_LETTURA])
+		self.assertEqual(c["dashboard.centro"], CENTRO)
+		self.assertNotIn("dashboard.condivise", c)
+		self.assertNotIn("dashboard.personali", c)
+
+	def test_sola_lettura_legge_conversazioni_e_note_del_suo_livello(self):
+		"""Reading has its own capability, as for people and deals: Read only keeps it."""
+		c = calcola([OP, catalogo.SOLA_LETTURA])
+		self.assertEqual(c["conversazioni.vedi"], SUOI)
+		self.assertEqual(c["note.vedi"], SUOI)
+		self.assertEqual(c["telefono.registro"], SUOI)
+		for livello in (MKT, AMM):
+			for lettura in ("conversazioni.vedi", "note.vedi"):
+				self.assertNotIn(lettura, calcola([livello]), (livello, lettura))
 
 	def test_segreteria(self):
 		c = calcola([SEG])
