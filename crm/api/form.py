@@ -129,11 +129,13 @@ def guest_can_select(doctype: str) -> bool:
 
 
 def _link_target_doctypes() -> set:
-	"""Doctypes reachable via a Link field on any form-mappable target."""
+	"""Doctypes reachable via a Link field a form may collect. A hidden or read-only
+	field is never on a form (`_mappable_fields`): the list it points at, like the
+	service of the person's last visit, stays closed."""
 	targets = set()
 	for document_type in ALLOWED_DOCTYPES:
 		for df in frappe.get_meta(document_type).fields:
-			if df.fieldtype == "Link" and df.options:
+			if df.fieldtype == "Link" and df.options and not (df.hidden or df.read_only):
 				targets.add(df.options)
 	return targets
 

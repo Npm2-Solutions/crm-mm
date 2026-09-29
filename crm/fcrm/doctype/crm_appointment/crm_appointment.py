@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_to_date, cint, get_datetime, now_datetime
+from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
 from crm.permissions.livelli import puo
 from crm.scheduling import pricing
@@ -76,6 +76,7 @@ class CRMAppointment(Document):
 	def on_update(self):
 		self.sync_event()
 		self.notify_online_client()
+		self.update_last_visit()
 
 	def on_trash(self):
 		self.remove_event()
@@ -118,6 +119,28 @@ class CRMAppointment(Document):
 		self.title = f"{self.service} — {who}" if who else self.service
 
 	# --- how it went ------------------------------------------------------
+
+	def update_last_visit(self):
+		"""The person's last visit and its service: administrative data the recalls
+		pick people by (docs/gestionale-medico, the second seam), never the record."""
+		if self.status == "Cancelled":
+			return
+		giorno = getdate(self.starts_on)
+		for row in self.participants:
+			came = row.status == "Attended" or (
+				self.status == "Completed" and row.status not in ("No Show", "Cancelled")
+			)
+			person = person_of(row.party_type, row.party) if came else None
+			if not person:
+				continue
+			last = frappe.db.get_value("CRM Lead", person, "last_visit")
+			if not last or getdate(last) <= giorno:
+				frappe.db.set_value(
+					"CRM Lead",
+					person,
+					{"last_visit": giorno, "last_service": self.service},
+					update_modified=False,
+				)
 
 	def stamp_arrivals(self):
 		"""The desk checked somebody in: the waiting room counts from now."""
