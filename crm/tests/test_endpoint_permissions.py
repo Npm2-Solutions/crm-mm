@@ -22,6 +22,7 @@ from crm.api.contact import get_linked_deals
 from crm.api.doc import assigned_users_of, get_assigned_users, get_linked_docs_of_document, remove_assignments
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
+from crm.fcrm.doctype.crm_deal.crm_deal import create_deal
 from crm.integrations.api import (
 	find_contact_by_phone_number,
 	get_contact_by_phone_number,
@@ -361,6 +362,29 @@ class TestRemoveAssignments(PermissionTestCase):
 			remove_assignments("CRM Lead", self.lead, json.dumps([REP]))
 		self.assertEqual(assigned_users_of("CRM Lead", self.lead), [])
 		self.assertFalse(frappe.db.get_value("CRM Lead", self.lead, "lead_owner"))
+
+
+class TestCreateDeal(PermissionTestCase):
+	def test_sales_users_create_deals(self):
+		for user, mobile_no in ((REP, "+39 333 444 5501"), (OUTSIDER, "+39 333 444 5502")):
+			with self.set_user(user):
+				deal = create_deal({"first_name": "Luca", "last_name": "Verdi", "mobile_no": mobile_no})
+			self.assertTrue(frappe.db.get_value("CRM Deal", deal, "lead"))
+
+	def test_a_website_user_creates_nothing(self):
+		before = {
+			doctype: frappe.db.count(doctype) for doctype in ("CRM Deal", "CRM Lead", "CRM Organization")
+		}
+		with self.set_user(PATIENT), self.assertRaises(frappe.PermissionError):
+			create_deal(
+				{
+					"first_name": "Paziente",
+					"mobile_no": "+39 333 444 5503",
+					"organization_name": "Studio del paziente",
+				}
+			)
+		after = {doctype: frappe.db.count(doctype) for doctype in before}
+		self.assertEqual(before, after)
 
 
 def make_call_log(links=(), **fields):
