@@ -1347,3 +1347,34 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/api/tracking.py`, `crm/invoicing/api.py` | Lo script del sito e il segreto del webhook all'agenzia |
 | `crm/fcrm/doctype/crm_call_log/crm_call_log.py` | Un utente cancellato non rompe la lista |
 | `crm/tests/test_impostazioni_divise.py`, `test_settings_methods.py`, `test_integration_secrets.py` | I test |
+
+## Le pagine del Manager sui documenti del core
+
+> **Completato** (29/09/2026). La PR 3b del doc 30. Modelli email, regole di
+> assegnazione, SLA, importazione e account email funzionano per il Manager, non
+> solo per System Manager; le condizioni in Python restano all'agenzia.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Un ruolo porta la regola sul documento del core, la capacità la restringe (`DEL_CORE` + `SCRITTURA`) | I DocPerm non sanno dei livelli, e un hook `has_permission` può solo togliere. Lo stesso schema di `crm.api.whatsapp.add_roles` e della PR 2 |
+| Sales User per i modelli email, Sales Manager per regole e importazioni | I modelli li scriveranno anche Man e Mkt (PR 4): ogni livello ha Sales User, e la capacità decide. Regole e importazioni sono del Manager, e leggerle non serve agli altri |
+| La regola si mette una volta, a ogni migrazione, e non si tocca se c'è già | Chi l'ha cambiata a mano dal Desk ha deciso lui |
+| Il permesso "import" sui doctype del CRM nel loro JSON, non con i permessi personalizzati | Un permesso personalizzato copia tutte le regole del doctype e le congela: le modifiche future del JSON non arriverebbero più ai siti |
+| Gli account email con API del CRM, non con i permessi | Il documento tiene password e server: l'API mostra solo quello che la pagina mostra, cambia solo quello che la pagina cambia, e mai un account con server suoi |
+| Le condizioni in Python le riscrive il server dalle condizioni guidate, in `before_validate` | Prima che qualcosa le valuti: lo SLA le prova con `safe_eval` nel suo `validate`. Il convertitore è una copia di quello del browser, più severo: campi del documento, operatori dello schermo, valori sempre fra virgolette, solo `and` e `or` |
+| Una condizione scritta dall'agenzia dal Desk resta, e il Manager può spegnere la regola | Il server riscrive solo quello che cambia; Python senza condizioni guidate dietro lo può cambiare solo l'agenzia |
+| In Frappe 16 `has_value_changed` dice True per ogni campo di un documento nuovo | Per un documento nuovo conta se il campo è dato (`_cambiato`) |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/permissions/documenti.py`, `crm/hooks.py`, `crm/install.py` | `DEL_CORE`, `concedi_documenti_del_core`, `scrivi_condizioni` e gli hook |
+| `crm/permissions/condizioni.py`, `test_condizioni.py` | Le condizioni guidate in Python, senza sito |
+| `crm/permissions/catalogo.py` | `tecnico.codice` |
+| `crm/fcrm/doctype/crm_lead`, `crm_deal`, `crm_organization`, `crm_task`, `crm_call_log` (JSON) | Il permesso "import" |
+| `crm/api/settings.py` | Gli account email per capacità |
+| `frontend/src/components/Settings/EmailAccountList.vue`, `EmailEdit.vue`, `emailConfig.js`, `Profile/UserEmailSettings.vue`, `Booking/BookingPlatforms.vue` | Le pagine sulle API del CRM |
+| `crm/tests/test_documenti_del_core.py` | I test, compresa un'importazione vera |
