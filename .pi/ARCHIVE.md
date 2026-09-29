@@ -1267,3 +1267,44 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/clinica/paziente.py`, `clinic_patient.json`, `crm/patches/v1_0/guardians_become_linked_people.py` | Chi decide per il paziente, il minorenne; il tutore diventa un legame |
 | `frontend/src/components/RelatedPeopleSection.vue`, `PatientSection.vue`, `ConsentsSection.vue`, `Calendar/AppointmentPanel.vue`, `pages/Lead.vue`, `MobileLead.vue` | La sezione "Linked people", chi decide, chi ha risposto, chi ha prenotato |
 | `crm/persone/tests/test_legami.py`, `crm/tests/test_related_people.py` | I test: 23 senza sito, 28 sul sito |
+
+## L'ambito segue il livello, e quello che è di una persona la segue
+
+> **Completato** (29/09/2026). La PR 2 del doc 30. La segreteria vede tutto il
+> centro, il commerciale il suo team, l'operatore le persone che ha in cura;
+> appuntamenti, messaggi e tracciamento seguono la persona; quello che lo schermo
+> tiene al Manager, il server lo chiede alla capacità.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| L'ambito di persone e trattative lo dà la capacità (`persone.vedi`, `trattative.vedi`), non il ruolo | Ogni livello ha Sales User: il ruolo non distingue la segreteria dal commerciale. La segreteria prima non vedeva nemmeno le persone che creava |
+| "Suoi" per l'operatore vuol dire assegnati e **in cura**: un appuntamento con lui, e quello che un modulo aggiunge con `crm_people_in_care` (la clinica: i pazienti per cui ha scritto in cartella) | Il doc 30 lo chiede; l'hook tiene il confine, il CRM non importa la clinica |
+| Senza la capacità, niente: nemmeno le proprie | Un livello che non vede le trattative (la Direzione sanitaria) non ne vede nessuna, e non per caso |
+| Chi è fuori dai livelli tiene la regola dei ruoli | Chi lavora dal Desk con i ruoli della fatturazione non deve accorgersi di niente |
+| Un posto nella gerarchia restringe: chi sta nell'albero vede il suo team, qualunque sia il livello | Il doc 30: il responsabile è un posto nella gerarchia, non un livello. Sui siti con la gerarchia i Sales Manager nell'albero (i responsabili) sono diventati Manager nel passaggio: allargarli a tutto il centro avrebbe cambiato quello che vedono senza che nessuno lo chiedesse |
+| L'ambito si calcola una volta per richiesta, e `dimentica_cache` lo dimentica | Una lista lo chiede per ogni sottoquery; i test cambiano livello a metà richiesta |
+| Un'assegnazione chiusa apre il record per 90 giorni | Il lavoro è finito, il seguito no; per sempre sarebbe una chiave che nessuno ricorda di aver dato |
+| Appuntamenti: il centro per chi ha `agenda.vedi` sul centro, per l'operatore quelli che lavora o prenota, per il commerciale quelli delle sue persone | "Vedere l'agenda": ✓, la sua, libero e occupato |
+| Il resto dell'agenda arriva come **tempo occupato**: quando, chi lo lavora, quale sala; mai chi viene, perché, o il nome dell'appuntamento | Il commerciale prenota per le sue persone nella giornata di tutti; e un servizio ("visita ginecologica") è già un dato sanitario |
+| L'operatore prenota solo nella sua agenda; eliminare chiede `agenda.elimina` | "Prenotare: la sua"; "Eliminare un appuntamento: Man" |
+| WhatsApp e SMS: a chi conversa, sulle persone che vede; quelli di nessuno a tutti quelli che conversano | Come le chiamate; la Direzione sanitaria non conversa |
+| Tracciamento: sulle persone che si vedono; il traffico anonimo a chi gestisce il tracciamento | Il percorso di una persona sta sulla sua pagina; l'anonimo è materia del marketing |
+| Le scritture dei documenti del Manager passano da un hook `has_permission` con la capacità, non dai DocPerm | I DocPerm non sanno dei livelli; l'hook lascia intatti i ruoli di chi è fuori dai livelli, e un test controlla che ogni documento dell'elenco abbia l'hook |
+| `create_deal` inserisce come l'utente e controlla persona e organizzazione | Con `ignore_permissions` non valevano i permessi per campo; e una trattativa si poteva attaccare a chiunque |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/permissions/org_hierarchy.py` | `_scope` per livello e per tipo, `NIENTE`, in cura, assegnazioni chiuse, `sees_everyone`, `visible_owners` per livello |
+| `crm/permissions/seguono.py` | Appuntamenti, WhatsApp, SMS, tracciamento, vecchie prenotazioni |
+| `crm/permissions/documenti.py` | Le scritture per capacità |
+| `crm/permissions/livelli.py` | `dimentica_cache` dimentica anche gli ambiti |
+| `crm/clinica/cartella.py` | `persone_in_cura` |
+| `crm/api/appointments.py` | `get_calendar` dà `busy` |
+| `crm/fcrm/doctype/crm_deal/crm_deal.py` | `create_deal` |
+| `crm/hooks.py` | Gli hook |
+| `frontend/src/pages/Calendar.vue`, `components/Calendar/ResourceScheduler.vue` | Il tempo occupato, nelle due viste |
+| `crm/tests/test_ambiti.py`, `crm/tests/test_billing_profile.py` | I test; la segreteria ora vede i dati fiscali di tutto il centro |
