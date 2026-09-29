@@ -7,9 +7,11 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import delete_property_setter, make_property_setter
 from frappe.model.document import Document
+from frappe.utils import cint
 
 from crm.demo.api import create_demo_data
 from crm.install import after_install
+from crm.utils import is_system_manager
 
 
 class FCRMSettings(Document):
@@ -58,6 +60,7 @@ class FCRMSettings(Document):
 		create_demo_data()
 
 	def validate(self):
+		self.only_a_system_manager_switches_the_hierarchy()
 		self.do_not_allow_to_delete_if_standard()
 		self.validate_dropdown_items()
 		self.setup_forecasting()
@@ -67,6 +70,19 @@ class FCRMSettings(Document):
 		# a child's own validate() does not run when its parent is saved
 		for item in self.dropdown_items:
 			item.validate_icon_and_route()
+
+	def only_a_system_manager_switches_the_hierarchy(self):
+		"""A Sales Manager may write these settings, and one placed in the tree is the
+		very person the tree restricts (crm/permissions/org_hierarchy.py): switching it
+		off would lift their own limit. Code that saves on purpose passes
+		ignore_permissions, as it does for any other permission."""
+		if self.flags.ignore_permissions or is_system_manager():
+			return
+		before = self.get_doc_before_save()
+		if cint(self.enable_sales_hierarchy) != cint(before and before.enable_sales_hierarchy):
+			frappe.throw(
+				_("Only a System Manager can turn the sales hierarchy on or off"), frappe.PermissionError
+			)
 
 	def do_not_allow_to_delete_if_standard(self):
 		if not self.has_value_changed("dropdown_items"):
