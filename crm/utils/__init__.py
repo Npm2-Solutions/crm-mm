@@ -155,6 +155,20 @@ def seconds_to_duration(seconds: float | int) -> str:
 		return "0s"
 
 
+def stored_value(doctype: str, name: str, fieldname: str):
+	"""A field as it is stored, never masked.
+
+	Frappe masks the fields marked `mask` for whoever may not see them (doc 30:
+	people's email and phone, for Marketing), `frappe.db.get_value` included, and
+	every logged-in user holds the Guest role: a webhook's session cannot be told
+	apart by role. The code that sends to a person reads the number or the address
+	from here; what is shown to a user goes on being masked.
+	"""
+	DT = frappe.qb.DocType(doctype)
+	riga = frappe.qb.from_(DT).select(DT[fieldname]).where(DT.name == name).run()
+	return riga[0][0] if riga else None
+
+
 def is_admin(user: str | None = None) -> bool:
 	"""
 	Check whether `user` is an admin

@@ -5,7 +5,7 @@ crm.patches.v1_0.move_crm_note_data_to_fcrm_note
 crm.patches.v1_0.rename_twilio_settings_to_crm_twilio_settings
 crm.patches.v1_0.create_invoicing_roles #09-09-2026
 crm.patches.v1_0.drop_unique_index_on_booking_webhook_token
-crm.patches.v1_0.create_level_roles #29-09-2026 Medical Director
+crm.patches.v1_0.create_level_roles #29-09-2026 Marketing, Contact Details
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
@@ -68,3 +68,4 @@ crm.patches.v1_0.encrypt_integration_secrets
 crm.patches.v1_0.give_users_their_levels
 crm.patches.v1_0.billing_details_from_past_invoices
 crm.patches.v1_0.guardians_become_linked_people
+crm.patches.v1_0.contact_details_for_users_outside_levels
