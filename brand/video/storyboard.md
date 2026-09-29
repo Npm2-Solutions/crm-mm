@@ -84,3 +84,11 @@ attraversa lo schermo.
 | 82,0–86,6 | Il centro | App dello staff e firma dal telefono | "Un'app per lo staff. Un'area per i pazienti." |
 | 86,6–90,8 | Il centro | Marchio fra le stelle UE | "I dati dei pazienti, protetti." |
 | 90,8–95,6 | — | Il logo si ricompone, moduli, firma | "Il gestionale per il tuo centro medico." |
+
+## Il reel verticale e gli spot
+
+- **Reel** (`DottorCloud-reel.mp4`, 1080×1920, 1:02): logo → WhatsApp → cartella →
+  fattura → area paziente → esercizi → livelli → privacy → logo. Stesse scene del
+  video lungo, testo in alto e interfaccia sotto; agenda e marketing restano fuori.
+- **Spot** (`../ads/video/`, 13–14 s, 9:16 e 4:5): il marchio e il titolo dello spot
+  (2,4 s) → una scena del prodotto → logo, una riga e "Richiedi una demo" (3,4 s).
