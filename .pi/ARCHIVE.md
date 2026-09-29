@@ -1525,3 +1525,27 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `CRM Form` numerato `FRM-.YYYY.-.#####`, non `format:` | Con `format:` il contatore `{#####}` di Frappe ha chiave vuota ed è condiviso da tutti |
 | La clinica dice chi legge i moduli con dati sanitari | Il CRM non conosce la clinica; senza clinica un modulo sanitario non esiste |
 | In sola lettura le risposte si mostrano in parole | I controlli disabilitati, tutti grigi, non dicevano cosa era stato risposto |
+
+## Fase 2, dove si firma: il tablet e il link
+
+> **Completato** (30/09/2026). `CRM Form Request`: moduli dati alla persona da
+> compilare da sola, con un link per email o sul tablet del banco; la pagina
+> `/modulo/<link>`; "On their own" nella scheda Forms. `docs/gestionale-medico/README.md`,
+> "Dove si firma".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| L'email del link non nomina i moduli, e la pagina li mostra solo dopo il codice | Il titolo di un consenso informato dice a cosa serve la visita; un link inoltrato o letto da altri non deve dirlo |
+| Il codice va all'indirizzo del link ed è legato al link | Link e codice insieme sono le credenziali; lo stesso codice non apre un altro link |
+| Dei segreti (link, codice, sessione) si tiene solo lo SHA-256 | Chi legge il database non apre i moduli di nessuno |
+| Un link, più moduli: la prima richiesta tiene link, codice e sessione, le altre `via` | Si manda una volta, si entra una volta; ogni modulo resta una richiesta a sé con il suo stato |
+| La versione del modello è quella del momento dell'invio | Si firma quello che il centro ha mandato; una versione nuova si manda con un link nuovo |
+| Per chi firma un genitore o un tutore il link va a loro, e il modulo lo dice (`given_by`) | Il minore non firma; la firma "del paziente" data da chi risponde per lui è registrata come del tutore |
+| Il tablet esce dall'utente dello staff e la pagina si lega al browser alla prima apertura | Sul tablet resta solo quella persona; l'indirizzo copiato altrove, o riaperto dopo, non apre niente |
+| Un modulo con firma dell'operatore o avanzata si compila fuori e si firma al banco | Da soli si dà solo la propria firma semplice; il resto non si finge |
+| Il modulo firmato fuori non ha autore del centro; il paziente lo registra chi ha mandato il link | "Compilato dalla persona" è la verità; la regola 1 vuole comunque un nome, non "Guest" |
+| `open_request` è un POST | Frappe non salva ciò che un GET scrive: la sessione del tablet si perdeva |
+| La pagina importa lo stesso motore del CRM, copiato tra gli asset | Una regola sola; un test di vitest ferma la copia che resta indietro |
+| Il codice parte subito dopo il commit e, se il server di posta rifiuta, ci riprova la coda | Dura dieci minuti; un errore di posta non deve far fallire la pagina |

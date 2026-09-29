@@ -562,10 +562,43 @@ Fatto il 30/09/2026 (fase 2, la seconda parte).
   dice la clinica (`compilazioni.registra_lettore_clinico`), e firmato fa diventare
   paziente (regola 1).
 
-Resta alla fase 2: dove si firma oltre il banco (il tablet dato al paziente, il
-link a casa, la carta scansionata, il fornitore della firma avanzata), la cartella
-sul modello della specialità, i referti, l'archivio. "Dal modulo di carta", con
-l'assistente che propone i campi, va alla fase 4.
+### Dove si firma: il tablet del banco e il link a casa
+
+Fatto il 30/09/2026 (fase 2, la terza parte).
+
+- **"On their own"**, sulla scheda Forms della persona: si scelgono uno o più moduli
+  e come darli. Un solo link apre tutti i moduli scelti.
+- **Il link a casa**: arriva per email alla persona o, per chi firma un genitore o
+  un tutore (le persone collegate con "decide per lui"), a loro; a un minore senza
+  chi firma per lui non parte. Il messaggio dice che ci sono moduli da compilare
+  prima della visita, mai quali: il titolo di un consenso può dire a cosa serve la
+  visita. Aperto il link, un codice di sei cifre va allo stesso indirizzo (dieci
+  minuti, cinque tentativi, tre codici l'ora) e solo dopo si vedono i moduli. Si
+  compila, si salva e si riprende dallo stesso link, si firma col dito, si scarica
+  la propria copia firmata. Il link vale 7 giorni e si ritira dalla scheda.
+- **Il tablet del banco**: l'operatore sceglie i moduli e chi tiene il tablet (la
+  persona o chi firma per lei). Il CRM esce dal suo utente su quel dispositivo e
+  apre la pagina dei soli moduli di quella persona, senza codice: l'operatore ha
+  visto chi lo tiene. La pagina si lega a quel browser la prima volta che si apre;
+  firmato l'ultimo modulo dice di riconsegnare il tablet, e lo stesso indirizzo non
+  riapre più niente.
+- **Firmato fuori dal banco è firmato come al banco**: stessi controlli, stesse
+  prove, stesso PDF/A. Il modulo non ha un autore del centro ("compilato dalla
+  persona"); le prove dicono come è stato riconosciuto chi ha firmato (il tablet
+  consegnato da chi, o il link e il codice a quale indirizzo) e il registro
+  aggiunge invio, apertura, codice mandato e codice verificato.
+- **Quello che non si firma da soli si firma al banco**: un modulo con la firma
+  dell'operatore, o con una firma avanzata, si manda lo stesso. La persona lo
+  compila e preme "Ho finito"; le risposte si controllano subito e il modulo aspetta
+  nella scheda come "Da firmare al banco".
+- **Una sola regola**: la pagina `/modulo` usa lo stesso motore del CRM (il file è
+  lo stesso, copiato tra gli asset e tenuto uguale da un test), e il server rifà
+  tutto quando si firma.
+
+Resta alla fase 2: la carta scansionata con l'attestazione dell'operatore, il
+fornitore della firma avanzata, i moduli "quando si chiede" e "Oggi: moduli da
+firmare", la cartella sul modello della specialità, i referti, l'archivio. "Dal
+modulo di carta", con l'assistente che propone i campi, va alla fase 4.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
