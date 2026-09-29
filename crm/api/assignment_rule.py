@@ -1,8 +1,15 @@
 import frappe
+from frappe import _
+
+MANAGER_ROLES = {"System Manager", "Sales Manager"}
 
 
 @frappe.whitelist()
 def get_assignment_rules_list():
+	# frappe.get_all below reads past permissions: the settings page that asks is a manager's
+	if not MANAGER_ROLES & set(frappe.get_roles()):
+		frappe.throw(_("Only sales managers can see the assignment rules"), frappe.PermissionError)
+
 	assignment_rules = []
 	for docname in frappe.get_all(
 		"Assignment Rule", filters={"document_type": ["in", ["CRM Lead", "CRM Deal"]]}
