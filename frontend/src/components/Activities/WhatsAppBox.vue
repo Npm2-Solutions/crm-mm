@@ -102,7 +102,28 @@
     </template>
   </div>
 
+  <!--
+    What is written first, then the tools, then the button that sends — the
+    same row as an email or a note. The attachment clip and the emoji used to
+    sit before the words, so the text started a third of the way along the box
+    and every channel wrote from a different place.
+  -->
   <div v-else class="flex items-end gap-1 px-1.5 pb-1.5 pt-1" v-bind="$attrs">
+    <!--
+      One line, and as many as the message needs — up to a point, after which
+      the chat above would be the one giving way. Focus used to jump it to six
+      rows whatever was in it, so a «ok» got five empty lines under it and the
+      conversation got pushed off screen to hold them.
+    -->
+    <Textarea
+      ref="textareaRef"
+      v-model="content"
+      variant="ghost"
+      class="min-h-9 w-full resize-none bg-transparent py-2 text-p-base text-ink-gray-9 placeholder-ink-gray-4"
+      :rows="1"
+      :placeholder="placeholder"
+      @keydown.enter.stop="(e) => sendTextMessage(e)"
+    />
     <div class="flex h-9 shrink-0 items-center">
       <!-- `private: false` is load-bearing. frappe_whatsapp hands Meta a link and
            Meta fetches it anonymously; a private Frappe file answers that fetch
@@ -124,7 +145,9 @@
           </Dropdown>
         </template>
       </FileUploader>
+      <!-- a phone's keyboard has its own -->
       <IconPicker
+        v-if="!isMobileView"
         v-slot="{ togglePopover }"
         v-model="emoji"
         @update:modelValue="
@@ -155,38 +178,24 @@
         :tooltip="__('Send a template')"
         @click="emit('template')"
       />
-    </div>
-    <!--
-      One line, and as many as the message needs — up to a point, after which
-      the chat above would be the one giving way. Focus used to jump it to six
-      rows whatever was in it, so a «ok» got five empty lines under it and the
-      conversation got pushed off screen to hold them.
-    -->
-    <Textarea
-      ref="textareaRef"
-      v-model="content"
-      variant="ghost"
-      class="min-h-9 w-full resize-none bg-transparent py-2 text-p-base text-ink-gray-9 placeholder-ink-gray-4"
-      :rows="rows"
-      :placeholder="placeholder"
-      @keydown.enter.stop="(e) => sendTextMessage(e)"
-    />
-    <!--
-      The microphone while there is nothing written, the arrow once there is:
-      the one button WhatsApp keeps in that corner. Enter still sends; the arrow
-      is for whoever does not know that, and on a phone there is no Enter.
-    -->
-    <div class="flex h-9 shrink-0 items-center">
+      <!--
+        The microphone while there is nothing written, the arrow once there is:
+        the one button WhatsApp keeps in that corner. Enter still sends; the
+        arrow is for whoever does not know that, and on a phone there is no
+        Enter.
+      -->
       <Button
         v-if="content.trim()"
+        class="ml-0.5"
         variant="solid"
         icon="lucide-send-horizontal"
         :aria-label="__('Send')"
-        :tooltip="__('Send')"
+        :tooltip="isMobileView ? __('Send') : `${__('Send')} (Enter)`"
         @click="sendTyped"
       />
       <Button
         v-else
+        class="ml-0.5"
         variant="ghost"
         icon="lucide-mic"
         :aria-label="__('Record a voice message')"
@@ -203,6 +212,8 @@ import SmileIcon from '@/components/Icons/SmileIcon.vue'
 import { sanitizeHTML } from '@/utils'
 import { isMobileView } from '@/composables/breakpoints'
 import { markAnswered } from '@/composables/conversationState'
+import { useDraft } from '@/composables/drafts'
+import { useGrowingTextarea } from '@/composables/growingTextarea'
 import { useTelemetry } from 'frappe-ui/frappe'
 import {
   Button,
@@ -231,17 +242,13 @@ const { capture } = useTelemetry()
 const textareaRef = ref(null)
 const emoji = ref('')
 
-const content = ref('')
+// What is being written to this person, kept per record like an email's
+// draft: a look at another lead used to throw it away.
+const content = useDraft('whatsappDraft', props.doctype, doc.value.name)
 
 // As tall as what is in it: one line for «ok», six at most, because past that
 // the composer would be eating the conversation it belongs to.
-const MOST = 6
-const rows = computed(() => {
-  const written = String(content.value || '')
-  if (!written) return 1
-  const lines = written.split('\n').length
-  return Math.min(Math.max(lines, 1), MOST)
-})
+const { fit } = useGrowingTextarea(textareaRef, content)
 const placeholder = computed(() =>
   reply.value?.message
     ? __('Write your reply…')
@@ -460,7 +467,10 @@ async function sendRecording() {
 }
 
 function show() {
-  nextTick(() => textareaRef.value.el.focus())
+  nextTick(() => {
+    fit()
+    textareaRef.value?.el?.focus()
+  })
 }
 
 function uploadFile(file) {

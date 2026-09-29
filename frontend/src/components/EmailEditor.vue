@@ -1,4 +1,15 @@
 <template>
+  <!--
+    An email, written the way every message here is written: a line that grows
+    as you type, with its tools and the send button beside it.
+
+    It used to be a form that unfolded when the line was clicked — To, CC, BCC,
+    Subject, a bordered editing area, a toolbar of headings — and stayed open
+    until somebody pressed Discard. Who it goes to and what it is about are
+    still here, in one line until they need more: the person whose record this
+    is and a subject from the record, which is right nine times in ten. A click
+    opens them; a reply that copies people in opens them by itself.
+  -->
   <Editor
     ref="textEditor"
     v-model="content"
@@ -6,31 +17,49 @@
     :placeholder="placeholder"
     :editable="editable"
     :upload-function="(file) => uploadFile(file, doctype, modelValue.name)"
+    @focus="onFocus"
   >
-    <div class="relative w-full">
-      <div class="flex flex-col gap-3">
-        <div
-          v-if="from.length"
-          class="mx-4 flex items-center gap-2 border-t pt-2.5 h-10"
+    <div class="w-full">
+      <button
+        v-if="!expanded"
+        type="button"
+        class="mx-1.5 mt-1 flex w-[calc(100%-0.75rem)] min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-left text-p-sm text-ink-gray-5 transition-colors hover:bg-surface-gray-2"
+        :aria-label="__('Recipients and subject')"
+        @click="expanded = true"
+      >
+        <span class="shrink-0">{{ __('To') }}</span>
+        <span
+          class="min-w-0 truncate"
+          :class="toEmails.length ? 'text-ink-gray-8' : 'text-ink-amber-8'"
         >
-          <span class="text-xs text-ink-gray-4">{{ __('FROM') }}:</span>
+          {{ toEmails.length ? toEmails.join(', ') : __('nobody yet') }}
+        </span>
+        <template v-if="subject">
+          <span class="shrink-0" aria-hidden="true">·</span>
+          <span class="min-w-0 flex-1 truncate">{{ subject }}</span>
+        </template>
+        <span
+          class="lucide-chevron-down ml-auto size-3.5 shrink-0"
+          aria-hidden="true"
+        />
+      </button>
+      <div v-else class="flex flex-col gap-1 px-3 pt-1.5">
+        <div v-if="from.length" class="flex items-center gap-2">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+            {{ __('From') }}
+          </span>
           <FormControl
             v-model="fromEmail"
             type="select"
             variant="ghost"
-            class="w-full"
-            :placeholder="__('')"
+            class="min-w-0 flex-1"
             :options="from"
           />
         </div>
-        <!-- a long address could not shrink, and pushed CC and BCC out of the
-             card on a phone: the recipients give way, the two buttons do not -->
-        <div
-          class="mx-4 flex items-start gap-2"
-          :class="from.length ? '' : 'border-t pt-2.5'"
-        >
-          <span class="mr-2 mt-1.5 shrink-0 text-xs text-ink-gray-4">
-            {{ __('TO') }}:
+        <!-- a long address gives way; CC, BCC and the fold do not -->
+        <div class="flex items-start gap-2">
+          <span class="mt-1.5 w-14 shrink-0 text-p-sm text-ink-gray-5">
+            {{ __('To') }}
           </span>
           <EmailMultiSelect
             v-model="toEmails"
@@ -42,31 +71,35 @@
               (value) => __('{0} is an invalid email address', [value])
             "
           />
-          <div class="flex shrink-0 gap-1.5">
+          <div class="flex shrink-0 items-center gap-0.5">
             <Button
               :label="__('CC')"
               variant="ghost"
-              :class="[
-                cc
-                  ? '!bg-surface-gray-4 hover:bg-surface-gray-3'
-                  : '!text-ink-gray-4',
-              ]"
+              size="sm"
+              :class="cc ? '!bg-surface-gray-3' : '!text-ink-gray-5'"
               @click="toggleCC()"
             />
             <Button
               :label="__('BCC')"
               variant="ghost"
-              :class="[
-                bcc
-                  ? '!bg-surface-gray-4 hover:bg-surface-gray-3'
-                  : '!text-ink-gray-4',
-              ]"
+              size="sm"
+              :class="bcc ? '!bg-surface-gray-3' : '!text-ink-gray-5'"
               @click="toggleBCC()"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="lucide-chevron-up"
+              :tooltip="__('Fold into one line')"
+              :aria-label="__('Fold into one line')"
+              @click="expanded = false"
             />
           </div>
         </div>
-        <div v-if="cc" class="mx-4 flex items-center gap-2">
-          <span class="text-xs text-ink-gray-4">{{ __('CC') }}:</span>
+        <div v-if="cc" class="flex items-center gap-2">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+            {{ __('CC') }}
+          </span>
           <EmailMultiSelect
             ref="ccInput"
             v-model="ccEmails"
@@ -79,8 +112,10 @@
             "
           />
         </div>
-        <div v-if="bcc" class="mx-4 flex items-center gap-2">
-          <span class="text-xs text-ink-gray-4">{{ __('BCC') }}:</span>
+        <div v-if="bcc" class="flex items-center gap-2">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+            {{ __('BCC') }}
+          </span>
           <EmailMultiSelect
             ref="bccInput"
             v-model="bccEmails"
@@ -93,92 +128,130 @@
             "
           />
         </div>
-        <div class="mx-4 flex items-center gap-2 pb-2.5">
-          <span class="text-xs text-ink-gray-4">{{ __('SUBJECT') }}:</span>
+        <div class="flex items-center gap-2">
+          <span class="w-14 shrink-0 text-p-sm text-ink-gray-5">
+            {{ __('Subject') }}
+          </span>
           <input
             v-model="subject"
-            class="flex-1 border-none text-ink-gray-9 text-base bg-transparent hover:bg-transparent focus:border-none focus:!shadow-none focus-visible:!ring-0"
+            class="min-w-0 flex-1 border-none bg-transparent px-2 py-1 text-p-base text-ink-gray-9 hover:bg-transparent focus:border-none focus:!shadow-none focus-visible:!ring-0"
           />
         </div>
       </div>
-      <EditorContent
-        :class="[
-          'prose-sm max-w-none [&_p.reply-to-content]:hidden',
-          editable && 'mx-4 max-h-[35vh] overflow-y-auto border-t py-3',
-        ]"
-      />
-      <EditorTableMenu />
-      <div v-if="editable" class="flex flex-col gap-2">
-        <div class="flex flex-wrap gap-2 px-4">
-          <AttachmentItem
-            v-for="a in attachments"
-            :key="a.file_url"
-            :label="a.file_name"
+
+      <!-- headings, lists, links: there when asked for, not before -->
+      <div
+        v-if="formatting"
+        class="mx-1.5 mt-1 overflow-x-auto rounded-md bg-surface-gray-2 px-1 dark:bg-surface-gray-3"
+      >
+        <EditorFixedMenu :items="fullToolbar" />
+      </div>
+
+      <div class="flex items-end gap-1 px-1.5 pb-1.5 pt-0.5">
+        <!-- a reply's quote is folded away, as it is in the email once sent -->
+        <EditorContent
+          class="composer-text min-w-0 flex-1 [&_p.reply-to-content]:hidden"
+          :class="showQuote ? '' : '[&_p.reply-to-content~*]:hidden'"
+        />
+        <div class="flex h-9 shrink-0 items-center">
+          <Button
+            variant="ghost"
+            :icon="EmailTemplateIcon"
+            :tooltip="__('Insert an email template')"
+            :aria-label="__('Insert an email template')"
+            @click="showEmailTemplateSelectorModal = true"
+          />
+          <FileUploader
+            :upload-args="{
+              doctype: doctype,
+              docname: modelValue.name,
+              private: true,
+            }"
+            @success="(f) => attachments.push(f)"
           >
-            <template #suffix>
-              <span
-                class="lucide-x h-3.5"
-                aria-hidden="true"
-                @click.stop="removeAttachment(a)"
+            <template #default="{ openFileSelector }">
+              <Button
+                variant="ghost"
+                :icon="AttachmentIcon"
+                :tooltip="__('Attach a file')"
+                :aria-label="__('Attach a file')"
+                @click="openFileSelector()"
               />
             </template>
-          </AttachmentItem>
-        </div>
-        <div
-          class="flex justify-between gap-2 overflow-hidden border-t px-4 py-2.5"
-        >
-          <div class="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+          </FileUploader>
+          <!-- a phone's keyboard has its own -->
+          <IconPicker
+            v-if="!isMobileView"
+            v-slot="{ togglePopover }"
+            v-model="emoji"
+            @update:modelValue="() => appendEmoji()"
+          >
             <Button
-              :tooltip="__('Insert Email Template')"
               variant="ghost"
-              :icon="EmailTemplateIcon"
-              @click="showEmailTemplateSelectorModal = true"
+              :icon="SmileIcon"
+              :tooltip="__('Emoji')"
+              :aria-label="__('Emoji')"
+              @click="togglePopover()"
             />
-            <FileUploader
-              :upload-args="{
-                doctype: doctype,
-                docname: modelValue.name,
-                private: true,
-              }"
-              @success="(f) => attachments.push(f)"
-            >
-              <template #default="{ openFileSelector }">
-                <Button
-                  :tooltip="__('Attach a File')"
-                  :icon="AttachmentIcon"
-                  variant="ghost"
-                  @click="openFileSelector()"
-                />
-              </template>
-            </FileUploader>
-            <EditorFixedMenu :items="fullToolbar" />
-            <IconPicker
-              v-slot="{ togglePopover }"
-              v-model="emoji"
-              @update:modelValue="() => appendEmoji()"
-            >
-              <Button
-                :tooltip="__('Insert Emoji')"
-                :icon="SmileIcon"
-                variant="ghost"
-                @click="togglePopover()"
-              />
-            </IconPicker>
-          </div>
-          <div class="flex shrink-0 items-center justify-end space-x-2">
-            <Button v-bind="discardButtonProps || {}" :label="__('Discard')" />
-            <Button
-              variant="solid"
-              v-bind="submitButtonProps || {}"
-              :label="
-                isMobileView
-                  ? __('Send')
-                  : `${__('Send')} (${submitShortcutLabel})`
-              "
-            />
-          </div>
+          </IconPicker>
+          <Button
+            variant="ghost"
+            icon="lucide-type"
+            :class="formatting ? '!bg-surface-gray-3' : ''"
+            :tooltip="__('Formatting')"
+            :aria-label="__('Formatting')"
+            :aria-pressed="formatting ? 'true' : 'false'"
+            @click="formatting = !formatting"
+          />
+          <Button
+            v-if="draft"
+            variant="ghost"
+            icon="lucide-trash-2"
+            :tooltip="__('Discard this email')"
+            :aria-label="__('Discard this email')"
+            v-bind="discardButtonProps || {}"
+          />
+          <Button
+            class="ml-0.5"
+            variant="solid"
+            icon="lucide-send-horizontal"
+            :tooltip="`${__('Send')} (${submitShortcutLabel})`"
+            :aria-label="__('Send')"
+            v-bind="submitButtonProps || {}"
+          />
         </div>
       </div>
+
+      <button
+        v-if="quoting"
+        type="button"
+        class="mx-2.5 mb-1.5 flex items-center gap-1 rounded px-1 py-0.5 text-p-xs text-ink-gray-5 transition-colors hover:bg-surface-gray-2 hover:text-ink-gray-7"
+        :aria-expanded="showQuote ? 'true' : 'false'"
+        @click="showQuote = !showQuote"
+      >
+        <span class="lucide-quote size-3" aria-hidden="true" />
+        {{
+          showQuote
+            ? __('Hide the email being answered')
+            : __('Show the email being answered')
+        }}
+      </button>
+      <div v-if="attachments.length" class="flex flex-wrap gap-2 px-3 pb-2">
+        <AttachmentItem
+          v-for="a in attachments"
+          :key="a.file_url"
+          :label="a.file_name"
+        >
+          <template #suffix>
+            <span
+              class="lucide-x h-3.5"
+              aria-hidden="true"
+              @click.stop="removeAttachment(a)"
+            />
+          </template>
+        </AttachmentItem>
+      </div>
+      <EditorTableMenu />
     </div>
   </Editor>
   <EmailTemplateSelectorModal
@@ -201,7 +274,7 @@ import {
   fullToolbar,
   uploadFile,
 } from '@/components/editor/config'
-import { FileUploader, call, FormControl } from 'frappe-ui'
+import { Button, FileUploader, call, FormControl } from 'frappe-ui'
 import {
   Editor,
   EditorContent,
@@ -211,6 +284,7 @@ import {
 import { useTelemetry } from 'frappe-ui/frappe'
 import { useDocument } from '@/data/document'
 import { validateEmail, submitShortcutLabel } from '@/utils'
+import { quotes } from '@/utils/emailDraft'
 import { isMobileView } from '@/composables/breakpoints'
 import Paragraph from '@tiptap/extension-paragraph'
 import { ref, computed, nextTick, inject, watch } from 'vue'
@@ -223,7 +297,11 @@ const props = defineProps({
   editorProps: { type: Object, default: () => ({}) },
   submitButtonProps: { type: Object, default: () => ({}) },
   discardButtonProps: { type: Object, default: () => ({}) },
+  // something written or attached, which is when there is something to discard
+  draft: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['focus'])
 
 const CustomParagraph = Paragraph.extend({
   addAttributes() {
@@ -258,6 +336,12 @@ const textEditor = ref(null)
 const cc = ref(false)
 const bcc = ref(false)
 const emoji = ref('')
+// the recipients and the subject unfolded from their one line
+const expanded = ref(false)
+// the headings-and-lists bar
+const formatting = ref(false)
+// a reply's quote, unfolded
+const showQuote = ref(false)
 
 const subject = ref(props.subject)
 
@@ -330,6 +414,9 @@ watch(
 
 const editor = computed(() => textEditor.value?.editor)
 
+// answering an email, which is carried quoted under what is written
+const quoting = computed(() => quotes(content.value))
+
 function removeAttachment(attachment) {
   attachments.value = attachments.value.filter((a) => a !== attachment)
 }
@@ -363,6 +450,31 @@ function appendEmoji() {
   capture('emoji_inserted_in_email', { emoji: emoji.value })
 }
 
+// Writing to nobody is the one thing about the recipients that cannot wait:
+// they unfold the moment somebody starts writing without any. And a reply that
+// copies people in says so by showing them.
+function onFocus() {
+  if (!toEmails.value.length) expanded.value = true
+  emit('focus')
+}
+
+watch([cc, bcc], ([copied, blind]) => {
+  if (copied || blind) expanded.value = true
+})
+
+// A new email to the person of this record, as the box starts: after one is
+// sent, or thrown away.
+function reset() {
+  subject.value = props.subject
+  toEmails.value = modelValue.value?.email ? [modelValue.value.email] : []
+  ccEmails.value = []
+  bccEmails.value = []
+  cc.value = false
+  bcc.value = false
+  expanded.value = false
+  showQuote.value = false
+}
+
 function toggleCC() {
   cc.value = !cc.value
   if (cc.value) nextTick(() => ccInput.value.setFocus())
@@ -382,5 +494,9 @@ defineExpose({
   toEmails,
   ccEmails,
   bccEmails,
+  expanded,
+  formatting,
+  fromOptions: from,
+  reset,
 })
 </script>

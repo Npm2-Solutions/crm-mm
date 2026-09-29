@@ -93,7 +93,7 @@ import AttachmentItem from '@/components/AttachmentItem.vue'
 import EmailContent from '@/components/Activities/EmailContent.vue'
 import { Badge } from 'frappe-ui'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
-import { reactive, computed } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   activity: { type: Object, default: () => ({}) },
@@ -102,54 +102,10 @@ const props = defineProps({
   bare: { type: Boolean, default: false },
 })
 
-const emailBox = reactive(props.emailBox)
-
-function reply(email, reply_all = false) {
-  emailBox.show = true
-  let editor = emailBox.editor
-  let message = email.content
-  let recipients = email.recipients.split(',').map((r) => r.trim())
-  editor.fromEmail = email.sender
-  editor.toEmails = [email.sender]
-  editor.cc = editor.bcc = false
-  editor.ccEmails = []
-  editor.bccEmails = []
-
-  if (!email.subject.startsWith('Re:')) {
-    editor.subject = `Re: ${email.subject}`
-  } else {
-    editor.subject = email.subject
-  }
-
-  if (reply_all) {
-    let cc = email.cc?.split(',').map((r) => r.trim())
-    let bcc = email.bcc?.split(',').map((r) => r.trim())
-
-    if (cc?.length) {
-      recipients = recipients.filter((r) => !cc?.includes(r))
-      cc.push(...recipients)
-    } else {
-      cc = recipients
-    }
-
-    editor.cc = cc ? true : false
-    editor.bcc = bcc ? true : false
-
-    editor.ccEmails = cc
-    editor.bccEmails = bcc
-  }
-
-  let repliedMessage = `<blockquote>${message}</blockquote>`
-
-  editor.editor
-    .chain()
-    .clearContent()
-    .updateAttributes('paragraph', { class: 'reply-to-content' })
-    .insertContent(repliedMessage)
-    .focus('all')
-    .insertContentAt(0, { type: 'paragraph' })
-    .focus('start')
-    .run()
+// The composer knows who a reply goes to and from which mailbox; this only
+// says which email, and whether to everybody on it.
+function reply(email, all = false) {
+  props.emailBox?.reply?.(email, all)
 }
 
 const status = computed(() => {

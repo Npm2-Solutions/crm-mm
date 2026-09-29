@@ -463,63 +463,54 @@
     read and not what you write in is a picker that gets ignored — but in «All»
     the box is free, and it opens where you were last written to.
   -->
-  <div
-    v-if="title == 'Activity'"
-    class="shrink-0 bg-surface-gray-2 px-3 pb-3 pt-2 dark:bg-surface-base sm:px-4"
-  >
-    <div
-      class="overflow-hidden rounded-xl border shadow-sm transition-colors"
-      :class="
-        way === 'comment'
-          ? 'border-outline-amber-3 bg-surface-amber-1'
-          : 'border-outline-gray-2 bg-surface-elevation-2 dark:bg-surface-gray-1'
-      "
-    >
-      <ChannelSwitcher :way="way" @pick="pickWay" />
-      <!-- a wrapper for v-show: the area has more than one root, and a
-           directive on a component like that is silently ignored -->
-      <div v-show="way === 'email' || way === 'comment'">
-        <CommunicationArea
-          ref="emailBox"
-          v-model="doc"
-          v-model:reload="reload_email"
-          :way="way === 'comment' ? 'comment' : 'email'"
-          :doctype="doctype"
-          @scroll="followMine"
-        />
-      </div>
-      <!-- each box is mounted the first time it is used and kept afterwards,
-           so a half-written message is still there after a look at another
-           channel -->
-      <div v-if="whatsappEnabled && used.whatsapp" v-show="way === 'whatsapp'">
-        <WhatsAppBox
-          ref="whatsappBox"
-          v-model="doc"
-          v-model:reply="replyMessage"
-          v-model:whatsapp="whatsappMessages"
-          :doctype="doctype"
-          @scroll="followMine"
-          @template="showWhatsappTemplates = true"
-        />
-      </div>
-      <div v-if="used.sms" v-show="way === 'sms'">
-        <SMSBox
-          ref="smsBox"
-          v-model="doc"
-          v-model:sms="smsMessages"
-          :doctype="doctype"
-          @scroll="followMine"
-        />
-      </div>
+  <ComposerShell v-if="title == 'Activity'" :way="way">
+    <ChannelSwitcher :way="way" :drafts="drafted" @pick="pickWay" />
+    <!-- a wrapper for v-show: the area has more than one root, and a
+         directive on a component like that is silently ignored -->
+    <div v-show="way === 'email' || way === 'comment'">
+      <CommunicationArea
+        ref="emailBox"
+        v-model="doc"
+        v-model:reload="reload_email"
+        :way="way === 'comment' ? 'comment' : 'email'"
+        :doctype="doctype"
+        @scroll="followMine"
+        @open="(which) => pickWay(which, { open: false })"
+      />
     </div>
-  </div>
-  <div v-else>
+    <!-- each box is mounted the first time it is used and kept afterwards,
+         so a half-written message is still there after a look at another
+         channel -->
+    <div v-if="whatsappEnabled && used.whatsapp" v-show="way === 'whatsapp'">
+      <WhatsAppBox
+        ref="whatsappBox"
+        v-model="doc"
+        v-model:reply="replyMessage"
+        v-model:whatsapp="whatsappMessages"
+        :doctype="doctype"
+        @scroll="followMine"
+        @template="showWhatsappTemplates = true"
+      />
+    </div>
+    <div v-if="used.sms" v-show="way === 'sms'">
+      <SMSBox
+        ref="smsBox"
+        v-model="doc"
+        v-model:sms="smsMessages"
+        :doctype="doctype"
+        @scroll="followMine"
+      />
+    </div>
+  </ComposerShell>
+  <!-- a channel's own tab: the same box, without the strip — the tab has
+       already said which channel it is -->
+  <ComposerShell v-else-if="WRITES_ON[title]" :way="WRITES_ON[title]">
     <CommunicationArea
       v-if="['Emails', 'Comments'].includes(title)"
       ref="emailBox"
       v-model="doc"
       v-model:reload="reload_email"
-      :way="title == 'Comments' ? 'comment' : 'email'"
+      :way="WRITES_ON[title]"
       :doctype="doctype"
       @scroll="followMine"
     />
@@ -541,7 +532,7 @@
       :doctype="doctype"
       @scroll="followMine"
     />
-  </div>
+  </ComposerShell>
   <WhatsappTemplateSelectorModal
     v-if="whatsappEnabled"
     v-model="showWhatsappTemplates"
@@ -602,6 +593,7 @@ import MissedCallIcon from '@/components/Icons/MissedCallIcon.vue'
 import DeclinedCallIcon from '@/components/Icons/DeclinedCallIcon.vue'
 import InboundCallIcon from '@/components/Icons/InboundCallIcon.vue'
 import OutboundCallIcon from '@/components/Icons/OutboundCallIcon.vue'
+import ComposerShell from '@/components/Activities/ComposerShell.vue'
 import ChannelSwitcher from '@/components/Activities/ChannelSwitcher.vue'
 import CommunicationArea from '@/components/CommunicationArea.vue'
 import ConversationView from '@/components/Activities/ConversationView.vue'
@@ -609,7 +601,8 @@ import WhatsappTemplateSelectorModal from '@/components/Modals/WhatsappTemplateS
 import AllModals from '@/components/Activities/AllModals.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
-import { startCase } from '@/utils'
+import { isContentEmpty, startCase } from '@/utils'
+import { useDraft } from '@/composables/drafts'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
@@ -1155,18 +1148,46 @@ const suggestedWay = computed(() =>
   }),
 )
 
+// What is half-written, and where: the same drafts the boxes keep (the key is
+// what makes them the same). Each box keeps its own, per record, so a
+// WhatsApp message begun yesterday is still there — and the box opens on it
+// instead of on the channel the customer last used, which left the draft
+// behind a tab nobody thought to look at.
+const draftTexts = {
+  email: useDraft('emailBoxContent', props.doctype, props.docname),
+  comment: useDraft('commentBoxContent', props.doctype, props.docname),
+  whatsapp: useDraft('whatsappDraft', props.doctype, props.docname),
+  sms: useDraft('smsDraft', props.doctype, props.docname),
+}
+const drafted = computed(() =>
+  ways.value.filter((one) => {
+    const text = draftTexts[one]?.value
+    return one === 'email' || one === 'comment'
+      ? !isContentEmpty(text)
+      : Boolean(String(text || '').trim())
+  }),
+)
+
 const way = ref('')
 // chosen by hand, and then not moved again by the conversation filling in
 const wayChosen = ref(false)
 // which boxes have been opened, so they stay mounted and keep their drafts
 const used = reactive({})
 
+// Where the box stands when nobody has chosen: on what is being written, if
+// anything is — a message arriving on another channel does not pull the box
+// out from under a half-written email — or else where the customer wrote.
+function openingWay() {
+  if (drafted.value.includes(way.value)) return way.value
+  return drafted.value[0] || suggestedWay.value
+}
+
 watch(
   [channel, suggestedWay, ways],
   () => {
     if (ways.value.includes(channel.value)) way.value = channel.value
     else if (!wayChosen.value || !ways.value.includes(way.value))
-      way.value = suggestedWay.value
+      way.value = openingWay()
   },
   { immediate: true },
 )
@@ -1183,7 +1204,7 @@ function pickWay(which, { open = true } = {}) {
   if (ways.value.includes(channel.value) && channel.value !== which)
     channel.value = which
   if (!open) return
-  // chosen by hand is chosen to write: the line opens into its editor
+  // chosen by hand is chosen to write: the cursor goes into it
   nextTick(() => {
     if (which === 'email' || which === 'comment') emailBox.value?.open?.(which)
     else if (which === 'whatsapp') whatsappBox.value?.show?.()
@@ -1198,17 +1219,17 @@ function write(which) {
 }
 
 // Answering a WhatsApp message is writing on WhatsApp, wherever the Reply was
-// pressed; and «Reply» on an email opens the email editor, so the box has to be
-// the email one for it to be seen.
+// pressed. (Reply on an email says so itself: the email composer's `open`.)
 watch(replyMessage, (message) => {
   if (message?.message) pickWay('whatsapp', { open: false })
 })
-watch(
-  () => emailBox.value?.show,
-  (open) => {
-    if (open && way.value !== 'email') pickWay('email', { open: false })
-  },
-)
+// the tabs that write, and on what
+const WRITES_ON = {
+  Emails: 'email',
+  Comments: 'comment',
+  WhatsApp: 'whatsapp',
+  SMS: 'sms',
+}
 
-defineExpose({ emailBox, all_activities, changeTabTo, showFilesTab })
+defineExpose({ emailBox, all_activities, changeTabTo, showFilesTab, write })
 </script>

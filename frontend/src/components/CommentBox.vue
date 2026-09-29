@@ -1,4 +1,9 @@
 <template>
+  <!--
+    A note for the team, written like every other message: a line that grows,
+    its tools and the send button beside it. The formatting bar comes when
+    asked for.
+  -->
   <Editor
     ref="commentEditor"
     v-model="content"
@@ -7,76 +12,91 @@
     :editable="editable"
     :upload-function="(file) => uploadFile(file, doctype, modelValue.name)"
   >
-    <div class="relative w-full">
-      <EditorContent
-        :class="[
-          'prose-sm max-w-none',
-          editable &&
-            'mx-4 max-h-[50vh] min-h-[7rem] overflow-y-auto border-t py-3',
-        ]"
-      />
-      <EditorTableMenu />
-      <div v-if="editable" class="flex flex-col gap-2">
-        <div class="flex flex-wrap gap-2 px-4">
-          <AttachmentItem
-            v-for="a in attachments"
-            :key="a.file_url"
-            :label="a.file_name"
+    <div class="w-full">
+      <div
+        v-if="formatting"
+        class="mx-1.5 mt-1.5 overflow-x-auto rounded-md bg-surface-gray-2 px-1 dark:bg-surface-gray-3"
+      >
+        <EditorFixedMenu :items="fullToolbar" />
+      </div>
+      <div class="flex items-end gap-1 p-1.5">
+        <EditorContent class="composer-text min-w-0 flex-1" />
+        <div class="flex h-9 shrink-0 items-center">
+          <FileUploader
+            :upload-args="{
+              doctype: doctype,
+              docname: modelValue.name,
+              private: true,
+            }"
+            @success="(f) => attachments.push(f)"
           >
-            <template #suffix>
-              <span
-                class="lucide-x h-3.5"
-                aria-hidden="true"
-                @click.stop="removeAttachment(a)"
+            <template #default="{ openFileSelector }">
+              <Button
+                variant="ghost"
+                :icon="AttachmentIcon"
+                :tooltip="__('Attach a file')"
+                :aria-label="__('Attach a file')"
+                @click="openFileSelector()"
               />
             </template>
-          </AttachmentItem>
-        </div>
-        <div
-          class="flex justify-between gap-2 overflow-hidden border-t px-4 py-2.5"
-        >
-          <div class="flex gap-1 items-center overflow-x-auto">
-            <FileUploader
-              :upload-args="{
-                doctype: doctype,
-                docname: modelValue.name,
-                private: true,
-              }"
-              @success="(f) => attachments.push(f)"
-            >
-              <template #default="{ openFileSelector }">
-                <Button
-                  :tooltip="__('Attach a File')"
-                  variant="ghost"
-                  :icon="AttachmentIcon"
-                  @click="openFileSelector()"
-                />
-              </template>
-            </FileUploader>
-            <EditorFixedMenu :items="fullToolbar" />
-            <IconPicker
-              v-slot="{ togglePopover }"
-              v-model="emoji"
-              @update:modelValue="() => appendEmoji()"
-            >
-              <Button
-                :tooltip="__('Insert Emoji')"
-                :icon="SmileIcon"
-                variant="ghost"
-                @click="togglePopover()"
-              />
-            </IconPicker>
-          </div>
-          <div class="mt-2 flex items-center justify-end space-x-2 sm:mt-0">
-            <Button v-bind="discardButtonProps || {}" :label="__('Discard')" />
+          </FileUploader>
+          <IconPicker
+            v-if="!isMobileView"
+            v-slot="{ togglePopover }"
+            v-model="emoji"
+            @update:modelValue="() => appendEmoji()"
+          >
             <Button
-              variant="solid"
-              v-bind="submitButtonProps || {}"
-              :label="`${__('Comment')} (${submitShortcutLabel})`"
+              variant="ghost"
+              :icon="SmileIcon"
+              :tooltip="__('Emoji')"
+              :aria-label="__('Emoji')"
+              @click="togglePopover()"
             />
-          </div>
+          </IconPicker>
+          <Button
+            variant="ghost"
+            icon="lucide-type"
+            :class="formatting ? '!bg-surface-gray-3' : ''"
+            :tooltip="__('Formatting')"
+            :aria-label="__('Formatting')"
+            :aria-pressed="formatting ? 'true' : 'false'"
+            @click="formatting = !formatting"
+          />
+          <Button
+            v-if="draft"
+            variant="ghost"
+            icon="lucide-trash-2"
+            :tooltip="__('Discard this note')"
+            :aria-label="__('Discard this note')"
+            v-bind="discardButtonProps || {}"
+          />
+          <Button
+            class="ml-0.5"
+            variant="solid"
+            icon="lucide-send-horizontal"
+            :tooltip="`${__('Add note')} (${submitShortcutLabel})`"
+            :aria-label="__('Add note')"
+            v-bind="submitButtonProps || {}"
+          />
         </div>
       </div>
+      <div v-if="attachments.length" class="flex flex-wrap gap-2 px-3 pb-2">
+        <AttachmentItem
+          v-for="a in attachments"
+          :key="a.file_url"
+          :label="a.file_name"
+        >
+          <template #suffix>
+            <span
+              class="lucide-x h-3.5"
+              aria-hidden="true"
+              @click.stop="removeAttachment(a)"
+            />
+          </template>
+        </AttachmentItem>
+      </div>
+      <EditorTableMenu />
     </div>
   </Editor>
 </template>
@@ -91,9 +111,10 @@ import {
   uploadFile,
 } from '@/components/editor/config'
 import { submitShortcutLabel } from '@/utils'
+import { isMobileView } from '@/composables/breakpoints'
 import { usersStore } from '@/stores/users'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { FileUploader } from 'frappe-ui'
+import { Button, FileUploader } from 'frappe-ui'
 import {
   Editor,
   EditorContent,
@@ -109,6 +130,8 @@ defineProps({
   editorProps: { type: Object, default: () => ({}) },
   submitButtonProps: { type: Object, default: () => ({}) },
   discardButtonProps: { type: Object, default: () => ({}) },
+  // something written or attached, which is when there is something to discard
+  draft: { type: Boolean, default: false },
 })
 
 const modelValue = defineModel({ type: Object })
@@ -123,6 +146,8 @@ const { capture } = useTelemetry()
 
 const commentEditor = ref(null)
 const emoji = ref('')
+// the headings-and-lists bar
+const formatting = ref(false)
 
 const editor = computed(() => commentEditor.value?.editor)
 
