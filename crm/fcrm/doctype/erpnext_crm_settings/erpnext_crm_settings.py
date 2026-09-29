@@ -11,10 +11,13 @@ from frappe.frappeclient import FrappeClient
 from frappe.model.document import Document
 from frappe.utils import get_url_to_form, get_url_to_list
 
-# The roles that may write these settings. Frappe runs a whitelisted method of a
-# document for anyone who can read it (run_doc_method only checks read), and a
-# Sales User can: the methods that act check the role themselves.
-MANAGER_ROLES = ("System Manager", "Sales Manager")
+from crm.permissions import livelli
+
+# The integration is the agency's, the whole page (doc 30). Frappe runs a
+# whitelisted method of a document for anyone who can read it (run_doc_method only
+# checks read), and a Sales User can: the methods that act ask for the capability
+# themselves, and `crm.permissions.documenti` keeps the writing to it.
+CAPACITA = "tecnico.erpnext"
 
 
 def _is_erpnext_installed():
@@ -199,7 +202,7 @@ class ERPNextCRMSettings(Document):
 
 	@frappe.whitelist()
 	def reset_erpnext_form_script(self):
-		frappe.only_for(MANAGER_ROLES, message=True)
+		livelli.verifica(CAPACITA)
 		try:
 			if frappe.db.exists("CRM Form Script", "Create Quotation from CRM Deal"):
 				script = get_crm_form_script()
@@ -212,7 +215,7 @@ class ERPNextCRMSettings(Document):
 
 	@frappe.whitelist()
 	def get_external_companies(self):
-		frappe.only_for(MANAGER_ROLES, message=True)
+		livelli.verifica(CAPACITA)
 		if not self.erpnext_site_url or not self.api_key or not self.api_secret:
 			return []
 		client = get_erpnext_site_client(self)
@@ -224,7 +227,7 @@ class ERPNextCRMSettings(Document):
 
 	@frappe.whitelist()
 	def run_product_sync(self):
-		frappe.only_for(MANAGER_ROLES, message=True)
+		livelli.verifica(CAPACITA)
 		if not self.enabled or self.is_erpnext_in_different_site:
 			frappe.throw(_("ERPNext integration must be enabled on the same site"))
 		from crm.fcrm.doctype.crm_product.reconcile_job import enqueue_reconciliation
