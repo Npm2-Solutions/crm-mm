@@ -205,7 +205,7 @@ lavorarci.
 | Eliminarlo | Senza conferma | Una conferma che propone di annullarlo invece: l'annullato resta nello storico, e libera comunque l'orario |
 | Colori | Tutto verde: il calendario conosce sette nomi e sette esadecimali, e il resto lo disegnava verde. I colori dei servizi sono esadecimali qualunque, e il pannello evento salvava la variabile CSS (`var(--ink-amber-7)`) | Ogni colore va al più vicino dei sette. Il calendario impara il grigio e il rosso. Gli annullati sono grigi. L'evento salva l'esadecimale |
 | Filtri | Servizio, professionista, sala, stato e fonte filtravano gli appuntamenti; gli eventi restavano | Un filtro su una di queste cose nasconde gli eventi, che non ne hanno nessuna. Accanto, il conteggio: «5 appuntamenti · 1 evento» |
-| Dalla persona | Gli appuntamenti non comparivano da nessuna parte, fuori dal calendario | La scheda «Eventi» di un lead o di una trattativa elenca anche i suoi appuntamenti, prima i prossimi e poi i passati. Un clic apre il calendario su quel giorno. «Prenota un appuntamento» (nel menu Nuovo e nella scheda) apre il calendario con il cliente già inserito |
+| Dalla persona | Gli appuntamenti non comparivano da nessuna parte, fuori dal calendario | La scheda «Eventi» di un lead o di una trattativa elenca anche i suoi appuntamenti, prima i prossimi e poi i passati. Un clic apre il calendario su quel giorno, e così le schede di appuntamenti ed eventi nella chat. «Prenota un appuntamento» (nel menu Nuovo e nella scheda) apre il calendario con il cliente già inserito |
 
 Un dettaglio che si vedeva solo usandolo: con «Nuovo» senza uno spazio
 cliccato, l'ora proposta era quella attuale arrotondata per difetto, cioè un

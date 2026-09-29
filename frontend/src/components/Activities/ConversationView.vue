@@ -284,6 +284,8 @@
               :title="__('Appointment')"
               :when="momentLabel(localOf(row.item.data?.starts_on))"
               card
+              opens
+              @open="openOnCalendar('appointment', row.item)"
             >
               <div class="flex flex-wrap items-center gap-2">
                 <span class="font-medium">
@@ -304,6 +306,8 @@
               :title="__('Event')"
               :when="momentLabel(localOf(row.item.data?.starts_on))"
               card
+              opens
+              @open="openOnCalendar('event', row.item)"
             >
               <span class="font-medium">{{ row.item.data?.subject }}</span>
             </HappenedCard>
@@ -454,8 +458,9 @@ import {
   isCreditNote,
   worstStatus,
 } from '@/utils/invoicing'
-import { Badge, dayjsLocal } from 'frappe-ui'
+import { Badge, dayjs, dayjsLocal } from 'frappe-ui'
 import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { appLocale } from '@/utils/locale'
 
 const props = defineProps({
@@ -482,6 +487,24 @@ const whatsappMessages = defineModel('whatsappMessages', {
 const reply = defineModel('reply', { type: Object, default: () => ({}) })
 
 const emit = defineEmits(['reload'])
+
+const router = useRouter()
+
+// An appointment or an event in the chat opens on the calendar, on its day:
+// that is where it can be moved, changed or cancelled. The cards used to be
+// something to look at and nothing to click.
+function openOnCalendar(kind, item) {
+  const date = item?.data?.starts_on
+    ? dayjs(item.data.starts_on).format('YYYY-MM-DD')
+    : undefined
+  router.push({
+    name: 'Calendar',
+    query:
+      kind === 'appointment'
+        ? { appointment: item.name, date }
+        : { eventId: item.name, date },
+  })
+}
 
 const { isNewestFirst } = useTimelinePreferences()
 const { getUser } = usersStore()
