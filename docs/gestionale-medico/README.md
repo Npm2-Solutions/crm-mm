@@ -453,6 +453,38 @@ pagina **Oggi** (`/crm/oggi`, per chi ha `agenda.presenze`):
 
 Resta alla fase 2 "i moduli da firmare oggi", che aspetta la firma.
 
+### La terza cucitura: il richiamo, e la dashboard del centro
+
+Fatta il 29/09/2026 (fase 1). Con questa la fase 1 è completa.
+
+- **Si sceglie su dati amministrativi.** La persona ha l'ultima visita e il suo
+  servizio (`last_visit`, `last_service`), che l'agenda tiene da sé quando un
+  appuntamento si chiude con la persona venuta; una patch li trova negli
+  appuntamenti di prima. Mai la cartella: il marketing vede "non viene da 14 mesi",
+  non il perché.
+- **Solo con il sì.** Un'automazione può chiedere il consenso al marketing ("Only
+  people who agreed to marketing"). Chi non l'ha dato non entra, e le esecuzioni lo
+  dicono ("Skipped: no marketing consent"), una volta sola per persona; se lo dà più
+  tardi entra. Se il consenso viene revocato mentre è dentro, i messaggi non partono.
+- **Il richiamo è una ricetta**: "Recall after a year", un Date Reminder un anno
+  dopo l'ultima visita, con il consenso chiesto; un'email, una settimana di attesa,
+  l'obiettivo "ha prenotato" e un task per telefonare a chi non l'ha fatto.
+- **La dashboard del centro** ("Medical centre"), registrata dalla clinica e creata
+  quando la si accende (una patch la crea dove la clinica era già accesa):
+  - nuovi pazienti e costo di un nuovo paziente;
+  - l'agenda di oggi, il tasso di non presentati e chi è "da richiamare" (ultima
+    visita oltre un anno fa, con il consenso);
+  - l'incassato, gli appuntamenti da fatturare e da confermare;
+  - l'andamento dell'agenda e i servizi più prenotati.
+
+  Un modulo registra i suoi modelli (`templates.registra`), e un modello dice di
+  che feature ha bisogno.
+- **Accendere la clinica legge il piano appena salvato.** Frappe esegue gli hook
+  prima di togliere il piano dalla cache: la clinica appena accesa risultava spenta,
+  e non partivano né il recupero dei pazienti, né le pipeline, né la dashboard. Ora è
+  il piano stesso a togliersi dalla cache, con i livelli e le feature della
+  dashboard.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da

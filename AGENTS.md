@@ -144,6 +144,12 @@ of their own, linked to the parent, never the parent's record.
 | `crm/api/oggi.py` + `frontend/src/pages/Today.vue` | The Today page: arrivals, waiting room, days left open, what is left to invoice |
 | `frontend/src/utils/oggi.js` | Pure: waiting time, next outcomes, summary, days — tested |
 
+An automation for marketing asks `marketing_consent`: `engine.enroll` skips whoever
+did not agree (an enrollment `Skipped`, once, never counted as having been through
+it) and a message step re-checks before sending. Recalls pick people by
+`CRM Lead.last_visit`/`last_service`, which the agenda keeps. A module adds its own
+dashboard template with `crm.dashboard.templates.registra` (`requires` features).
+
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
 (`tests/test_confine.py`); it hooks on through doc_events, `crm_timeline_gatherers`
 and the registries (`engine.registra_evento`, dashboard features and widgets).

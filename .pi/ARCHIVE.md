@@ -1459,3 +1459,22 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Chi è in sala d'attesa e nessuno ha segnato conta come venuto | È arrivato: lasciarlo "in attesa" per sempre non dice il vero a nessuno |
 | La giornata è quella del server | Un browser in un altro fuso mostrerebbe gli arrivi di domani |
 | La notifica apre la pagina Oggi (tipo "Agenda") | Le notifiche sapevano aprire solo persone e trattative |
+
+## Fase 1, la terza cucitura: il richiamo e la dashboard del centro
+
+> **Completato** (29/09/2026). Ultima visita e servizio sulla persona, automazioni con
+> il consenso al marketing, la ricetta del richiamo, la dashboard "Medical centre".
+> Con questa la fase 1 è completa. `docs/gestionale-medico/README.md`, "La terza cucitura".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| `last_visit` e `last_service` sulla persona, tenuti dall'agenda | I richiami scelgono su dati amministrativi, mai sulla cartella; un campo si filtra, si mostra e un Date Reminder lo legge senza codice nuovo |
+| Il consenso è un'opzione dell'automazione, non di ogni passo | È l'automazione che fa marketing; un passo dimenticato senza il controllo sarebbe l'invio che non doveva partire |
+| L'iscrizione saltata è "Skipped", una volta, e non conta come passaggio | Si vede perché qualcuno non ha ricevuto niente; e chi dice sì più tardi entra |
+| Il consenso si ricontrolla prima di ogni invio | Una revoca arriva mentre l'automazione aspetta: il messaggio dopo non deve partire |
+| I modelli di dashboard si registrano, con `requires` | La clinica aggiunge il suo senza che il CRM la nomini, e nasce solo dove la clinica è accesa |
+| Il piano, nel suo `on_update`, toglie dalla cache sé stesso, i livelli e le feature della dashboard | Frappe esegue `on_update` prima di `clear_cache`: la clinica appena accesa risultava spenta, e spenta risultava ancora accesa alla dashboard |
+| Una patch crea pipeline e dashboard dove la clinica era già accesa | Nascono accendendo la clinica: un sito che l'aveva accesa prima non le avrebbe mai avute |
+| I Link nascosti o di sola lettura non aprono liste agli ospiti | Un modulo web non li può raccogliere: `last_service` avrebbe aperto i servizi per niente |
