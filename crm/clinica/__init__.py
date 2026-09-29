@@ -188,6 +188,41 @@ def registra() -> None:
 	registra_tipo(REFERTI_ONLINE)
 
 
+def _cruscotto():
+	from frappe import _lt
+
+	from crm.dashboard.templates import CHART, KPI, LIST, Line, Template, section
+
+	return Template(
+		"medical_centre",
+		_lt("Medical centre"),
+		_lt("New patients and what one costs, the day's agenda, no-shows, recalls and invoices"),
+		"stethoscope",
+		sequence=5,
+		requires=("clinic",),
+		sections=(
+			section(
+				Line.of(
+					KPI,
+					"new_patients",
+					"meta_cost_per_patient",
+					"appointments_today",
+					"appointments_no_show_rate",
+					"recall_due",
+				),
+				Line.of(KPI, "invoiced_revenue", "appointments_to_invoice", "appointments_to_confirm"),
+				Line.of(CHART, "appointments_trend", "appointments_by_service"),
+				Line.of(
+					LIST,
+					"appointments_upcoming",
+					"appointments_to_invoice_list",
+					"appointments_to_confirm_list",
+				),
+			),
+		),
+	)
+
+
 def _registra_dashboard(clinica_accesa) -> None:
 	"""The "clinic" feature, and the widgets that need it (`crm.clinica.widgets`)."""
 	from frappe import _lt
@@ -205,3 +240,6 @@ def _registra_dashboard(clinica_accesa) -> None:
 		),
 	)
 	import crm.clinica.widgets  # registers the widgets
+	from crm.dashboard import templates as modelli
+
+	modelli.registra(_cruscotto())

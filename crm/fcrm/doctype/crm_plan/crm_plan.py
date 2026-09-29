@@ -61,7 +61,14 @@ class CRMPlan(Document):
 				frappe.throw(_("Row {0}: a trial needs the day it ends").format(riga.idx))
 
 	def on_update(self):
+		# on_update runs before Frappe drops the cached document: whoever reads the
+		# plan after this, in this same request, reads this one. The clinic switched
+		# on here, and the dashboard asking which features the site has, among them
+		frappe.clear_document_cache(self.doctype, self.name)
 		livelli.dimentica_cache()
+		from crm.dashboard import features
+
+		features.forget()
 
 
 #: The document's words for the registry's states.
