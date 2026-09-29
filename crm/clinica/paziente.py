@@ -64,10 +64,14 @@ def assicura_paziente(
 	fonte: tuple[str, str] | None = None,
 	da: str | None = None,
 	nota: str | None = None,
+	annuncia: bool = True,
 ) -> str | None:
 	"""Make ``lead`` a patient because of ``regola``; the card's name when it did.
 
-	None when nothing happened: already a patient, or the clinic is off.
+	None when nothing happened: already a patient, or the clinic is off. With
+	``annuncia`` the sales side hears it (`pipeline.diventato_paziente`): the new
+	patients deal is won and the automations run. The patients found in the data
+	already there are not news, and are not announced.
 	"""
 	if not lead or not clinica_accesa() or e_paziente(lead):
 		return None
@@ -93,6 +97,10 @@ def assicura_paziente(
 		# two rules at the same moment, from two requests: the other one won
 		frappe.db.rollback(save_point="clinica_paziente")
 		return None
+	if annuncia:
+		from crm.clinica import pipeline
+
+		pipeline.diventato_paziente(lead, regola)
 	return scheda.name
 
 
@@ -221,6 +229,7 @@ def recupera() -> int:
 			fonte=fatti[regola.valore][1],
 			da="",
 			nota=_("Found in the existing data when the clinic was switched on"),
+			annuncia=False,
 		):
 			creati += 1
 			if creati % 200 == 0:

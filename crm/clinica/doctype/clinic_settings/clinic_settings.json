@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "creation": "2026-09-29 20:40:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "pipelines_section",
+  "new_patients_pipeline",
+  "booked_stage",
+  "column_break_quotes",
+  "quotes_pipeline"
+ ],
+ "fields": [
+  {
+   "fieldname": "pipelines_section",
+   "fieldtype": "Section Break",
+   "label": "Pipelines"
+  },
+  {
+   "description": "An open deal here is won when the person becomes a patient.",
+   "fieldname": "new_patients_pipeline",
+   "fieldtype": "Link",
+   "label": "New patients pipeline",
+   "options": "CRM Pipeline"
+  },
+  {
+   "description": "Where a booking moves an open deal of the new patients pipeline, when it is further back.",
+   "fieldname": "booked_stage",
+   "fieldtype": "Link",
+   "label": "Stage after a booking",
+   "options": "CRM Deal Status"
+  },
+  {
+   "fieldname": "column_break_quotes",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Costly treatments, from the quote delivered to accepted or declined.",
+   "fieldname": "quotes_pipeline",
+   "fieldtype": "Link",
+   "label": "Quotes pipeline",
+   "options": "CRM Pipeline"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-29 20:40:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
