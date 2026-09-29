@@ -9,7 +9,9 @@
   >
     <!-- grip · kind · words · what applies to it · open · menu -->
     <div class="flex items-center gap-2 px-2.5 py-2">
-      <DragVerticalIcon class="drag-handle h-3.5 shrink-0 cursor-grab text-ink-gray-4" />
+      <DragVerticalIcon
+        class="drag-handle h-3.5 shrink-0 cursor-grab text-ink-gray-4"
+      />
       <component
         :is="componentIcon(field.type)"
         class="size-4 shrink-0 text-ink-gray-5"
@@ -26,12 +28,20 @@
         >
           {{ headline || __('Write the question') }}
         </span>
-        <span v-if="field.required || field.must_accept" class="shrink-0 text-ink-red-4">
+        <span
+          v-if="field.required || field.must_accept"
+          class="shrink-0 text-ink-red-4"
+        >
           *
         </span>
       </button>
       <div class="flex shrink-0 items-center gap-1 max-md:hidden">
-        <Badge v-if="has(field.show_if)" :label="__('Conditional')" size="sm" variant="subtle" />
+        <Badge
+          v-if="has(field.show_if)"
+          :label="__('Conditional')"
+          size="sm"
+          variant="subtle"
+        />
         <Badge
           v-if="has(field.stop_if)"
           :label="__('Stops')"
@@ -61,11 +71,18 @@
         </template>
       </Button>
       <Dropdown :options="menu">
-        <Button class="touch-target" variant="ghost" icon="lucide-more-horizontal" />
+        <Button
+          class="touch-target"
+          variant="ghost"
+          icon="lucide-more-horizontal"
+        />
       </Dropdown>
     </div>
 
-    <div v-if="expanded" class="flex flex-col gap-4 border-t border-outline-gray-2 px-3 py-3">
+    <div
+      v-if="expanded"
+      class="flex flex-col gap-4 border-t border-outline-gray-2 px-3 py-3"
+    >
       <ul
         v-if="problems.length"
         class="flex flex-col gap-1 rounded-md bg-surface-amber-1 px-3 py-2 text-sm text-ink-amber-7"
@@ -79,11 +96,17 @@
           type="textarea"
           :rows="6"
           :label="__('The words to read')"
-          :placeholder="__('A notice, an explanation: shown exactly as written')"
+          :placeholder="
+            __('A notice, an explanation: shown exactly as written')
+          "
         />
       </template>
       <template v-else>
-        <FormControl v-model="field.label" :label="labelCaption" :placeholder="__('Your weight')" />
+        <FormControl
+          v-model="field.label"
+          :label="labelCaption"
+          :placeholder="__('Your weight')"
+        />
         <FormControl
           v-model="field.description"
           :label="__('Help under it')"
@@ -93,7 +116,10 @@
 
       <!-- what this kind of question carries -->
       <template v-if="field.type === 'text'">
-        <TemplateSwitch v-model="field.multiline" :label="__('A longer answer')" />
+        <TemplateSwitch
+          v-model="field.multiline"
+          :label="__('A longer answer')"
+        />
         <FormControl
           v-model="field.placeholder"
           :label="__('Placeholder')"
@@ -102,13 +128,24 @@
         <TemplatePhrases
           v-model="phrases"
           :label="__('Ready phrases')"
-          :hint="__('One tap writes them into the answer: the operator\'s usual words')"
+          :hint="
+            __(
+              'One tap writes them into the answer: the operator\'s usual words',
+            )
+          "
           :placeholder="__('No pain at rest')"
         />
       </template>
 
-      <div v-else-if="field.type === 'number'" class="grid grid-cols-4 gap-2 max-md:grid-cols-2">
-        <FormControl v-model="field.unit" :label="__('Unit')" placeholder="kg" />
+      <div
+        v-else-if="field.type === 'number'"
+        class="grid grid-cols-4 gap-2 max-md:grid-cols-2"
+      >
+        <FormControl
+          v-model="field.unit"
+          :label="__('Unit')"
+          placeholder="kg"
+        />
         <TemplateNumber v-model="field.min" :label="__('Least')" />
         <TemplateNumber v-model="field.max" :label="__('Most')" />
         <TemplateNumber v-model="field.decimals" :label="__('Decimals')" />
@@ -116,7 +153,9 @@
 
       <template v-else-if="field.type === 'choice'">
         <div class="flex flex-col gap-1.5">
-          <span class="text-sm text-ink-gray-5">{{ __('Options, and their score') }}</span>
+          <span class="text-sm text-ink-gray-5">{{
+            __('Options, and their score')
+          }}</span>
           <div
             v-for="(option, index) in field.options"
             :key="index"
@@ -150,7 +189,10 @@
             @click="addOption"
           />
         </div>
-        <TemplateSwitch v-model="field.multiple" :label="__('More than one can be picked')" />
+        <TemplateSwitch
+          v-model="field.multiple"
+          :label="__('More than one can be picked')"
+        />
         <FormControl
           v-if="!field.multiple"
           v-model="field.display"
@@ -168,11 +210,30 @@
         <TemplateNumber v-model="scores.no" :label="__('Score for no')" />
       </div>
 
-      <div v-else-if="field.type === 'scale'" class="grid grid-cols-4 gap-2 max-md:grid-cols-2">
-        <TemplateNumber v-model="field.min" :label="__('From')" placeholder="0" />
-        <TemplateNumber v-model="field.max" :label="__('To')" placeholder="10" />
-        <FormControl v-model="field.min_label" :label="__('Words at the start')" :placeholder="__('None')" />
-        <FormControl v-model="field.max_label" :label="__('Words at the end')" :placeholder="__('The worst')" />
+      <div
+        v-else-if="field.type === 'scale'"
+        class="grid grid-cols-4 gap-2 max-md:grid-cols-2"
+      >
+        <TemplateNumber
+          v-model="field.min"
+          :label="__('From')"
+          placeholder="0"
+        />
+        <TemplateNumber
+          v-model="field.max"
+          :label="__('To')"
+          placeholder="10"
+        />
+        <FormControl
+          v-model="field.min_label"
+          :label="__('Words at the start')"
+          :placeholder="__('None')"
+        />
+        <FormControl
+          v-model="field.max_label"
+          :label="__('Words at the end')"
+          :placeholder="__('The worst')"
+        />
       </div>
 
       <div v-else-if="field.type === 'table'" class="flex flex-col gap-1.5">
@@ -224,7 +285,10 @@
         <FormControl v-model="field.unit" :label="__('Unit')" placeholder="°" />
       </div>
 
-      <div v-else-if="field.type === 'attachment'" class="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+      <div
+        v-else-if="field.type === 'attachment'"
+        class="grid grid-cols-2 gap-2 max-md:grid-cols-1"
+      >
         <FormControl
           v-model="field.accept"
           type="select"
@@ -236,7 +300,10 @@
             { label: __('Images and PDF'), value: 'image/*,application/pdf' },
           ]"
         />
-        <TemplateSwitch v-model="field.multiple" :label="__('More than one file')" />
+        <TemplateSwitch
+          v-model="field.multiple"
+          :label="__('More than one file')"
+        />
       </div>
 
       <template v-else-if="field.type === 'calc'">
@@ -245,8 +312,14 @@
           :label="__('Formula')"
           placeholder="weight / (height / 100) ^ 2"
         />
-        <div class="flex flex-wrap items-center gap-1.5 text-sm text-ink-gray-5">
-          <span>{{ numbersBefore.length ? __('It can use') : __('Add a number before it to use it here') }}</span>
+        <div
+          class="flex flex-wrap items-center gap-1.5 text-sm text-ink-gray-5"
+        >
+          <span>{{
+            numbersBefore.length
+              ? __('It can use')
+              : __('Add a number before it to use it here')
+          }}</span>
           <Button
             v-for="name in numbersBefore"
             :key="name.id"
@@ -262,7 +335,11 @@
         </div>
         <div class="grid grid-cols-2 gap-2">
           <TemplateNumber v-model="field.decimals" :label="__('Decimals')" />
-          <FormControl v-model="field.unit" :label="__('Unit')" placeholder="kg/m²" />
+          <FormControl
+            v-model="field.unit"
+            :label="__('Unit')"
+            placeholder="kg/m²"
+          />
         </div>
       </template>
 
@@ -281,11 +358,15 @@
               :model-value="(field.sources || []).includes(source.id)"
               @update:model-value="(on) => toggleSource(source.id, on)"
             />
-            <span class="min-w-0 truncate">{{ source.label || source.id }}</span>
+            <span class="min-w-0 truncate">{{
+              source.label || source.id
+            }}</span>
           </label>
         </div>
         <div class="flex flex-col gap-1.5">
-          <span class="text-sm text-ink-gray-5">{{ __('Bands: from, to, what it means') }}</span>
+          <span class="text-sm text-ink-gray-5">{{
+            __('Bands: from, to, what it means')
+          }}</span>
           <div
             v-for="(band, index) in field.bands"
             :key="index"
@@ -303,7 +384,11 @@
               :value="band.to ?? ''"
               @input="(e) => (band.to = numberOrNull(e.target.value))"
             />
-            <input v-model="band.label" class="form-input min-w-0 flex-1" :placeholder="__('Moderate')" />
+            <input
+              v-model="band.label"
+              class="form-input min-w-0 flex-1"
+              :placeholder="__('Moderate')"
+            />
             <Button
               class="touch-target shrink-0"
               variant="ghost"
@@ -339,7 +424,11 @@
         <TemplateSwitch
           v-model="field.must_accept"
           :label="__('It has to be accepted to go on')"
-          :hint="__('A notice read, an informed consent. Marketing never is: a no is an answer')"
+          :hint="
+            __(
+              'A notice read, an informed consent. Marketing never is: a no is an answer',
+            )
+          "
         />
       </template>
 
@@ -361,8 +450,14 @@
             :label="__('Signature')"
             :options="[
               { label: __('Simple: the stroke, who, when'), value: 'simple' },
-              { label: __('Advanced: with a code, by a provider'), value: 'advanced' },
-              { label: __('Qualified: the professional\'s digital signature'), value: 'qualified' },
+              {
+                label: __('Advanced: with a code, by a provider'),
+                value: 'advanced',
+              },
+              {
+                label: __('Qualified: the professional\'s digital signature'),
+                value: 'qualified',
+              },
             ]"
           />
         </div>
@@ -417,7 +512,11 @@
           v-model="keyDraft"
           class="min-w-0 flex-1"
           :label="__('Key')"
-          :description="__('How the answer is kept, and how conditions and formulas name it')"
+          :description="
+            __(
+              'How the answer is kept, and how conditions and formulas name it',
+            )
+          "
         />
         <Button
           :label="__('Rename')"
@@ -469,11 +568,21 @@ const labelCaption = computed(() =>
 )
 
 const menu = computed(() => [
-  { label: __('Duplicate'), icon: 'lucide-copy', onClick: () => emit('duplicate') },
-  { label: __('Remove'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('remove') },
+  {
+    label: __('Duplicate'),
+    icon: 'lucide-copy',
+    onClick: () => emit('duplicate'),
+  },
+  {
+    label: __('Remove'),
+    icon: 'lucide-trash-2',
+    theme: 'red',
+    onClick: () => emit('remove'),
+  },
 ])
 
-const has = (groups) => Array.isArray(groups) && groups.some((g) => g?.some?.((c) => c?.field))
+const has = (groups) =>
+  Array.isArray(groups) && groups.some((g) => g?.some?.((c) => c?.field))
 
 const conditionsBefore = computed(() => conditionFields(props.before))
 // required-if and stop-if look anywhere, the question itself included
@@ -482,7 +591,9 @@ const numbersBefore = computed(() =>
   props.before.filter((f) => component(f.type)?.numeric),
 )
 const scorableBefore = computed(() =>
-  props.before.filter((f) => ['choice', 'yesno', 'scale', 'number'].includes(f.type)),
+  props.before.filter((f) =>
+    ['choice', 'yesno', 'scale', 'number'].includes(f.type),
+  ),
 )
 
 const columnTypes = [
@@ -493,7 +604,9 @@ const columnTypes = [
 ]
 
 const numberOrNull = (value) => {
-  const text = String(value ?? '').trim().replace(',', '.')
+  const text = String(value ?? '')
+    .trim()
+    .replace(',', '.')
   if (text === '' || text === '-') return null
   const number = Number(text)
   return Number.isFinite(number) ? number : text
@@ -507,13 +620,19 @@ function setScore(option, value) {
 
 function addOption() {
   if (!Array.isArray(field.value.options)) field.value.options = []
-  field.value.options.push({ label: __('Option {0}', [field.value.options.length + 1]) })
+  field.value.options.push({
+    label: __('Option {0}', [field.value.options.length + 1]),
+  })
 }
 
 function addColumn() {
   if (!Array.isArray(field.value.columns)) field.value.columns = []
   const n = field.value.columns.length + 1
-  field.value.columns.push({ id: uniqueColumnId(`column_${n}`), label: '', type: 'text' })
+  field.value.columns.push({
+    id: uniqueColumnId(`column_${n}`),
+    label: '',
+    type: 'text',
+  })
 }
 
 function uniqueColumnId(base) {
@@ -535,7 +654,9 @@ function renameColumn(column, label) {
     .replace(/^_+|_+$/g, '')
     .replace(/^[0-9_]+/, '')
   if (key && key !== column.id) {
-    const taken = new Set(field.value.columns.filter((c) => c !== column).map((c) => c.id))
+    const taken = new Set(
+      field.value.columns.filter((c) => c !== column).map((c) => c.id),
+    )
     let id = key.slice(0, 40)
     let n = 2
     while (taken.has(id)) id = `${key.slice(0, 40)}_${n++}`
@@ -555,7 +676,9 @@ function toggleSource(id, on) {
   if (on) sources.add(id)
   else sources.delete(id)
   // in the order of the form
-  field.value.sources = props.before.map((f) => f.id).filter((key) => sources.has(key))
+  field.value.sources = props.before
+    .map((f) => f.id)
+    .filter((key) => sources.has(key))
 }
 
 function insertName(name) {
@@ -590,12 +713,16 @@ const consentOptions = computed(() =>
   props.consentTypes.map((type) => ({ label: type.label, value: type.key })),
 )
 const consentText = computed(
-  () => props.consentTypes.find((type) => type.key === field.value.consent_type)?.text || '',
+  () =>
+    props.consentTypes.find((type) => type.key === field.value.consent_type)
+      ?.text || '',
 )
 
 function pickConsent(key) {
   const type = props.consentTypes.find((t) => t.key === key)
-  const previous = props.consentTypes.find((t) => t.key === field.value.consent_type)
+  const previous = props.consentTypes.find(
+    (t) => t.key === field.value.consent_type,
+  )
   field.value.consent_type = key
   // the words follow the consent until somebody writes their own
   if (type && (!field.value.label || field.value.label === previous?.label)) {

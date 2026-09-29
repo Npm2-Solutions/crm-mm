@@ -5,7 +5,10 @@
       :key="section.id"
       class="flex flex-col gap-5"
     >
-      <div v-if="section.title || section.description" class="flex flex-col gap-1">
+      <div
+        v-if="section.title || section.description"
+        class="flex flex-col gap-1"
+      >
         <h3 class="text-lg font-semibold text-ink-gray-9">
           {{ section.title }}
         </h3>
@@ -55,7 +58,9 @@ const values = defineModel({ type: Object, default: () => ({}) })
 // the same evaluation the server makes when the form is sent
 const state = computed(() => evaluate(props.schema, values.value))
 const shownSections = computed(() =>
-  sectionsOf(props.schema).filter((section) => state.value.sections[section.id]),
+  sectionsOf(props.schema).filter(
+    (section) => state.value.sections[section.id],
+  ),
 )
 const required = computed(() => new Set(state.value.required))
 const missing = computed(() => new Set(state.value.missing))

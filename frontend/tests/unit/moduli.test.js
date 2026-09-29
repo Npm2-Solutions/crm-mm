@@ -24,12 +24,17 @@ import { STARTERS } from '@/utils/moduliStarters'
 // the cases the server proves too: crm/moduli/tests/test_schema.py reads them
 const CASES = JSON.parse(
   fs.readFileSync(
-    path.resolve(import.meta.dirname, '../../../crm/moduli/tests/casi_schema.json'),
+    path.resolve(
+      import.meta.dirname,
+      '../../../crm/moduli/tests/casi_schema.json',
+    ),
     'utf8',
   ),
 )
 const schemaOf = (c) =>
-  structuredClone(typeof c.schema === 'string' ? CASES.schemas[c.schema] : c.schema)
+  structuredClone(
+    typeof c.schema === 'string' ? CASES.schemas[c.schema] : c.schema,
+  )
 
 describe('the cases shared with the server', () => {
   it.each(CASES.conditions.map((c) => [c.name, c]))('condition: %s', (_, c) => {
@@ -39,17 +44,25 @@ describe('the cases shared with the server', () => {
   it.each(CASES.formulas.map((c) => [c.formula || '(empty)', c]))(
     'formula: %s',
     (_, c) => {
-      expect(computeFormula(c.formula, c.values, c.decimals ?? null)).toBe(c.expected)
+      expect(computeFormula(c.formula, c.values, c.decimals ?? null)).toBe(
+        c.expected,
+      )
     },
   )
 
-  it.each(CASES.evaluations.map((c) => [c.name, c]))('evaluation: %s', (_, c) => {
-    expect(evaluate(schemaOf(c), c.values)).toEqual(c.expected)
-  })
+  it.each(CASES.evaluations.map((c) => [c.name, c]))(
+    'evaluation: %s',
+    (_, c) => {
+      expect(evaluate(schemaOf(c), c.values)).toEqual(c.expected)
+    },
+  )
 
-  it.each(CASES.validations.map((c) => [c.name, c]))('validation: %s', (_, c) => {
-    expect(validateSchema(schemaOf(c)).map((p) => p.code)).toEqual(c.expected)
-  })
+  it.each(CASES.validations.map((c) => [c.name, c]))(
+    'validation: %s',
+    (_, c) => {
+      expect(validateSchema(schemaOf(c)).map((p) => p.code)).toEqual(c.expected)
+    },
+  )
 })
 
 describe('what Python calls true', () => {
@@ -57,13 +70,26 @@ describe('what Python calls true', () => {
     expect([null, undefined, false, 0, '', [], {}].map(truthy)).toEqual(
       Array(7).fill(false),
     )
-    expect([true, 1, 'x', [0], { a: 1 }, '0'].map(truthy)).toEqual(Array(6).fill(true))
+    expect([true, 1, 'x', [0], { a: 1 }, '0'].map(truthy)).toEqual(
+      Array(6).fill(true),
+    )
   })
 
   it('treats an empty stop list as no stop', () => {
     const schema = {
       sections: [
-        { id: 's', fields: [{ id: 'a', type: 'yesno', label: 'A', stop_if: [], required_if: [] }] },
+        {
+          id: 's',
+          fields: [
+            {
+              id: 'a',
+              type: 'yesno',
+              label: 'A',
+              stop_if: [],
+              required_if: [],
+            },
+          ],
+        },
       ],
     }
     const state = evaluate(schema, { a: true })
@@ -73,7 +99,9 @@ describe('what Python calls true', () => {
 
   it('never reads a key off the prototype', () => {
     const schema = {
-      sections: [{ id: 's', fields: [{ id: 'constructor', type: 'text', label: 'C' }] }],
+      sections: [
+        { id: 's', fields: [{ id: 'constructor', type: 'text', label: 'C' }] },
+      ],
     }
     expect(evaluate(schema, {}).values.constructor).toBe(null)
   })
@@ -91,10 +119,22 @@ describe('the builder', () => {
   it('makes new fields and sections the schema accepts', () => {
     const schema = { sections: [newSection({ sections: [] }, 'About you')] }
     expect(schema.sections[0].id).toBe('about_you')
-    for (const type of ['text', 'number', 'choice', 'yesno', 'date', 'scale', 'table', 'sides']) {
+    for (const type of [
+      'text',
+      'number',
+      'choice',
+      'yesno',
+      'date',
+      'scale',
+      'table',
+      'sides',
+    ]) {
       schema.sections[0].fields.push(newField(type, schema, `A ${type}`))
     }
-    schema.sections[0].fields.push({ ...newField('paragraph', schema), text: 'Read me' })
+    schema.sections[0].fields.push({
+      ...newField('paragraph', schema),
+      text: 'Read me',
+    })
     schema.sections[0].fields.push(newField('signature', schema, 'Signature'))
     expect(validateSchema(schema)).toEqual([])
     expect(readyToPublish(schema)).toEqual([])
@@ -110,14 +150,28 @@ describe('the builder', () => {
           fields: [
             { id: 'w', type: 'number', label: 'Weight' },
             { id: 'h', type: 'number', label: 'Height' },
-            { id: 'bmi', type: 'calc', label: 'BMI', formula: 'w / (h / 100) ^ 2 + round(w)' },
-            { id: 'q', type: 'scale', label: 'Q', show_if: [[{ field: 'w', operator: 'is_set' }]] },
+            {
+              id: 'bmi',
+              type: 'calc',
+              label: 'BMI',
+              formula: 'w / (h / 100) ^ 2 + round(w)',
+            },
+            {
+              id: 'q',
+              type: 'scale',
+              label: 'Q',
+              show_if: [[{ field: 'w', operator: 'is_set' }]],
+            },
             { id: 't', type: 'score', label: 'T', sources: ['w', 'q'] },
           ],
         },
       ],
     }
-    expect(usesOf(schema, 'w')).toEqual([{ field: 'bmi' }, { field: 'q' }, { field: 't' }])
+    expect(usesOf(schema, 'w')).toEqual([
+      { field: 'bmi' },
+      { field: 'q' },
+      { field: 't' },
+    ])
     expect(renameKey(schema, 'w', 'weight')).toBe(true)
     const [, , bmi, q, t] = schema.sections[0].fields
     expect(bmi.formula).toBe('weight / (h / 100) ^ 2 + round(weight)')
@@ -130,7 +184,9 @@ describe('the builder', () => {
   })
 
   it('renames a name in a formula and not the names around it', () => {
-    expect(renameInFormula('a + ab + ba + a_1 * a', 'a', 'x')).toBe('x + ab + ba + a_1 * x')
+    expect(renameInFormula('a + ab + ba + a_1 * a', 'a', 'x')).toBe(
+      'x + ab + ba + a_1 * x',
+    )
     expect(renameInFormula('max(a, 2)', 'max', 'x')).toBe('x(a, 2)')
   })
 
@@ -141,13 +197,9 @@ describe('the builder', () => {
       'height',
       'bmi',
     ])
-    expect(fieldsBefore(schema, { section: 'risks' }).map((f) => f.id)).toEqual([
-      'weight',
-      'height',
-      'bmi',
-      'smoker',
-      'cigarettes',
-    ])
+    expect(fieldsBefore(schema, { section: 'risks' }).map((f) => f.id)).toEqual(
+      ['weight', 'height', 'bmi', 'smoker', 'cigarettes'],
+    )
     const fields = conditionFields(fieldsBefore(schema, { section: 'mood' }))
     expect(fields.find((f) => f.fieldname === 'smoker').fieldtype).toBe('Check')
     expect(fields.find((f) => f.fieldname === 'bmi').fieldtype).toBe('Float')
@@ -156,7 +208,9 @@ describe('the builder', () => {
       fieldtype: 'Select',
       options: 'Penicillin\nLatex\nNone',
     })
-    expect(history.find((f) => f.fieldname === 'drugs').fieldtype).toBe('Attach')
+    expect(history.find((f) => f.fieldname === 'drugs').fieldtype).toBe(
+      'Attach',
+    )
   })
 })
 
@@ -170,10 +224,16 @@ describe('the forms to start from', () => {
 
   it('the history works out the BMI and asks which allergy', () => {
     const history = STARTERS.find((s) => s.key === 'history').schema()
-    const state = evaluate(history, { weight: 70, height: 175, allergies: ['Latex'] })
+    const state = evaluate(history, {
+      weight: 70,
+      height: 175,
+      allergies: ['Latex'],
+    })
     expect(state.values.bmi).toBe(22.9)
     expect(state.visible.allergies_which).toBe(true)
-    expect(evaluate(history, { allergies: ['None'] }).visible.allergies_which).toBe(false)
+    expect(
+      evaluate(history, { allergies: ['None'] }).visible.allergies_which,
+    ).toBe(false)
   })
 
   it('the informed consent stops on a pacemaker and without the yes', () => {
@@ -183,7 +243,9 @@ describe('the forms to start from', () => {
   })
 
   it('the questionnaire adds up to a band', () => {
-    const questionnaire = STARTERS.find((s) => s.key === 'questionnaire').schema()
+    const questionnaire = STARTERS.find(
+      (s) => s.key === 'questionnaire',
+    ).schema()
     const state = evaluate(questionnaire, {
       q1: 'Some days',
       q2: 'Nearly every day',

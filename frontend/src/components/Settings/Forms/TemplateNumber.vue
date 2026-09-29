@@ -4,7 +4,9 @@
     :placeholder="placeholder"
     inputmode="decimal"
     :model-value="modelValue ?? ''"
-    @update:model-value="(value) => $emit('update:modelValue', numberOrText(value))"
+    @update:model-value="
+      (value) => $emit('update:modelValue', numberOrText(value))
+    "
   />
 </template>
 
@@ -20,7 +22,9 @@ defineEmits(['update:modelValue'])
 
 /** A number when it is one; what was typed otherwise, for the checks to name. */
 function numberOrText(value) {
-  const text = String(value ?? '').trim().replace(',', '.')
+  const text = String(value ?? '')
+    .trim()
+    .replace(',', '.')
   if (text === '' || text === '-') return null
   const number = Number(text)
   return Number.isFinite(number) ? number : text

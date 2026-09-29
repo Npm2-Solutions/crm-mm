@@ -31,7 +31,11 @@
       </p>
       <!-- the automations' condition builder: one way of writing "if" -->
       <div v-else class="overflow-x-auto">
-        <ConditionBuilder v-model="groups" class="min-w-[26rem]" :fields="fields" />
+        <ConditionBuilder
+          v-model="groups"
+          class="min-w-[26rem]"
+          :fields="fields"
+        />
       </div>
       <slot />
     </div>
@@ -52,7 +56,9 @@ defineProps({
 })
 
 const groups = defineModel({ type: [Array, null], default: null })
-const active = computed(() => Array.isArray(groups.value) && groups.value.length > 0)
+const active = computed(
+  () => Array.isArray(groups.value) && groups.value.length > 0,
+)
 
 function start() {
   groups.value = [newConditionGroup()]

@@ -106,7 +106,10 @@ function context() {
 function point(event) {
   const rect = canvas.value.getBoundingClientRect()
   const scale = window.devicePixelRatio || 1
-  return [(event.clientX - rect.left) * scale, (event.clientY - rect.top) * scale]
+  return [
+    (event.clientX - rect.left) * scale,
+    (event.clientY - rect.top) * scale,
+  ]
 }
 
 function start(event) {
@@ -142,7 +145,9 @@ function move(event) {
 function end() {
   if (!drawing) return
   drawing = null
-  modelValue.value = strokes.value.length ? canvas.value.toDataURL('image/png') : null
+  modelValue.value = strokes.value.length
+    ? canvas.value.toDataURL('image/png')
+    : null
 }
 
 function redraw() {
@@ -169,7 +174,9 @@ function size() {
   // points were taken at the old size: stretch them to the new one
   const sx = canvas.value.width ? width / canvas.value.width : 1
   const sy = canvas.value.height ? height / canvas.value.height : 1
-  strokes.value = strokes.value.map((stroke) => stroke.map(([x, y]) => [x * sx, y * sy]))
+  strokes.value = strokes.value.map((stroke) =>
+    stroke.map(([x, y]) => [x * sx, y * sy]),
+  )
   canvas.value.width = width
   canvas.value.height = height
   redraw()

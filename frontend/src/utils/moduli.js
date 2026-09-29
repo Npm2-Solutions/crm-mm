@@ -410,7 +410,9 @@ function tokens(formula) {
       let end = i
       while (
         end < formula.length &&
-        (isLetter(formula[end]) || isDigit(formula[end]) || formula[end] === '_')
+        (isLetter(formula[end]) ||
+          isDigit(formula[end]) ||
+          formula[end] === '_')
       ) {
         end += 1
       }
@@ -605,8 +607,7 @@ function pointsOf(field, value) {
     }
     const picked = Array.isArray(value) ? value : [value]
     return picked.reduce(
-      (total, v) =>
-        total + (typeof v === 'string' ? (points.get(v) ?? 0) : 0),
+      (total, v) => total + (typeof v === 'string' ? (points.get(v) ?? 0) : 0),
       0,
     )
   }
@@ -622,7 +623,11 @@ export function scoreOf(field, values, visible, byId) {
   let total = 0
   let counted = 0
   for (const source of list(get(field, 'sources'))) {
-    if (typeof source !== 'string' || !get(visible, source) || !byId.has(source)) {
+    if (
+      typeof source !== 'string' ||
+      !get(visible, source) ||
+      !byId.has(source)
+    ) {
       continue
     }
     const value = get(values, source)
@@ -677,7 +682,11 @@ export function evaluate(schema, values) {
       let value = null
       if (seen && kind && kind.value !== null) {
         if (field.type === 'calc') {
-          value = computeFormula(get(field, 'formula'), effective, get(field, 'decimals'))
+          value = computeFormula(
+            get(field, 'formula'),
+            effective,
+            get(field, 'decimals'),
+          )
         } else if (field.type === 'score') {
           value = scoreOf(field, effective, visible, byId)
           put(bands, key, bandOf(field, value))
@@ -705,20 +714,39 @@ export function evaluate(schema, values) {
     ) {
       required.push(key)
       const value = get(effective, key)
-      if (isEmpty(value) || (truthy(get(field, 'must_accept')) && value !== true)) {
+      if (
+        isEmpty(value) ||
+        (truthy(get(field, 'must_accept')) && value !== true)
+      ) {
         missing.push(key)
       }
     }
-    if (truthy(get(field, 'stop_if')) && groupsHold(get(field, 'stop_if'), effective)) {
+    if (
+      truthy(get(field, 'stop_if')) &&
+      groupsHold(get(field, 'stop_if'), effective)
+    ) {
       stops.push({ field: key, message: or(get(field, 'stop_message'), '') })
     }
   }
-  return { values: effective, sections, visible, required, missing, stops, bands }
+  return {
+    values: effective,
+    sections,
+    visible,
+    required,
+    missing,
+    stops,
+    bands,
+  }
 }
 
 // --- validation ---------------------------------------------------------------
 
-const problem = (code, field, message, args = []) => ({ code, field, message, args })
+const problem = (code, field, message, args = []) => ({
+  code,
+  field,
+  message,
+  args,
+})
 
 function isGroups(groups) {
   return (
@@ -733,7 +761,11 @@ function checkConditions(found, groups, where, before, all, onlyBefore, label) {
   if (groups === null || groups === undefined) return
   if (Array.isArray(groups) && groups.length === 0) return
   if (!isGroups(groups)) {
-    found.push(problem('invalid_condition', where, '{0}: the condition is not valid', [label]))
+    found.push(
+      problem('invalid_condition', where, '{0}: the condition is not valid', [
+        label,
+      ]),
+    )
     return
   }
   for (const group of groups) {
@@ -743,7 +775,10 @@ function checkConditions(found, groups, where, before, all, onlyBefore, label) {
       const operator = or(get(condition, 'operator'), 'equals')
       if (!OPERATORS.includes(operator)) {
         found.push(
-          problem('invalid_operator', where, '{0}: unknown operator {1}', [label, operator]),
+          problem('invalid_operator', where, '{0}: unknown operator {1}', [
+            label,
+            operator,
+          ]),
         )
         continue
       }
@@ -770,9 +805,17 @@ function checkConditions(found, groups, where, before, all, onlyBefore, label) {
       const kind = component(target.type)
       if (!kind || kind.condition === null) {
         found.push(
-          problem('invalid_condition', where, '{0}: {1} cannot be asked about', [label, name]),
+          problem(
+            'invalid_condition',
+            where,
+            '{0}: {1} cannot be asked about',
+            [label, name],
+          ),
         )
-      } else if (kind.condition === 'presence' && !VALUELESS.includes(operator)) {
+      } else if (
+        kind.condition === 'presence' &&
+        !VALUELESS.includes(operator)
+      ) {
         found.push(
           problem(
             'invalid_operator',
@@ -786,7 +829,8 @@ function checkConditions(found, groups, where, before, all, onlyBefore, label) {
   }
 }
 
-const hasValue = (value) => value !== null && value !== undefined && value !== ''
+const hasValue = (value) =>
+  value !== null && value !== undefined && value !== ''
 
 function checkField(found, field, before, all) {
   const key = validId(field.id) ? field.id : null
@@ -794,12 +838,17 @@ function checkField(found, field, before, all) {
   const label = text(field.label) || key || ''
   if (!kind) {
     found.push(
-      problem('unknown_type', key, '{0}: unknown kind of field {1}', [label, field.type]),
+      problem('unknown_type', key, '{0}: unknown kind of field {1}', [
+        label,
+        field.type,
+      ]),
     )
     return
   }
   if (kind.value !== null && !text(field.label)) {
-    found.push(problem('missing_label', key, 'A question needs its words ({0})', [key]))
+    found.push(
+      problem('missing_label', key, 'A question needs its words ({0})', [key]),
+    )
   }
   const type = field.type
   if (type === 'number' || type === 'scale') {
@@ -817,44 +866,74 @@ function checkField(found, field, before, all) {
         )
       ) {
         found.push(
-          problem('invalid_scale', key, '{0}: a scale goes up in whole steps, at most 100', [
-            label,
-          ]),
+          problem(
+            'invalid_scale',
+            key,
+            '{0}: a scale goes up in whole steps, at most 100',
+            [label],
+          ),
         )
       }
     } else if (least !== null && most !== null && least > most) {
-      found.push(problem('min_above_max', key, '{0}: the least is above the most', [label]))
+      found.push(
+        problem('min_above_max', key, '{0}: the least is above the most', [
+          label,
+        ]),
+      )
     }
   }
-  if ((type === 'number' || type === 'calc') && get(field, 'decimals') !== null) {
+  if (
+    (type === 'number' || type === 'calc') &&
+    get(field, 'decimals') !== null
+  ) {
     const d = toNumber(get(field, 'decimals'))
     if (d === null || !Number.isInteger(d) || d < 0 || d > MAX_DECIMALS) {
-      found.push(problem('invalid_decimals', key, '{0}: decimals go from 0 to 6', [label]))
+      found.push(
+        problem('invalid_decimals', key, '{0}: decimals go from 0 to 6', [
+          label,
+        ]),
+      )
     }
   }
   if (type === 'choice') {
     const options = get(field, 'options')
     if (!Array.isArray(options) || !options.length) {
-      found.push(problem('missing_options', key, '{0}: a choice needs its options', [label]))
+      found.push(
+        problem('missing_options', key, '{0}: a choice needs its options', [
+          label,
+        ]),
+      )
     } else {
       const seen = new Set()
       for (const option of options.slice(0, MAX_OPTIONS + 1)) {
         const words = isObject(option) ? text(option.label) : ''
         if (!words || seen.has(words)) {
           found.push(
-            problem('duplicate_option', key, '{0}: every option has its own words', [label]),
+            problem(
+              'duplicate_option',
+              key,
+              '{0}: every option has its own words',
+              [label],
+            ),
           )
           break
         }
         seen.add(words)
         const score = get(option, 'score')
         if (hasValue(score) && toNumber(score) === null) {
-          found.push(problem('invalid_score', key, '{0}: a score is a number', [label]))
+          found.push(
+            problem('invalid_score', key, '{0}: a score is a number', [label]),
+          )
           break
         }
       }
       if (options.length > MAX_OPTIONS) {
-        found.push(problem('too_many', key, '{0}: at most {1} options', [label, MAX_OPTIONS]))
+        found.push(
+          problem('too_many', key, '{0}: at most {1} options', [
+            label,
+            MAX_OPTIONS,
+          ]),
+        )
       }
     }
   }
@@ -864,13 +943,19 @@ function checkField(found, field, before, all) {
       !isObject(scores) ||
       Object.values(scores).some((v) => hasValue(v) && toNumber(v) === null)
     ) {
-      found.push(problem('invalid_score', key, '{0}: a score is a number', [label]))
+      found.push(
+        problem('invalid_score', key, '{0}: a score is a number', [label]),
+      )
     }
   }
   if (type === 'table') {
     const columns = get(field, 'columns')
     if (!Array.isArray(columns) || !columns.length) {
-      found.push(problem('missing_columns', key, '{0}: a table needs its columns', [label]))
+      found.push(
+        problem('missing_columns', key, '{0}: a table needs its columns', [
+          label,
+        ]),
+      )
     } else {
       const seen = new Set()
       for (const column of columns) {
@@ -881,24 +966,39 @@ function checkField(found, field, before, all) {
           text(column.label) &&
           COLUMN_TYPES.includes(or(get(column, 'type'), 'text'))
         if (!ok) {
-          found.push(problem('invalid_column', key, '{0}: a column is not valid', [label]))
+          found.push(
+            problem('invalid_column', key, '{0}: a column is not valid', [
+              label,
+            ]),
+          )
           break
         }
         seen.add(column.id)
       }
       if (columns.length > MAX_COLUMNS) {
-        found.push(problem('too_many', key, '{0}: at most {1} columns', [label, MAX_COLUMNS]))
+        found.push(
+          problem('too_many', key, '{0}: at most {1} columns', [
+            label,
+            MAX_COLUMNS,
+          ]),
+        )
       }
     }
   }
   if (type === 'paragraph' && !text(field.text)) {
-    found.push(problem('missing_text', key, 'A text to read needs its words ({0})', [key]))
+    found.push(
+      problem('missing_text', key, 'A text to read needs its words ({0})', [
+        key,
+      ]),
+    )
   }
   if (type === 'calc') {
     let used = []
     try {
       // once each: "a * a" is one question used twice
-      used = [...new Set(formulaReferences(parseFormula(get(field, 'formula'))))]
+      used = [
+        ...new Set(formulaReferences(parseFormula(get(field, 'formula')))),
+      ]
     } catch (error) {
       if (!(error instanceof FormulaError)) throw error
       found.push(
@@ -927,7 +1027,10 @@ function checkField(found, field, before, all) {
         )
       } else if (!component(before.get(name).type)?.numeric) {
         found.push(
-          problem('not_a_number_reference', key, '{0}: {1} is not a number', [label, name]),
+          problem('not_a_number_reference', key, '{0}: {1} is not a number', [
+            label,
+            name,
+          ]),
         )
       }
     }
@@ -935,11 +1038,18 @@ function checkField(found, field, before, all) {
   if (type === 'score') {
     const sources = get(field, 'sources')
     if (!Array.isArray(sources) || !sources.length) {
-      found.push(problem('missing_sources', key, '{0}: a score counts some questions', [label]))
+      found.push(
+        problem('missing_sources', key, '{0}: a score counts some questions', [
+          label,
+        ]),
+      )
     } else {
       for (const source of sources) {
         const target = typeof source === 'string' ? before.get(source) : null
-        if (!target || !['choice', 'yesno', 'scale', 'number'].includes(target.type)) {
+        if (
+          !target ||
+          !['choice', 'yesno', 'scale', 'number'].includes(target.type)
+        ) {
           found.push(
             problem(
               'invalid_source',
@@ -967,14 +1077,24 @@ function checkField(found, field, before, all) {
       }
     }
   }
-  if (type === 'sides' && !SIDE_INPUTS.includes(or(get(field, 'input'), 'number'))) {
+  if (
+    type === 'sides' &&
+    !SIDE_INPUTS.includes(or(get(field, 'input'), 'number'))
+  ) {
     found.push(
-      problem('invalid_sides_input', key, '{0}: each side is a number or a text', [label]),
+      problem(
+        'invalid_sides_input',
+        key,
+        '{0}: each side is a number or a text',
+        [label],
+      ),
     )
   }
   if (type === 'signature') {
     if (!SIGNERS.includes(or(get(field, 'signer'), 'patient'))) {
-      found.push(problem('invalid_signer', key, '{0}: who signs is not valid', [label]))
+      found.push(
+        problem('invalid_signer', key, '{0}: who signs is not valid', [label]),
+      )
     }
     if (!SIGNATURE_LEVELS.includes(or(get(field, 'level'), 'simple'))) {
       found.push(
@@ -989,11 +1109,21 @@ function checkField(found, field, before, all) {
   }
   if (type === 'consent' && !text(field.consent_type)) {
     found.push(
-      problem('missing_consent_type', key, '{0}: which consent it records', [label]),
+      problem('missing_consent_type', key, '{0}: which consent it records', [
+        label,
+      ]),
     )
   }
   checkConditions(found, get(field, 'show_if'), key, before, all, true, label)
-  checkConditions(found, get(field, 'required_if'), key, before, all, false, label)
+  checkConditions(
+    found,
+    get(field, 'required_if'),
+    key,
+    before,
+    all,
+    false,
+    label,
+  )
   checkConditions(found, get(field, 'stop_if'), key, before, all, false, label)
 }
 
@@ -1004,7 +1134,9 @@ export function validateSchema(schema) {
   }
   const found = []
   if (schema.sections.length > MAX_SECTIONS) {
-    found.push(problem('too_many', null, 'At most {0} sections', [MAX_SECTIONS]))
+    found.push(
+      problem('too_many', null, 'At most {0} sections', [MAX_SECTIONS]),
+    )
   }
   const all = new Map()
   for (const field of fieldsOf(schema)) {
@@ -1023,7 +1155,11 @@ export function validateSchema(schema) {
     }
     const key = validId(section.id) ? section.id : null
     if (key === null || sectionIds.has(key)) {
-      found.push(problem('invalid_id', key, 'Every section has its own key ({0})', [key || '']))
+      found.push(
+        problem('invalid_id', key, 'Every section has its own key ({0})', [
+          key || '',
+        ]),
+      )
     }
     sectionIds.add(key)
     if ('fields' in section && !Array.isArray(section.fields)) {
@@ -1097,7 +1233,9 @@ const DEFAULTS = {
     options: [{ label: __('Option 1') }, { label: __('Option 2') }],
   }),
   scale: () => ({ min: 0, max: 10 }),
-  table: () => ({ columns: [{ id: 'column_1', label: __('Column 1'), type: 'text' }] }),
+  table: () => ({
+    columns: [{ id: 'column_1', label: __('Column 1'), type: 'text' }],
+  }),
   calc: () => ({ formula: '', decimals: 1 }),
   score: () => ({ sources: [], bands: [] }),
   sides: () => ({ input: 'number' }),
@@ -1155,9 +1293,12 @@ export function renameKey(schema, from, to) {
       renameInGroups(field.show_if, from, to)
       renameInGroups(field.required_if, from, to)
       renameInGroups(field.stop_if, from, to)
-      if (field.type === 'calc') field.formula = renameInFormula(field.formula, from, to)
+      if (field.type === 'calc')
+        field.formula = renameInFormula(field.formula, from, to)
       if (Array.isArray(field.sources)) {
-        field.sources = field.sources.map((source) => (source === from ? to : source))
+        field.sources = field.sources.map((source) =>
+          source === from ? to : source,
+        )
       }
     }
   }
@@ -1168,15 +1309,21 @@ export function renameKey(schema, from, to) {
 export function usesOf(schema, key) {
   const uses = []
   const inGroups = (groups) =>
-    cleanConditionGroups(groups).some((group) => group.some((c) => c.field === key))
+    cleanConditionGroups(groups).some((group) =>
+      group.some((c) => c.field === key),
+    )
   for (const section of sectionsOf(schema)) {
     if (inGroups(section.show_if)) uses.push({ section: section.id })
     for (const field of fieldsOfSection(section)) {
       if (field.id === key) continue
-      let used = inGroups(field.show_if) || inGroups(field.required_if) || inGroups(field.stop_if)
+      let used =
+        inGroups(field.show_if) ||
+        inGroups(field.required_if) ||
+        inGroups(field.stop_if)
       if (field.type === 'calc') {
         try {
-          used = used || formulaReferences(parseFormula(field.formula)).includes(key)
+          used =
+            used || formulaReferences(parseFormula(field.formula)).includes(key)
         } catch {
           // a formula being written uses nothing yet
         }
@@ -1236,7 +1383,8 @@ export function conditionFields(fields) {
 export function schemaCounts(schema) {
   return {
     sections: sectionsOf(schema).length,
-    questions: fieldsOf(schema).filter((field) => component(field.type)?.answer).length,
+    questions: fieldsOf(schema).filter((field) => component(field.type)?.answer)
+      .length,
   }
 }
 
@@ -1260,13 +1408,16 @@ export function answerInWords(field, value, band = null) {
     case 'choice':
       return Array.isArray(value) ? value.join(', ') : String(value)
     case 'scale': {
-      const ends = [field.min_label, field.max_label].filter(Boolean).join(' – ')
+      const ends = [field.min_label, field.max_label]
+        .filter(Boolean)
+        .join(' – ')
       return ends ? `${value} (${ends})` : String(value)
     }
     case 'sides': {
       const parts = []
       if (!isEmpty(value.left)) parts.push(__('Left: {0}', [unit(value.left)]))
-      if (!isEmpty(value.right)) parts.push(__('Right: {0}', [unit(value.right)]))
+      if (!isEmpty(value.right))
+        parts.push(__('Right: {0}', [unit(value.right)]))
       return parts.join(' · ')
     }
     case 'attachment':
