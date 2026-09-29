@@ -34,6 +34,9 @@
     <div v-else-if="title == 'Clinic'" class="h-full overflow-y-auto">
       <ClinicArea :lead="docname" />
     </div>
+    <div v-else-if="title == 'Forms'" class="h-full overflow-y-auto">
+      <FormsArea :lead="docname" />
+    </div>
     <div
       v-else-if="
         activities?.length ||
@@ -590,6 +593,7 @@ import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import EventArea from '@/components/Activities/EventArea.vue'
 import AttributionArea from '@/components/Activities/AttributionArea.vue'
 import ClinicArea from '@/components/Clinic/ClinicArea.vue'
+import FormsArea from '@/components/Moduli/FormsArea.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'

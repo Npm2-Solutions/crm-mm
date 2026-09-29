@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  answerInWords,
   computeFormula,
   conditionFields,
   evaluate,
@@ -190,5 +191,23 @@ describe('the forms to start from', () => {
     })
     expect(state.values.total).toBe(4)
     expect(state.bands.total).toBe('Moderate')
+  })
+})
+
+describe('a signed answer in words', () => {
+  it('says what was answered, as the PDF does', () => {
+    expect(answerInWords({ type: 'number', unit: 'kg' }, 70.5)).toBe('70.5 kg')
+    expect(answerInWords({ type: 'yesno' }, false)).toBe('No')
+    expect(answerInWords({ type: 'consent' }, true)).toBe('Agreed')
+    expect(answerInWords({ type: 'choice' }, ['Latex', 'Food'])).toBe('Latex, Food')
+    expect(answerInWords({ type: 'scale', min_label: 'None', max_label: 'Worst' }, 3)).toBe(
+      '3 (None – Worst)',
+    )
+    expect(answerInWords({ type: 'sides', unit: '°' }, { left: 120, right: '' })).toBe(
+      'Left: 120 °',
+    )
+    expect(answerInWords({ type: 'score' }, 4, 'Moderate')).toBe('4 · Moderate')
+    expect(answerInWords({ type: 'attachment' }, '/private/files/exam.pdf')).toBe('exam.pdf')
+    expect(answerInWords({ type: 'text' }, null)).toBe('')
   })
 })

@@ -201,6 +201,14 @@ const routes = [
     component: () => import('@/pages/Today.vue'),
   },
   {
+    // a form filled with a person and signed on the screen; signed, it is read
+    path: '/moduli/:formId',
+    name: 'FormFill',
+    props: true,
+    meta: { richiede: 'moduli.vedi' },
+    component: () => import('@/pages/FormFill.vue'),
+  },
+  {
     path: '/data-import',
     name: 'DataImportList',
     meta: { richiede: 'persone.importa' },
