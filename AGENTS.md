@@ -106,6 +106,18 @@ roles, levels and capabilities from its own `registra()`.
 A person's billing details and consents follow the person (`org_hierarchy.visible_leads`)
 and are deleted with them (`on_trash`); an answer in the register is never edited.
 
+### The clinic (`crm/clinica`, switched on by the plan's "clinica" module)
+| File | Role |
+|---|---|
+| `crm/clinica/__init__.py` | `registra()`: plan module, Medical Director level, capabilities, clinic consents |
+| `crm/clinica/regole.py` | How a person becomes a patient — pure, tested |
+| `crm/clinica/paziente.py` | `assicura_paziente` (the one door), the recovery over old data, the patient panel calls |
+| `crm/clinica/cartella.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock |
+| `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
+
+Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
+(`tests/test_confine.py`); it hooks on through doc_events and `crm_timeline_gatherers`.
+
 ## Mobile
 
 `isMobileView` (< 768px) picks the phone components, so what changes on a phone

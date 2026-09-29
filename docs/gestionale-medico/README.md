@@ -6,8 +6,10 @@
 anche nella cronologia della persona, lo stesso giorno; poi
 [l'anagrafica fiscale sola](#unanagrafica-fiscale-sola), letta dalla fattura e
 completata da quella confermata; [il registro dei consensi](#il-registro-dei-consensi),
-con quello di `/prenota`; e [lo scheletro della clinica](#lo-scheletro-della-clinica), con
-la scheda paziente che nasce dalle regole. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
+con quello di `/prenota`; [lo scheletro della clinica](#lo-scheletro-della-clinica), con
+la scheda paziente che nasce dalle regole; e [la sezione Clinica](#la-sezione-clinica)
+con la visita semplice e il registro degli accessi. Con queste la fase 0 è fatta, tranne
+le persone collegate (genitore e figlio). Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
 `develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
@@ -319,9 +321,37 @@ Fatto il 29/09/2026, in `crm/clinica` (Frappe module "Clinica"):
   documenti (appuntamento, fattura, piano, cancellazione) e con i registri. Solo
   `crm/registrazione.py` la nomina.
 
-Restano per le prossime PR la sezione Clinica con la visita e il registro degli
-accessi (PR 6), e nella fase 1 il deal che si chiude, l'evento per le automazioni
-e il widget "nuovi pazienti".
+Restano per la fase 1 il deal che si chiude, l'evento per le automazioni e il
+widget "nuovi pazienti".
+
+### La sezione Clinica
+
+Fatta il 29/09/2026: la scheda "Clinic" sulla pagina della persona, con la visita
+semplice (testo e allegati) e il registro degli accessi.
+
+- **La visita** (`Clinic Record`, una visita o una nota) è dell'autore finché è
+  una bozza; firmata non si riscrive più, si aggiunge ("Add to it"). Gli allegati
+  sono privati, o non si attaccano. La prima voce salvata fa della persona un
+  paziente (regola 1), dalla classe base di tutti i documenti clinici
+  (`crm/clinica/base.py`): un test controlla che tutti ne ereditino.
+- **Chi la legge**: l'autore sempre; la direzione sanitaria quando è firmata; gli
+  altri operatori solo se il paziente ha dato il consenso al dossier. Una voce
+  "Only me" resta dell'autore. La segreteria sa che c'è stata una visita (un
+  lucchetto nella cronologia, con chi l'ha fatta), non cosa si è detto; manager,
+  commerciale e marketing non la vedono. Nessun permesso a System Manager: il
+  supporto sulla cartella sarà un accesso a tempo.
+- **Il registro degli accessi**: ogni lettura della scheda scrive un View Log
+  (la SPA non passa dal form del Desk, che lo scrive da solo); il manager e la
+  direzione vedono chi l'ha aperta e quando, non cosa. Il View Log si tiene almeno
+  24 mesi: se qualcuno lo mette in Log Settings sotto i 730 giorni, torna a 730.
+- **La cronologia si apre ai moduli** con l'hook `crm_timeline_gatherers`: il CRM
+  non sa niente della clinica, la clinica aggiunge i suoi nodi.
+- **La direzione sanitaria** ha del CRM quello che dice la sua colonna nel doc 30:
+  persone, consensi, agenda in lettura, calendario, dashboard e numeri operativi;
+  non le conversazioni, e i canali che non può aprire non le compaiono.
+
+Resta per la fase 2 la cartella vera: i modelli per specialità, la firma, i
+referti, l'oscuramento, l'apertura fuori équipe con il motivo.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

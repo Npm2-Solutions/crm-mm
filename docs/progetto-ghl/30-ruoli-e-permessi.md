@@ -269,6 +269,11 @@ dell'agenzia.
 | Concedere e revocare l'accesso di supporto all'agenzia | — | — | ✓ | — | — | — | ✓ |
 | Usare l'assistente: dettatura, bozze | — | ✓ | lo attiva | — | — | — | ✓ |
 
+Dal 29/09/2026 ci sono la scheda paziente e la cartella semplice: `pazienti.vedi`,
+`pazienti.segna`, `pazienti.recupera`, `clinica.vedi`, `clinica.scrivi`,
+`clinica.traccia` ("che c'è stata una visita") e `clinica.accessi`, nel modulo "clinica"
+del piano; il livello Direzione sanitaria viene dalla clinica (`crm/clinica/__init__.py`).
+
 ### Area cliente (quando c'è)
 
 | Capacità | Seg | Op | Man | Com | Mkt | Amm | Dir |
