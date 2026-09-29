@@ -72,11 +72,11 @@ def check_app_permission():
 	if "FCRM" not in allowed_modules:
 		return False
 
-	roles = frappe.get_roles()
-	if any(role in ["System Manager", "Sales User", "Sales Manager"] for role in roles):
-		return True
+	# every role a module registered as a way in: the levels decide the rest
+	from crm.permissions import livelli
 
-	return False
+	livelli.carica()
+	return bool(livelli.ruoli_di_accesso() & set(frappe.get_roles()))
 
 
 # nosemgrep: guest-whitelisted-method — the invitation link itself: the key is the credential, 10/h
@@ -124,20 +124,29 @@ def accept_invitation(key: str | None = None):
 			frappe.local.response["location"] = "/crm"
 
 
-@frappe.whitelist()
-def invite_by_email(emails: str, role: str):
-	frappe.only_for(["Sales Manager", "System Manager"], True)
+@frappe.whitelist(methods=["POST"])
+def invite_by_email(emails: str, role: str | None = None, levels: str | list | None = None):
+	"""Invite people by email, with the levels they will have.
 
-	user_roles = frappe.get_roles(frappe.session.user)
+	``role`` is the old way, kept for callers that still send one: System Manager
+	stays the agency's, and a Sales Manager invites Sales Users only.
+	"""
+	from crm.permissions import livelli, utenti
 
-	if role == "System Manager" and "System Manager" not in user_roles:
-		frappe.throw(_("You are not allowed to invite System Managers"), frappe.PermissionError)
+	livelli.verifica("utenti.gestisci", messaggio=_("Only a manager can invite users"))
 
-	if role == "Sales Manager" and "System Manager" not in user_roles:
-		frappe.throw(_("You are not allowed to invite Sales Managers"), frappe.PermissionError)
-
-	if role not in ["System Manager", "Sales Manager", "Sales User"]:
-		frappe.throw(_("Cannot invite for this role"), frappe.PermissionError)
+	chiavi = []
+	if levels:
+		chiavi = utenti.verifica_livelli(frappe.parse_json(levels) if isinstance(levels, str) else levels)
+	else:
+		role = role or "Sales User"
+		user_roles = frappe.get_roles(frappe.session.user)
+		if role not in ["System Manager", "Sales Manager", "Sales User"]:
+			frappe.throw(_("Cannot invite for this role"), frappe.PermissionError)
+		if role == "System Manager" and "System Manager" not in user_roles:
+			frappe.throw(_("You are not allowed to invite System Managers"), frappe.PermissionError)
+		if role == "Sales Manager" and "System Manager" not in user_roles:
+			frappe.throw(_("You are not allowed to invite Sales Managers"), frappe.PermissionError)
 
 	if not emails:
 		return
@@ -151,7 +160,6 @@ def invite_by_email(emails: str, role: str):
 		"CRM Invitation",
 		filters={
 			"email": ["in", email_list],
-			"role": ["in", ["System Manager", "Sales Manager", "Sales User"]],
 			# an expired invitation must not stop a new one
 			"status": "Pending",
 		},
@@ -161,7 +169,12 @@ def invite_by_email(emails: str, role: str):
 	to_invite = list(set(email_list) - set(existing_members) - set(existing_invites))
 
 	for email in to_invite:
-		frappe.get_doc(doctype="CRM Invitation", email=email, role=role).insert(ignore_permissions=True)
+		invitation = {"doctype": "CRM Invitation", "email": email}
+		if chiavi:
+			invitation["levels"] = "\n".join(chiavi)
+		else:
+			invitation["role"] = role
+		frappe.get_doc(invitation).insert(ignore_permissions=True)
 
 	return {
 		"existing_members": existing_members,

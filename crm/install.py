@@ -45,7 +45,15 @@ def after_install(force=False):
 	add_assignment_rule_property_setters()
 	seed_default_rules_and_mappings()
 	seed_invoicing()
+	add_levels()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
+
+
+def add_levels():
+	"""The levels as Role Profiles, and the roles they carry (doc 30)."""
+	from crm.permissions.utenti import sincronizza
+
+	sincronizza()
 
 
 def seed_invoicing():

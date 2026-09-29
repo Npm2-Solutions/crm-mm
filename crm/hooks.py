@@ -464,6 +464,8 @@ ignore_links_on_delete = ["Failed Lead Sync Log"]
 
 after_migrate = [
 	"crm.fcrm.doctype.fcrm_settings.fcrm_settings.after_migrate",
+	# the levels' Role Profiles follow the registry, which is code
+	"crm.permissions.utenti.sincronizza",
 	"crm.api.whatsapp.add_roles",
 	"crm.domain_enrichment.install.seed_default_rules_and_mappings",
 	"crm.install.add_default_scripts",
@@ -524,7 +526,8 @@ standard_dropdown_items = [
 #
 # `crm.invoicing` issues, calculates, formats and transmits documents for any
 # sector, and knows nothing about healthcare. `crm.tessera_sanitaria` adds the
-# healthcare half and plugs itself in through `crm.invoicing.estensioni`.
+# healthcare half and plugs itself in through `crm.invoicing.estensioni`. Every
+# module adds its roles, levels and capabilities to `crm.permissions.livelli`.
 #
 # The wiring lives in `crm.registrazione`, in the app, because deciding which
 # modules an installation has is the app's job - not something either module gets

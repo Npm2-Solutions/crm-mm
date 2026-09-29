@@ -1,13 +1,19 @@
 import frappe
 from frappe import _
 
-CRM_ALLOWED_ROLES = ["System Manager", "Sales Manager", "Sales User"]
+from crm.permissions import livelli
+
+
+def crm_allowed_roles() -> list[str]:
+	"""Every role that opens the CRM, from every module that registered one."""
+	livelli.carica()
+	return sorted(livelli.ruoli_di_accesso())
 
 
 def get_session_role_flags():
 	roles = set(frappe.get_roles())
 
-	if not roles.intersection(set(CRM_ALLOWED_ROLES)):
+	if not roles.intersection(crm_allowed_roles()):
 		frappe.throw(_("You are not permitted to access CRM resources."), frappe.PermissionError)
 
 	return {
@@ -56,10 +62,11 @@ def get_users(include_all: bool = False):
 
 	# Always need the CRM user name set — used both as the filter for the
 	# fast path and as the membership check on the full path.
+	allowed_roles = crm_allowed_roles()
 	crm_user_names = set(
 		frappe.get_all(
 			"Has Role",
-			filters={"parenttype": "User", "role": ["in", CRM_ALLOWED_ROLES]},
+			filters={"parenttype": "User", "role": ["in", allowed_roles]},
 			pluck="parent",
 			distinct=True,
 		)
@@ -99,6 +106,17 @@ def get_users(include_all: bool = False):
 	# than serializing an IN list and gives identical results.
 	telephony_agents = set(frappe.get_all("CRM Telephony Agent", pluck="user"))
 
+	# levels, by user, and the optional capabilities turned on: what the Users page
+	# shows and changes
+	levels_by_user = _levels_by_user(role_filters)
+	optional_by_user = {}
+	for row in frappe.get_all(
+		"CRM User Capability",
+		filters={"enabled": 1, **({"user": role_filters["parent"]} if "parent" in role_filters else {})},
+		fields=["user", "capability"],
+	):
+		optional_by_user.setdefault(row.user, []).append(row.capability)
+
 	role_priority = ("System Manager", "Sales Manager", "Sales User", "Guest")
 	crm_users = []
 
@@ -123,8 +141,15 @@ def get_users(include_all: bool = False):
 
 		user.is_telephony_agent = user.name in telephony_agents
 		user.language = user.language or system_language
+		# the agency's users hold no level: they manage the site
+		user.agency = user.name == "Administrator" or "System Manager" in user.roles
+		user.levels = levels_by_user.get(user.name) or (
+			[] if user.agency else livelli.livelli_impliciti(user.roles)
+		)
+		user.levels_implied = not levels_by_user.get(user.name)
+		user.optional = sorted(optional_by_user.get(user.name, []))
 
-		if user.role in CRM_ALLOWED_ROLES:
+		if user.name == "Administrator" or set(user.roles).intersection(allowed_roles):
 			crm_users.append(user)
 
 	if not include_all:
@@ -169,3 +194,44 @@ def get_organizations():
 	).run(as_dict=1)
 
 	return organizations
+
+
+def _levels_by_user(role_filters: dict) -> dict[str, list[str]]:
+	"""user -> level keys, from the CRM's Role Profiles, in the registry's order."""
+	per_profilo = {livello.profilo: livello.chiave for livello in livelli.livelli()}
+	ordine = {livello.chiave: i for i, livello in enumerate(livelli.livelli())}
+	filters = {"parenttype": "User", "role_profile": ["in", list(per_profilo) or [""]]}
+	if "parent" in role_filters:
+		filters["parent"] = role_filters["parent"]
+	by_user: dict[str, list[str]] = {}
+	for row in frappe.get_all("User Role Profile", filters=filters, fields=["parent", "role_profile"]):
+		by_user.setdefault(row.parent, []).append(per_profilo[row.role_profile])
+	for keys in by_user.values():
+		keys.sort(key=lambda key: ordine.get(key, 99))
+	return by_user
+
+
+@frappe.whitelist()
+def get_permissions() -> dict:
+	"""What the session may do: its levels, every capability with its scope, and the plan.
+
+	The frontend asks this rather than comparing role names: the answer is the one the
+	server gives every endpoint, so a button never shows what the server refuses.
+	"""
+	get_session_role_flags()
+	return session_permissions()
+
+
+def session_permissions() -> dict:
+	"""The session's levels, capabilities and plan; for callers that already checked it
+	may open the CRM, like the page boot."""
+	user = frappe.session.user
+	return {
+		"levels": livelli.livelli_di(user),
+		"agency": livelli.e_agenzia(user),
+		"capabilities": livelli.capacita_di(user),
+		"modules": {
+			modulo.chiave: livelli.stato_modulo(modulo.chiave, livelli.moduli_attivi())
+			for modulo in livelli.moduli_piano()
+		},
+	}

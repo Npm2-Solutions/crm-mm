@@ -166,6 +166,26 @@ export const usersStore = defineStore('crm-users', () => {
     return users.data.crmUsers?.find((u) => u.name === user)
   }
 
+  // What the session may do, as the server decides it (doc 30): its levels,
+  // every capability with its scope, and the plan's modules. It comes with the
+  // page, so nothing appears late; it is asked again when levels change.
+  const permissions = createResource({
+    url: 'crm.api.session.get_permissions',
+    cache: 'crm-permissions',
+    initialData: window.crm_permissions || null,
+    auto: !window.crm_permissions,
+  })
+
+  /** Whether the session may do `capability` (`'fatture.emetti'`). */
+  function puo(capability) {
+    return Boolean(permissions.data?.capabilities?.[capability])
+  }
+
+  /** On which records: 'centro', 'team', 'suoi'… or null when it may not. */
+  function ambito(capability) {
+    return permissions.data?.capabilities?.[capability] || null
+  }
+
   return {
     users,
     usersFull,
@@ -179,6 +199,9 @@ export const usersStore = defineStore('crm-users', () => {
     getUserRole,
     isWebsiteUser,
     isCrmUser,
+    permissions,
+    puo,
+    ambito,
   }
 })
 
