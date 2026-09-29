@@ -37,6 +37,8 @@ class TestInquiryOpensADeal(IntegrationTestCase):
 		deal.status = status[0]
 		if type == "Lost":
 			deal.lost_reason = frappe.get_all("CRM Lost Reason", pluck="name", limit=1)[0]
+			# the newest reason on a fresh site is "Other", which wants a note
+			deal.lost_notes = "Chose another practice"
 		deal.save(ignore_permissions=True)
 
 	def test_an_inquiry_opens_a_deal_in_the_first_stage(self):
