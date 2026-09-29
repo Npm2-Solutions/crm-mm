@@ -602,3 +602,76 @@ quindi è finito negli `ignore` di `pyproject.toml` invece che nel codice.
 | `frontend/src/components/Activities/Activities.vue` | La conversazione segue le sue liste e compare anche quando erano già piene |
 | `frontend/src/components/Dashboard/EChart.vue`, `widgets/ChartWidget.vue` | Il grafico che vive e muore col suo elemento |
 | `frontend/src/components/Settings/Scheduling/PriceListsSettings.vue` | Il primo listino selezionato anche alla seconda apertura |
+
+---
+
+## Home Actions — il menu dell'avatar non esegue più niente
+
+> **Completato** (29/09/2026). Un'icona o una route salvate in Home Actions
+> giravano come script nel browser di chiunque aprisse il menu dell'avatar,
+> System Manager compresi, e le può scrivere un Sales Manager: escalation di
+> privilegi, della stessa famiglia della SSTI nelle automazioni. Ora l'icona è
+> solo un nome Feather e la route solo un percorso del sito o un link http(s),
+> controllati al salvataggio, quando il menu si disegna e sui dati già salvati.
+
+### Il buco
+
+`UserDropdown.vue` disegnava con `innerHTML` qualunque icona cominciasse con
+`<svg`, e apriva la route con `window.open` così com'era. Il campo `icon` è di
+tipo Code, che Frappe salta di proposito quando sanifica l'HTML dei campi:
+`<svg><image href=x onerror=…>` arrivava intatto nel database, e una route
+`javascript:` pure. FCRM Settings dà `write` al Sales Manager.
+
+Le strade per scriverci sono due, e la seconda non passa dal padre:
+
+| Strada | Chi controlla |
+|---|---|
+| Salvare FCRM Settings (Home Actions, il form di Desk, `frappe.client.set_value`) | Solo `FCRMSettings.validate()`: salvando il padre, Frappe non chiama il `validate()` delle righe |
+| `frappe.client.save` su una riga CRM Dropdown Item | Il permesso si guarda sul padre, ma gira solo il `validate()` della riga |
+
+Per questo il controllo sta in `CRMDropdownItem.validate_icon_and_route()`, e lo
+chiamano tutti e due.
+
+### Decisioni
+
+| Scelta | Perché |
+|---|---|
+| Una lista di nomi, non DOMPurify in profilo SVG | Niente di nostro salvava SVG: le voci standard in `hooks.py` usano `settings`, `info`, `log-out`, e né `install.py` né una patch scrivono icone. Un sanificatore SVG lato server sarebbe un secondo parser da tenere al passo con quello del browser |
+| La lista è tutta feather-icons (287 nomi) | È ciò che `FeatherIcon` sa disegnare, e la descrizione del campo prometteva «feather icons»: chi usava un nome continua a vederlo. I `lucide-*` no: il menu li mette in `class=""`, e Tailwind genera solo le classi che trova nel sorgente, quindi da database non si vedrebbero comunque |
+| Un file solo, `crm_dropdown_item/feather_icons.json` | Lo legge il server e lo importa `frontend/src/utils/dropdownItems.js`; un test JS verifica che coincida con `feather.icons` |
+| Route: relativa, oppure `http`/`https` con un host | Lo schema si riconosce come fa il browser (WHATWG): lettera ASCII, poi lettere, cifre, `+-.`, poi `:`. I caratteri di controllo si rifiutano ovunque, perché il browser toglie tab e a capo: `java\tscript:` è `javascript:` |
+| Nel menu la route la legge `new URL()` | È lo stesso parser di `window.open`, niente da emulare. Una voce con la route rifiutata non entra nel menu |
+| Il messaggio d'errore non ripete il valore | Toast e msgprint disegnano HTML: ripetere l'icona rifiutata l'avrebbe eseguita lì |
+| `noopener` su `window.open` | Una pagina esterna aperta dal menu non ha più `window.opener` per portare altrove la scheda del CRM |
+
+### I dati già salvati
+
+`crm.patches.v1_0.clean_unsafe_dropdown_items`: un'icona che non è un nome
+Feather si svuota — SVG compresi, anche innocui, perché il menu il markup non lo
+disegna più — e la voce prende l'icona di default. Una route con un altro schema
+si svuota e la riga si nasconde, così resta in Home Actions da guardare invece di
+sparire; un separatore la route non la usa, quindi si svuota soltanto. FCRM
+Settings non tiene lo storico delle versioni: la patch stampa quello che toglie,
+che può essere l'unica traccia di chi ha scritto cosa.
+
+Gira prima degli `after_migrate`, dove `sync_table()` salva FCRM Settings: senza
+la pulizia, quel salvataggio con la validazione nuova fermerebbe la migrate.
+
+### Lasciato com'è, di proposito
+
+- `icon` resta di tipo Code. Passare a Data vorrebbe dire `varchar(140)`, e la
+  sincronizzazione dello schema gira *prima* delle patch post-model-sync: sui
+  siti con un SVG lungo salvato la migrate si fermerebbe.
+- «Open in new window» spento apre comunque una scheda nuova: `window.open` con
+  target vuoto vale `_blank`. Era già così, e non è una questione di sicurezza.
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/fcrm/doctype/crm_dropdown_item/crm_dropdown_item.py` | `is_allowed_icon()`, `is_safe_route()`, `validate_icon_and_route()` |
+| `crm/fcrm/doctype/crm_dropdown_item/feather_icons.json` | I nomi ammessi, per server e menu |
+| `crm/fcrm/doctype/fcrm_settings/fcrm_settings.py` | Controlla ogni riga a ogni salvataggio |
+| `crm/patches/v1_0/clean_unsafe_dropdown_items.py` | Pulisce quello che era stato salvato prima |
+| `frontend/src/utils/dropdownItems.js` | `safeDropdownIcon()`, `safeDropdownRoute()` — puri, testati |
+| `frontend/src/components/UserDropdown.vue` | Niente più `innerHTML`, route controllate, `noopener` |
