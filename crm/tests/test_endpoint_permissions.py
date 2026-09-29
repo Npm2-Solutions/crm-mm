@@ -17,6 +17,7 @@ from frappe.utils.nestedset import rebuild_tree
 
 from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
+from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
 from crm.integrations.api import get_recording_url
 from crm.permissions.test_org_hierarchy import make_deal, make_hierarchy_node, make_lead, make_user
 from crm.telephony.transcription import get_transcript, transcribe_now
@@ -182,6 +183,23 @@ class TestAppointmentFeeds(SchedulingCase):
 				call()
 
 
+class TestDealContacts(PermissionTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.contact = make_contact("Giulia", "Bianchi", "+39 333 765 4321")
+		cls.deal = make_deal_with(REP, cls.contact)
+
+	def test_a_deals_contacts_are_listed_to_whoever_may_read_the_deal(self):
+		for user in (REP, MANAGER):
+			with self.set_user(user):
+				contacts = get_deal_contacts(self.deal)
+			self.assertEqual([c["name"] for c in contacts], [self.contact])
+		for user in (OUTSIDER, PATIENT):
+			with self.set_user(user), self.assertRaises(frappe.PermissionError):
+				get_deal_contacts(self.deal)
+
+
 def make_call_log(links=(), **fields):
 	doc = frappe.get_doc(
 		{
@@ -198,3 +216,16 @@ def make_call_log(links=(), **fields):
 	for doctype, name in links:
 		doc.append("links", {"link_doctype": doctype, "link_name": name})
 	return doc.insert(ignore_permissions=True)
+
+
+def make_contact(first_name, last_name, mobile_no):
+	contact = frappe.get_doc({"doctype": "Contact", "first_name": first_name, "last_name": last_name})
+	contact.append("phone_nos", {"phone": mobile_no, "is_primary_mobile_no": 1})
+	return contact.insert(ignore_permissions=True).name
+
+
+def make_deal_with(owner, contact):
+	deal = make_deal(owner)
+	deal.append("contacts", {"contact": contact, "is_primary": 1})
+	deal.save(ignore_permissions=True)
+	return deal.name
