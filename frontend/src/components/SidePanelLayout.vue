@@ -216,7 +216,7 @@
                         >
                           <DateTimePicker
                             :value="doc[field.fieldname]"
-                            :format="getFormat('', '', true, true, false)"
+                            :format="datetimeFormat()"
                             :placeholder="field.placeholder"
                             placement="left-start"
                             @change="(v) => fieldChange(v, field)"
@@ -442,6 +442,7 @@ import { usersStore } from '@/stores/users'
 import { isMobileView } from '@/composables/settings'
 import {
   getFormat,
+  datetimeFormat,
   evaluateDependsOnValue,
   isNull,
   interpolateTemplate,
