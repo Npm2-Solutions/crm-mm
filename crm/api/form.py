@@ -17,7 +17,23 @@ import frappe
 from frappe import _
 from frappe.utils.telemetry import capture
 
+from crm.utils import check_system_manager, is_system_manager
+
 ALLOWED_DOCTYPES = ("CRM Lead", "CRM Deal")
+
+# The lists a stranger may pick from on a public form: short shared vocabularies with
+# nobody's personal data in them. Guest `select` lets anyone holding a form link list
+# the records, so it is never opened on people (User, Contact), on the CRM's own
+# records (leads, deals, organizations) or on its configuration.
+GUEST_LINKABLE_DOCTYPES = (
+	"CRM Lead Source",
+	"CRM Territory",
+	"CRM Industry",
+	"CRM Service",
+	"Salutation",
+	"Gender",
+	"Currency",
+)
 FORM_SOURCE = "Web Form"
 FORM_MODULE = "FCRM"
 
@@ -113,15 +129,19 @@ def guest_can_select(doctype: str) -> bool:
 
 
 def _link_target_doctypes() -> set:
-	"""Doctypes reachable via a Link field on any form-mappable target — the only
-	doctypes `grant_guest_link_access` is allowed to touch, so the endpoint can't be
-	used to open Guest select on an arbitrary doctype."""
+	"""Doctypes reachable via a Link field on any form-mappable target."""
 	targets = set()
 	for document_type in ALLOWED_DOCTYPES:
 		for df in frappe.get_meta(document_type).fields:
 			if df.fieldtype == "Link" and df.options:
 				targets.add(df.options)
 	return targets
+
+
+def guest_linkable(doctype: str) -> bool:
+	"""Whether `grant_guest_link_access` may open `doctype` to guests: a lookup list
+	that a CRM form actually links to. Anything else stays closed whatever is asked."""
+	return doctype in GUEST_LINKABLE_DOCTYPES and doctype in _link_target_doctypes()
 
 
 # Fields the CRM stores as a Link but a stranger types by hand. A visitor filling
@@ -267,65 +287,66 @@ def get_hidden_seed(document_type: str) -> list[dict]:
 @frappe.whitelist()
 def link_field_guest_access(doctype: str) -> dict:
 	"""Whether guests can already select `doctype`. Drives the builder's Link-field
-	notice: if False, the author is warned that the public dropdown will be empty and
-	is offered a one-click grant (grant_guest_link_access)."""
+	notice: if False, the author is warned that the public dropdown will be empty and,
+	when the list may be opened at all, told who can grant it (grant_guest_link_access)."""
 	_check_manager()
-	return {"doctype": doctype, "guest_can_select": guest_can_select(doctype)}
+	grantable = guest_linkable(doctype)
+	return {
+		"doctype": doctype,
+		"guest_can_select": guest_can_select(doctype),
+		"grantable": grantable,
+		"can_grant": grantable and is_system_manager(),
+	}
 
 
 @frappe.whitelist()
 def grant_guest_link_access(doctype: str) -> dict:
-	"""Grant Guest `select` on `doctype` so a public Link dropdown can list its records — a
-	deliberate choice by a form manager (the builder warns that anyone with the form link
-	will then see them). Limited to doctypes that are Link targets on a CRM form; stored as
-	a site-level Custom DocPerm."""
-	_check_manager()
-	if doctype not in _link_target_doctypes():
-		frappe.throw(_("{0} isn't a linkable field on a CRM form.").format(doctype))
+	"""Grant Guest `select` on `doctype` so a public Link dropdown can list its records —
+	a deliberate choice (the builder warns that anyone with the form link will then see
+	them), stored as a site-level Custom DocPerm. That is a permission rule, so it takes a
+	System Manager, whose own permissions write it; and only on the lookup lists."""
+	check_system_manager()
+	if not guest_linkable(doctype):
+		frappe.throw(
+			_("{0} can't be opened to guests: it isn't a lookup list on a CRM form.").format(doctype),
+			frappe.PermissionError,
+		)
 
 	if not guest_can_select(doctype):
 		from frappe.permissions import add_permission
 
-		# a Sales Manager may run the builder but can't normally write Custom DocPerm; do
-		# this narrow, doctype-scoped grant with permission checks off (as this module
-		# already does to write the Web Form).
-		had_flag = frappe.flags.ignore_permissions
-		frappe.flags.ignore_permissions = True
-		try:
+		perm_name = frappe.db.get_value(
+			"Custom DocPerm",
+			{"parent": doctype, "role": "Guest", "permlevel": 0, "if_owner": 0},
+		)
+		if not perm_name:
+			add_permission(doctype, "Guest", 0, ptype="select")
 			perm_name = frappe.db.get_value(
 				"Custom DocPerm",
 				{"parent": doctype, "role": "Guest", "permlevel": 0, "if_owner": 0},
 			)
-			if not perm_name:
-				add_permission(doctype, "Guest", 0, ptype="select")
-				perm_name = frappe.db.get_value(
-					"Custom DocPerm",
-					{"parent": doctype, "role": "Guest", "permlevel": 0, "if_owner": 0},
-				)
-			# add_permission defaults the row to read/export; a public Link only lists
-			# names, so trim the Guest row to `select` alone.
-			perm = frappe.get_doc("Custom DocPerm", perm_name)
-			perm.update(
-				{
-					"select": 1,
-					"read": 0,
-					"write": 0,
-					"create": 0,
-					"delete": 0,
-					"submit": 0,
-					"cancel": 0,
-					"amend": 0,
-					"report": 0,
-					"export": 0,
-					"import": 0,
-					"print": 0,
-					"email": 0,
-					"share": 0,
-				}
-			)
-			perm.save(ignore_permissions=True)
-		finally:
-			frappe.flags.ignore_permissions = had_flag
+		# add_permission defaults the row to read/export; a public Link only lists
+		# names, so trim the Guest row to `select` alone.
+		perm = frappe.get_doc("Custom DocPerm", perm_name)
+		perm.update(
+			{
+				"select": 1,
+				"read": 0,
+				"write": 0,
+				"create": 0,
+				"delete": 0,
+				"submit": 0,
+				"cancel": 0,
+				"amend": 0,
+				"report": 0,
+				"export": 0,
+				"import": 0,
+				"print": 0,
+				"email": 0,
+				"share": 0,
+			}
+		)
+		perm.save()
 		frappe.clear_cache(doctype=doctype)
 
 	return {"doctype": doctype, "guest_can_select": guest_can_select(doctype)}

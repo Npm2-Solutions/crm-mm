@@ -179,6 +179,7 @@
                                   f.fieldtype === 'Link' &&
                                   guestSelect[f.options] === false
                                 "
+                                :guest-grant="guestGrant[f.options]"
                                 :granting="!!grantingSelect[f.options]"
                                 @open="open(f)"
                                 @toggle="toggle(f)"
@@ -832,6 +833,9 @@ async function ensureLinkOptions(doctype) {
 // per target doctype: can a guest select it? Drives the Link-field warning in
 // FieldCard. Fail-open on error so a failed check doesn't nag.
 const guestSelect = reactive({})
+// and when not, who can open it: 'grant' (this user), 'ask' (a System Manager) or
+// 'never' (not a lookup list: people and CRM records are never listed to guests)
+const guestGrant = reactive({})
 const grantingSelect = reactive({})
 async function ensureGuestSelect(doctype) {
   if (!doctype || doctype in guestSelect) return
@@ -839,6 +843,11 @@ async function ensureGuestSelect(doctype) {
   try {
     const res = await call('crm.api.form.link_field_guest_access', { doctype })
     guestSelect[doctype] = !!res?.guest_can_select
+    guestGrant[doctype] = res?.can_grant
+      ? 'grant'
+      : res?.grantable
+        ? 'ask'
+        : 'never'
   } catch {
     guestSelect[doctype] = true
   }
