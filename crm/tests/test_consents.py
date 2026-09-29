@@ -87,6 +87,15 @@ class IlRegistro(ConsentCase):
 		self.assertEqual(consensi.stato(self.anna.name, "marketing"), DATO)
 		self.assertEqual(frappe.db.count("CRM Consent", {"lead": self.anna.name}), 2)
 
+	def test_un_si_resta_uno_solo(self):
+		"""A second yes writes nothing, a no after a yes withdraws it: one "Given" row,
+		the current one - the clinical record asks the table that directly."""
+		prima = consensi.registra_risposta(self.anna.name, "marketing")
+		self.assertEqual(consensi.registra_risposta(self.anna.name, "marketing"), prima)
+		consensi.registra_risposta(self.anna.name, "marketing", RIFIUTATO)
+		self.assertEqual(frappe.db.get_value("CRM Consent", prima, "status"), REVOCATO)
+		self.assertFalse(frappe.db.exists("CRM Consent", {"lead": self.anna.name, "status": DATO}))
+
 	def test_non_si_revoca_quello_che_non_c_e(self):
 		with self.assertRaises(frappe.ValidationError):
 			consensi.revoca(self.anna.name, "marketing")

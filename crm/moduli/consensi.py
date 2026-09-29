@@ -151,6 +151,15 @@ def registra_risposta(
 	if canale not in registro.CANALI:
 		frappe.throw(_("Unknown channel: {0}").format(canale))
 	tipo = _tipo(chiave)
+	# One "Given" row per person and kind at most, and it is the current one: a
+	# second yes writes nothing, a no after a yes is a withdrawal. Whoever asks
+	# "did they agree?" of the table directly - the clinical record does, for the
+	# dossier - can trust a "Given" row.
+	attuale = risposta_attuale(lead, chiave)
+	if attuale and attuale["status"] == registro.DATO:
+		if stato == registro.DATO:
+			return attuale["name"]
+		return revoca(lead, chiave, canale, nota)
 	risposta = frappe.get_doc(
 		{
 			"doctype": REGISTRO,
@@ -316,11 +325,8 @@ def record_consent(
 ) -> dict:
 	"""Record an answer given outside the CRM's pages: at the desk, on paper, on the phone."""
 	_per_scrivere(lead, channel, consent_type)
-	if status == registro.RIFIUTATO and stato(lead, consent_type) == registro.DATO:
-		# "no" from somebody who had said yes is a withdrawal, and is written as one
-		revoca(lead, consent_type, channel, note)
-	else:
-		registra_risposta(lead, consent_type, status, channel, nota=note, allegato=attachment)
+	# a "no" from somebody who had said yes is written as the withdrawal it is
+	registra_risposta(lead, consent_type, status, channel, nota=note, allegato=attachment)
 	return get_consents(lead)
 
 
