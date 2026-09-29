@@ -469,7 +469,9 @@ un modulo che non ha: la richiesta va all'agenzia per email.
 **Gli utenti.** La pagina Utenti mostra i livelli di ognuno e li cambia dalla
 finestra Accesso; l'invito e "Aggiungi utente esistente" scelgono i livelli. Il
 Manager dà ogni livello, anche Manager, ma non tocca gli utenti dell'agenzia e non
-si toglie il livello Manager da solo. `update_user_role` resta per chi lo chiama
+si toglie il livello Manager da solo. A chi ha un ruolo di un'altra app un livello
+non si dà: con i profili Frappe glielo toglierebbe, e il CRM lo dice invece di
+farlo. `update_user_role` resta per chi lo chiama
 ancora e dà il livello che corrisponde al ruolo; System Manager resta dell'agenzia.
 
 **Il passaggio degli utenti di prima** (patch `give_users_their_levels`):
