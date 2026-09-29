@@ -675,3 +675,101 @@ la pulizia, quel salvataggio con la validazione nuova fermerebbe la migrate.
 | `crm/patches/v1_0/clean_unsafe_dropdown_items.py` | Pulisce quello che era stato salvato prima |
 | `frontend/src/utils/dropdownItems.js` | `safeDropdownIcon()`, `safeDropdownRoute()` — puri, testati |
 | `frontend/src/components/UserDropdown.vue` | Niente più `innerHTML`, route controllate, `noopener` |
+
+---
+
+## Inviti — la chiave del link è una credenziale
+
+> **Completato** (29/09/2026). Chiusi tre modi di prendersi un ruolo o un
+> account con gli inviti. La chiave nel link d'invito imposta la password di un
+> utente nuovo e consegna un ruolo a chi accetta: ora esiste solo nell'email
+> all'invitato, il ruolo è uno che chi invita può concedere, e chi ha già un
+> account accede prima di accettare.
+
+### I tre exploit
+
+1. **Un Sales Manager diventava System Manager.** `invite_by_email` controllava
+   chi può invitare chi, ma il doctype dava `create` al Sales Manager: un POST a
+   `/api/resource/CRM Invitation` per il proprio indirizzo con ruolo System
+   Manager, la chiave riletta dal record, `accept_invitation` — e `accept()`
+   aggiungeva il ruolo con `ignore_permissions`.
+2. **Un Sales User prendeva un invito in attesa.** La chiave era un campo Data
+   in chiaro e il Sales User aveva `read`: elencare gli inviti via REST dava il
+   link di chiunque, anche di un futuro System Manager, e con quello la sua
+   password.
+3. **Il link faceva entrare nell'account.** Per un utente che esisteva già
+   `accept_invitation` chiamava `login_as`: chi aveva la chiave diventava
+   l'invitato.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| La regola di `invite_by_email` sta in `validate`, per ogni invito in attesa (`can_grant_role`) | È il punto da cui passano REST, Desk e codice. Vale finché l'invito è in attesa: uno scaduto o accettato non consegna più niente, e il job che li fa scadere non si blocca su chi nel frattempo ha perso il ruolo |
+| `email`, `role` e `invited_by` in `set_only_once` | Frappe lo impone anche con `ignore_permissions`: un invito controllato non diventa un altro invito |
+| `accept()` richiede di nuovo che `invited_by` possa concedere il ruolo e sia attivo | L'invito vale tre giorni: chi l'ha mandato può aver perso il ruolo, o l'account, nel frattempo |
+| Si salva lo SHA-256 della chiave | Come le chiavi di reset della password di Frappe (`User._reset_password`): leggere il record, un backup o il database non dà niente che apra l'invito |
+| La chiave passa da 12 a 56 caratteri esadecimali | 12 sono 48 bit: l'hash di una chiave così si inverte per forza bruta in qualche ora |
+| E il campo `key` sta su permlevel 1, che nessun ruolo ha | Difesa in profondità: REST, report view e `frappe.client` lo tolgono dai risultati, e filtrarci sopra dà PermissionError. `set_key` lo toglie dal reset dei permlevel, altrimenti un System Manager che crea un invito dal Desk lo salverebbe vuoto |
+| Sales Manager senza `create` e `write`, Sales User senza accesso | Gli inviti si creano con `invite_by_email`. Al Sales Manager restano `read` e `delete`, che servono a Impostazioni → Invita utente per elencare e revocare gli inviti in attesa |
+| Chi ha già un account accede, poi torna al link | Il link prova di aver avuto l'email, non di essere il titolare dell'account. Ospite → `/login?redirect-to=<link>`; un altro utente collegato → PermissionError; l'invitato collegato → ruolo aggiunto e `/crm`. Un utente nuovo imposta la password come prima |
+| Accettare dal Desk per conto dell'invitato richiede `can_grant_role` | È un'altra strada per consegnare il ruolo |
+| `invite_by_email` guarda solo gli inviti in attesa | Un invito scaduto impediva per sempre di invitare di nuovo quell'indirizzo dal CRM |
+
+### Dati esistenti
+
+La patch `expire_invitations_with_readable_keys` cancella le chiavi in chiaro e
+fa scadere gli inviti in attesa che ne avevano una: ogni Sales User poteva
+leggerle, quindi vanno considerate compromesse. Chi li aveva ricevuti va
+invitato di nuovo da Impostazioni → Invita utente. Gli hash (64 caratteri)
+restano come sono.
+
+La patch non tocca i ruoli già dati. Per vedere se qualcuno ha usato questi
+exploit prima della correzione — sono indizi, non prove: guardano i ruoli di
+oggi di chi ha invitato:
+
+```sql
+-- inviti accettati per un ruolo che chi invitava non poteva dare, o a sé stessi
+select i.name, i.email, i.role, i.invited_by, i.accepted_at
+from `tabCRM Invitation` i
+where i.status = 'Accepted'
+  and (i.email = i.invited_by
+       or (i.role in ('Sales Manager', 'System Manager')
+           and i.invited_by != 'Administrator'
+           and not exists (select 1 from `tabHas Role` r
+                           where r.parenttype = 'User' and r.parent = i.invited_by
+                             and r.role = 'System Manager')));
+
+-- inviti accettati da un utente che esisteva già: il link faceva login_as
+select i.name, i.email, i.role, i.accepted_at
+from `tabCRM Invitation` i join `tabUser` u on u.name = i.email
+where i.status = 'Accepted' and u.creation < i.creation;
+```
+
+Nel secondo caso l'Activity Log ha il login dell'invitato all'ora di
+`accepted_at`, con l'IP di chi ha aperto il link.
+
+### Lasciato com'è, di proposito
+
+- **I permessi personalizzati.** Se un sito ha dei Custom DocPerm su CRM
+  Invitation (Role Permission Manager), valgono quelli e non i permessi del
+  doctype. Gli exploit restano chiusi lo stesso, perché li chiudono `validate`,
+  l'hash e l'accesso obbligatorio, non i permessi.
+- **I messaggi di `invite_by_email`.** La regola ora sta anche in
+  `can_grant_role`, ma i messaggi tradotti («You are not allowed to invite …»)
+  restano dove l'utente li vede.
+- **L'hash nella risposta di un POST REST.** Chi crea un invito via REST (un
+  System Manager) si vede restituire il record, hash compreso: è un hash, non
+  apre niente.
+- **`share` al Sales Manager.** Frappe non lascia condividere un diritto che non
+  si ha, quindi non gli restituisce `write`.
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/fcrm/doctype/crm_invitation/crm_invitation.py` | `can_grant_role`, `validate`, `set_key`, il controllo in `accept()` e nell'accettazione dal Desk, la chiave che sparisce quando l'invito scade |
+| `crm/fcrm/doctype/crm_invitation/crm_invitation.json` | Permessi, `set_only_once`, `key` nascosto su permlevel 1 |
+| `crm/api/__init__.py` | `accept_invitation` confronta gli hash e non fa più `login_as`; `invite_by_email` guarda solo gli inviti in attesa |
+| `crm/patches/v1_0/expire_invitations_with_readable_keys.py` | Le chiavi in chiaro spariscono, gli inviti in attesa che le avevano scadono |
+| `crm/fcrm/doctype/crm_invitation/test_crm_invitation.py` | I tre exploit dall'inizio alla fine, ogni controllo da solo, il flusso normale |
