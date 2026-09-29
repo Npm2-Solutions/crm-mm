@@ -61,6 +61,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [25](./25-costo-hosting.md) | Quanto costa tenerci i clienti sopra | 📊 stima | Un server condiviso invece di un piano per sito: quale taglio, quanti siti ci stanno e perche'. Il carico di cron per sito e' quello che decide il numero, non il prezzo del server |
 | [28](./28-dashboard.md) | La dashboard: un cruscotto per ogni parte del gestionale | ✅ fatto | 166 widget in 16 categorie, fatturazione compresa, e dieci dashboard pronte che seguono il sito: chi collega WhatsApp trova i suoi numeri senza toccare niente. Builder a griglia, colori che seguono la cosa e non il suo posto |
 | [29](./29-telefono.md) | Il CRM sul telefono | ✅ fatto | Ogni pagina, dialogo e sezione delle impostazioni guardati con Playwright su un telefono simulato e percorsi col dito: niente più azioni solo al passaggio del mouse, titoli sulla descrizione, controlli spinti fuori dallo schermo o da 16px. Le regole per le prossime schermate |
+| [30](./30-ruoli-e-permessi.md) | Ruoli e permessi: chi può fare cosa, modulo per modulo | 🟡 proposta | Livelli come Role Profile, ruoli come mattoni dei moduli, capacità controllate dal server; ogni modulo porta le sue. Le impostazioni divise fra centro e agenzia, l'ambito che segue la persona |
 
 ## Architettura complessiva
 
