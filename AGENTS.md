@@ -90,10 +90,16 @@ they run as evaluated strings in the browser.
 | `crm/permissions/utenti.py` | Role Profiles from the registry, giving levels, the migration of old users |
 | `crm/registrazione.py` | Every module registers here, once per process (`before_request`, `before_job`) |
 | `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability |
+| `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
+| `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
+| `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates) asks for the capability |
 
 Code asks for a capability (`puo("fatture.emetti")`, `@richiede(...)`), never for a
 role name; the frontend asks `usersStore().puo(...)`. A new module registers its
-roles, levels and capabilities from its own `registra()`.
+roles, levels and capabilities from its own `registra()`. A new document that
+belongs to a person follows them with `org_hierarchy`'s bricks (one condition for
+list and record); a new settings document gets its capability in `documenti.SCRITTURA`
+and the hook in `hooks.py`.
 
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |

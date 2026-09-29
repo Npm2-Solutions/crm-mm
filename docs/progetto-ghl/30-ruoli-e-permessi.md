@@ -78,11 +78,11 @@ ha già fatto per Meta e WhatsApp.
   - filtri rapidi, interruttore della gerarchia, accesso degli ospiti ai moduli e
     metodi di ERPNext controllano il ruolo; i segreti delle integrazioni sono
     campi Password.
-- **Restano aperti tre punti**, tutti nella PR 2 qui sotto: quello che ogni Sales
-  User legge ancora (due punti sopra); il calendario, che dà nome, email e
-  telefono di tutti i partecipanti di ogni appuntamento, da rivedere prima
-  dell'area cliente; `create_deal`, che salva ancora con `ignore_permissions`,
-  quindi lì non valgono né i permessi per campo né i User Permission.
+- **I tre punti rimasti aperti sono chiusi dalla [PR 2](#la-pr-2-comè-fatta)**
+  (29/09): quello che ogni Sales User leggeva e scriveva (due punti sopra); il
+  calendario, che dava nome, email e telefono di tutti i partecipanti di ogni
+  appuntamento e ora dà a chi vede solo parte dell'agenda il resto come tempo
+  occupato; `create_deal`, che salvava con `ignore_permissions`.
 
 ## Chi lavora nel sistema: i livelli
 
@@ -324,12 +324,12 @@ fra quello che decide il centro e quello che resta all'agenzia.
 
 ## L'ambito: su quali record
 
-- **Oggi** la regola c'è per persone e trattative: si vedono le proprie, le
-  assegnate, le condivise e quelle del proprio sottoalbero nella gerarchia; il
-  Sales Manager fuori dall'albero e il System Manager vedono tutto. Chiamate, note
-  e task seguono il lead o la trattativa di cui parlano (29/09). Un'assegnazione
-  chiusa continua a dare accesso: si esclude solo l'annullata.
-- **Domani** gli ambiti sono tre:
+- **Prima della PR 2** la regola c'era per persone e trattative: si vedevano le
+  proprie, le assegnate, le condivise e quelle del proprio sottoalbero nella
+  gerarchia; il Sales Manager fuori dall'albero e il System Manager vedevano tutto.
+  Chiamate, note e task seguivano il lead o la trattativa (29/09). Un'assegnazione
+  chiusa continuava a dare accesso: si escludeva solo l'annullata.
+- **Dalla PR 2** (29/09) gli ambiti sono tre, e li dice il livello:
   - **tutto il centro**: Segreteria, Manager, Amministrazione per quello che
     vedono, Direzione sanitaria per la clinica;
   - **team**: commerciali e responsabili, dalla gerarchia;
@@ -342,7 +342,7 @@ fra quello che decide il centro e quello che resta all'agenzia.
   sola per la lista e per il record); gli altri passano agli stessi mattoni.
 - **La cartella clinica non segue la gerarchia.** Segue il rapporto di cura, il
   consenso al dossier, gli oscuramenti e l'apertura con motivo.
-- Un'assegnazione chiusa non deve dare accesso per sempre.
+- Un'assegnazione chiusa non dà accesso per sempre: 90 giorni dopo la chiusura.
 
 ## Il piano del centro: la seconda chiave
 
@@ -425,7 +425,7 @@ livello della persona la prevede.
 |---|---|---|
 | 0 | I quattro problemi di sicurezza, ognuno a parte | ✅ fatto, 29/09 |
 | 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | ✅ fatto, 29/09 |
-| 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | 1 |
+| 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | ✅ fatto, 29/09 |
 | 3 | Capacità nel frontend, rotte protette, impostazioni divise | 0,5–1 |
 | 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
 
@@ -514,6 +514,61 @@ lì stava la sola registrazione dei moduli. In quei processi "fisioterapista" no
 era nel registro delle qualifiche e i controlli del Sistema TS non giravano.
 Adesso registra tutto `crm/registrazione.py`, anche da `before_request` e
 `before_job`.
+
+## La PR 2, com'è fatta
+
+**L'ambito lo dice il livello.** `crm/permissions/org_hierarchy.py` chiede la
+capacità che mostra le persone (`persone.vedi`) o le trattative
+(`trattative.vedi`) e ne legge l'ambito:
+
+- **tutto il centro**: Segreteria, Manager, Direzione sanitaria. La segreteria prima
+  vedeva solo le persone sue o assegnate, e non vedeva nemmeno quelle che creava;
+- **team**: il Commerciale, con la gerarchia di vendita; senza, le sue;
+- **suoi**: l'Operatore, cioè le persone assegnate a lui e quelle **che ha in cura**.
+  Sono chi ha un appuntamento con lui e quello che un modulo aggiunge con l'hook
+  `crm_people_in_care`: la clinica aggiunge i pazienti per cui ha scritto in
+  cartella. Il CRM non sa niente della clinica.
+
+**Un posto nella gerarchia restringe.** Chi sta nell'albero vede il suo team, qualunque
+sia il livello: il responsabile, come il Sales Manager di prima. Chi lavora dal Desk
+solo con i ruoli, fuori dai livelli, tiene la regola di prima. L'ambito si calcola
+una volta per richiesta.
+
+**Quello che è di una persona la segue** (`crm/permissions/seguono.py`, con i mattoni
+di `org_hierarchy`: una condizione sola per la lista e per il record):
+
+- **gli appuntamenti**, con l'ambito di `agenda.vedi`:
+  - tutto il centro per Segreteria e Manager;
+  - per l'Operatore quelli che lavora o che ha prenotato. Prenota solo nella sua
+    agenda;
+  - per il Commerciale quelli delle sue persone. Il resto dell'agenda il
+    calendario lo mostra come **tempo occupato** (quando, chi lo lavora, quale sala,
+    mai chi viene né perché), nelle due viste.
+  Eliminare un appuntamento chiede `agenda.elimina`, del Manager;
+- **i messaggi WhatsApp e gli SMS** a chi può conversare, sulle persone che vede; un
+  messaggio che non è di nessuno è di tutti quelli che conversano, come una
+  chiamata. La Direzione sanitaria non conversa e non li legge;
+- **il tracciamento** (visitatori ed eventi) sulle persone che si vedono; il
+  traffico che non è ancora di nessuno a chi gestisce il tracciamento;
+- **le prenotazioni delle vecchie pagine** a chi le ha ricevute o vede la persona.
+
+**Quello che lo schermo tiene al Manager, il server lo chiede alla capacità**
+(`crm/permissions/documenti.py`). Si scrive solo con la capacità della pagina:
+
+- servizi, prezzi, listini, impostazioni dell'agenda e festività: `agenda.configura`;
+- turni e sale: `agenda.turni`, la Segreteria per tutti, l'Operatore i suoi turni;
+- calendari di prenotazione: `prenotazione_online.configura`;
+- stati e fasi della pipeline: `pipeline.configura`;
+- viste pubbliche: `viste.configura`; le proprie restano di ognuno;
+- modelli e impostazioni WhatsApp: `modelli_messaggio.gestisci` e `canali.configura`;
+- il telefono degli altri: `telefono.configura`; il proprio è di ognuno.
+
+Leggere non cambia, e chi è fuori dai livelli tiene i permessi dei suoi ruoli.
+
+**Il resto:**
+- un'assegnazione chiusa apre il record per 90 giorni, poi non più;
+- `create_deal` inserisce la trattativa come l'utente, con i permessi per campo, e
+  non la apre su una persona o un'organizzazione che l'utente non vede.
 
 ## Da decidere
 
