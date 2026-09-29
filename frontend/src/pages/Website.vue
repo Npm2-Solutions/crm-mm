@@ -492,7 +492,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const { isManager } = usersStore()
+const { puo } = usersStore()
 
 const tab = ref('pages')
 const showcaseType = ref('CRM Service')
@@ -623,7 +623,7 @@ function openExternal(url) {
 }
 
 async function enableSite() {
-  if (!isManager()) return
+  if (!puo('sito.gestisci')) return
   enabling.value = true
   try {
     await call('frappe.client.set_value', {

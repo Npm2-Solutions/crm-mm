@@ -184,7 +184,7 @@ import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import ShieldCheck from '~icons/lucide/shield-check'
 import SlaConfig from './Sla/SlaConfig.vue'
 
-const { isManager, getUser, puo } = usersStore()
+const { getUser, puo, ambito } = usersStore()
 
 const user = computed(() => getUser() || {})
 
@@ -217,24 +217,27 @@ const tabs = computed(() => {
           label: __('General'),
           component: markRaw(GeneralSettings),
           icon: SettingsIcon,
+          condition: () => puo('impostazioni.generali'),
         },
         {
           label: __('Dashboard'),
           component: markRaw(DashboardSettings),
           icon: LucideLayoutDashboard,
+          condition: () => puo('impostazioni.generali'),
         },
         {
           label: __('Defaults'),
           component: markRaw(DefaultsSettings),
           icon: MonitorCogIcon,
+          condition: () => puo('tecnico.predefiniti'),
         },
         {
           label: __('Brand'),
           icon: SparkleIcon,
           component: markRaw(BrandSettings),
+          condition: () => puo('impostazioni.generali'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       label: __('Sales'),
@@ -243,14 +246,15 @@ const tabs = computed(() => {
           label: __('Pipelines'),
           icon: KanbanIcon,
           component: markRaw(PipelinesSettings),
+          condition: () => puo('pipeline.configura'),
         },
         {
           label: __('Call Scripts'),
           icon: markRaw(LucideListChecks),
           component: markRaw(CallScriptsSettings),
+          condition: () => puo('telefono.copioni_scrivi'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       label: __('User Management'),
@@ -259,19 +263,19 @@ const tabs = computed(() => {
           label: __('Users'),
           icon: 'user',
           component: markRaw(Users),
-          condition: () => isManager(),
+          condition: () => puo('utenti.gestisci'),
         },
         {
           label: __('Invite User'),
           icon: 'user-plus',
           component: markRaw(InviteUserPage),
-          condition: () => isManager(),
+          condition: () => puo('utenti.gestisci'),
         },
         {
           label: __('Sales Hierarchy'),
           icon: LucideNetwork,
           component: markRaw(Hierarchy),
-          condition: () => isManager(),
+          condition: () => puo('gerarchia.gestisci'),
         },
         {
           label: __('Plan'),
@@ -286,7 +290,6 @@ const tabs = computed(() => {
           condition: () => puo('consensi.configura'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       label: __('Email'),
@@ -295,12 +298,14 @@ const tabs = computed(() => {
           label: __('Accounts'),
           icon: Email2Icon,
           component: markRaw(EmailConfig),
-          condition: () => isManager(),
+          condition: () => puo('email.account_centro'),
         },
         {
           label: __('Templates'),
           icon: EmailTemplateIcon,
           component: markRaw(EmailTemplatePage),
+          // everybody uses them from the composer; writing them is the manager's
+          condition: () => puo('modelli_messaggio.gestisci'),
         },
       ],
     },
@@ -315,6 +320,7 @@ const tabs = computed(() => {
           key: 'WhatsApp',
           icon: WhatsAppIcon,
           component: markRaw(WhatsAppSettings),
+          condition: () => puo('canali.configura'),
         },
         {
           label: __('Templates'),
@@ -322,9 +328,10 @@ const tabs = computed(() => {
           key: 'WhatsApp Templates',
           icon: EmailTemplateIcon,
           component: markRaw(WhatsAppTemplates),
+          condition: () => puo('modelli_messaggio.gestisci'),
         },
       ],
-      condition: () => isManager() && isWhatsappInstalled.value,
+      condition: () => isWhatsappInstalled.value,
     },
     {
       label: __('Automation & Rules'),
@@ -333,29 +340,33 @@ const tabs = computed(() => {
           label: __('Assignment Rules'),
           icon: markRaw(h(SettingsIcon2, { class: 'rotate-90' })),
           component: markRaw(AssignmentRulePage),
+          condition: () => puo('assegnazione.regole'),
         },
         {
           label: __('SLA Policies'),
           icon: markRaw(h(ShieldCheck)),
           component: markRaw(SlaConfig),
+          condition: () => puo('assegnazione.regole'),
         },
         {
           label: __('Forms'),
           component: markRaw(FormsSettings),
           icon: markRaw(LucideTextCursorInput),
+          condition: () => puo('moduli_lead.gestisci'),
         },
         {
           label: __('Tracked Links'),
           component: markRaw(TrackedLinksSettings),
           icon: 'link',
+          condition: () => puo('tracciamento.gestisci'),
         },
         {
           label: __('Lead Tracking'),
           component: markRaw(TrackingSettings),
           icon: markRaw(LucideRadar),
+          condition: () => puo('tracciamento.gestisci'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       // invoicing, in the order you set it up: who signs the documents, what the
@@ -411,36 +422,42 @@ const tabs = computed(() => {
           label: __('Services'),
           icon: markRaw(LucideSparkles),
           component: markRaw(ServicesSettings),
+          condition: () => puo('agenda.configura'),
         },
         {
           label: __('Team rota'),
           icon: markRaw(LucideClock),
           component: markRaw(StaffSchedulesSettings),
+          condition: () => puo('agenda.turni'),
         },
         {
           // opening hours + what the agenda refuses: the studio's own rules
           label: __('Studio hours & rules'),
           icon: SettingsIcon,
           component: markRaw(SchedulingDefaults),
+          condition: () => puo('agenda.configura'),
         },
         {
           label: __('Rooms & Equipment'),
           icon: markRaw(LucideDoorOpen),
           component: markRaw(ResourcesSettings),
+          // the rooms are the whole centre's: a practitioner keeps only their shifts
+          condition: () => ambito('agenda.turni') === 'centro',
         },
         {
           label: __('Price Lists'),
           icon: markRaw(LucideTags),
           component: markRaw(PriceListsSettings),
+          condition: () => puo('agenda.configura'),
         },
         {
           // calendar view and event reminders, next to the rest of the agenda
           label: __('Calendar & reminders'),
           icon: CalendarIcon,
           component: markRaw(CalendarSettings),
+          condition: () => puo('impostazioni.generali'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       label: __('Booking'),
@@ -450,19 +467,19 @@ const tabs = computed(() => {
           label: __('Online booking'),
           icon: markRaw(LucideCalendarCheck),
           component: markRaw(OnlineBookingSetup),
-          condition: () => isManager(),
+          condition: () => puo('prenotazione_online.configura'),
         },
         {
           label: __('Page & rules'),
           icon: LucideGlobe,
           component: markRaw(BookingPageSettings),
-          condition: () => isManager(),
+          condition: () => puo('prenotazione_online.configura'),
         },
         {
           label: __('Booking platforms'),
           icon: LucideNetwork,
           component: markRaw(BookingPlatforms),
-          condition: () => isManager(),
+          condition: () => puo('piattaforme.configura'),
         },
         {
           // per user, not per site: everyone connects their own calendar
@@ -470,6 +487,7 @@ const tabs = computed(() => {
           key: 'Google Calendar',
           icon: CalendarIcon,
           component: markRaw(GoogleCalendarSettings),
+          condition: () => puo('google_calendar.proprio'),
         },
       ],
     },
@@ -484,9 +502,9 @@ const tabs = computed(() => {
           key: 'Social profiles',
           icon: SocialIcon,
           component: markRaw(SocialSettings),
+          condition: () => puo('social.pubblica'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       // the site's configuration; the day-to-day work (pages, showcase) is a
@@ -511,9 +529,9 @@ const tabs = computed(() => {
           label: __('Home Actions'),
           component: markRaw(HomeActions),
           icon: 'house',
+          condition: () => puo('impostazioni.generali'),
         },
       ],
-      condition: () => isManager(),
     },
     {
       label: __('Integrations', null, 'FCRM'),
@@ -528,7 +546,7 @@ const tabs = computed(() => {
           // and the entry had been drawing an empty square
           icon: markRaw(LucideInfinity),
           component: markRaw(MetaSettings),
-          condition: () => isManager(),
+          condition: () => puo('meta.gestisci'),
         },
         {
           label: __('Telephony'),
@@ -539,12 +557,14 @@ const tabs = computed(() => {
           label: __('ERPNext'),
           icon: ERPNextIcon,
           component: markRaw(ERPNextSettings),
-          condition: () => isManager(),
+          condition: () => puo('tecnico.erpnext'),
         },
       ],
     },
   ]
 
+  // each page asks for the capability of its own screen (doc 30); a group shows
+  // when one of its pages does
   return _tabs.filter((tab) => {
     if (tab.condition && !tab.condition()) return false
     if (tab.items) {
@@ -552,6 +572,7 @@ const tabs = computed(() => {
         if (item.condition && !item.condition()) return false
         return true
       })
+      return tab.items.length > 0
     }
     return true
   })

@@ -479,7 +479,7 @@ const emit = defineEmits(['beforeFieldChange', 'afterFieldChange', 'reload'])
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta(props.doctype)
 
-const { users, isManager, getUser } = usersStore()
+const { users, getUser, puo } = usersStore()
 
 const showSidePanelModal = ref(false)
 
@@ -608,7 +608,7 @@ function parsedSection(section, editButtonAdded) {
   let isContactSection = section.name == 'contacts_section'
   section.showEditButton = !(
     isMobileView.value ||
-    !isManager() ||
+    !puo('viste.configura') ||
     isContactSection ||
     editButtonAdded
   )

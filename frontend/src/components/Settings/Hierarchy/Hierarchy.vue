@@ -263,6 +263,7 @@ import { useRemoveNode } from './useRemoveNode'
 import { useDragDrop } from './useDragDrop'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
+import { useLevels, levelLabels } from '@/composables/levels'
 import LucideNetwork from '~icons/lucide/network'
 import LucideCircleQuestionMark from '~icons/lucide/circle-question-mark'
 import {
@@ -280,17 +281,24 @@ import { computed, ref } from 'vue'
 
 const DOCTYPE = 'CRM Sales Hierarchy'
 
-const ROLE_RANK = {
-  'Sales Manager': 0,
-  'Sales User': 1,
-}
-const ROLE_LABEL = {
-  'Sales Manager': __('Sales Manager'),
-  'Sales User': __('Sales User'),
+const { users: usersResource, puo } = usersStore()
+const canEdit = computed(() => puo('gerarchia.gestisci'))
+
+// People are shown by their levels, not by the roles underneath (doc 30). A
+// Manager sits above everyone else; the agency is not part of the team.
+const levels = puo('utenti.gestisci') ? useLevels() : null
+const labels = computed(() => levelLabels(levels?.data))
+
+function rankOf(user) {
+  if (!user?.levels?.length) return undefined
+  return user.levels.includes('manager') ? 0 : 1
 }
 
-const { users: usersResource, getUserRole, isAdmin } = usersStore()
-const canEdit = computed(() => isAdmin())
+function levelText(user) {
+  return (user?.levels || [])
+    .map((key) => __(labels.value[key] || key))
+    .join(', ')
+}
 const { $dialog } = globalStore()
 
 const fcrmSettings = createDocumentResource({
@@ -367,8 +375,7 @@ const treeOptions = {
 function enrich(node) {
   const user =
     usersResource.data?.crmUsers?.find((x) => x.name === node.user) || {}
-  const role = getUserRole(node.user) || 'Sales User'
-  const role_rank = ROLE_RANK[role]
+  const role_rank = rankOf(user)
   if (role_rank == undefined) return
 
   return {
@@ -377,8 +384,8 @@ function enrich(node) {
     email: user.email || node.user,
     user_image: user.user_image,
     enabled: user.enabled !== 0,
-    role,
-    role_label: ROLE_LABEL[role] || role,
+    levels: user.levels || [],
+    role_label: levelText(user),
     role_rank,
   }
 }
@@ -408,7 +415,8 @@ function matchesFilters(node) {
     !query ||
     node.full_name?.toLowerCase().includes(query) ||
     node.email?.toLowerCase().includes(query)
-  const matchRole = roleFilter.value === 'All' || node.role === roleFilter.value
+  const matchRole =
+    roleFilter.value === 'All' || node.levels?.includes(roleFilter.value)
   return matchSearch && matchRole
 }
 
@@ -442,29 +450,23 @@ const placedUserIds = computed(
   () => new Set(enrichedNodes.value.map((n) => n.user)),
 )
 
-const ALLOWED_ROLES = new Set(['Sales Manager', 'Sales User'])
-
 function getCandidates(parent) {
   const all = usersResource.data?.crmUsers || []
   const parentRank = parent?.role_rank ?? -1
   return all
     .filter((u) => {
       if (placedUserIds.value.has(u.name)) return false
-      if (u.name === 'Administrator') return false
-      const role = getUserRole(u.name)
-      if (!ALLOWED_ROLES.has(role)) return false
-      return (ROLE_RANK[role] ?? 99) >= parentRank
+      if (u.name === 'Administrator' || u.agency) return false
+      const rank = rankOf(u)
+      return rank != undefined && rank >= parentRank
     })
-    .map((u) => {
-      const role = getUserRole(u.name)
-      return {
-        value: u.name,
-        full_name: u.full_name || u.name,
-        email: u.email || u.name,
-        user_image: u.user_image,
-        role_label: ROLE_LABEL[role] || role,
-      }
-    })
+    .map((u) => ({
+      value: u.name,
+      full_name: u.full_name || u.name,
+      email: u.email || u.name,
+      user_image: u.user_image,
+      role_label: levelText(u),
+    }))
 }
 
 const candidatesLoading = computed(

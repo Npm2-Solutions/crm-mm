@@ -51,7 +51,11 @@
         </div>
       </div>
       <div
-        v-if="viewUpdated && route.query.view && (!view.public || isManager())"
+        v-if="
+          viewUpdated &&
+          route.query.view &&
+          (!view.public || puo('viste.configura'))
+        "
         class="flex flex-row-reverse items-center gap-2 border-r pr-2"
       >
         <Button :label="__('Cancel')" @click="cancelChanges" />
@@ -148,7 +152,11 @@
     <div class="-ml-2 h-[70%] border-l" />
     <div class="flex items-center gap-2">
       <div
-        v-if="viewUpdated && route.query.view && (!view.public || isManager())"
+        v-if="
+          viewUpdated &&
+          route.query.view &&
+          (!view.public || puo('viste.configura'))
+        "
         class="flex items-center gap-2 border-r pr-2"
       >
         <Button :label="__('Cancel')" @click="cancelChanges" />
@@ -192,7 +200,7 @@
           @update="(isDefault) => updateColumns(isDefault)"
         />
         <Dropdown
-          v-if="route.params.viewType !== 'kanban' || isManager()"
+          v-if="route.params.viewType !== 'kanban' || puo('viste.configura')"
           placement="right"
           :options="[
             {
@@ -223,7 +231,7 @@
                   label: __('Customize Quick Filters'),
                   icon: () => h(QuickFilterIcon, { class: 'h-4 w-4' }),
                   onClick: () => showCustomizeQuickFilter(),
-                  condition: () => isManager(),
+                  condition: () => puo('viste.configura'),
                 },
               ],
             },
@@ -367,7 +375,7 @@ const props = defineProps({
 const { brand } = getSettings()
 const { $dialog, $socket } = globalStore()
 const { reload: reloadView, getDefaultView, getView } = viewsStore()
-const { isManager, getUser } = usersStore()
+const { getUser, puo } = usersStore()
 const { organizations } = organizationsStore()
 
 const list = defineModel({ type: Object, default: () => ({}) })
@@ -1161,7 +1169,7 @@ const viewActions = (view, close) => {
     })
   }
 
-  if (!isStandard && (!_view.public || isManager())) {
+  if (!isStandard && (!_view.public || puo('viste.configura'))) {
     actions[0].items.push({
       label: __('Edit'),
       icon: () => h(EditIcon, { class: 'h-4 w-4' }),
@@ -1176,7 +1184,7 @@ const viewActions = (view, close) => {
       })
     }
 
-    if (isManager()) {
+    if (puo('viste.configura')) {
       actions[0].items.push({
         label: _view.public ? __('Make Private') : __('Make Public'),
         icon: () =>

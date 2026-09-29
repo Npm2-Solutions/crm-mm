@@ -133,20 +133,8 @@ export const usersStore = defineStore('crm-users', () => {
     return usersByName[email]
   }
 
-  function isAdmin(email) {
-    return getUser(email).role === 'System Manager'
-  }
-
-  function isManager(email) {
-    return getUser(email).role === 'Sales Manager' || isAdmin(email)
-  }
-
   function isWebsiteUser(email) {
     return getUser(email).user_type === 'Website User'
-  }
-
-  function isSalesUser(email) {
-    return getUser(email).role === 'Sales User'
   }
 
   function isTelephonyAgent(email) {
@@ -176,7 +164,10 @@ export const usersStore = defineStore('crm-users', () => {
     auto: !window.crm_permissions,
   })
 
-  /** Whether the session may do `capability` (`'fatture.emetti'`). */
+  /**
+   * Whether the session may do `capability` (`'fatture.emetti'`). Screens ask
+   * this, never for a role name: the level decides, and the plan (doc 30).
+   */
   function puo(capability) {
     return Boolean(permissions.data?.capabilities?.[capability])
   }
@@ -186,22 +177,31 @@ export const usersStore = defineStore('crm-users', () => {
     return permissions.data?.capabilities?.[capability] || null
   }
 
+  /** Whether the session may do at least one of `capabilities`. */
+  function puoUno(capabilities) {
+    return [].concat(capabilities || []).some(puo)
+  }
+
+  /** Whether the session manages the site rather than works in the centre. */
+  function isAgency() {
+    return Boolean(permissions.data?.agency)
+  }
+
   return {
     users,
     usersFull,
     allUsers: computed(() => usersFull.data?.allUsers || users.data?.allUsers),
     crmUsers: computed(() => users.data?.crmUsers),
     getUser,
-    isAdmin,
-    isManager,
-    isSalesUser,
     isTelephonyAgent,
     getUserRole,
     isWebsiteUser,
     isCrmUser,
     permissions,
     puo,
+    puoUno,
     ambito,
+    isAgency,
   }
 })
 
