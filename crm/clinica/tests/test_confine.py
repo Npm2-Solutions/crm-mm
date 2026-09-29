@@ -26,6 +26,8 @@ CLINICA = CRM / "clinica"
 VIETATO = "crm.clinica"
 #: The composition root: deciding which modules exist is its whole job.
 AMMESSI = {CRM / "registrazione.py"}
+#: The patient card is who is a patient, not what is wrong with them.
+NON_CLINICI = {"clinic_patient"}
 
 
 def _moduli_importati(sorgente: str) -> set[str]:
@@ -64,3 +66,21 @@ class ConfineTest(UnitTestCase):
 			self.assertIn("clinica", {m.chiave for m in livelli.moduli_piano()})
 			self.assertFalse(next(m for m in livelli.moduli_piano() if m.chiave == "clinica").predefinito)
 			self.assertIn("pazienti.vedi", livelli.capacita_registrate())
+
+	def test_ogni_documento_clinico_fa_un_paziente(self):
+		"""Rule 1 lives in one base class: a clinical DocType that does not inherit it
+		would store health data about somebody who is not a patient."""
+		senza = []
+		for cartella in sorted((CLINICA / "doctype").iterdir()):
+			controller = cartella / f"{cartella.name}.py"
+			if not controller.exists() or cartella.name in NON_CLINICI:
+				continue
+			classi = [n for n in ast.walk(ast.parse(controller.read_text())) if isinstance(n, ast.ClassDef)]
+			basi = {
+				getattr(base, "id", getattr(base, "attr", "")) for classe in classi for base in classe.bases
+			}
+			if "DocumentoClinico" not in basi:
+				senza.append(cartella.name)
+		self.assertEqual(
+			senza, [], "clinical DocTypes that do not inherit DocumentoClinico: " + ", ".join(senza)
+		)

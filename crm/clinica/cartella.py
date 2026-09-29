@@ -1,0 +1,298 @@
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+"""The clinical record on the person's page: who reads it, and the trace of who did.
+
+**Who reads a record** (doc 30, "Vedere la cartella"): its author, always; the
+medical director; the other practitioners only when the patient has given the
+consent to the health dossier. A note marked "only me" stays its author's, and a
+draft too. The front desk knows that a visit happened, not what was said; the
+manager, sales and marketing do not see it at all.
+
+**The access log.** Frappe writes a View Log only from its Desk form; the CRM reads
+through these calls, which write one for every record they return. The Garante
+wants those logs kept at least 24 months (Linee guida sul dossier, 4/6/2015).
+"""
+
+from __future__ import annotations
+
+import frappe
+from frappe import _
+from frappe.utils import cint, get_fullname
+
+from crm.clinica import paziente
+from crm.permissions import livelli
+
+DOCTYPE = "Clinic Record"
+SOLO_IO = "Only me"
+DOSSIER = "health_dossier"
+#: Two years: the least the Garante asks the access logs to be kept.
+GIORNI_REGISTRO = 730
+
+
+def _col_dossier(lead: str) -> bool:
+	# the register keeps one "Given" row per consent at most, and it is the current one
+	return bool(frappe.db.exists("CRM Consent", {"lead": lead, "consent_type": DOSSIER, "status": "Given"}))
+
+
+def _firmata(doc) -> bool:
+	"""Signed as the database has it. Frappe checks "write" while signing, with the
+	status already set in memory: a signature in flight is still its author's draft."""
+	salvata = frappe.db.get_value(DOCTYPE, doc.get("name"), "docstatus") if doc.get("name") else None
+	return cint(doc.get("docstatus") if salvata is None else salvata) >= 1
+
+
+def puo_leggere(doc, user: str | None = None) -> bool:
+	user = user or frappe.session.user
+	if doc.get("practitioner") == user:
+		return True
+	if doc.get("docstatus") != 1 or doc.get("visibility") == SOLO_IO:
+		return False
+	ambito = livelli.ambito("clinica.vedi", user)
+	if not ambito:
+		return False
+	return ambito == livelli.CENTRO or _col_dossier(doc.get("lead"))
+
+
+def has_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	user = user or frappe.session.user
+	ptype = ptype or "read"
+	if ptype == "create":
+		return livelli.puo("clinica.scrivi", user)
+	if ptype == "submit":
+		return doc.get("practitioner") == user
+	if ptype in ("write", "delete"):
+		# a draft is its author's; what is signed is not rewritten, it is added to
+		return doc.get("practitioner") == user and not _firmata(doc)
+	if ptype in ("cancel", "amend"):
+		return False
+	return puo_leggere(doc, user)
+
+
+def get_permission_query_conditions(user: str | None = None) -> str:
+	user = user or frappe.session.user
+	cartella = frappe.qb.DocType(DOCTYPE)
+	condizione = cartella.practitioner == user
+	ambito = livelli.ambito("clinica.vedi", user)
+	if ambito:
+		condivisa = (cartella.docstatus == 1) & (cartella.visibility != SOLO_IO)
+		if ambito != livelli.CENTRO:
+			consenso = frappe.qb.DocType("CRM Consent")
+			condivisa = condivisa & cartella.lead.isin(
+				frappe.qb.from_(consenso)
+				.select(consenso.lead)
+				.where((consenso.consent_type == DOSSIER) & (consenso.status == "Given"))
+			)
+		condizione = condizione | condivisa
+	return condizione.get_sql(with_namespace=True, quote_char="`", secondary_quote_char="'")
+
+
+# ------------------------------------------------------------ the person's page
+
+
+def _riga(doc) -> dict:
+	return {
+		"name": doc.name,
+		"kind": doc.kind,
+		"record_date": doc.record_date,
+		"practitioner": doc.practitioner,
+		"practitioner_name": get_fullname(doc.practitioner),
+		"visibility": doc.visibility,
+		"content": doc.content,
+		"docstatus": doc.docstatus,
+		"signed_on": doc.signed_on,
+		"addendum_to": doc.addendum_to,
+		"appointment": doc.appointment,
+		"mine": doc.practitioner == frappe.session.user,
+		"attachments": frappe.get_all(
+			"File",
+			filters={"attached_to_doctype": DOCTYPE, "attached_to_name": doc.name},
+			fields=["name", "file_name", "file_url"],
+			order_by="creation asc",
+		),
+	}
+
+
+def _legge() -> bool:
+	return livelli.puo("clinica.vedi") or livelli.puo("clinica.scrivi")
+
+
+def _della_persona(lead: str) -> None:
+	if not (_legge() or livelli.puo("clinica.accessi")):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
+
+
+@frappe.whitelist()
+def get_record(lead: str) -> dict:
+	"""The clinical record the session may read, newest first. Every read is logged.
+
+	The manager comes here for the access log alone: who opened the record, not
+	what it says. They get no record, and nothing is logged for them.
+	"""
+	_della_persona(lead)
+	legge = _legge()
+	righe = []
+	if legge:
+		for nome in frappe.get_list(
+			DOCTYPE, filters={"lead": lead}, pluck="name", order_by="record_date desc"
+		):
+			doc = frappe.get_doc(DOCTYPE, nome)
+			doc.add_viewed()
+			righe.append(_riga(doc))
+	return {
+		"records": righe,
+		"can_read": legge,
+		"can_write": livelli.puo("clinica.scrivi"),
+		"can_see_log": livelli.puo("clinica.accessi"),
+		"dossier": _col_dossier(lead),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_record(
+	lead: str,
+	content: str | None = None,
+	name: str | None = None,
+	kind: str = "Visit",
+	visibility: str = "Care team",
+	record_date: str | None = None,
+	addendum_to: str | None = None,
+	sign: int = 0,
+) -> dict:
+	"""Write a visit or a note; signing makes it final. The first one makes a patient."""
+	livelli.verifica("clinica.scrivi")
+	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
+	if name:
+		doc = frappe.get_doc(DOCTYPE, name)
+		if doc.lead != lead:
+			frappe.throw(_("This record belongs to somebody else"))
+		doc.check_permission("write")
+	else:
+		doc = frappe.new_doc(DOCTYPE)
+		doc.lead = lead
+		doc.practitioner = frappe.session.user
+		doc.addendum_to = addendum_to
+	doc.update({"kind": kind, "visibility": visibility, "content": content})
+	if record_date:
+		doc.record_date = record_date
+	doc.save()
+	if cint(sign):
+		doc.submit()
+	return _riga(doc)
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_draft(name: str) -> None:
+	"""A draft can be thrown away by whoever wrote it; a signed record never."""
+	doc = frappe.get_doc(DOCTYPE, name)
+	doc.check_permission("delete")
+	frappe.delete_doc(DOCTYPE, name)
+
+
+@frappe.whitelist()
+def access_log(lead: str) -> list[dict]:
+	"""Who opened this person's record, and when: not what they read."""
+	livelli.verifica("clinica.accessi")
+	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
+	voci = frappe.get_all(DOCTYPE, filters={"lead": lead}, pluck="name")
+	if not voci:
+		return []
+	righe = frappe.get_all(
+		"View Log",
+		filters={"reference_doctype": DOCTYPE, "reference_name": ("in", voci)},
+		fields=["viewed_by", "reference_name", "creation"],
+		order_by="creation desc",
+		limit=300,
+	)
+	for riga in righe:
+		riga["viewed_by_name"] = get_fullname(riga.viewed_by)
+	return righe
+
+
+# ---------------------------------------------------------------- the history
+
+
+def visite_su(doctype: str, name: str) -> list[dict]:
+	"""The visits in the person's history: a padlock for whoever may only know of them.
+
+	The front desk and the practitioners see that a visit happened and who did it;
+	what was said stays in the Clinic tab, for who may read it. A note "only me"
+	and a draft are nobody else's business, not even as a padlock.
+	"""
+	if doctype != "CRM Lead" or not paziente.clinica_accesa():
+		return []
+	legge = livelli.puo("clinica.vedi")
+	if not (legge or livelli.puo("clinica.traccia")):
+		return []
+	utente = frappe.session.user
+	leggibili = set(frappe.get_list(DOCTYPE, filters={"lead": name}, pluck="name")) if legge else set()
+	nodi = []
+	for riga in frappe.get_all(
+		DOCTYPE,
+		filters={"lead": name},
+		fields=["name", "kind", "record_date", "practitioner", "visibility", "docstatus", "creation"],
+	):
+		mio = riga.practitioner == utente
+		if not mio and (riga.docstatus != 1 or riga.visibility == SOLO_IO):
+			continue
+		nodi.append(
+			{
+				"name": riga.name,
+				"activity_type": "clinical",
+				"creation": riga.record_date or riga.creation,
+				"owner": riga.practitioner,
+				"data": {
+					"kind": riga.kind,
+					"practitioner_name": get_fullname(riga.practitioner),
+					"locked": riga.name not in leggibili,
+					"draft": riga.docstatus == 0,
+				},
+				"is_lead": True,
+			}
+		)
+	return nodi
+
+
+def proteggi_registro_accessi() -> None:
+	"""Keep the access logs two years at least, whatever Log Settings was told.
+
+	Frappe keeps View Logs until somebody adds them to Log Settings, whose default
+	for them is 180 days: that would quietly throw away what the Garante asks to
+	keep for 24 months.
+	"""
+	if not frappe.db.exists("DocType", "Log Settings"):
+		return
+	impostazioni = frappe.get_single("Log Settings")
+	cambiate = False
+	for riga in impostazioni.get("logs_to_clear") or []:
+		if riga.ref_doctype == "View Log" and cint(riga.days) < GIORNI_REGISTRO:
+			riga.days = GIORNI_REGISTRO
+			cambiate = True
+	if cambiate:
+		impostazioni.save(ignore_permissions=True)
+
+
+def valida_impostazioni_log(doc, method=None) -> None:
+	"""Whoever edits Log Settings later meets the same floor."""
+	for riga in doc.get("logs_to_clear") or []:
+		if riga.ref_doctype == "View Log" and cint(riga.days) < GIORNI_REGISTRO:
+			riga.days = GIORNI_REGISTRO
+			frappe.msgprint(
+				_(
+					"Views of the clinical record are kept {0} days at least: the Garante asks for 24 months"
+				).format(GIORNI_REGISTRO),
+				alert=True,
+			)
+
+
+def allegato_privato(doc, method=None) -> None:
+	"""An attachment to the clinical record is private, or it is not attached.
+
+	Frappe serves a private file only to whoever may read the record it is attached
+	to; a public one to anybody with the link. The file is already written when
+	this runs, so it is refused rather than quietly relabelled: the CRM uploads them
+	private, and anything else asking for public is a mistake to stop.
+	"""
+	if doc.attached_to_doctype == DOCTYPE and not cint(doc.is_private):
+		frappe.throw(_("An attachment to the clinical record is private"))

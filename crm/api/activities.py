@@ -751,6 +751,14 @@ def invoices_on(doctype: str, name: str) -> list[dict]:
 	]
 
 
+def extra_gatherers() -> list:
+	"""Gatherers other modules add to the history - the clinic's visits - without the
+	history knowing them: the `crm_timeline_gatherers` hook. Each takes the record's
+	doctype and name and returns rows shaped like the ones above, and decides for
+	itself what the session may see."""
+	return [frappe.get_attr(path) for path in frappe.get_hooks("crm_timeline_gatherers")]
+
+
 def everything_else_on(doctype: str, name: str) -> list[dict]:
 	"""The gatherers above, gathered. Each one is allowed to fail on its own.
 
@@ -759,7 +767,7 @@ def everything_else_on(doctype: str, name: str) -> list[dict]:
 	history.
 	"""
 	gathered = []
-	for gather in (appointments_on, events_on, tasks_on, notes_on, invoices_on):
+	for gather in (appointments_on, events_on, tasks_on, notes_on, invoices_on, *extra_gatherers()):
 		try:
 			gathered += gather(doctype, name)
 		except Exception:
