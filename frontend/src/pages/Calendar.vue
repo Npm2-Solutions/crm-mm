@@ -180,6 +180,7 @@
         :mode="columnMode"
         :date="agendaDate"
         :appointments="appointments"
+        :busy="busy"
         :columnDefs="schedulerColumns"
         :serviceColors="serviceColors"
         :selected="selectedAppointment"
@@ -502,6 +503,10 @@ const scheduler = createResource({
 })
 
 const appointments = computed(() => scheduler.data?.appointments || [])
+// the rest of the agenda, for who sees only part of it: when, not who or why
+const busy = computed(() => scheduler.data?.busy || [])
+const BUSY_PREFIX = 'busy:'
+const isBusyId = (id) => String(id || '').startsWith(BUSY_PREFIX)
 
 const serviceColors = computed(() =>
   Object.fromEntries(
@@ -666,9 +671,26 @@ const shownEvents = computed(() =>
   hasFilters.value ? [] : Array.isArray(events.data) ? events.data : [],
 )
 
+/** Busy time as calendar items: grey, nothing to open. */
+const busyItems = computed(() =>
+  busy.value.map((block, i) => ({
+    id: `${BUSY_PREFIX}${i}`,
+    title: __('Busy'),
+    description: '',
+    fromDate: dayjs(block.starts_on).format('YYYY-MM-DD'),
+    toDate: dayjs(block.ends_on).format('YYYY-MM-DD'),
+    fromTime: dayjs(block.starts_on).format('HH:mm'),
+    toTime: dayjs(block.ends_on).format('HH:mm'),
+    isFullDay: false,
+    color: 'gray',
+    attending: 'Yes',
+  })),
+)
+
 const calendarItems = computed(() => [
   ...shownEvents.value,
   ...appointmentItems.value,
+  ...busyItems.value,
 ])
 
 const countLabel = computed(() => {
@@ -1017,6 +1039,11 @@ function createEvent(_event) {
 
 async function updateEvent(_event, afterDrag = false) {
   if (!_event.id) return
+  // busy time is somebody else's appointment: a drag puts it back where it was
+  if (isBusyId(_event.id)) {
+    scheduler.reload()
+    return
+  }
 
   // an appointment dragged on the classic calendar reschedules through the
   // scheduling engine, so conflicts and buffers still apply
@@ -1099,7 +1126,7 @@ async function updateEvent(_event, afterDrag = false) {
 }
 
 function deleteEvent(eventID) {
-  if (!eventID) return
+  if (!eventID || isBusyId(eventID)) return
 
   if (isAppointmentId(eventID)) {
     openAppointment(appointmentName(eventID))
@@ -1217,6 +1244,7 @@ useKeyboardShortcuts({
 
 function showDetails(e, reloadEvent = false) {
   const id = (e?.calendarEvent || e)?.id
+  if (isBusyId(id)) return
   if (isAppointmentId(id)) {
     openAppointment(appointmentName(id))
     return
@@ -1226,6 +1254,7 @@ function showDetails(e, reloadEvent = false) {
 
 function editDetails(e) {
   const id = (e?.calendarEvent || e)?.id
+  if (isBusyId(id)) return
   if (isAppointmentId(id)) {
     openAppointment(appointmentName(id), 'edit')
     return
