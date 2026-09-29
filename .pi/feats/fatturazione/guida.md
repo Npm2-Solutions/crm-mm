@@ -163,6 +163,13 @@ cognome, e al paziente che torna si riscriveva tutto il resto ogni volta.
   nell'anagrafica del figlio lo metterebbe su tutte le fatture dopo. Si confrontano
   le parole dei due nomi, non i campi, perché un modulo web scrive "Mario Rossi"
   tutto nel nome e la cassa lo divide.
+- **Chi paga per un altro** (29/09/2026). Se sulla pagina della persona c'è chi paga
+  per lei (il genitore, fra le [persone collegate](../../../docs/gestionale-medico/README.md#le-persone-collegate)),
+  la fattura nuova è intestata a lui: i suoi dati fiscali, il suo nome, e nella
+  causale "Prestazione resa a Giulia Rossi" con il codice fiscale della figlia. Se la
+  cassa scrive il nome o il codice fiscale della figlia, la fattura resta sua e niente
+  del genitore ci finisce dentro. Confermata, completa l'anagrafica di chi nomina. Se
+  pagano in due, si sceglie fattura per fattura.
 - **Di chi è l'anagrafica** lo dice il record della fattura: la persona o
   l'organizzazione sono loro stesse; un contatto è la sua persona; una trattativa è
   la sua organizzazione se la fattura va a un'azienda, la sua persona se va a una

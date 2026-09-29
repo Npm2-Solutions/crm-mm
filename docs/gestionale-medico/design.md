@@ -465,13 +465,14 @@ Nel CRM, in `crm/moduli`, i DocType che servono a ogni cliente, con il prefisso
 | `CRM Form` | un modulo compilato e firmato (submittable) | versione, valori, PDF/A e impronta, compilato da (paziente o staff) |
 | `CRM Signature` | tabella figlia di `CRM Form` e, nella clinica, di `Clinic Record` | chi, in che veste, livello, metodo, ora, IP, dispositivo, id del fornitore |
 | `CRM Audit Log` | il registro che si aggiunge soltanto | documento, evento, ora, IP, dispositivo, impronta dell'evento precedente |
-| `CRM Consent` | il registro dei consensi (fatto il 29/09/2026, con `CRM Consent Type`) | tipo, stato, versione del testo, da quale modulo, revocato il |
+| `CRM Consent` | il registro dei consensi (fatto il 29/09/2026, con `CRM Consent Type`) | tipo, stato, versione del testo, da quale modulo, dato da, revocato il |
+| `CRM Related Person` | due persone che stanno insieme: genitore e figlio, partner, tutore (fatto il 29/09/2026) | chi è seguito, chi lo segue, relazione, paga, prenota, decide |
 
 Nella clinica, in `crm/clinica`, con il prefisso `Clinic`:
 
 | DocType | Che cos'è | Campi che contano |
 |---|---|---|
-| `Clinic Patient` | la scheda paziente, uno a uno con `CRM Lead` | paziente dal, regola, origine, tutore o pagante, consenso al dossier |
+| `Clinic Patient` | la scheda paziente, uno a uno con `CRM Lead` | paziente dal, regola, origine; chi decide e chi paga per lui sono legami fra persone (`CRM Related Person`), il dossier è nel registro dei consensi |
 | `Clinic Record` | una voce di cartella: visita, nota, misura (submittable, poi solo aggiunte) | versione, operatore (l'erogatore), appuntamento, valori, chi la vede, colonne per le statistiche |
 | `Clinic Document` | l'archivio | tipo, file privato, data, provenienza, visibile al paziente, online fino al |
 | `Clinic Plan` | un piano | tipo, versione del modello, operatore, periodo, pubblicato; tabelle dei momenti e delle voci |
@@ -525,7 +526,9 @@ PR piccole, ognuna utile da sola:
    scheda paziente e regole per diventarlo, con il recupero sui dati che ci sono
    già;
 6. la sezione Clinica sulla persona, con una visita semplice e il registro degli
-   accessi.
+   accessi;
+7. le persone collegate: genitore e figlio, chi paga, chi prenota e chi decide, e
+   la prenotazione per un altro.
 
 ## Da decidere
 

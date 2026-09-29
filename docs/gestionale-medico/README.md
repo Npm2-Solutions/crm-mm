@@ -8,8 +8,9 @@ anche nella cronologia della persona, lo stesso giorno; poi
 completata da quella confermata; [il registro dei consensi](#il-registro-dei-consensi),
 con quello di `/prenota`; [lo scheletro della clinica](#lo-scheletro-della-clinica), con
 la scheda paziente che nasce dalle regole; e [la sezione Clinica](#la-sezione-clinica)
-con la visita semplice e il registro degli accessi. Con queste la fase 0 è fatta, tranne
-le persone collegate (genitore e figlio). Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
+con la visita semplice e il registro degli accessi; infine [le persone
+collegate](#le-persone-collegate), genitore e figlio, con la prenotazione per un altro.
+Con queste la fase 0 è fatta. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
 `develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
@@ -202,7 +203,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 
 | Area | Oggi nel repo | Cosa manca per un centro medico |
 |---|---|---|
-| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare. Codice fiscale e indirizzo stanno nella sua [anagrafica fiscale](#unanagrafica-fiscale-sola) (29/09/2026) | La scheda paziente (consensi, tutore o genitore per i minori, dossier) |
+| Persona | `CRM Lead` è la persona, con un solo `Contact` ([18](../progetto-ghl/18-persona-unica.md), [21](../progetto-ghl/21-lead-contatto-trattativa.md)): nome, sesso, email, cellulare. Codice fiscale e indirizzo stanno nella sua [anagrafica fiscale](#unanagrafica-fiscale-sola); genitore, figlio, chi paga e chi prenota sono [persone collegate](#le-persone-collegate) (29/09/2026) | ~~La scheda paziente, il tutore o il genitore per i minori~~: fatti il 29/09/2026 ([scheda](#lo-scheletro-della-clinica), [persone collegate](#le-persone-collegate)) |
 | Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | Il [registro dei consensi](#il-registro-dei-consensi) (29/09/2026): quale testo, quale versione, quando, come; la spunta privacy di `/prenota` ci finisce, e la pagina chiede anche il marketing se il centro vuole. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | I consensi della clinica: dossier, referti online, assistente |
@@ -353,6 +354,50 @@ semplice (testo e allegati) e il registro degli accessi.
 Resta per la fase 2 la cartella vera: i modelli per specialità, la firma, i
 referti, l'oscuramento, l'apertura fuori équipe con il motivo.
 
+### Le persone collegate
+
+Fatte il 29/09/2026. Il paziente, chi paga e chi prenota possono essere tre persone
+- il bambino, il genitore che paga, la nonna che telefona - e il CRM lo sa. Era la
+decisione lasciata alla fase 0: come riconoscere una persona quando in famiglia email
+e telefono sono di tutti.
+
+- **Un legame per coppia** (`CRM Related Person`, `crm/persone/`): Maria è il
+  genitore di Luca, e per lui paga, prenota o decide. Si scrive dal lato di chi è
+  seguito e si legge dai due lati: sulla pagina di Maria, Luca è suo figlio. Pagare,
+  prenotare e decidere sono tre cose diverse: il padre separato che prenota il
+  sabato non è per forza quello che paga.
+- **Il contatto è di chi lo possiede.** Il figlio prenotato dalla madre ha un record
+  suo, senza l'email e il telefono di lei. Restano suoi: una chiamata da quel numero
+  è sua, e i messaggi sugli appuntamenti di Luca le arrivano dalla prenotazione, che
+  lo dice ("Booked by" sulla riga dell'appuntamento). La pagina di Luca dice da chi
+  passano i messaggi, e il pannello dell'appuntamento, scelto Luca, mette i recapiti
+  di lei.
+- **Chi è la persona di una prenotazione.** Il contatto trova il suo titolare; il
+  nome dice se è lui o una delle persone collegate a lui, e a loro: il padre che
+  prenota con l'email della madre trova il figlio. Un nome che non c'è è una persona
+  nuova, collegata al titolare: mai il record di un altro. I nomi si confrontano per
+  parole, come faceva già la fattura: "Mario Rossi", "Rossi Mario" e "Mario" sono
+  la stessa persona; "Luca" e "Lucia" no, e nemmeno "M. Rossi". Un doppione si unisce
+  in un minuto; una visita scritta sulla persona sbagliata si scopre quando è tardi.
+  Un record che ha per nome un'email o un numero non dice chi è: la prenotazione
+  con un nome vero sul suo contatto è sua.
+- **`/prenota` chiede per chi è l'appuntamento**: per me, o per un'altra persona, con
+  il suo nome e cosa si è per lei. L'informativa la legge chi prenota, per sé e per
+  l'altro, e il registro dei consensi scrive chi ha risposto; il marketing è di chi
+  prenota, che riceve i messaggi. I limiti per cliente contano chi viene: la madre che
+  prenota per due figli prenota tre persone, non una tre volte.
+- **La fattura va a chi paga**, quando paga uno solo: la visita della figlia è
+  intestata al padre, con i suoi dati fiscali, e la causale dice "Prestazione resa a
+  Giulia Rossi" con il suo codice fiscale. Se la cassa la intesta alla figlia (il suo
+  nome o il suo codice fiscale), resta sua e niente del padre ci finisce dentro. La
+  fattura confermata completa l'anagrafica di chi nomina.
+- **Il paziente minorenne.** L'età viene dal codice fiscale: la sezione Paziente dice
+  chi firma e decide per lui, e avvisa se è minorenne e non c'è nessuno. Al banco il
+  consenso si registra anche come dato da uno dei collegati. Il campo "tutore" della
+  scheda paziente è diventato un legame: una patch sposta quello che c'era.
+- **Chi li vede**: un legame è delle due persone, lo vede chi vede una delle due; lo
+  scrive chi scrive le persone, fra due persone che vede entrambe.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
@@ -495,9 +540,10 @@ Perché così:
   sanitario: i dati sulla salute separati dagli altri dati personali.
 - **Paziente, pagante e chi prenota possono essere tre persone diverse:** il
   bambino, il genitore che paga, la nonna che telefona. Jane li chiama "related
-  profiles". È il punto più delicato del modello, perché oggi `find_person`
-  riconosce una persona da email e telefono, e in una famiglia li condividono. Si
-  decide in fase 0.
+  profiles". È il punto più delicato del modello, perché `find_person` riconosce
+  una persona da email e telefono, e in una famiglia li condividono. Deciso il
+  29/09/2026: il contatto trova il titolare, il nome la persona
+  ([le persone collegate](#le-persone-collegate)).
 - **Una lista di regole, una porta sola.** Le sei regole stanno in un file solo
   (per esempio `crm/clinica/diventa_paziente.py`), nell'ordine della tabella, e
   chiamano tutte la stessa funzione (`ensure_patient(persona, regola, origine)`),
