@@ -123,17 +123,6 @@ class TestCRMInvitation(IntegrationTestCase):
 
 		self.assertFalse(invitation.accept())
 
-	def test_accept_invitation_logs_in_existing_user(self):
-		"""An existing user already has a password, so log them straight in."""
-		make_user("existing-invitee@example.com")
-		_invitation, key = self.make_invitation(email="existing-invitee@example.com")
-
-		with self.watching_logins() as login_as:
-			accept_invitation(key=key)
-
-		login_as.assert_called_once_with("existing-invitee@example.com")
-		self.assertEqual(frappe.local.response["location"], "/crm")
-
 	def test_desk_accept_mails_new_user_a_set_password_link(self):
 		invitation, _key = self.make_invitation(email="desk-invitee@example.com")
 
@@ -334,6 +323,53 @@ class TestCRMInvitation(IntegrationTestCase):
 				accept_invitation(key=key)
 
 		self.assertFalse(frappe.db.exists("User", "future.admin@example.com"))
+
+	# The link logs no one in. Exploit 3: for an existing user it logged whoever
+	# held it in as that user.
+
+	def test_the_link_does_not_log_anyone_in(self):
+		make_user("existing@example.com")
+		invitation, key = self.make_invitation("existing@example.com", "Sales Manager")
+
+		frappe.set_user("Guest")
+		with self.watching_logins() as login_as:
+			accept_invitation(key=key)
+
+		login_as.assert_not_called()
+		# the invitee is sent to log in first, and comes back to the same link
+		self.assertEqual(frappe.local.response["type"], "redirect")
+		location = urlparse(frappe.local.response["location"])
+		self.assertEqual(location.path, "/login")
+		self.assertEqual(
+			parse_qs(location.query)["redirect-to"], [f"/api/method/crm.api.accept_invitation?key={key}"]
+		)
+		self.assertNotIn("Sales Manager", frappe.get_roles("existing@example.com"))
+		self.assertEqual(frappe.db.get_value("CRM Invitation", invitation.name, "status"), "Pending")
+
+	def test_an_existing_user_accepts_once_logged_in(self):
+		make_user("existing@example.com")
+		invitation, key = self.make_invitation("existing@example.com", "Sales Manager")
+
+		frappe.set_user("existing@example.com")
+		with self.watching_logins() as login_as:
+			accept_invitation(key=key)
+
+		login_as.assert_not_called()
+		self.assertEqual(frappe.local.response["location"], "/crm")
+		self.assertIn("Sales Manager", frappe.get_roles("existing@example.com"))
+		self.assertEqual(frappe.db.get_value("CRM Invitation", invitation.name, "status"), "Accepted")
+
+	def test_someone_else_cannot_accept_for_an_existing_user(self):
+		make_user("existing@example.com")
+		_invitation, key = self.make_invitation("existing@example.com", "Sales Manager")
+
+		frappe.set_user(SALES_USER)
+		with self.watching_logins() as login_as:
+			self.assertRaises(frappe.PermissionError, accept_invitation, key=key)
+
+		login_as.assert_not_called()
+		self.assertNotIn("Sales Manager", frappe.get_roles("existing@example.com"))
+		self.assertNotIn("Sales Manager", frappe.get_roles(SALES_USER))
 
 
 def make_user(email, *roles):
