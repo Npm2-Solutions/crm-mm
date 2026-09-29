@@ -485,6 +485,54 @@ Fatta il 29/09/2026 (fase 1). Con questa la fase 1 è completa.
   il piano stesso a togliersi dalla cache, con i livelli e le feature della
   dashboard.
 
+### Il motore dei modelli
+
+Fatto il 30/09/2026 (fase 2, la prima parte). Sta nel CRM (`crm/moduli`), non
+nella clinica: privacy, consensi e questionari servono anche a una palestra
+([design](./design.md#il-motore-dei-modelli)).
+
+- **Una bozza, poi versioni.** Un modello (`CRM Form Template`) si costruisce in
+  Impostazioni → Forms, scheda "Forms to sign", accanto ai moduli web dei lead: un
+  builder solo, due destinazioni. La gente compila una **versione pubblicata**
+  (`CRM Form Template Version`), che non cambia più: ha l'impronta SHA-256 dello
+  schema e, dentro lo schema, **le parole esatte dei consensi** prese dal registro
+  il giorno della pubblicazione. Se il centro riscrive il testo del marketing, il
+  modello dice "Changes not published": la versione nuova porta il testo nuovo, e
+  chi pubblica sceglie da che giorno richiederla a chi aveva firmato la vecchia.
+- **I componenti**: testo (con le frasi pronte), numero con unità e limiti, scelta
+  singola o multipla con i punteggi, sì/no, data, scala, tabella (i farmaci),
+  destra e sinistra, allegato, testo da leggere, calcolo (il BMI), punteggio con le
+  fasce, consenso del registro, firma di paziente, operatore o tutore con il suo
+  livello (semplice, avanzata, qualificata).
+- **La logica**: "mostra se", "obbligatorio se", "ferma e avvisa l'operatore se",
+  scritte con lo stesso costruttore di condizioni delle automazioni. Una domanda
+  guarda solo quelle prima di lei (per mostrarsi, per calcolare, per contare), così
+  un solo passaggio in ordine decide tutto; una risposta nascosta non conta e non
+  si tiene. "Obbligatorio se" e "ferma se" possono guardare ovunque.
+- **La stessa logica, due volte, provata sugli stessi casi.** `crm/moduli/schema.py`
+  sul server e `frontend/src/utils/moduli.js` nel browser leggono
+  `crm/moduli/tests/casi_schema.json` (condizioni, formule, valutazioni di moduli
+  interi, validazioni). In più un confronto su 24.000 schemi casuali ha dato zero
+  differenze fra i due lati: quello che la persona vede compilando è quello che il
+  server decide.
+- **Si prova prima di pubblicare**: "Try it" compila il modulo come farebbe la
+  persona, con i calcoli, le condizioni e gli avvisi veri; "Check it" dice cosa
+  manca. Quel che non va (un'opzione doppia, una formula che guarda avanti) è
+  elencato mentre si scrive, e blocca solo la pubblicazione, non il salvataggio.
+- **Quattro modelli di partenza**: informativa e consensi, anamnesi di prima visita
+  (con BMI, allergie, farmaci, fumo), consenso informato a un trattamento (con il
+  campo che l'operatore scrive per quella persona e l'avviso sul pacemaker),
+  questionario prima della visita (dolore e un punteggio a fasce). I testi sono da
+  far scrivere e controllare al centro.
+- **Chi li scrive**: `moduli.configura`, al manager; con la clinica anche alla
+  direzione sanitaria. Il marchio "dato clinico" c'è solo dove la clinica è accesa
+  (lo registra la clinica, `modelli.registra_dato_clinico`) e resta nella versione.
+
+Resta alla fase 2: compilare e firmare (la firma col dito, il PDF/A con le prove,
+il registro dei consensi alimentato dal modulo), dove si firma (banco, casa,
+carta), la cartella sul modello della specialità, i referti, l'archivio. "Dal
+modulo di carta", con l'assistente che propone i campi, va alla fase 4.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
