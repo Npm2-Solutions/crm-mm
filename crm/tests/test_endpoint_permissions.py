@@ -17,6 +17,7 @@ from frappe.utils.nestedset import rebuild_tree
 
 from crm.api.appointments import get_calendar, get_scheduler_meta, get_workload
 from crm.api.contact import get_linked_deals
+from crm.api.doc import assigned_users_of, get_assigned_users, get_linked_docs_of_document
 from crm.fcrm.doctype.crm_call_log.crm_call_log import get_call_log
 from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
 from crm.integrations.api import (
@@ -286,6 +287,47 @@ class TestPhoneLookups(PermissionTestCase):
 			frappe.is_whitelisted(get_contact_by_phone_number)
 			with self.assertRaises(frappe.PermissionError):
 				frappe.is_whitelisted(get_contact_lead_or_deal_from_number)
+
+
+class TestLinkedDocsAndAssignees(PermissionTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		# a lead is assigned to its owner as it is made
+		cls.lead = make_lead(REP).name
+		cls.call = make_call_log(links=[("CRM Lead", cls.lead)]).name
+		# the person's deal, in the hands of somebody the rep cannot see
+		cls.deal = make_deal(OUTSIDER).name
+		frappe.db.set_value("CRM Deal", cls.deal, "lead", cls.lead)
+
+	def test_assignees_are_listed_to_whoever_may_read_the_record(self):
+		for user in (REP, MANAGER):
+			with self.set_user(user):
+				self.assertEqual(get_assigned_users("CRM Lead", self.lead), [REP])
+		for user in (OUTSIDER, PATIENT):
+			with self.set_user(user), self.assertRaises(frappe.PermissionError):
+				get_assigned_users("CRM Lead", self.lead)
+
+	def test_the_server_still_finds_assignees_as_guest(self):
+		with self.set_user("Guest"):
+			self.assertEqual(assigned_users_of("CRM Lead", self.lead), [REP])
+
+	def test_linked_documents_are_only_the_ones_the_user_may_read(self):
+		linked = get_linked_docs_of_document("CRM Lead", self.lead)
+		self.assertLessEqual({self.call, self.deal}, {d["reference_docname"] for d in linked})
+
+		with self.set_user(REP):
+			linked = {d["reference_docname"] for d in get_linked_docs_of_document("CRM Lead", self.lead)}
+		self.assertIn(self.call, linked)
+		self.assertNotIn(self.deal, linked)
+
+		for user in (OUTSIDER, PATIENT):
+			with self.set_user(user), self.assertRaises(frappe.PermissionError):
+				get_linked_docs_of_document("CRM Lead", self.lead)
+
+	def test_a_record_that_is_gone_has_nothing_linked(self):
+		with self.set_user(REP):
+			self.assertEqual(get_linked_docs_of_document("CRM Lead", "CRM-LEAD-GONE"), [])
 
 
 def make_call_log(links=(), **fields):

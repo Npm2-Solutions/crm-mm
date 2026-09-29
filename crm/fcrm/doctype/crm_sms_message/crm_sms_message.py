@@ -5,7 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-from crm.api.doc import get_assigned_users
+from crm.api.doc import assigned_users_of
 from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
 
 
@@ -90,7 +90,7 @@ class CRMSMSMessage(Document):
 				<span class="font-medium text-ink-gray-9">{safe_reference_name}</span>
 			</div>
 		"""
-		for user in get_assigned_users(self.reference_doctype, self.reference_name):
+		for user in assigned_users_of(self.reference_doctype, self.reference_name):
 			notify_user(
 				{
 					"owner": self.owner,
