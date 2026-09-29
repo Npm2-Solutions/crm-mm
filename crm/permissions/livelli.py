@@ -118,6 +118,9 @@ class Capacita:
 	#: Clinical data. The agency does not get it for being the agency.
 	clinica: bool = False
 	descrizione: str = ""
+	#: Something the site must have for the capability to mean anything: the site
+	#: pages need Frappe Builder. Checked by the function registered under this key.
+	requisito: str | None = None
 
 
 @dataclass
@@ -133,8 +136,12 @@ class _Registro:
 	ruoli: dict[str, str] = field(default_factory=dict)
 	#: roles that open the CRM at all, from every module
 	ruoli_accesso: set[str] = field(default_factory=set)
+	#: roles Frappe itself creates (System Manager, and the ones CRM doctypes name)
+	ruoli_esistenti: set[str] = field(default_factory=set)
 	#: role -> level it stands for, for users that predate levels
 	livelli_impliciti: list[tuple[str, str]] = field(default_factory=list)
+	#: requirement -> function that says whether this site meets it
+	requisiti: dict[str, Callable[[], bool]] = field(default_factory=dict)
 
 	def copia(self) -> _Registro:
 		return _Registro(
@@ -145,7 +152,9 @@ class _Registro:
 			ruoli_livello={k: set(v) for k, v in self.ruoli_livello.items()},
 			ruoli=dict(self.ruoli),
 			ruoli_accesso=set(self.ruoli_accesso),
+			ruoli_esistenti=set(self.ruoli_esistenti),
 			livelli_impliciti=list(self.livelli_impliciti),
+			requisiti=dict(self.requisiti),
 		)
 
 
@@ -167,15 +176,23 @@ def registra_livello(livello: Livello, ruoli: Iterable[str] = ()) -> None:
 
 
 def registra_ruolo(
-	nome: str, descrizione: str = "", livelli: Iterable[str] = (), accesso: bool = True
+	nome: str,
+	descrizione: str = "",
+	livelli: Iterable[str] = (),
+	accesso: bool = True,
+	di_frappe: bool = False,
 ) -> None:
 	"""A role a module brings, and the levels it goes to by default.
 
-	``accesso`` says whether holding it is enough to open the CRM.
+	``accesso`` says whether holding it is enough to open the CRM. ``di_frappe``
+	marks a role Frappe creates by itself - System Manager, or one the doctypes
+	name - which the CRM must not create as a custom role of its own.
 	"""
 	_r.ruoli[nome] = descrizione or _r.ruoli.get(nome, "")
 	if accesso:
 		_r.ruoli_accesso.add(nome)
+	if di_frappe:
+		_r.ruoli_esistenti.add(nome)
 	for livello in livelli:
 		aggiungi_ruoli(livello, [nome])
 
@@ -206,6 +223,11 @@ def registra_livello_implicito(ruolo: str, livello: str) -> None:
 	"""
 	if (ruolo, livello) not in _r.livelli_impliciti:
 		_r.livelli_impliciti.append((ruolo, livello))
+
+
+def registra_requisito(chiave: str, funzione: Callable[[], bool]) -> None:
+	"""How to tell whether this site meets ``chiave``, for the capabilities that need it."""
+	_r.requisiti[chiave] = funzione
 
 
 @contextmanager
@@ -249,6 +271,11 @@ def ruoli_registrati() -> dict[str, str]:
 	return dict(_r.ruoli)
 
 
+def ruoli_da_creare() -> dict[str, str]:
+	"""The registered roles the CRM creates itself: all but Frappe's own."""
+	return {nome: descrizione for nome, descrizione in _r.ruoli.items() if nome not in _r.ruoli_esistenti}
+
+
 def ruoli_di_accesso() -> frozenset[str]:
 	"""Every role that opens the CRM, from every module that registered one."""
 	return frozenset(_r.ruoli_accesso)
@@ -274,6 +301,21 @@ def a_scelta_dei_livelli(chiavi: Iterable[str]) -> list[str]:
 		for nome, livelli_concessi in _r.concessioni.items()
 		if nome in _r.capacita and any(livelli_concessi.get(chiave) == A_SCELTA for chiave in chiavi)
 	)
+
+
+def nel_crm(user: str | None = None) -> bool:
+	"""Whether ``user`` works in the CRM through levels, their own or implied, or is the
+	agency. Someone outside - an accountant with an invoicing role, on the Desk - keeps
+	the rules of before: their roles' document permissions."""
+	frappe = _frappe()
+	user = user or frappe.session.user
+	return e_agenzia(user) or bool(livelli_di(user))
+
+
+def verifica_nel_crm(nome: str, user: str | None = None, messaggio: str | None = None) -> None:
+	"""`verifica`, for whoever works in the CRM through levels; the others pass."""
+	if nel_crm(user):
+		verifica(nome, user, messaggio)
 
 
 def livelli_impliciti(ruoli: Iterable[str]) -> list[str]:
@@ -317,6 +359,7 @@ def calcola(
 	a_scelta: Iterable[str] = (),
 	agenzia: bool = False,
 	accessi_clinici: bool = False,
+	requisiti: Iterable[str] | None = None,
 ) -> dict[str, str]:
 	"""Every capability a person has, with its scope.
 
@@ -328,13 +371,19 @@ def calcola(
 	- ``agenzia``: the agency sees and configures everything that is not clinical,
 	  including what is technical; clinical data only with ``accessi_clinici``, the
 	  time-limited access the centre grants.
+	- ``requisiti``: what the site has (``"builder"``…). A capability that needs
+	  something the site lacks is nobody's, the agency's included: there is no site
+	  to manage without Builder. None means every requirement is met.
 	"""
 	livelli_utente = set(livelli_utente)
 	a_scelta = set(a_scelta)
+	requisiti = None if requisiti is None else set(requisiti)
 	sola_lettura = SOLA_LETTURA_LIVELLO in livelli_utente
 	risultato: dict[str, str] = {}
 
 	for nome, capacita in _r.capacita.items():
+		if capacita.requisito and requisiti is not None and capacita.requisito not in requisiti:
+			continue
 		ambito: str | None = None
 		if agenzia and (not capacita.clinica or accessi_clinici):
 			ambito = CENTRO
@@ -437,6 +486,24 @@ def moduli_attivi() -> dict[str, str]:
 	return stati
 
 
+def requisiti_soddisfatti() -> set[str]:
+	"""The requirements this site meets. Cached for the request."""
+	frappe = _frappe()
+	cache = getattr(frappe.local, "crm_requisiti", None)
+	if cache is not None:
+		return cache
+	soddisfatti = set()
+	for chiave, funzione in _r.requisiti.items():
+		try:
+			if funzione():
+				soddisfatti.add(chiave)
+		except Exception:
+			# a check that cannot answer is a requirement not met, never a broken page
+			continue
+	frappe.local.crm_requisiti = soddisfatti
+	return soddisfatti
+
+
 def capacita_a_scelta(user: str) -> list[str]:
 	frappe = _frappe()
 	return frappe.get_all(
@@ -466,6 +533,7 @@ def capacita_di(user: str | None = None) -> dict[str, str]:
 			moduli=moduli_attivi(),
 			a_scelta=() if agenzia else capacita_a_scelta(user),
 			agenzia=agenzia,
+			requisiti=requisiti_soddisfatti(),
 		)
 	cache[user] = risultato
 	return risultato
@@ -521,7 +589,7 @@ def richiede(*nomi: str) -> Callable:
 def dimentica_cache() -> None:
 	"""Forget what was worked out in this request: levels or the plan changed."""
 	frappe = _frappe()
-	for nome in ("crm_capacita", "crm_moduli_attivi"):
+	for nome in ("crm_capacita", "crm_moduli_attivi", "crm_requisiti"):
 		try:
 			delattr(frappe.local, nome)
 		except AttributeError:

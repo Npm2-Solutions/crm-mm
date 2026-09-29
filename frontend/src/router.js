@@ -76,6 +76,7 @@ const routes = [
     path: '/sito',
     name: 'Website',
     component: () => import('@/pages/Website.vue'),
+    meta: { richiede: 'sito.gestisci' },
   },
   {
     // the operator's console: what has been issued, and what still has a button
@@ -83,12 +84,14 @@ const routes = [
     path: '/fatture',
     name: 'Invoices',
     component: () => import('@/pages/Invoices.vue'),
+    meta: { richiede: 'fatture.emetti' },
   },
   {
     // full page, not a modal: Builder's canvas refuses to work in a small box
     path: '/sito/pagine/:name',
     name: 'WebsitePage',
     component: () => import('@/pages/WebsitePageEditor.vue'),
+    meta: { richiede: 'sito.gestisci' },
   },
   {
     alias: '/leads',
@@ -226,13 +229,21 @@ router.beforeEach(async (to, from, next) => {
   router.previousRoute = from
 
   const { isLoggedIn, user } = sessionStore()
-  const { users, isCrmUser, isAdmin } = usersStore()
+  const { users, isCrmUser, isAdmin, permissions, puo } = usersStore()
 
   if (isLoggedIn && !users.fetched) {
     try {
       await users.promise
     } catch (error) {
       console.error('Error loading users', error)
+    }
+  }
+  // the capabilities come with the page; asked for only when they did not
+  if (isLoggedIn && to.meta?.richiede && !permissions.data) {
+    try {
+      await permissions.reload()
+    } catch (error) {
+      console.error('Error loading permissions', error)
     }
   }
 
@@ -268,6 +279,9 @@ router.beforeEach(async (to, from, next) => {
 
   if (isLoggedIn && to.name !== 'Not Permitted' && !isCrmUser()) {
     next({ name: 'Not Permitted' })
+  } else if (isLoggedIn && to.meta?.richiede && !puo(to.meta.richiede)) {
+    // a page hidden from the menu does not open from its address either (doc 30)
+    next({ name: 'Home' })
   } else if (to.name === 'Home' && isLoggedIn) {
     const { views, getDefaultView } = viewsStore()
     await views.promise

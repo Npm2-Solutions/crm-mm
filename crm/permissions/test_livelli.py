@@ -219,6 +219,21 @@ class TestPiano(RegistroCase):
 		self.assertIn("piano.gestisci", c)
 
 
+class TestRequisiti(RegistroCase):
+	def test_il_sito_senza_builder_non_e_di_nessuno(self):
+		"""Installing Builder is the agency's job on the bench: without it there is no
+		site to manage, for the manager or the agency."""
+		self.assertNotIn("sito.gestisci", calcola([MAN], requisiti=set()))
+		self.assertNotIn("sito.gestisci", calcola([], agenzia=True, requisiti=set()))
+		self.assertIn("sito.gestisci", calcola([MAN], requisiti={"builder"}))
+
+	def test_senza_requisiti_dichiarati_vale_tutto(self):
+		self.assertIn("sito.gestisci", calcola([MAN]))
+
+	def test_gli_altri_non_dipendono_da_builder(self):
+		self.assertIn("automazioni.gestisci", calcola([MAN], requisiti=set()))
+
+
 class TestAgenzia(RegistroCase):
 	def test_l_agenzia_ha_tutto_quello_che_non_e_clinico(self):
 		c = calcola([], agenzia=True)

@@ -112,7 +112,10 @@ def _sla() -> bool:
 
 
 def _website() -> bool:
-	return bool(frappe.db.get_single_value("CRM Website Settings", "enabled"))
+	# without Frappe Builder there is no site, whatever the setting says
+	return "builder" in frappe.get_installed_apps() and bool(
+		frappe.db.get_single_value("CRM Website Settings", "enabled")
+	)
 
 
 def _invoicing() -> bool:

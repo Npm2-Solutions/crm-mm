@@ -328,15 +328,17 @@ const links = [
     label: 'Invoices',
     icon: LucideReceipt,
     to: 'Invoices',
-    condition: () => isManager(),
+    // whoever issues them: the front desk and the manager (doc 30)
+    condition: () => puo('fatture.emetti'),
   },
   {
     label: 'Site',
     icon: LucideGlobe,
     to: 'Website',
-    // managers only: the page itself handles "Builder missing" and "site off", so it
-    // stays reachable — otherwise there would be nowhere to turn the site on from
-    condition: () => isManager(),
+    // only where Frappe Builder is installed: without it there is no site to
+    // manage, and installing it is the agency's job on the bench. The page still
+    // turns the site on when it is off.
+    condition: () => puo('sito.gestisci'),
   },
 ]
 
@@ -464,7 +466,7 @@ function toggleHelpModal() {
 
 // onboarding
 const { user } = sessionStore()
-const { users, isManager } = usersStore()
+const { users, isManager, puo } = usersStore()
 const { isOnboardingStepsCompleted, setUp } = useOnboarding('frappecrm')
 
 async function getFirstLead() {
