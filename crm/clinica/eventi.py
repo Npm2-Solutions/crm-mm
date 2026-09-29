@@ -43,17 +43,24 @@ def appuntamento_creato(doc, method=None) -> None:
 
 
 def appuntamento_aggiornato(doc, method=None) -> None:
-	"""Rule 3: the appointment was completed, or a participant came."""
-	if not any(regole.presente(doc.status, riga.status) for riga in doc.participants or []):
+	"""Rule 2: the desk checked somebody in. Rule 3: the appointment was completed,
+	or a participant came."""
+	righe = doc.participants or []
+	if not any(riga.get("arrived_at") or regole.presente(doc.status, riga.status) for riga in righe):
 		return
 	if not paziente.clinica_accesa() or not paziente.appuntamento_per_la_clinica(doc.service):
 		return
 
 	def converti():
-		for riga in doc.participants or []:
+		for riga in righe:
+			persona = paziente.persona_di(riga.party_type, riga.party)
+			if riga.get("arrived_at") and riga.status not in regole.PARTECIPANTE_ASSENTE:
+				paziente.assicura_paziente(
+					persona, regole.ACCETTAZIONE, quando=riga.arrived_at, fonte=(doc.doctype, doc.name)
+				)
 			if regole.presente(doc.status, riga.status):
 				paziente.assicura_paziente(
-					paziente.persona_di(riga.party_type, riga.party),
+					persona,
 					regole.APPUNTAMENTO_SVOLTO,
 					quando=doc.starts_on,
 					fonte=(doc.doctype, doc.name),
