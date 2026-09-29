@@ -116,7 +116,7 @@
             />
           </div>
           <SidebarItem
-            v-if="isManager() && isDemoDataCreated"
+            v-if="puo('dati_prova.gestisci') && isDemoDataCreated"
             :label="__('Clear Demo Data')"
             class="!text-ink-red-6 hover:!bg-surface-red-2"
             @click="() => clearDemoData()"
@@ -262,6 +262,7 @@ const links = [
     label: 'Dashboard',
     icon: LucideLayoutDashboard,
     to: 'Dashboard',
+    condition: () => puo('dashboard.personali'),
   },
   {
     // the people. "Lead" is what one of them is at the start, not what they
@@ -270,59 +271,68 @@ const links = [
     label: 'People',
     icon: LeadsIcon,
     to: 'Leads',
+    condition: () => puo('persone.vedi'),
   },
   {
     label: 'Deals',
     icon: DealsIcon,
     to: 'Deals',
+    condition: () => puo('trattative.vedi'),
   },
   {
     label: 'Organizations',
     icon: OrganizationsIcon,
     to: 'Organizations',
+    condition: () => puo('persone.vedi'),
   },
   {
     // the same people as above; this is where you answer them
     label: 'Conversations',
     icon: SMSIcon,
     to: 'Conversations',
+    condition: () => puo('conversazioni.usa'),
   },
   {
     label: 'Automations',
     icon: AutomationIcon,
     to: 'Automations',
-    condition: () => isManager(),
+    condition: () => puo('automazioni.vedi'),
   },
   {
     label: 'Notes',
     icon: NoteIcon,
     to: 'Notes',
+    condition: () => puo('note.scrivi'),
   },
   {
     label: 'Tasks',
     icon: TaskIcon,
     to: 'Tasks',
+    condition: () => puo('persone.vedi'),
   },
   {
     label: 'Calendar',
     icon: CalendarIcon,
     to: 'Calendar',
+    condition: () => puo('agenda.vedi'),
   },
   {
     label: 'Call Logs',
     icon: PhoneIcon,
     to: 'Call Logs',
+    condition: () => puo('telefono.registro'),
   },
   {
     label: 'Dialer',
     icon: DialpadIcon,
     to: 'Dialer',
-    condition: () => callEnabled.value,
+    condition: () => callEnabled.value && puo('telefono.chiama'),
   },
   {
     label: 'Social Planner',
     icon: SocialIcon,
     to: 'Social Planner',
+    condition: () => puoUno(['social.bozze', 'social.pubblica']),
   },
   {
     label: 'Invoices',
@@ -466,7 +476,7 @@ function toggleHelpModal() {
 
 // onboarding
 const { user } = sessionStore()
-const { users, isManager, puo } = usersStore()
+const { users, puo, puoUno } = usersStore()
 const { isOnboardingStepsCompleted, setUp } = useOnboarding('frappecrm')
 
 async function getFirstLead() {
@@ -519,7 +529,7 @@ const steps = reactive([
       activeSettingsPage.value = 'Invite User'
       capture('onboarding_step_clicked_invite_your_team')
     },
-    condition: () => isManager(),
+    condition: () => puo('utenti.gestisci'),
   },
   {
     name: 'convert_lead_to_deal',

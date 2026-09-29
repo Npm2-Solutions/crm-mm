@@ -279,7 +279,7 @@
         :catalog="catalog.data || undefined"
         :loading="catalog.loading"
         :items="items"
-        :canSetUp="isManager()"
+        :canSetUp="puo('dashboard.condivise')"
         @add="add"
         @setup="setUp"
         @close="showLibrary = false"
@@ -355,7 +355,7 @@ const PREVIEW = 12
 
 const route = useRoute()
 const router = useRouter()
-const { users, getUser, isManager, isAdmin } = usersStore()
+const { users, getUser, puo } = usersStore()
 const { $dialog } = globalStore()
 
 // numbers and dates in the language the words are in
@@ -408,7 +408,7 @@ const catalog = createResource({
 const list = computed(() => dashboards.data?.dashboards || [])
 
 const canFilterPeople = computed(
-  () => (isManager() || isAdmin()) && !current.value?.only_mine,
+  () => puo('dashboard.filtro_persona') && !current.value?.only_mine,
 )
 
 // the library sits beside the grid when both fit, over it when sharing the

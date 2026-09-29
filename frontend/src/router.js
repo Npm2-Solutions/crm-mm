@@ -36,6 +36,7 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
+    meta: { richiede: 'dashboard.personali' },
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
@@ -44,6 +45,7 @@ const routes = [
     // somewhere else on every click.
     path: '/conversazioni',
     name: 'Conversations',
+    meta: { richiede: 'conversazioni.usa' },
     component: () => import('@/pages/Conversations.vue'),
   },
   {
@@ -55,21 +57,25 @@ const routes = [
   {
     path: '/automations',
     name: 'Automations',
+    meta: { richiede: 'automazioni.vedi' },
     component: () => import('@/pages/Automations.vue'),
   },
   {
     path: '/automations/:automationId',
     name: 'Automation',
+    meta: { richiede: 'automazioni.vedi' },
     component: () => import('@/pages/AutomationEditor.vue'),
   },
   {
     path: '/dialer',
     name: 'Dialer',
+    meta: { richiede: 'telefono.chiama' },
     component: () => import('@/pages/Dialer.vue'),
   },
   {
     path: '/social',
     name: 'Social Planner',
+    meta: { richiede: ['social.bozze', 'social.pubblica'] },
     component: () => import('@/pages/SocialPlanner.vue'),
   },
   {
@@ -97,11 +103,13 @@ const routes = [
     alias: '/leads',
     path: '/leads/view/:viewType?',
     name: 'Leads',
+    meta: { richiede: 'persone.vedi' },
     component: () => import('@/pages/Leads.vue'),
   },
   {
     path: '/leads/:leadId',
     name: 'Lead',
+    meta: { richiede: 'persone.vedi' },
     component: () => import(`@/pages/${handleMobileView('Lead')}.vue`),
     props: true,
   },
@@ -109,11 +117,13 @@ const routes = [
     alias: '/deals',
     path: '/deals/view/:viewType?',
     name: 'Deals',
+    meta: { richiede: 'trattative.vedi' },
     component: () => import('@/pages/Deals.vue'),
   },
   {
     path: '/deals/:dealId',
     name: 'Deal',
+    meta: { richiede: 'trattative.vedi' },
     component: () => import(`@/pages/${handleMobileView('Deal')}.vue`),
     props: true,
   },
@@ -121,23 +131,27 @@ const routes = [
     alias: '/notes',
     path: '/notes/view/:viewType?',
     name: 'Notes',
+    meta: { richiede: 'note.scrivi' },
     component: () => import('@/pages/Notes.vue'),
   },
   {
     alias: '/tasks',
     path: '/tasks/view/:viewType?',
     name: 'Tasks',
+    meta: { richiede: 'persone.vedi' },
     component: () => import('@/pages/Tasks.vue'),
   },
   {
     alias: '/contacts',
     path: '/contacts/view/:viewType?',
     name: 'Contacts',
+    meta: { richiede: 'persone.vedi' },
     component: () => import('@/pages/Contacts.vue'),
   },
   {
     path: '/contacts/:contactId',
     name: 'Contact',
+    meta: { richiede: 'persone.vedi' },
     component: () => import(`@/pages/${handleMobileView('Contact')}.vue`),
     props: true,
     // an address book entry is not a person: open the lead that owns it, which
@@ -153,11 +167,13 @@ const routes = [
     alias: '/organizations',
     path: '/organizations/view/:viewType?',
     name: 'Organizations',
+    meta: { richiede: 'persone.vedi' },
     component: () => import('@/pages/Organizations.vue'),
   },
   {
     path: '/organizations/:organizationId',
     name: 'Organization',
+    meta: { richiede: 'persone.vedi' },
     component: () => import(`@/pages/${handleMobileView('Organization')}.vue`),
     props: true,
   },
@@ -165,27 +181,32 @@ const routes = [
     alias: '/call-logs',
     path: '/call-logs/view/:viewType?',
     name: 'Call Logs',
+    meta: { richiede: 'telefono.registro' },
     component: () => import('@/pages/CallLogs.vue'),
   },
   {
     path: '/calendar',
     name: 'Calendar',
+    meta: { richiede: 'agenda.vedi' },
     component: () => import('@/pages/Calendar.vue'),
   },
   {
     path: '/data-import',
     name: 'DataImportList',
+    meta: { richiede: 'persone.importa' },
     component: () => import('@/pages/DataImport.vue'),
   },
   {
     path: '/data-import/doctype/:doctype',
     name: 'NewDataImport',
+    meta: { richiede: 'persone.importa' },
     component: () => import('@/pages/DataImport.vue'),
     props: true,
   },
   {
     path: '/data-import/:importName',
     name: 'DataImport',
+    meta: { richiede: 'persone.importa' },
     component: () => import('@/pages/DataImport.vue'),
     props: true,
   },
@@ -225,11 +246,32 @@ let router = createRouter({
   routes,
 })
 
+// Where to land when the default page is not one's own: the first one the level
+// opens. Notifications asks for nothing, so there is always somewhere to go.
+const LANDINGS = [
+  'Leads',
+  'Calendar',
+  'Conversations',
+  'Invoices',
+  'Dashboard',
+  'Deals',
+  'Notifications',
+]
+
+function allowed(name, puoUno) {
+  const route = router.getRoutes().find((r) => r.name === name)
+  return !route?.meta?.richiede || puoUno(route.meta.richiede)
+}
+
+function firstAllowed(puoUno) {
+  return LANDINGS.find((name) => allowed(name, puoUno)) || 'Notifications'
+}
+
 router.beforeEach(async (to, from, next) => {
   router.previousRoute = from
 
   const { isLoggedIn, user } = sessionStore()
-  const { users, isCrmUser, isAdmin, permissions, puo } = usersStore()
+  const { users, isCrmUser, isAgency, permissions, puoUno } = usersStore()
 
   if (isLoggedIn && !users.fetched) {
     try {
@@ -239,7 +281,7 @@ router.beforeEach(async (to, from, next) => {
     }
   }
   // the capabilities come with the page; asked for only when they did not
-  if (isLoggedIn && to.meta?.richiede && !permissions.data) {
+  if (isLoggedIn && !permissions.data) {
     try {
       await permissions.reload()
     } catch (error) {
@@ -247,7 +289,10 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  const isAdminUser = isLoggedIn && (isAdmin() || user === 'Administrator')
+  // the wizard that sets the CRM up is the agency's, or the centre's manager's
+  const isAdminUser =
+    isLoggedIn &&
+    (isAgency() || user === 'Administrator' || puoUno('utenti.gestisci'))
 
   // Only admins who haven't finished may reach the wizard, even via direct URL.
   if (isLoggedIn && to.name === 'Onboarding') {
@@ -279,7 +324,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (isLoggedIn && to.name !== 'Not Permitted' && !isCrmUser()) {
     next({ name: 'Not Permitted' })
-  } else if (isLoggedIn && to.meta?.richiede && !puo(to.meta.richiede)) {
+  } else if (isLoggedIn && to.meta?.richiede && !puoUno(to.meta.richiede)) {
     // a page hidden from the menu does not open from its address either (doc 30)
     next({ name: 'Home' })
   } else if (to.name === 'Home' && isLoggedIn) {
@@ -288,12 +333,17 @@ router.beforeEach(async (to, from, next) => {
 
     let defaultView = getDefaultView()
     if (!defaultView) {
-      next({ name: 'Leads' })
+      next({ name: firstAllowed(puoUno) })
       return
     }
 
     let { route_name, type, name, is_standard } = defaultView
     route_name = route_name || 'Leads'
+    // a default view on a page the level does not open is not a way in
+    if (!allowed(route_name, puoUno)) {
+      next({ name: firstAllowed(puoUno) })
+      return
+    }
 
     if (name && !is_standard) {
       next({

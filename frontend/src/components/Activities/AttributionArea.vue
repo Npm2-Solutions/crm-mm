@@ -24,7 +24,7 @@
       v-else-if="!hasAnything"
       :title="__('Nothing tracked yet')"
       :description="
-        isManager()
+        puo('tracciamento.gestisci')
           ? __(
               'No visit has been recorded for this record yet. Add the tracking script to your site, or check that this lead came in through a tracked form.',
             )
@@ -64,7 +64,7 @@
           <!-- the tracking settings open for managers only: anybody else
                would land on a page that is not there -->
           <Button
-            v-if="!isOfflineOrigin && isManager()"
+            v-if="!isOfflineOrigin && puo('tracciamento.gestisci')"
             :label="__('Open tracking settings')"
             @click="openTrackingSettings"
           />
@@ -219,7 +219,7 @@ import LucideUserPlus from '~icons/lucide/user-plus'
 import { Badge, Button, LoadingIndicator, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 
 const props = defineProps({
   doctype: { type: String, default: 'CRM Lead' },
@@ -300,7 +300,7 @@ const emptyReason = computed(() => {
     )
   // installing the script is a manager's job: anybody else is told what is
   // missing, not how to fix it
-  return isManager()
+  return puo('tracciamento.gestisci')
     ? __(
         'Nothing has been recorded for this visitor yet. Check that the tracking script is installed on the site this lead came from.',
       )

@@ -14,7 +14,7 @@
     </div>
     <div class="flex gap-1">
       <Button
-        v-if="isManager() && !isMobileView"
+        v-if="puo('viste.configura') && !isMobileView"
         :tooltip="__('Edit Fields Layout')"
         :icon="EditIcon"
         @click="showDataFieldsModal = true"
@@ -84,7 +84,7 @@ const fieldLayoutTabName = defineModel('fieldLayoutTabName', {
   default: '',
 })
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 
 const instance = getCurrentInstance()
 const attrs = instance?.vnode?.props ?? {}

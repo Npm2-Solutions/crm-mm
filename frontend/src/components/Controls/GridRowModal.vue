@@ -10,7 +10,7 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
-              v-if="isManager()"
+              v-if="puo('viste.configura')"
               :tooltip="__('Edit Fields Layout')"
               variant="ghost"
               class="w-7"
@@ -54,7 +54,7 @@ const props = defineProps({
   parentFieldname: { type: String, default: '' },
 })
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 
 provide('parentFieldname', props.parentFieldname)
 

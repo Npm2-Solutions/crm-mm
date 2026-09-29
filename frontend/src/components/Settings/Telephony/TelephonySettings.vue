@@ -173,14 +173,14 @@
       </div>
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
       >
         {{ __('Incoming Calls') }}
       </div>
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="flex items-center justify-between py-3 px-2"
       >
         <div class="flex flex-col gap-1">
@@ -210,12 +210,12 @@
       </div>
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="h-px border-t mx-2 border-outline-elevation-2"
       />
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="flex items-center justify-between py-3 px-2"
       >
         <div class="flex flex-col gap-1">
@@ -245,14 +245,14 @@
       </div>
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="flex items-center justify-between text-lg-semibold text-ink-gray-8 mt-4 py-3 px-2"
       >
         {{ __('Integrations') }}
       </div>
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="flex items-center justify-between py-3 px-2"
       >
         <div class="flex flex-col gap-1">
@@ -274,12 +274,12 @@
       </div>
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="h-px border-t mx-2 border-outline-elevation-2"
       />
 
       <div
-        v-if="isManager()"
+        v-if="puo('telefono.configura')"
         class="flex items-center justify-between py-3 px-2"
       >
         <div class="flex flex-col gap-1">
@@ -362,7 +362,7 @@ const mediumOptions = computed(() => [
 
 const emit = defineEmits(['updateStep'])
 
-const { getUser, isManager } = usersStore()
+const { getUser, puo } = usersStore()
 
 const isNewDoc = ref(false)
 

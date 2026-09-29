@@ -9,7 +9,7 @@
     </template>
     <template #right-header>
       <Button
-        v-if="isManager()"
+        v-if="puo('social.pubblica')"
         variant="ghost"
         :label="__('Profiles')"
         iconLeft="settings"
@@ -38,7 +38,7 @@
           <!-- connecting them is a manager's job: say whose, not how -->
           <span class="text-p-sm text-ink-gray-5">
             {{
-              isManager()
+              puo('social.pubblica')
                 ? __('Connect Facebook & Instagram to start scheduling.')
                 : __(
                     'Posts can be planned once a manager connects the Facebook and Instagram profiles.',
@@ -47,7 +47,7 @@
           </span>
         </div>
         <Button
-          v-if="isManager()"
+          v-if="puo('social.pubblica')"
           variant="solid"
           :label="__('Connect profiles')"
           @click="openSocialSettings"
@@ -266,7 +266,7 @@
           v-for="post in dayPosts"
           :key="post.name"
           class="flex cursor-pointer items-center gap-3 py-2.5 hover:bg-surface-gray-1"
-          @click="(showDay = false), openComposer(post)"
+          @click="((showDay = false), openComposer(post))"
         >
           <span class="w-12 shrink-0 tabular-nums text-sm text-ink-gray-5">
             {{ timeOf(post.scheduled_at) }}
@@ -327,12 +327,12 @@
             class="flex items-center gap-2 text-sm text-ink-gray-5"
           >
             {{
-              isManager()
+              puo('social.pubblica')
                 ? __('No profiles connected.')
                 : __('No profiles yet: a manager has to connect them.')
             }}
             <Button
-              v-if="isManager()"
+              v-if="puo('social.pubblica')"
               size="sm"
               :label="__('Connect profiles')"
               @click="openSocialSettings"
@@ -455,7 +455,7 @@
         <div class="flex gap-2">
           <Button :label="__('Save draft')" @click="save('Draft')" />
           <Button
-            v-if="!isManager()"
+            v-if="!puo('social.pubblica')"
             variant="solid"
             :label="__('Request approval')"
             @click="save('Pending Approval')"
@@ -506,7 +506,7 @@ import {
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { appLocale } from '@/utils/locale'
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 const { $socket } = globalStore()
 
 const current = ref(startOfMonth(new Date()))

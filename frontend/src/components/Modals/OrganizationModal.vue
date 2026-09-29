@@ -10,7 +10,7 @@
           </div>
           <div class="flex items-center gap-1">
             <Button
-              v-if="isManager() && !isMobileView"
+              v-if="puo('viste.configura') && !isMobileView"
               variant="ghost"
               class="w-7"
               :tooltip="__('Edit Fields Layout')"
@@ -81,7 +81,7 @@ const props = defineProps({
   },
 })
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 const { capture } = useTelemetry()
 
 const router = useRouter()

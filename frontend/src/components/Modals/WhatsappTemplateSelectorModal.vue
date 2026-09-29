@@ -20,7 +20,7 @@
         </TextInput>
         <!-- templates are made in Settings, which only managers can open -->
         <Button
-          v-if="isManager()"
+          v-if="puo('modelli_messaggio.gestisci')"
           :label="__('Create New Template')"
           variant="solid"
           @click="newWhatsappTemplate"
@@ -72,7 +72,7 @@
             class="text-center text-p-sm text-ink-gray-5"
           >
             {{
-              isManager()
+              puo('modelli_messaggio.gestisci')
                 ? __(
                     '{0} approved templates belong to another number and cannot be sent from {1}. A template lives on the WhatsApp account it was approved on, so they have to be created again here.',
                     [hiddenForOtherAccount, sending.data?.account],
@@ -139,7 +139,7 @@ const props = defineProps({
   doctype: { type: String, default: '' },
 })
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 
 const show = defineModel({ type: Boolean })
 const searchInput = ref('')

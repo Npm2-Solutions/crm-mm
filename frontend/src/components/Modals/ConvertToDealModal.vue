@@ -9,7 +9,7 @@
         </div>
         <div class="flex items-center gap-1">
           <Button
-            v-if="isManager() && !isMobileView"
+            v-if="puo('viste.configura') && !isMobileView"
             variant="ghost"
             :tooltip="__('Edit deal\'s mandatory fields layout')"
             :icon="EditIcon"
@@ -99,7 +99,7 @@ const router = useRouter()
 
 const { statusOptions, getDealStatus } = statusesStore()
 const { pipelines, getStageNames } = pipelinesStore()
-const { isManager } = usersStore()
+const { puo } = usersStore()
 const { user } = sessionStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { doctypeMeta: leadMeta } = getMeta('CRM Lead')
@@ -281,9 +281,9 @@ function isMatchingCustomField(leadField, dealField) {
 function isCustomField(field) {
   return Boolean(
     field?.is_custom_field ||
-      field?.custom ||
-      field?.fieldname?.startsWith('custom_') ||
-      field?.name === `${field?.parent}-${field?.fieldname}`,
+    field?.custom ||
+    field?.fieldname?.startsWith('custom_') ||
+    field?.name === `${field?.parent}-${field?.fieldname}`,
   )
 }
 

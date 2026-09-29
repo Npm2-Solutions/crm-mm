@@ -19,7 +19,7 @@
               :close="() => (show = false)"
             />
             <Button
-              v-if="isManager() && !isMobileView"
+              v-if="puo('viste.configura') && !isMobileView"
               variant="ghost"
               class="w-7"
               :tooltip="__('Edit Fields Layout')"
@@ -92,7 +92,7 @@ const emit = defineEmits(['afterInsert', 'afterUpdate'])
 
 const router = useRouter()
 
-const { isManager } = usersStore()
+const { puo } = usersStore()
 const { $dialog, $socket } = globalStore()
 
 const { document, scripts, triggerOnRender, triggerOnBeforeCreate } =
