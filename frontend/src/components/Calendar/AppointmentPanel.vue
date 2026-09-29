@@ -773,7 +773,8 @@ const STATUS_THEME = {
   'No Show': 'red',
   Cancelled: 'gray',
 }
-const ATTENDANCE = ['Booked', 'Attended', 'No Show', 'Cancelled']
+// «Arrived» is the desk's check-in: in the waiting room, not yet seen
+const ATTENDANCE = ['Booked', 'Arrived', 'Attended', 'No Show', 'Cancelled']
 
 // --- the appointment as it is ---------------------------------------------
 

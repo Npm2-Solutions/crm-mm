@@ -194,6 +194,13 @@ const routes = [
     component: () => import('@/pages/Calendar.vue'),
   },
   {
+    // the desk's day: arrivals, the waiting room, what the last days left open
+    path: '/oggi',
+    name: 'Today',
+    meta: { richiede: 'agenda.presenze' },
+    component: () => import('@/pages/Today.vue'),
+  },
+  {
     path: '/data-import',
     name: 'DataImportList',
     meta: { richiede: 'persone.importa' },

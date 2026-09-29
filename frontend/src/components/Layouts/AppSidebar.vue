@@ -173,6 +173,7 @@
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
+import LucideClipboardCheck from '~icons/lucide/clipboard-check'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideReceipt from '~icons/lucide/receipt-text'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
@@ -311,6 +312,13 @@ const links = [
     icon: TaskIcon,
     to: 'Tasks',
     condition: () => puo('persone.vedi'),
+  },
+  {
+    // who arrives, who is waiting, who came: the desk's day
+    label: 'Today',
+    icon: LucideClipboardCheck,
+    to: 'Today',
+    condition: () => puo('agenda.presenze'),
   },
   {
     label: 'Calendar',

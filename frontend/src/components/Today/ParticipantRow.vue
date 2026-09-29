@@ -1,0 +1,91 @@
+<template>
+  <div class="flex items-center gap-3 py-2 max-md:flex-wrap">
+    <!-- a phone gives the name its own line, and the buttons the next -->
+    <div class="flex min-w-0 flex-1 items-center gap-2 max-md:basis-full">
+      <RouterLink
+        v-if="participant.party_type === 'CRM Lead' && participant.party"
+        :to="{ name: 'Lead', params: { leadId: participant.party } }"
+        class="truncate text-base-medium text-ink-gray-8 hover:underline"
+      >
+        {{ participant.participant_name || participant.party }}
+      </RouterLink>
+      <span v-else class="truncate text-base-medium text-ink-gray-8">
+        {{ participant.participant_name }}
+      </span>
+      <Badge
+        :label="__(STATUS[participant.status]?.label || participant.status)"
+        :theme="STATUS[participant.status]?.theme || 'gray'"
+        variant="subtle"
+        class="shrink-0"
+      />
+      <span
+        v-if="participant.status === 'Arrived'"
+        class="shrink-0 text-p-sm tabular-nums text-ink-gray-5"
+        :title="
+          __('In the waiting room since {0}', [timeOf(participant.arrived_at)])
+        "
+      >
+        {{ waitingLabel(minutesWaiting(participant.arrived_at, now)) }}
+      </span>
+    </div>
+    <div v-if="canMark" class="flex shrink-0 items-center gap-1.5">
+      <Button
+        v-for="(outcome, i) in NEXT[participant.status] || []"
+        :key="outcome"
+        :label="__(ACTIONS[outcome])"
+        :variant="i === 0 && outcome !== 'Booked' ? 'solid' : 'subtle'"
+        :theme="outcome === 'No Show' ? 'red' : 'gray'"
+        :loading="busy === outcome"
+        class="touch-target"
+        @click="mark(outcome)"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { NEXT, minutesWaiting, timeOf, waitingLabel } from '@/utils/oggi'
+import { Badge, Button, call, toast } from 'frappe-ui'
+import { ref } from 'vue'
+
+const props = defineProps({
+  appointment: { type: Object, required: true },
+  participant: { type: Object, required: true },
+  canMark: { type: Boolean, default: false },
+  now: { type: Date, default: () => new Date() },
+})
+
+const emit = defineEmits(['changed'])
+
+// what each outcome is called on its button, and on the badge once given
+const ACTIONS = {
+  Arrived: 'Check in',
+  Attended: 'Came',
+  'No Show': 'Did not come',
+  Booked: 'Undo',
+}
+const STATUS = {
+  Booked: { label: 'Expected', theme: 'gray' },
+  Arrived: { label: 'Waiting', theme: 'orange' },
+  Attended: { label: 'Came', theme: 'green' },
+  'No Show': { label: 'Did not come', theme: 'red' },
+}
+
+const busy = ref('')
+
+async function mark(outcome) {
+  busy.value = outcome
+  try {
+    await call('crm.api.oggi.set_outcome', {
+      appointment: props.appointment.name,
+      participant: props.participant.name,
+      outcome,
+    })
+    emit('changed')
+  } catch (error) {
+    toast.error(error.messages?.[0] || __('Could not save'))
+  } finally {
+    busy.value = ''
+  }
+}
+</script>
