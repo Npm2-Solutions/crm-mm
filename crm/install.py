@@ -49,6 +49,7 @@ def after_install(force=False):
 	seed_default_rules_and_mappings()
 	seed_invoicing()
 	add_levels()
+	add_core_permissions()
 	add_consent_types()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
 
@@ -58,6 +59,13 @@ def add_levels():
 	from crm.permissions.utenti import sincronizza
 
 	sincronizza()
+
+
+def add_core_permissions():
+	"""The core documents the Manager's pages write: templates, rules, imports (doc 30)."""
+	from crm.permissions.documenti import concedi_documenti_del_core
+
+	concedi_documenti_del_core()
 
 
 def add_consent_types():

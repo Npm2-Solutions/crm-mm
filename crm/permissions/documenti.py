@@ -46,6 +46,21 @@ SCRITTURA = {
 	"CRM Service Level Agreement": "assegnazione.regole",
 	# the agency's, the whole page (PR 3): the Manager no longer writes it
 	"ERPNext CRM Settings": "tecnico.erpnext",
+	# core documents the Manager's pages write (PR 3b): see DEL_CORE
+	"Email Template": "modelli_messaggio.gestisci",
+	"Assignment Rule": "assegnazione.regole",
+	"Data Import": "persone.importa",
+}
+
+#: Core documents Frappe gives to System Manager only, which the Manager's pages
+#: write, and the role that carries their rule: `SCRITTURA` narrows it to the
+#: capability. Email Template is read by everybody already; the others are the
+#: Manager's to read too. Email accounts go through `crm.api.settings` instead:
+#: their servers and ports stay the agency's.
+DEL_CORE = {
+	"Email Template": "Sales User",
+	"Assignment Rule": "Sales Manager",
+	"Data Import": "Sales Manager",
 }
 
 #: The documents that belong to one user, and the field that says whose: one's own
@@ -85,3 +100,21 @@ def has_permission(doc, ptype: str | None = None, user: str | None = None) -> bo
 	if not livelli.nel_crm(user):
 		return True
 	return puo_scrivere(doc, user)
+
+
+def concedi_documenti_del_core() -> None:
+	"""Give `DEL_CORE`'s roles their rule on the core documents, once.
+
+	A rule already there, the CRM's or one changed by hand, is left as it is.
+	"""
+	from frappe.permissions import add_permission, update_permission_property
+
+	for doctype, ruolo in DEL_CORE.items():
+		if not frappe.db.exists("DocType", doctype):
+			continue
+		if frappe.db.exists("Custom DocPerm", {"parent": doctype, "role": ruolo, "permlevel": 0}):
+			continue
+		add_permission(doctype, ruolo, 0, "read")
+		for ptype in ("write", "create", "delete"):
+			update_permission_property(doctype, ruolo, 0, ptype, 1, validate=False)
+		frappe.clear_cache(doctype=doctype)
