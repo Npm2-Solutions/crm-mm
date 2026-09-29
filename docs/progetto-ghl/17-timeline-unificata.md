@@ -502,6 +502,15 @@ contenitore, non quelle del contenuto, e la chat si apriva con l'ultima email
 tagliata dal compositore. L'etichetta della data compare solo quando sei tu a
 scorrere.
 
+Riaprendo la stessa persona nella stessa sessione, però, a volte non compariva
+più: la scheda restava vuota. Le sue liste (storia, WhatsApp, SMS) sono tenute
+in memoria per persona, e frappe-ui le restituiva già piene, con le callback
+della prima apertura, che muovevano una conversazione non più sullo schermo;
+essendo già tutto arrivato, niente diceva a questa di comparire. E l'indirizzo
+con la scheda (`#activity`) veniva scambiato per un messaggio a cui scorrere,
+perché la scheda si chiama «Activity». Ora la conversazione segue le sue liste
+da sé e compare appena c'è, con tutto già arrivato o no.
+
 ### Le nuvolette sono una forma sola
 
 La punta era un triangolo appoggiato a un angolo arrotondato. Dove la curva si

@@ -576,3 +576,29 @@ quindi è finito negli `ignore` di `pyproject.toml` invece che nel codice.
 | `frontend/src/components/Dashboard/*`, `Kanban/KanbanView.vue`, `pages/Tasks.vue` | Numeri, colonne, descrizioni |
 | `frontend/src/pages/MobileLead.vue`, `MobileDeal.vue` | La scheda Eventi |
 | `crm/integrations/meta/api.py` | Il webhook senza app, testato in `test_meta_webhook_check.py` |
+
+---
+
+## Correzioni — la conversazione vuota, i grafici, i listini
+
+> **Completato** (29/09/2026). Tre errori che si vedevano solo tornando su una
+> cosa già aperta, o andandosene in fretta. Doc 17, «Si apre dove leggi».
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| La conversazione segue i dati delle sue liste con un `watch`, non con l'`onSuccess` delle risorse | Una risorsa con `cache` è restituita tale e quale alla seconda apertura, con le callback di chi l'ha creata: muovevano la conversazione della prima visita, non più sullo schermo |
+| `watch(arrived, …, { immediate: true })` | Alla seconda apertura le liste sono già piene: `arrived` è vero dall'inizio, il watcher non scattava, e la conversazione restava `invisible` |
+| Le schede nell'indirizzo si confrontano in minuscolo | L'indirizzo dice `#activity`, la scheda si chiama «Activity»: la scheda era presa per un messaggio a cui scorrere, e la conversazione non veniva mai mostrata |
+| Un grafico nostro (`EChart.vue`) al posto di quello di frappe-ui | Quello di frappe-ui osservava il proprio elemento mezzo secondo dopo il montaggio: smontato prima (cambio di dashboard con `?d=`), osservava `undefined` e lanciava; e non liberava mai il grafico |
+| `echarts` dichiarato fra le dipendenze del frontend | Lo usavamo solo attraverso frappe-ui; ora lo importiamo, alla stessa versione che il lockfile aveva già |
+| Il primo listino si seleziona da un `watch` sui dati | Stessa causa: alla seconda apertura dei Settings non si selezionava niente |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `frontend/src/components/Activities/Activities.vue` | La conversazione segue le sue liste e compare anche quando erano già piene |
+| `frontend/src/components/Dashboard/EChart.vue`, `widgets/ChartWidget.vue` | Il grafico che vive e muore col suo elemento |
+| `frontend/src/components/Settings/Scheduling/PriceListsSettings.vue` | Il primo listino selezionato anche alla seconda apertura |
