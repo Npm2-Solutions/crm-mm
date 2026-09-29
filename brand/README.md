@@ -1,14 +1,15 @@
 # DottorCloud — materiale del marchio
 
 Tutto il materiale per presentare DottorCloud, il gestionale per i centri medici di
-NPM2 Solutions Srl: logo, design system, video e presentazione. Ogni cartella ha i
+NPM2 Solutions Srl: logo, design system, video, presentazione e ads. Ogni cartella ha i
 file pronti all'uso e, in `sorgenti/`, quello che serve per rifarli.
 
 | Cartella | Cosa c'è | Da usare |
 |---|---|---|
 | [`logo/`](./logo/) | Marchio, logo orizzontale e verticale, negativo, a un colore, icona dell'app; SVG e PNG | [`logo/anteprima.png`](./logo/anteprima.png) · regole in [`logo/README.md`](./logo/README.md) |
 | [`design-system/`](./design-system/) | Colori, tipografia, forme, ombre, movimento, suono e linguaggio | [`design-system/anteprima.png`](./design-system/anteprima.png) · `tokens.css` · `tokens.json` |
-| [`video/`](./video/) | Il video di presentazione (2:17, 1920×1080, con musica), la copertina e il testo per i social | [`video/DottorCloud.mp4`](./video/DottorCloud.mp4) |
+| [`video/`](./video/) | Il video di presentazione (2:17, 1920×1080, con musica) e il reel verticale di un minuto, con copertine e testo per i social | [`video/DottorCloud.mp4`](./video/DottorCloud.mp4) · [`video/DottorCloud-reel.mp4`](./video/DottorCloud-reel.mp4) |
+| [`ads/`](./ads/) | Grafiche per le inserzioni (6 idee × feed quadrato, feed verticale, storie), 4 spot da 14 s in 9:16 e 4:5, i testi per Meta | [`ads/grafiche/`](./ads/grafiche/) · [`ads/testi.md`](./ads/testi.md) |
 | [`presentazione/`](./presentazione/) | 18 slide per i centri, con le note per chi presenta; la stessa in PDF per l'email | [`presentazione/DottorCloud.pptx`](./presentazione/DottorCloud.pptx) · [`presentazione/DottorCloud.pdf`](./presentazione/DottorCloud.pdf) |
 
 ## Il messaggio

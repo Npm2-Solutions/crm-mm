@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<!-- One ad graphic: grafiche.html?c=<concept>&f=<1x1|4x5|9x16>. grafiche.mjs renders them all. -->
+<link rel="stylesheet" href="../../design-system/tokens.css" />
+<style>
+@font-face { font-family: "Inter"; src: url(../../video/sorgenti/fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--dc-font); -webkit-font-smoothing: antialiased; overflow: hidden; }
+.ad { position: relative; width: 1080px; overflow: hidden; display: flex; flex-direction: column; padding: 72px 76px 64px; }
+.ad.dark { background: var(--dc-night); color: #fff; }
+.glow { position: absolute; width: 1300px; height: 1300px; border-radius: 50%; left: -110px; top: -520px; }
+.cloud { position: absolute; opacity: .05; }
+.head { position: relative; display: flex; align-items: center; justify-content: space-between; }
+.head img { height: 58px; }
+.chip { display: inline-flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 600; padding: 10px 20px; border-radius: 999px; background: var(--dc-teal-soft); color: var(--dc-teal-dark); }
+.dark .chip { background: rgba(95,224,204,.14); color: var(--dc-mint); }
+.txt { position: relative; margin-top: 52px; }
+h1 { font-size: 86px; font-weight: 700; letter-spacing: -.045em; line-height: 1.02; color: var(--dc-ink); }
+.dark h1 { color: #fff; }
+h1 em { font-style: normal; color: var(--dc-teal); }
+.dark h1 em { color: var(--dc-mint); }
+.sub { margin-top: 22px; font-size: 34px; line-height: 1.3; color: var(--dc-muted); letter-spacing: -.01em; }
+.dark .sub { color: rgba(255,255,255,.66); }
+.pic { position: relative; flex: 1; min-height: 0; margin: 30px -44px 24px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.pic img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pic.pair img { max-width: 49%; }
+.pic.stack { display: block; }
+.pic.stack img { position: absolute; max-width: 78%; max-height: 72%; }
+.pic.stack img:first-child { left: 0; top: 0; }
+.pic.stack img:last-child { right: 0; bottom: 0; }
+.foot { position: relative; display: flex; align-items: center; justify-content: space-between; }
+.cta { display: inline-flex; align-items: center; gap: 14px; background: var(--dc-teal); color: #fff; font-size: 34px; font-weight: 700; padding: 22px 36px; border-radius: 999px; }
+.by { font-size: 22px; color: var(--dc-faint); text-align: right; line-height: 1.35; }
+.by b { color: var(--dc-ink); }
+.dark .by b { color: #fff; }
+</style>
+</head>
+<body>
+<div class="ad" id="ad"></div>
+<script>
+const C = {
+  tutto: { dark: true, chip: 'Il gestionale per i centri medici', h: 'Tutto il tuo centro medico, <em>in un posto solo.</em>', sub: 'Agende, cartelle, fatture, messaggi e l\'app per i pazienti.', img: ['logo-orbit'], glow: '18,165,148' },
+  livelli: { chip: 'Permessi per ruolo', h: 'Ognuno vede <em>solo quello che gli serve.</em>', sub: 'Il medico la cartella, il marketing le campagne. Mai i dati clinici.', img: ['livelli-medico', 'livelli-marketing'], layout: 'stack', tint: '#eef7f5' },
+  fattura: { chip: 'Fatturazione', h: 'La fattura <em>nasce dalla visita.</em>', sub: 'Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.', img: ['fattura'], tint: '#f1f8f6' },
+  conferme: { chip: 'WhatsApp e promemoria', h: 'I pazienti <em>confermano da soli.</em>', sub: 'Promemoria automatici, risposte e note sulla scheda del paziente.', img: ['chat'], tint: '#eef7f1' },
+  casa: { chip: 'Area paziente', h: 'Piani ed esercizi, <em>sul telefono del paziente.</em>', sub: 'Il professionista li scrive, il paziente li segue.', img: ['dieta', 'esercizio'], layout: 'pair', tint: '#f3f1fd' },
+  privacy: { dark: true, chip: 'Privacy e GDPR', h: 'I dati dei pazienti, <em>protetti.</em>', sub: 'Server in Europa, un\'azienda italiana, ogni accesso registrato.', img: ['gdpr'], glow: '47,111,237' },
+};
+const FMT = { '1x1': [1080, 1080], '4x5': [1080, 1350], '9x16': [1080, 1920] };
+const q = new URLSearchParams(location.search), c = C[q.get('c') || 'tutto'], f = q.get('f') || '1x1', [W, H] = FMT[f];
+const ad = document.getElementById('ad');
+ad.className = 'ad' + (c.dark ? ' dark' : '');
+ad.style.height = H + 'px';
+ad.style.background = c.dark ? '' : c.tint;
+// stories and reels: keep the top and bottom bands clear for the platform's own buttons
+if (f === '9x16') { ad.style.paddingTop = '230px'; ad.style.paddingBottom = '300px'; }
+const small = f === '1x1';
+const img = (n) => `<img src="../../presentazione/sorgenti/img/${n}.png">`;
+ad.innerHTML = `
+  ${c.glow ? `<div class="glow" style="background:radial-gradient(circle,rgba(${c.glow},.30) 0%,rgba(${c.glow},0) 62%)"></div>` : ''}
+  ${c.dark ? `<img class="cloud" src="../../logo/dottorcloud-marchio-bianco.svg" style="width:900px;right:-330px;top:${H * 0.42}px">` : ''}
+  <div class="head"><img src="../../logo/dottorcloud-orizzontale${c.dark ? '-negativo' : ''}.svg"><span class="chip">${c.chip}</span></div>
+  <div class="txt"><h1 style="${small ? 'font-size:72px' : ''}">${c.h}</h1>${small ? '' : `<p class="sub">${c.sub}</p>`}</div>
+  <div class="pic ${c.layout || ''}">${c.img.map(img).join('')}</div>
+  <div class="foot"><span class="cta">Richiedi una demo <span>→</span></span><span class="by">Il gestionale per i centri medici<br><b>NPM2 Solutions Srl</b></span></div>`;
+if (small) ad.querySelector('.txt').style.marginTop = '40px';
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => (i.complete ? 1 : new Promise((r) => (i.onload = i.onerror = r))))]);
+</script>
+</body>
+</html>
