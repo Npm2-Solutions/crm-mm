@@ -321,7 +321,9 @@ vale se servono **due chiavi**: il modulo è attivo nel piano del centro, e il
 livello della persona la prevede.
 
 - **Il piano** sta in un documento solo per sito (per esempio `CRM Piano`). Dice:
-  - la taglia (quante agende);
+  - la taglia, cioè quante agende. Un'agenda attiva è un professionista con almeno
+    un appuntamento nel mese, anche se non entra mai nel CRM; sale, attrezzature e
+    chi non riceve appuntamenti non contano;
   - i moduli attivi, e per ciascuno se lo paga il centro o se è incluso in un
     servizio dell'agenzia;
   - le date di prova e di scadenza.
