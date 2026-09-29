@@ -7,6 +7,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from crm.permissions import livelli
+
 
 class CRMTranscriptionSettings(Document):
 	# begin: auto-generated types
@@ -38,9 +40,12 @@ class CRMTranscriptionSettings(Document):
 		if not self.enabled:
 			return
 		if not self.base_url:
-			frappe.throw(
-				_("Set the endpoint that will transcribe the recordings."), title=_("Endpoint Missing")
-			)
+			# the endpoint is the agency's (doc 30): the centre turns transcription on
+			if livelli.puo("tecnico.integrazioni"):
+				messaggio = _("Set the endpoint that will transcribe the recordings.")
+			else:
+				messaggio = _("The agency has to set up the transcription service first.")
+			frappe.throw(messaggio, title=_("Endpoint Missing"))
 		parsed = urlparse(self.base_url.rstrip("/"))
 		if parsed.scheme not in ("http", "https") or not parsed.hostname:
 			frappe.throw(_("The base URL must be a full http or https address."), title=_("Invalid URL"))

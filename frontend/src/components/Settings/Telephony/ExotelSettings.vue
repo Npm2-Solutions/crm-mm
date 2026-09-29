@@ -26,7 +26,12 @@
           variant="subtle"
           @click="exotel.reload()"
         />
-        <Button :label="__('Disable')" variant="subtle" @click="disable" />
+        <Button
+          v-if="tecnico"
+          :label="__('Disable')"
+          variant="subtle"
+          @click="disable"
+        />
         <Button
           variant="solid"
           :label="__('Update')"
@@ -39,7 +44,15 @@
     <template #content>
       <div v-if="exotel.doc" class="h-full">
         <div v-if="exotel.doc.enabled" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <!-- the account is the agency's (doc 30), recording the centre's -->
+          <p v-if="!tecnico" class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'The agency connects the Exotel account and its keys. Here you decide whether calls are recorded.',
+              )
+            }}
+          </p>
+          <div v-if="tecnico" class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
             <Password
               v-model="exotel.doc.api_key"
               :label="__('API Key')"
@@ -77,7 +90,10 @@
               autocomplete="off"
             />
           </div>
-          <div class="h-px border-t border-outline-elevation-2" />
+          <div
+            v-if="tecnico"
+            class="h-px border-t border-outline-elevation-2"
+          />
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
               <div class="text-p-base-medium text-ink-gray-7 truncate">
@@ -107,12 +123,21 @@
               </span>
               <span class="text-center text-p-base text-ink-gray-6">
                 {{
-                  __(
-                    'Enable Exotel integration to make and receive calls directly from your CRM',
-                  )
+                  tecnico
+                    ? __(
+                        'Enable Exotel integration to make and receive calls directly from your CRM',
+                      )
+                    : __(
+                        'The agency connects Exotel, so that you can make and receive calls from the CRM.',
+                      )
                 }}
               </span>
-              <Button :label="__('Enable')" variant="solid" @click="enable" />
+              <Button
+                v-if="tecnico"
+                :label="__('Enable')"
+                variant="solid"
+                @click="enable"
+              />
             </div>
           </div>
         </div>
@@ -129,10 +154,14 @@
 <script setup>
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
+import { usersStore } from '@/stores/users'
 import { Switch } from 'frappe-ui'
 import { computed } from 'vue'
 
 const emit = defineEmits(['updateStep'])
+
+// the account and its keys are the agency's
+const tecnico = usersStore().puo('tecnico.integrazioni')
 
 const { document: exotel } = useDocument(
   'CRM Exotel Settings',

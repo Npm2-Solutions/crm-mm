@@ -6,6 +6,8 @@ import requests
 from frappe import _
 from frappe.model.document import Document
 
+from crm.permissions import livelli
+
 
 class CRMExotelSettings(Document):
 	# begin: auto-generated types
@@ -26,6 +28,12 @@ class CRMExotelSettings(Document):
 	# end: auto-generated types
 
 	def validate(self):
+		# the keys are the agency's, and so is connecting the account: the centre
+		# decides whether calls are recorded (doc 30)
+		if self.has_value_changed("enabled"):
+			livelli.verifica_nel_crm(
+				"tecnico.integrazioni", messaggio=_("The agency connects and disconnects Exotel.")
+			)
 		self.verify_credentials()
 
 	def verify_credentials(self):

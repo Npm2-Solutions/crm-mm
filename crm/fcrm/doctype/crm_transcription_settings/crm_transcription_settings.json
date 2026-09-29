@@ -68,13 +68,15 @@
    "description": "Base URL up to and including the version, e.g. https://api.openai.com/v1 or http://localhost:8000/v1 for a self-hosted Whisper.",
    "fieldname": "base_url",
    "fieldtype": "Data",
-   "label": "Base URL"
+   "label": "Base URL",
+   "permlevel": 1
   },
   {
    "default": "whisper-1",
    "fieldname": "model",
    "fieldtype": "Data",
-   "label": "Model"
+   "label": "Model",
+   "permlevel": 1
   },
   {
    "fieldname": "column_break_endpoint",
@@ -84,7 +86,8 @@
    "description": "Leave empty for a self-hosted endpoint that needs no authentication.",
    "fieldname": "api_key",
    "fieldtype": "Password",
-   "label": "API Key"
+   "label": "API Key",
+   "permlevel": 1
   },
   {
    "description": "Optional hint passed to the model: names, jargon or product terms it should spell correctly.",
@@ -129,7 +132,8 @@
    "description": "Recordings larger than this are not sent. Guards both the provider's own limit and this server's memory.",
    "fieldname": "max_recording_mb",
    "fieldtype": "Int",
-   "label": "Maximum Recording Size (MB)"
+   "label": "Maximum Recording Size (MB)",
+   "permlevel": 1
   },
   {
    "fieldname": "column_break_limits",
@@ -140,12 +144,13 @@
    "description": "Seconds to wait for the transcription to come back.",
    "fieldname": "request_timeout",
    "fieldtype": "Int",
-   "label": "Request Timeout (seconds)"
+   "label": "Request Timeout (seconds)",
+   "permlevel": 1
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-05 12:00:00.000000",
+ "modified": "2026-09-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Transcription Settings",
@@ -173,6 +178,12 @@
    "report": 1,
    "role": "Sales Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
    "write": 1
   }
  ],

@@ -44,12 +44,18 @@
     <template #content>
       <div v-if="settings.doc" class="h-full">
         <div v-if="settings.doc.enabled" class="flex flex-col">
+          <!-- where the audio goes, and with which key, is the agency's (doc
+               30); when it runs and how long it is kept, the centre's -->
           <div class="rounded-md bg-surface-gray-2 px-3 py-2 mb-2">
             <p class="text-p-sm text-ink-gray-6">
               {{
-                __(
-                  'Any endpoint that speaks the OpenAI audio-transcription API works here: a Whisper server you run yourself, OpenAI, or Azure OpenAI. Only the URL and the key change — so where the audio is processed stays your decision.',
-                )
+                tecnico
+                  ? __(
+                      'Any endpoint that speaks the OpenAI audio-transcription API works here: a Whisper server you run yourself, OpenAI, or Azure OpenAI. Only the URL and the key change — so where the audio is processed stays your decision.',
+                    )
+                  : __(
+                      'The agency sets up the service that transcribes the recordings: where the audio is processed, and with which key. Here you decide when it runs, in which language, and how long transcripts are kept.',
+                    )
               }}
             </p>
           </div>
@@ -80,32 +86,34 @@
             />
           </SettingRow>
 
-          <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
-            {{ __('Endpoint') }}
-          </div>
+          <template v-if="tecnico">
+            <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
+              {{ __('Endpoint') }}
+            </div>
 
-          <div class="grid grid-cols-2 gap-4 px-2 py-3">
-            <FormControl
-              v-model="settings.doc.base_url"
-              :label="__('Base URL')"
-              placeholder="https://api.openai.com/v1"
-              autocomplete="off"
-            />
-            <Password
-              v-model="settings.doc.api_key"
-              :label="__('API Key')"
-              placeholder="************"
-            />
-          </div>
+            <div class="grid grid-cols-2 gap-4 px-2 py-3 max-md:grid-cols-1">
+              <FormControl
+                v-model="settings.doc.base_url"
+                :label="__('Base URL')"
+                placeholder="https://api.openai.com/v1"
+                autocomplete="off"
+              />
+              <Password
+                v-model="settings.doc.api_key"
+                :label="__('API Key')"
+                placeholder="************"
+              />
+            </div>
 
-          <SettingRow
-            :label="__('Model')"
-            :description="
-              __('For example whisper-1, or the name your own server serves.')
-            "
-          >
-            <FormControl v-model="settings.doc.model" class="w-56" />
-          </SettingRow>
+            <SettingRow
+              :label="__('Model')"
+              :description="
+                __('For example whisper-1, or the name your own server serves.')
+              "
+            >
+              <FormControl v-model="settings.doc.model" class="w-56" />
+            </SettingRow>
+          </template>
 
           <div class="py-3 px-2">
             <div class="text-p-base-medium text-ink-gray-7">
@@ -163,39 +171,41 @@
             />
           </SettingRow>
 
-          <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
-            {{ __('Limits') }}
-          </div>
+          <template v-if="tecnico">
+            <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
+              {{ __('Limits') }}
+            </div>
 
-          <SettingRow
-            :label="__('Maximum recording size')"
-            :description="
-              __(
-                'Larger recordings are not sent, guarding both the provider limit and this server.',
-              )
-            "
-          >
-            <FormControl
-              v-model.number="settings.doc.max_recording_mb"
-              type="number"
-              class="w-24"
-              suffix="MB"
-            />
-          </SettingRow>
+            <SettingRow
+              :label="__('Maximum recording size')"
+              :description="
+                __(
+                  'Larger recordings are not sent, guarding both the provider limit and this server.',
+                )
+              "
+            >
+              <FormControl
+                v-model.number="settings.doc.max_recording_mb"
+                type="number"
+                class="w-24"
+                suffix="MB"
+              />
+            </SettingRow>
 
-          <SettingRow
-            :label="__('Request timeout')"
-            :description="
-              __('How long to wait for the transcription to come back.')
-            "
-          >
-            <FormControl
-              v-model.number="settings.doc.request_timeout"
-              type="number"
-              class="w-24"
-              :suffix="__('seconds')"
-            />
-          </SettingRow>
+            <SettingRow
+              :label="__('Request timeout')"
+              :description="
+                __('How long to wait for the transcription to come back.')
+              "
+            >
+              <FormControl
+                v-model.number="settings.doc.request_timeout"
+                type="number"
+                class="w-24"
+                :suffix="__('seconds')"
+              />
+            </SettingRow>
+          </template>
 
           <ErrorMessage class="mt-4" :message="settings.save?.error" />
         </div>
@@ -238,6 +248,7 @@ import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import SettingRow from '@/components/Settings/Telephony/SettingRow.vue'
 import { transcriptionEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
+import { usersStore } from '@/stores/users'
 import {
   Badge,
   ErrorMessage,
@@ -251,6 +262,9 @@ import {
 import { computed } from 'vue'
 
 const emit = defineEmits(['updateStep'])
+
+// the endpoint, its key and its limits are the agency's
+const tecnico = usersStore().puo('tecnico.integrazioni')
 
 const { document: settings } = useDocument(
   'CRM Transcription Settings',
