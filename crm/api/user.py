@@ -135,7 +135,7 @@ def get_levels() -> list[dict]:
 def set_user_levels(user: str, levels: str | list) -> None:
 	"""Give ``user`` exactly these levels. A manager may give any of them, never the site."""
 	utenti.verifica_gestione(user)
-	chiavi = utenti.verifica_livelli(frappe.parse_json(levels) if isinstance(levels, str) else levels)
+	chiavi = utenti.verifica_livelli(_chiavi(levels))
 
 	agenzia = livelli.e_agenzia(frappe.session.user)
 	if user == frappe.session.user and not agenzia and MANAGER not in chiavi:
@@ -169,6 +169,18 @@ def add_existing_users(users: str | list, role: str | None = None, levels: str |
 			update_user_role(user, role or "Sales User")
 
 
+def _chiavi(levels: str | list | None) -> list[str]:
+	"""Level keys from a list, a JSON list, or a comma-separated string."""
+	if isinstance(levels, str):
+		try:
+			levels = frappe.parse_json(levels)
+		except ValueError:
+			levels = levels.split(",")
+	if isinstance(levels, str):
+		levels = [levels]
+	return [str(chiave).strip() for chiave in (levels or []) if str(chiave).strip()]
+
+
 #: The old roles, as the levels that stand for them now.
 LIVELLO_DEL_RUOLO = {"Sales Manager": MANAGER, "Sales User": SEGRETERIA}
 
@@ -193,7 +205,10 @@ def _rendi_agenzia(user: str) -> None:
 		frappe.throw(_("Only System Managers can assign the System Manager role"), frappe.PermissionError)
 	doc = frappe.get_doc("User", user)
 	crm = utenti.profili_crm()
-	doc.set("role_profiles", [riga for riga in doc.role_profiles if riga.role_profile not in crm])
+	if [riga for riga in doc.role_profiles if riga.role_profile not in crm]:
+		# Frappe would rebuild the roles from those profiles and drop System Manager
+		frappe.throw(_("{0} has other Role Profiles: make them System Manager from the Desk").format(user))
+	doc.set("role_profiles", [])
 	doc.role_profile_name = None
 	doc.append_roles("System Manager", "Sales Manager", "Sales User")
 	doc.set("block_modules", [])

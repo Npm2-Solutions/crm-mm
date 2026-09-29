@@ -171,7 +171,13 @@ const startTrial = createResource({
     plan.setData(data)
     // the new module's capabilities, for the menus that depend on them
     permissions.reload()
-    toast.success(__('Trial started: the agency has been told'))
+    if (data.agency_notified) {
+      toast.success(__('Trial started: the agency has been told'))
+    } else {
+      toast.warning(
+        __('Trial started, but the agency could not be emailed: let them know'),
+      )
+    }
   },
   onError(error) {
     toast.error(error?.messages?.[0] || __('Something went wrong'))

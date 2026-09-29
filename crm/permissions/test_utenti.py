@@ -172,6 +172,35 @@ class TestApiUtenti(LevelsCase):
 		self.as_user(MANAGER)
 		self.assertRaises(frappe.ValidationError, set_user_levels, DESK, ["segreteria"])
 
+	def test_chi_ha_ruoli_di_altre_app_non_li_perde(self):
+		"""Levels rebuild the roles: a user with another app's role is refused, not stripped."""
+		make_user("levels.other.app@example.com", roles=["Website Manager"])
+		self.as_user(MANAGER)
+		self.assertRaises(
+			frappe.ValidationError, set_user_levels, "levels.other.app@example.com", ["segreteria"]
+		)
+		self.assertIn("Website Manager", roles_of("levels.other.app@example.com"))
+		self.assertEqual(
+			frappe.get_all("User Role Profile", filters={"parent": "levels.other.app@example.com"}), []
+		)
+
+	def test_un_invito_non_toglie_i_ruoli_a_chi_ha_gia_un_account(self):
+		make_user("levels.existing@example.com", roles=["Website Manager"])
+		invitation = frappe.get_doc(
+			{"doctype": "CRM Invitation", "email": "levels.existing@example.com", "levels": "segreteria"}
+		)
+		with patch.object(frappe, "sendmail"):
+			invitation.insert()
+		self.assertRaises(frappe.ValidationError, invitation.accept)
+		self.assertIn("Website Manager", roles_of("levels.existing@example.com"))
+
+	def test_i_livelli_accettano_anche_una_chiave_sola(self):
+		self.as_user(MANAGER)
+		set_user_levels(NEWBIE, "operatore")
+		self.assertEqual(levels_of(NEWBIE), ["operatore"])
+		set_user_levels(NEWBIE, "operatore,manager")
+		self.assertEqual(levels_of(NEWBIE), ["operatore", "manager"])
+
 	def test_aggiungere_utenti_esistenti(self):
 		self.as_user(MANAGER)
 		add_existing_users([NEWBIE], levels=["operatore"])
@@ -275,7 +304,9 @@ class TestInviti(LevelsCase):
 class TestPiano(LevelsCase):
 	def set_plan(self, **stati):
 		piano = frappe.get_single("CRM Plan")
-		piano.set("modules", [{"module": m, "status": s, "trial_until": "2099-01-01"} for m, s in stati.items()])
+		piano.set(
+			"modules", [{"module": m, "status": s, "trial_until": "2099-01-01"} for m, s in stati.items()]
+		)
 		piano.save(ignore_permissions=True)
 		livelli.dimentica_cache()
 
