@@ -96,6 +96,7 @@
 <script setup>
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideNetwork from '~icons/lucide/network'
+import LucidePackage from '~icons/lucide/package'
 import MonitorCogIcon from '~icons/lucide/monitor-cog'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
 import LucideSparkles from '~icons/lucide/sparkles'
@@ -165,6 +166,7 @@ import ProvidersSettings from '@/components/Settings/Invoicing/ProvidersSettings
 import ProviderConnection from '@/components/Settings/Invoicing/ProviderConnection.vue'
 import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
+import PlanSettings from '@/components/Settings/PlanSettings.vue'
 import Icon from '@/components/Icon.vue'
 import { usersStore } from '@/stores/users'
 import {
@@ -180,7 +182,7 @@ import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import ShieldCheck from '~icons/lucide/shield-check'
 import SlaConfig from './Sla/SlaConfig.vue'
 
-const { isManager, getUser } = usersStore()
+const { isManager, getUser, puo } = usersStore()
 
 const user = computed(() => getUser() || {})
 
@@ -268,6 +270,12 @@ const tabs = computed(() => {
           icon: LucideNetwork,
           component: markRaw(Hierarchy),
           condition: () => isManager(),
+        },
+        {
+          label: __('Plan'),
+          icon: LucidePackage,
+          component: markRaw(PlanSettings),
+          condition: () => puo('piano.vedi'),
         },
       ],
       condition: () => isManager(),
