@@ -286,6 +286,8 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 		"intro": config.get("booking_page_intro") or "",
 		"privacy_policy_url": config.get("privacy_policy_url") or "",
 		"require_consent": cint(config.get("require_privacy_consent")),
+		# an optional box, never ticked for them: the words are the centre's
+		"marketing_consent": _marketing_offerto(config),
 		"timezone": str(scheduling_tz()),
 		"categories": categories,
 		"services": services,
@@ -551,6 +553,8 @@ def book(
 	timezone: str | None = None,
 	crm_vid: str | None = None,
 	crm_sid: str | None = None,
+	consent_text: str | None = None,
+	marketing_consent: int | str | None = None,
 ) -> dict:
 	"""Book a service on a free slot; returns what the confirmation page shows."""
 	config = _config()
@@ -637,9 +641,61 @@ def book(
 		)
 		appointment.insert(ignore_permissions=True)
 
+	_registra_consensi(lead, appointment, config, consent, consent_text, marketing_consent)
 	send_client_email(appointment, token, "booked")
 	notify_staff(appointment, _("New online booking"))
 	return public_view(appointment, token)
+
+
+def _marketing_offerto(config) -> dict | None:
+	"""The marketing box of the page, if the centre asks for it and the consent is on."""
+	if not cint(config.get("ask_marketing_consent")):
+		return None
+	from crm.moduli.consensi import testo_attuale
+
+	testo = testo_attuale("marketing")
+	return {"text": testo} if testo else None
+
+
+def _testo_della_spunta(testo: str | None, config) -> str:
+	"""What the privacy tick said, as the page wrote it in the visitor's language.
+
+	The page sends its own words; they are kept, whitespace folded and cut short,
+	with the policy's address when the page linked to it. From a page that sent
+	nothing (one cached from before) the kind's own text stands in.
+	"""
+	from crm.moduli.consensi import testo_attuale
+
+	parole = " ".join((testo or "").split())[:500] or testo_attuale("privacy_notice") or ""
+	indirizzo = config.get("privacy_policy_url")
+	if indirizzo and indirizzo not in parole:
+		parole = f"{parole} ({indirizzo})"
+	return parole
+
+
+def _registra_consensi(lead, appointment, config, consent, consent_text, marketing) -> None:
+	"""The ticks of the booking form, in the consent register.
+
+	The privacy tick was checked and never written down: nothing said what the
+	person had read, or when. Now it is an answer like any other, with the page's
+	words, the booking it came with and where it came from.
+	"""
+	from crm.moduli import consensi
+
+	dove = {
+		"canale": "Online booking",
+		"fonte": ("CRM Appointment", appointment.name),
+		"ip": getattr(frappe.local, "request_ip", None),
+		"browser": frappe.get_request_header("User-Agent")
+		if getattr(frappe.local, "request", None)
+		else None,
+	}
+	if cint(config.get("require_privacy_consent")) and cint(consent):
+		consensi.registra_risposta(
+			lead, "privacy_notice", testo=_testo_della_spunta(consent_text, config), **dove
+		)
+	if cint(marketing) and _marketing_offerto(config):
+		consensi.registra_risposta(lead, "marketing", **dove)
 
 
 def _participant_rows(full_name, email, phone, lead, token, seats, timezone=None) -> list[dict]:

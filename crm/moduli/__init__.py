@@ -1,0 +1,53 @@
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+"""What every client of the CRM needs about forms and consents.
+
+Today the consent register: who agreed to what, on which words, when and how. The
+form templates, the signatures and the PDFs will live here too (phase 2 of the
+medical centre project, `docs/gestionale-medico/design.md`), because a privacy
+notice or a marketing consent is not a clinical matter: a gym needs them as much
+as a clinic does.
+
+Other modules add their own kinds of consent through `registro.registra_tipo`, the
+way they add capabilities: the clinic will bring the health dossier and online
+reports.
+"""
+
+from __future__ import annotations
+
+from crm.moduli.registro import CONSENSO, PRESA_VISIONE, TipoConsenso, registra_tipo
+
+INFORMATIVA = TipoConsenso(
+	chiave="privacy_notice",
+	etichetta="Privacy notice",
+	natura=PRESA_VISIONE,
+	descrizione="The person read how their data is used. Information, not a consent: nothing to withdraw.",
+	testi={
+		"it": "Ho letto l'informativa sul trattamento dei dati personali.",
+		"en": "I have read the privacy notice.",
+	},
+)
+
+MARKETING = TipoConsenso(
+	chiave="marketing",
+	etichetta="Marketing",
+	natura=CONSENSO,
+	descrizione="News, offers and recalls by email, SMS and WhatsApp. Automations and campaigns ask about it.",
+	testi={
+		"it": (
+			"Acconsento a ricevere da voi comunicazioni su servizi, novità e promozioni, "
+			"anche via email, SMS e WhatsApp. Posso revocare il consenso in qualsiasi momento."
+		),
+		"en": (
+			"I agree to receive news, offers and reminders from you, also by email, SMS and "
+			"WhatsApp. I can withdraw this consent at any time."
+		),
+	},
+	campo_persona="marketing_consent",
+)
+
+
+def registra() -> None:
+	registra_tipo(INFORMATIVA)
+	registra_tipo(MARKETING)

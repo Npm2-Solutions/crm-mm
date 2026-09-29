@@ -38,10 +38,12 @@ def carica(*args, **kwargs) -> None:
 	_caricato = True
 	try:
 		from crm.invoicing import registra as registra_fatturazione
+		from crm.moduli import registra as registra_moduli
 		from crm.permissions import catalogo
 		from crm.tessera_sanitaria import registra as registra_tessera_sanitaria
 
 		catalogo.registra()
+		registra_moduli()
 		registra_fatturazione()
 		registra_tessera_sanitaria()
 	except Exception:

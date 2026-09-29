@@ -701,7 +701,7 @@ def getCounts(d, doctype):
 
 #: Documents that belong to the record they point at: deleted with it by its
 #: `on_trash`, never offered for unlinking.
-DELETED_WITH_THEIR_RECORD = {"CRM Billing Profile"}
+DELETED_WITH_THEIR_RECORD = {"CRM Billing Profile", "CRM Consent"}
 
 
 @frappe.whitelist()

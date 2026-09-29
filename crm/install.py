@@ -49,6 +49,7 @@ def after_install(force=False):
 	seed_default_rules_and_mappings()
 	seed_invoicing()
 	add_levels()
+	add_consent_types()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
 
 
@@ -57,6 +58,13 @@ def add_levels():
 	from crm.permissions.utenti import sincronizza
 
 	sincronizza()
+
+
+def add_consent_types():
+	"""The privacy notice and marketing, in the site's language (the consent register)."""
+	from crm.moduli.consensi import assicura_tipi
+
+	assicura_tipi()
 
 
 def seed_invoicing():

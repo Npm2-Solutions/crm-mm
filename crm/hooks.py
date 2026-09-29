@@ -173,6 +173,8 @@ permission_query_conditions = {
 	"CRM Invoice": "crm.invoicing.permessi.get_permission_query_conditions",
 	# a person's billing details follow the person
 	"CRM Billing Profile": "crm.invoicing.permessi.get_profile_permission_query_conditions",
+	# and so do their consents
+	"CRM Consent": "crm.moduli.consensi.get_permission_query_conditions",
 }
 
 has_permission = {
@@ -185,6 +187,7 @@ has_permission = {
 	"CRM Dashboard": "crm.fcrm.doctype.crm_dashboard.crm_dashboard.has_permission",
 	"CRM Invoice": "crm.invoicing.permessi.has_permission",
 	"CRM Billing Profile": "crm.invoicing.permessi.has_profile_permission",
+	"CRM Consent": "crm.moduli.consensi.has_permission",
 }
 
 # DocType Class
@@ -291,8 +294,9 @@ doc_events = {
 		],
 		"on_trash": [
 			"crm.integrations.meta.leads.forget_person",
-			# billing details are part of the person, not linked to it
+			# billing details and consents are part of the person, not linked to it
 			"crm.invoicing.anagrafica.cancella_con_il_titolare",
+			"crm.moduli.consensi.cancella_con_la_persona",
 		],
 	},
 	"CRM Organization": {
@@ -482,6 +486,8 @@ after_migrate = [
 	"crm.install.add_default_scripts",
 	"crm.install.add_web_form_custom_fields",
 	"crm.install.add_builder_page_custom_fields",
+	# the kinds of consent the modules registered, never overwriting the centre's text
+	"crm.moduli.consensi.assicura_tipi",
 ]
 
 standard_dropdown_items = [

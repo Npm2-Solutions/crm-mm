@@ -159,6 +159,17 @@ CAPACITA = (
 	_c("persone.unisci", segreteria=CENTRO, manager=CENTRO),
 	_c("persone.importa", manager=CENTRO),
 	_c("persone.esporta", scrive=False, manager=CENTRO),
+	# Consents: who agreed to what. Whoever hears "stop writing to me" records it
+	_c("consensi.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
+	_c(
+		"consensi.raccogli",
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		commerciale=TEAM,
+		descrizione="Record an answer given at the desk, on paper, by phone; record a withdrawal",
+	),
+	_c("consensi.configura", manager=CENTRO, descrizione="The kinds of consent and their texts"),
 	_c("trattative.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
 	_c("trattative.scrivi", segreteria=CENTRO, manager=CENTRO, commerciale=TEAM),
 	_c("pipeline.configura", manager=CENTRO),

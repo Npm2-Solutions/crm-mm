@@ -119,7 +119,8 @@
   "conversation_assigned_to",
   "conversation_unread",
   "conversation_seen_until",
-  "conversation_seen_by"
+  "conversation_seen_by",
+  "marketing_consent"
  ],
  "fields": [
   {
@@ -782,13 +783,22 @@
    "label": "Conversation Seen By",
    "options": "User",
    "read_only": 1
+  },
+  {
+   "description": "The latest answer in the consent register. Automations and campaigns filter on it.",
+   "fieldname": "marketing_consent",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Marketing consent",
+   "options": "\nGiven\nRefused\nWithdrawn",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-04 12:33:17.177897",
+ "modified": "2026-09-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

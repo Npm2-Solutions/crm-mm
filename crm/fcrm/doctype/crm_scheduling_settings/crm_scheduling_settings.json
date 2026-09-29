@@ -28,6 +28,7 @@
   "column_break_online_booking",
   "privacy_policy_url",
   "require_privacy_consent",
+  "ask_marketing_consent",
   "notify_staff_on_booking",
   "send_client_confirmation",
   "max_active_per_customer",
@@ -186,6 +187,13 @@
    "default": "1"
   },
   {
+   "default": "0",
+   "description": "An optional box, unticked, with the text of the Marketing consent. Whoever ticks it is recorded in the consent register.",
+   "fieldname": "ask_marketing_consent",
+   "fieldtype": "Check",
+   "label": "Ask for marketing consent"
+  },
+  {
    "fieldname": "notify_staff_on_booking",
    "fieldtype": "Check",
    "label": "Email the Professional",
@@ -313,7 +321,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-24 16:00:00.000000",
+ "modified": "2026-09-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",
