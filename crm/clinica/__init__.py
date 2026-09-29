@@ -120,6 +120,8 @@ CRM_DELLA_DIREZIONE = (
 	"dashboard.personali",
 	"numeri.operativi",
 	"profilo.proprio",
+	# the informed consents and the clinical sheets are the director's to write
+	"moduli.configura",
 )
 
 DOSSIER = TipoConsenso(
@@ -186,6 +188,10 @@ def registra() -> None:
 		concedi(nome, {DIREZIONE: CENTRO})
 	registra_tipo(DOSSIER)
 	registra_tipo(REFERTI_ONLINE)
+	# "health data" on a form template means something where the clinic is on
+	from crm.moduli import modelli
+
+	modelli.registra_dato_clinico(clinica_accesa)
 
 
 def _cruscotto():

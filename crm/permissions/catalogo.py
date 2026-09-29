@@ -220,6 +220,8 @@ CAPACITA = (
 		descrizione="Record an answer given at the desk, on paper, by phone; record a withdrawal",
 	),
 	_c("consensi.configura", manager=CENTRO, descrizione="The kinds of consent and their texts"),
+	# Forms to fill and sign (docs/gestionale-medico, phase 2): what they ask, in versions
+	_c("moduli.configura", manager=CENTRO, descrizione="The centre's form templates and their versions"),
 	_c("trattative.vedi", scrive=False, segreteria=CENTRO, operatore=SUOI, manager=CENTRO, commerciale=TEAM),
 	_c("trattative.scrivi", segreteria=CENTRO, manager=CENTRO, commerciale=TEAM),
 	_c("pipeline.configura", manager=CENTRO),
