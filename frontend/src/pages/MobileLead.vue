@@ -60,6 +60,7 @@
             >
               <template #after>
                 <BillingProfileSection partyType="CRM Lead" :party="leadId" />
+                <ConsentsSection :lead="leadId" />
               </template>
             </SidePanelLayout>
           </div>
@@ -112,6 +113,7 @@ import LucideRadar from '~icons/lucide/radar'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
+import ConsentsSection from '@/components/ConsentsSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations } from '@/utils'
