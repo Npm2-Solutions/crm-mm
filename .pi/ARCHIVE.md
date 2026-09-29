@@ -536,3 +536,43 @@ quindi è finito negli `ignore` di `pyproject.toml` invece che nel codice.
 | `frontend/src/utils/calendarColors.js` | Da qualsiasi colore al colore del calendario — puro, testato |
 | `crm/api/appointments.py` | `get_person_appointments`, testato in `test_scheduling.py` |
 | `frontend/src/components/Activities/EventArea.vue`, `ActivityHeader.vue` | Appuntamenti della persona, «Prenota un appuntamento» |
+
+---
+
+## Il CRM sul telefono — ogni schermata, col dito
+
+> **Completato** (29/09/2026). Ogni pagina, ogni cosa che si apre, ogni sezione
+> delle impostazioni e i suoi dialoghi, guardati con Playwright su un telefono
+> simulato (390 e 360px, chiaro e scuro) e percorsi col dito. Doc 29, «Il CRM
+> sul telefono».
+
+### Decisioni
+
+| Decisione | Perche' |
+|---|---|
+| `max-md:` e non `sm:` per quello che cambia sul telefono | È la soglia di `isMobileView` (768px), che decide quali componenti si montano: con `sm:` fra 640 e 768 restava il layout da desktop dentro la forma da telefono |
+| Le azioni nascoste fino al passaggio del mouse si mostrano anche al tocco | Su un telefono il passaggio non c'è: le azioni dei messaggi, il menu delle colonne del kanban e il «+» fra i passi di un'automazione non si potevano raggiungere |
+| Un anello invisibile intorno ai controlli piccoli (`.touch-target`, e ogni interruttore), solo con `pointer: coarse` | Ingrandirli cambiava le righe in cui stanno; col mouse l'anello ruberebbe i clic ai vicini |
+| Le impostazioni a tutto schermo, trovate con `:has(> .settings-modal)` | Il Dialog di frappe-ui non accetta una classe per il suo contenuto; da card teneva margini da monitor ed era 32px più alta dello schermo |
+| Il titolo delle pagine delle impostazioni senza altezza fissa, le azioni sotto la descrizione | Con `h-5` la seconda riga del titolo finiva sulla descrizione; i pulsanti a destra schiacciavano la descrizione in una colonna di una parola |
+| In una riga il testo cede (`min-w-0`) e il controllo resta; `SettingsRow` manda il controllo sotto quando non ci sta | Un titolo `truncate` senza `min-w-0` è largo quanto il suo testo e spingeva l'interruttore fuori dallo schermo |
+| La riga dei pulsanti dei moduli lunghi resta in fondo allo schermo (`.dialog-footer`, e la riga `#actions` di frappe-ui riconosciuta dalle sue classi), con `overflow: clip` sul dialogo | Crea compariva solo alla fine; `overflow: hidden` di frappe-ui fa del dialogo un contenitore che scorre e un elemento `sticky` al suo interno non si ferma mai |
+| Le tabelle figlie hanno una larghezza minima per colonna e scorrono di lato | A 340px sei colonne scendevano a due lettere; header e righe portano la stessa larghezza, senza un contenitore in più |
+| I filtri del calendario in una riga che scorre, nascosti col pannello aperto | Su tre righe prendevano un settimo dello schermo sopra ogni giorno |
+| Data e ora dei moduli al minuto (`datetimeFormat()`) | Il formato orario di sistema ha i secondi: una scadenza si leggeva «00:00:00» |
+| La persona scelta nel pannello appuntamento si mostra per nome | Il Link mostrava l'id del lead appena la sua ricerca cambiava |
+| Il catalogo delle prenotazioni chiesto con GET | Il metodo pubblico accetta solo GET; col POST predefinito di frappe-ui la pagina delle regole riceveva un 403 |
+| Il controllo del webhook Meta risponde «nessuna app» invece di fallire | La pagina lo chiede a ogni apertura di un amministratore, anche prima che l'app esista |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `frontend/src/index.css` | `.touch-target`, gli anelli degli interruttori, `.settings-modal` a tutto schermo, `.dialog-footer` |
+| `frontend/src/components/Settings/**`, `Layouts/SettingsLayoutBase.vue` | Titoli, intestazioni, margini, righe, griglie e schede di ogni pagina |
+| `frontend/src/components/Controls/Grid.vue` | Colonne con una larghezza minima, scorrimento di lato |
+| `frontend/src/components/Modals/*Modal.vue`, `FieldLayoutDialog.vue` | `.dialog-footer` |
+| `frontend/src/pages/Calendar.vue`, `components/Calendar/*` | Filtri, persona per nome, campi toccabili in tutta la loro altezza |
+| `frontend/src/components/Dashboard/*`, `Kanban/KanbanView.vue`, `pages/Tasks.vue` | Numeri, colonne, descrizioni |
+| `frontend/src/pages/MobileLead.vue`, `MobileDeal.vue` | La scheda Eventi |
+| `crm/integrations/meta/api.py` | Il webhook senza app, testato in `test_meta_webhook_check.py` |
