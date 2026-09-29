@@ -60,6 +60,7 @@
             >
               <template #after>
                 <BillingProfileSection partyType="CRM Lead" :party="leadId" />
+                <PatientSection :lead="leadId" />
                 <ConsentsSection :lead="leadId" />
               </template>
             </SidePanelLayout>
@@ -114,6 +115,7 @@ import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
+import PatientSection from '@/components/PatientSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { setupCustomizations } from '@/utils'
