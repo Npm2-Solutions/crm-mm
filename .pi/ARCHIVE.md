@@ -783,7 +783,9 @@ Nel secondo caso l'Activity Log ha il login dell'invitato all'ora di
 > una sessione. Undici endpoint segnalati — due letti a mano, gli altri da un
 > audit automatico — verificati uno per uno su un bench Frappe 16: dieci
 > chiedevano un controllo, uno (`remove_assignments`) non era sfruttabile via
-> HTTP ma si reggeva su un dettaglio di Frappe. I test sono in
+> HTTP ma si reggeva su un dettaglio di Frappe. Poi due cose trovate strada
+> facendo: gli aiuti dell'editor del calendario, e chiamate, note e task che la
+> gerarchia di vendita non toccava. I test sono in
 > `crm/tests/test_endpoint_permissions.py`: ogni endpoint provato da chi ne ha
 > diritto, da un Sales User fuori dalla gerarchia e da un Website User senza
 > ruoli CRM. Tolto un controllo alla volta, almeno un test fallisce.
@@ -807,8 +809,9 @@ richieste: `find_contact_by_phone_number()` accanto a
 
 | Endpoint | Cosa fa ora | Perché |
 |---|---|---|
-| `get_call_log`, `get_recording_url`, `get_transcript`, `transcribe_now` | `check_call_log_permission()`: il permesso sul call log, poi la lettura di almeno uno dei lead o delle trattative collegate | CRM Call Log non ha regole sue, ogni Sales User legge ogni chiamata: chi può vederla lo dice il record di cui parla. Ne basta uno, perché la chiamata compare nella timeline di ognuno. La telefonia salva il lead in `links`, una chiamata registrata a mano in `reference_*`. Chi era al telefono (`caller`, `receiver`) la apre sempre: una chiamata in entrata la prende chi è libero |
+| `get_call_log`, `get_recording_url`, `get_transcript`, `transcribe_now` | Il controllo standard sul call log, che ora porta con sé la gerarchia (sotto) | `get_call_log` non controllava niente; registrazione e trascrizione solo il doctype, che ogni Sales User ha su ogni chiamata |
 | `get_calendar`, `get_workload`, `get_scheduler_meta` | `get_list` al posto di `get_all` | CRM Appointment non ha gerarchia: ogni Sales User vede il calendario come prima, un Website User riceve `PermissionError`. `User` e `CRM Booking Connection` restano `get_all`: il Sales User non li legge e il calendario ne ha bisogno |
+| `check_conflicts`, `get_available_slots`, `quote_price` | Lettura di CRM Appointment (`_check_reader()`) | `check_conflicts` risponde «X ha già un altro appuntamento in questa fascia» per qualsiasi partecipante gli si passi: diceva a chiunque quando una persona ha un appuntamento. Chi legge il calendario sa già le stesse cose; `/prenota` ha endpoint suoi |
 | `get_deal_contacts` | Lettura della trattativa | |
 | `get_linked_deals` | Solo le trattative che `get_list` restituisce, nell'ordine di prima | Leggere la persona non è leggere le sue trattative |
 | `get_contact_by_phone_number` | Un record che l'utente non può aprire torna come nessun record, `{"mobile_no": <numero cercato>}`; la trattativa di un contatto sparisce se non è leggibile | Qui, di proposito, niente `throw`: un `PermissionError` nominerebbe il record, e un numero è la cosa che si prova in serie per sapere chi c'è nel CRM. Le schermate di chiamata fanno come per uno sconosciuto |
@@ -819,31 +822,63 @@ richieste: `find_contact_by_phone_number()` accanto a
 | `create_deal` | `has_permission("CRM Deal", "create")` prima di tutto | Persona, organizzazione e trattativa nascono con `ignore_permissions`: il controllo viene prima di qualunque insert |
 | `restore_defaults`, `restore_demo_data` | `frappe.only_for(["Sales Manager", "System Manager"])` come `clear_demo_data`, solo POST | `run_doc_method` chiede solo di poter leggere FCRM Settings, e ogni Sales User può |
 
+### Chiamate, note e task seguono il loro lead
+
+CRM Call Log, FCRM Note e CRM Task avevano solo i permessi di ruolo: ogni Sales
+User leggeva ogni chiamata — trascrizione e `recording_url` compresi — e ogni
+nota e task, da `/api/resource`, dalle liste e dal desk. Ora hanno un
+`has_permission` e una `permission_query_conditions` in `org_hierarchy.py`,
+costruiti dalla stessa condizione: la lista e il singolo record non possono dare
+risposte diverse. Lead e trattative sono passati agli stessi mattoni (`_scope`,
+`_theirs`, `_assigned`) e il loro SQL è quello di prima, byte per byte.
+
+Chi vede tutto resta com'era: Administrator, System Manager, e il Sales Manager
+fuori dall'albero o con la gerarchia spenta. Per gli altri:
+
+| Record | Lo vede | Perché |
+|---|---|---|
+| Chiamata | Chi l'ha fatta, presa o registrata, e il suo ramo; chi vede uno qualsiasi dei lead o delle trattative collegati; tutti, se non è collegata a nessuno | La telefonia salva il lead in `links`, una chiamata a mano in `reference_*`: contano tutti e due. Ne basta uno, perché la chiamata compare nella timeline di ognuno. Chi era al telefono la apre sempre: una chiamata in entrata la prende chi è libero, e le note si scrivono a chiamata in corso |
+| Nota | Chi l'ha scritta e il suo ramo; chi vede il lead o la trattativa di cui parla; tutti, se non parla di nessuno — salvo che la colleghi una chiamata che l'utente non vede | Una nota scritta durante una chiamata non punta a niente: è la chiamata a collegarla |
+| Task | Come la nota, più l'assegnatario e il suo ramo (`assigned_to` o un ToDo aperto) | Senza, l'assegnazione di Frappe condividerebbe il task (`frappe.share`) per farglielo vedere |
+| Lead condiviso | Porta con sé le sue chiamate, note e task | Una condivisione apre il lead a prescindere dalla gerarchia, nella lista e nella sua pagina |
+
+Tre scelte per non aprire una porta di lato:
+
+- **Una sola chiamata nascosta basta a nascondere la nota.** Chiunque può
+  collegare qualsiasi cosa a una chiamata sua: se bastasse una chiamata visibile,
+  collegare la nota di un altro sarebbe il modo di leggerla. Il rovescio — una
+  nota collegata a due chiamate e visibile da una sola — è raro, e resta chiuso.
+- **Si collega solo quello che si può leggere.** `CRMCallLog.validate` rifiuta un
+  collegamento nuovo a un record che l'utente non legge; la telefonia, che collega
+  per conto di nessuno, salva con `ignore_permissions`.
+- **Chi mostra le note di una chiamata le filtra.** `get_call_log` e la timeline
+  (`get_linked_calls`) non riportano una nota o un task solo perché la chiamata li
+  collega, e `add_task_to_call_log` non modifica più un task esistente senza il
+  permesso di scriverlo, come già succedeva per le note.
+
+`check_call_log_permission()`, il controllo per endpoint del primo giro, non c'è
+più: la regola sta nell'hook e gli endpoint sono tornati a chiedere a Frappe. La
+coda delle richiamate e il dialer leggevano già con `get_list`, apposta, e ora
+mostrano solo le chiamate che l'agente vede. Le condizioni si leggono meglio con
+un esempio che a parole: `get_note_permission_query_conditions("…")` in una
+console stampa l'SQL intero.
+
 ### Lasciato com'è, di proposito
 
-- **CRM Call Log, FCRM Note e CRM Task non hanno una regola di gerarchia.** Gli
-  endpoint sopra la applicano, ma `/api/resource`, `frappe.client.get` e le
-  liste danno ancora a ogni Sales User qualsiasi chiamata — trascrizione e
-  `recording_url` compresi — e qualsiasi nota o task. La soluzione è un
-  `has_permission` con la sua `permission_query_conditions` per questi doctype
-  in `org_hierarchy.py`; cambia ogni lista e ogni salvataggio, compresi quelli
-  della telefonia, e va progettata e provata a parte.
-- `add_note_to_call_log` e `add_task_to_call_log` controllano solo `write` sul
-  call log. Si chiamano a chiamata in corso: stringerli chiede una prova con la
-  telefonia vera.
 - `create_deal` inserisce ancora con `ignore_permissions`: i User Permission e i
   permlevel sui campi della trattativa lì non valgono.
-- `check_conflicts`, `get_available_slots` e `quote_price` in
-  `crm/api/appointments.py` non controllano niente e non erano nella lista.
-  `check_conflicts` risponde «X ha già un altro appuntamento in questa fascia»
-  per qualsiasi partecipante gli si passi: dice a chi lo chiama quando una
-  persona ha un appuntamento.
 - `delete_bulk_docs` non controlla niente prima di scollegare i record: si regge
   sul `write` di ogni collegato e sul `delete` di Frappe.
 - `_decorate` in `get_calendar` restituisce nome, email e telefono di tutti i
   partecipanti di ogni appuntamento leggibile. Oggi lo legge solo chi ha un ruolo
   CRM; se il portale darà ai pazienti la lettura degli appuntamenti di gruppo,
   ognuno vedrà gli altri.
+- **CRM SMS Message** ha solo i permessi di ruolo: ogni Sales User legge ogni
+  SMS. È il buco che avevano le chiamate, e si chiude allo stesso modo. Le email
+  (Communication) seguono già il loro record con le regole di Frappe; WhatsApp
+  Message è dell'app `frappe_whatsapp`.
+- I conteggi del cruscotto contano per proprietario (`visible_owners`), non con
+  queste regole: sono numeri, non record.
 - `ListBulkActions.vue` passa `ignore_permissions: true` a
   `frappe.desk.form.assign_to.remove_multiple`, che non lo accetta e che
   `get_newargs` scarterebbe comunque.
@@ -852,10 +887,11 @@ richieste: `find_contact_by_phone_number()` accanto a
 
 | File | Cosa cambia |
 |---|---|
-| `crm/fcrm/doctype/crm_call_log/crm_call_log.py` | `check_call_log_permission()`, usata da `get_call_log` |
-| `crm/integrations/api.py` | Registrazioni via `check_call_log_permission`; `get_contact_by_phone_number` filtra, `find_contact_by_phone_number()` per il server; `get_contact_lead_or_deal_from_number` non whitelisted |
-| `crm/telephony/transcription.py` | `get_transcript`, `transcribe_now` |
-| `crm/api/appointments.py` | `get_list` nel calendario |
+| `crm/permissions/org_hierarchy.py`, `crm/hooks.py` | La regola di chiamate, note e task; lead e trattative con gli stessi mattoni |
+| `crm/fcrm/doctype/crm_call_log/crm_call_log.py` | `get_call_log` riporta solo note e task leggibili; `validate` collega solo quello che l'utente legge |
+| `crm/api/activities.py` | La timeline filtra note e task delle chiamate |
+| `crm/integrations/api.py` | `get_contact_by_phone_number` filtra, `find_contact_by_phone_number()` per il server; `get_contact_lead_or_deal_from_number` non whitelisted; `add_task_to_call_log` |
+| `crm/api/appointments.py` | `get_list` nel calendario, `_check_reader()` negli aiuti dell'editor |
 | `crm/fcrm/doctype/crm_deal/api.py`, `crm/api/contact.py` | Contatti di una trattativa, trattative di un contatto |
 | `crm/api/doc.py` | Record collegati, assegnatari e `assigned_users_of()`, `remove_assignments` |
 | `crm/fcrm/doctype/crm_deal/crm_deal.py` | `create_deal` |

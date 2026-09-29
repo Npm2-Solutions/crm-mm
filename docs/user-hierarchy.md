@@ -20,6 +20,22 @@ While enabled:
 You can disable it at any time from the same page. Disabling is reversible —
 your tree is kept, so re-enabling restores the same structure.
 
+## Calls, notes and tasks
+
+Calls, notes and tasks follow the lead or deal they are about: whoever sees the
+lead sees them too — in the lists, on their own pages and through the API.
+
+- You always see the calls you made, took or logged, the notes and tasks you
+  wrote, and the tasks assigned to you. So does your manager, up the chain.
+- A call can be linked to more than one lead or deal; seeing any one of them is
+  enough to see the call.
+- A note or task written during a call follows that call.
+- Anything not about a lead or deal — a call from an unknown number, a note on
+  its own — stays visible to the whole team, as before.
+
+Sales Users see these rules even with the hierarchy switched off, exactly as they
+already see only their own leads and deals; Sales Managers then see everything.
+
 ## Adding users
 
 Click **Add User** in the top right. A picker opens with everyone who can be
