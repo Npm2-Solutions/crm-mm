@@ -30,7 +30,7 @@
           {{ __('Loading...') }}
         </div>
       </div>
-      <div class="px-4 pb-7 pt-4 sm:px-6">
+      <div class="dialog-footer px-4 pb-7 pt-4 sm:px-6">
         <div class="space-y-2">
           <Button
             v-for="(action, idx) in resolvedActions"
