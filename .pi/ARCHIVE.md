@@ -1478,3 +1478,27 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Il piano, nel suo `on_update`, toglie dalla cache sé stesso, i livelli e le feature della dashboard | Frappe esegue `on_update` prima di `clear_cache`: la clinica appena accesa risultava spenta, e spenta risultava ancora accesa alla dashboard |
 | Una patch crea pipeline e dashboard dove la clinica era già accesa | Nascono accendendo la clinica: un sito che l'aveva accesa prima non le avrebbe mai avute |
 | I Link nascosti o di sola lettura non aprono liste agli ospiti | Un modulo web non li può raccogliere: `last_service` avrebbe aperto i servizi per niente |
+
+## Fase 2, il motore dei modelli
+
+> **Completato** (30/09/2026). Lo schema dei modelli e la sua logica, in Python e in
+> JavaScript sugli stessi casi; bozza e versioni immutabili con impronta e testi dei
+> consensi congelati; il builder in Impostazioni → Forms con quattro modelli di
+> partenza e la prova dal vivo. `docs/gestionale-medico/README.md`, "Il motore dei modelli".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Un renderer nostro, non `FieldLayout` | La logica è strutturata e gira uguale sul server; l'area cliente userà gli stessi componenti senza gli store del CRM |
+| Una domanda guarda solo quelle prima di lei (mostra, calcola, conta) | Un passaggio in ordine decide tutto: niente cicli, niente ordine da indovinare, e i due lati restano identici |
+| "Obbligatorio se" e "ferma se" guardano ovunque, anche sé stesse | Non cambiano risposte: il pacemaker si segnala sulla sua stessa domanda |
+| Le condizioni con lo stesso formato e costruttore delle automazioni | Un solo modo di scrivere "se" nel CRM |
+| Formule con un parser nostro (+ − * / ^, round, min, max, abs, sqrt) | Niente `eval`: una formula è dato, e dà lo stesso numero in Python e nel browser (arrotondamento half-up, non il banker's di Python) |
+| `truthy()` nel JavaScript | Python e JavaScript non sono d'accordo su cosa è vuoto: un confronto differenziale lo ha trovato su 86 casi su 12.000 |
+| Una condizione confronta un valore solo | Una lista come valore diventava testo in modo diverso sui due lati |
+| La bozza si salva anche sbagliata; si pubblica solo giusta | Si lavora a pezzi; la gente compila solo versioni valide |
+| Le parole dei consensi congelate nella versione, dentro l'impronta | Il PDF firmato porterà il testo esatto; un testo riscritto è una versione nuova |
+| Una versione non si modifica né si cancella; un modello pubblicato si spegne | Quel che è stato firmato ci punta |
+| Il marchio "dato clinico" lo registra la clinica | Il CRM non conosce la clinica; senza clinica il marchio prometterebbe una protezione che nessuno dà |
+| La pagina Forms tiene i moduli web e i modelli, ognuno a chi lo può costruire | Il design chiede un builder solo con due destinazioni |

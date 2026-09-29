@@ -157,10 +157,13 @@ e alimento, esercizio) e il marchio "dato clinico" descritto qui sotto.
 - **Dal modulo di carta**: si carica il PDF che il centro usa già, l'assistente
   propone i campi e chi costruisce il modello li controlla. È lavoro
   amministrativo: nessun rischio da dispositivo medico.
-- **Tre rese dello stesso schema**: nel CRM con `FieldLayout` in modalità
-  standalone (quella di `formDialog()`), più i componenti nuovi; nell'area
-  cliente con gli stessi componenti Vue; nel PDF con un print format Jinja che
-  percorre lo schema congelato, poi il motore PDF/A che la fatturazione ha già.
+- **Tre rese dello stesso schema**: nel CRM e nell'area cliente con gli stessi
+  componenti Vue (`frontend/src/components/Moduli`); nel PDF con un print format
+  Jinja che percorre lo schema congelato, poi il motore PDF/A che la fatturazione
+  ha già. *Deciso il 30/09/2026:* non `FieldLayout`, che disegna i campi di un
+  DocType con le espressioni `eval:` di Frappe; qui la logica è strutturata, gira
+  uguale sul server, e l'area cliente non ha gli store del CRM che `FieldLayout`
+  si aspetta.
 - **Dove stanno i valori**: in un campo JSON della compilazione, più le poche
   colonne vere che servono alle statistiche (diagnosi, peso, parametri vitali).
   Non i Web Form di Frappe: ogni loro campo deve essere un campo del DocType, e

@@ -82,6 +82,20 @@ they run as evaluated strings in the browser.
 
 ---
 
+### Forms to fill and sign (crm/moduli, docs/gestionale-medico phase 2)
+| File | Role |
+|---|---|
+| `crm/moduli/schema.py` | Pure: what a template schema may hold, conditions, formulas, scores, `valuta()`, `pulisci()`, `valida_schema()`, SHA-256 |
+| `frontend/src/utils/moduli.js` | The same rules in the browser, plus the builder's helpers — tested on the same cases |
+| `crm/moduli/tests/casi_schema.json` | The cases both sides must agree on: change one side, run both suites |
+| `crm/moduli/modelli.py` | Drafts (`CRM Form Template`) and immutable versions (`CRM Form Template Version`), consents' words frozen at publish |
+| `frontend/src/components/Moduli/` | `FormRenderer` + `FormFieldInput`: draw and fill a schema |
+| `frontend/src/components/Settings/Forms/Template*.vue` | The builder, in Settings > Forms next to the web forms |
+
+The browser and the server evaluate a form the same way: a question looks only at
+the ones before it (to show, compute, score), a hidden answer does not count, and
+the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
+
 ### Levels, capabilities and the plan (doc 30)
 | File | Role |
 |---|---|
