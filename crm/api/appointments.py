@@ -239,6 +239,54 @@ def get_appointment(name: str) -> dict:
 	return data
 
 
+@frappe.whitelist()
+def get_person_appointments(doctype: str, name: str) -> list[dict]:
+	"""The appointments of the person a record is about, newest first.
+
+	A person's page showed their events and not their appointments, so what a
+	client had booked could only be found on the calendar. A deal answers for
+	the person behind it: that is who the appointments were made for.
+	"""
+	if doctype not in ("CRM Lead", "CRM Deal"):
+		return []
+	frappe.has_permission(doctype, "read", name, throw=True)
+	person = name if doctype == "CRM Lead" else frappe.db.get_value("CRM Deal", name, "lead")
+	if not person:
+		return []
+	booked = frappe.get_all(
+		"CRM Appointment Participant",
+		filters={"parenttype": "CRM Appointment", "party_type": "CRM Lead", "party": person},
+		pluck="parent",
+		limit_page_length=0,
+	)
+	if not booked:
+		return []
+	rows = frappe.get_list(
+		"CRM Appointment",
+		filters={"name": ["in", list(set(booked))]},
+		fields=[
+			"name",
+			"title",
+			"service",
+			"status",
+			"starts_on",
+			"ends_on",
+			"color",
+			"location",
+			"total_amount",
+			"currency",
+			"source",
+			"external_platform",
+		],
+		order_by="starts_on desc",
+		limit_page_length=100,
+	)
+	for row in rows:
+		row["starts_on"] = str(row["starts_on"])
+		row["ends_on"] = str(row["ends_on"])
+	return rows
+
+
 # --------------------------------------------------------------------------
 # meta for the pickers
 # --------------------------------------------------------------------------

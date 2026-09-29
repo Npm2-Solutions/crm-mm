@@ -733,6 +733,61 @@ class TestAppointmentApi(SchedulingCase):
 		self.assertEqual(len(result["created"]), 1)
 		self.assertEqual(len(result["skipped"]), 1)
 
+	def _person(self, first_name):
+		return frappe.get_doc({"doctype": "CRM Lead", "first_name": first_name}).insert(
+			ignore_permissions=True
+		)
+
+	def test_a_person_has_their_appointments_newest_first(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita persona", [anna])
+		giulia = self._person("Giulia")
+		marta = self._person("Marta")
+		earlier = self.make_appointment(
+			"Visita persona",
+			self.tomorrow(9),
+			[anna],
+			participants=[{"party_type": "CRM Lead", "party": giulia.name, "participant_name": "Giulia"}],
+		)
+		later = self.make_appointment(
+			"Visita persona",
+			self.tomorrow(11),
+			[anna],
+			participants=[{"party_type": "CRM Lead", "party": giulia.name, "participant_name": "Giulia"}],
+		)
+		self.make_appointment(
+			"Visita persona",
+			self.tomorrow(14),
+			[anna],
+			participants=[{"party_type": "CRM Lead", "party": marta.name, "participant_name": "Marta"}],
+		)
+		rows = A.get_person_appointments("CRM Lead", giulia.name)
+		self.assertEqual([row["name"] for row in rows], [later.name, earlier.name])
+		self.assertEqual(rows[0]["service"], "Visita persona")
+
+	def test_a_deal_answers_for_the_person_behind_it(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita trattativa", [anna])
+		giulia = self._person("Giulia")
+		organization = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": "Studio Appuntamenti"}
+		).insert(ignore_permissions=True)
+		deal = frappe.get_doc(
+			{"doctype": "CRM Deal", "lead": giulia.name, "organization": organization.name}
+		).insert(ignore_permissions=True)
+		booked = self.make_appointment(
+			"Visita trattativa",
+			self.tomorrow(10),
+			[anna],
+			participants=[{"party_type": "CRM Lead", "party": giulia.name, "participant_name": "Giulia"}],
+		)
+		rows = A.get_person_appointments("CRM Deal", deal.name)
+		self.assertEqual([row["name"] for row in rows], [booked.name])
+
+	def test_nobody_booked_nothing_listed(self):
+		self.assertEqual(A.get_person_appointments("CRM Lead", self._person("Nessuno").name), [])
+		self.assertEqual(A.get_person_appointments("Contact", "anything"), [])
+
 	def test_quote_price_answers_without_saving_anything(self):
 		anna = self.make_user("anna_sched@example.com")
 		self.make_service("Visita preventivo", [anna], default_price=70)
