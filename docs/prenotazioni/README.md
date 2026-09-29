@@ -48,6 +48,15 @@ giorni liberi, orari per fascia, scorciatoia *Primo orario libero*) → dati e c
 conferma con Google/Outlook e `.ics`. Prezzi "da …" e durate min–max quando i
 professionisti differiscono.
 
+**Per me o per un'altra persona** (29/09/2026). La pagina chiede per chi è
+l'appuntamento: il genitore prenota per il figlio, il figlio per la madre anziana. Chi
+viene ha un record suo, collegato a chi prenota e senza i suoi recapiti, che restano di
+chi li possiede: conferme e promemoria arrivano a chi ha prenotato, e l'email lo dice
+("L'appuntamento è per Luca Rossi"). Anche senza la scelta, un nome diverso sulla stessa
+email non finisce mai sul record di un altro: è una persona collegata. I limiti per
+cliente contano chi viene. Le regole sono in
+[gestionale-medico](../gestionale-medico/README.md#le-persone-collegate).
+
 ## 2. Dove stanno le regole
 
 Tre livelli, sempre visibili, mai copiati:

@@ -95,16 +95,21 @@ Code asks for a capability (`puo("fatture.emetti")`, `@richiede(...)`), never fo
 role name; the frontend asks `usersStore().puo(...)`. A new module registers its
 roles, levels and capabilities from its own `registra()`.
 
-### Consents and billing details (phase 0 of the medical centre project)
+### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |
 |---|---|
 | `crm/moduli/registro.py` | Kinds of consent (each module registers its own), natures, channels, the current state — pure |
 | `crm/moduli/consensi.py` | The register: record, withdraw, state, who reads it, the person panel and settings calls |
 | `crm/invoicing/engine/anagrafica.py` | What an invoice takes from a fiscal profile and what a confirmed one gives back — pure |
-| `crm/invoicing/anagrafica.py` | `CRM Billing Profile`: whose profile an invoice uses, both directions, the panel calls |
+| `crm/invoicing/anagrafica.py` | `CRM Billing Profile`: whose profile an invoice uses (or whoever pays for the client), both directions, the panel calls |
+| `crm/persone/legami.py` | Linked people: relations and their inverses, who acts for whom, names compared by their words, age — pure |
+| `crm/persone/collegate.py` | `CRM Related Person`: who a booking is for (`trova_per_nome`), the person booked for somebody, who pays / books / represents, the panel calls |
 
-A person's billing details and consents follow the person (`org_hierarchy.visible_leads`)
-and are deleted with them (`on_trash`); an answer in the register is never edited.
+A person's billing details, consents and links follow the person (`org_hierarchy.visible_leads`)
+and are deleted with them (`on_trash`); an answer in the register is never edited. A
+contact belongs to its owner: a booking finds the owner by email or phone and the
+person by name (`find_or_create_person`), so a child booked by a parent gets a record
+of their own, linked to the parent, never the parent's record.
 
 ### The clinic (`crm/clinica`, switched on by the plan's "clinica" module)
 | File | Role |

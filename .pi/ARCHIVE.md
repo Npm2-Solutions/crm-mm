@@ -1221,3 +1221,49 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/api/whatsapp.py`, `crm/api/sms.py` | `may_converse` |
 | `frontend/src/components/Clinic/ClinicArea.vue`, `Activities/*`, `utils/conversation.js`, `pages/Lead.vue`, `MobileLead.vue` | La scheda Clinic e il lucchetto |
 | `crm/clinica/tests/test_cartella.py`, `test_confine.py`, `crm/tests/test_consents.py` | I test |
+
+## Le persone collegate
+
+> **Completato** (29/09/2026). L'ultima PR della fase 0 del gestionale medico.
+> Il paziente, chi paga e chi prenota possono essere tre persone: un legame per
+> coppia, la prenotazione per un altro su `/prenota`, la fattura a chi paga, il
+> consenso dato da un genitore, e il contatto che resta di chi lo possiede.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| `CRM Related Person` nel CRM (`crm/persone`), non nella clinica | Una palestra ha bambini prenotati dai genitori quanto una clinica; il campo "tutore" della scheda paziente è diventato un legame, con una patch |
+| Una riga per coppia, scritta dal lato di chi è seguito: `related_person` è `relation` per `person`, e paga, prenota o decide per lui | Due righe per la stessa coppia prima o poi si contraddicono; dall'altro lato la relazione si legge girata (`inversa`) |
+| Pagare, prenotare e decidere sono tre bandierine, in un verso solo | Il padre separato che prenota il sabato non è quello che paga; il figlio che segue la madre anziana agisce nell'altro verso, e la riga si scrive dal lato di lei |
+| Il contatto è di chi lo possiede: il figlio prenotato dalla madre non prende la sua email né il suo telefono | Restano suoi: una chiamata da quel numero è sua, e la prossima prenotazione di lei non va al figlio. I messaggi le arrivano dalla riga dell'appuntamento, che dice "Booked by" |
+| Il contatto trova il titolare, il nome trova la persona: il titolare, uno dei suoi collegati (e dei loro), o una persona nuova collegata a lui | Era la decisione rimasta alla fase 0 (`find_person` riconosce da email e telefono, e in famiglia li condividono) |
+| I nomi si confrontano per parole, senza somiglianze né iniziali; due candidati possibili sono nessuno | "Luca" e "Lucia" sono fratello e sorella, "M. Rossi" può essere la madre o il figlio: un doppione si unisce in un minuto, una visita sulla persona sbagliata si scopre tardi |
+| Un titolare con un'email o un numero per nome è il titolare | Non dice chi è: la prenotazione con un nome vero sul suo contatto è sua |
+| `/prenota` chiede "per me o per un'altra persona", con il nome e cosa si è per lei | La scelta esplicita batte l'indovinare; l'indovinare resta la rete per le pagine e le piattaforme che non la chiedono |
+| L'informativa di `/prenota` si registra due volte: per chi prenota e per chi viene, "dato da" chi prenota | Chi prenota l'ha letta, per sé e per l'altro; il marketing è di chi prenota, che riceve i messaggi |
+| I limiti per cliente contano chi viene; il contatto conta solo le righe che non nominano nessuno | La madre che prenota per due figli prenota tre persone, non una tre volte |
+| La fattura va a chi paga quando paga uno solo, con "Prestazione resa a …" e il codice fiscale del paziente nella causale | Il documento va a chi paga; chi lo riceve, e chi detrae, deve sapere di chi era la visita |
+| Una fattura che nomina già il cliente (nome o codice fiscale) resta sua | La cassa che la intesta al figlio non deve trovarci l'indirizzo del padre |
+| La fattura confermata completa l'anagrafica di chi nomina, fra il cliente e chi paga | Prima non completava niente se era intestata a un altro; ora sa chi è l'altro |
+| Il consenso al banco "dato da" solo chi è collegato alla persona | Un estraneo non risponde per nessuno |
+| L'età viene dal codice fiscale; il minorenne senza chi decide è segnalato nella sezione Paziente | Mai scritta a mano, mai fuori passo |
+| Un legame lo vede chi vede una delle due persone; lo scrive chi ha `persone.scrivi` e le vede entrambe | È delle due persone; legare chi non si vede sarebbe un modo di vederlo |
+| Chi crea una persona dal legame ne è il proprietario, come nel modulo "nuova persona" | Altrimenti la segreteria creava una persona che poi non vedeva: l'ambito del doc 30 (PR 2) la allargherà |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/persone/legami.py` | Le regole, pure: relazioni e inverse, versi, nomi, chi è di una prenotazione, età |
+| `crm/persone/collegate.py` | I legami sul sito: famiglia, chi paga, chi decide, `trova_per_nome`, `persona_per_conto`, i permessi, le chiamate della pagina, `get_contact_for` |
+| `crm/fcrm/doctype/crm_related_person/` | Il DocType, una riga per coppia (indice unico) |
+| `crm/api/booking.py` | `find_or_create_person` col nome |
+| `crm/api/service_booking.py`, `crm/www/prenota.html` | "Per me o per un'altra persona", i limiti per chi viene, i consensi, l'email a chi ha prenotato |
+| `crm/fcrm/doctype/crm_appointment_participant/`, `crm/api/appointments.py` | "Booked by", che sopravvive alle modifiche della segreteria |
+| `crm/invoicing/anagrafica.py`, `crm_invoice.py`, `crm/invoicing/api.py` | La fattura a chi paga, la causale, il completamento di chi è nominato |
+| `crm/invoicing/engine/anagrafica.py` | `stessa_persona` usa `legami.stesso_nome`: una regola sola per i nomi |
+| `crm/moduli/consensi.py`, `crm_consent.json` | "Dato da" |
+| `crm/clinica/paziente.py`, `clinic_patient.json`, `crm/patches/v1_0/guardians_become_linked_people.py` | Chi decide per il paziente, il minorenne; il tutore diventa un legame |
+| `frontend/src/components/RelatedPeopleSection.vue`, `PatientSection.vue`, `ConsentsSection.vue`, `Calendar/AppointmentPanel.vue`, `pages/Lead.vue`, `MobileLead.vue` | La sezione "Linked people", chi decide, chi ha risposto, chi ha prenotato |
+| `crm/persone/tests/test_legami.py`, `crm/tests/test_related_people.py` | I test: 23 senza sito, 28 sul sito |
