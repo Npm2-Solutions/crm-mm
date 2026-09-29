@@ -528,10 +528,44 @@ nella clinica: privacy, consensi e questionari servono anche a una palestra
   direzione sanitaria. Il marchio "dato clinico" c'è solo dove la clinica è accesa
   (lo registra la clinica, `modelli.registra_dato_clinico`) e resta nella versione.
 
-Resta alla fase 2: compilare e firmare (la firma col dito, il PDF/A con le prove,
-il registro dei consensi alimentato dal modulo), dove si firma (banco, casa,
-carta), la cartella sul modello della specialità, i referti, l'archivio. "Dal
-modulo di carta", con l'assistente che propone i campi, va alla fase 4.
+### Compilare e firmare
+
+Fatto il 30/09/2026 (fase 2, la seconda parte).
+
+- **Dalla persona**: la scheda "Forms" della sua pagina elenca i moduli firmati e
+  quelli da finire, e "Fill a form" ne comincia uno sulla versione pubblicata. Si
+  compila con lei al banco, si salva a metà, si firma sullo schermo.
+- **La firma semplice, col dito**: si tiene l'immagine del tratto, mai la
+  pressione né i tempi dei punti (sarebbero dati biometrici). Con chi firma (il
+  paziente, l'operatore, il genitore o tutore indicato in "Answered by"), l'ora
+  del server, l'indirizzo e il dispositivo, e l'impronta delle risposte su cui è
+  stata messa. Un campo che il modello vuole con firma avanzata o qualificata non
+  si firma col dito: si firma con un fornitore o su carta, che arrivano con i canali
+  di firma.
+- **Firmando** il server rifà tutti i controlli con le sue regole (le stesse che il
+  browser ha mostrato), e il modulo si chiude: da lì non si riscrive.
+- **Il PDF/A**, fatto una volta sola alla firma: le risposte in parole, i testi
+  letti, gli avvisi per l'operatore, le firme come immagini dentro il file, e una
+  pagina delle prove (versione e impronta di cosa chiedeva, impronta delle
+  risposte, chi ha firmato, come, quando, da dove, gli eventi). WeasyPrint lo
+  disegna, il motore PDF/A della fatturazione lo converte e dice cosa ne è uscito
+  ("PDF/A-3b (structure verified)"); il suo SHA-256 resta sul modulo.
+- **I consensi** del modulo vanno nel registro con le parole congelate nella
+  versione e la loro versione del testo, il modulo come fonte, il canale e chi ha
+  risposto per la persona.
+- **Il registro degli eventi** (`CRM Audit Log`) si aggiunge soltanto: iniziato,
+  firmato, PDF fatto, consenso registrato, ciascuno con l'impronta di quello
+  prima. Un evento cambiato rompe la catena da lì in poi, e
+  `traccia.verifica_catena` dice dove.
+- **Chi li vede**: seguono la persona, come i consensi (`moduli.vedi`,
+  `moduli.compila`). Un modulo con dati sanitari è della sola squadra di cura: lo
+  dice la clinica (`compilazioni.registra_lettore_clinico`), e firmato fa diventare
+  paziente (regola 1).
+
+Resta alla fase 2: dove si firma oltre il banco (il tablet dato al paziente, il
+link a casa, la carta scansionata, il fornitore della firma avanzata), la cartella
+sul modello della specialità, i referti, l'archivio. "Dal modulo di carta", con
+l'assistente che propone i campi, va alla fase 4.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
