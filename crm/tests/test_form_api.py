@@ -403,3 +403,119 @@ class TestFormAPI(IntegrationTestCase):
 			F.list_forms()
 		with self.assertRaises(frappe.PermissionError):
 			F.save_form(name=None, form={"title": "X", "route": "nope", "document_type": "CRM Lead"})
+
+
+FORM_MANAGER = "form.guest.manager@example.com"
+FORM_ADMIN = "form.guest.admin@example.com"
+
+
+def make_user(email: str, role: str):
+	if not frappe.db.exists("User", email):
+		frappe.get_doc(
+			{
+				"doctype": "User",
+				"email": email,
+				"first_name": email.split("@")[0],
+				"send_welcome_email": 0,
+				"roles": [{"role": role}],
+			}
+		).insert(ignore_permissions=True)
+
+
+def guest_rows(doctype: str) -> list:
+	return frappe.get_all("Custom DocPerm", filters={"parent": doctype, "role": "Guest"}, pluck="name")
+
+
+class TestGuestLinkAccess(IntegrationTestCase):
+	"""Guest `select` lets anyone holding a form link list a doctype's records, so the
+	builder opens only lookup lists, and only a System Manager writes the rule."""
+
+	TOUCHED = ("CRM Territory", "CRM Lead Source", "Contact", "User", "CRM Organization", "CRM Service")
+
+	def setUp(self):
+		make_user(FORM_MANAGER, "Sales Manager")
+		make_user(FORM_ADMIN, "System Manager")
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+		# a grant is cached in the doctype's meta; the rollback does not reach the cache
+		for doctype in self.TOUCHED:
+			frappe.clear_cache(doctype=doctype)
+
+	def test_a_system_manager_opens_a_lookup_list(self):
+		frappe.set_user(FORM_ADMIN)
+		result = F.grant_guest_link_access("CRM Territory")
+		self.assertTrue(result["guest_can_select"])
+
+		frappe.set_user("Administrator")
+		rows = frappe.get_all(
+			"Custom DocPerm",
+			filters={"parent": "CRM Territory", "role": "Guest"},
+			fields=["select", "read", "write", "export"],
+		)
+		self.assertEqual(len(rows), 1)
+		# names only: a public dropdown needs nothing more
+		self.assertEqual((rows[0].select, rows[0].read, rows[0].write, rows[0].export), (1, 0, 0, 0))
+
+	def test_people_and_crm_records_are_never_opened(self):
+		for doctype in ("User", "Contact", "CRM Organization"):
+			before = guest_rows(doctype)
+			frappe.set_user(FORM_ADMIN)
+			with self.assertRaises(frappe.PermissionError):
+				F.grant_guest_link_access(doctype)
+			frappe.set_user("Administrator")
+			self.assertEqual(guest_rows(doctype), before, doctype)
+			self.assertFalse(F.guest_can_select(doctype), doctype)
+
+	def test_a_lookup_list_no_form_links_to_stays_closed(self):
+		# on the list, but no lead or deal field points at it on this site
+		self.assertNotIn("CRM Service", F._link_target_doctypes())
+		frappe.set_user(FORM_ADMIN)
+		with self.assertRaises(frappe.PermissionError):
+			F.grant_guest_link_access("CRM Service")
+
+	def test_a_sales_manager_cannot_write_the_rule(self):
+		before = guest_rows("CRM Lead Source")
+		frappe.set_user(FORM_MANAGER)
+		with self.assertRaises(frappe.PermissionError):
+			F.grant_guest_link_access("CRM Lead Source")
+		frappe.set_user("Administrator")
+		self.assertEqual(guest_rows("CRM Lead Source"), before)
+
+	def test_the_builder_is_told_who_can_open_what(self):
+		frappe.set_user(FORM_MANAGER)
+		territory = F.link_field_guest_access("CRM Territory")
+		self.assertTrue(territory["grantable"])
+		self.assertFalse(territory["can_grant"])
+		contact = F.link_field_guest_access("Contact")
+		self.assertFalse(contact["grantable"])
+		self.assertFalse(contact["can_grant"])
+
+		frappe.set_user(FORM_ADMIN)
+		self.assertTrue(F.link_field_guest_access("CRM Territory")["can_grant"])
+		self.assertFalse(F.link_field_guest_access("User")["can_grant"])
+
+	def old_grant(self, doctype: str):
+		"""The row the endpoint used to write, whatever the doctype."""
+		from frappe.permissions import add_permission
+
+		add_permission(doctype, "Guest", 0, ptype="select")
+		name = frappe.db.get_value("Custom DocPerm", {"parent": doctype, "role": "Guest"})
+		frappe.db.set_value("Custom DocPerm", name, {"select": 1, "read": 0, "export": 0})
+		frappe.clear_cache(doctype=doctype)
+
+	def test_existing_sites_lose_the_grants_on_people(self):
+		from crm.patches.v1_0.revoke_guest_select_outside_lookups import execute
+
+		self.old_grant("Contact")
+		self.old_grant("CRM Territory")
+		self.assertTrue(F.guest_can_select("Contact"))
+
+		execute()
+
+		self.assertFalse(guest_rows("Contact"))
+		self.assertFalse(F.guest_can_select("Contact"))
+		# a lookup list keeps what it was given
+		self.assertTrue(guest_rows("CRM Territory"))
+		self.assertTrue(F.guest_can_select("CRM Territory"))

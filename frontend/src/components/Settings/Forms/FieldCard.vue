@@ -48,14 +48,7 @@
           />
         </span>
       </div>
-      <Tooltip
-        v-if="guestSelectMissing"
-        :text="
-          __('Guests can\'t see {0} records yet. Open to grant access.', [
-            field.options,
-          ])
-        "
-      >
+      <Tooltip v-if="guestSelectMissing" :text="guestTooltip">
         <LucideTriangleAlert class="h-3.5 w-3.5 shrink-0 text-ink-amber-6" />
       </Tooltip>
       <Button
@@ -159,15 +152,9 @@
           class="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-amber-6"
         />
         <div class="flex min-w-0 flex-col items-start gap-2">
-          <p class="text-p-sm text-ink-gray-7">
-            {{
-              __(
-                "Guests can't see {0} records. Grant select access to list them publicly.",
-                [field.options],
-              )
-            }}
-          </p>
+          <p class="text-p-sm text-ink-gray-7">{{ guestNotice }}</p>
           <Button
+            v-if="guestGrant === 'grant'"
             size="sm"
             variant="outline"
             :loading="granting"
@@ -197,6 +184,9 @@ const props = defineProps({
   expanded: { type: Boolean, default: false },
   locked: { type: Boolean, default: false },
   guestSelectMissing: { type: Boolean, default: false },
+  // who can open the target to guests: 'grant' (this user), 'ask' (a System
+  // Manager) or 'never' (people and CRM records are never listed publicly)
+  guestGrant: { type: String, default: 'grant' },
   granting: { type: Boolean, default: false },
 })
 
@@ -228,6 +218,33 @@ async function beginEdit() {
   await nextTick()
   labelInput.value?.focus()
 }
+
+const guestTooltip = computed(() =>
+  props.guestGrant === 'grant'
+    ? __("Guests can't see {0} records yet. Open to grant access.", [
+        props.field.options,
+      ])
+    : __("Guests can't see {0} records.", [props.field.options]),
+)
+const guestNotice = computed(() => {
+  const doctype = props.field.options
+  if (props.guestGrant === 'grant') {
+    return __(
+      "Guests can't see {0} records. Grant select access to list them publicly.",
+      [doctype],
+    )
+  }
+  if (props.guestGrant === 'ask') {
+    return __(
+      "Guests can't see {0} records. A System Manager can grant select access to list them publicly.",
+      [doctype],
+    )
+  }
+  return __(
+    '{0} records are never listed to guests, so this dropdown stays empty on the public form.',
+    [doctype],
+  )
+})
 
 // map the field's type to a lucide icon shown next to the label
 const typeIcon = computed(() => fieldTypeIcon(props.field))

@@ -61,3 +61,4 @@ crm.patches.v1_0.an_invoicing_dashboard
 crm.patches.v1_0.the_ts_submissions_have_a_module
 crm.patches.v1_0.clean_unsafe_dropdown_items
 crm.patches.v1_0.expire_invitations_with_readable_keys
+crm.patches.v1_0.revoke_guest_select_outside_lookups
