@@ -43,7 +43,8 @@ l'agenzia. Serve una gestione dei ruoli propria del CRM.
   la scheda (`invoices_on` in `crm/api/activities.py` usa `frappe.get_all`, che
   salta i permessi). Mostra intestazione, importi e stati, non le righe.
 
-**Proposta.**
+**Proposta.** La tabella completa, modulo per modulo e pagina per pagina, è nel
+[doc 30](../progetto-ghl/30-ruoli-e-permessi.md); qui la sintesi.
 
 | Livello | Chi | Cosa fa | Cosa non fa |
 |---|---|---|---|
