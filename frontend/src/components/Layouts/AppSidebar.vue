@@ -210,6 +210,7 @@ import {
   notificationsStore,
 } from '@/stores/notifications'
 import { usersStore } from '@/stores/users'
+import { DASHBOARD_CAPABILITIES } from '@/utils/dashboard'
 import { sessionStore } from '@/stores/session'
 import {
   showSettings,
@@ -262,7 +263,8 @@ const links = [
     label: 'Dashboard',
     icon: LucideLayoutDashboard,
     to: 'Dashboard',
-    condition: () => puo('dashboard.personali'),
+    // reading the numbers is enough: Read only opens it and makes nothing
+    condition: () => puoUno(DASHBOARD_CAPABILITIES),
   },
   {
     // the people. "Lead" is what one of them is at the start, not what they
@@ -302,7 +304,7 @@ const links = [
     label: 'Notes',
     icon: NoteIcon,
     to: 'Notes',
-    condition: () => puo('note.scrivi'),
+    condition: () => puo('note.vedi'),
   },
   {
     label: 'Tasks',
@@ -339,7 +341,8 @@ const links = [
     icon: LucideReceipt,
     to: 'Invoices',
     // whoever issues them: the front desk and the manager (doc 30)
-    condition: () => puo('fatture.emetti'),
+    // the centre's register: whoever sees the centre's invoices, Read only too
+    condition: () => ambito('fatture.vedi') === 'centro',
   },
   {
     label: 'Site',
@@ -476,7 +479,7 @@ function toggleHelpModal() {
 
 // onboarding
 const { user } = sessionStore()
-const { users, puo, puoUno } = usersStore()
+const { users, puo, puoUno, ambito, solaLettura } = usersStore()
 const { isOnboardingStepsCompleted, setUp } = useOnboarding('frappecrm')
 
 async function getFirstLead() {
@@ -508,6 +511,8 @@ const steps = reactive([
   },
   {
     name: 'create_first_lead',
+    // a step the level cannot take is not offered (doc 30)
+    condition: () => puo('persone.scrivi'),
     title: __('Create your first lead'),
     icon: markRaw(LeadsIcon),
     completed: false,
@@ -533,6 +538,7 @@ const steps = reactive([
   },
   {
     name: 'convert_lead_to_deal',
+    condition: () => puo('trattative.scrivi'),
     title: __('Convert lead to deal'),
     icon: markRaw(ConvertIcon),
     completed: false,
@@ -561,6 +567,7 @@ const steps = reactive([
   },
   {
     name: 'create_first_task',
+    condition: () => !solaLettura(),
     title: __('Create your first task'),
     icon: markRaw(TaskIcon),
     completed: false,
@@ -582,6 +589,7 @@ const steps = reactive([
   },
   {
     name: 'create_first_note',
+    condition: () => puo('note.scrivi'),
     title: __('Create your first note'),
     icon: markRaw(NoteIcon),
     completed: false,
@@ -603,6 +611,7 @@ const steps = reactive([
   },
   {
     name: 'add_first_comment',
+    condition: () => puo('conversazioni.usa'),
     title: __('Add your first comment'),
     icon: markRaw(CommentIcon),
     completed: false,
@@ -625,6 +634,7 @@ const steps = reactive([
   },
   {
     name: 'send_first_email',
+    condition: () => puo('conversazioni.usa'),
     title: __('Send email'),
     icon: markRaw(EmailIcon),
     completed: false,
@@ -647,6 +657,7 @@ const steps = reactive([
   },
   {
     name: 'change_deal_status',
+    condition: () => puo('trattative.scrivi'),
     title: __('Change deal status'),
     icon: markRaw(StepsIcon),
     completed: false,

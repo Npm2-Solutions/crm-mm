@@ -60,7 +60,11 @@
             :iconLeft="LucidePenLine"
             @click="startEditing"
           />
-          <Dropdown :options="moreOptions" align="end">
+          <Dropdown
+            v-if="moreOptions.length"
+            :options="moreOptions"
+            align="end"
+          >
             <template #default>
               <Button :aria-label="__('More')">
                 <template #icon>
@@ -449,35 +453,40 @@ const switcherOptions = computed(() => {
   if (mine.length) groups.push({ group: __('Mine'), items: mine.map(entry) })
   if (waiting.length)
     groups.push({ group: __('Not set up yet'), items: waiting.map(entry) })
-  groups.push({
-    group: '',
-    hideLabel: true,
-    items: [
-      {
-        label: __('New dashboard'),
-        icon: iconOf('plus'),
-        onClick: () => openDashboardDialog('create'),
-      },
-    ],
-  })
+  if (canCreate.value)
+    groups.push({
+      group: '',
+      hideLabel: true,
+      items: [
+        {
+          label: __('New dashboard'),
+          icon: iconOf('plus'),
+          onClick: () => openDashboardDialog('create'),
+        },
+      ],
+    })
   return groups
 })
 
+// Read only opens the dashboards and makes none of its own (doc 30)
+const canCreate = computed(() => Boolean(dashboards.data?.can_create))
+
 const moreOptions = computed(() => {
   const dashboard = current.value
-  const options = [
-    {
+  const options = []
+  if (canCreate.value)
+    options.push({
       label: __('New dashboard'),
       icon: iconOf('plus'),
       onClick: () => openDashboardDialog('create'),
-    },
-  ]
+    })
   if (!dashboard) return options
-  options.push({
-    label: dashboard.can_edit ? __('Duplicate') : __('Duplicate for me'),
-    icon: iconOf('copy'),
-    onClick: duplicateDashboard,
-  })
+  if (canCreate.value)
+    options.push({
+      label: dashboard.can_edit ? __('Duplicate') : __('Duplicate for me'),
+      icon: iconOf('copy'),
+      onClick: duplicateDashboard,
+    })
   if (dashboard.can_edit) {
     options.push({
       label: __('Dashboard settings'),

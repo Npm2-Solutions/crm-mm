@@ -25,6 +25,7 @@
         :actions="document.actions"
       />
       <Button
+        v-if="canWrite && puo('trattative.scrivi')"
         :label="__('New Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -159,10 +160,8 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 
-const { triggerOnRender, assignees, document, scripts, error } = useDocument(
-  'CRM Lead',
-  props.leadId,
-)
+const { triggerOnRender, assignees, document, scripts, error, canWrite } =
+  useDocument('CRM Lead', props.leadId)
 
 const doc = computed(() => document.doc || {})
 
@@ -276,11 +275,13 @@ const tabs = computed(() => {
       name: 'Events',
       label: __('Events'),
       icon: EventIcon,
+      condition: () => puo('agenda.vedi'),
     },
     {
       name: 'Calls',
       label: __('Calls'),
       icon: PhoneIcon,
+      condition: () => puo('telefono.registro'),
     },
     {
       name: 'Tasks',
@@ -291,6 +292,7 @@ const tabs = computed(() => {
       name: 'Notes',
       label: __('Notes'),
       icon: NoteIcon,
+      condition: () => puo('note.vedi'),
     },
     {
       name: 'Attachments',

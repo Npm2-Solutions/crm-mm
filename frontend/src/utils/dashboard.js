@@ -2,6 +2,18 @@
 // No Vue, no network — everything here is unit-tested (tests/unit/dashboard.test.js).
 
 export const GRID_COLUMNS = 20
+
+/**
+ * What opens the dashboards (doc 30): making one's own, or reading the numbers.
+ * Read only reads them and makes nothing.
+ */
+export const DASHBOARD_CAPABILITIES = [
+  'dashboard.personali',
+  'dashboard.centro',
+  'numeri.operativi',
+  'numeri.economici',
+  'numeri.marketing',
+]
 export const ROW_HEIGHT = 42
 
 // -- periods -----------------------------------------------------------------

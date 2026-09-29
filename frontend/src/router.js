@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { standardViewTypesFor } from '@/utils/viewTypes'
+import { DASHBOARD_CAPABILITIES } from '@/utils/dashboard'
 import { call } from 'frappe-ui'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
@@ -36,7 +37,7 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    meta: { richiede: 'dashboard.personali' },
+    meta: { richiede: DASHBOARD_CAPABILITIES },
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
@@ -90,7 +91,9 @@ const routes = [
     path: '/fatture',
     name: 'Invoices',
     component: () => import('@/pages/Invoices.vue'),
-    meta: { richiede: 'fatture.emetti' },
+    // the centre's register: whoever sees the centre's invoices, Read only too.
+    // The practitioner finds theirs on each person
+    meta: { richiede: 'fatture.vedi', ambito: 'centro' },
   },
   {
     // full page, not a modal: Builder's canvas refuses to work in a small box
@@ -131,7 +134,7 @@ const routes = [
     alias: '/notes',
     path: '/notes/view/:viewType?',
     name: 'Notes',
-    meta: { richiede: 'note.scrivi' },
+    meta: { richiede: 'note.vedi' },
     component: () => import('@/pages/Notes.vue'),
   },
   {
@@ -258,20 +261,30 @@ const LANDINGS = [
   'Notifications',
 ]
 
-function allowed(name, puoUno) {
-  const route = router.getRoutes().find((r) => r.name === name)
-  return !route?.meta?.richiede || puoUno(route.meta.richiede)
+// What a page asks (doc 30): a capability, or one of several; with `ambito`,
+// one of them on that much of the centre.
+function meets(meta, { puoUno, ambito }) {
+  if (!meta?.richiede) return true
+  if (meta.ambito)
+    return [].concat(meta.richiede).some((c) => ambito(c) === meta.ambito)
+  return puoUno(meta.richiede)
 }
 
-function firstAllowed(puoUno) {
-  return LANDINGS.find((name) => allowed(name, puoUno)) || 'Notifications'
+function allowed(name, store) {
+  const route = router.getRoutes().find((r) => r.name === name)
+  return meets(route?.meta, store)
+}
+
+function firstAllowed(store) {
+  return LANDINGS.find((name) => allowed(name, store)) || 'Notifications'
 }
 
 router.beforeEach(async (to, from, next) => {
   router.previousRoute = from
 
   const { isLoggedIn, user } = sessionStore()
-  const { users, isCrmUser, isAgency, permissions, puoUno } = usersStore()
+  const store = usersStore()
+  const { users, isCrmUser, isAgency, permissions, puoUno } = store
 
   if (isLoggedIn && !users.fetched) {
     try {
@@ -324,7 +337,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (isLoggedIn && to.name !== 'Not Permitted' && !isCrmUser()) {
     next({ name: 'Not Permitted' })
-  } else if (isLoggedIn && to.meta?.richiede && !puoUno(to.meta.richiede)) {
+  } else if (isLoggedIn && !meets(to.meta, store)) {
     // a page hidden from the menu does not open from its address either (doc 30)
     next({ name: 'Home' })
   } else if (to.name === 'Home' && isLoggedIn) {
@@ -333,15 +346,15 @@ router.beforeEach(async (to, from, next) => {
 
     let defaultView = getDefaultView()
     if (!defaultView) {
-      next({ name: firstAllowed(puoUno) })
+      next({ name: firstAllowed(store) })
       return
     }
 
     let { route_name, type, name, is_standard } = defaultView
     route_name = route_name || 'Leads'
     // a default view on a page the level does not open is not a way in
-    if (!allowed(route_name, puoUno)) {
-      next({ name: firstAllowed(puoUno) })
+    if (!allowed(route_name, store)) {
+      next({ name: firstAllowed(store) })
       return
     }
 

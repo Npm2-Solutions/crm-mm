@@ -24,7 +24,7 @@
       />
       <AssignTo v-model="assignees.data" doctype="CRM Deal" :docname="dealId" />
       <Dropdown
-        v-if="doc.name && pipelines.data?.length > 1"
+        v-if="doc.name && pipelines.data?.length > 1 && canWrite"
         :options="pipelineDropdownOptions"
         placement="right"
       >
@@ -41,7 +41,7 @@
         </template>
       </Dropdown>
       <Dropdown
-        v-if="doc && document.statuses"
+        v-if="doc && document.statuses && canWrite"
         :options="statuses"
         placement="right"
       >
@@ -57,6 +57,14 @@
           </Button>
         </template>
       </Dropdown>
+      <!-- where it stands, for whoever reads the deal and does not move it -->
+      <div
+        v-else-if="doc.status"
+        class="flex h-7 items-center gap-1.5 px-2 text-base text-ink-gray-7"
+      >
+        <IndicatorIcon :class="getDealStatus(doc.status).color" />
+        {{ statusLabel(doc.status) }}
+      </div>
     </template>
   </LayoutHeader>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
@@ -131,6 +139,7 @@
             />
 
             <Button
+              v-if="canWrite"
               :tooltip="__('Attach a File')"
               :icon="AttachmentIcon"
               @click="showFilesUploader = true"
@@ -166,7 +175,10 @@
           @afterFieldChange="reloadResources"
         >
           <template #actions="{ section }">
-            <div v-if="section.name == 'contacts_section'" class="pr-2">
+            <div
+              v-if="section.name == 'contacts_section' && canWrite"
+              class="pr-2"
+            >
               <Link
                 value=""
                 doctype="Contact"
@@ -238,7 +250,10 @@
                           />
                         </div>
                         <div class="flex items-center">
-                          <Dropdown :options="contactOptions(contact)">
+                          <Dropdown
+                            v-if="canWrite"
+                            :options="contactOptions(contact)"
+                          >
                             <Button
                               icon="lucide-more-horizontal"
                               class="text-ink-gray-5"
@@ -399,6 +414,7 @@ import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
+import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
 import { useBroadcast } from '@/composables/useBroadcast'
 import {
@@ -428,6 +444,7 @@ import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning
 
 const { on } = useBroadcast()
 const { brand } = getSettings()
+const { puo } = usersStore()
 const { $dialog, $socket, makeCall } = globalStore()
 const { statusOptions, getDealStatus } = statusesStore()
 const { pipelines, getStageNames, pipelineOptions } = pipelinesStore()
@@ -455,6 +472,7 @@ const {
   document,
   scripts,
   error,
+  canWrite,
 } = useDocument('CRM Deal', props.dealId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
@@ -607,6 +625,7 @@ const tabs = computed(() => {
       name: 'Events',
       label: __('Events'),
       icon: EventIcon,
+      condition: () => puo('agenda.vedi'),
     },
     {
       name: 'Tasks',
@@ -617,6 +636,7 @@ const tabs = computed(() => {
       name: 'Notes',
       label: __('Notes'),
       icon: NoteIcon,
+      condition: () => puo('note.vedi'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))

@@ -486,13 +486,18 @@ const showSidePanelModal = ref(false)
 let document = { doc: {} }
 let triggerOnChange
 let triggerButton = () => {}
+let permissions = null
 
 if (props.docname) {
   let d = useDocument(props.doctype, props.docname)
   document = d.document
   triggerOnChange = d.triggerOnChange
   triggerButton = d.triggerButton
+  permissions = d.permissions
 }
+
+// as useDocument's canWrite: the server's answer, writable until it comes
+const canWrite = computed(() => permissions?.data?.permissions?.write !== 0)
 
 const doc = computed(() => document.doc || {})
 
@@ -564,7 +569,8 @@ function parsedField(field) {
       field.mandatory_depends_on,
       doc.value,
     ),
-    read_only: effectiveReadOnly,
+    // a level that reads the record and does not change it (doc 30)
+    read_only: effectiveReadOnly || !canWrite.value,
   }
 
   _field.visible = isFieldVisible(_field, overrides?.hidden)

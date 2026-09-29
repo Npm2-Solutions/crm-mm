@@ -7,6 +7,7 @@
     :title="title"
     :doc="doc"
     :modalRef="modalRef"
+    :canWrite="canWrite"
     @write="write"
   />
   <!--
@@ -466,7 +467,12 @@
     read and not what you write in is a picker that gets ignored — but in «All»
     the box is free, and it opens where you were last written to.
   -->
-  <ComposerShell v-if="title == 'Activity'" :way="way">
+  <!-- writing to a person is conversing: Marketing, Accounting and the medical
+       director read the stream without a box to write in (doc 30) -->
+  <ComposerShell
+    v-if="title == 'Activity' && puo('conversazioni.usa')"
+    :way="way"
+  >
     <ChannelSwitcher :way="way" :drafts="drafted" @pick="pickWay" />
     <!-- a wrapper for v-show: the area has more than one root, and a
          directive on a component like that is silently ignored -->
@@ -507,7 +513,10 @@
   </ComposerShell>
   <!-- a channel's own tab: the same box, without the strip — the tab has
        already said which channel it is -->
-  <ComposerShell v-else-if="WRITES_ON[title]" :way="WRITES_ON[title]">
+  <ComposerShell
+    v-else-if="WRITES_ON[title] && puo('conversazioni.usa')"
+    :way="WRITES_ON[title]"
+  >
     <CommunicationArea
       v-if="['Emails', 'Comments'].includes(title)"
       ref="emailBox"
@@ -633,7 +642,7 @@ import {
 import { useRoute } from 'vue-router'
 
 const { $socket } = globalStore()
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 const { capture } = useTelemetry()
 const { isNewestFirst } = useTimelinePreferences()
 
@@ -653,7 +662,10 @@ const route = useRoute()
 const reload = defineModel('reload', { type: Boolean, default: false })
 const tabIndex = defineModel('tabIndex', { type: Number, default: 0 })
 
-const { document: _document } = useDocument(props.doctype, props.docname)
+const { document: _document, canWrite } = useDocument(
+  props.doctype,
+  props.docname,
+)
 
 const doc = computed(() => _document.doc || {})
 

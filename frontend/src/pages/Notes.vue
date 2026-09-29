@@ -5,6 +5,7 @@
     </template>
     <template #right-header>
       <Button
+        v-if="puo('note.scrivi')"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -111,7 +112,7 @@ import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
 import { call, Dropdown, Tooltip, ListFooter } from 'frappe-ui'
 import { ref, watch } from 'vue'
 
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 

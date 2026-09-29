@@ -187,6 +187,16 @@ export const usersStore = defineStore('crm-users', () => {
     return Boolean(permissions.data?.agency)
   }
 
+  /**
+   * Whether Read only takes every write away from the session: for what no
+   * capability covers, like tasks. Everything else asks `puo()`.
+   */
+  function solaLettura() {
+    return (
+      !isAgency() && (permissions.data?.levels || []).includes('sola_lettura')
+    )
+  }
+
   return {
     users,
     usersFull,
@@ -202,6 +212,7 @@ export const usersStore = defineStore('crm-users', () => {
     puoUno,
     ambito,
     isAgency,
+    solaLettura,
   }
 })
 

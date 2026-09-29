@@ -9,7 +9,7 @@
         </template>
       </Breadcrumbs>
       <div class="absolute right-0">
-        <Dropdown v-if="doc" :options="statuses">
+        <Dropdown v-if="doc && canWrite" :options="statuses">
           <template #default="{ open }">
             <Button
               v-if="doc.status"
@@ -22,6 +22,14 @@
             </Button>
           </template>
         </Dropdown>
+        <!-- where it stands, for whoever reads the deal and does not move it -->
+        <div
+          v-else-if="doc.status"
+          class="flex h-7 items-center gap-1.5 px-2 text-base text-ink-gray-7"
+        >
+          <IndicatorIcon :class="getDealStatus(doc.status).color" />
+          {{ statusLabel(doc.status) }}
+        </div>
       </div>
     </header>
   </LayoutHeader>
@@ -69,7 +77,10 @@
               @afterFieldChange="reloadAssignees"
             >
               <template #actions="{ section }">
-                <div v-if="section.name == 'contacts_section'" class="pr-2">
+                <div
+                  v-if="section.name == 'contacts_section' && canWrite"
+                  class="pr-2"
+                >
                   <Link
                     value=""
                     doctype="Contact"
@@ -146,7 +157,10 @@
                               />
                             </div>
                             <div class="flex items-center">
-                              <Dropdown :options="contactOptions(contact.name)">
+                              <Dropdown
+                                v-if="canWrite"
+                                :options="contactOptions(contact.name)"
+                              >
                                 <Button
                                   icon="lucide-more-horizontal"
                                   class="text-ink-gray-5"
@@ -286,6 +300,7 @@ import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
+import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
@@ -304,6 +319,7 @@ import { ref, computed, h, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const { brand } = getSettings()
+const { puo } = usersStore()
 const { $dialog, $socket } = globalStore()
 const { statusOptions, getDealStatus } = statusesStore()
 const { getStageNames } = pipelinesStore()
@@ -327,6 +343,7 @@ const {
   document,
   scripts,
   error,
+  canWrite,
 } = useDocument('CRM Deal', props.dealId)
 
 const doc = computed(() => document.doc || {})
@@ -447,6 +464,7 @@ const tabs = computed(() => {
       name: 'Events',
       label: __('Events'),
       icon: EventIcon,
+      condition: () => puo('agenda.vedi'),
     },
     {
       name: 'Tasks',
@@ -457,6 +475,7 @@ const tabs = computed(() => {
       name: 'Notes',
       label: __('Notes'),
       icon: NoteIcon,
+      condition: () => puo('note.vedi'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))

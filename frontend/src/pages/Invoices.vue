@@ -19,6 +19,7 @@
         @click="openSettings('Issuing company')"
       />
       <Button
+        v-if="puo('fatture.emetti')"
         variant="solid"
         :label="__('New invoice')"
         iconLeft="plus"
@@ -460,7 +461,8 @@ const pending = createResource({ url: 'crm.invoicing.api.pending_actions' })
 // showing tomorrow's bookings is a list nobody trusts.
 const daFatturare = createResource({
   url: 'crm.invoicing.api.appointments_to_invoice',
-  auto: true,
+  // a queue of invoices to issue, for whoever issues them: Read only reads
+  auto: puo('fatture.emetti'),
 })
 
 // Solo practitioner or centre. Derived from how many providers are enabled, so a
