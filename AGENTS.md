@@ -18,6 +18,7 @@ they run as evaluated strings in the browser.
 | Form scripting user guide | [feats/form-scripting/guide.md](./.pi/feats/form-scripting/guide.md) |
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
+| Any screen a phone will see (rules below) | [docs/progetto-ghl/29-telefono.md](./docs/progetto-ghl/29-telefono.md) |
 
 ---
 
@@ -78,6 +79,22 @@ they run as evaluated strings in the browser.
 | `crm/booking_platforms/` | Connectors (MioDottore, Treatwell, Calendly, Cal.com…), sync engine |
 | `crm/api/booking_platforms.py` | Webhook in, busy feed out, settings API |
 | `docs/prenotazioni/` | User guide + platform API research |
+
+---
+
+## Mobile
+
+`isMobileView` (< 768px) picks the phone components, so what changes on a phone
+uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
+
+- Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
+- Small controls get `.touch-target` (an invisible ring on touch screens); frappe-ui
+  switches already have it. Long dialogs put `.dialog-footer` on their actions
+  (frappe-ui's own `#actions` row gets the same treatment in `index.css`).
+- Titles have no fixed height; a header stacks title, description, then actions.
+- In a row the words get `min-w-0`, the control `shrink-0`; descriptions wrap.
+- Three or four fields per row become one (or two); tables keep a minimum column
+  width and scroll sideways.
 
 ---
 
