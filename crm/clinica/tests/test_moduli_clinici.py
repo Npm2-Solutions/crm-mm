@@ -9,12 +9,13 @@ Signed, it makes the person a patient (rule 1), with the form as the source.
 """
 
 import json
+from unittest import mock
 
 import frappe
 
 from crm.clinica import regole
 from crm.clinica.tests.test_paziente import ClinicCase
-from crm.moduli import compilazioni, consensi, modelli
+from crm.moduli import compilazioni, consensi, modelli, richieste
 from crm.moduli.tests.test_compilazioni import tratto
 from crm.permissions import livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
@@ -95,3 +96,22 @@ class ModuliClinici(ClinicCase):
 		self.come(DOC)
 		self.assertEqual(compilazioni.get_form(nome)["answers"], {"allergie": "Nessuna"})
 		self.assertIn(nome, frappe.get_list(compilazioni.MODULO, pluck="name"))
+
+	def test_firmato_sul_tablet_lo_registra_chi_lo_ha_consegnato(self):
+		self.come(DOC)
+		with mock.patch.object(richieste, "_segreto", return_value="tablet-" + "t" * 25):
+			[riga] = richieste.hand_over_tablet(self.mario.name, json.dumps([self.anamnesi]))["requests"]
+			frappe.set_user("Guest")
+			sessione = richieste.open_request("tablet-" + "t" * 25)["session"]
+		richieste.sign_request(
+			"tablet-" + "t" * 25,
+			riga["name"],
+			json.dumps({"allergie": "Nessuna"}),
+			json.dumps({"firma": tratto()}),
+			session=sessione,
+		)
+		frappe.set_user("Administrator")
+		scheda = self.scheda(self.mario)
+		self.assertEqual(scheda.rule, regole.INFORMAZIONE_MEDICA.valore)
+		# nobody was logged in on the tablet: the one who handed it over
+		self.assertEqual(scheda.recorded_by, DOC)
