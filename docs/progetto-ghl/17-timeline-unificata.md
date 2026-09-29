@@ -477,3 +477,90 @@ ricerca di nuovo il numero, cosa che può spostarlo su un altro record.
 da «In attesa di risposta» perché l'ultima parola è nostra, ma resta fra le
 Aperte: si può rispondere a una domanda e dovere ancora la cosa promessa.
 Toglierla dal mucchio è «Gestita».
+
+## Scrivere, e vedere dove si scrive (29/09/2026)
+
+Il giro precedente aveva messo a posto cosa si legge. Questo riguarda quello
+che si fa con le mani: aprire una chat, cliccare nella casella, scrivere,
+cambiare canale, rispondere a un'email, lasciar perdere.
+
+### Si apre dove leggi
+
+Ogni chat veniva disegnata dalla cima e mezzo secondo dopo scorreva fino in
+fondo, con un'animazione: si vedeva passare tutta la storia. E siccome le sue
+parti arrivano una dopo l'altra (storia, WhatsApp, SMS), compariva con la prima
+e saltava all'arrivo delle altre.
+
+Ora resta nascosta finché non è arrivato tutto, poi si mette sulla riga dei
+nuovi messaggi, o in fondo, e solo allora compare. Da lì segue la conversazione
+solo se sei in fondo. Un messaggio che arriva, un'immagine che carica, un'email
+che prende la sua altezza, il compositore che cresce: l'ultimo messaggio resta
+in vista. Chi è risalito a leggere resta dov'è, a meno che non mandi qualcosa.
+L'email è il caso che sfuggiva: è disegnata in un riquadro alto 40px che si
+allarga solo dopo aver caricato. Lo scorrimento guardava le misure del
+contenitore, non quelle del contenuto, e la chat si apriva con l'ultima email
+tagliata dal compositore. L'etichetta della data compare solo quando sei tu a
+scorrere.
+
+### Le nuvolette sono una forma sola
+
+La punta era un triangolo appoggiato a un angolo arrotondato. Dove la curva si
+staccava dal lato dritto si vedeva il gradino, e l'ombra si fermava alla
+giunzione: sembrava incollata. Ora l'angolo da cui parte è squadrato, la punta
+è la curva di WhatsApp che prosegue il bordo superiore, ha lo stesso colore
+della nuvoletta (`background: inherit`) e ci entra sotto di un pixel. L'ombra
+è un `drop-shadow`, che segue anche la punta. La punta c'è solo sul primo
+messaggio di una serie, come nelle app di messaggi.
+
+Il tema scuro di WhatsApp non arrivava alle nuvolette: le regole erano scritte
+`:global([data-theme='dark']) .wa-in`, e Vue compila quella forma nel solo
+`[data-theme=dark]`, perdendo il resto. Il verde finiva sull'`<html>` della
+pagina.
+
+### Un solo modo di scrivere
+
+WhatsApp era una riga che cresce. Email e nota erano una riga che, cliccata,
+diventava un modulo: A, CC, Oggetto, un editor dentro una cornice dentro la
+cornice del compositore, una barra di titoli. Il modulo restava aperto finché
+non si premeva Scarta, anche vuoto. Ora ogni canale è la stessa riga: prima il
+testo, poi gli strumenti, poi il pulsante che invia.
+
+| Cosa | Prima | Ora |
+|---|---|---|
+| Clic nella casella | Su WhatsApp non cambiava niente; su email apriva il modulo | Il riquadro prende il colore del canale (verde, blu, viola, ambra per la nota), con un alone. Il segnaposto resta finché non scrivi |
+| Scrivere | WhatsApp e SMS crescevano solo con gli Invio: una frase lunga restava su una riga | Cresce con quello che scrivi, anche quando va a capo da sola, fino a sei righe (email e nota fino a 2/5 dello schermo) |
+| Destinatari e oggetto dell'email | Sempre aperti, quattro righe | Una riga, «A giulia@… · oggetto». Si apre con un clic, da sola se scrivi senza destinatari e quando una risposta mette qualcuno in copia |
+| Formattazione | Barra sempre visibile | Arriva quando la chiedi (Aa) |
+| Firma | Inserita nella casella al primo clic: quattro righe prima di scrivere, e la casella restava alta | Aggiunta all'invio, sotto il testo e sopra l'email citata. Una riga dice quale, e si può togliere per quell'email |
+| Scartare | Un pulsante «Scarta» sempre presente, senza ritorno | Un cestino, solo se c'è qualcosa, con Annulla nel toast. Gli allegati si cancellano solo dopo |
+| Inviare | La casella si chiudeva e la bozza restava fino alla risposta del server | Si svuota subito. Se l'invio fallisce, la bozza torna |
+| Bozze | Solo email e nota restavano per scheda; WhatsApp e SMS si perdevano cambiando scheda | Tutte per persona e per scheda. Il compositore si riapre sul canale della bozza, un puntino sulla scheda segnala una bozza altrove, e un messaggio in arrivo su un altro canale non sposta il compositore mentre scrivi |
+
+**Il contorno che nessuno aveva disegnato.** Il riquadro grigio attorno al
+testo dell'email non era nel codice del CRM. Era l'anello di focus del
+browser. frappe-ui porta le regole dei suoi editor (niente contorno, colore del
+cursore, segnaposto) e le importa dal suo punto d'ingresso. Il pacchetto però
+dichiara che solo CSS e Vue hanno effetti collaterali, e il bundler ha scartato
+l'import. Ora il foglio di stile dell'editor è importato direttamente, e il
+contorno sparisce da tutti gli editor del CRM, non solo da qui.
+
+### Rispondere a un'email
+
+| Caso | Prima | Ora |
+|---|---|---|
+| Rispondi a un cliente | Il mittente era l'indirizzo del cliente | Il mittente è la nostra casella che l'ha ricevuta |
+| Rispondi a una tua email | Andava a te stesso | Va a chi l'aveva ricevuta |
+| Rispondi a tutti | In copia c'eravamo anche noi | In copia tutti gli altri, mai noi |
+| Avevi già scritto qualcosa | Veniva cancellato | Resta sopra la citazione |
+| L'email citata | Intera nella casella, fino a riempirla | Piegata sotto il testo, come appare una volta inviata, con «Mostra l'email a cui rispondi» |
+| La seconda risposta di fila | Il compositore non si apriva: si apriva con un flag già vero | Si apre sempre, col cursore dove va la risposta |
+
+Da qualunque scheda di un lead, «Invia un'email» porta su Activity con il
+compositore sull'email: cercava una scheda «Emails» che non c'è più, e da
+qualunque altra scheda non faceva niente.
+
+I file: `ComposerShell.vue` (il riquadro), `CommunicationArea.vue`,
+`EmailEditor.vue`, `CommentBox.vue`, `WhatsAppBox.vue`, `SMSBox.vue`;
+`composables/growingTextarea.js`, `composables/drafts.js`,
+`composables/conversationScroll.js`; `utils/emailDraft.js` (firma, citazione,
+indirizzi di risposta), testato in `tests/unit/emailDraft.test.js`.

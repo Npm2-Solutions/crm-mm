@@ -146,11 +146,13 @@ La pagina **Calendar** ha due viste sugli stessi dati:
 
 Filtri per servizio, professionista, risorsa e stato sopra entrambe.
 
-L'editor appuntamento parte dal servizio (che porta durata, staffing e risorse),
-cerca gli slot liberi a 7 giorni mostrando anche i "unisciti" delle sessioni di
-gruppo, auto-assegna, collega i partecipanti a lead/contatti/deal, calcola il
-prezzo dal server dicendo **quale regola** ha vinto, e mostra i conflitti in
-tempo reale con l'override per i manager.
+L'appuntamento si apre nello stesso pannello laterale degli eventi (vedi «Un
+calendario, due cose» qui sotto). Parte dal servizio, che porta durata,
+staffing e risorse. Cerca gli orari liberi a 7 giorni, mostrando anche i posti
+liberi («unisciti») delle sessioni di gruppo, e assegna chi è libero. Il
+cliente si cerca fra le persone del CRM, o si scrive un nome. Il prezzo lo
+calcola il server, dicendo **quale regola** ha vinto, e i conflitti compaiono
+mentre si modifica, con l'override per i manager.
 
 Impostazioni dedicate nel gruppo **Agenda** del modale, nell'ordine in cui si
 configura: Servizi → Stanze & Attrezzature → Listini → Orari di lavoro →
@@ -170,6 +172,52 @@ Scheduling.
   motore condiviso, quindi un professionista pieno di appuntamenti interni non
   appare più libero ai visitatori della pagina pubblica.
 
+## Un calendario, due cose (29/09/2026)
+
+Appuntamenti ed eventi finiscono nello stesso calendario, ma ci si arrivava da
+due porte diverse e ci si lavorava in due modi diversi:
+
+- nell'intestazione due pulsanti, «Evento» e «Appuntamento»;
+- un clic su uno spazio vuoto creava sempre un evento, anche per chi prenota
+  clienti tutto il giorno;
+- l'evento si apriva in un pannello a lato, che si legge dall'alto in basso,
+  una riga per cosa, con il calendario ancora visibile;
+- l'appuntamento era una finestra larga quattro colonne sopra tutto, con ogni
+  campo aperto insieme: servizio, data, inizio, minuti, professionisti, sale,
+  partecipanti con nome, email, stato e importo ciascuno, listino, prezzo.
+  Tutto verde, per giunta.
+
+Le strade possibili erano tre: fondere i due modelli, mettere un selettore, o
+far diventare l'uno l'altro in base a un criterio (c'è un servizio o no). Il
+criterio è quello giusto: un appuntamento *è* un servizio per un cliente, con
+chi lo eroga e dove, e un evento è tutto il resto (una riunione, una
+chiamata, del tempo bloccato). I due modelli restano separati. Fonderli
+avrebbe voluto dire migrare i dati, e perdere l'`Event` che il framework
+sincronizza con Google. A essere unificato è il modo di arrivarci e di
+lavorarci.
+
+| Cosa | Prima | Ora |
+|---|---|---|
+| Creare | Due pulsanti; il clic su uno spazio vuoto faceva sempre un evento | Un solo «Nuovo» (Mod+E) e il clic sul vuoto aprono il pannello su quello che hai creato l'ultima volta. La prima riga del pannello è il selettore Appuntamento / Evento, e cambiando tiene giorno e ora. Il clic sulla riga «tutto il giorno» è un evento, perché un appuntamento ha un orario. Senza servizi configurati c'è solo l'evento |
+| Aprire un appuntamento | Finestra modale sopra il calendario | Lo stesso pannello laterale degli eventi, anche nella vista Agenda |
+| Leggerlo | Il modulo di modifica | Chi, quando, con chi, dove, quanto, da dove arriva la prenotazione. Lo stato si cambia con un clic (confermato, completato, non presentato, annullato), e così la presenza di ogni cliente |
+| Modificarlo | Tutto aperto insieme | Una riga per cosa, come nell'evento: servizio, cliente, giorno e orari (spostare l'inizio tiene la durata), «Trova un orario libero», professionisti, sale solo se ce ne sono, luogo, note, prezzo. Stato, listino e importi per cliente stanno in «Altre opzioni» |
+| Eliminarlo | Senza conferma | Una conferma che propone di annullarlo invece: l'annullato resta nello storico, e libera comunque l'orario |
+| Colori | Tutto verde: il calendario conosce sette nomi e sette esadecimali, e il resto lo disegnava verde. I colori dei servizi sono esadecimali qualunque, e il pannello evento salvava la variabile CSS (`var(--ink-amber-7)`) | Ogni colore va al più vicino dei sette. Il calendario impara il grigio e il rosso. Gli annullati sono grigi. L'evento salva l'esadecimale |
+| Filtri | Servizio, professionista, sala, stato e fonte filtravano gli appuntamenti; gli eventi restavano | Un filtro su una di queste cose nasconde gli eventi, che non ne hanno nessuna. Accanto, il conteggio: «5 appuntamenti · 1 evento» |
+| Dalla persona | Gli appuntamenti non comparivano da nessuna parte, fuori dal calendario | La scheda «Eventi» di un lead o di una trattativa elenca anche i suoi appuntamenti, prima i prossimi e poi i passati. Un clic apre il calendario su quel giorno. «Prenota un appuntamento» (nel menu Nuovo e nella scheda) apre il calendario con il cliente già inserito |
+
+Un dettaglio che si vedeva solo usandolo: con «Nuovo» senza uno spazio
+cliccato, l'ora proposta era quella attuale arrotondata per difetto, cioè un
+orario già passato. Ora è il prossimo quarto d'ora.
+
+File: `components/Calendar/AppointmentPanel.vue` (al posto di
+`AppointmentDialog.vue`), `KindSwitch.vue`, `CalendarEventPanel.vue` (il posto
+per il selettore, il colore esadecimale), `pages/Calendar.vue`;
+`utils/calendarColors.js`, `composables/scheduling.js`;
+`crm/api/appointments.py:get_person_appointments`;
+`components/Activities/EventArea.vue` e `ActivityHeader.vue` per la persona.
+
 ## Test
 
 - `crm/tests/test_scheduling.py` — algebra degli intervalli, i tre modelli di
@@ -179,7 +227,13 @@ Scheduling.
 - `crm/tests/test_booking.py` — un caso in più: un appuntamento interno blocca
   uno slot pubblico.
 - `frontend/tests/unit/scheduler.test.js` — geometria della griglia (lane degli
-  appuntamenti sovrapposti, box, assi, colonne).
+  appuntamenti sovrapposti, box, assi, colonne), fine di un appuntamento dalla
+  durata.
+- `frontend/tests/unit/calendarColors.test.js` — ogni colore salvato
+  (nome, esadecimale, variabile CSS) al colore del calendario più vicino; gli
+  annullati grigi.
+- `crm/tests/test_scheduling.py` — anche gli appuntamenti di una persona, e di
+  una trattativa attraverso la sua persona.
 
 ## Prossimi passi
 
