@@ -92,14 +92,17 @@ they run as evaluated strings in the browser.
 | `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability |
 | `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
 | `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
-| `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates) asks for the capability |
+| `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability; ERPNext is the agency's |
+| `frontend/src/router.js`, `components/Settings/Settings.vue` | Each route declares `meta.richiede`, each settings page its `condition`: hidden from the menu means closed at its address too |
 
 Code asks for a capability (`puo("fatture.emetti")`, `@richiede(...)`), never for a
 role name; the frontend asks `usersStore().puo(...)`. A new module registers its
 roles, levels and capabilities from its own `registra()`. A new document that
 belongs to a person follows them with `org_hierarchy`'s bricks (one condition for
 list and record); a new settings document gets its capability in `documenti.SCRITTURA`
-and the hook in `hooks.py`.
+and the hook in `hooks.py`. On a settings page, what is the agency's (keys, endpoints,
+webhook secrets, a tag for a website) sits on permlevel 1, System Manager's only, the
+screen shows it on `puo('tecnico.integrazioni')` and its methods ask for that.
 
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |

@@ -1308,3 +1308,42 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/hooks.py` | Gli hook |
 | `frontend/src/pages/Calendar.vue`, `components/Calendar/ResourceScheduler.vue` | Il tempo occupato, nelle due viste |
 | `crm/tests/test_ambiti.py`, `crm/tests/test_billing_profile.py` | I test; la segreteria ora vede i dati fiscali di tutto il centro |
+
+## Lo schermo chiede la capacità, e le impostazioni si dividono
+
+> **Completato** (29/09/2026). La PR 3 del doc 30. Menu, rotte, pulsanti e pagine
+> delle impostazioni chiedono la capacità; quello che è dell'agenzia su una pagina
+> (chiavi, indirizzi, segreti, lo script del sito) sta su un livello di permesso a
+> parte; ERPNext e i Predefiniti passano all'agenzia.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| `isManager()`, `isAdmin()` e `isSalesUser()` escono dallo store | Il ruolo non distingue più i livelli (tutti hanno Sales User); tenerle invitava a riusarle |
+| Le rotte dichiarano `meta.richiede`, e senza la capacità si torna alla prima pagina che il livello apre | Una pagina tolta dal menu si apriva ancora dall'indirizzo; la home non deve mandare su una vista predefinita che il livello non apre |
+| Ogni pagina delle impostazioni ha la sua `condition`, e un gruppo compare se una sua pagina compare | Prima il gruppo intero era del Manager: la Segreteria non trovava turni e sale, che sono suoi |
+| Le sale solo con `agenda.turni` su tutto il centro | L'Operatore ha i suoi turni; le sale sono di tutti e non le poteva salvare |
+| La parte dell'agenzia su **permlevel 1**, solo System Manager | È il modo di Frappe: il Manager non la riceve e un suo salvataggio la lascia com'era, da qualunque strada passi. Per i singoli `get_value` guarda il documento e non il campo: i segreti restano anche Password |
+| Collegare e scollegare Twilio ed Exotel è dell'agenzia; registrare le chiamate e gli ID chiamante del centro | Senza credenziali non si collega niente; se registrare è una decisione del centro, con il suo avviso |
+| La trascrizione la accende il centro, il servizio lo configura l'agenzia | Come farà l'assistente (doc 30): il Manager lo accende, fornitore e regione sono dell'agenzia. Se manca il servizio, il messaggio lo dice |
+| L'indirizzo del webhook delle piattaforme di prenotazione resta al Manager | È quello che si incolla nella piattaforma: senza, il Manager non finisce di collegarla. Il doc 30 lo dava all'agenzia; il test `test_a_manager_still_gets_the_urls_to_paste_into_the_platform` lo voleva già così |
+| La Gerarchia la costruisce il Manager | Il doc 30 ("Man"); prima la modificava solo System Manager. I nodi mostrano i livelli, non Sales Manager e Sales User |
+| La lista delle chiamate non si rompe per un utente cancellato | Una chiamata demo con un destinatario che non c'è più mandava in errore tutto il registro |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `frontend/src/stores/users.js` | `puoUno()`, `isAgency()`; via le funzioni dei ruoli |
+| `frontend/src/router.js` | `meta.richiede` sulle rotte, la guardia, la prima pagina del livello |
+| `frontend/src/components/Settings/Settings.vue`, `Layouts/AppSidebar.vue` e una ventina di componenti | Menu, impostazioni e pulsanti per capacità |
+| `frontend/src/components/Settings/DashboardSettings.vue`, `Telephony/TwilioSettings.vue`, `ExotelSettings.vue`, `TranscriptionSettings.vue`, `TrackingSettings.vue`, `Invoicing/ProviderConnection.vue` | La parte dell'agenzia con `tecnico.integrazioni` |
+| `frontend/src/components/Settings/Hierarchy/Hierarchy.vue` | I livelli al posto dei ruoli |
+| `crm/fcrm/doctype/fcrm_settings`, `crm_twilio_settings`, `crm_exotel_settings`, `crm_transcription_settings`, `crm_tracking_settings` (JSON) | I campi dell'agenzia su permlevel 1 |
+| `crm/fcrm/doctype/crm_twilio_settings/`, `crm_exotel_settings/`, `crm_transcription_settings/`, `erpnext_crm_settings/` | I metodi per capacità; collegare un provider è dell'agenzia |
+| `crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.json` | Il Sales Manager scrive la gerarchia |
+| `crm/permissions/documenti.py`, `crm/hooks.py` | Gerarchia, SLA, ID chiamante ed ERPNext per capacità |
+| `crm/api/tracking.py`, `crm/invoicing/api.py` | Lo script del sito e il segreto del webhook all'agenzia |
+| `crm/fcrm/doctype/crm_call_log/crm_call_log.py` | Un utente cancellato non rompe la lista |
+| `crm/tests/test_impostazioni_divise.py`, `test_settings_methods.py`, `test_integration_secrets.py` | I test |
