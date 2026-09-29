@@ -19,11 +19,11 @@ Pure: dictionaries in, dictionaries out. The rules can be checked without a site
 from __future__ import annotations
 
 import re
-import unicodedata
 from datetime import date
 
 from crm.invoicing.engine import codice_fiscale as cf
 from crm.invoicing.engine.codici import TipoDestinatario
+from crm.persone.legami import stesso_nome
 
 #: Who the invoice is made out to, beyond the name.
 IDENTIFICATIVI = ("fiscal_code", "tax_id", "recipient_code", "pec")
@@ -98,13 +98,6 @@ def da_completare(profilo: dict, fattura: dict) -> dict:
 	return valori
 
 
-def _parole(*testi: str | None) -> frozenset[str]:
-	insieme = " ".join(t for t in testi if t)
-	senza_accenti = unicodedata.normalize("NFKD", insieme)
-	senza_accenti = "".join(c for c in senza_accenti if not unicodedata.combining(c))
-	return frozenset(re.findall(r"[a-z]+", senza_accenti.lower()))
-
-
 def stessa_persona(fattura: dict, persona: dict) -> bool:
 	"""The invoice is made out to this person, not to whoever pays for them.
 
@@ -117,11 +110,10 @@ def stessa_persona(fattura: dict, persona: dict) -> bool:
 	name holds all the words of the other it is the same person, written more or
 	less completely; a first name that is not there at all is somebody else.
 	"""
-	sulla_fattura = _parole(fattura.get("first_name"), fattura.get("last_name"))
-	nel_crm = _parole(persona.get("first_name"), persona.get("last_name"))
-	if not (sulla_fattura and nel_crm):
-		return False
-	return sulla_fattura <= nel_crm or nel_crm <= sulla_fattura
+	return stesso_nome(
+		" ".join(p for p in (fattura.get("first_name"), fattura.get("last_name")) if p),
+		" ".join(p for p in (persona.get("first_name"), persona.get("last_name")) if p),
+	)
 
 
 # ----------------------------------------------------------------- the values
