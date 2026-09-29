@@ -1379,3 +1379,48 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/api/settings.py` | Gli account email per capacità |
 | `frontend/src/components/Settings/EmailAccountList.vue`, `EmailEdit.vue`, `emailConfig.js`, `Profile/UserEmailSettings.vue`, `Booking/BookingPlatforms.vue` | Le pagine sulle API del CRM |
 | `crm/tests/test_documenti_del_core.py` | I test, compresa un'importazione vera |
+
+## I livelli facoltativi: Marketing, Amministrazione, Sola lettura
+
+> **Completato** (29/09/2026). La PR 4 del doc 30. Il Marketing vede le persone con
+> email e telefoni mascherati dalla maschera di Frappe; l'Amministrazione fa la
+> fatturazione; la Sola lettura si aggiunge a un livello e toglie ogni scrittura.
+> Scrivere persone e trattative, leggere chiamate, note ed email chiede la capacità.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| La maschera di Frappe (`mask` sul campo, permesso `mask` al ruolo) e non una del CRM | Copre scheda, liste, esportazioni e salvataggi da qualunque strada; una maschera nelle API del CRM lasciava aperte `frappe.client` e `reportview` |
+| Il ruolo che vede in chiaro (`Contact Details`) lo portano tutti i livelli tranne il Marketing, dal registro | Ogni livello ha Sales User: il permesso di vedere in chiaro non poteva stare lì. Un livello nuovo lo porta da sé (`Livello.recapiti`) |
+| Niente regola per Guest | Il ruolo Guest ce l'hanno tutti gli utenti collegati: toglieva la maschera anche al Marketing. `frappe.db.get_value` e `get_all` non mascherano, e gli invii leggono con `stored_value` |
+| Chi è fuori dai livelli riceve `Contact Details` (patch e hook su User) | Conta come il livello che i suoi ruoli implicano, e quei livelli vedono i recapiti: nessuno perde quello che vedeva |
+| La rubrica (Contact) negata a chi vede mascherato, non mascherata | La maschera su un doctype del core varrebbe per tutto il sito, anche per gli utenti delle altre app |
+| Scrivere ed eliminare persone e trattative chiede la capacità | Vedere bastava, con Sales User: la Direzione sanitaria poteva modificare ed eliminare persone dall'API |
+| Chiamate e note chiedono la loro capacità oltre alla persona; le email `conversazioni.usa` | Il doc 30: si vede quello che è della persona se si vede la persona *e* se il livello ha la capacità per quel dato |
+| Sola lettura: un hook `has_permission` su ogni documento, con le notifiche e il profilo propri esclusi | Il registro toglie le capacità che scrivono, ma i ruoli del livello a cui si aggiunge scrivono ancora con l'API |
+| Il Marketing ha un ruolo suo sui documenti del marketing | Senza Sales Manager, che gli avrebbe dato anche il resto |
+| `conversazioni.vedi` e `note.vedi` accanto a `conversazioni.usa` e `note.scrivi` | La Sola lettura perde le capacità che scrivono: se leggere chiedeva quelle, non leggeva più le conversazioni e le note del suo livello |
+| Rispondere chiede di conversare e di vedere, non di modificare il record | L'Operatore non modifica le trattative, e ci risponde |
+| `crm.api.doc.get_doc_permissions` al posto di quello di Frappe | Frappe chiede ai controller solo la lettura: la scheda offriva campi e pulsanti che il server rifiuta |
+| L'assegnazione passa da `override_whitelisted_methods` | Frappe la concede a chi legge; le regole di assegnazione chiamano le funzioni direttamente e non passano da lì |
+| Un controllo al salvataggio, oltre agli hook `has_permission` | Il CRM condivide persone e trattative con il proprietario in scrittura, e Frappe concede quello che è condiviso senza chiedere ai controller |
+| `dashboard.centro` per vedere, `dashboard.condivise` per condividere | Erano una capacità sola, che scrive: la Sola lettura perdeva la dashboard, e un Manager in sola lettura i numeri del centro |
+| La pagina delle fatture con `fatture.vedi` e ambito centro | La Sola lettura legge il registro; l'Operatore, che vede solo le sue, le trova sulla persona come prima |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/permissions/livelli.py`, `catalogo.py`, `crm/invoicing/capacita.py` | I livelli, le colonne Mkt e Amm, `RUOLO_RECAPITI` |
+| `crm/permissions/org_hierarchy.py`, `seguono.py`, `documenti.py`, `utenti.py`, `crm/hooks.py` | Scritture per capacità (anche al salvataggio), chiamate e note, email, rubrica, Sola lettura, assegnazioni, `Contact Details` fuori dai livelli |
+| `crm/api/doc.py`, `crm/integrations/api.py` | I permessi di un documento come li giudica il server; i pulsanti di chiamata a chi chiama |
+| `crm/dashboard/context.py`, `store.py`, `crm/api/dashboard.py` | Vedere i numeri, condividere, fare dashboard proprie: tre capacità |
+| `frontend/src/router.js`, `utils/dashboard.js`, `components/Layouts/AppSidebar.vue`, `pages/Dashboard.vue`, `pages/Invoices.vue` | Rotte con l'ambito, la dashboard a chi legge i numeri, l'onboarding e il registro delle fatture per capacità |
+| `crm/fcrm/doctype/crm_lead`, `crm_deal` (JSON) | La maschera su email e telefoni, chi la toglie |
+| I JSON dei doctype del marketing (automazioni, social, tracciamento, Meta, sito) | Il ruolo Marketing |
+| `crm/api/activities.py`, `crm/api/whatsapp.py`, `crm/utils/__init__.py` | La cronologia per livello; il numero vero per gli invii |
+| `crm/patches/v1_0/contact_details_for_users_outside_levels.py` | Il ruolo a chi è fuori dai livelli |
+| `frontend/src/pages/Lead.vue`, `Deal.vue`, `MobileLead.vue`, `MobileDeal.vue`, `Notes.vue` | Schede, pulsanti e testata per capacità e per `canWrite` |
+| `frontend/src/data/document.js`, `stores/users.js`, `components/SidePanelLayout.vue`, `AssignTo.vue`, `EnrichFromWebsite.vue`, `Activities/*` | `canWrite` dal server, `solaLettura()`, il pannello in sola lettura, il menu "Nuovo" per capacità; `Settings/LevelPicker.vue` mette la Sola lettura a parte |
+| `crm/permissions/test_livelli.py`, `crm/tests/test_livelli_facoltativi.py` | I test |
