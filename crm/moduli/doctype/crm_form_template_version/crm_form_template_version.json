@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-30 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template",
+  "version",
+  "title",
+  "use",
+  "clinical",
+  "specialty",
+  "column_main",
+  "published_on",
+  "published_by",
+  "asked_from",
+  "notes",
+  "schema_section",
+  "schema",
+  "schema_hash"
+ ],
+ "fields": [
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Template",
+   "options": "CRM Form Template",
+   "read_only": 1,
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "use",
+   "fieldtype": "Data",
+   "label": "Use",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "clinical",
+   "fieldtype": "Check",
+   "label": "Health data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "specialty",
+   "fieldtype": "Data",
+   "label": "Specialty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Published on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_by",
+   "fieldtype": "Link",
+   "label": "Published by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "asked_from",
+   "fieldtype": "Date",
+   "label": "Asked again from",
+   "read_only": 1,
+   "description": "Whoever signed an earlier version is asked to sign this one from this day."
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "What changed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "schema_section",
+   "fieldtype": "Section Break",
+   "label": "What it asks"
+  },
+  {
+   "fieldname": "schema",
+   "fieldtype": "JSON",
+   "label": "Schema",
+   "read_only": 1,
+   "description": "Frozen: the questions, the words to read and the consents' texts exactly as they are signed."
+  },
+  {
+   "fieldname": "schema_hash",
+   "fieldtype": "Data",
+   "label": "SHA-256",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Moduli",
+ "name": "CRM Form Template Version",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "share": 1,
+   "write": 1,
+   "role": "System Manager"
+  },
+  {
+   "create": 1,
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "version",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "format:{template}-v{version}",
+ "naming_rule": "Expression",
+ "title_field": "title",
+ "show_title_field_in_link": 1
+}

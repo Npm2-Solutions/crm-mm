@@ -3,11 +3,11 @@
 
 """What every client of the CRM needs about forms and consents.
 
-Today the consent register: who agreed to what, on which words, when and how. The
-form templates, the signatures and the PDFs will live here too (phase 2 of the
-medical centre project, `docs/gestionale-medico/design.md`), because a privacy
-notice or a marketing consent is not a clinical matter: a gym needs them as much
-as a clinic does.
+The consent register: who agreed to what, on which words, when and how. The form
+templates and their versions (`schema`, `modelli`), and next the signatures and
+the PDFs (phase 2 of the medical centre project, `docs/gestionale-medico/design.md`),
+because a privacy notice or a marketing consent is not a clinical matter: a gym
+needs them as much as a clinic does.
 
 Other modules add their own kinds of consent through `registro.registra_tipo`, the
 way they add capabilities: the clinic will bring the health dossier and online

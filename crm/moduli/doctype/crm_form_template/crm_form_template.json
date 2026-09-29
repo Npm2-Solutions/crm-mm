@@ -1,0 +1,187 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-30 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "use",
+  "column_main",
+  "enabled",
+  "clinical",
+  "specialty",
+  "description",
+  "asking_section",
+  "ask_on",
+  "services",
+  "column_asking",
+  "validity",
+  "draft_section",
+  "schema",
+  "published_section",
+  "current_version",
+  "column_published",
+  "current_version_number",
+  "published_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "default": "Form",
+   "fieldname": "use",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Use",
+   "description": "A form the person fills. With the medical centre, also a clinical sheet or a plan."
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "clinical",
+   "fieldtype": "Check",
+   "label": "Health data",
+   "description": "Filling it records health data: only the care team reads it, and with the medical centre it makes the person a patient."
+  },
+  {
+   "fieldname": "specialty",
+   "fieldtype": "Data",
+   "label": "Specialty"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "What it is for",
+   "description": "For the staff."
+  },
+  {
+   "fieldname": "asking_section",
+   "fieldtype": "Section Break",
+   "label": "When it is asked"
+  },
+  {
+   "default": "By hand",
+   "fieldname": "ask_on",
+   "fieldtype": "Select",
+   "label": "Asked",
+   "options": "By hand\nFirst appointment\nServices"
+  },
+  {
+   "depends_on": "eval:doc.ask_on=='Services'",
+   "fieldname": "services",
+   "fieldtype": "Table MultiSelect",
+   "label": "For these services",
+   "options": "CRM Form Template Service"
+  },
+  {
+   "fieldname": "column_asking",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Forever",
+   "fieldname": "validity",
+   "fieldtype": "Select",
+   "label": "Valid",
+   "options": "Forever\nOne year\nEvery appointment",
+   "description": "How long a signed one counts before it is asked again."
+  },
+  {
+   "fieldname": "draft_section",
+   "fieldtype": "Section Break",
+   "label": "Draft"
+  },
+  {
+   "fieldname": "schema",
+   "fieldtype": "JSON",
+   "label": "Schema",
+   "description": "The draft, built in Settings > Forms. People fill the published version, never the draft."
+  },
+  {
+   "fieldname": "published_section",
+   "fieldtype": "Section Break",
+   "label": "Published"
+  },
+  {
+   "fieldname": "current_version",
+   "fieldtype": "Link",
+   "label": "Current version",
+   "options": "CRM Form Template Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_published",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_version_number",
+   "fieldtype": "Int",
+   "label": "Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "label": "Published on",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Moduli",
+ "name": "CRM Form Template",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "share": 1,
+   "write": 1,
+   "role": "System Manager"
+  },
+  {
+   "create": 1,
+   "export": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "hash",
+ "naming_rule": "Random",
+ "search_fields": "use",
+ "show_title_field_in_link": 1,
+ "title_field": "title",
+ "track_changes": 1
+}
