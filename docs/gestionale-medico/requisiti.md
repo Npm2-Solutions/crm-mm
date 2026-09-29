@@ -35,7 +35,7 @@ l'agenzia. Serve una gestione dei ruoli propria del CRM.
   responsabile del centro non può promuovere nessuno senza di voi.
 - Il frontend decide con `isAdmin()` (System Manager) e `isManager()` (Sales
   Manager o System Manager) in `frontend/src/stores/users.js`. Il backend ha
-  l'insieme `MANAGER_ROLES` copiato in **16 file**.
+  l'insieme `MANAGER_ROLES` copiato in **19 file**.
 - Per entrare nel CRM serve Sales User, Sales Manager o System Manager
   (`crm.api.check_app_permission`). La fatturazione ha i suoi ruoli, Invoicing
   Manager e Invoicing User, ma Sales User può leggere ed esportare tutte le
@@ -67,7 +67,7 @@ l'agenzia. Serve una gestione dei ruoli propria del CRM.
   Manager, Invoicing Manager…) più quelli nuovi (per esempio *CRM Admin* al posto
   di System Manager nei controlli del CRM, e un ruolo clinico per l'operatore).
 - **Un solo posto decide chi può cosa**: un modulo (per esempio
-  `crm/permissions/livelli.py`) al posto delle 16 copie di `MANAGER_ROLES`, e un
+  `crm/permissions/livelli.py`) al posto delle 19 copie di `MANAGER_ROLES`, e un
   livello calcolato dal server che il frontend legge invece di confrontare nomi di
   ruolo in `isManager()`.
 - **La gestione dei ruoli sta nel CRM**: Impostazioni → Utenti, con invito per
@@ -254,7 +254,7 @@ e un token in `/prenota` (sposta o annulla). Frappe ha già gli utenti del sito
 
 | Pezzo | sp |
 |---|---|
-| Tre livelli, gestione ruoli nel CRM, le 16 copie di `MANAGER_ROLES` in un posto solo | 1,5–2 |
+| Tre livelli, gestione ruoli nel CRM, le 19 copie di `MANAGER_ROLES` in un posto solo | 1,5–2 |
 | Sito nascosto senza Builder | 0,1 |
 | Builder dei moduli del centro, componente firma, PDF, registro dei consensi | 3–4 |
 | Firma avanzata con un fornitore (adattatore, codice SMS, kit dell'erogatore) | 1 |

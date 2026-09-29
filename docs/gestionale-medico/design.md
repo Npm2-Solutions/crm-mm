@@ -379,7 +379,7 @@ automatici, analisi delle emozioni dalla voce.
   hanno profili del centro, e il CRM rifiuta un profilo che contenga System
   Manager. L'invito del CRM assegna il livello, non i ruoli.
 - **Un posto solo decide**: un modulo (per esempio `crm/permissions/livelli.py`) al
-  posto delle 16 copie di `MANAGER_ROLES`, e dal server un elenco di capacità che
+  posto delle 19 copie di `MANAGER_ROLES`, e dal server un elenco di capacità che
   il frontend legge, come fa LMS.
 - **Per record**: l'operatore vede i suoi pazienti; con il consenso al dossier li
   vedono tutti gli operatori del centro, tranne gli episodi oscurati. Una voce può

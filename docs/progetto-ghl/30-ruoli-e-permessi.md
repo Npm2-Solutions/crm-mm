@@ -1,8 +1,8 @@
 # 30 — Ruoli e permessi: chi può fare cosa, modulo per modulo
 
 **Stato:** 🟡 proposta (29/09/2026), da approvare prima della PR dei livelli.
-Lo stato di oggi è verificato sul codice (branch `claude/confident-planck-25xfzz`,
-commit `8e9902c`); la proposta è da decidere insieme.
+Lo stato di oggi è verificato sul codice di `develop` (commit `151cba6`, dopo i
+fix di sicurezza del 29/09); la proposta è da decidere insieme.
 
 ## In una pagina
 
@@ -38,31 +38,47 @@ ha già fatto per Meta e WhatsApp.
   frontend decide con `isManager()` (63 righe in 20 file) e `isAdmin()` (9 righe in
   6 file). I ruoli della fatturazione il frontend non li vede, e chi ha solo quelli
   non entra nel CRM (`check_app_permission`).
-- **Il controllo "è un manager" è copiato in 16 file**, più sei controlli scritti a
+- **Il controllo "è un manager" è copiato in 19 file**, più sei controlli scritti a
   mano, e non dice sempre la stessa cosa: in `google/oauth.py` include Sales User;
-  il dialer, le viste pubbliche e la gerarchia guardano solo Sales Manager.
-- **La visibilità per record c'è solo per persone e trattative** (la gerarchia di
-  vendita, `crm/permissions/org_hierarchy.py`). Note, attività, chiamate con
-  registrazioni e trascrizioni, appuntamenti con le note, messaggi WhatsApp,
-  fatture e dati di tracciamento li legge ogni Sales User.
+  il dialer, le viste pubbliche e la gerarchia guardano solo Sales Manager. I fix
+  del 29/09 ne hanno aggiunti tre (filtri rapidi, regole di assegnazione, ERPNext),
+  in attesa del registro.
+- **La visibilità per record c'è per persone e trattative** (la gerarchia di
+  vendita, `crm/permissions/org_hierarchy.py`), e dal 29/09 **chiamate, note e
+  task le seguono**: una chiamata, con registrazione e trascrizione, la vede chi
+  l'ha fatta o presa e chi vede il lead o la trattativa collegati. Appuntamenti
+  con le note, messaggi WhatsApp e SMS, fatture e dati di tracciamento li legge
+  ancora ogni Sales User.
 - **I permessi sui documenti sono più larghi delle schermate.** Con l'API un Sales
   User scrive servizi, listini, turni, orari dello studio, fasi della pipeline,
   modelli e impostazioni WhatsApp, viste pubbliche: tutte cose che lo schermo
   riserva ai manager.
 - **Lo schermo mostra cose che il server rifiuta.** Il menu dei livelli nella
   pagina Utenti offre Admin e Manager a tutti, per un `|| true`
-  (`Users.vue:262`). Le fatture si vedono ai Sales Manager, che non possono
+  (`Users.vue:272`). Le fatture si vedono ai Sales Manager, che non possono
   scriverle. Predefiniti, account email e regole di assegnazione sono documenti del
   core di Frappe, riservati a System Manager. Automazioni, fatture, sito e
   importazione sono nascosti solo dal menu: dall'indirizzo si aprono.
-- **Quattro problemi di sicurezza** vanno chiusi prima di tutto, come lavori a parte:
-  - gli inviti permettono a un Manager di diventare System Manager, e le loro
-    chiavi si leggono;
-  - le icone del menu utente eseguono codice nel browser di chi le vede;
-  - alcune funzioni rispondono senza controllare i permessi: chiamate,
-    registrazioni, trascrizioni, calendario, contatti delle trattative;
-  - alcune impostazioni si scrivono senza controllo (filtri rapidi, interruttore
-    della gerarchia, ripristino dei predefiniti) e alcuni segreti si leggono.
+- **I quattro problemi di sicurezza sono chiusi** (29/09, in `develop`; il perché
+  di ogni scelta è in `.pi/ARCHIVE.md`):
+  - gli inviti: il ruolo è uno che chi invita può dare, della chiave si salva
+    solo l'hash, gli inviti si creano solo da Invita utente, e chi ha già un
+    account accede prima di accettare. Le chiavi leggibili sono scadute con una
+    patch;
+  - il menu utente: l'icona è solo un nome Feather, l'indirizzo solo un percorso
+    del sito o un link http(s), controllati al salvataggio e nel menu;
+  - le funzioni che rispondevano senza controllo (chiamate, registrazioni,
+    trascrizioni, calendario, contatti di trattative e persone, di chi è un
+    numero, record collegati, creazione di trattative, ripristini) ora chiedono il
+    permesso sul record;
+  - filtri rapidi, interruttore della gerarchia, accesso degli ospiti ai moduli e
+    metodi di ERPNext controllano il ruolo; i segreti delle integrazioni sono
+    campi Password.
+- **Restano aperti tre punti**, tutti nella PR 2 qui sotto: quello che ogni Sales
+  User legge ancora (due punti sopra); il calendario, che dà nome, email e
+  telefono di tutti i partecipanti di ogni appuntamento, da rivedere prima
+  dell'area cliente; `create_deal`, che salva ancora con `ignore_permissions`,
+  quindi lì non valgono né i permessi per campo né i User Permission.
 
 ## Chi lavora nel sistema: i livelli
 
@@ -271,7 +287,7 @@ fra quello che decide il centro e quello che resta all'agenzia.
 | Email › Modelli | tutti | Man, Mkt; tutti li usano | — |
 | WhatsApp › Numeri, Modelli | Manager | Man; i modelli anche Mkt | app, webhook, ID (già così) |
 | Regole di assegnazione, SLA | Manager | Man, con condizioni guidate | le condizioni scritte in Python |
-| Moduli per i lead | Manager | Man, Mkt | l'accesso degli ospiti ai campi collegati |
+| Moduli per i lead | Manager | Man, Mkt | l'accesso degli ospiti ai campi collegati (già così: System Manager, solo liste di valori) |
 | Link tracciati, Tracciamento | Manager | Man, Mkt | lo script sul sito e quanto si tengono i dati |
 | Fatturazione (sei pagine) | Manager, ma scrivono solo System Manager e Invoicing Manager | Man, Amm | i segreti del webhook del provider |
 | Agenda: servizi, turni, orari, sale, listini | Manager | Man; turni, ferie e sale anche Seg | — |
@@ -280,7 +296,7 @@ fra quello che decide il centro e quello che resta all'agenzia.
 | Google Calendar | ognuno il suo | ognuno il suo | l'app OAuth |
 | Social › Profili | Manager | Man, Mkt | — |
 | Sito | Manager | Man, Mkt | domini e certificati |
-| Voci del menu utente | Manager | Man, solo icone e indirizzi sicuri | — |
+| Voci del menu utente | Manager | Man, solo icone e indirizzi sicuri (già così) | — |
 | Meta | Manager; la parte tecnica System Manager | Man, Mkt | app, webhook, log (già così) |
 | Telefono | ognuno il suo; Manager il resto | ognuno il suo; Man segreteria, numeri, ID chiamante | chiavi di Twilio, Exotel e trascrizione, TwiML, SIP |
 | ERPNext | Manager | — | tutta |
@@ -295,10 +311,11 @@ fra quello che decide il centro e quello che resta all'agenzia.
 
 ## L'ambito: su quali record
 
-- **Oggi** la regola c'è solo per persone e trattative: si vedono le proprie, le
-  assegnate e quelle del proprio sottoalbero nella gerarchia; il Sales Manager fuori
-  dall'albero e il System Manager vedono tutto. Un'assegnazione chiusa continua a
-  dare accesso: si esclude solo l'annullata.
+- **Oggi** la regola c'è per persone e trattative: si vedono le proprie, le
+  assegnate, le condivise e quelle del proprio sottoalbero nella gerarchia; il
+  Sales Manager fuori dall'albero e il System Manager vedono tutto. Chiamate, note
+  e task seguono il lead o la trattativa di cui parlano (29/09). Un'assegnazione
+  chiusa continua a dare accesso: si esclude solo l'annullata.
 - **Domani** gli ambiti sono tre:
   - **tutto il centro**: Segreteria, Manager, Amministrazione per quello che
     vedono, Direzione sanitaria per la clinica;
@@ -307,8 +324,9 @@ fra quello che decide il centro e quello che resta all'agenzia.
     gli sono assegnate o che ha in cura; il commerciale quelle assegnate.
 - **Quello che è attaccato a una persona la segue.** Note, attività, chiamate con
   registrazioni e trascrizioni, appuntamenti, messaggi e fatture si vedono se si
-  vede la persona e se il livello ha la capacità per quel tipo di dato. La regola
-  di `org_hierarchy.py` diventa generale.
+  vede la persona e se il livello ha la capacità per quel tipo di dato. Chiamate,
+  note e task lo fanno già, con i mattoni di `org_hierarchy.py` (una condizione
+  sola per la lista e per il record); gli altri passano agli stessi mattoni.
 - **La cartella clinica non segue la gerarchia.** Segue il rapporto di cura, il
   consenso al dossier, gli oscuramenti e l'apertura con motivo.
 - Un'assegnazione chiusa non deve dare accesso per sempre.
@@ -361,14 +379,15 @@ livello della persona la prevede.
    Sales User e Sales Manager restano come ruoli interni, perché il codice di
    Frappe CRM li usa, ma lo schermo non li mostra più.
 3. **Sul server**, un decoratore `@richiede("fatture.emetti")` e una funzione
-   `puo(utente, "…")` al posto delle 16 copie di `MANAGER_ROLES`, dei controlli
+   `puo(utente, "…")` al posto delle 19 copie di `MANAGER_ROLES`, dei controlli
    scritti a mano e di `only_for`. `check_app_permission` accetta ogni livello del
    CRM, così chi fa solo amministrazione entra.
 4. **I permessi dei documenti allineati alle capacità**:
    - nessuno scrive con l'API quello che lo schermo non gli fa fare (servizi,
      listini, turni, fasi, modelli…);
    - il Sales User non legge più le fatture;
-   - i segreti stanno in campi che nessun utente del centro legge.
+   - SMS, messaggi WhatsApp, appuntamenti e tracciamento seguono la persona.
+   I segreti sono già campi Password dal 29/09.
 5. **Nel frontend**, l'avvio manda l'elenco delle capacità dell'utente.
    - `users.js` offre `puo('…')`, al posto delle 63 chiamate a `isManager()` e delle
      9 a `isAdmin()`.
@@ -390,9 +409,9 @@ livello della persona la prevede.
 
 | PR | Cosa | sp |
 |---|---|---|
-| 0 | I quattro problemi di sicurezza, ognuno a parte | 1–1,5 |
+| 0 | I quattro problemi di sicurezza, ognuno a parte | ✅ fatto, 29/09 |
 | 1 | Registro con le due chiavi (livello e piano), livelli, pagina Utenti e inviti, passaggio degli utenti | 1,5–2 |
-| 2 | Permessi dei documenti allineati; l'ambito che segue la persona | 1 |
+| 2 | Permessi dei documenti allineati; l'ambito che segue la persona, anche per SMS, WhatsApp e appuntamenti | 1 |
 | 3 | Capacità nel frontend, rotte protette, impostazioni divise | 0,5–1 |
 | 4 | I livelli facoltativi: Commerciale, Marketing, Amministrazione, Sola lettura | 0,5 |
 
@@ -405,7 +424,8 @@ Direzione sanitaria arriva con la clinica.
    dossier?
 3. La segreteria può inviare allo SdI e al Sistema TS, annullare fatture, eliminare
    appuntamenti?
-4. Le registrazioni delle chiamate: solo chi ha chiamato e il Manager?
+4. Le registrazioni delle chiamate: oggi le sente chi vede il lead o la
+   trattativa. Basta così, o solo chi ha chiamato e il Manager?
 5. I numeri economici: solo Manager e Amministrazione? L'operatore vede i suoi?
 6. Il marketing lavora solo con i dati mascherati e senza leggere le conversazioni?
 7. Nei centri medici serve il livello Commerciale?
