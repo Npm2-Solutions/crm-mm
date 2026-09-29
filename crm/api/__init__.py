@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import frappe
 from bs4 import BeautifulSoup
 from frappe import _
@@ -89,6 +91,22 @@ def accept_invitation(key: str | None = None):
 	if not result:
 		frappe.throw(_("Invalid or expired key"))
 	invitation = frappe.get_doc("CRM Invitation", result[0])
+
+	# The link shows someone got hold of the email, not that they own an account: whoever
+	# already has one logs in as usual first, then comes back here to take the role.
+	existing_user = frappe.db.exists("User", invitation.email)
+	if existing_user and existing_user != frappe.session.user:
+		if frappe.session.user != "Guest":
+			frappe.throw(
+				_("This invitation is for another account. Log out, then open the link again."),
+				frappe.PermissionError,
+			)
+		frappe.local.response["type"] = "redirect"
+		frappe.local.response["location"] = "/login?" + urlencode(
+			{"redirect-to": f"/api/method/crm.api.accept_invitation?key={key}"}
+		)
+		return
+
 	is_new_user = invitation.accept()
 	invitation.reload()
 
@@ -103,7 +121,6 @@ def accept_invitation(key: str | None = None):
 			user = frappe.get_doc("User", invitation.email)
 			frappe.local.response["location"] = user._reset_password()
 		else:
-			frappe.local.login_manager.login_as(invitation.email)
 			frappe.local.response["location"] = "/crm"
 
 
