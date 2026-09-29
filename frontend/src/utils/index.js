@@ -96,6 +96,13 @@ export function getFormat(
   return format
 }
 
+// How a Datetime field shows its value: the system's date and time formats, to
+// the minute. The time format carries seconds by default, and a due date read
+// «2026-09-26 00:00:00».
+export function datetimeFormat() {
+  return getFormat('', '', true, true, false).replace(':ss', '')
+}
+
 export function timeAgo(date) {
   return prettyDate(date)
 }

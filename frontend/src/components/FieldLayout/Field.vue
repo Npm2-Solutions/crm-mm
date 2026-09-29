@@ -93,7 +93,7 @@
       :required="
         Boolean(
           field.reqd ||
-            (field.mandatory_depends_on && field.mandatory_via_depends_on),
+          (field.mandatory_depends_on && field.mandatory_via_depends_on),
         )
       "
       :disabled="Boolean(field.read_only)"
@@ -179,7 +179,7 @@
     <DateTimePicker
       v-else-if="field.fieldtype === 'Datetime'"
       :value="data[field.fieldname]"
-      :format="getFormat('', '', true, true, false)"
+      :format="datetimeFormat()"
       :placeholder="getPlaceholder(field)"
       input-class="border-none"
       @change="(v) => fieldChange(v, field)"
@@ -348,6 +348,7 @@ import Grid from '@/components/Controls/Grid.vue'
 import { createDocument } from '@/composables/document'
 import {
   getFormat,
+  datetimeFormat,
   evaluateDependsOnValue,
   isNull,
   interpolateTemplate,
