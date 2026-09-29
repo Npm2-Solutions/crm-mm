@@ -16,11 +16,14 @@ from crm.api.lead import deal_names_of
 from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 from crm.permissions.livelli import puo
-from crm.utils import to_e164
+from crm.utils import stored_value, to_e164
 
 
 def validate_access(reference_doctype=None, reference_name=None, permtype="read"):
-	if not puo("conversazioni.usa"):
+	"""Reading a thread asks `conversazioni.vedi`, writing in one `conversazioni.usa`,
+	on a person or deal the session sees. Writing a message is not writing the
+	person: whoever converses answers the people they see (doc 30)."""
+	if not puo("conversazioni.usa" if permtype == "write" else "conversazioni.vedi"):
 		frappe.throw(_("Only sales users can access WhatsApp features."), frappe.PermissionError)
 
 	if reference_doctype and reference_name:
@@ -30,7 +33,7 @@ def validate_access(reference_doctype=None, reference_name=None, permtype="read"
 				frappe.DoesNotExistError,
 			)
 		reference_doc = frappe.get_doc(reference_doctype, reference_name)
-		if not reference_doc.has_permission(permtype):
+		if not reference_doc.has_permission("read"):
 			frappe.throw(
 				_("Not permitted to access reference document {0} {1}.").format(
 					reference_doctype, reference_name
@@ -115,12 +118,13 @@ def notify_agent(doc):
 
 
 def may_converse() -> bool:
-	"""Whether the session writes and reads conversations. Somebody outside levels,
+	"""Whether the session reads conversations: the channels show for it, and the
+	screen offers to write only with `conversazioni.usa`. Somebody outside levels,
 	on the Desk, keeps what their roles give; a level without the capability - the
 	medical director - is not shown channels it cannot open."""
 	from crm.permissions.livelli import nel_crm
 
-	return not nel_crm() or puo("conversazioni.usa")
+	return not nel_crm() or puo("conversazioni.vedi")
 
 
 @frappe.whitelist()
@@ -393,7 +397,8 @@ def numbers_of(reference_doctype: str, reference_name: str) -> list[str]:
 	A list is still what comes out, because it is also the list of numbers a send
 	is allowed to go to — see `whatsapp_recipient`, which refuses anything else.
 	"""
-	number = to_e164(frappe.db.get_value(reference_doctype, reference_name, "mobile_no"))
+	# as stored: a send started by a webhook runs in a session that sees it masked
+	number = to_e164(stored_value(reference_doctype, reference_name, "mobile_no"))
 	if number:
 		return [number]
 
@@ -562,7 +567,7 @@ def create_whatsapp_message(
 	reply_to: str = "",
 	content_type: str = "text",
 ):
-	validate_access(reference_doctype, reference_name)
+	validate_access(reference_doctype, reference_name, "write")
 	doc = frappe.new_doc("WhatsApp Message")
 
 	if reply_to:
@@ -573,7 +578,7 @@ def create_whatsapp_message(
 			frappe.throw(
 				_("Not permitted to access the referenced WhatsApp message."), frappe.PermissionError
 			)
-		validate_access(reply_doc.reference_doctype, reply_doc.reference_name)
+		validate_access(reply_doc.reference_doctype, reply_doc.reference_name, "write")
 		doc.update(
 			{
 				"is_reply": True,
@@ -641,7 +646,7 @@ def send_whatsapp_template(
 	order. When they are given they are stored on the message, so the text that
 	actually left is what the timeline shows later.
 	"""
-	validate_access(reference_doctype, reference_name)
+	validate_access(reference_doctype, reference_name, "write")
 
 	# A template is approved on one WhatsApp Business account and belongs to it.
 	# Sent from another number Meta refuses it, with a message about a template
@@ -705,7 +710,7 @@ def get_template_placeholders(template: str) -> dict:
 
 @frappe.whitelist()
 def react_on_whatsapp_message(emoji: str, reply_to_name: str):
-	validate_access()
+	validate_access(permtype="write")
 	if not frappe.db.exists("WhatsApp Message", reply_to_name):
 		frappe.throw(_("Referenced WhatsApp message does not exist."), frappe.DoesNotExistError)
 	reply_to_doc = frappe.get_doc("WhatsApp Message", reply_to_name)
@@ -713,7 +718,7 @@ def react_on_whatsapp_message(emoji: str, reply_to_name: str):
 	if not reply_to_doc.has_permission("read"):
 		frappe.throw(_("Not permitted to access the referenced WhatsApp message."), frappe.PermissionError)
 
-	validate_access(reply_to_doc.reference_doctype, reply_to_doc.reference_name)
+	validate_access(reply_to_doc.reference_doctype, reply_to_doc.reference_name, "write")
 
 	to = (reply_to_doc.type == "Incoming" and reply_to_doc.get("from")) or reply_to_doc.to
 	doc = frappe.new_doc("WhatsApp Message")

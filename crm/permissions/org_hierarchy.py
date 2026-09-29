@@ -18,6 +18,7 @@ for the list and for the record, so the two never disagree.
 """
 
 import frappe
+from frappe import _
 from frappe.query_builder.functions import IfNull
 from frappe.utils import add_days, now_datetime
 from frappe.utils.caching import request_cache
@@ -198,12 +199,56 @@ def _has_permission(doc, ptype, user, doctype: str, conditions=_permission_query
 	)
 
 
+#: Writing a person or a deal asks for its capability (doc 30, PR 4): seeing one is
+#: not enough, and every level carries Sales User, which may write them. The scope
+#: of each is within the scope that shows the record, so seeing is the rest.
+#: Emailing from one asks for conversing: sending is not writing the person.
+_SCRITTURE = {
+	"CRM Lead": {
+		"create": "persone.scrivi",
+		"write": "persone.scrivi",
+		"delete": "persone.elimina",
+		"email": "conversazioni.usa",
+	},
+	"CRM Deal": {
+		"create": "trattative.scrivi",
+		"write": "trattative.scrivi",
+		"delete": "trattative.scrivi",
+		"email": "conversazioni.usa",
+	},
+	"FCRM Note": {"create": "note.scrivi", "write": "note.scrivi", "delete": "note.scrivi"},
+}
+
+
+def _puo_scrivere(doctype: str, ptype: str | None, user: str | None) -> bool:
+	capacita = _SCRITTURE[doctype].get(ptype or "read")
+	if not capacita:
+		return True
+	user = user or frappe.session.user
+	return not livelli.nel_crm(user) or livelli.puo(capacita, user)
+
+
+def scrittura_per_capacita(doc, method=None):
+	"""`validate` of people, deals and notes: a save on the user's behalf asks for the
+	capability even on a record shared with them.
+
+	Frappe grants what is shared without asking the `has_permission` hooks, and the
+	CRM shares every person and deal with its owner, for writing: an owner whose
+	level does not change deals would change them anyway. What the server saves for
+	itself (`ignore_permissions`) is not asked, as it is not asked anything else.
+	"""
+	if doc.flags.ignore_permissions:
+		return
+	if not _puo_scrivere(doc.doctype, "create" if doc.is_new() else "write", None):
+		frappe.throw(_("Your level does not change this"), frappe.PermissionError)
+
+
 def has_lead_permission(doc, ptype, user):
-	return _has_permission(doc, ptype, user, "CRM Lead")
+	return _puo_scrivere("CRM Lead", ptype, user) and _has_permission(doc, ptype, user, "CRM Lead")
 
 
 def has_deal_permission(doc, ptype, user):
-	return _has_permission(doc, ptype, user, "CRM Deal")
+	return _puo_scrivere("CRM Deal", ptype, user) and _has_permission(doc, ptype, user, "CRM Deal")
 
 
 # --------------------------------------------------------------------------
@@ -328,8 +373,17 @@ def _on_hidden_call(DT, doctype: str, user: str, in_tree: bool):
 	)
 
 
+#: What each kind of activity asks for besides seeing the person (doc 30): the
+#: calls their register, the notes the internal notes. Marketing, Accounting and the
+#: medical director see people and none of these.
+_CAPACITA_ATTIVITA = {"CRM Call Log": "telefono.registro", "FCRM Note": "note.vedi"}
+
+
 def _activity_conditions(user: str | None, doctype: str):
 	user = user or frappe.session.user
+	capacita = _CAPACITA_ATTIVITA.get(doctype)
+	if capacita and livelli.nel_crm(user) and not livelli.puo(capacita, user):
+		return frappe.qb.DocType(doctype).name.isnull()
 	if sees_everyone(user):
 		return ""
 	# their own, or their team's when they see the team's people
@@ -372,7 +426,9 @@ def has_call_log_permission(doc, ptype, user):
 
 
 def has_note_permission(doc, ptype, user):
-	return _has_permission(doc, ptype, user, "FCRM Note", _activity_conditions)
+	return _puo_scrivere("FCRM Note", ptype, user) and _has_permission(
+		doc, ptype, user, "FCRM Note", _activity_conditions
+	)
 
 
 def has_task_permission(doc, ptype, user):

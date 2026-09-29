@@ -186,6 +186,9 @@ permission_query_conditions = {
 	"CRM Visitor": "crm.permissions.seguono.get_visitor_permission_query_conditions",
 	"CRM Tracking Event": "crm.permissions.seguono.get_tracking_event_permission_query_conditions",
 	"CRM Booking": "crm.permissions.seguono.get_booking_permission_query_conditions",
+	# emails to whoever converses; the address book not to whoever sees people masked
+	"Communication": "crm.permissions.seguono.get_communication_permission_query_conditions",
+	"Contact": "crm.permissions.seguono.get_contact_permission_query_conditions",
 }
 
 has_permission = {
@@ -207,6 +210,10 @@ has_permission = {
 	"CRM Visitor": "crm.permissions.seguono.has_visitor_permission",
 	"CRM Tracking Event": "crm.permissions.seguono.has_tracking_event_permission",
 	"CRM Booking": "crm.permissions.seguono.has_booking_permission",
+	"Communication": "crm.permissions.seguono.has_communication_permission",
+	"Contact": "crm.permissions.seguono.has_contact_permission",
+	# Read only takes every write away, whatever the document
+	"*": "crm.permissions.documenti.sola_lettura",
 	# what the screens keep for the manager is written with a capability, not a role
 	"CRM Service": "crm.permissions.documenti.has_permission",
 	"CRM Service Price": "crm.permissions.documenti.has_permission",
@@ -247,6 +254,10 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+	# Read only writes nothing, not even what is shared with it for writing
+	"*": {
+		"validate": ["crm.permissions.documenti.sola_lettura_al_salvataggio"],
+	},
 	# conditions written in Python are the agency's: the server writes the others
 	# from the guided conditions, before anything evaluates them
 	"Assignment Rule": {
@@ -305,6 +316,7 @@ doc_events = {
 		"on_update": ["crm.automation.engine.on_task_updated"],
 	},
 	"FCRM Note": {
+		"validate": ["crm.permissions.org_hierarchy.scrittura_per_capacita"],
 		"after_insert": ["crm.automation.engine.on_note_created"],
 	},
 	"Comment": {
@@ -328,6 +340,9 @@ doc_events = {
 		"after_insert": ["crm.api.conversations.on_message"],
 	},
 	"CRM Lead": {
+		# a person or a deal is shared with its owner for writing: the save asks
+		# for the capability all the same
+		"validate": ["crm.permissions.org_hierarchy.scrittura_per_capacita"],
 		"before_insert": [
 			"crm.api.tracking.stamp_manual_source",
 			"crm.utils.ownership.credit_the_system",
@@ -357,6 +372,7 @@ doc_events = {
 		"on_trash": ["crm.invoicing.anagrafica.cancella_con_il_titolare"],
 	},
 	"CRM Deal": {
+		"validate": ["crm.permissions.org_hierarchy.scrittura_per_capacita"],
 		"before_insert": [
 			"crm.api.tracking.stamp_manual_source",
 			"crm.utils.ownership.credit_the_system",
@@ -422,6 +438,8 @@ doc_events = {
 	},
 	"User": {
 		"before_validate": ["crm.api.live_demo.validate_user"],
+		# outside the levels, the roles imply one: it sees email and phone like it
+		"validate": ["crm.permissions.utenti.recapiti_fuori_dai_livelli"],
 		"validate_reset_password": ["crm.api.live_demo.validate_reset_password"],
 	},
 	# Frappe checks that two pages don't share a route, but knows nothing about /crm,
@@ -488,6 +506,13 @@ before_tests = "crm.tests.before_tests"
 # override_whitelisted_methods = {
 # "frappe.desk.doctype.event.event.get_events": "crm.event.get_events"
 # }
+# Assigning a person or a deal asks for the capability (doc 30)
+override_whitelisted_methods = {
+	"frappe.desk.form.assign_to.add": "crm.permissions.documenti.assegna",
+	"frappe.desk.form.assign_to.add_multiple": "crm.permissions.documenti.assegna_a_molti",
+	"frappe.desk.form.assign_to.remove": "crm.permissions.documenti.togli_assegnazione",
+	"frappe.desk.form.assign_to.remove_multiple": "crm.permissions.documenti.togli_assegnazioni",
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

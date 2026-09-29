@@ -106,6 +106,102 @@ def has_permission(doc, ptype: str | None = None, user: str | None = None) -> bo
 	return puo_scrivere(doc, user)
 
 
+# ---------------------------------------------------------------- assigning
+
+#: Assigning a person or a deal hands it to somebody: it decides who sees it.
+_ASSEGNABILI = ("CRM Lead", "CRM Deal")
+
+
+def verifica_assegnazione(doctype: str | None) -> None:
+	"""Assigning asks `persone.assegna` (doc 30), which Read only never has.
+
+	Frappe lets whoever reads a document assign it. The assignment rules call its
+	functions directly, so only what a person does from the screen or the API comes
+	through here.
+	"""
+	if doctype in _ASSEGNABILI and livelli.nel_crm() and not livelli.puo("persone.assegna"):
+		frappe.throw(_("Your level does not assign people"), frappe.PermissionError)
+
+
+@frappe.whitelist()
+def assegna(args: dict | None = None):
+	from frappe.desk.form import assign_to
+
+	args = args or frappe.local.form_dict
+	verifica_assegnazione(args.get("doctype"))
+	return assign_to.add(args)
+
+
+@frappe.whitelist()
+def assegna_a_molti(args: dict | None = None):
+	from frappe.desk.form import assign_to
+
+	args = args or frappe.local.form_dict
+	verifica_assegnazione(args.get("doctype"))
+	return assign_to.add_multiple(args)
+
+
+@frappe.whitelist()
+def togli_assegnazione(doctype: str, name: str | int, assign_to: str):
+	from frappe.desk.form import assign_to as assegnazioni
+
+	verifica_assegnazione(doctype)
+	return assegnazioni.remove(doctype, name, assign_to)
+
+
+@frappe.whitelist()
+def togli_assegnazioni(doctype: str, names: str):
+	from frappe.desk.form import assign_to
+
+	verifica_assegnazione(doctype)
+	return assign_to.remove_multiple(doctype, names)
+
+
+# ---------------------------------------------------------------- read only
+
+#: What someone with Read only may still change: what is theirs alone, and changes
+#: nothing of the centre's.
+_PROPRI = {"CRM Notification": "for_user", "User": "name", "CRM View Settings": "user"}
+#: Reading, printing, exporting. Sharing hands the document to somebody else, and
+#: emailing from it sends in the centre's name: both are writes.
+_LEGGE_SOLTANTO = ("read", "select", "print", "export", "report")
+
+
+def sola_lettura(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	"""`has_permission` for every document: Read only takes every write away (doc 30).
+
+	Its capabilities never write, but the roles of the level it is added to could,
+	with the API: here nothing is created, changed or deleted, but one's own
+	notifications and profile.
+	"""
+	if (ptype or "read") in _LEGGE_SOLTANTO:
+		return True
+	user = user or frappe.session.user
+	if not _in_sola_lettura(user):
+		return True
+	proprietario = _PROPRI.get(doc.doctype)
+	return bool(proprietario and doc.get(proprietario) == user)
+
+
+def sola_lettura_al_salvataggio(doc, method=None):
+	"""`validate` of every document: Read only asks again when a save is on the user's
+	behalf. What is shared with somebody is granted without the `has_permission`
+	hooks, and the CRM shares every person and deal with its owner, for writing."""
+	if doc.flags.ignore_permissions:
+		return
+	if not sola_lettura(doc, "write"):
+		frappe.throw(_("Your level only reads"), frappe.PermissionError)
+
+
+def _in_sola_lettura(user: str) -> bool:
+	cache = getattr(frappe.local, "crm_sola_lettura", None)
+	if cache is None:
+		cache = frappe.local.crm_sola_lettura = {}
+	if user not in cache:
+		cache[user] = not livelli.e_agenzia(user) and livelli.SOLA_LETTURA_LIVELLO in livelli.livelli_di(user)
+	return cache[user]
+
+
 def concedi_documenti_del_core() -> None:
 	"""Give `DEL_CORE`'s roles their rule on the core documents, once.
 

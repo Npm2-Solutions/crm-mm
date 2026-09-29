@@ -607,7 +607,27 @@ def get_records_based_on_order(doctype, rows, filters, page_length, order):
 
 
 @frappe.whitelist()
+def get_doc_permissions(doctype: str, docname: str | int) -> dict:
+	"""What the session may do with a document, the way the server will judge it.
+
+	`frappe.client.get_doc_permissions` asks the controllers one general question,
+	which they answer as a read, and gives the roles' answer for the rest: a level
+	that sees a person but may not change it (doc 30) was offered fields and buttons
+	it could not save. Each write is asked of the controllers too.
+	"""
+	doc = frappe.get_lazy_doc(doctype, docname)
+	permissions = frappe.permissions.get_doc_permissions(doc)
+	for ptype in ("write", "create", "delete", "share", "email"):
+		if permissions.get(ptype):
+			permissions[ptype] = int(frappe.has_permission(doctype, ptype, doc))
+	return {"permissions": permissions}
+
+
+@frappe.whitelist()
 def remove_assignments(doctype: str, name: str, assignees: str | list):
+	from crm.permissions.documenti import verifica_assegnazione
+
+	verifica_assegnazione(doctype)
 	assignees = frappe.parse_json(assignees)
 
 	if not assignees:
