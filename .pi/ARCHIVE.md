@@ -1064,3 +1064,41 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `crm/install.py`, `crm/patches/v1_0/create_level_roles.py` | I ruoli prima della sincronizzazione |
 | `frontend/src/router.js`, `Layouts/AppSidebar.vue`, `Settings/Settings.vue`, `pages/Invoices.vue` | Rotte protette, menu e impostazioni per capacità |
 | `crm/tests/test_invoice_access.py`, `crm/permissions/test_livelli.py` | I test |
+
+## L'anagrafica fiscale sola
+
+> **Completato** (29/09/2026). La terza PR della fase 0 del gestionale medico.
+> Codice fiscale e indirizzo si scrivono una volta, nell'anagrafica fiscale della
+> persona o dell'organizzazione: la fattura la legge, quella confermata la
+> completa, e la pagina della persona la mostra a chi può vederla.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| `CRM Billing Profile` è un DocType della fatturazione, fuori da `CRM Lead` | Serve a tutti i settori, non solo alla clinica; e il marketing, che le persone le vede, il codice fiscale non ha bisogno di vederlo: un documento a parte ha permessi suoi |
+| Uno per persona **e** uno per organizzazione (`party_type` + `party`, indice unico `unique_party`) | Il consulente fattura aziende quanto il fisioterapista fattura persone; lo stesso codice, un campo in più (la ragione sociale). Una trattativa o un contatto portano a uno dei due |
+| La bozza prende solo i campi vuoti, l'indirizzo intero | Quello sulla fattura è quello confermato alla cassa; una via da un posto e una città da un altro è un indirizzo dove non abita nessuno. Il paese da solo (IT di predefinito) non è un indirizzo |
+| La fattura confermata completa solo dove è vuoto, dentro un savepoint, senza mai sollevare | Un valore diverso è una decisione, non un buco; e una fattura che non si emette perché un'anagrafica non si aggiorna sarebbe difficile da spiegare |
+| Non completa se la fattura è intestata a un altro: confronto delle parole dei nomi | Il genitore che paga per il figlio. Le parole e non i campi, perché i moduli web mettono tutto il nome nel primo campo |
+| La ragione sociale va e torna solo per aziende ed enti | Scritta una volta nell'anagrafica di una persona finirebbe sulla ricevuta del medico |
+| I formati che la fattura rifiuterebbe dopo si bloccano subito; le incoerenze con la persona si segnalano | Carattere di controllo, partita IVA di un formato noto, codice destinatario, CAP e provincia italiani. Nome, cognome e sesso contro il codice fiscale sbagliano coi cognomi doppi: avviso, non blocco |
+| Data di nascita e sesso letti dal codice fiscale, in sola lettura | Mai scritti a mano, mai fuori passo; la clinica li leggerà da qui |
+| L'anagrafica segue la persona: `org_hierarchy.visible_leads` per la lista, `has_permission` del record per il documento | La stessa regola della lista delle persone, condivisioni comprese |
+| Una patch fa completare le anagrafiche alle fatture già emesse, dalla più recente | Il paziente fatturato il mese scorso non deve ridire il suo codice fiscale il giorno in cui l'anagrafica arriva |
+| Nel pannello laterale uno slot `after` di `SidePanelLayout` | La sezione non è un campo della persona ma scorre con le altre; lo slot non cambia niente altrove |
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/invoicing/engine/anagrafica.py` | Le regole, pure: cosa prende la bozza, cosa restituisce la confermata, stessa persona, formati, dati dal codice |
+| `crm/invoicing/anagrafica.py` | Di chi è l'anagrafica, i due versi, gli avvisi, `get_billing_profile` e `save_billing_profile` |
+| `crm/invoicing/doctype/crm_billing_profile/` | Il DocType e il controller |
+| `crm/invoicing/doctype/crm_invoice/crm_invoice.py` | `compila_da_controparte` legge, `on_submit` completa |
+| `crm/invoicing/engine/codice_fiscale.py` | `formato_iva_noto` |
+| `crm/invoicing/permessi.py`, `crm/permissions/org_hierarchy.py`, `crm/hooks.py` | L'anagrafica segue la persona |
+| `crm/patches/v1_0/billing_details_from_past_invoices.py` | Il recupero dalle fatture già emesse |
+| `frontend/src/components/BillingProfileSection.vue`, `SidePanelLayout.vue`, `pages/Lead.vue`, `MobileLead.vue`, `Organization.vue`, `MobileOrganization.vue` | La sezione "Billing details" |
+| `crm/invoicing/tests/test_anagrafica.py`, `crm/tests/test_billing_profile.py` | I test: 24 senza sito, 19 sul sito |
+

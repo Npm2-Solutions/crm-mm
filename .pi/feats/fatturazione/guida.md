@@ -144,6 +144,45 @@ l'esenzione su quel servizio e' un'assunzione che nessuno ha confermato.
 
 ---
 
+## Il cliente si scrive una volta
+
+Codice fiscale, partita IVA, codice destinatario, PEC e indirizzo stanno
+nell'**anagrafica fiscale** del cliente (`CRM Billing Profile`): una per persona,
+una per organizzazione. Prima la fattura prendeva dalla persona solo nome e
+cognome, e al paziente che torna si riscriveva tutto il resto ogni volta.
+
+- **La bozza prende** dall'anagrafica quello che ha lasciato vuoto. L'indirizzo
+  viaggia intero: se alla cassa si è scritta la città, la via dell'anagrafica non
+  ci si mescola. La ragione sociale solo per un'azienda o un ente: la fattura a
+  una persona porta nome e cognome.
+- **La fattura confermata restituisce** quello che sapeva, solo dove l'anagrafica
+  è vuota: il secondo documento non chiede niente, e quello che qualcuno ha scritto
+  apposta non si sovrascrive mai.
+- **Non restituisce niente se è intestata a un altro.** La visita del figlio
+  fatturata al genitore porta il codice fiscale del genitore: scriverlo
+  nell'anagrafica del figlio lo metterebbe su tutte le fatture dopo. Si confrontano
+  le parole dei due nomi, non i campi, perché un modulo web scrive "Mario Rossi"
+  tutto nel nome e la cassa lo divide.
+- **Di chi è l'anagrafica** lo dice il record della fattura: la persona o
+  l'organizzazione sono loro stesse; un contatto è la sua persona; una trattativa è
+  la sua organizzazione se la fattura va a un'azienda, la sua persona se va a una
+  persona.
+
+Si vede e si corregge dalla pagina della persona (o dell'organizzazione), nella
+sezione **Billing details**, per chi ha la capacità `persone.dati_fiscali`
+(Segreteria, Manager, Operatore; non il Commerciale né il marketing). Segue la
+persona: la legge chi vede la persona.
+
+Un codice fiscale che sbaglia il carattere di controllo non si salva, come una
+partita IVA di un formato noto scritta male, un codice destinatario che non ha sei
+o sette caratteri, un CAP italiano che non ha cinque cifre. Data di nascita e sesso
+si leggono dal codice fiscale. Un codice che contraddice il nome, il cognome o il
+sesso della persona, o che sta già su un'altra persona, **si segnala e non si
+blocca**: con i cognomi doppi o stranieri il confronto sbaglia, e quello va
+davanti a una persona, non in mezzo a un salvataggio.
+
+---
+
 ## Emettere
 
 Una `CRM Invoice` nasce in bozza: modificabile, **senza numero fiscale**. Il numero
