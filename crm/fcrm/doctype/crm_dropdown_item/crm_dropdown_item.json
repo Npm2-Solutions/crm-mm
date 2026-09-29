@@ -33,6 +33,7 @@
   },
   {
    "depends_on": "eval:doc.type == 'Route'",
+   "description": "A path on this site, e.g. /crm/leads, or an http(s) link",
    "fieldname": "route",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -58,7 +59,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Add svg code or use feather icons e.g 'settings'",
+   "description": "Name of a Feather icon (feathericons.com), e.g. settings or external-link",
    "fieldname": "icon",
    "fieldtype": "Code",
    "label": "Icon"
@@ -82,7 +83,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-02-23 12:22:42.798468",
+ "modified": "2026-09-29 10:30:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Dropdown Item",
