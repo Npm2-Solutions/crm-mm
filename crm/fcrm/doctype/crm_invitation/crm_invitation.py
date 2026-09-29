@@ -5,6 +5,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+INVITABLE_ROLES = ("Sales User", "Sales Manager", "System Manager")
+
 
 class CRMInvitation(Document):
 	# begin: auto-generated types
@@ -31,6 +33,17 @@ class CRMInvitation(Document):
 		self.invited_by = frappe.session.user
 		self.status = "Pending"
 
+	def validate(self):
+		# Whoever accepts a pending invitation gets its role, so it may only carry one its
+		# inviter could grant: the rule `invite_by_email` applies, enforced here for every
+		# way in (REST, Desk, code). Address, role and inviter can't change afterwards
+		# (set_only_once), and `accept` asks again in case the inviter lost the right.
+		if self.status == "Pending" and not can_grant_role(self.invited_by, self.role):
+			frappe.throw(
+				_("{0} is not allowed to invite users as {1}").format(self.invited_by, _(self.role)),
+				frappe.PermissionError,
+			)
+
 	def after_insert(self):
 		self.invite_via_email()
 
@@ -54,6 +67,11 @@ class CRMInvitation(Document):
 	@frappe.whitelist()
 	def accept_invitation(self):
 		frappe.only_for(["System Manager", "Sales Manager"], True)
+		# accepting on the invitee's behalf hands out the role just as inviting does
+		if not can_grant_role(frappe.session.user, self.role):
+			frappe.throw(
+				_("You are not allowed to grant the role {0}").format(_(self.role)), frappe.PermissionError
+			)
 		if self.accept():
 			# the invitee was not around to set a password, mail them a link to do it
 			frappe.get_doc("User", self.email).send_welcome_mail_to_user()
@@ -61,6 +79,10 @@ class CRMInvitation(Document):
 	def accept(self):
 		if self.status != "Pending":
 			frappe.throw(_("Invalid or expired key"))
+
+		# checked when the invitation was sent, but the inviter may have lost the right since
+		if not can_grant_role(self.invited_by, self.role):
+			frappe.throw(_("This invitation is no longer valid"), frappe.PermissionError)
 
 		user, is_new_user = self.create_user_if_not_exists()
 		user.append_roles(self.role)
@@ -103,6 +125,23 @@ class CRMInvitation(Document):
 			return user, True
 
 		return frappe.get_doc("User", self.email), False
+
+
+def can_grant_role(user: str | None, role: str) -> bool:
+	"""Whether `user` may invite someone as `role`: the rule `invite_by_email` applies.
+
+	Sales Managers invite Sales Users; managers and admins are invited by System
+	Managers only; a disabled account invites nobody.
+	"""
+	if not user or role not in INVITABLE_ROLES:
+		return False
+	if not frappe.db.get_value("User", user, "enabled"):
+		return False
+
+	roles = frappe.get_roles(user)
+	if role == "Sales User":
+		return "Sales Manager" in roles or "System Manager" in roles
+	return "System Manager" in roles
 
 
 def expire_invitations():
