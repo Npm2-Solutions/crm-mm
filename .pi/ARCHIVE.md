@@ -773,3 +773,92 @@ Nel secondo caso l'Activity Log ha il login dell'invitato all'ora di
 | `crm/api/__init__.py` | `accept_invitation` confronta gli hash e non fa più `login_as`; `invite_by_email` guarda solo gli inviti in attesa |
 | `crm/patches/v1_0/expire_invitations_with_readable_keys.py` | Le chiavi in chiaro spariscono, gli inviti in attesa che le avevano scadono |
 | `crm/fcrm/doctype/crm_invitation/test_crm_invitation.py` | I tre exploit dall'inizio alla fine, ogni controllo da solo, il flusso normale |
+
+---
+
+## Permessi degli endpoint — prima del portale pazienti
+
+> **Completato.** Il portale pazienti porterà utenti loggati come Website User, e
+> un metodo `@frappe.whitelist()` senza controllo è chiamabile da chiunque abbia
+> una sessione. Undici endpoint segnalati — due letti a mano, gli altri da un
+> audit automatico — verificati uno per uno su un bench Frappe 16: dieci
+> chiedevano un controllo, uno (`remove_assignments`) non era sfruttabile via
+> HTTP ma si reggeva su un dettaglio di Frappe. I test sono in
+> `crm/tests/test_endpoint_permissions.py`: ogni endpoint provato da chi ne ha
+> diritto, da un Sales User fuori dalla gerarchia e da un Website User senza
+> ruoli CRM. Tolto un controllo alla volta, almeno un test fallisce.
+
+### La regola
+
+Si controlla il record che si restituisce, o quello a cui appartiene (lead o
+trattativa), con `frappe.has_permission(doctype, ptype, doc, throw=True)`. Le
+liste passano da `frappe.get_list`, così valgono le
+`permission_query_conditions` di `crm/permissions/org_hierarchy.py`.
+`ignore_permissions` non arriva mai dal client. A chi aveva diritto la risposta
+non cambia.
+
+Dove il server chiamava lo stesso endpoint da un webhook, cioè come Guest, c'è
+ora una funzione gemella senza controlli e l'endpoint whitelisted resta per le
+richieste: `find_contact_by_phone_number()` accanto a
+`get_contact_by_phone_number`, `assigned_users_of()` accanto a
+`get_assigned_users`.
+
+### Decisioni
+
+| Endpoint | Cosa fa ora | Perché |
+|---|---|---|
+| `get_call_log`, `get_recording_url`, `get_transcript`, `transcribe_now` | `check_call_log_permission()`: il permesso sul call log, poi la lettura di almeno uno dei lead o delle trattative collegate | CRM Call Log non ha regole sue, ogni Sales User legge ogni chiamata: chi può vederla lo dice il record di cui parla. Ne basta uno, perché la chiamata compare nella timeline di ognuno. La telefonia salva il lead in `links`, una chiamata registrata a mano in `reference_*`. Chi era al telefono (`caller`, `receiver`) la apre sempre: una chiamata in entrata la prende chi è libero |
+| `get_calendar`, `get_workload`, `get_scheduler_meta` | `get_list` al posto di `get_all` | CRM Appointment non ha gerarchia: ogni Sales User vede il calendario come prima, un Website User riceve `PermissionError`. `User` e `CRM Booking Connection` restano `get_all`: il Sales User non li legge e il calendario ne ha bisogno |
+| `get_deal_contacts` | Lettura della trattativa | |
+| `get_linked_deals` | Solo le trattative che `get_list` restituisce, nell'ordine di prima | Leggere la persona non è leggere le sue trattative |
+| `get_contact_by_phone_number` | Un record che l'utente non può aprire torna come nessun record, `{"mobile_no": <numero cercato>}`; la trattativa di un contatto sparisce se non è leggibile | Qui, di proposito, niente `throw`: un `PermissionError` nominerebbe il record, e un numero è la cosa che si prova in serie per sapere chi c'è nel CRM. Le schermate di chiamata fanno come per uno sconosciuto |
+| `get_contact_lead_or_deal_from_number` | Non più whitelisted | La chiamano solo WhatsApp, SMS, coexistence e una patch, dal server |
+| `get_linked_docs_of_document` | Lettura del documento; fra i collegati solo quelli leggibili | La trattativa di una persona può essere di un altro, come sa già `get_conversation_on_deals` |
+| `get_assigned_users` | Lettura del documento | |
+| `remove_assignments` | Tolto il parametro `ignore_permissions` | Annullare un'assegnazione azzera `lead_owner`/`deal_owner` e cambia chi vede il record. Via HTTP non era sfruttabile — `frappe.call` passa da `get_newargs`, che toglie `ignore_permissions` ai kwargs — ma l'endpoint non deve reggersi su quello |
+| `create_deal` | `has_permission("CRM Deal", "create")` prima di tutto | Persona, organizzazione e trattativa nascono con `ignore_permissions`: il controllo viene prima di qualunque insert |
+| `restore_defaults`, `restore_demo_data` | `frappe.only_for(["Sales Manager", "System Manager"])` come `clear_demo_data`, solo POST | `run_doc_method` chiede solo di poter leggere FCRM Settings, e ogni Sales User può |
+
+### Lasciato com'è, di proposito
+
+- **CRM Call Log, FCRM Note e CRM Task non hanno una regola di gerarchia.** Gli
+  endpoint sopra la applicano, ma `/api/resource`, `frappe.client.get` e le
+  liste danno ancora a ogni Sales User qualsiasi chiamata — trascrizione e
+  `recording_url` compresi — e qualsiasi nota o task. La soluzione è un
+  `has_permission` con la sua `permission_query_conditions` per questi doctype
+  in `org_hierarchy.py`; cambia ogni lista e ogni salvataggio, compresi quelli
+  della telefonia, e va progettata e provata a parte.
+- `add_note_to_call_log` e `add_task_to_call_log` controllano solo `write` sul
+  call log. Si chiamano a chiamata in corso: stringerli chiede una prova con la
+  telefonia vera.
+- `create_deal` inserisce ancora con `ignore_permissions`: i User Permission e i
+  permlevel sui campi della trattativa lì non valgono.
+- `check_conflicts`, `get_available_slots` e `quote_price` in
+  `crm/api/appointments.py` non controllano niente e non erano nella lista.
+  `check_conflicts` risponde «X ha già un altro appuntamento in questa fascia»
+  per qualsiasi partecipante gli si passi: dice a chi lo chiama quando una
+  persona ha un appuntamento.
+- `delete_bulk_docs` non controlla niente prima di scollegare i record: si regge
+  sul `write` di ogni collegato e sul `delete` di Frappe.
+- `_decorate` in `get_calendar` restituisce nome, email e telefono di tutti i
+  partecipanti di ogni appuntamento leggibile. Oggi lo legge solo chi ha un ruolo
+  CRM; se il portale darà ai pazienti la lettura degli appuntamenti di gruppo,
+  ognuno vedrà gli altri.
+- `ListBulkActions.vue` passa `ignore_permissions: true` a
+  `frappe.desk.form.assign_to.remove_multiple`, che non lo accetta e che
+  `get_newargs` scarterebbe comunque.
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/fcrm/doctype/crm_call_log/crm_call_log.py` | `check_call_log_permission()`, usata da `get_call_log` |
+| `crm/integrations/api.py` | Registrazioni via `check_call_log_permission`; `get_contact_by_phone_number` filtra, `find_contact_by_phone_number()` per il server; `get_contact_lead_or_deal_from_number` non whitelisted |
+| `crm/telephony/transcription.py` | `get_transcript`, `transcribe_now` |
+| `crm/api/appointments.py` | `get_list` nel calendario |
+| `crm/fcrm/doctype/crm_deal/api.py`, `crm/api/contact.py` | Contatti di una trattativa, trattative di un contatto |
+| `crm/api/doc.py` | Record collegati, assegnatari e `assigned_users_of()`, `remove_assignments` |
+| `crm/fcrm/doctype/crm_deal/crm_deal.py` | `create_deal` |
+| `crm/fcrm/doctype/fcrm_settings/fcrm_settings.py` | Ripristini solo per i manager, solo POST |
+| `crm/integrations/twilio/api.py`, `crm/integrations/exotel/handler.py`, `crm/api/whatsapp.py`, `crm/fcrm/doctype/crm_sms_message/crm_sms_message.py`, `crm/automation/engine.py` | Le gemelle senza controlli, per chi arriva come Guest |
+| `crm/tests/test_endpoint_permissions.py` | I test |
