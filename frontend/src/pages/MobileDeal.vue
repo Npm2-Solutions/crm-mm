@@ -90,6 +90,7 @@
                         class="h-7 px-3"
                         variant="ghost"
                         icon="lucide-plus"
+                        :aria-label="__('Add a contact')"
                         @click="togglePopover()"
                       />
                     </template>
@@ -258,6 +259,7 @@ import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
 import ErrorPage from '@/components/ErrorPage.vue'
 import Icon from '@/components/Icon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
+import EventIcon from '@/components/Icons/EventIcon.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
@@ -438,6 +440,13 @@ const tabs = computed(() => {
       name: 'Data',
       label: __('Data'),
       icon: DetailsIcon,
+    },
+    // a person's appointments and events, as on a desk: the tab was missing on
+    // a phone, so nothing booked for them could be seen from one
+    {
+      name: 'Events',
+      label: __('Events'),
+      icon: EventIcon,
     },
     {
       name: 'Tasks',
