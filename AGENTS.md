@@ -134,9 +134,12 @@ of their own, linked to the parent, never the parent's record.
 | `crm/clinica/paziente.py` | `assicura_paziente` (the one door), the recovery over old data, the patient panel calls |
 | `crm/clinica/cartella.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock |
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
+| `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
+| `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
-(`tests/test_confine.py`); it hooks on through doc_events and `crm_timeline_gatherers`.
+(`tests/test_confine.py`); it hooks on through doc_events, `crm_timeline_gatherers`
+and the registries (`engine.registra_evento`, dashboard features and widgets).
 
 ## Mobile
 

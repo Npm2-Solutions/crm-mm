@@ -1424,3 +1424,20 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `frontend/src/pages/Lead.vue`, `Deal.vue`, `MobileLead.vue`, `MobileDeal.vue`, `Notes.vue` | Schede, pulsanti e testata per capacità e per `canWrite` |
 | `frontend/src/data/document.js`, `stores/users.js`, `components/SidePanelLayout.vue`, `AssignTo.vue`, `EnrichFromWebsite.vue`, `Activities/*` | `canWrite` dal server, `solaLettura()`, il pannello in sola lettura, il menu "Nuovo" per capacità; `Settings/LevelPicker.vue` mette la Sola lettura a parte |
 | `crm/permissions/test_livelli.py`, `crm/tests/test_livelli_facoltativi.py` | I test |
+
+## Fase 1, la prima cucitura: diventare paziente chiude il deal
+
+> **Completato** (29/09/2026). Le due pipeline del centro medico, la prenotazione che
+> sposta la richiesta, il paziente che la vince, l'evento "Became Patient" e i widget
+> dei nuovi pazienti. `docs/gestionale-medico/README.md`, "La prima cucitura".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Le pipeline nascono all'accensione della clinica, e `Clinic Settings` dice quali sono | Il Manager può indicare pipeline sue; il nome da solo non basta a riconoscerle |
+| I nomi degli stadi nella lingua del sito, come i testi dei consensi | Sono dati che la board mostra, non stringhe dell'interfaccia |
+| Vince solo chi diventa paziente adesso (`assicura_paziente(annuncia=...)`) | Il recupero dei pazienti di prima avrebbe chiuso deal vecchi e fatto partire automazioni per centinaia di persone |
+| "Became Patient" registrato dalla clinica (`registra_evento`), offerto solo con la clinica accesa | Il CRM non importa la clinica; le opzioni del Select lo accettano ovunque, ma il costruttore lo offre solo dove ha senso |
+| Il costo di un nuovo paziente conta chi è arrivato dagli annunci (`facebook_ad_id`) | La spesa divisa per tutti i pazienti, anche quelli arrivati dal passaparola, lo farebbe sembrare più basso |
+| La prenotazione sposta solo le richieste più indietro | Una richiesta che qualcuno ha già portato avanti a mano non torna indietro |
