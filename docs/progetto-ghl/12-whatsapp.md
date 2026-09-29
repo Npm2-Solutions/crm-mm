@@ -84,7 +84,7 @@ Cento clienti, un dominio solo.
 |---|---|
 | Manage domains → allowlist | `<hub>` (solo il dominio, serve al JavaScript SDK) |
 | Webhooks → WhatsApp Business Account | `https://<hub>/api/method/crm.integrations.whatsapp.webhook.handle` |
-| … verify token | quello del site hub (Settings → Integrations → Meta) |
+| … verify token | quello del site hub: lo registra il bottone *Configure it*. È cifrato in CRM Meta Settings; per incollarlo a mano un System Manager lo legge con `frappe.client.get_password("CRM Meta Settings", "CRM Meta Settings", "webhook_verify_token")` |
 | … campi | `messages`, `smb_message_echoes`, `history`, `smb_app_state_sync`, `message_template_status_update` |
 | Facebook Login for Business → Configurations | configurazione Embedded Signup con Coexistence; il suo id va in `whatsapp_signup_config_id` |
 | App settings → Basic → + Add Platform → **Website** | Site URL: `https://<hub>/` — senza la piattaforma Website il JavaScript SDK non e' autorizzato |

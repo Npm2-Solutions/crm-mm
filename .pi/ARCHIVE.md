@@ -898,3 +898,60 @@ console stampa l'SQL intero.
 | `crm/fcrm/doctype/fcrm_settings/fcrm_settings.py` | Ripristini solo per i manager, solo POST |
 | `crm/integrations/twilio/api.py`, `crm/integrations/exotel/handler.py`, `crm/api/whatsapp.py`, `crm/fcrm/doctype/crm_sms_message/crm_sms_message.py`, `crm/automation/engine.py` | Le gemelle senza controlli, per chi arriva come Guest |
 | `crm/tests/test_endpoint_permissions.py` | I test |
+
+---
+
+## Permessi e segreti — quello che un ruolo non deve poter fare
+
+> **Completato** (29/09/2026). Sei punti di un audit — il primo letto nel
+> codice, gli altri da uno strumento automatico, tutti verificati prima di
+> toccarli — più uno trovato strada facendo: la chiave del webhook delle
+> automazioni. Un commit e dei test per ciascuno: chi non deve viene fermato,
+> chi deve continua a riuscire. Gli inviti, trovati nello stesso giro, sono in
+> «Inviti — la chiave del link è una credenziale»; i ripristini di FCRM
+> Settings in «Permessi degli endpoint».
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| «Manager» è `{System Manager, Sales Manager}` in una costante per modulo | È l'insieme che usa già tutto il resto delle API. Quando arriverà `crm/permissions/livelli.py` i controlli da spostare sono: `update_quick_filters` (`crm/api/doc.py`), `get_assignment_rules_list`, `MANAGER_ROLES` di ERPNext CRM Settings, `_webhook_key` delle automazioni |
+| La gerarchia di vendita la accende e la spegne solo un System Manager, controllato nel controller | Un Sales Manager nell'albero è proprio chi l'albero limita; nascondere il pulsante non bastava, `frappe.client.set_value` arriva lo stesso |
+| I metodi whitelisted di ERPNext CRM Settings controllano il ruolo da soli | `run_doc_method` v1 carica il documento con un controllo di **lettura** e basta (la v2 chiede la scrittura solo sulle POST): chi legge ERPNext CRM Settings poteva far chiamare l'ERPNext remoto con le credenziali salvate |
+| Agli ospiti si aprono solo liste di valori (Lead Source, Territory, Industry, CRM Service, Salutation, Gender, Currency) | Guest `select` vuol dire che chiunque abbia il link del modulo elenca quei record: mai persone, mai record del CRM. Scrivere una regola di permesso del sito è di un System Manager, che lo fa con i suoi permessi: niente più `ignore_permissions` |
+| I segreti diventano campi Password, non un livello di permesso | Su un Single `frappe.client.get_single_value` e `get_value` controllano il doctype, non il campo: il livello di permesso non avrebbe fermato niente |
+| Il token delle prenotazioni si confronta decifrato, connessione per connessione | Si cercava per valore, e ora la colonna tiene solo asterischi. Le connessioni attive sono poche; il confronto è a tempo costante, sui byte (`compare_digest` rifiuta le `str` non ASCII) |
+| Una patch pre_model_sync toglie l'indice unique su `webhook_token` | Frappe non lo toglie quando la colonna diventa `text`, e MariaDB 10.11 lo converte in `UNIQUE … USING HASH`: le maschere di due token lunghi uguale coincidono e la seconda connessione veniva rifiutata. Provato prima di scriverla |
+| La patch dei segreti sposta i valori in chiaro in __Auth e maschera la colonna | Come fa Frappe salvando una Password: gli URL e le chiavi già dati ai fornitori continuano a funzionare |
+| Il token di verifica Meta non si mostra più | La schermata Meta registra il webhook da sé (*Configure it*), e dal doc 27 nessuna schermata lo mandava più; per incollarlo a mano un System Manager usa `frappe.client.get_password` |
+| `CRM Global Settings` in sola lettura per il Sales User | Lo scrivono solo `update_quick_filters`, l'installazione e una patch: con create e write al Sales User il controllo sull'endpoint era a una chiamata REST di distanza |
+
+### Lasciato com'è, di proposito
+
+- `is_erpnext_installed` resta aperto a chi legge ERPNext CRM Settings: risponde
+  con un booleano sul sito, e la pagina lo chiede.
+- `CRM Twilio Settings.api_key` resta Data: è lo SID della chiave API, un
+  identificativo; il segreto (`api_secret`) era già Password.
+- `CRM Booking.access_token` e `CRM Appointment Participant.access_token` restano
+  leggibili da chi gestisce le prenotazioni: sono i link di gestione mandati al
+  cliente, e chi li legge può già modificare quella prenotazione.
+- La copia del token di verifica che `upsert_account` scrive su `WhatsApp
+  Account` è un campo di `frappe_whatsapp`, un'altra app.
+- `get_customer_link`, `get_quotation_url` e `prefill_quotation_items`
+  (ERPNext) prendono il nome di una trattativa e non controllano che l'utente
+  possa leggerla: è un controllo per record, fuori da questo giro.
+
+### File
+
+| File | Cosa cambia |
+|---|---|
+| `crm/api/doc.py`, `crm_global_settings.json` | Filtri rapidi: manager, sette liste; Sales User in sola lettura |
+| `crm/fcrm/doctype/fcrm_settings/fcrm_settings.py`, `Hierarchy.vue` | Interruttore della gerarchia |
+| `crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py` | Ruolo sui metodi; `api_key` decifrata |
+| `crm/api/form.py`, `FormBuilderPanel.vue`, `FieldCard.vue` | Liste apribili agli ospiti, System Manager, chi può aprire cosa |
+| `crm/api/exchange_rate.py`, `crm/integrations/meta/`, `crm/integrations/whatsapp/`, `crm/integrations/exotel/handler.py`, `crm/telephony/providers/exotel.py` | Segreti letti con `get_password`, confronti a tempo costante |
+| `crm/fcrm/doctype/crm_booking_connection/crm_booking_connection.py`, `crm/api/booking_platforms.py`, `crm/booking_platforms/sync.py` | `connection_for_token` |
+| `crm/api/assignment_rule.py` | Solo manager |
+| `crm/api/automation.py` | Chiave del webhook solo ai manager, confronto decifrato |
+| `crm/patches/v1_0/` | `drop_unique_index_on_booking_webhook_token` (pre), `revoke_guest_select_outside_lookups`, `encrypt_integration_secrets` |
+| `crm/tests/test_quick_filters.py`, `test_settings_methods.py`, `test_integration_secrets.py`, `test_assignment_rule_api.py`, e i test di FCRM Settings, form e automazioni | Per ogni fix: il ruolo che non deve fallisce, quello che deve riesce |
