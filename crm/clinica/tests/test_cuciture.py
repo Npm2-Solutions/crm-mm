@@ -208,3 +208,17 @@ class LAccettazione(CucitureCase):
 			"Attended",
 		)
 		self.assertEqual(self.scheda(self.mario).rule, regole.INFORMAZIONE_MEDICA.valore)
+
+
+class LAccensione(CucitureCase):
+	def test_il_piano_appena_salvato(self):
+		"""on_update runs before Frappe drops the cached plan: switching the clinic on
+		reads the plan just saved, so the patients already there are looked for."""
+		self.accendi(False)
+		frappe.get_cached_doc("CRM Plan")  # in the cache, as on a live site
+		frappe.db.set_default(paziente.RECUPERO_FATTO, "")
+		with patch("frappe.enqueue") as coda:
+			piano = frappe.get_single("CRM Plan")
+			piano.append("modules", {"module": "clinica", "status": "Active"})
+			piano.save()
+		self.assertIn("crm.clinica.paziente.recupera", [c.args[0] for c in coda.call_args_list])
