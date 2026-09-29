@@ -294,9 +294,8 @@ def expire_transcripts() -> dict:
 @frappe.whitelist()
 def transcribe_now(call_log: str) -> dict:
 	"""Ask for a transcription from the call's own screen."""
-	from crm.fcrm.doctype.crm_call_log.crm_call_log import check_call_log_permission
-
-	check_call_log_permission(call_log, "write")
+	if not frappe.has_permission("CRM Call Log", "write", call_log):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	if not is_enabled():
 		frappe.throw(_("Transcription is not configured."), title=_("Not Configured"))
 
@@ -307,9 +306,8 @@ def transcribe_now(call_log: str) -> dict:
 @frappe.whitelist()
 def get_transcript(call_log: str) -> dict:
 	"""The transcript of one call, for a person or an agent reading over the API."""
-	from crm.fcrm.doctype.crm_call_log.crm_call_log import check_call_log_permission
-
-	check_call_log_permission(call_log)
+	if not frappe.has_permission("CRM Call Log", "read", call_log):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	row = frappe.db.get_value(
 		"CRM Call Log",
 		call_log,

@@ -461,15 +461,17 @@ def get_linked_calls(name: str):
 		if _calls:
 			calls = calls + _calls
 
+	# get_list: a call anybody can link to any note or task, and the link alone
+	# must not be a way to read somebody else's (crm.permissions.org_hierarchy)
 	if notes:
-		notes = frappe.db.get_all(
+		notes = frappe.get_list(
 			"FCRM Note",
 			filters={"name": ("in", notes)},
 			fields=["name", "title", "content", "owner", "modified"],
 		)
 
 	if tasks:
-		tasks = frappe.db.get_all(
+		tasks = frappe.get_list(
 			"CRM Task",
 			filters={"name": ("in", tasks)},
 			fields=[

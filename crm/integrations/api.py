@@ -120,6 +120,8 @@ def add_task_to_call_log(call_sid: str, task: dict):
 		).insert(ignore_permissions=True)
 	else:
 		_task = frappe.get_doc("CRM Task", task.get("name"))
+		# an existing task is somebody's: only whoever may edit it can, as with notes above
+		_task.check_permission("write")
 		_task.update(
 			{
 				"title": task.get("title"),
@@ -413,12 +415,11 @@ def get_recording_url(call_log_name: str):
 	Accept-Ranges/Content-Length set. Without range support the HTML <audio> element can't
 	read the recording's duration (shows 0:00) or seek within it.
 	"""
-	from crm.fcrm.doctype.crm_call_log.crm_call_log import check_call_log_permission
-
 	if not call_log_name or not frappe.db.exists("CRM Call Log", call_log_name):
 		frappe.throw(_("Call log not found"), frappe.DoesNotExistError)
 
-	log = check_call_log_permission(call_log_name)
+	log = frappe.get_doc("CRM Call Log", call_log_name)
+	log.check_permission("read")
 
 	if not log.recording_url:
 		frappe.throw(_("Recording URL not found"), frappe.DoesNotExistError)
