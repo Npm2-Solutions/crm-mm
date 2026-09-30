@@ -221,26 +221,14 @@ def _testo(centro: str) -> str:
 
 
 def _manda_whatsapp(lead_utente: str, numero: str, centro: str) -> None:
-	from crm.api.whatsapp import insert_and_send
+	from crm.api.whatsapp import manda_modello
 
-	doc = frappe.new_doc("WhatsApp Message")
-	doc.update(
-		{
-			"reference_doctype": "CRM Lead",
-			"reference_name": lead_utente,
-			"message_type": "Template",
-			"message": "Template message",
-			"content_type": "text",
-			"use_template": True,
-			"template": _modello_whatsapp(),
-			"to": numero,
-		}
-	)
+	modello = _modello_whatsapp()
 	# the template's words are approved; its one variable, if any, is the centre
-	variabili = frappe.db.get_value("WhatsApp Templates", doc.template, "template") or ""
-	if "{{1}}" in variabili.replace(" ", ""):
-		doc.template_parameters = frappe.as_json([centro])
-	insert_and_send(doc)
+	variabili = frappe.db.get_value("WhatsApp Templates", modello, "template") or ""
+	manda_modello(
+		"CRM Lead", lead_utente, numero, modello, [centro] if "{{1}}" in variabili.replace(" ", "") else []
+	)
 
 
 def _manda_sms(lead_utente: str, numero: str, centro: str) -> None:
