@@ -978,9 +978,36 @@ schermata Home. Da fare dopo:
 - ~~l'importazione delle tabelle degli alimenti (CREA, BDA-IEO con la licenza,
   CIQUAL) e di exercises-dataset~~: fatta, vedi "Le librerie: le tabelle e gli
   esercizi";
-- la lista della spesa dal menù;
+- ~~la lista della spesa dal menù~~: fatta, vedi "La lista della spesa";
 - i programmi a tappe;
 - lo sforzo o il dolore segnati con il check-in (il campo c'è già).
+
+### La lista della spesa
+
+Fatta il 30/09/2026: "lista della spesa dal menù" (design), "una settimana avanti si
+guarda, per esempio per fare la spesa".
+
+- **Cosa comprare per i giorni che vengono** (`piani_regole.spesa`, provata senza
+  sito):
+  - gli alimenti di una dieta, con i grammi sommati su ogni volta che il loro pasto
+    viene: i momenti di ogni giorno tutti i giorni, quelli di un giorno della
+    settimana in quel giorno;
+  - una voce chiesta "tre volte a settimana" conta tre volte a settimana, e la
+    settimana ricomincia il lunedì;
+  - solo i giorni del periodo del piano: un piano che finisce giovedì non fa
+    comprare per venerdì;
+  - un alimento senza grammi si compra lo stesso, senza numero;
+  - la dieta a scambi dà le porzioni per gruppo ("cereali: 14 porzioni"), con gli
+    alimenti del gruppo tra cui scegliere: l'alimento lo sceglie il paziente.
+- **Come la si legge**: arrotondata per eccesso come si compra, a 10 g e sopra il
+  chilo a 100 g ("560 g", "1,2 kg"), con come ci si arriva ("80 g, 7 volte"). In
+  ordine di gruppo, come sul banco del mercato.
+- **Nel CRM** ("Shopping list" su una dieta): da una data, per una a cinque
+  settimane; "Copy" la copia a parole, da incollare in un messaggio al paziente.
+  Aprirla è leggere il piano, e va nel registro degli accessi.
+- **Nell'area del paziente**, dalla pagina del piano: una o due settimane da oggi,
+  e una spunta per quello che è già nel carrello. Le spunte restano sul telefono,
+  non vanno al centro. Niente calorie.
 
 ### Le librerie: le tabelle e gli esercizi
 
