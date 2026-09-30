@@ -25,7 +25,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'The pages and accounts the planner publishes to. They come from the sources connected to DottorCloud: switch off the ones it should not offer.',
+              'The pages and accounts the planner publishes to. They come from the sources connected to {brand}: switch off the ones it should not offer.',
             )
           }}
         </p>
@@ -95,7 +95,7 @@
       <p class="text-p-sm text-ink-gray-5">
         {{
           __(
-            'More sources will appear here as new integrations are connected to DottorCloud.',
+            'More sources will appear here as new integrations are connected to {brand}.',
           )
         }}
       </p>
@@ -157,7 +157,7 @@
         {{
           anyConnected
             ? __(
-                'No profiles yet. The connected account shared no Page with DottorCloud: add them from the source, then refresh.',
+                'No profiles yet. The connected account shared no Page with {brand}: add them from the source, then refresh.',
               )
             : __('Connect a source above and its profiles appear here.')
         }}

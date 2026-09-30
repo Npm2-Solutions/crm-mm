@@ -107,7 +107,7 @@
             {{ __('Exchange Rate Provider') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">
-            {{ __('Configure the exchange rate provider for DottorCloud') }}
+            {{ __('Configure the exchange rate provider for {brand}') }}
           </div>
         </div>
         <div class="flex items-center gap-2">

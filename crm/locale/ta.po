@@ -407,7 +407,7 @@ msgid "Add your first comment"
 msgstr ""
 
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:11
-msgid "Add, edit, and manage email templates for the messages DottorCloud sends"
+msgid "Add, edit, and manage email templates for the messages {brand} sends"
 msgstr ""
 
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:12
@@ -1368,7 +1368,7 @@ msgid "Configure forecasting feature to help predict sales performance and growt
 msgstr ""
 
 #: frontend/src/components/Settings/TelephonySettings.vue:17
-msgid "Configure telephony settings for DottorCloud"
+msgid "Configure telephony settings for {brand}"
 msgstr ""
 
 #: frontend/src/components/Settings/CurrencySettings.vue:11
@@ -1376,7 +1376,7 @@ msgid "Configure the currency and exchange rate provider for your CRM"
 msgstr ""
 
 #: frontend/src/components/Settings/CurrencySettings.vue:63
-msgid "Configure the exchange rate provider for DottorCloud"
+msgid "Configure the exchange rate provider for {brand}"
 msgstr ""
 
 #: frontend/src/components/Settings/BrandSettings.vue:10
@@ -2148,7 +2148,7 @@ msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:98
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:124
-msgid "ERPNext is not integrated with DottorCloud"
+msgid "ERPNext is not integrated with {brand}"
 msgstr ""
 
 #: frontend/src/components/Settings/ERPNextSettings.vue:4
@@ -3785,7 +3785,7 @@ msgid "Manage CRM users by adding or inviting them, and assign roles to control 
 msgstr ""
 
 #: frontend/src/components/Settings/EmailAccountList.vue:11
-msgid "Manage your email accounts to send and receive emails directly from DottorCloud. You can add multiple accounts and set one as default for incoming and outgoing emails."
+msgid "Manage your email accounts to send and receive emails directly from {brand}. You can add multiple accounts and set one as default for incoming and outgoing emails."
 msgstr ""
 
 #: frontend/src/components/Modals/AddExistingUserModal.vue:93
@@ -6398,7 +6398,7 @@ msgid "You do not have Exotel Number set in your Telephony Agent"
 msgstr ""
 
 #: frontend/src/pages/NotPermitted.vue:12
-msgid "You do not have enough permissions to access DottorCloud. Please contact your administrator if you believe this is an error."
+msgid "You do not have enough permissions to access {brand}. Please contact your administrator if you believe this is an error."
 msgstr ""
 
 #: crm/integrations/exotel/handler.py:93
@@ -6406,7 +6406,7 @@ msgid "You do not have mobile number set in your Telephony Agent"
 msgstr ""
 
 #: crm/www/crm.py:20
-msgid "You do not have permission to access DottorCloud"
+msgid "You do not have permission to access {brand}"
 msgstr ""
 
 #: frontend/src/data/document.js:35

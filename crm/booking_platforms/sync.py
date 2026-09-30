@@ -34,6 +34,7 @@ from crm.booking_platforms.base import (
 	NotSupported,
 	PlatformError,
 )
+from crm.marchio import con_nome
 from crm.scheduling.timeutils import UTC, from_system_naive, to_system_naive
 
 ACTIVE = ("Scheduled", "Confirmed")
@@ -514,7 +515,10 @@ def _add_block(conn_name, user, ref, appointment, doc):
 	)
 	try:
 		row.external_block_id = provider.block_time(
-			ref, from_system_naive(doc.starts_on), from_system_naive(doc.ends_on), _("Busy (DottorCloud)")
+			ref,
+			from_system_naive(doc.starts_on),
+			from_system_naive(doc.ends_on),
+			con_nome(_("Busy ({brand})")),
 		)
 		row.status = "Active"
 	except Exception as exc:

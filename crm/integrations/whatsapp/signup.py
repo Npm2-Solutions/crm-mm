@@ -40,6 +40,7 @@ from crm.integrations.meta.client import (
 )
 from crm.integrations.meta.relay import relay_secret, sign
 from crm.integrations.meta.relay import sign as relay_sign
+from crm.marchio import con_nome
 from crm.utils.sites import is_this_site
 
 CONNECT_PATH = "/whatsapp-connect"
@@ -591,7 +592,7 @@ def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, n
 			raise ValueError(f"HTTP {response.status_code}: {response.text[:200]}")
 	except Exception as exc:
 		frappe.log_error(frappe.get_traceback(), f"WhatsApp: handing the connection to {site} failed")
-		frappe.throw(_("Could not hand the connection to DottorCloud: {0}").format(str(exc)[:200]))
+		frappe.throw(con_nome(_("Could not hand the connection to {brand}: {0}")).format(str(exc)[:200]))
 
 
 __all__ = [

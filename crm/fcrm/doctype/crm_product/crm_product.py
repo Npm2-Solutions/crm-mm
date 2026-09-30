@@ -14,6 +14,7 @@ from crm.integrations.erpnext.utils import (
 	should_push_to_erpnext,
 	validate_rename_conflict,
 )
+from crm.marchio import con_nome
 
 CATALOGUE_FIELDS = ("standard_rate", "image", "disabled", "description")
 
@@ -50,8 +51,10 @@ class CRMProduct(Document):
 			return
 		if should_push_to_erpnext():
 			frappe.throw(
-				_(
-					"ERPNext integration is active. Create an Item in ERPNext and it will appear among DottorCloud's products automatically."
+				con_nome(
+					_(
+						"ERPNext integration is active. Create an Item in ERPNext and it will appear among {brand}'s products automatically."
+					)
 				),
 				title=_("Use ERPNext to Create Products"),
 			)

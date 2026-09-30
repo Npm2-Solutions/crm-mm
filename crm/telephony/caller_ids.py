@@ -22,6 +22,8 @@ import phonenumbers
 from frappe import _
 from frappe.utils import now_datetime
 
+from crm.marchio import con_nome
+
 SOURCE_ACCOUNT = "Account Number"
 SOURCE_VERIFIED = "Verified Caller ID"
 SOURCE_MANUAL = "Manual"
@@ -173,19 +175,23 @@ def _routing(row: dict) -> dict:
 		# at it for incoming calls reaches the CRM at the wrong door
 		return {
 			"routes_to_crm": 0,
-			"routing_note": _(
-				"Set to DottorCloud's TwiML app, which handles outgoing calls. Point its "
-				"voice webhook at the incoming handler instead — the Twilio settings "
-				"page shows the address."
+			"routing_note": con_nome(
+				_(
+					"Set to {brand}'s TwiML app, which handles outgoing calls. Point its "
+					"voice webhook at the incoming handler instead — the Twilio settings "
+					"page shows the address."
+				)
 			),
 		}
 
 	if row.get("voice_url") or row.get("voice_application_sid"):
 		return {
 			"routes_to_crm": 0,
-			"routing_note": _(
-				"Its voice webhook points somewhere other than DottorCloud, so incoming "
-				"calls are handled elsewhere."
+			"routing_note": con_nome(
+				_(
+					"Its voice webhook points somewhere other than {brand}, so incoming "
+					"calls are handled elsewhere."
+				)
 			),
 		}
 

@@ -15,7 +15,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Add, edit, and manage email templates for the messages DottorCloud sends',
+              'Add, edit, and manage email templates for the messages {brand} sends',
             )
           }}
         </p>

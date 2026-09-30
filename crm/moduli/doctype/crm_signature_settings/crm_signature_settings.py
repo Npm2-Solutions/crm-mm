@@ -7,6 +7,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from crm.marchio import con_nome
+
 
 class CRMSignatureSettings(Document):
 	def validate(self):
@@ -14,7 +16,7 @@ class CRMSignatureSettings(Document):
 
 		if self.enabled and self.provider not in firme.fornitori():
 			frappe.throw(
-				_("{0} is not a provider DottorCloud knows: {1}").format(
+				con_nome(_("{0} is not a provider {brand} knows: {1}")).format(
 					frappe.bold(self.provider or "-"), ", ".join(firme.fornitori()) or _("none yet")
 				)
 			)

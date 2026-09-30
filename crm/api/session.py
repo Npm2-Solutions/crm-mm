@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 
+from crm.marchio import con_nome
 from crm.permissions import livelli
 
 
@@ -14,7 +15,7 @@ def get_session_role_flags():
 	roles = set(frappe.get_roles())
 
 	if not roles.intersection(crm_allowed_roles()):
-		frappe.throw(_("You are not permitted to access DottorCloud."), frappe.PermissionError)
+		frappe.throw(con_nome(_("You are not permitted to access {brand}.")), frappe.PermissionError)
 
 	return {
 		"is_system_manager": "System Manager" in roles,

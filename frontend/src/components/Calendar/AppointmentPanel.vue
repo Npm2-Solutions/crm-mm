@@ -402,7 +402,7 @@
               class="mt-0.5 py-1 text-p-sm text-ink-gray-5 hover:text-ink-gray-7 hover:underline"
               @click="row.manual = true"
             >
-              {{ __('Not in DottorCloud? Type a name') }}
+              {{ __('Not in {brand}? Type a name') }}
             </button>
           </template>
           <div v-else class="flex flex-col gap-1.5">
@@ -428,7 +428,7 @@
               class="self-start text-p-sm text-ink-gray-5 hover:text-ink-gray-7 hover:underline"
               @click="row.manual = false"
             >
-              {{ __('Search DottorCloud instead') }}
+              {{ __('Search {brand} instead') }}
             </button>
           </div>
         </div>

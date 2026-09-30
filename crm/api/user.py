@@ -4,6 +4,7 @@ from frappe.auth import LoginAttemptTracker
 from frappe.rate_limiter import rate_limit
 from frappe.utils.password import check_password, update_password
 
+from crm.marchio import con_nome
 from crm.permissions import livelli, utenti
 from crm.permissions.catalogo import MANAGER, SEGRETERIA
 
@@ -243,7 +244,7 @@ def remove_crm_roles_from_user(user: str):
 		remove_roles(doc, "System Manager")
 		doc.save(ignore_permissions=True)
 	utenti.togli_dal_crm(user)
-	frappe.msgprint(_("User {0} has been removed from DottorCloud roles.").format(user))
+	frappe.msgprint(con_nome(_("User {0} has been removed from {brand} roles.")).format(user))
 
 
 def remove_roles(self, *roles):

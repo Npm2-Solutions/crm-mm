@@ -510,7 +510,7 @@ msgid "Add your first comment"
 msgstr ""
 
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:11
-msgid "Add, edit, and manage email templates for the messages DottorCloud sends"
+msgid "Add, edit, and manage email templates for the messages {brand} sends"
 msgstr ""
 
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:12
@@ -1669,7 +1669,7 @@ msgid "Configure actions that appear on the home dropdown"
 msgstr ""
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:10
-msgid "Configure default settings for DottorCloud, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
+msgid "Configure default settings for {brand}, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
 msgstr ""
 
 #: frontend/src/components/Settings/GeneralSettings.vue:8
@@ -1723,7 +1723,7 @@ msgid "Confirm {0}"
 msgstr ""
 
 #: frontend/src/components/Settings/ERPNextSettings.vue:274
-msgid "Connect ERPNext to DottorCloud"
+msgid "Connect ERPNext to {brand}"
 msgstr ""
 
 #: frontend/src/pages/Welcome.vue:35
@@ -1852,7 +1852,7 @@ msgid "Copied to Clipboard"
 msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create DottorCloud's custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
+msgid "Could not create {brand}'s custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
 msgstr ""
 
 #: frontend/src/components/Settings/Hierarchy/useRemoveNode.js:16
@@ -2659,7 +2659,7 @@ msgid "ERPNext custom fields not created"
 msgstr ""
 
 #: crm/fcrm/doctype/crm_product/crm_product.py:42
-msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear among DottorCloud's products automatically."
+msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear among {brand}'s products automatically."
 msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:220
@@ -2677,7 +2677,7 @@ msgid "ERPNext is not installed on this site either install it or enter the URL 
 msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:27
-msgid "ERPNext is not integrated with DottorCloud"
+msgid "ERPNext is not integrated with {brand}"
 msgstr ""
 
 #: frontend/src/components/Activities/CommentArea.vue:94
@@ -2895,7 +2895,7 @@ msgid "Enable"
 msgstr "Aktiver"
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:112
-msgid "Enable Exotel integration to make and receive calls directly from DottorCloud"
+msgid "Enable Exotel integration to make and receive calls directly from {brand}"
 msgstr ""
 
 #. Label of the enable_forecasting (Check) field in DocType 'FCRM Settings'
@@ -2922,7 +2922,7 @@ msgid "Enable Sales Hierarchy Permissions"
 msgstr ""
 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:119
-msgid "Enable Twilio integration to make and receive calls directly from DottorCloud"
+msgid "Enable Twilio integration to make and receive calls directly from {brand}"
 msgstr ""
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:90
@@ -3807,7 +3807,7 @@ msgid "How do new leads usually come to you?"
 msgstr ""
 
 #: frontend/src/pages/PersonaForm.vue:108
-msgid "How many people will use DottorCloud?"
+msgid "How many people will use {brand}?"
 msgstr ""
 
 #. Description of the 'Timeline Timestamp Format' (Select) field in DocType
@@ -4688,7 +4688,7 @@ msgid "Manage your account emails and email signature for communication."
 msgstr ""
 
 #: frontend/src/components/Settings/EmailAccountList.vue:11
-msgid "Manage your email accounts to send and receive emails directly from DottorCloud. You can add multiple accounts and set one as default for incoming and outgoing emails."
+msgid "Manage your email accounts to send and receive emails directly from {brand}. You can add multiple accounts and set one as default for incoming and outgoing emails."
 msgstr ""
 
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:36
@@ -7999,7 +7999,7 @@ msgid "User {0} has been removed"
 msgstr ""
 
 #: crm/api/user.py:158
-msgid "User {0} has been removed from DottorCloud roles."
+msgid "User {0} has been removed from {brand} roles."
 msgstr ""
 
 #: crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.py:43
@@ -8126,7 +8126,7 @@ msgid "Welcome Message"
 msgstr ""
 
 #: frontend/src/pages/PersonaForm.vue:132
-msgid "Welcome to DottorCloud"
+msgid "Welcome to {brand}"
 msgstr ""
 
 #: frontend/src/pages/Welcome.vue:4
@@ -8230,7 +8230,7 @@ msgid "You are not allowed to invite System Managers"
 msgstr ""
 
 #: crm/api/session.py:11
-msgid "You are not permitted to access DottorCloud."
+msgid "You are not permitted to access {brand}."
 msgstr ""
 
 #: crm/utils/__init__.py:133
@@ -8270,7 +8270,7 @@ msgid "You do not have Exotel Number set in your Telephony Agent"
 msgstr ""
 
 #: frontend/src/pages/NotPermitted.vue:12
-msgid "You do not have enough permissions to access DottorCloud. Please contact your administrator if you believe this is an error."
+msgid "You do not have enough permissions to access {brand}. Please contact your administrator if you believe this is an error."
 msgstr ""
 
 #: crm/integrations/exotel/handler.py:92
@@ -8278,7 +8278,7 @@ msgid "You do not have mobile number set in your Telephony Agent"
 msgstr ""
 
 #: crm/www/crm.py:18
-msgid "You do not have permission to access DottorCloud"
+msgid "You do not have permission to access {brand}"
 msgstr ""
 
 #: frontend/src/data/document.js:45

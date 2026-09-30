@@ -23,6 +23,8 @@ from dataclasses import dataclass
 import frappe
 from frappe import _
 
+from crm.marchio import con_nome
+
 
 @dataclass(frozen=True)
 class Announcement:
@@ -107,7 +109,7 @@ class TelephonyProvider(ABC):
 
 	def say(self, announcement: Announcement, hang_up: bool = True) -> CallInstruction:
 		raise ProviderNotSupported(
-			_("{0} does not let DottorCloud control what a call hears.").format(self.label)
+			con_nome(_("{0} does not let {brand} control what a call hears.")).format(self.label)
 		)
 
 	def dial_phone(self, caller_id: str, to_number: str) -> CallInstruction:

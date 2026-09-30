@@ -13,7 +13,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Manage your email accounts to send and receive emails directly from DottorCloud. You can add multiple accounts and set one as default for incoming and outgoing emails.',
+              'Manage your email accounts to send and receive emails directly from {brand}. You can add multiple accounts and set one as default for incoming and outgoing emails.',
             )
           }}
         </p>

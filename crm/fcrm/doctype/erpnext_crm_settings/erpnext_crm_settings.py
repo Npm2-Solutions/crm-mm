@@ -11,6 +11,7 @@ from frappe.frappeclient import FrappeClient
 from frappe.model.document import Document
 from frappe.utils import get_url_to_form, get_url_to_list
 
+from crm.marchio import con_nome
 from crm.permissions import livelli
 
 # The integration is the agency's, the whole page (doc 30). Frappe runs a
@@ -32,7 +33,7 @@ def _log_and_throw(message: str, title: str | None = None):
 def _get_enabled_settings():
 	settings = frappe.get_single("ERPNext CRM Settings")
 	if not settings.enabled:
-		frappe.throw(_("ERPNext is not integrated with DottorCloud"))
+		frappe.throw(con_nome(_("ERPNext is not integrated with {brand}")))
 	return settings
 
 
@@ -162,10 +163,12 @@ class ERPNextCRMSettings(Document):
 				f"Could not create custom fields on remote ERPNext site: {self.erpnext_site_url}",
 			)
 			frappe.msgprint(
-				_(
-					"Could not create DottorCloud's custom fields on {0} automatically. "
-					"If it is running the latest ERPNext, enable the CRM data synchronization "
-					"in its CRM Settings, otherwise check the Error Log."
+				con_nome(
+					_(
+						"Could not create {brand}'s custom fields on {0} automatically. "
+						"If it is running the latest ERPNext, enable the CRM data synchronization "
+						"in its CRM Settings, otherwise check the Error Log."
+					)
 				).format(self.erpnext_site_url),
 				title=_("ERPNext custom fields not created"),
 				indicator="orange",

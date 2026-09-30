@@ -17,8 +17,8 @@ export default {
     'Quest’area è per i clienti del centro.',
   "This area is for the centre's patients.":
     'Quest’area è per i pazienti del centro.',
-  'Your work is in DottorCloud.': 'Il tuo lavoro è in DottorCloud.',
-  'Open DottorCloud': 'Apri DottorCloud',
+  'Your work is in {brand}.': 'Il tuo lavoro è in {brand}.',
+  'Open {brand}': 'Apri {brand}',
   Home: 'Inizio',
   Appointments: 'Appuntamenti',
   Documents: 'Documenti',

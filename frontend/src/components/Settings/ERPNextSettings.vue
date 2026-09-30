@@ -213,7 +213,7 @@
                   <div class="text-p-sm text-ink-gray-5">
                     {{
                       __(
-                        "ERPNext Items always sync into DottorCloud's products. Turn this on to also sync product changes back to ERPNext Items.",
+                        "ERPNext Items always sync into {brand}'s products. Turn this on to also sync product changes back to ERPNext Items.",
                       )
                     }}
                   </div>
@@ -241,7 +241,7 @@
                     {{
                       erpnextCRMSettingsResource.doc.sync_products
                         ? __(
-                            "Run a manual bi-directional sync between ERPNext Items and DottorCloud's products.",
+                            "Run a manual bi-directional sync between ERPNext Items and {brand}'s products.",
                           )
                         : __(
                             'Run a manual synchronization to pull the latest Items from ERPNext.',
@@ -428,7 +428,7 @@
             <ERPNextIcon class="size-7.5 text-ink-gray-5" />
             <div class="flex flex-col items-center gap-1.5 text-center">
               <span class="text-lg-medium text-ink-gray-8">
-                {{ __('Connect ERPNext to DottorCloud') }}
+                {{ __('Connect ERPNext to {brand}') }}
               </span>
               <span class="text-center text-p-base text-ink-gray-6">
                 {{

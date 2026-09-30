@@ -10,7 +10,7 @@
       <p class="text-ink-gray-6 text-p-base">
         {{
           __(
-            'You do not have enough permissions to access DottorCloud. Please contact your administrator if you believe this is an error.',
+            'You do not have enough permissions to access {brand}. Please contact your administrator if you believe this is an error.',
           )
         }}
       </p>

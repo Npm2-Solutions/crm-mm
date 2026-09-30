@@ -542,7 +542,7 @@ const statusFilterOptions = computed(() =>
 )
 
 const sourceFilterOptions = computed(() => [
-  { label: __('Created in DottorCloud'), value: 'Internal' },
+  { label: __('Created in {brand}'), value: 'Internal' },
   { label: __('Online booking page'), value: 'Online' },
   ...(meta.data?.platforms || []).map((platform) => ({
     label: platform,

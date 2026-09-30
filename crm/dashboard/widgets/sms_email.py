@@ -113,7 +113,7 @@ def sms_trend(ctx: Context):
 	category="email",
 	kind="number",
 	title=_lt("Emails received"),
-	description=_lt("Emails from people and deals that landed in DottorCloud"),
+	description=_lt("Emails from people and deals that landed in {brand}"),
 )
 def emails_received(ctx: Context):
 	return charts.number(*traffic(ctx, "email", "in"), route=INBOX)

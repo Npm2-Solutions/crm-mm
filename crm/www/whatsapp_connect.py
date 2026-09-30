@@ -25,12 +25,15 @@ from crm.integrations.whatsapp.signup import (
 	login_url,
 	parse_state,
 )
+from crm.marchio import con_nome, nome
 
 no_cache = 1
 
 
 def get_context(context):
 	context.no_cache = 1
+	# the page names the product: the brand of the vertical that is on
+	context.brand_name = nome()
 	# A logged-in visitor's POST is refused without this, and the agency
 	# connecting its own number on the hub is logged in. Handed over here
 	# rather than read from the page: Frappe writes its own copy at the very
@@ -70,8 +73,8 @@ def get_context(context):
 		# hands back, instead of from a fresh link.
 		return context
 	if not parsed:
-		context.error = _(
-			"This connection link is invalid or has expired. Go back to DottorCloud and press Connect again."
+		context.error = con_nome(
+			_("This connection link is invalid or has expired. Go back to {brand} and press Connect again.")
 		)
 	elif not allowed_site(parsed["site"]):
 		context.error = _("This site is not allowed to connect WhatsApp.")

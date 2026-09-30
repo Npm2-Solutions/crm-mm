@@ -26,6 +26,8 @@ import re
 
 from frappe import _
 
+from crm.marchio import con_nome
+
 # --- Graph API, all products -------------------------------------------------
 
 # nosemgrep: frappe-breaks-multitenancy — the lambda is the point: _() runs per call, not once at import
@@ -70,10 +72,12 @@ GRAPH = {
 		"This call needs a page access token with management rights, and the one in use is "
 		"not one. Reconnect and make sure the page is selected."
 	),
-	368: lambda: _(
-		"The account is temporarily blocked for a policy violation. Meta lifts it by itself, "
-		"and nothing in DottorCloud can shorten it — check the app's Alerts in the Meta dashboard "
-		"for what triggered it."
+	368: lambda: con_nome(
+		_(
+			"The account is temporarily blocked for a policy violation. Meta lifts it by itself, "
+			"and nothing in {brand} can shorten it — check the app's Alerts in the Meta dashboard "
+			"for what triggered it."
+		)
 	),
 	463: lambda: _("The token has simply expired. Reconnect the Meta account."),
 	2635: lambda: _(

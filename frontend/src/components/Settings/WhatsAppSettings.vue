@@ -65,7 +65,7 @@
           <FeatherIcon name="info" class="mt-0.5 size-4 shrink-0" />
           {{
             __(
-              'WhatsApp is not set up on DottorCloud yet. An administrator has to finish the setup before a number can be connected.',
+              'WhatsApp is not set up on {brand} yet. An administrator has to finish the setup before a number can be connected.',
             )
           }}
         </div>
@@ -139,7 +139,7 @@
                       (webhook.data?.missing_fields || []).join(', '),
                     ])
                   : __(
-                      'Without it no message reaches DottorCloud, in either direction.',
+                      'Without it no message reaches {brand}, in either direction.',
                     )
               }}
             </span>
@@ -503,7 +503,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'DottorCloud stops sending and receiving on this number. The WhatsApp Business app on the phone is not touched, and every message stays where it is. Scanning the QR again brings it back.',
+              '{brand} stops sending and receiving on this number. The WhatsApp Business app on the phone is not touched, and every message stays where it is. Scanning the QR again brings it back.',
             )
           }}
         </p>

@@ -17,7 +17,7 @@
           />
         </h2>
         <p class="text-p-base text-ink-gray-6">
-          {{ __('Configure telephony settings for DottorCloud') }}
+          {{ __('Configure telephony settings for {brand}') }}
         </p>
       </div>
       <div
@@ -91,9 +91,7 @@
               v-if="chosenCallerId && !chosenCallerId.routes_to_crm"
               class="w-56 text-right text-p-sm text-ink-red-8"
             >
-              {{
-                __('Incoming calls to this number do not reach DottorCloud.')
-              }}
+              {{ __('Incoming calls to this number do not reach {brand}.') }}
             </span>
           </div>
           <FormControl

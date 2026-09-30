@@ -105,7 +105,7 @@ const questions = computed(() => [
   },
   {
     key: 'team_size',
-    title: __('How many people will use DottorCloud?'),
+    title: __('How many people will use {brand}?'),
     options: [
       { label: __('Just me'), value: 'just_me' },
       { label: __('2–5'), value: '2_5' },
@@ -129,5 +129,5 @@ const questions = computed(() => [
   },
 ])
 
-usePageMeta(() => ({ title: __('Welcome to DottorCloud') }))
+usePageMeta(() => ({ title: __('Welcome to {brand}') }))
 </script>
