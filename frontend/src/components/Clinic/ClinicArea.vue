@@ -671,7 +671,9 @@ function openedWhat(row) {
         ? __('Opened the archive')
         : row.kind === 'plan'
           ? __('Opened a plan')
-          : __('Downloaded a file')
+          : row.kind === 'programme'
+            ? __('Opened a programme')
+            : __('Downloaded a file')
   return row.count > 1 ? __('{0} · {1} entries', [what, row.count]) : what
 }
 

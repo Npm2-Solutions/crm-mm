@@ -1,6 +1,20 @@
-<!-- The plans the person follows now, and how today is going on each. -->
+<!--
+  What the person follows now: their programmes, stage by stage, and their plans
+  with how today is going on each.
+-->
 <template>
   <div class="flex flex-col gap-4">
+    <template v-if="programmes.data?.programmes?.length">
+      <h1 class="text-xl font-semibold text-ink-gray-9">
+        {{ __('Your programmes') }}
+      </h1>
+      <ProgrammeCard
+        v-for="programme in programmes.data.programmes"
+        :key="programme.name"
+        :programme="programme"
+        @changed="reload"
+      />
+    </template>
     <h1 class="text-xl font-semibold text-ink-gray-9">
       {{ __('Your plans') }}
     </h1>
@@ -31,6 +45,7 @@
 
 <script setup>
 import { createResource } from 'frappe-ui'
+import ProgrammeCard from '../components/ProgrammeCard.vue'
 import { area } from '../store'
 
 const plans = createResource({
@@ -38,4 +53,15 @@ const plans = createResource({
   params: { person: area.person },
   auto: true,
 })
+const programmes = createResource({
+  url: 'crm.clinica.area.piani.area_programmes',
+  params: { person: area.person },
+  auto: true,
+})
+
+// a stage finished opens the next, and its plan comes with it
+function reload() {
+  programmes.reload()
+  plans.reload()
+}
 </script>
