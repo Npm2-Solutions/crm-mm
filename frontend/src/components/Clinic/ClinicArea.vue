@@ -43,6 +43,12 @@
       </div>
       <div class="flex shrink-0 gap-2 max-md:justify-end">
         <Button
+          v-if="record.data?.assistant?.summary"
+          :label="__('Summary before the visit')"
+          iconLeft="book-open"
+          @click="summarising = true"
+        />
+        <Button
           v-if="record.data?.can_see_log"
           :label="__('Who opened it')"
           iconLeft="eye"
@@ -275,6 +281,15 @@
               </template>
             </FileUploader>
             <Button
+              v-if="entry.template && record.data.assistant?.dictation"
+              size="sm"
+              variant="ghost"
+              class="touch-target"
+              :label="__('Fill from dictation')"
+              iconLeft="mic"
+              @click="dictating = { show: true, record: entry.name }"
+            />
+            <Button
               size="sm"
               variant="ghost"
               class="touch-target"
@@ -299,6 +314,20 @@
             iconLeft="plus"
             @click="startAddendum(entry)"
           />
+          <!-- the assistant drafts from one's own signed note; the practitioner signs -->
+          <Dropdown
+            v-if="entry.docstatus === 1 && record.data.assistant?.drafts"
+            :options="draftOptions(entry)"
+            placement="right"
+          >
+            <Button
+              size="sm"
+              variant="ghost"
+              class="touch-target"
+              :label="__('Draft')"
+              iconLeft="feather"
+            />
+          </Dropdown>
         </div>
       </header>
       <!-- a visit on a clinical sheet: its answers, in words once signed -->
@@ -362,6 +391,19 @@
     :obscured="obscuring.obscured"
     @done="afterObscure"
   />
+  <DictationDialog
+    v-model="dictating.show"
+    :record="dictating.record"
+    @filled="record.reload()"
+  />
+  <SummaryDialog v-model="summarising" :lead="lead" />
+  <AssistantDraftDialog
+    v-model="drafting.show"
+    :record="drafting.record"
+    :kind="drafting.kind"
+    :can-post="Boolean(record.data?.can_message)"
+    @kept="record.reload()"
+  />
 
   <Dialog
     v-model="log.show"
@@ -406,6 +448,9 @@
 
 <script setup>
 import AreaAccessCard from '@/components/Clinic/AreaAccessCard.vue'
+import AssistantDraftDialog from '@/components/Clinic/AssistantDraftDialog.vue'
+import DictationDialog from '@/components/Clinic/DictationDialog.vue'
+import SummaryDialog from '@/components/Clinic/SummaryDialog.vue'
 import ClinicPlans from '@/components/Clinic/ClinicPlans.vue'
 import AreaMessagesCard from '@/components/Clinic/AreaMessagesCard.vue'
 import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
@@ -536,6 +581,25 @@ async function startSheet(template) {
   } catch (err) {
     toast.error(err.messages?.[0] || err.message)
   }
+}
+
+const drafting = reactive({ show: false, record: null, kind: 'letter' })
+const dictating = ref({ show: false, record: null })
+const summarising = ref(false)
+
+function draftOptions(entry) {
+  const open = (kind) =>
+    Object.assign(drafting, { show: true, record: entry.name, kind })
+  return [
+    {
+      label: __('A letter to the family doctor'),
+      onClick: () => open('letter'),
+    },
+    {
+      label: __('Instructions after the visit'),
+      onClick: () => open('instructions'),
+    },
+  ]
 }
 
 function startAddendum(entry) {
