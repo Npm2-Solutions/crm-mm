@@ -62,38 +62,38 @@ Il sito sta sul server HestiaCP di NPM2 (`hosting.npm2solutions.com`, 91.99.201.
 come dominio web dell'utente `admin`. La chiave SSH e le credenziali del pannello sono
 nel pacchetto di consegna dell'hosting, **non in questo repository**.
 
-Una volta per dominio:
-
-1. **DNS.** Record A di `dottorcloud.it` e `www.dottorcloud.it` verso 91.99.201.178.
-   L'anteprima `dottorcloud.preview.npm2solutions.com` punta già lì (`*.preview`).
-2. **Pannello.** WEB → Add Web Domain, con PHP-FPM 8.1 o più recente; poi SSL con
-   Let's Encrypt e Force HTTPS. Da terminale:
-
-   ```bash
-   v-add-web-domain admin dottorcloud.it
-   v-add-letsencrypt-domain admin dottorcloud.it www.dottorcloud.it
-   v-add-web-domain-ssl-force admin dottorcloud.it
-   ```
-
-   Nel pannello, "Redirect" manda `www.dottorcloud.it` su `dottorcloud.it`.
-3. **La prima pubblicazione**, con la configurazione di nginx:
+1. **DNS.** Il DNS di `dottorcloud.it` è su Teliko (`dns1.teliko.net`): il record A di
+   `dottorcloud.it` va portato a 91.99.201.178; `www` è un CNAME di `dottorcloud.it` e lo
+   segue. Finché punta altrove, chi apre il sito vede la pagina "Not Found" del vecchio
+   server. L'anteprima `dottorcloud.preview.npm2solutions.com` punta già lì (`*.preview`).
+2. **La pubblicazione**, da un computer con Node, rsync e SSH:
 
    ```bash
-   SITO_SSH_KEY=/percorso/root_hetzner_id_ed25519 sito/deploy.sh dottorcloud.it --nginx
+   SITO_SSH_KEY=/percorso/root_hetzner_id_ed25519 sito/deploy.sh dottorcloud.it --crea --nginx
    ```
 
-   Lo script costruisce il sito per quel dominio, controlla che `public_html` sia vuota,
-   la pagina d'attesa del pannello o già il nostro sito (non tocca mai una cartella con
-   altro, come un WordPress), copia `dist/`, mette la 404 e crea `private/sito.ini`.
-   `--prova` mostra cosa cambierebbe senza cambiare niente.
-4. **L'email del modulo.** In `private/sito.ini` (fuori da `public_html`): `destinatario`
-   riceve le richieste, `mittente` le manda. Il dominio del mittente deve permettere al
-   server di spedire (SPF con `ip4:91.99.201.178`, meglio anche DKIM), altrimenti le
-   richieste finiscono nello spam. `archivio` tiene anche una copia di ogni richiesta in un
-   file, se si vuole. Poi una richiesta di prova dal sito.
+   `--crea` aggiunge il dominio nel pannello se manca e, quando il suo DNS punta al server,
+   gli dà il certificato Let's Encrypt con HTTPS obbligatorio e `www` che rimanda al
+   dominio; rilanciato dopo il cambio del DNS, prende il certificato. Poi lo script
+   costruisce il sito per quel dominio, controlla che `public_html` sia vuota, la pagina
+   d'attesa del pannello o già il nostro sito (non tocca mai una cartella con altro, come
+   un WordPress), copia `dist/`, mette la 404 e crea `private/sito.ini`. `--nginx` installa
+   la 404 e le intestazioni di `server/`. `--prova` mostra cosa cambierebbe senza cambiare
+   niente.
+
+   Senza computer, dal pannello (anche dal telefono): WEB → Add Web Domain, poi File
+   Manager → `public_html`, si toglie `index.html`, si carica lo zip di `sito/dist`
+   costruito con `SITO_URL=https://dottorcloud.it` e lo si estrae; quando il DNS punta al
+   server, SSL con Let's Encrypt e Force HTTPS.
+3. **L'email del modulo.** In `private/sito.ini` (fuori da `public_html`): `destinatario`
+   riceve le richieste, `mittente` le manda (`sito@dottorcloud.it`). Il dominio del
+   mittente deve permettere al server di spedire, altrimenti le richieste finiscono nello
+   spam: il record TXT di `dottorcloud.it`, oggi `v=spf1`, diventa
+   `v=spf1 ip4:91.99.201.178 ip6:2a01:4f8:1c1f:b10d::1 ~all`. `archivio` tiene anche una
+   copia di ogni richiesta in un file, se si vuole. Poi una richiesta di prova dal sito.
 
 Le volte dopo basta `sito/deploy.sh dottorcloud.it`. Per l'anteprima:
-`sito/deploy.sh dottorcloud.preview.npm2solutions.com`.
+`sito/deploy.sh dottorcloud.preview.npm2solutions.com --crea`.
 
 ## Cambiarlo
 
