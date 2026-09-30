@@ -51,7 +51,15 @@ def after_install(force=False):
 	add_levels()
 	add_core_permissions()
 	add_consent_types()
+	add_brand()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
+
+
+def add_brand():
+	"""The product's name in the framework's settings: login, desk, public pages."""
+	from crm.marchio import applica
+
+	applica()
 
 
 def add_levels():
