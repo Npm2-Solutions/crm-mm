@@ -187,6 +187,30 @@ class LaFatturaELaGiornata(OggiCase):
 		self.assertIn(dimenticato.name, avvisi[0].message)
 		self.assertNotIn(accolto.name, avvisi[0].message)
 
+	def test_una_giornata_che_finisce_tardi_si_chiude_dopo_mezzanotte(self):
+		tardi = self.appuntamento(self.ieri(23), self.mario)
+		self.come(DESK)
+		esiti.segna(tardi.name, self.riga(tardi, self.mario).name, "Arrived")
+		frappe.set_user("Administrator")
+		fine = get_datetime(frappe.db.get_value("CRM Appointment", tardi.name, "ends_on"))
+		giorno = fine.date()
+		# the day's last appointment, whatever else the site has that day
+		ultimo = max(get_datetime(riga.ends_on) for riga in esiti._di_oggi(giorno))
+		dopo = max(ultimo, fine) + datetime.timedelta(hours=1)
+		mezzanotte = datetime.datetime.combine(giorno + datetime.timedelta(days=1), datetime.time(0, 30))
+		frappe.db.set_default(esiti.AVVISATO, "")
+		with patch("crm.scheduling.esiti.now_datetime", return_value=max(dopo, mezzanotte)):
+			esiti.fine_giornata()
+		self.assertEqual(self.riga(tardi, self.mario).status, "Attended")
+		self.assertEqual(frappe.db.get_default(esiti.AVVISATO), str(giorno))
+		# asked about once: the next hour, nothing again
+		with patch(
+			"crm.scheduling.esiti.now_datetime",
+			return_value=max(dopo, mezzanotte) + datetime.timedelta(hours=1),
+		):
+			esiti.fine_giornata()
+		self.assertEqual(frappe.db.get_default(esiti.AVVISATO), str(giorno))
+
 	def test_la_giornata_della_segreteria(self):
 		oggi_incontro = self.appuntamento(self.tomorrow(10) - datetime.timedelta(days=1), self.mario)
 		aperto = self.appuntamento(self.ieri(9) - datetime.timedelta(days=1), self.luca)

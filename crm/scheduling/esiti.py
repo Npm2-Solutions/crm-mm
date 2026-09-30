@@ -171,22 +171,33 @@ def chi_avvisare() -> list[str]:
 
 
 def fine_giornata() -> None:
-	"""Hourly. Once the day's last appointment has ended: the checked in count as
-	came, and the desk is asked about the rest, once a day."""
+	"""Hourly. Once a day's last appointment has ended: the checked in count as
+	came, and the desk is asked about the rest, once a day. Yesterday too: a day
+	whose last appointment ends late is over only after midnight."""
 	adesso = now_datetime()
 	oggi = getdate(adesso)
-	appuntamenti = _di_oggi(oggi)
+	for giorno in (oggi - datetime.timedelta(days=1), oggi):
+		_chiudi_la_giornata(giorno, adesso, ieri=giorno < oggi)
+
+
+def _chiudi_la_giornata(giorno: datetime.date, adesso: datetime.datetime, ieri: bool = False) -> None:
+	appuntamenti = _di_oggi(giorno)
 	if not appuntamenti:
 		return
-	chiudi_gli_arrivati(oggi, adesso)
+	chiudi_gli_arrivati(giorno, adesso)
 	ultimo = max(get_datetime(riga.ends_on) for riga in appuntamenti)
-	if adesso < ultimo + MARGINE or frappe.db.get_default(AVVISATO) == str(oggi):
+	# the last day asked about: that day and the ones before it are done
+	if adesso < ultimo + MARGINE or (frappe.db.get_default(AVVISATO) or "") >= str(giorno):
 		return
-	frappe.db.set_default(AVVISATO, str(oggi))
-	aperti = senza_esito(oggi)
+	frappe.db.set_default(AVVISATO, str(giorno))
+	aperti = senza_esito(giorno)
 	if not aperti:
 		return
-	testo = _("{0} appointments today have no outcome: did they come?").format(len(aperti))
+	testo = (
+		_("{0} appointments yesterday have no outcome: did they come?")
+		if ieri
+		else _("{0} appointments today have no outcome: did they come?")
+	).format(len(aperti))
 	for utente in chi_avvisare():
 		frappe.get_doc(
 			{
