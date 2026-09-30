@@ -451,6 +451,8 @@ class LaLezione(AtteseCase):
 		self.assertTrue(LINK.search(entrato["link"]))
 		voce = frappe.get_doc(A.VOCE, {"lead": self.sara.name})
 		self.assertEqual((voce.class_session, voce.source, voce.days), (self.lezione.name, R.ONLINE, []))
+		# a seat in a class is waited for until the class
+		self.assertEqual(getdate(voce.until), self.tomorrow(18).date())
 		# the tick is in the register, with the entry it came with
 		self.assertTrue(
 			frappe.db.exists(
