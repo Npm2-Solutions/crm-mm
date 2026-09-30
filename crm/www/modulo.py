@@ -7,7 +7,8 @@ A static shell: what it shows comes from the guest calls in
 `crm.moduli.richieste`, where the link, the code and the session are the
 credentials. The rules that decide what shows and what is required are the CRM's
 own engine (`/assets/crm/js/moduli_engine.js`, the same file as
-`frontend/src/utils/moduli.js`), so the page and the server agree.
+`frontend/src/utils/moduli.js`), so the page and the server agree; the questions
+are drawn by `moduli_campi.js`, as on the website's forms.
 """
 
 import functools
@@ -18,11 +19,19 @@ import frappe
 no_cache = 1
 
 
+#: The engine, the questions drawn on it and their styles: they change together.
+MOTORE = (("js", "moduli_engine.js"), ("js", "moduli_campi.js"), ("css", "moduli_campi.css"))
+
+
 @functools.lru_cache(maxsize=1)
 def versione_del_motore() -> str:
 	"""A browser keeps the engine it downloaded: a new one gets a new address."""
-	with open(frappe.get_app_path("crm", "public", "js", "moduli_engine.js"), "rb") as motore:
-		return hashlib.sha256(motore.read()).hexdigest()[:12]
+	impronta = hashlib.sha256()
+	for cartella, nome in MOTORE:
+		# nosemgrep: frappe-security-file-traversal — the three files above, the app's own
+		with open(frappe.get_app_path("crm", "public", cartella, nome), "rb") as file:
+			impronta.update(file.read())
+	return impronta.hexdigest()[:12]
 
 
 def get_context(context):
