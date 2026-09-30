@@ -480,6 +480,34 @@ def meta_cost_per_customer(ctx: Context):
 	return payload
 
 
+def ad_clients(ctx: Context, previous: bool = False) -> float:
+	"""The people the ads brought who became clients in the period (`crm.clienti`)."""
+	return total(Lead, IfNull(Lead.facebook_ad_id, "") != "", ctx.within(Lead.client_since, previous))
+
+
+@widget(
+	"meta_cost_per_client",
+	category="meta",
+	kind="number",
+	title=_lt("Cost per new client"),
+	description=_lt("Ad spend divided by the people the ads brought who became clients"),
+	requires=("meta_ads",),
+	scope="site",
+	managers_only=True,
+	keywords=("cac", "acquisition", "clients"),
+)
+def meta_cost_per_client(ctx: Context):
+	now, currency = spend(ctx)
+	before, _currency = spend(ctx, True)
+	return charts.number(
+		per_unit(now, ad_clients(ctx)) or 0,
+		per_unit(before, ad_clients(ctx, True)),
+		format="currency",
+		currency=currency,
+		negative_is_better=True,
+	)
+
+
 @widget(
 	"meta_roas",
 	category="meta",

@@ -17,6 +17,7 @@ from collections import defaultdict
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import IfNull
 from frappe.utils import get_datetime, now_datetime
 
 from crm.clinica import PIANO, regole
@@ -77,10 +78,11 @@ def assicura_paziente(
 ) -> str | None:
 	"""Make ``lead`` a patient because of ``regola``; the card's name when it did.
 
-	None when nothing happened: already a patient, or the clinic is off. With
-	``annuncia`` the sales side hears it (`pipeline.diventato_paziente`): the new
-	patients deal is won and the automations run. The patients found in the data
-	already there are not news, and are not announced.
+	None when nothing happened: already a patient, or the clinic is off. A patient
+	is a client of the centre from the same moment (`crm.clienti`): with
+	``annuncia`` the sales side hears it, the new clients deal - the new patients'
+	with the clinic - is won and the automations hear "Became Client". The patients
+	found in the data already there are not news, and are not announced.
 	"""
 	if not lead or not clinica_accesa() or e_paziente(lead):
 		return None
@@ -106,10 +108,9 @@ def assicura_paziente(
 		# two rules at the same moment, from two requests: the other one won
 		frappe.db.rollback(save_point="clinica_paziente")
 		return None
-	if annuncia:
-		from crm.clinica import pipeline
+	from crm.clienti import cliente
 
-		pipeline.diventato_paziente(lead, regola)
+	cliente.diventa_cliente(lead, regola, quando=scheda.patient_since, annuncia=annuncia)
 	return scheda.name
 
 
@@ -135,37 +136,6 @@ def appuntamento_per_la_clinica(servizio: str | None) -> bool:
 	return sanitario is None or bool(sanitario)
 
 
-def _presenze() -> list[dict]:
-	"""Every participant who came or was checked in, with the appointment's service
-	and start."""
-	Appt = frappe.qb.DocType("CRM Appointment")
-	Part = frappe.qb.DocType("CRM Appointment Participant")
-	return (
-		frappe.qb.from_(Part)
-		.join(Appt)
-		.on(Part.parent == Appt.name)
-		.select(
-			Appt.name,
-			Appt.status,
-			Appt.starts_on,
-			Appt.service,
-			Part.status.as_("participant_status"),
-			Part.party_type,
-			Part.party,
-			Part.arrived_at,
-		)
-		.where(
-			(Part.parenttype == "CRM Appointment")
-			& (
-				(Appt.status == regole.APPUNTAMENTO_COMPLETATO)
-				| (Part.status == regole.PARTECIPANTE_PRESENTE)
-				| Part.arrived_at.isnotnull()
-			)
-		)
-		.run(as_dict=True)
-	)
-
-
 def _fatture_sanitarie() -> list[dict]:
 	Invoice = frappe.qb.DocType("CRM Invoice")
 	Item = frappe.qb.DocType("CRM Invoice Item")
@@ -177,7 +147,11 @@ def _fatture_sanitarie() -> list[dict]:
 	return (
 		frappe.qb.from_(Invoice)
 		.select(Invoice.name, Invoice.party_type, Invoice.party, Invoice.posting_date)
-		.where((Invoice.docstatus == 1) & Invoice.name.isin(sanitarie))
+		.where(
+			(Invoice.docstatus == 1)
+			& Invoice.name.isin(sanitarie)
+			& IfNull(Invoice.document_type, "").notin(regole.NOTE_DI_CREDITO)
+		)
 		.run(as_dict=True)
 	)
 
@@ -194,9 +168,11 @@ def fatti_esistenti() -> dict[str, dict[str, tuple[datetime.datetime, tuple[str,
 		if visto is None or quando < visto[0]:
 			fatti[lead][regola.valore] = (quando, fonte)
 
+	from crm.clienti.cliente import presenze
+
 	servizi: dict[str | None, bool] = {}
-	for riga in _presenze():
-		accolto = riga.arrived_at and riga.participant_status not in regole.PARTECIPANTE_ASSENTE
+	for riga in presenze():
+		accolto = regole.accolto(riga.arrived_at, riga.participant_status)
 		if not (accolto or regole.presente(riga.status, riga.participant_status)):
 			continue
 		if riga.service not in servizi:

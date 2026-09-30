@@ -27,26 +27,14 @@ def _senza_fermare(titolo: str, doc, funzione) -> None:
 		frappe.log_error(title=titolo, reference_doctype=doc.doctype, reference_name=doc.name)
 
 
-def appuntamento_creato(doc, method=None) -> None:
-	"""A booking moves the person's new patients deal to "appointment booked"."""
-	if doc.status in ("Cancelled", "No Show") or not paziente.clinica_accesa():
-		return
-	from crm.clinica import pipeline
-
-	def sposta():
-		for riga in doc.participants or []:
-			persona = paziente.persona_di(riga.party_type, riga.party)
-			if persona and riga.status != "Cancelled":
-				pipeline.prenotata(persona)
-
-	_senza_fermare(_("New patients deal not moved for appointment {0}").format(doc.name), doc, sposta)
-
-
 def appuntamento_aggiornato(doc, method=None) -> None:
 	"""Rule 2: the desk checked somebody in. Rule 3: the appointment was completed,
 	or a participant came."""
 	righe = doc.participants or []
-	if not any(riga.get("arrived_at") or regole.presente(doc.status, riga.status) for riga in righe):
+	if not any(
+		regole.accolto(riga.get("arrived_at"), riga.status) or regole.presente(doc.status, riga.status)
+		for riga in righe
+	):
 		return
 	if not paziente.clinica_accesa() or not paziente.appuntamento_per_la_clinica(doc.service):
 		return
@@ -54,7 +42,7 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 	def converti():
 		for riga in righe:
 			persona = paziente.persona_di(riga.party_type, riga.party)
-			if riga.get("arrived_at") and riga.status not in regole.PARTECIPANTE_ASSENTE:
+			if regole.accolto(riga.get("arrived_at"), riga.status):
 				paziente.assicura_paziente(
 					persona, regole.ACCETTAZIONE, quando=riga.arrived_at, fonte=(doc.doctype, doc.name)
 				)
@@ -71,8 +59,10 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 
 def fattura_confermata(doc, method=None) -> None:
 	"""Rule 4: a confirmed invoice with a healthcare line. A course or a membership
-	makes nobody a patient."""
+	makes nobody a patient, nor does a credit note."""
 	if not any(riga.get("is_healthcare") for riga in doc.items or []):
+		return
+	if not regole.vendita(doc.get("document_type")):
 		return
 	if not paziente.clinica_accesa():
 		return

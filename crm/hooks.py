@@ -274,6 +274,8 @@ has_permission = {
 	"CRM Lead Status": "crm.permissions.documenti.has_permission",
 	"CRM Deal Status": "crm.permissions.documenti.has_permission",
 	"CRM Communication Status": "crm.permissions.documenti.has_permission",
+	"CRM Client Settings": "crm.permissions.documenti.has_permission",
+	"CRM Quote Settings": "crm.permissions.documenti.has_permission",
 	"CRM View Settings": "crm.permissions.documenti.has_permission",
 	"WhatsApp Templates": "crm.permissions.documenti.has_permission",
 	"WhatsApp Settings": "crm.permissions.documenti.has_permission",
@@ -441,8 +443,8 @@ doc_events = {
 		"validate": ["crm.preventivi.appuntamenti.in_validazione"],
 		"after_insert": [
 			"crm.automation.engine.on_appointment_created",
-			# a booking moves the new patients deal, where the clinic is on
-			"crm.clinica.eventi.appuntamento_creato",
+			# a booking moves the new clients deal
+			"crm.clienti.eventi.appuntamento_creato",
 			# and sends the link to the forms the person owes for it
 			"crm.moduli.dovuti.appuntamento_prenotato",
 			"crm.preventivi.appuntamenti.creato",
@@ -450,7 +452,8 @@ doc_events = {
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",
 			"crm.booking_platforms.sync.on_appointment_change",
-			# who came becomes a patient, where the clinic is on
+			# who came becomes a client; where the clinic is on, a patient
+			"crm.clienti.eventi.appuntamento_aggiornato",
 			"crm.clinica.eventi.appuntamento_aggiornato",
 			# and the service of their quote is done
 			"crm.preventivi.appuntamenti.aggiornato",
@@ -460,11 +463,12 @@ doc_events = {
 			"crm.preventivi.appuntamenti.eliminato",
 		],
 	},
-	# the clinic listens to invoicing; invoicing never hears of the clinic
+	# new clients and the clinic listen to invoicing; invoicing hears of neither
 	"CRM Invoice": {
 		"on_submit": [
 			# issued from an appointment: the person came
 			"crm.scheduling.esiti.fattura_emessa",
+			"crm.clienti.eventi.fattura_confermata",
 			"crm.clinica.eventi.fattura_confermata",
 		],
 	},

@@ -240,49 +240,6 @@ def appointments_no_show_value(ctx: Context):
 	)
 
 
-def first_visits(ctx: Context, previous: bool) -> int:
-	"""People whose first appointment ever falls in the period."""
-	low, high = ctx.span(previous)
-	earlier = Participant.as_("earlier")
-	earlier_appt = Appt.as_("earlier_appt")
-	before = (
-		frappe.qb.from_(earlier)
-		.join(earlier_appt)
-		.on(earlier.parent == earlier_appt.name)
-		.select(earlier.party)
-		.where(earlier.parenttype == "CRM Appointment")
-		.where(earlier_appt.status.isin(TAKEN))
-		.where(earlier_appt.starts_on < low)
-		.where(earlier.party.isnotnull())
-	)
-	query = (
-		frappe.qb.from_(Participant)
-		.join(Appt)
-		.on(Participant.parent == Appt.name)
-		.select(Count(Participant.party).distinct())
-		.where(Participant.parenttype == "CRM Appointment")
-		.where(Participant.party.isnotnull())
-		.where(Participant.party.notin(before))
-	)
-	query = where(
-		query, Appt.status.isin(TAKEN), (Appt.starts_on >= low) & (Appt.starts_on < high), staffed_by(ctx)
-	)
-	return int(query.run()[0][0] or 0)
-
-
-@widget(
-	"new_clients",
-	category="agenda",
-	kind="number",
-	title=_lt("New clients"),
-	description=_lt("People who came for the first time in the period"),
-	requires=AGENDA,
-	keywords=("first visit",),
-)
-def new_clients(ctx: Context):
-	return charts.number(first_visits(ctx, False), first_visits(ctx, True))
-
-
 def workload(ctx: Context) -> tuple[dict[str, float], dict[str, float], int]:
 	"""Booked and available minutes per professional over the period."""
 	from crm.api.appointments import get_workload

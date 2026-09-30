@@ -77,6 +77,21 @@ def parola(testo: str) -> str:
 	return _(parole().get(testo, testo))
 
 
+def traduttore():
+	"""Strings of the base - lazy (`_lt`) or plain English - in the site's words and
+	the session's language, the vertical's words read once: for a list of many, as
+	the dashboard's widgets."""
+	from frappe import _
+
+	sue = parole()
+
+	def traduci(testo) -> str:
+		inglese = str(getattr(testo, "msg", testo))
+		return _(sue.get(inglese, inglese))
+
+	return traduci
+
+
 def nascosto(luogo: str) -> bool:
 	"""Whether the vertical hides this place of the base."""
 	verticale = attiva()

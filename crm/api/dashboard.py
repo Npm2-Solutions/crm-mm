@@ -4,6 +4,7 @@ from frappe.query_builder import Case, DocType
 from frappe.query_builder.functions import Avg, Coalesce, Count, Date, DateFormat, IfNull, Sum
 from pypika.functions import Function
 
+from crm import verticali
 from crm.dashboard import layout as grid
 from crm.dashboard import registry, store, templates
 from crm.dashboard.context import Context, is_manager, keeps_own, shares
@@ -47,6 +48,8 @@ def get_dashboard_layout(name: str) -> dict:
 def get_widget_catalog() -> dict:
 	"""Every widget the person may add, with the reason when their site cannot answer it yet."""
 	manager = is_manager()
+	# with a vertical on, its words: with the clinic, "New clients" reads "New patients"
+	parola = verticali.traduttore()
 	widgets = []
 	for widget in registry.all_widgets():
 		if widget.retired or (widget.managers_only and not manager):
@@ -57,8 +60,8 @@ def get_widget_catalog() -> dict:
 				"id": widget.id,
 				"category": widget.category,
 				"kind": widget.kind,
-				"title": str(widget.title),
-				"description": con_nome(widget.description),
+				"title": parola(widget.title),
+				"description": con_nome(parola(widget.description)),
 				"size": list(widget.size),
 				"live": widget.live,
 				"scope": widget.scope,
@@ -117,7 +120,12 @@ def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
 	widget = registry.get(name)
 	if not widget:
 		return {"error": _("This widget does not exist any more")}
-	about = {"title": str(widget.title), "description": con_nome(widget.description), "live": widget.live}
+	parola = verticali.traduttore()
+	about = {
+		"title": parola(widget.title),
+		"description": con_nome(parola(widget.description)),
+		"live": widget.live,
+	}
 	blocked = store.availability(widget)
 	if blocked:
 		return {"kind": widget.kind, **about, "unavailable": blocked}

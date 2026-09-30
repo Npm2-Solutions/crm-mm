@@ -58,4 +58,28 @@ PAROLE = {
 	"Signature of the person, or of who answers for them": (
 		"Signature of the patient, or of who answers for them"
 	),
+	# new clients (`crm.clienti`): with the clinic, whoever becomes a patient
+	"New clients": "New patients",
+	"Client since": "Patient since",
+	"Became Client": "Became Patient",
+	"The person becomes a client of the centre: the first time they come, or their first invoice.": (
+		"The person becomes a patient of the centre: first visit, first healthcare invoice, "
+		"first clinical note."
+	),
+	"People who became clients in the period: the first time they came, or their first invoice": (
+		"People who became patients in the period, whatever the rule that made them"
+	),
+	"Cost per new client": "Cost per new patient",
+	"Ad spend divided by the people the ads brought who became clients": (
+		"Ad spend divided by the people the ads brought who became patients"
+	),
+	"A booking moves an open deal of the new clients pipeline to the stage after a booking, and the first time the person comes wins it. So the ads report says what a new client costs.": (
+		"A booking moves an open deal of the new patients pipeline to the stage after a booking, "
+		"and becoming a patient wins it. So the ads report says what a new patient costs."
+	),
+	"Create the new clients pipeline": "Create the new patients pipeline",
+	"The stage after a booking has to be one of the new clients pipeline's stages": (
+		"The stage after a booking has to be one of the new patients pipeline's stages"
+	),
+	"New clients and quotes need two different pipelines": "New patients and quotes need two different pipelines",
 }

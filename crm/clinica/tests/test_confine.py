@@ -26,15 +26,13 @@ CLINICA = CRM / "clinica"
 VIETATO = "crm.clinica"
 #: The composition root: deciding which modules exist is its whole job.
 AMMESSI = {CRM / "registrazione.py"}
-#: The patient card is who is a patient, not what is wrong with them; the settings
-#: say which pipelines are the centre's; an opening out of the care team says who
-#: opened a record and why. The foods' library says what a food is; a tooth lives
-#: inside its chart. (Plans, programmes, exercises, a person's documents and quotes
-#: are the CRM's: they carry the mark of health data instead,
-#: `crm.permissions.sanitari`.)
+#: The patient card is who is a patient, not what is wrong with them; an opening
+#: out of the care team says who opened a record and why. The foods' library says
+#: what a food is; a tooth lives inside its chart. (Plans, programmes, exercises, a
+#: person's documents and quotes are the CRM's: they carry the mark of health data
+#: instead, `crm.permissions.sanitari`. The pipelines are the CRM's too.)
 NON_CLINICI = {
 	"clinic_patient",
-	"clinic_settings",
 	"clinic_access_grant",
 	"clinic_food",
 	"clinic_tooth_state",
