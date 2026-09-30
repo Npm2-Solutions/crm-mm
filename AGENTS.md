@@ -226,6 +226,19 @@ With the clinic on, what a health professional writes carries the mark: a dentis
 care plan is a quote read like the clinical record (and by the desk once proposed),
 every opening in the access log.
 
+### New clients (`crm/clienti`)
+| File | Role |
+|---|---|
+| `crm/clienti/regole.py` | Who came, without a site: checked in, an appointment attended, an invoice that sold something (not a credit note), the first fact in time — tested with plain `unittest`; the clinic's rules are built on it |
+| `crm/clienti/cliente.py` | The one door, `diventa_cliente`: `CRM Lead.client_since` written once, never in the future; the new clients deal won and "Became Client" (`client_created`) heard by the automations; `recupera()` finds last year's clients and announces nothing; `registra_regole`: a module with rules of its own (the clinic) takes the CRM's place where it is on |
+| `crm/clienti/eventi.py` | `CRM Appointment` and `CRM Invoice` doc_events: a booking moves the deal, a check-in, an attended appointment or an invoice makes a client |
+| `crm/clienti/pipeline.py` + `CRM Client Settings` | The "New clients" pipeline: which one and the stage after a booking, in Settings > Pipelines (`NewClientsPipeline.vue`); a vertical names it in its words (`registra_nomi`: the clinic's "New patients") |
+| `crm/dashboard/widgets/people.py`, `marketing.py` | "New clients" counts `client_since`, "Cost per new client" divides the ads' spend by the clients they brought; the dashboard's titles in the vertical's words (`verticali.traduttore()`) |
+
+With the clinic on, a client is a patient: its rules decide, `assicura_paziente`
+calls `diventa_cliente` from the same moment, and the CRM's words read "New
+patients", "Became Patient", "Patient since".
+
 ### Verticals (`crm/verticali.py`)
 A module of the plan that makes the CRM the software of a trade registers a
 `Verticale`: its words over the CRM's (pairs of English strings: the SPA gets them
@@ -267,12 +280,11 @@ the draft with `modello.accetta`.
 | `crm/clinica/sintesi.py` | The patient's summary (`Clinic Summary Value`): answers of signed forms and sheets proposed, a practitioner confirms, discards or writes by hand |
 | `frontend/src/components/Clinic/ClinicSummary.vue`, `ClinicArea.vue` | The summary card; the Clinic tab's visits, free or on a clinical sheet |
 | `frontend/src/components/Clinic/ObscureDialog.vue`, `OutOfCareDialog.vue` | Obscuring or revealing an episode; opening a record out of one's care (People page) |
-| `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
+| `crm/clinica/pipeline.py` | Phase 1's first seam: the CRM's two pipelines where the clinic is switched on, the new clients one named "New patients" (`NUOVI_PAZIENTI`) |
 | `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `piani_regole.spesa` + `ShoppingListDialog.vue`, `frontend/src/area/pages/PlanShopping.vue` | The shopping list of a diet: grams summed on the server over the days asked (times a week, the plan's period), rounded up in the browser; in the CRM to copy for the patient, in the area with ticks kept on the phone |
 | `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` | The foods (`piani.librerie`): a food table read on the server (CIQUAL, BDA-IEO and CREA with the licence declared, any sheet in their shape), its columns and categories checked before import, energy from the EU factors when missing; imported again, numbers update and the centre's words stay |
 | `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clinic > Foods: the list, correcting a food, the import of a table; the exercises' page is the CRM's (`Settings/Plans/`) |
-| `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 | `crm/clinica/cure_regole.py` | The teeth without a site: FDI teeth and arches, surfaces, the chart's conditions, the teeth on a quote's rows (`valida_denti`) — tested with plain `unittest` |
 | `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
@@ -314,7 +326,7 @@ dashboard template with `crm.dashboard.templates.registra` (`requires` features)
 
 Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
 (`tests/test_confine.py`); it hooks on through doc_events, `crm_timeline_gatherers`
-and the registries (`engine.registra_evento`, dashboard features and widgets).
+and the registries (`clienti.registra_regole`, dashboard features and templates).
 
 `crm/clinica` keeps only what exists for health data or medical practice: the
 patient, the record and reports, dossier and obscuring, the summary, the dental
@@ -322,8 +334,9 @@ chart, diets and rehabilitation. What a beauty centre or a gym would use the sam
 way belongs in the CRM, and the clinic registers its rules on it, with the "health
 data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
 30/09/2026). The client area moved there first (`crm/area`), then plans,
-programmes and exercises (`crm/piani`), a person's documents (`crm/documenti`) and
-quotes (`crm/preventivi`); the new clients pipeline follows.
+programmes and exercises (`crm/piani`), a person's documents (`crm/documenti`),
+quotes (`crm/preventivi`) and the new clients pipeline (`crm/clienti`); one forms
+builder follows.
 
 A module moved to the CRM keeps its data through two patches: before the sync its
 DocTypes are renamed (`*_are_the_crms`), after it what they held is put back

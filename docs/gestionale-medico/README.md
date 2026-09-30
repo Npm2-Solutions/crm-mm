@@ -427,6 +427,10 @@ Fatta il 29/09/2026 (fase 1), in `crm/clinica/pipeline.py`:
   all'accensione, non chiudono deal e non fanno partire automazioni: non sono una
   notizia.
 
+Dal 30/09/2026 la pipeline, l'evento e i widget sono del CRM (`crm/clienti`), e la
+clinica ci mette le sue regole: [i nuovi clienti passano al
+CRM](#i-nuovi-clienti-passano-al-crm-diventare-paziente-è-diventare-cliente).
+
 ### La seconda cucitura: la giornata della segreteria
 
 Fatta il 29/09/2026 (fase 1), in `crm/scheduling/esiti.py`, `crm/api/oggi.py` e nella
@@ -1549,6 +1553,42 @@ palestra e il piano di cura di un dentista sono la stessa cosa.
   I piani di cura di prima restano col marchio.
 - `cure.preventivi` non c'è più: è `preventivi.gestisci`, che la direzione
   sanitaria ha con `preventivi.vedi`.
+
+### I nuovi clienti passano al CRM: diventare paziente è diventare cliente
+
+Fatto il 30/09/2026, la settima riga dell'[ordine](./design.md#lordine). Un centro
+estetico e una palestra vogliono sapere quanti clienti nuovi arrivano e quanto
+costano, come un centro medico i suoi pazienti: la pipeline, l'evento e i widget
+sono del CRM (`crm/clienti`), e la clinica ci mette le sue regole.
+
+- **Si diventa clienti** la prima volta che si viene: accolti al banco o con un
+  appuntamento svolto. Oppure con la prima fattura confermata; una nota di credito
+  non conta.
+  - La prima regola che scatta scrive "Cliente dal" (`client_since`, sulla persona),
+    una volta sola e mai nel futuro. Le altre non fanno niente.
+  - Diventare clienti vince la trattativa aperta di "Nuovi clienti", e le automazioni
+    sentono "Became Client", con la regola che l'ha fatto.
+  - I clienti di prima si trovano una volta, con una patch (la prima volta che sono
+    venuti, o la prima fattura), senza chiudere trattative né far partire
+    automazioni.
+- **La pipeline "Nuovi clienti"** si sceglie o si crea in Impostazioni > Pipeline, con
+  lo stadio dove una prenotazione sposta la trattativa (`CRM Client Settings`).
+  Senza pipeline scelta non si sposta niente.
+- **La dashboard** conta i nuovi clienti ("New clients", su `client_since`) e quanto
+  costa uno arrivato dagli annunci ("Cost per new client").
+- **Con la clinica accesa un cliente è un paziente.**
+  - Le regole del CRM si fanno da parte e decidono quelle della clinica. Un corso
+    non fa un paziente, né un cliente.
+  - Diventare paziente scrive "Cliente dal" dallo stesso momento, e vince la
+    trattativa.
+  - La pipeline si chiama "Nuovi pazienti", e le parole della clinica dicono "Became
+    Patient", "Patient since", "New patients", "Cost per new patient".
+  - Le impostazioni della clinica, rimaste vuote, non ci sono più.
+- **Le patch** spostano la pipeline scelta nelle impostazioni del CRM e fanno
+  ascoltare "Became Client" alle automazioni che ascoltavano "Became Patient". I
+  widget "New patients" e "Cost per new patient" delle dashboard salvate diventano
+  quelli del CRM, e i pazienti di prima sono clienti dal giorno in cui sono
+  diventati pazienti.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
