@@ -205,6 +205,9 @@ the draft with `modello.accetta`.
 | `crm/clinica/area/passkey.py` + `frontend/src/area/passkey.js` | The patient area's passkeys (WebAuthn, py_webauthn): added from inside after a code, discoverable, user verification, same door as the code |
 | `crm/clinica/area/avvisi.py` | News in the area by WhatsApp or SMS besides the email: same words, only to the person's number that wrote to the centre, once every two hours |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
+| `crm/clinica/cure_regole.py` | Dental care plans without a site: FDI teeth and arches, surfaces, the chart's conditions, a plan's states, sums and which treatment an appointment takes — tested with plain `unittest` |
+| `crm/clinica/cure.py` | The odontogram (`Clinic Dental Chart`) and the care plans (`Clinic Care Plan`, `cure.scrivi` / `cure.preventivi`): a quote as a PDF (`templates/preventivo.html`), the quotes pipeline (`pipeline.preventivo_consegnato`/`_chiuso`), appointments taking treatments through `CRM Appointment` doc_events |
+| `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue`, `CarePlanDialog.vue` + `utils/cure.js` | The Clinic tab's teeth and care plans, the chart, the plan's editor and reader; the same rules as `cure_regole.py` — tested; `area/components/CarePlanCard.vue` in the area |
 
 ### The desk's day
 | File | Role |
@@ -247,7 +250,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **757 tests · ~15s** — all must pass before committing
+- **764 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
