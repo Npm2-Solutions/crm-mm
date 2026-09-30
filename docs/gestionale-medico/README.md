@@ -1511,6 +1511,45 @@ foto, una palestra il contratto e il certificato, un centro medico il referto.
 - I documenti archiviati prima restano col marchio (patch), e il referto di una
   visita firmata porta il suo file come ogni altro documento.
 
+### I preventivi passano al CRM, e l'odontoiatria ci mette il dente
+
+Fatto il 30/09/2026, la sesta riga dell'[ordine](./design.md#lordine). I piani di cura
+dentali erano un preventivo della clinica; ora il preventivo è del CRM
+(`crm/preventivi`): il pacchetto di un centro estetico, il personal training di una
+palestra e il piano di cura di un dentista sono la stessa cosa.
+
+- **Il preventivo nel CRM**: una scheda "Preventivi" sulla pagina della persona.
+  - Le righe vengono dal listino, con quantità, prezzo e sconto, in fasi.
+  - La bozza è di chi la scrive (`preventivi.scrivi`: segreteria, operatore,
+    commerciale, manager).
+  - Proposto, il preventivo non si riscrive: se ne fa il PDF e la trattativa della
+    persona nella pipeline "Preventivi" va a "preventivo consegnato".
+  - Lo legge chi ha `preventivi.vedi` e vede la persona. Accettato o rifiutato lo
+    registra chi l'ha scritto o chi gestisce i preventivi (`preventivi.gestisci`, la
+    segreteria): la trattativa è vinta o persa, col motivo.
+  - Accettato, gli appuntamenti prendono le righe al prezzo concordato, e quando la
+    persona viene la riga è fatta. Tutte fatte o annullate, il preventivo è
+    completato. Si può chiudere a metà, o farne una nuova versione.
+  - I DocType hanno preso i nomi del CRM (`CRM Quote`, `CRM Quote Item`) con una
+    patch che li rinomina: i dati restano dove sono.
+- **La pipeline "Preventivi"** è del CRM: si sceglie in Impostazioni > Pipeline,
+  con quanti giorni vale un preventivo (`CRM Quote Settings`, 60 se non si dice).
+  Quella che la clinica aveva scelto passa lì.
+- **Nell'area** la persona legge i preventivi proposti e in corso, nella pagina
+  "Piani".
+- **Cosa aggiunge l'odontoiatria** (`crm/clinica/cure.py`):
+  - il dente e le superfici sulla riga, come personalizzazioni sulle stesse colonne;
+    le controlla e le scrive in parole ("Dente 36 · OM") sulla pagina, nel PDF e
+    nell'area;
+  - solo un dentista mette un dente su un preventivo;
+  - l'odontogramma resta nella scheda Clinica.
+- **Il marchio "dato sanitario"** lo porta quello che scrive un professionista
+  sanitario, con la clinica accesa. Un piano di cura si legge come la cartella, e
+  dalla segreteria una volta proposto; ogni apertura va nel registro degli accessi.
+  I piani di cura di prima restano col marchio.
+- `cure.preventivi` non c'è più: è `preventivi.gestisci`, che la direzione
+  sanitaria ha con `preventivi.vedi`.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
