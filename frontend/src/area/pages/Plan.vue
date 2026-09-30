@@ -45,7 +45,7 @@
           class="min-h-9 shrink-0 rounded-full px-3 text-p-sm"
           :class="
             d === data.day
-              ? 'bg-surface-gray-7 text-ink-white'
+              ? 'bg-surface-gray-10 text-ink-base'
               : 'bg-surface-white text-ink-gray-7 shadow-sm'
           "
           :aria-pressed="d === data.day"

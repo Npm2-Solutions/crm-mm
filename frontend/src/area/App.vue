@@ -74,7 +74,7 @@
           <FeatherIcon :name="place.icon" class="size-5" />
           <span
             v-if="place.name === 'Messages' && unread"
-            class="absolute -right-2 -top-1 grid min-w-4 place-items-center rounded-full bg-surface-red-5 px-1 text-[10px] font-medium leading-4 text-ink-white"
+            class="absolute -right-2 -top-1 grid min-w-4 place-items-center rounded-full bg-surface-red-5 px-1 text-[10px] font-medium leading-4 text-ink-base"
           >
             {{ unread }}
           </span>
