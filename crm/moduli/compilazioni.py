@@ -194,7 +194,7 @@ def _modelli_da_compilare() -> list[dict]:
 		riga
 		for riga in frappe.get_all(
 			modelli.MODELLO,
-			filters={"enabled": 1, "current_version": ("is", "set")},
+			filters={"enabled": 1, "current_version": ("is", "set"), "use": modelli.FORMA},
 			fields=["name", "title", "clinical", "specialty", "current_version_number"],
 			order_by="title asc",
 		)
@@ -301,6 +301,10 @@ def start_form(
 	modello = frappe.get_doc(modelli.MODELLO, template)
 	if not modello.enabled or not modello.current_version:
 		frappe.throw(_("{0} is not published").format(frappe.bold(modello.title)))
+	if (modello.use or modelli.FORMA) != modelli.FORMA:
+		frappe.throw(
+			_("{0} is not a form to fill: it is written in the clinical record").format(modello.title)
+		)
 	versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
 	if versione.clinical and not legge_dati_clinici():
 		frappe.throw(_("This form records health data: it is for the care team"), frappe.PermissionError)
@@ -444,6 +448,12 @@ def _controlla(schema: dict, risposte: dict, tratti: dict, *, senza_firme: bool 
 			title=_("The form is not complete"),
 		)
 	return {chiave: valore for chiave, valore in puliti.items() if chiave not in firme}, stato
+
+
+def controlla(schema: dict, risposte: dict, *, senza_firme: bool = True) -> tuple[dict, dict]:
+	"""The answers cleaned and checked as signing asks, and the state they give:
+	a form's, or a clinical sheet's the practitioner signs by signing the visit."""
+	return _controlla(schema, risposte, {}, senza_firme=senza_firme)
 
 
 def firma(doc, risposte: dict, tratti: dict, *, da_solo: bool = False) -> None:

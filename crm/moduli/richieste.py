@@ -163,7 +163,7 @@ def _modelli_pubblicati() -> list[dict]:
 	righe = []
 	for riga in frappe.get_all(
 		modelli.MODELLO,
-		filters={"enabled": 1, "current_version": ("is", "set")},
+		filters={"enabled": 1, "current_version": ("is", "set"), "use": modelli.FORMA},
 		fields=["name", "title", "clinical", "current_version"],
 		order_by="title asc",
 	):
@@ -244,6 +244,8 @@ def _crea(
 		modello = frappe.get_doc(modelli.MODELLO, nome)
 		if not modello.enabled or not modello.current_version:
 			frappe.throw(_("{0} is not published").format(frappe.bold(modello.title)))
+		if (modello.use or modelli.FORMA) != modelli.FORMA:
+			frappe.throw(_("{0} is not a form to fill").format(frappe.bold(modello.title)))
 		versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
 		if versione.clinical and not dal_centro and not compilazioni.legge_dati_clinici():
 			frappe.throw(_("This form records health data: it is for the care team"), frappe.PermissionError)

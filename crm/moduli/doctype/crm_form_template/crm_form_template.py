@@ -20,8 +20,12 @@ class CRMFormTemplate(Document):
 		if not self.title:
 			frappe.throw(_("A form needs a title"))
 		self.use = self.use or modelli.FORMA
-		if self.use not in {uso.chiave for uso in modelli.usi()}:
+		uso = next((uso for uso in modelli.usi() if uso.chiave == self.use), None)
+		if not uso:
 			frappe.throw(_("{0} is not a use of forms on this site").format(frappe.bold(self.use)))
+		if uso.clinico:
+			# a clinical sheet or a plan records health data, always
+			self.clinical = 1
 		if self.clinical and not modelli.dato_clinico_disponibile():
 			# the mark means something only where the clinic is on: elsewhere it
 			# would promise a protection nobody gives

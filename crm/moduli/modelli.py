@@ -43,6 +43,8 @@ class Uso:
 	chiave: str
 	etichetta: str
 	descrizione: str = ""
+	#: a use that always records health data (the clinic's sheets and plans)
+	clinico: bool = False
 
 
 _usi: dict[str, Uso] = {
@@ -57,6 +59,19 @@ def registra_uso(uso: Uso) -> None:
 
 def usi() -> list[Uso]:
 	return list(_usi.values())
+
+
+_voci_sintesi: dict[str, str] = {}
+
+
+def registra_voce_sintesi(chiave: str, etichetta: str) -> None:
+	"""A line of the patient's summary a field may answer (the clinic's
+	allergies, medications, weight...): the builder offers it on the field."""
+	_voci_sintesi[chiave] = etichetta
+
+
+def voci_sintesi() -> dict[str, str]:
+	return dict(_voci_sintesi)
 
 
 def registra_dato_clinico(disponibile: Callable[[], bool]) -> None:
@@ -249,6 +264,13 @@ def _scelte() -> dict:
 			for uso in usi()
 		],
 		"clinical_available": dato_clinico_disponibile(),
+		"clinical_uses": [uso.chiave for uso in usi() if uso.clinico],
+		# the lines of the patient's summary an answer may go to, where the clinic is on
+		"summary_keys": [
+			{"value": chiave, "label": _(etichetta)} for chiave, etichetta in voci_sintesi().items()
+		]
+		if dato_clinico_disponibile()
+		else [],
 		# the kinds, not anybody's answers: offering them tells nothing about a person
 		"consent_types": [
 			{"key": tipo.name, "label": _(tipo.label), "kind": tipo.kind, "text": tipo.text}
