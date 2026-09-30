@@ -293,6 +293,31 @@ class TestStaffing(SchedulingCase):
 # ---------------------------------------------------------------------------
 
 
+class TestServiceHours(SchedulingCase):
+	def test_a_service_of_one_day_is_closed_on_the_others(self):
+		# the service's hours used to narrow only the days they named: on the
+		# others it was open whenever its staff worked
+		anna = self.make_user("anna_hours@example.com")
+		start = self.tomorrow(10)
+		self.make_service(
+			"Solo un giorno",
+			[anna],
+			availability=[
+				{"workday": ALL_DAYS[start.weekday()], "start_time": "10:00:00", "end_time": "12:00:00"}
+			],
+		)
+		slots = get_slots("Solo un giorno", start.date(), (start + datetime.timedelta(days=1)).date())
+		self.assertEqual([s.start for s in slots], [start, start + datetime.timedelta(hours=1)])
+
+	def test_a_service_without_hours_follows_its_staff(self):
+		anna = self.make_user("anna_hours@example.com")
+		start = self.tomorrow(10)
+		self.make_service("Sempre", [anna], availability=[])
+		# every hour of the staff's day, which ends a second before midnight
+		slots = get_slots("Sempre", start.date(), start.date())
+		self.assertEqual([s.start.hour for s in slots], list(range(23)))
+
+
 class TestResources(SchedulingCase):
 	def test_exclusive_room_blocks_a_second_appointment(self):
 		anna = self.make_user("anna_sched@example.com")
