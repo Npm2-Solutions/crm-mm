@@ -90,6 +90,23 @@
           :rows="2"
           :label="__('Notes')"
         />
+        <!-- genetic tests, HIV, or a test the patient left out: by hand only -->
+        <label v-if="choices.data?.for_me" class="flex items-start gap-2">
+          <Checkbox
+            v-model="form.not_online"
+            class="touch-target mt-0.5 shrink-0"
+          />
+          <span class="text-base text-ink-gray-8">
+            {{ __('Never online') }}
+            <span class="block text-p-sm text-ink-gray-5">
+              {{
+                __(
+                  'Genetic tests, HIV, or a test the patient left out: it is given by hand only.',
+                )
+              }}
+            </span>
+          </span>
+        </label>
         <p class="text-p-xs text-ink-gray-5">
           {{
             message
@@ -123,6 +140,7 @@
 import { usersStore } from '@/stores/users'
 import {
   Button,
+  Checkbox,
   Dialog,
   ErrorMessage,
   FileUploader,
@@ -164,6 +182,7 @@ const form = reactive({
   practitioner: '',
   visibility: 'Care team',
   notes: '',
+  not_online: false,
 })
 
 const dialogTitle = computed(() =>
@@ -220,6 +239,7 @@ function fill() {
       doc?.practitioner || (choices.data?.for_me ? me.value : '') || '',
     visibility: doc?.visibility || 'Care team',
     notes: doc?.notes || '',
+    not_online: Boolean(doc?.not_online),
   })
 }
 
@@ -249,6 +269,7 @@ async function save() {
     practitioner: form.practitioner,
     visibility: mine.value ? form.visibility : 'Care team',
     notes: form.notes,
+    not_online: form.not_online ? 1 : 0,
   }
   try {
     const saved = props.document

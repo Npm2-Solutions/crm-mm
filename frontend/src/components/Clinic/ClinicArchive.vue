@@ -66,6 +66,10 @@
           <span class="text-p-sm text-ink-gray-5">
             {{ describe(doc) }}
           </span>
+          <!-- how it reached the patient: the latest delivery -->
+          <span v-if="doc.deliveries?.length" class="text-p-xs text-ink-gray-5">
+            {{ delivered(doc.deliveries[0]) }}
+          </span>
         </div>
         <Badge
           v-if="doc.visibility === 'Only me'"
@@ -115,6 +119,12 @@
       @click="showAll = !showAll"
     />
   </section>
+
+  <DeliverDialog
+    v-model="delivering.show"
+    :document="delivering.doc"
+    @given="archive.reload()"
+  />
 
   <ObscureDialog
     v-model="obscuring.show"
@@ -174,6 +184,7 @@
 
 <script setup>
 import ClinicDocumentDialog from '@/components/Clinic/ClinicDocumentDialog.vue'
+import DeliverDialog from '@/components/Clinic/DeliverDialog.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import { formatDate } from '@/utils'
 import {
@@ -218,6 +229,7 @@ const shown = computed(() => {
 
 const dialog = reactive({ show: false, document: null })
 const obscuring = reactive({ show: false, doc: null })
+const delivering = reactive({ show: false, doc: null })
 const removing = reactive({
   show: false,
   doc: null,
@@ -241,8 +253,27 @@ function describe(doc) {
     .join(' · ')
 }
 
+function delivered(delivery) {
+  const when = formatDate(delivery.given_on, 'D MMM YYYY')
+  if (delivery.channel === 'By hand') {
+    return __('Given by hand to {0}, {1}', [delivery.delivered_to, when])
+  }
+  if (delivery.status === 'Withdrawn') return __('Online, withdrawn')
+  if (delivery.status === 'Expired') return __('Online, expired')
+  const until = formatDate(delivery.expires_on, 'D MMM YYYY')
+  return delivery.downloads
+    ? __('Online until {0}, downloaded', [until])
+    : __('Online until {0}, not downloaded yet', [until])
+}
+
 function actionsFor(doc) {
   return [
+    archive.data?.can_deliver &&
+      doc.file && {
+        label: __('Give it to the patient'),
+        icon: 'send',
+        onClick: () => Object.assign(delivering, { show: true, doc }),
+      },
     doc.can_edit && {
       label: __('Edit'),
       icon: 'edit-2',
