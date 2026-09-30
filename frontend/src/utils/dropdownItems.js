@@ -8,7 +8,7 @@
  * The server refuses anything else on save; this is the menu's own guard for
  * rows that got in some other way.
  */
-import FEATHER_ICONS from '../../../crm/fcrm/doctype/crm_dropdown_item/feather_icons.json'
+import FEATHER_ICONS from '../../../crm/fcrm/feather_icons.json'
 
 export const DEFAULT_DROPDOWN_ICON = 'external-link'
 

@@ -27,12 +27,14 @@ URL_SCHEME = re.compile(r"^([A-Za-z][A-Za-z0-9+.-]*):")
 # Browsers drop tabs and newlines anywhere in a URL: "java\tscript:" still runs.
 CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f]")
 SAFE_SCHEMES = frozenset(("http", "https"))
+ICONE = Path(__file__).parents[2] / "feather_icons.json"
 
 
 @cache
 def allowed_icons() -> frozenset[str]:
-	"""The names FeatherIcon can draw; the frontend imports the same file."""
-	return frozenset(json.loads(Path(__file__).with_name("feather_icons.json").read_text()))
+	"""The names FeatherIcon can draw; the frontend imports the same file. It lives
+	outside the DocType's folder: Frappe reads every JSON there as a document."""
+	return frozenset(json.loads(ICONE.read_text()))
 
 
 def is_allowed_icon(icon) -> bool:
