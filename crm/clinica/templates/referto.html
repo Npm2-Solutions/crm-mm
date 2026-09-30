@@ -5,6 +5,8 @@
 	say who signed it and when, and the hashes of what the sheet asked and of what
 	was answered: the same the record keeps.
 -#}
+{#- what a person typed, or their browser sent, is printed as text: never as HTML -#}
+{% autoescape true %}
 <!doctype html>
 <html lang="{{ lingua }}">
 <head>
@@ -69,9 +71,13 @@
 		{% endfor %}
 	{% endfor %}
 
-	{% if note %}
+	{% if note_html %}
 		<h2>{{ _("Notes") }}</h2>
-		<div>{{ note }}</div>
+		{#- written in the Desk's editor: cleaned of anything but formatting -#}
+		<div>{{ note_html | safe }}</div>
+	{% elif note %}
+		<h2>{{ _("Notes") }}</h2>
+		<div class="risposta">{{ note }}</div>
 	{% endif %}
 
 	<div class="firma">
@@ -85,3 +91,4 @@
 	</div>
 </body>
 </html>
+{% endautoescape %}

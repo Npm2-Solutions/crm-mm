@@ -15,6 +15,7 @@ of its own.
 from __future__ import annotations
 
 import json
+import re
 
 import frappe
 from frappe import _
@@ -76,10 +77,17 @@ def contesto(doc, versione) -> dict:
 		"data": format_datetime(doc.record_date),
 		"firmato_il": format_datetime(doc.signed_on),
 		"sezioni": sezioni,
-		# the notes are the practitioner's own HTML: cleaned before they go in
-		"note": frappe.utils.sanitize_html(doc.content or ""),
+		# the notes: written in the CRM as text, kept as text; in the Desk's editor as
+		# HTML, cleaned of anything but formatting before it goes in
+		**_note(doc.content or ""),
 		"_": _,
 	}
+
+
+def _note(contenuto: str) -> dict:
+	if re.search(r"<[a-zA-Z/][^>]*>", contenuto):
+		return {"note_html": frappe.utils.sanitize_html(contenuto), "note": None}
+	return {"note_html": None, "note": contenuto.strip()}
 
 
 def html(doc, versione) -> str:
@@ -87,9 +95,9 @@ def html(doc, versione) -> str:
 
 
 def rendi(doc, versione) -> bytes:
-	from weasyprint import HTML
+	from crm.moduli import pdf
 
-	return HTML(string=html(doc, versione)).write_pdf()
+	return pdf.pdf_da_html(html(doc, versione))
 
 
 def genera_e_allega(doc) -> dict:
