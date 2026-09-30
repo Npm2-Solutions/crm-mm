@@ -207,7 +207,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 | Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | Il [registro dei consensi](#il-registro-dei-consensi) (29/09/2026): quale testo, quale versione, quando, come; la spunta privacy di `/prenota` ci finisce, e la pagina chiede anche il marketing se il centro vuole. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | I consensi della clinica: dossier, referti online, assistente |
-| Clinica | Niente | Cartella per specialità, referti, consensi informati, allegati, registro degli accessi |
+| Clinica | La sezione Clinica della persona (29–30/09/2026): visite libere o sulla scheda della specialità, firmate e poi solo integrate, con gli allegati, il referto in PDF/A e la sintesi del paziente; i moduli e i consensi informati firmati; il registro degli accessi alla cartella | ~~Cartella per specialità, referti, consensi informati, allegati~~: fatti il 30/09/2026. Restano l'archivio dei documenti, il registro degli accessi anche sull'archivio, dossier e oscuramento, la consegna del referto |
 | Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`), e dalla PR #101 le fatture compaiono anche nella cronologia della persona: `invoices_on` in `crm/api/activities.py` le legge con `frappe.get_all`, che salta i permessi (solo intestazione, importi e stati, niente righe) | Tre livelli (Segreteria, Manager amministrativo, Operatore) con la gestione dei ruoli nel CRM; System Manager e Administrator solo all'agenzia, mentre oggi l'"Admin" del CRM **è** System Manager ([requisiti §1](./requisiti.md#1-tre-livelli-e-il-site-resta-vostro)). Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
 | Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
 
@@ -650,6 +650,39 @@ le 23: ora guarda anche il giorno prima, e chiede una volta sola per giorno.
 Resta alla fase 2: la cartella sul modello della specialità, i referti,
 l'archivio. "Dal modulo di carta", con l'assistente che propone i campi, va alla
 fase 4.
+
+### La scheda clinica, il referto e la sintesi
+
+Fatto il 30/09/2026 (fase 2, la sesta parte).
+
+- **La scheda clinica** è un modello come gli altri, con l'uso "Clinical sheet"
+  che registra la clinica (`modelli.registra_uso`, `clinico=True`): è sempre dato
+  clinico, la scrive l'operatore e non il paziente. Non si manda, non si compila
+  da un link o dal tablet, non è mai un modulo dovuto: solo l'uso "Form" lo è.
+  Nella sezione Clinica, "New visit" offre la visita libera e le schede
+  pubblicate; la visita si scrive sulla scheda, con gli stessi componenti dei
+  moduli (i calcoli come il BMI compresi), più le note.
+- **Firmata**, la visita si controlla con lo stesso motore dei moduli
+  (obbligatori, "ferma e avvisa"), le risposte si fermano con la loro impronta
+  (lo SHA-256 dello schema della versione e delle risposte) e nasce il
+  **referto** (`crm/clinica/referto.py`): un PDF/A con la scheda in parole, le
+  note, chi ha firmato e quando, la versione e le impronte. Si fa una volta
+  sola, privato, e la visita ne tiene lo SHA-256; si apre dal link "Report"
+  della visita, non sta fra gli allegati. Firmata, la visita non si riscrive: si
+  integra, come prima.
+- **La sintesi del paziente** (`crm/clinica/sintesi.py`): allergie, farmaci,
+  patologie, peso, altezza, pressione, frequenza cardiaca. Nel builder, un campo
+  di un modello clinico dice quale riga riempie ("Goes to the patient's summary
+  as"). Quando si firma un modulo o una scheda con quella risposta, la risposta
+  si propone; l'operatore la conferma, anche corretta, o la scarta, e può
+  scrivere una riga a mano. La riga è l'ultimo valore confermato; ogni valore
+  resta (`Clinic Summary Value`), con da dove viene e chi l'ha deciso. La legge
+  chi legge la cartella, la decide chi la scrive.
+
+Il referto porta le impronte ma non ancora il sigillo del centro, la marca
+temporale o la firma qualificata del professionista: arrivano con il fornitore di
+firma. Resta alla fase 2: l'archivio clinico dei documenti, il registro degli
+accessi anche sull'archivio, dossier e oscuramento, la consegna del referto.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
