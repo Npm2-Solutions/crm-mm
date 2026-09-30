@@ -8,7 +8,11 @@
   "new_patients_pipeline",
   "booked_stage",
   "column_break_quotes",
-  "quotes_pipeline"
+  "quotes_pipeline",
+  "area_section",
+  "area_whatsapp_template",
+  "column_area",
+  "area_sms_number"
  ],
  "fields": [
   {
@@ -40,12 +44,35 @@
    "fieldtype": "Link",
    "label": "Quotes pipeline",
    "options": "CRM Pipeline"
+  },
+  {
+   "fieldname": "area_section",
+   "fieldtype": "Section Break",
+   "label": "News in the patient area",
+   "description": "Besides the email, to the person's number that wrote to the centre, if they ask for it in their area"
+  },
+  {
+   "fieldname": "area_whatsapp_template",
+   "fieldtype": "Data",
+   "label": "WhatsApp template",
+   "description": "An approved template that says only that there is news; its one variable, if any, is the centre's name"
+  },
+  {
+   "fieldname": "column_area",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "area_sms_number",
+   "fieldtype": "Data",
+   "label": "SMS from",
+   "options": "Phone",
+   "description": "The centre's Twilio number"
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 20:40:00.000000",
+ "modified": "2026-10-02 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Settings",
