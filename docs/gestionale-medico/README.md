@@ -928,6 +928,47 @@ Restano alla fase 3 le notifiche fuori dall'email (push, WhatsApp). Da fare dopo
 - i programmi a tappe;
 - lo sforzo o il dolore segnati con il check-in (il campo c'è già).
 
+### L'assistente: le fondamenta e il modulo di carta
+
+Fatti il 30/09/2026 (fase 4, la prima parte), in `crm/assistente`: un modulo del
+piano a sé, spento finché l'agenzia non lo accende.
+
+- **Il suo scopo, in una frase ovunque**: supporto alla documentazione, e le bozze
+  le rivede il professionista. Scrive solo quello che è stato scritto o detto, non
+  salva niente da solo, e ogni richiesta resta nel registro.
+- **Dove gira il modello lo decide l'agenzia**, in Impostazioni > Assistant, sul
+  permlevel 1 (`CRM Assistant Settings`).
+  - Due modi di parlare, in un adattatore solo (`crm/assistente/modello.py`):
+    - l'API Messages di Anthropic, attraverso l'indirizzo che l'agenzia sceglie
+      (in UE, un gateway che fissa la regione);
+    - le chat completions "compatibili OpenAI": OpenAI con la residenza in UE,
+      Azure, o un modello sul server del centro.
+  - La regione si scrive come la dice il contratto.
+  - Senza la spunta "il fornitore non conserva e non addestra" l'assistente non
+    parte. Un indirizzo in chiaro (http) vale solo sulla macchina del centro.
+- **Il registro** (`CRM AI Event`) tiene per ogni richiesta:
+  - la funzione, chi l'ha chiesta, il modello, il fornitore, la regione;
+  - le impronte SHA-256 di quello che è entrato e uscito, i token, il tempo;
+  - la bozza come è arrivata, e quando una persona la fa sua: il testo finale,
+    la differenza riga per riga, quanto è cambiata, e chi l'ha controllata e
+    quando.
+  - Un errore resta scritto come errore, e un evento non si cancella.
+  - Ogni mese si rilegge un campione: "Mark as reviewed" con una nota.
+  - Ogni funzione dice chi legge i suoi eventi.
+- **Dal modulo di carta** (`crm/assistente/modulo_di_carta.py`, "From a paper
+  form" in Impostazioni > Forms > Forms to sign, con `assistente.moduli`):
+  1. si carica il PDF che il centro stampa;
+  2. l'assistente ne legge il testo e propone lo schema. Gli si danno i
+     componenti del motore dei moduli, letti dal codice, e i consensi del centro;
+  3. il motore stesso dice cosa c'è ancora da sistemare;
+  4. "Create the draft" ne fa una bozza di modello, che si finisce e si pubblica
+     nel builder.
+  - Una scansione senza testo non si manda: niente lettura di immagini.
+  - Il registro tiene la differenza fra lo schema proposto e quello creato.
+
+Resta alla fase 4: le bozze dalla nota firmata, la visita dettata, il riassunto
+prima della visita con le fonti, il menù con i conti dalle tabelle.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da

@@ -166,6 +166,20 @@ of their own, linked to the parent, never the parent's record.
 | `crm/clinica/piani.py` | Plans on the person's page (`Clinic Plan`, `piani.scrivi`): drafts of their author, published to the area, new version or closed; the libraries (`Clinic Food`, `Clinic Exercise`) |
 | `frontend/src/components/Clinic/ClinicPlans.vue`, `PlanDialog.vue`, `PlanItemEditor.vue`, `LibraryPicker.vue` + `frontend/src/utils/piani.js` | The plans card, the editor and reader, an item by its kind, the library search; the same rules as `piani_regole.py` — tested |
 | `crm/clinica/area/piani.py` + `frontend/src/area/pages/Plans.vue`, `Plan.vue`, `components/PlanItem.vue` | The plans in the area: the day's moments, one tap an item (`Clinic Plan Log`), made up within two days, what is left this week |
+
+### The assistant (`crm/assistente`, its own plan module)
+| File | Role |
+|---|---|
+| `crm/assistente/__init__.py` | `registra()`: plan module, capabilities, `registra_funzione()` — each function says who uses it and who reads its events |
+| `crm/assistente/regole.py` | Pure: the purpose sentence, the draft's mark, JSON out of a model's answer, the difference, `pronto()` — tested with plain `unittest` |
+| `crm/assistente/modello.py` | The adapter (Anthropic Messages, OpenAI compatible), `chiedi()` writes a `CRM AI Event` whatever happens, `accetta`/`scarta`, the register's calls |
+| `crm/assistente/modulo_di_carta.py` + `Settings/Forms/PaperFormDialog.vue` | A paper PDF into a draft template: the engine's components in the prompt, its rules on the proposal |
+| `frontend/src/components/Settings/AssistantSettings.vue` | Where the model runs (agency, permlevel 1), which functions (manager), the register |
+
+The assistant writes only what was written or said, saves nothing by itself, and
+every request stays in the register: a new function registers with
+`registra_funzione`, asks with `modello.chiedi`, and records what a person made of
+the draft with `modello.accetta`.
 | `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The patient area app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js` |
 | `crm/clinica/consegna.py` + `crm/www/referto.*` | Giving a report: by hand, or online 45 days with the consent; the link by email, the code another way; `/referto/<link>` opens it (`Clinic Report Delivery`) |
 | `crm/clinica/dossier.py` | Who reads what the others wrote: the dossier (consent and care), obscured episodes, "my discipline", the opening out of the care team with a reason (`Clinic Access Grant`, `crm_people_in_care`) |

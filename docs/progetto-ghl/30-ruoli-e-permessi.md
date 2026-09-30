@@ -306,6 +306,23 @@ La visibilità "la propria disciplina" è una scelta dell'operatore sulla sua vo
 | Scrivere al paziente nell'area | messaggi amministrativi | ai suoi pazienti | ✓ | — | — | — | — |
 | Sezioni, marchio e testi dell'area | — | — | ✓ | — | — | — | — |
 
+### Assistente (quando c'è)
+
+Un modulo del piano a sé, `assistente`, spento finché l'agenzia non lo accende
+(`crm/assistente/__init__.py`).
+
+| Capacità | Seg | Op | Man | Com | Mkt | Amm | Dir |
+|---|---|---|---|---|---|---|---|
+| Dal modulo di carta: il PDF diventa una bozza di modello (`assistente.moduli`) | — | — | ✓ | — | — | — | — |
+| Leggere il registro dell'assistente (`assistente.registro`) | — | — | ✓ | — | — | — | — |
+
+- Dove gira il modello è dell'agenzia: fornitore, indirizzo, modello, chiave,
+  regione e il contratto senza conservazione né addestramento stanno sul
+  permlevel 1 di `CRM Assistant Settings`, visti con `tecnico.integrazioni`.
+- Se usarlo, e per quali funzioni, lo decide il manager.
+- Ogni funzione dice chi la usa e chi legge i suoi eventi: quelle cliniche li
+  fanno leggere solo alla direzione sanitaria.
+
 ## Le impostazioni, pagina per pagina
 
 Oggi quasi tutto il modale si apre a chi è Manager. La proposta divide ogni pagina
