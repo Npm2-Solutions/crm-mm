@@ -251,7 +251,7 @@ def _controlla(modo: str, tappe: list[dict], doc=None) -> None:
 
 
 @frappe.whitelist(methods=["POST"])
-def save_programme(lead: str, data, name: str | None = None) -> dict:
+def save_programme(lead: str, data: dict | str, name: str | None = None) -> dict:
 	"""A draft of the session's own, new or carried on."""
 	livelli.verifica("piani.scrivi")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)

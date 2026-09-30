@@ -93,7 +93,7 @@ def get_foods(
 
 
 @frappe.whitelist(methods=["POST"])
-def save_food(name: str, data) -> dict:
+def save_food(name: str, data: dict | str) -> dict:
 	"""A food of the library corrected: its name in the centre's words, its group,
 	its portion, on or off. A table's numbers stay the table's; the centre's own
 	food has its numbers written here."""
@@ -192,7 +192,7 @@ def _presenti(fonte: str) -> dict[str, str]:
 
 
 @frappe.whitelist(methods=["POST"])
-def preview_foods(file_url: str, source: str | None = None, mapping=None) -> dict:
+def preview_foods(file_url: str, source: str | None = None, mapping: dict | str | None = None) -> dict:
 	"""A food table as it would be imported: the columns recognised, each category
 	with its group, the foods, which are already in the library."""
 	livelli.verifica("piani.librerie")
@@ -227,9 +227,9 @@ def import_foods(
 	file_url: str,
 	source: str,
 	attribution: str | None = None,
-	mapping=None,
-	groups=None,
-	keys=None,
+	mapping: dict | str | None = None,
+	groups: dict | str | None = None,
+	keys: list | str | None = None,
 	licence: int = 0,
 ) -> dict:
 	"""The foods of a table into the library: the ones chosen, or all. A food

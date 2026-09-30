@@ -242,7 +242,7 @@ def get_exercises(
 
 
 @frappe.whitelist(methods=["POST"])
-def save_exercise(name: str, data) -> dict:
+def save_exercise(name: str, data: dict | str) -> dict:
 	"""An exercise corrected: its name, the body part, the equipment, how it is
 	done, the centre's video, on or off. The library's pictures stay the library's."""
 	livelli.verifica("piani.librerie")
