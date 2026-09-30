@@ -179,6 +179,8 @@ def get_plans(lead: str) -> dict:
 		)
 		if puo_leggere(doc)
 	]
+	# a programme's stage plans are read inside their programme
+	documenti = [doc for doc in documenti if not doc.get("programme")]
 	# "done this week": from Monday, as the patient's week goes
 	lunedi, _domenica = R.settimana(getdate())
 	andamento = _andamento([d.name for d in documenti if d.status != BOZZA], lunedi)
@@ -290,11 +292,19 @@ def get_plan(name: str) -> dict:
 		"days": [str(add_days(dal, giorno)) for giorno in range(GIORNI_ANDAMENTO)],
 		"can_edit": doc.practitioner == frappe.session.user and doc.status == BOZZA,
 		"recipes": _ricette(doc),
-		"can_close": doc.practitioner == frappe.session.user and doc.status == PUBBLICATO,
+		"can_close": doc.practitioner == frappe.session.user
+		and doc.status == PUBBLICATO
+		and not doc.get("programme"),
+		# a stage's plan changes with its programme, not by a version of its own
 		"can_version": doc.status != BOZZA
+		and not doc.get("programme")
 		and doc.plan_type in tipi_consentiti()
 		and not doc.replaced_by
 		and not frappe.db.exists(PIANO, {"replaces": doc.name, "status": BOZZA}),
+		"programme": doc.get("programme"),
+		"programme_title": frappe.db.get_value("Clinic Programme", doc.programme, "title")
+		if doc.get("programme")
+		else None,
 	}
 
 
@@ -459,8 +469,19 @@ def publish_plan(name: str) -> dict:
 	"""The draft goes to the person's area. It closes the plan it replaces, and the
 	person's other plan of the same kind: one at a time."""
 	doc = _mio_in_bozza(name)
+	if doc.get("programme"):
+		frappe.throw(_("A stage's plan is published when its stage opens"))
 	if doc.plan_type not in tipi_consentiti():
 		frappe.throw(_("Your qualification does not write a plan of this kind"), frappe.PermissionError)
+	pubblica(doc)
+	_avvisa(doc.lead)
+	return get_plan(doc.name)
+
+
+def pubblica(doc, dal=None, al=None) -> None:
+	"""A draft followed from now: checked, published, and the person's other plan of
+	the same kind closed. A programme's stage publishes its plan this way, for its
+	days."""
 	momenti, voci = righe_del_piano(doc)
 	if not voci:
 		frappe.throw(_("A plan to follow has something in it"))
@@ -480,9 +501,11 @@ def publish_plan(name: str) -> dict:
 	doc.flags.dal_piano = True
 	doc.status = PUBBLICATO
 	doc.published_on = adesso
+	if dal:
+		doc.starts_on = dal
+	if al:
+		doc.ends_on = al
 	doc.save(ignore_permissions=True)
-	_avvisa(doc.lead)
-	return get_plan(doc.name)
 
 
 def _chiudi(doc, adesso, sostituito_da: str | None = None) -> None:
@@ -509,6 +532,8 @@ def close_plan(name: str) -> dict:
 		frappe.throw(_("A plan is closed by who wrote it"), frappe.PermissionError)
 	if doc.status != PUBBLICATO:
 		frappe.throw(_("Only a published plan is closed"))
+	if doc.get("programme"):
+		frappe.throw(_("A stage's plan is closed when its stage is finished"))
 	_chiudi(doc, now_datetime())
 	return get_plan(doc.name)
 
@@ -519,6 +544,8 @@ def new_version(name: str) -> dict:
 	vecchio = _piano(name)
 	if vecchio.status == BOZZA:
 		frappe.throw(_("A draft is changed as it is"))
+	if vecchio.get("programme"):
+		frappe.throw(_("A stage's plan changes with its programme"))
 	if vecchio.plan_type not in tipi_consentiti():
 		frappe.throw(_("Your qualification does not write a plan of this kind"), frappe.PermissionError)
 	gia = frappe.db.get_value(PIANO, {"replaces": vecchio.name, "status": BOZZA}, "name")
@@ -557,8 +584,17 @@ def new_version(name: str) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def delete_draft(name: str) -> None:
-	"""A draft is thrown away by who wrote it; a published plan never."""
+	"""A draft is thrown away by who wrote it; a published plan never. A stage's plan
+	thrown away leaves its stage without one."""
 	doc = _mio_in_bozza(name)
+	if doc.get("programme"):
+		frappe.db.set_value(
+			"Clinic Programme Stage",
+			{"parent": doc.programme, "plan": doc.name},
+			"plan",
+			None,
+			update_modified=False,
+		)
 	frappe.delete_doc(PIANO, doc.name, ignore_permissions=True)
 
 

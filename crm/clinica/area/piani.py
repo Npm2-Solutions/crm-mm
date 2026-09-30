@@ -53,8 +53,13 @@ def _in_corso(person: str, oggi) -> list:
 
 
 def piani_in_corso(person: str) -> int:
-	"""How many plans the person follows today: the area shows "Plans" when any."""
-	return len(_in_corso(person, getdate()))
+	"""How many plans and programmes the person follows today: the area shows
+	"Plans" when any."""
+	from crm.clinica import programmi
+
+	return len(_in_corso(person, getdate())) + frappe.db.count(
+		programmi.PROGRAMMA, {"lead": person, "status": programmi.PUBBLICATO}
+	)
 
 
 def _della_persona(person: str, plan: str):
@@ -98,9 +103,30 @@ def area_plans(person: str) -> dict:
 				"practitioner_name": get_fullname(doc.practitioner),
 				"today": len(di_oggi),
 				"done_today": len([v for v in di_oggi if v["key"] in fatti]),
+				# a stage's plan says which programme it is part of
+				"programme": doc.get("programme"),
 			}
 		)
 	return {"plans": voci}
+
+
+@frappe.whitelist()
+def area_programmes(person: str) -> dict:
+	"""The programmes the person follows now, stage by stage."""
+	from crm.clinica import programmi
+
+	_mia(person)
+	return {"programmes": programmi.area_dei_programmi(person)}
+
+
+@frappe.whitelist(methods=["POST"])
+def finish_stage(person: str, programme: str, stage: str) -> dict:
+	"""At one's own pace, the person says the open stage is finished: the next opens."""
+	from crm.clinica import programmi
+
+	_mia(person)
+	programmi.finisce_la_tappa(person, programme, stage)
+	return {"programmes": programmi.area_dei_programmi(person)}
 
 
 def _immagine(url: str | None) -> str | None:

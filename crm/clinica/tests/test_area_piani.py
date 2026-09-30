@@ -186,6 +186,37 @@ class LaSpesa(AreaPianiCase):
 		self.assertIn({"food_name": "Pasta di semola", "portion_g": 80}, cereali["choices"])
 
 
+class IProgrammi(AreaPianiCase):
+	def test_anna_finisce_la_tappa_e_si_apre_la_dopo(self):
+		from crm.clinica import programmi
+		from crm.clinica import programmi_regole as P
+
+		self.come(DOC1)
+		fatto = programmi.save_programme(
+			self.anna.name,
+			json.dumps(
+				{
+					"title": "Percorso",
+					"mode": P.RITMO,
+					"stages": [{"key": "a", "title": "Prima"}, {"key": "b", "title": "Seconda"}],
+				}
+			),
+		)
+		piano = programmi.stage_plan(fatto["name"], "a", R.MENU)["plan"]
+		piani.save_plan(self.anna.name, json.dumps(self.menu()), name=piano)
+		with mock.patch.object(messaggi, "_avvisa"):
+			programmi.publish_programme(fatto["name"])
+		self.entra()
+		# the Plans entry of the area counts the programme too
+		self.assertEqual(api.get_me()["people"][0]["plans"], 2)
+		[nell_area] = area_piani.area_programmes(self.anna.name)["programmes"]
+		self.assertEqual([t["state"] for t in nell_area["stages"]], [P.APERTA, P.CHIUSA])
+		self.assertIn(piano, [p["name"] for p in area_piani.area_plans(self.anna.name)["plans"]])
+		fatto = area_piani.finish_stage(self.anna.name, fatto["name"], "a")
+		self.assertEqual([t["state"] for t in fatto["programmes"][0]["stages"]], [P.FATTA, P.APERTA])
+		self.assertEqual(area_piani.area_plans(self.anna.name)["plans"], [])
+
+
 class UnTocco(AreaPianiCase):
 	def test_si_segna_si_cambia_si_ritira(self):
 		piano = self.pubblica()

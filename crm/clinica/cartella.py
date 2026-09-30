@@ -293,7 +293,13 @@ def delete_draft(name: str) -> None:
 
 
 #: What a line of the access log says was opened: never what it contains.
-APERTO = {"Clinic Record": "record", "Clinic Document": "archive", "Clinic Plan": "plan", "File": "file"}
+APERTO = {
+	"Clinic Record": "record",
+	"Clinic Document": "archive",
+	"Clinic Plan": "plan",
+	"Clinic Programme": "programme",
+	"File": "file",
+}
 
 
 @frappe.whitelist()
@@ -307,7 +313,7 @@ def access_log(lead: str) -> list[dict]:
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	voci = {
 		doctype: frappe.get_all(doctype, filters={"lead": lead}, pluck="name")
-		for doctype in ("Clinic Record", "Clinic Document", "Clinic Plan")
+		for doctype in ("Clinic Record", "Clinic Document", "Clinic Plan", "Clinic Programme")
 	}
 	righe = []
 	for doctype, nomi in voci.items():

@@ -190,6 +190,7 @@ permission_query_conditions = {
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
 	"Clinic Document": "crm.clinica.archivio.get_permission_query_conditions",
 	"Clinic Plan": "crm.clinica.piani.get_permission_query_conditions",
+	"Clinic Programme": "crm.clinica.programmi.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
@@ -220,6 +221,7 @@ has_permission = {
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"Clinic Document": "crm.clinica.archivio.has_permission",
 	"Clinic Plan": "crm.clinica.piani.has_permission",
+	"Clinic Programme": "crm.clinica.programmi.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
@@ -510,6 +512,8 @@ scheduler_events = {
 		# a button nobody pressed. The sweep looks for absence, not for errors.
 		"crm.invoicing.monitoraggio.giornaliero",
 		"crm.tessera_sanitaria.monitoraggio.giornaliero",
+		# a programme's stage whose day has come opens, and its plan with it
+		"crm.clinica.programmi.apri_del_giorno",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [
