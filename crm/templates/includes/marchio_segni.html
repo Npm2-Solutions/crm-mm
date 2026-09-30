@@ -1,0 +1,13 @@
+{#- Copyright (c) 2026, NPM2 Solutions Srl and contributors
+
+    The product's logo first and the centre's beside it (`logo_centro`): on every
+    public page the platform's brand, the centre's at most next to it
+    (`crm.marchio`). The logo for dark backgrounds where the page has a dark
+    look (`scuro`). -#}
+<div class="marchio">
+  {% if scuro %}<picture><source srcset="{{ marchio.logo_dark }}" media="(prefers-color-scheme: dark)" />{% endif -%}
+  <img class="marchio-prodotto" src="{{ marchio.logo }}" alt="{{ marchio.name }}" />
+  {%- if scuro %}</picture>{% endif %}
+  {% if logo_centro %}<span class="marchio-tra" aria-hidden="true"></span>
+  <img class="marchio-centro" src="{{ logo_centro }}" alt="" />{% endif %}
+</div>

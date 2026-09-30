@@ -1425,7 +1425,6 @@ def save_scheduling_settings(scheduling_settings: str | dict) -> dict:
 		"online_booking_enabled",
 		"booking_page_title",
 		"booking_page_logo",
-		"booking_page_color",
 		"booking_page_intro",
 		"privacy_policy_url",
 		"require_privacy_consent",

@@ -1,0 +1,13 @@
+{#- Copyright (c) 2026, NPM2 Solutions Srl and contributors
+
+    Inside a public page's <style>: the product's accent (`crm.marchio.accento`)
+    on its buttons and what is chosen, in dark too where the page has a dark look
+    (`scuro`), and the look of its marks (`marchio_segni.html`). -#}
+:root { {% for k, v in marchio.accent.light.items() %}{{ k }}: {{ v }}; {% endfor %} }
+{% if scuro %}@media (prefers-color-scheme: dark) {
+  :root { {% for k, v in marchio.accent.dark.items() %}{{ k }}: {{ v }}; {% endfor %} }
+}{% endif %}
+.marchio { display: flex; align-items: center; gap: .75rem; min-width: 0; margin-bottom: .75rem; }
+.marchio-prodotto { display: block; height: 28px; width: auto; flex: none; }
+.marchio-tra { width: 1px; height: 24px; background: var(--border); flex: none; }
+.marchio-centro { display: block; max-height: 36px; max-width: 140px; object-fit: contain; min-width: 0; }

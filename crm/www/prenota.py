@@ -43,7 +43,7 @@ def get_context(context):
 
 		context.branding = page_branding()
 	except Exception:
-		context.branding = {"title": "Prenota", "logo": "", "favicon": "", "css": {}}
+		context.branding = {"title": "Prenota", "logo": ""}
 	context.title = context.branding["title"]
 	return context
 

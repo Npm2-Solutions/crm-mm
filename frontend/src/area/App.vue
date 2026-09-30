@@ -1,6 +1,7 @@
 <!--
-  The client area's shell: the centre's name, whose area it is (a parent sees
-  their child's too), and its places at the bottom, within reach of a thumb.
+  The client area's shell: the product's brand first, the centre's logo and name
+  beside it (crm.marchio), whose area it is (a parent sees their child's too),
+  and its places at the bottom, within reach of a thumb.
   Staff who open it are sent to DottorCloud: the area is for the centre's clients.
   With the clinic on it is the patient area, and says so (window.AREA.words).
 -->
@@ -11,9 +12,9 @@
         {{ __("This area is for the centre's clients.") }}
       </p>
       <p class="text-p-sm text-ink-gray-5">
-        {{ __('Your work is in DottorCloud.') }}
+        {{ __('Your work is in {brand}.') }}
       </p>
-      <Button variant="solid" :label="__('Open DottorCloud')" @click="goCrm" />
+      <Button variant="solid" :label="__('Open {brand}')" @click="goCrm" />
     </div>
   </div>
   <router-view v-else-if="route.name === 'Login'" />
@@ -21,9 +22,19 @@
     <header
       class="flex items-center justify-between gap-3 border-b border-outline-gray-1 bg-surface-base px-4 py-3"
     >
-      <div class="flex min-w-0 items-center gap-2">
-        <img v-if="logo" :src="logo" alt="" class="max-h-7 max-w-[7rem]" />
-        <span class="truncate text-base font-semibold text-ink-gray-9">
+      <div class="flex min-w-0 items-center gap-2.5">
+        <img :src="brand.logo" :alt="brand.name" class="h-6 w-auto shrink-0" />
+        <span class="h-5 shrink-0 border-l border-outline-gray-2" aria-hidden="true" />
+        <img
+          v-if="logo"
+          :src="logo"
+          :alt="centre || ''"
+          class="max-h-7 max-w-[5rem] shrink-0 object-contain"
+        />
+        <span
+          class="min-w-0 truncate text-base font-semibold text-ink-gray-9"
+          :class="{ 'max-sm:sr-only': logo }"
+        >
           {{ centre || __('Your area') }}
         </span>
       </div>
@@ -91,12 +102,15 @@ import { Button, ErrorMessage, FeatherIcon, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { area, choose, loadMe, logout, section } from './store'
+import { marchio } from '@/utils/marchio'
 
 const route = useRoute()
 const boot = window.AREA || {}
 const staff = Boolean(boot.staff)
 const centre = boot.centre
+// the centre's logo, beside the product's: never in its place
 const logo = boot.logo
+const brand = marchio(boot.brand)
 
 const current = computed(() =>
   (area.me?.people || []).find((p) => p.name === area.person),

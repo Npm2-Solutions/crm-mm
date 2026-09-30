@@ -1,9 +1,11 @@
 <!doctype html>
+{%- set logo_centro = marchio.centre_logo %}
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ form_title }}</title>
+    <title>{{ form_title }} · {{ marchio.name }}</title>
+    {% include "crm/templates/includes/marchio_testa.html" %}
     <meta name="robots" content="noindex" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -167,6 +169,8 @@
         font: 400 14px/1.5 "Inter", sans-serif; text-align: left;
       }
       .draft-banner svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; color: oklch(0.599 0.141 56.803); }
+      {% include "crm/templates/includes/marchio_colori.html" %}
+      .marchio { width: 100%; max-width: 560px; margin: 0 auto .9rem; }
     </style>
   </head>
   <body class="{% if embed %}embed{% endif %}">
@@ -176,6 +180,7 @@
       <span>{{ _("Draft preview — only you can see this. Publish the form to make it public.") }}</span>
     </div>
     {% endif %}
+    {% if not embed %}{% include "crm/templates/includes/marchio_segni.html" %}{% endif %}
     <div class="card">
       <div id="form-view">
         <h1 class="title{% if not form_description %} title-only{% endif %}">{{ form_title }}</h1>

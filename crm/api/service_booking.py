@@ -30,6 +30,7 @@ from frappe.query_builder.functions import IfNull
 from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, flt, get_url
 
+from crm.marchio import con_nome
 from crm.scheduling import booking_rules as rules_mod
 from crm.scheduling.availability import ACTIVE_STATUSES, get_slots, settings
 from crm.scheduling.timeutils import (
@@ -222,21 +223,16 @@ def page_title(config=None) -> str:
 
 
 def page_branding(config=None) -> dict:
-	"""Title, logo, favicon and colours of the public page. Each falls back to the
-	CRM's own brand (Settings → Brand), never to Frappe's."""
-	from crm.scheduling.branding import accent_vars
-
+	"""The centre's part of a public page: its title, and its logo, which goes
+	beside the product's (Settings → Brand, or the booking page's own). The
+	favicon, the colours and the product's logo are the vertical's brand
+	(`crm.marchio`, `marchio` in every page's context)."""
 	config = config or settings()
 	# one field per read: `get_single_value` takes a single fieldname. Handed a
 	# list and `as_dict` it raised, the page caught it, and every public booking
-	# page went out with no logo, no favicon and no colours of its own
+	# page went out without the centre's logo
 	logo = config.get("booking_page_logo") or frappe.db.get_single_value("FCRM Settings", "brand_logo") or ""
-	return {
-		"title": page_title(config),
-		"logo": logo,
-		"favicon": frappe.db.get_single_value("FCRM Settings", "favicon") or logo,
-		"css": accent_vars(config.get("booking_page_color")),
-	}
+	return {"title": page_title(config), "logo": logo}
 
 
 def _puo(capacita: str) -> bool:
@@ -1124,7 +1120,7 @@ def notify_staff(appointment, subject: str) -> None:
 		frappe.sendmail(
 			recipients=emails,
 			subject=f"[{appointment.name}] {subject}: {appointment.title or appointment.service}",
-			message=_("{0} on {1}. Open the DottorCloud calendar for details.").format(
+			message=con_nome(_("{0} on {1}. Open the {brand} calendar for details.")).format(
 				frappe.utils.escape_html(appointment.title or appointment.service),
 				start.strftime("%d/%m/%Y %H:%M"),
 			),

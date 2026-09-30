@@ -1,10 +1,11 @@
 <!doctype html>
+{%- set scuro = true %}{% set logo_centro = branding.logo %}
 <html lang="{{ boot.lang }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title }}</title>
-    {% if branding.favicon %}<link rel="icon" href="{{ branding.favicon }}" />{% endif %}
+    <title>{{ title }} · {{ marchio.name }}</title>
+    {% include "crm/templates/includes/marchio_testa.html" %}
     <meta name="robots" content="noindex" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -56,10 +57,9 @@
           --warn-ink: oklch(0.88 0.08 85);
         }
       }
-      {% if branding.css %}
-      /* the practice's own colour, in light and dark alike */
-      :root { {% for k, v in branding.css.items() %}{{ k }}: {{ v }}; {% endfor %} }
-      {% endif %}
+      /* the product's accent and marks, the vertical's brand: the centre's logo
+         goes beside it */
+      {% include "crm/templates/includes/marchio_colori.html" %}
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
       body {
@@ -219,14 +219,13 @@
         border: 1px dashed var(--border-focus); background: var(--field); border-radius: 10px; padding: .7rem .9rem; font: inherit; color: var(--ink-strong); cursor: pointer; text-align: left; }
       button.first-free:hover { border-style: solid; }
       button.first-free small { color: var(--muted); display: block; font-size: .75rem; }
-      .brand-logo { display: block; max-height: 48px; max-width: 200px; object-fit: contain; margin-bottom: .4rem; }
       .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     </style>
   </head>
   <body>
     <div class="shell">
       <header class="top">
-        {% if branding.logo %}<img class="brand-logo" src="{{ branding.logo }}" alt="" />{% endif %}
+        {% include "crm/templates/includes/marchio_segni.html" %}
         <h1 id="page-title">{{ title }}</h1>
         <p id="page-intro"></p>
       </header>
@@ -807,7 +806,8 @@
           S.catalog = await api("get_catalog", { service: BOOT.service });
           S.category = BOOT.category && S.catalog.categories.includes(BOOT.category) ? BOOT.category : "";
           S.person = (BOOT.staff && (S.catalog.people || []).find((p) => p.id === BOOT.staff)) || null;
-          if (S.catalog.title) { $("page-title").textContent = S.catalog.title; document.title = S.catalog.title; }
+          // the tab says the centre's title beside the product's name, as the server wrote it
+          if (S.catalog.title) { $("page-title").textContent = S.catalog.title; document.title = S.catalog.title + " · " + {{ marchio.name | tojson }}; }
           $("page-intro").textContent = S.catalog.intro || "";
           $("foot").textContent = T("poweredBy");
           if (BOOT.token) {
