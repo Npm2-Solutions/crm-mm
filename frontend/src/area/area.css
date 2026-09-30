@@ -1,0 +1,7 @@
+@import 'frappe-ui/style.css';
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
