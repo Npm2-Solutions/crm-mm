@@ -309,7 +309,7 @@ export const TRIGGER_CATALOG = {
     icon: 'clipboard-check',
     doctype: 'CRM Lead',
     hint: conMarchio(
-      'A lead ad form is filled in — by a new person or by one {brand} already knows.',
+      "A form is filled in, an ad's or one on the website — by a new person or by one {brand} already knows.",
     ),
   },
   'Lead Status Changed': {

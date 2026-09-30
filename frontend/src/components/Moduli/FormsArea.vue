@@ -154,7 +154,9 @@
               form.docstatus
                 ? form.use === 'Sheet'
                   ? __('Completed')
-                  : __('Signed')
+                  : form.channel === 'Website'
+                    ? __('Sent')
+                    : __('Signed')
                 : __('To finish')
             "
             :theme="form.docstatus ? 'green' : 'orange'"
@@ -294,6 +296,7 @@ const templateOptions = computed(() => {
 const WHERE = {
   Link: () => __('from a link'),
   Tablet: () => __('on the tablet'),
+  Website: () => __('from the website'),
 }
 
 function describe(form) {
@@ -303,7 +306,9 @@ function describe(form) {
     parts.push(
       form.use === 'Sheet'
         ? __('completed {0}', [when])
-        : __('signed {0}', [when]),
+        : form.channel === 'Website'
+          ? __('sent {0}', [when])
+          : __('signed {0}', [when]),
     )
   } else {
     parts.push(__('started {0}', [formatDate(form.modified, 'D MMM YYYY')]))

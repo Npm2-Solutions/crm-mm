@@ -186,6 +186,7 @@
                     :all="allFields"
                     :consent-types="meta.consent_types"
                     :summary-keys="tpl.clinical ? meta.summary_keys : []"
+                    :person-fields="onTheSite ? meta.person_fields : []"
                     :problems="problemsOf(field.id)"
                     @toggle="expanded = expanded === field.id ? null : field.id"
                     @remove="removeField(section, field)"
@@ -272,7 +273,7 @@
                   )
                 : __('Complete: the form would be sent.')
           }}
-          <template v-if="previewState.stops.length">
+          <template v-if="previewState.stops.length && !onTheSite">
             {{
               previewState.stops.length === 1
                 ? __('The operator is warned once.')
@@ -295,7 +296,7 @@
           :description="useInfo.description"
         />
         <label
-          v-if="meta.clinical_available || tpl.clinical"
+          v-if="(meta.clinical_available || tpl.clinical) && !onTheSite"
           class="flex items-start gap-2 text-base text-ink-gray-7"
         >
           <Switch
@@ -320,16 +321,13 @@
           </span>
         </label>
         <FormControl
-          v-if="tpl.clinical || tpl.use !== 'Form'"
+          v-if="tpl.clinical || (tpl.use !== 'Form' && !onTheSite)"
           v-model="tpl.specialty"
           :label="__('Specialty')"
           :placeholder="__('Nutrition')"
         />
         <!-- asked of the person, and sent: a sheet is written at the desk -->
-        <div
-          v-if="forThePerson"
-          class="grid grid-cols-2 gap-3 max-md:grid-cols-1"
-        >
+        <div v-if="sent" class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
           <FormControl
             v-model="tpl.ask_on"
             type="select"
@@ -344,7 +342,7 @@
           />
         </div>
         <label
-          v-if="forThePerson && tpl.ask_on !== 'By hand'"
+          v-if="sent && tpl.ask_on !== 'By hand'"
           class="flex items-start gap-2 text-base text-ink-gray-7"
         >
           <Switch v-model="tpl.send_before" class="mt-0.5 shrink-0" size="sm" />
@@ -360,7 +358,7 @@
           </span>
         </label>
         <div
-          v-if="forThePerson && tpl.ask_on === 'Services'"
+          v-if="sent && tpl.ask_on === 'Services'"
           class="flex flex-col gap-1.5"
         >
           <span class="text-sm text-ink-gray-5">{{
@@ -375,23 +373,164 @@
             :empty-text="__('No services yet')"
           />
         </div>
+        <template v-if="onTheSite">
+          <FormControl
+            :model-value="tpl.route"
+            type="text"
+            :label="__('Address')"
+            :placeholder="addressFrom(tpl.title)"
+            :description="
+              __('Lowercase letters, numbers and dashes: {0}', [pageUrl])
+            "
+            @update:model-value="(value) => (tpl.route = tidyAddress(value))"
+          />
+          <FormControl
+            v-model="tpl.button_label"
+            type="text"
+            :label="__('The button')"
+            :placeholder="__('Send')"
+          />
+          <FormControl
+            v-model="tpl.success_message"
+            type="textarea"
+            :rows="3"
+            :label="__('What it says once sent')"
+            :placeholder="__('Thank you: the centre will be in touch soon.')"
+          />
+          <FormControl
+            v-model="tpl.success_url"
+            type="text"
+            :label="__('Then it goes to')"
+            placeholder="https://www.example.com/grazie"
+            :description="
+              __(
+                'A page of the site to go to after the thanks. Empty, the thanks stay.',
+              )
+            "
+          />
+        </template>
         <label class="flex items-start gap-2 text-base text-ink-gray-7">
           <Switch v-model="tpl.enabled" class="mt-0.5 shrink-0" size="sm" />
           <span>
             {{ __('On') }}
             <span class="block text-sm text-ink-gray-5">
               {{
-                forThePerson
+                onTheSite
                   ? __(
-                      'Off, it is not asked any more; what was signed on it stays.',
+                      'Off, it is not on the website any more; what was sent stays.',
                     )
-                  : __(
-                      'Off, it is not offered any more; what was written on it stays.',
-                    )
+                  : forThePerson
+                    ? __(
+                        'Off, it is not asked any more; what was signed on it stays.',
+                      )
+                    : __(
+                        'Off, it is not offered any more; what was written on it stays.',
+                      )
               }}
             </span>
           </span>
         </label>
+      </div>
+
+      <!-- SHARE: its page, in another site, in a page of the centre's site -->
+      <div v-else-if="tab === 'share'" class="flex max-w-2xl flex-col gap-7">
+        <p
+          v-if="!meta.current_version"
+          class="rounded-lg bg-surface-amber-1 px-4 py-3 text-sm text-ink-amber-7"
+        >
+          {{
+            __(
+              'Not published yet: the link and the frame show it once it is published. Until then you try it on its page.',
+            )
+          }}
+        </p>
+        <div class="flex flex-col gap-2">
+          <span class="text-base font-medium text-ink-gray-8">
+            {{ __('Its page') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                "With the centre's logo: to link from an email, a post, a QR code.",
+              )
+            }}
+          </span>
+          <div
+            class="flex items-center gap-2 max-md:flex-col max-md:items-stretch"
+          >
+            <TextInput class="min-w-0 flex-1" readonly :model-value="pageUrl" />
+            <div class="flex shrink-0 gap-2">
+              <Button
+                :label="__('Copy')"
+                icon-left="lucide-copy"
+                @click="copyToClipboard(pageUrl)"
+              />
+              <Button
+                :label="__('Open')"
+                icon-left="lucide-external-link"
+                @click="openPage"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-base font-medium text-ink-gray-8">
+            {{ __('In another site') }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'Paste this code where the form goes: it grows with the form, and the visit that led there comes along.',
+              )
+            }}
+          </span>
+          <div class="relative">
+            <textarea
+              readonly
+              rows="4"
+              class="w-full resize-none rounded-md border border-outline-gray-2 bg-surface-gray-1 py-2 pl-3 pr-10 font-mono text-xs text-ink-gray-7 focus:border-outline-gray-4 focus:outline-none focus:ring-0"
+              :value="snippet"
+            />
+            <Button
+              class="absolute right-2 top-2"
+              size="sm"
+              variant="ghost"
+              icon="lucide-copy"
+              :tooltip="__('Copy')"
+              @click="copyToClipboard(snippet)"
+            />
+          </div>
+          <FormControl
+            v-model="tpl.allowed_embedding_domains"
+            type="textarea"
+            :rows="3"
+            :label="__('The sites it may be shown in')"
+            placeholder="https://www.example.com"
+            :description="
+              __(
+                'One a line. A browser shows the form only in the sites listed here; with none, only on this site.',
+              )
+            "
+          />
+          <p v-if="domains.invalid.length" class="text-sm text-ink-red-6">
+            {{
+              __('Not a site, and left out: {0}', [domains.invalid.join(', ')])
+            }}
+          </p>
+        </div>
+        <div v-if="puo('sito.gestisci')" class="flex flex-col gap-1">
+          <span class="text-base font-medium text-ink-gray-8">
+            {{ __("In a page of the centre's site") }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                'In the Site, the "Form" block shows it inside the page, with the page\'s own look: give it the address {0}.',
+                [tpl.route || addressFrom(tpl.title)],
+              )
+            }}
+          </span>
+        </div>
       </div>
 
       <!-- VERSIONS -->
@@ -545,7 +684,14 @@ import {
   keyFromLabel,
   usesOf,
 } from '@/utils/moduli'
-import { formatDate } from '@/utils'
+import {
+  addressFrom,
+  embedSnippet,
+  embeddingDomains,
+  tidyAddress,
+  useProblems,
+} from '@/utils/moduliSito'
+import { copyToClipboard, formatDate } from '@/utils'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
@@ -564,6 +710,7 @@ import {
   LoadingIndicator,
   Switch,
   TabButtons,
+  TextInput,
   call,
   toast,
 } from 'frappe-ui'
@@ -573,13 +720,17 @@ const props = defineProps({ name: { type: String, required: true } })
 const emit = defineEmits(['back'])
 
 const { $dialog } = globalStore()
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 
-const tabs = [
-  { label: __('Build'), value: 'build' },
-  { label: __('Settings'), value: 'settings' },
-  { label: __('Versions'), value: 'versions' },
-]
+// a form of the website is shared: its page, a frame, a block of the site
+const tabs = computed(() =>
+  [
+    { label: __('Build'), value: 'build' },
+    { label: __('Settings'), value: 'settings' },
+    onTheSite.value && { label: __('Share'), value: 'share' },
+    { label: __('Versions'), value: 'versions' },
+  ].filter(Boolean),
+)
 const askOptions = [
   { label: __('When somebody asks for it'), value: 'By hand' },
   { label: __('At the first appointment'), value: 'First appointment' },
@@ -612,6 +763,7 @@ const meta = reactive({
   summary_keys: [],
   clinical_uses: [],
   service_options: [],
+  person_fields: [],
   current_version: null,
   current_version_number: 0,
   unpublished_changes: true,
@@ -628,6 +780,11 @@ const SETTINGS = [
   'send_before',
   'enabled',
   'services',
+  'route',
+  'button_label',
+  'success_message',
+  'success_url',
+  'allowed_embedding_domains',
 ]
 
 function apply(data) {
@@ -666,25 +823,40 @@ const useInfo = computed(
   () => meta.uses.find((use) => use.value === tpl.use) || {},
 )
 const forThePerson = computed(() => useInfo.value.for_the_person !== false)
-// a consent is the person's to give: a sheet records none
-const useProblems = computed(() =>
-  forThePerson.value
-    ? []
-    : fieldsOf(schema.value)
-        .filter((field) => field.type === 'consent')
-        .map((field) => ({
-          field: field.id,
-          message:
-            '{0}: a consent is given by the person, on a form. A sheet does not record it.',
-          args: [field.label || field.id],
-        })),
-)
+// asked and sent: a form of the desk, not a sheet nor a form of the website
+const sent = computed(() => useInfo.value.sent !== false)
+// filled by anybody on the centre's website (crm/moduli/sito.py)
+const onTheSite = computed(() => Boolean(useInfo.value.on_the_site))
+watch(onTheSite, (on) => !on && tab.value === 'share' && (tab.value = 'build'))
 
 // what is wrong, as the server will say it: the same rules, live
 const problems = computed(() => [
   ...readyToPublish(schema.value),
-  ...useProblems.value,
+  ...useProblems(schema.value, {
+    forThePerson: forThePerson.value,
+    onTheSite: onTheSite.value,
+    personFields: meta.person_fields,
+  }),
 ])
+
+const pageUrl = computed(
+  () =>
+    `${window.location.origin}/crm-form/${tpl.route || addressFrom(tpl.title)}`,
+)
+const snippet = computed(() =>
+  embedSnippet(
+    pageUrl.value,
+    tpl.route || addressFrom(tpl.title),
+    tpl.title || '',
+  ),
+)
+const domains = computed(() => embeddingDomains(tpl.allowed_embedding_domains))
+
+async function openPage() {
+  // the page shows what is saved: a draft only to whoever builds it
+  if (dirty.value && !(await save())) return
+  window.open(pageUrl.value, '_blank')
+}
 const nothingToPublish = computed(
   () =>
     !dirty.value &&
@@ -710,6 +882,10 @@ function palette(section) {
     group: __(group),
     items: componentList()
       .filter((kind) => kind.group === group)
+      .filter(
+        (kind) =>
+          !onTheSite.value || !['signature', 'attachment'].includes(kind.type),
+      )
       .map((kind) => ({
         label: __(kind.label),
         icon: componentIconName(kind.type),

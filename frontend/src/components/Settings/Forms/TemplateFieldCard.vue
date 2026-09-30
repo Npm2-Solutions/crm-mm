@@ -36,6 +36,14 @@
         </span>
       </button>
       <div class="flex shrink-0 items-center gap-1 max-md:hidden">
+        <!-- the person's field it fills, on a form of the website -->
+        <Badge
+          v-if="personLabel"
+          :label="personLabel"
+          theme="blue"
+          size="sm"
+          variant="subtle"
+        />
         <Badge
           v-if="has(field.show_if)"
           :label="__('Conditional')"
@@ -481,6 +489,21 @@
         :label="__('An answer is required, yes or no')"
       />
 
+      <!-- on a form of the website: the answer is one of the person's fields -->
+      <FormControl
+        v-if="field.type === 'text' && personFields.length"
+        :model-value="field.person || ''"
+        type="select"
+        :label="__('Fills the person\'s')"
+        :options="[{ label: __('Nothing'), value: '' }, ...personFields]"
+        :description="
+          __(
+            'Whoever sends the form is found by their email or mobile, or made: what they write fills what the centre did not know yet.',
+          )
+        "
+        @update:model-value="(value) => (field.person = value || undefined)"
+      />
+
       <!-- with the medical centre: the answer proposed to the patient's summary -->
       <FormControl
         v-if="answers && summaryKeys.length"
@@ -559,6 +582,8 @@ const props = defineProps({
   consentTypes: { type: Array, default: () => [] },
   /** The lines of the patient's summary an answer may go to (the clinic's). */
   summaryKeys: { type: Array, default: () => [] },
+  /** The person's fields a question of a form on the website may fill. */
+  personFields: { type: Array, default: () => [] },
   problems: { type: Array, default: () => [] },
 })
 
@@ -574,6 +599,12 @@ const headline = computed(() =>
   field.value.type === 'paragraph'
     ? (field.value.text || '').split('\n')[0]
     : field.value.label,
+)
+const personLabel = computed(
+  () =>
+    field.value.person &&
+    props.personFields.find((option) => option.value === field.value.person)
+      ?.label,
 )
 const labelCaption = computed(() =>
   kind.value?.answer ? __('The question') : __('Its name'),
