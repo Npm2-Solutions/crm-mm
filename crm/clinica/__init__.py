@@ -14,6 +14,7 @@ The clinical record comes next, on the person's page.
 
 from __future__ import annotations
 
+from crm.assistente import Funzione, registra_funzione
 from crm.moduli.registro import CONSENSO, TipoConsenso, registra_tipo
 from crm.permissions.livelli import (
 	CENTRO,
@@ -157,6 +158,28 @@ CAPACITA = (
 		),
 		{"operatore": SUOI},
 	),
+	# the assistant on one's patients (design.md, "L'assistente"): the plan's
+	# assistant module, the clinic's data
+	(
+		Capacita(
+			"assistente.bozze",
+			"assistente",
+			clinica=True,
+			descrizione="The assistant on one's patients: drafts from one's signed notes, a visit from "
+			"dictation, a summary before the visit - checked and signed by the practitioner",
+		),
+		{"operatore": SUOI},
+	),
+	(
+		Capacita(
+			"assistente.registro_clinico",
+			"assistente",
+			scrive=False,
+			clinica=True,
+			descrizione="Read the assistant's clinical events, and re-read the monthly sample",
+		),
+		{DIREZIONE: CENTRO},
+	),
 	(
 		Capacita(
 			"clinica.traccia",
@@ -250,6 +273,64 @@ REFERTI_ONLINE = TipoConsenso(
 )
 
 
+ASSISTENTE = TipoConsenso(
+	chiave="ai_assistant",
+	etichetta="Assistant",
+	natura=CONSENSO,
+	piano=PIANO,
+	capacita="pazienti.vedi",
+	descrizione="An AI assistant drafts documents from what the practitioner wrote; the practitioner "
+	"checks and signs them (L. 132/2025, art. 7).",
+	testi={
+		"it": (
+			"Acconsento che il centro usi un assistente di intelligenza artificiale per preparare bozze "
+			"di documenti (lettere, istruzioni dopo la visita, riassunti) da quello che i professionisti "
+			"hanno scritto. I professionisti le rivedono e le firmano; l'assistente non fa diagnosi. "
+			"Posso revocare il consenso in qualsiasi momento."
+		),
+		"en": (
+			"I agree that the centre uses an artificial intelligence assistant to draft documents "
+			"(letters, instructions after the visit, summaries) from what the practitioners wrote. "
+			"They check and sign them; the assistant makes no diagnosis. I can withdraw this "
+			"consent at any time."
+		),
+	},
+)
+
+
+# what the assistant does on the patients' record (design.md, "L'assistente"):
+# the practitioner's own, and their events the medical director's to read
+LETTERA = Funzione(
+	"letter_from_note",
+	"A letter from the note",
+	usa="assistente.bozze",
+	legge="assistente.registro_clinico",
+	interruttore="note_drafts",
+)
+ISTRUZIONI = Funzione(
+	"instructions_from_note",
+	"Instructions from the note",
+	usa="assistente.bozze",
+	legge="assistente.registro_clinico",
+	interruttore="note_drafts",
+)
+DETTATURA = Funzione(
+	"visit_from_dictation",
+	"A visit from dictation",
+	usa="assistente.bozze",
+	legge="assistente.registro_clinico",
+	interruttore="dictation",
+)
+RIASSUNTO = Funzione(
+	"summary_before_visit",
+	"A summary before the visit",
+	usa="assistente.bozze",
+	legge="assistente.registro_clinico",
+	interruttore="summaries",
+)
+FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO)
+
+
 def registra() -> None:
 	from crm.automation.engine import registra_evento
 	from crm.clinica import pipeline
@@ -272,6 +353,10 @@ def registra() -> None:
 		concedi(nome, {DIREZIONE: CENTRO})
 	registra_tipo(DOSSIER)
 	registra_tipo(REFERTI_ONLINE)
+	registra_tipo(ASSISTENTE)
+	# what the assistant does on the patients' record, each read by the medical director
+	for funzione in FUNZIONI_ASSISTENTE:
+		registra_funzione(funzione)
 	# "health data" on a form template means something where the clinic is on,
 	# and a form that records it is read by the care team only
 	from crm.moduli import compilazioni, modelli

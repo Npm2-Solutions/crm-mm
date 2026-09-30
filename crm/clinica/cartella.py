@@ -161,6 +161,12 @@ def _della_persona(lead: str) -> None:
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 
 
+def _assistente() -> dict:
+	from crm.clinica import assistente
+
+	return assistente.disponibili()
+
+
 @frappe.whitelist()
 def get_record(lead: str) -> dict:
 	"""The clinical record the session may read, newest first. Every read is logged.
@@ -191,6 +197,8 @@ def get_record(lead: str) -> dict:
 		"can_message": livelli.puo("area.messaggi"),
 		# a diet, a training, exercises at home: by one's qualification
 		"can_plan": livelli.puo("piani.scrivi"),
+		# the assistant: drafts from one's notes, dictation, a summary
+		"assistant": _assistente(),
 		# the medical director obscures an episode at the patient's request
 		"can_obscure": livelli.puo("clinica.oscura"),
 		"dossier": _col_dossier(lead),
