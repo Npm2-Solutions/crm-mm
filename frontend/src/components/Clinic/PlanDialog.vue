@@ -27,6 +27,17 @@
 
       <!-- writing it -->
       <div v-else-if="editing" class="flex flex-col gap-4">
+        <p
+          v-if="plan.programme"
+          class="rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
+        >
+          {{
+            __(
+              'A stage of the programme “{0}”: the plan is published when its stage opens.',
+              [plan.programme_title],
+            )
+          }}
+        </p>
         <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <FormControl v-model="plan.title" :label="__('Title')" />
           <FormControl
@@ -283,10 +294,13 @@
         <div class="flex gap-2">
           <Button
             :label="__('Save the draft')"
+            :variant="plan.programme ? 'solid' : 'subtle'"
             :loading="busy === 'save'"
             @click="save()"
           />
+          <!-- a stage's plan opens with its stage, not on its own -->
           <Button
+            v-if="!plan.programme"
             variant="solid"
             :label="__('Publish')"
             :loading="busy === 'publish'"
@@ -405,17 +419,7 @@ watch(show, async (open) => {
       plan_type: props.kind,
       title: __(props.kind),
       status: 'Draft',
-      moments: momentiIniziali(props.kind, {
-        pasti: [
-          __('Breakfast'),
-          __('Morning snack'),
-          __('Lunch'),
-          __('Afternoon snack'),
-          __('Dinner'),
-        ],
-        seduta: __('Session'),
-        giorno: __('Every day'),
-      }),
+      moments: firstMoments(props.kind),
       items: [],
     })
     if (props.kind === MENU) {
@@ -428,12 +432,30 @@ watch(show, async (open) => {
   loading.value = true
   try {
     fill(await call('crm.clinica.piani.get_plan', { name: props.name }))
+    // a stage's plan starts empty on the server: the same first moments as a new one
+    if (plan.can_edit && !plan.moments.length && !plan.items.length)
+      plan.moments = firstMoments(plan.plan_type)
   } catch (e) {
     error.value = e.messages?.join(' ') || e.message
   } finally {
     loading.value = false
   }
 })
+
+// where a plan starts: the day's meals, a session, or every day
+function firstMoments(kind) {
+  return momentiIniziali(kind, {
+    pasti: [
+      __('Breakfast'),
+      __('Morning snack'),
+      __('Lunch'),
+      __('Afternoon snack'),
+      __('Dinner'),
+    ],
+    seduta: __('Session'),
+    giorno: __('Every day'),
+  })
+}
 
 function itemsOf(key) {
   return plan.items.filter((item) => item.moment === key)
