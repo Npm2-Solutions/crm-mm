@@ -331,7 +331,9 @@ class TestPiano(RegistroCase):
 			self.assertIn("piccolo.usa", calcola([MAN], moduli={"grande": ATTIVO}))
 			self.assertIn("piccolo.usa", calcola([MAN], moduli={"grande": PROVA, "piccolo": SPENTO}))
 			self.assertEqual(livelli.stato_modulo("piccolo", {"grande": SOLA_LETTURA}), SOLA_LETTURA)
-			self.assertEqual(livelli.stato_modulo("piccolo", {"grande": SOLA_LETTURA, "piccolo": ATTIVO}), ATTIVO)
+			self.assertEqual(
+				livelli.stato_modulo("piccolo", {"grande": SOLA_LETTURA, "piccolo": ATTIVO}), ATTIVO
+			)
 			# comprising goes one way: the small one does not switch the big one on
 			self.assertEqual(livelli.stato_modulo("grande", {"piccolo": ATTIVO}), SPENTO)
 

@@ -240,7 +240,7 @@
             <Button
               size="sm"
               :label="__('Clear the answers')"
-              @click="((previewValues = {}), (previewChecked = false))"
+              @click="(previewValues = {}), (previewChecked = false)"
             />
           </div>
         </div>

@@ -71,7 +71,9 @@ class LaConversazione(UnitTestCase):
 
 	def test_una_pagina_aperta_prima_dice_ancora_patient(self):
 		# a page loaded before the area was the CRM's says "patient": the same person
-		self.assertEqual(C.storia([{"role": "patient", "text": "Buongiorno"}]), [{"role": "person", "text": "Buongiorno"}])
+		self.assertEqual(
+			C.storia([{"role": "patient", "text": "Buongiorno"}]), [{"role": "person", "text": "Buongiorno"}]
+		)
 
 	def test_la_risposta_del_modello(self):
 		self.assertEqual(
