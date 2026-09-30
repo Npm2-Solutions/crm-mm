@@ -47,7 +47,7 @@ import { day } from '../dates'
 import { area } from '../store'
 
 const documents = createResource({
-  url: 'crm.clinica.area.documenti.get_documents',
+  url: 'crm.documenti.area.get_documents',
   params: { person: area.person },
   auto: true,
 })
@@ -75,7 +75,7 @@ function go(doc) {
     person: area.person,
     delivery: doc.name,
   })
-  window.location.href = `/api/method/crm.clinica.area.documenti.download_document?${params}`
+  window.location.href = `/api/method/crm.documenti.area.download_document?${params}`
   doc.downloaded = true
 }
 </script>

@@ -12,10 +12,10 @@ same qualification. The front desk knows that a visit happened, not what was
 said; the manager, sales and marketing do not see it at all.
 
 **The access log.** Frappe writes a View Log only from its Desk form; the CRM reads
-through these calls, which write one for every record they return, and the
-archive's (`crm.clinica.archivio`) does the same for its documents; Frappe writes
-an Access Log for every download of a private file. "Who opened it" shows them
-together. The Garante wants those logs kept at least 24 months (Linee guida sul
+through these calls, which write one for every record they return, and a person's
+documents (`crm.documenti.api`) do the same for those with health data; Frappe
+writes an Access Log for every download of a private file. "Who opened it" shows
+them together. The Garante wants those logs kept at least 24 months (Linee guida sul
 dossier, 4/6/2015).
 """
 
@@ -156,7 +156,8 @@ def _legge() -> bool:
 
 
 def _della_persona(lead: str) -> None:
-	if not (_legge() or livelli.puo("clinica.accessi") or livelli.puo("clinica.archivia")):
+	# who opens the Clinic tab: who reads the record, the access log, the quotes
+	if not (_legge() or livelli.puo("clinica.accessi") or livelli.puo("cure.preventivi")):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 
@@ -172,8 +173,8 @@ def get_record(lead: str) -> dict:
 	"""The clinical record the session may read, newest first. Every read is logged.
 
 	The manager comes here for the access log alone: who opened the record, not
-	what it says; the front desk to add to the archive what the patient brings.
-	They get no record, and nothing is logged for them.
+	what it says; the front desk for the care plans' quotes. They get no record,
+	and nothing is logged for them.
 	"""
 	_della_persona(lead)
 	legge = _legge()
@@ -191,7 +192,6 @@ def get_record(lead: str) -> dict:
 		"can_write": livelli.puo("clinica.scrivi"),
 		"sheets": _schede() if livelli.puo("clinica.scrivi") else [],
 		"can_see_log": livelli.puo("clinica.accessi"),
-		"can_archive": livelli.puo("clinica.archivia"),
 		# the assistant's instructions may go on the person's board in their area
 		"can_message": livelli.puo("area.messaggi"),
 		# the assistant: drafts from one's notes, dictation, a summary
@@ -292,7 +292,7 @@ def delete_draft(name: str) -> None:
 #: What a line of the access log says was opened: never what it contains.
 APERTO = {
 	"Clinic Record": "record",
-	"Clinic Document": "archive",
+	"CRM Document": "documents",
 	"CRM Personal Plan": "plan",
 	"CRM Programme": "programme",
 	"Clinic Dental Chart": "dental chart",
@@ -303,9 +303,10 @@ APERTO = {
 
 @frappe.whitelist()
 def access_log(lead: str) -> list[dict]:
-	"""Who opened this person's record, archive and plans, and when: not what they read.
+	"""Who opened this person's record, documents and plans with health data, and
+	when: not what they read.
 
-	The record and the archive listed (a View Log for each entry they showed), a
+	The record and the documents listed (a View Log for each entry they showed), a
 	plan opened, and every file downloaded (Frappe's Access Log), one line for each
 	person, minute and kind of opening."""
 	livelli.verifica("clinica.accessi")
@@ -314,7 +315,8 @@ def access_log(lead: str) -> list[dict]:
 		doctype: frappe.get_all(doctype, filters={"lead": lead, **filtri}, pluck="name")
 		for doctype, filtri in (
 			("Clinic Record", {}),
-			("Clinic Document", {}),
+			# a person's documents that carry health data
+			("CRM Document", {"clinical": 1}),
 			# the plans and programmes of the CRM that carry health data
 			("CRM Personal Plan", {"clinical": 1}),
 			("CRM Programme", {"clinical": 1}),
@@ -483,14 +485,15 @@ def valida_impostazioni_log(doc, method=None) -> None:
 
 
 def allegato_privato(doc, method=None) -> None:
-	"""An attachment to the clinical record or archive is private, or it is not attached.
+	"""An attachment to the clinical record is private, or it is not attached (a
+	person's documents: `crm.documenti.api.allegato_privato`).
 
 	Frappe serves a private file only to whoever may read the record it is attached
 	to; a public one to anybody with the link. The file is already written when
 	this runs, so it is refused rather than quietly relabelled: the CRM uploads them
 	private, and anything else asking for public is a mistake to stop.
 	"""
-	if doc.attached_to_doctype not in (DOCTYPE, "Clinic Document"):
+	if doc.attached_to_doctype != DOCTYPE:
 		return
 	if not (cint(doc.is_private) or (doc.file_url or "").startswith("/private/")):
 		frappe.throw(_("An attachment to the clinical record is private"))

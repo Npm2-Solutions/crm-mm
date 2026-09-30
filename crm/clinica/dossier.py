@@ -10,7 +10,7 @@ The Garante's guidelines on the health dossier (4/6/2015), as doc 30 puts them:
   their own visits; without it, each one reads their own. The medical director
   reads everything.
 - **Obscuring**: the patient can ask that an episode (a visit, with its addenda
-  and its reports; or a document of the archive) is not in the dossier. The
+  and its reports; or one of the person's documents) is not in the dossier. The
   medical director does it, and can undo it. An obscured episode stays readable
   by who wrote or added it, and by the medical director; the others do not see
   it at all - not a padlock, not a count, not the source of a line of the summary
@@ -36,7 +36,7 @@ from crm.permissions import livelli
 DOSSIER = "health_dossier"
 TUTTI, DISCIPLINA, SOLO_IO = "Care team", "My discipline", "Only me"
 VISIBILITA = (TUTTI, DISCIPLINA, SOLO_IO)
-VOCE, DOCUMENTO = "Clinic Record", "Clinic Document"
+VOCE, DOCUMENTO = "Clinic Record", "CRM Document"
 CONCESSIONE = "Clinic Access Grant"
 #: How long an opening out of the care team lasts.
 ORE_FUORI_EQUIPE = 24
@@ -111,6 +111,27 @@ def condizione_condivisa(tabella, user: str):
 	return condizione
 
 
+def e_sanitario(doc) -> bool:
+	"""What a health professional writes, or what is for one, is health data whatever
+	its kind - a nutritionist's habits too. With the clinic on."""
+	from crm.clinica.paziente import clinica_accesa
+
+	qualifica = doc.get("discipline")
+	return bool(
+		qualifica
+		and clinica_accesa()
+		and frappe.db.get_value("CRM Professional Qualification", qualifica, "is_healthcare")
+	)
+
+
+def lettore():
+	"""The clinic's reader of what carries the mark of health data in the CRM (a plan,
+	a programme, a document): the dossier's rules, and the mark by who wrote it."""
+	from crm.permissions import sanitari
+
+	return sanitari.Lettore(legge=legge_le_altre, condizione=condizione_condivisa, marca=e_sanitario)
+
+
 def fonti_nascoste(fonti: list[tuple[str, str]], user: str | None = None) -> set[tuple[str, str]]:
 	"""Of these entries and documents, the obscured ones ``user`` must not know of."""
 	user = user or frappe.session.user
@@ -136,7 +157,7 @@ def fonti_nascoste(fonti: list[tuple[str, str]], user: str | None = None) -> set
 
 def _episodio(doctype: str, nome: str) -> list[tuple[str, str]]:
 	"""What obscuring an entry covers: a visit with its addenda and their reports
-	in the archive; a document alone."""
+	among the person's documents; a document alone."""
 	if doctype == DOCUMENTO:
 		return [(DOCUMENTO, nome)]
 	radice = frappe.db.get_value(VOCE, nome, "addendum_to") or nome
@@ -149,7 +170,7 @@ def _imposta(doctype: str, name: str, oscura: bool, note: str | None) -> dict:
 	from crm.moduli import traccia
 
 	if doctype not in (VOCE, DOCUMENTO):
-		frappe.throw(_("Only a visit or a document of the archive is obscured"))
+		frappe.throw(_("Only a visit or a person's document is obscured"))
 	livelli.verifica("clinica.oscura")
 	doc = frappe.get_doc(doctype, name)
 	doc.check_permission("read")

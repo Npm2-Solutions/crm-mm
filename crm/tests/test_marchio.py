@@ -213,7 +213,7 @@ class TestMarchio(IntegrationTestCase):
 		frappe.set_user("Guest")
 		try:
 			with con_il_verticale(PROVA.chiave):
-				for pagina in ("prenota", "modulo", "referto", "area"):
+				for pagina in ("prenota", "modulo", "documento", "area"):
 					set_request(method="GET", path=f"/{pagina}")
 					html = get_response_without_exception_handling(f"/{pagina}").get_data(as_text=True)
 					self.assertIn(f'href="{PROVA.favicon}"', html, pagina)

@@ -117,6 +117,7 @@ import LucideRadar from '~icons/lucide/radar'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import LucideAppWindow from '~icons/lucide/app-window'
+import LucideFolderOpen from '~icons/lucide/folder-open'
 import { usersStore } from '@/stores/users'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
@@ -315,6 +316,14 @@ const tabs = computed(() => {
       icon: LucideFileSignature,
       condition: () => puo('moduli.vedi'),
     },
+    // the person's documents: what they brought or sent, signed forms, contracts;
+    // with the clinic the tests and reports too
+    {
+      name: 'Documents',
+      label: __('Documents'),
+      icon: LucideFolderOpen,
+      condition: () => puo('documenti.vedi') || puo('documenti.aggiungi'),
+    },
     // the person's own area: who enters it, the board the centre writes on,
     // the plans they follow there
     {
@@ -337,7 +346,6 @@ const tabs = computed(() => {
         puo('clinica.vedi') ||
         puo('clinica.scrivi') ||
         puo('clinica.accessi') ||
-        puo('clinica.archivia') ||
         puo('cure.preventivi'),
     },
   ]

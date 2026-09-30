@@ -14,20 +14,15 @@
   "source",
   "column_main",
   "practitioner",
-  "visibility",
   "discipline",
-  "obscured",
-  "obscured_by",
-  "obscured_on",
+  "clinical",
   "added_by",
   "added_on",
   "file_section",
   "file",
   "file_hash",
   "column_file",
-  "record",
   "appointment",
-  "not_online",
   "notes"
  ],
  "fields": [
@@ -57,14 +52,13 @@
    "reqd": 1
   },
   {
-   "default": "External report",
    "fieldname": "document_type",
-   "fieldtype": "Select",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Type",
-   "options": "Report\nExternal report\nTest result\nImaging\nPrescription\nSigned form\nOther",
-   "reqd": 1
+   "reqd": 1,
+   "description": "A kind the CRM or a module registers: a contract, a signed form, a test result"
   },
   {
    "fieldname": "document_date",
@@ -83,7 +77,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "The practitioner it is for, or who wrote it",
+   "description": "Whom it is for: somebody of the centre, or who added it",
    "fieldname": "practitioner",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -91,37 +85,19 @@
    "options": "User"
   },
   {
-   "default": "Care team",
-   "fieldname": "visibility",
-   "fieldtype": "Select",
-   "label": "Who reads it",
-   "options": "Care team\nMy discipline\nOnly me"
-  },
-  {
    "fieldname": "discipline",
    "fieldtype": "Link",
    "label": "Discipline",
    "options": "CRM Professional Qualification",
-   "read_only": 1
+   "read_only": 1,
+   "description": "The qualification of whom it is for"
   },
   {
    "default": "0",
-   "fieldname": "obscured",
+   "description": "Health data: read like the clinical record, by the rule of the module that knows it",
+   "fieldname": "clinical",
    "fieldtype": "Check",
-   "label": "Obscured",
-   "read_only": 1
-  },
-  {
-   "fieldname": "obscured_by",
-   "fieldtype": "Link",
-   "label": "Obscured by",
-   "options": "User",
-   "read_only": 1
-  },
-  {
-   "fieldname": "obscured_on",
-   "fieldtype": "Datetime",
-   "label": "Obscured on",
+   "label": "Health data",
    "read_only": 1
   },
   {
@@ -159,25 +135,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "A report made by the centre: the visit it comes from",
-   "fieldname": "record",
-   "fieldtype": "Link",
-   "label": "Visit",
-   "options": "Clinic Record",
-   "read_only": 1
-  },
-  {
    "fieldname": "appointment",
    "fieldtype": "Link",
    "label": "Appointment",
    "options": "CRM Appointment"
-  },
-  {
-   "default": "0",
-   "description": "Genetic tests, HIV, or a test the patient left out: given by hand only",
-   "fieldname": "not_online",
-   "fieldtype": "Check",
-   "label": "Never online"
   },
   {
    "fieldname": "notes",
@@ -187,10 +148,10 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 12:00:00.000000",
+ "modified": "2026-10-01 13:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Document",
+ "module": "Documenti",
+ "name": "CRM Document",
  "naming_rule": "Random",
  "owner": "Administrator",
  "row_format": "Dynamic",
@@ -204,22 +165,13 @@
    "create": 1,
    "delete": 1,
    "read": 1,
-   "role": "Practitioner",
+   "role": "Sales User",
    "write": 1
   },
   {
-   "create": 1,
-   "delete": 1,
-   "read": 1,
-   "role": "Front Desk",
-   "write": 1
-  },
-  {
-   "delete": 1,
    "read": 1,
    "report": 1,
-   "role": "Medical Director",
-   "write": 1
+   "role": "System Manager"
   }
  ],
  "track_views": 1

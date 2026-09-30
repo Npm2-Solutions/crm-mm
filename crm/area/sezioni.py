@@ -5,7 +5,7 @@
 
 The area's own places - home, agenda, messages, invoices - are always there. A
 module adds its own the way it adds capabilities (docs/gestionale-medico/design.md,
-"Tre strati"): the clinic its documents given online, its plans and care plans.
+"Tre strati"): the documents given online and the plans, the clinic its care plans.
 For each person the session sees, ``per_persona`` says what the place has for
 them, and the app shows it when that is something: "Plans" only to who follows
 one now.

@@ -8,7 +8,7 @@ for a visit on a clinical sheet (a template whose use is "clinical sheet",
 checked by the same engine as every form), the sheet in words with the version
 and the hashes of what it asked and of what was answered; who signed and when.
 Like the signed form's PDF, it is made once; the record keeps its SHA-256, and
-the archive files it (`crm.clinica.archivio.dal_referto`). What is signed is
+the person's documents file it (`crm.clinica.documenti.dal_referto`). What is signed is
 added to, never rewritten: an addendum is a visit of its own, with its report.
 """
 

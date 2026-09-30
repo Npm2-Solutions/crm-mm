@@ -35,7 +35,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Document",
-   "options": "Clinic Document",
+   "options": "CRM Document",
    "read_only": 1,
    "reqd": 1,
    "search_index": 1
@@ -188,10 +188,10 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 12:00:00.000000",
+ "modified": "2026-10-01 13:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Report Delivery",
+ "module": "Documenti",
+ "name": "CRM Document Delivery",
  "naming_rule": "Random",
  "owner": "Administrator",
  "row_format": "Dynamic",
@@ -205,11 +205,7 @@
   {
    "read": 1,
    "report": 1,
-   "role": "Medical Director"
-  },
-  {
-   "read": 1,
-   "role": "Practitioner"
+   "role": "System Manager"
   }
  ]
 }

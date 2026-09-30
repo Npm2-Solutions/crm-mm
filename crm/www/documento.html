@@ -213,7 +213,7 @@
             event.preventDefault();
             button.disabled = true;
             try {
-              const response = await fetch("/api/method/crm.clinica.consegna.open_report", {
+              const response = await fetch("/api/method/crm.documenti.consegna.open_document", {
                 method: "POST",
                 headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded", "X-Frappe-CSRF-Token": window.CSRF || "" },
                 body: new URLSearchParams({ token, code: input.value }),
@@ -234,7 +234,7 @@
         }
 
         function show(opened) {
-          const url = "/api/method/crm.clinica.consegna.download_report?" + new URLSearchParams({ token, session: opened.session });
+          const url = "/api/method/crm.documenti.consegna.download_document?" + new URLSearchParams({ token, session: opened.session });
           screen(
             h("h1", {}, opened.title),
             h("p", { class: "lede" }, t("Online until {0}.", [day(opened.expires_on)])),

@@ -28,15 +28,14 @@ VIETATO = "crm.clinica"
 AMMESSI = {CRM / "registrazione.py"}
 #: The patient card is who is a patient, not what is wrong with them; the settings
 #: say which pipelines are the centre's; an opening out of the care team says who
-#: opened a record and why; a delivery, to whom a report was given. The foods'
-#: library says what a food is; a tooth lives inside its chart and a treatment
-#: inside its care plan. (Plans, programmes and exercises are the CRM's: a plan
-#: carries the mark of health data instead, `crm.piani`.)
+#: opened a record and why. The foods' library says what a food is; a tooth lives
+#: inside its chart and a treatment inside its care plan. (Plans, programmes,
+#: exercises and a person's documents are the CRM's: they carry the mark of health
+#: data instead, `crm.permissions.sanitari`.)
 NON_CLINICI = {
 	"clinic_patient",
 	"clinic_settings",
 	"clinic_access_grant",
-	"clinic_report_delivery",
 	"clinic_food",
 	"clinic_tooth_state",
 	"clinic_care_plan_item",

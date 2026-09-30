@@ -14,8 +14,9 @@ only writing why, for a day, and the access log shows it.
 import frappe
 from frappe.utils import add_to_date, now_datetime
 
-from crm.clinica import archivio, cartella, dossier, sintesi
+from crm.clinica import cartella, dossier, sintesi
 from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, MANAGER, RecordCase
+from crm.documenti import api as archivio
 from crm.moduli import consensi, traccia
 from crm.permissions import livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
@@ -115,7 +116,7 @@ class LOscuramento(DossierCase):
 			dossier.obscure("Clinic Record", bozza["name"])
 		[referto] = archivio.get_documents(self.anna.name)["documents"]
 		with self.assertRaises(frappe.ValidationError):
-			dossier.obscure("Clinic Document", referto["name"])
+			dossier.obscure("CRM Document", referto["name"])
 
 	def test_un_documento_si_oscura_da_solo(self):
 		self.come(DOC1)
@@ -127,7 +128,7 @@ class LOscuramento(DossierCase):
 		self.come(DOC2)
 		self.assertEqual(len(archivio.get_documents(self.anna.name)["documents"]), 1)
 		self.come(DIRECTOR)
-		dossier.obscure("Clinic Document", documento["name"])
+		dossier.obscure("CRM Document", documento["name"])
 		self.come(DOC2)
 		self.assertEqual(archivio.get_documents(self.anna.name)["documents"], [])
 		self.come(DOC1)

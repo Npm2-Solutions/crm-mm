@@ -1,24 +1,23 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Giving a report to the patient: by hand, or online for 45 days.
+"""Giving a document to the person: by hand, or online for the days chosen.
 
-The Garante's guidelines on online reports (19/11/2009) and their FAQ, as the
-design reads them:
-
-- **By hand** is always possible: the delivery says to whom (the patient, or
+- **By hand** is always possible: the delivery says to whom (the person, or
   somebody on their behalf), who gave it and when.
-- **Online** only with the patient's consent to online reports, and never for a
-  document marked "never online" (genetic tests, HIV, or a single test the
-  patient left out). The report stays online 45 days at most.
-- The message carries no content: an email says a document is ready, with a
-  link; the link opens only with a code the patient got **another way** - given
-  at the centre, printed or read out - so a wrong address alone opens nothing.
-- Every opening and download is in the audit log (who, when, from where); a
+- **Online** with a link and a code: the message carries no content - an email
+  says a document is ready, with a link - and the link opens only with a code the
+  person got **another way** (given at the centre, printed or read out), so a
+  wrong address alone opens nothing. It stays online the days chosen
+  (`regole.giorni_online`), every opening and download is in the audit log, a
   delivery can be withdrawn at once, and five wrong codes lock it.
+- **What a module adds** (`registra_regola`): when one of its documents may not go
+  online, and for how long at most. The clinic's reports: only with the patient's
+  consent to online reports, never a document marked "never online", 45 days at
+  most (the Garante's guidelines, 19/11/2009).
 
-The patient area of phase 3 will show the same deliveries; the page
-`/referto/<link>` is the way in until then.
+The person reads the same deliveries in their area (`crm.documenti.area`); the
+page `/documento/<link>` is the way in for whoever has no area.
 """
 
 from __future__ import annotations
@@ -26,24 +25,65 @@ from __future__ import annotations
 import hashlib
 import hmac
 import secrets
+from collections.abc import Callable
+from dataclasses import dataclass
 
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
 from frappe.utils import add_to_date, cint, get_datetime, get_fullname, get_url, now_datetime
 
+from crm.documenti import regole as R
 from crm.moduli import traccia
 from crm.permissions import livelli
 
-CONSEGNA = "Clinic Report Delivery"
-DOCUMENTO = "Clinic Document"
-REFERTI_ONLINE = "online_reports"
+CONSEGNA = "CRM Document Delivery"
+DOCUMENTO = "CRM Document"
 A_MANO, ONLINE = "By hand", "Online"
 CONSEGNATO, DISPONIBILE, SCARICATO, RITIRATO = "Delivered", "Available", "Downloaded", "Withdrawn"
-#: The longest a report stays online (Garante, 2009).
-GIORNI_ONLINE = 45
+SCADUTO = "Expired"
 TENTATIVI = 5
 MINUTI_SESSIONE = 10
+
+
+# ------------------------------------------------------------------ what a module adds
+
+
+@dataclass(frozen=True)
+class Regola:
+	"""What a module says of its documents going online."""
+
+	#: Why this document may not go online now; None: as far as the module is
+	#: concerned, it may.
+	ferma: Callable[[object], str | None]
+	#: The days it stays online, unless fewer are chosen; None: the CRM's.
+	giorni: Callable[[object], int | None] | None = None
+
+
+_regole: list[Regola] = []
+
+
+def registra_regola(regola: Regola) -> None:
+	if regola not in _regole:
+		_regole.append(regola)
+
+
+def perche_non_online(documento) -> str | None:
+	"""Why a document may not go online now, or None."""
+	for regola in _regole:
+		if motivo := regola.ferma(documento):
+			return motivo
+	return None
+
+
+def giorni_del_modulo(documento) -> int | None:
+	"""The days a module keeps its document online, unless fewer are chosen: the
+	fewest any says; None when none says."""
+	tetti = [g for regola in _regole if regola.giorni and (g := regola.giorni(documento))]
+	return min(tetti) if tetti else None
+
+
+# ------------------------------------------------------------------ the codes
 
 
 def _segreto() -> str:
@@ -62,41 +102,32 @@ def _uguali(a: str | None, b: str | None) -> bool:
 	return bool(a) and bool(b) and hmac.compare_digest(a, b)
 
 
-def col_consenso(lead: str) -> bool:
-	return bool(
-		frappe.db.exists("CRM Consent", {"lead": lead, "consent_type": REFERTI_ONLINE, "status": "Given"})
-	)
-
-
-def _file(documento) -> str | None:
-	from crm.clinica import archivio
-
-	return archivio._file_di(documento)
+# ------------------------------------------------------------------ on the person's page
 
 
 def _documento(nome: str):
-	livelli.verifica("clinica.consegna")
+	livelli.verifica("documenti.consegna")
 	documento = frappe.get_doc(DOCUMENTO, nome)
 	documento.check_permission("read")
-	if not _file(documento):
+	if not documento.file:
 		frappe.throw(_("This document has no file to give"))
 	return documento
 
 
-def _stato(riga) -> str:
+def stato(riga) -> str:
 	if riga.channel == ONLINE and riga.status in (DISPONIBILE, SCARICATO):
 		if get_datetime(riga.expires_on) <= now_datetime():
-			return "Expired"
+			return SCADUTO
 	return riga.status
 
 
 def consegne(documento: str) -> list[dict]:
-	"""How a document was given: for its row in the archive."""
+	"""How a document was given: for its row on the person's page."""
 	return [
 		{
 			"name": riga.name,
 			"channel": riga.channel,
-			"status": _stato(riga),
+			"status": stato(riga),
 			"delivered_to": riga.delivered_to,
 			"given_by_name": get_fullname(riga.given_by) if riga.given_by else None,
 			"given_on": riga.given_on,
@@ -123,21 +154,33 @@ def consegne(documento: str) -> list[dict]:
 	]
 
 
+def _indirizzo(lead: str) -> str | None:
+	"""Where the link goes: whoever signs for the person (a parent), or the person."""
+	from crm.moduli import richieste
+
+	return richieste.destinatario(lead).get("email")
+
+
 @frappe.whitelist()
 def get_deliveries(document: str) -> dict:
 	"""How a document was given, and how it can be given now."""
 	documento = _documento(document)
+	del_modulo = giorni_del_modulo(documento)
 	return {
 		"deliveries": consegne(documento.name),
-		"online_consent": col_consenso(documento.lead),
-		"never_online": cint(documento.not_online),
+		"online": {
+			# why not, when it may not: the module's words
+			"reason": perche_non_online(documento),
+			"days": R.giorni_online(None, del_modulo),
+			"max_days": R.giorni_massimi(del_modulo),
+		},
 		"email": _indirizzo(documento.lead),
 	}
 
 
 @frappe.whitelist(methods=["POST"])
 def deliver_by_hand(document: str, delivered_to: str | None = None) -> dict:
-	"""Printed and handed over: to the patient, or to whoever took it for them."""
+	"""Printed and handed over: to the person, or to whoever took it for them."""
 	documento = _documento(document)
 	chi = (delivered_to or "").strip() or frappe.db.get_value("CRM Lead", documento.lead, "lead_name")
 	riga = frappe.get_doc(
@@ -156,22 +199,14 @@ def deliver_by_hand(document: str, delivered_to: str | None = None) -> dict:
 	return {"deliveries": consegne(documento.name)}
 
 
-def _indirizzo(lead: str) -> str | None:
-	"""Where the link goes: whoever signs for the person (a parent), or the person."""
-	from crm.moduli import richieste
-
-	return richieste.destinatario(lead).get("email")
-
-
 @frappe.whitelist(methods=["POST"])
-def deliver_online(document: str, send_email: int = 1) -> dict:
-	"""Online for 45 days. Returns the link and the code, shown once: the code is
-	given to the patient here, and never travels with the link."""
+def deliver_online(document: str, send_email: int = 1, days: int | None = None) -> dict:
+	"""Online for the days chosen. Returns the link and the code, shown once: the
+	code is given to the person here, and never travels with the link."""
 	documento = _documento(document)
-	if not col_consenso(documento.lead):
-		frappe.throw(_("The patient has not asked for their reports online: give it by hand"))
-	if cint(documento.not_online):
-		frappe.throw(_("This document never goes online: give it by hand"))
+	if motivo := perche_non_online(documento):
+		frappe.throw(motivo)
+	giorni = R.giorni_online(days, giorni_del_modulo(documento))
 	# a new delivery takes the place of one still open
 	for aperta in frappe.get_all(
 		CONSEGNA,
@@ -191,13 +226,13 @@ def deliver_online(document: str, send_email: int = 1) -> dict:
 			"status": DISPONIBILE,
 			"given_by": frappe.session.user,
 			"given_on": adesso,
-			"expires_on": add_to_date(adesso, days=GIORNI_ONLINE),
+			"expires_on": add_to_date(adesso, days=giorni),
 			"email": email,
 			"token_hash": _impronta(token),
 			"code_hash": _impronta(token + codice),
 		}
 	).insert(ignore_permissions=True)
-	link = get_url(f"/referto/{token}")
+	link = get_url(f"/documento/{token}")
 	traccia.traccia(CONSEGNA, riga.name, "online", email)
 	if email:
 		try:
@@ -246,7 +281,7 @@ def withdraw(delivery: str) -> dict:
 	return {"deliveries": consegne(riga.document)}
 
 
-# ------------------------------------------------------------------ the patient's page
+# ------------------------------------------------------------------ the person's page, /documento
 
 
 def _per_token(token: str):
@@ -254,7 +289,7 @@ def _per_token(token: str):
 	if not nome:
 		frappe.throw(_("This link is not valid"), frappe.PermissionError)
 	riga = frappe.get_doc(CONSEGNA, nome)
-	if riga.channel != ONLINE or _stato(riga) not in (DISPONIBILE, SCARICATO):
+	if riga.channel != ONLINE or stato(riga) not in (DISPONIBILE, SCARICATO):
 		frappe.throw(_("This document is no longer online: ask the centre"), frappe.PermissionError)
 	return riga
 
@@ -262,7 +297,7 @@ def _per_token(token: str):
 # nosemgrep: guest-whitelisted-method — the link and the code are the credentials, 20/h
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 @rate_limit(key="token", limit=20, seconds=60 * 60)
-def open_report(token: str, code: str) -> dict:
+def open_document(token: str, code: str) -> dict:
 	"""The code the centre gave: right, it opens a session of ten minutes."""
 	riga = _per_token(token)
 	if cint(riga.attempts) >= TENTATIVI:
@@ -283,30 +318,35 @@ def open_report(token: str, code: str) -> dict:
 	return {"session": sessione, "title": documento.title, "expires_on": riga.expires_on}
 
 
+def scarica(riga, documento, nota: str | None = None) -> None:
+	"""The document's file as the response, the download counted and logged."""
+	contenuto = frappe.get_doc("File", {"file_url": documento.file}).get_content(encodings=[])
+	# a GET is not committed unless asked: the download is part of the register
+	frappe.local.flags.commit = True
+	frappe.db.set_value(
+		CONSEGNA,
+		riga.name,
+		{
+			"status": SCARICATO,
+			"downloads": cint(riga.downloads) + 1,
+			"last_download_on": now_datetime(),
+		},
+	)
+	traccia.traccia(CONSEGNA, riga.name, "downloaded", nota)
+	frappe.local.response.filename = documento.file.rsplit("/", 1)[-1]
+	frappe.local.response.filecontent = contenuto
+	frappe.local.response.type = "download"
+
+
 # nosemgrep: guest-whitelisted-method — the link and its session are the credentials
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 @rate_limit(key="token", limit=30, seconds=60 * 60)
-def download_report(token: str, session: str) -> None:
-	"""The report, while the session lasts; every download is in the audit log."""
+def download_document(token: str, session: str) -> None:
+	"""The document, while the session lasts; every download is in the audit log."""
 	riga = _per_token(token)
 	if not (
 		_uguali(_impronta(session or ""), riga.session_hash)
 		and get_datetime(riga.session_expires_on) > now_datetime()
 	):
 		frappe.throw(_("Enter the code again"), frappe.PermissionError)
-	documento = frappe.get_doc(DOCUMENTO, riga.document)
-	file_url = _file(documento)
-	contenuto = frappe.get_doc("File", {"file_url": file_url}).get_content(encodings=[])
-	# a GET is not committed unless asked: the download is part of the register
-	frappe.local.flags.commit = True
-	riga.db_set(
-		{
-			"status": SCARICATO,
-			"downloads": cint(riga.downloads) + 1,
-			"last_download_on": now_datetime(),
-		}
-	)
-	traccia.traccia(CONSEGNA, riga.name, "downloaded")
-	frappe.local.response.filename = file_url.rsplit("/", 1)[-1]
-	frappe.local.response.filecontent = contenuto
-	frappe.local.response.type = "download"
+	scarica(riga, frappe.get_doc(DOCUMENTO, riga.document))

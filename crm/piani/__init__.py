@@ -14,7 +14,7 @@ writes plans, so they are the CRM's, not the clinic's ("Tre strati").
   screens offer: the clinic its diets and exercises at home, the foods
   (`crm.clinica.piani`). A kind may carry the mark "health data": its plans are
   read like the clinical record, by the rule the clinic registers
-  (`api.registra_lettore_clinico`).
+  (`crm.permissions.sanitari`).
 - **Programmes of stages** (`programmi`): stages that open with time or one after
   the other, each maybe with its plan.
 - **The exercises' library** (`librerie`): the centre's own and exercises-dataset

@@ -69,11 +69,11 @@ class ClinicRecord(DocumentoClinico):
 
 	def _in_archivio(self):
 		"""Filing the report does not undo the signature: the log says why it failed."""
-		from crm.clinica import archivio
+		from crm.clinica import documenti
 
 		frappe.db.savepoint("referto_in_archivio")
 		try:
-			archivio.dal_referto(self)
+			documenti.dal_referto(self)
 		except Exception:
 			frappe.db.rollback(save_point="referto_in_archivio")
 			frappe.log_error(

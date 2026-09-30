@@ -1,10 +1,11 @@
 <!--
-  A document for the clinical archive: a file uploaded here, or one received in
+  A person's document (crm.documenti): a file uploaded here, or one received in
   a conversation (`message`), or an existing document to put right (`document`:
   what it is, when, where it comes from, whom it is for; the file stays).
 
-  A practitioner files for themselves and may keep it to themselves; the front
-  desk says which practitioner it is for, and then sees only what it added.
+  With the clinic, health data is for a practitioner: one files for themselves
+  and may keep it to themselves; the front desk says whom it is for, and then
+  sees only what it added.
 -->
 <template>
   <Dialog v-model="show" :options="{ title: dialogTitle, size: 'lg' }">
@@ -49,7 +50,7 @@
         <FormControl
           v-model="form.title"
           :label="__('Title')"
-          :placeholder="__('Blood tests, chest X-ray, cardiology report…')"
+          :placeholder="__('A contract, a certificate, a signed consent…')"
         />
         <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
           <FormControl
@@ -67,7 +68,7 @@
         <FormControl
           v-model="form.source"
           :label="__('Comes from')"
-          :placeholder="__('The laboratory, the hospital, the doctor')"
+          :placeholder="__('The office, the laboratory, the doctor')"
         />
         <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
           <FormControl
@@ -111,10 +112,10 @@
           {{
             message
               ? __(
-                  'The archive keeps a private copy; in the conversation the file stays, private too.',
+                  'The documents keep a private copy; in the conversation the file stays, private too.',
                 )
               : __(
-                  'The file is private: whoever reads the archive opens it, and every opening is logged.',
+                  "The file is private: only whoever reads the person's documents opens it.",
                 )
           }}
         </p>
@@ -126,7 +127,7 @@
         <Button :label="__('Cancel')" @click="show = false" />
         <Button
           variant="solid"
-          :label="document ? __('Save') : __('Add to the archive')"
+          :label="document ? __('Save') : __('Add to the documents')"
           :disabled="!ready"
           :loading="saving"
           @click="save"
@@ -153,7 +154,7 @@ import { computed, reactive, ref, watch } from 'vue'
 const props = defineProps({
   // the person, for a file uploaded here
   lead: { type: String, default: null },
-  // a WhatsApp message whose file goes to the archive
+  // a WhatsApp message whose file goes among the documents
   message: { type: String, default: null },
   messageFileName: { type: String, default: null },
   // what the person wrote with it, a better title than a file's name
@@ -167,8 +168,8 @@ const show = defineModel({ type: Boolean })
 const { getUser } = usersStore()
 
 const choices = createResource({
-  url: 'crm.clinica.archivio.get_choices',
-  cache: 'clinicArchiveChoices',
+  url: 'crm.documenti.api.get_choices',
+  cache: 'documentChoices',
 })
 
 const file = ref(null)
@@ -176,7 +177,7 @@ const error = ref('')
 const saving = ref(false)
 const form = reactive({
   title: '',
-  document_type: 'External report',
+  document_type: '',
   document_date: '',
   source: '',
   practitioner: '',
@@ -189,7 +190,7 @@ const dialogTitle = computed(() =>
   props.document
     ? __('Document')
     : props.message
-      ? __('Add to the clinical archive')
+      ? __('Add to the documents')
       : __('Add a document'),
 )
 const fileName = computed(
@@ -200,8 +201,19 @@ const me = computed(() => getUser().name)
 const mine = computed(
   () => choices.data?.for_me && form.practitioner === me.value,
 )
+// health data is for a practitioner: whom the desk names
+const needsPractitioner = computed(
+  () =>
+    Boolean(
+      (choices.data?.types || []).find((t) => t.value === form.document_type)
+        ?.clinical,
+    ) && !choices.data?.for_me,
+)
 const practitionerOptions = computed(() => [
-  { label: __('Choose…'), value: '' },
+  {
+    label: needsPractitioner.value ? __('Choose…') : __('Nobody in particular'),
+    value: '',
+  },
   ...(choices.data?.practitioners || []),
 ])
 const visibilityOptions = computed(() => [
@@ -215,7 +227,7 @@ const ready = computed(
   () =>
     form.title.trim() &&
     form.document_type &&
-    form.practitioner &&
+    (form.practitioner || !needsPractitioner.value) &&
     (props.document || props.message || file.value),
 )
 
@@ -232,7 +244,7 @@ function fill() {
   Object.assign(form, {
     title:
       doc?.title || props.suggestedTitle || readable(props.messageFileName),
-    document_type: doc?.document_type || 'External report',
+    document_type: doc?.document_type || choices.data?.types?.[0]?.value || '',
     document_date: doc?.document_date || '',
     source: doc?.source || '',
     practitioner:
@@ -273,16 +285,16 @@ async function save() {
   }
   try {
     const saved = props.document
-      ? await call('crm.clinica.archivio.update_document', {
+      ? await call('crm.documenti.api.update_document', {
           name: props.document.name,
           ...fields,
         })
       : props.message
-        ? await call('crm.clinica.archivio.archive_from_message', {
+        ? await call('crm.documenti.api.archive_from_message', {
             message: props.message,
             ...fields,
           })
-        : await call('crm.clinica.archivio.add_document', {
+        : await call('crm.documenti.api.add_document', {
             lead: props.lead,
             file: file.value.name,
             ...fields,

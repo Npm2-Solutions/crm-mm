@@ -1,15 +1,15 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The clinical archive: documents beside the record, read by the same rules.
+"""Health data among a person's documents (`crm.documenti`), read by the record's rules.
 
 A practitioner files a test, the front desk scans what the patient brings for a
 practitioner, a signed visit files its own report, a file received on WhatsApp
-goes to the archive and stops being public. Whom a document is for and whoever
-added it read it, the medical director reads it, the colleagues with the dossier;
-"only me" stays its practitioner's. A mistake goes the same day, later only by
-the director, with its reason in the audit log. Every listing and every download
-is in the access log.
+goes among the documents and stops being public. Whom a document is for and
+whoever added it read it, the medical director reads it, the colleagues with the
+dossier; "only me" stays its practitioner's. A mistake goes the same day, later
+only by the director, with its reason in the audit log. Every listing and every
+download is in the access log.
 """
 
 import hashlib
@@ -17,8 +17,9 @@ import hashlib
 import frappe
 from frappe.utils import add_days, now_datetime
 
-from crm.clinica import archivio, cartella
+from crm.clinica import cartella
 from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, MANAGER, SALES, RecordCase
+from crm.documenti import api as archivio
 from crm.moduli import consensi, traccia
 
 
@@ -83,7 +84,7 @@ class LAggiunta(ArchivioCase):
 		# nor the record
 		self.come(DESK)
 		visto = cartella.get_record(self.anna.name)
-		self.assertEqual((visto["records"], visto["can_read"], visto["can_archive"]), ([], False, True))
+		self.assertEqual((visto["records"], visto["can_read"]), ([], False))
 
 	def test_si_archivia_solo_un_file_appena_caricato_da_se(self):
 		di_altri = self.carica(DOC2, contenuto="altro")
@@ -106,8 +107,14 @@ class LAggiunta(ArchivioCase):
 			allegato = self.carica(user)
 			with self.assertRaises(frappe.PermissionError, msg=user):
 				archivio.add_document(self.anna.name, allegato.name, "Esami", "Test result")
-			with self.assertRaises(frappe.PermissionError, msg=user):
-				archivio.get_documents(self.anna.name)
+		self.come(SALES)
+		with self.assertRaises(frappe.PermissionError):
+			archivio.get_documents(self.anna.name)
+		# the manager reads the person's documents, never health data
+		self.archivia(DOC1)
+		self.assertFalse(self.vede(MANAGER, frappe.db.get_value(archivio.DOCTYPE, {"lead": self.anna.name})))
+		self.come(MANAGER)
+		self.assertNotIn("Test result", [t["value"] for t in archivio.get_choices()["types"]])
 
 
 class ChiLoLegge(ArchivioCase):
@@ -195,7 +202,7 @@ class IlRegistro(ArchivioCase):
 		self.come(MANAGER)
 		registro = cartella.access_log(self.anna.name)
 		del_direttore = {r.kind for r in registro if r.viewed_by == DIRECTOR}
-		self.assertEqual(del_direttore, {"archive", "file"})
+		self.assertEqual(del_direttore, {"documents", "file"})
 
 	def test_si_tengono_due_anni_anche_gli_scaricamenti(self):
 		frappe.set_user("Administrator")

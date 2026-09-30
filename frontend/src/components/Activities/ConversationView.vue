@@ -444,21 +444,21 @@
         <span class="text-p-sm text-ink-gray-6">{{ emptyText }}</span>
       </div>
     </div>
-    <!-- a file the person sent, filed in their clinical archive -->
-    <ClinicDocumentDialog
+    <!-- a file the person sent, filed among their documents -->
+    <DocumentDialog
       v-if="canArchive"
       v-model="archivingOpen"
       :message="archiving?.name"
       :message-file-name="fileNameOf(archiving)"
       :suggested-title="(archiving?.message || '').trim().slice(0, 80)"
-      @saved="toast.success(__('Added to the clinical archive'))"
+      @saved="toast.success(__('Added to the documents'))"
     />
   </div>
 </template>
 
 <script setup>
 import CallArea from '@/components/Activities/CallArea.vue'
-import ClinicDocumentDialog from '@/components/Clinic/ClinicDocumentDialog.vue'
+import DocumentDialog from '@/components/Documents/DocumentDialog.vue'
 import ChatBubble from '@/components/Activities/ChatBubble.vue'
 import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
@@ -557,8 +557,8 @@ function openOnCalendar(kind, item) {
 const { isNewestFirst } = useTimelinePreferences()
 const { getUser, puo } = usersStore()
 
-// where the clinic is on, a file received goes to the person's clinical archive
-const canArchive = computed(() => puo('clinica.archivia'))
+// a file received goes among the person's documents
+const canArchive = computed(() => puo('documenti.aggiungi'))
 const archiving = ref(null)
 const archivingOpen = computed({
   get: () => Boolean(archiving.value),

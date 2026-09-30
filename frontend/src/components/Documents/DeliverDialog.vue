@@ -1,15 +1,17 @@
 <!--
-  Giving a report to the patient: by hand, or online for 45 days.
+  Giving a document to the person (crm.documenti.consegna): by hand, or online
+  for the days chosen.
 
-  Online only with the patient's consent to online reports, and never for a
-  document marked "never online". The email carries a link and no content; the
-  code that opens it is shown here once, to give the patient another way -
-  printed or read out - so a wrong address alone opens nothing.
+  The email carries a link and no content; the code that opens it is shown here
+  once, to give the person another way - printed or read out - so a wrong
+  address alone opens nothing. A module says when one of its documents may not
+  go online, and for how long at most: the clinic's reports only with the
+  consent to online reports, never one marked "never online", 45 days at most.
 -->
 <template>
   <Dialog
     v-model="show"
-    :options="{ title: __('Give it to the patient'), size: 'lg' }"
+    :options="{ title: __('Give it to the person'), size: 'lg' }"
   >
     <template #body-content>
       <div
@@ -17,7 +19,7 @@
         class="flex flex-col items-center gap-3 py-2 text-center"
       >
         <span class="text-p-sm text-ink-gray-6">
-          {{ __('The code to open it: give it to the patient now') }}
+          {{ __('The code to open it: give it to the person now') }}
         </span>
         <span
           class="font-mono text-3xl font-semibold tracking-[0.3em] text-ink-gray-9 tabular-nums"
@@ -60,35 +62,38 @@
           <FormControl
             v-model="deliveredTo"
             :label="__('Given to')"
-            :placeholder="__('The patient, or who took it for them')"
+            :placeholder="__('The person, or who took it for them')"
           />
         </template>
 
         <template v-else>
+          <!-- why not, when it may not: the words of the module whose rule it is -->
           <div
-            v-if="!info.data.online_consent"
+            v-if="info.data.online.reason"
             class="rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
           >
-            {{
-              __(
-                'The patient has not asked for their reports online. Record their consent first, or give it by hand.',
-              )
-            }}
-          </div>
-          <div
-            v-else-if="info.data.never_online"
-            class="rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
-          >
-            {{ __('This document never goes online: give it by hand.') }}
+            {{ info.data.online.reason }}
           </div>
           <template v-else>
-            <p class="text-p-sm text-ink-gray-6">
-              {{
-                __(
-                  'Online for 45 days, opened with a code you give the patient here.',
-                )
-              }}
-            </p>
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="w-32">
+                <FormControl
+                  v-model="days"
+                  type="number"
+                  :label="__('Online for days')"
+                  :min="1"
+                  :max="info.data.online.max_days"
+                />
+              </div>
+              <p class="min-w-0 flex-1 text-p-sm text-ink-gray-6">
+                {{
+                  __(
+                    'At most {0}. It opens with a code you give the person here.',
+                    [info.data.online.max_days],
+                  )
+                }}
+              </p>
+            </div>
             <label class="flex items-start gap-2">
               <Checkbox
                 v-model="sendEmail"
@@ -152,7 +157,7 @@
           v-else-if="!given"
           variant="solid"
           :label="__('Put it online')"
-          :disabled="!info.data?.online_consent || info.data?.never_online"
+          :disabled="Boolean(info.data?.online?.reason)"
           :loading="busy"
           @click="online"
         />
@@ -186,13 +191,17 @@ const modes = [
 const how = ref('hand')
 const deliveredTo = ref('')
 const sendEmail = ref(true)
+const days = ref(null)
 const busy = ref(false)
 const error = ref('')
 const given = ref(null)
 
 const info = createResource({
-  url: 'crm.clinica.consegna.get_deliveries',
+  url: 'crm.documenti.consegna.get_deliveries',
   makeParams: () => ({ document: props.document?.name }),
+  onSuccess: (data) => {
+    days.value = data.online?.days || null
+  },
 })
 
 watch(show, (open) => {
@@ -227,7 +236,7 @@ async function run(method, args) {
   busy.value = true
   error.value = ''
   try {
-    return await call(`crm.clinica.consegna.${method}`, args)
+    return await call(`crm.documenti.consegna.${method}`, args)
   } catch (e) {
     error.value = e.messages?.join(' ') || e.message
   } finally {
@@ -250,6 +259,7 @@ async function online() {
   const done = await run('deliver_online', {
     document: props.document.name,
     send_email: sendEmail.value && info.data?.email ? 1 : 0,
+    days: days.value || null,
   })
   if (done) {
     given.value = done

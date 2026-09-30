@@ -81,12 +81,13 @@ def fonti(lead: str) -> list[dict]:
 					"text": f"{riga.get('label')}: {riga.get('value')} {riga.get('unit') or ''}".strip(),
 				}
 			)
-	from crm.clinica import archivio
+	from crm.documenti import api as documenti
 
-	for documento in archivio.get_documents(lead)["documents"][:MAX_VOCI]:
+	clinici = [d for d in documenti.get_documents(lead)["documents"] if d.get("clinical")]
+	for documento in clinici[:MAX_VOCI]:
 		voci.append(
 			{
-				"doctype": "Clinic Document",
+				"doctype": documenti.DOCTYPE,
 				"name": documento.get("name"),
 				"label": _("Document: {0}").format(documento.get("title")),
 				"text": f"{documento.get('title')} ({documento.get('document_type')}, "

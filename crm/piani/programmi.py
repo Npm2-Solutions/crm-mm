@@ -29,7 +29,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_fullname, getdate, now_datetime
 
-from crm.permissions import livelli
+from crm.permissions import livelli, sanitari
 from crm.piani import api as piani
 from crm.piani import programmi_regole as P
 
@@ -68,11 +68,11 @@ def get_permission_query_conditions(user: str | None = None) -> str:
 
 def marca(doc) -> None:
 	"""A programme carries the mark "health data" when a stage's plan does, or by
-	who wrote it (`api.sanitario`)."""
+	who wrote it (`crm.permissions.sanitari`)."""
 	piani_delle_tappe = [t.plan for t in doc.stages if t.plan]
 	doc.clinical = (
 		1
-		if piani.sanitario(doc)
+		if sanitari.per_chi_scrive(doc)
 		or (
 			piani_delle_tappe
 			and frappe.db.exists(piani.PIANO, {"name": ("in", piani_delle_tappe), "clinical": 1})
