@@ -1,4 +1,5 @@
-<!-- An appointment as the patient reads it: when, what, with whom, where. -->
+<!-- An appointment as the patient reads it: when, what - which session of a
+     cycle - with whom, where. -->
 <template>
   <div
     class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
@@ -16,7 +17,12 @@
         :label="__('Cancelled')"
       />
     </div>
-    <span class="text-p-base text-ink-gray-8">{{ appointment.service }}</span>
+    <span class="text-p-base text-ink-gray-8">
+      {{ appointment.service }}
+      <template v-if="laSeduta(appointment.session, t)">
+        · {{ laSeduta(appointment.session, t) }}
+      </template>
+    </span>
     <span v-if="appointment.staff?.length" class="text-p-sm text-ink-gray-6">
       {{ __('With {0}', [appointment.staff.join(', ')]) }}
     </span>
@@ -34,8 +40,11 @@
 </template>
 
 <script setup>
+import { laSeduta } from '@/utils/cicli'
 import { Badge } from 'frappe-ui'
 import { when } from '../dates'
 
 defineProps({ appointment: { type: Object, required: true } })
+
+const t = (text, args) => __(text, args)
 </script>
