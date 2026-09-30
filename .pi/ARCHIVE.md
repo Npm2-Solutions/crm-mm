@@ -1657,3 +1657,27 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Il registro degli accessi raggruppa per persona, minuto e tipo, e mostra cosa è stato aperto, non il titolo | Aprire la scheda scrive una riga per voce; al manager serve chi e quando, non cosa |
 | L'Access Log si tiene due anni come il View Log | Gli scaricamenti dei file sono accessi anche loro |
 | La sintesi non dà permessi a System Manager | Come la cartella: i dati clinici non sono dell'agenzia |
+
+## Fase 2, il dossier, l'oscuramento e l'apertura con motivo
+
+> **Completato** (30/09/2026). Le regole del Garante sul dossier (4/6/2015) in
+> `crm/clinica/dossier.py`: il dossier vuole il consenso e la cura, l'oscuramento
+> degli episodi, la visibilità per disciplina, l'apertura fuori équipe con un
+> motivo (`Clinic Access Grant`). `docs/gestionale-medico/README.md`, "Il
+> dossier, l'oscuramento e l'apertura con motivo".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Il dossier legge le voci degli altri solo per le persone in cura (`visible_leads`), anche nelle liste | Con il solo consenso, un operatore avrebbe elencato le cartelle di tutti i pazienti col dossier, via REST |
+| Una regola sola per la cartella e l'archivio (`dossier.legge_le_altre`, `condizione_condivisa`) | Consenso, cura, oscuramento, disciplina e "solo io" si decidono in un posto |
+| Oscura la direzione, non l'operatore, e solo un episodio firmato | Lo dice doc 30; una bozza è solo del suo autore, e la direzione non la vede |
+| Una visita si oscura con le sue integrazioni e i suoi referti | L'episodio è uno: una parte lasciata fuori lo tradirebbe |
+| Oscurato, gli altri non lo vedono affatto: né voce, né lucchetto, né fonte della sintesi | "Oscuramento dell'oscuramento": non si deve poter capire che qualcosa è stato oscurato |
+| La sintesi, per chi non può leggere la fonte, mostra l'ultimo valore da ciò che legge | Un farmaco confermato da un episodio oscurato direbbe l'episodio |
+| La disciplina è la qualifica della scheda erogatore, fissata sulla voce quando si scrive | La voce resta della disciplina di chi l'ha scritta, anche se poi cambia qualifica |
+| Fuori équipe si cerca per nome e cognome interi o per codice fiscale, al massimo 5 risultati | Chi apre deve sapere chi cerca: non è un elenco del centro da sfogliare |
+| L'apertura dura 24 ore e non cambia le regole del dossier | Rende la persona "in cura" per un giorno; senza consenso al dossier non apre le voci degli altri |
+| L'apertura, con il motivo, è nel registro degli accessi del manager | Doc 30: "e il manager lo vede" |
+| `Clinic Access Grant` non si modifica né si cancella, e non fa diventare paziente | È la traccia di un accesso, non un dato sanitario (`test_confine`) |
