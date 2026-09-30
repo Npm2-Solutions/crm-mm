@@ -118,6 +118,16 @@ CAPACITA = (
 		),
 		{"operatore": SUOI},
 	),
+	# giving a report to the patient, by hand or online (Garante, 2009)
+	(
+		Capacita(
+			"clinica.consegna",
+			PIANO,
+			clinica=True,
+			descrizione="Give a report to the patient: by hand, or online for 45 days with their consent",
+		),
+		{"operatore": SUOI, DIREZIONE: CENTRO},
+	),
 	(
 		Capacita(
 			"clinica.traccia",

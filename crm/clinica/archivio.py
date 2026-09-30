@@ -129,9 +129,18 @@ def _riga(doc) -> dict:
 		"record": doc.record,
 		"appointment": doc.appointment,
 		"notes": doc.notes,
+		"not_online": cint(doc.get("not_online")),
+		# how it was given to the patient: by hand, or online until when
+		"deliveries": _consegne(doc.name),
 		"can_edit": has_permission(doc, "write"),
 		"can_remove": has_permission(doc, "delete"),
 	}
+
+
+def _consegne(nome: str) -> list[dict]:
+	from crm.clinica import consegna
+
+	return consegna.consegne(nome)
 
 
 def _operatori() -> list[dict]:
@@ -175,6 +184,7 @@ def get_documents(lead: str) -> dict:
 		"documents": righe,
 		"can_add": livelli.puo("clinica.archivia"),
 		"can_obscure": livelli.puo("clinica.oscura"),
+		"can_deliver": livelli.puo("clinica.consegna"),
 	}
 
 
@@ -200,6 +210,7 @@ def _campi(
 	practitioner: str | None,
 	visibility: str | None,
 	notes: str | None,
+	not_online: int | None = None,
 ) -> dict:
 	titolo = (title or "").strip()
 	if not titolo:
@@ -222,6 +233,8 @@ def _campi(
 		"practitioner": practitioner,
 		"visibility": visibility if proprio and visibility in dossier.VISIBILITA else TUTTI,
 		"notes": (notes or "").strip() or None,
+		# genetic tests, HIV, or what the patient left out: given by hand only
+		"not_online": cint(not_online),
 	}
 
 
@@ -259,6 +272,7 @@ def add_document(
 	practitioner: str | None = None,
 	visibility: str | None = None,
 	notes: str | None = None,
+	not_online: int | None = None,
 	appointment: str | None = None,
 ) -> dict:
 	"""A file the session uploaded, private and attached to nothing yet, filed in
@@ -268,7 +282,7 @@ def add_document(
 	allegato = frappe.get_doc("File", file)
 	if allegato.owner != frappe.session.user or allegato.attached_to_doctype or not cint(allegato.is_private):
 		frappe.throw(_("Upload the file again: it has to be private, and just uploaded by you"))
-	campi = _campi(title, document_type, document_date, source, practitioner, visibility, notes)
+	campi = _campi(title, document_type, document_date, source, practitioner, visibility, notes, not_online)
 	return _archivia(lead, allegato, campi, appointment)
 
 
@@ -282,11 +296,14 @@ def update_document(
 	practitioner: str | None = None,
 	visibility: str | None = None,
 	notes: str | None = None,
+	not_online: int | None = None,
 ) -> dict:
 	"""What a document is, when, where it comes from, whom it is for: the file stays."""
 	doc = frappe.get_doc(DOCTYPE, name)
 	doc.check_permission("write")
-	doc.update(_campi(title, document_type, document_date, source, practitioner, visibility, notes))
+	doc.update(
+		_campi(title, document_type, document_date, source, practitioner, visibility, notes, not_online)
+	)
 	doc.save()
 	return _riga(doc)
 
@@ -381,6 +398,7 @@ def archive_from_message(
 	practitioner: str | None = None,
 	visibility: str | None = None,
 	notes: str | None = None,
+	not_online: int | None = None,
 ) -> dict:
 	"""A file received in a conversation, filed in the archive of the person who sent it."""
 	livelli.verifica("clinica.archivia")
@@ -392,7 +410,7 @@ def archive_from_message(
 	if not lead:
 		frappe.throw(_("This conversation is not with a person of the CRM"))
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
-	campi = _campi(title, document_type, document_date, source, practitioner, visibility, notes)
+	campi = _campi(title, document_type, document_date, source, practitioner, visibility, notes, not_online)
 	originale = _file_del_messaggio(messaggio)
 	if not originale or originale.is_remote_file:
 		frappe.throw(_("This message has no file kept by the CRM"))

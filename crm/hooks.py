@@ -92,6 +92,8 @@ website_route_rules = [
 	{"from_route": "/whatsapp-connect", "to_route": "whatsapp_connect"},
 	# forms to fill and sign at home, or on the desk's tablet: /modulo/<link>
 	{"from_route": "/modulo/<token>", "to_route": "modulo"},
+	# a report put online, opened with the code the centre gave: /referto/<link>
+	{"from_route": "/referto/<token>", "to_route": "referto"},
 ]
 
 # Generators

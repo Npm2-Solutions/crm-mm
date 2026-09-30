@@ -28,8 +28,8 @@ VIETATO = "crm.clinica"
 AMMESSI = {CRM / "registrazione.py"}
 #: The patient card is who is a patient, not what is wrong with them; the settings
 #: say which pipelines are the centre's; an opening out of the care team says who
-#: opened a record and why.
-NON_CLINICI = {"clinic_patient", "clinic_settings", "clinic_access_grant"}
+#: opened a record and why; a delivery, to whom a report was given.
+NON_CLINICI = {"clinic_patient", "clinic_settings", "clinic_access_grant", "clinic_report_delivery"}
 
 
 def _moduli_importati(sorgente: str) -> set[str]:
