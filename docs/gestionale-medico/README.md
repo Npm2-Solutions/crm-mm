@@ -1611,7 +1611,41 @@ accanto al "Modulo" che compila la persona.
 - **La clinica non registra più un suo uso**: una patch fa delle "Clinical sheet" di
   prima delle "Sheet" col marchio, nei modelli e nelle versioni.
 
-I moduli del sito, la seconda metà della riga, vengono dopo.
+### I moduli del sito sono modelli: un solo builder
+
+Fatto il 30/09/2026, la seconda metà dell'ottava riga dell'[ordine](./design.md#lordine).
+Il modulo "Richiedi informazioni" di un centro, il "Contattaci" di una palestra, la
+newsletter: prima erano Web Form del framework, con un builder a parte e i campi
+del lead come domande. Ora sono modelli dell'uso "Sito" (`crm/moduli/sito.py`), fatti
+nello stesso builder dei moduli e delle schede.
+
+- **Chi lo manda è la persona, trovata o fatta.** Si cerca per email o cellulare,
+  come fa una prenotazione (`find_or_create_person`): Giulia che torna è Giulia, e un
+  genitore che scrive per il figlio gli fa una scheda sua, collegata a lui. Le domande
+  segnate con un campo della persona (nome e cognome, email, cellulare, azienda,
+  ruolo) riempiono quello che il centro non sapeva ancora, e non riscrivono mai
+  quello che sa.
+- **Le risposte restano**, come un modulo della persona sul canale "Sito", con il
+  suo PDF (fatto dopo, in un job) e il registro degli eventi ("Inviato dal sito").
+  I consensi chiesti vanno nel registro come dati sul modulo web.
+- **Apre la trattativa** (`open_deal_for_inquiry`) e le automazioni sentono "Lead
+  Form Submitted" col modello; la visita che l'ha portato lì resta nel percorso.
+- **Tre posti, un solo disegno**: la sua pagina (`/crm-form/<indirizzo>`, con il
+  marchio), un altro sito (un iframe che cresce col modulo, solo sui siti elencati)
+  e una pagina del sito del centro (il blocco "Modulo"). Le domande le disegna
+  `crm/public/js/moduli_campi.js`, lo stesso di `/modulo`, sul motore del CRM: le
+  regole sono quelle del server.
+- **Cosa non fa**: non si firma, non riceve file, non si manda e non si deve, non
+  registra dati sanitari. Chiede almeno l'email o il cellulare: senza, nessuno
+  potrebbe rispondere. Una casella che nessuno vede ferma i robot.
+- **Chi lo costruisce**: il marketing (`moduli_lead.gestisci`) vede e fa solo i
+  moduli del sito; il centro (`moduli.configura`) i suoi moduli e le schede; il
+  manager tutti. Una bozza si prova sulla sua pagina, e non resta niente.
+- **I vecchi moduli**: la patch `web_forms_are_templates` fa di ogni Web Form del
+  CRM un modello allo stesso indirizzo, pubblicato se lo era e se può esserlo; toglie
+  i Web Form, i loro campi personalizzati e il `select` degli ospiti sugli elenchi.
+  Quello che non si porta (una condizione complicata, un'ora del giorno) è scritto
+  nel log.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

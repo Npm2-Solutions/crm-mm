@@ -29,7 +29,7 @@ calendario, form, attribuzione dei lead e automazioni sono **lo stesso dato**.
 
 | Pezzo | Dove | Cosa dà |
 |---|---|---|
-| **Form builder + form pubblici** | `crm/api/form.py`, `crm/www/crm_form.{py,html}`, `Settings → Forms` | costruzione visuale del form, target `CRM Lead`/`CRM Deal`, layout a sezioni/colonne, logica condizionale, publish/draft, **snippet iframe + allow-list di domini con CSP `frame-ancestors`** |
+| **Form builder + form pubblici** | `crm/moduli/sito.py`, `crm/www/crm_form.{py,html}`, `Settings → Forms` | *dal 30/09/2026* un modello dell'uso "Sito" nel builder dei moduli: domande con condizioni, versioni, la persona trovata o fatta, **snippet iframe + allow-list di domini con CSP `frame-ancestors`** (prima era un Web Form con `crm/api/form.py`) |
 | **Prenotazione pubblica** | `crm/www/book.{py,html}`, `crm/api/booking.py` | pagina per calendario, indice `/book`, API guest con `rate_limit`, reschedule/cancel via token |
 | **Token grafici espresso** | blocco `:root` in `crm_form.html` e `book.html` | il tema delle pagine pubbliche esiste già, in due copie |
 | **Catalogo** | `CRM Service`, `CRM Product`, `CRM Booking Calendar`, `CRM Price List` | `CRM Product` ha già immagine e descrizione rich-text |
@@ -50,8 +50,10 @@ blocchi che puntano a `Web Template` tipizzati
 ([doc](https://docs.frappe.io/erpnext/web-page-builder)). Esiste, ma §4.1 mostra che
 Frappe stessa non lo usa.
 
-**Web Form nativi** — restano il motore di submission; è già la scelta di questo repo
-(i form CRM usano `Web Form` come storage con `crm_published`).
+**Web Form nativi** — erano il motore di submission (i form CRM usavano `Web Form`
+come storage con `crm_published`). *Dal 30/09/2026 non più*: un campo per ogni campo del
+DocType non basta per le domande di un centro, e i moduli del sito sono modelli
+(`crm/moduli/sito.py`, [design](../gestionale-medico/design.md#il-motore-dei-modelli)).
 
 ## 4. Come lo fa Frappe — letto nel codice di Builder
 
