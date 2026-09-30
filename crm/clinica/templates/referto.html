@@ -39,6 +39,7 @@
 		<div>
 			<h1>{{ titolo }}</h1>
 			<div class="sommesso">{{ data }}{% if centro %} · {{ centro }}{% endif %}</div>
+			{% if integra %}<div class="sommesso">{{ _("Addendum to the visit {0}").format(integra) }}</div>{% endif %}
 		</div>
 		<div class="sommesso" style="text-align: right">
 			<div><strong>{{ persona }}</strong></div>
@@ -82,11 +83,13 @@
 
 	<div class="firma">
 		<div><strong>{{ _("Signed by {0} on {1}").format(medico, firmato_il) }}</strong></div>
+		{% if versione %}
 		<table style="margin-top: 6pt">
 			<tr><td>{{ _("Sheet") }}</td><td>{{ versione.title }} · {{ _("version {0}").format(versione.version) }}</td></tr>
 			<tr><td>{{ _("What it asked (SHA-256)") }}</td><td class="impronta">{{ versione.schema_hash }}</td></tr>
 			<tr><td>{{ _("The answers (SHA-256)") }}</td><td class="impronta">{{ doc.answers_hash }}</td></tr>
 		</table>
+		{% endif %}
 		<p class="sommesso">{{ _("This report was generated once, when the visit was signed. It is added to with addenda, never rewritten.") }}</p>
 	</div>
 </body>

@@ -1,15 +1,15 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-"""The report of a visit: the clinical sheet as signed, made once, and kept.
+"""The report of a visit: the visit as signed, made once, and kept.
 
-A visit written on a clinical sheet (a template whose use is "clinical sheet")
-has its answers checked by the same engine as every form, and, when the
-practitioner signs it, becomes a PDF/A: the sheet in words, the notes, who
-signed and when, the version and the hashes of what it asked and of what was
-answered. Like the signed form's PDF, it is made once; the record keeps its
-SHA-256. What is signed is added to, never rewritten: an addendum is a record
-of its own.
+When the practitioner signs a visit it becomes a PDF/A: what was written and,
+for a visit on a clinical sheet (a template whose use is "clinical sheet",
+checked by the same engine as every form), the sheet in words with the version
+and the hashes of what it asked and of what was answered; who signed and when.
+Like the signed form's PDF, it is made once; the record keeps its SHA-256, and
+the archive files it (`crm.clinica.archivio.dal_referto`). What is signed is
+added to, never rewritten: an addendum is a visit of its own, with its report.
 """
 
 from __future__ import annotations
@@ -26,10 +26,13 @@ from crm.moduli import schema as S
 MODELLO_HTML = "crm/clinica/templates/referto.html"
 
 
-def contesto(doc, versione) -> dict:
+def contesto(doc, versione=None) -> dict:
+	"""``versione`` is the clinical sheet's, or None for a visit written freely."""
 	from crm.moduli import pdf
 
-	schema = json.loads(versione.schema) if isinstance(versione.schema, str) else versione.schema
+	schema = {"sections": []}
+	if versione:
+		schema = json.loads(versione.schema) if isinstance(versione.schema, str) else versione.schema
 	risposte = json.loads(doc.answers or "{}") if isinstance(doc.answers, str) else (doc.answers or {})
 	stato = S.valuta(schema, risposte)
 	avvisi = {avviso["field"]: avviso["message"] for avviso in stato["stops"]}
@@ -69,7 +72,9 @@ def contesto(doc, versione) -> dict:
 	return {
 		"doc": doc,
 		"versione": versione,
-		"titolo": doc.title or versione.title,
+		"titolo": doc.title or (versione.title if versione else _("Visit")),
+		# an addendum says which visit it adds to
+		"integra": _integra(doc),
 		"lingua": (frappe.local.lang or "it")[:2],
 		"centro": frappe.db.get_single_value("FCRM Settings", "brand_name"),
 		"persona": doc.lead_name or frappe.db.get_value("CRM Lead", doc.lead, "lead_name"),
@@ -84,17 +89,26 @@ def contesto(doc, versione) -> dict:
 	}
 
 
+def _integra(doc) -> str | None:
+	if not doc.get("addendum_to"):
+		return None
+	originale = frappe.db.get_value("Clinic Record", doc.addendum_to, ["title", "record_date"], as_dict=True)
+	if not originale:
+		return None
+	return " · ".join(filter(None, [originale.title, format_datetime(originale.record_date)]))
+
+
 def _note(contenuto: str) -> dict:
 	if re.search(r"<[a-zA-Z/][^>]*>", contenuto):
 		return {"note_html": frappe.utils.sanitize_html(contenuto), "note": None}
 	return {"note_html": None, "note": contenuto.strip()}
 
 
-def html(doc, versione) -> str:
+def html(doc, versione=None) -> str:
 	return frappe.render_template(MODELLO_HTML, contesto(doc, versione))
 
 
-def rendi(doc, versione) -> bytes:
+def rendi(doc, versione=None) -> bytes:
 	from crm.moduli import pdf
 
 	return pdf.pdf_da_html(html(doc, versione))
@@ -105,15 +119,21 @@ def genera_e_allega(doc) -> dict:
 	that cannot be made does not undo the signature: the log says so."""
 	from crm.invoicing.engine import pdfa
 
-	if doc.get("pdf_file") or not doc.get("template_version"):
+	if doc.get("pdf_file") or doc.get("kind") != "Visit":
 		return {"skipped": True}
-	versione = frappe.get_doc("CRM Form Template Version", doc.template_version)
+	versione = (
+		frappe.get_doc("CRM Form Template Version", doc.template_version)
+		if doc.get("template_version")
+		else None
+	)
 	try:
 		reso = rendi(doc, versione)
 	except Exception:
 		frappe.log_error(title=f"Clinical report {doc.name}", message=frappe.get_traceback())
 		return {"skipped": True}
-	risultato = pdfa.converti(reso, titolo=doc.title or doc.name, data_documento=getdate(doc.signed_on))
+	risultato = pdfa.converti(
+		reso, titolo=doc.title or _("Visit") + f" {doc.name}", data_documento=getdate(doc.signed_on)
+	)
 	allegato = frappe.get_doc(
 		{
 			"doctype": "File",

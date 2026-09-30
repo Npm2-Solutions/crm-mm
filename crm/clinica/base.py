@@ -18,6 +18,10 @@ from crm.clinica import paziente, regole
 
 
 class DocumentoClinico(Document):
+	#: Written for an appointment, it says the person came. A document of the
+	#: archive does not: a test can arrive before the visit it is for.
+	dice_che_e_venuto = True
+
 	def after_insert(self):
 		paziente.assicura_paziente(
 			self.get("lead"),
@@ -26,7 +30,7 @@ class DocumentoClinico(Document):
 			da=self.get("practitioner") or frappe.session.user,
 		)
 		# written for an appointment: the person came, and the appointment closes
-		if self.get("appointment"):
+		if self.get("appointment") and self.dice_che_e_venuto:
 			from crm.scheduling import esiti
 
 			esiti.presente(self.appointment, self.get("lead"))
