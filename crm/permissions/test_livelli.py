@@ -318,6 +318,23 @@ class TestPiano(RegistroCase):
 			self.assertNotIn("nuovo.usa", calcola([MAN]))
 			self.assertIn("nuovo.usa", calcola([MAN], moduli={"nuovo": ATTIVO}))
 
+	def test_un_modulo_ne_comprende_un_altro(self):
+		"""The clinic comprises the client area: on with it, whatever the plan says
+		of the area; the better of the two states wins."""
+		with registro_isolato(vuoto=False):
+			livelli.registra_modulo_piano(livelli.ModuloPiano("piccolo", "Small", predefinito=False))
+			livelli.registra_modulo_piano(
+				livelli.ModuloPiano("grande", "Big", predefinito=False, comprende=("piccolo",))
+			)
+			livelli.registra_capacita(Capacita("piccolo.usa", piano="piccolo"), {MAN: CENTRO})
+			self.assertNotIn("piccolo.usa", calcola([MAN]))
+			self.assertIn("piccolo.usa", calcola([MAN], moduli={"grande": ATTIVO}))
+			self.assertIn("piccolo.usa", calcola([MAN], moduli={"grande": PROVA, "piccolo": SPENTO}))
+			self.assertEqual(livelli.stato_modulo("piccolo", {"grande": SOLA_LETTURA}), SOLA_LETTURA)
+			self.assertEqual(livelli.stato_modulo("piccolo", {"grande": SOLA_LETTURA, "piccolo": ATTIVO}), ATTIVO)
+			# comprising goes one way: the small one does not switch the big one on
+			self.assertEqual(livelli.stato_modulo("grande", {"piccolo": ATTIVO}), SPENTO)
+
 	def test_il_piano_vale_anche_per_l_agenzia(self):
 		c = calcola([], agenzia=True, moduli={catalogo.MARKETING: SPENTO})
 		self.assertNotIn("automazioni.gestisci", c)
