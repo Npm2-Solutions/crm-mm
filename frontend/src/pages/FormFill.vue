@@ -20,7 +20,9 @@
             signed
               ? isSheet
                 ? __('Completed')
-                : __('Signed')
+                : fromTheSite
+                  ? __('Sent')
+                  : __('Signed')
               : __('To finish')
           "
           :theme="signed ? 'green' : 'orange'"
@@ -54,10 +56,13 @@
           <template v-else-if="data.channel === 'Tablet'">
             · {{ __('on the tablet') }}</template
           >
+          <template v-else-if="fromTheSite">
+            · {{ __('from the website') }}</template
+          >
           <template v-if="signed">
             ·
             {{
-              __('signed {0}', [
+              __(fromTheSite ? 'sent {0}' : 'signed {0}', [
                 formatDate(data.signed_on, 'D MMM YYYY, HH:mm'),
               ])
             }}
@@ -229,7 +234,13 @@
         <dl
           class="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-sm max-md:grid-cols-1"
         >
-          <dt class="text-ink-gray-5">{{ __('Who signed, known by') }}</dt>
+          <dt class="text-ink-gray-5">
+            {{
+              fromTheSite
+                ? __('Who sent it, known by')
+                : __('Who signed, known by')
+            }}
+          </dt>
           <dd class="text-ink-gray-7">{{ data.recognised }}</dd>
           <dt class="text-ink-gray-5">{{ __('What it asked (SHA-256)') }}</dt>
           <dd class="break-all font-mono text-xs text-ink-gray-7">
@@ -335,6 +346,8 @@ const providerLinks = ref([])
 const signed = computed(() => data.value?.docstatus === 1)
 // the operator's sheet, written at the desk: completed, not signed by the person
 const isSheet = computed(() => data.value?.use === 'Sheet')
+// sent by anybody from the centre's website: nobody signed it
+const fromTheSite = computed(() => data.value?.channel === 'Website')
 const signatureFields = computed(() =>
   fieldsOf(data.value?.schema).filter((field) => field.type === 'signature'),
 )
@@ -439,6 +452,7 @@ const EVENTS = {
   answers_saved: __('Answers saved'),
   filled: __('Filled by the person'),
   signed: __('Signed'),
+  sent_from_website: __('Sent from the website'),
   pdf_generated: __('PDF made'),
   pdf_failed: __('PDF not made'),
   sealed: __('Sealed by the centre'),

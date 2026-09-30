@@ -9,20 +9,17 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Forms to sign') }}
+          {{ heading.title }}
         </h2>
-        <p class="text-p-base text-ink-gray-6">
-          {{
-            __(
-              'Privacy notices, consents, questionnaires: what people fill and sign. You work on a draft; people fill the published version, which never changes, so what someone signed can always be shown word for word.',
-            )
-          }}
-        </p>
+        <p class="text-p-base text-ink-gray-6">{{ heading.description }}</p>
       </div>
       <div class="flex shrink-0 gap-2">
         <!-- the assistant reads the centre's own paper form -->
         <Button
-          v-if="assistant.data?.functions?.form_from_paper"
+          v-if="
+            puo('moduli.configura') &&
+            assistant.data?.functions?.form_from_paper
+          "
           :label="__('From a paper form')"
           icon-left="lucide-sparkles"
           @click="paper = true"
@@ -37,6 +34,11 @@
     </div>
     <PaperFormDialog v-model="paper" @created="(name) => $emit('open', name)" />
 
+    <!-- one list for every use: the filter shows one at a time -->
+    <div v-if="filters.length > 2" class="px-2">
+      <TabButtons v-model="filter" :buttons="filters" />
+    </div>
+
     <div class="flex h-full flex-col overflow-y-auto">
       <div
         v-if="templates.loading && !templates.data"
@@ -45,13 +47,9 @@
         <LoadingIndicator class="w-4" />
       </div>
       <EmptyState
-        v-else-if="!templates.data?.length"
-        :title="__('No forms to sign yet')"
-        :description="
-          __(
-            'Start from a privacy notice, a first visit history or an informed consent.',
-          )
-        "
+        v-else-if="!shown.length"
+        :title="__('No forms yet')"
+        :description="heading.empty"
         :icon="h(LucideFileSignature)"
       />
       <div v-else class="w-full">
@@ -62,7 +60,7 @@
           <div class="w-5/12">{{ __('Status') }}</div>
         </div>
         <div class="mx-2 h-px border-t border-outline-elevation-2" />
-        <template v-for="(template, i) in templates.data" :key="template.name">
+        <template v-for="(template, i) in shown" :key="template.name">
           <div
             class="flex w-full items-center gap-3 rounded px-2 py-3 hover:bg-surface-gray-2 max-md:flex-wrap"
           >
@@ -80,6 +78,14 @@
                   v-if="template.use === 'Sheet'"
                   :label="__('Sheet')"
                   theme="gray"
+                  variant="subtle"
+                  size="sm"
+                />
+                <!-- filled by anybody on the centre's website -->
+                <Badge
+                  v-else-if="template.use === 'Website'"
+                  :label="__('Website')"
+                  theme="blue"
                   variant="subtle"
                   size="sm"
                 />
@@ -117,29 +123,38 @@
               </Dropdown>
             </div>
           </div>
-          <hr v-if="templates.data.length !== i + 1" class="mx-2" />
+          <hr v-if="shown.length !== i + 1" class="mx-2" />
         </template>
       </div>
     </div>
   </div>
 
-  <Dialog
-    v-model="showCreate"
-    :options="{ title: __('New form to sign'), size: 'xl' }"
-  >
+  <Dialog v-model="showCreate" :options="{ title: __('New form'), size: 'xl' }">
     <template #body-content>
       <div class="flex flex-col gap-4">
+        <FormControl
+          v-if="uses.data?.length > 1"
+          v-model="draft.use"
+          type="select"
+          :label="__('Use')"
+          :options="uses.data"
+          :description="useOf(draft.use)?.description"
+        />
         <FormControl
           v-model="draft.title"
           type="text"
           :label="__('Title')"
-          :placeholder="__('Privacy notice')"
+          :placeholder="
+            draft.use === 'Website'
+              ? __('Request information')
+              : __('Privacy notice')
+          "
         />
         <div class="flex flex-col gap-1.5">
           <span class="text-sm text-ink-gray-5">{{ __('Start from') }}</span>
           <div class="grid grid-cols-2 gap-2 max-md:grid-cols-1">
             <button
-              v-for="starter in starters"
+              v-for="starter in startersFor(draft.use)"
               :key="starter.key"
               type="button"
               class="flex min-w-0 flex-col gap-0.5 rounded-lg border px-3 py-2.5 text-left"
@@ -179,7 +194,8 @@
 
 <script setup>
 import { STARTERS } from '@/utils/moduliStarters'
-import { formatDate } from '@/utils'
+import { copyToClipboard, formatDate } from '@/utils'
+import { usersStore } from '@/stores/users'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import PaperFormDialog from '@/components/Settings/Forms/PaperFormDialog.vue'
 import LucideFileSignature from '~icons/lucide/file-signature'
@@ -191,13 +207,16 @@ import {
   ErrorMessage,
   FormControl,
   LoadingIndicator,
+  TabButtons,
   call,
   createResource,
   toast,
 } from 'frappe-ui'
-import { h, reactive, ref } from 'vue'
+import { computed, h, reactive, ref, watch } from 'vue'
 
 const emit = defineEmits(['open'])
+
+const { puo } = usersStore()
 
 const paper = ref(false)
 const assistant = createResource({
@@ -212,6 +231,61 @@ const templates = createResource({
 
 defineExpose({ reload: () => templates.reload() })
 
+// what a new template may be, for this session: the centre's, the website's, both
+const uses = createResource({
+  url: 'crm.moduli.modelli.get_uses',
+  auto: true,
+})
+const useOf = (value) => (uses.data || []).find((use) => use.value === value)
+
+const heading = computed(() => {
+  const centre = puo('moduli.configura')
+  if (!centre) {
+    return {
+      title: __('Forms on the website'),
+      description: __(
+        "On their own page, in another site or in a page of the centre's: whoever sends one is found by their email or mobile, or made, and their deal opens.",
+      ),
+      empty: __('Start from a contact request or a newsletter sign-up.'),
+    }
+  }
+  return {
+    title: __('Forms'),
+    description: puo('moduli_lead.gestisci')
+      ? __(
+          'What people fill and sign, the sheets the operator writes, the forms on the website. You work on a draft; people fill the published version, which never changes, so what was filled can always be shown word for word.',
+        )
+      : __(
+          'What people fill and sign, and the sheets the operator writes. You work on a draft; people fill the published version, which never changes, so what was filled can always be shown word for word.',
+        ),
+    empty: __(
+      'Start from a privacy notice, a first visit history or an informed consent.',
+    ),
+  }
+})
+
+const USE_FILTERS = {
+  Form: () => __('To fill and sign'),
+  Sheet: () => __('Sheets'),
+  Website: () => __('On the website'),
+}
+const filter = ref('all')
+const filters = computed(() => {
+  const present = [...new Set((templates.data || []).map((t) => t.use))]
+  return [
+    { label: __('All'), value: 'all' },
+    ...present.map((use) => ({
+      label: USE_FILTERS[use]?.() || useOf(use)?.label || use,
+      value: use,
+    })),
+  ]
+})
+const shown = computed(() =>
+  (templates.data || []).filter(
+    (template) => filter.value === 'all' || template.use === filter.value,
+  ),
+)
+
 const starters = [
   {
     key: 'blank',
@@ -225,6 +299,11 @@ const starters = [
     description: __(starter.description),
   })),
 ]
+// a blank one for every use; the others for their own
+const startersFor = (use) =>
+  starters.filter(
+    (starter) => starter.key === 'blank' || (starter.use || 'Form') === use,
+  )
 
 function summary(template) {
   const parts = [
@@ -232,6 +311,7 @@ function summary(template) {
       ? __('1 question')
       : __('{0} questions', [template.questions]),
   ]
+  if (template.route) parts.push(`/crm-form/${template.route}`)
   if (template.specialty) parts.push(template.specialty)
   if (template.published_on) {
     parts.push(
@@ -259,11 +339,23 @@ function badges(template) {
 }
 
 function rowOptions(template) {
+  // a form of the website, published: its page, and its link to give
+  const online = template.url && template.current_version && template.enabled
   return [
     {
       label: __('Edit'),
       icon: 'lucide-pencil',
       onClick: () => emit('open', template.name),
+    },
+    online && {
+      label: __('Open the page'),
+      icon: 'lucide-external-link',
+      onClick: () => window.open(template.url, '_blank'),
+    },
+    online && {
+      label: __('Copy the link'),
+      icon: 'lucide-link',
+      onClick: () => copyToClipboard(template.url),
     },
     {
       label: __('Duplicate'),
@@ -306,12 +398,25 @@ async function run(method, template, done) {
 
 const showCreate = ref(false)
 const creating = ref(false)
-const draft = reactive({ title: '', starter: 'blank', error: '' })
+const draft = reactive({ title: '', use: 'Form', starter: 'blank', error: '' })
 
 function openCreate() {
-  Object.assign(draft, { title: '', starter: 'blank', error: '' })
+  // the filter says what is being made, when it names one of the session's uses
+  const first = uses.data?.[0]?.value || 'Form'
+  const use = useOf(filter.value) ? filter.value : first
+  Object.assign(draft, { title: '', use, starter: 'blank', error: '' })
   showCreate.value = true
 }
+
+// another use, another set of starters: a form of the desk is not a website's
+watch(
+  () => draft.use,
+  (use) => {
+    if (!startersFor(use).some((s) => s.key === draft.starter)) {
+      pickStarter(starters[0])
+    }
+  },
+)
 
 function pickStarter(starter) {
   const previous = starters.find((s) => s.key === draft.starter)
@@ -329,6 +434,7 @@ async function create() {
     const starter = starters.find((s) => s.key === draft.starter) || starters[0]
     const saved = await call('crm.moduli.modelli.save_template', {
       title: draft.title.trim(),
+      use: draft.use,
       schema: JSON.stringify(starter.schema()),
     })
     showCreate.value = false

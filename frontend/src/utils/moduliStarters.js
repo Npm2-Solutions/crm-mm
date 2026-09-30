@@ -1,7 +1,9 @@
 /**
  * Forms to start from: the ones every centre needs (docs/gestionale-medico,
  * requisiti §4). The words are placeholders: the centre's own texts are checked
- * by whoever answers for privacy there before a version is published.
+ * by whoever answers for privacy there before a version is published. ``use`` is
+ * the kind of template each one starts: a form of the desk (the default) or one
+ * of the website, whose name, email and mobile find the person.
  */
 
 const on = (field, operator, value = '') => [[{ field, operator, value }]]
@@ -289,5 +291,90 @@ export const STARTERS = [
         ],
       }
     },
+  },
+  {
+    key: 'contact',
+    use: 'Website',
+    title: 'Contact request',
+    description: 'Name, email, mobile, the request and the news',
+    schema: () => ({
+      sections: [
+        {
+          id: 'contact',
+          title: '',
+          fields: [
+            {
+              id: 'name',
+              type: 'text',
+              label: __('Name and surname'),
+              person: 'full_name',
+              required: true,
+            },
+            {
+              id: 'email',
+              type: 'text',
+              label: __('Email'),
+              person: 'email',
+              required: true,
+            },
+            {
+              id: 'mobile',
+              type: 'text',
+              label: __('Mobile'),
+              person: 'mobile_no',
+            },
+            {
+              id: 'request',
+              type: 'text',
+              label: __('How can we help you?'),
+              multiline: true,
+              required: true,
+            },
+            {
+              id: 'marketing',
+              type: 'consent',
+              label: __('News, offers and recalls'),
+              consent_type: 'marketing',
+            },
+          ],
+        },
+      ],
+    }),
+  },
+  {
+    key: 'newsletter',
+    use: 'Website',
+    title: 'News by email',
+    description: 'The name, the email and the consent to news',
+    schema: () => ({
+      sections: [
+        {
+          id: 'news',
+          title: '',
+          fields: [
+            {
+              id: 'name',
+              type: 'text',
+              label: __('First name'),
+              person: 'first_name',
+            },
+            {
+              id: 'email',
+              type: 'text',
+              label: __('Email'),
+              person: 'email',
+              required: true,
+            },
+            {
+              id: 'marketing',
+              type: 'consent',
+              label: __('News, offers and recalls'),
+              consent_type: 'marketing',
+              must_accept: true,
+            },
+          ],
+        },
+      ],
+    }),
   },
 ]
