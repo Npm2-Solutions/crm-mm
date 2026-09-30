@@ -1410,6 +1410,32 @@ parla di sintomi passa a una persona o indica il 112".
 
 Con questa parte la fase 4 è completa.
 
+### L'area passa al CRM, e la clinica la trasforma
+
+Fatto il 30/09/2026, come dice la [decisione 5](#decisione-5--il-motore-nel-crm-la-clinica-aggiunge-le-sue-regole).
+L'area del paziente era della clinica; ora è l'Area clienti del CRM (`crm/area`),
+un modulo del piano che la clinica comprende. Un centro estetico o una palestra la
+danno ai loro clienti, un centro medico ai suoi pazienti.
+
+- **Cosa è passato**: la porta col codice e le passkey, gli appuntamenti con i cicli,
+  le fatture, "Prepara l'appuntamento", la bacheca dei messaggi, la chat con le sue
+  regole di sicurezza, gli avvisi su WhatsApp e SMS. I DocType hanno preso i nomi
+  del CRM (`CRM Area Access`, `CRM Area Passkey`, `CRM Area Notice`,
+  `CRM Area Message`, `CRM Area Settings`) con una patch che li rinomina: i dati
+  restano dove sono. Il ruolo di chi entra è "Client Area User".
+- **Cosa aggiunge la clinica**: i documenti dati online e i piani, come posti
+  dell'area (`crm.area.sezioni`); i messaggi di cura, scritti dal professionista e
+  letti come una visita (`messaggi.registra_tipo`); le sue parole.
+- **I verticali** (`crm/verticali.py`): un modulo che fa del CRM il gestionale di un
+  mestiere registra le sue parole sopra quelle del CRM, e i posti della base che
+  nasconde perché mostra i suoi. Con la clinica accesa DottorCloud e l'area dicono
+  "Area pazienti", "Prepara la visita", "pazienti"; senza, "Area clienti" e
+  "clienti". Il marchio del verticale (nome, logo, colori, favicon) è la PR
+  successiva.
+- **Sulla pagina della persona** l'area ha la sua scheda, "Area clienti" o "Area
+  pazienti": chi entra e la bacheca. Nella scheda Clinica restano la cartella e
+  quello che è solo medico.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
