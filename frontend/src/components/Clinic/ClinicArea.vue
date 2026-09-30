@@ -55,6 +55,13 @@
     <!-- allergies, medications, parameters: what a practitioner confirmed -->
     <ClinicSummary v-if="record.data?.can_read" ref="summaryRef" :lead="lead" />
 
+    <!-- reports, tests, images: what the patient brings, what the visits made -->
+    <ClinicArchive
+      v-if="record.data?.can_read || record.data?.can_archive"
+      ref="archiveRef"
+      :lead="lead"
+    />
+
     <!-- writing: a visit or a note, for the care team or for oneself -->
     <section
       v-if="composer.open"
@@ -123,15 +130,20 @@
       </p>
     </section>
 
-    <!-- the manager: who opened the record, never what it says -->
+    <!-- the manager: who opened the record, never what it says; the desk files
+         what the patient brings, and reads no record -->
     <div
       v-if="record.data && !record.data.can_read"
       class="rounded-lg border border-dashed border-outline-gray-2 px-4 py-8 text-center text-p-base text-ink-gray-5"
     >
       {{
-        __(
-          'You see who opened this record and when, not what it says: that is for the care team.',
-        )
+        record.data.can_see_log
+          ? __(
+              'You see who opened this record and when, not what it says: that is for the care team.',
+            )
+          : __(
+              'The visits are for the care team. Here you file what the patient brings, for the practitioner it is for.',
+            )
       }}
     </div>
     <div
@@ -297,7 +309,7 @@
       <p class="mb-3 text-p-sm text-ink-gray-6">
         {{
           __(
-            'Every reading of this record from the CRM: who and when, not what they read. Kept two years.',
+            'Every reading of this record and its archive from the CRM, and every file downloaded: who and when, not what they read. Kept two years.',
           )
         }}
       </p>
@@ -313,8 +325,13 @@
           :key="i"
           class="flex items-center justify-between gap-3 border-b border-outline-gray-1 py-2 text-p-sm last:border-0"
         >
-          <span class="min-w-0 truncate text-ink-gray-8">
-            {{ row.viewed_by_name || row.viewed_by }}
+          <span class="flex min-w-0 flex-col">
+            <span class="truncate text-ink-gray-8">
+              {{ row.viewed_by_name || row.viewed_by }}
+            </span>
+            <span class="text-p-xs text-ink-gray-5">
+              {{ openedWhat(row) }}
+            </span>
           </span>
           <span class="shrink-0 tabular-nums text-ink-gray-5">
             {{ formatDate(row.creation, '') }}
@@ -326,6 +343,7 @@
 </template>
 
 <script setup>
+import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
 import { formatDate, sanitizeHTML } from '@/utils'
@@ -367,6 +385,7 @@ const visibilityOptions = [
 ]
 
 const summaryRef = ref(null)
+const archiveRef = ref(null)
 
 // the draft being written is above, in the composer: not twice
 const shownRecords = computed(() =>
@@ -484,8 +503,10 @@ async function save(sign) {
     composer.open = false
     toast.success(sign ? __('Signed') : __('Draft saved'))
     record.reload()
-    // a signed sheet may propose lines of the summary
+    // a signed sheet may propose lines of the summary; a signed visit files
+    // its report in the archive
     if (sign && composer.sheet) summaryRef.value?.reload()
+    if (sign) archiveRef.value?.reload()
   } catch (err) {
     composer.error = err.messages?.[0] || err.message
   } finally {
@@ -503,6 +524,17 @@ async function remove(entry) {
 }
 
 const log = reactive({ show: false, rows: [] })
+
+// what was opened, never what it said
+function openedWhat(row) {
+  const what =
+    row.kind === 'record'
+      ? __('Opened the record')
+      : row.kind === 'archive'
+        ? __('Opened the archive')
+        : __('Downloaded a file')
+  return row.count > 1 ? __('{0} · {1} entries', [what, row.count]) : what
+}
 
 async function openLog() {
   log.rows = await call('crm.clinica.cartella.access_log', { lead: props.lead })

@@ -319,7 +319,10 @@ const tabs = computed(() => {
       label: __('Clinic'),
       icon: LucideStethoscope,
       condition: () =>
-        puo('clinica.vedi') || puo('clinica.scrivi') || puo('clinica.accessi'),
+        puo('clinica.vedi') ||
+        puo('clinica.scrivi') ||
+        puo('clinica.accessi') ||
+        puo('clinica.archivia'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
