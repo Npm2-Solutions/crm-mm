@@ -399,6 +399,8 @@ doc_events = {
 			"crm.automation.engine.on_appointment_created",
 			# a booking moves the new patients deal, where the clinic is on
 			"crm.clinica.eventi.appuntamento_creato",
+			# and sends the link to the forms the person owes for it
+			"crm.moduli.dovuti.appuntamento_prenotato",
 		],
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",

@@ -109,7 +109,9 @@ def modulo_firmato(doc, method=None) -> None:
 def _mandato_da(doc) -> str | None:
 	if not doc.get("request"):
 		return None
-	return frappe.db.get_value("CRM Form Request", doc.request, "sent_by")
+	mittente = frappe.db.get_value("CRM Form Request", doc.request, "sent_by")
+	# sent by the centre itself, with a booking: nobody in particular
+	return None if mittente in ("Guest", "Administrator") else mittente
 
 
 def piano_aggiornato(doc, method=None) -> None:
