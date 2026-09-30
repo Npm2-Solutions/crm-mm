@@ -165,6 +165,27 @@ contact belongs to its owner: a booking finds the owner by email or phone and th
 person by name (`find_or_create_person`), so a child booked by a parent gets a record
 of their own, linked to the parent, never the parent's record.
 
+### The client area (`crm/area`, the plan's "area" module; the clinic comprises it)
+| File | Role |
+|---|---|
+| `crm/area/accesso.py` + `crm/www/area.py` | The door: invitation (`CRM Area Access`, role "Client Area User"), a code by email, step-up before a download; every call derives the session's people on the server |
+| `crm/area/api.py` | Appointments with the booking page's link, cycles, invoices; "Prepare your appointment": the owed forms, opened on `/modulo` with the area's session |
+| `crm/area/sezioni.py` | The places other modules add to the area (`registra_sezione`): the clinic's documents and plans, shown to whom they have something |
+| `crm/area/messaggi.py` | The board (`CRM Area Message`): the desk writes administration, the chat passes questions; other kinds come from other modules (`registra_tipo`, the clinic's "Care") with their own readers |
+| `crm/area/chat.py` + `chat_regole.py` | The chat about hours and bookings, for any centre: emergency words get 112 before any model, health goes to a person, the rest only from what the centre wrote |
+| `crm/area/passkey.py`, `crm/area/avvisi.py` | Passkeys (WebAuthn); news by WhatsApp or SMS besides the email, only to the person's own number that wrote to the centre (`CRM Area Settings`) |
+| `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The area's app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js`, the vertical's first |
+| `frontend/src/components/Area/` | The person's "Client area" tab: who enters, the board |
+
+### Verticals (`crm/verticali.py`)
+A module of the plan that makes the CRM the software of a trade registers a
+`Verticale`: its words over the CRM's (pairs of English strings: the SPA gets them
+translated in its boot, the area in its own, the server asks `parola()`), and the
+places of the base it hides because it shows its own. The CRM underneath speaks
+neutral words (clients, appointments, the client area); with the clinic on it says
+patients, visits, the patient area, everywhere. A new place of the base that names
+the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
+
 ### The clinic (`crm/clinica`, switched on by the plan's "clinica" module)
 | File | Role |
 |---|---|
@@ -174,13 +195,11 @@ of their own, linked to the parent, never the parent's record.
 | `crm/clinica/cartella.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock |
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
-| `crm/clinica/area/` (`accesso.py`, `api.py`) + `crm/www/area.py` | The patient area: invitation (`Clinic Area Access`), the door by email code, step-up before a download; every call derives the session's people on the server |
-| `crm/clinica/area/api.py` (`get_forms`, `fill_forms`) | "Prepare your visit": the owed forms, opened on `/modulo` with the area's session; who signs is who a link by email would go to |
-| `crm/clinica/area/messaggi.py` + `components/Clinic/AreaMessagesCard.vue` | The centre's board in the area (`Clinic Message`): the desk writes administration, a practitioner the care (read like a visit); the email says only that there is news |
 | `crm/clinica/piani_regole.py` | Plans without a site: the five kinds, who writes which by qualification, what each holds, the day and the week — pure, tested with plain `unittest` |
 | `crm/clinica/piani.py` | Plans on the person's page (`Clinic Plan`, `piani.scrivi`): drafts of their author, published to the area, new version or closed; the libraries (`Clinic Food`, `Clinic Exercise`) |
 | `frontend/src/components/Clinic/ClinicPlans.vue`, `PlanDialog.vue`, `PlanItemEditor.vue`, `LibraryPicker.vue` + `frontend/src/utils/piani.js` | The plans card, the editor and reader, an item by its kind, the library search; the same rules as `piani_regole.py` — tested |
 | `crm/clinica/area/piani.py` + `frontend/src/area/pages/Plans.vue`, `Plan.vue`, `components/PlanItem.vue` | The plans in the area: the day's moments, one tap an item (`Clinic Plan Log`), made up within two days, what is left this week |
+| `crm/clinica/area/documenti.py`, `crm/clinica/parole.py` | The clinic's places in the client area (documents given online, registered with `crm.area.sezioni`; plans are the row above) and its words over the CRM's: patients, the patient area, the visit to prepare (`crm.verticali`) |
 
 ### The assistant (`crm/assistente`, its own plan module)
 | File | Role |
@@ -196,7 +215,6 @@ The assistant writes only what was written or said, saves nothing by itself, and
 every request stays in the register: a new function registers with
 `registra_funzione`, asks with `modello.chiedi`, and records what a person made of
 the draft with `modello.accetta`.
-| `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The patient area app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js` |
 | `crm/clinica/consegna.py` + `crm/www/referto.*` | Giving a report: by hand, or online 45 days with the consent; the link by email, the code another way; `/referto/<link>` opens it (`Clinic Report Delivery`) |
 | `crm/clinica/dossier.py` | Who reads what the others wrote: the dossier (consent and care), obscured episodes, "my discipline", the opening out of the care team with a reason (`Clinic Access Grant`, `crm_people_in_care`) |
 | `crm/clinica/archivio.py` | The clinical archive (`Clinic Document`): uploads, a signed visit's report, a WhatsApp file; read like the record, removed the same day or by the director, every listing and download in the access log |
@@ -205,7 +223,6 @@ the draft with `modello.accetta`.
 | `frontend/src/components/Clinic/ClinicArchive.vue`, `ClinicDocumentDialog.vue` | The archive card; adding or putting right a document, also from a chat message |
 | `frontend/src/components/Clinic/ObscureDialog.vue`, `OutOfCareDialog.vue` | Obscuring or revealing an episode; opening a record out of one's care (People page) |
 | `frontend/src/components/Clinic/DeliverDialog.vue` | Giving a document to the patient from the archive: by hand, or online with the code |
-| `frontend/src/components/Clinic/AreaAccessCard.vue` | Who enters the person's area, opening and closing it |
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
 | `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `crm/clinica/programmi_regole.py` + `crm/clinica/programmi.py` | Programmes of stages (`Clinic Programme`): each stage with its words and maybe a plan (`Clinic Plan.programme`), opened at one's own pace (the patient in the area, `finish_stage`) or by time (`apri_del_giorno`, daily); a stage that opens publishes its plan with `piani.pubblica` |
@@ -213,9 +230,6 @@ the draft with `modello.accetta`.
 | `piani_regole.spesa` + `ShoppingListDialog.vue`, `frontend/src/area/pages/PlanShopping.vue` | The shopping list of a diet: grams summed on the server over the days asked (times a week, the plan's period), rounded up in the browser; in the CRM to copy for the patient, in the area with ticks kept on the phone |
 | `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` | The libraries (`piani.librerie`): a food table read on the server (CIQUAL, BDA-IEO and CREA with the licence declared, any sheet in their shape), its columns and categories checked before import, energy from the EU factors when missing; exercises-dataset with its pictures from where the agency hosts them; imported again, numbers update and the centre's words stay |
 | `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clinic > Libraries: the lists, correcting a food or an exercise, the import of a table and of the exercises |
-| `crm/clinica/area/chat.py` + `chat_regole.py` | The patients' chat: emergency words get 112 before any model, health is passed to the desk as a "Question" on the board, the rest answered only from the centre's hours, closures and FAQ |
-| `crm/clinica/area/passkey.py` + `frontend/src/area/passkey.js` | The patient area's passkeys (WebAuthn, py_webauthn): added from inside after a code, discoverable, user verification, same door as the code |
-| `crm/clinica/area/avvisi.py` | News in the area by WhatsApp or SMS besides the email: same words, only to the person's number that wrote to the centre, once every two hours |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 | `crm/clinica/cure_regole.py` | Dental care plans without a site: FDI teeth and arches, surfaces, the chart's conditions, a plan's states, sums and which treatment an appointment takes — tested with plain `unittest` |
 | `crm/clinica/cure.py` | The odontogram (`Clinic Dental Chart`) and the care plans (`Clinic Care Plan`, `cure.scrivi` / `cure.preventivi`): a quote as a PDF (`templates/preventivo.html`), the quotes pipeline (`pipeline.preventivo_consegnato`/`_chiuso`), appointments taking treatments through `CRM Appointment` doc_events |
@@ -256,8 +270,8 @@ patient, the record and reports, dossier and obscuring, the summary, the dental
 chart, diets and rehabilitation. What a beauty centre or a gym would use the same
 way belongs in the CRM, and the clinic registers its rules on it, with the "health
 data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
-30/09/2026). The client area, plans and programmes, a person's documents, quotes
-and the new clients pipeline are moving there in that order.
+30/09/2026). The client area moved there first (`crm/area`); plans and programmes,
+a person's documents, quotes and the new clients pipeline follow, in that order.
 
 ## Mobile
 

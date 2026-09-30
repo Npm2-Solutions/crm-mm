@@ -437,6 +437,17 @@ sue regole**.
   piano, un documento o un messaggio possono portarlo. Con il marchio li legge chi
   dice la clinica: dossier, oscuramento, disciplina, registro degli accessi. Senza
   il marchio li legge chi vede la persona.
+- **Il verticale trasforma tutto.** La base è un CRM completo che parla neutro:
+  clienti, appuntamenti, area clienti. Un modulo verticale acceso (la clinica, e
+  domani altri) ne fa il gestionale del suo mestiere, al cento per cento
+  (`crm/verticali.py`):
+  - **le parole**: con la clinica il CRM dice pazienti, visita, area pazienti,
+    dappertutto (`crm/clinica/parole.py`);
+  - **il marchio**: nome, logo, colori, icona e favicon sono quelli del verticale,
+    DottorCloud per la clinica, in ogni schermata, pagina pubblica ed email. Il
+    centro al massimo mette il suo logo accanto a quello della piattaforma;
+  - **le funzioni**: se una funzione della base limita il mestiere, il verticale la
+    nasconde e mette la sua.
 
 | Strato | Cosa ci va | Per chi |
 |---|---|---|
@@ -530,17 +541,20 @@ modulo del piano si vende è una scelta commerciale.
 
 Una PR per riga, ognuna utile da sola:
 
-1. questa mappa nei documenti;
+1. questa mappa nei documenti (fatto il 30/09/2026);
 2. l'Area clienti nel CRM, con un registro delle sezioni a cui la clinica aggiunge
-   le sue;
-3. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
+   le sue, e i verticali con le loro parole: con la clinica è l'area pazienti
+   (fatto il 30/09/2026);
+3. il marchio del verticale: nome, logo, colori, icona e favicon dappertutto, il
+   logo del centro al massimo accanto;
+4. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
    clinica;
-4. i documenti della persona e la consegna nel CRM;
-5. i preventivi nel CRM, che l'odontoiatria estende;
-6. "Nuovi clienti" e "Diventato cliente" nel CRM;
-7. un solo builder dei moduli, con l'uso "Scheda" e i moduli del sito;
-8. le liste d'attesa;
-9. gli abbonamenti.
+5. i documenti della persona e la consegna nel CRM;
+6. i preventivi nel CRM, che l'odontoiatria estende;
+7. "Nuovi clienti" e "Diventato cliente" nel CRM;
+8. un solo builder dei moduli, con l'uso "Scheda" e i moduli del sito;
+9. le liste d'attesa;
+10. gli abbonamenti.
 
 ### Come si aggancia la clinica
 
