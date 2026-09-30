@@ -1011,7 +1011,8 @@ Fatti il 30/09/2026 (fase 4, la seconda parte).
   "A visit from dictation", "A summary before the visit".
 
 Resta alla fase 4: il menù con i conti dalle tabelle, e la chat del paziente solo
-per l'amministrazione.
+per l'amministrazione (il menù è arrivato dopo: vedi "Il menù per il
+nutrizionista").
 
 ### Il sigillo del centro e la marca temporale
 
@@ -1051,6 +1052,47 @@ Fatti il 30/09/2026, con pyHanko (`crm/moduli/sigillo.py`).
   si legge in memoria e non si scrive altrove.
 - **Si controlla anche senza di noi**: un lettore PDF mostra il sigillo nel pannello
   delle firme, e `openssl cms -verify` conferma la firma sui byte che copre.
+
+### Il menù per il nutrizionista
+
+Fatto il 30/09/2026 (fase 4, la terza parte): "obiettivi suoi, nutrienti calcolati
+dalle tabelle, l'IA propone solo le ricette".
+
+- **Gli obiettivi sono del nutrizionista**: energia, proteine, carboidrati, grassi e
+  fibre per un giorno, sul piano alimentare ("Targets for a day"). Solo il menù ne
+  ha.
+- **I conti li fa il motore dalle tabelle** (`piani_regole.nutrienti`,
+  `per_giorno`): i valori per 100 g della libreria per i grammi di ogni alimento.
+  - Sotto ogni pasto c'è il totale; in fondo "The day, from the food tables",
+    giorno per giorno accanto agli obiettivi. Solo numeri, senza colori: li legge
+    il nutrizionista.
+  - Il browser conta allo stesso modo mentre si scrive: Python e JavaScript
+    passano gli stessi casi (`crm/clinica/tests/casi_nutrienti.json`), con
+    l'arrotondamento a metà in su di tutti e due.
+  - Un alimento senza grammi, o senza valori nelle tabelle, non si conta e si dice
+    quanti sono.
+- **Un alimento nuovo** ha anche proteine, carboidrati, grassi e fibre per 100 g,
+  con la tabella da cui vengono.
+- **L'IA propone solo le ricette** (`crm/clinica/menu.py`, "Propose recipes" su un
+  pasto del proprio menù in bozza):
+  - legge il pasto, l'energia (suggerita da quello che l'obiettivo del giorno
+    lascia ai pasti ancora vuoti), cosa chiede il nutrizionista ("vegetariano,
+    veloce") e la libreria; mai chi è il paziente;
+  - del suo JSON il motore tiene gli alimenti della libreria, per id, e le loro
+    proporzioni (`piani_regole.ricetta`): un alimento che la libreria non ha, o un
+    numero suo, non entra;
+  - i grammi li scala il motore all'energia del pasto, a 5 g (al grammo sotto i
+    10), e ogni numero mostrato viene dalle tabelle;
+  - scelta, la ricetta entra nel pasto: gli alimenti come voci, il procedimento
+    nella nota del pasto con il segno "AI draft, checked by … on …". Il piano resta
+    in bozza, da rileggere, salvare e pubblicare;
+  - con il consenso del paziente all'assistente e l'interruttore "Recipes for a
+    meal plan"; il registro tiene la proposta e cosa è stato tenuto, e lo legge la
+    direzione sanitaria.
+- **La nota del pasto** (o della seduta) la legge il paziente nella sua area,
+  sotto il nome del pasto: come si prepara, cosa tenere a mente.
+
+Resta alla fase 4: la chat del paziente solo per l'amministrazione.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

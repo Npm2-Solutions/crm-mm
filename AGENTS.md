@@ -193,6 +193,7 @@ the draft with `modello.accetta`.
 | `frontend/src/components/Clinic/DeliverDialog.vue` | Giving a document to the patient from the archive: by hand, or online with the code |
 | `frontend/src/components/Clinic/AreaAccessCard.vue` | Who enters the person's area, opening and closing it |
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
+| `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 
 ### The desk's day
