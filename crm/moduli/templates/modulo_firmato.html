@@ -33,6 +33,12 @@
 	th { text-align: left; font-weight: normal; color: #6b6b6b; border-bottom: 0.6pt solid #d4d4d4; padding: 2pt 4pt 3pt 0; }
 	td { border-bottom: 0.4pt solid #eee; padding: 3pt 4pt 3pt 0; vertical-align: top; }
 	.firma img { max-height: 70pt; max-width: 240pt; }
+	.firma .spazio { height: 58pt; }
+	.caselle { display: flex; flex-wrap: wrap; gap: 4pt 16pt; margin-top: 2pt; }
+	.linea { border-bottom: 0.6pt solid #9a9a9a; height: 18pt; }
+	.righe-vuote td { height: 16pt; }
+	.scansione { page-break-before: always; text-align: center; }
+	.scansione img { max-width: 100%; max-height: 245mm; }
 	.firma .riga { border-top: 0.6pt solid #9a9a9a; width: 240pt; padding-top: 2pt; font-size: 8.5pt; color: #6b6b6b; }
 	.avviso { border: 0.8pt solid #d9534f; color: #a02622; padding: 5pt 8pt; border-radius: 3pt; margin: 4pt 0 8pt; }
 	.prove { page-break-before: always; font-size: 9pt; }
@@ -49,7 +55,7 @@
 		<div class="sommesso" style="text-align: right">
 			<div><strong>{{ persona }}</strong></div>
 			{% if dato_da %}<div>{{ _("Answered by {0}").format(dato_da) }}</div>{% endif %}
-			<div>{{ _("Signed on {0}").format(firmato_il) }}</div>
+			{% if da_firmare %}<div>{{ _("To sign") }}</div>{% else %}<div>{{ _("Signed on {0}").format(firmato_il) }}</div>{% endif %}
 		</div>
 	</div>
 
@@ -61,14 +67,18 @@
 				<div class="testo">{{ voce.testo }}</div>
 			{% elif voce.tipo == "signature" %}
 				<div class="domanda firma">
-					{% if voce.immagine %}<img src="{{ voce.immagine }}" alt="">{% else %}<div class="vuota">{{ _("Not signed") }}</div>{% endif %}
-					<div class="riga">{{ voce.etichetta }}{% if voce.firmatario %} — {{ voce.firmatario }}{% endif %}</div>
+					{% if da_firmare %}<div class="spazio"></div>
+					{% elif voce.immagine %}<img src="{{ voce.immagine }}" alt="">
+					{% elif voce.su_carta %}<div class="vuota">{{ _("Signed on paper: the scan is attached") }}</div>
+					{% else %}<div class="vuota">{{ _("Not signed") }}</div>{% endif %}
+					<div class="riga">{{ voce.etichetta }}{% if voce.firmatario %} — {{ voce.firmatario }}{% elif voce.atteso %} — {{ voce.atteso }}{% endif %}</div>
 				</div>
 			{% elif voce.tipo == "consent" %}
 				<div class="domanda">
 					<div class="etichetta">{{ voce.etichetta }}</div>
 					<div class="testo">{{ voce.testo }}</div>
-					<div class="risposta"><strong>{{ voce.risposta }}</strong></div>
+					{% if voce.risposta %}<div class="risposta"><strong>{{ voce.risposta }}</strong></div>
+					{% elif voce.opzioni %}<div class="caselle">{% for opzione in voce.opzioni %}<span>&#9744; {{ opzione }}</span>{% endfor %}</div>{% endif %}
 				</div>
 			{% elif voce.tipo == "table" %}
 				<div class="domanda">
@@ -78,12 +88,20 @@
 						<tr>{% for colonna in voce.colonne %}<th>{{ colonna }}</th>{% endfor %}</tr>
 						{% for riga in voce.righe %}<tr>{% for cella in riga %}<td>{{ cella }}</td>{% endfor %}</tr>{% endfor %}
 					</table>
+					{% elif da_firmare %}
+					<table class="righe-vuote">
+						<tr>{% for colonna in voce.colonne %}<th>{{ colonna }}</th>{% endfor %}</tr>
+						{% for _riga in range(3) %}<tr>{% for colonna in voce.colonne %}<td></td>{% endfor %}</tr>{% endfor %}
+					</table>
 					{% else %}<div class="vuota">—</div>{% endif %}
 				</div>
 			{% else %}
 				<div class="domanda">
 					<div class="etichetta">{{ voce.etichetta }}</div>
-					<div class="risposta {% if not voce.risposta %}vuota{% endif %}">{{ voce.risposta or "—" }}</div>
+					{% if voce.risposta %}<div class="risposta">{{ voce.risposta }}</div>
+					{% elif voce.opzioni %}<div class="caselle">{% for opzione in voce.opzioni %}<span>&#9744; {{ opzione }}</span>{% endfor %}</div>
+					{% elif da_firmare %}<div class="linea"></div>
+					{% else %}<div class="risposta vuota">—</div>{% endif %}
 				</div>
 			{% endif %}
 			{% if voce.avviso is not none %}
@@ -92,6 +110,19 @@
 		{% endfor %}
 	{% endfor %}
 
+	{% if da_firmare %}
+	<div class="prove">
+		<h2>{{ _("To sign") }}</h2>
+		<table>
+			<tr><td>{{ _("Form") }}</td><td>{{ doc.name }}</td></tr>
+			<tr><td>{{ _("Template") }}</td><td>{{ titolo }} · {{ _("version {0}").format(versione.version) }} · {{ _("published {0}").format(pubblicata_il) }}</td></tr>
+			<tr><td>{{ _("What it asked (SHA-256)") }}</td><td class="impronta">{{ versione.schema_hash }}</td></tr>
+		</table>
+		<p class="sommesso" style="margin-top: 12pt">
+			{{ _("This copy is to be signed. Signed on paper, its scan is kept with the form, attested by the operator as a true copy; signed with a provider, the provider's signed document is kept.") }}
+		</p>
+	</div>
+	{% else %}
 	<div class="prove">
 		<h2>{{ _("Evidence") }}</h2>
 		<table>
@@ -115,6 +146,15 @@
 		</table>
 		{% endfor %}
 
+		{% if carta %}
+		<h2>{{ _("On paper") }}</h2>
+		<table>
+			<tr><td>{{ _("Attested by") }}</td><td>{{ carta.attestato_da }} · {{ carta.il }}</td></tr>
+			<tr><td>{{ _("The scan (SHA-256)") }}</td><td class="impronta">{{ carta.impronta }}</td></tr>
+		</table>
+		<p class="sommesso">{{ _("The operator attests that the scan is a true copy of the original, signed in front of them. The original on paper stays with the centre; the scan is attached inside this file.") }}</p>
+		{% endif %}
+
 		<h2>{{ _("What happened") }}</h2>
 		<table>
 			{% for evento in eventi %}
@@ -125,5 +165,7 @@
 			{{ _("This document was generated once, when the form was signed. Its SHA-256 is recorded with the form: a copy that gives a different one is not this document.") }}
 		</p>
 	</div>
+	{% if carta %}{% for immagine in carta.immagini %}<div class="scansione"><img src="{{ immagine }}" alt=""></div>{% endfor %}{% endif %}
+	{% endif %}
 </body>
 </html>
