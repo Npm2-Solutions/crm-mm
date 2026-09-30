@@ -5,7 +5,7 @@
 -->
 <template>
   <article
-    class="flex flex-col gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+    class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
   >
     <div class="flex flex-col gap-1">
       <p class="text-base text-ink-gray-9">{{ describe(item) }}</p>

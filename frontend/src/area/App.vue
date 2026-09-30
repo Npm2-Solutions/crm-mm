@@ -18,7 +18,7 @@
   <router-view v-else-if="route.name === 'Login'" />
   <div v-else class="flex h-full flex-col">
     <header
-      class="flex items-center justify-between gap-3 border-b border-outline-gray-1 bg-surface-white px-4 py-3"
+      class="flex items-center justify-between gap-3 border-b border-outline-gray-1 bg-surface-base px-4 py-3"
     >
       <div class="flex min-w-0 items-center gap-2">
         <img v-if="logo" :src="logo" alt="" class="max-h-7 max-w-[7rem]" />
@@ -35,7 +35,7 @@
     </header>
     <div
       v-if="(area.me?.people || []).length > 1"
-      class="border-b border-outline-gray-1 bg-surface-white px-4 py-2"
+      class="border-b border-outline-gray-1 bg-surface-elevation-1 px-4 py-2"
     >
       <FormControl
         type="select"
@@ -54,7 +54,7 @@
       </div>
     </main>
     <nav
-      class="pb-safe grid border-t border-outline-gray-1 bg-surface-white"
+      class="pb-safe grid border-t border-outline-gray-1 bg-surface-elevation-1"
       :style="{
         gridTemplateColumns: `repeat(${places.length}, minmax(0, 1fr))`,
       }"

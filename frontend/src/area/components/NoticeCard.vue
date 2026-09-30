@@ -9,7 +9,9 @@
     <h2 class="text-base font-medium text-ink-gray-7">
       {{ __('How we tell you there is news') }}
     </h2>
-    <div class="flex flex-col gap-3 rounded-lg bg-surface-white p-4 shadow-sm">
+    <div
+      class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+    >
       <p class="text-p-sm text-ink-gray-6">
         {{
           __(

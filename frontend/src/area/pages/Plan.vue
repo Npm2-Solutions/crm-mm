@@ -22,14 +22,14 @@
       <router-link
         v-if="['Meal plan', 'Exchange diet'].includes(data.plan.plan_type)"
         :to="{ name: 'PlanShopping', params: { plan: data.plan.name } }"
-        class="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-surface-white px-4 py-3 text-p-base text-ink-gray-9 shadow-sm"
+        class="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 px-4 py-3 text-p-base text-ink-gray-9 shadow-sm"
       >
         {{ __('Shopping list') }}
         <span aria-hidden="true" class="text-ink-gray-5">›</span>
       </router-link>
       <details
         v-if="data.plan.instructions"
-        class="rounded-lg bg-surface-white p-4 text-p-base text-ink-gray-8 shadow-sm"
+        class="rounded-lg bg-surface-elevation-1 p-4 text-p-base text-ink-gray-8 shadow-sm"
       >
         <summary class="cursor-pointer text-ink-gray-9">
           {{ __('What to keep in mind') }}
@@ -46,7 +46,7 @@
           :class="
             d === data.day
               ? 'bg-surface-gray-10 text-ink-base'
-              : 'bg-surface-white text-ink-gray-7 shadow-sm'
+              : 'bg-surface-elevation-1 text-ink-gray-7 shadow-sm'
           "
           :aria-pressed="d === data.day"
           @click="go(d)"

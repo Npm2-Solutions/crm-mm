@@ -23,7 +23,7 @@
         :class="
           option.days === days
             ? 'bg-surface-gray-10 text-ink-base'
-            : 'bg-surface-white text-ink-gray-7 shadow-sm'
+            : 'bg-surface-elevation-1 text-ink-gray-7 shadow-sm'
         "
         :aria-pressed="option.days === days"
         @click="load(option.days)"
@@ -52,7 +52,7 @@
         <label
           v-for="row in group.items"
           :key="row.food"
-          class="flex items-center gap-3 rounded-lg bg-surface-white p-3 shadow-sm"
+          class="flex items-center gap-3 rounded-lg bg-surface-elevation-1 p-3 shadow-sm"
         >
           <Checkbox
             class="touch-target shrink-0"
@@ -87,7 +87,7 @@
         <div
           v-for="group in data.groups"
           :key="group.food_group"
-          class="flex flex-col gap-2 rounded-lg bg-surface-white p-4 shadow-sm"
+          class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
         >
           <p class="text-p-base text-ink-gray-9 first-letter:uppercase">
             {{

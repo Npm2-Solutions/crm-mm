@@ -8,7 +8,9 @@
     <h2 class="text-base font-medium text-ink-gray-7">
       {{ __('Prepare your visit') }}
     </h2>
-    <div class="flex flex-col gap-2 rounded-lg bg-surface-white p-4 shadow-sm">
+    <div
+      class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+    >
       <p v-if="forms.data.appointment" class="text-p-sm text-ink-gray-6">
         {{
           __('Before your appointment of {0}', [

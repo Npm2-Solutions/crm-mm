@@ -71,7 +71,7 @@
       </div>
       <div v-if="asking" class="flex items-start">
         <div
-          class="rounded-2xl bg-surface-white px-4 py-2.5 text-p-base text-ink-gray-5 shadow-sm"
+          class="rounded-2xl bg-surface-elevation-1 px-4 py-2.5 text-p-base text-ink-gray-5 shadow-sm"
         >
           {{ __('Writing…') }}
         </div>
@@ -120,7 +120,7 @@ function bubble(turn) {
   if (turn.role === 'patient') return 'bg-surface-gray-3 text-ink-gray-9'
   if (turn.kind === 'emergency')
     return 'bg-surface-red-2 text-ink-red-4 font-medium'
-  return 'bg-surface-white text-ink-gray-9 shadow-sm'
+  return 'bg-surface-elevation-1 text-ink-gray-9 shadow-sm'
 }
 
 async function send() {

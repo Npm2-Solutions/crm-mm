@@ -17,7 +17,7 @@
       </div>
       <form
         v-if="!sent"
-        class="flex flex-col gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+        class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
         @submit.prevent="send"
       >
         <FormControl
@@ -50,7 +50,7 @@
       </form>
       <form
         v-else
-        class="flex flex-col gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+        class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
         @submit.prevent="verify"
       >
         <p class="text-p-sm text-ink-gray-6">

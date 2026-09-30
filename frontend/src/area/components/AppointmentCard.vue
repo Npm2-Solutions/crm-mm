@@ -1,6 +1,8 @@
 <!-- An appointment as the patient reads it: when, what, with whom, where. -->
 <template>
-  <div class="flex flex-col gap-2 rounded-lg bg-surface-white p-4 shadow-sm">
+  <div
+    class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+  >
     <div class="flex items-start justify-between gap-2">
       <span
         class="text-base font-medium text-ink-gray-9 first-letter:uppercase"

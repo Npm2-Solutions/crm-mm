@@ -13,7 +13,7 @@
     <div
       v-for="doc in documents.data?.documents || []"
       :key="doc.name"
-      class="flex items-center justify-between gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+      class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
     >
       <div class="flex min-w-0 flex-col">
         <span class="text-base text-ink-gray-9">{{ doc.title }}</span>
