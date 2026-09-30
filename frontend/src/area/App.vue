@@ -54,21 +54,29 @@
       </div>
     </main>
     <nav
-      class="pb-safe grid grid-cols-4 border-t border-outline-gray-1 bg-surface-white"
+      class="pb-safe grid grid-cols-5 border-t border-outline-gray-1 bg-surface-white"
     >
       <router-link
         v-for="place in places"
         :key="place.name"
         :to="{ name: place.name }"
-        class="flex flex-col items-center gap-1 py-2 text-xs"
+        class="flex min-w-0 flex-col items-center gap-1 py-2 text-[11px] leading-tight"
         :class="
           route.name === place.name
             ? 'text-ink-gray-9 font-medium'
             : 'text-ink-gray-5'
         "
       >
-        <FeatherIcon :name="place.icon" class="size-5" />
-        {{ place.label }}
+        <span class="relative">
+          <FeatherIcon :name="place.icon" class="size-5" />
+          <span
+            v-if="place.name === 'Messages' && unread"
+            class="absolute -right-2 -top-1 grid min-w-4 place-items-center rounded-full bg-surface-red-5 px-1 text-[10px] font-medium leading-4 text-ink-white"
+          >
+            {{ unread }}
+          </span>
+        </span>
+        <span class="max-w-full truncate">{{ place.label }}</span>
       </router-link>
     </nav>
   </div>
@@ -76,6 +84,7 @@
 
 <script setup>
 import { Button, ErrorMessage, FeatherIcon, FormControl } from 'frappe-ui'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { area, choose, loadMe, logout } from './store'
 
@@ -89,8 +98,15 @@ const places = [
   { name: 'Home', label: __('Home'), icon: 'home' },
   { name: 'Appointments', label: __('Appointments'), icon: 'calendar' },
   { name: 'Documents', label: __('Documents'), icon: 'file-text' },
+  { name: 'Messages', label: __('Messages'), icon: 'message-square' },
   { name: 'Invoices', label: __('Invoices'), icon: 'credit-card' },
 ]
+
+// what the centre wrote and the person has not opened yet
+const unread = computed(
+  () =>
+    (area.me?.people || []).find((p) => p.name === area.person)?.unread || 0,
+)
 
 if (!staff && boot.user && boot.user !== 'Guest') loadMe()
 

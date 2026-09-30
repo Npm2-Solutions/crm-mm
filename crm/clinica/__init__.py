@@ -139,6 +139,15 @@ CAPACITA = (
 	),
 	(
 		Capacita(
+			"area.messaggi",
+			PIANO,
+			descrizione="Write on the person's board in their area: the desk about administration, "
+			"a practitioner about the care",
+		),
+		{"segreteria": CENTRO, "operatore": SUOI, DIREZIONE: CENTRO},
+	),
+	(
+		Capacita(
 			"clinica.traccia",
 			PIANO,
 			scrive=False,

@@ -82,6 +82,7 @@
 
     <!-- the person's own window on the centre, /area -->
     <AreaAccessCard v-if="record.data?.can_invite" :lead="lead" />
+    <AreaMessagesCard v-if="record.data?.can_message" :lead="lead" />
 
     <!-- writing: a visit or a note, for the care team or for oneself -->
     <section
@@ -400,6 +401,7 @@
 
 <script setup>
 import AreaAccessCard from '@/components/Clinic/AreaAccessCard.vue'
+import AreaMessagesCard from '@/components/Clinic/AreaMessagesCard.vue'
 import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
