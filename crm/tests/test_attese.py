@@ -590,9 +590,10 @@ class ChiLaVede(AtteseCase):
 		self.di_marco = self.in_lista(self.marco, service=self.pulizia.name)["name"]
 
 	def nomi(self, user):
+		"""The entries of these tests ``user`` reads: a site may hold others."""
 		self.come(user)
 		try:
-			return {v["name"] for v in A.get_waiting_list()["entries"]}
+			return {v["name"] for v in A.get_waiting_list()["entries"]} & {self.di_giulia, self.di_marco}
 		finally:
 			frappe.set_user("Administrator")
 
