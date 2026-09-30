@@ -1990,3 +1990,27 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Un programma si legge come un piano, e ogni apertura va nel registro degli accessi | Dice che cosa fa la persona per la sua salute |
 | Nell'area il testo sui fondi scuri è `text-ink-base` su `surface-gray-10` | `text-ink-white` non è un token: il testo restava scuro sul grigio (anche i giorni del piano e il contatore dei messaggi) |
 
+
+## Fase 3, i cicli di sedute
+
+> **Completato** (30/09/2026). `crm/scheduling/cicli_regole.py` (puro),
+> `crm/scheduling/cicli.py`, `CRM Session Cycle`, il ciclo su `CRM Appointment` e su
+> `CRM Invoice`, la capacità `agenda.cicli`, `invoicing.api.issue_from_cycle`,
+> `CyclesSection.vue` e `CycleDialog.vue` nel CRM, `CycleCard.vue` nell'area.
+> `docs/gestionale-medico/README.md`, "I cicli di sedute".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Nell'agenda (`crm/scheduling`), non nella clinica | Un ciclo è un accordo sugli appuntamenti: ce l'ha anche un centro estetico, senza cartella. Quello che succede in seduta va nella cartella |
+| L'appuntamento entra nel ciclo da solo, nel suo `validate` | Chi prenota non deve ricordarsi di collegarlo, da qualunque parte arrivi: calendario, /prenota, piattaforme |
+| Il ciclo nuovo prende gli appuntamenti già prenotati dal suo primo giorno | Spesso la segreteria prenota le dieci sedute e poi vende il ciclo |
+| Lo stato si conta dagli appuntamenti; "scaduto" si calcola e non si scrive | Una disdetta riapre il ciclo senza che nessuno lo tocchi; nessun lavoro notturno per la scadenza |
+| La seduta costa la sua parte del prezzo del ciclo | L'agenda e il cruscotto contano quello che il ciclo vale davvero; la fattura seduta per seduta viene giusta da sola |
+| Messo dentro o fuori a mano senza risalvare l'appuntamento | Cambiano solo il ciclo e il prezzo: il giorno, le persone e le sale no, e un conflitto vecchio non deve bloccare |
+| Pagato tutto: una fattura, e le sue sedute fuori da "da fatturare" | Sarebbero fatturate due volte |
+| La fatturazione nomina il ciclo, non importa il modulo dell'agenda | Come per l'appuntamento: la fatturazione resta staccabile |
+| Nell'area niente prezzo, niente note, niente fattura | Sono del centro; la persona vuole sapere a che punto è |
+| Una serie di numeri sua (`CYCLE-.#####`) | Con `format:CYCLE-{#####}` il contatore è quello di tutti i `format:` senza prefisso, e i cicli partivano da 2073 |
+| Le schede dell'area hanno il fondo `surface-elevation-1` | `bg-surface-white` non genera CSS in questa versione di frappe-ui: le schede restavano trasparenti sul grigio |
