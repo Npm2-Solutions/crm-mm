@@ -1950,3 +1950,22 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | La didascalia di Gym visual solo accanto alle sue immagini | La foto del centro è del centro; i dati del dataset sono MIT e non la chiedono |
 | Attrezzi e muscoli tradotti con un dizionario, i nomi no | Poche decine di parole si traducono una volta; 1.324 nomi di esercizi li deve rileggere un trainer (design) |
 
+## Fase 3, la lista della spesa
+
+> **Completato** (30/09/2026). `piani_regole.giorni_del_periodo` e `spesa` (pure),
+> `piani.shopping_list` e `area/piani.area_shopping_list`, `ShoppingListDialog.vue` nel
+> CRM, `PlanShopping.vue` nell'area; `utils/piani.js` arrotonda e scrive la lista.
+> `docs/gestionale-medico/README.md`, "La lista della spesa".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Le somme sul server, l'arrotondamento nel browser | I grammi sono del piano; "560 g" o "1,2 kg" è come lo legge chi compra, nella sua lingua |
+| Per eccesso, a 10 g e sopra il chilo a 100 g | La spesa non deve restare corta; nessuno compra 552 g |
+| "Tante volte a settimana" conta così anche nella spesa, dal lunedì | Il pesce tre volte a settimana non è pesce ogni giorno |
+| Solo i giorni del periodo del piano | Un piano che finisce giovedì non fa comprare per il fine settimana |
+| La dieta a scambi dà le porzioni, non gli alimenti | L'alimento lo sceglie il paziente, dentro il gruppo |
+| Le spunte restano sul telefono del paziente | Cosa ha già nel carrello non serve al centro |
+| Nel CRM aprirla va nel registro degli accessi | La lista dice cosa mangia la persona: è leggere il piano |
+
