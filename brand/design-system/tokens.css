@@ -1,0 +1,55 @@
+/* DottorCloud — design tokens.
+   The same values drive the logo, the video, the presentation and the PDF. */
+:root {
+  /* brand */
+  --dc-teal: #12a594;        /* the brand colour: mark, "Cloud", primary buttons */
+  --dc-teal-dark: #0b6f64;   /* text on teal-soft, deep backgrounds, app icon */
+  --dc-teal-soft: #e1f5f1;   /* chips, icon circles, highlighted rows */
+  --dc-mint: #5fe0cc;        /* the brand colour on dark backgrounds */
+  --dc-night: #111413;       /* dark scenes, covers, closing slides */
+
+  /* neutrals */
+  --dc-ink: #16201e;         /* titles and body on light */
+  --dc-muted: #5f6b69;       /* secondary text */
+  --dc-faint: #9aa5a3;       /* captions, disabled, footers */
+  --dc-border: #e3e9e7;      /* hairlines and card borders */
+  --dc-bg: #f4f7f6;          /* page background */
+  --dc-card: #ffffff;
+
+  /* accents: one per kind of thing, never for decoration */
+  --dc-blue: #2f6fed;   --dc-blue-soft: #e6eefe;    /* documents, ultrasound, our messages */
+  --dc-violet: #7c5cf0; --dc-violet-soft: #efeafe;  /* exercises, marketing */
+  --dc-amber: #d98a0b;  --dc-amber-soft: #fdf2dc;   /* waiting list, nutrition, internal notes */
+  --dc-rose: #e0487a;   --dc-rose-soft: #fde8ef;    /* cardiology, allergies, recording */
+  --dc-green: #1f9d55;  --dc-green-soft: #e3f6ea;   /* done, confirmed, WhatsApp */
+
+  /* type */
+  --dc-font: "Inter", -apple-system, "Segoe UI", sans-serif;   /* web, app, video */
+  --dc-font-office: "Calibri", "Carlito", sans-serif;           /* PowerPoint and PDF */
+  --dc-display: 700 88px/1.04 var(--dc-font);   /* video titles, letter-spacing -0.035em */
+  --dc-h1: 700 36px/1.1 var(--dc-font);         /* slide and page titles */
+  --dc-h2: 700 24px/1.2 var(--dc-font);
+  --dc-body: 400 16px/1.45 var(--dc-font);
+  --dc-caption: 600 13px/1.3 var(--dc-font);    /* uppercase labels, letter-spacing 0.05em */
+
+  /* shape */
+  --dc-radius-s: 8px;    /* inputs, tags */
+  --dc-radius-m: 12px;   /* buttons, list rows */
+  --dc-radius-l: 18px;   /* windows, cards */
+  --dc-radius-xl: 20px;  /* big cards, phone content */
+  --dc-radius-pill: 999px;
+
+  /* depth: soft, tinted with the brand's dark teal, never grey-black */
+  --dc-shadow-card: 0 3px 10px rgba(11, 59, 53, 0.08);
+  --dc-shadow-float: 0 24px 60px -16px rgba(16, 40, 36, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --dc-shadow-window: 0 40px 100px -20px rgba(16, 40, 36, 0.28), 0 12px 30px -10px rgba(0, 0, 0, 0.12);
+
+  /* motion */
+  --dc-ease-in: cubic-bezier(0.22, 1, 0.36, 1);        /* things arriving: fast then settle (quint out) */
+  --dc-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);    /* small things popping in, a little overshoot */
+  --dc-ease-move: cubic-bezier(0.65, 0, 0.35, 1);      /* camera and objects travelling (cubic in-out) */
+  --dc-dur-fast: 250ms;    /* taps, toggles */
+  --dc-dur-base: 500ms;    /* cards, rows, words */
+  --dc-dur-slow: 800ms;    /* windows, phones, transitions */
+  --dc-stagger: 60ms;      /* between words or list rows */
+}

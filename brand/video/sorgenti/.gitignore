@@ -1,0 +1,5 @@
+raw*.mp4
+stills/
+audio*.wav
+plan-*.json
+render*.log
