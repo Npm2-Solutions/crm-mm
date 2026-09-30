@@ -239,14 +239,23 @@ the draft with `modello.accetta`.
 | File | Role |
 |---|---|
 | `brand/` | The logo, the design system (`tokens.css`), video, presentation, ads — `brand/README.md` |
-| `crm/marchio.py` | The name and the marks where the framework shows its own: `applica()` fills Website/System/Navbar Settings and renames the desk's workspace and icons (install and patch), `boot()` renames the apps in the desk, `nome_scelto()` keeps the software's name from passing for a centre's |
-| `crm/hooks.py` (top) | `app_title`, `app_logo_url`, `website_context` (favicon, splash), `extend_bootinfo`, the apps screen |
-| `frontend/src/components/Icons/CRMLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The app's icon, the About with the licence's notices, getting started without a help centre |
-| `crm/public/images/` (`dottorcloud-icona.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
+| `crm/marchio.py` | The brand of the vertical that is on (`Marchio`, `registra_marchio`, `attivo()`; `BASE` without one): `nome()`, `con_nome()`, `colori()`, `accento()`, `per_il_boot()`, `per_le_pagine()`, `contesto()` (every web page), `manifest()` (the phone's). `applica()` writes it into Website/System/Navbar Settings, the desk's workspace and icons (install, patch, `piano_aggiornato` when the plan changes), `boot()` names the apps in the desk, `nome_scelto()` keeps the software's name from passing for a centre's |
+| `crm/verticali.py` | A vertical names its brand (`Verticale.marchio`): the clinic wears DottorCloud |
+| `crm/hooks.py` (top) | `app_title`, `app_logo_url` (fallbacks), `update_website_context` (`marchio.contesto`), `extend_bootinfo`, the apps screen |
+| `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); primary buttons, switches and ticks in its colour — tested |
+| `frontend/src/components/Icons/CRMLogo.vue`, `BrandLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The product's icon, the centre's logo beside it, the About with the licence's notices, getting started without a help centre |
+| `crm/templates/includes/marchio_*.html` | The public pages' head (favicon, phone icon), accent and marks: the product's logo first, the centre's beside it |
+| `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
 | `crm/locale/en.po` | The framework's own words that name it, in English with the product's name (`marchio.PAROLE_DEL_FRAMEWORK`) |
 
-A public page names the centre (`FCRM Settings.brand_name`), never the software:
-`nome_scelto()` treats "DottorCloud" in the site's name as no name at all.
+The product's brand - the vertical's - is everywhere a person looks: its name,
+icon, logo, favicon and colours in the CRM, the area, the public pages, the
+framework's screens, the PDFs' producer and the phone's manifest. A centre's own
+logo (Settings > Brand, the booking page's) goes at most beside it, never in its
+place. A sentence that names the product says `{brand}`: `__()` fills it in the
+browser, `con_nome(_("…"))` on the server (before any `.format()`). A public
+page's title names the centre (`FCRM Settings.brand_name`) beside the product's
+name: `nome_scelto()` treats every brand's name as no name of the centre's.
 
 ### The desk's day
 | File | Role |
