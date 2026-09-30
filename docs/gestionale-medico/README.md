@@ -847,6 +847,33 @@ con py_webauthn).
 - WebAuthn vuole https: in produzione c'è; il sito di prova in http si prova con il
   flag di Chromium che lo tratta come sicuro.
 
+### Le novità dell'area su WhatsApp e SMS
+
+Fatte il 30/09/2026 (fase 3, dopo), in `crm/clinica/area/avvisi.py`: "WhatsApp, SMS
+ed email dicono solo 'c'è una novità nella tua area'; le email vanno solo a
+indirizzi verificati".
+
+- **Le parole sono le stesse ovunque**: c'è una novità nell'area del centro, e il
+  link. Cosa sia resta dentro.
+- **L'email sempre**, all'indirizzo con cui si entra, verificato da ogni codice.
+- **WhatsApp o SMS se il paziente lo chiede**, dai Messaggi della sua area ("How we
+  tell you there is news"), e solo al suo numero se da lì ha scritto al centro
+  almeno una volta su quel canale.
+  - Un numero scritto nell'area non si usa mai: una cifra sbagliata direbbe a uno
+    sconosciuto che qualcuno è paziente di un centro medico.
+  - Senza un messaggio ricevuto da quel numero, l'area spiega di scrivere al
+    centro una volta e poi accenderlo.
+- **Il centro sceglie cosa offre**, in Impostazioni > News in the patient area
+  (`canali.configura`):
+  - il template WhatsApp approvato della novità, con il nome del centro come
+    unica variabile;
+  - il numero Twilio da cui partono gli SMS.
+- **Non è un'alluvione**: WhatsApp e SMS al più una volta ogni due ore per persona;
+  l'email come prima. Un avviso che non parte non ferma mai la bacheca: il log
+  degli errori dice perché.
+- Oggi lo manda la bacheca: i messaggi del centro e i piani pubblicati. La consegna
+  del referto e i moduli da firmare hanno già la loro email con il link.
+
 ### Prepara la visita e i messaggi del centro
 
 Fatti il 30/09/2026 (fase 3, la seconda parte).
@@ -945,7 +972,9 @@ Fatti il 30/09/2026 (fase 3, la quarta parte), in `crm/clinica/area/piani.py`.
 - L'operatore vede i check-in sul piano, voce per voce (`Clinic Plan Log`, uno
   per voce e per giorno, con chi l'ha segnato).
 
-Restano alla fase 3 le notifiche fuori dall'email (push, WhatsApp). Da fare dopo:
+Restavano alla fase 3 le notifiche fuori dall'email: WhatsApp e SMS sono arrivati
+dopo (vedi "Le novità dell'area su WhatsApp e SMS"); le push aspettano l'app sulla
+schermata Home. Da fare dopo:
 - l'importazione delle tabelle degli alimenti (CREA, BDA-IEO con la licenza,
   CIQUAL) e di exercises-dataset;
 - la lista della spesa dal menù;
