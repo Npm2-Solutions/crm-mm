@@ -1845,3 +1845,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | La chiave si legge in memoria (`load_pkcs12_data`) | Il file privato dell'agenzia resta l'unico posto dove la chiave sta |
 | La marca con un timeout di 10 secondi | Il sigillo avviene mentre la persona firma: un'autorità lenta non deve tenerla ferma |
 | Certificato, password e autorità sul permlevel 1, pagina con `tecnico.integrazioni` | Sono chiavi dell'agenzia, come quelle dei fornitori (doc 30) |
+
+## Fase 4, il menù per il nutrizionista
+
+> **Completato** (30/09/2026). Gli obiettivi del giorno sul piano alimentare, i
+> nutrienti dalle tabelle (`crm/clinica/piani_regole.py` e
+> `frontend/src/utils/piani.js`, sui casi di `crm/clinica/tests/casi_nutrienti.json`),
+> le ricette dell'assistente (`crm/clinica/menu.py`), la nota del pasto nell'area.
+> `docs/gestionale-medico/README.md`, "Il menù per il nutrizionista".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Dell'IA si tengono solo gli alimenti della libreria e le proporzioni | "I conti dei nutrienti li fa il motore dalle tabelle, non l'IA" (design): un numero del modello non entra mai |
+| I grammi li scala il motore all'energia del pasto | L'energia è un obiettivo del nutrizionista; la ricetta dà solo le proporzioni |
+| Stessi conti in Python e in JavaScript, sugli stessi casi, con l'arrotondamento a metà in su | Il totale che il nutrizionista vede scrivendo è quello che il server conta; `round()` di Python arrotonda al pari, il browser in su |
+| L'energia suggerita divide ciò che l'obiettivo lascia fra i pasti vuoti | Un punto di partenza: il nutrizionista la cambia |
+| La ricetta scelta va nella nota del pasto con il segno | Il paziente legge come si prepara; il segno dice che è una bozza dell'IA controllata (AI Act art. 50) |
+| Tabella dei conti senza colori | "Niente rosso fuori obiettivo" (design): i numeri li legge il professionista |
+| Il dialogo delle ricette sta dentro quello del piano | Due dialoghi reka-ui fratelli: il secondo restava `aria-hidden`, invisibile a uno screen reader |
