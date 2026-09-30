@@ -426,6 +426,8 @@ const EVENTS = {
   signed: __('Signed'),
   pdf_generated: __('PDF made'),
   pdf_failed: __('PDF not made'),
+  sealed: __('Sealed by the centre'),
+  seal_failed: __('Not sealed'),
   consent_recorded: __('Consent recorded'),
   copy_downloaded: __('Copy downloaded'),
   cancelled: __('Cancelled'),
