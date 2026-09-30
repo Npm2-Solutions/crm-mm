@@ -170,6 +170,27 @@ CAPACITA = (
 		),
 		{"manager": CENTRO, DIREZIONE: CENTRO, "operatore": A_SCELTA},
 	),
+	# the dental care plans (phase 3, "piani di cura (odontoiatria)"): the dentist
+	# writes the chart and the plans, the desk handles the quotes
+	(
+		Capacita(
+			"cure.scrivi",
+			PIANO,
+			clinica=True,
+			descrizione="Write the dental chart and the care plans, and propose them as quotes: with a "
+			"dentist's qualification",
+		),
+		{"operatore": SUOI},
+	),
+	(
+		Capacita(
+			"cure.preventivi",
+			PIANO,
+			clinica=True,
+			descrizione="Read the care plans proposed as quotes, and record them accepted or declined",
+		),
+		{"segreteria": CENTRO, "manager": CENTRO},
+	),
 	# the assistant on one's patients (design.md, "L'assistente"): the plan's
 	# assistant module, the clinic's data
 	(

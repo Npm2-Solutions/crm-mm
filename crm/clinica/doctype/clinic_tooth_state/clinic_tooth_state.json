@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "creation": "2026-10-05 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tooth",
+  "condition",
+  "surfaces",
+  "note",
+  "noted_on",
+  "noted_by"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "tooth",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tooth",
+   "reqd": 1,
+   "description": "FDI: 11-48, milk teeth 51-85"
+  },
+  {
+   "columns": 2,
+   "fieldname": "condition",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Condition",
+   "reqd": 1,
+   "options": "Caries\nFilling\nRoot canal\nCrown\nImplant\nMissing\nTo extract\nBridge\nFracture\nSealant\nVeneer\nMobile\nImpacted\nOther"
+  },
+  {
+   "columns": 1,
+   "fieldname": "surfaces",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Surfaces",
+   "description": "M, O, D, V, L"
+  },
+  {
+   "columns": 3,
+   "fieldname": "note",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Note"
+  },
+  {
+   "fieldname": "noted_on",
+   "fieldtype": "Date",
+   "label": "Noted on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "noted_by",
+   "fieldtype": "Link",
+   "label": "Noted by",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-05 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Tooth State",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

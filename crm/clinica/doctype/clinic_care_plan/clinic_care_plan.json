@@ -1,0 +1,305 @@
+{
+ "actions": [],
+ "creation": "2026-10-05 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "title",
+  "column_main",
+  "status",
+  "price_list",
+  "currency",
+  "valid_until",
+  "items_section",
+  "items",
+  "patient_notes",
+  "totals_section",
+  "total_gross",
+  "total_discount",
+  "column_totals",
+  "total_net",
+  "total_done",
+  "quote_section",
+  "proposed_on",
+  "quote_pdf",
+  "deal",
+  "column_quote",
+  "accepted_on",
+  "accepted_by",
+  "acceptance_note",
+  "declined_on",
+  "decline_reason",
+  "closed_on",
+  "replaces",
+  "dossier_section",
+  "practitioner",
+  "visibility",
+  "obscured",
+  "discipline"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "read_only": 1,
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nProposed\nAccepted\nDeclined\nCompleted\nClosed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price list",
+   "options": "CRM Price List"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "valid_until",
+   "fieldtype": "Date",
+   "label": "Quote valid until"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Treatments"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Treatments",
+   "options": "Clinic Care Plan Item"
+  },
+  {
+   "fieldname": "patient_notes",
+   "fieldtype": "Small Text",
+   "label": "For the patient",
+   "description": "Printed on the quote"
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "total_gross",
+   "fieldtype": "Currency",
+   "label": "Before discount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_discount",
+   "fieldtype": "Currency",
+   "label": "Discount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_net",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_done",
+   "fieldtype": "Currency",
+   "label": "Done",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quote_section",
+   "fieldtype": "Section Break",
+   "label": "The quote"
+  },
+  {
+   "fieldname": "proposed_on",
+   "fieldtype": "Datetime",
+   "label": "Proposed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quote_pdf",
+   "fieldtype": "Attach",
+   "label": "Quote",
+   "read_only": 1
+  },
+  {
+   "fieldname": "deal",
+   "fieldtype": "Link",
+   "label": "Deal",
+   "options": "CRM Deal",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_quote",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "accepted_on",
+   "fieldtype": "Datetime",
+   "label": "Accepted on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "accepted_by",
+   "fieldtype": "Link",
+   "label": "Recorded by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "acceptance_note",
+   "fieldtype": "Small Text",
+   "label": "How it was accepted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "declined_on",
+   "fieldtype": "Datetime",
+   "label": "Declined on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "decline_reason",
+   "fieldtype": "Small Text",
+   "label": "Why",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "replaces",
+   "fieldtype": "Link",
+   "label": "New version of",
+   "options": "Clinic Care Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dossier_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Practitioner",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "Care team",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Who reads it",
+   "options": "Care team\nMy discipline\nOnly me",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Obscured",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discipline",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Discipline",
+   "options": "CRM Professional Qualification",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-05 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Care Plan",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Practitioner",
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Medical Director"
+  },
+  {
+   "read": 1,
+   "role": "Front Desk"
+  },
+  {
+   "read": 1,
+   "role": "Sales Manager"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "description": "A dental care plan: a quote first, then its treatments done one by one",
+ "autoname": "CP-.YYYY.-.#####",
+ "naming_rule": "Expression (old style)",
+ "title_field": "title",
+ "track_changes": 1,
+ "track_views": 1
+}

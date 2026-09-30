@@ -1,0 +1,97 @@
+{#-
+	The quote of a dental care plan, as it is handed over (`crm.clinica.cure`): made
+	once when the plan is proposed, and kept. Like every document the CRM keeps, it
+	loads no remote resource. It ends with the lines the person signs to accept it.
+-#}
+{#- what a person typed is printed as text: never as HTML -#}
+{% autoescape true %}
+<!doctype html>
+<html lang="{{ lingua }}">
+<head>
+<meta charset="utf-8">
+<title>{{ titolo }}</title>
+<style>
+	@page { size: A4; margin: 18mm 16mm 18mm 16mm;
+		@bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #767676; }
+		@bottom-left { content: "{{ doc.name }}"; font-size: 8pt; color: #767676; } }
+	body { font-family: "DejaVu Sans", "Helvetica", sans-serif; color: #1a1a1a; font-size: 10pt; line-height: 1.45; }
+	h1 { font-size: 15pt; margin: 0 0 2pt; }
+	h2 { font-size: 11pt; margin: 16pt 0 6pt; padding-bottom: 3pt; border-bottom: 0.6pt solid #d4d4d4; }
+	.sommesso { color: #666; font-size: 9pt; }
+	.intestazione { display: flex; justify-content: space-between; gap: 16pt; margin-bottom: 10pt; }
+	.testo { white-space: pre-wrap; background: #f6f6f6; padding: 7pt 9pt; border-radius: 3pt; margin: 8pt 0; }
+	table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+	table.voci { table-layout: fixed; }
+	th { text-align: left; font-weight: normal; color: #6b6b6b; border-bottom: 0.6pt solid #d4d4d4; padding: 2pt 4pt 3pt 0; }
+	td { border-bottom: 0.4pt solid #eee; padding: 3pt 4pt 3pt 0; vertical-align: top; }
+	.numero { text-align: right; white-space: nowrap; }
+	.totali { margin-top: 10pt; margin-left: auto; width: 55%; }
+	.totali td { border: 0; padding: 1pt 0; }
+	.totale td { font-weight: bold; border-top: 0.6pt solid #d4d4d4; padding-top: 3pt; }
+	.firma { margin-top: 26pt; page-break-inside: avoid; }
+	.linee { display: flex; gap: 24pt; margin-top: 28pt; }
+	.linea { flex: 1; border-top: 0.6pt solid #1a1a1a; padding-top: 3pt; font-size: 8.5pt; color: #444; }
+</style>
+</head>
+<body>
+	<div class="intestazione">
+		<div>
+			<h1>{{ _("Quote") }} · {{ titolo }}</h1>
+			<div class="sommesso">{{ data }}{% if centro %} · {{ centro }}{% endif %}</div>
+		</div>
+		<div class="sommesso" style="text-align: right">
+			<div><strong>{{ persona }}</strong></div>
+			<div>{{ dentista }}</div>
+		</div>
+	</div>
+
+	{% for fase in fasi %}
+		{% if piu_fasi %}<h2>{{ _("Phase {0}").format(fase.phase) }}</h2>{% elif loop.first %}<h2>{{ _("Treatments") }}</h2>{% endif %}
+		<table class="voci">
+			<colgroup>
+				<col style="width: 38%"><col style="width: 14%"><col style="width: 8%">
+				<col style="width: 14%"><col style="width: 11%"><col style="width: 15%">
+			</colgroup>
+			<tr>
+				<th>{{ _("Treatment") }}</th>
+				<th>{{ _("Tooth") }}</th>
+				<th class="numero">{{ _("Qty") }}</th>
+				<th class="numero">{{ _("Price") }}</th>
+				<th class="numero">{{ _("Discount") }}</th>
+				<th class="numero">{{ _("Amount") }}</th>
+			</tr>
+			{% for voce in fase["items"] %}
+			<tr>
+				<td>{{ voce.description }}</td>
+				<td>{{ voce.tooth or "—" }}{% if voce.surfaces %} {{ voce.surfaces }}{% endif %}</td>
+				<td class="numero">{{ "%g"|format(voce.qty) }}</td>
+				<td class="numero">{{ soldi(voce.rate) }}</td>
+				<td class="numero">{% if voce.discount %}{{ "%g"|format(voce.discount) }}%{% else %}—{% endif %}</td>
+				<td class="numero">{{ soldi(voce.amount) }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	{% endfor %}
+
+	<table class="totali">
+		{% if totali.discount %}
+		<tr><td>{{ _("Before discount") }}</td><td class="numero">{{ soldi(totali.gross) }}</td></tr>
+		<tr><td>{{ _("Discount") }}</td><td class="numero">− {{ soldi(totali.discount) }}</td></tr>
+		{% endif %}
+		<tr class="totale"><td>{{ _("Total") }}</td><td class="numero">{{ soldi(totali.net) }}</td></tr>
+	</table>
+
+	{% if doc.patient_notes %}<div class="testo">{{ doc.patient_notes }}</div>{% endif %}
+
+	<div class="firma">
+		{% if valido_fino %}<p>{{ _("This quote is valid until {0}.").format(valido_fino) }}</p>{% endif %}
+		<p class="sommesso">{{ _("Each treatment is invoiced when it is done, at the price above.") }}</p>
+		<p>{{ _("For acceptance") }}</p>
+		<div class="linee">
+			<div class="linea">{{ _("Date") }}</div>
+			<div class="linea">{{ _("Signature of the patient, or of who answers for them") }}</div>
+		</div>
+	</div>
+</body>
+</html>
+{% endautoescape %}

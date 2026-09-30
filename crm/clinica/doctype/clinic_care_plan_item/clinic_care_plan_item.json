@@ -1,0 +1,151 @@
+{
+ "actions": [],
+ "creation": "2026-10-05 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "service",
+  "description",
+  "tooth",
+  "surfaces",
+  "phase",
+  "column_price",
+  "qty",
+  "rate",
+  "discount",
+  "amount",
+  "column_status",
+  "status",
+  "appointment",
+  "done_on",
+  "done_by",
+  "currency"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service",
+   "options": "CRM Service",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "columns": 1,
+   "fieldname": "tooth",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tooth"
+  },
+  {
+   "fieldname": "surfaces",
+   "fieldtype": "Data",
+   "label": "Surfaces"
+  },
+  {
+   "columns": 1,
+   "default": "1",
+   "fieldname": "phase",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Phase",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Quantity",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "non_negative": 1,
+   "options": "currency"
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Percent",
+   "label": "Discount"
+  },
+  {
+   "columns": 1,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "default": "To do",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "To do\nBooked\nDone\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "appointment",
+   "fieldtype": "Link",
+   "label": "Appointment",
+   "options": "CRM Appointment",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "done_on",
+   "fieldtype": "Date",
+   "label": "Done on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "done_by",
+   "fieldtype": "Link",
+   "label": "Done by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-05 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Care Plan Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

@@ -191,6 +191,8 @@ permission_query_conditions = {
 	"Clinic Document": "crm.clinica.archivio.get_permission_query_conditions",
 	"Clinic Plan": "crm.clinica.piani.get_permission_query_conditions",
 	"Clinic Programme": "crm.clinica.programmi.get_permission_query_conditions",
+	"Clinic Dental Chart": "crm.clinica.cure.get_chart_permission_query_conditions",
+	"Clinic Care Plan": "crm.clinica.cure.get_plan_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"CRM Session Cycle": "crm.permissions.seguono.get_cycle_permission_query_conditions",
@@ -223,6 +225,8 @@ has_permission = {
 	"Clinic Document": "crm.clinica.archivio.has_permission",
 	"Clinic Plan": "crm.clinica.piani.has_permission",
 	"Clinic Programme": "crm.clinica.programmi.has_permission",
+	"Clinic Dental Chart": "crm.clinica.cure.has_chart_permission",
+	"Clinic Care Plan": "crm.clinica.cure.has_plan_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"CRM Session Cycle": "crm.permissions.seguono.has_cycle_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
@@ -409,20 +413,28 @@ doc_events = {
 		"on_update": ["crm.automation.engine.on_booking_updated"],
 	},
 	"CRM Appointment": {
+		# a treatment of an accepted care plan: taken, at the price agreed
+		"validate": ["crm.clinica.cure.appuntamento_in_validazione"],
 		"after_insert": [
 			"crm.automation.engine.on_appointment_created",
 			# a booking moves the new patients deal, where the clinic is on
 			"crm.clinica.eventi.appuntamento_creato",
 			# and sends the link to the forms the person owes for it
 			"crm.moduli.dovuti.appuntamento_prenotato",
+			"crm.clinica.cure.appuntamento_creato",
 		],
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",
 			"crm.booking_platforms.sync.on_appointment_change",
 			# who came becomes a patient, where the clinic is on
 			"crm.clinica.eventi.appuntamento_aggiornato",
+			# and the treatment of their care plan is done
+			"crm.clinica.cure.appuntamento_aggiornato",
 		],
-		"on_trash": ["crm.booking_platforms.sync.on_appointment_change"],
+		"on_trash": [
+			"crm.booking_platforms.sync.on_appointment_change",
+			"crm.clinica.cure.appuntamento_eliminato",
+		],
 	},
 	# the clinic listens to invoicing; invoicing never hears of the clinic
 	"CRM Invoice": {

@@ -298,6 +298,8 @@ APERTO = {
 	"Clinic Document": "archive",
 	"Clinic Plan": "plan",
 	"Clinic Programme": "programme",
+	"Clinic Dental Chart": "dental chart",
+	"Clinic Care Plan": "care plan",
 	"File": "file",
 }
 
@@ -313,7 +315,14 @@ def access_log(lead: str) -> list[dict]:
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	voci = {
 		doctype: frappe.get_all(doctype, filters={"lead": lead}, pluck="name")
-		for doctype in ("Clinic Record", "Clinic Document", "Clinic Plan", "Clinic Programme")
+		for doctype in (
+			"Clinic Record",
+			"Clinic Document",
+			"Clinic Plan",
+			"Clinic Programme",
+			"Clinic Dental Chart",
+			"Clinic Care Plan",
+		)
 	}
 	righe = []
 	for doctype, nomi in voci.items():
