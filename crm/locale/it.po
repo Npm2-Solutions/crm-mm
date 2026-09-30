@@ -161,6 +161,14 @@ msgstr ""
 msgid "A new account has been created for you at {0}"
 msgstr "Un nuovo account è stato creato per te su {0}"
 
+#: crm/scheduling/attese_pubblico.py
+msgid "A phone number is required"
+msgstr "Serve un numero di telefono"
+
+#: crm/scheduling/attese.py
+msgid "A place has freed up: {0}, {1}"
+msgstr "Si è liberato un posto: {0}, {1}"
+
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.py:257
 msgid "A valid call log is required."
 msgstr ""
@@ -500,10 +508,18 @@ msgstr "Aggiungi codice svg o usa icone leggere ad esempio 'impostazioni'"
 msgid "Add time targets around support milestones like first response"
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "Add to Google Calendar"
+msgstr "Aggiungi a Google Calendar"
+
 #. Label of the add_to_holidays (Button) field in DocType 'CRM Holiday List'
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.json
 msgid "Add to Holidays"
 msgstr "Aggiungi alle Festività"
+
+#: crm/scheduling/attese.py
+msgid "Add to Outlook"
+msgstr "Aggiungi a Outlook"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:466
 msgid "Add your first comment"
@@ -576,6 +592,10 @@ msgstr ""
 msgid "Amount after discount"
 msgstr ""
 
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "An entry waits for 1 to {0} places"
+msgstr "Una voce aspetta da 1 a {0} posti"
+
 #: frontend/src/components/Modals/FieldLayoutDialog.vue:277
 #: frontend/src/data/script.js:78 frontend/src/data/script.js:79
 msgid "An error occurred"
@@ -594,6 +614,10 @@ msgstr "Un file icona con estensione .ico. Deve essere 16 x 16 px. Generato util
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 msgid "An image with 1:1 & 2:1 ratio is preferred"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "An offer is waiting for this person's answer already"
+msgstr "C'è già una proposta che aspetta la risposta di questa persona"
 
 #: frontend/src/components/Filter.vue:43 frontend/src/components/Filter.vue:83
 msgid "And"
@@ -616,6 +640,10 @@ msgstr "Il Fatturato Annuo dovrebbe essere un numero"
 #: frontend/src/pages/PersonaForm.vue:64
 msgid "Another CRM"
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "Any day"
+msgstr "Qualsiasi giorno"
 
 #: frontend/src/components/Settings/LeadSyncing/FailureLogs.vue:69
 msgid "Any failed lead syncs will show up here"
@@ -1025,6 +1053,10 @@ msgstr "Tra"
 #: frontend/src/components/Settings/ERPNextSettings.vue:195
 msgid "Bidirectional sync of existing CRM Products and ERPNext Items. Runs in the background."
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "Booked from the waiting list"
+msgstr "Prenotato dalla lista d'attesa"
 
 #: frontend/src/components/Settings/Settings.vue:137
 msgid "Brand"
@@ -1461,6 +1493,10 @@ msgstr "Scegli Contatto Esistente"
 msgid "Choose Existing Organization"
 msgstr "Scegli Organizzazione Esistente"
 
+#: crm/scheduling/attese_pubblico.py
+msgid "Choose a last day from today to a year from now"
+msgstr "Scegli un ultimo giorno da oggi a un anno da oggi"
+
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:171
 msgid "Choose how long this SLA policy will be active."
 msgstr ""
@@ -1717,6 +1753,10 @@ msgstr ""
 #: frontend/src/components/Modals/ChangePasswordModal.vue:30
 msgid "Confirm Password"
 msgstr "Ripeti Password"
+
+#: crm/scheduling/attese.py
+msgid "Confirm or decline"
+msgstr "Conferma o rifiuta"
 
 #: frontend/src/utils/index.js:822 frontend/src/utils/index.js:825
 msgid "Confirm {0}"
@@ -3550,6 +3590,10 @@ msgstr ""
 msgid "For all-day events, <b>set a time</b> to send reminders before the event starts"
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "For {0}"
+msgstr "Per {0}"
+
 #: frontend/src/components/Dashboard/AddChartModal.vue:91
 msgid "Forecasted Revenue"
 msgstr ""
@@ -3571,6 +3615,18 @@ msgstr ""
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.js:18
 msgid "Form Script updated successfully"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "From the same page you can leave the waiting list."
+msgstr "Dalla stessa pagina puoi uscire dalla lista d'attesa."
+
+#: crm/scheduling/attese.py
+msgid "Hi {0},"
+msgstr "Ciao {0},"
+
+#: crm/scheduling/attese.py
+msgid "It is yours if you confirm by {0}; then it goes to the next person waiting."
+msgstr "È tuo se confermi entro {0}; poi va a chi aspetta dopo di te."
 
 #: frontend/src/components/Settings/emailConfig.js:81
 msgid "Mail server address"
@@ -4691,6 +4747,10 @@ msgstr ""
 msgid "Manage your account emails and email signature for communication."
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "Manage your booking"
+msgstr "Gestisci la prenotazione"
+
 #: frontend/src/components/Settings/EmailAccountList.vue:11
 msgid "Manage your email accounts to send and receive emails directly from {brand}. You can add multiple accounts and set one as default for incoming and outgoing emails."
 msgstr ""
@@ -4928,6 +4988,10 @@ msgstr ""
 #: frontend/src/pages/Organization.vue:526
 msgid "Name"
 msgstr "Nome"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "Name and email are required"
+msgstr "Nome ed email sono obbligatori"
 
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue:417
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:148
@@ -5180,6 +5244,10 @@ msgstr "Nessuna modifica apportata"
 #: frontend/src/components/Settings/ERPNextSettings.vue:323
 msgid "No companies found in the given site"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "No email or mobile on file: call them"
+msgstr "Nessuna email né cellulare: chiamala"
 
 #: frontend/src/components/Activities/EventArea.vue:75
 msgid "No events coming up. Create a new one to keep things on track."
@@ -5488,6 +5556,10 @@ msgstr "Solo un {0} può essere impostato come primario."
 msgid "Only sales users can access WhatsApp features."
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "Only somebody waiting gets an offer: one is waiting for an answer already"
+msgstr "Si propone un posto solo a chi aspetta: una proposta aspetta già la risposta"
+
 #. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
 #. Option for the 'Type' (Select) field in DocType 'CRM Lead Status'
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
@@ -5780,6 +5852,10 @@ msgstr ""
 #: frontend/src/components/Activities/AudioPlayer.vue:176
 msgid "Playback Speed"
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "Please accept the privacy policy to go on the waiting list"
+msgstr "Accetta l'informativa sulla privacy per entrare in lista d'attesa"
 
 #: crm/lead_syncing/doctype/lead_sync_source/facebook.py:169
 msgid "Please check your access token"
@@ -6705,6 +6781,10 @@ msgstr "Sezione"
 msgid "See All Participants"
 msgstr ""
 
+#: crm/scheduling/attese_pubblico.py
+msgid "See or leave the waiting list"
+msgstr "Vedi o esci dalla lista d'attesa"
+
 #: frontend/src/components/SidePanelLayout.vue:154
 msgid "Select"
 msgstr "Seleziona"
@@ -7468,9 +7548,29 @@ msgstr "Grazie"
 msgid "The Condition '{0}' is invalid: {1}"
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "The SMS did not leave"
+msgstr "L'SMS non è partito"
+
 #: crm/moduli/sito.py
 msgid "The answers could not be read"
 msgstr "Non è stato possibile leggere le risposte"
+
+#: crm/scheduling/attese.py
+msgid "The appointment is for {0}."
+msgstr "L'appuntamento è per {0}."
+
+#: crm/area/api.py
+msgid "The centre does not take the waiting list from the area"
+msgstr "Il centro non prende la lista d'attesa dall'area"
+
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "The class is of another service"
+msgstr "La lezione è di un altro servizio"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "The class of {0}, when a seat frees up"
+msgstr "La lezione di {0}, quando si libera un posto"
 
 #: crm/moduli/compilazioni.py
 msgid "The form is not complete"
@@ -7479,6 +7579,10 @@ msgstr "Il modulo non è completo"
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.py:64
 msgid "The holiday on {0} is not between From Date and To Date"
 msgstr ""
+
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "The last day comes after the first"
+msgstr "L'ultimo giorno viene dopo il primo"
 
 #. Description of the 'Exchange Rate' (Float) field in DocType 'CRM Deal'
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
@@ -7490,6 +7594,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "The rate used to convert the organization’s currency to your crm's base currency (set in CRM Settings). It is set once when the currency is first added and doesn't change automatically."
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "The waiting list is not open online"
+msgstr "La lista d'attesa non è aperta online"
 
 #: frontend/src/components/Settings/PreferencesSettings.vue:23
 msgid "Theme"
@@ -7515,13 +7623,41 @@ msgstr ""
 msgid "This Week"
 msgstr ""
 
+#: crm/fcrm/doctype/crm_waiting_list_settings/crm_waiting_list_settings.py
+msgid "This WhatsApp template does not exist"
+msgstr "Questo modello WhatsApp non esiste"
+
 #: frontend/src/components/Filter.vue:697
 msgid "This Year"
 msgstr ""
 
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "This class is not going ahead"
+msgstr "Questa lezione non si fa"
+
+#: crm/scheduling/attese.py
+msgid "This class is not on any more"
+msgstr "Questa lezione non c'è più"
+
 #: frontend/src/components/FieldLayoutEditor.vue:584
 msgid "This column contains fields. Are you sure you want to remove it?"
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "This date cannot be read"
+msgstr "Questa data non si legge"
+
+#: crm/scheduling/attese.py
+msgid "This entry belongs to somebody else"
+msgstr "Questa voce è di un'altra persona"
+
+#: crm/scheduling/attese.py
+msgid "This entry is out of the line"
+msgstr "Questa voce non è più in lista"
+
+#: crm/scheduling/attese.py
+msgid "This entry is out of the line: add a new one"
+msgstr "Questa voce non è più in lista: aggiungine una nuova"
 
 #: frontend/src/components/Settings/Sla/WorkDayModal.vue:177
 msgid "This field is required"
@@ -7535,9 +7671,25 @@ msgstr "Questo modulo non è sul sito"
 msgid "This is my first CRM"
 msgstr ""
 
+#: crm/area/api.py
+msgid "This is not your area"
+msgstr "Questa non è la tua area"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "This link is not valid"
+msgstr "Questo link non è valido"
+
 #: crm/www/crm.py:31
 msgid "This method is only meant for developer mode"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "This place is no longer free"
+msgstr "Questo posto non è più libero"
+
+#: crm/scheduling/attese.py
+msgid "This place starts too soon to wait for an answer: book it by hand"
+msgstr "Questo posto comincia troppo presto per aspettare una risposta: fissalo tu"
 
 #: frontend/src/components/FieldLayoutEditor.vue:489
 msgid "This section contains fields. Are you sure you want to remove it?"
@@ -7546,6 +7698,10 @@ msgstr ""
 #: frontend/src/components/SidePanelLayoutEditor.vue:116
 msgid "This section is not editable"
 msgstr ""
+
+#: crm/area/api.py
+msgid "This service is not booked online"
+msgstr "Questo servizio non si prenota online"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:60
 msgid "This will delete selected items and items linked to it, are you sure?"
@@ -7898,6 +8054,10 @@ msgstr ""
 msgid "Unsaved Changes"
 msgstr "Modifiche non salvate"
 
+#: crm/scheduling/attese_pubblico.py
+msgid "Until {0}"
+msgstr "Fino al {0}"
+
 #: frontend/src/components/CollapsibleSection.vue:21
 #: frontend/src/components/FieldLayoutEditor.vue:32
 #: frontend/src/components/Modals/CreateDocumentModal.vue:8
@@ -8104,6 +8264,10 @@ msgstr "Viste"
 msgid "Visibility"
 msgstr "Visibilità"
 
+#: crm/scheduling/attese_pubblico.py
+msgid "Waiting list: {0}"
+msgstr "Lista d'attesa: {0}"
+
 #: frontend/src/pages/PersonaForm.vue:80
 msgid "Walk-ins"
 msgstr ""
@@ -8196,6 +8360,10 @@ msgstr ""
 msgid "WhatsApp Templates"
 msgstr ""
 
+#: crm/scheduling/attese_pubblico.py
+msgid "When a place frees up we write to you: it goes to whoever confirms first."
+msgstr "Quando si libera un posto ti scriviamo: va a chi conferma per primo."
+
 #: frontend/src/components/ConditionsFilter/CFCondition.vue:20
 #: frontend/src/components/Filter.vue:43 frontend/src/components/Filter.vue:83
 msgid "Where"
@@ -8208,6 +8376,10 @@ msgstr "Larghezza"
 #: frontend/src/components/ColumnSettings.vue:113
 msgid "Width can be in number, pixel or rem (eg. 3, 30px, 10rem)"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "With {0}"
+msgstr "Con {0}"
 
 #. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
 #. Option for the 'Type' (Select) field in DocType 'CRM Lead Status'
@@ -8242,6 +8414,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
 msgid "Working Hours"
 msgstr ""
+
+#: crm/fcrm/doctype/crm_waiting_list_settings/crm_waiting_list_settings.py
+msgid "Write the SMS number with its prefix, like +39…"
+msgstr "Scrivi il numero degli SMS col prefisso, come +39…"
 
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:531
 #: frontend/src/components/Filter.vue:601
@@ -8281,6 +8457,14 @@ msgstr ""
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.py:262
 msgid "You are not permitted to update this call log."
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "You are on the waiting list for {0} at {1}"
+msgstr "Sei in lista d'attesa per {0} da {1}"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "You are on the waiting list — {0}"
+msgstr "Sei in lista d'attesa — {0}"
 
 #: crm/templates/emails/helpdesk_invitation.html:22
 msgid "You can also copy-paste following link in your browser"
@@ -8342,6 +8526,14 @@ msgstr ""
 msgid "You will need a Meta developer account and an access token to sync leads from Facebook. Read more"
 msgstr "Avrai bisogno di un account Meta developer e un token di accesso per sincronizzare i contatti da Facebook. Per saperne di più"
 
+#: crm/scheduling/attese.py
+msgid "Your appointment is booked"
+msgstr "Il tuo appuntamento è prenotato"
+
+#: crm/scheduling/attese.py
+msgid "Your appointment is booked — {0}, {1}"
+msgstr "Il tuo appuntamento è prenotato — {0}, {1}"
+
 #: crm/api/todo.py:110
 msgid "Your assignment on task {0} has been removed by {1}"
 msgstr ""
@@ -8366,9 +8558,17 @@ msgstr ""
 msgid "Zoho CRM"
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "a place you were waiting for has freed up at {0}:"
+msgstr "si è liberato un posto che aspettavi da {0}:"
+
 #: frontend/src/components/Activities/CommentArea.vue:9
 msgid "added a"
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "afternoon"
+msgstr "pomeriggio"
 
 #. Option for the 'Color' (Select) field in DocType 'CRM Deal Status'
 #. Option for the 'Color' (Select) field in DocType 'CRM Lead Status'
@@ -8376,6 +8576,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "amber"
 msgstr ""
+
+#: crm/scheduling/attese_pubblico.py
+msgid "any time"
+msgstr "a qualsiasi ora"
 
 #: crm/api/todo.py:119
 msgid "assigned a new task {0} to you"
@@ -8469,6 +8673,10 @@ msgstr "desk"
 #: frontend/src/components/Settings/Hierarchy/HierarchyRow.vue:47
 msgid "disabled"
 msgstr "disattivato"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "evening"
+msgstr "sera"
 
 #. Option for the 'Service Provider' (Select) field in DocType 'FCRM Settings'
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
@@ -8662,6 +8870,10 @@ msgstr ""
 msgid "minutes before"
 msgstr ""
 
+#: crm/scheduling/attese_pubblico.py
+msgid "morning"
+msgstr "mattina"
+
 #: frontend/src/components/FieldLayoutEditor.vue:513
 msgid "next"
 msgstr ""
@@ -8724,6 +8936,10 @@ msgstr "rosso"
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "teal"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "the centre"
+msgstr "il centro"
 
 #: frontend/src/components/Activities/Activities.vue:291
 #: frontend/src/components/Activities/Activities.vue:354
@@ -8816,6 +9032,10 @@ msgstr "{0} giorni"
 msgid "{0} days ago"
 msgstr "{0} giorni fa"
 
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "{0} does not do this service"
+msgstr "{0} non fa questo servizio"
+
 #: frontend/src/utils/index.js:153
 msgid "{0} h"
 msgstr "{0} h"
@@ -8844,6 +9064,14 @@ msgstr ""
 #: frontend/src/components/Modals/EventModal.vue:127
 msgid "{0} is an invalid email address"
 msgstr ""
+
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "{0} is not a class: wait for the service instead"
+msgstr "{0} non è una lezione: aspetta il servizio"
+
+#: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
+msgid "{0} is on this waiting list already"
+msgstr "{0} è già in questa lista d'attesa"
 
 #: frontend/src/components/Modals/ContactModal.vue:106
 #: frontend/src/components/Modals/ConvertToDealModal.vue:169
@@ -8898,10 +9126,18 @@ msgstr "{0} anni fa"
 msgid "{0} yes"
 msgstr ""
 
+#: crm/scheduling/attese.py
+msgid "{0} — guest {1}"
+msgstr "{0} — ospite {1}"
+
 #: frontend/src/components/Questionnaire.vue:92
 #, python-format
 msgid "{0}% complete"
 msgstr ""
+
+#: crm/scheduling/attese.py
+msgid "{0}: a place has freed up for {1}, {2}. It is yours if you confirm by {3}: {4}"
+msgstr "{0}: si è liberato un posto per {1}, {2}. È tuo se confermi entro {3}: {4}"
 
 #: frontend/src/utils/scriptHelpers.js:43
 msgid "⚠️ Avoid using \"trigger\" as a field name — it conflicts with the built-in trigger() method."
