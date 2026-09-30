@@ -222,8 +222,10 @@
                     #actions
                   >
                     <MessageActions
+                      :archivable="canArchive && Boolean(row.item.attach)"
                       @reply="answer(row.item)"
                       @react="(emoji) => react(row.item, emoji)"
+                      @archive="archiving = row.item"
                     />
                   </template>
                 </ChatBubble>
@@ -442,11 +444,21 @@
         <span class="text-p-sm text-ink-gray-6">{{ emptyText }}</span>
       </div>
     </div>
+    <!-- a file the person sent, filed in their clinical archive -->
+    <ClinicDocumentDialog
+      v-if="canArchive"
+      v-model="archivingOpen"
+      :message="archiving?.name"
+      :message-file-name="fileNameOf(archiving)"
+      :suggested-title="(archiving?.message || '').trim().slice(0, 80)"
+      @saved="toast.success(__('Added to the clinical archive'))"
+    />
   </div>
 </template>
 
 <script setup>
 import CallArea from '@/components/Activities/CallArea.vue'
+import ClinicDocumentDialog from '@/components/Clinic/ClinicDocumentDialog.vue'
 import ChatBubble from '@/components/Activities/ChatBubble.vue'
 import CommentArea from '@/components/Activities/CommentArea.vue'
 import EmailArea from '@/components/Activities/EmailArea.vue'
@@ -494,7 +506,7 @@ import {
   isCreditNote,
   worstStatus,
 } from '@/utils/invoicing'
-import { Badge, dayjs, dayjsLocal } from 'frappe-ui'
+import { Badge, dayjs, dayjsLocal, toast } from 'frappe-ui'
 import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { appLocale } from '@/utils/locale'
@@ -543,7 +555,21 @@ function openOnCalendar(kind, item) {
 }
 
 const { isNewestFirst } = useTimelinePreferences()
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
+
+// where the clinic is on, a file received goes to the person's clinical archive
+const canArchive = computed(() => puo('clinica.archivia'))
+const archiving = ref(null)
+const archivingOpen = computed({
+  get: () => Boolean(archiving.value),
+  set: (open) => {
+    if (!open) archiving.value = null
+  },
+})
+
+function fileNameOf(message) {
+  return decodeURIComponent((message?.attach || '').split('/').pop() || '')
+}
 const { retrying, retry, react, answer } = useWhatsAppActions({
   list: whatsappMessages,
   reply,

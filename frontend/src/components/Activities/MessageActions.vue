@@ -1,5 +1,7 @@
 <!--
   Answer it, react to it: the two things done to a message you are reading.
+  Where the clinic is on, a file the person sent can also go to their clinical
+  archive (`archivable`).
 
   Beside the bubble, on its outer side, when the pointer is on it. They used to
   be a chevron inside the bubble's top corner on a white radial gradient — a
@@ -34,6 +36,15 @@
         </button>
       </Tooltip>
     </IconPicker>
+    <Tooltip v-if="archivable" :text="__('Add to the clinical archive')">
+      <button
+        class="grid size-7 place-items-center rounded-full bg-surface-elevation-2 text-ink-gray-6 shadow-sm ring-1 ring-outline-gray-1 transition-colors hover:text-ink-gray-9"
+        :aria-label="__('Add to the clinical archive')"
+        @click="emit('archive')"
+      >
+        <span class="lucide-folder-input size-3.5" aria-hidden="true" />
+      </button>
+    </Tooltip>
   </div>
 </template>
 
@@ -42,7 +53,8 @@ import IconPicker from '@/components/IconPicker.vue'
 import { Tooltip } from 'frappe-ui'
 import { ref } from 'vue'
 
-const emit = defineEmits(['reply', 'react'])
+defineProps({ archivable: { type: Boolean, default: false } })
+const emit = defineEmits(['reply', 'react', 'archive'])
 
 const emoji = ref('')
 // the six quick ones first; the whole picker is one click further
