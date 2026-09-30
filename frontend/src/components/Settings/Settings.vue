@@ -139,6 +139,8 @@ import BrandSettings from '@/components/Settings/BrandSettings.vue'
 import CalendarSettings from '@/components/Settings/CalendarSettings.vue'
 import HomeActions from '@/components/Settings/HomeActions.vue'
 import FormsSettings from '@/components/Settings/Forms/FormsSettings.vue'
+import AssistantSettings from '@/components/Settings/AssistantSettings.vue'
+import LucideBot from '~icons/lucide/bot'
 import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
 import DashboardSettings from '@/components/Settings/DashboardSettings.vue'
 import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplatePage.vue'
@@ -560,6 +562,17 @@ const tabs = computed(() => {
           icon: ERPNextIcon,
           component: markRaw(ERPNextSettings),
           condition: () => puo('tecnico.erpnext'),
+        },
+        {
+          // documentation support: the register for the manager, the model for the agency
+          label: __('Assistant'),
+          key: 'Assistant',
+          icon: markRaw(LucideBot),
+          component: markRaw(AssistantSettings),
+          condition: () =>
+            puo('assistente.registro') ||
+            puo('assistente.registro_clinico') ||
+            puo('tecnico.integrazioni'),
         },
       ],
     },

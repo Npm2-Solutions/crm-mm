@@ -19,14 +19,23 @@
           }}
         </p>
       </div>
-      <Button
-        class="shrink-0"
-        :label="__('New')"
-        icon-left="lucide-plus"
-        variant="solid"
-        @click="openCreate"
-      />
+      <div class="flex shrink-0 gap-2">
+        <!-- the assistant reads the centre's own paper form -->
+        <Button
+          v-if="assistant.data?.functions?.form_from_paper"
+          :label="__('From a paper form')"
+          icon-left="lucide-sparkles"
+          @click="paper = true"
+        />
+        <Button
+          :label="__('New')"
+          icon-left="lucide-plus"
+          variant="solid"
+          @click="openCreate"
+        />
+      </div>
     </div>
+    <PaperFormDialog v-model="paper" @created="(name) => $emit('open', name)" />
 
     <div class="flex h-full flex-col overflow-y-auto">
       <div
@@ -164,6 +173,7 @@
 import { STARTERS } from '@/utils/moduliStarters'
 import { formatDate } from '@/utils'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
+import PaperFormDialog from '@/components/Settings/Forms/PaperFormDialog.vue'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import {
   Badge,
@@ -180,6 +190,12 @@ import {
 import { h, reactive, ref } from 'vue'
 
 const emit = defineEmits(['open'])
+
+const paper = ref(false)
+const assistant = createResource({
+  url: 'crm.assistente.modello.get_status',
+  auto: true,
+})
 
 const templates = createResource({
   url: 'crm.moduli.modelli.get_templates',
