@@ -554,7 +554,7 @@ Una PR per riga, ognuna utile da sola:
    clinica (fatto il 30/09/2026);
 5. i documenti della persona e la consegna nel CRM; i referti restano alla clinica
    (fatto il 30/09/2026);
-6. i preventivi nel CRM, che l'odontoiatria estende;
+6. i preventivi nel CRM, che l'odontoiatria estende (fatto il 30/09/2026);
 7. "Nuovi clienti" e "Diventato cliente" nel CRM;
 8. un solo builder dei moduli, con l'uso "Scheda" e i moduli del sito;
 9. le liste d'attesa;

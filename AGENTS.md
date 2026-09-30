@@ -170,7 +170,7 @@ of their own, linked to the parent, never the parent's record.
 |---|---|
 | `crm/area/accesso.py` + `crm/www/area.py` | The door: invitation (`CRM Area Access`, role "Client Area User"), a code by email, step-up before a download; every call derives the session's people on the server |
 | `crm/area/api.py` | Appointments with the booking page's link, cycles, invoices; "Prepare your appointment": the owed forms, opened on `/modulo` with the area's session |
-| `crm/area/sezioni.py` | The places other modules add to the area (`registra_sezione`): the plans, the clinic's documents and care plans, shown to whom they have something |
+| `crm/area/sezioni.py` | The places other modules add to the area (`registra_sezione`): the plans, the documents given online, the quotes, shown to whom they have something |
 | `crm/area/messaggi.py` | The board (`CRM Area Message`): the desk writes administration, the chat passes questions; other kinds come from other modules (`registra_tipo`, the clinic's "Care") with their own readers |
 | `crm/area/chat.py` + `chat_regole.py` | The chat about hours and bookings, for any centre: emergency words get 112 before any model, health goes to a person, the rest only from what the centre wrote |
 | `crm/area/passkey.py`, `crm/area/avvisi.py` | Passkeys (WebAuthn); news by WhatsApp or SMS besides the email, only to the person's own number that wrote to the centre (`CRM Area Settings`) |
@@ -211,6 +211,21 @@ and its rule on going online. A document with the mark is read like the clinical
 record, every listing in the access log; without the clinic only whom it is for and
 who added it read it.
 
+### Quotes (`crm/preventivi`, followed to the end by the agenda)
+| File | Role |
+|---|---|
+| `crm/preventivi/regole.py` | A quote without a site: its states, the rows' amounts and sums, the phases, which row an appointment takes, what is checked before it is proposed — tested with plain `unittest` |
+| `crm/preventivi/api.py` | `CRM Quote` on the person's Quotes tab: a draft of its author (`preventivi.scrivi`); proposed, read with `preventivi.vedi` and the person, recorded accepted or declined by the author or `preventivi.gestisci` (the desk); a new version, closed half-way; what a module adds to the rows (`registra_estensione`) |
+| `crm/preventivi/documento.py` + `templates/preventivo.html` | The quote's PDF, made once when it is proposed, private |
+| `crm/preventivi/appuntamenti.py` | `CRM Appointment` doc_events: an appointment of a service still to do takes its row at the price agreed, done when the person came, given back when cancelled |
+| `crm/preventivi/pipeline.py` + `CRM Quote Settings` | The "Quotes" pipeline: delivered, won, lost with the reason; which one and how long a quote holds, in Settings > Pipelines |
+| `crm/preventivi/area.py` | The quotes proposed and going on, in the person's area (the Plans page) |
+| `frontend/src/components/Quotes/` + `utils/preventivi.js` | The Quotes tab (`QuotesCard`), the editor and reader (`QuoteDialog`: a module's row fields where the server offers them); the same sums as `regole.py` — tested; `area/components/QuoteCard.vue` in the area |
+
+With the clinic on, what a health professional writes carries the mark: a dentist's
+care plan is a quote read like the clinical record (and by the desk once proposed),
+every opening in the access log.
+
 ### Verticals (`crm/verticali.py`)
 A module of the plan that makes the CRM the software of a trade registers a
 `Verticale`: its words over the CRM's (pairs of English strings: the SPA gets them
@@ -231,7 +246,7 @@ the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
 | `crm/clinica/piani_regole.py` | The clinic's kinds on the CRM's plans (`crm.piani.regole`): a menu, an exchange diet, exercises at home, who writes which by qualification; a food and a food group; the nutrients and the shopping list — pure, tested with plain `unittest` |
 | `crm/clinica/piani.py` + `crm/clinica/custom/` | The clinic's plans on `crm.piani`: its kinds of item, what a diet keeps (the calories shown, a menu's targets: custom fields on `CRM Personal Plan`), who reads health data (the dossier) and what is health data by its author (a health professional's plan), the foods (`Clinic Food`), the shopping list |
-| `crm/clinica/area/piani.py`, `crm/clinica/parole.py` | The clinic's places in the client area (dental care plans, a diet's shopping list; registered with `crm.area.sezioni`) and its words over the CRM's: patients, the patient area, the visit to prepare (`crm.verticali`) |
+| `crm/clinica/area/piani.py`, `crm/clinica/parole.py` | The clinic's places in the client area (a diet's shopping list; registered with `crm.area.sezioni`) and its words over the CRM's: patients, the patient area, the visit to prepare (`crm.verticali`) |
 | `crm/clinica/documenti.py` + `crm/clinica/custom/crm_document.json` | The clinic's documents on `crm.documenti`: its kinds (health data, added with `clinica.archivia`, a practitioner's), who reads one ("only me", a discipline), obscured, never online, a signed visit's report (`dal_referto`); online only with the `online_reports` consent, 45 days |
 
 ### The assistant (`crm/assistente`, its own plan module)
@@ -258,9 +273,9 @@ the draft with `modello.accetta`.
 | `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` | The foods (`piani.librerie`): a food table read on the server (CIQUAL, BDA-IEO and CREA with the licence declared, any sheet in their shape), its columns and categories checked before import, energy from the EU factors when missing; imported again, numbers update and the centre's words stay |
 | `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clinic > Foods: the list, correcting a food, the import of a table; the exercises' page is the CRM's (`Settings/Plans/`) |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
-| `crm/clinica/cure_regole.py` | Dental care plans without a site: FDI teeth and arches, surfaces, the chart's conditions, a plan's states, sums and which treatment an appointment takes — tested with plain `unittest` |
-| `crm/clinica/cure.py` | The odontogram (`Clinic Dental Chart`) and the care plans (`Clinic Care Plan`, `cure.scrivi` / `cure.preventivi`): a quote as a PDF (`templates/preventivo.html`), the quotes pipeline (`pipeline.preventivo_consegnato`/`_chiuso`), appointments taking treatments through `CRM Appointment` doc_events |
-| `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue`, `CarePlanDialog.vue` + `utils/cure.js` | The Clinic tab's teeth and care plans, the chart, the plan's editor and reader; the same rules as `cure_regole.py` — tested; `area/components/CarePlanCard.vue` in the area |
+| `crm/clinica/cure_regole.py` | The teeth without a site: FDI teeth and arches, surfaces, the chart's conditions, the teeth on a quote's rows (`valida_denti`) — tested with plain `unittest` |
+| `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
+| `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
 
 ### The brand
 | File | Role |
@@ -307,8 +322,15 @@ chart, diets and rehabilitation. What a beauty centre or a gym would use the sam
 way belongs in the CRM, and the clinic registers its rules on it, with the "health
 data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
 30/09/2026). The client area moved there first (`crm/area`), then plans,
-programmes and exercises (`crm/piani`); a person's documents, quotes and the new
-clients pipeline follow, in that order.
+programmes and exercises (`crm/piani`), a person's documents (`crm/documenti`) and
+quotes (`crm/preventivi`); the new clients pipeline follows.
+
+A module moved to the CRM keeps its data through two patches: before the sync its
+DocTypes are renamed (`*_are_the_crms`), after it what they held is put back
+(`*_keep_their_health_data`, which reloads its DocTypes first and never skips in
+silence). Before a migrate syncs anything, `crm/migrazione.py` rebuilds the map of
+the modules from `modules.txt`: the cache may hold the previous release's, and a
+new module would not sync.
 
 ## Mobile
 
@@ -334,7 +356,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **774 tests · ~15s** — all must pass before committing
+- **775 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
