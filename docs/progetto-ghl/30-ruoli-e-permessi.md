@@ -281,6 +281,8 @@ Dal 30/09/2026 anche:
   direzione.
 - `clinica.fuori_equipe`: aprire una cartella fuori équipe scrivendo il motivo.
   L'operatore.
+- `clinica.consegna`: consegnare un referto al paziente, a mano o online per 45
+  giorni. L'operatore i suoi, la direzione tutti.
 
 La visibilità "la propria disciplina" è una scelta dell'operatore sulla sua voce
 (`crm/clinica/dossier.py`).

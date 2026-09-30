@@ -1681,3 +1681,24 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | L'apertura dura 24 ore e non cambia le regole del dossier | Rende la persona "in cura" per un giorno; senza consenso al dossier non apre le voci degli altri |
 | L'apertura, con il motivo, è nel registro degli accessi del manager | Doc 30: "e il manager lo vede" |
 | `Clinic Access Grant` non si modifica né si cancella, e non fa diventare paziente | È la traccia di un accesso, non un dato sanitario (`test_confine`) |
+
+## Fase 2, la consegna del referto
+
+> **Completato** (30/09/2026). Il referto al paziente, a mano o online per 45
+> giorni con il consenso (`crm/clinica/consegna.py`, `Clinic Report Delivery`,
+> `/referto/<link>`). Con questa la fase 2 è completa.
+> `docs/gestionale-medico/README.md`, "La consegna del referto".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Online solo con il consenso ai referti online, e mai per "Never online" | Linee guida 2009 e FAQ: adesione facoltativa; niente esiti genetici o HIV online; il paziente può escludere un esame |
+| Il link per email, il codice a voce o su carta, mostrato una volta | "La password per un'altra strada": un indirizzo sbagliato da solo non apre niente (il Garante ha ammonito un centro nel 2025 per un referto mandato all'indirizzo sbagliato) |
+| L'email non dice né il titolo né il contenuto | Il messaggio dice solo che c'è qualcosa, come chiedono le linee guida |
+| 45 giorni al massimo, poi non si apre più | Più a lungo diventerebbe un dossier, con un consenso a parte |
+| Cinque codici sbagliati chiudono la consegna; il ritiro è immediato | Accesso sospeso subito se le credenziali si perdono |
+| La sessione dura dieci minuti e non è il codice | Chi ha scaricato non lascia aperto il documento a chi usa lo stesso dispositivo dopo |
+| Un codice nuovo ritira quello aperto | Un solo modo valido per volta di aprire lo stesso documento |
+| Senza email del centro la consegna resta, e il link si dà con il codice | La consegna non deve dipendere dalla posta |
+| La consegna non si cancella | È la prova di cosa è stato dato e a chi |

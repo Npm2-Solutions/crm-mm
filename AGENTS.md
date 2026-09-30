@@ -159,12 +159,14 @@ of their own, linked to the parent, never the parent's record.
 | `crm/clinica/cartella.py` | The clinical record: who reads it, the Clinic tab calls, the access log, the timeline padlock |
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
+| `crm/clinica/consegna.py` + `crm/www/referto.*` | Giving a report: by hand, or online 45 days with the consent; the link by email, the code another way; `/referto/<link>` opens it (`Clinic Report Delivery`) |
 | `crm/clinica/dossier.py` | Who reads what the others wrote: the dossier (consent and care), obscured episodes, "my discipline", the opening out of the care team with a reason (`Clinic Access Grant`, `crm_people_in_care`) |
 | `crm/clinica/archivio.py` | The clinical archive (`Clinic Document`): uploads, a signed visit's report, a WhatsApp file; read like the record, removed the same day or by the director, every listing and download in the access log |
 | `crm/clinica/sintesi.py` | The patient's summary (`Clinic Summary Value`): answers of signed forms and sheets proposed, a practitioner confirms, discards or writes by hand |
 | `frontend/src/components/Clinic/ClinicSummary.vue`, `ClinicArea.vue` | The summary card; the Clinic tab's visits, free or on a clinical sheet |
 | `frontend/src/components/Clinic/ClinicArchive.vue`, `ClinicDocumentDialog.vue` | The archive card; adding or putting right a document, also from a chat message |
 | `frontend/src/components/Clinic/ObscureDialog.vue`, `OutOfCareDialog.vue` | Obscuring or revealing an episode; opening a record out of one's care (People page) |
+| `frontend/src/components/Clinic/DeliverDialog.vue` | Giving a document to the patient from the archive: by hand, or online with the code |
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 

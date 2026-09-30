@@ -207,7 +207,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 | Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | Il [registro dei consensi](#il-registro-dei-consensi) (29/09/2026): quale testo, quale versione, quando, come; la spunta privacy di `/prenota` ci finisce, e la pagina chiede anche il marketing se il centro vuole. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | I consensi della clinica: dossier, referti online, assistente |
-| Clinica | La sezione Clinica della persona (29–30/09/2026): visite libere o sulla scheda della specialità, firmate e poi solo integrate, con gli allegati, il referto in PDF/A e la sintesi del paziente; i moduli e i consensi informati firmati; il registro degli accessi alla cartella | ~~Cartella per specialità, referti, consensi informati, allegati~~: fatti il 30/09/2026. L'archivio dei documenti, il registro degli accessi anche sull'archivio, dossier e oscuramento: fatti il 30/09/2026. Resta la consegna del referto |
+| Clinica | La sezione Clinica della persona (29–30/09/2026): visite libere o sulla scheda della specialità, firmate e poi solo integrate, con gli allegati, il referto in PDF/A e la sintesi del paziente; i moduli e i consensi informati firmati; il registro degli accessi alla cartella | ~~Cartella per specialità, referti, consensi informati, allegati~~: fatti il 30/09/2026. L'archivio dei documenti, il registro degli accessi anche sull'archivio, dossier e oscuramento, la consegna del referto a mano e online: fatti il 30/09/2026 |
 | Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`), e dalla PR #101 le fatture compaiono anche nella cronologia della persona: `invoices_on` in `crm/api/activities.py` le legge con `frappe.get_all`, che salta i permessi (solo intestazione, importi e stati, niente righe) | Tre livelli (Segreteria, Manager amministrativo, Operatore) con la gestione dei ruoli nel CRM; System Manager e Administrator solo all'agenzia, mentre oggi l'"Admin" del CRM **è** System Manager ([requisiti §1](./requisiti.md#1-tre-livelli-e-il-site-resta-vostro)). Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
 | Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
 
@@ -758,6 +758,38 @@ sul dossier sanitario (4/6/2015). Le regole stanno in `crm/clinica/dossier.py`.
 
 Resta alla fase 2 la consegna del referto al paziente, a mano o online per 45
 giorni con il consenso ai referti online.
+
+### La consegna del referto
+
+Fatta il 30/09/2026 (fase 2, la nona e ultima parte), secondo le linee guida del
+Garante sui referti online (19/11/2009) e le sue FAQ (`crm/clinica/consegna.py`,
+`Clinic Report Delivery`, `DeliverDialog.vue`).
+
+- **Dall'archivio**, "Give it to the patient" su un referto o un documento
+  (`clinica.consegna`: l'operatore per i suoi, la direzione per tutti).
+- **A mano**, sempre possibile: si scrive a chi, che sia il paziente o chi l'ha
+  ritirato per lui, e chi l'ha dato e quando.
+- **Online per 45 giorni**, solo con il consenso ai referti online e mai per un
+  documento segnato "Never online" (esami genetici, HIV, o un esame che il
+  paziente ha escluso).
+  - L'email dice solo che un documento è pronto, con il link: né il titolo né il
+    contenuto.
+  - Il link si apre con un codice di sei cifre che l'operatore dà al paziente in
+    un altro modo: a voce o stampato. Il codice si vede una volta sola e non sta
+    nell'email, così un indirizzo sbagliato da solo non apre niente.
+  - Senza email del centro il link si dà insieme al codice.
+- **La pagina `/referto/<link>`** chiede il codice e poi dà il documento per
+  dieci minuti. Cinque codici sbagliati la chiudono; un documento ritirato o
+  scaduto non si apre più.
+- **Ogni passaggio è nel registro degli eventi**: messo online, codice
+  sbagliato, aperto, scaricato, ritirato. La riga dell'archivio dice come è stato
+  dato: a mano a chi, online fino a quando, se è stato scaricato.
+- **Un codice nuovo** prende il posto di quello aperto; "Withdraw" toglie subito
+  il documento da internet.
+
+Con questa parte la fase 2 è completa. Il sigillo del centro e la marca
+temporale sui PDF (pyHanko) arrivano con il certificato e il fornitore di firma.
+L'area del paziente della fase 3 mostrerà le stesse consegne.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
