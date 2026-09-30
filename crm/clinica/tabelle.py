@@ -36,6 +36,8 @@ import math
 import re
 import unicodedata
 
+from crm.clinica.piani_regole import GRUPPI
+
 CIBO_CAMPI = (
 	"code",
 	"name",
@@ -50,21 +52,6 @@ CIBO_CAMPI = (
 )
 #: What the library keeps of a food: its values for 100 g.
 VALORI = ("kcal", "protein_g", "carbs_g", "fat_g", "fibre_g")
-GRUPPI = (
-	"Cereals and tubers",
-	"Legumes",
-	"Meat",
-	"Fish",
-	"Eggs",
-	"Milk and dairy",
-	"Vegetables",
-	"Fruit",
-	"Oils and fats",
-	"Nuts and seeds",
-	"Sweets",
-	"Drinks",
-	"Other",
-)
 ALTRO = "Other"
 #: The most a table's sheet may hold: a table is a thousand foods, not a database.
 MAX_RIGHE = 20000

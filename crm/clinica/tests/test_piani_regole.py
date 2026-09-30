@@ -207,3 +207,106 @@ class LaRicettaProposta(UnitTestCase):
 		)
 		self.assertIsNone(p.ricetta({"foods": [{"id": "pasta", "grams": 80}]}, CASI["foods"]))
 		self.assertIsNone(p.ricetta("pasta", CASI["foods"]))
+
+
+SPESA_CIBI = {
+	"latte": {"food_name": "Latte parzialmente scremato", "food_group": "Milk and dairy"},
+	"pasta": {"food_name": "Pasta di semola", "food_group": "Cereals and tubers"},
+	"merluzzo": {"food_name": "Merluzzo", "food_group": "Fish"},
+	"olio": {"food_name": "Olio extravergine", "food_group": "Oils and fats"},
+}
+
+
+class LaSpesa(UnitTestCase):
+	"""The shopping list: the menu's foods over the days to shop for, as many times
+	a week as they are asked, and an exchange diet's portions by group."""
+
+	def menu(self):
+		momenti = [
+			momento("colazione", "Colazione"),
+			momento("pranzo", "Pranzo", day="Monday"),
+			momento("cena", "Cena"),
+		]
+		voci = [
+			{"key": "latte", "moment": "colazione", "kind": p.CIBO, "food": "latte", "quantity_g": 200},
+			{"key": "pasta", "moment": "pranzo", "kind": p.CIBO, "food": "pasta", "quantity_g": "80"},
+			# fish at dinner, but only twice a week
+			{
+				"key": "pesce",
+				"moment": "cena",
+				"kind": p.CIBO,
+				"food": "merluzzo",
+				"quantity_g": 150,
+				"times_per_week": 2,
+			},
+			{"key": "olio", "moment": "cena", "kind": p.CIBO, "food": "olio"},
+			{"key": "acqua", "moment": "cena", "kind": p.ABITUDINE, "text": "Acqua"},
+		]
+		return momenti, voci
+
+	def test_una_settimana_da_lunedi(self):
+		momenti, voci = self.menu()
+		giorni = p.giorni_del_periodo(LUNEDI, 7)
+		lista = p.spesa(momenti, voci, SPESA_CIBI, giorni)
+		self.assertEqual(lista["days"], 7)
+		self.assertEqual(
+			[(r["food"], r["grams"], r["times"], r["each"]) for r in lista["foods"]],
+			[
+				("pasta", 80, 1, 80),
+				("merluzzo", 300, 2, 150),
+				("latte", 1400, 7, 200),
+				# no grams: to buy all the same, without a number
+				("olio", None, 7, None),
+			],
+		)
+		self.assertEqual(lista["groups"], [])
+
+	def test_le_volte_a_settimana_ricominciano_il_lunedi(self):
+		momenti, voci = self.menu()
+		# from Thursday for a week: two dinners of fish this week, two the next
+		giorni = p.giorni_del_periodo(LUNEDI + datetime.timedelta(days=3), 7)
+		pesce = next(
+			r for r in p.spesa(momenti, voci, SPESA_CIBI, giorni)["foods"] if r["food"] == "merluzzo"
+		)
+		self.assertEqual((pesce["times"], pesce["grams"]), (4, 600))
+
+	def test_solo_i_giorni_del_piano(self):
+		giorni = p.giorni_del_periodo(LUNEDI, 14, fine=LUNEDI + datetime.timedelta(days=2))
+		self.assertEqual(giorni, [LUNEDI + datetime.timedelta(days=n) for n in range(3)])
+		self.assertEqual(len(p.giorni_del_periodo(LUNEDI, 90)), p.MAX_GIORNI_SPESA)
+		self.assertEqual(p.giorni_del_periodo(LUNEDI, 7, inizio=LUNEDI + datetime.timedelta(days=10)), [])
+
+	def test_quantita_diverse_non_hanno_un_ogni_volta(self):
+		momenti = [momento("colazione", "Colazione"), momento("merenda", "Merenda")]
+		voci = [
+			{"key": "a", "moment": "colazione", "kind": p.CIBO, "food": "latte", "quantity_g": 200},
+			{"key": "b", "moment": "merenda", "kind": p.CIBO, "food": "latte", "quantity_g": 125},
+		]
+		[latte] = p.spesa(momenti, voci, SPESA_CIBI, p.giorni_del_periodo(LUNEDI, 2))["foods"]
+		self.assertEqual((latte["grams"], latte["times"], latte["each"]), (650, 4, None))
+
+	def test_gli_scambi_per_gruppo(self):
+		momenti = [momento("pranzo", "Pranzo")]
+		voci = [
+			{
+				"key": "c",
+				"moment": "pranzo",
+				"kind": p.GRUPPO,
+				"food_group": "Cereals and tubers",
+				"portions": 1,
+			},
+			{
+				"key": "f",
+				"moment": "pranzo",
+				"kind": p.GRUPPO,
+				"food_group": "Fish",
+				"portions": 1.5,
+				"times_per_week": 3,
+			},
+		]
+		lista = p.spesa(momenti, voci, {}, p.giorni_del_periodo(LUNEDI, 7))
+		self.assertEqual(
+			lista["groups"],
+			[{"food_group": "Cereals and tubers", "portions": 7}, {"food_group": "Fish", "portions": 4.5}],
+		)
+		self.assertEqual(lista["foods"], [])
