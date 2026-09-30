@@ -1,10 +1,16 @@
-# CRM — Project Context
+# DottorCloud — Project Context
 
 ## What this project is
 
-Frappe CRM frontend. Vue 3 + frappe-ui. The backend is Frappe Python. Scripts in
-`frontend/` only; Python in `crm/` (Frappe app). No build step for Form Scripts —
-they run as evaluated strings in the browser.
+DottorCloud, the management software for medical centres of NPM2 Solutions Srl,
+built as the `crm` app. Vue 3 + frappe-ui frontend; the backend is Python on the
+Frappe framework. Scripts in `frontend/` only; Python in `crm/`. No build step for
+Form Scripts — they run as evaluated strings in the browser.
+
+Everything a user sees says DottorCloud: never "Frappe" nor "Frappe CRM", in the
+CRM, the framework's screens (login, desk, public pages, emails) or a document.
+The framework's name stays where only code sees it (imports, API paths, the
+licence's copyright lines).
 
 ---
 
@@ -208,6 +214,19 @@ the draft with `modello.accetta`.
 | `crm/clinica/cure_regole.py` | Dental care plans without a site: FDI teeth and arches, surfaces, the chart's conditions, a plan's states, sums and which treatment an appointment takes — tested with plain `unittest` |
 | `crm/clinica/cure.py` | The odontogram (`Clinic Dental Chart`) and the care plans (`Clinic Care Plan`, `cure.scrivi` / `cure.preventivi`): a quote as a PDF (`templates/preventivo.html`), the quotes pipeline (`pipeline.preventivo_consegnato`/`_chiuso`), appointments taking treatments through `CRM Appointment` doc_events |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue`, `CarePlanDialog.vue` + `utils/cure.js` | The Clinic tab's teeth and care plans, the chart, the plan's editor and reader; the same rules as `cure_regole.py` — tested; `area/components/CarePlanCard.vue` in the area |
+
+### The brand
+| File | Role |
+|---|---|
+| `brand/` | The logo, the design system (`tokens.css`), video, presentation, ads — `brand/README.md` |
+| `crm/marchio.py` | The name and the marks where the framework shows its own: `applica()` fills Website/System/Navbar Settings and renames the desk's workspace and icons (install and patch), `boot()` renames the apps in the desk, `nome_scelto()` keeps the software's name from passing for a centre's |
+| `crm/hooks.py` (top) | `app_title`, `app_logo_url`, `website_context` (favicon, splash), `extend_bootinfo`, the apps screen |
+| `frontend/src/components/Icons/CRMLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The app's icon, the About with the licence's notices, getting started without a help centre |
+| `crm/public/images/` (`dottorcloud-icona.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
+| `crm/locale/en.po` | The framework's own words that name it, in English with the product's name (`marchio.PAROLE_DEL_FRAMEWORK`) |
+
+A public page names the centre (`FCRM Settings.brand_name`), never the software:
+`nome_scelto()` treats "DottorCloud" in the site's name as no name at all.
 
 ### The desk's day
 | File | Role |

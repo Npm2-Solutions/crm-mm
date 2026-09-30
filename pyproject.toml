@@ -1,9 +1,9 @@
 [project]
 name = "crm"
 authors = [
-    { name = "Frappe Technologies Pvt. Ltd.", email = "shariq@frappe.io"}
+    { name = "NPM2 Solutions Srl" }
 ]
-description = "Kick-ass Open Source CRM"
+description = "Il gestionale per i centri medici"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
@@ -92,6 +92,4 @@ indent-style = "tab"
 docstring-code-format = true
 
 [project.urls]
-Homepage = "https://frappe.io/crm"
-Repository = "https://github.com/frappe/crm.git"
-"Bug Reports" = "https://github.com/frappe/crm/issues"
+Repository = "https://github.com/Npm2-Solutions/crm-mm.git"
