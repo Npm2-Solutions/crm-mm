@@ -1743,3 +1743,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Il messaggio dell'operatore è della cura, quello della segreteria no | Un dato sanitario fa un paziente e si legge come una visita; un promemoria no |
 | L'email dice solo che c'è una novità | Le notifiche non portano contenuti (design, "Notifiche") |
 | Aprire la bacheca segna letti i messaggi, con chi e quando | Il centro sa che la persona l'ha visto, senza chiederle di confermare |
+
+## Fase 3, i piani nel CRM
+
+> **Completato** (30/09/2026). `Clinic Plan` con i suoi momenti e le sue voci, le
+> librerie `Clinic Food` e `Clinic Exercise`, le regole pure in
+> `crm/clinica/piani_regole.py`, l'editor nella scheda Clinica.
+> `docs/gestionale-medico/README.md`, "I piani, nel CRM".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Momenti e voci in due tabelle, la voce che punta al suo momento con una chiave | Frappe non annida le tabelle figlie (design, "I piani"); la chiave resta la stessa tra una versione e l'altra |
+| Il tipo di piano lo decide la qualifica dell'erogatore, in una tabella del codice | "La dieta la firmano medico, biologo nutrizionista o dietista": è la legge, non una preferenza del centro |
+| Pubblicato non si riscrive: una nuova versione lo sostituisce, o si chiude | Come la cartella: si sa sempre cosa il paziente aveva davanti in un giorno |
+| Pubblicare chiude l'altro piano dello stesso tipo della persona | Una dieta alla volta: due menù aperti si contraddicono |
+| Le librerie sono del centro e crescono dall'editor; i valori vengono da una tabella che si cita | "I conti dei nutrienti li fa il motore dalle tabelle, non l'IA" (design) |
+| L'andamento è fatto, in parte, saltato, senza rosso | "Niente rosso fuori obiettivo, niente classifiche" (design) |
+| Una bozza clinica buttata lascia la scheda paziente con la sua regola, senza il legame | Prima la prima bozza di una visita non si poteva buttare: la scheda la indicava come origine (`DocumentoClinico.on_trash`) |
+

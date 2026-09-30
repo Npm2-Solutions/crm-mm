@@ -288,6 +288,9 @@ Dal 30/09/2026 anche:
   direzione.
 - `area.messaggi`: scrivere alla persona nella sua area. La segreteria per
   l'amministrazione, l'operatore per i suoi e della cura, la direzione.
+- `piani.scrivi`: scrivere e pubblicare i piani (dieta, allenamento, esercizi a
+  casa, abitudini) dei tipi che la propria qualifica consente. L'operatore, per
+  i suoi.
 
 Il paziente non è un livello: entra nell'area come utente del sito con il ruolo
 "Clinic Patient", mai nel CRM.

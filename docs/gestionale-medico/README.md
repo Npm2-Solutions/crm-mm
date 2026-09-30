@@ -855,8 +855,51 @@ Fatti il 30/09/2026 (fase 3, la seconda parte).
   - Nell'area la voce "Messaggi" porta il numero dei nuovi; aprirla li segna
     letti, con chi e quando, e il CRM lo mostra sotto ogni messaggio.
 
-Restano alla fase 3: i piani (alimentazione, allenamento, esercizi) e le
-notifiche fuori dall'email.
+### I piani, nel CRM
+
+Fatti il 30/09/2026 (fase 3, la terza parte): si scrivono e si pubblicano dalla
+scheda Clinica, riquadro "Plans" (`crm/clinica/piani.py`, `Clinic Plan`).
+
+- **Cinque tipi**, con lo stesso modello a righe: un piano ha i suoi momenti (un
+  pasto di un giorno, una seduta; ogni giorno o un giorno della settimana, con
+  l'ora se serve) e le voci, ciascuna nel suo momento.
+  - Il **menù** tiene alimenti con la quantità e cosa si può mangiare invece.
+  - La **dieta a scambi** tiene le porzioni di un gruppo di alimenti; l'alimento
+    lo sceglie il paziente.
+  - L'**allenamento** e gli **esercizi a casa** tengono esercizi con serie,
+    ripetizioni, durata, recupero e carico.
+  - Le **abitudini** tengono frasi ("due litri d'acqua").
+  - Un'abitudine sta bene in ogni piano, e ogni voce può chiedere "tante volte a
+    settimana".
+- **Chi scrive cosa lo decide la qualifica** del suo erogatore
+  (`crm/clinica/piani_regole.py`, con i suoi test senza sito):
+  - la dieta il medico, il biologo nutrizionista o il dietista;
+  - gli esercizi di riabilitazione a casa il fisioterapista o il medico;
+  - allenamento e abitudini chi scrive piani (`piani.scrivi`).
+  - Un personal trainer non dà diete.
+- **Una bozza è del suo autore.** Pubblicato, il piano va nell'area della persona,
+  con l'email che dice solo che c'è una novità, e non si riscrive:
+  - si fa una **nuova versione**, una bozza che lo sostituisce quando la si
+    pubblica;
+  - oppure lo si **chiude**, e resta nella cartella.
+  - Pubblicare chiude l'altro piano dello stesso tipo della persona: una dieta
+    alla volta.
+- **Chi lo legge**: l'autore, e gli altri come una visita (il dossier, la
+  direzione). Ogni apertura va nel registro degli accessi, con la cartella e
+  l'archivio.
+- **Le librerie** degli alimenti e degli esercizi del centro (`Clinic Food`,
+  `Clinic Exercise`) crescono dall'editor.
+  - Un alimento porta i valori per 100 g e il nome della tabella da cui vengono.
+  - Un esercizio porta come si fa, i muscoli, un'immagine o un video YouTube o
+    Vimeo, e l'autore da citare.
+  - Il paziente vede le calorie solo se l'operatore lo sceglie.
+- Il piano pubblicato mostra all'operatore come sono andate le ultime due
+  settimane, voce per voce: fatto, in parte, saltato, senza rosso.
+
+Restano alla fase 3: i piani nell'area del paziente, con il check-in di un tocco,
+e le notifiche fuori dall'email. Da fare dopo: l'importazione delle tabelle
+(CREA, BDA-IEO con la licenza, CIQUAL) e di exercises-dataset, la lista della
+spesa, i programmi a tappe.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
