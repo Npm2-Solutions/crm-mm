@@ -1590,6 +1590,29 @@ sono del CRM (`crm/clienti`), e la clinica ci mette le sue regole.
   quelli del CRM, e i pazienti di prima sono clienti dal giorno in cui sono
   diventati pazienti.
 
+### La scheda passa al CRM: quella clinica è la scheda col marchio
+
+Fatto il 30/09/2026, la prima metà dell'ottava riga dell'[ordine](./design.md#lordine).
+La scheda trattamento di un centro estetico, la valutazione di una palestra e la
+scheda della visita sono la stessa cosa: un modello che l'operatore scrive
+durante l'appuntamento. Ora è un uso del CRM, "Scheda" (`crm/moduli/modelli.py`),
+accanto al "Modulo" che compila la persona.
+
+- **La scrive l'operatore, al banco**: dalla scheda Moduli della persona, "Compila"
+  offre i moduli e le schede. Compilata e chiusa (con la firma dell'operatore, se
+  il modello la chiede) resta com'era, col suo PDF.
+- **Non si manda e non si deve**: niente link né tablet, niente richiesta alla
+  prenotazione. Una scheda salvata "alla prenotazione" torna "a mano".
+- **Niente consensi**: un consenso lo dà la persona, su un modulo. Una scheda con un
+  campo consenso non si pubblica, e il builder lo dice mentre la scrivi.
+- **Con la clinica, la scheda col marchio "dato sanitario" è la scheda clinica.** Si
+  scrive in cartella, dalla scheda Clinica, e mai fra i moduli. Una scheda senza il
+  marchio resta fra i moduli anche con la clinica accesa.
+- **La clinica non registra più un suo uso**: una patch fa delle "Clinical sheet" di
+  prima delle "Sheet" col marchio, nei modelli e nelle versioni.
+
+I moduli del sito, la seconda metà della riga, vengono dopo.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
