@@ -510,8 +510,8 @@ msgid "Add your first comment"
 msgstr "Ajouter votre premier commentaire"
 
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:11
-msgid "Add, edit, and manage email templates for various CRM communications"
-msgstr "Ajoutez, modifiez et gérez des modèles d'e-mails pour diverses communications CRM"
+msgid "Add, edit, and manage email templates for the messages DottorCloud sends"
+msgstr ""
 
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:12
 msgid "Add, edit, and manage sources for automatic lead syncing to your CRM"
@@ -1669,8 +1669,8 @@ msgid "Configure actions that appear on the home dropdown"
 msgstr "Configurer les actions qui apparaissent dans le menu déroulant de l'accueil"
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:10
-msgid "Configure default settings for your CRM system, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
-msgstr "Configurez les paramètres par défaut de votre système CRM, notamment la devise par défaut, les formats de date et d'autres préférences système pour assurer la cohérence de l'ensemble."
+msgid "Configure default settings for DottorCloud, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
+msgstr ""
 
 #: frontend/src/components/Settings/GeneralSettings.vue:8
 msgid "Configure general settings for your application"
@@ -1852,7 +1852,7 @@ msgid "Copied to Clipboard"
 msgstr "Copié dans le presse-papiers"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create the CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
+msgid "Could not create DottorCloud's custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
 msgstr ""
 
 #: frontend/src/components/Settings/Hierarchy/useRemoveNode.js:16
@@ -2659,7 +2659,7 @@ msgid "ERPNext custom fields not created"
 msgstr ""
 
 #: crm/fcrm/doctype/crm_product/crm_product.py:42
-msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear in CRM Product automatically."
+msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear among DottorCloud's products automatically."
 msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:220
@@ -2677,8 +2677,8 @@ msgid "ERPNext is not installed on this site either install it or enter the URL 
 msgstr "ERPNext n'est pas installé sur ce site. Installez-le ou saisissez l'URL de votre site ERPNext pour vous connecter"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:27
-msgid "ERPNext is not integrated with the CRM"
-msgstr "ERPNext n'est pas intégré au CRM"
+msgid "ERPNext is not integrated with DottorCloud"
+msgstr ""
 
 #: frontend/src/components/Activities/CommentArea.vue:94
 #: frontend/src/components/FieldLayout/Field.vue:110
@@ -2895,8 +2895,8 @@ msgid "Enable"
 msgstr "Activer"
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:112
-msgid "Enable Exotel integration to make and receive calls directly from your CRM"
-msgstr "Activer l'intégration Exotel pour passer et recevoir des appels directement depuis votre CRM"
+msgid "Enable Exotel integration to make and receive calls directly from DottorCloud"
+msgstr ""
 
 #. Label of the enable_forecasting (Check) field in DocType 'FCRM Settings'
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
@@ -2922,8 +2922,8 @@ msgid "Enable Sales Hierarchy Permissions"
 msgstr ""
 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:119
-msgid "Enable Twilio integration to make and receive calls directly from your CRM"
-msgstr "Activer l'intégration Twilio pour passer et recevoir des appels directement depuis votre CRM"
+msgid "Enable Twilio integration to make and receive calls directly from DottorCloud"
+msgstr ""
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:90
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:97
@@ -4688,8 +4688,8 @@ msgid "Manage your account emails and email signature for communication."
 msgstr "Gérez les e-mails de votre compte et votre signature e-mail pour vos communications."
 
 #: frontend/src/components/Settings/EmailAccountList.vue:11
-msgid "Manage your email accounts to send and receive emails directly from CRM. You can add multiple accounts and set one as default for incoming and outgoing emails."
-msgstr "Gérez vos comptes de messagerie pour envoyer et recevoir des e-mails directement depuis le CRM. Vous pouvez ajouter plusieurs comptes et en définir un par défaut pour les e-mails entrants et sortants."
+msgid "Manage your email accounts to send and receive emails directly from DottorCloud. You can add multiple accounts and set one as default for incoming and outgoing emails."
+msgstr ""
 
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:36
 msgid "Manage your email signature"
@@ -7999,8 +7999,8 @@ msgid "User {0} has been removed"
 msgstr "L'utilisateur {0} a été supprimé"
 
 #: crm/api/user.py:158
-msgid "User {0} has been removed from CRM roles."
-msgstr "L'utilisateur {0} a été retiré des rôles CRM."
+msgid "User {0} has been removed from DottorCloud roles."
+msgstr ""
 
 #: crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.py:43
 msgid "User {0} is already mapped to hierarchy node {1}."
@@ -8230,8 +8230,8 @@ msgid "You are not allowed to invite System Managers"
 msgstr "Vous n'êtes pas autorisé(e) à inviter des Administrateurs système"
 
 #: crm/api/session.py:11
-msgid "You are not permitted to access CRM resources."
-msgstr "Vous n'êtes pas autorisé(e) à accéder aux ressources CRM."
+msgid "You are not permitted to access DottorCloud."
+msgstr ""
 
 #: crm/utils/__init__.py:133
 msgid "You are not permitted to access this resource."

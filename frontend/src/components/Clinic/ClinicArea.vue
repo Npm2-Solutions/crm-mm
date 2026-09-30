@@ -415,7 +415,7 @@
       <p class="mb-3 text-p-sm text-ink-gray-6">
         {{
           __(
-            'Every reading of this record and its archive from the CRM, and every file downloaded: who and when, not what they read. Kept two years.',
+            'Every reading of this record and its archive from DottorCloud, and every file downloaded: who and when, not what they read. Kept two years.',
           )
         }}
       </p>

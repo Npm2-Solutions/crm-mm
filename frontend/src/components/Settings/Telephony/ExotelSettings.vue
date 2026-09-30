@@ -125,10 +125,10 @@
                 {{
                   tecnico
                     ? __(
-                        'Enable Exotel integration to make and receive calls directly from your CRM',
+                        'Enable Exotel integration to make and receive calls directly from DottorCloud',
                       )
                     : __(
-                        'The agency connects Exotel, so that you can make and receive calls from the CRM.',
+                        'The agency connects Exotel, so that you can make and receive calls from DottorCloud.',
                       )
                 }}
               </span>

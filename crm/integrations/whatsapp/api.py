@@ -404,7 +404,7 @@ def wire_up_delivery(account) -> list[dict]:
 		problems.append(
 			{
 				"key": "route",
-				"what": _("The hub does not know this number belongs to this CRM"),
+				"what": _("The hub does not know this number belongs to this site"),
 				"detail": str(exc)[:300],
 			}
 		)

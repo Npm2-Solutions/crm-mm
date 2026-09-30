@@ -15,7 +15,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Add or invite the people who work in the CRM, and give each one their levels: what they see and what they can do',
+              'Add or invite the people who work in DottorCloud, and give each one their levels: what they see and what they can do',
             )
           }}
         </p>

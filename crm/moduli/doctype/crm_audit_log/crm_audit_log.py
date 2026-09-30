@@ -17,7 +17,7 @@ class CRMAuditLog(Document):
 		if not self.is_new():
 			frappe.throw(_("An event of the register is not changed"))
 		if not self.flags.dalla_traccia:
-			frappe.throw(_("Events are written by the CRM, not by hand"))
+			frappe.throw(_("Events are written by DottorCloud, not by hand"))
 
 	def on_trash(self):
 		frappe.throw(_("An event of the register is not deleted"), frappe.LinkExistsError)

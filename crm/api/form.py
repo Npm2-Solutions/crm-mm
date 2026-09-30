@@ -311,7 +311,7 @@ def grant_guest_link_access(doctype: str) -> dict:
 	check_system_manager()
 	if not guest_linkable(doctype):
 		frappe.throw(
-			_("{0} can't be opened to guests: it isn't a lookup list on a CRM form.").format(doctype),
+			_("{0} can't be opened to guests: it isn't a lookup list on a DottorCloud form.").format(doctype),
 			frappe.PermissionError,
 		)
 
@@ -547,7 +547,7 @@ def _get_crm_form(name: str):
 	# scope to CRM's own forms — a Web Form from another app that happens to target
 	# CRM Lead/Deal must not be readable/mutable/deletable through this API
 	if doc.module != FORM_MODULE or doc.doc_type not in ALLOWED_DOCTYPES:
-		frappe.throw(_("Not a CRM form"))
+		frappe.throw(_("Not a DottorCloud form"))
 	return doc
 
 

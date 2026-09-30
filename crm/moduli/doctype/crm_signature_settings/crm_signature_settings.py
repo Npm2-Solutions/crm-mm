@@ -14,7 +14,7 @@ class CRMSignatureSettings(Document):
 
 		if self.enabled and self.provider not in firme.fornitori():
 			frappe.throw(
-				_("{0} is not a provider the CRM knows: {1}").format(
+				_("{0} is not a provider DottorCloud knows: {1}").format(
 					frappe.bold(self.provider or "-"), ", ".join(firme.fornitori()) or _("none yet")
 				)
 			)

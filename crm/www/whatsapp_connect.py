@@ -71,7 +71,7 @@ def get_context(context):
 		return context
 	if not parsed:
 		context.error = _(
-			"This connection link is invalid or has expired. Go back to your CRM and press Connect again."
+			"This connection link is invalid or has expired. Go back to DottorCloud and press Connect again."
 		)
 	elif not allowed_site(parsed["site"]):
 		context.error = _("This site is not allowed to connect WhatsApp.")

@@ -10,9 +10,9 @@
         {{ __('This area is for the patients of the centre.') }}
       </p>
       <p class="text-p-sm text-ink-gray-5">
-        {{ __('Your work is in the CRM.') }}
+        {{ __('Your work is in DottorCloud.') }}
       </p>
-      <Button variant="solid" :label="__('Open the CRM')" @click="goCrm" />
+      <Button variant="solid" :label="__('Open DottorCloud')" @click="goCrm" />
     </div>
   </div>
   <router-view v-else-if="route.name === 'Login'" />

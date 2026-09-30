@@ -14,7 +14,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Configure default settings for your CRM system, including default currency, date formats, and other system-wide preferences to ensure consistency across your system.',
+              'Configure default settings for DottorCloud, including default currency, date formats, and other system-wide preferences to ensure consistency across your system.',
             )
           }}
         </p>

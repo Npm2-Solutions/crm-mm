@@ -123,7 +123,7 @@ def _manda_richiesta(destinatari: list[str], modulo: str) -> None:
 		recipients=destinatari,
 		subject=_("{0} started a trial of {1} on {2}").format(chi, modulo, frappe.local.site),
 		message=_(
-			"{0} ({1}) started the {2}-day trial of {3} on {4}. Confirm it in the site's CRM Plan to bill it "
+			"{0} ({1}) started the {2}-day trial of {3} on {4}. Confirm it in the site's plan (Settings > Plan) to bill it "
 			"from next month, or let it end: the module then turns read only."
 		).format(chi, frappe.session.user, GIORNI_DI_PROVA, modulo, frappe.utils.get_url()),
 	)

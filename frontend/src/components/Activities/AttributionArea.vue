@@ -151,7 +151,11 @@
 
                 <template v-else-if="row.kind === 'record'">
                   <div class="flex flex-wrap items-center gap-2 py-1">
-                    <Badge :label="__('In the CRM')" theme="gray" size="sm" />
+                    <Badge
+                      :label="__('In DottorCloud')"
+                      theme="gray"
+                      size="sm"
+                    />
                     <span
                       class="truncate text-base font-medium text-ink-gray-8"
                     >
@@ -292,7 +296,7 @@ const emptyReason = computed(() => {
     )
   if (category === 'CRM UI')
     return __(
-      'This record was created by hand in the CRM, so there is no browsing to show. A journey appears for records that arrive from a form, a booking, or a site running the tracking script.',
+      'This record was created by hand in DottorCloud, so there is no browsing to show. A journey appears for records that arrive from a form, a booking, or a site running the tracking script.',
     )
   if (category === 'Third Party')
     return __(

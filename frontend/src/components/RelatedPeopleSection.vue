@@ -105,7 +105,7 @@
           <div class="flex flex-wrap gap-2" role="group">
             <Button
               :variant="dialog.newPerson ? 'subtle' : 'solid'"
-              :label="__('Someone in the CRM')"
+              :label="__('Someone in DottorCloud')"
               @click="dialog.newPerson = false"
             />
             <Button

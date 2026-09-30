@@ -24,7 +24,7 @@ class CRMForm(Document):
 		if not self.signed_on or not self.answers_hash:
 			# signing goes through `compilazioni.sign_form`, which checks the answers
 			# and keeps the signatures: a submit from anywhere else would skip both
-			frappe.throw(_("A form is signed from the CRM, where its answers are checked"))
+			frappe.throw(_("A form is signed from DottorCloud, where its answers are checked"))
 
 	def on_cancel(self):
 		traccia.traccia(self.doctype, self.name, "cancelled", _("Cancelled, to be amended"))

@@ -14,7 +14,7 @@ def get_session_role_flags():
 	roles = set(frappe.get_roles())
 
 	if not roles.intersection(crm_allowed_roles()):
-		frappe.throw(_("You are not permitted to access CRM resources."), frappe.PermissionError)
+		frappe.throw(_("You are not permitted to access DottorCloud."), frappe.PermissionError)
 
 	return {
 		"is_system_manager": "System Manager" in roles,

@@ -213,7 +213,7 @@
                   <div class="text-p-sm text-ink-gray-5">
                     {{
                       __(
-                        'ERPNext Items always sync into CRM Products. Turn this on to also sync CRM Product changes back to ERPNext Items.',
+                        "ERPNext Items always sync into DottorCloud's products. Turn this on to also sync product changes back to ERPNext Items.",
                       )
                     }}
                   </div>
@@ -241,7 +241,7 @@
                     {{
                       erpnextCRMSettingsResource.doc.sync_products
                         ? __(
-                            'Run a manual bi-directional sync between ERPNext Items and CRM Products.',
+                            "Run a manual bi-directional sync between ERPNext Items and DottorCloud's products.",
                           )
                         : __(
                             'Run a manual synchronization to pull the latest Items from ERPNext.',

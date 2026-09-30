@@ -125,7 +125,7 @@ class TestRoutingDerivation(IntegrationTestCase):
 			{"source": caller_ids.SOURCE_ACCOUNT, "voice_url": "https://elsewhere.test/voice"}
 		)
 		self.assertEqual(result["routes_to_crm"], 0)
-		self.assertIn("somewhere other than this CRM", result["routing_note"])
+		self.assertIn("somewhere other than DottorCloud", result["routing_note"])
 
 	def test_no_webhook_at_all_is_called_out(self):
 		result = caller_ids._routing({"source": caller_ids.SOURCE_ACCOUNT})

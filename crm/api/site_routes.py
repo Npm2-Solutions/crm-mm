@@ -96,7 +96,7 @@ def route_conflict(route: str) -> str | None:
 		return _("A route cannot start with {0}.").format(frappe.bold(route[0]))
 	first = route.split("/")[0]
 	if first in reserved_prefixes():
-		return _("{0} is reserved by the CRM. Pick another address.").format(frappe.bold("/" + first))
+		return _("{0} is reserved by DottorCloud. Pick another address.").format(frappe.bold("/" + first))
 	return None
 
 

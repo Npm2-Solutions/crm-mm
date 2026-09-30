@@ -51,7 +51,7 @@ class CRMProduct(Document):
 		if should_push_to_erpnext():
 			frappe.throw(
 				_(
-					"ERPNext integration is active. Create an Item in ERPNext and it will appear in CRM Product automatically."
+					"ERPNext integration is active. Create an Item in ERPNext and it will appear among DottorCloud's products automatically."
 				),
 				title=_("Use ERPNext to Create Products"),
 			)

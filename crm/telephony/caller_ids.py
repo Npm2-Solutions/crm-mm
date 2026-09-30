@@ -174,7 +174,7 @@ def _routing(row: dict) -> dict:
 		return {
 			"routes_to_crm": 0,
 			"routing_note": _(
-				"Set to this CRM's TwiML app, which handles outgoing calls. Point its "
+				"Set to DottorCloud's TwiML app, which handles outgoing calls. Point its "
 				"voice webhook at the incoming handler instead — the Twilio settings "
 				"page shows the address."
 			),
@@ -184,7 +184,7 @@ def _routing(row: dict) -> dict:
 		return {
 			"routes_to_crm": 0,
 			"routing_note": _(
-				"Its voice webhook points somewhere other than this CRM, so incoming "
+				"Its voice webhook points somewhere other than DottorCloud, so incoming "
 				"calls are handled elsewhere."
 			),
 		}
