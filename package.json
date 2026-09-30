@@ -2,16 +2,15 @@
 	"private": true,
 	"type": "module",
 	"name": "crm",
-	"description": "Frappe CRM helps you work, not slow you down. Open-source, intuitive, and free from extra costs.",
+	"description": "DottorCloud, il gestionale per i centri medici",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/frappe/crm.git"
+		"url": "git+https://github.com/Npm2-Solutions/crm-mm.git"
 	},
-	"homepage": "https://frappe.io/crm",
-	"author": "Frappe Technologies Pvt. Ltd.",
+	"author": "NPM2 Solutions Srl",
 	"license": "GPL-3.0",
 	"bugs": {
-		"url": "https://github.com/frappe/crm/issues"
+		"url": "https://github.com/Npm2-Solutions/crm-mm/issues"
 	},
 	"scripts": {
 		"postinstall": "cd frontend && yarn install --check-files",

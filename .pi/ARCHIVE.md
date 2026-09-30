@@ -2037,3 +2037,26 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | La segreteria legge i preventivi proposti, non le bozze né l'odontogramma | Li consegna e ne registra la risposta; il resto è del dentista |
 | Il preventivo muove la pipeline "Preventivi" | Consegnato, accettato o rifiutato è quello che la fase 1 aveva messo sul tabellone |
 | Nell'area il piano con i prezzi | È il preventivo della persona: cosa costa e cosa è fatto è suo |
+
+## Il marchio DottorCloud
+
+> **Completato** (30/09/2026). Il CRM, le schermate del framework (accesso, scrivania,
+> pagine pubbliche, email) e i documenti dicono DottorCloud: `crm/marchio.py`, gli hook
+> in testa a `crm/hooks.py`, la patch `dottorcloud_in_the_framework_screens`, l'icona
+> (`CRMLogo.vue`), l'About, il pannello "Getting started", le icone e le schermate
+> d'avvio del telefono generate da `brand/logo`, il README.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Logo, favicon e splash dagli hook, nome e piè di pagina nelle impostazioni | Gli hook valgono per ogni sito; le impostazioni un centro le può cambiare, e la patch non tocca quello che ha già scritto |
+| "About" e "Frappe Support" nascosti nel menu della scrivania, non cancellati | Il framework rimette a ogni aggiornamento le voci standard che mancano; quelle nascoste restano nascoste |
+| I suggerimenti di prodotto della scrivania spenti | Pubblicizzavano gli altri prodotti del framework agli amministratori |
+| Lo spazio di lavoro "Frappe CRM" diventa "DottorCloud" con la sua barra e la sua icona | Il nome è anche l'indirizzo (`/desk/dottorcloud`) |
+| Il centro di aiuto tolto, resta "Getting started" | Apriva la documentazione di un altro prodotto; i passi di avvio restano utili |
+| Tolti Frappe Cloud (menu, banner) e Frappe Mail | Servizi di un altro fornitore |
+| L'About dice copyright, nessuna garanzia e licenza, senza nomi | La AGPL chiede questi avvisi nelle interfacce; gli avvisi degli autori originali restano nei sorgenti e in LICENSE |
+| Due frasi del framework tradotte col nome del prodotto, anche in inglese (`en.po`) | Il tema "Frappe Light" e il benvenuto predefinito si vedono nella scrivania; le traduzioni sopravvivono agli aggiornamenti |
+| Il nome del software non è mai quello del centro (`nome_scelto`) | Prima il nome del sito era "Frappe" e le pagine pubbliche lo scartavano; ora è DottorCloud, e un paziente deve leggere il centro |
+| Restano nomi tecnici: pacchetti (`frappe`), percorsi delle API, un commento e un meta nel sorgente HTML | Non si vedono usando il prodotto; cambiarli vorrebbe dire modificare il framework |
