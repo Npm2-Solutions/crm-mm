@@ -26,7 +26,7 @@ import frappe
 from frappe import _
 from frappe.utils import format_datetime, formatdate, get_fullname, get_system_timezone, getdate
 
-from crm.moduli import compilazioni, traccia
+from crm.moduli import compilazioni, sigillo, traccia
 from crm.moduli import schema as S
 
 MODELLO_HTML = "crm/moduli/templates/modulo_firmato.html"
@@ -48,6 +48,8 @@ EVENTI = {
 	"answers_saved": "Answers saved",
 	"signed": "Signed",
 	"pdf_generated": "PDF made",
+	"sealed": "Sealed by the centre",
+	"seal_failed": "Not sealed",
 	"consent_recorded": "Consent recorded",
 	"sent": "Sent",
 	"opened": "Opened",
@@ -412,6 +414,10 @@ def genera_e_allega(doc) -> dict:
 		allegato_xml=originale,
 		relazione_allegato="Source",
 	)
+	# the centre's seal, if the agency installed one: before the fingerprint, so
+	# the fingerprint is the kept file's
+	sigillato = sigillo.sigilla(risultato.dati, motivo=_("Signed form"))
+	conformita = sigillato.descrizione(risultato.conformita)
 	allegato = frappe.get_doc(
 		{
 			"doctype": "File",
@@ -421,14 +427,14 @@ def genera_e_allega(doc) -> dict:
 			"attached_to_name": doc.name,
 			"attached_to_field": "pdf_file",
 			"is_private": 1,
-			"content": risultato.dati,
+			"content": sigillato.dati,
 		}
 	).insert(ignore_permissions=True)
 	doc.db_set(
 		{
 			"pdf_file": allegato.file_url,
-			"pdf_hash": risultato.sha256,
-			"pdf_conformance": risultato.conformita,
+			"pdf_hash": sigillato.sha256,
+			"pdf_conformance": conformita,
 		},
 		update_modified=False,
 	)
@@ -437,6 +443,7 @@ def genera_e_allega(doc) -> dict:
 		doc.name,
 		"pdf_generated",
 		risultato.conformita,
-		{"sha256": risultato.sha256, "bytes": risultato.byte},
+		{"sha256": sigillato.sha256, "bytes": len(sigillato.dati)},
 	)
-	return {"file": allegato.file_url, "sha256": risultato.sha256, "conformance": risultato.conformita}
+	sigillato.traccia(doc.doctype, doc.name)
+	return {"file": allegato.file_url, "sha256": sigillato.sha256, "conformance": conformita}

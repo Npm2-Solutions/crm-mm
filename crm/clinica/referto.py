@@ -22,6 +22,7 @@ from frappe import _
 from frappe.utils import format_datetime, get_fullname, getdate
 
 from crm.moduli import schema as S
+from crm.moduli import sigillo
 
 MODELLO_HTML = "crm/clinica/templates/referto.html"
 
@@ -134,6 +135,8 @@ def genera_e_allega(doc) -> dict:
 	risultato = pdfa.converti(
 		reso, titolo=doc.title or _("Visit") + f" {doc.name}", data_documento=getdate(doc.signed_on)
 	)
+	# sealed by the centre before the fingerprint, as a signed form is
+	sigillato = sigillo.sigilla(risultato.dati, motivo=_("Visit report"))
 	allegato = frappe.get_doc(
 		{
 			"doctype": "File",
@@ -142,15 +145,15 @@ def genera_e_allega(doc) -> dict:
 			"attached_to_name": doc.name,
 			"attached_to_field": "pdf_file",
 			"is_private": 1,
-			"content": risultato.dati,
+			"content": sigillato.dati,
 		}
 	).insert(ignore_permissions=True)
 	doc.db_set(
 		{
 			"pdf_file": allegato.file_url,
-			"pdf_hash": risultato.sha256,
-			"pdf_conformance": risultato.conformita,
+			"pdf_hash": sigillato.sha256,
+			"pdf_conformance": sigillato.descrizione(risultato.conformita),
 		},
 		update_modified=False,
 	)
-	return {"file": allegato.file_url, "sha256": risultato.sha256}
+	return {"file": allegato.file_url, "sha256": sigillato.sha256}
