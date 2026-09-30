@@ -1,0 +1,402 @@
+{
+ "_": "The nutrients of a plan, from the tables: crm/clinica/tests/test_piani_regole.py and frontend/tests/unit/piani.test.js prove the same cases.",
+ "foods": {
+  "pasta": {
+   "kcal": 353,
+   "protein_g": 12.5,
+   "carbs_g": 72.2,
+   "fat_g": 1.2,
+   "fibre_g": 2.7
+  },
+  "piselli": {
+   "kcal": 76,
+   "protein_g": 5.5,
+   "carbs_g": 12.4,
+   "fat_g": 0.2,
+   "fibre_g": 6.3
+  },
+  "olio": {
+   "kcal": 899,
+   "protein_g": 0,
+   "carbs_g": 0,
+   "fat_g": 99.9,
+   "fibre_g": 0
+  },
+  "mela": {
+   "kcal": 45,
+   "protein_g": 0.2,
+   "carbs_g": 10.4,
+   "fat_g": 0.1,
+   "fibre_g": 2
+  },
+  "senza_valori": {
+   "kcal": null
+  }
+ },
+ "nutrients": [
+  {
+   "name": "one food",
+   "items": [
+    {
+     "kind": "Food",
+     "food": "pasta",
+     "quantity_g": 80
+    }
+   ],
+   "expected": {
+    "kcal": 282,
+    "protein_g": 10.0,
+    "carbs_g": 57.8,
+    "fat_g": 1.0,
+    "fibre_g": 2.2,
+    "missing": []
+   }
+  },
+  {
+   "name": "a meal",
+   "items": [
+    {
+     "kind": "Food",
+     "food": "pasta",
+     "quantity_g": 80
+    },
+    {
+     "kind": "Food",
+     "food": "piselli",
+     "quantity_g": 100
+    },
+    {
+     "kind": "Food",
+     "food": "olio",
+     "quantity_g": 10
+    }
+   ],
+   "expected": {
+    "kcal": 448,
+    "protein_g": 15.5,
+    "carbs_g": 70.2,
+    "fat_g": 11.2,
+    "fibre_g": 8.5,
+    "missing": []
+   }
+  },
+  {
+   "name": "grams written as text",
+   "items": [
+    {
+     "kind": "Food",
+     "food": "mela",
+     "quantity_g": "150"
+    }
+   ],
+   "expected": {
+    "kcal": 68,
+    "protein_g": 0.3,
+    "carbs_g": 15.6,
+    "fat_g": 0.2,
+    "fibre_g": 3.0,
+    "missing": []
+   }
+  },
+  {
+   "name": "half a calorie goes up",
+   "items": [
+    {
+     "kind": "Food",
+     "food": "mela",
+     "quantity_g": 10
+    }
+   ],
+   "expected": {
+    "kcal": 5,
+    "protein_g": 0.0,
+    "carbs_g": 1.0,
+    "fat_g": 0.0,
+    "fibre_g": 0.2,
+    "missing": []
+   }
+  },
+  {
+   "name": "a food not in the tables, or without grams, is named",
+   "items": [
+    {
+     "kind": "Food",
+     "food": "sconosciuto",
+     "quantity_g": 50
+    },
+    {
+     "kind": "Food",
+     "food": "mela"
+    },
+    {
+     "kind": "Food",
+     "food": "mela",
+     "quantity_g": "80,5"
+    },
+    {
+     "kind": "Food",
+     "food": "pasta",
+     "quantity_g": 50
+    }
+   ],
+   "expected": {
+    "kcal": 177,
+    "protein_g": 6.3,
+    "carbs_g": 36.1,
+    "fat_g": 0.6,
+    "fibre_g": 1.4,
+    "missing": [
+     "sconosciuto",
+     "mela",
+     "mela"
+    ]
+   }
+  },
+  {
+   "name": "a food the tables know nothing of counts nothing",
+   "items": [
+    {
+     "kind": "Food",
+     "food": "senza_valori",
+     "quantity_g": 100
+    }
+   ],
+   "expected": {
+    "kcal": 0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 0.0,
+    "fibre_g": 0.0,
+    "missing": []
+   }
+  },
+  {
+   "name": "groups and habits do not count",
+   "items": [
+    {
+     "kind": "Food group",
+     "food_group": "Fruit",
+     "portions": 2
+    },
+    {
+     "kind": "Habit",
+     "text": "Two litres of water"
+    },
+    {
+     "food": "olio",
+     "quantity_g": 5
+    }
+   ],
+   "expected": {
+    "kcal": 45,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 5.0,
+    "fibre_g": 0.0,
+    "missing": []
+   }
+  },
+  {
+   "name": "nothing",
+   "items": [],
+   "expected": {
+    "kcal": 0,
+    "protein_g": 0.0,
+    "carbs_g": 0.0,
+    "fat_g": 0.0,
+    "fibre_g": 0.0,
+    "missing": []
+   }
+  }
+ ],
+ "days": [
+  {
+   "name": "every day, one row",
+   "moments": [
+    {
+     "key": "c",
+     "day": "Every day"
+    },
+    {
+     "key": "p",
+     "day": "Every day"
+    }
+   ],
+   "items": [
+    {
+     "moment": "c",
+     "kind": "Food",
+     "food": "mela",
+     "quantity_g": 150
+    },
+    {
+     "moment": "p",
+     "kind": "Food",
+     "food": "pasta",
+     "quantity_g": 80
+    }
+   ],
+   "expected": [
+    {
+     "day": "Every day",
+     "kcal": 350,
+     "protein_g": 10.3,
+     "carbs_g": 73.4,
+     "fat_g": 1.1,
+     "fibre_g": 5.2,
+     "missing": []
+    }
+   ]
+  },
+  {
+   "name": "a weekday of its own, seven rows",
+   "moments": [
+    {
+     "key": "p",
+     "day": "Every day"
+    },
+    {
+     "key": "d",
+     "day": "Sunday"
+    }
+   ],
+   "items": [
+    {
+     "moment": "p",
+     "kind": "Food",
+     "food": "pasta",
+     "quantity_g": 80
+    },
+    {
+     "moment": "d",
+     "kind": "Food",
+     "food": "olio",
+     "quantity_g": 10
+    }
+   ],
+   "expected": [
+    {
+     "day": "Monday",
+     "kcal": 282,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 1.0,
+     "fibre_g": 2.2,
+     "missing": []
+    },
+    {
+     "day": "Tuesday",
+     "kcal": 282,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 1.0,
+     "fibre_g": 2.2,
+     "missing": []
+    },
+    {
+     "day": "Wednesday",
+     "kcal": 282,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 1.0,
+     "fibre_g": 2.2,
+     "missing": []
+    },
+    {
+     "day": "Thursday",
+     "kcal": 282,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 1.0,
+     "fibre_g": 2.2,
+     "missing": []
+    },
+    {
+     "day": "Friday",
+     "kcal": 282,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 1.0,
+     "fibre_g": 2.2,
+     "missing": []
+    },
+    {
+     "day": "Saturday",
+     "kcal": 282,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 1.0,
+     "fibre_g": 2.2,
+     "missing": []
+    },
+    {
+     "day": "Sunday",
+     "kcal": 372,
+     "protein_g": 10.0,
+     "carbs_g": 57.8,
+     "fat_g": 11.0,
+     "fibre_g": 2.2,
+     "missing": []
+    }
+   ]
+  }
+ ],
+ "grams": [
+  [
+   7.4,
+   7
+  ],
+  [
+   7.5,
+   8
+  ],
+  [
+   0.2,
+   1
+  ],
+  [
+   9.49,
+   9
+  ],
+  [
+   12.4,
+   10
+  ],
+  [
+   12.5,
+   15
+  ],
+  [
+   82.49,
+   80
+  ],
+  [
+   82.5,
+   85
+  ],
+  [
+   0,
+   null
+  ],
+  [
+   -3,
+   null
+  ],
+  [
+   "abc",
+   null
+  ],
+  [
+   null,
+   null
+  ],
+  [
+   "",
+   null
+  ],
+  [
+   "45",
+   45
+  ]
+ ]
+}

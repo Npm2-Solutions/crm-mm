@@ -16,11 +16,17 @@ and how the patient's week reads (design.md, "I piani").
   many times a week", and the patient sees how many are left.
 - **Following it**: one tap an item (done, partly, skipped), a missed day made
   up within two days; no red, no ranking - what is shown is what is left to do.
+- **The nutrients come from the tables** (design.md, "L'assistente", point 5): the
+  targets are the nutritionist's, the totals are computed here from the library's
+  values for 100 g, and the assistant proposes only recipes - which foods of the
+  library, in which proportion. `frontend/src/utils/piani.js` computes the same
+  totals, on the cases of `tests/casi_nutrienti.json`.
 """
 
 from __future__ import annotations
 
 import datetime
+import math
 import re
 from dataclasses import dataclass
 
@@ -183,3 +189,117 @@ def calorie(per_cento_grammi, grammi) -> int | None:
 	if kcal is None or peso is None:
 		return None
 	return round(kcal * peso / 100)
+
+
+# ------------------------------------------------------------------ nutrients
+
+#: What the tables give for 100 g, and a total is made of.
+NUTRIENTI = ("kcal", "protein_g", "carbs_g", "fat_g", "fibre_g")
+#: The grams of one food in a recipe the engine reads: a proposal outside is dropped.
+GRAMMI_MAX = 2000
+
+
+def _mezzo_su(valore: float, decimali: int = 0) -> float:
+	"""Rounded half up, as the browser rounds: Python's own rounds half to even."""
+	scala = 10**decimali
+	return math.floor(valore * scala + 0.5) / scala
+
+
+def arrotonda_grammi(grammi) -> int | None:
+	"""A quantity as a person weighs it: to 5 g, to the gram under 10 g, never 0."""
+	valore = _numero(grammi)
+	if valore is None or valore <= 0:
+		return None
+	if valore < 10:
+		return max(1, int(_mezzo_su(valore)))
+	return int(5 * _mezzo_su(valore / 5))
+
+
+def _totali(voci: list[dict], cibi: dict) -> tuple[dict[str, float], list[str]]:
+	totali = dict.fromkeys(NUTRIENTI, 0.0)
+	mancano = []
+	for voce in voci:
+		if (voce.get("kind") or CIBO) != CIBO or not voce.get("food"):
+			continue
+		cibo = cibi.get(voce["food"])
+		grammi = _numero(voce.get("quantity_g"))
+		if not cibo or not grammi or grammi <= 0:
+			mancano.append(voce["food"])
+			continue
+		for nome in NUTRIENTI:
+			valore = _numero(cibo.get(nome))
+			if valore is not None:
+				totali[nome] += valore * grammi / 100
+	return totali, mancano
+
+
+def nutrienti(voci: list[dict], cibi: dict) -> dict:
+	"""What the foods give, from the tables' values for 100 g: kcal to the unit,
+	grams to one decimal. A food without grams, or not in the tables, counts
+	nothing and is named in ``missing``."""
+	totali, mancano = _totali(voci, cibi)
+	return {
+		"kcal": int(_mezzo_su(totali["kcal"])),
+		**{nome: _mezzo_su(totali[nome], 1) for nome in NUTRIENTI[1:]},
+		"missing": mancano,
+	}
+
+
+def per_giorno(momenti: list[dict], voci: list[dict], cibi: dict) -> list[dict]:
+	"""The totals of each day: the every-day moments and that weekday's. One row,
+	every day, when no moment is on a weekday of its own."""
+	ogni_giorno = {m["key"] for m in momenti if (m.get("day") or OGNI_GIORNO) == OGNI_GIORNO}
+	giorni = [g for g in GIORNI if any(m.get("day") == g for m in momenti)]
+	if not giorni:
+		return [{"day": OGNI_GIORNO, **nutrienti([v for v in voci if v.get("moment") in ogni_giorno], cibi)}]
+	righe = []
+	for giorno in GIORNI:
+		chiavi = ogni_giorno | {m["key"] for m in momenti if m.get("day") == giorno}
+		righe.append({"day": giorno, **nutrienti([v for v in voci if v.get("moment") in chiavi], cibi)})
+	return righe
+
+
+def scala(voci: list[dict], cibi: dict, kcal) -> list[dict]:
+	"""The same foods, their grams scaled so the meal gives about ``kcal``: the
+	proportions are the recipe's, the quantities the tables'."""
+	obiettivo = _numero(kcal)
+	attuali = _totali(voci, cibi)[0]["kcal"]
+	if not obiettivo or obiettivo <= 0 or attuali <= 0:
+		return [dict(voce) for voce in voci]
+	fattore = obiettivo / attuali
+	scalate = []
+	for voce in voci:
+		nuova = dict(voce)
+		grammi = _numero(voce.get("quantity_g"))
+		if (voce.get("kind") or CIBO) == CIBO and grammi:
+			nuova["quantity_g"] = arrotonda_grammi(grammi * fattore)
+		scalate.append(nuova)
+	return scalate
+
+
+def ricetta(proposta, cibi: dict) -> dict | None:
+	"""A recipe the assistant proposed, as the engine keeps it: only foods of the
+	library, by their id, with grams it can read; the same food once. Nothing else
+	of the proposal is taken - no numbers but the grams."""
+	if not isinstance(proposta, dict):
+		return None
+	titolo = str(proposta.get("title") or "").strip()[:140]
+	metodo = str(proposta.get("method") or "").strip()[:2000]
+	grammi: dict[str, float] = {}
+	for voce in proposta.get("foods") or []:
+		if not isinstance(voce, dict):
+			continue
+		cibo = str(voce.get("id") or voce.get("food") or "")
+		quanto = _numero(voce.get("grams"))
+		if cibo not in cibi or quanto is None or not 0 < quanto <= GRAMMI_MAX:
+			continue
+		grammi[cibo] = grammi.get(cibo, 0) + quanto
+	if not titolo or not grammi:
+		return None
+	return {
+		"title": titolo,
+		"method": metodo,
+		"items": [
+			{"kind": CIBO, "food": cibo, "quantity_g": arrotonda_grammi(g)} for cibo, g in grammi.items()
+		],
+	}

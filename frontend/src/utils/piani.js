@@ -169,3 +169,95 @@ export function perMomento(momenti, voci) {
     items: (voci || []).filter((voce) => voce.moment === momento.key),
   }))
 }
+
+// ------------------------------------------------------------------ nutrients
+// The same totals as crm/clinica/piani_regole.py, on the cases of
+// crm/clinica/tests/casi_nutrienti.json: the targets are the nutritionist's, the
+// numbers come from the tables' values for 100 g, never from the assistant.
+
+export const NUTRIENTI = ['kcal', 'protein_g', 'carbs_g', 'fat_g', 'fibre_g']
+
+// a number as Python's float() reads it, or null
+function valore(v) {
+  if (v === null || v === undefined || typeof v === 'boolean') return null
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
+  const testo = String(v).trim()
+  if (!testo) return null
+  const n = Number(testo)
+  return Number.isFinite(n) ? n : null
+}
+
+// half up, as the server rounds it
+function mezzoSu(v, decimali = 0) {
+  const scala = 10 ** decimali
+  return Math.floor(v * scala + 0.5) / scala
+}
+
+// a quantity as a person weighs it: to 5 g, to the gram under 10 g, never 0
+export function arrotondaGrammi(grammi) {
+  const v = valore(grammi)
+  if (v === null || v <= 0) return null
+  if (v < 10) return Math.max(1, mezzoSu(v))
+  return 5 * mezzoSu(v / 5)
+}
+
+// what the foods give: kcal to the unit, grams to one decimal; a food without
+// grams, or not in the tables, counts nothing and is named in ``missing``
+export function nutrienti(voci, cibi) {
+  const totali = Object.fromEntries(NUTRIENTI.map((n) => [n, 0]))
+  const missing = []
+  for (const voce of voci || []) {
+    if ((voce.kind || CIBO) !== CIBO || !voce.food) continue
+    const cibo = (cibi || {})[voce.food]
+    const grammi = valore(voce.quantity_g)
+    if (!cibo || !grammi || grammi <= 0) {
+      missing.push(voce.food)
+      continue
+    }
+    for (const nome of NUTRIENTI) {
+      const v = valore(cibo[nome])
+      if (v !== null) totali[nome] += (v * grammi) / 100
+    }
+  }
+  return {
+    kcal: mezzoSu(totali.kcal),
+    ...Object.fromEntries(
+      NUTRIENTI.slice(1).map((n) => [n, mezzoSu(totali[n], 1)]),
+    ),
+    missing,
+  }
+}
+
+// each day's totals: the every-day moments and that weekday's; one row, every
+// day, when no moment is on a weekday of its own
+export function perGiorno(momenti, voci, cibi) {
+  const ogni = new Set(
+    (momenti || [])
+      .filter((m) => (m.day || OGNI_GIORNO) === OGNI_GIORNO)
+      .map((m) => m.key),
+  )
+  const suoi = GIORNI.filter((g) => (momenti || []).some((m) => m.day === g))
+  const del = (chiavi) =>
+    nutrienti(
+      (voci || []).filter((v) => chiavi.has(v.moment)),
+      cibi,
+    )
+  if (!suoi.length) return [{ day: OGNI_GIORNO, ...del(ogni) }]
+  return GIORNI.map((giorno) => {
+    const chiavi = new Set(ogni)
+    for (const m of momenti) if (m.day === giorno) chiavi.add(m.key)
+    return { day: giorno, ...del(chiavi) }
+  })
+}
+
+// a total in words, for the nutritionist: no colour, no judgement
+export function rigaNutrienti(n, t = (s, a) => format(s, a)) {
+  if (!n) return ''
+  return [
+    t('{0} kcal', [n.kcal]),
+    t('proteins {0} g', [n.protein_g]),
+    t('carbohydrates {0} g', [n.carbs_g]),
+    t('fats {0} g', [n.fat_g]),
+    t('fibre {0} g', [n.fibre_g]),
+  ].join(' · ')
+}
