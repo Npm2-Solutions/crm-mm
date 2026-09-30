@@ -679,9 +679,9 @@ Fatto il 30/09/2026 (fase 2, la sesta parte).
   resta (`Clinic Summary Value`), con da dove viene e chi l'ha deciso. La legge
   chi legge la cartella, la decide chi la scrive.
 
-Il referto porta le impronte ma non ancora il sigillo del centro, la marca
-temporale o la firma qualificata del professionista: arrivano con il fornitore di
-firma. Resta alla fase 2: l'archivio clinico dei documenti, il registro degli
+Il referto porta le impronte; il sigillo del centro e la marca temporale sono
+arrivati dopo (vedi "Il sigillo del centro e la marca temporale"), la firma
+qualificata del professionista arriva con il fornitore di firma. Resta alla fase 2: l'archivio clinico dei documenti, il registro degli
 accessi anche sull'archivio, dossier e oscuramento, la consegna del referto.
 
 ### L'archivio clinico e il registro degli accessi
@@ -788,7 +788,7 @@ Garante sui referti online (19/11/2009) e le sue FAQ (`crm/clinica/consegna.py`,
   il documento da internet.
 
 Con questa parte la fase 2 è completa. Il sigillo del centro e la marca
-temporale sui PDF (pyHanko) arrivano con il certificato e il fornitore di firma.
+temporale sui PDF (pyHanko) sono arrivati dopo, con il certificato del centro.
 L'area del paziente della fase 3 mostrerà le stesse consegne.
 
 ### L'area del paziente: la porta e le prime stanze
@@ -1012,6 +1012,45 @@ Fatti il 30/09/2026 (fase 4, la seconda parte).
 
 Resta alla fase 4: il menù con i conti dalle tabelle, e la chat del paziente solo
 per l'amministrazione.
+
+### Il sigillo del centro e la marca temporale
+
+Fatti il 30/09/2026, con pyHanko (`crm/moduli/sigillo.py`).
+
+- **Il sigillo** è una firma PAdES fatta con il certificato del centro: un sigillo
+  elettronico (eIDAS, art. 35-36), meglio se qualificato, comprato da un
+  prestatore di servizi fiduciari. Va sul PDF/A del modulo firmato e sul
+  referto di ogni visita. Chi ha il file può controllare che niente sia cambiato
+  da allora, e da chi viene.
+- **La marca temporale** (RFC 3161) viene dall'autorità da cui il centro compra
+  le marche: dice quando il documento c'era, qualunque cosa dica l'orologio del
+  server. Con la marca il sigillo è PAdES B-T.
+- **Prima dell'impronta**: lo SHA-256 che il modulo e la visita tengono è quello
+  del file sigillato, così l'impronta e il file coincidono sempre. Il sigillo è
+  un aggiornamento aggiunto al file: la struttura PDF/A si ricontrolla sui byte
+  che si tengono, e il sigillo è invisibile, con il flag di stampa che PDF/A
+  chiede.
+- **Mai d'intralcio**:
+  - senza certificato il PDF resta com'era, con la sua impronta;
+  - una marca che non arriva lascia il sigillo senza marca;
+  - un certificato illeggibile, o non valido oggi, lascia il PDF senza sigillo:
+    un sigillo scaduto sembrerebbe una manomissione.
+
+  Ogni caso va nel registro del modulo ("Sealed by the centre", "Not sealed") e
+  nel log degli errori. Il documento non si perde mai.
+- **È dell'agenzia**, in Impostazioni > Seal and time stamp (`tecnico.integrazioni`):
+  - il file .p12 del certificato, privato, e la sua password;
+  - il luogo;
+  - l'indirizzo, l'utente e la password dell'autorità di marca;
+  - chi è il certificato, chi l'ha emesso, fino a quando vale; un certificato
+    autofirmato si dichiara (va bene per una prova, un lettore PDF non lo
+    riconosce);
+  - "Seal a test page" prova certificato e autorità.
+
+  Certificato e password stanno sul permlevel 1, del System Manager; la chiave
+  si legge in memoria e non si scrive altrove.
+- **Si controlla anche senza di noi**: un lettore PDF mostra il sigillo nel pannello
+  delle firme, e `openssl cms -verify` conferma la firma sui byte che copre.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

@@ -1823,3 +1823,25 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Gli eventi clinici li legge la direzione, non il manager | Sono dati sanitari: la rilettura mensile è vigilanza clinica |
 | "Quanto è cambiata" si misura parola per parola | Sulle lettere lunghe il confronto per lettere scambiava due nomi riempiti per una riscrittura |
 
+
+## Il sigillo del centro e la marca temporale sui PDF
+
+> **Completato** (30/09/2026). `crm/moduli/sigillo.py` (pyHanko): il sigillo PAdES
+> con il certificato del centro e la marca temporale RFC 3161 sul PDF/A del modulo
+> firmato (`crm/moduli/pdf.py`) e sul referto della visita (`crm/clinica/referto.py`);
+> i campi in `CRM Signature Settings`; la pagina dell'agenzia
+> `frontend/src/components/Settings/SealSettings.vue`.
+> `docs/gestionale-medico/README.md`, "Il sigillo del centro e la marca temporale".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Si sigilla prima di prendere l'impronta | Lo SHA-256 che il modulo tiene deve essere quello del file tenuto: un'impronta del file senza sigillo non proverebbe niente |
+| Un sigillo invisibile, con il flag di stampa | Un riquadro disegnato vorrebbe i font incorporati di PDF/A; pyHanko di default resta compatibile con PDF/A-2/3 |
+| La struttura PDF/A si ricontrolla dopo il sigillo | Il sigillo è un aggiornamento aggiunto al file: la conformità dichiarata riguarda i byte tenuti |
+| Mai d'intralcio: senza sigillo, senza marca, mai senza documento | Una firma del paziente non si perde per un certificato o un'autorità che non rispondono; il registro dice cosa è successo |
+| Un certificato non valido oggi non sigilla | Un sigillo scaduto si legge come un sigillo rotto |
+| La chiave si legge in memoria (`load_pkcs12_data`) | Il file privato dell'agenzia resta l'unico posto dove la chiave sta |
+| La marca con un timeout di 10 secondi | Il sigillo avviene mentre la persona firma: un'autorità lenta non deve tenerla ferma |
+| Certificato, password e autorità sul permlevel 1, pagina con `tecnico.integrazioni` | Sono chiavi dell'agenzia, come quelle dei fornitori (doc 30) |

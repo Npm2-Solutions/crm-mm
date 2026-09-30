@@ -93,6 +93,7 @@ they run as evaluated strings in the browser.
 | `frontend/src/components/Settings/Forms/Template*.vue` | The builder, in Settings > Forms next to the web forms |
 | `crm/moduli/compilazioni.py` | A person's forms: start, save half-way, sign (checks, strokes, submit, PDF, consents) |
 | `crm/moduli/pdf.py` + `templates/modulo_firmato.html` | The signed form's PDF/A with its evidence page, made once |
+| `crm/moduli/sigillo.py` | The centre's PAdES seal and RFC 3161 time stamp (pyHanko), before the fingerprint; the agency's Seal page |
 | `crm/moduli/traccia.py` | `CRM Audit Log`: a document's events, each chained to the one before |
 | `frontend/src/pages/FormFill.vue`, `components/Moduli/FormsArea.vue`, `SignaturePad.vue` | Filling and signing, the person's Forms tab, the stroke as a PNG |
 | `crm/moduli/richieste.py` | `CRM Form Request`: forms filled on their own — a link by email (code to the same address) or the desk's tablet; the guest calls |
