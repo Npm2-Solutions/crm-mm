@@ -91,7 +91,7 @@ def builder_installed() -> bool:
 def _require_builder():
 	if not builder_installed():
 		frappe.throw(
-			_("Frappe Builder is not installed on this site. Install it to build website pages."),
+			_("The website builder is not installed on this site. Install it to build website pages."),
 			title=_("Builder missing"),
 		)
 

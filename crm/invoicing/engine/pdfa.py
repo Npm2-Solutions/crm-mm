@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 #: Declared producer: constant, neutral, no version that reveals the stack.
-PRODUTTORE = "Frappe CRM"
+PRODUTTORE = "DottorCloud"
 
 PARTE_PDFA = 3
 CONFORMANZA_PDFA = "B"

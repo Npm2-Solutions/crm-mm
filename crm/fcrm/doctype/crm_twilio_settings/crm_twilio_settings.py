@@ -41,7 +41,7 @@ class CRMTwilioSettings(Document):
 		webhook_base_url: DF.Data | None
 	# end: auto-generated types
 
-	friendly_resource_name = "Frappe CRM"  # System creates TwiML app & API keys with this name.
+	friendly_resource_name = "DottorCloud"  # System creates TwiML app & API keys with this name.
 
 	def validate(self):
 		if self.has_value_changed("enabled"):

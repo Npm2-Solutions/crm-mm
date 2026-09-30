@@ -130,23 +130,23 @@ msgstr "501-1000"
 msgid "51-200"
 msgstr "51-200"
 
-#. Paragraph text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Paragraph text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<b>META</b>"
 msgstr "<b>META</b>"
 
-#. Paragraph text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Paragraph text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<b>SHORTCUTS</b>"
 msgstr "<b>GYORSGOMBOK</b>"
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:95
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:95
-msgid "<p>Dear {{ lead_name }},</p>\\n\\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\\n\\n<p>Thanks,</p>\\n<p>Frappé</p>"
-msgstr "<p>Kedves {{ lead_name }},</p>\\n\\n<p>Ez egy emlékeztető a {{ grand_total }} befizetésére.</p>\\n\\n<p>Köszönöm,</p>\\n<p>Frappé</p>"
+msgid "<p>Dear {{ lead_name }},</p>\\n\\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\\n\\n<p>Thanks,</p>\\n<p>The team</p>"
+msgstr ""
 
-#. Header text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Header text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<span class=\"h5\"><b>PORTAL</b></span>"
 msgstr "<span class=\"h5\"><b>PORTÁL</b></span>"
 
@@ -703,10 +703,6 @@ msgstr "Biztosan elveti a dokumentum mentetlen módosításait?"
 msgid "Are you sure you want to go back? Unsaved changes will be lost."
 msgstr "Biztosan vissza akarsz menni? A nem mentett módosítások elvesznek."
 
-#: frontend/src/composables/frappecloud.js:24
-msgid "Are you sure you want to login to your Frappe Cloud dashboard?"
-msgstr "Biztos, hogy be szeretne jelentkezni a Frappe Cloud műszerfalára?"
-
 #: frontend/src/components/FieldLayoutEditor.vue:431
 msgid "Are you sure you want to remove this tab and all its content?"
 msgstr "Biztosan törölni szeretné ezt a lapot és annak minden tartalmát?"
@@ -782,8 +778,8 @@ msgstr "Hozzárendelési napok"
 msgid "Assignment Days are required"
 msgstr "Hozzárendelési napok megadása kötelező"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/components/Layouts/AppSidebar.vue:612
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRulesList.vue:16
 msgid "Assignment Rule"
@@ -1177,8 +1173,8 @@ msgstr "CRM-értesítés"
 msgid "CRM Organization"
 msgstr "CRM-szervezet"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "CRM Portal Page"
 msgstr "CRM portáloldal"
 
@@ -1616,8 +1612,8 @@ msgstr "Az ügyletek elvesztésének gyakori okai"
 msgid "Communication Status"
 msgstr "Kommunikációs állapot"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Communication Statuses"
 msgstr "Kommunikációs állapotok"
 
@@ -1733,8 +1729,8 @@ msgid "Confirm {0}"
 msgstr ""
 
 #: frontend/src/components/Settings/ERPNextSettings.vue:274
-msgid "Connect ERPNext to Frappe CRM"
-msgstr "ERPNext összekapcsolása Frappe CRM-mel"
+msgid "Connect ERPNext to DottorCloud"
+msgstr "ERPNext összekapcsolása DottorCloud-mel"
 
 #: frontend/src/pages/Welcome.vue:35
 msgid "Connect your Email"
@@ -1796,9 +1792,9 @@ msgstr "Kapcsolati kép frissítve"
 
 #. Label of the contacts_tab (Tab Break) field in DocType 'CRM Deal'
 #. Label of the contacts (Table) field in DocType 'CRM Deal'
-#. Label of a shortcut in the Frappe CRM Workspace
+#. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/Contact.vue:244 frontend/src/pages/MobileContact.vue:226
 #: frontend/src/pages/MobileOrganization.vue:349
 msgid "Contacts"
@@ -1862,7 +1858,7 @@ msgid "Copied to Clipboard"
 msgstr "Vágólapra másolva"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create the Frappe CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable <b>Frappe CRM Data Synchronization</b> in its CRM Settings, Otherwise check the Error Log."
+msgid "Could not create the CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
 msgstr ""
 
 #: frontend/src/components/Settings/Hierarchy/useRemoveNode.js:16
@@ -2131,8 +2127,8 @@ msgstr "Ügylet tulajdonosa"
 msgid "Deal Status"
 msgstr "Ügylet állapota"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Deal Statuses"
 msgstr "Ügylet állapotai"
 
@@ -2153,8 +2149,8 @@ msgstr "Az ügylet állapotának megadása kötelező"
 msgid "Deal value"
 msgstr "Ügylet értéke"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/Deal.vue:514 frontend/src/pages/MobileContact.vue:302
 #: frontend/src/pages/MobileDeal.vue:391
 #: frontend/src/pages/MobileOrganization.vue:343
@@ -2203,8 +2199,8 @@ msgstr "Ügyletek területenként"
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:111
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:111
-msgid "Dear {{ lead_name }}, \\n\\nThis is a reminder for the payment of {{ grand_total }}. \\n\\nThanks, \\nFrappé"
-msgstr "Kedves {{ lead_name }},\\n\\nEz egy emlékeztető a {{ grand_total }} befizetésére.\\n\\nKöszönöm,\\nFrappé"
+msgid "Dear {{ lead_name }}, \\n\\nThis is a reminder for the payment of {{ grand_total }}. \\n\\nThanks, \\nThe team"
+msgstr ""
 
 #: frontend/src/utils/callLog.js:64
 msgid "Declined"
@@ -3582,18 +3578,9 @@ msgstr "Űrlap neve"
 msgid "Form Script updated successfully"
 msgstr "Űrlapszkript sikeresen frissítve"
 
-#. Name of a Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
-msgid "Frappe CRM"
-msgstr "Frappe CRM"
-
-#: frontend/src/components/Layouts/AppSidebar.vue:638
-msgid "Frappe CRM mobile"
-msgstr "Frappe CRM mobil"
-
 #: frontend/src/components/Settings/emailConfig.js:81
-msgid "Frappe Mail Site"
-msgstr "Frappe Mail oldal"
+msgid "Mail server address"
+msgstr ""
 
 #. Option for the 'Weekly Off' (Select) field in DocType 'CRM Holiday List'
 #. Option for the 'Workday' (Select) field in DocType 'CRM Service Day'
@@ -3826,7 +3813,7 @@ msgid "How do new leads usually come to you?"
 msgstr ""
 
 #: frontend/src/pages/PersonaForm.vue:108
-msgid "How many people will use Frappe CRM?"
+msgid "How many people will use DottorCloud?"
 msgstr ""
 
 #. Description of the 'Timeline Timestamp Format' (Select) field in DocType
@@ -3939,8 +3926,8 @@ msgstr "Bejövő hívás..."
 msgid "Incorrect current password. Please try again."
 msgstr "Helytelen jelenlegi jelszó. Kérjük, próbáld újra."
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Industries"
 msgstr "Iparágak"
 
@@ -3983,11 +3970,6 @@ msgid "Integration Not Enabled"
 msgstr "Integráció nincs engedélyezve"
 
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:144
-msgid "Integrations"
-msgstr "Integrációk"
-
-#: frontend/src/components/Settings/Settings.vue:217
-msgctxt "FCRM"
 msgid "Integrations"
 msgstr "Integrációk"
 
@@ -4424,14 +4406,14 @@ msgstr "Érdeklődés tulajdonosa"
 msgid "Lead Owner cannot be same as the Lead Email Address"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:7
 msgid "Lead Sources"
 msgstr "Érdeklődő forrásai"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Lead Statuses"
 msgstr "Érdeklődők állapotai"
 
@@ -4472,8 +4454,8 @@ msgstr "Érdeklődő szinkronizálási forrása sikeresen törölve"
 msgid "Lead to deal conversion pipeline"
 msgstr "Érdeklődésből ügyletté konvertálási folyamat"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/InvalidPage.vue:9 frontend/src/pages/Lead.vue:369
 #: frontend/src/pages/MobileLead.vue:239
 msgid "Leads"
@@ -4596,10 +4578,6 @@ msgstr "Napló ID"
 #: frontend/src/components/Activities/ActivityHeader.vue:179
 msgid "Log a Call"
 msgstr "Naplózz egy hívást"
-
-#: frontend/src/composables/frappecloud.js:23
-msgid "Login to Frappe Cloud?"
-msgstr "Bejelentkezés a Frappe Cloudba?"
 
 #: frontend/src/pages/NotPermitted.vue:21
 msgid "Login with Different Account"
@@ -5613,8 +5591,8 @@ msgstr "Vállalkozás neve"
 msgid "Organization or a primary Contact is required to create a customer"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/MobileOrganization.vue:219
 #: frontend/src/pages/Organization.vue:257
 msgid "Organizations"
@@ -5724,11 +5702,7 @@ msgid "Payment Reminder"
 msgstr "Fizetési emlékeztető"
 
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:69
-msgid "Payment Reminder from Frappé - (#{{ name }})"
-msgstr "Fizetési emlékeztető a Frappétól - (#{{ name }})"
-
-#: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:69
-msgid "Payment reminder from Frappé - (#{{ name }})"
+msgid "Payment reminder - (#{{ name }})"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'CRM Invitation'
@@ -6466,10 +6440,10 @@ msgstr "Sorok"
 #. Label of the sla (Link) field in DocType 'CRM Deal'
 #. Label of the sla_tab (Tab Break) field in DocType 'CRM Lead'
 #. Label of the sla (Link) field in DocType 'CRM Lead'
-#. Label of a shortcut in the Frappe CRM Workspace
+#. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "SLA"
 msgstr ""
 
@@ -6958,10 +6932,6 @@ msgstr "A beállítás sikeresen letiltva"
 #: frontend/src/components/Settings/GeneralSettings.vue:152
 msgid "Setting enabled successfully"
 msgstr "A beállítás sikeresen engedélyezve"
-
-#: frontend/src/components/Settings/emailConfig.js:158
-msgid "Setting up Frappe Mail requires you to have an API key and API Secret of your email account. Read more"
-msgstr "A Frappe Mail beállításához API-kulcsra és API Secret-re van szükség az e-mail fiókodhoz. További információ"
 
 #: frontend/src/components/Settings/emailConfig.js:104
 msgid "Setting up GMail requires you to enable two factor authentication and app specific passwords. Read more"
@@ -7456,8 +7426,8 @@ msgstr "Sablon sikeresen frissítve"
 msgid "Templates"
 msgstr "Sablonok"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Territories"
 msgstr "Területek"
 
@@ -8107,10 +8077,6 @@ msgstr "Láthatóság"
 msgid "Walk-ins"
 msgstr ""
 
-#: frontend/src/components/SalesHierarchyBanner.vue:20
-msgid "We are changing how permissions work in Frappe CRM"
-msgstr ""
-
 #: frontend/src/components/Layouts/AppSidebar.vue:593
 msgid "Web Form"
 msgstr "Webes űrlap"
@@ -8166,7 +8132,7 @@ msgid "Welcome Message"
 msgstr "Üdvözlő üzenet"
 
 #: frontend/src/pages/PersonaForm.vue:132
-msgid "Welcome to Frappe CRM"
+msgid "Welcome to DottorCloud"
 msgstr ""
 
 #: frontend/src/pages/Welcome.vue:4
@@ -8310,15 +8276,15 @@ msgid "You do not have Exotel Number set in your Telephony Agent"
 msgstr ""
 
 #: frontend/src/pages/NotPermitted.vue:12
-msgid "You do not have enough permissions to access Frappe CRM. Please contact your administrator if you believe this is an error."
-msgstr "Nincs elegendő jogosultsága a Frappe CRM eléréséhez. Ha úgy gondolja, hogy hiba történt, kérjük, vegye fel a kapcsolatot a rendszergazdával."
+msgid "You do not have enough permissions to access DottorCloud. Please contact your administrator if you believe this is an error."
+msgstr "Nincs elegendő jogosultsága a DottorCloud eléréséhez. Ha úgy gondolja, hogy hiba történt, kérjük, vegye fel a kapcsolatot a rendszergazdával."
 
 #: crm/integrations/exotel/handler.py:92
 msgid "You do not have mobile number set in your Telephony Agent"
 msgstr ""
 
 #: crm/www/crm.py:18
-msgid "You do not have permission to access Frappe CRM"
+msgid "You do not have permission to access DottorCloud"
 msgstr ""
 
 #: frontend/src/data/document.js:45
