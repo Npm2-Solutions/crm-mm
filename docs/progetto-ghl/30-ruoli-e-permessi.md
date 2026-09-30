@@ -286,6 +286,8 @@ Dal 30/09/2026 anche:
 - `area.invita`: aprire l'area del paziente alla persona, o a chi risponde per
   lei, e chiuderla. La segreteria, l'operatore per i suoi, il manager e la
   direzione.
+- `area.messaggi`: scrivere alla persona nella sua area. La segreteria per
+  l'amministrazione, l'operatore per i suoi e della cura, la direzione.
 
 Il paziente non è un livello: entra nell'area come utente del sito con il ruolo
 "Clinic Patient", mai nel CRM.

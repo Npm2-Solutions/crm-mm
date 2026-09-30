@@ -823,9 +823,40 @@ con le API in `crm/clinica/area`.
 - **In italiano**: l'area ha il suo dizionario (`frontend/src/area/it.js`), perché
   il paziente non legge l'inglese dello staff.
 
-Restano alla fase 3: "Prepara la visita" con i moduli da firmare dall'area, i
-messaggi del centro, i piani (alimentazione, allenamento, esercizi) e le
-notifiche.
+### Prepara la visita e i messaggi del centro
+
+Fatti il 30/09/2026 (fase 3, la seconda parte).
+
+- **"Prepara la visita"**, nell'Inizio dell'area: i moduli che il centro chiede
+  per il prossimo appuntamento (le stesse regole della scheda "Moduli" e di Oggi,
+  `crm/moduli/dovuti.py`), ciascuno da compilare, iniziato, o da firmare al centro.
+  - "Compila" apre la pagina dei moduli (`/modulo/<link>`) già aperta: chi è
+    nell'area è entrato con un codice, e la pagina non ne chiede un altro. Il
+    link dura quattro ore e finito torna all'area ("Torna alla tua area").
+  - Un link ancora aperto con quei moduli, fatto dall'area o mandato per email,
+    si riprende con le risposte date fin lì, invece di ricominciare: il suo
+    vecchio indirizzo non vale più, come quando si manda un link nuovo.
+  - **Chi firma** è quello di un link per email (`richieste.destinatario`): la
+    persona, se nessuno risponde per lei; il genitore o il tutore che è entrato,
+    se è tra le sue persone collegate con la sua email. Chi la segue soltanto
+    vede e non firma; una minorenne vede i suoi moduli, e li firma il genitore
+    dalla sua area.
+- **I messaggi del centro** (`crm/clinica/area/messaggi.py`, `Clinic Message`):
+  una bacheca per persona, non una chat: il paziente legge e non risponde qui.
+  Il design lascia la domanda aperta ("Da decidere" 7): una chat sarebbe
+  un'altra casella per i medici, e si aggiunge se il centro la vuole.
+  - Si scrive dalla scheda Clinica, riquadro "Messages in the area", con
+    `area.messaggi`. La segreteria scrive messaggi amministrativi (un promemoria,
+    un documento da portare); l'operatore scrive della cura, e il suo messaggio
+    è un dato sanitario: fa della persona un paziente e si legge nel CRM come le
+    sue visite (`dossier.legge_le_altre`). Un messaggio non si riscrive.
+  - Chi entra nell'area riceve un'email che dice solo che c'è una novità: il
+    testo resta dentro l'area.
+  - Nell'area la voce "Messaggi" porta il numero dei nuovi; aprirla li segna
+    letti, con chi e quando, e il CRM lo mostra sotto ogni messaggio.
+
+Restano alla fase 3: i piani (alimentazione, allenamento, esercizi) e le
+notifiche fuori dall'email.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
