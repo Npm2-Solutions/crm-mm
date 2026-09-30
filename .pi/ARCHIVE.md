@@ -1908,3 +1908,21 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | L'id dell'utente nella passkey è un'impronta, non l'indirizzo | Il telefono tiene il minimo |
 | Credenziali fino a 255 caratteri | Un indice unico su un varchar più lungo supera il limite di InnoDB; quelle dei telefoni sono di 20-64 byte |
 | I test usano un autenticatore software vero (P-256, firma ES256) | py_webauthn verifica firme, sfide e contatori come farebbe con un telefono |
+
+## Fase 3, le novità dell'area su WhatsApp e SMS
+
+> **Completato** (30/09/2026). `crm/clinica/area/avvisi.py`, `Clinic Area Notice`, i
+> campi dell'area in `Clinic Settings`, `AreaNoticeSettings.vue` (Impostazioni > News
+> in the patient area), `NoticeCard.vue` nei Messaggi dell'area.
+> `docs/gestionale-medico/README.md`, "Le novità dell'area su WhatsApp e SMS".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Solo al numero della persona che ha scritto al centro da lì | Verificato dal suo stesso gesto, senza codici né template di autenticazione; un numero scritto a mano può essere sbagliato, e dire a uno sconosciuto che qualcuno è paziente |
+| Le stesse parole dell'email, mai il contenuto | "Dicono solo 'c'è una novità nella tua area'" (design) |
+| Il template WhatsApp è un campo di testo, non un Link | Dove `frappe_whatsapp` non c'è, un Link a "WhatsApp Templates" romperebbe il migrate |
+| Al più uno ogni due ore per canale | Tre messaggi del centro di fila non devono essere tre WhatsApp |
+| Un avviso che non parte finisce nel log, non ferma la bacheca | Il messaggio del centro è la cosa; l'avviso è un di più |
+| Le impostazioni con `canali.configura`, dai metodi della clinica | I canali sono del manager; niente scritture del Single dal client |
