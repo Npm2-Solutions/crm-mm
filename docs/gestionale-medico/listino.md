@@ -161,9 +161,9 @@ rifanno i numeri.
 
 1. I prezzi, dopo i centri pilota.
 2. Il prezzo dell'Area clienti da sola, e quello della Clinica, che ora comprende
-   l'area. *Deciso il 30/09/2026* il resto: moduli con firma, consensi, documenti,
-   preventivi, abbonamenti e liste d'attesa vanno nella Base, perché la privacy e i
-   contratti firmati servono a tutti; l'area e i piani non medici sono un modulo a
+   l'area. *Proposta del 30/09/2026* per il resto: moduli con firma, consensi,
+   documenti, preventivi, abbonamenti e liste d'attesa nella Base, perché la privacy e
+   i contratti firmati servono a tutti; l'area e i piani non medici in un modulo a
    sé ([i tre strati](./design.md#tre-strati-crm-fatturazione-clinica)).
 
 ## Fonti
