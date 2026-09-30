@@ -31,14 +31,12 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_datetime, now_datetime
 
+from crm import marchio
 from crm.integrations.meta.client import GRAPH_VERSION, graph_post_body
 
 # The first event of every lead. Meta needs it to know the lead was received and
 # processed at all; without it the later stages cannot be put in proportion.
 RAW_LEAD = "Raw Lead"
-
-# what we call ourselves in the payload, for Meta's own diagnostics
-LEAD_EVENT_SOURCE = "DottorCloud"
 
 MAX_ATTEMPTS = 5
 BATCH = 200
@@ -142,7 +140,10 @@ def send_pending(limit: int = BATCH) -> dict:
 		return {"sent": 0, "error": "no token"}
 
 	# the payload goes in the body: two hundred events do not fit in a URL
-	payload = {"data": frappe.as_json([_event(row) for row in rows])}
+	# what we call ourselves in the payload, for Meta's own diagnostics: the
+	# product's name, the vertical's brand
+	fonte = marchio.nome()
+	payload = {"data": frappe.as_json([_event(row, fonte) for row in rows])}
 	if config.conversions_test_code:
 		payload["test_event_code"] = config.conversions_test_code
 
@@ -159,7 +160,7 @@ def send_pending(limit: int = BATCH) -> dict:
 	return {"sent": len(rows), "events_received": received}
 
 
-def _event(row: dict) -> dict:
+def _event(row: dict, fonte: str) -> dict:
 	"""One event, in the shape the CRM integration requires.
 
 	`action_source` is `system_generated` here — the web, app and offline flavours
@@ -172,7 +173,7 @@ def _event(row: dict) -> dict:
 		"user_data": {"lead_id": int(row["facebook_lead_id"])}
 		if str(row["facebook_lead_id"]).isdigit()
 		else {"lead_id": row["facebook_lead_id"]},
-		"custom_data": {"lead_event_source": LEAD_EVENT_SOURCE, "event_source": "crm"},
+		"custom_data": {"lead_event_source": fonte, "event_source": "crm"},
 	}
 
 

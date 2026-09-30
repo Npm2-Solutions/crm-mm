@@ -38,7 +38,8 @@ import struct
 from dataclasses import dataclass, field
 from datetime import date
 
-#: Declared producer: constant, neutral, no version that reveals the stack.
+#: Declared producer: neutral, no version that reveals the stack. The callers pass
+#: the product's brand (`crm.marchio.nome()`); this is who it is without one.
 PRODUTTORE = "DottorCloud"
 
 PARTE_PDFA = 3
@@ -110,7 +111,11 @@ class RapportoPdf:
 
 
 def xmp(
-	titolo: str, data_documento: date, parte: int = PARTE_PDFA, conformita: str = CONFORMANZA_PDFA
+	titolo: str,
+	data_documento: date,
+	parte: int = PARTE_PDFA,
+	conformita: str = CONFORMANZA_PDFA,
+	produttore: str = PRODUTTORE,
 ) -> bytes:
 	"""A minimal, **neutral** XMP packet.
 
@@ -133,11 +138,11 @@ def xmp(
    <dc:description><rdf:Alt><rdf:li xml:lang="x-default"></rdf:li></rdf:Alt></dc:description>
   </rdf:Description>
   <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
-   <pdf:Producer>{PRODUTTORE}</pdf:Producer>
+   <pdf:Producer>{_testo_xml(produttore)}</pdf:Producer>
    <pdf:Keywords></pdf:Keywords>
   </rdf:Description>
   <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-   <xmp:CreatorTool>{PRODUTTORE}</xmp:CreatorTool>
+   <xmp:CreatorTool>{_testo_xml(produttore)}</xmp:CreatorTool>
    <xmp:CreateDate>{istante}</xmp:CreateDate>
    <xmp:ModifyDate>{istante}</xmp:ModifyDate>
    <xmp:MetadataDate>{istante}</xmp:MetadataDate>
@@ -286,6 +291,7 @@ def converti(
 	data_documento: date,
 	allegato_xml: tuple[str, bytes] | None = None,
 	relazione_allegato: str = "Alternative",
+	produttore: str = PRODUTTORE,
 ) -> RisultatoPdf:
 	"""Turn a rendered PDF into PDF/A structure, and report what came out.
 
@@ -336,7 +342,7 @@ def converti(
 		radice = scrittore.root_object
 
 		# The XMP packet stays uncompressed - PDF/A requires it readable as it lies.
-		scrittore.xmp_metadata = xmp(titolo, data_documento)
+		scrittore.xmp_metadata = xmp(titolo, data_documento, produttore=produttore)
 		flusso_xmp = radice["/Metadata"].get_object()
 		flusso_xmp[NameObject("/Type")] = NameObject("/Metadata")
 		flusso_xmp[NameObject("/Subtype")] = NameObject("/XML")
@@ -370,8 +376,8 @@ def converti(
 				"/Author": "",
 				"/Subject": "",
 				"/Keywords": "",
-				"/Creator": PRODUTTORE,
-				"/Producer": PRODUTTORE,
+				"/Creator": produttore,
+				"/Producer": produttore,
 				"/CreationDate": marca,
 				"/ModDate": marca,
 			}
