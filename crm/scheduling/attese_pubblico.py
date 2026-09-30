@@ -125,6 +125,9 @@ def join_waiting_list(
 		canale=channel,
 		contatto=booker if lead != booker else None,
 		fonte=R.ONLINE,
+		# as a booking keeps them on its row: the record found may hold none of them
+		email=email,
+		telefono=phone or None,
 		ignora_permessi=True,
 	)
 	SB._registra_consensi(lead, voce, config, consent, consent_text, marketing_consent, booker)
@@ -154,9 +157,8 @@ def _email_d_ingresso(voce, segreto: str) -> None:
 	from frappe.utils import escape_html as esc
 
 	from crm.moduli.richieste import nome_del_centro
-	from crm.utils import stored_value
 
-	email = stored_value("CRM Lead", voce.contact or voce.lead, "email")
+	_chi, email, _numero = A._destinatario(voce)
 	if not email:
 		return
 	try:

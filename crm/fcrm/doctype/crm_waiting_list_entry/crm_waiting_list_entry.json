@@ -22,6 +22,8 @@
   "contact_section",
   "channel",
   "contact",
+  "email",
+  "phone",
   "column_break_contact",
   "source",
   "notes",
@@ -143,6 +145,20 @@
    "description": "Who hears of the offers, when somebody else booked for them"
   },
   {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email for the offers",
+   "options": "Email",
+   "description": "Given when joining: the offers go here. Empty: the person's own"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Mobile for the offers",
+   "options": "Phone",
+   "description": "Given when joining. Empty: the person's own"
+  },
+  {
    "fieldname": "column_break_contact",
    "fieldtype": "Column Break"
   },
@@ -195,7 +211,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 22:00:00.000000",
+ "modified": "2026-09-30 23:50:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Waiting List Entry",
