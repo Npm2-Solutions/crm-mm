@@ -220,6 +220,7 @@ permission_query_conditions = {
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"CRM Session Cycle": "crm.permissions.seguono.get_cycle_permission_query_conditions",
+	"CRM Waiting List Entry": "crm.permissions.seguono.get_waiting_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
 	"CRM SMS Message": "crm.permissions.seguono.get_sms_permission_query_conditions",
 	"CRM Visitor": "crm.permissions.seguono.get_visitor_permission_query_conditions",
@@ -253,6 +254,7 @@ has_permission = {
 	"Clinic Dental Chart": "crm.clinica.cure.has_chart_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"CRM Session Cycle": "crm.permissions.seguono.has_cycle_permission",
+	"CRM Waiting List Entry": "crm.permissions.seguono.has_waiting_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
 	"CRM Visitor": "crm.permissions.seguono.has_visitor_permission",
@@ -267,6 +269,7 @@ has_permission = {
 	"CRM Service Price": "crm.permissions.documenti.has_permission",
 	"CRM Price List": "crm.permissions.documenti.has_permission",
 	"CRM Scheduling Settings": "crm.permissions.documenti.has_permission",
+	"CRM Waiting List Settings": "crm.permissions.documenti.has_permission",
 	"CRM Holiday List": "crm.permissions.documenti.has_permission",
 	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
 	"CRM Resource": "crm.permissions.documenti.has_permission",
@@ -414,6 +417,8 @@ doc_events = {
 			"crm.invoicing.anagrafica.cancella_con_il_titolare",
 			"crm.moduli.consensi.cancella_con_la_persona",
 			"crm.persone.collegate.cancella_con_la_persona",
+			# and what they waited for
+			"crm.scheduling.attese.cancella_con_la_persona",
 		],
 	},
 	"CRM Organization": {
@@ -456,12 +461,22 @@ doc_events = {
 			"crm.clinica.eventi.appuntamento_aggiornato",
 			# and the service of their quote is done
 			"crm.preventivi.appuntamenti.aggiornato",
+			# cancelled, moved, a seat freed: offered to who waits
+			"crm.scheduling.attese.appuntamento_aggiornato",
 		],
 		"on_trash": [
 			"crm.booking_platforms.sync.on_appointment_change",
 			"crm.preventivi.appuntamenti.eliminato",
+			# the waiting lists let go of it, and its time goes to who waits once it is gone
+			"crm.scheduling.attese.appuntamento_in_eliminazione",
 		],
+		"after_delete": ["crm.scheduling.attese.appuntamento_eliminato"],
 	},
+	# a new shift, a service or a room changed: the waiting lists are looked at again
+	"CRM Staff Schedule": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Service": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Resource": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
+	"CRM Scheduling Settings": {"on_update": ["crm.scheduling.attese.orari_cambiati"]},
 	# new clients and the clinic listen to invoicing; invoicing hears of neither
 	"CRM Invoice": {
 		"on_submit": [
@@ -591,10 +606,14 @@ scheduler_events = {
 	],
 	"cron": {
 		"* * * * *": ["crm.automation.engine.process_due_enrollments"],
-		# while the webhook is silent (an app in Development mode never gets one)
-		# this is the only way a lead reaches anybody, and an hour of waiting is
-		# most of a lead's value. It stands down on its own once Meta calls.
-		"*/10 * * * *": ["crm.integrations.meta.leads.catch_up_recent_leads"],
+		"*/10 * * * *": [
+			# while the webhook is silent (an app in Development mode never gets one)
+			# this is the only way a lead reaches anybody, and an hour of waiting is
+			# most of a lead's value. It stands down on its own once Meta calls.
+			"crm.integrations.meta.leads.catch_up_recent_leads",
+			# an offer nobody answered goes to the next one waiting; the whole list hourly
+			"crm.scheduling.attese.ogni_dieci_minuti",
+		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
 		"*/15 * * * *": ["crm.booking_platforms.sync.sync_all"],
