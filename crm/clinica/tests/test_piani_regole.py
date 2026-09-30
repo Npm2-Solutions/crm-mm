@@ -7,6 +7,8 @@ patient's day and week."""
 from __future__ import annotations
 
 import datetime
+import json
+import pathlib
 
 try:
 	from frappe.tests import UnitTestCase
@@ -16,6 +18,8 @@ except ImportError:  # no bench: the rules are still testable
 from crm.clinica import piani_regole as p
 
 LUNEDI = datetime.date(2026, 9, 28)
+#: The cases the browser proves too (`frontend/tests/unit/piani.test.js`).
+CASI = json.loads((pathlib.Path(__file__).parent / "casi_nutrienti.json").read_text())
 
 
 def momento(key="colazione", label="Colazione", day=p.OGNI_GIORNO):
@@ -124,3 +128,82 @@ class IlGiornoELaSettimana(UnitTestCase):
 	def test_le_calorie_dalla_tabella(self):
 		self.assertEqual(p.calorie(360, 80), 288)
 		self.assertIsNone(p.calorie(None, 80))
+
+
+class INutrienti(UnitTestCase):
+	"""The totals come from the tables, the same in the browser and here."""
+
+	def test_i_casi_condivisi(self):
+		for caso in CASI["nutrients"]:
+			with self.subTest(caso["name"]):
+				self.assertEqual(p.nutrienti(caso["items"], CASI["foods"]), caso["expected"])
+		for caso in CASI["days"]:
+			with self.subTest(caso["name"]):
+				self.assertEqual(
+					p.per_giorno(caso["moments"], caso["items"], CASI["foods"]), caso["expected"]
+				)
+		for grammi, atteso in CASI["grams"]:
+			with self.subTest(grammi=grammi):
+				self.assertEqual(p.arrotonda_grammi(grammi), atteso)
+
+	def test_scalare_tiene_le_proporzioni(self):
+		voci = [
+			{"kind": p.CIBO, "food": "pasta", "quantity_g": 80},
+			{"kind": p.CIBO, "food": "piselli", "quantity_g": 100},
+			{"kind": p.ABITUDINE, "text": "Acqua"},
+		]
+		scalate = p.scala(voci, CASI["foods"], 538)
+		# 358 kcal become about 538: one and a half, in grams a person weighs
+		self.assertEqual([v.get("quantity_g") for v in scalate], [120, 150, None])
+		self.assertEqual(p.nutrienti(scalate, CASI["foods"])["kcal"], 538)
+		self.assertEqual(voci[0]["quantity_g"], 80)
+
+	def test_senza_obiettivo_o_senza_calorie_non_si_scala(self):
+		voci = [{"kind": p.CIBO, "food": "pasta", "quantity_g": 80}]
+		self.assertEqual(p.scala(voci, CASI["foods"], None), voci)
+		self.assertEqual(p.scala(voci, CASI["foods"], "0"), voci)
+		self.assertEqual(
+			p.scala([{"kind": p.CIBO, "food": "senza_valori", "quantity_g": 5}], CASI["foods"], 500)[0][
+				"quantity_g"
+			],
+			5,
+		)
+
+
+class LaRicettaProposta(UnitTestCase):
+	"""Of a recipe the assistant proposed the engine keeps the foods of the library
+	and their grams: nothing else of its numbers."""
+
+	def test_solo_alimenti_della_libreria_e_grammi_leggibili(self):
+		proposta = {
+			"title": " Pasta e piselli ",
+			"method": "Cuoci i piselli, poi la pasta.",
+			"kcal": 9999,
+			"foods": [
+				{"id": "pasta", "grams": 78},
+				{"id": "piselli", "grams": "100"},
+				{"id": "burro", "grams": 20},
+				{"id": "olio", "grams": 0},
+				{"id": "olio", "grams": 5000},
+				{"id": "pasta", "grams": 2},
+				"sale",
+			],
+		}
+		self.assertEqual(
+			p.ricetta(proposta, CASI["foods"]),
+			{
+				"title": "Pasta e piselli",
+				"method": "Cuoci i piselli, poi la pasta.",
+				"items": [
+					{"kind": p.CIBO, "food": "pasta", "quantity_g": 80},
+					{"kind": p.CIBO, "food": "piselli", "quantity_g": 100},
+				],
+			},
+		)
+
+	def test_senza_titolo_o_senza_alimenti_non_c_e_ricetta(self):
+		self.assertIsNone(
+			p.ricetta({"title": "Niente", "foods": [{"id": "burro", "grams": 20}]}, CASI["foods"])
+		)
+		self.assertIsNone(p.ricetta({"foods": [{"id": "pasta", "grams": 80}]}, CASI["foods"]))
+		self.assertIsNone(p.ricetta("pasta", CASI["foods"]))

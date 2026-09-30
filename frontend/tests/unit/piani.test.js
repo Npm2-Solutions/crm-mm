@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import fs from 'node:fs'
+import path from 'node:path'
 import {
   ABITUDINE,
   ABITUDINI,
@@ -17,8 +19,47 @@ import {
   momentiIniziali,
   nuovaChiave,
   nuovaVoce,
+  nutrienti,
+  perGiorno,
   perMomento,
+  arrotondaGrammi,
+  rigaNutrienti,
 } from '@/utils/piani'
+
+// the cases the server proves too: crm/clinica/tests/test_piani_regole.py reads them
+const CASI = JSON.parse(
+  fs.readFileSync(
+    path.resolve(
+      import.meta.dirname,
+      '../../../crm/clinica/tests/casi_nutrienti.json',
+    ),
+    'utf8',
+  ),
+)
+
+describe('the nutrients, from the tables, as the server counts them', () => {
+  it.each(CASI.nutrients.map((c) => [c.name, c]))('%s', (_, c) => {
+    expect(nutrienti(c.items, CASI.foods)).toEqual(c.expected)
+  })
+
+  it.each(CASI.days.map((c) => [c.name, c]))('days: %s', (_, c) => {
+    expect(perGiorno(c.moments, c.items, CASI.foods)).toEqual(c.expected)
+  })
+
+  it('reads a total in words', () => {
+    expect(rigaNutrienti(CASI.nutrients[1].expected)).toBe(
+      '448 kcal · proteins 15.5 g · carbohydrates 70.2 g · fats 11.2 g · fibre 8.5 g',
+    )
+    expect(rigaNutrienti(null)).toBe('')
+  })
+
+  it.each(CASI.grams.map(([g, atteso]) => [String(g), g, atteso]))(
+    'grams as weighed: %s',
+    (_, g, atteso) => {
+      expect(arrotondaGrammi(g)).toBe(atteso)
+    },
+  )
+})
 
 // a random that repeats: keys are predictable in a test
 const sempre = (valore) => () => valore
