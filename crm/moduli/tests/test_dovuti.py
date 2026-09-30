@@ -150,7 +150,8 @@ class LaSchedaEOggi(DovutiCase):
 		giorno = pagina.get_day(str(getdate()))
 		[riga] = [a for a in giorno["appointments"] if a["name"] == appuntamento.name]
 		[persona] = riga["participants"]
-		self.assertEqual([f["template"] for f in persona["due_forms"]], [anamnesi])
+		# the site may ask other forms of its own: this one is among them
+		self.assertIn(anamnesi, [f["template"] for f in persona["due_forms"]])
 
 	def test_chi_non_vede_i_moduli_non_li_vede_nemmeno_qui(self):
 		self.chiedi()
