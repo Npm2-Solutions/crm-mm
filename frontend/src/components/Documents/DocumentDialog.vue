@@ -17,7 +17,9 @@
           :uploadArgs="{ private: true }"
           @success="chosen"
         >
-          <template #default="{ openFileSelector, uploading, progress }">
+          <template
+            #default="{ openFileSelector, uploading, progress, error: failed }"
+          >
             <div class="flex min-w-0 flex-wrap items-center gap-2">
               <Button
                 icon-left="upload"
@@ -37,6 +39,8 @@
                 {{ file.file_name }}
               </span>
             </div>
+            <!-- a file refused on upload says why, or nothing would -->
+            <ErrorMessage v-if="failed" class="mt-2" :message="failed" />
           </template>
         </FileUploader>
         <div
