@@ -16,6 +16,13 @@
   "patient_section",
   "instructions",
   "show_calories",
+  "targets_section",
+  "target_kcal",
+  "target_protein_g",
+  "target_carbs_g",
+  "column_targets",
+  "target_fat_g",
+  "target_fibre_g",
   "moments_section",
   "moments",
   "items_section",
@@ -114,6 +121,47 @@
    "read_only": 1
   },
   {
+   "fieldname": "targets_section",
+   "fieldtype": "Section Break",
+   "label": "Targets for a day",
+   "depends_on": "eval:doc.plan_type=='Meal plan'",
+   "description": "The nutritionist's: the totals of the menu come from the food tables"
+  },
+  {
+   "fieldname": "target_kcal",
+   "fieldtype": "Float",
+   "label": "Energy (kcal)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "target_protein_g",
+   "fieldtype": "Float",
+   "label": "Proteins (g)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "target_carbs_g",
+   "fieldtype": "Float",
+   "label": "Carbohydrates (g)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_targets",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_fat_g",
+   "fieldtype": "Float",
+   "label": "Fats (g)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "target_fibre_g",
+   "fieldtype": "Float",
+   "label": "Fibre (g)",
+   "non_negative": 1
+  },
+  {
    "fieldname": "moments_section",
    "fieldtype": "Section Break",
    "label": "Moments"
@@ -208,7 +256,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 16:00:00.000000",
+ "modified": "2026-10-01 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Plan",

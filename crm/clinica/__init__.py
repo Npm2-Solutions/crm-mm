@@ -328,7 +328,14 @@ RIASSUNTO = Funzione(
 	legge="assistente.registro_clinico",
 	interruttore="summaries",
 )
-FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO)
+RICETTE = Funzione(
+	"menu_recipes",
+	"Recipes for a meal plan",
+	usa="assistente.bozze",
+	legge="assistente.registro_clinico",
+	interruttore="menus",
+)
+FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE)
 
 
 def registra() -> None:

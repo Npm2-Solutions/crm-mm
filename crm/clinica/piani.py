@@ -196,7 +196,7 @@ def _cibi(nomi: set[str]) -> dict[str, dict]:
 		for riga in frappe.get_all(
 			CIBO,
 			filters={"name": ("in", list(nomi))},
-			fields=["name", "food_name", "food_group", "portion_g", "kcal", "protein_g", "carbs_g", "fat_g"],
+			fields=["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI],
 		)
 	}
 
@@ -229,7 +229,13 @@ def righe_del_piano(doc) -> tuple[list[dict], list[dict]]:
 	cibi = _cibi({v.food for v in doc.items if v.food})
 	esercizi = _esercizi({v.exercise for v in doc.items if v.exercise})
 	momenti = [
-		{"key": m.moment_key, "label": m.label, "day": m.day, "time": str(m.time) if m.time else None}
+		{
+			"key": m.moment_key,
+			"label": m.label,
+			"day": m.day,
+			"time": str(m.time) if m.time else None,
+			"note": m.note,
+		}
 		for m in doc.moments
 	]
 	voci = []
@@ -247,6 +253,15 @@ def righe_del_piano(doc) -> tuple[list[dict], list[dict]]:
 	return momenti, voci
 
 
+def _ricette(doc) -> dict:
+	"""Whether the author may ask the assistant for recipes on this draft."""
+	if doc.practitioner != frappe.session.user or doc.status != BOZZA or doc.plan_type != R.MENU:
+		return {}
+	from crm.clinica import menu
+
+	return menu.disponibile(doc.lead)
+
+
 @frappe.whitelist()
 def get_plan(name: str) -> dict:
 	"""A plan to read or to go on writing, with how the last two weeks went. The
@@ -260,11 +275,14 @@ def get_plan(name: str) -> dict:
 		"lead": doc.lead,
 		"instructions": doc.instructions,
 		"show_calories": cint(doc.show_calories),
+		# the nutritionist's targets for a day; the totals come from the tables
+		"targets": {nome: doc.get(f"target_{nome}") or None for nome in R.NUTRIENTI},
 		"moments": momenti,
 		"items": voci,
 		"logs": _andamento([doc.name], dal).get(doc.name, []),
 		"days": [str(add_days(dal, giorno)) for giorno in range(GIORNI_ANDAMENTO)],
 		"can_edit": doc.practitioner == frappe.session.user and doc.status == BOZZA,
+		"recipes": _ricette(doc),
 		"can_close": doc.practitioner == frappe.session.user and doc.status == PUBBLICATO,
 		"can_version": doc.status != BOZZA
 		and doc.plan_type in tipi_consentiti()
@@ -291,6 +309,7 @@ def _righe(dati: dict) -> tuple[list[dict], list[dict]]:
 				"label": (momento.get("label") or "").strip(),
 				"day": momento.get("day") or R.OGNI_GIORNO,
 				"time": momento.get("time") or None,
+				"note": (momento.get("note") or "").strip() or None,
 			}
 		)
 	voci = []
@@ -328,9 +347,23 @@ def _scrivi(doc, dati: dict, momenti: list[dict], voci: list[dict]) -> None:
 		frappe.throw(_("A plan ends after it starts"))
 	doc.instructions = (dati.get("instructions") or "").strip() or None
 	doc.show_calories = 1 if cint(dati.get("show_calories")) else 0
+	obiettivi = dati.get("targets") or {}
+	for nome in R.NUTRIENTI:
+		# a menu's targets only: the other kinds have none
+		valore = flt(obiettivi.get(nome)) if doc.plan_type == R.MENU else 0
+		doc.set(f"target_{nome}", valore if valore > 0 else None)
 	doc.set(
 		"moments",
-		[{"moment_key": m["key"], "label": m["label"], "day": m["day"], "time": m["time"]} for m in momenti],
+		[
+			{
+				"moment_key": m["key"],
+				"label": m["label"],
+				"day": m["day"],
+				"time": m["time"],
+				"note": m["note"],
+			}
+			for m in momenti
+		],
 	)
 	doc.set(
 		"items",
@@ -507,7 +540,7 @@ def search_foods(text: str | None = None, group: str | None = None) -> list[dict
 		"food_name",
 		text,
 		{"food_group": group},
-		["name", "food_name", "food_group", "portion_g", "kcal", "source"],
+		["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI, "source"],
 	)
 
 
@@ -525,18 +558,27 @@ def search_exercises(text: str | None = None, body_part: str | None = None) -> l
 
 @frappe.whitelist(methods=["POST"])
 def add_food(
-	food_name: str, food_group: str, portion_g=None, kcal=None, source_note: str | None = None
+	food_name: str,
+	food_group: str,
+	portion_g=None,
+	kcal=None,
+	source_note: str | None = None,
+	protein_g=None,
+	carbs_g=None,
+	fat_g=None,
+	fibre_g=None,
 ) -> dict:
-	"""A food of the centre, when the library has not got it: its values from a
-	table, whose name goes with it."""
+	"""A food of the centre, when the library has not got it: its values for 100 g
+	from a table, whose name goes with it."""
 	livelli.verifica("piani.scrivi")
+	valori = {"kcal": kcal, "protein_g": protein_g, "carbs_g": carbs_g, "fat_g": fat_g, "fibre_g": fibre_g}
 	doc = frappe.get_doc(
 		{
 			"doctype": CIBO,
 			"food_name": (food_name or "").strip(),
 			"food_group": food_group,
 			"portion_g": flt(portion_g) or None,
-			"kcal": flt(kcal) if kcal not in (None, "") else None,
+			**{nome: flt(valore) if valore not in (None, "") else None for nome, valore in valori.items()},
 			"source": "Centre",
 			"source_note": source_note,
 		}
@@ -546,7 +588,7 @@ def add_food(
 		"food_name": doc.food_name,
 		"food_group": doc.food_group,
 		"portion_g": doc.portion_g,
-		"kcal": doc.kcal,
+		**{nome: doc.get(nome) for nome in R.NUTRIENTI},
 	}
 
 

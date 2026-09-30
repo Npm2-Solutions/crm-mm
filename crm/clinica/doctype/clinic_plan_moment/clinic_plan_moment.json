@@ -8,7 +8,8 @@
   "moment_key",
   "label",
   "day",
-  "time"
+  "time",
+  "note"
  ],
  "fields": [
   {
@@ -38,11 +39,17 @@
    "fieldtype": "Time",
    "in_list_view": 1,
    "label": "Time"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "description": "What the patient reads with the meal or the session: how to prepare it, what to keep in mind"
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 16:00:00.000000",
+ "modified": "2026-10-01 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Plan Moment",
