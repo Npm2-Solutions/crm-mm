@@ -1,6 +1,7 @@
 import json
 import sys
 import wave
+from pathlib import Path
 
 import numpy as np
 
@@ -33,7 +34,7 @@ PLAN_FULL = [
 	("s-gdpr", 4.2, "cloud", 1.2, 1.0),
 	("s-out", 4.8, None, 1, 1.5),
 ]
-PLAN = [tuple(p) for p in json.load(open(sys.argv[1]))] if len(sys.argv) > 1 else PLAN_FULL
+PLAN = [tuple(p) for p in json.loads(Path(sys.argv[1]).read_text())] if len(sys.argv) > 1 else PLAN_FULL
 OUTWAV = sys.argv[2] if len(sys.argv) > 2 else "audio.wav"
 AT = {}
 SL = {}

@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 
 import pathops
 from fontTools.pens.svgPathPen import SVGPathPen
@@ -92,10 +93,10 @@ def text_path(s, size, x0, base, track=-0.03):
 
 import json
 
-json.dump({"mark": d_of(m), "bounds": b}, open("mark.json", "w"))
+Path("mark.json").write_text(json.dumps({"mark": d_of(m), "bounds": b}))
 t1, x1 = text_path("Dottor", 100, 0, 0)
 t2, x2 = text_path("Cloud", 100, x1 + 2, 0)
-json.dump({"dottor": t1, "cloud": t2, "w": x2}, open("word.json", "w"))
+Path("word.json").write_text(json.dumps({"dottor": t1, "cloud": t2, "w": x2}))
 print("word width", x2)
 
 
@@ -120,5 +121,7 @@ for ch in "DottorCloud":
 	x += gs[g].width * sc - 3
 	if ch == "r":
 		x += 2
-json.dump({"sil": d_of(sil()), "cross": d_of(cr), "letters": letters, "w": x}, open("pieces.json", "w"))
+Path("pieces.json").write_text(
+	json.dumps({"sil": d_of(sil()), "cross": d_of(cr), "letters": letters, "w": x})
+)
 print("pieces ok", x)

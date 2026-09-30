@@ -1,7 +1,8 @@
 import json
+from pathlib import Path
 
-M = json.load(open("mark.json"))
-W = json.load(open("word.json"))
+M = json.loads(Path("mark.json").read_text())
+W = json.loads(Path("word.json").read_text())
 mx0, my0, mx1, my1 = M["bounds"]
 mw, mh = mx1 - mx0, my1 - my0
 TEAL = "#12a594"
@@ -72,5 +73,5 @@ out = {
 	"dottorcloud-orizzontale-nero.svg": horiz("#000000", "#000000", "#000000"),
 }
 for k, v in out.items():
-	open("../" + k, "w").write(v)
+	Path("..", k).write_text(v)
 print("\n".join(out))
