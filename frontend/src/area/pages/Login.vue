@@ -31,9 +31,22 @@
           variant="solid"
           type="submit"
           :label="__('Send me the code')"
-          :loading="busy"
+          :loading="busy === true"
           :disabled="!email.trim()"
         />
+        <template v-if="passkeys">
+          <div class="flex items-center gap-2 text-p-sm text-ink-gray-5">
+            <span class="h-px flex-1 bg-surface-gray-3" />
+            {{ __('or') }}
+            <span class="h-px flex-1 bg-surface-gray-3" />
+          </div>
+          <Button
+            :label="__('Enter with a passkey')"
+            icon-left="lucide-fingerprint"
+            :loading="busy === 'passkey'"
+            @click="withPasskey"
+          />
+        </template>
       </form>
       <form
         v-else
@@ -60,7 +73,7 @@
           variant="solid"
           type="submit"
           :label="__('Enter')"
-          :loading="busy"
+          :loading="busy === true"
           :disabled="code.trim().length < 6"
         />
         <div class="flex justify-between">
@@ -79,6 +92,7 @@
 <script setup>
 import { Button, ErrorMessage, FormControl, call } from 'frappe-ui'
 import { ref } from 'vue'
+import { inJSON, opzioniDiAccesso, supported } from '../passkey'
 import { messageOf } from '../store'
 
 const boot = window.AREA || {}
@@ -103,6 +117,32 @@ async function send() {
     sent.value = true
   } catch (e) {
     error.value = __(messageOf(e))
+  } finally {
+    busy.value = false
+  }
+}
+
+// the phone offers its passkeys for this site: no address to type
+const passkeys = supported()
+
+async function withPasskey() {
+  busy.value = 'passkey'
+  error.value = ''
+  try {
+    const { options, state } = await call(
+      'crm.clinica.area.passkey.authentication_options',
+    )
+    const credenziale = await navigator.credentials.get({
+      publicKey: opzioniDiAccesso(options),
+    })
+    await call('crm.clinica.area.passkey.authenticate', {
+      credential: JSON.stringify(inJSON(credenziale)),
+      state,
+    })
+    window.location.href = '/area'
+  } catch (e) {
+    // closed on the phone: nothing to say
+    if (e?.name !== 'NotAllowedError') error.value = __(messageOf(e))
   } finally {
     busy.value = false
   }
