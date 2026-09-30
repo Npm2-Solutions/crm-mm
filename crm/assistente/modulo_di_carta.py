@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
 """A form from paper: the PDF the centre already uses, the assistant proposes the

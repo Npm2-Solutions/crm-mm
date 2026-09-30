@@ -1,4 +1,5 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
 from unittest.mock import MagicMock, patch

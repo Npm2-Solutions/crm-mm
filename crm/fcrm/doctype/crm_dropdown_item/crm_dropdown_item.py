@@ -1,4 +1,5 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
 """A Home Action: one entry of the avatar menu every user opens.

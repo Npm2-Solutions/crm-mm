@@ -1,4 +1,5 @@
 # Copyright (c) 2024, Frappe Technologies and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # This file is used to handle live demo site (https://frappecrm-demo.frappe.cloud) related API calls and hooks
 
 import frappe
