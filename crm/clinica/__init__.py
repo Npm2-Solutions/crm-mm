@@ -17,6 +17,7 @@ from __future__ import annotations
 from crm.assistente import Funzione, registra_funzione
 from crm.moduli.registro import CONSENSO, TipoConsenso, registra_tipo
 from crm.permissions.livelli import (
+	A_SCELTA,
 	CENTRO,
 	SUOI,
 	Capacita,
@@ -157,6 +158,17 @@ CAPACITA = (
 			"of the kinds one's qualification allows",
 		),
 		{"operatore": SUOI},
+	),
+	# the libraries the plans are written with: the manager, the medical director,
+	# and the nutritionist the manager chooses (the tables' licences are the centre's)
+	(
+		Capacita(
+			"piani.librerie",
+			PIANO,
+			descrizione="Keep the centre's food and exercise libraries: import the food tables and the "
+			"exercises, correct names and groups, switch an item off",
+		),
+		{"manager": CENTRO, DIREZIONE: CENTRO, "operatore": A_SCELTA},
 	),
 	# the assistant on one's patients (design.md, "L'assistente"): the plan's
 	# assistant module, the clinic's data

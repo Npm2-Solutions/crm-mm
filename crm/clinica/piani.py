@@ -202,10 +202,14 @@ def _cibi(nomi: set[str]) -> dict[str, dict]:
 
 
 def _esercizi(nomi: set[str]) -> dict[str, dict]:
+	"""The exercises of a plan, with their pictures: the centre's own, or the
+	library's from where the agency hosts them (`librerie.media`)."""
+	from crm.clinica.librerie import media
+
 	if not nomi:
 		return {}
 	return {
-		riga.name: riga
+		riga.name: frappe._dict({**riga, **media(riga)})
 		for riga in frappe.get_all(
 			ESERCIZIO,
 			filters={"name": ("in", list(nomi))},
@@ -218,6 +222,9 @@ def _esercizi(nomi: set[str]) -> dict[str, dict]:
 				"video_url",
 				"instructions",
 				"attribution",
+				"source",
+				"media_path",
+				"animation_path",
 			],
 		)
 	}

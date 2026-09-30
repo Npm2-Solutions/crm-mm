@@ -17,10 +17,13 @@
   "carbs_g",
   "fat_g",
   "fibre_g",
+  "kcal_computed",
   "source_section",
   "source",
+  "source_code",
   "column_source",
-  "source_note"
+  "source_note",
+  "name_in_source"
  ],
  "fields": [
   {
@@ -90,6 +93,14 @@
    "label": "Fibre (g)"
   },
   {
+   "description": "Computed from proteins, carbohydrates, fats, fibre and alcohol with the factors of the Regulation EU 1169/2011: the table gives none",
+   "fieldname": "kcal_computed",
+   "fieldtype": "Check",
+   "label": "Energy computed from the nutrients",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
    "fieldname": "source_section",
    "fieldtype": "Section Break",
    "label": "Source"
@@ -102,6 +113,13 @@
    "options": "Centre\nCREA\nBDA-IEO\nCIQUAL\nUSDA"
   },
   {
+   "fieldname": "source_code",
+   "fieldtype": "Data",
+   "label": "Code in the table",
+   "read_only": 1,
+   "length": 40
+  },
+  {
    "fieldname": "column_source",
    "fieldtype": "Column Break"
   },
@@ -110,11 +128,17 @@
    "fieldname": "source_note",
    "fieldtype": "Data",
    "label": "Licence or attribution"
+  },
+  {
+   "fieldname": "name_in_source",
+   "fieldtype": "Data",
+   "label": "Name in the table",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 16:00:00.000000",
+ "modified": "2026-10-03 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Food",
