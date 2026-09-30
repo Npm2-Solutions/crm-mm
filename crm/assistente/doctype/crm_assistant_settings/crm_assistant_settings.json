@@ -13,6 +13,10 @@
   "dictation",
   "summaries",
   "menus",
+  "chat_section",
+  "patient_chat",
+  "chat_about",
+  "chat_faq",
   "provider_section",
   "provider",
   "base_url",
@@ -74,6 +78,31 @@
    "fieldname": "menus",
    "fieldtype": "Check",
    "label": "Recipes for a meal plan"
+  },
+  {
+   "fieldname": "chat_section",
+   "fieldtype": "Section Break",
+   "label": "The patients' chat",
+   "description": "In the patient area: opening hours, bookings and the centre's frequent questions. Health questions go to a person, an emergency to 112."
+  },
+  {
+   "default": "0",
+   "fieldname": "patient_chat",
+   "fieldtype": "Check",
+   "label": "The patients' chat",
+   "description": "It says it is an AI and answers only from what the centre wrote"
+  },
+  {
+   "fieldname": "chat_about",
+   "fieldtype": "Small Text",
+   "label": "What the chat may say about the centre",
+   "description": "Address, how to get there, parking, payments, what to bring: the chat answers from this and the frequent questions"
+  },
+  {
+   "fieldname": "chat_faq",
+   "fieldtype": "Table",
+   "label": "Frequent questions",
+   "options": "CRM Assistant FAQ"
   },
   {
    "fieldname": "provider_section",
@@ -143,7 +172,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 21:00:00.000000",
+ "modified": "2026-10-01 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "Assistente",
  "name": "CRM Assistant Settings",

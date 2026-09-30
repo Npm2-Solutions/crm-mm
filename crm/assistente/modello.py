@@ -209,6 +209,13 @@ def accetta(
 	return evento
 
 
+def consegnata(nome: str) -> None:
+	"""An answer given as it came, to whoever asked: no draft waits on it. The
+	register keeps it for whoever reads the function's events."""
+	if frappe.db.get_value(EVENTO, nome, "status") == regole.BOZZA:
+		frappe.db.set_value(EVENTO, nome, "status", regole.CONSEGNATA, update_modified=False)
+
+
 def scarta(nome: str) -> None:
 	evento = _mio(nome)
 	evento.status = regole.SCARTATA

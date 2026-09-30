@@ -3,7 +3,9 @@
 
 """A message from the centre on the person's board in their area
 (`crm.clinica.area.messaggi`): administrative from the desk, or about their care
-from a practitioner. Written once, read by the patient; not a chat."""
+from a practitioner. Written once, read by the patient; not a chat. A question
+the patient passed on from the area's chat is on the board too, for the desk to
+answer there."""
 
 import frappe
 from frappe import _

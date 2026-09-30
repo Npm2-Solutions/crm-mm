@@ -53,7 +53,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nAccepted\nDiscarded\nFailed",
+   "options": "Draft\nAccepted\nDiscarded\nFailed\nAnswered",
    "read_only": 1
   },
   {
@@ -227,7 +227,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-01 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "Assistente",
  "name": "CRM AI Event",

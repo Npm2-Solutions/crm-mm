@@ -36,7 +36,9 @@ COMPATIBILE_OPENAI = "OpenAI compatible"
 FORNITORI = (ANTHROPIC, COMPATIBILE_OPENAI)
 
 BOZZA, ACCETTATA, SCARTATA, FALLITA = "Draft", "Accepted", "Discarded", "Failed"
-STATI = (BOZZA, ACCETTATA, SCARTATA, FALLITA)
+#: An answer given to a person as it came, not a draft: the patients' chat.
+CONSEGNATA = "Answered"
+STATI = (BOZZA, ACCETTATA, SCARTATA, FALLITA, CONSEGNATA)
 
 #: The most text a request sends: a paper form of a few pages, a visit's note.
 MAX_TESTO = 60_000

@@ -335,7 +335,16 @@ RICETTE = Funzione(
 	legge="assistente.registro_clinico",
 	interruttore="menus",
 )
-FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE)
+# the patients' chat in their area: they use it; in the CRM it goes with the
+# area's messages, where what it passes on arrives
+CHAT = Funzione(
+	"patient_chat",
+	"The patients' chat",
+	usa="area.messaggi",
+	legge="assistente.registro_clinico",
+	interruttore="patient_chat",
+)
+FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE, CHAT)
 
 
 def registra() -> None:
