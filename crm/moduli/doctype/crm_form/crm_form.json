@@ -31,6 +31,18 @@
   "column_document",
   "pdf_hash",
   "pdf_conformance",
+  "paper_section",
+  "paper_file",
+  "paper_hash",
+  "column_paper",
+  "attested_by",
+  "attested_on",
+  "provider_section",
+  "provider",
+  "provider_reference",
+  "column_provider",
+  "provider_status",
+  "provider_evidence",
   "signatures_section",
   "signatures",
   "amended_from"
@@ -201,6 +213,79 @@
    "read_only": 1
   },
   {
+   "collapsible": 1,
+   "depends_on": "paper_file",
+   "fieldname": "paper_section",
+   "fieldtype": "Section Break",
+   "label": "On paper"
+  },
+  {
+   "fieldname": "paper_file",
+   "fieldtype": "Attach",
+   "label": "The signed paper, scanned",
+   "read_only": 1
+  },
+  {
+   "fieldname": "paper_hash",
+   "fieldtype": "Data",
+   "label": "The scan (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_paper",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attested_by",
+   "fieldtype": "Link",
+   "label": "Attested by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "attested_on",
+   "fieldtype": "Datetime",
+   "label": "Attested on",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "provider",
+   "fieldname": "provider_section",
+   "fieldtype": "Section Break",
+   "label": "Signature provider"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "label": "Provider",
+   "read_only": 1
+  },
+  {
+   "fieldname": "provider_reference",
+   "fieldtype": "Data",
+   "label": "Provider reference",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_provider",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "provider_status",
+   "fieldtype": "Select",
+   "label": "At the provider",
+   "options": "\nSent\nSigned\nDeclined\nExpired",
+   "read_only": 1
+  },
+  {
+   "fieldname": "provider_evidence",
+   "fieldtype": "Attach",
+   "label": "The provider's evidence",
+   "read_only": 1
+  },
+  {
    "fieldname": "signatures_section",
    "fieldtype": "Section Break",
    "label": "Signatures"
@@ -224,7 +309,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 15:00:00.000000",
+ "modified": "2026-09-30 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Form",
