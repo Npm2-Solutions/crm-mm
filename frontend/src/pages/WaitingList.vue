@@ -27,20 +27,22 @@
   <div class="flex-1 overflow-y-auto">
     <div class="mx-auto flex max-w-4xl flex-col gap-6 px-5 py-6 max-md:px-4">
       <div class="flex flex-wrap items-center gap-2">
-        <FormControl
-          v-model="service"
-          type="select"
-          class="w-60 max-md:w-full"
-          :aria-label="__('Service')"
-          :options="serviceOptions"
-        />
-        <FormControl
-          v-model="staff"
-          type="select"
-          class="w-52 max-md:w-full"
-          :aria-label="__('With')"
-          :options="staffOptions"
-        />
+        <div class="w-60 max-md:w-full">
+          <FormControl
+            v-model="service"
+            type="select"
+            :aria-label="__('Service')"
+            :options="serviceOptions"
+          />
+        </div>
+        <div class="w-52 max-md:w-full">
+          <FormControl
+            v-model="staff"
+            type="select"
+            :aria-label="__('With')"
+            :options="staffOptions"
+          />
+        </div>
       </div>
 
       <!-- how the line stands, at a glance -->
