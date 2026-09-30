@@ -17,7 +17,7 @@
           <template v-for="(dente, i) in riga" :key="dente">
             <div
               v-if="i === riga.length / 2"
-              class="mx-1 w-px self-stretch bg-outline-gray-2"
+              class="mx-1 self-stretch border-l border-outline-gray-2"
               aria-hidden="true"
             />
             <button
