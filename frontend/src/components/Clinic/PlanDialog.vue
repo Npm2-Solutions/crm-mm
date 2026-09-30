@@ -262,6 +262,8 @@
           {{ __('Replaced by a new version.') }}
         </p>
         <ErrorMessage :message="error" />
+        <!-- inside the plan's dialog, one layer on the other -->
+        <ShoppingListDialog v-model="shopping" :plan="plan.name" />
       </div>
     </template>
 
@@ -294,6 +296,12 @@
       </div>
       <div v-else class="dialog-footer flex flex-wrap justify-end gap-2">
         <Button
+          v-if="isDieta(plan.plan_type) && hasShopping"
+          icon-left="lucide-shopping-cart"
+          :label="__('Shopping list')"
+          @click="shopping = true"
+        />
+        <Button
           v-if="plan.can_close"
           :label="__('Close the plan')"
           :loading="busy === 'close'"
@@ -316,11 +324,13 @@
 import PlanItemEditor from '@/components/Clinic/PlanItemEditor.vue'
 import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
 import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
+import ShoppingListDialog from '@/components/Clinic/ShoppingListDialog.vue'
 import { formatDate } from '@/utils'
 import {
   CIBO,
   ESITI,
   GIORNI,
+  GRUPPO,
   MENU,
   NUTRIENTI,
   OGNI_GIORNO,
@@ -558,6 +568,13 @@ const foods = computed(() =>
 )
 const hasFoods = computed(() =>
   (plan.items || []).some((item) => item.kind === CIBO && item.food),
+)
+// a diet with something to buy: its foods, or an exchange diet's portions
+const shopping = ref(false)
+const hasShopping = computed(() =>
+  (plan.items || []).some(
+    (item) => (item.kind === CIBO && item.food) || item.kind === GRUPPO,
+  ),
 )
 const days = computed(() => perGiorno(plan.moments, plan.items, foods.value))
 const missing = computed(

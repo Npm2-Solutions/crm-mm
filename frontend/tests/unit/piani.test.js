@@ -24,6 +24,11 @@ import {
   perMomento,
   arrotondaGrammi,
   rigaNutrienti,
+  comeSiArriva,
+  daComprare,
+  perGruppo,
+  quantitaDaComprare,
+  testoDellaSpesa,
 } from '@/utils/piani'
 
 // the cases the server proves too: crm/clinica/tests/test_piani_regole.py reads them
@@ -200,5 +205,52 @@ describe('how the days went', () => {
       { day: '2026-09-29', outcome: null },
       { day: '2026-09-30', outcome: 'Partly' },
     ])
+  })
+})
+
+describe('the shopping list', () => {
+  it('rounds up what to buy, to 10 g or to 100 g past the kilo', () => {
+    expect(daComprare(552)).toEqual({ value: 560, unit: 'g' })
+    expect(daComprare(560)).toEqual({ value: 560, unit: 'g' })
+    expect(daComprare(1400)).toEqual({ value: 1.4, unit: 'kg' })
+    expect(daComprare(1401)).toEqual({ value: 1.5, unit: 'kg' })
+    expect(daComprare(null)).toBeNull()
+    expect(daComprare(0)).toBeNull()
+    expect(quantitaDaComprare(1400, 'it')).toBe('1,4 kg')
+    expect(quantitaDaComprare(75, 'en')).toBe('80 g')
+    expect(quantitaDaComprare(null)).toBe('')
+  })
+
+  it('says how the sum is made', () => {
+    expect(comeSiArriva({ each: 80, times: 7 })).toBe('80 g, 7 times')
+    expect(comeSiArriva({ each: null, times: 4 })).toBe('4 times')
+    expect(comeSiArriva({ each: 80, times: 1 })).toBe('')
+  })
+
+  it('keeps the groups in the server’s order and pastes as words', () => {
+    const lista = {
+      foods: [
+        { food_name: 'Pasta', food_group: 'Cereals and tubers', grams: 560 },
+        { food_name: 'Riso', food_group: 'Cereals and tubers', grams: 80 },
+        { food_name: 'Olio', food_group: 'Oils and fats', grams: null },
+      ],
+      groups: [{ food_group: 'Fish', portions: 3 }],
+    }
+    expect(
+      perGruppo(lista.foods).map((g) => [g.group, g.items.length]),
+    ).toEqual([
+      ['Cereals and tubers', 2],
+      ['Oils and fats', 1],
+    ])
+    expect(testoDellaSpesa(lista, undefined, 'en')).toBe(
+      [
+        'CEREALS AND TUBERS',
+        '- Pasta: 560 g',
+        '- Riso: 80 g',
+        'OILS AND FATS',
+        '- Olio',
+        'Fish: 3 portions',
+      ].join('\n'),
+    )
   })
 })

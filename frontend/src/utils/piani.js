@@ -261,3 +261,59 @@ export function rigaNutrienti(n, t = (s, a) => format(s, a)) {
     t('fibre {0} g', [n.fibre_g]),
   ].join(' · ')
 }
+
+// ------------------------------------------------------------------ the shopping list
+// The server sums the grams (crm/clinica/piani_regole.py, spesa); here they are
+// read as a person buys them.
+
+export const GIORNI_SPESA = [7, 14, 21, 28, 35]
+
+// what to buy of a food: rounded up, to 10 g, or to 100 g past the kilo
+export function daComprare(grammi) {
+  const v = valore(grammi)
+  if (v === null || v <= 0) return null
+  if (v < 1000) return { value: Math.ceil(v / 10) * 10, unit: 'g' }
+  return { value: Math.ceil(v / 100) / 10, unit: 'kg' }
+}
+
+// "560 g", "1,2 kg": in the reader's language
+export function quantitaDaComprare(grammi, locale) {
+  const q = daComprare(grammi)
+  if (!q) return ''
+  return `${q.value.toLocaleString(locale)} ${q.unit}`
+}
+
+// "80 g, 7 times": how the sum is made, when every time is the same
+export function comeSiArriva(riga, t = (s, a) => format(s, a)) {
+  if (riga.each && riga.times > 1)
+    return t('{0} g, {1} times', [riga.each, riga.times])
+  if (riga.times > 1) return t('{0} times', [riga.times])
+  return ''
+}
+
+// the foods by group, in the order the server gives them
+export function perGruppo(righe) {
+  const gruppi = []
+  for (const riga of righe || []) {
+    const ultimo = gruppi[gruppi.length - 1]
+    if (ultimo && ultimo.group === riga.food_group) ultimo.items.push(riga)
+    else gruppi.push({ group: riga.food_group, items: [riga] })
+  }
+  return gruppi
+}
+
+// the list as words, to paste in a message: a line a food
+export function testoDellaSpesa(lista, t = (s, a) => format(s, a), locale) {
+  const righe = []
+  for (const gruppo of perGruppo(lista?.foods)) {
+    righe.push(t(gruppo.group).toUpperCase())
+    for (const riga of gruppo.items) {
+      const quanto = quantitaDaComprare(riga.grams, locale)
+      righe.push(`- ${riga.food_name}${quanto ? ': ' + quanto : ''}`)
+    }
+  }
+  for (const gruppo of lista?.groups || []) {
+    righe.push(t('{0}: {1} portions', [t(gruppo.food_group), gruppo.portions]))
+  }
+  return righe.join('\n')
+}
