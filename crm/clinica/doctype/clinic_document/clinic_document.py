@@ -57,11 +57,3 @@ class ClinicDocument(DocumentoClinico):
 				},
 			)
 		super().after_insert()
-
-	def on_trash(self):
-		# the patient card keeps the rule that made them a patient, not a link to a
-		# document taken away: the audit log says what it was
-		for scheda in frappe.get_all(
-			"Clinic Patient", filters={"source_doctype": self.doctype, "source_name": self.name}, pluck="name"
-		):
-			frappe.db.set_value("Clinic Patient", scheda, {"source_doctype": None, "source_name": None})
