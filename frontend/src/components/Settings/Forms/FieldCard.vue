@@ -113,7 +113,7 @@
           <Tooltip
             :text="
               __(
-                'Frappe expression referencing other fields as doc.<fieldname>, e.g. eval:doc.country == \'India\'. Leave blank for no condition.',
+                'An expression on the other fields, as doc.<fieldname>, e.g. eval:doc.country == \'Italy\'. Leave blank for no condition.',
               )
             "
           >

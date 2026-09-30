@@ -21,7 +21,7 @@
           "
         >
           <div class="text-base-medium leading-none text-ink-gray-9 truncate">
-            {{ __(brand.name || 'CRM') }}
+            {{ brand.name || 'DottorCloud' }}
           </div>
           <div class="mt-1 text-sm leading-none text-ink-gray-7 truncate">
             {{ user.full_name }}
@@ -47,18 +47,13 @@
 
 <script setup>
 import BrandLogo from '@/components/BrandLogo.vue'
-import FrappeCloudIcon from '@/components/Icons/FrappeCloudIcon.vue'
 import AppsIcon from '@/components/Icons/AppsIcon.vue'
+import LucideLayoutGrid from '~icons/lucide/layout-grid'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { getSettings } from '@/stores/settings'
-import {
-  showSettings,
-  isMobileView,
-  mobileSidebarOpened,
-} from '@/composables/settings'
+import { showSettings, mobileSidebarOpened } from '@/composables/settings'
 import { showAboutModal } from '@/composables/modals'
-import { confirmLoginToFrappeCloud } from '@/composables/frappecloud'
 import { safeDropdownIcon, safeDropdownRoute } from '@/utils/dropdownItems'
 import { createResource, Dropdown } from 'frappe-ui'
 import { computed, h, markRaw } from 'vue'
@@ -151,13 +146,6 @@ function getStandardItem(item) {
           showSettings.value = true
         },
       }
-    case 'login_to_fc':
-      return {
-        icon: h(FrappeCloudIcon),
-        label: __(item.label),
-        onClick: () => confirmLoginToFrappeCloud(),
-        condition: () => !isMobileView.value && window.is_fc_site,
-      }
     case 'about':
       return {
         icon: item.icon,
@@ -178,15 +166,19 @@ function appMenuItems() {
     label: app.title,
     onClick: () => (window.location.href = app.route),
     slots: {
-      prefix: () => h('img', { class: 'size-5 rounded', src: app.logo }),
+      prefix: () =>
+        app.icon
+          ? h(app.icon, { class: 'size-5 text-ink-gray-7' })
+          : h('img', { class: 'size-5 rounded', src: app.logo }),
     },
   }))
 }
 
+// the back office: an icon of its own, not the framework's logo
 function deskApp() {
   return {
-    name: 'frappe',
-    logo: '/assets/frappe/images/framework.png',
+    name: 'desk',
+    icon: markRaw(LucideLayoutGrid),
     title: __('Desk'),
     route: '/desk',
   }

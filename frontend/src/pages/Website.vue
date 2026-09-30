@@ -46,7 +46,7 @@
       >
         <div class="flex flex-col gap-1">
           <span class="text-p-base-medium text-ink-gray-8">
-            {{ __('Frappe Builder is not installed on this site') }}
+            {{ __('The website builder is not installed on this site') }}
           </span>
           <span class="text-p-sm text-ink-gray-5">
             {{
