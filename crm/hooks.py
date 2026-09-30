@@ -1,12 +1,23 @@
 app_name = "crm"
-app_title = "Frappe CRM"
-app_publisher = "Frappe Technologies Pvt. Ltd."
-app_description = "Kick-ass Open Source CRM"
-app_email = "shariq@frappe.io"
+app_title = "DottorCloud"
+app_publisher = "NPM2 Solutions Srl"
+app_description = "Management software for medical centres"
+app_email = ""
 app_license = "AGPLv3"
-app_icon_url = "/assets/crm/images/logo.svg"
-app_icon_title = "CRM"
+app_icon_url = "/assets/crm/images/dottorcloud-icona.svg"
+app_icon_title = "DottorCloud"
 app_icon_route = "/crm"
+
+# The product's marks where the framework shows its own (`crm.marchio`): the login
+# page's and the desk's logo, the favicon and the splash of every page it serves.
+# A logo, a favicon or a splash set in the Website Settings still wins.
+app_logo_url = "/assets/crm/images/dottorcloud-icona.svg"
+website_context = {
+	"favicon": "/assets/crm/images/favicon.png",
+	"splash_image": "/assets/crm/images/dottorcloud-icona.svg",
+}
+# the desk names the apps by their titles: the framework's is "Frappe Framework"
+extend_bootinfo = ["crm.marchio.boot"]
 
 # Apps
 # ------------------
@@ -15,8 +26,8 @@ app_icon_route = "/crm"
 add_to_apps_screen = [
 	{
 		"name": "crm",
-		"logo": "/assets/crm/images/logo.svg",
-		"title": "CRM",
+		"logo": "/assets/crm/images/dottorcloud-icona.svg",
+		"title": "DottorCloud",
 		"route": "/crm",
 		"has_permission": "crm.api.check_app_permission",
 	}
@@ -667,13 +678,6 @@ standard_dropdown_items = [
 		"label": "Settings",
 		"type": "Route",
 		"icon": "settings",
-		"route": "#",
-		"is_standard": 1,
-	},
-	{
-		"name1": "login_to_fc",
-		"label": "Login to Frappe Cloud",
-		"type": "Route",
 		"route": "#",
 		"is_standard": 1,
 	},

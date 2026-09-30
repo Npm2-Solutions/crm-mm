@@ -203,9 +203,11 @@ def _tz_or(value: str | None, fallback: ZoneInfo) -> ZoneInfo:
 def page_title(config=None) -> str:
 	"""What the booking page is called: its own title, else the brand of the CRM.
 
-	Never Frappe's own default ``app_name``: a client booking a massage must not
-	read "Frappe" in the tab.
+	Never the software's own name in ``app_name``: a client booking a massage must
+	read the centre's name in the tab, not the software's (`crm.marchio.nome_scelto`).
 	"""
+	from crm.marchio import nome_scelto
+
 	config = config or settings()
 	title = (config.get("booking_page_title") or "").strip()
 	if title:
@@ -213,8 +215,8 @@ def page_title(config=None) -> str:
 	brand = (frappe.db.get_single_value("FCRM Settings", "brand_name") or "").strip()
 	if brand:
 		return brand
-	app_name = (frappe.db.get_single_value("Website Settings", "app_name") or "").strip()
-	if app_name and app_name.lower() not in ("frappe", "frappe crm"):
+	app_name = nome_scelto(frappe.db.get_single_value("Website Settings", "app_name"))
+	if app_name:
 		return app_name
 	return _("Book an appointment")
 

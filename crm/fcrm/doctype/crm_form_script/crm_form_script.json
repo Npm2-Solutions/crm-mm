@@ -40,8 +40,7 @@
   },
   {
    "default": "function setupForm({ doc }) {\n    return {\n        actions: [],\n    }\n}",
-   "documentation_url": "https://docs.frappe.io/crm/custom-actions",
-   "fieldname": "script",
+     "fieldname": "script",
    "fieldtype": "Code",
    "label": "Script",
    "options": "JS"
@@ -65,7 +64,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-23 12:31:42.629014",
+ "modified": "2026-09-30 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Form Script",
