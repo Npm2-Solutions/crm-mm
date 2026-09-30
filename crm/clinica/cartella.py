@@ -189,6 +189,8 @@ def get_record(lead: str) -> dict:
 		# the patient area: who opens it to the person
 		"can_invite": livelli.puo("area.invita"),
 		"can_message": livelli.puo("area.messaggi"),
+		# a diet, a training, exercises at home: by one's qualification
+		"can_plan": livelli.puo("piani.scrivi"),
 		# the medical director obscures an episode at the patient's request
 		"can_obscure": livelli.puo("clinica.oscura"),
 		"dossier": _col_dossier(lead),
@@ -283,21 +285,21 @@ def delete_draft(name: str) -> None:
 
 
 #: What a line of the access log says was opened: never what it contains.
-APERTO = {"Clinic Record": "record", "Clinic Document": "archive", "File": "file"}
+APERTO = {"Clinic Record": "record", "Clinic Document": "archive", "Clinic Plan": "plan", "File": "file"}
 
 
 @frappe.whitelist()
 def access_log(lead: str) -> list[dict]:
-	"""Who opened this person's record and archive, and when: not what they read.
+	"""Who opened this person's record, archive and plans, and when: not what they read.
 
-	The record and the archive listed (a View Log for each entry they showed) and
-	every file downloaded (Frappe's Access Log), one line for each person, minute
-	and kind of opening."""
+	The record and the archive listed (a View Log for each entry they showed), a
+	plan opened, and every file downloaded (Frappe's Access Log), one line for each
+	person, minute and kind of opening."""
 	livelli.verifica("clinica.accessi")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	voci = {
 		doctype: frappe.get_all(doctype, filters={"lead": lead}, pluck="name")
-		for doctype in ("Clinic Record", "Clinic Document")
+		for doctype in ("Clinic Record", "Clinic Document", "Clinic Plan")
 	}
 	righe = []
 	for doctype, nomi in voci.items():

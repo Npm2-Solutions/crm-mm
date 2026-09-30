@@ -189,6 +189,7 @@ permission_query_conditions = {
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
 	"Clinic Document": "crm.clinica.archivio.get_permission_query_conditions",
+	"Clinic Plan": "crm.clinica.piani.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
@@ -218,6 +219,7 @@ has_permission = {
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"Clinic Document": "crm.clinica.archivio.has_permission",
+	"Clinic Plan": "crm.clinica.piani.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
