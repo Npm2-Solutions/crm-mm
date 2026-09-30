@@ -1631,3 +1631,29 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Il motore dei PDF carica solo i data URI (`pdf.pdf_da_html`) | Anche se qualcosa sfuggisse all'escape, niente del disco e niente dalla rete entra in un documento firmato |
 | Le note del referto scritte nel CRM restano testo; quelle del Desk passano da `sanitize_html` | L'editor del Desk scrive HTML: si tiene la formattazione, non il resto |
 | Il test prova anche il contrario: senza il nostro motore il file del server entra | Un test che passa anche senza la correzione non prova niente |
+
+## Fase 2, l'archivio clinico e il registro degli accessi
+
+> **Completato** (30/09/2026). L'archivio (`crm/clinica/archivio.py`,
+> `Clinic Document`) con i documenti caricati, il referto di ogni visita firmata e
+> i file ricevuti in una conversazione. Il registro degli accessi mette insieme la
+> cartella, l'archivio e i file scaricati. `docs/gestionale-medico/README.md`,
+> "L'archivio clinico e il registro degli accessi".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Un documento dell'archivio si legge con le regole della cartella (`cartella.legge_le_altre`, `condizione_condivisa`) | Una regola sola per le voci e per i documenti: autore, direzione, dossier, "solo io" |
+| Ogni documento è "per" un operatore, e la segreteria lo deve dire | Senza dossier un documento di nessuno non lo leggerebbe nessun operatore |
+| La segreteria archivia e poi vede solo quello che ha aggiunto (`clinica.archivia`) | Scansiona quello che porta il paziente, ma la cartella non è sua |
+| Il referto in archivio è un rimando alla visita, senza un file suo | Si legge e si scarica con i permessi della visita, e non si toglie |
+| Ora anche la visita libera ha il suo referto; la nota no | Il referto è quello che si consegna di una visita: serve a tutte |
+| Un documento non chiude l'appuntamento (`dice_che_e_venuto`) | Un esame può arrivare prima della visita per cui è |
+| Un errore si toglie in giornata da chi l'ha aggiunto, poi solo dalla direzione, con il motivo nel registro degli eventi | La persona sbagliata va corretta subito; dopo decide chi risponde della parte clinica |
+| Il registro degli eventi sopravvive a ciò che registra (`ignore_links_on_delete`) | Tolto il documento, restano chi l'ha tolto e perché |
+| La scheda paziente perde il rimando al documento tolto, non la regola | Un paziente resta paziente; il rimando non punterebbe a niente |
+| Dalla conversazione si archivia una copia privata, e il file della chat diventa privato | frappe_whatsapp salva pubblici i file ricevuti: un documento sanitario non resta raggiungibile dal solo indirizzo |
+| Il registro degli accessi raggruppa per persona, minuto e tipo, e mostra cosa è stato aperto, non il titolo | Aprire la scheda scrive una riga per voce; al manager serve chi e quando, non cosa |
+| L'Access Log si tiene due anni come il View Log | Gli scaricamenti dei file sono accessi anche loro |
+| La sintesi non dà permessi a System Manager | Come la cartella: i dati clinici non sono dell'agenzia |
