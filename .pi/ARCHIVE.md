@@ -1549,3 +1549,25 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | `open_request` è un POST | Frappe non salva ciò che un GET scrive: la sessione del tablet si perdeva |
 | La pagina importa lo stesso motore del CRM, copiato tra gli asset | Una regola sola; un test di vitest ferma la copia che resta indietro |
 | Il codice parte subito dopo il commit e, se il server di posta rifiuta, ci riprova la coda | Dura dieci minuti; un errore di posta non deve far fallire la pagina |
+
+## Fase 2, su carta e con un fornitore di firma
+
+> **Completato** (30/09/2026). La firma su carta con la scansione attestata
+> dall'operatore; l'adattatore dei fornitori di firma avanzata e qualificata
+> (`crm/moduli/firme.py`, `CRM Signature Settings`), con un fornitore finto nei
+> test. `docs/gestionale-medico/README.md`, "Su carta e con un fornitore di firma".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Una sola chiusura (`_chiudi`) per ogni modo di firmare | Stesso registro, stessa richiesta, stessi consensi: cambia solo come arriva la firma e chi fa il PDF |
+| La firma su carta è "handwritten", qualunque livello chiedesse il campo | L'autografa non è un livello di firma elettronica; su carta si firma anche il consenso informato |
+| La scansione entra nel PDF/A come allegato `Source`, e le sue pagine se è un PDF | Il documento conservato porta dentro l'originale da cui viene; nessun file a parte da perdere |
+| L'operatore attesta la copia conforme, e senza attestazione non si firma | È la sua parola che lega la scansione all'originale di carta, come chiede il design |
+| La copia da firmare ha caselle e righe per le risposte vuote | La stessa stampa serve anche come modulo di carta bianco |
+| Il PDF del fornitore si tiene com'è | Convertirlo in PDF/A romperebbe la firma PAdES |
+| Mandato al fornitore, il modulo non si cambia | Il fornitore ha già il PDF con quelle risposte; si riprende o aspetta il rifiuto |
+| Il webhook è del fornitore attivo e lo verifica il fornitore | Ognuno firma le sue chiamate a modo suo; una busta sconosciuta, o ripresa, non firma niente |
+| L'operatore di una firma data dal fornitore è chi ha compilato o mandato il modulo | Il webhook arriva senza nessuno collegato |
+| Nessun fornitore reale nel codice, per ora | Il centro deve scegliere (Namirial, InfoCert, Intesi) e firmare un contratto; l'adattatore è pronto |

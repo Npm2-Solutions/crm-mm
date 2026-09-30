@@ -595,10 +595,36 @@ Fatto il 30/09/2026 (fase 2, la terza parte).
   lo stesso, copiato tra gli asset e tenuto uguale da un test), e il server rifà
   tutto quando si firma.
 
-Resta alla fase 2: la carta scansionata con l'attestazione dell'operatore, il
-fornitore della firma avanzata, i moduli "quando si chiede" e "Oggi: moduli da
-firmare", la cartella sul modello della specialità, i referti, l'archivio. "Dal
-modulo di carta", con l'assistente che propone i campi, va alla fase 4.
+### Su carta e con un fornitore di firma
+
+Fatto il 30/09/2026 (fase 2, la quarta parte).
+
+- **Su carta** ("Other ways to sign" → "On paper" nella pagina del modulo): si
+  stampa la copia da firmare con le risposte date fin lì (le risposte vuote sono
+  caselle da barrare o righe su cui scrivere, e sotto ogni firma c'è il nome di chi
+  firma), la persona firma, si carica la scansione (PDF, JPG o PNG, privata) e
+  l'operatore attesta che è copia conforme dell'originale firmato davanti a lui.
+  Le risposte scritte nel CRM si controllano come sempre. La firma è registrata
+  come autografa ("handwritten", su carta); la scansione entra nel PDF/A come file
+  allegato (la sua fonte) e, se è un PDF, con le sue pagine; il suo SHA-256, chi
+  l'ha attestata e quando stanno sul modulo e nella pagina delle prove.
+  L'originale di carta resta al centro. Un modulo con firma avanzata, senza
+  fornitore, si firma su carta.
+- **Con un fornitore** (`crm/moduli/firme.py`): la firma avanzata (il codice SMS
+  del fornitore, dopo il riconoscimento con un documento) e quella qualificata
+  vengono da un fornitore. Il CRM gli chiede cinque cose, chiunque sia: creare la
+  busta, la pagina di firma, cosa dice il suo webhook, il PDF firmato (PAdES), le
+  sue prove. Un fornitore è una classe registrata con `registra_fornitore`; il
+  centro lo sceglie in `CRM Signature Settings` (le chiavi sono dell'agenzia).
+  Il modulo mandato al fornitore non si cambia più; firmato, il webhook lo chiude
+  con il PDF del fornitore così com'è (convertirlo romperebbe la firma) e le sue
+  prove accanto. Rifiutato o scaduto torna una bozza; si può anche riprendere.
+  Nessun fornitore reale è ancora collegato: Namirial, InfoCert o Intesi si
+  aggiungono come una classe ciascuno, quando il centro sceglie.
+
+Resta alla fase 2: i moduli "quando si chiede" e "Oggi: moduli da firmare", la
+cartella sul modello della specialità, i referti, l'archivio. "Dal modulo di
+carta", con l'assistente che propone i campi, va alla fase 4.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
