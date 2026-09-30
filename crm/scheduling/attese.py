@@ -966,6 +966,10 @@ def entra(
 		"name",
 	)
 	doc = frappe.get_doc(VOCE, nome) if nome else frappe.new_doc(VOCE)
+	if lezione:
+		# a seat in a class is waited for until the class
+		fino = _locale(frappe.db.get_value(APPUNTAMENTO, lezione, "starts_on")).date()
+		righe, dal = [], None
 	if doc.is_new():
 		doc.lead = lead
 		doc.service = servizio
