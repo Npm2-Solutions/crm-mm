@@ -516,6 +516,9 @@ piano a sé.
 
 ### Il piano del centro
 
+*Proposta, da confermare con i prezzi:* dove sta il codice è deciso, in quale
+modulo del piano si vende è una scelta commerciale.
+
 - **Base**: in più i moduli con firma e i consensi, i documenti, i preventivi, gli
   abbonamenti e le liste d'attesa. La privacy e i contratti firmati servono a tutti.
 - **Area clienti**: un modulo nuovo, che si compra da solo.
