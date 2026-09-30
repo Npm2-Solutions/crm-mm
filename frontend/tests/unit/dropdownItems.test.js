@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import feather from 'feather-icons'
-import FEATHER_ICONS from '../../../crm/fcrm/doctype/crm_dropdown_item/feather_icons.json'
+import FEATHER_ICONS from '../../../crm/fcrm/feather_icons.json'
 import {
   DEFAULT_DROPDOWN_ICON,
   isAllowedDropdownIcon,
