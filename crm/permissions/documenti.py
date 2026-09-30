@@ -37,6 +37,9 @@ SCRITTURA = {
 	"CRM Lead Status": "pipeline.configura",
 	"CRM Deal Status": "pipeline.configura",
 	"CRM Communication Status": "pipeline.configura",
+	# which pipelines new clients and quotes move
+	"CRM Client Settings": "pipeline.configura",
+	"CRM Quote Settings": "pipeline.configura",
 	# public views: everybody keeps their own
 	"CRM View Settings": "viste.configura",
 	# the channels: everybody uses the templates, the manager writes them

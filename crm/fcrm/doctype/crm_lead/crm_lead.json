@@ -34,6 +34,7 @@
   "lead_owner",
   "last_visit",
   "last_service",
+  "client_since",
   "organization_tab",
   "section_break_uixv",
   "naming_series",
@@ -246,6 +247,13 @@
    "fieldtype": "Link",
    "label": "Last service",
    "options": "CRM Service",
+   "read_only": 1
+  },
+  {
+   "description": "When they became a client: the first time they came, or their first invoice. Written once, by the rules; automations and the dashboard count on it.",
+   "fieldname": "client_since",
+   "fieldtype": "Datetime",
+   "label": "Client since",
    "read_only": 1
   },
   {
@@ -817,7 +825,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-29 20:00:00.000000",
+ "modified": "2026-10-07 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

@@ -336,13 +336,16 @@ FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE)
 
 
 def registra() -> None:
-	from crm.automation.engine import registra_evento
+	from crm.clienti import cliente
+	from crm.clienti import pipeline as clienti
 	from crm.clinica import pipeline
 	from crm.clinica.paziente import clinica_accesa
 
 	registra_modulo_piano(MODULO)
-	# "Became Patient", offered to the automations where the clinic is on
-	registra_evento(pipeline.EVENTO, pipeline.TRIGGER, disponibile=clinica_accesa)
+	# who becomes a client is who becomes a patient, by the clinic's rules; the new
+	# clients pipeline is the new patients' one
+	cliente.registra_regole(clinica_accesa)
+	clienti.registra_nomi(PIANO, pipeline.NUOVI_PAZIENTI)
 	_registra_dashboard(clinica_accesa)
 	registra_ruolo(
 		"Medical Director",
@@ -447,8 +450,9 @@ def _cruscotto():
 			section(
 				Line.of(
 					KPI,
-					"new_patients",
-					"meta_cost_per_patient",
+					# the CRM's, in the clinic's words: new patients, what one costs
+					"new_clients",
+					"meta_cost_per_client",
 					"appointments_today",
 					"appointments_no_show_rate",
 					"recall_due",
@@ -467,7 +471,7 @@ def _cruscotto():
 
 
 def _registra_dashboard(clinica_accesa) -> None:
-	"""The "clinic" feature, and the widgets that need it (`crm.clinica.widgets`)."""
+	"""The "clinic" feature, and the medical centre's dashboard that needs it."""
 	from frappe import _lt
 
 	from crm.dashboard.features import FEATURES, Feature
@@ -482,7 +486,6 @@ def _registra_dashboard(clinica_accesa) -> None:
 			clinica_accesa,
 		),
 	)
-	import crm.clinica.widgets  # registers the widgets
 	from crm.dashboard import templates as modelli
 
 	modelli.registra(_cruscotto())

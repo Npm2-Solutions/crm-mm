@@ -81,3 +81,6 @@ crm.patches.v1_0.the_brand_is_the_verticals
 crm.patches.v1_0.plans_keep_their_health_data
 crm.patches.v1_0.documents_keep_their_health_data
 crm.patches.v1_0.quotes_keep_their_health_data
+crm.patches.v1_0.new_clients_are_the_crms
+crm.patches.v1_0.clients_since_they_first_came
+crm.clinica.patches.patients_are_clients

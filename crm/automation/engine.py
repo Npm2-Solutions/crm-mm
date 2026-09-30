@@ -92,12 +92,14 @@ EVENT_TO_TRIGGER = {
 	"note_added": "Note Added",
 	"date_reminder": "Date Reminder",
 	"inbound_webhook": "Inbound Webhook",
+	# the first time a person comes, or their first invoice (`crm.clienti`)
+	"client_created": "Became Client",
 }
 
 TRIGGER_EVENTS = list(EVENT_TO_TRIGGER.values())
 
-#: When a trigger a module added is offered: the clinic's "Became Patient" only
-#: where the clinic is on. The CRM names none of them.
+#: When a trigger a module added is offered: only where the module is on. The CRM
+#: names none of them.
 _OFFERTO: dict = {}
 
 

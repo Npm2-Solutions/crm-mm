@@ -63,7 +63,7 @@ class CRMAutomation(Document):
 			"Note Added",
 			"Date Reminder",
 			"Inbound Webhook",
-			"Became Patient",
+			"Became Client",
 		]
 		webhook_key: DF.Password | None
 		window_days: DF.JSON | None

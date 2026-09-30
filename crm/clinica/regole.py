@@ -17,17 +17,19 @@ the one that would have fired first, in time; the table's order only breaks a ti
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 
-
-@dataclass(frozen=True)
-class Regola:
-	numero: int
-	#: What the patient card stores, in English like every stored choice.
-	valore: str
-	descrizione: str
-
+# the CRM's rules of who came, which the clinic's are built on (`crm.clienti`)
+from crm.clienti.regole import (
+	APPUNTAMENTO_COMPLETATO,
+	NOTE_DI_CREDITO,
+	PARTECIPANTE_ASSENTE,
+	PARTECIPANTE_PRESENTE,
+	Regola,
+	accolto,
+	presente,
+	vendita,
+)
 
 INFORMAZIONE_MEDICA = Regola(1, "Medical information", "The first clinical record saved about the person")
 ACCETTAZIONE = Regola(2, "Check-in", "Their arrival registered at the desk")
@@ -38,23 +40,6 @@ A_MANO = Regola(6, "By hand", "Somebody marked them as a patient")
 
 REGOLE = (INFORMAZIONE_MEDICA, ACCETTAZIONE, APPUNTAMENTO_SVOLTO, FATTURA_SANITARIA, IMPORTAZIONE, A_MANO)
 PER_VALORE = {regola.valore: regola for regola in REGOLE}
-
-#: How the appointment ended, for the rule that reads the agenda.
-APPUNTAMENTO_COMPLETATO = "Completed"
-PARTECIPANTE_PRESENTE = "Attended"
-#: A participant who did not come does not become a patient because the others did.
-PARTECIPANTE_ASSENTE = ("No Show", "Cancelled")
-
-
-def presente(stato_appuntamento: str | None, stato_partecipante: str | None) -> bool:
-	"""Whether this participant came: marked attended, or on a completed appointment.
-
-	Somebody who booked and never showed stays a contact: better one patient less
-	than a no-show counted as a patient.
-	"""
-	if stato_partecipante == PARTECIPANTE_PRESENTE:
-		return True
-	return stato_appuntamento == APPUNTAMENTO_COMPLETATO and stato_partecipante not in PARTECIPANTE_ASSENTE
 
 
 def prima_regola(fatti: dict[str, datetime | None]) -> tuple[Regola, datetime] | None:

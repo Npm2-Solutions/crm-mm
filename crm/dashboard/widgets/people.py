@@ -49,6 +49,24 @@ def total_leads(ctx: Context):
 
 
 @widget(
+	"new_clients",
+	category="people",
+	kind="number",
+	title=_lt("New clients"),
+	description=_lt(
+		"People who became clients in the period: the first time they came, or their first invoice"
+	),
+	requires=("agenda",),
+	scope="site",
+	keywords=("first visit", "clients", "conversion"),
+)
+def new_clients(ctx: Context):
+	"""A count says nothing about anybody: how many, never who (`crm.clienti`)."""
+	now, before = two_periods(ctx, Lead, Lead.client_since)
+	return charts.number(now, before)
+
+
+@widget(
 	"people_with_deal",
 	category="people",
 	kind="number",

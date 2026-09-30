@@ -86,8 +86,8 @@
             />
           </div>
         </template>
+        <NewClientsPipeline />
         <QuotesPipeline />
-        <ClinicPipelines />
       </div>
 
       <Dialog v-model:open="newPipeline.show" :title="__('New Pipeline')">
@@ -181,7 +181,7 @@
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
-import ClinicPipelines from './ClinicPipelines.vue'
+import NewClientsPipeline from './NewClientsPipeline.vue'
 import QuotesPipeline from './QuotesPipeline.vue'
 import { ConfirmDelete } from '@/utils'
 import {
