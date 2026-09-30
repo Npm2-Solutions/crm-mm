@@ -164,6 +164,53 @@ def has_cycle_permission(doc, ptype: str | None = None, user: str | None = None)
 	return _riga_visibile(doc, CICLO, cycle_conditions(user))
 
 
+# ------------------------------------------------------------------ waiting lists
+
+ATTESA = "CRM Waiting List Entry"
+
+
+def waiting_conditions(user: str | None = None):
+	"""The waiting list ``user`` reads, with `agenda.attese`: the whole centre's;
+	a practitioner who waits for them, or for a service they do with anybody, and
+	the ones they added; somebody with a team, also their people's. ``None`` all."""
+	user = user or frappe.session.user
+	if not livelli.nel_crm(user):
+		return None
+	ambito = livelli.ambito("agenda.attese", user)
+	if ambito == livelli.CENTRO:
+		return None
+	W = frappe.qb.DocType(ATTESA)
+	if ambito is None:
+		return W.name.isnull()
+	Staff = frappe.qb.DocType("CRM Service Staff").as_("_wait_staff")
+	suoi_servizi = (
+		frappe.qb.from_(Staff)
+		.select(Staff.parent)
+		.where((Staff.parenttype == "CRM Service") & (Staff.user == user))
+	)
+	suoi = (
+		(W.staff == user) | (W.owner == user) | ((IfNull(W.staff, "") == "") & W.service.isin(suoi_servizi))
+	)
+	if ambito == livelli.SUOI:
+		return suoi
+	visibili = oh.visible_leads(user)
+	return None if visibili is None else suoi | W.lead.isin(visibili)
+
+
+def get_waiting_permission_query_conditions(user: str | None = None) -> str:
+	return _sql(waiting_conditions(user))
+
+
+def has_waiting_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	user = user or frappe.session.user
+	ptype = ptype or "read"
+	if livelli.nel_crm(user) and not livelli.puo("agenda.attese", user):
+		return False
+	if ptype == "create":
+		return True
+	return _riga_visibile(doc, ATTESA, waiting_conditions(user))
+
+
 # ---------------------------------------------------------------- the messages
 
 

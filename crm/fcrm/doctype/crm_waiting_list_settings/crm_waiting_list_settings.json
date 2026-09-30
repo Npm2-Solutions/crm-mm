@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-30 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "offers_section",
+  "enabled",
+  "offers_at_once",
+  "hours_to_answer",
+  "column_break_offers",
+  "min_notice_hours",
+  "days_ahead",
+  "join_section",
+  "online_join",
+  "area_join",
+  "column_break_join",
+  "default_until_days",
+  "channels_section",
+  "whatsapp_template",
+  "column_break_channels",
+  "sms_number"
+ ],
+ "fields": [
+  {
+   "fieldname": "offers_section",
+   "fieldtype": "Section Break",
+   "label": "Offers"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Offer freed places by themselves",
+   "description": "Off: the list is kept and the desk offers by hand"
+  },
+  {
+   "default": "3",
+   "fieldname": "offers_at_once",
+   "fieldtype": "Int",
+   "label": "Offered at once to",
+   "non_negative": 1,
+   "description": "A freed place goes to the first ones in the line at once: the first who confirms takes it"
+  },
+  {
+   "default": "2",
+   "fieldname": "hours_to_answer",
+   "fieldtype": "Int",
+   "label": "Hours to answer",
+   "non_negative": 1,
+   "description": "Then the place goes to the next ones"
+  },
+  {
+   "fieldname": "column_break_offers",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "2",
+   "fieldname": "min_notice_hours",
+   "fieldtype": "Int",
+   "label": "Offer places from",
+   "non_negative": 1,
+   "description": "Hours from now: a place starting sooner is not offered"
+  },
+  {
+   "default": "30",
+   "fieldname": "days_ahead",
+   "fieldtype": "Int",
+   "label": "Look ahead",
+   "non_negative": 1,
+   "description": "Days: places further ahead are offered when they come closer"
+  },
+  {
+   "fieldname": "join_section",
+   "fieldtype": "Section Break",
+   "label": "Joining"
+  },
+  {
+   "default": "1",
+   "fieldname": "online_join",
+   "fieldtype": "Check",
+   "label": "From the booking page",
+   "description": "When no time suits, and for a class that is full"
+  },
+  {
+   "default": "1",
+   "fieldname": "area_join",
+   "fieldtype": "Check",
+   "label": "From the client area"
+  },
+  {
+   "fieldname": "column_break_join",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "fieldname": "default_until_days",
+   "fieldtype": "Int",
+   "label": "Waits for",
+   "non_negative": 1,
+   "description": "Days an entry made online waits, unless the person says until when"
+  },
+  {
+   "fieldname": "channels_section",
+   "fieldtype": "Section Break",
+   "label": "Channels"
+  },
+  {
+   "fieldname": "whatsapp_template",
+   "fieldtype": "Data",
+   "label": "WhatsApp template",
+   "description": "Approved: its variables are the name, the service, the day and time, the link"
+  },
+  {
+   "fieldname": "column_break_channels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sms_number",
+   "fieldtype": "Data",
+   "label": "SMS from",
+   "options": "Phone"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-30 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Waiting List Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

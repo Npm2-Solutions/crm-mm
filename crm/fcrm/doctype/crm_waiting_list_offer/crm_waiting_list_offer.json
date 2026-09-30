@@ -1,0 +1,133 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-30 22:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "starts_on",
+  "ends_on",
+  "staff",
+  "class_session",
+  "column_break_offer",
+  "status",
+  "channel",
+  "delivery",
+  "section_break_times",
+  "sent_on",
+  "expires_on",
+  "answered_on",
+  "column_break_who",
+  "offered_by",
+  "appointment",
+  "token_hash"
+ ],
+ "fields": [
+  {
+   "fieldname": "starts_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Starts on",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ends_on",
+   "fieldtype": "Datetime",
+   "label": "Ends on"
+  },
+  {
+   "fieldname": "staff",
+   "fieldtype": "Small Text",
+   "label": "With"
+  },
+  {
+   "fieldname": "class_session",
+   "fieldtype": "Link",
+   "label": "A place in",
+   "options": "CRM Appointment"
+  },
+  {
+   "fieldname": "column_break_offer",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Sent",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Sent\nAccepted\nDeclined\nExpired\nTaken"
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Sent by"
+  },
+  {
+   "fieldname": "delivery",
+   "fieldtype": "Small Text",
+   "label": "Not sent because"
+  },
+  {
+   "fieldname": "section_break_times",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sent_on",
+   "fieldtype": "Datetime",
+   "label": "Sent on"
+  },
+  {
+   "fieldname": "expires_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Answer by"
+  },
+  {
+   "fieldname": "answered_on",
+   "fieldtype": "Datetime",
+   "label": "Answered on"
+  },
+  {
+   "fieldname": "column_break_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "offered_by",
+   "fieldtype": "Link",
+   "label": "Offered by",
+   "options": "User",
+   "description": "Empty: offered by itself when the place freed up"
+  },
+  {
+   "fieldname": "appointment",
+   "fieldtype": "Link",
+   "label": "Appointment",
+   "options": "CRM Appointment"
+  },
+  {
+   "fieldname": "token_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Link",
+   "no_copy": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-30 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Waiting List Offer",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

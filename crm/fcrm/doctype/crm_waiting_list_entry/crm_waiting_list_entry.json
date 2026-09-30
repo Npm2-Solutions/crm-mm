@@ -1,0 +1,241 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "WAIT-.#####",
+ "creation": "2026-09-30 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "service",
+  "staff",
+  "class_session",
+  "seats",
+  "column_break_head",
+  "status",
+  "urgent",
+  "from_date",
+  "until",
+  "when_section",
+  "days",
+  "contact_section",
+  "channel",
+  "contact",
+  "column_break_contact",
+  "source",
+  "notes",
+  "offers_section",
+  "offers",
+  "booked_appointment",
+  "closed_on",
+  "token_hash"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Service",
+   "options": "CRM Service",
+   "reqd": 1
+  },
+  {
+   "fieldname": "staff",
+   "fieldtype": "Link",
+   "label": "With",
+   "options": "User",
+   "description": "Empty: anyone who does the service"
+  },
+  {
+   "fieldname": "class_session",
+   "fieldtype": "Link",
+   "label": "A place in",
+   "options": "CRM Appointment",
+   "description": "A class that is full: the entry waits for a seat in it"
+  },
+  {
+   "default": "1",
+   "fieldname": "seats",
+   "fieldtype": "Int",
+   "label": "Places",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Waiting",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Waiting\nOffered\nBooked\nExpired\nRemoved",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "urgent",
+   "fieldtype": "Check",
+   "label": "Urgent",
+   "description": "Ahead of the others in the line"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "Not before"
+  },
+  {
+   "fieldname": "until",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Until",
+   "description": "Empty: until booked or taken off the list"
+  },
+  {
+   "fieldname": "when_section",
+   "fieldtype": "Section Break",
+   "label": "When they can"
+  },
+  {
+   "fieldname": "days",
+   "fieldtype": "Table",
+   "label": "Days and hours",
+   "options": "CRM Service Day",
+   "description": "Empty: any time the centre is open"
+  },
+  {
+   "fieldname": "contact_section",
+   "fieldtype": "Section Break",
+   "label": "Contact"
+  },
+  {
+   "default": "Email",
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Offers by",
+   "options": "WhatsApp\nSMS\nEmail"
+  },
+  {
+   "fieldname": "contact",
+   "fieldtype": "Link",
+   "label": "Messages to",
+   "options": "CRM Lead",
+   "description": "Who hears of the offers, when somebody else booked for them"
+  },
+  {
+   "fieldname": "column_break_contact",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Desk",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Joined from",
+   "options": "Desk\nOnline\nClient area",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "offers_section",
+   "fieldtype": "Section Break",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers",
+   "fieldtype": "Table",
+   "label": "Offers",
+   "options": "CRM Waiting List Offer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "booked_appointment",
+   "fieldtype": "Link",
+   "label": "Booked",
+   "options": "CRM Appointment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "token_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Link",
+   "no_copy": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Waiting List Entry",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lead_name",
+ "track_changes": 1
+}

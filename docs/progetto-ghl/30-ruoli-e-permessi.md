@@ -171,6 +171,7 @@ Valori:
 | Eliminare un appuntamento | — | — | ✓ | — | — | — | — |
 | Prenotare sopra un conflitto | a scelta | — | ✓ | — | — | — | — |
 | Segnare arrivato, svolto, non presentato | ✓ | la sua | ✓ | — | — | — | — |
+| Liste d'attesa: chi aspetta, proporre un posto, fissarlo (`agenda.attese`) | ✓ | chi aspetta lui o i suoi servizi | ✓ | team | — | — | — |
 | Turni, ferie, sale | ✓ | chiede le sue ferie | ✓ | — | — | — | — |
 | Servizi, listini, orari e regole dello studio | — | — | ✓ | — | — | — | — |
 | Prenotazione online e pagina `/prenota` | — | — | ✓ | — | i testi | — | — |
