@@ -14,6 +14,7 @@
       </p>
     </section>
     <PrepareVisit />
+    <TodayPlans />
     <section
       v-if="documents.data?.documents?.length"
       class="flex flex-col gap-2"
@@ -50,6 +51,7 @@ import { createResource } from 'frappe-ui'
 import { computed } from 'vue'
 import AppointmentCard from '../components/AppointmentCard.vue'
 import PrepareVisit from '../components/PrepareVisit.vue'
+import TodayPlans from '../components/TodayPlans.vue'
 import { day } from '../dates'
 import { area } from '../store'
 
