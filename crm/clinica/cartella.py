@@ -186,6 +186,8 @@ def get_record(lead: str) -> dict:
 		"sheets": _schede() if livelli.puo("clinica.scrivi") else [],
 		"can_see_log": livelli.puo("clinica.accessi"),
 		"can_archive": livelli.puo("clinica.archivia"),
+		# the patient area: who opens it to the person
+		"can_invite": livelli.puo("area.invita"),
 		# the medical director obscures an episode at the patient's request
 		"can_obscure": livelli.puo("clinica.oscura"),
 		"dossier": _col_dossier(lead),

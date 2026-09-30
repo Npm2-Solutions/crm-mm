@@ -128,6 +128,15 @@ CAPACITA = (
 		),
 		{"operatore": SUOI, DIREZIONE: CENTRO},
 	),
+	# the patient area (design.md, "L'area cliente"): the centre opens it to a person
+	(
+		Capacita(
+			"area.invita",
+			PIANO,
+			descrizione="Open a person's patient area to them, or to who answers for them, and close it",
+		),
+		{"segreteria": CENTRO, "operatore": SUOI, "manager": CENTRO, DIREZIONE: CENTRO},
+	),
 	(
 		Capacita(
 			"clinica.traccia",
