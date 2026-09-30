@@ -74,7 +74,59 @@
         </span>
       </div>
 
-      <div v-if="!signed" class="flex flex-col gap-1.5">
+      <div
+        v-if="atProvider"
+        class="flex flex-col gap-2 rounded-lg bg-surface-blue-1 px-4 py-3 text-sm"
+        role="status"
+      >
+        <span class="font-medium text-ink-blue-4">
+          {{ __('With {0} for the signatures', [data.provider_name]) }}
+        </span>
+        <span class="text-ink-gray-7">
+          {{
+            __(
+              'The answers do not change while it is there. Signed, it closes here by itself.',
+            )
+          }}
+        </span>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            v-for="link in providerLinks"
+            :key="link.field"
+            size="sm"
+            icon-left="external-link"
+            :label="
+              __('Signing page: {0}', [link.label || labelOf(link.field)])
+            "
+            :link="link.url"
+          />
+          <Button
+            size="sm"
+            variant="ghost"
+            :label="__('Take it back')"
+            @click="takeBack"
+          />
+        </div>
+      </div>
+      <div
+        v-else-if="
+          !signed && ['Declined', 'Expired'].includes(data.provider_status)
+        "
+        class="rounded-lg bg-surface-red-1 px-4 py-3 text-sm text-ink-red-4"
+        role="alert"
+      >
+        {{
+          data.provider_status === 'Declined'
+            ? __('Declined at {0}: send it again, or sign it on paper', [
+                data.provider_name,
+              ])
+            : __('Expired at {0}: send it again, or sign it on paper', [
+                data.provider_name,
+              ])
+        }}
+      </div>
+
+      <div v-if="!signed && !atProvider" class="flex flex-col gap-1.5">
         <span class="text-sm text-ink-gray-5">
           {{ __('Answered by a parent or guardian') }}
         </span>
@@ -100,12 +152,12 @@
       <FormRenderer
         v-model="values"
         :schema="data.schema"
-        :readonly="signed"
+        :readonly="signed || atProvider"
         :show-missing="tried"
       />
 
       <div
-        v-if="!signed && data.can_sign"
+        v-if="!signed && data.can_sign && !atProvider"
         class="dialog-footer sticky bottom-0 flex items-center justify-between gap-2 border-t border-outline-gray-2 bg-surface-base py-3 max-md:flex-wrap"
       >
         <Button
@@ -120,11 +172,35 @@
             :loading="saving"
             @click="save"
           />
+          <Dropdown
+            v-if="otherWays.length"
+            :options="otherWays"
+            placement="right"
+          >
+            <Button
+              :label="__('Other ways to sign')"
+              icon-right="chevron-down"
+            />
+          </Dropdown>
           <Button
+            v-if="primary === 'drawn'"
             variant="solid"
             :label="__('Sign and finish')"
             :loading="signing"
             @click="sign"
+          />
+          <Button
+            v-else-if="primary === 'provider'"
+            variant="solid"
+            :label="__('Sign with {0}', [data.provider.name])"
+            :loading="signing"
+            @click="sendToProvider"
+          />
+          <Button
+            v-else
+            variant="solid"
+            :label="__('Sign on paper')"
+            @click="showPaper = true"
           />
         </div>
       </div>
@@ -150,6 +226,23 @@
           <dd class="break-all font-mono text-xs text-ink-gray-7">
             {{ data.answers_hash }}
           </dd>
+          <template v-if="data.paper">
+            <dt class="text-ink-gray-5">{{ __('Attested by') }}</dt>
+            <dd class="text-ink-gray-7">
+              {{ data.paper.attested_by }} ·
+              {{ formatDate(data.paper.attested_on, 'D MMM YYYY, HH:mm') }}
+            </dd>
+            <dt class="text-ink-gray-5">{{ __('The scan (SHA-256)') }}</dt>
+            <dd class="break-all font-mono text-xs text-ink-gray-7">
+              {{ data.paper.sha256 }}
+              <a
+                class="block font-sans text-ink-gray-5 underline"
+                :href="data.paper.file"
+                target="_blank"
+                >{{ __('Open the scan') }}</a
+              >
+            </dd>
+          </template>
           <template v-if="data.pdf_hash">
             <dt class="text-ink-gray-5">{{ __('The PDF (SHA-256)') }}</dt>
             <dd class="break-all font-mono text-xs text-ink-gray-7">
@@ -179,12 +272,22 @@
       </section>
     </div>
   </div>
+
+  <PaperSignDialog
+    v-if="showPaper"
+    v-model="showPaper"
+    :form-id="formId"
+    :answers="answersOnly()"
+    :given-by="givenBy"
+    @signed="signedOnPaper"
+  />
 </template>
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Link from '@/components/Controls/Link.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
+import PaperSignDialog from '@/components/Moduli/PaperSignDialog.vue'
 import { evaluate, fieldsOf } from '@/utils/moduli'
 import { formatDate } from '@/utils'
 import { globalStore } from '@/stores/global'
@@ -193,12 +296,13 @@ import {
   Badge,
   Breadcrumbs,
   Button,
+  Dropdown,
   LoadingIndicator,
   call,
   toast,
   usePageMeta,
 } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({ formId: { type: String, required: true } })
@@ -212,6 +316,8 @@ const givenBy = ref(null)
 const tried = ref(false)
 const saving = ref(false)
 const signing = ref(false)
+const showPaper = ref(false)
+const providerLinks = ref([])
 
 const signed = computed(() => data.value?.docstatus === 1)
 const signatureFields = computed(() =>
@@ -223,8 +329,9 @@ function apply(form) {
   givenBy.value = form.given_by || null
   const shown = { ...(form.answers || {}) }
   // a signed form shows its strokes where they were drawn
+  // on paper or at a provider there is no stroke: the page says how instead
   for (const signature of form.signatures || [])
-    shown[signature.field] = signature.image
+    shown[signature.field] = signature.image || { method: signature.method }
   values.value = shown
 }
 
@@ -262,7 +369,53 @@ function labelOf(key) {
   )
 }
 
+const atProvider = computed(() => data.value?.provider_status === 'Sent')
+
+// a signature a finger cannot give (advanced, qualified) goes to the provider,
+// or on paper when the centre has none
+const needsProvider = computed(() => {
+  if (!data.value) return false
+  const state = evaluate(data.value.schema, values.value)
+  return signatureFields.value.some(
+    (field) =>
+      state.visible[field.id] && (field.level || 'simple') !== 'simple',
+  )
+})
+const primary = computed(() =>
+  needsProvider.value ? (data.value?.provider ? 'provider' : 'paper') : 'drawn',
+)
+const otherWays = computed(() =>
+  [
+    primary.value !== 'paper' && {
+      label: __('On paper'),
+      icon: 'lucide-printer',
+      onClick: () => (showPaper.value = true),
+    },
+    data.value?.provider &&
+      primary.value !== 'provider' && {
+        label: __('With {0}', [data.value.provider.name]),
+        icon: 'lucide-shield-check',
+        onClick: sendToProvider,
+      },
+  ].filter(Boolean),
+)
+
+watch(atProvider, async (waiting) => {
+  providerLinks.value = waiting
+    ? await call('crm.moduli.compilazioni.provider_links', {
+        name: props.formId,
+      })
+    : []
+})
+
 const EVENTS = {
+  printed: __('Printed to sign on paper'),
+  attested: __('Scan attested as a true copy'),
+  provider_sent: __('Sent to the signature provider'),
+  provider_withdrawn: __('Taken back from the signature provider'),
+  provider_declined: __('Declined at the signature provider'),
+  provider_expired: __('Expired at the signature provider'),
+  pdf_received: __('Signed PDF received'),
   sent: __('Link sent'),
   opened: __('Link opened'),
   code_sent: __('Code sent'),
@@ -337,6 +490,55 @@ async function sign() {
   } finally {
     signing.value = false
   }
+}
+
+function missingBesidesSignatures() {
+  const signatures = new Set(signatureFields.value.map((field) => field.id))
+  return evaluate(data.value.schema, values.value).missing.filter(
+    (key) => !signatures.has(key),
+  )
+}
+
+async function sendToProvider() {
+  tried.value = true
+  const missing = missingBesidesSignatures()
+  if (missing.length) {
+    toast.error(__('Still to answer: {0}', [missing.map(labelOf).join(', ')]))
+    return
+  }
+  signing.value = true
+  try {
+    const form = await call('crm.moduli.compilazioni.send_to_provider', {
+      name: props.formId,
+      answers: JSON.stringify(answersOnly()),
+      given_by: givenBy.value || '',
+    })
+    apply(form)
+    tried.value = false
+    toast.success(__('Sent to {0}', [form.provider_name]))
+  } catch (error) {
+    toast.error(error.messages?.join(' ') || error.message)
+  } finally {
+    signing.value = false
+  }
+}
+
+async function takeBack() {
+  try {
+    apply(
+      await call('crm.moduli.compilazioni.take_back_from_provider', {
+        name: props.formId,
+      }),
+    )
+  } catch (error) {
+    toast.error(error.messages?.[0] || error.message)
+  }
+}
+
+function signedOnPaper(form) {
+  apply(form)
+  tried.value = false
+  toast.success(__('Signed on paper'))
 }
 
 function discard() {

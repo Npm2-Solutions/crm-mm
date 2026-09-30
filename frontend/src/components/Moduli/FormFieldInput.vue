@@ -298,9 +298,23 @@
       </div>
 
       <template v-else-if="field.type === 'signature'">
+        <!-- signed, but not drawn here: on paper, or at the provider -->
+        <div
+          v-if="readonly && modelValue && typeof modelValue === 'object'"
+          class="flex max-w-md items-start gap-2 rounded-lg border border-outline-gray-2 px-4 py-3 text-sm text-ink-gray-7 max-md:max-w-none"
+        >
+          <LucideSignature class="mt-0.5 size-4 shrink-0" />
+          {{
+            modelValue.method === 'On paper'
+              ? __('Signed on paper: the scan is inside the PDF')
+              : __(
+                  'Signed with the signature provider: its signed PDF is the document',
+                )
+          }}
+        </div>
         <!-- the template chose the level: only a simple one is drawn here -->
         <div
-          v-if="(field.level || 'simple') !== 'simple' && !readonly"
+          v-else-if="(field.level || 'simple') !== 'simple' && !readonly"
           class="flex max-w-md items-start gap-2 rounded-lg border border-dashed border-outline-gray-3 px-4 py-3 text-sm text-ink-gray-6 max-md:max-w-none"
         >
           <LucideSignature class="mt-0.5 size-4 shrink-0" />
