@@ -1,5 +1,5 @@
 <!--
-title: Richiedi una demo | DottorCloud
+title: Richiedi una demo · DottorCloud
 description: Vediamo DottorCloud sul tuo centro: una demo con i tuoi servizi, le tue agende e il tuo modo di lavorare. Scrivici due righe e ti contattiamo.
 path: /demo/
 nav: demo
@@ -7,6 +7,7 @@ nav: demo
 <section class="section">
   <div class="container demo">
     <div class="feature__text demo__intro">
+      <span class="chip arrive" style="--i: 0">{{icon calendar-check}} Richiedi una demo</span>
       <h1 class="h1 arrive" style="--i: 1">Vediamolo sul tuo centro.</h1>
       <p class="lead arrive" style="--i: 2">Una demo con i tuoi servizi, le tue agende e il tuo modo di lavorare.</p>
     </div>
@@ -116,7 +117,7 @@ nav: demo
         <input name="t" type="hidden" value="" />
         <div class="form__actions">
           <p class="form__status" role="alert"></p>
-          <button class="button button--primary" type="submit">Richiedi la demo</button>
+          <button class="button button--primary" type="submit">Richiedi la demo {{icon arrow-right}}</button>
           <p class="form__note">Ti rispondiamo in italiano, e senza impegno.</p>
         </div>
       </form>

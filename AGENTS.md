@@ -404,10 +404,7 @@ done by the data, never by a click, so a centre that already works sees nothing.
 | `sito/test/sito.test.mjs` | `node --test sito/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
 
 The site promises the finished product as the marketing material does, and shows no
-plan and no price. Its look is the product's agenda: a block is an appointment (a bar
-on its left in the colour of its kind), the home page is a day at the centre hour by
-hour with a calendar's "now" line following the reader, dark surfaces are the deep
-green `#0E3B36`. No labels above headings, no arrows in buttons, no entrances on scroll. It sets no cookie and loads nothing from other sites. It is not
+plan and no price. It sets no cookie and loads nothing from other sites. It is not
 the Frappe site's public pages: those belong to each centre.
 
 ### The desk's day
