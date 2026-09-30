@@ -1471,6 +1471,46 @@ nutrizionista scrive la dieta.
 - **Nell'area** la voce "Piani" c'è per chi segue un piano o un programma, e per
   chi ha un piano di cura dentale.
 
+### I documenti della persona passano al CRM, e la clinica aggiunge i referti
+
+Fatto il 30/09/2026, la quinta riga dell'[ordine](./design.md#lordine). L'archivio
+clinico e la consegna dei referti erano della clinica; ora i documenti della persona
+sono del CRM (`crm/documenti`): un centro estetico tiene il consenso firmato e una
+foto, una palestra il contratto e il certificato, un centro medico il referto.
+
+- **I documenti nel CRM**: una scheda "Documenti" sulla pagina della persona. Ogni
+  documento ha il suo tipo, la data, da dove viene e per chi è; il file privato con
+  la sua impronta SHA-256.
+  - Lo legge chi legge i documenti (`documenti.vedi`) e vede la persona: la
+    segreteria e il manager per tutto il centro, l'operatore per le sue persone.
+  - Lo aggiunge chi ha `documenti.aggiungi`, anche da un file arrivato in chat.
+  - Si corregge ma non cambia file. Aggiunto per errore, lo toglie chi l'ha
+    aggiunto lo stesso giorno, poi il manager (`documenti.togli`); il registro tiene
+    il perché.
+  - I DocType hanno preso i nomi del CRM (`CRM Document`, `CRM Document Delivery`)
+    con una patch che li rinomina: i dati restano dove sono.
+- **La consegna nel CRM** (`documenti.consegna`): a mano, dicendo a chi; online con
+  il link per email e il codice dato in un altro modo, per i giorni scelti (30 se
+  non si dice, mai più di 90), sulla pagina `/documento/<link>`. I link già mandati
+  (`/referto/<link>`) continuano ad aprirsi. Nell'area i documenti dati online si
+  scaricano dopo un codice.
+- **I tipi si registrano**: il CRM porta il modulo firmato, il contratto, il
+  certificato, il documento d'identità, la foto e "altro". La clinica porta
+  (`crm/clinica/documenti.py`):
+  - il referto, il referto esterno, gli esami, le immagini e la ricetta, col marchio
+    "dato sanitario" e aggiunti da chi archivia (`clinica.archivia`);
+  - i suoi campi, come personalizzazioni sulle stesse colonne (`crm/clinica/custom`):
+    chi lo legge, oscurato, mai online, la visita da cui viene il referto;
+  - la sua regola per l'online: solo col consenso ai referti online, mai un
+    documento "mai online", 45 giorni.
+- **Il marchio "dato sanitario"** (`clinical`) lo porta un tipo sanitario e, con la
+  clinica accesa, un documento per un professionista sanitario. Chi lo legge lo
+  dice una sola regola, che la clinica registra (`crm/permissions/sanitari.py`), la
+  stessa dei piani. Ogni elenco va nel registro degli accessi. Senza la clinica lo
+  leggono solo chi l'ha aggiunto e per chi è.
+- I documenti archiviati prima restano col marchio (patch), e il referto di una
+  visita firmata porta il suo file come ogni altro documento.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da

@@ -181,7 +181,7 @@ of their own, linked to the parent, never the parent's record.
 | File | Role |
 |---|---|
 | `crm/piani/regole.py` | Plans without a site: moments and items, the day and the week, one tap, the kinds of plan registered (`registra_tipo`: who writes it by qualification, what it holds, what its screens offer, the "health data" mark) and of item — tested with plain `unittest` |
-| `crm/piani/api.py` | Plans on the person's page (`CRM Personal Plan`, `piani.scrivi` / `piani.vedi`): drafts of their author, published to the area, new version or closed; what a module adds (`registra_genere`, `registra_estensione`) and who reads health data (`registra_lettore_clinico`) |
+| `crm/piani/api.py` | Plans on the person's page (`CRM Personal Plan`, `piani.scrivi` / `piani.vedi`): drafts of their author, published to the area, new version or closed; what a module adds (`registra_genere`, `registra_estensione`); health data read through `crm.permissions.sanitari` |
 | `crm/piani/programmi_regole.py` + `programmi.py` | Programmes of stages (`CRM Programme`): each stage with its words and maybe a plan (`CRM Personal Plan.programme`), opened at one's own pace (the person in the area, `finish_stage`) or by time (`apri_del_giorno`, daily); a stage that opens publishes its plan with `api.pubblica` |
 | `crm/piani/area.py` + `frontend/src/area/pages/Plans.vue`, `Plan.vue`, `components/PlanItem.vue`, `ProgrammeCard.vue` | The plans in the area: the day's moments, one tap an item (`CRM Personal Plan Log`), made up within two days, what is left this week; the programmes stage by stage |
 | `crm/piani/librerie.py` + `dataset.py` | The exercises (`CRM Exercise`, `piani.librerie`, Settings > Plans > Exercises): exercises-dataset with its pictures from where the agency hosts them (`CRM Area Settings`, permlevel 1), the imports and their licences (`CRM Library Import`); imported again, numbers update and the centre's words stay |
@@ -193,6 +193,23 @@ health data by its kind or by its author (with the clinic on, whatever a health
 professional writes): the `clinical` mark, read like the clinical record by the rule
 the clinic registers, every opening in the access log. Without the clinic nobody
 reads a plan with the mark but its author.
+
+### A person's documents (`crm/documenti`, given by hand or online)
+| File | Role |
+|---|---|
+| `crm/documenti/regole.py` | The kinds of document registered (`registra_tipo`: the CRM's signed form, contract, certificate, identity document, photo, other; a module's, maybe health data, maybe made elsewhere, maybe added only with a capability), the days online — tested with plain `unittest` |
+| `crm/documenti/api.py` | `CRM Document` on the person's Documents tab: read with `documenti.vedi` and the person, added with `documenti.aggiungi` (the file private, its SHA-256), put right but never given another file, taken away the same day by who added it or with `documenti.togli`; filed from a conversation; what a module adds (`registra_estensione`) |
+| `crm/documenti/consegna.py` + `crm/www/documento.*` | Giving one (`CRM Document Delivery`, `documenti.consegna`): by hand to whom, or online with a link by email and a code given another way, `/documento/<link>` (and `/referto/<link>` for the links already sent); a module says when one may not go online and for how many days (`registra_regola`) |
+| `crm/documenti/area.py` | The documents given online, in the client area while they are, downloaded after a code |
+| `crm/permissions/sanitari.py` | Health data in what the CRM keeps for a person: who reads what carries the `clinical` mark, and what else carries it — the `Lettore` the clinic registers (the dossier; a health professional's) |
+| `frontend/src/components/Documents/` | The Documents tab: `DocumentsCard`, `DocumentDialog` (also from a chat message), `DeliverDialog` |
+
+The kinds decide the fields: a module registers its own (the clinic: report, test
+result, image, prescription) with the mark of health data and the capability that
+adds them (`clinica.archivia`), its fields as customisations (`crm/clinica/custom`),
+and its rule on going online. A document with the mark is read like the clinical
+record, every listing in the access log; without the clinic only whom it is for and
+who added it read it.
 
 ### Verticals (`crm/verticali.py`)
 A module of the plan that makes the CRM the software of a trade registers a
@@ -214,7 +231,8 @@ the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
 | `crm/clinica/piani_regole.py` | The clinic's kinds on the CRM's plans (`crm.piani.regole`): a menu, an exchange diet, exercises at home, who writes which by qualification; a food and a food group; the nutrients and the shopping list — pure, tested with plain `unittest` |
 | `crm/clinica/piani.py` + `crm/clinica/custom/` | The clinic's plans on `crm.piani`: its kinds of item, what a diet keeps (the calories shown, a menu's targets: custom fields on `CRM Personal Plan`), who reads health data (the dossier) and what is health data by its author (a health professional's plan), the foods (`Clinic Food`), the shopping list |
-| `crm/clinica/area/piani.py`, `crm/clinica/area/documenti.py`, `crm/clinica/parole.py` | The clinic's places in the client area (documents given online, dental care plans, a diet's shopping list; registered with `crm.area.sezioni`) and its words over the CRM's: patients, the patient area, the visit to prepare (`crm.verticali`) |
+| `crm/clinica/area/piani.py`, `crm/clinica/parole.py` | The clinic's places in the client area (dental care plans, a diet's shopping list; registered with `crm.area.sezioni`) and its words over the CRM's: patients, the patient area, the visit to prepare (`crm.verticali`) |
+| `crm/clinica/documenti.py` + `crm/clinica/custom/crm_document.json` | The clinic's documents on `crm.documenti`: its kinds (health data, added with `clinica.archivia`, a practitioner's), who reads one ("only me", a discipline), obscured, never online, a signed visit's report (`dal_referto`); online only with the `online_reports` consent, 45 days |
 
 ### The assistant (`crm/assistente`, its own plan module)
 | File | Role |
@@ -230,14 +248,10 @@ The assistant writes only what was written or said, saves nothing by itself, and
 every request stays in the register: a new function registers with
 `registra_funzione`, asks with `modello.chiedi`, and records what a person made of
 the draft with `modello.accetta`.
-| `crm/clinica/consegna.py` + `crm/www/referto.*` | Giving a report: by hand, or online 45 days with the consent; the link by email, the code another way; `/referto/<link>` opens it (`Clinic Report Delivery`) |
 | `crm/clinica/dossier.py` | Who reads what the others wrote: the dossier (consent and care), obscured episodes, "my discipline", the opening out of the care team with a reason (`Clinic Access Grant`, `crm_people_in_care`) |
-| `crm/clinica/archivio.py` | The clinical archive (`Clinic Document`): uploads, a signed visit's report, a WhatsApp file; read like the record, removed the same day or by the director, every listing and download in the access log |
 | `crm/clinica/sintesi.py` | The patient's summary (`Clinic Summary Value`): answers of signed forms and sheets proposed, a practitioner confirms, discards or writes by hand |
 | `frontend/src/components/Clinic/ClinicSummary.vue`, `ClinicArea.vue` | The summary card; the Clinic tab's visits, free or on a clinical sheet |
-| `frontend/src/components/Clinic/ClinicArchive.vue`, `ClinicDocumentDialog.vue` | The archive card; adding or putting right a document, also from a chat message |
 | `frontend/src/components/Clinic/ObscureDialog.vue`, `OutOfCareDialog.vue` | Obscuring or revealing an episode; opening a record out of one's care (People page) |
-| `frontend/src/components/Clinic/DeliverDialog.vue` | Giving a document to the patient from the archive: by hand, or online with the code |
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
 | `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `piani_regole.spesa` + `ShoppingListDialog.vue`, `frontend/src/area/pages/PlanShopping.vue` | The shopping list of a diet: grams summed on the server over the days asked (times a week, the plan's period), rounded up in the browser; in the CRM to copy for the patient, in the area with ticks kept on the phone |
@@ -320,7 +334,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **764 tests · ~15s** — all must pass before committing
+- **774 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
