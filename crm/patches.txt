@@ -85,3 +85,4 @@ crm.patches.v1_0.new_clients_are_the_crms
 crm.patches.v1_0.clients_since_they_first_came
 crm.clinica.patches.patients_are_clients
 crm.patches.v1_0.sheets_are_the_crms
+crm.patches.v1_0.web_forms_are_templates

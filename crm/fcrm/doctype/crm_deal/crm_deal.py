@@ -150,12 +150,6 @@ class CRMDeal(Document):
 		website: DF.Data | None
 	# end: auto-generated types
 
-	def before_insert(self):
-		# apply CRM enrichment (source/organization/contact) when created via a web form
-		from crm.api.form import enrich_form_submission
-
-		enrich_form_submission(self)
-
 	def before_validate(self):
 		self.set_sla()
 

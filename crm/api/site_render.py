@@ -6,9 +6,10 @@
 These are registered as Jinja methods (see `hooks.jinja`), so a Builder block can call
 them straight from its markup — `{{ crm_form_html(props.form) }}` — and Builder's
 renderer, which passes every page through `render_template`, resolves them at render
-time. That is what lets a CRM form sit *inside* a page instead of inside an iframe: same
-document, same fonts, same styles, visible to search engines, and the visitor's tracking
-ids travel with the submission exactly as they do on the standalone form page.
+time. That is what lets a form of the website sit *inside* a page instead of inside an
+iframe: same document, same fonts, same styles, visible to search engines, and the
+visitor's tracking ids travel with the submission exactly as they do on the standalone
+form page.
 
 Nothing here trusts its caller: an unpublished form or a disabled calendar renders as
 nothing rather than leaking a draft onto a live page.
@@ -25,60 +26,23 @@ import frappe
 from frappe import _
 from frappe.utils import escape_html
 
-from crm.api.form import ALLOWED_DOCTYPES
-
-FIELD_INPUT_TYPES = {
-	"Data": "text",
-	"Phone": "tel",
-	"Int": "number",
-	"Float": "number",
-	"Currency": "number",
-	"Percent": "number",
-	"Date": "date",
-	"Datetime": "datetime-local",
-	"Time": "time",
-	"Color": "color",
-}
-
-TEXTAREA_TYPES = {"Small Text", "Text", "Long Text", "Text Editor", "HTML Editor", "Markdown Editor"}
-
 
 def crm_form_html(route: str | None = None, title: str | None = None, button: str | None = None) -> str:
-	"""A published CRM form, rendered inline.
+	"""A published form of the website, drawn inline.
 
-	`route` is the form's public route — the same one `/crm-form/<route>` serves.
+	`route` is the form's address — the same one `/crm-form/<route>` serves. Its
+	questions come from the template's published version, never a draft.
 	"""
 	if not route:
 		return _placeholder(_("Pick a form in the block settings."))
 
-	name = frappe.db.get_value(
-		"Web Form",
-		{"route": str(route).strip("/"), "crm_published": 1, "doc_type": ["in", ALLOWED_DOCTYPES]},
-		"name",
-	)
-	if not name:
+	from crm.moduli import sito
+	from crm.www.modulo import versione_del_motore
+
+	modello = sito.modello_del_sito(route)
+	if not modello:
 		return _placeholder(_("This form is not published."))
-
-	doc = frappe.get_cached_doc("Web Form", name)
-	from crm.www.crm_form import _link_field_options, build_layout
-
-	fields = [
-		{
-			"fieldname": f.fieldname,
-			"label": f.label or ("" if f.fieldtype in ("Section Break", "Column Break") else f.fieldname),
-			"fieldtype": f.fieldtype,
-			"options": f.options or "",
-			"reqd": int(f.reqd or 0),
-			"placeholder": f.placeholder or "",
-			"description": f.description or "",
-		}
-		for f in doc.web_form_fields
-	]
-	link_options = {
-		f["fieldname"]: _link_field_options(f["options"])
-		for f in fields
-		if f["fieldtype"] == "Link" and f["options"]
-	}
+	pagina = sito.per_la_pagina(modello)
 	try:
 		csrf_token = frappe.sessions.get_csrf_token()
 	except Exception:
@@ -87,17 +51,14 @@ def crm_form_html(route: str | None = None, title: str | None = None, button: st
 	return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 		"crm/templates/site/form_inline.html",
 		{
-			"web_form_name": doc.name,
-			"form_title": title or doc.title,
-			"form_description": doc.introduction_text or "",
-			"submit_label": button or doc.button_label or _("Send"),
-			"success_message": doc.success_message or _("Thank you!"),
-			"success_url": doc.success_url or "",
-			"layout": build_layout(fields),
-			"link_options": link_options,
+			"form": {
+				**pagina,
+				"title": title or pagina["title"],
+				"button_label": button or pagina["button_label"],
+			},
 			"csrf_token": csrf_token,
-			"input_types": FIELD_INPUT_TYPES,
-			"textarea_types": TEXTAREA_TYPES,
+			"lang": (frappe.local.lang or "it")[:2],
+			"engine_version": versione_del_motore(),
 			"uid": frappe.generate_hash(length=8),
 		},
 	)

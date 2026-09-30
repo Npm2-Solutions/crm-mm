@@ -409,7 +409,7 @@ def inbound_webhook(automation: str, key: str) -> dict:
 
 	lead = find_person(email=email, phone=phone)
 	if not lead:
-		from crm.api.form import _default_status
+		from crm.api.lead import default_status
 
 		lead_doc = frappe.get_doc(
 			{
@@ -418,7 +418,7 @@ def inbound_webhook(automation: str, key: str) -> dict:
 				"last_name": payload.get("last_name") or "",
 				"email": email,
 				"mobile_no": phone,
-				"status": _default_status("CRM Lead"),
+				"status": default_status("CRM Lead"),
 			}
 		)
 		lead_doc.insert(ignore_permissions=True)

@@ -14,9 +14,11 @@ What a schema may hold and what answers mean is `crm.moduli.schema`'s business;
 this module keeps drafts and versions, and says who may do what with them.
 
 A template has a use: a **form** the person fills (on their own, from a link or the
-desk's tablet, or at the desk with the operator), or a **sheet** the operator
-writes during an appointment - a beauty centre's treatment sheet, a gym's
-assessment. Other modules add to it without the CRM knowing them, the way they add
+desk's tablet, or at the desk with the operator), a **sheet** the operator writes
+during an appointment - a beauty centre's treatment sheet, a gym's assessment - or
+a form **on the website**, which anybody fills and which finds the person or makes
+them (`crm.moduli.sito`). The centre builds its forms and sheets; marketing builds
+the website's. Other modules add to it without the CRM knowing them, the way they add
 capabilities: the clinic says when the "health data" mark means something
 (`registra_dato_clinico`), and a sheet with the mark is its clinical sheet, written
 in the clinical record.
@@ -30,7 +32,7 @@ from dataclasses import dataclass
 
 import frappe
 from frappe import _
-from frappe.utils import cint, getdate, now_datetime
+from frappe.utils import cint, get_url, getdate, now_datetime
 
 from crm.moduli import schema as S
 from crm.permissions import livelli
@@ -39,6 +41,7 @@ MODELLO = "CRM Form Template"
 VERSIONE = "CRM Form Template Version"
 FORMA = "Form"
 SCHEDA = "Sheet"
+SITO = "Website"
 CHIEDE = ("By hand", "First appointment", "Services")
 VALIDITA = ("Forever", "One year", "Every appointment")
 
@@ -50,9 +53,14 @@ class Uso:
 	descrizione: str = ""
 	#: a use that always records health data
 	clinico: bool = False
-	#: filled in by the person: sent by link or on the tablet, asked at a booking,
-	#: giving consents. A sheet is the operator's: filled at the desk, and only there.
+	#: filled in by the person, who gives its consents; a sheet is the operator's
 	della_persona: bool = True
+	#: filled at the desk, on the person's page
+	al_banco: bool = True
+	#: sent by link or on the tablet, and asked at a booking
+	si_manda: bool = True
+	#: published on the centre's website, filled in by anybody (`crm.moduli.sito`)
+	sul_sito: bool = False
 
 
 _usi: dict[str, Uso] = {
@@ -62,7 +70,30 @@ _usi: dict[str, Uso] = {
 		"Sheet",
 		"Written by the operator during an appointment: a treatment sheet, an assessment",
 		della_persona=False,
+		si_manda=False,
 	),
+	SITO: Uso(
+		SITO,
+		"Website",
+		"Filled in by anybody on the centre's website: a request, a contact. It finds the person, or makes "
+		"them, and opens their deal",
+		al_banco=False,
+		si_manda=False,
+		sul_sito=True,
+	),
+}
+
+#: A question of a form on the website may fill one of the person's fields.
+S.registra_proprieta_comune("person")
+#: The person's fields a question on the website may fill, and what they are.
+CAMPI_PERSONA = {
+	"full_name": "Name and surname",
+	"first_name": "First name",
+	"last_name": "Last name",
+	"email": "Email",
+	"mobile_no": "Mobile",
+	"organization": "Organization",
+	"job_title": "Job title",
 }
 _dato_clinico: list[Callable[[], bool]] = []
 
@@ -81,26 +112,87 @@ def uso(chiave: str | None) -> Uso:
 
 
 def usi_della_persona() -> list[str]:
-	"""The uses the person fills: what is sent, asked at a booking, and gives consents."""
+	"""The uses the person fills: what gives consents."""
 	return [chiave for chiave, voce in _usi.items() if voce.della_persona]
 
 
+def capacita_dell_uso(chiave: str | None) -> str:
+	"""Who builds a use: a form on the website is marketing's, the rest the centre's."""
+	return "moduli_lead.gestisci" if uso(chiave).sul_sito else "moduli.configura"
+
+
+def verifica_uso(chiave: str | None) -> None:
+	livelli.verifica(capacita_dell_uso(chiave))
+
+
+def puo_costruire(chiave: str | None) -> bool:
+	return livelli.puo(capacita_dell_uso(chiave))
+
+
 def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
-	"""What the use does not allow: a consent is the person's to give, so a sheet
-	the operator writes records none."""
-	if uso(chiave).della_persona:
-		return []
-	return [
-		{
-			"code": "consent_on_a_sheet",
-			"field": campo.get("id"),
-			"message": _(
-				"{0}: a consent is given by the person, on a form. A sheet does not record it."
-			).format(campo.get("label") or campo.get("id")),
-		}
-		for campo in S.campi(schema)
-		if campo.get("type") == "consent"
-	]
+	"""What the use does not allow. A consent is the person's to give, so a sheet
+	the operator writes records none. A form on the website finds the person by an
+	email or a mobile (the name, when it asks one, says which of a family), and is
+	neither signed nor sent files."""
+	voce = uso(chiave)
+	problemi_trovati = []
+
+	def problema(codice, campo, messaggio):
+		problemi_trovati.append(
+			{"code": codice, "field": campo.get("id") if campo else None, "message": messaggio}
+		)
+
+	for campo in S.campi(schema):
+		etichetta = campo.get("label") or campo.get("id")
+		if campo.get("type") == "consent" and not voce.della_persona:
+			problema(
+				"consent_on_a_sheet",
+				campo,
+				_("{0}: a consent is given by the person, on a form. A sheet does not record it.").format(
+					etichetta
+				),
+			)
+		if not voce.sul_sito:
+			continue
+		if campo.get("type") == "signature":
+			problema(
+				"signature_on_the_site",
+				campo,
+				_("{0}: a form on the website is not signed").format(etichetta),
+			)
+		if campo.get("type") == "attachment":
+			problema("file_on_the_site", campo, _("{0}: no file is sent from the website").format(etichetta))
+		if campo.get("person") and campo.get("person") not in CAMPI_PERSONA:
+			problema(
+				"person_field_unknown",
+				campo,
+				_("{0}: the person has no field {1}").format(etichetta, campo.get("person")),
+			)
+		elif campo.get("person") and campo.get("type") != "text":
+			problema(
+				"person_field_not_text",
+				campo,
+				_("{0}: only a text question fills one of the person's fields").format(etichetta),
+			)
+	if voce.sul_sito:
+		dove = [campo.get("person") for campo in S.campi(schema) if campo.get("person")]
+		for chiave_persona in {c for c in dove if dove.count(c) > 1}:
+			problema(
+				"person_field_twice",
+				None,
+				_("Two questions fill the same field of the person: {0}").format(
+					_(CAMPI_PERSONA.get(chiave_persona, chiave_persona))
+				),
+			)
+		if not {"email", "mobile_no"} & set(dove):
+			problema(
+				"person_without_contact",
+				None,
+				_(
+					"A form on the website needs a question for the email or the mobile, to find the person again"
+				),
+			)
+	return problemi_trovati
 
 
 _voci_sintesi: dict[str, str] = {}
@@ -229,6 +321,11 @@ def _riga(modello) -> dict:
 		"name": modello.name,
 		"title": modello.title,
 		"use": modello.use,
+		# where a form on the website is: /crm-form/<route>
+		"route": modello.get("route") if uso(modello.use).sul_sito else None,
+		"url": get_url(f"/crm-form/{modello.route}")
+		if uso(modello.use).sul_sito and modello.get("route")
+		else None,
 		"enabled": modello.enabled,
 		"clinical": modello.clinical,
 		"specialty": modello.specialty,
@@ -262,17 +359,28 @@ def _uguale_alla_versione(modello, schema: dict, pubblicata) -> bool:
 
 @frappe.whitelist()
 def get_templates() -> list[dict]:
-	livelli.verifica("moduli.configura")
+	"""The templates the session builds: the centre's forms and sheets, the forms on
+	the website, or both."""
+	if not (livelli.puo("moduli.configura") or livelli.puo("moduli_lead.gestisci")):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	return [
-		_riga(frappe.get_doc(MODELLO, nome))
-		for nome in frappe.get_all(MODELLO, pluck="name", order_by="modified desc")
+		_riga(modello)
+		for modello in (
+			frappe.get_doc(MODELLO, nome)
+			for nome in frappe.get_all(MODELLO, pluck="name", order_by="modified desc")
+		)
+		if puo_costruire(modello.use)
 	]
+
+
+#: What a form on the website says and where it goes, besides its questions.
+CAMPI_SITO = ("route", "button_label", "success_message", "success_url", "allowed_embedding_domains")
 
 
 @frappe.whitelist()
 def get_template(name: str) -> dict:
-	livelli.verifica("moduli.configura")
 	modello = frappe.get_doc(MODELLO, name)
+	verifica_uso(modello.use)
 	schema = carica_schema(modello.schema)
 	return {
 		**_riga(modello),
@@ -281,11 +389,38 @@ def get_template(name: str) -> dict:
 		"services": [riga.service for riga in modello.services],
 		"validity": modello.validity,
 		"send_before": modello.send_before,
+		**{campo: modello.get(campo) for campo in CAMPI_SITO},
 		"schema": schema,
 		"problems": problemi(schema) + problemi_dell_uso(schema, modello.use),
 		"versions": _versioni(name),
 		**_scelte(),
 	}
+
+
+def _usi_da_costruire() -> list[dict]:
+	"""The uses the session builds, as the builder offers them."""
+	return [
+		{
+			"value": voce.chiave,
+			"label": _(voce.etichetta),
+			"description": _(voce.descrizione),
+			# given consents by the person; a sheet is written by the operator
+			"for_the_person": voce.della_persona,
+			# asked and sent: a form, not a sheet nor a form on the website
+			"sent": voce.si_manda,
+			"on_the_site": voce.sul_sito,
+		}
+		for voce in usi()
+		if puo_costruire(voce.chiave)
+	]
+
+
+@frappe.whitelist()
+def get_uses() -> list[dict]:
+	"""What a new template may be, for whoever builds one."""
+	if not (livelli.puo("moduli.configura") or livelli.puo("moduli_lead.gestisci")):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	return _usi_da_costruire()
 
 
 def _scelte() -> dict:
@@ -301,15 +436,10 @@ def _scelte() -> dict:
 		order_by="creation asc",
 	)
 	return {
-		"uses": [
-			{
-				"value": voce.chiave,
-				"label": _(voce.etichetta),
-				"description": _(voce.descrizione),
-				# asked, sent and signed by the person; a sheet is written at the desk
-				"for_the_person": voce.della_persona,
-			}
-			for voce in usi()
+		"uses": _usi_da_costruire(),
+		# the person's fields a question on the website may fill
+		"person_fields": [
+			{"value": chiave, "label": _(etichetta)} for chiave, etichetta in CAMPI_PERSONA.items()
 		],
 		"clinical_available": dato_clinico_disponibile(),
 		"clinical_uses": [voce.chiave for voce in usi() if voce.clinico],
@@ -339,8 +469,8 @@ def _scelte() -> dict:
 @frappe.whitelist()
 def get_version(name: str) -> dict:
 	"""A published version, as people fill it."""
-	livelli.verifica("moduli.configura")
 	versione = frappe.get_doc(VERSIONE, name)
+	verifica_uso(versione.use)
 	return {
 		"name": versione.name,
 		"template": versione.template,
@@ -370,6 +500,7 @@ _CAMPI_MODELLO = (
 	"validity",
 	"send_before",
 	"enabled",
+	*CAMPI_SITO,
 )
 
 
@@ -382,8 +513,11 @@ def save_template(
 ) -> dict:
 	"""Keep the draft. It may be half-written: what is still wrong comes back with
 	it, and only publishing asks for it to be right."""
-	livelli.verifica("moduli.configura")
 	modello = frappe.get_doc(MODELLO, name) if name else frappe.new_doc(MODELLO)
+	if name:
+		verifica_uso(modello.use)
+	# the use it is becoming is the session's to build too
+	verifica_uso(campi.get("use") or modello.use)
 	for campo in _CAMPI_MODELLO:
 		if campo in campi and campi[campo] is not None:
 			modello.set(campo, campi[campo])
@@ -406,8 +540,14 @@ def publish_template(name: str, notes: str | None = None, asked_from: str | None
 	``asked_from`` is for a change that matters to whoever signed before (a new
 	consent text): from that day they are asked to sign the new version.
 	"""
-	livelli.verifica("moduli.configura")
 	modello = frappe.get_doc(MODELLO, name)
+	verifica_uso(modello.use)
+	return get_version(pubblica(modello, notes, asked_from).name)
+
+
+def pubblica(modello, notes: str | None = None, asked_from: str | None = None):
+	"""The new version, once the draft is right; who may publish is the caller's
+	business (`publish_template`, or a patch bringing forms from elsewhere)."""
 	if not modello.enabled:
 		frappe.throw(_("Switch the form on before publishing it"))
 	schema = carica_schema(modello.schema)
@@ -457,17 +597,29 @@ def publish_template(name: str, notes: str | None = None, asked_from: str | None
 			"published_on": versione.published_on,
 		}
 	)
-	return get_version(versione.name)
+	return versione
+
+
+def indirizzo_libero(base: str) -> str:
+	"""``base``, or ``base-2``, ``base-3``...: the first no form on the website has."""
+	candidato, numero = base, 1
+	while frappe.db.exists(MODELLO, {"route": candidato, "use": SITO}):
+		numero += 1
+		candidato = f"{base}-{numero}"
+	return candidato
 
 
 @frappe.whitelist(methods=["POST"])
 def duplicate_template(name: str) -> dict:
-	livelli.verifica("moduli.configura")
 	originale = frappe.get_doc(MODELLO, name)
+	verifica_uso(originale.use)
 	copia = frappe.new_doc(MODELLO)
 	for campo in _CAMPI_MODELLO:
 		copia.set(campo, originale.get(campo))
 	copia.title = _("Copy of {0}").format(originale.title)
+	if copia.route:
+		# an address is one form's
+		copia.route = indirizzo_libero(f"{originale.route[:70]}-copy")
 	copia.schema = originale.schema
 	copia.set("services", [{"service": riga.service} for riga in originale.services])
 	copia.insert(ignore_permissions=True)
@@ -478,5 +630,5 @@ def duplicate_template(name: str) -> dict:
 def delete_template(name: str) -> None:
 	"""A draft never published goes; a published one is switched off instead, since
 	what was signed on it points at it."""
-	livelli.verifica("moduli.configura")
+	verifica_uso(frappe.db.get_value(MODELLO, name, "use"))
 	frappe.delete_doc(MODELLO, name, ignore_permissions=True)

@@ -2,17 +2,23 @@
 # Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
+"""/crm-form/<route> - a form of the centre's website (`crm.moduli.sito`).
+
+Its questions are a published template's, drawn by the renderer of the forms
+sent by link (`moduli_campi.js`) on the CRM's engine, the rules the server
+applies too; what is sent goes to `crm.moduli.sito.submit_site_form`. Embedded
+in another site with ``?embed=1`` it drops its page, and the browser shows it
+only on the sites its template lists.
+"""
+
 import re
 
 import frappe
 
-from crm.api.form import ALLOWED_DOCTYPES, guest_can_select
+from crm.moduli import sito
+from crm.www.modulo import versione_del_motore
 
 no_cache = 1
-
-# Cap on options a Link renders into the page — a page-weight guard against a huge
-# target table, not a permission gate.
-MAX_LINK_OPTIONS = 500
 
 # bare host, optional scheme/port, optional leading "*." wildcard — rejects any
 # token containing CSP metacharacters like ";" so admin-entered domains can't
@@ -22,72 +28,31 @@ ALLOWED_EMBEDDING_DOMAIN_RE = re.compile(
 )
 
 
-def _puo(capacita: str) -> bool:
-	from crm.permissions.livelli import puo
-
-	return puo(capacita)
-
-
 def get_context(context):
-	route = resolve_route()
-	filters = {"route": route, "crm_published": 1, "doc_type": ["in", ALLOWED_DOCTYPES]}
-	name = frappe.db.get_value("Web Form", filters)
-	# let CRM managers preview an unpublished (draft) form; guests only see published
-	is_author = frappe.session.user != "Guest" and _puo("moduli_lead.gestisci")
-	if not name and is_author:
-		name = frappe.db.get_value("Web Form", {"route": route, "doc_type": ["in", ALLOWED_DOCTYPES]})
-	if not name:
+	# whoever builds the website's forms sees a draft before it is published
+	modello = sito.modello_del_sito(resolve_route(), anteprima=frappe.session.user != "Guest")
+	if not modello:
 		raise frappe.DoesNotExistError
-
-	doc = frappe.get_doc("Web Form", name)
-	set_embedding_headers(doc)
+	set_embedding_headers(modello)
 	context.no_cache = 1
 	try:
 		context.csrf_token = frappe.sessions.get_csrf_token()
 	except Exception:
 		context.csrf_token = ""
-	# When the form is embedded in an iframe the tracker on the host page appends
-	# the visitor ids to the frame's src, because the frame cannot read the host
-	# page's storage. Same-origin (a form opened directly) has the cookies instead.
-	context.crm_vid = _tracking_id("crm_vid")
-	context.crm_sid = _tracking_id("crm_sid")
-	context.web_form_name = doc.name
-	# ?embed=1 (set by the iframe snippet) strips the page chrome so the form sits
-	# flush inside the host page instead of showing our own card-on-gray-background
+	# ?embed=1 (the iframe's address) drops the page around the form
 	context.embed = frappe.form_dict.get("embed") in ("1", "true", "yes")
-	context.draft_preview = not doc.crm_published
-	context.form_title = doc.title
-	context.form_description = doc.introduction_text or ""
-	context.form_route = doc.route
-	context.submit_label = doc.button_label or "Submit"
-	context.success_message = doc.success_message or "Thank you!"
-	context.success_url = doc.success_url or ""
-	context.fields = [
-		{
-			"fieldname": f.fieldname,
-			# breaks (Section/Column) keep an empty label when blank so unlabeled
-			# sections render no heading; only real fields fall back to fieldname
-			"label": f.label or ("" if f.fieldtype in ("Section Break", "Column Break") else f.fieldname),
-			"fieldtype": f.fieldtype,
-			"options": f.options or "",
-			"reqd": int(f.reqd or 0),
-			"placeholder": f.placeholder or "",
-			"description": f.description or "",
-			# conditional-logic expressions, evaluated client-side (see crm_form.html)
-			"depends_on": f.depends_on or "",
-			"mandatory_depends_on": f.mandatory_depends_on or "",
-			"read_only_depends_on": f.read_only_depends_on or "",
-		}
-		for f in doc.web_form_fields
-	]
-	context.layout = build_layout(context.fields)
-	# Link fields render as a server-populated dropdown of existing records. Resolve
-	# resolve Link options here (keyed by fieldname) so the template stays presentation-only.
-	context.link_options = {
-		f["fieldname"]: _link_field_options(f["options"])
-		for f in context.fields
-		if f["fieldtype"] == "Link" and f["options"]
+	context.engine_version = versione_del_motore()
+	context.form = sito.per_la_pagina(modello)
+	context.boot = {
+		"lang": (frappe.local.lang or "it")[:2],
+		"embed": context.embed,
+		# When the form is embedded in an iframe the tracker on the host page appends
+		# the visitor ids to the frame's address, because the frame cannot read the
+		# host page's storage. Opened directly, the cookies have them instead.
+		"crm_vid": _tracking_id("crm_vid"),
+		"crm_sid": _tracking_id("crm_sid"),
 	}
+	context.title = context.form["title"]
 	return context
 
 
@@ -97,54 +62,6 @@ def _tracking_id(key: str) -> str:
 	value = str(frappe.form_dict.get(key) or frappe.request.cookies.get(key) or "").strip()
 	is_id = len(value) == 32 and all(c in "0123456789abcdef" for c in value)
 	return value if is_id else ""
-
-
-def _link_field_options(doctype: str) -> list[dict]:
-	"""Existing records of `doctype` as {value, label} dropdown options, scoped to what an
-	anonymous visitor may see — honouring the target's permissions at every level (doctype
-	`select`, row rules, if_owner).
-
-	An actual guest is already in that context, so we query directly. Only a logged-in author
-	*previewing* the page needs the session temporarily switched to Guest (rather than
-	`get_list(user="Guest")`, which still derives its permission *tier* from the active
-	session and would check the manager for Guest `read`, failing on a select-only target).
-	That switch is destructive — `frappe.set_user()` overwrites `session.sid` with the
-	username and wipes `session.data` — and restoring only the user leaves a corrupted
-	session that gets persisted under the real sid, logging the author out on their next
-	request. So snapshot and restore sid + data as well."""
-	if not doctype or not frappe.db.exists("DocType", doctype):
-		return []
-	if not guest_can_select(doctype):
-		return []
-	meta = frappe.get_meta(doctype)
-	title_field = meta.title_field or "name"
-	fields = ["name"] if title_field == "name" else ["name", title_field]
-
-	def _query():
-		return frappe.get_list(
-			doctype,
-			fields=fields,
-			order_by=f"{title_field} asc",
-			limit=MAX_LINK_OPTIONS,
-		)
-
-	current_user = frappe.session.user
-	if current_user == "Guest":
-		rows = _query()
-	else:
-		saved_sid = frappe.session.sid
-		saved_data = frappe.session.data
-		try:
-			frappe.set_user("Guest")  # nosemgrep — session fully restored in finally
-			rows = _query()
-		finally:
-			# nosemgrep: frappe-setuser — this is the restore: it puts the real user back after the guest-scoped read
-			frappe.set_user(current_user)
-			# set_user() clobbers sid (→ username) and wipes data; put the real ones
-			# back so the request doesn't persist a corrupted session (see #logout).
-			frappe.session.sid = saved_sid
-			frappe.session.data = saved_data
-	return [{"value": r["name"], "label": r.get(title_field) or r["name"]} for r in rows]
 
 
 def set_embedding_headers(doc):
@@ -160,23 +77,6 @@ def set_embedding_headers(doc):
 	if not domains:
 		return
 	frappe.local.response_headers["Content-Security-Policy"] = "frame-ancestors 'self' " + " ".join(domains)
-
-
-def build_layout(fields):
-	"""Group fields into sections -> columns using Section/Column Break rows."""
-	sections = []
-	current = {"label": None, "columns": [[]]}
-	for f in fields:
-		ft = f["fieldtype"]
-		if ft == "Section Break":
-			sections.append(current)
-			current = {"label": f.get("label") or None, "columns": [[]]}
-		elif ft == "Column Break":
-			current["columns"].append([])
-		else:
-			current["columns"][-1].append(f)
-	sections.append(current)
-	return [s for s in sections if s["label"] or any(col for col in s["columns"])]
 
 
 def resolve_route() -> str:

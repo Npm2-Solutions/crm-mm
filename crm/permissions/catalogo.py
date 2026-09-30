@@ -391,7 +391,12 @@ CAPACITA = (
 		"meta.gestisci", piano=MARKETING, manager=CENTRO, descrizione="Pages, lead forms, spend, lead quality"
 	),
 	_c("tracciamento.gestisci", piano=MARKETING, manager=CENTRO, descrizione="Tracked links and tracking"),
-	_c("moduli_lead.gestisci", piano=MARKETING, manager=CENTRO, descrizione="Web forms for leads"),
+	_c(
+		"moduli_lead.gestisci",
+		piano=MARKETING,
+		manager=CENTRO,
+		descrizione="The forms on the website, which find the person or make them",
+	),
 	_c("campagne.gestisci", piano=MARKETING, manager=CENTRO),
 	_c("numeri.marketing", piano=MARKETING, scrive=False, manager=CENTRO),
 	_c(

@@ -1,6 +1,28 @@
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
+# For license information, please see license.txt
+
 import frappe
 
-from crm.api.form import GUEST_LINKABLE_DOCTYPES, _link_target_doctypes
+# What the form builder of the time allowed guests to list; the website's forms
+# carry their choices now (`web_forms_are_templates`), so this patch keeps its own.
+GUEST_LINKABLE_DOCTYPES = (
+	"CRM Lead Source",
+	"CRM Territory",
+	"CRM Industry",
+	"CRM Service",
+	"Salutation",
+	"Gender",
+	"Currency",
+)
+
+
+def _link_target_doctypes() -> set:
+	targets = set()
+	for document_type in ("CRM Lead", "CRM Deal"):
+		for df in frappe.get_meta(document_type).fields:
+			if df.fieldtype == "Link" and df.options and not (df.hidden or df.read_only):
+				targets.add(df.options)
+	return targets
 
 
 def execute():

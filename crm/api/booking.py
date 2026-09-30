@@ -353,11 +353,14 @@ def find_or_create_person(
 	source: str = BOOKING_SOURCE,
 	medium: str = "booking",
 	source_dimension: str = "booking_page",
+	conversione: str | None = "booking",
 ) -> str:
 	"""The lead behind somebody who just booked — found, or created.
 
-	Shared by the Calendly-style pages, the service booking page and the
-	connectors importing bookings from external platforms.
+	Shared by the Calendly-style pages, the service booking page, the
+	connectors importing bookings from external platforms and the forms on the
+	website, which record their own conversion (``conversione=None``) once the
+	form they filled exists.
 
 	A family shares an email and a phone, so the contact finds its owner and the
 	name says who the booking is for: the owner, one of the people linked to them,
@@ -375,10 +378,11 @@ def find_or_create_person(
 		# who was on the page, whoever the booking is for
 		lead = frappe.get_doc("CRM Lead", owner)
 		attribute(lead, visitor_id=crm_vid, session_id=crm_sid)
-		record_conversion(lead, "booking", full_name or "", reference=reference)
+		if conversione:
+			record_conversion(lead, conversione, full_name or "", reference=reference)
 		return existing or persona_per_conto(owner, full_name, fonte=_ensure_source(source))
 
-	from crm.api.form import _default_status
+	from crm.api.lead import default_status
 
 	parts = (full_name or email or phone or "").split(maxsplit=1) or [""]
 	lead = frappe.get_doc(
@@ -388,7 +392,7 @@ def find_or_create_person(
 			"last_name": parts[1] if len(parts) > 1 else "",
 			"email": email or "",
 			"mobile_no": phone or "",
-			"status": _default_status("CRM Lead"),
+			"status": default_status("CRM Lead"),
 			"source": _ensure_source(source),
 		}
 	)
@@ -400,7 +404,8 @@ def find_or_create_person(
 		dimensions={"source": source_dimension, "medium": medium},
 	)
 	lead.insert(ignore_permissions=True)
-	record_conversion(lead, "booking", full_name or "", reference=reference)
+	if conversione:
+		record_conversion(lead, conversione, full_name or "", reference=reference)
 	return lead.name
 
 
