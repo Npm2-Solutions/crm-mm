@@ -1095,6 +1095,59 @@ il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
   si fa un esercizio) restano sue. Un alimento o un esercizio si spegne, non si
   cancella: un piano può averlo.
 
+### I cicli di sedute
+
+Fatti il 30/09/2026 (`crm/scheduling/cicli.py`, le regole pure in
+`cicli_regole.py`): i "cicli di sedute (fisioterapia)" della fase 3. I pacchetti di
+un centro estetico sono la stessa cosa. Stanno nell'agenda, non nella clinica: un
+ciclo è un accordo sugli appuntamenti; quello che succede in ogni seduta va nella
+cartella, dove la clinica c'è.
+
+- **Si vende dalla persona**: la sezione "Cycles of sessions" nella colonna della sua
+  pagina, "+" (`agenda.cicli`: la segreteria e il manager per tutto il centro, il
+  professionista per le sue persone). Si dicono:
+  - il servizio e quante sedute (da 1 a 100);
+  - da quando e, se serve, fino a quando;
+  - chi lo segue;
+  - il prezzo del ciclo e come si paga;
+  - se una seduta persa si consuma.
+- **Gli appuntamenti entrano da soli**: un appuntamento nuovo del servizio del ciclo,
+  per la persona e nei giorni del ciclo, entra nel suo ciclo finché ci sono sedute da
+  prenotare (prima il ciclo più vecchio). Venduto il ciclo, ci entrano anche gli
+  appuntamenti già prenotati dal suo primo giorno: spesso la segreteria prima
+  prenota e poi vende. Dalla scheda dell'appuntamento lo si mette dentro o fuori a
+  mano ("Change"); "Book a session" apre il calendario con il servizio e la persona.
+- **Il ciclo si conta da sé**:
+  - le sedute fatte: è venuta, o l'appuntamento è completato;
+  - le perse: non è venuta e non ha disdetto. Si consumano se il ciclo dice così,
+    altrimenti sono una seduta in più da prenotare;
+  - le prenotate, e quelle ancora da prenotare.
+
+  Usate tutte, il ciclo è completato, e una disdetta lo riapre. Passato l'ultimo
+  giorno con sedute da usare si legge scaduto e non prende più appuntamenti. Chiuso
+  a mano, lo stesso, finché non si riapre.
+- **"Seduta 4 di 10"**: ogni appuntamento dice quale seduta è nella sua scheda, nella
+  pagina Oggi, nella scheda Eventi della persona e nell'area del paziente. Una
+  disdetta non ha numero.
+- **Il prezzo**: con un prezzo, ogni seduta costa la sua parte invece del listino
+  (400 € per 10 sedute: 40 € a seduta), e l'agenda conta quello. Se cambia il
+  prezzo, cambia la parte delle sedute non ancora fatturate. Il ciclo si paga in uno
+  di due modi:
+  - **seduta per seduta**: ogni seduta si fattura dalla lista "da fatturare", alla
+    sua parte;
+  - **tutto il ciclo in una fattura**: "Invoice the cycle" apre la bozza con una
+    riga sola (il servizio, "ciclo di N sedute", il periodo dal primo giorno alla
+    scadenza), per la persona o per chi paga per lei. Le sue sedute escono dagli
+    appuntamenti da fatturare (pagina Fatture, Oggi, cruscotto), e una seduta da
+    sola non si fattura.
+- **Chi lo legge**: come gli appuntamenti che conta. La segreteria e il manager
+  tutti; il professionista quelli delle sue persone (che segue, che ha venduto, o di
+  cui lavora un appuntamento); il marketing nessuno.
+- **Nell'area**, alla voce Agenda, la persona vede i suoi cicli in corso: fatte,
+  prenotate, quante da prenotare, fino a quando. Niente prezzo, niente note.
+- **Un ciclo sbagliato** si cancella finché nessuna seduta è usata e non è
+  fatturato; i suoi appuntamenti restano in agenda, al prezzo del listino.
+
 ### L'assistente: le fondamenta e il modulo di carta
 
 Fatti il 30/09/2026 (fase 4, la prima parte), in `crm/assistente`: un modulo del

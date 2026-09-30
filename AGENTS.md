@@ -78,6 +78,8 @@ they run as evaluated strings in the browser.
 | `crm/api/booking_admin.py` | Who-does-what matrix, team rota, "why not available" explainer |
 | `crm/booking_platforms/` | Connectors (MioDottore, Treatwell, Calendly, Cal.com…), sync engine |
 | `crm/api/booking_platforms.py` | Webhook in, busy feed out, settings API |
+| `crm/scheduling/cicli.py` + `cicli_regole.py` | Cycles of sessions (`CRM Session Cycle`, `agenda.cicli`): an appointment joins its cycle by itself (`aggancia` in its `validate`), "session 4 of 10", each session its share of the price, one invoice for a cycle paid as a whole (`invoicing.api.issue_from_cycle`); the rules pure, tested with plain `unittest` |
+| `frontend/src/components/CyclesSection.vue`, `CycleDialog.vue` + `utils/cicli.js` | The person's cycles, selling and following one; the words, tested; `area/components/CycleCard.vue` in the patient area |
 | `docs/prenotazioni/` | User guide + platform API research |
 
 ---
@@ -245,7 +247,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **697 tests · ~15s** — all must pass before committing
+- **757 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
