@@ -30,8 +30,20 @@
           iconLeft="eye"
           @click="openLog"
         />
+        <!-- a free visit, or one on the specialty's clinical sheet -->
+        <Dropdown
+          v-if="
+            record.data?.can_write &&
+            !composer.open &&
+            record.data.sheets?.length
+          "
+          :options="newOptions"
+          placement="right"
+        >
+          <Button variant="solid" :label="__('New visit')" iconLeft="plus" />
+        </Dropdown>
         <Button
-          v-if="record.data?.can_write && !composer.open"
+          v-else-if="record.data?.can_write && !composer.open"
           variant="solid"
           :label="__('New visit')"
           iconLeft="plus"
@@ -40,6 +52,9 @@
       </div>
     </div>
 
+    <!-- allergies, medications, parameters: what a practitioner confirmed -->
+    <ClinicSummary v-if="record.data?.can_read" ref="summaryRef" :lead="lead" />
+
     <!-- writing: a visit or a note, for the care team or for oneself -->
     <section
       v-if="composer.open"
@@ -47,6 +62,9 @@
     >
       <div v-if="composer.addendumTo" class="text-p-sm text-ink-gray-6">
         {{ __('Addendum to the record of {0}', [composer.addendumLabel]) }}
+      </div>
+      <div v-if="composer.sheet" class="text-base-semibold text-ink-gray-8">
+        {{ composer.sheet.title }}
       </div>
       <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
         <FormControl
@@ -62,11 +80,17 @@
           :options="visibilityOptions"
         />
       </div>
+      <FormRenderer
+        v-if="composer.sheet"
+        v-model="composer.answers"
+        :schema="composer.sheet.schema"
+        :show-missing="composer.tried"
+      />
       <FormControl
         v-model="composer.content"
         type="textarea"
-        :rows="7"
-        :label="__('What happened')"
+        :rows="composer.sheet ? 3 : 7"
+        :label="composer.sheet ? __('Notes') : __('What happened')"
         :placeholder="
           __(
             'Reason for the visit, what you found, what you did, what comes next',
@@ -124,7 +148,7 @@
     </div>
 
     <article
-      v-for="entry in record.data?.records || []"
+      v-for="entry in shownRecords"
       :key="entry.name"
       class="flex flex-col gap-2 rounded-lg border border-outline-gray-2 p-4"
     >
@@ -132,7 +156,13 @@
         <div class="flex min-w-0 flex-col">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-base-semibold text-ink-gray-8">
-              {{ entry.kind === 'Note' ? __('Note') : __('Visit') }}
+              {{
+                entry.template
+                  ? entry.title
+                  : entry.kind === 'Note'
+                    ? __('Note')
+                    : __('Visit')
+              }}
             </span>
             <Badge
               v-if="entry.docstatus === 0"
@@ -206,6 +236,13 @@
           />
         </div>
       </header>
+      <!-- a visit on a clinical sheet: its answers, in words once signed -->
+      <FormRenderer
+        v-if="entry.template"
+        :model-value="entry.answers"
+        :schema="entry.schema"
+        :readonly="true"
+      />
       <!-- written in the Desk: sanitised before it is shown -->
       <!-- eslint-disable vue/no-v-html -->
       <div
@@ -235,9 +272,19 @@
       </div>
       <footer
         v-if="entry.docstatus === 1 && entry.signed_on"
-        class="text-p-xs text-ink-gray-5"
+        class="flex flex-wrap items-center gap-2 text-p-xs text-ink-gray-5"
       >
         {{ __('Signed on {0}', [formatDate(entry.signed_on, '')]) }}
+        <a
+          v-if="entry.pdf_file"
+          :href="entry.pdf_file"
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-1 rounded-md bg-surface-gray-2 px-2 py-0.5 text-ink-gray-7 hover:bg-surface-gray-3"
+        >
+          <span class="lucide-file-text size-3.5" aria-hidden="true" />
+          {{ __('Report') }}
+        </a>
       </footer>
     </article>
   </div>
@@ -279,10 +326,13 @@
 </template>
 
 <script setup>
+import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
+import FormRenderer from '@/components/Moduli/FormRenderer.vue'
 import { formatDate, sanitizeHTML } from '@/utils'
 import {
   Badge,
   Dialog,
+  Dropdown,
   ErrorMessage,
   FileUploader,
   FormControl,
@@ -290,7 +340,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   lead: { type: String, required: true },
@@ -316,8 +366,33 @@ const visibilityOptions = [
   { label: __('Only me'), value: 'Only me' },
 ]
 
+const summaryRef = ref(null)
+
+// the draft being written is above, in the composer: not twice
+const shownRecords = computed(() =>
+  (record.data?.records || []).filter(
+    (entry) => !(composer.open && entry.name === composer.name),
+  ),
+)
+
+const newOptions = computed(() => [
+  {
+    label: __('Free visit'),
+    icon: 'lucide-file-text',
+    onClick: () => startNew(),
+  },
+  ...(record.data?.sheets || []).map((sheet) => ({
+    label: sheet.title,
+    icon: 'lucide-clipboard-list',
+    onClick: () => startSheet(sheet.name),
+  })),
+])
+
 const composer = reactive({
   open: false,
+  sheet: null,
+  answers: {},
+  tried: false,
   name: null,
   addendumTo: null,
   addendumLabel: '',
@@ -331,6 +406,9 @@ const composer = reactive({
 function reset(values = {}) {
   Object.assign(composer, {
     open: true,
+    sheet: null,
+    answers: {},
+    tried: false,
     name: null,
     addendumTo: null,
     addendumLabel: '',
@@ -353,7 +431,22 @@ function startEdit(entry) {
     kind: entry.kind,
     visibility: entry.visibility,
     content: entry.content || '',
+    sheet: entry.template ? { title: entry.title, schema: entry.schema } : null,
+    answers: { ...(entry.answers || {}) },
   })
+}
+
+async function startSheet(template) {
+  try {
+    const entry = await call('crm.clinica.cartella.start_sheet', {
+      lead: props.lead,
+      template,
+    })
+    startEdit(entry)
+    record.reload()
+  } catch (err) {
+    toast.error(err.messages?.[0] || err.message)
+  }
 }
 
 function startAddendum(entry) {
@@ -374,6 +467,7 @@ function isHtml(text) {
 }
 
 async function save(sign) {
+  composer.tried = sign
   composer.saving = sign ? 'sign' : 'draft'
   composer.error = ''
   try {
@@ -385,10 +479,13 @@ async function save(sign) {
       content: composer.content,
       addendum_to: composer.addendumTo,
       sign: sign ? 1 : 0,
+      answers: composer.sheet ? JSON.stringify(composer.answers) : undefined,
     })
     composer.open = false
     toast.success(sign ? __('Signed') : __('Draft saved'))
     record.reload()
+    // a signed sheet may propose lines of the summary
+    if (sign && composer.sheet) summaryRef.value?.reload()
   } catch (err) {
     composer.error = err.messages?.[0] || err.message
   } finally {

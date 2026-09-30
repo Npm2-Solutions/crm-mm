@@ -185,6 +185,7 @@
                     :before="fieldsBefore(schema, { field: field.id })"
                     :all="allFields"
                     :consent-types="meta.consent_types"
+                    :summary-keys="tpl.clinical ? meta.summary_keys : []"
                     :problems="problemsOf(field.id)"
                     @toggle="expanded = expanded === field.id ? null : field.id"
                     @remove="removeField(section, field)"
@@ -296,7 +297,12 @@
           v-if="meta.clinical_available || tpl.clinical"
           class="flex items-start gap-2 text-base text-ink-gray-7"
         >
-          <Switch v-model="tpl.clinical" class="mt-0.5 shrink-0" size="sm" />
+          <Switch
+            v-model="tpl.clinical"
+            class="mt-0.5 shrink-0"
+            size="sm"
+            :disabled="meta.clinical_uses.includes(tpl.use)"
+          />
           <span>
             {{ __('Health data') }}
             <span class="block text-sm text-ink-gray-5">
@@ -587,6 +593,8 @@ const meta = reactive({
   uses: [],
   clinical_available: false,
   consent_types: [],
+  summary_keys: [],
+  clinical_uses: [],
   service_options: [],
   current_version: null,
   current_version_number: 0,
@@ -631,6 +639,11 @@ async function load() {
 load()
 
 watch([schema, tpl], () => loaded.value && (dirty.value = true), { deep: true })
+// a clinical sheet or a plan records health data, always
+watch(
+  () => tpl.use,
+  (use) => meta.clinical_uses.includes(use) && (tpl.clinical = true),
+)
 
 // what is wrong, as the server will say it: the same rules, live
 const problems = computed(() => readyToPublish(schema.value))
