@@ -174,7 +174,9 @@ e alimento, esercizio) e il marchio "dato clinico" descritto qui sotto.
   vorrebbe dire un DocType per specialità.
 - **Il builder** parte da quello che c'è (Impostazioni → Forms,
   `FormBuilderPanel.vue`, oggi solo per i lead) e diventa uno solo, con due
-  destinazioni: il lead dal sito, come oggi, e il modello del centro.
+  destinazioni: il lead dal sito, come oggi, e il modello del centro. *Fatto il
+  30/09/2026:* il modulo del sito è un modello dell'uso "Sito" (`crm/moduli/sito.py`)
+  e i vecchi Web Form sono diventati modelli.
 - **Il marchio "dato clinico"** sul modello decide la regola 1: una compilazione
   di un modello clinico fa diventare paziente.
 
@@ -558,7 +560,7 @@ Una PR per riga, ognuna utile da sola:
 7. "Nuovi clienti" e "Diventato cliente" nel CRM; con la clinica le sue regole, e
    il paziente è il cliente (fatto il 30/09/2026);
 8. un solo builder dei moduli, con l'uso "Scheda" e i moduli del sito, in due PR:
-   la scheda (fatta il 30/09/2026), poi i moduli del sito;
+   la scheda e i moduli del sito (fatto il 30/09/2026);
 9. le liste d'attesa;
 10. gli abbonamenti.
 

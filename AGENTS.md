@@ -102,9 +102,11 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/moduli/schema.py` | Pure: what a template schema may hold, conditions, formulas, scores, `valuta()`, `pulisci()`, `valida_schema()`, SHA-256 |
 | `frontend/src/utils/moduli.js` | The same rules in the browser, plus the builder's helpers — tested on the same cases |
 | `crm/moduli/tests/casi_schema.json` | The cases both sides must agree on: change one side, run both suites |
-| `crm/moduli/modelli.py` | Drafts (`CRM Form Template`) and immutable versions (`CRM Form Template Version`), consents' words frozen at publish; the uses: a "Form" the person fills (sent, owed at a booking, giving consents) and a "Sheet" the operator writes at the desk (a treatment sheet; with the health data mark, the clinic's clinical sheet, written in the record), a module registers its own (`registra_uso`); the summary's lines |
+| `crm/moduli/modelli.py` | Drafts (`CRM Form Template`) and immutable versions (`CRM Form Template Version`), consents' words frozen at publish; the uses: a "Form" the person fills (sent, owed at a booking, giving consents), a "Sheet" the operator writes at the desk (a treatment sheet; with the health data mark, the clinic's clinical sheet, written in the record) and a "Website" form anybody fills, built by marketing (`moduli_lead.gestisci`), a module registers its own (`registra_uso`); what a use does not allow (`problemi_dell_uso`); the summary's lines |
+| `crm/moduli/sito.py` + `crm/www/crm_form.*` | A form of the website at `/crm-form/<address>`, in another site (`?embed=1`, the sites listed) or in a page of the centre's (`site_render.crm_form_html`, `templates/site/form_inline.html`): the guest `submit_site_form` finds the person by email or mobile or makes them (`find_or_create_person`), fills what the centre did not know, keeps the answers as their form (channel "Website"), records the consents, opens the deal, fires "Lead Form Submitted"; a honeypot, a rate limit; a draft only tried (`try_site_form`) |
+| `crm/public/js/moduli_campi.js`, `crm/public/css/moduli_campi.css` | The questions of a public page drawn without a framework, on the engine the page hands over: `/modulo`, the website's page and block (`versione_del_motore` versions all three) |
 | `frontend/src/components/Moduli/` | `FormRenderer` + `FormFieldInput`: draw and fill a schema |
-| `frontend/src/components/Settings/Forms/Template*.vue` | The builder, in Settings > Forms next to the web forms |
+| `frontend/src/components/Settings/Forms/Template*.vue` + `utils/moduliSito.js` | The one builder, in Settings > Forms: forms, sheets and the website's (its address, its Share tab, the person's field a question fills); what a use does not allow, live, the address from a title, the embed code — tested |
 | `crm/moduli/compilazioni.py` | A person's forms: start, save half-way, sign (checks, strokes, submit, PDF, consents) |
 | `crm/moduli/pdf.py` + `templates/modulo_firmato.html` | The signed form's PDF/A with its evidence page, made once |
 | `crm/moduli/sigillo.py` | The centre's PAdES seal and RFC 3161 time stamp (pyHanko), before the fingerprint; the agency's Seal page |
@@ -335,8 +337,8 @@ way belongs in the CRM, and the clinic registers its rules on it, with the "heal
 data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
 30/09/2026). The client area moved there first (`crm/area`), then plans,
 programmes and exercises (`crm/piani`), a person's documents (`crm/documenti`),
-quotes (`crm/preventivi`) and the new clients pipeline (`crm/clienti`); one forms
-builder follows.
+quotes (`crm/preventivi`), the new clients pipeline (`crm/clienti`) and one forms
+builder, with the operator's sheet and the website's forms (`crm/moduli/sito.py`).
 
 A module moved to the CRM keeps its data through two patches: before the sync its
 DocTypes are renamed (`*_are_the_crms`), after it what they held is put back
@@ -369,7 +371,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **775 tests · ~15s** — all must pass before committing
+- **770 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

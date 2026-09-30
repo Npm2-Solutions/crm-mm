@@ -103,7 +103,8 @@ l'azienda esiste gia', quello che dice di se' vale piu' di quello che digita una
 persona nuova.
 
 Un'eccezione dichiarata: sui **moduli pubblici** il campo resta una casella di
-testo (`TYPED_BY_HAND` in `crm/api/form.py`). Uno sconosciuto non conosce
+testo (una domanda di testo che riempie l'azienda della persona, in
+`crm/moduli/sito.py`; prima `TYPED_BY_HAND` in `crm/api/form.py`). Uno sconosciuto non conosce
 l'elenco delle aziende del CRM, non ha il permesso di cercarci dentro, e non
 deve essere impedito di scrivere il nome della propria: il record nasce dal
 nome, alla ricezione.
