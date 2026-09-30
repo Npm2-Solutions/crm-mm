@@ -1590,3 +1590,26 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Non parte a meno di un'ora dalla visita, né se un link per quel modulo è aperto | Non c'è tempo di compilarlo a casa; e un secondo link confonde |
 | Mandato dal centro, il paziente non lo registra "Administrator" | La regola 1 vuole un nome o nessuno, non un utente tecnico |
 | La fine della giornata guarda anche ieri, e ricorda l'ultimo giorno chiesto | Un giorno che finisce dopo le 23 si chiude dopo mezzanotte; chiedere due volte lo stesso giorno sarebbe rumore |
+
+## Fase 2, la scheda clinica, il referto e la sintesi
+
+> **Completato** (30/09/2026). La visita scritta sulla scheda della specialità,
+> firmata con il suo referto in PDF/A (`crm/clinica/referto.py`); la sintesi del
+> paziente con le proposte dai moduli e dalle schede firmati
+> (`crm/clinica/sintesi.py`, `Clinic Summary Value`).
+> `docs/gestionale-medico/README.md`, "La scheda clinica, il referto e la sintesi".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| La scheda è un uso del modello registrato dalla clinica, non un DocType per specialità | Lo stesso motore, lo stesso builder, le stesse versioni; il CRM non sa niente di clinica (`test_confine`) |
+| Solo l'uso "Form" si manda, si compila da un link e si chiede | Una scheda la scrive l'operatore nella cartella; mandarla al paziente la renderebbe un modulo |
+| La visita tiene le risposte (JSON) e punta alla versione | Come un modulo compilato: il referto e la sintesi si rifanno dallo schema congelato |
+| Le risposte si controllano e si fermano alla firma, con la loro impronta | Una scheda incompleta non si firma da nessuna strada; l'impronta dice che il referto è quello |
+| Il referto si fa una volta sola, e se non si riesce la firma resta | Come il PDF del modulo: il documento non cambia dopo; un errore del PDF si vede nel log, non annulla la visita |
+| Il referto non sta fra gli allegati della visita | È la visita stessa, non un file in più; ha il suo link |
+| Le risposte vanno alla sintesi come proposte, e decide l'operatore | Un modulo compilato dal paziente non scrive da solo la sua cartella (design, "Il motore dei modelli") |
+| Una riga della sintesi è l'ultimo valore confermato, e i valori restano | La sintesi ha una storia: da dove viene ogni valore, chi l'ha deciso |
+| La sintesi la legge chi legge la cartella, la decide chi la scrive | Le stesse capacità della cartella (`clinica.vedi`, `clinica.scrivi`), lo stesso ambito sulle persone |
+| Le righe della sintesi le registra la clinica (`registra_voce_sintesi`) | Il builder le offre solo quando c'è la clinica; il campo `summary` è una proprietà comune dello schema |
