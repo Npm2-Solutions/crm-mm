@@ -1,4 +1,5 @@
 # Copyright (c) 2022, Frappe Technologies Pvt. Ltd. and Contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # GNU GPLv3 License. See license.txt
 
 import frappe

@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
 """The users from before levels get the levels that stand for their roles (doc 30).

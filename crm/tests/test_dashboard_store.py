@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
 """Dashboards on disk: templates that follow the site, and who may see and change what."""

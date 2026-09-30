@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
 """The scope follows the level, and what belongs to a person follows the person.

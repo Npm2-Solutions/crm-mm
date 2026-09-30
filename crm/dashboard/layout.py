@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
 """Where widgets sit on the grid — pure, no database: runs with plain ``unittest`` too.

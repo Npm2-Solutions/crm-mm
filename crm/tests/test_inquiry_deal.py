@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
 """The sale has one scale of states, and it lives on the deal.

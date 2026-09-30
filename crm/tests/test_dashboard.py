@@ -1,4 +1,5 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and Contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # See license.txt
 
 

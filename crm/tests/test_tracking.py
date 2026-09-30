@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
 """Lead tracking, end to end: a beacon arrives, a lead comes out attributed."""

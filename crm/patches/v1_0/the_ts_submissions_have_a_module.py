@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
 """The Sistema TS submissions get the module they live in.

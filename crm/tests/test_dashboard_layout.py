@@ -1,4 +1,4 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2026, NPM2 Solutions Srl and Contributors
 # See license.txt
 
 """Periods, grid layouts and widget payloads — pure, no database: runs with plain ``unittest`` too."""
