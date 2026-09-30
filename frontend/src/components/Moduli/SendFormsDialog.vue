@@ -146,7 +146,12 @@ import {
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 
-const props = defineProps({ lead: { type: String, required: true } })
+const props = defineProps({
+  lead: { type: String, required: true },
+  // the forms the person owes, chosen already; the appointment they are for
+  preselect: { type: Array, default: () => [] },
+  appointment: { type: String, default: null },
+})
 const emit = defineEmits(['sent'])
 const show = defineModel({ type: Boolean })
 
@@ -189,7 +194,7 @@ watch(
   async (open) => {
     if (!open) return
     options.value = null
-    chosen.value = []
+    chosen.value = [...props.preselect]
     error.value = ''
     try {
       const found = await call('crm.moduli.richieste.get_send_options', {
@@ -214,6 +219,7 @@ async function go() {
       await call('crm.moduli.richieste.send_form_link', {
         lead: props.lead,
         templates,
+        appointment: props.appointment,
       })
       toast.success(__('Link sent'))
       show.value = false
@@ -224,6 +230,7 @@ async function go() {
       lead: props.lead,
       templates,
       given_by: holder.value || '',
+      appointment: props.appointment,
     })
     // the operator's session ends here: the person sees their forms only
     await call('logout')

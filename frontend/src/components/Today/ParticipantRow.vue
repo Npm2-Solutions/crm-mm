@@ -18,6 +18,27 @@
         variant="subtle"
         class="shrink-0"
       />
+      <!-- forms they owe for this appointment: to sign while they wait -->
+      <RouterLink
+        v-if="participant.due_forms?.length"
+        :to="{
+          name: 'Lead',
+          params: { leadId: participant.party },
+          hash: '#forms',
+        }"
+        class="touch-target shrink-0"
+        :title="participant.due_forms.map((form) => form.title).join(', ')"
+      >
+        <Badge
+          :label="
+            participant.due_forms.length === 1
+              ? __('1 form to sign')
+              : __('{0} forms to sign', [participant.due_forms.length])
+          "
+          theme="blue"
+          variant="subtle"
+        />
+      </RouterLink>
       <span
         v-if="participant.status === 'Arrived'"
         class="shrink-0 text-p-sm tabular-nums text-ink-gray-5"

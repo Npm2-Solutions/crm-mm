@@ -37,6 +37,48 @@
       </div>
     </div>
 
+    <!-- what the person owes: for their next appointment, or in general -->
+    <div v-if="owed.length" class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-ink-gray-5">
+        {{
+          data.due.appointment
+            ? __('To sign for the appointment of {0}', [
+                formatDate(data.due.appointment.starts_on, 'D MMM, HH:mm'),
+              ])
+            : __('To sign')
+        }}
+      </span>
+      <div
+        v-for="form in owed"
+        :key="form.template"
+        class="flex min-w-0 items-center gap-3 rounded px-2 py-2.5 hover:bg-surface-gray-2 max-md:flex-wrap"
+      >
+        <LucideFileClock class="size-4 shrink-0 text-ink-gray-5" />
+        <div class="min-w-0 flex-1">
+          <div class="truncate text-base text-ink-gray-8">{{ form.title }}</div>
+          <div class="text-sm text-ink-gray-5">
+            {{ REASONS[form.reason]() }}
+          </div>
+        </div>
+        <div class="flex shrink-0 items-center gap-1.5">
+          <Badge
+            v-if="form.pending"
+            :label="PENDING[form.pending]()"
+            theme="blue"
+            variant="subtle"
+            size="sm"
+          />
+          <Button
+            v-else-if="data.can_fill"
+            size="sm"
+            class="touch-target"
+            :label="__('Fill')"
+            @click="start(form.template, form.appointment)"
+          />
+        </div>
+      </div>
+    </div>
+
     <!-- what was sent and has not come back -->
     <div v-if="waiting.length" class="flex flex-col gap-1">
       <span class="text-sm font-medium text-ink-gray-5">{{
@@ -133,7 +175,16 @@
       v-if="showSend"
       v-model="showSend"
       :lead="lead"
-      @sent="requests.reload()"
+      :preselect="
+        owed.filter((form) => !form.pending).map((form) => form.template)
+      "
+      :appointment="data?.due?.appointment?.name || null"
+      @sent="
+        () => {
+          requests.reload()
+          forms.reload()
+        }
+      "
     />
   </div>
 </template>
@@ -145,6 +196,7 @@ import SendFormsDialog from '@/components/Moduli/SendFormsDialog.vue'
 import { formatDate } from '@/utils'
 import LucideChevronRight from '~icons/lucide/chevron-right'
 import LucideFileCheck from '~icons/lucide/file-check'
+import LucideFileClock from '~icons/lucide/file-clock'
 import LucideFilePen from '~icons/lucide/file-pen-line'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import {
@@ -188,6 +240,19 @@ const earlier = computed(() =>
   ),
 )
 
+const owed = computed(() => data.value?.due?.forms || [])
+const REASONS = {
+  never_signed: () => __('Never signed'),
+  new_version: () => __('A new version: to sign again'),
+  expired: () => __('Signed more than a year ago'),
+  every_appointment: () => __('Signed for each appointment'),
+}
+const PENDING = {
+  draft: () => __('Started'),
+  sent: () => __('Link sent'),
+  to_sign_at_desk: () => __('To sign at the desk'),
+}
+
 const templateOptions = computed(() =>
   (data.value?.templates || []).map((template) => ({
     label: template.title,
@@ -219,12 +284,13 @@ function open(name) {
   router.push({ name: 'FormFill', params: { formId: name } })
 }
 
-async function start(template) {
+async function start(template, appointment = null) {
   starting.value = true
   try {
     const form = await call('crm.moduli.compilazioni.start_form', {
       lead: props.lead,
       template,
+      appointment,
     })
     open(form.name)
   } catch (error) {

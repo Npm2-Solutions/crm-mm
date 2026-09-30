@@ -328,6 +328,22 @@
             :options="validityOptions"
           />
         </div>
+        <label
+          v-if="tpl.ask_on !== 'By hand'"
+          class="flex items-start gap-2 text-base text-ink-gray-7"
+        >
+          <Switch v-model="tpl.send_before" class="mt-0.5 shrink-0" size="sm" />
+          <span>
+            {{ __('Send the link when an appointment is booked') }}
+            <span class="block text-sm text-ink-gray-5">
+              {{
+                __(
+                  'Whoever owes it gets it by email to fill before the visit; the message does not say which form.',
+                )
+              }}
+            </span>
+          </span>
+        </label>
         <div v-if="tpl.ask_on === 'Services'" class="flex flex-col gap-1.5">
           <span class="text-sm text-ink-gray-5">{{
             __('For these services')
@@ -585,6 +601,7 @@ const SETTINGS = [
   'specialty',
   'ask_on',
   'validity',
+  'send_before',
   'enabled',
   'services',
 ]
@@ -593,6 +610,7 @@ function apply(data) {
   for (const key of SETTINGS) tpl[key] = data[key]
   tpl.clinical = Boolean(data.clinical)
   tpl.enabled = Boolean(data.enabled)
+  tpl.send_before = Boolean(data.send_before)
   tpl.services = data.services || []
   schema.value = data.schema?.sections ? data.schema : { sections: [] }
   versions.value = data.versions || []
@@ -760,6 +778,7 @@ async function save() {
       ),
       clinical: tpl.clinical ? 1 : 0,
       enabled: tpl.enabled ? 1 : 0,
+      send_before: tpl.send_before ? 1 : 0,
       services: JSON.stringify(tpl.services || []),
       schema: JSON.stringify(schema.value),
     })
