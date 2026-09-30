@@ -28,7 +28,12 @@ from crm.moduli import schema as S
 MODELLO_HTML = "crm/moduli/templates/modulo_firmato.html"
 
 VESTI = {"patient": "The patient", "operator": "The operator", "guardian": "A parent or guardian"}
-LIVELLI = {"simple": "Simple signature", "advanced": "Advanced signature", "qualified": "Qualified signature"}
+LIVELLI = {
+	"simple": "Simple signature",
+	"advanced": "Advanced signature",
+	"qualified": "Qualified signature",
+	"handwritten": "Handwritten signature",
+}
 METODI = {
 	"Drawn": "drawn on the screen",
 	"On paper": "on paper, scanned",
@@ -45,6 +50,15 @@ EVENTI = {
 	"code_sent": "Code sent",
 	"code_verified": "Code checked",
 	"filled": "Filled by the person, to sign at the desk",
+	"printed": "Printed to sign on paper",
+	"attested": "Scan attested as a true copy",
+	"provider_sent": "Sent to the signature provider",
+	"provider_withdrawn": "Taken back from the signature provider",
+	"provider_declined": "Declined at the signature provider",
+	"provider_expired": "Expired at the signature provider",
+	"pdf_received": "Signed PDF received",
+	"copy_downloaded": "Copy downloaded",
+	"cancelled": "Cancelled",
 }
 
 
@@ -100,9 +114,49 @@ def _immagine(file_url: str | None) -> str | None:
 	return "data:image/png;base64," + base64.b64encode(contenuto).decode()
 
 
-def contesto(doc, versione) -> dict:
+def _contenuto(file_url: str) -> bytes:
+	contenuto = frappe.get_doc("File", {"file_url": file_url}).get_content(encodings=[])
+	return contenuto.encode() if isinstance(contenuto, str) else contenuto
+
+
+def _come_immagine(contenuto: bytes) -> str | None:
+	"""A scanned page as a data URI, when it is a picture (a PDF scan is merged
+	as pages instead)."""
+	for inizio, tipo in ((b"\x89PNG", "image/png"), (b"\xff\xd8\xff", "image/jpeg")):
+		if contenuto.startswith(inizio):
+			return f"data:{tipo};base64," + base64.b64encode(contenuto).decode()
+	return None
+
+
+def _caselle(campo: dict) -> list[str]:
+	"""What a person ticks on paper for an empty answer."""
+	tipo = campo.get("type")
+	if tipo == "consent":
+		return [_("Agreed")] if campo.get("must_accept") else [_("Agreed"), _("Did not agree")]
+	if tipo == "yesno":
+		return [_("Yes"), _("No")]
+	if tipo == "choice":
+		return [o.get("label") for o in campo.get("options") or [] if isinstance(o, dict) and o.get("label")]
+	if tipo == "scale":
+		minimo, massimo = int(campo.get("min") or 0), int(campo.get("max") or 10)
+		return [str(n) for n in range(minimo, massimo + 1)][:21]
+	return []
+
+
+def _chi_firmera(campo: dict, doc) -> str | None:
+	"""Who is expected to sign a field, on a copy to sign."""
+	veste = compilazioni._veste(campo, doc)
+	if veste == "operator":
+		return None
+	if veste == "guardian":
+		return frappe.db.get_value("CRM Lead", doc.given_by, "lead_name") if doc.given_by else None
+	return doc.lead_name or frappe.db.get_value("CRM Lead", doc.lead, "lead_name")
+
+
+def contesto(doc, versione, da_firmare: bool = False) -> dict:
 	"""What the page shows: the answers in the order of the form, the signatures,
-	and the evidence."""
+	and the evidence. ``da_firmare`` is the copy to sign (on paper, or at a
+	provider): room for the signatures, and no evidence of a signature yet."""
 	schema = json.loads(versione.schema) if isinstance(versione.schema, str) else versione.schema
 	risposte = json.loads(doc.answers or "{}") if isinstance(doc.answers, str) else (doc.answers or {})
 	stato = S.valuta(schema, risposte)
@@ -128,8 +182,10 @@ def contesto(doc, versione) -> dict:
 				voce["testo"] = campo.get("text") or ""
 			elif voce["tipo"] == "signature":
 				riga = firme.get(chiave)
-				voce["immagine"] = _immagine(riga.image) if riga else None
+				voce["immagine"] = _immagine(riga.image) if riga and riga.image else None
 				voce["firmatario"] = riga.signer_name if riga else None
+				voce["su_carta"] = bool(riga and riga.method == "On paper")
+				voce["atteso"] = _chi_firmera(campo, doc) if da_firmare else None
 			elif voce["tipo"] == "consent":
 				voce["testo"] = campo.get("text") or ""
 				voce["risposta"] = risposta_in_parole(campo, valore)
@@ -145,6 +201,9 @@ def contesto(doc, versione) -> dict:
 				]
 			else:
 				voce["risposta"] = risposta_in_parole(campo, valore, stato["bands"].get(chiave))
+			if da_firmare and not voce.get("risposta"):
+				# on paper an empty answer is given by hand: boxes to tick, or a line
+				voce["opzioni"] = _caselle(campo)
 			voci.append(voce)
 		sezioni.append(
 			{"titolo": sezione.get("title"), "descrizione": sezione.get("description"), "voci": voci}
@@ -190,19 +249,107 @@ def contesto(doc, versione) -> dict:
 			for evento in compilazioni.eventi_del_modulo(doc)
 		],
 		"riconoscimento": compilazioni.riconoscimento(doc),
+		"da_firmare": da_firmare,
+		"carta": _carta(doc) if not da_firmare else None,
 		"_": _,
 	}
 
 
-def html(doc, versione) -> str:
-	return frappe.render_template(MODELLO_HTML, contesto(doc, versione))
+def _carta(doc) -> dict | None:
+	"""A form signed on paper: who attested the scan, its hash, and its pages
+	when they are pictures."""
+	if not doc.get("paper_file"):
+		return None
+	immagine = None
+	try:
+		immagine = _come_immagine(_contenuto(doc.paper_file))
+	except Exception:
+		frappe.log_error(title=f"Form scan {doc.name}", message=frappe.get_traceback())
+	return {
+		"attestato_da": get_fullname(doc.attested_by) if doc.attested_by else None,
+		"il": f"{format_datetime(doc.attested_on)} ({get_system_timezone()})",
+		"impronta": doc.paper_hash,
+		"immagini": [immagine] if immagine else [],
+	}
 
 
-def rendi(doc, versione) -> bytes:
+def html(doc, versione, da_firmare: bool = False) -> str:
+	return frappe.render_template(MODELLO_HTML, contesto(doc, versione, da_firmare))
+
+
+def rendi(doc, versione, da_firmare: bool = False) -> bytes:
 	"""The bytes as rendered, before PDF/A. Separate, so a test can swap it."""
 	from weasyprint import HTML
 
-	return HTML(string=html(doc, versione)).write_pdf()
+	return HTML(string=html(doc, versione, da_firmare)).write_pdf()
+
+
+def _con_le_pagine(reso: bytes, scansione: bytes) -> bytes:
+	"""The rendered form followed by the pages of a scanned PDF."""
+	import io
+
+	from pypdf import PdfReader, PdfWriter
+
+	scrittore = PdfWriter(clone_from=PdfReader(io.BytesIO(reso)))
+	scrittore.append(PdfReader(io.BytesIO(scansione)))
+	uscita = io.BytesIO()
+	scrittore.write(uscita)
+	return uscita.getvalue()
+
+
+def da_firmare(doc) -> bytes:
+	"""The form as it is to be signed - on paper, or at a provider - with the
+	answers so far. Not the evidence of anything: it is not kept."""
+	from crm.invoicing.engine import pdfa
+
+	versione = frappe.get_doc("CRM Form Template Version", doc.template_version)
+	reso = rendi(doc, versione, da_firmare=True)
+	return pdfa.converti(reso, titolo=doc.title or doc.name, data_documento=getdate()).dati
+
+
+def allega_dal_fornitore(doc, firmato: bytes, prove: bytes | None, fornitore: str) -> dict:
+	"""The provider's signed PDF is the form's document: kept as it came, since
+	converting it would break its signature. Its audit trail goes next to it."""
+	import hashlib
+
+	allegato = frappe.get_doc(
+		{
+			"doctype": "File",
+			"file_name": f"{doc.name}.pdf",
+			"attached_to_doctype": doc.doctype,
+			"attached_to_name": doc.name,
+			"attached_to_field": "pdf_file",
+			"is_private": 1,
+			"content": firmato,
+		}
+	).insert(ignore_permissions=True)
+	valori = {
+		"pdf_file": allegato.file_url,
+		"pdf_hash": hashlib.sha256(firmato).hexdigest(),
+		"pdf_conformance": _("Signed by {0} (PAdES)").format(fornitore),
+	}
+	if prove:
+		prova = frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_name": f"{doc.name}-evidence.pdf",
+				"attached_to_doctype": doc.doctype,
+				"attached_to_name": doc.name,
+				"attached_to_field": "provider_evidence",
+				"is_private": 1,
+				"content": prove,
+			}
+		).insert(ignore_permissions=True)
+		valori["provider_evidence"] = prova.file_url
+	doc.db_set(valori, update_modified=False)
+	traccia.traccia(
+		doc.doctype,
+		doc.name,
+		"pdf_received",
+		fornitore,
+		{"sha256": valori["pdf_hash"], "bytes": len(firmato)},
+	)
+	return {"file": allegato.file_url, "sha256": valori["pdf_hash"]}
 
 
 def genera_e_allega(doc) -> dict:
@@ -221,7 +368,26 @@ def genera_e_allega(doc) -> dict:
 		traccia.traccia(doc.doctype, doc.name, "pdf_failed", str(errore)[:500])
 		return {"skipped": True, "reason": str(errore)}
 
-	risultato = pdfa.converti(reso, titolo=doc.title or doc.name, data_documento=getdate(doc.signed_on))
+	originale = None
+	if doc.get("paper_file"):
+		# signed on paper: the scan is inside the file, as its source, and a scanned
+		# PDF's pages follow the form's
+		scansione = _contenuto(doc.paper_file)
+		estensione = doc.paper_file.rsplit(".", 1)[-1].lower()
+		originale = (f"{doc.name}-paper.{estensione}", scansione)
+		if scansione.startswith(b"%PDF"):
+			try:
+				reso = _con_le_pagine(reso, scansione)
+			except Exception as errore:
+				traccia.traccia(doc.doctype, doc.name, "pdf_failed", f"scan pages: {errore}"[:500])
+
+	risultato = pdfa.converti(
+		reso,
+		titolo=doc.title or doc.name,
+		data_documento=getdate(doc.signed_on),
+		allegato_xml=originale,
+		relazione_allegato="Source",
+	)
 	allegato = frappe.get_doc(
 		{
 			"doctype": "File",

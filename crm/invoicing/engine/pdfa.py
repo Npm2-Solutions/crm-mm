@@ -278,13 +278,15 @@ def converti(
 	titolo: str,
 	data_documento: date,
 	allegato_xml: tuple[str, bytes] | None = None,
+	relazione_allegato: str = "Alternative",
 ) -> RisultatoPdf:
 	"""Turn a rendered PDF into PDF/A structure, and report what came out.
 
 	`allegato_xml` embeds the FatturaPA file inside the document a human reads, so
 	the readable rendering and the machine-readable original are one file. That is
 	what part 3 is for; on the healthcare branch there is no XML and the parameter
-	stays empty.
+	stays empty. A signed paper form embeds its scan the same way, as the
+	`Source` the document was made from (`relazione_allegato`).
 
 	It never raises on a conversion problem: an invoice that exists as a plain PDF
 	is worth more than an exception at the counter. What it does instead is say so,
@@ -375,12 +377,12 @@ def converti(
 				# Part 3 does not just permit the attachment, it wants it declared: the
 				# relationship says the file is another rendition of this document, and
 				# the catalogue's /AF is where a reader looks for it.
-				allegato.pdf_object[NameObject("/AFRelationship")] = NameObject("/Alternative")
+				allegato.pdf_object[NameObject("/AFRelationship")] = NameObject(f"/{relazione_allegato}")
 				allegato.pdf_object[NameObject("/UF")] = allegato.pdf_object[NameObject("/F")]
 				elenco = radice["/Names"]["/EmbeddedFiles"]["/Names"]
 				radice[NameObject("/AF")] = ArrayObject([elenco[i] for i in range(1, len(elenco), 2)])
 			except Exception as errore:
-				avvisi.append(f"the XML could not be embedded: {errore}")
+				avvisi.append(f"the attachment could not be embedded: {errore}")
 
 		uscita = io.BytesIO()
 		scrittore.write(uscita)
