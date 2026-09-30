@@ -1,4 +1,5 @@
-// The area's words in Italian: every string the patient reads.
+// The area's words in Italian: every string its people read, and the words a
+// vertical says its own way (the clinic's, in crm/clinica/parole.py).
 export default {
   'Your area': 'La tua area',
   'Enter with your email': 'Entra con la tua email',
@@ -12,7 +13,9 @@ export default {
   Enter: 'Entra',
   'Another address': 'Un altro indirizzo',
   'Send it again': 'Mandalo di nuovo',
-  'This area is for the patients of the centre.':
+  "This area is for the centre's clients.":
+    'Quest’area è per i clienti del centro.',
+  "This area is for the centre's patients.":
     'Quest’area è per i pazienti del centro.',
   'Your work is in DottorCloud.': 'Il tuo lavoro è in DottorCloud.',
   'Open DottorCloud': 'Apri DottorCloud',
@@ -64,6 +67,7 @@ export default {
   'Documents online': 'Documenti online',
   'See all': 'Vedi tutti',
   Messages: 'Messaggi',
+  'Prepare your appointment': 'Prepara l’appuntamento',
   'Prepare your visit': 'Prepara la visita',
   'Before your appointment of {0}': 'Prima del tuo appuntamento del {0}',
   Started: 'Iniziato',

@@ -13,8 +13,8 @@ indirizzi verificati").
   only to a number that is verified the same way: the person's number on file,
   which has written to the centre at least once on that channel. A number typed
   in the area is never used: a wrong digit would tell a stranger that somebody is
-  a patient of a medical centre.
-- **The centre chooses what it offers** (Settings > Patient area): the approved
+  a client of the centre - of a medical centre, a patient.
+- **The centre chooses what it offers** (Settings > Client area): the approved
   WhatsApp template of the news, the number SMS leave from.
 - **Not a flood**: WhatsApp and SMS at most once every two hours per person; the
   email as before. A notice that cannot leave never stops what caused it: the
@@ -27,11 +27,11 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_url, now_datetime
 
-from crm.clinica.area import accesso
+from crm.area import accesso
 from crm.permissions import livelli
 
-AVVISO = "Clinic Area Notice"
-IMPOSTAZIONI = "Clinic Settings"
+AVVISO = "CRM Area Notice"
+IMPOSTAZIONI = "CRM Area Settings"
 WHATSAPP, SMS = "WhatsApp", "SMS"
 CANALI = (WHATSAPP, SMS)
 #: How long after a WhatsApp or an SMS the next one waits.
@@ -42,7 +42,7 @@ ORE_TRA_AVVISI = 2
 
 
 def _modello_whatsapp() -> str | None:
-	nome = frappe.db.get_single_value(IMPOSTAZIONI, "area_whatsapp_template")
+	nome = frappe.db.get_single_value(IMPOSTAZIONI, "whatsapp_template")
 	if not nome or not frappe.db.exists("DocType", "WhatsApp Templates"):
 		return None
 	return nome if frappe.db.exists("WhatsApp Templates", nome) else None
@@ -51,7 +51,7 @@ def _modello_whatsapp() -> str | None:
 def _numero_sms() -> str | None:
 	if not cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled")):
 		return None
-	return (frappe.db.get_single_value(IMPOSTAZIONI, "area_sms_number") or "").strip() or None
+	return (frappe.db.get_single_value(IMPOSTAZIONI, "sms_number") or "").strip() or None
 
 
 def offerti() -> list[str]:
@@ -76,8 +76,8 @@ def get_notice_settings() -> dict:
 			order_by="template_name asc",
 		)
 	return {
-		"whatsapp_template": frappe.db.get_single_value(IMPOSTAZIONI, "area_whatsapp_template"),
-		"sms_number": frappe.db.get_single_value(IMPOSTAZIONI, "area_sms_number"),
+		"whatsapp_template": frappe.db.get_single_value(IMPOSTAZIONI, "whatsapp_template"),
+		"sms_number": frappe.db.get_single_value(IMPOSTAZIONI, "sms_number"),
 		"templates": modelli,
 		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
 	}
@@ -98,8 +98,8 @@ def save_notice_settings(whatsapp_template: str | None = None, sms_number: str |
 		numero = to_e164(sms_number)
 		if not numero.startswith("+"):
 			frappe.throw(_("Write the SMS number with its prefix, like +39…"))
-	frappe.db.set_single_value(IMPOSTAZIONI, "area_whatsapp_template", whatsapp_template or None)
-	frappe.db.set_single_value(IMPOSTAZIONI, "area_sms_number", numero)
+	frappe.db.set_single_value(IMPOSTAZIONI, "whatsapp_template", whatsapp_template or None)
+	frappe.db.set_single_value(IMPOSTAZIONI, "sms_number", numero)
 	return get_notice_settings()
 
 
@@ -170,7 +170,7 @@ def _scelti(user: str) -> dict[str, dict]:
 def notice_options() -> dict:
 	"""How the session hears of news: the email, and what else it may choose."""
 	utente = frappe.session.user
-	if utente == "Guest" or not accesso.e_paziente_dell_area(utente):
+	if utente == "Guest" or not accesso.entra_nell_area(utente):
 		frappe.throw(_("Enter the area first"), frappe.PermissionError)
 	scelti = _scelti(utente)
 	canali = []
@@ -190,7 +190,7 @@ def notice_options() -> dict:
 def set_notice(channel: str, on: int = 1) -> dict:
 	"""On or off, for one channel: only to the verified number, never to one typed."""
 	utente = frappe.session.user
-	if utente == "Guest" or not accesso.e_paziente_dell_area(utente):
+	if utente == "Guest" or not accesso.entra_nell_area(utente):
 		frappe.throw(_("Enter the area first"), frappe.PermissionError)
 	if channel not in offerti():
 		frappe.throw(_("The centre does not send news this way"))

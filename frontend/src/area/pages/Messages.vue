@@ -71,11 +71,11 @@ import { area } from '../store'
 const noticesOffered = computed(() => Boolean(area.me?.notices))
 
 const messages = createResource({
-  url: 'crm.clinica.area.messaggi.area_messages',
+  url: 'crm.area.messaggi.area_messages',
   params: { person: area.person },
   auto: true,
   onSuccess() {
-    call('crm.clinica.area.messaggi.mark_read', { person: area.person })
+    call('crm.area.messaggi.mark_read', { person: area.person })
       .then(() => {
         const who = (area.me?.people || []).find((p) => p.name === area.person)
         if (who) who.unread = 0

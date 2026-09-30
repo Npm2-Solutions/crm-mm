@@ -1,5 +1,5 @@
 <!--
-  News in the patient area, told outside it: the email always says only that
+  News in the client area, told outside it: the email always says only that
   there is news; WhatsApp and SMS may say the same, to the person's own number
   that wrote to the centre, if they ask for it in their area. Here the centre
   chooses what it offers: the approved template, the number SMS leave from.
@@ -8,7 +8,7 @@
   <SettingsLayoutBase>
     <template #title>
       <h2 class="text-2xl-semibold text-ink-gray-9">
-        {{ __('News in the patient area') }}
+        {{ __('News in the client area') }}
       </h2>
     </template>
     <template #header-actions>
@@ -100,7 +100,7 @@ function fill(data) {
 }
 
 const settings = createResource({
-  url: 'crm.clinica.area.avvisi.get_notice_settings',
+  url: 'crm.area.avvisi.get_notice_settings',
   auto: true,
   onSuccess: fill,
 })
@@ -123,7 +123,7 @@ async function save() {
   saving.value = true
   error.value = ''
   try {
-    const data = await call('crm.clinica.area.avvisi.save_notice_settings', {
+    const data = await call('crm.area.avvisi.save_notice_settings', {
       whatsapp_template: form.whatsapp_template || null,
       sms_number: form.sms_number || null,
     })

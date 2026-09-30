@@ -192,8 +192,7 @@ def get_record(lead: str) -> dict:
 		"sheets": _schede() if livelli.puo("clinica.scrivi") else [],
 		"can_see_log": livelli.puo("clinica.accessi"),
 		"can_archive": livelli.puo("clinica.archivia"),
-		# the patient area: who opens it to the person
-		"can_invite": livelli.puo("area.invita"),
+		# the assistant's instructions may go on the person's board in their area
 		"can_message": livelli.puo("area.messaggi"),
 		# a diet, a training, exercises at home: by one's qualification
 		"can_plan": livelli.puo("piani.scrivi"),

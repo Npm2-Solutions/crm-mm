@@ -1,16 +1,17 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What the patient's chat may answer, without a site (design.md, "L'assistente",
+"""What the area's chat may answer, without a site (design.md, "L'assistente",
 point 6): "una chat per il paziente solo per l'amministrazione (orari,
 prenotazioni, domande frequenti scritte dal centro); se parla di sintomi passa a
-una persona o indica il 112".
+una persona o indica il 112". The same holds for any centre: a gym's client may
+write that they feel ill too.
 
 - **An emergency is read before any model**: words of an emergency get 112 at
   once, in fixed words, and nothing is sent anywhere.
 - **Health is a person's**: symptoms, medicines, doses, results, a diagnosis.
   The chat does not answer them: it offers to pass the question to the centre,
-  and the patient decides.
+  and the person decides.
 - **The rest is administration**: hours, bookings, the centre's frequent
   questions - answered by the model only from what the centre wrote, and when it
   does not know, it says so and offers a person too.
@@ -131,6 +132,9 @@ def classifica(domanda: str) -> str | None:
 	return None
 
 
+#: Who spoke. "patient" is how a page opened before the area was the CRM's says it.
+RUOLI = {"person": "person", "patient": "person", "assistant": "assistant"}
+
 #: How long a question is, and how much of the conversation goes with it.
 MAX_DOMANDA = 500
 MAX_TURNI = 6
@@ -144,9 +148,9 @@ def storia(turni) -> list[dict]:
 	for turno in turni or []:
 		if not isinstance(turno, dict):
 			continue
-		chi = turno.get("role")
+		chi = RUOLI.get(turno.get("role"))
 		testo = str(turno.get("text") or "").strip()[:MAX_RISPOSTA]
-		if chi in ("patient", "assistant") and testo:
+		if chi and testo:
 			righe.append({"role": chi, "text": testo})
 	return righe[-MAX_TURNI:]
 

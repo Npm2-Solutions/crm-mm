@@ -28,7 +28,7 @@
         v-for="(turn, index) in turns"
         :key="index"
         class="flex flex-col gap-1"
-        :class="turn.role === 'patient' ? 'items-end' : 'items-start'"
+        :class="turn.role === 'person' ? 'items-end' : 'items-start'"
       >
         <div
           class="max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-p-base"
@@ -117,7 +117,7 @@ const passing = ref(null)
 const error = ref('')
 
 function bubble(turn) {
-  if (turn.role === 'patient') return 'bg-surface-gray-3 text-ink-gray-9'
+  if (turn.role === 'person') return 'bg-surface-gray-3 text-ink-gray-9'
   if (turn.kind === 'emergency')
     return 'bg-surface-red-2 text-ink-red-4 font-medium'
   return 'bg-surface-elevation-1 text-ink-gray-9 shadow-sm'
@@ -128,12 +128,12 @@ async function send() {
   if (!question || asking.value) return
   // what was said before goes with it: the words, not who said them
   const history = turns.value.map((t) => ({ role: t.role, text: t.text }))
-  turns.value.push({ role: 'patient', text: question })
+  turns.value.push({ role: 'person', text: question })
   draft.value = ''
   asking.value = true
   error.value = ''
   try {
-    const answer = await call('crm.clinica.area.chat.ask', {
+    const answer = await call('crm.area.chat.ask', {
       person: area.person,
       question,
       history: JSON.stringify(history),
@@ -158,7 +158,7 @@ async function pass(index) {
   passing.value = index
   error.value = ''
   try {
-    await call('crm.clinica.area.chat.pass_on', {
+    await call('crm.area.chat.pass_on', {
       person: area.person,
       question: turn.question,
     })

@@ -128,6 +128,28 @@ def _mandato_da(doc) -> str | None:
 	return None if mittente in ("Guest", "Administrator") else mittente
 
 
+def messaggio_scritto(doc, method=None) -> None:
+	"""Rule 1: a message about the care, on the patient's board, is health data. One
+	from the desk is not, nor a question the patient passed on."""
+	if doc.get("kind") != "Care" or not paziente.clinica_accesa():
+		return
+	_senza_fermare(
+		_("Patient not recorded from message {0}").format(doc.name),
+		doc,
+		lambda: paziente.assicura_paziente(
+			doc.lead,
+			regole.INFORMAZIONE_MEDICA,
+			fonte=(doc.doctype, doc.name),
+			da=doc.get("practitioner") or doc.get("author"),
+		),
+	)
+
+
+def messaggio_eliminato(doc, method=None) -> None:
+	"""A message gone: the patient card keeps the rule, not a link to it."""
+	paziente.dimentica_fonte(doc.doctype, doc.name)
+
+
 def piano_aggiornato(doc, method=None) -> None:
 	"""The clinic was switched on: the patients already there are found once, in the
 	background, from the appointments and the invoices."""

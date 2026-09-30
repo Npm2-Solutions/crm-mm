@@ -105,7 +105,7 @@ website_route_rules = [
 	{"from_route": "/modulo/<token>", "to_route": "modulo"},
 	# a report put online, opened with the code the centre gave: /referto/<link>
 	{"from_route": "/referto/<token>", "to_route": "referto"},
-	# the patient area: one page, its own app routes inside
+	# the client area: one page, its own app routes inside
 	{"from_route": "/area/<path:app_path>", "to_route": "area"},
 ]
 
@@ -461,6 +461,11 @@ doc_events = {
 	# rule 1 of becoming a patient: a signed form with health data
 	"CRM Form": {
 		"on_submit": ["crm.clinica.eventi.modulo_firmato"],
+	},
+	# and a message about the care on the board of the area
+	"CRM Area Message": {
+		"after_insert": ["crm.clinica.eventi.messaggio_scritto"],
+		"on_trash": ["crm.clinica.eventi.messaggio_eliminato"],
 	},
 	"Log Settings": {
 		"validate": ["crm.clinica.cartella.valida_impostazioni_log"],

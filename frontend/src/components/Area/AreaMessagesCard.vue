@@ -1,9 +1,9 @@
 <!--
   The person's board in their area: what the centre writes to them. Not a chat -
-  the patient reads and does not answer here. The desk writes administrative
-  messages; a practitioner writes about the care, read in the CRM like a visit.
-  Who enters the area gets an email that says only that there is news.
-  A question the patient passed on from the area's chat shows here too, marked:
+  the person reads and does not answer here. The desk writes administrative
+  messages; with the clinic on, a practitioner writes about the care, read like a
+  visit. Who enters the area gets an email that says only that there is news.
+  A question the person passed on from the area's chat shows here too, marked:
   it is answered by writing to the person.
 -->
 <template>
@@ -106,7 +106,7 @@ import { ref, watch } from 'vue'
 const props = defineProps({ lead: { type: String, required: true } })
 
 const board = createResource({
-  url: 'crm.clinica.area.messaggi.get_messages',
+  url: 'crm.area.messaggi.get_messages',
   makeParams: () => ({ lead: props.lead }),
 })
 watch(
@@ -123,7 +123,7 @@ async function post() {
   busy.value = true
   error.value = ''
   try {
-    board.data = await call('crm.clinica.area.messaggi.post_message', {
+    board.data = await call('crm.area.messaggi.post_message', {
       lead: props.lead,
       body: draft.value,
     })

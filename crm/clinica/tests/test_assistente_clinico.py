@@ -146,7 +146,7 @@ class LaNotaTenuta(AssistenteClinicoCase):
 		self.assertTrue(tenuta["posted"])
 		frappe.set_user("Administrator")
 		[messaggio] = frappe.get_all(
-			"Clinic Message", filters={"lead": self.anna.name}, fields=["kind", "body", "author"]
+			"CRM Area Message", filters={"lead": self.anna.name}, fields=["kind", "body", "author"]
 		)
 		self.assertEqual((messaggio.kind, messaggio.author), ("Care", DOC1))
 		self.assertIn("Faccia gli esercizi", messaggio.body)

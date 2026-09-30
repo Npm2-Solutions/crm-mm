@@ -62,7 +62,7 @@ const busy = ref('')
 const error = ref('')
 
 const options = createResource({
-  url: 'crm.clinica.area.avvisi.notice_options',
+  url: 'crm.area.avvisi.notice_options',
   auto: true,
 })
 
@@ -70,7 +70,7 @@ async function set(channel, on) {
   busy.value = channel.channel
   error.value = ''
   try {
-    options.data = await call('crm.clinica.area.avvisi.set_notice', {
+    options.data = await call('crm.area.avvisi.set_notice', {
       channel: channel.channel,
       on: on ? 1 : 0,
     })

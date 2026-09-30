@@ -17,8 +17,8 @@
    "in_list_view": 1,
    "label": "User",
    "options": "User",
-   "reqd": 1,
    "read_only": 1,
+   "reqd": 1,
    "search_index": 1
   },
   {
@@ -27,8 +27,8 @@
    "in_list_view": 1,
    "label": "Channel",
    "options": "WhatsApp\nSMS",
-   "reqd": 1,
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "default": "0",
@@ -50,8 +50,8 @@
  "links": [],
  "modified": "2026-10-02 00:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Area Notice",
+ "module": "Area",
+ "name": "CRM Area Notice",
  "owner": "Administrator",
  "permissions": [
   {

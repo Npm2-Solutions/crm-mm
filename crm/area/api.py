@@ -1,18 +1,19 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What the patient area shows: only the session's people, derived on the server.
+"""What the client area shows: only the session's people, derived on the server.
 
 Every call takes a ``person`` and first checks it is one of the session's
 (`accesso.persone_di`): a person the session was not given is a refusal, never an
 empty answer that could be probed. The rest reads the CRM as the centre does and
-gives the patient only what is theirs to see:
+gives the person only what is theirs to see:
 
 - **appointments**, upcoming and past, each with the booking page's own link to
-  move or cancel it by the centre's rules;
-- **documents** the centre gave online (`crm.clinica.consegna`), downloaded after
-  a code verified in the last minutes, and logged like the page `/referto`;
-- **invoices**, with their PDF.
+  move or cancel it by the centre's rules, and the cycles of sessions;
+- **the forms** to fill before the next one, opened without another code;
+- **invoices**, with their PDF;
+- **the places other modules add** (`sezioni`): the clinic's documents, plans and
+  care plans answer from the clinic.
 """
 
 from __future__ import annotations
@@ -24,21 +25,19 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 from frappe.utils import get_datetime, now_datetime
 
-from crm.clinica.area import accesso
+from crm.area import accesso, sezioni
 from crm.scheduling import cicli
 
-CONSEGNA = "Clinic Report Delivery"
 
-
-def _paziente() -> str:
+def _utente() -> str:
 	utente = frappe.session.user
-	if utente == "Guest" or not accesso.e_paziente_dell_area(utente):
+	if utente == "Guest" or not accesso.entra_nell_area(utente):
 		frappe.throw(_("Enter the area first"), frappe.PermissionError)
 	return utente
 
 
 def _mia(person: str) -> dict:
-	utente = _paziente()
+	utente = _utente()
 	for riga in accesso.persone_di(utente):
 		if riga.lead == person:
 			return riga
@@ -48,10 +47,10 @@ def _mia(person: str) -> dict:
 @frappe.whitelist()
 def get_me() -> dict:
 	"""Who is in, whose areas they see, and the centre's name."""
-	from crm.clinica.area import avvisi, chat, messaggi, piani
+	from crm.area import avvisi, chat, messaggi
 	from crm.moduli.richieste import nome_del_centro
 
-	utente = _paziente()
+	utente = _utente()
 	persone = accesso.persone_di(utente)
 	frappe.db.set_value(
 		accesso.ACCESSO,
@@ -69,8 +68,9 @@ def get_me() -> dict:
 				"lead_name": p.lead_name,
 				"relation": p.relation,
 				"unread": messaggi.da_leggere(p.lead),
-				# the area shows "Plans" to who follows one now
-				"plans": piani.piani_in_corso(p.lead),
+				# the places other modules add, for this person: the clinic's plans
+				# show to who follows one now
+				"sections": sezioni.per_persona(p.lead),
 			}
 			for p in persone
 		],
@@ -155,10 +155,10 @@ def get_appointments(person: str) -> dict:
 	return {"upcoming": prossimi, "past": passati[:20], "cycles": cicli.della_persona(person)}
 
 
-# ------------------------------------------------------------------ preparing the visit
+# ------------------------------------------------------------------ preparing the appointment
 
 #: In the trace of a link: made, or taken up, from the area.
-DALL_AREA = "Patient area"
+DALL_AREA = "Client area"
 #: How long the forms opened from the area stay open.
 ORE_MODULI = 4
 #: A form filled at home that is signed at the desk (`dovuti._in_corso`).
@@ -201,7 +201,7 @@ def get_forms(person: str) -> dict:
 
 	riga = _mia(person)
 	prossimo = dovuti.prossimo_appuntamento(person)
-	# the person's own forms, clinical ones too: they are theirs to fill
+	# the person's own forms, those with health data too: they are theirs to fill
 	voci = dovuti.dovuti([person], {person: prossimo}, clinici=True)[person]
 	firma, perche = _chi_firma(person, riga)
 	# today's forms count for today's visit, but "before your appointment" only
@@ -289,7 +289,7 @@ def fill_forms(person: str, templates) -> dict:
 			recipient=firma["lead"],
 			sent_to=richieste._nascosta(indirizzo),
 			# asked for by who is in: nobody of the centre sent it, and the forms
-			# are the person's own, clinical ones too
+			# are the person's own, those with health data too
 			mittente=frappe.session.user,
 			dal_centro=True,
 		)
@@ -299,85 +299,6 @@ def fill_forms(person: str, templates) -> dict:
 		)
 	sessione = richieste._apri_sessione(capo)
 	return {"url": f"/modulo/{token}", "token": token, "session": sessione}
-
-
-# ------------------------------------------------------------------ documents
-
-
-def _online(person: str) -> list:
-	from crm.clinica import consegna
-
-	adesso = now_datetime()
-	return [
-		riga
-		for riga in frappe.get_all(
-			CONSEGNA,
-			filters={
-				"lead": person,
-				"channel": consegna.ONLINE,
-				"status": ("in", (consegna.DISPONIBILE, consegna.SCARICATO)),
-			},
-			fields=["name", "document", "given_on", "expires_on", "downloads"],
-			order_by="given_on desc",
-		)
-		if get_datetime(riga.expires_on) > adesso
-	]
-
-
-@frappe.whitelist()
-def get_documents(person: str) -> dict:
-	"""What the centre gave online, while it is online."""
-	_mia(person)
-	voci = []
-	for riga in _online(person):
-		documento = frappe.db.get_value(
-			"Clinic Document", riga.document, ["title", "document_type", "document_date"], as_dict=True
-		)
-		if not documento:
-			continue
-		voci.append(
-			{
-				"name": riga.name,
-				"title": documento.title,
-				"document_type": documento.document_type,
-				"document_date": documento.document_date,
-				"given_on": riga.given_on,
-				"expires_on": riga.expires_on,
-				"downloaded": bool(riga.downloads),
-			}
-		)
-	return {"documents": voci, "verified": accesso.verificato_da_poco()}
-
-
-@frappe.whitelist(methods=["GET"])
-def download_document(person: str, delivery: str) -> None:
-	"""A document, after a code verified in the last minutes; logged like /referto."""
-	from crm.clinica import archivio, consegna
-	from crm.moduli import traccia
-
-	_mia(person)
-	if not accesso.verificato_da_poco():
-		frappe.throw(_("Enter your code again to download it"), frappe.PermissionError)
-	riga = next((r for r in _online(person) if r.name == delivery), None)
-	if not riga:
-		frappe.throw(_("This document is no longer online: ask the centre"), frappe.PermissionError)
-	documento = frappe.get_doc("Clinic Document", riga.document)
-	file_url = archivio._file_di(documento)
-	contenuto = frappe.get_doc("File", {"file_url": file_url}).get_content(encodings=[])
-	frappe.local.flags.commit = True
-	frappe.db.set_value(
-		CONSEGNA,
-		riga.name,
-		{
-			"status": consegna.SCARICATO,
-			"downloads": (riga.downloads or 0) + 1,
-			"last_download_on": now_datetime(),
-		},
-	)
-	traccia.traccia(CONSEGNA, riga.name, "downloaded", _("From the patient area"))
-	frappe.local.response.filename = file_url.rsplit("/", 1)[-1]
-	frappe.local.response.filecontent = contenuto
-	frappe.local.response.type = "download"
 
 
 # ------------------------------------------------------------------ invoices

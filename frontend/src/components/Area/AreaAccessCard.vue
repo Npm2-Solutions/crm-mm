@@ -1,5 +1,5 @@
 <!--
-  The person's patient area, from the CRM: who enters it and since when, and
+  The person's client area, from DottorCloud: who enters it and since when, and
   the invitation that opens it - to the person, or to a parent or somebody who
   follows them. The area itself is /area, with a code by email each time.
 -->
@@ -10,7 +10,7 @@
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h3 class="text-base-semibold text-ink-gray-8">
-        {{ __('Patient area') }}
+        {{ __('Who enters the area') }}
       </h3>
       <Button
         class="shrink-0"
@@ -135,7 +135,7 @@ function relationLabel(value) {
 }
 
 const accesses = createResource({
-  url: 'crm.clinica.area.accesso.get_accesses',
+  url: 'crm.area.accesso.get_accesses',
   makeParams: () => ({ lead: props.lead }),
 })
 watch(
@@ -166,7 +166,7 @@ async function invite() {
   dialog.busy = true
   dialog.error = ''
   try {
-    const done = await call('crm.clinica.area.accesso.invite', {
+    const done = await call('crm.area.accesso.invite', {
       lead: props.lead,
       relation: dialog.relation,
       email: dialog.email || null,
@@ -183,7 +183,7 @@ async function invite() {
 
 async function revoke(access) {
   try {
-    await call('crm.clinica.area.accesso.revoke', {
+    await call('crm.area.accesso.revoke', {
       lead: props.lead,
       user: access.user,
     })

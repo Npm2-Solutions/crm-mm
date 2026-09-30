@@ -342,7 +342,7 @@ def delete_programme_draft(name: str) -> None:
 
 def _avvisa(lead: str) -> None:
 	# the same news as a message: the area says what it is
-	from crm.clinica.area import messaggi
+	from crm.area import messaggi
 
 	messaggi._avvisa(lead)
 

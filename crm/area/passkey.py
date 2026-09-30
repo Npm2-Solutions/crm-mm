@@ -1,18 +1,18 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The patient area's other door: a passkey (design.md, "Come si entra": "dalla
+"""The client area's other door: a passkey (design.md, "Come si entra": "dalla
 volta dopo, se il paziente vuole, una passkey: viso o impronta, che restano sul
 telefono").
 
 - **Only after a code**: a passkey is added from inside the area, by whoever
   entered it, never from outside.
-- **The key stays on the phone**: the centre keeps the public half (`Clinic Area
+- **The key stays on the phone**: the centre keeps the public half (`CRM Area
   Passkey`) and the counter the phone increases at each use; the phone asks for
   the face, the fingerprint or its PIN every time (user verification).
 - **The same door as the code**: a passkey opens only an area that is open
-  (`accesso.e_paziente_dell_area`); closed, it opens nothing. Entering with it
-  counts as entering again for a report, as a code does.
+  (`accesso.entra_nell_area`); closed, it opens nothing. Entering with it
+  counts as entering again for a document, as a code does.
 - **No address to type**: the page asks the phone which passkeys it has for the
   site (discoverable credentials), so it tells nobody which addresses have an area.
 - Each one is listed in the area with the device it was added from, and removed
@@ -31,9 +31,9 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 from frappe.utils import get_url, now_datetime
 
-from crm.clinica.area import accesso
+from crm.area import accesso
 
-PASSKEY = "Clinic Area Passkey"
+PASSKEY = "CRM Area Passkey"
 #: How long the phone has to answer a challenge.
 MINUTI_SFIDA = 5
 MAX_PASSKEY = 10
@@ -56,15 +56,15 @@ def _id_utente(user: str) -> bytes:
 	return hashlib.sha256(f"crm-area:{user}".encode()).digest()[:16]
 
 
-def _paziente() -> str:
+def _utente() -> str:
 	utente = frappe.session.user
-	if utente == "Guest" or not accesso.e_paziente_dell_area(utente):
+	if utente == "Guest" or not accesso.entra_nell_area(utente):
 		frappe.throw(_("Enter the area first"), frappe.PermissionError)
 	return utente
 
 
 def _dispositivo() -> str:
-	"""Which device, in words the patient recognises: from the browser's name."""
+	"""Which device, in words the person recognises: from the browser's name."""
 	richiesta = getattr(frappe.local, "request", None)
 	agente = ((richiesta and frappe.get_request_header("User-Agent")) or "").lower()
 	for chiave, nome in (
@@ -92,7 +92,7 @@ def _righe(user: str) -> list[dict]:
 @frappe.whitelist()
 def my_passkeys() -> dict:
 	"""The session's passkeys, to see and remove."""
-	return {"passkeys": _righe(_paziente())}
+	return {"passkeys": _righe(_utente())}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -110,7 +110,7 @@ def registration_options() -> dict:
 
 	from crm.moduli.richieste import nome_del_centro
 
-	utente = _paziente()
+	utente = _utente()
 	gia = frappe.get_all(PASSKEY, filters={"user": utente}, pluck="credential_id")
 	if len(gia) >= MAX_PASSKEY:
 		frappe.throw(_("Remove a passkey first: an area keeps {0}").format(MAX_PASSKEY))
@@ -140,7 +140,7 @@ def register(credential) -> dict:
 	from webauthn import verify_registration_response
 	from webauthn.helpers import bytes_to_base64url
 
-	utente = _paziente()
+	utente = _utente()
 	chiave = _chiave("registra", frappe.session.sid)
 	sfida = frappe.cache.get_value(chiave)
 	frappe.cache.delete_value(chiave)
@@ -179,7 +179,7 @@ def register(credential) -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def remove_passkey(name: str) -> dict:
-	utente = _paziente()
+	utente = _utente()
 	if frappe.db.get_value(PASSKEY, name, "user") != utente:
 		frappe.throw(_("This is not your passkey"), frappe.PermissionError)
 	frappe.delete_doc(PASSKEY, name, ignore_permissions=True)
@@ -243,7 +243,7 @@ def authenticate(credential, state: str) -> dict:
 		)
 	except Exception:
 		frappe.throw(_("This passkey does not open an area here"), frappe.PermissionError)
-	if not accesso.e_paziente_dell_area(riga.user):
+	if not accesso.entra_nell_area(riga.user):
 		frappe.throw(_("This area is closed: ask the centre"), frappe.PermissionError)
 	frappe.db.set_value(
 		PASSKEY,

@@ -54,7 +54,7 @@ watch(show, (open) => {
 
 async function send() {
   try {
-    await call('crm.clinica.area.accesso.send_code')
+    await call('crm.area.accesso.send_code')
   } catch (e) {
     error.value = __(messageOf(e))
   }
@@ -64,7 +64,7 @@ async function verify() {
   busy.value = true
   error.value = ''
   try {
-    await call('crm.clinica.area.accesso.verify_code', {
+    await call('crm.area.accesso.verify_code', {
       code: code.value.trim(),
     })
     show.value = false

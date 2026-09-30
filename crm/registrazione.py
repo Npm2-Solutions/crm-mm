@@ -37,6 +37,7 @@ def carica(*args, **kwargs) -> None:
 	# set first: a module that reads a registry while registering must not recurse
 	_caricato = True
 	try:
+		from crm.area import registra as registra_area
 		from crm.assistente import registra as registra_assistente
 		from crm.clinica import registra as registra_clinica
 		from crm.invoicing import registra as registra_fatturazione
@@ -50,7 +51,10 @@ def carica(*args, **kwargs) -> None:
 		registra_tessera_sanitaria()
 		# the assistant: on every site, switched on by the plan
 		registra_assistente()
-		# the clinic: on every site, switched on by the plan
+		# the client area: on every site, switched on by the plan
+		registra_area()
+		# the clinic, a vertical: on every site, switched on by the plan; it adds to
+		# the area, so after it
 		registra_clinica()
 	except Exception:
 		# half a registration must not pass for a whole one: the next caller retries,

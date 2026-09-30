@@ -52,7 +52,7 @@ import CycleCard from '../components/CycleCard.vue'
 import { area } from '../store'
 
 const appointments = createResource({
-  url: 'crm.clinica.area.api.get_appointments',
+  url: 'crm.area.api.get_appointments',
   params: { person: area.person },
   auto: true,
 })

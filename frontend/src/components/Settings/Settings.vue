@@ -584,8 +584,8 @@ const tabs = computed(() => {
         },
         {
           // what the patient area tells outside it: the channels are the manager's
-          label: __('News in the patient area'),
-          key: 'News in the patient area',
+          label: __('News in the client area'),
+          key: 'News in the client area',
           icon: markRaw(LucideBellRing),
           component: markRaw(AreaNoticeSettings),
           condition: () => puo('canali.configura') && puo('area.invita'),

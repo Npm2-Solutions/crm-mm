@@ -23,8 +23,8 @@
    "in_list_view": 1,
    "label": "User",
    "options": "User",
-   "reqd": 1,
    "read_only": 1,
+   "reqd": 1,
    "search_index": 1
   },
   {
@@ -60,17 +60,17 @@
    "fieldname": "credential_id",
    "fieldtype": "Data",
    "label": "Credential",
-   "reqd": 1,
-   "unique": 1,
+   "length": 255,
    "read_only": 1,
-   "length": 255
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "public_key",
    "fieldtype": "Long Text",
    "label": "Public key",
-   "reqd": 1,
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "default": "0",
@@ -91,8 +91,8 @@
  "links": [],
  "modified": "2026-10-01 23:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Area Passkey",
+ "module": "Area",
+ "name": "CRM Area Passkey",
  "owner": "Administrator",
  "permissions": [
   {

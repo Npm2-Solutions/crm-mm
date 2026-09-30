@@ -3,43 +3,92 @@
 
 """The centre's messages on the person's board, read in their area.
 
-Not a chat: a board, one per person, and the patient does not answer here.
-design.md leaves that open ("Da decidere" 7): a chat would be one more inbox
-for the doctors. The desk writes administrative messages (a reminder, a
-document to bring); a practitioner writes about the care, and those are read in
-the CRM like a visit (`crm.clinica.dossier`). The email that follows says only
-that there is news in the area: the content stays inside it.
+Not a chat: a board, one per person, and the person does not answer here.
+design.md leaves that open ("Da decidere" 7): a chat would be one more inbox.
+The desk writes administrative messages (a reminder, a document to bring); a
+question the person passed on from the area's chat is on the board too, for the
+desk to answer there. The email that follows says only that there is news in the
+area: the content stays inside it.
+
+**Other kinds come from other modules** (`registra_tipo`), each with who writes
+it and who reads it in DottorCloud: the clinic's "Care", written by a practitioner
+and read like a visit. A message goes out as the kind of the highest priority its
+author writes.
 """
 
 from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import dataclass
 
 import frappe
 from frappe import _
 from frappe.utils import cint, get_fullname, get_url, now_datetime
 
-from crm.clinica.area import accesso
+from crm.area import accesso
 from crm.permissions import livelli
 
-MESSAGGIO = "Clinic Message"
-AMMINISTRATIVO, CURA = "Administrative", "Care"
-#: A question the patient passed to the centre from the chat: read and answered
+MESSAGGIO = "CRM Area Message"
+AMMINISTRATIVO = "Administrative"
+#: A question the person passed to the centre from the chat: read and answered
 #: here by whoever writes to the person.
 DOMANDA = "Question"
 
 
+@dataclass(frozen=True)
+class TipoMessaggio:
+	chiave: str
+	#: Whether this user writes messages of this kind; None: nobody writes it from
+	#: DottorCloud (a question comes from the area's chat).
+	scrive: Callable[[str], bool] | None
+	#: Whether this user, not its author, reads a message of this kind.
+	legge: Callable[[object, str], bool]
+	#: What a new message of this kind also carries (the clinic: whose care it is).
+	campi: Callable[[str], dict] | None = None
+	#: Of the kinds a user writes, the highest goes out.
+	priorita: int = 0
+
+
+_tipi: dict[str, TipoMessaggio] = {}
+
+
+def registra_tipo(tipo: TipoMessaggio) -> None:
+	_tipi[tipo.chiave] = tipo
+
+
+def _scrive_al_board(user: str) -> bool:
+	return livelli.puo("area.messaggi", user)
+
+
+def _legge_il_board(doc, user: str) -> bool:
+	return livelli.puo("area.messaggi", user)
+
+
+def registra() -> None:
+	registra_tipo(TipoMessaggio(AMMINISTRATIVO, scrive=_scrive_al_board, legge=_legge_il_board))
+	registra_tipo(TipoMessaggio(DOMANDA, scrive=None, legge=_legge_il_board))
+
+
+def tipo_di(user: str | None = None) -> TipoMessaggio:
+	"""The kind a message of this user goes out as."""
+	livelli.carica()
+	user = user or frappe.session.user
+	scritti = [tipo for tipo in _tipi.values() if tipo.scrive and tipo.scrive(user)]
+	if not scritti:
+		return _tipi[AMMINISTRATIVO]
+	return max(scritti, key=lambda tipo: tipo.priorita)
+
+
 def _legge(doc, user: str) -> bool:
-	"""In the CRM: its author; an administrative one whoever writes to the
-	person; one about the care by the dossier's rules."""
+	"""In DottorCloud: its author; the others as its kind says."""
 	if doc.get("author") == user:
 		return True
-	if doc.get("kind") in (AMMINISTRATIVO, DOMANDA):
-		return livelli.puo("area.messaggi", user)
-	from crm.clinica import dossier
-
-	return dossier.legge_le_altre(doc, user)
+	livelli.carica()
+	tipo = _tipi.get(doc.get("kind"))
+	return bool(tipo and tipo.legge(doc, user))
 
 
-def _riga(doc, per_il_paziente: bool = False) -> dict:
+def _riga(doc, nell_area: bool = False) -> dict:
 	riga = {
 		"name": doc.name,
 		"kind": doc.kind,
@@ -48,7 +97,7 @@ def _riga(doc, per_il_paziente: bool = False) -> dict:
 		"posted_on": doc.posted_on,
 		"read_on": doc.read_on,
 	}
-	if not per_il_paziente:
+	if not nell_area:
 		riga["mine"] = doc.author == frappe.session.user
 	return riga
 
@@ -69,7 +118,7 @@ def get_messages(lead: str) -> dict:
 		)
 		if _legge(doc, utente)
 	]
-	# the patient's questions are read by who opens the board: the patient sees it
+	# the person's questions are read by who opens the board: the person sees it
 	for riga in righe:
 		if riga["kind"] == DOMANDA and not riga["read_on"]:
 			riga["read_on"] = now_datetime()
@@ -81,8 +130,9 @@ def get_messages(lead: str) -> dict:
 			)
 	return {
 		"messages": righe,
-		# a practitioner writes about the care; the desk, administration
-		"kind": CURA if livelli.puo("clinica.scrivi") else AMMINISTRATIVO,
+		# the kind the session writes: the desk administration, the clinic's
+		# practitioner the care
+		"kind": tipo_di(utente).chiave,
 		"has_area": bool(accesso.accessi_aperti(lead)),
 	}
 
@@ -96,18 +146,16 @@ def post_message(lead: str, body: str) -> dict:
 	testo = (body or "").strip()
 	if not testo:
 		frappe.throw(_("Write the message"))
-	cura = livelli.puo("clinica.scrivi")
+	tipo = tipo_di()
 	doc = frappe.get_doc(
 		{
 			"doctype": MESSAGGIO,
 			"lead": lead,
-			"kind": CURA if cura else AMMINISTRATIVO,
+			"kind": tipo.chiave,
 			"author": frappe.session.user,
 			"posted_on": now_datetime(),
 			"body": testo[:4000],
-			# read in the CRM like a visit of its author
-			"practitioner": frappe.session.user if cura else None,
-			"visibility": "Care team",
+			**(tipo.campi(frappe.session.user) if tipo.campi else {}),
 		}
 	)
 	doc.insert(ignore_permissions=True)
@@ -133,23 +181,23 @@ def _avvisa(lead: str) -> None:
 	except frappe.OutgoingEmailError:
 		frappe.clear_last_message()
 	# WhatsApp or SMS to who asked for them, with the same words
-	from crm.clinica.area import avvisi
+	from crm.area import avvisi
 
 	avvisi.avvisa_fuori(lead)
 
 
-# ------------------------------------------------------------------ the patient's side
+# ------------------------------------------------------------------ the person's side
 
 
 @frappe.whitelist()
 def area_messages(person: str) -> dict:
 	"""The board, in the area: every message to the person."""
-	from crm.clinica.area.api import _mia
+	from crm.area.api import _mia
 
 	_mia(person)
 	return {
 		"messages": [
-			_riga(frappe.get_doc(MESSAGGIO, nome), per_il_paziente=True)
+			_riga(frappe.get_doc(MESSAGGIO, nome), nell_area=True)
 			for nome in frappe.get_all(
 				MESSAGGIO, filters={"lead": person}, pluck="name", order_by="posted_on desc", limit=100
 			)
@@ -160,7 +208,7 @@ def area_messages(person: str) -> dict:
 @frappe.whitelist(methods=["POST"])
 def mark_read(person: str) -> dict:
 	"""Opened in the area: what was new is read, by whom and when."""
-	from crm.clinica.area.api import _mia
+	from crm.area.api import _mia
 
 	_mia(person)
 	for nome in frappe.get_all(

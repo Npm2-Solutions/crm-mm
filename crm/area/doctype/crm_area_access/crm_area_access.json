@@ -102,31 +102,31 @@
    "read_only": 1
   }
  ],
+ "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
  "modified": "2026-10-01 13:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Area Access",
+ "module": "Area",
+ "name": "CRM Area Access",
  "naming_rule": "Random",
  "owner": "Administrator",
- "row_format": "Dynamic",
- "sort_field": "creation",
- "sort_order": "DESC",
- "states": [],
- "title_field": "lead_name",
- "track_changes": 1,
- "in_create": 1,
  "permissions": [
   {
    "read": 1,
    "report": 1,
-   "role": "Medical Director"
+   "role": "System Manager"
   },
   {
    "read": 1,
    "report": 1,
    "role": "Front Desk"
   }
- ]
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lead_name",
+ "track_changes": 1
 }

@@ -266,6 +266,7 @@ import Activities from '@/components/Activities/Activities.vue'
 import LucideRadar from '~icons/lucide/radar'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
+import LucideAppWindow from '~icons/lucide/app-window'
 import { usersStore } from '@/stores/users'
 import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
@@ -498,6 +499,13 @@ const tabs = computed(() => {
       label: __('Forms'),
       icon: LucideFileSignature,
       condition: () => puo('moduli.vedi'),
+    },
+    // the person's own area: who enters it, the board the centre writes on
+    {
+      name: 'Area',
+      label: __('Client area'),
+      icon: LucideAppWindow,
+      condition: () => puo('area.invita') || puo('area.messaggi'),
     },
     // the clinical record, for whoever cares for the person: visits and notes,
     // signed and then only added to. Where the plan has no clinic, no tab
