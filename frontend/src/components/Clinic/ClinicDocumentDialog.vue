@@ -185,10 +185,13 @@ const practitionerOptions = computed(() => [
   { label: __('Choose…'), value: '' },
   ...(choices.data?.practitioners || []),
 ])
-const visibilityOptions = [
+const visibilityOptions = computed(() => [
   { label: __('Care team'), value: 'Care team' },
+  ...(choices.data?.discipline
+    ? [{ label: __('My discipline'), value: 'My discipline' }]
+    : []),
   { label: __('Only me'), value: 'Only me' },
-]
+])
 const ready = computed(
   () =>
     form.title.trim() &&

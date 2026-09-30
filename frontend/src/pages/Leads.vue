@@ -12,6 +12,13 @@
         v-if="leadsListView?.customListActions"
         :actions="leadsListView.customListActions"
       />
+      <!-- a practitioner opens the record of somebody not in their care, saying why -->
+      <Button
+        v-if="puo('clinica.fuori_equipe')"
+        :label="__('Out of your care')"
+        iconLeft="lock-open"
+        @click="showOutOfCare = true"
+      />
       <Button
         variant="solid"
         :label="__('Create')"
@@ -20,6 +27,7 @@
       />
     </template>
   </LayoutHeader>
+  <OutOfCareDialog v-if="puo('clinica.fuori_equipe')" v-model="showOutOfCare" />
   <ViewControls
     ref="viewControls"
     v-model="leads"
@@ -75,6 +83,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import LeadsListView from '@/components/ListViews/LeadsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import LeadModal from '@/components/Modals/LeadModal.vue'
+import OutOfCareDialog from '@/components/Clinic/OutOfCareDialog.vue'
 import ViewControls from '@/components/ViewControls.vue'
 import { getMeta } from '@/stores/meta'
 import { usersStore } from '@/stores/users'
@@ -86,12 +95,13 @@ import { ref, computed, reactive, h } from 'vue'
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Lead')
-const { getUser } = usersStore()
+const { getUser, puo } = usersStore()
 const { getLeadStatus } = statusesStore()
 const { on } = useBroadcast()
 
 const leadsListView = ref(null)
 const showLeadModal = ref(false)
+const showOutOfCare = ref(false)
 
 on('trigger_lead_create', (data) => {
   showLeadModal.value = Boolean(data)
