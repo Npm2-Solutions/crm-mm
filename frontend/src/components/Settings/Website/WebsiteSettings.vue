@@ -132,7 +132,7 @@
             <span class="text-p-sm text-ink-gray-5">
               {{
                 __(
-                  'The site answers at the domain root. The CRM stays at /crm either way.',
+                  'The site answers at the domain root. DottorCloud stays at /crm either way.',
                 )
               }}
             </span>
@@ -375,7 +375,7 @@
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Visits and form submissions already feed the CRM’s own lead attribution. These are the extra platform tags.',
+              'Visits and form submissions already feed DottorCloud’s own lead attribution. These are the extra platform tags.',
             )
           }}
         </p>

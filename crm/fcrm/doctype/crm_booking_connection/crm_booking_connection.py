@@ -99,7 +99,7 @@ class CRMBookingConnection(Document):
 			target = {"Service": row.service, "Staff": row.staff, "Resource": row.resource}.get(row.map_type)
 			if not target:
 				frappe.throw(
-					_("Row {0}: pick what {1} corresponds to in the CRM").format(row.idx, row.external_id)
+					_("Row {0}: pick what {1} corresponds to in DottorCloud").format(row.idx, row.external_id)
 				)
 
 	def validate_field_map(self):

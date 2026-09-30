@@ -23,7 +23,7 @@
         <span class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'The app on developers.facebook.com this CRM connects through. Once it is saved, anyone who manages the CRM can connect their account.',
+              'The app on developers.facebook.com DottorCloud connects through. Once it is saved, anyone who manages DottorCloud can connect their account.',
             )
           }}
         </span>
@@ -63,7 +63,7 @@
       <FeatherIcon name="info" class="mt-0.5 size-4 shrink-0" />
       {{
         __(
-          'Meta is not set up on this CRM yet. An administrator has to add it before an account can be connected.',
+          'Meta is not set up on DottorCloud yet. An administrator has to add it before an account can be connected.',
         )
       }}
     </div>
@@ -182,7 +182,7 @@
       class="flex flex-col gap-2 rounded-lg border border-outline-red-1 bg-surface-red-1 p-4"
     >
       <div class="text-p-base-medium text-ink-red-8">
-        {{ __('Facebook did not grant everything this CRM needs') }}
+        {{ __('Facebook did not grant everything DottorCloud needs') }}
       </div>
       <div class="text-p-sm text-ink-gray-6">
         {{
@@ -218,7 +218,7 @@
           <span class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'Give Facebook access once, then decide here which Pages send their leads to the CRM.',
+                'Give Facebook access once, then decide here which Pages send their leads to DottorCloud.',
               )
             }}
           </span>
@@ -263,7 +263,7 @@
             class="flex items-center justify-between px-2 pb-1 text-p-xs text-ink-gray-5"
           >
             <span>{{ __('Page') }}</span>
-            <span>{{ __('Leads to the CRM') }}</span>
+            <span>{{ __('Leads to DottorCloud') }}</span>
           </div>
           <div
             v-for="page in pages"
@@ -310,7 +310,7 @@
         <span v-if="hidden" class="text-p-sm text-ink-gray-5">
           {{
             __(
-              '{0} Page(s) are not shown: Facebook did not give the CRM the advertising role on them, so their leads cannot be read. Grant them again to use them.',
+              '{0} Page(s) are not shown: Facebook did not give DottorCloud the advertising role on them, so their leads cannot be read. Grant them again to use them.',
               [hidden],
             )
           }}
@@ -338,12 +338,12 @@
 
       <div v-else class="flex flex-col gap-1 text-p-sm">
         <span class="text-ink-red-8">
-          {{ __('Facebook granted the CRM no Page.') }}
+          {{ __('Facebook granted DottorCloud no Page.') }}
         </span>
         <span class="text-ink-gray-5">
           {{
             __(
-              'The login worked but no Page came with it. Press "Add Pages from Facebook" and tick the Pages you administer — granting them all is fine, you choose here which ones the CRM actually uses.',
+              'The login worked but no Page came with it. Press "Add Pages from Facebook" and tick the Pages you administer — granting them all is fine, you choose here which ones DottorCloud actually uses.',
             )
           }}
         </span>
@@ -472,7 +472,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'The CRM stops importing leads from every Page, unsubscribes them from Facebook and forgets their tokens. The Social Planner cannot publish either until you connect again.',
+              'DottorCloud stops importing leads from every Page, unsubscribes them from Facebook and forgets their tokens. The Social Planner cannot publish either until you connect again.',
             )
           }}
         </p>

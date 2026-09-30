@@ -243,7 +243,7 @@ def remove_crm_roles_from_user(user: str):
 		remove_roles(doc, "System Manager")
 		doc.save(ignore_permissions=True)
 	utenti.togli_dal_crm(user)
-	frappe.msgprint(_("User {0} has been removed from CRM roles.").format(user))
+	frappe.msgprint(_("User {0} has been removed from DottorCloud roles.").format(user))
 
 
 def remove_roles(self, *roles):

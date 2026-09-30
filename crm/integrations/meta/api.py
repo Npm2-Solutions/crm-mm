@@ -284,7 +284,7 @@ def no_token_message(page_id: str | None) -> str:
 	granted = frappe.db.get_value("Facebook Page", page_id, "granted") if page_id else None
 	if granted == 0:
 		return _(
-			"Facebook did not include this Page in the last connection, so the CRM has no token "
+			"Facebook did not include this Page in the last connection, so DottorCloud has no token "
 			'for it. Press "Reconnect" and tick this Page in the dialog. If it is not offered '
 			"there, it belongs to somebody else's Business portfolio: its owner has to give you "
 			"a role on the Page first."
@@ -499,7 +499,7 @@ def save_form_mapping(form_id: str, mapping: dict | str) -> None:
 	for question in form.questions:
 		target = (mapping.get(question.key) or "").strip()
 		if target and target not in valid_fields:
-			frappe.throw(_("Invalid CRM field: {0}").format(target))
+			frappe.throw(_("Invalid DottorCloud field: {0}").format(target))
 		question.mapped_to_crm_field = target
 	form.save(ignore_permissions=True)
 

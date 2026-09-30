@@ -510,8 +510,8 @@ msgid "Add your first comment"
 msgstr "Birinchi izohingizni qo'shing"
 
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:11
-msgid "Add, edit, and manage email templates for various CRM communications"
-msgstr "Turli CRM aloqalari uchun elektron pochta shablonlarini qo'shish, tahrirlash va boshqarish"
+msgid "Add, edit, and manage email templates for the messages DottorCloud sends"
+msgstr ""
 
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:12
 msgid "Add, edit, and manage sources for automatic lead syncing to your CRM"
@@ -1669,8 +1669,8 @@ msgid "Configure actions that appear on the home dropdown"
 msgstr "Bosh sahifa ochiluvchi menyusida ko'rsatiladigan amallarni sozlash"
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:10
-msgid "Configure default settings for your CRM system, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
-msgstr "Tizimingiz bo'ylab izchillikni ta'minlash uchun CRM tizimingiz uchun standart sozlamalarni, jumladan, standart valyuta, sana formatlari va boshqa tizim miqyosidagi sozlamalarni sozlang."
+msgid "Configure default settings for DottorCloud, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
+msgstr ""
 
 #: frontend/src/components/Settings/GeneralSettings.vue:8
 msgid "Configure general settings for your application"
@@ -1852,7 +1852,7 @@ msgid "Copied to Clipboard"
 msgstr "Buferga nusxalandi"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create the CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
+msgid "Could not create DottorCloud's custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
 msgstr ""
 
 #: frontend/src/components/Settings/Hierarchy/useRemoveNode.js:16
@@ -2659,8 +2659,8 @@ msgid "ERPNext custom fields not created"
 msgstr ""
 
 #: crm/fcrm/doctype/crm_product/crm_product.py:42
-msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear in CRM Product automatically."
-msgstr "ERPNext integratsiyasi faol. ERPNext da element yarating, shunda u avtomatik ravishda CRM mahsulotida paydo bo'ladi."
+msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear among DottorCloud's products automatically."
+msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:220
 msgid "ERPNext integration must be enabled on the same site"
@@ -2677,8 +2677,8 @@ msgid "ERPNext is not installed on this site either install it or enter the URL 
 msgstr "ERPNext bu saytda o'rnatilmagan, uni o'rnating yoki ulanish uchun ERPNext saytingizning URL manzilini kiriting"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:27
-msgid "ERPNext is not integrated with the CRM"
-msgstr "ERPNext CRM bilan integratsiyalanmagan"
+msgid "ERPNext is not integrated with DottorCloud"
+msgstr ""
 
 #: frontend/src/components/Activities/CommentArea.vue:94
 #: frontend/src/components/FieldLayout/Field.vue:110
@@ -2895,8 +2895,8 @@ msgid "Enable"
 msgstr "Yoqish"
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:112
-msgid "Enable Exotel integration to make and receive calls directly from your CRM"
-msgstr "CRM tizimingizdan to'g'ridan-to'g'ri qo'ng'iroqlarni amalga oshirish va qabul qilish uchun Exotel integratsiyasini yoqing"
+msgid "Enable Exotel integration to make and receive calls directly from DottorCloud"
+msgstr ""
 
 #. Label of the enable_forecasting (Check) field in DocType 'FCRM Settings'
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
@@ -2922,8 +2922,8 @@ msgid "Enable Sales Hierarchy Permissions"
 msgstr "Savdo ierarxiyasi ruxsatnomalarini yoqish"
 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:119
-msgid "Enable Twilio integration to make and receive calls directly from your CRM"
-msgstr "CRM tizimingizdan to'g'ridan-to'g'ri qo'ng'iroqlarni amalga oshirish va qabul qilish uchun Twilio integratsiyasini yoqing"
+msgid "Enable Twilio integration to make and receive calls directly from DottorCloud"
+msgstr ""
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:90
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:97
@@ -4688,8 +4688,8 @@ msgid "Manage your account emails and email signature for communication."
 msgstr "Aloqa uchun hisob qaydnomangiz elektron pochta xabarlarini va elektron pochta imzosini boshqaring."
 
 #: frontend/src/components/Settings/EmailAccountList.vue:11
-msgid "Manage your email accounts to send and receive emails directly from CRM. You can add multiple accounts and set one as default for incoming and outgoing emails."
-msgstr "Elektron pochta hisoblaringizni CRM orqali to'g'ridan-to'g'ri yuborish va qabul qilish uchun boshqaring. Siz bir nechta hisoblarni qo'shishingiz va kiruvchi va chiquvchi elektron pochtalar uchun bittasini standart sifatida o'rnatishingiz mumkin."
+msgid "Manage your email accounts to send and receive emails directly from DottorCloud. You can add multiple accounts and set one as default for incoming and outgoing emails."
+msgstr ""
 
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:36
 msgid "Manage your email signature"
@@ -7999,8 +7999,8 @@ msgid "User {0} has been removed"
 msgstr "{0} foydalanuvchisi olib tashlandi"
 
 #: crm/api/user.py:158
-msgid "User {0} has been removed from CRM roles."
-msgstr "{0} foydalanuvchisi CRM rollaridan olib tashlandi."
+msgid "User {0} has been removed from DottorCloud roles."
+msgstr ""
 
 #: crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.py:43
 msgid "User {0} is already mapped to hierarchy node {1}."
@@ -8230,8 +8230,8 @@ msgid "You are not allowed to invite System Managers"
 msgstr "Sizga tizim menejerlarini taklif qilish huquqi berilmagan"
 
 #: crm/api/session.py:11
-msgid "You are not permitted to access CRM resources."
-msgstr "Sizga CRM resurslariga kirishga ruxsat berilmaydi."
+msgid "You are not permitted to access DottorCloud."
+msgstr ""
 
 #: crm/utils/__init__.py:133
 msgid "You are not permitted to access this resource."

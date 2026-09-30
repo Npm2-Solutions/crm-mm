@@ -510,8 +510,8 @@ msgid "Add your first comment"
 msgstr "Tilføj din første kommentar"
 
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:11
-msgid "Add, edit, and manage email templates for various CRM communications"
-msgstr "Tilføj, rediger og administrer e-mail-skabeloner til forskellige CRM-kommunikationer"
+msgid "Add, edit, and manage email templates for the messages DottorCloud sends"
+msgstr ""
 
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:12
 msgid "Add, edit, and manage sources for automatic lead syncing to your CRM"
@@ -1669,8 +1669,8 @@ msgid "Configure actions that appear on the home dropdown"
 msgstr "Konfigurer handlinger, der vises på startmenuen"
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:10
-msgid "Configure default settings for your CRM system, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
-msgstr "Konfigurer standardindstillinger for dit CRM-system, herunder standardvaluta, datoformater og andre systempræferencer, for at sikre ensartethed på tværs af systemet."
+msgid "Configure default settings for DottorCloud, including default currency, date formats, and other system-wide preferences to ensure consistency across your system."
+msgstr ""
 
 #: frontend/src/components/Settings/GeneralSettings.vue:8
 msgid "Configure general settings for your application"
@@ -1852,7 +1852,7 @@ msgid "Copied to Clipboard"
 msgstr "Kopieret til udklipsholder"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create the CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
+msgid "Could not create DottorCloud's custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
 msgstr ""
 
 #: frontend/src/components/Settings/Hierarchy/useRemoveNode.js:16
@@ -2659,8 +2659,8 @@ msgid "ERPNext custom fields not created"
 msgstr ""
 
 #: crm/fcrm/doctype/crm_product/crm_product.py:42
-msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear in CRM Product automatically."
-msgstr "ERPNext-integrationen er aktiv. Opret et element i ERPNext, og det vises automatisk i CRM-produktet."
+msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear among DottorCloud's products automatically."
+msgstr ""
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:220
 msgid "ERPNext integration must be enabled on the same site"
@@ -2677,8 +2677,8 @@ msgid "ERPNext is not installed on this site either install it or enter the URL 
 msgstr "ERPNext er ikke installeret på dette websted. Installer det heller ikke, eller indtast URL'en til dit ERPNext-websted for at oprette forbindelse."
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:27
-msgid "ERPNext is not integrated with the CRM"
-msgstr "ERPNext er ikke integreret med CRM'et"
+msgid "ERPNext is not integrated with DottorCloud"
+msgstr ""
 
 #: frontend/src/components/Activities/CommentArea.vue:94
 #: frontend/src/components/FieldLayout/Field.vue:110
@@ -2895,8 +2895,8 @@ msgid "Enable"
 msgstr "Aktivér"
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:112
-msgid "Enable Exotel integration to make and receive calls directly from your CRM"
-msgstr "Aktivér Exotel-integration for at foretage og modtage opkald direkte fra dit CRM"
+msgid "Enable Exotel integration to make and receive calls directly from DottorCloud"
+msgstr ""
 
 #. Label of the enable_forecasting (Check) field in DocType 'FCRM Settings'
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
@@ -2922,8 +2922,8 @@ msgid "Enable Sales Hierarchy Permissions"
 msgstr "Aktivér tilladelser for salgshierarki"
 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:119
-msgid "Enable Twilio integration to make and receive calls directly from your CRM"
-msgstr "Aktivér Twilio-integration for at foretage og modtage opkald direkte fra dit CRM"
+msgid "Enable Twilio integration to make and receive calls directly from DottorCloud"
+msgstr ""
 
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:90
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:97
@@ -4688,8 +4688,8 @@ msgid "Manage your account emails and email signature for communication."
 msgstr "Administrer dine konto-e-mails og din e-mailsignatur til kommunikation."
 
 #: frontend/src/components/Settings/EmailAccountList.vue:11
-msgid "Manage your email accounts to send and receive emails directly from CRM. You can add multiple accounts and set one as default for incoming and outgoing emails."
-msgstr "Administrer dine e-mailkonti for at sende og modtage e-mails direkte fra CRM. Du kan tilføje flere konti og indstille én som standard til indgående og udgående e-mails."
+msgid "Manage your email accounts to send and receive emails directly from DottorCloud. You can add multiple accounts and set one as default for incoming and outgoing emails."
+msgstr ""
 
 #: frontend/src/components/Settings/Profile/UserEmailSettings.vue:36
 msgid "Manage your email signature"
@@ -7999,8 +7999,8 @@ msgid "User {0} has been removed"
 msgstr "Bruger {0} er blevet fjernet"
 
 #: crm/api/user.py:158
-msgid "User {0} has been removed from CRM roles."
-msgstr "Bruger {0} er blevet fjernet fra CRM-roller."
+msgid "User {0} has been removed from DottorCloud roles."
+msgstr ""
 
 #: crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.py:43
 msgid "User {0} is already mapped to hierarchy node {1}."
@@ -8230,8 +8230,8 @@ msgid "You are not allowed to invite System Managers"
 msgstr "Du har ikke tilladelse til at invitere systemadministratorer"
 
 #: crm/api/session.py:11
-msgid "You are not permitted to access CRM resources."
-msgstr "Du har ikke adgang til CRM-ressourcer."
+msgid "You are not permitted to access DottorCloud."
+msgstr ""
 
 #: crm/utils/__init__.py:133
 msgid "You are not permitted to access this resource."

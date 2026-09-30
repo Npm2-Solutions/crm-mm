@@ -32,7 +32,7 @@ def _log_and_throw(message: str, title: str | None = None):
 def _get_enabled_settings():
 	settings = frappe.get_single("ERPNext CRM Settings")
 	if not settings.enabled:
-		frappe.throw(_("ERPNext is not integrated with the CRM"))
+		frappe.throw(_("ERPNext is not integrated with DottorCloud"))
 	return settings
 
 
@@ -163,7 +163,7 @@ class ERPNextCRMSettings(Document):
 			)
 			frappe.msgprint(
 				_(
-					"Could not create the CRM custom fields on {0} automatically. "
+					"Could not create DottorCloud's custom fields on {0} automatically. "
 					"If it is running the latest ERPNext, enable the CRM data synchronization "
 					"in its CRM Settings, otherwise check the Error Log."
 				).format(self.erpnext_site_url),

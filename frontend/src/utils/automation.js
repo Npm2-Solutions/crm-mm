@@ -55,7 +55,7 @@ export const STEP_CATALOG = {
     icon: 'bell',
     theme: 'blue',
     category: 'communication',
-    description: 'Notifies the owner and the assignees inside the CRM.',
+    description: 'Notifies the owner and the assignees inside DottorCloud.',
     defaults: { message: '' },
     gateable: true,
   },
@@ -304,7 +304,7 @@ export const TRIGGER_CATALOG = {
     category: 'lead',
     icon: 'clipboard-check',
     doctype: 'CRM Lead',
-    hint: 'A lead ad form is filled in — by a new person or by one the CRM already knows.',
+    hint: 'A lead ad form is filled in — by a new person or by one DottorCloud already knows.',
   },
   'Lead Status Changed': {
     category: 'lead',
@@ -357,7 +357,7 @@ export const TRIGGER_CATALOG = {
   'Email Opened': {
     category: 'messaging',
     icon: 'mail',
-    hint: 'Read tracking on an email sent by the CRM.',
+    hint: 'Read tracking on an email sent by DottorCloud.',
   },
   'Trigger Link Clicked': {
     category: 'messaging',

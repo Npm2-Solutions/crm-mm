@@ -72,7 +72,7 @@ GRAPH = {
 	),
 	368: lambda: _(
 		"The account is temporarily blocked for a policy violation. Meta lifts it by itself, "
-		"and nothing in the CRM can shorten it — check the app's Alerts in the Meta dashboard "
+		"and nothing in DottorCloud can shorten it — check the app's Alerts in the Meta dashboard "
 		"for what triggered it."
 	),
 	463: lambda: _("The token has simply expired. Reconnect the Meta account."),

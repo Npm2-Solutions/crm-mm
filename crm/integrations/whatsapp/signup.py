@@ -519,7 +519,7 @@ def claim_route(waba_id: str, phone_number_id: str, display_number: str | None, 
 		frappe.throw(
 			_(
 				"This WhatsApp account is already connected to {0}, and this request came from "
-				"{1}. If those are the same CRM under two addresses, remove the Meta WhatsApp "
+				"{1}. If those are the same site under two addresses, remove the Meta WhatsApp "
 				"Route for {2} on the hub and connect again."
 			).format(current, site, waba_id)
 		)
@@ -591,7 +591,7 @@ def deliver_to_site(site: str, token: str, waba_id: str, phone_number_id: str, n
 			raise ValueError(f"HTTP {response.status_code}: {response.text[:200]}")
 	except Exception as exc:
 		frappe.log_error(frappe.get_traceback(), f"WhatsApp: handing the connection to {site} failed")
-		frappe.throw(_("Could not hand the connection to your CRM: {0}").format(str(exc)[:200]))
+		frappe.throw(_("Could not hand the connection to DottorCloud: {0}").format(str(exc)[:200]))
 
 
 __all__ = [

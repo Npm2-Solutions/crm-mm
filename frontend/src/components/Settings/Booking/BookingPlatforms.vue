@@ -347,7 +347,7 @@
             class="flex items-center gap-2 text-sm text-ink-gray-7"
           >
             <Switch v-model="form.push_blocks" size="sm" />
-            {{ __('Block CRM appointments on the platform') }}
+            {{ __('Block DottorCloud appointments on the platform') }}
           </label>
           <label
             v-if="info.capabilities.includes('cancel')"
@@ -368,7 +368,7 @@
               <span class="text-p-sm text-ink-gray-5">
                 {{
                   __(
-                    'Which CRM service and professional each platform service and staff member is. Unmapped services use the default; same-named services match on their own.',
+                    'Which DottorCloud service and professional each platform service and staff member is. Unmapped services use the default; same-named services match on their own.',
                   )
                 }}
               </span>
@@ -410,7 +410,7 @@
               <Link
                 :doctype="TARGET[row.map_type].doctype"
                 :modelValue="row[TARGET[row.map_type].field]"
-                :placeholder="__('In the CRM')"
+                :placeholder="__('In DottorCloud')"
                 @update:modelValue="
                   (v) => (row[TARGET[row.map_type].field] = v)
                 "
@@ -851,7 +851,7 @@ async function loadCatalog() {
       })
       added++
     }
-    toast.success(__('{0} items added: pick their CRM match', [added]))
+    toast.success(__('{0} items added: pick their DottorCloud match', [added]))
   } catch (error) {
     toast.error(error.messages?.[0] || __('Could not read the platform'))
   }

@@ -61,7 +61,7 @@
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'An agenda is a practitioner with at least one appointment in the month, even one who never opens the CRM. Rooms, equipment, front desk and managers do not count.',
+              'An agenda is a practitioner with at least one appointment in the month, even one who never opens DottorCloud. Rooms, equipment, front desk and managers do not count.',
             )
           }}
         </p>

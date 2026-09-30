@@ -69,8 +69,8 @@ const caption = computed(() => {
   if (!props.whatsapp) return props.unread ? '' : __('Read')
   if (!props.receipts) {
     return props.unread
-      ? __('They get no blue ticks from this CRM')
-      : __('Read · they get no blue ticks from this CRM')
+      ? __('They get no blue ticks from DottorCloud')
+      : __('Read · they get no blue ticks from DottorCloud')
   }
   return props.unread
     ? __('They see the blue ticks when you reply or mark it read')

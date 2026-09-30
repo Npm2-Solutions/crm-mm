@@ -1124,7 +1124,7 @@ def notify_staff(appointment, subject: str) -> None:
 		frappe.sendmail(
 			recipients=emails,
 			subject=f"[{appointment.name}] {subject}: {appointment.title or appointment.service}",
-			message=_("{0} on {1}. Open the CRM calendar for details.").format(
+			message=_("{0} on {1}. Open the DottorCloud calendar for details.").format(
 				frappe.utils.escape_html(appointment.title or appointment.service),
 				start.strftime("%d/%m/%Y %H:%M"),
 			),

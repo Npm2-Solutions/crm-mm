@@ -408,12 +408,12 @@ def archive_from_message(
 	messaggio.check_permission("read")
 	lead = paziente.persona_di(messaggio.reference_doctype, messaggio.reference_name)
 	if not lead:
-		frappe.throw(_("This conversation is not with a person of the CRM"))
+		frappe.throw(_("This conversation is not with a person in DottorCloud"))
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	campi = _campi(title, document_type, document_date, source, practitioner, visibility, notes, not_online)
 	originale = _file_del_messaggio(messaggio)
 	if not originale or originale.is_remote_file:
-		frappe.throw(_("This message has no file kept by the CRM"))
+		frappe.throw(_("This message has no file kept by DottorCloud"))
 	# a file received is private first, so the archive's copy shares it, private
 	if messaggio.type == "Incoming" and not cint(originale.is_private):
 		_rendi_privato(originale, messaggio)

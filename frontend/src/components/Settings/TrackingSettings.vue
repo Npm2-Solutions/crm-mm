@@ -14,7 +14,7 @@
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Record where every lead came from — the campaign, the pages they read, the links they clicked — on your own sites as well as inside the CRM.',
+              'Record where every lead came from — the campaign, the pages they read, the links they clicked — on your own sites as well as inside DottorCloud.',
             )
           }}
         </p>

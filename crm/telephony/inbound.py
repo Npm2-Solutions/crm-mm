@@ -39,7 +39,7 @@ def handle_incoming_call(
 		# a carrier whose flow is built in its own dashboard has nothing to be told;
 		# reaching here means a webhook was wired to the wrong provider
 		raise ProviderNotSupported(
-			_("{0} does not let the CRM decide what an incoming call hears.").format(provider.label)
+			_("{0} does not let DottorCloud decide what an incoming call hears.").format(provider.label)
 		)
 
 	config = answering.settings()

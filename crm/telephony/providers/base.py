@@ -107,7 +107,7 @@ class TelephonyProvider(ABC):
 
 	def say(self, announcement: Announcement, hang_up: bool = True) -> CallInstruction:
 		raise ProviderNotSupported(
-			_("{0} does not let the CRM control what a call hears.").format(self.label)
+			_("{0} does not let DottorCloud control what a call hears.").format(self.label)
 		)
 
 	def dial_phone(self, caller_id: str, to_number: str) -> CallInstruction:

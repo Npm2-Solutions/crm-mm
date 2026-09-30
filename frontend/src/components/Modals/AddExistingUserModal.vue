@@ -10,7 +10,7 @@
         <p class="text-p-sm">
           {{
             __(
-              'Add existing system users to this CRM, with the levels they will have. They sign in with their current credentials.',
+              'Add existing system users to DottorCloud, with the levels they will have. They sign in with their current credentials.',
             )
           }}
         </p>

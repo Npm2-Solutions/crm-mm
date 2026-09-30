@@ -14,8 +14,8 @@ export default {
   'Send it again': 'Mandalo di nuovo',
   'This area is for the patients of the centre.':
     'Quest’area è per i pazienti del centro.',
-  'Your work is in the CRM.': 'Il tuo lavoro è nel CRM.',
-  'Open the CRM': 'Apri il CRM',
+  'Your work is in DottorCloud.': 'Il tuo lavoro è in DottorCloud.',
+  'Open DottorCloud': 'Apri DottorCloud',
   Home: 'Inizio',
   Appointments: 'Appuntamenti',
   Documents: 'Documenti',

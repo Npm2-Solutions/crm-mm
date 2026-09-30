@@ -121,7 +121,7 @@ class CRMInvoice(Document):
 				"CRM Invoicing Company", {"is_default": 1, "enabled": 1}, "name"
 			) or frappe.db.get_single_value("CRM Invoicing Settings", "default_company")
 		if not self.company:
-			frappe.throw(_("No issuing company: create a CRM Invoicing Company first"))
+			frappe.throw(_("No issuing company: set it up in Settings > Invoicing > Issuing company first"))
 
 	def applica_predefiniti(self):
 		"""Fill what was left empty. An empty value here means 'not chosen yet'."""

@@ -447,7 +447,7 @@ def _notify_agent(booking, subject: str):
 	frappe.sendmail(
 		recipients=[agent_email],
 		subject=f"[{booking.name}] {subject}",
-		message=_("{0} ({1}) — status: {2}. Open the CRM for details.").format(
+		message=_("{0} ({1}) — status: {2}. Open DottorCloud for details.").format(
 			booking.invitee_name, booking.invitee_email, _(booking.status)
 		),
 		reference_doctype="CRM Booking",

@@ -514,7 +514,7 @@ def _add_block(conn_name, user, ref, appointment, doc):
 	)
 	try:
 		row.external_block_id = provider.block_time(
-			ref, from_system_naive(doc.starts_on), from_system_naive(doc.ends_on), _("Busy (CRM)")
+			ref, from_system_naive(doc.starts_on), from_system_naive(doc.ends_on), _("Busy (DottorCloud)")
 		)
 		row.status = "Active"
 	except Exception as exc:
