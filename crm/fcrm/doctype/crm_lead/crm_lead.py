@@ -148,12 +148,6 @@ class CRMLead(Document):
 		website: DF.Data | None
 	# end: auto-generated types
 
-	def before_insert(self):
-		# apply CRM enrichment (source/contact) when created via a web form
-		from crm.api.form import enrich_form_submission
-
-		enrich_form_submission(self)
-
 	def _validate_links(self):
 		"""Make the company real before Frappe checks that it is.
 

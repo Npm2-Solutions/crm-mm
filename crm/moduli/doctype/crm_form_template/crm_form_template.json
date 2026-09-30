@@ -18,6 +18,13 @@
   "column_asking",
   "validity",
   "send_before",
+  "site_section",
+  "route",
+  "button_label",
+  "success_message",
+  "column_site",
+  "success_url",
+  "allowed_embedding_domains",
   "draft_section",
   "schema",
   "published_section",
@@ -40,7 +47,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Use",
-   "description": "A form the person fills, or a sheet the operator writes during an appointment. With the health data mark, a sheet is a clinical sheet in the clinical record."
+   "description": "A form the person fills, a sheet the operator writes during an appointment, or a form on the website that finds or makes the person. With the health data mark, a sheet is a clinical sheet in the clinical record."
   },
   {
    "fieldname": "column_main",
@@ -111,6 +118,48 @@
    "label": "Send the link when an appointment is booked"
   },
   {
+   "collapsible": 0,
+   "depends_on": "eval:doc.use=='Website'",
+   "fieldname": "site_section",
+   "fieldtype": "Section Break",
+   "label": "On the website"
+  },
+  {
+   "description": "The form's page is /crm-form/ followed by this: lowercase letters, numbers and dashes",
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Address",
+   "search_index": 1
+  },
+  {
+   "description": "The words on the button that sends the form",
+   "fieldname": "button_label",
+   "fieldtype": "Data",
+   "label": "Button"
+  },
+  {
+   "description": "What the person reads once the form is sent",
+   "fieldname": "success_message",
+   "fieldtype": "Small Text",
+   "label": "Thank you message"
+  },
+  {
+   "fieldname": "column_site",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "A page to go to once the form is sent, instead of the thank you message",
+   "fieldname": "success_url",
+   "fieldtype": "Data",
+   "label": "Then go to"
+  },
+  {
+   "description": "The sites the form may be embedded in, one per line: example.com, *.example.com",
+   "fieldname": "allowed_embedding_domains",
+   "fieldtype": "Small Text",
+   "label": "Embedded in"
+  },
+  {
    "fieldname": "draft_section",
    "fieldtype": "Section Break",
    "label": "Draft"
@@ -152,7 +201,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-08 12:00:00.000000",
+ "modified": "2026-10-09 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Form Template",

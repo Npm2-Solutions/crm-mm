@@ -170,7 +170,7 @@ def persona_per_conto(chi: str, nome: str, relazione: str = legami.ALTRO, fonte:
 	"""
 	trovata = cerca_per_conto(chi, nome)
 	if not trovata:
-		from crm.api.form import _default_status
+		from crm.api.lead import default_status
 
 		nome_proprio, cognome = legami.dividi(nome)
 		persona = frappe.get_doc(
@@ -178,7 +178,7 @@ def persona_per_conto(chi: str, nome: str, relazione: str = legami.ALTRO, fonte:
 				"doctype": "CRM Lead",
 				"first_name": nome_proprio,
 				"last_name": cognome,
-				"status": _default_status("CRM Lead"),
+				"status": default_status("CRM Lead"),
 				"source": fonte,
 			}
 		)
@@ -315,7 +315,7 @@ def _per_scrivere(lead: str) -> None:
 
 
 def _nuova_persona(nome: str | None, cognome: str | None) -> str:
-	from crm.api.form import _default_status
+	from crm.api.lead import default_status
 
 	if not (nome or "").strip():
 		frappe.throw(_("Pick a person, or write the first name of a new one"))
@@ -324,7 +324,7 @@ def _nuova_persona(nome: str | None, cognome: str | None) -> str:
 			"doctype": "CRM Lead",
 			"first_name": nome.strip(),
 			"last_name": (cognome or "").strip(),
-			"status": _default_status("CRM Lead"),
+			"status": default_status("CRM Lead"),
 			# whoever makes a person from the page owns them, as the new-person form does
 			"lead_owner": frappe.session.user,
 		}

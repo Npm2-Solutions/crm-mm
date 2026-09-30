@@ -51,6 +51,8 @@ CANALE_DEL_REGISTRO = {
 	"Tablet": "At the desk",
 	"Link": "Web form",
 	"On paper": "On paper",
+	# a form on the centre's website (`crm.moduli.sito`)
+	"Website": "Web form",
 }
 #: A PNG a finger draws is a few kilobytes: anything this big is not one.
 MAX_FIRMA = 400 * 1024
@@ -142,6 +144,8 @@ def riconoscimento(doc) -> str:
 		)
 	if doc.get("provider") and doc.get("provider_status") == "Signed":
 		return _("By {0}, the signature provider, with its own identification").format(doc.provider)
+	if doc.channel == "Website":
+		return _("On the centre's website, by whoever filled it in: the contact they left was not checked")
 	if doc.filled_by:
 		return _("At the desk, with {0}").format(get_fullname(doc.filled_by))
 	return _("At the desk")
@@ -545,10 +549,12 @@ def _chiudi(
 	ignora_permessi: bool = False,
 	dettagli: dict | None = None,
 	fai_il_pdf: Callable | None = None,
+	evento: str = "signed",
 ) -> None:
 	"""How every signature ends, however it was given: the form closed on the
 	answers it was signed on, its register, its request, its PDF, its consents.
-	``fai_il_pdf`` is for a PDF that is not ours to make (a provider's)."""
+	``fai_il_pdf`` is for a PDF that is not ours to make (a provider's), or not
+	now; ``evento`` for a form nobody signs (one sent from the website)."""
 	doc.answers = json.dumps(risposte_firmate, ensure_ascii=False)
 	doc.alerts = json.dumps(stato["stops"], ensure_ascii=False)
 	doc.answers_hash = impronta
@@ -561,7 +567,7 @@ def _chiudi(
 	traccia.traccia(
 		MODULO,
 		doc.name,
-		"signed",
+		evento,
 		", ".join(riga["signer_name"] or "" for riga in righe),
 		{
 			"answers_hash": impronta,

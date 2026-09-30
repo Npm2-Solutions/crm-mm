@@ -14,6 +14,17 @@ DEAL_FIELDS = [
 ]
 
 
+def default_status(document_type: str = "CRM Lead") -> str | None:
+	"""The status a new person or deal starts in: the one the controllers would
+	pick, for the records made where nobody chooses (a booking, a form, a webhook)."""
+	status_dt = "CRM Lead Status" if document_type == "CRM Lead" else "CRM Deal Status"
+	preferred = "New" if document_type == "CRM Lead" else "Qualification"
+	if frappe.db.exists(status_dt, preferred):
+		return preferred
+	rows = frappe.get_all(status_dt, {"type": "Open"}, pluck="name")
+	return rows[0] if rows else None
+
+
 def find_person(email: str | None = None, phone: str | None = None) -> str | None:
 	"""The person behind an email address or a phone number — deal or no deal.
 

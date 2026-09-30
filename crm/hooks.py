@@ -399,7 +399,6 @@ doc_events = {
 		],
 		"after_insert": [
 			"crm.api.tracking.bind_visitor",
-			"crm.api.form.open_deal_for_web_submission",
 			"crm.automation.engine.on_lead_created",
 			"crm.integrations.meta.conversions.on_lead_created",
 		],
@@ -686,7 +685,6 @@ after_migrate = [
 	"crm.api.whatsapp.add_roles",
 	"crm.domain_enrichment.install.seed_default_rules_and_mappings",
 	"crm.install.add_default_scripts",
-	"crm.install.add_web_form_custom_fields",
 	"crm.install.add_builder_page_custom_fields",
 	# the kinds of consent the modules registered, never overwriting the centre's text
 	"crm.moduli.consensi.assicura_tipi",
