@@ -63,4 +63,5 @@ export default {
   'Your appointments': 'I tuoi appuntamenti',
   'Documents online': 'Documenti online',
   'See all': 'Vedi tutti',
+  Messages: 'Messaggi',
 }

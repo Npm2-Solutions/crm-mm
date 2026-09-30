@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-10-01 14:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "kind",
+  "column_main",
+  "author",
+  "posted_on",
+  "read_on",
+  "read_by",
+  "message_section",
+  "body",
+  "practitioner",
+  "visibility",
+  "obscured",
+  "discipline"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "read_only": 1,
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "default": "Administrative",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Administrative\nCare",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "author",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "posted_on",
+   "fieldtype": "Datetime",
+   "label": "Posted on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "read_on",
+   "fieldtype": "Datetime",
+   "label": "Read on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "read_by",
+   "fieldtype": "Link",
+   "label": "Read by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "message_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "body",
+   "fieldtype": "Small Text",
+   "label": "Message",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Practitioner",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "Care team",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Who reads it",
+   "options": "Care team\nMy discipline\nOnly me",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Obscured",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discipline",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Discipline",
+   "options": "CRM Professional Qualification",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Message",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lead_name",
+ "track_changes": 1,
+ "in_create": 1,
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Medical Director"
+  }
+ ]
+}

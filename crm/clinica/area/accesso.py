@@ -214,6 +214,11 @@ def revoke(lead: str, user: str) -> dict:
 	return {"accesses": accessi(lead)}
 
 
+def accessi_aperti(lead: str) -> list[dict]:
+	"""Who enters this person's area now."""
+	return frappe.get_all(ACCESSO, filters={"lead": lead, "enabled": 1}, fields=["user", "relation"])
+
+
 def accessi(lead: str) -> list[dict]:
 	return frappe.get_all(
 		ACCESSO,
