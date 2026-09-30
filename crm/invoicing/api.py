@@ -14,12 +14,16 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import getdate
+from frappe.utils import flt, getdate
 
 from crm.invoicing import anagrafica, connessione, documento, estensioni
 from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
+
+# a cycle of sessions paid as a whole (`crm.scheduling.cicli`): one invoice for it,
+# none for its sessions. Named, not imported, like the appointment it comes from.
+CICLO_INTERO = "The whole cycle"
 
 
 def _fattura(name: str):
@@ -256,6 +260,11 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 	"""
 	incontro = frappe.get_doc("CRM Appointment", appointment)
 	incontro.check_permission("read")
+	if (
+		incontro.get("session_cycle")
+		and frappe.db.get_value("CRM Session Cycle", incontro.session_cycle, "billing") == CICLO_INTERO
+	):
+		frappe.throw(_("This session is paid with its cycle: invoice the cycle"))
 
 	if not billable_service and incontro.service:
 		billable_service = frappe.db.get_value(
@@ -299,6 +308,66 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 			"service_provider": service_provider,
 			"qty": 1,
 			"rate": incontro.unit_price or 0,
+		},
+	)
+	fattura.insert()
+	return fattura.name
+
+
+@frappe.whitelist(methods=["POST"])
+def issue_from_cycle(cycle: str, billable_service: str = "", service_provider: str = "") -> str:
+	"""Open a draft invoice for a cycle of sessions paid as a whole: one line, the
+	cycle's service, at the cycle's price, over the cycle's days.
+
+	The same proposals as from an appointment: the fiscal card of the cycle's
+	service, the provider of whoever follows it, the person as the client - or
+	whoever pays for them.
+	"""
+	frappe.has_permission("CRM Invoice", "create", throw=True)
+	ciclo = frappe.get_doc("CRM Session Cycle", cycle)
+	ciclo.check_permission("read")
+	if ciclo.billing != CICLO_INTERO or not flt(ciclo.price):
+		frappe.throw(_("This cycle is invoiced session by session"))
+	gia = frappe.db.get_value("CRM Invoice", {"session_cycle": cycle, "docstatus": ("<", 2)}, "name")
+	if gia:
+		frappe.throw(_("This cycle is invoiced already: {0}").format(gia))
+	if not billable_service:
+		billable_service = frappe.db.get_value(
+			"CRM Billable Service", {"crm_service": ciclo.service, "enabled": 1}, "name"
+		)
+	if not billable_service:
+		frappe.throw(_("No fiscal card for this cycle's service: a service without a card is not billable"))
+	if not service_provider and ciclo.practitioner:
+		service_provider = frappe.db.get_value(
+			"CRM Service Provider", {"user": ciclo.practitioner, "enabled": 1}, "name"
+		)
+	if not service_provider:
+		service_provider = frappe.db.get_value("CRM Billable Service", billable_service, "default_provider")
+	if not service_provider:
+		frappe.throw(
+			_(
+				"No provider for this cycle: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+			)
+		)
+
+	fattura = frappe.new_doc("CRM Invoice")
+	fattura.session_cycle = cycle
+	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
+	fattura.party_type = "CRM Lead"
+	fattura.party = ciclo.lead
+	if not anagrafica.pagante_della_fattura(fattura):
+		fattura.billing_name = ciclo.lead_name
+	servizio = frappe.db.get_value("CRM Billable Service", billable_service, "fiscal_description")
+	fattura.append(
+		"items",
+		{
+			"billable_service": billable_service,
+			"service_provider": service_provider,
+			"description": _("{0}: cycle of {1} sessions").format(servizio or ciclo.service, ciclo.sessions),
+			"qty": 1,
+			"rate": flt(ciclo.price),
+			"period_from": ciclo.starts_on,
+			"period_to": ciclo.valid_until,
 		},
 	)
 	fattura.insert()
@@ -698,14 +767,20 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 			fields=["appointment"],
 		)
 	}
+	# a session of a cycle paid as a whole is invoiced with its cycle
+	interi = set(frappe.get_all("CRM Session Cycle", filters={"billing": CICLO_INTERO}, pluck="name"))
 	incontri = frappe.get_all(
 		"CRM Appointment",
 		filters={
 			"starts_on": ["between", [da, frappe.utils.now_datetime()]],
 			"status": ["not in", ("Cancelled", "No Show")],
 		},
-		fields=["name", "title", "starts_on", "service", "unit_price", "status"],
+		fields=["name", "title", "starts_on", "service", "unit_price", "status", "session_cycle"],
 		order_by="starts_on desc",
 		limit_page_length=int(limit),
 	)
-	return [dict(i) for i in incontri if i.name not in fatturati]
+	return [
+		dict(i)
+		for i in incontri
+		if i.name not in fatturati and not (i.session_cycle and i.session_cycle in interi)
+	]

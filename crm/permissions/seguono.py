@@ -115,6 +115,55 @@ def has_appointment_permission(doc, ptype: str | None = None, user: str | None =
 	return _riga_visibile(doc, APPUNTAMENTO, appointment_conditions(user))
 
 
+# ------------------------------------------------------------------ cycles of sessions
+
+CICLO = "CRM Session Cycle"
+
+
+def cycle_conditions(user: str | None = None):
+	"""The cycles of sessions ``user`` reads: those of the appointments they read,
+	and the ones they follow or sold; ``None`` all of them."""
+	user = user or frappe.session.user
+	if not livelli.nel_crm(user):
+		return None
+	ambito = livelli.ambito("agenda.vedi", user)
+	if ambito == livelli.CENTRO:
+		return None
+	C = frappe.qb.DocType(CICLO)
+	if ambito is None:
+		return C.name.isnull()
+	A = frappe.qb.DocType(APPUNTAMENTO).as_("_cycle_appt")
+	suoi = (
+		(C.practitioner == user)
+		| (C.owner == user)
+		| C.name.isin(
+			frappe.qb.from_(A)
+			.select(A.session_cycle)
+			.where(A.session_cycle.isnotnull())
+			.where(_dello_staff(A, user))
+		)
+	)
+	if ambito == livelli.SUOI:
+		return suoi
+	visibili = oh.visible_leads(user)
+	return None if visibili is None else suoi | C.lead.isin(visibili)
+
+
+def get_cycle_permission_query_conditions(user: str | None = None) -> str:
+	return _sql(cycle_conditions(user))
+
+
+def has_cycle_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	user = user or frappe.session.user
+	ptype = ptype or "read"
+	if livelli.nel_crm(user) and ptype in ("create", "write", "delete"):
+		if not livelli.puo("agenda.cicli", user):
+			return False
+	if ptype == "create":
+		return True
+	return _riga_visibile(doc, CICLO, cycle_conditions(user))
+
+
 # ---------------------------------------------------------------- the messages
 
 

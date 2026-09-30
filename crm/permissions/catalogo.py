@@ -297,6 +297,13 @@ CAPACITA = (
 	_c(
 		"agenda.turni", segreteria=CENTRO, operatore=SUOI, manager=CENTRO, descrizione="Rota, holidays, rooms"
 	),
+	_c(
+		"agenda.cicli",
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		descrizione="Cycles of sessions: sell, follow, close",
+	),
 	_c("agenda.configura", manager=CENTRO, descrizione="Services, price lists, studio hours and rules"),
 	_c("prenotazione_online.configura", manager=CENTRO),
 	_c("piattaforme.configura", manager=CENTRO, descrizione="MioDottore, Treatwell and the others"),
