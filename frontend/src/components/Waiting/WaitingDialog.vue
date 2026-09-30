@@ -416,41 +416,46 @@ function edit() {
   editing.value = true
 }
 
-watch(show, async (open) => {
-  if (!open) return
-  error.value = ''
-  busy.value = ''
-  places.value = null
-  if (!props.name) {
-    fill({})
+watch(
+  show,
+  async (open) => {
+    if (!open) return
+    error.value = ''
+    busy.value = ''
+    places.value = null
+    if (!props.name) {
+      fill({})
+      loading.value = true
+      try {
+        // the channels this centre offers, for the choice below
+        const entries = await call('crm.scheduling.attese.get_entries', {
+          lead: props.lead,
+        })
+        entry.channels = entries.channels
+      } catch {
+        entry.channels = ['Email']
+      } finally {
+        loading.value = false
+      }
+      Object.assign(form, empty())
+      const services = meta.data?.services || []
+      if (services.length === 1) form.service = services[0].name
+      editing.value = true
+      return
+    }
+    editing.value = false
     loading.value = true
     try {
-      // the channels this centre offers, for the choice below
-      const entries = await call('crm.scheduling.attese.get_entries', {
-        lead: props.lead,
-      })
-      entry.channels = entries.channels
-    } catch {
-      entry.channels = ['Email']
+      fill(await call('crm.scheduling.attese.get_entry', { name: props.name }))
+    } catch (e) {
+      error.value = e.messages?.[0] || __('Could not open the entry')
     } finally {
       loading.value = false
     }
-    Object.assign(form, empty())
-    const services = meta.data?.services || []
-    if (services.length === 1) form.service = services[0].name
-    editing.value = true
-    return
-  }
-  editing.value = false
-  loading.value = true
-  try {
-    fill(await call('crm.scheduling.attese.get_entry', { name: props.name }))
-  } catch (e) {
-    error.value = e.messages?.[0] || __('Could not open the entry')
-  } finally {
-    loading.value = false
-  }
-})
+    // the list page mounts it open: it loads the first time too
+  },
+  { immediate: true },
+)
 
 // --- words --------------------------------------------------------------------
 
