@@ -94,6 +94,8 @@ website_route_rules = [
 	{"from_route": "/modulo/<token>", "to_route": "modulo"},
 	# a report put online, opened with the code the centre gave: /referto/<link>
 	{"from_route": "/referto/<token>", "to_route": "referto"},
+	# the patient area: one page, its own app routes inside
+	{"from_route": "/area/<path:app_path>", "to_route": "area"},
 ]
 
 # Generators
