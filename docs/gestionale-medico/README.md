@@ -1148,6 +1148,55 @@ cartella, dove la clinica c'è.
 - **Un ciclo sbagliato** si cancella finché nessuna seduta è usata e non è
   fatturato; i suoi appuntamenti restano in agenda, al prezzo del listino.
 
+### I piani di cura (odontoiatria)
+
+Fatti il 30/09/2026 (`crm/clinica/cure.py`, le regole pure in `cure_regole.py`): i
+"piani di cura (odontoiatria)" della fase 3, con l'odontogramma e i preventivi della
+domanda 2. Stanno nella clinica: i denti di una persona sono dati sanitari.
+
+- **L'odontogramma** (`Clinic Dental Chart`, uno per persona), nella scheda
+  Clinica, riquadro "Teeth and care plans":
+  - i denti in notazione FDI, come li vede il dentista: l'arcata superiore sopra,
+    la destra del paziente a sinistra; permanenti, decidui o la dentatura mista;
+  - su ogni dente le sue condizioni, una riga ciascuna: carie e otturazioni sulle
+    loro superfici (M, O, D, V, L; "dom" diventa "MOD"), devitalizzato, corona,
+    impianto, mancante, da estrarre, e le altre. Un dente mancante non ha
+    nient'altro;
+  - lo scrive il dentista (`cure.scrivi` e la qualifica di odontoiatra o di medico);
+    lo legge come la cartella chi l'ha cominciato, e i colleghi con il dossier. Le
+    sue modifiche restano nella sua storia, e ogni apertura va nel registro degli
+    accessi.
+- **Il piano di cura è prima un preventivo** (`Clinic Care Plan`): il dentista
+  scrive le prestazioni, ognuna un servizio dell'agenda, magari su un dente e le sue
+  superfici, divise in fasi (prima la conservativa, poi l'implantologia). Il prezzo
+  viene dal listino e si cambia; lo sconto è per prestazione. La bozza è sua.
+- **Proposto, non si riscrive**:
+  - il preventivo si fa in PDF, con le fasi, le prestazioni, lo sconto, il totale,
+    fino a quando vale (60 giorni se non si dice) e le righe per firmarlo per
+    accettazione;
+  - il deal della persona nella pipeline "Preventivi" va a "Preventivo consegnato"
+    con il valore del piano; se non c'è, si apre;
+  - da qui lo legge anche la segreteria (`cure.preventivi`, e il manager), che
+    registra la risposta: accettato, e come ("firmato al banco"), o rifiutato, e
+    perché. Il deal è vinto o perso con quel motivo;
+  - il dentista può riprenderlo per cambiarlo finché la persona non ha risposto:
+    torna bozza, e il PDF consegnato non è più il suo.
+- **Accettato, si fa prestazione per prestazione**:
+  - un appuntamento del servizio di una prestazione, per la persona, prende la prima
+    ancora da fare, nell'ordine delle fasi, al prezzo del preventivo (la fattura
+    dell'appuntamento viene giusta da sola). Gli appuntamenti già prenotati la
+    prendono quando il piano è accettato;
+  - la persona è venuta: la prestazione è fatta. Una disdetta, un'assenza o un
+    appuntamento cancellato la rimettono da fare;
+  - il dentista segna a mano quello che è andato diversamente (fatta, da fare,
+    annullata). Tutte fatte o annullate, il piano è completato; si può chiudere a
+    metà.
+- **Una nuova versione** parte da un piano come bozza con le sue prestazioni: dopo un
+  rifiuto, o per cambiarlo.
+- **Nell'area**, alla voce "Piani", la persona vede i piani proposti e quelli in
+  corso: le prestazioni con il dente, quelle fatte, quando è prenotata la prossima,
+  il totale e quanto è fatto.
+
 ### L'assistente: le fondamenta e il modulo di carta
 
 Fatti il 30/09/2026 (fase 4, la prima parte), in `crm/assistente`: un modulo del

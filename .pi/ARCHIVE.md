@@ -2014,3 +2014,26 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Nell'area niente prezzo, niente note, niente fattura | Sono del centro; la persona vuole sapere a che punto è |
 | Una serie di numeri sua (`CYCLE-.#####`) | Con `format:CYCLE-{#####}` il contatore è quello di tutti i `format:` senza prefisso, e i cicli partivano da 2073 |
 | Le schede dell'area hanno il fondo `surface-elevation-1` | `bg-surface-white` non genera CSS in questa versione di frappe-ui: le schede restavano trasparenti sul grigio |
+
+## Fase 3, i piani di cura (odontoiatria)
+
+> **Completato** (30/09/2026). `crm/clinica/cure_regole.py` (puro), `crm/clinica/cure.py`,
+> `Clinic Dental Chart` con `Clinic Tooth State`, `Clinic Care Plan` con
+> `Clinic Care Plan Item`, le capacità `cure.scrivi` e `cure.preventivi`, il preventivo
+> `templates/preventivo.html`, la cucitura con la pipeline "Preventivi",
+> `DentalCard.vue`, `DentalChart.vue`, `CarePlanDialog.vue` nel CRM, `CarePlanCard.vue`
+> nell'area. `docs/gestionale-medico/README.md`, "I piani di cura (odontoiatria)".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Nella clinica, e l'odontogramma si legge come la cartella | I denti di una persona sono dati sanitari: stesse regole, stesso registro degli accessi |
+| La notazione FDI, le superfici M O D V L | È quella che scrivono i dentisti italiani; "dom" diventa "MOD" da solo |
+| Un odontogramma per persona, con la sua storia | È lo stato di oggi della bocca: le versioni dicono com'era, senza un secondo documento per visita |
+| Il piano è un preventivo prima, e proposto non si riscrive | Quello consegnato e firmato deve restare quello; per cambiarlo si riprende come bozza o si fa una nuova versione |
+| Le prestazioni sono servizi dell'agenda, a un prezzo del listino che si cambia | L'appuntamento della prestazione si prenota e si fattura come gli altri, al prezzo pattuito |
+| L'appuntamento prende da solo la prima prestazione da fare del suo servizio | Nessuno deve collegarli a mano; chi è venuto la fa fatta, una disdetta la rimette da fare |
+| La segreteria legge i preventivi proposti, non le bozze né l'odontogramma | Li consegna e ne registra la risposta; il resto è del dentista |
+| Il preventivo muove la pipeline "Preventivi" | Consegnato, accettato o rifiutato è quello che la fase 1 aveva messo sul tabellone |
+| Nell'area il piano con i prezzi | È il preventivo della persona: cosa costa e cosa è fatto è suo |
