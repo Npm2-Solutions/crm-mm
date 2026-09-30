@@ -140,6 +140,8 @@ import CalendarSettings from '@/components/Settings/CalendarSettings.vue'
 import HomeActions from '@/components/Settings/HomeActions.vue'
 import FormsSettings from '@/components/Settings/Forms/FormsSettings.vue'
 import AssistantSettings from '@/components/Settings/AssistantSettings.vue'
+import SealSettings from '@/components/Settings/SealSettings.vue'
+import LucideStamp from '~icons/lucide/stamp'
 import LucideBot from '~icons/lucide/bot'
 import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
 import DashboardSettings from '@/components/Settings/DashboardSettings.vue'
@@ -562,6 +564,14 @@ const tabs = computed(() => {
           icon: ERPNextIcon,
           component: markRaw(ERPNextSettings),
           condition: () => puo('tecnico.erpnext'),
+        },
+        {
+          // the centre's certificate and the time-stamping authority: the agency's
+          label: __('Seal and time stamp'),
+          key: 'Seal and time stamp',
+          icon: markRaw(LucideStamp),
+          component: markRaw(SealSettings),
+          condition: () => puo('tecnico.integrazioni'),
         },
         {
           // documentation support: the register for the manager, the model for the agency
