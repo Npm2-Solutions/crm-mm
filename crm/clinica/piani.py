@@ -179,8 +179,9 @@ def get_plans(lead: str) -> dict:
 		)
 		if puo_leggere(doc)
 	]
-	settimana_fa = add_days(getdate(), -6)
-	andamento = _andamento([d.name for d in documenti if d.status != BOZZA], settimana_fa)
+	# "done this week": from Monday, as the patient's week goes
+	lunedi, _domenica = R.settimana(getdate())
+	andamento = _andamento([d.name for d in documenti if d.status != BOZZA], lunedi)
 	return {
 		"plans": [_riga(doc, andamento.get(doc.name)) for doc in documenti],
 		"kinds": tipi_consentiti(),
