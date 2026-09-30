@@ -1,4 +1,4 @@
-# Online-booking platforms in Italy: integration research for Frappe CRM connectors
+# Online-booking platforms in Italy: integration research for DottorCloud connectors
 
 Research date: 2026-09-24. Legend:
 

@@ -435,8 +435,8 @@ livello della persona la prevede.
 2. **I livelli come Role Profile**, generati dal registro all'installazione e a
    ogni migrazione, senza doppioni. Frappe rifà i ruoli di un utente dai suoi
    profili a ogni salvataggio, quindi o si passa tutto dai livelli o non funziona.
-   Sales User e Sales Manager restano come ruoli interni, perché il codice di
-   Frappe CRM li usa, ma lo schermo non li mostra più.
+   Sales User e Sales Manager restano come ruoli interni, perché il codice
+   venuto dal progetto originale li usa, ma lo schermo non li mostra più.
 3. **Sul server**, un decoratore `@richiede("fatture.emetti")` e una funzione
    `puo(utente, "…")` al posto delle 19 copie di `MANAGER_ROLES`, dei controlli
    scritti a mano e di `only_for`. `check_app_permission` accetta ogni livello del

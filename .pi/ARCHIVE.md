@@ -2060,3 +2060,20 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Due frasi del framework tradotte col nome del prodotto, anche in inglese (`en.po`) | Il tema "Frappe Light" e il benvenuto predefinito si vedono nella scrivania; le traduzioni sopravvivono agli aggiornamenti |
 | Il nome del software non è mai quello del centro (`nome_scelto`) | Prima il nome del sito era "Frappe" e le pagine pubbliche lo scartavano; ora è DottorCloud, e un paziente deve leggere il centro |
 | Restano nomi tecnici: pacchetti (`frappe`), percorsi delle API, un commento e un meta nel sorgente HTML | Non si vedono usando il prodotto; cambiarli vorrebbe dire modificare il framework |
+
+## NPM2 Solutions Srl per l'azienda, DottorCloud per il prodotto
+
+> **Completato** (30/09/2026). Le intestazioni dei file, i metadati delle traduzioni,
+> i testi dell'interfaccia e i documenti nominano l'azienda NPM2 Solutions Srl e il
+> prodotto DottorCloud.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| I 455 file nati dopo la separazione dal progetto originale (29/08/2026) dicono "Copyright NPM2 Solutions Srl" | Li ha scritti NPM2: la riga con l'altro nome la metteva il generatore dei file, prendendola dai metadati dell'app |
+| I file del progetto originale tengono la riga dei loro autori; i 31 che NPM2 ha cambiato ne aggiungono una per le modifiche | La AGPL e la legge sul diritto d'autore chiedono di non togliere gli avvisi di chi ha scritto il codice, e di dire chi l'ha modificato e quando |
+| Quale file è di chi lo dice la storia di git: il percorso non esisteva al commit `37497a073` | I file generati dallo stesso modello si somigliano, e il riconoscimento delle copie di git li scambiava per copie |
+| "Il CRM" nell'interfaccia diventa DottorCloud; "CRM" resta per la categoria e nei nomi tecnici | È il nome del prodotto che il centro compra; "Zoho CRM" o le Impostazioni CRM di ERPNext sono altra cosa |
+| Nelle traduzioni si cambia la frase e si tiene la traduzione solo dove c'era | Il file italiano non è tenuto al passo dal fork: aggiungerne qui e là lo renderebbe più incoerente, non meno |
+| Nei documenti la storia e la licenza restano esatte | "Nato da un CRM open source", le licenze dei componenti: servono a chi deve rispettarle |

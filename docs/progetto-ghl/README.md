@@ -1,6 +1,6 @@
-# Progetto GHL-Parity — Frappe CRM come piattaforma all-in-one
+# Progetto GHL-Parity — DottorCloud come piattaforma all-in-one
 
-> **Obiettivo**: portare questo fork di Frappe CRM (`crm-mm`) alla parità funzionale
+> **Obiettivo**: portare DottorCloud (`crm-mm`, nato da un CRM open source) alla parità funzionale
 > con GoHighLevel — funnel, marketing automation omnicanale, telefonia/SMS/inbox
 > unificata, corsi & membership, calendari di prenotazione, white-label SaaS e
 > reputation management — riusando al massimo l'ecosistema open-source Frappe.
