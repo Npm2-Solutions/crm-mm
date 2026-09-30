@@ -118,6 +118,7 @@ import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import LucideAppWindow from '~icons/lucide/app-window'
 import LucideFolderOpen from '~icons/lucide/folder-open'
+import LucideReceiptText from '~icons/lucide/receipt-text'
 import { usersStore } from '@/stores/users'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
@@ -324,6 +325,16 @@ const tabs = computed(() => {
       icon: LucideFolderOpen,
       condition: () => puo('documenti.vedi') || puo('documenti.aggiungi'),
     },
+    // the person's quotes, and how they are going; with the clinic, the care plans
+    {
+      name: 'Quotes',
+      label: __('Quotes'),
+      icon: LucideReceiptText,
+      condition: () =>
+        puo('preventivi.vedi') ||
+        puo('preventivi.scrivi') ||
+        puo('preventivi.gestisci'),
+    },
     // the person's own area: who enters it, the board the centre writes on,
     // the plans they follow there
     {
@@ -343,10 +354,7 @@ const tabs = computed(() => {
       label: __('Clinic'),
       icon: LucideStethoscope,
       condition: () =>
-        puo('clinica.vedi') ||
-        puo('clinica.scrivi') ||
-        puo('clinica.accessi') ||
-        puo('cure.preventivi'),
+        puo('clinica.vedi') || puo('clinica.scrivi') || puo('clinica.accessi'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))

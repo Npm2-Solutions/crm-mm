@@ -207,13 +207,15 @@ permission_query_conditions = {
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
 	"Clinic Dental Chart": "crm.clinica.cure.get_chart_permission_query_conditions",
-	"Clinic Care Plan": "crm.clinica.cure.get_plan_permission_query_conditions",
 	# plans and programmes: their author, whoever reads the person's plans; with
 	# health data, the dossier
 	"CRM Personal Plan": "crm.piani.api.get_permission_query_conditions",
 	# a person's documents: whom it is for, who added it, who reads their documents;
 	# with health data, the dossier
 	"CRM Document": "crm.documenti.api.get_permission_query_conditions",
+	# quotes: their author; proposed, who reads the person's quotes and who handles
+	# them; with health data, the dossier
+	"CRM Quote": "crm.preventivi.api.get_permission_query_conditions",
 	"CRM Programme": "crm.piani.programmi.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
@@ -246,9 +248,9 @@ has_permission = {
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"CRM Personal Plan": "crm.piani.api.has_permission",
 	"CRM Document": "crm.documenti.api.has_permission",
+	"CRM Quote": "crm.preventivi.api.has_permission",
 	"CRM Programme": "crm.piani.programmi.has_permission",
 	"Clinic Dental Chart": "crm.clinica.cure.has_chart_permission",
-	"Clinic Care Plan": "crm.clinica.cure.has_plan_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"CRM Session Cycle": "crm.permissions.seguono.has_cycle_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
@@ -435,27 +437,27 @@ doc_events = {
 		"on_update": ["crm.automation.engine.on_booking_updated"],
 	},
 	"CRM Appointment": {
-		# a treatment of an accepted care plan: taken, at the price agreed
-		"validate": ["crm.clinica.cure.appuntamento_in_validazione"],
+		# a service of an accepted quote: taken, at the price agreed
+		"validate": ["crm.preventivi.appuntamenti.in_validazione"],
 		"after_insert": [
 			"crm.automation.engine.on_appointment_created",
 			# a booking moves the new patients deal, where the clinic is on
 			"crm.clinica.eventi.appuntamento_creato",
 			# and sends the link to the forms the person owes for it
 			"crm.moduli.dovuti.appuntamento_prenotato",
-			"crm.clinica.cure.appuntamento_creato",
+			"crm.preventivi.appuntamenti.creato",
 		],
 		"on_update": [
 			"crm.automation.engine.on_appointment_updated",
 			"crm.booking_platforms.sync.on_appointment_change",
 			# who came becomes a patient, where the clinic is on
 			"crm.clinica.eventi.appuntamento_aggiornato",
-			# and the treatment of their care plan is done
-			"crm.clinica.cure.appuntamento_aggiornato",
+			# and the service of their quote is done
+			"crm.preventivi.appuntamenti.aggiornato",
 		],
 		"on_trash": [
 			"crm.booking_platforms.sync.on_appointment_change",
-			"crm.clinica.cure.appuntamento_eliminato",
+			"crm.preventivi.appuntamenti.eliminato",
 		],
 	},
 	# the clinic listens to invoicing; invoicing never hears of the clinic
@@ -494,6 +496,10 @@ doc_events = {
 	},
 	"CRM Document": {
 		"validate": ["crm.clinica.documenti.valida"],
+		"after_insert": ["crm.clinica.eventi.sanitario_scritto"],
+		"on_trash": ["crm.clinica.eventi.sanitario_eliminato"],
+	},
+	"CRM Quote": {
 		"after_insert": ["crm.clinica.eventi.sanitario_scritto"],
 		"on_trash": ["crm.clinica.eventi.sanitario_eliminato"],
 	},

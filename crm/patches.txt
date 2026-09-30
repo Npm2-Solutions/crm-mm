@@ -9,6 +9,7 @@ crm.patches.v1_0.create_level_roles #29-09-2026 Marketing, Contact Details
 crm.patches.v1_0.the_client_area_is_the_crms
 crm.patches.v1_0.plans_are_the_crms
 crm.patches.v1_0.documents_are_the_crms
+crm.patches.v1_0.quotes_are_the_crms
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
@@ -79,3 +80,4 @@ crm.patches.v1_0.the_area_settings_are_the_crms
 crm.patches.v1_0.the_brand_is_the_verticals
 crm.patches.v1_0.plans_keep_their_health_data
 crm.patches.v1_0.documents_keep_their_health_data
+crm.patches.v1_0.quotes_keep_their_health_data

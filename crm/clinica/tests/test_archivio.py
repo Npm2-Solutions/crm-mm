@@ -81,10 +81,10 @@ class LAggiunta(ArchivioCase):
 		# the desk sees what it added, not the rest of the archive
 		altro = self.archivia(DOC1)
 		self.assertFalse(self.vede(DESK, altro["name"]))
-		# nor the record
+		# nor the record: the Clinic tab is not the desk's, the care plans are quotes
 		self.come(DESK)
-		visto = cartella.get_record(self.anna.name)
-		self.assertEqual((visto["records"], visto["can_read"]), ([], False))
+		with self.assertRaises(frappe.PermissionError):
+			cartella.get_record(self.anna.name)
 
 	def test_si_archivia_solo_un_file_appena_caricato_da_se(self):
 		di_altri = self.carica(DOC2, contenuto="altro")

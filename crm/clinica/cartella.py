@@ -156,8 +156,8 @@ def _legge() -> bool:
 
 
 def _della_persona(lead: str) -> None:
-	# who opens the Clinic tab: who reads the record, the access log, the quotes
-	if not (_legge() or livelli.puo("clinica.accessi") or livelli.puo("cure.preventivi")):
+	# who opens the Clinic tab: who reads the record, and who reads the access log
+	if not (_legge() or livelli.puo("clinica.accessi")):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 
@@ -173,8 +173,7 @@ def get_record(lead: str) -> dict:
 	"""The clinical record the session may read, newest first. Every read is logged.
 
 	The manager comes here for the access log alone: who opened the record, not
-	what it says; the front desk for the care plans' quotes. They get no record,
-	and nothing is logged for them.
+	what it says. They get no record, and nothing is logged for them.
 	"""
 	_della_persona(lead)
 	legge = _legge()
@@ -296,7 +295,7 @@ APERTO = {
 	"CRM Personal Plan": "plan",
 	"CRM Programme": "programme",
 	"Clinic Dental Chart": "dental chart",
-	"Clinic Care Plan": "care plan",
+	"CRM Quote": "quote",
 	"File": "file",
 }
 
@@ -321,7 +320,8 @@ def access_log(lead: str) -> list[dict]:
 			("CRM Personal Plan", {"clinical": 1}),
 			("CRM Programme", {"clinical": 1}),
 			("Clinic Dental Chart", {}),
-			("Clinic Care Plan", {}),
+			# the quotes a health professional wrote: the care plans
+			("CRM Quote", {"clinical": 1}),
 		)
 	}
 	righe = []

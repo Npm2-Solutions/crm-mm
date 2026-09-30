@@ -1,17 +1,17 @@
 <!--
-  What the person follows now: their programmes, stage by stage, their plans with
-  how today is going on each, and their dental care plans.
+  What the person follows now: their quotes and how they are going, their
+  programmes stage by stage, their plans with how today is going on each.
 -->
 <template>
   <div class="flex flex-col gap-4">
-    <template v-if="carePlans.data?.plans?.length">
+    <template v-if="quotes.data?.quotes?.length">
       <h1 class="text-xl font-semibold text-ink-gray-9">
-        {{ __('Your care plans') }}
+        {{ __('Your quotes') }}
       </h1>
-      <CarePlanCard
-        v-for="plan in carePlans.data.plans"
-        :key="plan.name"
-        :plan="plan"
+      <QuoteCard
+        v-for="quote in quotes.data.quotes"
+        :key="quote.name"
+        :quote="quote"
       />
     </template>
     <template v-if="programmes.data?.programmes?.length">
@@ -55,8 +55,8 @@
 
 <script setup>
 import { createResource } from 'frappe-ui'
-import CarePlanCard from '../components/CarePlanCard.vue'
 import ProgrammeCard from '../components/ProgrammeCard.vue'
+import QuoteCard from '../components/QuoteCard.vue'
 import { area, section } from '../store'
 
 const plans = createResource({
@@ -69,11 +69,11 @@ const programmes = createResource({
   params: { person: area.person },
   auto: true,
 })
-// the clinic's dental care plans, where it has any for the person
-const carePlans = createResource({
-  url: 'crm.clinica.area.piani.area_care_plans',
+// the quotes proposed to the person and going on, where there are any
+const quotes = createResource({
+  url: 'crm.preventivi.area.area_quotes',
   params: { person: area.person },
-  auto: Boolean(section('care_plans')),
+  auto: Boolean(section('quotes')),
 })
 
 // a stage finished opens the next, and its plan comes with it

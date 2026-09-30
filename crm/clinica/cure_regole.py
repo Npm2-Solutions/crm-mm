@@ -13,11 +13,8 @@
 - **The chart** says what each tooth is now, one row per condition: caries and a
   filling on their surfaces, a root canal, a crown, an implant, missing, to extract.
   A missing tooth has nothing else; the rest may go together.
-- **A care plan is a quote first**: treatments, each maybe on a tooth and its
-  surfaces, in phases, with its price and discount. Proposed, it is handed to the
-  person; accepted, its treatments are done one by one - an appointment of a
-  treatment's service takes the first one still to do - and when every one is done
-  or cancelled, the plan is completed. Declined, it stays as it was.
+- **A care plan is a quote** (`crm.preventivi.regole`): its rows may be on a tooth
+  and its surfaces.
 """
 
 from __future__ import annotations
@@ -199,107 +196,17 @@ def valida_stato(righe: list[dict]) -> list[Problema]:
 	return problemi
 
 
-# ------------------------------------------------------------------ the plan
-
-BOZZA, PROPOSTO, ACCETTATO, RIFIUTATO, COMPLETATO, CHIUSO = (
-	"Draft",
-	"Proposed",
-	"Accepted",
-	"Declined",
-	"Completed",
-	"Closed",
-)
-#: From where each state is reached.
-PASSAGGI = {
-	PROPOSTO: {BOZZA},
-	BOZZA: {PROPOSTO},
-	ACCETTATO: {PROPOSTO},
-	RIFIUTATO: {PROPOSTO},
-	COMPLETATO: {ACCETTATO},
-	CHIUSO: {ACCETTATO},
-}
-
-DA_FARE, PRENOTATA, FATTA, ANNULLATA = "To do", "Booked", "Done", "Cancelled"
-MAX_VOCI = 200
+# ------------------------------------------------------------------ on a quote
 
 
-def si_passa(da: str, a: str) -> bool:
-	return da in PASSAGGI.get(a, set())
-
-
-def importo(quantita, prezzo, sconto) -> float:
-	"""A treatment's amount: quantity times price, less the discount, to the cent."""
-	q = float(quantita or 0)
-	p = float(prezzo or 0)
-	s = min(max(float(sconto or 0), 0.0), 100.0)
-	return round(q * p * (100 - s) / 100 + 1e-9, 2)
-
-
-def totali(voci: list[dict]) -> dict[str, float]:
-	"""The plan's sums: before and after the discount, and how much is done and left.
-	A cancelled treatment does not count."""
-	lordo = netto = fatto = 0.0
-	for voce in voci:
-		if voce.get("status") == ANNULLATA:
-			continue
-		lordo += float(voce.get("qty") or 0) * float(voce.get("rate") or 0)
-		valore = importo(voce.get("qty"), voce.get("rate"), voce.get("discount"))
-		netto += valore
-		if voce.get("status") == FATTA:
-			fatto += valore
-	lordo, netto, fatto = round(lordo, 2), round(netto, 2), round(fatto, 2)
-	return {
-		"gross": lordo,
-		"discount": round(lordo - netto, 2),
-		"net": netto,
-		"done": fatto,
-		"left": round(netto - fatto, 2),
-	}
-
-
-def fasi(voci: list[dict]) -> list[tuple[int, list[int]]]:
-	"""The phases in order, each with the positions of its treatments."""
-	gruppi: dict[int, list[int]] = {}
-	for n, voce in enumerate(voci):
-		gruppi.setdefault(max(int(voce.get("phase") or 1), 1), []).append(n)
-	return sorted(gruppi.items())
-
-
-def voce_per(voci: list[dict], servizio: str) -> int | None:
-	"""The treatment an appointment of ``servizio`` takes: the first still to do, in
-	the order of the phases."""
-	for _fase, posizioni in fasi(voci):
-		for n in posizioni:
-			if voci[n].get("service") == servizio and voci[n].get("status", DA_FARE) == DA_FARE:
-				return n
-	return None
-
-
-def completato(voci: list[dict]) -> bool:
-	"""Every treatment done or cancelled, and at least one done."""
-	stati = [voce.get("status", DA_FARE) for voce in voci]
-	return FATTA in stati and all(stato in (FATTA, ANNULLATA) for stato in stati)
-
-
-def valida_piano(voci: list[dict]) -> list[Problema]:
-	"""What is wrong with a plan's treatments before it is proposed."""
+def valida_denti(voci: list[dict]) -> list[Problema]:
+	"""What is wrong with the teeth on a quote's rows: a tooth that is not one,
+	surfaces without a tooth or that are not surfaces."""
 	problemi = []
-	if not voci:
-		return [Problema("A plan has at least one treatment")]
-	if len(voci) > MAX_VOCI:
-		return [Problema("A plan has at most {0} treatments", (MAX_VOCI,))]
 	for n, voce in enumerate(voci, 1):
-		if not voce.get("service"):
-			problemi.append(Problema("Treatment {0}: choose the service", (n,)))
 		dente = voce.get("tooth")
 		if dente and not e_dente(dente):
-			problemi.append(Problema("Treatment {0}: {1} is not a tooth", (n, dente)))
+			problemi.append(Problema("Row {0}: {1} is not a tooth", (n, dente)))
 		if voce.get("surfaces") and (not dente or superfici(voce.get("surfaces")) is None):
-			problemi.append(Problema("Treatment {0}: surfaces go with a tooth, as M, O, D, V, L", (n,)))
-		if float(voce.get("qty") or 0) <= 0:
-			problemi.append(Problema("Treatment {0}: the quantity is more than zero", (n,)))
-		if float(voce.get("rate") or 0) < 0:
-			problemi.append(Problema("Treatment {0}: the price is not negative", (n,)))
-		if not 0 <= float(voce.get("discount") or 0) <= 100:
-			problemi.append(Problema("Treatment {0}: the discount is from 0 to 100%", (n,)))
+			problemi.append(Problema("Row {0}: surfaces go with a tooth, as M, O, D, V, L", (n,)))
 	return problemi

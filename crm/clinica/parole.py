@@ -54,4 +54,8 @@ PAROLE = {
 	"At most {0}. It opens with a code you give the person here.": (
 		"At most {0}. It opens with a code you give the patient here."
 	),
+	# the quotes: "For the person" above heads them too; signed by the patient
+	"Signature of the person, or of who answers for them": (
+		"Signature of the patient, or of who answers for them"
+	),
 }

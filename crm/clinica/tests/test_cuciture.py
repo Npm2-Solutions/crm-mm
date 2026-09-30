@@ -19,6 +19,7 @@ from crm.clinica.tests.test_paziente import ClinicCase
 from crm.dashboard import registry
 from crm.dashboard.context import Context
 from crm.fcrm.doctype.crm_pipeline.crm_pipeline import get_first_stage
+from crm.preventivi import pipeline as preventivi
 
 
 class CucitureCase(ClinicCase):
@@ -47,7 +48,8 @@ class LePipeline(CucitureCase):
 	def test_accesa_la_clinica_nascono_le_due(self):
 		conf = pipeline.impostazioni()
 		self.assertTrue(frappe.db.exists("CRM Pipeline", conf.new_patients_pipeline))
-		self.assertTrue(frappe.db.exists("CRM Pipeline", conf.quotes_pipeline))
+		# the quotes pipeline is the CRM's, made with it
+		self.assertTrue(frappe.db.exists("CRM Pipeline", preventivi.quale()))
 		self.assertEqual(
 			frappe.db.get_value("CRM Deal Status", conf.booked_stage, "pipeline"), conf.new_patients_pipeline
 		)
@@ -65,9 +67,8 @@ class LePipeline(CucitureCase):
 		self.assertEqual(frappe.db.count("CRM Pipeline"), prima)
 
 	def test_le_impostazioni_tengono_insieme_pipeline_e_stadio(self):
-		conf = pipeline.impostazioni()
 		doc = frappe.get_single(pipeline.IMPOSTAZIONI)
-		doc.booked_stage = get_first_stage(conf.quotes_pipeline)
+		doc.booked_stage = get_first_stage(preventivi.quale())
 		with self.assertRaises(frappe.ValidationError):
 			doc.save(ignore_permissions=True)
 
@@ -79,10 +80,9 @@ class LaPrenotazione(CucitureCase):
 		self.assertEqual(self.stato(deal), pipeline.impostazioni().booked_stage)
 
 	def test_una_trattativa_di_un_altra_pipeline_resta_dove_e(self):
-		conf = pipeline.impostazioni()
-		preventivo = self.richiesta(self.mario, get_first_stage(conf.quotes_pipeline))
+		preventivo = self.richiesta(self.mario, get_first_stage(preventivi.quale()))
 		self.appuntamento(self.mario, self.tomorrow(10))
-		self.assertEqual(self.stato(preventivo), get_first_stage(conf.quotes_pipeline))
+		self.assertEqual(self.stato(preventivo), get_first_stage(preventivi.quale()))
 
 	def test_con_la_clinica_spenta_non_sposta(self):
 		deal = self.richiesta(self.mario)

@@ -6,9 +6,7 @@
  "field_order": [
   "pipelines_section",
   "new_patients_pipeline",
-  "booked_stage",
-  "column_break_quotes",
-  "quotes_pipeline"
+  "booked_stage"
  ],
  "fields": [
   {
@@ -29,23 +27,12 @@
    "fieldtype": "Link",
    "label": "Stage after a booking",
    "options": "CRM Deal Status"
-  },
-  {
-   "fieldname": "column_break_quotes",
-   "fieldtype": "Column Break"
-  },
-  {
-   "description": "Costly treatments, from the quote delivered to accepted or declined.",
-   "fieldname": "quotes_pipeline",
-   "fieldtype": "Link",
-   "label": "Quotes pipeline",
-   "options": "CRM Pipeline"
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-30 19:00:00.000000",
+ "modified": "2026-10-06 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Settings",

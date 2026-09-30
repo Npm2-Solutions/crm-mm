@@ -7654,6 +7654,11 @@ msgstr ""
 
 #. Label of the total (Currency) field in DocType 'CRM Deal'
 #. Label of the total (Currency) field in DocType 'CRM Lead'
+#. a row of a dental care plan, on the quote and in the patient area
+#: crm/clinica/cure.py
+msgid "Tooth {0}"
+msgstr "Dente {0}"
+
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 msgid "Total"

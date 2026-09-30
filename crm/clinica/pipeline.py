@@ -11,7 +11,7 @@ A medical centre works with two pipelines (docs/gestionale-medico, "Due pipeline
   (`cost_per_won`), so it says what a new patient costs, with nobody doing
   anything more.
 - **Quotes**: the costly treatments, from the quote delivered to accepted or
-  declined.
+  declined - the CRM's (`crm.preventivi.pipeline`), created here with the other.
 
 A patient who books their own visits has no deal, and that is right: nothing here
 opens one. And only somebody who becomes a patient now closes anything: the
@@ -55,29 +55,6 @@ NUOVI_PAZIENTI = {
 #: Which of the stages above a booking moves a deal to.
 PRENOTATO = 2
 
-PREVENTIVI = {
-	"it": (
-		"Preventivi",
-		"Le cure costose, dal preventivo consegnato ad accettato o rifiutato.",
-		(
-			("Preventivo da fare", "gray", "Open", 10),
-			("Preventivo consegnato", "blue", "Ongoing", 50),
-			("Accettato", "green", "Won", 100),
-			("Rifiutato", "red", "Lost", 0),
-		),
-	),
-	"en": (
-		"Quotes",
-		"Costly treatments, from the quote delivered to accepted or declined.",
-		(
-			("Quote to prepare", "gray", "Open", 10),
-			("Quote delivered", "blue", "Ongoing", 50),
-			("Accepted", "green", "Won", 100),
-			("Declined", "red", "Lost", 0),
-		),
-	),
-}
-
 CHIUSI = ("Won", "Lost")
 
 
@@ -91,7 +68,6 @@ def impostazioni() -> frappe._dict:
 	return frappe._dict(
 		new_patients_pipeline=valori.get("new_patients_pipeline"),
 		booked_stage=valori.get("booked_stage"),
-		quotes_pipeline=valori.get("quotes_pipeline"),
 	)
 
 
@@ -125,7 +101,10 @@ def _crea(definizione: dict) -> tuple[str, list[str] | None]:
 
 
 def crea_pipeline() -> frappe._dict:
-	"""The two pipelines, wherever the settings do not point at one yet. Idempotent."""
+	"""The two pipelines, wherever the settings do not point at one yet: the new
+	patients, and the CRM's quotes. Idempotent."""
+	from crm.preventivi import pipeline as preventivi
+
 	attuali = impostazioni()
 	valori = {}
 	if not (
@@ -135,8 +114,7 @@ def crea_pipeline() -> frappe._dict:
 		valori["new_patients_pipeline"] = nome
 		# a pipeline that was already there: the Manager says which stage it is
 		valori["booked_stage"] = stadi[PRENOTATO] if stadi else None
-	if not (attuali.quotes_pipeline and frappe.db.exists("CRM Pipeline", attuali.quotes_pipeline)):
-		valori["quotes_pipeline"] = _crea(PREVENTIVI)[0]
+	preventivi.crea()
 	if valori:
 		doc = frappe.get_single(IMPOSTAZIONI)
 		doc.update(valori)
@@ -223,71 +201,6 @@ def diventato_paziente(lead: str, regola) -> None:
 	engine.process_event(EVENTO, frappe.get_doc("CRM Lead", lead), {"rule": regola.valore})
 
 
-# ---------------------------------------------------------------- quotes
-
-#: The stage of the quotes pipeline a care plan handed over moves its deal to.
-CONSEGNATO = 2
-ALTRO_MOTIVO = "Other"
-
-
-def _stadio(pipeline: str, posizione: int | None = None, tipo: str | None = None) -> str | None:
-	filtri = {"pipeline": pipeline}
-	if posizione:
-		filtri["position"] = posizione
-	if tipo:
-		filtri["type"] = tipo
-	return frappe.db.get_value("CRM Deal Status", filtri, "name", order_by="position asc")
-
-
-def preventivo_consegnato(lead: str, valore: float, deal: str | None = None) -> str | None:
-	"""A care plan handed to the person: its deal - the one it had, else the person's
-	open one in the quotes pipeline, else a new one - to "quote delivered", worth the
-	quote. None where the centre has no quotes pipeline."""
-	pipeline = impostazioni().quotes_pipeline
-	stadio = _stadio(pipeline, posizione=CONSEGNATO) if pipeline else None
-	if not stadio:
-		return None
-	if not (deal and frappe.db.exists("CRM Deal", deal)):
-		deal = next((riga.name for riga in _aperte(lead, pipeline)), None)
-	if deal:
-		doc = frappe.get_doc("CRM Deal", deal)
-	else:
-		persona = frappe.get_cached_doc("CRM Lead", lead)
-		doc = frappe.new_doc("CRM Deal")
-		doc.lead = lead
-		doc.organization = persona.organization
-		doc.source = persona.source
-		doc.deal_owner = persona.lead_owner
-		if persona.contact:
-			doc.append("contacts", {"contact": persona.contact, "is_primary": 1})
-	doc.status = stadio
-	doc.expected_deal_value = valore
-	# the server moves it, as for an inquiry: nobody to ask a forecast of
-	doc.flags.from_inquiry = True
-	doc.save(ignore_permissions=True)
-	frappe.db.set_value("CRM Lead", lead, "converted", 1, update_modified=False)
-	return doc.name
-
-
-def preventivo_chiuso(
-	deal: str | None, accettato: bool, motivo: str | None = None, note: str | None = None
-) -> None:
-	"""Accepted, the quote's deal is won; declined, lost - with the reason given, or
-	"Other" and the words."""
-	if not (deal and frappe.db.exists("CRM Deal", deal)):
-		return
-	doc = frappe.get_doc("CRM Deal", deal)
-	stadio = _stadio(doc.pipeline, tipo="Won" if accettato else "Lost")
-	if not stadio or doc.status == stadio:
-		return
-	doc.status = stadio
-	if not accettato:
-		doc.lost_reason = motivo if motivo and frappe.db.exists("CRM Lost Reason", motivo) else ALTRO_MOTIVO
-		doc.lost_notes = note or _("Quote declined")
-	doc.flags.from_inquiry = True
-	doc.save(ignore_permissions=True)
-
-
 # ---------------------------------------------------------------- automations
 
 #: The event, and the trigger the automation builder offers: only where the clinic
@@ -313,7 +226,6 @@ def get_settings() -> dict:
 def save_settings(
 	new_patients_pipeline: str | None = None,
 	booked_stage: str | None = None,
-	quotes_pipeline: str | None = None,
 ) -> dict:
 	from crm.permissions import livelli
 
@@ -323,7 +235,6 @@ def save_settings(
 		{
 			"new_patients_pipeline": new_patients_pipeline or None,
 			"booked_stage": booked_stage or None,
-			"quotes_pipeline": quotes_pipeline or None,
 		}
 	)
 	doc.save(ignore_permissions=True)

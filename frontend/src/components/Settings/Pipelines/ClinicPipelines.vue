@@ -1,9 +1,9 @@
 <template>
   <!--
-    The medical centre's two pipelines, where the clinic is on. A booking moves
-    an open deal of the new patients pipeline to the stage chosen here, and
-    becoming a patient wins it: that is what lets the ads report say what a new
-    patient costs.
+    The medical centre's new patients pipeline, where the clinic is on. A booking
+    moves an open deal of it to the stage chosen here, and becoming a patient wins
+    it: that is what lets the ads report say what a new patient costs. The quotes
+    pipeline is the CRM's (QuotesPipeline).
   -->
   <div
     v-if="settings.data?.clinic_on"
@@ -23,12 +23,12 @@
     </div>
     <div v-if="missing">
       <Button
-        :label="__('Create the two pipelines')"
+        :label="__('Create the new patients pipeline')"
         :loading="busy"
         @click="create"
       />
     </div>
-    <div class="grid grid-cols-3 gap-4 max-md:grid-cols-1">
+    <div class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
       <FormControl
         v-model="form.new_patients_pipeline"
         type="select"
@@ -42,12 +42,6 @@
         :label="__('Stage after a booking')"
         :options="stageOptions"
         :disabled="!form.new_patients_pipeline"
-      />
-      <FormControl
-        v-model="form.quotes_pipeline"
-        type="select"
-        :label="__('Quotes')"
-        :options="pipelineOptions"
       />
     </div>
     <ErrorMessage :message="error" />
@@ -83,7 +77,7 @@ const settings = createResource({
   auto: puo('pipeline.configura'),
 })
 
-const FIELDS = ['new_patients_pipeline', 'booked_stage', 'quotes_pipeline']
+const FIELDS = ['new_patients_pipeline', 'booked_stage']
 const form = reactive(Object.fromEntries(FIELDS.map((field) => [field, ''])))
 const busy = ref(false)
 const error = ref('')
@@ -94,10 +88,7 @@ watch(
   { immediate: true },
 )
 
-const missing = computed(
-  () =>
-    !settings.data?.new_patients_pipeline || !settings.data?.quotes_pipeline,
-)
+const missing = computed(() => !settings.data?.new_patients_pipeline)
 const changed = computed(() =>
   FIELDS.some((field) => (settings.data?.[field] || '') !== form[field]),
 )

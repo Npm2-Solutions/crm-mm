@@ -1,7 +1,6 @@
 <!--
-  The teeth and the care plans: the odontogram the dentists write, and the plans
-  proposed as quotes - in draft for their dentist, then for the desk that records
-  them accepted or declined, then done treatment by treatment.
+  The teeth: the odontogram the dentists write. A care plan is a quote with a tooth
+  on its rows: on the Quotes tab, with the others (crm.preventivi).
 -->
 <template>
   <section
@@ -10,7 +9,7 @@
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h3 class="text-base-semibold text-ink-gray-8">
-        {{ __('Teeth and care plans') }}
+        {{ __('Teeth') }}
       </h3>
       <div class="flex shrink-0 flex-wrap items-center gap-2">
         <template v-if="editing">
@@ -29,12 +28,6 @@
               dental.data.chart ? __('Edit the chart') : __('Start the chart')
             "
             @click="startEditing"
-          />
-          <Button
-            v-if="dental.data.is_dentist"
-            icon-left="plus"
-            :label="__('New care plan')"
-            @click="openPlan(null)"
           />
         </template>
       </div>
@@ -154,56 +147,17 @@
       <ErrorMessage :message="error" />
     </template>
 
-    <!-- the care plans: quotes first -->
-    <div v-if="dental.data.plans.length" class="flex flex-col">
-      <button
-        v-for="plan in dental.data.plans"
-        :key="plan.name"
-        type="button"
-        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
-        @click="openPlan(plan.name)"
-      >
-        <span class="flex min-w-0 flex-col">
-          <span class="truncate text-base text-ink-gray-8">{{
-            plan.title
-          }}</span>
-          <span class="text-p-sm text-ink-gray-5">
-            {{ money(plan.total_net, plan.currency) }} ·
-            {{ __('{0} of {1} done', [plan.done, plan.treatments]) }} ·
-            {{ plan.practitioner_name }}
-          </span>
-        </span>
-        <Badge
-          class="shrink-0"
-          variant="subtle"
-          :theme="STATO_PIANO[plan.status] || 'gray'"
-          :label="__(plan.status)"
-        />
-      </button>
-    </div>
-    <p
-      v-else-if="!dental.data.chart && !editing"
-      class="text-p-sm text-ink-gray-5"
-    >
+    <p v-if="!dental.data.chart && !editing" class="text-p-sm text-ink-gray-5">
       {{
         __(
-          'No chart and no care plan yet. The chart says what each tooth is; a care plan is a quote first, then its treatments.',
+          'No chart yet. The chart says what each tooth is; a care plan is a quote, on the Quotes tab.',
         )
       }}
     </p>
-
-    <CarePlanDialog
-      v-model="dialog.show"
-      :lead="lead"
-      :name="dialog.name"
-      :price-lists="dental.data.price_lists"
-      @changed="dental.reload()"
-    />
   </section>
 </template>
 
 <script setup>
-import CarePlanDialog from '@/components/Clinic/CarePlanDialog.vue'
 import DentalChart from '@/components/Clinic/DentalChart.vue'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
@@ -212,15 +166,12 @@ import {
   DECIDUA,
   MISTA,
   PERMANENTE,
-  STATO_PIANO,
   delDente,
   segno,
   suSuperfici,
   tono,
 } from '@/utils/cure'
-import { appLocale } from '@/utils/locale'
 import {
-  Badge,
   Button,
   Dropdown,
   ErrorMessage,
@@ -245,20 +196,14 @@ const dental = createResource({
 watch(
   () => props.lead,
   (lead) => {
-    if (
-      lead &&
-      (puo('cure.scrivi') || puo('cure.preventivi') || puo('clinica.vedi'))
-    )
-      dental.reload()
+    if (lead && (puo('cure.scrivi') || puo('clinica.vedi'))) dental.reload()
   },
   { immediate: true },
 )
 
-// a card only where there is something, or a dentist to write it
+// a card only where there is a chart, or a dentist to write it
 const shown = computed(
-  () =>
-    dental.data &&
-    (dental.data.is_dentist || dental.data.chart || dental.data.plans.length),
+  () => dental.data && (dental.data.is_dentist || dental.data.chart),
 )
 
 const canWriteChart = computed(
@@ -267,13 +212,6 @@ const canWriteChart = computed(
     !dental.data.chart?.hidden &&
     (!dental.data.chart || dental.data.chart.can_write),
 )
-
-function money(amount, currency) {
-  return new Intl.NumberFormat(appLocale(), {
-    style: 'currency',
-    currency: currency || 'EUR',
-  }).format(amount || 0)
-}
 
 // --- the chart -----------------------------------------------------------------
 
@@ -354,13 +292,5 @@ async function saveChart() {
   } finally {
     saving.value = false
   }
-}
-
-// --- the plans -------------------------------------------------------------------
-
-const dialog = reactive({ show: false, name: null })
-
-function openPlan(name) {
-  Object.assign(dialog, { show: true, name })
 }
 </script>
