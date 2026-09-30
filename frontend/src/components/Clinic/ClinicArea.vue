@@ -81,6 +81,11 @@
     />
 
     <!-- the person's own window on the centre, /area -->
+    <!-- a diet, a training, exercises at home: followed in the area -->
+    <ClinicPlans
+      v-if="record.data?.can_read || record.data?.can_plan"
+      :lead="lead"
+    />
     <AreaAccessCard v-if="record.data?.can_invite" :lead="lead" />
     <AreaMessagesCard v-if="record.data?.can_message" :lead="lead" />
 
@@ -401,6 +406,7 @@
 
 <script setup>
 import AreaAccessCard from '@/components/Clinic/AreaAccessCard.vue'
+import ClinicPlans from '@/components/Clinic/ClinicPlans.vue'
 import AreaMessagesCard from '@/components/Clinic/AreaMessagesCard.vue'
 import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
@@ -599,7 +605,9 @@ function openedWhat(row) {
       ? __('Opened the record')
       : row.kind === 'archive'
         ? __('Opened the archive')
-        : __('Downloaded a file')
+        : row.kind === 'plan'
+          ? __('Opened a plan')
+          : __('Downloaded a file')
   return row.count > 1 ? __('{0} · {1} entries', [what, row.count]) : what
 }
 
