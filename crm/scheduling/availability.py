@@ -753,12 +753,13 @@ class SlotFinder:
 			# two days of windows: a late slot may run past midnight, and only a
 			# slot that *starts* today belongs to today
 			day_start, day_end = day_bounds(day, self.tz)
+			# a service with no hours of its own is open whenever its staff work
+			# (its windows are the whole day); one with hours only on some days is
+			# closed on the others, not open all day
 			service_windows = service_hours.for_span(day, 2, self.tz)
 			free_by_user = {}
 			for user in self.eligible:
-				windows = staff_hours[user].for_span(day, 2, self.tz)
-				if service_windows:
-					windows = iv.intersect(windows, service_windows)
+				windows = iv.intersect(staff_hours[user].for_span(day, 2, self.tz), service_windows)
 				free_by_user[user] = iv.subtract(windows, busy[user])
 
 			candidates = iv.slots_in(

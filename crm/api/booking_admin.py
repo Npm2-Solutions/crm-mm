@@ -396,7 +396,8 @@ def explain_slot(service: str, start: str, online: int | str = 1) -> dict:
 				reasons.append(
 					_reason("STAFF_OFFLINE", _("Not bookable online (working hours → booking page)"), "rota")
 				)
-		if service_windows and not iv.covers(service_windows, start_utc, end_utc):
+		# a holiday says why on its own, below
+		if day not in holidays_service and not iv.covers(service_windows, start_utc, end_utc):
 			reasons.append(
 				_reason("SERVICE_HOURS", _("Outside the hours this service can be delivered"), "service")
 			)
