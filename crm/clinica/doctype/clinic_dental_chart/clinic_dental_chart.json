@@ -1,0 +1,152 @@
+{
+ "actions": [],
+ "creation": "2026-10-05 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "dentition",
+  "column_main",
+  "updated_on",
+  "updated_by",
+  "teeth_section",
+  "teeth",
+  "notes",
+  "dossier_section",
+  "practitioner",
+  "visibility",
+  "obscured",
+  "discipline"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "default": "Permanent",
+   "fieldname": "dentition",
+   "fieldtype": "Select",
+   "label": "Dentition",
+   "options": "Permanent\nMixed\nDeciduous"
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "updated_on",
+   "fieldtype": "Datetime",
+   "label": "Updated on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "updated_by",
+   "fieldtype": "Link",
+   "label": "Updated by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "teeth_section",
+   "fieldtype": "Section Break",
+   "label": "Teeth"
+  },
+  {
+   "fieldname": "teeth",
+   "fieldtype": "Table",
+   "label": "Teeth",
+   "options": "Clinic Tooth State"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "dossier_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Practitioner",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "Care team",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Who reads it",
+   "options": "Care team\nMy discipline\nOnly me",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Obscured",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discipline",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Discipline",
+   "options": "CRM Professional Qualification",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-05 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Dental Chart",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Practitioner",
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Medical Director"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "description": "What each tooth of the person is now: the odontogram, written by the dentists",
+ "autoname": "hash",
+ "naming_rule": "Random",
+ "title_field": "lead_name",
+ "track_changes": 1,
+ "track_views": 1
+}
