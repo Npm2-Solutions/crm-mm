@@ -188,6 +188,17 @@ class LAmministrazione(ChatCase):
 		with self.assertRaises(frappe.ValidationError):
 			chat.pass_on(self.carla.name, "A che ora aprite?")
 
+	def test_senza_l_assistente_nel_piano_non_c_e_chat(self):
+		frappe.set_user("Administrator")
+		piano = frappe.get_single("CRM Plan")
+		piano.set("modules", [{"module": "clinica", "status": "Active"}])
+		piano.save()
+		livelli.dimentica_cache()
+		self.entra(CARLA)
+		self.assertFalse(api.get_me()["chat"])
+		with self.assertRaises(frappe.ValidationError):
+			self.chiede("A che ora aprite?")
+
 	def test_niente_chat_nelle_aree_altrui(self):
 		self.entra(CARLA)
 		with self.assertRaises(frappe.PermissionError):
