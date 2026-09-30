@@ -26,6 +26,7 @@ import frappe
 from frappe import _
 from frappe.utils import format_datetime, formatdate, get_fullname, get_system_timezone, getdate
 
+from crm import marchio
 from crm.moduli import compilazioni, sigillo, traccia
 from crm.moduli import schema as S
 
@@ -330,7 +331,9 @@ def da_firmare(doc) -> bytes:
 
 	versione = frappe.get_doc("CRM Form Template Version", doc.template_version)
 	reso = rendi(doc, versione, da_firmare=True)
-	return pdfa.converti(reso, titolo=doc.title or doc.name, data_documento=getdate()).dati
+	return pdfa.converti(
+		reso, titolo=doc.title or doc.name, data_documento=getdate(), produttore=marchio.nome()
+	).dati
 
 
 def allega_dal_fornitore(doc, firmato: bytes, prove: bytes | None, fornitore: str) -> dict:
@@ -413,6 +416,7 @@ def genera_e_allega(doc) -> dict:
 		data_documento=getdate(doc.signed_on),
 		allegato_xml=originale,
 		relazione_allegato="Source",
+		produttore=marchio.nome(),
 	)
 	# the centre's seal, if the agency installed one: before the fingerprint, so
 	# the fingerprint is the kept file's

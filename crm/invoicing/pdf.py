@@ -20,6 +20,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
+from crm import marchio
 from crm.invoicing.engine import pdfa
 
 FORMATO_STAMPA = "Fattura"
@@ -76,6 +77,7 @@ def genera_e_allega(doc) -> dict:
 		titolo=doc.document_number or doc.name,
 		data_documento=getdate(doc.posting_date),
 		allegato_xml=_xml_allegato(doc),
+		produttore=marchio.nome(),
 	)
 
 	allegato = frappe.get_doc(

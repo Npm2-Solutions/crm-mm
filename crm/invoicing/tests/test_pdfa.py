@@ -205,3 +205,18 @@ class ConversioneTest(UnitTestCase):
 		self.assertEqual(lettore.metadata["/Producer"], pdfa.PRODUTTORE)
 		self.assertEqual(lettore.metadata["/Author"], "")
 		self.assertEqual(len(re.findall(rb"/Type\s*/Metadata", risultato.dati)), 1)
+
+	def test_il_produttore_e_il_marchio_del_prodotto(self):
+		# the callers pass the vertical's brand (`crm.marchio.nome()`), in the
+		# document's information and in its XMP alike
+		risultato = pdfa.converti(
+			pdf_reso(), titolo="x", data_documento=date(2026, 3, 10), produttore="Marchio & Co"
+		)
+		from pypdf import PdfReader
+
+		lettore = PdfReader(io.BytesIO(risultato.dati))
+		self.assertEqual(lettore.metadata["/Producer"], "Marchio & Co")
+		self.assertEqual(lettore.metadata["/Creator"], "Marchio & Co")
+		xmp = pdfa.xmp("x", date(2026, 3, 10), produttore="Marchio & Co")
+		self.assertIn(b"<pdf:Producer>Marchio &amp; Co</pdf:Producer>", xmp)
+		self.assertIn(b"<xmp:CreatorTool>Marchio &amp; Co</xmp:CreatorTool>", xmp)

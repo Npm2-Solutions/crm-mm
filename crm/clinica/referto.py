@@ -21,6 +21,7 @@ import frappe
 from frappe import _
 from frappe.utils import format_datetime, get_fullname, getdate
 
+from crm import marchio
 from crm.moduli import schema as S
 from crm.moduli import sigillo
 
@@ -133,7 +134,10 @@ def genera_e_allega(doc) -> dict:
 		frappe.log_error(title=f"Clinical report {doc.name}", message=frappe.get_traceback())
 		return {"skipped": True}
 	risultato = pdfa.converti(
-		reso, titolo=doc.title or _("Visit") + f" {doc.name}", data_documento=getdate(doc.signed_on)
+		reso,
+		titolo=doc.title or _("Visit") + f" {doc.name}",
+		data_documento=getdate(doc.signed_on),
+		produttore=marchio.nome(),
 	)
 	# sealed by the centre before the fingerprint, as a signed form is
 	sigillato = sigillo.sigilla(risultato.dati, motivo=_("Visit report"))
