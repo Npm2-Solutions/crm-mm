@@ -1763,3 +1763,21 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | L'andamento è fatto, in parte, saltato, senza rosso | "Niente rosso fuori obiettivo, niente classifiche" (design) |
 | Una bozza clinica buttata lascia la scheda paziente con la sua regola, senza il legame | Prima la prima bozza di una visita non si poteva buttare: la scheda la indicava come origine (`DocumentoClinico.on_trash`) |
 
+## Fase 3, i piani nell'area del paziente
+
+> **Completato** (30/09/2026). La pagina "Piani" dell'area con il giorno del piano
+> e un tocco per voce (`crm/clinica/area/piani.py`, `Clinic Plan Log`).
+> `docs/gestionale-medico/README.md`, "I piani nell'area del paziente".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| "Piani" nella barra solo per chi segue un piano adesso | La maggior parte dei pazienti non ne ha: una voce vuota è rumore, e la barra sta in sei posti solo con etichette corte ("Agenda") |
+| Un check-in per voce e per giorno, cambiato o ritirato con un tocco | "Un tocco per pasto": niente diario da compilare, che si abbandona in pochi giorni (design) |
+| Si segna fino a due giorni indietro, mai avanti | "La serie di giorni si può recuperare" (design); avanti si guarda soltanto |
+| Si mostra quello che resta ("ancora 2 questa settimana"), niente rosso | "Niente rosso fuori obiettivo, niente classifiche" (design) |
+| Le calorie solo se l'operatore le vuole mostrare | "Calorie solo se l'operatore le vuole mostrare" (design) |
+| Gli alimenti tra cui scegliere vengono dalla libreria del centro, con la loro porzione | "Il paziente sceglie dentro i limiti" (design) |
+| L'immagine di un esercizio solo se è un file pubblico o un indirizzo; il video si apre fuori | Un file privato non si mostra a un utente del sito; un player incorporato è un altro sito dentro l'area |
+

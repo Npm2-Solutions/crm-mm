@@ -896,10 +896,37 @@ scheda Clinica, riquadro "Plans" (`crm/clinica/piani.py`, `Clinic Plan`).
 - Il piano pubblicato mostra all'operatore come sono andate le ultime due
   settimane, voce per voce: fatto, in parte, saltato, senza rosso.
 
-Restano alla fase 3: i piani nell'area del paziente, con il check-in di un tocco,
-e le notifiche fuori dall'email. Da fare dopo: l'importazione delle tabelle
-(CREA, BDA-IEO con la licenza, CIQUAL) e di exercises-dataset, la lista della
-spesa, i programmi a tappe.
+### I piani nell'area del paziente
+
+Fatti il 30/09/2026 (fase 3, la quarta parte), in `crm/clinica/area/piani.py`.
+
+- **La voce "Piani"** compare nell'area solo a chi segue un piano adesso:
+  pubblicato, e con il suo periodo che comprende oggi. L'Inizio mostra ogni piano
+  con quanto è fatto oggi ("Oggi 2 su 5").
+- **Il giorno**: i momenti di ogni giorno e quelli di quel giorno della
+  settimana, con le voci come le legge il paziente.
+  - L'alimento ha la quantità e cosa può mangiare invece.
+  - Il gruppo di una dieta a scambi ha gli alimenti tra cui scegliere, una
+    porzione ciascuno, dalla libreria del centro.
+  - L'esercizio ha le serie, l'immagine, come si fa, il video su YouTube o
+    Vimeo e l'autore da citare.
+  - Le calorie compaiono solo se l'operatore le ha volute mostrare.
+- **Un tocco per voce**: fatto, in parte, saltato.
+  - Un altro tocco sulla stessa risposta la ritira.
+  - Si segna il giorno stesso o entro due giorni, così un giorno perso si
+    recupera; mai in anticipo.
+  - Una settimana avanti si guarda soltanto, per esempio per fare la spesa.
+- **"Ancora 2 questa settimana"** per le voci chieste tante volte a settimana: si
+  mostra quello che resta da fare, mai il rosso di quello che non è andato.
+- L'operatore vede i check-in sul piano, voce per voce (`Clinic Plan Log`, uno
+  per voce e per giorno, con chi l'ha segnato).
+
+Restano alla fase 3 le notifiche fuori dall'email (push, WhatsApp). Da fare dopo:
+- l'importazione delle tabelle degli alimenti (CREA, BDA-IEO con la licenza,
+  CIQUAL) e di exercises-dataset;
+- la lista della spesa dal menù;
+- i programmi a tappe;
+- lo sforzo o il dolore segnati con il check-in (il campo c'è già).
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
