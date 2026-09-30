@@ -124,6 +124,7 @@
         display: flex; gap: .75rem; align-items: center; min-height: 44px; padding: .7rem 1rem; border: 1px solid var(--border);
         border-radius: 10px; background: var(--card); color: var(--ink-strong); text-decoration: none; font-weight: 600;
       }
+      a.action.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); justify-content: center; margin-top: 1.5rem; }
       .actions {
         position: sticky; bottom: 0; background: var(--bg); padding: .85rem 0; margin-top: 1.5rem;
         display: flex; gap: .6rem; justify-content: flex-end; border-top: 1px solid var(--border); flex-wrap: wrap;
@@ -196,6 +197,7 @@
         "Bring it to the visit, or send it to the centre.": "Portalo alla visita, o mandalo al centro.",
         "Something went wrong: try again.": "Qualcosa non è andato: riprova.",
         "Nothing is left to fill here.": "Qui non c'è più niente da compilare.",
+        "Back to your area": "Torna alla tua area",
       };
       window.WORDS = (window.BOOT.lang || "it").startsWith("it") ? IT : {};
       const t = window.__;
@@ -203,6 +205,7 @@
       const app = document.getElementById("app");
       const brand = app.querySelector(".brand").outerHTML;
       const KEY = "modulo:" + token;
+      const fromArea = new URLSearchParams(window.location.search).get("from") === "area";
       let session = null;
       try { session = sessionStorage.getItem(KEY); } catch (e) { session = null; }
       let view = null;
@@ -354,7 +357,9 @@
           h("h1", {}, thanks),
           h("p", { class: "lede" }, t("Everything is done.") + (atDesk ? " " + t("The forms to sign at the desk wait for you there.") : "")),
           copies.length ? h("h2", {}, t("Your copies")) : null,
-          h("div", { class: "stack" }, copies.map((form) => copyLink(form.id, form.title))));
+          h("div", { class: "stack" }, copies.map((form) => copyLink(form.id, form.title))),
+          // opened from the patient area: back where the person came from
+          fromArea ? h("a", { class: "action primary", href: "/area" }, t("Back to your area")) : null);
       }
 
       function copyLink(id, title) {

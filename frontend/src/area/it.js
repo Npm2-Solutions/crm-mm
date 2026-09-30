@@ -64,4 +64,17 @@ export default {
   'Documents online': 'Documenti online',
   'See all': 'Vedi tutti',
   Messages: 'Messaggi',
+  'Prepare your visit': 'Prepara la visita',
+  'Before your appointment of {0}': 'Prima del tuo appuntamento del {0}',
+  Started: 'Iniziato',
+  'To fill': 'Da compilare',
+  Continue: 'Continua',
+  Fill: 'Compila',
+  'There is nothing to fill here': 'Qui non c’è niente da compilare',
+  'To sign at the centre': 'Da firmare al centro',
+  'Your forms are answered by a parent or guardian, from their area':
+    'I tuoi moduli li compila un genitore o il tutore, dalla sua area',
+  'To sign for them, ask the centre to add you to their related people':
+    'Per firmare al suo posto, chiedi al centro di aggiungerti tra le sue persone collegate',
+  'The person signs their own forms': 'I moduli li firma la persona stessa',
 }
