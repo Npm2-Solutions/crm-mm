@@ -4472,6 +4472,10 @@ msgstr ""
 msgid "Learn more"
 msgstr "Scopri di più"
 
+#: crm/moduli/sito.py
+msgid "Leave an email or a mobile number, so that the centre can answer you"
+msgstr "Lascia un'email o un cellulare, così il centro può risponderti"
+
 #. Label of the lft (Int) field in DocType 'CRM Sales Hierarchy'
 #. Label of the lft (Int) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.json
@@ -5788,6 +5792,10 @@ msgstr ""
 #: frontend/src/components/FilesUploader/FilesUploader.vue:155
 msgid "Please enter a valid URL"
 msgstr ""
+
+#: crm/moduli/sito.py
+msgid "Please enter a valid email address"
+msgstr "Scrivi un indirizzo email valido"
 
 #: frontend/src/components/Settings/Sla/WorkDayModal.vue:239
 msgid "Please fix the errors in the form"
@@ -7226,6 +7234,10 @@ msgstr ""
 msgid "Step {0} of {1}"
 msgstr ""
 
+#: crm/moduli/compilazioni.py
+msgid "Still to answer: {0}"
+msgstr "Da rispondere ancora: {0}"
+
 #. Label of the subdomain (Data) field in DocType 'CRM Exotel Settings'
 #: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:75
@@ -7444,6 +7456,10 @@ msgstr ""
 msgid "Territory Name"
 msgstr ""
 
+#: crm/moduli/sito.py
+msgid "Thank you: the centre will be in touch soon."
+msgstr "Grazie: il centro ti ricontatterà presto."
+
 #: crm/templates/emails/helpdesk_invitation.html:16
 msgid "Thanks"
 msgstr "Grazie"
@@ -7451,6 +7467,14 @@ msgstr "Grazie"
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.py:72
 msgid "The Condition '{0}' is invalid: {1}"
 msgstr ""
+
+#: crm/moduli/sito.py
+msgid "The answers could not be read"
+msgstr "Non è stato possibile leggere le risposte"
+
+#: crm/moduli/compilazioni.py
+msgid "The form is not complete"
+msgstr "Il modulo non è completo"
 
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.py:64
 msgid "The holiday on {0} is not between From Date and To Date"
@@ -7475,6 +7499,10 @@ msgstr "Tema"
 msgid "There can only be one default priority in Priorities table"
 msgstr ""
 
+#: crm/moduli/sito.py
+msgid "There is no form at this address"
+msgstr "A questo indirizzo non c'è un modulo"
+
 #: frontend/src/components/Filter.vue:689
 msgid "This Month"
 msgstr ""
@@ -7498,6 +7526,10 @@ msgstr ""
 #: frontend/src/components/Settings/Sla/WorkDayModal.vue:177
 msgid "This field is required"
 msgstr ""
+
+#: crm/moduli/sito.py
+msgid "This form is not on the website"
+msgstr "Questo modulo non è sul sito"
 
 #: frontend/src/pages/PersonaForm.vue:58
 msgid "This is my first CRM"
