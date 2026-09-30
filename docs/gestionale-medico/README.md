@@ -975,11 +975,62 @@ Fatti il 30/09/2026 (fase 3, la quarta parte), in `crm/clinica/area/piani.py`.
 Restavano alla fase 3 le notifiche fuori dall'email: WhatsApp e SMS sono arrivati
 dopo (vedi "Le novità dell'area su WhatsApp e SMS"); le push aspettano l'app sulla
 schermata Home. Da fare dopo:
-- l'importazione delle tabelle degli alimenti (CREA, BDA-IEO con la licenza,
-  CIQUAL) e di exercises-dataset;
+- ~~l'importazione delle tabelle degli alimenti (CREA, BDA-IEO con la licenza,
+  CIQUAL) e di exercises-dataset~~: fatta, vedi "Le librerie: le tabelle e gli
+  esercizi";
 - la lista della spesa dal menù;
 - i programmi a tappe;
 - lo sforzo o il dolore segnati con il check-in (il campo c'è già).
+
+### Le librerie: le tabelle e gli esercizi
+
+Fatte il 30/09/2026, in Impostazioni > Clinic > Libraries (`crm/clinica/librerie.py`,
+il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
+
+- **Chi le tiene** (`piani.librerie`): il manager e la direzione sanitaria; un
+  operatore quando il manager glielo accende (la nutrizionista che cura gli
+  alimenti). Chi scrive i piani continua ad aggiungere un alimento o un esercizio
+  dall'editor.
+- **Una tabella degli alimenti** si carica come foglio Excel (.xlsx, .xls) o CSV:
+  - CIQUAL come la pubblica ANSES, in francese o in inglese (Licence Ouverte);
+  - BDA-IEO con la licenza per i software commerciali, CREA con il permesso scritto:
+    si importano solo con la spunta "il centro può usarla", e l'importazione tiene
+    chi l'ha dichiarato (`Clinic Library Import`);
+  - qualunque altra tabella nella stessa forma (USDA compresa): una riga per
+    alimento, una colonna per valore su 100 g.
+- **Il server legge, la persona controlla**, prima che entri niente:
+  - le colonne si riconoscono dal nome, in italiano, francese e inglese; quello che
+    non si riconosce si sceglie a mano;
+  - ogni categoria della tabella diventa uno dei gruppi della libreria con le sue
+    parole ("vegetable oils" sono oli, "fruits de mer" pesce, "légumes" verdure,
+    "legumes" legumi) e si può cambiare, categoria per categoria. Sulla tabella
+    CIQUAL vera tutte le 64 categorie finiscono nel gruppo giusto;
+  - gli alimenti si scelgono: tutti per una tabella italiana, uno per uno per
+    CIQUAL e USDA, che riempiono i buchi e non hanno i nomi in italiano.
+- **I numeri sono della tabella**: "4,63" è 4,63; "-" non è noto e non si conta;
+  "traces" e "< 0,15" valgono zero. L'energia solo in kJ diventa kcal; i
+  carboidrati "per differenza" perdono la fibra. Un valore impossibile (più di 100
+  g in 100 g) si scarta, e si dice quanti.
+- **L'energia che la tabella non dà** (CIQUAL la lascia vuota per un alimento su
+  quattro) si calcola da proteine, carboidrati, grassi, fibra e alcol con i fattori
+  del Regolamento UE 1169/2011, il modo della tabella stessa: dove CIQUAL la dà, la
+  differenza mediana è di 0,4 kcal. L'alimento lo dice ("kcal computed").
+- **exercises-dataset**: 1.324 esercizi, dal suo `exercises.json` caricato o
+  scaricato da GitHub alla versione su cui è scritta l'importazione.
+  - Il nome in inglese, da rinominare quando un trainer l'ha letto; come si fa in
+    italiano, a passi numerati; la parte del corpo; l'attrezzo e i muscoli in
+    italiano (poche decine di parole, tradotte una volta).
+  - Le immagini e le animazioni (© Gym visual, autorizzate a NPM2 Solutions) si
+    vedono solo da dove le tiene l'agenzia: un indirizzo https o un percorso del
+    server, sul permlevel 1 (`tecnico.integrazioni`). Una copia per server o un CDN,
+    non una per sito; si cambia l'indirizzo e ogni esercizio lo segue, senza
+    reimportare. L'assistente non le tocca mai.
+  - Il paziente vede l'animazione nell'area, con "© Gym visual" sotto; la foto del
+    centro, se c'è, vince, e allora non è di Gym visual.
+- **Importata di nuovo**, una tabella porta i suoi numeri nuovi e il dataset le sue
+  immagini e i muscoli; le parole del centro (il nome in italiano, il gruppo, come
+  si fa un esercizio) restano sue. Un alimento o un esercizio si spegne, non si
+  cancella: un piano può averlo.
 
 ### L'assistente: le fondamenta e il modulo di carta
 
