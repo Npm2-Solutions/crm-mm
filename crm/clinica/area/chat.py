@@ -139,7 +139,15 @@ def _conversazione(storia: list[dict], domanda: str) -> str:
 
 
 def attiva() -> bool:
-	return modello.acceso(CHAT.chiave)
+	"""On where the centre's plan has the assistant and the clinic, the agency set
+	the model up, and the centre turned the chat on."""
+	from crm.assistente import MODULO
+	from crm.clinica import MODULO as CLINICA
+
+	moduli = livelli.moduli_attivi()
+	return all(
+		livelli.stato_modulo(m.chiave, moduli) == livelli.ATTIVO for m in (MODULO, CLINICA)
+	) and modello.acceso(CHAT.chiave)
 
 
 @frappe.whitelist()
@@ -188,7 +196,11 @@ def ask(person: str, question: str, history=None) -> dict:
 		frappe.throw(_("The chat is not available: write to the centre in Messages"))
 	if genere == C.SALUTE:
 		return _salute()
-	storia = C.storia(frappe.parse_json(history) if isinstance(history, str) else history)
+	try:
+		storia = C.storia(frappe.parse_json(history) if isinstance(history, str) else history)
+	except ValueError:
+		# a conversation that cannot be read is a conversation that starts now
+		storia = []
 	risposta = modello.chiedi(
 		CHAT.chiave,
 		ISTRUZIONI.format(scopo=SCOPO, centro=_centro(), contesto=contesto()),
