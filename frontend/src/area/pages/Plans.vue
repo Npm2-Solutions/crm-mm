@@ -1,9 +1,19 @@
 <!--
-  What the person follows now: their programmes, stage by stage, and their plans
-  with how today is going on each.
+  What the person follows now: their programmes, stage by stage, their plans with
+  how today is going on each, and their dental care plans.
 -->
 <template>
   <div class="flex flex-col gap-4">
+    <template v-if="carePlans.data?.plans?.length">
+      <h1 class="text-xl font-semibold text-ink-gray-9">
+        {{ __('Your care plans') }}
+      </h1>
+      <CarePlanCard
+        v-for="plan in carePlans.data.plans"
+        :key="plan.name"
+        :plan="plan"
+      />
+    </template>
     <template v-if="programmes.data?.programmes?.length">
       <h1 class="text-xl font-semibold text-ink-gray-9">
         {{ __('Your programmes') }}
@@ -45,6 +55,7 @@
 
 <script setup>
 import { createResource } from 'frappe-ui'
+import CarePlanCard from '../components/CarePlanCard.vue'
 import ProgrammeCard from '../components/ProgrammeCard.vue'
 import { area } from '../store'
 
@@ -55,6 +66,11 @@ const plans = createResource({
 })
 const programmes = createResource({
   url: 'crm.clinica.area.piani.area_programmes',
+  params: { person: area.person },
+  auto: true,
+})
+const carePlans = createResource({
+  url: 'crm.clinica.area.piani.area_care_plans',
   params: { person: area.person },
   auto: true,
 })

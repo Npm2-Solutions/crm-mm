@@ -53,12 +53,14 @@ def _in_corso(person: str, oggi) -> list:
 
 
 def piani_in_corso(person: str) -> int:
-	"""How many plans and programmes the person follows today: the area shows
-	"Plans" when any."""
-	from crm.clinica import programmi
+	"""How many plans, programmes and care plans the person follows today: the area
+	shows "Plans" when any."""
+	from crm.clinica import cure, programmi
 
-	return len(_in_corso(person, getdate())) + frappe.db.count(
-		programmi.PROGRAMMA, {"lead": person, "status": programmi.PUBBLICATO}
+	return (
+		len(_in_corso(person, getdate()))
+		+ frappe.db.count(programmi.PROGRAMMA, {"lead": person, "status": programmi.PUBBLICATO})
+		+ cure.piani_nell_area(person)
 	)
 
 
@@ -117,6 +119,16 @@ def area_programmes(person: str) -> dict:
 
 	_mia(person)
 	return {"programmes": programmi.area_dei_programmi(person)}
+
+
+@frappe.whitelist()
+def area_care_plans(person: str) -> dict:
+	"""The dental care plans proposed to the person and going on: the treatments,
+	what is done, the sums."""
+	from crm.clinica import cure
+
+	_mia(person)
+	return {"plans": cure.della_persona(person)}
 
 
 @frappe.whitelist(methods=["POST"])
