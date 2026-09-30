@@ -46,6 +46,9 @@
               </span>
               <span class="block truncate text-p-sm text-ink-gray-5">
                 {{ when(appointment) }}
+                <template v-if="laSeduta(appointment.cycle, t)">
+                  · {{ laSeduta(appointment.cycle, t) }}
+                </template>
               </span>
             </span>
             <Badge
@@ -148,6 +151,7 @@ import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import MultipleAvatar from '@/components/MultipleAvatar.vue'
 import { useEvent, showEventModal, activeEvent } from '@/composables/event'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
+import { laSeduta } from '@/utils/cicli'
 import { Avatar, Badge, createResource, dayjs } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -186,6 +190,7 @@ const booked = createResource({
 })
 
 const appointments = computed(() => booked.data || [])
+const t = (text, args) => __(text, args)
 
 const appointmentGroups = computed(() => {
   const now = dayjs()
