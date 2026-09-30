@@ -171,6 +171,7 @@
       button.time[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
       button.time[aria-pressed="true"] small { color: var(--accent-ink); }
       .hint { color: var(--muted); font-size: .82rem; }
+      .hint a { color: var(--ink-strong); }
       .tz { color: var(--faint); font-size: .78rem; margin-top: .75rem; }
       .next-free { margin-top: .75rem; }
 
@@ -785,7 +786,7 @@
             consent: f.consent ? 1 : 0, consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
             for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
             crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
-          }, true, "crm.scheduling.attese_pubblico.");
+          }, true, "/api/method/crm.scheduling.attese_pubblico.");
           S.busy = false;
           go("waited");
         } catch (e) { S.busy = false; S.error = e.message; render(); }
