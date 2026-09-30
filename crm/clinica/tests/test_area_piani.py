@@ -149,6 +149,43 @@ class IlGiorno(AreaPianiCase):
 		self.assertIn({"food_name": "Pasta di semola", "portion_g": 80}, cereali["choices"])
 
 
+class LaSpesa(AreaPianiCase):
+	def test_cosa_comprare_per_i_prossimi_giorni(self):
+		piano = self.pubblica()
+		self.entra()
+		lista = area_piani.area_shopping_list(self.anna.name, piano, days=14)
+		self.assertEqual((lista["from"], lista["days"]), (str(getdate()), 14))
+		# the pasta every day; the fish three times a week is a habit, not a food
+		self.assertEqual(
+			[(r["food_name"], r["grams"], r["times"]) for r in lista["foods"]],
+			[("Pasta di semola", 1120, 14)],
+		)
+		self.assertNotIn("kcal", lista["foods"][0])
+		with self.assertRaises(frappe.ValidationError):
+			area_piani.area_shopping_list(self.anna.name, piano, start=str(add_days(getdate(), 40)))
+
+	def test_la_dieta_a_scambi_per_porzioni(self):
+		dati = {
+			"plan_type": R.SCAMBI,
+			"title": "Scambi",
+			"moments": [{"key": "pranzo", "label": "Pranzo", "day": R.OGNI_GIORNO}],
+			"items": [
+				{
+					"key": "cereali",
+					"moment": "pranzo",
+					"kind": R.GRUPPO,
+					"food_group": "Cereals and tubers",
+					"portions": 2,
+				}
+			],
+		}
+		piano = self.pubblica(dati)
+		self.entra()
+		[cereali] = area_piani.area_shopping_list(self.anna.name, piano)["groups"]
+		self.assertEqual((cereali["food_group"], cereali["portions"]), ("Cereals and tubers", 14))
+		self.assertIn({"food_name": "Pasta di semola", "portion_g": 80}, cereali["choices"])
+
+
 class UnTocco(AreaPianiCase):
 	def test_si_segna_si_cambia_si_ritira(self):
 		piano = self.pubblica()

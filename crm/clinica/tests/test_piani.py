@@ -238,3 +238,41 @@ class LeLibrerie(PianiCase):
 			piani.search_foods("pasta")
 		with self.assertRaises(frappe.PermissionError):
 			piani.add_food("Pane", "Cereals and tubers")
+
+
+class LaSpesa(PianiCase):
+	def test_la_lista_di_una_settimana_da_dare_al_paziente(self):
+		fatto = self.pubblica()
+		self.come(DOC1)
+		lista = piani.shopping_list(fatto["name"], start="2026-10-05", days=7)
+		self.assertEqual((lista["from"], lista["until"], lista["days"]), ("2026-10-05", "2026-10-11", 7))
+		[pasta] = lista["foods"]
+		self.assertEqual(
+			(pasta["food_name"], pasta["grams"], pasta["times"], pasta["each"]),
+			("Pasta di semola", 560, 7, 80),
+		)
+		# opening it is reading the plan
+		self.come(MANAGER)
+		registro = cartella.access_log(self.anna.name)
+		self.assertIn(("plan", DOC1), [(riga["kind"], riga["viewed_by"]) for riga in registro])
+
+	def test_solo_i_giorni_del_piano_e_solo_una_dieta(self):
+		fatto = self.pubblica(dati=self.menu(starts_on="2026-10-05", ends_on="2026-10-07"))
+		self.come(DOC1)
+		lista = piani.shopping_list(fatto["name"], days=14)
+		# from the plan's first day, and not after its last
+		self.assertEqual((lista["from"], lista["days"]), ("2026-10-05", 3))
+		self.assertEqual(lista["foods"][0]["grams"], 240)
+		esercizi = {
+			"plan_type": R.ESERCIZI,
+			"title": "Schiena",
+			"moments": [{"key": "sera", "label": "Sera", "day": R.OGNI_GIORNO}],
+			"items": [{"key": "ponte", "moment": "sera", "kind": R.ESERCIZIO, "exercise": self.ponte.name}],
+		}
+		scritto = self.scrive(user=DOC2, dati=esercizi)
+		with self.assertRaises(frappe.ValidationError):
+			piani.shopping_list(scritto["name"])
+		# who does not read the plan does not read its list
+		self.come(DOC2)
+		with self.assertRaises(frappe.PermissionError):
+			piani.shopping_list(fatto["name"])

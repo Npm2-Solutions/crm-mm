@@ -238,6 +238,27 @@ def area_plan(person: str, plan: str, day: str | None = None) -> dict:
 	}
 
 
+@frappe.whitelist()
+def area_shopping_list(person: str, plan: str, start: str | None = None, days: int = 7) -> dict:
+	"""What to buy for the days ahead: the diet's foods and how much, the groups
+	to choose from with their portions. From two days back to five weeks ahead."""
+	_mia(person)
+	doc = _della_persona(person, plan)
+	if doc.plan_type not in (R.MENU, R.SCAMBI):
+		frappe.throw(_("Only a diet has a shopping list"))
+	oggi = getdate()
+	dal = getdate(start) if start else oggi
+	if not (add_days(oggi, -R.GIORNI_RECUPERO) <= dal <= add_days(oggi, R.MAX_GIORNI_SPESA)):
+		frappe.throw(_("This day is not shown"))
+	lista = piani.lista_della_spesa(doc, dal, days)
+	scelte = _scelte({g["food_group"] for g in lista["groups"]})
+	for gruppo in lista["groups"]:
+		gruppo["choices"] = scelte.get(gruppo["food_group"], [])
+	# the plan's own words, not the tables': no calories on a shopping list
+	lista["plan"]["practitioner_name"] = get_fullname(doc.practitioner)
+	return lista
+
+
 @frappe.whitelist(methods=["POST"])
 def log_item(
 	person: str,

@@ -298,6 +298,40 @@ def get_plan(name: str) -> dict:
 	}
 
 
+# ------------------------------------------------------------------ the shopping list
+
+
+def lista_della_spesa(doc, dal=None, giorni: int = 7) -> dict:
+	"""What to buy for a diet's days from ``dal`` (today, or the plan's first day
+	if later): the foods with their grams, an exchange diet's portions by group,
+	only within the plan's period."""
+	inizio = getdate(doc.starts_on) if doc.starts_on else None
+	fine = getdate(doc.ends_on) if doc.ends_on else None
+	oggi = getdate()
+	dal = getdate(dal) if dal else max(oggi, inizio or oggi)
+	quanti = max(1, min(cint(giorni) or 7, R.MAX_GIORNI_SPESA))
+	momenti, voci = righe_del_piano(doc)
+	cibi = {v["food"]: v["food_detail"] for v in voci if v.get("food") and v.get("food_detail")}
+	lista = R.spesa(momenti, voci, cibi, R.giorni_del_periodo(dal, quanti, inizio, fine))
+	return {
+		**lista,
+		"from": str(dal),
+		"until": str(add_days(dal, quanti - 1)),
+		"asked": quanti,
+		"plan": {"name": doc.name, "title": doc.title, "plan_type": doc.plan_type},
+	}
+
+
+@frappe.whitelist()
+def shopping_list(name: str, start: str | None = None, days: int = 7) -> dict:
+	"""A diet's shopping list, to give the patient: opening it is reading the plan."""
+	doc = _piano(name)
+	if doc.plan_type not in (R.MENU, R.SCAMBI):
+		frappe.throw(_("Only a diet has a shopping list"))
+	doc.add_viewed()
+	return lista_della_spesa(doc, start, days)
+
+
 # ------------------------------------------------------------------ writing
 
 
