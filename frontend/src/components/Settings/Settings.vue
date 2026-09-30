@@ -142,6 +142,8 @@ import FormsSettings from '@/components/Settings/Forms/FormsSettings.vue'
 import AssistantSettings from '@/components/Settings/AssistantSettings.vue'
 import SealSettings from '@/components/Settings/SealSettings.vue'
 import AreaNoticeSettings from '@/components/Settings/AreaNoticeSettings.vue'
+import LibrariesSettings from '@/components/Settings/Clinic/LibrariesSettings.vue'
+import LucideLibraryBig from '~icons/lucide/library-big'
 import LucideBellRing from '~icons/lucide/bell-ring'
 import LucideStamp from '~icons/lucide/stamp'
 import LucideBot from '~icons/lucide/bot'
@@ -496,6 +498,19 @@ const tabs = computed(() => {
           icon: CalendarIcon,
           component: markRaw(GoogleCalendarSettings),
           condition: () => puo('google_calendar.proprio'),
+        },
+      ],
+    },
+    {
+      // the clinic's own pages: what the plans are written with
+      label: __('Clinic'),
+      items: [
+        {
+          label: __('Libraries'),
+          key: 'Libraries',
+          icon: markRaw(LucideLibraryBig),
+          component: markRaw(LibrariesSettings),
+          condition: () => puo('piani.librerie'),
         },
       ],
     },

@@ -140,6 +140,8 @@ function describe(row) {
     const parts = [__(row.food_group)]
     if (row.portion_g) parts.push(__('portion {0} g', [row.portion_g]))
     if (row.kcal) parts.push(__('{0} kcal/100 g', [row.kcal]))
+    // where the numbers come from: a table, or the centre
+    if (row.source && row.source !== 'Centre') parts.push(row.source)
     return parts.join(' · ')
   }
   return [row.body_part ? __(row.body_part) : '', row.equipment || '']
