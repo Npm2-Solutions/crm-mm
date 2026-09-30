@@ -8,7 +8,9 @@
     <h2 class="text-base font-medium text-ink-gray-7">
       {{ __('Entering with a passkey') }}
     </h2>
-    <div class="flex flex-col gap-3 rounded-lg bg-surface-white p-4 shadow-sm">
+    <div
+      class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+    >
       <template v-if="!list.length">
         <p class="text-p-base text-ink-gray-8">
           {{

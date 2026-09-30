@@ -22,7 +22,7 @@
       v-for="plan in plans.data?.plans || []"
       :key="plan.name"
       :to="{ name: 'Plan', params: { plan: plan.name } }"
-      class="flex items-center justify-between gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+      class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
     >
       <span class="flex min-w-0 flex-col">
         <span class="text-base text-ink-gray-9">{{ plan.title }}</span>

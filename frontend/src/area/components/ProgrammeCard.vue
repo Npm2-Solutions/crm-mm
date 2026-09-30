@@ -5,7 +5,7 @@
 -->
 <template>
   <article
-    class="flex flex-col gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+    class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
   >
     <div class="flex flex-col gap-0.5">
       <h2 class="text-base font-medium text-ink-gray-9">

@@ -24,7 +24,7 @@
       :class="
         message.kind === 'Question'
           ? 'ml-8 bg-surface-gray-2'
-          : 'bg-surface-white'
+          : 'bg-surface-elevation-1'
       "
     >
       <span

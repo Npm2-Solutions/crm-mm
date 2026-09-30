@@ -18,7 +18,7 @@
     <router-link
       v-if="area.me?.chat"
       :to="{ name: 'Chat' }"
-      class="flex items-center justify-between gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+      class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
     >
       <span class="flex min-w-0 flex-col">
         <span class="text-p-base font-medium text-ink-gray-9">
@@ -47,7 +47,7 @@
         </router-link>
       </div>
       <div
-        class="rounded-lg bg-surface-white p-4 text-p-base text-ink-gray-8 shadow-sm"
+        class="rounded-lg bg-surface-elevation-1 p-4 text-p-base text-ink-gray-8 shadow-sm"
       >
         {{ documents.data.documents[0].title }}
         <span class="block text-p-sm text-ink-gray-5">
