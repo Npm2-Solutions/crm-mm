@@ -160,6 +160,8 @@ of their own, linked to the parent, never the parent's record.
 | `crm/clinica/base.py` | `DocumentoClinico`: every clinical DocType inherits it (rule 1) |
 | `crm/clinica/referto.py` + `templates/referto.html` | A visit written on a clinical sheet, signed: its report as PDF/A, made once, private, with its SHA-256 |
 | `crm/clinica/area/` (`accesso.py`, `api.py`) + `crm/www/area.py` | The patient area: invitation (`Clinic Area Access`), the door by email code, step-up before a download; every call derives the session's people on the server |
+| `crm/clinica/area/api.py` (`get_forms`, `fill_forms`) | "Prepare your visit": the owed forms, opened on `/modulo` with the area's session; who signs is who a link by email would go to |
+| `crm/clinica/area/messaggi.py` + `components/Clinic/AreaMessagesCard.vue` | The centre's board in the area (`Clinic Message`): the desk writes administration, a practitioner the care (read like a visit); the email says only that there is news |
 | `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The patient area app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js` |
 | `crm/clinica/consegna.py` + `crm/www/referto.*` | Giving a report: by hand, or online 45 days with the consent; the link by email, the code another way; `/referto/<link>` opens it (`Clinic Report Delivery`) |
 | `crm/clinica/dossier.py` | Who reads what the others wrote: the dossier (consent and care), obscured episodes, "my discipline", the opening out of the care team with a reason (`Clinic Access Grant`, `crm_people_in_care`) |

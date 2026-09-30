@@ -1723,3 +1723,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Per scaricare un documento, un codice verificato negli ultimi quindici minuti | "Per scaricare un referto si rientra" (design, linee guida sui referti online) |
 | Gli appuntamenti si spostano e annullano dalla pagina di prenotazione, con il suo link | Le regole del centro (preavviso, limiti) sono già lì: una sola strada |
 | L'area ha un suo dizionario italiano | Il paziente legge la sua lingua, non quella dello staff |
+
+## Fase 3, prepara la visita e i messaggi del centro
+
+> **Completato** (30/09/2026). "Prepara la visita" nell'Inizio dell'area, con i
+> moduli compilati sulla pagina `/modulo` già aperta; la bacheca dei messaggi del
+> centro (`Clinic Message`, `crm/clinica/area/messaggi.py`).
+> `docs/gestionale-medico/README.md`, "Prepara la visita e i messaggi del centro".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Dall'area si compila sulla pagina dei moduli che c'è, aperta con la sua sessione | Una sola pagina per compilare e firmare, con le sue regole e le sue prove; il codice dell'area vale come quello del link |
+| Il link dell'area dura quattro ore | Basta per compilare adesso; il giorno dopo si riapre dall'area |
+| Un link aperto con gli stessi moduli si riprende, anche se era arrivato per email | Le risposte date restano; un solo link vivo per gli stessi moduli |
+| Firma chi firmerebbe un link per email; chi segue soltanto non firma | Il genitore firma per il figlio minorenne, un figlio segue il genitore anziano senza firmare al posto suo (design, "Familiari") |
+| I messaggi sono una bacheca, non una chat | Il design lascia aperto se il paziente risponde ("Da decidere" 7): una chat è un'altra casella per i medici, e si aggiunge dopo se il centro la vuole |
+| Il messaggio dell'operatore è della cura, quello della segreteria no | Un dato sanitario fa un paziente e si legge come una visita; un promemoria no |
+| L'email dice solo che c'è una novità | Le notifiche non portano contenuti (design, "Notifiche") |
+| Aprire la bacheca segna letti i messaggi, con chi e quando | Il centro sa che la persona l'ha visto, senza chiederle di confermare |
