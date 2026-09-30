@@ -52,6 +52,15 @@ def persona_di(party_type: str | None, party: str | None) -> str | None:
 	return None
 
 
+def dimentica_fonte(doctype: str, name: str) -> None:
+	"""What made somebody a patient is gone (a draft thrown away): the card keeps
+	the rule and the moment, and no longer points to it."""
+	for scheda in frappe.get_all(
+		DOCTYPE, filters={"source_doctype": doctype, "source_name": name}, pluck="name"
+	):
+		frappe.db.set_value(DOCTYPE, scheda, {"source_doctype": None, "source_name": None})
+
+
 def e_paziente(lead: str) -> bool:
 	return bool(frappe.db.exists(DOCTYPE, lead))
 

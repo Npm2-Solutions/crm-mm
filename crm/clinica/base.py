@@ -34,3 +34,8 @@ class DocumentoClinico(Document):
 			from crm.scheduling import esiti
 
 			esiti.presente(self.appointment, self.get("lead"))
+
+	def on_trash(self):
+		# a draft thrown away: the patient card keeps the rule that made them a
+		# patient, not a link to what is gone - the audit log says what it was
+		paziente.dimentica_fonte(self.doctype, self.name)

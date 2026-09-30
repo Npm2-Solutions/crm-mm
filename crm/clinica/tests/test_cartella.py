@@ -91,6 +91,18 @@ class LaVisita(RecordCase):
 		self.assertEqual(scheda.recorded_by, DOC1)
 		self.assertEqual(scheda.source_name, visita["name"])
 
+	def test_la_prima_bozza_buttata_lascia_il_paziente(self):
+		visita = self.scrive()
+		cartella.delete_draft(visita["name"])
+		# the card keeps the rule and the moment, and no longer points to the draft
+		scheda = frappe.db.get_value(
+			"Clinic Patient", self.anna.name, ["rule", "source_doctype", "source_name"], as_dict=True
+		)
+		self.assertEqual(
+			(scheda.rule, scheda.source_doctype, scheda.source_name),
+			(regole.INFORMAZIONE_MEDICA.valore, None, None),
+		)
+
 	def test_una_bozza_e_del_suo_autore(self):
 		bozza = self.scrive()
 		self.assertTrue(self.legge(DOC1, bozza["name"]))
