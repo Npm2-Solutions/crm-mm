@@ -1,0 +1,41 @@
+<!-- The plans the person follows now, and how today is going on each. -->
+<template>
+  <div class="flex flex-col gap-4">
+    <h1 class="text-xl font-semibold text-ink-gray-9">
+      {{ __('Your plans') }}
+    </h1>
+    <router-link
+      v-for="plan in plans.data?.plans || []"
+      :key="plan.name"
+      :to="{ name: 'Plan', params: { plan: plan.name } }"
+      class="flex items-center justify-between gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+    >
+      <span class="flex min-w-0 flex-col">
+        <span class="text-base text-ink-gray-9">{{ plan.title }}</span>
+        <span class="text-p-sm text-ink-gray-5">
+          {{ __(plan.plan_type) }} · {{ plan.practitioner_name }}
+        </span>
+      </span>
+      <span v-if="plan.today" class="shrink-0 text-p-sm text-ink-gray-6">
+        {{ __('Today {0} of {1}', [plan.done_today, plan.today]) }}
+      </span>
+    </router-link>
+    <p
+      v-if="plans.data && !plans.data.plans.length"
+      class="text-p-base text-ink-gray-5"
+    >
+      {{ __('No plan to follow now.') }}
+    </p>
+  </div>
+</template>
+
+<script setup>
+import { createResource } from 'frappe-ui'
+import { area } from '../store'
+
+const plans = createResource({
+  url: 'crm.clinica.area.piani.area_plans',
+  params: { person: area.person },
+  auto: true,
+})
+</script>

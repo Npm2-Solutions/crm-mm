@@ -37,3 +37,11 @@ export function money(value) {
     currency: 'EUR',
   }).format(Number(value || 0))
 }
+
+// a day in a row of days: "mer 30"
+export function shortDay(value) {
+  const date = parse(value)
+  return date
+    ? date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric' })
+    : ''
+}

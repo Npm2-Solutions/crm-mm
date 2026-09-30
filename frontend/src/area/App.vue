@@ -1,6 +1,6 @@
 <!--
   The patient area's shell: the centre's name, whose area it is (a parent sees
-  their child's too), and four places at the bottom, within reach of a thumb.
+  their child's too), and its places at the bottom, within reach of a thumb.
   Staff who open it are sent to the CRM: the area is for patients.
 -->
 <template>
@@ -54,7 +54,10 @@
       </div>
     </main>
     <nav
-      class="pb-safe grid grid-cols-5 border-t border-outline-gray-1 bg-surface-white"
+      class="pb-safe grid border-t border-outline-gray-1 bg-surface-white"
+      :style="{
+        gridTemplateColumns: `repeat(${places.length}, minmax(0, 1fr))`,
+      }"
     >
       <router-link
         v-for="place in places"
@@ -62,7 +65,7 @@
         :to="{ name: place.name }"
         class="flex min-w-0 flex-col items-center gap-1 py-2 text-[11px] leading-tight"
         :class="
-          route.name === place.name
+          placeOf(route.name) === place.name
             ? 'text-ink-gray-9 font-medium'
             : 'text-ink-gray-5'
         "
@@ -94,19 +97,29 @@ const staff = Boolean(boot.staff)
 const centre = boot.centre
 const logo = boot.logo
 
-const places = [
-  { name: 'Home', label: __('Home'), icon: 'home' },
-  { name: 'Appointments', label: __('Appointments'), icon: 'calendar' },
-  { name: 'Documents', label: __('Documents'), icon: 'file-text' },
-  { name: 'Messages', label: __('Messages'), icon: 'message-square' },
-  { name: 'Invoices', label: __('Invoices'), icon: 'credit-card' },
-]
+const current = computed(() =>
+  (area.me?.people || []).find((p) => p.name === area.person),
+)
+
+// "Plans" only for whoever follows one: most patients never do
+const places = computed(() =>
+  [
+    { name: 'Home', label: __('Home'), icon: 'home' },
+    { name: 'Appointments', label: __('Agenda'), icon: 'calendar' },
+    current.value?.plans
+      ? { name: 'Plans', label: __('Plans'), icon: 'check-square' }
+      : null,
+    { name: 'Messages', label: __('Messages'), icon: 'message-square' },
+    { name: 'Documents', label: __('Documents'), icon: 'file-text' },
+    { name: 'Invoices', label: __('Invoices'), icon: 'credit-card' },
+  ].filter(Boolean),
+)
+
+// a plan's own page lights its place in the bar
+const placeOf = (name) => (name === 'Plan' ? 'Plans' : name)
 
 // what the centre wrote and the person has not opened yet
-const unread = computed(
-  () =>
-    (area.me?.people || []).find((p) => p.name === area.person)?.unread || 0,
-)
+const unread = computed(() => current.value?.unread || 0)
 
 if (!staff && boot.user && boot.user !== 'Guest') loadMe()
 
