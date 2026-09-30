@@ -150,6 +150,28 @@ def messaggio_eliminato(doc, method=None) -> None:
 	paziente.dimentica_fonte(doc.doctype, doc.name)
 
 
+def piano_personale_scritto(doc, method=None) -> None:
+	"""Rule 1: a plan or a programme with health data - a diet, exercises at home -
+	makes its person a patient. A training or habits do not."""
+	if not doc.get("clinical") or not paziente.clinica_accesa():
+		return
+	_senza_fermare(
+		_("Patient not recorded from plan {0}").format(doc.name),
+		doc,
+		lambda: paziente.assicura_paziente(
+			doc.lead,
+			regole.INFORMAZIONE_MEDICA,
+			fonte=(doc.doctype, doc.name),
+			da=doc.get("practitioner") or frappe.session.user,
+		),
+	)
+
+
+def piano_personale_eliminato(doc, method=None) -> None:
+	"""A draft thrown away: the patient card keeps the rule, not a link to it."""
+	paziente.dimentica_fonte(doc.doctype, doc.name)
+
+
 def piano_aggiornato(doc, method=None) -> None:
 	"""The clinic was switched on: the patients already there are found once, in the
 	background, from the appointments and the invoices."""

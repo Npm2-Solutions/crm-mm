@@ -7,6 +7,7 @@ crm.patches.v1_0.create_invoicing_roles #09-09-2026
 crm.patches.v1_0.drop_unique_index_on_booking_webhook_token
 crm.patches.v1_0.create_level_roles #29-09-2026 Marketing, Contact Details
 crm.patches.v1_0.the_client_area_is_the_crms
+crm.patches.v1_0.plans_are_the_crms
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
@@ -75,3 +76,4 @@ crm.clinica.patches.medical_centre_where_the_clinic_is_on
 crm.patches.v1_0.dottorcloud_in_the_framework_screens
 crm.patches.v1_0.the_area_settings_are_the_crms
 crm.patches.v1_0.the_brand_is_the_verticals
+crm.patches.v1_0.plans_keep_their_health_data

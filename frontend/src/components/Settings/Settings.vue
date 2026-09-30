@@ -142,8 +142,10 @@ import FormsSettings from '@/components/Settings/Forms/FormsSettings.vue'
 import AssistantSettings from '@/components/Settings/AssistantSettings.vue'
 import SealSettings from '@/components/Settings/SealSettings.vue'
 import AreaNoticeSettings from '@/components/Settings/AreaNoticeSettings.vue'
-import LibrariesSettings from '@/components/Settings/Clinic/LibrariesSettings.vue'
+import ExercisesSettings from '@/components/Settings/Plans/ExercisesSettings.vue'
+import FoodsSettings from '@/components/Settings/Clinic/FoodsSettings.vue'
 import LucideLibraryBig from '~icons/lucide/library-big'
+import LucideDumbbell from '~icons/lucide/dumbbell'
 import LucideBellRing from '~icons/lucide/bell-ring'
 import LucideStamp from '~icons/lucide/stamp'
 import LucideBot from '~icons/lucide/bot'
@@ -502,15 +504,29 @@ const tabs = computed(() => {
       ],
     },
     {
-      // the clinic's own pages: what the plans are written with
+      // what the plans are written with: the exercises, the CRM's
+      label: __('Plans'),
+      items: [
+        {
+          label: __('Exercises'),
+          key: 'Exercises',
+          icon: markRaw(LucideDumbbell),
+          component: markRaw(ExercisesSettings),
+          condition: () => puo('piani.librerie'),
+        },
+      ],
+    },
+    {
+      // the clinic's own pages: the foods its diets are written with
       label: __('Clinic'),
       items: [
         {
-          label: __('Libraries'),
-          key: 'Libraries',
+          label: __('Foods'),
+          key: 'Foods',
           icon: markRaw(LucideLibraryBig),
-          component: markRaw(LibrariesSettings),
-          condition: () => puo('piani.librerie'),
+          component: markRaw(FoodsSettings),
+          condition: () =>
+            puo('piani.librerie') && window.vertical?.key === 'clinica',
         },
       ],
     },

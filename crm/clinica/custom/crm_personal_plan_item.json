@@ -1,0 +1,62 @@
+{
+ "custom_fields": [
+  {
+   "name": "CRM Personal Plan Item-food",
+   "dt": "CRM Personal Plan Item",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "kind",
+   "fieldname": "food",
+   "fieldtype": "Link",
+   "label": "Food",
+   "options": "Clinic Food",
+   "in_list_view": 1
+  },
+  {
+   "name": "CRM Personal Plan Item-quantity_g",
+   "dt": "CRM Personal Plan Item",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "food",
+   "fieldname": "quantity_g",
+   "fieldtype": "Float",
+   "label": "Quantity (g)"
+  },
+  {
+   "name": "CRM Personal Plan Item-food_group",
+   "dt": "CRM Personal Plan Item",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "quantity_g",
+   "fieldname": "food_group",
+   "fieldtype": "Select",
+   "label": "Food group",
+   "options": "\nCereals and tubers\nLegumes\nMeat\nFish\nEggs\nMilk and dairy\nVegetables\nFruit\nOils and fats\nNuts and seeds\nSweets\nDrinks\nOther"
+  },
+  {
+   "name": "CRM Personal Plan Item-portions",
+   "dt": "CRM Personal Plan Item",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "food_group",
+   "fieldname": "portions",
+   "fieldtype": "Float",
+   "label": "Portions"
+  },
+  {
+   "name": "CRM Personal Plan Item-alternatives",
+   "dt": "CRM Personal Plan Item",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "portions",
+   "fieldname": "alternatives",
+   "fieldtype": "Small Text",
+   "label": "Or instead"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "CRM Personal Plan Item",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

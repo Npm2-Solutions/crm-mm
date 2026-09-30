@@ -3,20 +3,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   ABITUDINE,
-  ABITUDINI,
-  ALLENAMENTO,
   CIBO,
-  ESERCIZI,
   ESERCIZIO,
   GRUPPO,
-  MENU,
   OGNI_GIORNO,
-  SCAMBI,
   descrivi,
-  generiPer,
   giorniDellaVoce,
-  isDieta,
   momentiIniziali,
+  offre,
   nuovaChiave,
   nuovaVoce,
   nutrienti,
@@ -69,20 +63,37 @@ describe('the nutrients, from the tables, as the server counts them', () => {
 // a random that repeats: keys are predictable in a test
 const sempre = (valore) => () => valore
 
-describe('what a plan holds', () => {
-  it('follows the server: a habit fits anywhere', () => {
-    expect(generiPer(MENU)).toEqual([CIBO, ABITUDINE])
-    expect(generiPer(SCAMBI)).toEqual([GRUPPO, CIBO, ABITUDINE])
-    expect(generiPer(ALLENAMENTO)).toEqual([ESERCIZIO, ABITUDINE])
-    expect(generiPer(ESERCIZI)).toEqual([ESERCIZIO, ABITUDINE])
-    expect(generiPer(ABITUDINI)).toEqual([ABITUDINE])
-    expect(generiPer('Horoscope')).toEqual([])
-  })
+// the kinds as the server describes them (crm.piani.api.descrivi_tipo)
+const MENU = 'Meal plan'
+const ALLENAMENTO = 'Training'
+const ABITUDINI = 'Habits'
+const TIPO = {
+  [MENU]: {
+    key: MENU,
+    items: [CIBO, ABITUDINE],
+    features: [
+      'calories',
+      'meals',
+      'nutrients',
+      'recipes',
+      'shopping',
+      'targets',
+    ],
+  },
+  [ALLENAMENTO]: {
+    key: ALLENAMENTO,
+    items: [ESERCIZIO, ABITUDINE],
+    features: [],
+  },
+  [ABITUDINI]: { key: ABITUDINI, items: [ABITUDINE], features: [] },
+}
 
-  it('knows a diet', () => {
-    expect(isDieta(MENU)).toBe(true)
-    expect(isDieta(SCAMBI)).toBe(true)
-    expect(isDieta(ALLENAMENTO)).toBe(false)
+describe('what a kind offers', () => {
+  it('reads it from what the server says', () => {
+    expect(offre(TIPO[MENU], 'targets')).toBe(true)
+    expect(offre(TIPO[ALLENAMENTO], 'targets')).toBe(false)
+    expect(offre(undefined, 'meals')).toBe(false)
+    expect(offre({ key: 'x' }, 'meals')).toBe(false)
   })
 })
 
@@ -98,15 +109,17 @@ describe('the rows', () => {
       seduta: 'Seduta A',
       giorno: 'Ogni giorno',
     }
-    expect(momentiIniziali(MENU, nomi).map((m) => m.label)).toEqual([
+    expect(momentiIniziali(TIPO[MENU], nomi).map((m) => m.label)).toEqual([
       'Colazione',
       'Pranzo',
       'Cena',
     ])
-    expect(momentiIniziali(ALLENAMENTO, nomi)).toMatchObject([
+    expect(momentiIniziali(TIPO[ALLENAMENTO], nomi)).toMatchObject([
       { label: 'Seduta A', day: OGNI_GIORNO },
     ])
-    expect(momentiIniziali(ABITUDINI, nomi)[0].label).toBe('Ogni giorno')
+    expect(momentiIniziali(TIPO[ABITUDINI], nomi)[0].label).toBe('Ogni giorno')
+    // a kind the editor does not know yet starts from a session
+    expect(momentiIniziali(undefined, nomi)[0].label).toBe('Seduta A')
   })
 
   it('a new item has what its kind needs to start', () => {

@@ -33,10 +33,12 @@ from frappe import _
 from frappe.utils import flt
 
 from crm.assistente import modello, regole
-from crm.clinica import ASSISTENTE, RICETTE, piani
+from crm.clinica import ASSISTENTE, RICETTE
 from crm.clinica import piani_regole as R
+from crm.clinica.piani import CIBO
 from crm.moduli import consensi
 from crm.permissions import livelli
+from crm.piani import api as piani
 
 #: How many recipes a proposal holds, and how many foods of the library it reads.
 MAX_RICETTE = 3
@@ -64,7 +66,7 @@ def _libreria() -> dict[str, dict]:
 	return {
 		riga.name: riga
 		for riga in frappe.get_all(
-			piani.CIBO,
+			CIBO,
 			filters={"enabled": 1},
 			fields=["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI],
 			order_by="food_name asc",

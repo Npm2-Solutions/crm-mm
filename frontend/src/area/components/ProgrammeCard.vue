@@ -140,7 +140,7 @@ async function finish(stage) {
   busy.value = true
   error.value = ''
   try {
-    await call('crm.clinica.area.piani.finish_stage', {
+    await call('crm.piani.area.finish_stage', {
       person: area.person,
       programme: props.programme.name,
       stage: stage.key,

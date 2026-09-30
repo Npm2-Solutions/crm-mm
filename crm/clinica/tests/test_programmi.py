@@ -20,11 +20,15 @@ import frappe
 from frappe.utils import add_days, getdate
 
 from crm.area import messaggi
-from crm.clinica import cartella, piani, programmi
+from crm.clinica import cartella
+from crm.clinica import piani as piani_clinica
 from crm.clinica import piani_regole as R
-from crm.clinica import programmi_regole as P
 from crm.clinica.tests.test_cartella import DIRECTOR, DOC1, DOC2, MANAGER
 from crm.clinica.tests.test_piani import PianiCase
+from crm.piani import api as piani
+from crm.piani import programmi
+from crm.piani import programmi_regole as P
+from crm.piani import regole as r
 
 
 class ProgrammiCase(PianiCase):
