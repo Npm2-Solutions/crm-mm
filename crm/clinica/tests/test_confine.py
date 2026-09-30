@@ -27,8 +27,9 @@ VIETATO = "crm.clinica"
 #: The composition root: deciding which modules exist is its whole job.
 AMMESSI = {CRM / "registrazione.py"}
 #: The patient card is who is a patient, not what is wrong with them; the settings
-#: say which pipelines are the centre's.
-NON_CLINICI = {"clinic_patient", "clinic_settings"}
+#: say which pipelines are the centre's; an opening out of the care team says who
+#: opened a record and why.
+NON_CLINICI = {"clinic_patient", "clinic_settings", "clinic_access_grant"}
 
 
 def _moduli_importati(sorgente: str) -> set[str]:

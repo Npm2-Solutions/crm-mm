@@ -9,9 +9,11 @@ when a visit is signed: each one a document with its type, its date, where it
 comes from and whom it is for, the file private and its SHA-256 kept
 (requisiti.md §5).
 
-**Who reads it**, as the record (`cartella.legge_le_altre`): whom it is for and
-whoever added it; the medical director; the other practitioners once the
-patient consented to the health dossier. "Only me" stays its practitioner's.
+**Who reads it**, as the record (`crm.clinica.dossier`): whom it is for and
+whoever added it; the medical director; the other practitioners who have the
+patient in care, once the patient consented to the health dossier, and never a
+document the patient had obscured. "Only me" stays its practitioner's; "my
+discipline" is for the colleagues of the same qualification.
 
 **Who adds one**: a practitioner, for their patients; the front desk, which scans
 what the patient brings, for a practitioner it names, and then sees only what it
@@ -33,7 +35,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_fullname, getdate, nowdate
 
-from crm.clinica import cartella, paziente
+from crm.clinica import cartella, dossier, paziente
 from crm.permissions import livelli
 
 DOCTYPE = "Clinic Document"
@@ -53,9 +55,7 @@ def puo_leggere(doc, user: str | None = None) -> bool:
 	user = user or frappe.session.user
 	if user in (doc.get("practitioner"), doc.get("added_by")):
 		return True
-	if doc.get("visibility") == SOLO_IO:
-		return False
-	return cartella.legge_le_altre(doc.get("lead"), user)
+	return dossier.legge_le_altre(doc, user)
 
 
 def _puo_togliere(doc, user: str) -> bool:
@@ -91,7 +91,7 @@ def get_permission_query_conditions(user: str | None = None) -> str:
 	user = user or frappe.session.user
 	archivio = frappe.qb.DocType(DOCTYPE)
 	condizione = (archivio.practitioner == user) | (archivio.added_by == user)
-	condivisa = cartella.condizione_condivisa(archivio, user)
+	condivisa = dossier.condizione_condivisa(archivio, user)
 	if condivisa is not None:
 		condizione = condizione | condivisa
 	return condizione.get_sql(with_namespace=True, quote_char="`", secondary_quote_char="'")
@@ -121,6 +121,8 @@ def _riga(doc) -> dict:
 		"added_by_name": get_fullname(doc.added_by) if doc.added_by else None,
 		"added_on": doc.added_on,
 		"visibility": doc.visibility,
+		# shown only to who still reads it: whom it is for, who added it, the director
+		"obscured": cint(doc.obscured),
 		"file": file,
 		"file_name": file.rsplit("/", 1)[-1] if file else None,
 		"file_hash": doc.file_hash,
@@ -169,7 +171,11 @@ def get_documents(lead: str) -> dict:
 		doc = frappe.get_doc(DOCTYPE, nome)
 		doc.add_viewed()
 		righe.append(_riga(doc))
-	return {"documents": righe, "can_add": livelli.puo("clinica.archivia")}
+	return {
+		"documents": righe,
+		"can_add": livelli.puo("clinica.archivia"),
+		"can_obscure": livelli.puo("clinica.oscura"),
+	}
 
 
 @frappe.whitelist()
@@ -180,6 +186,8 @@ def get_choices() -> dict:
 	return {
 		"types": [{"value": tipo, "label": _(tipo)} for tipo in DA_AGGIUNGERE],
 		"for_me": livelli.puo("clinica.scrivi"),
+		# "my discipline" is offered to a practitioner who has one
+		"discipline": dossier.disciplina_di(frappe.session.user) if livelli.puo("clinica.scrivi") else None,
 		"practitioners": _operatori(),
 	}
 
@@ -204,15 +212,15 @@ def _campi(
 		frappe.throw(_("Say which practitioner the document is for"))
 	if practitioner != frappe.session.user and not livelli.puo("clinica.scrivi", practitioner):
 		frappe.throw(_("{0} does not write clinical records").format(get_fullname(practitioner)))
-	# "only me" is a practitioner's choice about their own document
-	solo_io = visibility == SOLO_IO and scrive and practitioner == frappe.session.user
+	# "only me" and "my discipline" are a practitioner's choices about their own document
+	proprio = scrive and practitioner == frappe.session.user
 	return {
 		"title": titolo[:140],
 		"document_type": document_type,
 		"document_date": getdate(document_date) if document_date else None,
 		"source": (source or "").strip() or None,
 		"practitioner": practitioner,
-		"visibility": SOLO_IO if solo_io else TUTTI,
+		"visibility": visibility if proprio and visibility in dossier.VISIBILITA else TUTTI,
 		"notes": (notes or "").strip() or None,
 	}
 
@@ -328,6 +336,8 @@ def dal_referto(visita) -> str | None:
 			"document_date": getdate(visita.record_date or visita.signed_on),
 			"practitioner": visita.practitioner,
 			"visibility": visita.visibility or TUTTI,
+			"discipline": visita.get("discipline"),
+			"obscured": cint(visita.get("obscured")),
 			"record": visita.name,
 			"file_hash": visita.get("pdf_hash"),
 			"appointment": visita.get("appointment"),

@@ -98,6 +98,26 @@ CAPACITA = (
 		),
 		{"segreteria": CENTRO, "operatore": SUOI, DIREZIONE: CENTRO},
 	),
+	# the dossier (doc 30): obscuring an episode is the medical director's, at the
+	# patient's request; a practitioner opens a record out of their care writing why
+	(
+		Capacita(
+			"clinica.oscura",
+			PIANO,
+			clinica=True,
+			descrizione="Obscure an episode of the record at the patient's request, and reveal it again",
+		),
+		{DIREZIONE: CENTRO},
+	),
+	(
+		Capacita(
+			"clinica.fuori_equipe",
+			PIANO,
+			clinica=True,
+			descrizione="Open the record of somebody not in your care, writing why: for a day, in the access log",
+		),
+		{"operatore": SUOI},
+	),
 	(
 		Capacita(
 			"clinica.traccia",

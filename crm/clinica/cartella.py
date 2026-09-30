@@ -4,10 +4,12 @@
 """The clinical record on the person's page: who reads it, and the trace of who did.
 
 **Who reads a record** (doc 30, "Vedere la cartella"): its author, always; the
-medical director; the other practitioners only when the patient has given the
-consent to the health dossier. A note marked "only me" stays its author's, and a
-draft too. The front desk knows that a visit happened, not what was said; the
-manager, sales and marketing do not see it at all.
+medical director; the other practitioners who have the patient in care, only
+when the patient has given the consent to the health dossier, and never an
+episode the patient had obscured (`crm.clinica.dossier`). A note marked "only me"
+stays its author's, and a draft too; "my discipline" is for the colleagues of the
+same qualification. The front desk knows that a visit happened, not what was
+said; the manager, sales and marketing do not see it at all.
 
 **The access log.** Frappe writes a View Log only from its Desk form; the CRM reads
 through these calls, which write one for every record they return, and the
@@ -25,7 +27,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_fullname
 
-from crm.clinica import paziente
+from crm.clinica import dossier, paziente
 from crm.permissions import livelli
 
 DOCTYPE = "Clinic Record"
@@ -36,8 +38,7 @@ GIORNI_REGISTRO = 730
 
 
 def _col_dossier(lead: str) -> bool:
-	# the register keeps one "Given" row per consent at most, and it is the current one
-	return bool(frappe.db.exists("CRM Consent", {"lead": lead, "consent_type": DOSSIER, "status": "Given"}))
+	return dossier.col_dossier(lead)
 
 
 def _firmata(doc) -> bool:
@@ -47,39 +48,15 @@ def _firmata(doc) -> bool:
 	return cint(doc.get("docstatus") if salvata is None else salvata) >= 1
 
 
-def legge_le_altre(lead: str, user: str | None = None) -> bool:
-	"""Whether ``user`` reads what others wrote about this person: the medical
-	director always; a practitioner once the patient consented to the dossier."""
-	ambito = livelli.ambito("clinica.vedi", user or frappe.session.user)
-	if not ambito:
-		return False
-	return ambito == livelli.CENTRO or _col_dossier(lead)
-
-
-def condizione_condivisa(tabella, user: str):
-	"""The same rule for a list: the rows of ``tabella`` (with `lead` and
-	`visibility`) ``user`` reads though they are somebody else's, or None."""
-	ambito = livelli.ambito("clinica.vedi", user)
-	if not ambito:
-		return None
-	condizione = tabella.visibility != SOLO_IO
-	if ambito != livelli.CENTRO:
-		consenso = frappe.qb.DocType("CRM Consent")
-		condizione = condizione & tabella.lead.isin(
-			frappe.qb.from_(consenso)
-			.select(consenso.lead)
-			.where((consenso.consent_type == DOSSIER) & (consenso.status == "Given"))
-		)
-	return condizione
-
-
 def puo_leggere(doc, user: str | None = None) -> bool:
+	"""Its author, always; the others by the dossier's rules (`crm.clinica.dossier`),
+	once it is signed."""
 	user = user or frappe.session.user
 	if doc.get("practitioner") == user:
 		return True
-	if doc.get("docstatus") != 1 or doc.get("visibility") == SOLO_IO:
+	if doc.get("docstatus") != 1:
 		return False
-	return legge_le_altre(doc.get("lead"), user)
+	return dossier.legge_le_altre(doc, user)
 
 
 def has_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
@@ -101,7 +78,7 @@ def get_permission_query_conditions(user: str | None = None) -> str:
 	user = user or frappe.session.user
 	cartella = frappe.qb.DocType(DOCTYPE)
 	condizione = cartella.practitioner == user
-	condivisa = condizione_condivisa(cartella, user)
+	condivisa = dossier.condizione_condivisa(cartella, user)
 	if condivisa is not None:
 		condizione = condizione | ((cartella.docstatus == 1) & condivisa)
 	return condizione.get_sql(with_namespace=True, quote_char="`", secondary_quote_char="'")
@@ -118,6 +95,9 @@ def _riga(doc) -> dict:
 		"practitioner": doc.practitioner,
 		"practitioner_name": get_fullname(doc.practitioner),
 		"visibility": doc.visibility,
+		"discipline": doc.get("discipline"),
+		# shown only to who still reads it: its author and the medical director
+		"obscured": cint(doc.get("obscured")),
 		"content": doc.content,
 		"docstatus": doc.docstatus,
 		"signed_on": doc.signed_on,
@@ -206,7 +186,13 @@ def get_record(lead: str) -> dict:
 		"sheets": _schede() if livelli.puo("clinica.scrivi") else [],
 		"can_see_log": livelli.puo("clinica.accessi"),
 		"can_archive": livelli.puo("clinica.archivia"),
+		# the medical director obscures an episode at the patient's request
+		"can_obscure": livelli.puo("clinica.oscura"),
 		"dossier": _col_dossier(lead),
+		# "my discipline" is offered to who has one
+		"discipline": dossier.disciplina_di(frappe.session.user) if livelli.puo("clinica.scrivi") else None,
+		# opened out of the care team: until when, and why
+		"out_of_care": dossier.apertura_in_corso(lead),
 	}
 
 
@@ -236,6 +222,8 @@ def save_record(
 		doc.lead = lead
 		doc.practitioner = frappe.session.user
 		doc.addendum_to = addendum_to
+	if visibility not in dossier.VISIBILITA:
+		frappe.throw(_("{0} is not who reads a record").format(visibility))
 	doc.update({"kind": kind, "visibility": visibility, "content": content})
 	if answers is not None and doc.template_version:
 		from crm.moduli import modelli
@@ -342,7 +330,9 @@ def access_log(lead: str) -> list[dict]:
 				limit=1000,
 			)
 		]
-	return _per_minuto(righe)[:300]
+	# the openings out of the care team, each with its reason
+	aperture = dossier.aperture(lead)
+	return sorted(_per_minuto(righe) + aperture, key=lambda riga: riga.creation, reverse=True)[:300]
 
 
 def _per_minuto(righe: list[dict]) -> list[dict]:
@@ -382,7 +372,8 @@ def visite_su(doctype: str, name: str) -> list[dict]:
 
 	The front desk and the practitioners see that a visit happened and who did it;
 	what was said stays in the Clinic tab, for who may read it. A note "only me"
-	and a draft are nobody else's business, not even as a padlock.
+	and a draft are nobody else's business, not even as a padlock; nor is an
+	episode the patient had obscured, but for its author and the medical director.
 	"""
 	if doctype != "CRM Lead" or not paziente.clinica_accesa():
 		return []
@@ -395,10 +386,21 @@ def visite_su(doctype: str, name: str) -> list[dict]:
 	for riga in frappe.get_all(
 		DOCTYPE,
 		filters={"lead": name},
-		fields=["name", "kind", "record_date", "practitioner", "visibility", "docstatus", "creation"],
+		fields=[
+			"name",
+			"kind",
+			"record_date",
+			"practitioner",
+			"visibility",
+			"docstatus",
+			"obscured",
+			"creation",
+		],
 	):
 		mio = riga.practitioner == utente
 		if not mio and (riga.docstatus != 1 or riga.visibility == SOLO_IO):
+			continue
+		if not mio and riga.obscured and not dossier.vede_gli_oscurati(utente):
 			continue
 		nodi.append(
 			{
