@@ -207,7 +207,7 @@ Il paziente che prenota le sue visite non ha deal, ed è giusto così:
 | Agenda | Un motore solo: servizi, professionisti, stanze, attrezzature, listini condizionati, `/prenota`, piattaforme esterne, automazioni sugli stati. `Completed` e `Attended` si segnano a mano, con un clic dal pannello dell'appuntamento; la scheda della persona elenca i suoi appuntamenti e ne prenota uno ([14](../progetto-ghl/14-agenda-appuntamenti.md#un-calendario-due-cose-29092026)) | L'accettazione per chi ha la segreteria; la visita, l'accettazione e la fattura che chiudono da sole l'appuntamento |
 | Fatturazione | `CRM Invoice` nasce dall'appuntamento (la coda "Dall'agenda, non ancora fatturati", `issue_from_appointment`); i medici sono gli erogatori (`CRM Service Provider`, con utente e qualifica); il canale lo decide la classificazione; Sistema TS con le credenziali del centro | ~~Il codice fiscale e l'indirizzo non si ricordano~~: fatto il 29/09/2026, con [l'anagrafica fiscale](#unanagrafica-fiscale-sola) |
 | Privacy | Il [registro dei consensi](#il-registro-dei-consensi) (29/09/2026): quale testo, quale versione, quando, come; la spunta privacy di `/prenota` ci finisce, e la pagina chiede anche il marketing se il centro vuole. L'hook `user_data_fields` è commentato. Sulla fattura c'è già l'opposizione all'invio TS, documento per documento | I consensi della clinica: dossier, referti online, assistente |
-| Clinica | La sezione Clinica della persona (29–30/09/2026): visite libere o sulla scheda della specialità, firmate e poi solo integrate, con gli allegati, il referto in PDF/A e la sintesi del paziente; i moduli e i consensi informati firmati; il registro degli accessi alla cartella | ~~Cartella per specialità, referti, consensi informati, allegati~~: fatti il 30/09/2026. L'archivio dei documenti e il registro degli accessi anche sull'archivio: fatti il 30/09/2026. Restano dossier e oscuramento, la consegna del referto |
+| Clinica | La sezione Clinica della persona (29–30/09/2026): visite libere o sulla scheda della specialità, firmate e poi solo integrate, con gli allegati, il referto in PDF/A e la sintesi del paziente; i moduli e i consensi informati firmati; il registro degli accessi alla cartella | ~~Cartella per specialità, referti, consensi informati, allegati~~: fatti il 30/09/2026. L'archivio dei documenti, il registro degli accessi anche sull'archivio, dossier e oscuramento: fatti il 30/09/2026. Resta la consegna del referto |
 | Ruoli | System Manager, Sales Manager, Sales User; Invoicing Manager e Invoicing User. Ogni utente vede tutti gli appuntamenti. **Sales User legge tutte le fatture** (permesso di lettura ed export su `CRM Invoice`), e dalla PR #101 le fatture compaiono anche nella cronologia della persona: `invoices_on` in `crm/api/activities.py` le legge con `frappe.get_all`, che salta i permessi (solo intestazione, importi e stati, niente righe) | Tre livelli (Segreteria, Manager amministrativo, Operatore) con la gestione dei ruoli nel CRM; System Manager e Administrator solo all'agenzia, mentre oggi l'"Admin" del CRM **è** System Manager ([requisiti §1](./requisiti.md#1-tre-livelli-e-il-site-resta-vostro)). Il marketing non deve leggere le fatture: una riga "seduta di psicoterapia" è un dato sanitario |
 | Moduli | Nessun interruttore per modulo: `crm/dashboard/features.py` rileva cosa usa il sito, ma serve solo alla dashboard | Un interruttore "centro medico" che accende menu, pagine, impostazioni, widget e job |
 
@@ -723,6 +723,41 @@ Fatto il 30/09/2026 (fase 2, la settima parte).
 
 Resta alla fase 2: il dossier con l'oscuramento degli episodi e l'apertura fuori
 équipe con un motivo; la consegna del referto al paziente.
+
+### Il dossier, l'oscuramento e l'apertura con motivo
+
+Fatto il 30/09/2026 (fase 2, l'ottava parte), secondo le linee guida del Garante
+sul dossier sanitario (4/6/2015). Le regole stanno in `crm/clinica/dossier.py`.
+
+- **Il dossier vuole la cura.** Con il consenso del paziente, gli operatori che lo
+  hanno in cura leggono tutta la cartella e l'archivio, non solo le proprie visite.
+  Prima bastava il consenso: ora chi non ha la persona in cura non legge niente,
+  né da una lista né dal documento.
+- **Oscurare un episodio** tocca alla direzione sanitaria, su richiesta del
+  paziente (`clinica.oscura`), con una nota su come è arrivata la richiesta.
+  - Una visita porta con sé le integrazioni e i referti; un documento
+    dell'archivio si oscura da solo.
+  - L'episodio resta leggibile da chi l'ha scritto o aggiunto e dalla direzione.
+  - Gli altri non possono sapere che esiste: niente voce, niente lucchetto nella
+    cronologia, niente riga nell'archivio. Nella sintesi del paziente una riga
+    che viene da lì mostra l'ultimo valore che possono leggere.
+  - Si torna indietro con "Reveal". Il registro degli eventi tiene chi, quando e
+    la nota.
+- **La propria disciplina**: una visita o un documento può essere "My discipline",
+  per i colleghi con la stessa qualifica (quella della scheda erogatore). Chi non
+  ha una qualifica non la sceglie; la direzione legge tutto.
+- **Fuori équipe** (`clinica.fuori_equipe`): dalle Persone, "Out of your care".
+  - L'operatore cerca una persona che non ha in cura per nome e cognome, scritti
+    per intero, o per codice fiscale: poche corrispondenze esatte, mai un elenco
+    del centro.
+  - La apre scrivendo il motivo. Per 24 ore la persona è sua, e le regole del
+    dossier valgono comunque.
+  - La scheda Clinica gli ricorda fino a quando e perché.
+  - Il registro degli accessi mostra al manager e alla direzione chi l'ha aperta,
+    quando e il motivo.
+
+Resta alla fase 2 la consegna del referto al paziente, a mano o online per 45
+giorni con il consenso ai referti online.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

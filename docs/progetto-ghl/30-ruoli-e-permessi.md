@@ -273,6 +273,17 @@ Dal 29/09/2026 ci sono la scheda paziente e la cartella semplice: `pazienti.vedi
 `pazienti.segna`, `pazienti.recupera`, `clinica.vedi`, `clinica.scrivi`,
 `clinica.traccia` ("che c'è stata una visita") e `clinica.accessi`, nel modulo "clinica"
 del piano; il livello Direzione sanitaria viene dalla clinica (`crm/clinica/__init__.py`).
+Dal 30/09/2026 anche:
+
+- `clinica.archivia`: aggiungere documenti all'archivio. La segreteria per un
+  operatore, l'operatore per i suoi pazienti.
+- `clinica.oscura`: oscurare un episodio su richiesta del paziente. Solo la
+  direzione.
+- `clinica.fuori_equipe`: aprire una cartella fuori équipe scrivendo il motivo.
+  L'operatore.
+
+La visibilità "la propria disciplina" è una scelta dell'operatore sulla sua voce
+(`crm/clinica/dossier.py`).
 
 ### Area cliente (quando c'è)
 
