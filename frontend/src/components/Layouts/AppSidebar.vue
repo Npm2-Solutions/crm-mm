@@ -161,6 +161,7 @@
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
 import LucideClipboardCheck from '~icons/lucide/clipboard-check'
+import LucideHourglass from '~icons/lucide/hourglass'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideReceipt from '~icons/lucide/receipt-text'
 import GettingStartedPanel from '@/components/Layouts/GettingStartedPanel.vue'
@@ -305,6 +306,13 @@ const links = [
     icon: CalendarIcon,
     to: 'Calendar',
     condition: () => puo('agenda.vedi'),
+  },
+  {
+    // who waits for a place that frees up
+    label: 'Waiting list',
+    icon: LucideHourglass,
+    to: 'Waiting List',
+    condition: () => puo('agenda.attese'),
   },
   {
     label: 'Call Logs',

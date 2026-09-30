@@ -194,6 +194,13 @@ const routes = [
     component: () => import('@/pages/Calendar.vue'),
   },
   {
+    // who waits for a place, and the places offered to them
+    path: '/waiting-list',
+    name: 'Waiting List',
+    meta: { richiede: 'agenda.attese' },
+    component: () => import('@/pages/WaitingList.vue'),
+  },
+  {
     // the desk's day: arrivals, the waiting room, what the last days left open
     path: '/oggi',
     name: 'Today',

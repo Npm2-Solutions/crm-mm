@@ -106,6 +106,7 @@ import LucideDoorOpen from '~icons/lucide/door-open'
 import LucideTags from '~icons/lucide/tags'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
+import LucideHourglass from '~icons/lucide/hourglass'
 import LucideCalendarCheck from '~icons/lucide/calendar-check'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
@@ -162,6 +163,7 @@ import ResourcesSettings from '@/components/Settings/Scheduling/ResourcesSetting
 import PriceListsSettings from '@/components/Settings/Scheduling/PriceListsSettings.vue'
 import StaffSchedulesSettings from '@/components/Settings/Scheduling/StaffSchedulesSettings.vue'
 import SchedulingDefaults from '@/components/Settings/Scheduling/SchedulingDefaults.vue'
+import WaitingListSettings from '@/components/Settings/Scheduling/WaitingListSettings.vue'
 import PipelinesSettings from '@/components/Settings/Pipelines/PipelinesSettings.vue'
 import CallScriptsSettings from '@/components/Settings/CallScriptsSettings.vue'
 import MetaSettings from '@/components/Settings/Meta/MetaSettings.vue'
@@ -460,6 +462,13 @@ const tabs = computed(() => {
           label: __('Price Lists'),
           icon: markRaw(LucideTags),
           component: markRaw(PriceListsSettings),
+          condition: () => puo('agenda.configura'),
+        },
+        {
+          // a place that frees up goes to who waits for it
+          label: __('Waiting list'),
+          icon: markRaw(LucideHourglass),
+          component: markRaw(WaitingListSettings),
           condition: () => puo('agenda.configura'),
         },
         {

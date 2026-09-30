@@ -1031,6 +1031,9 @@ def descrivi(doc) -> dict:
 		"notes": doc.notes,
 		"since": str(doc.creation),
 		"booked_appointment": doc.booked_appointment,
+		"booked_starts_on": str(frappe.db.get_value(APPUNTAMENTO, doc.booked_appointment, "starts_on"))
+		if doc.booked_appointment
+		else None,
 		"offer": _offerta(in_corso) if in_corso else None,
 		"offers": [_offerta(r) for r in offerte[:10]],
 	}
@@ -1188,6 +1191,23 @@ def _dalla_scrivania(doc, start: str, staff: str | None, class_session: str | No
 
 
 @frappe.whitelist()
+def get_full_classes(service: str) -> list[dict]:
+	"""The classes of a service with no seat left, in the days the list looks at:
+	one waits for a seat in one of them."""
+	_vede()
+	conf = impostazioni()
+	adesso = datetime.datetime.now(UTC)
+	return [
+		{
+			"name": lezione["name"],
+			"starts_on": str(to_system_naive(lezione["start"])),
+			"seats": lezione["seats"],
+		}
+		for lezione in sessioni_piene(service, adesso, adesso + datetime.timedelta(days=conf.giorni))
+	]
+
+
+@frappe.whitelist()
 def find_places(name: str) -> dict:
 	"""What is free for an entry now, earliest first, and how many are being
 	offered each place already."""
@@ -1324,6 +1344,7 @@ def della_persona(persona: str) -> list[dict]:
 				"staff": dati["staff_name"],
 				"class_starts_on": dati["class_starts_on"],
 				"choice": dati["choice"],
+				"days": dati["days"],
 				"until": dati["until"],
 				"status": dati["status"],
 				"offer": {
