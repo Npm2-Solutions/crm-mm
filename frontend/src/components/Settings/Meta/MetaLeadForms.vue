@@ -39,7 +39,7 @@
           <span class="text-p-sm text-ink-gray-6">
             {{
               __(
-                'They reached DottorCloud and stopped there. Trying again is safe: a lead already imported is not imported twice.',
+                'They reached {brand} and stopped there. Trying again is safe: a lead already imported is not imported twice.',
               )
             }}
           </span>
@@ -56,7 +56,7 @@
         <span class="text-p-sm text-ink-gray-5">
           {{
             __(
-              "The Pages switched on in Connection, and how their form answers map to DottorCloud's fields.",
+              "The Pages switched on in Connection, and how their form answers map to {brand}'s fields.",
             )
           }}
         </span>
@@ -219,7 +219,7 @@
       >
         {{
           __(
-            'No Page is switched on yet. Choose which ones bring their leads to DottorCloud on the Connection tab, and their forms appear here.',
+            'No Page is switched on yet. Choose which ones bring their leads to {brand} on the Connection tab, and their forms appear here.',
           )
         }}
       </div>
@@ -234,7 +234,7 @@
           <p>
             {{
               __(
-                'In Meta Business Settings → Integrations → Leads Access the business may restrict who can read its leads: assign DottorCloud there.',
+                'In Meta Business Settings → Integrations → Leads Access the business may restrict who can read its leads: assign {brand} there.',
               )
             }}
           </p>

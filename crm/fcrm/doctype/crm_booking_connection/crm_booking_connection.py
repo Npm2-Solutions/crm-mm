@@ -7,6 +7,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from crm.marchio import con_nome
+
 
 class CRMBookingConnection(Document):
 	# begin: auto-generated types
@@ -99,7 +101,9 @@ class CRMBookingConnection(Document):
 			target = {"Service": row.service, "Staff": row.staff, "Resource": row.resource}.get(row.map_type)
 			if not target:
 				frappe.throw(
-					_("Row {0}: pick what {1} corresponds to in DottorCloud").format(row.idx, row.external_id)
+					con_nome(_("Row {0}: pick what {1} corresponds to in {brand}")).format(
+						row.idx, row.external_id
+					)
 				)
 
 	def validate_field_map(self):

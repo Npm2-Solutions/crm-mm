@@ -7,6 +7,7 @@ from pypika.functions import Function
 from crm.dashboard import layout as grid
 from crm.dashboard import registry, store, templates
 from crm.dashboard.context import Context, is_manager, keeps_own, shares
+from crm.marchio import con_nome
 from crm.utils import sales_user_only
 
 
@@ -57,7 +58,7 @@ def get_widget_catalog() -> dict:
 				"category": widget.category,
 				"kind": widget.kind,
 				"title": str(widget.title),
-				"description": str(widget.description),
+				"description": con_nome(widget.description),
 				"size": list(widget.size),
 				"live": widget.live,
 				"scope": widget.scope,
@@ -116,7 +117,7 @@ def widget_answer(name, config, from_date, to_date, user, only_mine) -> dict:
 	widget = registry.get(name)
 	if not widget:
 		return {"error": _("This widget does not exist any more")}
-	about = {"title": str(widget.title), "description": str(widget.description), "live": widget.live}
+	about = {"title": str(widget.title), "description": con_nome(widget.description), "live": widget.live}
 	blocked = store.availability(widget)
 	if blocked:
 		return {"kind": widget.kind, **about, "unavailable": blocked}

@@ -159,7 +159,7 @@
             :label="__('Forget recording links after')"
             :description="
               __(
-                'Drops the recording link so the audio is no longer reachable from DottorCloud. Deleting it at the provider is a separate step. 0 keeps the links.',
+                'Drops the recording link so the audio is no longer reachable from {brand}. Deleting it at the provider is a separate step. 0 keeps the links.',
               )
             "
           >

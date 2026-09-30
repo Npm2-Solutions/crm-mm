@@ -11,13 +11,15 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from crm.marchio import con_nome
+
 
 class CRMAuditLog(Document):
 	def validate(self):
 		if not self.is_new():
 			frappe.throw(_("An event of the register is not changed"))
 		if not self.flags.dalla_traccia:
-			frappe.throw(_("Events are written by DottorCloud, not by hand"))
+			frappe.throw(con_nome(_("Events are written by {brand}, not by hand")))
 
 	def on_trash(self):
 		frappe.throw(_("An event of the register is not deleted"), frappe.LinkExistsError)

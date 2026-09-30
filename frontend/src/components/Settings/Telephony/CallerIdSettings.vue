@@ -17,7 +17,7 @@
       <p class="text-p-base text-ink-gray-6">
         {{
           __(
-            'Every number this account can present, what kind of number it is, and whether a call to it actually reaches DottorCloud.',
+            'Every number this account can present, what kind of number it is, and whether a call to it actually reaches {brand}.',
           )
         }}
       </p>
@@ -65,7 +65,7 @@
           <p class="text-p-sm text-ink-gray-7">
             {{
               __(
-                '{0} of {1} numbers do not reach DottorCloud. The answering service can only answer on the ones that do.',
+                '{0} of {1} numbers do not reach {brand}. The answering service can only answer on the ones that do.',
                 [unreachable.length, callerIds.data.length],
               )
             }}
@@ -117,8 +117,8 @@
                 <Badge
                   :label="
                     row.routes_to_crm
-                      ? __('Reaches DottorCloud')
-                      : __('Does not reach DottorCloud')
+                      ? __('Reaches {brand}')
+                      : __('Does not reach {brand}')
                   "
                   variant="subtle"
                   :theme="row.routes_to_crm ? 'green' : 'red'"

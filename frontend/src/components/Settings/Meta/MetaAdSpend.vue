@@ -11,7 +11,7 @@
     <p class="text-p-sm text-ink-gray-5">
       {{
         __(
-          'Spend read from Meta, results read from DottorCloud. The cost per customer is the number Ads Manager cannot show you.',
+          'Spend read from Meta, results read from {brand}. The cost per customer is the number Ads Manager cannot show you.',
         )
       }}
     </p>
@@ -118,7 +118,7 @@
           <div v-else class="mt-3 text-p-base text-ink-gray-5">
             {{
               __(
-                'No ad account yet. Press "Find my ad accounts": DottorCloud asks Facebook which ones the connected user can read.',
+                'No ad account yet. Press "Find my ad accounts": {brand} asks Facebook which ones the connected user can read.',
               )
             }}
           </div>

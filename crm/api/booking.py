@@ -12,6 +12,7 @@ from crm.fcrm.doctype.crm_booking_calendar.crm_booking_calendar import (
 	from_system_naive,
 	to_system_naive,
 )
+from crm.marchio import con_nome
 from crm.utils import count_field
 
 BOOKING_SOURCE = "Booking"
@@ -447,7 +448,7 @@ def _notify_agent(booking, subject: str):
 	frappe.sendmail(
 		recipients=[agent_email],
 		subject=f"[{booking.name}] {subject}",
-		message=_("{0} ({1}) — status: {2}. Open DottorCloud for details.").format(
+		message=con_nome(_("{0} ({1}) — status: {2}. Open {brand} for details.")).format(
 			booking.invitee_name, booking.invitee_email, _(booking.status)
 		),
 		reference_doctype="CRM Booking",

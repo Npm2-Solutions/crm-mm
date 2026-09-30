@@ -83,7 +83,7 @@
                   {{ __('Twilio App Name') }}
                 </div>
                 <div class="text-p-sm text-ink-gray-5">
-                  {{ __('Select a Twilio app for DottorCloud') }}
+                  {{ __('Select a Twilio app for {brand}') }}
                 </div>
               </div>
               <div class="flex items-center gap-2">
@@ -155,7 +155,7 @@
               <div class="text-p-sm text-ink-gray-5">
                 {{
                   __(
-                    'The numbers this account owns or has verified, and whether each one reaches DottorCloud.',
+                    'The numbers this account owns or has verified, and whether each one reaches {brand}.',
                   )
                 }}
               </div>
@@ -305,10 +305,10 @@
                 {{
                   tecnico
                     ? __(
-                        'Enable Twilio integration to make and receive calls directly from DottorCloud',
+                        'Enable Twilio integration to make and receive calls directly from {brand}',
                       )
                     : __(
-                        'The agency connects Twilio, so that you can make and receive calls from DottorCloud.',
+                        'The agency connects Twilio, so that you can make and receive calls from {brand}.',
                       )
                 }}
               </span>

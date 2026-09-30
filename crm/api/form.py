@@ -18,6 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils.telemetry import capture
 
+from crm.marchio import con_nome
 from crm.utils import check_system_manager, is_system_manager
 
 ALLOWED_DOCTYPES = ("CRM Lead", "CRM Deal")
@@ -311,7 +312,9 @@ def grant_guest_link_access(doctype: str) -> dict:
 	check_system_manager()
 	if not guest_linkable(doctype):
 		frappe.throw(
-			_("{0} can't be opened to guests: it isn't a lookup list on a DottorCloud form.").format(doctype),
+			con_nome(_("{0} can't be opened to guests: it isn't a lookup list on a {brand} form.")).format(
+				doctype
+			),
 			frappe.PermissionError,
 		)
 
@@ -547,7 +550,7 @@ def _get_crm_form(name: str):
 	# scope to CRM's own forms — a Web Form from another app that happens to target
 	# CRM Lead/Deal must not be readable/mutable/deletable through this API
 	if doc.module != FORM_MODULE or doc.doc_type not in ALLOWED_DOCTYPES:
-		frappe.throw(_("Not a DottorCloud form"))
+		frappe.throw(con_nome(_("Not a {brand} form")))
 	return doc
 
 

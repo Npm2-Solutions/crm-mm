@@ -13,6 +13,7 @@ from __future__ import annotations
 import frappe
 from frappe import _
 
+from crm.marchio import con_nome
 from crm.telephony import answering, callbacks, routing
 from crm.telephony.providers.base import (
 	Announcement,
@@ -39,7 +40,7 @@ def handle_incoming_call(
 		# a carrier whose flow is built in its own dashboard has nothing to be told;
 		# reaching here means a webhook was wired to the wrong provider
 		raise ProviderNotSupported(
-			_("{0} does not let DottorCloud decide what an incoming call hears.").format(provider.label)
+			con_nome(_("{0} does not let {brand} decide what an incoming call hears.")).format(provider.label)
 		)
 
 	config = answering.settings()

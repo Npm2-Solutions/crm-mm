@@ -10,6 +10,8 @@
  * this layer adds is a stable `id` per node, which the backend keeps.
  */
 
+import { conMarchio } from './marchio'
+
 export const STEP_CATEGORIES = [
   { name: 'communication', label: 'Talk to the contact', icon: 'send' },
   { name: 'contact', label: 'Update the record', icon: 'user' },
@@ -55,7 +57,9 @@ export const STEP_CATALOG = {
     icon: 'bell',
     theme: 'blue',
     category: 'communication',
-    description: 'Notifies the owner and the assignees inside DottorCloud.',
+    description: conMarchio(
+      'Notifies the owner and the assignees inside {brand}.',
+    ),
     defaults: { message: '' },
     gateable: true,
   },
@@ -304,7 +308,9 @@ export const TRIGGER_CATALOG = {
     category: 'lead',
     icon: 'clipboard-check',
     doctype: 'CRM Lead',
-    hint: 'A lead ad form is filled in — by a new person or by one DottorCloud already knows.',
+    hint: conMarchio(
+      'A lead ad form is filled in — by a new person or by one {brand} already knows.',
+    ),
   },
   'Lead Status Changed': {
     category: 'lead',
@@ -357,7 +363,7 @@ export const TRIGGER_CATALOG = {
   'Email Opened': {
     category: 'messaging',
     icon: 'mail',
-    hint: 'Read tracking on an email sent by DottorCloud.',
+    hint: conMarchio('Read tracking on an email sent by {brand}.'),
   },
   'Trigger Link Clicked': {
     category: 'messaging',

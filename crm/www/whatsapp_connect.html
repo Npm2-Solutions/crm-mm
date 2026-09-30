@@ -27,7 +27,7 @@
 		{% elif launch %}
 			<h1 class="wa-title">{{ _("Connect WhatsApp Business") }}</h1>
 			<p class="wa-text">
-				{{ _("You will keep using WhatsApp on your phone as always. Messages will also appear in DottorCloud, and the last months of conversations are imported.") }}
+				{{ _("You will keep using WhatsApp on your phone as always. Messages will also appear in {brand}, and the last months of conversations are imported.").replace("{brand}", brand_name) }}
 			</p>
 			<ol class="wa-steps">
 				<li>{{ _("Type the number that has the WhatsApp Business app on it. Do not pick another number from the list: typing the right one is what turns on the connection that keeps your phone working.") }}</li>
@@ -53,7 +53,7 @@
 		{% else %}
 			<h1 class="wa-title">{{ _("Connect WhatsApp Business") }}</h1>
 			<p class="wa-text">
-				{{ _("You will keep using WhatsApp on your phone as always. Messages will also appear in DottorCloud, and the last months of conversations are imported.") }}
+				{{ _("You will keep using WhatsApp on your phone as always. Messages will also appear in {brand}, and the last months of conversations are imported.").replace("{brand}", brand_name) }}
 			</p>
 			<ol class="wa-steps">
 				<li>{{ _("Type the number that has the WhatsApp Business app on it. Do not pick another number from the list: typing the right one is what turns on the connection that keeps your phone working.") }}</li>
@@ -177,7 +177,7 @@
 			.then(function (result) {
 				if (!result.ok) throw new Error(serverMessage(result.body));
 				forget();
-				say({{ _("Connected. Taking you back to DottorCloud…") | tojson }});
+				say({{ _("Connected. Taking you back to {brand}…").replace("{brand}", brand_name) | tojson }});
 				if (returnUrl) window.location.href = returnUrl;
 			})
 			.catch(function (error) {
@@ -191,7 +191,7 @@
 				});
 				say(
 					reason
-						? {{ _("Facebook finished, but DottorCloud refused the connection: ") | tojson }} + reason
+						? {{ _("Facebook finished, but {brand} refused the connection: ").replace("{brand}", brand_name) | tojson }} + reason
 						: {{ _("Could not complete the connection. Please retry.") | tojson }},
 					true
 				);
@@ -236,7 +236,7 @@
 			// A different tab, or storage the browser cleared. There is nothing
 			// to recover from here, and pretending otherwise wastes the code.
 			say(
-				{{ _("This browser tab lost track of the connection. Go back to DottorCloud and press Connect again.") | tojson }},
+				{{ _("This browser tab lost track of the connection. Go back to {brand} and press Connect again.").replace("{brand}", brand_name) | tojson }},
 				true
 			);
 			return;

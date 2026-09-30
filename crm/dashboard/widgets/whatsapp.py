@@ -98,7 +98,7 @@ def whatsapp_received(ctx: Context):
 	category="whatsapp",
 	kind="number",
 	title=_lt("WhatsApp sent"),
-	description=_lt("Messages the team sent on WhatsApp, from DottorCloud or the phone"),
+	description=_lt("Messages the team sent on WhatsApp, from {brand} or the phone"),
 	requires=WHATSAPP,
 )
 def whatsapp_sent(ctx: Context):
@@ -168,7 +168,7 @@ def read_rate(counts: dict[str, float]) -> float | None:
 	category="whatsapp",
 	kind="number",
 	title=_lt("WhatsApp read rate"),
-	description=_lt("Share of the messages sent from DottorCloud that were read"),
+	description=_lt("Share of the messages sent from {brand} that were read"),
 	requires=WHATSAPP,
 )
 def whatsapp_read_rate(ctx: Context):
@@ -201,7 +201,7 @@ def whatsapp_failed(ctx: Context):
 	category="whatsapp",
 	kind="donut",
 	title=_lt("What happened to the messages sent"),
-	description=_lt("Messages sent from DottorCloud: read, delivered, sent, not delivered"),
+	description=_lt("Messages sent from {brand}: read, delivered, sent, not delivered"),
 	size=(10, 8),
 	requires=WHATSAPP,
 )
@@ -297,7 +297,7 @@ def whatsapp_templates(ctx: Context):
 	category="whatsapp",
 	kind="number",
 	title=_lt("Answered from the phone"),
-	description=_lt("Share of WhatsApp replies typed in the WhatsApp Business app instead of DottorCloud"),
+	description=_lt("Share of WhatsApp replies typed in the WhatsApp Business app instead of {brand}"),
 	requires=WHATSAPP,
 	keywords=("coexistence", "business app"),
 )
