@@ -144,7 +144,9 @@ def _proposte(dati, cibi: dict[str, dict], kcal: float | None) -> list[dict]:
 
 
 @frappe.whitelist(methods=["POST"])
-def propose_recipes(plan: str, moment: str, kcal=None, notes: str | None = None) -> dict:
+def propose_recipes(
+	plan: str, moment: str, kcal: float | str | None = None, notes: str | None = None
+) -> dict:
 	"""Up to three recipes for one meal of one's own draft menu: nothing is written
 	in the plan, only the register's event."""
 	doc = _il_mio_menu(plan)
@@ -185,7 +187,7 @@ def _in_parole(ricetta: dict, cibi: dict[str, dict]) -> str:
 
 
 @frappe.whitelist(methods=["POST"])
-def use_recipe(event: str, moment: str, recipe) -> dict:
+def use_recipe(event: str, moment: str, recipe: dict | str) -> dict:
 	"""The nutritionist chose a recipe, as the dialog shows it: its foods go into the
 	meal, its method into the meal's note with the mark. The engine reads it again:
 	nothing outside the library comes in."""

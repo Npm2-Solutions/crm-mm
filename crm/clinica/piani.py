@@ -227,13 +227,13 @@ def search_foods(text: str | None = None, group: str | None = None) -> list[dict
 def add_food(
 	food_name: str,
 	food_group: str,
-	portion_g=None,
-	kcal=None,
+	portion_g: float | str | None = None,
+	kcal: float | str | None = None,
 	source_note: str | None = None,
-	protein_g=None,
-	carbs_g=None,
-	fat_g=None,
-	fibre_g=None,
+	protein_g: float | str | None = None,
+	carbs_g: float | str | None = None,
+	fat_g: float | str | None = None,
+	fibre_g: float | str | None = None,
 ) -> dict:
 	"""A food of the centre, when the library has not got it: its values for 100 g
 	from a table, whose name goes with it."""

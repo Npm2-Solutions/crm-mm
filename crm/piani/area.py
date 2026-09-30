@@ -211,7 +211,7 @@ def log_item(
 	item: str,
 	outcome: str | None = None,
 	day: str | None = None,
-	effort=None,
+	effort: int | str | None = None,
 	note: str | None = None,
 ) -> dict:
 	"""One tap: how an item went on a day. Tapped again, it changes; with no
