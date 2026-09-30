@@ -1781,3 +1781,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Gli alimenti tra cui scegliere vengono dalla libreria del centro, con la loro porzione | "Il paziente sceglie dentro i limiti" (design) |
 | L'immagine di un esercizio solo se è un file pubblico o un indirizzo; il video si apre fuori | Un file privato non si mostra a un utente del sito; un player incorporato è un altro sito dentro l'area |
 
+## Fase 4, l'assistente: le fondamenta e il modulo di carta
+
+> **Completato** (30/09/2026). `crm/assistente`: il modulo del piano, l'adattatore
+> del modello, `CRM Assistant Settings`, il registro `CRM AI Event`, "Dal modulo di
+> carta". `docs/gestionale-medico/README.md`, "L'assistente: le fondamenta e il
+> modulo di carta".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| L'assistente sta nel CRM, non nella clinica; la clinica registra le sue funzioni | Il lavoro d'ufficio (moduli di carta) serve a ogni cliente; le funzioni cliniche portano con sé chi legge i loro eventi |
+| Un adattatore, due modi di parlare (Anthropic, compatibile OpenAI) | Dove gira il modello è un indirizzo nelle impostazioni, non un ramo del codice: API, gateway UE, server del centro |
+| Senza "nessuna conservazione, nessun addestramento" non parte | Il contratto è la condizione (design, "I dati"), e l'agenzia lo dichiara dove si configura |
+| http solo verso la macchina del centro | Fuori dal centro i dati viaggiano cifrati, come per la trascrizione |
+| Ogni richiesta è un evento, anche fallita, e non si cancella | "Un registro dell'assistente... Ogni mese un campione si rilegge" (design) |
+| Il registro tiene le parole del modello come sono arrivate; il confronto si fa a parte | L'impronta di uscita deve corrispondere al testo tenuto |
+| Dal modulo di carta: solo il testo del PDF, niente immagini | Un modulo in bianco non ha dati di nessuno; leggere scansioni è un altro lavoro, e un altro rischio |
+| Lo schema proposto passa le regole del motore, e diventa solo una bozza | Nessuna scorciatoia: si finisce e si pubblica nel builder come ogni modello |
+
