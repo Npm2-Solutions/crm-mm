@@ -1,0 +1,215 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-10-01 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "document",
+  "lead",
+  "lead_name",
+  "channel",
+  "status",
+  "column_main",
+  "delivered_to",
+  "given_by",
+  "given_on",
+  "online_section",
+  "expires_on",
+  "email",
+  "downloads",
+  "last_download_on",
+  "column_online",
+  "attempts",
+  "withdrawn_by",
+  "withdrawn_on",
+  "token_hash",
+  "code_hash",
+  "session_hash",
+  "session_expires_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "document",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document",
+   "options": "Clinic Document",
+   "read_only": 1,
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "read_only": 1,
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "How",
+   "options": "By hand\nOnline",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Delivered\nAvailable\nDownloaded\nWithdrawn",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "By hand: the patient, or who took it for them",
+   "fieldname": "delivered_to",
+   "fieldtype": "Data",
+   "label": "Given to",
+   "read_only": 1
+  },
+  {
+   "fieldname": "given_by",
+   "fieldtype": "Link",
+   "label": "Given by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "given_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Given on",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.channel=='Online'",
+   "fieldname": "online_section",
+   "fieldtype": "Section Break",
+   "label": "Online"
+  },
+  {
+   "fieldname": "expires_on",
+   "fieldtype": "Datetime",
+   "label": "Online until",
+   "read_only": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Link sent to",
+   "options": "Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "downloads",
+   "fieldtype": "Int",
+   "label": "Downloads",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_download_on",
+   "fieldtype": "Datetime",
+   "label": "Last download",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_online",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Wrong codes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withdrawn_by",
+   "fieldtype": "Link",
+   "label": "Withdrawn by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withdrawn_on",
+   "fieldtype": "Datetime",
+   "label": "Withdrawn on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "token_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Link (SHA-256)",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "code_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Code (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "session_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Session (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "session_expires_on",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "Session until",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Report Delivery",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lead_name",
+ "track_changes": 1,
+ "in_create": 1,
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Medical Director"
+  },
+  {
+   "read": 1,
+   "role": "Practitioner"
+  }
+ ]
+}
