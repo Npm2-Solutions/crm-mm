@@ -217,17 +217,6 @@ CRM_DELLA_DIREZIONE = (
 )
 
 
-def _scheda():
-	from crm.moduli.modelli import Uso
-
-	return Uso(
-		"Clinical sheet",
-		"Clinical sheet",
-		"Written by the practitioner during a visit, on the specialty's sheet: it goes to the clinical record",
-		clinico=True,
-	)
-
-
 DOSSIER = TipoConsenso(
 	chiave="health_dossier",
 	etichetta="Health dossier",
@@ -365,13 +354,12 @@ def registra() -> None:
 	for funzione in FUNZIONI_ASSISTENTE:
 		registra_funzione(funzione)
 	# "health data" on a form template means something where the clinic is on,
-	# and a form that records it is read by the care team only
+	# and a form that records it is read by the care team only; a sheet with the
+	# mark is the practitioner's clinical sheet, written in the record (`cartella`)
 	from crm.moduli import compilazioni, modelli
 
 	modelli.registra_dato_clinico(clinica_accesa)
 	compilazioni.registra_lettore_clinico(legge_i_moduli_clinici)
-	# the practitioner's sheet: a template written during a visit, into the record
-	modelli.registra_uso(_scheda())
 	# the lines of the patient's summary a field of a template may answer
 	from crm.clinica import sintesi
 

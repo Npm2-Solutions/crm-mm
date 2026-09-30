@@ -16,7 +16,13 @@
       <div class="flex items-center gap-2">
         <Badge
           v-if="data"
-          :label="signed ? __('Signed') : __('To finish')"
+          :label="
+            signed
+              ? isSheet
+                ? __('Completed')
+                : __('Signed')
+              : __('To finish')
+          "
           :theme="signed ? 'green' : 'orange'"
           variant="subtle"
         />
@@ -126,7 +132,10 @@
         }}
       </div>
 
-      <div v-if="!signed && !atProvider" class="flex flex-col gap-1.5">
+      <div
+        v-if="!signed && !atProvider && !isSheet"
+        class="flex flex-col gap-1.5"
+      >
         <span class="text-sm text-ink-gray-5">
           {{ __('Answered by a parent or guardian') }}
         </span>
@@ -185,7 +194,11 @@
           <Button
             v-if="primary === 'drawn'"
             variant="solid"
-            :label="__('Sign and finish')"
+            :label="
+              isSheet && !signatureFields.length
+                ? __('Finish the sheet')
+                : __('Sign and finish')
+            "
             :loading="signing"
             @click="sign"
           />
@@ -320,6 +333,8 @@ const showPaper = ref(false)
 const providerLinks = ref([])
 
 const signed = computed(() => data.value?.docstatus === 1)
+// the operator's sheet, written at the desk: completed, not signed by the person
+const isSheet = computed(() => data.value?.use === 'Sheet')
 const signatureFields = computed(() =>
   fieldsOf(data.value?.schema).filter((field) => field.type === 'signature'),
 )
@@ -486,7 +501,7 @@ async function sign() {
     })
     apply(form)
     tried.value = false
-    toast.success(__('Signed'))
+    toast.success(isSheet.value ? __('Completed') : __('Signed'))
   } catch (error) {
     toast.error(error.messages?.join(' ') || error.message)
   } finally {

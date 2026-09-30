@@ -24,7 +24,7 @@ MODULO = "CRM Form"
 MODELLO = "CRM Form Template"
 VERSIONE = "CRM Form Template Version"
 RICHIESTA = "CRM Form Request"
-#: Only a form is asked of a person: a clinical sheet is written in the record.
+#: Only a form is asked of a person: a sheet is the operator's, written at the desk.
 FORMA = "Form"
 
 #: Why a form is owed, most telling first.

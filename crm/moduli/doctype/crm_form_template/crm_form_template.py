@@ -24,8 +24,12 @@ class CRMFormTemplate(Document):
 		if not uso:
 			frappe.throw(_("{0} is not a use of forms on this site").format(frappe.bold(self.use)))
 		if uso.clinico:
-			# a clinical sheet or a plan records health data, always
+			# a use that records health data, always
 			self.clinical = 1
+		if not uso.della_persona:
+			# a sheet is written by the operator at the desk: nobody owes it, nothing sends it
+			self.ask_on = "By hand"
+			self.send_before = 0
 		if self.clinical and not modelli.dato_clinico_disponibile():
 			# the mark means something only where the clinic is on: elsewhere it
 			# would promise a protection nobody gives

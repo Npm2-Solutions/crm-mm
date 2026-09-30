@@ -13,7 +13,7 @@
       <p class="min-w-0 text-p-base text-ink-gray-6">
         {{
           __(
-            "Privacy, consents, questionnaires: filled with the person and signed on the screen, or on their own from a link or the desk's tablet. A signed form is kept as it was, with its PDF.",
+            "Privacy, consents, questionnaires: filled with the person and signed on the screen, or on their own from a link or the desk's tablet. The sheets are written by the operator during the appointment. What is signed is kept as it was, with its PDF.",
           )
         }}
       </p>
@@ -22,6 +22,7 @@
         class="flex shrink-0 gap-2 max-md:flex-wrap"
       >
         <Button
+          v-if="personForms.length"
           icon-left="send"
           :label="__('On their own')"
           @click="showSend = true"
@@ -103,7 +104,9 @@
       :description="
         data?.can_fill && !data.templates.length
           ? __('Publish a form in Settings > Forms to fill it here.')
-          : __('The forms this person fills and signs are kept here.')
+          : __(
+              'The forms this person fills and signs, and the sheets written for them, are kept here.',
+            )
       "
       :icon="h(LucideFileSignature)"
     />
@@ -140,7 +143,20 @@
             size="sm"
           />
           <Badge
-            :label="form.docstatus ? __('Signed') : __('To finish')"
+            v-if="form.use === 'Sheet'"
+            :label="__('Sheet')"
+            theme="gray"
+            variant="subtle"
+            size="sm"
+          />
+          <Badge
+            :label="
+              form.docstatus
+                ? form.use === 'Sheet'
+                  ? __('Completed')
+                  : __('Signed')
+                : __('To finish')
+            "
             :theme="form.docstatus ? 'green' : 'orange'"
             variant="subtle"
             size="sm"
@@ -253,13 +269,27 @@ const PENDING = {
   to_sign_at_desk: () => __('To sign at the desk'),
 }
 
-const templateOptions = computed(() =>
-  (data.value?.templates || []).map((template) => ({
+// the person's forms, and the operator's sheets: filled at the desk, never sent
+const personForms = computed(() =>
+  (data.value?.templates || []).filter((template) => template.use !== 'Sheet'),
+)
+const sheets = computed(() =>
+  (data.value?.templates || []).filter((template) => template.use === 'Sheet'),
+)
+function asOption(template) {
+  return {
     label: template.title,
     icon: template.clinical ? 'lucide-stethoscope' : 'lucide-file-text',
     onClick: () => start(template.name),
-  })),
-)
+  }
+}
+const templateOptions = computed(() => {
+  if (!sheets.value.length) return personForms.value.map(asOption)
+  return [
+    { group: __('Forms'), items: personForms.value.map(asOption) },
+    { group: __('Sheets'), items: sheets.value.map(asOption) },
+  ].filter((group) => group.items.length)
+})
 
 const WHERE = {
   Link: () => __('from a link'),
@@ -269,8 +299,11 @@ const WHERE = {
 function describe(form) {
   const parts = [__('version {0}', [form.version])]
   if (form.docstatus) {
+    const when = formatDate(form.signed_on, 'D MMM YYYY, HH:mm')
     parts.push(
-      __('signed {0}', [formatDate(form.signed_on, 'D MMM YYYY, HH:mm')]),
+      form.use === 'Sheet'
+        ? __('completed {0}', [when])
+        : __('signed {0}', [when]),
     )
   } else {
     parts.push(__('started {0}', [formatDate(form.modified, 'D MMM YYYY')]))

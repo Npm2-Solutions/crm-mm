@@ -174,6 +174,8 @@ def _riga(doc) -> dict:
 		"title": doc.title,
 		"version": doc.version,
 		"template": doc.template,
+		# a form the person fills, or a sheet the operator writes
+		"use": modelli.uso(frappe.get_cached_value(modelli.VERSIONE, doc.template_version, "use")).chiave,
 		"clinical": doc.clinical,
 		"channel": doc.channel,
 		"docstatus": doc.docstatus,
@@ -187,18 +189,23 @@ def _riga(doc) -> dict:
 	}
 
 
+#: What is filled at the desk: the person's forms, and the operator's sheets.
+DAL_BANCO = (modelli.FORMA, modelli.SCHEDA)
+
+
 def _modelli_da_compilare() -> list[dict]:
-	"""The published forms the session may have somebody fill."""
+	"""The published forms the session may have somebody fill, and the sheets it may
+	write for them. A sheet with health data is written in the clinical record."""
 	clinico = legge_dati_clinici()
 	return [
 		riga
 		for riga in frappe.get_all(
 			modelli.MODELLO,
-			filters={"enabled": 1, "current_version": ("is", "set"), "use": modelli.FORMA},
-			fields=["name", "title", "clinical", "specialty", "current_version_number"],
+			filters={"enabled": 1, "current_version": ("is", "set"), "use": ("in", DAL_BANCO)},
+			fields=["name", "title", "use", "clinical", "specialty", "current_version_number"],
 			order_by="title asc",
 		)
-		if clinico or not riga.clinical
+		if (clinico or not riga.clinical) and not (riga.use == modelli.SCHEDA and riga.clinical)
 	]
 
 
@@ -301,10 +308,14 @@ def start_form(
 	modello = frappe.get_doc(modelli.MODELLO, template)
 	if not modello.enabled or not modello.current_version:
 		frappe.throw(_("{0} is not published").format(frappe.bold(modello.title)))
-	if (modello.use or modelli.FORMA) != modelli.FORMA:
+	uso = modelli.uso(modello.use).chiave
+	if uso not in DAL_BANCO or (uso == modelli.SCHEDA and modello.clinical):
 		frappe.throw(
 			_("{0} is not a form to fill: it is written in the clinical record").format(modello.title)
 		)
+	if uso == modelli.SCHEDA:
+		# the operator's, written at the desk: never a link, never the tablet
+		channel = "At the desk"
 	versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
 	if versione.clinical and not legge_dati_clinici():
 		frappe.throw(_("This form records health data: it is for the care team"), frappe.PermissionError)
@@ -886,9 +897,12 @@ def completa(doc, risposte: dict) -> None:
 
 
 def _registra_consensi(doc, schema: dict, risposte: dict, stato: dict) -> None:
-	"""Every consent the form asked goes into the register, on the words it showed."""
+	"""Every consent the form asked goes into the register, on the words it showed.
+	A sheet records none: a consent is the person's to give."""
 	from crm.moduli import consensi, registro
 
+	if not modelli.uso(_versione(doc).use).della_persona:
+		return
 	ip, dispositivo = _richiesta()
 	for campo in S.campi(schema):
 		chiave = campo.get("id")
