@@ -116,6 +116,24 @@ class LaScheda(SchedeCase):
 		# the report is the report, not one more attachment of the visit
 		self.assertNotIn(firmata["pdf_file"], [a.file_url for a in firmata["attachments"]])
 
+	def test_il_referto_e_sigillato_dal_centro(self):
+		from crm.moduli import sigillo
+		from crm.moduli.tests.test_sigillo import installa_sigillo
+
+		installa_sigillo()
+		self.addCleanup(frappe.clear_document_cache, sigillo.IMPOSTAZIONI, sigillo.IMPOSTAZIONI)
+		firmata = self.visita()
+		frappe.set_user("Administrator")
+		pdf = frappe.get_doc("File", {"file_url": firmata["pdf_file"]}).get_content(encodings=[])
+		# the fingerprint the record keeps is the sealed file's
+		self.assertEqual(hashlib.sha256(pdf).hexdigest(), firmata["pdf_hash"])
+		[firma] = sigillo.verifica(pdf)
+		self.assertEqual((firma["intact"], firma["covers_all"]), (True, True))
+		self.assertEqual(
+			frappe.db.get_value("Clinic Record", firmata["name"], "pdf_conformance"),
+			"PDF/A-3b (structure verified), sealed by the centre",
+		)
+
 	def test_il_referto_scrive_testo(self):
 		from crm.clinica import referto
 		from crm.moduli.tests.test_pdf_sicuro import TRAPPOLA, allegati
