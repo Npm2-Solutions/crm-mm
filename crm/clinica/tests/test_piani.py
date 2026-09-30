@@ -223,7 +223,10 @@ class LeLibrerie(PianiCase):
 		self.come(DOC1)
 		nuovo = piani.add_food("Merluzzo", "Fish", portion_g=150, kcal=82)
 		self.assertIn(nuovo["name"], [c["name"] for c in piani.search_foods("merl")])
-		self.assertEqual([c["name"] for c in piani.search_foods(group="Fish")], [nuovo["name"]])
+		# the site may have its own fish: the filter keeps to the group
+		pesci = piani.search_foods(group="Fish")
+		self.assertIn(nuovo["name"], [c["name"] for c in pesci])
+		self.assertEqual({c["food_group"] for c in pesci}, {"Fish"})
 		with self.assertRaises(frappe.ValidationError):
 			piani.add_exercise("Plank", video_url="https://example.com/plank.mp4")
 		esercizio = piani.add_exercise("Plank", "Core", video_url="https://www.youtube.com/watch?v=abc123")
