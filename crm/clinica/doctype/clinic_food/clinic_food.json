@@ -1,0 +1,157 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 16:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "food_name",
+  "food_group",
+  "column_main",
+  "portion_g",
+  "enabled",
+  "nutrients_section",
+  "kcal",
+  "protein_g",
+  "column_nutrients",
+  "carbs_g",
+  "fat_g",
+  "fibre_g",
+  "source_section",
+  "source",
+  "column_source",
+  "source_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "food_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Food",
+   "reqd": 1
+  },
+  {
+   "fieldname": "food_group",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Group",
+   "options": "Cereals and tubers\nLegumes\nMeat\nFish\nEggs\nMilk and dairy\nVegetables\nFruit\nOils and fats\nNuts and seeds\nSweets\nDrinks\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The usual portion, in grams: what one portion of an exchange diet means for this food",
+   "fieldname": "portion_g",
+   "fieldtype": "Float",
+   "label": "Portion (g)"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "nutrients_section",
+   "fieldtype": "Section Break",
+   "label": "Per 100 g"
+  },
+  {
+   "fieldname": "kcal",
+   "fieldtype": "Float",
+   "label": "kcal"
+  },
+  {
+   "fieldname": "protein_g",
+   "fieldtype": "Float",
+   "label": "Protein (g)"
+  },
+  {
+   "fieldname": "column_nutrients",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "carbs_g",
+   "fieldtype": "Float",
+   "label": "Carbohydrates (g)"
+  },
+  {
+   "fieldname": "fat_g",
+   "fieldtype": "Float",
+   "label": "Fat (g)"
+  },
+  {
+   "fieldname": "fibre_g",
+   "fieldtype": "Float",
+   "label": "Fibre (g)"
+  },
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "default": "Centre",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Table",
+   "options": "Centre\nCREA\nBDA-IEO\nCIQUAL\nUSDA"
+  },
+  {
+   "fieldname": "column_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "What the table's licence asks to show",
+   "fieldname": "source_note",
+   "fieldtype": "Data",
+   "label": "Licence or attribution"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 16:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Food",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "food_name",
+ "sort_order": "ASC",
+ "states": [],
+ "autoname": "hash",
+ "naming_rule": "Random",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Practitioner",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Medical Director"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "title_field": "food_name",
+ "show_title_field_in_link": 1,
+ "search_fields": "food_group"
+}

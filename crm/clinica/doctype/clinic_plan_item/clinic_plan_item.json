@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 16:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_key",
+  "moment_key",
+  "kind",
+  "food",
+  "quantity_g",
+  "food_group",
+  "portions",
+  "alternatives",
+  "column_exercise",
+  "exercise",
+  "sets",
+  "reps",
+  "duration",
+  "rest",
+  "load",
+  "column_more",
+  "text",
+  "times_per_week",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "moment_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Moment"
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Food\nFood group\nExercise\nHabit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "food",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Food",
+   "options": "Clinic Food"
+  },
+  {
+   "fieldname": "quantity_g",
+   "fieldtype": "Float",
+   "label": "Quantity (g)"
+  },
+  {
+   "fieldname": "food_group",
+   "fieldtype": "Select",
+   "label": "Food group",
+   "options": "\nCereals and tubers\nLegumes\nMeat\nFish\nEggs\nMilk and dairy\nVegetables\nFruit\nOils and fats\nNuts and seeds\nSweets\nDrinks\nOther"
+  },
+  {
+   "fieldname": "portions",
+   "fieldtype": "Float",
+   "label": "Portions"
+  },
+  {
+   "fieldname": "alternatives",
+   "fieldtype": "Small Text",
+   "label": "Or instead"
+  },
+  {
+   "fieldname": "column_exercise",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "exercise",
+   "fieldtype": "Link",
+   "label": "Exercise",
+   "options": "Clinic Exercise"
+  },
+  {
+   "fieldname": "sets",
+   "fieldtype": "Int",
+   "label": "Sets"
+  },
+  {
+   "fieldname": "reps",
+   "fieldtype": "Data",
+   "label": "Repetitions"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Data",
+   "label": "Duration"
+  },
+  {
+   "fieldname": "rest",
+   "fieldtype": "Data",
+   "label": "Rest"
+  },
+  {
+   "fieldname": "load",
+   "fieldtype": "Data",
+   "label": "Load"
+  },
+  {
+   "fieldname": "column_more",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "text",
+   "fieldtype": "Data",
+   "label": "Habit"
+  },
+  {
+   "fieldname": "times_per_week",
+   "fieldtype": "Int",
+   "label": "Times a week"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note for the patient"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 16:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Plan Item",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

@@ -146,6 +146,17 @@ CAPACITA = (
 		),
 		{"segreteria": CENTRO, "operatore": SUOI, DIREZIONE: CENTRO},
 	),
+	# the plans (design.md, "I piani"): which kinds, the qualification decides
+	(
+		Capacita(
+			"piani.scrivi",
+			PIANO,
+			clinica=True,
+			descrizione="Write and publish plans - a diet, a training, exercises at home, habits - "
+			"of the kinds one's qualification allows",
+		),
+		{"operatore": SUOI},
+	),
 	(
 		Capacita(
 			"clinica.traccia",
