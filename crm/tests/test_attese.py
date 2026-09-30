@@ -497,6 +497,24 @@ class DaPrenota(AtteseCase):
 			(vista["status"], vista["choice"]["parts"], vista["offer"]), (R.IN_ATTESA, ["morning"], None)
 		)
 
+	def test_col_telefono_di_un_familiare(self):
+		# the phone is Giulia's and the name is new: a record of Nina's own, linked
+		# to Giulia and without contacts, as a booking makes it; the entry keeps
+		# what Nina typed, and the offers go there
+		self.entra(
+			full_name="Nina Attese",
+			email="nina.attese@example.com",
+			phone="+39 333 111 0001",
+			days="[]",
+			parts="[]",
+		)
+		voce = frappe.get_doc(A.VOCE, {"email": "nina.attese@example.com"})
+		self.assertNotEqual(voce.lead, self.giulia.name)
+		self.assertEqual(A._destinatario(voce)[1:], ("nina.attese@example.com", "+393331110001"))
+		self.annulla(self.occupato)
+		self.assertEqual(frappe.db.get_value(A.VOCE, voce.name, "status"), R.PROPOSTA)
+		self.assertTrue(self.link("nina.attese@example.com"))
+
 	def test_una_voce_sola_per_servizio(self):
 		self.entra()
 		self.entra(parts=json.dumps(["evening"]))

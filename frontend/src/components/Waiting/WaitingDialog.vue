@@ -539,6 +539,10 @@ const facts = computed(() => {
       : __('with no last day'),
   )
   parts.push(__('offers by {0}', [__(entry.channel)]))
+  // where they go, when the person gave them joining
+  const to =
+    entry.channel === 'Email' ? entry.email : entry.phone || entry.email
+  if (to) parts.push(__('to {0}', [to]))
   if (entry.contact_name)
     parts.push(__('messages to {0}', [entry.contact_name]))
   parts.push(

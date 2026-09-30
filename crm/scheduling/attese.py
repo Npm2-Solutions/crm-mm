@@ -567,13 +567,20 @@ def offri(voce, posto: R.Posto, da: str | None = None, conf=None) -> dict:
 
 
 def _destinatario(voce) -> tuple[str, str | None, str | None]:
-	"""Who hears of an offer, and where: the person, or who booked for them."""
+	"""Who hears of an offer, and where: the email and the mobile given when
+	joining, as a booking keeps them on its row - a family shares a phone, and the
+	record found by it may hold none of theirs - else the person's own, or those
+	of who booked for them."""
 	from crm.api.whatsapp import numbers_of
-	from crm.utils import stored_value
+	from crm.utils import stored_value, to_e164
 
 	chi = voce.contact or voce.lead
-	numeri = numbers_of("CRM Lead", chi)
-	return chi, stored_value("CRM Lead", chi, "email") or None, numeri[0] if numeri else None
+	email = (voce.get("email") or "").strip() or stored_value("CRM Lead", chi, "email") or None
+	numero = to_e164(voce.get("phone")) if voce.get("phone") else None
+	if not numero:
+		numeri = numbers_of("CRM Lead", chi)
+		numero = numeri[0] if numeri else None
+	return chi, email, numero
 
 
 def _nome_servizio(servizio: str) -> str:
@@ -725,17 +732,15 @@ def ancora_libero(voce, riga):
 
 
 def _righe_partecipanti(voce, segreto: str, online: bool) -> list[dict]:
-	from crm.utils import stored_value
-
-	chi = voce.contact or voce.lead
+	_chi, email, numero = _destinatario(voce)
 	righe = [
 		{
 			"party_type": "CRM Lead",
 			"party": voce.lead,
 			"participant_name": voce.lead_name or voce.lead,
 			"booked_by": voce.contact or None,
-			"email": stored_value("CRM Lead", chi, "email") or None,
-			"phone": stored_value("CRM Lead", chi, "mobile_no") or None,
+			"email": email,
+			"phone": numero,
 			"status": "Booked",
 			"access_token": segreto,
 			"booked_online": 1 if online else 0,
@@ -878,10 +883,8 @@ def _conferma_al_cliente(voce, appuntamento, segreto: str) -> None:
 	from crm.api.service_booking import _calendar_links, ics_file, manage_url
 	from crm.moduli.richieste import nome_del_centro
 	from crm.scheduling.availability import settings
-	from crm.utils import stored_value
 
-	chi = voce.contact or voce.lead
-	email = stored_value("CRM Lead", chi, "email")
+	_chi, email, _numero = _destinatario(voce)
 	if not email:
 		return
 	try:
@@ -945,10 +948,13 @@ def entra(
 	fonte: str = R.DAL_BANCO,
 	urgente: bool = False,
 	note: str | None = None,
+	email: str | None = None,
+	telefono: str | None = None,
 	ignora_permessi: bool = False,
 ):
 	"""On the list, or the entry already there changed: one per person and service
-	(and class). Returns the entry."""
+	(and class). ``email`` and ``telefono`` are the ones given when joining, where
+	the offers go. Returns the entry."""
 	nome = frappe.db.get_value(
 		VOCE,
 		{
@@ -973,6 +979,9 @@ def entra(
 	doc.until = fino or None
 	doc.channel = canale if canale in canali_offerti() else R.EMAIL
 	doc.contact = contatto or None
+	if email or telefono:
+		doc.email = email or None
+		doc.phone = telefono or None
 	if fonte == R.DAL_BANCO:
 		doc.urgent = 1 if urgente else 0
 		doc.notes = (note or "").strip() or None
@@ -1025,6 +1034,8 @@ def descrivi(doc) -> dict:
 		],
 		"choice": R.scelte_da(doc.days),
 		"channel": doc.channel,
+		"email": doc.get("email"),
+		"phone": doc.get("phone"),
 		"contact": doc.contact,
 		"contact_name": frappe.db.get_value("CRM Lead", doc.contact, "lead_name") if doc.contact else None,
 		"source": doc.source,
