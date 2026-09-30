@@ -1926,3 +1926,27 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Al più uno ogni due ore per canale | Tre messaggi del centro di fila non devono essere tre WhatsApp |
 | Un avviso che non parte finisce nel log, non ferma la bacheca | Il messaggio del centro è la cosa; l'avviso è un di più |
 | Le impostazioni con `canali.configura`, dai metodi della clinica | I canali sono del manager; niente scritture del Single dal client |
+
+## Fase 3, le librerie: le tabelle degli alimenti ed exercises-dataset
+
+> **Completato** (30/09/2026). `crm/clinica/tabelle.py` (puro: fogli, colonne, numeri,
+> gruppi, esercizi), `crm/clinica/librerie.py`, `Clinic Library Import`, i campi di
+> origine su `Clinic Food` e `Clinic Exercise`, `exercise_media_url` in `Clinic
+> Settings`, `frontend/src/components/Settings/Clinic/` (Impostazioni > Clinic >
+> Libraries). `docs/gestionale-medico/README.md`, "Le librerie: le tabelle e gli
+> esercizi".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Il foglio si legge sul server, la persona controlla colonne, categorie e alimenti prima dell'importazione | Le tabelle con la licenza (BDA-IEO, CREA) arrivano in forme che non conosciamo: il riconoscimento dei nomi più la scelta a mano le copre tutte |
+| CREA e BDA-IEO solo con la spunta, e l'importazione dice chi l'ha data | Sono le due fonti che un software commerciale usa solo con licenza o permesso (ricerca-design §2.3) |
+| CIQUAL e USDA si scelgono alimento per alimento | Riempiono i buchi e i nomi non sono in italiano: 3.183 alimenti in francese o inglese sporcherebbero la libreria |
+| "traces" e "< x" valgono zero, "-" non si conta | Sotto il limite del laboratorio non c'è niente da sommare; quello che non si sa non si inventa |
+| L'energia mancante si calcola con i fattori UE, e l'alimento lo dice | 794 alimenti di CIQUAL hanno proteine, carboidrati e grassi ma non l'energia: senza, il menù conterebbe zero kcal senza dirlo. Dove la tabella la dà, il calcolo sta entro 0,4 kcal (mediana) |
+| Reimportare aggiorna i numeri, non le parole del centro | La nutrizionista traduce i nomi una volta; la versione nuova della tabella non deve cancellarli |
+| Le immagini del dataset sono percorsi, l'indirizzo è dell'agenzia | "Una copia per server o un CDN, non una per sito" (design); cambiando CDN nessun esercizio si rompe |
+| La didascalia di Gym visual solo accanto alle sue immagini | La foto del centro è del centro; i dati del dataset sono MIT e non la chiedono |
+| Attrezzi e muscoli tradotti con un dizionario, i nomi no | Poche decine di parole si traducono una volta; 1.324 nomi di esercizi li deve rileggere un trainer (design) |
+
