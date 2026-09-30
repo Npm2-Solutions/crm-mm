@@ -17,8 +17,8 @@ DOCUMENTO = "CRM Document"
 
 
 def execute():
-	if not frappe.db.exists("DocType", DOCUMENTO) or not frappe.db.has_column(DOCUMENTO, "clinical"):
-		return
+	# the DocType as this release has it, with the mark: never a silent skip
+	frappe.reload_doc("documenti", "doctype", "crm_document")
 	frappe.db.sql(f"update `tab{DOCUMENTO}` set clinical = 1")  # nosemgrep
 	if not frappe.db.has_column(DOCUMENTO, "record"):
 		return

@@ -149,6 +149,9 @@ setup_wizard_complete = "crm.demo.api.create_demo_data"
 before_install = "crm.install.before_install"
 after_install = "crm.install.after_install"
 
+# a migrate syncs the modules of this release, whatever map a worker left in the cache
+before_migrate = ["crm.migrazione.mappa_dei_moduli"]
+
 # Uninstallation
 # ------------
 

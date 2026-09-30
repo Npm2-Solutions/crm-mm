@@ -14,9 +14,11 @@ import frappe
 
 
 def execute():
+	# the DocTypes as this release has them, with the mark: never a silent skip
+	frappe.reload_doc("piani", "doctype", "crm_personal_plan")
+	frappe.reload_doc("piani", "doctype", "crm_programme")
 	for doctype in ("CRM Personal Plan", "CRM Programme"):
-		if frappe.db.has_column(doctype, "clinical"):
-			frappe.db.sql(f"update `tab{doctype}` set clinical = 1")  # nosemgrep
+		frappe.db.sql(f"update `tab{doctype}` set clinical = 1")  # nosemgrep
 	valore = frappe.db.sql(
 		"select value from tabSingles where doctype = 'Clinic Settings' and field = 'exercise_media_url'"
 	)
