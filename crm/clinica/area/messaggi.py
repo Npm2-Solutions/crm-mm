@@ -22,6 +22,9 @@ from crm.permissions import livelli
 
 MESSAGGIO = "Clinic Message"
 AMMINISTRATIVO, CURA = "Administrative", "Care"
+#: A question the patient passed to the centre from the chat: read and answered
+#: here by whoever writes to the person.
+DOMANDA = "Question"
 
 
 def _legge(doc, user: str) -> bool:
@@ -29,7 +32,7 @@ def _legge(doc, user: str) -> bool:
 	person; one about the care by the dossier's rules."""
 	if doc.get("author") == user:
 		return True
-	if doc.get("kind") == AMMINISTRATIVO:
+	if doc.get("kind") in (AMMINISTRATIVO, DOMANDA):
 		return livelli.puo("area.messaggi", user)
 	from crm.clinica import dossier
 
@@ -66,6 +69,16 @@ def get_messages(lead: str) -> dict:
 		)
 		if _legge(doc, utente)
 	]
+	# the patient's questions are read by who opens the board: the patient sees it
+	for riga in righe:
+		if riga["kind"] == DOMANDA and not riga["read_on"]:
+			riga["read_on"] = now_datetime()
+			frappe.db.set_value(
+				MESSAGGIO,
+				riga["name"],
+				{"read_on": riga["read_on"], "read_by": utente},
+				update_modified=False,
+			)
 	return {
 		"messages": righe,
 		# a practitioner writes about the care; the desk, administration
@@ -147,7 +160,9 @@ def mark_read(person: str) -> dict:
 
 	_mia(person)
 	for nome in frappe.get_all(
-		MESSAGGIO, filters={"lead": person, "read_on": ("is", "not set")}, pluck="name"
+		MESSAGGIO,
+		filters={"lead": person, "read_on": ("is", "not set"), "kind": ("!=", DOMANDA)},
+		pluck="name",
 	):
 		frappe.db.set_value(
 			MESSAGGIO,
@@ -159,4 +174,7 @@ def mark_read(person: str) -> dict:
 
 
 def da_leggere(person: str) -> int:
-	return cint(frappe.db.count(MESSAGGIO, {"lead": person, "read_on": ("is", "not set")}))
+	"""The centre's messages the person has not opened: their own questions are not news."""
+	return cint(
+		frappe.db.count(MESSAGGIO, {"lead": person, "read_on": ("is", "not set"), "kind": ("!=", DOMANDA)})
+	)

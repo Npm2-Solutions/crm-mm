@@ -69,6 +69,10 @@ def get_hash(notification):
 	if notification.type == "WhatsApp":
 		_hash = "#whatsapp"
 
+	# a question from the patient area: on the person's board, in the Clinic tab
+	if notification.type == "Area":
+		_hash = "#clinic"
+
 	if notification.type == "Assignment" and notification.notification_type_doctype == "CRM Task":
 		_hash = "#tasks"
 		if "has been removed by" in notification.message:
