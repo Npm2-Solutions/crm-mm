@@ -4,7 +4,7 @@
 
 ## Il problema
 
-La dashboard era quella di Frappe CRM: una pagina sola, per tutti, con i numeri
+La dashboard era quella del CRM da cui DottorCloud è nato: una pagina sola, per tutti, con i numeri
 di lead e trattative. Intanto il gestionale e' diventato dieci cose — inbox con
 WhatsApp, SMS ed email, telefono e dialer, agenda e prenotazioni online,
 piattaforme esterne, tracciamento e inserzioni Meta, automazioni, social,
@@ -219,7 +219,7 @@ vendita su trattative note e quelli della fatturazione su documenti noti), `test
 - Le traduzioni italiane delle stringhe nuove (titoli e descrizioni dei widget,
   etichette del builder) non sono in `crm/locale/it.po`, come quelle degli altri
   moduli aggiunti da questo fork (agenda, dialer, automazioni, social…): il
-  file arriva da Crowdin e copre solo Frappe CRM. Finche' non si traduce il fork
+  file arriva dal progetto originale e copre solo le sue frasi. Finche' non si traduce il fork
   intero, la dashboard parla inglese anche a chi ha l'italiano.
 - Nessun widget definito dall'utente con query libere: il catalogo e' codice,
   rivisto e testato. Un report a scelta resta il lavoro delle viste salvate.

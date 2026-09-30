@@ -1,5 +1,5 @@
 # Integration routes for beauty/wellness booking platforms without a public API
-Research date: 2026-09-24. Scope: Italian Frappe CRM for salons, spas and wellness studios. The CRM already has email-notification parsing and an iCal feed.
+Research date: 2026-09-24. Scope: DottorCloud for salons, spas and wellness studios. It already has email-notification parsing and an iCal feed.
 Tags: **[V]** means verified on the cited URL (page content or a search-engine snippet of that page). **[I]** means inferred or not confirmed. No contact address appears here unless a source published it.
 
 ---

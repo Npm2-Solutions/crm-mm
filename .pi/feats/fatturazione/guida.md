@@ -303,8 +303,8 @@ canale che finge di aver mandato e' peggio di uno che si ferma.
 ### La PEC
 
 E' la strada che non ha bisogno di nessuno: una casella certificata, un indirizzo,
-e la fattura parte. Serve un Email Account in Frappe con quella PEC, **in invio e
-in ricezione** — le ricevute tornano li'.
+e la fattura parte. Serve un account email con quella PEC (Impostazioni > Email),
+**in invio e in ricezione** — le ricevute tornano li'.
 
 Due dettagli che decidono se funziona:
 

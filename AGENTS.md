@@ -7,10 +7,16 @@ built as the `crm` app. Vue 3 + frappe-ui frontend; the backend is Python on the
 Frappe framework. Scripts in `frontend/` only; Python in `crm/`. No build step for
 Form Scripts — they run as evaluated strings in the browser.
 
-Everything a user sees says DottorCloud: never "Frappe" nor "Frappe CRM", in the
-CRM, the framework's screens (login, desk, public pages, emails) or a document.
-The framework's name stays where only code sees it (imports, API paths, the
-licence's copyright lines).
+The company is **NPM2 Solutions Srl**, the brand is **DottorCloud**. Everything a
+user sees says DottorCloud: never "Frappe" nor "Frappe CRM", in the CRM, the
+framework's screens (login, desk, public pages, emails) or a document, and never
+"the CRM" for the product ("CRM" stays for the category and in technical names).
+The framework's name stays where only code sees it (imports, API paths).
+
+A new file starts `Copyright (c) <year>, NPM2 Solutions Srl and contributors`. A
+file that came from the original project keeps its authors' copyright line, as
+the AGPL asks, and when NPM2 changes it for the first time it gets
+`Modifications copyright (c) <year>, NPM2 Solutions Srl` right below.
 
 ---
 
