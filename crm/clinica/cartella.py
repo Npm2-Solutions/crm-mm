@@ -142,10 +142,13 @@ def _scheda(doc) -> dict:
 
 
 def _schede() -> list[dict]:
-	"""The clinical sheets a practitioner can write a visit on."""
+	"""The clinical sheets a practitioner can write a visit on: the CRM's sheets
+	with the mark of health data. One without it is written among the forms."""
+	from crm.moduli import modelli
+
 	return frappe.get_all(
-		"CRM Form Template",
-		filters={"enabled": 1, "current_version": ("is", "set"), "use": "Clinical sheet"},
+		modelli.MODELLO,
+		filters={"enabled": 1, "current_version": ("is", "set"), "use": modelli.SCHEDA, "clinical": 1},
 		fields=["name", "title", "specialty"],
 		order_by="title asc",
 	)
@@ -259,7 +262,8 @@ def start_sheet(lead: str, template: str, appointment: str | None = None) -> dic
 	from crm.moduli import modelli
 
 	modello = frappe.get_doc(modelli.MODELLO, template)
-	if modello.use != "Clinical sheet" or not modello.enabled or not modello.current_version:
+	clinica = modello.use == modelli.SCHEDA and modello.clinical
+	if not clinica or not modello.enabled or not modello.current_version:
 		frappe.throw(_("{0} is not a clinical sheet in use").format(frappe.bold(modello.title)))
 	versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
 	doc = frappe.get_doc(

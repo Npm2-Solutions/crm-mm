@@ -3,8 +3,9 @@
 
 """A visit on the specialty's clinical sheet, its report, and the patient's summary.
 
-A clinical sheet is a template the practitioner writes during a visit: always
-health data, never offered as a form to fill. Signing the visit checks the sheet
+A clinical sheet is the CRM's sheet with the mark of health data: the
+practitioner writes it during a visit, in the record, never among the forms. One
+without the mark is written at the desk, among the forms. Signing the visit checks the sheet
 as a form is checked, freezes it with its hash, and makes the report once. The
 answers that fill a line of the summary (allergies, medications, weight...) are
 proposed, from the sheet or from a signed clinical form; a practitioner confirms
@@ -60,7 +61,7 @@ class SchedeCase(RecordCase):
 	def setUp(self):
 		super().setUp()
 		frappe.set_user("Administrator")
-		self.scheda = self.pubblica(VISITA, "Visita nutrizionale", use="Clinical sheet")
+		self.scheda = self.pubblica(VISITA, "Visita nutrizionale", use=modelli.SCHEDA, clinical=1)
 
 	@staticmethod
 	def pubblica(schema, titolo, **campi):
@@ -85,10 +86,10 @@ class SchedeCase(RecordCase):
 
 
 class LaScheda(SchedeCase):
-	def test_una_scheda_e_sempre_dato_sanitario_e_non_un_modulo(self):
+	def test_una_scheda_clinica_si_scrive_in_cartella_e_non_fra_i_moduli(self):
 		frappe.set_user("Administrator")
 		modello = frappe.get_doc("CRM Form Template", self.scheda)
-		self.assertEqual((modello.use, modello.clinical), ("Clinical sheet", 1))
+		self.assertEqual((modello.use, modello.clinical), (modelli.SCHEDA, 1))
 		self.come(DOC1)
 		self.assertNotIn(
 			self.scheda, [t["name"] for t in compilazioni.get_person_forms(self.anna.name)["templates"]]
@@ -96,6 +97,38 @@ class LaScheda(SchedeCase):
 		with self.assertRaises(frappe.ValidationError):
 			compilazioni.start_form(self.anna.name, self.scheda)
 		self.assertIn(self.scheda, [s["name"] for s in cartella.get_record(self.anna.name)["sheets"]])
+
+	def test_una_scheda_senza_il_marchio_e_fra_i_moduli(self):
+		frappe.set_user("Administrator")
+		trattamento = self.pubblica(
+			{
+				"sections": [
+					{"id": "s", "title": "S", "fields": [{"id": "zona", "type": "text", "label": "Zona"}]}
+				]
+			},
+			"Scheda trattamento",
+			use=modelli.SCHEDA,
+		)
+		self.come(DOC1)
+		self.assertIn(
+			trattamento, [t["name"] for t in compilazioni.get_person_forms(self.anna.name)["templates"]]
+		)
+		self.assertNotIn(trattamento, [s["name"] for s in cartella.get_record(self.anna.name)["sheets"]])
+		with self.assertRaises(frappe.ValidationError):
+			cartella.start_sheet(self.anna.name, trattamento)
+
+	def test_le_schede_cliniche_di_prima_sono_schede_col_marchio(self):
+		from crm.patches.v1_0 import sheets_are_the_crms
+
+		frappe.set_user("Administrator")
+		versione = frappe.db.get_value("CRM Form Template", self.scheda, "current_version")
+		frappe.db.set_value("CRM Form Template", self.scheda, "use", "Clinical sheet")
+		frappe.db.set_value("CRM Form Template Version", versione, "use", "Clinical sheet")
+		sheets_are_the_crms.execute()
+		self.assertEqual(
+			frappe.db.get_value("CRM Form Template", self.scheda, ["use", "clinical"]), (modelli.SCHEDA, 1)
+		)
+		self.assertEqual(frappe.db.get_value("CRM Form Template Version", versione, "use"), modelli.SCHEDA)
 
 	def test_firmata_si_chiude_con_il_referto(self):
 		firmata = self.visita()

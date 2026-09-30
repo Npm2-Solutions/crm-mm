@@ -75,6 +75,14 @@
                 <span class="truncate text-base-medium text-ink-gray-7">
                   {{ template.title }}
                 </span>
+                <!-- written by the operator at the desk, not filled by the person -->
+                <Badge
+                  v-if="template.use === 'Sheet'"
+                  :label="__('Sheet')"
+                  theme="gray"
+                  variant="subtle"
+                  size="sm"
+                />
                 <Badge
                   v-if="template.clinical"
                   :label="__('Health data')"

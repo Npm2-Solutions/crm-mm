@@ -292,6 +292,7 @@
           type="select"
           :label="__('Use')"
           :options="meta.uses"
+          :description="useInfo.description"
         />
         <label
           v-if="meta.clinical_available || tpl.clinical"
@@ -307,9 +308,13 @@
             {{ __('Health data') }}
             <span class="block text-sm text-ink-gray-5">
               {{
-                __(
-                  'Filling it records health data: only the care team reads it, and it makes the person a patient.',
-                )
+                forThePerson
+                  ? __(
+                      'Filling it records health data: only the care team reads it, and it makes the person a patient.',
+                    )
+                  : __(
+                      'A sheet with health data is a clinical sheet: written in the clinical record, read by the care team.',
+                    )
               }}
             </span>
           </span>
@@ -320,7 +325,11 @@
           :label="__('Specialty')"
           :placeholder="__('Nutrition')"
         />
-        <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+        <!-- asked of the person, and sent: a sheet is written at the desk -->
+        <div
+          v-if="forThePerson"
+          class="grid grid-cols-2 gap-3 max-md:grid-cols-1"
+        >
           <FormControl
             v-model="tpl.ask_on"
             type="select"
@@ -335,7 +344,7 @@
           />
         </div>
         <label
-          v-if="tpl.ask_on !== 'By hand'"
+          v-if="forThePerson && tpl.ask_on !== 'By hand'"
           class="flex items-start gap-2 text-base text-ink-gray-7"
         >
           <Switch v-model="tpl.send_before" class="mt-0.5 shrink-0" size="sm" />
@@ -350,7 +359,10 @@
             </span>
           </span>
         </label>
-        <div v-if="tpl.ask_on === 'Services'" class="flex flex-col gap-1.5">
+        <div
+          v-if="forThePerson && tpl.ask_on === 'Services'"
+          class="flex flex-col gap-1.5"
+        >
           <span class="text-sm text-ink-gray-5">{{
             __('For these services')
           }}</span>
@@ -369,9 +381,13 @@
             {{ __('On') }}
             <span class="block text-sm text-ink-gray-5">
               {{
-                __(
-                  'Off, it is not asked any more; what was signed on it stays.',
-                )
+                forThePerson
+                  ? __(
+                      'Off, it is not asked any more; what was signed on it stays.',
+                    )
+                  : __(
+                      'Off, it is not offered any more; what was written on it stays.',
+                    )
               }}
             </span>
           </span>
@@ -639,14 +655,36 @@ async function load() {
 load()
 
 watch([schema, tpl], () => loaded.value && (dirty.value = true), { deep: true })
-// a clinical sheet or a plan records health data, always
+// a use that records health data, always
 watch(
   () => tpl.use,
   (use) => meta.clinical_uses.includes(use) && (tpl.clinical = true),
 )
 
+// who fills it: the person (a form), or the operator at the desk (a sheet)
+const useInfo = computed(
+  () => meta.uses.find((use) => use.value === tpl.use) || {},
+)
+const forThePerson = computed(() => useInfo.value.for_the_person !== false)
+// a consent is the person's to give: a sheet records none
+const useProblems = computed(() =>
+  forThePerson.value
+    ? []
+    : fieldsOf(schema.value)
+        .filter((field) => field.type === 'consent')
+        .map((field) => ({
+          field: field.id,
+          message:
+            '{0}: a consent is given by the person, on a form. A sheet does not record it.',
+          args: [field.label || field.id],
+        })),
+)
+
 // what is wrong, as the server will say it: the same rules, live
-const problems = computed(() => readyToPublish(schema.value))
+const problems = computed(() => [
+  ...readyToPublish(schema.value),
+  ...useProblems.value,
+])
 const nothingToPublish = computed(
   () =>
     !dirty.value &&

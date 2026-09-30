@@ -20,7 +20,7 @@ import requests
 from crm.assistente import modello, regole
 from crm.clinica import ASSISTENTE, assistente, cartella
 from crm.clinica.tests.test_cartella import DIRECTOR, DOC1, DOC2, MANAGER, RecordCase
-from crm.moduli import consensi
+from crm.moduli import consensi, modelli
 from crm.permissions import livelli
 
 NOTA = "<p>Lombalgia acuta. Esercizi di mobilità per due settimane. Controllo tra un mese.</p>"
@@ -201,7 +201,7 @@ class LaDettatura(AssistenteClinicoCase):
 		from crm.clinica.tests.test_schede import SchedeCase
 
 		frappe.set_user("Administrator")
-		self.scheda = SchedeCase.pubblica(SCHEDA, "Visita della schiena", use="Clinical sheet")
+		self.scheda = SchedeCase.pubblica(SCHEDA, "Visita della schiena", use=modelli.SCHEDA, clinical=1)
 		self.come(DOC1)
 		self.bozza_visita = cartella.start_sheet(self.anna.name, self.scheda)["name"]
 

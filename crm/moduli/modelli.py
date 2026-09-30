@@ -13,9 +13,13 @@ signed, and the text a person agreed to can be shown word for word years later.
 What a schema may hold and what answers mean is `crm.moduli.schema`'s business;
 this module keeps drafts and versions, and says who may do what with them.
 
-Other modules add to it without the CRM knowing them, the way they add
-capabilities: the clinic registers the uses "clinical sheet" and "plan", and says
-when the "health data" mark means something (`registra_dato_clinico`).
+A template has a use: a **form** the person fills (on their own, from a link or the
+desk's tablet, or at the desk with the operator), or a **sheet** the operator
+writes during an appointment - a beauty centre's treatment sheet, a gym's
+assessment. Other modules add to it without the CRM knowing them, the way they add
+capabilities: the clinic says when the "health data" mark means something
+(`registra_dato_clinico`), and a sheet with the mark is its clinical sheet, written
+in the clinical record.
 """
 
 from __future__ import annotations
@@ -34,6 +38,7 @@ from crm.permissions import livelli
 MODELLO = "CRM Form Template"
 VERSIONE = "CRM Form Template Version"
 FORMA = "Form"
+SCHEDA = "Sheet"
 CHIEDE = ("By hand", "First appointment", "Services")
 VALIDITA = ("Forever", "One year", "Every appointment")
 
@@ -43,12 +48,21 @@ class Uso:
 	chiave: str
 	etichetta: str
 	descrizione: str = ""
-	#: a use that always records health data (the clinic's sheets and plans)
+	#: a use that always records health data
 	clinico: bool = False
+	#: filled in by the person: sent by link or on the tablet, asked at a booking,
+	#: giving consents. A sheet is the operator's: filled at the desk, and only there.
+	della_persona: bool = True
 
 
 _usi: dict[str, Uso] = {
-	FORMA: Uso(FORMA, "Form", "Filled in by the person: a privacy notice, consents, a questionnaire")
+	FORMA: Uso(FORMA, "Form", "Filled in by the person: a privacy notice, consents, a questionnaire"),
+	SCHEDA: Uso(
+		SCHEDA,
+		"Sheet",
+		"Written by the operator during an appointment: a treatment sheet, an assessment",
+		della_persona=False,
+	),
 }
 _dato_clinico: list[Callable[[], bool]] = []
 
@@ -59,6 +73,34 @@ def registra_uso(uso: Uso) -> None:
 
 def usi() -> list[Uso]:
 	return list(_usi.values())
+
+
+def uso(chiave: str | None) -> Uso:
+	"""A template's use; an old one without it is a form."""
+	return _usi.get(chiave or FORMA) or _usi[FORMA]
+
+
+def usi_della_persona() -> list[str]:
+	"""The uses the person fills: what is sent, asked at a booking, and gives consents."""
+	return [chiave for chiave, voce in _usi.items() if voce.della_persona]
+
+
+def problemi_dell_uso(schema: dict, chiave: str | None) -> list[dict]:
+	"""What the use does not allow: a consent is the person's to give, so a sheet
+	the operator writes records none."""
+	if uso(chiave).della_persona:
+		return []
+	return [
+		{
+			"code": "consent_on_a_sheet",
+			"field": campo.get("id"),
+			"message": _(
+				"{0}: a consent is given by the person, on a form. A sheet does not record it."
+			).format(campo.get("label") or campo.get("id")),
+		}
+		for campo in S.campi(schema)
+		if campo.get("type") == "consent"
+	]
 
 
 _voci_sintesi: dict[str, str] = {}
@@ -240,7 +282,7 @@ def get_template(name: str) -> dict:
 		"validity": modello.validity,
 		"send_before": modello.send_before,
 		"schema": schema,
-		"problems": problemi(schema),
+		"problems": problemi(schema) + problemi_dell_uso(schema, modello.use),
 		"versions": _versioni(name),
 		**_scelte(),
 	}
@@ -260,11 +302,17 @@ def _scelte() -> dict:
 	)
 	return {
 		"uses": [
-			{"value": uso.chiave, "label": _(uso.etichetta), "description": _(uso.descrizione)}
-			for uso in usi()
+			{
+				"value": voce.chiave,
+				"label": _(voce.etichetta),
+				"description": _(voce.descrizione),
+				# asked, sent and signed by the person; a sheet is written at the desk
+				"for_the_person": voce.della_persona,
+			}
+			for voce in usi()
 		],
 		"clinical_available": dato_clinico_disponibile(),
-		"clinical_uses": [uso.chiave for uso in usi() if uso.clinico],
+		"clinical_uses": [voce.chiave for voce in usi() if voce.clinico],
 		# the lines of the patient's summary an answer may go to, where the clinic is on
 		"summary_keys": [
 			{"value": chiave, "label": _(etichetta)} for chiave, etichetta in voci_sintesi().items()
@@ -364,7 +412,9 @@ def publish_template(name: str, notes: str | None = None, asked_from: str | None
 		frappe.throw(_("Switch the form on before publishing it"))
 	schema = carica_schema(modello.schema)
 	bozza = S.normalizza(schema)
-	sbagliati = problemi(bozza, per_pubblicare=True) + congela_consensi(bozza)
+	sbagliati = (
+		problemi(bozza, per_pubblicare=True) + problemi_dell_uso(bozza, modello.use) + congela_consensi(bozza)
+	)
 	if sbagliati:
 		frappe.throw(
 			"<br>".join(frappe.utils.escape_html(problema["message"]) for problema in sbagliati[:10]),
