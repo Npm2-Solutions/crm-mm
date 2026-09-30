@@ -687,6 +687,37 @@ def send_whatsapp_template(
 	return insert_and_send(doc)
 
 
+def manda_modello(
+	reference_doctype: str, reference_name: str, numero: str, modello: str, valori: list | None = None
+) -> str:
+	"""An approved template the CRM sends by itself - an offer from the waiting
+	list, news in the area - to ``numero``, about the record, with its variables
+	in their order.
+
+	`frappe_whatsapp` gives Meta the body's variables only from `body_param`;
+	`template_parameters` is what the chat shows of the text that left. Both are
+	written, so what the person reads is what the chat says they read.
+	"""
+	doc = frappe.new_doc("WhatsApp Message")
+	doc.update(
+		{
+			"reference_doctype": reference_doctype,
+			"reference_name": reference_name,
+			"message_type": "Template",
+			"message": "Template message",
+			"content_type": "text",
+			"use_template": True,
+			"template": modello,
+			"to": numero,
+		}
+	)
+	valori = [str(valore) for valore in valori or []]
+	if valori:
+		doc.body_param = json.dumps({str(i): valore for i, valore in enumerate(valori, start=1)})
+		doc.template_parameters = json.dumps(valori)
+	return insert_and_send(doc)
+
+
 @frappe.whitelist()
 def get_template_placeholders(template: str) -> dict:
 	"""How many variables a template needs, so the sender can fill them in."""
