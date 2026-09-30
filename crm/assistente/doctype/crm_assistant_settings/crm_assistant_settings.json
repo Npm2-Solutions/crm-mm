@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "service_section",
+  "enabled",
+  "paper_forms",
+  "column_service",
+  "note_drafts",
+  "provider_section",
+  "provider",
+  "base_url",
+  "model",
+  "api_key",
+  "column_provider",
+  "region",
+  "no_retention",
+  "request_timeout",
+  "max_output_tokens"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_section",
+   "fieldtype": "Section Break",
+   "label": "The assistant"
+  },
+  {
+   "default": "0",
+   "description": "Documentation support: the professional reviews every draft",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "default": "1",
+   "fieldname": "paper_forms",
+   "fieldtype": "Check",
+   "label": "Forms from paper"
+  },
+  {
+   "fieldname": "column_service",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Drafts from a signed note: a letter, instructions after the visit",
+   "fieldname": "note_drafts",
+   "fieldtype": "Check",
+   "label": "Drafts from a note"
+  },
+  {
+   "fieldname": "provider_section",
+   "fieldtype": "Section Break",
+   "label": "The model"
+  },
+  {
+   "default": "Anthropic",
+   "fieldname": "provider",
+   "fieldtype": "Select",
+   "label": "Provider",
+   "options": "Anthropic\nOpenAI compatible",
+   "permlevel": 1
+  },
+  {
+   "description": "The provider's address. In the EU: Claude through an EU gateway, or a model on the centre's own server",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Endpoint",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API key",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_provider",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Where the model runs, as the contract says: the register keeps it with every request",
+   "fieldname": "region",
+   "fieldtype": "Data",
+   "label": "Region",
+   "permlevel": 1
+  },
+  {
+   "default": "0",
+   "description": "The contract says the provider keeps nothing and trains on nothing: without it the assistant does not start",
+   "fieldname": "no_retention",
+   "fieldtype": "Check",
+   "label": "No retention, no training",
+   "permlevel": 1
+  },
+  {
+   "default": "120",
+   "fieldname": "request_timeout",
+   "fieldtype": "Int",
+   "label": "Timeout (seconds)",
+   "permlevel": 1
+  },
+  {
+   "default": "4000",
+   "fieldname": "max_output_tokens",
+   "fieldtype": "Int",
+   "label": "Longest answer (tokens)",
+   "permlevel": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistente",
+ "name": "CRM Assistant Settings",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "issingle": 1,
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ]
+}

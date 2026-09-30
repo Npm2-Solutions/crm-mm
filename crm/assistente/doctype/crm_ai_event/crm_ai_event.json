@@ -1,0 +1,251 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "function",
+  "status",
+  "user",
+  "column_main",
+  "reference_doctype",
+  "reference_name",
+  "read_capability",
+  "model_section",
+  "provider",
+  "model",
+  "region",
+  "column_model",
+  "input_hash",
+  "output_hash",
+  "input_tokens",
+  "output_tokens",
+  "duration_ms",
+  "draft_section",
+  "draft",
+  "final",
+  "difference",
+  "change_ratio",
+  "error",
+  "check_section",
+  "checked_by",
+  "checked_on",
+  "column_check",
+  "reviewed_by",
+  "reviewed_on",
+  "review_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "function",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Function",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nAccepted\nDiscarded\nFailed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Asked by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "About",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Document",
+   "options": "reference_doctype",
+   "read_only": 1
+  },
+  {
+   "description": "The capability that reads this event: clinical ones only the medical director",
+   "fieldname": "read_capability",
+   "fieldtype": "Data",
+   "label": "Read by",
+   "read_only": 1
+  },
+  {
+   "fieldname": "model_section",
+   "fieldtype": "Section Break",
+   "label": "The model"
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "label": "Provider",
+   "read_only": 1
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model",
+   "read_only": 1
+  },
+  {
+   "fieldname": "region",
+   "fieldtype": "Data",
+   "label": "Region",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_model",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "input_hash",
+   "fieldtype": "Data",
+   "label": "What went in (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "output_hash",
+   "fieldtype": "Data",
+   "label": "What came out (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "input_tokens",
+   "fieldtype": "Int",
+   "label": "Tokens in",
+   "read_only": 1
+  },
+  {
+   "fieldname": "output_tokens",
+   "fieldtype": "Int",
+   "label": "Tokens out",
+   "read_only": 1
+  },
+  {
+   "fieldname": "duration_ms",
+   "fieldtype": "Int",
+   "label": "Time (ms)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "draft_section",
+   "fieldtype": "Section Break",
+   "label": "The draft and what became of it"
+  },
+  {
+   "fieldname": "draft",
+   "fieldtype": "Long Text",
+   "label": "Draft",
+   "read_only": 1
+  },
+  {
+   "fieldname": "final",
+   "fieldtype": "Long Text",
+   "label": "Final",
+   "read_only": 1
+  },
+  {
+   "fieldname": "difference",
+   "fieldtype": "Long Text",
+   "label": "Difference",
+   "read_only": 1
+  },
+  {
+   "description": "0 taken as it was, 1 nothing of it stayed",
+   "fieldname": "change_ratio",
+   "fieldtype": "Float",
+   "label": "How much it changed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "check_section",
+   "fieldtype": "Section Break",
+   "label": "Checked"
+  },
+  {
+   "fieldname": "checked_by",
+   "fieldtype": "Link",
+   "label": "Checked by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "checked_on",
+   "fieldtype": "Datetime",
+   "label": "Checked on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_check",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The monthly sample a person re-reads",
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Reviewed by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reviewed_on",
+   "fieldtype": "Datetime",
+   "label": "Reviewed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_note",
+   "fieldtype": "Small Text",
+   "label": "Review note",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Assistente",
+ "name": "CRM AI Event",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "hash",
+ "naming_rule": "Random",
+ "in_create": 1,
+ "title_field": "function",
+ "track_changes": 0,
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ]
+}
