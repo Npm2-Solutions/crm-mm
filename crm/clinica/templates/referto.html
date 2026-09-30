@@ -1,0 +1,87 @@
+{#-
+	The report of a visit, as signed: made once, and kept (`crm.clinica.referto`).
+
+	Like every document the CRM keeps, it loads no remote resource. Its last lines
+	say who signed it and when, and the hashes of what the sheet asked and of what
+	was answered: the same the record keeps.
+-#}
+<!doctype html>
+<html lang="{{ lingua }}">
+<head>
+<meta charset="utf-8">
+<title>{{ titolo }}</title>
+<style>
+	@page { size: A4; margin: 18mm 16mm 18mm 16mm;
+		@bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #767676; }
+		@bottom-left { content: "{{ doc.name }}"; font-size: 8pt; color: #767676; } }
+	body { font-family: "DejaVu Sans", "Helvetica", sans-serif; color: #1a1a1a; font-size: 10pt; line-height: 1.45; }
+	h1 { font-size: 15pt; margin: 0 0 2pt; }
+	h2 { font-size: 11pt; margin: 16pt 0 6pt; padding-bottom: 3pt; border-bottom: 0.6pt solid #d4d4d4; }
+	.sommesso { color: #666; font-size: 9pt; }
+	.intestazione { display: flex; justify-content: space-between; gap: 16pt; margin-bottom: 10pt; }
+	.domanda { margin: 0 0 7pt; page-break-inside: avoid; }
+	.etichetta { font-size: 8.5pt; letter-spacing: .04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 1pt; }
+	.risposta { white-space: pre-wrap; }
+	.vuota { color: #9a9a9a; }
+	.testo { white-space: pre-wrap; background: #f6f6f6; padding: 7pt 9pt; border-radius: 3pt; margin: 0 0 7pt; }
+	.avviso { border: 0.8pt solid #d9534f; color: #a02622; padding: 5pt 8pt; border-radius: 3pt; margin: 4pt 0 8pt; }
+	table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+	th { text-align: left; font-weight: normal; color: #6b6b6b; border-bottom: 0.6pt solid #d4d4d4; padding: 2pt 4pt 3pt 0; }
+	td { border-bottom: 0.4pt solid #eee; padding: 3pt 4pt 3pt 0; vertical-align: top; }
+	.firma { margin-top: 22pt; page-break-inside: avoid; }
+	.impronta { font-family: "DejaVu Sans Mono", monospace; font-size: 7.5pt; word-break: break-all; }
+</style>
+</head>
+<body>
+	<div class="intestazione">
+		<div>
+			<h1>{{ titolo }}</h1>
+			<div class="sommesso">{{ data }}{% if centro %} · {{ centro }}{% endif %}</div>
+		</div>
+		<div class="sommesso" style="text-align: right">
+			<div><strong>{{ persona }}</strong></div>
+			<div>{{ medico }}</div>
+		</div>
+	</div>
+
+	{% for sezione in sezioni %}
+		{% if sezione.titolo %}<h2>{{ sezione.titolo }}</h2>{% endif %}
+		{% for voce in sezione.voci %}
+			{% if voce.tipo == "paragraph" %}
+				<div class="testo">{{ voce.testo }}</div>
+			{% elif voce.tipo == "table" %}
+				<div class="domanda">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					{% if voce.righe %}
+					<table>
+						<tr>{% for colonna in voce.colonne %}<th>{{ colonna }}</th>{% endfor %}</tr>
+						{% for riga in voce.righe %}<tr>{% for cella in riga %}<td>{{ cella }}</td>{% endfor %}</tr>{% endfor %}
+					</table>
+					{% else %}<div class="vuota">—</div>{% endif %}
+				</div>
+			{% else %}
+				<div class="domanda">
+					<div class="etichetta">{{ voce.etichetta }}</div>
+					<div class="risposta {% if not voce.risposta %}vuota{% endif %}">{{ voce.risposta or "—" }}</div>
+				</div>
+			{% endif %}
+			{% if voce.avviso is not none %}<div class="avviso">{{ voce.avviso or _("Stop here and tell the operator") }}</div>{% endif %}
+		{% endfor %}
+	{% endfor %}
+
+	{% if note %}
+		<h2>{{ _("Notes") }}</h2>
+		<div>{{ note }}</div>
+	{% endif %}
+
+	<div class="firma">
+		<div><strong>{{ _("Signed by {0} on {1}").format(medico, firmato_il) }}</strong></div>
+		<table style="margin-top: 6pt">
+			<tr><td>{{ _("Sheet") }}</td><td>{{ versione.title }} · {{ _("version {0}").format(versione.version) }}</td></tr>
+			<tr><td>{{ _("What it asked (SHA-256)") }}</td><td class="impronta">{{ versione.schema_hash }}</td></tr>
+			<tr><td>{{ _("The answers (SHA-256)") }}</td><td class="impronta">{{ doc.answers_hash }}</td></tr>
+		</table>
+		<p class="sommesso">{{ _("This report was generated once, when the visit was signed. It is added to with addenda, never rewritten.") }}</p>
+	</div>
+</body>
+</html>
