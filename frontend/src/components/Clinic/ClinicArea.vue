@@ -92,6 +92,8 @@
       v-if="record.data?.can_read || record.data?.can_plan"
       :lead="lead"
     />
+    <!-- the teeth, and the care plans proposed as quotes -->
+    <DentalCard :lead="lead" />
     <AreaAccessCard v-if="record.data?.can_invite" :lead="lead" />
     <AreaMessagesCard v-if="record.data?.can_message" :lead="lead" />
 
@@ -452,6 +454,7 @@ import AssistantDraftDialog from '@/components/Clinic/AssistantDraftDialog.vue'
 import DictationDialog from '@/components/Clinic/DictationDialog.vue'
 import SummaryDialog from '@/components/Clinic/SummaryDialog.vue'
 import ClinicPlans from '@/components/Clinic/ClinicPlans.vue'
+import DentalCard from '@/components/Clinic/DentalCard.vue'
 import AreaMessagesCard from '@/components/Clinic/AreaMessagesCard.vue'
 import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
@@ -673,7 +676,11 @@ function openedWhat(row) {
           ? __('Opened a plan')
           : row.kind === 'programme'
             ? __('Opened a programme')
-            : __('Downloaded a file')
+            : row.kind === 'dental chart'
+              ? __('Opened the dental chart')
+              : row.kind === 'care plan'
+                ? __('Opened a care plan')
+                : __('Downloaded a file')
   return row.count > 1 ? __('{0} · {1} entries', [what, row.count]) : what
 }
 

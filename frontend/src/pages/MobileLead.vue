@@ -324,7 +324,8 @@ const tabs = computed(() => {
         puo('clinica.vedi') ||
         puo('clinica.scrivi') ||
         puo('clinica.accessi') ||
-        puo('clinica.archivia'),
+        puo('clinica.archivia') ||
+        puo('cure.preventivi'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
