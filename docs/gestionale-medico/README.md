@@ -979,8 +979,44 @@ schermata Home. Da fare dopo:
   CIQUAL) e di exercises-dataset~~: fatta, vedi "Le librerie: le tabelle e gli
   esercizi";
 - ~~la lista della spesa dal menù~~: fatta, vedi "La lista della spesa";
-- i programmi a tappe;
+- ~~i programmi a tappe~~: fatti, vedi "I programmi a tappe";
 - lo sforzo o il dolore segnati con il check-in (il campo c'è già).
+
+### I programmi a tappe
+
+Fatti il 30/09/2026 (`crm/clinica/programmi.py`, le regole pure in
+`programmi_regole.py`): "contenuti che si aprono col tempo o finita la tappa prima,
+per i percorsi di nutrizione e di allenamento" (design).
+
+- **Si scrive come un piano**, dal riquadro "Plans" della scheda Clinica ("New plan"
+  > "Programme of stages"): una bozza del suo autore (`piani.scrivi`), con il titolo,
+  cosa legge il paziente e le tappe in ordine.
+  - Ogni tappa ha il suo titolo e le sue parole ("questa settimana cambiamo la
+    colazione") e, se l'operatore lo scrive, il suo piano: un menù, un allenamento,
+    esercizi a casa, abitudini, dei tipi della sua qualifica.
+  - Il piano di una tappa si scrive nel solito editor, parte dagli stessi momenti di
+    un piano nuovo, e non si pubblica da solo: si pubblica quando la sua tappa si
+    apre. Nella lista dei piani non compare: sta dentro il suo programma.
+- **Come si aprono le tappe**:
+  - **al proprio ritmo**: la tappa dopo si apre quando il paziente dice, dalla sua
+    area, di aver finito quella aperta ("Ho finito questa tappa"), o quando lo dice
+    l'operatore;
+  - **per tempo**: ogni tappa dura i suoi giorni dal primo giorno del programma, e
+    ogni mattina il lavoro del giorno apre quella che tocca; l'ultima può non avere
+    giorni, e resta aperta finché il programma non si chiude. Aprire prima una tappa
+    a mano non sposta i giorni delle altre.
+- **Una tappa che si apre** pubblica il suo piano (per i suoi giorni, se il
+  programma va per tempo), chiudendo l'altro piano dello stesso tipo della persona
+  come fa ogni piano, e la persona riceve l'email che dice solo che c'è una novità.
+  Una tappa finita chiude il suo piano, che resta nella cartella. Finita l'ultima, il
+  programma è completato.
+- **Nell'area** la voce "Piani" mostra prima i percorsi: le tappe fatte, quella aperta
+  con le sue parole e il suo piano, quelle dopo con il giorno in cui si aprono o
+  "si apre quando finisci quella prima". Niente rosso: solo dove si è.
+- **Chi lo legge**: come un piano. L'autore sempre, gli altri come una visita, una
+  volta pubblicato; ogni apertura va nel registro degli accessi ("Opened a
+  programme"). Pubblicato non si riscrive: va avanti o si chiude, e chiudendolo si
+  chiude il piano della tappa aperta.
 
 ### La lista della spesa
 
