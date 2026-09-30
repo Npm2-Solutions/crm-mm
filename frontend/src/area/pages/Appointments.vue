@@ -1,9 +1,23 @@
-<!-- Appointments: the ones coming, then the last ones. -->
+<!-- Appointments: the cycles of sessions going on, the ones coming, then the
+     last ones. -->
 <template>
   <div class="flex flex-col gap-6">
     <h1 class="text-xl font-semibold text-ink-gray-9">
       {{ __('Your appointments') }}
     </h1>
+    <section
+      v-if="appointments.data?.cycles?.length"
+      class="flex flex-col gap-2"
+    >
+      <h2 class="text-base font-medium text-ink-gray-7">
+        {{ __('Your cycles of sessions') }}
+      </h2>
+      <CycleCard
+        v-for="cycle in appointments.data.cycles"
+        :key="cycle.name"
+        :cycle="cycle"
+      />
+    </section>
     <section class="flex flex-col gap-2">
       <h2 class="text-base font-medium text-ink-gray-7">
         {{ __('Coming up') }}
@@ -34,6 +48,7 @@
 <script setup>
 import { createResource } from 'frappe-ui'
 import AppointmentCard from '../components/AppointmentCard.vue'
+import CycleCard from '../components/CycleCard.vue'
 import { area } from '../store'
 
 const appointments = createResource({

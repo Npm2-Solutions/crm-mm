@@ -6,7 +6,8 @@
 The desk opens Anna's area to her address: a user of the site with the patient
 role, never of the desk. A code by email lets her in, the same answer goes to an
 address with no area, five wrong codes close it; staff never enter this way. In,
-she sees her appointments with the booking page's link, the documents given
+she sees her appointments with the booking page's link and her cycles of sessions,
+the documents given
 online (downloaded after a code verified in the last minutes) and her invoices,
 and nobody else's; closed, the area refuses her.
 
@@ -154,6 +155,42 @@ class Dentro(AreaCase):
 		[prossimo] = api.get_appointments(self.anna.name)["upcoming"]
 		self.assertEqual(prossimo["service"], "Visita area")
 		self.assertIn("/prenota?token=", prossimo["manage_url"])
+
+	def test_i_cicli_di_sedute_e_a_che_seduta_e(self):
+		frappe.set_user("Administrator")
+		medico = self.make_user("area.fisio@example.com")
+		servizio = self.make_service("Fisioterapia area", [medico])
+		frappe.get_doc(
+			{
+				"doctype": "CRM Session Cycle",
+				"lead": self.anna.name,
+				"service": servizio.name,
+				"sessions": 3,
+				"price": 90,
+				"notes": "Per la segreteria",
+			}
+		).insert()
+		domani = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
+		self.make_appointment(
+			servizio.name,
+			domani,
+			[medico],
+			participants=[
+				{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Cartella"}
+			],
+		)
+		self.invita()
+		self.entra()
+		fatto = api.get_appointments(self.anna.name)
+		[prossimo] = fatto["upcoming"]
+		self.assertEqual(prossimo["session"], {"number": 1, "total": 3})
+		[ciclo] = fatto["cycles"]
+		self.assertEqual(
+			(ciclo["service"], ciclo["counts"]["booked"], ciclo["counts"]["left"]),
+			("Fisioterapia area", 1, 2),
+		)
+		# what the centre keeps for itself stays there
+		self.assertFalse({"price", "notes", "invoice"} & set(ciclo))
 
 	def test_i_documenti_online_dopo_un_codice(self):
 		self.consenso()

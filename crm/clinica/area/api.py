@@ -25,6 +25,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import get_datetime, now_datetime
 
 from crm.clinica.area import accesso
+from crm.scheduling import cicli
 
 CONSEGNA = "Clinic Report Delivery"
 
@@ -108,6 +109,8 @@ def get_appointments(person: str) -> dict:
 	)
 	adesso = now_datetime()
 	prossimi, passati = [], []
+	# "session 4 of 10": which session of a cycle each one is
+	sedute = cicli.numero_della_seduta([riga.parent for riga in righe])
 	for riga in righe:
 		appuntamento = frappe.db.get_value(
 			"CRM Appointment",
@@ -127,6 +130,10 @@ def get_appointments(person: str) -> dict:
 			"ends_on": appuntamento.ends_on,
 			"location": appuntamento.location,
 			"status": "Cancelled" if annullato else appuntamento.status,
+			"session": {
+				k: v for k, v in (sedute.get(appuntamento.name) or {}).items() if k in ("number", "total")
+			}
+			or None,
 			"staff": [
 				frappe.utils.get_fullname(u)
 				for u in frappe.get_all(
@@ -145,7 +152,7 @@ def get_appointments(person: str) -> dict:
 			passati.append(voce)
 	prossimi.sort(key=lambda v: v["starts_on"])
 	passati.sort(key=lambda v: v["starts_on"], reverse=True)
-	return {"upcoming": prossimi, "past": passati[:20]}
+	return {"upcoming": prossimi, "past": passati[:20], "cycles": cicli.della_persona(person)}
 
 
 # ------------------------------------------------------------------ preparing the visit

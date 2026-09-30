@@ -151,4 +151,15 @@ export default {
   'In this programme the stages open by themselves, on their day':
     'In questo percorso le tappe si aprono da sole, nel loro giorno',
   'This stage is not the one open': 'Questa non è la tappa aperta',
+  // cycles of sessions
+  'Your cycles of sessions': 'I tuoi cicli di sedute',
+  'Sessions used': 'Sedute usate',
+  '{0} of {1} done': '{0} di {1} fatte',
+  '{0} booked': '{0} prenotate',
+  '{0} missed': '{0} perse',
+  'Nothing left to book': 'Sono tutte prenotate',
+  '1 session to book': '1 seduta da prenotare',
+  '{0} sessions to book': '{0} sedute da prenotare',
+  'valid until {0}': 'valido fino al {0}',
+  'Session {0} of {1}': 'Seduta {0} di {1}',
 }
