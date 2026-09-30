@@ -52,9 +52,13 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 	):
 		staff.setdefault(riga.parent, []).append(riga.user)
 
+	dovuti = _moduli_dovuti(righe, partecipanti)
 	fuori = []
 	for riga in righe:
 		persone = partecipanti.get(riga.name, [])
+		for persona in persone:
+			# the forms they owe for this appointment: to sign while they wait
+			persona["due_forms"] = dovuti.get((riga.name, persona.party), [])
 		if solo_aperti and not any(p.status == "Booked" for p in persone):
 			continue
 		chi = staff.get(riga.name, [])
@@ -69,6 +73,30 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 			}
 		)
 	return fuori
+
+
+def _moduli_dovuti(righe: list, partecipanti: dict) -> dict[tuple[str, str], list[dict]]:
+	"""For each appointment and person, the forms they owe for it - for whoever
+	sees the forms."""
+	if not livelli.puo("moduli.vedi"):
+		return {}
+	from crm.moduli import compilazioni, dovuti
+
+	clinici = compilazioni.legge_dati_clinici()
+	risposta = {}
+	for riga in righe:
+		persone = [p.party for p in partecipanti.get(riga.name, []) if p.party_type == "CRM Lead" and p.party]
+		if not persone:
+			continue
+		appuntamento = {"name": riga.name, "service": riga.service}
+		for persona, voci in dovuti.dovuti(
+			persone, {persona: appuntamento for persona in persone}, clinici=clinici
+		).items():
+			if voci:
+				risposta[(riga.name, persona)] = [
+					{"template": v["template"], "title": v["title"], "pending": v["pending"]} for v in voci
+				]
+	return risposta
 
 
 @frappe.whitelist()

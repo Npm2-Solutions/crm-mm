@@ -37,7 +37,16 @@ import secrets
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from frappe.utils import add_to_date, cint, escape_html, get_datetime, get_url, getdate, now_datetime
+from frappe.utils import (
+	add_to_date,
+	cint,
+	escape_html,
+	format_datetime,
+	get_datetime,
+	get_url,
+	getdate,
+	now_datetime,
+)
 
 from crm.moduli import compilazioni, modelli, traccia
 from crm.moduli import schema as S
@@ -220,8 +229,12 @@ def _crea(
 	given_by: str | None = None,
 	recipient: str | None = None,
 	sent_to: str | None = None,
+	mittente: str | None = None,
+	dal_centro: bool = False,
 ) -> tuple[list, str]:
-	"""The requests for these forms, one link for all of them."""
+	"""The requests for these forms, one link for all of them. ``dal_centro`` is
+	the centre sending by itself (with a booking): no operator, so no operator's
+	right to health data to ask; the person only ever sees their own forms."""
 	nomi = _elenco(templates)
 	if not nomi:
 		frappe.throw(_("Choose at least one form"))
@@ -232,7 +245,7 @@ def _crea(
 		if not modello.enabled or not modello.current_version:
 			frappe.throw(_("{0} is not published").format(frappe.bold(modello.title)))
 		versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
-		if versione.clinical and not compilazioni.legge_dati_clinici():
+		if versione.clinical and not dal_centro and not compilazioni.legge_dati_clinici():
 			frappe.throw(_("This form records health data: it is for the care team"), frappe.PermissionError)
 		richiesta = frappe.get_doc(
 			{
@@ -251,7 +264,7 @@ def _crea(
 				# the first holds the link; the others open with it
 				"via": richieste[0].name if richieste else None,
 				"token_hash": None if richieste else _impronta(token),
-				"sent_by": frappe.session.user,
+				"sent_by": mittente or frappe.session.user,
 				"sent_on": now_datetime(),
 				"recipient": recipient,
 				"sent_to": sent_to,
@@ -275,15 +288,35 @@ def send_form_link(lead: str, templates, appointment: str | None = None) -> dict
 	dove = destinatario(lead)
 	if not dove.get("email"):
 		frappe.throw(dove.get("reason") or _("There is no email to send the link to"))
+	richieste = manda_il_link(
+		lead, templates, dove, appointment=appointment, scadenza=add_to_date(now_datetime(), days=GIORNI_LINK)
+	)
+	return {"requests": [_riga(r) for r in richieste]}
+
+
+def manda_il_link(
+	lead: str,
+	templates,
+	dove: dict,
+	*,
+	scadenza,
+	appointment: str | None = None,
+	mittente: str | None = None,
+	dal_centro: bool = False,
+) -> list:
+	"""The requests, and the email with their one link: to ``dove`` (see
+	`destinatario`), good until ``scadenza``."""
 	richieste, token = _crea(
 		lead,
 		templates,
 		"Link",
-		scadenza=add_to_date(now_datetime(), days=GIORNI_LINK),
+		scadenza=scadenza,
 		appointment=appointment,
 		given_by=dove["given_by"],
 		recipient=dove["lead"],
 		sent_to=_nascosta(dove["email"]),
+		mittente=mittente,
+		dal_centro=dal_centro,
 	)
 	centro = escape_html(nome_del_centro() or _("The centre"))
 	if dove["given_by"]:
@@ -291,7 +324,7 @@ def send_form_link(lead: str, templates, appointment: str | None = None) -> dict
 		invito = _("{0} asks you to fill in some forms for {1} before the visit.").format(centro, persona)
 	else:
 		invito = _("{0} asks you to fill in some forms before your visit.").format(centro)
-	avviso = _("To open them you will receive a code at this address. The link is valid for {0} days.")
+	avviso = _("To open them you will receive a code at this address. The link is valid until {0}.")
 	frappe.sendmail(
 		recipients=[dove["email"]],
 		subject=_("Forms to fill before your visit"),
@@ -300,7 +333,7 @@ def send_form_link(lead: str, templates, appointment: str | None = None) -> dict
 				f"<p>{_('Hello,')}</p>",
 				f"<p>{invito}</p>",
 				f'<p><a href="{_indirizzo(token)}">{_("Open the forms")}</a></p>',
-				f"<p>{avviso.format(GIORNI_LINK)}</p>",
+				f"<p>{avviso.format(format_datetime(scadenza, 'd MMMM, HH:mm'))}</p>",
 			]
 		),
 		reference_doctype=RICHIESTA,
@@ -311,9 +344,9 @@ def send_form_link(lead: str, templates, appointment: str | None = None) -> dict
 		richieste[0].name,
 		"sent",
 		_nascosta(dove["email"]),
-		{"channel": "Link", "forms": [r.name for r in richieste]},
+		{"channel": "Link", "forms": [r.name for r in richieste], "by_the_centre": dal_centro},
 	)
-	return {"requests": [_riga(r) for r in richieste]}
+	return richieste
 
 
 @frappe.whitelist(methods=["POST"])

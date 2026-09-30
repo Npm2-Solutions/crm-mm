@@ -212,10 +212,14 @@ def get_person_forms(lead: str) -> dict:
 		for nome in frappe.get_list(MODULO, filters={"lead": lead}, pluck="name", order_by="modified desc")
 	]
 	puo_compilare = livelli.puo("moduli.compila")
+	from crm.moduli import dovuti
+
 	return {
 		"forms": moduli,
 		"can_fill": puo_compilare,
 		"templates": _modelli_da_compilare() if puo_compilare else [],
+		# what the person owes, for their next appointment or in general
+		"due": dovuti.della_persona(lead),
 	}
 
 

@@ -223,6 +223,7 @@ def get_template(name: str) -> dict:
 		"ask_on": modello.ask_on,
 		"services": [riga.service for riga in modello.services],
 		"validity": modello.validity,
+		"send_before": modello.send_before,
 		"schema": schema,
 		"problems": problemi(schema),
 		"versions": _versioni(name),
@@ -289,7 +290,17 @@ def get_version(name: str) -> dict:
 # ------------------------------------------------------------------ writing
 
 
-_CAMPI_MODELLO = ("title", "description", "use", "clinical", "specialty", "ask_on", "validity", "enabled")
+_CAMPI_MODELLO = (
+	"title",
+	"description",
+	"use",
+	"clinical",
+	"specialty",
+	"ask_on",
+	"validity",
+	"send_before",
+	"enabled",
+)
 
 
 @frappe.whitelist(methods=["POST"])
