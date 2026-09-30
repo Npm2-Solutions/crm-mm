@@ -823,6 +823,30 @@ con le API in `crm/clinica/area`.
 - **In italiano**: l'area ha il suo dizionario (`frontend/src/area/it.js`), perché
   il paziente non legge l'inglese dello staff.
 
+### La passkey per entrare nell'area
+
+Fatta il 30/09/2026 (fase 3, dopo): "dalla volta dopo, se il paziente vuole, una
+passkey: viso o impronta, che restano sul telefono" (`crm/clinica/area/passkey.py`,
+con py_webauthn).
+
+- **Si aggiunge da dentro**: chi è entrato con il codice trova nell'Inizio "Add a
+  passkey". Il telefono chiede il viso, l'impronta o il suo PIN, e la chiave resta
+  lì. Il centro tiene la metà pubblica (`Clinic Area Passkey`) e il contatore che il
+  telefono aumenta a ogni uso.
+- **Si entra senza scrivere l'indirizzo**: "Enter with a passkey" sulla porta chiede
+  al telefono le passkey che ha per il sito. La pagina non dice a nessuno quali
+  indirizzi hanno un'area.
+- **La stessa porta del codice**:
+  - la passkey apre solo un'area aperta: chiusa dal centro, non apre niente;
+  - entrare con la passkey vale come rientrare per scaricare un referto;
+  - il telefono conferma sempre chi è (viso, impronta o PIN);
+  - una firma sbagliata, una sfida già usata o un contatore che torna indietro (una
+    chiave copiata) non entrano.
+- **Le proprie passkey** si vedono nell'Inizio, con il dispositivo da cui vengono e
+  quando sono state usate, e si tolgono lì; al massimo dieci.
+- WebAuthn vuole https: in produzione c'è; il sito di prova in http si prova con il
+  flag di Chromium che lo tratta come sicuro.
+
 ### Prepara la visita e i messaggi del centro
 
 Fatti il 30/09/2026 (fase 3, la seconda parte).
