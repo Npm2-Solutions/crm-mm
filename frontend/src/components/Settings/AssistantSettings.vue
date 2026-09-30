@@ -101,6 +101,17 @@
           >
             <Switch v-model="settings.doc.summaries" size="sm" />
           </SettingRow>
+          <SettingRow
+            v-if="status.data?.switches?.includes('menus')"
+            :label="__('Recipes for a meal plan')"
+            :description="
+              __(
+                'Recipes of the library’s foods for a meal: the targets are the nutritionist’s, the nutrients come from the food tables.',
+              )
+            "
+          >
+            <Switch v-model="settings.doc.menus" size="sm" />
+          </SettingRow>
 
           <template v-if="tecnico">
             <div class="pb-1 pt-6 text-base-semibold text-ink-gray-9">
@@ -346,6 +357,7 @@ const functionLabels = {
   instructions_from_note: __('Instructions from the note'),
   visit_from_dictation: __('A visit from dictation'),
   summary_before_visit: __('A summary before the visit'),
+  menu_recipes: __('Recipes for a meal plan'),
 }
 
 function functionLabel(key) {

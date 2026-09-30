@@ -22,7 +22,7 @@
           v-model="item.food"
           kind="food"
           :label="item.food_name"
-          @picked="(row) => (item.food_name = row.food_name)"
+          @picked="(row) => Object.assign(item, pickedFood(row))"
         />
         <FormControl
           v-model="item.quantity_g"
@@ -105,6 +105,12 @@ defineEmits(['remove'])
 const item = defineModel({ type: Object, required: true })
 
 const groups = GRUPPI.map((g) => ({ label: __(g), value: g }))
+
+// a food picked from the library brings its values for 100 g: the plan's
+// totals are counted from them
+function pickedFood(row) {
+  return { food_name: row.food_name, food_detail: row }
+}
 // every time the moment comes, or so many times a week
 const weekly = [
   { label: __('Every time'), value: '0' },
