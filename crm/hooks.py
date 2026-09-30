@@ -111,6 +111,8 @@ website_route_rules = [
 	{"from_route": "/referto/<token>", "to_route": "documento"},
 	# the client area: one page, its own app routes inside
 	{"from_route": "/area/<path:app_path>", "to_route": "area"},
+	# a place offered from a waiting list, confirmed or declined: /lista-attesa/<link>
+	{"from_route": "/lista-attesa/<token>", "to_route": "lista_attesa"},
 ]
 
 # Generators

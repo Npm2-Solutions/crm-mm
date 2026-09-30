@@ -287,11 +287,24 @@ def get_catalog(service: str | None = None, include_hidden: int | str = 0) -> di
 		"require_consent": cint(config.get("require_privacy_consent")),
 		# an optional box, never ticked for them: the words are the centre's
 		"marketing_consent": _marketing_offerto(config),
+		# when no time suits, or a class is full: the waiting list, where the centre offers it
+		"waiting_list": _lista_d_attesa(),
 		"timezone": str(scheduling_tz()),
 		"categories": categories,
 		"services": services,
 		"people": sorted(people.values(), key=lambda p: p["name"]),
 	}
+
+
+def _lista_d_attesa() -> dict | None:
+	"""What the page needs to put somebody on the waiting list: the channels the
+	offers go by, and how long an entry waits. ``None`` where it is not offered."""
+	from crm.scheduling import attese
+
+	conf = attese.impostazioni()
+	if not conf.online:
+		return None
+	return {"channels": attese.canali_offerti(conf), "days": conf.giorni_online}
 
 
 def _service_card(service) -> dict:
@@ -458,9 +471,39 @@ def get_slots_public(
 	earliest, latest = _rules(doc).window(datetime.datetime.now(UTC))
 	return {
 		"days": days,
+		# the classes with no seat left: one can wait for a seat in them
+		"full": _lezioni_piene(doc, first, last, earliest, latest, client_tz),
 		"min_date": earliest.astimezone(client_tz).date().isoformat(),
 		"max_date": latest.astimezone(client_tz).date().isoformat() if latest else None,
 	}
+
+
+def _lezioni_piene(doc, first, last, earliest, latest, client_tz) -> dict[str, list[dict]]:
+	"""The full classes of the days asked, within the online window, where the
+	waiting list is offered: each with a public id, never the appointment's name."""
+	if cint(doc.max_participants) <= 1 or not _lista_d_attesa():
+		return {}
+	from crm.scheduling import attese
+	from crm.scheduling.timeutils import day_bounds
+
+	tz = scheduling_tz()
+	start = max(day_bounds(first, tz)[0], earliest)
+	end = day_bounds(last, tz)[1]
+	if latest:
+		end = min(end, latest)
+	if end <= start:
+		return {}
+	full: dict[str, list[dict]] = {}
+	for lezione in attese.sessioni_piene(doc.name, start, end):
+		local = lezione["start"].astimezone(client_tz)
+		full.setdefault(local.date().isoformat(), []).append(
+			{
+				"start": lezione["start"].isoformat(),
+				"time": local.strftime("%H:%M"),
+				"session": attese.id_pubblico(lezione["name"]),
+			}
+		)
+	return full
 
 
 def _seats(service, requested) -> int:
@@ -722,14 +765,15 @@ def _registra_consensi(lead, appointment, config, consent, consent_text, marketi
 
 	Booked for somebody else, the one booking read the notice for both: their own
 	data are on the page too. The marketing tick is theirs alone - they are the
-	one who gets the messages.
+	one who gets the messages. ``appointment`` is what the ticks came with: a
+	booking, or an entry in a waiting list.
 	"""
 	booker = booker or lead
 	from crm.moduli import consensi
 
 	dove = {
 		"canale": "Online booking",
-		"fonte": ("CRM Appointment", appointment.name),
+		"fonte": (appointment.doctype, appointment.name),
 		"ip": getattr(frappe.local, "request_ip", None),
 		"browser": frappe.get_request_header("User-Agent")
 		if getattr(frappe.local, "request", None)

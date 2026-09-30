@@ -1,0 +1,346 @@
+<!doctype html>
+{%- set scuro = true %}{% set logo_centro = branding.logo %}
+<html lang="{{ boot.lang }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} · {{ marchio.name }}</title>
+    {% include "crm/templates/includes/marchio_testa.html" %}
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <style>
+      :root {
+        --ink-strong: oklch(0.168 0 0);
+        --ink: oklch(0.205 0 0);
+        --muted: oklch(0.52 0 0);
+        --faint: oklch(0.683 0 0);
+        --border: oklch(0.913 0 0);
+        --border-focus: oklch(0.8 0 0);
+        --bg: oklch(0.975 0 0);
+        --card: oklch(1 0 0);
+        --field: oklch(0.975 0 0);
+        --hover: oklch(0.96 0 0);
+        --accent: oklch(0.205 0 0);
+        --accent-ink: oklch(1 0 0);
+        --accent-soft: oklch(0.94 0 0);
+        --danger: oklch(0.507 0.165 25.286);
+        --danger-bg: oklch(0.978 0.011 17.34);
+        --success-bg: oklch(0.965 0.03 155.987);
+        --success-ink: oklch(0.45 0.118 155.358);
+        --warn-bg: oklch(0.975 0.04 85);
+        --warn-ink: oklch(0.47 0.1 70);
+        --radius: 12px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ink-strong: oklch(0.98 0 0);
+          --ink: oklch(0.92 0 0);
+          --muted: oklch(0.72 0 0);
+          --faint: oklch(0.55 0 0);
+          --border: oklch(0.3 0 0);
+          --border-focus: oklch(0.45 0 0);
+          --bg: oklch(0.17 0 0);
+          --card: oklch(0.21 0 0);
+          --field: oklch(0.25 0 0);
+          --hover: oklch(0.26 0 0);
+          --accent: oklch(0.95 0 0);
+          --accent-ink: oklch(0.18 0 0);
+          --accent-soft: oklch(0.3 0 0);
+          --danger-bg: oklch(0.3 0.06 25);
+          --danger: oklch(0.8 0.1 25);
+          --success-bg: oklch(0.3 0.05 155);
+          --success-ink: oklch(0.85 0.1 155);
+          --warn-bg: oklch(0.32 0.05 85);
+          --warn-ink: oklch(0.88 0.08 85);
+        }
+      }
+      /* the product's accent and marks, the vertical's brand */
+      {% include "crm/templates/includes/marchio_colori.html" %}
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+        background: var(--bg); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased;
+      }
+      .shell { max-width: 600px; margin: 0 auto; padding: 1.75rem 1rem 4rem; }
+      .brand { display: flex; align-items: center; gap: .6rem; color: var(--muted); font-size: .9rem; margin-bottom: 1rem; flex-wrap: wrap; }
+      .brand .marchio { margin-bottom: 0; }
+      h1 { font-size: 1.45rem; margin: 0 0 .35rem; color: var(--ink-strong); letter-spacing: -.01em; }
+      h2 { font-size: 1.1rem; margin: 0 0 .5rem; color: var(--ink-strong); }
+      .lede { color: var(--muted); margin: 0 0 1.25rem; font-size: .95rem; }
+      .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+      .kv { display: grid; grid-template-columns: max-content 1fr; gap: .45rem 1rem; font-size: .95rem; margin: .75rem 0 0; }
+      .kv dt { color: var(--muted); }
+      .kv dd { margin: 0; color: var(--ink-strong); font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+      .when { font-size: 1.15rem; font-weight: 600; color: var(--ink-strong); margin: .15rem 0 .25rem; }
+      .when::first-letter { text-transform: uppercase; }
+      .deadline { display: inline-block; background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: .3rem .6rem; font-size: .88rem; margin-top: .75rem; }
+      .notice { border-radius: 10px; padding: .75rem 1rem; margin: 0 0 1rem; font-size: .92rem; }
+      .notice.warn { background: var(--warn-bg); color: var(--warn-ink); }
+      .notice.error { background: var(--danger-bg); color: var(--danger); }
+      .notice.ok { background: var(--success-bg); color: var(--success-ink); }
+      .hero { text-align: center; padding: .5rem 0 .25rem; }
+      .hero .badge { width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center; margin: 0 auto .75rem; background: var(--success-bg); color: var(--success-ink); font-size: 1.5rem; }
+      .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.1rem; }
+      button.primary, button.secondary, button.ghost, button.danger, a.btn {
+        font: inherit; font-weight: 600; border-radius: 10px; padding: .75rem 1.1rem; cursor: pointer; min-height: 44px; text-decoration: none; display: inline-flex; align-items: center;
+      }
+      button.primary { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
+      button.secondary, a.btn { background: var(--card); color: var(--ink-strong); border: 1px solid var(--border); }
+      button.danger { background: var(--danger-bg); color: var(--danger); border: 1px solid transparent; }
+      button.ghost { background: transparent; color: var(--muted); border: none; padding-left: 0; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+      button:disabled { opacity: .5; cursor: default; }
+      .muted { color: var(--muted); }
+      .small { font-size: .85rem; }
+      @media (max-width: 480px) {
+        .actions > button, .actions > a { flex: 1 1 100%; justify-content: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell" id="app" aria-live="polite">
+      <div class="brand">
+        {% include "crm/templates/includes/marchio_segni.html" %}
+        <span>{{ branding.title }}</span>
+      </div>
+      <p class="muted" id="loading">…</p>
+    </main>
+    <script>
+      window.BOOT = {{ boot | tojson }};
+      window.CSRF = {{ csrf_token | tojson }};
+    </script>
+    <script>
+      (function () {
+        const IT = {
+          "A place for you": "Un posto per te",
+          "It has freed up at {0}. It is yours if you confirm first.": "Si è liberato da {0}. È tuo se confermi per primo.",
+          "Service": "Servizio",
+          "With": "Con",
+          "Where": "Dove",
+          "For": "Per",
+          "Answer by {0}": "Rispondi entro {0}",
+          "Confirm": "Conferma",
+          "No thanks": "No, grazie",
+          "Booked": "Prenotato",
+          "Your appointment is booked. We have sent you an email with the details.": "Il tuo appuntamento è prenotato. Ti abbiamo mandato un'email con i dettagli.",
+          "This appointment has been cancelled.": "Questo appuntamento è stato annullato.",
+          "Add to Google Calendar": "Aggiungi a Google Calendar",
+          "Add to Outlook": "Aggiungi a Outlook",
+          "Move or cancel": "Sposta o annulla",
+          "Somebody confirmed before you: this place has gone. You are still on the waiting list.": "Qualcuno ha confermato prima di te: questo posto non c'è più. Sei ancora in lista d'attesa.",
+          "The time to answer has passed: the place went to the next person waiting. You are still on the list.": "Il tempo per rispondere è passato: il posto è andato a chi aspetta dopo di te. Sei ancora in lista.",
+          "Fine: the place goes to the next person waiting. You keep your place on the list.": "Va bene: il posto va a chi aspetta dopo di te. Resti in lista.",
+          "You are on the waiting list": "Sei in lista d'attesa",
+          "When a place frees up we write to you: it goes to whoever confirms first.": "Quando si libera un posto ti scriviamo: va a chi conferma per primo.",
+          "A seat in the class of {0}": "Un posto nella lezione di {0}",
+          "When": "Quando",
+          "Until": "Fino al",
+          "Any day, any time": "Qualsiasi giorno, a qualsiasi ora",
+          "Any day": "Qualsiasi giorno",
+          "any time": "a qualsiasi ora",
+          "morning": "mattina",
+          "afternoon": "pomeriggio",
+          "evening": "sera",
+          "Leave the waiting list": "Esci dalla lista d'attesa",
+          "Leave the waiting list for {0}?": "Esci dalla lista d'attesa per {0}?",
+          "Yes, leave it": "Sì, esci",
+          "Stay": "Resta",
+          "You are no longer on this waiting list.": "Non sei più in questa lista d'attesa.",
+          "This waiting list has ended.": "Questa lista d'attesa è finita.",
+          "This link is not valid": "Questo link non è valido",
+          "Something went wrong: try again.": "Qualcosa non è andato: riprova.",
+          "Times in {0}": "Orari di {0}",
+        };
+        const lang = (window.BOOT.lang || "it").slice(0, 2);
+        const words = lang === "it" ? IT : {};
+        const locale = lang === "it" ? "it-IT" : undefined;
+        const t = (message, args) => {
+          let text = words[message] || message;
+          (args || []).forEach((arg, i) => (text = text.replace("{" + i + "}", arg)));
+          return text;
+        };
+        const token = window.BOOT.token;
+        const app = document.getElementById("app");
+        const brand = app.querySelector(".brand").outerHTML;
+
+        function h(tag, attrs, ...children) {
+          const el = document.createElement(tag);
+          for (const [key, value] of Object.entries(attrs || {})) {
+            if (value === null || value === undefined || value === false) continue;
+            if (key.startsWith("on")) el.addEventListener(key.slice(2), value);
+            else if (key === "class") el.className = value;
+            else el.setAttribute(key, value === true ? "" : value);
+          }
+          for (const child of children.flat()) {
+            if (child === null || child === undefined || child === false) continue;
+            el.append(child instanceof Node ? child : document.createTextNode(String(child)));
+          }
+          return el;
+        }
+
+        function messageOf(data) {
+          try {
+            const list = JSON.parse(data._server_messages || "[]");
+            if (list.length) return JSON.parse(list[0]).message.replace(/<[^>]+>/g, " ").trim();
+          } catch (e) { /* the plain message below */ }
+          return t("Something went wrong: try again.");
+        }
+
+        async function call(method, extra) {
+          const response = await fetch("/api/method/crm.scheduling.attese_pubblico." + method, {
+            method: "POST",
+            headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded", "X-Frappe-CSRF-Token": window.CSRF || "" },
+            body: new URLSearchParams({ token, ...(extra || {}) }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(messageOf(data));
+          return data.message;
+        }
+
+        function screen(...children) {
+          app.innerHTML = brand;
+          app.append(...children.filter(Boolean));
+        }
+
+        // the place is at the centre: its times are the centre's
+        let zone = undefined;
+        const fmt = (value, options) => new Intl.DateTimeFormat(locale, { ...options, timeZone: zone }).format(new Date(value));
+        const when = (value) => fmt(value, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+        const hour = (value) => {
+          const today = fmt(new Date(), { year: "numeric", month: "2-digit", day: "2-digit" });
+          const that = fmt(value, { year: "numeric", month: "2-digit", day: "2-digit" });
+          return that === today ? fmt(value, { hour: "2-digit", minute: "2-digit" }) : when(value);
+        };
+        const day = (value) => new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(value + "T00:00:00Z"));
+        const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const dayName = (name) => new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + DAYS.indexOf(name))));
+
+        function preferences(v) {
+          if (v.class_start) return t("A seat in the class of {0}", [when(v.class_start)]);
+          if (!v.choice) return v.days.map((d) => `${dayName(d.workday)} ${d.start}–${d.end}`).join(", ");
+          const days = v.choice.days.length && v.choice.days.length < 7 ? v.choice.days.map(dayName).join(", ") : "";
+          const parts = v.choice.parts.map((p) => t(p)).join(", ");
+          if (!days && !parts) return t("Any day, any time");
+          return [days || t("Any day"), parts || t("any time")].join(" · ");
+        }
+
+        function detailsOf(rows) {
+          const dl = h("dl", { class: "kv" });
+          for (const [label, value] of rows) if (value) dl.append(h("dt", {}, label), h("dd", {}, value));
+          return dl;
+        }
+
+        function waiting(v, note) {
+          const leave = h("button", { class: "ghost", type: "button" }, t("Leave the waiting list"));
+          const card = h("div", { class: "card" },
+            h("h2", {}, t("You are on the waiting list")),
+            detailsOf([
+              [t("Service"), v.service],
+              [t("For"), v["for"]],
+              [t("With"), v.staff],
+              [t("When"), preferences(v)],
+              [t("Until"), v.until ? day(v.until) : ""],
+            ]),
+            h("p", { class: "muted small" }, t("When a place frees up we write to you: it goes to whoever confirms first.")),
+            h("div", { class: "actions" }, leave),
+          );
+          leave.addEventListener("click", () => askLeave(v, card));
+          return [note, card];
+        }
+
+        function askLeave(v, card) {
+          const yes = h("button", { class: "danger", type: "button" }, t("Yes, leave it"));
+          const no = h("button", { class: "secondary", type: "button" }, t("Stay"));
+          const box = h("div", { class: "notice warn", role: "alertdialog" },
+            h("b", {}, t("Leave the waiting list for {0}?", [v.service])),
+            h("div", { class: "actions" }, yes, no));
+          no.addEventListener("click", () => box.remove());
+          yes.addEventListener("click", () => act("leave_list", yes));
+          card.append(box);
+          yes.focus();
+        }
+
+        function offerCard(v) {
+          const o = v.offer;
+          const confirm = h("button", { class: "primary", type: "button" }, t("Confirm"));
+          const decline = h("button", { class: "secondary", type: "button" }, t("No thanks"));
+          confirm.addEventListener("click", () => act("confirm_offer", confirm, decline));
+          decline.addEventListener("click", () => act("decline_offer", decline, confirm));
+          return h("div", { class: "card" },
+            h("h1", {}, t("A place for you")),
+            h("p", { class: "lede" }, t("It has freed up at {0}. It is yours if you confirm first.", [v.centre || ""])),
+            h("div", { class: "when" }, when(o.start)),
+            detailsOf([
+              [t("Service"), v.service],
+              [t("For"), v["for"]],
+              [t("With"), o.staff.join(", ")],
+              [t("Where"), o.location],
+            ]),
+            o.expires_on ? h("div", { class: "deadline" }, t("Answer by {0}", [hour(o.expires_on)])) : null,
+            h("div", { class: "actions" }, confirm, decline),
+          );
+        }
+
+        function booked(v) {
+          const b = v.booked;
+          const links = h("div", { class: "actions" },
+            h("a", { class: "btn", href: b.calendar_links.google, target: "_blank", rel: "noopener" }, t("Add to Google Calendar")),
+            h("a", { class: "btn", href: b.calendar_links.outlook, target: "_blank", rel: "noopener" }, t("Add to Outlook")),
+            b.manage_url ? h("a", { class: "btn", href: b.manage_url }, t("Move or cancel")) : null,
+          );
+          return h("div", { class: "card" },
+            h("div", { class: "hero" }, h("div", { class: "badge", "aria-hidden": "true" }, "✓"), h("h1", {}, t("Booked"))),
+            b.cancelled
+              ? h("div", { class: "notice warn" }, t("This appointment has been cancelled."))
+              : h("p", { class: "lede" }, t("Your appointment is booked. We have sent you an email with the details.")),
+            h("div", { class: "when" }, when(b.start)),
+            detailsOf([
+              [t("Service"), v.service],
+              [t("For"), v["for"]],
+              [t("With"), b.staff.join(", ")],
+              [t("Where"), b.location],
+            ]),
+            b.cancelled ? null : links,
+          );
+        }
+
+        function show(v, result) {
+          zone = v.timezone || undefined;
+          if (v.booked) return screen(booked(v));
+          if (v.offer && v.offer.can_answer) {
+            return screen(offerCard(v), v.can_leave ? waiting(v)[1] : null);
+          }
+          let note = null;
+          const gone = result === "taken" || (v.offer && v.offer.status === "Taken");
+          if (gone) note = h("div", { class: "notice warn", role: "status" }, t("Somebody confirmed before you: this place has gone. You are still on the waiting list."));
+          else if (result === "declined") note = h("div", { class: "notice ok", role: "status" }, t("Fine: the place goes to the next person waiting. You keep your place on the list."));
+          else if (result === "expired" || (v.offer && v.offer.status === "Expired" && v.status !== "Expired")) note = h("div", { class: "notice warn", role: "status" }, t("The time to answer has passed: the place went to the next person waiting. You are still on the list."));
+          if (v.status === "Waiting" || v.status === "Offered") return screen(...waiting(v, note));
+          if (v.status === "Removed") return screen(h("div", { class: "notice ok", role: "status" }, t("You are no longer on this waiting list.")));
+          return screen(h("div", { class: "notice warn", role: "status" }, t("This waiting list has ended.")));
+        }
+
+        async function act(method, button, other) {
+          button.disabled = true;
+          if (other) other.disabled = true;
+          try {
+            const v = await call(method);
+            show(v, v.result);
+          } catch (e) {
+            button.disabled = false;
+            if (other) other.disabled = false;
+            app.append(h("div", { class: "notice error", role: "alert" }, e.message));
+          }
+        }
+
+        (async function boot() {
+          try {
+            show(await call("open_offer"));
+          } catch (e) {
+            screen(h("div", { class: "notice error", role: "alert" }, e.message || t("This link is not valid")));
+          }
+        })();
+      })();
+    </script>
+  </body>
+</html>
