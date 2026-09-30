@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import io
 import re
+import struct
+import time
 import unittest
 from datetime import date
 
@@ -122,6 +124,13 @@ class ConversioneTest(UnitTestCase):
 		primo = pdfa.converti(sorgente, titolo="x", data_documento=date(2026, 3, 10))
 		secondo = pdfa.converti(sorgente, titolo="x", data_documento=date(2026, 3, 10))
 		self.assertEqual(primo.sha256, secondo.sha256)
+
+	def test_il_profilo_non_porta_l_ora(self):
+		# littleCMS writes the clock into the profile: a second later it must be the same
+		primo = pdfa.profilo_srgb()
+		time.sleep(1.1)
+		self.assertEqual(primo, pdfa.profilo_srgb())
+		self.assertEqual(struct.unpack(">6H", primo[24:36]), pdfa.DATA_PROFILO)
 
 	def test_un_titolo_diverso_da_un_file_diverso(self):
 		sorgente = pdf_reso()

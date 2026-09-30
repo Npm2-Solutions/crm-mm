@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import struct
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -42,6 +43,8 @@ PRODUTTORE = "Frappe CRM"
 
 PARTE_PDFA = 3
 CONFORMANZA_PDFA = "B"
+#: The sRGB profile's creation date in its ICC header: fixed, so the bytes are.
+DATA_PROFILO = (2026, 1, 1, 0, 0, 0)
 
 
 class Conformita:
@@ -254,9 +257,13 @@ def profilo_srgb() -> bytes | None:
 	except ImportError:
 		return None
 	try:
-		return ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+		profilo = bytearray(ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes())
 	except Exception:
 		return None
+	# littleCMS writes the clock into the header (bytes 24-35: when the profile was
+	# made): a fixed date, or the same form converted a second later is another file
+	profilo[24:36] = struct.pack(">6H", *DATA_PROFILO)
+	return bytes(profilo)
 
 
 @dataclass
