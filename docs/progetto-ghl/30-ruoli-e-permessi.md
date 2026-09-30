@@ -283,6 +283,12 @@ Dal 30/09/2026 anche:
   L'operatore.
 - `clinica.consegna`: consegnare un referto al paziente, a mano o online per 45
   giorni. L'operatore i suoi, la direzione tutti.
+- `area.invita`: aprire l'area del paziente alla persona, o a chi risponde per
+  lei, e chiuderla. La segreteria, l'operatore per i suoi, il manager e la
+  direzione.
+
+Il paziente non è un livello: entra nell'area come utente del sito con il ruolo
+"Clinic Patient", mai nel CRM.
 
 La visibilità "la propria disciplina" è una scelta dell'operatore sulla sua voce
 (`crm/clinica/dossier.py`).

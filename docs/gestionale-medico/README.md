@@ -791,6 +791,42 @@ Con questa parte la fase 2 è completa. Il sigillo del centro e la marca
 temporale sui PDF (pyHanko) arrivano con il certificato e il fornitore di firma.
 L'area del paziente della fase 3 mostrerà le stesse consegne.
 
+### L'area del paziente: la porta e le prime stanze
+
+Fatta il 30/09/2026 (fase 3, la prima parte), su `/area`: un'app a parte, che non
+carica il codice del CRM (`frontend/vite.area.config.js`, `frontend/src/area`),
+con le API in `crm/clinica/area`.
+
+- **L'invito è del centro** (`area.invita`), dalla scheda Clinica della persona,
+  riquadro "Patient area".
+  - Si apre alla persona o a chi risponde per lei (un genitore, un tutore) o la
+    segue (`Clinic Area Access`).
+  - Se serve si crea un utente del sito con il ruolo "Clinic Patient", senza
+    accesso al Desk. Un indirizzo dello staff non diventa mai un paziente.
+  - L'email dice solo che l'area è aperta. L'area si chiude da lì, subito.
+- **La porta è un codice** di sei cifre per email: dieci minuti, cinque tentativi,
+  nessuna password.
+  - Chi chiede riceve la stessa risposta, che l'indirizzo abbia un'area o no: la
+    pagina non rivela chi è registrato.
+  - Lo staff non entra da qui.
+- **Dentro, solo le proprie persone**: ogni chiamata ricava sul server le persone
+  della sessione e rifiuta le altre. Un genitore sceglie di chi guardare l'area.
+  - **Inizio**: il prossimo appuntamento e i documenti online.
+  - **Appuntamenti**: quelli in programma, con il link della pagina di
+    prenotazione per spostarli o annullarli con le regole del centro; poi quelli
+    passati.
+  - **Documenti**: quelli che il centro ha dato online, fino alla loro data. Si
+    scaricano solo con un codice verificato negli ultimi quindici minuti ("per
+    scaricare un referto si rientra") e ogni download va nel registro, come da
+    `/referto`.
+  - **Fatture**, con il loro PDF.
+- **In italiano**: l'area ha il suo dizionario (`frontend/src/area/it.js`), perché
+  il paziente non legge l'inglese dello staff.
+
+Restano alla fase 3: "Prepara la visita" con i moduli da firmare dall'area, i
+messaggi del centro, i piani (alimentazione, allenamento, esercizi) e le
+notifiche.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
