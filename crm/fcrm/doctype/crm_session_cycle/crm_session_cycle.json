@@ -1,0 +1,197 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "CYCLE-.#####",
+ "creation": "2026-09-30 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "service",
+  "sessions",
+  "column_break_head",
+  "status",
+  "starts_on",
+  "valid_until",
+  "practitioner",
+  "price_section",
+  "price",
+  "currency",
+  "column_break_price",
+  "billing",
+  "missed_count",
+  "details_section",
+  "notes",
+  "closed_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Service",
+   "options": "CRM Service",
+   "reqd": 1,
+   "description": "The appointments of this service join the cycle by themselves"
+  },
+  {
+   "fieldname": "sessions",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Sessions",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nCompleted\nClosed",
+   "read_only": 1,
+   "description": "Completed when every session is used; past its last day with sessions left it reads as expired"
+  },
+  {
+   "default": "Today",
+   "fieldname": "starts_on",
+   "fieldtype": "Date",
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "valid_until",
+   "fieldtype": "Date",
+   "label": "Valid until",
+   "description": "Empty: until the sessions are used"
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Practitioner",
+   "options": "User",
+   "description": "Who follows the cycle, when one person does"
+  },
+  {
+   "fieldname": "price_section",
+   "fieldtype": "Section Break",
+   "label": "Price"
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price of the cycle",
+   "non_negative": 1,
+   "options": "currency",
+   "description": "Each session costs its share. Empty: the price list's price"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "column_break_price",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Per session",
+   "fieldname": "billing",
+   "fieldtype": "Select",
+   "label": "Invoiced",
+   "options": "Per session\nThe whole cycle",
+   "description": "The whole cycle: one invoice, and its sessions leave the list of appointments to invoice"
+  },
+  {
+   "default": "1",
+   "fieldname": "missed_count",
+   "fieldtype": "Check",
+   "label": "A missed session is used",
+   "description": "Not coming without cancelling uses a session; unticked, it is one more to book"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed on",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Session Cycle",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lead_name",
+ "track_changes": 1
+}

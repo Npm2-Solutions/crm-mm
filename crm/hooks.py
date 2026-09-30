@@ -193,6 +193,7 @@ permission_query_conditions = {
 	"Clinic Programme": "crm.clinica.programmi.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
+	"CRM Session Cycle": "crm.permissions.seguono.get_cycle_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
 	"CRM SMS Message": "crm.permissions.seguono.get_sms_permission_query_conditions",
 	"CRM Visitor": "crm.permissions.seguono.get_visitor_permission_query_conditions",
@@ -223,6 +224,7 @@ has_permission = {
 	"Clinic Plan": "crm.clinica.piani.has_permission",
 	"Clinic Programme": "crm.clinica.programmi.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
+	"CRM Session Cycle": "crm.permissions.seguono.has_cycle_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
 	"CRM Visitor": "crm.permissions.seguono.has_visitor_permission",

@@ -41,6 +41,7 @@ Invoice = DocType("CRM Invoice")
 Item = DocType("CRM Invoice Item")
 Supplier = DocType("CRM Supplier Invoice")
 Appt = DocType("CRM Appointment")
+Cycle = DocType("CRM Session Cycle")
 
 INVOICING = ("invoicing",)
 FROM_THE_AGENDA = ("invoicing", "agenda")
@@ -218,18 +219,21 @@ def sdi_rejected(ctx: Context):
 
 
 def not_invoiced(ctx: Context):
-	"""Appointments that happened lately and have no document (``api.appointments_to_invoice``)."""
+	"""Appointments that happened lately and have no document (``api.appointments_to_invoice``);
+	a session of a cycle paid as a whole is invoiced with its cycle."""
 	since = add_days(ctx.now, -int(ctx.option("days", 30)))
 	invoiced = (
 		frappe.qb.from_(Invoice)
 		.select(Invoice.appointment)
 		.where(Invoice.appointment.isnotnull() & (Invoice.docstatus < 2))
 	)
+	whole = frappe.qb.from_(Cycle).select(Cycle.name).where(Cycle.billing == "The whole cycle")
 	return (
 		(Appt.starts_on >= since)
 		& (Appt.starts_on <= ctx.now)
 		& Appt.status.notin(("Cancelled", "No Show"))
 		& Appt.name.notin(invoiced)
+		& (Appt.session_cycle.isnull() | Appt.session_cycle.notin(whole))
 	)
 
 

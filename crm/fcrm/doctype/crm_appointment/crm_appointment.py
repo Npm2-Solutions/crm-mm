@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
 from crm.permissions.livelli import puo
-from crm.scheduling import pricing
+from crm.scheduling import cicli, pricing
 from crm.scheduling.availability import find_conflicts, settings
 
 
@@ -50,6 +50,7 @@ class CRMAppointment(Document):
 		reschedule_count: DF.Int
 		resources: DF.Table[CRMAppointmentResource]
 		series: DF.Data | None
+		session_cycle: DF.Link | None
 		source: DF.Literal["Internal", "Online", "External"]
 		service: DF.Link
 		staff: DF.Table[CRMAppointmentStaff]
@@ -71,15 +72,22 @@ class CRMAppointment(Document):
 		self.close_from_attendance()
 		self.set_title()
 		self.check_conflicts()
+		# a session of a cycle joins it before the price, and costs its share after
+		cicli.aggancia(self)
 		pricing.apply_to(self)
+		cicli.prezzo(self)
 
 	def on_update(self):
 		self.sync_event()
 		self.notify_online_client()
 		self.update_last_visit()
+		cicli.appuntamento_aggiornato(self)
 
 	def on_trash(self):
 		self.remove_event()
+
+	def after_delete(self):
+		cicli.appuntamento_eliminato(self)
 
 	# --- defaults ---------------------------------------------------------
 

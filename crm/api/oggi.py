@@ -16,7 +16,7 @@ import frappe
 from frappe.utils import get_datetime, getdate
 
 from crm.permissions import livelli
-from crm.scheduling import esiti
+from crm.scheduling import cicli, esiti
 
 #: How far back the appointments nobody closed are still asked about.
 GIORNI_INDIETRO = 7
@@ -53,6 +53,8 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 		staff.setdefault(riga.parent, []).append(riga.user)
 
 	dovuti = _moduli_dovuti(righe, partecipanti)
+	# "session 4 of 10": which session of its cycle it is
+	sedute = cicli.numero_della_seduta(nomi)
 	fuori = []
 	for riga in righe:
 		persone = partecipanti.get(riga.name, [])
@@ -66,6 +68,7 @@ def _appuntamenti(dal: datetime.datetime, al: datetime.datetime, solo_aperti: bo
 			{
 				**riga,
 				"participants": persone,
+				"cycle": sedute.get(riga.name),
 				"staff": [{"user": u, "full_name": frappe.utils.get_fullname(u)} for u in chi],
 				"can_mark": esiti.puo_segnare(
 					frappe._dict(name=riga.name, staff=[frappe._dict(user=u) for u in chi])

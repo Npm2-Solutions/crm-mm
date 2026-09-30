@@ -32,6 +32,7 @@
   "cancellation_reason",
   "column_break_details",
   "series",
+  "session_cycle",
   "booking",
   "event",
   "conflict_section",
@@ -210,6 +211,15 @@
    "search_index": 1
   },
   {
+   "fieldname": "session_cycle",
+   "fieldtype": "Link",
+   "label": "Cycle of sessions",
+   "options": "CRM Session Cycle",
+   "search_index": 1,
+   "description": "The cycle this appointment is a session of: set by itself when booked, changed from the appointment's panel",
+   "read_only": 1
+  },
+  {
    "fieldname": "booking",
    "fieldtype": "Link",
    "label": "Booking",
@@ -302,7 +312,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-24 10:00:00.000000",
+ "modified": "2026-09-30 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",
