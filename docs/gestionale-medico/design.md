@@ -444,8 +444,11 @@ sue regole**.
   - **le parole**: con la clinica il CRM dice pazienti, visita, area pazienti,
     dappertutto (`crm/clinica/parole.py`);
   - **il marchio**: nome, logo, colori, icona e favicon sono quelli del verticale,
-    DottorCloud per la clinica, in ogni schermata, pagina pubblica ed email. Il
-    centro al massimo mette il suo logo accanto a quello della piattaforma;
+    DottorCloud per la clinica, in ogni schermata, nell'area, nelle pagine
+    pubbliche e in quelle del framework, nelle email, nei PDF e sul telefono
+    (`crm/marchio.py`). Il centro al massimo mette il suo logo accanto a quello
+    della piattaforma. Senza verticale parla il marchio della base, ancora da
+    scegliere (per ora quello di DottorCloud);
   - **le funzioni**: se una funzione della base limita il mestiere, il verticale la
     nasconde e mette la sua.
 
@@ -546,7 +549,7 @@ Una PR per riga, ognuna utile da sola:
    le sue, e i verticali con le loro parole: con la clinica è l'area pazienti
    (fatto il 30/09/2026);
 3. il marchio del verticale: nome, logo, colori, icona e favicon dappertutto, il
-   logo del centro al massimo accanto;
+   logo del centro al massimo accanto (fatto il 30/09/2026);
 4. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
    clinica;
 5. i documenti della persona e la consegna nel CRM;
