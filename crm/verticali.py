@@ -16,7 +16,8 @@ software and says so everywhere.
   `parola()`.
 - **Its places**: what of the base would limit the trade is hidden (`nascosto`),
   and the vertical's own shows instead.
-- **Its brand** comes next, the same way.
+- **Its brand** (`marchio`): the product's name, icon, logo, favicon and colours,
+  everywhere, from `crm.marchio`.
 
 A vertical registers from its own `registra()`, like its capabilities: the CRM
 never names one. At most one is on on a site; if two were, the first registered
@@ -38,6 +39,9 @@ class Verticale:
 	parole: Mapping[str, str] = field(default_factory=dict)
 	#: The base's places it hides, because it shows its own instead.
 	nasconde: frozenset[str] = frozenset()
+	#: The key of its brand (`crm.marchio`): the product's name, icon, logo, favicon
+	#: and colours wherever it is on.
+	marchio: str | None = None
 
 
 _verticali: dict[str, Verticale] = {}

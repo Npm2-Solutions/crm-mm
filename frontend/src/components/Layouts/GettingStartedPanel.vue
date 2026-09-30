@@ -34,7 +34,7 @@
     </div>
     <div class="flex h-full flex-col overflow-hidden">
       <OnboardingSteps
-        title="DottorCloud"
+        :title="platform.name"
         :logo="CRMLogo"
         :app-name="appName"
         :after-skip="afterSkip"
@@ -48,6 +48,7 @@
 
 <script setup>
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
+import { marchio } from '@/utils/marchio'
 import LucideMaximize from '~icons/lucide/maximize-2'
 import LucideMinimize from '~icons/lucide/minimize-2'
 import { Button } from 'frappe-ui'
@@ -63,5 +64,6 @@ defineProps({
   afterResetAll: { type: Function, default: () => {} },
 })
 
+const platform = marchio()
 const show = defineModel({ type: Boolean })
 </script>

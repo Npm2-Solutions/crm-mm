@@ -6,22 +6,17 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
     />
-    <title>DottorCloud</title>
+    <!-- the product's brand - the vertical's (crm.marchio), from the server:
+         its name, its icons, the phone's manifest -->
+    <title>{{ marchio.name }}</title>
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="DottorCloud" />
+    <meta name="apple-mobile-web-app-title" content="{{ marchio.name }}" />
     <meta name="apple-mobile-web-app-status-bar-style" content="white" />
 
     <!-- PWA -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="196x196"
-      href="/assets/crm/manifest/apple-icon-180.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="/assets/crm/manifest/apple-icon-180.png"
-    />
+    <link rel="icon" href="{{ marchio.favicon }}" />
+    <link rel="apple-touch-icon" href="{{ marchio.touch_icon }}" />
+    <link rel="manifest" href="/api/method/crm.marchio.manifest" />
 
     <link
       rel="apple-touch-startup-image"

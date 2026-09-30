@@ -1,0 +1,31 @@
+/* Copyright (c) 2026, NPM2 Solutions Srl and contributors
+   The product's brand in DottorCloud's pages and in the client area alike. */
+
+/* The brand's colour - the vertical's (crm.marchio), set on the root by
+   utils/marchio.js - on what a person acts with: the primary button, a switch
+   that is on, a ticked box. frappe-ui draws the first two in its darkest gray,
+   and only they carry the hover class with it: tooltips, the call panel and the
+   other dark surfaces keep their gray. On light the button takes the brand's
+   darker shade, which white words read on (the lighter one is under the 4.5:1
+   contrast of text); on dark, the lighter one under dark words. */
+:root {
+  --brand-action: var(--brand-strong, #171717);
+  --brand-action-hover: color-mix(in srgb, var(--brand-action) 86%, black);
+}
+[data-theme='dark'] {
+  --brand-action: var(--brand, #f3f3f3);
+  --brand-action-hover: color-mix(in srgb, var(--brand-action) 86%, white);
+}
+.bg-surface-gray-10.hover\:bg-surface-gray-9,
+.bg-surface-gray-10.enabled\:hover\:bg-surface-gray-9 {
+  background-color: var(--brand-action);
+}
+.bg-surface-gray-10.hover\:bg-surface-gray-9:hover,
+.bg-surface-gray-10.enabled\:hover\:bg-surface-gray-9:enabled:hover,
+.bg-surface-gray-10.active\:bg-surface-gray-8:active {
+  background-color: var(--brand-action-hover);
+}
+input[type='checkbox']:checked,
+input[type='radio']:checked {
+  color: var(--brand-action);
+}

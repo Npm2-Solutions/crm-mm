@@ -19,46 +19,10 @@ export default defineConfig(async ({ mode }) => {
         devOptions: {
           enabled: true,
         },
-        manifest: {
-          display: 'standalone',
-          name: 'DottorCloud',
-          short_name: 'DottorCloud',
-          // Both, and matching: without a scope the browser works one out from
-          // where the manifest is served — a path under /assets — and then
-          // refuses the whole thing because the start url is not inside it.
-          scope: '/crm',
-          start_url: '/crm',
-          description: 'Il gestionale per i centri medici',
-          lang: 'it',
-          theme_color: '#ffffff',
-          background_color: '#ffffff',
-          icons: [
-            {
-              src: '/assets/crm/manifest/manifest-icon-192.maskable.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any',
-            },
-            {
-              src: '/assets/crm/manifest/manifest-icon-192.maskable.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'maskable',
-            },
-            {
-              src: '/assets/crm/manifest/manifest-icon-512.maskable.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any',
-            },
-            {
-              src: '/assets/crm/manifest/manifest-icon-512.maskable.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable',
-            },
-          ],
-        },
+        // The phone's manifest is the brand's - the vertical's the plan has on -
+        // so the server writes it (crm.marchio.manifest) and index.html links it:
+        // a manifest built here would carry one name and one icon for every site.
+        manifest: false,
       }),
     ],
     resolve: {

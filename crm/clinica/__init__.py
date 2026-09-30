@@ -404,9 +404,11 @@ def registra() -> None:
 	sintesi.registra()
 	# with the clinic on, the CRM is a medical centre's software and says so
 	from crm.clinica.parole import PAROLE
+	from crm.marchio import DOTTORCLOUD
 	from crm.verticali import Verticale, registra_verticale
 
-	registra_verticale(Verticale(PIANO, PIANO, parole=PAROLE))
+	# and wears its brand: DottorCloud's name, marks and colours, everywhere
+	registra_verticale(Verticale(PIANO, PIANO, parole=PAROLE, marchio=DOTTORCLOUD.chiave))
 	_registra_area(clinica_accesa)
 
 

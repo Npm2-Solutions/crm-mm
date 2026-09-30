@@ -173,3 +173,12 @@ class LeParoleDellaClinica(AreaCase):
 			pagina_area._parole()["This area is for the centre's clients."],
 			"This area is for the centre's patients.",
 		)
+
+	def test_la_clinica_indossa_dottorcloud(self):
+		from crm import marchio
+
+		frappe.set_user("Administrator")
+		livelli.dimentica_cache()
+		self.assertEqual(verticali.attiva().marchio, marchio.DOTTORCLOUD.chiave)
+		self.assertEqual(marchio.attivo(), marchio.DOTTORCLOUD)
+		self.assertEqual(marchio.per_le_pagine()["name"], "DottorCloud")

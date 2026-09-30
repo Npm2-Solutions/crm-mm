@@ -1,4 +1,5 @@
 import { getConfig } from 'frappe-ui'
+import { conMarchio } from '@/utils/marchio'
 
 export default function translationPlugin(app) {
   app.config.globalProperties.__ = translate
@@ -34,6 +35,9 @@ function translate(message, replace, context = null) {
   if (!translatedMessage) {
     translatedMessage = translatedMessages[message] || message
   }
+
+  // a sentence that names the product says "{brand}": the vertical's brand
+  translatedMessage = conMarchio(translatedMessage)
 
   const hasPlaceholders = /{\d+}/.test(message)
   if (!hasPlaceholders) {
