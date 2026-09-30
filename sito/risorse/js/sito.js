@@ -39,22 +39,69 @@ if (header) {
   onScroll()
 }
 
-// things arriving as they come into view
-const arriving = document.querySelectorAll('.reveal')
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-if (arriving.length && 'IntersectionObserver' in window && !still) {
-  const seen = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue
-        entry.target.classList.add('is-visible')
-        seen.unobserve(entry.target)
+
+// the home page opens on today's date
+const today = document.querySelector('[data-oggi]')
+if (today) {
+  const date = new Date().toLocaleDateString('it-IT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+  today.textContent = date.charAt(0).toUpperCase() + date.slice(1)
+}
+
+// the calendar's "now" line: it follows the reader down the day, and its
+// time runs between the times of the moments above and below it
+const day = document.querySelector('[data-day]')
+const now = day?.querySelector('.day__now')
+if (day && now) {
+  const label = now.querySelector('span')
+  const box = day.querySelector('.container')
+  const moments = [...day.querySelectorAll('[data-ora]')]
+  const minutes = (text) => {
+    const [h, m] = text.split(':').map(Number)
+    return h * 60 + m
+  }
+  const clock = (value) => {
+    const m = Math.round(value)
+    return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+  }
+  let frame = 0
+  const place = () => {
+    frame = 0
+    const top = box.getBoundingClientRect().top
+    const points = moments.map((el) => ({
+      y: el.getBoundingClientRect().top - top + 18,
+      t: minutes(el.dataset.ora),
+    }))
+    const last = points.at(-1)
+    points.push({ y: box.offsetHeight, t: Math.min(last.t + 90, 23 * 60 + 59) })
+    // the line sits at 45% of the window, kept inside the day
+    const y = Math.min(
+      Math.max(window.innerHeight * 0.45 - top, points[0].y),
+      last.y,
+    )
+    let t = points[0].t
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = points[i]
+      const b = points[i + 1]
+      if (y >= a.y && y <= b.y) {
+        t = a.t + ((y - a.y) / (b.y - a.y || 1)) * (b.t - a.t)
+        break
       }
-    },
-    { rootMargin: '0px 0px -8% 0px' },
-  )
-  arriving.forEach((element) => seen.observe(element))
-  document.documentElement.classList.add('reveal-on')
+    }
+    now.style.transform = `translateY(${y}px)`
+    label.textContent = clock(t)
+  }
+  const ask = () => {
+    if (!frame) frame = requestAnimationFrame(place)
+  }
+  window.addEventListener('scroll', ask, { passive: true })
+  window.addEventListener('resize', ask)
+  window.addEventListener('load', ask)
+  place()
 }
 
 // the video starts from its own button, then has the browser's controls
