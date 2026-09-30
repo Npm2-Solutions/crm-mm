@@ -16,7 +16,7 @@ export async function loadMe() {
   if (area.me || area.loading) return area.me
   area.loading = true
   try {
-    area.me = await call('crm.clinica.area.api.get_me')
+    area.me = await call('crm.area.api.get_me')
     let kept = null
     try {
       kept = sessionStorage.getItem(KEY)
@@ -32,6 +32,13 @@ export async function loadMe() {
     area.loading = false
   }
   return area.me
+}
+
+// A place another module adds (crm.area.sezioni): the clinic's documents, its
+// plans. Shown when it has something for the person being looked at.
+export function section(key) {
+  const current = (area.me?.people || []).find((p) => p.name === area.person)
+  return Boolean(current?.sections?.[key])
 }
 
 export function choose(person) {

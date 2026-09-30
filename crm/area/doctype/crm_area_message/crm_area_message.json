@@ -42,6 +42,7 @@
   },
   {
    "default": "Administrative",
+   "description": "Care is the clinic's: written by a practitioner, read like a visit",
    "fieldname": "kind",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -92,6 +93,7 @@
    "reqd": 1
   },
   {
+   "depends_on": "eval:doc.kind=='Care'",
    "fieldname": "practitioner",
    "fieldtype": "Link",
    "hidden": 1,
@@ -101,6 +103,7 @@
   },
   {
    "default": "Care team",
+   "depends_on": "eval:doc.kind=='Care'",
    "fieldname": "visibility",
    "fieldtype": "Select",
    "hidden": 1,
@@ -110,6 +113,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.kind=='Care'",
    "fieldname": "obscured",
    "fieldtype": "Check",
    "hidden": 1,
@@ -117,6 +121,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.kind=='Care'",
    "fieldname": "discipline",
    "fieldtype": "Link",
    "hidden": 1,
@@ -125,26 +130,26 @@
    "read_only": 1
   }
  ],
+ "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
  "modified": "2026-10-01 22:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Message",
+ "module": "Area",
+ "name": "CRM Area Message",
  "naming_rule": "Random",
  "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
  "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
  "title_field": "lead_name",
- "track_changes": 1,
- "in_create": 1,
- "permissions": [
-  {
-   "read": 1,
-   "report": 1,
-   "role": "Medical Director"
-  }
- ]
+ "track_changes": 1
 }

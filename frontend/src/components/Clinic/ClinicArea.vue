@@ -94,8 +94,6 @@
     />
     <!-- the teeth, and the care plans proposed as quotes -->
     <DentalCard :lead="lead" />
-    <AreaAccessCard v-if="record.data?.can_invite" :lead="lead" />
-    <AreaMessagesCard v-if="record.data?.can_message" :lead="lead" />
 
     <!-- writing: a visit or a note, for the care team or for oneself -->
     <section
@@ -449,13 +447,11 @@
 </template>
 
 <script setup>
-import AreaAccessCard from '@/components/Clinic/AreaAccessCard.vue'
 import AssistantDraftDialog from '@/components/Clinic/AssistantDraftDialog.vue'
 import DictationDialog from '@/components/Clinic/DictationDialog.vue'
 import SummaryDialog from '@/components/Clinic/SummaryDialog.vue'
 import ClinicPlans from '@/components/Clinic/ClinicPlans.vue'
 import DentalCard from '@/components/Clinic/DentalCard.vue'
-import AreaMessagesCard from '@/components/Clinic/AreaMessagesCard.vue'
 import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'

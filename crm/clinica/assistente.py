@@ -160,7 +160,7 @@ def keep_draft(event: str, text: str, post_to_area: int = 0) -> dict:
 	)
 	fatto = {"note": nota["name"], "mark": segno}
 	if frappe.utils.cint(post_to_area) and funzione is ISTRUZIONI:
-		from crm.clinica.area import messaggi
+		from crm.area import messaggi
 
 		messaggi.post_message(visita.lead, f"{testo}\n\n{segno}")
 		fatto["posted"] = True

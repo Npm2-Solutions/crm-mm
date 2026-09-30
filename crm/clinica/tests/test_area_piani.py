@@ -19,7 +19,7 @@ from frappe.utils import add_days, getdate
 
 from crm.clinica import piani
 from crm.clinica import piani_regole as R
-from crm.clinica.area import api, messaggi
+from crm.area import api, messaggi
 from crm.clinica.area import piani as area_piani
 from crm.clinica.tests.test_area import AreaCase
 from crm.clinica.tests.test_cartella import DOC1
@@ -103,7 +103,7 @@ class IlGiorno(AreaPianiCase):
 		self.entra()
 		[riga] = area_piani.area_plans(self.anna.name)["plans"]
 		self.assertEqual((riga["name"], riga["today"], riga["done_today"]), (piano, 3, 0))
-		self.assertEqual(api.get_me()["people"][0]["plans"], 1)
+		self.assertEqual(api.get_me()["people"][0]["sections"]["plans"], 1)
 		fatto = self.giorno(piano)
 		self.assertEqual([m["label"] for m in fatto["moments"]], ["Pranzo", "Solo oggi"])
 		self.assertTrue(fatto["can_log"])
@@ -208,7 +208,7 @@ class IProgrammi(AreaPianiCase):
 			programmi.publish_programme(fatto["name"])
 		self.entra()
 		# the Plans entry of the area counts the programme too
-		self.assertEqual(api.get_me()["people"][0]["plans"], 2)
+		self.assertEqual(api.get_me()["people"][0]["sections"]["plans"], 2)
 		[nell_area] = area_piani.area_programmes(self.anna.name)["programmes"]
 		self.assertEqual([t["state"] for t in nell_area["stages"]], [P.APERTA, P.CHIUSA])
 		self.assertIn(piano, [p["name"] for p in area_piani.area_plans(self.anna.name)["plans"]])

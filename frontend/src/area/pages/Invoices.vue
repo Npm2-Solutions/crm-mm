@@ -43,7 +43,7 @@ import { day, money } from '../dates'
 import { area } from '../store'
 
 const invoices = createResource({
-  url: 'crm.clinica.area.api.get_invoices',
+  url: 'crm.area.api.get_invoices',
   params: { person: area.person },
   auto: true,
 })
@@ -53,6 +53,6 @@ function pdf(invoice) {
     person: area.person,
     invoice: invoice.name,
   })
-  return `/api/method/crm.clinica.area.api.download_invoice?${params}`
+  return `/api/method/crm.area.api.download_invoice?${params}`
 }
 </script>

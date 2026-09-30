@@ -1,15 +1,16 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The patient's chat in the area: administration only.
+"""The chat in the client area: administration only, whatever the centre.
 
 Carla asks about a pain in her chest: 112, before any model. She asks whether she
 can come with a fever: the chat does not answer, it offers to pass the question
 to the centre; passed on, it is on her board, the desk hears of it without the
 words and answers there. She asks when the centre opens on Saturday: the model
 answers from the hours and the questions the centre wrote, and does not read who
-she is; the register keeps the answer for the medical director. What the model
-does not know goes to a person too. With the chat off there is no chat.
+she is; the register keeps the answer for the manager. What the model does not
+know goes to a person too. With the chat off, or without the assistant in the
+plan, there is no chat.
 """
 
 import json
@@ -18,13 +19,23 @@ from unittest import mock
 import frappe
 import requests
 
+from crm.area import CHAT, accesso, api, chat, messaggi
+from crm.area.tests.test_area import CARLA, DESK, AreaCase
 from crm.assistente import modello, regole
-from crm.clinica import CHAT, paziente
-from crm.clinica.area import accesso, api, chat, messaggi
-from crm.clinica.tests.test_area import CARLA, AreaCase
-from crm.clinica.tests.test_assistente_clinico import risposta
-from crm.clinica.tests.test_cartella import DESK, DOC1
 from crm.permissions import livelli
+
+
+def risposta(testo):
+	"""What the model's endpoint gives back, with ``testo`` as its answer."""
+	finta = mock.Mock()
+	finta.raise_for_status = mock.Mock()
+	finta.json = mock.Mock(
+		return_value={
+			"content": [{"type": "text", "text": testo}],
+			"usage": {"input_tokens": 90, "output_tokens": 40},
+		}
+	)
+	return finta
 
 
 class ChatCase(AreaCase):
@@ -34,26 +45,12 @@ class ChatCase(AreaCase):
 		self.carla = frappe.get_doc(
 			{"doctype": "CRM Lead", "first_name": "Carla", "last_name": "Bacheca", "email": CARLA}
 		).insert(ignore_permissions=True)
-		for user in (DESK, DOC1):
-			frappe.get_doc(
-				{
-					"doctype": "ToDo",
-					"reference_type": "CRM Lead",
-					"reference_name": self.carla.name,
-					"allocated_to": user,
-					"description": "Carla",
-				}
-			).insert(ignore_permissions=True)
+		self.segue(self.carla.name)
 		frappe.cache.delete_value(accesso._chiave_codice(CARLA))
+		self.piano({"module": "area", "status": "Active"}, {"module": "assistente", "status": "Active"})
 		self.come(DESK)
 		accesso.invite(self.carla.name)
 		frappe.set_user("Administrator")
-		piano = frappe.get_single("CRM Plan")
-		piano.set(
-			"modules",
-			[{"module": "clinica", "status": "Active"}, {"module": "assistente", "status": "Active"}],
-		)
-		piano.save()
 		orari = frappe.get_single("CRM Scheduling Settings")
 		orari.set(
 			"default_availability",
@@ -120,9 +117,7 @@ class LaSalute(ChatCase):
 		self.assertEqual((fatto["kind"], fatto["can_pass"]), ("health", True))
 		post.assert_not_called()
 		chat.pass_on(self.carla.name, domanda)
-		# not a patient for a question: only what the centre writes about the care makes one
 		frappe.set_user("Administrator")
-		self.assertFalse(paziente.e_paziente(self.carla.name))
 		avvisi = frappe.get_all(
 			"CRM Notification",
 			filters={"type": "Area", "reference_name": self.carla.name},
@@ -147,7 +142,7 @@ class LAmministrazione(ChatCase):
 		fatto, post = self.chiede(
 			"A che ora aprite il sabato?",
 			json.dumps({"answer": "Il sabato apriamo dalle 8:30 alle 12:30.", "handoff": False}),
-			history=[{"role": "patient", "text": "Buongiorno"}, {"role": "assistant", "text": "Buongiorno!"}],
+			history=[{"role": "person", "text": "Buongiorno"}, {"role": "assistant", "text": "Buongiorno!"}],
 		)
 		self.assertEqual(
 			fatto, {"kind": "answer", "answer": "Il sabato apriamo dalle 8:30 alle 12:30.", "can_pass": False}
@@ -159,15 +154,16 @@ class LAmministrazione(ChatCase):
 		self.assertIn("parcheggio in cortile", sistema)
 		self.assertIn("Q: Serve l'impegnativa?", sistema)
 		conversazione = json.dumps(inviato["messages"], ensure_ascii=False)
-		self.assertIn("Patient: Buongiorno", conversazione)
-		self.assertIn("The patient asks: A che ora aprite il sabato?", conversazione)
+		self.assertIn("Client: Buongiorno", conversazione)
+		self.assertIn("The client asks: A che ora aprite il sabato?", conversazione)
 		# the model does not read who asks
 		for chi in ("Carla", "Bacheca", CARLA):
 			self.assertNotIn(chi, json.dumps(inviato, ensure_ascii=False))
 		frappe.set_user("Administrator")
 		evento = frappe.get_last_doc(modello.EVENTO, filters={"function": CHAT.chiave})
 		self.assertEqual((evento.status, evento.reference_name), (regole.CONSEGNATA, self.carla.name))
-		self.assertEqual(evento.read_capability, "assistente.registro_clinico")
+		# the manager reads the register of the chat
+		self.assertEqual(evento.read_capability, "assistente.registro")
 
 	def test_quello_che_non_sa_lo_passa_a_una_persona(self):
 		self.entra(CARLA)
@@ -189,11 +185,7 @@ class LAmministrazione(ChatCase):
 			chat.pass_on(self.carla.name, "A che ora aprite?")
 
 	def test_senza_l_assistente_nel_piano_non_c_e_chat(self):
-		frappe.set_user("Administrator")
-		piano = frappe.get_single("CRM Plan")
-		piano.set("modules", [{"module": "clinica", "status": "Active"}])
-		piano.save()
-		livelli.dimentica_cache()
+		self.piano({"module": "area", "status": "Active"})
 		self.entra(CARLA)
 		self.assertFalse(api.get_me()["chat"])
 		with self.assertRaises(frappe.ValidationError):

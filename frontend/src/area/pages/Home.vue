@@ -1,4 +1,7 @@
-<!-- The first screen: the next appointment, and what the centre gave online. -->
+<!--
+  The first screen: the next appointment, what to prepare for it, and - where the
+  clinic adds them - the plans followed today and what the centre gave online.
+-->
 <template>
   <div class="flex flex-col gap-6">
     <h1 class="text-xl font-semibold text-ink-gray-9">
@@ -14,7 +17,7 @@
       </p>
     </section>
     <PrepareVisit />
-    <TodayPlans />
+    <TodayPlans v-if="section('plans')" />
     <router-link
       v-if="area.me?.chat"
       :to="{ name: 'Chat' }"
@@ -70,18 +73,18 @@ import PasskeyCard from '../components/PasskeyCard.vue'
 import PrepareVisit from '../components/PrepareVisit.vue'
 import TodayPlans from '../components/TodayPlans.vue'
 import { day } from '../dates'
-import { area } from '../store'
+import { area, section } from '../store'
 
 const person = area.person
 const appointments = createResource({
-  url: 'crm.clinica.area.api.get_appointments',
+  url: 'crm.area.api.get_appointments',
   params: { person },
   auto: true,
 })
 const documents = createResource({
-  url: 'crm.clinica.area.api.get_documents',
+  url: 'crm.clinica.area.documenti.get_documents',
   params: { person },
-  auto: true,
+  auto: section('documents'),
 })
 
 const next = computed(() => appointments.data?.upcoming?.[0])

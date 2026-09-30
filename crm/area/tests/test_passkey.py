@@ -1,11 +1,11 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""A passkey to the patient area, proved with a software authenticator: a P-256
+"""A passkey to the client area, proved with a software authenticator: a P-256
 key, the authenticator data and the signature a phone would make.
 
 Anna enters with the code and adds a passkey; the next time she enters with it,
-without a code, and it counts as entering again for a report. From outside no
+without a code, and it counts as entering again for a document. From outside no
 passkey is added; a closed area does not open; a wrong signature, an old
 challenge, a key that went back in its counter do not enter. She removes her
 passkeys, not somebody else's.
@@ -22,9 +22,8 @@ import frappe
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from crm.clinica.area import accesso, passkey
-from crm.clinica.tests.test_area import ANNA, AreaCase
-from crm.clinica.tests.test_cartella import DESK
+from crm.area import accesso, passkey
+from crm.area.tests.test_area import ANNA, DESK, AreaCase
 
 
 def b64(dati: bytes) -> str:

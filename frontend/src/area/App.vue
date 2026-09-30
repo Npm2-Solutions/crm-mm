@@ -1,13 +1,14 @@
 <!--
-  The patient area's shell: the centre's name, whose area it is (a parent sees
+  The client area's shell: the centre's name, whose area it is (a parent sees
   their child's too), and its places at the bottom, within reach of a thumb.
-  Staff who open it are sent to the CRM: the area is for patients.
+  Staff who open it are sent to DottorCloud: the area is for the centre's clients.
+  With the clinic on it is the patient area, and says so (window.AREA.words).
 -->
 <template>
   <div v-if="staff" class="grid h-full place-items-center px-4">
     <div class="flex max-w-sm flex-col items-center gap-3 text-center">
       <p class="text-base text-ink-gray-8">
-        {{ __('This area is for the patients of the centre.') }}
+        {{ __("This area is for the centre's clients.") }}
       </p>
       <p class="text-p-sm text-ink-gray-5">
         {{ __('Your work is in DottorCloud.') }}
@@ -89,7 +90,7 @@
 import { Button, ErrorMessage, FeatherIcon, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { area, choose, loadMe, logout } from './store'
+import { area, choose, loadMe, logout, section } from './store'
 
 const route = useRoute()
 const boot = window.AREA || {}
@@ -101,16 +102,19 @@ const current = computed(() =>
   (area.me?.people || []).find((p) => p.name === area.person),
 )
 
-// "Plans" only for whoever follows one: most patients never do
+// the places other modules add, where they have something: "Plans" only for
+// whoever follows one, most people never do; the documents where the clinic is
 const places = computed(() =>
   [
     { name: 'Home', label: __('Home'), icon: 'home' },
     { name: 'Appointments', label: __('Agenda'), icon: 'calendar' },
-    current.value?.plans
+    area.person && section('plans')
       ? { name: 'Plans', label: __('Plans'), icon: 'check-square' }
       : null,
     { name: 'Messages', label: __('Messages'), icon: 'message-square' },
-    { name: 'Documents', label: __('Documents'), icon: 'file-text' },
+    area.person && section('documents')
+      ? { name: 'Documents', label: __('Documents'), icon: 'file-text' }
+      : null,
     { name: 'Invoices', label: __('Invoices'), icon: 'credit-card' },
   ].filter(Boolean),
 )

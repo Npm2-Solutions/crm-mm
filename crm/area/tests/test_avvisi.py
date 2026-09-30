@@ -17,9 +17,8 @@ from unittest import mock
 
 import frappe
 
-from crm.clinica.area import api, avvisi, messaggi
-from crm.clinica.tests.test_area import ANNA, AreaCase
-from crm.clinica.tests.test_cartella import DESK, MANAGER
+from crm.area import api, avvisi, messaggi
+from crm.area.tests.test_area import ANNA, DESK, MANAGER, AreaCase
 
 NUMERO = "+393331234567"
 MODELLO = "novita-area-prova"
@@ -53,8 +52,8 @@ class AvvisiCase(AreaCase):
 			frappe.cache.delete_value(avvisi._chiave_pausa(ANNA, canale))
 
 	def offri(self, whatsapp=None, sms=None, twilio=0):
-		frappe.db.set_single_value(avvisi.IMPOSTAZIONI, "area_whatsapp_template", whatsapp)
-		frappe.db.set_single_value(avvisi.IMPOSTAZIONI, "area_sms_number", sms)
+		frappe.db.set_single_value(avvisi.IMPOSTAZIONI, "whatsapp_template", whatsapp)
+		frappe.db.set_single_value(avvisi.IMPOSTAZIONI, "sms_number", sms)
 		frappe.db.set_single_value("CRM Twilio Settings", "enabled", twilio)
 
 	def ha_scritto(self, canale=avvisi.WHATSAPP):

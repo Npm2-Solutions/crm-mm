@@ -1,7 +1,7 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The plans in the patient area: what to do on a day, one tap an item.
+"""The plans in the client area: what to do on a day, one tap an item.
 
 - **The plans followed now** (`area_plans`): the published ones whose period
   holds today, each with how today is going.
@@ -26,7 +26,7 @@ from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 from crm.clinica import piani
 from crm.clinica import piani_regole as R
 from crm.clinica import tabelle as T
-from crm.clinica.area.api import _mia
+from crm.area.api import _mia
 
 #: How far ahead the patient looks at a plan: next week's menu, to shop for it.
 GIORNI_AVANTI = 6

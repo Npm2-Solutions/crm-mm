@@ -1,15 +1,20 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The clinic: patients, and in time their record, reports, plans and area.
+"""The clinic: the vertical that makes the CRM a medical centre's management software.
+
+Switched on, it turns the CRM into the centre's software, all of it
+(docs/gestionale-medico/design.md, "Tre strati"): its words - patients, visits, the
+patient area (`parole.py`, through `crm.verticali`); what exists only for health
+data or medical practice - who is a patient (`regole.py`, `paziente.py`), the
+record and its reports, the dossier, the summary, the dental chart, diets; and its
+rules on the CRM's own pieces, which it registers rather than copies - the client
+area's places and the board's messages about the care, the forms with health data.
 
 It hooks onto the CRM the way the Sistema TS hooks onto invoicing: the CRM never
 imports it (`tests/test_confine.py` checks), and without the line in
 `crm/registrazione.py` the CRM is what it was. The code is on every site; what
 it does is switched on per site by the plan's "clinic" module, off by default.
-
-Today: who is a patient, and how they became one (`regole.py`, `paziente.py`).
-The clinical record comes next, on the person's page.
 """
 
 from __future__ import annotations
@@ -38,9 +43,11 @@ MODULO = ModuloPiano(
 	PIANO,
 	"Clinic",
 	predefinito=False,
-	descrizione="Patients, the clinical record, forms and consents with signature, the archive, "
-	"the patient area, plans",
+	descrizione="The medical centre's management software: patients, the clinical record and "
+	"reports, the archive, plans, and the patient area",
 	ordine=2,
+	# a medical centre gives its patients their area: it comes with the clinic
+	comprende=("area",),
 )
 
 LIVELLO_DIREZIONE = Livello(
@@ -129,24 +136,6 @@ CAPACITA = (
 			descrizione="Give a report to the patient: by hand, or online for 45 days with their consent",
 		),
 		{"operatore": SUOI, DIREZIONE: CENTRO},
-	),
-	# the patient area (design.md, "L'area cliente"): the centre opens it to a person
-	(
-		Capacita(
-			"area.invita",
-			PIANO,
-			descrizione="Open a person's patient area to them, or to who answers for them, and close it",
-		),
-		{"segreteria": CENTRO, "operatore": SUOI, "manager": CENTRO, DIREZIONE: CENTRO},
-	),
-	(
-		Capacita(
-			"area.messaggi",
-			PIANO,
-			descrizione="Write on the person's board in their area: the desk about administration, "
-			"a practitioner about the care",
-		),
-		{"segreteria": CENTRO, "operatore": SUOI, DIREZIONE: CENTRO},
 	),
 	# the plans (design.md, "I piani"): which kinds, the qualification decides
 	(
@@ -250,6 +239,10 @@ CRM_DELLA_DIREZIONE = (
 	"moduli.configura",
 	"moduli.vedi",
 	"moduli.compila",
+	# the patient area: opening it, the board, and the register of its chat
+	"area.invita",
+	"area.messaggi",
+	"assistente.registro",
 )
 
 
@@ -368,16 +361,7 @@ RICETTE = Funzione(
 	legge="assistente.registro_clinico",
 	interruttore="menus",
 )
-# the patients' chat in their area: they use it; in the CRM it goes with the
-# area's messages, where what it passes on arrives
-CHAT = Funzione(
-	"patient_chat",
-	"The patients' chat",
-	usa="area.messaggi",
-	legge="assistente.registro_clinico",
-	interruttore="patient_chat",
-)
-FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE, CHAT)
+FUNZIONI_ASSISTENTE = (LETTERA, ISTRUZIONI, DETTATURA, RIASSUNTO, RICETTE)
 
 
 def registra() -> None:
@@ -418,6 +402,47 @@ def registra() -> None:
 	from crm.clinica import sintesi
 
 	sintesi.registra()
+	# with the clinic on, the CRM is a medical centre's software and says so
+	from crm.clinica.parole import PAROLE
+	from crm.verticali import Verticale, registra_verticale
+
+	registra_verticale(Verticale(PIANO, PIANO, parole=PAROLE))
+	_registra_area(clinica_accesa)
+
+
+def _registra_area(clinica_accesa) -> None:
+	"""The clinic's places in the patient area, and its kind of message on the board."""
+	from crm.area import messaggi
+	from crm.area.sezioni import Sezione, registra_sezione
+	from crm.permissions import livelli
+
+	def documenti(lead: str) -> bool:
+		return clinica_accesa()
+
+	def piani(lead: str) -> int:
+		# how many plans, programmes and care plans the patient follows today
+		from crm.clinica.area import piani as area_piani
+
+		return area_piani.piani_in_corso(lead) if clinica_accesa() else 0
+
+	registra_sezione(Sezione("documents", documenti))
+	registra_sezione(Sezione("plans", piani))
+	# about the care: written by a practitioner, read like one of their visits
+	messaggi.registra_tipo(
+		messaggi.TipoMessaggio(
+			"Care",
+			scrive=lambda user: livelli.puo("clinica.scrivi", user),
+			legge=_legge_la_cura,
+			campi=lambda user: {"practitioner": user, "visibility": "Care team"},
+			priorita=10,
+		)
+	)
+
+
+def _legge_la_cura(doc, user: str) -> bool:
+	from crm.clinica import dossier
+
+	return dossier.legge_le_altre(doc, user)
 
 
 def legge_i_moduli_clinici(user: str | None = None) -> bool:

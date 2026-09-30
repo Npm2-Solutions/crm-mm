@@ -110,7 +110,7 @@ async function send() {
   busy.value = true
   error.value = ''
   try {
-    const answer = await call('crm.clinica.area.accesso.send_code', {
+    const answer = await call('crm.area.accesso.send_code', {
       email: email.value.trim(),
     })
     minutes.value = answer.minutes
@@ -130,12 +130,12 @@ async function withPasskey() {
   error.value = ''
   try {
     const { options, state } = await call(
-      'crm.clinica.area.passkey.authentication_options',
+      'crm.area.passkey.authentication_options',
     )
     const credenziale = await navigator.credentials.get({
       publicKey: opzioniDiAccesso(options),
     })
-    await call('crm.clinica.area.passkey.authenticate', {
+    await call('crm.area.passkey.authenticate', {
       credential: JSON.stringify(inJSON(credenziale)),
       state,
     })
@@ -152,7 +152,7 @@ async function verify() {
   busy.value = true
   error.value = ''
   try {
-    await call('crm.clinica.area.accesso.verify_code', {
+    await call('crm.area.accesso.verify_code', {
       email: email.value.trim(),
       code: code.value.trim(),
     })

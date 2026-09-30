@@ -22,7 +22,8 @@
       v-if="title != 'Activity'"
       class="flex h-8 shrink-0 items-center text-xl-semibold text-ink-gray-8"
     >
-      {{ __(title) }}
+      <!-- the area's tab is named by its words: the clinic's patient area -->
+      {{ title == 'Area' ? __('Client area') : __(title) }}
     </div>
     <!--
       The channel picker. It changes the stream *and* the box underneath: picking
@@ -146,7 +147,7 @@
       />
     </template>
     <!-- the record's buttons live in the record: signing is not a «New» -->
-    <div v-else-if="title == 'Clinic' || title == 'Forms'" />
+    <div v-else-if="title == 'Clinic' || title == 'Forms' || title == 'Area'" />
     <Dropdown
       v-else-if="defaultActions.length"
       :options="defaultActions"

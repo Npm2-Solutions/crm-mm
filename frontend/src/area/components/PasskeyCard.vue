@@ -95,7 +95,7 @@ const shown = computed(
 onMounted(async () => {
   if (!supported()) return
   try {
-    list.value = (await call('crm.clinica.area.passkey.my_passkeys')).passkeys
+    list.value = (await call('crm.area.passkey.my_passkeys')).passkeys
     loaded.value = true
   } catch {
     loaded.value = false
@@ -106,12 +106,12 @@ async function add() {
   busy.value = 'add'
   error.value = ''
   try {
-    const options = await call('crm.clinica.area.passkey.registration_options')
+    const options = await call('crm.area.passkey.registration_options')
     const credenziale = await navigator.credentials.create({
       publicKey: opzioniDiCreazione(options),
     })
     list.value = (
-      await call('crm.clinica.area.passkey.register', {
+      await call('crm.area.passkey.register', {
         credential: JSON.stringify(inJSON(credenziale)),
       })
     ).passkeys
@@ -128,7 +128,7 @@ async function remove(key) {
   error.value = ''
   try {
     list.value = (
-      await call('crm.clinica.area.passkey.remove_passkey', { name: key.name })
+      await call('crm.area.passkey.remove_passkey', { name: key.name })
     ).passkeys
   } catch (e) {
     error.value = __(messageOf(e))

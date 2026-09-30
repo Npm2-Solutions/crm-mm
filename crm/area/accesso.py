@@ -1,19 +1,19 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The door of the patient area: an invitation from the centre, a code by email.
+"""The door of the client area: an invitation from the centre, a code by email.
 
 - **The invitation** is the centre's (`area.invita`): it opens the area of a
   person to their own address, or to whoever answers for them (a parent, a
   guardian) or follows them. A user of the site is made if there is none, with
-  the "Clinic Patient" role and no access to the desk; the email says only that
-  the area is open.
+  the area's role and no access to the desk; the email says only that the area is
+  open.
 - **The code**: six digits by email, ten minutes, five tries. Whoever asks gets
   the same answer, registered or not: the page does not tell which addresses
-  have an area. Only a patient's user enters this way, never staff.
-- **Again, for a report**: a download asks for a code verified in the last
+  have an area. Only an area's user enters this way, never staff.
+- **Again, for a document**: a download asks for a code verified in the last
   fifteen minutes (design.md: "per scaricare un referto si rientra").
-- **A passkey** is the other door, added from inside (`crm.clinica.area.passkey`).
+- **A passkey** is the other door, added from inside (`crm.area.passkey`).
 """
 
 from __future__ import annotations
@@ -29,8 +29,9 @@ from frappe.utils import cint, get_url, now_datetime, validate_email_address
 
 from crm.permissions import livelli
 
-RUOLO = "Clinic Patient"
-ACCESSO = "Clinic Area Access"
+#: The role of whoever enters an area: a user of the site, never of the desk.
+RUOLO = "Client Area User"
+ACCESSO = "CRM Area Access"
 SE_STESSO, TUTORE, SEGUE = "Self", "Parent or guardian", "Follows them"
 RELAZIONI = (SE_STESSO, TUTORE, SEGUE)
 MINUTI_CODICE = 10
@@ -64,7 +65,7 @@ def _normalizza(email: str | None) -> str:
 
 
 def assicura_ruolo() -> None:
-	"""The patient's role: a user of the site, never of the desk."""
+	"""The area's role: a user of the site, never of the desk."""
 	if frappe.db.exists("Role", RUOLO):
 		return
 	frappe.get_doc(
@@ -73,7 +74,7 @@ def assicura_ruolo() -> None:
 			"role_name": RUOLO,
 			"desk_access": 0,
 			"is_custom": 1,
-			"description": "Enters the patient area of the centre: never the desk, never the CRM",
+			"description": "Enters the client area of the centre: never the desk",
 		}
 	).insert(ignore_permissions=True)
 
@@ -88,7 +89,9 @@ def persone_di(user: str | None = None) -> list[dict]:
 	)
 
 
-def e_paziente_dell_area(user: str) -> bool:
+def entra_nell_area(user: str) -> bool:
+	"""Whether ``user`` is somebody who enters an area now: a user of the site, with
+	the role, and at least one person given."""
 	return (
 		frappe.db.get_value("User", user, "user_type") == "Website User"
 		and RUOLO in frappe.get_roles(user)
@@ -112,8 +115,8 @@ def _utente_per(email: str, nome: str) -> str:
 	utente = frappe.db.get_value("User", {"name": email})
 	if utente:
 		if frappe.db.get_value("User", utente, "user_type") != "Website User":
-			# a colleague's address: staff never enter the area, and do not become patients
-			frappe.throw(_("{0} is a user of the centre: the area is for patients").format(email))
+			# a colleague's address: staff never enter the area
+			frappe.throw(_("{0} is a user of the centre: the area is for the people it looks after").format(email))
 		doc = frappe.get_doc("User", utente)
 		if RUOLO not in [r.role for r in doc.roles]:
 			doc.append("roles", {"role": RUOLO})
@@ -241,7 +244,7 @@ def get_accesses(lead: str) -> dict:
 	}
 
 
-# ------------------------------------------------------------------ the patient's side
+# ------------------------------------------------------------------ the person's side
 
 
 def _mandalo(email: str, codice: str) -> None:
@@ -269,7 +272,7 @@ def send_code(email: str | None = None) -> dict:
 	indirizzo = frappe.session.user if frappe.session.user != "Guest" else _normalizza(email)
 	if not indirizzo:
 		frappe.throw(_("Write your email address"))
-	if e_paziente_dell_area(indirizzo):
+	if entra_nell_area(indirizzo):
 		chiave = _chiave_codice(indirizzo)
 		precedente = frappe.cache.get_value(chiave) or {}
 		inviati = cint(precedente.get("sent")) + 1
@@ -305,7 +308,7 @@ def verify_code(code: str, email: str | None = None) -> dict:
 		frappe.cache.set_value(chiave, salvato, expires_in_sec=MINUTI_CODICE * 60)
 		frappe.throw(_("The code is not right"))
 	frappe.cache.delete_value(chiave)
-	if not e_paziente_dell_area(indirizzo):
+	if not entra_nell_area(indirizzo):
 		frappe.throw(_("This area is closed: ask the centre"), frappe.PermissionError)
 	if frappe.session.user == "Guest":
 		frappe.local.login_manager.login_as(indirizzo)

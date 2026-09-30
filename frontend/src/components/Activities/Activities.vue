@@ -37,6 +37,9 @@
     <div v-else-if="title == 'Forms'" class="h-full overflow-y-auto">
       <FormsArea :lead="docname" />
     </div>
+    <div v-else-if="title == 'Area'" class="h-full overflow-y-auto">
+      <PersonArea :lead="docname" />
+    </div>
     <div
       v-else-if="
         activities?.length ||
@@ -594,6 +597,7 @@ import EventArea from '@/components/Activities/EventArea.vue'
 import AttributionArea from '@/components/Activities/AttributionArea.vue'
 import ClinicArea from '@/components/Clinic/ClinicArea.vue'
 import FormsArea from '@/components/Moduli/FormsArea.vue'
+import PersonArea from '@/components/Area/PersonArea.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'

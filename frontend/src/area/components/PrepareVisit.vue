@@ -1,12 +1,12 @@
 <!--
-  Preparing the visit: the forms the centre asks before the next appointment,
+  Preparing the appointment: the forms the centre asks before the next one,
   filled here on the forms page - already open, since the person came in with a
   code - and back to the area when they are done.
 -->
 <template>
   <section v-if="forms.data?.forms?.length" class="flex flex-col gap-2">
     <h2 class="text-base font-medium text-ink-gray-7">
-      {{ __('Prepare your visit') }}
+      {{ __('Prepare your appointment') }}
     </h2>
     <div
       class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
@@ -53,7 +53,7 @@ import { day } from '../dates'
 import { area, messageOf } from '../store'
 
 const forms = createResource({
-  url: 'crm.clinica.area.api.get_forms',
+  url: 'crm.area.api.get_forms',
   params: { person: area.person },
   auto: true,
 })
@@ -81,7 +81,7 @@ async function fill(templates) {
   opening.value = templates[0]
   error.value = ''
   try {
-    const open = await call('crm.clinica.area.api.fill_forms', {
+    const open = await call('crm.area.api.fill_forms', {
       person: area.person,
       templates: JSON.stringify(templates),
     })
