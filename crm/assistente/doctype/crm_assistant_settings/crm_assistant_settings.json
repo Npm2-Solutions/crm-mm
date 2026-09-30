@@ -10,6 +10,8 @@
   "paper_forms",
   "column_service",
   "note_drafts",
+  "dictation",
+  "summaries",
   "provider_section",
   "provider",
   "base_url",
@@ -50,6 +52,20 @@
    "fieldname": "note_drafts",
    "fieldtype": "Check",
    "label": "Drafts from a note"
+  },
+  {
+   "default": "1",
+   "description": "The practitioner's words into the fields of the specialty's sheet: medicines, allergies and doses confirmed one by one",
+   "fieldname": "dictation",
+   "fieldtype": "Check",
+   "label": "A visit from dictation"
+  },
+  {
+   "default": "1",
+   "description": "What the record says, citing its sources: no scores, no alerts",
+   "fieldname": "summaries",
+   "fieldtype": "Check",
+   "label": "A summary before the visit"
   },
   {
    "fieldname": "provider_section",
@@ -119,7 +135,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-01 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "Assistente",
  "name": "CRM Assistant Settings",
