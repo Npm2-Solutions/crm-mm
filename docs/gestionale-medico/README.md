@@ -622,9 +622,34 @@ Fatto il 30/09/2026 (fase 2, la quarta parte).
   Nessun fornitore reale è ancora collegato: Namirial, InfoCert o Intesi si
   aggiungono come una classe ciascuno, quando il centro sceglie.
 
-Resta alla fase 2: i moduli "quando si chiede" e "Oggi: moduli da firmare", la
-cartella sul modello della specialità, i referti, l'archivio. "Dal modulo di
-carta", con l'assistente che propone i campi, va alla fase 4.
+### I moduli dovuti: quando si chiede
+
+Fatto il 30/09/2026 (fase 2, la quinta parte).
+
+- **Quando si chiede** lo dice il modello: a mano, al primo appuntamento, per alcuni
+  servizi; e quanto vale uno firmato: per sempre, un anno, un appuntamento. Una
+  versione nuova può richiederlo a chi aveva firmato la precedente, da una data.
+  La regola è una sola e pura (`crm/moduli/dovuti.py`, `dovuto`).
+- **Nella scheda Forms** della persona, "To sign for the appointment of…": i
+  moduli che deve per il suo prossimo appuntamento (o in generale), con il perché
+  (mai firmato, versione nuova, firmato più di un anno fa, uno per appuntamento) e
+  cosa è già in corso (iniziato, link mandato, da firmare al banco). "Fill" lo
+  comincia legato all'appuntamento; "On their own" li trova già scelti.
+- **Nella pagina Oggi**, accanto a ogni persona, "N forms to sign": si firmano
+  mentre aspetta. I moduli con dati sanitari solo per chi li legge.
+- **Con la prenotazione**: un modello può dire "Send the link when an appointment
+  is booked". Prenotato un appuntamento (dal CRM o da /prenota), chi deve quel
+  modulo riceve il link, uno per persona con tutti i moduli, valido fino all'ora
+  della visita; non se manca meno di un'ora, non se un link per quel modulo è già
+  aperto, non se non c'è un indirizzo. Il messaggio non dice quali moduli.
+
+Corretto insieme: la fine della giornata (le accettazioni che diventano "venuto" e
+la domanda "sono venuti?") perdeva un giorno il cui ultimo appuntamento finiva dopo
+le 23: ora guarda anche il giorno prima, e chiede una volta sola per giorno.
+
+Resta alla fase 2: la cartella sul modello della specialità, i referti,
+l'archivio. "Dal modulo di carta", con l'assistente che propone i campi, va alla
+fase 4.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
