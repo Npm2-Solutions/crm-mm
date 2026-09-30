@@ -47,7 +47,7 @@ def _mia(person: str) -> dict:
 @frappe.whitelist()
 def get_me() -> dict:
 	"""Who is in, whose areas they see, and the centre's name."""
-	from crm.clinica.area import messaggi
+	from crm.clinica.area import messaggi, piani
 	from crm.moduli.richieste import nome_del_centro
 
 	utente = _paziente()
@@ -68,6 +68,8 @@ def get_me() -> dict:
 				"lead_name": p.lead_name,
 				"relation": p.relation,
 				"unread": messaggi.da_leggere(p.lead),
+				# the area shows "Plans" to who follows one now
+				"plans": piani.piani_in_corso(p.lead),
 			}
 			for p in persone
 		],
