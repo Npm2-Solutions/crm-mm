@@ -127,6 +127,10 @@ Un modulo, una scheda clinica e un piano sono lo stesso oggetto con tre usi:
 | Scheda clinica | l'operatore | cartella | visita nutrizionale, valutazione fisioterapica |
 | Piano | l'operatore, il paziente lo segue | area cliente | dieta, allenamento, esercizi a casa |
 
+*Dal 30/09/2026 la scheda è un uso del CRM, "Scheda": la scheda trattamento di un
+centro estetico è la stessa cosa. Con il marchio "dato clinico" è una scheda
+clinica e va in cartella ([tre strati](#tre-strati-crm-fatturazione-clinica)).*
+
 **Il motore sta nel CRM, non nella clinica.** Anche una palestra o uno studio
 legale hanno privacy, contratti e preventivi da far firmare: modelli,
 compilazioni, firme e PDF/A servono a ogni cliente e stanno in `crm/moduli`
@@ -227,6 +231,9 @@ e alimento, esercizio) e il marchio "dato clinico" descritto qui sotto.
 
 ## L'area cliente
 
+*Dal 30/09/2026 è l'Area clienti del CRM ([tre strati](#tre-strati-crm-fatturazione-clinica)):
+la clinica ci aggiunge referti, messaggi di cura e piani sanitari.*
+
 - **Un'app a parte.** Una seconda app Vite nello stesso modulo, su `/area`, con il
   suo service worker: come HRMS, che ha l'app dei dipendenti accanto a quella
   dell'ufficio. Non la SPA del CRM: la sua pagina d'ingresso respinge chi non è
@@ -261,6 +268,10 @@ e alimento, esercizio) e il marchio "dato clinico" descritto qui sotto.
   sono cifrati sul disco: la cifratura sta nei backup e nel disco del server.
 
 ## I piani
+
+*Dal 30/09/2026 il motore dei piani sta nel CRM ([tre strati](#tre-strati-crm-fatturazione-clinica)):
+allenamento, abitudini e programmi a tappe per tutti; dieta ed esercizi di
+riabilitazione restano alla clinica.*
 
 ([ricerca per il design §2](./ricerca-design.md#2-i-piani-nutrizione-allenamento-esercizi-a-casa))
 
@@ -409,56 +420,165 @@ automatici, analisi delle emozioni dalla voce.
 
 ## Tre strati: CRM, fatturazione, clinica
 
-Una parte del lavoro serve a ogni cliente del CRM, non solo ai centri medici.
-Quindi nella clinica non va tutto:
+*Rivisto il 30/09/2026.* La prima versione metteva nella clinica tutto quello che è
+nato col progetto medico. Riletta sul codice, gran parte serve a chiunque lavori su
+appuntamenti: un centro estetico, una palestra, uno studio. Adesso vale la regola
+dei moduli da firmare: **il motore sta nel CRM, e la clinica ci aggiunge solo le
+sue regole**.
+
+- **Come si decide.** Una cosa va nel CRM se un centro estetico o una palestra la
+  userebbero allo stesso modo. Resta nella clinica se esiste per i dati sanitari
+  (GDPR art. 9, le linee guida del Garante su dossier e referti online) o se la usa
+  solo un medico (la cartella, l'odontogramma).
+- **La clinica non copia, registra.** Quando usa un pezzo del CRM con regole in
+  più, registra le sue regole, come fa già con l'uso "scheda clinica" dei modelli e
+  con i suoi tipi di consenso.
+- **La leva è il marchio "dato clinico".** Con la clinica accesa, un modulo, un
+  piano, un documento o un messaggio possono portarlo. Con il marchio li legge chi
+  dice la clinica: dossier, oscuramento, disciplina, registro degli accessi. Senza
+  il marchio li legge chi vede la persona.
 
 | Strato | Cosa ci va | Per chi |
 |---|---|---|
-| CRM | livelli e ruoli ([doc 30](../progetto-ghl/30-ruoli-e-permessi.md)), Sito nascosto senza Builder, fatture viste solo da chi deve, registro dei consensi, modelli e firme (`crm/moduli`) | tutti i clienti |
-| Fatturazione (c'è già) | l'anagrafica fiscale della persona | chi fattura |
-| Clinica (nuova, `crm/clinica`) | paziente e regole per diventarlo, cartella, referti, archivio, dossier, piani, area cliente, assistente | solo i centri medici |
+| CRM, Base | persone e agenda; cicli di sedute, **abbonamenti** e **liste d'attesa**; prenotazione, promemoria, conversazioni; fatture e **preventivi**; **documenti della persona** e consegna sicura; moduli con firma e registro dei consensi; pipeline "nuovi clienti" e "preventivi"; dashboard, livelli | tutti |
+| CRM, Area clienti | l'app della persona: porta col codice e passkey, appuntamenti, fatture, moduli da compilare, documenti, messaggi, chat dell'amministrazione, avvisi; piani di allenamento e di abitudini, programmi a tappe, libreria degli esercizi | chi dà l'app ai suoi clienti; con la Clinica è compresa |
+| Fatturazione | anagrafica fiscale, Sistema TS | chi fattura |
+| Clinica | il paziente e le regole per diventarlo; cartella, schede cliniche e referti; dossier, oscuramento e accessi; la sintesi; l'odontogramma; i piani sanitari (dieta, riabilitazione) con alimenti e tabelle; l'assistente clinico; chi legge quello che porta il marchio "dato clinico" | i centri medici |
 
-- **Anche i consensi stanno nel CRM.** Il consenso al marketing serve a tutti; la
-  clinica aggiunge dossier, referti online e uso dell'IA.
-- **La clinica si aggancia al CRM come il Sistema TS alla fatturazione**, senza
-  che il CRM la conosca:
-  - una riga in `crm/hooks.py` (`registra()`): senza quella riga il CRM è quello
-    di oggi;
-  - un interruttore "centro medico" per sito: il codice c'è su tutti i siti, ma
-    menu, scheda della persona, eventi e job si accendono solo dove serve;
-  - le liste oggi scritte a mano diventano aperte, come fa
-    `crm/invoicing/estensioni.py`: la cronologia (`everything_else_on`, per le
-    visite col lucchetto), le automazioni (`EVENT_TO_TRIGGER`, per "Diventato
-    paziente"), la dashboard (`features.py` e i widget con `requires`), l'avvio
-    (`get_boot()`, che dice al frontend se la clinica è accesa e che cosa può
-    fare l'utente);
-  - nel frontend la scheda "Clinica" è una voce in più della lista `tabs` di
-    `Lead.vue`, e le pagine cliniche si caricano solo quando servono;
-  - l'area cliente è una seconda app nello stesso repo, su `/area`.
+### Cosa passa dalla clinica al CRM
+
+| Oggi nella clinica | Nel CRM | Resta alla clinica |
+|---|---|---|
+| L'area del paziente | L'Area clienti: porta, passkey, appuntamenti, fatture, "Prepara l'appuntamento", messaggi dell'amministrazione, avvisi, la chat con le sue regole di sicurezza (il 112, le domande di salute a una persona) | referti e documenti clinici, messaggi di cura, piani di cura; la parola "paziente" |
+| I piani e i programmi | Il motore: momenti, voci, settimana, un tocco, versioni. Allenamento e abitudini, programmi a tappe, libreria degli esercizi con il dataset | dieta a menù e a scambi, esercizi di riabilitazione, alimenti e tabelle, nutrienti, lista della spesa, ricette dell'assistente |
+| L'archivio clinico | I documenti della persona: tipo, data, provenienza, file privato con impronta, da un messaggio, visibili nell'area. La consegna a mano o online con link e codice, per i giorni scelti | il marchio "dato clinico" e le sue regole; i referti delle visite; "mai online"; i 45 giorni e il consenso ai referti online |
+| I piani di cura (odontoiatria) | Il preventivo: prestazioni dal listino con sconto, fasi, PDF, accettato o rifiutato, la pipeline "Preventivi", gli appuntamenti che prendono le righe | il dente e le superfici sulla riga, l'odontogramma |
+| La pipeline "Nuovi pazienti" | "Nuovi clienti": la prenotazione sposta la trattativa, la prima volta che la persona viene la vince; l'evento "Diventato cliente"; il costo per nuovo cliente | "Diventato paziente", con le regole della prima informazione clinica e della fattura sanitaria |
+| Le impostazioni della clinica | Tutte: pipeline, WhatsApp e SMS dell'area, immagini degli esercizi | niente: si svuotano |
+
+I nomi seguono lo strato: `Clinic Area Access` diventa `CRM Area Access`,
+`Clinic Plan` diventa `CRM Personal Plan` (`CRM Plan` è il piano del centro),
+`Clinic Document` diventa `CRM Document`, `Clinic Care Plan` diventa `CRM Quote`.
+**Si fa adesso** perché nessun centro usa ancora la clinica: oggi rinominare costa
+una patch, domani costerebbe spostare dati veri.
+
+### Cosa si aggiunge al CRM
+
+- **Le liste d'attesa.** Una persona aspetta un servizio, se serve con un
+  professionista, in certi giorni e fasce orarie, entro una data; oppure aspetta un
+  posto in una lezione piena. Quando qualcosa si libera (una disdetta, uno
+  spostamento, un turno nuovo, un posto nella lezione), il CRM lo propone a chi
+  aspetta, nell'ordine, su WhatsApp, SMS o email, con un link: il primo che
+  conferma lo prende. La segreteria vede chi aspetta e può fissare a mano. In lista
+  si entra dalla segreteria, da `/prenota` quando non c'è posto e dall'area.
+- **Gli abbonamenti.** Un tipo di abbonamento dice:
+  - la durata: un mese, tre, un anno;
+  - il prezzo, e se si paga tutto subito o a rate mensili;
+  - quali servizi comprende e quanti ingressi: illimitati, oppure tanti a settimana
+    o al mese;
+  - se si può sospendere.
+
+  Si vende dalla pagina della persona, come un ciclo. Le fatture partono da sole a
+  ogni rata. Prima della fine arrivano il promemoria e il rinnovo. Un appuntamento
+  di un servizio compreso consuma un ingresso, come una seduta consuma il ciclo:
+  un ciclo conta le sedute, un abbonamento il tempo, e stanno insieme nell'agenda.
+
+### Cosa si usa di quello che c'è
+
+- La consegna dei documenti usa il link col codice delle richieste di moduli, non un
+  meccanismo suo.
+- Gli abbonamenti contano gli ingressi come i cicli contano le sedute, e fatturano
+  con la fatturazione che c'è.
+- Le liste d'attesa leggono i posti liberi dal motore dell'agenda (anche quelli
+  delle lezioni di gruppo) e scrivono con i canali delle conversazioni.
+
+### Cosa basta configurare
+
+- **Il modulo privacy**: un modulo con l'elemento "informativa", chiesto alla prima
+  visita.
+- **La scheda clinica**: un modello d'uso "Scheda", compilato dall'operatore, con il
+  marchio "dato clinico". L'uso "Scheda" sta nel CRM: la scheda trattamento di un
+  centro estetico è la stessa cosa.
+- **Il form del sito**: un modulo con "Dove si usa: sul sito". Il builder è uno solo
+  ([il motore dei modelli](#il-motore-dei-modelli)).
+- **Chi scrive quale piano**: le qualifiche dei professionisti. Un personal trainer
+  scrive allenamenti e abitudini; la dieta la scrivono medico, biologo nutrizionista
+  e dietista.
+- **Le parole**: "Area pazienti" con la clinica, "Area clienti" senza; il nome e le
+  fasi delle pipeline; orari, chiusure e domande frequenti della chat.
+
+### Già al posto giusto
+
+Livelli e capacità, il registro dei consensi, modelli, compilazioni e firme
+(`crm/moduli`), l'anagrafica fiscale, le persone collegate, i cicli di sedute, la
+giornata della segreteria (Oggi, arrivi, esiti) e l'assistente, che è un modulo del
+piano a sé.
+
+### Il piano del centro
+
+- **Base**: in più i moduli con firma e i consensi, i documenti, i preventivi, gli
+  abbonamenti e le liste d'attesa. La privacy e i contratti firmati servono a tutti.
+- **Area clienti**: un modulo nuovo, che si compra da solo.
+- **Clinica**: comprende l'Area clienti, così un centro medico ha quello che aveva.
+- I prezzi dell'Area clienti e della Clinica sono da rifare
+  ([listino](./listino.md#da-decidere)).
+
+### L'ordine
+
+Una PR per riga, ognuna utile da sola:
+
+1. questa mappa nei documenti;
+2. l'Area clienti nel CRM, con un registro delle sezioni a cui la clinica aggiunge
+   le sue;
+3. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
+   clinica;
+4. i documenti della persona e la consegna nel CRM;
+5. i preventivi nel CRM, che l'odontoiatria estende;
+6. "Nuovi clienti" e "Diventato cliente" nel CRM;
+7. un solo builder dei moduli, con l'uso "Scheda" e i moduli del sito;
+8. le liste d'attesa;
+9. gli abbonamenti.
+
+### Come si aggancia la clinica
+
+- **Come il Sistema TS alla fatturazione**, senza che il CRM la conosca:
+  - una riga in `crm/registrazione.py` (`registra()`): senza quella riga il CRM è
+    quello di prima;
+  - il modulo "Clinica" del piano accende menu, pagina della persona, eventi e job
+    solo dove serve;
+  - si aggancia alle liste aperte: la cronologia, le automazioni
+    (`engine.registra_evento`), la dashboard (i widget con `requires`), gli usi dei
+    modelli, i tipi di consenso, le sezioni dell'area, i tipi di piano, chi legge il
+    marchio "dato clinico";
+  - nel frontend la scheda "Clinica" è una voce in più della pagina della persona.
 - **Un modulo, non un'app a parte**: il frontend del CRM è uno, e la cartella vive
   sulla pagina della persona ([README, decisione 2](./README.md#decisione-2--un-verticale-dentro-crm-con-le-regole-di-unapp-separata)).
   Con il confine controllato da un test, staccarla un giorno sarà un trasloco, non
   una riscrittura.
 
+Dove andrà il codice, alla fine del riordino:
+
 ```
-crm/moduli/            per tutti: modelli, compilazioni, firme, PDF/A
+crm/moduli/            per tutti: modelli, compilazioni, firme, PDF/A, consensi
+crm/area/              per tutti: l'Area clienti (porta, passkey, messaggi, chat, avvisi)
+crm/piani/             per tutti: piani, programmi, esercizi
+crm/documenti/         per tutti: i documenti della persona e la consegna
+crm/preventivi/        per tutti: i preventivi e la loro pipeline
+crm/scheduling/        per tutti: agenda, cicli, abbonamenti, liste d'attesa
 crm/clinica/
-  __init__.py          registra(): regole, eventi, cronologia, widget
-  regole.py            le regole per diventare paziente, testabili senza un sito
-  paziente.py          ensure_patient() e il recupero dei dati che ci sono già
-  cartella/            visite, referti, archivio, accessi, dossier
-  piani/               piani, alimenti, esercizi, check-in
-  area/                le API dell'area cliente, solo "la mia persona"
-  doctype/             Clinic Patient, Clinic Record, Clinic Plan…
+  __init__.py          registra(): livello, capacità, consensi, usi, sezioni, tipi di piano
+  regole.py, paziente.py                            chi è paziente
+  cartella.py, referto.py, dossier.py, sintesi.py   la cartella
+  alimentazione/       diete, alimenti e tabelle, nutrienti, lista della spesa, menù
+  cure.py              l'odontogramma, sui preventivi del CRM
   tests/               test_confine: né il CRM né la fatturazione la importano
-frontend/src/clinica/  la sezione Clinica e i piani
-area/                  l'app del paziente
+frontend/src/area/     l'app della persona
 ```
 
 ## Il modello dati
 
-Nel CRM, in `crm/moduli`, i DocType che servono a ogni cliente, con il prefisso
-`CRM` come il resto del codice:
+Nel CRM, i DocType che servono a ogni cliente, con il prefisso `CRM` come il resto
+del codice. In `crm/moduli`:
 
 | DocType | Che cos'è | Campi che contano |
 |---|---|---|
@@ -471,23 +591,37 @@ Nel CRM, in `crm/moduli`, i DocType che servono a ogni cliente, con il prefisso
 | `CRM Consent` | il registro dei consensi (fatto il 29/09/2026, con `CRM Consent Type`) | tipo, stato, versione del testo, da quale modulo, dato da, revocato il |
 | `CRM Related Person` | due persone che stanno insieme: genitore e figlio, partner, tutore (fatto il 29/09/2026) | chi è seguito, chi lo segue, relazione, paga, prenota, decide |
 
-Nella clinica, in `crm/clinica`, con il prefisso `Clinic`:
+Con il riordino del 30/09/2026 passano al CRM, rinominati, e se ne aggiungono di
+nuovi:
+
+| DocType | Era | Che cos'è |
+|---|---|---|
+| `CRM Area Access`, `CRM Area Passkey`, `CRM Area Notice` | `Clinic Area …` | chi entra nell'area della persona, le sue passkey, come vuole gli avvisi |
+| `CRM Area Message` | `Clinic Message` | un messaggio nell'area: dell'amministrazione, una domanda; con la clinica anche di cura |
+| `CRM Personal Plan`, con i momenti, le voci e il registro | `Clinic Plan …` | un piano per una persona; i tipi li registra chi li porta |
+| `CRM Programme`, con le tappe | `Clinic Programme …` | un programma a tappe |
+| `CRM Exercise`, `CRM Library Import` | `Clinic Exercise`, `Clinic Library Import` | la libreria degli esercizi; chi ha importato quale tabella, con quale licenza |
+| `CRM Document`, `CRM Document Delivery` | `Clinic Document`, `Clinic Report Delivery` | i documenti della persona; la consegna a mano o online |
+| `CRM Quote`, con le righe | `Clinic Care Plan …` | un preventivo |
+| `CRM Waiting List Entry` | nuovo | chi aspetta cosa, fino a quando, e che cosa gli è stato proposto |
+| `CRM Subscription Type`, `CRM Subscription` | nuovi | il tipo di abbonamento; l'abbonamento di una persona |
+
+Nella clinica, in `crm/clinica`, con il prefisso `Clinic`, resta quello che esiste
+per i dati sanitari o per il mestiere medico:
 
 | DocType | Che cos'è | Campi che contano |
 |---|---|---|
 | `Clinic Patient` | la scheda paziente, uno a uno con `CRM Lead` | paziente dal, regola, origine; chi decide e chi paga per lui sono legami fra persone (`CRM Related Person`), il dossier è nel registro dei consensi |
 | `Clinic Record` | una voce di cartella: visita, nota, misura (submittable, poi solo aggiunte) | versione, operatore (l'erogatore), appuntamento, valori, chi la vede, colonne per le statistiche |
-| `Clinic Document` | l'archivio | tipo, file privato, data, provenienza, visibile al paziente, online fino al |
-| `Clinic Plan` | un piano | tipo, versione del modello, operatore, periodo, pubblicato; tabelle dei momenti e delle voci |
-| `Clinic Food`, `Clinic Exercise` | le librerie | nutrienti e fonte con licenza; muscoli primari e secondari, fotogrammi, GIF o link, istruzioni, autore e licenza da mostrare |
-| `Clinic Plan Log` | un check-in del paziente | voce, esito (fatto, in parte, saltato), peso, fatica o dolore, foto, nota |
-| `Clinic Message` | un messaggio nell'area | autore, testo, letto il |
-| `Clinic AI Event` | il registro dell'assistente | funzione, modello, fornitore, regione, impronte, bozza e differenza con la nota firmata |
-| `Clinic Access Grant` | l'accesso di supporto dell'agenzia | chi, perché, da, a, chiesto da |
+| `Clinic Summary Value` | una riga della sintesi: allergie, farmaci, condizioni, parametri | voce, valore, da dove viene, chi l'ha confermata |
+| `Clinic Food` | la libreria degli alimenti | nutrienti per 100 g, gruppo, fonte con licenza |
+| `Clinic Dental Chart`, con lo stato dei denti | l'odontogramma | dente FDI, superfici, condizione |
+| `Clinic Access Grant` | l'apertura fuori dal gruppo di cura, con il motivo | chi, perché, da, a |
 
 Da `crm/invoicing` si riusano l'erogatore (`CRM Service Provider`: il medico con la
 sua qualifica) e l'anagrafica fiscale della persona (`CRM Billing Profile`, dal
-29/09/2026), con la data di nascita e il sesso letti dal codice fiscale.
+29/09/2026), con la data di nascita e il sesso letti dal codice fiscale. Il registro
+dell'assistente è `CRM AI Event`, nel modulo dell'assistente.
 
 ## Le norme e il calendario
 
@@ -512,6 +646,7 @@ referto, l'assistente non può fare diagnosi. Le date che contano:
 | 2 — Modelli, firma, cartella | Motore dei modelli e builder, anche dal PDF; firma semplice nostra e avanzata con un fornitore; PDF/A con impronta e marca temporale; registro dei consensi; schede e referti, firmati e poi solo aggiunte; archivio; accessi, dossier, oscuramento | 8–10 | …spegnere il vecchio gestionale |
 | 3 — Area cliente e piani | App a parte, codice e passkey; "Prepara la visita"; appuntamenti, documenti, messaggi, fatture; referti per 45 giorni; piani, librerie e check-in con un tocco | 6–8 | …dare a ogni paziente l'app del suo centro |
 | 4 — L'assistente | Bozze dalla nota, visita dettata, riassunto con le fonti, menù con i conti dalle tabelle; registro dell'assistente | 3–4 | …scrivere meno |
+| 5 — Il CRM per tutti | Il [riordino](#tre-strati-crm-fatturazione-clinica): Area clienti, piani, documenti, preventivi e pipeline nel CRM; un solo builder dei moduli; liste d'attesa; abbonamenti | 8–10 | …vendere lo stesso CRM a un centro estetico o a una palestra |
 
 Fasi 0–3: 21–27 settimane-persona; con l'assistente 24–31. Stime indicative, da
 rifare dopo le decisioni aperte. `Web Form Request` chiede Frappe v16.35: il minimo

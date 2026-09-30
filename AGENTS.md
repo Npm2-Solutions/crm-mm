@@ -251,6 +251,14 @@ Nothing outside `crm/clinica` imports it except `crm/registrazione.py`
 (`tests/test_confine.py`); it hooks on through doc_events, `crm_timeline_gatherers`
 and the registries (`engine.registra_evento`, dashboard features and widgets).
 
+`crm/clinica` keeps only what exists for health data or medical practice: the
+patient, the record and reports, dossier and obscuring, the summary, the dental
+chart, diets and rehabilitation. What a beauty centre or a gym would use the same
+way belongs in the CRM, and the clinic registers its rules on it, with the "health
+data" mark deciding who reads (docs/gestionale-medico/design.md, "Tre strati",
+30/09/2026). The client area, plans and programmes, a person's documents, quotes
+and the new clients pipeline are moving there in that order.
+
 ## Mobile
 
 `isMobileView` (< 768px) picks the phone components, so what changes on a phone

@@ -10,8 +10,11 @@ con quello di `/prenota`; [lo scheletro della clinica](#lo-scheletro-della-clini
 la scheda paziente che nasce dalle regole; e [la sezione Clinica](#la-sezione-clinica)
 con la visita semplice e il registro degli accessi; infine [le persone
 collegate](#le-persone-collegate), genitore e figlio, con la prenotazione per un altro.
-Con queste la fase 0 è fatta. Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in
-`develop`. Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
+Con queste la fase 0 è fatta. Il 30/09/2026 il confine fra CRM e clinica è stato
+rivisto: quello che serve a ogni attività passa al CRM
+([decisione 5](#decisione-5--il-motore-nel-crm-la-clinica-aggiunge-le-sue-regole)).
+Proposta del 25/09/2026, rivista dopo l'arrivo della fatturazione in `develop`.
+Fattura elettronica e Sistema TS ci sono già (`crm/invoicing` e
 `crm/tessera_sanitaria`, [guida](../../.pi/feats/fatturazione/guida.md)): questa
 proposta ci si appoggia e non li tocca, se non nei punti detti sotto. Prima di
 scrivere codice vanno chiuse le [domande](#le-domande-da-chiudere-prima) in fondo.
@@ -1504,6 +1507,25 @@ quando servirà, il **Fascicolo sanitario**: stesso principio, un adattatore con
 intermediario dietro. Il gestionale produce il documento giusto, l'intermediario lo
 firma o lo consegna e restituisce l'esito
 ([ricerca §3](./ricerca.md#3-i-tubi-regolati-sdi-sistema-ts-firma)).
+
+## Decisione 5 — Il motore nel CRM, la clinica aggiunge le sue regole
+
+*Presa il 30/09/2026.* La decisione 2 metteva nella clinica piani, area cliente e
+archivio. Riletti sul codice, sono pezzi che un centro estetico o una palestra
+userebbero allo stesso modo: l'app per i clienti, un piano di allenamento, i
+documenti di una persona, un preventivo, la pipeline dei nuovi clienti. Vale la
+regola dei moduli da firmare, che stanno già nel CRM:
+
+- **nel CRM** va quello che serve a qualunque attività su appuntamenti;
+- **nella clinica** resta quello che esiste per i dati sanitari o che fa solo un
+  medico: il paziente, la cartella e i referti, dossier e oscuramento, la sintesi,
+  l'odontogramma, dieta e riabilitazione;
+- **la clinica non copia, registra** le sue regole sul pezzo del CRM, con il marchio
+  "dato clinico" a decidere chi legge.
+
+Nel CRM si aggiungono anche le liste d'attesa e gli abbonamenti. La mappa, cosa si
+sposta, cosa basta configurare e l'ordine delle PR sono in
+[design.md, i tre strati](./design.md#tre-strati-crm-fatturazione-clinica).
 
 ## Il modello dati, prima versione
 

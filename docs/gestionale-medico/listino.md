@@ -34,11 +34,12 @@ strumento per WhatsApp, spende facilmente 250–450 € al mese.
 
 **La Base** serve a tutti e comprende:
 
-- persone e agenda con le sale;
+- persone e agenda con le sale, cicli di sedute, abbonamenti e liste d'attesa;
 - prenotazione online e collegamento alle piattaforme (MioDottore…);
 - promemoria;
 - conversazioni (email, WhatsApp, SMS);
-- fatture e Sistema TS;
+- fatture e Sistema TS, preventivi;
+- moduli con firma e registro dei consensi, documenti della persona;
 - dashboard, utenti e livelli.
 
 Si paga per agenda, cioè per ogni professionista che riceve appuntamenti. Conta
@@ -54,8 +55,12 @@ attrezzature, segreterie e manager no, quindi gli altri utenti sono illimitati
 | Poliambulatorio | fino a 15 | 219 € | 149 € | 129 € | 79 € |
 | Oltre 15 | | +12 € ad agenda | | | |
 
-- **Clinica**: cartella, moduli e consensi con firma, archivio, area pazienti,
-  piani.
+- **Area clienti**: l'app della persona (appuntamenti, fatture, moduli, documenti,
+  messaggi, chat), con i piani di allenamento e di abitudini e i programmi a tappe.
+  Prezzo da decidere.
+- **Clinica**: cartella e referti, dossier, sintesi, odontogramma, piani
+  alimentari e di riabilitazione, l'assistente in cartella. Comprende l'Area
+  clienti.
 - **Marketing**: automazioni, campagne, Meta (lead e spesa), social,
   tracciamento, costo per nuovo paziente, sito.
 - **Telefono**: centralino nel browser, dialer, registrazioni e trascrizioni.
@@ -155,10 +160,11 @@ rifanno i numeri.
 ## Da decidere
 
 1. I prezzi, dopo i centri pilota.
-2. Modelli e firma sono codice del CRM, per tutti i clienti
-   ([i tre strati](./design.md#tre-strati-crm-fatturazione-clinica)); in questo
-   listino stanno nella Clinica. Per chi non è un centro medico (una palestra, uno
-   studio) vanno nella Base o in un modulo a sé?
+2. Il prezzo dell'Area clienti da sola, e quello della Clinica, che ora comprende
+   l'area. *Deciso il 30/09/2026* il resto: moduli con firma, consensi, documenti,
+   preventivi, abbonamenti e liste d'attesa vanno nella Base, perché la privacy e i
+   contratti firmati servono a tutti; l'area e i piani non medici sono un modulo a
+   sé ([i tre strati](./design.md#tre-strati-crm-fatturazione-clinica)).
 
 ## Fonti
 
