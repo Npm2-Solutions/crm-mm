@@ -8,6 +8,24 @@
     padlock.
   -->
   <div class="flex flex-col gap-4 px-3 pb-6 pt-1 sm:px-10">
+    <!-- opened out of the care team: until when, and the reason given -->
+    <div
+      v-if="record.data?.out_of_care"
+      class="flex items-start gap-2 rounded-lg bg-surface-amber-1 px-3 py-2 text-p-sm text-ink-amber-8"
+    >
+      <span
+        class="lucide-lock-open mt-0.5 size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <span class="min-w-0">
+        {{
+          __('You opened this record out of your care, until {0}: {1}', [
+            formatDate(record.data.out_of_care.expires_on, ''),
+            record.data.out_of_care.reason,
+          ])
+        }}
+      </span>
+    </div>
     <div
       class="flex flex-wrap items-center justify-between gap-2 max-md:flex-col max-md:items-stretch"
     >
@@ -189,6 +207,18 @@
               :label="__('Only me')"
             />
             <Badge
+              v-if="entry.visibility === 'My discipline'"
+              size="sm"
+              theme="gray"
+              :label="__('My discipline')"
+            />
+            <Badge
+              v-if="entry.obscured"
+              size="sm"
+              theme="orange"
+              :label="__('Obscured')"
+            />
+            <Badge
               v-if="entry.addendum_to"
               size="sm"
               theme="blue"
@@ -200,6 +230,20 @@
             {{ entry.practitioner_name }}
           </span>
         </div>
+        <!-- the medical director, at the patient's request: the whole episode -->
+        <Button
+          v-if="
+            record.data.can_obscure &&
+            entry.docstatus === 1 &&
+            !entry.addendum_to
+          "
+          size="sm"
+          variant="ghost"
+          class="touch-target shrink-0"
+          :icon-left="entry.obscured ? 'eye' : 'eye-off'"
+          :label="entry.obscured ? __('Reveal') : __('Obscure')"
+          @click="askObscure('Clinic Record', entry)"
+        />
         <div v-if="entry.mine" class="flex shrink-0 gap-1">
           <template v-if="entry.docstatus === 0">
             <FileUploader
@@ -301,6 +345,15 @@
     </article>
   </div>
 
+  <ObscureDialog
+    v-model="obscuring.show"
+    :doctype="obscuring.doctype"
+    :name="obscuring.name"
+    :title="obscuring.title"
+    :obscured="obscuring.obscured"
+    @done="afterObscure"
+  />
+
   <Dialog
     v-model="log.show"
     :options="{ title: __('Who opened it'), size: 'lg' }"
@@ -345,6 +398,7 @@
 <script setup>
 import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
+import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
 import { formatDate, sanitizeHTML } from '@/utils'
 import {
@@ -379,10 +433,14 @@ const kindOptions = [
   { label: __('Visit'), value: 'Visit' },
   { label: __('Note'), value: 'Note' },
 ]
-const visibilityOptions = [
+// "my discipline" for who has one: the colleagues of the same qualification
+const visibilityOptions = computed(() => [
   { label: __('The care team'), value: 'Care team' },
+  ...(record.data?.discipline
+    ? [{ label: __('My discipline'), value: 'My discipline' }]
+    : []),
   { label: __('Only me'), value: 'Only me' },
-]
+])
 
 const summaryRef = ref(null)
 const archiveRef = ref(null)
@@ -525,8 +583,11 @@ async function remove(entry) {
 
 const log = reactive({ show: false, rows: [] })
 
-// what was opened, never what it said
+// what was opened, never what it said; an opening out of the care team says why
 function openedWhat(row) {
+  if (row.kind === 'out_of_care') {
+    return __('Opened out of their care: {0}', [row.reason])
+  }
   const what =
     row.kind === 'record'
       ? __('Opened the record')
@@ -534,6 +595,29 @@ function openedWhat(row) {
         ? __('Opened the archive')
         : __('Downloaded a file')
   return row.count > 1 ? __('{0} · {1} entries', [what, row.count]) : what
+}
+
+const obscuring = reactive({
+  show: false,
+  doctype: 'Clinic Record',
+  name: null,
+  title: '',
+  obscured: false,
+})
+
+function askObscure(doctype, entry) {
+  Object.assign(obscuring, {
+    show: true,
+    doctype,
+    name: entry.name,
+    title: entry.title || (entry.kind === 'Note' ? __('Note') : __('Visit')),
+    obscured: Boolean(entry.obscured),
+  })
+}
+
+function afterObscure() {
+  record.reload()
+  archiveRef.value?.reload()
 }
 
 async function openLog() {

@@ -74,8 +74,22 @@
           class="shrink-0"
           :label="__('Only me')"
         />
+        <Badge
+          v-if="doc.visibility === 'My discipline'"
+          size="sm"
+          theme="gray"
+          class="shrink-0"
+          :label="__('My discipline')"
+        />
+        <Badge
+          v-if="doc.obscured"
+          size="sm"
+          theme="orange"
+          class="shrink-0"
+          :label="__('Obscured')"
+        />
         <Dropdown
-          v-if="doc.can_edit || doc.can_remove"
+          v-if="actionsFor(doc).length"
           :options="actionsFor(doc)"
           placement="right"
         >
@@ -101,6 +115,15 @@
       @click="showAll = !showAll"
     />
   </section>
+
+  <ObscureDialog
+    v-model="obscuring.show"
+    doctype="Clinic Document"
+    :name="obscuring.doc?.name"
+    :title="obscuring.doc?.title"
+    :obscured="Boolean(obscuring.doc?.obscured)"
+    @done="archive.reload()"
+  />
 
   <ClinicDocumentDialog
     v-model="dialog.show"
@@ -151,6 +174,7 @@
 
 <script setup>
 import ClinicDocumentDialog from '@/components/Clinic/ClinicDocumentDialog.vue'
+import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import { formatDate } from '@/utils'
 import {
   Badge,
@@ -193,6 +217,7 @@ const shown = computed(() => {
 })
 
 const dialog = reactive({ show: false, document: null })
+const obscuring = reactive({ show: false, doc: null })
 const removing = reactive({
   show: false,
   doc: null,
@@ -223,6 +248,13 @@ function actionsFor(doc) {
       icon: 'edit-2',
       onClick: () => openDialog(doc),
     },
+    // the medical director, at the patient's request; a report goes with its visit
+    archive.data?.can_obscure &&
+      !doc.record && {
+        label: doc.obscured ? __('Reveal') : __('Obscure'),
+        icon: doc.obscured ? 'eye' : 'eye-off',
+        onClick: () => Object.assign(obscuring, { show: true, doc }),
+      },
     doc.can_remove && {
       label: __('Take away'),
       icon: 'trash-2',
