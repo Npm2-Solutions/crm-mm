@@ -213,7 +213,9 @@ class Dentro(AreaCase):
 			"Trattamento area",
 			domani,
 			[estetista],
-			participants=[{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Area"}],
+			participants=[
+				{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Area"}
+			],
 		)
 		self.invita()
 		self.entra()
@@ -240,7 +242,9 @@ class Dentro(AreaCase):
 			servizio.name,
 			domani,
 			[estetista],
-			participants=[{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Area"}],
+			participants=[
+				{"party_type": "CRM Lead", "party": self.anna.name, "participant_name": "Anna Area"}
+			],
 		)
 		self.invita()
 		self.entra()

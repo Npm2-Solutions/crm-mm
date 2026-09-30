@@ -607,7 +607,7 @@ function pointsOf(field, value) {
     }
     const picked = Array.isArray(value) ? value : [value]
     return picked.reduce(
-      (total, v) => total + (typeof v === 'string' ? (points.get(v) ?? 0) : 0),
+      (total, v) => total + (typeof v === 'string' ? points.get(v) ?? 0 : 0),
       0,
     )
   }

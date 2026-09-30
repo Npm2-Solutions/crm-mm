@@ -93,7 +93,7 @@
       :required="
         Boolean(
           field.reqd ||
-          (field.mandatory_depends_on && field.mandatory_via_depends_on),
+            (field.mandatory_depends_on && field.mandatory_via_depends_on),
         )
       "
       :disabled="Boolean(field.read_only)"

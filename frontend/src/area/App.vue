@@ -24,7 +24,10 @@
     >
       <div class="flex min-w-0 items-center gap-2.5">
         <img :src="brand.logo" :alt="brand.name" class="h-6 w-auto shrink-0" />
-        <span class="h-5 shrink-0 border-l border-outline-gray-2" aria-hidden="true" />
+        <span
+          class="h-5 shrink-0 border-l border-outline-gray-2"
+          aria-hidden="true"
+        />
         <img
           v-if="logo"
           :src="logo"

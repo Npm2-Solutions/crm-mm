@@ -19,10 +19,10 @@ from unittest import mock
 import frappe
 from frappe.utils import add_days, getdate
 
+from crm.area import messaggi
 from crm.clinica import cartella, piani, programmi
 from crm.clinica import piani_regole as R
 from crm.clinica import programmi_regole as P
-from crm.area import messaggi
 from crm.clinica.tests.test_cartella import DIRECTOR, DOC1, DOC2, MANAGER
 from crm.clinica.tests.test_piani import PianiCase
 

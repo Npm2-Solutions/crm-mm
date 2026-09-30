@@ -51,7 +51,9 @@ def per_persona(lead: str) -> dict[str, Any]:
 			fatto[sezione.chiave] = sezione.per_persona(lead)
 		except Exception:
 			frappe.log_error(
-				title=f"Area place {sezione.chiave} not read", reference_doctype="CRM Lead", reference_name=lead
+				title=f"Area place {sezione.chiave} not read",
+				reference_doctype="CRM Lead",
+				reference_name=lead,
 			)
 			fatto[sezione.chiave] = False
 	return fatto

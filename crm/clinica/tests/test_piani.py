@@ -17,9 +17,9 @@ from unittest import mock
 
 import frappe
 
+from crm.area import messaggi
 from crm.clinica import cartella, paziente, piani
 from crm.clinica import piani_regole as R
-from crm.area import messaggi
 from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, MANAGER, SALES
 from crm.clinica.tests.test_dossier import DossierCase
 

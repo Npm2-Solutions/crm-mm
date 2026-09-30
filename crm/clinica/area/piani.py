@@ -23,10 +23,10 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
+from crm.area.api import _mia
 from crm.clinica import piani
 from crm.clinica import piani_regole as R
 from crm.clinica import tabelle as T
-from crm.area.api import _mia
 
 #: How far ahead the patient looks at a plan: next week's menu, to shop for it.
 GIORNI_AVANTI = 6

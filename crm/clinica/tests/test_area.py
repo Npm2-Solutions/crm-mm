@@ -145,9 +145,7 @@ class IMessaggiDellaCura(AreaCase):
 		# health data: Carla is a patient now, and the desk does not read it
 		frappe.set_user("Administrator")
 		self.assertTrue(paziente.e_paziente(self.carla.name))
-		self.assertEqual(
-			frappe.db.get_value(messaggi.MESSAGGIO, messaggio["name"], "practitioner"), DOC1
-		)
+		self.assertEqual(frappe.db.get_value(messaggi.MESSAGGIO, messaggio["name"], "practitioner"), DOC1)
 		self.come(DESK)
 		self.assertEqual(messaggi.get_messages(self.carla.name)["messages"], [])
 		self.entra(CARLA)

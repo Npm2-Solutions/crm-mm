@@ -17,9 +17,9 @@ from unittest import mock
 import frappe
 from frappe.utils import add_days, getdate
 
+from crm.area import api, messaggi
 from crm.clinica import piani
 from crm.clinica import piani_regole as R
-from crm.area import api, messaggi
 from crm.clinica.area import piani as area_piani
 from crm.clinica.tests.test_area import AreaCase
 from crm.clinica.tests.test_cartella import DOC1

@@ -116,7 +116,9 @@ def _utente_per(email: str, nome: str) -> str:
 	if utente:
 		if frappe.db.get_value("User", utente, "user_type") != "Website User":
 			# a colleague's address: staff never enter the area
-			frappe.throw(_("{0} is a user of the centre: the area is for the people it looks after").format(email))
+			frappe.throw(
+				_("{0} is a user of the centre: the area is for the people it looks after").format(email)
+			)
 		doc = frappe.get_doc("User", utente)
 		if RUOLO not in [r.role for r in doc.roles]:
 			doc.append("roles", {"role": RUOLO})
