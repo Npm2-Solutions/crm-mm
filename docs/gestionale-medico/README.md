@@ -966,8 +966,52 @@ piano a sé, spento finché l'agenzia non lo accende.
   - Una scansione senza testo non si manda: niente lettura di immagini.
   - Il registro tiene la differenza fra lo schema proposto e quello creato.
 
-Resta alla fase 4: le bozze dalla nota firmata, la visita dettata, il riassunto
-prima della visita con le fonti, il menù con i conti dalle tabelle.
+### L'assistente nella clinica: bozze, dettatura, riassunto
+
+Fatti il 30/09/2026 (fase 4, la seconda parte).
+
+- **Sempre con il consenso del paziente all'assistente** (`ai_assistant`, uno dei
+  consensi della clinica) e con `assistente.bozze`, che ha l'operatore per i suoi
+  pazienti.
+- **Al modello non va mai chi è il paziente**: niente nome, codice o indirizzo. La
+  bozza lascia i vuoti tra parentesi quadre, e il professionista li riempie.
+- **Bozze dalla nota firmata** (`crm/clinica/assistente.py`, menu "Draft" su una
+  propria visita firmata):
+  - la lettera al medico curante, o le istruzioni dopo la visita in parole
+    semplici, scritte solo da quello che la nota dice;
+  - il professionista la legge, la corregge, riempie i vuoti;
+  - "Keep as a note" la aggiunge alla visita come nota da firmare, con il segno
+    "AI draft, checked by … on …";
+  - le istruzioni possono andare anche sulla bacheca del paziente nella sua
+    area.
+- **La visita dettata** (`crm/clinica/dettatura.py`, "Fill from dictation" su una
+  propria scheda in bozza):
+  - le parole del professionista (scritte, incollate o dettate con la
+    dettatura del telefono o del computer: qui non si registra niente) diventano
+    le risposte della scheda;
+  - solo per i campi di cui parlano, nei termini del campo: un'opzione, un
+    numero nella sua unità. Il motore scarta quello che non ci sta;
+  - il professionista spunta cosa tenere. Farmaci, allergie e dosi non sono mai
+    spuntati per lui: si confermano uno per uno;
+  - le parole non si tengono: il registro tiene la loro impronta, la proposta e
+    cosa è stato tenuto.
+- **Il riassunto prima della visita** (`crm/clinica/riassunto.py`, "Summary
+  before the visit"):
+  - legge solo quello che il professionista può leggere: le visite firmate
+    secondo il dossier, le righe confermate della sintesi, i titoli
+    dell'archivio;
+  - numera le fonti e le cita [1], [2]; niente punteggi, classifiche, avvisi o
+    consigli;
+  - non si tiene: resta l'evento nel registro, e ogni voce letta va nel
+    registro degli accessi.
+- **Il registro degli eventi clinici** lo legge la direzione sanitaria
+  (`assistente.registro_clinico`), non il manager: sono dati sanitari. In
+  Impostazioni > Assistant la direzione vede solo quello.
+- Ogni funzione ha il suo interruttore nelle impostazioni: "Drafts from a note",
+  "A visit from dictation", "A summary before the visit".
+
+Resta alla fase 4: il menù con i conti dalle tabelle, e la chat del paziente solo
+per l'amministrazione.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

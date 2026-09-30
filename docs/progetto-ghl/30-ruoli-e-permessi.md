@@ -315,6 +315,8 @@ Un modulo del piano a sé, `assistente`, spento finché l'agenzia non lo accende
 |---|---|---|---|---|---|---|---|
 | Dal modulo di carta: il PDF diventa una bozza di modello (`assistente.moduli`) | — | — | ✓ | — | — | — | — |
 | Leggere il registro dell'assistente (`assistente.registro`) | — | — | ✓ | — | — | — | — |
+| Bozze dalla propria nota, visita dettata, riassunto prima della visita (`assistente.bozze`) | — | ai suoi pazienti | — | — | — | — | — |
+| Leggere gli eventi clinici del registro (`assistente.registro_clinico`) | — | — | — | — | — | — | ✓ |
 
 - Dove gira il modello è dell'agenzia: fornitore, indirizzo, modello, chiave,
   regione e il contratto senza conservazione né addestramento stanno sul
@@ -322,6 +324,8 @@ Un modulo del piano a sé, `assistente`, spento finché l'agenzia non lo accende
 - Se usarlo, e per quali funzioni, lo decide il manager.
 - Ogni funzione dice chi la usa e chi legge i suoi eventi: quelle cliniche li
   fanno leggere solo alla direzione sanitaria.
+- Le funzioni cliniche chiedono anche il consenso del paziente all'assistente
+  (`ai_assistant`).
 
 ## Le impostazioni, pagina per pagina
 

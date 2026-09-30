@@ -1801,3 +1801,25 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Dal modulo di carta: solo il testo del PDF, niente immagini | Un modulo in bianco non ha dati di nessuno; leggere scansioni è un altro lavoro, e un altro rischio |
 | Lo schema proposto passa le regole del motore, e diventa solo una bozza | Nessuna scorciatoia: si finisce e si pubblica nel builder come ogni modello |
 
+## Fase 4, l'assistente nella clinica: bozze, dettatura, riassunto
+
+> **Completato** (30/09/2026). `crm/clinica/assistente.py` (bozze dalla nota
+> firmata), `dettatura.py` (la visita dettata nei campi della scheda),
+> `riassunto.py` (il riassunto prima della visita con le fonti); il consenso
+> `ai_assistant`. `docs/gestionale-medico/README.md`, "L'assistente nella
+> clinica".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Il consenso del paziente all'assistente, oltre al contratto del centro | È tra i consensi della clinica del design; la L. 132/2025 chiede di dire al paziente quali sistemi di IA si usano |
+| Al modello non va chi è il paziente; la bozza lascia i vuoti | Il minimo che serve: il nome lo mette il professionista |
+| Solo dalla propria nota firmata | "Bozze dalla nota firmata dell'operatore" (design): si parte da quello che il professionista ha già firmato |
+| Tenuta, la bozza è una nota da firmare con il segno | "Niente si salva da solo: firma l'operatore"; "ogni nota porta il segno" (design) |
+| La dettatura non registra l'audio: le parole sono scritte o dettate dal dispositivo | Niente audio da cancellare, niente trascrizione da tenere; il registro tiene l'impronta |
+| Farmaci, allergie e dosi non si spuntano mai da soli | "Si confermano uno per uno" (design): dove gli scribe sbagliano di più |
+| Il riassunto cita le fonti numerate, e non dà punteggi né avvisi | "Il riassunto prima della visita, con le fonti citate, senza classifiche né avvisi" (design) |
+| Gli eventi clinici li legge la direzione, non il manager | Sono dati sanitari: la rilettura mensile è vigilanza clinica |
+| "Quanto è cambiata" si misura parola per parola | Sulle lettere lunghe il confronto per lettere scambiava due nomi riempiti per una riscrittura |
+
