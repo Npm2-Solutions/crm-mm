@@ -10,7 +10,11 @@ signature is the one made then: its SHA-256 is stored on the form, and a PDF mad
 again later would be a different file, so it is never made again.
 
 Everything the page shows is inside it: the signatures travel as images in the
-HTML, nothing is fetched from a server, and the fonts are the system's.
+HTML, nothing is fetched from a server, and the fonts are the system's. The
+renderer is told so too (`pdf_da_html`): it loads only what is written in the
+page, so an answer or a browser's name that looked like HTML could not bring a
+file of the server, or a request to one, into a signed document - and the
+templates escape what they print.
 """
 
 from __future__ import annotations
@@ -277,11 +281,31 @@ def html(doc, versione, da_firmare: bool = False) -> str:
 	return frappe.render_template(MODELLO_HTML, contesto(doc, versione, da_firmare))
 
 
-def rendi(doc, versione, da_firmare: bool = False) -> bytes:
-	"""The bytes as rendered, before PDF/A. Separate, so a test can swap it."""
+def _solo_nella_pagina():
+	"""A fetcher for WeasyPrint that loads only a data URI: what is written in the
+	page. Not a file of the server (``file://``, which WeasyPrint would even embed as
+	an attachment of the PDF), not an address on the network."""
+	from weasyprint.urls import URLFetcher
+
+	class SoloNellaPagina(URLFetcher):
+		def fetch(self, url, headers=None):
+			if not str(url).lower().startswith("data:"):
+				raise ValueError("A signed document loads nothing from outside itself")
+			return super().fetch(url, headers)
+
+	return SoloNellaPagina(allow_redirects=False)
+
+
+def pdf_da_html(pagina: str) -> bytes:
+	"""A document the CRM keeps, from its HTML: every resource inside it."""
 	from weasyprint import HTML
 
-	return HTML(string=html(doc, versione, da_firmare)).write_pdf()
+	return HTML(string=pagina, url_fetcher=_solo_nella_pagina()).write_pdf()
+
+
+def rendi(doc, versione, da_firmare: bool = False) -> bytes:
+	"""The bytes as rendered, before PDF/A. Separate, so a test can swap it."""
+	return pdf_da_html(html(doc, versione, da_firmare))
 
 
 def _con_le_pagine(reso: bytes, scansione: bytes) -> bytes:
