@@ -1,7 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Giving a report to the patient: by hand, or online for 45 days.
+"""Giving a report to the patient: the CRM's delivery (`crm.documenti.consegna`)
+with the clinic's rule, online for 45 days.
 
 By hand is always possible, and says to whom. Online needs the consent to online
 reports and a document that may go online; the email carries a link and no
@@ -14,9 +15,10 @@ from unittest import mock
 import frappe
 from frappe.utils import add_days, now_datetime
 
-from crm.clinica import consegna
+from crm.clinica import documenti
 from crm.clinica.tests.test_archivio import ArchivioCase
 from crm.clinica.tests.test_cartella import DESK, DOC1
+from crm.documenti import consegna
 from crm.moduli import consensi, traccia
 
 LINK = "link-del-referto"
@@ -51,7 +53,7 @@ class ConsegnaCase(ArchivioCase):
 
 	def consenso(self):
 		frappe.set_user("Administrator")
-		consensi.registra_risposta(self.anna.name, consegna.REFERTI_ONLINE)
+		consensi.registra_risposta(self.anna.name, documenti.REFERTI_ONLINE)
 
 	def online(self, **altro):
 		self.come(DOC1)
@@ -60,7 +62,7 @@ class ConsegnaCase(ArchivioCase):
 
 	def apri(self, codice):
 		frappe.set_user("Guest")
-		return consegna.open_report(LINK, codice)
+		return consegna.open_document(LINK, codice)
 
 
 class AMano(ConsegnaCase):
@@ -88,7 +90,7 @@ class Online(ConsegnaCase):
 		with self.assertRaises(frappe.ValidationError):
 			consegna.deliver_online(self.documento["name"])
 		self.consenso()
-		frappe.db.set_value("Clinic Document", self.documento["name"], "not_online", 1)
+		frappe.db.set_value("CRM Document", self.documento["name"], "not_online", 1)
 		self.come(DOC1)
 		with self.assertRaises(frappe.ValidationError):
 			consegna.deliver_online(self.documento["name"])
@@ -96,12 +98,12 @@ class Online(ConsegnaCase):
 	def test_il_link_per_email_il_codice_a_voce(self):
 		self.consenso()
 		fatto = self.online()
-		self.assertTrue(fatto["link"].endswith(f"/referto/{LINK}"))
+		self.assertTrue(fatto["link"].endswith(f"/documento/{LINK}"))
 		self.assertEqual(len(fatto["code"]), 6)
 		self.assertEqual(fatto["email"], "anna.referto@example.com")
 		frappe.set_user("Administrator")
 		[posta] = frappe.get_all("Email Queue", fields=["message"], order_by="creation desc", limit=1)
-		self.assertIn(f"/referto/{LINK}", posta.message)
+		self.assertIn(f"/documento/{LINK}", posta.message)
 		self.assertNotIn(fatto["code"], posta.message)
 		self.assertNotIn("Esami", posta.message)
 		# 45 days, at most
@@ -116,7 +118,7 @@ class Online(ConsegnaCase):
 			self.apri("000000" if fatto["code"] != "000000" else "111111")
 		aperto = self.apri(fatto["code"])
 		self.assertEqual(aperto["title"], "Esami")
-		consegna.download_report(LINK, aperto["session"])
+		consegna.download_document(LINK, aperto["session"])
 		self.assertEqual(frappe.local.response.filecontent, b"Esame di record.doctor1@example.com")
 		frappe.set_user("Administrator")
 		[riga] = frappe.get_all(
@@ -130,7 +132,7 @@ class Online(ConsegnaCase):
 		# a session is not a code: an invented one opens nothing
 		frappe.set_user("Guest")
 		with self.assertRaises(frappe.PermissionError):
-			consegna.download_report(LINK, "inventata")
+			consegna.download_document(LINK, "inventata")
 
 	def test_cinque_codici_sbagliati_chiudono(self):
 		self.consenso()

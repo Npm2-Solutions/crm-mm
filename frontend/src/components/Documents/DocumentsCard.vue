@@ -1,11 +1,12 @@
 <!--
-  The clinical archive of one person: reports, tests, images, prescriptions.
+  A person's documents (crm.documenti): a signed form, a contract, what they
+  brought, what arrived in a conversation; with the clinic the tests, the
+  reports, the images, and the report of every signed visit.
 
-  What the patient brings, what arrived in a conversation, and the report of
-  every signed visit. The files are private: opening one is logged by Frappe,
-  and listing them here is logged like reading the record. A document added by
-  mistake goes the same day, with a reason; later only the medical director
-  takes one away.
+  The files are private: opening one is logged by Frappe, and listing one with
+  health data is logged like reading the record. A document added by mistake
+  goes the same day, with a reason; later the manager takes one away - one with
+  health data, the medical director.
 -->
 <template>
   <section
@@ -34,7 +35,7 @@
     <p v-if="!archive.data.documents.length" class="text-p-sm text-ink-gray-5">
       {{
         __(
-          'Nothing yet. The tests, reports and images the patient brings go here, and the report of every signed visit.',
+          'Nothing yet. What the person brings or sends goes here: a contract, a certificate, a consent signed on paper.',
         )
       }}
     </p>
@@ -66,11 +67,19 @@
           <span class="text-p-sm text-ink-gray-5">
             {{ describe(doc) }}
           </span>
-          <!-- how it reached the patient: the latest delivery -->
+          <!-- how it reached the person: the latest delivery -->
           <span v-if="doc.deliveries?.length" class="text-p-xs text-ink-gray-5">
             {{ delivered(doc.deliveries[0]) }}
           </span>
         </div>
+        <!-- read like the clinical record: the dossier's rules, the access log -->
+        <Badge
+          v-if="doc.clinical"
+          size="sm"
+          theme="gray"
+          class="shrink-0"
+          :label="__('Health data')"
+        />
         <Badge
           v-if="doc.visibility === 'Only me'"
           size="sm"
@@ -128,14 +137,14 @@
 
   <ObscureDialog
     v-model="obscuring.show"
-    doctype="Clinic Document"
+    doctype="CRM Document"
     :name="obscuring.doc?.name"
     :title="obscuring.doc?.title"
     :obscured="Boolean(obscuring.doc?.obscured)"
     @done="archive.reload()"
   />
 
-  <ClinicDocumentDialog
+  <DocumentDialog
     v-model="dialog.show"
     :lead="lead"
     :document="dialog.document"
@@ -151,7 +160,7 @@
         <p class="text-p-base text-ink-gray-7">
           {{
             __(
-              '{0} leaves the archive. The audit log keeps who took it away, why, and the fingerprint of the file.',
+              '{0} is taken away. The audit log keeps who took it away, why, and the fingerprint of the file.',
               [removing.doc?.title],
             )
           }}
@@ -183,8 +192,8 @@
 </template>
 
 <script setup>
-import ClinicDocumentDialog from '@/components/Clinic/ClinicDocumentDialog.vue'
-import DeliverDialog from '@/components/Clinic/DeliverDialog.vue'
+import DeliverDialog from '@/components/Documents/DeliverDialog.vue'
+import DocumentDialog from '@/components/Documents/DocumentDialog.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import { formatDate } from '@/utils'
 import {
@@ -203,16 +212,21 @@ const props = defineProps({ lead: { type: String, required: true } })
 
 const LIMIT = 5
 const ICONS = {
+  'Signed form': 'lucide-file-signature',
+  Contract: 'lucide-file-pen-line',
+  Certificate: 'lucide-award',
+  'Identity document': 'lucide-id-card',
+  Photo: 'lucide-image',
+  // the clinic's
   Report: 'lucide-file-check',
   'External report': 'lucide-file-text',
   'Test result': 'lucide-flask-conical',
   Imaging: 'lucide-scan',
   Prescription: 'lucide-pill',
-  'Signed form': 'lucide-file-signature',
 }
 
 const archive = createResource({
-  url: 'crm.clinica.archivio.get_documents',
+  url: 'crm.documenti.api.get_documents',
   makeParams: () => ({ lead: props.lead }),
 })
 watch(
@@ -270,7 +284,7 @@ function actionsFor(doc) {
   return [
     archive.data?.can_deliver &&
       doc.file && {
-        label: __('Give it to the patient'),
+        label: __('Give it to the person'),
         icon: 'send',
         onClick: () => Object.assign(delivering, { show: true, doc }),
       },
@@ -310,7 +324,7 @@ async function remove() {
   removing.busy = true
   removing.error = ''
   try {
-    await call('crm.clinica.archivio.remove_document', {
+    await call('crm.documenti.api.remove_document', {
       name: removing.doc.name,
       reason: removing.reason,
     })

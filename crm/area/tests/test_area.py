@@ -16,8 +16,8 @@ with no code (she came in with one); taken up again they keep their answers; a
 parent signs for her, who only follows her does not. The desk writes on her board:
 the email says only that there is news, and opening the board reads what was new.
 
-Without the clinic nothing of the clinic shows - no documents, no plans - and the
-words are the CRM's own; with the area off in the plan nobody opens one.
+Documents and plans show to who has some, and the words are the CRM's own without
+the clinic; with the area off in the plan nobody opens one.
 """
 
 import datetime
@@ -277,7 +277,7 @@ class SenzaLaClinica(AreaCase):
 		self.invita()
 		self.entra()
 		[persona] = api.get_me()["people"]
-		# the clinic's places answer nothing where the clinic is off
+		# nothing given online, no plan: their places answer nothing
 		self.assertFalse(persona["sections"].get("documents"))
 		self.assertFalse(persona["sections"].get("plans"))
 		frappe.set_user("Administrator")

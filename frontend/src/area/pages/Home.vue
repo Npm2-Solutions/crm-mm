@@ -82,7 +82,7 @@ const appointments = createResource({
   auto: true,
 })
 const documents = createResource({
-  url: 'crm.clinica.area.documenti.get_documents',
+  url: 'crm.documenti.area.get_documents',
   params: { person },
   auto: section('documents'),
 })

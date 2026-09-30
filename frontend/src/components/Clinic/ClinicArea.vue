@@ -79,13 +79,6 @@
     <!-- allergies, medications, parameters: what a practitioner confirmed -->
     <ClinicSummary v-if="record.data?.can_read" ref="summaryRef" :lead="lead" />
 
-    <!-- reports, tests, images: what the patient brings, what the visits made -->
-    <ClinicArchive
-      v-if="record.data?.can_read || record.data?.can_archive"
-      ref="archiveRef"
-      :lead="lead"
-    />
-
     <!-- the teeth, and the care plans proposed as quotes -->
     <DentalCard :lead="lead" />
 
@@ -407,7 +400,7 @@
       <p class="mb-3 text-p-sm text-ink-gray-6">
         {{
           __(
-            'Every reading of this record and its archive from {brand}, and every file downloaded: who and when, not what they read. Kept two years.',
+            'Every reading from {brand} of this record, and of the documents and plans with health data, and every file downloaded: who and when, not what they read. Kept two years.',
           )
         }}
       </p>
@@ -445,7 +438,6 @@ import AssistantDraftDialog from '@/components/Clinic/AssistantDraftDialog.vue'
 import DictationDialog from '@/components/Clinic/DictationDialog.vue'
 import SummaryDialog from '@/components/Clinic/SummaryDialog.vue'
 import DentalCard from '@/components/Clinic/DentalCard.vue'
-import ClinicArchive from '@/components/Clinic/ClinicArchive.vue'
 import ClinicSummary from '@/components/Clinic/ClinicSummary.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'
 import FormRenderer from '@/components/Moduli/FormRenderer.vue'
@@ -492,7 +484,6 @@ const visibilityOptions = computed(() => [
 ])
 
 const summaryRef = ref(null)
-const archiveRef = ref(null)
 
 // the draft being written is above, in the composer: not twice
 const shownRecords = computed(() =>
@@ -630,9 +621,8 @@ async function save(sign) {
     toast.success(sign ? __('Signed') : __('Draft saved'))
     record.reload()
     // a signed sheet may propose lines of the summary; a signed visit files
-    // its report in the archive
+    // its report among the person's documents (the Documents tab)
     if (sign && composer.sheet) summaryRef.value?.reload()
-    if (sign) archiveRef.value?.reload()
   } catch (err) {
     composer.error = err.messages?.[0] || err.message
   } finally {
@@ -659,8 +649,8 @@ function openedWhat(row) {
   const what =
     row.kind === 'record'
       ? __('Opened the record')
-      : row.kind === 'archive'
-        ? __('Opened the archive')
+      : row.kind === 'documents'
+        ? __('Opened the documents')
         : row.kind === 'plan'
           ? __('Opened a plan')
           : row.kind === 'programme'
@@ -693,7 +683,6 @@ function askObscure(doctype, entry) {
 
 function afterObscure() {
   record.reload()
-  archiveRef.value?.reload()
 }
 
 async function openLog() {

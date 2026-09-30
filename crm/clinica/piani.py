@@ -8,10 +8,11 @@ exercises at home, the foods, and who reads what carries health data.
   biologist nutritionist or a dietitian writes; exercises at home a
   physiotherapist or a doctor. Health data: switched on with the clinic.
 - **What a health professional writes is health data**, whatever its kind: a
-  nutritionist's habits too, a doctor's programme (`_sanitario`, by the author's
-  qualification).
+  nutritionist's habits too, a doctor's programme (`dossier.e_sanitario`, by the
+  author's qualification).
 - **Who reads them**: their author, always; the others like a visit
-  (`crm.clinica.dossier`), once published - every opening in the access log.
+  (`crm.clinica.dossier`, registered with `crm.permissions.sanitari`), once
+  published - every opening in the access log.
 - **Its items**: a food and how much, with what instead, the calories from the
   tables only if the practitioner shows them; a food group and its portions, the
   patient choosing the food. Their fields are the clinic's own on the CRM's plan
@@ -34,34 +35,6 @@ from crm.piani import api as piani
 CIBO = "Clinic Food"
 #: A plan's fields that are the clinic's: the calories shown, a menu's targets.
 CAMPI_PIANO = ("show_calories", *(f"target_{nome}" for nome in R.NUTRIENTI))
-
-
-# ------------------------------------------------------------------ who reads
-
-
-def _sanitario(doc) -> bool:
-	"""What a health professional writes for a patient is health data, whatever its
-	kind: a nutritionist's habits too. With the clinic on."""
-	from crm.clinica.paziente import clinica_accesa
-
-	qualifica = doc.get("discipline")
-	return bool(
-		qualifica
-		and clinica_accesa()
-		and frappe.db.get_value("CRM Professional Qualification", qualifica, "is_healthcare")
-	)
-
-
-def _legge(doc, user: str) -> bool:
-	from crm.clinica import dossier
-
-	return dossier.legge_le_altre(doc, user)
-
-
-def _condizione(tabella, user: str):
-	from crm.clinica import dossier
-
-	return dossier.condizione_condivisa(tabella, user)
 
 
 # ------------------------------------------------------------------ the foods
@@ -266,7 +239,7 @@ ESTENSIONE = piani.Estensione(legge=_legge_il_piano, scrive=_scrive_il_piano, co
 
 
 def registra() -> None:
-	"""The clinic's kinds of item, what a diet keeps, and who reads health data."""
+	"""The clinic's kinds of item, and what a diet keeps."""
 	piani.registra_genere(
 		piani.Genere(
 			R.CIBO,
@@ -287,6 +260,3 @@ def registra() -> None:
 		)
 	)
 	piani.registra_estensione(ESTENSIONE)
-	piani.registra_lettore_clinico(
-		piani.LettoreClinico(legge=_legge, condizione=_condizione, marca=_sanitario)
-	)

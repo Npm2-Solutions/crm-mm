@@ -166,10 +166,10 @@ class LaVisita(RecordCase):
 		self.come(SALES)
 		with self.assertRaises(frappe.PermissionError):
 			cartella.get_record(self.anna.name)
-		# the desk comes to add to the archive: no record, and no reading logged
+		# the desk comes for the quotes: no record, and no reading logged
 		self.come(DESK)
 		visto = cartella.get_record(self.anna.name)
-		self.assertEqual((visto["records"], visto["can_read"], visto["can_archive"]), ([], False, True))
+		self.assertEqual((visto["records"], visto["can_read"]), ([], False))
 		# the manager comes for the access log: no record, and no reading logged
 		self.come(MANAGER)
 		visto = cartella.get_record(self.anna.name)

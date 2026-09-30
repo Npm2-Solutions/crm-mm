@@ -19,10 +19,11 @@ import frappe
 from crm import verticali
 from crm.api import plan
 from crm.area import accesso, api, messaggi
-from crm.clinica import consegna, paziente
-from crm.clinica.area import documenti
+from crm.clinica import paziente
 from crm.clinica.tests.test_cartella import DESK, DOC1, MANAGER
 from crm.clinica.tests.test_consegna import ConsegnaCase
+from crm.documenti import area as documenti
+from crm.documenti import consegna
 from crm.permissions import livelli
 from crm.tests.test_scheduling import SchedulingCase
 

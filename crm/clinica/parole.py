@@ -37,4 +37,21 @@ PAROLE = {
 	"What the person reads when the stage opens: its goal, what to keep in mind": (
 		"What the patient reads when the stage opens: its goal, what to keep in mind"
 	),
+	# the person's documents: with the clinic, reports and tests first
+	"Nothing yet. What the person brings or sends goes here: a contract, a certificate, a consent signed on paper.": (
+		"Nothing yet. The tests, reports and images the patient brings go here, and the report "
+		"of every signed visit."
+	),
+	"A contract, a certificate, a signed consent…": "Blood tests, chest X-ray, cardiology report…",
+	"The office, the laboratory, the doctor": "The laboratory, the hospital, the doctor",
+	"The file is private: only whoever reads the person's documents opens it.": (
+		"The file is private: only whoever reads the patient's documents opens it, and every opening of "
+		"health data is logged."
+	),
+	"Give it to the person": "Give it to the patient",
+	"The code to open it: give it to the person now": "The code to open it: give it to the patient now",
+	"The person, or who took it for them": "The patient, or who took it for them",
+	"At most {0}. It opens with a code you give the person here.": (
+		"At most {0}. It opens with a code you give the patient here."
+	),
 }

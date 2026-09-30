@@ -43,7 +43,7 @@ MODULO = ModuloPiano(
 	"Clinic",
 	predefinito=False,
 	descrizione="The medical centre's management software: patients, the clinical record and "
-	"reports, the archive, plans, and the patient area",
+	"reports, health data in plans and documents, and the patient area",
 	ordine=2,
 	# a medical centre gives its patients their area: it comes with the clinic
 	comprende=("area",),
@@ -95,14 +95,15 @@ CAPACITA = (
 		Capacita("clinica.scrivi", PIANO, clinica=True, descrizione="Write and sign visits and notes"),
 		{"operatore": SUOI},
 	),
-	# the archive: the desk scans what the patient brings, for a practitioner
+	# health data among a person's documents (`crm.documenti`): the desk scans what
+	# the patient brings, for a practitioner
 	(
 		Capacita(
 			"clinica.archivia",
 			PIANO,
 			clinica=True,
-			descrizione="Add documents to the clinical archive: what the patient brings, what arrives in a "
-			"conversation",
+			descrizione="Add health data to a person's documents: the tests, reports, images and "
+			"prescriptions the patient brings or sends",
 		),
 		{"segreteria": CENTRO, "operatore": SUOI, DIREZIONE: CENTRO},
 	),
@@ -125,16 +126,6 @@ CAPACITA = (
 			descrizione="Open the record of somebody not in your care, writing why: for a day, in the access log",
 		),
 		{"operatore": SUOI},
-	),
-	# giving a report to the patient, by hand or online (Garante, 2009)
-	(
-		Capacita(
-			"clinica.consegna",
-			PIANO,
-			clinica=True,
-			descrizione="Give a report to the patient: by hand, or online for 45 days with their consent",
-		),
-		{"operatore": SUOI, DIREZIONE: CENTRO},
 	),
 	# the dental care plans (phase 3, "piani di cura (odontoiatria)"): the dentist
 	# writes the chart and the plans, the desk handles the quotes
@@ -223,6 +214,12 @@ CRM_DELLA_DIREZIONE = (
 	# the plans: to read them, and the libraries - the tables' licences are the centre's
 	"piani.vedi",
 	"piani.librerie",
+	# a person's documents: health data read with the dossier's rules, and what goes
+	# after its day is the medical director's to take away
+	"documenti.vedi",
+	"documenti.aggiungi",
+	"documenti.consegna",
+	"documenti.togli",
 )
 
 
@@ -382,11 +379,20 @@ def registra() -> None:
 	from crm.clinica import sintesi
 
 	sintesi.registra()
-	# its plans on the CRM's engine: diets and exercises at home, the foods, and
-	# who reads what carries health data
+	# who reads what carries health data in the CRM - plans, programmes, documents -
+	# and what carries it by who wrote it: the dossier's rules
+	from crm.clinica import dossier
+	from crm.permissions import sanitari
+
+	sanitari.registra_lettore(dossier.lettore())
+	# its plans on the CRM's engine: diets and exercises at home, the foods
 	from crm.clinica import piani
 
 	piani.registra()
+	# its documents among the person's: reports, tests, images, prescriptions
+	from crm.clinica import documenti
+
+	documenti.registra()
 	# with the clinic on, the CRM is a medical centre's software and says so
 	from crm.clinica.parole import PAROLE
 	from crm.marchio import DOTTORCLOUD
@@ -403,16 +409,12 @@ def _registra_area(clinica_accesa) -> None:
 	from crm.area.sezioni import Sezione, registra_sezione
 	from crm.permissions import livelli
 
-	def documenti(lead: str) -> bool:
-		return clinica_accesa()
-
 	def cure(lead: str) -> int:
 		# the dental care plans proposed to the patient and going on
 		from crm.clinica import cure as piani_di_cura
 
 		return piani_di_cura.piani_nell_area(lead) if clinica_accesa() else 0
 
-	registra_sezione(Sezione("documents", documenti))
 	registra_sezione(Sezione("care_plans", cure))
 	# about the care: written by a practitioner, read like one of their visits
 	messaggi.registra_tipo(

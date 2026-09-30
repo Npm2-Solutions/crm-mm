@@ -1,9 +1,9 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The documents the centre gave online, in the client area (design.md, "L'area
-cliente"): while they are online, downloaded after a code verified in the last
-minutes, and logged like the page `/referto` (`crm.clinica.consegna`).
+"""The documents the centre gave online, in the client area: while they are
+online, downloaded after a code verified in the last minutes, and logged like the
+page `/documento` (`crm.documenti.consegna`).
 """
 
 from __future__ import annotations
@@ -14,18 +14,15 @@ from frappe.utils import get_datetime, now_datetime
 
 from crm.area import accesso
 from crm.area.api import _mia
-
-CONSEGNA = "Clinic Report Delivery"
+from crm.documenti import consegna
 
 
 def _online(person: str) -> list:
-	from crm.clinica import consegna
-
 	adesso = now_datetime()
 	return [
 		riga
 		for riga in frappe.get_all(
-			CONSEGNA,
+			consegna.CONSEGNA,
 			filters={
 				"lead": person,
 				"channel": consegna.ONLINE,
@@ -38,6 +35,11 @@ def _online(person: str) -> list:
 	]
 
 
+def documenti_online(person: str) -> int:
+	"""How many documents the person has online now: the area shows the place then."""
+	return len(_online(person))
+
+
 @frappe.whitelist()
 def get_documents(person: str) -> dict:
 	"""What the centre gave online, while it is online."""
@@ -45,7 +47,7 @@ def get_documents(person: str) -> dict:
 	voci = []
 	for riga in _online(person):
 		documento = frappe.db.get_value(
-			"Clinic Document", riga.document, ["title", "document_type", "document_date"], as_dict=True
+			consegna.DOCUMENTO, riga.document, ["title", "document_type", "document_date"], as_dict=True
 		)
 		if not documento:
 			continue
@@ -65,30 +67,11 @@ def get_documents(person: str) -> dict:
 
 @frappe.whitelist(methods=["GET"])
 def download_document(person: str, delivery: str) -> None:
-	"""A document, after a code verified in the last minutes; logged like /referto."""
-	from crm.clinica import archivio, consegna
-	from crm.moduli import traccia
-
+	"""A document, after a code verified in the last minutes; logged like /documento."""
 	_mia(person)
 	if not accesso.verificato_da_poco():
 		frappe.throw(_("Enter your code again to download it"), frappe.PermissionError)
 	riga = next((r for r in _online(person) if r.name == delivery), None)
 	if not riga:
 		frappe.throw(_("This document is no longer online: ask the centre"), frappe.PermissionError)
-	documento = frappe.get_doc("Clinic Document", riga.document)
-	file_url = archivio._file_di(documento)
-	contenuto = frappe.get_doc("File", {"file_url": file_url}).get_content(encodings=[])
-	frappe.local.flags.commit = True
-	frappe.db.set_value(
-		CONSEGNA,
-		riga.name,
-		{
-			"status": consegna.SCARICATO,
-			"downloads": (riga.downloads or 0) + 1,
-			"last_download_on": now_datetime(),
-		},
-	)
-	traccia.traccia(CONSEGNA, riga.name, "downloaded", _("From the client area"))
-	frappe.local.response.filename = file_url.rsplit("/", 1)[-1]
-	frappe.local.response.filecontent = contenuto
-	frappe.local.response.type = "download"
+	consegna.scarica(riga, frappe.get_doc(consegna.DOCUMENTO, riga.document), _("From the client area"))

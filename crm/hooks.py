@@ -105,8 +105,10 @@ website_route_rules = [
 	{"from_route": "/whatsapp-connect", "to_route": "whatsapp_connect"},
 	# forms to fill and sign at home, or on the desk's tablet: /modulo/<link>
 	{"from_route": "/modulo/<token>", "to_route": "modulo"},
-	# a report put online, opened with the code the centre gave: /referto/<link>
-	{"from_route": "/referto/<token>", "to_route": "referto"},
+	# a document put online, opened with the code the centre gave: /documento/<link>;
+	# the links sent when it was a report still open it
+	{"from_route": "/documento/<token>", "to_route": "documento"},
+	{"from_route": "/referto/<token>", "to_route": "documento"},
 	# the client area: one page, its own app routes inside
 	{"from_route": "/area/<path:app_path>", "to_route": "area"},
 ]
@@ -201,12 +203,14 @@ permission_query_conditions = {
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
-	"Clinic Document": "crm.clinica.archivio.get_permission_query_conditions",
 	"Clinic Dental Chart": "crm.clinica.cure.get_chart_permission_query_conditions",
 	"Clinic Care Plan": "crm.clinica.cure.get_plan_permission_query_conditions",
 	# plans and programmes: their author, whoever reads the person's plans; with
 	# health data, the dossier
 	"CRM Personal Plan": "crm.piani.api.get_permission_query_conditions",
+	# a person's documents: whom it is for, who added it, who reads their documents;
+	# with health data, the dossier
+	"CRM Document": "crm.documenti.api.get_permission_query_conditions",
 	"CRM Programme": "crm.piani.programmi.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
@@ -237,8 +241,8 @@ has_permission = {
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
-	"Clinic Document": "crm.clinica.archivio.has_permission",
 	"CRM Personal Plan": "crm.piani.api.has_permission",
+	"CRM Document": "crm.documenti.api.has_permission",
 	"CRM Programme": "crm.piani.programmi.has_permission",
 	"Clinic Dental Chart": "crm.clinica.cure.has_chart_permission",
 	"Clinic Care Plan": "crm.clinica.cure.has_plan_permission",
@@ -475,21 +479,28 @@ doc_events = {
 		"after_insert": ["crm.clinica.eventi.messaggio_scritto"],
 		"on_trash": ["crm.clinica.eventi.messaggio_eliminato"],
 	},
-	# and a plan or a programme with health data: a diet, exercises at home
+	# and what carries health data among a person's plans, programmes and documents:
+	# a diet, exercises at home, a test result
 	"CRM Personal Plan": {
-		"after_insert": ["crm.clinica.eventi.piano_personale_scritto"],
-		"on_trash": ["crm.clinica.eventi.piano_personale_eliminato"],
+		"after_insert": ["crm.clinica.eventi.sanitario_scritto"],
+		"on_trash": ["crm.clinica.eventi.sanitario_eliminato"],
 	},
 	"CRM Programme": {
-		"after_insert": ["crm.clinica.eventi.piano_personale_scritto"],
-		"on_trash": ["crm.clinica.eventi.piano_personale_eliminato"],
+		"after_insert": ["crm.clinica.eventi.sanitario_scritto"],
+		"on_trash": ["crm.clinica.eventi.sanitario_eliminato"],
+	},
+	"CRM Document": {
+		"validate": ["crm.clinica.documenti.valida"],
+		"after_insert": ["crm.clinica.eventi.sanitario_scritto"],
+		"on_trash": ["crm.clinica.eventi.sanitario_eliminato"],
 	},
 	"Log Settings": {
 		"validate": ["crm.clinica.cartella.valida_impostazioni_log"],
 	},
-	# a file attached to the clinical record or archive is private, whatever the upload asked
+	# a file attached to the clinical record or to a person's document is private,
+	# whatever the upload asked
 	"File": {
-		"before_insert": ["crm.clinica.cartella.allegato_privato"],
+		"before_insert": ["crm.clinica.cartella.allegato_privato", "crm.documenti.api.allegato_privato"],
 	},
 	"Sales Order": {
 		"before_validate": [

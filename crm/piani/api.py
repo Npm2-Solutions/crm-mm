@@ -11,7 +11,7 @@
   person's plans (`piani.vedi`, `piani.scrivi`) and sees the person. A plan with
   health data (`clinical`: its kind's mark, or its author's - with the clinic on,
   what a health professional writes) is read by the rule the clinic registers
-  instead (`registra_lettore_clinico`), like a visit, and every opening goes in
+  instead (`crm.permissions.sanitari`), like a visit, and every opening goes in
   the access log; with nobody registered, only its author reads it.
 - **Published, a plan is not rewritten.** A new version starts as a draft that
   replaces it once published, or the plan is closed. Publishing closes the
@@ -32,7 +32,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
-from crm.permissions import livelli, org_hierarchy
+from crm.permissions import livelli, org_hierarchy, sanitari
 from crm.piani import regole as R
 
 PIANO = "CRM Personal Plan"
@@ -78,21 +78,8 @@ class Estensione:
 	copia: tuple[str, ...] = ()
 
 
-@dataclass(frozen=True)
-class LettoreClinico:
-	"""Who reads a plan with health data where a module says so: the clinic, like a visit."""
-
-	legge: Callable[[object, str], bool]
-	#: The same, as a condition on the table; None: nobody but the author.
-	condizione: Callable[[object, str], object | None]
-	#: Whether a plan or a programme is health data whatever its kind: what a
-	#: health professional writes for a patient.
-	marca: Callable[[object], bool] | None = None
-
-
 _generi: dict[str, Genere] = {}
 _estensioni: list[Estensione] = []
-_lettore: dict[str, LettoreClinico] = {}
 
 
 def registra_genere(genere: Genere) -> None:
@@ -102,10 +89,6 @@ def registra_genere(genere: Genere) -> None:
 def registra_estensione(estensione: Estensione) -> None:
 	if estensione not in _estensioni:
 		_estensioni.append(estensione)
-
-
-def registra_lettore_clinico(lettore: LettoreClinico) -> None:
-	_lettore["clinico"] = lettore
 
 
 def genere(chiave: str | None) -> Genere | None:
@@ -135,8 +118,7 @@ def puo_leggere(doc, user: str | None = None) -> bool:
 	if doc.get("status") == BOZZA:
 		return False
 	if cint(doc.get("clinical")):
-		lettore = _lettore.get("clinico")
-		return bool(lettore and lettore.legge(doc, user))
+		return sanitari.legge(doc, user)
 	return legge_i_piani(user) and bool(
 		frappe.has_permission("CRM Lead", "read", doc=doc.get("lead"), user=user)
 	)
@@ -151,8 +133,7 @@ def condizione(tabella, user: str):
 		altri = tabella.clinical == 0
 		if visibili is not None:
 			altri = altri & tabella.lead.isin(visibili)
-	lettore = _lettore.get("clinico")
-	clinici = lettore.condizione(tabella, user) if lettore else None
+	clinici = sanitari.condizione(tabella, user)
 	if clinici is not None:
 		clinici = (tabella.clinical == 1) & clinici
 		altri = clinici if altri is None else (altri | clinici)
@@ -481,17 +462,10 @@ def _scrivi(doc, dati: dict, momenti: list[dict], voci: list[dict]) -> None:
 	doc.set("items", [_voce_da_scrivere(v) for v in voci])
 
 
-def sanitario(doc) -> bool:
-	"""Whether a plan or a programme is health data by who wrote it, as the module
-	that reads health data says: the clinic's health professionals."""
-	lettore = _lettore.get("clinico")
-	return bool(lettore and lettore.marca and lettore.marca(doc))
-
-
 def marca(doc) -> None:
 	"""The mark "health data" a plan carries: its kind's, or its author's."""
 	tipo = R.tipo(doc.plan_type)
-	doc.clinical = 1 if (tipo and tipo.clinico) or sanitario(doc) else 0
+	doc.clinical = 1 if (tipo and tipo.clinico) or sanitari.per_chi_scrive(doc) else 0
 
 
 @frappe.whitelist(methods=["POST"])

@@ -1,0 +1,81 @@
+{
+ "custom_fields": [
+  {
+   "name": "CRM Document-visibility",
+   "dt": "CRM Document",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "clinical",
+   "default": "Care team",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "label": "Who reads it",
+   "options": "Care team\nMy discipline\nOnly me"
+  },
+  {
+   "name": "CRM Document-obscured",
+   "dt": "CRM Document",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "visibility",
+   "default": "0",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "label": "Obscured",
+   "read_only": 1
+  },
+  {
+   "name": "CRM Document-obscured_by",
+   "dt": "CRM Document",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "obscured",
+   "fieldname": "obscured_by",
+   "fieldtype": "Link",
+   "label": "Obscured by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "name": "CRM Document-obscured_on",
+   "dt": "CRM Document",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "obscured_by",
+   "fieldname": "obscured_on",
+   "fieldtype": "Datetime",
+   "label": "Obscured on",
+   "read_only": 1
+  },
+  {
+   "name": "CRM Document-record",
+   "dt": "CRM Document",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "file_hash",
+   "description": "A report made by the centre: the visit it comes from",
+   "fieldname": "record",
+   "fieldtype": "Link",
+   "label": "Visit",
+   "options": "Clinic Record",
+   "read_only": 1
+  },
+  {
+   "name": "CRM Document-not_online",
+   "dt": "CRM Document",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "appointment",
+   "default": "0",
+   "description": "Genetic tests, HIV, or a test the patient left out: given by hand only",
+   "fieldname": "not_online",
+   "fieldtype": "Check",
+   "label": "Never online"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "CRM Document",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

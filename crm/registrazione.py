@@ -40,6 +40,7 @@ def carica(*args, **kwargs) -> None:
 		from crm.area import registra as registra_area
 		from crm.assistente import registra as registra_assistente
 		from crm.clinica import registra as registra_clinica
+		from crm.documenti import registra as registra_documenti
 		from crm.invoicing import registra as registra_fatturazione
 		from crm.moduli import registra as registra_moduli
 		from crm.permissions import catalogo
@@ -56,6 +57,8 @@ def carica(*args, **kwargs) -> None:
 		registra_area()
 		# plans and programmes, followed in the area
 		registra_piani()
+		# a person's documents, and giving them: every centre's
+		registra_documenti()
 		# the clinic, a vertical: on every site, switched on by the plan; it adds to
 		# the area, so after it
 		registra_clinica()
