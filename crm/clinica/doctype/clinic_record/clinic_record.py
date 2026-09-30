@@ -23,7 +23,15 @@ SOLO_IO = "Only me"
 class ClinicRecord(DocumentoClinico):
 	def validate(self):
 		if self.is_new():
+			from crm.clinica import dossier
+
 			self.practitioner = self.practitioner or frappe.session.user
+			# "my discipline" means the author's, as it was when they wrote it
+			self.discipline = self.discipline or dossier.disciplina_di(self.practitioner)
+		if self.visibility == "My discipline" and not self.discipline:
+			frappe.throw(
+				_("You have no discipline on your provider record: choose the care team or only you")
+			)
 		if self.addendum_to:
 			firmato = frappe.db.get_value(
 				"Clinic Record", self.addendum_to, ["lead", "docstatus"], as_dict=True

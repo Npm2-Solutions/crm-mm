@@ -626,6 +626,8 @@ crm_timeline_gatherers = [
 crm_people_in_care = [
 	# the patients they wrote a clinical record for
 	"crm.clinica.cartella.persone_in_cura",
+	# the people they opened out of their care, writing why, for a day
+	"crm.clinica.dossier.aperti_con_motivo",
 ]
 
 standard_dropdown_items = [

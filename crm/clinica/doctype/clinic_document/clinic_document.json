@@ -15,6 +15,10 @@
   "column_main",
   "practitioner",
   "visibility",
+  "discipline",
+  "obscured",
+  "obscured_by",
+  "obscured_on",
   "added_by",
   "added_on",
   "file_section",
@@ -90,7 +94,34 @@
    "fieldname": "visibility",
    "fieldtype": "Select",
    "label": "Who reads it",
-   "options": "Care team\nOnly me"
+   "options": "Care team\nMy discipline\nOnly me"
+  },
+  {
+   "fieldname": "discipline",
+   "fieldtype": "Link",
+   "label": "Discipline",
+   "options": "CRM Professional Qualification",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "label": "Obscured",
+   "read_only": 1
+  },
+  {
+   "fieldname": "obscured_by",
+   "fieldtype": "Link",
+   "label": "Obscured by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "obscured_on",
+   "fieldtype": "Datetime",
+   "label": "Obscured on",
+   "read_only": 1
   },
   {
    "fieldname": "added_by",
@@ -148,7 +179,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 10:00:00.000000",
+ "modified": "2026-10-01 11:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Document",

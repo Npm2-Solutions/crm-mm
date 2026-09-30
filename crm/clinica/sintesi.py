@@ -148,6 +148,14 @@ def sintesi(lead: str) -> dict:
 		],
 		order_by="decided_on desc, proposed_on desc",
 	)
+	# what came from an episode the patient had obscured is not there for who must
+	# not know of it: the line shows the last value from what they may read
+	from crm.clinica import dossier
+
+	nascoste = dossier.fonti_nascoste(
+		[(v.source_doctype, v.source_name) for v in valori if v.source_doctype and v.source_name]
+	)
+	valori = [v for v in valori if (v.source_doctype, v.source_name) not in nascoste]
 	confermati: dict[str, dict] = {}
 	for valore in valori:
 		if valore.status == CONFERMATO and valore.key not in confermati:

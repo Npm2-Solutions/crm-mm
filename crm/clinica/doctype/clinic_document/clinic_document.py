@@ -23,11 +23,21 @@ class ClinicDocument(DocumentoClinico):
 	dice_che_e_venuto = False
 
 	def validate(self):
+		from crm.clinica import dossier
+
 		if self.is_new():
 			self.added_by = self.added_by or frappe.session.user
 			self.added_on = self.added_on or now_datetime()
-		elif self.has_value_changed("file") or self.has_value_changed("record"):
-			frappe.throw(_("The file of a document is not replaced: add a new document"))
+			# "my discipline" means the discipline of whom it is for
+			if not self.discipline and self.practitioner:
+				self.discipline = dossier.disciplina_di(self.practitioner)
+		else:
+			if self.has_value_changed("file") or self.has_value_changed("record"):
+				frappe.throw(_("The file of a document is not replaced: add a new document"))
+			if self.has_value_changed("practitioner"):
+				self.discipline = dossier.disciplina_di(self.practitioner) if self.practitioner else None
+		if self.visibility == dossier.DISCIPLINA and not self.discipline:
+			frappe.throw(_("{0} has no discipline: choose the care team").format(self.practitioner))
 		if not (self.file or self.record):
 			frappe.throw(_("A document of the archive is a file"))
 		if self.visibility == SOLO_IO and not self.practitioner:
