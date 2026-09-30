@@ -188,6 +188,8 @@ export default {
   'When a place frees up we write to you: it goes to whoever confirms first.':
     'Quando si libera un posto ti scriviamo: va a chi conferma per primo.',
   'Leave the waiting list': 'Esci dalla lista d’attesa',
+  'You are no longer on the waiting list for {0}.':
+    'Non sei più in lista d’attesa per {0}.',
   'A seat in the class of {0}': 'Un posto nella lezione di {0}',
   'until {0}': 'fino al {0}',
   'Booked: you find it among your appointments.':

@@ -33,11 +33,18 @@
           @click="joining = true"
         />
       </div>
+      <p
+        v-if="said"
+        class="rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-8"
+        role="status"
+      >
+        {{ said }}
+      </p>
       <WaitingCard
         v-for="entry in appointments.data?.waiting || []"
         :key="entry.name"
         :entry="entry"
-        @changed="appointments.reload()"
+        @changed="changed"
       />
       <p
         v-if="appointments.data && !appointments.data.waiting.length"
@@ -74,7 +81,7 @@
         :appointment="appointment"
       />
     </section>
-    <WaitingJoinDialog v-model="joining" @changed="appointments.reload()" />
+    <WaitingJoinDialog v-model="joining" @changed="changed('')" />
   </div>
 </template>
 
@@ -88,10 +95,17 @@ import WaitingJoinDialog from '../components/WaitingJoinDialog.vue'
 import { area } from '../store'
 
 const joining = ref(false)
+// how the last answer went: the card of a place booked or a list left is gone
+const said = ref('')
 
 const appointments = createResource({
   url: 'crm.area.api.get_appointments',
   params: { person: area.person },
   auto: true,
 })
+
+function changed(message) {
+  said.value = message || ''
+  appointments.reload()
+}
 </script>

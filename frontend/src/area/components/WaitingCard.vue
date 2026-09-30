@@ -1,7 +1,7 @@
 <!--
   What the person waits for. When a place freed up for them, it says which and
   until when it is theirs to take: yes books it, no gives it to the next one,
-  and they stay on the list. They can leave it too.
+  and they stay on the list. They can leave it too. How it went, the page says.
 -->
 <template>
   <article
@@ -63,9 +63,6 @@
       }}
     </p>
 
-    <p v-if="message" class="text-p-sm text-ink-gray-7" role="status">
-      {{ message }}
-    </p>
     <ErrorMessage :message="error" />
     <button
       type="button"
@@ -91,7 +88,6 @@ const emit = defineEmits(['changed'])
 
 const busy = ref('')
 const error = ref('')
-const message = ref('')
 const t = (text, args) => __(text, args)
 
 const line = computed(() => {
@@ -124,8 +120,8 @@ async function answer(what) {
       entry: props.entry.name,
       answer: what,
     })
-    message.value = WORDS[done.result] ? __(WORDS[done.result]) : ''
-    emit('changed', done)
+    // said by the page: a place booked takes the card away with it
+    emit('changed', WORDS[done.result] ? __(WORDS[done.result]) : '')
   } catch (e) {
     error.value = __(messageOf(e))
   } finally {
@@ -137,11 +133,16 @@ async function leave() {
   busy.value = 'leave'
   error.value = ''
   try {
-    const done = await call('crm.area.api.leave_waiting_list', {
+    await call('crm.area.api.leave_waiting_list', {
       person: area.person,
       entry: props.entry.name,
     })
-    emit('changed', done)
+    emit(
+      'changed',
+      __('You are no longer on the waiting list for {0}.', [
+        props.entry.service,
+      ]),
+    )
   } catch (e) {
     error.value = __(messageOf(e))
   } finally {
