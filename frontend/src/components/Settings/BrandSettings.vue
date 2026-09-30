@@ -13,7 +13,11 @@
           {{ __('Brand Settings') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
-          {{ __('Configure your brand name, logo and favicon') }}
+          {{
+            __(
+              "The centre's name and logo. The product's brand, {brand}, stays everywhere: the logo goes beside it.",
+            )
+          }}
         </p>
       </div>
       <div
@@ -42,7 +46,11 @@
             {{ __('Brand Name') }}
           </div>
           <div class="text-p-sm text-ink-gray-5">
-            {{ __('Set the name of your brand. Appears in the left sidebar.') }}
+            {{
+              __(
+                'How the centre is called to the people it looks after: in the emails and on the public pages.',
+              )
+            }}
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -78,7 +86,7 @@
             <span class="text-p-sm text-ink-gray-5">
               {{
                 __(
-                  'Appears in the left sidebar. Recommended size is 32x32 px in PNG or SVG',
+                  'Beside the icon of {brand} in the sidebar, in the client area and on the public pages. PNG or SVG, at least 64 px high.',
                 )
               }}
             </span>
@@ -89,43 +97,6 @@
               :image_url="settings.doc?.brand_logo"
               @upload="(url) => (settings.doc.brand_logo = url)"
               @remove="() => (settings.doc.brand_logo = '')"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- favicon -->
-      <div class="flex flex-col justify-between gap-4">
-        <div class="flex items-center flex-1 gap-5">
-          <div
-            class="flex items-center justify-center rounded border border-outline-elevation-2 size-20"
-          >
-            <img
-              v-if="settings.doc?.favicon"
-              :src="settings.doc?.favicon"
-              alt="Favicon"
-              class="size-8 rounded"
-            />
-            <ImageIcon v-else class="size-5 text-ink-gray-4" />
-          </div>
-          <div class="flex flex-1 flex-col gap-1">
-            <span class="text-p-base-medium text-ink-gray-7">{{
-              __('Favicon')
-            }}</span>
-            <span class="text-p-sm text-ink-gray-5">
-              {{
-                __(
-                  'Appears next to the title in your browser tab. Recommended size is 32x32 px in PNG or ICO',
-                )
-              }}
-            </span>
-          </div>
-          <div>
-            <ImageUploader
-              image_type="image/ico"
-              :image_url="settings.doc?.favicon"
-              @upload="(url) => (settings.doc.favicon = url)"
-              @remove="() => (settings.doc.favicon = '')"
             />
           </div>
         </div>

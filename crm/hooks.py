@@ -8,14 +8,16 @@ app_icon_url = "/assets/crm/images/dottorcloud-icona.svg"
 app_icon_title = "DottorCloud"
 app_icon_route = "/crm"
 
-# The product's marks where the framework shows its own (`crm.marchio`): the login
-# page's and the desk's logo, the favicon and the splash of every page it serves.
-# A logo, a favicon or a splash set in the Website Settings still wins.
+# The product's brand - the vertical's - where the framework shows its own
+# (`crm.marchio`). These are the fallbacks of a site not set up yet: the brand that
+# is on writes the Website Settings (login page, desk, favicon, splash) and every
+# web page takes its favicon and splash from it (`update_website_context`).
 app_logo_url = "/assets/crm/images/dottorcloud-icona.svg"
 website_context = {
 	"favicon": "/assets/crm/images/favicon.png",
 	"splash_image": "/assets/crm/images/dottorcloud-icona.svg",
 }
+update_website_context = ["crm.marchio.contesto"]
 # the desk names the apps by their titles: the framework's is "Frappe Framework"
 extend_bootinfo = ["crm.marchio.boot"]
 
@@ -456,7 +458,11 @@ doc_events = {
 		],
 	},
 	"CRM Plan": {
-		"on_update": ["crm.clinica.eventi.piano_aggiornato"],
+		"on_update": [
+			# a vertical switched on or off changes the brand of the framework's pages
+			"crm.marchio.piano_aggiornato",
+			"crm.clinica.eventi.piano_aggiornato",
+		],
 	},
 	# rule 1 of becoming a patient: a signed form with health data
 	"CRM Form": {

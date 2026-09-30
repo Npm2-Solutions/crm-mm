@@ -11,7 +11,11 @@
               : 'w-full px-2 hover:bg-surface-gray-2'
         "
       >
-        <BrandLogo v-model="brand" class="h-8 max-w-16 flex-shrink-0" />
+        <BrandLogo
+          :model-value="brand"
+          :compact="isCollapsed"
+          class="h-8 flex-shrink-0"
+        />
         <div
           class="flex flex-1 flex-col text-left duration-300 ease-in-out truncate"
           :class="
@@ -21,7 +25,7 @@
           "
         >
           <div class="text-base-medium leading-none text-ink-gray-9 truncate">
-            {{ brand.name || 'DottorCloud' }}
+            {{ platform.name }}
           </div>
           <div class="mt-1 text-sm leading-none text-ink-gray-7 truncate">
             {{ user.full_name }}
@@ -52,6 +56,7 @@ import LucideLayoutGrid from '~icons/lucide/layout-grid'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { getSettings } from '@/stores/settings'
+import { marchio } from '@/utils/marchio'
 import { showSettings, mobileSidebarOpened } from '@/composables/settings'
 import { showAboutModal } from '@/composables/modals'
 import { safeDropdownIcon, safeDropdownRoute } from '@/utils/dropdownItems'
@@ -63,6 +68,8 @@ defineProps({
 })
 
 const { settings, brand } = getSettings()
+// the product's brand leads; the centre's logo sits beside its icon
+const platform = marchio()
 const { logout } = sessionStore()
 const { getUser } = usersStore()
 

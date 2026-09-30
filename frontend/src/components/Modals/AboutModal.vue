@@ -9,9 +9,12 @@
       <div class="p-4 pt-5">
         <div class="flex flex-col items-center text-center">
           <CRMLogo class="mb-3 size-12" />
-          <h3 class="text-2xl-semibold text-ink-gray-9">DottorCloud</h3>
-          <p class="mt-1 text-p-base text-ink-gray-6">
-            {{ __('Management software for medical centres') }}
+          <h3 class="text-2xl-semibold text-ink-gray-9">{{ platform.name }}</h3>
+          <p
+            v-if="platform.description"
+            class="mt-1 text-p-base text-ink-gray-6"
+          >
+            {{ platform.description }}
           </p>
         </div>
         <hr class="mx-2 my-3 border-t" />
@@ -42,7 +45,10 @@
 </template>
 <script setup>
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
+import { marchio } from '@/utils/marchio'
 import LucideScale from '~icons/lucide/scale'
 
 let show = defineModel({ type: Boolean })
+// the product's name and line are the brand's - the vertical's
+const platform = marchio()
 </script>

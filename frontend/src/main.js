@@ -6,6 +6,7 @@ import { createDialog } from './utils/dialogs'
 import { initSocket } from './socket'
 import router from './router'
 import translationPlugin from './translation'
+import { indossa } from './utils/marchio'
 import App from './App.vue'
 
 import {
@@ -39,6 +40,10 @@ let globalComponents = {
   Badge,
   FeatherIcon,
 }
+
+// the product's brand - the vertical's - before anything is drawn: its colours,
+// favicon, name and home-screen icon (crm.marchio)
+indossa()
 
 // create a pinia instance
 let pinia = createPinia()

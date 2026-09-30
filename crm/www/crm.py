@@ -9,6 +9,8 @@ from frappe.translate import get_messages_for_boot, get_translated_doctypes
 from frappe.utils import cint, get_system_timezone
 from frappe.utils.telemetry import capture
 
+from crm.marchio import con_nome
+
 no_cache = 1
 
 
@@ -16,12 +18,14 @@ def get_context():
 	from crm.api import check_app_permission
 
 	if not check_app_permission():
-		frappe.throw(_("You do not have permission to access DottorCloud"), frappe.PermissionError)
+		frappe.throw(con_nome(_("You do not have permission to access {brand}")), frappe.PermissionError)
 
 	redirect_to_set_password()
 
 	context = frappe._dict()
 	context.boot = get_boot()
+	# the head of the page (index.html): the brand's name, icons and manifest
+	context.marchio = context.boot.brand
 	if frappe.session.user != "Guest":
 		capture("active_site", "crm")
 	return context
@@ -90,8 +94,17 @@ def get_boot():
 			"state_options": get_state_options(),
 			"crm_permissions": get_permissions(),
 			"vertical": get_vertical(),
+			# the product's brand - the vertical's - and the centre's logo beside it
+			"brand": get_brand(),
 		}
 	)
+
+
+def get_brand() -> dict:
+	"""The brand of the vertical that is on. Never raises: the base's otherwise."""
+	from crm import marchio
+
+	return marchio.per_le_pagine()
 
 
 def get_translated_messages() -> dict:

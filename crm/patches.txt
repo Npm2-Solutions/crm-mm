@@ -74,3 +74,4 @@ crm.patches.v1_0.last_visit_from_appointments
 crm.clinica.patches.medical_centre_where_the_clinic_is_on
 crm.patches.v1_0.dottorcloud_in_the_framework_screens
 crm.patches.v1_0.the_area_settings_are_the_crms
+crm.patches.v1_0.the_brand_is_the_verticals
