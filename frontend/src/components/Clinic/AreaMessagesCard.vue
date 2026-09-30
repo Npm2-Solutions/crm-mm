@@ -3,6 +3,8 @@
   the patient reads and does not answer here. The desk writes administrative
   messages; a practitioner writes about the care, read in the CRM like a visit.
   Who enters the area gets an email that says only that there is news.
+  A question the patient passed on from the area's chat shows here too, marked:
+  it is answered by writing to the person.
 -->
 <template>
   <section
@@ -60,18 +62,30 @@
       :key="message.name"
       class="flex flex-col gap-1 border-t border-outline-gray-1 pt-3"
     >
+      <Badge
+        v-if="message.kind === 'Question'"
+        class="w-fit"
+        variant="subtle"
+        theme="blue"
+        :label="__('A question from the area')"
+      />
       <p class="whitespace-pre-line text-p-base text-ink-gray-8">
         {{ message.body }}
       </p>
       <span class="text-p-xs text-ink-gray-5">
         {{ message.author_name }} ·
-        {{ formatDate(message.posted_on, 'D MMM YYYY, HH:mm') }} ·
-        {{ message.kind === 'Care' ? __('Care') : __('Desk') }} ·
-        {{
-          message.read_on
-            ? __('read {0}', [formatDate(message.read_on, 'D MMM YYYY')])
-            : __('not read yet')
-        }}
+        {{ formatDate(message.posted_on, 'D MMM YYYY, HH:mm') }}
+        <template v-if="message.kind === 'Question'">
+          · {{ __('answer by writing to the person') }}
+        </template>
+        <template v-else>
+          · {{ message.kind === 'Care' ? __('Care') : __('Desk') }} ·
+          {{
+            message.read_on
+              ? __('read {0}', [formatDate(message.read_on, 'D MMM YYYY')])
+              : __('not read yet')
+          }}
+        </template>
       </span>
     </div>
   </section>
@@ -79,7 +93,14 @@
 
 <script setup>
 import { formatDate } from '@/utils'
-import { Button, ErrorMessage, Textarea, call, createResource } from 'frappe-ui'
+import {
+  Badge,
+  Button,
+  ErrorMessage,
+  Textarea,
+  call,
+  createResource,
+} from 'frappe-ui'
 import { ref, watch } from 'vue'
 
 const props = defineProps({ lead: { type: String, required: true } })

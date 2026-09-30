@@ -113,6 +113,71 @@
             <Switch v-model="settings.doc.menus" size="sm" />
           </SettingRow>
 
+          <template v-if="status.data?.switches?.includes('patient_chat')">
+            <div class="pb-1 pt-6 text-base-semibold text-ink-gray-9">
+              {{ __('The patients’ chat') }}
+            </div>
+            <SettingRow
+              :label="__('On in the patient area')"
+              :description="
+                __(
+                  'Hours, bookings and your frequent questions. It says it is an AI; health questions go to a person, an emergency to 112.',
+                )
+              "
+            >
+              <Switch v-model="settings.doc.patient_chat" size="sm" />
+            </SettingRow>
+            <div class="flex flex-col gap-3 px-2 py-3">
+              <FormControl
+                v-model="settings.doc.chat_about"
+                type="textarea"
+                :rows="4"
+                :label="__('What the chat may say about the centre')"
+                :placeholder="
+                  __(
+                    'Address, how to get there, parking, payments, what to bring',
+                  )
+                "
+              />
+              <span class="text-sm text-ink-gray-5">
+                {{ __('Frequent questions') }}
+              </span>
+              <div
+                v-for="(row, index) in settings.doc.chat_faq || []"
+                :key="row.name || index"
+                class="flex flex-col gap-2 rounded-md border border-outline-gray-2 p-3"
+              >
+                <div class="flex items-start gap-2">
+                  <div class="min-w-0 flex-1">
+                    <FormControl
+                      v-model="row.question"
+                      :placeholder="__('The question')"
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    icon="x"
+                    class="touch-target shrink-0"
+                    :aria-label="__('Remove')"
+                    @click="settings.doc.chat_faq.splice(index, 1)"
+                  />
+                </div>
+                <FormControl
+                  v-model="row.answer"
+                  type="textarea"
+                  :rows="2"
+                  :placeholder="__('The centre’s answer')"
+                />
+              </div>
+              <Button
+                class="w-fit"
+                icon-left="plus"
+                :label="__('Add a question')"
+                @click="addQuestion"
+              />
+            </div>
+          </template>
+
           <template v-if="tecnico">
             <div class="pb-1 pt-6 text-base-semibold text-ink-gray-9">
               {{ __('Where the model runs') }}
@@ -350,6 +415,7 @@ const statusTheme = {
   Accepted: 'green',
   Discarded: 'gray',
   Failed: 'red',
+  Answered: 'blue',
 }
 const functionLabels = {
   form_from_paper: __('A form from paper'),
@@ -358,6 +424,7 @@ const functionLabels = {
   visit_from_dictation: __('A visit from dictation'),
   summary_before_visit: __('A summary before the visit'),
   menu_recipes: __('Recipes for a meal plan'),
+  patient_chat: __('The patients’ chat'),
 }
 
 function functionLabel(key) {
@@ -383,6 +450,15 @@ const isDirty = computed(
     settings.originalDoc &&
     JSON.stringify(settings.doc) !== JSON.stringify(settings.originalDoc),
 )
+
+function addQuestion() {
+  if (!settings.doc.chat_faq) settings.doc.chat_faq = []
+  settings.doc.chat_faq.push({
+    doctype: 'CRM Assistant FAQ',
+    question: '',
+    answer: '',
+  })
+}
 
 function update() {
   settings.save.submit(null, {

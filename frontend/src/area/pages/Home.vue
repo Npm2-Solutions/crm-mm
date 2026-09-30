@@ -15,6 +15,21 @@
     </section>
     <PrepareVisit />
     <TodayPlans />
+    <router-link
+      v-if="area.me?.chat"
+      :to="{ name: 'Chat' }"
+      class="flex items-center justify-between gap-3 rounded-lg bg-surface-white p-4 shadow-sm"
+    >
+      <span class="flex min-w-0 flex-col">
+        <span class="text-p-base font-medium text-ink-gray-9">
+          {{ __('A question about hours or bookings?') }}
+        </span>
+        <span class="text-p-sm text-ink-gray-5">
+          {{ __('Ask the centre’s virtual assistant, an AI') }}
+        </span>
+      </span>
+      <span class="shrink-0 text-p-sm text-ink-gray-7">→</span>
+    </router-link>
     <section
       v-if="documents.data?.documents?.length"
       class="flex flex-col gap-2"
