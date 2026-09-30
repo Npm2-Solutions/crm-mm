@@ -47,6 +47,15 @@
               :label="__('kcal per 100 g')"
             />
           </div>
+          <div class="grid grid-cols-4 gap-3 max-md:grid-cols-2">
+            <FormControl
+              v-for="nutrient in macros"
+              :key="nutrient.key"
+              v-model="adding[nutrient.key]"
+              type="number"
+              :label="nutrient.label"
+            />
+          </div>
           <FormControl
             v-model="adding.source"
             :label="__('From which table')"
@@ -173,12 +182,24 @@ function pick(option) {
 const groupOptions = GRUPPI.map((g) => ({ label: __(g), value: g }))
 const partOptions = PARTI.map((p) => ({ label: __(p), value: p }))
 
+// grams per 100 g, as the table says: what a menu's totals are made of
+const macros = [
+  { key: 'protein_g', label: __('Proteins (g)') },
+  { key: 'carbs_g', label: __('Carbohydrates (g)') },
+  { key: 'fat_g', label: __('Fats (g)') },
+  { key: 'fibre_g', label: __('Fibre (g)') },
+]
+
 const adding = reactive({
   show: false,
   name: '',
   group: GRUPPI[0],
   portion: '',
   kcal: '',
+  protein_g: '',
+  carbs_g: '',
+  fat_g: '',
+  fibre_g: '',
   source: '',
   part: PARTI[0],
   instructions: '',
@@ -193,6 +214,10 @@ function openAdd(text) {
     name: text || '',
     portion: '',
     kcal: '',
+    protein_g: '',
+    carbs_g: '',
+    fat_g: '',
+    fibre_g: '',
     source: '',
     instructions: '',
     video: '',
@@ -212,6 +237,12 @@ async function add() {
             food_group: adding.group,
             portion_g: adding.portion || null,
             kcal: adding.kcal === '' ? null : adding.kcal,
+            ...Object.fromEntries(
+              macros.map(({ key }) => [
+                key,
+                adding[key] === '' ? null : adding[key],
+              ]),
+            ),
             source_note: adding.source || null,
           })
         : await call('crm.clinica.piani.add_exercise', {

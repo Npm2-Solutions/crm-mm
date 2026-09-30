@@ -61,6 +61,12 @@
             · {{ String(moment.time).slice(0, 5) }}
           </span>
         </h2>
+        <p
+          v-if="moment.note"
+          class="whitespace-pre-line text-p-sm text-ink-gray-6"
+        >
+          {{ moment.note }}
+        </p>
         <PlanItem
           v-for="item in moment.items"
           :key="item.key"

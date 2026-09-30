@@ -60,6 +60,20 @@
             {{ __('Show the calories to the patient') }}
           </span>
         </label>
+        <div v-if="plan.plan_type === MENU" class="flex flex-col gap-2">
+          <span class="text-sm font-medium text-ink-gray-7">
+            {{ __('Targets for a day') }}
+          </span>
+          <div class="grid grid-cols-5 gap-3 max-md:grid-cols-2">
+            <FormControl
+              v-for="field in nutrientFields"
+              :key="field.key"
+              v-model="plan.targets[field.key]"
+              type="number"
+              :label="field.label"
+            />
+          </div>
+        </div>
 
         <section
           v-for="moment in plan.moments"
@@ -93,20 +107,53 @@
               @click="removeMoment(moment)"
             />
           </div>
+          <FormControl
+            v-model="moment.note"
+            type="textarea"
+            :rows="moment.note ? 4 : 2"
+            :placeholder="
+              isDieta(plan.plan_type)
+                ? __('How to prepare it: the patient reads it with the meal')
+                : __(
+                    'What to keep in mind: the patient reads it with the session',
+                  )
+            "
+          />
           <PlanItemEditor
             v-for="item in itemsOf(moment.key)"
             :key="item.key"
             :model-value="item"
             @remove="removeItem(item)"
           />
-          <Dropdown :options="addOptions(moment)" placement="left">
+          <div class="flex flex-wrap items-center gap-2">
+            <Dropdown :options="addOptions(moment)" placement="left">
+              <Button
+                size="sm"
+                icon-left="plus"
+                class="w-fit"
+                :label="__('Add')"
+              />
+            </Dropdown>
             <Button
+              v-if="plan.plan_type === MENU && plan.recipes?.on"
               size="sm"
-              icon-left="plus"
-              class="w-fit"
-              :label="__('Add')"
+              icon-left="lucide-sparkles"
+              :label="__('Propose recipes')"
+              :disabled="!plan.recipes.consent"
+              :title="
+                plan.recipes.consent
+                  ? ''
+                  : __('The patient has not agreed to the assistant')
+              "
+              @click="openRecipes(moment)"
             />
-          </Dropdown>
+            <span
+              v-if="plan.plan_type === MENU && momentLine(moment.key)"
+              class="text-p-xs text-ink-gray-5"
+            >
+              {{ momentLine(moment.key) }}
+            </span>
+          </div>
         </section>
         <Button
           class="w-fit"
@@ -114,7 +161,22 @@
           :label="__('Add a moment')"
           @click="addMoment"
         />
+        <PlanNutrientsTable
+          v-if="plan.plan_type === MENU && hasFoods"
+          :days="days"
+          :targets="plan.targets"
+          :missing="missing"
+        />
         <ErrorMessage :message="error" />
+        <!-- inside the plan's dialog: one layer on the other, for the eye and
+             for a screen reader -->
+        <RecipeDialog
+          v-model="recipes.show"
+          :plan="plan.name"
+          :moment="recipes.moment"
+          :suggested-kcal="recipes.kcal"
+          @used="onRecipeUsed"
+        />
       </div>
 
       <!-- reading it -->
@@ -157,6 +219,12 @@
               }}{{ moment.time ? ' · ' + hhmm(moment.time) : '' }}
             </span>
           </h4>
+          <p
+            v-if="moment.note"
+            class="whitespace-pre-line text-p-sm text-ink-gray-6"
+          >
+            {{ moment.note }}
+          </p>
           <div
             v-for="item in itemsOf(moment.key)"
             :key="item.key"
@@ -184,6 +252,12 @@
             </div>
           </div>
         </section>
+        <PlanNutrientsTable
+          v-if="plan.plan_type === MENU && hasFoods"
+          :days="days"
+          :targets="plan.targets"
+          :missing="missing"
+        />
         <p v-if="plan.replaced_by" class="text-p-sm text-ink-gray-5">
           {{ __('Replaced by a new version.') }}
         </p>
@@ -240,10 +314,15 @@
 
 <script setup>
 import PlanItemEditor from '@/components/Clinic/PlanItemEditor.vue'
+import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
+import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
 import { formatDate } from '@/utils'
 import {
+  CIBO,
   ESITI,
   GIORNI,
+  MENU,
+  NUTRIENTI,
   OGNI_GIORNO,
   descrivi,
   generiPer,
@@ -252,6 +331,9 @@ import {
   momentiIniziali,
   nuovaVoce,
   nuovoMomento,
+  nutrienti,
+  perGiorno,
+  rigaNutrienti,
 } from '@/utils/piani'
 import {
   Badge,
@@ -293,6 +375,9 @@ function fill(data) {
   for (const key of Object.keys(plan)) delete plan[key]
   Object.assign(plan, data, {
     show_calories: Boolean(data.show_calories),
+    targets: Object.fromEntries(
+      NUTRIENTI.map((n) => [n, data.targets?.[n] ?? '']),
+    ),
     moments: (data.moments || []).map((m) => ({ ...m, time: m.time || null })),
     items: (data.items || []).map((i) => ({
       ...i,
@@ -323,6 +408,11 @@ watch(show, async (open) => {
       }),
       items: [],
     })
+    if (props.kind === MENU) {
+      plan.recipes = await call('crm.clinica.menu.recipes_available', {
+        lead: props.lead,
+      }).catch(() => ({}))
+    }
     return
   }
   loading.value = true
@@ -393,6 +483,7 @@ function payload() {
     ends_on: plan.ends_on || null,
     instructions: plan.instructions || null,
     show_calories: plan.show_calories ? 1 : 0,
+    targets: plan.targets,
     moments: plan.moments,
     items: plan.items,
   })
@@ -445,5 +536,79 @@ async function newVersion() {
 async function remove() {
   const done = await run('delete', 'delete_draft', { name: plan.name })
   if (done) show.value = false
+}
+
+// ------------------------------------------------------------ the nutrients
+// counted from the tables' values for 100 g, as the server counts them
+
+const nutrientFields = [
+  { key: 'kcal', label: __('Energy (kcal)') },
+  { key: 'protein_g', label: __('Proteins (g)') },
+  { key: 'carbs_g', label: __('Carbohydrates (g)') },
+  { key: 'fat_g', label: __('Fats (g)') },
+  { key: 'fibre_g', label: __('Fibre (g)') },
+]
+
+const foods = computed(() =>
+  Object.fromEntries(
+    (plan.items || [])
+      .filter((item) => item.food && item.food_detail)
+      .map((item) => [item.food, item.food_detail]),
+  ),
+)
+const hasFoods = computed(() =>
+  (plan.items || []).some((item) => item.kind === CIBO && item.food),
+)
+const days = computed(() => perGiorno(plan.moments, plan.items, foods.value))
+const missing = computed(
+  () => nutrienti(plan.items, foods.value).missing.length,
+)
+
+function momentLine(key) {
+  const items = itemsOf(key)
+  if (!items.some((item) => item.kind === CIBO && item.food)) return ''
+  return rigaNutrienti(nutrienti(items, foods.value), (text, args) =>
+    __(text, args),
+  )
+}
+
+// ------------------------------------------------------------ the recipes
+
+const recipes = reactive({ show: false, moment: null, kcal: '' })
+
+// what the day's target leaves to this meal, shared with the empty ones
+function suggestedKcal(moment) {
+  const target = Number(plan.targets?.kcal)
+  if (!target) return ''
+  const day = moment.day === OGNI_GIORNO ? days.value[0]?.day : moment.day
+  const ofTheDay = plan.moments.filter(
+    (m) => m.day === OGNI_GIORNO || m.day === day,
+  )
+  const empty = ofTheDay.filter(
+    (m) =>
+      m.key !== moment.key &&
+      !itemsOf(m.key).some((item) => item.kind === CIBO && item.food),
+  )
+  const total = days.value.find((row) => row.day === day)?.kcal || 0
+  const own = nutrienti(itemsOf(moment.key), foods.value).kcal
+  const left = target - (total - own)
+  return left > 0 ? Math.round(left / (empty.length + 1)) : ''
+}
+
+async function openRecipes(moment) {
+  // the proposal is the saved draft's: what is on screen is saved first
+  if (!(await save(true))) return
+  const saved = plan.moments.find((m) => m.key === moment.key) || moment
+  Object.assign(recipes, {
+    show: true,
+    moment: { key: saved.key, label: saved.label },
+    kcal: suggestedKcal(saved),
+  })
+}
+
+function onRecipeUsed(data) {
+  fill(data)
+  emit('changed')
+  toast.success(__('The recipe is in the meal: read it, then save or publish'))
 }
 </script>
