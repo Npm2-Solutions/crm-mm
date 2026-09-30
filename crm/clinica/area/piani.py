@@ -25,6 +25,7 @@ from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
 from crm.clinica import piani
 from crm.clinica import piani_regole as R
+from crm.clinica import tabelle as T
 from crm.clinica.area.api import _mia
 
 #: How far ahead the patient looks at a plan: next week's menu, to shop for it.
@@ -109,6 +110,20 @@ def _immagine(url: str | None) -> str | None:
 	return None
 
 
+def _figura(esercizio: dict) -> tuple[str | None, str | None]:
+	"""What the patient sees of an exercise, and whose it is: the centre's own
+	picture; else the library's animation or picture, with the name of their
+	owner; the author of a centre's exercise always."""
+	propria = _immagine(esercizio.get("image"))
+	della_libreria = esercizio.get("animation") or (
+		None if esercizio.get("image") else esercizio.get("picture")
+	)
+	dal_dataset = esercizio.get("source") == T.DATASET
+	if propria or not della_libreria:
+		return propria, None if dal_dataset else esercizio.get("attribution")
+	return della_libreria, esercizio.get("attribution")
+
+
 def _per_il_paziente(voce: dict, mostra_calorie: bool, scelte: dict[str, list]) -> dict:
 	"""An item as the patient reads it: what to do, and nothing of the tables."""
 	riga = {
@@ -138,6 +153,7 @@ def _per_il_paziente(voce: dict, mostra_calorie: bool, scelte: dict[str, list]) 
 		)
 	elif voce["kind"] == R.ESERCIZIO:
 		esercizio = voce.get("exercise_detail") or {}
+		immagine, autore = _figura(esercizio)
 		riga.update(
 			{
 				"exercise_name": voce.get("exercise_name"),
@@ -147,9 +163,9 @@ def _per_il_paziente(voce: dict, mostra_calorie: bool, scelte: dict[str, list]) 
 				"rest": voce.get("rest"),
 				"load": voce.get("load"),
 				"instructions": esercizio.get("instructions"),
-				"image": _immagine(esercizio.get("image")),
+				"image": immagine,
 				"video_url": esercizio.get("video_url"),
-				"attribution": esercizio.get("attribution"),
+				"attribution": autore,
 			}
 		)
 	else:

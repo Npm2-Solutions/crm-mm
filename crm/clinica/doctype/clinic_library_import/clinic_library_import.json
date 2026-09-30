@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-03 00:00:00.000000",
+ "description": "Who imported a food table or the exercises into the centre's libraries, from which source, with which licence",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "library",
+  "source",
+  "attribution",
+  "file_name",
+  "column_main",
+  "imported_by",
+  "imported_on",
+  "licence_section",
+  "licence",
+  "counts_section",
+  "rows_read",
+  "created_count",
+  "column_counts",
+  "updated_count",
+  "skipped_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "library",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Library",
+   "options": "Foods\nExercises",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Source",
+   "options": "CIQUAL\nCREA\nBDA-IEO\nUSDA\nexercises-dataset",
+   "reqd": 1
+  },
+  {
+   "description": "What each food or exercise says of where it comes from",
+   "fieldname": "attribution",
+   "fieldtype": "Data",
+   "label": "Version and attribution"
+  },
+  {
+   "fieldname": "file_name",
+   "fieldtype": "Data",
+   "label": "File"
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "imported_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Imported by",
+   "options": "User"
+  },
+  {
+   "fieldname": "imported_on",
+   "fieldtype": "Datetime",
+   "label": "Imported on"
+  },
+  {
+   "fieldname": "licence_section",
+   "fieldtype": "Section Break",
+   "label": "Licence"
+  },
+  {
+   "description": "What the person importing declared about the licence of the source",
+   "fieldname": "licence",
+   "fieldtype": "Small Text",
+   "label": "Declared"
+  },
+  {
+   "fieldname": "counts_section",
+   "fieldtype": "Section Break",
+   "label": "Counts"
+  },
+  {
+   "fieldname": "rows_read",
+   "fieldtype": "Int",
+   "label": "Rows read"
+  },
+  {
+   "fieldname": "created_count",
+   "fieldtype": "Int",
+   "label": "Added"
+  },
+  {
+   "fieldname": "column_counts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "updated_count",
+   "fieldtype": "Int",
+   "label": "Updated"
+  },
+  {
+   "fieldname": "skipped_count",
+   "fieldtype": "Int",
+   "label": "Left out"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-03 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Clinica",
+ "name": "Clinic Library Import",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

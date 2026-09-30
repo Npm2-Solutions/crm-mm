@@ -17,7 +17,14 @@
   "column_media",
   "image",
   "video_url",
-  "attribution"
+  "attribution",
+  "source_section",
+  "source",
+  "source_code",
+  "media_path",
+  "animation_path",
+  "column_source",
+  "name_in_source"
  ],
  "fields": [
   {
@@ -77,7 +84,7 @@
   {
    "fieldname": "image",
    "fieldtype": "Attach Image",
-   "label": "Picture or animation"
+   "label": "Picture of the centre"
   },
   {
    "fieldname": "video_url",
@@ -90,11 +97,55 @@
    "fieldname": "attribution",
    "fieldtype": "Data",
    "label": "Author and licence"
+  },
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "default": "Centre",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Library",
+   "options": "Centre\nexercises-dataset",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_code",
+   "fieldtype": "Data",
+   "label": "Code in the library",
+   "read_only": 1,
+   "length": 40
+  },
+  {
+   "description": "The library's picture, under the address where the agency hosts it",
+   "fieldname": "media_path",
+   "fieldtype": "Data",
+   "label": "Picture in the library",
+   "read_only": 1
+  },
+  {
+   "description": "The library's animation, under the address where the agency hosts it",
+   "fieldname": "animation_path",
+   "fieldtype": "Data",
+   "label": "Animation in the library",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "name_in_source",
+   "fieldtype": "Data",
+   "label": "Name in the library",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 16:00:00.000000",
+ "modified": "2026-10-03 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Exercise",

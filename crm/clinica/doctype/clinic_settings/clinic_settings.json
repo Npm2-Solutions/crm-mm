@@ -12,7 +12,9 @@
   "area_section",
   "area_whatsapp_template",
   "column_area",
-  "area_sms_number"
+  "area_sms_number",
+  "libraries_section",
+  "exercise_media_url"
  ],
  "fields": [
   {
@@ -67,12 +69,24 @@
    "label": "SMS from",
    "options": "Phone",
    "description": "The centre's Twilio number"
+  },
+  {
+   "fieldname": "libraries_section",
+   "fieldtype": "Section Break",
+   "label": "Libraries"
+  },
+  {
+   "description": "Where the agency hosts the pictures and animations of exercises-dataset (its images/ and videos/ folders): an https address or a path of this server",
+   "fieldname": "exercise_media_url",
+   "fieldtype": "Data",
+   "label": "Exercise pictures from",
+   "permlevel": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 00:00:00.000000",
+ "modified": "2026-10-03 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Settings",
@@ -91,6 +105,12 @@
   {
    "read": 1,
    "role": "Sales Manager"
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
   }
  ],
  "sort_field": "modified",
