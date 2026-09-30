@@ -233,8 +233,8 @@ def use_recipe(event: str, moment: str, recipe: dict | str) -> dict:
 				"quantity_g": voce["quantity_g"],
 			},
 		)
-	testo = "\n".join(filter(None, [ricetta["title"], ricetta["method"], segno]))
-	momento.note = "\n\n".join(filter(None, [momento.note, testo]))
+	testo = "\n".join(parte for parte in (ricetta["title"], ricetta["method"], segno) if parte)
+	momento.note = "\n\n".join(parte for parte in (momento.note, testo) if parte)
 	doc.save(ignore_permissions=True)
 	return piani.get_plan(doc.name)
 
