@@ -1092,7 +1092,51 @@ dalle tabelle, l'IA propone solo le ricette".
 - **La nota del pasto** (o della seduta) la legge il paziente nella sua area,
   sotto il nome del pasto: come si prepara, cosa tenere a mente.
 
-Resta alla fase 4: la chat del paziente solo per l'amministrazione.
+Resta alla fase 4: la chat del paziente solo per l'amministrazione (arrivata
+dopo: vedi "La chat del paziente").
+
+### La chat del paziente
+
+Fatta il 30/09/2026 (fase 4, l'ultima parte), nell'area (`crm/clinica/area/chat.py`,
+`frontend/src/area/pages/Chat.vue`): "una chat per il paziente solo per
+l'amministrazione (orari, prenotazioni, domande frequenti scritte dal centro); se
+parla di sintomi passa a una persona o indica il 112".
+
+- **Dice che è un'IA** sopra la conversazione e su ogni risposta ("AI answer"); le
+  risposte fisse delle regole si chiamano "Automatic answer" (AI Act, art. 50).
+- **Prima l'emergenza** (`crm/clinica/chat_regole.py`, pure e provate): le parole
+  di un'emergenza (dolore al petto, non respiro, svenuto, "il 118"…) hanno subito
+  il 112, con un link per chiamarlo. Niente va al modello né a nessuno, anche a
+  chat spenta.
+- **La salute è di una persona**: sintomi, farmaci, dosi, referti, esiti,
+  gravidanza… La chat non risponde e offre "Pass my question to the centre";
+  decide il paziente.
+- **Passata al centro**, la domanda va sulla bacheca della persona (un `Clinic
+  Message` "Question"), che la segreteria legge dalla scheda Clinica e a cui
+  risponde lì, scrivendo alla persona.
+  - La segreteria lo sa dalle notifiche ("… asked the centre a question in their
+    area"): senza le parole della domanda, con il link alla scheda.
+  - Il paziente vede nei Messaggi la sua domanda e se il centro l'ha letta.
+  - Una domanda non fa della persona un paziente; solo quello che il centro
+    scrive della cura.
+  - Si passa solo dalla chat accesa: il paziente non scrive alla bacheca in altro
+    modo (la domanda 7 resta al centro).
+- **Il resto dal centro**: il modello risponde solo da quello che il centro ha
+  scritto, cioè
+  - gli orari dello studio;
+  - le chiusure dei prossimi 60 giorni;
+  - dove sono le prenotazioni (l'Agenda dell'area, la pagina per prenotare);
+  - "What the chat may say about the centre" e le domande frequenti, in
+    Impostazioni > Assistant.
+
+  Quello che non sa lo dice, e offre una persona.
+- **Al modello non va chi chiede**: la domanda e gli ultimi turni, non il nome. La
+  conversazione non si tiene: il registro tiene ogni risposta ("Answered"), e lo
+  legge la direzione sanitaria.
+- Si accende in Impostazioni > Assistant, "The patients' chat"; è spenta finché
+  il centro non la accende. Quaranta domande l'ora, dieci passate al centro.
+
+Con questa parte la fase 4 è completa.
 
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 

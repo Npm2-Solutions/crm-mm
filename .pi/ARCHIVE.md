@@ -1865,3 +1865,26 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | La ricetta scelta va nella nota del pasto con il segno | Il paziente legge come si prepara; il segno dice che è una bozza dell'IA controllata (AI Act art. 50) |
 | Tabella dei conti senza colori | "Niente rosso fuori obiettivo" (design): i numeri li legge il professionista |
 | Il dialogo delle ricette sta dentro quello del piano | Due dialoghi reka-ui fratelli: il secondo restava `aria-hidden`, invisibile a uno screen reader |
+
+## Fase 4, la chat del paziente
+
+> **Completato** (30/09/2026). `crm/clinica/chat_regole.py` (emergenza, salute,
+> il resto: pure), `crm/clinica/area/chat.py` (la chat dell'area, il passaggio al
+> centro), la domanda "Question" sulla bacheca (`Clinic Message`), l'avviso "Area"
+> alla segreteria, "Answered" nel registro, le domande frequenti del centro nelle
+> impostazioni dell'assistente. `docs/gestionale-medico/README.md`, "La chat del
+> paziente". Con questa, la fase 4 è completa.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| L'emergenza la riconoscono le regole, prima del modello, anche a chat spenta | Il 112 non aspetta una rete o un modello; nessun dato esce |
+| Niente "112" o "118" da soli fra le parole d'emergenza: "il 112", "il 118" | "Via Roma 112" è un indirizzo |
+| La salute non ha risposta dalla chat: il paziente decide se passarla | "Se parla di sintomi passa a una persona" (design); la domanda con i sintomi la manda lui |
+| La domanda passata va sulla bacheca, non in un compito del CRM | Un compito sulla persona lo vede anche chi vende; la bacheca ha già le regole della clinica |
+| L'avviso alla segreteria non ha le parole della domanda | Le parole restano sulla bacheca, come la mail dell'area dice solo che c'è una novità |
+| Si passa al centro solo dalla chat accesa | Un canale paziente→centro è la domanda 7 del design: la decide il centro |
+| Al modello la domanda e gli ultimi turni, non chi chiede | Il minimo che serve per rispondere su orari e prenotazioni |
+| Le risposte della chat sono "Answered" nel registro | Non sono bozze che qualcuno accetta: vanno al paziente come vengono, e la direzione le rilegge |
+| La chat è spenta finché il centro non la accende | Un'IA che parla ai pazienti la sceglie il centro, con le sue domande frequenti |
