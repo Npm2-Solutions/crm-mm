@@ -64,6 +64,7 @@
                 <RelatedPeopleSection :lead="leadId" />
                 <PatientSection :lead="leadId" />
                 <CyclesSection :lead="leadId" />
+                <WaitingSection :lead="leadId" />
                 <ConsentsSection :lead="leadId" />
               </template>
             </SidePanelLayout>
@@ -125,6 +126,7 @@ import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
 import CyclesSection from '@/components/CyclesSection.vue'
+import WaitingSection from '@/components/Waiting/WaitingSection.vue'
 import PatientSection from '@/components/PatientSection.vue'
 import RelatedPeopleSection from '@/components/RelatedPeopleSection.vue'
 import SLASection from '@/components/SLASection.vue'
