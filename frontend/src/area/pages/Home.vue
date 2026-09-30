@@ -30,6 +30,7 @@
       </span>
       <span class="shrink-0 text-p-sm text-ink-gray-7">→</span>
     </router-link>
+    <PasskeyCard />
     <section
       v-if="documents.data?.documents?.length"
       class="flex flex-col gap-2"
@@ -65,6 +66,7 @@
 import { createResource } from 'frappe-ui'
 import { computed } from 'vue'
 import AppointmentCard from '../components/AppointmentCard.vue'
+import PasskeyCard from '../components/PasskeyCard.vue'
 import PrepareVisit from '../components/PrepareVisit.vue'
 import TodayPlans from '../components/TodayPlans.vue'
 import { day } from '../dates'
