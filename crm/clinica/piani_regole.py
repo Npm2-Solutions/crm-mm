@@ -16,6 +16,10 @@ and how the patient's week reads (design.md, "I piani").
   many times a week", and the patient sees how many are left.
 - **Following it**: one tap an item (done, partly, skipped), a missed day made
   up within two days; no red, no ranking - what is shown is what is left to do.
+- **The shopping list** (design.md, "I piani": "Lista della spesa dal menù") is
+  the menu's foods over the days to shop for: each food's grams every time its
+  meal comes, as many times a week as it is asked; an exchange diet's portions
+  by group, the food chosen by the patient.
 - **The nutrients come from the tables** (design.md, "L'assistente", point 5): the
   targets are the nutritionist's, the totals are computed here from the library's
   values for 100 g, and the assistant proposes only recipes - which foods of the
@@ -67,6 +71,23 @@ VOCI: dict[str, frozenset] = {
 
 OGNI_GIORNO = "Every day"
 GIORNI = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+#: The groups of the library's foods, in the order a list shows them.
+GRUPPI = (
+	"Cereals and tubers",
+	"Legumes",
+	"Meat",
+	"Fish",
+	"Eggs",
+	"Milk and dairy",
+	"Vegetables",
+	"Fruit",
+	"Oils and fats",
+	"Nuts and seeds",
+	"Sweets",
+	"Drinks",
+	"Other",
+)
 
 FATTO = "Done"
 IN_PARTE = "Partly"
@@ -303,3 +324,92 @@ def ricetta(proposta, cibi: dict) -> dict | None:
 			{"kind": CIBO, "food": cibo, "quantity_g": arrotonda_grammi(g)} for cibo, g in grammi.items()
 		],
 	}
+
+
+# ------------------------------------------------------------------ the shopping list
+
+#: How far a shopping list looks: five weeks at most.
+MAX_GIORNI_SPESA = 35
+
+
+def giorni_del_periodo(
+	dal: datetime.date,
+	giorni: int,
+	inizio: datetime.date | None = None,
+	fine: datetime.date | None = None,
+) -> list[datetime.date]:
+	"""The days from ``dal`` for ``giorni`` days that fall in the plan's period."""
+	quanti = max(1, min(int(giorni or 1), MAX_GIORNI_SPESA))
+	return [
+		giorno
+		for giorno in (dal + datetime.timedelta(days=n) for n in range(quanti))
+		if in_corso(inizio, fine, giorno)
+	]
+
+
+def spesa(momenti: list[dict], voci: list[dict], cibi: dict, giorni: list[datetime.date]) -> dict:
+	"""What to buy for these days.
+
+	Each food of the menu with its grams summed over the days its moment comes -
+	every day's moments every day, a weekday's on that weekday - and only as many
+	times a week as the item asks. A food without grams is listed, to buy, without
+	a number. The portions of an exchange diet are summed by group: the food is the
+	patient's choice. Foods in the library's group order, then by name.
+	"""
+	per_cibo: dict[str, dict] = {}
+	per_gruppo: dict[str, float] = {}
+	volte_nella_settimana: dict[tuple, int] = {}
+	for giorno in giorni:
+		lunedi = settimana(giorno)[0]
+		chiavi = [m["key"] for m in momenti_del_giorno(momenti, giorno)]
+		for chiave_momento in chiavi:
+			for voce in voci:
+				if voce.get("moment") != chiave_momento:
+					continue
+				genere = voce.get("kind") or CIBO
+				if genere not in (CIBO, GRUPPO):
+					continue
+				volte = int(_numero(voce.get("times_per_week")) or 0)
+				if volte:
+					conto = (lunedi, voce.get("key"))
+					if volte_nella_settimana.get(conto, 0) >= volte:
+						continue
+					volte_nella_settimana[conto] = volte_nella_settimana.get(conto, 0) + 1
+				if genere == GRUPPO:
+					gruppo = voce.get("food_group") or "Other"
+					per_gruppo[gruppo] = per_gruppo.get(gruppo, 0) + (_numero(voce.get("portions")) or 0)
+					continue
+				cibo = voce.get("food")
+				if not cibo:
+					continue
+				riga = per_cibo.setdefault(cibo, {"food": cibo, "grams": 0.0, "times": 0, "each": set()})
+				grammi = _numero(voce.get("quantity_g"))
+				riga["times"] += 1
+				if grammi and grammi > 0:
+					riga["grams"] += grammi
+					riga["each"].add(grammi)
+				else:
+					riga["each"].add(None)
+	righe = []
+	for riga in per_cibo.values():
+		dati = cibi.get(riga["food"]) or {}
+		ogni_volta = riga["each"].pop() if len(riga["each"]) == 1 else None
+		righe.append(
+			{
+				"food": riga["food"],
+				"food_name": dati.get("food_name") or riga["food"],
+				"food_group": dati.get("food_group") or "Other",
+				"grams": _mezzo_su(riga["grams"], 1) if riga["grams"] else None,
+				"times": riga["times"],
+				# the same quantity each time: "80 g, 7 times"
+				"each": ogni_volta,
+			}
+		)
+	ordine = {gruppo: n for n, gruppo in enumerate(GRUPPI)}
+	righe.sort(key=lambda r: (ordine.get(r["food_group"], len(GRUPPI)), r["food_name"].lower()))
+	gruppi = [
+		{"food_group": gruppo, "portions": _mezzo_su(porzioni, 1)}
+		for gruppo, porzioni in sorted(per_gruppo.items(), key=lambda g: ordine.get(g[0], len(GRUPPI)))
+		if porzioni > 0
+	]
+	return {"foods": righe, "groups": gruppi, "days": len(giorni)}
