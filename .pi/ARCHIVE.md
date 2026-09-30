@@ -1571,3 +1571,22 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Il webhook è del fornitore attivo e lo verifica il fornitore | Ognuno firma le sue chiamate a modo suo; una busta sconosciuta, o ripresa, non firma niente |
 | L'operatore di una firma data dal fornitore è chi ha compilato o mandato il modulo | Il webhook arriva senza nessuno collegato |
 | Nessun fornitore reale nel codice, per ora | Il centro deve scegliere (Namirial, InfoCert, Intesi) e firmare un contratto; l'adattatore è pronto |
+
+## Fase 2, i moduli dovuti
+
+> **Completato** (30/09/2026). Quando un modulo si chiede e quanto vale uno
+> firmato (`crm/moduli/dovuti.py`), nella scheda Forms, nella pagina Oggi e con
+> la prenotazione. `docs/gestionale-medico/README.md`, "I moduli dovuti".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| `dovuto()` è pura, con i casi nei test | È la regola che decide cosa si chiede a chi: si prova senza database |
+| Senza appuntamento non si chiede un modulo "per appuntamento" | Non c'è niente a cui legarlo; si chiede quando c'è la visita |
+| Una versione nuova richiede solo se ha una data (`asked_from`) | Cambiare una virgola non deve far rifirmare tutti; lo decide chi pubblica |
+| Si mostra cosa è già in corso invece di chiederlo di nuovo | Una bozza iniziata o un link aperto non sono moduli da chiedere due volte |
+| Il link con la prenotazione parte dopo il salvataggio, in un job, fino all'ora della visita | La prenotazione non aspetta la posta; dopo la visita il link non serve |
+| Non parte a meno di un'ora dalla visita, né se un link per quel modulo è aperto | Non c'è tempo di compilarlo a casa; e un secondo link confonde |
+| Mandato dal centro, il paziente non lo registra "Administrator" | La regola 1 vuole un nome o nessuno, non un utente tecnico |
+| La fine della giornata guarda anche ieri, e ricorda l'ultimo giorno chiesto | Un giorno che finisce dopo le 23 si chiude dopo mezzanotte; chiedere due volte lo stesso giorno sarebbe rumore |
