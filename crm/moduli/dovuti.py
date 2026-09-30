@@ -24,6 +24,8 @@ MODULO = "CRM Form"
 MODELLO = "CRM Form Template"
 VERSIONE = "CRM Form Template Version"
 RICHIESTA = "CRM Form Request"
+#: Only a form is asked of a person: a clinical sheet is written in the record.
+FORMA = "Form"
 
 #: Why a form is owed, most telling first.
 MOTIVI = ("never_signed", "new_version", "expired", "every_appointment")
@@ -85,7 +87,12 @@ def modelli_che_si_chiedono() -> list[dict]:
 	needs: a handful, read in three queries."""
 	righe = frappe.get_all(
 		MODELLO,
-		filters={"enabled": 1, "current_version": ("is", "set"), "ask_on": ("!=", "By hand")},
+		filters={
+			"enabled": 1,
+			"current_version": ("is", "set"),
+			"ask_on": ("!=", "By hand"),
+			"use": FORMA,
+		},
 		fields=["name", "title", "clinical", "ask_on", "validity", "current_version", "send_before"],
 		order_by="title asc",
 	)
