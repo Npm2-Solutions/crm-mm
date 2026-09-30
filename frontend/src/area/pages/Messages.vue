@@ -56,13 +56,19 @@
     >
       {{ __('Nothing here yet.') }}
     </p>
+    <NoticeCard v-if="noticesOffered" />
   </div>
 </template>
 
 <script setup>
 import { call, createResource } from 'frappe-ui'
+import { computed } from 'vue'
+import NoticeCard from '../components/NoticeCard.vue'
 import { day } from '../dates'
 import { area } from '../store'
+
+// other channels than the email, where the centre offers them
+const noticesOffered = computed(() => Boolean(area.me?.notices))
 
 const messages = createResource({
   url: 'crm.clinica.area.messaggi.area_messages',
