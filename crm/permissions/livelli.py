@@ -91,6 +91,9 @@ class ModuloPiano:
 	predefinito: bool = True
 	descrizione: str = ""
 	ordine: int = 0
+	#: The modules it comprises: on with it, whatever the plan says of them. The
+	#: clinic comprises the client area.
+	comprende: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -356,8 +359,11 @@ def piu_ampio(a: str | None, b: str | None) -> str | None:
 	return a if _AMPIEZZA.get(a, 0) >= _AMPIEZZA.get(b, 0) else b
 
 
-def stato_modulo(chiave: str, moduli: Mapping[str, str] | None) -> str:
-	"""A module's state: what the plan says, or its default when the plan is silent."""
+#: From the most to the least: a module comprised by two takes the better state.
+_ORDINE_STATI = (ATTIVO, PROVA, SOLA_LETTURA, SPENTO)
+
+
+def _stato_proprio(chiave: str, moduli: Mapping[str, str] | None) -> str:
 	if moduli and chiave in moduli:
 		return moduli[chiave]
 	modulo = _r.moduli.get(chiave)
@@ -365,6 +371,21 @@ def stato_modulo(chiave: str, moduli: Mapping[str, str] | None) -> str:
 		# a capability of a module nobody declared: not something a plan can sell
 		return ATTIVO
 	return ATTIVO if modulo.predefinito else SPENTO
+
+
+def _migliore(a: str, b: str) -> str:
+	indice = {stato: i for i, stato in enumerate(_ORDINE_STATI)}
+	return a if indice.get(a, len(indice)) <= indice.get(b, len(indice)) else b
+
+
+def stato_modulo(chiave: str, moduli: Mapping[str, str] | None) -> str:
+	"""A module's state: what the plan says, or its default when the plan is silent;
+	and at least that of a module comprising it, as the clinic does the client area."""
+	stato = _stato_proprio(chiave, moduli)
+	for modulo in _r.moduli.values():
+		if chiave in modulo.comprende and modulo.chiave != chiave:
+			stato = _migliore(stato, _stato_proprio(modulo.chiave, moduli))
+	return stato
 
 
 def calcola(

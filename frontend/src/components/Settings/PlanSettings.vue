@@ -90,6 +90,14 @@
                   size="sm"
                 />
                 <Badge
+                  v-if="module.comprised_by?.length"
+                  :label="
+                    __('Included in {0}', [module.comprised_by.join(', ')])
+                  "
+                  theme="gray"
+                  size="sm"
+                />
+                <Badge
                   v-if="module.included_in_service"
                   :label="
                     module.service

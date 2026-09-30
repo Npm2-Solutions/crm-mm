@@ -79,7 +79,7 @@ def get_boot():
 			"demo_data_created": frappe.db.get_default("crm_demo_data_created") == "1",
 			"is_fc_site": is_fc_site(),
 			"translated_doctypes": get_translated_doctypes(),
-			"translated_messages": get_messages_for_boot(),
+			"translated_messages": get_translated_messages(),
 			# the language the words above are in, so dates and numbers speak it too
 			"lang": frappe.local.lang,
 			"timezone": {
@@ -89,8 +89,34 @@ def get_boot():
 			},
 			"state_options": get_state_options(),
 			"crm_permissions": get_permissions(),
+			"vertical": get_vertical(),
 		}
 	)
+
+
+def get_translated_messages() -> dict:
+	"""The session's language, with the words of the vertical the plan has on laid
+	over the base's: with the clinic, "Client area" reads "Patient area"."""
+	messages = get_messages_for_boot()
+	try:
+		from crm import verticali
+
+		messages.update(verticali.per_il_boot()["words"])
+	except Exception:
+		# never in the way of the page: the base's words are still words
+		pass
+	return messages
+
+
+def get_vertical() -> dict:
+	"""Which vertical is on, and the base's places it hides. Never raises."""
+	try:
+		from crm import verticali
+
+		verticale = verticali.per_il_boot()
+		return {"key": verticale["key"], "hidden": verticale["hidden"]}
+	except Exception:
+		return {"key": None, "hidden": []}
 
 
 def get_permissions() -> dict | None:

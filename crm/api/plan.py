@@ -51,6 +51,13 @@ def get_plan() -> dict:
 				"state": STATO[stato],
 				"listed": bool(riga),
 				"included_in_service": bool(riga and riga.source == "Agency service"),
+				# on because a module the plan has comprises it: the clinic, the client area
+				"comprised_by": [
+					altro.etichetta
+					for altro in livelli.moduli_piano()
+					if modulo.chiave in altro.comprende
+					and livelli.stato_modulo(altro.chiave, stati) != livelli.SPENTO
+				],
 				"service": riga.service if riga else None,
 				"trial_until": riga.trial_until if riga else None,
 				"expires_on": riga.expires_on if riga else None,
