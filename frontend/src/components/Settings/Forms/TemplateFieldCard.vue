@@ -481,6 +481,16 @@
         :label="__('An answer is required, yes or no')"
       />
 
+      <!-- with the medical centre: the answer proposed to the patient's summary -->
+      <FormControl
+        v-if="answers && summaryKeys.length"
+        :model-value="field.summary || ''"
+        type="select"
+        :label="__('Goes to the patient\'s summary as')"
+        :options="[{ label: __('Nowhere'), value: '' }, ...summaryKeys]"
+        @update:model-value="(value) => (field.summary = value || undefined)"
+      />
+
       <!-- when it shows, when it is required, when to stop -->
       <ConditionsBlock
         v-model="field.show_if"
@@ -547,6 +557,8 @@ const props = defineProps({
   /** Every field: required-if and stop-if may look anywhere. */
   all: { type: Array, default: () => [] },
   consentTypes: { type: Array, default: () => [] },
+  /** The lines of the patient's summary an answer may go to (the clinic's). */
+  summaryKeys: { type: Array, default: () => [] },
   problems: { type: Array, default: () => [] },
 })
 
