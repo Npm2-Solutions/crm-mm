@@ -1888,3 +1888,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Al modello la domanda e gli ultimi turni, non chi chiede | Il minimo che serve per rispondere su orari e prenotazioni |
 | Le risposte della chat sono "Answered" nel registro | Non sono bozze che qualcuno accetta: vanno al paziente come vengono, e la direzione le rilegge |
 | La chat è spenta finché il centro non la accende | Un'IA che parla ai pazienti la sceglie il centro, con le sue domande frequenti |
+
+## Fase 3, la passkey per entrare nell'area
+
+> **Completato** (30/09/2026). `crm/clinica/area/passkey.py` (py_webauthn), `Clinic
+> Area Passkey`, `frontend/src/area/passkey.js` (le conversioni, provate),
+> `PasskeyCard.vue` e "Enter with a passkey" sulla porta. `docs/gestionale-medico/README.md`,
+> "La passkey per entrare nell'area".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| La passkey si aggiunge solo da dentro, dopo il codice | Chi la aggiunge ha già dimostrato di avere l'indirizzo: la passkey non è una porta nuova, è la stessa più comoda |
+| Passkey residenti, senza indirizzo da scrivere | La porta non dice a nessuno quali indirizzi hanno un'area, come il codice |
+| Verifica dell'utente sempre (viso, impronta, PIN) | "Viso o impronta" (design): chi ha il telefono in mano non basta |
+| Un'area chiusa non si apre, nemmeno con la passkey | La porta è una sola: `e_paziente_dell_area` per il codice e per la passkey |
+| Entrare con la passkey vale come rientrare per un referto | "Per scaricare un referto si rientra" (design): una passkey con verifica è un rientro |
+| L'id dell'utente nella passkey è un'impronta, non l'indirizzo | Il telefono tiene il minimo |
+| Credenziali fino a 255 caratteri | Un indice unico su un varchar più lungo supera il limite di InnoDB; quelle dei telefoni sono di 20-64 byte |
+| I test usano un autenticatore software vero (P-256, firma ES256) | py_webauthn verifica firme, sfide e contatori come farebbe con un telefono |

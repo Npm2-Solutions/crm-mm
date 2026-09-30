@@ -195,6 +195,7 @@ the draft with `modello.accetta`.
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the two pipelines, a booking moves the new patients deal, becoming a patient wins it, "Became Patient" |
 | `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `crm/clinica/area/chat.py` + `chat_regole.py` | The patients' chat: emergency words get 112 before any model, health is passed to the desk as a "Question" on the board, the rest answered only from the centre's hours, closures and FAQ |
+| `crm/clinica/area/passkey.py` + `frontend/src/area/passkey.js` | The patient area's passkeys (WebAuthn, py_webauthn): added from inside after a code, discoverable, user verification, same door as the code |
 | `crm/clinica/widgets.py` | New patients, cost per new patient (registered with the "clinic" feature) |
 
 ### The desk's day
