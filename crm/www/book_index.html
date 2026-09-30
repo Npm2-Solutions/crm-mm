@@ -1,9 +1,11 @@
 <!doctype html>
+{%- set logo_centro = marchio.centre_logo %}
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ org_name }} — {{ _("Book an appointment") }}</title>
+    <title>{{ org_name }} — {{ _("Book an appointment") }} · {{ marchio.name }}</title>
+    {% include "crm/templates/includes/marchio_testa.html" %}
     <meta name="robots" content="noindex" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -82,9 +84,11 @@
         font-weight: 600;
       }
       a.service:hover .cta { background: var(--accent-hover); }
+      {% include "crm/templates/includes/marchio_colori.html" %}
     </style>
   </head>
   <body>
+    {% include "crm/templates/includes/marchio_segni.html" %}
     <h1>{{ org_name }}</h1>
     <p class="sub">{{ _("Choose a service and pick a time that works for you.") }}</p>
     {% if not services %}

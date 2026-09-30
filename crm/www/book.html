@@ -1,9 +1,11 @@
 <!doctype html>
+{%- set logo_centro = marchio.centre_logo %}
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title }}</title>
+    <title>{{ title }} · {{ marchio.name }}</title>
+    {% include "crm/templates/includes/marchio_testa.html" %}
     <meta name="robots" content="noindex" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -117,11 +119,13 @@
       .msg.success { display: block; background: var(--success-bg); color: var(--success-ink); }
       .hidden { display: none !important; }
       .empty { color: var(--faint); font-size: .85rem; }
+      {% include "crm/templates/includes/marchio_colori.html" %}
     </style>
   </head>
   <body>
     <div class="card">
       <div class="info">
+        {% include "crm/templates/includes/marchio_segni.html" %}
         <a class="back" href="/book">&larr; {{ _("All services") }}</a>
         <h1>{{ title }}</h1>
         {% if description %}<p class="sub">{{ description }}</p>{% endif %}

@@ -9,9 +9,13 @@
     <meta name="robots" content="noindex" />
     <meta name="referrer" content="no-referrer" />
     <title>{{ title }}</title>
-    {% if branding.favicon %}
-    <link rel="icon" href="{{ branding.favicon }}" />
-    {% endif %}
+    <!-- the product's brand - the vertical's (crm.marchio): icons, colour, the
+         phone's home screen; the centre's name is in the title beside it -->
+    <link rel="icon" href="{{ marchio.favicon }}" />
+    <link rel="apple-touch-icon" href="{{ marchio.touch_icon }}" />
+    <link rel="manifest" href="/api/method/crm.marchio.manifest?app=area" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="apple-mobile-web-app-title" content="{{ marchio.name }}" />
   </head>
   <body class="h-full bg-surface-gray-1">
     <div id="app" class="h-full"></div>

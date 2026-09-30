@@ -97,34 +97,13 @@
                 @remove="() => (form.booking_page_logo = '')"
               />
             </div>
-            <div class="flex flex-col gap-1.5">
-              <span class="text-base text-ink-gray-5">{{
-                __('Main colour')
-              }}</span>
-              <div class="flex flex-wrap items-center gap-3">
-                <ColourPicker
-                  :modelValue="form.booking_page_color"
-                  fallback="#171717"
-                  @update:modelValue="(v) => (form.booking_page_color = v)"
-                />
-                <FormControl
-                  v-model="form.booking_page_color"
-                  class="w-28"
-                  type="text"
-                  placeholder="#171717"
-                />
-                <Button
-                  v-if="form.booking_page_color"
-                  variant="ghost"
-                  size="sm"
-                  :label="__('Default')"
-                  @click="form.booking_page_color = ''"
-                />
-              </div>
-              <span class="text-p-xs text-ink-gray-5">
-                {{ __('Buttons, the chosen day and time, the steps.') }}
-              </span>
-            </div>
+            <p class="text-p-xs text-ink-gray-5">
+              {{
+                __(
+                  "The page wears {brand}'s logo and colours; the centre's logo goes beside it.",
+                )
+              }}
+            </p>
             <FormControl
               v-model="form.booking_page_intro"
               type="textarea"
@@ -136,7 +115,7 @@
             />
           </div>
 
-          <!-- live preview, same colours as the real page -->
+          <!-- live preview: the product's marks and colour, as the real page -->
           <div
             class="flex flex-col gap-3 self-start rounded-xl border border-outline-gray-2 bg-surface-gray-1 p-4"
             :aria-label="__('Preview')"
@@ -144,12 +123,29 @@
             <span class="text-p-xs uppercase text-ink-gray-5">{{
               __('Preview')
             }}</span>
-            <img
-              v-if="logo"
-              :src="logo"
-              alt=""
-              class="max-h-9 max-w-40 self-start object-contain"
-            />
+            <div class="flex min-w-0 items-center gap-2.5">
+              <img
+                :src="prodotto.logo"
+                :alt="prodotto.name"
+                class="h-6 w-auto shrink-0 dark:hidden"
+              />
+              <img
+                :src="prodotto.logo_dark"
+                :alt="prodotto.name"
+                class="hidden h-6 w-auto shrink-0 dark:block"
+              />
+              <template v-if="logo">
+                <span
+                  class="h-5 shrink-0 border-l border-outline-gray-2"
+                  aria-hidden="true"
+                />
+                <img
+                  :src="logo"
+                  alt=""
+                  class="max-h-8 min-w-0 max-w-28 object-contain"
+                />
+              </template>
+            </div>
             <div class="text-lg font-semibold text-ink-gray-9">
               {{
                 form.booking_page_title ||
@@ -168,30 +164,19 @@
                 v-for="(slot, i) in ['09:00', '09:30', '10:00']"
                 :key="slot"
                 class="rounded-md border px-2.5 py-1 text-p-sm"
-                :style="
-                  i === 1 && accent
-                    ? {
-                        background: accent,
-                        color: accentInk,
-                        borderColor: accent,
-                      }
-                    : {}
-                "
+                :style="i === 1 ? { background: 'var(--brand-action)' } : {}"
                 :class="
                   i !== 1
                     ? 'border-outline-gray-2 bg-surface-elevation-2 text-ink-gray-8'
-                    : accent
-                      ? ''
-                      : 'border-transparent bg-surface-gray-10 text-ink-base'
+                    : 'border-transparent text-ink-base'
                 "
               >
                 {{ slot }}
               </span>
             </div>
             <span
-              class="rounded-md px-3 py-1.5 text-center text-p-sm-medium"
-              :class="accent ? '' : 'bg-surface-gray-10 text-ink-base'"
-              :style="accent ? { background: accent, color: accentInk } : {}"
+              class="rounded-md px-3 py-1.5 text-center text-p-sm-medium text-ink-base"
+              :style="{ background: 'var(--brand-action)' }"
             >
               {{ __('Confirm booking') }}
             </span>
@@ -364,14 +349,9 @@
 
 <script setup>
 import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
-import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import ImageUploader from '@/components/Controls/ImageUploader.vue'
-import {
-  buildBookingLink,
-  embedSnippet,
-  hexColour,
-  readableInk,
-} from '@/utils/onlineBooking'
+import { buildBookingLink, embedSnippet } from '@/utils/onlineBooking'
+import { marchio } from '@/utils/marchio'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import QRCode from 'qrcode'
 import { activeSettingsPage } from '@/composables/settings'
@@ -498,7 +478,6 @@ const CHECKS = [
 const FIELDS = [
   'booking_page_title',
   'booking_page_logo',
-  'booking_page_color',
   'booking_page_intro',
   'privacy_policy_url',
   'max_active_per_customer',
@@ -521,7 +500,6 @@ const form = reactive({
   notify_staff_on_booking: true,
   booking_page_title: '',
   booking_page_logo: '',
-  booking_page_color: '',
   booking_page_intro: '',
   privacy_policy_url: '',
   max_active_per_customer: 0,
@@ -557,12 +535,10 @@ createResource({
 })
 
 const brand = reactive({ name: '', logo: '' })
+// the centre's logo, beside the product's (crm.marchio): the page's colours
+// are the product's too, and so are the preview's
 const logo = computed(() => form.booking_page_logo || brand.logo)
-// No colour of its own: the page falls back to near-black in light and
-// near-white in dark (prenota.html), and so does the preview — with the
-// inverting grey rather than a black that vanished on the dark card.
-const accent = computed(() => hexColour(form.booking_page_color))
-const accentInk = computed(() => accent.value && readableInk(accent.value))
+const prodotto = marchio()
 
 const summary = createResource({
   url: 'crm.api.booking_admin.get_inheritance_summary',

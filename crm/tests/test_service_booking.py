@@ -69,24 +69,19 @@ class TestServiceBooking(SchedulingCase):
 
 	# -- branding ----------------------------------------------------------------
 
-	def test_the_public_page_wears_the_crm_brand(self):
+	def test_the_public_page_carries_the_centres_logo(self):
 		# A reader of two fields that asked `get_single_value` for a list with
-		# `as_dict` raised every time; /prenota caught it and went out with no
-		# logo, no favicon and no colours, on every site, without a word.
+		# `as_dict` raised every time; /prenota caught it and went out without
+		# the centre's logo, on every site, without a word. The favicon and the
+		# colours are the product's (crm.marchio, tests/test_marchio.py).
 		frappe.db.set_single_value("FCRM Settings", "brand_logo", "/files/studio-logo.png")
-		frappe.db.set_single_value("FCRM Settings", "favicon", "/files/studio-icon.png")
-		branding = SB.page_branding({"booking_page_color": "#30A46C"})
+		branding = SB.page_branding({})
 		self.assertEqual(branding["logo"], "/files/studio-logo.png")
-		self.assertEqual(branding["favicon"], "/files/studio-icon.png")
-		self.assertEqual(branding["css"]["--accent"], "#30a46c")
 
 	def test_a_logo_of_the_page_itself_wins_over_the_brand(self):
 		frappe.db.set_single_value("FCRM Settings", "brand_logo", "/files/studio-logo.png")
-		frappe.db.set_single_value("FCRM Settings", "favicon", "")
 		branding = SB.page_branding({"booking_page_logo": "/files/booking.png"})
 		self.assertEqual(branding["logo"], "/files/booking.png")
-		# no favicon of its own: the page's logo stands in, not an empty tab
-		self.assertEqual(branding["favicon"], "/files/booking.png")
 
 	def test_the_scheduling_settings_page_loads(self):
 		# the same reader broke the settings page that shows the fallback brand

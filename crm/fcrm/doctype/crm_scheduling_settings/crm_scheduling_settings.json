@@ -23,7 +23,6 @@
   "online_booking_enabled",
   "booking_page_title",
   "booking_page_logo",
-  "booking_page_color",
   "booking_page_intro",
   "column_break_online_booking",
   "privacy_policy_url",
@@ -157,13 +156,7 @@
    "fieldname": "booking_page_logo",
    "fieldtype": "Attach Image",
    "label": "Booking Page Logo",
-   "description": "Empty = the CRM brand logo"
-  },
-  {
-   "fieldname": "booking_page_color",
-   "fieldtype": "Color",
-   "label": "Booking Page Colour",
-   "description": "Buttons and selections on the booking page. Empty = black"
+   "description": "Beside the product's logo. Empty = the centre's logo (Settings > Brand)"
   },
   {
    "fieldname": "booking_page_intro",
@@ -321,7 +314,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-09-30 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",

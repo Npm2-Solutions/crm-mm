@@ -42,10 +42,10 @@ def get_context(context):
 
 		context.branding = page_branding()
 	except Exception:
-		context.branding = {"logo": "", "favicon": "", "css": {}}
+		context.branding = {"title": "", "logo": ""}
 	from crm.moduli.richieste import nome_del_centro
 
-	# the booking page's logo and colours, with the centre's name: not its title
+	# the centre's logo beside the product's, with the centre's name: not the booking page's title
 	context.branding["title"] = nome_del_centro()
 	context.title = context.branding["title"] or "Moduli"
 	return context
