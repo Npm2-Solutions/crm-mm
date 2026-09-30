@@ -184,6 +184,7 @@ permission_query_conditions = {
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
+	"Clinic Document": "crm.clinica.archivio.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
@@ -212,6 +213,7 @@ has_permission = {
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
+	"Clinic Document": "crm.clinica.archivio.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
@@ -430,7 +432,7 @@ doc_events = {
 	"Log Settings": {
 		"validate": ["crm.clinica.cartella.valida_impostazioni_log"],
 	},
-	# a file attached to the clinical record is private, whatever the upload asked
+	# a file attached to the clinical record or archive is private, whatever the upload asked
 	"File": {
 		"before_insert": ["crm.clinica.cartella.allegato_privato"],
 	},
@@ -552,7 +554,8 @@ override_whitelisted_methods = {
 # Ignore links to specified DocTypes when deleting documents
 # -----------------------------------------------------------
 
-ignore_links_on_delete = ["Failed Lead Sync Log"]
+# the audit log outlives what it records: a document taken away keeps its events
+ignore_links_on_delete = ["Failed Lead Sync Log", "CRM Audit Log"]
 
 # Request Events
 # ----------------

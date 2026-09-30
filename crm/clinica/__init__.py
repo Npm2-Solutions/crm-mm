@@ -87,6 +87,17 @@ CAPACITA = (
 		Capacita("clinica.scrivi", PIANO, clinica=True, descrizione="Write and sign visits and notes"),
 		{"operatore": SUOI},
 	),
+	# the archive: the desk scans what the patient brings, for a practitioner
+	(
+		Capacita(
+			"clinica.archivia",
+			PIANO,
+			clinica=True,
+			descrizione="Add documents to the clinical archive: what the patient brings, what arrives in a "
+			"conversation",
+		),
+		{"segreteria": CENTRO, "operatore": SUOI, DIREZIONE: CENTRO},
+	),
 	(
 		Capacita(
 			"clinica.traccia",

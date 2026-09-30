@@ -48,14 +48,31 @@ class ClinicRecord(DocumentoClinico):
 		self.signed_on = now_datetime()
 
 	def on_submit(self):
-		if not self.template_version:
-			return
-		# the report, made once; the answers that fill the patient's summary, proposed
 		from crm.clinica import referto, sintesi
 
-		referto.genera_e_allega(self)
-		schema, risposte, stato = self._scheda()
-		sintesi.proponi(self, schema, risposte, stato)
+		# a visit's report, made once and filed in the archive; a note has none
+		if self.kind == "Visit":
+			referto.genera_e_allega(self)
+			self._in_archivio()
+		# the answers of a sheet that fill the patient's summary, proposed
+		if self.template_version:
+			schema, risposte, stato = self._scheda()
+			sintesi.proponi(self, schema, risposte, stato)
+
+	def _in_archivio(self):
+		"""Filing the report does not undo the signature: the log says why it failed."""
+		from crm.clinica import archivio
+
+		frappe.db.savepoint("referto_in_archivio")
+		try:
+			archivio.dal_referto(self)
+		except Exception:
+			frappe.db.rollback(save_point="referto_in_archivio")
+			frappe.log_error(
+				title=f"Report of {self.name} not filed",
+				reference_doctype=self.doctype,
+				reference_name=self.name,
+			)
 
 	def _scheda(self):
 		from crm.moduli import modelli
