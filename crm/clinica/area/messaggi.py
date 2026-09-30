@@ -132,6 +132,10 @@ def _avvisa(lead: str) -> None:
 		)
 	except frappe.OutgoingEmailError:
 		frappe.clear_last_message()
+	# WhatsApp or SMS to who asked for them, with the same words
+	from crm.clinica.area import avvisi
+
+	avvisi.avvisa_fuori(lead)
 
 
 # ------------------------------------------------------------------ the patient's side

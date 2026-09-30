@@ -1,0 +1,292 @@
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+"""News in the area, told outside it (design.md, "Notifiche": "WhatsApp, SMS ed
+email dicono solo 'c'è una novità nella tua area'; le email vanno solo a
+indirizzi verificati").
+
+- **The words are the same everywhere**: there is news in the area of the
+  centre, and the link. What it is stays inside.
+- **Email always**, to the address the person enters the area with: verified by
+  every code it received.
+- **WhatsApp or SMS if the person asks**, from the Messages of their area, and
+  only to a number that is verified the same way: the person's number on file,
+  which has written to the centre at least once on that channel. A number typed
+  in the area is never used: a wrong digit would tell a stranger that somebody is
+  a patient of a medical centre.
+- **The centre chooses what it offers** (Settings > Patient area): the approved
+  WhatsApp template of the news, the number SMS leave from.
+- **Not a flood**: WhatsApp and SMS at most once every two hours per person; the
+  email as before. A notice that cannot leave never stops what caused it: the
+  error log says why.
+"""
+
+from __future__ import annotations
+
+import frappe
+from frappe import _
+from frappe.utils import cint, get_url, now_datetime
+
+from crm.clinica.area import accesso
+from crm.permissions import livelli
+
+AVVISO = "Clinic Area Notice"
+IMPOSTAZIONI = "Clinic Settings"
+WHATSAPP, SMS = "WhatsApp", "SMS"
+CANALI = (WHATSAPP, SMS)
+#: How long after a WhatsApp or an SMS the next one waits.
+ORE_TRA_AVVISI = 2
+
+
+# ------------------------------------------------------------------ what the centre offers
+
+
+def _modello_whatsapp() -> str | None:
+	nome = frappe.db.get_single_value(IMPOSTAZIONI, "area_whatsapp_template")
+	if not nome or not frappe.db.exists("DocType", "WhatsApp Templates"):
+		return None
+	return nome if frappe.db.exists("WhatsApp Templates", nome) else None
+
+
+def _numero_sms() -> str | None:
+	if not cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled")):
+		return None
+	return (frappe.db.get_single_value(IMPOSTAZIONI, "area_sms_number") or "").strip() or None
+
+
+def offerti() -> list[str]:
+	"""The channels the centre offers besides the email."""
+	canali = []
+	if _modello_whatsapp():
+		canali.append(WHATSAPP)
+	if _numero_sms():
+		canali.append(SMS)
+	return canali
+
+
+@frappe.whitelist()
+def get_notice_settings() -> dict:
+	livelli.verifica("canali.configura")
+	modelli = []
+	if frappe.db.exists("DocType", "WhatsApp Templates"):
+		modelli = frappe.get_all(
+			"WhatsApp Templates",
+			filters={"status": "APPROVED"},
+			fields=["name", "template_name", "template"],
+			order_by="template_name asc",
+		)
+	return {
+		"whatsapp_template": frappe.db.get_single_value(IMPOSTAZIONI, "area_whatsapp_template"),
+		"sms_number": frappe.db.get_single_value(IMPOSTAZIONI, "area_sms_number"),
+		"templates": modelli,
+		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def save_notice_settings(whatsapp_template: str | None = None, sms_number: str | None = None) -> dict:
+	"""What the area offers besides the email: the centre's, with the channels'
+	capability."""
+	from crm.utils import to_e164
+
+	livelli.verifica("canali.configura")
+	if whatsapp_template and not frappe.db.exists("WhatsApp Templates", whatsapp_template):
+		frappe.throw(_("This WhatsApp template does not exist"))
+	numero = None
+	if (sms_number or "").strip():
+		# a number it cannot read comes back as it was written: only E.164 is kept
+		numero = to_e164(sms_number)
+		if not numero.startswith("+"):
+			frappe.throw(_("Write the SMS number with its prefix, like +39…"))
+	frappe.db.set_single_value(IMPOSTAZIONI, "area_whatsapp_template", whatsapp_template or None)
+	frappe.db.set_single_value(IMPOSTAZIONI, "area_sms_number", numero)
+	return get_notice_settings()
+
+
+# ------------------------------------------------------------------ whose number, verified
+
+
+def _persona_di(user: str) -> str | None:
+	"""The person the area user is: the area they enter as themselves, or the
+	person with their address."""
+	for riga in frappe.get_all(
+		accesso.ACCESSO, filters={"user": user, "enabled": 1, "relation": accesso.SE_STESSO}, pluck="lead"
+	):
+		return riga
+	return frappe.db.get_value("CRM Lead", {"email": user}, "name")
+
+
+def _ha_scritto(lead: str, numero: str, canale: str) -> bool:
+	"""Whether this number wrote to the centre on this channel, about this person
+	or their deals."""
+	from crm.api.lead import deal_names_of
+	from crm.utils import to_e164
+
+	riferimenti = [("CRM Lead", lead)] + [("CRM Deal", deal) for deal in deal_names_of(lead)]
+	doctype = "WhatsApp Message" if canale == WHATSAPP else "CRM SMS Message"
+	if not frappe.db.exists("DocType", doctype):
+		return False
+	for tipo, nome in riferimenti:
+		mittenti = frappe.get_all(
+			doctype,
+			filters={"type": "Incoming", "reference_doctype": tipo, "reference_name": nome},
+			pluck="from",
+			limit=50,
+		)
+		if any(to_e164(m) == numero for m in mittenti if m):
+			return True
+	return False
+
+
+def numero_verificato(user: str, canale: str) -> str | None:
+	"""The number a notice may go to on this channel: the person's own, that
+	wrote to the centre from it."""
+	from crm.api.whatsapp import numbers_of
+
+	lead = _persona_di(user)
+	if not lead:
+		return None
+	numeri = numbers_of("CRM Lead", lead)
+	if not numeri:
+		return None
+	return numeri[0] if _ha_scritto(lead, numeri[0], canale) else None
+
+
+def _mascherato(numero: str) -> str:
+	return "•••• " + numero[-3:]
+
+
+# ------------------------------------------------------------------ the person's choice
+
+
+def _scelti(user: str) -> dict[str, dict]:
+	return {
+		riga.channel: riga
+		for riga in frappe.get_all(AVVISO, filters={"user": user}, fields=["name", "channel", "enabled"])
+	}
+
+
+@frappe.whitelist()
+def notice_options() -> dict:
+	"""How the session hears of news: the email, and what else it may choose."""
+	utente = frappe.session.user
+	if utente == "Guest" or not accesso.e_paziente_dell_area(utente):
+		frappe.throw(_("Enter the area first"), frappe.PermissionError)
+	scelti = _scelti(utente)
+	canali = []
+	for canale in offerti():
+		numero = numero_verificato(utente, canale)
+		canali.append(
+			{
+				"channel": canale,
+				"number": _mascherato(numero) if numero else None,
+				"on": bool(numero and scelti.get(canale) and scelti[canale].enabled),
+			}
+		)
+	return {"email": utente, "channels": canali}
+
+
+@frappe.whitelist(methods=["POST"])
+def set_notice(channel: str, on: int = 1) -> dict:
+	"""On or off, for one channel: only to the verified number, never to one typed."""
+	utente = frappe.session.user
+	if utente == "Guest" or not accesso.e_paziente_dell_area(utente):
+		frappe.throw(_("Enter the area first"), frappe.PermissionError)
+	if channel not in offerti():
+		frappe.throw(_("The centre does not send news this way"))
+	acceso = bool(cint(on))
+	if acceso and not numero_verificato(utente, channel):
+		frappe.throw(_("Write to the centre once from your number on {0}, then turn this on").format(channel))
+	riga = _scelti(utente).get(channel)
+	if riga:
+		frappe.db.set_value(AVVISO, riga.name, {"enabled": int(acceso), "set_on": now_datetime()})
+	else:
+		frappe.get_doc(
+			{
+				"doctype": AVVISO,
+				"user": utente,
+				"channel": channel,
+				"enabled": int(acceso),
+				"set_on": now_datetime(),
+			}
+		).insert(ignore_permissions=True)
+	return notice_options()
+
+
+# ------------------------------------------------------------------ telling
+
+
+def _testo(centro: str) -> str:
+	return _("There is news in your area at {0}: {1}").format(centro, get_url("/area"))
+
+
+def _manda_whatsapp(lead_utente: str, numero: str, centro: str) -> None:
+	from crm.api.whatsapp import insert_and_send
+
+	doc = frappe.new_doc("WhatsApp Message")
+	doc.update(
+		{
+			"reference_doctype": "CRM Lead",
+			"reference_name": lead_utente,
+			"message_type": "Template",
+			"message": "Template message",
+			"content_type": "text",
+			"use_template": True,
+			"template": _modello_whatsapp(),
+			"to": numero,
+		}
+	)
+	# the template's words are approved; its one variable, if any, is the centre
+	variabili = frappe.db.get_value("WhatsApp Templates", doc.template, "template") or ""
+	if "{{1}}" in variabili.replace(" ", ""):
+		doc.template_parameters = frappe.as_json([centro])
+	insert_and_send(doc)
+
+
+def _manda_sms(lead_utente: str, numero: str, centro: str) -> None:
+	from crm.api.sms import create_sms, deliver_via_twilio
+
+	doc = create_sms(
+		type="Outgoing",
+		from_number=_numero_sms(),
+		to=numero,
+		message=_testo(centro),
+		reference_doctype="CRM Lead",
+		reference_name=lead_utente,
+	)
+	deliver_via_twilio(doc)
+
+
+def _chiave_pausa(user: str, canale: str) -> str:
+	return f"crm:area:avviso:{canale}:{user}"
+
+
+def avvisa_fuori(lead: str) -> list[tuple[str, str]]:
+	"""WhatsApp and SMS to whoever enters this area and asked for them: at most one
+	every two hours each. Returns who was told how, for the trace."""
+	from crm.moduli.richieste import nome_del_centro
+
+	canali = offerti()
+	if not canali:
+		return []
+	centro = nome_del_centro() or _("your centre")
+	fatti = []
+	for utente in sorted({riga.user for riga in accesso.accessi_aperti(lead)}):
+		scelti = _scelti(utente)
+		for canale in canali:
+			if not (scelti.get(canale) and scelti[canale].enabled):
+				continue
+			if frappe.cache.get_value(_chiave_pausa(utente, canale)):
+				continue
+			numero = numero_verificato(utente, canale)
+			if not numero:
+				continue
+			try:
+				(_manda_whatsapp if canale == WHATSAPP else _manda_sms)(_persona_di(utente), numero, centro)
+			except Exception:
+				frappe.clear_last_message()
+				frappe.log_error(title=f"Area news not sent by {canale}")
+				continue
+			frappe.cache.set_value(_chiave_pausa(utente, canale), 1, expires_in_sec=ORE_TRA_AVVISI * 3600)
+			fatti.append((utente, canale))
+	return fatti

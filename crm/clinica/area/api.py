@@ -47,7 +47,7 @@ def _mia(person: str) -> dict:
 @frappe.whitelist()
 def get_me() -> dict:
 	"""Who is in, whose areas they see, and the centre's name."""
-	from crm.clinica.area import chat, messaggi, piani
+	from crm.clinica.area import avvisi, chat, messaggi, piani
 	from crm.moduli.richieste import nome_del_centro
 
 	utente = _paziente()
@@ -76,6 +76,8 @@ def get_me() -> dict:
 		"centre": nome_del_centro(),
 		# the chat about hours and bookings, where the centre turned it on
 		"chat": chat.attiva(),
+		# news also by WhatsApp or SMS, where the centre offers them
+		"notices": bool(avvisi.offerti()),
 	}
 
 
