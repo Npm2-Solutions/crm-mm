@@ -175,4 +175,46 @@ export default {
   'Booked for {0}': 'Prenotato per {0}',
   Total: 'Totale',
   'Done so far': 'Fatto finora',
+  // the waiting list
+  'Waiting list': 'Lista d’attesa',
+  'Join the waiting list': 'Mettiti in lista d’attesa',
+  'No time suits you? Join the waiting list: when a place frees up we write to you.':
+    'Nessun orario va bene? Mettiti in lista d’attesa: quando si libera un posto ti scriviamo.',
+  'A place for you': 'Un posto per te',
+  Waiting: 'In attesa',
+  'It is yours if you confirm by {0}': 'È tuo se confermi entro {0}',
+  'Yes, book it': 'Sì, prenotalo',
+  'No thanks': 'No, grazie',
+  'When a place frees up we write to you: it goes to whoever confirms first.':
+    'Quando si libera un posto ti scriviamo: va a chi conferma per primo.',
+  'Leave the waiting list': 'Esci dalla lista d’attesa',
+  'A seat in the class of {0}': 'Un posto nella lezione di {0}',
+  'until {0}': 'fino al {0}',
+  'Booked: you find it among your appointments.':
+    'Prenotato: lo trovi fra i tuoi appuntamenti.',
+  'Somebody confirmed before you: the place has gone. You are still on the list.':
+    'Qualcuno ha confermato prima di te: il posto non c’è più. Resti in lista.',
+  'The time to answer has passed: the place went to the next person. You are still on the list.':
+    'Il tempo per rispondere è passato: il posto è andato a chi aspetta dopo di te. Resti in lista.',
+  'Fine: the place goes to the next person. You keep your place on the list.':
+    'Va bene: il posto va a chi aspetta dopo di te. Resti in lista.',
+  'Choose the days and times you can: when a place frees up there we write to you, and it goes to whoever confirms first.':
+    'Scegli i giorni e le ore in cui puoi: quando lì si libera un posto ti scriviamo, e va a chi conferma per primo.',
+  Service: 'Servizio',
+  'Choose a service': 'Scegli un servizio',
+  With: 'Con',
+  Anybody: 'Chiunque',
+  Days: 'Giorni',
+  'Times of day': 'Parti del giorno',
+  Morning: 'Mattina',
+  Afternoon: 'Pomeriggio',
+  Evening: 'Sera',
+  'Nothing chosen: any day, any time.':
+    'Nessuna scelta: qualsiasi giorno, a qualsiasi ora.',
+  Until: 'Fino al',
+  'Write to me by': 'Scrivimi su',
+  'Put me on the list': 'Mettimi in lista',
+  'Any day, any time': 'Qualsiasi giorno, a qualsiasi ora',
+  'Any day': 'Qualsiasi giorno',
+  'Any time': 'A qualsiasi ora',
 }

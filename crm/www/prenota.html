@@ -154,6 +154,12 @@
       .day.sel { background: var(--accent); color: var(--accent-ink); }
       .day.sel::after { background: var(--accent-ink); }
       .day.today { text-decoration: underline; text-underline-offset: 3px; }
+      .day.full::after { background: var(--warn-ink); }
+      button.time.full { border-style: dashed; color: var(--muted); }
+      button.time.full small { color: var(--warn-ink); }
+      .chips.wrap { flex-wrap: wrap; overflow: visible; }
+      button.link { border: 0; background: none; padding: 0; font: inherit; color: var(--ink-strong); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .wait-cta { margin-top: 1rem; }
       .times-wrap { margin-top: 1rem; }
       .times { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: .45rem; }
       button.time {
@@ -276,6 +282,13 @@
           yourName: "Il tuo nome e cognome", otherName: "Nome e cognome di chi viene", youAre: "Tu sei",
           relParent: "Il genitore", relGuardian: "Il tutore", relFamily: "Un familiare", relOther: "Altro",
           otherHint: "I messaggi sull'appuntamento arrivano ai tuoi recapiti.", forLabel: "Per",
+          waitTitle: "Lista d'attesa", waitNoTime: "Nessun orario va bene?", waitJoin: "Mettiti in lista d'attesa",
+          waitIntro: "Scegli i giorni e le ore in cui puoi: quando lì si libera un posto ti scriviamo, e va a chi conferma per primo.",
+          waitClassIntro: "La lezione di {0} è piena. Se si libera un posto ti scriviamo: va a chi conferma per primo.",
+          waitDays: "Giorni", waitParts: "Parti del giorno", waitAny: "Nessuna scelta: qualsiasi giorno, a qualsiasi ora.",
+          waitUntil: "Fino al", waitChannel: "Scrivimi su", full: "Piena", fullWait: "in lista", joinWait: "Mettimi in lista",
+          waitedTitle: "Sei in lista d'attesa", waitedSub: "Ti abbiamo mandato un'email: dal suo link puoi vedere la lista o uscirne.",
+          waitedLink: "Vedi o esci dalla lista d'attesa", waitClass: "Lezione", partmorning: "Mattina", partafternoon: "Pomeriggio", partevening: "Sera",
         },
         en: {
           stepService: "Service", stepStaff: "Professional", stepTime: "Date & time", stepDetails: "Your details", stepDone: "Confirmation",
@@ -304,6 +317,13 @@
           yourName: "Your full name", otherName: "Their full name", youAre: "You are",
           relParent: "Their parent", relGuardian: "Their legal guardian", relFamily: "A family member", relOther: "Other",
           otherHint: "Messages about the appointment go to your contact details.", forLabel: "For",
+          waitTitle: "Waiting list", waitNoTime: "No time suits you?", waitJoin: "Join the waiting list",
+          waitIntro: "Choose the days and times you can: when a place frees up there we write to you, and it goes to whoever confirms first.",
+          waitClassIntro: "The class of {0} is full. If a seat frees up we write to you: it goes to whoever confirms first.",
+          waitDays: "Days", waitParts: "Times of day", waitAny: "Nothing chosen: any day, any time.",
+          waitUntil: "Until", waitChannel: "Write to me by", full: "Full", fullWait: "waiting list", joinWait: "Put me on the list",
+          waitedTitle: "You are on the waiting list", waitedSub: "We've emailed you: from its link you can see the list or leave it.",
+          waitedLink: "See or leave the waiting list", waitClass: "Class", partmorning: "Morning", partafternoon: "Afternoon", partevening: "Evening",
         },
       };
       const LANG = DICT[BOOT.lang] ? BOOT.lang : (navigator.language || "it").slice(0, 2) in DICT ? (navigator.language || "it").slice(0, 2) : "it";
@@ -327,8 +347,8 @@
       if (BOOT.embed) document.body.classList.add("embed");
 
       // --- API ------------------------------------------------------------------
-      async function api(method, params = {}, post = false) {
-        const url = new URL(API + method, location.origin);
+      async function api(method, params = {}, post = false, base = API) {
+        const url = new URL(base + method, location.origin);
         const opts = { headers: { Accept: "application/json" } };
         if (post) {
           opts.method = "POST";
@@ -371,7 +391,8 @@
       const S = {
         catalog: null, step: "service", query: "", category: "",
         service: null, staff: "", staffName: "", seats: 1,
-        month: null, days: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
+        month: null, days: {}, full: {}, minDate: null, maxDate: null, date: null, slot: null, loadingSlots: false,
+        wait: null, waited: null,
         form: { full_name: BOOT.prefill?.full_name || "", email: BOOT.prefill?.email || "", phone: BOOT.prefill?.phone || "", notes: "", consent: false, marketing: false, for_other: false, for_name: "", for_relation: "Parent" },
         person: null,
         result: null, manage: null, moving: false, error: "", busy: false,
@@ -395,7 +416,7 @@
         renderSummary();
         const main = $("main");
         main.replaceChildren();
-        const view = { service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage }[S.step];
+        const view = { service: viewServices, staff: viewStaff, time: viewTime, details: viewDetails, done: viewDone, manage: viewManage, wait: viewWait, waited: viewWaited }[S.step];
         try { main.append(view()); } catch (e) { console.error(e); main.append(h("div", { class: "msg error", role: "alert" }, T("genericError"))); }
         if (S.error) main.append(h("div", { class: "msg error", role: "alert" }, S.error));
       }
@@ -403,7 +424,7 @@
       function renderSteps() {
         const ol = $("steps");
         ol.replaceChildren();
-        if (S.step === "manage" || (S.step === "time" && S.moving)) { ol.classList.add("hidden"); return; }
+        if (S.step === "manage" || S.step === "wait" || S.step === "waited" || (S.step === "time" && S.moving)) { ol.classList.add("hidden"); return; }
         ol.classList.remove("hidden");
         const list = STEPS();
         const at = list.findIndex(([k]) => k === S.step);
@@ -537,11 +558,11 @@
         S.loadingSlots = true; render();
         try {
           const r = await api("get_slots_public", { service: S.service.id, start_date: first, end_date: last, staff: S.staff, participants: S.seats, timezone: CLIENT_TZ });
-          S.days = r.days; S.minDate = r.min_date; S.maxDate = r.max_date;
-          const available = Object.keys(S.days).sort();
-          if (!S.date || !S.days[S.date]) S.date = available[0] || null;
+          S.days = r.days; S.full = r.full || {}; S.minDate = r.min_date; S.maxDate = r.max_date;
+          const available = [...new Set([...Object.keys(S.days), ...Object.keys(S.full)])].sort();
+          if (!S.date || !(S.days[S.date] || S.full[S.date])) S.date = available[0] || null;
           if (S.slot && !(S.days[S.date] || []).some((x) => x.start === S.slot.start)) S.slot = null;
-        } catch (e) { S.error = e.message; S.days = {}; }
+        } catch (e) { S.error = e.message; S.days = {}; S.full = {}; }
         S.loadingSlots = false; render();
       }
 
@@ -578,22 +599,27 @@
         const dim = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth() + 1, 0)).getUTCDate();
         for (let dnum = 1; dnum <= dim; dnum++) {
           const key = addDays(S.month, dnum - 1);
-          const avail = !S.loadingSlots && (S.days[key] || []).length > 0;
-          const cls = ["day", avail ? "avail" : "", key === S.date ? "sel" : "", key === today ? "today" : ""].join(" ");
+          const free = (S.days[key] || []).length > 0;
+          // a day with only full classes opens too: one can wait for a seat
+          const full = !free && waitOn() && (S.full[key] || []).length > 0;
+          const avail = !S.loadingSlots && (free || full);
+          const cls = ["day", avail ? "avail" : "", full ? "full" : "", key === S.date ? "sel" : "", key === today ? "today" : ""].join(" ");
           grid.append(h("button", { class: cls, disabled: !avail, "aria-label": key, onclick: () => { S.date = key; S.slot = null; render(); } }, String(dnum)));
         }
         wrap.append(grid);
 
         const times = h("div", { class: "times-wrap" });
+        const fullOf = (day) => (waitOn() ? S.full[day] || [] : []);
         if (S.loadingSlots) times.append(h("div", { class: "skeleton" }));
-        else if (!Object.keys(S.days).length) {
+        else if (!Object.keys(S.days).length && !Object.keys(S.full).some((day) => fullOf(day).length)) {
           times.append(h("div", { class: "hint" }, T("noSlotsMonth")));
           if (!S.maxDate || nextMonth <= S.maxDate) times.append(h("button", { class: "ghost next-free", onclick: () => loadMonth(nextMonth) }, T("nextFree") + " →"));
         } else if (!S.date) times.append(h("div", { class: "hint" }, T("pickDay")));
         else {
-          times.append(h("h3", {}, fmtLong.format(new Date(S.days[S.date][0].start))));
+          const first = (S.days[S.date] || [])[0] || fullOf(S.date)[0];
+          times.append(h("h3", {}, fmtLong.format(new Date(first.start))));
           const buckets = { morning: [], afternoon: [], evening: [] };
-          for (const slot of S.days[S.date]) {
+          for (const slot of S.days[S.date] || []) {
             const hour = Number(slot.time.slice(0, 2));
             buckets[hour < 13 ? "morning" : hour < 18 ? "afternoon" : "evening"].push(slot);
           }
@@ -608,6 +634,20 @@
             }
             times.append(g);
           }
+          // the classes with no seat left: a seat may free up
+          if (!S.moving && fullOf(S.date).length) {
+            times.append(h("div", { class: "hint", style: "margin:.6rem 0 .35rem" }, T("full")));
+            const g = h("div", { class: "times" });
+            for (const lesson of fullOf(S.date)) {
+              g.append(h("button", { class: "time full", onclick: () => startWait(lesson) }, lesson.time, h("small", {}, T("fullWait"))));
+            }
+            times.append(g);
+          }
+        }
+        // nothing that suits: the waiting list, where the centre offers it
+        if (!S.loadingSlots && !S.moving && waitOn()) {
+          times.append(h("p", { class: "hint wait-cta" }, T("waitNoTime") + " ",
+            h("button", { class: "link", type: "button", onclick: () => startWait(null) }, T("waitJoin"))));
         }
         times.append(h("div", { class: "tz" }, `${T("tzNote")} ${CLIENT_TZ}`));
         wrap.append(times);
@@ -627,6 +667,16 @@
         const svc = S.service;
         const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submit(); } });
         form.append(h("h2", {}, T("stepDetails")));
+        const other = personFields(form, svc, true);
+        form.append(h("div", { class: "actions" },
+          h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
+          h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
+        setTimeout(() => $(other && !S.form.for_name ? "f-for_name" : "f-full_name")?.focus(), 0);
+        return form;
+      }
+
+      // who it is for, who they are, the ticks: the same for a booking and the waiting list
+      function personFields(form, svc, withNotes) {
         // a parent books for a child, a son for his mother: the appointment is theirs,
         // the contact details stay the booker's
         const other = S.form.for_other;
@@ -649,7 +699,7 @@
         form.append(h("div", { class: "grid2" },
           field("email", T("email"), { type: "email", autocomplete: "email", inputmode: "email" }, true),
           field("phone", T("phone"), { type: "tel", autocomplete: "tel", inputmode: "tel" }, !!svc.require_phone)));
-        form.append(field("notes", svc.question || T("notes"), { tag: "textarea", rows: 3 }, !!svc.require_notes));
+        if (withNotes) form.append(field("notes", svc.question || T("notes"), { tag: "textarea", rows: 3 }, !!svc.require_notes));
         if (S.catalog.require_consent) {
           const cb = h("input", { type: "checkbox", id: "f-consent" });
           cb.checked = S.form.consent;
@@ -666,11 +716,100 @@
           mk.addEventListener("change", (e) => (S.form.marketing = e.target.checked));
           form.append(h("label", { class: "check", for: "f-marketing" }, mk, h("span", {}, S.catalog.marketing_consent.text)));
         }
+        return other;
+      }
+
+      // --- waiting list -------------------------------------------------------------
+      const waitOn = () => Boolean(S.catalog?.waiting_list) && !S.moving;
+      const WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const PARTS = ["morning", "afternoon", "evening"];
+      const dayShort = (name) => new Intl.DateTimeFormat(LOCALE, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + WEEK.indexOf(name))));
+
+      function startWait(lesson) {
+        const wl = S.catalog.waiting_list;
+        S.wait = { lesson, days: [], parts: [], until: addDays(todayLocal(), wl.days || 30), channel: wl.channels[0] || "Email" };
+        go("wait");
+      }
+
+      function toggle(list, value) {
+        const i = list.indexOf(value);
+        if (i >= 0) list.splice(i, 1); else list.push(value);
+      }
+
+      function viewWait() {
+        const svc = S.service, W = S.wait, wl = S.catalog.waiting_list;
+        const form = h("form", { novalidate: true, onsubmit: (e) => { e.preventDefault(); submitWait(); } });
+        form.append(h("h2", {}, T("waitTitle")));
+        form.append(h("p", { class: "hint" }, W.lesson ? T("waitClassIntro").replace("{0}", fmtFull.format(new Date(W.lesson.start))) : T("waitIntro")));
+        if (!W.lesson) {
+          form.append(h("label", { id: "w-days" }, T("waitDays")));
+          form.append(h("div", { class: "chips wrap", role: "group", "aria-labelledby": "w-days" },
+            ...WEEK.map((day) => h("button", { type: "button", class: "chip", "aria-pressed": String(W.days.includes(day)), onclick: () => { toggle(W.days, day); render(); } }, dayShort(day)))));
+          form.append(h("label", { id: "w-parts" }, T("waitParts")));
+          form.append(h("div", { class: "chips wrap", role: "group", "aria-labelledby": "w-parts" },
+            ...PARTS.map((part) => h("button", { type: "button", class: "chip", "aria-pressed": String(W.parts.includes(part)), onclick: () => { toggle(W.parts, part); render(); } }, T("part" + part)))));
+          if (!W.days.length && !W.parts.length) form.append(h("p", { class: "hint" }, T("waitAny")));
+          const until = h("input", { type: "date", id: "w-until", min: todayLocal(), max: addDays(todayLocal(), 365) });
+          until.value = W.until;
+          until.addEventListener("change", (e) => (W.until = e.target.value));
+          form.append(h("div", {}, h("label", { for: "w-until" }, T("waitUntil")), until));
+        }
+        if (wl.channels.length > 1) {
+          form.append(h("label", { id: "w-channel" }, T("waitChannel")));
+          form.append(h("div", { class: "chips wrap", role: "group", "aria-labelledby": "w-channel" },
+            ...wl.channels.map((channel) => h("button", { type: "button", class: "chip", "aria-pressed": String(W.channel === channel), onclick: () => { W.channel = channel; render(); } }, channel))));
+        }
+        form.append(h("h3", {}, T("stepDetails")));
+        const other = personFields(form, svc, false);
         form.append(h("div", { class: "actions" },
-          h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("confirm")),
-          h("button", { class: "ghost", type: "button", onclick: () => go("time") }, "← " + T("back"))));
-        setTimeout(() => $(other && !S.form.for_name ? "f-for_name" : "f-full_name")?.focus(), 0);
+          h("button", { class: "primary", type: "submit", disabled: S.busy }, S.busy ? T("booking") : T("joinWait")),
+          h("button", { class: "ghost", type: "button", onclick: () => { S.wait = null; go("time"); } }, "← " + T("back"))));
+        setTimeout(() => { if (other && !S.form.for_name) $("f-for_name")?.focus(); }, 0);
         return form;
+      }
+
+      async function submitWait() {
+        const f = S.form, svc = S.service, W = S.wait;
+        if (!f.full_name.trim() || !f.email.trim() || (svc.require_phone && !f.phone.trim()) || (S.catalog.require_consent && !f.consent) || (f.for_other && !f.for_name.trim())) {
+          S.error = T("required"); render(); return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { S.error = T("invalidEmail"); render(); return; }
+        const consentText = f.consent ? ($("f-consent-label")?.innerText || "").replace(/\s*\*\s*$/, "") : "";
+        S.busy = true; S.error = ""; render();
+        try {
+          const params = new URLSearchParams(location.search);
+          S.waited = await api("join_waiting_list", {
+            service: svc.id, full_name: f.full_name, email: f.email, phone: f.phone, staff: S.staff,
+            session: W.lesson ? W.lesson.session : "", participants: S.seats,
+            days: W.lesson ? [] : W.days, parts: W.lesson ? [] : W.parts, until: W.lesson ? "" : W.until, channel: W.channel,
+            consent: f.consent ? 1 : 0, consent_text: consentText, marketing_consent: f.marketing ? 1 : 0,
+            for_name: f.for_other ? f.for_name.trim() : "", for_relation: f.for_other ? f.for_relation : "",
+            crm_vid: params.get("crm_vid") || readCookie("crm_vid"), crm_sid: params.get("crm_sid") || readCookie("crm_sid"),
+          }, true, "crm.scheduling.attese_pubblico.");
+          S.busy = false;
+          go("waited");
+        } catch (e) { S.busy = false; S.error = e.message; render(); }
+      }
+
+      function viewWaited() {
+        const v = S.waited;
+        const dl = h("dl", { class: "kv" });
+        const add = (k, value) => { if (value) dl.append(h("dt", {}, k), h("dd", {}, value)); };
+        add(T("stepService"), v.service);
+        add(T("forLabel"), v["for"]);
+        add(T("with"), v.staff);
+        if (v.class_start) add(T("waitClass"), fmtFull.format(new Date(v.class_start)));
+        else if (v.choice) {
+          const days = v.choice.days.length && v.choice.days.length < 7 ? v.choice.days.map(dayShort).join(", ") : "";
+          add(T("waitDays"), days || "—");
+          add(T("waitParts"), v.choice.parts.map((p) => T("part" + p)).join(", ") || "—");
+        }
+        if (v.until) add(T("waitUntil"), new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(v.until + "T00:00:00Z")));
+        return h("section", {},
+          h("div", { class: "done-hero" }, h("div", { class: "badge", "aria-hidden": "true" }, "✓"), h("h2", {}, T("waitedTitle")), h("div", { class: "hint" }, T("waitedSub"))),
+          dl,
+          h("p", { class: "hint" }, h("a", { href: v.link }, T("waitedLink"))),
+          h("div", { class: "actions" }, h("button", { class: "ghost", onclick: restart }, T("another"))));
       }
 
       async function submit() {
@@ -742,7 +881,7 @@
 
       function restart() {
         history.replaceState(null, "", location.pathname);
-        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, result: null, manage: null, moving: false, seats: 1 });
+        Object.assign(S, { service: null, staff: "", staffName: "", slot: null, date: null, month: null, days: {}, full: {}, result: null, manage: null, moving: false, seats: 1, wait: null, waited: null });
         S.form.notes = ""; S.form.consent = false; S.form.marketing = false; S.form.for_name = "";
         go("service");
       }

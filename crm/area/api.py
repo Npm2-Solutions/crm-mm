@@ -10,6 +10,8 @@ gives the person only what is theirs to see:
 
 - **appointments**, upcoming and past, each with the booking page's own link to
   move or cancel it by the centre's rules, and the cycles of sessions;
+- **the waiting lists**: what the person waits for, the place offered to answer,
+  joining one and leaving it (`crm.scheduling.attese`);
 - **the forms** to fill before the next one, opened without another code;
 - **invoices**, with their PDF;
 - **the places other modules add** (`sezioni`): the clinic's documents, plans and
@@ -26,7 +28,8 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import get_datetime, now_datetime
 
 from crm.area import accesso, sezioni
-from crm.scheduling import cicli
+from crm.scheduling import attese, cicli
+from crm.scheduling import attese_regole as R
 
 
 def _utente() -> str:
@@ -152,7 +155,147 @@ def get_appointments(person: str) -> dict:
 			passati.append(voce)
 	prossimi.sort(key=lambda v: v["starts_on"])
 	passati.sort(key=lambda v: v["starts_on"], reverse=True)
-	return {"upcoming": prossimi, "past": passati[:20], "cycles": cicli.della_persona(person)}
+	return {
+		"upcoming": prossimi,
+		"past": passati[:20],
+		"cycles": cicli.della_persona(person),
+		"waiting": attese.della_persona(person),
+		"can_wait": attese.impostazioni().area,
+	}
+
+
+# ------------------------------------------------------------------ waiting lists
+
+
+def _in_lista() -> frappe._dict:
+	conf = attese.impostazioni()
+	if not conf.area:
+		frappe.throw(_("The centre does not take the waiting list from the area"), frappe.PermissionError)
+	return conf
+
+
+def _prenotabili() -> list:
+	"""The services one may wait for from the area: the booking page's own."""
+	return frappe.get_all(
+		"CRM Service",
+		filters={"enabled": 1, "bookable_online": 1},
+		fields=["name", "service_name", "max_participants", "staff_selection", "allow_staff_choice"],
+		order_by="website_order asc, service_name asc",
+	)
+
+
+@frappe.whitelist()
+def get_waiting_options(person: str) -> dict:
+	"""What one may wait for from the area: the services, who does them when one
+	may choose, the channels the offers go by, and the last day proposed."""
+	_mia(person)
+	conf = _in_lista()
+	servizi = []
+	for servizio in _prenotabili():
+		staff = []
+		if (
+			frappe.utils.cint(servizio.allow_staff_choice)
+			and (servizio.staff_selection or "Any one") == "Any one"
+		):
+			staff = [
+				{"user": u, "name": frappe.utils.get_fullname(u)}
+				for u in frappe.get_all(
+					"CRM Service Staff",
+					filters={"parenttype": "CRM Service", "parent": servizio.name},
+					pluck="user",
+					order_by="idx asc",
+				)
+			]
+		servizi.append(
+			{
+				"name": servizio.name,
+				"service_name": servizio.service_name,
+				"staff": staff if len(staff) > 1 else [],
+			}
+		)
+	return {
+		"services": servizi,
+		"channels": attese.canali_offerti(conf),
+		"until": str(attese.fino_predefinito(conf)),
+	}
+
+
+def _contatto(riga) -> str | None:
+	"""Who hears of the offers: the person themselves, or the parent who is in."""
+	if riga.relation == accesso.SE_STESSO:
+		return None
+	from crm.area.avvisi import _persona_di
+
+	return _persona_di(frappe.session.user)
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60 * 60)
+def join_waiting_list(
+	person: str,
+	service: str,
+	staff: str | None = None,
+	days: list | str | None = None,
+	parts: list | str | None = None,
+	until: str | None = None,
+	channel: str | None = None,
+) -> dict:
+	"""On the waiting list from the area, for a service of the booking page. Joining
+	again changes what the person waits for."""
+	riga = _mia(person)
+	conf = _in_lista()
+	if service not in {s.name for s in _prenotabili()}:
+		frappe.throw(_("This service is not booked online"))
+	giorni = frappe.parse_json(days) if isinstance(days, str) else (days or [])
+	parti = frappe.parse_json(parts) if isinstance(parts, str) else (parts or [])
+	oggi = attese._oggi()
+	fino = frappe.utils.getdate(until) if until else attese.fino_predefinito(conf)
+	if fino < oggi or fino > frappe.utils.getdate(frappe.utils.add_days(oggi, 365)):
+		frappe.throw(_("Choose a last day from today to a year from now"))
+	voce = attese.entra(
+		person,
+		service,
+		staff=staff or None,
+		righe=R.righe_da(giorni, parti),
+		fino=fino,
+		canale=channel,
+		contatto=_contatto(riga),
+		fonte=R.DALL_AREA,
+		ignora_permessi=True,
+	)
+	attese.dopo_l_ingresso(voce.name)
+	return {"waiting": attese.della_persona(person)}
+
+
+def _voce_di(person: str, entry: str):
+	doc = frappe.get_doc(attese.VOCE, entry)
+	if doc.lead != person:
+		frappe.throw(_("This is not your area"), frappe.PermissionError)
+	return doc
+
+
+@frappe.whitelist(methods=["POST"])
+def leave_waiting_list(person: str, entry: str) -> dict:
+	_mia(person)
+	attese.togli(_voce_di(person, entry))
+	return {"waiting": attese.della_persona(person)}
+
+
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=30, seconds=60 * 60)
+def answer_waiting_offer(person: str, entry: str, answer: str) -> dict:
+	"""Yes or no to the place offered: yes books it, if it is still free."""
+	_mia(person)
+	doc = _voce_di(person, entry)
+	riga = next((r for r in doc.offers if r.status == R.INVIATA), None)
+	if not riga:
+		esito = {"result": "none"}
+	elif answer == "yes":
+		esito = attese.conferma(doc, riga, R.DALL_AREA)
+	else:
+		attese.rifiuta(doc, riga)
+		esito = {"result": "declined"}
+	return {"result": esito["result"], "waiting": attese.della_persona(person)}
 
 
 # ------------------------------------------------------------------ preparing the appointment
