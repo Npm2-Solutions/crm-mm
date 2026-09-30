@@ -141,6 +141,8 @@ import HomeActions from '@/components/Settings/HomeActions.vue'
 import FormsSettings from '@/components/Settings/Forms/FormsSettings.vue'
 import AssistantSettings from '@/components/Settings/AssistantSettings.vue'
 import SealSettings from '@/components/Settings/SealSettings.vue'
+import AreaNoticeSettings from '@/components/Settings/AreaNoticeSettings.vue'
+import LucideBellRing from '~icons/lucide/bell-ring'
 import LucideStamp from '~icons/lucide/stamp'
 import LucideBot from '~icons/lucide/bot'
 import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
@@ -564,6 +566,14 @@ const tabs = computed(() => {
           icon: ERPNextIcon,
           component: markRaw(ERPNextSettings),
           condition: () => puo('tecnico.erpnext'),
+        },
+        {
+          // what the patient area tells outside it: the channels are the manager's
+          label: __('News in the patient area'),
+          key: 'News in the patient area',
+          icon: markRaw(LucideBellRing),
+          component: markRaw(AreaNoticeSettings),
+          condition: () => puo('canali.configura') && puo('area.invita'),
         },
         {
           // the centre's certificate and the time-stamping authority: the agency's
