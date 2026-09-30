@@ -162,4 +162,14 @@ export default {
   '{0} sessions to book': '{0} sedute da prenotare',
   'valid until {0}': 'valido fino al {0}',
   'Session {0} of {1}': 'Seduta {0} di {1}',
+  // dental care plans
+  'Your care plans': 'I tuoi piani di cura',
+  'To decide': 'Da decidere',
+  'Going on': 'In corso',
+  'The quote is valid until {0}.': 'Il preventivo vale fino al {0}.',
+  'To do': 'Da fare',
+  'tooth {0}': 'dente {0}',
+  'Booked for {0}': 'Prenotato per {0}',
+  Total: 'Totale',
+  'Done so far': 'Fatto finora',
 }
