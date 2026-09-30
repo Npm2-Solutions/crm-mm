@@ -39,6 +39,10 @@ class LaDifferenza(UnitTestCase):
 		self.assertEqual(r.quanto_cambiata("abc", "abc"), 0.0)
 		self.assertEqual(r.quanto_cambiata("abc", "xyz"), 1.0)
 		self.assertEqual(r.quanto_cambiata("", ""), 0.0)
+		# two gaps filled in a long letter are a small change, not a rewrite
+		lettera = "Gentile collega, ho visitato [nome] per il controllo previsto. " * 8 + "Saluti, [firma]"
+		corretta = lettera.replace("[nome]", "la signora Rossi", 1).replace("[firma]", "Dott.ssa Verdi")
+		self.assertLess(r.quanto_cambiata(lettera, corretta), 0.1)
 
 
 class IlResto(UnitTestCase):

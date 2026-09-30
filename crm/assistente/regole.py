@@ -114,10 +114,15 @@ def differenza(bozza: str | None, finale: str | None) -> str:
 
 
 def quanto_cambiata(bozza: str | None, finale: str | None) -> float:
-	"""0 when the draft was taken as it was, 1 when nothing of it stayed."""
+	"""0 when the draft was taken as it was, 1 when nothing of it stayed.
+
+	Word by word, and every word counts: on a long text difflib would otherwise
+	take the commonest letters for noise, and two names filled in would read as
+	a letter rewritten."""
 	if not (bozza or finale):
 		return 0.0
-	return round(1 - difflib.SequenceMatcher(None, bozza or "", finale or "").ratio(), 3)
+	confronto = difflib.SequenceMatcher(None, (bozza or "").split(), (finale or "").split(), autojunk=False)
+	return round(1 - confronto.ratio(), 3)
 
 
 def taglia(testo: str | None, massimo: int = MAX_TESTO) -> str:
