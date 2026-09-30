@@ -16,6 +16,8 @@ wants those logs kept at least 24 months (Linee guida sul dossier, 4/6/2015).
 
 from __future__ import annotations
 
+import json
+
 import frappe
 from frappe import _
 from frappe.utils import cint, get_fullname
@@ -104,13 +106,50 @@ def _riga(doc) -> dict:
 		"addendum_to": doc.addendum_to,
 		"appointment": doc.appointment,
 		"mine": doc.practitioner == frappe.session.user,
+		# a visit written on a clinical sheet: its questions, answers and report
+		**_scheda(doc),
 		"attachments": frappe.get_all(
 			"File",
-			filters={"attached_to_doctype": DOCTYPE, "attached_to_name": doc.name},
+			# the report is shown as the report, not as one more attachment
+			filters={
+				"attached_to_doctype": DOCTYPE,
+				"attached_to_name": doc.name,
+				"attached_to_field": ("!=", "pdf_file"),
+			},
 			fields=["name", "file_name", "file_url"],
 			order_by="creation asc",
 		),
 	}
+
+
+def _scheda(doc) -> dict:
+	if not doc.get("template_version"):
+		return {"template": None}
+	from crm.moduli import modelli
+
+	versione = frappe.get_cached_doc(modelli.VERSIONE, doc.template_version)
+	risposte = json.loads(doc.answers or "{}") if isinstance(doc.answers, str) else (doc.answers or {})
+	return {
+		"template": doc.template,
+		"title": doc.title or versione.title,
+		"version": versione.version,
+		"schema": modelli.carica_schema(versione.schema),
+		"answers": risposte,
+		"alerts": json.loads(doc.alerts or "[]") if isinstance(doc.alerts, str) else (doc.alerts or []),
+		"answers_hash": doc.answers_hash,
+		"pdf_file": doc.pdf_file,
+		"pdf_hash": doc.pdf_hash,
+	}
+
+
+def _schede() -> list[dict]:
+	"""The clinical sheets a practitioner can write a visit on."""
+	return frappe.get_all(
+		"CRM Form Template",
+		filters={"enabled": 1, "current_version": ("is", "set"), "use": "Clinical sheet"},
+		fields=["name", "title", "specialty"],
+		order_by="title asc",
+	)
 
 
 def _legge() -> bool:
@@ -144,6 +183,7 @@ def get_record(lead: str) -> dict:
 		"records": righe,
 		"can_read": legge,
 		"can_write": livelli.puo("clinica.scrivi"),
+		"sheets": _schede() if livelli.puo("clinica.scrivi") else [],
 		"can_see_log": livelli.puo("clinica.accessi"),
 		"dossier": _col_dossier(lead),
 	}
@@ -159,8 +199,10 @@ def save_record(
 	record_date: str | None = None,
 	addendum_to: str | None = None,
 	sign: int = 0,
+	answers: dict | str | None = None,
 ) -> dict:
-	"""Write a visit or a note; signing makes it final. The first one makes a patient."""
+	"""Write a visit or a note; signing makes it final. The first one makes a patient.
+	A visit on a clinical sheet keeps its ``answers``: what converts, as a form does."""
 	livelli.verifica("clinica.scrivi")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	if name:
@@ -174,11 +216,49 @@ def save_record(
 		doc.practitioner = frappe.session.user
 		doc.addendum_to = addendum_to
 	doc.update({"kind": kind, "visibility": visibility, "content": content})
+	if answers is not None and doc.template_version:
+		from crm.moduli import modelli
+		from crm.moduli import schema as S
+
+		schema = modelli.carica_schema(frappe.get_cached_doc(modelli.VERSIONE, doc.template_version).schema)
+		letti = frappe.parse_json(answers) if isinstance(answers, str) else answers
+		puliti, _errori, _stato = S.pulisci(schema, letti or {})
+		doc.answers = json.dumps(puliti, ensure_ascii=False)
 	if record_date:
 		doc.record_date = record_date
 	doc.save()
 	if cint(sign):
 		doc.submit()
+	return _riga(doc)
+
+
+@frappe.whitelist(methods=["POST"])
+def start_sheet(lead: str, template: str, appointment: str | None = None) -> dict:
+	"""A visit written on a clinical sheet: the version published now, a draft of
+	its author's until it is signed."""
+	livelli.verifica("clinica.scrivi")
+	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
+	from crm.moduli import modelli
+
+	modello = frappe.get_doc(modelli.MODELLO, template)
+	if modello.use != "Clinical sheet" or not modello.enabled or not modello.current_version:
+		frappe.throw(_("{0} is not a clinical sheet in use").format(frappe.bold(modello.title)))
+	versione = frappe.get_doc(modelli.VERSIONE, modello.current_version)
+	doc = frappe.get_doc(
+		{
+			"doctype": DOCTYPE,
+			"lead": lead,
+			"kind": "Visit",
+			"practitioner": frappe.session.user,
+			"record_date": frappe.utils.now_datetime(),
+			"appointment": appointment,
+			"template": modello.name,
+			"template_version": versione.name,
+			"title": versione.title,
+			"schema_hash": versione.schema_hash,
+			"answers": "{}",
+		}
+	).insert()
 	return _riga(doc)
 
 

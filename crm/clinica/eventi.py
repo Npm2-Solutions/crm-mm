@@ -104,6 +104,20 @@ def modulo_firmato(doc, method=None) -> None:
 			da=doc.get("filled_by") or _mandato_da(doc),
 		),
 	)
+	# the answers that fill the patient's summary wait for a practitioner to confirm them
+	_senza_fermare(
+		_("Summary not proposed from form {0}").format(doc.name), doc, lambda: _proponi_dal_modulo(doc)
+	)
+
+
+def _proponi_dal_modulo(doc) -> None:
+	from crm.clinica import sintesi
+	from crm.moduli import modelli
+	from crm.moduli import schema as S
+
+	schema = modelli.carica_schema(frappe.get_cached_doc(modelli.VERSIONE, doc.template_version).schema)
+	risposte = frappe.parse_json(doc.answers) if isinstance(doc.answers, str) else (doc.answers or {})
+	sintesi.proponi(doc, schema, risposte, S.valuta(schema, risposte))
 
 
 def _mandato_da(doc) -> str | None:

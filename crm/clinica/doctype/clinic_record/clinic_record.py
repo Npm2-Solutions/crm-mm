@@ -9,6 +9,8 @@ integrated, never corrected in place. Who reads it is `crm.clinica.cartella`'s
 business, and every read from the CRM leaves a trace in the access log.
 """
 
+import json
+
 import frappe
 from frappe import _
 from frappe.utils import now_datetime
@@ -32,12 +34,49 @@ class ClinicRecord(DocumentoClinico):
 				frappe.throw(_("A draft is edited, not added to"))
 
 	def before_submit(self):
+		if self.template_version:
+			self._chiudi_la_scheda()
 		allegati = frappe.db.exists(
 			"File", {"attached_to_doctype": self.doctype, "attached_to_name": self.name}
 		)
-		if not frappe.utils.strip_html(self.content or "").strip() and not allegati:
+		if (
+			not frappe.utils.strip_html(self.content or "").strip()
+			and not allegati
+			and not self.template_version
+		):
 			frappe.throw(_("A signed record says something: write what happened, or attach it"))
 		self.signed_on = now_datetime()
+
+	def on_submit(self):
+		if not self.template_version:
+			return
+		# the report, made once; the answers that fill the patient's summary, proposed
+		from crm.clinica import referto, sintesi
+
+		referto.genera_e_allega(self)
+		schema, risposte, stato = self._scheda()
+		sintesi.proponi(self, schema, risposte, stato)
+
+	def _scheda(self):
+		from crm.moduli import modelli
+		from crm.moduli import schema as S
+
+		versione = frappe.get_cached_doc(modelli.VERSIONE, self.template_version)
+		schema = modelli.carica_schema(versione.schema)
+		risposte = json.loads(self.answers or "{}") if isinstance(self.answers, str) else (self.answers or {})
+		return schema, risposte, S.valuta(schema, risposte)
+
+	def _chiudi_la_scheda(self):
+		"""A sheet is checked as a form is when the visit is signed, and what it
+		said is frozen with its hash."""
+		from crm.moduli import compilazioni, modelli
+
+		versione = frappe.get_cached_doc(modelli.VERSIONE, self.template_version)
+		schema, risposte, _stato = self._scheda()
+		puliti, stato = compilazioni.controlla(schema, risposte)
+		self.answers = json.dumps(puliti, ensure_ascii=False)
+		self.alerts = json.dumps(stato["stops"], ensure_ascii=False)
+		self.answers_hash = compilazioni.impronta_risposte(versione.schema_hash, puliti)
 
 	def before_cancel(self):
 		frappe.throw(_("A signed record is not taken back: add an addendum to it"))

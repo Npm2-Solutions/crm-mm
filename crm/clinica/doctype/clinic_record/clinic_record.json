@@ -15,6 +15,20 @@
   "visibility",
   "content_section",
   "content",
+  "sheet_section",
+  "template",
+  "template_version",
+  "title",
+  "answers",
+  "alerts",
+  "column_sheet",
+  "schema_hash",
+  "answers_hash",
+  "report_section",
+  "pdf_file",
+  "pdf_hash",
+  "column_report",
+  "pdf_conformance",
   "links_section",
   "appointment",
   "service_provider",
@@ -91,6 +105,89 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "template",
+   "fieldname": "sheet_section",
+   "fieldtype": "Section Break",
+   "label": "Clinical sheet"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Sheet",
+   "options": "CRM Form Template",
+   "read_only": 1
+  },
+  {
+   "fieldname": "template_version",
+   "fieldtype": "Link",
+   "label": "Version",
+   "options": "CRM Form Template Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "answers",
+   "fieldtype": "JSON",
+   "label": "Answers"
+  },
+  {
+   "fieldname": "alerts",
+   "fieldtype": "JSON",
+   "label": "Warnings",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_sheet",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "schema_hash",
+   "fieldtype": "Data",
+   "label": "What it asked (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "answers_hash",
+   "fieldtype": "Data",
+   "label": "The answers (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "pdf_file",
+   "fieldname": "report_section",
+   "fieldtype": "Section Break",
+   "label": "Report"
+  },
+  {
+   "fieldname": "pdf_file",
+   "fieldtype": "Attach",
+   "label": "Signed report",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pdf_hash",
+   "fieldtype": "Data",
+   "label": "The report (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_report",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pdf_conformance",
+   "fieldtype": "Data",
+   "label": "Conformance",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
    "fieldname": "links_section",
    "fieldtype": "Section Break",
    "label": "Linked"
@@ -139,7 +236,7 @@
  "is_submittable": 1,
  "links": [],
  "make_attachments_public": 0,
- "modified": "2026-09-29 16:00:00.000000",
+ "modified": "2026-10-01 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Record",

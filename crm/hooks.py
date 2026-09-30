@@ -183,6 +183,7 @@ permission_query_conditions = {
 	"CRM Related Person": "crm.persone.collegate.get_permission_query_conditions",
 	# the clinical record: its author, the medical director, the dossier
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
+	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
@@ -210,6 +211,7 @@ has_permission = {
 	"CRM Form Request": "crm.moduli.richieste.has_permission",
 	"CRM Related Person": "crm.persone.collegate.has_permission",
 	"Clinic Record": "crm.clinica.cartella.has_permission",
+	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",

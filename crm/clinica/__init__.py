@@ -126,6 +126,18 @@ CRM_DELLA_DIREZIONE = (
 	"moduli.compila",
 )
 
+
+def _scheda():
+	from crm.moduli.modelli import Uso
+
+	return Uso(
+		"Clinical sheet",
+		"Clinical sheet",
+		"Written by the practitioner during a visit, on the specialty's sheet: it goes to the clinical record",
+		clinico=True,
+	)
+
+
 DOSSIER = TipoConsenso(
 	chiave="health_dossier",
 	etichetta="Health dossier",
@@ -196,6 +208,12 @@ def registra() -> None:
 
 	modelli.registra_dato_clinico(clinica_accesa)
 	compilazioni.registra_lettore_clinico(legge_i_moduli_clinici)
+	# the practitioner's sheet: a template written during a visit, into the record
+	modelli.registra_uso(_scheda())
+	# the lines of the patient's summary a field of a template may answer
+	from crm.clinica import sintesi
+
+	sintesi.registra()
 
 
 def legge_i_moduli_clinici(user: str | None = None) -> bool:
