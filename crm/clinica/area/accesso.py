@@ -13,6 +13,7 @@
   have an area. Only a patient's user enters this way, never staff.
 - **Again, for a report**: a download asks for a code verified in the last
   fifteen minutes (design.md: "per scaricare un referto si rientra").
+- **A passkey** is the other door, added from inside (`crm.clinica.area.passkey`).
 """
 
 from __future__ import annotations
@@ -308,8 +309,14 @@ def verify_code(code: str, email: str | None = None) -> dict:
 		frappe.throw(_("This area is closed: ask the centre"), frappe.PermissionError)
 	if frappe.session.user == "Guest":
 		frappe.local.login_manager.login_as(indirizzo)
-	frappe.cache.set_value(_chiave_verifica(frappe.session.sid), 1, expires_in_sec=MINUTI_VERIFICA * 60)
+	segna_verificato()
 	return {"ok": True}
+
+
+def segna_verificato() -> None:
+	"""The session entered again just now, by a code or a passkey: a report may be
+	downloaded for a while."""
+	frappe.cache.set_value(_chiave_verifica(frappe.session.sid), 1, expires_in_sec=MINUTI_VERIFICA * 60)
 
 
 def verificato_da_poco() -> bool:

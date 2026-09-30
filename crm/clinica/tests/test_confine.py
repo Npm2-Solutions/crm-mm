@@ -29,14 +29,15 @@ AMMESSI = {CRM / "registrazione.py"}
 #: The patient card is who is a patient, not what is wrong with them; the settings
 #: say which pipelines are the centre's; an opening out of the care team says who
 #: opened a record and why; a delivery, to whom a report was given; an access to
-#: the patient area, who enters whose. The libraries say what a food or an exercise
-#: is, and a plan's rows live inside their plan.
+#: the patient area, who enters whose, and a passkey, with which key. The libraries
+#: say what a food or an exercise is, and a plan's rows live inside their plan.
 NON_CLINICI = {
 	"clinic_patient",
 	"clinic_settings",
 	"clinic_access_grant",
 	"clinic_report_delivery",
 	"clinic_area_access",
+	"clinic_area_passkey",
 	"clinic_food",
 	"clinic_exercise",
 	"clinic_plan_moment",
