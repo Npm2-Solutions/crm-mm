@@ -399,7 +399,7 @@ CAPACITA = (
 		piano=MARKETING,
 		requisito="builder",
 		manager=CENTRO,
-		descrizione="Pages, showcase and site settings: only where Frappe Builder is installed",
+		descrizione="Pages, showcase and site settings: only where the website builder is installed",
 	),
 )
 

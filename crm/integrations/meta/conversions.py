@@ -38,7 +38,7 @@ from crm.integrations.meta.client import GRAPH_VERSION, graph_post_body
 RAW_LEAD = "Raw Lead"
 
 # what we call ourselves in the payload, for Meta's own diagnostics
-LEAD_EVENT_SOURCE = "Frappe CRM"
+LEAD_EVENT_SOURCE = "DottorCloud"
 
 MAX_ATTEMPTS = 5
 BATCH = 200

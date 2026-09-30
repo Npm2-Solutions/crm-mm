@@ -115,23 +115,23 @@ msgstr ""
 msgid "51-200"
 msgstr ""
 
-#. Paragraph text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Paragraph text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<b>META</b>"
 msgstr ""
 
-#. Paragraph text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Paragraph text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<b>SHORTCUTS</b>"
 msgstr ""
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:95
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:95
-msgid "<p>Dear {{ lead_name }},</p>\\n\\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\\n\\n<p>Thanks,</p>\\n<p>Frappé</p>"
+msgid "<p>Dear {{ lead_name }},</p>\\n\\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\\n\\n<p>Thanks,</p>\\n<p>The team</p>"
 msgstr ""
 
-#. Header text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Header text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<span class=\"h5\"><b>PORTAL</b></span>"
 msgstr ""
 
@@ -577,10 +577,6 @@ msgstr ""
 msgid "Are you sure you want to go back? Unsaved changes will be lost."
 msgstr ""
 
-#: frontend/src/composables/frappecloud.js:24
-msgid "Are you sure you want to login to your Frappe Cloud dashboard?"
-msgstr ""
-
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.js:9
 msgid "Are you sure you want to reset 'Create Quotation from CRM Deal' Form Script?"
 msgstr ""
@@ -637,8 +633,8 @@ msgstr ""
 msgid "Assignment"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Assignment Rule"
 msgstr ""
 
@@ -993,8 +989,8 @@ msgstr ""
 msgid "CRM Organization"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "CRM Portal Page"
 msgstr ""
 
@@ -1334,8 +1330,8 @@ msgstr ""
 msgid "Communication Status"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Communication Statuses"
 msgstr ""
 
@@ -1471,9 +1467,9 @@ msgstr ""
 
 #. Label of the contacts_tab (Tab Break) field in DocType 'CRM Deal'
 #. Label of the contacts (Table) field in DocType 'CRM Deal'
-#. Label of a shortcut in the Frappe CRM Workspace
+#. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/Contact.vue:259 frontend/src/pages/MobileContact.vue:221
 #: frontend/src/pages/MobileOrganization.vue:346
 msgid "Contacts"
@@ -1741,8 +1737,8 @@ msgstr ""
 msgid "Deal Status"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Deal Statuses"
 msgstr ""
 
@@ -1765,8 +1761,8 @@ msgstr ""
 msgid "Deal value"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/Deal.vue:496 frontend/src/pages/MobileContact.vue:297
 #: frontend/src/pages/MobileDeal.vue:386
 #: frontend/src/pages/MobileOrganization.vue:340
@@ -1800,7 +1796,7 @@ msgstr ""
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:112
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:112
-msgid "Dear {{ lead_name }}, \\n\\nThis is a reminder for the payment of {{ grand_total }}. \\n\\nThanks, \\nFrappé"
+msgid "Dear {{ lead_name }}, \\n\\nThis is a reminder for the payment of {{ grand_total }}. \\n\\nThanks, \\nThe team"
 msgstr ""
 
 #. Label of the default (Check) field in DocType 'CRM Service Level Agreement'
@@ -2874,15 +2870,6 @@ msgstr ""
 msgid "Form Script updated successfully"
 msgstr ""
 
-#. Name of a Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
-msgid "Frappe CRM"
-msgstr ""
-
-#: frontend/src/components/Layouts/AppSidebar.vue:608
-msgid "Frappe CRM mobile"
-msgstr ""
-
 #. Option for the 'Weekly Off' (Select) field in DocType 'CRM Holiday List'
 #. Option for the 'Workday' (Select) field in DocType 'CRM Service Day'
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.json
@@ -3196,8 +3183,8 @@ msgstr ""
 msgid "Incoming call..."
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Industries"
 msgstr ""
 
@@ -3559,13 +3546,13 @@ msgstr ""
 msgid "Lead Owner cannot be same as the Lead Email Address"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Lead Sources"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Lead Statuses"
 msgstr ""
 
@@ -3602,8 +3589,8 @@ msgstr ""
 msgid "Lead to deal conversion pipeline"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/InvalidPage.vue:9 frontend/src/pages/Lead.vue:345
 #: frontend/src/pages/MobileLead.vue:293
 msgid "Leads"
@@ -3693,10 +3680,6 @@ msgstr ""
 #: frontend/src/components/Activities/ActivityHeader.vue:133
 #: frontend/src/components/Activities/ActivityHeader.vue:176
 msgid "Log a Call"
-msgstr ""
-
-#: frontend/src/composables/frappecloud.js:23
-msgid "Login to Frappe Cloud?"
 msgstr ""
 
 #: frontend/src/pages/NotPermitted.vue:21
@@ -4511,8 +4494,8 @@ msgstr ""
 msgid "Organization logo"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/MobileOrganization.vue:216
 #: frontend/src/pages/Organization.vue:258
 msgid "Organizations"
@@ -4588,7 +4571,7 @@ msgstr ""
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:69
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:69
-msgid "Payment Reminder from Frappé - (#{{ name }})"
+msgid "Payment reminder - (#{{ name }})"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'CRM Invitation'
@@ -5134,10 +5117,10 @@ msgstr ""
 #. Label of the sla (Link) field in DocType 'CRM Deal'
 #. Label of the sla_tab (Tab Break) field in DocType 'CRM Lead'
 #. Label of the sla (Link) field in DocType 'CRM Lead'
-#. Label of a shortcut in the Frappe CRM Workspace
+#. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "SLA"
 msgstr ""
 
@@ -5424,10 +5407,6 @@ msgstr ""
 
 #: frontend/src/components/Layouts/AppSidebar.vue:533
 msgid "Setting up"
-msgstr ""
-
-#: frontend/src/components/Settings/emailConfig.js:145
-msgid "Setting up Frappe Mail requires you to have an API key and API Secret of your email account. Read more "
 msgstr ""
 
 #: frontend/src/components/Settings/emailConfig.js:97
@@ -5811,8 +5790,8 @@ msgstr ""
 msgid "Template updated successfully"
 msgstr ""
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Territories"
 msgstr ""
 
@@ -6425,7 +6404,7 @@ msgid "You do not have Exotel Number set in your Telephony Agent"
 msgstr ""
 
 #: frontend/src/pages/NotPermitted.vue:12
-msgid "You do not have enough permissions to access Frappe CRM. Please contact your administrator if you believe this is an error."
+msgid "You do not have enough permissions to access DottorCloud. Please contact your administrator if you believe this is an error."
 msgstr ""
 
 #: crm/integrations/exotel/handler.py:93
@@ -6433,7 +6412,7 @@ msgid "You do not have mobile number set in your Telephony Agent"
 msgstr ""
 
 #: crm/www/crm.py:20
-msgid "You do not have permission to access Frappe CRM"
+msgid "You do not have permission to access DottorCloud"
 msgstr ""
 
 #: frontend/src/data/document.js:35

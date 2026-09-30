@@ -130,23 +130,23 @@ msgstr "501-1000"
 msgid "51-200"
 msgstr "51-200"
 
-#. Paragraph text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Paragraph text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<b>META</b>"
 msgstr "<b>META</b>"
 
-#. Paragraph text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Paragraph text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<b>SHORTCUTS</b>"
 msgstr "<b>YORQA KO‘CHMALAR</b>"
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:95
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:95
-msgid "<p>Dear {{ lead_name }},</p>\\n\\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\\n\\n<p>Thanks,</p>\\n<p>Frappé</p>"
+msgid "<p>Dear {{ lead_name }},</p>\\n\\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\\n\\n<p>Thanks,</p>\\n<p>The team</p>"
 msgstr ""
 
-#. Header text in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Header text in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "<span class=\"h5\"><b>PORTAL</b></span>"
 msgstr "<span class=\"h5\"><b>PORTAL</b></span>"
 
@@ -703,10 +703,6 @@ msgstr "Ushbu tadbirga saqlanmagan o'zgarishlarni bekor qilmoqchimisiz?"
 msgid "Are you sure you want to go back? Unsaved changes will be lost."
 msgstr "Haqiqatan ham orqaga qaytmoqchimisiz? Saqlanmagan o'zgarishlar yo'qoladi."
 
-#: frontend/src/composables/frappecloud.js:24
-msgid "Are you sure you want to login to your Frappe Cloud dashboard?"
-msgstr "Frappe Cloud boshqaruv paneliga kirishni xohlaysizmi?"
-
 #: frontend/src/components/FieldLayoutEditor.vue:431
 msgid "Are you sure you want to remove this tab and all its content?"
 msgstr "Ushbu yorliqni va uning barcha tarkibini olib tashlamoqchimisiz?"
@@ -782,8 +778,8 @@ msgstr "Topshiriq kunlari"
 msgid "Assignment Days are required"
 msgstr "Topshiriq kunlari talab qilinadi"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/components/Layouts/AppSidebar.vue:612
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRulesList.vue:16
 msgid "Assignment Rule"
@@ -1177,8 +1173,8 @@ msgstr "CRM bildirishnomasi"
 msgid "CRM Organization"
 msgstr "CRM tashkiloti"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "CRM Portal Page"
 msgstr "CRM portali sahifasi"
 
@@ -1616,8 +1612,8 @@ msgstr "Bitimlarni yo'qotishning keng tarqalgan sabablari"
 msgid "Communication Status"
 msgstr "Aloqa holati"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Communication Statuses"
 msgstr "Aloqa holatlari"
 
@@ -1733,8 +1729,8 @@ msgid "Confirm {0}"
 msgstr "{0} ni tasdiqlang"
 
 #: frontend/src/components/Settings/ERPNextSettings.vue:274
-msgid "Connect ERPNext to Frappe CRM"
-msgstr "ERP ni Frappe CRM ga ulang"
+msgid "Connect ERPNext to DottorCloud"
+msgstr "ERP ni DottorCloud ga ulang"
 
 #: frontend/src/pages/Welcome.vue:35
 msgid "Connect your Email"
@@ -1796,9 +1792,9 @@ msgstr "Kontakt rasmi yangilandi"
 
 #. Label of the contacts_tab (Tab Break) field in DocType 'CRM Deal'
 #. Label of the contacts (Table) field in DocType 'CRM Deal'
-#. Label of a shortcut in the Frappe CRM Workspace
+#. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/Contact.vue:244 frontend/src/pages/MobileContact.vue:226
 #: frontend/src/pages/MobileOrganization.vue:349
 msgid "Contacts"
@@ -1862,7 +1858,7 @@ msgid "Copied to Clipboard"
 msgstr "Buferga nusxalandi"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create the Frappe CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable <b>Frappe CRM Data Synchronization</b> in its CRM Settings, Otherwise check the Error Log."
+msgid "Could not create the CRM custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
 msgstr ""
 
 #: frontend/src/components/Settings/Hierarchy/useRemoveNode.js:16
@@ -2131,8 +2127,8 @@ msgstr "Bitim egasi"
 msgid "Deal Status"
 msgstr "Bitim holati"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Deal Statuses"
 msgstr "Bitim holatlari"
 
@@ -2153,8 +2149,8 @@ msgstr "Bitim holatini ko'rsatish shart"
 msgid "Deal value"
 msgstr "Bitim qiymati"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/Deal.vue:514 frontend/src/pages/MobileContact.vue:302
 #: frontend/src/pages/MobileDeal.vue:391
 #: frontend/src/pages/MobileOrganization.vue:343
@@ -2203,8 +2199,8 @@ msgstr "Hududlar bo'yicha bitimlar"
 
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:111
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:111
-msgid "Dear {{ lead_name }}, \\n\\nThis is a reminder for the payment of {{ grand_total }}. \\n\\nThanks, \\nFrappé"
-msgstr "Hurmatli {{ lead_name }}, \\n\\nBu {{ grand_total }}to'lovi uchun eslatma. \\n\\nRahmat, \\nFrappé"
+msgid "Dear {{ lead_name }}, \\n\\nThis is a reminder for the payment of {{ grand_total }}. \\n\\nThanks, \\nThe team"
+msgstr ""
 
 #: frontend/src/utils/callLog.js:64
 msgid "Declined"
@@ -3582,18 +3578,9 @@ msgstr "Forma nomi"
 msgid "Form Script updated successfully"
 msgstr "Forma skripti muvaffaqiyatli yangilandi"
 
-#. Name of a Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
-msgid "Frappe CRM"
-msgstr "Frappe CRM"
-
-#: frontend/src/components/Layouts/AppSidebar.vue:638
-msgid "Frappe CRM mobile"
-msgstr "Frappe CRM mobil"
-
 #: frontend/src/components/Settings/emailConfig.js:81
-msgid "Frappe Mail Site"
-msgstr "Frappe pochta sayti"
+msgid "Mail server address"
+msgstr ""
 
 #. Option for the 'Weekly Off' (Select) field in DocType 'CRM Holiday List'
 #. Option for the 'Workday' (Select) field in DocType 'CRM Service Day'
@@ -3826,7 +3813,7 @@ msgid "How do new leads usually come to you?"
 msgstr ""
 
 #: frontend/src/pages/PersonaForm.vue:108
-msgid "How many people will use Frappe CRM?"
+msgid "How many people will use DottorCloud?"
 msgstr ""
 
 #. Description of the 'Timeline Timestamp Format' (Select) field in DocType
@@ -3939,8 +3926,8 @@ msgstr "Kiruvchi qo'ng'iroq..."
 msgid "Incorrect current password. Please try again."
 msgstr "Joriy parol noto'g'ri. Iltimos, qaytadan urinib ko'ring."
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Industries"
 msgstr "Sanoat tarmoqlari"
 
@@ -3983,11 +3970,6 @@ msgid "Integration Not Enabled"
 msgstr "Integratsiya yoqilmagan"
 
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:144
-msgid "Integrations"
-msgstr "Integratsiyalar"
-
-#: frontend/src/components/Settings/Settings.vue:217
-msgctxt "FCRM"
 msgid "Integrations"
 msgstr "Integratsiyalar"
 
@@ -4424,14 +4406,14 @@ msgstr "Asosiy egasi"
 msgid "Lead Owner cannot be same as the Lead Email Address"
 msgstr "Asosiy egasi asosiy elektron pochta manzili bilan bir xil bo'lishi mumkin emas"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:7
 msgid "Lead Sources"
 msgstr "Yetakchi manbalar"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Lead Statuses"
 msgstr "Potentsial mijozlarning maqomlari"
 
@@ -4472,8 +4454,8 @@ msgstr "Mijozlarni sinxronlashtirish manbai muvaffaqiyatli o'chirildi"
 msgid "Lead to deal conversion pipeline"
 msgstr "Kelishuvga erishish uchun konversiya quvur liniyasi"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/InvalidPage.vue:9 frontend/src/pages/Lead.vue:369
 #: frontend/src/pages/MobileLead.vue:239
 msgid "Leads"
@@ -4596,10 +4578,6 @@ msgstr "Jurnal identifikatori"
 #: frontend/src/components/Activities/ActivityHeader.vue:179
 msgid "Log a Call"
 msgstr "Qo'ng'iroqni yozib olish"
-
-#: frontend/src/composables/frappecloud.js:23
-msgid "Login to Frappe Cloud?"
-msgstr "Frappe Cloud’ga kirish?"
 
 #: frontend/src/pages/NotPermitted.vue:21
 msgid "Login with Different Account"
@@ -5613,8 +5591,8 @@ msgstr "Tashkilot nomi"
 msgid "Organization or a primary Contact is required to create a customer"
 msgstr "Mijoz yaratish uchun tashkilot yoki asosiy kontakt kerak"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/MobileOrganization.vue:219
 #: frontend/src/pages/Organization.vue:257
 msgid "Organizations"
@@ -5724,12 +5702,8 @@ msgid "Payment Reminder"
 msgstr "To'lov haqida eslatma"
 
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:69
-msgid "Payment Reminder from Frappé - (#{{ name }})"
-msgstr "Frappédan toʻlov eslatmasi - (#{{ name }})"
-
-#: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:69
-msgid "Payment reminder from Frappé - (#{{ name }})"
-msgstr "Frappédan toʻlov eslatmasi - (#{{ name }})"
+msgid "Payment reminder - (#{{ name }})"
+msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'CRM Invitation'
 #: crm/fcrm/doctype/crm_invitation/crm_invitation.json
@@ -6466,10 +6440,10 @@ msgstr "Qatorlar"
 #. Label of the sla (Link) field in DocType 'CRM Deal'
 #. Label of the sla_tab (Tab Break) field in DocType 'CRM Lead'
 #. Label of the sla (Link) field in DocType 'CRM Lead'
-#. Label of a shortcut in the Frappe CRM Workspace
+#. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "SLA"
 msgstr "SLA"
 
@@ -6958,10 +6932,6 @@ msgstr "Sozlama muvaffaqiyatli o'chirib qo'yildi"
 #: frontend/src/components/Settings/GeneralSettings.vue:152
 msgid "Setting enabled successfully"
 msgstr "Sozlama muvaffaqiyatli yoqildi"
-
-#: frontend/src/components/Settings/emailConfig.js:158
-msgid "Setting up Frappe Mail requires you to have an API key and API Secret of your email account. Read more"
-msgstr "Frappe Mailni sozlash uchun sizdan elektron pochta hisobingizning API kaliti va API siri talab qilinadi. Batafsil o'qing"
 
 #: frontend/src/components/Settings/emailConfig.js:104
 msgid "Setting up GMail requires you to enable two factor authentication and app specific passwords. Read more"
@@ -7456,8 +7426,8 @@ msgstr "Andoza muvaffaqiyatli yangilandi"
 msgid "Templates"
 msgstr "Shablonlar"
 
-#. Label of a shortcut in the Frappe CRM Workspace
-#: crm/fcrm/workspace/frappe_crm/frappe_crm.json
+#. Label of a shortcut in the DottorCloud Workspace
+#: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 msgid "Territories"
 msgstr "Hududlar"
 
@@ -8107,10 +8077,6 @@ msgstr "Ko'rinish"
 msgid "Walk-ins"
 msgstr ""
 
-#: frontend/src/components/SalesHierarchyBanner.vue:20
-msgid "We are changing how permissions work in Frappe CRM"
-msgstr "Biz Frappe CRM da ruxsatnomalar qanday ishlashini o'zgartirmoqdamiz"
-
 #: frontend/src/components/Layouts/AppSidebar.vue:593
 msgid "Web Form"
 msgstr "Veb-shakl"
@@ -8166,7 +8132,7 @@ msgid "Welcome Message"
 msgstr "Xush kelibsiz xabari"
 
 #: frontend/src/pages/PersonaForm.vue:132
-msgid "Welcome to Frappe CRM"
+msgid "Welcome to DottorCloud"
 msgstr ""
 
 #: frontend/src/pages/Welcome.vue:4
@@ -8310,16 +8276,16 @@ msgid "You do not have Exotel Number set in your Telephony Agent"
 msgstr "Sizning telefon agentingizda Exotel raqami o'rnatilmagan"
 
 #: frontend/src/pages/NotPermitted.vue:12
-msgid "You do not have enough permissions to access Frappe CRM. Please contact your administrator if you believe this is an error."
-msgstr "Sizda Frappe CRM ga kirish uchun yetarli ruxsat yo'q. Agar bu xatolik deb hisoblasangiz, iltimos, administratoringizga murojaat qiling."
+msgid "You do not have enough permissions to access DottorCloud. Please contact your administrator if you believe this is an error."
+msgstr "Sizda DottorCloud ga kirish uchun yetarli ruxsat yo'q. Agar bu xatolik deb hisoblasangiz, iltimos, administratoringizga murojaat qiling."
 
 #: crm/integrations/exotel/handler.py:92
 msgid "You do not have mobile number set in your Telephony Agent"
 msgstr "Sizning telefon agentingizda mobil raqamingiz o'rnatilmagan"
 
 #: crm/www/crm.py:18
-msgid "You do not have permission to access Frappe CRM"
-msgstr "Sizda Frappe CRM-ga kirish uchun ruxsat yo'q"
+msgid "You do not have permission to access DottorCloud"
+msgstr "Sizda DottorCloud-ga kirish uchun ruxsat yo'q"
 
 #: frontend/src/data/document.js:45
 msgid "You do not have permission to access this document"
