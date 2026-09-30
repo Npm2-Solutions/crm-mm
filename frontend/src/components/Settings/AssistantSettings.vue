@@ -79,6 +79,28 @@
           >
             <Switch v-model="settings.doc.note_drafts" size="sm" />
           </SettingRow>
+          <SettingRow
+            v-if="status.data?.switches?.includes('dictation')"
+            :label="__('A visit from dictation')"
+            :description="
+              __(
+                'The words of the practitioner into the fields of the sheet. Medicines, allergies and doses are confirmed one by one.',
+              )
+            "
+          >
+            <Switch v-model="settings.doc.dictation" size="sm" />
+          </SettingRow>
+          <SettingRow
+            v-if="status.data?.switches?.includes('summaries')"
+            :label="__('A summary before the visit')"
+            :description="
+              __(
+                'What the record says, citing its sources: no scores, no alerts.',
+              )
+            "
+          >
+            <Switch v-model="settings.doc.summaries" size="sm" />
+          </SettingRow>
 
           <template v-if="tecnico">
             <div class="pb-1 pt-6 text-base-semibold text-ink-gray-9">
@@ -322,6 +344,8 @@ const functionLabels = {
   form_from_paper: __('A form from paper'),
   letter_from_note: __('A letter from the note'),
   instructions_from_note: __('Instructions from the note'),
+  visit_from_dictation: __('A visit from dictation'),
+  summary_before_visit: __('A summary before the visit'),
 }
 
 function functionLabel(key) {
