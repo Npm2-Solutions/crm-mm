@@ -6,7 +6,6 @@ import LogoSendgrid from '@/images/sendgrid.png'
 import LogoSparkpost from '@/images/sparkpost.webp'
 import LogoYahoo from '@/images/yahoo.png'
 import LogoYandex from '@/images/yandex.png'
-import LogoFrappeMail from '@/images/frappe-mail.svg'
 
 const fixedFields = [
   {
@@ -78,10 +77,10 @@ export const popularProviderFields = [
 export const customProviderFields = [
   ...fixedFields,
   {
-    label: __('Frappe Mail Site'),
+    label: __('Mail server address'),
     name: 'frappe_mail_site',
     type: 'text',
-    placeholder: 'https://frappemail.com',
+    placeholder: 'https://mail.example.com',
   },
   {
     label: __('API Key'),
@@ -152,15 +151,6 @@ export const services = [
     link: 'https://yandex.com/support/id/authorization/app-passwords.html',
     custom: false,
   },
-  {
-    name: 'Frappe Mail',
-    icon: LogoFrappeMail,
-    info: __(
-      'Setting up Frappe Mail requires you to have an API key and API secret for your email account. Read more',
-    ),
-    link: 'https://github.com/frappe/mail',
-    custom: true,
-  },
 ]
 
 export const emailIcon = {
@@ -170,7 +160,6 @@ export const emailIcon = {
   SparkPost: LogoSparkpost,
   Yahoo: LogoYahoo,
   Yandex: LogoYandex,
-  'Frappe Mail': LogoFrappeMail,
 }
 
 // `editing`: the account keeps the password and key it has; typing one replaces it

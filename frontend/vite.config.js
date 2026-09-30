@@ -21,15 +21,17 @@ export default defineConfig(async ({ mode }) => {
         },
         manifest: {
           display: 'standalone',
-          name: 'Frappe CRM',
-          short_name: 'Frappe CRM',
+          name: 'DottorCloud',
+          short_name: 'DottorCloud',
           // Both, and matching: without a scope the browser works one out from
           // where the manifest is served — a path under /assets — and then
           // refuses the whole thing because the start url is not inside it.
           scope: '/crm',
           start_url: '/crm',
-          description:
-            'Modern & 100% Open-source CRM tool to supercharge your sales operations',
+          description: 'Il gestionale per i centri medici',
+          lang: 'it',
+          theme_color: '#ffffff',
+          background_color: '#ffffff',
           icons: [
             {
               src: '/assets/crm/manifest/manifest-icon-192.maskable.png',

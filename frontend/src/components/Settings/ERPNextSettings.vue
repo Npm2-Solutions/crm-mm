@@ -8,16 +8,6 @@
         <h2 class="flex text-2xl-semibold leading-tight md:h-5 md:leading-none">
           {{ __('ERPNext Settings') }}
         </h2>
-        <Tooltip text="View documentation">
-          <a
-            class="touch-target"
-            href="https://docs.frappe.io/crm/erpnext"
-            target="_blank"
-            :aria-label="__('View documentation')"
-          >
-            <lucide-circle-question-mark class="h-4 w-4 text-ink-gray-6" />
-          </a>
-        </Tooltip>
       </div>
     </template>
     <template #header-actions>
@@ -438,7 +428,7 @@
             <ERPNextIcon class="size-7.5 text-ink-gray-5" />
             <div class="flex flex-col items-center gap-1.5 text-center">
               <span class="text-lg-medium text-ink-gray-8">
-                {{ __('Connect ERPNext to Frappe CRM') }}
+                {{ __('Connect ERPNext to DottorCloud') }}
               </span>
               <span class="text-center text-p-base text-ink-gray-6">
                 {{
@@ -471,7 +461,6 @@ import {
   LoadingIndicator,
   Switch,
   toast,
-  Tooltip,
 } from 'frappe-ui'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
