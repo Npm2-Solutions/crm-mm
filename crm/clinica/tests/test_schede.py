@@ -116,6 +116,29 @@ class LaScheda(SchedeCase):
 		# the report is the report, not one more attachment of the visit
 		self.assertNotIn(firmata["pdf_file"], [a.file_url for a in firmata["attachments"]])
 
+	def test_il_referto_scrive_testo(self):
+		from crm.clinica import referto
+		from crm.moduli.tests.test_pdf_sicuro import TRAPPOLA, allegati
+
+		self.come(DOC1)
+		riga = cartella.start_sheet(self.anna.name, self.scheda)
+		firmata = cartella.save_record(
+			self.anna.name,
+			name=riga["name"],
+			content="Controllo tra un mese.\nPortare gli esami.",
+			answers=json.dumps({"allergie": "Nichel", "esame": TRAPPOLA}),
+			sign=1,
+		)
+		frappe.set_user("Administrator")
+		contenuto = frappe.get_doc("File", {"file_url": firmata["pdf_file"]}).get_content(encodings=[])
+		self.assertEqual(allegati(contenuto), [])
+		doc = frappe.get_doc("Clinic Record", firmata["name"])
+		pagina = referto.html(doc, frappe.get_doc(modelli.VERSIONE, doc.template_version))
+		self.assertNotIn('<a rel="attachment"', pagina)
+		self.assertIn("&lt;a rel=", pagina)
+		# notes written as text keep their lines
+		self.assertIn("Controllo tra un mese.\nPortare gli esami.", pagina)
+
 	def test_una_scheda_incompleta_non_si_firma(self):
 		with self.assertRaises(frappe.ValidationError):
 			self.visita({"peso": "64"})
