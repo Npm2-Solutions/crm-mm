@@ -1,0 +1,103 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-30 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "enabled",
+  "provider",
+  "sandbox",
+  "keys_section",
+  "account",
+  "api_key",
+  "column_keys",
+  "api_secret",
+  "webhook_secret"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Sign with a provider"
+  },
+  {
+   "depends_on": "enabled",
+   "description": "One of the providers the CRM knows.",
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "label": "Provider",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "fieldname": "sandbox",
+   "fieldtype": "Check",
+   "label": "Test environment"
+  },
+  {
+   "fieldname": "keys_section",
+   "fieldtype": "Section Break",
+   "label": "Keys",
+   "depends_on": "enabled"
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Data",
+   "label": "Account or endpoint",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API key",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_keys",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "api_secret",
+   "fieldtype": "Password",
+   "label": "API secret",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook secret",
+   "permlevel": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Moduli",
+ "name": "CRM Signature Settings",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ]
+}
