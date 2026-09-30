@@ -197,6 +197,7 @@
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
+import { laSeduta } from '@/utils/cicli'
 import { byDay, shiftDay, summarize, timeOf, waitingRoom } from '@/utils/oggi'
 import { formatDate } from '@/utils'
 import { Breadcrumbs, Button, createResource, usePageMeta } from 'frappe-ui'
@@ -253,9 +254,11 @@ function shift(days) {
   date.value = shiftDay(day.data?.date || date.value, days)
 }
 
+// the service, which session of its cycle - "session 4 of 10" - and who
 function appointmentLine(appointment) {
   const who = (appointment.staff || []).map((s) => s.full_name).join(', ')
-  return [appointment.service, who].filter(Boolean).join(' · ')
+  const session = laSeduta(appointment.cycle, (text, args) => __(text, args))
+  return [appointment.service, session, who].filter(Boolean).join(' · ')
 }
 
 usePageMeta(() => ({ title: __('Today') }))

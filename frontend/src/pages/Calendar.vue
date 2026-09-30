@@ -1204,14 +1204,16 @@ onMounted(async () => {
       calendar.value?.onMonthYearChange?.(dayjs(date).toDate())
     }
   }
-  // «Book an appointment» on a person: a new appointment, for them. The query
-  // stays in the address — the page is keyed on it, and taking it away
-  // rebuilds the page without the panel it had just opened.
+  // «Book an appointment» on a person: a new appointment, for them - of the
+  // cycle's service, from a cycle of sessions. The query stays in the address —
+  // the page is keyed on it, and taking it away rebuilds the page without the
+  // panel it had just opened.
   if (route.query.new === 'appointment') {
     openNewAppointment({
       date: date || today(),
       time: nextQuarter(),
       party: route.query.party || undefined,
+      service: route.query.service || undefined,
     })
   }
   if (eventId && date) {

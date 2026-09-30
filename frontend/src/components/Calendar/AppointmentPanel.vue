@@ -112,6 +112,29 @@
           </span>
         </div>
 
+        <!-- which session of its cycle it is: in or out by hand, when the
+             desk booked it before selling the cycle, or the other way round -->
+        <div
+          v-if="doc.cycle"
+          class="flex items-center gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
+        >
+          <span class="lucide-repeat size-4 shrink-0" aria-hidden="true" />
+          <span class="min-w-0 flex-1 truncate">{{ cycleLine }}</span>
+          <Dropdown
+            v-if="doc.cycle.can_manage && cycleActions.length"
+            :options="cycleActions"
+          >
+            <Button
+              size="sm"
+              variant="ghost"
+              class="touch-target shrink-0"
+              :label="__('Change')"
+              iconRight="chevron-down"
+              :loading="changing"
+            />
+          </Dropdown>
+        </div>
+
         <div class="mx-4.5 my-3 border-t border-outline-gray-1" />
 
         <!-- the clients, and whether they came -->
@@ -728,6 +751,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { buildEndTimeOptions } from '@/composables/event'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
+import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
 import { addMinutes, minutesBetween } from '@/utils/scheduler'
 import {
@@ -912,6 +936,60 @@ function attendanceActions(row) {
         }),
     }),
   )
+}
+
+// --- its cycle of sessions ----------------------------------------------------
+
+const cycleLine = computed(() => {
+  const cycle = doc.value?.cycle
+  if (!cycle) return ''
+  if (!cycle.cycle) return __('Not in a cycle of sessions')
+  return (
+    laSeduta(cycle, (text, args) => __(text, args)) ||
+    __('In a cycle, not counted')
+  )
+})
+
+const cycleActions = computed(() => {
+  const cycle = doc.value?.cycle
+  if (!cycle) return []
+  const people = new Set((cycle.options || []).map((one) => one.lead_name))
+  const actions = (cycle.options || [])
+    .filter((one) => one.name !== cycle.cycle)
+    .map((one) => ({
+      label: __('Into the cycle from {0} ({1} to book)', [
+        (people.size > 1 ? `${one.lead_name}, ` : '') +
+          dayjs(one.starts_on).format('D MMM'),
+        one.left,
+      ]),
+      onClick: () => moveToCycle(one.name),
+    }))
+  if (cycle.cycle)
+    actions.push({
+      label: __('Out of the cycle'),
+      onClick: () => moveToCycle(null),
+    })
+  return actions
+})
+
+function moveToCycle(cycle) {
+  changing.value = true
+  createResource({
+    url: 'crm.scheduling.cicli.attach',
+    params: { appointment: doc.value.name, cycle },
+    auto: true,
+    onSuccess: () => {
+      changing.value = false
+      toast.success(
+        cycle ? __('Now a session of the cycle') : __('Out of the cycle'),
+      )
+      load(doc.value.name)
+    },
+    onError: (e) => {
+      changing.value = false
+      toast.error(e.messages?.[0] || __('Could not change it'))
+    },
+  })
 }
 
 // --- repeating -------------------------------------------------------------
