@@ -1613,3 +1613,21 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Una riga della sintesi è l'ultimo valore confermato, e i valori restano | La sintesi ha una storia: da dove viene ogni valore, chi l'ha deciso |
 | La sintesi la legge chi legge la cartella, la decide chi la scrive | Le stesse capacità della cartella (`clinica.vedi`, `clinica.scrivi`), lo stesso ambito sulle persone |
 | Le righe della sintesi le registra la clinica (`registra_voce_sintesi`) | Il builder le offre solo quando c'è la clinica; il campo `summary` è una proprietà comune dello schema |
+
+## Correzione: un documento firmato porta solo quello che c'è scritto
+
+> **Completato** (30/09/2026). Il PDF del modulo firmato e il referto della
+> visita si facevano da un HTML che stampava le risposte, il nome del browser e
+> gli altri valori senza escape, e WeasyPrint caricava quello che l'HTML indicava:
+> una risposta come `<a rel="attachment" href="file:///...">` avrebbe messo un file
+> del server dentro il PDF firmato, che la persona poi scarica; un'immagine con un
+> indirizzo avrebbe fatto chiamare quell'indirizzo al server.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| I modelli HTML dei documenti firmati stampano con l'escape (`{% autoescape true %}`) | Quello che una persona scrive, o che il suo browser dice di sé, è testo |
+| Il motore dei PDF carica solo i data URI (`pdf.pdf_da_html`) | Anche se qualcosa sfuggisse all'escape, niente del disco e niente dalla rete entra in un documento firmato |
+| Le note del referto scritte nel CRM restano testo; quelle del Desk passano da `sanitize_html` | L'editor del Desk scrive HTML: si tiene la formattazione, non il resto |
+| Il test prova anche il contrario: senza il nostro motore il file del server entra | Un test che passa anche senza la correzione non prova niente |
