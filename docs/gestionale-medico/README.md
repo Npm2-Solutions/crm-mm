@@ -1436,6 +1436,41 @@ danno ai loro clienti, un centro medico ai suoi pazienti.
   pazienti": chi entra e la bacheca. Nella scheda Clinica restano la cartella e
   quello che è solo medico.
 
+### I piani passano al CRM, e la clinica aggiunge le diete
+
+Fatto il 30/09/2026, la quarta riga dell'[ordine](./design.md#lordine). Piani,
+programmi a tappe ed esercizi erano della clinica; ora sono del CRM (`crm/piani`) e
+si seguono nell'Area clienti: un personal trainer scrive l'allenamento come un
+nutrizionista scrive la dieta.
+
+- **Il motore nel CRM**: momenti e voci, la settimana, un tocco per voce, le
+  versioni; i programmi a tappe; la libreria degli esercizi con exercises-dataset.
+  I DocType hanno preso i nomi del CRM (`CRM Personal Plan` con i momenti, le voci
+  e il registro, `CRM Programme` con le tappe, `CRM Exercise`, `CRM Library
+  Import`) con una patch che li rinomina: i dati restano dove sono. L'indirizzo
+  delle immagini degli esercizi passa alle impostazioni dell'area.
+- **I tipi si registrano**: il CRM porta l'allenamento e le abitudini, per chi ha
+  `piani.scrivi`. La clinica porta:
+  - le diete (a menù e a scambi) e gli esercizi a casa, con le qualifiche che li
+    scrivono;
+  - gli alimenti e i gruppi come voci;
+  - le calorie e gli obiettivi, campi suoi sul piano del CRM (`crm/clinica/custom`);
+  - i nutrienti, la lista della spesa e le ricette dell'assistente.
+  Lo schermo sa dal server che cosa tiene e che cosa offre un tipo.
+- **Il marchio "dato sanitario"** (`clinical`) lo portano un tipo sanitario (una
+  dieta, la riabilitazione) e, con la clinica accesa, tutto quello che scrive un
+  professionista sanitario, anche delle abitudini.
+  - Un piano col marchio si legge come una visita (il dossier), ogni apertura va
+    nel registro degli accessi, e fa della persona un paziente.
+  - Senza marchio lo legge chi legge i piani (`piani.vedi`): la segreteria e il
+    manager per tutto il centro, l'operatore per le sue persone.
+  - I piani scritti prima restano col marchio.
+- **Sulla pagina della persona** i piani stanno nella scheda "Area clienti" (o
+  "Area pazienti"), con chi entra e la bacheca. Nelle impostazioni ci sono Piani >
+  Esercizi, del CRM, e Clinica > Alimenti, della clinica.
+- **Nell'area** la voce "Piani" c'è per chi segue un piano o un programma, e per
+  chi ha un piano di cura dentale.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da

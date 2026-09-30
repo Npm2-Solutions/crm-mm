@@ -464,7 +464,7 @@ sue regole**.
 | Oggi nella clinica | Nel CRM | Resta alla clinica |
 |---|---|---|
 | L'area del paziente | L'Area clienti: porta, passkey, appuntamenti, fatture, "Prepara l'appuntamento", messaggi dell'amministrazione, avvisi, la chat con le sue regole di sicurezza (il 112, le domande di salute a una persona) | referti e documenti clinici, messaggi di cura, piani di cura; la parola "paziente" |
-| I piani e i programmi | Il motore: momenti, voci, settimana, un tocco, versioni. Allenamento e abitudini, programmi a tappe, libreria degli esercizi con il dataset | dieta a menù e a scambi, esercizi di riabilitazione, alimenti e tabelle, nutrienti, lista della spesa, ricette dell'assistente |
+| I piani e i programmi | Il motore: momenti, voci, settimana, un tocco, versioni. Allenamento e abitudini, programmi a tappe, libreria degli esercizi con il dataset | dieta a menù e a scambi, esercizi di riabilitazione, alimenti e tabelle, nutrienti, lista della spesa, ricette dell'assistente; il marchio "dato clinico" su quello che scrive un professionista sanitario, di qualunque tipo |
 | L'archivio clinico | I documenti della persona: tipo, data, provenienza, file privato con impronta, da un messaggio, visibili nell'area. La consegna a mano o online con link e codice, per i giorni scelti | il marchio "dato clinico" e le sue regole; i referti delle visite; "mai online"; i 45 giorni e il consenso ai referti online |
 | I piani di cura (odontoiatria) | Il preventivo: prestazioni dal listino con sconto, fasi, PDF, accettato o rifiutato, la pipeline "Preventivi", gli appuntamenti che prendono le righe | il dente e le superfici sulla riga, l'odontogramma |
 | La pipeline "Nuovi pazienti" | "Nuovi clienti": la prenotazione sposta la trattativa, la prima volta che la persona viene la vince; l'evento "Diventato cliente"; il costo per nuovo cliente | "Diventato paziente", con le regole della prima informazione clinica e della fattura sanitaria |
@@ -551,7 +551,7 @@ Una PR per riga, ognuna utile da sola:
 3. il marchio del verticale: nome, logo, colori, icona e favicon dappertutto, il
    logo del centro al massimo accanto (fatto il 30/09/2026);
 4. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
-   clinica;
+   clinica (fatto il 30/09/2026);
 5. i documenti della persona e la consegna nel CRM;
 6. i preventivi nel CRM, che l'odontoiatria estende;
 7. "Nuovi clienti" e "Diventato cliente" nel CRM;
