@@ -31,7 +31,7 @@ AMMESSI = {CRM / "registrazione.py"}
 #: opened a record and why; a delivery, to whom a report was given; an access to
 #: the patient area, who enters whose, with which passkey, told of news how. The
 #: libraries say what a food or an exercise is, and where a table came from; a
-#: plan's rows live inside their plan.
+#: plan's rows live inside their plan, a programme's stages inside their programme.
 NON_CLINICI = {
 	"clinic_patient",
 	"clinic_settings",
@@ -45,6 +45,7 @@ NON_CLINICI = {
 	"clinic_library_import",
 	"clinic_plan_moment",
 	"clinic_plan_item",
+	"clinic_programme_stage",
 }
 
 
