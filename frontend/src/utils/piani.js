@@ -1,26 +1,13 @@
-// Plans in the editor: the same rules as crm/clinica/piani_regole.py - what each
-// kind of plan holds, the days, the rows' keys - and how an item reads.
+// Plans in the editor: the same rules as crm/piani/regole.py - the days, the rows'
+// keys - and how an item reads; the nutrients of the clinic's diets as
+// crm/clinica/piani_regole.py counts them. What a kind holds and what its screens
+// offer comes from the server (crm.piani.api.descrivi_tipo): {key, items, features}.
 
-export const MENU = 'Meal plan'
-export const SCAMBI = 'Exchange diet'
-export const ALLENAMENTO = 'Training'
-export const ESERCIZI = 'Home exercises'
-export const ABITUDINI = 'Habits'
-export const TIPI = [MENU, SCAMBI, ALLENAMENTO, ESERCIZI, ABITUDINI]
-
+// the kinds of item: a module's kinds of plan are named by the server
 export const CIBO = 'Food'
 export const GRUPPO = 'Food group'
 export const ESERCIZIO = 'Exercise'
 export const ABITUDINE = 'Habit'
-
-// what each kind holds: a habit fits anywhere
-export const VOCI = {
-  [MENU]: [CIBO, ABITUDINE],
-  [SCAMBI]: [GRUPPO, CIBO, ABITUDINE],
-  [ALLENAMENTO]: [ESERCIZIO, ABITUDINE],
-  [ESERCIZI]: [ESERCIZIO, ABITUDINE],
-  [ABITUDINI]: [ABITUDINE],
-}
 
 export const OGNI_GIORNO = 'Every day'
 export const GIORNI = [
@@ -64,12 +51,10 @@ export const PARTI = [
 
 export const ESITI = ['Done', 'Partly', 'Skipped']
 
-export function generiPer(tipo) {
-  return VOCI[tipo] || []
-}
-
-export function isDieta(tipo) {
-  return tipo === MENU || tipo === SCAMBI
+// whether the screens offer something for a kind: "meals", "calories", "targets",
+// "nutrients", "recipes", "shopping"
+export function offre(tipo, funzione) {
+  return Boolean(tipo?.features?.includes(funzione))
 }
 
 // eight hex characters, as the server makes them: a check-in stays with its item
@@ -83,11 +68,13 @@ export function nuovoMomento(label = '', day = OGNI_GIORNO, random) {
   return { key: nuovaChiave(random), label, day, time: null }
 }
 
-// where a plan starts: the day's meals for a diet, a session for a training
+// where a plan starts: the day's meals for a kind that says so (a diet), every
+// day for one that holds only habits, a session for the rest
 export function momentiIniziali(tipo, nomi, random) {
-  if (isDieta(tipo))
+  if (offre(tipo, 'meals'))
     return nomi.pasti.map((nome) => nuovoMomento(nome, OGNI_GIORNO, random))
-  if (tipo === ABITUDINI)
+  const generi = tipo?.items || []
+  if (generi.length === 1 && generi[0] === ABITUDINE)
     return [nuovoMomento(nomi.giorno, OGNI_GIORNO, random)]
   return [nuovoMomento(nomi.seduta, OGNI_GIORNO, random)]
 }

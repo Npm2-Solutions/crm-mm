@@ -1,0 +1,10 @@
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
+# For license information, please see license.txt
+
+"""A moment of a plan: a session, a meal of a day. Its items point to it."""
+
+from frappe.model.document import Document
+
+
+class CRMPersonalPlanMoment(Document):
+	pass

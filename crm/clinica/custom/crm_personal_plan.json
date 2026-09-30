@@ -1,0 +1,125 @@
+{
+ "custom_fields": [
+  {
+   "name": "CRM Personal Plan-show_calories",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "instructions",
+   "fieldname": "show_calories",
+   "fieldtype": "Check",
+   "label": "Show calories",
+   "default": "0",
+   "description": "Calories only if the practitioner wants them shown",
+   "read_only": 1
+  },
+  {
+   "name": "CRM Personal Plan-targets_section",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "show_calories",
+   "fieldname": "targets_section",
+   "fieldtype": "Section Break",
+   "label": "Targets for a day",
+   "description": "The nutritionist's: the totals of the menu come from the food tables",
+   "depends_on": "eval:doc.plan_type=='Meal plan'"
+  },
+  {
+   "name": "CRM Personal Plan-target_kcal",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "targets_section",
+   "fieldname": "target_kcal",
+   "fieldtype": "Float",
+   "label": "Energy (kcal)",
+   "non_negative": 1
+  },
+  {
+   "name": "CRM Personal Plan-target_protein_g",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "target_kcal",
+   "fieldname": "target_protein_g",
+   "fieldtype": "Float",
+   "label": "Proteins (g)",
+   "non_negative": 1
+  },
+  {
+   "name": "CRM Personal Plan-target_carbs_g",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "target_protein_g",
+   "fieldname": "target_carbs_g",
+   "fieldtype": "Float",
+   "label": "Carbohydrates (g)",
+   "non_negative": 1
+  },
+  {
+   "name": "CRM Personal Plan-column_targets",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "target_carbs_g",
+   "fieldname": "column_targets",
+   "fieldtype": "Column Break"
+  },
+  {
+   "name": "CRM Personal Plan-target_fat_g",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "column_targets",
+   "fieldname": "target_fat_g",
+   "fieldtype": "Float",
+   "label": "Fats (g)",
+   "non_negative": 1
+  },
+  {
+   "name": "CRM Personal Plan-target_fibre_g",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "target_fat_g",
+   "fieldname": "target_fibre_g",
+   "fieldtype": "Float",
+   "label": "Fibre (g)",
+   "non_negative": 1
+  },
+  {
+   "name": "CRM Personal Plan-visibility",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "clinical",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "label": "Who reads it",
+   "options": "Care team\nMy discipline\nOnly me",
+   "default": "Care team",
+   "hidden": 1,
+   "read_only": 1
+  },
+  {
+   "name": "CRM Personal Plan-obscured",
+   "dt": "CRM Personal Plan",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "visibility",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "label": "Obscured",
+   "default": "0",
+   "hidden": 1,
+   "read_only": 1
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "CRM Personal Plan",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

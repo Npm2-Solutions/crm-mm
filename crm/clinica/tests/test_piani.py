@@ -18,10 +18,13 @@ from unittest import mock
 import frappe
 
 from crm.area import messaggi
-from crm.clinica import cartella, paziente, piani
+from crm.clinica import cartella, paziente
+from crm.clinica import piani as piani_clinica
 from crm.clinica import piani_regole as R
 from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, MANAGER, SALES
 from crm.clinica.tests.test_dossier import DossierCase
+from crm.piani import api as piani
+from crm.piani import regole as r
 
 
 class PianiCase(DossierCase):
@@ -32,7 +35,7 @@ class PianiCase(DossierCase):
 		frappe.set_user("Administrator")
 		self.pasta = frappe.get_doc(
 			{
-				"doctype": piani.CIBO,
+				"doctype": piani_clinica.CIBO,
 				"food_name": "Pasta di semola",
 				"food_group": "Cereals and tubers",
 				"portion_g": 80,
@@ -47,7 +50,7 @@ class PianiCase(DossierCase):
 		return {
 			"plan_type": R.MENU,
 			"title": "Menù di ottobre",
-			"moments": [{"key": "pranzo", "label": "Pranzo", "day": R.OGNI_GIORNO}],
+			"moments": [{"key": "pranzo", "label": "Pranzo", "day": r.OGNI_GIORNO}],
 			"items": [
 				{
 					"key": "pasta",
@@ -74,9 +77,9 @@ class PianiCase(DossierCase):
 class ChiScrive(PianiCase):
 	def test_la_dietista_scrive_il_menu_il_fisioterapista_no(self):
 		self.come(DOC1)
-		self.assertIn(R.MENU, piani.get_plans(self.anna.name)["kinds"])
+		self.assertIn(R.MENU, [tipo["key"] for tipo in piani.get_plans(self.anna.name)["kinds"]])
 		self.come(DOC2)
-		tipi = piani.get_plans(self.anna.name)["kinds"]
+		tipi = [tipo["key"] for tipo in piani.get_plans(self.anna.name)["kinds"]]
 		self.assertNotIn(R.MENU, tipi)
 		self.assertIn(R.ESERCIZI, tipi)
 		with self.assertRaises(frappe.PermissionError):
@@ -93,9 +96,9 @@ class ChiScrive(PianiCase):
 		dati = {
 			"plan_type": R.ESERCIZI,
 			"title": "Schiena",
-			"moments": [{"key": "sera", "label": "La sera", "day": R.OGNI_GIORNO}],
+			"moments": [{"key": "sera", "label": "La sera", "day": r.OGNI_GIORNO}],
 			"items": [
-				{"moment": "sera", "kind": R.ESERCIZIO, "exercise": self.ponte.name, "sets": 3, "reps": "12"}
+				{"moment": "sera", "kind": r.ESERCIZIO, "exercise": self.ponte.name, "sets": 3, "reps": "12"}
 			],
 		}
 		fatto = self.scrive(DOC2, dati)
@@ -106,17 +109,33 @@ class ChiScrive(PianiCase):
 			self.scrive(DOC1, dati)
 
 	def test_un_piano_tiene_solo_quello_che_e_suo(self):
-		dati = self.menu(items=[{"moment": "pranzo", "kind": R.ESERCIZIO, "exercise": self.ponte.name}])
+		dati = self.menu(items=[{"moment": "pranzo", "kind": r.ESERCIZIO, "exercise": self.ponte.name}])
 		with self.assertRaises(frappe.ValidationError):
 			self.scrive(DOC1, dati)
 
 	def test_chi_non_scrive_piani(self):
-		for user in (DESK, SALES):
-			self.come(user)
-			with self.assertRaises(frappe.PermissionError, msg=user):
-				piani.get_plans(self.anna.name)
-			with self.assertRaises(frappe.PermissionError, msg=user):
-				piani.save_plan(self.anna.name, json.dumps(self.menu()))
+		self.pubblica()
+		# the desk reads plans, but not a diet: health data, read like a visit
+		self.come(DESK)
+		self.assertEqual(piani.get_plans(self.anna.name), {"plans": [], "kinds": []})
+		with self.assertRaises(frappe.PermissionError):
+			piani.save_plan(self.anna.name, json.dumps(self.menu()))
+		self.come(SALES)
+		with self.assertRaises(frappe.PermissionError):
+			piani.get_plans(self.anna.name)
+		with self.assertRaises(frappe.PermissionError):
+			piani.save_plan(self.anna.name, json.dumps(self.menu()))
+
+	def test_quello_che_scrive_un_sanitario_e_un_dato_sanitario(self):
+		# habits are no health data by their kind, but a nutritionist's are
+		dati = {
+			"plan_type": r.ABITUDINI,
+			"title": "Buone abitudini",
+			"moments": [{"key": "g", "label": "Ogni giorno", "day": r.OGNI_GIORNO}],
+			"items": [{"moment": "g", "kind": r.ABITUDINE, "text": "Due litri d'acqua"}],
+		}
+		fatto = self.scrive(DOC1, dati)
+		self.assertEqual(fatto["clinical"], 1)
 
 
 class LaBozza(PianiCase):
@@ -221,10 +240,10 @@ class ChiLegge(PianiCase):
 class LeLibrerie(PianiCase):
 	def test_crescono_dall_editor(self):
 		self.come(DOC1)
-		nuovo = piani.add_food("Merluzzo", "Fish", portion_g=150, kcal=82)
-		self.assertIn(nuovo["name"], [c["name"] for c in piani.search_foods("merl")])
+		nuovo = piani_clinica.add_food("Merluzzo", "Fish", portion_g=150, kcal=82)
+		self.assertIn(nuovo["name"], [c["name"] for c in piani_clinica.search_foods("merl")])
 		# the site may have its own fish: the filter keeps to the group
-		pesci = piani.search_foods(group="Fish")
+		pesci = piani_clinica.search_foods(group="Fish")
 		self.assertIn(nuovo["name"], [c["name"] for c in pesci])
 		self.assertEqual({c["food_group"] for c in pesci}, {"Fish"})
 		with self.assertRaises(frappe.ValidationError):
@@ -235,16 +254,16 @@ class LeLibrerie(PianiCase):
 	def test_solo_chi_scrive_piani(self):
 		self.come(SALES)
 		with self.assertRaises(frappe.PermissionError):
-			piani.search_foods("pasta")
+			piani_clinica.search_foods("pasta")
 		with self.assertRaises(frappe.PermissionError):
-			piani.add_food("Pane", "Cereals and tubers")
+			piani_clinica.add_food("Pane", "Cereals and tubers")
 
 
 class LaSpesa(PianiCase):
 	def test_la_lista_di_una_settimana_da_dare_al_paziente(self):
 		fatto = self.pubblica()
 		self.come(DOC1)
-		lista = piani.shopping_list(fatto["name"], start="2026-10-05", days=7)
+		lista = piani_clinica.shopping_list(fatto["name"], start="2026-10-05", days=7)
 		self.assertEqual((lista["from"], lista["until"], lista["days"]), ("2026-10-05", "2026-10-11", 7))
 		[pasta] = lista["foods"]
 		self.assertEqual(
@@ -259,20 +278,20 @@ class LaSpesa(PianiCase):
 	def test_solo_i_giorni_del_piano_e_solo_una_dieta(self):
 		fatto = self.pubblica(dati=self.menu(starts_on="2026-10-05", ends_on="2026-10-07"))
 		self.come(DOC1)
-		lista = piani.shopping_list(fatto["name"], days=14)
+		lista = piani_clinica.shopping_list(fatto["name"], days=14)
 		# from the plan's first day, and not after its last
 		self.assertEqual((lista["from"], lista["days"]), ("2026-10-05", 3))
 		self.assertEqual(lista["foods"][0]["grams"], 240)
 		esercizi = {
 			"plan_type": R.ESERCIZI,
 			"title": "Schiena",
-			"moments": [{"key": "sera", "label": "Sera", "day": R.OGNI_GIORNO}],
-			"items": [{"key": "ponte", "moment": "sera", "kind": R.ESERCIZIO, "exercise": self.ponte.name}],
+			"moments": [{"key": "sera", "label": "Sera", "day": r.OGNI_GIORNO}],
+			"items": [{"key": "ponte", "moment": "sera", "kind": r.ESERCIZIO, "exercise": self.ponte.name}],
 		}
 		scritto = self.scrive(user=DOC2, dati=esercizi)
 		with self.assertRaises(frappe.ValidationError):
-			piani.shopping_list(scritto["name"])
+			piani_clinica.shopping_list(scritto["name"])
 		# who does not read the plan does not read its list
 		self.come(DOC2)
 		with self.assertRaises(frappe.PermissionError):
-			piani.shopping_list(fatto["name"])
+			piani_clinica.shopping_list(fatto["name"])

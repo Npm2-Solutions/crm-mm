@@ -57,22 +57,23 @@
 import { createResource } from 'frappe-ui'
 import CarePlanCard from '../components/CarePlanCard.vue'
 import ProgrammeCard from '../components/ProgrammeCard.vue'
-import { area } from '../store'
+import { area, section } from '../store'
 
 const plans = createResource({
-  url: 'crm.clinica.area.piani.area_plans',
+  url: 'crm.piani.area.area_plans',
   params: { person: area.person },
   auto: true,
 })
 const programmes = createResource({
-  url: 'crm.clinica.area.piani.area_programmes',
+  url: 'crm.piani.area.area_programmes',
   params: { person: area.person },
   auto: true,
 })
+// the clinic's dental care plans, where it has any for the person
 const carePlans = createResource({
   url: 'crm.clinica.area.piani.area_care_plans',
   params: { person: area.person },
-  auto: true,
+  auto: Boolean(section('care_plans')),
 })
 
 // a stage finished opens the next, and its plan comes with it

@@ -315,12 +315,17 @@ const tabs = computed(() => {
       icon: LucideFileSignature,
       condition: () => puo('moduli.vedi'),
     },
-    // the person's own area: who enters it, the board the centre writes on
+    // the person's own area: who enters it, the board the centre writes on,
+    // the plans they follow there
     {
       name: 'Area',
       label: __('Client area'),
       icon: LucideAppWindow,
-      condition: () => puo('area.invita') || puo('area.messaggi'),
+      condition: () =>
+        puo('area.invita') ||
+        puo('area.messaggi') ||
+        puo('piani.vedi') ||
+        puo('piani.scrivi'),
     },
     // the clinical record, for whoever cares for the person: visits and notes,
     // signed and then only added to. Where the plan has no clinic, no tab

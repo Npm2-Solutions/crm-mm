@@ -20,7 +20,7 @@
         </p>
       </div>
       <router-link
-        v-if="['Meal plan', 'Exchange diet'].includes(data.plan.plan_type)"
+        v-if="data.plan.features?.includes('shopping')"
         :to="{ name: 'PlanShopping', params: { plan: data.plan.name } }"
         class="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 px-4 py-3 text-p-base text-ink-gray-9 shadow-sm"
       >
@@ -109,7 +109,7 @@ const saving = ref(null)
 async function go(day) {
   error.value = ''
   try {
-    data.value = await call('crm.clinica.area.piani.area_plan', {
+    data.value = await call('crm.piani.area.area_plan', {
       person: area.person,
       plan: route.params.plan,
       day: day || null,
@@ -126,7 +126,7 @@ async function log(item, outcome) {
   saving.value = item.key
   error.value = ''
   try {
-    await call('crm.clinica.area.piani.log_item', {
+    await call('crm.piani.area.log_item', {
       person: area.person,
       plan: route.params.plan,
       item: item.key,

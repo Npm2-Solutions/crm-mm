@@ -19,4 +19,22 @@ PAROLE = {
 	# the area
 	"This area is for the centre's clients.": "This area is for the centre's patients.",
 	"Prepare your appointment": "Prepare your visit",
+	# plans and programmes, written for the person to follow in their area
+	"For the person": "For the patient",
+	"What to keep in mind, in the words the person reads in their area": (
+		"What to keep in mind, in the words the patient reads in their area"
+	),
+	"What to keep in mind: the person reads it with the session": (
+		"What to keep in mind: the patient reads it with the session"
+	),
+	"A note for the person": "A note for the patient",
+	"The next stage opens when the person says the one before is finished, in their area, or when you do.": (
+		"The next stage opens when the patient says the one before is finished, in their area, or when you do."
+	),
+	"What the programme is for, in the words the person reads": (
+		"What the programme is for, in the words the patient reads"
+	),
+	"What the person reads when the stage opens: its goal, what to keep in mind": (
+		"What the patient reads when the stage opens: its goal, what to keep in mind"
+	),
 }

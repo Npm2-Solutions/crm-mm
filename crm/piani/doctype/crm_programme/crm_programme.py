@@ -1,0 +1,21 @@
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
+# For license information, please see license.txt
+
+"""A programme of stages (`crm.piani.programmi`): written as a draft by its author,
+published to the person's area, where its stages open with time or one after the
+other. Published, it is not rewritten: it goes on, or it is closed."""
+
+import frappe
+from frappe import _
+from frappe.model.document import Document
+
+
+class CRMProgramme(Document):
+	def validate(self):
+		prima = None if self.is_new() else self.get_doc_before_save()
+		if prima and prima.status != "Draft" and not self.flags.dal_programma:
+			frappe.throw(_("A published programme is not rewritten: close it and write another"))
+
+	def on_trash(self):
+		if self.status != "Draft":
+			frappe.throw(_("A published programme is kept: close it instead"))

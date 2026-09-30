@@ -17,13 +17,18 @@ import json
 
 import frappe
 
-from crm.clinica import librerie, piani
+from crm.clinica import librerie
+from crm.clinica import piani as piani_clinica
 from crm.clinica import piani_regole as R
-from crm.clinica import tabelle as T
-from crm.clinica.area import piani as area_piani
+from crm.clinica.area import piani as area_clinica
 from crm.clinica.tests.test_cartella import DESK, DIRECTOR, DOC1, DOC2, MANAGER
 from crm.clinica.tests.test_piani import PianiCase
 from crm.permissions import livelli, utenti
+from crm.piani import api as piani
+from crm.piani import area as area_piani
+from crm.piani import dataset as T
+from crm.piani import librerie as librerie_crm
+from crm.piani import regole as r
 
 INTESTAZIONE = (
 	"alim_grp_nom_eng;alim_ssgrp_nom_eng;alim_code;alim_nom_eng;"
@@ -71,7 +76,7 @@ class LibrerieCase(PianiCase):
 	def setUp(self):
 		super().setUp()
 		frappe.set_user("Administrator")
-		frappe.db.set_single_value(librerie.IMPOSTAZIONI, "exercise_media_url", None)
+		frappe.db.set_single_value(librerie_crm.IMPOSTAZIONI, "exercise_media_url", None)
 
 	def carica(self, user, nome, contenuto) -> str:
 		"""A file as the session uploads it: private, its own."""
@@ -97,18 +102,18 @@ class ChiLeTiene(LibrerieCase):
 	def test_il_manager_e_la_direzione_non_la_segreteria(self):
 		for user in (MANAGER, DIRECTOR):
 			self.come(user)
-			self.assertIn("rows", librerie.get_library("Foods"))
+			self.assertIn("rows", librerie.get_foods())
 		for user in (DESK, DOC1):
 			self.come(user)
 			with self.assertRaises(frappe.PermissionError):
-				librerie.get_library("Foods")
+				librerie.get_foods()
 
 	def test_la_nutrizionista_quando_il_manager_la_sceglie(self):
 		frappe.set_user("Administrator")
 		utenti.imposta_capacita(DOC1, "piani.librerie", True)
 		self.come(DOC1)
 		self.assertTrue(livelli.puo("piani.librerie"))
-		self.assertIn("rows", librerie.get_library("Exercises"))
+		self.assertIn("rows", librerie_crm.get_exercises())
 
 
 class UnaTabella(LibrerieCase):
@@ -144,14 +149,14 @@ class UnaTabella(LibrerieCase):
 		self.assertEqual((basilico.kcal, basilico.kcal_computed), (30.4, 1))
 		self.assertEqual(basilico.source_note, librerie.ATTRIBUZIONI["CIQUAL"])
 		self.assertFalse(frappe.db.exists(librerie.CIBO, {"source_code": "T9811"}))
-		registro = frappe.get_doc(librerie.IMPORTAZIONE, fatto["import"])
+		registro = frappe.get_doc(librerie_crm.IMPORTAZIONE, fatto["import"])
 		self.assertEqual(
 			(registro.library, registro.source, registro.imported_by, registro.created_count),
 			("Foods", "CIQUAL", MANAGER, 2),
 		)
 		# the plans find them
 		self.come(DOC1)
-		self.assertIn("Carrot, raw", [c.food_name for c in piani.search_foods("carrot")])
+		self.assertIn("Carrot, raw", [c.food_name for c in piani_clinica.search_foods("carrot")])
 
 	def test_di_nuovo_i_numeri_nuovi_il_nome_del_centro(self):
 		self.importa(self.tabella())
@@ -179,7 +184,7 @@ class UnaTabella(LibrerieCase):
 			with self.assertRaises(frappe.ValidationError):
 				self.importa(url, source=fonte)
 		fatto = self.importa(url, source="BDA-IEO", licence=1)
-		registro = frappe.get_doc(librerie.IMPORTAZIONE, fatto["import"])
+		registro = frappe.get_doc(librerie_crm.IMPORTAZIONE, fatto["import"])
 		self.assertIn("BDA-IEO", registro.licence)
 		self.assertEqual(frappe.db.get_value(librerie.CIBO, {"source_code": "T9811"}, "source"), "BDA-IEO")
 
@@ -215,7 +220,7 @@ class IlCiboDelCentro(LibrerieCase):
 		spento = librerie.save_food(self.pasta.name, {**fatto, "enabled": 0})
 		self.assertEqual(spento["enabled"], 0)
 		self.come(DOC1)
-		self.assertNotIn(self.pasta.name, [c.name for c in piani.search_foods("pasta")])
+		self.assertNotIn(self.pasta.name, [c.name for c in piani_clinica.search_foods("pasta")])
 		with self.assertRaises(frappe.ValidationError):
 			self.come(MANAGER)
 			librerie.save_food(self.pasta.name, {"food_name": "", "food_group": "Cereals and tubers"})
@@ -226,9 +231,9 @@ class GliEsercizi(LibrerieCase):
 		return self.carica(user, "exercises.json", json.dumps(DATASET).encode())
 
 	def test_il_dataset_con_i_passi_in_italiano(self):
-		fatto = librerie.import_exercises(self.dataset())
+		fatto = librerie_crm.import_exercises(self.dataset())
 		self.assertEqual((fatto["created"], fatto["updated"], fatto["skipped"]), (2, 0, 1))
-		curl = frappe.get_doc(librerie.ESERCIZIO, {"source": T.DATASET, "source_code": "T002"})
+		curl = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T002"})
 		self.assertEqual(
 			(curl.exercise_name, curl.body_part, curl.equipment, curl.primary_muscles),
 			("Barbell curl", "Arms", "bilanciere", "bicipiti"),
@@ -237,13 +242,13 @@ class GliEsercizi(LibrerieCase):
 		self.assertEqual((curl.media_path, curl.animation_path), ("images/0002-x.jpg", "videos/0002-x.gif"))
 
 	def test_di_nuovo_le_immagini_nuove_le_parole_del_centro(self):
-		librerie.import_exercises(self.dataset())
+		librerie_crm.import_exercises(self.dataset())
 		self.come(MANAGER)
-		addome = frappe.get_doc(librerie.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"})
-		librerie.save_exercise(addome.name, {"exercise_name": "Crunch a tre quarti", "body_part": "Core"})
+		addome = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"})
+		librerie_crm.save_exercise(addome.name, {"exercise_name": "Crunch a tre quarti", "body_part": "Core"})
 		DATASET[0]["gif_url"] = "videos/0001-nuovo.gif"
 		try:
-			fatto = librerie.import_exercises(self.dataset())
+			fatto = librerie_crm.import_exercises(self.dataset())
 		finally:
 			DATASET[0]["gif_url"] = "videos/0001-2gPfomN.gif"
 		self.assertEqual((fatto["created"], fatto["updated"]), (0, 2))
@@ -253,34 +258,37 @@ class GliEsercizi(LibrerieCase):
 		)
 
 	def test_le_immagini_dove_le_tiene_l_agenzia_con_il_loro_autore(self):
-		librerie.import_exercises(self.dataset())
+		librerie_crm.import_exercises(self.dataset())
 		frappe.set_user("Administrator")
-		addome = frappe.db.get_value(librerie.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"}, "name")
+		addome = frappe.db.get_value(
+			librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"}, "name"
+		)
 		dati = {
 			"plan_type": R.ESERCIZI,
 			"title": "Esercizi a casa",
-			"moments": [{"key": "sera", "label": "Sera", "day": R.OGNI_GIORNO}],
+			"moments": [{"key": "sera", "label": "Sera", "day": r.OGNI_GIORNO}],
 			"items": [
-				{"key": "addome", "moment": "sera", "kind": R.ESERCIZIO, "exercise": addome, "sets": 3}
+				{"key": "addome", "moment": "sera", "kind": r.ESERCIZIO, "exercise": addome, "sets": 3}
 			],
 		}
 		scritto = self.scrive(user=DOC2, dati=dati)
 
 		def figura():
 			# what the patient's area shows of it
-			_momenti, voci = piani.righe_del_piano(frappe.get_doc(piani.PIANO, scritto["name"]))
-			voce = area_piani._per_il_paziente(voci[0], False, {})
+			piano = frappe.get_doc(piani.PIANO, scritto["name"])
+			_momenti, voci = piani.righe_del_piano(piano)
+			voce = area_piani.per_la_persona(voci[0], piano, {})
 			return voce["image"], voce["attribution"]
 
 		# no address yet: no picture, and no owner of a picture to name
 		self.assertEqual(figura(), (None, None))
 		self.come(MANAGER)
 		with self.assertRaises(frappe.PermissionError):
-			librerie.save_media_url("https://cdn.example.com/esercizi")
+			librerie_crm.save_media_url("https://cdn.example.com/esercizi")
 		frappe.set_user("Administrator")
 		with self.assertRaises(frappe.ValidationError):
-			librerie.save_media_url("http://cdn.example.com/esercizi")
-		librerie.save_media_url("https://cdn.example.com/esercizi/")
+			librerie_crm.save_media_url("http://cdn.example.com/esercizi")
+		librerie_crm.save_media_url("https://cdn.example.com/esercizi/")
 		self.assertEqual(
 			figura(),
 			(
@@ -289,5 +297,5 @@ class GliEsercizi(LibrerieCase):
 			),
 		)
 		# the centre's own picture wins, and it is not Gym visual's
-		frappe.db.set_value(librerie.ESERCIZIO, addome, "image", "/files/ponte.jpg")
+		frappe.db.set_value(librerie_crm.ESERCIZIO, addome, "image", "/files/ponte.jpg")
 		self.assertEqual(figura(), ("/files/ponte.jpg", None))

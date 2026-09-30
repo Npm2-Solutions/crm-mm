@@ -1,0 +1,244 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 16:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "plan_type",
+  "title",
+  "column_main",
+  "status",
+  "starts_on",
+  "ends_on",
+  "patient_section",
+  "instructions",
+  "moments_section",
+  "moments",
+  "items_section",
+  "items",
+  "trace_section",
+  "published_on",
+  "closed_on",
+  "column_trace",
+  "replaces",
+  "replaced_by",
+  "programme",
+  "stage_key",
+  "practitioner",
+  "discipline",
+  "clinical"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "read_only": 1,
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "lead.lead_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "plan_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Kind",
+   "read_only": 1,
+   "reqd": 1,
+   "description": "A kind a module registers (crm.piani): Training, Habits; the clinic's diets and exercises at home"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nPublished\nClosed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "starts_on",
+   "fieldtype": "Date",
+   "label": "From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ends_on",
+   "fieldtype": "Date",
+   "label": "Until",
+   "read_only": 1
+  },
+  {
+   "fieldname": "patient_section",
+   "fieldtype": "Section Break",
+   "label": "For the person"
+  },
+  {
+   "fieldname": "instructions",
+   "fieldtype": "Text",
+   "label": "Instructions",
+   "read_only": 1
+  },
+  {
+   "fieldname": "moments_section",
+   "fieldtype": "Section Break",
+   "label": "Moments"
+  },
+  {
+   "fieldname": "moments",
+   "fieldtype": "Table",
+   "label": "Moments",
+   "options": "CRM Personal Plan Moment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "CRM Personal Plan Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "trace_section",
+   "fieldtype": "Section Break",
+   "label": "Trace"
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "label": "Published on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_trace",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "replaces",
+   "fieldtype": "Link",
+   "label": "Replaces",
+   "options": "CRM Personal Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "replaced_by",
+   "fieldtype": "Link",
+   "label": "Replaced by",
+   "options": "CRM Personal Plan",
+   "read_only": 1
+  },
+  {
+   "description": "A stage's plan: published when its stage opens",
+   "fieldname": "programme",
+   "fieldtype": "Link",
+   "label": "Programme",
+   "options": "CRM Programme",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "stage_key",
+   "fieldtype": "Data",
+   "label": "Stage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Practitioner",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discipline",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Discipline",
+   "options": "CRM Professional Qualification",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Health data: read like the clinical record where the clinic is on (the kind decides)",
+   "fieldname": "clinical",
+   "fieldtype": "Check",
+   "label": "Health data",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 19:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Piani",
+ "name": "CRM Personal Plan",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "hash",
+ "naming_rule": "Random",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Practitioner",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager"
+  }
+ ],
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "in_create": 1,
+ "track_views": 1
+}

@@ -120,12 +120,13 @@ const current = computed(() =>
 )
 
 // the places other modules add, where they have something: "Plans" only for
-// whoever follows one, most people never do; the documents where the clinic is
+// whoever follows one - a plan, a programme, the clinic's care plans - most
+// people never do; the documents where the clinic is
 const places = computed(() =>
   [
     { name: 'Home', label: __('Home'), icon: 'home' },
     { name: 'Appointments', label: __('Agenda'), icon: 'calendar' },
-    area.person && section('plans')
+    area.person && (section('plans') || section('care_plans'))
       ? { name: 'Plans', label: __('Plans'), icon: 'check-square' }
       : null,
     { name: 'Messages', label: __('Messages'), icon: 'message-square' },

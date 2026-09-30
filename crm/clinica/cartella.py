@@ -194,8 +194,6 @@ def get_record(lead: str) -> dict:
 		"can_archive": livelli.puo("clinica.archivia"),
 		# the assistant's instructions may go on the person's board in their area
 		"can_message": livelli.puo("area.messaggi"),
-		# a diet, a training, exercises at home: by one's qualification
-		"can_plan": livelli.puo("piani.scrivi"),
 		# the assistant: drafts from one's notes, dictation, a summary
 		"assistant": _assistente(),
 		# the medical director obscures an episode at the patient's request
@@ -295,8 +293,8 @@ def delete_draft(name: str) -> None:
 APERTO = {
 	"Clinic Record": "record",
 	"Clinic Document": "archive",
-	"Clinic Plan": "plan",
-	"Clinic Programme": "programme",
+	"CRM Personal Plan": "plan",
+	"CRM Programme": "programme",
 	"Clinic Dental Chart": "dental chart",
 	"Clinic Care Plan": "care plan",
 	"File": "file",
@@ -313,14 +311,15 @@ def access_log(lead: str) -> list[dict]:
 	livelli.verifica("clinica.accessi")
 	frappe.has_permission("CRM Lead", "read", doc=lead, throw=True)
 	voci = {
-		doctype: frappe.get_all(doctype, filters={"lead": lead}, pluck="name")
-		for doctype in (
-			"Clinic Record",
-			"Clinic Document",
-			"Clinic Plan",
-			"Clinic Programme",
-			"Clinic Dental Chart",
-			"Clinic Care Plan",
+		doctype: frappe.get_all(doctype, filters={"lead": lead, **filtri}, pluck="name")
+		for doctype, filtri in (
+			("Clinic Record", {}),
+			("Clinic Document", {}),
+			# the plans and programmes of the CRM that carry health data
+			("CRM Personal Plan", {"clinical": 1}),
+			("CRM Programme", {"clinical": 1}),
+			("Clinic Dental Chart", {}),
+			("Clinic Care Plan", {}),
 		)
 	}
 	righe = []

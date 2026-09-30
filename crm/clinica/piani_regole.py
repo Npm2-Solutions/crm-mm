@@ -1,21 +1,20 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""What a plan is, without a site: its kinds, who writes each, what goes in it,
-and how the patient's week reads (design.md, "I piani").
+"""The clinic's plans, without a site: the diets and the exercises at home, who
+writes them, the foods, and what the tables say of them (design.md, "I piani").
 
-- **Five kinds**: a menu, an exchange diet (portions of a food group, the food
-  chosen by the patient), a training, exercises at home, habits. Every kind is the
-  same rows: moments (a day and a meal, a session) and items pointing to their
-  moment - Frappe does not nest child tables.
+- **Three kinds of its own** in the CRM's engine (`crm.piani.regole`): a menu, an
+  exchange diet (portions of a food group, the food chosen by the patient),
+  exercises at home. Health data: read like the record, switched on with the
+  clinic.
 - **Who writes which**: the practitioner's qualification decides. A diet is
   written by a doctor, a biologist nutritionist or a dietitian: a personal trainer
   who gives one practises a profession that is not theirs. Rehabilitation at home
-  by a physiotherapist or a doctor. A training and habits by whoever writes plans.
-- **The week**: a moment is every day or one weekday; an item may ask for "so
-  many times a week", and the patient sees how many are left.
-- **Following it**: one tap an item (done, partly, skipped), a missed day made
-  up within two days; no red, no ranking - what is shown is what is left to do.
+  by a physiotherapist or a doctor. A training and habits are the CRM's, for
+  whoever writes plans.
+- **Two kinds of item**: a food and how much, with what instead; a food group and
+  its portions.
 - **The shopping list** (design.md, "I piani": "Lista della spesa dal menù") is
   the menu's foods over the days to shop for: each food's grams every time its
   meal comes, as many times a week as it is asked; an exchange diet's portions
@@ -31,46 +30,37 @@ from __future__ import annotations
 
 import datetime
 import math
-import re
-from dataclasses import dataclass
+
+from crm.piani.regole import (
+	ABITUDINE,
+	ESERCIZIO,
+	GIORNI,
+	OGNI_GIORNO,
+	GenereVoce,
+	Problema,
+	TipoPiano,
+	in_corso,
+	momenti_del_giorno,
+	registra_genere,
+	registra_tipo,
+	settimana,
+)
+
+#: The plan's module that switches the clinic's kinds on.
+MODULO = "clinica"
 
 MENU = "Meal plan"
 SCAMBI = "Exchange diet"
-ALLENAMENTO = "Training"
 ESERCIZI = "Home exercises"
-ABITUDINI = "Habits"
-TIPI = (MENU, SCAMBI, ALLENAMENTO, ESERCIZI, ABITUDINI)
+#: The clinic's kinds; the CRM's own are a training and habits.
+TIPI = (MENU, SCAMBI, ESERCIZI)
+DIETE_TIPI = (MENU, SCAMBI)
 
 CIBO = "Food"
 GRUPPO = "Food group"
-ESERCIZIO = "Exercise"
-ABITUDINE = "Habit"
-GENERI = (CIBO, GRUPPO, ESERCIZIO, ABITUDINE)
 
 DIETE = frozenset({"medico_chirurgo", "biologo", "dietista"})
 RIABILITAZIONE = frozenset({"fisioterapista", "medico_chirurgo"})
-
-#: Who writes each kind, by the code of their `CRM Professional Qualification`;
-#: None is whoever writes plans at all.
-CHI_SCRIVE: dict[str, frozenset | None] = {
-	MENU: DIETE,
-	SCAMBI: DIETE,
-	ALLENAMENTO: None,
-	ESERCIZI: RIABILITAZIONE,
-	ABITUDINI: None,
-}
-
-#: What each kind holds. A habit fits anywhere: water, a walk, sleep.
-VOCI: dict[str, frozenset] = {
-	MENU: frozenset({CIBO, ABITUDINE}),
-	SCAMBI: frozenset({GRUPPO, CIBO, ABITUDINE}),
-	ALLENAMENTO: frozenset({ESERCIZIO, ABITUDINE}),
-	ESERCIZI: frozenset({ESERCIZIO, ABITUDINE}),
-	ABITUDINI: frozenset({ABITUDINE}),
-}
-
-OGNI_GIORNO = "Every day"
-GIORNI = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 #: The groups of the library's foods, in the order a list shows them.
 GRUPPI = (
@@ -89,33 +79,6 @@ GRUPPI = (
 	"Other",
 )
 
-FATTO = "Done"
-IN_PARTE = "Partly"
-SALTATO = "Skipped"
-ESITI = (FATTO, IN_PARTE, SALTATO)
-
-#: A missed day is made up, not lost: how many days back a check-in is written.
-GIORNI_RECUPERO = 2
-MAX_MOMENTI = 60
-MAX_VOCI = 400
-_CHIAVE = re.compile(r"^[A-Za-z0-9_-]{1,40}$")
-
-
-@dataclass(frozen=True)
-class Problema:
-	"""What is wrong, in English words to translate, with their arguments."""
-
-	messaggio: str
-	argomenti: tuple = ()
-
-	def testo(self, traduci=lambda s: s) -> str:
-		return traduci(self.messaggio).format(*self.argomenti)
-
-
-def tipi_per(qualifica: str | None) -> list[str]:
-	"""The kinds of plan a practitioner with this qualification writes."""
-	return [tipo for tipo in TIPI if CHI_SCRIVE[tipo] is None or qualifica in CHI_SCRIVE[tipo]]
-
 
 def _numero(valore) -> float | None:
 	try:
@@ -124,84 +87,50 @@ def _numero(valore) -> float | None:
 		return None
 
 
-def valida(tipo: str, momenti: list[dict], voci: list[dict]) -> list[Problema]:
-	"""What is wrong with a plan's rows: nothing, or the list.
-
-	A moment has its own key, a name and a day; an item points to a moment and is
-	of a kind the plan holds, with what that kind needs: the food, the group and
-	its portions, the exercise, the habit's words.
-	"""
-	if tipo not in TIPI:
-		return [Problema("{0} is not a kind of plan", (tipo,))]
-	problemi: list[Problema] = []
-	if len(momenti) > MAX_MOMENTI:
-		problemi.append(Problema("At most {0} moments", (MAX_MOMENTI,)))
-	if len(voci) > MAX_VOCI:
-		problemi.append(Problema("At most {0} items", (MAX_VOCI,)))
-	chiavi: set[str] = set()
-	for momento in momenti:
-		chiave = momento.get("key")
-		if not isinstance(chiave, str) or not _CHIAVE.match(chiave) or chiave in chiavi:
-			problemi.append(Problema("Every moment has its own key ({0})", (chiave or "",)))
-		chiavi.add(chiave)
-		if not (momento.get("label") or "").strip():
-			problemi.append(Problema("Every moment has a name"))
-		if momento.get("day") not in (OGNI_GIORNO, *GIORNI):
-			problemi.append(Problema("{0} is not a day", (momento.get("day") or "",)))
-	for voce in voci:
-		genere = voce.get("kind")
-		if genere not in VOCI[tipo]:
-			problemi.append(Problema("A plan of this kind does not hold {0}", (genere or "",)))
-			continue
-		if voce.get("moment") not in chiavi:
-			problemi.append(Problema("An item belongs to a moment of the plan"))
-		if genere == CIBO and not voce.get("food"):
-			problemi.append(Problema("Choose the food"))
-		if genere == GRUPPO and (not voce.get("food_group") or (_numero(voce.get("portions")) or 0) <= 0):
-			problemi.append(Problema("A food group comes with its portions"))
-		if genere == ESERCIZIO and not voce.get("exercise"):
-			problemi.append(Problema("Choose the exercise"))
-		if genere == ABITUDINE and not (voce.get("text") or "").strip():
-			problemi.append(Problema("Write the habit"))
-		volte = voce.get("times_per_week")
-		if volte not in (None, "", 0) and not (1 <= (_numero(volte) or 0) <= 7):
-			problemi.append(Problema("A week has at most seven days"))
-	return problemi
+def _cibo(voce: dict) -> Problema | None:
+	return None if voce.get("food") else Problema("Choose the food")
 
 
-def momenti_del_giorno(momenti: list[dict], giorno: datetime.date) -> list[dict]:
-	"""The moments of a day: every day's, and that weekday's, in their order."""
-	nome = GIORNI[giorno.weekday()]
-	return [momento for momento in momenti if momento.get("day") in (OGNI_GIORNO, nome)]
-
-
-def settimana(giorno: datetime.date) -> tuple[datetime.date, datetime.date]:
-	"""Monday to Sunday of the week of ``giorno``."""
-	lunedi = giorno - datetime.timedelta(days=giorno.weekday())
-	return lunedi, lunedi + datetime.timedelta(days=6)
-
-
-def restano(volte: int | None, esiti: list[str]) -> int | None:
-	"""How many times are left this week: a partial one counts, a skipped one does not."""
-	if not volte:
+def _gruppo(voce: dict) -> Problema | None:
+	if voce.get("food_group") and (_numero(voce.get("portions")) or 0) > 0:
 		return None
-	fatte = sum(1 for esito in esiti if esito in (FATTO, IN_PARTE))
-	return max(int(volte) - fatte, 0)
+	return Problema("A food group comes with its portions")
 
 
-def si_segna(giorno: datetime.date, oggi: datetime.date) -> bool:
-	"""A check-in is for today, or a day just missed; never ahead."""
-	return 0 <= (oggi - giorno).days <= GIORNI_RECUPERO
-
-
-def in_corso(inizio: datetime.date | None, fine: datetime.date | None, oggi: datetime.date) -> bool:
-	"""Whether a published plan is followed on ``oggi``."""
-	return (inizio is None or inizio <= oggi) and (fine is None or oggi <= fine)
-
-
-def riepilogo(esiti: list[str]) -> dict[str, int]:
-	"""How the days went, counted: for the practitioner, not a score."""
-	return {esito: sum(1 for e in esiti if e == esito) for esito in ESITI}
+registra_genere(GenereVoce(CIBO, ("food", "quantity_g", "alternatives"), _cibo))
+registra_genere(GenereVoce(GRUPPO, ("food_group", "portions", "alternatives"), _gruppo))
+registra_tipo(
+	TipoPiano(
+		MENU,
+		(CIBO, ABITUDINE),
+		chi_scrive=DIETE,
+		clinico=True,
+		modulo=MODULO,
+		funzioni=frozenset({"meals", "calories", "targets", "nutrients", "recipes", "shopping"}),
+		ordine=10,
+	)
+)
+registra_tipo(
+	TipoPiano(
+		SCAMBI,
+		(GRUPPO, CIBO, ABITUDINE),
+		chi_scrive=DIETE,
+		clinico=True,
+		modulo=MODULO,
+		funzioni=frozenset({"meals", "calories", "shopping"}),
+		ordine=20,
+	)
+)
+registra_tipo(
+	TipoPiano(
+		ESERCIZI,
+		(ESERCIZIO, ABITUDINE),
+		chi_scrive=RIABILITAZIONE,
+		clinico=True,
+		modulo=MODULO,
+		ordine=40,
+	)
+)
 
 
 def calorie(per_cento_grammi, grammi) -> int | None:

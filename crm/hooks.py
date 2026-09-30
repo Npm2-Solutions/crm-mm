@@ -202,10 +202,12 @@ permission_query_conditions = {
 	"Clinic Record": "crm.clinica.cartella.get_permission_query_conditions",
 	"Clinic Summary Value": "crm.clinica.sintesi.get_permission_query_conditions",
 	"Clinic Document": "crm.clinica.archivio.get_permission_query_conditions",
-	"Clinic Plan": "crm.clinica.piani.get_permission_query_conditions",
-	"Clinic Programme": "crm.clinica.programmi.get_permission_query_conditions",
 	"Clinic Dental Chart": "crm.clinica.cure.get_chart_permission_query_conditions",
 	"Clinic Care Plan": "crm.clinica.cure.get_plan_permission_query_conditions",
+	# plans and programmes: their author, whoever reads the person's plans; with
+	# health data, the dossier
+	"CRM Personal Plan": "crm.piani.api.get_permission_query_conditions",
+	"CRM Programme": "crm.piani.programmi.get_permission_query_conditions",
 	# the agenda, the messages, the tracking and the old bookings follow the person
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"CRM Session Cycle": "crm.permissions.seguono.get_cycle_permission_query_conditions",
@@ -236,8 +238,8 @@ has_permission = {
 	"Clinic Record": "crm.clinica.cartella.has_permission",
 	"Clinic Summary Value": "crm.clinica.sintesi.has_permission",
 	"Clinic Document": "crm.clinica.archivio.has_permission",
-	"Clinic Plan": "crm.clinica.piani.has_permission",
-	"Clinic Programme": "crm.clinica.programmi.has_permission",
+	"CRM Personal Plan": "crm.piani.api.has_permission",
+	"CRM Programme": "crm.piani.programmi.has_permission",
 	"Clinic Dental Chart": "crm.clinica.cure.has_chart_permission",
 	"Clinic Care Plan": "crm.clinica.cure.has_plan_permission",
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
@@ -473,6 +475,15 @@ doc_events = {
 		"after_insert": ["crm.clinica.eventi.messaggio_scritto"],
 		"on_trash": ["crm.clinica.eventi.messaggio_eliminato"],
 	},
+	# and a plan or a programme with health data: a diet, exercises at home
+	"CRM Personal Plan": {
+		"after_insert": ["crm.clinica.eventi.piano_personale_scritto"],
+		"on_trash": ["crm.clinica.eventi.piano_personale_eliminato"],
+	},
+	"CRM Programme": {
+		"after_insert": ["crm.clinica.eventi.piano_personale_scritto"],
+		"on_trash": ["crm.clinica.eventi.piano_personale_eliminato"],
+	},
 	"Log Settings": {
 		"validate": ["crm.clinica.cartella.valida_impostazioni_log"],
 	},
@@ -549,7 +560,7 @@ scheduler_events = {
 		"crm.invoicing.monitoraggio.giornaliero",
 		"crm.tessera_sanitaria.monitoraggio.giornaliero",
 		# a programme's stage whose day has come opens, and its plan with it
-		"crm.clinica.programmi.apri_del_giorno",
+		"crm.piani.programmi.apri_del_giorno",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [

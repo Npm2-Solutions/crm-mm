@@ -23,7 +23,7 @@ import { createResource } from 'frappe-ui'
 import { area } from '../store'
 
 const plans = createResource({
-  url: 'crm.clinica.area.piani.area_plans',
+  url: 'crm.piani.area.area_plans',
   params: { person: area.person },
   auto: true,
 })

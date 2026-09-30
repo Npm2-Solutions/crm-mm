@@ -21,13 +21,16 @@ import frappe
 import requests
 
 from crm.assistente import modello, regole
-from crm.clinica import ASSISTENTE, RICETTE, menu, piani
+from crm.clinica import ASSISTENTE, RICETTE, menu
+from crm.clinica import piani as piani_clinica
 from crm.clinica import piani_regole as R
 from crm.clinica.tests.test_assistente_clinico import risposta
 from crm.clinica.tests.test_cartella import DOC1, DOC2
 from crm.clinica.tests.test_piani import PianiCase
 from crm.moduli import consensi
 from crm.permissions import livelli
+from crm.piani import api as piani
+from crm.piani import regole as r
 
 
 class MenuCase(PianiCase):
@@ -35,13 +38,13 @@ class MenuCase(PianiCase):
 		super().setUp()
 		frappe.set_user("Administrator")
 		frappe.db.set_value(
-			piani.CIBO,
+			piani_clinica.CIBO,
 			self.pasta.name,
 			{"protein_g": 10.9, "carbs_g": 79.1, "fat_g": 1.4, "fibre_g": 2.7},
 		)
 		self.piselli = frappe.get_doc(
 			{
-				"doctype": piani.CIBO,
+				"doctype": piani_clinica.CIBO,
 				"food_name": "Piselli surgelati",
 				"food_group": "Legumes",
 				"kcal": 69,
@@ -53,7 +56,7 @@ class MenuCase(PianiCase):
 		).insert(ignore_permissions=True)
 		self.olio = frappe.get_doc(
 			{
-				"doctype": piani.CIBO,
+				"doctype": piani_clinica.CIBO,
 				"food_name": "Olio extravergine",
 				"food_group": "Oils and fats",
 				"kcal": 899,
@@ -132,7 +135,7 @@ class IConti(MenuCase):
 	def test_gli_obiettivi_sono_suoi_e_la_nota_arriva_al_paziente(self):
 		fatto = self.scrive_bozza(
 			targets={"kcal": "1800", "protein_g": 90, "fat_g": "", "fibre_g": -3},
-			moments=[{"key": "pranzo", "label": "Pranzo", "day": R.OGNI_GIORNO, "note": " Pasta al dente. "}],
+			moments=[{"key": "pranzo", "label": "Pranzo", "day": r.OGNI_GIORNO, "note": " Pasta al dente. "}],
 		)
 		self.assertEqual(
 			fatto["targets"],
@@ -146,17 +149,18 @@ class IConti(MenuCase):
 
 	def test_un_allenamento_non_ha_obiettivi_ne_ricette(self):
 		dati = {
-			"plan_type": R.ALLENAMENTO,
+			"plan_type": r.ALLENAMENTO,
 			"title": "Forza",
 			"targets": {"kcal": 1800},
-			"moments": [{"key": "s", "label": "Seduta", "day": R.OGNI_GIORNO}],
+			"moments": [{"key": "s", "label": "Seduta", "day": r.OGNI_GIORNO}],
 			"items": [
-				{"key": "p", "moment": "s", "kind": R.ESERCIZIO, "exercise": self.ponte.name, "sets": 3}
+				{"key": "p", "moment": "s", "kind": r.ESERCIZIO, "exercise": self.ponte.name, "sets": 3}
 			],
 		}
 		fatto = self.scrive(dati=dati)
-		self.assertEqual(fatto["targets"]["kcal"], None)
-		self.assertEqual(fatto["recipes"], {})
+		# what a menu keeps is not a training's
+		self.assertNotIn("targets", fatto)
+		self.assertNotIn("recipes", fatto)
 		self.consenso()
 		self.come(DOC1)
 		with self.assertRaises(frappe.ValidationError):

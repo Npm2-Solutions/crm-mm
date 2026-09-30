@@ -22,7 +22,6 @@ from __future__ import annotations
 from crm.assistente import Funzione, registra_funzione
 from crm.moduli.registro import CONSENSO, TipoConsenso, registra_tipo
 from crm.permissions.livelli import (
-	A_SCELTA,
 	CENTRO,
 	SUOI,
 	Capacita,
@@ -137,28 +136,6 @@ CAPACITA = (
 		),
 		{"operatore": SUOI, DIREZIONE: CENTRO},
 	),
-	# the plans (design.md, "I piani"): which kinds, the qualification decides
-	(
-		Capacita(
-			"piani.scrivi",
-			PIANO,
-			clinica=True,
-			descrizione="Write and publish plans - a diet, a training, exercises at home, habits - "
-			"of the kinds one's qualification allows",
-		),
-		{"operatore": SUOI},
-	),
-	# the libraries the plans are written with: the manager, the medical director,
-	# and the nutritionist the manager chooses (the tables' licences are the centre's)
-	(
-		Capacita(
-			"piani.librerie",
-			PIANO,
-			descrizione="Keep the centre's food and exercise libraries: import the food tables and the "
-			"exercises, correct names and groups, switch an item off",
-		),
-		{"manager": CENTRO, DIREZIONE: CENTRO, "operatore": A_SCELTA},
-	),
 	# the dental care plans (phase 3, "piani di cura (odontoiatria)"): the dentist
 	# writes the chart and the plans, the desk handles the quotes
 	(
@@ -243,6 +220,9 @@ CRM_DELLA_DIREZIONE = (
 	"area.invita",
 	"area.messaggi",
 	"assistente.registro",
+	# the plans: to read them, and the libraries - the tables' licences are the centre's
+	"piani.vedi",
+	"piani.librerie",
 )
 
 
@@ -402,6 +382,11 @@ def registra() -> None:
 	from crm.clinica import sintesi
 
 	sintesi.registra()
+	# its plans on the CRM's engine: diets and exercises at home, the foods, and
+	# who reads what carries health data
+	from crm.clinica import piani
+
+	piani.registra()
 	# with the clinic on, the CRM is a medical centre's software and says so
 	from crm.clinica.parole import PAROLE
 	from crm.marchio import DOTTORCLOUD
@@ -421,14 +406,14 @@ def _registra_area(clinica_accesa) -> None:
 	def documenti(lead: str) -> bool:
 		return clinica_accesa()
 
-	def piani(lead: str) -> int:
-		# how many plans, programmes and care plans the patient follows today
-		from crm.clinica.area import piani as area_piani
+	def cure(lead: str) -> int:
+		# the dental care plans proposed to the patient and going on
+		from crm.clinica import cure as piani_di_cura
 
-		return area_piani.piani_in_corso(lead) if clinica_accesa() else 0
+		return piani_di_cura.piani_nell_area(lead) if clinica_accesa() else 0
 
 	registra_sezione(Sezione("documents", documenti))
-	registra_sezione(Sezione("plans", piani))
+	registra_sezione(Sezione("care_plans", cure))
 	# about the care: written by a practitioner, read like one of their visits
 	messaggi.registra_tipo(
 		messaggi.TipoMessaggio(

@@ -1,0 +1,114 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 16:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_key",
+  "moment_key",
+  "kind",
+  "column_exercise",
+  "exercise",
+  "sets",
+  "reps",
+  "duration",
+  "rest",
+  "load",
+  "column_more",
+  "text",
+  "times_per_week",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "moment_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Moment"
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Kind",
+   "reqd": 1,
+   "description": "Exercise, Habit, or a kind a module registers (the clinic's foods)"
+  },
+  {
+   "fieldname": "column_exercise",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "exercise",
+   "fieldtype": "Link",
+   "label": "Exercise",
+   "options": "CRM Exercise"
+  },
+  {
+   "fieldname": "sets",
+   "fieldtype": "Int",
+   "label": "Sets"
+  },
+  {
+   "fieldname": "reps",
+   "fieldtype": "Data",
+   "label": "Repetitions"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Data",
+   "label": "Duration"
+  },
+  {
+   "fieldname": "rest",
+   "fieldtype": "Data",
+   "label": "Rest"
+  },
+  {
+   "fieldname": "load",
+   "fieldtype": "Data",
+   "label": "Load"
+  },
+  {
+   "fieldname": "column_more",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "text",
+   "fieldtype": "Data",
+   "label": "Habit"
+  },
+  {
+   "fieldname": "times_per_week",
+   "fieldtype": "Int",
+   "label": "Times a week"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note for the patient"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-30 19:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Piani",
+ "name": "CRM Personal Plan Item",
+ "owner": "Administrator",
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

@@ -1,10 +1,10 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The food tables and the exercises dataset as the libraries read them, without a
-site: the columns by their names in Italian, French and English, the numbers as
-the tables write them, the categories into the library's groups, the energy a
-table leaves out, the exercises with their steps and their pictures' paths."""
+"""The food tables as the clinic's library reads them, without a site: the columns
+by their names in Italian, French and English, the numbers as the tables write
+them, the categories into the library's groups, the energy a table leaves out. The
+exercises dataset is the CRM's (`crm/piani/tests/test_dataset.py`)."""
 
 from __future__ import annotations
 
@@ -291,66 +291,3 @@ class IlFoglio(UnitTestCase):
 	def test_un_csv_in_utf8_con_le_virgole(self):
 		testo = "﻿name,kcal,protein\nOats,389,16.9\n"
 		self.assertEqual(T.leggi_foglio("t.csv", testo.encode("utf-8"))[1], ["Oats", "389", "16.9"])
-
-
-RECORD = {
-	"id": "0001",
-	"name": "3/4 sit-up",
-	"category": "waist",
-	"body_part": "waist",
-	"equipment": "body weight",
-	"instructions": {"it": "Sdraiati sulla schiena.", "en": "Lie flat on your back."},
-	"instruction_steps": {
-		"it": ["Sdraiati sulla schiena.", "Solleva il busto."],
-		"en": ["Lie flat on your back.", "Lift your torso."],
-	},
-	"muscle_group": "hip flexors",
-	"secondary_muscles": ["hip flexors", "lower back", "abs"],
-	"target": "abs",
-	"image": "images/0001-2gPfomN.jpg",
-	"gif_url": "videos/0001-2gPfomN.gif",
-	"media_id": "2gPfomN",
-	"attribution": "© Gym visual — https://gymvisual.com/",
-}
-
-
-class GliEsercizi(UnitTestCase):
-	def test_un_esercizio_del_dataset(self):
-		self.assertEqual(
-			T.esercizio(RECORD, "it"),
-			{
-				"code": "0001",
-				"name": "3/4 sit-up",
-				"name_in_source": "3/4 sit-up",
-				"body_part": "Core",
-				"equipment": "corpo libero",
-				"primary_muscles": "addominali",
-				"secondary_muscles": "flessori dell'anca, zona lombare",
-				"instructions": "1. Sdraiati sulla schiena.\n2. Solleva il busto.",
-				"media_path": "images/0001-2gPfomN.jpg",
-				"animation_path": "videos/0001-2gPfomN.gif",
-				"attribution": "© Gym visual — https://gymvisual.com/",
-			},
-		)
-
-	def test_in_inglese_e_senza_passi(self):
-		record = {**RECORD, "name": "barbell curl", "instruction_steps": {}}
-		fatto = T.esercizio(record, "en")
-		self.assertEqual((fatto["name"], fatto["equipment"]), ("Barbell curl", "body weight"))
-		self.assertEqual(fatto["instructions"], "Lie flat on your back.")
-
-	def test_percorsi_e_indirizzi_delle_immagini(self):
-		self.assertIsNone(T.esercizio({**RECORD, "gif_url": "../../etc/passwd"}, "it")["animation_path"])
-		self.assertIsNone(T.esercizio({"id": "9", "name": ""}, "it"))
-		self.assertIsNone(T.esercizio("not a record", "it"))
-		self.assertEqual(
-			T.indirizzo_media("https://cdn.example.com/esercizi/", "videos/0001-2gPfomN.gif"),
-			"https://cdn.example.com/esercizi/videos/0001-2gPfomN.gif",
-		)
-		self.assertEqual(
-			T.indirizzo_media("/assets/esercizi", "images/0001-2gPfomN.jpg"),
-			"/assets/esercizi/images/0001-2gPfomN.jpg",
-		)
-		for base in (None, "", "http://cdn.example.com", "//cdn.example.com", "javascript:alert(1)"):
-			self.assertIsNone(T.indirizzo_media(base, "images/0001-2gPfomN.jpg"), base)
-		self.assertIsNone(T.indirizzo_media("https://cdn.example.com", "images/../../x.jpg"))
