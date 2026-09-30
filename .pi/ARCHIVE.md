@@ -1969,3 +1969,24 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Le spunte restano sul telefono del paziente | Cosa ha già nel carrello non serve al centro |
 | Nel CRM aprirla va nel registro degli accessi | La lista dice cosa mangia la persona: è leggere il piano |
 
+## Fase 3, i programmi a tappe
+
+> **Completato** (30/09/2026). `crm/clinica/programmi_regole.py` (puro),
+> `crm/clinica/programmi.py`, `Clinic Programme` e `Clinic Programme Stage`, il
+> programma e la tappa su `Clinic Plan`, `ProgrammeDialog.vue`, `ProgrammeCard.vue`
+> nell'area, il lavoro del giorno `programmi.apri_del_giorno`.
+> `docs/gestionale-medico/README.md`, "I programmi a tappe".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Una tappa ha un piano normale, che si pubblica quando la tappa si apre | L'area, il check-in, la lista della spesa e il registro dei piani valgono come per ogni piano: niente secondo motore |
+| Il piano di una tappa non si pubblica, non si chiude e non ha versioni da solo | Va con la sua tappa; un piano che scappa dal programma lascerebbe la tappa senza |
+| Due modi: al proprio ritmo e per tempo | Practice Better: date fisse o "la tappa dopo si apre finita quella prima" (ricerca-design §2.1) |
+| Per tempo, aprire prima una tappa a mano non sposta i giorni delle altre | Il calendario resta quello detto al paziente; chi vuole un altro ritmo sceglie "al proprio ritmo" |
+| L'ultima tappa per tempo può non avere giorni | Il mantenimento non finisce da solo: lo chiude l'operatore |
+| Il paziente che finisce una tappa non riceve l'email della tappa dopo | L'ha aperta lui: glielo dice la pagina |
+| Un programma si legge come un piano, e ogni apertura va nel registro degli accessi | Dice che cosa fa la persona per la sua salute |
+| Nell'area il testo sui fondi scuri è `text-ink-base` su `surface-gray-10` | `text-ink-white` non è un token: il testo restava scuro sul grigio (anche i giorni del piano e il contatore dei messaggi) |
+
