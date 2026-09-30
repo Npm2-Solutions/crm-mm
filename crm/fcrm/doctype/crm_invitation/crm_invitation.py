@@ -7,7 +7,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import sha256_hash
 
-from crm.marchio import NOME
+from crm.marchio import nome
 from crm.permissions import livelli, utenti
 
 INVITABLE_ROLES = ("Sales User", "Sales Manager", "System Manager")
@@ -87,7 +87,7 @@ class CRMInvitation(Document):
 			print(f"Invite link for {self.email}: {invite_link}")  # nosemgrep
 
 		# the centre's name where it set one, the product's otherwise
-		title = frappe.db.get_single_value("FCRM Settings", "brand_name") or NOME
+		title = frappe.db.get_single_value("FCRM Settings", "brand_name") or nome()
 		template = "crm_invitation"
 
 		frappe.sendmail(
