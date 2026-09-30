@@ -14,7 +14,16 @@
   "api_key",
   "column_keys",
   "api_secret",
-  "webhook_secret"
+  "webhook_secret",
+  "seal_section",
+  "seal_enabled",
+  "seal_certificate",
+  "seal_password",
+  "seal_location",
+  "column_seal",
+  "tsa_url",
+  "tsa_username",
+  "tsa_password"
  ],
  "fields": [
   {
@@ -71,11 +80,65 @@
    "fieldtype": "Password",
    "label": "Webhook secret",
    "permlevel": 1
+  },
+  {
+   "fieldname": "seal_section",
+   "fieldtype": "Section Break",
+   "label": "The centre's seal and the time stamp"
+  },
+  {
+   "default": "0",
+   "description": "A PAdES seal with the centre's certificate on the signed forms and the reports: whoever holds the file can check nothing changed",
+   "fieldname": "seal_enabled",
+   "fieldtype": "Check",
+   "label": "Seal the PDFs"
+  },
+  {
+   "description": "The centre's certificate with its key, as a PKCS#12 file (.p12 or .pfx)",
+   "fieldname": "seal_certificate",
+   "fieldtype": "Attach",
+   "label": "Certificate",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "seal_password",
+   "fieldtype": "Password",
+   "label": "Certificate password",
+   "permlevel": 1
+  },
+  {
+   "description": "Where the seal is put, as the PDF shows it: the centre's city",
+   "fieldname": "seal_location",
+   "fieldtype": "Data",
+   "label": "Place"
+  },
+  {
+   "fieldname": "column_seal",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The time-stamping authority (RFC 3161) the centre buys stamps from",
+   "fieldname": "tsa_url",
+   "fieldtype": "Data",
+   "label": "Time stamp address",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "tsa_username",
+   "fieldtype": "Data",
+   "label": "Time stamp user",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "tsa_password",
+   "fieldtype": "Password",
+   "label": "Time stamp password",
+   "permlevel": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 18:00:00.000000",
+ "modified": "2026-10-01 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Signature Settings",
