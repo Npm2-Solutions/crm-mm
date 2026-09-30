@@ -6,8 +6,6 @@
  "field_order": [
   "service",
   "description",
-  "tooth",
-  "surfaces",
   "phase",
   "column_price",
   "qty",
@@ -37,18 +35,6 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Description"
-  },
-  {
-   "columns": 1,
-   "fieldname": "tooth",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Tooth"
-  },
-  {
-   "fieldname": "surfaces",
-   "fieldtype": "Data",
-   "label": "Surfaces"
   },
   {
    "columns": 1,
@@ -136,10 +122,10 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-05 00:00:00.000000",
+ "modified": "2026-10-06 12:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Care Plan Item",
+ "module": "Preventivi",
+ "name": "CRM Quote Item",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",

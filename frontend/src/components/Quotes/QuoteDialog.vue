@@ -1,9 +1,10 @@
 <!--
-  A dental care plan. Its dentist writes the draft: the treatments - a service,
-  maybe on a tooth and its surfaces, in phases - priced from the price list, with a
-  discount. Proposed, it is a quote to hand over (the PDF), which the desk records
-  accepted or declined. Accepted, its treatments are done as the appointments go:
-  booked from here, marked by hand when it happened otherwise.
+  A quote (crm.preventivi). Its author writes the draft: services from the price
+  list, in phases, with a discount - and what a module adds to a row, where the
+  server offers it: the clinic's tooth and surfaces, to a dentist. Proposed, it is
+  a PDF to hand over, which the desk records accepted or declined. Accepted, its
+  services are done as the appointments go: booked from here, marked by hand when
+  it happened otherwise.
 -->
 <template>
   <Dialog v-model="show" :options="{ size: '4xl' }">
@@ -11,17 +12,13 @@
       <div class="flex min-w-0 flex-wrap items-center gap-2">
         <h3 class="truncate text-2xl font-semibold text-ink-gray-9">
           {{
-            editing
-              ? plan.name
-                ? __('Care plan')
-                : __('New care plan')
-              : plan.title
+            editing ? (plan.name ? __('Quote') : __('New quote')) : plan.title
           }}
         </h3>
         <Badge
           v-if="plan.status"
           variant="subtle"
-          :theme="STATO_PIANO[plan.status] || 'gray'"
+          :theme="STATO[plan.status] || 'gray'"
           :label="__(plan.status)"
         />
       </div>
@@ -49,14 +46,17 @@
         </div>
 
         <div class="overflow-x-auto">
-          <div class="flex min-w-[720px] flex-col gap-2">
-            <div
-              class="grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_4rem_5rem_4rem_6rem_5rem_6rem_2rem] gap-2 text-p-xs text-ink-gray-5"
-            >
+          <div
+            class="flex flex-col gap-2"
+            :class="teeth ? 'min-w-[720px]' : 'min-w-[600px]'"
+          >
+            <div class="grid gap-2 text-p-xs text-ink-gray-5" :class="columns">
               <span>{{ __('Service') }}</span>
               <span>{{ __('Description') }}</span>
-              <span>{{ __('Tooth') }}</span>
-              <span>{{ __('Surfaces') }}</span>
+              <template v-if="teeth">
+                <span>{{ __('Tooth') }}</span>
+                <span>{{ __('Surfaces') }}</span>
+              </template>
               <span>{{ __('Phase') }}</span>
               <span>{{ __('Price') }}</span>
               <span>{{ __('Discount %') }}</span>
@@ -66,7 +66,8 @@
             <div
               v-for="(item, index) in plan.items"
               :key="item.key"
-              class="grid grid-cols-[minmax(0,2fr)_minmax(0,2fr)_4rem_5rem_4rem_6rem_5rem_6rem_2rem] items-center gap-2"
+              class="grid items-center gap-2"
+              :class="columns"
             >
               <FormControl
                 :modelValue="item.service"
@@ -80,17 +81,19 @@
                 v-model="item.description"
                 :aria-label="__('Description')"
               />
-              <TextInput
-                v-model="item.tooth"
-                :placeholder="'36'"
-                :aria-label="__('Tooth')"
-              />
-              <TextInput
-                v-model="item.surfaces"
-                :placeholder="'MOD'"
-                :disabled="!item.tooth"
-                :aria-label="__('Surfaces')"
-              />
+              <template v-if="teeth">
+                <TextInput
+                  v-model="item.tooth"
+                  :placeholder="'36'"
+                  :aria-label="__('Tooth')"
+                />
+                <TextInput
+                  v-model="item.surfaces"
+                  :placeholder="'MOD'"
+                  :disabled="!item.tooth"
+                  :aria-label="__('Surfaces')"
+                />
+              </template>
               <TextInput
                 v-model="item.phase"
                 type="number"
@@ -113,7 +116,7 @@
                 variant="ghost"
                 icon="x"
                 class="touch-target"
-                :aria-label="__('Remove the treatment')"
+                :aria-label="__('Remove the service')"
                 @click="plan.items.splice(index, 1)"
               />
             </div>
@@ -122,7 +125,7 @@
         <Button
           class="w-fit"
           icon-left="plus"
-          :label="__('Add a treatment')"
+          :label="__('Add a service')"
           @click="addItem"
         />
         <Totals :totals="liveTotals" :money="money" />
@@ -130,9 +133,9 @@
           v-model="plan.patient_notes"
           type="textarea"
           :rows="2"
-          :label="__('For the patient')"
+          :label="__('For the person')"
           :placeholder="
-            __('Printed on the quote: how the treatments go, what is included')
+            __('Printed on the quote: how the services go, what is included')
           "
         />
         <ErrorMessage :message="error" />
@@ -170,8 +173,8 @@
                   "
                 >
                   {{ item.description }}
-                  <span v-if="item.tooth" class="text-ink-gray-6">
-                    · {{ sulDente(item) }}
+                  <span v-if="item.detail" class="text-ink-gray-6">
+                    · {{ item.detail }}
                   </span>
                 </span>
                 <span
@@ -328,13 +331,12 @@ import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
 import { formatDate } from '@/utils'
 import {
-  STATO_PIANO,
+  STATO,
   STATO_VOCE,
   importo,
   perIlServer,
-  sulDente,
   totali,
-} from '@/utils/cure'
+} from '@/utils/preventivi'
 import { appLocale } from '@/utils/locale'
 import {
   Badge,
@@ -352,9 +354,11 @@ import { useRouter } from 'vue-router'
 
 const props = defineProps({
   lead: { type: String, required: true },
-  // the plan to open; none for a new one
+  // the quote to open; none for a new one
   name: { type: String, default: null },
   priceLists: { type: Array, default: () => [] },
+  // what a module offers on the rows, for a new quote: { teeth: true }
+  offers: { type: Object, default: () => ({}) },
 })
 const emit = defineEmits(['changed'])
 const show = defineModel({ type: Boolean })
@@ -371,6 +375,14 @@ const deciding = ref('')
 const decision = reactive({ reason: '', note: '' })
 
 const editing = computed(() => !plan.name || plan.can_edit)
+// a dentist writes the tooth and its surfaces on a row: the clinic offers them
+const teeth = computed(() => Boolean((plan.offers || props.offers)?.teeth))
+const campi = computed(() => (teeth.value ? ['tooth', 'surfaces'] : []))
+const columns = computed(() =>
+  teeth.value
+    ? 'grid-cols-[minmax(0,2fr)_minmax(0,2fr)_4rem_5rem_4rem_6rem_5rem_6rem_2rem]'
+    : 'grid-cols-[minmax(0,2fr)_minmax(0,2fr)_4rem_6rem_5rem_6rem_2rem]',
+)
 const isGoing = computed(() =>
   ['Accepted', 'Completed', 'Closed'].includes(plan.status),
 )
@@ -398,15 +410,15 @@ watch(show, async (open) => {
   busy.value = ''
   deciding.value = ''
   if (!props.name) {
-    fill({ title: __('Care plan'), status: null, items: [] })
+    fill({ title: __('Quote'), status: null, items: [] })
     addItem()
     return
   }
   loading.value = true
   try {
-    fill(await call('crm.clinica.cure.get_care_plan', { name: props.name }))
+    fill(await call('crm.preventivi.api.get_quote', { name: props.name }))
   } catch (e) {
-    error.value = e.messages?.[0] || __('Could not open the care plan')
+    error.value = e.messages?.[0] || __('Could not open the quote')
   } finally {
     loading.value = false
   }
@@ -446,7 +458,7 @@ const reasonOptions = computed(() => [
 
 const liveTotals = computed(() => totali(plan.items))
 
-// the treatments by phase, in their order
+// the services by phase, in their order
 const phases = computed(() => {
   const groups = new Map()
   for (const item of plan.items || []) {
@@ -541,8 +553,7 @@ function addItem() {
     key: key(),
     service: '',
     description: '',
-    tooth: '',
-    surfaces: '',
+    ...(teeth.value ? { tooth: '', surfaces: '' } : {}),
     phase: plan.items.at(-1)?.phase || 1,
     qty: 1,
     rate: 0,
@@ -556,7 +567,7 @@ async function pickService(item, service) {
   )?.service_name
   item.service = service
   try {
-    const price = await call('crm.clinica.cure.price_of', {
+    const price = await call('crm.preventivi.api.price_of', {
       service,
       price_list: plan.price_list || null,
     })
@@ -573,9 +584,9 @@ async function save(quietly = false) {
   error.value = ''
   try {
     fill(
-      await call('crm.clinica.cure.save_care_plan', {
+      await call('crm.preventivi.api.save_quote', {
         lead: props.lead,
-        data: perIlServer(plan),
+        data: perIlServer(plan, campi.value),
         name: plan.name || null,
       }),
     )
@@ -583,9 +594,10 @@ async function save(quietly = false) {
     emit('changed')
     return true
   } catch (e) {
-    error.value = (
-      e.messages?.[0] || __('Could not save the care plan')
-    ).replace(/<br>/g, ' · ')
+    error.value = (e.messages?.[0] || __('Could not save the quote')).replace(
+      /<br>/g,
+      ' · ',
+    )
     return false
   } finally {
     busy.value = ''
@@ -596,7 +608,7 @@ async function propose() {
   if (!(await save(true))) return
   busy.value = 'propose'
   try {
-    fill(await call('crm.clinica.cure.propose_care_plan', { name: plan.name }))
+    fill(await call('crm.preventivi.api.propose_quote', { name: plan.name }))
     toast.success(__('Proposed: the quote is ready to hand over'))
     emit('changed')
   } catch (e) {
@@ -612,7 +624,7 @@ async function propose() {
 function removeDraft() {
   $dialog({
     title: __('Delete the draft?'),
-    message: __('The care plan was never proposed: nothing else goes with it.'),
+    message: __('The quote was never proposed: nothing else goes with it.'),
     actions: [
       {
         label: __('Delete'),
@@ -621,7 +633,7 @@ function removeDraft() {
         onClick: async (closeDialog) => {
           closeDialog()
           try {
-            await call('crm.clinica.cure.delete_care_plan_draft', {
+            await call('crm.preventivi.api.delete_quote_draft', {
               name: plan.name,
             })
             emit('changed')
@@ -660,14 +672,14 @@ async function decide() {
   if (deciding.value === 'accept') {
     await act(
       'accept',
-      'crm.clinica.cure.accept_care_plan',
+      'crm.preventivi.api.accept_quote',
       { note: decision.note },
       __('Accepted'),
     )
   } else {
     await act(
       'decline',
-      'crm.clinica.cure.decline_care_plan',
+      'crm.preventivi.api.decline_quote',
       { reason: decision.reason || null, note: decision.note },
       __('Declined'),
     )
@@ -681,7 +693,7 @@ function markOptions(item) {
     options.push({
       label: __('Done'),
       onClick: () =>
-        act('mark', 'crm.clinica.cure.mark_treatment', {
+        act('mark', 'crm.preventivi.api.mark_item', {
           item: item.name,
           status: 'Done',
         }),
@@ -690,7 +702,7 @@ function markOptions(item) {
     options.push({
       label: __('To do'),
       onClick: () =>
-        act('mark', 'crm.clinica.cure.mark_treatment', {
+        act('mark', 'crm.preventivi.api.mark_item', {
           item: item.name,
           status: 'To do',
         }),
@@ -704,7 +716,7 @@ function markOptions(item) {
     options.push({
       label: __('Cancelled'),
       onClick: () =>
-        act('mark', 'crm.clinica.cure.mark_treatment', {
+        act('mark', 'crm.preventivi.api.mark_item', {
           item: item.name,
           status: 'Cancelled',
         }),
@@ -718,7 +730,7 @@ const moreOptions = computed(() => {
     options.push({
       label: __('Take it back to change it'),
       icon: 'edit-2',
-      onClick: () => act('withdraw', 'crm.clinica.cure.withdraw_care_plan'),
+      onClick: () => act('withdraw', 'crm.preventivi.api.withdraw_quote'),
     })
   if (plan.can_copy)
     options.push({
@@ -728,22 +740,17 @@ const moreOptions = computed(() => {
     })
   if (plan.can_close)
     options.push({
-      label: __('Close the plan'),
+      label: __('Close the quote'),
       icon: 'lock',
       onClick: () =>
-        act(
-          'close',
-          'crm.clinica.cure.close_care_plan',
-          {},
-          __('Care plan closed'),
-        ),
+        act('close', 'crm.preventivi.api.close_quote', {}, __('Quote closed')),
     })
   return options
 })
 
 async function copy() {
   try {
-    const data = await call('crm.clinica.cure.copy_care_plan', {
+    const data = await call('crm.preventivi.api.copy_quote', {
       name: plan.name,
     })
     fill(data)
@@ -758,7 +765,7 @@ function openQuote() {
   window.open(plan.quote_pdf, '_blank')
 }
 
-// on the calendar: a new appointment of the treatment's service, for the person
+// on the calendar: a new appointment of the row's service, for the person
 function book(item) {
   show.value = false
   router.push({

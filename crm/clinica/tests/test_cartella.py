@@ -166,10 +166,10 @@ class LaVisita(RecordCase):
 		self.come(SALES)
 		with self.assertRaises(frappe.PermissionError):
 			cartella.get_record(self.anna.name)
-		# the desk comes for the quotes: no record, and no reading logged
+		# the desk handles the quotes on their own tab: the record is not its door
 		self.come(DESK)
-		visto = cartella.get_record(self.anna.name)
-		self.assertEqual((visto["records"], visto["can_read"]), ([], False))
+		with self.assertRaises(frappe.PermissionError):
+			cartella.get_record(self.anna.name)
 		# the manager comes for the access log: no record, and no reading logged
 		self.come(MANAGER)
 		visto = cartella.get_record(self.anna.name)

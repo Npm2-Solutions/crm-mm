@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "creation": "2026-10-06 12:00:00.000000",
+ "description": "How quotes go: the pipeline they move, how long they hold",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "quotes_pipeline",
+  "valid_days"
+ ],
+ "fields": [
+  {
+   "description": "A quote handed over moves the person's deal here",
+   "fieldname": "quotes_pipeline",
+   "fieldtype": "Link",
+   "label": "Quotes pipeline",
+   "options": "CRM Pipeline"
+  },
+  {
+   "description": "How long a quote holds, unless whoever writes it says otherwise (60 if empty)",
+   "fieldname": "valid_days",
+   "fieldtype": "Int",
+   "label": "Valid for days"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-06 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Preventivi",
+ "name": "CRM Quote Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,8 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Dental care plans, without a site: the teeth and their surfaces, the chart, the
-sums of a quote, and which treatment an appointment takes."""
+"""The teeth without a site: the FDI notation and the surfaces, the chart, the teeth
+on a quote's rows (its sums are the CRM's: `crm/preventivi/tests/test_regole.py`)."""
 
 from __future__ import annotations
 
@@ -82,73 +82,21 @@ class LoStato(UnitTestCase):
 		)
 
 
-def voce(servizio="Otturazione", fase=1, stato=R.DA_FARE, qty=1, rate=100, sconto=0, **altro):
-	return {
-		"service": servizio,
-		"phase": fase,
-		"status": stato,
-		"qty": qty,
-		"rate": rate,
-		"discount": sconto,
-		**altro,
-	}
+def voce(servizio="Otturazione", **altro):
+	return {"service": servizio, **altro}
 
 
-class IlPiano(UnitTestCase):
-	def test_i_passaggi(self):
-		self.assertTrue(R.si_passa(R.BOZZA, R.PROPOSTO))
-		self.assertTrue(R.si_passa(R.PROPOSTO, R.BOZZA))
-		self.assertTrue(R.si_passa(R.PROPOSTO, R.ACCETTATO))
-		self.assertFalse(R.si_passa(R.BOZZA, R.ACCETTATO))
-		self.assertFalse(R.si_passa(R.RIFIUTATO, R.ACCETTATO))
-		self.assertTrue(R.si_passa(R.ACCETTATO, R.CHIUSO))
-
-	def test_le_somme(self):
-		self.assertEqual(R.importo(2, 80, 10), 144)
-		self.assertEqual(R.importo(1, 99.99, 33), 66.99)
-		voci = [
-			voce(rate=100, sconto=10, stato=R.FATTA),
-			voce("Impianto", 2, qty=1, rate=1200),
-			voce("Igiene", 1, rate=70, stato=R.ANNULLATA),
-		]
-		self.assertEqual(
-			R.totali(voci), {"gross": 1300, "discount": 10, "net": 1290, "done": 90, "left": 1200}
-		)
-
-	def test_l_appuntamento_prende_la_prima_da_fare_nell_ordine_delle_fasi(self):
-		voci = [
-			voce("Impianto", 3),
-			voce("Otturazione", 2, tooth="36"),
-			voce("Otturazione", 1, tooth="46", stato=R.FATTA),
-			voce("Otturazione", 1, tooth="26"),
-		]
-		self.assertEqual(R.voce_per(voci, "Otturazione"), 3)
-		voci[3]["status"] = R.PRENOTATA
-		self.assertEqual(R.voce_per(voci, "Otturazione"), 1)
-		self.assertIsNone(R.voce_per(voci, "Igiene"))
-
-	def test_completato(self):
-		self.assertFalse(R.completato([voce(stato=R.FATTA), voce()]))
-		self.assertTrue(R.completato([voce(stato=R.FATTA), voce(stato=R.ANNULLATA)]))
-		self.assertFalse(R.completato([voce(stato=R.ANNULLATA)]))
-
-	def test_prima_di_proporlo(self):
-		self.assertEqual([p.testo() for p in R.valida_piano([])], ["A plan has at least one treatment"])
-		problemi = R.valida_piano(
-			[
-				voce(tooth="36", surfaces="MOD"),
-				voce(servizio="", tooth="19"),
-				voce(surfaces="O"),
-				voce(qty=0, sconto=120),
-			]
+class SuUnPreventivo(UnitTestCase):
+	def test_i_denti_delle_righe(self):
+		self.assertEqual(R.valida_denti([voce(tooth="36", surfaces="MOD"), voce()]), [])
+		problemi = R.valida_denti(
+			[voce(tooth="36"), voce(tooth="19"), voce(surfaces="O"), voce(tooth="46", surfaces="X")]
 		)
 		self.assertEqual(
 			[p.testo() for p in problemi],
 			[
-				"Treatment 2: choose the service",
-				"Treatment 2: 19 is not a tooth",
-				"Treatment 3: surfaces go with a tooth, as M, O, D, V, L",
-				"Treatment 4: the quantity is more than zero",
-				"Treatment 4: the discount is from 0 to 100%",
+				"Row 2: 19 is not a tooth",
+				"Row 3: surfaces go with a tooth, as M, O, D, V, L",
+				"Row 4: surfaces go with a tooth, as M, O, D, V, L",
 			],
 		)

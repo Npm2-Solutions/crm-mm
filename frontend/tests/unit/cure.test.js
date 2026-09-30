@@ -5,13 +5,10 @@ import {
   arcate,
   delDente,
   eDente,
-  importo,
   mancante,
-  perIlServer,
   sulDente,
   superfici,
   suSuperfici,
-  totali,
 } from '@/utils/cure'
 
 describe('the teeth', () => {
@@ -54,59 +51,8 @@ describe('the teeth', () => {
 })
 
 describe('a care plan', () => {
-  it('sums as the server does', () => {
-    expect(importo(2, 80, 10)).toBe(144)
-    expect(importo(1, 99.99, 33)).toBe(66.99)
-    expect(
-      totali([
-        { qty: 1, rate: 100, discount: 10, status: 'Done' },
-        { qty: 1, rate: 1200 },
-        { qty: 1, rate: 70, status: 'Cancelled' },
-      ]),
-    ).toEqual({ gross: 1300, discount: 10, net: 1290, done: 90, left: 1200 })
-  })
-
-  it('writes a treatment on its tooth', () => {
+  it('writes a row on its tooth', () => {
     expect(sulDente({ tooth: '36', surfaces: 'MOD' })).toBe('36 MOD')
     expect(sulDente({ tooth: null })).toBe('')
-  })
-
-  it('goes to the server as it takes it', () => {
-    expect(
-      perIlServer({
-        title: '  Piano 2026 ',
-        items: [
-          { service: 'Otturazione', tooth: ' 36 ', surfaces: 'MO', rate: '90' },
-          { service: 'Igiene', surfaces: 'O', phase: 0, qty: 0, discount: '5' },
-        ],
-      }),
-    ).toEqual({
-      title: 'Piano 2026',
-      price_list: null,
-      valid_until: null,
-      patient_notes: null,
-      items: [
-        {
-          service: 'Otturazione',
-          description: null,
-          tooth: '36',
-          surfaces: 'MO',
-          phase: 1,
-          qty: 1,
-          rate: 90,
-          discount: 0,
-        },
-        {
-          service: 'Igiene',
-          description: null,
-          tooth: null,
-          surfaces: null,
-          phase: 1,
-          qty: 1,
-          rate: 0,
-          discount: 5,
-        },
-      ],
-    })
   })
 })

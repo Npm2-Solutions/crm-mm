@@ -1,0 +1,36 @@
+{
+ "custom_fields": [
+  {
+   "name": "CRM Quote-visibility",
+   "dt": "CRM Quote",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "clinical",
+   "default": "Care team",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Who reads it",
+   "options": "Care team\nMy discipline\nOnly me",
+   "read_only": 1
+  },
+  {
+   "name": "CRM Quote-obscured",
+   "dt": "CRM Quote",
+   "module": "Clinica",
+   "is_system_generated": 1,
+   "insert_after": "visibility",
+   "default": "0",
+   "fieldname": "obscured",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Obscured",
+   "read_only": 1
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "CRM Quote",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}

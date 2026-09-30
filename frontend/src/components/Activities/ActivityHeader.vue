@@ -152,7 +152,8 @@
         title == 'Clinic' ||
         title == 'Forms' ||
         title == 'Area' ||
-        title == 'Documents'
+        title == 'Documents' ||
+        title == 'Quotes'
       "
     />
     <Dropdown

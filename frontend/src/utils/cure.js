@@ -1,5 +1,6 @@
-// Dental care plans in the browser: the same teeth, surfaces and sums as
-// crm/clinica/cure_regole.py, and what the editor sends to the server.
+// The teeth in the browser: the same notation, surfaces and chart as
+// crm/clinica/cure_regole.py. A care plan is a quote: its sums are
+// utils/preventivi.js.
 
 export const PERMANENTE = 'Permanent'
 export const MISTA = 'Mixed'
@@ -65,22 +66,6 @@ export function suSuperfici(condizione) {
   return Boolean(PER_NOME[condizione]?.surfaces)
 }
 
-export const STATO_PIANO = {
-  Draft: 'orange',
-  Proposed: 'blue',
-  Accepted: 'green',
-  Declined: 'red',
-  Completed: 'gray',
-  Closed: 'gray',
-}
-
-export const STATO_VOCE = {
-  'To do': 'gray',
-  Booked: 'blue',
-  Done: 'green',
-  Cancelled: 'gray',
-}
-
 export function eDente(codice) {
   const numero = Number(String(codice ?? '').trim())
   if (!Number.isInteger(numero)) return false
@@ -130,56 +115,7 @@ export function mancante(righe, dente) {
   return delDente(righe, dente).some((riga) => riga.condition === 'Missing')
 }
 
-// a treatment's amount, as the server rounds it
-export function importo(quantita, prezzo, sconto) {
-  const q = Number(quantita) || 0
-  const p = Number(prezzo) || 0
-  const s = Math.min(Math.max(Number(sconto) || 0, 0), 100)
-  return Math.round(((q * p * (100 - s)) / 100) * 100 + 1e-7) / 100
-}
-
-export function totali(voci) {
-  let lordo = 0
-  let netto = 0
-  let fatto = 0
-  for (const voce of voci || []) {
-    if (voce.status === 'Cancelled') continue
-    lordo += (Number(voce.qty) || 0) * (Number(voce.rate) || 0)
-    const valore = importo(voce.qty, voce.rate, voce.discount)
-    netto += valore
-    if (voce.status === 'Done') fatto += valore
-  }
-  const tondo = (n) => Math.round(n * 100) / 100
-  return {
-    gross: tondo(lordo),
-    discount: tondo(lordo - netto),
-    net: tondo(netto),
-    done: tondo(fatto),
-    left: tondo(netto - fatto),
-  }
-}
-
-// a treatment's tooth and surfaces, as a dentist writes them: "36 MOD"
+// a row's tooth and surfaces, as a dentist writes them: "36 MOD"
 export function sulDente(voce) {
   return [voce?.tooth, voce?.surfaces].filter(Boolean).join(' ')
-}
-
-// the plan as the server takes it
-export function perIlServer(piano) {
-  return {
-    title: (piano.title || '').trim(),
-    price_list: piano.price_list || null,
-    valid_until: piano.valid_until || null,
-    patient_notes: (piano.patient_notes || '').trim() || null,
-    items: (piano.items || []).map((voce) => ({
-      service: voce.service,
-      description: (voce.description || '').trim() || null,
-      tooth: voce.tooth ? String(voce.tooth).trim() : null,
-      surfaces: voce.tooth && voce.surfaces ? voce.surfaces : null,
-      phase: Math.max(Number(voce.phase) || 1, 1),
-      qty: Number(voce.qty) > 0 ? Number(voce.qty) : 1,
-      rate: Number(voce.rate) || 0,
-      discount: Number(voce.discount) || 0,
-    })),
-  }
 }

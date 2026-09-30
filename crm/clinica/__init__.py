@@ -127,26 +127,17 @@ CAPACITA = (
 		),
 		{"operatore": SUOI},
 	),
-	# the dental care plans (phase 3, "piani di cura (odontoiatria)"): the dentist
-	# writes the chart and the plans, the desk handles the quotes
+	# the teeth (phase 3, "piani di cura (odontoiatria)"): the dentist writes the
+	# chart, and a care plan is a quote of the CRM's with a tooth on its rows
 	(
 		Capacita(
 			"cure.scrivi",
 			PIANO,
 			clinica=True,
-			descrizione="Write the dental chart and the care plans, and propose them as quotes: with a "
+			descrizione="Write the dental chart, and the tooth and its surfaces on a quote: with a "
 			"dentist's qualification",
 		),
 		{"operatore": SUOI},
-	),
-	(
-		Capacita(
-			"cure.preventivi",
-			PIANO,
-			clinica=True,
-			descrizione="Read the care plans proposed as quotes, and record them accepted or declined",
-		),
-		{"segreteria": CENTRO, "manager": CENTRO},
 	),
 	# the assistant on one's patients (design.md, "L'assistente"): the plan's
 	# assistant module, the clinic's data
@@ -220,6 +211,9 @@ CRM_DELLA_DIREZIONE = (
 	"documenti.aggiungi",
 	"documenti.consegna",
 	"documenti.togli",
+	# the quotes: the care plans, and closing one stopped half-way
+	"preventivi.vedi",
+	"preventivi.gestisci",
 )
 
 
@@ -393,6 +387,10 @@ def registra() -> None:
 	from crm.clinica import documenti
 
 	documenti.registra()
+	# the tooth and its surfaces on the CRM's quotes: a care plan
+	from crm.clinica import cure
+
+	cure.registra()
 	# with the clinic on, the CRM is a medical centre's software and says so
 	from crm.clinica.parole import PAROLE
 	from crm.marchio import DOTTORCLOUD
@@ -400,22 +398,14 @@ def registra() -> None:
 
 	# and wears its brand: DottorCloud's name, marks and colours, everywhere
 	registra_verticale(Verticale(PIANO, PIANO, parole=PAROLE, marchio=DOTTORCLOUD.chiave))
-	_registra_area(clinica_accesa)
+	_registra_area()
 
 
-def _registra_area(clinica_accesa) -> None:
-	"""The clinic's places in the patient area, and its kind of message on the board."""
+def _registra_area() -> None:
+	"""The clinic's kind of message on the board of the patient area."""
 	from crm.area import messaggi
-	from crm.area.sezioni import Sezione, registra_sezione
 	from crm.permissions import livelli
 
-	def cure(lead: str) -> int:
-		# the dental care plans proposed to the patient and going on
-		from crm.clinica import cure as piani_di_cura
-
-		return piani_di_cura.piani_nell_area(lead) if clinica_accesa() else 0
-
-	registra_sezione(Sezione("care_plans", cure))
 	# about the care: written by a practitioner, read like one of their visits
 	messaggi.registra_tipo(
 		messaggi.TipoMessaggio(

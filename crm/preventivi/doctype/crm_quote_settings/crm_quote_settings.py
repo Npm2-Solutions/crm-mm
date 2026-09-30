@@ -4,5 +4,5 @@
 from frappe.model.document import Document
 
 
-class ClinicCarePlanItem(Document):
+class CRMQuoteSettings(Document):
 	pass

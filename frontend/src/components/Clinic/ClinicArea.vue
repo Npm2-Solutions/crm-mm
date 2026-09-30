@@ -657,8 +657,8 @@ function openedWhat(row) {
             ? __('Opened a programme')
             : row.kind === 'dental chart'
               ? __('Opened the dental chart')
-              : row.kind === 'care plan'
-                ? __('Opened a care plan')
+              : row.kind === 'quote'
+                ? __('Opened a quote')
                 : __('Downloaded a file')
   return row.count > 1 ? __('{0} · {1} entries', [what, row.count]) : what
 }

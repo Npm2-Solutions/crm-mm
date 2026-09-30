@@ -1,11 +1,9 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The clinic's plans in the patient area, beside the CRM's (`crm.piani.area`):
-the dental care plans, and a diet's shopping list.
+"""The clinic's plans in the patient area, beside the CRM's (`crm.piani.area`): a
+diet's shopping list. The dental care plans are quotes (`crm.preventivi.area`).
 
-- **The care plans** (`area_care_plans`): the treatments proposed and going on,
-  what is done, the sums.
 - **The shopping list** (`area_shopping_list`): what to buy for the days ahead -
   the diet's foods and how much, the groups to choose from with their portions -
   from two days back to five weeks ahead.
@@ -22,16 +20,6 @@ from crm.clinica import piani
 from crm.clinica import piani_regole as R
 from crm.piani import area as area_dei_piani
 from crm.piani import regole
-
-
-@frappe.whitelist()
-def area_care_plans(person: str) -> dict:
-	"""The dental care plans proposed to the person and going on: the treatments,
-	what is done, the sums."""
-	from crm.clinica import cure
-
-	_mia(person)
-	return {"plans": cure.della_persona(person)}
 
 
 @frappe.whitelist()

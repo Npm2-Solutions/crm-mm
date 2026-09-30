@@ -1,18 +1,20 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Dental care plans (docs/gestionale-medico, phase 3).
+"""Dental care plans (docs/gestionale-medico, phase 3): the dentist's chart, and a
+care plan as a quote of the CRM's (`crm.preventivi`) with a tooth on its rows.
 
-The dentist writes Anna's chart, and a plan of two phases - two fillings, then an
-implant with a discount - from the price list; the hygienist writes neither.
-Proposed, the plan is frozen, its quote is a PDF and Anna's deal in the quotes
-pipeline says "quote delivered"; the desk, which did not read the draft, records
-it accepted and the deal is won. The appointment already booked for a filling
-takes the first filling, a new one the second, the implant its own at the price
-agreed; Anna came, it is done; a cancellation gives it back; every treatment done
-or cancelled, the plan is completed. Declined, the deal is lost with the reason,
-and a new version starts from it. A colleague reads a proposed plan with the
-dossier, and every opening goes in the access log; sales reads nothing of it.
+The dentist writes Anna's chart, and a care plan of two phases - two fillings, then
+an implant with a discount - from the price list; the hygienist writes no chart and
+puts no tooth on a quote. The plan is health data, its author a dentist. Proposed,
+it is frozen, its PDF says the teeth and Anna's deal in the quotes pipeline says
+"quote delivered"; the desk, which did not read the draft, records it accepted and
+the deal is won. The appointment already booked for a filling takes the first
+filling, a new one the second, the implant its own at the price agreed; Anna came,
+it is done; a cancellation gives it back; every row done or cancelled, the plan is
+completed. Declined, the deal is lost with the reason, and a new version starts
+from it with its teeth. A colleague reads a proposed plan with the dossier, and
+every opening goes in the access log; sales reads nothing of it.
 """
 
 import json
@@ -24,6 +26,11 @@ from crm.clinica import cartella, cure, pipeline
 from crm.clinica import cure_regole as R
 from crm.clinica.tests.test_cartella import DESK, DOC1, DOC2, MANAGER, SALES
 from crm.clinica.tests.test_dossier import DossierCase
+from crm.preventivi import api as preventivi
+from crm.preventivi import area as area_preventivi
+from crm.preventivi import documento
+from crm.preventivi import pipeline as pipeline_preventivi
+from crm.preventivi import regole as P
 from crm.tests.test_scheduling import SchedulingCase
 
 DENTISTA, IGIENISTA = DOC1, DOC2
@@ -48,7 +55,7 @@ class CureCase(DossierCase, SchedulingCase):
 
 	def piano(self, **altro):
 		self.come(DENTISTA)
-		return cure.save_care_plan(
+		return preventivi.save_quote(
 			self.anna.name,
 			json.dumps(
 				{
@@ -83,7 +90,7 @@ class CureCase(DossierCase, SchedulingCase):
 
 	def proponi(self, nome):
 		self.come(DENTISTA)
-		return cure.propose_care_plan(nome)
+		return preventivi.propose_quote(nome)
 
 	def appuntamento(self, servizio, quando):
 		frappe.set_user("Administrator")
@@ -110,7 +117,7 @@ class CureCase(DossierCase, SchedulingCase):
 
 	def voci(self, nome):
 		self.come(DENTISTA)
-		return [(v["tooth"], v["status"], v["appointment"]) for v in cure.get_care_plan(nome)["items"]]
+		return [(v["tooth"], v["status"], v["appointment"]) for v in preventivi.get_quote(nome)["items"]]
 
 	def tipo_del_deal(self, deal):
 		return frappe.db.get_value("CRM Deal Status", frappe.db.get_value("CRM Deal", deal, "status"), "type")
@@ -162,39 +169,50 @@ class LoStatoDeiDenti(CureCase):
 class IlPreventivo(CureCase):
 	def test_si_scrive_si_propone_e_la_segreteria_lo_accetta(self):
 		fatto = self.piano()
-		self.assertEqual(fatto["status"], R.BOZZA)
+		self.assertEqual((fatto["status"], fatto["clinical"]), (P.BOZZA, 1))
 		self.assertEqual(
 			fatto["totals"], {"gross": 1380, "discount": 120, "net": 1260, "done": 0, "left": 1260}
 		)
 		self.assertEqual([v["surfaces"] for v in fatto["items"]], ["MO", "O", None])
-		# the hygienist does not write plans; the desk does not read a draft
+		self.assertEqual(fatto["items"][0]["detail"], "Tooth 36 MO")
+		self.assertTrue(fatto["offers"]["teeth"])
+		# the hygienist puts no tooth on a quote; the desk does not read a draft
 		self.come(IGIENISTA)
-		with self.assertRaises(frappe.PermissionError):
-			cure.save_care_plan(self.anna.name, json.dumps({"title": "Suo", "items": []}))
+		self.assertFalse(preventivi.get_quotes(self.anna.name)["offers"]["teeth"])
+		with self.assertRaises(frappe.ValidationError):
+			preventivi.save_quote(
+				self.anna.name,
+				json.dumps({"title": "Suo", "items": [{"service": self.otturazione.name, "tooth": "36"}]}),
+			)
 		self.come(DESK)
-		self.assertEqual(cure.get_dental(self.anna.name)["plans"], [])
+		self.assertEqual(preventivi.get_quotes(self.anna.name)["quotes"], [])
 		with self.assertRaises(frappe.PermissionError):
-			cure.get_care_plan(fatto["name"])
+			preventivi.get_quote(fatto["name"])
 		proposto = self.proponi(fatto["name"])
-		self.assertEqual(proposto["status"], R.PROPOSTO)
+		self.assertEqual(proposto["status"], P.PROPOSTO)
 		self.assertTrue(proposto["quote_pdf"])
-		self.assertEqual(getdate(proposto["valid_until"]), add_days(getdate(), cure.GIORNI_VALIDITA))
+		self.assertEqual(getdate(proposto["valid_until"]), add_days(getdate(), P.GIORNI_VALIDITA))
+		self.assertIn("Tooth 36 MO", documento.html(frappe.get_doc(preventivi.DOCTYPE, fatto["name"])))
 		deal = frappe.get_doc("CRM Deal", proposto["deal"])
-		self.assertEqual(deal.pipeline, pipeline.impostazioni().quotes_pipeline)
-		self.assertEqual(frappe.db.get_value("CRM Deal Status", deal.status, "position"), pipeline.CONSEGNATO)
+		self.assertEqual(deal.pipeline, pipeline_preventivi.quale())
+		self.assertEqual(
+			frappe.db.get_value("CRM Deal Status", deal.status, "position"), pipeline_preventivi.CONSEGNATO
+		)
 		self.assertEqual(deal.expected_deal_value, 1260)
 		# proposed, it is not rewritten
-		doc = frappe.get_doc(cure.PIANO, fatto["name"])
+		doc = frappe.get_doc(preventivi.DOCTYPE, fatto["name"])
 		doc.title = "Riscritto"
 		with self.assertRaises(frappe.ValidationError):
 			doc.save(ignore_permissions=True)
 		# the desk reads it now, and records it accepted
 		self.come(DESK)
-		self.assertEqual([p["name"] for p in cure.get_dental(self.anna.name)["plans"]], [fatto["name"]])
-		self.assertTrue(cure.get_care_plan(fatto["name"])["can_decide"])
-		accettato = cure.accept_care_plan(fatto["name"], note="Firmato al banco")
 		self.assertEqual(
-			(accettato["status"], accettato["acceptance_note"]), (R.ACCETTATO, "Firmato al banco")
+			[p["name"] for p in preventivi.get_quotes(self.anna.name)["quotes"]], [fatto["name"]]
+		)
+		self.assertTrue(preventivi.get_quote(fatto["name"])["can_decide"])
+		accettato = preventivi.accept_quote(fatto["name"], note="Firmato al banco")
+		self.assertEqual(
+			(accettato["status"], accettato["acceptance_note"]), (P.ACCETTATO, "Firmato al banco")
 		)
 		self.assertEqual(self.tipo_del_deal(accettato["deal"]), "Won")
 
@@ -202,20 +220,21 @@ class IlPreventivo(CureCase):
 		fatto = self.piano()
 		self.proponi(fatto["name"])
 		self.come(DESK)
-		rifiutato = cure.decline_care_plan(fatto["name"], reason="Pricing", note="Ci vuole pensare")
-		self.assertEqual(rifiutato["status"], R.RIFIUTATO)
+		rifiutato = preventivi.decline_quote(fatto["name"], reason="Pricing", note="Ci vuole pensare")
+		self.assertEqual(rifiutato["status"], P.RIFIUTATO)
 		deal = frappe.get_doc("CRM Deal", rifiutato["deal"])
 		self.assertEqual((self.tipo_del_deal(deal.name), deal.lost_reason), ("Lost", "Pricing"))
 		self.come(DENTISTA)
-		nuova = cure.copy_care_plan(fatto["name"])
+		nuova = preventivi.copy_quote(fatto["name"])
 		self.assertEqual(
-			(nuova["status"], nuova["replaces"], len(nuova["items"])), (R.BOZZA, fatto["name"], 3)
+			(nuova["status"], nuova["replaces"], len(nuova["items"])), (P.BOZZA, fatto["name"], 3)
 		)
+		self.assertEqual([v["tooth"] for v in nuova["items"]], ["36", "46", "26"])
 		# proposed and taken back to change it: a draft again, without the old quote
 		self.proponi(nuova["name"])
 		self.come(DENTISTA)
-		ritirata = cure.withdraw_care_plan(nuova["name"])
-		self.assertEqual((ritirata["status"], ritirata["quote_pdf"]), (R.BOZZA, None))
+		ritirata = preventivi.withdraw_quote(nuova["name"])
+		self.assertEqual((ritirata["status"], ritirata["quote_pdf"]), (P.BOZZA, None))
 
 
 class LePrestazioni(CureCase):
@@ -226,7 +245,7 @@ class LePrestazioni(CureCase):
 		prima = self.appuntamento(self.otturazione, self.tomorrow(9))
 		self.assertEqual(frappe.db.get_value("CRM Appointment", prima.name, "total_amount"), 90)
 		self.come(DESK)
-		cure.accept_care_plan(fatto["name"])
+		preventivi.accept_quote(fatto["name"])
 		# a new one takes the next, the implant its own at the price agreed
 		seconda = self.appuntamento(self.otturazione, self.tomorrow(11))
 		impianto = self.appuntamento(self.impianto, self.tomorrow(14))
@@ -234,41 +253,42 @@ class LePrestazioni(CureCase):
 		self.assertEqual(
 			self.voci(fatto["name"]),
 			[
-				("36", R.PRENOTATA, prima.name),
-				("46", R.PRENOTATA, seconda.name),
-				("26", R.PRENOTATA, impianto.name),
+				("36", P.PRENOTATA, prima.name),
+				("46", P.PRENOTATA, seconda.name),
+				("26", P.PRENOTATA, impianto.name),
 			],
 		)
 		# Anna came: done; a cancellation gives the treatment back
 		self.esito(prima, "Attended")
 		self.esito(seconda, "Cancelled")
-		self.assertEqual(self.voci(fatto["name"])[:2], [("36", R.FATTA, prima.name), ("46", R.DA_FARE, None)])
+		self.assertEqual(self.voci(fatto["name"])[:2], [("36", P.FATTA, prima.name), ("46", P.DA_FARE, None)])
 		# the dentist cancels the second filling; the implant done, the plan is completed
 		self.come(DENTISTA)
-		voce = cure.get_care_plan(fatto["name"])["items"][1]["name"]
-		cure.mark_treatment(fatto["name"], voce, R.ANNULLATA)
+		voce = preventivi.get_quote(fatto["name"])["items"][1]["name"]
+		preventivi.mark_item(fatto["name"], voce, P.ANNULLATA)
 		self.esito(impianto, "Attended")
 		self.come(DENTISTA)
-		finito = cure.get_care_plan(fatto["name"])
-		self.assertEqual(finito["status"], R.COMPLETATO)
+		finito = preventivi.get_quote(fatto["name"])
+		self.assertEqual(finito["status"], P.COMPLETATO)
 		self.assertEqual(
 			finito["totals"], {"gross": 1290, "discount": 120, "net": 1170, "done": 1170, "left": 0}
 		)
-		# in the person's area: the plan and its treatments
-		[nell_area] = cure.della_persona(self.anna.name)
+		# in the person's area: the plan and its treatments, with their teeth
+		[nell_area] = area_preventivi.della_persona(self.anna.name)
 		self.assertEqual(
-			[(v["tooth"], v["status"]) for v in nell_area["items"]], [("36", R.FATTA), ("26", R.FATTA)]
+			[(v["detail"], v["status"]) for v in nell_area["items"]],
+			[("Tooth 36 MO", P.FATTA), ("Tooth 26", P.FATTA)],
 		)
 
 	def test_un_appuntamento_eliminato_rende_la_prestazione(self):
 		fatto = self.piano()
 		self.proponi(fatto["name"])
 		self.come(DESK)
-		cure.accept_care_plan(fatto["name"])
+		preventivi.accept_quote(fatto["name"])
 		appuntamento = self.appuntamento(self.otturazione, self.tomorrow(9))
 		frappe.set_user("Administrator")
 		frappe.delete_doc("CRM Appointment", appuntamento.name)
-		self.assertEqual(self.voci(fatto["name"])[0], ("36", R.DA_FARE, None))
+		self.assertEqual(self.voci(fatto["name"])[0], ("36", P.DA_FARE, None))
 
 
 class ChiLegge(CureCase):
@@ -277,16 +297,18 @@ class ChiLegge(CureCase):
 		self.proponi(fatto["name"])
 		self.come(IGIENISTA)
 		with self.assertRaises(frappe.PermissionError):
-			cure.get_care_plan(fatto["name"])
+			preventivi.get_quote(fatto["name"])
 		self.consenso()
 		self.come(IGIENISTA)
-		letto = cure.get_care_plan(fatto["name"])
+		letto = preventivi.get_quote(fatto["name"])
 		self.assertEqual(letto["title"], "Piano di cura 2026")
 		self.assertFalse(letto["can_decide"])
 		self.come(MANAGER)
 		registro = cartella.access_log(self.anna.name)
-		self.assertIn(("care plan", IGIENISTA), [(riga["kind"], riga["viewed_by"]) for riga in registro])
-		# sales reads nothing of the teeth
+		self.assertIn(("quote", IGIENISTA), [(riga["kind"], riga["viewed_by"]) for riga in registro])
+		# sales reads nothing of the teeth, nor the care plan
 		self.come(SALES)
 		with self.assertRaises(frappe.PermissionError):
 			cure.get_dental(self.anna.name)
+		with self.assertRaises(frappe.PermissionError):
+			preventivi.get_quote(fatto["name"])

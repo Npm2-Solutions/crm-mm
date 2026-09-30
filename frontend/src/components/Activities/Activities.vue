@@ -47,6 +47,12 @@
       <DocumentsCard :lead="docname" />
     </div>
     <div
+      v-else-if="title == 'Quotes'"
+      class="h-full overflow-y-auto px-8 py-6 max-md:px-4 max-md:py-4"
+    >
+      <QuotesCard :lead="docname" />
+    </div>
+    <div
       v-else-if="
         activities?.length ||
         (whatsappMessages.data?.length && title == 'WhatsApp') ||
@@ -605,6 +611,7 @@ import ClinicArea from '@/components/Clinic/ClinicArea.vue'
 import FormsArea from '@/components/Moduli/FormsArea.vue'
 import PersonArea from '@/components/Area/PersonArea.vue'
 import DocumentsCard from '@/components/Documents/DocumentsCard.vue'
+import QuotesCard from '@/components/Quotes/QuotesCard.vue'
 import WhatsAppArea from '@/components/Activities/WhatsAppArea.vue'
 import WhatsAppBox from '@/components/Activities/WhatsAppBox.vue'
 import SMSArea from '@/components/Activities/SMSArea.vue'

@@ -35,9 +35,8 @@
   "replaces",
   "dossier_section",
   "practitioner",
-  "visibility",
-  "obscured",
-  "discipline"
+  "discipline",
+  "clinical"
  ],
  "fields": [
   {
@@ -99,18 +98,18 @@
   {
    "fieldname": "items_section",
    "fieldtype": "Section Break",
-   "label": "Treatments"
+   "label": "Services"
   },
   {
    "fieldname": "items",
    "fieldtype": "Table",
-   "label": "Treatments",
-   "options": "Clinic Care Plan Item"
+   "label": "Services",
+   "options": "CRM Quote Item"
   },
   {
    "fieldname": "patient_notes",
    "fieldtype": "Small Text",
-   "label": "For the patient",
+   "label": "For the person",
    "description": "Printed on the quote"
   },
   {
@@ -220,37 +219,21 @@
    "fieldname": "replaces",
    "fieldtype": "Link",
    "label": "New version of",
-   "options": "Clinic Care Plan",
+   "options": "CRM Quote",
    "read_only": 1
   },
   {
    "fieldname": "dossier_section",
    "fieldtype": "Section Break",
-   "hidden": 1
+   "hidden": 1,
+   "label": "Who"
   },
   {
    "fieldname": "practitioner",
    "fieldtype": "Link",
    "hidden": 1,
-   "label": "Practitioner",
+   "label": "Written by",
    "options": "User",
-   "read_only": 1
-  },
-  {
-   "default": "Care team",
-   "fieldname": "visibility",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Who reads it",
-   "options": "Care team\nMy discipline\nOnly me",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "obscured",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Obscured",
    "read_only": 1
   },
   {
@@ -260,44 +243,43 @@
    "label": "Discipline",
    "options": "CRM Professional Qualification",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Health data: read like the clinical record, where the clinic is on",
+   "fieldname": "clinical",
+   "fieldtype": "Check",
+   "label": "Health data",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-05 00:00:00.000000",
+ "modified": "2026-10-06 12:00:00.000000",
  "modified_by": "Administrator",
- "module": "Clinica",
- "name": "Clinic Care Plan",
+ "module": "Preventivi",
+ "name": "CRM Quote",
  "owner": "Administrator",
  "permissions": [
   {
    "create": 1,
    "delete": 1,
    "read": 1,
-   "role": "Practitioner",
+   "role": "Sales User",
    "write": 1
   },
   {
-   "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Medical Director"
-  },
-  {
-   "read": 1,
-   "role": "Front Desk"
-  },
-  {
-   "read": 1,
-   "role": "Sales Manager"
+   "role": "System Manager"
   }
  ],
  "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
- "description": "A dental care plan: a quote first, then its treatments done one by one",
- "autoname": "CP-.YYYY.-.#####",
+ "description": "A quote for a person: services from the price list, then done one by one",
+ "autoname": "QT-.YYYY.-.#####",
  "naming_rule": "Expression (old style)",
  "title_field": "title",
  "track_changes": 1,
