@@ -1702,3 +1702,24 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Un codice nuovo ritira quello aperto | Un solo modo valido per volta di aprire lo stesso documento |
 | Senza email del centro la consegna resta, e il link si dà con il codice | La consegna non deve dipendere dalla posta |
 | La consegna non si cancella | È la prova di cosa è stato dato e a chi |
+
+## Fase 3, l'area del paziente: la porta e le prime stanze
+
+> **Completato** (30/09/2026). `/area`, un'app a parte con le API in
+> `crm/clinica/area`: l'invito del centro (`Clinic Area Access`), l'accesso con un
+> codice per email, gli appuntamenti con il link della prenotazione, i documenti
+> dati online, le fatture. `docs/gestionale-medico/README.md`, "L'area del
+> paziente: la porta e le prime stanze".
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Un'app Vite a parte (`vite.area.config.js`, `/assets/crm/area`), non una rotta della SPA | Il paziente non scarica il codice dello staff, e la pagina d'ingresso non è quella del CRM (design, "L'area cliente") |
+| Un utente del sito con il ruolo "Clinic Patient", senza Desk; mai un indirizzo dello staff | Lo staff ha le sue credenziali e il suo CRM; un paziente non deve poter aprire il Desk |
+| Chi entra dove sta in `Clinic Area Access`, anche per un figlio o un genitore anziano | Una persona può seguire più aree, e ogni accesso si apre e si chiude uno per uno |
+| Ogni chiamata ricava sul server le persone della sessione e rifiuta le altre | Mai un id accettato dal telefono (design) |
+| Un codice per email a ogni ingresso, dieci minuti e cinque tentativi, e la stessa risposta a chiunque | Niente password da ricordare; la pagina non dice quali indirizzi hanno un'area |
+| Per scaricare un documento, un codice verificato negli ultimi quindici minuti | "Per scaricare un referto si rientra" (design, linee guida sui referti online) |
+| Gli appuntamenti si spostano e annullano dalla pagina di prenotazione, con il suo link | Le regole del centro (preavviso, limiti) sono già lì: una sola strada |
+| L'area ha un suo dizionario italiano | Il paziente legge la sua lingua, non quella dello staff |
