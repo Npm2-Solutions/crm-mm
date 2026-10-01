@@ -401,7 +401,7 @@ done by the data, never by a click, so a centre that already works sees nothing.
 | `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS, logo, font and video from `brand/`, sitemap |
 | `sito/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
 | `sito/deploy.sh`, `sito/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
-| `.github/workflows/sito-pubblica.yml` | A push to `develop` that changes `sito/` or `brand/` puts it online: tests, the `DEPLOY_PATH` guard, `deploy.sh` with a key only for the panel user `dottorcloud` (secrets `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `DEPLOY_PATH`, `SSH_PORT`), then a check |
+| `.github/workflows/sito-pubblica.yml`, `sito/domini.txt` | Publishing from GitHub on every push that changes `sito/` or `brand/`: tests, then `deploy.sh --crea --nginx` for each domain listed; needs the `HOSTING_SSH_KEY` secret |
 | `sito/test/sito.test.mjs` | `node --test sito/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
 
 The site promises the finished product as the marketing material does, and shows no

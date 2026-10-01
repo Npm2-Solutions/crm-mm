@@ -14,12 +14,7 @@
 #
 #   SITO_SSH=root@hosting.npm2solutions.com   who to connect as (the default)
 #   SITO_SSH_KEY=~/.ssh/chiave                the key, when ssh-agent or ~/.ssh/config do not have it
-#   SITO_SSH_PORT=22                          the SSH port (the default)
-#   HESTIA_USER=admin                         the panel user that owns the domain: the one who
-#                                             connects, or admin when that is root
-#
-# Connected as the panel user who owns the domain, it needs no root: it copies
-# the site, the 404 and the form's settings. --crea and --nginx do need root.
+#   HESTIA_USER=admin                         the panel user that owns the domain (the default)
 #
 # It refuses a folder that holds something else, such as a WordPress site: it
 # replaces only an empty public_html, the panel's placeholder page, or a copy
@@ -28,7 +23,7 @@
 set -euo pipefail
 
 usage() {
-	sed -n '5,26p' "$0" | sed 's/^# \{0,1\}//'
+	sed -n '5,18p' "$0" | sed 's/^# \{0,1\}//'
 	exit "${1:-0}"
 }
 
@@ -53,11 +48,9 @@ if [[ ! "$DOMAIN" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9
 fi
 
 SSH_TARGET="${SITO_SSH:-root@hosting.npm2solutions.com}"
-SSH_LOGIN="${SSH_TARGET%%@*}"
-[[ "$SSH_LOGIN" != "$SSH_TARGET" && "$SSH_LOGIN" != root ]] || SSH_LOGIN=admin
-PANEL_USER="${HESTIA_USER:-$SSH_LOGIN}"
+PANEL_USER="${HESTIA_USER:-admin}"
 SITE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SSH=(ssh -o BatchMode=yes -o ConnectTimeout=15 -p "${SITO_SSH_PORT:-22}")
+SSH=(ssh -o BatchMode=yes -o ConnectTimeout=15)
 if [[ -n "${SITO_SSH_KEY:-}" ]]; then
 	SSH+=(-i "$SITO_SSH_KEY" -o IdentitiesOnly=yes)
 fi
