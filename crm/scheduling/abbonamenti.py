@@ -188,15 +188,15 @@ def _per(persone: list[str], servizio: str, giorno: datetime.date) -> str | None
 
 
 def _ci_sta(appuntamento, nome: str) -> bool:
-	"""Whether an appointment still belongs to its subscription: the subscription is
-	not closed, comprises its service, is of one of its people and lasts that day."""
+	"""Whether an appointment still belongs to its subscription: it comprises its
+	service, is of one of its people and lasts that day, not suspended. Closed, it
+	keeps what it had: only nothing new joins it."""
 	if not frappe.db.exists(ABBONAMENTO, nome):
 		return False
 	doc = frappe.get_doc(ABBONAMENTO, nome)
 	giorno = getdate(appuntamento.starts_on) if appuntamento.starts_on else None
 	return bool(
-		doc.status != R.CHIUSO
-		and appuntamento.service in _servizi(doc)
+		appuntamento.service in _servizi(doc)
 		and doc.lead in _persone(appuntamento, anche_annullati=True)
 		and giorno
 		and getdate(doc.starts_on) <= giorno <= getdate(doc.ends_on or ultimo(doc))

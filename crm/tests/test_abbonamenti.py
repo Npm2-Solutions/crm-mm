@@ -246,10 +246,12 @@ class GliIngressi(AbbonamentiCase):
 		self.come(DESK)
 		with self.assertRaises(frappe.ValidationError):
 			A.attach(personal.name, fatto["name"])
-		# closed, nothing new uses it; open again, it does
+		# closed, nothing new uses it; what it had stays, outcome and all
 		A.close_subscription(fatto["name"])
 		frappe.set_user("Administrator")
 		self.assertEqual(self.prezzo(self.lezione(self.lunedi(2))), (None, 20))
+		self.esito(lezione, "Arrived")
+		self.assertEqual(self.prezzo(lezione), (fatto["name"], 0))
 		self.come(DESK)
 		A.reopen_subscription(fatto["name"])
 		frappe.set_user("Administrator")
