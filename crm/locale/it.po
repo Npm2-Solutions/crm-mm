@@ -2117,6 +2117,18 @@ msgstr "Albo professionale"
 msgid "Alert after N days with no accepted TS submission"
 msgstr "Avvisa dopo N giorni senza un invio TS accolto"
 
+#: frontend/vite/frappeUi.js
+msgid "Align Center"
+msgstr "Centra"
+
+#: frontend/vite/frappeUi.js
+msgid "Align Left"
+msgstr "Allinea a sinistra"
+
+#: frontend/vite/frappeUi.js
+msgid "Align Right"
+msgstr "Allinea a destra"
+
 #: frontend/src/components/Notifications.vue:118
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:75
 #: frontend/src/components/Settings/Users.vue:84
@@ -3411,6 +3423,10 @@ msgstr "Allega un file…"
 msgid "Attach the PDF to the invoice"
 msgstr "Allega il PDF alla fattura"
 
+#: frontend/vite/frappeUi.js
+msgid "Attachment"
+msgstr "Allegato"
+
 #: frontend/src/pages/Deal.vue:601 frontend/src/pages/Lead.vue:453
 #: frontend/src/pages/MobileDeal.vue:473 frontend/src/pages/MobileLead.vue:320
 msgid "Attachments"
@@ -3897,9 +3913,25 @@ msgstr "Appartiene a"
 msgid "Beneficiary"
 msgstr "Beneficiario"
 
+#: frontend/vite/frappeUi.js
+msgid "Blockquote"
+msgstr "Citazione"
+
+#: frontend/vite/frappeUi.js
+msgid "Bold"
+msgstr "Grassetto"
+
+#: frontend/vite/frappeUi.js
+msgid "Bullet List"
+msgstr "Elenco puntato"
+
 #: crm/utils/attribution.py
 msgid "CRM UI"
 msgstr "Inserimento manuale"
+
+#: frontend/vite/frappeUi.js
+msgid "Cell color"
+msgstr "Colore della cella"
 
 #: frontend/vite/frappeUi.js
 msgid "Change the mapping of columns from your file to fields in the system"
@@ -3912,6 +3944,14 @@ msgstr "Scegli il file"
 #: frontend/vite/frappeUi.js
 msgid "Choose a Document Type to import"
 msgstr "Scegli cosa importare"
+
+#: frontend/vite/frappeUi.js
+msgid "Code"
+msgstr "Codice"
+
+#: frontend/vite/frappeUi.js
+msgid "Code Block"
+msgstr "Blocco di codice"
 
 #: frontend/vite/frappeUi.js
 msgid "Column Mapping"
@@ -3942,6 +3982,18 @@ msgid "Custom Template"
 msgstr "Modello personalizzato"
 
 #: frontend/vite/frappeUi.js
+msgid "Delete column"
+msgstr "Elimina la colonna"
+
+#: frontend/vite/frappeUi.js
+msgid "Delete row"
+msgstr "Elimina la riga"
+
+#: frontend/vite/frappeUi.js
+msgid "Delete table"
+msgstr "Elimina la tabella"
+
+#: frontend/vite/frappeUi.js
 msgid "Download CSV Template"
 msgstr "Scarica il modello CSV"
 
@@ -3952,6 +4004,10 @@ msgstr "Trascina qui un file CSV, oppure caricalo dal tuo"
 #: frontend/src/components/Modals/DoctypeModal.vue
 msgid "Edit Address"
 msgstr "Modifica l'indirizzo"
+
+#: frontend/vite/frappeUi.js
+msgid "Embed"
+msgstr "Incorpora"
 
 #: frontend/vite/frappeUi.js
 msgid "Error"
@@ -3981,9 +4037,49 @@ msgstr "Campi"
 msgid "File Type"
 msgstr "Tipo di file"
 
+#: frontend/vite/frappeUi.js
+msgid "Font Color"
+msgstr "Colore del testo"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading"
+msgstr "Titolo"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading 1"
+msgstr "Titolo 1"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading 2"
+msgstr "Titolo 2"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading 3"
+msgstr "Titolo 3"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading 4"
+msgstr "Titolo 4"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading 5"
+msgstr "Titolo 5"
+
+#: frontend/vite/frappeUi.js
+msgid "Heading 6"
+msgstr "Titolo 6"
+
 #: crm/clinica/__init__.py
 msgid "Health dossier"
 msgstr "Dossier sanitario"
+
+#: frontend/vite/frappeUi.js
+msgid "Highlight"
+msgstr "Evidenzia"
+
+#: frontend/vite/frappeUi.js
+msgid "Horizontal Rule"
+msgstr "Linea orizzontale"
 
 #: crm/preventivi/doctype/crm_quote_settings/crm_quote_settings.json
 msgid "How quotes go: the pipeline they move, how long they hold"
@@ -3996,6 +4092,10 @@ msgstr "Tabella di instradamento del solo hub: quale sito cliente possiede una p
 #: crm/fcrm/doctype/meta_whatsapp_route/meta_whatsapp_route.json
 msgid "Hub-only routing table: which client site owns a WhatsApp Business account, so messages delivered to the shared app reach the right site."
 msgstr "Tabella di instradamento del solo hub: quale sito cliente possiede un account WhatsApp Business, così i messaggi consegnati all'app condivisa arrivano al sito giusto."
+
+#: frontend/vite/frappeUi.js
+msgid "Image / Gallery"
+msgstr "Immagine o galleria"
 
 #: frontend/vite/frappeUi.js
 msgid "Import Logs"
@@ -4012,6 +4112,26 @@ msgstr "Importa i dati da file CSV."
 #: frontend/vite/frappeUi.js
 msgid "Importing {0}"
 msgstr "Importazione in {0}"
+
+#: frontend/vite/frappeUi.js
+msgid "Insert column left"
+msgstr "Inserisci una colonna a sinistra"
+
+#: frontend/vite/frappeUi.js
+msgid "Insert column right"
+msgstr "Inserisci una colonna a destra"
+
+#: frontend/vite/frappeUi.js
+msgid "Insert row above"
+msgstr "Inserisci una riga sopra"
+
+#: frontend/vite/frappeUi.js
+msgid "Insert row below"
+msgstr "Inserisci una riga sotto"
+
+#: frontend/vite/frappeUi.js
+msgid "Italic"
+msgstr "Corsivo"
 
 #: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
 msgid "Leads at the top of the booking page. Empty = the centre's logo (Settings → The centre → General → Name & logo)"
@@ -15646,6 +15766,14 @@ msgstr "Menu"
 msgid "Merge Repeat Calls Within (hours)"
 msgstr "Unisci le chiamate ripetute entro (ore)"
 
+#: frontend/vite/frappeUi.js
+msgid "Merge cells"
+msgstr "Unisci le celle"
+
+#: frontend/vite/frappeUi.js
+msgid "Merge or split cells"
+msgstr "Unisci o dividi le celle"
+
 #: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
 msgid "Merge repeat calls within"
 msgstr "Unisci le chiamate ripetute entro"
@@ -19612,6 +19740,10 @@ msgstr "In che ordine si vedono attività, email, commenti e chiamate"
 msgid "Order of activities, emails, comments and calls in the timeline for all users"
 msgstr "In che ordine si vedono attività, email, commenti e chiamate, per tutti gli utenti"
 
+#: frontend/vite/frappeUi.js
+msgid "Ordered List"
+msgstr "Elenco numerato"
+
 #: crm/fcrm/doctype/crm_automation/crm_automation.json
 msgid "Ordered list of steps; see crm/automation/engine.py for the schema"
 msgstr "Elenco ordinato dei passi; lo schema è in crm/automation/engine.py"
@@ -19960,6 +20092,10 @@ msgstr "Il dolore oggi"
 #: frontend/src/frontend/src/utils/moduliStarters.js
 msgid "Pain, and a short scored questionnaire"
 msgstr "Il dolore e un breve questionario a punteggio"
+
+#: frontend/vite/frappeUi.js
+msgid "Paragraph"
+msgstr "Paragrafo"
 
 #. Label of the parent_crm_territory (Link) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
@@ -22025,6 +22161,10 @@ msgstr "Schede: una coda fatta di persone o trattative. Richiamate: le persone a
 #: crm/fcrm/doctype/crm_visitor_session/crm_visitor_session.json
 msgid "Reddit Click ID (rdt_cid)"
 msgstr "ID clic di Reddit (rdt_cid)"
+
+#: frontend/vite/frappeUi.js
+msgid "Redo"
+msgstr "Ripeti"
 
 #. Label of the reference_name (Dynamic Link) field in DocType 'CRM
 #. Notification'
@@ -25306,6 +25446,10 @@ msgstr "Spesa"
 msgid "Spend read from Meta, results read from {brand}. The cost per customer is the number Ads Manager cannot show you."
 msgstr "La spesa letta da Meta, i risultati letti da {brand}. Il costo per cliente è il numero che Gestione inserzioni non può mostrarti."
 
+#: frontend/vite/frappeUi.js
+msgid "Split cell"
+msgstr "Dividi la cella"
+
 #: crm/invoicing/doctype/crm_invoice/crm_invoice.json
 msgid "Split payment (art. 17-ter)"
 msgstr "Scissione dei pagamenti (art. 17-ter)"
@@ -25676,6 +25820,10 @@ msgstr "Conserva l'indirizzo IP"
 msgid "Store IP address"
 msgstr "Conserva l'indirizzo IP"
 
+#: frontend/vite/frappeUi.js
+msgid "Strike"
+msgstr "Barrato"
+
 #: crm/fcrm/doctype/crm_plan/crm_plan.json
 msgid "Studio"
 msgstr "Studio"
@@ -26045,6 +26193,14 @@ msgstr "TK Ticket (quota fissa e/o di partecipazione al costo) · FC Farmaco, an
 msgid "TO"
 msgstr ""
 
+#: frontend/vite/frappeUi.js
+msgid "Table"
+msgstr "Tabella"
+
+#: frontend/vite/frappeUi.js
+msgid "Table of Contents"
+msgstr "Indice"
+
 #: crm/fcrm/doctype/crm_visitor/crm_visitor.json
 msgid "Tablet"
 msgstr "Tablet"
@@ -26187,6 +26343,10 @@ msgstr "Attività"
 #: crm/fcrm/doctype/crm_automation/crm_automation.json
 msgid "Task Completed"
 msgstr "Cosa da fare completata"
+
+#: frontend/vite/frappeUi.js
+msgid "Task List"
+msgstr "Elenco con caselle"
 
 #: frontend/src/components/Automations/StepPanel.vue
 msgid "Task title"
@@ -29432,6 +29592,10 @@ msgstr "Oggi, {0}"
 msgid "Todo"
 msgstr "Da fare"
 
+#: frontend/vite/frappeUi.js
+msgid "Toggle header row"
+msgstr "Riga di intestazione"
+
 #: frontend/src/components/Modals/SidePanelModal.vue:59
 msgid "Toggle on for Preview"
 msgstr "Mostra l'anteprima per vederla qui"
@@ -30774,6 +30938,10 @@ msgstr "Versione {0}, dal {1}"
 #: frontend/src/components/Settings/Forms/TemplateBuilder.vue
 msgid "Versions"
 msgstr "Versioni"
+
+#: frontend/vite/frappeUi.js
+msgid "Video"
+msgstr "Video"
 
 #: frontend/src/components/Plans/LibraryPicker.vue
 msgid "Video (YouTube or Vimeo)"
