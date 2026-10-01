@@ -137,6 +137,7 @@ the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
 | `crm/permissions/utenti.py` | Role Profiles from the registry, giving levels, the migration of old users |
 | `crm/registrazione.py` | Every module registers here, once per process (`before_request`, `before_job`) |
 | `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability |
+| `crm/api/plan.py` + `Settings/PlanSettings.vue`, `utils/funzionalita.js` | Settings > The centre > Features (doc 36): what the product comprises (`compresi()`: the base, the vertical's module and what it comprises), the extras and their trial; each module registers the settings pages it is set up from (`ModuloPiano.impostazioni`) |
 | `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
 | `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
 | `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability; ERPNext is the agency's. `DEL_CORE`: the core documents the manager writes (email templates, assignment rules, imports) get a role's rule, narrowed by the capability |

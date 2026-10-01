@@ -40,7 +40,7 @@ quelle della scheda di una persona (Attività, Email, Note…).
 ```
 Il tuo account     Profilo · Preferenze · Google Calendar
 Il centro          Generale [Nome e logo · Conversazioni · Dashboard · Menu · Formati*]
-                   Utenti [Utenti · Invita · Gerarchia] · Piano
+                   Utenti [Utenti · Invita · Gerarchia] · Funzionalità (doc 36)
 Agenda             Servizi [Servizi · Listini · Abbonamenti]
                    Orari e turni [Orari e regole · Turni del team]
                    Sale e attrezzature · Calendario e promemoria · Lista d'attesa
