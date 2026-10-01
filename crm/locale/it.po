@@ -296,9 +296,10 @@ msgstr "SID dell'Account"
 msgid "Account name is required"
 msgstr "Il nome dell'Account è obbligatorio"
 
+#: frontend/src/utils/impostazioni.js
 #: frontend/src/components/Settings/Settings.vue:177
 msgid "Accounts"
-msgstr "Contabilità"
+msgstr "Account"
 
 #: frontend/src/components/CustomActions.vue:76
 #: frontend/src/components/ViewControls.vue:693
@@ -557,6 +558,18 @@ msgstr "Indirizzo"
 msgid "Admin"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Agenda"
+msgstr "Agenda"
+
+#: frontend/src/components/Settings/Booking/AvailabilityCheck.vue
+msgid "Agenda → Hours & shifts → Team rota"
+msgstr "Agenda → Orari e turni → Turni del team"
+
+#: frontend/src/components/Settings/Booking/AvailabilityCheck.vue
+msgid "Agenda → Online booking, or the grid in Agenda → Services"
+msgstr "Agenda → Prenotazione online, o la griglia in Agenda → Servizi"
+
 #: crm/integrations/twilio/twilio_handler.py:144
 msgid "Agent is unavailable to take the call, please call after some time."
 msgstr ""
@@ -790,10 +803,11 @@ msgstr ""
 msgid "Assignees"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
 #. Option for the 'Type' (Select) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
 msgid "Assignment"
-msgstr ""
+msgstr "Assegnazione"
 
 #: frontend/src/components/ListBulkActions.vue:152
 msgid "Assignment Cleared Successfully"
@@ -856,6 +870,10 @@ msgstr ""
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:305
 msgid "Assignment conditions are invalid or corrupt, recreate the conditions."
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Assistant"
+msgstr "Assistente"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:188
 msgid "At least one field is required"
@@ -1066,9 +1084,17 @@ msgstr "Tra"
 msgid "Bidirectional sync of existing CRM Products and ERPNext Items. Runs in the background."
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Billable services"
+msgstr "Servizi fatturabili"
+
 #: crm/scheduling/attese.py
 msgid "Booked from the waiting list"
 msgstr "Prenotato dalla lista d'attesa"
+
+#: frontend/src/components/Settings/Booking/BookingPlatforms.vue
+msgid "Booking platforms"
+msgstr "Piattaforme di prenotazione"
 
 #: crm/scheduling/abbonamenti.py
 msgid "Both days are needed"
@@ -1310,6 +1336,10 @@ msgstr ""
 msgid "Calendar"
 msgstr "Calendario"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Calendar & reminders"
+msgstr "Calendario e promemoria"
+
 #: frontend/src/components/Settings/CalendarSettings.vue:8
 msgid "Calendar Settings"
 msgstr ""
@@ -1327,10 +1357,18 @@ msgstr ""
 msgid "Call Received By"
 msgstr ""
 
+#: frontend/src/components/Settings/CallScriptsSettings.vue
+msgid "Call Scripts"
+msgstr "Script delle chiamate"
+
 #: crm/integrations/api.py:158 crm/integrations/twilio/api.py:148
 #: crm/integrations/twilio/api.py:166
 msgid "Call log not found"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Call scripts"
+msgstr "Script delle chiamate"
 
 #: frontend/src/components/Telephony/CallUI.vue:9
 msgid "Call using {0}"
@@ -1584,6 +1622,14 @@ msgstr "Cancella Tabella"
 msgid "Click on the link below to complete your registration and set a new password"
 msgstr "Fare clic sul collegamento sottostante per completare la registrazione e impostare una nuova password"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Client area"
+msgstr "Area clienti"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Clients"
+msgstr "Clienti"
+
 #: frontend/src/components/Controls/GeolocationControl.vue:60
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleListItem.vue:62
 #: frontend/src/components/Settings/Sla/SlaPolicyList.vue:128
@@ -1798,6 +1844,10 @@ msgstr ""
 msgid "Connect your Email"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Consents"
+msgstr "Consensi"
+
 #. Label of the contact (Link) field in DocType 'CRM Contacts'
 #. Label of the contact (Link) field in DocType 'CRM Deal'
 #: crm/fcrm/doctype/crm_contacts/crm_contacts.json
@@ -1886,6 +1936,10 @@ msgstr "Il Contenuto è obbligatorio"
 #: frontend/src/components/Settings/DefaultsSettings.vue:75
 msgid "Controls how numbers are displayed (e.g., commas, decimal separators)"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Conversations"
+msgstr "Conversazioni"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:405
 #: frontend/src/components/ListBulkActions.vue:86
@@ -2047,6 +2101,10 @@ msgstr "Precisione valuta"
 #: frontend/src/components/Settings/DashboardSettings.vue:250
 msgid "Currency set as {0} successfully"
 msgstr ""
+
+#: frontend/src/components/Settings/DefaultsSettings.vue
+msgid "Currency, numbers, dates and times, as every screen of {brand} shows them."
+msgstr "Valuta, numeri, date e orari, come li mostra ogni schermata di {brand}."
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:8
 msgid "Current Password"
@@ -2709,7 +2767,7 @@ msgstr ""
 #: frontend/src/components/Settings/ERPNextSettings.vue:3
 #: frontend/src/components/Settings/ERPNextSettings.vue:9
 msgid "ERPNext Settings"
-msgstr ""
+msgstr "Impostazioni ERPNext"
 
 #. Label of the section_break_oubd (Section Break) field in DocType 'ERPNext
 #. CRM Settings'
@@ -2880,7 +2938,7 @@ msgstr ""
 
 #: frontend/src/components/Settings/EmailAccountList.vue:7
 msgid "Email Accounts"
-msgstr ""
+msgstr "Account email"
 
 #: frontend/src/components/Calendar/Attendee.vue:278
 msgid "Email Already Exists"
@@ -2918,7 +2976,7 @@ msgstr "Modello e-mail"
 #: frontend/src/components/Modals/EmailTemplateSelectorModal.vue:2
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:7
 msgid "Email Templates"
-msgstr ""
+msgstr "Modelli email"
 
 #: frontend/src/components/Controls/EmailMultiSelect.vue:256
 msgid "Email already exists"
@@ -3238,6 +3296,10 @@ msgstr ""
 msgid "Exchange Rate Provider"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Exercises"
+msgstr "Esercizi"
+
 #. Option for the 'Telephony Medium' (Select) field in DocType 'CRM Call Log'
 #. Option for the 'Default Medium' (Select) field in DocType 'CRM Telephony
 #. Agent'
@@ -3542,6 +3604,10 @@ msgstr ""
 msgid "File \"{0}\" was skipped because only {1} uploads are allowed for DocType \"{2}\""
 msgstr ""
 
+#: crm/api/site_render.py
+msgid "Fill in the contact details under Settings → Marketing → Website."
+msgstr "Compila i recapiti in Impostazioni → Marketing → Sito Web."
+
 #: frontend/src/components/Filter.vue:6
 msgid "Filter"
 msgstr "Filtro"
@@ -3612,6 +3678,10 @@ msgstr "Precisione decimale"
 msgid "Following up consistently"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Foods"
+msgstr "Alimenti"
+
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:48
 #: frontend/src/components/Settings/EmailTemplate/EmailTemplates.vue:83
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:48
@@ -3648,6 +3718,14 @@ msgstr ""
 msgid "Form Script updated successfully"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Formats"
+msgstr "Formati"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Forms"
+msgstr "Moduli"
+
 #: crm/scheduling/attese.py
 msgid "From the same page you can leave the waiting list."
 msgstr "Dalla stessa pagina puoi uscire dalla lista d'attesa."
@@ -3656,9 +3734,57 @@ msgstr "Dalla stessa pagina puoi uscire dalla lista d'attesa."
 msgid "Give the type a name"
 msgstr "Dai un nome al tipo"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Google Calendar"
+msgstr "Google Calendar"
+
+#: frontend/src/components/Settings/Scheduling/OnlineBookingPanel.vue
+msgid "Grey values come from Online booking → Page & rules and follow them. Customise a rule to give this service its own value."
+msgstr "I valori in grigio vengono da Prenotazione online → Pagina e regole e li seguono. Personalizza una regola per dare a questo servizio un valore suo."
+
 #: crm/scheduling/attese.py
 msgid "Hi {0},"
 msgstr "Ciao {0},"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Hierarchy"
+msgstr "Gerarchia"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Hours & rules"
+msgstr "Orari e regole"
+
+#: frontend/src/components/Settings/Scheduling/SchedulingDefaults.vue
+msgid "Hours & rules saved"
+msgstr "Orari e regole salvati"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Hours & shifts"
+msgstr "Orari e turni"
+
+#: frontend/src/components/Settings/Booking/OnlineBookingSetup.vue
+msgid "Hours and days off: Agenda → Hours & shifts → Team rota. Own price or length for a service: Agenda → Services."
+msgstr "Orari e giorni liberi: Agenda → Orari e turni → Turni del team. Prezzo o durata propri per un servizio: Agenda → Servizi."
+
+#: frontend/src/components/Settings/Sla/SlaPolicyList.vue
+msgid "How soon a request is answered, and what happens when it is not: the service level agreements (SLA)."
+msgstr "Entro quando si risponde a una richiesta, e cosa succede se non si risponde: gli accordi sul livello di servizio (SLA)."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Invite"
+msgstr "Invita"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Invoicing"
+msgstr "Fatturazione"
+
+#: frontend/src/components/Settings/Invoicing/InvoicingDefaults.vue
+msgid "Invoicing options"
+msgstr "Opzioni di fatturazione"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Issuing company"
+msgstr "Azienda emittente"
 
 #: crm/scheduling/attese.py
 msgid "It is yours if you confirm by {0}; then it goes to the next person waiting."
@@ -3672,9 +3798,21 @@ msgstr "Si sovrappone a un'altra sospensione"
 msgid "It renews by itself the day after."
 msgstr "Si rinnova da solo il giorno dopo."
 
+#: frontend/src/components/Settings/TrackingSettings.vue
+msgid "Lead Tracking"
+msgstr "Tracciamento dei contatti"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Lead tracking"
+msgstr "Tracciamento dei contatti"
+
 #: crm/scheduling/abbonamenti.py
 msgid "Left as a draft: {0}"
 msgstr "Rimasta in bozza: {0}"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Libraries"
+msgstr "Librerie"
 
 #: frontend/src/components/Settings/emailConfig.js:81
 msgid "Mail server address"
@@ -4867,6 +5005,10 @@ msgstr "Segna tutto come letto"
 msgid "Mark lead/deal as replied on response"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Marketing"
+msgstr "Marketing"
+
 #: frontend/src/components/Layouts/AppSidebar.vue:577
 msgid "Masters"
 msgstr ""
@@ -4895,6 +5037,10 @@ msgstr ""
 #: frontend/src/components/Notifications.vue:120
 msgid "Mentions"
 msgstr "Menzioni"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Menu"
+msgstr "Menu"
 
 #. Label of the message (HTML Editor) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
@@ -5041,6 +5187,10 @@ msgstr ""
 msgid "Name"
 msgstr "Nome"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Name & logo"
+msgstr "Nome e logo"
+
 #: crm/scheduling/attese_pubblico.py
 msgid "Name and email are required"
 msgstr "Nome ed email sono obbligatori"
@@ -5181,6 +5331,14 @@ msgstr "Nuovo {0}"
 msgid "Newest First"
 msgstr ""
 
+#: frontend/src/components/Settings/AreaNoticeSettings.vue
+msgid "News in the client area"
+msgstr "Novità nell'area clienti"
+
+#: crm/clinica/parole.py
+msgid "News in the patient area"
+msgstr "Novità nell'area pazienti"
+
 #: frontend/src/components/Filter.vue:713
 msgid "Next 6 Months"
 msgstr ""
@@ -5240,6 +5398,10 @@ msgstr ""
 msgid "No Failure Logs Found"
 msgstr ""
 
+#: crm/social/publisher.py
+msgid "No Instagram account id — refresh the profiles in Settings → Marketing → Social Planner"
+msgstr "Manca l'id dell'account Instagram: aggiorna i profili in Impostazioni → Marketing → Social Planner"
+
 #: frontend/src/components/FieldLayoutEditor.vue:123
 msgid "No Label"
 msgstr "Nessuna etichetta"
@@ -5288,6 +5450,14 @@ msgstr ""
 msgid "No Workdays in the List"
 msgstr ""
 
+#: frontend/src/components/Settings/Scheduling/WaitingListSettings.vue
+msgid "No approved WhatsApp template yet: create it in Settings > WhatsApp > Templates, then choose it here."
+msgstr "Ancora nessun modello WhatsApp approvato: crealo in Impostazioni > WhatsApp > Modelli, poi sceglilo qui."
+
+#: frontend/src/components/Dialer/DialerScriptPanel.vue
+msgid "No call scripts yet. A manager can add them in Settings → Phone → Call scripts."
+msgstr "Ancora nessuno script. Un manager li aggiunge in Impostazioni → Telefono → Script delle chiamate."
+
 #: frontend/src/components/Settings/EmailEdit.vue:153
 #: frontend/src/components/Settings/Hierarchy/useDragDrop.js:63
 msgid "No changes made"
@@ -5326,6 +5496,10 @@ msgstr "Nessun erogatore per questo abbonamento: la qualifica decide il tipo di 
 #: frontend/src/components/frappe-ui/Autocomplete.vue:119
 msgid "No results found"
 msgstr ""
+
+#: frontend/src/components/Subscriptions/SubscriptionsSection.vue
+msgid "No subscription yet. The types to sell are made in Settings > Agenda > Services > Subscriptions."
+msgstr "Ancora nessun abbonamento. I tipi da vendere si fanno in Impostazioni > Agenda > Servizi > Abbonamenti."
 
 #: crm/scheduling/abbonamenti.py
 msgid "No such instalment"
@@ -5549,6 +5723,10 @@ msgstr ""
 msgid "Number of decimal places used for all currency values"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Numbers"
+msgstr "Numeri"
+
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue:167
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue:251
 msgid "Old Condition"
@@ -5594,6 +5772,10 @@ msgstr ""
 #: crm/api/dashboard.py:189
 msgid "Ongoing deals"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Online booking"
+msgstr "Prenotazione online"
 
 #: crm/api/user.py:62 crm/api/user.py:95
 msgid "Only System Managers can assign the Sales Manager role"
@@ -5777,6 +5959,10 @@ msgstr ""
 msgid "Page"
 msgstr "Pagina"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Page & rules"
+msgstr "Pagina e regole"
+
 #. Label of the page_name (Data) field in DocType 'Facebook Page'
 #: crm/lead_syncing/doctype/facebook_page/facebook_page.json
 msgid "Page Name"
@@ -5828,6 +6014,14 @@ msgstr "Le password non corrispondono"
 #: frontend/src/components/Modals/ChangePasswordModal.vue:149
 msgid "Passwords match"
 msgstr ""
+
+#: crm/clinica/parole.py
+msgid "Patient area"
+msgstr "Area pazienti"
+
+#: crm/clinica/parole.py
+msgid "Patients"
+msgstr "Pazienti"
 
 #: frontend/src/components/Modals/EmailTemplateSelectorModal.vue:10
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:38
@@ -5912,6 +6106,22 @@ msgstr ""
 #: frontend/src/pages/PersonaForm.vue:63
 msgid "Pipedrive"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Pipelines"
+msgstr "Pipeline"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Plan"
+msgstr "Piano"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Platforms"
+msgstr "Piattaforme"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Play a different announcement when closed, and count the promised time in working hours only. Hours come from Agenda → Hours & shifts."
+msgstr "Un annuncio diverso quando il centro è chiuso, e il tempo promesso contato solo nelle ore di apertura. Gli orari vengono da Agenda → Orari e turni."
 
 #: frontend/src/components/Activities/AudioPlayer.vue:176
 msgid "Playback Speed"
@@ -6016,6 +6226,14 @@ msgstr "Preferenze"
 #: frontend/src/components/Settings/PreferencesSettings.vue:115
 msgid "Preferences Updated Successfully"
 msgstr ""
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "Price Lists"
+msgstr "Listini"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Price lists"
+msgstr "Listini"
 
 #: frontend/src/pages/Deal.vue:215 frontend/src/pages/MobileDeal.vue:153
 msgid "Primary"
@@ -6140,6 +6358,14 @@ msgstr ""
 msgid "Projected vs actual revenue based on deal probability"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Provider connection"
+msgstr "Connessione al provider"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Providers"
+msgstr "Professionisti"
+
 #. Label of the public (Check) field in DocType 'CRM View Settings'
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:483
@@ -6154,6 +6380,14 @@ msgstr ""
 #: frontend/src/components/ViewControls.vue:680
 msgid "Public Views"
 msgstr ""
+
+#: frontend/src/components/Settings/Invoicing/QualificationsSettings.vue
+msgid "Qualification register"
+msgstr "Albo delle qualifiche"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Qualifications"
+msgstr "Qualifiche"
 
 #. Label of the qty (Float) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
@@ -6464,6 +6698,10 @@ msgstr ""
 msgid "Response Time is required"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Response times"
+msgstr "Tempi di risposta"
+
 #. Description of the 'Rolling Responses' (Check) field in DocType 'CRM Service
 #. Level Agreement'
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
@@ -6562,6 +6800,14 @@ msgstr ""
 msgid "Rolling Responses"
 msgstr ""
 
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "Rooms & Equipment"
+msgstr "Sale e attrezzature"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Rooms & equipment"
+msgstr "Sale e attrezzature"
+
 #. Option for the 'Type' (Select) field in DocType 'CRM Dropdown Item'
 #. Label of the route (Data) field in DocType 'CRM Dropdown Item'
 #: crm/fcrm/doctype/crm_dropdown_item/crm_dropdown_item.json
@@ -6577,6 +6823,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
 msgid "Rows"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Rules"
+msgstr "Regole"
 
 #. Label of the sla_tab (Tab Break) field in DocType 'CRM Deal'
 #. Label of the sla (Link) field in DocType 'CRM Deal'
@@ -6818,6 +7068,10 @@ msgstr ""
 msgid "Script"
 msgstr "Script"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Seal and time stamp"
+msgstr "Sigillo e marca temporale"
+
 #: frontend/src/components/Settings/AssignmentRules/AssigneeSearch.vue:23
 #: frontend/src/components/Settings/Sla/SlaPolicyList.vue:21
 #: frontend/src/components/frappe-ui/Autocomplete.vue:57
@@ -6948,7 +7202,7 @@ msgstr ""
 
 #: frontend/src/components/Settings/InviteUserPage.vue:6
 msgid "Send Invites To"
-msgstr ""
+msgstr "Manda gli inviti a"
 
 #: frontend/src/components/Activities/ActivityHeader.vue:61
 msgid "Send Template"
@@ -6988,6 +7242,18 @@ msgstr ""
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 msgid "Service Provider"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Services"
+msgstr "Servizi"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Services & people"
+msgstr "Servizi e persone"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Services & providers"
+msgstr "Servizi e professionisti"
 
 #: frontend/src/components/Filter.vue:593
 msgid "Set"
@@ -7208,6 +7474,10 @@ msgstr ""
 msgid "Skip for now"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Social Planner"
+msgstr "Social Planner"
+
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:438
 msgid "Some error occurred while creating SLA Policy"
 msgstr ""
@@ -7402,6 +7672,10 @@ msgstr ""
 msgid "Subject: {0}"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Subscriptions"
+msgstr "Abbonamenti"
+
 #. Option for the 'Weekly Off' (Select) field in DocType 'CRM Holiday List'
 #. Option for the 'Workday' (Select) field in DocType 'CRM Service Day'
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.json
@@ -7531,9 +7805,14 @@ msgstr "Attività"
 msgid "Tasks"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Team rota"
+msgstr "Turni del team"
+
+#: frontend/src/utils/impostazioni.js
 #: frontend/src/components/Settings/Settings.vue:220
 msgid "Telephony"
-msgstr ""
+msgstr "Telefonia"
 
 #. Label of the telephony_medium (Select) field in DocType 'CRM Call Log'
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
@@ -7624,6 +7903,10 @@ msgstr "Non è stato possibile leggere le risposte"
 msgid "The appointment is for {0}."
 msgstr "L'appuntamento è per {0}."
 
+#: frontend/src/utils/impostazioni.js
+msgid "The centre"
+msgstr "Il centro"
+
 #: crm/area/api.py
 msgid "The centre does not take the waiting list from the area"
 msgstr "Il centro non prende la lista d'attesa dall'area"
@@ -7662,6 +7945,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "The rate used to convert the organization’s currency to your crm's base currency (set in CRM Settings). It is set once when the currency is first added and doesn't change automatically."
 msgstr ""
+
+#: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
+msgid "The studio hours are set in Agenda → Hours & shifts → Hours & rules and apply to everyone without their own."
+msgstr "Gli orari del centro si impostano in Agenda → Orari e turni → Orari e regole e valgono per chi non ha i suoi."
 
 #: crm/scheduling/abbonamenti.py
 msgid "The subscription does not comprise this service, or is of somebody else"
@@ -8006,6 +8293,18 @@ msgstr ""
 msgid "Traceback"
 msgstr ""
 
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "Tracked Links"
+msgstr "Link tracciati"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Tracked links"
+msgstr "Link tracciati"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Tracking"
+msgstr "Tracciamento"
+
 #. Option for the 'Weekly Off' (Select) field in DocType 'CRM Holiday List'
 #. Option for the 'Workday' (Select) field in DocType 'CRM Service Day'
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.json
@@ -8334,6 +8633,10 @@ msgstr ""
 msgid "Users are required"
 msgstr ""
 
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+msgid "Using your logo (Settings → General → Name & logo)."
+msgstr "Si usa il tuo logo (Impostazioni → Generale → Nome e logo)."
+
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:168
 msgid "Valid From"
 msgstr ""
@@ -8379,6 +8682,10 @@ msgstr "Viste"
 #: frontend/src/components/Modals/EventModal.vue:134
 msgid "Visibility"
 msgstr "Visibilità"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Waiting list"
+msgstr "Lista d'attesa"
 
 #: crm/scheduling/attese_pubblico.py
 msgid "Waiting list: {0}"
@@ -8450,9 +8757,17 @@ msgstr ""
 msgid "Welcome {0}, lets add your first lead"
 msgstr ""
 
+#: frontend/src/components/Settings/GeneralSettings.vue
+msgid "What a new message does to the person or the deal it is about, and how their activity reads."
+msgstr "Cosa fa un messaggio nuovo alla persona o alla trattativa di cui parla, e come si legge la loro attività."
+
 #: frontend/src/pages/PersonaForm.vue:87
 msgid "What are your biggest challenges with sales today?"
 msgstr ""
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "What the menu under the centre’s name, at the top left, offers everyone."
+msgstr "Cosa offre a tutti il menu sotto il nome del centro, in alto a sinistra."
 
 #: frontend/src/pages/PersonaForm.vue:118
 msgid "What would you like to accomplish first?"
@@ -8472,9 +8787,10 @@ msgstr ""
 msgid "WhatsApp Message"
 msgstr ""
 
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
 #: frontend/src/components/Modals/WhatsappTemplateSelectorModal.vue:2
 msgid "WhatsApp Templates"
-msgstr ""
+msgstr "Modelli WhatsApp"
 
 #: crm/scheduling/attese_pubblico.py
 msgid "When a place frees up we write to you: it goes to whoever confirms first."
@@ -8484,6 +8800,10 @@ msgstr "Quando si libera un posto ti scriviamo: va a chi conferma per primo."
 #: frontend/src/components/Filter.vue:43 frontend/src/components/Filter.vue:83
 msgid "Where"
 msgstr ""
+
+#: frontend/src/components/Settings/Scheduling/ServicesSettings.vue
+msgid "Who clients can book for it: Agenda → Online booking."
+msgstr "Chi si può prenotare per questo servizio: Agenda → Prenotazione online."
 
 #: frontend/src/components/ColumnSettings.vue:109
 msgid "Width"
@@ -8641,6 +8961,10 @@ msgstr ""
 #: frontend/src/components/Settings/LeadSyncing/leadSyncSourceConfig.js:8
 msgid "You will need a Meta developer account and an access token to sync leads from Facebook. Read more"
 msgstr "Avrai bisogno di un account Meta developer e un token di accesso per sincronizzare i contatti da Facebook. Per saperne di più"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Your account"
+msgstr "Il tuo account"
 
 #: crm/scheduling/attese.py
 msgid "Your appointment is booked"
