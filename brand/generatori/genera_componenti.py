@@ -4,18 +4,17 @@ Scrive ../design-system/espresso/componenti/<Componente>/{anteprima.html,README.
 Le anteprime usano tokens.css e componenti.css (vedi design-system/espresso).
 Uso: python3 genera_componenti.py"""
 
-import os
 import re
 
 from percorsi import ESPRESSO, ICONE
 
-OUT = str(ESPRESSO / "componenti")
+OUT = ESPRESSO / "componenti"
 LOGO_LIGHT = "../../../../logo/dottorcloud-orizzontale.svg"
 LOGO_DARK = "../../../../logo/dottorcloud-orizzontale-negativo.svg"
 
 
 def ic(name, cls="dc-icon"):
-	s = open(ICONE / f"{name}.svg").read()
+	s = (ICONE / f"{name}.svg").read_text()
 	inner = re.search(r">\s*(.*)</svg>", re.sub(r"<!--.*?-->", "", s, flags=re.S), re.S).group(1)
 	inner = re.sub(r"\s+", " ", inner).replace("> <", "><").strip()
 	return f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true">{inner}</svg>'
@@ -639,8 +638,8 @@ C["PatientJourney"] = (
 )
 
 for name, (group, h, body, readme) in C.items():
-	d = f"{OUT}/{name}"
-	os.makedirs(d, exist_ok=True)
-	open(f"{d}/anteprima.html", "w").write(page(group, h, body))
-	open(f"{d}/README.md", "w").write(f"# {name}\n\n" + readme)
+	d = OUT / name
+	d.mkdir(parents=True, exist_ok=True)
+	(d / "anteprima.html").write_text(page(group, h, body))
+	(d / "README.md").write_text(f"# {name}\n\n" + readme)
 print(len(C))
