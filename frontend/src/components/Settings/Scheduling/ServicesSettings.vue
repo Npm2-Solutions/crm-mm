@@ -506,7 +506,8 @@ const editorTabs = [
   { label: __('Details'), value: 'details' },
   { label: __('Team'), value: 'team' },
   { label: __('Rooms & group'), value: 'space' },
-  { label: __('Hours'), value: 'hours' },
+  // the hours the service is offered («Orari»), not the automations' unit («Ore»)
+  { label: __('Hours', null, 'Service editor tab'), value: 'hours' },
   { label: __('Online'), value: 'online' },
 ]
 
