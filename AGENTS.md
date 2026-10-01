@@ -321,6 +321,18 @@ the draft with `modello.accetta`.
 | `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
 
+### The language (docs/progetto-ghl/40)
+| File | Role |
+|---|---|
+| `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads; the voice and the product's words (person, trattativa, cosa da fare, sala…) are in doc 40 |
+| `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts), the agenda's calendar named by Intl in the boot's language; each rewrite must match frappe-ui's source — tested |
+| `frontend/src/area/it.js` | The client area's dictionary: a test reads every `__()` of `src/area` and wants it there |
+
+A value a list shows from a choice (status, priority) or from a translated
+DocType (stages, sources, reasons) goes through `__()`: the default ones read in
+the user's language, a name the centre wrote stays as written. Times are the
+system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
+
 ### The brand
 | File | Role |
 |---|---|
