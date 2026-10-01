@@ -1,5 +1,5 @@
 <!doctype html>
-{%- set logo_centro = marchio.centre_logo %}
+{%- set solo_logo = true %}
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -107,5 +107,6 @@
       </a>
       {% endfor %}
     </div>
+    {% include "crm/templates/includes/marchio_piede.html" %}
   </body>
 </html>

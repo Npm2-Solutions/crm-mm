@@ -94,7 +94,8 @@ def get_boot():
 			"state_options": get_state_options(),
 			"crm_permissions": get_permissions(),
 			"vertical": get_vertical(),
-			# the product's brand - the vertical's - and the centre's logo beside it
+			# the product's brand - the vertical's - and the centre's mark, which leads
+			# at the top of the sidebar
 			"brand": get_brand(),
 		}
 	)
