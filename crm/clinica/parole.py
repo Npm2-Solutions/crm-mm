@@ -16,6 +16,8 @@ PAROLE = {
 	# DottorCloud
 	"Client area": "Patient area",
 	"News in the client area": "News in the patient area",
+	# the waiting list: where one joins it
+	"From the client area": "From the patient area",
 	# the area
 	"This area is for the centre's clients.": "This area is for the centre's patients.",
 	"Prepare your appointment": "Prepare your visit",
