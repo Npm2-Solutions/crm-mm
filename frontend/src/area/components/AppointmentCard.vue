@@ -1,7 +1,10 @@
 <!-- An appointment as the patient reads it: when, what - which session of a
-     cycle - with whom, where. -->
+     cycle - with whom, where. In the centre's preview, one whoever previews does
+     not read shows only when. -->
 <template>
+  <HiddenCard v-if="appointment.hidden" :when="when(appointment.starts_on)" />
   <div
+    v-else
     class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
   >
     <div class="flex items-start justify-between gap-2">
@@ -43,6 +46,7 @@
 import { laSeduta } from '@/utils/cicli'
 import { Badge } from 'frappe-ui'
 import { when } from '../dates'
+import HiddenCard from './HiddenCard.vue'
 
 defineProps({ appointment: { type: Object, required: true } })
 

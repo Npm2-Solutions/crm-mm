@@ -8,42 +8,44 @@
       <h1 class="text-xl font-semibold text-ink-gray-9">
         {{ __('Your quotes') }}
       </h1>
-      <QuoteCard
-        v-for="quote in quotes.data.quotes"
-        :key="quote.name"
-        :quote="quote"
-      />
+      <template v-for="quote in quotes.data.quotes" :key="quote.name">
+        <HiddenCard v-if="quote.hidden" />
+        <QuoteCard v-else :quote="quote" />
+      </template>
     </template>
     <template v-if="programmes.data?.programmes?.length">
       <h1 class="text-xl font-semibold text-ink-gray-9">
         {{ __('Your programmes') }}
       </h1>
-      <ProgrammeCard
+      <template
         v-for="programme in programmes.data.programmes"
         :key="programme.name"
-        :programme="programme"
-        @changed="reload"
-      />
+      >
+        <HiddenCard v-if="programme.hidden" />
+        <ProgrammeCard v-else :programme="programme" @changed="reload" />
+      </template>
     </template>
     <h1 class="text-xl font-semibold text-ink-gray-9">
       {{ __('Your plans') }}
     </h1>
-    <router-link
-      v-for="plan in plans.data?.plans || []"
-      :key="plan.name"
-      :to="{ name: 'Plan', params: { plan: plan.name } }"
-      class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-    >
-      <span class="flex min-w-0 flex-col">
-        <span class="text-base text-ink-gray-9">{{ plan.title }}</span>
-        <span class="text-p-sm text-ink-gray-5">
-          {{ __(plan.plan_type) }} · {{ plan.practitioner_name }}
+    <template v-for="plan in plans.data?.plans || []" :key="plan.name">
+      <HiddenCard v-if="plan.hidden" />
+      <router-link
+        v-else
+        :to="{ name: 'Plan', params: { plan: plan.name } }"
+        class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+      >
+        <span class="flex min-w-0 flex-col">
+          <span class="text-base text-ink-gray-9">{{ plan.title }}</span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ __(plan.plan_type) }} · {{ plan.practitioner_name }}
+          </span>
         </span>
-      </span>
-      <span v-if="plan.today" class="shrink-0 text-p-sm text-ink-gray-6">
-        {{ __('Today {0} of {1}', [plan.done_today, plan.today]) }}
-      </span>
-    </router-link>
+        <span v-if="plan.today" class="shrink-0 text-p-sm text-ink-gray-6">
+          {{ __('Today {0} of {1}', [plan.done_today, plan.today]) }}
+        </span>
+      </router-link>
+    </template>
     <p
       v-if="plans.data && !plans.data.plans.length"
       class="text-p-base text-ink-gray-5"
@@ -55,6 +57,7 @@
 
 <script setup>
 import { createResource } from 'frappe-ui'
+import HiddenCard from '../components/HiddenCard.vue'
 import ProgrammeCard from '../components/ProgrammeCard.vue'
 import QuoteCard from '../components/QuoteCard.vue'
 import { area, section } from '../store'

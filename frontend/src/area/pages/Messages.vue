@@ -17,52 +17,59 @@
         {{ __('Ask the assistant') }}
       </router-link>
     </div>
-    <article
+    <template
       v-for="message in messages.data?.messages || []"
       :key="message.name"
-      class="flex flex-col gap-2 rounded-lg p-4 shadow-sm"
-      :class="
-        message.kind === 'Question'
-          ? 'ml-8 bg-surface-gray-2'
-          : 'bg-surface-elevation-1'
-      "
     >
-      <span
-        v-if="message.kind === 'Question'"
-        class="text-p-sm font-medium text-ink-gray-7"
+      <HiddenCard v-if="message.hidden" />
+      <article
+        v-else
+        class="flex flex-col gap-2 rounded-lg p-4 shadow-sm"
+        :class="
+          message.kind === 'Question'
+            ? 'ml-8 bg-surface-gray-2'
+            : 'bg-surface-elevation-1'
+        "
       >
-        {{ __('Your question') }}
-      </span>
-      <p class="whitespace-pre-line text-p-base text-ink-gray-9">
-        {{ message.body }}
-      </p>
-      <span class="text-p-sm text-ink-gray-5">
-        <template v-if="message.kind === 'Question'">
-          {{ day(message.posted_on) }} ·
-          {{
-            message.read_on
-              ? __('read by the centre')
-              : __('not read by the centre yet')
-          }}
-        </template>
-        <template v-else>
-          {{ message.author_name }} · {{ day(message.posted_on) }}
-        </template>
-      </span>
-    </article>
+        <span
+          v-if="message.kind === 'Question'"
+          class="text-p-sm font-medium text-ink-gray-7"
+        >
+          {{ __('Your question') }}
+        </span>
+        <p class="whitespace-pre-line text-p-base text-ink-gray-9">
+          {{ message.body }}
+        </p>
+        <span class="text-p-sm text-ink-gray-5">
+          <template v-if="message.kind === 'Question'">
+            {{ day(message.posted_on) }} ·
+            {{
+              message.read_on
+                ? __('read by the centre')
+                : __('not read by the centre yet')
+            }}
+          </template>
+          <template v-else>
+            {{ message.author_name }} · {{ day(message.posted_on) }}
+          </template>
+        </span>
+      </article>
+    </template>
     <p
       v-if="messages.data && !messages.data.messages.length"
       class="text-p-base text-ink-gray-5"
     >
       {{ __('Nothing here yet.') }}
     </p>
-    <NoticeCard v-if="noticesOffered" />
+    <NoticeCard v-if="noticesOffered && !anteprima" />
   </div>
 </template>
 
 <script setup>
 import { call, createResource } from 'frappe-ui'
 import { computed } from 'vue'
+import { anteprima } from '../anteprima'
+import HiddenCard from '../components/HiddenCard.vue'
 import NoticeCard from '../components/NoticeCard.vue'
 import { day } from '../dates'
 import { area } from '../store'
@@ -75,6 +82,8 @@ const messages = createResource({
   params: { person: area.person },
   auto: true,
   onSuccess() {
+    // the centre's preview reads nothing on the person's behalf
+    if (anteprima) return
     call('crm.area.messaggi.mark_read', { person: area.person })
       .then(() => {
         const who = (area.me?.people || []).find((p) => p.name === area.person)

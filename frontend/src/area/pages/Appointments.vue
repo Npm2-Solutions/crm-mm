@@ -40,7 +40,7 @@
           {{ __('Waiting list') }}
         </h2>
         <Button
-          v-if="appointments.data?.can_wait"
+          v-if="appointments.data?.can_wait && !anteprima"
           :label="__('Join the waiting list')"
           icon-left="plus"
           @click="joining = true"
@@ -101,6 +101,7 @@
 <script setup>
 import { Button, createResource } from 'frappe-ui'
 import { ref } from 'vue'
+import { anteprima } from '../anteprima'
 import AppointmentCard from '../components/AppointmentCard.vue'
 import CycleCard from '../components/CycleCard.vue'
 import SubscriptionCard from '../components/SubscriptionCard.vue'

@@ -41,7 +41,7 @@
           ])
         }}
       </span>
-      <div class="flex flex-wrap gap-2">
+      <div v-if="!anteprima" class="flex flex-wrap gap-2">
         <Button
           variant="solid"
           :label="__('Yes, book it')"
@@ -65,6 +65,7 @@
 
     <ErrorMessage :message="error" />
     <button
+      v-if="!anteprima"
       type="button"
       class="touch-target w-fit text-p-sm text-ink-gray-6 underline underline-offset-2"
       :disabled="busy === 'leave'"
@@ -79,6 +80,7 @@
 import { quandoPuo } from '@/utils/attese'
 import { Badge, Button, ErrorMessage, call } from 'frappe-ui'
 import { computed, ref } from 'vue'
+import { anteprima } from '../anteprima'
 import { day, when } from '../dates'
 import { area, messageOf } from '../store'
 import { locale } from '../translation'

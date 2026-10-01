@@ -66,7 +66,9 @@
           >
             {{ __('Open the plan of this stage') }}
           </router-link>
-          <template v-if="stage.state === 'open' && programme.can_finish">
+          <template
+            v-if="stage.state === 'open' && programme.can_finish && !anteprima"
+          >
             <button
               v-if="!confirming"
               type="button"
@@ -111,6 +113,7 @@
 import { aCheTappa } from '@/utils/programmi'
 import { ErrorMessage, call } from 'frappe-ui'
 import { computed, ref } from 'vue'
+import { anteprima } from '../anteprima'
 import { day } from '../dates'
 import { area, messageOf } from '../store'
 

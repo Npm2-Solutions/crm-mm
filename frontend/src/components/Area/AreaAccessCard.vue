@@ -1,7 +1,9 @@
 <!--
   The person's client area, from DottorCloud: who enters it and since when, and
   the invitation that opens it - to the person, or to a parent or somebody who
-  follows them. The area itself is /area, with a code by email each time.
+  follows them. The area itself is /area, with a code by email each time. The
+  preview opens it as the person sees it, before the invitation or after, read
+  only and with nothing sent (crm.area.anteprima).
 -->
 <template>
   <section
@@ -12,12 +14,22 @@
       <h3 class="text-base-semibold text-ink-gray-8">
         {{ __('Who enters the area') }}
       </h3>
-      <Button
-        class="shrink-0"
-        icon-left="user-plus"
-        :label="__('Open the area')"
-        @click="openDialog"
-      />
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <Button
+          icon-left="eye"
+          :label="__('Preview')"
+          :title="
+            __('See the area as this person sees it: nothing reaches them')
+          "
+          :loading="previewing"
+          @click="preview"
+        />
+        <Button
+          icon-left="user-plus"
+          :label="__('Open the area')"
+          @click="openDialog"
+        />
+      </div>
     </div>
     <p v-if="!accesses.data.accesses.length" class="text-p-sm text-ink-gray-5">
       {{
@@ -120,7 +132,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 
 const props = defineProps({ lead: { type: String, required: true } })
 
@@ -178,6 +190,24 @@ async function invite() {
     dialog.error = e.messages?.join(' ') || e.message
   } finally {
     dialog.busy = false
+  }
+}
+
+// the area as the person sees it, in a tab of its own: opened on the click, or
+// the browser would block it once the call has answered
+const previewing = ref(false)
+async function preview() {
+  previewing.value = true
+  const tab = window.open('', '_blank')
+  try {
+    const done = await call('crm.area.anteprima.start', { lead: props.lead })
+    if (tab) tab.location.href = done.url
+    else window.location.href = done.url
+  } catch (e) {
+    tab?.close()
+    toast.error(e.messages?.[0] || e.message)
+  } finally {
+    previewing.value = false
   }
 }
 

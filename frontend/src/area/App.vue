@@ -3,11 +3,12 @@
   drawn, wide on its own or square beside its name - and the product's signature
   at the foot (crm.marchio), whose area it is (a parent sees their child's too),
   and its places at the bottom, within reach of a thumb.
-  Staff who open it are sent to DottorCloud: the area is for the centre's clients.
+  Staff who open it are sent to DottorCloud: the area is for the centre's clients,
+  but for the preview a person's page opens (crm.area.anteprima), read only.
   With the clinic on it is the patient area, and says so (window.AREA.words).
 -->
 <template>
-  <div v-if="staff" class="grid h-full place-items-center px-4">
+  <div v-if="staff && !anteprima" class="grid h-full place-items-center px-4">
     <div class="flex max-w-sm flex-col items-center gap-3 text-center">
       <p class="text-base text-ink-gray-8">
         {{ __("This area is for the centre's clients.") }}
@@ -59,12 +60,32 @@
         </template>
       </div>
       <Button
+        v-if="anteprima"
+        variant="solid"
+        :label="__('Close the preview')"
+        class="shrink-0"
+        @click="chiudi"
+      />
+      <Button
+        v-else
         variant="ghost"
         :label="__('Log out')"
         class="shrink-0"
         @click="logout"
       />
     </header>
+    <p
+      v-if="anteprima"
+      class="border-b border-outline-gray-1 bg-surface-amber-1 px-4 py-2 text-p-sm text-ink-amber-8"
+      role="status"
+    >
+      {{
+        __(
+          'Preview: this is the area of {0} as they see it. Nothing is changed or sent from here.',
+          [anteprima.lead_name],
+        )
+      }}
+    </p>
     <div
       v-if="(area.me?.people || []).length > 1"
       class="border-b border-outline-gray-1 bg-surface-elevation-1 px-4 py-2"
@@ -130,6 +151,7 @@
 import { Button, ErrorMessage, FeatherIcon, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { anteprima, chiudi } from './anteprima'
 import { area, choose, loadMe, logout, section } from './store'
 import CentreTile from '@/components/CentreTile.vue'
 import { useFormaDelLogo } from '@/composables/formaDelLogo'
@@ -172,7 +194,8 @@ const placeOf = (name) => (name === 'Plan' ? 'Plans' : name)
 // what the centre wrote and the person has not opened yet
 const unread = computed(() => current.value?.unread || 0)
 
-if (!staff && boot.user && boot.user !== 'Guest') loadMe()
+// a client, or the centre previewing a person's area
+if ((!staff || anteprima) && boot.user && boot.user !== 'Guest') loadMe()
 
 function goCrm() {
   window.location.href = '/crm'
