@@ -155,9 +155,9 @@ def crm_contact_html(page_name: str | None = None) -> str:
 	"""
 	s = _site_of_page(page_name)
 	if not s:
-		return _placeholder(_("Fill in the contact details under Settings → Website."))
+		return _placeholder(_("Fill in the contact details under Settings → Marketing → Website."))
 	if not (s.address or s.phone or s.email or s.whatsapp_number):
-		return _placeholder(_("Fill in the contact details under Settings → Website."))
+		return _placeholder(_("Fill in the contact details under Settings → Marketing → Website."))
 	return frappe.render_template(  # nosemgrep: frappe-ssti — literal template path
 		"crm/templates/site/contacts.html",
 		{

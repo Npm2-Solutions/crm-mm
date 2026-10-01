@@ -1,6 +1,6 @@
 <!--
   The product's icon, and the centre's logo beside it when the centre has one
-  (Settings > Brand): the platform's brand comes first, everywhere.
+  (Settings > General > Name & logo): the platform's brand comes first, everywhere.
 -->
 <template>
   <div class="flex shrink-0 items-center gap-1.5">

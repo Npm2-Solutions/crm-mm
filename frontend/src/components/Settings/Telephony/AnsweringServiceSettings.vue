@@ -81,7 +81,7 @@
             :label="__('Respect working hours')"
             :description="
               __(
-                'Play a different announcement when closed, and count the promised time in working hours only. Hours come from Agenda → Working Hours.',
+                'Play a different announcement when closed, and count the promised time in working hours only. Hours come from Agenda → Hours & shifts.',
               )
             "
           >

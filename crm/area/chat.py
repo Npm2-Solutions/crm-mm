@@ -68,7 +68,7 @@ def _ora(valore) -> str:
 
 
 def _orari() -> list[str]:
-	"""The studio's hours, day by day, as Settings > Studio hours & rules says."""
+	"""The studio's hours, day by day, as Settings > Agenda > Hours & shifts says."""
 	cfg = frappe.get_cached_doc("CRM Scheduling Settings")
 	per_giorno: dict[str, list[str]] = {}
 	for riga in cfg.get("default_availability") or []:

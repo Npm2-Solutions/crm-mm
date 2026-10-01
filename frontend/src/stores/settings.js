@@ -16,7 +16,7 @@ const _settings = createDocumentResource({
 })
 
 export function getSettings() {
-  // The centre's own name and logo (Settings > Brand): the logo goes beside the
+  // The centre's own name and logo (Settings > General > Name & logo): the logo goes beside the
   // product's. The tab's icon is always the product's - the vertical's brand.
   function setupBrand() {
     brand.name = settings.value?.brand_name
