@@ -43,11 +43,10 @@
           </div>
           <!-- One box per group: a sticky label sticks only inside its own
                parent, and with every label in one scroller they all stayed
-               pinned and piled up — «Automation & Rules» over «Invoicing». -->
-          <div v-for="(tab, i) in tabs" :key="tab.label">
-            <div v-if="!tab.hideLabel && i != 0" class="mx-1 mb-0.5 mt-[5px]" />
+               pinned and piled up, one group's name over the next one's. -->
+          <div v-for="(tab, i) in tabs" :key="tab.key">
+            <div v-if="i != 0" class="mx-1 mb-0.5 mt-[5px]" />
             <div
-              v-if="!tab.hideLabel"
               class="h-7.5 px-2 py-[7px] my-[3px] flex cursor-pointer gap-1.5 text-xs-medium text-ink-gray-5 transition-all duration-300 ease-in-out sticky top-0 z-10 bg-surface-gray-1"
             >
               <span>{{ __(tab.label) }}</span>
@@ -87,38 +86,42 @@
               {{ __(activeTab?.title || activeTab?.label || 'Settings') }}
             </span>
           </div>
-          <component :is="activeTab.component" v-if="activeTab" />
+          <!-- an entry with several sides draws its tabs; the others are one page -->
+          <SettingsHub
+            v-if="activeTab?.tabs"
+            :key="activeTab.key"
+            :voce="activeTab"
+          />
+          <component :is="activeTab.component" v-else-if="activeTab" />
         </div>
       </div>
     </template>
   </Dialog>
 </template>
 <script setup>
-import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
-import LucideNetwork from '~icons/lucide/network'
+import LucideCalendarCog from '~icons/lucide/calendar-cog'
 import LucidePackage from '~icons/lucide/package'
 import LucideFileCheck from '~icons/lucide/file-check'
-import MonitorCogIcon from '~icons/lucide/monitor-cog'
 import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
 import LucideSparkles from '~icons/lucide/sparkles'
 import LucideInfinity from '~icons/lucide/infinity'
 import LucideDoorOpen from '~icons/lucide/door-open'
-import LucideTags from '~icons/lucide/tags'
-import LucideGlobe from '~icons/lucide/globe'
 import LucideClock from '~icons/lucide/clock'
 import LucideHourglass from '~icons/lucide/hourglass'
-import LucideTicket from '~icons/lucide/ticket'
 import LucideCalendarCheck from '~icons/lucide/calendar-check'
+import LucideBellRing from '~icons/lucide/bell-ring'
 import LucideRadar from '~icons/lucide/radar'
 import LucideListChecks from '~icons/lucide/list-checks'
 import LucideReceipt from '~icons/lucide/receipt-text'
 import LucideBuilding from '~icons/lucide/building-2'
-import LucidePlug from '~icons/lucide/plug-zap'
-import LucideBookOpen from '~icons/lucide/book-open'
-import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideUserCog from '~icons/lucide/user-cog'
+import LucidePlug from '~icons/lucide/plug-zap'
+import LucideLibraryBig from '~icons/lucide/library-big'
+import LucideStamp from '~icons/lucide/stamp'
+import LucideBot from '~icons/lucide/bot'
+import LucideGlobe from '~icons/lucide/globe'
+import LucideUsers from '~icons/lucide/users'
 import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
-import SparkleIcon from '@/components/Icons/SparkleIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
@@ -128,6 +131,7 @@ import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import EmailTemplateIcon from '@/components/Icons/EmailTemplateIcon.vue'
 import SettingsIcon from '@/components/Icons/SettingsIcon.vue'
 import SettingsIcon2 from '@/components/Icons/SettingsIcon2.vue'
+import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import Users from '@/components/Settings/Users.vue'
 import Hierarchy from '@/components/Settings/Hierarchy/Hierarchy.vue'
 import InviteUserPage from '@/components/Settings/InviteUserPage.vue'
@@ -146,11 +150,6 @@ import SealSettings from '@/components/Settings/SealSettings.vue'
 import AreaNoticeSettings from '@/components/Settings/AreaNoticeSettings.vue'
 import ExercisesSettings from '@/components/Settings/Plans/ExercisesSettings.vue'
 import FoodsSettings from '@/components/Settings/Clinic/FoodsSettings.vue'
-import LucideLibraryBig from '~icons/lucide/library-big'
-import LucideDumbbell from '~icons/lucide/dumbbell'
-import LucideBellRing from '~icons/lucide/bell-ring'
-import LucideStamp from '~icons/lucide/stamp'
-import LucideBot from '~icons/lucide/bot'
 import GeneralSettings from '@/components/Settings/GeneralSettings.vue'
 import DashboardSettings from '@/components/Settings/DashboardSettings.vue'
 import EmailTemplatePage from '@/components/Settings/EmailTemplate/EmailTemplatePage.vue'
@@ -179,10 +178,10 @@ import QualificationsSettings from '@/components/Settings/Invoicing/Qualificatio
 import BillableServicesSettings from '@/components/Settings/Invoicing/BillableServicesSettings.vue'
 import ProvidersSettings from '@/components/Settings/Invoicing/ProvidersSettings.vue'
 import ProviderConnection from '@/components/Settings/Invoicing/ProviderConnection.vue'
-import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import EmailConfig from '@/components/Settings/EmailConfig.vue'
 import PlanSettings from '@/components/Settings/PlanSettings.vue'
 import ConsentsSettings from '@/components/Settings/ConsentsSettings.vue'
+import SettingsHub from '@/components/Settings/SettingsHub.vue'
 import Icon from '@/components/Icon.vue'
 import { usersStore } from '@/stores/users'
 import {
@@ -192,482 +191,148 @@ import {
   disableSettingModalOutsideClick,
 } from '@/composables/settings'
 import { isWhatsappInstalled } from '@/composables/whatsapp'
+import { menuDi, trova } from '@/utils/impostazioni'
 import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
 import { ref, markRaw, computed, watch, h } from 'vue'
 import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
-import ShieldCheck from '~icons/lucide/shield-check'
 import SlaConfig from './Sla/SlaConfig.vue'
 
 const { getUser, puo, ambito } = usersStore()
 
 const user = computed(() => getUser() || {})
 
-const tabs = computed(() => {
-  let _tabs = [
-    {
-      label: __('User Configuration'),
-      items: [
-        {
-          label: __('Profile'),
-          icon: () =>
-            h(Avatar, {
-              size: 'xs',
-              label: user.value.full_name,
-              image: user.value.user_image,
-            }),
-          component: markRaw(ProfilePage),
-        },
-        {
-          label: __('Preferences'),
-          icon: SlidersIcon,
-          component: markRaw(PreferencesSettings),
-        },
-      ],
-    },
-    {
-      label: __('System Configuration'),
-      items: [
-        {
-          label: __('General'),
-          component: markRaw(GeneralSettings),
-          icon: SettingsIcon,
-          condition: () => puo('impostazioni.generali'),
-        },
-        {
-          label: __('Dashboard'),
-          component: markRaw(DashboardSettings),
-          icon: LucideLayoutDashboard,
-          condition: () => puo('impostazioni.generali'),
-        },
-        {
-          label: __('Defaults'),
-          component: markRaw(DefaultsSettings),
-          icon: MonitorCogIcon,
-          condition: () => puo('tecnico.predefiniti'),
-        },
-        {
-          label: __('Brand'),
-          icon: SparkleIcon,
-          component: markRaw(BrandSettings),
-          condition: () => puo('impostazioni.generali'),
-        },
-      ],
-    },
-    {
-      label: __('Sales'),
-      items: [
-        {
-          label: __('Pipelines'),
-          icon: KanbanIcon,
-          component: markRaw(PipelinesSettings),
-          condition: () => puo('pipeline.configura'),
-        },
-        {
-          label: __('Call Scripts'),
-          icon: markRaw(LucideListChecks),
-          component: markRaw(CallScriptsSettings),
-          condition: () => puo('telefono.copioni_scrivi'),
-        },
-      ],
-    },
-    {
-      label: __('User Management'),
-      items: [
-        {
-          label: __('Users'),
-          icon: 'user',
-          component: markRaw(Users),
-          condition: () => puo('utenti.gestisci'),
-        },
-        {
-          label: __('Invite User'),
-          icon: 'user-plus',
-          component: markRaw(InviteUserPage),
-          condition: () => puo('utenti.gestisci'),
-        },
-        {
-          label: __('Sales Hierarchy'),
-          icon: LucideNetwork,
-          component: markRaw(Hierarchy),
-          condition: () => puo('gerarchia.gestisci'),
-        },
-        {
-          label: __('Plan'),
-          icon: LucidePackage,
-          component: markRaw(PlanSettings),
-          condition: () => puo('piano.vedi'),
-        },
-        {
-          label: __('Consents'),
-          icon: LucideFileCheck,
-          component: markRaw(ConsentsSettings),
-          condition: () => puo('consensi.configura'),
-        },
-      ],
-    },
-    {
-      label: __('Email'),
-      items: [
-        {
-          label: __('Accounts'),
-          icon: Email2Icon,
-          component: markRaw(EmailConfig),
-          condition: () => puo('email.account_centro'),
-        },
-        {
-          label: __('Templates'),
-          icon: EmailTemplateIcon,
-          component: markRaw(EmailTemplatePage),
-          // everybody uses them from the composer; writing them is the manager's
-          condition: () => puo('modelli_messaggio.gestisci'),
-        },
-      ],
-    },
-    {
-      // a channel of its own, next to Email and built the same way: the numbers
-      // it sends from, and the templates it may send outside the 24 hours
-      label: __('WhatsApp'),
-      items: [
-        {
-          label: __('Numbers'),
-          title: __('WhatsApp'),
-          key: 'WhatsApp',
-          icon: WhatsAppIcon,
-          component: markRaw(WhatsAppSettings),
-          condition: () => puo('canali.configura'),
-        },
-        {
-          label: __('Templates'),
-          title: __('WhatsApp Templates'),
-          key: 'WhatsApp Templates',
-          icon: EmailTemplateIcon,
-          component: markRaw(WhatsAppTemplates),
-          condition: () => puo('modelli_messaggio.gestisci'),
-        },
-      ],
-      condition: () => isWhatsappInstalled.value,
-    },
-    {
-      label: __('Automation & Rules'),
-      items: [
-        {
-          label: __('Assignment Rules'),
-          icon: markRaw(h(SettingsIcon2, { class: 'rotate-90' })),
-          component: markRaw(AssignmentRulePage),
-          condition: () => puo('assegnazione.regole'),
-        },
-        {
-          label: __('SLA Policies'),
-          icon: markRaw(h(ShieldCheck)),
-          component: markRaw(SlaConfig),
-          condition: () => puo('assegnazione.regole'),
-        },
-        {
-          label: __('Forms'),
-          component: markRaw(FormsSettings),
-          icon: markRaw(LucideTextCursorInput),
-          // the web forms, and the forms to fill and sign: one builder
-          condition: () =>
-            puo('moduli_lead.gestisci') || puo('moduli.configura'),
-        },
-        {
-          label: __('Tracked Links'),
-          component: markRaw(TrackedLinksSettings),
-          icon: 'link',
-          condition: () => puo('tracciamento.gestisci'),
-        },
-        {
-          label: __('Lead Tracking'),
-          component: markRaw(TrackingSettings),
-          icon: markRaw(LucideRadar),
-          condition: () => puo('tracciamento.gestisci'),
-        },
-      ],
-    },
-    {
-      // invoicing, in the order you set it up: who signs the documents, what the
-      // qualifications mean, what is being sold, who performs it, how it reaches
-      // the provider and comes back, and the switches that apply to all of it
-      label: __('Invoicing'),
-      items: [
-        {
-          label: __('Issuing company'),
-          key: 'Issuing company',
-          icon: markRaw(LucideBuilding),
-          component: markRaw(InvoicingCompany),
-        },
-        {
-          label: __('Qualification register'),
-          key: 'Qualification register',
-          icon: markRaw(LucideBookOpen),
-          component: markRaw(QualificationsSettings),
-        },
-        {
-          label: __('Billable services'),
-          key: 'Billable services',
-          icon: markRaw(LucideStethoscope),
-          component: markRaw(BillableServicesSettings),
-        },
-        {
-          label: __('Providers'),
-          key: 'Providers',
-          icon: markRaw(LucideUserCog),
-          component: markRaw(ProvidersSettings),
-        },
-        {
-          label: __('Provider connection'),
-          key: 'Provider connection',
-          icon: markRaw(LucidePlug),
-          component: markRaw(ProviderConnection),
-        },
-        {
-          label: __('Invoicing defaults'),
-          key: 'Invoicing defaults',
-          icon: markRaw(LucideReceipt),
-          component: markRaw(InvoicingDefaults),
-        },
-      ],
-      condition: () => puo('fatture.configura'),
-    },
-    {
-      // the agenda setup, in the order you configure it: what you sell, what it
-      // needs, what it costs, who is available, and the rules on top
-      label: __('Agenda'),
-      items: [
-        {
-          label: __('Services'),
-          icon: markRaw(LucideSparkles),
-          component: markRaw(ServicesSettings),
-          condition: () => puo('agenda.configura'),
-        },
-        {
-          label: __('Team rota'),
-          icon: markRaw(LucideClock),
-          component: markRaw(StaffSchedulesSettings),
-          condition: () => puo('agenda.turni'),
-        },
-        {
-          // opening hours + what the agenda refuses: the studio's own rules
-          label: __('Studio hours & rules'),
-          icon: SettingsIcon,
-          component: markRaw(SchedulingDefaults),
-          condition: () => puo('agenda.configura'),
-        },
-        {
-          label: __('Rooms & Equipment'),
-          icon: markRaw(LucideDoorOpen),
-          component: markRaw(ResourcesSettings),
-          // the rooms are the whole centre's: a practitioner keeps only their shifts
-          condition: () => ambito('agenda.turni') === 'centro',
-        },
-        {
-          label: __('Price Lists'),
-          icon: markRaw(LucideTags),
-          component: markRaw(PriceListsSettings),
-          condition: () => puo('agenda.configura'),
-        },
-        {
-          // a place that frees up goes to who waits for it
-          label: __('Waiting list'),
-          icon: markRaw(LucideHourglass),
-          component: markRaw(WaitingListSettings),
-          condition: () => puo('agenda.configura'),
-        },
-        {
-          // what the desk sells: months, price, services and entries
-          label: __('Subscriptions'),
-          icon: markRaw(LucideTicket),
-          component: markRaw(SubscriptionTypesSettings),
-          condition: () => puo('agenda.configura'),
-        },
-        {
-          // calendar view and event reminders, next to the rest of the agenda
-          label: __('Calendar & reminders'),
-          icon: CalendarIcon,
-          component: markRaw(CalendarSettings),
-          condition: () => puo('impostazioni.generali'),
-        },
-      ],
-    },
-    {
-      label: __('Booking'),
-      items: [
-        {
-          // the one place to answer "can clients book this person?"
-          label: __('Online booking'),
-          icon: markRaw(LucideCalendarCheck),
-          component: markRaw(OnlineBookingSetup),
-          condition: () => puo('prenotazione_online.configura'),
-        },
-        {
-          label: __('Page & rules'),
-          icon: LucideGlobe,
-          component: markRaw(BookingPageSettings),
-          condition: () => puo('prenotazione_online.configura'),
-        },
-        {
-          label: __('Booking platforms'),
-          icon: LucideNetwork,
-          component: markRaw(BookingPlatforms),
-          condition: () => puo('piattaforme.configura'),
-        },
-        {
-          // per user, not per site: everyone connects their own calendar
-          label: __('Google Calendar'),
-          key: 'Google Calendar',
-          icon: CalendarIcon,
-          component: markRaw(GoogleCalendarSettings),
-          condition: () => puo('google_calendar.proprio'),
-        },
-      ],
-    },
-    {
-      // what the plans are written with: the exercises, the CRM's
-      label: __('Plans'),
-      items: [
-        {
-          label: __('Exercises'),
-          key: 'Exercises',
-          icon: markRaw(LucideDumbbell),
-          component: markRaw(ExercisesSettings),
-          condition: () => puo('piani.librerie'),
-        },
-      ],
-    },
-    {
-      // the clinic's own pages: the foods its diets are written with
-      label: __('Clinic'),
-      items: [
-        {
-          label: __('Foods'),
-          key: 'Foods',
-          icon: markRaw(LucideLibraryBig),
-          component: markRaw(FoodsSettings),
-          condition: () =>
-            puo('piani.librerie') && window.vertical?.key === 'clinica',
-        },
-      ],
-    },
-    {
-      // the planner's own space: which profiles it publishes to. They come from
-      // sources connected under Integrations — Meta today, others later
-      label: __('Social Planner'),
-      items: [
-        {
-          label: __('Profiles'),
-          title: __('Social Planner'),
-          key: 'Social profiles',
-          icon: SocialIcon,
-          component: markRaw(SocialSettings),
-          condition: () => puo('social.pubblica'),
-        },
-      ],
-    },
-    {
-      // the site's configuration; the day-to-day work (pages, showcase) is a
-      // section of the app, not a settings screen
-      label: __('Website'),
-      items: [
-        {
-          label: __('Website'),
-          key: 'Website',
-          icon: markRaw(LucideGlobe),
-          component: markRaw(WebsiteSettings),
-        },
-      ],
-      // only where Frappe Builder is installed: installing it is the agency's
-      // job on the bench, not a switch the centre has
-      condition: () => puo('sito.gestisci'),
-    },
-    {
-      label: __('Customization'),
-      items: [
-        {
-          label: __('Home Actions'),
-          component: markRaw(HomeActions),
-          icon: 'house',
-          condition: () => puo('impostazioni.generali'),
-        },
-      ],
-    },
-    {
-      label: __('Integrations', null, 'FCRM'),
-      items: [
-        {
-          // one page with its own tabs: the connection and the three things
-          // it feeds. The old page names still open it, on the right tab.
-          label: __('Meta'),
-          key: 'Meta connection',
-          aliases: ['Lead forms', 'Ad performance', 'Lead quality'],
-          // the Meta mark, near enough: the sprite has no 'facebook' any more,
-          // and the entry had been drawing an empty square
-          icon: markRaw(LucideInfinity),
-          component: markRaw(MetaSettings),
-          condition: () => puo('meta.gestisci'),
-        },
-        {
-          label: __('Telephony'),
-          icon: PhoneIcon,
-          component: markRaw(TelephonyPage),
-        },
-        {
-          label: __('ERPNext'),
-          icon: ERPNextIcon,
-          component: markRaw(ERPNextSettings),
-          condition: () => puo('tecnico.erpnext'),
-        },
-        {
-          // what the patient area tells outside it: the channels are the manager's
-          label: __('News in the client area'),
-          key: 'News in the client area',
-          icon: markRaw(LucideBellRing),
-          component: markRaw(AreaNoticeSettings),
-          condition: () => puo('canali.configura') && puo('area.invita'),
-        },
-        {
-          // the centre's certificate and the time-stamping authority: the agency's
-          label: __('Seal and time stamp'),
-          key: 'Seal and time stamp',
-          icon: markRaw(LucideStamp),
-          component: markRaw(SealSettings),
-          condition: () => puo('tecnico.integrazioni'),
-        },
-        {
-          // documentation support: the register for the manager, the model for the agency
-          label: __('Assistant'),
-          key: 'Assistant',
-          icon: markRaw(LucideBot),
-          component: markRaw(AssistantSettings),
-          condition: () =>
-            puo('assistente.registro') ||
-            puo('assistente.registro_clinico') ||
-            puo('tecnico.integrazioni'),
-        },
-      ],
-    },
-  ]
+// What each page is drawn with, by the name it has in the menu
+// (utils/impostazioni.js): an entry of its own, or a tab of one.
+const PAGINE = {
+  Profile: ProfilePage,
+  Preferences: PreferencesSettings,
+  'Google Calendar': GoogleCalendarSettings,
+  Brand: BrandSettings,
+  General: GeneralSettings,
+  Dashboard: DashboardSettings,
+  'Home Actions': HomeActions,
+  Defaults: DefaultsSettings,
+  Users,
+  'Invite User': InviteUserPage,
+  'Sales Hierarchy': Hierarchy,
+  Plan: PlanSettings,
+  Services: ServicesSettings,
+  'Price Lists': PriceListsSettings,
+  Subscriptions: SubscriptionTypesSettings,
+  'Studio hours & rules': SchedulingDefaults,
+  'Team rota': StaffSchedulesSettings,
+  'Rooms & Equipment': ResourcesSettings,
+  'Calendar & reminders': CalendarSettings,
+  'Waiting list': WaitingListSettings,
+  'Online booking': OnlineBookingSetup,
+  'Page & rules': BookingPageSettings,
+  'Booking platforms': BookingPlatforms,
+  Forms: FormsSettings,
+  Consents: ConsentsSettings,
+  'News in the client area': AreaNoticeSettings,
+  Exercises: ExercisesSettings,
+  Foods: FoodsSettings,
+  Pipelines: PipelinesSettings,
+  'Assignment Rules': AssignmentRulePage,
+  'SLA Policies': SlaConfig,
+  Accounts: EmailConfig,
+  Templates: EmailTemplatePage,
+  WhatsApp: WhatsAppSettings,
+  'WhatsApp Templates': WhatsAppTemplates,
+  Telephony: TelephonyPage,
+  'Call Scripts': CallScriptsSettings,
+  Website: WebsiteSettings,
+  'Social profiles': SocialSettings,
+  'Lead Tracking': TrackingSettings,
+  'Tracked Links': TrackedLinksSettings,
+  'Issuing company': InvoicingCompany,
+  'Provider connection': ProviderConnection,
+  'Billable services': BillableServicesSettings,
+  Providers: ProvidersSettings,
+  'Qualification register': QualificationsSettings,
+  'Invoicing defaults': InvoicingDefaults,
+  // one page with its own tabs: the connection and the three things it feeds
+  'Meta connection': MetaSettings,
+  ERPNext: ERPNextSettings,
+  'Seal and time stamp': SealSettings,
+  Assistant: AssistantSettings,
+}
 
-  // each page asks for the capability of its own screen (doc 30); a group shows
-  // when one of its pages does
-  return _tabs.filter((tab) => {
-    if (tab.condition && !tab.condition()) return false
-    if (tab.items) {
-      tab.items = tab.items.filter((item) => {
-        if (item.condition && !item.condition()) return false
-        return true
-      })
-      return tab.items.length > 0
-    }
-    return true
-  })
-})
+// The icon of each entry.
+const ICONE = {
+  Profile: () =>
+    h(Avatar, {
+      size: 'xs',
+      label: user.value.full_name,
+      image: user.value.user_image,
+    }),
+  Preferences: SlidersIcon,
+  'Google Calendar': CalendarIcon,
+  'General settings': SettingsIcon,
+  Users: LucideUsers,
+  Plan: LucidePackage,
+  Services: LucideSparkles,
+  'Hours & shifts': LucideClock,
+  'Rooms & Equipment': LucideDoorOpen,
+  'Calendar & reminders': LucideCalendarCog,
+  'Waiting list': LucideHourglass,
+  'Online booking': LucideCalendarCheck,
+  Forms: LucideTextCursorInput,
+  Consents: LucideFileCheck,
+  'News in the client area': LucideBellRing,
+  Libraries: LucideLibraryBig,
+  Pipelines: KanbanIcon,
+  Assignment: h(SettingsIcon2, { class: 'rotate-90' }),
+  Accounts: Email2Icon,
+  Templates: EmailTemplateIcon,
+  WhatsApp: WhatsAppIcon,
+  'WhatsApp Templates': EmailTemplateIcon,
+  Telephony: PhoneIcon,
+  'Call Scripts': LucideListChecks,
+  Website: LucideGlobe,
+  'Social profiles': SocialIcon,
+  Tracking: LucideRadar,
+  'Issuing company': LucideBuilding,
+  'Services & providers': LucideUserCog,
+  'Provider connection': LucidePlug,
+  'Invoicing defaults': LucideReceipt,
+  // the Meta mark, near enough: the sprite has no 'facebook' any more
+  'Meta connection': LucideInfinity,
+  ERPNext: ERPNextIcon,
+  'Seal and time stamp': LucideStamp,
+  Assistant: LucideBot,
+}
+
+// a component, an icon: never made reactive along with the entry holding it
+const fermo = (cosa) =>
+  cosa && typeof cosa === 'object' ? markRaw(cosa) : cosa
+
+// The menu this person sees (each page asks for the capability of its own
+// screen, doc 30), with what its pages and entries are drawn with.
+const tabs = computed(() =>
+  menuDi({
+    puo,
+    ambito,
+    whatsapp: isWhatsappInstalled.value,
+    verticale: window.vertical?.key || null,
+  }).map((gruppo) => ({
+    ...gruppo,
+    items: gruppo.items.map((voce) => ({
+      ...voce,
+      icon: fermo(ICONE[voce.key]),
+      component: voce.tabs ? null : fermo(PAGINE[voce.key]),
+      tabs: voce.tabs?.map((scheda) => ({
+        ...scheda,
+        component: fermo(PAGINE[scheda.key]),
+      })),
+    })),
+  })),
+)
 
 const activeTab = ref(tabs.value[0].items[0])
 
-// What tells one page from another. The label cannot: it is translated, and two
-// pages share it ("Templates" is both Email's and WhatsApp's).
 function itemId(item) {
-  return item.key || item.label
+  return item.key
 }
 
 function isActive(item) {
@@ -675,19 +340,12 @@ function isActive(item) {
 }
 
 function setActiveTab(tabName) {
-  // `label` is translated, so a deep link built server-side (an OAuth callback
-  // sending the browser back here) can only match the untranslated `key`. The
-  // key wins over a label, and a page that used to exist on its own (`aliases`)
-  // opens the page that holds it now.
-  const items = tabs.value.map((tab) => tab.items).flat()
+  // A deep link built server-side (an OAuth callback sending the browser back
+  // here) names the page by its key, which is not translated; a page that is a
+  // tab now, or used to be a page of its own (an alias), opens the entry holding
+  // it. A screen outside the modal may still ask by the English label.
   activeTab.value =
-    (tabName &&
-      (items.find((item) => itemId(item) === tabName) ||
-        items.find((item) => item.aliases?.includes(tabName)) ||
-        items.find((item) => item.label === tabName) ||
-        // the untranslated name of a page without a key ("Telephony"), asked
-        // for by a screen outside the modal in a language that translates it
-        items.find((item) => item.label === __(tabName)))) ||
+    trova(tabs.value, tabName, (testo) => __(testo))?.voce ||
     tabs.value[0].items[0]
 }
 
@@ -709,14 +367,16 @@ watch(activeSettingsPage, (activePage) => {
 // The page a link asks for can sit in a group whose condition is not known yet:
 // the user's role and whether WhatsApp is installed both load in the
 // background. The WhatsApp signup comes back to `?settings=WhatsApp` on a fresh
-// page, and landed on Profile whenever it won that race. So when the groups
-// change, the page asked for is looked up again.
+// page, and landed on Profile whenever it won that race. So when the menu
+// changes, the page asked for is looked up again, and the entry open is taken
+// as the new menu has it, with the tabs it has now.
 watch(tabs, () => {
-  const asked = activeSettingsPage.value
-  const current = activeTab.value
-  if (!asked || !current) return
-  if (itemId(current) === asked || current.aliases?.includes(asked)) return
-  setActiveTab(asked)
+  if (activeSettingsPage.value) return setActiveTab(activeSettingsPage.value)
+  const aperta = activeTab.value?.key
+  activeTab.value =
+    tabs.value
+      .flatMap((tab) => tab.items)
+      .find((item) => item.key === aperta) || tabs.value[0].items[0]
 })
 
 // Tapping a row has to push to the detail even when it is the row you were last
@@ -727,8 +387,8 @@ function openSettingsPage(id) {
   showingDetail.value = true
 }
 
-// deep link: /crm?settings=<page label> opens the modal on that page (used by
-// OAuth callbacks, e.g. the Meta Lead Ads connect flow)
+// deep link: /crm?settings=<page> opens the modal on that page (used by OAuth
+// callbacks, e.g. the Meta Lead Ads connect flow)
 const settingsParam = new URLSearchParams(window.location.search).get(
   'settings',
 )
