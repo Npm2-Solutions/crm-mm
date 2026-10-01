@@ -45,8 +45,6 @@
   </LayoutHeader>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <!-- where the person is: arrived, booked, came, after, at home -->
-      <PersonJourney :lead="leadId" class="border-b px-5 pb-3 pt-3.5" />
       <Tabs
         v-model="tabIndex"
         :tabs="tabs"
@@ -255,7 +253,6 @@
 <script setup>
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
 import ErrorPage from '@/components/ErrorPage.vue'
-import PersonJourney from '@/components/Espresso/PersonJourney.vue'
 import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
