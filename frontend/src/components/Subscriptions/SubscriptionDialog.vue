@@ -172,7 +172,7 @@
             >
               <button
                 type="button"
-                class="min-w-0 flex-1 truncate text-left text-p-base text-ink-gray-8 hover:underline focus-visible:underline focus-visible:outline-none"
+                class="min-w-0 flex-1 truncate text-left text-p-base text-ink-gray-8 hover:underline focus-visible:underline focus-visible:outline-none max-md:whitespace-normal"
                 @click="openAppointment(appointment)"
               >
                 {{ formatDate(appointment.starts_on, 'ddd D MMM YYYY, HH:mm') }}
