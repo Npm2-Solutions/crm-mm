@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 
-from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, notify_user
 
 
 def after_insert(doc, method):
@@ -43,13 +43,8 @@ def notify_assigned_user(doc, is_cancelled=False):
 	owner = frappe.get_cached_value("User", frappe.session.user, "full_name")
 	notification_text = get_notification_text(owner, doc, _doc, is_cancelled)
 
-	message = (
-		_("Your assignment on {0} {1} has been removed by {2}").format(
-			doc.reference_type, doc.reference_name, owner
-		)
-		if is_cancelled
-		else _("{0} assigned a {1} {2} to you").format(owner, doc.reference_type, doc.reference_name)
-	)
+	# the same sentence, without its markup
+	message = frappe.utils.strip_html(notification_text).strip()
 
 	redirect_to_doctype, redirect_to_name = get_redirect_to_doc(doc)
 
@@ -69,44 +64,31 @@ def notify_assigned_user(doc, is_cancelled=False):
 
 
 def get_notification_text(owner, doc, reference_doc, is_cancelled=False):
-	name = doc.reference_name
 	doctype = doc.reference_type
 
-	if doctype.startswith("CRM "):
-		doctype = doctype[4:].lower()
-
-	if doctype in ["lead", "deal"]:
+	if doctype in ["CRM Lead", "CRM Deal"]:
 		name = (
-			reference_doc.lead_name or name
-			if doctype == "lead"
-			else reference_doc.organization or reference_doc.lead_name or name
+			reference_doc.lead_name or doc.reference_name
+			if doctype == "CRM Lead"
+			else reference_doc.organization or reference_doc.lead_name or doc.reference_name
 		)
-
 		if is_cancelled:
-			return f"""
-                <div class="mb-2 leading-5 text-ink-gray-5">
-                    <span>{
-				_("Your assignment on {0} {1} has been removed by {2}").format(
-					doctype,
-					f'<span class="font-medium text-ink-gray-9">{name}</span>',
-					f'<span class="font-medium text-ink-gray-9">{owner}</span>',
-				)
-			}</span>
-                </div>
-            """
-
+			frase = (
+				_("{0} removed your assignment on the deal {1}")
+				if doctype == "CRM Deal"
+				else _("{0} removed your assignment on {1}")
+			)
+		else:
+			frase = (
+				_("{0} assigned you the deal {1}") if doctype == "CRM Deal" else _("{0} assigned {1} to you")
+			)
 		return f"""
             <div class="mb-2 leading-5 text-ink-gray-5">
-                <span class="font-medium text-ink-gray-9">{owner}</span>
-                <span>{
-			_("assigned a {0} {1} to you").format(
-				doctype, f'<span class="font-medium text-ink-gray-9">{name}</span>'
-			)
-		}</span>
+                {frase.format(in_grassetto(owner), in_grassetto(name))}
             </div>
         """
 
-	if doctype == "task":
+	if doctype == "CRM Task":
 		if is_cancelled:
 			return f"""
                 <div class="mb-2 leading-5 text-ink-gray-5">

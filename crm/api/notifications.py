@@ -73,8 +73,17 @@ def get_hash(notification):
 	if notification.type == "Area":
 		_hash = "#clinic"
 
+	# the person's tasks, while the task is still theirs (the sentence is in the
+	# language of whoever assigned it: it is not what says so)
 	if notification.type == "Assignment" and notification.notification_type_doctype == "CRM Task":
-		_hash = "#tasks"
-		if "has been removed by" in notification.message:
-			_hash = ""
+		ancora = frappe.db.exists(
+			"ToDo",
+			{
+				"reference_type": "CRM Task",
+				"reference_name": notification.notification_type_doc,
+				"allocated_to": notification.to_user,
+				"status": ("!=", "Cancelled"),
+			},
+		)
+		_hash = "#tasks" if ancora else ""
 	return _hash

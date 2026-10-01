@@ -1,4 +1,5 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
 import frappe
@@ -82,3 +83,23 @@ def notify_user(notification):
 	if frappe.db.exists("CRM Notification", values):
 		return
 	frappe.get_doc(values).insert(ignore_permissions=True)
+
+
+def in_grassetto(testo) -> str:
+	"""A name inside a notification's sentence, the way the panel shows names."""
+	return f'<span class="font-medium text-ink-gray-9">{frappe.utils.escape_html(testo or "")}</span>'
+
+
+def nome_di(reference_doctype: str, reference_name: str) -> str:
+	"""What a notification is about, by the name one reads: a person's name, a deal's
+	company or person; the ID when there is neither.
+
+	The sentences name a person by their name alone and a deal as "the deal": a
+	doctype's name glued into a sentence reads wrong in any language but English, and
+	where the clinic is on a person is a patient."""
+	if reference_doctype == "CRM Lead":
+		return frappe.db.get_value("CRM Lead", reference_name, "lead_name") or reference_name
+	if reference_doctype == "CRM Deal":
+		deal = frappe.db.get_value("CRM Deal", reference_name, ["organization", "lead_name"], as_dict=True)
+		return (deal and (deal.organization or deal.lead_name)) or reference_name
+	return reference_name
