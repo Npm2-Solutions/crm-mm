@@ -135,7 +135,15 @@ for sl in prs.slides:
 					if al is not None and int(al) == 3
 					else "left"
 				)
-				text = html.escape("".join(r.text for r in para.runs))
+				# every run keeps its own colour (a title's highlighted words)
+				parts = []
+				for r in para.runs:
+					try:
+						rc = "#" + str(r.font.color.rgb)
+					except Exception:
+						rc = col
+					parts.append(html.escape(r.text) if rc == col else f'<span style="color:{rc}">{html.escape(r.text)}</span>')
+				text = "".join(parts)
 				paras.append(
 					f'<p style="font-size:{size}pt;font-weight:{weight};color:{col};text-align:{align}">{text}</p>'
 				)
