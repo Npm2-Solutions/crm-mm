@@ -313,23 +313,28 @@ the draft with `modello.accetta`.
 | File | Role |
 |---|---|
 | `brand/` | The logo, the design system (`tokens.css`), video, presentation, ads — `brand/README.md` |
-| `crm/marchio.py` | The brand of the vertical that is on (`Marchio`, `registra_marchio`, `attivo()`; `BASE` without one): `nome()`, `con_nome()`, `colori()`, `accento()`, `per_il_boot()`, `per_le_pagine()`, `contesto()` (every web page), `manifest()` (the phone's). `applica()` writes it into Website/System/Navbar Settings, the desk's workspace and icons (install, patch, `piano_aggiornato` when the plan changes), `boot()` names the apps in the desk, `nome_scelto()` keeps the software's name from passing for a centre's |
+| `crm/marchio.py` | The brand of the vertical that is on (`Marchio`, `registra_marchio`, `attivo()`; `BASE` without one): `nome()`, `con_nome()`, `colori()`, `accento()`, `per_il_boot()`, `per_le_pagine()` (with the centre's mark: `centre_logo`, `centre_logo_shape`, `centre_name`), `contesto()` (every web page), `manifest()` (the phone's). `forma_di()` measures a logo of the site's ("wide" on its own, "square" beside the name). `applica()` writes it into Website/System/Navbar Settings, the desk's workspace and icons (install, patch, `piano_aggiornato` when the plan changes), `boot()` names the apps in the desk, `nome_scelto()` keeps the software's name from passing for a centre's |
 | `crm/verticali.py` | A vertical names its brand (`Verticale.marchio`): the clinic wears DottorCloud |
 | `crm/hooks.py` (top) | `app_title`, `app_logo_url` (fallbacks), `update_website_context` (`marchio.contesto`), `extend_bootinfo`, the apps screen |
-| `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); primary buttons, switches and ticks in its colour — tested |
-| `frontend/src/components/Icons/CRMLogo.vue`, `BrandLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The product's icon, the centre's logo beside it, the About with the licence's notices, getting started without a help centre |
-| `crm/templates/includes/marchio_*.html` | The public pages' head (favicon, phone icon), accent and marks: the product's logo first, the centre's beside it |
+| `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); the centre's mark: `formaDelLogo()`, `misureSvg()`, `iniziali()`, `nomeDelCentro()`; primary buttons, switches and ticks in its colour — tested |
+| `frontend/src/components/CentreTile.vue`, `composables/formaDelLogo.js` | The centre's tile (a square logo, the initials, the product's icon) in the client area and the previews; a logo's shape, from the server or measured |
+| `frontend/src/components/UserDropdown.vue`, `Icons/CRMLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The product's logo heading the sidebar (its icon when collapsed), the About with the licence's notices, getting started without a help centre |
+| `crm/templates/includes/marchio_*.html` | The public pages' head (favicon, phone icon), accent, the centre's mark at the top (`marchio_segni`) and the product's signature at the foot (`marchio_piede`) |
 | `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
 | `crm/locale/en.po` | The framework's own words that name it, in English with the product's name (`marchio.PAROLE_DEL_FRAMEWORK`) |
 
-The product's brand - the vertical's - is everywhere a person looks: its name,
-icon, logo, favicon and colours in the CRM, the area, the public pages, the
-framework's screens, the PDFs' producer and the phone's manifest. A centre's own
-logo (Settings > General > Name & logo, the booking page's) goes at most beside it, never in its
-place. A sentence that names the product says `{brand}`: `__()` fills it in the
-browser, `con_nome(_("…"))` on the server (before any `.format()`). A public
-page's title names the centre (`FCRM Settings.brand_name`) beside the product's
-name: `nome_scelto()` treats every brand's name as no name of the centre's.
+One mark per place, never two side by side. The product's brand - the
+vertical's - heads the sidebar (its horizontal logo, as the design system wants,
+`brand/design-system/espresso`) and is the tab's (title, favicon), the framework's
+screens', the emails', the PDFs' producer's, the phone's manifest's; its colours
+are everywhere. Where a person deals with the centre - the client area, the public
+pages - the centre's mark leads (Settings > The centre > General > Name & logo, the
+booking page's own logo): its logo as it is drawn (wide on its own, square beside
+its name), else its name; the product signs at the foot ("Powered by {brand}"), and
+stands in at the top only for a centre with neither a logo nor a name. A sentence that names the product says `{brand}`: `__()`
+fills it in the browser, `con_nome(_("…"))` on the server (before any `.format()`).
+A public page's title names the centre (`FCRM Settings.brand_name`) beside the
+product's name: `nome_scelto()` treats every brand's name as no name of the centre's.
 
 ### The desk's day
 | File | Role |
