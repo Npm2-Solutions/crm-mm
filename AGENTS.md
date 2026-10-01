@@ -331,7 +331,7 @@ the draft with `modello.accetta`.
 | `frontend/src/espresso.css` | The design system on frappe-ui (`brand/design-system/espresso`): its variables with the brand's values, the cloud's tail and the cross through a few rules on frappe-ui's markup, under `[data-marchio]` (set by `indossa()`); our own required marks carry `segno-obbligatorio` |
 | `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); the centre's mark: `formaDelLogo()`, `misureSvg()`, `iniziali()`, `nomeDelCentro()`; primary buttons, switches and ticks in its colour — tested |
 | `frontend/src/components/CentreTile.vue`, `composables/formaDelLogo.js` | The centre's tile (a square logo, the initials, the product's icon) in the client area and the previews; a logo's shape, from the server or measured |
-| `frontend/src/components/UserDropdown.vue`, `Icons/CRMLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The product's logo heading the sidebar (its icon when collapsed), the About with the licence's notices, getting started without a help centre |
+| `frontend/src/components/UserDropdown.vue`, `Icons/CRMLogo.vue`, `Modals/AboutModal.vue` | The product's logo heading the sidebar (its icon when collapsed), the About with the licence's notices |
 | `crm/templates/includes/marchio_*.html` | The public pages' head (favicon, phone icon), accent, the centre's mark at the top (`marchio_segni`) and the product's signature at the foot (`marchio_piede`) |
 | `crm/public/images/` (`dottorcloud-*.svg`, `favicon.png`, `amministrazione.svg`), `crm/public/manifest/` | The icon, the logos, the favicon, the desk's tools; the phone's icons and splash screens, made from `brand/logo` |
 | `crm/locale/en.po` | The framework's own words that name it, in English with the product's name (`marchio.PAROLE_DEL_FRAMEWORK`) |
@@ -355,6 +355,15 @@ acts with (`--brand-action`, never the darkest gray), `--brand-segno` for a mark
 that is not under words (progress), a required field's mark `segno-obbligatorio`.
 A new mark of the brand goes in `espresso.css`, for every screen at once, never as
 one screen's colours.
+
+### The first steps (docs/progetto-ghl/37)
+| File | Role |
+|---|---|
+| `crm/primi_passi.py` | The registry: a `Passo` says who takes it (capabilities), its module, where it is taken (a settings page or a route) and whether the centre's data say it is done; `get_first_steps()`; the base's steps |
+| `frontend/src/components/FirstSteps/`, `composables/primiPassi.js`, `utils/primiPassi.js` | The sidebar's card and the panel (in `GlobalModals.vue`); the pure part tested |
+
+A module with steps of its own registers them from its `registra()`; a step is
+done by the data, never by a click, so a centre that already works sees nothing.
 
 ### The desk's day
 | File | Role |
