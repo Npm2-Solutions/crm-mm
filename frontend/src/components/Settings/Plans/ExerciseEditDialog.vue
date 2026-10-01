@@ -1,15 +1,22 @@
 <!--
-  An exercise of the library, put right: its name in the centre's words, the body
-  part, the equipment, how it is done, the centre's own video, on or off. The
-  library's pictures stay the library's, shown with whose they are.
+  An exercise of the library, put right, or a new one of the centre's: its name in
+  the centre's words, the body part, the equipment, how it is done, the centre's
+  own video, on or off. The library's pictures stay the library's, shown with
+  whose they are.
 -->
 <template>
-  <Dialog v-model="show" :options="{ title: __('Exercise'), size: 'xl' }">
+  <Dialog
+    v-model="show"
+    :options="{
+      title: exercise?.name ? __('Exercise') : __('New exercise'),
+      size: 'xl',
+    }"
+  >
     <template #body-content>
       <div v-if="form" class="flex flex-col gap-3">
         <div class="flex items-start gap-3 max-md:flex-col">
           <figure
-            v-if="exercise.animation || exercise.picture"
+            v-if="exercise?.animation || exercise?.picture"
             class="flex shrink-0 flex-col gap-1"
           >
             <img
@@ -74,12 +81,17 @@
           <Switch v-model="form.enabled" class="shrink-0" />
         </label>
         <p
-          v-if="exercise.source && exercise.source !== 'Centre'"
+          v-if="exercise?.source && exercise.source !== 'Centre'"
           class="text-p-sm text-ink-gray-5"
         >
-          {{ exercise.source }} · {{ exercise.name_in_source }}
-          <template v-if="exercise.source_code">
-            · {{ __('code {0}', [exercise.source_code]) }}
+          {{ __('From the {brand} library') }}
+          <template
+            v-if="
+              exercise.name_in_source &&
+              exercise.name_in_source !== exercise.exercise_name
+            "
+          >
+            · {{ __('originally “{0}”', [exercise.name_in_source]) }}
           </template>
         </p>
         <ErrorMessage :message="error" />
@@ -132,12 +144,14 @@ const CAMPI = [
   'video_url',
 ]
 
+// an exercise to put right, or none: a new one of the centre's, switched on
 watch(show, (open) => {
-  if (!open || !props.exercise) return
+  if (!open) return
+  const esercizio = props.exercise || { enabled: 1 }
   error.value = ''
   form.value = {
-    ...Object.fromEntries(CAMPI.map((c) => [c, props.exercise[c] || ''])),
-    enabled: Boolean(props.exercise.enabled),
+    ...Object.fromEntries(CAMPI.map((c) => [c, esercizio[c] || ''])),
+    enabled: Boolean(esercizio.enabled),
   }
 })
 
@@ -146,7 +160,7 @@ async function save() {
   error.value = ''
   try {
     await call('crm.piani.librerie.save_exercise', {
-      name: props.exercise.name,
+      name: props.exercise?.name || null,
       data: JSON.stringify({
         ...form.value,
         enabled: form.value.enabled ? 1 : 0,

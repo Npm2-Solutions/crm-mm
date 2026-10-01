@@ -41,7 +41,7 @@
    "label": "Plans"
   },
   {
-   "description": "Where the agency hosts exercises-dataset's pictures: an https address, or a path of this server",
+   "description": "Where the agency hosts the pictures of the exercise library: an https address, or a path of this server",
    "fieldname": "exercise_media_url",
    "fieldtype": "Data",
    "label": "Exercises' pictures",
@@ -51,7 +51,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-30 19:00:00.000000",
+ "modified": "2026-10-01 17:04:01.952022",
  "modified_by": "Administrator",
  "module": "Area",
  "name": "CRM Area Settings",
