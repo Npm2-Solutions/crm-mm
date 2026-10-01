@@ -12,7 +12,12 @@
       <div class="flex min-w-0 flex-col gap-0.5">
         <span class="text-base font-medium text-ink-gray-8">
           {{ field.label }}
-          <span v-if="required" class="text-ink-red-4">*</span>
+          <span
+            v-if="required"
+            class="segno-obbligatorio text-ink-red-4"
+            aria-hidden="true"
+            >*</span
+          >
         </span>
         <span
           v-if="field.description"

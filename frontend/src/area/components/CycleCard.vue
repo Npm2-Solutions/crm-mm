@@ -17,7 +17,7 @@
       :aria-label="__('Sessions used')"
     >
       <div
-        class="h-full rounded-full bg-surface-gray-7"
+        class="h-full rounded-full bg-[var(--brand-segno)]"
         :style="{ width: `${percentuale(cycle.counts)}%` }"
       />
     </div>

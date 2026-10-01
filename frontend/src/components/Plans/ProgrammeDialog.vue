@@ -306,7 +306,7 @@ const statusTheme = {
 }
 const dot = {
   done: 'bg-surface-green-2 text-ink-green-8',
-  open: 'bg-surface-gray-10 text-ink-base',
+  open: 'bg-[var(--brand-action)] text-ink-base',
   locked: 'bg-surface-gray-2 text-ink-gray-6',
 }
 const modeOptions = [
