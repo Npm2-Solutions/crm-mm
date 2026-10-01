@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as pw:
 	b = pw.chromium.launch(args=["--allow-file-access-from-files"])
 	for f in sorted(FORME.glob("*.svg")) + sorted(COMPOSIZIONI.glob("*.svg")):
-		w, h = map(float, re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', f.read_text()).groups())
+		w, h = (float(n) for n in re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', f.read_text()).groups())
 		scale = 4 if w < 100 else 2
 		p = b.new_page(viewport={"width": int(w), "height": int(h)}, device_scale_factor=scale)
 		p.goto(f.as_uri())

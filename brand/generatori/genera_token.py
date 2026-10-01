@@ -655,7 +655,6 @@ T = {
 		],
 	},
 }
-OUT = sys.argv[1] if len(sys.argv) > 1 else str(TOKEN)
-with open(OUT, "w") as uscita:
-	uscita.write(json.dumps(T, ensure_ascii=False, indent=1) + "\n")
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TOKEN
+OUT.write_text(json.dumps(T, ensure_ascii=False, indent=1) + "\n")
 print(len(tokens), "colors")
