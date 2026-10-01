@@ -158,6 +158,16 @@ export default {
   // cycles of sessions
   'Your cycles of sessions': 'I tuoi cicli di sedute',
   'Sessions used': 'Sedute usate',
+  // subscriptions
+  'Your subscriptions': 'I tuoi abbonamenti',
+  Suspended: 'Sospeso',
+  'Entries used': 'Ingressi usati',
+  '1 entry left this week': '1 ingresso rimasto questa settimana',
+  '1 entry left this month': '1 ingresso rimasto questo mese',
+  '{0} entries left this week': '{0} ingressi rimasti questa settimana',
+  '{0} entries left this month': '{0} ingressi rimasti questo mese',
+  'suspended until {0}': 'sospeso fino al {0}',
+  'renews by itself on {0}': 'rinnovo automatico: {0}',
   '{0} of {1} done': '{0} di {1} fatte',
   '{0} booked': '{0} prenotate',
   '{0} missed': '{0} perse',

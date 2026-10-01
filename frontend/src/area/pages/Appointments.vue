@@ -1,5 +1,5 @@
-<!-- Appointments: the cycles of sessions going on, what the person waits for,
-     the ones coming, then the last ones. -->
+<!-- Appointments: the cycles of sessions and the subscriptions going on, what
+     the person waits for, the ones coming, then the last ones. -->
 <template>
   <div class="flex flex-col gap-6">
     <h1 class="text-xl font-semibold text-ink-gray-9">
@@ -16,6 +16,19 @@
         v-for="cycle in appointments.data.cycles"
         :key="cycle.name"
         :cycle="cycle"
+      />
+    </section>
+    <section
+      v-if="appointments.data?.subscriptions?.length"
+      class="flex flex-col gap-2"
+    >
+      <h2 class="text-base font-medium text-ink-gray-7">
+        {{ __('Your subscriptions') }}
+      </h2>
+      <SubscriptionCard
+        v-for="subscription in appointments.data.subscriptions"
+        :key="subscription.name"
+        :subscription="subscription"
       />
     </section>
     <section
@@ -90,6 +103,7 @@ import { Button, createResource } from 'frappe-ui'
 import { ref } from 'vue'
 import AppointmentCard from '../components/AppointmentCard.vue'
 import CycleCard from '../components/CycleCard.vue'
+import SubscriptionCard from '../components/SubscriptionCard.vue'
 import WaitingCard from '../components/WaitingCard.vue'
 import WaitingJoinDialog from '../components/WaitingJoinDialog.vue'
 import { area } from '../store'
