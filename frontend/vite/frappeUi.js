@@ -267,8 +267,24 @@ const SOSTITUZIONI_FRAPPE = {
   ],
 }
 
+// frappe-ui/src/molecules: the editor's toolbar, its labels in the tooltips
+const SOSTITUZIONI_MOLECOLE = {
+  'editor/MenuItems.vue': [
+    [
+      'return item.getLabel(props.editor)',
+      `return ${TRADUCI}(item.getLabel(props.editor))`,
+    ],
+    ['  return item.label\n}', `  return ${TRADUCI}(item.label)\n}`],
+    [':label="item.label"', ':label="__(item.label)"'],
+    [/\{\{\s*item\.label\s*\}\}/, '{{ __(item.label) }}'],
+    [':text="groupItem.label"', ':text="__(groupItem.label)"'],
+    [':label="groupItem.label"', ':label="__(groupItem.label)"'],
+  ],
+}
+
 const RADICI = {
   '/frappe-ui/src/components/': SOSTITUZIONI,
+  '/frappe-ui/src/molecules/': SOSTITUZIONI_MOLECOLE,
   '/frappe-ui/frappe/': SOSTITUZIONI_FRAPPE,
 }
 
@@ -277,6 +293,9 @@ export const FILE = Object.keys(SOSTITUZIONI)
 
 /** The same, under frappe-ui/frappe. */
 export const FILE_FRAPPE = Object.keys(SOSTITUZIONI_FRAPPE)
+
+/** The same, under frappe-ui's molecules. */
+export const FILE_MOLECOLE = Object.keys(SOSTITUZIONI_MOLECOLE)
 
 /** The module's code in the user's language, or null when it is not one to rewrite. */
 export function traduciFrappeUi(codice, id) {

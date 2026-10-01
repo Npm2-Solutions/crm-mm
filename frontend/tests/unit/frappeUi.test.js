@@ -8,6 +8,7 @@ import path from 'node:path'
 import {
   FILE,
   FILE_FRAPPE,
+  FILE_MOLECOLE,
   NOMI,
   traduciFrappeUi,
 } from '../../vite/frappeUi.js'
@@ -19,6 +20,10 @@ const COMPONENTI = path.resolve(
 const FRAPPE = path.resolve(
   import.meta.dirname,
   '../../node_modules/frappe-ui/frappe',
+)
+const MOLECOLE = path.resolve(
+  import.meta.dirname,
+  '../../node_modules/frappe-ui/src/molecules',
 )
 
 function tradotto(file, cartella = COMPONENTI) {
@@ -45,6 +50,17 @@ describe('frappe-ui in the user’s language', () => {
       expect(() => tradotto(file, FRAPPE), file).not.toThrow()
       expect(tradotto(file, FRAPPE), file).not.toBeNull()
     }
+    for (const file of FILE_MOLECOLE) {
+      expect(() => tradotto(file, MOLECOLE), file).not.toThrow()
+      expect(tradotto(file, MOLECOLE), file).not.toBeNull()
+    }
+  })
+
+  it("takes the editor toolbar's labels through the translator", () => {
+    const menu = tradotto('editor/MenuItems.vue', MOLECOLE)
+    expect(menu).toContain('return (globalThis.__ || String)(item.label)')
+    expect(menu).toContain(':text="__(groupItem.label)"')
+    expect(menu).not.toContain(':label="item.label"')
   })
 
   it('takes the data import pages through the translator', () => {
