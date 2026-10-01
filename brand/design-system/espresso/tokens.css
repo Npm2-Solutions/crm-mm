@@ -1,6 +1,6 @@
 /* Copyright (c) 2026, NPM2 Solutions Srl and contributors
    DottorCloud su Espresso (frappe-ui): i token. Generato da tokens.json. */
-@font-face { font-family: 'Inter'; src: url('../../video/sorgenti/fonts/inter.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../../font/Inter-Variable-latin.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
 :root, [data-theme='light'] {
   --teal-50: #f0faf8;
   --teal-100: #e1f5f1;

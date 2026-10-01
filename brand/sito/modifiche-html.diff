@@ -1,0 +1,52 @@
+diff -ru '--exclude=sito.css' '--exclude=*.webp' '--exclude=*.mp4' '--exclude=*.jpg' '--exclude=*.png' '--exclude=*.woff2' orig/dati-e-privacy/index.html sito/dati-e-privacy/index.html
+--- orig/dati-e-privacy/index.html	2026-09-30 17:31:48.000000000 +0200
++++ sito/dati-e-privacy/index.html	2026-10-01 14:11:57.921363312 +0200
+@@ -233,6 +233,7 @@
+ </section>
+ 
+ <section class="section section--night" aria-labelledby="cta-titolo">
++  <i class="closing__mint" aria-hidden="true"></i>
+   <div class="container closing reveal">
+     <img src="/img/marchio.svg" alt="" width="420" height="370" loading="lazy" decoding="async" />
+     <h2 id="cta-titolo" class="h2">Vediamolo sul tuo centro.</h2>
+diff -ru '--exclude=sito.css' '--exclude=*.webp' '--exclude=*.mp4' '--exclude=*.jpg' '--exclude=*.png' '--exclude=*.woff2' orig/funzioni/index.html sito/funzioni/index.html
+--- orig/funzioni/index.html	2026-09-30 17:31:48.000000000 +0200
++++ sito/funzioni/index.html	2026-10-01 14:11:57.921928951 +0200
+@@ -625,6 +625,7 @@
+ </section>
+ 
+ <section class="section section--night" aria-labelledby="cta-titolo">
++  <i class="closing__mint" aria-hidden="true"></i>
+   <div class="container closing reveal">
+     <img src="/img/marchio.svg" alt="" width="420" height="370" loading="lazy" decoding="async" />
+     <h2 id="cta-titolo" class="h2">Vediamolo sul tuo centro.</h2>
+diff -ru '--exclude=sito.css' '--exclude=*.webp' '--exclude=*.mp4' '--exclude=*.jpg' '--exclude=*.png' '--exclude=*.woff2' orig/index.html sito/index.html
+--- orig/index.html	2026-09-30 17:31:48.000000000 +0200
++++ sito/index.html	2026-10-01 14:12:40.077392453 +0200
+@@ -70,6 +70,7 @@
+       </p>
+     </div>
+     <div class="showcase arrive" style="--i: 5">
++      <div class="showcase__art" aria-hidden="true"><i class="crosses"></i><i class="bump"></i></div>
+       <img
+         class="showcase__main"
+         src="/img/agenda.webp"
+@@ -498,6 +499,7 @@
+ </section>
+ 
+ <section class="section section--night" aria-labelledby="cta-titolo">
++  <i class="closing__mint" aria-hidden="true"></i>
+   <div class="container closing reveal">
+     <img src="/img/marchio.svg" alt="" width="420" height="370" loading="lazy" decoding="async" />
+     <h2 id="cta-titolo" class="h2">Vediamolo sul tuo centro.</h2>
+diff -ru '--exclude=sito.css' '--exclude=*.webp' '--exclude=*.mp4' '--exclude=*.jpg' '--exclude=*.png' '--exclude=*.woff2' orig/per-chi/index.html sito/per-chi/index.html
+--- orig/per-chi/index.html	2026-09-30 17:31:48.000000000 +0200
++++ sito/per-chi/index.html	2026-10-01 14:11:57.922293732 +0200
+@@ -234,6 +234,7 @@
+ </section>
+ 
+ <section class="section section--night" aria-labelledby="cta-titolo">
++  <i class="closing__mint" aria-hidden="true"></i>
+   <div class="container closing reveal">
+     <img src="/img/marchio.svg" alt="" width="420" height="370" loading="lazy" decoding="async" />
+     <h2 id="cta-titolo" class="h2">Vediamolo sul tuo centro.</h2>

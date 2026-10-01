@@ -2,7 +2,7 @@
 
 La tavola con tutti i componenti, in chiaro e in scuro: [`anteprima.html`](./anteprima.html) (aprila nel browser).
 I valori: [`tokens.json`](./tokens.json) e [`tokens.css`](./tokens.css) (variabili con gli stessi nomi di frappe-ui).
-Come è applicato al gestionale, e cosa è stato sistemato applicandolo: [`frappe-ui.md`](./frappe-ui.md) (il CSS è in `frontend/src/espresso.css`).
+Come è applicato al gestionale, e cosa è stato sistemato applicandolo: [`frappe-ui.md`](./frappe-ui.md) (il CSS è in `frontend/src/espresso.css` e `espresso-componenti.css`). Sito e gestionale a confronto: [`sito.md`](./sito.md).
 
 Il design system del marchio per video, slide e ads resta un livello sopra, in [`../`](../README.md).
 
