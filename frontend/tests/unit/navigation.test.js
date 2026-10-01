@@ -35,3 +35,19 @@ describe('bottomNavTabFor', () => {
     expect(bottomNavTabFor(undefined)).toBeNull()
   })
 })
+
+describe('bottomNavTabFor, with the bar the menu gives', () => {
+  const tabs = ['Today', 'Calendar', 'Leads', 'Conversations']
+
+  it("lights the day's pages and keeps people lit inside a person", () => {
+    expect(bottomNavTabFor({ name: 'Today' }, tabs)).toBe('Today')
+    expect(bottomNavTabFor({ name: 'Calendar' }, tabs)).toBe('Calendar')
+    expect(bottomNavTabFor({ name: 'Lead' }, tabs)).toBe('Leads')
+    expect(bottomNavTabFor({ name: 'Contact' }, tabs)).toBe('Leads')
+  })
+
+  it('answers nothing for a page that has no tab in this bar', () => {
+    expect(bottomNavTabFor({ name: 'Deal' }, tabs)).toBeNull()
+    expect(bottomNavTabFor({ name: 'Invoices' }, tabs)).toBeNull()
+  })
+})

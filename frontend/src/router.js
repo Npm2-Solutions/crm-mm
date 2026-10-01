@@ -272,13 +272,17 @@ let router = createRouter({
 })
 
 // Where to land when the default page is not one's own: the first one the level
-// opens. Notifications asks for nothing, so there is always somewhere to go.
+// opens. The desk's day for who has it (the front desk, the practitioners, the
+// manager), the numbers for who looks at the centre from above (accounting,
+// marketing, the medical director). Notifications asks for nothing, so there is
+// always somewhere to go.
 const LANDINGS = [
-  'Leads',
+  'Today',
+  'Dashboard',
   'Calendar',
+  'Leads',
   'Conversations',
   'Invoices',
-  'Dashboard',
   'Deals',
   'Notifications',
 ]

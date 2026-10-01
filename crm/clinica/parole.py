@@ -15,8 +15,10 @@ from __future__ import annotations
 PAROLE = {
 	# DottorCloud
 	"Client area": "Patient area",
-	# the settings' group of the people the centre serves, and the booking rules'
+	# the settings' group of the people the centre serves, and the booking rules';
+	# the main menu's group and its list of people, the page and its breadcrumbs
 	"Clients": "Patients",
+	"People": "Patients",
 	"News in the client area": "News in the patient area",
 	# the waiting list: where one joins it
 	"From the client area": "From the patient area",

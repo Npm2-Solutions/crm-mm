@@ -713,6 +713,10 @@ msgstr "Applica A"
 msgid "Apps"
 msgstr "Applicazioni"
 
+#: frontend/src/utils/menu.js
+msgid "Archive"
+msgstr "Archivio"
+
 #: frontend/src/composables/demoData.js:21
 msgid "Are you sure you want to clear demo data? This action cannot be undone."
 msgstr ""
@@ -974,6 +978,10 @@ msgstr ""
 #: frontend/src/components/Settings/Settings.vue:190
 msgid "Automation & Rules"
 msgstr ""
+
+#: frontend/src/utils/menu.js
+msgid "Automations"
+msgstr "Automazioni"
 
 #: crm/api/dashboard.py:252
 msgid "Average deal value of non won/lost deals"
@@ -1352,6 +1360,10 @@ msgstr ""
 msgid "Call Log"
 msgstr ""
 
+#: frontend/src/utils/menu.js
+msgid "Call Logs"
+msgstr "Chiamate"
+
 #. Label of the receiver (Link) field in DocType 'CRM Call Log'
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
 msgid "Call Received By"
@@ -1537,6 +1549,10 @@ msgstr "Grafico"
 #: frontend/src/components/Dashboard/AddChartModal.vue:8
 msgid "Chart Type"
 msgstr "Tipo di Grafico"
+
+#: frontend/src/components/Mobile/MobileBottomNav.vue
+msgid "Chat"
+msgstr "Chat"
 
 #: frontend/src/components/Modals/ConvertToDealModal.vue:29
 #: frontend/src/components/Modals/ConvertToDealModal.vue:55
@@ -2565,6 +2581,10 @@ msgstr ""
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:39
 msgid "Device"
 msgstr ""
+
+#: frontend/src/utils/menu.js
+msgid "Dialer"
+msgstr "Tastierino"
 
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.js:30
 #: frontend/src/components/Settings/ERPNextSettings.vue:32
@@ -3785,6 +3805,10 @@ msgstr "Come le persone che segue chiamano il centro: nelle email e sulle pagine
 #: frontend/src/utils/impostazioni.js
 msgid "Invite"
 msgstr "Invita"
+
+#: frontend/src/utils/menu.js
+msgid "Invoices"
+msgstr "Fatture"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Invoicing"
@@ -5128,6 +5152,10 @@ msgstr "Mese"
 msgid "Monthly"
 msgstr "Mensile"
 
+#: frontend/src/components/Mobile/MobileBottomNav.vue
+msgid "More"
+msgstr "Altro"
+
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:466
 #: frontend/src/components/ViewControls.vue:234
 msgid "More Options"
@@ -5660,10 +5688,11 @@ msgstr "Nota"
 msgid "Note deleted"
 msgstr ""
 
+#: frontend/src/utils/menu.js
 #: frontend/src/pages/Deal.vue:596 frontend/src/pages/Lead.vue:448
 #: frontend/src/pages/MobileDeal.vue:468 frontend/src/pages/MobileLead.vue:315
 msgid "Notes"
-msgstr ""
+msgstr "Note"
 
 #: frontend/src/pages/Notes.vue:23
 msgid "Notes View"
@@ -5923,12 +5952,13 @@ msgstr ""
 msgid "Organization or a primary Contact is required to create a customer"
 msgstr ""
 
+#: frontend/src/utils/menu.js
 #. Label of a shortcut in the DottorCloud Workspace
 #: crm/fcrm/workspace/dottorcloud/dottorcloud.json
 #: frontend/src/pages/MobileOrganization.vue:219
 #: frontend/src/pages/Organization.vue:257
 msgid "Organizations"
-msgstr ""
+msgstr "Aziende"
 
 #: frontend/src/pages/PersonaForm.vue:124
 msgid "Organize my contacts"
@@ -6061,6 +6091,10 @@ msgstr "In Attesa"
 #: frontend/src/components/Settings/InviteUserPage.vue:61
 msgid "Pending Invites"
 msgstr ""
+
+#: frontend/src/utils/menu.js
+msgid "People"
+msgstr "Persone"
 
 #: frontend/src/pages/Dashboard.vue:66
 msgid "Period"
@@ -7486,6 +7520,10 @@ msgstr ""
 msgid "Since you removed {0} from the assignee, the {0} has been changed to the next available assignee {1}."
 msgstr ""
 
+#: frontend/src/utils/menu.js
+msgid "Site"
+msgstr "Sito web"
+
 #: frontend/src/components/Settings/ERPNextSettings.vue:66
 msgid "Site URL"
 msgstr ""
@@ -7828,10 +7866,11 @@ msgstr ""
 msgid "Task"
 msgstr "Attività"
 
+#: frontend/src/utils/menu.js
 #: frontend/src/pages/Deal.vue:591 frontend/src/pages/Lead.vue:443
 #: frontend/src/pages/MobileDeal.vue:463 frontend/src/pages/MobileLead.vue:310
 msgid "Tasks"
-msgstr ""
+msgstr "Da fare"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Team rota"

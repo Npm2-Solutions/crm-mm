@@ -48,8 +48,55 @@
             </template>
           </SidebarItem>
 
+          <!-- the menu: the centre's work in groups (utils/menu.js), each with
+               a small label as the design system draws them; collapsed, a line -->
+          <template v-for="(gruppo, i) in menu" :key="gruppo.key">
+            <template v-if="gruppo.label">
+              <div
+                v-if="!isCollapsed"
+                class="mb-1 mt-4 select-none px-2 text-[11px] font-medium uppercase tracking-wide text-ink-gray-5"
+              >
+                {{ __(gruppo.label) }}
+              </div>
+              <div
+                v-else
+                class="mx-2 my-2 border-t border-outline-gray-2"
+                aria-hidden="true"
+              />
+            </template>
+            <nav
+              class="flex flex-col gap-1"
+              :class="{ 'mt-1': !gruppo.label && i > 0 }"
+              :aria-label="gruppo.label ? __(gruppo.label) : undefined"
+            >
+              <SidebarItem
+                v-for="link in gruppo.entries"
+                :key="link.key"
+                :to="{ name: link.key }"
+                :label="__(link.label)"
+                :active="activeItem === link.key"
+                @click="selectItem($event, link.key)"
+              >
+                <template #prefix>
+                  <Icon
+                    :icon="ICONE[link.icon]"
+                    class="size-4 text-ink-gray-7"
+                  />
+                </template>
+                <Tooltip
+                  :text="__(link.label)"
+                  placement="right"
+                  :hoverDelay="1.5"
+                  :disabled="isCollapsed"
+                >
+                  <span class="truncate text-sm">{{ __(link.label) }}</span>
+                </Tooltip>
+              </SidebarItem>
+            </nav>
+          </template>
+
           <CollapsibleSection
-            v-for="section in allViews"
+            v-for="section in savedViews"
             :key="section.name"
             :label="section.name"
             :hideLabel="section.hideLabel"
@@ -98,6 +145,18 @@
           </CollapsibleSection>
         </div>
 
+        <!-- the settings, where one looks for them: not only in the menu under
+             the name. On the phone at the drawer's foot -->
+        <SidebarItem
+          v-if="mobile"
+          :label="__('Settings')"
+          class="mt-2"
+          @click="openSettings"
+        >
+          <template #prefix>
+            <LucideSettings class="size-4 text-ink-gray-7" />
+          </template>
+        </SidebarItem>
         <div v-if="!mobile" class="mt-auto flex flex-col gap-1 pt-2">
           <div class="mb-1 flex flex-col gap-2">
             <GettingStartedBanner
@@ -122,6 +181,11 @@
           >
             <template #prefix>
               <StepsIcon class="size-4 text-ink-gray-7" />
+            </template>
+          </SidebarItem>
+          <SidebarItem :label="__('Settings')" @click="openSettings">
+            <template #prefix>
+              <LucideSettings class="size-4 text-ink-gray-7" />
             </template>
           </SidebarItem>
           <SidebarItem
@@ -159,11 +223,7 @@
 
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
-import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
-import LucideClipboardCheck from '~icons/lucide/clipboard-check'
-import LucideHourglass from '~icons/lucide/hourglass'
-import LucideGlobe from '~icons/lucide/globe'
-import LucideReceipt from '~icons/lucide/receipt-text'
+import LucideSettings from '~icons/lucide/settings'
 import GettingStartedPanel from '@/components/Layouts/GettingStartedPanel.vue'
 import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
@@ -180,13 +240,8 @@ import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
-import SMSIcon from '@/components/Icons/SMSIcon.vue'
-import AutomationIcon from '@/components/Icons/AutomationIcon.vue'
-import DialpadIcon from '@/components/Icons/DialpadIcon.vue'
-import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import { callEnabled } from '@/composables/telephony'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
-import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
@@ -198,7 +253,8 @@ import {
   notificationsStore,
 } from '@/stores/notifications'
 import { usersStore } from '@/stores/users'
-import { DASHBOARD_CAPABILITIES } from '@/utils/dashboard'
+import { menuDi } from '@/utils/menu'
+import { ICONE_DEL_MENU } from '@/components/Icons/menu'
 import { sessionStore } from '@/stores/session'
 import {
   showSettings,
@@ -240,154 +296,38 @@ const isSidebarCollapsed = useStorage('isSidebarCollapsed', false)
 // even when the stored rail state says otherwise.
 const isCollapsed = computed(() => isSidebarCollapsed.value && !props.mobile)
 
-const links = [
-  {
-    label: 'Dashboard',
-    icon: LucideLayoutDashboard,
-    to: 'Dashboard',
-    // reading the numbers is enough: Read only opens it and makes nothing
-    condition: () => puoUno(DASHBOARD_CAPABILITIES),
-  },
-  {
-    // the people. "Lead" is what one of them is at the start, not what they
-    // are forever: they stay here after a deal is opened, as in GHL and
-    // HubSpot, so the list cannot be named after the first ten minutes
-    label: 'People',
-    icon: LeadsIcon,
-    to: 'Leads',
-    condition: () => puo('persone.vedi'),
-  },
-  {
-    label: 'Deals',
-    icon: DealsIcon,
-    to: 'Deals',
-    condition: () => puo('trattative.vedi'),
-  },
-  {
-    label: 'Organizations',
-    icon: OrganizationsIcon,
-    to: 'Organizations',
-    condition: () => puo('persone.vedi'),
-  },
-  {
-    // the same people as above; this is where you answer them
-    label: 'Conversations',
-    icon: SMSIcon,
-    to: 'Conversations',
-    condition: () => puo('conversazioni.usa'),
-  },
-  {
-    label: 'Automations',
-    icon: AutomationIcon,
-    to: 'Automations',
-    condition: () => puo('automazioni.vedi'),
-  },
-  {
-    label: 'Notes',
-    icon: NoteIcon,
-    to: 'Notes',
-    condition: () => puo('note.vedi'),
-  },
-  {
-    label: 'Tasks',
-    icon: TaskIcon,
-    to: 'Tasks',
-    condition: () => puo('persone.vedi'),
-  },
-  {
-    // who arrives, who is waiting, who came: the desk's day
-    label: 'Today',
-    icon: LucideClipboardCheck,
-    to: 'Today',
-    condition: () => puo('agenda.presenze'),
-  },
-  {
-    label: 'Calendar',
-    icon: CalendarIcon,
-    to: 'Calendar',
-    condition: () => puo('agenda.vedi'),
-  },
-  {
-    // who waits for a place that frees up
-    label: 'Waiting list',
-    icon: LucideHourglass,
-    to: 'Waiting List',
-    condition: () => puo('agenda.attese'),
-  },
-  {
-    label: 'Call Logs',
-    icon: PhoneIcon,
-    to: 'Call Logs',
-    condition: () => puo('telefono.registro'),
-  },
-  {
-    label: 'Dialer',
-    icon: DialpadIcon,
-    to: 'Dialer',
-    condition: () => callEnabled.value && puo('telefono.chiama'),
-  },
-  {
-    label: 'Social Planner',
-    icon: SocialIcon,
-    to: 'Social Planner',
-    condition: () => puoUno(['social.bozze', 'social.pubblica']),
-  },
-  {
-    label: 'Invoices',
-    icon: LucideReceipt,
-    to: 'Invoices',
-    // whoever issues them: the front desk and the manager (doc 30)
-    // the centre's register: whoever sees the centre's invoices, Read only too
-    condition: () => ambito('fatture.vedi') === 'centro',
-  },
-  {
-    label: 'Site',
-    icon: LucideGlobe,
-    to: 'Website',
-    // only where Frappe Builder is installed: without it there is no site to
-    // manage, and installing it is the agency's job on the bench. The page still
-    // turns the site on when it is off.
-    condition: () => puo('sito.gestisci'),
-  },
-]
+// the menu one sees: the groups of the centre's work with what one may open
+const menu = computed(() =>
+  menuDi({ puo, puoUno, ambito, telefono: callEnabled.value }),
+)
 
-const allViews = computed(() => {
-  let _views = [
-    {
-      name: 'All Views',
-      hideLabel: true,
-      opened: true,
-      views: links
-        .filter((link) => {
-          if (link.condition) {
-            return link.condition()
-          }
-          return true
-        })
-        .map((link) => ({
-          label: link.label,
-          icon: link.icon,
-          key: link.key || link.to,
-          to: { name: link.to, params: link.params },
-        })),
-    },
-  ]
+// the icon of each entry of the menu (utils/menu.js names them)
+const ICONE = ICONE_DEL_MENU
+
+// Settings is a dialog and so is the phone's nav drawer: one focus trap at a time
+function openSettings() {
+  mobileSidebarOpened.value = false
+  showSettings.value = true
+}
+
+// the views saved for everyone and the pinned ones, after the menu
+const savedViews = computed(() => {
+  const viste = []
   if (getPublicViews().length) {
-    _views.push({
+    viste.push({
       name: 'Public Views',
       opened: true,
       views: parseView(getPublicViews()),
     })
   }
-
   if (getPinnedViews().length) {
-    _views.push({
+    viste.push({
       name: 'Pinned Views',
       opened: true,
       views: parseView(getPinnedViews()),
     })
   }
-  return _views
+  return viste
 })
 
 function parseView(views) {
