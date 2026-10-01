@@ -1647,6 +1647,69 @@ nello stesso builder dei moduli e delle schede.
   Quello che non si porta (una condizione complicata, un'ora del giorno) è scritto
   nel log.
 
+### Le liste d'attesa: il posto che si libera va a chi aspetta
+
+Fatto il 01/10/2026, la nona riga dell'[ordine](./design.md#lordine). Una disdetta in
+un centro medico, un posto in una lezione piena di una palestra, un turno nuovo
+dall'estetista: il posto che si libera va a chi lo aspetta, prima che resti vuoto. Le
+liste d'attesa sono del CRM (`crm/scheduling/attese.py`, le regole in
+`attese_regole.py`) e leggono i posti liberi dal motore che prenota.
+
+- **Chi aspetta e cosa.** Una voce per persona e servizio (`CRM Waiting List Entry`):
+  il servizio, se serve con un professionista, i giorni e le parti del giorno
+  (mattina, pomeriggio, sera, come le raggruppa `/prenota`), da quando e fino a
+  quando. Oppure un posto in una lezione piena, fino alla lezione. Chi entra di nuovo
+  per lo stesso servizio cambia la sua voce.
+  - La fila è in ordine di arrivo. La segreteria può segnare una voce come urgente,
+    e quella passa avanti.
+- **Si entra in tre posti.**
+  - Dalla segreteria: dalla pagina della persona (la sezione "Lista d'attesa") o
+    dalla pagina "Lista d'attesa" del menu, che mostra tutta la fila per servizio e
+    professionista.
+  - Da `/prenota`, quando nessun orario va bene o la lezione è piena. Si chiedono
+    nome, email, cellulare e consensi, come per una prenotazione, e arriva un link per
+    vedere o lasciare la lista (`/lista-attesa/<link>`).
+  - Dall'area del cliente, per i servizi della pagina di prenotazione.
+
+  La voce tiene l'email e il cellulare scritti entrando, come una prenotazione li
+  tiene sulla sua riga: un telefono di famiglia fa una scheda tutta sua e senza
+  recapiti, e le proposte vanno dove la persona ha detto.
+- **Quando qualcosa si libera**, un job chiede al motore dell'agenda quali posti sono
+  liberi e li propone a chi aspetta, nell'ordine. Liberano un posto una disdetta, uno
+  spostamento, un appuntamento tolto, un posto in una lezione, un turno o un orario
+  nuovi.
+  - Il posto va a uno per volta o a pochi insieme: lo sceglie il centro, tre se non
+    sceglie. Il primo che conferma lo prende.
+  - La proposta va per email, con un link a `/lista-attesa/<link>`. Va per WhatsApp
+    (un modello approvato) o per SMS se la persona li ha scelti e il centro li ha.
+- **Il tempo per rispondere** lo sceglie il centro, due ore se non sceglie, e finisce
+  sempre un'ora prima dell'inizio. Un posto che lascerebbe meno di un quarto d'ora
+  per rispondere non si propone.
+  - Ogni dieci minuti le proposte senza risposta passano ai prossimi, e una volta
+    l'ora si riguarda tutta la lista.
+  - Chi dice di no, o non risponde, resta in fila.
+- **Confermare prenota**, con lo stesso lucchetto di `/prenota` e dopo che il motore
+  ha detto che il posto è ancora libero: un appuntamento del servizio, o un posto nella
+  lezione. Arriva la conferma per email, col link per spostarlo o annullarlo. Le
+  proposte dello stesso posto agli altri si chiudono, e il loro link lo dice.
+- **La segreteria** vede la fila e, per una voce, i posti liberi adesso. Ne propone
+  uno, con lo stesso messaggio e lo stesso link, o lo fissa a mano con i suoi
+  permessi sull'agenda: anche più vicino del preavviso che il centro dà alle proposte
+  automatiche. Una proposta che non è potuta partire, senza email né cellulare, è
+  scritta in rosso sulla voce: va chiamata.
+- **Chi la vede**: chi ha `agenda.attese`. La segreteria e il manager vedono tutto il
+  centro, un professionista chi aspetta lui o i suoi servizi, chi ha un team anche le
+  sue persone.
+- **Le impostazioni** (Impostazioni > Agenda > Lista d'attesa, `CRM Waiting List
+  Settings`):
+  - se i posti si propongono da soli, a quanti per volta, le ore per rispondere, il
+    preavviso minimo, quanti giorni avanti guardare;
+  - dove si entra (`/prenota`, l'area) e per quanti giorni aspetta una voce fatta
+    online;
+  - il modello WhatsApp e il numero da cui partono gli SMS.
+- **Con la clinica accesa** la lista d'attesa è la stessa, nelle parole della clinica:
+  si entra dall'area pazienti.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da

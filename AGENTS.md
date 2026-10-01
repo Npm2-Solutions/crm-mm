@@ -92,6 +92,9 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/api/booking_platforms.py` | Webhook in, busy feed out, settings API |
 | `crm/scheduling/cicli.py` + `cicli_regole.py` | Cycles of sessions (`CRM Session Cycle`, `agenda.cicli`): an appointment joins its cycle by itself (`aggancia` in its `validate`), "session 4 of 10", each session its share of the price, one invoice for a cycle paid as a whole (`invoicing.api.issue_from_cycle`); the rules pure, tested with plain `unittest` |
 | `frontend/src/components/CyclesSection.vue`, `CycleDialog.vue` + `utils/cicli.js` | The person's cycles, selling and following one; the words, tested; `area/components/CycleCard.vue` in the patient area |
+| `crm/scheduling/attese_regole.py` + `attese.py` | Waiting lists (`CRM Waiting List Entry`, `agenda.attese`): who waits for what (days, parts of the day, a full class), the line; what frees a place (a cancellation, a move, a deleted appointment, a seat, new hours: doc_events) runs the look in a job on `availability.get_slots`, the offer goes by email, WhatsApp or SMS with a link and the first who confirms books under /prenota's lock; every ten minutes the offers nobody answered go to the next ones; the desk's list, its free places, offering and booking by hand; `CRM Waiting List Settings`. The rules pure, tested with plain `unittest` |
+| `crm/scheduling/attese_pubblico.py` + `crm/www/lista_attesa.*` | Joining from /prenota (no time suits, a full class) and the `/lista-attesa/<link>` page: the offer to confirm or let go, the list to leave. The entry keeps the email and mobile typed when joining, and the offers go there |
+| `frontend/src/pages/WaitingList.vue`, `components/Waiting/` + `utils/attese.js` | The desk: the whole line, the person's section, an entry with its free places; the words, tested; `area/components/WaitingCard.vue`, `WaitingJoinDialog.vue` in the client area |
 | `docs/prenotazioni/` | User guide + platform API research |
 
 ---
@@ -371,7 +374,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **770 tests · ~15s** — all must pass before committing
+- **779 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

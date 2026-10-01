@@ -561,7 +561,7 @@ Una PR per riga, ognuna utile da sola:
    il paziente è il cliente (fatto il 30/09/2026);
 8. un solo builder dei moduli, con l'uso "Scheda" e i moduli del sito, in due PR:
    la scheda e i moduli del sito (fatto il 30/09/2026);
-9. le liste d'attesa;
+9. le liste d'attesa (fatto il 01/10/2026);
 10. gli abbonamenti.
 
 ### Come si aggancia la clinica

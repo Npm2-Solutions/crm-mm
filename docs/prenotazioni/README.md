@@ -36,6 +36,7 @@ Le automazioni *Booking …* scattano per le prenotazioni online dei clienti.
 | `&utm_source=…` | attribuzione (già tracciata dal CRM) |
 | `&embed=1` | per un iframe nel sito (il tracker gli passa il visitatore) |
 | `?token=…` | gestione della prenotazione: annulla / sposta entro le regole |
+| `/lista-attesa/<link>` | la lista d'attesa di una persona: il posto proposto da confermare, la lista da lasciare |
 
 Il **generatore di link** (*Impostazioni → Booking → Pagina e regole*) costruisce il
 link, il **QR code** scaricabile e il **codice da incorporare**. Il blocco *Prenota* del sito
@@ -56,6 +57,13 @@ chi li possiede: conferme e promemoria arrivano a chi ha prenotato, e l'email lo
 email non finisce mai sul record di un altro: è una persona collegata. I limiti per
 cliente contano chi viene. Le regole sono in
 [gestionale-medico](../gestionale-medico/README.md#le-persone-collegate).
+
+**Quando nessun orario va bene** (01/10/2026). Sotto gli orari, e su una lezione piena,
+la pagina offre la lista d'attesa: giorni e parti del giorno in cui si può, fino a
+quando, nome, email, cellulare e consensi. Quando un posto si libera arriva una proposta
+con un link: il primo che conferma lo prende, e l'appuntamento è prenotato come da qui.
+Come funziona, chi la vede e le impostazioni sono in
+[gestionale-medico](../gestionale-medico/README.md#le-liste-dattesa-il-posto-che-si-libera-va-a-chi-aspetta).
 
 ## 2. Dove stanno le regole
 
