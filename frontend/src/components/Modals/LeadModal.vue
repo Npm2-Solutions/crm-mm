@@ -60,10 +60,9 @@ import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { usersStore } from '@/stores/users'
-import { sessionStore } from '@/stores/session'
 import { isMobileView } from '@/composables/settings'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
+import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource, call, toast } from 'frappe-ui'
 import { useDocument } from '@/data/document'
 import { onMounted, ref, nextTick } from 'vue'
@@ -73,9 +72,7 @@ const props = defineProps({
   defaults: { type: Object, default: () => ({}) },
 })
 
-const { user } = sessionStore()
 const { getUser, puo } = usersStore()
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const show = defineModel({ type: Boolean })
 
@@ -209,9 +206,6 @@ async function createNewLead() {
         show.value = false
         lead.doc = {}
         router.push({ name: 'Lead', params: { leadId: data.name } })
-        updateOnboardingStep('create_first_lead', true, false, () => {
-          localStorage.setItem('firstLead' + user, data.name)
-        })
       },
       onError(err) {
         isLeadCreating.value = false

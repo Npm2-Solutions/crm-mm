@@ -76,6 +76,8 @@ PAROLE = {
 		"People who became patients in the period, whatever the rule that made them"
 	),
 	"Cost per new client": "Cost per new patient",
+	# the first steps
+	"Your first client": "Your first patient",
 	# the marketing module, on the features page
 	"Automations, campaigns, Meta leads and spend, social, tracking, cost per new client, the website": (
 		"Automations, campaigns, Meta leads and spend, social, tracking, cost per new patient, the website"

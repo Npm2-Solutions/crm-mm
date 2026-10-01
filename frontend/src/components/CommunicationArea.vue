@@ -94,7 +94,7 @@ import {
 import { usersStore } from '@/stores/users'
 import { markAnswered } from '@/composables/conversationState'
 import { useDraft } from '@/composables/drafts'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
+import { useTelemetry } from 'frappe-ui/frappe'
 import { call, createResource, toast } from 'frappe-ui'
 import { computed, nextTick, reactive, ref } from 'vue'
 
@@ -113,7 +113,6 @@ const reload = defineModel('reload', { type: Boolean })
 const emit = defineEmits(['scroll', 'open'])
 
 const { getUser } = usersStore()
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 
 // Drafts are kept per person and per record, so going to WhatsApp and back —
@@ -334,7 +333,6 @@ async function submitEmail() {
   // an email is an answer too — a note to colleagues is not
   markAnswered(props.doctype, doc.value.name)
   capture('email_sent', { doctype: props.doctype })
-  updateOnboardingStep('send_first_email')
 }
 
 async function submitComment() {
@@ -367,7 +365,6 @@ async function submitComment() {
   reload.value = true
   emit('scroll')
   capture('comment_sent', { doctype: props.doctype })
-  updateOnboardingStep('add_first_comment')
 }
 
 /**

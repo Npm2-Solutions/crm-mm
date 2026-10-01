@@ -11,7 +11,7 @@
 import EventModal from '@/components/Modals/EventModal.vue'
 import { showEventModal, activeEvent } from '@/composables/event'
 import { useDoctypeModal } from '@/composables/doctypeModal'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
+import { useTelemetry } from 'frappe-ui/frappe'
 import { call, dayjs } from 'frappe-ui'
 import { callParties, numberOf } from '@/utils/callLog'
 import { usersStore } from '@/stores/users'
@@ -26,7 +26,6 @@ const activities = defineModel({ type: Object })
 
 const { showModal } = useDoctypeModal()
 const { getUser } = usersStore()
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 
 // Event
@@ -107,7 +106,6 @@ function afterDoctype(d, isInsert = false) {
   }
 
   if (isInsert) {
-    updateOnboardingStep('create_first_' + name)
     capture(name + '_created')
   } else {
     capture(name + '_updated')

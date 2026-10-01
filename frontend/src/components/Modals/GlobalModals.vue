@@ -20,10 +20,14 @@
        dialog, and Settings was guarded off it entirely — there was no way to
        open Settings from a phone at all. -->
   <Settings />
+  <!-- the first steps: opened by the sidebar's card, on a desktop and in the
+       phone's drawer alike -->
+  <FirstStepsPanel />
   <FieldLayoutDialogContainer />
 </template>
 <script setup>
 import Settings from '@/components/Settings/Settings.vue'
+import FirstStepsPanel from '@/components/FirstSteps/FirstStepsPanel.vue'
 import FieldLayoutDialogContainer from '@/components/Modals/FieldLayoutDialogContainer.vue'
 import ChangePasswordModal from '@/components/Modals/ChangePasswordModal.vue'
 import CreateDocumentModal from '@/components/Modals/CreateDocumentModal.vue'

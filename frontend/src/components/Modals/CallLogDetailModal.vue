@@ -213,7 +213,7 @@ import { isMobileView } from '@/composables/settings'
 import { transcriptionEnabled } from '@/composables/telephony'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { useDocument } from '@/data/document'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
+import { useTelemetry } from 'frappe-ui/frappe'
 import { FeatherIcon, Dropdown, Avatar, Tooltip, call, toast } from 'frappe-ui'
 import { ref, computed, h, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -224,7 +224,6 @@ const show = defineModel({ type: Boolean })
 
 const callLog = defineModel('callLog', { type: Object })
 
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { capture } = useTelemetry()
 const { showModal } = useDoctypeModal()
 
@@ -296,7 +295,6 @@ async function addNoteToCallLog(_note, isInsert = false) {
       call_sid: callLog.value?.data?.id,
       note: _note,
     })
-    updateOnboardingStep('create_first_note')
     capture('note_created')
   } else {
     capture('note_updated')
@@ -310,7 +308,6 @@ async function addTaskToCallLog(_task, isInsert = false) {
       call_sid: callLog.value?.data?.id,
       task: _task,
     })
-    updateOnboardingStep('create_first_task')
     capture('task_created')
   } else {
     capture('task_updated')
