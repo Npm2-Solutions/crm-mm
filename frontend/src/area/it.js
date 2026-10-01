@@ -230,4 +230,43 @@ export default {
   'Any day, any time': 'Qualsiasi giorno, a qualsiasi ora',
   'Any day': 'Qualsiasi giorno',
   'Any time': 'A qualsiasi ora',
+  // The chat with the centre's assistant, entering with a passkey, the news.
+  'Ask the centre': 'Chiedi al centro',
+  'This is the centre’s virtual assistant, an AI, not a person. It answers about opening hours, bookings and the centre’s frequent questions. It does not answer about your health: it offers to pass your question to a person. In an emergency call 112.':
+    'Questo è l’assistente virtuale del centro, un’intelligenza artificiale, non una persona. Risponde su orari, prenotazioni e domande frequenti del centro. Non risponde sulla tua salute: ti propone di passare la domanda a una persona. In un’emergenza chiama il 112.',
+  'Call 112': 'Chiama il 112',
+  'AI answer': 'Risposta dell’intelligenza artificiale',
+  'Automatic answer': 'Risposta automatica',
+  'Pass my question to the centre': 'Passa la mia domanda al centro',
+  'Passed to the centre: the answer comes in':
+    'Passata al centro: la risposta arriva in',
+  'Writing…': 'Sta scrivendo…',
+  'Your question about hours or bookings':
+    'La tua domanda su orari o prenotazioni',
+  'Your question': 'La tua domanda',
+  Send: 'Invia',
+  'A question about hours or bookings?': 'Una domanda su orari o prenotazioni?',
+  'Ask the centre’s virtual assistant, an AI':
+    'Chiedi all’assistente virtuale del centro, un’intelligenza artificiale',
+  'Ask the assistant': 'Chiedi all’assistente',
+  'read by the centre': 'letta dal centro',
+  'not read by the centre yet': 'non ancora letta dal centro',
+  or: 'oppure',
+  'Enter with a passkey': 'Entra con una passkey',
+  'Entering with a passkey': 'Entrare con una passkey',
+  'Next time, enter with your face or fingerprint instead of a code. The key stays on this phone.':
+    'La prossima volta entra con il volto o l’impronta invece del codice. La chiave resta su questo telefono.',
+  'Add a passkey': 'Aggiungi una passkey',
+  'Not now': 'Non ora',
+  'used {0}': 'usata il {0}',
+  'added {0}': 'aggiunta il {0}',
+  Remove: 'Togli',
+  'Add one on another device': 'Aggiungine una su un altro dispositivo',
+  'How we tell you there is news': 'Come ti avvisiamo delle novità',
+  'We only say that there is news in your area, never what it is. By email always, to {0}.':
+    'Ti diciamo solo che c’è una novità nella tua area, mai di cosa si tratta. Per email sempre, a {0}.',
+  'Also on {0}': 'Anche su {0}',
+  'to your number {0}': 'al tuo numero {0}',
+  'Write to the centre once on {0} from your number, then you can turn this on.':
+    'Scrivi una volta al centro su {0} dal tuo numero, poi potrai attivarlo.',
 }
