@@ -17,8 +17,9 @@ writes plans, so they are the CRM's, not the clinic's ("Tre strati").
   (`crm.permissions.sanitari`).
 - **Programmes of stages** (`programmi`): stages that open with time or one after
   the other, each maybe with its plan.
-- **The exercises' library** (`librerie`): the centre's own and exercises-dataset
-  (`dataset`), its pictures from where the agency hosts them.
+- **The exercises' library** (`librerie`): the library DottorCloud ships
+  (`dati/esercizi.json`, loaded at install and migrate) and the centre's own, its
+  pictures from where the agency hosts them.
 - **In the area** (`area`): the day's moments, one tap an item, what is left this
   week; the programmes stage by stage.
 

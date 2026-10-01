@@ -9,8 +9,9 @@ recognised, "herbs" goes to the vegetables because the manager says so, and only
 the two foods chosen come in. The dietitian renames one in Italian; the next
 version of the table brings new numbers and keeps the name. CREA and BDA-IEO come
 in only when somebody declares the centre may use them, and the import says who.
-The exercises come with their steps in Italian; their pictures appear, with whose
-they are, once the agency says where it hosts them.
+The exercises of the library DottorCloud ships come with their steps in Italian;
+loaded again, they keep the centre's words; their pictures appear, with whose they
+are, once the agency says where it hosts them. The centre adds its own.
 """
 
 import json
@@ -227,11 +228,8 @@ class IlCiboDelCentro(LibrerieCase):
 
 
 class GliEsercizi(LibrerieCase):
-	def dataset(self, user=MANAGER):
-		return self.carica(user, "exercises.json", json.dumps(DATASET).encode())
-
-	def test_il_dataset_con_i_passi_in_italiano(self):
-		fatto = librerie_crm.import_exercises(self.dataset())
+	def test_la_libreria_con_i_passi_in_italiano(self):
+		fatto = librerie_crm.carica(DATASET, "it")
 		self.assertEqual((fatto["created"], fatto["updated"], fatto["skipped"]), (2, 0, 1))
 		curl = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T002"})
 		self.assertEqual(
@@ -242,13 +240,14 @@ class GliEsercizi(LibrerieCase):
 		self.assertEqual((curl.media_path, curl.animation_path), ("images/0002-x.jpg", "videos/0002-x.gif"))
 
 	def test_di_nuovo_le_immagini_nuove_le_parole_del_centro(self):
-		librerie_crm.import_exercises(self.dataset())
+		librerie_crm.carica(DATASET, "it")
 		self.come(MANAGER)
 		addome = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"})
 		librerie_crm.save_exercise(addome.name, {"exercise_name": "Crunch a tre quarti", "body_part": "Core"})
 		DATASET[0]["gif_url"] = "videos/0001-nuovo.gif"
 		try:
-			fatto = librerie_crm.import_exercises(self.dataset())
+			frappe.set_user("Administrator")
+			fatto = librerie_crm.carica(DATASET, "it")
 		finally:
 			DATASET[0]["gif_url"] = "videos/0001-2gPfomN.gif"
 		self.assertEqual((fatto["created"], fatto["updated"]), (0, 2))
@@ -257,8 +256,35 @@ class GliEsercizi(LibrerieCase):
 			(addome.exercise_name, addome.animation_path), ("Crunch a tre quarti", "videos/0001-nuovo.gif")
 		)
 
+	def test_la_libreria_si_carica_una_volta_per_versione(self):
+		# the site loaded the shipped file at install: the same file is not loaded again
+		librerie_crm.carica_libreria()
+		self.assertIsNone(librerie_crm.carica_libreria())
+		self.assertTrue(
+			frappe.db.exists(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "0001"})
+		)
+
+	def test_il_centro_aggiunge_i_suoi(self):
+		self.come(MANAGER)
+		fatto = librerie_crm.save_exercise(
+			None, {"exercise_name": "Ponte su una gamba", "body_part": "Legs", "instructions": "Piano."}
+		)
+		self.assertEqual(
+			(fatto["exercise_name"], fatto["body_part"], fatto["source"]),
+			("Ponte su una gamba", "Legs", librerie_crm.CENTRO),
+		)
+		self.assertIn(
+			"Ponte su una gamba",
+			[
+				riga["exercise_name"]
+				for riga in librerie_crm.get_exercises(text="Ponte su", source="Centre")["rows"]
+			],
+		)
+		with self.assertRaises(frappe.ValidationError):
+			librerie_crm.save_exercise(None, {"exercise_name": "  "})
+
 	def test_le_immagini_dove_le_tiene_l_agenzia_con_il_loro_autore(self):
-		librerie_crm.import_exercises(self.dataset())
+		librerie_crm.carica(DATASET, "it")
 		frappe.set_user("Administrator")
 		addome = frappe.db.get_value(
 			librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"}, "name"

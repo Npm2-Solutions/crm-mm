@@ -1,26 +1,26 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""exercises-dataset as the CRM's library keeps it, without a site (design.md, "I
-piani", "Le librerie"; ricerca-design.md §2.3).
+"""The exercise library DottorCloud ships, as the CRM keeps it, without a site
+(design.md, "I piani", "Le librerie"; ricerca-design.md §2.3).
 
-hasaneyldrm's dataset, the data MIT; the media © Gym visual, with its written
-authorisation to NPM2 Solutions: the name in English, how it is done in Italian in
-steps, the body part, the equipment and the muscles in the centre's language; the
-animation and the picture only from where the agency hosts them. The assistant
-never touches them.
+`dati/esercizi.json` was made once from hasaneyldrm's exercises-dataset at
+7455efa (18/03/2026), keeping only what the library reads: the name in English,
+how it is done in Italian and English in steps, the body part, the equipment and
+the muscles, the pictures' paths and whose they are. The data are MIT (the notice
+travels with them, `dati/esercizi.LICENSE.txt`); the media © Gym visual, with its
+written authorisation to NPM2 Solutions, only from where the agency hosts them and
+always with "© Gym visual — https://gymvisual.com/". The assistant never touches
+them. A new exercise of the library is a new record of that file, with an id of
+NPM2's ("dc-0001"): the centre never imports one.
 """
 
 from __future__ import annotations
 
 import re
 
+#: The library's exercises carry it as their source: what the centre adds has none.
 DATASET = "exercises-dataset"
-#: The dataset, at the version the import was written on (18/03/2026).
-DATASET_URL = (
-	"https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/"
-	"7455efae41b330c265e7cd4b78dfa848e7ce5ebd/data/exercises.json"
-)
 PARTI_DATASET = {
 	"back": "Back",
 	"cardio": "Full body",
