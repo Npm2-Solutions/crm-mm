@@ -462,12 +462,12 @@ def _ricorda(doc) -> None:
 	quando = formatdate(doc.ends_on, "d MMMM yyyy")
 	righe = [
 		f"<p>{esc(_('Hi {0},').format(nome))}</p>" if nome else "",
-		f"<p>{esc(_('your subscription {0} at {1} ends on {2}.').format(doc.subscription_type, nome_del_centro(), quando))}</p>",
+		f"<p>{esc(_('your subscription {0} at {1} ends soon. Last day: {2}.').format(doc.subscription_type, nome_del_centro(), quando))}</p>",
 		f"<p>{esc(_('It renews by itself the day after.') if cint(doc.auto_renew) else _('To go on, renew it at the desk or answer this email.'))}</p>",
 	]
 	frappe.sendmail(
 		recipients=[email],
-		subject=_("Your subscription ends on {0}").format(quando),
+		subject=_("Your subscription ends soon: {0}").format(quando),
 		message="".join(righe),
 		reference_doctype=ABBONAMENTO,
 		reference_name=doc.name,
