@@ -332,6 +332,9 @@ A value a list shows from a choice (status, priority) or from a translated
 DocType (stages, sources, reasons) goes through `__()`: the default ones read in
 the user's language, a name the centre wrote stays as written. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
+When one English sentence needs two Italian ones, the rarer place passes a
+context (`__('Hours', null, 'Service editor tab')`) and the catalog gives it a
+`msgctxt` entry.
 
 ### The brand
 | File | Role |

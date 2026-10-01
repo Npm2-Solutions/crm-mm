@@ -42,6 +42,22 @@ conversazioni, le cose da fare, le fatture; l'area clienti.
   (`tests/unit/areaParole.test.js`) legge ogni frase che l'area passa a `__()` e
   vuole trovarla nel dizionario.
 
+## Fatto: le impostazioni (PR 2)
+
+Tutte le 51 pagine delle impostazioni, dal proprio account all'agenzia: le 1654
+frasi dei loro componenti e le 81 che arrivano dai dati e dal server (i livelli
+degli utenti, i gruppi di alimenti, le parti del corpo degli esercizi, i modelli di
+partenza dei moduli, i campi della fatturazione). Il giro nel browser apre ogni
+pagina con il suo link diretto (`?settings=<chiave>`).
+
+- La pagina delle stanze si chiama come il listino le conta: "Ambulatori e
+  attrezzature" (era "Sale e attrezzature", con "ambulatorio" dentro).
+- **Una parola, due posti**: "Hours" è la scheda degli orari di un servizio
+  ("Orari") e l'unità di un'attesa nelle automazioni ("Ore"). Quando la stessa
+  frase inglese vuole due italiani, il posto meno comune le dà un contesto,
+  `__('Hours', null, 'Service editor tab')`, e il catalogo ha la sua voce con
+  `msgctxt`: il traduttore cerca prima `frase:contesto`.
+
 ## Come si trovano le frasi in inglese
 
 - **Nel codice**: le chiamate `__('…')` del frontend e `_()`/`_lt()` del server, e le
@@ -78,7 +94,7 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | Call log | chiamata |
 | Appointment, event | appuntamento, evento |
 | Service, professional | servizio, professionista |
-| Room / equipment | sala ("Sale e attrezzature") / attrezzatura |
+| Room / equipment | ambulatorio, come nel listino ("Ambulatori e attrezzature") / attrezzatura |
 | Slot, free time | orario libero; fascia oraria |
 | Booking, booking page | prenotazione, pagina di prenotazione |
 | Waiting list, cycle, session | lista d'attesa, ciclo di sedute, seduta |
