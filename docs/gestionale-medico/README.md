@@ -1710,6 +1710,58 @@ liste d'attesa sono del CRM (`crm/scheduling/attese.py`, le regole in
 - **Con la clinica accesa** la lista d'attesa è la stessa, nelle parole della clinica:
   si entra dall'area pazienti.
 
+### Gli abbonamenti: un ciclo conta le sedute, un abbonamento il tempo
+
+Fatto il 01/10/2026, la decima riga dell'[ordine](./design.md#lordine). Il mese della
+palestra, tre mesi di pilates due volte a settimana, un anno di trattamenti: gli
+abbonamenti sono del CRM (`crm/scheduling/abbonamenti.py`, le regole in
+`abbonamenti_regole.py`), accanto ai cicli di sedute, e stanno con loro nell'agenda.
+
+- **Un tipo** (`CRM Subscription Type`, Impostazioni > Agenda > Abbonamenti,
+  `agenda.configura`) dice:
+  - quanti mesi dura, il prezzo, e se si paga tutto subito o una rata al mese;
+  - i servizi che comprende e gli ingressi: quanti se ne vuole, oppure tanti a
+    settimana o al mese; se un'assenza conta come un ingresso;
+  - se si può sospendere, e per quanti giorni al massimo;
+  - quanti giorni prima della fine arriva il promemoria, e se si rinnova da solo;
+  - la scheda fiscale delle sue fatture, e se si emettono da sole;
+  - cosa legge la persona nella sua area.
+
+  Un tipo venduto non si cancella: si toglie dalla vendita.
+- **Si vende dalla pagina della persona**, come un ciclo (`agenda.abbonamenti`): un
+  tipo da un giorno, magari a un altro prezzo o pagato in un altro modo.
+  L'abbonamento copia le condizioni del tipo, e un tipo cambiato dopo non cambia
+  niente di venduto. Finisce il giorno prima dello stesso giorno tanti mesi dopo.
+- **Un appuntamento di un servizio compreso usa un ingresso da solo**: è della
+  persona, nei giorni dell'abbonamento e non in una sospensione, e nella settimana
+  (dal lunedì alla domenica) o nel mese dell'abbonamento resta un ingresso. Non
+  costa niente: l'abbonamento si paga a parte. Un ciclo dello stesso servizio viene
+  prima.
+  - Una disdetta rende l'ingresso; un'assenza lo usa, se il tipo lo dice.
+  - Un abbonamento nuovo prende gli appuntamenti già prenotati nei suoi giorni; il
+    pannello dell'appuntamento lo mette dentro o fuori a mano.
+- **Le rate**: una sola il primo giorno, o una al mese lo stesso giorno, l'ultima con
+  i centesimi che avanzano.
+  - Il giorno di una rata la sua fattura si apre da sola, con la scheda fiscale del
+    tipo, la persona (o chi paga per lei) e i giorni che paga. Si emette da sola se
+    il tipo lo dice, altrimenti resta una bozza per la segreteria; una che non parte
+    dice perché sulla rata.
+  - Gli ingressi non si fatturano uno per uno: escono dagli appuntamenti da
+    fatturare.
+  - Senza scheda fiscale le rate sono solo un calendario.
+- **Sospeso** da un giorno a un giorno, se il tipo lo consente: la fine si sposta di
+  quei giorni, e gli appuntamenti prenotati in quei giorni smettono di usare un
+  ingresso.
+- **Prima della fine** arriva alla persona un'email di promemoria, una volta. Un tipo
+  che si rinnova da solo fa partire l'abbonamento successivo il giorno dopo l'ultimo,
+  al prezzo del tipo di quel giorno; la segreteria rinnova anche a mano.
+- **Chi lo vede**: chi vende abbonamenti fin dove li vende, chi legge l'agenda fin
+  dove la legge. La segreteria e il manager tutto il centro, l'operatore quelli che
+  segue o dei suoi appuntamenti, il commerciale anche quelli delle sue persone.
+- **Nell'area** la persona vede i suoi abbonamenti in corso: quanti ingressi restano
+  questa settimana o questo mese, fino a quando valgono o quando si rinnovano, se
+  sono sospesi. Il prezzo, le note e le fatture restano al centro.
+
 ## Decisione 1 — Niente Marley Health e niente ERPNext
 
 Marley Health è l'ex modulo Healthcare di ERPNext, oggi un'app a sé mantenuta da
