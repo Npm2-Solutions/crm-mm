@@ -147,6 +147,7 @@
 
         <!-- the settings, where one looks for them: not only in the menu under
              the name. On the phone at the drawer's foot -->
+        <FirstStepsCard v-if="mobile" class="mt-3" />
         <SidebarItem
           v-if="mobile"
           :label="__('Settings')"
@@ -159,10 +160,7 @@
         </SidebarItem>
         <div v-if="!mobile" class="mt-auto flex flex-col gap-1 pt-2">
           <div class="mb-1 flex flex-col gap-2">
-            <GettingStartedBanner
-              v-if="!isOnboardingStepsCompleted"
-              :isSidebarCollapsed="isCollapsed"
-            />
+            <FirstStepsCard :collapsed="isCollapsed" />
           </div>
           <SidebarItem
             v-if="puo('dati_prova.gestisci') && isDemoDataCreated"
@@ -172,15 +170,6 @@
           >
             <template #prefix>
               <BrushCleaningIcon class="size-4" />
-            </template>
-          </SidebarItem>
-          <SidebarItem
-            v-if="isOnboardingStepsCompleted"
-            :label="__('Getting started')"
-            @click="toggleHelpModal"
-          >
-            <template #prefix>
-              <StepsIcon class="size-4 text-ink-gray-7" />
             </template>
           </SidebarItem>
           <SidebarItem :label="__('Settings')" @click="openSettings">
@@ -204,44 +193,22 @@
     </Sidebar>
     <Notifications v-if="!mobile" />
   </div>
-
-  <template v-if="!mobile">
-    <GettingStartedPanel
-      v-if="showHelpModal"
-      v-model="showHelpModal"
-      :after-skip="(step) => capture('onboarding_step_skipped_' + step)"
-      :after-skip-all="() => capture('onboarding_steps_skipped')"
-      :after-reset="(step) => capture('onboarding_step_reset_' + step)"
-      :after-reset-all="() => capture('onboarding_steps_reset')"
-    />
-    <IntermediateStepModal
-      v-model="showIntermediateModal"
-      :currentStep="currentStep"
-    />
-  </template>
 </template>
 
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideSettings from '~icons/lucide/settings'
-import GettingStartedPanel from '@/components/Layouts/GettingStartedPanel.vue'
-import InviteIcon from '@/components/Icons/InviteIcon.vue'
-import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
-import CommentIcon from '@/components/Icons/CommentIcon.vue'
-import EmailIcon from '@/components/Icons/EmailIcon.vue'
-import StepsIcon from '@/components/Icons/StepsIcon.vue'
 import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import Icon from '@/components/Icon.vue'
 import PinIcon from '@/components/Icons/PinIcon.vue'
 import UserDropdown from '@/components/UserDropdown.vue'
-import SquareAsterisk from '@/components/Icons/SquareAsterisk.vue'
+import FirstStepsCard from '@/components/FirstSteps/FirstStepsCard.vue'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import { callEnabled } from '@/composables/telephony'
-import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
@@ -255,27 +222,11 @@ import {
 import { usersStore } from '@/stores/users'
 import { menuDi } from '@/utils/menu'
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
-import { sessionStore } from '@/stores/session'
-import {
-  showSettings,
-  activeSettingsPage,
-  mobileSidebarOpened,
-} from '@/composables/settings'
-import { showChangePasswordModal } from '@/composables/modals'
-import { useBroadcast } from '@/composables/useBroadcast.js'
-import { call, Sidebar, SidebarItem, SidebarLabel, Tooltip } from 'frappe-ui'
-import {
-  GettingStartedBanner,
-  useOnboarding,
-  showHelpModal,
-  minimize,
-  IntermediateStepModal,
-  useTelemetry,
-} from 'frappe-ui/frappe'
-import router from '@/router'
+import { showSettings, mobileSidebarOpened } from '@/composables/settings'
+import { Sidebar, SidebarItem, SidebarLabel, Tooltip } from 'frappe-ui'
 import { useStorage } from '@vueuse/core'
 import { useDemoData } from '@/composables/demoData'
-import { ref, reactive, computed, markRaw, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps({
@@ -286,9 +237,8 @@ const route = useRoute()
 
 const { getPinnedViews, getPublicViews } = viewsStore()
 const { toggle: toggleNotificationPanel } = notificationsStore()
-const { capture } = useTelemetry()
 const { clearDemoData, isDemoDataCreated } = useDemoData()
-const { send } = useBroadcast()
+const { puo, puoUno, ambito } = usersStore()
 
 const isSidebarCollapsed = useStorage('isSidebarCollapsed', false)
 
@@ -407,238 +357,4 @@ function onNotificationsClick(event) {
     toggleNotificationPanel()
   }
 }
-
-function toggleHelpModal() {
-  showHelpModal.value = minimize.value ? true : !showHelpModal.value
-  minimize.value = !showHelpModal.value
-}
-
-// onboarding
-const { user } = sessionStore()
-const { users, puo, puoUno, ambito, solaLettura } = usersStore()
-const { isOnboardingStepsCompleted, setUp } = useOnboarding('frappecrm')
-
-async function getFirstLead() {
-  let firstLead = localStorage.getItem('firstLead' + user)
-  if (firstLead) return firstLead
-  return await call('crm.api.onboarding.get_first_lead')
-}
-
-async function getFirstDeal() {
-  let firstDeal = localStorage.getItem('firstDeal' + user)
-  if (firstDeal) return firstDeal
-  return await call('crm.api.onboarding.get_first_deal')
-}
-
-const showIntermediateModal = ref(false)
-const currentStep = ref({})
-
-const steps = reactive([
-  {
-    name: 'setup_your_password',
-    title: __('Setup your password'),
-    icon: markRaw(SquareAsterisk),
-    completed: false,
-    onClick: () => {
-      minimize.value = true
-      showChangePasswordModal.value = true
-      capture('onboarding_step_clicked_setup_password')
-    },
-  },
-  {
-    name: 'create_first_lead',
-    // a step the level cannot take is not offered (doc 30)
-    condition: () => puo('persone.scrivi'),
-    title: __('Create your first lead'),
-    icon: markRaw(LeadsIcon),
-    completed: false,
-    onClick: () => {
-      minimize.value = true
-      router.push({ name: 'Leads' })
-      send('trigger_lead_create', true)
-      capture('onboarding_step_clicked_create_first_lead')
-    },
-  },
-  {
-    name: 'invite_your_team',
-    title: __('Invite your team'),
-    icon: markRaw(InviteIcon),
-    completed: false,
-    onClick: () => {
-      minimize.value = true
-      showSettings.value = true
-      activeSettingsPage.value = 'Invite User'
-      capture('onboarding_step_clicked_invite_your_team')
-    },
-    condition: () => puo('utenti.gestisci'),
-  },
-  {
-    name: 'convert_lead_to_deal',
-    condition: () => puo('trattative.scrivi'),
-    title: __('Convert lead to deal'),
-    icon: markRaw(ConvertIcon),
-    completed: false,
-    dependsOn: 'create_first_lead',
-    onClick: async () => {
-      minimize.value = true
-      capture('onboarding_step_clicked_convert_lead_to_deal')
-      currentStep.value = {
-        title: __('Convert lead to deal'),
-        buttonLabel: __('Convert'),
-        videoURL: '/assets/crm/videos/convertToDeal.mov',
-        onClick: async () => {
-          showIntermediateModal.value = false
-          currentStep.value = {}
-
-          let lead = await getFirstLead()
-          if (lead) {
-            router.push({ name: 'Lead', params: { leadId: lead } })
-          } else {
-            router.push({ name: 'Leads' })
-          }
-        },
-      }
-      showIntermediateModal.value = true
-    },
-  },
-  {
-    name: 'create_first_task',
-    condition: () => !solaLettura(),
-    title: __('Create your first task'),
-    icon: markRaw(TaskIcon),
-    completed: false,
-    onClick: async () => {
-      minimize.value = true
-      let deal = await getFirstDeal()
-      capture('onboarding_step_clicked_create_first_task')
-
-      if (deal) {
-        router.push({
-          name: 'Deal',
-          params: { dealId: deal },
-          hash: '#tasks',
-        })
-      } else {
-        router.push({ name: 'Tasks' })
-      }
-    },
-  },
-  {
-    name: 'create_first_note',
-    condition: () => puo('note.scrivi'),
-    title: __('Create your first note'),
-    icon: markRaw(NoteIcon),
-    completed: false,
-    onClick: async () => {
-      minimize.value = true
-      let deal = await getFirstDeal()
-      capture('onboarding_step_clicked_create_first_note')
-
-      if (deal) {
-        router.push({
-          name: 'Deal',
-          params: { dealId: deal },
-          hash: '#notes',
-        })
-      } else {
-        router.push({ name: 'Notes' })
-      }
-    },
-  },
-  {
-    name: 'add_first_comment',
-    condition: () => puo('conversazioni.usa'),
-    title: __('Add your first comment'),
-    icon: markRaw(CommentIcon),
-    completed: false,
-    dependsOn: 'create_first_lead',
-    onClick: async () => {
-      minimize.value = true
-      let deal = await getFirstDeal()
-      capture('onboarding_step_clicked_add_first_comment')
-
-      if (deal) {
-        router.push({
-          name: 'Deal',
-          params: { dealId: deal },
-          hash: '#comments',
-        })
-      } else {
-        router.push({ name: 'Leads' })
-      }
-    },
-  },
-  {
-    name: 'send_first_email',
-    condition: () => puo('conversazioni.usa'),
-    title: __('Send email'),
-    icon: markRaw(EmailIcon),
-    completed: false,
-    dependsOn: 'create_first_lead',
-    onClick: async () => {
-      minimize.value = true
-      let deal = await getFirstDeal()
-      capture('onboarding_step_clicked_send_first_email')
-
-      if (deal) {
-        router.push({
-          name: 'Deal',
-          params: { dealId: deal },
-          hash: '#emails',
-        })
-      } else {
-        router.push({ name: 'Leads' })
-      }
-    },
-  },
-  {
-    name: 'change_deal_status',
-    condition: () => puo('trattative.scrivi'),
-    title: __('Change deal status'),
-    icon: markRaw(StepsIcon),
-    completed: false,
-    dependsOn: 'convert_lead_to_deal',
-    onClick: async () => {
-      minimize.value = true
-      capture('onboarding_step_clicked_change_deal_status')
-
-      currentStep.value = {
-        title: __('Change deal status'),
-        buttonLabel: __('Change'),
-        videoURL: '/assets/crm/videos/changeDealStatus.mov',
-        onClick: async () => {
-          showIntermediateModal.value = false
-          currentStep.value = {}
-
-          let deal = await getFirstDeal()
-          if (deal) {
-            router.push({
-              name: 'Deal',
-              params: { dealId: deal },
-              hash: '#activity',
-            })
-          } else {
-            router.push({ name: 'Leads' })
-          }
-        },
-      }
-      showIntermediateModal.value = true
-    },
-  },
-])
-
-onMounted(async () => {
-  if (props.mobile) return
-
-  await users.promise
-
-  const filteredSteps = steps.filter((step) => {
-    if (step.condition) {
-      return step.condition()
-    }
-    return true
-  })
-
-  setUp(filteredSteps)
-})
 </script>

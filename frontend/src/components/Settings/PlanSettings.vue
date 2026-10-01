@@ -41,6 +41,31 @@
       v-if="plan.data"
       class="flex flex-1 flex-col gap-8 overflow-y-auto px-2 pb-2"
     >
+      <!-- the first steps while some are left: here too, hidden from the
+           sidebar or not -->
+      <div
+        v-if="primi.stato.value.totale && !primi.stato.value.finiti"
+        class="flex items-center justify-between gap-3 rounded-lg bg-surface-gray-2 px-4 py-3 max-md:flex-col max-md:items-start"
+      >
+        <div class="flex min-w-0 flex-col gap-0.5">
+          <span class="text-base-medium text-ink-gray-8">
+            {{
+              __('First steps: {0} of {1} done', [
+                primi.stato.value.fatti,
+                primi.stato.value.totale,
+              ])
+            }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{ __('What to do to start, one step at a time.') }}
+          </span>
+        </div>
+        <Button
+          class="shrink-0"
+          :label="__('Open the first steps')"
+          @click="apriIPrimiPassi"
+        />
+      </div>
       <!-- what the centre signed up for: on, nothing to switch -->
       <section v-if="parti.compresi.length" class="flex flex-col gap-3">
         <div class="flex flex-col gap-0.5">
@@ -267,6 +292,8 @@ import LucideSparkles from '~icons/lucide/sparkles'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import FeatureSetUp from '@/components/Settings/FeatureSetUp.vue'
+import { usePrimiPassi } from '@/composables/primiPassi'
+import { showSettings } from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
 import { dividi } from '@/utils/funzionalita'
@@ -301,6 +328,16 @@ const startTrial = createResource({
 
 // what the product comprises, then the extras
 const parti = computed(() => dividi(plan.data?.modules))
+
+// the first steps, shown again even if hidden from the sidebar; the panel opens
+// over the page, so the settings close first
+const primi = usePrimiPassi()
+
+function apriIPrimiPassi() {
+  primi.mostra()
+  showSettings.value = false
+  primi.apriPannello()
+}
 
 // each module by what it is; one a new module brings gets the box
 const ICONE = {

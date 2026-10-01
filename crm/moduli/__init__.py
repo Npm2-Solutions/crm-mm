@@ -51,3 +51,17 @@ MARKETING = TipoConsenso(
 def registra() -> None:
 	registra_tipo(INFORMATIVA)
 	registra_tipo(MARKETING)
+	# a first step of every centre: what people fill in and sign
+	from crm.primi_passi import Passo, c_e, registra_passo
+
+	registra_passo(
+		Passo(
+			"moduli",
+			"Forms and consents",
+			"What people fill in and sign before an appointment, and what they agree to.",
+			lambda: c_e("CRM Form Template Version"),
+			("moduli.configura",),
+			pagina="Forms",
+			ordine=50,
+		)
+	)

@@ -108,7 +108,7 @@ import LevelPicker from '@/components/Settings/LevelPicker.vue'
 import { useLevels, levelLabels } from '@/composables/levels'
 import { validateEmail, convertArrayToString } from '@/utils'
 import { usersStore } from '@/stores/users'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
+import { useTelemetry } from 'frappe-ui/frappe'
 import {
   toast,
   createListResource,
@@ -117,7 +117,6 @@ import {
 } from 'frappe-ui'
 import { ref, computed, watch } from 'vue'
 
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { users } = usersStore()
 const { capture } = useTelemetry()
 const levels = useLevels()
@@ -195,7 +194,6 @@ const inviteByEmail = createResource({
     invitees.value = []
     pendingInvitations.reload()
     toast.success(__('Invitations sent successfully'))
-    updateOnboardingStep('invite_your_team')
     capture('user_invited')
   },
   onError(err) {

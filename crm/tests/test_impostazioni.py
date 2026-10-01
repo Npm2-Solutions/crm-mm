@@ -7,7 +7,7 @@ The menu is the frontend's (`frontend/src/utils/impostazioni.js`): groups, entri
 and tabs, each page under the name it had, as a key or an alias. The server builds
 links to those names - a dashboard's hint, the way back from Facebook and Google,
 the WhatsApp signup, the Social Planner's sources, where a module of the plan is
-set up - and so do the buttons around the app. A name the menu lost would open the first page instead, and nobody would
+set up, the first steps - and so do the buttons around the app. A name the menu lost would open the first page instead, and nobody would
 be told: so here every one of them is looked up.
 """
 
@@ -38,10 +38,14 @@ def nomi_del_server() -> dict[str, str]:
 	nomi = {f"the dashboard's {chiave}": f.settings for chiave, f in FEATURES.items() if f.settings}
 	nomi.update({f"the way back from {chiave}": pagina for chiave, pagina in SETTINGS_PAGE.items()})
 	nomi.update({f"the source {s.key}": s.settings_page for s in SOURCES})
-	# where the Features page sends one to set up each module of the plan
+	# where the Features page sends one to set up each module of the plan, and
+	# where the first steps are taken
 	livelli.carica()
 	for modulo in livelli.moduli_piano():
 		nomi.update({f"the plan's {modulo.chiave}: {pagina}": pagina for pagina in modulo.impostazioni})
+	from crm import primi_passi
+
+	nomi.update({f"the first step {p.chiave}": p.pagina for p in primi_passi.passi() if p.pagina})
 	for file in (RADICE / "crm").rglob("*.py"):
 		if "tests" in file.parts:
 			continue

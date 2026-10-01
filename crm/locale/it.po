@@ -1108,6 +1108,10 @@ msgstr ""
 msgid "Base"
 msgstr "Base"
 
+#: frontend/src/components/FirstSteps/FirstStepsCard.vue
+msgid "Begin"
+msgstr "Comincia"
+
 #: frontend/src/components/Filter.vue:356
 msgid "Between"
 msgstr "Tra"
@@ -1119,6 +1123,10 @@ msgstr ""
 #: frontend/src/utils/impostazioni.js
 msgid "Billable services"
 msgstr "Servizi fatturabili"
+
+#: crm/primi_passi.py
+msgid "Book it in the agenda: the reminder goes out by itself."
+msgstr "Fissalo in agenda: il promemoria parte da solo."
 
 #: crm/scheduling/attese.py
 msgid "Booked from the waiting list"
@@ -1996,6 +2004,10 @@ msgstr "Tipo di Contenuto"
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:166
 msgid "Content is required"
 msgstr "Il Contenuto è obbligatorio"
+
+#: frontend/src/components/FirstSteps/FirstStepsCard.vue
+msgid "Continue"
+msgstr "Continua"
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:75
 msgid "Controls how numbers are displayed (e.g., commas, decimal separators)"
@@ -3758,6 +3770,14 @@ msgstr ""
 msgid "First name"
 msgstr ""
 
+#: frontend/src/components/FirstSteps/FirstStepsCard.vue
+msgid "First steps"
+msgstr "Primi passi"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "First steps: {0} of {1} done"
+msgstr "Primi passi: {0} di {1} fatti"
+
 #: frontend/src/components/Settings/DefaultsSettings.vue:92
 msgid "Float Precision"
 msgstr "Precisione decimale"
@@ -3814,6 +3834,10 @@ msgstr "Formati"
 msgid "Forms"
 msgstr "Moduli"
 
+#: crm/moduli/__init__.py
+msgid "Forms and consents"
+msgstr "Moduli e consensi"
+
 #: crm/assistente/__init__.py
 msgid "Forms from paper, drafts from a signed note: documentation support the professional reviews"
 msgstr "Moduli dalla carta, bozze da una nota firmata: un aiuto alla documentazione che il professionista rivede"
@@ -3837,6 +3861,10 @@ msgstr "I valori in grigio vengono da Prenotazione online → Pagina e regole e 
 #: crm/scheduling/attese.py
 msgid "Hi {0},"
 msgstr "Ciao {0},"
+
+#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
+msgid "Hide the first steps"
+msgstr "Nascondi i primi passi"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Hierarchy"
@@ -3893,6 +3921,10 @@ msgstr "Compreso in {brand}"
 #: frontend/src/utils/impostazioni.js
 msgid "Invite"
 msgstr "Invita"
+
+#: crm/primi_passi.py
+msgid "Invite whoever works in the centre, each at their level."
+msgstr "Invita chi lavora nel centro, ognuno al suo livello."
 
 #: frontend/src/utils/menu.js
 msgid "Invoices"
@@ -5984,10 +6016,18 @@ msgstr ""
 msgid "Open in new window"
 msgstr ""
 
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Open the first steps"
+msgstr "Apri i primi passi"
+
 #: frontend/src/doctypes/crm_task/form.js:9
 #: frontend/src/doctypes/fcrm_note/form.js:9
 msgid "Open {0}"
 msgstr "Apri {0}"
+
+#: crm/primi_passi.py
+msgid "Opening hours and shifts"
+msgstr "Orari e turni"
 
 #: frontend/src/components/ConditionsFilter/CFCondition.vue:47
 #: frontend/src/pages/Calendar.vue:105
@@ -6211,6 +6251,10 @@ msgstr "Persone"
 #: crm/permissions/catalogo.py
 msgid "People and agenda with rooms, online booking and platforms, reminders, conversations, invoices and Sistema TS, dashboards, users and levels"
 msgstr "Persone e agenda con sale, prenotazione online e piattaforme, promemoria, conversazioni, fatture e Sistema TS, dashboard, utenti e livelli"
+
+#: crm/primi_passi.py
+msgid "People book by themselves, from your website or a link."
+msgstr "Le persone prenotano da sole, dal tuo sito o da un link."
 
 #: frontend/src/pages/Dashboard.vue:66
 msgid "Period"
@@ -7406,6 +7450,10 @@ msgstr ""
 msgid "Send an Email"
 msgstr ""
 
+#: crm/primi_passi.py
+msgid "Send and receive the centre's emails without leaving the page."
+msgstr "Manda e ricevi le email del centro senza cambiare pagina."
+
 #: frontend/src/components/Layouts/AppSidebar.vue:488
 msgid "Send email"
 msgstr ""
@@ -8134,6 +8182,10 @@ msgstr "Il centro"
 msgid "The centre does not take the waiting list from the area"
 msgstr "Il centro non prende la lista d'attesa dall'area"
 
+#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
+msgid "The centre is ready. Have a good day at work!"
+msgstr "Il centro è pronto. Buon lavoro!"
+
 #: frontend/src/utils/impostazioni.js
 msgid "The centre's WhatsApp numbers."
 msgstr "I numeri WhatsApp del centro."
@@ -8141,6 +8193,10 @@ msgstr "I numeri WhatsApp del centro."
 #: frontend/src/utils/impostazioni.js
 msgid "The centre's certificate and the time stamps on signed PDFs."
 msgstr "Il certificato del centro e le marche temporali sui PDF firmati."
+
+#: crm/primi_passi.py
+msgid "The centre's email"
+msgstr "L'email del centro"
 
 #: frontend/src/utils/impostazioni.js
 msgid "The centre's mailboxes and the emails you send often."
@@ -8241,6 +8297,10 @@ msgstr ""
 msgid "The service that takes the invoices to the tax system."
 msgstr "Il servizio che porta le fatture al fisco."
 
+#: crm/primi_passi.py
+msgid "The services you offer"
+msgstr "I servizi che offri"
+
 #: frontend/src/utils/impostazioni.js
 msgid "The stages a request goes through, until it is won or lost."
 msgstr "Le fasi di una richiesta, finché è vinta o persa."
@@ -8277,6 +8337,10 @@ msgstr "La lista d'attesa non è aperta online"
 msgid "The website, the social posts and where people come from."
 msgstr "Il sito, i post sui social e da dove arrivano le persone."
 
+#: crm/primi_passi.py
+msgid "Their details, their appointments, their story: all in one place."
+msgstr "I suoi dati, i suoi appuntamenti, la sua storia: tutto in un posto."
+
 #: frontend/src/components/Settings/PreferencesSettings.vue:23
 msgid "Theme"
 msgstr "Tema"
@@ -8288,6 +8352,10 @@ msgstr ""
 #: crm/moduli/sito.py
 msgid "There is no form at this address"
 msgstr "A questo indirizzo non c'è un modulo"
+
+#: crm/primi_passi.py
+msgid "They head the booking page, the forms and the emails people receive."
+msgstr "Stanno in testa alla pagina di prenotazione, ai moduli e alle email che ricevono le persone."
 
 #: frontend/src/components/Filter.vue:689
 msgid "This Month"
@@ -9088,6 +9156,22 @@ msgstr ""
 msgid "Welcome {0}, lets add your first lead"
 msgstr ""
 
+#: crm/primi_passi.py
+msgid "What can be booked, how long it takes, what it costs."
+msgstr "Cosa si può prenotare, quanto dura, quanto costa."
+
+#: crm/moduli/__init__.py
+msgid "What people fill in and sign before an appointment, and what they agree to."
+msgstr "Cosa compilano e firmano le persone prima di un appuntamento, e a cosa acconsentono."
+
+#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
+msgid "What to do to start with {brand}: each step ticks itself once it is done."
+msgstr "Le cose da fare per cominciare con {brand}: ogni passo si spunta da solo quando è fatto."
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "What to do to start, one step at a time."
+msgstr "Le cose da fare per cominciare, un passo alla volta."
+
 #: frontend/src/utils/impostazioni.js
 msgid "What {brand} includes for the centre, and what can be added."
 msgstr "Cosa comprende {brand} per il centro, e cosa si può aggiungere."
@@ -9174,6 +9258,10 @@ msgstr "Messaggi WhatsApp inviati"
 #: crm/scheduling/attese_pubblico.py
 msgid "When a place frees up we write to you: it goes to whoever confirms first."
 msgstr "Quando si libera un posto ti scriviamo: va a chi conferma per primo."
+
+#: crm/primi_passi.py
+msgid "When the centre is open and who works when: the agenda books only then."
+msgstr "Quando il centro è aperto e chi lavora quando: l'agenda prenota solo allora."
 
 #: frontend/src/utils/impostazioni.js
 msgid "When the centre is open, and who works when."
@@ -9381,6 +9469,10 @@ msgstr ""
 msgid "You will be redirected to invite user page, unsaved changes will be lost."
 msgstr ""
 
+#: frontend/src/components/FirstSteps/FirstStepsPanel.vue
+msgid "You will find them again in Settings, The centre, Features."
+msgstr "Li ritrovi in Impostazioni › Il centro › Funzionalità."
+
 #: frontend/src/components/Settings/LeadSyncing/leadSyncSourceConfig.js:8
 msgid "You will need a Meta developer account and an access token to sync leads from Facebook. Read more"
 msgstr "Avrai bisogno di un account Meta developer e un token di accesso per sincronizzare i contatti da Facebook. Per saperne di più"
@@ -9404,6 +9496,26 @@ msgstr ""
 #: crm/api/todo.py:47 crm/api/todo.py:88
 msgid "Your assignment on {0} {1} has been removed by {2}"
 msgstr "La tua assegnazione su {0} {1} è stata rimossa da {2}"
+
+#: crm/primi_passi.py
+msgid "Your centre's name and logo"
+msgstr "Il nome e il logo del centro"
+
+#: crm/primi_passi.py
+msgid "Your colleagues"
+msgstr "I tuoi colleghi"
+
+#: crm/primi_passi.py
+msgid "Your first appointment"
+msgstr "Il tuo primo appuntamento"
+
+#: crm/primi_passi.py
+msgid "Your first client"
+msgstr "Il tuo primo cliente"
+
+#: crm/clinica/parole.py
+msgid "Your first patient"
+msgstr "Il tuo primo paziente"
 
 #: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
 msgid "Your hours and days off, week by week, and how full each day is. Click your row to change them."
@@ -10000,6 +10112,10 @@ msgstr "{0} mesi fa"
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:647
 msgid "{0} no"
 msgstr ""
+
+#: frontend/src/components/FirstSteps/FirstStepsCard.vue
+msgid "{0} of {1} done"
+msgstr "{0} di {1} fatti"
 
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:503
 msgid "{0} users added to hierarchy"

@@ -73,13 +73,12 @@ import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import Link from '@/components/Controls/Link.vue'
 import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
-import { sessionStore } from '@/stores/session'
 import { statusesStore } from '@/stores/statuses'
 import { pipelinesStore } from '@/stores/pipelines'
 import { getMeta } from '@/stores/meta'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { isMobileView } from '@/composables/settings'
-import { useOnboarding, useTelemetry } from 'frappe-ui/frappe'
+import { useTelemetry } from 'frappe-ui/frappe'
 import { Switch, Dialog, createResource, call } from 'frappe-ui'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -100,8 +99,6 @@ const router = useRouter()
 const { statusOptions, getDealStatus } = statusesStore()
 const { pipelines, getStageNames } = pipelinesStore()
 const { puo } = usersStore()
-const { user } = sessionStore()
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 const { doctypeMeta: leadMeta } = getMeta('CRM Lead')
 
 const existingOrganizationChecked = ref(false)
@@ -155,9 +152,6 @@ async function convertToDeal() {
     existingOrganizationChecked.value = false
     existingOrganization.value = ''
     error.value = ''
-    updateOnboardingStep('convert_lead_to_deal', true, false, () => {
-      localStorage.setItem('firstDeal' + user, _deal)
-    })
     capture('convert_lead_to_deal')
     router.push({ name: 'Deal', params: { dealId: _deal } })
   }
