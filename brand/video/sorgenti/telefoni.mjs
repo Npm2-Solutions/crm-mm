@@ -6,12 +6,12 @@
 // (then python3 sito/immagini.py makes the WebP)
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 const OUT = '../../presentazione/sorgenti/img/telefono-';
-// [name, phone, seconds into the phone's scene]
+// [name, phone, seconds into the phone's scene]: the moments grab.mjs takes
 const J = process.argv[2]
   ? [[process.argv[2], process.argv[3], +process.argv[4]]]
   : [
-      ['login', '#acp', 3.4], ['home', '#acp', 6.3], ['dieta', '#dip', 4.5],
-      ['esercizio', '#exp', 2.5], ['esercizi', '#exp', 5.5], ['staff', '#ph1', 5], ['firma', '#ph2', 5],
+      ['login', '#acp', 2.8], ['home', '#acp', 4.3], ['dieta', '#dip', 3.7],
+      ['esercizio', '#exp', 3.6], ['esercizi', '#exp', 4.6], ['staff', '#ph1', 3.9], ['firma', '#ph2', 3.9],
     ];
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2 });
@@ -19,11 +19,10 @@ await p.goto('file://' + process.cwd() + '/video.html');
 await p.evaluate(() => window.ready);
 for (const [name, sel, dt] of J) {
   const clip = await p.evaluate(({ dt, sel }) => {
-    const i = SCN.indexOf(document.querySelector(sel).closest('.scene'));
-    window.render(start(i) + dt);
+    window.render(window.at(document.querySelector(sel).closest('.scene').id, dt));
     document.documentElement.style.background = 'transparent'; document.body.style.background = 'transparent';
     document.querySelectorAll('.scene').forEach((s) => { s.style.background = 'transparent'; });
-    document.querySelectorAll('.bgc,.blob,.dots,#bug,#cursor,#touch,#ripple,.shine').forEach((e) => (e.style.visibility = 'hidden'));
+    document.querySelectorAll('.blk,.dots,#bug,#trk,#cursor,#touch,#ripple,.shine').forEach((e) => (e.style.visibility = 'hidden'));
     const el = document.querySelector(sel);
     // nothing behind the phone: its round corners on transparency
     for (let a = el.parentElement; a; a = a.parentElement) a.style.background = 'transparent';
