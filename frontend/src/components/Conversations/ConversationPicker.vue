@@ -25,7 +25,7 @@
               <span
                 class="min-w-0 truncate text-lg font-semibold text-ink-gray-9"
               >
-                {{ __(labelOf(view)) }}
+                {{ __(labelOf(view), null, VISTA) }}
               </span>
               <span
                 v-if="countOf(view) && !search"
@@ -167,6 +167,9 @@ const VIEWS = [
   },
 ]
 
+// a view names many conversations: «Gestite», where the header says «Gestita»
+const VISTA = 'Conversation view'
+
 function labelOf(which) {
   return VIEWS.find((one) => one.value === which)?.label || 'Open'
 }
@@ -182,8 +185,8 @@ function unreadIn(which) {
 const viewOptions = computed(() =>
   VIEWS.map((one) => ({
     label: countOf(one.value)
-      ? `${__(one.label)} · ${countOf(one.value)}`
-      : __(one.label),
+      ? `${__(one.label, null, VISTA)} · ${countOf(one.value)}`
+      : __(one.label, null, VISTA),
     description: __(one.about),
     selected: one.value === view.value,
     onClick: () => (view.value = one.value),

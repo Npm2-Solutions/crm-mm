@@ -75,7 +75,10 @@ async function saveAssignees(
     (a) => a.name !== document.doc[ownerField.value],
   )
 
-  let owner = ownerField.value.replace('_', ' ')
+  // the field's own label, in the user's language: «responsabile della persona»
+  let owner = __(
+    ownerField.value === 'deal_owner' ? 'Deal Owner' : 'Lead Owner',
+  ).toLowerCase()
 
   if (
     document.doc[ownerField.value] &&

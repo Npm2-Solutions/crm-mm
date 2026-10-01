@@ -144,7 +144,10 @@ function describe(row) {
     if (row.source && row.source !== 'Centre') parts.push(row.source)
     return parts.join(' · ')
   }
-  return [row.body_part ? __(row.body_part) : '', row.equipment || '']
+  return [
+    row.body_part ? __(row.body_part, null, 'Body part') : '',
+    row.equipment || '',
+  ]
     .filter(Boolean)
     .join(' · ')
 }

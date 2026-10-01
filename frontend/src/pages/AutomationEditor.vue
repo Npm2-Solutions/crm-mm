@@ -93,7 +93,7 @@
       :key="entry.name"
       size="sm"
       :variant="tab === entry.name ? 'subtle' : 'ghost'"
-      :label="__(entry.label)"
+      :label="__(entry.label, null, 'Automation editor tab')"
       :disabled="entry.name === 'enrollments' && !draft.name"
       @click="tab = entry.name"
     />
@@ -325,6 +325,7 @@ import {
 const route = useRoute()
 const router = useRouter()
 
+// with a context: "Builder" is also the name of a product
 const TABS = [
   { name: 'builder', label: 'Builder' },
   { name: 'settings', label: 'Settings' },

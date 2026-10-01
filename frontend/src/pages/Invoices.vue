@@ -154,7 +154,7 @@
                 v-if="row.action === 'ts' && tsMode !== 'export'"
                 variant="subtle"
                 :loading="sending === row.name"
-                :label="__('Report')"
+                :label="__('Report', null, 'Sistema TS')"
                 @click="report(row)"
               />
               <Button

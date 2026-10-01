@@ -95,7 +95,10 @@ const library = {
     'No exercises yet: import exercises-dataset, or add them while writing a plan.',
   ),
   describe: (row) =>
-    [row.body_part ? __(row.body_part) : '', row.equipment || '']
+    [
+      row.body_part ? __(row.body_part, null, 'Body part') : '',
+      row.equipment || '',
+    ]
       .filter(Boolean)
       .join(' · '),
   thumbnail: (row) => row.picture || row.animation || null,

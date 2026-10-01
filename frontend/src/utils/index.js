@@ -7,6 +7,7 @@ import { gemoji } from 'gemoji'
 import DOMPurify from 'dompurify'
 import { toast, dayjsLocal, dayjs, getConfig, FeatherIcon } from 'frappe-ui'
 import { h } from 'vue'
+import { traQuanto } from '@/utils/quando'
 
 export function formatTime(seconds) {
   const days = Math.floor(seconds / (3600 * 24))
@@ -187,19 +188,8 @@ export function prettyDate(date, mini = false) {
           return __('in {0} hours', [Math.floor(Math.abs(diff) / 3600)])
         }
       }
-      if (Math.abs(dayDiff) >= 1 && Math.abs(dayDiff) < 1.5) {
-        return __('tomorrow')
-      } else if (Math.abs(dayDiff) < 7) {
-        return __('in {0} days', [Math.floor(Math.abs(dayDiff))])
-      } else if (Math.abs(dayDiff) < 31) {
-        return __('in {0} weeks', [Math.floor(Math.abs(dayDiff) / 7)])
-      } else if (Math.abs(dayDiff) < 365) {
-        return __('in {0} months', [Math.floor(Math.abs(dayDiff) / 30)])
-      } else if (Math.abs(dayDiff) < 730) {
-        return __('in 1 year')
-      } else {
-        return __('in {0} years', [Math.floor(Math.abs(dayDiff) / 365)])
-      }
+      const [frase, valori] = traQuanto(Math.floor(Math.abs(dayDiff)))
+      return __(frase, valori)
     } else if (dayDiff >= 0 && dayDiff < 1) {
       if (diff < 60) {
         return __('just now')

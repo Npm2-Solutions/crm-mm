@@ -73,8 +73,11 @@
         <div class="flex items-start justify-between gap-3">
           <div class="flex min-w-0 flex-col gap-0.5">
             <div class="flex flex-wrap items-center gap-2">
+              <!-- the standard kinds are written in English when they are
+                   created: the translator gives them the user's words, a kind
+                   the centre wrote stays as it is -->
               <span class="text-base-semibold text-ink-gray-8">
-                {{ type.label }}
+                {{ __(type.label) }}
               </span>
               <Badge
                 variant="subtle"
@@ -103,7 +106,7 @@
           />
         </div>
         <p v-if="type.description" class="text-p-sm text-ink-gray-6">
-          {{ type.description }}
+          {{ __(type.description) }}
         </p>
         <FormControl
           v-model="type.draftText"

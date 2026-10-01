@@ -110,6 +110,7 @@ const SOSTITUZIONI = {
   'DatePicker/DateRangePicker.vue': [
     predefinito('placeholder', 'Select range'),
   ],
+  'TimePicker/TimePicker.vue': [predefinito('placeholder', 'Select time')],
   'Select/Select.vue': [
     predefinito('placeholder', 'Select option'),
     predefinito('emptyText', 'No options'),
