@@ -10,25 +10,32 @@
     <p class="text-p-sm text-ink-gray-6">
       {{ __('Documents the centre gave you, online until the date shown.') }}
     </p>
-    <div
-      v-for="doc in documents.data?.documents || []"
-      :key="doc.name"
-      class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-    >
-      <div class="flex min-w-0 flex-col">
-        <span class="text-base text-ink-gray-9">{{ doc.title }}</span>
-        <span class="text-p-sm text-ink-gray-5">
-          {{ __(doc.document_type) }} ·
-          {{ __('Online until {0}', [day(doc.expires_on)]) }}
-        </span>
-      </div>
-      <Button
-        class="shrink-0"
-        :variant="doc.downloaded ? 'subtle' : 'solid'"
-        :label="__('Download')"
-        @click="download(doc)"
+    <template v-for="doc in documents.data?.documents || []" :key="doc.name">
+      <HiddenCard
+        v-if="doc.hidden"
+        :when="__('Online until {0}', [day(doc.expires_on)])"
       />
-    </div>
+      <div
+        v-else
+        class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+      >
+        <div class="flex min-w-0 flex-col">
+          <span class="text-base text-ink-gray-9">{{ doc.title }}</span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ __(doc.document_type) }} ·
+            {{ __('Online until {0}', [day(doc.expires_on)]) }}
+          </span>
+        </div>
+        <!-- the centre's preview downloads nothing -->
+        <Button
+          v-if="!anteprima"
+          class="shrink-0"
+          :variant="doc.downloaded ? 'subtle' : 'solid'"
+          :label="__('Download')"
+          @click="download(doc)"
+        />
+      </div>
+    </template>
     <p
       v-if="documents.data && !documents.data.documents.length"
       class="text-p-base text-ink-gray-5"
@@ -42,7 +49,9 @@
 <script setup>
 import { Button, createResource } from 'frappe-ui'
 import { ref } from 'vue'
+import { anteprima } from '../anteprima'
 import CodeDialog from '../components/CodeDialog.vue'
+import HiddenCard from '../components/HiddenCard.vue'
 import { day } from '../dates'
 import { area } from '../store'
 

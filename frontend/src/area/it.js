@@ -269,4 +269,12 @@ export default {
   'to your number {0}': 'al tuo numero {0}',
   'Write to the centre once on {0} from your number, then you can turn this on.':
     'Scrivi una volta al centro su {0} dal tuo numero, poi potrai attivarlo.',
+  // the centre's preview of a person's area (crm.area.anteprima)
+  'Close the preview': 'Chiudi l’anteprima',
+  'Preview: this is the area of {0} as they see it. Nothing is changed or sent from here.':
+    'Anteprima: questa è l’area di {0} come la vede. Da qui non si cambia e non si manda niente.',
+  'Here {0} sees something you do not read in {brand}.':
+    'Qui {0} vede qualcosa che in {brand} tu non leggi.',
+  'In the preview the chat does not answer.':
+    'Nell’anteprima la chat non risponde.',
 }

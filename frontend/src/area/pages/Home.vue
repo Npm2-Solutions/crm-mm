@@ -33,7 +33,7 @@
       </span>
       <span class="shrink-0 text-p-sm text-ink-gray-7">→</span>
     </router-link>
-    <PasskeyCard />
+    <PasskeyCard v-if="!anteprima" />
     <section
       v-if="documents.data?.documents?.length"
       class="flex flex-col gap-2"
@@ -49,7 +49,14 @@
           {{ __('See all') }}
         </router-link>
       </div>
+      <HiddenCard
+        v-if="documents.data.documents[0].hidden"
+        :when="
+          __('Online until {0}', [day(documents.data.documents[0].expires_on)])
+        "
+      />
       <div
+        v-else
         class="rounded-lg bg-surface-elevation-1 p-4 text-p-base text-ink-gray-8 shadow-sm"
       >
         {{ documents.data.documents[0].title }}
@@ -68,7 +75,9 @@
 <script setup>
 import { createResource } from 'frappe-ui'
 import { computed } from 'vue'
+import { anteprima } from '../anteprima'
 import AppointmentCard from '../components/AppointmentCard.vue'
+import HiddenCard from '../components/HiddenCard.vue'
 import PasskeyCard from '../components/PasskeyCard.vue'
 import PrepareVisit from '../components/PrepareVisit.vue'
 import TodayPlans from '../components/TodayPlans.vue'

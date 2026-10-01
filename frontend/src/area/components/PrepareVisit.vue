@@ -38,7 +38,10 @@
           @click="fill([form.template])"
         />
       </div>
-      <p v-if="!forms.data.can_fill" class="text-p-sm text-ink-gray-6">
+      <p
+        v-if="!forms.data.can_fill && !anteprima"
+        class="text-p-sm text-ink-gray-6"
+      >
         {{ whyNot[forms.data.why_not] }}
       </p>
       <ErrorMessage :message="error" />
@@ -49,6 +52,7 @@
 <script setup>
 import { Button, ErrorMessage, call, createResource } from 'frappe-ui'
 import { ref } from 'vue'
+import { anteprima } from '../anteprima'
 import { day } from '../dates'
 import { area, messageOf } from '../store'
 

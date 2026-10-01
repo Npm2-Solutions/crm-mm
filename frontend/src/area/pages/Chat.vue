@@ -79,7 +79,15 @@
     </div>
     <ErrorMessage :message="error" />
 
+    <!-- the centre's preview asks nothing: a question would reach the model -->
+    <p
+      v-if="anteprima"
+      class="mt-auto rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
+    >
+      {{ __('In the preview the chat does not answer.') }}
+    </p>
     <form
+      v-else
       class="sticky bottom-0 mt-auto flex items-end gap-2 bg-surface-gray-1 py-2"
       @submit.prevent="send"
     >
@@ -108,6 +116,7 @@
 <script setup>
 import { Button, ErrorMessage, Textarea, call } from 'frappe-ui'
 import { ref } from 'vue'
+import { anteprima } from '../anteprima'
 import { area } from '../store'
 
 const turns = ref([])
