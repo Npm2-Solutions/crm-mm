@@ -13,7 +13,7 @@ from werkzeug.wrappers import Response
 
 from crm.api.doc import assigned_users_of
 from crm.api.lead import deal_names_of
-from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, nome_di, notify_user
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
 from crm.permissions.livelli import puo
 from crm.utils import stored_value, to_e164
@@ -89,15 +89,15 @@ def notify_agent(doc):
 	if doc.type == "Incoming":
 		if not doc.reference_doctype or not doc.reference_name:
 			return
-		doctype = doc.reference_doctype
-		if doctype and doctype.startswith("CRM "):
-			doctype = doctype[4:].lower()
-		safe_reference_name = frappe.utils.escape_html(doc.reference_name)
+		frase = (
+			_("You received a WhatsApp message on the deal {0}")
+			if doc.reference_doctype == "CRM Deal"
+			else _("You received a WhatsApp message from {0}")
+		)
+		chi = in_grassetto(nome_di(doc.reference_doctype, doc.reference_name))
 		notification_text = f"""
             <div class="mb-2 leading-5 text-ink-gray-5">
-                <span class="font-medium text-ink-gray-9">{_("You")}</span>
-                <span>{_("received a whatsapp message in {0}").format(doctype)}</span>
-                <span class="font-medium text-ink-gray-9">{safe_reference_name}</span>
+                {frase.format(chi)}
             </div>
         """
 		assigned_users = assigned_users_of(doc.reference_doctype, doc.reference_name)

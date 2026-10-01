@@ -6,7 +6,7 @@ from frappe import _
 from frappe.desk.form.utils import add_comment as frappe_add_comment
 from frappe.utils import get_fullname
 
-from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, notify_user
 
 
 def on_update(self, method):
@@ -27,19 +27,19 @@ def notify_mentions(doc):
 	reference_doc = frappe.get_doc(doc.reference_doctype, doc.reference_name)
 	for mention in mentions:
 		owner = frappe.get_cached_value("User", doc.owner, "full_name")
-		doctype = doc.reference_doctype
-		if doctype.startswith("CRM "):
-			doctype = doctype[4:].lower()
 		name = (
 			reference_doc.lead_name
-			if doctype == "lead"
+			if doc.reference_doctype == "CRM Lead"
 			else reference_doc.organization or reference_doc.lead_name
+		)
+		frase = (
+			_("{0} mentioned you in a comment on the deal {1}")
+			if doc.reference_doctype == "CRM Deal"
+			else _("{0} mentioned you in a comment on {1}")
 		)
 		notification_text = f"""
             <div class="mb-2 leading-5 text-ink-gray-5">
-                <span class="font-medium text-ink-gray-9">{owner}</span>
-                <span>{_("mentioned you in {0}").format(doctype)}</span>
-                <span class="font-medium text-ink-gray-9">{name}</span>
+                {frase.format(in_grassetto(owner), in_grassetto(name))}
             </div>
         """
 		notify_user(

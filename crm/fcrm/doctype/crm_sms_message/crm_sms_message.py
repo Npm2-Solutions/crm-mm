@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 
 from crm.api.doc import assigned_users_of
-from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, nome_di, notify_user
 
 
 class CRMSMSMessage(Document):
@@ -79,15 +79,15 @@ class CRMSMSMessage(Document):
 	def notify_agents(self):
 		if self.type != "Incoming" or not self.reference_doctype or not self.reference_name:
 			return
-		doctype = self.reference_doctype
-		if doctype.startswith("CRM "):
-			doctype = doctype[4:].lower()
-		safe_reference_name = frappe.utils.escape_html(self.reference_name)
+		frase = (
+			_("You received an SMS on the deal {0}")
+			if self.reference_doctype == "CRM Deal"
+			else _("You received an SMS from {0}")
+		)
+		chi = in_grassetto(nome_di(self.reference_doctype, self.reference_name))
 		notification_text = f"""
 			<div class="mb-2 leading-5 text-ink-gray-5">
-				<span class="font-medium text-ink-gray-9">{_("You")}</span>
-				<span>{_("received an SMS in {0}").format(doctype)}</span>
-				<span class="font-medium text-ink-gray-9">{safe_reference_name}</span>
+				{frase.format(chi)}
 			</div>
 		"""
 		for user in assigned_users_of(self.reference_doctype, self.reference_name):
