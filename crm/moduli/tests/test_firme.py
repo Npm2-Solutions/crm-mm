@@ -23,6 +23,7 @@ import frappe
 from crm.invoicing.engine import pdfa
 from crm.moduli import compilazioni, firme, registro, traccia
 from crm.moduli.tests.test_compilazioni import DESK, PRIVACY, CompilazioniCase
+from crm.permissions import livelli
 
 
 @firme.registra_fornitore
@@ -326,17 +327,38 @@ class SenzaFornitore(FirmeCase):
 		with self.assertRaises(frappe.PermissionError):
 			firme.webhook()
 
-	def test_le_impostazioni_conoscono_i_fornitori(self):
-		impostazioni = frappe.get_single(firme.IMPOSTAZIONI)
-		impostazioni.enabled = 1
-		impostazioni.provider = "Sconosciuto"
-		with self.assertRaises(frappe.ValidationError):
-			impostazioni.save()
+	def piano(self, *moduli):
+		piano = frappe.get_single("CRM Plan")
+		piano.set("modules", [{"module": modulo, "status": "Active"} for modulo in moduli])
+		piano.save()
+		livelli.dimentica_cache()
+
+	def fornitore_impostato(self):
 		impostazioni = frappe.get_single(firme.IMPOSTAZIONI)
 		impostazioni.enabled = 1
 		impostazioni.provider = "Prova"
 		impostazioni.save()
 		frappe.clear_document_cache(firme.IMPOSTAZIONI, firme.IMPOSTAZIONI)
+
+	def test_la_firma_avanzata_e_un_extra_del_piano(self):
+		"""The provider set up, the plan decides: off, nothing new goes to it; what
+		was sent still comes back."""
+		self.fornitore_impostato()
+		self.piano()
+		self.assertIsNone(firme.attivo())
+		self.assertEqual(firme.attivo(nuove=False).nome, "Prova")
+		self.assertEqual(firme.get_provider()["name"], None)
+		self.piano(firme.PIANO)
+		self.assertEqual(firme.attivo().nome, "Prova")
+
+	def test_le_impostazioni_conoscono_i_fornitori(self):
+		self.piano(firme.PIANO)
+		impostazioni = frappe.get_single(firme.IMPOSTAZIONI)
+		impostazioni.enabled = 1
+		impostazioni.provider = "Sconosciuto"
+		with self.assertRaises(frappe.ValidationError):
+			impostazioni.save()
+		self.fornitore_impostato()
 		self.assertEqual(firme.attivo().nome, "Prova")
 		self.assertIn("Prova", firme.get_provider()["available"])
 		# the operator's page knows it can send there

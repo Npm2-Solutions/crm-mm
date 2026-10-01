@@ -4,8 +4,8 @@
 
   Settings > The centre > Features (doc 36; the plan of listino.md, doc 30): what
   the product comprises, on and set up from its pages; the extras, each saying
-  what it adds, tried for free; the size and this month's usage. The plan itself
-  is the agency's, from the Desk.
+  what it adds, tried for free; the size in rooms and the usage, as the listino
+  of 01/10/2026 counts them. The plan itself is the agency's, from the Desk.
 -->
 <template>
   <div
@@ -216,7 +216,7 @@
         </ul>
       </section>
 
-      <!-- the size: counted, never enforced -->
+      <!-- the size: the ambulatori, counted, never enforced (listino.md) -->
       <section class="flex flex-col gap-3">
         <h3 class="text-base-semibold text-ink-gray-8">
           {{ __('Size and usage') }}
@@ -228,13 +228,11 @@
             {{ sizeText }}
           </div>
           <div class="text-p-sm text-ink-gray-6">
-            {{
-              __('{0} active agendas this month', [plan.data.agendas.active])
-            }}
+            {{ __('{0} rooms in the agenda', [plan.data.rooms.count]) }}
           </div>
           <div
-            v-if="plan.data.agendas.over"
-            class="mt-1 flex gap-2 rounded bg-surface-amber-1 p-2 text-p-sm text-ink-amber-3"
+            v-if="plan.data.rooms.over"
+            class="mt-1 flex gap-2 rounded bg-surface-amber-1 p-2 text-p-sm text-ink-amber-8"
           >
             <span
               class="lucide-info mt-0.5 size-3.5 shrink-0"
@@ -243,7 +241,7 @@
             <span>
               {{
                 __(
-                  'More agendas than the plan covers. Nothing is blocked: appointments and invoices work as always, and the agency will propose the size above.',
+                  'More rooms than the plan covers. Nothing is blocked: appointments and invoices work as always, and the agency will propose the level above.',
                 )
               }}
             </span>
@@ -251,27 +249,37 @@
           <p class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'An agenda is a practitioner with at least one appointment in the month, even one who never opens {brand}. Rooms, equipment, front desk and managers do not count.',
+                'A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited.',
               )
             }}
           </p>
+          <FeatureSetUp :pagine="['Rooms & Equipment']" />
         </div>
-        <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4 max-md:grid-cols-1">
           <div
             v-for="item in usage"
             :key="item.label"
             class="flex flex-col gap-1 rounded-lg border border-outline-gray-2 p-3"
           >
             <span class="text-p-sm text-ink-gray-5">{{ item.label }}</span>
-            <span class="text-xl-semibold text-ink-gray-8">
-              {{ item.value ?? '–' }}
+            <span class="text-xl-semibold tabular-nums text-ink-gray-8">
+              {{ item.used ?? '–' }}
+              <span
+                v-if="item.included"
+                class="text-base font-normal text-ink-gray-5"
+              >
+                / {{ item.included }}
+              </span>
+            </span>
+            <span v-if="item.warn" class="text-p-xs text-ink-amber-8">
+              {{ __('Nearly used up: beyond, they are paid as used') }}
             </span>
           </div>
         </div>
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Messages, SMS and call minutes are billed at cost by the agency, once a month.',
+              'Beyond what is included, SdI credits, minutes, SMS and advanced signatures are billed by the agency once a month. WhatsApp messages are paid by the centre directly to Meta.',
             )
           }}
         </p>
@@ -287,6 +295,8 @@
 import LucideCalendarDays from '~icons/lucide/calendar-days'
 import LucideMegaphone from '~icons/lucide/megaphone'
 import LucidePackage from '~icons/lucide/package'
+import LucideReceipt from '~icons/lucide/receipt-text'
+import LucideSignature from '~icons/lucide/signature'
 import LucideSmartphone from '~icons/lucide/smartphone'
 import LucideSparkles from '~icons/lucide/sparkles'
 import LucideStethoscope from '~icons/lucide/stethoscope'
@@ -344,21 +354,24 @@ const ICONE = {
   base: LucideCalendarDays,
   clinica: LucideStethoscope,
   area: LucideSmartphone,
+  fatturazione: LucideReceipt,
   marketing: LucideMegaphone,
   telefono: PhoneIcon,
   assistente: LucideSparkles,
+  firma: LucideSignature,
 }
 
 function iconaDi(modulo) {
   return ICONE[modulo.key] || LucidePackage
 }
 
+// the listino's levels (docs/gestionale-medico/listino.md)
 const SIZES = {
-  Solo: __('Solo, one agenda'),
-  Studio: __('Studio, up to 3 agendas'),
-  Centre: __('Centre, up to 8 agendas'),
-  Polyclinic: __('Polyclinic, up to 15 agendas'),
-  Large: __('Over 15 agendas'),
+  Solo: __('Solo, one room'),
+  Studio: __('Studio, up to 2 rooms'),
+  Centre: __('Centre, up to 5 rooms'),
+  Polyclinic: __('Polyclinic, up to 10 rooms'),
+  Large: __('Over 10 rooms'),
 }
 
 const sizeText = computed(() =>
@@ -367,11 +380,26 @@ const sizeText = computed(() =>
     : __('No size set yet: the agency sets it with the plan'),
 )
 
-const usage = computed(() => [
-  { label: __('WhatsApp messages sent'), value: plan.data?.usage?.whatsapp },
-  { label: __('SMS sent'), value: plan.data?.usage?.sms },
-  { label: __('Call minutes'), value: plan.data?.usage?.call_minutes },
-])
+// what the agency bills, each with what the plan includes: the SdI credits with
+// invoicing, the signatures with the advanced signature
+const usage = computed(() => {
+  const uso = plan.data?.usage || {}
+  return [
+    uso.sdi_credits && {
+      label: __('SdI credits this year'),
+      ...uso.sdi_credits,
+    },
+    uso.sms && { label: __('SMS sent this month'), ...uso.sms },
+    uso.call_minutes && {
+      label: __('Call minutes this month'),
+      ...uso.call_minutes,
+    },
+    uso.signatures && {
+      label: __('Advanced signatures this year'),
+      ...uso.signatures,
+    },
+  ].filter(Boolean)
+})
 
 function stateLabel(module) {
   if (module.state === 'trial')

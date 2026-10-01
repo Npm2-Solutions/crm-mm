@@ -23,6 +23,10 @@ it keeps is the provider's, since converting it would break the signature.
 **Paper** needs nobody: the operator prints the form, the person signs it, the
 scan is uploaded and the operator attests it is a true copy of the original
 (`compilazioni.firma_su_carta`).
+
+**The plan**: the advanced signature is an extra (listino.md, 01/10/2026). With
+the module off nothing new goes to the provider; what was sent still comes back,
+signed or declined, and its links still open.
 """
 
 from __future__ import annotations
@@ -31,7 +35,22 @@ import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
 
+from crm.permissions.livelli import ModuloPiano
+
 IMPOSTAZIONI = "CRM Signature Settings"
+
+#: The plan's module of the advanced signature: off until the centre has it. No
+#: site signed with a provider before plans had it, so nothing is taken away.
+PIANO = "firma"
+
+MODULO = ModuloPiano(
+	PIANO,
+	"Advanced signature",
+	predefinito=False,
+	descrizione="Informed consent and quotes signed with an SMS code, valid as on paper: 2,000 signatures a year",
+	ordine=7,
+	impostazioni=("Seal and time stamp",),
+)
 
 _fornitori: dict[str, type[FornitoreFirma]] = {}
 
@@ -83,8 +102,18 @@ def fornitori() -> list[str]:
 	return sorted(_fornitori)
 
 
-def attivo() -> FornitoreFirma | None:
-	"""The centre's provider, if one is chosen, switched on and known."""
+def acceso() -> bool:
+	"""Whether the plan lets the centre send new forms to its provider."""
+	from crm.permissions import livelli
+
+	return livelli.stato_modulo(PIANO, livelli.moduli_attivi()) in (livelli.ATTIVO, livelli.PROVA)
+
+
+def attivo(nuove: bool = True) -> FornitoreFirma | None:
+	"""The centre's provider, if one is chosen, switched on and known; for new
+	signatures, while the plan has the advanced signature (``nuove``)."""
+	if nuove and not acceso():
+		return None
 	if not frappe.db.exists("DocType", IMPOSTAZIONI):
 		return None
 	impostazioni = frappe.get_cached_doc(IMPOSTAZIONI)
@@ -138,7 +167,8 @@ def webhook(provider: str | None = None) -> dict:
 	it does not know, or one already closed, is left as it is."""
 	from crm.moduli import compilazioni
 
-	fornitore = attivo()
+	# what was sent comes back even after the module ended
+	fornitore = attivo(nuove=False)
 	if not fornitore or (provider and provider != fornitore.nome):
 		frappe.throw(_("No such signature provider here"), frappe.PermissionError)
 	esito = fornitore.evento(frappe.request)

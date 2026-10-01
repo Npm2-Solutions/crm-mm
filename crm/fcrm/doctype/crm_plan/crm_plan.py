@@ -79,8 +79,38 @@ STATI = {
 	"Off": livelli.SPENTO,
 }
 
-#: Agendas each size covers; None is "no limit".
-AGENDE = {"Solo": 1, "Studio": 3, "Centre": 8, "Polyclinic": 15, "Large": None}
+# What the listino says (docs/gestionale-medico/listino.md, 01/10/2026).
+
+#: Ambulatori each size covers - rooms where one visits or treats, as the agenda's
+#: rooms; None: past ten, each one more is paid.
+AMBULATORI = {"Solo": 1, "Studio": 2, "Centre": 5, "Polyclinic": 10, "Large": None}
+
+#: SdI credits a year that come with invoicing, by size.
+CREDITI_SDI = {"Solo": 240, "Studio": 500, "Centre": 1200, "Polyclinic": 2400, "Large": 2400}
+
+#: Minutes a month that come with the phone; signatures a year with the advanced
+#: signature.
+MINUTI_INCLUSI = 714
+FIRME_INCLUSE = 2000
+
+#: Used past this share of what is included, the page warns (the listino: at 80%).
+AVVISO = 0.8
+
+#: An invoice's SdI states that spent no credit: never sent, refused by the SdI
+#: for its format, failed on the way.
+SENZA_CREDITO = frozenset({"non_applicabile", "da_inviare", "scartata", "errore"})
+
+
+def crediti_sdi(inviate, ricevute: int) -> int:
+	"""SdI credits used: one an invoice sent or received, three one sent to the
+	public administration; one the SdI refused for its format costs nothing.
+	``inviate``: the (SdI state, recipient type) of each invoice sent. Pure."""
+	spesi = sum(
+		3 if destinatario == "pubblica_amministrazione" else 1
+		for stato, destinatario in inviate
+		if stato not in SENZA_CREDITO
+	)
+	return spesi + ricevute
 
 
 def stato_della_riga(

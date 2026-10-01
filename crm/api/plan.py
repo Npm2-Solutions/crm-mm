@@ -22,7 +22,14 @@ from frappe import _
 from frappe.utils import add_days, get_first_day, get_last_day, getdate, now, nowdate
 
 from crm import verticali
-from crm.fcrm.doctype.crm_plan.crm_plan import AGENDE
+from crm.fcrm.doctype.crm_plan.crm_plan import (
+	AMBULATORI,
+	AVVISO,
+	CREDITI_SDI,
+	FIRME_INCLUSE,
+	MINUTI_INCLUSI,
+	crediti_sdi,
+)
 from crm.permissions import livelli
 from crm.permissions.catalogo import BASE
 from crm.permissions.livelli import ModuloPiano, richiede
@@ -93,17 +100,18 @@ def get_plan() -> dict:
 				"can_start_trial": stato == livelli.SPENTO and livelli.puo("piano.amplia"),
 			}
 		)
-	agende = agende_attive()
-	incluse = AGENDE.get(piano.size) if piano.size else None
+	sale = ambulatori()
+	comprese = AMBULATORI.get(piano.size) if piano.size else None
+	accesi = {modulo["key"] for modulo in moduli if modulo["state"] in ("active", "trial")}
 	return {
 		"size": piano.size or None,
-		"agendas": {
-			"active": agende,
-			"included": incluse,
-			"over": bool(incluse and agende > incluse),
+		"rooms": {
+			"count": sale,
+			"included": comprese,
+			"over": bool(comprese and sale > comprese),
 		},
 		"modules": moduli,
-		"usage": consumi(),
+		"usage": consumi(piano.size, accesi),
 		"agency": livelli.e_agenzia(frappe.session.user),
 		"trial_days": GIORNI_DI_PROVA,
 	}
@@ -175,43 +183,53 @@ def _system_managers() -> list[str]:
 	return frappe.get_all("User", filters={"name": ["in", users or [""]], "enabled": 1}, pluck="email")
 
 
-def agende_attive(giorno: str | None = None) -> int:
-	"""Practitioners with at least one appointment this month.
+def ambulatori() -> int:
+	"""What the size counts (listino.md): the ambulatori, the agenda's rooms where
+	one visits or treats - a physiotherapy gym counts as one. Practitioners and
+	users are unlimited."""
+	return frappe.db.count("CRM Resource", {"resource_type": "Room", "enabled": 1})
 
-	What the size counts: someone who receives appointments, even if they never open
-	the CRM. Rooms, equipment, front desk and managers do not count.
-	"""
+
+def consumi(taglia: str | None = None, accesi: set[str] = frozenset(), giorno: str | None = None) -> dict:
+	"""What the centre used, as the agency bills it: the SdI credits and the
+	advanced signatures of the year, the SMS and the minutes of the month, each
+	with what the plan includes. WhatsApp is not counted: Meta bills the centre."""
 	giorno = getdate(giorno or nowdate())
-	Appointment = frappe.qb.DocType("CRM Appointment")
-	Staff = frappe.qb.DocType("CRM Appointment Staff")
-	righe = (
-		frappe.qb.from_(Staff)
-		.join(Appointment)
-		.on(Appointment.name == Staff.parent)
-		.select(Staff.user)
-		.distinct()
-		.where(
-			(Staff.parenttype == "CRM Appointment")
-			& (Appointment.status != "Cancelled")
-			& (Appointment.starts_on >= get_first_day(giorno))
-			& (Appointment.starts_on < add_days(get_last_day(giorno), 1))
-		)
-	).run(pluck=True)
-	return len([user for user in righe if user])
-
-
-def consumi(giorno: str | None = None) -> dict:
-	"""What the centre used this month, as the agency bills it."""
-	giorno = getdate(giorno or nowdate())
-	periodo = ["between", [get_first_day(giorno), get_last_day(giorno)]]
-	uso = {"whatsapp": None, "sms": None, "call_minutes": None}
-	if frappe.db.table_exists("WhatsApp Message"):
-		uso["whatsapp"] = frappe.db.count("WhatsApp Message", {"type": "Outgoing", "creation": periodo})
-	uso["sms"] = frappe.db.count("CRM SMS Message", {"type": "Outgoing", "creation": periodo})
+	mese = ["between", [get_first_day(giorno), get_last_day(giorno)]]
+	anno = ["between", [getdate(f"{giorno.year}-01-01"), getdate(f"{giorno.year}-12-31")]]
 	secondi = frappe.get_all(
 		"CRM Call Log",
-		filters={"creation": periodo, "status": "Completed"},
+		filters={"creation": mese, "status": "Completed"},
 		fields=[{"SUM": "duration", "as": "total"}],
 	)
-	uso["call_minutes"] = round((secondi[0].total or 0) / 60) if secondi else 0
+	uso = {
+		"sms": {"used": frappe.db.count("CRM SMS Message", {"type": "Outgoing", "creation": mese})},
+		"call_minutes": {
+			"used": round((secondi[0].total or 0) / 60) if secondi else 0,
+			"included": MINUTI_INCLUSI if "telefono" in accesi else None,
+		},
+		"sdi_credits": None,
+		"signatures": None,
+	}
+	if "fatturazione" in accesi:
+		inviate = frappe.get_all(
+			"CRM Invoice",
+			filters={"channel": "sdi", "sdi_sent_on": anno},
+			fields=["sdi_status", "recipient_type"],
+		)
+		ricevute = frappe.db.count("CRM Supplier Invoice", {"creation": anno})
+		uso["sdi_credits"] = {
+			"used": crediti_sdi([(r.sdi_status, r.recipient_type) for r in inviate], ricevute),
+			"included": CREDITI_SDI.get(taglia) if taglia else None,
+		}
+	if "firma" in accesi:
+		uso["signatures"] = {
+			"used": frappe.db.count(
+				"CRM Form", {"provider": ["is", "set"], "provider_status": "Signed", "signed_on": anno}
+			),
+			"included": FIRME_INCLUSE,
+		}
+	for voce in uso.values():
+		if voce and voce.get("included"):
+			voce["warn"] = voce["used"] >= AVVISO * voce["included"]
 	return uso

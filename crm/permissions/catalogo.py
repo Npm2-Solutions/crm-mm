@@ -60,8 +60,9 @@ MODULI = (
 	ModuloPiano(
 		BASE,
 		"Base",
-		descrizione="People and agenda with rooms, online booking and platforms, reminders, "
-		"conversations, invoices and Sistema TS, dashboards, users and levels",
+		descrizione="People and agenda with rooms, cycles, subscriptions and waiting lists; online "
+		"booking and platforms, reminders; conversations; quotes; forms with a simple signature, "
+		"consents and documents; dashboards, users and levels",
 		ordine=1,
 		impostazioni=("Services", "Hours & shifts", "Online booking", "Users"),
 	),

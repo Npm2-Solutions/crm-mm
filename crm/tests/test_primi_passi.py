@@ -73,12 +73,20 @@ class IPrimiPassi(IntegrationTestCase):
 				"moduli",
 				"prenotazione",
 				"email",
+				"fatture",
 				"persona",
 				"appuntamento",
 			],
 		)
-		self.assertEqual(fatto["total"], 9)
+		self.assertEqual(fatto["total"], 10)
 		self.assertEqual(fatto["done"], sum(passo["done"] for passo in fatto["steps"]))
+
+	def test_senza_la_fatturazione_niente_passo_delle_fatture(self):
+		frappe.set_user("Administrator")
+		piano = frappe.get_single("CRM Plan")
+		piano.append("modules", {"module": "fatturazione", "status": "Off"})
+		piano.save()
+		self.assertNotIn("fatture", [passo["key"] for passo in self.passi(MANAGER)["steps"]])
 
 	def test_la_segreteria_ha_i_suoi(self):
 		fatto = self.passi(DESK)

@@ -15,6 +15,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import plan
+from crm.fcrm.doctype.crm_plan.crm_plan import crediti_sdi
 from crm.permissions import livelli, utenti
 from crm.permissions.livelli import ModuloPiano
 from crm.permissions.test_org_hierarchy import make_user
@@ -40,6 +41,22 @@ class CosaComprendeIlProdotto(TestCase):
 
 	def test_un_verticale_che_nessuno_ha_registrato_non_aggiunge_niente(self):
 		self.assertEqual(plan.compresi(MODULI, "altro"), {"base"})
+
+
+class ICreditiSdI(TestCase):
+	def test_uno_a_fattura_tre_alla_pa_niente_se_scartata(self):
+		inviate = [
+			("consegnata", "persona_fisica"),
+			("inviato", "soggetto_iva"),
+			("esito_pa", "pubblica_amministrazione"),
+			("mancata_consegna", "persona_fisica"),
+			# refused for its format, failed on the way, never sent: no credit
+			("scartata", "soggetto_iva"),
+			("errore", "persona_fisica"),
+			("da_inviare", "persona_fisica"),
+		]
+		self.assertEqual(crediti_sdi(inviate, ricevute=4), 1 + 1 + 3 + 1 + 4)
+		self.assertEqual(crediti_sdi([], 0), 0)
 
 
 class LaPaginaDelleFunzionalita(IntegrationTestCase):
@@ -74,10 +91,63 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 	def test_gli_extra_si_provano(self):
 		moduli = self.moduli()
 		extra = {chiave for chiave, modulo in moduli.items() if not modulo["included"]}
-		self.assertEqual(extra, {"marketing", "telefono", "assistente"})
-		# the assistant is off until the centre wants it: the manager tries it
-		self.assertEqual(moduli["assistente"]["state"], "off")
-		self.assertTrue(moduli["assistente"]["can_start_trial"])
+		# the listino's extras (01/10/2026)
+		self.assertEqual(extra, {"fatturazione", "marketing", "telefono", "assistente", "firma"})
+		# invoicing was every site's before plans: on until the plan says otherwise
+		self.assertEqual(moduli["fatturazione"]["state"], "active")
+		# the assistant and the advanced signature are off until the centre wants them
+		for chiave in ("assistente", "firma"):
+			self.assertEqual(moduli[chiave]["state"], "off")
+			self.assertTrue(moduli[chiave]["can_start_trial"])
+
+	def test_la_taglia_conta_gli_ambulatori(self):
+		frappe.set_user("Administrator")
+		piano = frappe.get_single("CRM Plan")
+		piano.size = "Solo"
+		piano.save()
+		prima = frappe.db.count("CRM Resource", {"resource_type": "Room", "enabled": 1})
+		for nome in ("Ambulatorio 1 dei test", "Ambulatorio 2 dei test"):
+			frappe.get_doc(
+				{"doctype": "CRM Resource", "resource_name": nome, "resource_type": "Room"}
+			).insert()
+		# a machine is not an ambulatorio
+		frappe.get_doc(
+			{"doctype": "CRM Resource", "resource_name": "Ecografo dei test", "resource_type": "Equipment"}
+		).insert()
+		frappe.set_user(MANAGER)
+		sale = plan.get_plan()["rooms"]
+		self.assertEqual(sale, {"count": prima + 2, "included": 1, "over": True})
+
+	def test_i_consumi_come_li_conta_il_listino(self):
+		frappe.set_user("Administrator")
+		piano = frappe.get_single("CRM Plan")
+		piano.size = "Studio"
+		piano.set(
+			"modules",
+			[
+				{"module": "clinica", "status": "Active"},
+				{"module": "telefono", "status": "Active"},
+				{"module": "firma", "status": "Active"},
+			],
+		)
+		piano.save()
+		livelli.dimentica_cache()
+		frappe.set_user(MANAGER)
+		uso = plan.get_plan()["usage"]
+		# WhatsApp is not counted: Meta bills the centre
+		self.assertNotIn("whatsapp", uso)
+		self.assertEqual(uso["sdi_credits"]["included"], 500)
+		self.assertEqual(uso["call_minutes"]["included"], 714)
+		self.assertEqual(uso["signatures"]["included"], 2000)
+		for voce in ("sdi_credits", "call_minutes", "signatures"):
+			self.assertIn("warn", uso[voce])
+		# without invoicing there are no credits to count
+		frappe.set_user("Administrator")
+		piano.append("modules", {"module": "fatturazione", "status": "Off"})
+		piano.save()
+		livelli.dimentica_cache()
+		frappe.set_user(MANAGER)
+		self.assertIsNone(plan.get_plan()["usage"]["sdi_credits"])
 
 	def test_ogni_modulo_dice_dove_si_imposta(self):
 		moduli = self.moduli()
