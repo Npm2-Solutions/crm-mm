@@ -34,14 +34,37 @@
               <span class="min-w-0 truncate text-base text-ink-gray-8">
                 {{ serviceName(cycle.service) }}
               </span>
+              <InProgressBadge
+                v-if="cycle.status === 'Active'"
+                class="shrink-0"
+                :label="__(cycle.status)"
+              />
               <Badge
+                v-else
                 class="shrink-0"
                 variant="subtle"
                 :theme="TEMA_DELLO_STATO[cycle.status] || 'gray'"
                 :label="__(cycle.status)"
               />
             </span>
+            <!-- one segment a session, the used ones in the brand's colour -->
             <span
+              v-if="tappe(cycle.counts)"
+              class="dc-steps w-full"
+              role="progressbar"
+              :aria-valuenow="percentuale(cycle.counts)"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              :aria-label="__('Sessions used')"
+            >
+              <span
+                v-for="(usata, i) in tappe(cycle.counts)"
+                :key="i"
+                :class="{ 'is-done': usata }"
+              />
+            </span>
+            <span
+              v-else
               class="h-1.5 w-full overflow-hidden rounded-full bg-surface-gray-2"
               role="progressbar"
               :aria-valuenow="percentuale(cycle.counts)"
@@ -94,6 +117,7 @@
 <script setup>
 import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import CycleDialog from '@/components/CycleDialog.vue'
+import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
@@ -102,6 +126,7 @@ import {
   comeVa,
   daPrenotare,
   percentuale,
+  tappe,
 } from '@/utils/cicli'
 import { Badge, Button, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'

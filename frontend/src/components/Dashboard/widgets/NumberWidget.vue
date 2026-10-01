@@ -1,7 +1,7 @@
 <template>
   <div class="kpi flex h-full flex-col justify-end gap-1.5 px-4 pb-3">
     <div
-      class="kpi-value truncate font-semibold leading-8 text-ink-gray-9"
+      class="kpi-value truncate font-bold leading-8 tabular-nums tracking-[-0.02em] text-ink-gray-9"
       :title="exact"
     >
       {{ value }}
@@ -102,12 +102,13 @@ const fill = computed(() => colors(1, dark.value)[0])
 
 <style scoped>
 /* the figure shrinks with its card, so a narrow tile (the builder with the
-   library open) still shows "246.900 USD" whole; a normal row keeps 26px */
+   library open) still shows "246.900 USD" whole; a normal row keeps the
+   design system's 28px */
 .kpi {
   container-type: inline-size;
 }
 .kpi-value {
-  font-size: 26px;
+  font-size: 28px;
 }
 @container (max-width: 170px) {
   .kpi-value {

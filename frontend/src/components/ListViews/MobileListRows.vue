@@ -29,6 +29,7 @@
           :class="{
             'opacity-50 pointer-events-none': row.disabled,
             'cursor-pointer': isTappable,
+            'dc-riga-scelta': selectable && isSelected(row),
           }"
           @click="onRowClick(row, $event)"
         >

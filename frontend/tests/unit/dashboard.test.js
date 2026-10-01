@@ -9,6 +9,7 @@ import {
   formatValue,
   groupDashboards,
   groupByCategory,
+  highlightedNumbers,
   mobileOrder,
   newItem,
   newKey,
@@ -256,6 +257,24 @@ describe('the grid', () => {
       { name: 'a', layout: { x: 0, y: 0 } },
     ])
     expect(order.map((item) => item.name)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('makes the first number of each row the deep block, one a row', () => {
+    const grid = [
+      { type: 'number', layout: { x: 5, y: 0, i: 'b' } },
+      { type: 'number', layout: { x: 0, y: 0, i: 'a' } },
+      { type: 'number', layout: { x: 10, y: 0, i: 'c' } },
+      // a chart opens the next row: the number after it leads its row
+      { type: 'axis', layout: { x: 0, y: 3, i: 'chart' } },
+      { type: 'number', layout: { x: 10, y: 3, i: 'd' } },
+      { type: 'number', layout: { x: 15, y: 3, i: 'e' } },
+    ]
+    const kindOf = (item) => item.type
+    expect([...highlightedNumbers(grid, kindOf)].sort()).toEqual(['a', 'd'])
+    expect(highlightedNumbers([], kindOf).size).toBe(0)
+    // the answer's kind wins over the stored type
+    const answered = (item) => (item.layout.i === 'a' ? 'axis' : item.type)
+    expect([...highlightedNumbers(grid, answered)].sort()).toEqual(['b', 'd'])
   })
 
   it('counts the widgets already placed', () => {

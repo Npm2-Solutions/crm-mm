@@ -113,7 +113,12 @@
             <PlayIcon class="size-3" />
           </template>
         </Badge>
+        <InProgressBadge
+          v-if="call.status === 'In Progress'"
+          :label="getCallStatusLabel(call.status, call.type)"
+        />
         <Badge
+          v-else
           :label="getCallStatusLabel(call.status, call.type)"
           :theme="statusColorMap[call.status]"
         />
@@ -141,6 +146,7 @@ import PlayIcon from '@/components/Icons/PlayIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import DurationIcon from '@/components/Icons/DurationIcon.vue'
 import MultipleAvatar from '@/components/MultipleAvatar.vue'
+import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import AudioPlayer from '@/components/Activities/AudioPlayer.vue'
 import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'

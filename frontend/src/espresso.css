@@ -141,21 +141,35 @@
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%230b2e2a' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
 }
 
-/* 6. A switch that is on: the cross at the centre of its knob (markup:
-      reka-ui's SwitchRoot and SwitchThumb) */
-[data-marchio='dottorcloud']
-  button[role='switch'][data-state='checked']
-  > span {
+/* 6. A switch that is on: the cross at the centre of its knob, coming in with
+      a small bounce (markup: reka-ui's SwitchRoot and SwitchThumb) */
+[data-marchio='dottorcloud'] button[role='switch'] > span {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%230b6f64' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: center;
+  background-size: 0%;
+  transition:
+    transform 100ms ease-in-out,
+    background-color 100ms ease-in-out,
+    background-size 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-marchio='dottorcloud']
+  button[role='switch'][data-state='checked']
+  > span {
   background-size: 50%;
+}
+[data-marchio='dottorcloud'][data-theme='dark'] button[role='switch'] > span {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%235fe0cc' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
 }
 [data-marchio='dottorcloud'][data-theme='dark']
   button[role='switch'][data-state='checked']
   > span {
   background-color: #0b2e2a;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%235fe0cc' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-marchio='dottorcloud'] button[role='switch'] > span {
+    transition: none;
+  }
 }
 
 /* 7. A field one must fill: a small red cross after its label instead of the
@@ -241,4 +255,180 @@
   [data-settings-tabs]
   [role='tab'][aria-selected='true']::after {
   background-color: var(--brand-action);
+}
+
+/* 14. The person in the cloud: three round corners and the tip at the bottom
+       left, like the mark (markup: frappe-ui's Avatar). The people of the
+       centre's records on the brand's soft green, its staff (UserAvatar,
+       `dc-avatar--staff`) on its solid; round only who is outside the centre
+       (`dc-avatar--round`: companies, systems) */
+[data-marchio='dottorcloud']
+  .relative.inline-block.shrink-0.rounded-full:not(.dc-avatar--round),
+[data-marchio='dottorcloud']
+  .relative.inline-block.shrink-0.rounded-full:not(.dc-avatar--round)
+  > .rounded-full:not(.absolute) {
+  border-radius: 50% 50% 50% 22%;
+}
+[data-marchio='dottorcloud']
+  .relative.inline-block.shrink-0:not(.dc-avatar--round)
+  > .uppercase.bg-surface-gray-2.text-ink-gray-5 {
+  background-color: var(--brand-subtle);
+  color: var(--on-brand-subtle);
+}
+[data-marchio='dottorcloud']
+  .relative.inline-block.shrink-0.dc-avatar--staff
+  > .uppercase.bg-surface-gray-2.text-ink-gray-5 {
+  background-color: var(--brand-solid);
+  color: var(--on-brand-solid);
+}
+
+/* 15. The cloud's tail on what floats - menus, the lists of a select, the
+       calendar of a date, popovers - and on the cards of a page (markup:
+       frappe-ui's menu-content and PopoverPanel; a bordered `rounded-lg` or
+       `rounded-xl` box is a card) */
+[data-marchio='dottorcloud'] .menu-content,
+[data-marchio='dottorcloud'] [data-slot='content-body'][data-panel],
+[data-marchio='dottorcloud'] div.rounded-lg.border,
+[data-marchio='dottorcloud'] div.rounded-xl.border {
+  border-bottom-left-radius: 2px;
+}
+
+/* 16. The item chosen in a list is marked by the brand's cross instead of the
+       tick (markup: frappe-ui's Select and Combobox put a `lucide-check` in the
+       item's suffix; DottorCloud's own menus mark theirs `dc-scelto`) */
+[data-marchio='dottorcloud']
+  [role='option']
+  [data-slot='item-suffix']
+  .lucide-check,
+[data-marchio='dottorcloud'] .dc-scelto.lucide-check {
+  color: var(--brand-segno);
+  -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+  mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+  -webkit-mask-size: 9px;
+  mask-size: 9px;
+}
+
+/* 17. A list's rows chosen on the brand's soft green, and the bar of what to do
+       with them a deep block with the tail (markup: frappe-ui's ListRow; the
+       bar is ListSelectBanner with `dc-list-bar`, the phone's rows mark
+       themselves `dc-riga-scelta`) */
+[data-marchio='dottorcloud']
+  .flex-col.transition-all.duration-300.ease-in-out.bg-surface-gray-2,
+[data-marchio='dottorcloud'] .dc-riga-scelta {
+  background-color: var(--brand-subtle);
+}
+[data-marchio='dottorcloud']
+  .flex-col.transition-all.duration-300.ease-in-out.bg-surface-gray-2:hover {
+  background-color: var(--brand-subtle-hover);
+}
+[data-marchio='dottorcloud'] .dc-list-bar.rounded-lg {
+  background-color: var(--block-deep);
+  color: var(--on-block-deep);
+  border-bottom-left-radius: 2px;
+}
+[data-marchio='dottorcloud'] .dc-list-bar .text-ink-gray-9,
+[data-marchio='dottorcloud'] .dc-list-bar .text-ink-gray-7,
+[data-marchio='dottorcloud'] .dc-list-bar button {
+  color: var(--on-block-deep);
+}
+[data-marchio='dottorcloud'] .dc-list-bar button:not(:disabled):hover {
+  background-color: rgba(225, 245, 241, 0.12);
+}
+[data-marchio='dottorcloud'] .dc-list-bar .border-outline-gray-2 {
+  border-color: rgba(225, 245, 241, 0.2);
+}
+[data-marchio='dottorcloud'] .dc-list-bar input[type='checkbox'] {
+  color: var(--mint-300);
+  opacity: 1;
+}
+
+/* 18. The calendar of a date: the day chosen in the brand's solid with the
+       tail; today in the brand's colour with a small cross under the number
+       (markup: frappe-ui's CalendarPanel marks today `font-semibold`) */
+[data-marchio='dottorcloud'] button[role='gridcell'][aria-selected='true'] {
+  background-color: var(--brand-action);
+  color: var(--on-brand-solid);
+  border-bottom-left-radius: 2px;
+}
+[data-marchio='dottorcloud']
+  button[role='gridcell'].font-semibold:not([aria-selected='true']) {
+  position: relative;
+  color: var(--brand-action);
+}
+[data-marchio='dottorcloud']
+  button[role='gridcell'].font-semibold:not([aria-selected='true'])::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  background: var(--brand-segno);
+  clip-path: polygon(
+    34% 0,
+    66% 0,
+    66% 34%,
+    100% 34%,
+    100% 66%,
+    66% 66%,
+    66% 100%,
+    34% 100%,
+    34% 66%,
+    0 66%,
+    0 34%,
+    34% 34%
+  );
+}
+
+/* 19. A dialog: its veil tinted with the brand's deep green, its icon in a
+       small cloud (markup: frappe-ui's Dialog) */
+[data-marchio='dottorcloud'] .dialog-overlay {
+  background-color: rgba(11, 46, 42, 0.32);
+}
+[data-marchio='dottorcloud'][data-theme='dark'] .dialog-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+[data-marchio='dottorcloud']
+  .dialog-content
+  .h-7.w-7.flex-shrink-0.rounded-full {
+  border-radius: 50% 50% 50% 22%;
+}
+
+/* 20. The toast's words and marks on the deep block, also in the dark theme
+       (where frappe-ui writes it in the base ink, the dark one); the tick of
+       a success in mint */
+[data-marchio='dottorcloud'] li.bg-surface-gray-9.rounded-md .text-ink-base {
+  color: var(--on-block-deep);
+}
+[data-marchio='dottorcloud'] li.bg-surface-gray-9.rounded-md .text-ink-green-5 {
+  color: #5fe0cc;
+}
+
+/* 21. Waiting, outside a button: the spinner's arc in the brand's colour
+       (markup: frappe-ui's Spinner draws in the current colour) */
+[data-marchio='dottorcloud']
+  .fui-spinner:not(button .fui-spinner):not([class*='text-']) {
+  color: var(--brand-segno);
+}
+
+/* 22. The alert of a page with the cloud's tail (markup: frappe-ui's Alert) */
+[data-marchio='dottorcloud'] .grid.grid-cols-\[auto_1fr_auto\].rounded-md {
+  border-bottom-left-radius: 2px;
+}
+
+/* 23. The brand's subtle button, for what one does for the person beside the
+       main action (`dc-brand` on a subtle Button) */
+[data-marchio='dottorcloud'] button.dc-brand {
+  background-color: var(--brand-subtle);
+  color: var(--on-brand-subtle);
+}
+[data-marchio='dottorcloud'] button.dc-brand:not(:disabled):hover {
+  background-color: var(--brand-subtle-hover);
+}
+
+/* 24. frappe-ui's calendar events, in the week and month views: the cloud's
+       tail (markup: CalendarWeekDayEvent and CalendarMonthEvent) */
+[data-marchio='dottorcloud'] .event.rounded {
+  border-bottom-left-radius: 2px;
 }

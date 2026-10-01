@@ -59,6 +59,15 @@ export function percentuale(conti) {
   return Math.min(100, Math.round((conti.used / conti.total) * 100))
 }
 
+// The sessions as the design system's steps: one segment each, the used ones
+// in the brand's colour. Past `massimo` the segments would be slivers, and the
+// bar of percentuale() says it better: null.
+export function tappe(conti, massimo = 30) {
+  if (!conti?.total || conti.total > massimo) return null
+  const usate = Math.min(conti.used || 0, conti.total)
+  return Array.from({ length: conti.total }, (_, i) => i < usate)
+}
+
 // another appointment fits in it
 export function siPrenota(ciclo) {
   return ciclo?.status === 'Active' && (ciclo.counts?.left || 0) > 0

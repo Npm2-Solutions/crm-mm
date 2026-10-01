@@ -1,0 +1,583 @@
+/* Copyright (c) 2026, NPM2 Solutions Srl and contributors
+   The design system's own components (brand/design-system/espresso/componenti):
+   what frappe-ui has no component for - the cross, the StatTile, the empty
+   state, the category tag, the patient's journey, the agenda's event - with the
+   classes the system names (`dc-*`), and the tokens they need. The tokens sit on
+   the brand the page wears (utils/marchio.js: --brand, --brand-strong,
+   --brand-soft, --brand-on-dark), so another vertical's brand fills them with
+   its own colours; the states and the categories are the same for everybody.
+   espresso.css lays the system over frappe-ui's own components. */
+
+/* 1. Tokens (tokens.css): the brand solid and subtle, the states, the categories */
+:root {
+  --brand-solid: var(--brand-action);
+  --brand-solid-hover: var(--brand-action-hover);
+  --on-brand-solid: #ffffff;
+  --brand-subtle: var(--brand-soft, var(--surface-gray-2));
+  --brand-subtle-hover: color-mix(in srgb, var(--brand-subtle) 88%, black);
+  --on-brand-subtle: var(--brand-strong, var(--ink-gray-8));
+  --mint-300: var(--brand-on-dark, #5fe0cc);
+  --block-mint: var(--mint-300);
+  --on-block-mint: var(--block-deep, #0b2e2a);
+  --on-block-deep-muted: #8fc7bd;
+  --radius-tail: 2px;
+  --success: #177a42;
+  --success-subtle: #e3f6ea;
+  --warning: #8a5300;
+  --warning-subtle: #fdf2dc;
+  --danger: #c8323c;
+  --danger-subtle: #fdeaea;
+  --info: #2459c9;
+  --info-subtle: #e6eefe;
+  --cat-blue: #2f6fed;
+  --cat-blue-subtle: #e6eefe;
+  --cat-blue-text: #2459c9;
+  --cat-violet: #7c5cf0;
+  --cat-violet-subtle: #efeafe;
+  --cat-violet-text: #5b3fd0;
+  --cat-amber: #d98a0b;
+  --cat-amber-subtle: #fdf2dc;
+  --cat-amber-text: #8a5300;
+  --cat-rose: #e0487a;
+  --cat-rose-subtle: #fde8ef;
+  --cat-rose-text: #b02a5a;
+  --cat-green: #1f9d55;
+  --cat-green-subtle: #e3f6ea;
+  --cat-green-text: #177a42;
+}
+:root[data-theme='dark'] {
+  --on-brand-solid: var(--block-deep, #0b2e2a);
+  --brand-subtle: color-mix(
+    in srgb,
+    var(--brand-on-dark, #5fe0cc) 14%,
+    #151817
+  );
+  --brand-subtle-hover: color-mix(
+    in srgb,
+    var(--brand-on-dark, #5fe0cc) 20%,
+    #151817
+  );
+  --on-brand-subtle: var(--brand-on-dark, var(--ink-gray-8));
+  --on-block-deep-muted: #9fd3c9;
+  --success: #4cd38a;
+  --success-subtle: #133222;
+  --warning: #f5b544;
+  --warning-subtle: #3a2a0c;
+  --danger: #ff7a80;
+  --danger-subtle: #3a1517;
+  --info: #7aa5ff;
+  --info-subtle: #15233f;
+  --cat-blue: #7aa5ff;
+  --cat-blue-subtle: #15233f;
+  --cat-blue-text: #a9c4ff;
+  --cat-violet: #b9a6ff;
+  --cat-violet-subtle: #231a44;
+  --cat-violet-text: #cfc2ff;
+  --cat-amber: #f5b544;
+  --cat-amber-subtle: #3a2a0c;
+  --cat-amber-text: #f8cb7a;
+  --cat-rose: #ff8fb4;
+  --cat-rose-subtle: #3d1424;
+  --cat-rose-text: #ffb3cc;
+  --cat-green: #4cd38a;
+  --cat-green-subtle: #133222;
+  --cat-green-text: #86e3b0;
+}
+
+/* 2. Type: the main pages' title, the StatTile's number */
+.dc-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-gray-9);
+}
+.dc-metric {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 3. The cross, as a sign; and as a motif, only inside full blocks */
+.dc-cross {
+  --s: 10px;
+  --c: currentColor;
+  display: inline-block;
+  flex: none;
+  width: var(--s);
+  height: var(--s);
+  background: var(--c);
+  border-radius: 1px;
+  clip-path: polygon(
+    34% 0,
+    66% 0,
+    66% 34%,
+    100% 34%,
+    100% 66%,
+    66% 66%,
+    66% 100%,
+    34% 100%,
+    34% 66%,
+    0 66%,
+    0 34%,
+    34% 34%
+  );
+}
+.dc-crosses {
+  --c: var(--mint-300);
+  --pitch: 20px;
+  background: var(--c);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M8.3 5h3.4v3.3H15v3.4h-3.3V15H8.3v-3.3H5V8.3h3.3z'/%3E%3C/svg%3E")
+    0 0 / var(--pitch) var(--pitch) repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M8.3 5h3.4v3.3H15v3.4h-3.3V15H8.3v-3.3H5V8.3h3.3z'/%3E%3C/svg%3E")
+    0 0 / var(--pitch) var(--pitch) repeat;
+}
+
+/* 4. The category tag: what kind of thing it is, square with the tail, never a
+      state's pill */
+.dc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 4px 4px 4px var(--radius-tail);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dc-tag--blue {
+  background: var(--cat-blue-subtle);
+  color: var(--cat-blue-text);
+}
+.dc-tag--violet {
+  background: var(--cat-violet-subtle);
+  color: var(--cat-violet-text);
+}
+.dc-tag--amber {
+  background: var(--cat-amber-subtle);
+  color: var(--cat-amber-text);
+}
+.dc-tag--rose {
+  background: var(--cat-rose-subtle);
+  color: var(--cat-rose-text);
+}
+.dc-tag--green {
+  background: var(--cat-green-subtle);
+  color: var(--cat-green-text);
+}
+.dc-tag--brand {
+  background: var(--brand-subtle);
+  color: var(--on-brand-subtle);
+}
+
+/* 5. "In progress" - on a call, a cycle under way: the brand's subtle with the
+      cross in place of the dot. One a row */
+.dc-in-corso {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--brand-subtle);
+  color: var(--on-brand-subtle);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dc-in-corso .dc-cross {
+  --s: 7px;
+}
+
+/* 6. The StatTile: the number, the crosses in its corner; the most important
+      of a row a deep block */
+.dc-stat {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 96px;
+  padding: 12px 14px;
+  border-radius: 16px 16px 16px var(--radius-tail);
+  background: var(--surface-base);
+  box-shadow: inset 0 0 0 1px var(--outline-gray-2);
+  text-decoration: none;
+}
+.dc-stat__label {
+  position: relative;
+  /* the words stop short of the crosses: never a motif under them */
+  padding-right: 56px;
+  font-size: 13px;
+  color: var(--ink-gray-6);
+}
+.dc-stat__value {
+  position: relative;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-gray-9);
+}
+.dc-stat .dc-crosses {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 60px;
+  height: 40px;
+  --c: var(--brand-subtle);
+}
+.dc-stat--brand {
+  background: var(--block-deep, #0b2e2a);
+  box-shadow: none;
+}
+.dc-stat--brand .dc-stat__label {
+  color: var(--on-block-deep-muted);
+}
+.dc-stat--brand .dc-stat__value {
+  color: var(--on-block-deep, #e1f5f1);
+}
+.dc-stat--brand .dc-crosses {
+  --c: var(--mint-300);
+  opacity: 0.5;
+}
+.dc-stat--link {
+  cursor: pointer;
+  transition: box-shadow 120ms;
+}
+.dc-stat--link:hover {
+  box-shadow: inset 0 0 0 1px var(--outline-gray-3);
+}
+.dc-stat--brand.dc-stat--link:hover {
+  box-shadow: inset 0 0 0 1px var(--mint-300);
+}
+
+/* 7. The empty state: a small composition of the cover's blocks - the brand's
+      dark and light green, the mint with its hump, the ink - a sentence, the
+      action */
+.dc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 28px 20px;
+}
+.dc-empty__art {
+  position: relative;
+  flex: none;
+  width: 96px;
+  height: 60px;
+  margin-bottom: 6px;
+}
+.dc-empty__art > span {
+  position: absolute;
+  display: block;
+}
+.dc-empty__blocco {
+  border-radius: 10px 10px 10px var(--radius-tail);
+}
+.dc-empty__blocco--1 {
+  left: 0;
+  top: 10px;
+  width: 36px;
+  height: 50px;
+  background: var(--brand-strong, #0b6f64);
+}
+.dc-empty__art > .dc-empty__croce {
+  --s: 14px;
+  --c: var(--mint-300);
+  left: 11px;
+  top: 22px;
+}
+.dc-empty__blocco--2 {
+  left: 42px;
+  top: 0;
+  width: 54px;
+  height: 28px;
+  background: var(--brand, #12a594);
+}
+.dc-empty__blocco--3 {
+  left: 42px;
+  top: 34px;
+  width: 30px;
+  height: 26px;
+  background: var(--mint-300);
+}
+.dc-empty__gobba {
+  left: 49px;
+  top: 25px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--mint-300);
+  clip-path: inset(0 0 50% 0);
+}
+.dc-empty__blocco--4 {
+  left: 78px;
+  top: 34px;
+  width: 18px;
+  height: 26px;
+  border-radius: 7px 7px 7px var(--radius-tail);
+  background: var(--ink-gray-9);
+}
+.dc-empty__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-gray-9);
+}
+.dc-empty__text {
+  margin: 0;
+  max-width: 320px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-gray-5);
+}
+.dc-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* 8. Progress by steps - the sessions of a cycle: separate segments, the done
+      ones in the brand's colour */
+.dc-steps {
+  display: flex;
+  gap: 4px;
+}
+.dc-steps > span {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-gray-3);
+}
+.dc-steps > span.is-done {
+  background: var(--brand-segno, var(--brand));
+}
+
+/* 9. The person's journey: five cloud steps, done in the solid, the current
+      one mint with the cross */
+/* (margins and padding stay the caller's: the reset already zeroes a list's) */
+.dc-journey {
+  display: flex;
+  list-style: none;
+}
+.dc-journey li {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 13px;
+}
+.dc-journey li::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 26px;
+  right: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--surface-gray-3);
+}
+.dc-journey li:last-child::before {
+  display: none;
+}
+.dc-journey li.is-done::before {
+  background: var(--brand-segno, var(--brand));
+}
+.dc-journey__dot {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50% 50% 50% 22%;
+  background: var(--surface-gray-2);
+  color: var(--ink-gray-5);
+  font-size: 11px;
+  font-weight: 500;
+}
+.dc-journey li.is-done .dc-journey__dot {
+  background: var(--brand-solid);
+  color: var(--on-brand-solid);
+}
+.dc-journey li.is-current .dc-journey__dot {
+  background: var(--block-mint);
+  color: var(--on-block-mint);
+  box-shadow: 0 0 0 3px var(--brand-subtle);
+}
+.dc-journey li.is-current .dc-journey__dot .dc-cross {
+  --s: 9px;
+}
+.dc-journey__label {
+  font-weight: 500;
+  color: var(--ink-gray-9);
+}
+.dc-journey li:not(.is-done):not(.is-current) .dc-journey__label {
+  color: var(--ink-gray-5);
+}
+.dc-journey__meta {
+  font-size: 12px;
+  color: var(--ink-gray-5);
+}
+
+/* 10. A page loading: the brand's cross turning and breathing */
+.dc-loader-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+.dc-loader-mark .dc-cross {
+  --s: 12px;
+  --c: var(--brand-segno, var(--brand));
+  animation: dc-respiro 1.2s ease-in-out infinite;
+}
+@keyframes dc-respiro {
+  50% {
+    transform: rotate(90deg) scale(0.8);
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dc-loader-mark .dc-cross {
+    animation: none;
+  }
+}
+
+/* 11. Where a file is dropped: the tail and a cloud mark; a file over it, the
+       brand's soft green and the cross */
+.dc-drop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px dashed var(--outline-gray-3);
+  border-radius: 12px 12px 12px var(--radius-tail);
+  background: var(--surface-gray-1);
+  color: var(--ink-gray-6);
+  transition:
+    background-color 120ms,
+    border-color 120ms;
+}
+.dc-drop.is-over {
+  border-color: var(--brand-solid);
+  background: var(--brand-subtle);
+  color: var(--on-brand-subtle);
+}
+.dc-drop__mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 22%;
+  background: var(--surface-base);
+  box-shadow: var(--elevation-sm);
+  color: var(--ink-gray-6);
+}
+.dc-drop.is-over .dc-drop__mark {
+  background: var(--brand-solid);
+  color: var(--on-brand-solid);
+}
+
+/* 12. The dashboard's numbers are StatTiles (components/Dashboard/WidgetFrame
+       `dc-numero`): the crosses in the corner; the first of a row the deep
+       block, its words on it */
+.dc-numero > .dc-crosses {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 40px;
+  height: 40px;
+  --c: var(--brand-subtle);
+  pointer-events: none;
+}
+.dc-numero > :not(.dc-crosses) {
+  position: relative;
+}
+.dc-numero--blocco {
+  background-color: var(--block-deep, #0b2e2a);
+  border-color: transparent;
+}
+.dc-numero--blocco.cursor-pointer:hover {
+  border-color: var(--mint-300);
+}
+.dc-numero--blocco > .dc-crosses {
+  --c: var(--mint-300);
+  opacity: 0.5;
+}
+.dc-numero--blocco .text-ink-gray-9 {
+  color: var(--on-block-deep, #e1f5f1);
+}
+.dc-numero--blocco :is(.text-ink-gray-7, .text-ink-gray-5, .text-ink-gray-4) {
+  color: var(--on-block-deep-muted);
+}
+
+/* 13. The agenda's appointment (the design system's AgendaEvent,
+       components/Calendar/ResourceScheduler): the cloud's tail, the service's
+       colour as its ground and its bar, the time in that colour; a first visit
+       the brand's full block, the one going on now ringed with the cross, a
+       cancelled one grey and struck through */
+.dc-evento {
+  --evento: var(--surface-gray-6);
+  border-radius: 8px 8px 8px var(--radius-tail);
+  background-color: color-mix(in srgb, var(--evento) 14%, var(--surface-base));
+  padding-left: 10px;
+}
+.dc-evento::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 5px;
+  bottom: 5px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--evento);
+}
+.dc-evento__ora {
+  color: color-mix(in srgb, var(--evento) 60%, var(--ink-gray-9));
+  font-variant-numeric: tabular-nums;
+}
+.dc-evento--prima {
+  background-color: var(--brand-solid);
+}
+.dc-evento--prima::before {
+  background: var(--mint-300);
+}
+.dc-evento--prima .dc-evento__titolo {
+  color: var(--on-brand-solid);
+}
+.dc-evento--prima :is(.dc-evento__ora, .text-ink-gray-5) {
+  color: color-mix(in srgb, var(--on-brand-solid) 80%, var(--brand-solid));
+}
+.dc-evento--adesso {
+  box-shadow: 0 0 0 2px var(--brand-segno, var(--brand));
+}
+.dc-evento--adesso .dc-cross {
+  --c: var(--brand-segno, var(--brand));
+}
+.dc-evento--prima.dc-evento--adesso .dc-cross {
+  --c: var(--mint-300);
+}
+.dc-evento--annullato {
+  background-color: var(--surface-gray-2);
+}
+.dc-evento--annullato::before {
+  background: var(--surface-gray-5);
+}
+.dc-evento--annullato .dc-evento__titolo {
+  text-decoration: line-through;
+  color: var(--ink-gray-5);
+}
+.dc-evento--annullato .dc-evento__ora {
+  color: var(--ink-gray-5);
+}

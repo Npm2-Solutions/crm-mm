@@ -1,14 +1,23 @@
 <template>
+  <!-- a number is the design system's StatTile (dc-numero): the crosses in
+       its corner, and the first of its row the deep block -->
   <div
     class="group/frame relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-outline-gray-1 bg-surface-elevation-1 shadow-sm"
-    :class="
+    :class="[
       clickable
         ? 'cursor-pointer transition-colors hover:border-outline-gray-3'
-        : ''
-    "
+        : '',
+      cardLink ? 'dc-numero' : '',
+      cardLink && blocco ? 'dc-numero--blocco' : '',
+    ]"
     @click="open"
   >
-    <div class="flex min-h-9 items-start justify-between gap-2 px-4 pt-3">
+    <span v-if="cardLink" class="dc-crosses" aria-hidden="true" />
+    <!-- a number's title stops short of the crosses: never a motif under words -->
+    <div
+      class="flex min-h-9 items-start justify-between gap-2 px-4 pt-3"
+      :class="cardLink ? 'pr-12' : ''"
+    >
       <div class="flex min-w-0 items-center gap-1.5">
         <!-- two lines on a phone: half a screen wide, «Waiting for an
              answer» and «Appointments today» were cut to «Waiting for an ans…» -->
@@ -82,6 +91,8 @@ const props = defineProps({
   cardLink: { type: Boolean, default: false },
   // a KPI shows its badge under the value, where its title has no room to lose
   badgeInBody: { type: Boolean, default: false },
+  // the first number of its row: the deep block
+  blocco: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['navigate', 'setup'])

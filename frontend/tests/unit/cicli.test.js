@@ -10,6 +10,7 @@ import {
   perIlServer,
   quota,
   siPrenota,
+  tappe,
 } from '@/utils/cicli'
 
 const conti = (done, missed, booked, total, perseContano = true) => {
@@ -66,6 +67,22 @@ describe('a cycle of sessions in words', () => {
     expect(siPrenota({ status: 'Expired', counts: conti(1, 0, 0, 3) })).toBe(
       false,
     )
+  })
+})
+
+describe("a cycle's steps", () => {
+  it('draws one segment a session, the used ones done', () => {
+    // a missed session is used up like a done one, as in percentuale()
+    expect(tappe(conti(2, 1, 1, 5))).toEqual([true, true, true, false, false])
+    expect(tappe(conti(0, 0, 0, 3))).toEqual([false, false, false])
+    expect(tappe(conti(3, 0, 0, 3))).toEqual([true, true, true])
+  })
+
+  it('leaves the bar to a long cycle, and to nothing', () => {
+    expect(tappe(conti(5, 0, 0, 31))).toBeNull()
+    expect(tappe(conti(5, 0, 0, 31), 40)).toHaveLength(31)
+    expect(tappe(null)).toBeNull()
+    expect(tappe({ total: 0, used: 0 })).toBeNull()
   })
 })
 

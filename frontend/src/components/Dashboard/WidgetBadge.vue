@@ -1,11 +1,15 @@
 <template>
+  <!-- what is going on now: the brand's soft green and the cross in place of
+       the dot, as the design system's «in progress» -->
   <span
-    class="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-gray-2 px-1.5 py-0.5 text-2xs font-medium text-ink-gray-6"
+    class="inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-2xs font-medium"
+    :class="badge.live ? 'dc-in-corso' : 'bg-surface-gray-2 text-ink-gray-6'"
     :title="badge.hint"
   >
     <span
       v-if="badge.live"
-      class="size-1.5 rounded-full bg-[#1baf7a]"
+      class="dc-cross"
+      style="--s: 7px"
       aria-hidden="true"
     />
     {{ badge.label }}

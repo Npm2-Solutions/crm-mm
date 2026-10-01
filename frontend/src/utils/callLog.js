@@ -34,6 +34,8 @@ export function getCallLogDetail(row, log, columns = []) {
     return {
       label: getCallStatusLabel(log.status, log.type),
       color: statusColorMap[log.status],
+      // a call going on now is drawn as the design system's «in progress»
+      inProgress: log.status === 'In Progress',
     }
   } else if (['modified', 'creation'].includes(row)) {
     return timestampCell(log[row])

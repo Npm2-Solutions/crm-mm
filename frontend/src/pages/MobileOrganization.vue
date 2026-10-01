@@ -21,7 +21,7 @@
             <div class="group relative h-14.5 w-14.5">
               <Avatar
                 size="3xl"
-                class="h-14.5 w-14.5"
+                class="dc-avatar--round h-14.5 w-14.5"
                 :label="organization.doc.organization_name"
                 :image="organization.doc.organization_logo"
               />

@@ -13,7 +13,14 @@
         <h2 class="text-base font-medium text-ink-gray-9">{{ quote.title }}</h2>
         <p class="text-p-sm text-ink-gray-5">{{ quote.practitioner_name }}</p>
       </div>
+      <!-- a care plan under way: the design system's «in progress» -->
+      <InProgressBadge
+        v-if="quote.status === 'Accepted'"
+        class="shrink-0"
+        :label="labels[quote.status]"
+      />
       <Badge
+        v-else
         class="shrink-0"
         variant="subtle"
         :theme="quote.status === 'Proposed' ? 'blue' : 'green'"
@@ -82,6 +89,7 @@
 </template>
 
 <script setup>
+import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import { Badge } from 'frappe-ui'
 import { day, when } from '../dates'
 

@@ -199,6 +199,7 @@
       </ListRowItem>
     </component>
     <ListSelectBanner
+      class="dc-list-bar"
       :class="{ '!min-w-0 max-w-[calc(100vw-1.5rem)]': isMobileView }"
     >
       <template #actions="{ selections, unselectAll }">

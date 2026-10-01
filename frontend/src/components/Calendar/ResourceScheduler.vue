@@ -116,24 +116,39 @@
             />
           </div>
 
-          <!-- appointments -->
+          <!-- appointments: the design system's AgendaEvent - the service's
+               colour as ground and bar, a first visit the brand's full block,
+               the one going on now ringed with the cross, a cancelled one grey
+               and struck through -->
           <button
             v-for="block in column.blocks"
             :key="`${column.key}-${block.name}`"
             type="button"
             draggable="true"
-            class="absolute overflow-hidden rounded-md border-l-[3px] px-1.5 py-1 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-outline-gray-3"
+            class="dc-evento absolute overflow-hidden py-1 pr-1.5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-outline-gray-3"
             :class="[
-              block.status === 'Cancelled' ? 'opacity-50 line-through' : '',
+              block.status === 'Cancelled'
+                ? 'dc-evento--annullato'
+                : block.first_visit
+                  ? 'dc-evento--prima'
+                  : '',
+              isNow(block) ? 'dc-evento--adesso' : '',
               selected === block.name ? 'ring-2 ring-outline-gray-4' : '',
             ]"
             :style="blockBoxStyle(block)"
+            :title="block.first_visit ? __('First appointment') : undefined"
             @click.stop="$emit('select', block.name)"
             @dblclick.stop="$emit('edit', block.name)"
             @dragstart="onDragStart($event, block, column)"
           >
             <div class="flex items-center gap-1">
-              <span class="truncate text-p-xs-medium text-ink-gray-8">
+              <span
+                v-if="isNow(block)"
+                class="dc-cross shrink-0"
+                style="--s: 8px"
+                aria-hidden="true"
+              />
+              <span class="dc-evento__ora truncate text-p-xs-medium">
                 {{ formatMinutes(block.startMinutes) }}
               </span>
               <span
@@ -149,7 +164,7 @@
                 {{ sourceTag(block) }}
               </span>
             </div>
-            <div class="truncate text-p-xs text-ink-gray-7">
+            <div class="dc-evento__titolo truncate text-p-xs text-ink-gray-7">
               {{ block.title }}
             </div>
             <div
@@ -277,12 +292,20 @@ function spanOf(from, to) {
 }
 
 function blockBoxStyle(block) {
-  const color = appointmentColor(block, props.serviceColors)
   return {
     ...blockStyle(block, viewWindow.value),
-    borderLeftColor: color,
-    backgroundColor: `${color}1f`,
+    '--evento': appointmentColor(block, props.serviceColors),
   }
+}
+
+// the appointment going on now, today
+function isNow(block) {
+  return (
+    nowMinutes.value !== null &&
+    block.status !== 'Cancelled' &&
+    block.startMinutes <= nowMinutes.value &&
+    nowMinutes.value < block.endMinutes
+  )
 }
 
 /** Where in the day did the pointer land inside this column? */
