@@ -29,8 +29,9 @@
 ```
 
 - **I passi del centro**, nell'ordine in cui si fanno: il nome e il logo, i servizi,
-  orari e turni, i colleghi, moduli e consensi, la prenotazione online, l'email, il
-  primo paziente, il primo appuntamento. Ognuno con una riga su a cosa serve.
+  orari e turni, i colleghi, moduli e consensi, la prenotazione online, l'email,
+  chi emette le fatture (con l'extra della fatturazione), il primo paziente, il
+  primo appuntamento. Ognuno con una riga su a cosa serve.
 - **Si spuntano da soli**: un passo è fatto quando i dati lo dicono (c'è un servizio
   attivo, ci sono gli orari, è partito un invito o lavora qualcun altro, c'è un
   modulo pubblicato…), comunque lo si sia fatto. Un centro che lavora già non ha

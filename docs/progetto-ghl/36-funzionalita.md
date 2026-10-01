@@ -8,6 +8,11 @@
 > chiama **Funzionalità**: in alto quello che DottorCloud comprende, pronto da
 > usare; sotto gli extra, ognuno con quello che aggiunge e la prova gratuita; per
 > ognuno i link alle pagine dove si imposta.
+>
+> **Con il listino finale** (01/10/2026,
+> [listino](../gestionale-medico/listino.md#nel-crm)): la taglia conta gli
+> ambulatori, la fatturazione e la firma avanzata sono extra, e i consumi sono
+> quelli che l'agenzia fattura.
 
 ## Com'è
 
@@ -24,16 +29,22 @@ COMPRESO IN DOTTORCLOUD
                  Da impostare  [Area pazienti ›]
 
 EXTRA   gratis per 14 giorni, poi l'agenzia li aggiunge al piano dal mese dopo
-  ┌ Marketing  Attivo ──────────┐ ┌ Telefono  Attivo ───────────┐
-  │ Automazioni, campagne…      │ │ Chiamate dal browser…       │
-  │ Da impostare [Meta ›] …     │ │ Da impostare [Telefonia ›] …│
+  ┌ Fatturazione  Attivo ───────┐ ┌ Marketing  Attivo ──────────┐
+  │ Fatture illimitate, il TS…  │ │ Automazioni, campagne…      │
+  │ Da impostare [Azienda…›] …  │ │ Da impostare [Meta ›] …     │
   └─────────────────────────────┘ └─────────────────────────────┘
-  ┌ Assistente ─────────────────┐
-  │ Moduli dalla carta…         │
+  ┌ Telefono  Attivo ───────────┐ ┌ Assistente ─────────────────┐
+  │ Chiamate dal browser…       │ │ Moduli dalla carta…         │
+  │ Da impostare [Telefonia ›] …│ │ [Prova gratis per 14 giorni]│
+  └─────────────────────────────┘ └─────────────────────────────┘
+  ┌ Firma avanzata ─────────────┐
+  │ Consenso informato e prev…  │
   │ [Prova gratis per 14 giorni]│
   └─────────────────────────────┘
 
-DIMENSIONE E CONSUMI   le agende attive questo mese, messaggi, SMS, minuti
+DIMENSIONE E CONSUMI
+  Studio, fino a 2 ambulatori · 3 ambulatori nell'agenda (avviso: oltre la taglia)
+  Crediti SdI quest'anno 412 / 500 · SMS questo mese · Minuti 120 / 714 · Firme 30 / 2000
 ```
 
 - **Compreso in DottorCloud**: la base, il modulo del verticale acceso (la
@@ -47,6 +58,17 @@ DIMENSIONE E CONSUMI   le agende attive questo mese, messaggi, SMS, minuti
   imposta; uno finito dice che i dati restano e che lo rinnova l'agenzia.
 - **Da impostare**: i link alle pagine delle impostazioni dove si comincia, solo
   quelle che la persona vede; un link apre la pagina con la sua categoria accesa.
+- **Gli extra del listino**: fatturazione (con il Sistema TS e i crediti SdI;
+  accesa dove il piano non dice niente, perché ogni sito fatturava prima dei
+  piani), marketing, telefono, assistente, firma avanzata (spenta finché il piano
+  non la comprende).
+- **La taglia** in ambulatori, le sale dell'agenda: Solo 1, Studio fino a 2,
+  Centro fino a 5, Poliambulatorio fino a 10, oltre. Superarla non blocca niente.
+- **I consumi** come li fattura l'agenzia, ognuno con quello che il piano
+  comprende: crediti SdI dell'anno (con la fatturazione: uno a fattura inviata o
+  ricevuta, tre alla PA, niente per una scartata), SMS del mese, minuti del mese
+  (714 con il telefono), firme avanzate dell'anno (2.000). Oltre l'80% la pagina
+  avvisa. WhatsApp no: lo paga il centro a Meta.
 - **Il nome**: "Funzionalità", non "Piano", che sono i piani dei pazienti (esercizi,
   diete). Il nome della pagina resta `Plan` nei link (`?settings=Plan`).
 - **Tutto in italiano**: i moduli, le loro frasi, gli stati, le dimensioni; con la
@@ -58,7 +80,9 @@ DIMENSIONE E CONSUMI   le agende attive questo mese, messaggi, SMS, minuti
 |---|---|
 | `crm/permissions/livelli.py` | `ModuloPiano.impostazioni`: le pagine dove si imposta un modulo, nell'ordine in cui si fa |
 | `crm/permissions/catalogo.py`, `crm/area`, `crm/clinica`, `crm/assistente` | Ogni modulo registra le sue pagine con sé |
-| `crm/api/plan.py` | `compresi()` (puro): la base, il modulo del verticale e quello che comprende; `get_plan()` dice di ogni modulo se è compreso (`included`) e dove si imposta (`settings`) |
+| `crm/api/plan.py` | `compresi()` (puro): la base, il modulo del verticale e quello che comprende; `get_plan()` dice di ogni modulo se è compreso (`included`) e dove si imposta (`settings`), gli ambulatori (`ambulatori()`) e i consumi (`consumi()`) |
+| `crm/fcrm/doctype/crm_plan/crm_plan.py` | I numeri del listino (`AMBULATORI`, `CREDITI_SDI`, `MINUTI_INCLUSI`, `FIRME_INCLUSE`, l'avviso all'80%) e `crediti_sdi()`, puro |
+| `crm/invoicing/capacita.py`, `crm/moduli/firme.py` | La fatturazione e la firma avanzata come moduli del piano; con la firma spenta niente di nuovo va al fornitore (`firme.attivo()`), quello partito torna |
 | `frontend/src/utils/funzionalita.js` | `dividi()` compreso ed extra, `doveSiImposta()` i link fra le pagine che la persona vede — puro, testato |
 | `frontend/src/components/Settings/PlanSettings.vue`, `FeatureSetUp.vue` | La pagina e i link; il menu visibile arriva da `Settings.vue` (`provide('menuDelleImpostazioni')`) |
 

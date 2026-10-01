@@ -400,9 +400,10 @@ vale se servono **due chiavi**: il modulo è attivo nel piano del centro, e il
 livello della persona la prevede.
 
 Il listino finale (01/10/2026) misura la taglia in ambulatori e fa della
-fatturazione e della firma avanzata due extra. Il piano qui sotto, e il codice,
-contano ancora le agende attive: cosa cambia è nel listino,
-[Nel CRM, da allineare](../gestionale-medico/listino.md#nel-crm-da-allineare).
+fatturazione e della firma avanzata due extra, e il codice conta così dallo
+stesso giorno ([listino, Nel CRM](../gestionale-medico/listino.md#nel-crm),
+[doc 36](./36-funzionalita.md)). Il piano qui sotto parla ancora di agende: vale
+quello che dice il listino.
 
 - **Il piano** sta in un documento solo per sito (per esempio `CRM Piano`). Dice:
   - la taglia, cioè quante agende. Un'agenda attiva è un professionista con almeno

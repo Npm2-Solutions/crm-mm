@@ -3,8 +3,8 @@
 **Stato:** ✅ listino finale (01/10/2026). Le soglie degli ambulatori si
 verificano con i primi centri. Prezzi al mese, IVA esclusa. Sostituisce il
 listino a moduli del 29/09: ora la parte clinica è inclusa, la taglia la danno
-gli ambulatori e la fatturazione è un extra. Il CRM non conta ancora così: vedi
-[Nel CRM, da allineare](#nel-crm-da-allineare).
+gli ambulatori e la fatturazione è un extra. Il CRM conta così dal 01/10/2026:
+vedi [Nel CRM](#nel-crm).
 
 ## In una pagina
 
@@ -156,20 +156,31 @@ CRM avvisa all'80%.
 Un centro che oggi usa MioDottore o Doctolib, più un gestionale, più uno
 strumento per WhatsApp, spende facilmente 250–450 € al mese.
 
-## Nel CRM, da allineare
+## Nel CRM
 
-Il piano nel CRM (`CRM Plan`, la pagina Funzionalità:
+✅ **Allineato (01/10/2026).** Il piano nel CRM (`CRM Plan`, la pagina
+Funzionalità:
 [doc 30](../progetto-ghl/30-ruoli-e-permessi.md#il-piano-del-centro-la-seconda-chiave),
-[doc 36](../progetto-ghl/36-funzionalita.md)) è fatto sul listino del 29/09. Per
-questo listino cambia così:
+[doc 36](../progetto-ghl/36-funzionalita.md)) conta come questo listino:
 
-1. la taglia conta gli ambulatori, cioè le sale dell'agenda, e non più le agende
-   attive del mese;
-2. la fatturazione diventa un extra del piano, con i crediti SdI inclusi per
-   livello e il loro conteggio;
-3. la firma avanzata diventa un extra del piano;
-4. nei consumi si contano crediti SdI, SMS, minuti e firme avanzate; i messaggi
+1. **La taglia conta gli ambulatori**: le sale attive dell'agenda (Agenda › Sale e
+   attrezzature, di tipo sala), non più le agende del mese. Superarla non blocca
+   niente: la pagina lo dice e l'agenzia propone il livello sopra.
+2. **La fatturazione è un extra del piano** (`fatturazione`), con il Sistema TS
+   dentro. È accesa dove il piano non dice niente, perché ogni sito fatturava
+   prima dei piani: un centro che non la prende ha la riga spenta. I crediti SdI
+   inclusi (240, 500, 1.200, 2.400 l'anno) si contano sull'anno: uno a fattura
+   inviata o ricevuta, tre a una fattura alla PA, niente per una scartata o mai
+   partita; la pagina avvisa all'80%.
+3. **La firma avanzata è un extra** (`firma`), spenta finché il piano non la
+   comprende: senza, niente di nuovo parte verso il fornitore, e quello che era
+   partito torna firmato o rifiutato.
+4. **Nei consumi** crediti SdI e firme avanzate dell'anno, SMS e minuti del mese
+   (714 inclusi con il telefono, 2.000 firme l'anno con la firma avanzata);
    WhatsApp no, perché li fattura Meta al centro.
+
+I numeri stanno in `crm/fcrm/doctype/crm_plan/crm_plan.py` (`AMBULATORI`,
+`CREDITI_SDI`, `MINUTI_INCLUSI`, `FIRME_INCLUSE`): cambiano con il listino.
 
 ## Da decidere
 
