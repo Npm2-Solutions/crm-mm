@@ -25,6 +25,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
+from crm.area import anteprima
 from crm.area.api import _mia
 from crm.piani import api as piani
 from crm.piani import regole as R
@@ -91,10 +92,14 @@ def _voci_del_giorno(doc, giorno) -> tuple[list[dict], list[dict]]:
 @frappe.whitelist()
 def area_plans(person: str) -> dict:
 	"""The plans the person follows now, and how today is going on each."""
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
 	oggi = getdate()
 	voci = []
 	for doc in in_corso(person, oggi):
+		# in the centre's preview, a plan whoever previews does not read keeps its place
+		if not anteprima.vede(piani.PIANO, doc.name):
+			voci.append(anteprima.coperta(doc))
+			continue
 		_momenti, di_oggi = _voci_del_giorno(doc, oggi)
 		fatti = {r.item_key for r in _esiti(doc.name, oggi, oggi) if r.outcome in (R.FATTO, R.IN_PARTE)}
 		voci.append(
@@ -118,8 +123,8 @@ def area_programmes(person: str) -> dict:
 	"""The programmes the person follows now, stage by stage."""
 	from crm.piani import programmi
 
-	_mia(person)
-	return {"programmes": programmi.area_dei_programmi(person)}
+	_mia(person, anche_in_anteprima=True)
+	return {"programmes": anteprima.filtra(programmi.PROGRAMMA, programmi.area_dei_programmi(person))}
 
 
 @frappe.whitelist(methods=["POST"])
@@ -160,8 +165,10 @@ def contesti(voci: list[dict]) -> dict[str, dict]:
 def area_plan(person: str, plan: str, day: str | None = None) -> dict:
 	"""A plan on a day: its moments, its items, what was answered, what is left
 	this week. From two days back to a week ahead."""
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
 	doc = della_persona(person, plan)
+	if not anteprima.vede(piani.PIANO, doc.name):
+		frappe.throw(_("In this preview you do not read this plan"), frappe.PermissionError)
 	oggi = getdate()
 	giorno = getdate(day) if day else oggi
 	if not (add_days(oggi, -R.GIORNI_RECUPERO) <= giorno <= add_days(oggi, GIORNI_AVANTI)):
@@ -198,7 +205,8 @@ def area_plan(person: str, plan: str, day: str | None = None) -> dict:
 		},
 		"day": str(giorno),
 		"today": str(oggi),
-		"can_log": R.si_segna(giorno, oggi),
+		# the centre's preview ticks nothing
+		"can_log": R.si_segna(giorno, oggi) and not anteprima.in_anteprima(),
 		"days": [str(add_days(oggi, n)) for n in range(-R.GIORNI_RECUPERO, GIORNI_AVANTI + 1)],
 		"moments": righe,
 	}

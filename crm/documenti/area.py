@@ -12,7 +12,7 @@ import frappe
 from frappe import _
 from frappe.utils import get_datetime, now_datetime
 
-from crm.area import accesso
+from crm.area import accesso, anteprima
 from crm.area.api import _mia
 from crm.documenti import consegna
 
@@ -42,10 +42,14 @@ def documenti_online(person: str) -> int:
 
 @frappe.whitelist()
 def get_documents(person: str) -> dict:
-	"""What the centre gave online, while it is online."""
-	_mia(person)
+	"""What the centre gave online, while it is online. In the centre's preview,
+	a document whoever previews does not read keeps its place, with nothing of it."""
+	_mia(person, anche_in_anteprima=True)
 	voci = []
 	for riga in _online(person):
+		if not anteprima.vede(consegna.DOCUMENTO, riga.document):
+			voci.append({**anteprima.coperta(riga), "expires_on": riga.expires_on})
+			continue
 		documento = frappe.db.get_value(
 			consegna.DOCUMENTO, riga.document, ["title", "document_type", "document_date"], as_dict=True
 		)

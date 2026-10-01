@@ -153,7 +153,7 @@ def attiva() -> bool:
 @frappe.whitelist()
 def chat_status(person: str) -> dict:
 	"""Whether the chat answers in this area."""
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
 	return {"on": attiva()}
 
 

@@ -191,18 +191,24 @@ def _avvisa(lead: str) -> None:
 
 @frappe.whitelist()
 def area_messages(person: str) -> dict:
-	"""The board, in the area: every message to the person."""
+	"""The board, in the area: every message to the person. In the centre's
+	preview, a message whoever previews does not read keeps its place, with
+	nothing of it: the clinic's care is read as the clinic says."""
+	from crm.area import anteprima
 	from crm.area.api import _mia
 
-	_mia(person)
-	return {
-		"messages": [
-			_riga(frappe.get_doc(MESSAGGIO, nome), nell_area=True)
-			for nome in frappe.get_all(
-				MESSAGGIO, filters={"lead": person}, pluck="name", order_by="posted_on desc", limit=100
-			)
-		]
-	}
+	_mia(person, anche_in_anteprima=True)
+	vista = anteprima.in_anteprima()
+	righe = []
+	for nome in frappe.get_all(
+		MESSAGGIO, filters={"lead": person}, pluck="name", order_by="posted_on desc", limit=100
+	):
+		doc = frappe.get_doc(MESSAGGIO, nome)
+		if vista and not _legge(doc, vista.user):
+			righe.append(anteprima.coperta(doc))
+			continue
+		righe.append(_riga(doc, nell_area=True))
+	return {"messages": righe}
 
 
 @frappe.whitelist(methods=["POST"])

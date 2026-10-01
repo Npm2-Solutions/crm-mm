@@ -9,6 +9,7 @@ from __future__ import annotations
 import frappe
 from frappe.utils import cint, flt, get_fullname
 
+from crm.area import anteprima
 from crm.area.api import _mia
 from crm.preventivi import regole as R
 from crm.preventivi.api import DOCTYPE, dettaglio_della_voce
@@ -63,6 +64,7 @@ def nell_area(persona: str) -> int:
 
 @frappe.whitelist()
 def area_quotes(person: str) -> dict:
-	"""The quotes proposed to the person and going on."""
-	_mia(person)
-	return {"quotes": della_persona(person)}
+	"""The quotes proposed to the person and going on; in the centre's preview,
+	only those whoever previews reads."""
+	_mia(person, anche_in_anteprima=True)
+	return {"quotes": anteprima.filtra(DOCTYPE, della_persona(person))}
