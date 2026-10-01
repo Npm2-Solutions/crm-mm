@@ -94,6 +94,10 @@ class ModuloPiano:
 	#: The modules it comprises: on with it, whatever the plan says of them. The
 	#: clinic comprises the client area.
 	comprende: tuple[str, ...] = ()
+	#: The settings pages where one sets it up, in the order one does: keys of the
+	#: settings' menu (frontend/src/utils/impostazioni.js). The Features page
+	#: links to them.
+	impostazioni: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

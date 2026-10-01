@@ -99,7 +99,7 @@ describe('the settings menu, by who reads it', () => {
   it('gives the manager every area of the centre, in eleven groups', () => {
     expect(comeSiLegge(menuDi(sessione('manager')))).toEqual([
       'Your account: Profile, Preferences, Google Calendar',
-      'The centre: General [Name & logo · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Plan',
+      'The centre: General [Name & logo · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Features',
       'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Calendar & reminders, Waiting list, Online booking [Services & people · Page & rules · Platforms]',
       'Clients: Forms, Consents, Client area, Libraries [Exercises · Foods]',
       'Deals: Pipelines, Assignment [Rules · Response times]',
@@ -124,7 +124,7 @@ describe('the settings menu, by who reads it', () => {
   it('adds the technical pages for the agency', () => {
     const menu = comeSiLegge(menuDi(sessione('agenzia')))
     expect(menu[1]).toBe(
-      'The centre: General [Name & logo · Conversations · Dashboard · Menu · Formats], Users [Users · Invite · Hierarchy], Plan',
+      'The centre: General [Name & logo · Conversations · Dashboard · Menu · Formats], Users [Users · Invite · Hierarchy], Features',
     )
     expect(menu.at(-1)).toBe(
       'Integrations: Meta, ERPNext, Seal and time stamp, Assistant',

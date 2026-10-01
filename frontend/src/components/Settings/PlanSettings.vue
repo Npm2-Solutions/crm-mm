@@ -1,3 +1,12 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  Settings > The centre > Features (doc 36; the plan of listino.md, doc 30): what
+  the product comprises, on and set up from its pages; the extras, each saying
+  what it adds, tried for free; the size and this month's usage. The plan itself
+  is the agency's, from the Desk.
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -9,12 +18,12 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Plan') }}
+          {{ __('Features') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'The modules your centre has, and what it used this month. A module that ends is never deleted: its data stays readable.',
+              'What {brand} includes for your centre, and the extras you can add when you need them.',
             )
           }}
         </p>
@@ -30,105 +39,197 @@
 
     <div
       v-if="plan.data"
-      class="flex flex-1 flex-col gap-6 overflow-y-auto px-2"
+      class="flex flex-1 flex-col gap-8 overflow-y-auto px-2 pb-2"
     >
-      <!-- the size: counted, never enforced -->
-      <section
-        class="flex flex-col gap-1.5 rounded-lg border border-outline-gray-2 p-4"
-      >
-        <div class="text-base-semibold text-ink-gray-8">
-          {{ sizeText }}
-        </div>
-        <div class="text-p-sm text-ink-gray-6">
-          {{ __('{0} active agendas this month', [plan.data.agendas.active]) }}
-        </div>
-        <div
-          v-if="plan.data.agendas.over"
-          class="mt-1 flex gap-2 rounded bg-surface-amber-1 p-2 text-p-sm text-ink-amber-3"
-        >
-          <span
-            class="lucide-info mt-0.5 size-3.5 shrink-0"
-            aria-hidden="true"
-          />
-          <span>
+      <!-- what the centre signed up for: on, nothing to switch -->
+      <section v-if="parti.compresi.length" class="flex flex-col gap-3">
+        <div class="flex flex-col gap-0.5">
+          <h3 class="text-base-semibold text-ink-gray-8">
+            {{ __('Included in {brand}') }}
+          </h3>
+          <p class="text-p-sm text-ink-gray-5">
             {{
               __(
-                'More agendas than the plan covers. Nothing is blocked: appointments and invoices work as always, and the agency will propose the size above.',
+                'Ready to use, nothing to switch on: each part is set up from its pages.',
               )
             }}
-          </span>
-        </div>
-        <p class="text-p-sm text-ink-gray-5">
-          {{
-            __(
-              'An agenda is a practitioner with at least one appointment in the month, even one who never opens {brand}. Rooms, equipment, front desk and managers do not count.',
-            )
-          }}
-        </p>
-      </section>
-
-      <section class="flex flex-col gap-2">
-        <div class="text-base-semibold text-ink-gray-8">
-          {{ __('Modules') }}
+          </p>
         </div>
         <ul
           class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
           <li
-            v-for="module in plan.data.modules"
-            :key="module.key"
-            class="flex items-start gap-3 px-4 py-3 max-md:flex-col"
+            v-for="modulo in parti.compresi"
+            :key="modulo.key"
+            class="flex items-start gap-3 px-4 py-3"
           >
-            <div class="flex min-w-0 flex-1 flex-col gap-1">
+            <span
+              class="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-gray-2"
+              aria-hidden="true"
+            >
+              <component :is="iconaDi(modulo)" class="size-4 text-ink-gray-7" />
+            </span>
+            <div class="flex min-w-0 flex-1 flex-col gap-1.5">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="text-base-medium text-ink-gray-8">
-                  {{ __(module.label) }}
+                  {{ __(modulo.label) }}
                 </span>
                 <Badge
-                  :label="stateLabel(module)"
-                  :theme="stateTheme(module)"
-                  size="sm"
-                />
-                <Badge
-                  v-if="module.comprised_by?.length"
-                  :label="
-                    __('Included in {0}', [module.comprised_by.join(', ')])
-                  "
-                  theme="gray"
-                  size="sm"
-                />
-                <Badge
-                  v-if="module.included_in_service"
-                  :label="
-                    module.service
-                      ? __('Included in {0}', [module.service])
-                      : __('Included in the agency\'s service')
-                  "
-                  theme="gray"
+                  v-if="modulo.state !== 'active'"
+                  :label="stateLabel(modulo)"
+                  :theme="stateTheme(modulo)"
                   size="sm"
                 />
               </div>
-              <p class="text-p-sm text-ink-gray-5">
-                {{ __(module.description) }}
+              <p class="text-p-sm text-ink-gray-6">
+                {{ __(modulo.description) }}
               </p>
+              <FeatureSetUp :pagine="modulo.settings" />
             </div>
-            <Button
-              v-if="module.can_start_trial"
-              class="shrink-0"
-              variant="solid"
-              :label="__('Try it for {0} days', [plan.data.trial_days])"
-              :loading="
-                startTrial.loading && startTrial.params?.module === module.key
-              "
-              @click="startTrial.submit({ module: module.key })"
-            />
           </li>
         </ul>
       </section>
 
-      <section class="flex flex-col gap-2">
-        <div class="text-base-semibold text-ink-gray-8">
-          {{ __('This month') }}
+      <!-- the extras: what each adds; one the centre does not have is tried
+           for free, one it has says where it is set up -->
+      <section v-if="parti.extra.length" class="flex flex-col gap-3">
+        <div class="flex flex-col gap-0.5">
+          <h3 class="text-base-semibold text-ink-gray-8">
+            {{ __('Extras') }}
+          </h3>
+          <p class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                'Add one when the centre needs it: free for {0} days, then the agency adds it to your plan from the month after. One that ends deletes nothing: its data stays readable.',
+                [plan.data.trial_days],
+              )
+            }}
+          </p>
+        </div>
+        <ul class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+          <li
+            v-for="modulo in parti.extra"
+            :key="modulo.key"
+            class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
+          >
+            <div class="flex items-start gap-3">
+              <span
+                class="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-gray-2"
+                aria-hidden="true"
+              >
+                <component
+                  :is="iconaDi(modulo)"
+                  class="size-4 text-ink-gray-7"
+                />
+              </span>
+              <div class="flex min-w-0 flex-1 flex-col gap-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-base-medium text-ink-gray-8">
+                    {{ __(modulo.label) }}
+                  </span>
+                  <Badge
+                    v-if="modulo.state !== 'off'"
+                    :label="stateLabel(modulo)"
+                    :theme="stateTheme(modulo)"
+                    size="sm"
+                  />
+                  <Badge
+                    v-if="modulo.comprised_by?.length"
+                    :label="
+                      __('Included in {0}', [
+                        modulo.comprised_by.map((nome) => __(nome)).join(', '),
+                      ])
+                    "
+                    theme="gray"
+                    size="sm"
+                  />
+                  <Badge
+                    v-if="modulo.included_in_service"
+                    :label="
+                      modulo.service
+                        ? __('Included in {0}', [modulo.service])
+                        : __('Included in the agency\'s service')
+                    "
+                    theme="gray"
+                    size="sm"
+                  />
+                </div>
+                <p class="text-p-sm text-ink-gray-6">
+                  {{ __(modulo.description) }}
+                </p>
+              </div>
+            </div>
+            <div class="mt-auto">
+              <Button
+                v-if="modulo.can_start_trial"
+                variant="solid"
+                :label="__('Try it free for {0} days', [plan.data.trial_days])"
+                :loading="
+                  startTrial.loading && startTrial.params?.module === modulo.key
+                "
+                @click="startTrial.submit({ module: modulo.key })"
+              />
+              <p
+                v-else-if="modulo.state === 'read_only'"
+                class="text-p-sm text-ink-gray-5"
+              >
+                {{
+                  __(
+                    'Ended: its data stays readable. Ask the agency to renew it.',
+                  )
+                }}
+              </p>
+              <FeatureSetUp
+                v-else-if="modulo.state !== 'off'"
+                :pagine="modulo.settings"
+              />
+              <p v-else class="text-p-sm text-ink-gray-5">
+                {{ __('Not in your plan: ask the agency to add it.') }}
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- the size: counted, never enforced -->
+      <section class="flex flex-col gap-3">
+        <h3 class="text-base-semibold text-ink-gray-8">
+          {{ __('Size and usage') }}
+        </h3>
+        <div
+          class="flex flex-col gap-1.5 rounded-lg border border-outline-gray-2 p-4"
+        >
+          <div class="text-base-medium text-ink-gray-8">
+            {{ sizeText }}
+          </div>
+          <div class="text-p-sm text-ink-gray-6">
+            {{
+              __('{0} active agendas this month', [plan.data.agendas.active])
+            }}
+          </div>
+          <div
+            v-if="plan.data.agendas.over"
+            class="mt-1 flex gap-2 rounded bg-surface-amber-1 p-2 text-p-sm text-ink-amber-3"
+          >
+            <span
+              class="lucide-info mt-0.5 size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span>
+              {{
+                __(
+                  'More agendas than the plan covers. Nothing is blocked: appointments and invoices work as always, and the agency will propose the size above.',
+                )
+              }}
+            </span>
+          </div>
+          <p class="text-p-sm text-ink-gray-5">
+            {{
+              __(
+                'An agenda is a practitioner with at least one appointment in the month, even one who never opens {brand}. Rooms, equipment, front desk and managers do not count.',
+              )
+            }}
+          </p>
         </div>
         <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
           <div
@@ -158,11 +259,17 @@
 </template>
 
 <script setup>
-// Settings > Plan (listino.md, doc 30 "il piano del centro"). The centre reads
-// its plan here and starts the trial of a module it does not have; everything
-// else about the plan is the agency's, from the Desk.
+import LucideCalendarDays from '~icons/lucide/calendar-days'
+import LucideMegaphone from '~icons/lucide/megaphone'
+import LucidePackage from '~icons/lucide/package'
+import LucideSmartphone from '~icons/lucide/smartphone'
+import LucideSparkles from '~icons/lucide/sparkles'
+import LucideStethoscope from '~icons/lucide/stethoscope'
+import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
+import FeatureSetUp from '@/components/Settings/FeatureSetUp.vue'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
+import { dividi } from '@/utils/funzionalita'
 import { Badge, createResource, toast } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -191,6 +298,23 @@ const startTrial = createResource({
     toast.error(error?.messages?.[0] || __('Something went wrong'))
   },
 })
+
+// what the product comprises, then the extras
+const parti = computed(() => dividi(plan.data?.modules))
+
+// each module by what it is; one a new module brings gets the box
+const ICONE = {
+  base: LucideCalendarDays,
+  clinica: LucideStethoscope,
+  area: LucideSmartphone,
+  marketing: LucideMegaphone,
+  telefono: PhoneIcon,
+  assistente: LucideSparkles,
+}
+
+function iconaDi(modulo) {
+  return ICONE[modulo.key] || LucidePackage
+}
 
 const SIZES = {
   Solo: __('Solo, one agenda'),

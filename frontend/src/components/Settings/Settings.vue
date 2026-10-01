@@ -130,7 +130,7 @@
               </div>
             </div>
             <ul
-              class="flex flex-col divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-1"
+              class="flex flex-col divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
             >
               <li v-for="voce in gruppoAperto.items" :key="voce.key">
                 <button
@@ -231,7 +231,7 @@ import {
 import { isWhatsappInstalled } from '@/composables/whatsapp'
 import { menuDi, trova } from '@/utils/impostazioni'
 import { Button, Dialog, Avatar, SidebarItem } from 'frappe-ui'
-import { ref, markRaw, computed, watch, h } from 'vue'
+import { ref, markRaw, computed, watch, h, provide } from 'vue'
 import AssignmentRulePage from './AssignmentRules/AssignmentRulePage.vue'
 import SlaConfig from './Sla/SlaConfig.vue'
 
@@ -342,6 +342,10 @@ const tabs = computed(() =>
     })),
   })),
 )
+
+// the pages that send one elsewhere in the settings (the features page, to
+// where each one is set up) link only to what this person sees
+provide('menuDelleImpostazioni', tabs)
 
 // The category open on the left, and the entry open on the right: none, and
 // the right pane shows the category's entries, each saying what it is for.

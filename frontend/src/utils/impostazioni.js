@@ -60,7 +60,7 @@ export const MENU = [
     key: 'centre',
     label: 'The centre',
     description:
-      'Who the centre is, who works in it, how {brand} behaves, what the plan includes.',
+      'Who the centre is, who works in it, how {brand} behaves, what it includes.',
     items: [
       {
         key: 'General settings',
@@ -103,8 +103,10 @@ export const MENU = [
         ],
       },
       {
+        // the plan as the centre reads it: what the product comprises, the
+        // extras; "Features", not "Plan", which are the patients' (doc 36)
         key: 'Plan',
-        label: 'Plan',
+        label: 'Features',
         description:
           'What {brand} includes for the centre, and what can be added.',
         condition: puo('piano.vedi'),

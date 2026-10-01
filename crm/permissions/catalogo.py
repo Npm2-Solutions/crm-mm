@@ -63,6 +63,7 @@ MODULI = (
 		descrizione="People and agenda with rooms, online booking and platforms, reminders, "
 		"conversations, invoices and Sistema TS, dashboards, users and levels",
 		ordine=1,
+		impostazioni=("Services", "Hours & shifts", "Online booking", "Users"),
 	),
 	ModuloPiano(
 		MARKETING,
@@ -70,12 +71,14 @@ MODULI = (
 		descrizione="Automations, campaigns, Meta leads and spend, social, tracking, "
 		"cost per new client, the website",
 		ordine=3,
+		impostazioni=("Meta connection", "Tracking", "Social profiles", "Website"),
 	),
 	ModuloPiano(
 		TELEFONO,
 		"Phone",
 		descrizione="Calls from the browser, the dialer, recordings and transcripts",
 		ordine=4,
+		impostazioni=("Telephony", "Call Scripts"),
 	),
 )
 

@@ -45,6 +45,7 @@ MODULO = ModuloPiano(
 	descrizione="The app of the people the centre looks after: appointments, forms, invoices, "
 	"messages, the chat",
 	ordine=5,
+	impostazioni=("News in the client area",),
 )
 
 CAPACITA = (
