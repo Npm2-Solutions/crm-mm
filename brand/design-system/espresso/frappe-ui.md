@@ -35,11 +35,28 @@ Il CSS proposto qui prima dell'applicazione è andato in `espresso.css` con ques
 - **Il segmentato** (TabButtons): il pulsante scelto ha la coda della nuvola. **Le schede di una voce delle impostazioni** (`SettingsHub.vue`) hanno la linea della scheda aperta nel colore dell'azione, come quelle di frappe-ui.
 - **Il tooltip** resta sul grigio più scuro di Espresso (`surface-gray-10`, ora tinto): la sua freccia ha lo stesso colore e non si raggiunge da una regola sul fumetto; il tooltip non diventa comunque il pieno del marchio.
 
-## Classi DottorCloud da usare nei componenti nostri
+## Il resto del sistema (doc 39)
 
-Dove frappe-ui non ha il componente (o serve la forma del marchio) si passa una classe:
+Sui componenti di frappe-ui, in `espresso.css` (sezioni 14–24, tutte **(markup)**):
 
-- `dc-avatar` su `<Avatar>`: la persona nella nuvola (`border-radius: 50% 50% 50% 22%`).
-- `dc-tag dc-tag--<categoria>` su `<Badge>`: le etichette di categoria.
-- `dc-brand` su `<Button variant="subtle">`: il pulsante tenue del marchio.
-- StatTile, AgendaEvent, PatientJourney, EmptyState: componenti del gestionale (`components/Dashboard/`, l'agenda, la scheda paziente) da costruire con i token di questo sistema.
+| Cosa | Come |
+|---|---|
+| Avatar a nuvola | la radice `relative inline-block shrink-0 rounded-full` e i suoi figli; il fondo grigio del segnaposto diventa `brand-subtle`, quello del personale (`UserAvatar`, `dc-avatar--staff`) `brand-solid`; `dc-avatar--round` resta tondo |
+| La coda su ciò che galleggia e sulle carte | `.menu-content`, `[data-slot='content-body'][data-panel]` (PopoverPanel: select, autocomplete, date), `div.rounded-lg.border`, `div.rounded-xl.border`, l'Alert (`grid-cols-[auto_1fr_auto] rounded-md`), gli eventi del calendario (`.event.rounded`) |
+| La voce scelta con la croce | la `lucide-check` nel suffisso di `[role='option']`, e `dc-scelto` nei menu nostri: la maschera della spunta diventa quella della croce |
+| Righe scelte e barra delle azioni | ListRow (`flex-col transition-all duration-300 ease-in-out bg-surface-gray-2`) su `brand-subtle`; ListSelectBanner con `class="dc-list-bar"` in blocco profondo; sul telefono `dc-riga-scelta` |
+| Calendario di una data | `button[role='gridcell'][aria-selected='true']` nel pieno con la coda; oggi (`font-semibold`) nel colore del marchio con la croce sotto |
+| Finestre | `.dialog-overlay` tinto di verde profondo; l'icona (`h-7 w-7 rounded-full`) in una nuvola |
+| Switch | la croce del pomello cresce con un rimbalzo (`background-size`); ferma con "riduci il movimento" |
+| Toast nel tema scuro | `.text-ink-base` del toast in `on-block-deep`: frappe-ui lo scrive nell'inchiostro scuro, illeggibile sul blocco |
+| Spinner | `.fui-spinner` fuori dai pulsanti, senza un colore suo, in `brand-segno` |
+
+I componenti che frappe-ui non ha sono del gestionale, in
+`frontend/src/components/Espresso/`, con le classi di `espresso-componenti.css`:
+`StatTile` (`dc-stat`; i numeri della dashboard con `dc-numero`), `EmptyState` e
+`EmptyArt` (`dc-empty`), `CategoryTag` (`dc-tag`), `InProgressBadge` (`dc-in-corso`),
+`LoaderMark` (`dc-loader-mark`), `PersonJourney` (`dc-journey`); l'evento dell'agenda
+è `dc-evento` in `ResourceScheduler.vue`, i cicli a tappe `dc-steps`, l'area di
+rilascio `dc-drop`. I token che usano (stati, categorie, `brand-subtle`, `brand-solid`,
+`radius-tail`) stanno in testa a `espresso-componenti.css` e prendono il marchio
+acceso: un altro verticale li colora con i suoi.
