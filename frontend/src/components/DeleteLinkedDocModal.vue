@@ -213,28 +213,28 @@ const unlinkLinkedDoc = (doc) => {
   })
 }
 
+// nothing chosen means all of them: its own sentence, an English "all" glued into
+// another language's reads wrong
 const confirmDelete = () => {
-  const items =
-    viewControls.value.selections.length == 0
-      ? 'all'
-      : viewControls.value.selections.length
+  const items = viewControls.value.selections.length
   confirmDeleteInfo.value = {
     show: true,
     title: __('Delete Linked Item'),
-    message: __('Are you sure you want to delete {0} linked item(s)?', [items]),
+    message: items
+      ? __('Are you sure you want to delete {0} linked item(s)?', [items])
+      : __('Are you sure you want to delete all linked items?'),
     delete: true,
   }
 }
 
 const confirmUnlink = () => {
-  const items =
-    viewControls.value.selections.length == 0
-      ? 'all'
-      : viewControls.value.selections.length
+  const items = viewControls.value.selections.length
   confirmDeleteInfo.value = {
     show: true,
     title: __('Unlink Linked Item'),
-    message: __('Are you sure you want to unlink {0} linked item(s)?', [items]),
+    message: items
+      ? __('Are you sure you want to unlink {0} linked item(s)?', [items])
+      : __('Are you sure you want to unlink all linked items?'),
     delete: false,
   }
 }
