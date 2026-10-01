@@ -1409,6 +1409,10 @@ msgstr ""
 msgid "Calls"
 msgstr "Chiamate"
 
+#: frontend/src/utils/impostazioni.js
+msgid "Calls from DottorCloud and what to say on them."
+msgstr "Le chiamate da DottorCloud e cosa dire."
+
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:55
 msgid "Camera"
 msgstr "Fotocamera"
@@ -3451,6 +3455,10 @@ msgstr ""
 msgid "Facebook Page"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Facebook and Instagram: lead forms, ads, the quality of the leads."
+msgstr "Facebook e Instagram: moduli dei contatti, inserzioni, qualità dei contatti."
+
 #: frontend/src/pages/PersonaForm.vue:74
 msgid "Facebook/Instagram Ads"
 msgstr ""
@@ -3790,6 +3798,10 @@ msgstr "Orari e turni"
 msgid "Hours and days off: Agenda → Hours & shifts → Team rota. Own price or length for a service: Agenda → Services."
 msgstr "Orari e giorni liberi: Agenda → Orari e turni → Turni del team. Prezzo o durata propri per un servizio: Agenda → Servizi."
 
+#: frontend/src/utils/impostazioni.js
+msgid "How a new request is followed: its stages, who takes it, how soon they answer."
+msgstr "Come si segue una nuova richiesta: le sue fasi, chi la prende, entro quando risponde."
+
 #: frontend/src/components/Settings/BrandSettings.vue
 msgid "How it looks"
 msgstr "Come si vede"
@@ -3797,6 +3809,10 @@ msgstr "Come si vede"
 #: frontend/src/components/Settings/Sla/SlaPolicyList.vue
 msgid "How soon a request is answered, and what happens when it is not: the service level agreements (SLA)."
 msgstr "Entro quando si risponde a una richiesta, e cosa succede se non si risponde: gli accordi sul livello di servizio (SLA)."
+
+#: frontend/src/utils/impostazioni.js
+msgid "How the agenda looks, and the reminders people receive."
+msgstr "Come si vede l'agenda, e i promemoria che ricevono le persone."
 
 #: frontend/src/components/Settings/BrandSettings.vue
 msgid "How the centre is called to the people it looks after: in the emails and on the public pages."
@@ -7962,6 +7978,10 @@ msgstr ""
 msgid "The SMS did not leave"
 msgstr "L'SMS non è partito"
 
+#: frontend/src/utils/impostazioni.js
+msgid "The accounting system the agency connects."
+msgstr "Il gestionale contabile che collega l'agenzia."
+
 #: crm/moduli/sito.py
 msgid "The answers could not be read"
 msgstr "Non è stato possibile leggere le risposte"
@@ -7978,9 +7998,29 @@ msgstr "Il centro"
 msgid "The centre does not take the waiting list from the area"
 msgstr "Il centro non prende la lista d'attesa dall'area"
 
+#: frontend/src/utils/impostazioni.js
+msgid "The centre's WhatsApp numbers."
+msgstr "I numeri WhatsApp del centro."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The centre's certificate and the time stamps on signed PDFs."
+msgstr "Il certificato del centro e le marche temporali sui PDF firmati."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The centre's mailboxes and the emails you send often."
+msgstr "Le caselle del centro e le email che mandi spesso."
+
 #: frontend/src/components/Settings/BrandSettings.vue
 msgid "The centre's name and logo, at the top of every page the people it looks after open: booking, forms, their area. {brand} signs at the bottom."
 msgstr "Il nome e il logo del centro, in cima a ogni pagina che aprono le persone che segue: prenotazioni, moduli, la loro area. {brand} firma in fondo."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The centre's name and logo, how conversations behave, the dashboard, the menu."
+msgstr "Il nome e il logo del centro, come si comportano le conversazioni, la dashboard, il menu."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The centre's numbers and the messages WhatsApp has approved."
+msgstr "I numeri del centro e i messaggi che WhatsApp ha approvato."
 
 #: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
 msgid "The class is of another service"
@@ -7990,6 +8030,10 @@ msgstr "La lezione è di un altro servizio"
 msgid "The class of {0}, when a seat frees up"
 msgstr "La lezione di {0}, quando si libera un posto"
 
+#: frontend/src/utils/impostazioni.js
+msgid "The emails you send often, ready to use."
+msgstr "Le email che mandi spesso, pronte da usare."
+
 #: crm/scheduling/abbonamenti.py
 msgid "The first day does not change once entries are used or instalments invoiced"
 msgstr "Il primo giorno non cambia quando ci sono ingressi usati o rate fatturate"
@@ -7997,6 +8041,10 @@ msgstr "Il primo giorno non cambia quando ci sono ingressi usati o rate fatturat
 #: crm/moduli/compilazioni.py
 msgid "The form is not complete"
 msgstr "Il modulo non è completo"
+
+#: frontend/src/utils/impostazioni.js
+msgid "The forms people fill and sign, the sheets you write, the website's forms."
+msgstr "I moduli che le persone compilano e firmano, le schede che scrivi, i moduli del sito."
 
 #: crm/fcrm/doctype/crm_holiday_list/crm_holiday_list.py:64
 msgid "The holiday on {0} is not between From Date and To Date"
@@ -8006,9 +8054,33 @@ msgstr ""
 msgid "The last day comes after the first"
 msgstr "L'ultimo giorno viene dopo il primo"
 
+#: frontend/src/utils/impostazioni.js
+msgid "The lines DottorCloud calls and answers on."
+msgstr "Le linee su cui DottorCloud chiama e risponde."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The mailboxes DottorCloud sends and receives from."
+msgstr "Le caselle da cui DottorCloud manda e riceve."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The messages WhatsApp approved, to write after 24 hours."
+msgstr "I messaggi approvati da WhatsApp, per scrivere dopo 24 ore."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The news their area sends by WhatsApp or SMS."
+msgstr "Le novità che la loro area manda per WhatsApp o SMS."
+
 #: frontend/src/components/Settings/Booking/BookingPageSettings.vue
 msgid "The page shows the centre's logo at the top, in {brand}'s colours; {brand} signs at the bottom."
 msgstr "La pagina mostra in alto il logo del centro, nei colori di {brand}; {brand} firma in fondo."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The pages and profiles the planner publishes to."
+msgstr "Le pagine e i profili su cui pubblica il planner."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The pages of the centre's website."
+msgstr "Le pagine del sito del centro."
 
 #. Description of the 'Exchange Rate' (Float) field in DocType 'CRM Deal'
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
@@ -8020,6 +8092,14 @@ msgstr ""
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "The rate used to convert the organization’s currency to your crm's base currency (set in CRM Settings). It is set once when the currency is first added and doesn't change automatically."
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "The service that takes the invoices to the tax system."
+msgstr "Il servizio che porta le fatture al fisco."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The stages a request goes through, until it is won or lost."
+msgstr "Le fasi di una richiesta, finché è vinta o persa."
 
 #: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
 msgid "The studio hours are set in Agenda → Hours & shifts → Hours & rules and apply to everyone without their own."
@@ -8037,9 +8117,21 @@ msgstr "La sospensione finisce prima di cominciare"
 msgid "The suspension starts outside the subscription"
 msgstr "La sospensione comincia fuori dall'abbonamento"
 
+#: frontend/src/utils/impostazioni.js
+msgid "The switches over all invoicing."
+msgstr "Le scelte su tutta la fatturazione."
+
+#: frontend/src/utils/impostazioni.js
+msgid "The theme and the language you read DottorCloud in."
+msgstr "Il tema e la lingua in cui leggi DottorCloud."
+
 #: crm/scheduling/attese_pubblico.py
 msgid "The waiting list is not open online"
 msgstr "La lista d'attesa non è aperta online"
+
+#: frontend/src/utils/impostazioni.js
+msgid "The website, the social posts and where people come from."
+msgstr "Il sito, i post sui social e da dove arrivano le persone."
 
 #: frontend/src/components/Settings/PreferencesSettings.vue:23
 msgid "Theme"
@@ -8832,6 +8924,10 @@ msgstr ""
 msgid "Welcome {0}, lets add your first lead"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "What DottorCloud includes for the centre, and what can be added."
+msgstr "Cosa comprende DottorCloud per il centro, e cosa si può aggiungere."
+
 #: frontend/src/components/Settings/GeneralSettings.vue
 msgid "What a new message does to the person or the deal it is about, and how their activity reads."
 msgstr "Cosa fa un messaggio nuovo alla persona o alla trattativa di cui parla, e come si legge la loro attività."
@@ -8840,9 +8936,45 @@ msgstr "Cosa fa un messaggio nuovo alla persona o alla trattativa di cui parla, 
 msgid "What are your biggest challenges with sales today?"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "What can be booked online and with whom, the booking page, the platforms."
+msgstr "Cosa si prenota online e con chi, la pagina di prenotazione, le piattaforme."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What is billed, who performs it, their qualifications."
+msgstr "Cosa si fattura, chi lo esegue, le sue qualifiche."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What is connected from outside: Meta, the assistant, the agency's tools."
+msgstr "Cosa è collegato da fuori: Meta, l'assistente, gli strumenti dell'agenzia."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What people agree to, and the words they read."
+msgstr "A cosa acconsentono le persone, e le parole che leggono."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What plans are written with: exercises, foods."
+msgstr "Con cosa si scrivono i piani: esercizi, alimenti."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What the centre offers, its price lists and its subscriptions."
+msgstr "Cosa offre il centro, i suoi listini e i suoi abbonamenti."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What the centre offers, when and where: services, hours, rooms, reminders, online booking."
+msgstr "Cosa offre il centro, quando e dove: servizi, orari, sale, promemoria, prenotazione online."
+
 #: frontend/src/components/Settings/HomeActions.vue
 msgid "What the menu under the centre’s name, at the top left, offers everyone."
 msgstr "Cosa offre a tutti il menu sotto il nome del centro, in alto a sinistra."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What the people you look after fill in, sign and see, and what their plans are written with."
+msgstr "Cosa compilano, firmano e vedono le persone che segui, e con cosa si scrivono i loro piani."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What to say on a call, step by step."
+msgstr "Cosa dire in una chiamata, passo per passo."
 
 #: frontend/src/pages/PersonaForm.vue:118
 msgid "What would you like to accomplish first?"
@@ -8871,14 +9003,54 @@ msgstr "Modelli WhatsApp"
 msgid "When a place frees up we write to you: it goes to whoever confirms first."
 msgstr "Quando si libera un posto ti scriviamo: va a chi conferma per primo."
 
+#: frontend/src/utils/impostazioni.js
+msgid "When the centre is open, and who works when."
+msgstr "Quando è aperto il centro, e chi lavora quando."
+
 #: frontend/src/components/ConditionsFilter/CFCondition.vue:20
 #: frontend/src/components/Filter.vue:43 frontend/src/components/Filter.vue:83
 msgid "Where"
 msgstr ""
 
+#: frontend/src/utils/impostazioni.js
+msgid "Where appointments take place and what they need."
+msgstr "Dove si svolgono gli appuntamenti e cosa serve."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Where people come from: visits, campaigns, tracked links."
+msgstr "Da dove arrivano le persone: visite, campagne, link tracciati."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Where the assistant runs, what it may do, what it did."
+msgstr "Dove gira l'assistente, cosa può fare, cosa ha fatto."
+
 #: frontend/src/components/Settings/Scheduling/ServicesSettings.vue
 msgid "Who clients can book for it: Agenda → Online booking."
 msgstr "Chi si può prenotare per questo servizio: Agenda → Prenotazione online."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who gets a place that frees up, and how they are told."
+msgstr "A chi va un posto che si libera, e come lo sa."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who issues the invoices, what is billed, how they reach the tax system."
+msgstr "Chi emette le fatture, cosa si fattura, come arrivano al fisco."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who issues the invoices: details, numbering, transmission."
+msgstr "Chi emette le fatture: dati, numerazione, trasmissione."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who takes a new request, and how soon they answer."
+msgstr "Chi prende una nuova richiesta, ed entro quando risponde."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who the centre is, who works in it, how DottorCloud behaves, what the plan includes."
+msgstr "Chi è il centro, chi ci lavora, come si comporta DottorCloud, cosa comprende il piano."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who works in the centre and at what level, invitations, who sees whom."
+msgstr "Chi lavora nel centro e a che livello, gli inviti, chi vede chi."
 
 #: frontend/src/components/ColumnSettings.vue:109
 msgid "Width"
@@ -9065,9 +9237,17 @@ msgstr "La tua assegnazione su {0} {1} è stata rimossa da {2}"
 msgid "Your hours and days off, week by week, and how full each day is. Click your row to change them."
 msgstr "I tuoi orari e i giorni liberi, settimana per settimana, e quanto è pieno ogni giorno. Tocca la tua riga per cambiarli."
 
+#: frontend/src/utils/impostazioni.js
+msgid "Your hours busy elsewhere, so that nobody books you then."
+msgstr "Le tue ore occupate altrove, perché nessuno ti prenoti allora."
+
 #: crm/templates/emails/helpdesk_invitation.html:6
 msgid "Your login id is"
 msgstr "Il tuo ID di login è"
+
+#: frontend/src/utils/impostazioni.js
+msgid "Your name, your photo, your password."
+msgstr "Il tuo nome, la tua foto, la tua password."
 
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue:641
 msgid "Your old condition will be overwritten. Are you sure you want to save?"
@@ -9076,6 +9256,10 @@ msgstr ""
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:400
 msgid "Your old conditions will be overwritten. Are you sure you want to save?"
 msgstr ""
+
+#: frontend/src/utils/impostazioni.js
+msgid "Your profile, how DottorCloud looks for you, the calendar you bring."
+msgstr "Il tuo profilo, come vedi DottorCloud, il calendario che porti con te."
 
 #: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
 msgid "Your shifts"
