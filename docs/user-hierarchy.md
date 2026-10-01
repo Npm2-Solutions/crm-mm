@@ -3,7 +3,7 @@
 Arrange your sales team into a reporting tree so managers see the leads and
 deals owned by their team, while everyone else sees only their own.
 
-Open it from **Settings → User Hierarchy**.
+Open it from **Settings → Users → Hierarchy** (the tab next to the users and the invitations).
 
 ## Turning it on
 

@@ -96,7 +96,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/scheduling/attese_pubblico.py` + `crm/www/lista_attesa.*` | Joining from /prenota (no time suits, a full class) and the `/lista-attesa/<link>` page: the offer to confirm or let go, the list to leave. The entry keeps the email and mobile typed when joining, and the offers go there |
 | `frontend/src/pages/WaitingList.vue`, `components/Waiting/` + `utils/attese.js` | The desk: the whole line, the person's section, an entry with its free places; the words, tested; `area/components/WaitingCard.vue`, `WaitingJoinDialog.vue` in the client area |
 | `crm/scheduling/abbonamenti_regole.py` + `abbonamenti.py` | Subscriptions (`CRM Subscription Type`, `CRM Subscription`, `agenda.abbonamenti`): a type sold from a day, its terms copied on the subscription; an appointment of a comprised service uses an entry by itself (`aggancia` and `prezzo` in the appointment's `validate`, after its cycle) while its week or month has one left, and costs nothing; a suspension moves the end; the daily `ogni_giorno` invoices the instalments due (`invoicing.api.issue_from_subscription`, issued where the type says so), reminds of the end, renews. The rules pure, tested with plain `unittest` |
-| `frontend/src/components/Subscriptions/`, `Settings/Scheduling/SubscriptionTypesSettings.vue` + `utils/abbonamenti.js` | The person's subscriptions, selling and following one, the types in Settings > Agenda; the words and the instalments as the server makes them, tested; `area/components/SubscriptionCard.vue` in the client area |
+| `frontend/src/components/Subscriptions/`, `Settings/Scheduling/SubscriptionTypesSettings.vue` + `utils/abbonamenti.js` | The person's subscriptions, selling and following one, the types in Settings > Agenda > Services; the words and the instalments as the server makes them, tested; `area/components/SubscriptionCard.vue` in the client area |
 | `docs/prenotazioni/` | User guide + platform API research |
 
 ---
@@ -111,7 +111,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | `crm/moduli/sito.py` + `crm/www/crm_form.*` | A form of the website at `/crm-form/<address>`, in another site (`?embed=1`, the sites listed) or in a page of the centre's (`site_render.crm_form_html`, `templates/site/form_inline.html`): the guest `submit_site_form` finds the person by email or mobile or makes them (`find_or_create_person`), fills what the centre did not know, keeps the answers as their form (channel "Website"), records the consents, opens the deal, fires "Lead Form Submitted"; a honeypot, a rate limit; a draft only tried (`try_site_form`) |
 | `crm/public/js/moduli_campi.js`, `crm/public/css/moduli_campi.css` | The questions of a public page drawn without a framework, on the engine the page hands over: `/modulo`, the website's page and block (`versione_del_motore` versions all three) |
 | `frontend/src/components/Moduli/` | `FormRenderer` + `FormFieldInput`: draw and fill a schema |
-| `frontend/src/components/Settings/Forms/Template*.vue` + `utils/moduliSito.js` | The one builder, in Settings > Forms: forms, sheets and the website's (its address, its Share tab, the person's field a question fills); what a use does not allow, live, the address from a title, the embed code — tested |
+| `frontend/src/components/Settings/Forms/Template*.vue` + `utils/moduliSito.js` | The one builder, in Settings > Clients > Forms: forms, sheets and the website's (its address, its Share tab, the person's field a question fills); what a use does not allow, live, the address from a title, the embed code — tested |
 | `crm/moduli/compilazioni.py` | A person's forms: start, save half-way, sign (checks, strokes, submit, PDF, consents) |
 | `crm/moduli/pdf.py` + `templates/modulo_firmato.html` | The signed form's PDF/A with its evidence page, made once |
 | `crm/moduli/sigillo.py` | The centre's PAdES seal and RFC 3161 time stamp (pyHanko), before the fingerprint; the agency's Seal page |
@@ -140,7 +140,7 @@ the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
 | `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
 | `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability; ERPNext is the agency's. `DEL_CORE`: the core documents the manager writes (email templates, assignment rules, imports) get a role's rule, narrowed by the capability |
 | `crm/permissions/condizioni.py` | Guided conditions to Python, pure: for anybody but the agency the server writes assignment-rule and SLA conditions itself |
-| `frontend/src/router.js`, `components/Settings/Settings.vue` | Each route declares `meta.richiede`, each settings page its `condition`: hidden from the menu means closed at its address too |
+| `frontend/src/router.js`, `utils/impostazioni.js` | Each route declares `meta.richiede`, each page of the settings its `condition` in the menu: hidden from the menu means closed at its address too |
 
 Code asks for a capability (`puo("fatture.emetti")`, `@richiede(...)`), never for a
 role name; the frontend asks `usersStore().puo(...)`. A new module registers its
@@ -155,6 +155,19 @@ get masked values for Marketing; code that sends reads `crm.utils.stored_value`.
 A record's page asks `useDocument(...).canWrite` (from `crm.api.doc.get_doc_permissions`,
 which asks the controllers too) before offering a write; reading and writing are
 separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
+
+### The settings (docs/progetto-ghl/31)
+| File | Role |
+|---|---|
+| `frontend/src/utils/impostazioni.js` | The menu as data: groups (your account, the centre, agenda, clients, deals, email, WhatsApp, phone, marketing, invoicing, integrations), their entries, an entry's tabs, who sees each (`condition` on `puo`, `ambito`, `whatsapp`, `verticale`); `menuDi()`, `trova()` (the entry and tab a page's name opens), `pagine()` — tested |
+| `frontend/src/components/Settings/Settings.vue`, `SettingsHub.vue` | The modal draws the menu from the data (`PAGINE`, `ICONE` by key); an entry with tabs is one page with its row of tabs, the tab open being `activeSettingsPage` |
+| `crm/tests/test_impostazioni.py` | Every page the server or a button names is in the menu |
+
+A new page goes in the group of the part of the work it belongs to, as an entry
+or as a tab of an entry that is there: no group of one entry. Its key never
+changes (links are built on it); a page that becomes a tab keeps its key, a name
+it had before stays as an alias. Its label, its tab and its page's title say the
+same words, in the user's language.
 
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |
@@ -191,7 +204,7 @@ of their own, linked to the parent, never the parent's record.
 | `crm/piani/api.py` | Plans on the person's page (`CRM Personal Plan`, `piani.scrivi` / `piani.vedi`): drafts of their author, published to the area, new version or closed; what a module adds (`registra_genere`, `registra_estensione`); health data read through `crm.permissions.sanitari` |
 | `crm/piani/programmi_regole.py` + `programmi.py` | Programmes of stages (`CRM Programme`): each stage with its words and maybe a plan (`CRM Personal Plan.programme`), opened at one's own pace (the person in the area, `finish_stage`) or by time (`apri_del_giorno`, daily); a stage that opens publishes its plan with `api.pubblica` |
 | `crm/piani/area.py` + `frontend/src/area/pages/Plans.vue`, `Plan.vue`, `components/PlanItem.vue`, `ProgrammeCard.vue` | The plans in the area: the day's moments, one tap an item (`CRM Personal Plan Log`), made up within two days, what is left this week; the programmes stage by stage |
-| `crm/piani/librerie.py` + `dataset.py` | The exercises (`CRM Exercise`, `piani.librerie`, Settings > Plans > Exercises): exercises-dataset with its pictures from where the agency hosts them (`CRM Area Settings`, permlevel 1), the imports and their licences (`CRM Library Import`); imported again, numbers update and the centre's words stay |
+| `crm/piani/librerie.py` + `dataset.py` | The exercises (`CRM Exercise`, `piani.librerie`, Settings > Clients > Libraries): exercises-dataset with its pictures from where the agency hosts them (`CRM Area Settings`, permlevel 1), the imports and their licences (`CRM Library Import`); imported again, numbers update and the centre's words stay |
 | `frontend/src/components/Plans/` + `utils/piani.js`, `utils/programmi.js` | The plans card, the editor and reader, an item by its kind, the library search, the programme: what a kind holds and offers comes from the server — tested |
 
 A training and habits are the CRM's own kinds; a module registers its kinds with the
@@ -225,7 +238,7 @@ who added it read it.
 | `crm/preventivi/api.py` | `CRM Quote` on the person's Quotes tab: a draft of its author (`preventivi.scrivi`); proposed, read with `preventivi.vedi` and the person, recorded accepted or declined by the author or `preventivi.gestisci` (the desk); a new version, closed half-way; what a module adds to the rows (`registra_estensione`) |
 | `crm/preventivi/documento.py` + `templates/preventivo.html` | The quote's PDF, made once when it is proposed, private |
 | `crm/preventivi/appuntamenti.py` | `CRM Appointment` doc_events: an appointment of a service still to do takes its row at the price agreed, done when the person came, given back when cancelled |
-| `crm/preventivi/pipeline.py` + `CRM Quote Settings` | The "Quotes" pipeline: delivered, won, lost with the reason; which one and how long a quote holds, in Settings > Pipelines |
+| `crm/preventivi/pipeline.py` + `CRM Quote Settings` | The "Quotes" pipeline: delivered, won, lost with the reason; which one and how long a quote holds, in Settings > Deals > Pipelines |
 | `crm/preventivi/area.py` | The quotes proposed and going on, in the person's area (the Plans page) |
 | `frontend/src/components/Quotes/` + `utils/preventivi.js` | The Quotes tab (`QuotesCard`), the editor and reader (`QuoteDialog`: a module's row fields where the server offers them); the same sums as `regole.py` — tested; `area/components/QuoteCard.vue` in the area |
 
@@ -239,7 +252,7 @@ every opening in the access log.
 | `crm/clienti/regole.py` | Who came, without a site: checked in, an appointment attended, an invoice that sold something (not a credit note), the first fact in time — tested with plain `unittest`; the clinic's rules are built on it |
 | `crm/clienti/cliente.py` | The one door, `diventa_cliente`: `CRM Lead.client_since` written once, never in the future; the new clients deal won and "Became Client" (`client_created`) heard by the automations; `recupera()` finds last year's clients and announces nothing; `registra_regole`: a module with rules of its own (the clinic) takes the CRM's place where it is on |
 | `crm/clienti/eventi.py` | `CRM Appointment` and `CRM Invoice` doc_events: a booking moves the deal, a check-in, an attended appointment or an invoice makes a client |
-| `crm/clienti/pipeline.py` + `CRM Client Settings` | The "New clients" pipeline: which one and the stage after a booking, in Settings > Pipelines (`NewClientsPipeline.vue`); a vertical names it in its words (`registra_nomi`: the clinic's "New patients") |
+| `crm/clienti/pipeline.py` + `CRM Client Settings` | The "New clients" pipeline: which one and the stage after a booking, in Settings > Deals > Pipelines (`NewClientsPipeline.vue`); a vertical names it in its words (`registra_nomi`: the clinic's "New patients") |
 | `crm/dashboard/widgets/people.py`, `marketing.py` | "New clients" counts `client_since`, "Cost per new client" divides the ads' spend by the clients they brought; the dashboard's titles in the vertical's words (`verticali.traduttore()`) |
 
 With the clinic on, a client is a patient: its rules decide, `assicura_paziente`
@@ -291,7 +304,7 @@ the draft with `modello.accetta`.
 | `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `piani_regole.spesa` + `ShoppingListDialog.vue`, `frontend/src/area/pages/PlanShopping.vue` | The shopping list of a diet: grams summed on the server over the days asked (times a week, the plan's period), rounded up in the browser; in the CRM to copy for the patient, in the area with ticks kept on the phone |
 | `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` | The foods (`piani.librerie`): a food table read on the server (CIQUAL, BDA-IEO and CREA with the licence declared, any sheet in their shape), its columns and categories checked before import, energy from the EU factors when missing; imported again, numbers update and the centre's words stay |
-| `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clinic > Foods: the list, correcting a food, the import of a table; the exercises' page is the CRM's (`Settings/Plans/`) |
+| `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clients > Libraries, the Foods tab: the list, correcting a food, the import of a table; the exercises' page is the CRM's (`Settings/Plans/`) |
 | `crm/clinica/cure_regole.py` | The teeth without a site: FDI teeth and arches, surfaces, the chart's conditions, the teeth on a quote's rows (`valida_denti`) — tested with plain `unittest` |
 | `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
@@ -312,7 +325,7 @@ the draft with `modello.accetta`.
 The product's brand - the vertical's - is everywhere a person looks: its name,
 icon, logo, favicon and colours in the CRM, the area, the public pages, the
 framework's screens, the PDFs' producer and the phone's manifest. A centre's own
-logo (Settings > Brand, the booking page's) goes at most beside it, never in its
+logo (Settings > General > Name & logo, the booking page's) goes at most beside it, never in its
 place. A sentence that names the product says `{brand}`: `__()` fills it in the
 browser, `con_nome(_("…"))` on the server (before any `.format()`). A public
 page's title names the centre (`FCRM Settings.brand_name`) beside the product's

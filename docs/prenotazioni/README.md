@@ -38,7 +38,7 @@ Le automazioni *Booking …* scattano per le prenotazioni online dei clienti.
 | `?token=…` | gestione della prenotazione: annulla / sposta entro le regole |
 | `/lista-attesa/<link>` | la lista d'attesa di una persona: il posto proposto da confermare, la lista da lasciare |
 
-Il **generatore di link** (*Impostazioni → Booking → Pagina e regole*) costruisce il
+Il **generatore di link** (*Impostazioni → Agenda → Prenotazione online → Pagina e regole*) costruisce il
 link, il **QR code** scaricabile e il **codice da incorporare**. Il blocco *Prenota* del sito
 accetta un servizio, un vecchio calendario o niente (tutto il menu).
 
@@ -69,7 +69,7 @@ Come funziona, chi la vede e le impostazioni sono in
 
 Tre livelli, sempre visibili, mai copiati:
 
-1. **Pagina e regole** (*Impostazioni → Booking*): le regole online predefinite
+1. **Pagina e regole** (*Impostazioni → Agenda → Prenotazione online*, la seconda scheda): le regole online predefinite
    (preavviso, orizzonte, passo degli orari, conferma automatica o su approvazione,
    stesso giorno fino a, telefono obbligatorio, annullamento/spostamento e loro
    preavviso, spostamenti massimi, prenotazioni per cliente al giorno). Accanto a ognuna:
@@ -97,7 +97,7 @@ globale per cliente).
 
 ## 3. Le viste d'insieme
 
-- **Prenotazione online** (*Impostazioni → Booking*, la prima voce) — la risposta a
+- **Prenotazione online** (*Impostazioni → Agenda → Prenotazione online*, la prima scheda, *Servizi e persone*) — la risposta a
   "come rendo prenotabile qualcuno?" in un'unica schermata, con effetto immediato: pagina
   aperta/chiusa e link; servizi online con quante persone li prendono; per ogni persona un
   interruttore, i servizi da accendere con un clic (se non li fa ancora viene aggiunta al
@@ -117,7 +117,7 @@ globale per cliente).
 
 ## 4. Piattaforme esterne
 
-Si configurano in *Impostazioni → Booking → Piattaforme di prenotazione → Collega una
+Si configurano in *Impostazioni → Agenda → Prenotazione online → Piattaforme → Collega una
 piattaforma*. Ogni connessione ha:
 
 - **credenziali**, diverse per piattaforma; la schermata mostra solo i campi necessari e
