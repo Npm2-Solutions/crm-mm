@@ -112,7 +112,8 @@ def lost_count(ctx: Context, previous: bool = False) -> int:
 
 
 def stage_name(name: str | None) -> str:
-	return name or _("No stage")
+	# a stage is a translated name: the default ones read in the user's language
+	return _(name) if name else _("No stage")
 
 
 # -- KPIs -------------------------------------------------------------------
@@ -557,7 +558,7 @@ def funnel_conversion(ctx: Context):
 	for index, stage in enumerate(stages):
 		if stage.type == "Lost":
 			continue
-		steps.append((stage.name, sum(1 for value in reached.values() if value >= index)))
+		steps.append((stage_name(stage.name), sum(1 for value in reached.values() if value >= index)))
 	return charts.funnel(steps)
 
 
@@ -784,7 +785,7 @@ def closing_soon(ctx: Context):
 			row,
 			value=row.amount,
 			time=row.expected_closure_date,
-			badge={"label": row.status, "color": row.color or "gray"},
+			badge={"label": stage_name(row.status), "color": row.color or "gray"},
 		)
 		for row in rows
 	]
@@ -852,7 +853,7 @@ def deals_stale(ctx: Context):
 			row,
 			value=row.amount,
 			time=row.modified,
-			badge={"label": row.status, "color": row.color or "gray"},
+			badge={"label": stage_name(row.status), "color": row.color or "gray"},
 		)
 		for row in rows
 	]

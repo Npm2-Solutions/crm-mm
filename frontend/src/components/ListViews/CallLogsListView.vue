@@ -249,6 +249,7 @@ function onColumnWidthUpdated({ width, save }, column) {
 }
 
 function getLabel(label, column) {
+  if (column.type === 'Select') return __(label)
   if (column.options && isTranslatable(column.options)) return __(label)
   return label
 }

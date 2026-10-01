@@ -64,13 +64,15 @@ let slaSection = computed(() => {
 
   if (status == 'First Response Due' || status == 'Rolling Response Due') {
     status = timeAgo(data.value.response_by)
-    if (status == 'just now') {
+    // timeAgo speaks the user's language: its words, not the English ones, and
+    // the English keys below until __() reads them out
+    if (status == __('just now')) {
       status = 'In less than a minute'
     }
     tooltipText = formatDate(data.value.response_by)
     if (new Date(data.value.response_by) < new Date()) {
       color = 'red'
-      if (status == __('In less than a minute')) {
+      if (status == 'In less than a minute') {
         status = 'less than a minute ago'
       }
     }
