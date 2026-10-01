@@ -1,6 +1,7 @@
 <!--
-  The client area's shell: the product's brand first, the centre's logo and name
-  beside it (crm.marchio), whose area it is (a parent sees their child's too),
+  The client area's shell: the centre's mark at the top - its logo as it is
+  drawn, wide on its own or square beside its name - and the product's signature
+  at the foot (crm.marchio), whose area it is (a parent sees their child's too),
   and its places at the bottom, within reach of a thumb.
   Staff who open it are sent to DottorCloud: the area is for the centre's clients.
   With the clinic on it is the patient area, and says so (window.AREA.words).
@@ -23,23 +24,39 @@
       class="flex items-center justify-between gap-3 border-b border-outline-gray-1 bg-surface-base px-4 py-3"
     >
       <div class="flex min-w-0 items-center gap-2.5">
-        <img :src="brand.logo" :alt="brand.name" class="h-6 w-auto shrink-0" />
-        <span
-          class="h-5 shrink-0 border-l border-outline-gray-2"
-          aria-hidden="true"
-        />
         <img
-          v-if="logo"
+          v-if="logo && forma === 'wide'"
           :src="logo"
           :alt="centre || ''"
-          class="max-h-7 max-w-[5rem] shrink-0 object-contain"
+          class="h-8 min-w-0 max-w-full object-contain object-left dark:rounded dark:bg-white dark:px-1.5 dark:py-1"
         />
-        <span
-          class="min-w-0 truncate text-base font-semibold text-ink-gray-9"
-          :class="{ 'max-sm:sr-only': logo }"
-        >
-          {{ centre || __('Your area') }}
-        </span>
+        <template v-else>
+          <CentreTile
+            v-if="logo"
+            :logo="logo"
+            :forma="forma"
+            :nome="centre"
+            class="size-8"
+          />
+          <span
+            v-if="centre"
+            class="min-w-0 truncate text-base font-semibold text-ink-gray-9"
+          >
+            {{ centre }}
+          </span>
+          <template v-else-if="!logo">
+            <img
+              :src="brand.logo"
+              :alt="brand.name"
+              class="h-6 w-auto shrink-0 dark:hidden"
+            />
+            <img
+              :src="brand.logo_dark"
+              :alt="brand.name"
+              class="hidden h-6 w-auto shrink-0 dark:block"
+            />
+          </template>
+        </template>
       </div>
       <Button
         variant="ghost"
@@ -66,6 +83,15 @@
       <div class="mx-auto w-full max-w-2xl px-4 py-5">
         <ErrorMessage v-if="area.error" :message="area.error" />
         <router-view v-else-if="area.person" :key="area.person" />
+        <!-- the product signs at the foot: the centre leads at the top (where
+             it has neither a logo nor a name, the product is up there already) -->
+        <p
+          v-if="logo || centre"
+          class="mt-10 flex items-center justify-center gap-1.5 text-xs text-ink-gray-5"
+        >
+          <img :src="brand.icon" alt="" class="size-4 rounded-[4px]" />
+          {{ __('Powered by {brand}') }}
+        </p>
       </div>
     </main>
     <nav
@@ -105,14 +131,17 @@ import { Button, ErrorMessage, FeatherIcon, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { area, choose, loadMe, logout, section } from './store'
+import CentreTile from '@/components/CentreTile.vue'
+import { useFormaDelLogo } from '@/composables/formaDelLogo'
 import { marchio } from '@/utils/marchio'
 
 const route = useRoute()
 const boot = window.AREA || {}
 const staff = Boolean(boot.staff)
 const centre = boot.centre
-// the centre's logo, beside the product's: never in its place
+// the centre's logo leads: wide on its own, square beside its name
 const logo = boot.logo
+const forma = useFormaDelLogo(logo, boot.logo_shape)
 const brand = marchio(boot.brand)
 
 const current = computed(() =>

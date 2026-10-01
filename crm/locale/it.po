@@ -1484,6 +1484,10 @@ msgstr "Acquisizione di contatti"
 msgid "Category"
 msgstr "Categoria"
 
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "Centre's name"
+msgstr "Nome del centro"
+
 #: frontend/src/components/Controls/ImageUploader.vue:14
 #: frontend/src/components/Layouts/AppSidebar.vue:520
 msgid "Change"
@@ -3766,9 +3770,17 @@ msgstr "Orari e turni"
 msgid "Hours and days off: Agenda → Hours & shifts → Team rota. Own price or length for a service: Agenda → Services."
 msgstr "Orari e giorni liberi: Agenda → Orari e turni → Turni del team. Prezzo o durata propri per un servizio: Agenda → Servizi."
 
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "How it looks"
+msgstr "Come si vede"
+
 #: frontend/src/components/Settings/Sla/SlaPolicyList.vue
 msgid "How soon a request is answered, and what happens when it is not: the service level agreements (SLA)."
 msgstr "Entro quando si risponde a una richiesta, e cosa succede se non si risponde: gli accordi sul livello di servizio (SLA)."
+
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "How the centre is called to the people it looks after: in the emails and on the public pages."
+msgstr "Come le persone che segue chiamano il centro: nelle email e sulle pagine pubbliche."
 
 #: frontend/src/utils/impostazioni.js
 msgid "Invite"
@@ -5758,6 +5770,10 @@ msgstr ""
 msgid "On Hold"
 msgstr "In Attesa"
 
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "On the booking page, the forms and their area"
+msgstr "Nella pagina di prenotazione, nei moduli e nella loro area"
+
 #. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
 #. Option for the 'Type' (Select) field in DocType 'CRM Lead Status'
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
@@ -5953,6 +5969,10 @@ msgstr ""
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:146
 msgid "Owner: {0}"
 msgstr ""
+
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "PNG or SVG. A wide logo, with the name in it, goes on its own; a square one, beside the name. Without one, the initials stand in."
+msgstr "PNG o SVG. Un logo largo, con dentro il nome, sta da solo; uno quadrato, accanto al nome. Senza logo, le iniziali."
 
 #. Label of the page (Link) field in DocType 'Facebook Lead Form'
 #: crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json
@@ -6218,6 +6238,10 @@ msgstr ""
 msgid "Position"
 msgstr "Posizione"
 
+#: crm/templates/includes/marchio_piede.html
+msgid "Powered by {0}"
+msgstr "Con tecnologia {0}"
+
 #: frontend/src/components/Settings/PreferencesSettings.vue:4
 #: frontend/src/components/Settings/Settings.vue:112
 msgid "Preferences"
@@ -6226,6 +6250,10 @@ msgstr "Preferenze"
 #: frontend/src/components/Settings/PreferencesSettings.vue:115
 msgid "Preferences Updated Successfully"
 msgstr ""
+
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+msgid "Preview"
+msgstr "Anteprima"
 
 #: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
 msgid "Price Lists"
@@ -7911,6 +7939,10 @@ msgstr "Il centro"
 msgid "The centre does not take the waiting list from the area"
 msgstr "Il centro non prende la lista d'attesa dall'area"
 
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "The centre's name and logo, at the top of every page the people it looks after open: booking, forms, their area. {brand} signs at the bottom."
+msgstr "Il nome e il logo del centro, in cima a ogni pagina che aprono le persone che segue: prenotazioni, moduli, la loro area. {brand} firma in fondo."
+
 #: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
 msgid "The class is of another service"
 msgstr "La lezione è di un altro servizio"
@@ -7934,6 +7966,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
 msgid "The last day comes after the first"
 msgstr "L'ultimo giorno viene dopo il primo"
+
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+msgid "The page shows the centre's logo at the top, in {brand}'s colours; {brand} signs at the bottom."
+msgstr "La pagina mostra in alto il logo del centro, nei colori di {brand}; {brand} firma in fondo."
 
 #. Description of the 'Exchange Rate' (Float) field in DocType 'CRM Deal'
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
@@ -9129,6 +9165,10 @@ msgstr "desk"
 #: frontend/src/components/Settings/Hierarchy/HierarchyRow.vue:47
 msgid "disabled"
 msgstr "disattivato"
+
+#: frontend/src/components/Settings/BrandSettings.vue
+msgid "e.g. Centro Aurora"
+msgstr "es. Centro Aurora"
 
 #: crm/scheduling/attese_pubblico.py
 msgid "evening"

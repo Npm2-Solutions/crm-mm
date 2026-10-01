@@ -2,35 +2,38 @@
   <Dropdown :options="dropdownItems" v-bind="$attrs">
     <template #default="{ open }">
       <button
-        class="flex h-12 items-center rounded-md py-2 duration-300 ease-in-out"
-        :class="
-          isCollapsed
-            ? 'w-auto px-0'
-            : open
-              ? 'w-full px-2 bg-surface-elevation-3 shadow-sm'
-              : 'w-full px-2 hover:bg-surface-gray-2'
-        "
+        class="flex items-center rounded-md duration-300 ease-in-out"
+        :class="[
+          isCollapsed ? 'h-12 w-auto px-0' : 'min-h-12 w-full px-2 py-2',
+          !isCollapsed &&
+            (open
+              ? 'bg-surface-elevation-3 shadow-sm'
+              : 'hover:bg-surface-gray-2'),
+        ]"
+        :aria-label="platform.name"
       >
-        <BrandLogo
-          :model-value="brand"
-          :compact="isCollapsed"
-          class="h-8 flex-shrink-0"
-        />
+        <!-- the product's logo heads the sidebar (design system Espresso): on its
+             own row, the user under it; collapsed, its icon. The centre's mark
+             leads where people deal with the centre: the public pages, the area -->
         <div
-          class="flex flex-1 flex-col text-left duration-300 ease-in-out truncate"
-          :class="
-            isCollapsed
-              ? 'ml-0 w-0 overflow-hidden opacity-0'
-              : 'ml-2 w-auto opacity-100'
-          "
+          v-if="!isCollapsed"
+          class="flex min-w-0 flex-1 flex-col items-start gap-1.5 text-left"
         >
-          <div class="text-base-medium leading-none text-ink-gray-9 truncate">
-            {{ platform.name }}
-          </div>
-          <div class="mt-1 text-sm leading-none text-ink-gray-7 truncate">
+          <img
+            :src="platform.logo"
+            :alt="platform.name"
+            class="h-5 w-auto shrink-0 dark:hidden"
+          />
+          <img
+            :src="platform.logo_dark"
+            :alt="platform.name"
+            class="hidden h-5 w-auto shrink-0 dark:block"
+          />
+          <div class="w-full truncate text-sm leading-none text-ink-gray-6">
             {{ user.full_name }}
           </div>
         </div>
+        <CRMLogo v-else class="size-8 shrink-0 rounded-md" />
         <div
           class="duration-300 ease-in-out"
           :class="
@@ -50,7 +53,7 @@
 </template>
 
 <script setup>
-import BrandLogo from '@/components/BrandLogo.vue'
+import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import AppsIcon from '@/components/Icons/AppsIcon.vue'
 import LucideLayoutGrid from '~icons/lucide/layout-grid'
 import { sessionStore } from '@/stores/session'
@@ -67,8 +70,9 @@ defineProps({
   isCollapsed: { type: Boolean, default: false },
 })
 
-const { settings, brand } = getSettings()
-// the product's brand leads; the centre's logo sits beside its icon
+const { settings } = getSettings()
+// the product's brand heads the sidebar; the centre's mark leads on the pages
+// its people open (crm.marchio)
 const platform = marchio()
 const { logout } = sessionStore()
 const { getUser } = usersStore()

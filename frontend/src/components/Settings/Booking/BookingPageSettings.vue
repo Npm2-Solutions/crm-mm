@@ -102,7 +102,7 @@
             <p class="text-p-xs text-ink-gray-5">
               {{
                 __(
-                  "The page wears {brand}'s logo and colours; the centre's logo goes beside it.",
+                  "The page shows the centre's logo at the top, in {brand}'s colours; {brand} signs at the bottom.",
                 )
               }}
             </p>
@@ -117,7 +117,8 @@
             />
           </div>
 
-          <!-- live preview: the product's marks and colour, as the real page -->
+          <!-- live preview: the centre's logo at the top, the product's colour
+               and signature, as the real page -->
           <div
             class="flex flex-col gap-3 self-start rounded-xl border border-outline-gray-2 bg-surface-gray-1 p-4"
             :aria-label="__('Preview')"
@@ -125,29 +126,15 @@
             <span class="text-p-xs uppercase text-ink-gray-5">{{
               __('Preview')
             }}</span>
-            <div class="flex min-w-0 items-center gap-2.5">
+            <template v-if="logo">
               <img
-                :src="prodotto.logo"
-                :alt="prodotto.name"
-                class="h-6 w-auto shrink-0 dark:hidden"
+                v-if="forma === 'wide'"
+                :src="logo"
+                alt=""
+                class="h-9 min-w-0 max-w-full self-start object-contain object-left dark:rounded dark:bg-white dark:px-1.5 dark:py-1"
               />
-              <img
-                :src="prodotto.logo_dark"
-                :alt="prodotto.name"
-                class="hidden h-6 w-auto shrink-0 dark:block"
-              />
-              <template v-if="logo">
-                <span
-                  class="h-5 shrink-0 border-l border-outline-gray-2"
-                  aria-hidden="true"
-                />
-                <img
-                  :src="logo"
-                  alt=""
-                  class="max-h-8 min-w-0 max-w-28 object-contain"
-                />
-              </template>
-            </div>
+              <CentreTile v-else :logo="logo" :forma="forma" class="size-10" />
+            </template>
             <div class="text-lg font-semibold text-ink-gray-9">
               {{
                 form.booking_page_title ||
@@ -181,6 +168,12 @@
               :style="{ background: 'var(--brand-action)' }"
             >
               {{ __('Confirm booking') }}
+            </span>
+            <span
+              class="mt-1 flex items-center justify-center gap-1.5 text-xs text-ink-gray-5"
+            >
+              <CRMLogo class="size-4 shrink-0 rounded-[4px]" />
+              {{ __('Powered by {0}', [prodotto.name]) }}
             </span>
           </div>
         </div>
@@ -353,6 +346,9 @@
 import CopyRow from '@/components/Settings/Booking/CopyRow.vue'
 import ImageUploader from '@/components/Controls/ImageUploader.vue'
 import { buildBookingLink, embedSnippet } from '@/utils/onlineBooking'
+import CentreTile from '@/components/CentreTile.vue'
+import CRMLogo from '@/components/Icons/CRMLogo.vue'
+import { useFormaDelLogo } from '@/composables/formaDelLogo'
 import { marchio } from '@/utils/marchio'
 import { createResource, FormControl, Switch, toast } from 'frappe-ui'
 import QRCode from 'qrcode'
@@ -537,10 +533,15 @@ createResource({
 })
 
 const brand = reactive({ name: '', logo: '' })
-// the centre's logo, beside the product's (crm.marchio): the page's colours
-// are the product's too, and so are the preview's
+// the centre's logo leads at the top, as it is drawn (crm.marchio): the page's
+// colours and its signature at the foot are the product's, and so are the preview's
 const logo = computed(() => form.booking_page_logo || brand.logo)
 const prodotto = marchio()
+const forma = useFormaDelLogo(logo, () =>
+  logo.value && logo.value === prodotto.centre_logo
+    ? prodotto.centre_logo_shape
+    : '',
+)
 
 const summary = createResource({
   url: 'crm.api.booking_admin.get_inheritance_summary',
