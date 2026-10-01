@@ -70,7 +70,7 @@
                     'No subscription yet: a month of the gym, three of pilates…',
                   )
                 : __(
-                    'No subscription yet. The types to sell are made in Settings > Agenda > Subscriptions.',
+                    'No subscription yet. The types to sell are made in Settings > Agenda > Services > Subscriptions.',
                   )
             }}
           </div>

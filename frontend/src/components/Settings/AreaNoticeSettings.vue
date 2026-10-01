@@ -45,7 +45,7 @@
                     'An approved template that says only that there is news; its one variable, if any, is the centre’s name.',
                   )
                 : __(
-                    'No approved WhatsApp template yet: create it in Settings > WhatsApp, then choose it here.',
+                    'No approved WhatsApp template yet: create it in Settings > WhatsApp > Templates, then choose it here.',
                   )
             }}
           </span>

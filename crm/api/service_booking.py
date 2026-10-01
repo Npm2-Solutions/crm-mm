@@ -224,7 +224,7 @@ def page_title(config=None) -> str:
 
 def page_branding(config=None) -> dict:
 	"""The centre's part of a public page: its title, and its logo, which goes
-	beside the product's (Settings → Brand, or the booking page's own). The
+	beside the product's (Settings → General → Name & logo, or the booking page's own). The
 	favicon, the colours and the product's logo are the vertical's brand
 	(`crm.marchio`, `marchio` in every page's context)."""
 	config = config or settings()

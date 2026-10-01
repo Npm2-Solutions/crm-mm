@@ -67,7 +67,7 @@ def publish_to_meta(post, target, account) -> str:
 		ig_id = account.provider_account_id
 		if not ig_id:
 			raise PublishError(
-				_("No Instagram account id — refresh the profiles in Settings → Social Planner")
+				_("No Instagram account id — refresh the profiles in Settings → Marketing → Social Planner")
 			)
 		if not media_url:
 			raise PublishError(_("Instagram requires an image or a video"))

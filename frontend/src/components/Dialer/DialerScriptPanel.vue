@@ -12,7 +12,7 @@
     <div v-if="!context?.scripts?.length" class="text-sm text-ink-gray-5">
       {{
         __(
-          'No call scripts yet. A manager can add them in Settings → Call Scripts.',
+          'No call scripts yet. A manager can add them in Settings → Phone → Call scripts.',
         )
       }}
     </div>

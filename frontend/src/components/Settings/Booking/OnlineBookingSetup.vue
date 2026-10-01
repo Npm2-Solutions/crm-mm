@@ -245,7 +245,7 @@
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Hours and days off: Agenda → Team rota. Own price or length for a service: Agenda → Services.',
+              'Hours and days off: Agenda → Hours & shifts → Team rota. Own price or length for a service: Agenda → Services.',
             )
           }}
         </p>

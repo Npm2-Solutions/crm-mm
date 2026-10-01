@@ -174,7 +174,7 @@
                       'An approved template. Its variables, in order: the person’s name, the service, the day and time, the link to confirm.',
                     )
                   : __(
-                      'No approved WhatsApp template yet: create it in Settings > WhatsApp, then choose it here.',
+                      'No approved WhatsApp template yet: create it in Settings > WhatsApp > Templates, then choose it here.',
                     )
               }}
             </span>

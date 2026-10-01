@@ -85,7 +85,9 @@
                     form.booking_page_logo
                       ? __('Its own logo.')
                       : brand.logo
-                        ? __('Using your brand logo (Settings → Brand).')
+                        ? __(
+                            'Using your logo (Settings → General → Name & logo).',
+                          )
                         : __('PNG or SVG, about 200 × 48 px.')
                   }}
                 </span>

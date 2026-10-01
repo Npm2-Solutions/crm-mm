@@ -7,7 +7,7 @@ A vertical switched on by the plan brings its brand (`crm.verticali`): the clini
 DottorCloud. Its name, icon, logo, favicon and colours are the product's in every
 place: DottorCloud's pages and the client area, the public pages (booking, forms,
 reports), the framework's own (the login page, the desk, the emails), the phone's
-home screen. A centre's own logo goes at most beside it (Settings > Brand); it never
+home screen. A centre's own logo goes at most beside it (Settings > General > Name & logo); it never
 takes its place. Without a vertical the base's brand speaks (`BASE`).
 
 - **Where it is read**: `attivo()`, on the server; the boots of DottorCloud's page
@@ -174,7 +174,7 @@ def accento(marchio: Marchio | None = None) -> dict[str, dict[str, str]]:
 
 
 def logo_del_centro() -> str:
-	"""The centre's own logo (Settings > Brand): at most beside the product's."""
+	"""The centre's own logo (Settings > General > Name & logo): at most beside the product's."""
 	return frappe.db.get_single_value("FCRM Settings", "brand_logo") or ""
 
 

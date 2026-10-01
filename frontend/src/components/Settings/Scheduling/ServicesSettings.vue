@@ -398,7 +398,7 @@
               </span>
               <span class="text-p-sm text-ink-gray-5">
                 {{
-                  __('Who clients can book for it: Booking → Online booking.')
+                  __('Who clients can book for it: Agenda → Online booking.')
                 }}
               </span>
             </span>

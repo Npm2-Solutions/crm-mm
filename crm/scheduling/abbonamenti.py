@@ -5,7 +5,7 @@
 abbonamenti"). The rules are `abbonamenti_regole`; here, the appointments, the
 invoices and the days.
 
-- **Types** (`CRM Subscription Type`, Settings > Agenda > Subscriptions,
+- **Types** (`CRM Subscription Type`, Settings > Agenda > Services > Subscriptions,
   `agenda.configura`): months, price, at once or by the month, the services it
   comprises and its entries, suspensions, the reminder, renewing by itself, the
   fiscal card of its invoices.
