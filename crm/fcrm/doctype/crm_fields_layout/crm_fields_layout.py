@@ -177,16 +177,20 @@ def get_permlevel_access(permission_type="write", doctype=None, parent_doctype=N
 
 
 def get_field_obj(field):
-	field["placeholder"] = field.get("placeholder") or "Add " + field.label + "..."
+	# in the user's language: «Aggiungi Sito web...», «Scegli Azienda...». A field to
+	# pick from (a link, a choice) asks to choose: the placeholder set first used to
+	# keep «Add» on those too.
+	label = _(field.label or "")
+	choose = field.fieldtype == "Link" or (field.fieldtype == "Select" and field.options)
+	field["placeholder"] = field.get("placeholder") or (
+		_("Select {0}...").format(label) if choose else _("Add {0}...").format(label)
+	)
 
-	if field.fieldtype == "Link":
-		field["placeholder"] = field.get("placeholder") or "Select " + field.label + "..."
-	elif field.fieldtype == "Select" and field.options:
-		field["placeholder"] = field.get("placeholder") or "Select " + field.label + "..."
-		field["options"] = [{"label": option, "value": option} for option in field.options.split("\n")]
+	if field.fieldtype == "Select" and field.options:
+		field["options"] = [{"label": _(option), "value": option} for option in field.options.split("\n")]
 
 	if field.read_only:
-		field["tooltip"] = "This field is read only and cannot be edited."
+		field["tooltip"] = _("This field is read only and cannot be edited.")
 
 	return field
 
