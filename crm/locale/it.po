@@ -2020,7 +2020,7 @@ msgstr "Aerospaziale"
 msgid "Affiliate"
 msgstr "Affiliati"
 
-#: frontend/src/utils/percorso.js
+#: frontend/src/components/Automations/TriggerPanel.vue
 msgid "After"
 msgstr "Dopo"
 
@@ -3103,10 +3103,6 @@ msgstr "Arrivato"
 msgid "Arrived at"
 msgstr "Ora di arrivo"
 
-#: frontend/src/utils/percorso.js
-msgid "Arrives"
-msgstr "Arriva"
-
 #: crm/area/doctype/crm_area_access/crm_area_access.json
 msgid "As"
 msgstr "In qualità di"
@@ -3350,10 +3346,6 @@ msgstr "Assistente"
 #: frontend/src/components/Settings/AssistantSettings.vue
 msgid "Assistant updated"
 msgstr "Assistente aggiornato"
-
-#: frontend/src/utils/percorso.js
-msgid "At home"
-msgstr "A casa"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:188
 msgid "At least one field is required"
@@ -4520,10 +4512,6 @@ msgstr "Prenotazioni dalle piattaforme"
 #: frontend/src/components/Settings/Booking/BookingPlatforms.vue
 msgid "Bookings taken on MioDottore, Treatwell, Fresha, Calendly… land on your calendar, and your calendar blocks their slots."
 msgstr "Le prenotazioni prese su MioDottore, Treatwell, Fresha, Calendly… arrivano nella tua agenda, e la tua agenda blocca i loro orari."
-
-#: frontend/src/utils/percorso.js
-msgid "Books"
-msgstr "Prenota"
 
 #: crm/fcrm/doctype/crm_related_person/crm_related_person.json
 msgid "Books for them"
@@ -6633,10 +6621,6 @@ msgstr "Colonne"
 #: frontend/src/components/Documents/DocumentDialog.vue
 msgid "Comes from"
 msgstr "Provenienza"
-
-#: frontend/src/utils/percorso.js
-msgid "Comes in"
-msgstr "Viene"
 
 #: frontend/src/components/Activities/EventArea.vue
 msgid "Coming up"
@@ -13561,10 +13545,6 @@ msgstr "Entrata in lista da"
 msgid "Joining"
 msgstr "Entrare in lista"
 
-#: frontend/src/components/Espresso/PersonJourney.vue
-msgid "Journey"
-msgstr "Percorso"
-
 #: frontend/src/components/Automations/StepPanel.vue
 msgid "Jump to the step labelled"
 msgstr "Salta al passo con l'etichetta"
@@ -20240,7 +20220,7 @@ msgstr "Incolla «{0}»"
 msgid "Path {0}"
 msgstr "Percorso {0}"
 
-#: frontend/src/components/Espresso/PersonJourney.vue
+#: frontend/src/components/PatientSection.vue
 msgid "Patient"
 msgstr "Paziente"
 
@@ -29610,10 +29590,6 @@ msgstr "Da verificare"
 #: frontend/src/components/Filter.vue:677 frontend/src/pages/Calendar.vue:85
 msgid "Today"
 msgstr "Oggi"
-
-#: frontend/src/utils/percorso.js
-msgid "Today, {0}"
-msgstr "Oggi, {0}"
 
 #. Option for the 'Status' (Select) field in DocType 'CRM Task'
 #: crm/fcrm/doctype/crm_task/crm_task.json

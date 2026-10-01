@@ -1,11 +1,11 @@
 /* Copyright (c) 2026, NPM2 Solutions Srl and contributors
    The design system's own components (brand/design-system/espresso/componenti):
    what frappe-ui has no component for - the cross, the StatTile, the empty
-   state, the category tag, the patient's journey, the agenda's event - with the
-   classes the system names (`dc-*`), and the tokens they need. The tokens sit on
-   the brand the page wears (utils/marchio.js: --brand, --brand-strong,
-   --brand-soft, --brand-on-dark), so another vertical's brand fills them with
-   its own colours; the states and the categories are the same for everybody.
+   state, the category tag, the agenda's event - with the classes the system
+   names (`dc-*`), and the tokens they need. The tokens sit on the brand the
+   page wears (utils/marchio.js: --brand, --brand-strong, --brand-soft,
+   --brand-on-dark), so another vertical's brand fills them with its own
+   colours; the states and the categories are the same for everybody.
    espresso.css lays the system over frappe-ui's own components. */
 
 /* 1. Tokens (tokens.css): the brand solid and subtle, the states, the categories */
