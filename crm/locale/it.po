@@ -2516,10 +2516,6 @@ msgstr "E"
 msgid "Animation in the library"
 msgstr "Animazione nella libreria"
 
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "Animations and pictures of exercises-dataset © Gym visual — https://gymvisual.com/"
-msgstr "Animazioni e immagini di exercises-dataset © Gym visual — https://gymvisual.com/"
-
 #: crm/invoicing/doctype/crm_invoice/crm_invoice.json
 msgid "Annotations"
 msgstr "Annotazioni"
@@ -8112,10 +8108,6 @@ msgstr "Campi della scheda Dati"
 msgid "Data Import"
 msgstr "Importazione dati"
 
-#: crm/piani/librerie.py
-msgid "Data under the MIT licence; pictures © Gym visual, authorised to NPM2 Solutions"
-msgstr "Dati con licenza MIT; immagini © Gym visual, uso concesso a NPM2 Solutions"
-
 #: crm/fcrm/doctype/crm_meta_settings/crm_meta_settings.json
 msgid "Dataset (Pixel) ID"
 msgstr "ID del dataset (pixel)"
@@ -12853,10 +12845,6 @@ msgstr "Importa una tabella"
 msgid "Import bookings"
 msgstr "Importa le prenotazioni"
 
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "Import exercises"
-msgstr "Importa gli esercizi"
-
 #: frontend/src/components/Settings/Meta/MetaLeadForms.vue
 msgid "Import started — the leads will appear shortly"
 msgstr "Importazione avviata: i contatti compariranno a breve"
@@ -17317,10 +17305,6 @@ msgstr "Nessun evento in arrivo. Creane uno per tenere il filo."
 msgid "No exemption reference: the 'operazione esente' annotation is mandatory on the document (art. 21, c. 6, lett. c), and on a PDF it is the annotation that carries weight, not the N4 code."
 msgstr "Manca il riferimento dell'esenzione: l'annotazione 'operazione esente' è obbligatoria sul documento (art. 21, c. 6, lett. c), e su un PDF conta l'annotazione, non il codice N4."
 
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "No exercises yet: import exercises-dataset, or add them while writing a plan."
-msgstr "Ancora nessun esercizio: importa exercises-dataset, o aggiungili mentre scrivi un piano."
-
 #: frontend/src/components/Settings/Meta/MetaLeadForms.vue
 msgid "No failed import."
 msgstr "Nessun errore di importazione."
@@ -17516,10 +17500,6 @@ msgstr "Manca il metodo di pagamento: il Sistema TS chiede se il pagamento è tr
 #: crm/integrations/whatsapp/api.py
 msgid "No phone number id in the connection payload"
 msgstr "Nei dati del collegamento manca l'ID del numero di telefono"
-
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "No pictures yet: the agency says where it hosts them, and they appear without importing again."
-msgstr "Ancora nessuna immagine: quando l'agenzia indica dove le ospita, compaiono senza importare di nuovo."
 
 #: frontend/src/components/Settings/Pipelines/PipelineList.vue
 msgid "No pipelines yet"
@@ -27268,10 +27248,6 @@ msgstr "Il ciclo di cui questo appuntamento è una seduta: si imposta da solo al
 msgid "The dashboard goes back to the ready-made layout and keeps up with the site again. The current arrangement is lost."
 msgstr "La dashboard torna alla disposizione pronta e segue di nuovo il sito. La disposizione attuale va persa."
 
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "The data are under the MIT licence. The animations and pictures are © Gym visual, which authorised NPM2 Solutions: they appear only where the agency hosts them, and the assistant never uses them."
-msgstr "I dati sono sotto licenza MIT. Le animazioni e le immagini sono © Gym visual, che ha autorizzato NPM2 Solutions: compaiono solo dove le ospita l'agenzia, e l'assistente non le usa mai."
-
 #: crm/fcrm/doctype/crm_subscription_type/crm_subscription_type.json
 msgid "The day after the last one, the next subscription starts at the type's price"
 msgstr "Il giorno dopo l'ultimo, il nuovo abbonamento comincia al prezzo del tipo"
@@ -27383,10 +27359,6 @@ msgstr "L'energia di un pasto va da 1 a 5000 kcal"
 #: crm/domain_enrichment/doctype/crm_enrichment_field_mapping/crm_enrichment_field_mapping.json
 msgid "The enrichment result key to read the value from."
 msgstr "La chiave del risultato del completamento da cui leggere il valore."
-
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "The exercises plans are written with: the centre’s own, and exercises-dataset. The names and body parts are the centre’s."
-msgstr "Gli esercizi con cui si scrivono i piani: quelli del centro ed exercises-dataset. I nomi e le parti del corpo sono quelli del centro."
 
 #: crm/tessera_sanitaria/__init__.py
 msgid "The expense file is built with a stand-in and cannot be submitted."
@@ -27887,10 +27859,6 @@ msgstr "Chi ha collegato Facebook deve avere anche il ruolo di inserzionista su 
 #: crm/clinica/parole.py
 msgid "The person, or who took it for them"
 msgstr "La persona, o chi l'ha ritirato per lei"
-
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "The pictures come from where the agency hosts them."
-msgstr "Le immagini arrivano da dove le ospita l'agenzia."
 
 #: crm/integrations/whatsapp/templates.py
 msgid "The placeholders must be numbered from {0} without gaps. This body has: {1}"
@@ -28986,10 +28954,6 @@ msgstr "Questa non è una ricetta per un piano"
 #: crm/clinica/riassunto.py
 msgid "This is not a summary"
 msgstr "Questo non è un riepilogo"
-
-#: crm/piani/librerie.py
-msgid "This is not exercises-dataset's exercises.json"
-msgstr "Questo non è il file exercises.json di exercises-dataset"
 
 #: crm/piani/area.py
 msgid "This is not in the plan"
@@ -30561,10 +30525,6 @@ msgstr "Carica un video"
 msgid "Upload another"
 msgstr "Caricane un'altra"
 
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "Upload exercises.json"
-msgstr "Carica exercises.json"
-
 #: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.py
 msgid "Upload the announcement audio, or switch the source back to text to speech."
 msgstr "Carica l'audio dell'annuncio, o torna alla sintesi vocale."
@@ -32031,12 +31991,8 @@ msgid "Where the Book button leads. The appointment lands in the agenda."
 msgstr "Dove porta il pulsante Prenota. L'appuntamento finisce in agenda."
 
 #: crm/area/doctype/crm_area_settings/crm_area_settings.json
-msgid "Where the agency hosts exercises-dataset's pictures: an https address, or a path of this server"
-msgstr "Dove l'agenzia ospita le immagini di exercises-dataset: un indirizzo https o un percorso di questo server"
-
-#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
-msgid "Where the agency hosts the images/ and videos/ folders of exercises-dataset: one copy per server or a CDN, not one per site. Empty: no pictures."
-msgstr "Dove l'agenzia ospita le cartelle images/ e videos/ di exercises-dataset: una copia per server o una CDN, non una per sito. Vuoto: nessuna immagine."
+msgid "Where the agency hosts the pictures of the exercise library: an https address, or a path of this server"
+msgstr "Dove l'agenzia tiene le immagini della libreria degli esercizi: un indirizzo https o un percorso di questo server"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Where the assistant runs, what it may do, what it did."
@@ -32461,10 +32417,6 @@ msgstr "Si applica la ritenuta"
 #: crm/invoicing/doctype/crm_invoice/crm_invoice.json
 msgid "Withholding base"
 msgstr "Base della ritenuta"
-
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "Without a file it is downloaded from GitHub."
-msgstr "Senza un file, viene scaricato da GitHub."
 
 #: frontend/src/components/Settings/Scheduling/SubscriptionTypesSettings.vue
 msgid "Without a fiscal card the instalments are only a schedule."
@@ -33539,19 +33491,11 @@ msgstr "exchangerate.host"
 
 #: crm/piani/doctype/crm_exercise/crm_exercise.json
 msgid "exercises-dataset"
-msgstr "exercises-dataset"
-
-#: crm/piani/librerie.py
-msgid "exercises-dataset could not be downloaded: upload its exercises.json instead"
-msgstr "Non è stato possibile scaricare exercises-dataset: carica invece il suo exercises.json"
-
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "exercises-dataset: 1,324 exercises with how they are done, step by step, in Italian. The names are in English: rename them here when a trainer has read them."
-msgstr "exercises-dataset: 1.324 esercizi con l'esecuzione spiegata passo per passo, in italiano. I nomi sono in inglese: rinominali qui dopo che un istruttore li ha letti."
+msgstr "Libreria"
 
 #: crm/piani/doctype/crm_library_import/crm_library_import.json
-msgid "exercises-dataset; the clinic's tables: CIQUAL, CREA, BDA-IEO, USDA"
-msgstr "exercises-dataset; le tabelle della clinica: CIQUAL, CREA, BDA-IEO, USDA"
+msgid "The clinic's tables: CIQUAL, CREA, BDA-IEO, USDA"
+msgstr "Le tabelle della clinica: CIQUAL, CREA, BDA-IEO, USDA"
 
 #: frontend/src/components/Documents/DeliverDialog.vue
 msgid "expired"
@@ -34898,10 +34842,6 @@ msgstr "{0} voci aspettano ancora il commercialista"
 msgid "{0} events"
 msgstr "{0} eventi"
 
-#: frontend/src/components/Settings/Plans/ExerciseImportDialog.vue
-msgid "{0} exercises added, {1} updated."
-msgstr "{0} esercizi aggiunti, {1} aggiornati."
-
 #: frontend/src/components/Settings/Meta/MetaLeadQuality.vue
 msgid "{0} failed"
 msgstr "{0} non riusciti"
@@ -35872,3 +35812,31 @@ msgstr "Supporto alla documentazione: il professionista rivede ogni bozza."
 #: crm/integrations/meta/api.py
 msgid "Facebook did not give {brand} the advertising role on this Page, so it cannot read its lead forms. Press \"Choose Pages\" on the connection screen and tick this Page: you must be one of its administrators."
 msgstr "Facebook non ha dato a {brand} il ruolo di inserzionista su questa pagina, quindi non può leggerne i moduli per i contatti. Premi «Scegli le pagine» nella schermata di collegamento e spunta questa pagina: devi esserne amministratore."
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+msgid "The exercises plans are written with: the {brand} library, ready to use, and the centre’s own. Names and body parts can be put in the centre’s words."
+msgstr "Gli esercizi con cui si scrivono i piani: la libreria di {brand}, pronta all'uso, e quelli del centro. Nomi e parti del corpo si possono scrivere con le parole del centro."
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+msgid "New exercise"
+msgstr "Nuovo esercizio"
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+msgid "No exercises yet: add the centre’s own with New exercise."
+msgstr "Ancora nessun esercizio: aggiungi quelli del centro con Nuovo esercizio."
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+msgid "Where the agency hosts the library’s pictures, the images/ and videos/ folders: one copy per server or a CDN, not one per site. Empty: no pictures."
+msgstr "Dove l'agenzia tiene le immagini della libreria, le cartelle images/ e videos/: una copia per server o un CDN, non una per sito. Vuoto: niente immagini."
+
+#: frontend/src/components/Settings/Plans/ExercisesSettings.vue
+msgid "Animations and pictures © Gym visual — https://gymvisual.com/"
+msgstr "Animazioni e immagini © Gym visual — https://gymvisual.com/"
+
+#: frontend/src/components/Settings/Plans/ExerciseEditDialog.vue
+msgid "From the {brand} library"
+msgstr "Dalla libreria di {brand}"
+
+#: frontend/src/components/Settings/Plans/ExerciseEditDialog.vue
+msgid "originally “{0}”"
+msgstr "in origine «{0}»"

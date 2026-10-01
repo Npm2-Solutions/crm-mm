@@ -37,7 +37,7 @@
    "in_list_view": 1,
    "label": "Source",
    "reqd": 1,
-   "description": "exercises-dataset; the clinic's tables: CIQUAL, CREA, BDA-IEO, USDA"
+   "description": "The clinic's tables: CIQUAL, CREA, BDA-IEO, USDA"
   },
   {
    "description": "What each food or exercise says of where it comes from",
@@ -110,7 +110,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-01 17:04:01.952022",
  "modified_by": "Administrator",
  "module": "Piani",
  "name": "CRM Library Import",

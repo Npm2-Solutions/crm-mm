@@ -1,9 +1,10 @@
 <!--
   A library the plans are written with, as a settings page: searched, filtered
   by group and source, a row opened to be put right, imports listed with who
-  declared which licence. The CRM's exercises use it, and so does a module for
-  its own library - the clinic's foods: each says where its rows come from and
-  how they read (``library``), and keeps its own dialogs.
+  declared which licence. The CRM's exercises use it (a library DottorCloud
+  ships: no import, the centre adds its own), and so does a module for its own
+  library - the clinic's foods, imported from a table: each says where its rows
+  come from and how they read (``library``), and keeps its own dialogs.
 -->
 <template>
   <SettingsLayoutBase>
@@ -15,6 +16,15 @@
     </template>
     <template #header-actions>
       <Button
+        v-if="library.newLabel"
+        class="shrink-0"
+        variant="solid"
+        icon-left="plus"
+        :label="library.newLabel"
+        @click="emit('new')"
+      />
+      <Button
+        v-if="library.importLabel"
         class="shrink-0"
         variant="solid"
         icon-left="upload"
@@ -32,7 +42,7 @@
             :aria-label="__('Search')"
           />
         </div>
-        <div class="w-44 max-md:flex-1">
+        <div class="w-56 max-md:flex-1">
           <FormControl
             v-model="filters.group"
             type="select"
@@ -163,10 +173,11 @@ import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   // title, description, endpoint, nameField, groups, everyGroup, groupLabel,
-  // sources, searchPlaceholder, importLabel, empty, describe(row), thumbnail(row)
+  // sources (a name, or its value and label), searchPlaceholder, newLabel or
+  // importLabel, empty, describe(row), thumbnail(row)
   library: { type: Object, required: true },
 })
-const emit = defineEmits(['edit', 'import'])
+const emit = defineEmits(['edit', 'new', 'import'])
 
 const filters = reactive({ text: '', group: '', source: '' })
 const data = ref(null)
@@ -182,14 +193,23 @@ const groupOptions = computed(() => [
   ...props.library.groups.map((g) => ({ label: __(g), value: g })),
 ])
 
+// a source is a table's own name ("CIQUAL"), or a value with the words the
+// centre reads ("exercises-dataset" is the library DottorCloud ships)
+const sources = computed(() =>
+  props.library.sources.map((s) =>
+    typeof s === 'string' ? { label: s, value: s } : s,
+  ),
+)
+
 const sourceOptions = computed(() => [
   { label: __('Every source'), value: '' },
   { label: __('The centre'), value: 'Centre' },
-  ...props.library.sources.map((s) => ({ label: s, value: s })),
+  ...sources.value,
 ])
 
 function sourceLabel(source) {
-  return !source || source === 'Centre' ? __('The centre') : source
+  if (!source || source === 'Centre') return __('The centre')
+  return sources.value.find((s) => s.value === source)?.label || source
 }
 
 async function load(start = 0) {

@@ -1,16 +1,17 @@
 <!--
-  The centre's exercises, the library its plans are written with: its own, and
-  exercises-dataset from its file or GitHub, its pictures from where the agency
-  hosts them. Here a name becomes the centre's own, a body part is put right, an
-  exercise is switched off; imported again, the dataset brings its pictures and
-  muscles, never over the centre's words.
+  The exercises plans are written with: the library DottorCloud ships, ready on
+  every site (`crm.piani.librerie.carica_libreria`), and the centre's own. Here a
+  name becomes the centre's, a body part is put right, an exercise is switched
+  off or added. The centre never imports: NPM2 adds to the library in the code.
+  The library's pictures come from where the agency hosts them, always with
+  whose they are.
 -->
 <template>
   <LibraryPage
     ref="page"
     :library="library"
     @edit="(row) => Object.assign(editing, { show: true, row })"
-    @import="importing = true"
+    @new="Object.assign(editing, { show: true, row: null })"
   >
     <template #before="{ data }">
       <div
@@ -36,7 +37,7 @@
         <span class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Where the agency hosts the images/ and videos/ folders of exercises-dataset: one copy per server or a CDN, not one per site. Empty: no pictures.',
+              'Where the agency hosts the library’s pictures, the images/ and videos/ folders: one copy per server or a CDN, not one per site. Empty: no pictures.',
             )
           }}
         </span>
@@ -45,22 +46,15 @@
     <template #after="{ data }">
       <p v-if="data?.has_media" class="px-2 text-p-xs text-ink-gray-5">
         {{
-          __(
-            'Animations and pictures of exercises-dataset © Gym visual — https://gymvisual.com/',
-          )
+          __('Animations and pictures © Gym visual — https://gymvisual.com/')
         }}
       </p>
     </template>
-    <template #dialogs="{ reload, data }">
+    <template #dialogs="{ reload }">
       <ExerciseEditDialog
         v-model="editing.show"
         :exercise="editing.row"
         @saved="reload"
-      />
-      <ExerciseImportDialog
-        v-model="importing"
-        :has-media="Boolean(data?.has_media)"
-        @imported="reload"
       />
     </template>
   </LibraryPage>
@@ -68,7 +62,6 @@
 
 <script setup>
 import ExerciseEditDialog from '@/components/Settings/Plans/ExerciseEditDialog.vue'
-import ExerciseImportDialog from '@/components/Settings/Plans/ExerciseImportDialog.vue'
 import LibraryPage from '@/components/Settings/Plans/LibraryPage.vue'
 import { PARTI } from '@/utils/piani'
 import { Button, FormControl, call, toast } from 'frappe-ui'
@@ -76,24 +69,22 @@ import { reactive, ref, watch } from 'vue'
 
 const page = ref(null)
 const editing = reactive({ show: false, row: null })
-const importing = ref(false)
 
 const library = {
   title: __('Exercises'),
   description: __(
-    'The exercises plans are written with: the centre’s own, and exercises-dataset. The names and body parts are the centre’s.',
+    'The exercises plans are written with: the {brand} library, ready to use, and the centre’s own. Names and body parts can be put in the centre’s words.',
   ),
   endpoint: 'crm.piani.librerie.get_exercises',
   nameField: 'exercise_name',
   groups: PARTI,
   everyGroup: __('Every body part'),
   groupLabel: __('Body part'),
-  sources: ['exercises-dataset'],
+  // the library DottorCloud ships keeps this name as its source, in the code only
+  sources: [{ value: 'exercises-dataset', label: __('Library') }],
   searchPlaceholder: __('Search an exercise'),
-  importLabel: __('Import exercises'),
-  empty: __(
-    'No exercises yet: import exercises-dataset, or add them while writing a plan.',
-  ),
+  newLabel: __('New exercise'),
+  empty: __('No exercises yet: add the centre’s own with New exercise.'),
   describe: (row) =>
     [
       row.body_part ? __(row.body_part, null, 'Body part') : '',
