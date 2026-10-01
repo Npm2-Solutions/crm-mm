@@ -935,7 +935,7 @@ def _tipo_da(data: dict, doc) -> None:
 	doc.months = R.entro(data.get("months"), R.MESI)
 	doc.payment = data.get("payment") if data.get("payment") in R.PAGAMENTI else R.SUBITO
 	doc.price = flt(data.get("price")) or 0
-	doc.currency = data.get("currency") or doc.currency
+	doc.currency = data.get("currency") or doc.currency or frappe.db.get_default("currency") or "EUR"
 	doc.billable_service = data.get("billable_service") or None
 	doc.issue_invoices = 1 if cint(data.get("issue_invoices")) else 0
 	doc.entries = data.get("entries") if data.get("entries") in R.INGRESSI else R.ILLIMITATI
@@ -972,12 +972,29 @@ def get_types() -> list[dict]:
 	]
 
 
+@frappe.whitelist()
+def get_fiscal_cards() -> list[dict]:
+	"""The fiscal cards a type's invoices may say: the enabled ones."""
+	livelli.verifica("agenda.configura")
+	return [
+		{"value": riga.name, "label": riga.service_name or riga.name}
+		for riga in frappe.get_all(
+			"CRM Billable Service",
+			filters={"enabled": 1},
+			fields=["name", "service_name"],
+			order_by="service_name asc",
+		)
+	]
+
+
 @frappe.whitelist(methods=["POST"])
 def save_type(data: dict | str, name: str | None = None) -> dict:
 	livelli.verifica("agenda.configura")
 	dati = _dati(data)
 	doc = frappe.get_doc(TIPO, name) if name else frappe.new_doc(TIPO)
 	_tipo_da(dati, doc)
+	if not name and frappe.db.exists(TIPO, doc.type_name):
+		frappe.throw(_("A type called {0} exists already").format(doc.type_name))
 	doc.save() if name else doc.insert()
 	return _tipo(doc)
 
