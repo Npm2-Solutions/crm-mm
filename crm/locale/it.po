@@ -1410,8 +1410,8 @@ msgid "Calls"
 msgstr "Chiamate"
 
 #: frontend/src/utils/impostazioni.js
-msgid "Calls from DottorCloud and what to say on them."
-msgstr "Le chiamate da DottorCloud e cosa dire."
+msgid "Calls from {brand} and what to say on them."
+msgstr "Le chiamate da {brand} e cosa dire."
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:55
 msgid "Camera"
@@ -8055,12 +8055,12 @@ msgid "The last day comes after the first"
 msgstr "L'ultimo giorno viene dopo il primo"
 
 #: frontend/src/utils/impostazioni.js
-msgid "The lines DottorCloud calls and answers on."
-msgstr "Le linee su cui DottorCloud chiama e risponde."
+msgid "The lines {brand} calls and answers on."
+msgstr "Le linee su cui {brand} chiama e risponde."
 
 #: frontend/src/utils/impostazioni.js
-msgid "The mailboxes DottorCloud sends and receives from."
-msgstr "Le caselle da cui DottorCloud manda e riceve."
+msgid "The mailboxes {brand} sends and receives from."
+msgstr "Le caselle da cui {brand} manda e riceve."
 
 #: frontend/src/utils/impostazioni.js
 msgid "The messages WhatsApp approved, to write after 24 hours."
@@ -8122,8 +8122,8 @@ msgid "The switches over all invoicing."
 msgstr "Le scelte su tutta la fatturazione."
 
 #: frontend/src/utils/impostazioni.js
-msgid "The theme and the language you read DottorCloud in."
-msgstr "Il tema e la lingua in cui leggi DottorCloud."
+msgid "The theme and the language you read {brand} in."
+msgstr "Il tema e la lingua in cui leggi {brand}."
 
 #: crm/scheduling/attese_pubblico.py
 msgid "The waiting list is not open online"
@@ -8925,8 +8925,8 @@ msgid "Welcome {0}, lets add your first lead"
 msgstr ""
 
 #: frontend/src/utils/impostazioni.js
-msgid "What DottorCloud includes for the centre, and what can be added."
-msgstr "Cosa comprende DottorCloud per il centro, e cosa si può aggiungere."
+msgid "What {brand} includes for the centre, and what can be added."
+msgstr "Cosa comprende {brand} per il centro, e cosa si può aggiungere."
 
 #: frontend/src/components/Settings/GeneralSettings.vue
 msgid "What a new message does to the person or the deal it is about, and how their activity reads."
@@ -9045,8 +9045,8 @@ msgid "Who takes a new request, and how soon they answer."
 msgstr "Chi prende una nuova richiesta, ed entro quando risponde."
 
 #: frontend/src/utils/impostazioni.js
-msgid "Who the centre is, who works in it, how DottorCloud behaves, what the plan includes."
-msgstr "Chi è il centro, chi ci lavora, come si comporta DottorCloud, cosa comprende il piano."
+msgid "Who the centre is, who works in it, how {brand} behaves, what the plan includes."
+msgstr "Chi è il centro, chi ci lavora, come si comporta {brand}, cosa comprende il piano."
 
 #: frontend/src/utils/impostazioni.js
 msgid "Who works in the centre and at what level, invitations, who sees whom."
@@ -9258,8 +9258,8 @@ msgid "Your old conditions will be overwritten. Are you sure you want to save?"
 msgstr ""
 
 #: frontend/src/utils/impostazioni.js
-msgid "Your profile, how DottorCloud looks for you, the calendar you bring."
-msgstr "Il tuo profilo, come vedi DottorCloud, il calendario che porti con te."
+msgid "Your profile, how {brand} looks for you, the calendar you bring."
+msgstr "Il tuo profilo, come vedi {brand}, il calendario che porti con te."
 
 #: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
 msgid "Your shifts"
