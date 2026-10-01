@@ -120,8 +120,9 @@ def check_placeholders(values: dict) -> None:
 	wanted = sorted(set(found))
 	if wanted != list(range(1, len(wanted) + 1)):
 		frappe.throw(
-			_("The placeholders must be numbered from {{1}} without gaps. This body has: {0}").format(
-				", ".join(f"{{{{{number}}}}}" for number in wanted)
+			# {{1}} goes in as a value: in the sentence .format() would make it {1}
+			_("The placeholders must be numbered from {0} without gaps. This body has: {1}").format(
+				"{{1}}", ", ".join(f"{{{{{number}}}}}" for number in wanted)
 			)
 		)
 

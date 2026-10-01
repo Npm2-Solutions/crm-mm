@@ -449,12 +449,19 @@ def push_appointment(appointment: str, deleted: bool = False):
 	_sync_blocks(appointment, doc)
 
 
+def _dalla_piattaforma(reason: str, platform: str) -> bool:
+	"""A cancellation the platform made: its reason says "Cancelled on <platform>" in
+	the language of whoever synced it, which need not be this job's."""
+	lingue = {None, "en", frappe.db.get_single_value("System Settings", "language")}
+	return any(reason.startswith(_("Cancelled on {0}", lang=lingua).format(platform)) for lingua in lingue)
+
+
 def _cancel_on_platform(doc):
 	conn = frappe.get_doc("CRM Booking Connection", doc.booking_connection)
 	if not cint(conn.push_cancellations) or not cint(conn.enabled):
 		return
 	reason = doc.cancellation_reason or ""
-	if reason.startswith(_("Cancelled on {0}").format(conn.platform)):
+	if _dalla_piattaforma(reason, conn.platform):
 		return  # it came from the platform: nothing to send back
 	try:
 		get_provider(conn).cancel_booking(doc.external_id, reason)
