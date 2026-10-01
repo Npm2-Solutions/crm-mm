@@ -42,6 +42,8 @@
     >
       <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
+          <!-- where the person is: arrived, booked, came, after, at home -->
+          <PersonJourney :lead="leadId" class="border-b px-3 py-3" />
           <SLASection
             v-if="doc.sla_status"
             v-model="doc"
@@ -125,6 +127,7 @@ import LucideReceiptText from '~icons/lucide/receipt-text'
 import { usersStore } from '@/stores/users'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
+import PersonJourney from '@/components/Espresso/PersonJourney.vue'
 import BillingProfileSection from '@/components/BillingProfileSection.vue'
 import ConsentsSection from '@/components/ConsentsSection.vue'
 import CyclesSection from '@/components/CyclesSection.vue'
