@@ -38,12 +38,11 @@ Laura Consenso
 - **In corso** (`InProgressBadge.vue`): il verde tenue del marchio con la croce al
   posto del pallino. Una chiamata in corso, un ciclo di sedute attivo, un piano di
   cura in corso nell'area, i numeri "Adesso" della dashboard.
-- **Il percorso** (`PersonJourney.vue`): in testa alla scheda della persona (sul
-  telefono in testa a "Dettagli") le cinque tappe Arriva → Prenota → Viene → Dopo →
-  A casa; con la clinica "Visita". Fatte nel pieno con la spunta, quella in corso in
-  menta con la croce, le altre numerate; sotto, da dove e quando, o quando la si
-  aspetta. Dice quando e attraverso cosa, mai cosa: nessun servizio, nessun titolo
-  di piano o documento.
+- **Il percorso** (`PersonJourney.vue`): le cinque tappe Arriva → Prenota → Viene →
+  Dopo → A casa in testa alla scheda della persona. **Tolto il 01/10/2026**: in
+  testa alla scheda non serviva, e ripeteva quello che la scheda dice già (gli
+  appuntamenti, i documenti, i piani). Il PatientJourney resta nel design system
+  (`brand/design-system/espresso/componenti/PatientJourney`), non nel gestionale.
 - **L'evento dell'agenda**: nella vista per professionista o ambulatorio
   l'appuntamento ha la coda, il fondo e la barretta nel colore del servizio e l'ora
   in quel colore; il **primo appuntamento** di una persona (con la clinica, la prima
@@ -101,30 +100,23 @@ Le logiche del marchio e come rigenerare stanno nel [README di `brand/`](../../b
 |---|---|
 | `frontend/src/espresso-componenti.css` | I token che mancavano (stati, categorie, il tenue e il pieno del marchio, la coda) e le classi `dc-*` dei componenti; tutto sul marchio acceso, quindi un altro verticale li colora con i suoi |
 | `frontend/src/espresso.css` | Sezioni 14–24: avatar, coda, voce scelta, righe e barra, calendario, finestre, toast, spinner, avvisi, `dc-brand`, eventi del calendario |
-| `frontend/src/components/Espresso/` | `StatTile`, `EmptyState` + `EmptyArt`, `CategoryTag`, `InProgressBadge`, `LoaderMark`, `PersonJourney` |
+| `frontend/src/components/Espresso/` | `StatTile`, `EmptyState` + `EmptyArt`, `CategoryTag`, `InProgressBadge`, `LoaderMark` |
 | `frontend/src/utils/dashboard.js` | `highlightedNumbers()`: il primo numero di ogni fila — testato |
 | `frontend/src/utils/cicli.js` | `tappe()`: un segmento per seduta — testato |
-| `frontend/src/utils/percorso.js` | Le parole sotto le tappe del percorso — testato |
-| `crm/clienti/percorso.py` | Il percorso: `percorso()` puro, `get_journey()` con il permesso di leggere la persona |
 | `crm/api/appointments.py` | `first_visit` sugli appuntamenti dell'agenda: il primo non annullato di una persona che non era già cliente |
 | `frontend/src/App.vue` | Le date di dayjs in italiano per chi usa l'italiano ("mercoledì 30 settembre", "3 minuti fa") |
 
-Con la clinica "Viene" diventa "Visita" e "Primo appuntamento" "Prima visita"
-(`crm/clinica/parole.py`).
+Con la clinica "Primo appuntamento" diventa "Prima visita" (`crm/clinica/parole.py`).
 
 ## Test
 
-- `crm/clienti/tests/test_percorso.py`: le tappe senza sito (in corso la prima che
-  manca, quella fatta resta fatta, chi è venuto e quando, la prima prenotazione e il
-  suo canale, il prossimo appuntamento); il percorso di Giulia che arriva, prenota,
-  viene, riceve un documento; chi non legge la persona non vede il percorso.
 - `crm/tests/test_scheduling.py`: l'agenda segna la prima visita, non quella
   annullata, non le successive, non chi era cliente da prima.
-- `tests/unit/dashboard.test.js`, `cicli.test.js`, `percorso.test.js`.
+- `tests/unit/dashboard.test.js`, `cicli.test.js`.
 - I generatori del marchio rigenerano i 28 componenti e i token del repo senza
   differenze (solo il percorso del font, ora `brand/font`).
 - Nel browser, in chiaro, in scuro e sul telefono: Oggi, la dashboard, le liste con
-  le righe scelte, la scheda con il percorso, i piani e i documenti, il toast, la
+  le righe scelte, la scheda della persona, i piani e i documenti, il toast, la
   vista per professionista dell'agenda.
 
 ## Tradotto

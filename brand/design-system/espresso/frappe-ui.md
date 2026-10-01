@@ -55,7 +55,8 @@ I componenti che frappe-ui non ha sono del gestionale, in
 `frontend/src/components/Espresso/`, con le classi di `espresso-componenti.css`:
 `StatTile` (`dc-stat`; i numeri della dashboard con `dc-numero`), `EmptyState` e
 `EmptyArt` (`dc-empty`), `CategoryTag` (`dc-tag`), `InProgressBadge` (`dc-in-corso`),
-`LoaderMark` (`dc-loader-mark`), `PersonJourney` (`dc-journey`); l'evento dell'agenda
+`LoaderMark` (`dc-loader-mark`); il PatientJourney non c'è (tolto dalla scheda della
+persona il 01/10/2026). L'evento dell'agenda
 è `dc-evento` in `ResourceScheduler.vue`, i cicli a tappe `dc-steps`, l'area di
 rilascio `dc-drop`. I token che usano (stati, categorie, `brand-subtle`, `brand-solid`,
 `radius-tail`) stanno in testa a `espresso-componenti.css` e prendono il marchio
