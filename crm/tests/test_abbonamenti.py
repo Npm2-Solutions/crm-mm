@@ -497,6 +497,9 @@ class ITipi(AbbonamentiCase):
 			A.save_type(json.dumps({"type_name": "Senza servizi", "services": []}))
 		with self.assertRaises(frappe.ValidationError):
 			A.save_type(json.dumps({"type_name": "", "services": [self.pilates.name]}))
+		# a name taken says so, in words
+		with self.assertRaisesRegex(frappe.ValidationError, "exists already"):
+			A.save_type(json.dumps({"type_name": "Open in prova", "services": [self.pilates.name]}))
 		self.vendi(self.open)
 		with self.assertRaises(frappe.ValidationError):
 			A.delete_type(self.open)
