@@ -44,24 +44,28 @@
     </template>
   </LayoutHeader>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
-    <Tabs
-      v-model="tabIndex"
-      :tabs="tabs"
-      class="flex flex-1 overflow-hidden flex-col [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-5 [&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
-    >
-      <template #tab-panel>
-        <Activities
-          ref="activities"
-          v-model:reload="reload"
-          v-model:tabIndex="tabIndex"
-          doctype="CRM Lead"
-          :docname="leadId"
-          :tabs="tabs"
-          @beforeSave="saveChange"
-          @afterSave="reloadResources"
-        />
-      </template>
-    </Tabs>
+    <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <!-- where the person is: arrived, booked, came, after, at home -->
+      <PersonJourney :lead="leadId" class="border-b px-5 pb-3 pt-3.5" />
+      <Tabs
+        v-model="tabIndex"
+        :tabs="tabs"
+        class="flex flex-1 overflow-hidden flex-col [&>[role='tablist']>[role='tab']]:px-0 [&>[role='tablist']>[role='tab']]:shrink-0 [&>[role='tablist']]:px-5 [&>[role='tablist']::-webkit-scrollbar]:h-0 [&>[role='tablist']]:min-h-[45px] [&>[role='tablist']]:gap-7.5 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
+      >
+        <template #tab-panel>
+          <Activities
+            ref="activities"
+            v-model:reload="reload"
+            v-model:tabIndex="tabIndex"
+            doctype="CRM Lead"
+            :docname="leadId"
+            :tabs="tabs"
+            @beforeSave="saveChange"
+            @afterSave="reloadResources"
+          />
+        </template>
+      </Tabs>
+    </div>
     <Resizer class="flex flex-col justify-between border-l" side="right">
       <!-- The record's id, for copying: it was styled as the panel's title,
            in bigger type than the name right under it. -->
@@ -251,6 +255,7 @@
 <script setup>
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
 import ErrorPage from '@/components/ErrorPage.vue'
+import PersonJourney from '@/components/Espresso/PersonJourney.vue'
 import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'

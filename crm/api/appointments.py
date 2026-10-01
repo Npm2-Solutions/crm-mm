@@ -16,6 +16,7 @@ import json
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import Min
 from frappe.utils import cint, flt, sbool
 
 from crm.permissions.livelli import CENTRO, ambito, puo, verifica
@@ -170,6 +171,7 @@ def get_calendar(
 		limit_page_length=0,
 	)
 	appointments = _decorate(rows)
+	_first_visits(appointments)
 
 	wanted_staff = set(_as_list(staff))
 	wanted_resources = set(_as_list(resources))
@@ -281,6 +283,70 @@ def _decorate(rows: list[dict]) -> list[dict]:
 				entry["booked_by_name"] = frappe.db.get_value("CRM Lead", entry["booked_by"], "lead_name")
 			by_name[parent][key].append(entry)
 	return rows
+
+
+def _first_visits(appointments: list[dict]) -> None:
+	"""Mark `first_visit` on the appointments that are a person's first: their
+	earliest appointment not cancelled, unless the centre counted them a client
+	before it (history from before the agenda). The agenda draws them as the
+	brand's full block, the design system's AgendaEvent."""
+	leads = {
+		participant["party"]
+		for appointment in appointments
+		for participant in appointment["participants"]
+		if participant.get("party_type") == "CRM Lead" and participant.get("party")
+	}
+	for appointment in appointments:
+		appointment["first_visit"] = False
+	if not leads:
+		return
+	appointment_ = frappe.qb.DocType("CRM Appointment")
+	participant_ = frappe.qb.DocType("CRM Appointment Participant")
+	first = {
+		row.party: row.first
+		for row in (
+			frappe.qb.from_(participant_)
+			.join(appointment_)
+			.on(appointment_.name == participant_.parent)
+			.select(participant_.party, Min(appointment_.starts_on).as_("first"))
+			.where(
+				(participant_.parenttype == "CRM Appointment")
+				& (participant_.party_type == "CRM Lead")
+				& participant_.party.isin(list(leads))
+				& (appointment_.status != "Cancelled")
+			)
+			.groupby(participant_.party)
+		).run(as_dict=True)
+	}
+	clients_since = dict(
+		frappe.get_all(
+			"CRM Lead",
+			filters={"name": ["in", list(leads)], "client_since": ["is", "set"]},
+			fields=["name", "client_since"],
+			as_list=True,
+		)
+	)
+	for appointment in appointments:
+		appointment["first_visit"] = is_first_visit(appointment, first, clients_since)
+
+
+def is_first_visit(appointment: dict, first: dict, clients_since: dict) -> bool:
+	"""A person's first visit: not cancelled, the earliest of one of its people,
+	who was not a client before its day."""
+	if appointment.get("status") == "Cancelled":
+		return False
+	day = str(appointment["starts_on"])[:10]
+	for participant in appointment.get("participants") or []:
+		party = participant.get("party")
+		if participant.get("party_type") != "CRM Lead" or not party or party not in first:
+			continue
+		if str(first[party]) != str(appointment["starts_on"]):
+			continue
+		since = clients_since.get(party)
+		if since and str(since)[:10] < day:
+			continue
+		return True
+	return False
 
 
 def _plain_events(from_dt, to_dt) -> list[dict]:

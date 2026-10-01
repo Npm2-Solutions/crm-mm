@@ -700,6 +700,52 @@ class TestAppointmentApi(SchedulingCase):
 		self.assertEqual([s["user"] for s in row["staff"]], [anna])
 		self.assertEqual([p["participant_name"] for p in row["participants"]], ["Cliente"])
 
+	def test_the_feed_marks_a_persons_first_visit(self):
+		anna = self.make_user("anna_sched@example.com")
+		self.make_service("Visita prima", [anna])
+		lead = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Prima", "last_name": "Visita"}).insert(
+			ignore_permissions=True
+		)
+		who = [{"party_type": "CRM Lead", "party": lead.name, "participant_name": "Prima Visita"}]
+		start = self.tomorrow(10)
+		# a cancelled one before it does not count
+		cancelled = self.make_appointment(
+			"Visita prima",
+			start - datetime.timedelta(hours=2),
+			[anna],
+			participants=[dict(row) for row in who],
+			status="Cancelled",
+		)
+		first = self.make_appointment("Visita prima", start, [anna], participants=[dict(row) for row in who])
+		later = self.make_appointment(
+			"Visita prima",
+			start + datetime.timedelta(days=2),
+			[anna],
+			participants=[dict(row) for row in who],
+		)
+		other = self.make_appointment(
+			"Visita prima",
+			start + datetime.timedelta(hours=3),
+			[anna],
+			participants=[{"participant_name": "Senza scheda"}],
+		)
+
+		def marks():
+			feed = A.get_calendar(
+				(start - datetime.timedelta(days=1)).date().isoformat(),
+				(start + datetime.timedelta(days=2)).date().isoformat(),
+				include_events=False,
+			)
+			return {row["name"]: row["first_visit"] for row in feed["appointments"]}
+
+		self.assertEqual(
+			{name: marks()[name] for name in (cancelled.name, first.name, later.name, other.name)},
+			{cancelled.name: False, first.name: True, later.name: False, other.name: False},
+		)
+		# a client from before the agenda: no first visit
+		frappe.db.set_value("CRM Lead", lead.name, "client_since", "2020-01-01")
+		self.assertFalse(marks()[first.name])
+
 	def test_calendar_feed_filters_by_professional(self):
 		anna = self.make_user("anna_sched@example.com")
 		bruno = self.make_user("bruno_sched@example.com")
