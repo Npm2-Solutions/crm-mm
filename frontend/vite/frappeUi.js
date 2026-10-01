@@ -15,8 +15,6 @@
  * English in silence.
  */
 
-const CARTELLA = '/frappe-ui/src/components/'
-
 // Appended to the calendar's calendarUtils.ts: function declarations, hoisted, so
 // the lists at the top of the module can call them while it loads.
 export const NOMI = `
@@ -59,6 +57,26 @@ function attributo(nome, testo) {
 function testo(parola) {
   return [new RegExp(`>\\s*${parola}\\s*<`), `>{{ __('${parola}') }}<`]
 }
+
+/**
+ * A sentence between two tags, however the template spaces it; `tutte` for one
+ * written more than once.
+ */
+function frase(testo, { tutte = false, contesto = null } = {}) {
+  const cerca = testo
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/ /g, '\\s+')
+  const chiamata = contesto
+    ? `__('${testo}', null, '${contesto}')`
+    : `__('${testo.replace(/'/g, "\\'")}')`
+  return [
+    new RegExp(`>(\\s*)${cerca}(\\s*)<`, tutte ? 'g' : ''),
+    `>$1{{ ${chiamata} }}$2<`,
+  ]
+}
+
+/** A word in the component's script, through the translator once the app has it. */
+const TRADUCI = '(globalThis.__ || String)'
 
 /**
  * A default of `withDefaults`, `placeholder: 'Select option'`, made when the
@@ -125,17 +143,149 @@ const SOSTITUZIONI = {
   ],
 }
 
+// frappe-ui/frappe: the data import pages, written with no translator at all
+const SOSTITUZIONI_FRAPPE = {
+  'DataImport/DataImport.vue': [
+    ["label: 'Data Import',", `label: ${TRADUCI}('Data Import'),`],
+    [
+      'label: `Importing ${doctypeTitle.value}`,',
+      `label: ${TRADUCI}('Importing {0}', [doctypeTitle.value]),`,
+    ],
+  ],
+  'DataImport/DataImportList.vue': [
+    frase('Data Import'),
+    frase('Import data into your system using CSV files.'),
+    frase('Import'),
+    frase('Name'),
+    frase('Status'),
+    frase('Load More'),
+    frase('No data imports found.'),
+    attributo('placeholder', 'Search imported files'),
+    attributo('label', 'Choose a Document Type to import'),
+    ["title: 'New Data Import',", "title: __('New Data Import'),"],
+    ["label: 'Continue',", "label: __('Continue'),"],
+    [':label="dataImport.status"', ':label="__(dataImport.status)"'],
+    [
+      '{{ dataImport.reference_doctype }}',
+      '{{ __(dataImport.reference_doctype) }}',
+    ],
+    [
+      '({ label: option, value: option })',
+      `({ label: ${TRADUCI}(option), value: option })`,
+    ],
+  ],
+  'DataImport/ImportSteps.vue': [
+    frase('Upload File'),
+    frase('Map Data'),
+    frase('Review & Import'),
+  ],
+  'DataImport/MappingStep.vue': [
+    frase('Map Data'),
+    frase(
+      'Change the mapping of columns from your file to fields in the system',
+    ),
+    frase('Fields in File'),
+    frase('Fields in System'),
+    attributo('label', 'Reset Mapping'),
+    attributo('label', 'Continue'),
+    attributo('placeholder', 'Select field'),
+    ['{{ data?.status }}', '{{ __(data?.status) }}'],
+    ['? f.label', `? ${TRADUCI}(f.label)`],
+    ['`${f.label} (', `\`\${${TRADUCI}(f.label)} (`],
+  ],
+  'DataImport/PreviewStep.vue': [
+    frase('Review and Import'),
+    frase('Verify the data before starting the import process'),
+    frase('Column Mapping'),
+    frase('Warnings'),
+    frase('Import Logs'),
+    frase('Row no.'),
+    frase('Message'),
+    frase('Failed to import'),
+    frase('Successfully imported'),
+    frase('No logs to display.'),
+    attributo('label', 'Done'),
+    ['{{ data.status }}', '{{ __(data.status) }}'],
+    [
+      `:label="data.status != 'Pending' ? 'Retry' : 'Import'"`,
+      `:label="data.status != 'Pending' ? __('Retry') : __('Import')"`,
+    ],
+    [
+      "{{ importSuccessCount }} {{ importSuccessCount == 1 ? 'row' : 'rows' }} imported successfully, {{ importErrorCount }} {{ importErrorCount == 1 ? 'row' : 'rows' }} failed.",
+      "{{ __('Rows imported: {0}. Rows not imported: {1}.', [importSuccessCount, importErrorCount]) }}",
+    ],
+    [
+      "{ label: 'All', value: 'all' }",
+      `{ label: ${TRADUCI}('All'), value: 'all' }`,
+    ],
+    [
+      "{ label: 'Successful', value: 'successful' }",
+      `{ label: ${TRADUCI}('Successful'), value: 'successful' }`,
+    ],
+    [
+      "{ label: 'Failed', value: 'failed' }",
+      `{ label: ${TRADUCI}('Failed'), value: 'failed' }`,
+    ],
+    ['`Column ${index + 1}`', `${TRADUCI}('Column {0}', [index + 1])`],
+  ],
+  'DataImport/TemplateModal.vue': [
+    ["title: 'Export Data',", "title: __('Export Data'),"],
+    attributo('label', 'File Type'),
+    frase('Select the fields you want to include in the template.'),
+    attributo('label', 'Select All'),
+    attributo('label', 'Select Mandatory Fields'),
+    attributo('label', 'Unselect All'),
+    attributo('label', 'Export'),
+    attributo('label', 'Cancel'),
+    ['{{ doctype }}', '{{ __(doctype) }}'],
+    [
+      '{{ field.label || field.fieldname }}',
+      '{{ __(field.label) || field.fieldname }}',
+    ],
+  ],
+  'DataImport/UploadStep.vue': [
+    frase('Choose Import'),
+    frase('Continue'),
+    frase('Import data into your system using CSV files or Google Sheets.'),
+    frase('Drag and drop a CSV file, or upload from your'),
+    // the pieces of one sentence: "…caricalo dal tuo dispositivo o da un foglio Google"
+    frase('Device', { contesto: 'Data import' }),
+    frase('or', { contesto: 'Data import' }),
+    frase('Google Sheet', { tutte: true, contesto: 'Data import' }),
+    frase('Make sure the link is publically accessible to fetch the data.'),
+    frase('Download CSV Template'),
+    attributo('placeholder', 'Add Google Sheets Link'),
+    ['{{ data?.status }}', '{{ __(data?.status) }}'],
+    ['}} of {{', "}} {{ __('of') }} {{"],
+    ["label: 'Mandatory Fields',", "label: __('Mandatory Fields'),"],
+    ["label: 'All Fields',", "label: __('All Fields'),"],
+    ["label: 'Custom Template',", "label: __('Custom Template'),"],
+    [
+      "toast.error('Please upload a valid CSV file.')",
+      `toast.error(${TRADUCI}('Please upload a valid CSV file.'))`,
+    ],
+  ],
+}
+
+const RADICI = {
+  '/frappe-ui/src/components/': SOSTITUZIONI,
+  '/frappe-ui/frappe/': SOSTITUZIONI_FRAPPE,
+}
+
 /** The files the build rewrites, as their path under frappe-ui's components. */
 export const FILE = Object.keys(SOSTITUZIONI)
+
+/** The same, under frappe-ui/frappe. */
+export const FILE_FRAPPE = Object.keys(SOSTITUZIONI_FRAPPE)
 
 /** The module's code in the user's language, or null when it is not one to rewrite. */
 export function traduciFrappeUi(codice, id) {
   // a .vue file's style or template part comes with a query: only the file itself
   if (id.includes('?')) return null
-  const dove = id.indexOf(CARTELLA)
-  if (dove < 0) return null
-  const file = id.slice(dove + CARTELLA.length)
-  const sostituzioni = SOSTITUZIONI[file]
+  const radice = Object.keys(RADICI).find((cartella) => id.includes(cartella))
+  if (!radice) return null
+  const file = id.slice(id.indexOf(radice) + radice.length)
+  const sostituzioni = RADICI[radice][file]
   if (!sostituzioni) return null
   for (const [cerca, metti] of sostituzioni) {
     const trovato =
