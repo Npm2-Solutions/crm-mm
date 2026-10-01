@@ -23,7 +23,8 @@ import DoctypeModals from '@/components/Modals/DoctypeModals.vue'
 import { Dialogs } from '@/utils/dialogs'
 import { sessionStore } from '@/stores/session'
 import { isMobileView } from '@/composables/breakpoints'
-import { FrappeUIProvider, setConfig, useTheme } from 'frappe-ui'
+import { FrappeUIProvider, dayjs, setConfig, useTheme } from 'frappe-ui'
+import 'dayjs/esm/locale/it'
 import { computed, defineAsyncComponent, provide } from 'vue'
 
 const session = sessionStore()
@@ -50,4 +51,9 @@ const Layout = computed(() =>
 setConfig('systemTimezone', window.timezone?.system || null)
 setConfig('localTimezone', window.timezone?.user || null)
 setConfig('translatedMessages', window.translated_messages || {})
+// the dates dayjs writes - formatDate, the agenda's headers, «3 minuti fa» - in
+// the user's language: «mercoledì 30 settembre» under Italian words, not
+// «Wednesday 30 September». Italian is the product's own; any other language
+// keeps dayjs's English
+if (String(window.lang || '').startsWith('it')) dayjs.locale('it')
 </script>
