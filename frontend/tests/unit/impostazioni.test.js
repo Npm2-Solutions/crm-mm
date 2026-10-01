@@ -331,8 +331,8 @@ describe('the pages there are', () => {
 })
 
 describe('what Settings.vue draws them with', () => {
-  // the modal names each page's component and each entry's icon by its key:
-  // one forgotten, and the page is blank, or the entry has no icon
+  // the modal names each page's component and each category's icon by its key:
+  // one forgotten, and the page is blank, or the category has no icon
   const vue = fs.readFileSync(
     path.resolve(
       import.meta.dirname,
@@ -353,9 +353,32 @@ describe('what Settings.vue draws them with', () => {
       expect([chiave, ha(pagineVue, chiave)]).toEqual([chiave, true])
   })
 
-  it('has an icon for every entry', () => {
+  it('has an icon for every category: the categories carry them, not the entries', () => {
     const icone = blocco('ICONE')
-    for (const voce of MENU.flatMap((gruppo) => gruppo.items))
-      expect([voce.key, ha(icone, voce.key)]).toEqual([voce.key, true])
+    for (const gruppo of MENU)
+      expect([gruppo.key, ha(icone, gruppo.key)]).toEqual([gruppo.key, true])
+  })
+})
+
+describe('what the settings explain', () => {
+  // a category's page lists its entries, each with a line on what one sets up
+  // there: none goes without
+  it('says what each category and each entry is for', () => {
+    for (const gruppo of MENU) {
+      expect([gruppo.key, Boolean(gruppo.description)]).toEqual([
+        gruppo.key,
+        true,
+      ])
+      for (const voce of gruppo.items)
+        expect([voce.key, Boolean(voce.description)]).toEqual([voce.key, true])
+    }
+  })
+
+  it('keeps it to one line a person reads at a glance', () => {
+    for (const cosa of MENU.flatMap((gruppo) => [gruppo, ...gruppo.items]))
+      expect([cosa.key, cosa.description.length <= 100]).toEqual([
+        cosa.key,
+        true,
+      ])
   })
 })

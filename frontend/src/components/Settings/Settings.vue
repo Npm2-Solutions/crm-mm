@@ -6,11 +6,13 @@
     @close="activeSettingsPage = ''"
   >
     <template #body>
-      <!-- Two panes side by side on a desktop. On a phone they do not fit, so it
-           becomes a list that pushes to a page and comes back, and it takes
-           the whole screen (`.settings-modal` in index.css): as a card it
-           kept frappe-ui's margins, 16px a side and 48px above, and was 32px
-           taller than the screen, with its bottom row cut off. -->
+      <!-- Two levels: the categories on the left, each with its icon; on the
+           right a category's entries, each saying what it is for, and the
+           entry one opens, with the way back to its category. On a phone they
+           do not fit side by side, so it becomes a list that pushes to a page
+           and comes back, and it takes the whole screen (`.settings-modal` in
+           index.css): as a card it kept frappe-ui's margins, 16px a side and
+           48px above, and was 32px taller than the screen. -->
       <div
         class="settings-modal flex bg-surface-gray-1"
         :class="
@@ -28,45 +30,35 @@
           <!-- The `#body` slot suppresses the dialog's own chrome, so on a phone
                — where there is no backdrop left to tap — this is the only way out. -->
           <div
-            v-if="isMobileView"
             class="flex items-center justify-between px-2 py-1.5"
+            :class="{ 'md:pt-3': !isMobileView }"
           >
             <span class="text-base-medium text-ink-gray-9">
               {{ __('Settings') }}
             </span>
             <Button
+              v-if="isMobileView"
               variant="ghost"
               icon="x"
               :aria-label="__('Close')"
               @click="showSettings = false"
             />
           </div>
-          <!-- One box per group: a sticky label sticks only inside its own
-               parent, and with every label in one scroller they all stayed
-               pinned and piled up, one group's name over the next one's. -->
-          <div v-for="(tab, i) in tabs" :key="tab.key">
-            <div v-if="i != 0" class="mx-1 mb-0.5 mt-[5px]" />
-            <div
-              class="h-7.5 px-2 py-[7px] my-[3px] flex cursor-pointer gap-1.5 text-xs-medium text-ink-gray-5 transition-all duration-300 ease-in-out sticky top-0 z-10 bg-surface-gray-1"
+          <nav class="space-y-[3px] px-1 pb-2" :aria-label="__('Settings')">
+            <SidebarItem
+              v-for="gruppo in tabs"
+              :key="gruppo.key"
+              :label="__(gruppo.label)"
+              :active="categoria === gruppo.key"
+              class="w-full"
+              :class="categoria !== gruppo.key && 'hover:!bg-surface-gray-3'"
+              @click="apriCategoria(gruppo.key)"
             >
-              <span>{{ __(tab.label) }}</span>
-            </div>
-            <nav class="space-y-[3px] px-1">
-              <SidebarItem
-                v-for="item in tab.items"
-                :key="itemId(item)"
-                :label="__(item.label)"
-                :active="isActive(item)"
-                class="w-full"
-                :class="!isActive(item) && 'hover:!bg-surface-gray-3'"
-                @click="openSettingsPage(itemId(item))"
-              >
-                <template #prefix>
-                  <Icon :icon="item.icon" class="size-4 text-ink-gray-7" />
-                </template>
-              </SidebarItem>
-            </nav>
-          </div>
+              <template #prefix>
+                <Icon :icon="gruppo.icon" class="size-4 text-ink-gray-7" />
+              </template>
+            </SidebarItem>
+          </nav>
         </div>
         <div
           class="flex flex-1 flex-col overflow-y-auto bg-surface-elevation-2"
@@ -80,58 +72,104 @@
               variant="ghost"
               icon="chevron-left"
               :aria-label="__('Back')"
-              @click="showingDetail = false"
+              @click="indietro"
             />
             <span class="truncate text-base-medium text-ink-gray-9">
-              {{ __(activeTab?.title || activeTab?.label || 'Settings') }}
+              {{
+                __(
+                  activeTab
+                    ? activeTab.title || activeTab.label
+                    : gruppoAperto?.label || 'Settings',
+                )
+              }}
             </span>
           </div>
-          <!-- an entry with several sides draws its tabs; the others are one page -->
-          <SettingsHub
-            v-if="activeTab?.tabs"
-            :key="activeTab.key"
-            :voce="activeTab"
-          />
-          <component :is="activeTab.component" v-else-if="activeTab" />
+          <template v-if="activeTab">
+            <!-- the way back to the category the entry belongs to -->
+            <div v-if="!isMobileView && gruppoAperto" class="px-6 pt-5">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 rounded text-sm text-ink-gray-5 hover:text-ink-gray-8"
+                @click="apriCategoria(gruppoAperto.key)"
+              >
+                <span class="lucide-chevron-left size-4" aria-hidden="true" />
+                {{ __(gruppoAperto.label) }}
+              </button>
+            </div>
+            <!-- an entry with several sides draws its tabs; the others are one page -->
+            <SettingsHub
+              v-if="activeTab.tabs"
+              :key="activeTab.key"
+              :voce="activeTab"
+            />
+            <component :is="activeTab.component" v-else />
+          </template>
+          <!-- a category: what it is for, and each of its entries with a line
+               on what one sets up there -->
+          <div
+            v-else-if="gruppoAperto"
+            class="flex flex-col gap-6 px-6 py-8 max-md:px-3 max-md:py-5"
+          >
+            <div class="flex items-start gap-3 px-2">
+              <span
+                class="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-gray-2"
+                aria-hidden="true"
+              >
+                <Icon
+                  :icon="gruppoAperto.icon"
+                  class="size-5 text-ink-gray-7"
+                />
+              </span>
+              <div class="flex min-w-0 flex-col gap-1">
+                <h2 class="text-2xl-semibold leading-tight text-ink-gray-8">
+                  {{ __(gruppoAperto.label) }}
+                </h2>
+                <p class="text-p-base text-ink-gray-6">
+                  {{ __(gruppoAperto.description) }}
+                </p>
+              </div>
+            </div>
+            <ul
+              class="flex flex-col divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-1"
+            >
+              <li v-for="voce in gruppoAperto.items" :key="voce.key">
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-gray-1 focus-visible:bg-surface-gray-1"
+                  @click="openSettingsPage(voce.key)"
+                >
+                  <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span class="text-base-medium text-ink-gray-8">
+                      {{ __(voce.label) }}
+                    </span>
+                    <span class="text-p-sm text-ink-gray-5">
+                      {{ __(voce.description) }}
+                    </span>
+                  </span>
+                  <span
+                    class="lucide-chevron-right size-4 shrink-0 text-ink-gray-4"
+                    aria-hidden="true"
+                  />
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </template>
   </Dialog>
 </template>
 <script setup>
-import LucideCalendarCog from '~icons/lucide/calendar-cog'
-import LucidePackage from '~icons/lucide/package'
-import LucideFileCheck from '~icons/lucide/file-check'
-import LucideTextCursorInput from '~icons/lucide/text-cursor-input'
-import LucideSparkles from '~icons/lucide/sparkles'
-import LucideInfinity from '~icons/lucide/infinity'
-import LucideDoorOpen from '~icons/lucide/door-open'
-import LucideClock from '~icons/lucide/clock'
-import LucideHourglass from '~icons/lucide/hourglass'
-import LucideCalendarCheck from '~icons/lucide/calendar-check'
-import LucideBellRing from '~icons/lucide/bell-ring'
-import LucideRadar from '~icons/lucide/radar'
-import LucideListChecks from '~icons/lucide/list-checks'
 import LucideReceipt from '~icons/lucide/receipt-text'
 import LucideBuilding from '~icons/lucide/building-2'
-import LucideUserCog from '~icons/lucide/user-cog'
+import LucideCalendarDays from '~icons/lucide/calendar-days'
+import LucideMegaphone from '~icons/lucide/megaphone'
 import LucidePlug from '~icons/lucide/plug-zap'
-import LucideLibraryBig from '~icons/lucide/library-big'
-import LucideStamp from '~icons/lucide/stamp'
-import LucideBot from '~icons/lucide/bot'
-import LucideGlobe from '~icons/lucide/globe'
 import LucideUsers from '~icons/lucide/users'
-import SlidersIcon from '@/components/Icons/SlidersIcon.vue'
-import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
-import ERPNextIcon from '@/components/Icons/ERPNextIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
-import EmailTemplateIcon from '@/components/Icons/EmailTemplateIcon.vue'
-import SettingsIcon from '@/components/Icons/SettingsIcon.vue'
-import SettingsIcon2 from '@/components/Icons/SettingsIcon2.vue'
-import SocialIcon from '@/components/Icons/SocialIcon.vue'
 import Users from '@/components/Settings/Users.vue'
 import Hierarchy from '@/components/Settings/Hierarchy/Hierarchy.vue'
 import InviteUserPage from '@/components/Settings/InviteUserPage.vue'
@@ -258,49 +296,25 @@ const PAGINE = {
   Assistant: AssistantSettings,
 }
 
-// The icon of each entry.
+// The icon of each category: the categories carry them, their entries are
+// read by their words (and the line under each).
 const ICONE = {
-  Profile: () =>
+  account: () =>
     h(Avatar, {
       size: 'xs',
       label: user.value.full_name,
       image: user.value.user_image,
     }),
-  Preferences: SlidersIcon,
-  'Google Calendar': CalendarIcon,
-  'General settings': SettingsIcon,
-  Users: LucideUsers,
-  Plan: LucidePackage,
-  Services: LucideSparkles,
-  'Hours & shifts': LucideClock,
-  'Rooms & Equipment': LucideDoorOpen,
-  'Calendar & reminders': LucideCalendarCog,
-  'Waiting list': LucideHourglass,
-  'Online booking': LucideCalendarCheck,
-  Forms: LucideTextCursorInput,
-  Consents: LucideFileCheck,
-  'News in the client area': LucideBellRing,
-  Libraries: LucideLibraryBig,
-  Pipelines: KanbanIcon,
-  Assignment: h(SettingsIcon2, { class: 'rotate-90' }),
-  Accounts: Email2Icon,
-  Templates: EmailTemplateIcon,
-  WhatsApp: WhatsAppIcon,
-  'WhatsApp Templates': EmailTemplateIcon,
-  Telephony: PhoneIcon,
-  'Call Scripts': LucideListChecks,
-  Website: LucideGlobe,
-  'Social profiles': SocialIcon,
-  Tracking: LucideRadar,
-  'Issuing company': LucideBuilding,
-  'Services & providers': LucideUserCog,
-  'Provider connection': LucidePlug,
-  'Invoicing defaults': LucideReceipt,
-  // the Meta mark, near enough: the sprite has no 'facebook' any more
-  'Meta connection': LucideInfinity,
-  ERPNext: ERPNextIcon,
-  'Seal and time stamp': LucideStamp,
-  Assistant: LucideBot,
+  centre: LucideBuilding,
+  agenda: LucideCalendarDays,
+  clients: LucideUsers,
+  deals: KanbanIcon,
+  email: Email2Icon,
+  whatsapp: WhatsAppIcon,
+  phone: PhoneIcon,
+  marketing: LucideMegaphone,
+  invoicing: LucideReceipt,
+  integrations: LucidePlug,
 }
 
 // a component, an icon: never made reactive along with the entry holding it
@@ -317,9 +331,9 @@ const tabs = computed(() =>
     verticale: window.vertical?.key || null,
   }).map((gruppo) => ({
     ...gruppo,
+    icon: fermo(ICONE[gruppo.key]),
     items: gruppo.items.map((voce) => ({
       ...voce,
-      icon: fermo(ICONE[voce.key]),
       component: voce.tabs ? null : fermo(PAGINE[voce.key]),
       tabs: voce.tabs?.map((scheda) => ({
         ...scheda,
@@ -329,14 +343,18 @@ const tabs = computed(() =>
   })),
 )
 
-const activeTab = ref(tabs.value[0].items[0])
+// The category open on the left, and the entry open on the right: none, and
+// the right pane shows the category's entries, each saying what it is for.
+const categoria = ref(tabs.value[0]?.key)
+const activeTab = ref(null)
+const gruppoAperto = computed(
+  () => tabs.value.find((gruppo) => gruppo.key === categoria.value) || null,
+)
 
-function itemId(item) {
-  return item.key
-}
-
-function isActive(item) {
-  return Boolean(activeTab.value) && itemId(activeTab.value) === itemId(item)
+function gruppoDi(voce) {
+  return tabs.value.find((gruppo) =>
+    gruppo.items.some((item) => item.key === voce?.key),
+  )
 }
 
 function setActiveTab(tabName) {
@@ -344,9 +362,24 @@ function setActiveTab(tabName) {
   // here) names the page by its key, which is not translated; a page that is a
   // tab now, or used to be a page of its own (an alias), opens the entry holding
   // it. A screen outside the modal may still ask by the English label.
-  activeTab.value =
-    trova(tabs.value, tabName, (testo) => __(testo))?.voce ||
-    tabs.value[0].items[0]
+  const voce = trova(tabs.value, tabName, (testo) => __(testo))?.voce || null
+  activeTab.value = voce
+  if (voce) categoria.value = gruppoDi(voce)?.key || categoria.value
+}
+
+// A category: its entries on the right, no entry open.
+function apriCategoria(chiave) {
+  categoria.value = chiave
+  activeTab.value = null
+  activeSettingsPage.value = ''
+  showingDetail.value = true
+}
+
+// The phone's way back: from an entry to its category, from a category to the
+// list of categories.
+function indietro() {
+  if (activeTab.value) apriCategoria(categoria.value)
+  else showingDetail.value = false
 }
 
 // Which pane a phone is looking at. Ignored on anything wider, where both are
@@ -354,7 +387,13 @@ function setActiveTab(tabName) {
 const showingDetail = ref(false)
 
 watch(showSettings, (open) => {
-  if (open) showingDetail.value = !!activeSettingsPage.value
+  if (!open) return
+  showingDetail.value = !!activeSettingsPage.value
+  // opened without a page: the first category's entries
+  if (!activeSettingsPage.value) {
+    activeTab.value = null
+    categoria.value = categoria.value || tabs.value[0]?.key
+  }
 })
 
 watch(activeSettingsPage, (activePage) => {
@@ -373,10 +412,13 @@ watch(activeSettingsPage, (activePage) => {
 watch(tabs, () => {
   if (activeSettingsPage.value) return setActiveTab(activeSettingsPage.value)
   const aperta = activeTab.value?.key
-  activeTab.value =
-    tabs.value
-      .flatMap((tab) => tab.items)
-      .find((item) => item.key === aperta) || tabs.value[0].items[0]
+  activeTab.value = aperta
+    ? tabs.value
+        .flatMap((tab) => tab.items)
+        .find((item) => item.key === aperta) || null
+    : null
+  if (!tabs.value.some((gruppo) => gruppo.key === categoria.value))
+    categoria.value = tabs.value[0]?.key
 })
 
 // Tapping a row has to push to the detail even when it is the row you were last
