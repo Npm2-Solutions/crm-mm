@@ -19,7 +19,7 @@
             <div
               class="line-clamp-2 w-[35%] min-w-20 shrink-0 break-words pt-1 text-sm text-ink-gray-5"
             >
-              {{ type.label }}
+              {{ __(type.label) }}
             </div>
             <!-- the state and its button on one line, when and how under both:
                  beside the button the date wrapped on three lines -->
@@ -228,11 +228,17 @@ function dot(type) {
 function action(type) {
   if (!consents.data?.can_record) return null
   if (type.can_withdraw) {
-    return { label: __('Withdraw'), run: () => open(type, 'withdraw') }
+    return {
+      label: __('Withdraw', null, 'Consent'),
+      run: () => open(type, 'withdraw'),
+    }
   }
   // read once is read: a privacy notice is not answered twice
   if (type.kind !== 'Consent' && type.current?.status === 'Given') return null
-  return { label: __('Record'), run: () => open(type, 'record') }
+  return {
+    label: __('Record', null, 'Consent'),
+    run: () => open(type, 'record'),
+  }
 }
 
 const dialog = reactive({
@@ -254,8 +260,8 @@ function open(type, mode) {
     type,
     title:
       mode === 'record'
-        ? __('Record an answer: {0}', [type.label])
-        : __('Withdraw: {0}', [type.label]),
+        ? __('Record an answer: {0}', [__(type.label)])
+        : __('Withdraw: {0}', [__(type.label)]),
     channel: 'At the desk',
     givenBy: '',
     note: '',

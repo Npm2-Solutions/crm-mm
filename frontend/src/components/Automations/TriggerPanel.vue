@@ -65,7 +65,7 @@
           <FormControl
             v-model="trigger.config.doctype"
             type="select"
-            :label="__('Record')"
+            :label="__('Record', null, 'Automation record')"
             :options="[
               { label: __('Lead'), value: 'CRM Lead' },
               { label: __('Deal'), value: 'CRM Deal' },

@@ -135,7 +135,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 	),
 	_sanitaria(
 		"medico_competente",
-		"Medico competente (invoices to the employer)",
+		"Medico competente (fattura al datore di lavoro)",
 		SoggettoInviante.MEDICO_ODONTOIATRA,
 		obbligo_ts=False,
 		dal=2015,

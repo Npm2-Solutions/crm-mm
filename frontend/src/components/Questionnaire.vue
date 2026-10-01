@@ -41,7 +41,7 @@
         <Button
           :disabled="current < 1"
           variant="subtle"
-          label="Previous"
+          :label="__('Previous')"
           icon-left="lucide-arrow-left"
           @click="back"
         />
@@ -51,7 +51,7 @@
           variant="solid"
           :disabled="!canProceed"
           icon-right="lucide-arrow-right"
-          label="Next"
+          :label="__('Next')"
           @click="next"
         />
         <Button

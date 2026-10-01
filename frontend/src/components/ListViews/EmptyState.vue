@@ -37,12 +37,13 @@ const props = defineProps({
 })
 
 const computedTitle = computed(() => {
-  return props.title ? props.title : __('No {0} Found', [__(props.name)])
+  // a title handed as it is written in the code goes through the translator too
+  return props.title ? __(props.title) : __('No {0} Found', [__(props.name)])
 })
 
 const computedDescription = computed(() => {
   return props.description
-    ? props.description
+    ? __(props.description)
     : __(
         'It appears that there are currently no {0} available. You can create more {0} by using the Create button.',
         [__(props.name)],

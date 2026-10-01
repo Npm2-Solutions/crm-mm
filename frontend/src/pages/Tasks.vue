@@ -66,7 +66,11 @@
           v-else-if="getRow(itemName, titleField).label"
           class="truncate text-base"
         >
-          {{ getRow(itemName, titleField).label }}
+          {{
+            ['status', 'priority'].includes(titleField)
+              ? __(getRow(itemName, titleField).label)
+              : getRow(itemName, titleField).label
+          }}
         </div>
         <div v-else class="text-ink-gray-4">{{ __('No Title') }}</div>
       </div>
@@ -120,8 +124,13 @@
           />
           <!-- eslint-enable vue/no-v-html -->
         </div>
+        <!-- a status or a priority is a value of a list: in the user's words -->
         <div v-else class="truncate text-base">
-          {{ getRow(itemName, fieldName).label }}
+          {{
+            ['status', 'priority'].includes(fieldName)
+              ? __(getRow(itemName, fieldName).label)
+              : getRow(itemName, fieldName).label
+          }}
         </div>
       </div>
     </template>

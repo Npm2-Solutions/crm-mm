@@ -143,7 +143,9 @@
                   entry.skipped_count,
                 ])
               }}
-              <template v-if="entry.licence"> · {{ entry.licence }}</template>
+              <template v-if="entry.licence">
+                · {{ __(entry.licence) }}</template
+              >
             </span>
           </div>
         </section>
