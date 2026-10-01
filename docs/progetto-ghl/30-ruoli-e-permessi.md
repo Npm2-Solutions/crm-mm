@@ -399,6 +399,11 @@ segreteria sblocca il telefono, le campagne il marketing; i prezzi sono nel
 vale se servono **due chiavi**: il modulo è attivo nel piano del centro, e il
 livello della persona la prevede.
 
+Il listino finale (01/10/2026) misura la taglia in ambulatori e fa della
+fatturazione e della firma avanzata due extra. Il piano qui sotto, e il codice,
+contano ancora le agende attive: cosa cambia è nel listino,
+[Nel CRM, da allineare](../gestionale-medico/listino.md#nel-crm-da-allineare).
+
 - **Il piano** sta in un documento solo per sito (per esempio `CRM Piano`). Dice:
   - la taglia, cioè quante agende. Un'agenda attiva è un professionista con almeno
     un appuntamento nel mese, anche se non entra mai nel CRM; sale, attrezzature e

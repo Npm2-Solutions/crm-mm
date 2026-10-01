@@ -539,7 +539,9 @@ modulo del piano si vende è una scelta commerciale.
   abbonamenti e le liste d'attesa. La privacy e i contratti firmati servono a tutti.
 - **Area clienti**: un modulo nuovo, che si compra da solo.
 - **Clinica**: comprende l'Area clienti, così un centro medico ha quello che aveva.
-- I prezzi dell'Area clienti e della Clinica sono da rifare
+- Il listino finale (01/10/2026) vende alle cliniche un piano solo, con dentro
+  la clinica e l'area pazienti; la fatturazione è un extra. Il prezzo dell'Area
+  clienti da sola, per chi non è una clinica, resta da decidere
   ([listino](./listino.md#da-decidere)).
 
 ### L'ordine
