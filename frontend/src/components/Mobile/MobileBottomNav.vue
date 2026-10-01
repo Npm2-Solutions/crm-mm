@@ -18,35 +18,41 @@
 </template>
 
 <script setup>
-import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
-import DealsIcon from '@/components/Icons/DealsIcon.vue'
-import SMSIcon from '@/components/Icons/SMSIcon.vue'
-import TaskIcon from '@/components/Icons/TaskIcon.vue'
+import { ICONE_DEL_MENU } from '@/components/Icons/menu'
 import MenuIcon from '@/components/Icons/MenuIcon.vue'
 import { mobileSidebarOpened } from '@/composables/settings'
+import { callEnabled } from '@/composables/telephony'
+import { usersStore } from '@/stores/users'
+import { barraDelTelefono, menuDi } from '@/utils/menu'
 import { bottomNavTabFor } from '@/utils/navigation'
 import { MobileNav, MobileNavItem } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const { puo, puoUno, ambito } = usersStore()
 
-// The four a phone actually opens all day. Everything else — Organizations,
-// Notes, Call Logs, Automations, the saved views — stays one tap away behind
-// "More", which is the existing drawer.
-const tabs = [
-  { key: 'Leads', label: 'People', icon: LeadsIcon, to: { name: 'Leads' } },
-  { key: 'Deals', label: 'Deals', icon: DealsIcon, to: { name: 'Deals' } },
-  {
-    key: 'Conversations',
-    label: 'Chat',
-    icon: SMSIcon,
-    to: { name: 'Conversations' },
-  },
-  { key: 'Tasks', label: 'Tasks', icon: TaskIcon, to: { name: 'Tasks' } },
-]
+// The four places a phone opens all day, from the same menu as the sidebar
+// (utils/menu.js): the day's pages, the people, the conversations. Everything
+// else stays one tap away behind "More", which is the drawer.
+const tabs = computed(() =>
+  barraDelTelefono(
+    menuDi({ puo, puoUno, ambito, telefono: callEnabled.value }),
+  ).map((voce) => ({
+    key: voce.key,
+    // a word that fits under an icon a fifth of a phone wide
+    label: voce.key === 'Conversations' ? 'Chat' : voce.label,
+    icon: ICONE_DEL_MENU[voce.icon],
+    to: { name: voce.key },
+  })),
+)
 
 // `MobileNavItem` lights itself up on an exact route match, which leaves a tab
 // dark the moment you open a record inside its section.
-const activeTab = computed(() => bottomNavTabFor(route))
+const activeTab = computed(() =>
+  bottomNavTabFor(
+    route,
+    tabs.value.map((tab) => tab.key),
+  ),
+)
 </script>
