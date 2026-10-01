@@ -153,8 +153,14 @@
           <span class="truncate text-base text-ink-gray-8">{{
             plan.title
           }}</span>
-          <span class="text-p-sm text-ink-gray-5">
-            {{ __(plan.plan_type) }} · {{ plan.practitioner_name }}
+          <span
+            class="flex min-w-0 items-center gap-1.5 text-p-sm text-ink-gray-5"
+          >
+            <CategoryTag
+              :label="__(plan.plan_type)"
+              :color="KIND_COLOR[plan.plan_type]"
+            />
+            <span class="truncate">{{ plan.practitioner_name }}</span>
           </span>
         </span>
         <span class="flex shrink-0 items-center gap-2">
@@ -192,10 +198,18 @@
 <script setup>
 import PlanDialog from '@/components/Plans/PlanDialog.vue'
 import ProgrammeDialog from '@/components/Plans/ProgrammeDialog.vue'
+import CategoryTag from '@/components/Espresso/CategoryTag.vue'
 import { Badge, Button, Dropdown, createResource } from 'frappe-ui'
 import { computed, reactive, watch } from 'vue'
 
 const props = defineProps({ lead: { type: String, required: true } })
+
+// the kind is a category, the design system's Tag: exercises in violet, what
+// the centre writes otherwise in its own colour
+const KIND_COLOR = {
+  Training: 'violet',
+  'Home exercises': 'violet',
+}
 
 const statusTheme = {
   Draft: 'orange',

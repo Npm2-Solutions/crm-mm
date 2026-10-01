@@ -8,7 +8,24 @@
     class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
   >
     <h3 class="text-base font-medium text-ink-gray-9">{{ cycle.service }}</h3>
+    <!-- one segment a session, the used ones in the brand's colour -->
     <div
+      v-if="tappe(cycle.counts)"
+      class="dc-steps w-full"
+      role="progressbar"
+      :aria-valuenow="percentuale(cycle.counts)"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      :aria-label="__('Sessions used')"
+    >
+      <span
+        v-for="(usata, i) in tappe(cycle.counts)"
+        :key="i"
+        :class="{ 'is-done': usata }"
+      />
+    </div>
+    <div
+      v-else
       class="h-2 w-full overflow-hidden rounded-full bg-surface-gray-2"
       role="progressbar"
       :aria-valuenow="percentuale(cycle.counts)"
@@ -32,7 +49,7 @@
 </template>
 
 <script setup>
-import { comeVa, daPrenotare, percentuale } from '@/utils/cicli'
+import { comeVa, daPrenotare, percentuale, tappe } from '@/utils/cicli'
 import { day } from '../dates'
 
 defineProps({ cycle: { type: Object, required: true } })

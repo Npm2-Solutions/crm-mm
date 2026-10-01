@@ -34,6 +34,7 @@
     :onlyMine="onlyMine"
     :cardLink="kind === 'number'"
     :badgeInBody="kind === 'number'"
+    :blocco="kind === 'number' && blocco"
     @navigate="(target) => $emit('navigate', target)"
     @setup="(feature) => $emit('setup', feature)"
   >
@@ -92,6 +93,8 @@ const props = defineProps({
   userFiltered: { type: Boolean, default: false },
   onlyMine: { type: Boolean, default: false },
   locale: { type: String, default: undefined },
+  // the first number of its row: the design system's deep block
+  blocco: { type: Boolean, default: false },
 })
 
 defineEmits(['navigate', 'setup'])

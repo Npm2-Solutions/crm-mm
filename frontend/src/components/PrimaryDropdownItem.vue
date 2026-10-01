@@ -15,7 +15,7 @@
       <template #prefix>
         <Tooltip v-if="localOption.selected" :text="__('Primary')">
           <span
-            class="lucide-check size-4 text-ink-gray-8"
+            class="dc-scelto lucide-check size-4 text-ink-gray-8"
             aria-hidden="true"
           />
         </Tooltip>

@@ -52,7 +52,7 @@
           </Dropdown>
           <span
             v-if="selected"
-            class="lucide-check size-4 text-ink-gray-7"
+            class="dc-scelto lucide-check size-4 text-ink-gray-7"
             aria-hidden="true"
           />
         </div>

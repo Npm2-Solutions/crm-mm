@@ -5,12 +5,14 @@
       :class="widthClass"
       :style="{ top: top }"
     >
-      <Icon :icon="icon" class="size-7.5 text-ink-gray-5" />
+      <!-- the design system's picture, the same for every empty list: the
+           title says what is missing -->
+      <EmptyArt />
       <div class="flex flex-col items-center gap-1">
-        <span class="text-lg-medium text-ink-gray-8">
+        <span class="text-center text-lg-semibold text-ink-gray-9">
           {{ computedTitle }}
         </span>
-        <span class="text-center text-p-base text-ink-gray-6">
+        <span class="text-center text-p-sm text-ink-gray-5">
           {{ computedDescription }}
         </span>
       </div>
@@ -18,13 +20,14 @@
   </div>
 </template>
 <script setup>
-import Icon from '@/components/Icon.vue'
+import EmptyArt from '@/components/Espresso/EmptyArt.vue'
 import { computed } from 'vue'
 
 const props = defineProps({
   name: { type: String, required: true },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
+  // kept for the pages that pass one: the picture is the design system's
   icon: {
     type: [String, Object],
     default: 'file-text',

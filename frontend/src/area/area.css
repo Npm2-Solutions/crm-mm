@@ -1,6 +1,7 @@
 @import 'frappe-ui/style.css';
 @import '../marchio.css';
 @import '../espresso.css';
+@import '../espresso-componenti.css';
 
 @layer utilities {
   .pb-safe {

@@ -17,6 +17,7 @@
         <DashboardItem
           :item="item"
           :answer="answers[item.layout.i]"
+          :blocco="blocchi.has(item.layout.i)"
           :refreshing="refreshing"
           :userFiltered="userFiltered"
           :onlyMine="onlyMine"
@@ -61,6 +62,7 @@
             <DashboardItem
               :item="byKey[i]"
               :answer="answers[i]"
+              :blocco="blocchi.has(i)"
               :editing="editing"
               :refreshing="refreshing"
               :userFiltered="userFiltered"
@@ -111,7 +113,12 @@
 <script setup>
 import DashboardItem from '@/components/Dashboard/DashboardItem.vue'
 import { isMobileView } from '@/composables/breakpoints'
-import { GRID_COLUMNS, ROW_HEIGHT, mobileOrder } from '@/utils/dashboard'
+import {
+  GRID_COLUMNS,
+  ROW_HEIGHT,
+  highlightedNumbers,
+  mobileOrder,
+} from '@/utils/dashboard'
 import { GridLayout, Tooltip } from 'frappe-ui'
 import { computed } from 'vue'
 
@@ -140,6 +147,9 @@ const byKey = computed(() =>
 function kindOf(item) {
   return props.answers[item.layout.i]?.kind || item.type
 }
+
+// the first number of each row is the design system's deep block
+const blocchi = computed(() => highlightedNumbers(items.value, kindOf))
 
 // A number sets its own height, from 128px up, so a two-line title and a
 // comparison on a line of its own fit whole; the two in a row grow together.

@@ -72,11 +72,11 @@
             {{ delivered(doc.deliveries[0]) }}
           </span>
         </div>
-        <!-- read like the clinical record: the dossier's rules, the access log -->
-        <Badge
+        <!-- read like the clinical record: the dossier's rules, the access log;
+             what kind of data it is, the design system's Tag -->
+        <CategoryTag
           v-if="doc.clinical"
-          size="sm"
-          theme="gray"
+          color="rose"
           class="shrink-0"
           :label="__('Health data')"
         />
@@ -192,6 +192,7 @@
 </template>
 
 <script setup>
+import CategoryTag from '@/components/Espresso/CategoryTag.vue'
 import DeliverDialog from '@/components/Documents/DeliverDialog.vue'
 import DocumentDialog from '@/components/Documents/DocumentDialog.vue'
 import ObscureDialog from '@/components/Clinic/ObscureDialog.vue'

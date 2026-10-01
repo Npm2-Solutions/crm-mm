@@ -34,16 +34,13 @@
     <div class="mx-auto flex max-w-4xl flex-col gap-8 px-5 py-6 max-md:px-4">
       <!-- how the day stands, at a glance -->
       <div class="grid grid-cols-4 gap-3 max-md:grid-cols-2">
-        <div
-          v-for="stat in stats"
+        <StatTile
+          v-for="(stat, i) in stats"
           :key="stat.label"
-          class="flex flex-col gap-1 rounded-lg border border-outline-gray-2 px-4 py-3"
-        >
-          <span class="text-p-sm text-ink-gray-5">{{ __(stat.label) }}</span>
-          <span class="text-2xl-semibold tabular-nums text-ink-gray-8">
-            {{ stat.value }}
-          </span>
-        </div>
+          :label="__(stat.label)"
+          :value="stat.value"
+          :blocco="i === 0"
+        />
       </div>
 
       <!-- the waiting room: who arrived first, first -->
@@ -78,17 +75,26 @@
         <h2 class="text-lg-semibold text-ink-gray-8">
           {{ __('Appointments') }}
         </h2>
-        <div
-          v-if="day.loading && !day.data"
-          class="flex justify-center py-10 text-ink-gray-5"
-        >
-          <LoadingIndicator class="size-4" />
+        <div v-if="day.loading && !day.data" class="flex justify-center py-10">
+          <LoaderMark />
         </div>
         <div
           v-else-if="!appointments.length"
-          class="rounded-lg border border-dashed border-outline-gray-2 px-4 py-8 text-center text-p-base text-ink-gray-5"
+          class="rounded-lg border border-outline-gray-2"
         >
-          {{ __('Nothing booked on this day') }}
+          <EmptyState
+            :title="__('Nothing booked on this day')"
+            :text="
+              __(
+                'Whoever books appears here hour by hour: you check them in when they arrive, and mark who came.',
+              )
+            "
+          >
+            <Button
+              :label="__('Open the agenda')"
+              :route="{ name: 'Calendar' }"
+            />
+          </EmptyState>
         </div>
         <div
           v-else
@@ -139,7 +145,7 @@
           <p class="text-p-sm text-ink-gray-5">
             {{
               __(
-                "The last days' appointments nobody closed. Patients, reminders and invoices all read the agenda.",
+                "The last days' appointments nobody closed: the records, the reminders and the invoices all read the agenda.",
               )
             }}
           </p>
@@ -195,7 +201,9 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
-import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
+import EmptyState from '@/components/Espresso/EmptyState.vue'
+import LoaderMark from '@/components/Espresso/LoaderMark.vue'
+import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
 import { laSeduta } from '@/utils/cicli'
 import { byDay, shiftDay, summarize, timeOf, waitingRoom } from '@/utils/oggi'

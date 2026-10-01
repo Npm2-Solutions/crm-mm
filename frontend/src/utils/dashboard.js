@@ -315,6 +315,21 @@ export function mobileOrder(items) {
     )
 }
 
+// The numbers drawn as the design system's StatTile: the first of each row of
+// the grid - the leftmost number among the widgets that start on that row - is
+// the deep block, one a row. A row is the grid's `y`; on a phone the same ones
+// stay blocks, whatever the order stacks them in.
+export function highlightedNumbers(items, kindOf) {
+  const first = new Map()
+  for (const item of items) {
+    if (!item?.layout || kindOf(item) !== 'number') continue
+    const { x = 0, y = 0, i } = item.layout
+    const current = first.get(y)
+    if (!current || x < current.x) first.set(y, { x, i })
+  }
+  return new Set([...first.values()].map((number) => number.i))
+}
+
 // -- the switcher --------------------------------------------------------------------
 
 // The switcher's groups: the team's dashboards, the viewer's own, and — for a

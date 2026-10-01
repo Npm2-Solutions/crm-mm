@@ -52,7 +52,7 @@
           <div v-if="column.key === 'organization_name'">
             <Avatar
               v-if="item.label"
-              class="flex items-center"
+              class="dc-avatar--round flex items-center"
               :image="item.logo"
               :label="item.label"
               size="sm"
@@ -136,6 +136,7 @@
       </ListRowItem>
     </component>
     <ListSelectBanner
+      class="dc-list-bar"
       :class="{ '!min-w-0 max-w-[calc(100vw-1.5rem)]': isMobileView }"
     >
       <template #actions="{ selections, unselectAll }">

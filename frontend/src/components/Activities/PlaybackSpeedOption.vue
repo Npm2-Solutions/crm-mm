@@ -7,7 +7,7 @@
       @click="onClick"
     >
       <template v-if="active" #suffix>
-        <span class="lucide-check size-4" aria-hidden="true" />
+        <span class="dc-scelto lucide-check size-4" aria-hidden="true" />
       </template>
     </Button>
   </div>
