@@ -62,6 +62,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [28](./28-dashboard.md) | La dashboard: un cruscotto per ogni parte del gestionale | ✅ fatto | 166 widget in 16 categorie, fatturazione compresa, e dieci dashboard pronte che seguono il sito: chi collega WhatsApp trova i suoi numeri senza toccare niente. Builder a griglia, colori che seguono la cosa e non il suo posto |
 | [29](./29-telefono.md) | Il CRM sul telefono | ✅ fatto | Ogni pagina, dialogo e sezione delle impostazioni guardati con Playwright su un telefono simulato e percorsi col dito: niente più azioni solo al passaggio del mouse, titoli sulla descrizione, controlli spinti fuori dallo schermo o da 16px. Le regole per le prossime schermate |
 | [30](./30-ruoli-e-permessi.md) | Ruoli e permessi: chi può fare cosa, modulo per modulo | 🟡 proposta | Livelli come Role Profile, ruoli come mattoni dei moduli, capacità controllate dal server; ogni modulo porta le sue. Le impostazioni divise fra centro e agenzia, l'ambito che segue la persona |
+| [31](./31-impostazioni-in-ordine.md) | Le impostazioni in ordine | ✅ fatto | Da 48 voci in sedici gruppi a 33 in undici, un gruppo per ogni parte del lavoro del centro come nel menu dell'app; le pagine dello stesso argomento diventano le schede di una voce, come Meta, e i vecchi nomi aprono ancora la scheda giusta. Il menu tutto in italiano |
 
 ## Architettura complessiva
 

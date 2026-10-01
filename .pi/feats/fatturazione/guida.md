@@ -72,9 +72,10 @@ ha gia' consumato il tempo di chi l'ha scritto, col cliente ancora davanti.
 
 ## Dove si configura
 
-Tutto sta in **Impostazioni → Fatturazione**, nella modale del CRM: azienda
-emittente, registro delle qualifiche, servizi, erogatori, la connessione al provider
-e le impostazioni comuni.
+Tutto sta nel gruppo **Fatturazione** delle Impostazioni: *Azienda emittente*;
+*Servizi e professionisti*, con le schede dei servizi fatturabili, dei professionisti
+che li erogano e dell'albo delle qualifiche; la *Connessione al provider*; le *Opzioni*
+comuni a ogni documento.
 
 La scheda dell'azienda e' divisa per argomento, cosi' il sanitario e il Sistema TS
 hanno il loro spazio invece di stare in fondo a un modulo unico: *Company*,
