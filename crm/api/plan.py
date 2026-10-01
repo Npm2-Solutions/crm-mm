@@ -1,24 +1,31 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""Settings > Plan: what the centre has, what it used this month, and how it grows.
+"""Settings > The centre > Features: what the centre has, what it used this month,
+and how it grows.
 
 The plan is the agency's to write (`CRM Plan`, System Manager only). The centre sees
-it here, and can do one thing on its own: start the 14-day trial of a module it does
-not have. The request goes to the agency, which confirms it and bills it from the
-month after (listino.md, "Come si amplia il piano"). Going over the size never blocks
-anything: the page says so, and proposes the size above.
+it here: first what the product it signed up for comprises - the base and its
+vertical, DottorCloud's clinic with the patient area - on, nothing to switch; then
+the extras, each with what it adds. It can do one thing on its own: start the 14-day
+trial of an extra it does not have. The request goes to the agency, which confirms it
+and bills it from the month after (listino.md, "Come si amplia il piano"). Going over
+the size never blocks anything: the page says so, and proposes the size above.
 """
 
 from __future__ import annotations
+
+from collections.abc import Iterable
 
 import frappe
 from frappe import _
 from frappe.utils import add_days, get_first_day, get_last_day, getdate, now, nowdate
 
+from crm import verticali
 from crm.fcrm.doctype.crm_plan.crm_plan import AGENDE
 from crm.permissions import livelli
-from crm.permissions.livelli import richiede
+from crm.permissions.catalogo import BASE
+from crm.permissions.livelli import ModuloPiano, richiede
 
 #: Days a trial started from the CRM lasts.
 GIORNI_DI_PROVA = 14
@@ -32,6 +39,22 @@ STATO = {
 }
 
 
+def compresi(moduli: Iterable[ModuloPiano], verticale: str | None) -> set[str]:
+	"""What the product the centre signed up for comprises: the base, the module of
+	its vertical - the clinic, for DottorCloud - and what that comprises (the patient
+	area). The other modules are extras, which the centre adds when it needs them."""
+	per_chiave = {modulo.chiave: modulo for modulo in moduli}
+	dentro: set[str] = set()
+	da_vedere = [BASE, *([verticale] if verticale else [])]
+	while da_vedere:
+		chiave = da_vedere.pop()
+		if chiave in dentro or chiave not in per_chiave:
+			continue
+		dentro.add(chiave)
+		da_vedere.extend(per_chiave[chiave].comprende)
+	return dentro
+
+
 @frappe.whitelist()
 @richiede("piano.vedi")
 def get_plan() -> dict:
@@ -39,6 +62,8 @@ def get_plan() -> dict:
 	piano = frappe.get_cached_doc("CRM Plan")
 	righe = {riga.module: riga for riga in piano.modules}
 	stati = livelli.moduli_attivi()
+	verticale = verticali.attiva()
+	nel_prodotto = compresi(livelli.moduli_piano(), verticale.piano if verticale else None)
 	moduli = []
 	for modulo in livelli.moduli_piano():
 		riga = righe.get(modulo.chiave)
@@ -49,6 +74,10 @@ def get_plan() -> dict:
 				"label": modulo.etichetta,
 				"description": modulo.descrizione,
 				"state": STATO[stato],
+				# part of the product: on, nothing to switch; the others are extras
+				"included": modulo.chiave in nel_prodotto,
+				# where one sets it up: the settings' pages, as the menu names them
+				"settings": list(modulo.impostazioni),
 				"listed": bool(riga),
 				"included_in_service": bool(riga and riga.source == "Agency service"),
 				# on because a module the plan has comprises it: the clinic, the client area

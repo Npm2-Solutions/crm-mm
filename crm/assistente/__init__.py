@@ -35,6 +35,7 @@ MODULO = ModuloPiano(
 	predefinito=False,
 	descrizione="Forms from paper, drafts from a signed note: documentation support the professional reviews",
 	ordine=6,
+	impostazioni=("Assistant",),
 )
 
 CAPACITA = (

@@ -47,6 +47,8 @@ MODULO = ModuloPiano(
 	ordine=2,
 	# a medical centre gives its patients their area: it comes with the clinic
 	comprende=("area",),
+	# the clinical sheets are forms of the builder; the clinic's consents
+	impostazioni=("Forms", "Consents"),
 )
 
 LIVELLO_DIREZIONE = Livello(
