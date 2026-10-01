@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- @dsCard group="Moduli" height=120 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>html,body{margin:0;background:var(--surface-base);}.stage{padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}.col{display:flex;flex-direction:column;gap:12px;}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}[data-theme="dark"] .only-light{display:none}:root:not([data-theme="dark"]) .only-dark{display:none}</style></head><body>
+<div class="dc stage" style="gap:40px;align-items:flex-start">
+ <div class="col" style="gap:12px">
+  <label class="dc-switch-row"><button class="dc-switch" role="switch" aria-checked="true" data-state="checked"><span class="dc-switch__thumb"></span></button>Prenotazioni online</label>
+  <label class="dc-switch-row"><button class="dc-switch" role="switch" aria-checked="false" data-state="unchecked"><span class="dc-switch__thumb"></span></button>Lista d'attesa automatica</label>
+  <label class="dc-switch-row" style="color:var(--ink-gray-4)"><button class="dc-switch" role="switch" disabled><span class="dc-switch__thumb"></span></button>Videovisite (non attive)</label>
+ </div>
+ <div class="col" style="gap:12px">
+  <label class="dc-switch-row"><button class="dc-switch dc-switch--md" role="switch" aria-checked="true" data-state="checked"><span class="dc-switch__thumb"></span></button>Taglia md, accesa</label>
+  <label class="dc-switch-row"><button class="dc-switch dc-switch--md" role="switch" aria-checked="false" data-state="unchecked"><span class="dc-switch__thumb"></span></button>Taglia md, spenta</label>
+ </div>
+</div>
+</body></html>

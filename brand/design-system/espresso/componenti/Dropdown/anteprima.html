@@ -1,0 +1,22 @@
+<!doctype html>
+<!-- @dsCard group="Azioni" height=270 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>html,body{margin:0;background:var(--surface-base);}.stage{padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}.col{display:flex;flex-direction:column;gap:12px;}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}[data-theme="dark"] .only-light{display:none}:root:not([data-theme="dark"]) .only-dark{display:none}</style></head><body>
+<div class="dc stage" style="align-items:flex-start;gap:24px">
+ <div class="col" style="gap:6px"><button class="dc-btn dc-btn--subtle dc-btn--icon" aria-label="Azioni"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg></button>
+ <div class="dc-menu">
+  <div class="dc-menu__item"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>Modifica</div>
+  <div class="dc-menu__item is-active"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>Duplica<span class="dc-menu__hint">⌘D</span></div>
+  <div class="dc-menu__item"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z" /><path d="M6 12h16" /></svg>Invia promemoria</div>
+  <div class="dc-menu__sep"></div>
+  <div class="dc-menu__item dc-menu__item--danger"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>Annulla la visita</div>
+ </div></div>
+ <div class="dc-menu" style="margin-top:34px">
+  <div class="dc-menu__group">Stato</div>
+  <div class="dc-menu__item is-selected"><span class="dc-badge__dot" style="color:var(--success)"></span>Confermato<i class="dc-cross" style="--s:8px" aria-hidden="true"></i></div>
+  <div class="dc-menu__item"><span class="dc-badge__dot" style="color:var(--warning)"></span>Da confermare</div>
+  <div class="dc-menu__item"><span class="dc-badge__dot" style="color:var(--info)"></span>In sala d'attesa</div>
+  <div class="dc-menu__item"><span class="dc-badge__dot" style="color:var(--danger)"></span>Annullato</div>
+ </div>
+</div>
+</body></html>

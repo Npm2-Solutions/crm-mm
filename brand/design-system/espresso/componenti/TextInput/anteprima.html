@@ -1,0 +1,13 @@
+<!doctype html>
+<!-- @dsCard group="Moduli" height=200 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>html,body{margin:0;background:var(--surface-base);}.stage{padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}.col{display:flex;flex-direction:column;gap:12px;}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}[data-theme="dark"] .only-light{display:none}:root:not([data-theme="dark"]) .only-dark{display:none}</style></head><body>
+<div class="dc stage grid3">
+ <label class="dc-field"><span class="dc-label">Cognome<i class="dc-cross" style="--s:7px;--c:var(--danger)" aria-hidden="true"></i></span><span class="dc-input"><input value="Rossi"></span></label>
+ <label class="dc-field"><span class="dc-label">Cerca paziente</span><span class="dc-input is-focus"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg><input placeholder="Nome, codice fiscale o telefono"></span></label>
+ <label class="dc-field"><span class="dc-label">Codice fiscale<i class="dc-cross" style="--s:7px;--c:var(--danger)" aria-hidden="true"></i></span><span class="dc-input dc-input--error"><input value="RSSMRA80A01H50"></span><span class="dc-error"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>Mancano due caratteri.</span></label>
+ <label class="dc-field"><span class="dc-label">Telefono</span><span class="dc-input dc-input--outline"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></svg><input value="+39 333 123 4567"></span><span class="dc-help">Per i promemoria WhatsApp.</span></label>
+ <label class="dc-field"><span class="dc-label">Email</span><span class="dc-input dc-input--md"><input placeholder="nome@esempio.it"></span></label>
+ <label class="dc-field"><span class="dc-label">Numero cartella</span><span class="dc-input"><input value="CC-2026-0412" disabled></span></label>
+</div>
+</body></html>
