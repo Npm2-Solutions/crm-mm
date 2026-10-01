@@ -94,6 +94,17 @@ fila delle schede, la voce è quella pagina.
 | Direzione sanitaria | Il tuo account; Clienti: Moduli, Librerie; Telefono; Integrazioni: Assistente |
 | Agenzia | Come il manager, più Formati, ERPNext, Sigillo e marca temporale |
 
+### La voce dell'operatore si apre
+
+Percorrendo il menu di ogni livello è venuto fuori che l'operatore aveva una
+voce sola nell'Agenda, i turni, e ogni chiamata dietro quella pagina lo
+rifiutava (`agenda.turni` chiesto per tutto il centro). La capacità gli dà i
+suoi turni e il permesso del documento pure (`documenti.DI_CHI`): ora la pagina
+gli mostra **I tuoi turni**, la sua settimana, il pulsante degli orari apre i suoi, e il
+server gli lascia cambiare orari e giorni liberi suoi e di nessun altro
+(`appointments.turni`); come lo mostra la pagina di prenotazione resta del
+manager.
+
 ### I link che esistevano restano validi
 
 Ogni pagina tiene il nome che aveva, come chiave di una voce o di una scheda (o

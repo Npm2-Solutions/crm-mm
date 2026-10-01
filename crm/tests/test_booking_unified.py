@@ -336,3 +336,72 @@ class TestParticipantsArePeople(SchedulingCase):
 		self.assertEqual(person_of("CRM Lead", "X"), "X")
 		self.assertIsNone(person_of("Contact", None))
 		self.assertIsNone(person_of("Contact", "does-not-exist"))
+
+
+class TestTheirOwnShifts(SchedulingCase):
+	"""A practitioner's shifts are theirs (doc 30: `agenda.turni` on their own). The
+	settings showed them the team rota and every call behind it refused them; now
+	they read their own week and change their own hours and days off, never anybody
+	else's, and how the booking page shows them stays the manager's."""
+
+	def setUp(self):
+		super().setUp()
+		from crm.permissions import livelli, utenti
+
+		utenti.sincronizza()
+		self.anna = self.make_user("turni.anna@example.com")
+		self.bruno = self.make_user("turni.bruno@example.com")
+		self.desk = self.make_user("turni.desk@example.com")
+		self.marketing = self.make_user("turni.marketing@example.com")
+		for user, livello in (
+			(self.anna, "operatore"),
+			(self.bruno, "operatore"),
+			(self.desk, "segreteria"),
+			(self.marketing, "marketing"),
+		):
+			utenti.assegna_livelli(user, [livello])
+		livelli.dimentica_cache()
+		self.make_service("Turni Visit", [self.anna, self.bruno])
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		super().tearDown()
+
+	def test_a_practitioner_reads_their_own_week_the_desk_everybodys(self):
+		frappe.set_user(self.anna)
+		self.assertEqual([p["user"] for p in ADMIN.get_team_rota()["team"]], [self.anna])
+		frappe.set_user(self.desk)
+		team = [p["user"] for p in ADMIN.get_team_rota()["team"]]
+		self.assertIn(self.anna, team)
+		self.assertIn(self.bruno, team)
+		frappe.set_user(self.marketing)
+		with self.assertRaises(frappe.PermissionError):
+			ADMIN.get_team_rota()
+
+	def test_a_practitioner_changes_their_own_hours_and_nobody_elses(self):
+		from crm.api import appointments as A
+
+		frappe.set_user(self.anna)
+		A.save_schedule(
+			schedule={
+				"user": self.anna,
+				"enabled": 1,
+				"availability": [{"workday": "Monday", "start_time": "09:00", "end_time": "13:00"}],
+				"exceptions": [{"date": "2026-12-24", "unavailable": 1, "reason": "Vigilia"}],
+				"bookable_online": 0,
+				"public_title": "Ortopedico",
+			}
+		)
+		# the editor opens on them, without saying who
+		saved = A.get_schedule()
+		self.assertEqual(saved["user"], self.anna)
+		self.assertEqual(saved["availability"][0]["start_time"], "09:00")
+		self.assertEqual(saved["exceptions"][0]["reason"], "Vigilia")
+		# how the booking page shows them is the manager's
+		self.assertEqual(saved["public_title"], "")
+		self.assertEqual(saved["bookable_online"], 1)
+		with self.assertRaises(frappe.PermissionError):
+			A.get_schedule(self.bruno)
+		with self.assertRaises(frappe.PermissionError):
+			A.save_schedule(schedule={"user": self.bruno, "enabled": 0, "availability": []})
+		self.assertFalse(frappe.db.exists("CRM Staff Schedule", {"user": self.bruno}))
