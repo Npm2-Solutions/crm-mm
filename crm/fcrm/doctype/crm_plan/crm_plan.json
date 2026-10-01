@@ -17,7 +17,7 @@
    "fieldtype": "Select",
    "label": "Size",
    "options": "\nSolo\nStudio\nCentre\nPolyclinic\nLarge",
-   "description": "How many agendas the plan covers: Solo 1, Studio up to 3, Centre up to 8, Polyclinic up to 15. An agenda is a practitioner with at least one appointment in the month."
+   "description": "How many rooms the plan covers: Solo 1, Studio up to 2, Centre up to 5, Polyclinic up to 10; past ten, each one more is paid. A room is where one visits or treats, as the agenda's rooms."
   },
   {
    "fieldname": "column_break_size",
@@ -34,7 +34,7 @@
    "fieldname": "section_break_modules",
    "fieldtype": "Section Break",
    "label": "Modules",
-   "description": "A module not listed here keeps its default: what the CRM did before plans existed is on, a new module is off."
+   "description": "A module not listed here keeps its default: what the software did before plans existed is on, a new module is off."
   },
   {
    "fieldname": "modules",
@@ -52,7 +52,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 15:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Plan",

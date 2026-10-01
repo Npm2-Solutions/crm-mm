@@ -50,7 +50,7 @@
  ],
  "fields": [
   {
-   "description": "Only you see this — it names the site inside the CRM.",
+   "description": "Only you see this — it names the site in here.",
    "fieldname": "site_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -278,7 +278,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Web Site",

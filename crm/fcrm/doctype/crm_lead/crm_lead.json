@@ -200,7 +200,7 @@
    "options": "Contact",
    "read_only": 1,
    "no_copy": 1,
-   "description": "Where this person's phone numbers and emails live. Kept by the CRM, not edited by hand."
+   "description": "Where this person's phone numbers and emails live. Kept up to date by itself, not edited by hand."
   },
   {
    "fieldname": "phone",
@@ -825,7 +825,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-07 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

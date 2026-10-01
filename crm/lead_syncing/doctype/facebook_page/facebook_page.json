@@ -58,7 +58,7 @@
    "fieldtype": "Check",
    "label": "Sync Enabled",
    "default": "0",
-   "description": "Leads from this page are synced into the CRM"
+   "description": "Leads from this page are imported as people"
   },
   {
    "fieldname": "webhook_subscribed",
@@ -124,7 +124,7 @@
    "link_fieldname": "page"
   }
  ],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Lead Syncing",
  "name": "Facebook Page",

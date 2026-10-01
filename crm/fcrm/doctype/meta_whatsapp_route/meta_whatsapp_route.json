@@ -2,7 +2,7 @@
  "actions": [],
  "autoname": "field:waba_id",
  "creation": "2026-09-03 12:00:00.000000",
- "description": "Hub-only routing table: which client site owns a WhatsApp Business account, so messages delivered to the shared app reach the right CRM.",
+ "description": "Hub-only routing table: which client site owns a WhatsApp Business account, so messages delivered to the shared app reach the right site.",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -47,7 +47,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-03 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "Meta WhatsApp Route",

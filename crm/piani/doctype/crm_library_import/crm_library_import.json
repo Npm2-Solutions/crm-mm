@@ -29,7 +29,7 @@
    "in_list_view": 1,
    "label": "Library",
    "reqd": 1,
-   "description": "Exercises, the CRM's; or a module's own: the clinic's Foods"
+   "description": "Exercises, the base library; or a module's own: the clinic's Foods"
   },
   {
    "fieldname": "source",
@@ -110,7 +110,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 19:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Piani",
  "name": "CRM Library Import",
