@@ -324,7 +324,7 @@ the draft with `modello.accetta`.
 ### The language (docs/progetto-ghl/40)
 | File | Role |
 |---|---|
-| `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads; the voice and the product's words (person, trattativa, cosa da fare, sala…) are in doc 40 |
+| `crm/locale/it.po` | DottorCloud's Italian, over the framework's: every word a user reads, the server's sentences, the DocTypes' labels and names (`CRM Lead` is "Persona"); the voice and the product's words (persona, trattativa, cosa da fare, ambulatorio…) are in doc 40 |
 | `frontend/vite/frappeUi.js` | frappe-ui's own English words through `__()` at build ("Load More", "Search", the select's empty texts), the agenda's calendar named by Intl in the boot's language; each rewrite must match frappe-ui's source — tested |
 | `frontend/src/area/it.js` | The client area's dictionary: a test reads every `__()` of `src/area` and wants it there |
 
@@ -335,6 +335,19 @@ system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
 When one English sentence needs two Italian ones, the rarer place passes a
 context (`__('Hours', null, 'Service editor tab')`) and the catalog gives it a
 `msgctxt` entry.
+
+A sentence is whole in every language: never a DocType's name or an English word
+glued into it ("mentioned you in {0}" with "lead"), one sentence per case instead
+(a person named by their name, "the deal {1}": `crm_notification.in_grassetto`,
+`nome_di`). What the code reads back is never a translated sentence: a marker
+written in one language is looked for in English and in the site's
+(`booking_platforms.sync._dalla_piattaforma`), a state is asked of the data. Words
+handed as props are translated where they are drawn (`EmptyState`'s title and
+description), and a standard record created in English (the kinds of consent, a
+library's licence) is shown through `__()`: the shipped words read in the user's
+language, what the centre wrote stays as written. A DocType's description or label
+never calls the product "the CRM", and a changed one moves the JSON's `modified`, or
+migrate keeps the old words.
 
 ### The brand
 | File | Role |

@@ -58,6 +58,46 @@ pagina con il suo link diretto (`?settings=<chiave>`).
   `__('Hours', null, 'Service editor tab')`, e il catalogo ha la sua voce con
   `msgctxt`: il traduttore cerca prima `frase:contesto`.
 
+## Fatto: il resto dell'app e le parole del server (PR 3)
+
+Le pagine che restavano (automazioni, social, sito, tastierino, offerte, aziende,
+contatti, note, chiamate, notifiche) e tutto quello che arriva dal server.
+
+- **Le frasi del server**: messaggi d'errore, email, notifiche, testi delle
+  automazioni e della fatturazione elettronica, circa 2600 frasi; le etichette, le
+  descrizioni e le opzioni dei DocType; i **nomi dei DocType**, che il framework
+  mette nei suoi messaggi ("Non hai il permesso per Appuntamento"). Cinque nomi
+  ereditati erano sbagliati: `CRM Lead` e `CRM Deal` erano entrambi "Offerta CRM",
+  ora "Persona" e "Trattativa"; `CRM Task` è "Cosa da fare".
+- **Le notifiche** incollavano una parola inglese nella frase: "ti ha menzionato
+  in lead Mario Rossi". Ora una frase per caso: la persona per nome ("Anna ti ha
+  menzionato in un commento su Mario Rossi"), la trattativa come tale ("…sulla
+  trattativa Studio Verdi"); WhatsApp, SMS e assegnazioni allo stesso modo, con il
+  nome invece del codice della scheda.
+- **Quello che il codice rilegge** non è mai la frase tradotta: un annullamento
+  arrivato da una piattaforma si riconosce in inglese e nella lingua del sito, il
+  collegamento di una notifica alle cose da fare guarda se la cosa è ancora tua.
+- **Una parola, due posti** (le voci con `msgctxt`): le viste delle conversazioni
+  ("Aperte", "Gestite"), un consenso ("Registra", "Revoca"), la scheda di
+  un'automazione, la comunicazione al Sistema TS, la parte del corpo di un
+  esercizio ("Schiena"), le schede dell'editor delle automazioni ("Builder" è
+  anche il nome di un prodotto).
+- **Le parole che non passavano dal traduttore**: i titoli degli stati vuoti, il
+  pulsante Salva dei dati, le descrizioni dei campi, il segnaposto del
+  responsabile, priorità e stato nelle schede del Kanban, il segnaposto dell'ora di
+  frappe-ui. I tipi di consenso e la licenza di una libreria, creati in inglese,
+  si leggono nella lingua di chi li guarda; quello che il centro ha scritto resta
+  com'è.
+- **Le descrizioni dei DocType** non chiamano più il prodotto "the CRM" (22 testi,
+  anche in inglese); le dimensioni del piano contano gli ambulatori del listino.
+- **Il giro nel browser** guarda anche il testo visibile: le righe con parole solo
+  inglesi, per trovare quello che non passa da `__()`.
+
+Resta, per la prossima PR: le pagine di importazione dei dati, che frappe-ui
+disegna senza traduttore; i dati delle librerie (gli esercizi di exercises-dataset
+e gli alimenti CIQUAL hanno i nomi inglesi); le traduzioni ereditate da rimettere
+nella voce del prodotto.
+
 ## Come si trovano le frasi in inglese
 
 - **Nel codice**: le chiamate `__('…')` del frontend e `_()`/`_lt()` del server, e le
@@ -68,6 +108,10 @@ pagina con il suo link diretto (`?settings=<chiave>`).
   tradotte con `__(voce.label)`) e il codice non le mostra. Un giro nel browser in
   italiano registra ogni frase chiesta al traduttore e rimasta senza traduzione:
   `window.translated_messages`, avvolto in un Proxy prima che la pagina parta.
+- **Sullo schermo**: quello che non passa dal traduttore (una prop disegnata
+  com'è, un'etichetta scritta nel template) il Proxy non lo vede. Lo stesso giro
+  legge il testo visibile e i segnaposto e segnala le righe con parole solo
+  inglesi.
 
 ## La voce e le parole
 
@@ -125,3 +169,4 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | `frontend/src/components/ListViews/*ListView.vue`, `Kanban/KanbanView.vue` | I valori a scelta e le colonne del Kanban tradotti |
 | `frontend/src/area/it.js` | Il dizionario dell'area clienti |
 | `crm/dashboard/widgets/sales.py` | Le fasi tradotte nell'imbuto e nelle liste (`stage_name`) |
+| `crm/fcrm/doctype/crm_notification/crm_notification.py` | `in_grassetto`, `nome_di`: le notifiche nominano chi e dove con frasi intere |
