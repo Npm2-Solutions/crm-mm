@@ -28,7 +28,7 @@ arrivano dal nostro server), quindi nessun banner per il consenso.
 |---|---|
 | `pagine/` | Una pagina per file: in cima un commento con `title`, `description`, `path`, `nav` (la voce del menu accesa) e `index: no` per tenerla fuori dai motori di ricerca; sotto, il contenuto di `<main>` |
 | `parti/` | Lo scheletro (`layout.html`), la testata, il piè di pagina e la fascia finale "Vediamolo sul tuo centro" (`cta.html`) |
-| `risorse/css/sito.css` | Lo stile. I colori, i raggi, le ombre e i movimenti sono i token di [`../brand/design-system/tokens.css`](../brand/design-system/), messi davanti al foglio dalla build |
+| `risorse/css/sito.css` | Lo stile. I colori, i raggi, le ombre e i movimenti sono i token di [`../brand/design-system/tokens.css`](../brand/design-system/), messi davanti al foglio dalla build; dietro, la build mette lo strato del marchio [`../brand/sito/sito-marchio.css`](../brand/sito/) (blocchi, croce, nuvola: le regole in [`sito.md`](../brand/design-system/espresso/sito.md)) |
 | `risorse/js/sito.js` | Il menu sul telefono, le cose che arrivano mentre si scorre, il video, il capitolo acceso in Funzioni, il modulo inviato senza lasciare la pagina. Tutto funziona anche senza |
 | `risorse/icone/` | Le icone Lucide usate dal sito (licenza ISC, in `LICENSE`), solo le forme: la build le mette dentro l'HTML |
 | `risorse/img/` | Le schermate del video in WebP e l'immagine per i link condivisi, fatte da `immagini.py` |
@@ -38,8 +38,10 @@ arrivano dal nostro server), quindi nessun banner per il consenso.
 | `deploy.sh` | Lo pubblica sul server |
 | `test/sito.test.mjs` | I test: pagine, collegamenti, immagini, nessun prezzo, il modulo con PHP |
 
-Il logo, il carattere Inter e il video non sono copiati qui: la build li prende da
-`brand/` (e l'icona per il telefono da `crm/public/manifest/`).
+Il logo, il carattere Inter (`brand/font/`), lo strato del marchio, la composizione della
+404 (`brand/composizioni/stato-vuoto.svg`) e il video non sono copiati qui: la build li
+prende da `brand/` (e l'icona per il telefono da `crm/public/manifest/`). L'immagine dei
+link condivisi è `brand/composizioni/condivisione-og.png`, fatta JPEG da `immagini.py`.
 
 Nelle pagine: `{{> cta}}` inserisce una parte, `{{icon calendar-days}}` un'icona,
 `{{email}}`, `{{company}}`, `{{address}}` e `{{vat}}` i dati di NPM2 Solutions Srl, che

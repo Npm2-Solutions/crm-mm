@@ -6,7 +6,7 @@
 The product screens are the ones the video and the presentation use
 (brand/presentazione/sorgenti/img, taken with brand/video/sorgenti/grab.mjs):
 here they become WebP at twice the size the page shows them. The picture for
-link previews is the video's cover, cut to 1200x630.
+link previews is the brand's composition (brand/composizioni/condivisione-og.png).
 
     pip install pillow
     python3 sito/immagini.py
@@ -57,14 +57,10 @@ def webp(sorgente: Path, destinazione: Path, larghezza: int) -> None:
 
 
 def condivisione() -> None:
-	"""The video's cover as the 1200x630 picture of a shared link."""
-	copertina = Image.open(RADICE / "brand/video/DottorCloud.jpg").convert("RGB")
-	larghezza, altezza = 1200, 630
-	scala = larghezza / copertina.width
-	copertina = copertina.resize((larghezza, round(copertina.height * scala)), Image.LANCZOS)
-	alto = (copertina.height - altezza) // 2
-	copertina.crop((0, alto, larghezza, alto + altezza)).save(
-		USCITA / "condivisione.jpg", "JPEG", quality=86, optimize=True, progressive=True
+	"""The brand's composition for shared links (brand/composizioni), at 1200x630."""
+	og = Image.open(RADICE / "brand/composizioni/condivisione-og.png").convert("RGB")
+	og.resize((1200, 630), Image.LANCZOS).save(
+		USCITA / "condivisione.jpg", "JPEG", quality=88, optimize=True, progressive=True
 	)
 	# the same cover, smaller, as the poster of the video on the page
 	poster = Image.open(RADICE / "brand/video/DottorCloud.jpg").convert("RGB")

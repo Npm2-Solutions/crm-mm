@@ -10,7 +10,8 @@
 // part, {{icon name}} a Lucide icon from risorse/icone, {{current key}} marks
 // the menu's page. Images get their width and height from the file, so nothing
 // jumps while they load. Logo, font and video come from brand/, the tokens of
-// the design system go in front of the stylesheet: one source for each.
+// the design system go in front of the stylesheet and the brand's layer
+// (brand/sito/sito-marchio.css) after it: one source for each.
 //
 //   SITO_URL=https://dottorcloud.com   the address the site answers to
 //   SITO_ANTEPRIMA=1                  a preview: noindex, and robots.txt says no
@@ -45,7 +46,8 @@ const FROM_REPO = {
   'img/marchio.svg': 'brand/logo/dottorcloud-marchio.svg',
   'favicon.svg': 'brand/logo/dottorcloud-icona-app.svg',
   'apple-touch-icon.png': 'crm/public/manifest/apple-icon-180.png',
-  'font/inter.woff2': 'brand/video/sorgenti/fonts/inter.woff2',
+  'font/inter.woff2': 'brand/font/Inter-Variable-latin.woff2',
+  'img/stato-vuoto.svg': 'brand/composizioni/stato-vuoto.svg',
   'video/dottorcloud.mp4': 'brand/video/DottorCloud.mp4',
 }
 
@@ -218,7 +220,9 @@ export function build() {
   copyDir(path.join(SITE, 'api'), path.join(OUT, 'api'))
 
   const tokens = read(path.join(ROOT, 'brand/design-system/tokens.css'))
-  const css = `${tokens}\n${read(path.join(SITE, 'risorse/css/sito.css'))}`
+  // the brand's layer goes last: it restyles the site without touching its rules
+  const layer = read(path.join(ROOT, 'brand/sito/sito-marchio.css'))
+  const css = `${tokens}\n${read(path.join(SITE, 'risorse/css/sito.css'))}\n${layer}`
   const js = read(path.join(SITE, 'risorse/js/sito.js'))
   write(path.join(OUT, 'css/sito.css'), css)
   write(path.join(OUT, 'js/sito.js'), js)

@@ -398,7 +398,7 @@ done by the data, never by a click, so a centre that already works sees nothing.
 | File | Role |
 |---|---|
 | `sito/pagine/`, `sito/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
-| `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS, logo, font and video from `brand/`, sitemap |
+| `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS and `brand/sito/sito-marchio.css` after it, logo, font, compositions and video from `brand/`, sitemap |
 | `sito/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
 | `sito/deploy.sh`, `sito/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
 | `.github/workflows/sito-pubblica.yml`, `sito/domini.txt` | Publishing from GitHub on every push that changes `sito/` or `brand/`: tests, then `deploy.sh --crea --nginx` for each domain listed; needs the `HOSTING_SSH_KEY` secret |
