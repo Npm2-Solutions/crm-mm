@@ -2,12 +2,19 @@
 
     Inside a public page's <style>: the product's accent (`crm.marchio.accento`)
     on its buttons and what is chosen, in dark too where the page has a dark look
-    (`scuro`), and the look of its marks (`marchio_segni.html`). -#}
+    (`scuro`), and the look of the centre's mark at the top (`marchio_segni.html`)
+    and of the product's signature at the foot (`marchio_piede.html`). -#}
 :root { {% for k, v in marchio.accent.light.items() %}{{ k }}: {{ v }}; {% endfor %} }
 {% if scuro %}@media (prefers-color-scheme: dark) {
   :root { {% for k, v in marchio.accent.dark.items() %}{{ k }}: {{ v }}; {% endfor %} }
+  /* a logo is drawn for white paper: on dark it keeps a white card */
+  .marchio-logo { background: #fff; padding: 3px; }
+  .marchio-logo-largo { padding: 4px 8px; }
 }{% endif %}
-.marchio { display: flex; align-items: center; gap: .75rem; min-width: 0; margin-bottom: .75rem; }
+.marchio { display: flex; align-items: center; gap: .625rem; min-width: 0; margin-bottom: .75rem; }
+.marchio-logo { display: block; width: 40px; height: 40px; object-fit: contain; flex: none; border-radius: 8px; }
+.marchio-logo-largo { width: auto; height: auto; max-height: 44px; max-width: min(240px, 100%); border-radius: 4px; }
+.marchio-nome { min-width: 0; color: var(--ink-strong, var(--ink, inherit)); font-size: 1.0625rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
 .marchio-prodotto { display: block; height: 28px; width: auto; flex: none; }
-.marchio-tra { width: 1px; height: 24px; background: var(--border); flex: none; }
-.marchio-centro { display: block; max-height: 36px; max-width: 140px; object-fit: contain; min-width: 0; }
+.marchio-piede { display: flex; align-items: center; justify-content: center; gap: .375rem; margin: 2rem 0 2.5rem; font-size: .75rem; color: var(--faint, var(--muted, #8a8a8a)); }
+.marchio-piede img { width: 16px; height: 16px; border-radius: 4px; flex: none; }

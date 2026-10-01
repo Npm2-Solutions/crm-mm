@@ -1,5 +1,5 @@
 <!doctype html>
-{%- set scuro = not embed %}{% set logo_centro = marchio.centre_logo %}
+{%- set scuro = not embed %}
 <html lang="{{ boot.lang }}">
   <head>
     <meta charset="UTF-8" />
@@ -112,6 +112,7 @@
         </div>
       </div>
     </main>
+    {% if not embed %}{% include "crm/templates/includes/marchio_piede.html" %}{% endif %}
 
     <!-- Records the visit and carries the visitor ids into the submission below.
          Same script the centre pastes on its own site; here it is already on the

@@ -1,5 +1,5 @@
 <!doctype html>
-{%- set scuro = true %}{% set logo_centro = branding.logo %}
+{%- set scuro = true %}{% set logo_centro = branding.logo %}{% set forma_logo = branding.logo_shape %}{% set solo_logo = true %}{% set piede_id = "foot-text" %}
 <html lang="{{ boot.lang }}">
   <head>
     <meta charset="UTF-8" />
@@ -57,8 +57,8 @@
           --warn-ink: oklch(0.88 0.08 85);
         }
       }
-      /* the product's accent and marks, the vertical's brand: the centre's logo
-         goes beside it */
+      /* the product's accent, the vertical's brand, and the look of the centre's
+         logo at the top and of the product's signature at the foot */
       {% include "crm/templates/includes/marchio_colori.html" %}
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
@@ -215,7 +215,8 @@
       .stepper-seats { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
       .stepper-seats button { border: 0; background: var(--card); width: 2.1rem; height: 2.1rem; font-size: 1rem; cursor: pointer; color: var(--ink); }
       .stepper-seats span { min-width: 2.2rem; text-align: center; font-weight: 600; }
-      footer.foot { text-align: center; color: var(--faint); font-size: .75rem; margin-top: 2rem; }
+      footer.foot { margin-top: 2rem; }
+      footer.foot .marchio-piede { margin: 0; }
       .profile { display: flex; gap: 1rem; align-items: flex-start; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
       .profile h2 { margin: 0 0 .15rem; }
       .profile .bio { margin: .4rem 0 0; color: var(--muted); font-size: .88rem; max-width: 55ch; }
@@ -245,7 +246,7 @@
         </main>
         <aside class="panel summary" id="summary"></aside>
       </div>
-      <footer class="foot" id="foot"></footer>
+      <footer class="foot" id="foot">{% include "crm/templates/includes/marchio_piede.html" %}</footer>
     </div>
 
     <script>
@@ -277,7 +278,7 @@
           moveBtn: "Cambia data o orario", cancelReason: "Motivo (facoltativo)", cancelConfirm: "Confermi l'annullamento?",
           yesCancel: "Sì, annulla", keep: "No, mantieni", status: "Stato", stConfirmed: "Confermata", stScheduled: "In attesa di conferma",
           stCancelled: "Annullata", stCompleted: "Completata", "stNo Show": "Assente", instructions: "Indicazioni", genericError: "Qualcosa è andato storto. Riprova.",
-          required: "Compila i campi obbligatori.", invalidEmail: "Inserisci un'email valida.", poweredBy: "Prenotazione online",
+          required: "Compila i campi obbligatori.", invalidEmail: "Inserisci un'email valida.", poweredBy: {{ ("Con tecnologia " ~ marchio.name) | tojson }},
           firstFree: "Primo orario libero", servicesOf: "Servizi di", allServices: "Tutti i servizi",
           forWhom: "Per chi è l'appuntamento?", forMe: "Per me", forOther: "Per un'altra persona",
           yourName: "Il tuo nome e cognome", otherName: "Nome e cognome di chi viene", youAre: "Tu sei",
@@ -312,7 +313,7 @@
           moveBtn: "Change date or time", cancelReason: "Reason (optional)", cancelConfirm: "Cancel this booking?",
           yesCancel: "Yes, cancel", keep: "No, keep it", status: "Status", stConfirmed: "Confirmed", stScheduled: "Awaiting confirmation",
           stCancelled: "Cancelled", stCompleted: "Completed", "stNo Show": "No show", instructions: "Instructions", genericError: "Something went wrong. Please try again.",
-          required: "Please fill in the required fields.", invalidEmail: "Please enter a valid email.", poweredBy: "Online booking",
+          required: "Please fill in the required fields.", invalidEmail: "Please enter a valid email.", poweredBy: {{ ("Powered by " ~ marchio.name) | tojson }},
           firstFree: "First free time", servicesOf: "Services by", allServices: "All services",
           forWhom: "Who is the appointment for?", forMe: "For me", forOther: "For someone else",
           yourName: "Your full name", otherName: "Their full name", youAre: "You are",
@@ -949,7 +950,7 @@
           // the tab says the centre's title beside the product's name, as the server wrote it
           if (S.catalog.title) { $("page-title").textContent = S.catalog.title; document.title = S.catalog.title + " · " + {{ marchio.name | tojson }}; }
           $("page-intro").textContent = S.catalog.intro || "";
-          $("foot").textContent = T("poweredBy");
+          $("foot-text").textContent = T("poweredBy");
           if (BOOT.token) {
             S.manage = await api("get_booking", { token: BOOT.token });
             S.step = "manage";

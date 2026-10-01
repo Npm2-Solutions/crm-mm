@@ -223,16 +223,19 @@ def page_title(config=None) -> str:
 
 
 def page_branding(config=None) -> dict:
-	"""The centre's part of a public page: its title, and its logo, which goes
-	beside the product's (Settings → General → Name & logo, or the booking page's own). The
-	favicon, the colours and the product's logo are the vertical's brand
+	"""The centre's part of a public page: its title, and its logo, which leads at
+	the top (Settings → The centre → General → Name & logo, or the booking page's own),
+	with its shape: wide on its own, square beside the name (`crm.marchio.forma_di`).
+	The favicon, the colours and the signature at the foot are the vertical's brand
 	(`crm.marchio`, `marchio` in every page's context)."""
+	from crm.marchio import forma_di
+
 	config = config or settings()
 	# one field per read: `get_single_value` takes a single fieldname. Handed a
 	# list and `as_dict` it raised, the page caught it, and every public booking
 	# page went out without the centre's logo
 	logo = config.get("booking_page_logo") or frappe.db.get_single_value("FCRM Settings", "brand_logo") or ""
-	return {"title": page_title(config), "logo": logo}
+	return {"title": page_title(config), "logo": logo, "logo_shape": forma_di(logo)}
 
 
 def _puo(capacita: str) -> bool:

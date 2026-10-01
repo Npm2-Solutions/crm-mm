@@ -1,14 +1,19 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The product's brand - the vertical's - everywhere a person looks.
+"""The product's brand - the vertical's - and the centre's: one mark in each place.
 
 A vertical switched on by the plan brings its brand (`crm.verticali`): the clinic
-DottorCloud. Its name, icon, logo, favicon and colours are the product's in every
-place: DottorCloud's pages and the client area, the public pages (booking, forms,
-reports), the framework's own (the login page, the desk, the emails), the phone's
-home screen. A centre's own logo goes at most beside it (Settings > General > Name & logo); it never
-takes its place. Without a vertical the base's brand speaks (`BASE`).
+DottorCloud. Its name, icon, favicon and colours are the product's everywhere: the
+tab of every page, the framework's own (the login page, the desk, the emails), the
+phone's home screen, the PDFs' producer. Where a person deals with the centre - the
+top of DottorCloud's sidebar, the client area, the public pages (booking, forms,
+documents) - the centre's own mark leads (Settings > The centre > General > Name &
+logo): its logo as it is drawn, wide on its own or square beside its name
+(`forma_del_logo`), or its name alone; the product signs at the foot, "Powered by
+DottorCloud". The two never stand side by side. A centre with neither a logo nor a
+name has the product's logo in their place. Without a vertical the base's brand
+speaks (`BASE`).
 
 - **Where it is read**: `attivo()`, on the server; the boots of DottorCloud's page
   and of the area (`per_il_boot`), the public pages (`per_le_pagine`), the phone's
@@ -27,7 +32,10 @@ the copyright lines in the sources and the licence file.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
+from pathlib import Path
+from urllib.parse import unquote
 
 import frappe
 from frappe import _lt
@@ -174,11 +182,86 @@ def accento(marchio: Marchio | None = None) -> dict[str, dict[str, str]]:
 
 
 def logo_del_centro() -> str:
-	"""The centre's own logo (Settings > General > Name & logo): at most beside the product's."""
+	"""The centre's own logo (Settings > The centre > General > Name & logo)."""
 	return frappe.db.get_single_value("FCRM Settings", "brand_logo") or ""
 
 
-def _dati(marchio: Marchio, logo_centro: str = "") -> dict:
+#: A logo this many times wider than high is drawn on its own, wide: it carries the
+#: centre's name. Below it, square, it goes beside the name. As `utils/marchio.js`.
+LARGO = 1.5
+
+
+def forma_del_logo(larghezza, altezza) -> str:
+	"""How a logo is drawn: "wide" on its own, "square" beside the centre's name; ""
+	when its size is not known, and then it goes beside the name, which is never lost."""
+	try:
+		larghezza, altezza = float(larghezza or 0), float(altezza or 0)
+	except (TypeError, ValueError):
+		return ""
+	if larghezza <= 0 or altezza <= 0:
+		return ""
+	return "wide" if larghezza >= LARGO * altezza else "square"
+
+
+def misure_svg(testo: str) -> tuple[float, float] | None:
+	"""An SVG's width and height: its own, in pixels, else its viewBox's."""
+	radice = re.search(r"<svg\b[^>]*>", testo or "", re.IGNORECASE)
+	if not radice:
+		return None
+	tag = radice.group(0)
+
+	def misura(nome: str) -> float | None:
+		trovata = re.search(rf"""\s{nome}\s*=\s*["']\s*([\d.]+)\s*(?:px)?\s*["']""", tag)
+		return float(trovata.group(1)) if trovata else None
+
+	larghezza, altezza = misura("width"), misura("height")
+	if larghezza and altezza:
+		return larghezza, altezza
+	vista = re.search(r"""viewBox\s*=\s*["']([^"']+)["']""", tag, re.IGNORECASE)
+	numeri = re.split(r"[\s,]+", vista.group(1).strip()) if vista else []
+	try:
+		return (float(numeri[2]), float(numeri[3])) if len(numeri) == 4 else None
+	except ValueError:
+		return None
+
+
+def misure_del_logo(url: str | None) -> tuple[float, float] | None:
+	"""A logo's width and height, from the file the site keeps: the head of an image,
+	the size of an SVG. None for an address elsewhere, or a file it cannot read."""
+	percorso = _file_del_sito(url)
+	if not percorso:
+		return None
+	try:
+		if percorso.suffix.lower() == ".svg":
+			# nosemgrep: frappe-security-file-traversal — a file of the site's own folders, resolved inside them
+			with open(percorso, encoding="utf-8", errors="ignore") as file:
+				return misure_svg(file.read(16384))
+		from PIL import Image
+
+		with Image.open(percorso) as immagine:
+			return immagine.size
+	except Exception:
+		return None
+
+
+def forma_di(url: str | None) -> str:
+	"""The shape of the logo at an address: "wide", "square" or "" (`forma_del_logo`)."""
+	return forma_del_logo(*(misure_del_logo(url) or (0, 0))) if url else ""
+
+
+def _file_del_sito(url: str | None) -> Path | None:
+	# only the site's own files, and never a step out of their folder
+	url = (url or "").split("?", 1)[0].split("#", 1)[0]
+	for prefisso, cartella in (("/files/", "public"), ("/private/files/", "private")):
+		if url.startswith(prefisso):
+			base = Path(frappe.get_site_path(cartella, "files")).resolve()
+			percorso = (base / unquote(url[len(prefisso) :])).resolve()
+			if percorso.is_relative_to(base) and percorso.is_file():
+				return percorso
+	return None
+
+
+def _dati(marchio: Marchio, logo_centro: str = "", nome_centro: str = "") -> dict:
 	return {
 		"key": marchio.chiave,
 		"name": marchio.nome,
@@ -190,22 +273,30 @@ def _dati(marchio: Marchio, logo_centro: str = "") -> dict:
 		"colors": colori(marchio),
 		"touch_icon": marchio.icone_telefono.get("180") or marchio.icona,
 		"centre_logo": logo_centro,
+		"centre_logo_shape": forma_di(logo_centro),
+		"centre_name": nome_centro,
 	}
 
 
+def _del_centro() -> tuple[str, str]:
+	from crm.moduli.richieste import nome_del_centro
+
+	return logo_del_centro(), nome_del_centro()
+
+
 def per_il_boot() -> dict:
-	"""What DottorCloud's page and the area need of the brand, and the centre's logo
-	that goes beside it."""
-	return _dati(attivo(), logo_del_centro())
+	"""What DottorCloud's page and the area need of the brand, and the centre's mark
+	that leads at the top of the sidebar: its logo, the logo's shape, its name."""
+	return _dati(attivo(), *_del_centro())
 
 
 def per_le_pagine() -> dict:
 	"""The public pages' branding: the product's name, icon, logo, favicon, colours
-	and accent (`accento`), and the centre's logo beside them. Never raises: a page
-	without it still opens, in the base's brand."""
+	and accent (`accento`), and the centre's mark that leads at the top. Never
+	raises: a page without it still opens, in the base's brand."""
 	try:
 		marchio = attivo()
-		dati = _dati(marchio, logo_del_centro())
+		dati = _dati(marchio, *_del_centro())
 	except Exception:
 		marchio = BASE
 		dati = _dati(marchio)

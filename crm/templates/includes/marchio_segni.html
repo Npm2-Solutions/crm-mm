@@ -1,13 +1,27 @@
 {#- Copyright (c) 2026, NPM2 Solutions Srl and contributors
 
-    The product's logo first and the centre's beside it (`logo_centro`): on every
-    public page the platform's brand, the centre's at most next to it
-    (`crm.marchio`). The logo for dark backgrounds where the page has a dark
-    look (`scuro`). -#}
+    The centre's mark at the top of a public page (`crm.marchio`): its logo as it
+    is drawn - wide on its own, square beside its name - or its name alone; the
+    product signs at the foot (`marchio_piede.html`), never beside it. A page may
+    hand over its own logo and shape (`logo_centro`, `forma_logo`: the booking
+    page's); a page whose title already names the centre shows only the logo
+    (`solo_logo`). With neither a logo nor a name, the product's logo stands in,
+    for dark backgrounds too where the page has a dark look (`scuro`). -#}
+{%- set _logo = logo_centro if logo_centro is defined else marchio.centre_logo -%}
+{%- set _forma = forma_logo if forma_logo is defined else marchio.centre_logo_shape -%}
+{%- set _nome = "" if solo_logo else (marchio.centre_name or "") -%}
+{%- set _largo = _forma == "wide" -%}
+{%- if _logo or _nome or not solo_logo %}
 <div class="marchio">
+  {%- if _logo %}
+  <img class="marchio-logo{% if _largo %} marchio-logo-largo{% endif %}" src="{{ _logo | e }}" alt="{{ '' if _nome and not _largo else (marchio.centre_name or '') | e }}" />
+  {%- endif %}
+  {%- if _nome and not (_logo and _largo) %}
+  <span class="marchio-nome">{{ _nome | e }}</span>
+  {%- elif not _logo and not _nome %}
   {% if scuro %}<picture><source srcset="{{ marchio.logo_dark }}" media="(prefers-color-scheme: dark)" />{% endif -%}
   <img class="marchio-prodotto" src="{{ marchio.logo }}" alt="{{ marchio.name }}" />
   {%- if scuro %}</picture>{% endif %}
-  {% if logo_centro %}<span class="marchio-tra" aria-hidden="true"></span>
-  <img class="marchio-centro" src="{{ logo_centro }}" alt="" />{% endif %}
+  {%- endif %}
 </div>
+{%- endif %}

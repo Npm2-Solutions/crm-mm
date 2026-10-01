@@ -1,0 +1,11 @@
+{#- Copyright (c) 2026, NPM2 Solutions Srl and contributors
+
+    The product's signature at the foot of a public page: its icon and "Powered
+    by DottorCloud", discreet. The centre's mark leads at the top
+    (`marchio_segni.html`); where the centre has neither a logo nor a name the
+    product's logo stands in up there, and it does not sign twice. A page that
+    writes its words in the browser gives the sentence an id (`piede_id`). -#}
+{%- set _logo = logo_centro if logo_centro is defined else marchio.centre_logo -%}
+{%- if _logo or marchio.centre_name or solo_logo %}
+<p class="marchio-piede"><img src="{{ marchio.icon }}" alt="" /><span{% if piede_id %} id="{{ piede_id }}"{% endif %}>{{ _("Powered by {0}").format(marchio.name) }}</span></p>
+{%- endif %}

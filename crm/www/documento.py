@@ -29,7 +29,7 @@ def get_context(context):
 
 		context.branding = page_branding()
 	except Exception:
-		context.branding = {"title": "", "logo": ""}
+		context.branding = {"title": "", "logo": "", "logo_shape": ""}
 	from crm.moduli.richieste import nome_del_centro
 
 	context.branding["title"] = nome_del_centro()

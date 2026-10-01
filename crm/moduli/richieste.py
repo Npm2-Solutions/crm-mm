@@ -101,14 +101,13 @@ def _nascosta(email: str) -> str:
 
 
 def nome_del_centro() -> str:
-	"""The centre's name: the CRM's brand (Settings > Brand), never the booking
-	page's own title nor the software's. Empty when there is none."""
+	"""The centre's name (Settings > The centre > General > Name & logo), never the
+	booking page's own title nor the software's. Empty when there is none."""
 	from crm.marchio import nome_scelto
 
-	marchio = (frappe.db.get_single_value("FCRM Settings", "brand_name") or "").strip()
-	if marchio:
-		return marchio
-	return nome_scelto(frappe.db.get_single_value("Website Settings", "app_name"))
+	return nome_scelto(frappe.db.get_single_value("FCRM Settings", "brand_name")) or nome_scelto(
+		frappe.db.get_single_value("Website Settings", "app_name")
+	)
 
 
 # ------------------------------------------------------------------ who it goes to

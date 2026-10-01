@@ -1,5 +1,4 @@
 <!doctype html>
-{%- set logo_centro = marchio.centre_logo %}
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -41,8 +40,10 @@
         color: var(--ink);
         min-height: 100vh;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
         padding: 2rem 1rem;
+        box-sizing: border-box;
       }
       .card {
         background: var(--card);
@@ -171,6 +172,7 @@
         <div id="msg" class="msg"></div>
       </div>
     </div>
+    {% include "crm/templates/includes/marchio_piede.html" %}
 
     <!-- Tracks the visit and hands the visitor ids to the booking call below, so
          a booking is credited to the campaign that produced it. -->

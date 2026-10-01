@@ -27,12 +27,12 @@ def get_context(context):
 
 		branding = page_branding()
 	except Exception:
-		branding = {"title": "", "logo": ""}
+		branding = {"title": "", "logo": "", "logo_shape": ""}
 	from crm.moduli.richieste import nome_del_centro
 
 	utente = frappe.session.user
-	# the product's brand - the vertical's - is the page's; the centre's name and
-	# logo go beside it
+	# the product's brand - the vertical's - is the page's tab and its foot; the
+	# centre's logo and name lead at the top
 	context.marchio = marchio.per_le_pagine()
 	centro = nome_del_centro()
 	context.title = f"{centro} · {context.marchio['name']}" if centro else context.marchio["name"]
@@ -43,6 +43,7 @@ def get_context(context):
 		"lang": (frappe.local.lang or "it")[:2],
 		"centre": centro,
 		"logo": branding.get("logo") or "",
+		"logo_shape": branding.get("logo_shape") or "",
 		"brand": context.marchio,
 		# the vertical the plan has on says some words its own way: the clinic's patients
 		"words": _parole(),

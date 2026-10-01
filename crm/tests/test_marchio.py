@@ -1,16 +1,20 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # See license.txt
 
-"""The product's brand - the vertical's - everywhere a person looks (`crm.marchio`).
+"""The product's brand - the vertical's - and the centre's: one mark in each place
+(`crm.marchio`).
 
-The vertical the plan has on brings its brand: its name, icon, logo, favicon and
-colours are the product's on the framework's pages (the login page, the desk's
-title, the line under every public page), in the desk, on the phone's home
-screen and on the public pages, where the centre's logo goes at most beside it.
-A patient never reads the software's name where the centre's belongs.
+The vertical the plan has on brings its brand: its name, icon, favicon and colours
+are the product's on the framework's pages (the login page, the desk's title), in
+the desk, on the phone's home screen. Where a person deals with the centre - the
+top of the sidebar, the client area, the public pages - the centre's mark leads,
+its logo drawn as it is (wide on its own, square beside its name), and the product
+signs at the foot: never the two side by side. A patient never reads the
+software's name where the centre's belongs.
 """
 
 import json
+import os
 from unittest.mock import patch
 
 import frappe
@@ -154,8 +158,10 @@ class TestMarchio(IntegrationTestCase):
 
 	# ------------------------------------------------------------ what the pages read
 
-	def test_i_dati_per_le_pagine_e_il_logo_del_centro_accanto(self):
-		frappe.db.set_single_value("FCRM Settings", "brand_logo", "/files/aurora.png")
+	def test_i_dati_per_le_pagine_e_il_segno_del_centro(self):
+		frappe.db.set_single_value(
+			"FCRM Settings", {"brand_logo": "/files/aurora.png", "brand_name": "Centro Aurora"}
+		)
 		with con_il_verticale(PROVA.chiave):
 			dati = marchio.per_le_pagine()
 		self.assertEqual(
@@ -163,16 +169,76 @@ class TestMarchio(IntegrationTestCase):
 			(PROVA.nome, PROVA.icona, PROVA.logo, PROVA.logo_negativo, PROVA.favicon),
 		)
 		self.assertEqual(dati["touch_icon"], "/p/180.png")
-		self.assertEqual(dati["centre_logo"], "/files/aurora.png")
+		# the centre's mark: its logo, the logo's shape (no such file: not known), its name
+		self.assertEqual(
+			(dati["centre_logo"], dati["centre_logo_shape"], dati["centre_name"]),
+			("/files/aurora.png", "", "Centro Aurora"),
+		)
 		self.assertEqual(dati["colors"]["--brand"], "#3355ff")
 		# on light its darker shade under white words, on dark its own under dark ones
 		self.assertEqual(dati["accent"]["light"]["--accent"], "#1a2fa0")
 		self.assertEqual(dati["accent"]["light"]["--accent-ink"], "#ffffff")
 		self.assertEqual(dati["accent"]["light"]["--accent-soft"], "#e8ecff")
 		self.assertEqual(dati["accent"]["dark"]["--accent"], "#3355ff")
-		# the centre's page gives only its title and its logo
-		self.assertEqual(set(service_booking.page_branding({})), {"title", "logo"})
-		frappe.db.set_single_value("FCRM Settings", "brand_logo", "")
+		# the centre's page gives its title, its logo and the logo's shape
+		self.assertEqual(set(service_booking.page_branding({})), {"title", "logo", "logo_shape"})
+		frappe.db.set_single_value("FCRM Settings", {"brand_logo": "", "brand_name": ""})
+
+	# ------------------------------------------------------------ the logo's shape
+
+	def test_la_forma_del_logo(self):
+		# wide from one and a half times as wide as high: it carries the name
+		for misure, forma in (
+			((220, 60), "wide"),
+			((150, 100), "wide"),
+			((149, 100), "square"),
+			((64, 64), "square"),
+			((80, 120), "square"),
+			((0, 60), ""),
+			((None, None), ""),
+			(("x", 3), ""),
+		):
+			self.assertEqual(marchio.forma_del_logo(*misure), forma, misure)
+
+	def test_le_misure_di_un_svg(self):
+		for testo, misure in (
+			('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="60">', (220, 60)),
+			("<?xml version='1.0'?><svg viewBox='0,0,64,48'>", (64, 48)),
+			# a size in percent says nothing: the viewBox does
+			('<svg width="100%" height="100%" viewBox="0 0 300 100">', (300, 100)),
+			# a stroke's width is not the drawing's
+			('<svg stroke-width="2" width="48px" height="40px">', (48, 40)),
+			("<svg><rect width='10' height='90'/></svg>", None),
+			("not an svg", None),
+		):
+			self.assertEqual(marchio.misure_svg(testo), misure, testo)
+
+	def test_le_misure_si_leggono_dai_file_del_sito(self):
+		from PIL import Image
+
+		cartella = frappe.get_site_path("public", "files")
+		largo, quadrato = "prova-logo-largo.svg", "prova-logo-quadrato.png"
+		with open(os.path.join(cartella, largo), "w") as file:
+			file.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 60"></svg>')
+		Image.new("RGB", (96, 90), "white").save(os.path.join(cartella, quadrato))
+		try:
+			self.assertEqual(marchio.misure_del_logo(f"/files/{largo}"), (220, 60))
+			self.assertEqual(marchio.forma_di(f"/files/{largo}?v=2"), "wide")
+			self.assertEqual(marchio.forma_di(f"/files/{quadrato}"), "square")
+			# an address elsewhere, a file that is not there, a step out of the folder
+			for url in (
+				"https://example.com/logo.png",
+				"/files/non-ce.png",
+				"/files/../../site_config.json",
+				"/files/%2e%2e/%2e%2e/site_config.json",
+				"",
+				None,
+			):
+				self.assertIsNone(marchio.misure_del_logo(url), url)
+				self.assertEqual(marchio.forma_di(url), "", url)
+		finally:
+			os.remove(os.path.join(cartella, largo))
+			os.remove(os.path.join(cartella, quadrato))
 
 	def test_dottorcloud_ha_i_colori_leggibili(self):
 		accento = marchio.accento(marchio.DOTTORCLOUD)
@@ -206,10 +272,11 @@ class TestMarchio(IntegrationTestCase):
 		marchio.manifest()
 		self.assertEqual(json.loads(frappe.local.response["filecontent"])["scope"], "/crm")
 
-	def test_le_pagine_pubbliche_portano_il_marchio_e_il_logo_del_centro_accanto(self):
+	def test_le_pagine_pubbliche_portano_il_centro_in_alto_e_il_marchio_in_fondo(self):
 		frappe.db.set_single_value(
 			"FCRM Settings", {"brand_logo": "/files/aurora.png", "brand_name": "Centro Aurora"}
 		)
+		app_name = frappe.db.get_single_value("Website Settings", "app_name")
 		frappe.set_user("Guest")
 		try:
 			with con_il_verticale(PROVA.chiave):
@@ -219,10 +286,39 @@ class TestMarchio(IntegrationTestCase):
 					self.assertIn(f'href="{PROVA.favicon}"', html, pagina)
 					self.assertIn("Marchio di Prova", html, pagina)
 					if pagina != "area":
-						# the product's logo, then the centre's beside it; its colour
-						self.assertLess(html.index(PROVA.logo), html.index("/files/aurora.png"), pagina)
+						# the centre's logo at the top, the product's signature at the
+						# foot, its colour; the product's logo nowhere beside the centre's
+						self.assertIn('class="marchio-logo" src="/files/aurora.png"', html, pagina)
+						self.assertLess(
+							html.index("/files/aurora.png"), html.index('class="marchio-piede"'), pagina
+						)
+						self.assertIn(f'<img src="{PROVA.icona}" alt="" />', html, pagina)
+						self.assertNotIn(f'src="{PROVA.logo}"', html, pagina)
 						self.assertIn("--accent: #1a2fa0", html, pagina)
 					self.assertNotIn("frappe-favicon", html, pagina)
+				# the booking page names the centre in its title: the logo alone at the
+				# top; the others put the name beside a logo that is not wide
+				set_request(method="GET", path="/modulo")
+				html = get_response_without_exception_handling("/modulo").get_data(as_text=True)
+				self.assertIn('<span class="marchio-nome">Centro Aurora</span>', html)
+				set_request(method="GET", path="/prenota")
+				html = get_response_without_exception_handling("/prenota").get_data(as_text=True)
+				self.assertNotIn('class="marchio-nome"', html)
+				# a centre with neither a logo nor a name: the product's logo stands in
+				# at the top, and the product does not sign twice
+				frappe.db.set_single_value("FCRM Settings", {"brand_logo": "", "brand_name": ""})
+				frappe.db.set_single_value("Website Settings", "app_name", PROVA.nome)
+				set_request(method="GET", path="/modulo")
+				html = get_response_without_exception_handling("/modulo").get_data(as_text=True)
+				self.assertIn(f'class="marchio-prodotto" src="{PROVA.logo}"', html)
+				self.assertNotIn('class="marchio-logo', html)
+				self.assertNotIn('class="marchio-piede"', html)
+				# the booking page names the centre in its title, and so still signs
+				set_request(method="GET", path="/prenota")
+				html = get_response_without_exception_handling("/prenota").get_data(as_text=True)
+				self.assertNotIn('class="marchio-prodotto"', html)
+				self.assertIn('class="marchio-piede"', html)
 		finally:
 			frappe.set_user("Administrator")
 			frappe.db.set_single_value("FCRM Settings", {"brand_logo": "", "brand_name": ""})
+			frappe.db.set_single_value("Website Settings", "app_name", app_name)
