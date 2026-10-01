@@ -49,8 +49,13 @@ MARKETING = TipoConsenso(
 
 
 def registra() -> None:
+	from crm.moduli import firme
+	from crm.permissions.livelli import registra_modulo_piano
+
 	registra_tipo(INFORMATIVA)
 	registra_tipo(MARKETING)
+	# the advanced signature, an extra of the plan: the simple one is everybody's
+	registra_modulo_piano(firme.MODULO)
 	# a first step of every centre: what people fill in and sign
 	from crm.primi_passi import Passo, c_e, registra_passo
 

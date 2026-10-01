@@ -19,13 +19,25 @@ from crm.permissions.livelli import (
 	CENTRO,
 	SUOI,
 	Capacita,
+	ModuloPiano,
 	registra_capacita,
+	registra_modulo_piano,
 	registra_ruolo,
 )
 
-#: Invoicing belongs to the Base plan: every centre issues invoices, and the
-#: Sistema TS comes with them (listino.md, "Il Sistema TS sta nella Base").
-PIANO = "base"
+#: Invoicing is an extra of the plan (listino.md, 01/10/2026): many centres
+#: invoice through their accountant. The Sistema TS always comes with it - whoever
+#: invoices healthcare to private persons owes it, and may not send those
+#: invoices to the SdI. On by default: every site invoiced before plans existed.
+PIANO = "fatturazione"
+
+MODULO = ModuloPiano(
+	PIANO,
+	"Invoicing",
+	descrizione="Unlimited invoices, the Sistema TS with the practice's credentials, SdI credits included every year",
+	ordine=3,
+	impostazioni=("Issuing company", "Provider connection", "Invoicing defaults"),
+)
 
 RUOLI = (
 	(
@@ -75,6 +87,22 @@ TECNICHE = (Capacita("fatture.segreti", PIANO, agenzia=True, descrizione="The pr
 
 
 def registra() -> None:
+	from crm.primi_passi import Passo, c_e, registra_passo
+
+	registra_modulo_piano(MODULO)
+	# a first step where the centre invoices with the product: who issues them
+	registra_passo(
+		Passo(
+			"fatture",
+			"Who issues the invoices",
+			"The company's details and numbering, and the Sistema TS: the first invoice goes out right.",
+			lambda: c_e("CRM Invoicing Company", {"enabled": 1, "tax_id": ["is", "set"]}),
+			("fatture.configura",),
+			pagina="Issuing company",
+			modulo=PIANO,
+			ordine=75,
+		)
+	)
 	for nome, descrizione, livelli in RUOLI:
 		# invoicing roles alone do not open the CRM: whoever holds one works in it
 		# through a level that also brings a CRM role

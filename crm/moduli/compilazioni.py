@@ -789,7 +789,8 @@ def provider_links(name: str) -> list[dict]:
 
 	doc = frappe.get_doc(MODULO, name)
 	doc.check_permission("read")
-	fornitore = firme.attivo()
+	# a form already sent is signed where it went, even after the module ended
+	fornitore = firme.attivo(nuove=False)
 	if doc.docstatus != 0 or doc.provider_status != "Sent" or not fornitore or fornitore.nome != doc.provider:
 		return []
 	schema = modelli.carica_schema(_versione(doc).schema)

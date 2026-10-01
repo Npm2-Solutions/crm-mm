@@ -201,6 +201,10 @@ msgstr "Un piano per questa tappa"
 msgid "A question from the area"
 msgstr "Una domanda dall'area"
 
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "A room is where one visits or treats, like a surgery or a box; a physiotherapy gym counts as one. They are the rooms of the agenda: practitioners and users are unlimited."
+msgstr "Un ambulatorio è una stanza in cui si visita o si tratta, come uno studio o un box; la palestra di fisioterapia conta come uno. Sono le sale dell'agenda: specialisti e utenti sono illimitati."
+
 #: frontend/src/components/Plans/PlanDialog.vue
 msgid "A stage of the programme “{0}”: the plan is published when its stage opens."
 msgstr "Una tappa del programma “{0}”: il piano si pubblica quando si apre la sua tappa."
@@ -614,6 +618,14 @@ msgstr "Indirizzo"
 msgid "Admin"
 msgstr ""
 
+#: crm/moduli/firme.py
+msgid "Advanced signature"
+msgstr "Firma avanzata"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Advanced signatures this year"
+msgstr "Firme avanzate quest'anno"
+
 #: frontend/src/components/Plans/PlanDialog.vue
 msgid "Afternoon snack"
 msgstr "Merenda"
@@ -672,10 +684,6 @@ msgstr ""
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Amount after discount"
 msgstr ""
-
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "An agenda is a practitioner with at least one appointment in the month, even one who never opens {brand}. Rooms, equipment, front desk and managers do not count."
-msgstr "Un'agenda è un professionista con almeno un appuntamento nel mese, anche se non apre mai {brand}. Sale, attrezzature, segreteria e manager non contano."
 
 #: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
 msgid "An entry waits for 1 to {0} places"
@@ -1172,6 +1180,10 @@ msgstr "Comincia"
 msgid "Between"
 msgstr "Tra"
 
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Beyond what is included, SdI credits, minutes, SMS and advanced signatures are billed by the agency once a month. WhatsApp messages are paid by the centre directly to Meta."
+msgstr "Oltre quello che è incluso, crediti SdI, minuti, SMS e firme avanzate li fattura l'agenzia una volta al mese. I messaggi WhatsApp li paga il centro direttamente a Meta."
+
 #: frontend/src/components/Settings/ERPNextSettings.vue:195
 msgid "Bidirectional sync of existing CRM Products and ERPNext Items. Runs in the background."
 msgstr ""
@@ -1479,8 +1491,8 @@ msgid "Call log not found"
 msgstr ""
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Call minutes"
-msgstr "Minuti di chiamata"
+msgid "Call minutes this month"
+msgstr "Minuti di chiamata questo mese"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Call scripts"
@@ -1621,8 +1633,8 @@ msgid "Centre's name"
 msgstr "Nome del centro"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Centre, up to 8 agendas"
-msgstr "Centro, fino a 8 agende"
+msgid "Centre, up to 5 rooms"
+msgstr "Centro, fino a 5 ambulatori"
 
 #: frontend/src/components/Controls/ImageUploader.vue:14
 #: frontend/src/components/Layouts/AppSidebar.vue:520
@@ -4138,6 +4150,10 @@ msgstr "Compreso in {0}"
 msgid "Included in {brand}"
 msgstr "Compreso in {brand}"
 
+#: crm/moduli/firme.py
+msgid "Informed consent and quotes signed with an SMS code, valid as on paper: 2,000 signatures a year"
+msgstr "Consenso informato e preventivi firmati con un codice SMS, validi come su carta: 2.000 firme l'anno"
+
 #: frontend/src/components/Area/AreaAccessCard.vue
 msgid "Invitation sent to {0}"
 msgstr "Invito mandato a {0}"
@@ -5447,10 +5463,6 @@ msgstr "Messaggio"
 msgid "Messages in the area"
 msgstr "Messaggi nell'area"
 
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "Messages, SMS and call minutes are billed at cost by the agency, once a month."
-msgstr "Messaggi, SMS e minuti di chiamata li fattura l'agenzia al costo, una volta al mese."
-
 #. Label of the middle_name (Data) field in DocType 'CRM Lead'
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 msgid "Middle Name"
@@ -5533,13 +5545,13 @@ msgstr "Altro"
 msgid "More Options"
 msgstr ""
 
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "More agendas than the plan covers. Nothing is blocked: appointments and invoices work as always, and the agency will propose the size above."
-msgstr "Più agende di quelle che il piano comprende. Non si blocca niente: appuntamenti e fatture funzionano come sempre, e l'agenzia proporrà la dimensione superiore."
-
 #: crm/scheduling/abbonamenti.py
 msgid "More days than the type allows"
 msgstr "Più giorni di quanti ne consenta il tipo"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "More rooms than the plan covers. Nothing is blocked: appointments and invoices work as always, and the agency will propose the level above."
+msgstr "Più ambulatori di quelli che il piano comprende. Non si blocca niente: appuntamenti e fatture funzionano come sempre, e l'agenzia proporrà il livello sopra."
 
 #: frontend/src/pages/PersonaForm.vue:113
 msgid "More than 20"
@@ -5631,6 +5643,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_product/crm_product.json
 msgid "Naming Series"
 msgstr ""
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Nearly used up: beyond, they are paid as used"
+msgstr "Quasi finiti: oltre, si pagano a consumo"
 
 #: frontend/src/components/ConditionsFilter/CFCondition.vue:98
 msgid "Nested Conditions"
@@ -6428,8 +6444,8 @@ msgid "Outgoing"
 msgstr "In uscita"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Over 15 agendas"
-msgstr "Oltre 15 agende"
+msgid "Over 10 rooms"
+msgstr "Oltre 10 ambulatori"
 
 #. Label of the log_owner (Link) field in DocType 'CRM Status Change Log'
 #: crm/fcrm/doctype/crm_status_change_log/crm_status_change_log.json
@@ -6537,8 +6553,8 @@ msgid "People"
 msgstr "Persone"
 
 #: crm/permissions/catalogo.py
-msgid "People and agenda with rooms, online booking and platforms, reminders, conversations, invoices and Sistema TS, dashboards, users and levels"
-msgstr "Persone e agenda con sale, prenotazione online e piattaforme, promemoria, conversazioni, fatture e Sistema TS, dashboard, utenti e livelli"
+msgid "People and agenda with rooms, cycles, subscriptions and waiting lists; online booking and platforms, reminders; conversations; quotes; forms with a simple signature, consents and documents; dashboards, users and levels"
+msgstr "Persone e agenda con le sale, cicli, abbonamenti e liste d'attesa; prenotazione online e piattaforme, promemoria; conversazioni; preventivi; moduli con firma semplice, consensi e documenti; dashboard, utenti e livelli"
 
 #: crm/primi_passi.py
 msgid "People book by themselves, from your website or a link."
@@ -6718,8 +6734,8 @@ msgid "Policy Name"
 msgstr ""
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Polyclinic, up to 15 agendas"
-msgstr "Poliambulatorio, fino a 15 agende"
+msgid "Polyclinic, up to 10 rooms"
+msgstr "Poliambulatorio, fino a 10 ambulatori"
 
 #: frontend/src/components/Plans/LibraryPicker.vue
 msgid "Portion (g)"
@@ -7486,6 +7502,10 @@ msgstr ""
 msgid "SMS sent"
 msgstr "SMS inviati"
 
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "SMS sent this month"
+msgstr "SMS inviati questo mese"
+
 #: frontend/src/components/EmailEditor.vue:102
 msgid "SUBJECT"
 msgstr ""
@@ -7665,6 +7685,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.json
 msgid "Script"
 msgstr "Script"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "SdI credits this year"
+msgstr "Crediti SdI quest'anno"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Seal and time stamp"
@@ -8121,8 +8145,8 @@ msgid "Social Planner"
 msgstr "Social Planner"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Solo, one agenda"
-msgstr "Solo, un'agenda"
+msgid "Solo, one room"
+msgstr "Solo, un ambulatorio"
 
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:438
 msgid "Some error occurred while creating SLA Policy"
@@ -8307,8 +8331,8 @@ msgid "Still to answer: {0}"
 msgstr "Da rispondere ancora: {0}"
 
 #: frontend/src/components/Settings/PlanSettings.vue
-msgid "Studio, up to 3 agendas"
-msgstr "Studio, fino a 3 agende"
+msgid "Studio, up to 2 rooms"
+msgstr "Studio, fino a 2 ambulatori"
 
 #. Label of the subdomain (Data) field in DocType 'CRM Exotel Settings'
 #: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
@@ -8625,6 +8649,10 @@ msgstr "La lezione di {0}, quando si libera un posto"
 #: frontend/src/components/Plans/PlansCard.vue
 msgid "The client area is not on: the person will not see the plans. It is added in Settings, The centre, Features."
 msgstr "L'area clienti non è attiva: la persona non vedrà i piani. Si aggiunge in Impostazioni › Il centro › Funzionalità."
+
+#: crm/invoicing/capacita.py
+msgid "The company's details and numbering, and the Sistema TS: the first invoice goes out right."
+msgstr "I dati e la numerazione dell'azienda, e il Sistema TS: la prima fattura parte giusta."
 
 #: crm/clinica/piani_regole.py
 msgid "The day's meals with foods and grams: calories and nutrients counted, the shopping list ready."
@@ -9303,6 +9331,10 @@ msgstr "Sconosciuto"
 msgid "Unknown telephony medium: {0}"
 msgstr ""
 
+#: crm/invoicing/capacita.py
+msgid "Unlimited invoices, the Sistema TS with the practice's credentials, SdI credits included every year"
+msgstr "Fatture illimitate, il Sistema TS con le credenziali dello studio, crediti SdI inclusi ogni anno"
+
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:124
 msgid "Unlink"
 msgstr ""
@@ -9771,10 +9803,6 @@ msgstr ""
 msgid "WhatsApp Templates"
 msgstr "Modelli WhatsApp"
 
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "WhatsApp messages sent"
-msgstr "Messaggi WhatsApp inviati"
-
 #: crm/scheduling/attese_pubblico.py
 msgid "When a place frees up we write to you: it goes to whoever confirms first."
 msgstr "Quando si libera un posto ti scriviamo: va a chi conferma per primo."
@@ -9819,6 +9847,10 @@ msgstr "Chi entra nell'area"
 #: frontend/src/utils/impostazioni.js
 msgid "Who gets a place that frees up, and how they are told."
 msgstr "A chi va un posto che si libera, e come lo sa."
+
+#: crm/invoicing/capacita.py
+msgid "Who issues the invoices"
+msgstr "Chi emette le fatture"
 
 #: frontend/src/utils/impostazioni.js
 msgid "Who issues the invoices, what is billed, how they reach the tax system."
@@ -10623,10 +10655,6 @@ msgstr ""
 msgid "{0} M"
 msgstr "{0} mesi"
 
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "{0} active agendas this month"
-msgstr "{0} agende attive questo mese"
-
 #: crm/api/todo.py:51
 msgid "{0} assigned a {1} {2} to you"
 msgstr ""
@@ -10728,6 +10756,10 @@ msgstr ""
 #: frontend/src/components/FirstSteps/FirstStepsCard.vue
 msgid "{0} of {1} done"
 msgstr "{0} di {1} fatti"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "{0} rooms in the agenda"
+msgstr "{0} ambulatori nell'agenda"
 
 #: frontend/src/components/Plans/PlansCard.vue
 msgid "{0} stages"
