@@ -34,7 +34,7 @@ export const MENU = [
     key: 'account',
     label: 'Your account',
     description:
-      'Your profile, how DottorCloud looks for you, the calendar you bring.',
+      'Your profile, how {brand} looks for you, the calendar you bring.',
     items: [
       {
         key: 'Profile',
@@ -44,7 +44,7 @@ export const MENU = [
       {
         key: 'Preferences',
         label: 'Preferences',
-        description: 'The theme and the language you read DottorCloud in.',
+        description: 'The theme and the language you read {brand} in.',
       },
       {
         // each person connects their own: the hours they are busy elsewhere
@@ -60,7 +60,7 @@ export const MENU = [
     key: 'centre',
     label: 'The centre',
     description:
-      'Who the centre is, who works in it, how DottorCloud behaves, what the plan includes.',
+      'Who the centre is, who works in it, how {brand} behaves, what the plan includes.',
     items: [
       {
         key: 'General settings',
@@ -106,7 +106,7 @@ export const MENU = [
         key: 'Plan',
         label: 'Plan',
         description:
-          'What DottorCloud includes for the centre, and what can be added.',
+          'What {brand} includes for the centre, and what can be added.',
         condition: puo('piano.vedi'),
       },
     ],
@@ -286,7 +286,7 @@ export const MENU = [
       {
         key: 'Accounts',
         label: 'Accounts',
-        description: 'The mailboxes DottorCloud sends and receives from.',
+        description: 'The mailboxes {brand} sends and receives from.',
         condition: puo('email.account_centro'),
       },
       {
@@ -326,12 +326,12 @@ export const MENU = [
     // and for the phone: the lines, and what to say on a call
     key: 'phone',
     label: 'Phone',
-    description: 'Calls from DottorCloud and what to say on them.',
+    description: 'Calls from {brand} and what to say on them.',
     items: [
       {
         key: 'Telephony',
         label: 'Telephony',
-        description: 'The lines DottorCloud calls and answers on.',
+        description: 'The lines {brand} calls and answers on.',
       },
       {
         key: 'Call Scripts',
