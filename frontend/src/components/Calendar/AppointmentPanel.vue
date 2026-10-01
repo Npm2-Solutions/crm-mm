@@ -135,6 +135,28 @@
           </Dropdown>
         </div>
 
+        <!-- the subscription it uses an entry of: in or out by hand -->
+        <div
+          v-if="doc.subscription"
+          class="flex items-center gap-2 px-4.5 pt-2 text-p-sm text-ink-gray-6"
+        >
+          <span class="lucide-ticket size-4 shrink-0" aria-hidden="true" />
+          <span class="min-w-0 flex-1 truncate">{{ subscriptionLine }}</span>
+          <Dropdown
+            v-if="doc.subscription.can_manage && subscriptionActions.length"
+            :options="subscriptionActions"
+          >
+            <Button
+              size="sm"
+              variant="ghost"
+              class="touch-target shrink-0"
+              :label="__('Change')"
+              iconRight="chevron-down"
+              :loading="changing"
+            />
+          </Dropdown>
+        </div>
+
         <div class="mx-4.5 my-3 border-t border-outline-gray-1" />
 
         <!-- the clients, and whether they came -->
@@ -982,6 +1004,58 @@ function moveToCycle(cycle) {
       changing.value = false
       toast.success(
         cycle ? __('Now a session of the cycle') : __('Out of the cycle'),
+      )
+      load(doc.value.name)
+    },
+    onError: (e) => {
+      changing.value = false
+      toast.error(e.messages?.[0] || __('Could not change it'))
+    },
+  })
+}
+
+// --- its subscription --------------------------------------------------------
+
+const subscriptionLine = computed(() => {
+  const sub = doc.value?.subscription
+  if (!sub) return ''
+  const mine = (sub.options || []).find((one) => one.name === sub.subscription)
+  if (!sub.subscription) return __('Not in a subscription')
+  return mine ? __('An entry of {0}', [mine.type]) : __('In a subscription')
+})
+
+const subscriptionActions = computed(() => {
+  const sub = doc.value?.subscription
+  if (!sub) return []
+  const people = new Set((sub.options || []).map((one) => one.lead_name))
+  const actions = (sub.options || [])
+    .filter((one) => one.name !== sub.subscription)
+    .map((one) => ({
+      label: __('An entry of {0}', [
+        (people.size > 1 ? `${one.lead_name}, ` : '') + one.type,
+      ]),
+      onClick: () => moveToSubscription(one.name),
+    }))
+  if (sub.subscription)
+    actions.push({
+      label: __('Out of the subscription'),
+      onClick: () => moveToSubscription(null),
+    })
+  return actions
+})
+
+function moveToSubscription(subscription) {
+  changing.value = true
+  createResource({
+    url: 'crm.scheduling.abbonamenti.attach',
+    params: { appointment: doc.value.name, subscription },
+    auto: true,
+    onSuccess: () => {
+      changing.value = false
+      toast.success(
+        subscription
+          ? __('Now an entry of the subscription')
+          : __('Out of the subscription'),
       )
       load(doc.value.name)
     },
