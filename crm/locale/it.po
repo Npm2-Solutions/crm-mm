@@ -35860,3 +35860,15 @@ msgstr "o da un"
 msgctxt "Data import"
 msgid "Google Sheet"
 msgstr "foglio Google"
+
+#: crm/assistente/regole.py
+msgid "AI draft, checked by {0} on {1}"
+msgstr "Bozza dell'IA, controllata da {0} il {1}"
+
+#: crm/assistente/regole.py
+msgid "Documentation support: the professional reviews every draft."
+msgstr "Supporto alla documentazione: il professionista rivede ogni bozza."
+
+#: crm/integrations/meta/api.py
+msgid "Facebook did not give {brand} the advertising role on this Page, so it cannot read its lead forms. Press \"Choose Pages\" on the connection screen and tick this Page: you must be one of its administrators."
+msgstr "Facebook non ha dato a {brand} il ruolo di inserzionista su questa pagina, quindi non può leggerne i moduli per i contatti. Premi «Scegli le pagine» nella schermata di collegamento e spunta questa pagina: devi esserne amministratore."
