@@ -1153,22 +1153,322 @@ a:hover {
   width: 100%;
 }
 
+/* two or three phones, upright, the middle one in front */
 .feature__media--phones {
   display: flex;
   justify-content: center;
-  gap: 2%;
+  align-items: center;
+  padding-block: 4% 6%;
 }
 
 .feature__media--phones img {
+  position: relative;
   width: 34%;
+  margin-inline: -1.5%;
+  filter: drop-shadow(0 26px 34px rgba(16, 40, 36, 0.2));
 }
 
-.feature__media--phones img:nth-child(2) {
-  margin-top: 8%;
+.feature__media--phones img:first-child {
+  transform: translateY(5%) rotate(-3deg);
 }
 
-.feature__media--phones img:nth-child(3) {
-  margin-top: 16%;
+.feature__media--phones img:last-child {
+  transform: translateY(9%) rotate(3deg);
+}
+
+.feature__media--phones img:nth-child(2):not(:last-child) {
+  z-index: 1;
+  width: 37%;
+  transform: none;
+}
+
+/* two phones: each a little bigger */
+.feature__media--phones img:first-child:nth-last-child(2),
+.feature__media--phones img:first-child:nth-last-child(2) ~ img {
+  width: 43%;
+}
+
+/* the phones breathe, each on its own beat */
+@media (prefers-reduced-motion: no-preference) {
+  .feature__media--phones img,
+  .showcase__phone {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .feature__media--phones img:nth-child(2) {
+    animation-delay: -2s;
+  }
+
+  .feature__media--phones img:nth-child(3) {
+    animation-delay: -4s;
+  }
+}
+
+@keyframes float {
+  50% {
+    translate: 0 -12px;
+  }
+}
+
+/* an automation, drawn: the dots run along the lines, a step lights up as they arrive */
+.flow {
+  position: relative;
+  aspect-ratio: 1470 / 440;
+  margin: 0;
+  container-type: inline-size;
+}
+
+.flow__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.flow__lines path {
+  fill: none;
+  stroke: #9bdcd1;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.flow__lines circle {
+  fill: var(--dc-teal);
+}
+
+.flow__moving circle {
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgba(18, 165, 148, 0.7));
+}
+
+.flow__nodes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow__node {
+  position: absolute;
+  left: calc(var(--x) / 1470 * 100%);
+  top: calc(var(--y) / 440 * 100%);
+  width: calc(300 / 1470 * 100%);
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.1cqi, 14px);
+  padding: clamp(10px, 1.3cqi, 18px);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius-l);
+  background: var(--dc-card);
+  box-shadow: var(--dc-shadow-card);
+  transform: translateY(-50%);
+}
+
+.flow__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: clamp(32px, 3.6cqi, 46px);
+  height: clamp(32px, 3.6cqi, 46px);
+  border-radius: 12px;
+  background: #f1f4f3;
+  color: var(--dc-muted);
+}
+
+.flow__icon .icon {
+  width: 55%;
+  height: 55%;
+}
+
+.flow__icon--teal {
+  background: var(--dc-teal-soft);
+  color: var(--dc-teal-dark);
+}
+
+.flow__icon--green {
+  background: var(--dc-green-soft);
+  color: var(--dc-green);
+}
+
+.flow__icon--blue {
+  background: var(--dc-blue-soft);
+  color: var(--dc-blue);
+}
+
+.flow__icon--amber {
+  background: var(--dc-amber-soft);
+  color: var(--dc-amber);
+}
+
+.flow__words {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.flow__words strong {
+  font-size: clamp(13px, 1.25cqi, 17px);
+  letter-spacing: -0.01em;
+}
+
+.flow__words > span:last-child {
+  color: var(--dc-muted);
+  font-size: clamp(11.5px, 1cqi, 14px);
+}
+
+.flow__kind {
+  color: var(--dc-muted);
+  font-size: clamp(10px, 0.8cqi, 12px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.flow__kind--teal {
+  color: var(--dc-teal-dark);
+}
+
+.flow__kind--green {
+  color: var(--dc-green);
+}
+
+.flow__kind--blue {
+  color: var(--dc-blue);
+}
+
+.flow__kind--amber {
+  color: var(--dc-amber);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flow__still {
+    display: none;
+  }
+
+  .flow__node {
+    animation: flow-arrive 4.8s ease-out infinite;
+    animation-delay: calc(var(--t) * 4.8s - 0.05s);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow__moving {
+    display: none;
+  }
+}
+
+@keyframes flow-arrive {
+  0% {
+    border-color: var(--dc-teal);
+    box-shadow:
+      0 0 0 4px rgba(18, 165, 148, 0.14),
+      var(--dc-shadow-card);
+  }
+
+  14%,
+  100% {
+    border-color: var(--dc-border);
+    box-shadow: var(--dc-shadow-card);
+  }
+}
+
+/* narrower than the drawing: the steps one under the other, a dot running down */
+@media (max-width: 899px) {
+  .flow {
+    aspect-ratio: auto;
+    padding-left: 28px;
+  }
+
+  .flow::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 28px;
+    bottom: 28px;
+    width: 3px;
+    border-radius: 2px;
+    background: #9bdcd1;
+  }
+
+  .flow__lines {
+    display: none;
+  }
+
+  .flow__nodes {
+    display: grid;
+    gap: 12px;
+  }
+
+  .flow__node {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+    transform: none;
+  }
+
+  .flow__node::before {
+    content: "";
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    width: 11px;
+    height: 11px;
+    margin-top: -5.5px;
+    border-radius: 50%;
+    background: var(--dc-teal);
+  }
+
+  .flow__words strong {
+    font-size: 16px;
+  }
+
+  .flow__words > span:last-child {
+    font-size: 14px;
+  }
+
+  .flow__kind {
+    font-size: 11px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .flow__node {
+      animation-delay: calc(var(--n) * 0.96s - 0.05s);
+    }
+
+    .flow::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 28px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--dc-teal);
+      box-shadow: 0 0 10px rgba(18, 165, 148, 0.7);
+      animation: flow-down 4.8s linear infinite;
+    }
+  }
+}
+
+@keyframes flow-down {
+  0% {
+    top: 28px;
+    opacity: 0;
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  92% {
+    opacity: 1;
+  }
+
+  100% {
+    top: calc(100% - 41px);
+    opacity: 0;
+  }
 }
 
 /* two windows, the second over the first's corner */
@@ -1751,7 +2051,8 @@ a:hover {
 }
 
 .centre__media--phone img {
-  width: 56%;
+  width: min(56%, 230px);
+  filter: drop-shadow(0 18px 24px rgba(16, 40, 36, 0.18));
   max-height: none;
   align-self: start;
 }
@@ -2179,6 +2480,73 @@ a:hover {
   .reveal-on .reveal.is-visible {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* inside what arrives, its lines come one after the other */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-on .reveal .rows .row {
+    opacity: 0;
+    transform: translateX(-14px);
+    transition:
+      opacity var(--dc-dur-base) var(--dc-ease-in),
+      transform var(--dc-dur-base) var(--dc-ease-in);
+  }
+
+  .reveal-on .reveal.is-visible .rows .row {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reveal-on .reveal .rows .row:nth-child(1) { transition-delay: 220ms; }
+  .reveal-on .reveal .rows .row:nth-child(2) { transition-delay: 320ms; }
+  .reveal-on .reveal .rows .row:nth-child(3) { transition-delay: 420ms; }
+  .reveal-on .reveal .rows .row:nth-child(4) { transition-delay: 520ms; }
+  .reveal-on .reveal .rows .row:nth-child(5) { transition-delay: 620ms; }
+  .reveal-on .reveal .rows .row:nth-child(6) { transition-delay: 720ms; }
+
+  /* the icons pop in with their line */
+  .reveal-on .reveal .bubble {
+    transition: transform 500ms var(--dc-ease-pop);
+  }
+
+  .reveal-on .reveal:not(.is-visible) .bubble {
+    transform: scale(0.6);
+  }
+
+  /* cards lift a little under the pointer */
+  .card {
+    transition:
+      translate 220ms var(--dc-ease-in),
+      box-shadow 220ms var(--dc-ease-in);
+  }
+
+  .reveal-on .card.reveal {
+    transition:
+      opacity var(--dc-dur-base) var(--dc-ease-in),
+      transform var(--dc-dur-base) var(--dc-ease-in),
+      translate 220ms var(--dc-ease-in),
+      box-shadow 220ms var(--dc-ease-in);
+    transition-delay:
+      calc(var(--i, 0) * var(--dc-stagger)),
+      calc(var(--i, 0) * var(--dc-stagger)),
+      0s,
+      0s;
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      translate: 0 -4px;
+      box-shadow: var(--dc-shadow-float);
+    }
+  }
+
+  /* the hero's confirmation arrives, then keeps a gentle bob */
+  .showcase__toast {
+    animation:
+      pop 600ms var(--dc-ease-pop) both,
+      float 7s ease-in-out 1.4s infinite;
+    animation-delay: 880ms, 1.4s;
   }
 }
 
