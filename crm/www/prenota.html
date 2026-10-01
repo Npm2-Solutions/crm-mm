@@ -265,7 +265,7 @@
           pickDate: "Scegli giorno e orario", noSlotsMonth: "Nessun orario libero in questo mese.", nextFree: "Vai al primo giorno libero",
           pickDay: "Seleziona un giorno evidenziato.", noSlotsDay: "Nessun orario libero in questo giorno.",
           morning: "Mattina", afternoon: "Pomeriggio", evening: "Sera", seatsLeft: "posti", people: "Persone",
-          tzNote: "Orari nel fuso", continue: "Continua", back: "Indietro",
+          tzNote: "Orari nel tuo fuso orario: {0}", continue: "Continua", back: "Indietro",
           name: "Nome e cognome", email: "Email", phone: "Telefono", notes: "Note per lo studio", optional: "facoltativo",
           consent: "Ho letto e accetto l'", privacy: "informativa sulla privacy", consentPlain: "Acconsento al trattamento dei miei dati per gestire la prenotazione.",
           confirm: "Conferma prenotazione", confirmMove: "Sposta qui", booking: "Prenotazione in corso…",
@@ -300,7 +300,7 @@
           pickDate: "Pick a day and time", noSlotsMonth: "No free times this month.", nextFree: "Jump to the first free day",
           pickDay: "Select a highlighted day.", noSlotsDay: "No free times on this day.",
           morning: "Morning", afternoon: "Afternoon", evening: "Evening", seatsLeft: "seats", people: "People",
-          tzNote: "Times shown in", continue: "Continue", back: "Back",
+          tzNote: "Times in your time zone: {0}", continue: "Continue", back: "Back",
           name: "Full name", email: "Email", phone: "Phone", notes: "Notes for us", optional: "optional",
           consent: "I have read and accept the ", privacy: "privacy policy", consentPlain: "I agree to the processing of my data to manage this booking.",
           confirm: "Confirm booking", confirmMove: "Move here", booking: "Booking…",
@@ -384,6 +384,21 @@
       const iso = (d) => d.toISOString().slice(0, 10);
       const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
       const todayLocal = () => new Intl.DateTimeFormat("en-CA", { timeZone: CLIENT_TZ }).format(new Date());
+      // a zone by its name in the page's language ("Ora dell'Europa centrale"), and
+      // whether the visitor's clock is not the centre's right now
+      const parteDelFuso = (tz, tipo) => {
+        try {
+          return new Intl.DateTimeFormat(LOCALE, { timeZone: tz, timeZoneName: tipo }).formatToParts(new Date()).find((p) => p.type === "timeZoneName")?.value || "";
+        } catch (e) {
+          return "";
+        }
+      };
+      const nomeDelFuso = (tz) => parteDelFuso(tz, "longGeneric") || tz;
+      const altroFuso = () => {
+        const centro = S.catalog?.timezone;
+        if (!centro || centro === CLIENT_TZ) return false;
+        return parteDelFuso(centro, "shortOffset") !== parteDelFuso(CLIENT_TZ, "shortOffset");
+      };
       const initials = (n) => (n || "?").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
       const durationLabel = (s) => (s.duration_max && s.duration_max > s.duration ? `${duration(s.duration)} – ${duration(s.duration_max)}` : duration(s.duration));
       const priceLabel = (s) => (s.price_from ? `${T("from")} ${s.formatted_price}` : s.formatted_price);
@@ -651,7 +666,9 @@
           times.append(h("p", { class: "hint wait-cta" }, T("waitNoTime") + " ",
             h("button", { class: "link", type: "button", onclick: () => startWait(null) }, T("waitJoin"))));
         }
-        times.append(h("div", { class: "tz" }, `${T("tzNote")} ${CLIENT_TZ}`));
+        // who books from the centre's own zone reads the times as they are; from
+        // elsewhere, the times are theirs and the page says so in words
+        if (altroFuso()) times.append(h("div", { class: "tz" }, T("tzNote").replace("{0}", nomeDelFuso(CLIENT_TZ))));
         wrap.append(times);
         const backTo = S.moving ? () => { S.moving = false; go("manage"); } : () => go(S.service.can_pick_staff ? "staff" : "service");
         wrap.append(h("div", { class: "actions" }, h("button", { class: "ghost", onclick: backTo }, "← " + T("back"))));
