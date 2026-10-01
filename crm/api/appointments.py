@@ -19,7 +19,7 @@ from frappe import _
 from frappe.utils import cint, flt, sbool
 
 from crm.permissions.livelli import CENTRO, puo, verifica
-from crm.scheduling import cicli, pricing
+from crm.scheduling import abbonamenti, cicli, pricing
 from crm.scheduling.availability import (
 	ACTIVE_STATUSES,
 	find_conflicts,
@@ -313,8 +313,10 @@ def get_appointment(name: str) -> dict:
 			row["party_type"], row["party"] = "CRM Lead", person
 	data["start_utc"] = from_system_naive(doc.starts_on).isoformat()
 	data["end_utc"] = from_system_naive(doc.ends_on).isoformat()
-	# which session of its cycle it is, and the cycles it could join
+	# which session of its cycle it is, and the cycles it could join; the same for
+	# the subscriptions an entry is used of
 	data["cycle"] = cicli.della_seduta(doc)
+	data["subscription"] = abbonamenti.del_appuntamento(doc)
 	return data
 
 

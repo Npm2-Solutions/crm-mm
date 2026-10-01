@@ -1,0 +1,308 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-01 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lead",
+  "lead_name",
+  "subscription_type",
+  "practitioner",
+  "column_break_head",
+  "status",
+  "starts_on",
+  "ends_on",
+  "terms_section",
+  "months",
+  "payment",
+  "price",
+  "currency",
+  "billable_service",
+  "issue_invoices",
+  "column_break_terms",
+  "services",
+  "entries",
+  "entries_count",
+  "missed_count",
+  "can_suspend",
+  "max_suspension_days",
+  "remind_days",
+  "auto_renew",
+  "suspensions_section",
+  "suspensions",
+  "instalments_section",
+  "instalments",
+  "details_section",
+  "renewal_of",
+  "renewed_by",
+  "reminded_on",
+  "column_break_details",
+  "notes",
+  "closed_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Person",
+   "options": "CRM Lead",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "fetch_from": "lead.lead_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "subscription_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Type",
+   "options": "CRM Subscription Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Followed by",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nSuspended\nExpired\nClosed",
+   "default": "Active"
+  },
+  {
+   "fieldname": "starts_on",
+   "fieldtype": "Date",
+   "label": "From",
+   "reqd": 1,
+   "default": "Today"
+  },
+  {
+   "fieldname": "ends_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Until",
+   "read_only": 1,
+   "description": "From the months, later by the days suspended"
+  },
+  {
+   "fieldname": "terms_section",
+   "fieldtype": "Section Break",
+   "label": "Terms",
+   "description": "The type's when it was sold: a type changed later changes nothing here"
+  },
+  {
+   "fieldname": "months",
+   "fieldtype": "Int",
+   "label": "Months",
+   "default": "1",
+   "reqd": 1,
+   "non_negative": 1,
+   "description": "How long it lasts"
+  },
+  {
+   "fieldname": "payment",
+   "fieldtype": "Select",
+   "label": "Paid",
+   "options": "Upfront\nMonthly",
+   "default": "Upfront"
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "options": "currency"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "billable_service",
+   "fieldtype": "Link",
+   "label": "Fiscal card",
+   "options": "CRM Billable Service"
+  },
+  {
+   "fieldname": "issue_invoices",
+   "fieldtype": "Check",
+   "label": "Issue the invoices by themselves"
+  },
+  {
+   "fieldname": "column_break_terms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "services",
+   "fieldtype": "Table MultiSelect",
+   "label": "Services",
+   "options": "CRM Subscription Service"
+  },
+  {
+   "fieldname": "entries",
+   "fieldtype": "Select",
+   "label": "Entries",
+   "options": "Unlimited\nPer week\nPer month",
+   "default": "Unlimited"
+  },
+  {
+   "fieldname": "entries_count",
+   "fieldtype": "Int",
+   "label": "How many",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "missed_count",
+   "fieldtype": "Check",
+   "default": "1",
+   "label": "A missed entry is used"
+  },
+  {
+   "fieldname": "can_suspend",
+   "fieldtype": "Check",
+   "label": "Can be suspended"
+  },
+  {
+   "fieldname": "max_suspension_days",
+   "fieldtype": "Int",
+   "label": "Days of suspension at most",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "remind_days",
+   "fieldtype": "Int",
+   "label": "Remind days before the end",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "auto_renew",
+   "fieldtype": "Check",
+   "label": "Renews by itself"
+  },
+  {
+   "fieldname": "suspensions_section",
+   "fieldtype": "Section Break",
+   "label": "Suspensions"
+  },
+  {
+   "fieldname": "suspensions",
+   "fieldtype": "Table",
+   "label": "Suspensions",
+   "options": "CRM Subscription Suspension"
+  },
+  {
+   "fieldname": "instalments_section",
+   "fieldtype": "Section Break",
+   "label": "Instalments"
+  },
+  {
+   "fieldname": "instalments",
+   "fieldtype": "Table",
+   "label": "Instalments",
+   "options": "CRM Subscription Instalment"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "renewal_of",
+   "fieldtype": "Link",
+   "label": "Renews",
+   "options": "CRM Subscription",
+   "read_only": 1
+  },
+  {
+   "fieldname": "renewed_by",
+   "fieldtype": "Link",
+   "label": "Renewed by",
+   "options": "CRM Subscription",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reminded_on",
+   "fieldtype": "Date",
+   "label": "End reminded on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed on",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-01 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Subscription",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "SUB-.#####",
+ "naming_rule": "Expression (old style)",
+ "title_field": "lead_name",
+ "track_changes": 1
+}

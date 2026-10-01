@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 
 from crm.permissions.livelli import puo
-from crm.scheduling import cicli, pricing
+from crm.scheduling import abbonamenti, cicli, pricing
 from crm.scheduling.availability import find_conflicts, settings
 
 
@@ -56,6 +56,7 @@ class CRMAppointment(Document):
 		staff: DF.Table[CRMAppointmentStaff]
 		starts_on: DF.Datetime
 		status: DF.Literal["Scheduled", "Confirmed", "Completed", "Cancelled", "No Show"]
+		subscription: DF.Link | None
 		title: DF.Data | None
 		total_amount: DF.Currency | None
 		unit_price: DF.Currency | None
@@ -72,10 +73,13 @@ class CRMAppointment(Document):
 		self.close_from_attendance()
 		self.set_title()
 		self.check_conflicts()
-		# a session of a cycle joins it before the price, and costs its share after
+		# a session of a cycle joins it before the price, and costs its share after;
+		# what no cycle takes uses an entry of a subscription, and costs nothing
 		cicli.aggancia(self)
+		abbonamenti.aggancia(self)
 		pricing.apply_to(self)
 		cicli.prezzo(self)
+		abbonamenti.prezzo(self)
 
 	def on_update(self):
 		self.sync_event()

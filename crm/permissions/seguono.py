@@ -164,6 +164,65 @@ def has_cycle_permission(doc, ptype: str | None = None, user: str | None = None)
 	return _riga_visibile(doc, CICLO, cycle_conditions(user))
 
 
+# ------------------------------------------------------------------ subscriptions
+
+ABBONAMENTO = "CRM Subscription"
+
+
+def _ambito_abbonamenti(user: str) -> str | None:
+	"""Who sells subscriptions reads them as far as they sell them; who reads the
+	agenda, as far as they read it - its free and busy time shows no subscription."""
+	vedi = livelli.ambito("agenda.vedi", user)
+	if vedi == livelli.LIBERO_OCCUPATO:
+		vedi = None
+	return livelli.piu_ampio(livelli.ambito("agenda.abbonamenti", user), vedi)
+
+
+def subscription_conditions(user: str | None = None):
+	"""The subscriptions ``user`` reads: the whole centre's; a practitioner the ones
+	they follow or sold, and those of the appointments they do; somebody with a team,
+	also their people's. ``None`` all of them."""
+	user = user or frappe.session.user
+	if not livelli.nel_crm(user):
+		return None
+	ambito = _ambito_abbonamenti(user)
+	if ambito == livelli.CENTRO:
+		return None
+	S = frappe.qb.DocType(ABBONAMENTO)
+	if ambito is None:
+		return S.name.isnull()
+	A = frappe.qb.DocType(APPUNTAMENTO).as_("_subscription_appt")
+	suoi = (
+		(S.practitioner == user)
+		| (S.owner == user)
+		| S.name.isin(
+			frappe.qb.from_(A)
+			.select(A.subscription)
+			.where(A.subscription.isnotnull())
+			.where(_dello_staff(A, user))
+		)
+	)
+	if ambito == livelli.SUOI:
+		return suoi
+	visibili = oh.visible_leads(user)
+	return None if visibili is None else suoi | S.lead.isin(visibili)
+
+
+def get_subscription_permission_query_conditions(user: str | None = None) -> str:
+	return _sql(subscription_conditions(user))
+
+
+def has_subscription_permission(doc, ptype: str | None = None, user: str | None = None) -> bool:
+	user = user or frappe.session.user
+	ptype = ptype or "read"
+	if livelli.nel_crm(user) and ptype in ("create", "write", "delete"):
+		if not livelli.puo("agenda.abbonamenti", user):
+			return False
+	if ptype == "create":
+		return True
+	return _riga_visibile(doc, ABBONAMENTO, subscription_conditions(user))
+
+
 # ------------------------------------------------------------------ waiting lists
 
 ATTESA = "CRM Waiting List Entry"
