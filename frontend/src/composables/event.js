@@ -158,7 +158,7 @@ export function useEvent({
     startTime,
     endTime,
     isFullDay = false,
-    format = 'h:mm a',
+    format = 'HH:mm',
   ) => {
     const start = dayjs(startTime)
     const end = dayjs(endTime)
