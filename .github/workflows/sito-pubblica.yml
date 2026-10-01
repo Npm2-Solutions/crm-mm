@@ -1,0 +1,94 @@
+name: Pubblica il sito
+
+# Publishes sito/ on NPM2's HestiaCP server, for every domain in sito/domini.txt:
+# the domain is added in the panel if missing, gets its certificate once its DNS
+# points to the server, and receives the site through sito/deploy.sh. It needs
+# the HOSTING_SSH_KEY secret (the server's SSH key); without it the run only says
+# so and publishes nothing.
+
+on:
+    push:
+        branches:
+            - develop
+            - claude/upbeat-faraday-j8afbh
+        paths:
+            - "sito/**"
+            - "brand/**"
+            - ".github/workflows/sito-pubblica.yml"
+    workflow_dispatch:
+
+concurrency:
+    group: sito-pubblica
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    publish:
+        name: Publish
+        runs-on: ubuntu-latest
+        env:
+            HOSTING_SSH_KEY: ${{ secrets.HOSTING_SSH_KEY }}
+            HOSTING_IP: 91.99.201.178
+
+        steps:
+            - name: Without the key, nothing is published
+              if: env.HOSTING_SSH_KEY == ''
+              run: echo "::warning::The HOSTING_SSH_KEY secret is missing, so the site was not published (see sito/README.md)."
+
+            - uses: actions/checkout@v4
+              if: env.HOSTING_SSH_KEY != ''
+
+            - uses: actions/setup-node@v4
+              if: env.HOSTING_SSH_KEY != ''
+              with:
+                  node-version: "24"
+
+            # a site that fails its tests does not go online
+            - name: Test
+              if: env.HOSTING_SSH_KEY != ''
+              run: node --test sito/test/sito.test.mjs
+
+            - name: SSH key
+              if: env.HOSTING_SSH_KEY != ''
+              run: |
+                  install -m 700 -d ~/.ssh
+                  printf '%s\n' "$HOSTING_SSH_KEY" > ~/.ssh/hosting
+                  chmod 600 ~/.ssh/hosting
+                  ssh-keyscan -T 20 "$HOSTING_IP" >> ~/.ssh/known_hosts 2>/dev/null
+
+            - name: Publish
+              if: env.HOSTING_SSH_KEY != ''
+              run: |
+                  export SITO_SSH="root@$HOSTING_IP" SITO_SSH_KEY="$HOME/.ssh/hosting"
+                  for domain in $(grep -v -e '^#' -e '^[[:space:]]*$' sito/domini.txt); do
+                      echo "::group::$domain"
+                      sito/deploy.sh "$domain" --crea --nginx
+                      echo "::endgroup::"
+                  done
+
+            - name: Check
+              if: env.HOSTING_SSH_KEY != ''
+              run: |
+                  failed=0
+                  echo "| Address | Answer |" >> "$GITHUB_STEP_SUMMARY"
+                  echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+                  for domain in $(grep -v -e '^#' -e '^[[:space:]]*$' sito/domini.txt); do
+                      if [[ "$(getent ahostsv4 "$domain" | awk 'NR == 1 {print $1}')" == "$HOSTING_IP" ]]; then
+                          url="https://$domain/"
+                          code="$(curl -sS -o /dev/null -w '%{http_code}' "$url" || true)"
+                      else
+                          # the DNS still points elsewhere: ask the server directly
+                          url="http://$domain/ (DNS not here yet)"
+                          code="$(curl -sS -o /dev/null -w '%{http_code}' --resolve "$domain:80:$HOSTING_IP" "http://$domain/" || true)"
+                      fi
+                      echo "| $url | $code |" >> "$GITHUB_STEP_SUMMARY"
+                      echo "$url → $code"
+                      [[ "$code" == 200 ]] || failed=1
+                  done
+                  exit "$failed"
+
+            - name: Forget the key
+              if: always() && env.HOSTING_SSH_KEY != ''
+              run: rm -f ~/.ssh/hosting

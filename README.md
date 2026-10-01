@@ -24,6 +24,7 @@ dalla sua area, il marketing e le sue campagne.
 | Le pagine del prodotto, il telefono, la dashboard | [docs/progetto-ghl/](./docs/progetto-ghl/) |
 | Contratti stabili e storia delle decisioni | [.pi/SPEC.md](./.pi/SPEC.md) · [.pi/ARCHIVE.md](./.pi/ARCHIVE.md) |
 | Logo, design system, video, presentazione, inserzioni | [brand/](./brand/) |
+| Il sito di DottorCloud (`dottorcloud.com`) | [sito/](./sito/) |
 
 ## Sviluppo
 

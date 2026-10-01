@@ -1,0 +1,14 @@
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
+# For license information, please see license.txt
+#
+# The DottorCloud site on HestiaCP: included at the end of the domain's HTTPS
+# server block (/home/<user>/conf/web/<domain>/nginx.ssl.conf_sito, put there
+# by `sito/deploy.sh <domain> --nginx`). The site's own 404 page and a few
+# headers that cost nothing to a static site.
+
+error_page 404 /404.html;
+
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()" always;

@@ -1,0 +1,628 @@
+<!--
+title: Funzioni · DottorCloud
+description: Campagne, telefono, WhatsApp, agende per medici, stanze e attrezzature, cartella clinica, fatture allo SdI e al Sistema TS, automazioni, l'app del paziente e i permessi per ruolo. Tutto quello che fa DottorCloud, tappa per tappa.
+path: /funzioni/
+nav: funzioni
+-->
+<section class="hero hero--page">
+  <div class="container">
+    <div class="hero__text">
+      <span class="chip arrive" style="--i: 0">{{icon layers}} Funzioni</span>
+      <h1 class="h1 arrive" style="--i: 1">Cosa fa DottorCloud, dal primo contatto al dopo visita.</h1>
+      <p class="lead arrive" style="--i: 2">
+        Il percorso del paziente dentro il centro, tappa per tappa. Tutto lavora sulla stessa scheda della
+        persona: nessun dato va ricopiato da un programma all'altro.
+      </p>
+    </div>
+  </div>
+</section>
+
+<nav class="chapters" aria-label="Le tappe">
+  <div class="container">
+    <ol role="list">
+      <li><a href="#arriva"><span class="num">01</span> Arriva</a></li>
+      <li><a href="#prenota"><span class="num">02</span> Prenota</a></li>
+      <li><a href="#visita"><span class="num">03</span> La visita</a></li>
+      <li><a href="#dopo"><span class="num">04</span> Dopo</a></li>
+      <li><a href="#a-casa"><span class="num">05</span> A casa</a></li>
+      <li><a href="#il-centro"><span class="num">06</span> Il centro</a></li>
+    </ol>
+  </div>
+</nav>
+
+<section id="arriva" class="section chapter" aria-labelledby="arriva-titolo">
+  <div class="container">
+    <header class="chapter__head reveal">
+      <span class="chapter__num" aria-hidden="true">01</span>
+      <h2 id="arriva-titolo" class="h2">Il paziente arriva.</h2>
+      <p class="lead">
+        Da una campagna, da una telefonata: ogni richiesta entra fra le persone, con la sua provenienza.
+      </p>
+    </header>
+
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon megaphone}} Campagne e social</span>
+        <h3 class="h3">Campagne Meta e post social, dallo stesso posto.</h3>
+        <p class="lead">Chi compila il modulo di un'inserzione entra fra le persone, con la campagna da cui arriva.</p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon inbox}}</span>
+            <div><strong>Richieste da Facebook e Instagram</strong><span>Arrivano da sole, senza copiarle a mano.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon target}}</span>
+            <div><strong>Da dove arrivano i pazienti</strong><span>Ogni paziente con la sua campagna d'origine.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon share-2}}</span>
+            <div><strong>Post programmati</strong><span>Il calendario dei social del centro.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media feature__media--stack reveal" style="--i: 2">
+        <img
+          src="/img/social.webp"
+          alt="Il calendario dei post programmati del centro, con le anteprime di ottobre"
+        />
+        <img
+          src="/img/lead.webp"
+          alt="Una notifica: nuova richiesta in DottorCloud da Facebook, dalla campagna Check-up cuore; Davide Villa entra fra le persone con la campagna da cui arriva"
+        />
+      </div>
+    </article>
+
+    <article class="feature feature--flip">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon phone-call}} Telefono</span>
+        <h3 class="h3">Il telefono, dentro il gestionale.</h3>
+        <p class="lead">Quando il telefono squilla, sullo schermo c'è già la scheda di chi chiama.</p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon contact}}</span>
+            <div><strong>Chi chiama, prima di rispondere</strong><span>Nome, prossima visita, ultimo messaggio, fatture.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon phone}}</span>
+            <div><strong>Chiamare con un clic</strong><span>Dalla scheda del paziente, dal computer.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon history}}</span>
+            <div><strong>Storico e registrazioni</strong><span>Ogni chiamata resta sulla scheda della persona.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/chiamata.webp"
+          alt="Una chiamata in arrivo da Giulia Ferri, paziente: sullo schermo la prossima visita, l'ultimo messaggio e le fatture pagate, mentre la chiamata viene registrata"
+        />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="prenota" class="section section--white chapter" aria-labelledby="prenota-titolo">
+  <div class="container">
+    <header class="chapter__head reveal">
+      <span class="chapter__num" aria-hidden="true">02</span>
+      <h2 id="prenota-titolo" class="h2">Il paziente prenota.</h2>
+      <p class="lead">
+        Messaggi, agende, stanze e servizi: l'agenda propone solo gli orari davvero liberi, e i pazienti
+        confermano da soli.
+      </p>
+    </header>
+
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon message-circle}} Messaggi</span>
+        <h3 class="h3">WhatsApp, promemoria e conferme.</h3>
+        <p class="lead">
+          Tutta la conversazione sta sulla scheda del paziente, insieme alle note interne dello staff.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small bubble--green">{{icon message-circle}}</span>
+            <div><strong>WhatsApp nel gestionale</strong><span>La segreteria risponde dalla scheda del paziente.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon bell-ring}}</span>
+            <div><strong>Promemoria automatici</strong><span>Prima della visita, senza che nessuno se ne ricordi.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon check}}</span>
+            <div><strong>Conferme</strong><span>Il paziente risponde "Sì" e l'appuntamento è confermato.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small bubble--amber">{{icon pen-line}}</span>
+            <div><strong>Note interne</strong><span>Visibili solo allo staff, nella stessa conversazione.</span></div>
+          </li>
+        </ul>
+        <p class="note">WhatsApp, SMS ed email arrivano tutti sulla scheda della persona, in una conversazione sola.</p>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/chat.webp"
+          alt="La conversazione WhatsApp con Giulia Ferri: chiede di spostare la visita, riceve il promemoria automatico, risponde Sì e l'appuntamento è confermato; sotto, una nota interna per lo staff"
+        />
+      </div>
+    </article>
+
+    <article class="feature feature--wide">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon calendar-days}} Agende</span>
+        <h3 class="h3">Più agende, stanze e attrezzature, insieme.</h3>
+        <p class="lead">
+          Ogni medico, stanza o attrezzatura è una risorsa con la sua agenda, e una visita può occupare
+          insieme il medico, lo studio e l'ecografo.
+        </p>
+      </div>
+      <div class="feature__media reveal" style="--i: 1">
+        <img
+          src="/img/agenda.webp"
+          alt="L'agenda per risorse di giovedì 15 ottobre: cardiologa, studio con ecografo, palestra e box laser; un appuntamento annullato riempito dalla lista d'attesa e una seduta di fisioterapia, la 4 di 10 di un abbonamento"
+        />
+      </div>
+    </article>
+    <ul class="steps" role="list">
+      <li class="card reveal" style="--i: 0">
+        <span class="bubble bubble--small">{{icon calendar-days}}</span>
+        <h4>Agenda per risorse</h4>
+        <p>Colonne per medico, stanza, ecografo o palestra.</p>
+      </li>
+      <li class="card reveal" style="--i: 1">
+        <span class="bubble bubble--small bubble--amber">{{icon clock}}</span>
+        <h4>Lista d'attesa</h4>
+        <p>Un posto si libera e il primo in lista viene avvisato.</p>
+      </li>
+      <li class="card reveal" style="--i: 2">
+        <span class="bubble bubble--small">{{icon repeat}}</span>
+        <h4>Abbonamenti e pacchetti</h4>
+        <p>Sedute contate: "4 di 10" direttamente in agenda.</p>
+      </li>
+      <li class="card reveal" style="--i: 3">
+        <span class="bubble bubble--small">{{icon users}}</span>
+        <h4>Sedute di gruppo</h4>
+        <p>Più partecipanti nello stesso appuntamento.</p>
+      </li>
+    </ul>
+
+    <article class="feature feature--flip">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon list-checks}} Servizi</span>
+        <h3 class="h3">Servizi e personale: chi fa cosa, e dove.</h3>
+        <p class="lead">Ogni servizio sa quanto dura, chi lo può fare e che stanza o attrezzatura gli serve.</p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon list-checks}}</span>
+            <div><strong>Chi fa cosa</strong><span>Una griglia servizi × persone, modificabile in un clic.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon door-open}}</span>
+            <div><strong>Durata, stanza, attrezzatura</strong><span>L'agenda propone solo gli orari davvero liberi.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon globe}}</span>
+            <div><strong>Prenotazione online</strong><span>Il paziente prenota dal sito, a qualsiasi ora.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon repeat}}</span>
+            <div><strong>Pacchetti e abbonamenti</strong><span>Cicli di sedute venduti e seguiti nel tempo.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/servizi.webp"
+          alt="La griglia dei servizi del centro: per ogni servizio la durata, la stanza e le persone che lo possono fare"
+        />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="visita" class="section chapter" aria-labelledby="visita-titolo">
+  <div class="container">
+    <header class="chapter__head reveal">
+      <span class="chapter__num" aria-hidden="true">03</span>
+      <h2 id="visita-titolo" class="h2">La visita.</h2>
+      <p class="lead">
+        La cartella clinica sta sulla scheda della persona, e la vede solo chi cura. Il resto del centro
+        non ci entra.
+      </p>
+    </header>
+
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon folder-heart}} Cartella clinica</span>
+        <h3 class="h3">La cartella clinica, dentro il gestionale.</h3>
+        <p class="lead">
+          La persona diventa paziente da sola: al primo dato clinico, all'arrivo o alla prima fattura
+          sanitaria. Sulla sua scheda compare la sezione Clinica, solo per chi cura.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small bubble--rose">{{icon heart-pulse}}</span>
+            <div><strong>Allergie, terapie, parametri</strong><span>La sintesi del paziente sempre in alto.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon pen-line}}</span>
+            <div><strong>Note di visita firmate</strong><span>Scritte dal medico, firmate e poi solo integrate.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small bubble--blue">{{icon folder-heart}}</span>
+            <div><strong>Referti e documenti</strong><span>Archiviati sulla scheda, con il lucchetto.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon file-check}}</span>
+            <div><strong>Consensi</strong><span>Chi ha firmato cosa, quando, e con quale firma.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/clinica.webp"
+          alt="La cartella clinica di Giulia Ferri, solo per i medici: allergia, terapia e pressione, la nota della visita cardiologica firmata dalla dottoressa e referto, consenso ed ecografia con il lucchetto"
+        />
+      </div>
+    </article>
+
+    <article class="feature feature--flip feature--dark">
+      <div class="feature__text reveal">
+        <span class="chip chip--soon">{{icon sparkles}} Presto</span>
+        <h3 class="h3">L'assistente IA per il medico.</h3>
+        <p class="lead">Il medico detta la visita, l'assistente scrive la bozza nei campi della scheda.</p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon mic}}</span>
+            <div><strong>Dettatura</strong><span>La visita detta diventa la bozza della nota.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon check}}</span>
+            <div><strong>Decide il medico</strong><span>Niente si salva da solo: il medico conferma e firma.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon server}}</span>
+            <div><strong>In Europa</strong><span>Modello ospitato in UE, senza addestramento sui dati.</span></div>
+          </li>
+        </ul>
+        <p class="note">Aiuta nel lavoro di tutti i giorni, non fa diagnosi.</p>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/ai.webp"
+          alt="L'assistente di DottorCloud mentre il medico detta: motivo della visita, anamnesi e parametri compilati come bozza, da confermare e firmare"
+        />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="dopo" class="section section--white chapter" aria-labelledby="dopo-titolo">
+  <div class="container">
+    <header class="chapter__head reveal">
+      <span class="chapter__num" aria-hidden="true">04</span>
+      <h2 id="dopo-titolo" class="h2">Dopo la visita.</h2>
+      <p class="lead">Fattura e richiami, da soli: il lavoro che si ripete lo fa il gestionale.</p>
+    </header>
+
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon receipt}} Fatture e Sistema TS</span>
+        <h3 class="h3">La fattura nasce dalla visita.</h3>
+        <p class="lead">Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.</p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon calendar-check}}</span>
+            <div><strong>Dall'appuntamento</strong><span>Paziente, prestazioni e professionista sono già lì.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon send}}</span>
+            <div><strong>SdI</strong><span>Invio e ricevute di consegna nel gestionale.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon file-check}}</span>
+            <div><strong>Sistema TS</strong><span>Le spese sanitarie trasmesse per la precompilata.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon stamp}}</span>
+            <div><strong>Bollo e numerazione</strong><span>Li mette il gestionale.</span></div>
+          </li>
+        </ul>
+        <p class="note">La segreteria vede anche le visite svolte e non ancora fatturate.</p>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/fattura.webp"
+          alt="La fattura di Giulia Ferri nata dall'appuntamento: visita cardiologica, elettrocardiogramma e marca da bollo automatica; inviata allo SdI, consegnata e trasmessa al Sistema TS"
+        />
+      </div>
+    </article>
+
+    <article class="feature feature--wide">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon workflow}} Automazioni</span>
+        <h3 class="h3">Automazioni che lavorano al posto tuo.</h3>
+        <p class="lead">
+          Un evento, un'attesa, un messaggio: i flussi si disegnano una volta e girano da soli.
+        </p>
+      </div>
+      <div class="feature__media reveal" style="--i: 1">
+        <figure class="flow" aria-label="Un'automazione: dopo la visita, sette giorni nei giorni feriali; poi su WhatsApp la richiesta di una recensione e il richiamo per il controllo a sei mesi; se il paziente non prenota, un'attività di chiamata alla segreteria">
+          <svg class="flow__lines" viewBox="0 0 1470 440" aria-hidden="true" focusable="false">
+            <path id="flow-ab" d="M300 220 H390" />
+            <path id="flow-bc" d="M690 220 C735 220 735 80 780 80" />
+            <path id="flow-bd" d="M690 220 C735 220 735 360 780 360" />
+            <path id="flow-de" d="M1080 360 H1170" />
+            <g class="flow__still">
+              <circle cx="345" cy="220" r="7" /><circle cx="1125" cy="360" r="7" />
+            </g>
+            <g class="flow__moving">
+              <circle r="8"><animateMotion dur="4.8s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.02;0.18;1" calcMode="linear"><mpath href="#flow-ab" /></animateMotion><animate attributeName="opacity" dur="4.8s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.03;0.17;0.19;1" /></circle>
+              <circle r="8"><animateMotion dur="4.8s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.3;0.48;1" calcMode="linear"><mpath href="#flow-bc" /></animateMotion><animate attributeName="opacity" dur="4.8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.3;0.31;0.47;0.49;1" /></circle>
+              <circle r="8"><animateMotion dur="4.8s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.3;0.48;1" calcMode="linear"><mpath href="#flow-bd" /></animateMotion><animate attributeName="opacity" dur="4.8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.3;0.31;0.47;0.49;1" /></circle>
+              <circle r="8"><animateMotion dur="4.8s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.6;0.76;1" calcMode="linear"><mpath href="#flow-de" /></animateMotion><animate attributeName="opacity" dur="4.8s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.6;0.61;0.75;0.77;1" /></circle>
+            </g>
+          </svg>
+          <ol class="flow__nodes" role="list">
+            <li class="flow__node" style="--x: 0; --y: 220; --n: 0; --t: 0">
+              <span class="flow__icon flow__icon--teal">{{icon check}}</span>
+              <span class="flow__words"><span class="flow__kind flow__kind--teal">Quando</span><strong>La visita è svolta</strong><span>Cardiologia</span></span>
+            </li>
+            <li class="flow__node" style="--x: 390; --y: 220; --n: 1; --t: 0.18">
+              <span class="flow__icon">{{icon clock}}</span>
+              <span class="flow__words"><span class="flow__kind">Aspetta</span><strong>7 giorni</strong><span>Solo nei giorni feriali</span></span>
+            </li>
+            <li class="flow__node" style="--x: 780; --y: 80; --n: 2; --t: 0.48">
+              <span class="flow__icon flow__icon--green">{{icon message-circle}}</span>
+              <span class="flow__words"><span class="flow__kind flow__kind--green">WhatsApp</span><strong>"Com'è andata?"</strong><span>Chiede una recensione</span></span>
+            </li>
+            <li class="flow__node" style="--x: 780; --y: 360; --n: 3; --t: 0.48">
+              <span class="flow__icon flow__icon--blue">{{icon calendar-days}}</span>
+              <span class="flow__words"><span class="flow__kind flow__kind--blue">Richiamo</span><strong>Controllo a 6 mesi</strong><span>Con il link per prenotare</span></span>
+            </li>
+            <li class="flow__node" style="--x: 1170; --y: 360; --n: 4; --t: 0.76">
+              <span class="flow__icon flow__icon--amber">{{icon list-checks}}</span>
+              <span class="flow__words"><span class="flow__kind flow__kind--amber">Se non prenota</span><strong>Chiamare</strong><span>Attività alla segreteria</span></span>
+            </li>
+          </ol>
+        </figure>
+      </div>
+    </article>
+    <ul class="steps" role="list">
+      <li class="card reveal" style="--i: 0">
+        <span class="bubble bubble--small">{{icon bell-ring}}</span>
+        <h4>Promemoria e conferme</h4>
+        <p>Prima di ogni visita.</p>
+      </li>
+      <li class="card reveal" style="--i: 1">
+        <span class="bubble bubble--small">{{icon calendar-clock}}</span>
+        <h4>Richiami</h4>
+        <p>Per i controlli periodici.</p>
+      </li>
+      <li class="card reveal" style="--i: 2">
+        <span class="bubble bubble--small">{{icon send}}</span>
+        <h4>Dopo la visita</h4>
+        <p>Un messaggio e una recensione.</p>
+      </li>
+      <li class="card reveal" style="--i: 3">
+        <span class="bubble bubble--small">{{icon list-checks}}</span>
+        <h4>Attività</h4>
+        <p>Alla segreteria, se serve una persona.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section id="a-casa" class="section chapter" aria-labelledby="casa-titolo">
+  <div class="container">
+    <header class="chapter__head reveal">
+      <span class="chapter__num" aria-hidden="true">05</span>
+      <h2 id="casa-titolo" class="h2">A casa.</h2>
+      <p class="lead">Piani, esercizi e documenti sul telefono del paziente, con il nome del centro.</p>
+    </header>
+
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon smartphone}} App e area pazienti</span>
+        <h3 class="h3">Un'app per lo staff, un'area per i pazienti.</h3>
+        <p class="lead">
+          Medici e segreteria lavorano anche dal telefono. I pazienti hanno la loro area, con il nome del
+          centro.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon key-round}}</span>
+            <div><strong>Accesso sicuro</strong><span>Codice via SMS, poi viso o impronta.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon pen-line}}</span>
+            <div><strong>Prepara la visita</strong><span>Moduli e consensi firmati dal telefono.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small bubble--blue">{{icon file-text}}</span>
+            <div><strong>Documenti e messaggi</strong><span>Referti, fatture, comunicazioni del medico.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon users}}</span>
+            <div><strong>Anche per i familiari</strong><span>Un genitore segue un figlio, un figlio il genitore anziano.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media feature__media--phones reveal" style="--i: 2">
+        <img src="/img/login.webp" alt="L'ingresso nell'area del paziente: il codice di sei cifre, poi il riconoscimento del viso" />
+        <img src="/img/home.webp" alt="La pagina iniziale dell'area del paziente: la prossima visita da preparare, i piani, un messaggio della dottoressa e un nuovo referto" />
+        <img src="/img/firma.webp" alt="Prepara la visita: privacy e anamnesi fatte, il consenso informato firmato con il dito sul telefono" />
+      </div>
+    </article>
+
+    <article class="feature feature--flip">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon apple}} Piani ed esercizi</span>
+        <h3 class="h3">Piani alimentari ed esercizi, sul telefono del paziente.</h3>
+        <p class="lead">Li scrive il professionista, il paziente li segue e segna cosa ha fatto.</p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small bubble--amber">{{icon apple}}</span>
+            <div><strong>Piano alimentare</strong><span>Pasti con un tocco, alternative equivalenti, lista della spesa.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small bubble--violet">{{icon dumbbell}}</span>
+            <div><strong>Esercizi a casa</strong><span>Animazioni, serie e ripetizioni, muscoli che lavorano.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon activity}}</span>
+            <div><strong>Il professionista vede</strong><span>Cosa è stato fatto, e risponde dall'app.</span></div>
+          </li>
+        </ul>
+        <p class="note">La dieta la firma solo chi ha la qualifica per farlo.</p>
+      </div>
+      <div class="feature__media collage reveal" style="--i: 2">
+        <img src="/img/esercizi.webp" alt="La seduta di oggi sul telefono: quattro esercizi con serie e ripetizioni, uno già fatto" />
+        <img src="/img/spesa.webp" alt="La lista della spesa fatta dal menù della settimana, con le voci già spuntate" />
+        <img src="/img/muscoli.webp" alt="La mappa dei muscoli che lavorano nello squat a corpo libero, davanti e dietro" />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="il-centro" class="section section--white chapter" aria-labelledby="centro-titolo">
+  <div class="container">
+    <header class="chapter__head reveal">
+      <span class="chapter__num" aria-hidden="true">06</span>
+      <h2 id="centro-titolo" class="h2">Dietro le quinte.</h2>
+      <p class="lead">Permessi, persone, dati protetti: il centro decide chi vede cosa, persona per persona.</p>
+    </header>
+
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon lock}} Livelli e permessi</span>
+        <h3 class="h3">Ognuno vede solo quello che gli serve.</h3>
+        <p class="lead">
+          Stessa scheda del paziente, viste diverse a seconda di chi la apre. I livelli si danno persona per
+          persona.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon users}}</span>
+            <div><strong>Segreteria</strong><span>Agenda di tutti, arrivi, moduli da firmare, fatture e incassi.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon stethoscope}}</span>
+            <div><strong>Medici e operatori</strong><span>La propria agenda, i propri pazienti, la cartella clinica.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon user-cog}}</span>
+            <div><strong>Amministrazione e direzione</strong><span>Impostazioni, utenti, numeri del centro, fatture.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon lock}}</span>
+            <div><strong>Marketing</strong><span>Campagne e richieste, senza dati clinici né codice fiscale.</span></div>
+          </li>
+        </ul>
+        <p class="note">I livelli si combinano: il titolare che visita è amministrazione più medico.</p>
+      </div>
+      <div class="feature__media feature__media--stack reveal" style="--i: 2">
+        <img
+          src="/img/livelli-medico.webp"
+          alt="La scheda di Giulia Ferri vista dal medico: la sezione Clinica, visibile solo ai medici del centro"
+        />
+        <img
+          src="/img/livelli-marketing.webp"
+          alt="La stessa scheda vista dal marketing: la campagna da cui arriva e il consenso, con i dati clinici riservati"
+        />
+      </div>
+    </article>
+
+    <article class="feature feature--flip">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon smartphone}} L'app dello staff</span>
+        <h3 class="h3">La giornata del centro, anche sul telefono.</h3>
+        <p class="lead">
+          Medici e segreteria trovano la loro agenda, le schede dei pazienti e i moduli da firmare anche dal
+          telefono.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon calendar-days}}</span>
+            <div><strong>La mia agenda</strong><span>Gli appuntamenti del giorno, uno sotto l'altro.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon pen-line}}</span>
+            <div><strong>Firma dal telefono</strong><span>Moduli e consensi, prima della visita.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon infinity}}</span>
+            <div><strong>Utenti illimitati, agende infinite</strong><span>Si aggiungono persone e agende quando servono.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media feature__media--phones reveal" style="--i: 2">
+        <img src="/img/staff.webp" alt="L'app dello staff: la mia agenda di oggi, con i pazienti ora per ora" />
+        <img src="/img/firma.webp" alt="La firma di un consenso informato sul telefono" />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="sintesi-titolo">
+  <div class="container">
+    <div class="section-head section-head--center reveal">
+      <span class="chip">{{icon badge-check}} In sintesi</span>
+      <h2 id="sintesi-titolo" class="h2">Quello che un centro medico chiede, c'è.</h2>
+      <p class="lead">E sta tutto nello stesso gestionale, sulla stessa scheda della persona.</p>
+    </div>
+    <ul class="grid grid--4 grid--rows" role="list">
+      <li class="card card--checked reveal" style="--i: 0">
+        <span class="bubble">{{icon lock}}</span>
+        <h3>Permessi per ruolo</h3>
+        <p>Ognuno vede la sua parte.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 1">
+        <span class="bubble">{{icon calendar-days}}</span>
+        <h3>Agende senza limiti</h3>
+        <p>Medici, stanze, attrezzature.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 2">
+        <span class="bubble">{{icon stethoscope}}</span>
+        <h3>Cartella clinica</h3>
+        <p>Schede, note, referti archiviati.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 3">
+        <span class="bubble">{{icon receipt}}</span>
+        <h3>Fatturazione</h3>
+        <p>Elettronica, SdI e Sistema TS.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 4">
+        <span class="bubble">{{icon message-circle}}</span>
+        <h3>Comunicazione</h3>
+        <p>WhatsApp, promemoria, conferme.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 5">
+        <span class="bubble">{{icon phone-call}}</span>
+        <h3>Telefono integrato</h3>
+        <p>La scheda si apre mentre squilla.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 6">
+        <span class="bubble">{{icon smartphone}}</span>
+        <h3>App</h3>
+        <p>Per lo staff e per i pazienti.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+      <li class="card card--checked reveal" style="--i: 7">
+        <span class="bubble">{{icon server}}</span>
+        <h3>Dati protetti</h3>
+        <p>Server europei, azienda italiana.</p>
+        <span class="check">{{icon check}}</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+{{> cta}}

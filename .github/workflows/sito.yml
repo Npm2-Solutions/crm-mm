@@ -1,0 +1,32 @@
+name: Sito
+
+on:
+    pull_request:
+        paths:
+            - "sito/**"
+            - "brand/**"
+            - ".github/workflows/sito.yml"
+    workflow_dispatch:
+
+concurrency:
+    group: sito-${{ github.event.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test:
+        name: Build and test
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+
+            # the demo form's tests run it under `php -S`
+            - name: PHP
+              run: php --version
+
+            - name: Test
+              run: node --test sito/test/sito.test.mjs

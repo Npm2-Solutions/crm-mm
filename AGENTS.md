@@ -394,6 +394,20 @@ one screen's colours.
 A module with steps of its own registers them from its `registra()`; a step is
 done by the data, never by a click, so a centre that already works sees nothing.
 
+### The website (`sito/`)
+| File | Role |
+|---|---|
+| `sito/pagine/`, `sito/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
+| `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS and `brand/sito/sito-marchio.css` after it, logo, font, compositions and video from `brand/`, sitemap |
+| `sito/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
+| `sito/deploy.sh`, `sito/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |
+| `.github/workflows/sito-pubblica.yml`, `sito/domini.txt` | Publishing from GitHub on every push that changes `sito/` or `brand/`: tests, then `deploy.sh --crea --nginx` for each domain listed; needs the `HOSTING_SSH_KEY` secret |
+| `sito/test/sito.test.mjs` | `node --test sito/test/sito.test.mjs`: pages, links, images, no prices, the form under `php -S` |
+
+The site promises the finished product as the marketing material does, and shows no
+plan and no price. It sets no cookie and loads nothing from other sites. It is not
+the Frappe site's public pages: those belong to each centre.
+
 ### The desk's day
 | File | Role |
 |---|---|
