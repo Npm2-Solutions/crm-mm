@@ -1,0 +1,244 @@
+/* Copyright (c) 2026, NPM2 Solutions Srl and contributors
+   DottorCloud on Espresso (brand/design-system/espresso): frappe-ui's own
+   variables with the brand's values, and the brand's two marks - the cloud's
+   tail, the cross - where frappe-ui's markup lets a rule reach them. Nothing of
+   frappe-ui is rewritten. The brand the page wears says which (`data-marchio`,
+   set by utils/marchio.js): another vertical keeps Espresso's neutral grays.
+
+   The rules marked (markup) hang on frappe-ui's classes and roles: after an
+   update of the library, look at them again (frappe-ui.md in the design system). */
+
+/* 1. Espresso's grays with a touch of the brand's green (hue 178°), at the same
+      lightness; the labels' gray a step darker, so that it reads at 4.5:1 on
+      white and on the sidebar (Espresso's stops at 4.2) */
+:root[data-marchio='dottorcloud'] {
+  --surface-gray-1: #f6f9f8;
+  --surface-gray-2: #f1f4f3;
+  --surface-gray-3: #ebeeed;
+  --surface-gray-4: #e0e3e2;
+  --surface-gray-5: #c4c8c7;
+  --surface-gray-6: #959b99;
+  --surface-gray-7: #777e7c;
+  --surface-gray-8: #4e5352;
+  --surface-gray-9: #353938;
+  --surface-gray-10: #151817;
+  --surface-sidebar: #f6f9f8;
+  --surface-elevation-1: #ffffff;
+  --surface-elevation-2: #ffffff;
+  --ink-gray-1: #ebeeed;
+  --ink-gray-2: #e0e3e2;
+  --ink-gray-3: #c4c8c7;
+  --ink-gray-4: #959b99;
+  --ink-gray-5: #6a716f;
+  --ink-gray-6: #4e5352;
+  --ink-gray-7: #353938;
+  --ink-gray-8: #151817;
+  --ink-gray-9: #0e100f;
+  --outline-gray-1: #ebeeed;
+  --outline-gray-2: #e0e3e2;
+  --outline-gray-3: #c4c8c7;
+  --outline-gray-4: #959b99;
+  --outline-gray-5: #777e7c;
+  --outline-gray-6: #4e5352;
+  --outline-gray-7: #353938;
+  --outline-gray-8: #151817;
+  --outline-gray-9: #0e100f;
+  --outline-elevation-1: #ebeeed;
+  --outline-elevation-2: #ebeeed;
+  /* 2. the focus ring in the brand's colour; shadows tinted with its dark green */
+  --focus-outline-default: 2px solid #0e8a7c;
+  --elevation-sm: 0px 0px 1px 0px rgba(11, 46, 42, 0.2),
+    0px 1px 3px 0px rgba(11, 46, 42, 0.14);
+  --elevation-base: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.16),
+    0px 2px 5px 0px rgba(11, 46, 42, 0.12);
+  --elevation-md: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.15),
+    0px 6px 12px -2px rgba(11, 46, 42, 0.08);
+  --elevation-lg: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.18),
+    0px 18px 22px -6px rgba(11, 46, 42, 0.12);
+  --elevation-xl: 0px 0px 1px 0px rgba(11, 46, 42, 0.2),
+    0px 24px 30px -8px rgba(11, 46, 42, 0.1);
+  --elevation-2xl: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.25),
+    0px 44px 52px -10px rgba(11, 46, 42, 0.12);
+  /* 3. states that read at 4.5:1 on their own soft backgrounds */
+  --ink-amber-8: #8a5300;
+  --ink-red-8: #c8323c;
+  --ink-green-8: #177a42;
+  /* the block: the toast, the bar of the rows chosen */
+  --block-deep: #0b2e2a;
+  --on-block-deep: #e1f5f1;
+}
+:root[data-marchio='dottorcloud'][data-theme='dark'] {
+  --surface-base: #151817;
+  --surface-gray-1: #1d201f;
+  --surface-gray-2: #272a29;
+  --surface-gray-3: #353938;
+  --surface-gray-4: #3f4342;
+  --surface-gray-5: #535957;
+  --surface-gray-6: #757c7a;
+  --surface-gray-7: #959b99;
+  --surface-gray-8: #abb0af;
+  --surface-gray-9: #d6dad9;
+  --surface-gray-10: #f6f9f8;
+  --surface-sidebar: #151817;
+  --surface-elevation-1: #1d201f;
+  --surface-elevation-2: #222524;
+  --surface-elevation-3: #353938;
+  --ink-base: #151817;
+  --ink-gray-1: #222524;
+  --ink-gray-2: #353938;
+  --ink-gray-3: #3f4342;
+  --ink-gray-4: #757c7a;
+  --ink-gray-5: #858c8a;
+  --ink-gray-6: #959b99;
+  --ink-gray-7: #abb0af;
+  --ink-gray-8: #d6dad9;
+  --ink-gray-9: #f6f9f8;
+  --outline-base: #151817;
+  --outline-gray-1: #222524;
+  --outline-gray-2: #353938;
+  --outline-gray-3: #3f4342;
+  --outline-gray-4: #535957;
+  --outline-gray-5: #757c7a;
+  --outline-gray-6: #959b99;
+  --outline-gray-7: #ebeeed;
+  --outline-gray-8: #f1f4f3;
+  --outline-gray-9: #f6f9f8;
+  --outline-elevation-1: #272a29;
+  --outline-elevation-2: #353938;
+  --focus-outline-default: 2px solid #5fe0cc;
+  --elevation-sm: 0px 0px 14px 0px rgba(0, 0, 0, 0.18),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.7);
+  --elevation-base: 0px 0px 14px 0px rgba(0, 0, 0, 0.18),
+    0px 2px 5px 0px rgba(0, 0, 0, 0.6);
+  --elevation-lg: 0px 0px 16px 0px rgba(0, 0, 0, 0.1),
+    0px 18px 20px -8px rgba(0, 0, 0, 0.52);
+  --elevation-2xl: 0px 0px 14px 10px rgba(0, 0, 0, 0.12),
+    0px 44px 52px -4px rgba(0, 0, 0, 0.42);
+  --block-deep: #123b36;
+  --on-block-deep: #e1f5f1;
+}
+
+/* 4. The cloud's tail: the corner at the bottom left nearly straight, like the
+      side of the mark's D, on what one acts with (markup) */
+[data-marchio='dottorcloud'] button.bg-surface-gray-10,
+[data-marchio='dottorcloud'] button.bg-surface-red-7,
+[data-marchio='dottorcloud'] .dialog-content {
+  border-bottom-left-radius: 2px;
+}
+
+/* 5. The ticked box a cloud; the chosen radio the brand's cross */
+[data-marchio='dottorcloud'] input[type='checkbox'] {
+  border-radius: 4px 4px 4px 2px;
+}
+[data-marchio='dottorcloud'] input[type='radio']:checked {
+  background-color: var(--brand-action);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%23ffffff' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+  background-size: 55%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+[data-marchio='dottorcloud'][data-theme='dark'] input[type='radio']:checked {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%230b2e2a' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+}
+
+/* 6. A switch that is on: the cross at the centre of its knob (markup:
+      reka-ui's SwitchRoot and SwitchThumb) */
+[data-marchio='dottorcloud']
+  button[role='switch'][data-state='checked']
+  > span {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%230b6f64' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 50%;
+}
+[data-marchio='dottorcloud'][data-theme='dark']
+  button[role='switch'][data-state='checked']
+  > span {
+  background-color: #0b2e2a;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%235fe0cc' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
+}
+
+/* 7. A field one must fill: a small red cross after its label instead of the
+      asterisk (markup: frappe-ui's RequiredIndicator; DottorCloud's own fields
+      mark theirs `segno-obbligatorio`) */
+[data-marchio='dottorcloud']
+  span.text-ink-red-6.select-none[aria-hidden='true'],
+[data-marchio='dottorcloud'] .segno-obbligatorio {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 3px;
+  vertical-align: 1px;
+  font-size: 0;
+  background: currentColor;
+  clip-path: polygon(
+    34% 0,
+    66% 0,
+    66% 34%,
+    100% 34%,
+    100% 66%,
+    66% 66%,
+    66% 100%,
+    34% 100%,
+    34% 66%,
+    0 66%,
+    0 34%,
+    34% 34%
+  );
+}
+
+/* 8. The tab that is open: its line and its icon in the brand's colour
+      (markup: frappe-ui's Tabs and its TabsIndicator) */
+[data-marchio='dottorcloud'] [role='tablist'] .bg-surface-gray-10 {
+  background-color: var(--brand-action);
+}
+[data-marchio='dottorcloud']
+  [role='tab'][data-state='active']
+  :is(svg, [class*='lucide-']) {
+  color: var(--brand-action);
+}
+
+/* 9. Progress in the logo's green (markup: frappe-ui's Progress) */
+[data-marchio='dottorcloud'] .transform-gpu.rounded-xl > .bg-surface-gray-10 {
+  background-color: var(--brand-segno);
+}
+
+/* 10. The toast: a block of deep green with the cloud's tail (markup: frappe-ui's
+       Toast and ToastProvider); its action in mint */
+[data-marchio='dottorcloud'] li.bg-surface-gray-9.rounded-md {
+  background-color: var(--block-deep);
+  border-bottom-left-radius: 2px;
+}
+[data-marchio='dottorcloud']
+  li.bg-surface-gray-9.rounded-md
+  .text-ink-blue-link {
+  color: #5fe0cc;
+}
+
+/* 11. The sidebar's open entry: the cloud's tail and its icon in the brand's
+       colour (markup: frappe-ui's SidebarItem) */
+[data-marchio='dottorcloud'] .group\/sidebar-item.bg-surface-elevation-3 {
+  border-bottom-left-radius: 2px;
+}
+[data-marchio='dottorcloud']
+  .group\/sidebar-item.bg-surface-elevation-3
+  :is(svg, [class*='lucide-']) {
+  color: var(--brand-action);
+}
+
+/* 12. The segmented control: the button chosen has the cloud's tail (markup:
+       frappe-ui's TabButtons) */
+[data-marchio='dottorcloud'] [data-slot='tab-button'][data-state='checked'],
+[data-marchio='dottorcloud']
+  [data-slot='tab-button'][data-state='checked']
+  > * {
+  border-bottom-left-radius: 2px;
+}
+
+/* 13. The tabs of an entry of the settings: the open one's line in the brand's
+       colour, as frappe-ui's tabs above (SettingsHub.vue) */
+[data-marchio='dottorcloud']
+  [data-settings-tabs]
+  [role='tab'][aria-selected='true']::after {
+  background-color: var(--brand-action);
+}

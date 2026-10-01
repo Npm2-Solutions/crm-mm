@@ -50,6 +50,8 @@ export function variabili(colori) {
 // pages' own titles and icons start from it.
 export function indossa(documento = document, dati = marchio()) {
   const radice = documento.documentElement
+  // the brand's own look over frappe-ui's (espresso.css hangs on it)
+  if (dati.key) radice.dataset.marchio = dati.key
   for (const [nome, valore] of Object.entries(variabili(dati.colors))) {
     radice.style.setProperty(nome, valore)
   }

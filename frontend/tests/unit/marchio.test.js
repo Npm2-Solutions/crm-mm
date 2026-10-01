@@ -30,6 +30,7 @@ afterEach(() => {
   document.head.innerHTML = ''
   document.title = ''
   document.documentElement.removeAttribute('style')
+  document.documentElement.removeAttribute('data-marchio')
 })
 
 describe('marchio', () => {
@@ -105,6 +106,8 @@ describe('indossa', () => {
         .getAttribute('href'),
     ).toBe('/p/180.png')
     expect(document.title).toBe('Marchio di Prova')
+    // the brand's own look over frappe-ui's hangs on its key (espresso.css)
+    expect(document.documentElement.dataset.marchio).toBe('prova')
   })
 
   it('replaces the icons the page came with, without adding more', () => {

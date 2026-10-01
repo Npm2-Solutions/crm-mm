@@ -7,14 +7,18 @@
    and only they carry the hover class with it: tooltips, the call panel and the
    other dark surfaces keep their gray. On light the button takes the brand's
    darker shade, which white words read on (the lighter one is under the 4.5:1
-   contrast of text); on dark, the lighter one under dark words. */
+   contrast of text); on dark, the colour it takes on dark backgrounds (DottorCloud's
+   mint) under dark words. */
 :root {
   --brand-action: var(--brand-strong, #171717);
   --brand-action-hover: color-mix(in srgb, var(--brand-action) 86%, black);
+  /* the brand as a mark, never under words: progress, what is being done now */
+  --brand-segno: var(--brand, #7c7c7c);
 }
 [data-theme='dark'] {
-  --brand-action: var(--brand, #f3f3f3);
+  --brand-action: var(--brand-on-dark, var(--brand, #f3f3f3));
   --brand-action-hover: color-mix(in srgb, var(--brand-action) 86%, white);
+  --brand-segno: var(--brand-on-dark, var(--brand, #a3a3a3));
 }
 .bg-surface-gray-10.hover\:bg-surface-gray-9,
 .bg-surface-gray-10.enabled\:hover\:bg-surface-gray-9 {
