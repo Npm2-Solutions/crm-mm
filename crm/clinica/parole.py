@@ -15,8 +15,7 @@ from __future__ import annotations
 PAROLE = {
 	# DottorCloud
 	"Client area": "Patient area",
-	# the person's journey at the head of their page, and the agenda's first one
-	"Comes in": "Visit",
+	# the agenda's first appointment of a person
 	"First appointment": "First visit",
 	# the settings' group of the people the centre serves, and the booking rules';
 	# the main menu's group and its list of people, the page and its breadcrumbs

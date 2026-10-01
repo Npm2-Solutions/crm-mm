@@ -362,74 +362,7 @@
   background: var(--brand-segno, var(--brand));
 }
 
-/* 9. The person's journey: five cloud steps, done in the solid, the current
-      one mint with the cross */
-/* (margins and padding stay the caller's: the reset already zeroes a list's) */
-.dc-journey {
-  display: flex;
-  list-style: none;
-}
-.dc-journey li {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  font-size: 13px;
-}
-.dc-journey li::before {
-  content: '';
-  position: absolute;
-  top: 9px;
-  left: 26px;
-  right: 6px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--surface-gray-3);
-}
-.dc-journey li:last-child::before {
-  display: none;
-}
-.dc-journey li.is-done::before {
-  background: var(--brand-segno, var(--brand));
-}
-.dc-journey__dot {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50% 50% 50% 22%;
-  background: var(--surface-gray-2);
-  color: var(--ink-gray-5);
-  font-size: 11px;
-  font-weight: 500;
-}
-.dc-journey li.is-done .dc-journey__dot {
-  background: var(--brand-solid);
-  color: var(--on-brand-solid);
-}
-.dc-journey li.is-current .dc-journey__dot {
-  background: var(--block-mint);
-  color: var(--on-block-mint);
-  box-shadow: 0 0 0 3px var(--brand-subtle);
-}
-.dc-journey li.is-current .dc-journey__dot .dc-cross {
-  --s: 9px;
-}
-.dc-journey__label {
-  font-weight: 500;
-  color: var(--ink-gray-9);
-}
-.dc-journey li:not(.is-done):not(.is-current) .dc-journey__label {
-  color: var(--ink-gray-5);
-}
-.dc-journey__meta {
-  font-size: 12px;
-  color: var(--ink-gray-5);
-}
-
-/* 10. A page loading: the brand's cross turning and breathing */
+/* 9. A page loading: the brand's cross turning and breathing */
 .dc-loader-mark {
   display: inline-grid;
   place-items: center;
@@ -453,7 +386,7 @@
   }
 }
 
-/* 11. Where a file is dropped: the tail and a cloud mark; a file over it, the
+/* 10. Where a file is dropped: the tail and a cloud mark; a file over it, the
        brand's soft green and the cross */
 .dc-drop {
   display: flex;
@@ -489,7 +422,7 @@
   color: var(--on-brand-solid);
 }
 
-/* 12. The dashboard's numbers are StatTiles (components/Dashboard/WidgetFrame
+/* 11. The dashboard's numbers are StatTiles (components/Dashboard/WidgetFrame
        `dc-numero`): the crosses in the corner; the first of a row the deep
        block, its words on it */
 .dc-numero > .dc-crosses {
@@ -522,7 +455,7 @@
   color: var(--on-block-deep-muted);
 }
 
-/* 13. The agenda's appointment (the design system's AgendaEvent,
+/* 12. The agenda's appointment (the design system's AgendaEvent,
        components/Calendar/ResourceScheduler): the cloud's tail, the service's
        colour as its ground and its bar, the time in that colour; a first visit
        the brand's full block, the one going on now ringed with the cross, a
