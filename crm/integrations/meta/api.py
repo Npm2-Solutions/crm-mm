@@ -299,9 +299,9 @@ def no_token_message(page_id: str | None) -> str:
 
 
 NOT_GRANTED = (
-	"Facebook did not grant this CRM the advertising role on this Page, so it cannot read "
-	'its lead forms. Press "Choose pages" on the connection screen and tick this Page — '
-	"you must be an administrator of it."
+	"Facebook did not give {brand} the advertising role on this Page, so it cannot read "
+	'its lead forms. Press "Choose Pages" on the connection screen and tick this Page: '
+	"you must be one of its administrators."
 )
 
 
@@ -358,7 +358,7 @@ def sync_forms(page_id: str) -> dict:
 	if not token:
 		frappe.throw(no_token_message(page_id))
 	if not can_sync_leads(frappe.db.get_value("Facebook Page", page_id, "tasks")):
-		frappe.throw(_(NOT_GRANTED))
+		frappe.throw(con_nome(_(NOT_GRANTED)))
 	error = sync_forms_recording_failure(page_id, token)
 	return {
 		"error": error,
@@ -440,7 +440,7 @@ def set_page_sync(page_id: str, enabled: bool) -> dict:
 	if not token:
 		frappe.throw(no_token_message(page_id))
 	if enabled and not can_sync_leads(page.tasks):
-		frappe.throw(_(NOT_GRANTED))
+		frappe.throw(con_nome(_(NOT_GRANTED)))
 
 	subscribed = page.webhook_subscribed
 	try:
