@@ -51,8 +51,16 @@ def after_install(force=False):
 	add_levels()
 	add_core_permissions()
 	add_consent_types()
+	add_exercise_library()
 	add_brand()
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — no request here, and a failure later must not undo the seeding
+
+
+def add_exercise_library():
+	"""The exercises DottorCloud ships: ready on the first day, the centre imports none."""
+	from crm.piani.librerie import carica_libreria
+
+	carica_libreria()
 
 
 def add_brand():

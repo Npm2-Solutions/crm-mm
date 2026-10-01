@@ -718,6 +718,8 @@ after_migrate = [
 	"crm.clinica.cartella.proteggi_registro_accessi",
 	# the core documents the Manager's pages write: templates, rules, imports
 	"crm.permissions.documenti.concedi_documenti_del_core",
+	# the exercise library DottorCloud ships, when its file is a new one
+	"crm.piani.librerie.carica_libreria",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)

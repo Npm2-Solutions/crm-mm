@@ -1,10 +1,14 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""exercises-dataset as the CRM's library reads it, without a site: the exercises
-with their steps in the centre's language and their pictures' paths."""
+"""The exercise library as the CRM reads it, without a site: the exercises with
+their steps in the centre's language and their pictures' paths, and the file
+DottorCloud ships."""
 
 from __future__ import annotations
+
+import json
+from pathlib import Path
 
 try:
 	from frappe.tests import UnitTestCase
@@ -74,3 +78,30 @@ class GliEsercizi(UnitTestCase):
 		for base in (None, "", "http://cdn.example.com", "//cdn.example.com", "javascript:alert(1)"):
 			self.assertIsNone(T.indirizzo_media(base, "images/0001-2gPfomN.jpg"), base)
 		self.assertIsNone(T.indirizzo_media("https://cdn.example.com", "images/../../x.jpg"))
+
+
+class LaLibreriaNelCodice(UnitTestCase):
+	"""The file DottorCloud ships (`dati/esercizi.json`): every record an exercise,
+	once, how it is done in Italian, its pictures with whose they are. An exercise
+	NPM2 adds to the library has to be the same."""
+
+	def test_ogni_voce_e_un_esercizio_completo(self):
+		file = Path(T.__file__).parent / "dati" / "esercizi.json"
+		record = json.loads(file.read_text(encoding="utf-8"))
+		self.assertGreaterEqual(len(record), 1324)
+		codici = set()
+		for voce in record:
+			esercizio = T.esercizio(voce, "it")
+			self.assertIsNotNone(esercizio, voce)
+			self.assertNotIn(esercizio["code"], codici, voce)
+			codici.add(esercizio["code"])
+			self.assertTrue(voce["instruction_steps"]["it"], voce["id"])
+			self.assertTrue(esercizio["instructions"], voce["id"])
+			if voce.get("image") or voce.get("gif_url"):
+				self.assertTrue(esercizio["media_path"] or esercizio["animation_path"], voce["id"])
+				self.assertEqual(voce["attribution"], "© Gym visual — https://gymvisual.com/")
+
+	def test_la_licenza_viaggia_con_i_dati(self):
+		licenza = (Path(T.__file__).parent / "dati" / "esercizi.LICENSE.txt").read_text(encoding="utf-8")
+		self.assertIn("MIT License", licenza)
+		self.assertIn("Gym visual", licenza)
