@@ -21,7 +21,7 @@ const built = spawnSync(process.execPath, [path.join(SITE, 'build.mjs')], {
   env: {
     ...process.env,
     SITO_DIST: OUT,
-    SITO_URL: 'https://dottorcloud.it',
+    SITO_URL: 'https://dottorcloud.com',
     SITO_ANTEPRIMA: '',
   },
   encoding: 'utf8',
@@ -83,8 +83,8 @@ describe('the build', () => {
 
   test('the sitemap lists the pages to index, and only those', () => {
     const sitemap = fs.readFileSync(path.join(OUT, 'sitemap.xml'), 'utf8')
-    assert.match(sitemap, /<loc>https:\/\/dottorcloud\.it\/<\/loc>/)
-    assert.match(sitemap, /<loc>https:\/\/dottorcloud\.it\/funzioni\/<\/loc>/)
+    assert.match(sitemap, /<loc>https:\/\/dottorcloud\.com\/<\/loc>/)
+    assert.match(sitemap, /<loc>https:\/\/dottorcloud\.com\/funzioni\/<\/loc>/)
     assert.doesNotMatch(sitemap, /grazie|errore|404/)
   })
 
@@ -132,7 +132,7 @@ describe('the pages', () => {
       )
       assert.match(
         html,
-        /<link rel="canonical" href="https:\/\/dottorcloud\.it\//,
+        /<link rel="canonical" href="https:\/\/dottorcloud\.com\//,
         `${name}: canonical`,
       )
       assert.equal(html.match(/<h1[\s>]/g)?.length, 1, `${name}: one <h1>`)

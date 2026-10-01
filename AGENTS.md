@@ -397,7 +397,7 @@ done by the data, never by a click, so a centre that already works sees nothing.
 ### The website (`sito/`)
 | File | Role |
 |---|---|
-| `sito/pagine/`, `sito/parti/` | DottorCloud's own site (`dottorcloud.it`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
+| `sito/pagine/`, `sito/parti/` | DottorCloud's own site (`dottorcloud.com`): one file per page with its title, description and path in a comment on top; layout, header, footer, closing band |
 | `sito/build.mjs` | Builds into `sito/dist` with no dependencies: parts, Lucide icons inlined, image sizes, brand tokens in front of the CSS, logo, font and video from `brand/`, sitemap |
 | `sito/api/richiesta-demo.php` | The demo form: checks, trap and hourly limit, emails NPM2; settings in `private/sito.ini` outside the web root |
 | `sito/deploy.sh`, `sito/server/` | Publishes on the HestiaCP server (never over a folder holding something else), nginx's 404 and headers |

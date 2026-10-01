@@ -1,6 +1,6 @@
 # Il sito di DottorCloud
 
-Il sito pubblico di DottorCloud, per `dottorcloud.it`. Presenta il gestionale finito
+Il sito pubblico di DottorCloud, per `dottorcloud.com`. Presenta il gestionale finito
 come fanno il video, la presentazione e le inserzioni in [`../brand/`](../brand/): stesse
 frasi, stesse schermate, stesso percorso del paziente (Arriva → Prenota → Visita → Dopo →
 A casa → Il centro). Nessun piano e nessun prezzo, per scelta: un test lo controlla.
@@ -70,14 +70,13 @@ controlla che il sito risponda. Gli serve il secret `HOSTING_SSH_KEY` (Settings 
 and variables → Actions): tutto il file `chiavi-ssh/root_hetzner_id_ed25519` del
 pacchetto, righe `BEGIN` ed `END` comprese. Senza, avvisa e non pubblica niente.
 
-1. **DNS.** Il DNS di `dottorcloud.it` è su Teliko (`dns1.teliko.net`): il record A di
-   `dottorcloud.it` va portato a 91.99.201.178; `www` è un CNAME di `dottorcloud.it` e lo
-   segue. Finché punta altrove, chi apre il sito vede la pagina "Not Found" del vecchio
-   server. L'anteprima `dottorcloud.preview.npm2solutions.com` punta già lì (`*.preview`).
+1. **DNS.** Il DNS di `dottorcloud.com` è su GoDaddy (`ns47.domaincontrol.com`): il record A
+   punta già a 91.99.201.178 e `www` è un CNAME di `dottorcloud.com`. L'anteprima
+   `dottorcloud.preview.npm2solutions.com` punta lì anche lei (`*.preview`).
 2. **La pubblicazione**, da un computer con Node, rsync e SSH:
 
    ```bash
-   SITO_SSH_KEY=/percorso/root_hetzner_id_ed25519 sito/deploy.sh dottorcloud.it --crea --nginx
+   SITO_SSH_KEY=/percorso/root_hetzner_id_ed25519 sito/deploy.sh dottorcloud.com --crea --nginx
    ```
 
    `--crea` aggiunge il dominio nel pannello se manca e, quando il suo DNS punta al server,
@@ -91,16 +90,16 @@ pacchetto, righe `BEGIN` ed `END` comprese. Senza, avvisa e non pubblica niente.
 
    Senza computer, dal pannello (anche dal telefono): WEB → Add Web Domain, poi File
    Manager → `public_html`, si toglie `index.html`, si carica lo zip di `sito/dist`
-   costruito con `SITO_URL=https://dottorcloud.it` e lo si estrae; quando il DNS punta al
+   costruito con `SITO_URL=https://dottorcloud.com` e lo si estrae; quando il DNS punta al
    server, SSL con Let's Encrypt e Force HTTPS.
 3. **L'email del modulo.** In `private/sito.ini` (fuori da `public_html`): `destinatario`
-   riceve le richieste, `mittente` le manda (`sito@dottorcloud.it`). Il dominio del
+   riceve le richieste, `mittente` le manda (`sito@dottorcloud.com`). Il dominio del
    mittente deve permettere al server di spedire, altrimenti le richieste finiscono nello
-   spam: il record TXT di `dottorcloud.it`, oggi `v=spf1`, diventa
+   spam: su GoDaddy va aggiunto a `dottorcloud.com` il record TXT
    `v=spf1 ip4:91.99.201.178 ip6:2a01:4f8:1c1f:b10d::1 ~all`. `archivio` tiene anche una
    copia di ogni richiesta in un file, se si vuole. Poi una richiesta di prova dal sito.
 
-Le volte dopo basta `sito/deploy.sh dottorcloud.it`. Per l'anteprima:
+Le volte dopo basta `sito/deploy.sh dottorcloud.com`. Per l'anteprima:
 `sito/deploy.sh dottorcloud.preview.npm2solutions.com --crea`.
 
 ## Cambiarlo
@@ -124,4 +123,4 @@ Le volte dopo basta `sito/deploy.sh dottorcloud.it`. Per l'anteprima:
   il fornitore della posta, i tempi di conservazione.
 - Nel piè di pagina ci sono ragione sociale, sede e partita IVA; se si vogliono, numero REA
   e capitale sociale vanno aggiunti in `parti/footer.html`.
-- Il dominio è `dottorcloud.it` (`SITO_URL` in `build.mjs`).
+- Il dominio è `dottorcloud.com` (`SITO_URL` in `build.mjs`).

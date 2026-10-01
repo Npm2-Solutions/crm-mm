@@ -4,4 +4,4 @@
 # the server, and copies the site there with sito/deploy.sh. A preview
 # (*.preview.*) stays out of search engines.
 dottorcloud.preview.npm2solutions.com
-dottorcloud.it
+dottorcloud.com

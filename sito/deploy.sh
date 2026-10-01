@@ -6,11 +6,11 @@
 # domain, then copies sito/dist into the domain's public_html.
 #
 #   sito/deploy.sh dottorcloud.preview.npm2solutions.com   # a preview, kept out of search engines
-#   sito/deploy.sh dottorcloud.it                          # the site
-#   sito/deploy.sh dottorcloud.it --crea                   # also add the domain in the panel if missing,
+#   sito/deploy.sh dottorcloud.com                          # the site
+#   sito/deploy.sh dottorcloud.com --crea                   # also add the domain in the panel if missing,
 #                                                          # with its certificate once the DNS points here
-#   sito/deploy.sh dottorcloud.it --nginx                  # also install server/nginx.ssl.conf_sito
-#   sito/deploy.sh dottorcloud.it --prova                  # only show what would change
+#   sito/deploy.sh dottorcloud.com --nginx                  # also install server/nginx.ssl.conf_sito
+#   sito/deploy.sh dottorcloud.com --prova                  # only show what would change
 #
 #   SITO_SSH=root@hosting.npm2solutions.com   who to connect as (the default)
 #   SITO_SSH_KEY=~/.ssh/chiave                the key, when ssh-agent or ~/.ssh/config do not have it

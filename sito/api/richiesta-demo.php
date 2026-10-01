@@ -11,9 +11,9 @@
  * public_html on HestiaCP (or wherever SITO_CONFIG points). All optional:
  *
  *   destinatario = "info@npm2solutions.com"   who receives the requests
- *   mittente     = "sito@dottorcloud.it"      the sender: a domain whose SPF lets this server send
- *   cartella     = "/home/admin/web/dottorcloud.it/private"   where the hourly counters live
- *   archivio     = "/home/admin/web/dottorcloud.it/private/richieste-demo.jsonl"
+ *   mittente     = "sito@dottorcloud.com"      the sender: a domain whose SPF lets this server send
+ *   cartella     = "/home/admin/web/dottorcloud.com/private"   where the hourly counters live
+ *   archivio     = "/home/admin/web/dottorcloud.com/private/richieste-demo.jsonl"
  *                  every request also written here, one JSON per line (off when empty)
  */
 

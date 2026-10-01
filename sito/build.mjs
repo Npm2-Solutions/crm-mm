@@ -12,7 +12,7 @@
 // jumps while they load. Logo, font and video come from brand/, the tokens of
 // the design system go in front of the stylesheet: one source for each.
 //
-//   SITO_URL=https://dottorcloud.it   the address the site answers to
+//   SITO_URL=https://dottorcloud.com   the address the site answers to
 //   SITO_ANTEPRIMA=1                  a preview: noindex, and robots.txt says no
 //   SITO_DIST=/some/folder            where to write (default sito/dist)
 
@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 const SITE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.dirname(SITE)
 const OUT = path.resolve(process.env.SITO_DIST || path.join(SITE, 'dist'))
-const ORIGIN = (process.env.SITO_URL || 'https://dottorcloud.it').replace(
+const ORIGIN = (process.env.SITO_URL || 'https://dottorcloud.com').replace(
   /\/+$/,
   '',
 )
