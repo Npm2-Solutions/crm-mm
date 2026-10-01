@@ -23,33 +23,34 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
+// the titles in the user's words: frappe-ui writes them as it gets them
 const doctypeMap = {
   'CRM Lead': {
-    title: 'People',
+    title: __('People'),
     listRoute: '/crm/leads',
     pageRoute: `/crm/leads/docname`,
   },
   'CRM Deal': {
-    title: 'Deals',
+    title: __('Deals'),
     listRoute: '/crm/deals',
     pageRoute: `/crm/deals/docname`,
   },
   Contact: {
-    title: 'Contacts',
+    title: __('Contacts'),
     listRoute: '/crm/contacts',
     pageRoute: `/crm/contacts/docname`,
   },
   'CRM Task': {
-    title: 'Tasks',
+    title: __('Tasks'),
     listRoute: '/crm/tasks',
   },
   'CRM Organization': {
-    title: 'Organizations',
+    title: __('Organizations'),
     listRoute: '/crm/organizations',
     pageRoute: `/crm/organizations/docname`,
   },
   'CRM Call Log': {
-    title: 'Call Log',
+    title: __('Call Log'),
     listRoute: '/crm/call-logs',
   },
 }

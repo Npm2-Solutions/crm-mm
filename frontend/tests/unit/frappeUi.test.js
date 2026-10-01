@@ -5,15 +5,24 @@
 // screen.
 import fs from 'node:fs'
 import path from 'node:path'
-import { FILE, NOMI, traduciFrappeUi } from '../../vite/frappeUi.js'
+import {
+  FILE,
+  FILE_FRAPPE,
+  NOMI,
+  traduciFrappeUi,
+} from '../../vite/frappeUi.js'
 
 const COMPONENTI = path.resolve(
   import.meta.dirname,
   '../../node_modules/frappe-ui/src/components',
 )
+const FRAPPE = path.resolve(
+  import.meta.dirname,
+  '../../node_modules/frappe-ui/frappe',
+)
 
-function tradotto(file) {
-  const id = path.join(COMPONENTI, file)
+function tradotto(file, cartella = COMPONENTI) {
+  const id = path.join(cartella, file)
   return traduciFrappeUi(fs.readFileSync(id, 'utf8'), id)
 }
 
@@ -32,6 +41,26 @@ describe('frappe-ui in the user’s language', () => {
       expect(() => tradotto(file), file).not.toThrow()
       expect(tradotto(file), file).not.toBeNull()
     }
+    for (const file of FILE_FRAPPE) {
+      expect(() => tradotto(file, FRAPPE), file).not.toThrow()
+      expect(tradotto(file, FRAPPE), file).not.toBeNull()
+    }
+  })
+
+  it('takes the data import pages through the translator', () => {
+    const lista = tradotto('DataImport/DataImportList.vue', FRAPPE)
+    expect(lista).toContain(`{{ __('Data Import') }}`)
+    expect(lista).toContain(`:placeholder="__('Search imported files')"`)
+    expect(lista).toContain(`:label="__(dataImport.status)"`)
+    const carica = tradotto('DataImport/UploadStep.vue', FRAPPE)
+    // written twice, both through the translator
+    expect(
+      carica.match(/__\('Google Sheet', null, 'Data import'\)/g),
+    ).toHaveLength(2)
+    expect(carica).not.toMatch(/>\s*Google Sheet\s*</)
+    const anteprima = tradotto('DataImport/PreviewStep.vue', FRAPPE)
+    expect(anteprima).toContain('Rows imported: {0}. Rows not imported: {1}.')
+    expect(anteprima).not.toContain('imported successfully')
   })
 
   it('sends the words through the translator', () => {

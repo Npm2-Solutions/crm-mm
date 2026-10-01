@@ -1524,6 +1524,10 @@ msgstr "Aggiungi Campo"
 msgid "Add Filter"
 msgstr "Aggiungi Filtro"
 
+#: frontend/vite/frappeUi.js
+msgid "Add Google Sheets Link"
+msgstr "Incolla il link del foglio Google"
+
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:430
 msgid "Add Lead or Deal"
 msgstr "Aggiungi Lead o Deal"
@@ -2134,6 +2138,10 @@ msgstr "Tutto il giorno"
 #: frontend/src/components/Settings/CalendarSettings.vue:158
 msgid "All Day Event Notifications"
 msgstr "Notifiche degli eventi di tutto il giorno"
+
+#: frontend/vite/frappeUi.js
+msgid "All Fields"
+msgstr "Tutti i campi"
 
 #: frontend/src/components/Settings/Scheduling/SubscriptionTypesSettings.vue
 msgid "All at once"
@@ -3893,6 +3901,26 @@ msgstr "Beneficiario"
 msgid "CRM UI"
 msgstr "Inserimento manuale"
 
+#: frontend/vite/frappeUi.js
+msgid "Change the mapping of columns from your file to fields in the system"
+msgstr "Scegli in quale campo va ogni colonna del tuo file"
+
+#: frontend/vite/frappeUi.js
+msgid "Choose Import"
+msgstr "Scegli il file"
+
+#: frontend/vite/frappeUi.js
+msgid "Choose a Document Type to import"
+msgstr "Scegli cosa importare"
+
+#: frontend/vite/frappeUi.js
+msgid "Column Mapping"
+msgstr "Abbinamento delle colonne"
+
+#: frontend/vite/frappeUi.js
+msgid "Column {0}"
+msgstr "Colonna {0}"
+
 #: frontend/src/components/Modals/DoctypeModal.vue
 msgid "Create Address"
 msgstr "Nuovo indirizzo"
@@ -3909,13 +3937,49 @@ msgstr "Nuova nota"
 msgid "Create Task"
 msgstr "Nuova cosa da fare"
 
+#: frontend/vite/frappeUi.js
+msgid "Custom Template"
+msgstr "Modello personalizzato"
+
+#: frontend/vite/frappeUi.js
+msgid "Download CSV Template"
+msgstr "Scarica il modello CSV"
+
+#: frontend/vite/frappeUi.js
+msgid "Drag and drop a CSV file, or upload from your"
+msgstr "Trascina qui un file CSV, oppure caricalo dal tuo"
+
 #: frontend/src/components/Modals/DoctypeModal.vue
 msgid "Edit Address"
 msgstr "Modifica l'indirizzo"
 
+#: frontend/vite/frappeUi.js
+msgid "Error"
+msgstr "Errore"
+
 #: crm/clinica/__init__.py
 msgid "Every practitioner of the centre may read the whole record, not only their own visits (Garante, 4/6/2015)."
 msgstr "Ogni professionista del centro può leggere tutta la cartella clinica, non solo le proprie visite (Garante, 4/6/2015)."
+
+#: frontend/vite/frappeUi.js
+msgid "Export Data"
+msgstr "Esporta i dati"
+
+#: frontend/vite/frappeUi.js
+msgid "Failed to import"
+msgstr "Non importata"
+
+#: frontend/vite/frappeUi.js
+msgid "Fields in File"
+msgstr "Colonne del file"
+
+#: frontend/vite/frappeUi.js
+msgid "Fields in System"
+msgstr "Campi"
+
+#: frontend/vite/frappeUi.js
+msgid "File Type"
+msgstr "Tipo di file"
 
 #: crm/clinica/__init__.py
 msgid "Health dossier"
@@ -3932,6 +3996,22 @@ msgstr "Tabella di instradamento del solo hub: quale sito cliente possiede una p
 #: crm/fcrm/doctype/meta_whatsapp_route/meta_whatsapp_route.json
 msgid "Hub-only routing table: which client site owns a WhatsApp Business account, so messages delivered to the shared app reach the right site."
 msgstr "Tabella di instradamento del solo hub: quale sito cliente possiede un account WhatsApp Business, così i messaggi consegnati all'app condivisa arrivano al sito giusto."
+
+#: frontend/vite/frappeUi.js
+msgid "Import Logs"
+msgstr "Registro dell'importazione"
+
+#: frontend/vite/frappeUi.js
+msgid "Import data into your system using CSV files or Google Sheets."
+msgstr "Importa i dati da un file CSV o da un foglio Google."
+
+#: frontend/vite/frappeUi.js
+msgid "Import data into your system using CSV files."
+msgstr "Importa i dati da file CSV."
+
+#: frontend/vite/frappeUi.js
+msgid "Importing {0}"
+msgstr "Importazione in {0}"
 
 #: crm/fcrm/doctype/crm_scheduling_settings/crm_scheduling_settings.json
 msgid "Leads at the top of the booking page. Empty = the centre's logo (Settings → The centre → General → Name & logo)"
@@ -7898,7 +7978,7 @@ msgstr "Campi della scheda Dati"
 
 #: frontend/src/pages/DataImport.vue:49
 msgid "Data Import"
-msgstr "Importazione Dati"
+msgstr "Importazione dati"
 
 #: crm/piani/librerie.py
 msgid "Data under the MIT licence; pictures © Gym visual, authorised to NPM2 Solutions"
@@ -15109,6 +15189,10 @@ msgstr "Chiama"
 msgid "Make attachment {0}"
 msgstr "Rendi l'allegato {0}"
 
+#: frontend/vite/frappeUi.js
+msgid "Make sure the link is publically accessible to fetch the data."
+msgstr "Il link deve essere pubblico, perché i dati si possano leggere."
+
 #: frontend/src/components/Activities/AttachmentArea.vue:107
 msgid "Make {0}"
 msgstr "Crea {0}"
@@ -15187,6 +15271,10 @@ msgstr "Gestisce il sito: l'agenzia imposta i suoi accessi dall'amministrazione"
 msgid "Managing contacts and companies"
 msgstr "Gestione di contatti e aziende"
 
+#: frontend/vite/frappeUi.js
+msgid "Mandatory Fields"
+msgstr "Campi obbligatori"
+
 #: frontend/src/components/Modals/DoctypeModal.vue:122
 #: frontend/src/data/document.js:68
 msgid "Mandatory field error: {0}"
@@ -15233,6 +15321,10 @@ msgstr "Con l'approvazione manuale l'orario viene prenotato, ma resta da conferm
 #: crm/install.py
 msgid "Manufacturing"
 msgstr "Manifattura"
+
+#: frontend/vite/frappeUi.js
+msgid "Map Data"
+msgstr "Abbina i dati"
 
 #: frontend/src/components/Settings/Meta/MetaLeadForms.vue
 msgid "Map every form question to a field of the person. First name is required."
@@ -16414,6 +16506,10 @@ msgstr ""
 msgid "New Contact"
 msgstr "Nuovo contatto"
 
+#: frontend/vite/frappeUi.js
+msgid "New Data Import"
+msgstr "Nuova importazione"
+
 #: frontend/src/pages/Lead.vue
 msgid "New Deal"
 msgstr "Nuova trattativa"
@@ -17029,6 +17125,10 @@ msgstr "Nessuna credenziale per il provider: imposta una chiave API, oppure uten
 msgid "No cycles yet: ten sessions of physiotherapy, six of laser…"
 msgstr "Ancora nessun ciclo: dieci sedute di fisioterapia, sei di laser…"
 
+#: frontend/vite/frappeUi.js
+msgid "No data imports found."
+msgstr "Ancora nessuna importazione."
+
 #: crm/dashboard/widgets/sales.py
 msgid "No deal is expected to close in the next two weeks"
 msgstr "Nessuna trattativa dovrebbe chiudersi nelle prossime due settimane"
@@ -17180,6 +17280,10 @@ msgstr "Nessun limite impostato"
 #: crm/invoicing/connessione.py
 msgid "No login endpoint for the provider"
 msgstr "Nessun endpoint di accesso per il provider"
+
+#: frontend/vite/frappeUi.js
+msgid "No logs to display."
+msgstr "Nessuna voce da mostrare."
 
 #: frontend/src/components/ConversationList.vue
 msgid "No longer in this list: it goes when you open another conversation"
@@ -19878,6 +19982,10 @@ msgstr "Parte"
 msgid "Part of a series"
 msgstr "Parte di una serie"
 
+#: frontend/vite/frappeUi.js
+msgid "Partial Success"
+msgstr "Riuscita in parte"
+
 #: crm/scheduling/esiti.py
 msgid "Participant not found"
 msgstr "Partecipante non trovato"
@@ -20650,6 +20758,10 @@ msgstr "Scrivi nelle note il motivo della perdita della trattativa."
 #: crm/fcrm/doctype/crm_lead/crm_lead.py:152
 msgid "Please specify the reason for losing the lead."
 msgstr ""
+
+#: frontend/vite/frappeUi.js
+msgid "Please upload a valid CSV file."
+msgstr "Carica un file CSV valido."
 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue
 msgid "Point your Twilio number's voice webhook here:"
@@ -22467,6 +22579,10 @@ msgstr "Reimposta modifiche"
 msgid "Reset ERPNext Form Script"
 msgstr ""
 
+#: frontend/vite/frappeUi.js
+msgid "Reset Mapping"
+msgstr "Ripristina l'abbinamento"
+
 #: frontend/src/components/ColumnSettings.vue:86
 #: frontend/src/pages/Dashboard.vue:28
 msgid "Reset to Default"
@@ -22617,6 +22733,10 @@ msgstr "Conservazione"
 msgid "Retention (days)"
 msgstr "Conservazione (giorni)"
 
+#: frontend/vite/frappeUi.js
+msgid "Retry"
+msgstr "Riprova"
+
 #: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
 msgid "Retry After (hours)"
 msgstr "Riprova dopo (ore)"
@@ -22665,6 +22785,14 @@ msgstr "Ricavi"
 #: crm/dashboard/widgets/sales.py
 msgid "Revenue forecast"
 msgstr "Previsione dei ricavi"
+
+#: frontend/vite/frappeUi.js
+msgid "Review & Import"
+msgstr "Controlla e importa"
+
+#: frontend/vite/frappeUi.js
+msgid "Review and Import"
+msgstr "Controlla e importa"
 
 #: frontend/src/components/Settings/AssistantSettings.vue
 msgid "Review note"
@@ -22845,6 +22973,10 @@ msgstr "Riga #{0}: il percorso deve essere un indirizzo di questo sito o un link
 msgid "Row names of the script steps ticked during the call."
 msgstr "I nomi delle righe dei passi dello script spuntati durante la chiamata."
 
+#: frontend/vite/frappeUi.js
+msgid "Row no."
+msgstr "Riga"
+
 #: crm/fcrm/doctype/crm_plan/crm_plan.py
 msgid "Row {0}: a trial needs the day it ends"
 msgstr "Riga {0}: per una prova serve il giorno in cui finisce"
@@ -22882,6 +23014,10 @@ msgstr "Riga {0}: {1} {2} compare due volte nelle corrispondenze"
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
 msgid "Rows"
 msgstr "Righe"
+
+#: frontend/vite/frappeUi.js
+msgid "Rows imported: {0}. Rows not imported: {1}."
+msgstr "Righe importate: {0}. Righe non importate: {1}."
 
 #: crm/piani/doctype/crm_library_import/crm_library_import.json
 msgid "Rows read"
@@ -23579,6 +23715,10 @@ msgstr "Cerca per parola chiave"
 msgid "Search fields…"
 msgstr "Cerca un campo…"
 
+#: frontend/vite/frappeUi.js
+msgid "Search imported files"
+msgstr "Cerca tra i file importati"
+
 #: frontend/src/components/AssignToBody.vue
 msgid "Search people…"
 msgstr "Cerca persone…"
@@ -23680,6 +23820,10 @@ msgstr "Seleziona valuta"
 msgid "Select Holiday List"
 msgstr "Scegli un elenco di festività"
 
+#: frontend/vite/frappeUi.js
+msgid "Select Mandatory Fields"
+msgstr "Seleziona i campi obbligatori"
+
 #: frontend/src/components/Settings/Telephony/TelephonySettings.vue:54
 msgid "Select Medium"
 msgstr "Scegli il servizio"
@@ -23745,6 +23889,10 @@ msgstr "Scegli almeno un profilo social"
 msgid "Select date"
 msgstr "Scegli la data"
 
+#: frontend/vite/frappeUi.js
+msgid "Select field"
+msgstr "Scegli il campo"
+
 #: frontend/build/frappeUi.js
 msgid "Select option"
 msgstr "Scegli…"
@@ -23764,6 +23912,10 @@ msgstr "Scegli lo stato della trattativa che crea in automatico il cliente in ER
 #: frontend/src/components/Settings/CalendarSettings.vue:38
 msgid "Select the default view for your calendar. This will be the initial view when you open the calendar"
 msgstr "Scegli la vista predefinita dell'agenda: è quella che vedi quando la apri"
+
+#: frontend/vite/frappeUi.js
+msgid "Select the fields you want to include in the template."
+msgstr "Scegli i campi da mettere nel modello."
 
 #: frontend/build/frappeUi.js
 msgid "Select time"
@@ -25631,6 +25783,18 @@ msgstr "Parte di testo: un URL che la contiene viene saltato durante la scansion
 #: crm/domain_enrichment/doctype/crm_enrichment_settings/crm_enrichment_settings.json
 msgid "Substrings that exclude a candidate link from the crawl."
 msgstr "Parti di testo che escludono un link dalla scansione."
+
+#: frontend/vite/frappeUi.js
+msgid "Success"
+msgstr "Riuscita"
+
+#: frontend/vite/frappeUi.js
+msgid "Successful"
+msgstr "Riuscite"
+
+#: frontend/vite/frappeUi.js
+msgid "Successfully imported"
+msgstr "Importata"
 
 #: crm/clinica/riassunto.py
 msgid "Summarise the record for the next visit."
@@ -29040,6 +29204,10 @@ msgstr "Utente per la marca temporale"
 msgid "Time zone"
 msgstr "Fuso orario"
 
+#: frontend/vite/frappeUi.js
+msgid "Timed Out"
+msgstr "Tempo scaduto"
+
 #: frontend/src/components/Activities/AttributionArea.vue
 msgid "Timeline"
 msgstr "Cronologia"
@@ -30043,6 +30211,10 @@ msgstr "Non ha più risposto"
 msgid "Unsaved Changes"
 msgstr "Modifiche non salvate"
 
+#: frontend/vite/frappeUi.js
+msgid "Unselect All"
+msgstr "Deseleziona tutto"
+
 #: frontend/src/components/Plans/PlanDialog.vue
 msgid "Until"
 msgstr "Fino a"
@@ -30196,6 +30368,10 @@ msgstr "Carica un audio"
 #: frontend/src/components/Activities/WhatsAppBox.vue:152
 msgid "Upload Document"
 msgstr "Carica un documento"
+
+#: frontend/vite/frappeUi.js
+msgid "Upload File"
+msgstr "Carica il file"
 
 #: frontend/src/components/Activities/WhatsAppBox.vue:160
 #: frontend/src/pages/Contact.vue:48 frontend/src/pages/Lead.vue:93
@@ -30558,6 +30734,10 @@ msgstr "Verifica un ID chiamante"
 #: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
 msgid "Verify a number"
 msgstr "Verifica un numero"
+
+#: frontend/vite/frappeUi.js
+msgid "Verify the data before starting the import process"
+msgstr "Controlla i dati prima di avviare l'importazione"
 
 #: crm/tessera_sanitaria/__init__.py
 msgid "Verify {0}"
@@ -35489,3 +35669,18 @@ msgstr "Impostazioni"
 msgctxt "Automation editor tab"
 msgid "Enrolments"
 msgstr "Iscrizioni"
+
+#: frontend/vite/frappeUi.js
+msgctxt "Data import"
+msgid "Device"
+msgstr "dispositivo"
+
+#: frontend/vite/frappeUi.js
+msgctxt "Data import"
+msgid "or"
+msgstr "o da un"
+
+#: frontend/vite/frappeUi.js
+msgctxt "Data import"
+msgid "Google Sheet"
+msgstr "foglio Google"
