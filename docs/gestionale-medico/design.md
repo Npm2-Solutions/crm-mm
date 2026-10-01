@@ -294,7 +294,14 @@ riabilitazione restano alla clinica.*
   free-exercise-db restano la riserva libera. Per la fisioterapia non
   c'è una libreria libera con le figure (dell'NHS si riusano i testi, non le
   immagini né i video): restano i video del centro, più un link YouTube o Vimeo.
-- **exercises-dataset, come si importa**:
+- **La libreria degli esercizi, come arriva** (01/10/2026): la diamo noi. È nel
+  codice (`crm/piani/dati/esercizi.json`, fatto una volta da exercises-dataset, con
+  la licenza MIT dei dati accanto) e si carica da sola all'installazione e a ogni
+  aggiornamento che porta un file nuovo. Il centro non importa niente: trova la
+  lista pronta, corregge i nomi e le parti del corpo, aggiunge i suoi. Un esercizio
+  nuovo della libreria lo aggiungiamo noi, nel file. Le schermate non nominano il
+  dataset né GitHub; accanto alle immagini resta «© Gym visual», che la licenza
+  chiede.
   - i nomi sono solo in inglese: si traducono una volta e li rivede un trainer; le
     istruzioni in italiano ci sono già, anche divise in passi;
   - le animazioni sono a 180×180; se Gym visual ci manda versioni più grandi,
