@@ -142,7 +142,11 @@ for sl in prs.slides:
 						rc = "#" + str(r.font.color.rgb)
 					except Exception:
 						rc = col
-					parts.append(html.escape(r.text) if rc == col else f'<span style="color:{rc}">{html.escape(r.text)}</span>')
+					parts.append(
+						html.escape(r.text)
+						if rc == col
+						else f'<span style="color:{rc}">{html.escape(r.text)}</span>'
+					)
 				text = "".join(parts)
 				paras.append(
 					f'<p style="font-size:{size}pt;font-weight:{weight};color:{col};text-align:{align}">{text}</p>'
