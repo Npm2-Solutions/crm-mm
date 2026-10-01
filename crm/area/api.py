@@ -9,7 +9,8 @@ empty answer that could be probed. The rest reads the CRM as the centre does and
 gives the person only what is theirs to see:
 
 - **appointments**, upcoming and past, each with the booking page's own link to
-  move or cancel it by the centre's rules, and the cycles of sessions;
+  move or cancel it by the centre's rules, the cycles of sessions and the
+  subscriptions going on (`crm.scheduling.abbonamenti`);
 - **the waiting lists**: what the person waits for, the place offered to answer,
   joining one and leaving it (`crm.scheduling.attese`);
 - **the forms** to fill before the next one, opened without another code;
@@ -28,7 +29,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import get_datetime, now_datetime
 
 from crm.area import accesso, sezioni
-from crm.scheduling import attese, cicli
+from crm.scheduling import abbonamenti, attese, cicli
 from crm.scheduling import attese_regole as R
 
 
@@ -159,6 +160,7 @@ def get_appointments(person: str) -> dict:
 		"upcoming": prossimi,
 		"past": passati[:20],
 		"cycles": cicli.della_persona(person),
+		"subscriptions": abbonamenti.della_persona(person),
 		"waiting": attese.della_persona(person),
 		"can_wait": attese.impostazioni().area,
 	}

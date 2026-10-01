@@ -223,6 +223,7 @@ permission_query_conditions = {
 	"CRM Appointment": "crm.permissions.seguono.get_appointment_permission_query_conditions",
 	"CRM Session Cycle": "crm.permissions.seguono.get_cycle_permission_query_conditions",
 	"CRM Waiting List Entry": "crm.permissions.seguono.get_waiting_permission_query_conditions",
+	"CRM Subscription": "crm.permissions.seguono.get_subscription_permission_query_conditions",
 	"WhatsApp Message": "crm.permissions.seguono.get_whatsapp_permission_query_conditions",
 	"CRM SMS Message": "crm.permissions.seguono.get_sms_permission_query_conditions",
 	"CRM Visitor": "crm.permissions.seguono.get_visitor_permission_query_conditions",
@@ -257,6 +258,7 @@ has_permission = {
 	"CRM Appointment": "crm.permissions.seguono.has_appointment_permission",
 	"CRM Session Cycle": "crm.permissions.seguono.has_cycle_permission",
 	"CRM Waiting List Entry": "crm.permissions.seguono.has_waiting_permission",
+	"CRM Subscription": "crm.permissions.seguono.has_subscription_permission",
 	"WhatsApp Message": "crm.permissions.seguono.has_whatsapp_permission",
 	"CRM SMS Message": "crm.permissions.seguono.has_sms_permission",
 	"CRM Visitor": "crm.permissions.seguono.has_visitor_permission",
@@ -272,6 +274,7 @@ has_permission = {
 	"CRM Price List": "crm.permissions.documenti.has_permission",
 	"CRM Scheduling Settings": "crm.permissions.documenti.has_permission",
 	"CRM Waiting List Settings": "crm.permissions.documenti.has_permission",
+	"CRM Subscription Type": "crm.permissions.documenti.has_permission",
 	"CRM Holiday List": "crm.permissions.documenti.has_permission",
 	"CRM Staff Schedule": "crm.permissions.documenti.has_permission",
 	"CRM Resource": "crm.permissions.documenti.has_permission",
@@ -601,6 +604,8 @@ scheduler_events = {
 		"crm.tessera_sanitaria.monitoraggio.giornaliero",
 		# a programme's stage whose day has come opens, and its plan with it
 		"crm.piani.programmi.apri_del_giorno",
+		# subscriptions: how each stands, the instalments due, the end, the renewals
+		"crm.scheduling.abbonamenti.ogni_giorno",
 	],
 	"weekly": ["crm.api.event.trigger_weekly_event_notifications"],
 	"hourly_long": [

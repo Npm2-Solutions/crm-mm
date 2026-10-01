@@ -33,6 +33,7 @@
   "column_break_details",
   "series",
   "session_cycle",
+  "subscription",
   "booking",
   "event",
   "conflict_section",
@@ -220,6 +221,15 @@
    "read_only": 1
   },
   {
+   "fieldname": "subscription",
+   "fieldtype": "Link",
+   "label": "Subscription",
+   "options": "CRM Subscription",
+   "search_index": 1,
+   "description": "The subscription this appointment uses an entry of: set by itself when booked, changed from the appointment's panel",
+   "read_only": 1
+  },
+  {
    "fieldname": "booking",
    "fieldtype": "Link",
    "label": "Booking",
@@ -312,7 +322,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-30 09:00:00.000000",
+ "modified": "2026-10-01 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Appointment",

@@ -305,6 +305,14 @@ CAPACITA = (
 		descrizione="Cycles of sessions: sell, follow, close",
 	),
 	_c(
+		"agenda.abbonamenti",
+		segreteria=CENTRO,
+		operatore=SUOI,
+		manager=CENTRO,
+		commerciale=TEAM,
+		descrizione="Subscriptions: sell, follow, suspend, renew",
+	),
+	_c(
 		"agenda.attese",
 		segreteria=CENTRO,
 		operatore=SUOI,

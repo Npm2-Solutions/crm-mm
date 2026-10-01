@@ -29,6 +29,7 @@ SCRITTURA = {
 	"CRM Price List": "agenda.configura",
 	"CRM Scheduling Settings": "agenda.configura",
 	"CRM Waiting List Settings": "agenda.configura",
+	"CRM Subscription Type": "agenda.configura",
 	"CRM Holiday List": "agenda.configura",
 	# shifts, holidays and rooms: the front desk's too; a practitioner their own shifts
 	"CRM Staff Schedule": "agenda.turni",

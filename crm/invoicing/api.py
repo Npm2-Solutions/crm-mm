@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate
+from frappe.utils import add_days, flt, getdate
 
 from crm.invoicing import anagrafica, connessione, documento, estensioni
 from crm.invoicing.engine.classificazione import GuardiaSdI
@@ -265,6 +265,8 @@ def issue_from_appointment(appointment: str, billable_service: str = "", service
 		and frappe.db.get_value("CRM Session Cycle", incontro.session_cycle, "billing") == CICLO_INTERO
 	):
 		frappe.throw(_("This session is paid with its cycle: invoice the cycle"))
+	if incontro.get("subscription"):
+		frappe.throw(_("This appointment is comprised in a subscription: its instalments are invoiced"))
 
 	if not billable_service and incontro.service:
 		billable_service = frappe.db.get_value(
@@ -368,6 +370,70 @@ def issue_from_cycle(cycle: str, billable_service: str = "", service_provider: s
 			"rate": flt(ciclo.price),
 			"period_from": ciclo.starts_on,
 			"period_to": ciclo.valid_until,
+		},
+	)
+	fattura.insert()
+	return fattura.name
+
+
+@frappe.whitelist(methods=["POST"])
+def issue_from_subscription(subscription: str, instalment: str, service_provider: str = "") -> str:
+	"""Open a draft invoice for one instalment of a subscription: one line, the
+	fiscal card of its type, the instalment's amount, over the days it pays for.
+
+	The person is the client - or whoever pays for them - and the provider is the
+	one of whoever follows the subscription, else the card's own. Its appointments
+	are not invoiced one by one: they are paid here.
+	"""
+	frappe.has_permission("CRM Invoice", "create", throw=True)
+	abbonamento = frappe.get_doc("CRM Subscription", subscription)
+	abbonamento.check_permission("read")
+	rata = next((r for r in abbonamento.instalments if r.name == instalment), None)
+	if not rata:
+		frappe.throw(_("No such instalment"))
+	if rata.invoice and frappe.db.get_value("CRM Invoice", rata.invoice, "docstatus") in (0, 1):
+		frappe.throw(_("This instalment is invoiced already: {0}").format(rata.invoice))
+	billable_service = abbonamento.billable_service
+	if not billable_service:
+		frappe.throw(_("This subscription has no fiscal card: its instalments are not invoiced"))
+	if not service_provider and abbonamento.practitioner:
+		service_provider = frappe.db.get_value(
+			"CRM Service Provider", {"user": abbonamento.practitioner, "enabled": 1}, "name"
+		)
+	if not service_provider:
+		service_provider = frappe.db.get_value("CRM Billable Service", billable_service, "default_provider")
+	if not service_provider:
+		frappe.throw(
+			_(
+				"No provider for this subscription: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+			)
+		)
+	# the days the instalment pays for: until the next one, or the last day
+	dopo = sorted(
+		getdate(r.due_on) for r in abbonamento.instalments if getdate(r.due_on) > getdate(rata.due_on)
+	)
+	fino = add_days(dopo[0], -1) if dopo else abbonamento.ends_on
+
+	fattura = frappe.new_doc("CRM Invoice")
+	fattura.subscription = subscription
+	fattura.recipient_type = TipoDestinatario.PERSONA_FISICA
+	fattura.party_type = "CRM Lead"
+	fattura.party = abbonamento.lead
+	if not anagrafica.pagante_della_fattura(fattura):
+		fattura.billing_name = abbonamento.lead_name
+	servizio = frappe.db.get_value("CRM Billable Service", billable_service, "fiscal_description")
+	fattura.append(
+		"items",
+		{
+			"billable_service": billable_service,
+			"service_provider": service_provider,
+			"description": _("{0}: subscription {1}").format(
+				servizio or abbonamento.subscription_type, abbonamento.subscription_type
+			),
+			"qty": 1,
+			"rate": flt(rata.amount),
+			"period_from": rata.due_on,
+			"period_to": fino,
 		},
 	)
 	fattura.insert()
@@ -775,12 +841,24 @@ def appointments_to_invoice(company: str = "", days: int = 14, limit: int = 100)
 			"starts_on": ["between", [da, frappe.utils.now_datetime()]],
 			"status": ["not in", ("Cancelled", "No Show")],
 		},
-		fields=["name", "title", "starts_on", "service", "unit_price", "status", "session_cycle"],
+		fields=[
+			"name",
+			"title",
+			"starts_on",
+			"service",
+			"unit_price",
+			"status",
+			"session_cycle",
+			"subscription",
+		],
 		order_by="starts_on desc",
 		limit_page_length=int(limit),
 	)
 	return [
 		dict(i)
 		for i in incontri
-		if i.name not in fatturati and not (i.session_cycle and i.session_cycle in interi)
+		if i.name not in fatturati
+		and not (i.session_cycle and i.session_cycle in interi)
+		# an entry of a subscription is paid with its instalments
+		and not i.subscription
 	]
