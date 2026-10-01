@@ -942,28 +942,11 @@ const formattedDateTime = computed(() => {
     return `${__('All Day')} - ${date.format('ddd, D MMM YYYY')}`
   }
 
-  let start = dayjs(_event.value.fromDate + ' ' + _event.value.fromTime)
-  let end = dayjs(_event.value.toDate + ' ' + _event.value.toTime)
+  // the system's clock, which Frappe only knows as 24 hours (HH:mm)
+  const start = dayjs(_event.value.fromDate + ' ' + _event.value.fromTime)
+  const end = dayjs(_event.value.toDate + ' ' + _event.value.toTime)
 
-  start = start.format('h:mm a')
-  end = end.format('h:mm a')
-
-  if (start.includes(':00')) {
-    start = start.replace(':00', '')
-  }
-
-  if (end.includes(':00')) {
-    end = end.replace(':00', '')
-  }
-
-  if (
-    (start.includes(' am') && end.includes(' am')) ||
-    (start.includes(' pm') && end.includes(' pm'))
-  ) {
-    start = start.replace(' am', '').replace(' pm', '')
-  }
-
-  return `${start} - ${end} ${date.format('ddd, D MMM YYYY')}`
+  return `${start.format('HH:mm')} - ${end.format('HH:mm')} ${date.format('ddd, D MMM YYYY')}`
 })
 
 // Saved as the colour's hex. It used to be saved as the CSS variable behind

@@ -202,6 +202,8 @@
         allowCustomClickEvents: true,
         enableShortcuts: false,
         noBorder: true,
+        // the system's clock: Frappe only knows it as 24 hours (HH:mm)
+        timeFormat: '24h',
       }"
       :events="calendarItems"
       :onClick="showDetails"

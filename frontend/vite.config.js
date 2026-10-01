@@ -3,12 +3,15 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
+import frappeUiNellaLingua from './vite/frappeUi.js'
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
   const isDev = mode === 'development'
   const config = {
     plugins: [
+      // frappe-ui's own words in the user's language, not English (vite/frappeUi.js)
+      frappeUiNellaLingua(),
       vue(),
       vueJsx(),
       VitePWA({
