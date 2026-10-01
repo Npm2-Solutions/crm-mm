@@ -207,7 +207,10 @@ of their own, linked to the parent, never the parent's record.
 | `crm/area/chat.py` + `chat_regole.py` | The chat about hours and bookings, for any centre: emergency words get 112 before any model, health goes to a person, the rest only from what the centre wrote |
 | `crm/area/passkey.py`, `crm/area/avvisi.py` | Passkeys (WebAuthn); news by WhatsApp or SMS besides the email, only to the person's own number that wrote to the centre (`CRM Area Settings`) |
 | `frontend/src/area/`, `frontend/vite.area.config.js`, `frontend/area.html` | The area's app, built apart into `/assets/crm/area` (`yarn build:area`, run by `yarn build`); its words in `it.js`, the vertical's first |
-| `frontend/src/components/Area/` | The person's "Client area" tab: who enters, the board, the plans |
+| `frontend/src/components/Area/` | The person's "Client area" tab: who enters, the board, the plans, the preview |
+| `crm/area/anteprima.py` + `frontend/src/area/anteprima.js` | The centre's preview of a person's area (doc 41): `start` from the person's page ties it to the session for half an hour, before the invitation too, nothing sent; the area shows only what whoever previews reads in DottorCloud (`vede`, `filtra`: the rest keeps its place empty, `HiddenCard`), health data read go in the access log |
+
+A call of the area that only reads passes `anche_in_anteprima=True` to `_mia` (or `_utente`), and in a list keeps what the previewer does not read in its place (`anteprima.filtra`); one that writes, sends, books or downloads passes nothing: the preview refuses it.
 
 ### Plans and programmes (`crm/piani`, followed in the client area)
 | File | Role |
