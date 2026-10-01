@@ -15,6 +15,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, getdate
 
+from crm.area import anteprima
 from crm.area.api import _mia
 from crm.clinica import piani
 from crm.clinica import piani_regole as R
@@ -26,8 +27,11 @@ from crm.piani import regole
 def area_shopping_list(person: str, plan: str, start: str | None = None, days: int = 7) -> dict:
 	"""What to buy for the days ahead: the diet's foods and how much, the groups
 	to choose from with their portions. From two days back to five weeks ahead."""
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
 	doc = area_dei_piani.della_persona(person, plan)
+	# a diet is health data: in the centre's preview, only for who reads it
+	if not anteprima.vede(doc.doctype, doc.name):
+		frappe.throw(_("In this preview you do not read this plan"), frappe.PermissionError)
 	if doc.plan_type not in R.DIETE_TIPI:
 		frappe.throw(_("Only a diet has a shopping list"))
 	oggi = getdate()

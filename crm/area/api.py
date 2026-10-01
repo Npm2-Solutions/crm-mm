@@ -17,6 +17,9 @@ gives the person only what is theirs to see:
 - **invoices**, with their PDF;
 - **the places other modules add** (`sezioni`): the clinic's documents, plans and
   care plans answer from the clinic.
+
+The centre's preview (`anteprima`) goes through the same calls: the ones that only
+read say so (`anche_in_anteprima`), every other one answers that it is a preview.
 """
 
 from __future__ import annotations
@@ -28,19 +31,33 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 from frappe.utils import get_datetime, now_datetime
 
-from crm.area import accesso, sezioni
+from crm.area import accesso, anteprima, sezioni
 from crm.scheduling import abbonamenti, attese, cicli
 from crm.scheduling import attese_regole as R
 
 
-def _utente() -> str:
+def _utente(anche_in_anteprima: bool = False) -> str:
+	"""Who is in the area; the centre's preview too, for a call that only reads."""
 	utente = frappe.session.user
+	if anteprima.in_anteprima():
+		if not anche_in_anteprima:
+			anteprima.rifiuta()
+		return utente
 	if utente == "Guest" or not accesso.entra_nell_area(utente):
 		frappe.throw(_("Enter the area first"), frappe.PermissionError)
 	return utente
 
 
-def _mia(person: str) -> dict:
+def _mia(person: str, anche_in_anteprima: bool = False) -> dict:
+	"""The person, if the session was given their area: in the centre's preview,
+	the person previewed, for a call that only reads."""
+	vista = anteprima.in_anteprima()
+	if vista:
+		if not anche_in_anteprima:
+			anteprima.rifiuta()
+		if person != vista.lead:
+			frappe.throw(_("This is not your area"), frappe.PermissionError)
+		return frappe._dict(lead=vista.lead, lead_name=vista.lead_name, relation=accesso.SE_STESSO)
 	utente = _utente()
 	for riga in accesso.persone_di(utente):
 		if riga.lead == person:
@@ -54,15 +71,20 @@ def get_me() -> dict:
 	from crm.area import avvisi, chat, messaggi
 	from crm.moduli.richieste import nome_del_centro
 
-	utente = _utente()
-	persone = accesso.persone_di(utente)
-	frappe.db.set_value(
-		accesso.ACCESSO,
-		{"user": utente, "enabled": 1},
-		"last_seen_on",
-		now_datetime(),
-		update_modified=False,
-	)
+	utente = _utente(anche_in_anteprima=True)
+	vista = anteprima.in_anteprima()
+	if vista:
+		# the centre looks: the person's area, and nobody was seen in it
+		persone = [frappe._dict(lead=vista.lead, lead_name=vista.lead_name, relation=accesso.SE_STESSO)]
+	else:
+		persone = accesso.persone_di(utente)
+		frappe.db.set_value(
+			accesso.ACCESSO,
+			{"user": utente, "enabled": 1},
+			"last_seen_on",
+			now_datetime(),
+			update_modified=False,
+		)
 	return {
 		"user": utente,
 		"full_name": frappe.utils.get_fullname(utente),
@@ -83,6 +105,8 @@ def get_me() -> dict:
 		"chat": chat.attiva(),
 		# news also by WhatsApp or SMS, where the centre offers them
 		"notices": bool(avvisi.offerti()),
+		# the centre's preview: whose area, read only
+		"preview": {"lead": vista.lead, "lead_name": vista.lead_name} if vista else None,
 	}
 
 
@@ -105,7 +129,8 @@ def _link_di_gestione(riga) -> str | None:
 @frappe.whitelist()
 def get_appointments(person: str) -> dict:
 	"""The person's appointments: the next ones, and the last ones."""
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
+	vista = anteprima.in_anteprima()
 	righe = frappe.get_all(
 		"CRM Appointment Participant",
 		filters={"parenttype": "CRM Appointment", "party_type": "CRM Lead", "party": person},
@@ -123,6 +148,13 @@ def get_appointments(person: str) -> dict:
 			as_dict=True,
 		)
 		if not appuntamento:
+			continue
+		if vista and not anteprima.vede("CRM Appointment", appuntamento.name):
+			# in the centre's preview, an appointment whoever previews does not read
+			# keeps its place, with nothing of it
+			(prossimi if get_datetime(appuntamento.starts_on) >= adesso else passati).append(
+				{**anteprima.coperta(appuntamento), "starts_on": appuntamento.starts_on}
+			)
 			continue
 		annullato = "Cancelled" in (appuntamento.status, riga.status)
 		voce = {
@@ -148,8 +180,9 @@ def get_appointments(person: str) -> dict:
 			],
 		}
 		if get_datetime(appuntamento.starts_on) >= adesso and not annullato:
-			# moved or cancelled on the booking page, by the service's own rules
-			if appuntamento.service:
+			# moved or cancelled on the booking page, by the service's own rules; not
+			# from the centre's preview, which changes nothing
+			if appuntamento.service and not vista:
 				voce["manage_url"] = _link_di_gestione(riga)
 			prossimi.append(voce)
 		else:
@@ -190,7 +223,7 @@ def _prenotabili() -> list:
 def get_waiting_options(person: str) -> dict:
 	"""What one may wait for from the area: the services, who does them when one
 	may choose, the channels the offers go by, and the last day proposed."""
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
 	conf = _in_lista()
 	servizi = []
 	for servizio in _prenotabili():
@@ -344,7 +377,7 @@ def get_forms(person: str) -> dict:
 	are under way, and whether who is in signs them (design.md, "Prepara la visita")."""
 	from crm.moduli import dovuti
 
-	riga = _mia(person)
+	riga = _mia(person, anche_in_anteprima=True)
 	prossimo = dovuti.prossimo_appuntamento(person)
 	# the person's own forms, those with health data too: they are theirs to fill
 	voci = dovuti.dovuti([person], {person: prossimo}, clinici=True)[person]
@@ -399,7 +432,7 @@ def _da_riprendere(person: str, firma: dict, scelti: set[str]):
 
 @frappe.whitelist(methods=["POST"])
 @rate_limit(limit=30, seconds=60 * 60)
-def fill_forms(person: str, templates) -> dict:
+def fill_forms(person: str, templates: str | list) -> dict:
 	"""The forms page for these forms, already open: who is in came with a code, so
 	the page asks for none. Returns its link and its session."""
 	from frappe.utils import add_to_date
@@ -461,18 +494,21 @@ def _fatture(person: str) -> list:
 
 @frappe.whitelist()
 def get_invoices(person: str) -> dict:
-	_mia(person)
+	_mia(person, anche_in_anteprima=True)
 	return {
-		"invoices": [
-			{
-				"name": f.name,
-				"number": f.document_number or f.name,
-				"date": f.posting_date,
-				"total": f.grand_total,
-				"has_pdf": bool(f.pdf_file),
-			}
-			for f in _fatture(person)
-		]
+		"invoices": anteprima.filtra(
+			"CRM Invoice",
+			[
+				{
+					"name": f.name,
+					"number": f.document_number or f.name,
+					"date": f.posting_date,
+					"total": f.grand_total,
+					"has_pdf": bool(f.pdf_file),
+				}
+				for f in _fatture(person)
+			],
+		)
 	}
 
 

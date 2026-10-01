@@ -28,9 +28,12 @@ def get_context(context):
 		branding = page_branding()
 	except Exception:
 		branding = {"title": "", "logo": "", "logo_shape": ""}
+	from crm.area import anteprima
 	from crm.moduli.richieste import nome_del_centro
 
 	utente = frappe.session.user
+	# the centre's preview of a person's area: the staff's session, read only
+	vista = anteprima.in_anteprima()
 	# the product's brand - the vertical's - is the page's tab and its foot; the
 	# centre's logo and name lead at the top
 	context.marchio = marchio.per_le_pagine()
@@ -40,6 +43,8 @@ def get_context(context):
 		"user": utente,
 		# staff opening this page are told where their app is: the area is for clients
 		"staff": utente != "Guest" and frappe.db.get_value("User", utente, "user_type") == "System User",
+		# unless they opened a person's preview from that person's page
+		"preview": {"lead": vista.lead, "lead_name": vista.lead_name} if vista else None,
 		"lang": (frappe.local.lang or "it")[:2],
 		"centre": centro,
 		"logo": branding.get("logo") or "",

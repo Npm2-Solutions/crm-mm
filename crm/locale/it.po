@@ -35840,3 +35840,19 @@ msgstr "Dalla libreria di {brand}"
 #: frontend/src/components/Settings/Plans/ExerciseEditDialog.vue
 msgid "originally “{0}”"
 msgstr "in origine «{0}»"
+
+#: frontend/src/components/Area/AreaAccessCard.vue
+msgid "See the area as this person sees it: nothing reaches them"
+msgstr "Vedi l'area come la vede questa persona: non le arriva niente"
+
+#: crm/area/anteprima.py
+msgid "Only the centre previews an area"
+msgstr "Solo il centro può vedere l'anteprima di un'area"
+
+#: crm/area/anteprima.py
+msgid "This is a preview: from here nothing is changed and nothing is sent"
+msgstr "Questa è un'anteprima: da qui non si cambia e non si manda niente"
+
+#: crm/piani/area.py
+msgid "In this preview you do not read this plan"
+msgstr "In questa anteprima non puoi leggere questo piano"
