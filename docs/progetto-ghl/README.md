@@ -63,6 +63,7 @@ accanto al CRM**, con i componenti collegati al CRM spediti da `crm/builder_file
 | [29](./29-telefono.md) | Il CRM sul telefono | ✅ fatto | Ogni pagina, dialogo e sezione delle impostazioni guardati con Playwright su un telefono simulato e percorsi col dito: niente più azioni solo al passaggio del mouse, titoli sulla descrizione, controlli spinti fuori dallo schermo o da 16px. Le regole per le prossime schermate |
 | [30](./30-ruoli-e-permessi.md) | Ruoli e permessi: chi può fare cosa, modulo per modulo | 🟡 proposta | Livelli come Role Profile, ruoli come mattoni dei moduli, capacità controllate dal server; ogni modulo porta le sue. Le impostazioni divise fra centro e agenzia, l'ambito che segue la persona |
 | [31](./31-impostazioni-in-ordine.md) | Le impostazioni in ordine | ✅ fatto | Da 48 voci in sedici gruppi a 33 in undici, un gruppo per ogni parte del lavoro del centro come nel menu dell'app; le pagine dello stesso argomento diventano le schede di una voce, come Meta, e i vecchi nomi aprono ancora la scheda giusta. Il menu tutto in italiano |
+| [32](./32-un-segno-per-posto.md) | Un segno per posto: il centro in alto, DottorCloud in fondo | ✅ fatto | Niente più loghi affiancati: la barra laterale porta il logo di DottorCloud, come vuole il design system; dove una persona ha a che fare con il centro (prenotazione, moduli, la sua area) in alto c'è il centro, com'è disegnato il suo logo, e DottorCloud firma in fondo. Nome e logo spiegati, con l'anteprima |
 
 ## Architettura complessiva
 

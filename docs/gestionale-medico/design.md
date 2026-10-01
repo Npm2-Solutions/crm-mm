@@ -551,7 +551,9 @@ Una PR per riga, ognuna utile da sola:
    le sue, e i verticali con le loro parole: con la clinica è l'area pazienti
    (fatto il 30/09/2026);
 3. il marchio del verticale: nome, logo, colori, icona e favicon dappertutto, il
-   logo del centro al massimo accanto (fatto il 30/09/2026);
+   logo del centro al massimo accanto (fatto il 30/09/2026); poi un segno per
+   posto, il centro in alto e DottorCloud in fondo
+   ([doc 32](../progetto-ghl/32-un-segno-per-posto.md), 01/10/2026);
 4. piani, programmi ed esercizi nel CRM; alimentazione e riabilitazione restano alla
    clinica (fatto il 30/09/2026);
 5. i documenti della persona e la consegna nel CRM; i referti restano alla clinica
