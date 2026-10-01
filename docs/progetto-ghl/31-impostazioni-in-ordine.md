@@ -124,13 +124,13 @@ chiamate", "Impostazioni > Agenda > Servizi > Abbonamenti".
 | File | Cosa fa |
 |---|---|
 | `frontend/src/utils/impostazioni.js` | Il menu come dati: gruppi, voci, schede, chi vede cosa (`condition` sulla sessione: `puo`, `ambito`, `whatsapp`, `verticale`). `menuDi()` il menu di una persona, `trova()` la voce e la scheda che un nome apre, `pagine()` tutte le pagine — puro, testato |
-| `frontend/src/components/Settings/Settings.vue` | Il modale: con cosa si disegna ogni pagina (`PAGINE`) e ogni voce (`ICONE`), il resto lo legge dai dati |
+| `frontend/src/components/Settings/Settings.vue` | Il modale: con cosa si disegna ogni pagina (`PAGINE`) e ogni categoria (`ICONE`, dal doc 35), il resto lo legge dai dati |
 | `frontend/src/components/Settings/SettingsHub.vue` | Una voce con più schede: la fila in alto (frecce comprese), la pagina sotto che scorre; la scheda aperta è `activeSettingsPage` |
 | `crm/tests/test_impostazioni.py` | Ogni pagina che il server nomina esiste nel menu |
 
 Una pagina nuova: una riga nel menu (`utils/impostazioni.js`, nel gruppo della
 parte del lavoro a cui appartiene, come voce o come scheda di una voce che c'è
-già), una in `PAGINE`, l'icona se è una voce, la traduzione. Un gruppo nuovo solo
+già), una in `PAGINE`, la sua riga di descrizione (doc 35), la traduzione. Un gruppo nuovo solo
 per una parte del lavoro che l'app non ha ancora.
 
 ## Test
