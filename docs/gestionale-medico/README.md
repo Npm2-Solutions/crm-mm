@@ -22,7 +22,7 @@ Le richieste puntuali (livelli, Sito senza Builder, moduli con firma, archivio,
 area cliente), verificate sul codice, sono in [requisiti.md](./requisiti.md).
 Obblighi, concorrenti ed ecosistema Frappe, con le fonti, sono in
 [ricerca.md](./ricerca.md). Il design, con i tre strati (CRM, fatturazione,
-clinica), è in [design.md](./design.md); il listino proposto in
+clinica), è in [design.md](./design.md); il listino in
 [listino.md](./listino.md); ruoli e permessi nel
 [doc 30](../progetto-ghl/30-ruoli-e-permessi.md).
 
