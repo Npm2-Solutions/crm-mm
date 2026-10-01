@@ -153,6 +153,10 @@ msgstr ""
 msgid "A Lead requires either a person's name or an organization's name"
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "A closed subscription is not suspended"
+msgstr "Un abbonamento chiuso non si sospende"
+
 #: crm/lead_syncing/doctype/lead_sync_source/lead_sync_source.py:49
 msgid "A lead sync source is already enabled for this Facebook Lead Form!"
 msgstr ""
@@ -168,6 +172,10 @@ msgstr "Serve un numero di telefono"
 #: crm/scheduling/attese.py
 msgid "A place has freed up: {0}, {1}"
 msgstr "Si è liberato un posto: {0}, {1}"
+
+#: crm/scheduling/abbonamenti.py
+msgid "A type called {0} exists already"
+msgstr "Esiste già un tipo che si chiama {0}"
 
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.py:257
 msgid "A valid call log is required."
@@ -615,6 +623,10 @@ msgstr "Un file icona con estensione .ico. Deve essere 16 x 16 px. Generato util
 msgid "An image with 1:1 & 2:1 ratio is preferred"
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "An instalment is invoiced: close it instead"
+msgstr "Una rata è fatturata: chiudilo invece"
+
 #: crm/scheduling/attese.py
 msgid "An offer is waiting for this person's answer already"
 msgstr "C'è già una proposta che aspetta la risposta di questa persona"
@@ -1057,6 +1069,10 @@ msgstr ""
 #: crm/scheduling/attese.py
 msgid "Booked from the waiting list"
 msgstr "Prenotato dalla lista d'attesa"
+
+#: crm/scheduling/abbonamenti.py
+msgid "Both days are needed"
+msgstr "Servono tutti e due i giorni"
 
 #: frontend/src/components/Settings/Settings.vue:137
 msgid "Brand"
@@ -1517,6 +1533,14 @@ msgstr ""
 msgid "Choose the days of the week when this rule should be active."
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "Choose the services it comprises"
+msgstr "Scegli i servizi che comprende"
+
+#: crm/scheduling/abbonamenti.py
+msgid "Choose the type of subscription"
+msgstr "Scegli il tipo di abbonamento"
+
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:107
 msgid "Choose which leads/deals are affected by this policy."
 msgstr ""
@@ -1670,6 +1694,10 @@ msgstr "Completa la Registrazione"
 #: frontend/src/utils/callLog.js:62
 msgid "Completed"
 msgstr "Completato"
+
+#: crm/scheduling/abbonamenti.py
+msgid "Comprised in the subscription {0}"
+msgstr "Compreso nell'abbonamento {0}"
 
 #. Option for the 'Device' (Select) field in DocType 'CRM Telephony Agent'
 #: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
@@ -3083,6 +3111,10 @@ msgstr ""
 msgid "Enter {0}"
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "Entries are used already: close it instead"
+msgstr "Ci sono già ingressi usati: chiudilo invece"
+
 #: frontend/src/components/Filter.vue:67 frontend/src/components/Filter.vue:100
 #: frontend/src/components/Filter.vue:273
 #: frontend/src/components/Filter.vue:294
@@ -3620,6 +3652,10 @@ msgstr ""
 msgid "From the same page you can leave the waiting list."
 msgstr "Dalla stessa pagina puoi uscire dalla lista d'attesa."
 
+#: crm/scheduling/abbonamenti.py
+msgid "Give the type a name"
+msgstr "Dai un nome al tipo"
+
 #: crm/scheduling/attese.py
 msgid "Hi {0},"
 msgstr "Ciao {0},"
@@ -3627,6 +3663,18 @@ msgstr "Ciao {0},"
 #: crm/scheduling/attese.py
 msgid "It is yours if you confirm by {0}; then it goes to the next person waiting."
 msgstr "È tuo se confermi entro {0}; poi va a chi aspetta dopo di te."
+
+#: crm/scheduling/abbonamenti.py
+msgid "It overlaps another suspension"
+msgstr "Si sovrappone a un'altra sospensione"
+
+#: crm/scheduling/abbonamenti.py
+msgid "It renews by itself the day after."
+msgstr "Si rinnova da solo il giorno dopo."
+
+#: crm/scheduling/abbonamenti.py
+msgid "Left as a draft: {0}"
+msgstr "Rimasta in bozza: {0}"
 
 #: frontend/src/components/Settings/emailConfig.js:81
 msgid "Mail server address"
@@ -4927,6 +4975,10 @@ msgstr "Mensile"
 msgid "More Options"
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "More days than the type allows"
+msgstr "Più giorni di quanti ne consenta il tipo"
+
 #: frontend/src/pages/PersonaForm.vue:113
 msgid "More than 20"
 msgstr ""
@@ -5249,6 +5301,10 @@ msgstr ""
 msgid "No email or mobile on file: call them"
 msgstr "Nessuna email né cellulare: chiamala"
 
+#: crm/scheduling/abbonamenti.py
+msgid "No entry is left that day"
+msgstr "Quel giorno non resta nessun ingresso"
+
 #: frontend/src/components/Activities/EventArea.vue:75
 msgid "No events coming up. Create a new one to keep things on track."
 msgstr ""
@@ -5261,11 +5317,19 @@ msgstr ""
 msgid "No matching users"
 msgstr ""
 
+#: crm/invoicing/api.py
+msgid "No provider for this subscription: the qualification decides the expense type and the VAT regime, so it cannot be left to a default"
+msgstr "Nessun erogatore per questo abbonamento: la qualifica decide il tipo di spesa e il regime IVA, quindi non si può lasciare a un valore predefinito"
+
 #: frontend/src/components/Calendar/Attendee.vue:215
 #: frontend/src/components/Controls/EmailMultiSelect.vue:133
 #: frontend/src/components/frappe-ui/Autocomplete.vue:119
 msgid "No results found"
 msgstr ""
+
+#: crm/scheduling/abbonamenti.py
+msgid "No such instalment"
+msgstr "Questa rata non esiste"
 
 #: frontend/src/components/Settings/Hierarchy/UserMultiSelect.vue:64
 msgid "No users found"
@@ -7572,6 +7636,10 @@ msgstr "La lezione è di un altro servizio"
 msgid "The class of {0}, when a seat frees up"
 msgstr "La lezione di {0}, quando si libera un posto"
 
+#: crm/scheduling/abbonamenti.py
+msgid "The first day does not change once entries are used or instalments invoiced"
+msgstr "Il primo giorno non cambia quando ci sono ingressi usati o rate fatturate"
+
 #: crm/moduli/compilazioni.py
 msgid "The form is not complete"
 msgstr "Il modulo non è completo"
@@ -7594,6 +7662,18 @@ msgstr ""
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "The rate used to convert the organization’s currency to your crm's base currency (set in CRM Settings). It is set once when the currency is first added and doesn't change automatically."
 msgstr ""
+
+#: crm/scheduling/abbonamenti.py
+msgid "The subscription does not comprise this service, or is of somebody else"
+msgstr "L'abbonamento non comprende questo servizio, o è di un'altra persona"
+
+#: crm/scheduling/abbonamenti.py
+msgid "The suspension ends before it starts"
+msgstr "La sospensione finisce prima di cominciare"
+
+#: crm/scheduling/abbonamenti.py
+msgid "The suspension starts outside the subscription"
+msgstr "La sospensione comincia fuori dall'abbonamento"
 
 #: crm/scheduling/attese_pubblico.py
 msgid "The waiting list is not open online"
@@ -7631,6 +7711,14 @@ msgstr "Questo modello WhatsApp non esiste"
 msgid "This Year"
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "This appointment is a session of a cycle"
+msgstr "Questo appuntamento è una seduta di un ciclo"
+
+#: crm/invoicing/api.py
+msgid "This appointment is comprised in a subscription: its instalments are invoiced"
+msgstr "Questo appuntamento è compreso in un abbonamento: si fatturano le sue rate"
+
 #: crm/fcrm/doctype/crm_waiting_list_entry/crm_waiting_list_entry.py
 msgid "This class is not going ahead"
 msgstr "Questa lezione non si fa"
@@ -7667,6 +7755,10 @@ msgstr ""
 msgid "This form is not on the website"
 msgstr "Questo modulo non è sul sito"
 
+#: crm/invoicing/api.py
+msgid "This instalment is invoiced already: {0}"
+msgstr "Questa rata è già fatturata: {0}"
+
 #: frontend/src/pages/PersonaForm.vue:58
 msgid "This is my first CRM"
 msgstr ""
@@ -7702,6 +7794,26 @@ msgstr ""
 #: crm/area/api.py
 msgid "This service is not booked online"
 msgstr "Questo servizio non si prenota online"
+
+#: crm/scheduling/abbonamenti.py
+msgid "This subscription cannot be suspended"
+msgstr "Questo abbonamento non si può sospendere"
+
+#: crm/scheduling/abbonamenti.py
+msgid "This subscription has no fiscal card: its instalments are not invoiced"
+msgstr "Questo abbonamento non ha una scheda fiscale: le sue rate non si fatturano"
+
+#: crm/scheduling/abbonamenti.py
+msgid "This subscription is renewed already: {0}"
+msgstr "Questo abbonamento è già rinnovato: {0}"
+
+#: crm/scheduling/abbonamenti.py
+msgid "This type is sold already: switch it off instead"
+msgstr "Questo tipo è già stato venduto: toglilo dalla vendita invece"
+
+#: crm/scheduling/abbonamenti.py
+msgid "This type of subscription is not sold any more"
+msgstr "Questo tipo di abbonamento non si vende più"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:60
 msgid "This will delete selected items and items linked to it, are you sure?"
@@ -7814,6 +7926,10 @@ msgstr ""
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
 msgid "To User"
 msgstr ""
+
+#: crm/scheduling/abbonamenti.py
+msgid "To go on, renew it at the desk or answer this email."
+msgstr "Per continuare, rinnovalo in segreteria o rispondi a questa email."
 
 #: frontend/src/components/Settings/EmailEdit.vue:121
 msgid "To know more about setting up email accounts, click"
@@ -8554,6 +8670,10 @@ msgstr ""
 msgid "Your old conditions will be overwritten. Are you sure you want to save?"
 msgstr ""
 
+#: crm/scheduling/abbonamenti.py
+msgid "Your subscription ends soon: {0}"
+msgstr "Il tuo abbonamento sta per scadere: {0}"
+
 #: frontend/src/pages/PersonaForm.vue:62
 msgid "Zoho CRM"
 msgstr ""
@@ -9004,6 +9124,10 @@ msgstr "giallo"
 msgid "yesterday"
 msgstr "ieri"
 
+#: crm/scheduling/abbonamenti.py
+msgid "your subscription {0} at {1} ends soon. Last day: {2}."
+msgstr "il tuo abbonamento {0} da {1} sta per scadere. Ultimo giorno: {2}."
+
 #: frontend/src/components/Settings/Sla/utils.js:254
 msgid "{0} (Invalid time format)"
 msgstr ""
@@ -9138,6 +9262,10 @@ msgstr ""
 #: crm/scheduling/attese.py
 msgid "{0}: a place has freed up for {1}, {2}. It is yours if you confirm by {3}: {4}"
 msgstr "{0}: si è liberato un posto per {1}, {2}. È tuo se confermi entro {3}: {4}"
+
+#: crm/invoicing/api.py
+msgid "{0}: subscription {1}"
+msgstr "{0}: abbonamento {1}"
 
 #: frontend/src/utils/scriptHelpers.js:43
 msgid "⚠️ Avoid using \"trigger\" as a field name — it conflicts with the built-in trigger() method."
