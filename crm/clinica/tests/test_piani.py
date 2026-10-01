@@ -117,7 +117,8 @@ class ChiScrive(PianiCase):
 		self.pubblica()
 		# the desk reads plans, but not a diet: health data, read like a visit
 		self.come(DESK)
-		self.assertEqual(piani.get_plans(self.anna.name), {"plans": [], "kinds": []})
+		fatto = piani.get_plans(self.anna.name)
+		self.assertEqual((fatto["plans"], fatto["kinds"]), ([], []))
 		with self.assertRaises(frappe.PermissionError):
 			piani.save_plan(self.anna.name, json.dumps(self.menu()))
 		self.come(SALES)

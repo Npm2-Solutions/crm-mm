@@ -153,7 +153,8 @@
         title == 'Forms' ||
         title == 'Area' ||
         title == 'Documents' ||
-        title == 'Quotes'
+        title == 'Quotes' ||
+        title == 'Plans'
       "
     />
     <Dropdown

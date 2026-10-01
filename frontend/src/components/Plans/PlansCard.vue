@@ -1,93 +1,177 @@
 <!--
-  The person's plans: a training, habits, and the kinds a module brings - the
-  clinic's diets and exercises at home. Each is written by whoever's
-  qualification allows its kind, and followed by the person in their area; here,
-  how the last week went. The kinds come from the server (crm.piani.api).
+  The person's plans, a tab of their page: a training, habits, and the kinds a
+  module brings - the clinic's diets and exercises at home. Each is written by
+  whoever's qualification allows its kind, and followed by the person in their
+  area; here, how the last week went. What a plan is and how it goes is said
+  above it; with none yet, the kinds one may write are the choices, each saying
+  what it is. The kinds come from the server (crm.piani.api).
 -->
 <template>
-  <section
-    v-if="plans.data"
-    class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
-  >
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">{{ __('Plans') }}</h3>
+  <section v-if="plans.data" class="flex flex-col gap-5">
+    <div
+      class="flex items-start justify-between gap-4 max-md:flex-col max-md:gap-3"
+    >
+      <!-- the tab's header names it: here, what a plan is -->
+      <div class="flex min-w-0 max-w-2xl flex-col gap-1">
+        <p class="text-p-base text-ink-gray-6">
+          {{
+            __(
+              'What the person follows between one appointment and the next: a training, habits, a diet, exercises at home. You write it here and publish it; they find it in their area and tick off what they do.',
+            )
+          }}
+        </p>
+      </div>
       <Dropdown
-        v-if="plans.data.kinds.length"
+        v-if="plans.data.kinds.length && !vuoto"
         :options="newOptions"
         placement="right"
       >
-        <Button class="shrink-0" icon-left="plus" :label="__('New plan')" />
+        <Button
+          class="shrink-0"
+          variant="solid"
+          icon-left="plus"
+          :label="__('New plan')"
+        />
       </Dropdown>
     </div>
-    <!-- the programmes: stages that open with time, or one after the other -->
-    <button
-      v-for="programme in programmes.data?.programmes || []"
-      :key="programme.name"
-      type="button"
-      class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
-      @click="openProgramme(programme.name)"
+
+    <!-- a published plan reaches the person only through their area -->
+    <div
+      v-if="avvisoArea"
+      class="flex gap-2 rounded-lg bg-surface-amber-1 px-3 py-2.5 text-p-sm text-ink-amber-8"
     >
-      <span class="flex min-w-0 flex-col">
-        <span class="truncate text-base text-ink-gray-8">
-          {{ programme.title }}
-        </span>
-        <span class="text-p-sm text-ink-gray-5">
-          {{ __('Programme') }} ·
-          {{
-            programme.open_stage === null
-              ? __('{0} stages', [programme.stages])
-              : __('stage {0} of {1}', [
-                  programme.open_stage + 1,
-                  programme.stages,
-                ])
-          }}
-          · {{ programme.practitioner_name }}
-        </span>
-      </span>
-      <Badge
-        class="shrink-0"
-        variant="subtle"
-        :theme="statusTheme[programme.status] || 'gray'"
-        :label="__(programme.status)"
-      />
-    </button>
-    <p
-      v-if="!plans.data.plans.length && !programmes.data?.programmes?.length"
-      class="text-p-sm text-ink-gray-5"
-    >
-      {{
-        __(
-          'No plans yet. Written here, a plan is followed by the person in their area, one tap at a time.',
-        )
-      }}
-    </p>
-    <button
-      v-for="plan in plans.data.plans"
-      :key="plan.name"
-      type="button"
-      class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
-      @click="open(plan.name)"
-    >
-      <span class="flex min-w-0 flex-col">
-        <span class="truncate text-base text-ink-gray-8">{{ plan.title }}</span>
-        <span class="text-p-sm text-ink-gray-5">
-          {{ __(plan.plan_type) }} · {{ plan.practitioner_name }}
-        </span>
-      </span>
-      <span class="flex shrink-0 items-center gap-2">
-        <span
-          v-if="plan.status === 'Published'"
-          class="text-p-xs text-ink-gray-5 max-md:hidden"
+      <span class="lucide-info mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <span>{{ avvisoArea }}</span>
+    </div>
+
+    <!-- none yet: how it goes, and what one may write -->
+    <template v-if="vuoto">
+      <ol class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
+        <li
+          v-for="(passo, i) in COME_FUNZIONA"
+          :key="passo"
+          class="flex gap-3 rounded-lg bg-surface-gray-1 p-3"
         >
-          {{ __('{0} done this week', [plan.summary.Done]) }}
+          <span
+            class="grid size-6 shrink-0 place-items-center rounded-full bg-surface-gray-3 text-p-sm font-medium text-ink-gray-7"
+            aria-hidden="true"
+          >
+            {{ i + 1 }}
+          </span>
+          <span class="text-p-sm text-ink-gray-7">{{ __(passo) }}</span>
+        </li>
+      </ol>
+      <div v-if="plans.data.kinds.length" class="flex flex-col gap-2">
+        <h4 class="text-base-medium text-ink-gray-8">
+          {{ __('What do you want to write?') }}
+        </h4>
+        <ul class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+          <li v-for="kind in plans.data.kinds" :key="kind.key">
+            <button
+              type="button"
+              class="flex h-full w-full flex-col gap-1 rounded-lg border border-outline-gray-2 p-4 text-left hover:border-outline-gray-3 hover:bg-surface-gray-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+              @click="nuovo(kind)"
+            >
+              <span class="text-base-medium text-ink-gray-8">
+                {{ __(kind.key) }}
+              </span>
+              <span v-if="kind.description" class="text-p-sm text-ink-gray-6">
+                {{ __(kind.description) }}
+              </span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              class="flex h-full w-full flex-col gap-1 rounded-lg border border-dashed border-outline-gray-3 p-4 text-left hover:bg-surface-gray-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+              @click="nuovoProgramma"
+            >
+              <span class="text-base-medium text-ink-gray-8">
+                {{ __('Programme of stages') }}
+              </span>
+              <span class="text-p-sm text-ink-gray-6">
+                {{
+                  __(
+                    'Several plans in a row: opened one after the other, or as the weeks go by.',
+                  )
+                }}
+              </span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <p v-else class="text-p-sm text-ink-gray-5">
+        {{
+          __(
+            'No plans yet. A practitioner writes them here, and the person follows them in their area.',
+          )
+        }}
+      </p>
+    </template>
+
+    <div v-else class="flex flex-col gap-1">
+      <!-- the programmes: stages that open with time, or one after the other -->
+      <button
+        v-for="programme in programmes.data?.programmes || []"
+        :key="programme.name"
+        type="button"
+        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+        @click="openProgramme(programme.name)"
+      >
+        <span class="flex min-w-0 flex-col">
+          <span class="truncate text-base text-ink-gray-8">
+            {{ programme.title }}
+          </span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ __('Programme') }} ·
+            {{
+              programme.open_stage === null
+                ? __('{0} stages', [programme.stages])
+                : __('stage {0} of {1}', [
+                    programme.open_stage + 1,
+                    programme.stages,
+                  ])
+            }}
+            · {{ programme.practitioner_name }}
+          </span>
         </span>
         <Badge
+          class="shrink-0"
           variant="subtle"
-          :theme="statusTheme[plan.status] || 'gray'"
-          :label="__(plan.status)"
+          :theme="statusTheme[programme.status] || 'gray'"
+          :label="__(programme.status)"
         />
-      </span>
-    </button>
+      </button>
+      <button
+        v-for="plan in plans.data.plans"
+        :key="plan.name"
+        type="button"
+        class="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-gray-2 focus-visible:bg-surface-gray-2 focus-visible:outline-none"
+        @click="open(plan.name)"
+      >
+        <span class="flex min-w-0 flex-col">
+          <span class="truncate text-base text-ink-gray-8">{{
+            plan.title
+          }}</span>
+          <span class="text-p-sm text-ink-gray-5">
+            {{ __(plan.plan_type) }} · {{ plan.practitioner_name }}
+          </span>
+        </span>
+        <span class="flex shrink-0 items-center gap-2">
+          <span
+            v-if="plan.status === 'Published'"
+            class="text-p-xs text-ink-gray-5 max-md:hidden"
+          >
+            {{ __('{0} done this week', [plan.summary.Done]) }}
+          </span>
+          <Badge
+            variant="subtle"
+            :theme="statusTheme[plan.status] || 'gray'"
+            :label="__(plan.status)"
+          />
+        </span>
+      </button>
+    </div>
     <PlanDialog
       v-model="dialog.show"
       :lead="lead"
@@ -142,15 +226,50 @@ watch(
 
 const dialog = reactive({ show: false, name: null, kind: null })
 
+// how a plan goes, for whoever writes the first one
+const COME_FUNZIONA = [
+  'Choose what to write: a training, habits, a diet, exercises at home.',
+  'Write the moments - breakfast, Monday morning - and what to do in each; exercises and foods come from the libraries.',
+  'Publish it: the person finds it in their area and ticks off what they do. Here you see how their week went.',
+]
+
+// none yet, of plans or programmes
+const vuoto = computed(
+  () => !plans.data?.plans?.length && !programmes.data?.programmes?.length,
+)
+
+// what keeps a published plan from the person
+const avvisoArea = computed(() => {
+  const area = plans.data?.area
+  if (!area || !plans.data.kinds.length) return ''
+  if (!area.on)
+    return __(
+      'The client area is not on: the person will not see the plans. It is added in Settings, The centre, Features.',
+    )
+  if (!area.open)
+    return __(
+      'The person does not enter their area yet: invite them from the Client area tab, so that they see the plans you publish.',
+    )
+  return ''
+})
+
+function nuovo(kind) {
+  Object.assign(dialog, { show: true, name: null, kind })
+}
+
+function nuovoProgramma() {
+  Object.assign(programmeDialog, { show: true, name: null })
+}
+
 // the kinds the author's qualification writes, and a programme of them
 const newOptions = computed(() => [
   ...(plans.data?.kinds || []).map((kind) => ({
     label: __(kind.key),
-    onClick: () => Object.assign(dialog, { show: true, name: null, kind }),
+    onClick: () => nuovo(kind),
   })),
   {
     label: __('Programme of stages'),
-    onClick: () => Object.assign(programmeDialog, { show: true, name: null }),
+    onClick: nuovoProgramma,
   },
 ])
 

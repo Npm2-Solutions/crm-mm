@@ -188,6 +188,7 @@ def descrivi_tipo(chiave: str) -> dict:
 		return {"key": chiave, "items": [], "features": []}
 	return {
 		"key": tipo.chiave,
+		"description": tipo.descrizione,
 		"items": list(tipo.generi),
 		"features": sorted(tipo.funzioni),
 		"clinical": tipo.clinico,
@@ -283,7 +284,17 @@ def get_plans(lead: str) -> dict:
 	return {
 		"plans": [_riga(doc, andamento.get(doc.name)) for doc in documenti],
 		"kinds": [descrivi_tipo(tipo) for tipo in tipi_consentiti()],
+		"area": _nell_area(lead),
 	}
+
+
+def _nell_area(lead: str) -> dict:
+	"""Whether a published plan reaches the person: the client area is on, and
+	somebody - the person, or who answers for them - enters it."""
+	from crm.area.accesso import accessi_aperti
+
+	acceso = livelli.stato_modulo("area", livelli.moduli_attivi()) != livelli.SPENTO
+	return {"on": acceso, "open": acceso and bool(accessi_aperti(lead))}
 
 
 def dettagli(genere_voce: str, nomi: set[str]) -> dict[str, dict]:

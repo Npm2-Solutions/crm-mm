@@ -78,6 +78,10 @@ PAROLE = {
 	"Cost per new client": "Cost per new patient",
 	# the first steps
 	"Your first client": "Your first patient",
+	# the person's plans, without the area
+	"The person does not enter their area yet: invite them from the Client area tab, so that they see the plans you publish.": (
+		"The person does not enter their area yet: invite them from the Patient area tab, so that they see the plans you publish."
+	),
 	# the marketing module, on the features page
 	"Automations, campaigns, Meta leads and spend, social, tracking, cost per new client, the website": (
 		"Automations, campaigns, Meta leads and spend, social, tracking, cost per new patient, the website"

@@ -92,6 +92,9 @@ class TipoPiano:
 	#: meals), "calories", "targets", "nutrients", "recipes", "shopping".
 	funzioni: frozenset[str] = frozenset()
 	ordine: int = 50
+	#: One line on what it is, in English: whoever chooses which plan to write
+	#: reads it.
+	descrizione: str = ""
 
 
 _generi: dict[str, GenereVoce] = {}
@@ -231,5 +234,19 @@ def _abitudine(voce: dict) -> Problema | None:
 registra_genere(GenereVoce(ESERCIZIO, ("exercise", "sets", "reps", "duration", "rest", "load"), _esercizio))
 #: A habit fits in any plan: water, a walk, sleep.
 registra_genere(GenereVoce(ABITUDINE, ("text",), _abitudine))
-registra_tipo(TipoPiano(ALLENAMENTO, (ESERCIZIO, ABITUDINE), ordine=30))
-registra_tipo(TipoPiano(ABITUDINI, (ABITUDINE,), ordine=50))
+registra_tipo(
+	TipoPiano(
+		ALLENAMENTO,
+		(ESERCIZIO, ABITUDINE),
+		ordine=30,
+		descrizione="Exercises for the days of the week, with sets, reps and rest.",
+	)
+)
+registra_tipo(
+	TipoPiano(
+		ABITUDINI,
+		(ABITUDINE,),
+		ordine=50,
+		descrizione="Small things to keep up every day: water, a walk, sleep.",
+	)
+)
