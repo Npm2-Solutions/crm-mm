@@ -6,12 +6,24 @@
 <style>
 @font-face { font-family: "Inter"; src: url(fonts/inter.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
 :root {
-  --ink-strong: #16201e; --ink: #262626; --muted: #737373; --faint: #a3a3a3;
-  --border: #e5e5e5; --bg: #f7f7f7; --card: #fff; --field: #f5f5f5;
-  --teal: #12a594; --teal-d: #0b6f64; --teal-s: #e1f5f1; --night: #111413; --mint: #5fe0cc;
-  --blue: #2f6fed; --blue-s: #e6eefe; --violet: #7c5cf0; --violet-s: #efeafe;
-  --amber: #d98a0b; --amber-s: #fdf2dc; --rose: #e0487a; --rose-s: #fde8ef;
-  --green: #1f9d55; --green-s: #e3f6ea; --wa: #25a35a; --ours: #2f6fed;
+  /* DottorCloud su Espresso: i grigi di frappe-ui tinti verso il verde del marchio (design-system/espresso/tokens.css) */
+  --s0: #ffffff; --s1: #f6f9f8; --s2: #f1f4f3; --s3: #ebeeed; --s4: #e0e3e2; --s5: #c4c8c7;
+  --ink-strong: #0e100f; --ink: #151817; --meta: #4e5352; --muted: #6a716f; --faint: #959b99;
+  --border: #e0e3e2; --line: #ebeeed; --bg: #f6f9f8; --card: #fff; --field: #f1f4f3;
+  --teal: #12a594; --teal-d: #0b6f64; --teal-dd: #095a51; --teal-s: #e1f5f1; --teal-200: #bfeae2; --teal-300: #8fdbcf; --teal-950: #0b2e2a;
+  --night: #111413; --mint: #5fe0cc; --deep: #0b2e2a; --on-deep: #e1f5f1; --on-deep-m: #8fc7bd;
+  --act: #0b6f64; --act-h: #095a51; --focus: #0e8a7c;
+  --success: #177a42; --success-s: #e3f6ea; --warning: #8a5300; --warning-s: #fdf2dc; --danger: #c8323c; --danger-s: #fdeaea; --info: #2459c9; --info-s: #e6eefe;
+  --blue: #2f6fed; --blue-s: #e6eefe; --blue-t: #2459c9; --violet: #7c5cf0; --violet-s: #efeafe; --violet-t: #5b3fd0;
+  --amber: #d98a0b; --amber-s: #fdf2dc; --amber-t: #8a5300; --rose: #e0487a; --rose-s: #fde8ef; --rose-t: #b02a5a;
+  --green: #1f9d55; --green-s: #e3f6ea; --green-t: #177a42; --wa: #177a42; --ours: #2f6fed;
+  /* la nuvola-D: tre angoli tondi, quello in basso a sinistra quasi dritto */
+  --tail: 3px; --tail-l: 5px;
+  --sh-sm: 0 0 1px rgba(11,46,42,.2), 0 1px 3px rgba(11,46,42,.14);
+  --sh-lg: 0 0 1.5px rgba(11,46,42,.18), 0 24px 30px -8px rgba(11,46,42,.14);
+  --sh-2xl: 0 0 1.5px rgba(11,46,42,.25), 0 60px 70px -14px rgba(11,46,42,.18);
+  --cross: polygon(34% 0, 66% 0, 66% 34%, 100% 34%, 100% 66%, 66% 66%, 66% 100%, 34% 100%, 34% 66%, 0 66%, 0 34%, 34% 34%);
+  --motif: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M16.5 10h7v6.5H30v7h-6.5V30h-7v-6.5H10v-7h6.5z'/%3E%3C/svg%3E");
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--night); }
@@ -23,189 +35,226 @@ body { font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; co
 .kin { display: inline; }
 .kin .kw { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .12em; margin-bottom: -.12em; }
 .kin .kw > span { display: inline-block; }
-svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-.dots { position: absolute; inset: -200px; background-image: radial-gradient(circle, rgba(255,255,255,.07) 1.5px, transparent 1.6px); background-size: 48px 48px; }
-.blob { position: absolute; border-radius: 50%; }
-.bgc { position: absolute; pointer-events: none; }
+.kin .kw.hl > span { color: var(--teal-d); }
+.dark .kin .kw.hl > span { color: var(--mint); }
+svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+/* la croce del marchio come segno, e il motivo delle croci solo negli angoli e dentro i blocchi */
+.x { display: inline-block; flex: none; width: .62em; height: .62em; background: currentColor; clip-path: var(--cross); }
+.dots { position: absolute; inset: -200px; background: rgba(95,224,204,.16); -webkit-mask: var(--motif) 0 0 / 56px 56px repeat;
+  clip-path: polygon(0 62%, 30% 62%, 30% 100%, 0 100%); }
+.blob { display: none; }
+.bgc { display: none; }
+/* i blocchi della copertina: verde scuro con il motivo, il verde del logo, la menta con la gobba, l'inchiostro */
+.blk { position: absolute; border-radius: 28px 28px 28px var(--tail-l); overflow: hidden; }
+.blk.deep { background: var(--teal-d); } .blk.brand { background: var(--teal); } .blk.mint { background: var(--mint); overflow: visible; } .blk.ink { background: var(--night); } .blk.dk2 { background: var(--deep); }
+.blk .mo { position: absolute; inset: 0; background: var(--mint); -webkit-mask: var(--motif) 0 0 / 64px 64px repeat; }
+.blk.mint::before { content: ""; position: absolute; left: 50%; top: 0; width: 46%; aspect-ratio: 1; margin-left: -23%; transform: translateY(-38%); border-radius: 50%; background: var(--mint); }
+.blk.ink .mo, .blk.dk2 .mo { background: rgba(95,224,204,.22); }
 
-.cap { color: var(--ink-strong); font-weight: 700; letter-spacing: -.035em; line-height: 1.04; }
+.cap { color: var(--ink-strong); font-weight: 800; letter-spacing: -.04em; line-height: 1.02; }
 .dark .cap { color: #fff; }
-.eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 600; color: var(--teal-d); background: var(--teal-s); padding: 10px 18px; border-radius: 999px; }
-.dark .eyebrow { color: var(--mint); background: rgba(95,224,204,.12); }
-.sub { font-size: 30px; font-weight: 500; color: var(--muted); letter-spacing: -.01em; line-height: 1.3; }
-.dark .sub { color: rgba(255,255,255,.62); }
+/* l'etichetta di sezione del sito: niente pillola, la croce e il maiuscoletto */
+.eyebrow { display: inline-flex; align-items: center; gap: 14px; font-size: 22px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-d); }
+.eyebrow::before { content: ""; width: 18px; height: 18px; background: var(--teal); clip-path: var(--cross); flex: none; }
+.eyebrow svg { display: none; }
+.dark .eyebrow { color: var(--mint); } .dark .eyebrow::before { background: var(--mint); }
+.sub { font-size: 30px; font-weight: 500; color: var(--meta); letter-spacing: -.012em; line-height: 1.3; }
+.dark .sub { color: rgba(255,255,255,.66); }
 .left { position: absolute; left: 110px; top: 0; bottom: 0; width: 640px; display: flex; flex-direction: column; justify-content: center; gap: 30px; }
 
-.win { position: absolute; background: var(--card); border-radius: 18px; overflow: hidden; border: 1px solid rgba(0,0,0,.08);
-  box-shadow: 0 40px 100px -20px rgba(16,40,36,.28), 0 12px 30px -10px rgba(0,0,0,.12); }
-.wbar { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--border); background: #fbfbfb; }
-.wbar i { width: 12px; height: 12px; border-radius: 50%; background: #e3e3e3; display: block; }
-.wbar .url { margin-left: 14px; height: 28px; border-radius: 8px; background: var(--field); padding: 0 12px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+/* le finestre del gestionale: Espresso, raggio 7 con la coda, ombra tinta */
+.win { position: absolute; background: var(--card); border-radius: 20px 20px 20px var(--tail-l); overflow: hidden; box-shadow: var(--sh-2xl), 0 0 0 1px rgba(11,46,42,.07); }
+.wbar { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--s1); }
+.wbar i { width: 12px; height: 12px; border-radius: 50%; background: var(--s4); display: block; }
+.wbar .url { margin-left: 14px; height: 28px; border-radius: 8px 8px 8px 2px; background: var(--s2); padding: 0 12px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); letter-spacing: .01em; }
 .wbar .url svg { font-size: 13px; }
-.wbar .br { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--ink-strong); letter-spacing: -.02em; }
-.wbar .br b { color: var(--teal); font-weight: 700; }
-.card { position: absolute; background: #fff; border-radius: 20px; box-shadow: 0 40px 100px -28px rgba(16,40,36,.32), 0 0 0 1px rgba(0,0,0,.05); }
-.floatb { position: absolute; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px; padding: 16px 24px 16px 16px; font-size: 20px; font-weight: 600; color: var(--ink-strong);
-  box-shadow: 0 24px 60px -16px rgba(16,40,36,.35), 0 0 0 1px rgba(0,0,0,.05); white-space: nowrap; z-index: 5; }
-.floatb .ib { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-size: 24px; flex: none; }
-.floatb small { display: block; font-size: 15px; color: var(--muted); font-weight: 500; margin-top: 2px; }
-.pill { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px; border-radius: 999px; font-size: 15px; font-weight: 600; white-space: nowrap; }
+.wbar .br { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.card { position: absolute; background: #fff; border-radius: 20px 20px 20px var(--tail-l); box-shadow: var(--sh-2xl), 0 0 0 1px rgba(11,46,42,.06); }
+.floatb { position: absolute; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px 16px 16px var(--tail); padding: 14px 24px 14px 14px; font-size: 20px; font-weight: 600; color: var(--ink-strong);
+  box-shadow: var(--sh-lg), 0 0 0 1px rgba(11,46,42,.07); white-space: nowrap; z-index: 5; letter-spacing: -.005em; }
+.floatb .ib { width: 46px; height: 46px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 22px; flex: none; }
+.floatb small { display: block; font-size: 15px; color: var(--muted); font-weight: 500; margin-top: 2px; letter-spacing: .005em; }
+/* il toast è un blocco: verde profondo, la coda, la menta per i segni */
+.floatb.toast { background: var(--deep); color: var(--on-deep); box-shadow: 0 30px 60px -20px rgba(11,46,42,.5); }
+.floatb.toast small { color: var(--on-deep-m); }
+.floatb.toast .ib { background: rgba(95,224,204,.14) !important; color: var(--mint) !important; }
+.pill { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px; border-radius: 999px; font-size: 15px; font-weight: 600; white-space: nowrap; letter-spacing: .01em; }
 .pill svg { font-size: 16px; }
-.tag { font-size: 14px; color: var(--muted); background: var(--field); border-radius: 7px; padding: 4px 10px; font-weight: 500; white-space: nowrap; }
-.btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 10px; background: var(--ink-strong); color: #fff; font-size: 17px; font-weight: 600; white-space: nowrap; }
-.btn.teal { background: var(--teal); }
-.av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 700; flex: none; }
-.h3 { font-size: 24px; font-weight: 700; color: var(--ink-strong); letter-spacing: -.02em; }
-.lbl { font-size: 14px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-.box { border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; background: #fff; }
+.pill .x { width: 10px; height: 10px; }
+.tag { font-size: 14px; color: var(--meta); background: var(--s2); border-radius: 7px; padding: 4px 10px; font-weight: 500; white-space: nowrap; letter-spacing: .01em; }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 11px 11px 11px var(--tail); background: var(--act); color: #fff; font-size: 17px; font-weight: 600; white-space: nowrap; letter-spacing: .01em; }
+.btn.teal { background: var(--act); }
+.btn.sub2 { background: var(--s2); color: var(--ink); border-radius: 11px; }
+.av { width: 40px; height: 40px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 15px; font-weight: 700; flex: none; letter-spacing: .02em; }
+.h3 { font-size: 24px; font-weight: 600; color: var(--ink-strong); letter-spacing: -.012em; }
+.lbl { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.box { border-radius: 14px 14px 14px var(--tail); padding: 18px 20px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
 
-.chipc { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 14px; padding: 14px 26px 14px 14px; border-radius: 999px;
-  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); color: #fff; font-size: 28px; font-weight: 600; white-space: nowrap; }
-.chipc .ic { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; color: #fff; }
+.chipc { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 14px; padding: 12px 26px 12px 12px; border-radius: 18px 18px 18px var(--tail);
+  background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px rgba(255,255,255,.13); color: #fff; font-size: 28px; font-weight: 600; white-space: nowrap; }
+.chipc .ic { width: 52px; height: 52px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 26px; color: #fff; }
 
 .chap { display: flex; align-items: center; justify-content: center; }
-.chap .row { display: flex; align-items: center; gap: 56px; }
-.chap .num { font-size: 26px; font-weight: 700; letter-spacing: .12em; opacity: .7; }
-.chap .word { font-size: 200px; font-weight: 800; letter-spacing: -.055em; line-height: .95; }
-.chap .csub { font-size: 36px; font-weight: 500; margin-top: 18px; opacity: .75; letter-spacing: -.01em; }
 
-.seg { display: inline-flex; background: var(--field); border-radius: 12px; padding: 5px; gap: 4px; position: relative; }
-.seg div { position: relative; z-index: 1; padding: 10px 20px; font-size: 17px; font-weight: 600; color: var(--muted); border-radius: 9px; }
-.seg .knob { position: absolute; z-index: 0; top: 5px; bottom: 5px; background: #fff; border-radius: 9px; box-shadow: 0 1px 3px rgba(0,0,0,.12); padding: 0; }
+/* il segmentato di Espresso: la voce scelta bianca, con la coda */
+.seg { display: inline-flex; background: var(--s2); border-radius: 12px; padding: 4px; gap: 2px; position: relative; }
+.seg div { position: relative; z-index: 1; padding: 9px 20px; font-size: 17px; font-weight: 600; color: var(--muted); border-radius: 9px; letter-spacing: .01em; }
+.seg .knob { position: absolute; z-index: 0; top: 4px; bottom: 4px; background: #fff; border-radius: 9px 9px 9px var(--tail); box-shadow: var(--sh-sm); padding: 0; }
 .view { position: absolute; left: 36px; right: 36px; top: 270px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.view .box b { display: block; font-size: 20px; color: var(--ink-strong); margin-top: 8px; }
+.view .box b { display: block; font-size: 20px; color: var(--ink-strong); margin-top: 8px; font-weight: 600; }
 .view .box span { font-size: 16px; color: var(--muted); }
-.lockbox { grid-column: span 2; border: 1px dashed #d4d4d4; border-radius: 14px; padding: 26px; display: flex; align-items: center; gap: 22px; background: repeating-linear-gradient(135deg, #fafafa 0 12px, #f4f4f4 12px 24px); }
-.lockbox .lk { width: 64px; height: 64px; border-radius: 16px; background: var(--ink-strong); color: #fff; display: grid; place-items: center; font-size: 30px; flex: none; }
+.lockbox { grid-column: span 2; border-radius: 14px 14px 14px var(--tail); padding: 26px; display: flex; align-items: center; gap: 22px; box-shadow: inset 0 0 0 1px var(--border);
+  background: repeating-linear-gradient(135deg, #f6f9f8 0 12px, #f1f4f3 12px 24px); }
+.lockbox .lk { width: 64px; height: 64px; border-radius: 50% 50% 50% 22%; background: var(--deep); color: var(--mint); display: grid; place-items: center; font-size: 28px; flex: none; }
 
 .ag { display: grid; position: relative; }
-.ag .colh { height: 66px; padding: 10px 14px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); }
-.ag .colh b { display: block; font-size: 16px; color: var(--ink-strong); white-space: nowrap; }
+.ag .colh { height: 66px; padding: 10px 14px; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); }
+.ag .colh b { display: block; font-size: 16px; color: var(--ink-strong); white-space: nowrap; font-weight: 600; }
 .ag .colh span { font-size: 13px; color: var(--muted); }
-.ag .hr { height: 88px; font-size: 13px; color: var(--faint); text-align: right; padding-right: 10px; transform: translateY(-8px); }
-.ag .cell { height: 88px; border-left: 1px solid var(--border); border-bottom: 1px solid #f0f0f0; }
-.appt { position: absolute; border-radius: 10px; padding: 9px 12px; overflow: hidden; border-left: 4px solid; }
-.appt b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; }
-.appt span { font-size: 13px; opacity: .85; white-space: nowrap; }
-.wl { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; background: #fff; }
-.wl b { font-size: 16px; color: var(--ink-strong); display: block; }
+.ag .hr { height: 88px; font-size: 13px; color: var(--muted); text-align: right; padding-right: 10px; transform: translateY(-8px); font-variant-numeric: tabular-nums; }
+.ag .cell { height: 88px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+/* l'evento in agenda: fondo tenue, la barretta della categoria, la coda */
+.appt { position: absolute; border-radius: 10px 10px 10px var(--tail); padding: 8px 12px 8px 14px; overflow: hidden; border-left: 0 !important; }
+.appt::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--bar, currentColor); }
+.appt b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; color: var(--ink-strong); }
+.appt span { font-size: 13px; white-space: nowrap; }
+.appt.solid { background: var(--act) !important; } .appt.solid b, .appt.solid span { color: #fff !important; } .appt.solid::before { background: var(--mint); }
+.nowl { position: absolute; left: 66px; right: 0; height: 2px; background: var(--teal); z-index: 4; }
+.nowl::before { content: ""; position: absolute; left: -8px; top: -7px; width: 16px; height: 16px; background: var(--teal); clip-path: var(--cross); }
+.nowl span { position: absolute; left: -62px; top: -11px; font-size: 12px; font-weight: 700; color: var(--teal-d); background: #fff; letter-spacing: .02em; }
+.wl { padding: 12px 14px; border-radius: 12px 12px 12px var(--tail); margin-bottom: 10px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+.wl b { font-size: 16px; color: var(--ink-strong); display: block; font-weight: 600; }
 .wl span { font-size: 13px; color: var(--muted); }
+.wl.hot { background: repeating-linear-gradient(135deg, #fffaf0 0 10px, #fdf2dc 10px 20px); box-shadow: inset 0 0 0 1.5px var(--amber); }
 
 .mx { display: grid; grid-template-columns: 360px repeat(4, 1fr); }
-.mx > div { height: 84px; display: flex; align-items: center; border-bottom: 1px solid #f0f0f0; }
-.mx .sv b { font-size: 18px; color: var(--ink-strong); display: block; }
+.mx > div { height: 84px; display: flex; align-items: center; border-bottom: 1px solid var(--line); }
+.mx .sv b { font-size: 18px; color: var(--ink-strong); display: block; font-weight: 600; }
 .mx .sv span { font-size: 14px; color: var(--muted); }
 .mx .c { justify-content: center; }
-.mx .c i { width: 36px; height: 36px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 20px; font-style: normal; }
-.mx .c em { width: 10px; height: 10px; border-radius: 50%; background: #e5e5e5; }
+/* lo switch: acceso nel pieno dell'azione, con la croce nel pomello */
+.sw { width: 50px; height: 30px; border-radius: 999px; background: var(--s4); position: relative; flex: none; display: block; font-style: normal; }
+.sw::after { content: ""; position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: var(--sh-sm); }
+.sw.on { background: var(--act); }
+.sw.on::after { left: 24px; }
+.sw.on::before { content: ""; position: absolute; left: 30px; top: 10px; width: 10px; height: 10px; background: var(--act); clip-path: var(--cross); z-index: 1; }
+.mx .c em { display: none; }
 
-.chip2 { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 10px; font-size: 16px; font-weight: 600; }
-.doc { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; margin-top: 10px; font-size: 16px; font-weight: 600; color: var(--ink-strong); background: #fff; }
-.doc .fi { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; font-size: 19px; }
+.chip2 { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px 10px 10px var(--tail); font-size: 16px; font-weight: 600; }
+.doc { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px 12px 12px var(--tail); margin-top: 10px; font-size: 16px; font-weight: 600; color: var(--ink-strong); background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+.doc .fi { width: 38px; height: 38px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 18px; }
 .doc .lk { margin-left: auto; color: var(--faint); font-size: 18px; }
 
-.inv .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 30px; margin-top: 26px; padding: 22px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.inv .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 30px; margin-top: 26px; padding: 22px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .inv .meta label { display: block; font-size: 14px; color: var(--muted); font-weight: 500; }
 .inv .meta div { font-size: 19px; color: var(--ink-strong); font-weight: 600; margin-top: 4px; }
-.inv .ln { display: grid; grid-template-columns: 1fr auto; align-items: center; height: 64px; border-bottom: 1px solid #f0f0f0; font-size: 19px; }
+.inv .ln { display: grid; grid-template-columns: 1fr auto; align-items: center; height: 64px; border-bottom: 1px solid var(--line); font-size: 19px; }
 .inv .ln .d { display: flex; align-items: center; gap: 14px; font-weight: 500; color: var(--ink-strong); }
-.inv .ln .d span { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; }
-.stt { position: absolute; display: flex; align-items: center; gap: 16px; background: #fff; border-radius: 16px; padding: 14px 24px 14px 14px; font-size: 21px; font-weight: 600; color: var(--ink-strong);
-  box-shadow: 0 24px 60px -16px rgba(16,40,36,.3), 0 0 0 1px rgba(0,0,0,.05); white-space: nowrap; }
-.stt .c { width: 42px; height: 42px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 22px; }
+.inv .ln .d span { width: 40px; height: 40px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 19px; }
+.stt { position: absolute; display: flex; align-items: center; gap: 16px; background: #fff; border-radius: 16px 16px 16px var(--tail); padding: 14px 24px 14px 14px; font-size: 21px; font-weight: 600; color: var(--ink-strong);
+  box-shadow: var(--sh-lg), 0 0 0 1px rgba(11,46,42,.07); white-space: nowrap; }
+.stt .c { width: 42px; height: 42px; border-radius: 50% 50% 50% 22%; background: var(--success-s); color: var(--success); display: grid; place-items: center; font-size: 22px; }
 .stt small { display: block; font-size: 14px; color: var(--muted); font-weight: 500; }
+.stt.toast { background: var(--deep); color: var(--on-deep); } .stt.toast small { color: var(--on-deep-m); } .stt.toast .c { background: rgba(95,224,204,.14); color: var(--mint); }
 
 .msg { position: absolute; max-width: 560px; padding: 14px 18px; border-radius: 18px; font-size: 19px; line-height: 1.4; }
-.msg.th { left: 34px; background: #fff; border: 1px solid var(--border); color: var(--ink-strong); border-bottom-left-radius: 5px; }
-.msg.us { right: 34px; background: var(--ours); color: #fff; border-bottom-right-radius: 5px; }
+.msg.th { left: 34px; background: #fff; color: var(--ink-strong); border-bottom-left-radius: 4px; box-shadow: inset 0 0 0 1px var(--line); }
+.msg.us { right: 34px; background: var(--ours); color: #fff; border-bottom-right-radius: 4px; }
 .msg small { display: flex; align-items: center; gap: 6px; justify-content: flex-end; font-size: 13px; opacity: .75; margin-top: 5px; }
 .msg .auto { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.2); padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: auto; }
 .sysm { position: absolute; left: 0; right: 0; display: flex; justify-content: center; }
-.note { position: absolute; left: 90px; right: 90px; background: #fdf4dd; border: 1px solid #f3dea3; color: #7a5305; border-radius: 12px; padding: 12px 16px; font-size: 17px; display: flex; gap: 10px; align-items: center; }
-.typing { position: absolute; left: 34px; background: #fff; border: 1px solid var(--border); border-radius: 18px; border-bottom-left-radius: 5px; padding: 16px 18px; display: flex; gap: 6px; }
-.typing i { width: 9px; height: 9px; border-radius: 50%; background: #b5b5b5; display: block; }
+.note { position: absolute; left: 90px; right: 90px; background: var(--amber-s); color: var(--amber-t); border-radius: 12px 12px 12px var(--tail); padding: 12px 16px; font-size: 17px; display: flex; gap: 10px; align-items: center; }
+.typing { position: absolute; left: 34px; background: #fff; border-radius: 18px; border-bottom-left-radius: 4px; padding: 16px 18px; display: flex; gap: 6px; box-shadow: inset 0 0 0 1px var(--line); }
+.typing i { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); display: block; }
 
-.node { position: absolute; width: 330px; background: #fff; border-radius: 16px; padding: 18px 20px; box-shadow: 0 20px 50px -20px rgba(16,40,36,.35), 0 0 0 1px rgba(0,0,0,.06); display: flex; gap: 14px; align-items: center; }
-.node .ni { width: 50px; height: 50px; border-radius: 13px; display: grid; place-items: center; font-size: 24px; flex: none; }
-.node b { display: block; font-size: 18px; color: var(--ink-strong); }
+.node { position: absolute; width: 330px; background: #fff; border-radius: 16px 16px 16px var(--tail); padding: 18px 20px; box-shadow: var(--sh-lg), 0 0 0 1px rgba(11,46,42,.07); display: flex; gap: 14px; align-items: center; }
+.node .ni { width: 50px; height: 50px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 23px; flex: none; }
+.node b { display: block; font-size: 18px; color: var(--ink-strong); font-weight: 600; }
 .node span { font-size: 14px; color: var(--muted); }
-.node .k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.node .k { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 
-.phone { position: absolute; width: 400px; height: 820px; border-radius: 58px; background: #0e0e0e; padding: 14px; box-shadow: 0 60px 120px -30px rgba(0,0,0,.45); }
+.phone { position: absolute; width: 400px; height: 820px; border-radius: 58px; background: #0d100f; padding: 14px; box-shadow: 0 60px 120px -30px rgba(11,46,42,.5); }
 .phone .scr { width: 100%; height: 100%; border-radius: 46px; background: var(--bg); overflow: hidden; position: relative; }
-.phone .notch { position: absolute; top: 12px; left: 50%; width: 110px; height: 30px; margin-left: -55px; background: #0e0e0e; border-radius: 20px; z-index: 3; }
+.phone .notch { position: absolute; top: 12px; left: 50%; width: 110px; height: 30px; margin-left: -55px; background: #0d100f; border-radius: 20px; z-index: 3; }
 .phone .pad { padding: 58px 22px 22px; }
-.phone .ttl { font-size: 28px; font-weight: 700; color: var(--ink-strong); letter-spacing: -.02em; }
-.prow { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px; padding: 11px 14px; margin-top: 9px; box-shadow: 0 0 0 1px rgba(0,0,0,.06); font-size: 15px; }
-.prow b { display: block; font-size: 16px; color: var(--ink-strong); }
+.phone .ttl { font-size: 28px; font-weight: 700; color: var(--ink-strong); letter-spacing: -.025em; }
+.prow { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px 14px 14px var(--tail); padding: 11px 14px; margin-top: 9px; box-shadow: inset 0 0 0 1px var(--line); font-size: 15px; }
+.prow b { display: block; font-size: 16px; color: var(--ink-strong); font-weight: 600; }
 .prow span { color: var(--muted); font-size: 13px; }
-.prow .tm { font-weight: 700; color: var(--ink-strong); width: 48px; font-size: 15px; }
-.prow .ck { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; flex: none; }
+.prow .tm { font-weight: 700; color: var(--ink-strong); width: 48px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.prow .ck { width: 30px; height: 30px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 15px; flex: none; }
 
-.call { position: absolute; width: 580px; background: #161a19; color: #fff; border-radius: 26px; padding: 26px 30px 30px; box-shadow: 0 60px 120px -30px rgba(0,0,0,.55); }
-.call .ring { position: absolute; left: 30px; top: 70px; width: 84px; height: 84px; border-radius: 50%; border: 3px solid var(--mint); }
-.call .cb { display: flex; align-items: center; justify-content: center; gap: 10px; height: 60px; border-radius: 16px; font-size: 19px; font-weight: 700; flex: 1; }
+.call { position: absolute; width: 580px; background: #1d201f; color: #fff; border-radius: 26px 26px 26px var(--tail-l); padding: 26px 30px 30px; box-shadow: 0 60px 120px -30px rgba(11,46,42,.6); }
+.call .ring { position: absolute; left: 30px; top: 70px; width: 84px; height: 84px; border-radius: 50% 50% 50% 22%; border: 3px solid var(--mint); }
+.call .cb { display: flex; align-items: center; justify-content: center; gap: 10px; height: 60px; border-radius: 16px 16px 16px var(--tail); font-size: 19px; font-weight: 700; flex: 1; }
 
-.post { position: absolute; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 8px 20px -10px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.05); }
+.post { position: absolute; border-radius: 10px 10px 10px var(--tail); overflow: hidden; background: #fff; box-shadow: var(--sh-sm), 0 0 0 1px rgba(11,46,42,.05); }
 .post .tx { padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--ink-strong); line-height: 1.25; }
 
-.grow { display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 600; color: #fff; }
-.grow .gi { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 30px; background: rgba(95,224,204,.14); color: var(--mint); flex: none; }
-.grow small { display: block; font-size: 20px; font-weight: 500; color: rgba(255,255,255,.55); margin-top: 2px; }
+.grow { display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 700; color: #fff; letter-spacing: -.015em; }
+.grow .gi { width: 64px; height: 64px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 28px; background: rgba(95,224,204,.14); color: var(--mint); flex: none; }
+.grow small { display: block; font-size: 20px; font-weight: 500; color: rgba(255,255,255,.6); margin-top: 2px; letter-spacing: 0; }
 
 .wave { display: flex; align-items: center; gap: 7px; height: 110px; }
 .wave i { width: 9px; border-radius: 6px; background: var(--teal); display: block; }
 .fld { margin-top: 16px; }
-.fld label { font-size: 14px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 6px; }
-.fld div { min-height: 50px; border: 1px solid var(--border); border-radius: 11px; padding: 13px 15px; font-size: 18px; color: var(--ink-strong); background: #fff; }
-.fld div.ai { border-color: #b9e6dd; background: #f3fbf9; }
+.fld label { font-size: 14px; color: var(--muted); font-weight: 500; display: block; margin-bottom: 6px; letter-spacing: .01em; }
+.fld div { min-height: 50px; border-radius: 11px; padding: 13px 15px; font-size: 18px; color: var(--ink-strong); background: var(--s2); }
+.fld div.ai { background: #f0faf8; box-shadow: inset 0 0 0 1px var(--teal-200); }
 .caret { display: inline-block; width: 2px; height: 20px; background: var(--teal); vertical-align: -3px; margin-left: 2px; }
 
-
 .bigp { width: 430px; height: 880px; }
-.tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px; }
-.tabbar div { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--faint); }
+.tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #fff; border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px; }
+.tabbar div { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--faint); letter-spacing: .02em; }
 .tabbar div svg { font-size: 22px; }
-.tabbar div.on { color: var(--teal); }
-.codeb { width: 46px; height: 58px; border-radius: 12px; border: 1.5px solid var(--border); display: grid; place-items: center; font-size: 28px; font-weight: 700; color: var(--ink-strong); background: #fff; }
-.sms { position: absolute; left: 10px; right: 10px; top: 10px; background: rgba(245,245,245,.96); border-radius: 18px; padding: 12px 14px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.3); font-size: 14px; z-index: 4; }
-.meal { background: #fff; border-radius: 16px; padding: 14px 16px; margin-top: 10px; box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
-.meal .mh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.tabbar div.on { color: var(--teal-d); }
+.codeb { width: 46px; height: 58px; border-radius: 12px 12px 12px var(--tail); box-shadow: inset 0 0 0 1.5px var(--border); display: grid; place-items: center; font-size: 28px; font-weight: 700; color: var(--ink-strong); background: var(--s1); border: 0 !important; }
+.codeb.on { box-shadow: inset 0 0 0 2px var(--act); background: #fff; }
+.codeb.cur { box-shadow: inset 0 0 0 2px var(--focus); background: #fff; }
+.sms { position: absolute; left: 10px; right: 10px; top: 10px; background: rgba(246,249,248,.97); border-radius: 18px; padding: 12px 14px; box-shadow: 0 10px 30px -10px rgba(11,46,42,.3); font-size: 14px; z-index: 4; }
+.meal { background: #fff; border-radius: 16px 16px 16px var(--tail); padding: 14px 16px; margin-top: 10px; box-shadow: inset 0 0 0 1px var(--line); }
+.meal .mh { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .meal .mt { font-size: 16px; font-weight: 600; color: var(--ink-strong); margin-top: 4px; line-height: 1.35; }
-.dchip { width: 44px; height: 58px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
+.dchip { width: 44px; height: 58px; border-radius: 14px 14px 14px var(--tail); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); background: #fff; box-shadow: inset 0 0 0 1px var(--line); letter-spacing: .04em; }
 .dchip b { font-size: 17px; color: var(--ink-strong); }
-.dchip.on { background: var(--teal); color: #d8fff8; box-shadow: none; }
+.dchip.on { background: var(--act); color: var(--teal-200); box-shadow: none; }
 .dchip.on b { color: #fff; }
-.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 26px 26px 0 0; padding: 12px 20px 30px; box-shadow: 0 -20px 50px -10px rgba(0,0,0,.25); z-index: 5; }
-.alt { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--border); margin-top: 10px; font-size: 16px; font-weight: 600; color: var(--ink-strong); }
-.exi { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px; padding: 10px 12px; margin-top: 10px; box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
-.exi .th { width: 64px; height: 64px; border-radius: 12px; background: var(--teal-s); flex: none; overflow: hidden; }
-.exi b { display: block; font-size: 16px; color: var(--ink-strong); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 26px 26px 0 0; padding: 12px 20px 30px; box-shadow: 0 -20px 50px -10px rgba(11,46,42,.25); z-index: 5; }
+.alt { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px 14px 14px var(--tail); box-shadow: inset 0 0 0 1px var(--border); margin-top: 10px; font-size: 16px; font-weight: 600; color: var(--ink-strong); border: 0 !important; }
+.alt.on { box-shadow: inset 0 0 0 2px var(--act); background: var(--teal-s); }
+.exi { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 16px 16px 16px var(--tail); padding: 10px 12px; margin-top: 10px; box-shadow: inset 0 0 0 1px var(--line); }
+.exi .th { width: 64px; height: 64px; border-radius: 12px 12px 12px var(--tail); background: var(--violet-s); flex: none; overflow: hidden; }
+.exi b { display: block; font-size: 16px; color: var(--ink-strong); font-weight: 600; }
 .exi span { font-size: 13px; color: var(--muted); }
-.exi .ck { margin-left: auto; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; flex: none; }
-.setp { flex: 1; height: 48px; border-radius: 12px; border: 1.5px solid var(--border); display: grid; place-items: center; font-weight: 700; font-size: 15px; color: var(--muted); }
-#touch { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(22,32,30,.28); border: 3px solid rgba(255,255,255,.9); display: none; z-index: 50; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+.exi .ck { margin-left: auto; width: 30px; height: 30px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 16px; flex: none; }
+.setp { flex: 1; height: 48px; border-radius: 12px 12px 12px var(--tail); box-shadow: inset 0 0 0 1.5px var(--border); display: grid; place-items: center; font-weight: 700; font-size: 15px; color: var(--muted); border: 0 !important; }
+#touch { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(11,46,42,.28); border: 3px solid rgba(255,255,255,.92); display: none; z-index: 50; box-shadow: 0 6px 16px rgba(11,46,42,.25); }
 
-.jmap { background: #fff; }
-.jn { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; display: grid; place-items: center; font-size: 46px; }
-.jl { position: absolute; width: 240px; margin-left: -120px; text-align: center; font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
-.jring { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; border: 4px solid var(--teal); }
-#trk { position: absolute; left: 50%; top: 22px; z-index: 46; display: none; align-items: center; gap: 2px; padding: 5px; border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 6px 20px -8px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.04); font-size: 15px; font-weight: 700; }
-#trk .ti { position: relative; z-index: 1; padding: 7px 14px; border-radius: 999px; color: var(--faint); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-#trk .ti i { font-style: normal; font-size: 12px; opacity: .8; }
-#trk .knob { position: absolute; z-index: 0; top: 5px; bottom: 5px; border-radius: 999px; background: var(--teal); }
-#trk.dk { background: rgba(255,255,255,.08); box-shadow: 0 0 0 1px rgba(255,255,255,.1); }
-.blind { position: absolute; left: 0; width: 1920px; display: none; z-index: 42; }
+/* le tappe del percorso, come sul sito: l'icona in una nuvola, la croce e il numero */
+.jmap { background: var(--s1); }
+.jmap .dots { background: rgba(18,165,148,.16); clip-path: polygon(0 0, 24% 0, 24% 26%, 0 26%); }
+.jn { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50% 50% 50% 22%; display: grid; place-items: center; font-size: 44px; }
+.jk { position: absolute; width: 240px; margin-left: -120px; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: .1em; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--teal-d); }
+.jk::before { content: ""; width: 12px; height: 12px; background: var(--teal); clip-path: var(--cross); }
+.jl { position: absolute; width: 240px; margin-left: -120px; text-align: center; font-size: 26px; font-weight: 700; letter-spacing: -.015em; }
+.jring { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50% 50% 50% 22%; border: 4px solid var(--teal); }
+#trk { position: absolute; left: 50%; top: 22px; z-index: 46; display: none; align-items: center; gap: 2px; padding: 4px; border-radius: 14px; background: rgba(241,244,243,.94); box-shadow: 0 8px 24px -10px rgba(11,46,42,.25), inset 0 0 0 1px rgba(11,46,42,.05); font-size: 15px; font-weight: 600; letter-spacing: .01em; }
+#trk .ti { position: relative; z-index: 1; padding: 8px 15px; border-radius: 10px; color: var(--faint); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+#trk .knob { position: absolute; z-index: 0; top: 4px; bottom: 4px; border-radius: 10px 10px 10px var(--tail); background: var(--act); }
+#trk.dk { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+#trk.dk .knob { background: var(--mint); }
+.blind { position: absolute; left: 0; width: 1920px; display: none; z-index: 42; overflow: hidden; }
 .cam { position: absolute; inset: 0; }
-.shine { position: absolute; inset: 0; pointer-events: none; z-index: 20; background: linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 62%); transform: translateX(-130%); }
+.shine { position: absolute; inset: 0; pointer-events: none; z-index: 20; background: linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 62%); transform: translateX(-130%); }
 .card { overflow: hidden; }
-#bug { position: absolute; right: 40px; top: 30px; z-index: 45; display: none; align-items: center; gap: 10px; padding: 8px 16px 8px 10px; border-radius: 999px; background: rgba(255,255,255,.85); box-shadow: 0 6px 20px -8px rgba(0,0,0,.2); font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink-strong); }
+#bug { position: absolute; right: 40px; top: 30px; z-index: 45; display: none; align-items: center; gap: 10px; padding: 8px 16px 8px 10px; border-radius: 14px 14px 14px var(--tail); background: rgba(255,255,255,.9); box-shadow: 0 8px 24px -10px rgba(11,46,42,.25); font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink-strong); }
 #bug b { color: var(--teal); font-weight: 700; }
 #bug.dk { background: rgba(255,255,255,.08); color: #fff; box-shadow: none; }
 #bug.dk b { color: var(--mint); }
-.wipe { position: absolute; display: none; }
-#cl { position: absolute; inset: 0; display: none; background: var(--teal); }
-#cursor { position: absolute; left: 0; top: 0; width: 44px; height: 44px; display: none; z-index: 50; filter: drop-shadow(0 6px 10px rgba(0,0,0,.3)); }
+.wipe { position: absolute; display: none; overflow: hidden; }
+#cl { position: absolute; inset: 0; display: none; background: var(--teal-d); }
+#cl .mo, .wipe .mo, .blind .mo { position: absolute; inset: 0; background: var(--mint); opacity: .9; -webkit-mask: var(--motif) 0 0 / 64px 64px repeat; }
+#cursor { position: absolute; left: 0; top: 0; width: 44px; height: 44px; display: none; z-index: 50; filter: drop-shadow(0 6px 10px rgba(11,46,42,.35)); }
 #ripple { position: absolute; left: 0; top: 0; width: 80px; height: 80px; margin: -40px 0 0 -40px; border-radius: 50%; border: 4px solid var(--teal); display: none; z-index: 49; }
 </style>
 </head>
@@ -220,7 +269,7 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="abs" id="hm1" style="left:530px;top:465px"></div>
   <div class="abs" id="hw1" style="left:740px;top:490px"></div>
   <div class="abs" id="tag1" style="left:0;right:0;top:680px;text-align:center;font-size:34px;font-weight:500;color:rgba(255,255,255,.62)">Il gestionale per i centri medici</div>
-  <div class="abs cap" style="left:0;right:0;top:800px;text-align:center;font-size:76px;letter-spacing:-.04em"><span class="kin" id="hk1">Tutto il tuo centro medico,</span> <span class="kin" id="hk2" style="color:var(--mint)">in un posto solo.</span></div>
+  <div class="abs cap" style="left:0;right:0;top:800px;text-align:center;font-size:76px;letter-spacing:-.04em"><span class="kin" id="hk1">Tutto il tuo centro medico,</span> <span class="kin" id="hk2">~in ~un ~posto ~solo.</span></div>
 </section>
 
 <!-- ===== chapter 1 ===== -->
@@ -235,12 +284,12 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#2f6fed" data-o=".05" style="left:1300px;top:-300px;width:900px"></div>
   <div class="abs" style="left:110px;top:70px;width:1600px">
     <span class="eyebrow" id="ag-e"><svg class="i" data-p="cal"></svg>Agenda</span>
-    <div class="cap" style="font-size:70px;margin-top:22px"><span class="kin" id="ag-h">Stanze, attrezzature, lista d'attesa e abbonamenti.</span></div>
+    <div class="cap" style="font-size:70px;margin-top:22px"><span class="kin" id="ag-h">Stanze, attrezzature, ~lista ~d'attesa e abbonamenti.</span></div>
   </div>
   <div class="win" id="ag-w" style="left:110px;top:300px;width:1700px;height:840px" data-bar="aurora.dottorcloud.it/agenda">
     <div style="display:flex;height:100%">
       <div style="flex:1;position:relative">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--border)"><div class="h3" style="font-size:22px">Giovedì 15 ottobre</div><div style="display:flex;gap:8px"><span class="tag">Giorno</span><span class="tag" style="background:var(--ink-strong);color:#fff">Risorse</span><span class="tag">Settimana</span></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--border)"><div class="h3" style="font-size:22px">Giovedì 15 ottobre</div><div class="seg" style="padding:3px"><div style="padding:6px 14px;font-size:15px">Giorno</div><div style="padding:6px 14px;font-size:15px;background:#fff;color:var(--ink-strong);border-radius:9px 9px 9px 3px;box-shadow:var(--sh-sm)">Risorse</div><div style="padding:6px 14px;font-size:15px">Settimana</div></div></div>
         <div class="ag" id="ag" style="grid-template-columns:66px repeat(4,1fr)">
           <div class="colh" style="border-left:0"></div>
           <div class="colh"><b>Dott.ssa Rossi</b><span>Cardiologia</span></div>
@@ -249,15 +298,15 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
           <div class="colh"><b>Box 2</b><span>Laser</span></div>
         </div>
       </div>
-      <div style="width:330px;border-left:1px solid var(--border);padding:20px 18px;background:#fafafa">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><svg class="i" data-p="clock" style="font-size:20px;color:var(--amber)"></svg><b style="font-size:18px;color:var(--ink-strong)">Lista d'attesa</b><span class="tag" style="margin-left:auto">3</span></div>
-        <div class="wl" id="wl0" style="border-color:var(--amber);box-shadow:0 0 0 3px rgba(217,138,11,.12)"><b>Marco Bellini</b><span>Visita cardiologica · qualsiasi mattina</span></div>
+      <div style="width:330px;border-left:1px solid var(--line);padding:20px 18px;background:var(--s1)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><svg class="i" data-p="clock" style="font-size:20px;color:var(--amber)"></svg><b style="font-size:18px;color:var(--ink-strong)">Lista d'attesa</b><span class="pill" style="margin-left:auto;height:26px;padding:0 10px;font-size:13px;background:var(--amber-s);color:var(--amber-t)">3</span></div>
+        <div class="wl hot" id="wl0"><b>Marco Bellini</b><span>Visita cardiologica · qualsiasi mattina</span></div>
         <div class="wl" id="wl1"><b>Sara Conti</b><span>Ecografia · dopo le 17</span></div>
         <div class="wl" id="wl2"><b>Paolo Greco</b><span>Fisioterapia · martedì</span></div>
       </div>
     </div>
   </div>
-  <div class="floatb" id="ag-t" style="left:1180px;top:960px"><div class="ib" style="background:var(--amber-s);color:var(--amber)"><svg class="i" data-p="bell"></svg></div><div>Posto libero: avvisato Marco Bellini<small>Dalla lista d'attesa, in automatico</small></div></div>
+  <div class="floatb toast" id="ag-t" style="left:1180px;top:960px"><div class="ib" style="background:var(--amber-s);color:var(--amber)"><svg class="i" data-p="bell"></svg></div><div>Posto libero: avvisato Marco Bellini<small>Dalla lista d'attesa, in automatico</small></div></div>
 </section>
 
 <!-- ===== servizi ===== -->
@@ -265,19 +314,19 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#12a594" data-o=".06" style="left:-300px;top:500px;width:1000px"></div>
   <div class="left">
     <div><span class="eyebrow" id="sv-e"><svg class="i" data-p="users"></svg>Servizi e personale</span></div>
-    <div class="cap" style="font-size:84px"><span class="kin" id="sv-h">Chi fa cosa, quanto dura, e dove.</span></div>
+    <div class="cap" style="font-size:84px"><span class="kin" id="sv-h">Chi fa cosa, quanto dura, ~e ~dove.</span></div>
   </div>
   <div class="card" id="sv-c" style="left:830px;top:140px;width:980px;height:800px;padding:32px 38px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="h3">Servizi del centro</div><span class="tag">24 servizi · 12 persone</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="h3">Servizi del centro</div><span class="pill" style="background:var(--teal-s);color:var(--teal-d)">24 servizi · 12 persone</span></div>
     <div class="mx" id="mx"></div>
   </div>
 </section>
 
 <!-- ===== illimitati ===== -->
-<section class="scene" id="s-unl" style="background:#eef7f5">
+<section class="scene" id="s-unl">
   <div id="avwall" class="abs" style="inset:0"></div>
-  <div class="abs" style="inset:0;background:radial-gradient(ellipse 1000px 420px at 960px 440px, rgba(238,247,245,1) 40%, rgba(238,247,245,0) 100%)"></div>
-  <div class="abs cap" style="left:0;right:0;top:270px;text-align:center;font-size:120px;letter-spacing:-.045em"><span class="kin" id="un-a">Utenti illimitati.</span><br><span class="kin" id="un-b" style="color:var(--teal)">Agende infinite.</span></div>
+  <div class="abs" style="inset:0;background:radial-gradient(ellipse 1000px 420px at 960px 440px, rgba(246,249,248,1) 40%, rgba(246,249,248,0) 100%)"></div>
+  <div class="abs cap" style="left:0;right:0;top:270px;text-align:center;font-size:120px;letter-spacing:-.045em"><span class="kin" id="un-a">Utenti illimitati.</span><br><span class="kin" id="un-b">~Agende ~infinite.</span></div>
   <div class="abs" id="strip" style="left:0;top:720px;height:260px;width:8000px;display:flex;gap:18px"></div>
 </section>
 
@@ -293,38 +342,38 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#2f6fed" data-o=".05" style="left:-300px;top:-250px;width:1000px"></div>
   <div class="left">
     <div><span class="eyebrow" id="cl-e"><svg class="i" data-p="steth"></svg>Cartella clinica</span></div>
-    <div class="cap" style="font-size:84px"><span class="kin" id="cl-h">Schede cliniche, note e referti. Al sicuro.</span></div>
+    <div class="cap" style="font-size:84px"><span class="kin" id="cl-h">Schede cliniche, note e referti. ~Al ~sicuro.</span></div>
   </div>
   <div class="win" id="cl-w" style="left:830px;top:90px;width:980px;height:900px" data-bar="aurora.dottorcloud.it/pazienti/giulia-ferri">
     <div style="padding:26px 36px">
-    <div style="display:flex;align-items:center;gap:16px"><div class="av" style="width:56px;height:56px;font-size:19px;background:var(--rose-s);color:var(--rose)">GF</div><div><div class="h3" style="font-size:26px">Giulia Ferri</div><div style="color:var(--muted);font-size:16px">Clinica · Cardiologia</div></div>
-      <span class="pill" style="margin-left:auto;background:var(--teal-s);color:var(--teal-d)"><svg class="i" data-p="lock"></svg>Solo medici</span></div>
+    <div style="display:flex;align-items:center;gap:16px"><div class="av" style="width:56px;height:56px;font-size:19px;background:var(--teal-s);color:var(--teal-d)">GF</div><div><div class="h3" style="font-size:26px">Giulia Ferri</div><div style="color:var(--muted);font-size:16px">Clinica · Cardiologia</div></div>
+      <span class="pill" style="margin-left:auto;background:var(--teal-s);color:var(--teal-d)"><svg class="i" data-p="lock"></svg>Solo i medici</span></div>
     <div id="cchips" style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
-      <span class="chip2" style="background:var(--rose-s);color:var(--rose)"><svg class="i" data-p="alert"></svg>Allergia: penicillina</span>
-      <span class="chip2" style="background:var(--blue-s);color:var(--blue)"><svg class="i" data-p="pill"></svg>Ramipril 5 mg</span>
-      <span class="chip2" style="background:var(--green-s);color:var(--green)"><svg class="i" data-p="act"></svg>PA 135/85</span>
+      <span class="chip2" style="background:var(--rose-s);color:var(--rose-t)"><svg class="i" data-p="alert"></svg>Allergia: penicillina</span>
+      <span class="chip2" style="background:var(--blue-s);color:var(--blue-t)"><svg class="i" data-p="pill"></svg>Ramipril 5 mg</span>
+      <span class="chip2" style="background:var(--green-s);color:var(--green-t)"><svg class="i" data-p="act"></svg>PA 135/85</span>
     </div>
     <div class="box" id="cnote" style="margin-top:20px">
       <div style="display:flex;justify-content:space-between"><span class="lbl">Visita cardiologica · 13/10</span><span class="tag">Nota di visita</span></div>
       <div id="ntxt" style="font-size:19px;line-height:1.5;color:var(--ink-strong);margin-top:10px;min-height:86px"></div>
-      <div id="nsign" style="display:flex;align-items:center;gap:8px;color:var(--green);font-weight:600;font-size:15px;margin-top:6px"><svg class="i" data-p="check"></svg>Firmata da Dott.ssa Rossi, 13/10 alle 11:42</div>
+      <div id="nsign" style="display:flex;align-items:center;gap:8px;color:var(--success);font-weight:600;font-size:15px;margin-top:6px"><svg class="i" data-p="check"></svg>Firmata da Dott.ssa Rossi, 13/10 alle 11:42</div>
     </div>
     <div style="margin-top:20px"><span class="lbl">Documenti</span>
-      <div class="doc" id="d0"><div class="fi" style="background:var(--rose-s);color:var(--rose)"><svg class="i" data-p="file"></svg></div>Referto ECG · 13/10<svg class="i lk" data-p="lock"></svg></div>
+      <div class="doc" id="d0"><div class="fi" style="background:var(--rose-s);color:var(--rose-t)"><svg class="i" data-p="file"></svg></div>Referto ECG · 13/10<svg class="i lk" data-p="lock"></svg></div>
       <div class="doc" id="d1"><div class="fi" style="background:var(--teal-s);color:var(--teal-d)"><svg class="i" data-p="pen"></svg></div>Consenso informato · firmato<svg class="i lk" data-p="lock"></svg></div>
-      <div class="doc" id="d2"><div class="fi" style="background:var(--blue-s);color:var(--blue)"><svg class="i" data-p="scan"></svg></div>Ecografia addome · 02/09<svg class="i lk" data-p="lock"></svg></div>
+      <div class="doc" id="d2"><div class="fi" style="background:var(--blue-s);color:var(--blue-t)"><svg class="i" data-p="scan"></svg></div>Ecografia addome · 02/09<svg class="i lk" data-p="lock"></svg></div>
     </div></div>
   </div>
   <div class="floatb" id="cl-f" style="left:1330px;top:950px"><div class="ib" style="background:var(--teal-s);color:var(--teal-d)"><svg class="i" data-p="shield"></svg></div><div>Archiviazione sicura, in Europa<small>Ogni apertura della cartella resta registrata</small></div></div>
 </section>
 
 <!-- ===== AI ===== -->
-<section class="scene dark" id="s-ai" style="background:linear-gradient(160deg,#0c1f1c 0%,#111413 60%)">
+<section class="scene dark" id="s-ai">
   <div class="dots"></div>
   <div class="bgc" data-c="#5fe0cc" data-o=".07" style="left:1000px;top:-260px;width:1200px"></div>
   <div class="left">
-    <div><span class="eyebrow" id="ai-e" style="background:var(--mint);color:#0b2a25"><svg class="i" data-p="spark"></svg>Presto</span></div>
-    <div class="cap" style="font-size:88px"><span class="kin" id="ai-h">L'assistente IA per il medico.</span></div>
+    <div><span class="eyebrow" id="ai-e" style="background:var(--mint);color:var(--teal-950);padding:10px 18px 10px 16px;border-radius:12px 12px 12px 3px;--x:var(--teal-950)"><svg class="i" data-p="spark"></svg>Presto</span></div>
+    <div class="cap" style="font-size:88px"><span class="kin" id="ai-h">L'assistente IA ~per ~il ~medico.</span></div>
     <div class="sub"><span class="kin" id="ai-s">Detti la visita, lui scrive la bozza. In Europa, conforme al GDPR.</span></div>
   </div>
   <div class="card" id="ai-c" style="left:880px;top:170px;width:930px;height:740px;padding:30px 38px">
@@ -338,7 +387,7 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
     <div class="fld"><label>Motivo della visita</label><div class="ai" id="f0"></div></div>
     <div class="fld"><label>Anamnesi</label><div class="ai" id="f1"></div></div>
     <div class="fld"><label>Esame obiettivo</label><div class="ai" id="f2"></div></div>
-    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:22px"><div class="btn" style="background:var(--field);color:var(--ink)">Modifica</div><div class="btn teal" id="aiok"><svg class="i" data-p="check"></svg>Confermo e firmo</div></div>
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:22px"><div class="btn sub2">Modifica</div><div class="btn teal" id="aiok"><svg class="i" data-p="check"></svg>Confermo e firmo</div></div>
   </div>
 </section>
 
@@ -355,37 +404,36 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#1f9d55" data-o=".06" style="left:-300px;top:-200px;width:1000px"></div>
   <div class="left">
     <div><span class="eyebrow" id="ch-e"><svg class="i" data-p="msg"></svg>Messaggi</span></div>
-    <div class="cap" style="font-size:88px"><span class="kin" id="ch-h">WhatsApp, promemoria e conferme.</span></div>
+    <div class="cap" style="font-size:88px"><span class="kin" id="ch-h">WhatsApp, promemoria ~e ~conferme.</span></div>
     <div class="sub"><span class="kin" id="ch-s">Tutto sulla scheda del paziente.</span></div>
   </div>
   <div class="win" id="ch-w" style="left:830px;top:80px;width:980px;height:940px" data-bar="aurora.dottorcloud.it/conversazioni">
-    <div style="display:flex;align-items:center;gap:14px;padding:18px 28px;border-bottom:1px solid var(--border)"><div class="av" style="background:var(--rose-s);color:var(--rose)">GF</div><div><b style="font-size:19px;color:var(--ink-strong);display:block">Giulia Ferri</b><span style="font-size:14px;color:var(--wa);font-weight:600">WhatsApp</span></div><span class="tag" style="margin-left:auto">Paziente</span></div>
-    <div id="chat" style="position:relative;height:800px;background:#fafafa">
+    <div style="display:flex;align-items:center;gap:14px;padding:18px 28px;border-bottom:1px solid var(--border)"><div class="av" style="background:var(--teal-s);color:var(--teal-d)">GF</div><div><b style="font-size:19px;color:var(--ink-strong);display:block">Giulia Ferri</b><span style="font-size:14px;color:var(--wa);font-weight:600">WhatsApp</span></div><span class="pill" style="margin-left:auto;background:var(--teal-s);color:var(--teal-d)">Paziente</span></div>
+    <div id="chat" style="position:relative;height:800px;background:var(--s1)">
       <div class="msg th" id="m0" style="top:26px">Buongiorno, posso spostare la visita a giovedì?<small>09:12</small></div>
       <div class="msg us" id="m1" style="top:132px">Certo! Giovedì 15 alle 11:00 va bene?<small>09:14 · Segreteria</small></div>
       <div class="msg th" id="m2" style="top:238px">Perfetto, grazie 🙏<small>09:15</small></div>
       <div class="msg us" id="m3" style="top:344px"><span>Promemoria: domani alle 11:00 visita cardiologica con la Dott.ssa Rossi. Rispondi SÌ per confermare.</span><small><span class="auto"><svg class="i" data-p="zap"></svg>Automatico</span>Mer 18:00 · ✓✓</small></div>
       <div class="msg th" id="m4" style="top:510px">SÌ<small>18:04</small></div>
       <div class="typing" id="typ" style="top:510px"><i></i><i></i><i></i></div>
-      <div class="sysm" id="m5" style="top:606px"><span class="pill" style="background:var(--green-s);color:var(--green);height:40px;font-size:17px;padding:0 18px"><svg class="i" data-p="check"></svg>Appuntamento confermato</span></div>
+      <div class="sysm" id="m5" style="top:606px"><span class="pill" style="background:var(--success-s);color:var(--success);height:40px;font-size:17px;padding:0 18px"><svg class="i" data-p="check"></svg>Appuntamento confermato</span></div>
       <div class="note" id="m6" style="top:674px"><svg class="i" data-p="pen" style="font-size:18px"></svg><span><b>Nota interna</b> · Portare l'ECG precedente. Visibile solo allo staff.</span></div>
     </div>
   </div>
 </section>
 
 <!-- ===== automazioni ===== -->
-<section class="scene" id="s-auto" style="background:#f3f5f4">
-  <div class="dots" style="background-image:radial-gradient(circle, rgba(0,0,0,.08) 1.5px, transparent 1.6px)"></div>
+<section class="scene" id="s-auto">
   <div class="abs" style="left:0;right:0;top:80px;text-align:center">
     <span class="eyebrow" id="au-e"><svg class="i" data-p="zap"></svg>Automazioni</span>
-    <div class="cap" style="font-size:80px;margin-top:24px"><span class="kin" id="au-h">Automazioni che lavorano al posto tuo.</span></div>
+    <div class="cap" style="font-size:80px;margin-top:24px"><span class="kin" id="au-h">Automazioni che lavorano ~al ~posto ~tuo.</span></div>
   </div>
   <svg id="links" class="abs" style="left:0;top:0" width="1920" height="1080"></svg>
   <div class="node" id="n0" style="left:110px;top:540px"><div class="ni" style="background:var(--teal-s);color:var(--teal-d)"><svg class="i" data-p="check"></svg></div><div><div class="k" style="color:var(--teal-d)">Quando</div><b>La visita è svolta</b><span>Cardiologia</span></div></div>
-  <div class="node" id="n1" style="left:560px;top:540px"><div class="ni" style="background:var(--field);color:var(--muted)"><svg class="i" data-p="clock"></svg></div><div><div class="k" style="color:var(--muted)">Aspetta</div><b>7 giorni</b><span>Solo nei giorni feriali</span></div></div>
-  <div class="node" id="n2" style="left:1010px;top:410px"><div class="ni" style="background:var(--green-s);color:var(--wa)"><svg class="i" data-p="msg"></svg></div><div><div class="k" style="color:var(--wa)">WhatsApp</div><b>"Com'è andata?"</b><span>Chiede una recensione</span></div></div>
-  <div class="node" id="n3" style="left:1010px;top:680px"><div class="ni" style="background:var(--blue-s);color:var(--blue)"><svg class="i" data-p="cal"></svg></div><div><div class="k" style="color:var(--blue)">Richiamo</div><b>Controllo a 6 mesi</b><span>Con il link per prenotare</span></div></div>
-  <div class="node" id="n4" style="left:1480px;top:680px"><div class="ni" style="background:var(--amber-s);color:var(--amber)"><svg class="i" data-p="task"></svg></div><div><div class="k" style="color:var(--amber)">Se non prenota</div><b>Chiamare</b><span>Attività alla segreteria</span></div></div>
+  <div class="node" id="n1" style="left:560px;top:540px"><div class="ni" style="background:var(--s2);color:var(--meta)"><svg class="i" data-p="clock"></svg></div><div><div class="k" style="color:var(--muted)">Aspetta</div><b>7 giorni</b><span>Solo nei giorni feriali</span></div></div>
+  <div class="node" id="n2" style="left:1010px;top:410px"><div class="ni" style="background:var(--green-s);color:var(--green-t)"><svg class="i" data-p="msg"></svg></div><div><div class="k" style="color:var(--green-t)">WhatsApp</div><b>"Com'è andata?"</b><span>Chiede una recensione</span></div></div>
+  <div class="node" id="n3" style="left:1010px;top:680px"><div class="ni" style="background:var(--blue-s);color:var(--blue-t)"><svg class="i" data-p="cal"></svg></div><div><div class="k" style="color:var(--blue-t)">Richiamo</div><b>Controllo a 6 mesi</b><span>Con il link per prenotare</span></div></div>
+  <div class="node" id="n4" style="left:1480px;top:680px"><div class="ni" style="background:var(--amber-s);color:var(--amber-t)"><svg class="i" data-p="task"></svg></div><div><div class="k" style="color:var(--amber-t)">Se non prenota</div><b>Chiamare</b><span>Attività alla segreteria</span></div></div>
 </section>
 
 <!-- ===== telefono ===== -->
@@ -393,7 +441,7 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#d98a0b" data-o=".06" style="left:-300px;top:-250px;width:1000px"></div>
   <div class="left">
     <div><span class="eyebrow" id="te-e"><svg class="i" data-p="phone"></svg>Telefono integrato</span></div>
-    <div class="cap" style="font-size:88px"><span class="kin" id="te-h">Il telefono, dentro il gestionale.</span></div>
+    <div class="cap" style="font-size:88px"><span class="kin" id="te-h">Il telefono, ~dentro ~il ~gestionale.</span></div>
     <div class="sub"><span class="kin" id="te-s">Chi chiama, lo sai prima di rispondere.</span></div>
   </div>
   <div class="win" id="te-w" style="left:830px;top:140px;width:980px;height:800px" data-bar="aurora.dottorcloud.it/chiamate">
@@ -402,14 +450,14 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="call" id="call" style="left:1030px;top:240px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:15px;font-weight:700;color:rgba(255,255,255,.7)"><div class="lm" data-f="#5fe0cc" data-x="#161a19" style="height:22px"></div>DottorCloud · Telefono</div>
     <div class="ring" id="ring1"></div><div class="ring" id="ring2"></div>
-    <div style="display:flex;gap:22px;align-items:center;position:relative"><div class="av" style="width:84px;height:84px;font-size:28px;background:var(--rose);color:#fff">GF</div>
+    <div style="display:flex;gap:22px;align-items:center;position:relative"><div class="av" style="width:84px;height:84px;font-size:28px;background:var(--mint);color:var(--teal-950)">GF</div>
       <div><div id="cst" style="font-size:16px;color:var(--mint);font-weight:600">Chiamata in arrivo…</div><div style="font-size:32px;font-weight:700;letter-spacing:-.02em;margin-top:2px">Giulia Ferri</div><div style="font-size:16px;color:rgba(255,255,255,.6)">+39 347 ••• ••12 · Paziente</div></div></div>
     <div style="margin-top:22px;background:rgba(255,255,255,.06);border-radius:16px;padding:14px 18px;font-size:17px;line-height:1.8;color:rgba(255,255,255,.85)">
       <div style="display:flex;gap:10px;align-items:center"><svg class="i" data-p="cal" style="color:var(--mint)"></svg>Prossima visita: gio 15 ottobre, 11:00</div>
       <div style="display:flex;gap:10px;align-items:center"><svg class="i" data-p="msg" style="color:var(--mint)"></svg>Ultimo messaggio: "SÌ" · ieri</div>
       <div style="display:flex;gap:10px;align-items:center"><svg class="i" data-p="file" style="color:var(--mint)"></svg>Fatture: tutte pagate</div>
     </div>
-    <div style="display:flex;gap:14px;margin-top:22px" id="cbtns"><div class="cb" style="background:#3a2226;color:#ff8a9c"><svg class="i" data-p="phoneoff"></svg>Rifiuta</div><div class="cb" id="ans" style="background:var(--teal);color:#fff"><svg class="i" data-p="phone"></svg>Rispondi</div></div>
+    <div style="display:flex;gap:14px;margin-top:22px" id="cbtns"><div class="cb" style="background:rgba(200,50,60,.18);color:#ff9aa5"><svg class="i" data-p="phoneoff"></svg>Rifiuta</div><div class="cb" id="ans" style="background:var(--mint);color:var(--teal-950)"><svg class="i" data-p="phone"></svg>Rispondi</div></div>
     <div id="incall" style="display:none;margin-top:22px;height:60px;align-items:center;gap:14px"><span style="display:inline-flex;align-items:center;gap:8px;font-size:17px;color:#ff8a9c;font-weight:600"><i style="width:10px;height:10px;border-radius:50%;background:#ff5a73;display:block"></i>Registrazione</span><span id="ctime" style="margin-left:auto;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums">00:00</span></div>
   </div>
 </section>
@@ -419,12 +467,12 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#7c5cf0" data-o=".05" style="left:1300px;top:-300px;width:900px"></div>
   <div class="abs" style="left:110px;top:70px;width:1700px">
     <span class="eyebrow" id="mk-e"><svg class="i" data-p="mega"></svg>Marketing</span>
-    <div class="cap" style="font-size:70px;margin-top:22px"><span class="kin" id="mk-h">Campagne Meta e post social, dallo stesso posto.</span></div>
+    <div class="cap" style="font-size:70px;margin-top:22px"><span class="kin" id="mk-h">Campagne Meta e post social, ~dallo ~stesso ~posto.</span></div>
   </div>
   <div class="card" id="ad" style="left:110px;top:320px;width:470px;height:640px;overflow:hidden">
-    <div style="display:flex;align-items:center;gap:12px;padding:18px 20px"><div class="av" style="background:var(--teal);color:#fff">A</div><div><b style="font-size:16px;color:var(--ink-strong);display:block">Centro Medico Aurora</b><span style="font-size:13px;color:var(--muted)">Sponsorizzato</span></div></div>
-    <div style="height:300px;background:linear-gradient(135deg,#12a594,#2f6fed);display:grid;place-items:center;color:#fff;text-align:center"><div><svg class="i" data-p="heart" style="font-size:64px"></svg><div style="font-size:32px;font-weight:700;margin-top:10px;letter-spacing:-.02em">Check-up cuore</div><div style="font-size:18px;opacity:.85">Visita ed ECG in un'ora</div></div></div>
-    <div style="padding:18px 20px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;color:var(--ink);font-weight:500">Prenota il tuo check-up</span><div class="btn" id="adbtn" style="height:40px;font-size:15px;background:#e9ecef;color:#111">Iscriviti</div></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:18px 20px"><div class="av" style="background:var(--act);color:#fff">A</div><div><b style="font-size:16px;color:var(--ink-strong);display:block">Centro Medico Aurora</b><span style="font-size:13px;color:var(--muted)">Sponsorizzato</span></div></div>
+    <div style="height:300px;background:var(--teal-d);display:grid;place-items:center;color:#fff;text-align:center;position:relative;overflow:hidden"><div class="blk mint" style="right:-40px;bottom:-60px;width:150px;height:130px"></div><div style="position:absolute;left:0;top:0;width:150px;height:120px;background:var(--mint);opacity:.35;-webkit-mask:var(--motif) 0 0 / 40px 40px repeat"></div><div><svg class="i" data-p="heart" style="font-size:64px"></svg><div style="font-size:32px;font-weight:700;margin-top:10px;letter-spacing:-.02em">Check-up cuore</div><div style="font-size:18px;opacity:.85">Visita ed ECG in un'ora</div></div></div>
+    <div style="padding:18px 20px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;color:var(--ink);font-weight:500">Prenota il tuo check-up</span><div class="btn sub2" id="adbtn" style="height:40px;font-size:15px">Iscriviti</div></div>
     <div id="form" style="position:absolute;left:0;right:0;bottom:0;height:640px;background:#fff;padding:26px 22px;transform:translateY(100%)">
       <b style="font-size:20px;color:var(--ink-strong)">Modulo della campagna</b>
       <div class="fld"><label>Nome</label><div>Davide Villa</div></div>
@@ -434,9 +482,9 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
     </div>
   </div>
   <svg class="abs" id="arrow" style="left:600px;top:600px" width="120" height="60"><path d="M6 30 H104 M88 14 L106 30 L88 46" fill="none" stroke="#12a594" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="150" /></svg>
-  <div class="floatb" id="lead" style="left:740px;top:540px;flex-direction:column;align-items:flex-start;white-space:normal;width:450px"><div style="display:flex;gap:14px;align-items:center"><div class="ib" style="background:var(--teal-s)"><div class="lm" data-f="#12a594" data-x="#e1f5f1" style="height:26px"></div></div><div>Nuova richiesta in DottorCloud<small>Da Facebook · Check-up cuore · adesso</small></div></div><div style="font-size:18px;color:var(--muted);font-weight:500">Davide Villa entra fra le persone, con la campagna da cui arriva.</div></div>
+  <div class="floatb toast" id="lead" style="left:740px;top:540px;flex-direction:column;align-items:flex-start;white-space:normal;width:450px"><div style="display:flex;gap:14px;align-items:center"><div class="ib" style="background:var(--teal-s)"><div class="lm" data-f="#5fe0cc" data-x="#0b2e2a" style="height:26px"></div></div><div>Nuova richiesta in DottorCloud<small>Da Facebook · Check-up cuore · adesso</small></div></div><div style="font-size:18px;color:var(--on-deep-m);font-weight:500">Davide Villa entra fra le persone, con la campagna da cui arriva.</div></div>
   <div class="card" id="soc" style="left:1240px;top:320px;width:570px;height:640px;padding:24px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><div class="h3" style="font-size:21px">Post programmati</div><span class="tag">Ottobre</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="h3" style="font-size:21px">Post programmati</div><span class="pill" style="background:var(--s2);color:var(--meta)">Ottobre</span></div>
     <div id="socg" style="position:relative;margin-top:18px;height:540px"></div>
   </div>
 </section>
@@ -453,13 +501,13 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#12a594" data-o=".06" style="left:-300px;top:450px;width:1000px"></div>
   <div class="left">
     <div><span class="eyebrow" id="fa-e"><svg class="i" data-p="file"></svg>Fatturazione</span></div>
-    <div class="cap" style="font-size:88px"><span class="kin" id="fa-h">La fattura nasce dalla visita.</span></div>
+    <div class="cap" style="font-size:88px"><span class="kin" id="fa-h">La fattura ~nasce ~dalla ~visita.</span></div>
     <div class="sub"><span class="kin" id="fa-s">Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.</span></div>
   </div>
   <div class="card inv" id="inv" style="left:900px;top:120px;width:900px;height:820px;padding:40px 46px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div><div class="lbl">Fattura FT-2026/0412</div><div class="h3" style="font-size:34px;margin-top:6px">Giulia Ferri</div></div>
-      <span class="pill" style="background:var(--teal-s);color:var(--teal-d)"><svg class="i" data-p="cal"></svg>Dall'appuntamento del 13/10</span>
+      <span class="pill" style="background:var(--teal-s);color:var(--teal-d)"><span class="x"></span>Dall'appuntamento del 13/10</span>
     </div>
     <div class="meta">
       <div><label>Codice fiscale</label><div>FRRGLI85M52H501X</div></div>
@@ -468,15 +516,15 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
       <div><label>Sistema TS</label><div>Invio automatico</div></div>
     </div>
     <div id="lns" style="margin-top:8px">
-      <div class="ln"><div class="d"><span style="background:var(--rose-s);color:var(--rose)"><svg class="i" data-p="heart"></svg></span>Visita cardiologica</div><span class="tag">Prestazione sanitaria</span></div>
-      <div class="ln"><div class="d"><span style="background:var(--rose-s);color:var(--rose)"><svg class="i" data-p="act"></svg></span>Elettrocardiogramma</div><span class="tag">Prestazione sanitaria</span></div>
-      <div class="ln"><div class="d"><span style="background:var(--field);color:var(--muted)"><svg class="i" data-p="stamp"></svg></span>Marca da bollo</div><span class="tag">Automatica</span></div>
+      <div class="ln"><div class="d"><span style="background:var(--rose-s);color:var(--rose-t)"><svg class="i" data-p="heart"></svg></span>Visita cardiologica</div><span class="tag">Prestazione sanitaria</span></div>
+      <div class="ln"><div class="d"><span style="background:var(--rose-s);color:var(--rose-t)"><svg class="i" data-p="act"></svg></span>Elettrocardiogramma</div><span class="tag">Prestazione sanitaria</span></div>
+      <div class="ln"><div class="d"><span style="background:var(--s2);color:var(--meta)"><svg class="i" data-p="stamp"></svg></span>Marca da bollo</div><span class="tag">Automatica</span></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px"><span style="color:var(--muted);font-size:17px;display:flex;align-items:center;gap:8px"><span class="lm" data-f="#12a594" data-x="#fff" style="height:20px;display:inline-block"></span>Numerazione, bollo e codici li mette DottorCloud</span><div class="btn teal" id="emit" style="height:54px;padding:0 24px;font-size:19px"><svg class="i" data-p="send"></svg>Emetti e invia</div></div>
   </div>
   <div class="stt" id="st1" style="left:1160px;top:770px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Inviata allo SdI<small>Sistema di Interscambio</small></div></div>
   <div class="stt" id="st2" style="left:1190px;top:866px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Consegnata<small>Ricevuta di consegna</small></div></div>
-  <div class="stt" id="st3" style="left:1220px;top:962px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Trasmessa al Sistema TS<small>Per la dichiarazione precompilata</small></div></div>
+  <div class="stt toast" id="st3" style="left:1220px;top:962px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Trasmessa al Sistema TS<small>Per la dichiarazione precompilata</small></div></div>
 </section>
 
 <!-- ===== livelli ===== -->
@@ -484,12 +532,12 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="bgc" data-c="#12a594" data-o=".06" style="left:-300px;top:-250px;width:1000px"></div>
   <div class="left">
     <div><span class="eyebrow" id="lv-e"><svg class="i" data-p="shield"></svg>Livelli e permessi</span></div>
-    <div class="cap" style="font-size:80px"><span class="kin" id="lv-h">Ognuno vede solo quello che gli serve.</span></div>
+    <div class="cap" style="font-size:80px"><span class="kin" id="lv-h">Ognuno vede ~solo ~quello ~che ~gli ~serve.</span></div>
     <div class="sub"><span class="kin" id="lv-s">Un livello per ogni ruolo.</span></div>
   </div>
   <div class="win" id="lv-w" style="left:820px;top:170px;width:1000px;height:720px" data-bar="aurora.dottorcloud.it/persone/giulia-ferri">
     <div style="padding:26px 36px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--border)">
-      <div class="av" style="width:64px;height:64px;font-size:22px;background:var(--rose-s);color:var(--rose)">GF</div>
+      <div class="av" style="width:64px;height:64px;font-size:22px;background:var(--teal-s);color:var(--teal-d)">GF</div>
       <div><div class="h3" style="font-size:30px">Giulia Ferri</div><div style="color:var(--muted);font-size:17px;margin-top:3px">Paziente dal 12/10/2026 · 41 anni</div></div>
     </div>
     <div style="padding:24px 36px 0;display:flex;align-items:center;gap:16px"><span style="color:var(--muted);font-size:17px;font-weight:500">Vista come</span>
@@ -502,13 +550,13 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
       <div class="box"><span class="lbl">Conversazioni</span><b>WhatsApp · ieri alle 18:04</b><span>"Sì, confermo"</span></div>
     </div>
     <div class="view" id="v1">
-      <div class="box" style="grid-column:span 2;display:flex;align-items:center;gap:12px;background:var(--teal-s);border-color:#bfe7de"><svg class="i" data-p="lock" style="color:var(--teal-d);font-size:22px"></svg><b style="margin:0;color:var(--teal-d);font-size:18px">Clinica · la vedono solo i medici del centro</b></div>
-      <div class="box"><span class="lbl">Allergie</span><b style="color:var(--rose)">Penicillina</b><span>Segnalata il 12/10</span></div>
+      <div class="box" style="grid-column:span 2;display:flex;align-items:center;gap:12px;background:var(--teal-s);box-shadow:none"><svg class="i" data-p="lock" style="color:var(--teal-d);font-size:22px"></svg><b style="margin:0;color:var(--teal-d);font-size:18px">Clinica · la vedono solo i medici del centro</b></div>
+      <div class="box"><span class="lbl">Allergie</span><b style="color:var(--rose-t)">Penicillina</b><span>Segnalata il 12/10</span></div>
       <div class="box"><span class="lbl">Terapia in corso</span><b>Ramipril 5 mg</b><span>Una volta al giorno</span></div>
     </div>
     <div class="view" id="v2">
       <div class="box"><span class="lbl">Arriva da</span><b>Campagna "Check-up cuore"</b><span>Facebook · 3 settimane fa</span></div>
-      <div class="box"><span class="lbl">Consenso marketing</span><b style="color:var(--green)">Sì, dal 10/10</b><span>Può ricevere le newsletter</span></div>
+      <div class="box"><span class="lbl">Consenso marketing</span><b style="color:var(--success)">Sì, dal 10/10</b><span>Può ricevere le newsletter</span></div>
       <div class="lockbox"><div class="lk"><svg class="i" data-p="lock"></svg></div><div><b style="font-size:22px;color:var(--ink-strong);display:block">Dati clinici riservati</b><span style="font-size:17px;color:var(--muted)">Il marketing non vede visite, referti, fatture né il codice fiscale</span></div></div>
     </div>
   </div>
@@ -523,43 +571,43 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
 </section>
 
 <!-- ===== accesso ===== -->
-<section class="scene" id="s-acc" style="background:#eef7f5">
+<section class="scene" id="s-acc">
   <div class="bgc" data-c="#12a594" data-o=".07" style="left:1250px;top:-250px;width:900px"></div>
   <div class="left" style="width:660px">
     <div><span class="eyebrow" id="ac-e"><svg class="i" data-p="user"></svg>Area paziente</span></div>
-    <div class="cap" style="font-size:80px"><span class="kin" id="ac-h">Il paziente entra con un codice, poi col viso.</span></div>
+    <div class="cap" style="font-size:80px"><span class="kin" id="ac-h">Il paziente entra con un codice, ~poi ~col ~viso.</span></div>
     <div class="sub"><span class="kin" id="ac-s">Solo su invito del centro.</span></div>
   </div>
   <div class="phone bigp" id="acp" style="left:870px;top:100px">
     <div class="scr" style="background:#fff"><div class="notch"></div>
       <div class="sms" id="sms"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600"><span>MESSAGGI</span><span>ora</span></div><b style="display:block;margin-top:3px;color:#111">Centro Medico Aurora</b>Il tuo codice per entrare è 482913</div>
       <div id="acLogin" class="pad" style="position:absolute;inset:0;padding-top:120px;text-align:center">
-        <div class="av" style="width:64px;height:64px;font-size:26px;background:var(--teal);color:#fff;margin:0 auto">A</div>
+        <div class="av" style="width:64px;height:64px;font-size:26px;background:var(--act);color:#fff;margin:0 auto">A</div>
         <div class="ttl" style="margin-top:18px">Entra nella tua area</div>
         <div style="font-size:15px;color:var(--muted);margin-top:6px">Ti abbiamo mandato un codice via SMS</div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:30px"><div class="codeb" id="cb0"></div><div class="codeb" id="cb1"></div><div class="codeb" id="cb2"></div><div class="codeb" id="cb3"></div><div class="codeb" id="cb4"></div><div class="codeb" id="cb5"></div></div>
-        <div id="sugg" class="pill" style="margin-top:28px;background:var(--field);color:var(--ink-strong);height:44px;font-size:15px;padding:0 18px"><svg class="i" data-p="msg"></svg>Usa 482913 dai Messaggi</div>
-        <div id="face" style="position:absolute;left:50%;top:560px;width:150px;height:150px;margin-left:-75px;border-radius:36px;background:rgba(18,165,148,.08);display:grid;place-items:center">
-          <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#12a594" stroke-width="1.6" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M9 9v1M15 9v1M12 9v4h-1M9 16c1.8 1.3 4.2 1.3 6 0"/></svg>
+        <div id="sugg" class="pill" style="margin-top:28px;background:var(--s2);color:var(--ink-strong);border-radius:12px 12px 12px 3px;height:44px;font-size:15px;padding:0 18px"><svg class="i" data-p="msg"></svg>Usa 482913 dai Messaggi</div>
+        <div id="face" style="position:absolute;left:50%;top:560px;width:150px;height:150px;margin-left:-75px;border-radius:50% 50% 50% 22%;background:var(--teal-s);display:grid;place-items:center">
+          <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#0b6f64" stroke-width="1.6" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M9 9v1M15 9v1M12 9v4h-1M9 16c1.8 1.3 4.2 1.3 6 0"/></svg>
           <div id="scan" style="position:absolute;left:18px;right:18px;height:3px;background:var(--mint);border-radius:3px;box-shadow:0 0 12px var(--mint)"></div>
-          <div id="faceok" style="position:absolute;inset:0;border-radius:36px;background:var(--teal);display:grid;place-items:center;color:#fff;font-size:70px"><svg class="i" data-p="check"></svg></div>
+          <div id="faceok" style="position:absolute;inset:0;border-radius:50% 50% 50% 22%;background:var(--act);display:grid;place-items:center;color:#fff;font-size:70px"><svg class="i" data-p="check"></svg></div>
         </div>
       </div>
       <div id="acHome" class="pad" style="position:absolute;inset:0;background:var(--bg)">
-        <div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:13px;background:var(--teal);color:#fff">A</div><b style="font-size:14px;color:var(--ink-strong)">Centro Medico Aurora</b></div>
+        <div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:13px;background:var(--act);color:#fff">A</div><b style="font-size:14px;color:var(--ink-strong)">Centro Medico Aurora</b></div>
         <div class="ttl" style="margin-top:14px">Ciao Giulia</div>
-        <div class="hh" style="margin-top:12px;background:var(--teal);color:#fff;border-radius:18px;padding:16px">
-          <div style="font-size:13px;font-weight:700;opacity:.85">GIO 15 OTT · 11:00</div>
-          <div style="font-size:19px;font-weight:700;margin-top:3px">Visita cardiologica</div>
+        <div class="hh" style="margin-top:12px;background:var(--deep);color:var(--on-deep);border-radius:18px 18px 18px 4px;padding:16px;position:relative;overflow:hidden"><div style="position:absolute;right:0;top:0;width:96px;height:70px;background:var(--mint);opacity:.3;-webkit-mask:var(--motif) 0 0 / 32px 32px repeat"></div>
+          <div style="font-size:13px;font-weight:700;color:var(--mint);letter-spacing:.06em">GIO 15 OTT · 11:00</div>
+          <div style="font-size:19px;font-weight:700;margin-top:3px;color:#fff">Visita cardiologica</div>
           <div style="font-size:14px;opacity:.9;margin-top:6px">Prepara la visita · 2 di 3 fatti</div>
         </div>
         <div class="hh lbl" style="margin-top:18px">I tuoi piani</div>
         <div class="hh" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-          <div style="background:#fff;border-radius:16px;padding:14px;box-shadow:0 0 0 1px rgba(0,0,0,.06)"><div style="width:38px;height:38px;border-radius:11px;background:var(--amber-s);color:var(--amber);display:grid;place-items:center;font-size:20px"><svg class="i" data-p="apple"></svg></div><b style="display:block;font-size:15px;margin-top:10px;color:var(--ink-strong)">Piano alimentare</b><span style="font-size:12px;color:var(--muted)">Settimana 3 di 8</span></div>
-          <div style="background:#fff;border-radius:16px;padding:14px;box-shadow:0 0 0 1px rgba(0,0,0,.06)"><div style="width:38px;height:38px;border-radius:11px;background:var(--violet-s);color:var(--violet);display:grid;place-items:center;font-size:20px"><svg class="i" data-p="dumb"></svg></div><b style="display:block;font-size:15px;margin-top:10px;color:var(--ink-strong)">Esercizi a casa</b><span style="font-size:12px;color:var(--muted)">Oggi: 4 esercizi</span></div>
+          <div style="background:#fff;border-radius:16px 16px 16px 3px;padding:14px;box-shadow:inset 0 0 0 1px var(--line)"><div style="width:38px;height:38px;border-radius:50% 50% 50% 22%;background:var(--amber-s);color:var(--amber-t);display:grid;place-items:center;font-size:20px"><svg class="i" data-p="apple"></svg></div><b style="display:block;font-size:15px;margin-top:10px;color:var(--ink-strong)">Piano alimentare</b><span style="font-size:12px;color:var(--muted)">Settimana 3 di 8</span></div>
+          <div style="background:#fff;border-radius:16px 16px 16px 3px;padding:14px;box-shadow:inset 0 0 0 1px var(--line)"><div style="width:38px;height:38px;border-radius:50% 50% 50% 22%;background:var(--violet-s);color:var(--violet-t);display:grid;place-items:center;font-size:20px"><svg class="i" data-p="dumb"></svg></div><b style="display:block;font-size:15px;margin-top:10px;color:var(--ink-strong)">Esercizi a casa</b><span style="font-size:12px;color:var(--muted)">Oggi: 4 esercizi</span></div>
         </div>
-        <div class="hh prow" style="margin-top:10px"><div class="ck" style="background:var(--blue-s);color:var(--blue)"><svg class="i" data-p="msg"></svg></div><div><b>Dott.ssa Rossi</b><span>"Ho letto il tuo diario, ottimo lavoro"</span></div></div>
-        <div class="hh prow"><div class="ck" style="background:var(--rose-s);color:var(--rose)"><svg class="i" data-p="file"></svg></div><div><b>Referto ECG</b><span>Nuovo documento</span></div></div>
+        <div class="hh prow" style="margin-top:10px"><div class="ck" style="background:var(--blue-s);color:var(--blue-t)"><svg class="i" data-p="msg"></svg></div><div><b>Dott.ssa Rossi</b><span>"Ho letto il tuo diario, ottimo lavoro"</span></div></div>
+        <div class="hh prow"><div class="ck" style="background:var(--rose-s);color:var(--rose-t)"><svg class="i" data-p="file"></svg></div><div><b>Referto ECG</b><span>Nuovo documento</span></div></div>
         <div class="tabbar"><div class="on"><svg class="i" data-p="home"></svg>Oggi</div><div class=""><svg class="i" data-p="list"></svg>Piani</div><div class=""><svg class="i" data-p="file"></svg>Documenti</div><div class=""><svg class="i" data-p="msg"></svg>Messaggi</div></div>
       </div>
     </div>
@@ -570,11 +618,11 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
 </section>
 
 <!-- ===== piano alimentare ===== -->
-<section class="scene" id="s-diet" style="background:#fbf6ec">
+<section class="scene" id="s-diet">
   <div class="bgc" data-c="#d98a0b" data-o=".06" style="left:-300px;top:450px;width:1000px"></div>
   <div class="left" style="width:660px">
-    <div><span class="eyebrow" id="di-e" style="background:var(--amber-s);color:#8a5a06"><svg class="i" data-p="apple"></svg>Piani alimentari</span></div>
-    <div class="cap" style="font-size:80px"><span class="kin" id="di-h">Il piano alimentare, sul telefono.</span></div>
+    <div><span class="eyebrow" id="di-e"><svg class="i" data-p="apple"></svg>Piani alimentari</span></div>
+    <div class="cap" style="font-size:80px"><span class="kin" id="di-h">Il piano alimentare, ~sul ~telefono.</span></div>
     <div class="sub"><span class="kin" id="di-s">Lo scrive il nutrizionista, il paziente lo segue.</span></div>
   </div>
   <div class="phone bigp" id="dip" style="left:870px;top:100px">
@@ -582,27 +630,27 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
       <div style="font-size:13px;color:var(--muted);font-weight:700">PIANO ALIMENTARE · SETTIMANA 3</div><div class="ttl">Mercoledì</div>
       <div id="days" style="display:flex;gap:6px;margin-top:12px"><div class="dchip" data-i="0">LUN<b>12</b></div><div class="dchip" data-i="1">MAR<b>13</b></div><div class="dchip" data-i="2">MER<b>14</b></div><div class="dchip" data-i="3">GIO<b>15</b></div><div class="dchip" data-i="4">VEN<b>16</b></div><div class="dchip" data-i="5">SAB<b>17</b></div><div class="dchip" data-i="6">DOM<b>18</b></div></div>
       <div class="meal" id="me0"><div class="mh">Colazione · 7:30<span class="ck" id="mck0" style="margin-left:auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:15px"></span></div><div class="mt">Yogurt greco, fiocchi d'avena, mirtilli</div></div>
-      <div class="meal" id="me1"><div class="mh">Pranzo · 13:00<span class="pill" id="cambia" style="margin-left:auto;height:28px;font-size:13px;background:var(--teal-s);color:var(--teal-d)">Cambia</span></div><div class="mt" id="pranzo">Merluzzo al forno 150 g, patate, insalata</div></div>
+      <div class="meal" id="me1"><div class="mh">Pranzo · 13:00<span class="pill" id="cambia" style="margin-left:auto;height:28px;font-size:13px;background:var(--teal-s);color:var(--teal-d);border-radius:9px 9px 9px 3px">Cambia</span></div><div class="mt" id="pranzo">Merluzzo al forno 150 g, patate, insalata</div></div>
       <div class="meal" id="me2"><div class="mh">Spuntino · 16:30</div><div class="mt">Una mela e 20 g di mandorle</div></div>
       <div class="meal" id="me3"><div class="mh">Cena · 20:00</div><div class="mt">Pasta integrale 70 g, verdure grigliate</div></div>
-      <div id="fishp" class="pill" style="margin-top:12px;background:var(--blue-s);color:var(--blue);height:36px"><svg class="i" data-p="info"></svg>Pesce: ancora 2 volte questa settimana</div>
+      <div id="fishp" class="pill" style="margin-top:12px;background:var(--info-s);color:var(--info);height:36px"><svg class="i" data-p="info"></svg>Pesce: ancora 2 volte questa settimana</div>
     </div>
-    <div class="sheet" id="sheet"><div style="width:44px;height:5px;border-radius:3px;background:#ddd;margin:0 auto 12px"></div><b style="font-size:18px;color:var(--ink-strong)">Al posto del merluzzo</b><div style="font-size:14px;color:var(--muted);margin-top:2px">Alternative equivalenti, scelte dal nutrizionista</div>
+    <div class="sheet" id="sheet"><div style="width:44px;height:5px;border-radius:3px;background:var(--s4);margin:0 auto 12px"></div><b style="font-size:18px;color:var(--ink-strong)">Al posto del merluzzo</b><div style="font-size:14px;color:var(--muted);margin-top:2px">Alternative equivalenti, scelte dal nutrizionista</div>
       <div class="alt" id="alt0"><span style="font-size:22px">🐟</span>Orata al forno 150 g</div><div class="alt"><span style="font-size:22px">🐟</span>Nasello 150 g</div><div class="alt"><span style="font-size:22px">🐟</span>Sogliola 170 g</div></div>
     <div class="tabbar"><div class=""><svg class="i" data-p="home"></svg>Oggi</div><div class="on"><svg class="i" data-p="list"></svg>Piani</div><div class=""><svg class="i" data-p="file"></svg>Documenti</div><div class=""><svg class="i" data-p="msg"></svg>Messaggi</div></div></div>
   </div>
   <div class="card" id="shop" style="left:1370px;top:250px;width:440px;padding:26px 28px">
-    <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:12px;background:var(--amber-s);color:var(--amber);display:grid;place-items:center;font-size:22px"><svg class="i" data-p="cart"></svg></div><div><b style="font-size:20px;color:var(--ink-strong);display:block">Lista della spesa</b><span style="font-size:14px;color:var(--muted)">Fatta dal menù della settimana</span></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:50% 50% 50% 22%;background:var(--amber-s);color:var(--amber-t);display:grid;place-items:center;font-size:22px"><svg class="i" data-p="cart"></svg></div><div><b style="font-size:20px;color:var(--ink-strong);display:block">Lista della spesa</b><span style="font-size:14px;color:var(--muted)">Fatta dal menù della settimana</span></div></div>
     <div id="shopl" style="margin-top:14px"></div>
   </div>
 </section>
 
 <!-- ===== esercizi ===== -->
-<section class="scene" id="s-ex" style="background:#f2f0fd">
+<section class="scene" id="s-ex">
   <div class="bgc" data-c="#7c5cf0" data-o=".06" style="left:-300px;top:-250px;width:1000px"></div>
   <div class="left" style="width:660px">
-    <div><span class="eyebrow" id="ex-e" style="background:var(--violet-s);color:var(--violet)"><svg class="i" data-p="dumb"></svg>Esercizi</span></div>
-    <div class="cap" style="font-size:80px"><span class="kin" id="ex-h">Esercizi a casa, con le animazioni.</span></div>
+    <div><span class="eyebrow" id="ex-e"><svg class="i" data-p="dumb"></svg>Esercizi</span></div>
+    <div class="cap" style="font-size:80px"><span class="kin" id="ex-h">Esercizi a casa, ~con ~le ~animazioni.</span></div>
     <div class="sub"><span class="kin" id="ex-s">Serie, ripetizioni e muscoli che lavorano.</span></div>
   </div>
   <div class="phone bigp" id="exp" style="left:870px;top:100px">
@@ -611,20 +659,20 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
         <div style="font-size:13px;color:var(--muted);font-weight:700">ESERCIZI A CASA · FISIOTERAPIA</div>
         <div style="display:flex;align-items:center;justify-content:space-between"><div class="ttl">Seduta di oggi</div>
           <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="none" stroke="#e7e3fb" stroke-width="7"/><circle id="ring" cx="28" cy="28" r="22" fill="none" stroke="#7c5cf0" stroke-width="7" stroke-linecap="round" transform="rotate(-90 28 28)" stroke-dasharray="138.2" stroke-dashoffset="138.2"/><text id="ringt" x="28" y="33" text-anchor="middle" font-size="14" font-weight="700" fill="#16201e">0/4</text></svg></div>
-        <div class="exi" id="ex0"><div class="th"><svg class="fig" data-k="squat" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Squat a corpo libero</b><span>3 serie × 12</span></div><div class="ck" id="exck0" style="background:var(--field);color:var(--faint)"></div></div>
-        <div class="exi" id="ex1"><div class="th"><svg class="fig" data-k="bridge" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Ponte per i glutei</b><span>3 serie × 15</span></div><div class="ck" style="background:var(--field);color:var(--faint)"></div></div>
-        <div class="exi" id="ex2"><div class="th"><svg class="fig" data-k="plank" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Plank sugli avambracci</b><span>3 serie × 30 s</span></div><div class="ck" style="background:var(--field);color:var(--faint)"></div></div>
-        <div class="exi" id="ex3"><div class="th"><svg class="fig" data-k="stretch" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Allungamento dei femorali</b><span>2 serie × 30 s</span></div><div class="ck" style="background:var(--field);color:var(--faint)"></div></div>
-        <div style="margin-top:14px;font-size:13px;color:var(--muted);background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 0 0 1px rgba(0,0,0,.06)"><b style="color:var(--ink-strong)">Dott. Bianchi</b> · "Se senti dolore al ginocchio, fermati e scrivimi."</div>
+        <div class="exi" id="ex0"><div class="th"><svg class="fig" data-k="squat" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Squat a corpo libero</b><span>3 serie × 12</span></div><div class="ck" id="exck0" style="background:var(--s2);color:var(--faint)"></div></div>
+        <div class="exi" id="ex1"><div class="th"><svg class="fig" data-k="bridge" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Ponte per i glutei</b><span>3 serie × 15</span></div><div class="ck" style="background:var(--s2);color:var(--faint)"></div></div>
+        <div class="exi" id="ex2"><div class="th"><svg class="fig" data-k="plank" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Plank sugli avambracci</b><span>3 serie × 30 s</span></div><div class="ck" style="background:var(--s2);color:var(--faint)"></div></div>
+        <div class="exi" id="ex3"><div class="th"><svg class="fig" data-k="stretch" width="64" height="64" viewBox="0 0 100 120"></svg></div><div><b>Allungamento dei femorali</b><span>2 serie × 30 s</span></div><div class="ck" style="background:var(--s2);color:var(--faint)"></div></div>
+        <div style="margin-top:14px;font-size:13px;color:var(--muted);background:#fff;border-radius:14px 14px 14px 3px;padding:12px 14px;box-shadow:inset 0 0 0 1px var(--line)"><b style="color:var(--ink-strong)">Dott. Bianchi</b> · "Se senti dolore al ginocchio, fermati e scrivimi."</div>
       </div>
       <div class="pad" id="exDet" style="position:absolute;inset:0;background:#fff">
-        <div style="font-size:14px;color:var(--violet);font-weight:700">‹ Seduta di oggi</div>
-        <div style="margin-top:10px;height:300px;border-radius:22px;background:var(--violet-s);display:grid;place-items:center"><svg class="fig" data-k="squat" data-big="1" width="250" height="290" viewBox="0 0 100 120"></svg></div>
+        <div style="font-size:14px;color:var(--teal-d);font-weight:700">‹ Seduta di oggi</div>
+        <div style="margin-top:10px;height:300px;border-radius:22px 22px 22px 4px;background:var(--violet-s);display:grid;place-items:center"><svg class="fig" data-k="squat" data-big="1" width="250" height="290" viewBox="0 0 100 120"></svg></div>
         <div class="ttl" style="margin-top:16px;font-size:26px">Squat a corpo libero</div>
         <div style="font-size:15px;color:var(--muted);margin-top:4px">3 serie × 12 · recupero 60 s</div>
         <div style="font-size:15px;color:var(--ink);margin-top:10px;line-height:1.45">Piedi alla larghezza delle spalle, scendi come per sederti, schiena dritta.</div>
         <div style="display:flex;gap:8px;margin-top:16px"><div class="setp" id="set0">Serie 1</div><div class="setp" id="set1">Serie 2</div><div class="setp" id="set2">Serie 3</div></div>
-        <div class="btn teal" id="exDone" style="margin-top:16px;width:100%;justify-content:center;height:52px;background:var(--violet)"><svg class="i" data-p="check"></svg>Fatto</div>
+        <div class="btn" id="exDone" style="margin-top:16px;width:100%;justify-content:center;height:52px;border-radius:14px 14px 14px 4px"><svg class="i" data-p="check"></svg>Fatto</div>
       </div>
     </div>
   </div>
@@ -636,36 +684,36 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
 </section>
 
 <!-- ===== app ===== -->
-<section class="scene" id="s-app" style="background:#eef7f5">
+<section class="scene" id="s-app">
   <div class="bgc" data-c="#12a594" data-o=".07" style="left:-200px;top:520px;width:900px"></div>
   <div class="left" style="width:620px">
     <div><span class="eyebrow" id="ap-e"><svg class="i" data-p="mobile"></svg>Sul telefono</span></div>
-    <div class="cap" style="font-size:80px"><span class="kin" id="ap-h">Un'app per lo staff. Un'area per i pazienti.</span></div>
+    <div class="cap" style="font-size:80px"><span class="kin" id="ap-h">Un'app per lo staff. ~Un'area ~per ~i ~pazienti.</span></div>
     <div class="sub"><span class="kin" id="ap-s">Firme, appuntamenti e documenti.</span></div>
   </div>
   <div class="phone" id="ph1" style="left:850px;top:130px">
     <div class="scr"><div class="notch"></div><div class="pad">
-      <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)"><div class="lm" data-f="#12a594" data-x="#f7f7f7" style="height:22px"></div>Dottor<span style="color:var(--teal);margin-left:-8px">Cloud</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--ink-strong)"><div class="lm" data-f="#12a594" data-x="#f6f9f8" style="height:22px"></div>Dottor<span style="color:var(--teal);margin-left:-8px">Cloud</span></div>
       <div style="font-size:14px;color:var(--muted);font-weight:600;margin-top:14px">Giovedì 15 ottobre</div><div class="ttl">La mia agenda</div>
       <div id="pl1"></div>
     </div></div>
   </div>
   <div class="phone" id="ph2" style="left:1390px;top:130px">
     <div class="scr" style="background:#fff"><div class="notch"></div><div class="pad">
-      <div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:34px;height:34px;font-size:14px;background:var(--teal);color:#fff">A</div><b style="font-size:15px;color:var(--ink-strong)">Centro Medico Aurora</b></div>
+      <div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:34px;height:34px;font-size:14px;background:var(--act);color:#fff">A</div><b style="font-size:15px;color:var(--ink-strong)">Centro Medico Aurora</b></div>
       <div class="ttl" style="margin-top:14px">Ciao Giulia</div>
-      <div style="margin-top:12px;background:var(--teal-s);border-radius:16px;padding:14px 16px">
+      <div style="margin-top:12px;background:var(--teal-s);border-radius:16px 16px 16px 3px;padding:14px 16px">
         <div style="font-size:14px;color:var(--teal-d);font-weight:700">GIO 15 OTT · 11:00</div>
         <div style="font-size:18px;font-weight:700;color:var(--ink-strong);margin-top:4px">Prepara la visita</div>
-        <div style="height:8px;border-radius:6px;background:#fff;margin-top:10px;overflow:hidden"><div id="prog" style="height:100%;background:var(--teal);width:66%"></div></div>
+        <div style="height:8px;border-radius:6px;background:#fff;margin-top:10px;overflow:hidden"><div id="prog" style="height:100%;background:var(--teal);width:66%;border-radius:6px"></div></div>
         <div id="progt" style="font-size:13px;color:var(--teal-d);margin-top:6px;font-weight:600">2 di 3 fatti</div>
       </div>
-      <div class="prow"><div class="ck" style="background:var(--green);color:#fff"><svg class="i" data-p="check"></svg></div><div><b>Privacy</b><span>Firmata</span></div></div>
-      <div class="prow"><div class="ck" style="background:var(--green);color:#fff"><svg class="i" data-p="check"></svg></div><div><b>Anamnesi</b><span>Compilata da casa</span></div></div>
-      <div class="prow"><div class="ck" id="consck" style="background:var(--field);color:var(--muted)"></div><div><b>Consenso informato</b><span id="const">Da firmare</span></div><div class="btn teal" id="firma" style="margin-left:auto;height:36px;font-size:14px;padding:0 14px">Firma</div></div>
+      <div class="prow"><div class="ck" style="background:var(--act);color:#fff"><svg class="i" data-p="check"></svg></div><div><b>Privacy</b><span>Firmata</span></div></div>
+      <div class="prow"><div class="ck" style="background:var(--act);color:#fff"><svg class="i" data-p="check"></svg></div><div><b>Anamnesi</b><span>Compilata da casa</span></div></div>
+      <div class="prow"><div class="ck" id="consck" style="background:var(--s2);color:var(--muted)"></div><div><b>Consenso informato</b><span id="const">Da firmare</span></div><div class="btn teal" id="firma" style="margin-left:auto;height:36px;font-size:14px;padding:0 14px">Firma</div></div>
       <div style="height:84px;position:relative"><svg id="sig" width="330" height="80" viewBox="0 0 330 90" style="position:absolute;top:2px"><path id="sigp" d="M20 60 C 40 20, 60 20, 70 55 S 100 80, 115 40 S 140 10, 150 50 C 158 75, 175 70, 185 45 C 195 25, 205 30, 210 55 C 214 70, 230 62, 245 40 L 300 38" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/></svg></div>
-      <div class="prow"><div class="ck" style="background:var(--rose-s);color:var(--rose)"><svg class="i" data-p="file"></svg></div><div><b>Referto ECG</b><span>Disponibile per 45 giorni</span></div></div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:12px;color:var(--faint);font-weight:600"><div class="lm" data-f="#a3a3a3" data-x="#fff" style="height:14px"></div>con DottorCloud</div>
+      <div class="prow"><div class="ck" style="background:var(--rose-s);color:var(--rose-t)"><svg class="i" data-p="file"></svg></div><div><b>Referto ECG</b><span>Disponibile per 45 giorni</span></div></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:12px;color:var(--faint);font-weight:600"><div class="lm" data-f="#959b99" data-x="#fff" style="height:14px"></div>con DottorCloud</div>
     </div></div>
   </div>
 </section>
@@ -673,12 +721,12 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
 <!-- ===== GDPR ===== -->
 <section class="scene dark" id="s-gdpr">
   <div class="dots"></div>
-  <div class="blob" id="gb" style="width:1300px;height:1300px;left:-200px;top:-150px;background:radial-gradient(circle,rgba(47,111,237,.28) 0%,rgba(47,111,237,0) 62%)"></div>
+  <div class="blob" id="gb"></div>
   <svg id="eu" class="abs" style="left:200px;top:240px" width="600" height="600" viewBox="0 0 600 600"></svg>
   <div class="abs cm2" id="gm" style="left:390px;top:430px"></div>
   <div class="abs" style="left:950px;top:230px;width:880px">
     <div><span class="eyebrow" id="gd-e"><svg class="i" data-p="lock"></svg>Privacy e GDPR</span></div>
-    <div class="cap" style="font-size:88px;margin-top:28px"><span class="kin" id="gd-h">I dati dei pazienti, protetti.</span></div>
+    <div class="cap" style="font-size:88px;margin-top:28px"><span class="kin" id="gd-h">I dati dei pazienti, ~protetti.</span></div>
     <div style="display:flex;flex-direction:column;gap:26px;margin-top:48px">
       <div class="grow" id="g0"><div class="gi"><svg class="i" data-p="server"></svg></div><div>Server in Europa<small>I dati dei pazienti non escono dall'Unione europea</small></div></div>
       <div class="grow" id="g1"><div class="gi"><svg class="i" data-p="flag"></svg></div><div>Un'azienda italiana<small>Vicina, raggiungibile, che parla la tua lingua</small></div></div>
@@ -698,9 +746,9 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="abs" id="sign" style="left:0;right:0;top:900px;text-align:center;color:rgba(255,255,255,.6);font-size:26px;font-weight:500">Un prodotto di <b style="color:#fff;font-weight:700">NPM2 Solutions Srl</b></div>
 </section>
 
-<div id="cl"></div>
-<div class="wipe" id="wA" style="background:var(--teal)"></div>
-<div class="wipe" id="wB" style="background:var(--teal-d)"></div>
+<div id="cl"><div class="mo"></div></div>
+<div class="wipe" id="wA" style="background:var(--mint)"></div>
+<div class="wipe" id="wB" style="background:var(--teal-d)"><div class="mo"></div></div>
 <div id="bug"><span class="lm" data-f="#12a594" data-x="#fff" style="height:24px" id="bugm"></span><span>Dottor<b>Cloud</b></span></div>
 <div id="trk"></div><div class="blind" id="bl0"></div><div class="blind" id="bl1"></div><div class="blind" id="bl2"></div><div class="blind" id="bl3"></div><div class="blind" id="bl4"></div><div class="blind" id="bl5"></div><div class="blind" id="bl6"></div><div class="blind" id="bl7"></div><div id="ripple"></div><div id="touch"></div>
 <svg id="cursor" viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.6 14.8 L11.6 21.4 L14.4 20.2 L11.4 13.7 L17.6 13.4 Z" fill="#111" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
@@ -803,8 +851,11 @@ const pop = (el, t, s, d = 0.5, dy = 40) => { const q = eback(pr(t, s, s + d)); 
 const rise = (el, t, s, d = 0.6, dy = 50) => { const q = eo5(pr(t, s, s + d)); S(el, { transform: `translateY(${(1 - q) * dy}px)`, opacity: pr(t, s, s + 0.2) }); };
 
 const K = {};
+// a word that starts with ~ takes the brand colour, like the highlighted words on the site
+const kinHTML = (txt) => txt.split(' ').map((w) => (w[0] === '~' ? `<span class="kw hl"><span>${w.slice(1)}</span></span>` : `<span class="kw"><span>${w}</span></span>`)).join(' ');
+const blkHTML = (b) => `<div class="blk ${b[0]}" data-d="${b[5]}" data-v="${b[6]}" style="left:${b[1]}px;top:${b[2]}px;width:${b[3]}px;height:${b[4]}px">${b[7] ? '<div class="mo"></div>' : ''}</div>`;
 document.querySelectorAll('.kin').forEach((el) => {
-  el.innerHTML = el.textContent.split(' ').map((w) => `<span class="kw"><span>${w}</span></span>`).join(' ');
+  el.innerHTML = kinHTML(el.textContent);
   K[el.id] = [...el.querySelectorAll('.kw > span')];
 });
 function kinIn(k, t, start, stag = 0.055, dur = 0.55, out = null) {
@@ -854,10 +905,10 @@ const PLANS = {
 };
 // what each ad says before and after the product
 const AD = {
-  'ad-chat': ['I pazienti confermano da soli.', 'Promemoria e conferme su WhatsApp, in automatico.'],
-  'ad-fatt': ['La fattura si fa da sola.', 'Dalla visita allo SdI e al Sistema TS.'],
-  'ad-app': ['I tuoi pazienti, con la loro app.', 'Documenti, firme e piani sul telefono.'],
-  'ad-ex': ['Gli esercizi a casa, finalmente seguiti.', 'Serie, animazioni e muscoli sul telefono del paziente.'],
+  'ad-chat': ['I pazienti ~confermano ~da ~soli.', 'Promemoria e conferme su WhatsApp, in automatico.'],
+  'ad-fatt': ['La fattura ~si ~fa ~da ~sola.', 'Dalla visita allo SdI e al Sistema TS.'],
+  'ad-app': ['I tuoi pazienti, ~con ~la ~loro ~app.', 'Documenti, firme e piani sul telefono.'],
+  'ad-ex': ['Gli esercizi a casa, ~finalmente ~seguiti.', 'Serie, animazioni e muscoli sul telefono del paziente.'],
 }[PLAN_NAME];
 const PLAN = PLANS[PLAN_NAME];
 window.PLAN_OUT = PLAN;
@@ -869,33 +920,57 @@ const JX = (i) => 210 + i * 300, JY = 380;
 CHAP.forEach((c, k) => {
   const sec = document.createElement('section');
   sec.className = 'scene jmap'; sec.id = 'j' + (k + 1);
-  let h = '<div class="dots" style="background-image:radial-gradient(circle, rgba(0,0,0,.07) 1.5px, transparent 1.6px)"></div>';
-  h += `<svg class="abs jsvg" style="left:0;top:0" width="1920" height="1080"><line x1="${JX(0)}" y1="${JY}" x2="${JX(5)}" y2="${JY}" stroke="#dde7e4" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 16"/><line class="jprog" x1="${JX(0)}" y1="${JY}" x2="${JX(0)}" y2="${JY}" stroke="#12a594" stroke-width="6" stroke-linecap="round"/></svg>`;
+  let h = '<div class="dots"></div>';
+  h += `<svg class="abs jsvg" style="left:0;top:0" width="1920" height="1080"><line x1="${JX(0)}" y1="${JY}" x2="${JX(5)}" y2="${JY}" stroke="#c4c8c7" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 16"/><line class="jprog" x1="${JX(0)}" y1="${JY}" x2="${JX(0)}" y2="${JY}" stroke="#12a594" stroke-width="5" stroke-linecap="round"/></svg>`;
   h += '<div class="jring" style="left:' + JX(k) + 'px;top:' + JY + 'px"></div>';
-  CHAP.forEach((d, i) => { h += `<div class="jn" data-i="${i}" style="left:${JX(i)}px;top:${JY}px"></div><div class="jl" data-i="${i}" style="left:${JX(i)}px;top:${JY + 88}px">${d.name}</div>`; });
-  h += `<div class="abs" style="left:0;right:0;top:590px;text-align:center"><div class="jnum" style="font-size:24px;font-weight:700;letter-spacing:.14em;color:var(--teal)">0${k + 1} DI 06</div>
+  CHAP.forEach((d, i) => { h += `<div class="jk" data-i="${i}" style="left:${JX(i)}px;top:${JY - 104}px">0${i + 1}</div><div class="jn" data-i="${i}" style="left:${JX(i)}px;top:${JY}px"></div><div class="jl" data-i="${i}" style="left:${JX(i)}px;top:${JY + 84}px">${d.name}</div>`; });
+  h += `<div class="abs" style="left:0;right:0;top:590px;text-align:center"><div class="jnum eyebrow" style="font-size:24px">Tappa 0${k + 1} di 06</div>
     <div class="cap" style="font-size:124px;letter-spacing:-.05em;margin-top:10px"><span class="kin" id="jt${k}">${c.title}</span></div>
     <div class="sub" style="margin-top:14px;font-size:36px"><span class="kin" id="js${k}">${c.sub}</span></div></div>`;
   sec.innerHTML = h;
   document.getElementById('stage').appendChild(sec);
-  [...sec.querySelectorAll('.kin')].forEach((el) => { el.innerHTML = el.textContent.split(' ').map((w) => `<span class="kw"><span>${w}</span></span>`).join(' '); K[el.id] = [...el.querySelectorAll('.kw > span')]; });
+  [...sec.querySelectorAll('.kin')].forEach((el) => { el.innerHTML = kinHTML(el.textContent); K[el.id] = [...el.querySelectorAll('.kw > span')]; });
 });
 // the two ad scenes
 if (AD) {
   const hook = document.createElement('section');
   hook.className = 'scene dark'; hook.id = 'x-hook';
-  hook.innerHTML = `<div class="dots"></div><div class="blob" style="width:1400px;height:1400px;left:${SW / 2 - 700}px;top:${SH / 2 - 800}px;background:radial-gradient(circle,rgba(18,165,148,.32) 0%,rgba(18,165,148,0) 62%)"></div>
+  hook.innerHTML = `${blkHTML(['deep', -50, SH * 0.76, SW * 0.36, SH * 0.3, 0.05, 'u', 1])}${blkHTML(['mint', SW * 0.78, -80, SW * 0.17, SH * 0.17, 0.15, 'd'])}${blkHTML(['brand', SW * 0.6, SH * 0.9, SW * 0.14, SH * 0.2, 0.25, 'u'])}
     <div class="abs xm" style="left:${SW / 2 - 60}px;top:${SH * 0.3 - 110}px">${markSVG(106, '#5fe0cc', '#111413')}</div>
     <div class="abs cap" style="left:70px;right:70px;top:${SH * 0.3 + 40}px;text-align:center;font-size:${FMT === 'p' ? 96 : 110}px;letter-spacing:-.045em;line-height:1.02"><span class="kin" id="xh">${AD[0]}</span></div>`;
   const end = document.createElement('section');
   end.className = 'scene dark'; end.id = 'x-end';
-  end.innerHTML = `<div class="dots"></div><div class="blob" style="width:1400px;height:1400px;left:${SW / 2 - 700}px;top:${SH / 2 - 800}px;background:radial-gradient(circle,rgba(18,165,148,.32) 0%,rgba(18,165,148,0) 62%)"></div>
+  const ex = ((200 + SW * 0.3) / (SW + 400)) * 100, ey1 = ((200 + SH * 0.7) / (SH + 400)) * 100, ey2 = ((200 + SH - 170) / (SH + 400)) * 100;
+  end.innerHTML = `<div class="dots" style="clip-path:polygon(0 ${ey1}%, ${ex}% ${ey1}%, ${ex}% ${ey2}%, 0 ${ey2}%)"></div>${blkHTML(['deep', SW - 250, -80, 300, SH * 0.25, 0.0, 'd', 1])}${blkHTML(['mint', SW - 410, -80, 130, SH * 0.16, 0.12, 'd'])}
     <div class="abs" id="xl" style="left:0;right:0;top:${SH * 0.3}px;display:flex;justify-content:center;align-items:center;gap:26px">${markSVG(110, '#12a594', '#111413')}${wordSVG(78, '#ffffff', '#5fe0cc')}</div>
     <div class="abs sub" style="left:80px;right:80px;top:${SH * 0.3 + 170}px;text-align:center;font-size:40px;color:rgba(255,255,255,.72)"><span class="kin" id="xs">${AD[1]}</span></div>
-    <div class="abs" style="left:0;right:0;top:${SH * 0.3 + 330}px;display:flex;justify-content:center"><div id="xcta" style="display:flex;align-items:center;gap:14px;background:var(--teal);color:#fff;font-size:40px;font-weight:700;padding:26px 44px;border-radius:999px;letter-spacing:-.01em">Richiedi una demo <span style="font-size:44px">→</span></div></div>
+    <div class="abs" style="left:0;right:0;top:${SH * 0.3 + 330}px;display:flex;justify-content:center"><div id="xcta" style="display:flex;align-items:center;gap:14px;background:var(--mint);color:var(--teal-950);font-size:40px;font-weight:700;padding:26px 44px;border-radius:22px 22px 22px 6px;letter-spacing:-.01em">Richiedi una demo <span style="font-size:44px">→</span></div></div>
     <div class="abs" style="left:0;right:0;bottom:90px;text-align:center;color:rgba(255,255,255,.55);font-size:28px;font-weight:500">Il gestionale per i centri medici · <b style="color:#fff">NPM2 Solutions Srl</b></div>`;
-  [hook, end].forEach((sec) => { document.getElementById('stage').appendChild(sec); sec.querySelectorAll('.kin').forEach((el) => { el.innerHTML = el.textContent.split(' ').map((w) => `<span class="kw"><span>${w}</span></span>`).join(' '); K[el.id] = [...el.querySelectorAll('.kw > span')]; }); });
+  [hook, end].forEach((sec) => { document.getElementById('stage').appendChild(sec); sec.querySelectorAll('.kin').forEach((el) => { el.innerHTML = kinHTML(el.textContent); K[el.id] = [...el.querySelectorAll('.kw > span')]; }); });
 }
+// ---------- the brand's blocks behind the product (one composition per screen, never under the words) ----------
+const COMP = {
+  's-agenda': [['mint', 1690, 210, 200, 300, 0.25, 'r'], ['deep', 30, 640, 240, 520, 0.1, 'u', 1]],
+  's-serv': [['deep', 730, 560, 280, 480, 0.1, 'u', 1], ['mint', 1690, 110, 200, 300, 0.25, 'r'], ['ink', 1770, 760, 120, 240, 0.35, 'r']],
+  's-clin': [['deep', 750, 610, 260, 460, 0.1, 'u', 1], ['mint', 1700, 150, 190, 300, 0.25, 'r']],
+  's-chat': [['deep', 740, 120, 260, 420, 0.1, 'l', 1], ['brand', 1710, 560, 180, 360, 0.25, 'r']],
+  's-fatt': [['deep', 820, 70, 260, 420, 0.1, 'd', 1], ['mint', 1690, 620, 200, 330, 0.3, 'r']],
+  's-liv': [['deep', 740, 590, 260, 440, 0.1, 'u', 1], ['mint', 1700, 110, 190, 280, 0.25, 'r']],
+  's-tel': [['deep', 750, 620, 250, 420, 0.1, 'u', 1], ['brand', 1700, 70, 190, 280, 0.25, 'r']],
+  's-mkt': [['deep', 640, 800, 520, 340, 0.1, 'u', 1], ['mint', 1820, 860, 160, 240, 0.3, 'r']],
+  's-auto': [['deep', -60, 820, 380, 320, 0.1, 'u', 1], ['mint', 1640, 900, 240, 240, 0.3, 'u']],
+  's-ai': [['deep', 800, 600, 260, 440, 0.1, 'u', 1], ['mint', 1700, 100, 190, 280, 0.25, 'r']],
+  's-acc': [['deep', 770, 560, 180, 460, 0.1, 'u', 1], ['mint', 1170, 300, 200, 420, 0.3, 'r']],
+  's-diet': [['deep', 770, 140, 180, 420, 0.1, 'd', 1], ['mint', 1240, 720, 220, 300, 0.3, 'u']],
+  's-ex': [['deep', 780, 610, 180, 430, 0.1, 'u', 1], ['mint', 1700, 90, 190, 260, 0.3, 'r']],
+  's-app': [['deep', 760, 560, 150, 440, 0.1, 'u', 1], ['mint', 1220, 380, 200, 460, 0.3, 'u']],
+  's-out': [['deep', 1690, -60, 260, 600, 0.0, 'd', 1], ['mint', 1520, -60, 150, 380, 0.15, 'd']],
+};
+Object.entries(COMP).forEach(([id, bl]) => { const sc = document.getElementById(id); if (sc) sc.insertAdjacentHTML('afterbegin', bl.map(blkHTML).join('')); });
+// the dark scenes keep the motif in one free corner
+CHAP.forEach((_, k) => { const d = document.getElementById('j' + (k + 1)).querySelector('.dots'); d.style.clipPath = k % 2 ? 'polygon(76% 0, 100% 0, 100% 26%, 76% 26%)' : 'polygon(0 0, 24% 0, 24% 26%, 0 26%)'; });
+const DCLIP = { 's-hook': 'polygon(0 0, 26% 0, 26% 30%, 0 30%)', 's-gdpr': 'polygon(74% 70%, 100% 70%, 100% 100%, 74% 100%)', 's-out': 'polygon(0 66%, 30% 66%, 30% 100%, 0 100%)', 's-ai': 'polygon(0 0, 0 0, 0 0)' };
+Object.entries(DCLIP).forEach(([id, c]) => { const d = document.getElementById(id)?.querySelector('.dots'); if (d) d.style.clipPath = c; });
 // put the scenes in the order of the path, each inside a camera
 const stageEl = document.getElementById('stage'), firstOverlay = document.getElementById('cl');
 const SCN = PLAN.map(([id]) => document.getElementById(id));
@@ -955,8 +1030,8 @@ const chipEls = [...document.querySelectorAll('.chipc')];
   }
   $('avwall').innerHTML = h;
   const COLS = [['Dott.ssa Rossi', 'Cardiologia'], ['Dott. Bianchi', 'Ortopedia'], ['Studio 3', 'Ecografo'], ['Palestra', 'Fisioterapia'], ['Dott.ssa Conti', 'Dermatologia'], ['Box 2', 'Laser'], ['Dott. Greco', 'Nutrizione'], ['Studio 5', 'Psicologia'], ['Dott.ssa Villa', 'Ginecologia'], ['Sala prelievi', 'Laboratorio'], ['Dott. Marchi', 'Oculistica'], ['Studio 7', 'Logopedia']];
-  $('strip').innerHTML = [...COLS, ...COLS].map((c, i) => `<div style="width:300px;flex:none;background:#fff;border-radius:16px;padding:18px;box-shadow:0 12px 30px -14px rgba(0,0,0,.2),0 0 0 1px rgba(0,0,0,.05)"><b style="font-size:18px;color:var(--ink-strong);display:block">${c[0]}</b><span style="font-size:14px;color:var(--muted)">${c[1]}</span>
-    <div style="margin-top:14px;height:44px;border-radius:9px;background:${PAL[i % 6][0]};border-left:4px solid ${PAL[i % 6][1]}"></div><div style="margin-top:8px;height:64px;border-radius:9px;background:${PAL[(i + 2) % 6][0]};border-left:4px solid ${PAL[(i + 2) % 6][1]}"></div></div>`).join('');
+  $('strip').innerHTML = [...COLS, ...COLS].map((c, i) => `<div style="width:300px;flex:none;background:#fff;border-radius:16px 16px 16px 3px;padding:18px;box-shadow:var(--sh-lg),0 0 0 1px rgba(11,46,42,.06)"><b style="font-size:18px;color:var(--ink-strong);display:block">${c[0]}</b><span style="font-size:14px;color:var(--muted)">${c[1]}</span>
+    <div style="margin-top:14px;height:44px;border-radius:9px 9px 9px 2px;background:${PAL[i % 6][0]};border-left:4px solid ${PAL[i % 6][1]}"></div><div style="margin-top:8px;height:64px;border-radius:9px;background:${PAL[(i + 2) % 6][0]};border-left:4px solid ${PAL[(i + 2) % 6][1]}"></div></div>`).join('');
 }
 const avEls = [...document.querySelectorAll('.wa')];
 
@@ -966,7 +1041,7 @@ const avEls = [...document.querySelectorAll('.wa')];
   $('ag').insertAdjacentHTML('beforeend', h);
 }
 const COLW4 = (1700 - 330 - 66) / 4;
-const C4 = { rose: ['var(--rose-s)', 'var(--rose)'], violet: ['var(--violet-s)', 'var(--violet)'], blue: ['var(--blue-s)', 'var(--blue)'], amber: ['var(--amber-s)', 'var(--amber)'] };
+const C4 = { rose: ['var(--rose-s)', 'var(--rose)', 'var(--rose-t)'], violet: ['var(--violet-s)', 'var(--violet)', 'var(--violet-t)'], blue: ['var(--blue-s)', 'var(--blue)', 'var(--blue-t)'], amber: ['var(--amber-s)', 'var(--amber)', 'var(--amber-t)'] };
 const APPT = [
   [0, 0.5, 0.66, 'Visita cardiologica', 'Chiara Fontana', 'rose'], [0, 1.5, 0.66, 'Visita cardiologica', 'Luca Moretti · annullata', 'rose', 'cancel'], [0, 3, 0.66, 'Visita cardiologica', 'Giulia Ferri', 'rose'],
   [1, 0, 0.5, 'Ecografia tiroide', 'Anna Marchi', 'blue'], [1, 1, 0.5, 'Ecografia addome', 'Elena Riva', 'blue'], [1, 2.5, 0.5, 'Ecocardiogramma', 'Davide Villa', 'blue'],
@@ -977,36 +1052,38 @@ const ag = $('ag');
 const apptEls = APPT.map((a) => {
   const d = document.createElement('div');
   d.className = 'appt';
-  S(d, { left: 66 + a[0] * COLW4 + 6 + 'px', top: 66 + a[1] * 88 + 3 + 'px', width: COLW4 - 12 + 'px', height: a[2] * 88 - 6 + 'px', background: C4[a[5]][0], borderColor: C4[a[5]][1], color: C4[a[5]][1] });
-  d.innerHTML = `<b>${a[3]}</b><span>${a[4]}</span>` + (a[6] === 'sub' ? '<span class="pill" id="subpill" style="position:absolute;right:8px;bottom:8px;height:26px;font-size:12px;background:#fff;color:var(--amber)">Abbonamento · 4 di 10</span>' : '');
+  S(d, { left: 66 + a[0] * COLW4 + 6 + 'px', top: 66 + a[1] * 88 + 3 + 'px', width: COLW4 - 12 + 'px', height: a[2] * 88 - 6 + 'px', background: C4[a[5]][0], color: C4[a[5]][2] });
+  d.style.setProperty('--bar', C4[a[5]][1]);
+  d.innerHTML = `<b>${a[3]}</b><span>${a[4]}</span>` + (a[6] === 'sub' ? '<span class="pill" id="subpill" style="position:absolute;right:8px;bottom:8px;height:26px;font-size:12px;background:#fff;color:var(--amber-t)">Abbonamento · 4 di 10</span>' : '');
   ag.appendChild(d);
   return d;
 });
 const fill = document.createElement('div');
-fill.className = 'appt';
-S(fill, { left: '72px', top: 66 + 1.5 * 88 + 3 + 'px', width: COLW4 - 12 + 'px', height: 0.66 * 88 - 6 + 'px', background: 'var(--teal-s)', borderColor: 'var(--teal)', color: 'var(--teal-d)', zIndex: 3 });
+fill.className = 'appt solid';
+S(fill, { left: '72px', top: 66 + 1.5 * 88 + 3 + 'px', width: COLW4 - 12 + 'px', height: 0.66 * 88 - 6 + 'px', zIndex: 3 });
 fill.innerHTML = '<b>Visita cardiologica</b><span>Marco Bellini · dalla lista d\'attesa</span>';
 ag.appendChild(fill);
+ag.insertAdjacentHTML('beforeend', `<div class="nowl" id="nowl" style="top:${66 + 2.67 * 88}px"><span>Adesso</span></div>`);
 
 {
   const staff = [['MR', 0], ['LB', 1], ['SC', 2], ['GT', 3]];
   const rows = [['Visita cardiologica', '40 min · Studio 1', [1, 0, 0, 0]], ['Ecografia addome', '30 min · Studio 3 · ecografo', [1, 1, 0, 0]], ['Fisioterapia', '50 min · Palestra', [0, 0, 1, 1]], ['Visita dermatologica', '30 min · Studio 2', [0, 1, 0, 0]], ['Tecarterapia', '40 min · Box 2 · tecar', [0, 0, 1, 1]], ['Elettrocardiogramma', '15 min · Studio 1', [1, 1, 0, 0]], ['Pacchetto 10 sedute', 'Abbonamento · Palestra', [0, 0, 1, 1]]];
   let h = '<div></div>' + staff.map((s) => `<div class="c"><div class="av" style="background:${PAL[s[1]][0]};color:${PAL[s[1]][1]}">${s[0]}</div></div>`).join('');
-  rows.forEach((r, ri) => { h += `<div class="sv"><div><b>${r[0]}</b><span>${r[1]}</span></div></div>` + r[2].map((v, ci) => `<div class="c">${v ? `<i class="mk" data-k="${ri + ci}">${svg('check')}</i>` : '<em></em>'}</div>`).join(''); });
+  rows.forEach((r, ri) => { h += `<div class="sv"><div><b>${r[0]}</b><span>${r[1]}</span></div></div>` + r[2].map((v, ci) => `<div class="c">${v ? `<i class="mk sw" data-k="${ri + ci}"></i>` : '<i class="sw"></i>'}</div>`).join(''); });
   $('mx').innerHTML = h;
 }
 const mkEls = [...document.querySelectorAll('.mk')];
 const mxRows = [...document.querySelectorAll('#mx .sv')];
 
 $('clog').innerHTML = [['Marco Bellini', 'In uscita · 3 min', 'Ieri, 17:40'], ['Sara Conti', 'Persa · richiamata', 'Ieri, 12:02'], ['Anna Marchi', 'In entrata · 1 min', 'Ieri, 10:15'], ['Paolo Greco', 'In entrata · 5 min', 'Lun, 16:30'], ['Elena Riva', 'In uscita · 2 min', 'Lun, 09:10'], ['Davide Villa', 'In entrata · 4 min', 'Lun, 08:55'], ['Chiara Fontana', 'In uscita · 1 min', 'Lun, 08:40']].map((r, i) =>
-  `<div style="display:flex;align-items:center;gap:16px;height:84px;border-bottom:1px solid #f0f0f0"><div class="av" style="background:${PAL[i % 6][0]};color:${PAL[i % 6][1]}">${r[0].split(' ').map((w) => w[0]).join('')}</div><div><b style="font-size:18px;color:var(--ink-strong);display:block">${r[0]}</b><span style="font-size:15px;color:var(--muted)">${r[1]}</span></div><span style="margin-left:auto;color:var(--faint);font-size:15px">${r[2]}</span></div>`).join('');
+  `<div style="display:flex;align-items:center;gap:16px;height:84px;border-bottom:1px solid var(--line)"><div class="av" style="background:${PAL[i % 6][0]};color:${PAL[i % 6][1]}">${r[0].split(' ').map((w) => w[0]).join('')}</div><div><b style="font-size:18px;color:var(--ink-strong);display:block">${r[0]}</b><span style="font-size:15px;color:var(--muted)">${r[1]}</span></div><span style="margin-left:auto;color:var(--faint);font-size:15px">${r[2]}</span></div>`).join('');
 
 {
   const days = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven'];
   let h = days.map((d, i) => `<div style="position:absolute;left:${i * 106}px;top:0;width:98px;text-align:center;font-size:13px;color:var(--faint);font-weight:700">${d}</div>`).join('');
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) h += `<div style="position:absolute;left:${c * 106}px;top:${28 + r * 170}px;width:98px;height:160px;border-radius:10px;background:#fafafa;border:1px dashed #e8e8e8"></div>`;
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) h += `<div style="position:absolute;left:${c * 106}px;top:${28 + r * 170}px;width:98px;height:160px;border-radius:10px 10px 10px 3px;background:var(--s1);border:1px dashed var(--s4)"></div>`;
   const POSTS = [[0, 0, 'Prevenzione cuore', '#12a594,#5fe0cc'], [2, 0, 'Il nuovo ecografo', '#2f6fed,#7fa8ff'], [4, 0, 'Orari di ottobre', '#d98a0b,#f5c26b'], [1, 1, 'Postura e schiena', '#7c5cf0,#b7a4ff'], [3, 1, 'Il nostro team', '#e0487a,#ff9dbb'], [0, 2, 'Check-up cuore', '#0b6f64,#12a594'], [2, 2, 'Consigli d\'autunno', '#1f9d55,#7ad6a0'], [4, 2, 'Domande frequenti', '#2f6fed,#12a594']];
-  h += POSTS.map((p) => `<div class="post" style="left:${p[0] * 106}px;top:${28 + p[1] * 170}px;width:98px;height:160px"><div style="height:96px;background:linear-gradient(135deg,${p[3]})"></div><div class="tx">${p[2]}</div></div>`).join('');
+  h += POSTS.map((p) => `<div class="post" style="left:${p[0] * 106}px;top:${28 + p[1] * 170}px;width:98px;height:160px"><div style="height:96px;background:${p[3].split(',')[0]}"></div><div class="tx">${p[2]}</div></div>`).join('');
   $('socg').innerHTML = h;
 }
 const postEls = [...document.querySelectorAll('#socg .post')];
@@ -1022,7 +1099,7 @@ $('wave').innerHTML = Array.from({ length: 44 }, () => '<i></i>').join('');
 const waveEls = [...document.querySelectorAll('#wave i')];
 
 $('mods').innerHTML = [['cal', 'Agende e stanze'], ['folder', 'Cartella clinica'], ['file', 'Fatture e Sistema TS'], ['msg', 'WhatsApp e promemoria'], ['phone', 'Telefono'], ['mega', 'Campagne e social'], ['mobile', 'App e area pazienti'], ['dumb', 'Piani ed esercizi']].map((m) =>
-  `<div class="m" style="display:flex;align-items:center;gap:12px;padding:12px 22px 12px 16px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:22px;font-weight:600">${svg(m[0], 'color:var(--mint)')}${m[1]}</div>`).join('');
+  `<div class="m" style="display:flex;align-items:center;gap:12px;padding:12px 22px 12px 16px;border-radius:14px 14px 14px 3px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.13);color:#fff;font-size:22px;font-weight:600">${svg(m[0], 'color:var(--mint)')}${m[1]}</div>`).join('');
 const modEls = [...document.querySelectorAll('#mods .m')];
 
 // ---------- cursor ----------
@@ -1134,7 +1211,7 @@ R['s-agenda'] = (t) => {
   apptEls.forEach((el, i) => {
     const s = 0.7 + i * 0.07, sq = spring(pr(t, s, s + 0.9));
     let op = pr(t, s, s + 0.12), tf = `translateY(${(1 - sq) * -60}px)`;
-    if (APPT[i][6] === 'cancel') { const c = eio(pr(t, 2.3, 2.7)); op *= 1 - c; tf += ` scale(${1 - c * 0.15}) rotate(${c * -4}deg)`; el.style.boxShadow = t > 1.95 && t < 2.35 ? '0 0 0 4px rgba(224,72,122,.35)' : 'none'; }
+    if (APPT[i][6] === 'cancel') { const c = eio(pr(t, 2.3, 2.7)); op *= 1 - c; tf += ` scale(${1 - c * 0.15}) rotate(${c * -4}deg)`; el.style.boxShadow = t > 1.95 && t < 2.35 ? '0 0 0 3px rgba(200,50,60,.4)' : 'none'; el.style.textDecoration = t > 1.95 ? 'line-through' : 'none'; }
     S(el, { transform: tf, opacity: op });
   });
   const wl = $('wl0'), agr = ag.getBoundingClientRect(), from = wl.getBoundingClientRect();
@@ -1143,6 +1220,7 @@ R['s-agenda'] = (t) => {
   if (t < 2.8) rise(wl, t, 0.8, 0.5, 20); else wl.style.opacity = 0;
   rise($('wl1'), t, 0.9, 0.5, 20); rise($('wl2'), t, 1.0, 0.5, 20);
   pop($('ag-t'), t, 3.4, 0.5, 60);
+  S($('nowl'), { transformOrigin: '0 0', transform: `scaleX(${eo5(pr(t, 1.2, 1.9))})`, opacity: pr(t, 1.2, 1.3) });
   S($('subpill'), { transform: `scale(${eback(pr(t, 3.9, 4.3))})`, opacity: pr(t, 3.9, 4.0) });
 };
 R['s-serv'] = (t) => {
@@ -1150,7 +1228,7 @@ R['s-serv'] = (t) => {
   S($('sv-c'), { transform: `perspective(2200px) rotateY(${(1 - q) * 25}deg) translateX(${(1 - q) * 200}px)`, opacity: pr(t, 0, 0.2) });
   rise($('sv-e'), t, 0.2); kinIn('sv-h', t, 0.3, 0.06, 0.6);
   mxRows.forEach((r, i) => rise(r, t, 0.35 + i * 0.06, 0.5, 20));
-  mkEls.forEach((m) => { const s = 0.9 + +m.dataset.k * 0.11; S(m, { transform: `scale(${eback(pr(t, s, s + 0.35))})`, opacity: pr(t, s, s + 0.08) }); });
+  mkEls.forEach((m) => { const s = 0.9 + +m.dataset.k * 0.11; m.className = 'mk sw' + (t >= s ? ' on' : ''); S(m, { transform: `scale(${t >= s ? lerp(1.12, 1, eo(pr(t, s, s + 0.3))) : 1})` }); });
 };
 R['s-unl'] = (t) => {
   avEls.forEach((el) => { const d = +el.dataset.d, s = 0.1 + d / 1400, q = eback(pr(t, s, s + 0.4)); S(el, { transform: `scale(${q})`, opacity: pr(t, s, s + 0.1) * 0.9 }); });
@@ -1196,7 +1274,6 @@ R['s-chat'] = (t) => {
 };
 R['s-auto'] = (t) => {
   rise($('au-e'), t, 0.1); kinIn('au-h', t, 0.2, 0.06, 0.6);
-  $('s-auto').querySelector('.dots').style.transform = `translate(${-t * 12}px, ${-t * 6}px)`;
   const nodes = ['n0', 'n1', 'n2', 'n3', 'n4'].map($);
   [0.5, 1.0, 1.5, 1.6, 2.2].forEach((s, i) => pop(nodes[i], t, s, 0.5, 40));
   $('links').innerHTML = [[0, 1, 0.8], [1, 2, 1.3], [1, 3, 1.4], [3, 4, 2.0]].map(([p, q, s]) => {
@@ -1205,11 +1282,11 @@ R['s-auto'] = (t) => {
     const lq = eio(pr(t, s, s + 0.4));
     let dot = '';
     if (t > s + 0.4) { const u = ((t - s - 0.4) % 1.2) / 1.2, x = (1 - u) ** 3 * x1 + 3 * (1 - u) ** 2 * u * mx + 3 * (1 - u) * u * u * mx + u ** 3 * x2, y = (1 - u) ** 3 * y1 + 3 * (1 - u) ** 2 * u * y1 + 3 * (1 - u) * u * u * y2 + u ** 3 * y2; dot = `<circle cx="${x}" cy="${y}" r="7" fill="#12a594"/>`; }
-    return `<path d="M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}" fill="none" stroke="#9fd8ce" stroke-width="4" stroke-dasharray="1200" stroke-dashoffset="${1200 * (1 - lq)}"/>${dot}`;
+    return `<path d="M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}" fill="none" stroke="#8fdbcf" stroke-width="4" stroke-dasharray="1200" stroke-dashoffset="${1200 * (1 - lq)}"/>${dot}`;
   }).join('');
 };
 R['s-tel'] = (t, a) => {
-  S($('te-w'), { transform: `translateX(${(1 - eo5(pr(t, 0.05, 0.7))) * 400}px)`, opacity: pr(t, 0.05, 0.2) * (1 - 0.45 * pr(t, 0.8, 1.1)) });
+  S($('te-w'), { transform: `translateX(${(1 - eo5(pr(t, 0.05, 0.7))) * 400}px)`, opacity: pr(t, 0.05, 0.2) });
   [...$('clog').children].forEach((r, i) => rise(r, t, 0.3 + i * 0.06, 0.4, 20));
   rise($('te-e'), t, 0.2); kinIn('te-h', t, 0.3, 0.06, 0.6); kinIn('te-s', t, 1.0, 0.05, 0.5);
   const cq = eback(pr(t, 0.8, 1.3)), shake = t > 1.3 && t < 2.2 ? Math.sin(t * 60) * 2 : 0;
@@ -1262,7 +1339,7 @@ R['s-app'] = (t, a) => {
   const sp = $('sigp'); sp.setAttribute('stroke-dasharray', '700'); sp.setAttribute('stroke-dashoffset', String(700 * (1 - pr(t, 2.3, 3.2))));
   $('sig').style.opacity = t > 2.25 ? 1 : 0;
   const done = t >= 3.4;
-  S($('consck'), { background: done ? 'var(--green)' : 'var(--field)', color: done ? '#fff' : 'var(--muted)', transform: `scale(${done ? eback(pr(t, 3.4, 3.7)) : 1})` });
+  S($('consck'), { background: done ? 'var(--act)' : 'var(--s2)', color: done ? '#fff' : 'var(--muted)', transform: `scale(${done ? eback(pr(t, 3.4, 3.7)) : 1})` });
   $('consck').innerHTML = svg(done ? 'check' : 'pen');
   $('const').textContent = done ? 'Firmato dal telefono' : 'Da firmare';
   $('firma').style.display = done ? 'none' : 'inline-flex';
@@ -1332,12 +1409,12 @@ const figEls = [...document.querySelectorAll('svg.fig')];
     s += g('M26 128 h22 v60 q0 8 -8 8 h-6 q-8 0 -8 -8z', back ? P2 : P1) + g('M52 128 h22 v60 q0 8 -8 8 h-6 q-8 0 -8 -8z', back ? P2 : P1);
     s += g('M28 200 h18 v62 q0 8 -9 8 q-9 0 -9 -8z', back ? P2 : base) + g('M54 200 h18 v62 q0 8 -9 8 q-9 0 -9 -8z', back ? P2 : base);
     if (!back) s += g('M32 58 h36 v26 h-36z', P2);
-    return s + `<text x="50" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="#737373">${back ? 'Dietro' : 'Davanti'}</text></g>`;
+    return s + `<text x="50" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="#6a716f">${back ? 'Dietro' : 'Davanti'}</text></g>`;
   };
   $('body').innerHTML = body(10, false) + body(130, true);
 }
 $('shopl').innerHTML = ['Yogurt greco · 4 vasetti', 'Fiocchi d\'avena · 500 g', 'Mirtilli · 2 vaschette', 'Orata · 2 filetti', 'Pasta integrale · 500 g', 'Mandorle · 150 g'].map((x, i) =>
-  `<div class="sh" style="display:flex;align-items:center;gap:12px;height:52px;border-bottom:1px solid #f2f2f2;font-size:17px;font-weight:500;color:var(--ink-strong)"><div class="sb" style="width:26px;height:26px;border-radius:8px;border:2px solid #ddd;display:grid;place-items:center;color:#fff;font-size:15px"></div><span>${x}</span></div>`).join('');
+  `<div class="sh" style="display:flex;align-items:center;gap:12px;height:52px;border-bottom:1px solid var(--line);font-size:17px;font-weight:500;color:var(--ink-strong)"><div class="sb" style="width:26px;height:26px;border-radius:7px 7px 7px 2px;border:2px solid var(--s5);display:grid;place-items:center;color:#fff;font-size:15px"></div><span>${x}</span></div>`).join('');
 const shopEls = [...document.querySelectorAll('#shopl .sh')];
 const floatIn = (el, t, s) => { const q = eback(pr(t, s, s + 0.5)); S(el, { transform: `translateX(${(1 - q) * 80}px)`, opacity: pr(t, s, s + 0.12) }); };
 const phoneIn = (el, t) => { const q = eo5(pr(t, 0.05, 0.85)); S(el, { transform: `translateY(${(1 - q) * 900}px) rotate(${(1 - q) * 8 - 2}deg)` }); };
@@ -1347,7 +1424,7 @@ R['s-acc'] = (t, a) => {
   const sq = eo5(pr(t, 0.8, 1.1)), so = 1 - pr(t, 1.5, 1.7);
   S($('sms'), { transform: `translateY(${(1 - sq) * -130}px)`, opacity: so });
   const code = '482913';
-  for (let i = 0; i < 6; i++) { const b = $('cb' + i), s0 = 1.35 + i * 0.1, on = t >= s0; b.textContent = on ? code[i] : ''; b.style.borderColor = on ? 'var(--teal)' : (t >= s0 - 0.1 && t < s0 ? 'var(--ink-strong)' : 'var(--border)'); b.style.transform = `scale(${on ? eback(pr(t, s0, s0 + 0.2)) : 1})`; }
+  for (let i = 0; i < 6; i++) { const b = $('cb' + i), s0 = 1.35 + i * 0.1, on = t >= s0; b.textContent = on ? code[i] : ''; b.className = 'codeb' + (on ? ' on' : t >= s0 - 0.1 && t < s0 ? ' cur' : ''); b.style.transform = `scale(${on ? eback(pr(t, s0, s0 + 0.2)) : 1})`; }
   S($('sugg'), { opacity: pr(t, 0.9, 1.1) * (1 - pr(t, 1.3, 1.45)) });
   const fq = eback(pr(t, 2.1, 2.45));
   S($('face'), { transform: `scale(${fq})`, opacity: pr(t, 2.1, 2.2) });
@@ -1366,19 +1443,18 @@ R['s-diet'] = (t, a) => {
   [...document.querySelectorAll('#days .dchip')].forEach((d, i) => { pop(d, t, 0.5 + i * 0.04, 0.35, 15); d.className = 'dchip' + (i === 2 ? ' on' : ''); });
   ['me0', 'me1', 'me2', 'me3'].forEach((m, i) => rise($(m), t, 0.7 + i * 0.08, 0.45, 25));
   const ok = t >= 1.45, mk = $('mck0');
-  S(mk, { background: ok ? 'var(--green)' : 'var(--field)', color: ok ? '#fff' : 'var(--faint)', transform: `scale(${ok ? eback(pr(t, 1.45, 1.7)) : 1})` });
+  S(mk, { background: ok ? 'var(--act)' : 'var(--s2)', color: ok ? '#fff' : 'var(--faint)', transform: `scale(${ok ? eback(pr(t, 1.45, 1.7)) : 1})` });
   mk.innerHTML = svg('check');
-  $('me0').style.background = ok ? '#f3fbf6' : '#fff';
+  $('me0').style.background = ok ? '#f0faf8' : '#fff';
   const up = eo5(pr(t, 2.05, 2.4)) * (1 - eio(pr(t, 3.05, 3.35)));
   S($('sheet'), { transform: `translateY(${(1 - up) * 105}%)` });
-  $('alt0').style.borderColor = t > 2.85 ? 'var(--teal)' : 'var(--border)';
-  $('alt0').style.background = t > 2.85 ? 'var(--teal-s)' : '#fff';
+  $('alt0').className = 'alt' + (t > 2.85 ? ' on' : '');
   const sw = t >= 3.1;
   $('pranzo').textContent = sw ? 'Orata al forno 150 g, patate, insalata' : 'Merluzzo al forno 150 g, patate, insalata';
-  $('me1').style.boxShadow = sw && t < 3.8 ? `0 0 0 ${3 * (1 - pr(t, 3.1, 3.8))}px rgba(18,165,148,.5)` : '0 0 0 1px rgba(0,0,0,.06)';
+  $('me1').style.boxShadow = sw && t < 3.8 ? `0 0 0 ${3 * (1 - pr(t, 3.1, 3.8))}px rgba(18,165,148,.5)` : 'inset 0 0 0 1px var(--line)';
   pop($('fishp'), t, 3.5, 0.45, 15);
   pop($('shop'), t, 0.9, 0.6, 60);
-  shopEls.forEach((e, i) => { rise(e, t, 1.1 + i * 0.06, 0.4, 15); const d = t > 1.8 + i * 0.35 && i < 4, b = e.querySelector('.sb'); b.style.background = d ? 'var(--teal)' : '#fff'; b.style.borderColor = d ? 'var(--teal)' : '#ddd'; b.innerHTML = d ? svg('check') : ''; e.querySelector('span').style.color = d ? 'var(--faint)' : 'var(--ink-strong)'; e.querySelector('span').style.textDecoration = d ? 'line-through' : 'none'; });
+  shopEls.forEach((e, i) => { rise(e, t, 1.1 + i * 0.06, 0.4, 15); const d = t > 1.8 + i * 0.35 && i < 4, b = e.querySelector('.sb'); b.style.background = d ? 'var(--act)' : '#fff'; b.style.borderColor = d ? 'var(--act)' : 'var(--s5)'; b.innerHTML = d ? svg('check') : ''; e.querySelector('span').style.color = d ? 'var(--faint)' : 'var(--ink-strong)'; e.querySelector('span').style.textDecoration = d ? 'line-through' : 'none'; });
   ck([[1.1, [1300, 900]], [1.4, $('mck0')], [1.75, $('cambia')], [2.0, $('cambia')], [2.7, $('alt0')], [2.9, $('alt0')]], [1.45, 2.0, 2.85], a, true);
 };
 R['s-ex'] = (t, a) => {
@@ -1389,9 +1465,9 @@ R['s-ex'] = (t, a) => {
   const dq = eio(pr(t, 1.45, 1.8)) * (1 - eio(pr(t, 3.7, 4.0)));
   S($('exDet'), { transform: `translateX(${(1 - dq) * 100}%)` });
   S($('exList'), { transform: `translateX(${-dq * 30}%)` });
-  [0, 1, 2].forEach((i) => { const s0 = 2.1 + i * 0.4, on = t >= s0, e = $('set' + i); S(e, { background: on ? 'var(--violet)' : '#fff', borderColor: on ? 'var(--violet)' : 'var(--border)', color: on ? '#fff' : 'var(--muted)', transform: `scale(${on ? eback(pr(t, s0, s0 + 0.25)) : 1})` }); });
+  [0, 1, 2].forEach((i) => { const s0 = 2.1 + i * 0.4, on = t >= s0, e = $('set' + i); S(e, { background: on ? 'var(--act)' : '#fff', boxShadow: on ? 'none' : 'inset 0 0 0 1.5px var(--border)', color: on ? '#fff' : 'var(--muted)', transform: `scale(${on ? eback(pr(t, s0, s0 + 0.25)) : 1})` }); });
   const done = t >= 3.6, c0 = $('exck0');
-  S(c0, { background: done ? 'var(--violet)' : 'var(--field)', color: done ? '#fff' : 'var(--faint)', transform: `scale(${done ? eback(pr(t, 3.9, 4.2)) : 1})` });
+  S(c0, { background: done ? 'var(--act)' : 'var(--s2)', color: done ? '#fff' : 'var(--faint)', transform: `scale(${done ? eback(pr(t, 3.9, 4.2)) : 1})` });
   c0.innerHTML = svg('check');
   const r = done ? eo(pr(t, 3.95, 4.4)) : 0;
   $('ring').setAttribute('stroke-dashoffset', String(138.2 * (1 - r * 0.25)));
@@ -1411,9 +1487,9 @@ function journey(k) {
       const s0 = 0.05 + i * 0.05, q = eback(pr(t, s0, s0 + 0.45));
       const past = i < k, cur = i === k;
       const lit = cur && t > 0.55;
-      n.style.background = past || lit ? 'var(--teal)' : '#fff';
-      n.style.boxShadow = past || lit ? '0 14px 30px -10px rgba(18,165,148,.55)' : '0 0 0 3px #dde7e4 inset';
-      n.style.color = past || lit ? '#fff' : cur ? 'var(--teal)' : '#a3b1ae';
+      n.style.background = lit ? 'var(--act)' : past ? 'var(--teal-s)' : '#fff';
+      n.style.boxShadow = lit ? '0 18px 34px -12px rgba(11,111,100,.6)' : past ? 'none' : 'inset 0 0 0 2px var(--s4)';
+      n.style.color = lit ? '#fff' : past ? 'var(--teal-d)' : cur ? 'var(--teal-d)' : 'var(--faint)';
       n.innerHTML = svg(past ? 'check' : CHAP[i].ic);
       if (cur) n.firstChild.style.opacity = 1 - pr(t, D - 0.55, D - 0.35);
       let sz = lerp(0.3, 1, cl(q, 0, 1.2));
@@ -1422,6 +1498,7 @@ function journey(k) {
       if (cur) sz *= Math.exp(dive * 3.9);
       S(n, { transform: `scale(${sz})`, opacity: pr(t, s0, s0 + 0.1), zIndex: cur ? 5 : 1 });
       labels[i].style.color = cur ? 'var(--ink-strong)' : past ? 'var(--teal-d)' : 'var(--faint)';
+      const kk = sc.querySelectorAll('.jk')[i]; kk.style.opacity = (cur ? 1 : 0.45) * pr(t, s0 + 0.1, s0 + 0.3) * (1 - pr(t, D - 0.6, D - 0.4)); kk.style.transform = `translateY(${(1 - eo5(pr(t, s0 + 0.1, s0 + 0.5))) * -12 - (cur ? eback(pr(t, 0.5, 0.85)) * 14 : 0)}px)`;
       S(labels[i], { opacity: pr(t, s0 + 0.1, s0 + 0.3) * (1 - pr(t, D - 0.6, D - 0.4)), transform: `translateY(${(1 - eo5(pr(t, s0 + 0.1, s0 + 0.5))) * 16 + (cur ? eback(pr(t, 0.5, 0.85)) * 16 : 0)}px)` });
     });
     const ring = sc.querySelector('.jring'), ph = ((t - 0.8) * 1.1) % 1;
@@ -1439,7 +1516,7 @@ CHAP.forEach((_, k) => (R['j' + (k + 1)] = journey(k)));
 
 // ---------- ad scenes ----------
 R['x-hook'] = (t) => {
-  const sc = $('x-hook'); sc.querySelector('.dots').style.transform = `translate(${-t * 16}px, ${-t * 8}px)`;
+  const sc = $('x-hook');
   const m = sc.querySelector('.xm'), q = eback(pr(t, 0.05, 0.5));
   S(m, { transform: `scale(${q})`, opacity: pr(t, 0.05, 0.15) });
   m.querySelector('.crs').setAttribute('transform', `translate(53 61) rotate(${eio(pr(t, 0.4, 0.9)) * 90}) translate(-53 -61)`);
@@ -1452,7 +1529,7 @@ R['x-end'] = (t) => {
   l.querySelector('.crs').setAttribute('transform', `translate(53 61) rotate(${eio(pr(t, 0.5, 1.0)) * 90}) translate(-53 -61)`);
   kinIn('xs', t, 0.7, 0.05, 0.55);
   const c = $('xcta'), cq = eback(pr(t, 1.3, 1.8)), ph = Math.max(0, t - 2) % 1.2 / 1.2;
-  S(c, { transform: `scale(${cq})`, opacity: pr(t, 1.3, 1.45), boxShadow: t > 2 ? `0 0 0 ${ph * 26}px rgba(18,165,148,${0.45 * (1 - ph)})` : 'none' });
+  S(c, { transform: `scale(${cq})`, opacity: pr(t, 1.3, 1.45), boxShadow: t > 2 ? `0 0 0 ${ph * 26}px rgba(95,224,204,${0.4 * (1 - ph)})` : 'none' });
 };
 
 // ---------- vertical and feed layouts: caption on top, the product below ----------
@@ -1484,7 +1561,7 @@ function layoutPortrait() {
     cam.appendChild(ui);
     S(ui, { position: 'absolute', left: 0, top: 0, width: '1920px', height: '1080px', transformOrigin: '0 0' });
     const boxes = [];
-    const add = (e) => { if (e.classList.contains('zw')) [...e.children].forEach(add); else if (e.offsetWidth) boxes.push([e.offsetLeft, e.offsetTop, e.offsetLeft + e.offsetWidth, e.offsetTop + e.offsetHeight]); };
+    const add = (e) => { if (e.classList.contains('zw')) [...e.children].forEach(add); else if (e.offsetWidth && !e.classList.contains('blk')) boxes.push([e.offsetLeft, e.offsetTop, e.offsetLeft + e.offsetWidth, e.offsetTop + e.offsetHeight]); };
     [...ui.children].forEach(add);
     const bx = Math.min(...boxes.map((b) => b[0])), by = Math.min(...boxes.map((b) => b[1])), bw = Math.max(...boxes.map((b) => b[2])) - bx, bh = Math.max(...boxes.map((b) => b[3])) - by;
     const top = cap.offsetTop + cap.offsetHeight + 60, bottom = SH - 70, room = bottom - top;
@@ -1518,7 +1595,7 @@ function tracker(top, t) {
   const knob = trk.querySelector('.knob'), prev = Math.max(0, k - 1), q = k === 0 ? 1 : eio(pr(lt, 0.25, 0.75));
   const a = trkItems[prev], b = trkItems[k];
   S(knob, { left: lerp(a.offsetLeft, b.offsetLeft, q) + 'px', width: lerp(a.offsetWidth, b.offsetWidth, q) + 'px' });
-  trkItems.forEach((it, i) => (it.style.color = i === k && q > 0.5 ? '#fff' : i < k ? (dark ? 'var(--mint)' : 'var(--teal-d)') : dark ? 'rgba(255,255,255,.4)' : 'var(--faint)'));
+  trkItems.forEach((it, i) => (it.style.color = i === k && q > 0.5 ? (dark ? 'var(--teal-950)' : '#fff') : i < k ? (dark ? 'var(--mint)' : 'var(--teal-d)') : dark ? 'rgba(255,255,255,.45)' : 'var(--faint)'));
 }
 function render(t) {
   if (!laidOut) layoutPortrait();
@@ -1542,7 +1619,7 @@ function render(t) {
       const q = eio(pr(t, a, a + 0.6)); if (q < 1) sc.style.clipPath = `circle(${q * 2300}px at ${cx}px ${cy}px)`;
     }
     if (inT === 'zoom') { const q = eo5(pr(t, a, a + 0.45)); S(sc, { opacity: pr(t, a, a + 0.3), transform: `scale(${lerp(0.94, 1, q)})` }); }
-    if (outT === 'zoom') { const q = ei(pr(t, endOf(i) - 0.35, endOf(i))); S(sc, { opacity: 1 - q, transform: `scale(${1 + q * 0.12})` }); stageEl.style.background = '#f4f7f6'; }
+    if (outT === 'zoom') { const q = ei(pr(t, endOf(i) - 0.35, endOf(i))); S(sc, { opacity: 1 - q, transform: `scale(${1 + q * 0.12})` }); stageEl.style.background = 'var(--s1)'; }
     if (outT === 'push') sc.style.transform = `translateX(${-eio(pr(t, endOf(i) - 0.05, endOf(i) + 0.55)) * 640}px)`;
     if (outT === 'cloud') sc.style.transform = `scale(${1 + ei(pr(t, endOf(i) - 0.3, endOf(i) + 0.75)) * 0.12})`;
     CUR_SLOW = SLOW[i];
@@ -1573,11 +1650,17 @@ function render(t) {
       document.querySelectorAll('.blind').forEach((bl, j) => {
         const dir = j % 2 ? -1 : 1, d = j * 0.012;
         const qi = eo5(pr(t, b - 0.42 + d, b - 0.1 + d)), qo = ei(pr(t, b + 0.02 + d, b + 0.34 + d));
-        S(bl, { display: 'block', top: (j * SH) / 8 + 'px', height: SH / 8 + 1 + 'px', width: SW + 'px', background: j % 2 ? 'var(--teal-d)' : 'var(--teal)', transform: `translateX(${(1 - qi) * dir * SW - qo * dir * SW}px)` });
+        S(bl, { display: 'block', top: (j * SH) / 8 + 'px', height: SH / 8 + 1 + 'px', width: SW + 'px', background: ['var(--teal-d)', 'var(--teal)', 'var(--mint)', 'var(--night)'][j % 4], transform: `translateX(${(1 - qi) * dir * SW - qo * dir * SW}px)` });
       });
     }
   });
-  document.querySelectorAll('.bgc').forEach((e, k) => { const sc = e.closest('.scene'); if (sc.style.display === 'none') return; const i = SCN.indexOf(sc); const lt = t - start(i); e.style.transform = `translate(${Math.sin(lt * 0.5 + k) * 30 + lt * 14}px, ${Math.cos(lt * 0.4 + k) * 20 - lt * 6}px) rotate(${lt * 1.5}deg) scale(${1 + lt * 0.015})`; });
+  document.querySelectorAll('.blk[data-v]').forEach((e, k) => {
+    const sc = e.closest('.scene'); if (sc.style.display === 'none') return;
+    const lt = t - start(SCN.indexOf(sc)), d = +e.dataset.d, q = eo5(pr(lt, d, d + 0.9)), off = (1 - q) * 520;
+    const [dx, dy] = { l: [-off, 0], r: [off, 0], u: [0, off], d: [0, -off] }[e.dataset.v];
+    e.style.transform = `translate(${dx}px, ${dy + Math.sin(lt * 0.9 + k) * 6}px)`;
+    const mo = e.querySelector('.mo'); if (mo) mo.style.webkitMaskPosition = `${lt * 9}px ${-lt * 6}px`;
+  });
   const bug = $('bug');
   const show = top && !NOBUG.has(top);
   bug.style.display = show ? 'flex' : 'none';
@@ -1594,6 +1677,8 @@ function render(t) {
   cursorPath(t);
 }
 window.render = render; window.DUR = DUR;
+// a scene's own time to the cut's time (grab.mjs)
+window.at = (id, lt) => { const i = SCN.findIndex((s) => s.id === id); return start(i) + lt * SLOW[i]; };
 window.ready = document.fonts.ready.then(() => true);
 </script>
 </body>

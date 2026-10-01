@@ -85,6 +85,6 @@ le quinte (permessi, persone, dati protetti).
   europea", "senza addestramento sui dati" per l'IA, la registrazione delle
   chiamate e l'avviso automatico dalla lista d'attesa.
 - Il centro "Aurora", i pazienti e l'indirizzo `aurora.dottorcloud.it` sono
-  inventati; le schermate sono ricostruite nello stile del prodotto, non catturate
-  dall'app.
+  inventati; le schermate sono ricostruite con il design system del gestionale
+  (Espresso con i segni del marchio), non catturate dall'app.
 - Nessun prezzo, per scelta.

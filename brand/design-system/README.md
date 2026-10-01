@@ -7,16 +7,33 @@ prossime pagine si somiglino. La tavola visiva è [`anteprima.png`](./anteprima.
 
 ## Colori
 
-Il **verde acqua** `#12A594` domina: il marchio e un'azione per schermata. Su fondo
-scuro diventa **menta** `#5FE0CC`. Il **verde scuro** `#0B6F64` è il testo sul
-verde chiaro `#E1F5F1` e lo sfondo dell'icona. Le scene e le slide di apertura e
-chiusura sono su **notte** `#111413`, il resto su **sfondo** `#F4F7F6` con carte
-bianche.
+Sono quelli di [`espresso/`](./espresso/README.md), nel registro del sito
+([`espresso/sito.md`](./espresso/sito.md)): video, ads e presentazione li usano in grande.
+
+- Il **verde del logo** `#12A594` segna, non scrive: logo, croce, barre, linee.
+- Il **verde scuro** `#0B6F64` è l'azione: pulsanti pieni, switch accesi, voce scelta,
+  e le parole in evidenza nei titoli. Su fondo scuro l'azione è la **menta** `#5FE0CC`
+  con il testo `#0B2E2A`.
+- I **grigi** sono quelli di Espresso tinti verso il verde: sfondo `#F6F9F8`, campi
+  `#F1F4F3`, filetti `#EBEEED`, testo `#151817`, metadati `#4E5352`, etichette `#6A716F`.
+- Il **verde profondo** `#0B2E2A` è il blocco del toast e delle notifiche; le scene di
+  apertura e chiusura sono su **notte** `#111413`.
 
 Gli **accenti** dicono che tipo di cosa è, non decorano: blu per documenti ed
 ecografie (e i nostri messaggi in chat), viola per esercizi e marketing, ambra per
 lista d'attesa, nutrizione e note interne, rosa per cardiologia e allergie, verde
-per fatto e confermato. Ognuno ha la sua versione chiara per lo sfondo.
+per fatto e confermato. Ognuno ha un fondo tenue e un colore per il testo.
+
+## I segni del marchio
+
+- **La nuvola-D**: tre angoli tondi e quello in basso a sinistra quasi dritto, su
+  finestre, carte, pulsanti, toast ed eventi; avatar e icone in una nuvola intera
+  (`50% 50% 50% 22%`).
+- **La croce** al posto dei punti: etichette di sezione (croce e maiuscoletto, niente
+  pillola), switch accesi, "Adesso" in agenda, le tappe del percorso.
+- **I blocchi** della copertina dietro al prodotto: la lastra verde scuro con il
+  motivo delle croci, il verde del logo, la menta con la gobba, l'inchiostro. Una
+  composizione per schermata, mai sotto il testo.
 
 ## Tipografia
 

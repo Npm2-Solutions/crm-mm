@@ -13,8 +13,13 @@ const LOGO = (n) => path.join(ROOT, 'brand/logo/png', n + '.png');
 
 const C = {
   night: '111413', ink: '16201E', teal: '12A594', tealD: '0B6F64', tealS: 'E1F5F1', mint: '5FE0CC',
-  bg: 'F4F7F6', card: 'FFFFFF', muted: '5F6B69', faint: '9AA5A3', mintText: '9FD8CE', deep: '0E3B36',
+  bg: 'F6F9F8', card: 'FFFFFF', muted: '4E5352', faint: '959B99', mintText: '9FD8CE', deep: '0B2E2A', line: 'E0E3E2',
 };
+// the brand's signs (design-system/espresso): the cloud with its almost straight corner, the cross, the motif
+const NUVOLA = (n, c) => `<svg xmlns="http://www.w3.org/2000/svg" width="${n}" height="${n}" viewBox="0 0 256 256"><path d="M128 0A128 128 0 0 1 256 128A128 128 0 0 1 128 256H56A56 56 0 0 1 0 200V128A128 128 0 0 1 128 0Z" fill="#${c}"/></svg>`;
+const CROSS = (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 12 12"><path d="M4 0h4v4h4v4H8v4H4V8H0V4h4z" fill="#${c}"/></svg>`;
+const MOTIF = (c, w, h, p = 40) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><pattern id="m" width="${p}" height="${p}" patternUnits="userSpaceOnUse"><path transform="scale(${p / 40})" d="M16.5 10h7v6.5H30v7h-6.5V30h-7v-6.5H10v-7h6.5z" fill="#${c}"/></pattern></defs><rect width="${w}" height="${h}" fill="url(#m)"/></svg>`;
+const png64 = async (svg) => 'image/png;base64,' + (await sharp(Buffer.from(svg)).png().toBuffer()).toString('base64');
 const FONT = 'Calibri';
 
 const iconCache = {};
@@ -39,15 +44,23 @@ async function img(slide, file, x, y, w, h, align = 'center') {
 }
 const T = (slide, text, o) => slide.addText(text, { fontFace: FONT, isTextBox: true, margin: 0, valign: 'top', ...o });
 
+// an icon inside the cloud (avatars and small signs are whole clouds: 50% 50% 50% 22%)
 async function circleIcon(slide, x, y, d, fill, name, color) {
-  slide.addShape('ellipse', { x, y, w: d, h: d, fill: { color: fill }, line: { color: fill } });
+  slide.addImage({ data: await png64(NUVOLA(256, fill)), x, y, w: d, h: d });
   const p = d * 0.26;
   slide.addImage({ data: await icon(name, color), x: x + p, y: y + p, w: d - 2 * p, h: d - 2 * p });
 }
-function chip(slide, text, x, y, dark = false) {
-  const w = 0.2 + text.length * 0.095;
-  slide.addShape('roundRect', { x, y, w, h: 0.36, rectRadius: 0.18, fill: { color: dark ? C.deep : C.tealS }, line: { color: dark ? C.deep : C.tealS } });
-  T(slide, text, { x, y, w, h: 0.36, fontSize: 12, bold: true, color: dark ? C.mint : C.tealD, align: 'center', valign: 'middle' });
+// the site's section label: no pill, the cross and the small capitals
+async function chip(slide, text, x, y, dark = false) {
+  slide.addImage({ data: await png64(CROSS(dark ? C.mint : C.teal)), x, y: y + 0.105, w: 0.15, h: 0.15 });
+  T(slide, text.toUpperCase(), { x: x + 0.26, y, w: 6, h: 0.36, fontSize: 12, bold: true, charSpacing: 1.5, color: dark ? C.mint : C.tealD, valign: 'middle' });
+}
+// a block of the cover: rounded, the bottom-left corner almost straight, with the motif or the hump
+async function block(slide, x, y, w, h, color, { motif = null, hump = false } = {}) {
+  const r = Math.min(w, h) * 0.12, pw = Math.round(w * 100), ph = Math.round(h * 100), rr = r * 100, t = 6;
+  slide.addImage({ data: await png64(`<svg xmlns="http://www.w3.org/2000/svg" width="${pw}" height="${ph}"><path d="M${rr} 0H${pw - rr}A${rr} ${rr} 0 0 1 ${pw} ${rr}V${ph - rr}A${rr} ${rr} 0 0 1 ${pw - rr} ${ph}H${t}A${t} ${t} 0 0 1 0 ${ph - t}V${rr}A${rr} ${rr} 0 0 1 ${rr} 0Z" fill="#${color}"/></svg>`), x, y, w, h });
+  if (motif) slide.addImage({ data: await png64(MOTIF(motif, pw, ph, 48)), x, y, w, h });
+  if (hump) { const d = w * 0.5; slide.addShape('ellipse', { x: x + (w - d) / 2, y: y - d * 0.38, w: d, h: d, fill: { color }, line: { color } }); }
 }
 async function row(slide, x, y, w, ic, title, desc, dark = false) {
   await circleIcon(slide, x, y, 0.52, dark ? C.deep : C.tealS, ic, dark ? C.mint : C.tealD);
@@ -71,7 +84,7 @@ async function feature(pres, o) {
   const s = base(pres, o.dark);
   const left = o.side !== 'left';
   const tx = left ? 0.6 : 7.25, tw = left ? 5.35 : 5.5;
-  chip(s, o.chip, tx, 0.6, o.dark);
+  await chip(s, o.chip, tx, 0.6, o.dark);
   T(s, o.title, { x: tx, y: 1.1, w: tw, h: 1.25, fontSize: 30, bold: true, color: o.dark ? 'FFFFFF' : C.ink, valign: 'top' });
   T(s, o.sub, { x: tx, y: 2.4, w: tw, h: 0.7, fontSize: 14, color: o.dark ? C.mintText : C.muted });
   for (let i = 0; i < o.rows.length; i++) await row(s, tx, 3.3 + i * 0.9, tw, ...o.rows[i], o.dark);
@@ -91,12 +104,16 @@ async function feature(pres, o) {
 
   // 1 · cover
   {
-    const s = base(pres, true);
-    s.addImage({ path: LOGO('dottorcloud-orizzontale-negativo'), x: 0.7, y: 0.75, w: 3.4, h: 3.4 * 244 / 1200 });
-    T(s, 'Il gestionale per il tuo centro medico', { x: 0.7, y: 2.05, w: 6.0, h: 2.0, fontSize: 44, bold: true, color: 'FFFFFF' });
-    T(s, 'Agende, cartelle, fatture, messaggi e l\'app per i pazienti. In un posto solo.', { x: 0.7, y: 4.25, w: 5.6, h: 0.9, fontSize: 18, color: C.mintText });
-    T(s, 'NPM2 Solutions Srl', { x: 0.7, y: 6.55, w: 4, h: 0.35, fontSize: 13, bold: true, color: C.faint });
-    await img(s, IMG('logo-orbit'), 6.3, 1.6, 6.8, 4.2);
+    const s = base(pres);
+    s.addImage({ path: LOGO('dottorcloud-orizzontale'), x: 0.7, y: 0.75, w: 3.4, h: 3.4 * 244 / 1200 });
+    T(s, [{ text: 'Il gestionale per ', options: { color: C.ink } }, { text: 'il tuo centro medico', options: { color: C.tealD } }], { x: 0.7, y: 2.05, w: 6.0, h: 2.0, fontSize: 44, bold: true });
+    T(s, 'Agende, cartelle, fatture, messaggi e l\'app per i pazienti. In un posto solo.', { x: 0.7, y: 4.25, w: 5.6, h: 0.9, fontSize: 18, color: C.muted });
+    T(s, 'NPM2 Solutions Srl', { x: 0.7, y: 6.55, w: 4, h: 0.35, fontSize: 13, bold: true, color: C.muted });
+    // the cover's composition: the slab with the motif, the logo's green, the mint with the hump, the ink
+    await block(s, 7.2, -0.3, 2.3, 6.2, C.tealD, { motif: C.mint });
+    await block(s, 9.7, -0.3, 4.0, 2.6, C.teal);
+    await block(s, 9.7, 2.95, 2.25, 2.95, C.mint, { hump: true });
+    await block(s, 12.15, 2.95, 1.6, 2.95, C.night);
     s.addNotes('Presentiamo DottorCloud: un gestionale unico per tutto il centro medico. Il messaggio di fondo è uno: tutto quello che oggi sta in programmi, fogli e telefoni diversi finisce in un posto solo, e ognuno vede la sua parte.');
     page++;
   }
@@ -104,7 +121,7 @@ async function feature(pres, o) {
   // 2 · overview
   {
     const s = base(pres);
-    chip(s, 'Panoramica', 0.6, 0.6);
+    await chip(s, 'Panoramica', 0.6, 0.6);
     T(s, 'Tutto il centro, in un posto solo', { x: 0.6, y: 1.1, w: 12, h: 0.7, fontSize: 32, bold: true, color: C.ink });
     T(s, 'Un solo gestionale per segreteria, medici, amministrazione e pazienti. Si accendono i moduli che servono.', { x: 0.6, y: 1.85, w: 12, h: 0.45, fontSize: 15, color: C.muted });
     const M = [
@@ -120,7 +137,7 @@ async function feature(pres, o) {
     const w = 2.86, h = 2.05, g = 0.25;
     for (let i = 0; i < M.length; i++) {
       const x = 0.6 + (i % 4) * (w + g), y = 2.65 + Math.floor(i / 4) * (h + g);
-      s.addShape('roundRect', { x, y, w, h, rectRadius: 0.14, fill: { color: C.card }, line: { color: 'E3E9E7', width: 0.75 }, shadow: { type: 'outer', color: '0B3B35', opacity: 0.08, blur: 10, offset: 3, angle: 90 } });
+      s.addShape('roundRect', { x, y, w, h, rectRadius: 0.14, fill: { color: C.card }, line: { color: C.line, width: 0.75 }, shadow: { type: 'outer', color: '0B3B35', opacity: 0.08, blur: 10, offset: 3, angle: 90 } });
       await circleIcon(s, x + 0.28, y + 0.28, 0.6, C.tealS, M[i][0], C.tealD);
       T(s, M[i][1], { x: x + 0.28, y: y + 1.05, w: w - 0.5, h: 0.35, fontSize: 16, bold: true, color: C.ink });
       T(s, M[i][2], { x: x + 0.28, y: y + 1.42, w: w - 0.5, h: 0.5, fontSize: 12, color: C.muted });
@@ -146,7 +163,8 @@ async function feature(pres, o) {
   // 4 · unlimited
   {
     const s = base(pres, false, C.tealD);
-    chip(s, '01 · Organizza', 0.6, 0.6, true);
+    s.addImage({ data: await png64(MOTIF('19907F', 420, 230, 48)), x: 9.0, y: 0, w: 4.2, h: 2.3 });
+    await chip(s, '01 · Organizza', 0.6, 0.6, true);
     T(s, 'Utenti illimitati, agende infinite', { x: 0.6, y: 1.1, w: 12, h: 0.8, fontSize: 36, bold: true, color: 'FFFFFF' });
     T(s, 'Il centro cresce senza cambiare gestionale: si aggiungono persone e agende quando servono.', { x: 0.6, y: 1.95, w: 12, h: 0.45, fontSize: 16, color: 'CFF3EC' });
     const B = [['∞', 'Utenti', 'Medici, segreteria, collaboratori esterni: aggiungi chi serve, quando serve.', 'LuUsers'],
@@ -167,7 +185,7 @@ async function feature(pres, o) {
   // 5 · agenda
   {
     const s = base(pres);
-    chip(s, '01 · Organizza', 0.6, 0.6);
+    await chip(s, '01 · Organizza', 0.6, 0.6);
     T(s, 'Più agende, stanze e attrezzature, insieme', { x: 0.6, y: 1.1, w: 12, h: 0.7, fontSize: 32, bold: true, color: C.ink });
     await img(s, IMG('agenda'), 0.4, 2.0, 8.4, 4.85, 'left');
     const R = [['LuCalendarDays', 'Agenda per risorse', 'Colonne per medico, stanza, ecografo o palestra'],
@@ -237,7 +255,7 @@ async function feature(pres, o) {
   // 10 · automations
   {
     const s = base(pres);
-    chip(s, '03 · Comunica', 0.6, 0.6);
+    await chip(s, '03 · Comunica', 0.6, 0.6);
     T(s, 'Automazioni che lavorano al posto tuo', { x: 0.6, y: 1.1, w: 12, h: 0.7, fontSize: 32, bold: true, color: C.ink });
     T(s, 'Un evento, un\'attesa, un messaggio: i flussi si disegnano una volta e girano da soli.', { x: 0.6, y: 1.85, w: 12, h: 0.45, fontSize: 15, color: C.muted });
     await img(s, IMG('auto'), 0.4, 2.45, 12.5, 3.3);
@@ -295,7 +313,7 @@ async function feature(pres, o) {
   // 14 · the app
   {
     const s = base(pres);
-    chip(s, '05 · Il paziente', 0.6, 0.6);
+    await chip(s, '05 · Il paziente', 0.6, 0.6);
     T(s, 'Un\'app per lo staff, un\'area per i pazienti', { x: 0.6, y: 1.1, w: 4.3, h: 1.9, fontSize: 30, bold: true, color: C.ink });
     T(s, 'Medici e segreteria lavorano anche dal telefono. I pazienti hanno la loro area, con il nome del centro.', { x: 0.6, y: 3.05, w: 4.2, h: 0.95, fontSize: 14, color: C.muted });
     const R = [['LuKeyRound', 'Accesso sicuro', 'Codice via SMS, poi viso o impronta'], ['LuPenLine', 'Prepara la visita', 'Moduli e consensi firmati dal telefono'], ['LuFileText', 'Documenti e messaggi', 'Referti, fatture, comunicazioni del medico']];
@@ -310,7 +328,7 @@ async function feature(pres, o) {
   // 15 · plans and exercises
   {
     const s = base(pres);
-    chip(s, '05 · Il paziente', 0.6, 0.6);
+    await chip(s, '05 · Il paziente', 0.6, 0.6);
     T(s, 'Piani alimentari ed esercizi, sul telefono del paziente', { x: 0.6, y: 1.1, w: 4.3, h: 1.9, fontSize: 28, bold: true, color: C.ink });
     T(s, 'Li scrive il professionista, il paziente li segue e segna cosa ha fatto.', { x: 0.6, y: 3.05, w: 4.2, h: 0.7, fontSize: 14, color: C.muted });
     const R = [['LuApple', 'Piano alimentare', 'Pasti con un tocco, alternative equivalenti, lista della spesa'], ['LuDumbbell', 'Esercizi a casa', 'Animazioni, serie e ripetizioni, muscoli che lavorano'], ['LuActivity', 'Il professionista vede', 'Cosa è stato fatto, e risponde dall\'app']];
@@ -340,14 +358,14 @@ async function feature(pres, o) {
   // 17 · summary
   {
     const s = base(pres);
-    chip(s, 'In sintesi', 0.6, 0.6);
+    await chip(s, 'In sintesi', 0.6, 0.6);
     T(s, 'Quello che un centro medico chiede, c\'è', { x: 0.6, y: 1.1, w: 12, h: 0.7, fontSize: 32, bold: true, color: C.ink });
     const A = [['LuLock', 'Permessi per ruolo', 'Ognuno vede la sua parte'], ['LuCalendarDays', 'Agende senza limiti', 'Medici, stanze, attrezzature'], ['LuStethoscope', 'Cartella clinica', 'Schede, note, referti archiviati'], ['LuReceipt', 'Fatturazione', 'Elettronica, SdI e Sistema TS'],
       ['LuMessageCircle', 'Comunicazione', 'WhatsApp, promemoria, conferme'], ['LuPhoneCall', 'Telefono integrato', 'La scheda si apre mentre squilla'], ['LuSmartphone', 'App', 'Per lo staff e per i pazienti'], ['LuServer', 'Dati protetti', 'Server europei, azienda italiana']];
     const w = 2.86, h = 2.2, g = 0.25;
     for (let i = 0; i < A.length; i++) {
       const x = 0.6 + (i % 4) * (w + g), y = 2.1 + Math.floor(i / 4) * (h + g);
-      s.addShape('roundRect', { x, y, w, h, rectRadius: 0.14, fill: { color: C.card }, line: { color: 'E3E9E7', width: 0.75 }, shadow: { type: 'outer', color: '0B3B35', opacity: 0.08, blur: 10, offset: 3, angle: 90 } });
+      s.addShape('roundRect', { x, y, w, h, rectRadius: 0.14, fill: { color: C.card }, line: { color: C.line, width: 0.75 }, shadow: { type: 'outer', color: '0B3B35', opacity: 0.08, blur: 10, offset: 3, angle: 90 } });
       await circleIcon(s, x + 0.28, y + 0.3, 0.6, C.tealS, A[i][0], C.tealD);
       await circleIcon(s, x + w - 0.62, y + 0.34, 0.34, C.teal, 'LuCheck', 'FFFFFF');
       T(s, A[i][1], { x: x + 0.28, y: y + 1.1, w: w - 0.5, h: 0.4, fontSize: 17, bold: true, color: C.ink });
@@ -360,10 +378,15 @@ async function feature(pres, o) {
   // 18 · close
   {
     const s = base(pres, true);
+    await block(s, 11.3, -0.5, 2.3, 3.4, C.tealD, { motif: C.mint });
+    await block(s, 10.0, -0.5, 1.1, 2.1, C.mint);
+    s.addImage({ data: await png64(MOTIF('1F4E47', 360, 200, 48)), x: 0, y: 5.6, w: 3.6, h: 2.0 });
     s.addImage({ path: LOGO('dottorcloud-orizzontale-negativo'), x: (13.333 - 4.4) / 2, y: 1.5, w: 4.4, h: 4.4 * 244 / 1200 });
     T(s, 'Vediamolo sul vostro centro', { x: 0.6, y: 2.85, w: 12.13, h: 0.9, fontSize: 40, bold: true, color: 'FFFFFF', align: 'center' });
     T(s, 'Una demo con i vostri servizi, le vostre agende e il vostro modo di lavorare.', { x: 1.6, y: 3.85, w: 10.13, h: 0.5, fontSize: 18, color: C.mintText, align: 'center' });
-    T(s, 'NPM2 Solutions Srl', { x: 0.6, y: 5.6, w: 12.13, h: 0.4, fontSize: 15, bold: true, color: C.faint, align: 'center' });
+    s.addShape('roundRect', { x: (13.333 - 3.2) / 2, y: 4.75, w: 3.2, h: 0.62, rectRadius: 0.14, fill: { color: C.mint }, line: { color: C.mint } });
+    T(s, 'Richiedi una demo  →', { x: (13.333 - 3.2) / 2, y: 4.75, w: 3.2, h: 0.62, fontSize: 17, bold: true, color: '0B2E2A', align: 'center', valign: 'middle' });
+    T(s, 'NPM2 Solutions Srl', { x: 0.6, y: 6.2, w: 12.13, h: 0.4, fontSize: 15, bold: true, color: C.faint, align: 'center' });
     s.addNotes('Chiudere proponendo una demo sui dati e sui servizi del centro: è lì che il gestionale si vede davvero.');
   }
 
