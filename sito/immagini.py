@@ -41,15 +41,11 @@ LARGHEZZE = {
 	"gdpr": 900,
 	"muscoli": 700,
 	"spesa": 700,
-	# phones
-	"home": 640,
-	"login": 640,
-	"firma": 640,
-	"dieta": 640,
-	"esercizio": 640,
-	"esercizi": 640,
-	"staff": 640,
 }
+
+
+# the phones, upright (brand/video/sorgenti/telefoni.mjs makes telefono-<name>.png)
+TELEFONI = {nome: 640 for nome in ("login", "home", "firma", "dieta", "esercizio", "esercizi", "staff")}
 
 
 def webp(sorgente: Path, destinazione: Path, larghezza: int) -> None:
@@ -80,6 +76,8 @@ def main() -> None:
 	USCITA.mkdir(parents=True, exist_ok=True)
 	for nome, larghezza in LARGHEZZE.items():
 		webp(SCHERMATE / f"{nome}.png", USCITA / f"{nome}.webp", larghezza)
+	for nome, larghezza in TELEFONI.items():
+		webp(SCHERMATE / f"telefono-{nome}.png", USCITA / f"{nome}.webp", larghezza)
 	condivisione()
 	for file in sorted(USCITA.iterdir()):
 		print(f"{file.name:28} {file.stat().st_size // 1024:5} KB")
