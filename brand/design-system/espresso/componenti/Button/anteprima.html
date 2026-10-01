@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- @dsCard group="Azioni" height=150 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>html,body{margin:0;background:var(--surface-base);}.stage{padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}.col{display:flex;flex-direction:column;gap:12px;}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}[data-theme="dark"] .only-light{display:none}:root:not([data-theme="dark"]) .only-dark{display:none}</style></head><body>
+<div class="dc stage col" style="align-items:flex-start">
+ <div class="row">
+  <button class="dc-btn dc-btn--solid dc-btn--md"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /><path d="M12 5v14" /></svg>Nuovo appuntamento</button>
+  <button class="dc-btn dc-btn--brand dc-btn--md"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z" /><path d="M6 12h16" /></svg>Invia promemoria</button>
+  <button class="dc-btn dc-btn--subtle dc-btn--md">Esporta</button>
+  <button class="dc-btn dc-btn--outline dc-btn--md"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></svg>Allega</button>
+  <button class="dc-btn dc-btn--ghost dc-btn--md">Annulla</button>
+  <button class="dc-btn dc-btn--danger dc-btn--md">Elimina</button>
+ </div>
+ <div class="row">
+  <button class="dc-btn dc-btn--solid dc-btn--lg">Prenota la visita</button>
+  <button class="dc-btn dc-btn--solid">Salva</button>
+  <button class="dc-btn dc-btn--subtle"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>Cerca</button>
+  <button class="dc-btn dc-btn--danger-subtle">Annulla la visita</button>
+  <button class="dc-btn dc-btn--subtle dc-btn--icon" aria-label="Altre azioni"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg></button>
+  <button class="dc-btn dc-btn--ghost dc-btn--icon" aria-label="Chiudi"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
+  <button class="dc-btn dc-btn--solid dc-btn--xs">Conferma</button>
+  <button class="dc-btn dc-btn--solid" disabled>Non disponibile</button>
+ </div>
+</div>
+</body></html>

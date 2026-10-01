@@ -1,0 +1,15 @@
+<!doctype html>
+<!-- @dsCard group="Moduli" height=170 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>html,body{margin:0;background:var(--surface-base);}.stage{padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}.col{display:flex;flex-direction:column;gap:12px;}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}[data-theme="dark"] .only-light{display:none}:root:not([data-theme="dark"]) .only-dark{display:none}</style></head><body>
+<div class="dc stage grid2">
+ <div class="col" style="gap:8px">
+  <div class="dc-drop"><span class="dc-drop__mark"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></svg></span><span><b style="color:var(--ink-gray-8);font-weight:500">Trascina qui il referto</b><br><span style="font-size:12px">oppure scegli un file · PDF o immagine, fino a 10 MB</span></span></div>
+  <div class="dc-drop is-over"><span class="dc-drop__mark"><i class="dc-cross" style="--s:11px" aria-hidden="true"></i></span><span><b style="font-weight:500">Rilascia per allegare</b></span></div>
+ </div>
+ <div class="col" style="gap:6px">
+  <div class="dc-file"><span class="dc-tag dc-tag--blue">PDF</span><span style="flex:1"><span class="dc-file__name">Ecografia_addome.pdf</span><br><span class="dc-file__meta">1,2 MB · caricato ora</span></span><button class="dc-btn dc-btn--ghost dc-btn--icon dc-btn--xs" aria-label="Rimuovi"><svg class="dc-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button></div>
+  <div class="dc-file"><span class="dc-spinner"></span><span style="flex:1"><span class="dc-file__name">Referto_cardiologico.pdf</span><div class="dc-progress__track" style="margin-top:6px"><div class="dc-progress__fill" style="width:40%"></div></div></span></div>
+ </div>
+</div>
+</body></html>

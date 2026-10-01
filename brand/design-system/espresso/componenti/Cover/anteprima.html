@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- @dsCard height=288 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>
+html,body{margin:0;height:100%;background:var(--surface-base);}
+.cover{position:relative;width:960px;height:288px;overflow:hidden;background:var(--surface-base);font-family:var(--font-sans);}
+.art{position:absolute;inset:0;width:960px;height:288px;}
+.t700{fill:var(--teal-700);} .t500{fill:var(--brand);} .mint{fill:var(--mint-300);} .t100{fill:var(--teal-100);} .ink{fill:var(--ink-gray-9);}
+.xl{rx:var(--radius-7);} .lg{rx:var(--radius-6);} .xs{rx:var(--radius-1);}
+[data-theme="dark"] .t500{fill:var(--teal-500);}
+.name{position:absolute;left:40px;bottom:40px;max-width:440px;}
+.name h1{margin:0;font-size:64px;line-height:.95;font-weight:700;letter-spacing:-0.035em;color:var(--ink-gray-9);}
+.name p{margin:12px 0 0;font-size:14px;line-height:20px;color:var(--ink-gray-6);}
+</style></head><body>
+<div class="cover"><svg class="art" viewBox="0 0 960 288" aria-hidden="true">
+<!-- blocks: teal-700 slab 176x288 (radius-7), teal-500 280x144 bleeding right/top, mint-300 160x106, ink-gray-9 96x128, teal-100 disc r=48 (radius-full)
+     arrangement: one tall slab with satellites, the teal-500 block bleeding off the top-right edge
+     pattern: 12 medical crosses cut from radius-xs bars on the slab - the literal motif of the mark (a cloud with a cross in negative); half-round cloud bump on the mint block
+     steps: gaps space-4 (16), cross pitch 48 = 2 x space-6, bar width space-2 (8); radii radius-7, radius-6, radius-1, radius-full -->
+<rect class="t700 xl" x="520" y="0" width="176" height="288"/>
+<rect class="mint xs" x="556" y="40" width="8" height="24"/><rect class="mint xs" x="548" y="48" width="24" height="8"/><rect class="mint xs" x="604" y="40" width="8" height="24"/><rect class="mint xs" x="596" y="48" width="24" height="8"/><rect class="mint xs" x="652" y="40" width="8" height="24"/><rect class="mint xs" x="644" y="48" width="24" height="8"/><rect class="mint xs" x="556" y="104" width="8" height="24"/><rect class="mint xs" x="548" y="112" width="24" height="8"/><rect class="mint xs" x="604" y="104" width="8" height="24"/><rect class="mint xs" x="596" y="112" width="24" height="8"/><rect class="mint xs" x="652" y="104" width="8" height="24"/><rect class="mint xs" x="644" y="112" width="24" height="8"/><rect class="mint xs" x="556" y="168" width="8" height="24"/><rect class="mint xs" x="548" y="176" width="24" height="8"/><rect class="mint xs" x="604" y="168" width="8" height="24"/><rect class="mint xs" x="596" y="176" width="24" height="8"/><rect class="mint xs" x="652" y="168" width="8" height="24"/><rect class="mint xs" x="644" y="176" width="24" height="8"/><rect class="mint xs" x="556" y="232" width="8" height="24"/><rect class="mint xs" x="548" y="240" width="24" height="8"/><rect class="mint xs" x="604" y="232" width="8" height="24"/><rect class="mint xs" x="596" y="240" width="24" height="8"/><rect class="mint xs" x="652" y="232" width="8" height="24"/><rect class="mint xs" x="644" y="240" width="24" height="8"/>
+<rect class="t500 lg" x="712" y="-24" width="280" height="168"/>
+<rect class="mint lg" x="712" y="160" width="160" height="128"/>
+<circle class="mint" cx="792" cy="168" r="40"/>
+<rect class="ink lg" x="888" y="160" width="96" height="128"/>
+<circle class="t100" cx="944" cy="96" r="32"/>
+</svg><div class="name"><h1>DottorCloud</h1><p>Il gestionale che tiene tutto il centro medico in un posto solo.</p></div></div>
+</body></html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<!-- @dsCard group="Moduli" height=170 -->
+<html data-theme="light">
+<script>if(location.hash==="#dark")document.documentElement.dataset.theme="dark"</script><head><meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../componenti.css"><style>html,body{margin:0;background:var(--surface-base);}.stage{padding:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}.col{display:flex;flex-direction:column;gap:12px;}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}[data-theme="dark"] .only-light{display:none}:root:not([data-theme="dark"]) .only-dark{display:none}</style></head><body>
+<div class="dc stage" style="align-items:flex-start;gap:36px">
+ <div class="col" style="gap:10px">
+  <label class="dc-check"><input type="checkbox" checked> Invia promemoria via WhatsApp</label>
+  <label class="dc-check"><input type="checkbox"> Consenso al trattamento per marketing</label>
+  <label class="dc-check"><input type="checkbox" class="ind"> Seleziona tutti (3 di 12)</label>
+  <label class="dc-check"><input type="checkbox" disabled checked> Privacy firmata</label>
+  <label class="dc-check"><input type="checkbox" disabled> Non disponibile</label>
+ </div>
+ <div class="col" style="gap:4px;width:300px">
+  <label class="dc-check dc-check--md dc-check--row"><input type="checkbox" checked><span>Promemoria il giorno prima<span class="dc-check__desc">WhatsApp alle 18:00</span></span></label>
+  <label class="dc-check dc-check--md dc-check--row"><input type="checkbox"><span>Promemoria un'ora prima<span class="dc-check__desc">SMS</span></span></label>
+ </div>
+</div>
+<script>document.querySelectorAll('input.ind').forEach(function(i){i.indeterminate=true})</script>
+</body></html>
