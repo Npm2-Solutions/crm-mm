@@ -9,12 +9,12 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('System Defaults') }}
+          {{ __('Formats') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
             __(
-              'Configure default settings for {brand}, including default currency, date formats, and other system-wide preferences to ensure consistency across your system.',
+              'Currency, numbers, dates and times, as every screen of {brand} shows them.',
             )
           }}
         </p>

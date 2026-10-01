@@ -9,7 +9,7 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Studio hours & rules') }}
+          {{ __('Hours & rules') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
@@ -243,7 +243,7 @@ function save() {
     auto: true,
     onSuccess: () => {
       saving.value = false
-      toast.success(__('Studio hours & rules saved'))
+      toast.success(__('Hours & rules saved'))
     },
     onError: (e) => {
       saving.value = false

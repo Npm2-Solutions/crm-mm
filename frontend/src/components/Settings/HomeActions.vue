@@ -10,10 +10,14 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Home Actions') }}
+          {{ __('Menu') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
-          {{ __('Configure actions that appear on the home dropdown') }}
+          {{
+            __(
+              'What the menu under the centre’s name, at the top left, offers everyone.',
+            )
+          }}
         </p>
       </div>
       <div

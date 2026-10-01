@@ -10,7 +10,7 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Brand Settings') }}
+          {{ __('Name & logo') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{

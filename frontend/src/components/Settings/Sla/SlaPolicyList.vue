@@ -1,7 +1,11 @@
 <template>
   <SettingsLayoutBase
-    :title="__('SLA Policies')"
-    :description="__('Manage your service level agreement policies')"
+    :title="__('Response times')"
+    :description="
+      __(
+        'How soon a request is answered, and what happens when it is not: the service level agreements (SLA).',
+      )
+    "
   >
     <template #header-actions>
       <Button
