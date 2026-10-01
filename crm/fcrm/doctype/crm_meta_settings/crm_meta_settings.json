@@ -86,7 +86,7 @@
    "label": "Webhook"
   },
   {
-   "description": "Generated here and registered with Meta by the CRM (Settings \u2192 Meta \u2192 configure the webhook). Kept encrypted",
+   "description": "Generated here and registered with Meta automatically (Settings \u2192 Meta \u2192 configure the webhook). Kept encrypted",
    "fieldname": "webhook_verify_token",
    "fieldtype": "Password",
    "label": "Webhook Verify Token",
@@ -133,7 +133,7 @@
    "label": "Last Delivery From Meta"
   },
   {
-   "description": "When Meta last POSTed to the webhook \u2014 whether or not the CRM accepted it. Empty means Meta has never called.",
+   "description": "When Meta last POSTed to the webhook \u2014 whether or not it was accepted. Empty means Meta has never called.",
    "fieldname": "last_webhook_seen",
    "fieldtype": "Datetime",
    "label": "Last Call From Meta",
@@ -193,7 +193,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Meta Settings",

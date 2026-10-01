@@ -2,7 +2,7 @@
  "actions": [],
  "autoname": "hash",
  "creation": "2026-10-04 00:00:00.000000",
- "description": "A programme of stages that open with time or one after the other, each with what the patient reads and, if written, a plan",
+ "description": "A programme of stages that open with time or one after the other, each with what the person reads and, if written, a plan",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -154,7 +154,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-30 19:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Piani",
  "name": "CRM Programme",

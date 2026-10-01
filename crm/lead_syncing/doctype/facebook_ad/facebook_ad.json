@@ -68,7 +68,7 @@
   },
   {
    "default": "0",
-   "description": "Meta refused to describe this ad with the token we have. Kept so the CRM stops asking every time.",
+   "description": "Meta refused to describe this ad with the token we have. Kept so it is not asked for again every time.",
    "fieldname": "unreadable",
    "fieldtype": "Check",
    "label": "Unreadable"
@@ -128,7 +128,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Lead Syncing",
  "name": "Facebook Ad",

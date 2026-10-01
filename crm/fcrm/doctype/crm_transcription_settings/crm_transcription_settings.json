@@ -115,7 +115,7 @@
   },
   {
    "default": "0",
-   "description": "Nightly, drops the recording link from calls older than this so the audio is no longer reachable from the CRM. 0 keeps the links. Deleting the audio at the provider is a separate step.",
+   "description": "Nightly, drops the recording link from calls older than this so the audio can no longer be reached from here. 0 keeps the links. Deleting the audio at the provider is a separate step.",
    "fieldname": "recording_retention_days",
    "fieldtype": "Int",
    "label": "Forget Recording Links After (days)"
@@ -150,7 +150,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Transcription Settings",

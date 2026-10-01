@@ -156,7 +156,7 @@
    "fieldname": "booking_page_logo",
    "fieldtype": "Attach Image",
    "label": "Booking Page Logo",
-   "description": "Beside the product's logo. Empty = the centre's logo (Settings > Brand)"
+   "description": "Leads at the top of the booking page. Empty = the centre's logo (Settings → The centre → General → Name & logo)"
   },
   {
    "fieldname": "booking_page_intro",
@@ -314,7 +314,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-30 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Scheduling Settings",

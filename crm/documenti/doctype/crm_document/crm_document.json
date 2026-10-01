@@ -58,7 +58,7 @@
    "in_standard_filter": 1,
    "label": "Type",
    "reqd": 1,
-   "description": "A kind the CRM or a module registers: a contract, a signed form, a test result"
+   "description": "A kind registered by the base or by a module: a contract, a signed form, a test result"
   },
   {
    "fieldname": "document_date",
@@ -148,7 +148,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-01 13:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Documenti",
  "name": "CRM Document",

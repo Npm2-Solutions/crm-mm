@@ -121,12 +121,12 @@
   },
   {
    "default": "0",
-   "description": "Whether a call to this number actually reaches the CRM. When it does not, the answering service cannot run on it.",
+   "description": "Whether a call to this number actually arrives here. When it does not, the answering service cannot run on it.",
    "fieldname": "routes_to_crm",
    "fieldtype": "Check",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Reaches the CRM",
+   "label": "Calls arrive here",
    "read_only": 1
   },
   {
@@ -140,7 +140,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "When set, incoming calls go to your own SIP infrastructure and never touch the CRM.",
+   "description": "When set, incoming calls go to your own SIP infrastructure and never arrive here.",
    "fieldname": "sip_trunk",
    "fieldtype": "Data",
    "label": "SIP Trunk",
@@ -177,7 +177,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-24 09:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Caller ID",

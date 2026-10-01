@@ -11,7 +11,7 @@
  "fields": [
   {
    "default": "0",
-   "description": "Turns the Site section on in the CRM. Nothing is published until you publish it.",
+   "description": "Turns the Site section on. Nothing is published until you publish it.",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Website enabled"
@@ -21,7 +21,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "The site the CRM opens on.",
+   "description": "The site the Site section opens on.",
    "fieldname": "default_site",
    "fieldtype": "Link",
    "label": "Default site",
@@ -30,7 +30,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-08 10:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Website Settings",

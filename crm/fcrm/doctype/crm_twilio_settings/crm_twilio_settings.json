@@ -156,7 +156,7 @@
    "collapsible": 1
   },
   {
-   "description": "Elastic SIP trunks on this account, refreshed from Twilio. A number handed to a trunk stops reaching the CRM: Twilio ignores its voice webhook and sends the call to your own SIP infrastructure, so the answering service cannot run on it.",
+   "description": "Elastic SIP trunks on this account, refreshed from Twilio. A number handed to a trunk no longer arrives here: Twilio ignores its voice webhook and sends the call to your own SIP infrastructure, so the answering service cannot run on it.",
    "fieldname": "sip_trunks",
    "fieldtype": "Code",
    "options": "JSON",
@@ -168,7 +168,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Twilio Settings",

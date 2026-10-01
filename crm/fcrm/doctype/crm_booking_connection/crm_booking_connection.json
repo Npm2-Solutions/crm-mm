@@ -250,13 +250,13 @@
    "fieldname": "push_blocks",
    "fieldtype": "Check",
    "label": "Block Time on the Platform",
-   "description": "When an appointment is booked in the CRM, mark the professional busy on the platform (where supported)"
+   "description": "When an appointment is booked here, mark the professional busy on the platform (where supported)"
   },
   {
    "fieldname": "push_cancellations",
    "fieldtype": "Check",
    "label": "Cancel on the Platform",
-   "description": "Cancelling an imported appointment in the CRM cancels it on the platform too (where supported)"
+   "description": "Cancelling an imported appointment here cancels it on the platform too (where supported)"
   },
   {
    "fieldname": "defaults_section",
@@ -329,7 +329,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-01 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Booking Connection",
