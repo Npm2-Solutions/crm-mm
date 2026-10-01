@@ -18,6 +18,7 @@ export default {
   "This area is for the centre's patients.":
     'Quest’area è per i pazienti del centro.',
   'Your work is in {brand}.': 'Il tuo lavoro è in {brand}.',
+  'Powered by {brand}': 'Con tecnologia {brand}',
   'Open {brand}': 'Apri {brand}',
   Home: 'Inizio',
   Appointments: 'Appuntamenti',

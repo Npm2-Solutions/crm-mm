@@ -6,7 +6,12 @@
   <div class="flex min-h-full items-center justify-center px-4 py-10">
     <div class="flex w-full max-w-sm flex-col gap-5">
       <div class="flex flex-col items-center gap-2 text-center">
-        <img v-if="logo" :src="logo" alt="" class="max-h-10 max-w-[10rem]" />
+        <img
+          v-if="logo"
+          :src="logo"
+          alt=""
+          class="max-h-12 max-w-[12rem] object-contain dark:rounded-md dark:bg-white dark:p-1.5"
+        />
         <h1 class="text-xl font-semibold text-ink-gray-9">
           {{ centre || __('Your area') }}
         </h1>
@@ -85,6 +90,13 @@
           <Button variant="ghost" :label="__('Send it again')" @click="send" />
         </div>
       </form>
+      <!-- the product signs at the foot: the centre leads at the top -->
+      <p
+        class="flex items-center justify-center gap-1.5 text-xs text-ink-gray-5"
+      >
+        <img :src="brand.icon" alt="" class="size-4 rounded-[4px]" />
+        {{ __('Powered by {brand}') }}
+      </p>
     </div>
   </div>
 </template>
@@ -94,10 +106,12 @@ import { Button, ErrorMessage, FormControl, call } from 'frappe-ui'
 import { ref } from 'vue'
 import { inJSON, opzioniDiAccesso, supported } from '../passkey'
 import { messageOf } from '../store'
+import { marchio } from '@/utils/marchio'
 
 const boot = window.AREA || {}
 const centre = boot.centre
 const logo = boot.logo
+const brand = marchio(boot.brand)
 
 const email = ref('')
 const code = ref('')
