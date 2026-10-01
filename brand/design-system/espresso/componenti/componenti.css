@@ -246,7 +246,7 @@
 .dc-toast__action { all: unset; margin-left: auto; padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--mint-300); cursor: pointer; }
 .dc-toast__action:hover { background: rgba(95, 224, 204, 0.12); }
 .dc-toast .dc-btn--ghost { color: var(--on-block-deep-muted); } .dc-toast .dc-btn--ghost:hover { background: rgba(225,245,241,.1); }
-.dc-tooltip { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: var(--radius-1); background: var(--surface-gray-9); color: var(--ink-base); font-size: 12px; box-shadow: var(--elevation-lg); }
+.dc-tooltip { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: var(--radius-1); background: var(--surface-gray-10); color: var(--ink-base); font-size: 12px; box-shadow: var(--elevation-lg); }
 .dc-tooltip::after { content: ""; position: absolute; left: 50%; bottom: -4px; width: 8px; height: 8px; margin-left: -4px; background: inherit; transform: rotate(45deg); border-radius: 1px; }
 .dc-tooltip kbd { font: inherit; font-size: 11px; padding: 0 4px; border-radius: 3px; background: rgba(255,255,255,.16); }
 

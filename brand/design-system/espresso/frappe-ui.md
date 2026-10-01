@@ -1,6 +1,6 @@
 # frappe-ui
 
-Come applicare questo sistema al gestionale senza riscrivere i componenti di frappe-ui (1.0.0-beta.29, Espresso). Tutto passa da `frontend/src/marchio.css`, che oggi già colora il pulsante solid, lo switch e la checkbox con `--brand-action` (da `utils/marchio.js`). Le regole qui sotto si aggiungono a quelle; le variabili si sovrascrivono senza toccare frappe-ui.
+Come questo sistema si applica al gestionale senza riscrivere i componenti di frappe-ui (1.0.0-beta.29, Espresso). È applicato in [`frontend/src/espresso.css`](../../../frontend/src/espresso.css), che `index.css` e l'area clienti importano dopo `marchio.css`: le variabili di frappe-ui prendono i valori del marchio, e poche regole mettono i segni del marchio dove il markup di frappe-ui lo permette. Tutto sta sotto `[data-marchio='dottorcloud']`, l'attributo che `utils/marchio.js` (`indossa()`) mette sulla pagina con la chiave del marchio acceso: un altro verticale tiene i grigi neutri di Espresso. Il pieno dell'azione (`--brand-action`: pulsante solid, switch, checkbox, radio) resta in `marchio.css`, per ogni marchio.
 
 Le regole con un selettore di classe dipendono dal markup di frappe-ui: dopo un aggiornamento della libreria vanno ricontrollate. Sono segnate con **(markup)**.
 
@@ -22,128 +22,18 @@ Le regole con un selettore di classe dipendono dal markup di frappe-ui: dopo un 
 | Voce attiva della barra laterale | `elevation-3` | + icona verde e coda | regola (markup) |
 | Stati ambra e rosso | `ink-amber-8`, `ink-red-8` | più scuri (4.5:1) | variabili |
 
-## Il CSS da aggiungere a marchio.css
+## Sistemato applicandolo
 
-```css
-/* 1. Grigi di Espresso tinti del verde del marchio (stessa luminosità) */
-:root {
-  --surface-gray-1: #f6f9f8;
-  --surface-gray-2: #f1f4f3;
-  --surface-gray-3: #ebeeed;
-  --surface-gray-4: #e0e3e2;
-  --surface-gray-5: #c4c8c7;
-  --surface-gray-6: #959b99;
-  --surface-gray-7: #777e7c;
-  --surface-gray-8: #4e5352;
-  --surface-gray-9: #353938;
-  --surface-gray-10: #151817;
-  --surface-sidebar: #f6f9f8;
-  --surface-elevation-1: #ffffff;
-  --surface-elevation-2: #ffffff;
-  --ink-gray-2: #e0e3e2;
-  --ink-gray-3: #c4c8c7;
-  --ink-gray-4: #959b99;
-  --ink-gray-5: #777e7c;
-  --ink-gray-6: #4e5352;
-  --ink-gray-7: #353938;
-  --ink-gray-8: #151817;
-  --ink-gray-9: #0e100f;
-  --outline-gray-1: #ebeeed;
-  --outline-gray-2: #e0e3e2;
-  --outline-gray-3: #c4c8c7;
-  --outline-gray-4: #959b99;
-  --outline-gray-5: #777e7c;
-  /* 2. focus e ombre */
-  --focus-outline-default: 2px solid #0e8a7c;
-  --elevation-sm: 0px 0px 1px 0px rgba(11, 46, 42, 0.2), 0px 1px 3px 0px rgba(11, 46, 42, 0.14);
-  --elevation-base: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.16), 0px 2px 5px 0px rgba(11, 46, 42, 0.12);
-  --elevation-lg: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.18), 0px 18px 22px -6px rgba(11, 46, 42, 0.12);
-  --elevation-2xl: 0px 0px 1.5px 0px rgba(11, 46, 42, 0.25), 0px 44px 52px -10px rgba(11, 46, 42, 0.12);
-  /* 3. stati leggibili */
-  --ink-amber-8: #8a5300;
-  --ink-red-8: #c8323c;
-  --ink-green-8: #177a42;
-}
-[data-theme='dark'] {
-  --surface-base: #151817;
-  --surface-gray-1: #1d201f;
-  --surface-gray-2: #272a29;
-  --surface-gray-3: #353938;
-  --surface-gray-4: #3f4342;
-  --surface-gray-5: #535957;
-  --surface-gray-6: #757c7a;
-  --surface-gray-7: #959b99;
-  --surface-gray-8: #abb0af;
-  --surface-gray-9: #d6dad9;
-  --surface-gray-10: #f6f9f8;
-  --surface-sidebar: #151817;
-  --surface-elevation-1: #1d201f;
-  --surface-elevation-2: #222524;
-  --ink-base: #151817;
-  --ink-gray-2: #353938;
-  --ink-gray-3: #3f4342;
-  --ink-gray-4: #757c7a;
-  --ink-gray-5: #757c7a;
-  --ink-gray-6: #959b99;
-  --ink-gray-7: #abb0af;
-  --ink-gray-8: #d6dad9;
-  --ink-gray-9: #f6f9f8;
-  --outline-gray-1: #222524;
-  --outline-gray-2: #353938;
-  --outline-gray-3: #3f4342;
-  --outline-gray-4: #535957;
-  --outline-gray-5: #757c7a;
-  --focus-outline-default: 2px solid #5fe0cc;
-}
+Il CSS proposto qui prima dell'applicazione è andato in `espresso.css` con queste correzioni, verificate nel browser (stili calcolati, in chiaro e in scuro):
 
-/* 4. La coda della nuvola sul pulsante solid (markup) */
-button.bg-surface-gray-10,
-button.bg-surface-red-7 { border-bottom-left-radius: 2px; }
-
-/* 5. Checkbox a nuvola, radio con la croce */
-input[type='checkbox'] { border-radius: 4px 4px 4px 2px; }
-input[type='radio']:checked {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%23ffffff' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
-  background-size: 55%;
-}
-[data-theme='dark'] input[type='radio']:checked { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%230b2e2a' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e"); }
-
-/* 6. Switch acceso: la croce al centro del pomello (markup: reka-ui SwitchThumb) */
-button[role='switch'][data-state='checked'] > span {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%230b6f64' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 50%;
-}
-[data-theme='dark'] button[role='switch'][data-state='checked'] > span {
-  background-color: #0b2e2a;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%235fe0cc' d='M4 0h4v4h4v4H8v4H4V8H0V4h4z'/%3e%3c/svg%3e");
-}
-
-/* 7. Campo obbligatorio: la croce al posto dell'asterisco (markup: RequiredIndicator) */
-label span.text-ink-red-6[aria-hidden='true'] {
-  display: inline-block; width: 7px; height: 7px; margin-left: 3px; vertical-align: 1px;
-  font-size: 0; background: currentColor;
-  clip-path: polygon(34% 0, 66% 0, 66% 34%, 100% 34%, 100% 66%, 66% 66%, 66% 100%, 34% 100%, 34% 66%, 0 66%, 0 34%, 34% 34%);
-}
-
-/* 8. Scheda attiva: linea e icona del marchio (markup: Tabs, TabsIndicator) */
-[role='tablist'] .bg-surface-gray-10 { background-color: var(--brand-action); }
-[role='tab'][data-state='active'] svg { color: var(--brand-action); }
-
-/* 9. Avanzamento in verde (markup: Progress) */
-.transform-gpu.rounded-xl > .bg-surface-gray-10 { background-color: var(--brand, #12a594); }
-
-/* 10. Toast in verde profondo con la coda (markup: Toast) */
-li.bg-surface-gray-9.rounded-md { background-color: #0b2e2a; border-bottom-left-radius: 2px; }
-
-/* 11. Voce attiva della barra laterale (markup: SidebarItem) */
-.group\/sidebar-item.bg-surface-elevation-3 { border-bottom-left-radius: 2px; }
-.group\/sidebar-item.bg-surface-elevation-3 svg { color: var(--brand-action); }
-
-/* 12. Finestre, menu e popover con la coda (markup) */
-.dialog-content { border-bottom-left-radius: 2px; }
-```
+- **Il grigio delle etichette** (`ink-gray-5`) un passo più scuro: `#6a716f` in chiaro, `#858c8a` in scuro. Quello di Espresso arrivava a 4.2:1 sul bianco e a 3.9:1 sul fondo delle carte scure, sotto il 4.5:1 che il principio 5 chiede; frappe-ui lo usa per etichette in peso normale, non solo in medium.
+- **I grigi che il CSS proposto non toccava**, tinti come gli altri: `ink-gray-1`, `outline-gray-6…9`, `outline-elevation-1/2`, `outline-base` e `surface-elevation-3` (scuro), le ombre `elevation-md` e `elevation-xl`. Altrimenti restavano grigi neutri accanto a quelli tinti.
+- **Il pieno dell'azione nel tema scuro** è la menta (`--brand-on-dark`), come dice il sistema: `marchio.css` usava il verde del logo.
+- **Le icone della scheda attiva** sono spesso classi `lucide-*`, non `svg`: la regola prende entrambe (anche per la voce attiva della barra laterale).
+- **L'avanzamento**: solo il riempimento figlio diretto del binario (`> .bg-surface-gray-10`), perché un contenitore `transform-gpu rounded-xl` può avere dentro un pulsante solid.
+- **La croce dei campi obbligatori** anche sui campi di DottorCloud (`FieldLayout`, moduli, SLA, modelli email, motivo di perdita, griglie): portano la classe `segno-obbligatorio` al posto del solo asterisco rosso, che una regola CSS non può riconoscere.
+- **Il segmentato** (TabButtons): il pulsante scelto ha la coda della nuvola. **Le schede di una voce delle impostazioni** (`SettingsHub.vue`) hanno la linea della scheda aperta nel colore dell'azione, come quelle di frappe-ui.
+- **Il tooltip** resta sul grigio più scuro di Espresso (`surface-gray-10`, ora tinto): la sua freccia ha lo stesso colore e non si raggiunge da una regola sul fumetto; il tooltip non diventa comunque il pieno del marchio.
 
 ## Classi DottorCloud da usare nei componenti nostri
 

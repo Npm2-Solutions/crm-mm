@@ -2,7 +2,7 @@
 
 La tavola con tutti i componenti, in chiaro e in scuro: [`anteprima.html`](./anteprima.html) (aprila nel browser).
 I valori: [`tokens.json`](./tokens.json) e [`tokens.css`](./tokens.css) (variabili con gli stessi nomi di frappe-ui).
-Come applicarlo al gestionale: [`frappe-ui.md`](./frappe-ui.md).
+Come è applicato al gestionale, e cosa è stato sistemato applicandolo: [`frappe-ui.md`](./frappe-ui.md) (il CSS è in `frontend/src/espresso.css`).
 
 Il design system del marchio per video, slide e ads resta un livello sopra, in [`../`](../README.md).
 
@@ -32,7 +32,7 @@ DottorCloud è il gestionale dei centri medici di NPM2 Solutions Srl. Il gestion
 
 ## Colore
 
-- **Grigi Espresso tinti.** I grigi di frappe-ui (`surface-gray-1…10`, `ink-gray-2…9`, `outline-gray-1…5`) hanno la stessa luminosità di Espresso ma una punta del verde del marchio (tinta 182° in OKLCH). Si usano esattamente come in Espresso: `surface-base` la pagina e le carte, `surface-gray-2` il fondo dei campi e dei pulsanti subtle, `surface-gray-3` l'hover, `ink-gray-8` il testo, `ink-gray-9` i titoli, `ink-gray-6` i metadati, `ink-gray-5` le etichette, `ink-gray-4` solo segnaposto e icone di contorno, `outline-gray-1` i filetti.
+- **Grigi Espresso tinti.** I grigi di frappe-ui (`surface-gray-1…10`, `ink-gray-2…9`, `outline-gray-1…5`) hanno la stessa luminosità di Espresso ma una punta del verde del marchio (tinta 182° in OKLCH). Si usano esattamente come in Espresso: `surface-base` la pagina e le carte, `surface-gray-2` il fondo dei campi e dei pulsanti subtle, `surface-gray-3` l'hover, `ink-gray-8` il testo, `ink-gray-9` i titoli, `ink-gray-6` i metadati, `ink-gray-5` le etichette (un passo più scuro di Espresso, per arrivare a 4.5:1), `ink-gray-4` solo segnaposto e icone di contorno, `outline-gray-1` i filetti.
 - **Azione.** `brand-solid` (teal-700, menta nel tema scuro) sostituisce il pieno grigio di Espresso (`surface-gray-10`) dove si agisce: pulsante solid, checkbox spuntata, radio scelto, switch acceso, giorno scelto. Sopra `on-brand-solid`. Hover `brand-solid-hover`.
 - **Marchio tenue.** `brand-subtle` con `on-brand-subtle`: righe selezionate, pulsante subtle del marchio, avatar dei pazienti, contatore della scheda attiva, avvisi di novità.
 - **Marchio come segno.** `brand` (il verde del logo, teal-500) solo per segni non testuali: barre di avanzamento, linea della scheda attiva nel tema scuro, croce del menu, anello "adesso". Sul bianco ha 3:1: mai per testo.

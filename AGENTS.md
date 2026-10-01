@@ -31,6 +31,7 @@ the AGPL asks, and when NPM2 changes it for the first time it gets
 | formDialog() API reference | [feats/form-scripting/form-dialog.md](./.pi/feats/form-scripting/form-dialog.md) |
 | Electronic invoicing (setup, issuing, Sistema TS) | [feats/fatturazione/guida.md](./.pi/feats/fatturazione/guida.md) |
 | Any screen a phone will see (rules below) | [docs/progetto-ghl/29-telefono.md](./docs/progetto-ghl/29-telefono.md) |
+| How DottorCloud looks: tokens, the brand's marks, components | [brand/design-system/espresso](./brand/design-system/espresso/README.md) (applied in `frontend/src/espresso.css`) |
 
 ---
 
@@ -316,6 +317,7 @@ the draft with `modello.accetta`.
 | `crm/marchio.py` | The brand of the vertical that is on (`Marchio`, `registra_marchio`, `attivo()`; `BASE` without one): `nome()`, `con_nome()`, `colori()`, `accento()`, `per_il_boot()`, `per_le_pagine()` (with the centre's mark: `centre_logo`, `centre_logo_shape`, `centre_name`), `contesto()` (every web page), `manifest()` (the phone's). `forma_di()` measures a logo of the site's ("wide" on its own, "square" beside the name). `applica()` writes it into Website/System/Navbar Settings, the desk's workspace and icons (install, patch, `piano_aggiornato` when the plan changes), `boot()` names the apps in the desk, `nome_scelto()` keeps the software's name from passing for a centre's |
 | `crm/verticali.py` | A vertical names its brand (`Verticale.marchio`): the clinic wears DottorCloud |
 | `crm/hooks.py` (top) | `app_title`, `app_logo_url` (fallbacks), `update_website_context` (`marchio.contesto`), `extend_bootinfo`, the apps screen |
+| `frontend/src/espresso.css` | The design system on frappe-ui (`brand/design-system/espresso`): its variables with the brand's values, the cloud's tail and the cross through a few rules on frappe-ui's markup, under `[data-marchio]` (set by `indossa()`); our own required marks carry `segno-obbligatorio` |
 | `frontend/src/utils/marchio.js`, `marchio.css` | The brand in the SPA and the area: `marchio()` from the boot, `conMarchio()` in `__()`, `indossa()` (colours as `--brand*`, favicon, icons, title); the centre's mark: `formaDelLogo()`, `misureSvg()`, `iniziali()`, `nomeDelCentro()`; primary buttons, switches and ticks in its colour — tested |
 | `frontend/src/components/CentreTile.vue`, `composables/formaDelLogo.js` | The centre's tile (a square logo, the initials, the product's icon) in the client area and the previews; a logo's shape, from the server or measured |
 | `frontend/src/components/UserDropdown.vue`, `Icons/CRMLogo.vue`, `Modals/AboutModal.vue`, `Layouts/GettingStartedPanel.vue` | The product's logo heading the sidebar (its icon when collapsed), the About with the licence's notices, getting started without a help centre |
@@ -335,6 +337,13 @@ stands in at the top only for a centre with neither a logo nor a name. A sentenc
 fills it in the browser, `con_nome(_("…"))` on the server (before any `.format()`).
 A public page's title names the centre (`FCRM Settings.brand_name`) beside the
 product's name: `nome_scelto()` treats every brand's name as no name of the centre's.
+
+A screen looks the way the design system says (`brand/design-system/espresso`):
+frappe-ui's components with its variables, the brand's action colour for what one
+acts with (`--brand-action`, never the darkest gray), `--brand-segno` for a mark
+that is not under words (progress), a required field's mark `segno-obbligatorio`.
+A new mark of the brand goes in `espresso.css`, for every screen at once, never as
+one screen's colours.
 
 ### The desk's day
 | File | Role |
