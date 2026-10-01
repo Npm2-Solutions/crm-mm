@@ -32,7 +32,7 @@ import datetime
 
 import frappe
 from frappe import _
-from frappe.utils import cint, escape_html, flt, formatdate, get_fullname, getdate, now_datetime
+from frappe.utils import add_days, cint, escape_html, flt, formatdate, get_fullname, getdate, now_datetime
 
 from crm.permissions import livelli
 from crm.scheduling import abbonamenti_regole as R
@@ -42,6 +42,9 @@ ABBONAMENTO = "CRM Subscription"
 TIPO = "CRM Subscription Type"
 APPUNTAMENTO = "CRM Appointment"
 PARTECIPANTE = "CRM Appointment Participant"
+
+#: How long after its end the daily round still looks at a subscription.
+GIORNI_DOPO_LA_FINE = 31
 
 #: The terms a subscription copies from its type when it is sold.
 CONDIZIONI = (
@@ -406,7 +409,14 @@ def ogni_giorno() -> None:
 	of the end; the renewals. One that fails leaves the others alone, and the
 	scheduler commits what was done."""
 	oggi = getdate()
-	for nome in frappe.get_all(ABBONAMENTO, filters={"status": ("!=", R.CHIUSO)}, pluck="name"):
+	nomi = frappe.get_all(ABBONAMENTO, filters={"status": ("in", [R.ATTIVO, R.SOSPESO])}, pluck="name")
+	# the ones just ended: their renewal, their last instalments
+	nomi += frappe.get_all(
+		ABBONAMENTO,
+		filters={"status": R.SCADUTO, "ends_on": (">=", add_days(oggi, -GIORNI_DOPO_LA_FINE))},
+		pluck="name",
+	)
+	for nome in nomi:
 		frappe.db.savepoint("crm_abbonamento_del_giorno")
 		try:
 			_il_giorno(frappe.get_doc(ABBONAMENTO, nome), oggi)
