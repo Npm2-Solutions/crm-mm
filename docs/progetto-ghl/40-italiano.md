@@ -1,12 +1,13 @@
 # 40 — L'italiano dappertutto
 
-> 🔄 **IN CORSO (01/10/2026)**. DottorCloud parla italiano, ma metà delle schermate
+> ✅ **FATTO (01/10/2026)**. DottorCloud parla italiano, ma metà delle schermate
 > dicevano ancora inglese: le frasi nuove senza traduzione, quelle ereditate rimaste
 > vuote, le parole che frappe-ui scrive da sé ("Load More", "Sun 27", "All day"),
 > gli stati delle liste mostrati come sono salvati ("Todo", "High"), l'ora con am/pm.
-> Il lavoro va per PR: prima le pagine di ogni giorno, poi le impostazioni, poi il
-> resto e le parole del server, infine le traduzioni ereditate rimesse nella voce
-> del prodotto.
+> Il lavoro è andato per PR: prima le pagine di ogni giorno, poi le impostazioni, poi
+> il resto e le parole del server, infine l'importazione, l'editor e le traduzioni
+> ereditate rimesse nella voce del prodotto. Restano in inglese solo dei dati: i nomi
+> degli esercizi di exercises-dataset e degli alimenti CIQUAL.
 
 ## Fatto: le pagine di ogni giorno (PR 1)
 
@@ -93,10 +94,24 @@ contatti, note, chiamate, notifiche) e tutto quello che arriva dal server.
 - **Il giro nel browser** guarda anche il testo visibile: le righe con parole solo
   inglesi, per trovare quello che non passa da `__()`.
 
-Resta, per la prossima PR: le pagine di importazione dei dati, che frappe-ui
-disegna senza traduttore; i dati delle librerie (gli esercizi di exercises-dataset
-e gli alimenti CIQUAL hanno i nomi inglesi); le traduzioni ereditate da rimettere
-nella voce del prodotto.
+## Fatto: l'importazione, l'editor e le traduzioni ereditate (PR 4)
+
+- **L'importazione dei dati**: frappe-ui disegna le sue pagine (elenco, caricamento,
+  abbinamento delle colonne, anteprima, modello da scaricare) senza traduttore. La
+  build ne passa le frasi a `__()` come per gli altri suoi componenti, con una
+  seconda radice (`frappe-ui/frappe`): stati, nomi dei DocType e campi nella lingua
+  dell'utente, "Importazione in Pazienti" con la clinica attiva. I pezzi di una
+  stessa frase ("caricalo dal tuo dispositivo o da un foglio Google") prendono un
+  contesto.
+- **La barra dell'editor di testo** (grassetto, elenchi, titoli, tabelle): i
+  suggerimenti dei pulsanti, una terza radice (`frappe-ui/src/molecules`).
+- **Le traduzioni ereditate**, nella voce del prodotto: le maiuscole all'italiana
+  ("Data di scadenza", non "Data di Scadenza"), l'articolo nei pulsanti ("Aggiungi
+  una riga"), le parole del prodotto ("Persone", non "Potenziali Clienti"; le
+  regole di assegnazione parlano di persone e trattative), l'imperativo e "Vuoi…?"
+  invece dell'infinito, gli errori che dicono cosa non è stato possibile fare.
+  Dove frappe dà una sua traduzione con le maiuscole a una parola dell'app, il
+  catalogo di DottorCloud ne ha una sua.
 
 ## Come si trovano le frasi in inglese
 
@@ -165,7 +180,7 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | File | Cosa fa |
 |---|---|
 | `crm/locale/it.po` | Il catalogo di DottorCloud: vince su quello del framework |
-| `frontend/vite/frappeUi.js` | Le parole di frappe-ui nella lingua dell'utente, alla build |
+| `frontend/vite/frappeUi.js` | Le parole di frappe-ui nella lingua dell'utente, alla build: i componenti, l'importazione dei dati, la barra dell'editor |
 | `frontend/src/components/ListViews/*ListView.vue`, `Kanban/KanbanView.vue` | I valori a scelta e le colonne del Kanban tradotti |
 | `frontend/src/area/it.js` | Il dizionario dell'area clienti |
 | `crm/dashboard/widgets/sales.py` | Le fasi tradotte nell'imbuto e nelle liste (`stage_name`) |
