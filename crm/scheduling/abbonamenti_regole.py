@@ -26,7 +26,7 @@ from __future__ import annotations
 import calendar
 import datetime
 
-from crm.scheduling.cicli_regole import FATTA, PERSA, PRENOTATA, seduta
+from crm.scheduling import cicli_regole as C
 
 ATTIVO, SOSPESO, SCADUTO, CHIUSO = "Active", "Suspended", "Expired", "Closed"
 STATI = (ATTIVO, SOSPESO, SCADUTO, CHIUSO)
@@ -43,7 +43,8 @@ PROMEMORIA = (0, 60, 7)
 UN_GIORNO = datetime.timedelta(days=1)
 
 #: What an appointment is for the subscription: the same as for a cycle.
-ingresso = seduta
+FATTA, PERSA, PRENOTATA, ANNULLATA = C.FATTA, C.PERSA, C.PRENOTATA, C.ANNULLATA
+ingresso = C.seduta
 
 
 def entro(valore, limiti: tuple[int, int, int]) -> int:
