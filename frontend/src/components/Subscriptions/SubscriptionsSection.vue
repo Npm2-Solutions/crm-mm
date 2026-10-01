@@ -54,7 +54,7 @@
               :aria-label="__('Entries used')"
             >
               <span
-                class="block h-full rounded-full bg-surface-gray-7"
+                class="block h-full rounded-full bg-[var(--brand-segno)]"
                 :style="{ width: `${percentuale(sub)}%` }"
               />
             </span>

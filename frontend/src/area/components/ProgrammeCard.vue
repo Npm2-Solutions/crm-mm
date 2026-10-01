@@ -70,7 +70,7 @@
             <button
               v-if="!confirming"
               type="button"
-              class="mt-1 min-h-11 w-fit rounded-md bg-surface-gray-10 px-4 text-p-sm font-medium text-ink-base"
+              class="mt-1 min-h-11 w-fit rounded-md bg-[var(--brand-action)] px-4 text-p-sm font-medium text-ink-base"
               @click="confirming = true"
             >
               {{ __('I have finished this stage') }}
@@ -85,7 +85,7 @@
               </span>
               <button
                 type="button"
-                class="min-h-11 rounded-md bg-surface-gray-10 px-4 text-p-sm font-medium text-ink-base"
+                class="min-h-11 rounded-md bg-[var(--brand-action)] px-4 text-p-sm font-medium text-ink-base"
                 :disabled="busy"
                 @click="finish(stage)"
               >
@@ -127,7 +127,7 @@ const progress = computed(() =>
 // done, open, locked: no red, only where the person stands
 const dot = {
   done: 'bg-surface-green-2 text-ink-green-8',
-  open: 'bg-surface-gray-10 text-ink-base',
+  open: 'bg-[var(--brand-action)] text-ink-base',
   locked: 'bg-surface-gray-2 text-ink-gray-6',
 }
 const labels = {

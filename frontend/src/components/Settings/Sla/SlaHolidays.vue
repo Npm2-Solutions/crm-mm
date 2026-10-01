@@ -90,7 +90,12 @@
           }"
         >
           {{ column.label }}
-          <span v-if="column.isRequired" class="text-red-500">*</span>
+          <span
+            v-if="column.isRequired"
+            class="segno-obbligatorio text-red-500"
+            aria-hidden="true"
+            >*</span
+          >
         </div>
       </div>
       <hr
