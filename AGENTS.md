@@ -166,18 +166,19 @@ separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 A new page that people open every day goes in the menu's data, in the group of its
 work, with the capability that opens it; never straight into the sidebar.
 
-### The settings (docs/progetto-ghl/31)
+### The settings (docs/progetto-ghl/31, 35)
 | File | Role |
 |---|---|
-| `frontend/src/utils/impostazioni.js` | The menu as data: groups (your account, the centre, agenda, clients, deals, email, WhatsApp, phone, marketing, invoicing, integrations), their entries, an entry's tabs, who sees each (`condition` on `puo`, `ambito`, `whatsapp`, `verticale`); `menuDi()`, `trova()` (the entry and tab a page's name opens), `pagine()` — tested |
-| `frontend/src/components/Settings/Settings.vue`, `SettingsHub.vue` | The modal draws the menu from the data (`PAGINE`, `ICONE` by key); an entry with tabs is one page with its row of tabs, the tab open being `activeSettingsPage` |
+| `frontend/src/utils/impostazioni.js` | The menu as data: groups (your account, the centre, agenda, clients, deals, email, WhatsApp, phone, marketing, invoicing, integrations), their entries, an entry's tabs, who sees each (`condition` on `puo`, `ambito`, `whatsapp`, `verticale`), the line on what each group and entry is for (`description`); `menuDi()`, `trova()` (the entry and tab a page's name opens), `pagine()` — tested |
+| `frontend/src/components/Settings/Settings.vue`, `SettingsHub.vue` | The modal draws the menu from the data in two levels: the groups on the left with their icons (`ICONE` by group), on the right the group open with its entries and their lines, or the entry open (`PAGINE`) with the way back to its group; an entry with tabs is one page with its row of tabs, the tab open being `activeSettingsPage` |
 | `crm/tests/test_impostazioni.py` | Every page the server or a button names is in the menu |
 
 A new page goes in the group of the part of the work it belongs to, as an entry
 or as a tab of an entry that is there: no group of one entry. Its key never
 changes (links are built on it); a page that becomes a tab keeps its key, a name
 it had before stays as an alias. Its label, its tab and its page's title say the
-same words, in the user's language.
+same words, in the user's language, and its `description` says in one line what
+one sets up there.
 
 ### Consents, billing details, linked people (phase 0 of the medical centre project)
 | File | Role |
