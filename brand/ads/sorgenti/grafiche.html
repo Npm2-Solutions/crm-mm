@@ -3,66 +3,78 @@
 <head>
 <meta charset="utf-8" />
 <!-- One ad graphic: grafiche.html?c=<concept>&f=<1x1|4x5|9x16>. grafiche.mjs renders them all. -->
-<link rel="stylesheet" href="../../design-system/tokens.css" />
+<link rel="stylesheet" href="../../design-system/espresso/tokens.css" />
 <style>
-@font-face { font-family: "Inter"; src: url(../../video/sorgenti/fonts/inter.woff2) format("woff2"); font-weight: 100 900; }
+/* the site's register (design-system/espresso/sito.md): titles 800, the section label with the cross,
+   the button with the cloud's tail, the cover's blocks behind the product */
+@font-face { font-family: "Inter"; src: url(../../font/Inter-Variable-latin.woff2) format("woff2"); font-weight: 100 900; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--dc-font); -webkit-font-smoothing: antialiased; overflow: hidden; }
-.ad { position: relative; width: 1080px; overflow: hidden; display: flex; flex-direction: column; padding: 72px 76px 64px; }
-.ad.dark { background: var(--dc-night); color: #fff; }
-.glow { position: absolute; width: 1300px; height: 1300px; border-radius: 50%; left: -110px; top: -520px; }
-.cloud { position: absolute; opacity: .05; }
-.head { position: relative; display: flex; align-items: center; justify-content: space-between; }
+:root { --cross: polygon(34% 0, 66% 0, 66% 34%, 100% 34%, 100% 66%, 66% 66%, 66% 100%, 34% 100%, 34% 66%, 0 66%, 0 34%, 34% 34%);
+  --motif: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M16.5 10h7v6.5H30v7h-6.5V30h-7v-6.5H10v-7h6.5z'/%3E%3C/svg%3E"); }
+body { font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; font-feature-settings: "cv11", "ss01"; }
+.ad { position: relative; width: 1080px; overflow: hidden; display: flex; flex-direction: column; padding: 72px 76px 64px; background: var(--surface-gray-1); }
+.ad.dark { background: var(--night-950); color: #fff; }
+.blk { position: absolute; border-radius: 40px 40px 40px 8px; overflow: hidden; }
+.blk.deep { background: var(--teal-700); } .blk.brand { background: var(--teal-500); } .blk.ink { background: var(--night-950); }
+.blk.mint { background: var(--mint-300); overflow: visible; }
+.blk.mint::before { content: ""; position: absolute; left: 50%; top: 0; width: 50%; aspect-ratio: 1; margin-left: -25%; transform: translateY(-38%); border-radius: 50%; background: var(--mint-300); }
+.blk .mo { position: absolute; inset: 0; background: var(--mint-300); -webkit-mask: var(--motif) 0 0 / 80px 80px repeat; }
+.motif { position: absolute; background: rgba(95,224,204,.18); -webkit-mask: var(--motif) 0 0 / 64px 64px repeat; }
+.head { position: relative; display: flex; align-items: center; justify-content: space-between; z-index: 2; }
 .head img { height: 58px; }
-.chip { display: inline-flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 600; padding: 10px 20px; border-radius: 999px; background: var(--dc-teal-soft); color: var(--dc-teal-dark); }
-.dark .chip { background: rgba(95,224,204,.14); color: var(--dc-mint); }
-.txt { position: relative; margin-top: 52px; }
-h1 { font-size: 86px; font-weight: 700; letter-spacing: -.045em; line-height: 1.02; color: var(--dc-ink); }
+.lab { display: inline-flex; align-items: center; gap: 14px; font-size: 24px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-700); }
+.lab::before { content: ""; width: 20px; height: 20px; background: var(--teal-500); clip-path: var(--cross); }
+.dark .lab { color: var(--mint-300); } .dark .lab::before { background: var(--mint-300); }
+.txt { position: relative; margin-top: 56px; z-index: 2; }
+h1 { margin-top: 22px; font-size: 88px; font-weight: 800; letter-spacing: -.045em; line-height: 1.0; color: var(--ink-gray-9); }
 .dark h1 { color: #fff; }
-h1 em { font-style: normal; color: var(--dc-teal); }
-.dark h1 em { color: var(--dc-mint); }
-.sub { margin-top: 22px; font-size: 34px; line-height: 1.3; color: var(--dc-muted); letter-spacing: -.01em; }
+h1 em { font-style: normal; color: var(--teal-700); }
+.dark h1 em { color: var(--mint-300); }
+.sub { margin-top: 24px; font-size: 34px; line-height: 1.3; color: var(--ink-gray-6); letter-spacing: -.01em; }
 .dark .sub { color: rgba(255,255,255,.66); }
-.pic { position: relative; flex: 1; min-height: 0; margin: 30px -44px 24px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-.pic img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pic { position: relative; flex: 1; min-height: 0; margin: 30px -44px 24px; display: flex; align-items: center; justify-content: center; gap: 12px; z-index: 1; }
+.pic img { max-width: 100%; max-height: 100%; object-fit: contain; position: relative; }
 .pic.pair img { max-width: 49%; }
 .pic.stack { display: block; }
 .pic.stack img { position: absolute; max-width: 78%; max-height: 72%; }
 .pic.stack img:first-child { left: 0; top: 0; }
 .pic.stack img:last-child { right: 0; bottom: 0; }
-.foot { position: relative; display: flex; align-items: center; justify-content: space-between; }
-.cta { display: inline-flex; align-items: center; gap: 14px; background: var(--dc-teal); color: #fff; font-size: 34px; font-weight: 700; padding: 22px 36px; border-radius: 999px; }
-.by { font-size: 22px; color: var(--dc-faint); text-align: right; line-height: 1.35; }
-.by b { color: var(--dc-ink); }
-.dark .by b { color: #fff; }
+.foot { position: relative; display: flex; align-items: center; justify-content: space-between; z-index: 2; }
+.cta { display: inline-flex; align-items: center; gap: 14px; background: var(--teal-700); color: #fff; font-size: 34px; font-weight: 700; padding: 24px 38px; border-radius: 26px 26px 26px 8px; letter-spacing: -.005em; }
+.dark .cta { background: var(--mint-300); color: var(--teal-950); }
+.by { font-size: 22px; color: var(--ink-gray-5); text-align: right; line-height: 1.35; }
+.by b { color: var(--ink-gray-9); }
+.dark .by { color: rgba(255,255,255,.55); } .dark .by b { color: #fff; }
 </style>
 </head>
 <body>
 <div class="ad" id="ad"></div>
 <script>
 const C = {
-  tutto: { dark: true, chip: 'Il gestionale per i centri medici', h: 'Tutto il tuo centro medico, <em>in un posto solo.</em>', sub: 'Agende, cartelle, fatture, messaggi e l\'app per i pazienti.', img: ['logo-orbit'], glow: '18,165,148' },
-  livelli: { chip: 'Permessi per ruolo', h: 'Ognuno vede <em>solo quello che gli serve.</em>', sub: 'Il medico la cartella, il marketing le campagne. Mai i dati clinici.', img: ['livelli-medico', 'livelli-marketing'], layout: 'stack', tint: '#eef7f5' },
-  fattura: { chip: 'Fatturazione', h: 'La fattura <em>nasce dalla visita.</em>', sub: 'Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.', img: ['fattura'], tint: '#f1f8f6' },
-  conferme: { chip: 'WhatsApp e promemoria', h: 'I pazienti <em>confermano da soli.</em>', sub: 'Promemoria automatici, risposte e note sulla scheda del paziente.', img: ['chat'], tint: '#eef7f1' },
-  casa: { chip: 'Area paziente', h: 'Piani ed esercizi, <em>sul telefono del paziente.</em>', sub: 'Il professionista li scrive, il paziente li segue.', img: ['dieta', 'esercizio'], layout: 'pair', tint: '#f3f1fd' },
-  privacy: { dark: true, chip: 'Privacy e GDPR', h: 'I dati dei pazienti, <em>protetti.</em>', sub: 'Server in Europa, un\'azienda italiana, ogni accesso registrato.', img: ['gdpr'], glow: '47,111,237' },
+  tutto: { dark: true, chip: 'Il gestionale per i centri medici', h: 'Tutto il tuo centro medico, <em>in un posto solo.</em>', sub: 'Agende, cartelle, fatture, messaggi e l\'app per i pazienti.', img: ['logo-orbit'] },
+  livelli: { chip: 'Permessi per ruolo', h: 'Ognuno vede <em>solo quello che gli serve.</em>', sub: 'Il medico la cartella, il marketing le campagne. Mai i dati clinici.', img: ['livelli-medico', 'livelli-marketing'], layout: 'stack' },
+  fattura: { chip: 'Fatturazione', h: 'La fattura <em>nasce dalla visita.</em>', sub: 'Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.', img: ['fattura'] },
+  conferme: { chip: 'WhatsApp e promemoria', h: 'I pazienti <em>confermano da soli.</em>', sub: 'Promemoria automatici, risposte e note sulla scheda del paziente.', img: ['chat'] },
+  casa: { chip: 'Area paziente', h: 'Piani ed esercizi, <em>sul telefono del paziente.</em>', sub: 'Il professionista li scrive, il paziente li segue.', img: ['dieta', 'esercizio'], layout: 'pair' },
+  privacy: { dark: true, chip: 'Privacy e GDPR', h: 'I dati dei pazienti, <em>protetti.</em>', sub: 'Server in Europa, un\'azienda italiana, ogni accesso registrato.', img: ['gdpr'] },
 };
 const FMT = { '1x1': [1080, 1080], '4x5': [1080, 1350], '9x16': [1080, 1920] };
 const q = new URLSearchParams(location.search), c = C[q.get('c') || 'tutto'], f = q.get('f') || '1x1', [W, H] = FMT[f];
 const ad = document.getElementById('ad');
 ad.className = 'ad' + (c.dark ? ' dark' : '');
 ad.style.height = H + 'px';
-ad.style.background = c.dark ? '' : c.tint;
 // stories and reels: keep the top and bottom bands clear for the platform's own buttons
 if (f === '9x16') { ad.style.paddingTop = '230px'; ad.style.paddingBottom = '300px'; }
 const small = f === '1x1';
 const img = (n) => `<img src="../../presentazione/sorgenti/img/${n}.png">`;
-ad.innerHTML = `
-  ${c.glow ? `<div class="glow" style="background:radial-gradient(circle,rgba(${c.glow},.30) 0%,rgba(${c.glow},0) 62%)"></div>` : ''}
-  ${c.dark ? `<img class="cloud" src="../../logo/dottorcloud-marchio-bianco.svg" style="width:900px;right:-330px;top:${H * 0.42}px">` : ''}
-  <div class="head"><img src="../../logo/dottorcloud-orizzontale${c.dark ? '-negativo' : ''}.svg"><span class="chip">${c.chip}</span></div>
-  <div class="txt"><h1 style="${small ? 'font-size:72px' : ''}">${c.h}</h1>${small ? '' : `<p class="sub">${c.sub}</p>`}</div>
+// one composition: a slab with the motif behind the product on the left, a mint block with the hump on the right
+const pic0 = small ? 0.42 : f === '4x5' ? 0.46 : 0.42;
+const comp = c.dark
+  ? `<div class="blk deep" style="right:-60px;top:-60px;width:260px;height:${H * 0.2}px"><div class="mo"></div></div><div class="blk mint" style="right:230px;top:-60px;width:130px;height:${H * 0.12}px"></div>`
+  : `<div class="blk deep" style="left:-50px;top:${H * pic0}px;width:300px;height:${H * 0.36}px"><div class="mo"></div></div><div class="blk mint" style="right:-40px;top:${H * (pic0 + 0.05)}px;width:250px;height:${H * 0.3}px"></div>`;
+ad.innerHTML = `${comp}
+  <div class="head"><img src="../../logo/dottorcloud-orizzontale${c.dark ? '-negativo' : ''}.svg"></div>
+  <div class="txt"><span class="lab">${c.chip}</span><h1 style="${small ? 'font-size:74px;margin-top:18px' : ''}">${c.h}</h1>${small ? '' : `<p class="sub">${c.sub}</p>`}</div>
   <div class="pic ${c.layout || ''}">${c.img.map(img).join('')}</div>
   <div class="foot"><span class="cta">Richiedi una demo <span>→</span></span><span class="by">Il gestionale per i centri medici<br><b>NPM2 Solutions Srl</b></span></div>`;
 if (small) ad.querySelector('.txt').style.marginTop = '40px';
