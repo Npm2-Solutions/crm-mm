@@ -1085,8 +1085,10 @@ il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
   quattro) si calcola da proteine, carboidrati, grassi, fibra e alcol con i fattori
   del Regolamento UE 1169/2011, il modo della tabella stessa: dove CIQUAL la dà, la
   differenza mediana è di 0,4 kcal. L'alimento lo dice ("kcal computed").
-- **exercises-dataset**: 1.324 esercizi, dal suo `exercises.json` caricato o
-  scaricato da GitHub alla versione su cui è scritta l'importazione.
+- **La libreria degli esercizi**: 1.324 esercizi, nel codice
+  (`crm/piani/dati/esercizi.json`, fatto una volta da exercises-dataset). Si carica
+  da sola all'installazione e a ogni aggiornamento che porta un file nuovo: dal
+  01/10/2026 il centro non importa più, e gli esercizi nuovi li aggiungiamo noi.
   - Il nome in inglese, da rinominare quando un trainer l'ha letto; come si fa in
     italiano, a passi numerati; la parte del corpo; l'attrezzo e i muscoli in
     italiano (poche decine di parole, tradotte una volta).
