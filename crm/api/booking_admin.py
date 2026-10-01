@@ -22,6 +22,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt
 
+from crm.api.appointments import turni
 from crm.permissions.livelli import CENTRO, verifica
 from crm.scheduling import booking_rules as rules_mod
 from crm.scheduling import intervals as iv
@@ -248,13 +249,14 @@ def copy_column(source: str, target: str) -> dict:
 
 @frappe.whitelist()
 def get_team_rota(start: str | None = None) -> dict:
-	"""Every professional's week (from ``start``'s Monday) with hours, time off and load."""
-	_check("agenda.turni")
+	"""Every professional's week (from ``start``'s Monday) with hours, time off and
+	load; a practitioner's own week only."""
+	proprio = turni()
 	tz = scheduling_tz()
 	first = parse_date(start) if start else datetime.datetime.now(tz).date()
 	first -= datetime.timedelta(days=first.weekday())
 	days = [first + datetime.timedelta(days=i) for i in range(7)]
-	team = _team()
+	team = [proprio] if proprio else _team()
 	people = _people(team)
 	week_start = datetime.datetime.combine(first, datetime.time.min, tzinfo=tz).astimezone(UTC)
 	week_end = week_start + datetime.timedelta(days=7)

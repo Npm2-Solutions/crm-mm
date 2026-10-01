@@ -8906,6 +8906,10 @@ msgstr "Sei in lista d'attesa — {0}"
 msgid "You can also copy-paste following link in your browser"
 msgstr "Puoi anche copiare e incollare il seguente collegamento nel tuo browser"
 
+#: crm/api/appointments.py
+msgid "You can change only your own shifts"
+msgstr "Puoi cambiare solo i tuoi turni"
+
 #: frontend/src/components/Telephony/CallUI.vue:37
 msgid "You can change the default calling medium from the settings"
 msgstr ""
@@ -8982,6 +8986,10 @@ msgstr ""
 msgid "Your assignment on {0} {1} has been removed by {2}"
 msgstr "La tua assegnazione su {0} {1} è stata rimossa da {2}"
 
+#: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
+msgid "Your hours and days off, week by week, and how full each day is. Click your row to change them."
+msgstr "I tuoi orari e i giorni liberi, settimana per settimana, e quanto è pieno ogni giorno. Tocca la tua riga per cambiarli."
+
 #: crm/templates/emails/helpdesk_invitation.html:6
 msgid "Your login id is"
 msgstr "Il tuo ID di login è"
@@ -8993,6 +9001,10 @@ msgstr ""
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:400
 msgid "Your old conditions will be overwritten. Are you sure you want to save?"
 msgstr ""
+
+#: frontend/src/components/Settings/Scheduling/StaffSchedulesSettings.vue
+msgid "Your shifts"
+msgstr "I tuoi turni"
 
 #: crm/scheduling/abbonamenti.py
 msgid "Your subscription ends soon: {0}"

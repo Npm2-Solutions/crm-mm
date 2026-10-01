@@ -18,7 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, sbool
 
-from crm.permissions.livelli import CENTRO, puo, verifica
+from crm.permissions.livelli import CENTRO, ambito, puo, verifica
 from crm.scheduling import abbonamenti, cicli, pricing
 from crm.scheduling.availability import (
 	ACTIVE_STATUSES,
@@ -48,6 +48,19 @@ def _check(capacita: str) -> None:
 		messaggio=_("Only sales managers can change the scheduling setup"),
 		ambito_minimo=CENTRO,
 	)
+
+
+def turni(user: str | None = None) -> str | None:
+	"""Whose shifts the session reads and changes: the whole team's for the front
+	desk and the manager (None), only their own for a practitioner - the scope the
+	capability gives them (doc 30), as their schedule's own permission does
+	(`documenti.DI_CHI`). Their one entry of the settings opened on a refusal."""
+	verifica("agenda.turni", messaggio=_("Only sales managers can change the scheduling setup"))
+	if ambito("agenda.turni") == CENTRO:
+		return None
+	if user and user != frappe.session.user:
+		frappe.throw(_("You can change only your own shifts"), frappe.PermissionError)
+	return frappe.session.user
 
 
 def _check_reader():
@@ -1273,7 +1286,7 @@ def list_schedules() -> list[dict]:
 
 @frappe.whitelist()
 def get_schedule(user: str = "") -> dict:
-	_check("agenda.turni")
+	user = turni(user) or user
 	config = frappe.get_cached_doc("CRM Scheduling Settings")
 	studio = {
 		"default_availability": [
@@ -1330,9 +1343,9 @@ def get_schedule(user: str = "") -> dict:
 
 @frappe.whitelist(methods=["POST"])
 def save_schedule(schedule: str | dict) -> dict:
-	_check("agenda.turni")
 	payload = _loads(schedule)
-	user = payload.get("user")
+	proprio = turni(payload.get("user"))
+	user = proprio or payload.get("user")
 	if not user:
 		frappe.throw(_("Pick a professional"))
 	values = {
@@ -1364,10 +1377,11 @@ def save_schedule(schedule: str | dict) -> dict:
 	}
 	# the online side (bookable, title, bio) lives in Online booking: a rota save
 	# that does not carry it leaves it alone
-	if "bookable_online" in payload:
+	if "bookable_online" in payload and not proprio:
 		values["bookable_online"] = cint(payload.get("bookable_online"))
 	for key in ("public_title", "public_bio"):
-		if key in payload:
+		# a practitioner's own hours, not how the booking page shows them
+		if key in payload and not proprio:
 			values[key] = payload.get(key) or None
 	if values["enabled"] and not values["availability"]:
 		frappe.throw(_("Add at least one time slot, or use the studio hours"))

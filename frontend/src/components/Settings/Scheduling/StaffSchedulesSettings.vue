@@ -9,13 +9,17 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
         >
-          {{ __('Team rota') }}
+          {{ proprio ? __('Your shifts') : __('Team rota') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
-            __(
-              'The whole team at a glance: hours, days off and how full each day is. Click a person to edit.',
-            )
+            proprio
+              ? __(
+                  'Your hours and days off, week by week, and how full each day is. Click your row to change them.',
+                )
+              : __(
+                  'The whole team at a glance: hours, days off and how full each day is. Click a person to edit.',
+                )
           }}
         </p>
       </div>
@@ -23,7 +27,7 @@
         variant="solid"
         :label="__('Set hours')"
         iconLeft="plus"
-        @click="openEditor()"
+        @click="openEditor(proprio ? user : '')"
       />
     </div>
 
@@ -329,6 +333,14 @@ import {
 import { computed, reactive, ref } from 'vue'
 import { hhmm } from '@/utils/scheduler'
 import { appLocale } from '@/utils/locale'
+import { sessionStore } from '@/stores/session'
+import { usersStore } from '@/stores/users'
+
+// a practitioner reads and changes only their own shifts (the capability's
+// scope): their week, and the editor opens on them
+const { user } = sessionStore()
+const { ambito } = usersStore()
+const proprio = computed(() => ambito('agenda.turni') !== 'centro')
 
 const weekStart = ref('')
 const todayIso = new Date().toISOString().slice(0, 10)
