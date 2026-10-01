@@ -79,7 +79,7 @@
           · {{ __('answer by writing to the person') }}
         </template>
         <template v-else>
-          · {{ message.kind === 'Care' ? __('Care') : __('Desk') }} ·
+          · {{ message.kind === 'Care' ? __('Care') : __('Front desk') }} ·
           {{
             message.read_on
               ? __('read {0}', [formatDate(message.read_on, 'D MMM YYYY')])

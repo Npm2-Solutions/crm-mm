@@ -119,6 +119,7 @@ import LucideRadar from '~icons/lucide/radar'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
 import LucideAppWindow from '~icons/lucide/app-window'
+import LucideListChecks from '~icons/lucide/list-checks'
 import LucideFolderOpen from '~icons/lucide/folder-open'
 import LucideReceiptText from '~icons/lucide/receipt-text'
 import { usersStore } from '@/stores/users'
@@ -339,17 +340,21 @@ const tabs = computed(() => {
         puo('preventivi.scrivi') ||
         puo('preventivi.gestisci'),
     },
-    // the person's own area: who enters it, the board the centre writes on,
-    // the plans they follow there
+    // what the person follows between appointments - a training, habits, a
+    // diet, exercises at home - written here and followed in their area. A tab
+    // of its own: inside the area's, under the board, nobody found them
+    {
+      name: 'Plans',
+      label: __('Plans'),
+      icon: LucideListChecks,
+      condition: () => puo('piani.vedi') || puo('piani.scrivi'),
+    },
+    // the person's own area: who enters it, the board the centre writes on
     {
       name: 'Area',
       label: __('Client area'),
       icon: LucideAppWindow,
-      condition: () =>
-        puo('area.invita') ||
-        puo('area.messaggi') ||
-        puo('piani.vedi') ||
-        puo('piani.scrivi'),
+      condition: () => puo('area.invita') || puo('area.messaggi'),
     },
     // the clinical record, for whoever cares for the person: visits and notes,
     // signed and then only added to. Where the plan has no clinic, no tab

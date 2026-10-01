@@ -98,6 +98,17 @@ class ChiScrive(PianiCase):
 		self.assertEqual(allenamento["items"], [r.ESERCIZIO, r.ABITUDINE])
 		self.assertEqual(abitudini["items"], [r.ABITUDINE])
 		self.assertFalse(allenamento["clinical"])
+		# each says what it is, for whoever chooses which plan to write
+		self.assertTrue(allenamento["description"] and abitudini["description"])
+
+	def test_dice_se_la_persona_lo_vedra(self):
+		"""A published plan reaches the person through their area: until somebody
+		enters it, the page says so."""
+		self.come(OPERATORE)
+		self.assertEqual(piani.get_plans(self.anna.name)["area"], {"on": True, "open": False})
+		self.invita()
+		self.come(OPERATORE)
+		self.assertEqual(piani.get_plans(self.anna.name)["area"], {"on": True, "open": True})
 
 
 class UnAllenamento(PianiCase):

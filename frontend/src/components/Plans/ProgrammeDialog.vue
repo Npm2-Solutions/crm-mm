@@ -73,7 +73,7 @@
               {{ index + 1 }}
             </span>
             <div class="min-w-40 flex-1">
-              <FormControl v-model="stage.title" :label="__('Stage')" />
+              <FormControl v-model="stage.title" :label="__('Stage name')" />
             </div>
             <div v-if="programme.mode === TEMPO" class="w-28 max-md:flex-1">
               <FormControl
