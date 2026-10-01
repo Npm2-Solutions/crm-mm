@@ -62,6 +62,14 @@ Il sito sta sul server HestiaCP di NPM2 (`hosting.npm2solutions.com`, 91.99.201.
 come dominio web dell'utente `admin`. La chiave SSH e le credenziali del pannello sono
 nel pacchetto di consegna dell'hosting, **non in questo repository**.
 
+**Da GitHub, il modo solito.** Il workflow
+[Pubblica il sito](../.github/workflows/sito-pubblica.yml) parte a ogni push che cambia
+`sito/` o `brand/` (su `develop` e sul branch del sito) o a mano da Actions: fa girare i
+test e, per ogni dominio di [`domini.txt`](./domini.txt), `deploy.sh --crea --nginx`, poi
+controlla che il sito risponda. Gli serve il secret `HOSTING_SSH_KEY` (Settings → Secrets
+and variables → Actions): tutto il file `chiavi-ssh/root_hetzner_id_ed25519` del
+pacchetto, righe `BEGIN` ed `END` comprese. Senza, avvisa e non pubblica niente.
+
 1. **DNS.** Il DNS di `dottorcloud.it` è su Teliko (`dns1.teliko.net`): il record A di
    `dottorcloud.it` va portato a 91.99.201.178; `www` è un CNAME di `dottorcloud.it` e lo
    segue. Finché punta altrove, chi apre il sito vede la pagina "Not Found" del vecchio
