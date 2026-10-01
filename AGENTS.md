@@ -157,6 +157,15 @@ A record's page asks `useDocument(...).canWrite` (from `crm.api.doc.get_doc_perm
 which asks the controllers too) before offering a write; reading and writing are
 separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 
+### The main menu (docs/progetto-ghl/34)
+| File | Role |
+|---|---|
+| `frontend/src/utils/menu.js` | The menu as data: the day's group (no label), the archive, marketing, the phone; each entry its page, icon and `condition` on the session; `menuDi()`, `barraDelTelefono()` (the phone's four places) — tested |
+| `frontend/src/components/Layouts/AppSidebar.vue`, `Mobile/MobileBottomNav.vue`, `Icons/menu.js` | The sidebar draws the menu with the design system's group labels, the phone's bar takes its places; the same icons |
+
+A new page that people open every day goes in the menu's data, in the group of its
+work, with the capability that opens it; never straight into the sidebar.
+
 ### The settings (docs/progetto-ghl/31)
 | File | Role |
 |---|---|
