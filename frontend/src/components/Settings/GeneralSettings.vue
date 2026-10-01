@@ -6,10 +6,14 @@
       <h2
         class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
       >
-        {{ __('General Settings') }}
+        {{ __('Conversations') }}
       </h2>
       <p class="text-p-base text-ink-gray-6">
-        {{ __('Configure general settings for your application') }}
+        {{
+          __(
+            'What a new message does to the person or the deal it is about, and how their activity reads.',
+          )
+        }}
       </p>
     </div>
 

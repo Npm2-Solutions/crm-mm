@@ -8,7 +8,7 @@
         <h2
           class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none text-ink-gray-8"
         >
-          {{ __('Telephony Settings') }}
+          {{ __('Telephony') }}
           <Badge
             v-if="isDirty"
             :label="__('Not Saved')"

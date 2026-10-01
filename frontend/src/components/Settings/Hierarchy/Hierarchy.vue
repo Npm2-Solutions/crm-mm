@@ -10,7 +10,7 @@
           <h2
             class="flex text-2xl-semibold leading-tight md:h-5 md:leading-none"
           >
-            {{ __('Sales Hierarchy') }}
+            {{ __('Hierarchy') }}
           </h2>
         </div>
         <p class="text-p-base text-ink-gray-6">
