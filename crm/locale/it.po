@@ -3005,6 +3005,10 @@ msgstr "Vuoi davvero cancellare i dati demo? Questa azione non si può annullare
 msgid "Are you sure you want to delete \"{0}\" view?"
 msgstr "Vuoi davvero eliminare la vista «{0}»?"
 
+#: frontend/src/components/DeleteLinkedDocModal.vue
+msgid "Are you sure you want to delete all linked items?"
+msgstr "Vuoi davvero eliminare tutti i documenti collegati?"
+
 #: frontend/src/components/Activities/AttachmentArea.vue:128
 msgid "Are you sure you want to delete this attachment?"
 msgstr "Vuoi davvero eliminare questo allegato?"
@@ -3070,6 +3074,10 @@ msgstr "Vuoi davvero reimpostare lo script del modulo \"Crea Preventivo da Offer
 #: frontend/src/components/Settings/DashboardSettings.vue:236
 msgid "Are you sure you want to set the currency as {0}? This cannot be changed later."
 msgstr "Vuoi davvero impostare {0} come valuta? Poi non si potrà più cambiare."
+
+#: frontend/src/components/DeleteLinkedDocModal.vue
+msgid "Are you sure you want to unlink all linked items?"
+msgstr "Vuoi davvero scollegare tutti i documenti?"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue
 msgid "Are you sure you want to unlink {0} linked doc(s)?"
