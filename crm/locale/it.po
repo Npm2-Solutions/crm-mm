@@ -37824,3 +37824,107 @@ msgstr "Tipo di ritenuta"
 #: crm/invoicing/doctype/crm_service_provider/crm_service_provider.json
 msgid "Professional qualification"
 msgstr "Qualifica professionale"
+
+#: crm/tessera_sanitaria/preimpostazione.py
+msgid "Choose who issues the invoices"
+msgstr "Scegli chi emette le fatture"
+
+#: crm/tessera_sanitaria/preimpostazione.py
+msgid "Choose the tax regime"
+msgstr "Scegli il regime fiscale"
+
+#: crm/tessera_sanitaria/preimpostazione.py
+msgid "A healthcare facility invoices under the ordinary regime"
+msgstr "Una struttura sanitaria fattura nel regime ordinario"
+
+#: crm/tessera_sanitaria/preimpostazione.py
+msgid "Choose the profession of whoever invoices in their own name"
+msgstr "Scegli la professione di chi fattura a proprio nome"
+
+#: crm/tessera_sanitaria/preimpostazione.py
+msgid "{0} is not a valid code: at most {1} letters or digits"
+msgstr "{0} non è un codice valido: al massimo {1} lettere o cifre"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "The centre's invoicing"
+msgstr "La fatturazione del centro"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "Set up the centre's invoicing"
+msgstr "Imposta la fatturazione del centro"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "Three questions: who issues the invoices, under which tax regime and, for a professional, which profession. The rest is set from the answers."
+msgstr "Tre domande: chi emette le fatture, con quale regime fiscale e, per un professionista, quale professione. Il resto si imposta dalle risposte."
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "Answer them"
+msgstr "Rispondi"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "Who issues the invoices?"
+msgstr "Chi emette le fatture?"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "The codes the Region gave the facility"
+msgstr "I codici che la Regione ha dato alla struttura"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "They are on the authorisation to the Sistema TS (the Codice Proprietario): the Sistema TS recognises the facility by them."
+msgstr "Sono sull'abilitazione al Sistema TS (il Codice Proprietario): il Sistema TS riconosce la struttura da questi."
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "Which profession?"
+msgstr "Quale professione?"
+
+#: frontend/src/components/Settings/Invoicing/HealthcareSetup.vue
+msgid "Under which tax regime?"
+msgstr "Con quale regime fiscale?"
+
+#: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
+msgid "One service of the agenda has no card"
+msgstr "Un servizio dell'agenda non ha la scheda fiscale"
+
+#: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
+msgid "{0} services of the agenda have no card"
+msgstr "{0} servizi dell'agenda non hanno la scheda fiscale"
+
+#: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
+msgid "Each becomes a healthcare service, exempt, with the expense type of whoever issues and the agenda's price. The accountant confirms them; one that is not a healthcare service (a course, a product) is corrected on its card."
+msgstr "Ognuno diventa una prestazione sanitaria esente, con il tipo di spesa di chi emette e il prezzo dell'agenda. Il commercialista le conferma; quella che non è una prestazione sanitaria (un corso, un prodotto) si corregge sulla sua scheda."
+
+#: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
+msgid "Create the cards"
+msgstr "Crea le schede"
+
+#: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
+msgid "One card ready"
+msgstr "Una scheda pronta"
+
+#: frontend/src/components/Settings/Invoicing/BillableServicesSettings.vue
+msgid "{0} cards ready"
+msgstr "{0} schede pronte"
+
+#: frontend/src/components/Settings/Invoicing/QualificationsSettings.vue
+msgid "Every qualification, the other professions too."
+msgstr "Tutte le qualifiche, anche le altre professioni."
+
+#: frontend/src/components/Settings/Invoicing/QualificationsSettings.vue
+msgid "The health professions, and the ones in use."
+msgstr "Le professioni sanitarie, e quelle in uso."
+
+#: frontend/src/components/Settings/Invoicing/QualificationsSettings.vue
+msgid "Only the health professions"
+msgstr "Solo le professioni sanitarie"
+
+#: frontend/src/components/Settings/Invoicing/QualificationsSettings.vue
+msgid "Show the other professions ({0})"
+msgstr "Mostra le altre professioni ({0})"
+
+#: crm/tessera_sanitaria/qualifica.py
+msgid "A facility, a pharmacy or an optician reports with the Region, ASL and facility codes of its Sistema TS authorisation (the Codice Proprietario): all three are needed"
+msgstr "Una struttura, una farmacia o un ottico comunica con i codici di Regione, ASL e struttura della sua abilitazione al Sistema TS (il Codice Proprietario): servono tutti e tre"
+
+#: crm/tessera_sanitaria/qualifica.py
+msgid "Whoever invoices in their own name reports with their codice fiscale: the Region, ASL and facility codes stay empty"
+msgstr "Chi fattura a proprio nome comunica con il suo codice fiscale: i codici di Regione, ASL e struttura restano vuoti"

@@ -7,6 +7,7 @@
 -->
 <template>
   <RecordList
+    ref="elenco"
     doctype="CRM Billable Service"
     :title="__('Billable services')"
     :subtitle="
@@ -30,10 +31,43 @@
       'enabled',
     ]"
     order-by="service_name asc"
-    :defaults="{ enabled: 1, subject_to_stamp_duty: 1, vat_rate: 22 }"
+    :defaults="predefiniti"
     :describe="descrivi"
     :badges="etichette"
-  />
+  >
+    <template #banner>
+      <!-- with the clinic on: the agenda's services become cards in one click,
+           healthcare and exempt, for the accountant to confirm -->
+      <div
+        v-if="sanitario && senzaScheda"
+        class="mx-2 flex items-start justify-between gap-4 rounded-xl border border-outline-gray-2 px-4 py-3 max-md:flex-col"
+      >
+        <div class="flex min-w-0 flex-col gap-1">
+          <span class="text-p-base-medium text-ink-gray-8">
+            {{
+              senzaScheda === 1
+                ? __('One service of the agenda has no card')
+                : __('{0} services of the agenda have no card', [senzaScheda])
+            }}
+          </span>
+          <span class="text-p-sm text-ink-gray-6">
+            {{
+              __(
+                "Each becomes a healthcare service, exempt, with the expense type of whoever issues and the agenda's price. The accountant confirms them; one that is not a healthcare service (a course, a product) is corrected on its card.",
+              )
+            }}
+          </span>
+        </div>
+        <Button
+          class="shrink-0"
+          variant="solid"
+          :label="__('Create the cards')"
+          :loading="crea.loading"
+          @click="crea.submit()"
+        />
+      </div>
+    </template>
+  </RecordList>
 </template>
 
 <script setup>
@@ -41,8 +75,37 @@ import RecordList from '@/components/Settings/Invoicing/RecordList.vue'
 import { useVocabolarioFatturazione } from '@/composables/vocabolarioFatturazione'
 import { formatEuro } from '@/utils/invoicing'
 import { nomeDi } from '@/utils/scelte'
+import { createResource, toast, Button } from 'frappe-ui'
+import { computed, ref } from 'vue'
 
 const { nomi } = useVocabolarioFatturazione()
+const elenco = ref(null)
+
+// a medical centre's: what a new card starts as, and the services still without one
+const setup = createResource({
+  url: 'crm.tessera_sanitaria.preimpostazione.get_setup',
+  auto: true,
+})
+const sanitario = computed(() => setup.data?.profile === 'sanitario')
+const senzaScheda = computed(() => setup.data?.services_without_card || 0)
+const predefiniti = computed(() =>
+  sanitario.value && setup.data?.card_defaults
+    ? setup.data.card_defaults
+    : { enabled: 1, subject_to_stamp_duty: 1, vat_rate: 22 },
+)
+
+const crea = createResource({
+  url: 'crm.tessera_sanitaria.preimpostazione.cards_from_services',
+  onSuccess: (esito) => {
+    const fatte = esito.created.length + esito.linked.length
+    toast.success(
+      fatte === 1 ? __('One card ready') : __('{0} cards ready', [fatte]),
+    )
+    setup.reload()
+    elenco.value?.reload()
+  },
+  onError: (e) => toast.error(e.messages?.[0] || e.message),
+})
 
 // what the card says, in words: "Exempt (art. 10) · Health professional's
 // services · 70,00 €", never a natura or an expense type code

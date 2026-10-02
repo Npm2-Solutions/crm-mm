@@ -42,6 +42,13 @@
       </div>
     </div>
 
+    <!-- with the clinic on: a medical centre's invoicing, in three questions -->
+    <HealthcareSetup
+      v-if="corrente && !creando"
+      :company="corrente"
+      @saved="impostata"
+    />
+
     <!-- What is still missing, and what each gap costs. A live list, not a
          document nobody opens: it gets shorter. -->
     <div
@@ -61,7 +68,7 @@
       <!-- a new company starts where the DocType says: DocFields reads its defaults -->
       <DocFields
         v-if="corrente || creando"
-        :key="creando ? 'nuova' : corrente"
+        :key="creando ? 'nuova' : `${corrente}-${versione}`"
         doctype="CRM Invoicing Company"
         :docname="creando ? '' : corrente"
         @saved="salvata"
@@ -75,11 +82,14 @@
 
 <script setup>
 import DocFields from '@/components/Settings/Invoicing/DocFields.vue'
+import HealthcareSetup from '@/components/Settings/Invoicing/HealthcareSetup.vue'
 import { createListResource, createResource, Button, Dropdown } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
 
 const corrente = ref('')
 const creando = ref(false)
+// the answers to the three questions change the record under the form: drawn again
+const versione = ref(0)
 
 const companies = createListResource({
   doctype: 'CRM Invoicing Company',
@@ -118,6 +128,11 @@ const opzioni = computed(() =>
 
 function nuova() {
   creando.value = true
+}
+
+function impostata() {
+  versione.value += 1
+  checklist.fetch({ company: corrente.value })
 }
 
 function salvata(nome) {
