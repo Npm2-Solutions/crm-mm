@@ -359,7 +359,7 @@ fra quello che decide il centro e quello che resta all'agenzia.
 | Voci del menu utente | Manager | Man, solo icone e indirizzi sicuri (già così) | — |
 | Meta | Manager; la parte tecnica System Manager | Man, Mkt | app, webhook, log (già così) |
 | Telefono | ognuno il suo; Manager il resto | ognuno il suo; Man segreteria, numeri, ID chiamante | chiavi di Twilio, Exotel e trascrizione, TwiML, SIP |
-| ERPNext | Manager | — | tutta |
+| ERPNext (tolto il 02/10/2026) | Manager | — | tutta |
 | Fuori dal modale: campi delle schede, viste pubbliche, filtri rapidi | Manager | Man | — |
 | Script dei moduli (Form Script) | dal Desk | — | tutta |
 | Importazione | la vedono tutti, funziona solo per Administrator | Man | — |
@@ -657,8 +657,8 @@ di Sales Manager e Sales User.
   i numeri e gli interruttori;
 - **Fatturazione, connessione al provider**: generare e ruotare il segreto del
   webhook;
-- **ERPNext** e **Predefiniti** (valuta e formati del sito): tutta la pagina. ERPNext
-  lo scrive solo `tecnico.erpnext`, anche dall'API.
+- **Predefiniti** (valuta e formati del sito): tutta la pagina. Lo stesso valeva per
+  ERPNext (`tecnico.erpnext`), tolto il 02/10/2026.
 
 Il livello di permesso fa due cose: la copia delle impostazioni che arriva al Manager
 non ha quei valori, e un suo salvataggio li lascia com'erano. Non copre

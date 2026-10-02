@@ -140,7 +140,7 @@ the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
 | `crm/api/plan.py` + `Settings/PlanSettings.vue`, `utils/funzionalita.js` | Settings > The centre > Features (doc 36): what the product comprises (`compresi()`: the base, the vertical's module and what it comprises), the extras (invoicing, marketing, phone, assistant, advanced signature) and their trial, the size in rooms and the usage the agency bills; each module registers the settings pages it is set up from (`ModuloPiano.impostazioni`) |
 | `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
 | `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
-| `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability; ERPNext is the agency's. `DEL_CORE`: the core documents the manager writes (email templates, assignment rules, imports) get a role's rule, narrowed by the capability |
+| `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability. `DEL_CORE`: the core documents the manager writes (email templates, assignment rules, imports) get a role's rule, narrowed by the capability |
 | `crm/permissions/condizioni.py` | Guided conditions to Python, pure: for anybody but the agency the server writes assignment-rule and SLA conditions itself |
 | `frontend/src/router.js`, `utils/impostazioni.js` | Each route declares `meta.richiede`, each page of the settings its `condition` in the menu: hidden from the menu means closed at its address too |
 
@@ -380,8 +380,9 @@ every opening in the access log.
 A deal is the sale, a quote what the person is asked to accept: two levels, as in
 every CRM ("Deals" reads "Trattative"). A deal's value comes from its quotes: the
 deal has no products grid of its own (the fields stay, `CRM Product` stays for the
-website and ERPNext). Marketing's "offers", if they come, are catalogue packages,
-neutral where the clinic is on.
+website). Marketing's "offers", if they come, are catalogue packages, neutral where
+the clinic is on. DottorCloud connects to no ERP: the ERPNext integration went on
+02/10/2026 (`dottorcloud_does_not_connect_erpnext`).
 
 ### New clients (`crm/clienti`)
 | File | Role |
