@@ -39777,3 +39777,459 @@ msgstr "Account SID"
 msgctxt "Twilio console"
 msgid "Auth Token"
 msgstr "Auth Token"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Area code"
+msgstr "Prefisso"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "02, 06, 011…"
+msgstr "02, 06, 011…"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "The address on the documents must be in this area."
+msgstr "L'indirizzo dei documenti deve essere in questa zona."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Whose number"
+msgstr "Di chi è il numero"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio has numbers like {0} ready now."
+msgstr "Twilio ha subito disponibili numeri come {0}."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio has none of these ready now: the documents can be approved all the same, and the number is bought when Twilio has one."
+msgstr "Twilio adesso non ne ha disponibili: i documenti si possono approvare lo stesso, e il numero si compra quando Twilio ne ha uno."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio asks every Italian number for who it is for. What {brand} knows of the centre is already written: check it."
+msgstr "Per ogni numero italiano Twilio chiede a chi è intestato. Quello che {brand} sa del centro è già scritto: controllalo."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Email for Twilio"
+msgstr "Email per Twilio"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio writes here about the documents. Not a PEC mailbox."
+msgstr "Twilio scrive qui per i documenti. Non una casella PEC."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "A PDF, a JPEG or a PNG of each one, of 5 MB at most. Once Twilio approves them, {brand} does not keep them: Twilio has its copy."
+msgstr "Un PDF, un JPEG o un PNG di ciascuno, al massimo di 5 MB. Quando Twilio li approva, {brand} non li tiene: Twilio ha la sua copia."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Which document"
+msgstr "Quale documento"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Upload the document"
+msgstr "Carica il documento"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "The office's address"
+msgstr "L'indirizzo della sede"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Street and number"
+msgstr "Via e numero civico"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio says something is missing:"
+msgstr "Secondo Twilio manca qualcosa:"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "The documents are with Twilio."
+msgstr "I documenti sono da Twilio."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio checks them, usually within a few working days, and writes to {0}. {brand} tells you among the notifications when it answers: then you choose the number."
+msgstr "Twilio li controlla, di solito in pochi giorni lavorativi, e scrive a {0}. Quando risponde, {brand} te lo dice tra le notifiche: allora scegli il numero."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "The documents are approved. Choose the number: it answers on {brand} from the moment it is bought."
+msgstr "I documenti sono approvati. Scegli il numero: risponde su {brand} dal momento in cui lo compri."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "With these digits"
+msgstr "Con queste cifre"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio has none of these ready now. Try other digits, or come back in a few days."
+msgstr "Twilio adesso non ne ha disponibili. Prova altre cifre, o riprova tra qualche giorno."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Twilio charges {0} a month to the centre's account, from today, until the number is released."
+msgstr "Twilio addebita {0} al mese sull'account del centro, da oggi, finché il numero non viene rilasciato."
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Send to Twilio"
+msgstr "Manda a Twilio"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Buy {0}"
+msgstr "Compra {0}"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Choose a number"
+msgstr "Scegli un numero"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Choose the number"
+msgstr "Scegli il numero"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "New number"
+msgstr "Nuovo numero"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} a month"
+msgstr "{0} al mese"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Write the prefix of the area: 02, 06, 011…"
+msgstr "Scrivi il prefisso della zona: 02, 06, 011…"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "{0} is the centre's, and answers on {brand}."
+msgstr "{0} è del centro, e risponde su {brand}."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Bought: {0}"
+msgstr "Comprati: {0}"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Another number"
+msgstr "Un altro numero"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Send again"
+msgstr "Manda di nuovo"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Ask Twilio now"
+msgstr "Chiedi a Twilio adesso"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Remove the request?"
+msgstr "Togliere la richiesta?"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "The documents written for it go, here and in Twilio. Nothing has been bought with them."
+msgstr "I documenti scritti per questa richiesta vanno via, qui e su Twilio. Con questi non è stato comprato niente."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Verified"
+msgstr "Verificato"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Off"
+msgstr "Disattivato"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Release"
+msgstr "Rilascia"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Release {0}?"
+msgstr "Rilasciare {0}?"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "The number goes back to Twilio: it stops costing, and whoever calls it hears it does not exist. It cannot be undone: Twilio may give it to somebody else."
+msgstr "Il numero torna a Twilio: smette di costare, e chi lo chiama sente che non esiste. Non si può annullare: Twilio può darlo a qualcun altro."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "{0} is released"
+msgstr "{0} è rilasciato"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Could not release the number"
+msgstr "Non è stato possibile rilasciare il numero"
+
+#: frontend/src/utils/numeri.js
+msgid "The document has to be a PDF, a JPEG or a PNG."
+msgstr "Il documento deve essere un PDF, un JPEG o un PNG."
+
+#: frontend/src/utils/numeri.js
+msgid "The document is larger than 5 MB: Twilio does not take it."
+msgstr "Il documento supera i 5 MB: Twilio non lo accetta."
+
+#: frontend/src/utils/numeri.js
+msgctxt "Number request"
+msgid "In review"
+msgstr "In verifica"
+
+#: frontend/src/utils/numeri.js
+msgctxt "Number request"
+msgid "Approved"
+msgstr "Approvata"
+
+#: frontend/src/utils/numeri.js
+msgctxt "Number request"
+msgid "Refused"
+msgstr "Rifiutata"
+
+#: frontend/src/utils/numeri.js
+msgctxt "Number request"
+msgid "Draft"
+msgstr "Bozza"
+
+#: frontend/src/utils/numeri.js
+msgid "Twilio checks the documents, usually within a few working days, and writes to {0}. You will find its answer among the notifications."
+msgstr "Twilio controlla i documenti, di solito in pochi giorni lavorativi, e scrive a {0}. Trovi la sua risposta tra le notifiche."
+
+#: frontend/src/utils/numeri.js
+msgid "The documents are good for another number of this kind too."
+msgstr "I documenti valgono anche per un altro numero di questo tipo."
+
+#: frontend/src/utils/numeri.js
+msgid "The documents are approved: choose the number."
+msgstr "I documenti sono approvati: scegli il numero."
+
+#: frontend/src/utils/numeri.js
+msgid "Twilio refused the documents. Put them right and send them again."
+msgstr "Twilio ha rifiutato i documenti. Correggili e mandali di nuovo."
+
+#: frontend/src/utils/numeri.js
+msgid "Not sent: Twilio found something missing."
+msgstr "Non mandata: secondo Twilio manca qualcosa."
+
+#: crm/telephony/numeri.py
+msgid "Upload the file of every document."
+msgstr "Carica il file di ogni documento."
+
+#: crm/telephony/numeri.py
+msgid "Write the office's address: street, city and postal code."
+msgstr "Scrivi l'indirizzo della sede: via, città e CAP."
+
+#: crm/telephony/numeri.py
+msgid "Write the email Twilio writes to about the documents."
+msgstr "Scrivi l'email a cui Twilio scrive per i documenti."
+
+#: crm/telephony/numeri.py
+msgid "Choose the kind of number."
+msgstr "Scegli il tipo di numero."
+
+#: crm/telephony/numeri.py
+msgid "Twilio does not sell this kind of number in Italy now."
+msgstr "Twilio adesso non vende questo tipo di numero in Italia."
+
+#: crm/telephony/numeri.py
+msgid "A document's file is not among those uploaded here: upload it again."
+msgstr "Il file di un documento non è tra quelli caricati qui: caricalo di nuovo."
+
+#: crm/telephony/numeri.py
+msgid "These documents are already with Twilio."
+msgstr "Questi documenti sono già da Twilio."
+
+#: crm/telephony/numeri.py
+msgid "The documents have to be approved by Twilio first."
+msgstr "Prima Twilio deve approvare i documenti."
+
+#: crm/telephony/numeri.py
+msgid "This number is not of the kind the documents are for."
+msgstr "Questo numero non è del tipo per cui sono i documenti."
+
+#: crm/telephony/numeri.py
+msgid "This number is not of the area the documents are for."
+msgstr "Questo numero non è della zona per cui sono i documenti."
+
+#: crm/telephony/numeri.py
+msgid "This Twilio account was connected by hand: release its numbers from Twilio's console."
+msgstr "Questo account Twilio è stato collegato a mano: rilascia i suoi numeri dalla console di Twilio."
+
+#: crm/telephony/numeri.py
+msgid "Twilio wrote why to {0}."
+msgstr "Twilio ha scritto il motivo a {0}."
+
+#: crm/telephony/numeri.py
+msgid "This number is not in {brand}'s space."
+msgstr "Questo numero non è nello spazio di {brand}."
+
+#: crm/telephony/numeri_regole.py
+msgid "Mobile number"
+msgstr "Numero mobile"
+
+#: crm/telephony/numeri_regole.py
+msgid "+39 3…: takes calls and SMS, and the answers to them. Not for calling out: since 19 November 2025 the AGCOM has calls from abroad showing an Italian mobile blocked."
+msgstr "+39 3…: riceve chiamate e SMS, e le risposte. Non per chiamare: dal 19 novembre 2025 l'AGCOM fa bloccare le chiamate dall'estero che mostrano un cellulare italiano."
+
+#: crm/telephony/numeri_regole.py
+msgid "Geographic number"
+msgstr "Numero geografico"
+
+#: crm/telephony/numeri_regole.py
+msgid "02, 06, 011…: calls in and out. The address on the documents must be in the area of the prefix."
+msgstr "02, 06, 011…: chiama e riceve. L'indirizzo dei documenti deve essere nella zona del prefisso."
+
+#: crm/telephony/numeri_regole.py
+msgid "Toll-free number"
+msgstr "Numero verde"
+
+#: crm/telephony/numeri_regole.py
+msgid "800: only takes calls, free for whoever calls; the centre pays each minute."
+msgstr "800: riceve soltanto, gratis per chi chiama; il centro paga ogni minuto."
+
+#: crm/telephony/numeri_regole.py
+msgid "A company"
+msgstr "Una società"
+
+#: crm/telephony/numeri_regole.py
+msgid "A company or a firm in the business register: srl, sas, snc…"
+msgstr "Una società o un'impresa iscritta al registro delle imprese: srl, sas, snc…"
+
+#: crm/telephony/numeri_regole.py
+msgid "A professional"
+msgstr "Un professionista"
+
+#: crm/telephony/numeri_regole.py
+msgid "A professional in their own name, with a VAT number and no company."
+msgstr "Un professionista a suo nome, con partita IVA e senza società."
+
+#: crm/telephony/numeri_regole.py
+msgid "Business name"
+msgstr "Ragione sociale"
+
+#: crm/telephony/numeri_regole.py
+msgid "Kind of registration number"
+msgstr "Tipo di numero di registrazione"
+
+#: crm/telephony/numeri_regole.py
+msgid "Kind of business"
+msgstr "Tipo di attività"
+
+#: crm/telephony/numeri_regole.py
+msgid "Place of birth"
+msgstr "Luogo di nascita"
+
+#: crm/telephony/numeri_regole.py
+msgid "Nationality"
+msgstr "Nazionalità"
+
+#: crm/telephony/numeri_regole.py
+msgid "Document number"
+msgstr "Numero del documento"
+
+#: crm/telephony/numeri_regole.py
+msgid "Issue date"
+msgstr "Data di rilascio"
+
+#: crm/telephony/numeri_regole.py
+msgid "Expiry date"
+msgstr "Data di scadenza"
+
+#: crm/telephony/numeri_regole.py
+msgid "Identity document of the legal representative"
+msgstr "Documento d'identità del legale rappresentante"
+
+#: crm/telephony/numeri_regole.py
+msgid "Passport of the legal representative"
+msgstr "Passaporto del legale rappresentante"
+
+#: crm/telephony/numeri_regole.py
+msgid "Business register extract (visura camerale)"
+msgstr "Visura camerale"
+
+#: crm/telephony/numeri_regole.py
+msgid "A utility bill at the office's address"
+msgstr "Una bolletta all'indirizzo della sede"
+
+#: crm/telephony/numeri_regole.py
+msgid "A tax notice at the office's address"
+msgstr "Un avviso fiscale all'indirizzo della sede"
+
+#: crm/telephony/numeri_regole.py
+msgid "A rent receipt at the office's address"
+msgstr "Una ricevuta d'affitto all'indirizzo della sede"
+
+#: crm/telephony/numeri_regole.py
+msgid "The title deed of the office"
+msgstr "L'atto di proprietà della sede"
+
+#: crm/notifiche/regole.py
+msgid "Twilio approved the documents of the new number: choose it now"
+msgstr "Twilio ha approvato i documenti del nuovo numero: sceglilo adesso"
+
+#: crm/notifiche/regole.py
+msgid "Twilio refused the documents of the new number: see why"
+msgstr "Twilio ha rifiutato i documenti del nuovo numero: guarda perché"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Phone numbers"
+msgstr "Numeri di telefono"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Twilio's answer on the documents of a new number."
+msgstr "La risposta di Twilio sui documenti di un nuovo numero."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "CRM Phone Number Request"
+msgstr "Richiesta di numero"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "A new Italian number asked of Twilio: the documents sent, where Twilio's check is, the numbers bought."
+msgstr "Un nuovo numero italiano chiesto a Twilio: i documenti mandati, a che punto è il controllo di Twilio, i numeri comprati."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Kind of number"
+msgstr "Tipo di numero"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "For a geographic number: the prefix of its area (02, 06, 011…)."
+msgstr "Per un numero geografico: il prefisso della sua zona (02, 06, 011…)."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Numbers bought"
+msgstr "Numeri comprati"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Bought with these documents: approved, they are good for more numbers of the same kind."
+msgstr "Comprati con questi documenti: approvati, valgono per altri numeri dello stesso tipo."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "The request"
+msgstr "La richiesta"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Asked on"
+msgstr "Chiesta il"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Twilio writes here about the documents."
+msgstr "Twilio scrive qui per i documenti."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "What Twilio found"
+msgstr "Cosa ha trovato Twilio"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "In Twilio"
+msgstr "Su Twilio"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Regulation"
+msgstr "Regolamento"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "Bundle"
+msgstr "Pacchetto"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "End user"
+msgstr "Intestatario"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "What was written"
+msgstr "Cosa è stato scritto"
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "The fields and the address written for Twilio, to try again without writing them twice. Gone once Twilio approves: Twilio has its copy."
+msgstr "I campi e l'indirizzo scritti per Twilio, per riprovare senza riscriverli. Spariscono quando Twilio approva: Twilio ha la sua copia."
+
+#: crm/fcrm/doctype/crm_phone_number_request/crm_phone_number_request.json
+msgid "In review"
+msgstr "In verifica"
+
+#: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
+msgid "Upload another file"
+msgstr "Carica un altro file"
