@@ -102,6 +102,25 @@ def documento_spesa(doc, emittente: dict) -> DocumentoSpesa:
 		flag_pagamento_anticipato=bool(doc.advance_payment),
 		pagamento_tracciato=_tracciato(doc.payment_traced),
 		flag_operazione=doc.ts_operation or OperazioneTS.INSERIMENTO,
+		id_rimborso=_originale(doc, emittente),
+	)
+
+
+def _originale(doc, emittente: dict) -> IdSpesa | None:
+	"""For a refund, the document the money came back from: the credit note says which
+	invoice it corrects, and the Sistema TS wants that invoice's identifier."""
+	if doc.ts_operation != OperazioneTS.RIMBORSO or not doc.get("reference_invoice"):
+		return None
+	originale = frappe.db.get_value(
+		"CRM Invoice", doc.reference_invoice, ["posting_date", "document_number"], as_dict=True
+	)
+	if not originale or not originale.document_number:
+		return None
+	return IdSpesa(
+		p_iva=(emittente.get("tax_id") or "").strip(),
+		data_emissione=getdate(originale.posting_date),
+		num_documento=originale.document_number,
+		dispositivo=1,
 	)
 
 
