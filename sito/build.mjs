@@ -34,6 +34,7 @@ import {
   trail,
   wordCount,
 } from './seo.mjs'
+import { INDEXNOW_KEY } from './indexnow.mjs'
 
 const SITE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.dirname(SITE)
@@ -382,6 +383,8 @@ export function build() {
     path.join(OUT, 'llms.txt'),
     llms(pages.filter((page) => !page.noindex)),
   )
+  // IndexNow's proof of ownership (sito/indexnow.mjs), never on a preview
+  if (!PREVIEW) write(path.join(OUT, `${INDEXNOW_KEY}.txt`), `${INDEXNOW_KEY}\n`)
   // the deploy script looks for this before it replaces a folder's contents
   write(path.join(OUT, '.sito-dottorcloud'), `${version}\n`)
   return pages

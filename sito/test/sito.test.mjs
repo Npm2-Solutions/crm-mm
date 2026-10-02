@@ -14,6 +14,7 @@ import path from 'node:path'
 import { after, before, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
+import { INDEXNOW_KEY, changedSince, request } from '../indexnow.mjs'
 import { faqs, headings, readingMinutes, slugify, trail } from '../seo.mjs'
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -209,6 +210,20 @@ describe('the pages', () => {
       for (const [, url] of html.matchAll(/\s(?:src|poster)="(\/img\/[^"]+)"/g))
         assert.match(url, /\?v=[0-9a-f]{8}$/, `${path.relative(OUT, file)}: ${url}`)
     }
+  })
+
+  test('tell IndexNow the pages changed, with its key on the site', () => {
+    const key = path.join(OUT, `${INDEXNOW_KEY}.txt`)
+    assert.equal(fs.readFileSync(key, 'utf8').trim(), INDEXNOW_KEY)
+    const xml = fs.readFileSync(path.join(OUT, 'sitemap.xml'), 'utf8')
+    assert.equal(changedSince(xml, '2000-01-01').length, xml.match(/<url>/g).length)
+    assert.deepEqual(changedSince(xml, '2999-01-01'), [])
+    const sample = '<url><loc>https://a.it/x/</loc><lastmod>2026-10-02</lastmod></url>' +
+      '<url><loc>https://a.it/y/</loc><lastmod>2026-09-30</lastmod></url>'
+    assert.deepEqual(changedSince(sample, '2026-10-01'), ['https://a.it/x/'])
+    const body = request('https://dottorcloud.com', ['https://dottorcloud.com/'])
+    assert.equal(body.host, 'dottorcloud.com')
+    assert.equal(body.keyLocation, `https://dottorcloud.com/${INDEXNOW_KEY}.txt`)
   })
 
   test('show no price, plan or fee', () => {
