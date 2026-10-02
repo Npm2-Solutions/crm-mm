@@ -12,7 +12,12 @@ from __future__ import annotations
 
 import frappe
 
-from crm.telephony.providers.base import Announcement, CallInstruction, TelephonyProvider
+from crm.telephony.providers.base import Announcement, CallInstruction, Message, Ring, TelephonyProvider
+
+#: Where Twilio comes back to: the ringing over, a message taken and its recording.
+SQUILLO_FINITO = "/api/method/crm.integrations.twilio.api.ring_ended"
+MESSAGGIO_PRESO = "/api/method/crm.integrations.twilio.api.message_taken"
+MESSAGGIO_REGISTRATO = "/api/method/crm.integrations.twilio.api.message_recorded"
 
 
 class TwilioProvider(TelephonyProvider):
@@ -57,6 +62,43 @@ class TwilioProvider(TelephonyProvider):
 	def dial_agent(self, agent: str) -> CallInstruction:
 		client = self._client()
 		return CallInstruction(client.generate_twilio_client_response(client.safe_identity(agent)).to_xml())
+
+	def ring(self, ring: Ring) -> CallInstruction:
+		"""One <Dial> with everyone in it: browsers and phones ring together, the
+		first to pick up takes the call, and the end of the ringing comes back to
+		``ring_ended``."""
+		from crm.integrations.twilio.utils import get_public_url
+
+		client = self._client()
+		return CallInstruction(client.generate_ring_response(ring, get_public_url(SQUILLO_FINITO)).to_xml())
+
+	def take_message(self, announcement: Announcement, message: Message) -> CallInstruction:
+		"""The announcement, the words before the tone, then <Record>: the recording
+		reaches ``message_recorded``, the end of it ``message_taken``. Without an
+		``action`` Twilio would ask the call's own address again, from the start."""
+		from twilio.twiml.voice_response import VoiceResponse
+
+		from crm.integrations.twilio.utils import get_public_url
+
+		response = VoiceResponse()
+		if announcement.audio_url:
+			response.play(announcement.audio_url)
+		elif announcement.text:
+			response.say(announcement.text, language=announcement.language, voice=announcement.voice)
+		response.say(message.prompt, language=message.language, voice=message.voice)
+		response.record(
+			action=get_public_url(MESSAGGIO_PRESO),
+			method="POST",
+			max_length=message.seconds,
+			timeout=5,
+			play_beep=True,
+			finish_on_key="#",
+			trim="trim-silence",
+			recording_status_callback=get_public_url(MESSAGGIO_REGISTRATO),
+			recording_status_callback_event="completed",
+			recording_status_callback_method="POST",
+		)
+		return CallInstruction(response.to_xml())
 
 	# ------------------------------------------------------------------
 	# what this account can present, and how each number is routed

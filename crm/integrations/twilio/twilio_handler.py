@@ -122,6 +122,36 @@ class Twilio:
 		resp.append(dial)
 		return resp
 
+	def generate_ring_response(self, ring, after_url: str):
+		"""Everyone of ``ring`` at once, in the browser and on the phone, for
+		``ring.seconds``; then Twilio asks ``after_url`` how it went. The caller
+		hears the ringing until somebody picks up (``answer_on_bridge``), and the
+		recording notice first, being already on the line."""
+		resp = VoiceResponse()
+		self.say_notice(resp)
+		dial = Dial(
+			caller_id=ring.caller_id,
+			timeout=ring.seconds,
+			action=after_url,
+			method="POST",
+			answer_on_bridge=True,
+			ring_tone="it",
+			record=self.settings.record_calls,
+			recording_status_callback=self.get_recording_status_callback_url(),
+			recording_status_callback_event="completed",
+		)
+		segui = {
+			"status_callback_event": "initiated ringing answered completed",
+			"status_callback": self.get_update_call_status_callback_url(),
+			"status_callback_method": "POST",
+		}
+		for agent in ring.agents:
+			dial.client(self.safe_identity(agent), **segui)
+		for phone in ring.phones:
+			dial.number(phone, **segui)
+		resp.append(dial)
+		return resp
+
 	def get_call_info(self, call_sid):
 		return self.twilio_client.calls(call_sid).fetch()
 

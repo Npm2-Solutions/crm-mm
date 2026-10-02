@@ -6,7 +6,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from werkzeug.wrappers import Response
 
 from crm.integrations.api import find_contact_by_phone_number
-from crm.telephony import inbound, transcription
+from crm.telephony import answering, inbound, messaggi, transcription
 from crm.telephony.providers import get as get_provider
 
 from .twilio_handler import Twilio, TwilioCallDetails
@@ -187,6 +187,78 @@ def twilio_incoming_call_handler(**kwargs):
 	instruction = inbound.handle_incoming_call(get_provider("twilio"), args.From, args.To, call_log=call_log)
 	frappe.db.commit()  # nosemgrep: frappe-manual-commit — Twilio calls back into this log before we are done
 	return Response(instruction.body, mimetype=instruction.mimetype)
+
+
+# webhook authenticity is enforced by validate_twilio_request(); Twilio posts here, as it is told
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def ring_ended(**kwargs):
+	"""Everyone rang (`inbound`): picked up, nothing more is said; nobody did, the
+	answering service or the apology."""
+	args = frappe._dict(kwargs)
+	validate_twilio_request(args)
+
+	if args.DialCallStatus in ("completed", "answered"):
+		resp = VoiceResponse()
+		resp.hangup()
+		return Response(resp.to_xml(), mimetype="text/xml")
+
+	call_log = (
+		frappe.get_doc("CRM Call Log", args.CallSid)
+		if frappe.db.exists("CRM Call Log", args.CallSid)
+		else None
+	)
+	instruction = inbound.nobody_answered(get_provider("twilio"), call_log=call_log)
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit — the callback queued here must be there when Twilio calls back
+	return Response(instruction.body, mimetype=instruction.mimetype)
+
+
+# webhook authenticity is enforced by validate_twilio_request(); Twilio posts here, as it is told
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def message_taken(**kwargs):
+	"""The caller finished the message, or hung up: thanks, and goodbye."""
+	args = frappe._dict(kwargs)
+	validate_twilio_request(args)
+
+	config = answering.settings()
+	resp = VoiceResponse()
+	if frappe.utils.cint(args.RecordingDuration) > 0:
+		resp.say(
+			answering.message_thanks(), language=config.language or "it-IT", voice=config.voice or "alice"
+		)
+	resp.hangup()
+	return Response(resp.to_xml(), mimetype="text/xml")
+
+
+# webhook authenticity is enforced by validate_twilio_request(); Twilio posts here, as it is told
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def message_recorded(**kwargs):
+	"""A message left on the answering service, recorded: on the call, written out
+	when transcription is on, and told to whoever follows the caller."""
+	args = frappe._dict(kwargs)
+	validate_twilio_request(args)
+
+	call_sid = args.CallSid
+	if not (call_sid and frappe.db.exists("CRM Call Log", call_sid)):
+		frappe.log_error(f"Twilio message for an unknown call: {call_sid}", "CRM Telephony")
+		return _acknowledged()
+	if not args.RecordingUrl or frappe.utils.cint(args.RecordingDuration) < 1:
+		# the tone, then silence: nothing was left
+		return _acknowledged()
+
+	try:
+		frappe.db.set_value("CRM Call Log", call_sid, {"recording_url": args.RecordingUrl, "left_message": 1})
+		messaggi.avvisa_del_messaggio(call_sid)
+		frappe.db.commit()
+	except Exception:
+		frappe.db.rollback()
+		frappe.log_error(frappe.get_traceback(), "CRM Telephony: failed to keep a message")
+		return _acknowledged()
+
+	# set_value bypasses document hooks, so the transcription is asked for here
+	if transcription.transcribes_automatically():
+		transcription.request_transcription(call_sid)
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — the queued job runs elsewhere and must find the row
+	return _acknowledged()
 
 
 def _call_failed_response():

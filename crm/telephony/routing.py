@@ -82,16 +82,18 @@ def record_owner(caller: str | None) -> str | None:
 	return frappe.db.get_value("CRM Lead", person, "lead_owner") if person else None
 
 
-def pick_attender(owners: dict, caller: str | None = None) -> dict | None:
-	"""Which of a number's owners takes the call.
+def reachable(owners: dict, caller: str | None = None) -> list[dict]:
+	"""Every owner of the number who can be rung now: on their mobile, or at their
+	desk while logged in. They ring all at once (`inbound`), the first who picks up
+	takes the call.
 
-	With more than one of them online, the lead or deal owner wins — the caller
-	reaches the person who already knows them. That preference is applied by
-	looking at them first, not by filtering the others out, so it holds whether
-	they answer at their desk or on their mobile.
+	With more than one of them online, the lead or deal owner comes first — the
+	caller reaches the person who already knows them, where a carrier rings one at
+	a time. That preference is applied by looking at them first, not by filtering
+	the others out, so it holds whether they answer at their desk or on their mobile.
 	"""
 	if not owners:
-		return None
+		return []
 
 	online = logged_in(list(owners))
 	candidates = list(owners.items())
@@ -99,14 +101,27 @@ def pick_attender(owners: dict, caller: str | None = None) -> dict | None:
 	if len(online) > 1 and (preferred := record_owner(caller)) in owners:
 		candidates.sort(key=lambda item: item[0] != preferred)
 
+	pronti = []
 	for name, details in candidates:
 		on_phone = details.get("call_receiving_device") == "Phone" and details.get("mobile_no")
 		at_desk = details.get("call_receiving_device") == "Computer" and name in online
 		if on_phone or at_desk:
-			return details
-	return None
+			pronti.append(details)
+	return pronti
+
+
+def pick_attender(owners: dict, caller: str | None = None) -> dict | None:
+	"""Which of a number's owners takes the call, when only one is rung: the first
+	of those reachable."""
+	pronti = reachable(owners, caller)
+	return pronti[0] if pronti else None
 
 
 def find_attender(provider, to_number: str | None, caller: str | None = None) -> dict | None:
 	"""The agent a call to ``to_number`` should ring, or ``None`` if nobody would."""
 	return pick_attender(number_owners(provider, to_number), caller)
+
+
+def find_ringing(provider, to_number: str | None, caller: str | None = None) -> list[dict]:
+	"""Everyone a call to ``to_number`` rings at once."""
+	return reachable(number_owners(provider, to_number), caller)

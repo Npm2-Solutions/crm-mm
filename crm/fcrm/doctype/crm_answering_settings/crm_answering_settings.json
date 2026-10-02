@@ -9,12 +9,18 @@
   "answer_mode",
   "column_break_mode",
   "use_working_hours",
+  "ring_seconds",
   "promise_section",
   "callback_hours",
   "dedupe_window_hours",
   "column_break_promise",
   "max_callback_attempts",
   "retry_after_hours",
+  "messages_section",
+  "take_messages",
+  "message_prompt",
+  "column_break_messages",
+  "message_seconds",
   "greeting_section",
   "greeting_source",
   "greeting_text",
@@ -169,11 +175,52 @@
    "fieldtype": "Select",
    "label": "Voice",
    "options": "alice\nman\nwoman\nPolly.Bianca\nPolly.Carla\nPolly.Giorgio"
+  },
+  {
+   "default": "20",
+   "depends_on": "eval:doc.enabled && doc.answer_mode=='Ring Agents First'",
+   "description": "Everyone who answers the number rings at once for this long; then the announcement.",
+   "fieldname": "ring_seconds",
+   "fieldtype": "Int",
+   "label": "Ring For (seconds)",
+   "non_negative": 1
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "messages_section",
+   "fieldtype": "Section Break",
+   "label": "Messages"
+  },
+  {
+   "default": "0",
+   "description": "After the announcement, the caller can leave a message: it goes on the call, written out when transcription is on, and whoever follows the person is told.",
+   "fieldname": "take_messages",
+   "fieldtype": "Check",
+   "label": "Let Callers Leave a Message"
+  },
+  {
+   "depends_on": "take_messages",
+   "description": "Said after the announcement, before the tone. Left empty, a standard sentence is said.",
+   "fieldname": "message_prompt",
+   "fieldtype": "Small Text",
+   "label": "Before the Tone"
+  },
+  {
+   "fieldname": "column_break_messages",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "120",
+   "depends_on": "take_messages",
+   "fieldname": "message_seconds",
+   "fieldtype": "Int",
+   "label": "Longest Message (seconds)",
+   "non_negative": 1
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-09-05 10:00:00.000000",
+ "modified": "2026-10-02 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Answering Settings",

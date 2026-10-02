@@ -37,6 +37,35 @@ class Announcement:
 
 
 @dataclass(frozen=True)
+class Ring:
+	"""Who an incoming call rings, all at once, and for how long.
+
+	Whoever picks up first takes the call. When nobody does within ``seconds``,
+	the carrier comes back to ``inbound.nobody_answered``: the announcement, or
+	the apology.
+	"""
+
+	#: users, rung in the browser
+	agents: tuple[str, ...] = ()
+	#: numbers, rung on a phone
+	phones: tuple[str, ...] = ()
+	#: what a phone shows: the caller's own number
+	caller_id: str | None = None
+	seconds: int = 20
+
+
+@dataclass(frozen=True)
+class Message:
+	"""A message taken after the announcement: what is said before the tone, and
+	how long it may last."""
+
+	prompt: str
+	seconds: int = 120
+	language: str = "it-IT"
+	voice: str = "alice"
+
+
+@dataclass(frozen=True)
 class CallInstruction:
 	"""A provider's answer to "what should this call do now", ready to return.
 
@@ -117,6 +146,23 @@ class TelephonyProvider(ABC):
 
 	def dial_agent(self, agent: str) -> CallInstruction:
 		raise ProviderNotSupported(_("{0} cannot ring an agent in the browser.").format(self.label))
+
+	def ring(self, ring: Ring) -> CallInstruction:
+		"""Ring everyone at once, coming back when nobody answers.
+
+		A carrier that rings one at a time does what it can: one person, as
+		``dial_agent`` or ``dial_phone`` would.
+		"""
+		if len(ring.agents) + len(ring.phones) != 1:
+			raise ProviderNotSupported(_("{0} cannot ring several people at once.").format(self.label))
+		if ring.agents:
+			return self.dial_agent(ring.agents[0])
+		return self.dial_phone(caller_id=ring.caller_id, to_number=ring.phones[0])
+
+	def take_message(self, announcement: Announcement, message: Message) -> CallInstruction:
+		"""The announcement, then a message after the tone. A carrier that cannot
+		record one says the announcement alone: the callback is queued all the same."""
+		return self.say(announcement)
 
 	# ------------------------------------------------------------------
 	# outgoing

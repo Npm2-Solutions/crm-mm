@@ -26,7 +26,11 @@ class CRMAnsweringSettings(Document):
 		greeting_text: DF.SmallText | None
 		language: DF.Data | None
 		max_callback_attempts: DF.Int
+		message_prompt: DF.SmallText | None
+		message_seconds: DF.Int
 		retry_after_hours: DF.Int
+		ring_seconds: DF.Int
+		take_messages: DF.Check
 		use_working_hours: DF.Check
 		voice: DF.Literal["alice", "man", "woman", "Polly.Bianca", "Polly.Carla", "Polly.Giorgio"]
 	# end: auto-generated types

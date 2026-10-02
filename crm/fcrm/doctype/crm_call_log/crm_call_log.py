@@ -34,6 +34,7 @@ class CRMCallLog(Document):
 		duration: DF.Duration | None
 		end_time: DF.Datetime | None
 		id: DF.Data | None
+		left_message: DF.Check
 		links: DF.Table[DynamicLink]
 		medium: DF.Data | None
 		note: DF.Link | None

@@ -25,6 +25,7 @@
   "receiver",
   "caller",
   "recording_url",
+  "left_message",
   "end_time",
   "note",
   "section_break_kebz",
@@ -254,11 +255,19 @@
    "label": "Transcription Error",
    "read_only": 1,
    "depends_on": "eval:doc.transcription_status=='Failed'"
+  },
+  {
+   "default": "0",
+   "description": "The caller left a message on the answering service: the recording is the message.",
+   "fieldname": "left_message",
+   "fieldtype": "Check",
+   "label": "Left a Message",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-29 12:00:00.000000",
+ "modified": "2026-10-02 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Call Log",
