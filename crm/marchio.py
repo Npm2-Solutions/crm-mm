@@ -483,9 +483,9 @@ def _scrivania(marchio: Marchio) -> None:
 def _autori() -> None:
 	"""The desk shows who created and last changed a DocType: some of the CRM's came
 	with the old product's authors' addresses."""
+	moduli = frappe.get_all("Module Def", filters={"app_name": "crm"}, pluck="name")
 	for campo in ("owner", "modified_by"):
-		frappe.db.sql(
-			f"""update `tabDocType` set `{campo}` = 'Administrator'
-			where `{campo}` like %s and module in (select name from `tabModule Def` where app_name = 'crm')""",
-			("%@frappe.io",),
-		)
+		for doctype in frappe.get_all(
+			"DocType", filters={campo: ("like", "%@frappe.io"), "module": ("in", moduli)}, pluck="name"
+		):
+			frappe.db.set_value("DocType", doctype, campo, "Administrator", update_modified=False)

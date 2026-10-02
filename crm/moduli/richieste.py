@@ -282,7 +282,7 @@ def _indirizzo(token: str) -> str:
 
 
 @frappe.whitelist(methods=["POST"])
-def send_form_link(lead: str, templates, appointment: str | None = None) -> dict:
+def send_form_link(lead: str, templates: list | str, appointment: str | None = None) -> dict:
 	"""Email a link to fill and sign these forms at home. The message says there
 	are forms to fill; which ones, only the person sees, once in with the code."""
 	livelli.verifica("moduli.compila")
@@ -353,7 +353,7 @@ def manda_il_link(
 
 @frappe.whitelist(methods=["POST"])
 def hand_over_tablet(
-	lead: str, templates, given_by: str | None = None, appointment: str | None = None
+	lead: str, templates: list | str, given_by: str | None = None, appointment: str | None = None
 ) -> dict:
 	"""The page for this person and these forms, with no code: the operator has
 	seen who holds the tablet. The browser logs the operator out and opens it."""
