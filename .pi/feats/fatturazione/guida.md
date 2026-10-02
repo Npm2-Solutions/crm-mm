@@ -89,6 +89,14 @@ volta sola non puo' divergere dall'interfaccia che la mostra.
 Il pannello `/crm/fatture` resta la console dell'operatore: cosa e' stato emesso e
 cosa aspetta ancora un bottone. Non si configura niente da li'.
 
+**I codici si scelgono per nome.** Ogni campo che salva un codice dell'Agenzia o
+del Sistema TS (regime, natura IVA, cassa, ritenuta, causale, modalita' di
+pagamento, tipo di spesa...) offre le scelte col loro nome e una riga che dice
+quando si usano; si salva il codice. Con la clinica accesa si vedono solo quelle di
+un centro medico, e i tipi di spesa sono quelli che la categoria di chi emette puo'
+usare. Un valore scelto prima resta nel suo campo anche se il profilo non lo
+propone piu' (doc 45).
+
 ---
 
 ## Prima di emettere: quattro cose
@@ -98,7 +106,8 @@ cosa aspetta ancora un bottone. Non si configura niente da li'.
 Chi firma le fatture. Partita IVA, sede, regime fiscale, cassa e ritenuta,
 modalita' del bollo, formato di numerazione. Se lo studio e' sanitario, anche la
 categoria presso il Sistema TS e — solo per strutture, farmacie, parafarmacie e
-ottici — il Codice Proprietario `codiceRegione-codiceAsl-codiceSSA`.
+ottici — il Codice Proprietario: codice regione, codice ASL e codice struttura
+(SSA).
 
 Il formato di numerazione si valida **quando salvi l'azienda**, non al primo invio
 al Sistema TS: `numDocumento` accetta al massimo 20 caratteri dell'alfabeto
@@ -138,7 +147,8 @@ poliambulatorio con calendario condiviso un'assegnazione sbagliata non da' error
 
 **Un servizio senza scheda non e' fatturabile.** La scheda dice se la prestazione
 e' sanitaria, se e' esente e con quale riferimento normativo, l'aliquota o la
-natura IVA, il `tipoSpesa` per il Sistema TS, se e' soggetta a bollo.
+natura IVA (*Perche' non c'e' IVA*), il tipo di spesa per il Sistema TS, se e'
+soggetta a bollo.
 
 Il campo *Verificato dal commercialista* non blocca nulla: finche' non e' spuntato,
 l'esenzione su quel servizio e' un'assunzione che nessuno ha confermato.
