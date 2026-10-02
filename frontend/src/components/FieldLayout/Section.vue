@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="!section.hidden"
+    v-if="!section.hidden && applies"
     class="section"
     :class="[
       section.hideBorder
@@ -31,11 +31,21 @@
 <script setup>
 import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import Column from '@/components/FieldLayout/Column.vue'
-import { inject } from 'vue'
+import { evaluateDependsOnValue } from '@/utils/expressions'
+import { computed, inject } from 'vue'
 
-defineProps({
+const props = defineProps({
   section: { type: Object, required: true },
 })
 
 const hasTabs = inject('hasTabs')
+const data = inject('data', null)
+
+// a section the DocType shows only when the document needs it (the Sistema TS
+// fields of a service that is not healthcare)
+const applies = computed(() =>
+  props.section.dependsOn
+    ? evaluateDependsOnValue(props.section.dependsOn, data?.value)
+    : true,
+)
 </script>

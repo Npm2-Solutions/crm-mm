@@ -89,4 +89,42 @@ describe('buildTabs', () => {
     expect(reso.description).toContain('Sistema TS')
     expect(reso.depends_on).toBe('eval:doc.enabled')
   })
+
+  it('folds the sections the DocType folds, and keeps when one applies', () => {
+    const tabs = buildTabs([
+      campo('identity', 'Section Break'),
+      campo('company_name'),
+      campo('registro', 'Section Break', { collapsible: 1 }),
+      campo('rea_number'),
+      campo('ts_section', 'Section Break', {
+        depends_on: 'eval:doc.is_healthcare',
+      }),
+      campo('ts_expense_type', 'Select'),
+      campo('options', 'Section Break'),
+      campo('enabled', 'Check'),
+    ])
+    const [identita, registro, ts, opzioni] = tabs[0].sections
+    expect(identita).not.toHaveProperty('opened')
+    expect(registro.opened).toBe(false)
+    expect(ts.dependsOn).toBe('eval:doc.is_healthcare')
+    expect(ts.opened).toBeUndefined()
+    expect(opzioni).not.toHaveProperty('opened')
+    expect(opzioni).not.toHaveProperty('dependsOn')
+  })
+
+  it('never opens a tab on a folded section', () => {
+    const [, sdi] = buildTabs([
+      campo('tab_company', 'Tab Break'),
+      campo('company_name'),
+      campo('tab_sdi', 'Tab Break'),
+      campo('sdi_section', 'Section Break', { collapsible: 1 }),
+      campo('sdi_mode', 'Select'),
+      campo('extra', 'Section Break', { collapsible: 1 }),
+      campo('sdi_endpoint'),
+    ])
+    const [vuota, canale, altro] = sdi.sections
+    expect(vuota.columns[0].fields).toEqual([])
+    expect(canale).not.toHaveProperty('opened')
+    expect(altro.opened).toBe(false)
+  })
 })
