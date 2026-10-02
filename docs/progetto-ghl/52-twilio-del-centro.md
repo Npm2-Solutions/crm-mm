@@ -256,14 +256,24 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   e quando Twilio poi dice che non è arrivato. Nel log restano solo il codice e lo
   stato, mai il numero né le parole.
 
-### 6. I numeri che il centro ha già (sesta parte)
+### 6. I numeri che il centro ha già (sesta parte, fatta)
 
-- **Un numero già nell'account del centro** si sposta nello spazio: DottorCloud
-  chiede il token una volta per quella sola operazione e copia i documenti già
-  approvati (Bundle Clones).
-- **Il numero storico di un altro operatore**: o lo si inoltra al numero di
-  DottorCloud (lo fa l'operatore), o lo si porta su Twilio con il modulo di Twilio,
-  con la guida in DottorCloud; arrivato nell'account, si sposta nello spazio.
+- **Un numero già nell'account del centro (fatto).** Sulla pagina di Twilio, accanto a
+  «Nuovo numero», «Ho già un numero» → «Nell'account Twilio del centro»: il
+  responsabile incolla di nuovo Account SID e Auth Token dell'account. Servono solo a
+  quella richiesta e non restano: DottorCloud mostra i numeri dell'account fuori dallo
+  spazio (uno su un trunk SIP resta dov'è, e lo dice), e quello scelto si sposta. Un
+  numero italiano porta con sé i documenti già approvati, copiati nello spazio prima
+  dello spostamento (il «bundle clone» di Twilio, approvato anche lì: l'SDK 8.5 non lo
+  ha, DottorCloud lo chiede all'indirizzo di Twilio), e il suo indirizzo, scritto di
+  nuovo nello spazio; poi il numero punta a DottorCloud ed entra nell'elenco dei numeri
+  del centro. Solo nello spazio dell'account del centro: quello dell'agenzia è un altro
+  account, e i codici di un account diverso da quello dello spazio non spostano niente.
+- **Il numero storico di un altro operatore (fatto)**, «Con un altro operatore»: la
+  pagina spiega le due strade. O l'operatore inoltra le chiamate a un numero del centro
+  in DottorCloud (gli SMS non seguono), o il numero si porta su Twilio con il modulo di
+  Twilio (dai grandi operatori, fino a sei settimane), con la guida di Twilio per
+  l'Italia; arrivato nell'account, si sposta nello spazio come sopra.
 
 ## La stessa strada per l'agenzia
 
@@ -304,6 +314,8 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 | `frontend/src/components/Settings/SmsSenderLine.vue`, `Activities/SMSBox.vue` | Da dove partono gli SMS, sulle pagine dell'area e della lista d'attesa; sopra il box, la persona che ha scritto STOP |
 | `crm/telephony/consumi_regole.py`, `errori_regole.py` | Senza sito: la spesa del mese per voce, l'importo dell'avviso e che cosa fare del trigger; i codici di Twilio a parole, i problemi raggruppati per codice — provati con `unittest` |
 | `crm/telephony/consumi.py` + `errori.py`, `CRM Twilio Settings.spend_alert` | La spesa e i problemi per la pagina (`get_twilio_usage`), l'avviso come trigger dello spazio (`allinea_l_avviso`, al salvataggio e ogni ora), `spend_reached` che lo dice a chi paga; un codice di Twilio a parole (`errori.in_parole`), anche sugli SMS |
+| `crm/telephony/trasloco_regole.py` | Senza sito: quale numero dell'account si sposta e quale resta (un trunk SIP), che cosa serve allo spazio prima (i documenti, l'indirizzo) — provato con `unittest` |
+| `crm/telephony/trasloco.py` + `Settings/Telephony/MoveNumberDialog.vue` | «Ho già un numero»: i numeri dell'account del centro con i suoi codici incollati per quella richiesta (`get_account_numbers`), lo spostamento con il clone dei documenti e la copia dell'indirizzo (`move_number`); la guida per un numero di un altro operatore |
 
 ## Da decidere
 
