@@ -47,4 +47,11 @@ class EsitoInvio:
 
 
 class ErroreCanale(Exception):
-	"""The channel could not take the document. It says why, in one sentence."""
+	"""The channel could not take the document. It says why, in one sentence.
+
+	`incerto`: the answer was lost on the way (a timeout, a dropped connection), so
+	the document may have arrived all the same - the next attempt asks first."""
+
+	def __init__(self, messaggio: str = "", incerto: bool = False):
+		super().__init__(messaggio)
+		self.incerto = incerto

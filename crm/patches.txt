@@ -90,3 +90,4 @@ crm.patches.v1_0.invoicing_only_what_somebody_sets
 crm.patches.v1_0.the_centre_sends_sms_from_one_sender
 crm.patches.v1_0.dottorcloud_does_not_connect_erpnext
 crm.patches.v1_0.the_person_first_on_their_page
+crm.patches.v1_0.itala_states_are_the_invoices

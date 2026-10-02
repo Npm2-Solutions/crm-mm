@@ -106,6 +106,7 @@
   "xml_file",
   "xml_hash",
   "sdi_signed_file",
+  "sdi_sent_file",
   "column_files",
   "pdf_file",
   "pdf_hash",
@@ -744,10 +745,17 @@
    "read_only": 1
   },
   {
-   "description": "The .p7m, when the XML has been signed. Mandatory towards a public administration: an unsigned one comes back as rejection 00102.",
+   "description": "Only for an invoice sent by the centre's own PEC: the .p7m, when the XML has been signed by hand. Through Itala nothing is signed here: Itala signs the invoices to a public body itself, and sends the XML as it is.",
    "fieldname": "sdi_signed_file",
    "fieldtype": "Attach",
    "label": "Signed XML (.p7m)"
+  },
+  {
+   "description": "The file Itala transmitted to the SdI, with its own transmission data: the one the SdI holds, kept as it came back.",
+   "fieldname": "sdi_sent_file",
+   "fieldtype": "Attach",
+   "label": "XML as transmitted",
+   "read_only": 1
   },
   {
    "fieldname": "column_files",
@@ -872,7 +880,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-02 16:00:00.000000",
+ "modified": "2026-10-02 23:45:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",

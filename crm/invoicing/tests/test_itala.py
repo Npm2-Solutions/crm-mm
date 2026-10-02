@@ -14,6 +14,8 @@ the same names so a reader finds them where they look.
 from __future__ import annotations
 
 import base64
+import json
+from pathlib import Path
 
 from crm.invoicing.engine import busta as itala
 from crm.invoicing.tests.base import UnitTestCase
@@ -36,10 +38,26 @@ class StatiTest(UnitTestCase):
 		self.assertEqual(itala.STATO_PROVIDER["NONC"], "mancata_consegna")
 		self.assertNotEqual(itala.STATO_PROVIDER["NONC"], "errore")
 
-	def test_gli_stati_pa_restano_distinti(self):
-		self.assertEqual(itala.STATO_PROVIDER["ACCE"], "accettato")
-		self.assertEqual(itala.STATO_PROVIDER["RIFI"], "rifiutato")
+	def test_la_risposta_della_pa_e_il_suo_esito(self):
+		# yes or no, a public body's answer is its outcome, as the notice it sends is
+		self.assertEqual(itala.STATO_PROVIDER["ACCE"], "esito_pa")
+		self.assertEqual(itala.STATO_PROVIDER["RIFI"], "esito_pa")
 		self.assertEqual(itala.STATO_PROVIDER["DECO"], "decorrenza_termini")
+		self.assertEqual(itala.STATO_PROVIDER["CONS"], "consegnata")
+
+	def test_ogni_traduzione_e_uno_stato_della_fattura(self):
+		"""Nothing is ever written that the invoice's state does not admit: a state
+		outside its options escaped every guard on the invoice (01/10/2026)."""
+		percorso = Path(__file__).parents[1] / "doctype" / "crm_invoice" / "crm_invoice.json"
+		campo = next(f for f in json.loads(percorso.read_text())["fields"] if f["fieldname"] == "sdi_status")
+		ammessi = set(campo["options"].split("\n"))
+		for codice, stato in itala.STATO_PROVIDER.items():
+			self.assertIn(stato, ammessi, codice)
+
+	def test_si_dice_quello_che_qualcuno_deve_sapere(self):
+		for codice in ("NONC", "RIFI", "ERRO"):
+			self.assertIn(codice, itala.STATI_DA_DIRE)
+		self.assertNotIn("CONS", itala.STATI_DA_DIRE)
 
 	def test_solo_gli_stati_conclusi_hanno_una_notifica_da_scaricare(self):
 		# Going to fetch a notice for something still in flight is a wasted call and
@@ -92,3 +110,39 @@ class IngressoTest(UnitTestCase):
 
 	def test_una_voce_senza_documento_non_ne_inventa_uno(self):
 		self.assertIsNone(itala.xml_in_ingresso({"ricezione": 1, "id": 4}))
+
+
+class NotificaTest(UnitTestCase):
+	def test_il_nome_della_notifica_e_il_suo(self):
+		self.assertEqual(
+			itala.nome_da_disposizione('attachment; filename="IT01234567890_abc12_NE_001.xml"'),
+			"IT01234567890_abc12_NE_001.xml",
+		)
+		self.assertEqual(
+			itala.nome_da_disposizione("attachment; filename*=UTF-8''IT0_a_RC_001.xml"), "IT0_a_RC_001.xml"
+		)
+
+	def test_niente_nome_o_un_percorso_non_e_un_nome(self):
+		self.assertIsNone(itala.nome_da_disposizione(None))
+		self.assertIsNone(itala.nome_da_disposizione("inline"))
+		self.assertIsNone(itala.nome_da_disposizione("attachment; filename=../../etc/passwd"))
+
+
+class PartitaIvaTest(UnitTestCase):
+	def test_una_riga_di_un_altra_partita_iva_non_e_della_societa(self):
+		self.assertTrue(itala.della_partita_iva({"partita_iva": "IT01234567890"}, "01234567890"))
+		self.assertTrue(itala.della_partita_iva({"piva": "01234567890"}, "IT 01234567890"))
+		self.assertFalse(itala.della_partita_iva({"partita_iva": "09876543210"}, "01234567890"))
+
+	def test_una_riga_che_non_la_nomina_e_di_chi_l_ha_chiesta(self):
+		self.assertTrue(itala.della_partita_iva({"id": 3}, "01234567890"))
+		self.assertFalse(itala.della_partita_iva("non una riga", "01234567890"))
+
+
+class ScadenzaTest(UnitTestCase):
+	def test_la_scadenza_si_legge_con_l_ora_del_sito(self):
+		from datetime import datetime
+
+		adesso = datetime(2026, 10, 2, 12, 0, 0)
+		self.assertEqual(itala.durata_token("2026-10-02 14:00:00", adesso), 2 * 3600 - itala.MARGINE)
+		self.assertEqual(itala.durata_token("2026-10-02 11:00:00", adesso), itala.MARGINE)

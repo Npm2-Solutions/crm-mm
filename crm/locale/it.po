@@ -12756,10 +12756,6 @@ msgstr "Nell'area pazienti: orari di apertura, prenotazioni e domande frequenti 
 msgid "In the planner"
 msgstr "Nel planner"
 
-#: crm/invoicing/api.py
-msgid "In the provider's configuration set the authentication token to the secret you generated here, as a header named X-Acube-Token or as a query parameter named token."
-msgstr "Nella configurazione del provider, imposta come token di autenticazione la chiave segreta che hai generato qui, come header X-Acube-Token o come parametro di query token."
-
 #: frontend/src/components/Today/ParticipantRow.vue
 msgid "In the waiting room since {0}"
 msgstr "In sala d'attesa dalle {0}"
@@ -38315,10 +38311,6 @@ msgstr "Itala ha rifiutato il documento: {0}"
 msgid "Itala answered {0} when asked for updates: {1}"
 msgstr "Itala ha risposto {0} alla richiesta degli aggiornamenti: {1}"
 
-#: crm/invoicing/sdi/itala.py
-msgid "Accepted by Itala{0}. The outcome arrives as a notice."
-msgstr "Presa in carico da Itala{0}. L'esito arriva con una notifica."
-
 #: crm/invoicing/emissione.py
 msgid "Test: checked, not sent"
 msgstr "Prova: controllata, non inviata"
@@ -40630,3 +40622,163 @@ msgstr "Programma"
 #: frontend/src/pages/Dialer.vue
 msgid "Skip"
 msgstr "Salta"
+
+#: crm/invoicing/api.py
+msgid "In Itala's dashboard set the webhook to this address and its token to the secret generated here: Itala sends it as Authorization: Bearer. Only for a company with an account of its own: under the agency's account the updates are fetched every ten minutes."
+msgstr "Nel pannello di Itala imposta il webhook su questo indirizzo e il suo token sul segreto generato qui: Itala lo manda come Authorization: Bearer. Solo per una società con un account suo: con l'account dell'agenzia gli aggiornamenti si chiedono ogni dieci minuti."
+
+#: crm/invoicing/api.py
+msgid "It may have reached Itala all the same: sending it again first asks whether it did."
+msgstr "Può essere arrivata a Itala lo stesso: inviandola di nuovo, prima si chiede se l'ha già."
+
+#: crm/invoicing/prova.py
+msgid "Itala's recipient code"
+msgstr "Codice destinatario di Itala"
+
+#: crm/invoicing/prova.py
+msgid "Itala gives it with the account: without it the centre cannot be told what to register to receive its suppliers' invoices here."
+msgstr "Itala lo dà con l'account: senza, al centro non si può dire che cosa registrare per ricevere qui le fatture dei fornitori."
+
+#: crm/invoicing/prova.py
+msgid "Your suppliers' invoices"
+msgstr "Le fatture dei tuoi fornitori"
+
+#: crm/invoicing/prova.py
+msgid "Itala's updates"
+msgstr "Gli aggiornamenti di Itala"
+
+#: crm/invoicing/prova.py
+msgid "Removed from the agency's account at Itala."
+msgstr "Tolta dall'account dell'agenzia su Itala."
+
+#: crm/invoicing/prova.py
+msgid "Register the recipient code {0} once in Fatture e Corrispettivi (ivaservizi.agenziaentrate.gov.it), you or your accountant, then tick it on the Invoicing tab: from that day the invoices your suppliers send arrive here."
+msgstr "Registra una volta il codice destinatario {0} in Fatture e Corrispettivi (ivaservizi.agenziaentrate.gov.it), tu o il tuo commercialista, poi spuntalo nella scheda Fatturazione: da quel giorno le fatture dei tuoi fornitori arrivano qui."
+
+#: crm/invoicing/prova.py
+msgid "This site is not {0}, the one that reads the company's updates at Itala: it reads none, so as not to take them away from that one. If this is the company's site now, clear Reads Itala's updates on the company."
+msgstr "Questo sito non è {0}, quello che legge gli aggiornamenti della società su Itala: non ne legge nessuno, per non toglierli a quello. Se ora il sito della società è questo, svuota Legge gli aggiornamenti di Itala nella società."
+
+#: crm/invoicing/sdi/itala.py
+msgid "Accepted by Itala"
+msgstr "Presa in carico da Itala"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala already had it"
+msgstr "Itala l'aveva già"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala did not remove the company ({0}): {1}"
+msgstr "Itala non ha tolto la società ({0}): {1}"
+
+#: crm/invoicing/sdi/itala.py
+msgid "The outcome arrives as a notice."
+msgstr "L'esito arriva con una notifica."
+
+#: crm/invoicing/sdi/riconciliazione.py
+msgid "Invoice {0} was refused by the public body"
+msgstr "La fattura {0} è stata rifiutata dalla pubblica amministrazione"
+
+#: crm/invoicing/sdi/riconciliazione.py
+msgid "It has to be corrected with a credit note and issued again. {0}"
+msgstr "Va corretta con una nota di credito ed emessa di nuovo. {0}"
+
+#: crm/invoicing/sdi/riconciliazione.py
+msgid "Invoice {0} did not go through"
+msgstr "La fattura {0} non è passata"
+
+#: crm/invoicing/sdi/riconciliazione.py
+msgid "It counts as not issued: correct it and send it again. {0}"
+msgstr "Vale come non emessa: correggila e inviala di nuovo. {0}"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Channel"
+msgstr "Canale"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Remove from Itala"
+msgstr "Togli da Itala"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Remove the company from Itala?"
+msgstr "Togliere la società da Itala?"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Only for a centre that leaves: its invoices stop leaving through the agency’s account, and the ones its suppliers send stop arriving here."
+msgstr "Solo per un centro che se ne va: le sue fatture smettono di partire con l'account dell'agenzia, e quelle dei suoi fornitori di arrivare qui."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Removed from Itala"
+msgstr "Tolta da Itala"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Could not remove it from Itala"
+msgstr "Non è stato possibile toglierla da Itala"
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "CRM SdI Update"
+msgstr "Aggiornamento SdI"
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "What Itala gave back, kept until it is applied: an update read once is not given again."
+msgstr "Quello che Itala ha restituito, tenuto finché non è applicato: un aggiornamento letto una volta non viene dato di nuovo."
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "Received invoice"
+msgstr "Fattura ricevuta"
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "An invoice a supplier sent, not news of one of ours."
+msgstr "Una fattura mandata da un fornitore, non una notizia di una delle nostre."
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "Itala's state"
+msgstr "Stato di Itala"
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "Applied"
+msgstr "Applicato"
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "Why it was not applied"
+msgstr "Perché non è stato applicato"
+
+#: crm/invoicing/doctype/crm_sdi_update/crm_sdi_update.json
+msgid "The update as Itala gave it, until it is applied; then emptied."
+msgstr "L'aggiornamento come l'ha dato Itala, finché non è applicato; poi svuotato."
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "XML as transmitted"
+msgstr "XML come trasmesso"
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "The file Itala transmitted to the SdI, with its own transmission data: the one the SdI holds, kept as it came back."
+msgstr "Il file che Itala ha trasmesso allo SdI, con i suoi dati di trasmissione: quello che ha lo SdI, tenuto com'è tornato."
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Only for an invoice sent by the centre's own PEC: the .p7m, when the XML has been signed by hand. Through Itala nothing is signed here: Itala signs the invoices to a public body itself, and sends the XML as it is."
+msgstr "Solo per una fattura inviata con la PEC del centro: il .p7m, quando l'XML è stato firmato a mano. Con Itala qui non si firma nulla: le fatture alla pubblica amministrazione le firma Itala, e l'XML parte così com'è."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Registered Itala's recipient code"
+msgstr "Registrato il codice destinatario di Itala"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Once, in Fatture e Corrispettivi (by the centre or its accountant): Itala's recipient code as the address of the invoices your suppliers send. From that day they arrive here."
+msgstr "Una volta, in Fatture e Corrispettivi (dal centro o dal suo commercialista): il codice destinatario di Itala come indirizzo delle fatture dei tuoi fornitori. Da quel giorno arrivano qui."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Reads Itala's updates"
+msgstr "Legge gli aggiornamenti di Itala"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The site that reads the company's updates at Itala. A copy of the site elsewhere reads none: it would take them away from this one."
+msgstr "Il sito che legge gli aggiornamenti della società su Itala. Una copia del sito altrove non ne legge nessuno: li toglierebbe a questo."
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Recipient code"
+msgstr "Codice destinatario"
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "The seven characters Itala gives the account: each centre registers them at the Agenzia, and its suppliers' invoices arrive here."
+msgstr "I sette caratteri che Itala dà all'account: ogni centro li registra all'Agenzia, e le fatture dei suoi fornitori arrivano qui."

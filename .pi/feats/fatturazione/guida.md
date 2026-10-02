@@ -473,10 +473,18 @@ E' un endpoint pubblico, quindi il progetto riguarda soprattutto chi puo' bussar
 - **l'identita' non si legge mai dal corpo**: a quale fattura risponde una ricevuta si
   decide come su ogni altro canale, dal nome file che ci ha messo lo SdI.
 
-Il codice di stato e' il contratto con la coda del fornitore, che riprova quindici
-volte in circa dieci ore su tutto cio' che non e' 200. Quindi una consegna capita
-risponde 200 anche quando non c'era niente da applicare — gli stessi byte
-arriverebbero alla stessa risposta — e solo un guasto inatteso risponde 500.
+Il codice di stato e' il contratto con la coda del fornitore: Itala riprova ogni
+tre ore, per al massimo tre giorni, su tutto cio' che non e' 200. Quindi una
+consegna capita risponde 200 anche quando non c'era niente da applicare — gli
+stessi byte arriverebbero alla stessa risposta — e solo un guasto inatteso risponde
+500. Quello che arriva e' tenuto prima di essere applicato (`CRM SdI Update`): un
+200 non perde mai un aggiornamento.
+
+Itala presenta il segreto come `Authorization: Bearer <segreto>`. Frappe legge ogni
+Bearer come un suo token OAuth e rifiuterebbe la chiamata prima dell'endpoint:
+per l'indirizzo del webhook, e solo per quello, l'intestazione e' tolta prima che
+Frappe la guardi e tenuta per il confronto col segreto della societa'
+(`crm.invoicing.sdi.webhook.prima_della_richiesta`, un `before_request`).
 
 Serve solo a un'azienda con un account Itala suo: il riquadro dell'agenzia in
 **Impostazioni → Fatturazione → Prova e attivazione** costruisce l'URL da incollare e

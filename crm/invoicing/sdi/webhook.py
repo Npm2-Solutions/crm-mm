@@ -37,9 +37,27 @@ from crm.invoicing import connessione
 from crm.invoicing.engine import busta
 from crm.invoicing.sdi import ricezione
 
+#: The one address the provider pushes to.
+PERCORSO = "/api/method/crm.invoicing.api.provider_webhook"
+
 
 class Rifiutata(Exception):
 	"""The delivery is not accepted. The caller learns nothing beyond that."""
+
+
+def prima_della_richiesta() -> None:
+	"""Itala presents its secret as `Authorization: Bearer <secret>`, and Frappe reads
+	any Bearer as one of its own OAuth tokens: not finding it, it refuses the call
+	before the endpoint runs. For this one address, the header is taken away before
+	Frappe looks and kept for `autentica`, which compares it with the company's
+	secret. Every other address is left as it is. (`before_request`, which runs
+	before Frappe authenticates the request.)"""
+	richiesta = getattr(frappe.local, "request", None)
+	if richiesta is None or richiesta.path != PERCORSO:
+		return
+	valore = richiesta.environ.pop("HTTP_AUTHORIZATION", None)
+	if valore:
+		frappe.local.flags.autorizzazione_del_provider = valore
 
 
 def _aziende_candidate(richiesta) -> list[str]:
@@ -64,7 +82,11 @@ def autentica(richiesta) -> str:
 	Every candidate is checked even after one matches: returning early would let a
 	caller time how far down the list its guess landed.
 	"""
-	presentato = busta.token_presentato(richiesta.headers or {}, richiesta.args or {})
+	intestazioni = dict(richiesta.headers or {})
+	# the Bearer taken away before Frappe read it (`prima_della_richiesta`)
+	if frappe.local.flags.get("autorizzazione_del_provider"):
+		intestazioni["Authorization"] = frappe.local.flags.autorizzazione_del_provider
+	presentato = busta.token_presentato(intestazioni, richiesta.args or {})
 	if not presentato:
 		raise Rifiutata
 

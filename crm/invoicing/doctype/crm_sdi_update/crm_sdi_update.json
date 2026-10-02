@@ -1,0 +1,127 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-02 23:45:00.000000",
+ "description": "What Itala gave back, kept until it is applied: an update read once is not given again.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "incoming",
+  "provider_id",
+  "provider_state",
+  "column_head",
+  "invoice",
+  "done",
+  "attempts",
+  "received_on",
+  "detail_section",
+  "last_error",
+  "payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "CRM Invoicing Company",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "An invoice a supplier sent, not news of one of ours.",
+   "fieldname": "incoming",
+   "fieldtype": "Check",
+   "label": "Received invoice"
+  },
+  {
+   "fieldname": "provider_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Itala's identifier"
+  },
+  {
+   "fieldname": "provider_state",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Itala's state"
+  },
+  {
+   "fieldname": "column_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "options": "CRM Invoice"
+  },
+  {
+   "default": "0",
+   "fieldname": "done",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Applied"
+  },
+  {
+   "default": "0",
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Attempts"
+  },
+  {
+   "fieldname": "received_on",
+   "fieldtype": "Datetime",
+   "label": "Received on"
+  },
+  {
+   "fieldname": "detail_section",
+   "fieldtype": "Section Break",
+   "label": "Detail"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Why it was not applied"
+  },
+  {
+   "description": "The update as Itala gave it, until it is applied; then emptied.",
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Update",
+   "options": "JSON"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-02 23:45:00.000000",
+ "modified_by": "Administrator",
+ "module": "Invoicing",
+ "name": "CRM SdI Update",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Invoicing Manager"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
