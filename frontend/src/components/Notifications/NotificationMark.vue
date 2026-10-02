@@ -24,6 +24,7 @@ import { computed } from 'vue'
 import LucideAtSign from '~icons/lucide/at-sign'
 import LucideBell from '~icons/lucide/bell'
 import LucideCalendarClock from '~icons/lucide/calendar-clock'
+import LucideMail from '~icons/lucide/mail'
 import LucideMessageCircleQuestion from '~icons/lucide/message-circle-question'
 import LucideMessageSquareText from '~icons/lucide/message-square-text'
 import LucideReceiptText from '~icons/lucide/receipt-text'
@@ -57,6 +58,7 @@ const ICONE = {
   'at-sign': LucideAtSign,
   bell: LucideBell,
   'calendar-clock': LucideCalendarClock,
+  mail: LucideMail,
   'message-circle-question': LucideMessageCircleQuestion,
   'message-square-text': LucideMessageSquareText,
   'receipt-text': LucideReceiptText,

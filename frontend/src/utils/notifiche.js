@@ -20,6 +20,7 @@ export const ASPETTI = {
   task_removed: { colore: 'gray', icona: 'square-x', parola: 'Task' },
   whatsapp: { colore: 'green', icona: 'whatsapp', parola: 'WhatsApp' },
   sms: { colore: 'blue', icona: 'message-square-text', parola: 'SMS' },
+  email: { colore: 'blue', icona: 'mail', parola: 'Email' },
   area: {
     colore: 'blue',
     icona: 'message-circle-question',

@@ -179,6 +179,11 @@ def assegna_livelli(user: str, chiavi: list[str]) -> None:
 	if not doc.role_profiles:
 		_togli_ruoli_crm(doc)
 	_moduli_desk(doc, chiavi)
+	# a person's email reaches whoever follows them in DottorCloud's panel
+	# (crm.posta.ingresso): the framework's copy to their own mailbox would be a
+	# second one, outside DottorCloud, and a patient's words in a private inbox
+	if chiavi:
+		doc.thread_notify = 0
 	doc.save(ignore_permissions=True)
 	livelli.dimentica_cache()
 

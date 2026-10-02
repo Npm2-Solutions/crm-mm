@@ -48,7 +48,9 @@ CAMPI = [
 ]
 
 #: The kinds whose message the panel shows the first words of.
-CON_ANTEPRIMA = frozenset({"mention", "whatsapp", "sms", "invoicing"})
+CON_ANTEPRIMA = frozenset({"mention", "whatsapp", "sms", "email", "invoicing"})
+#: The kinds that are a person's message on a channel: read by who reads conversations.
+MESSAGGI = ("whatsapp", "sms", "email")
 #: The record pages a notification opens, and the name of their parameter.
 PAGINE = {"CRM Lead": ("Lead", "leadId"), "CRM Deal": ("Deal", "dealId")}
 
@@ -116,7 +118,7 @@ def _anteprima(riga, genere: str, conversazioni: bool) -> str:
 	if genere not in CON_ANTEPRIMA:
 		return ""
 	# a message of a channel is read by who reads the conversations
-	if genere in ("whatsapp", "sms") and not conversazioni:
+	if genere in MESSAGGI and not conversazioni:
 		return ""
 	return R.anteprima(riga.message)
 
@@ -134,7 +136,7 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set) -> dict | 
 		return None
 	nome_pagina, parametro = pagina
 	segno = ""
-	if genere in ("mention", "whatsapp", "sms") and riga.notification_type_doc:
+	if genere in ("mention", *MESSAGGI) and riga.notification_type_doc:
 		# the comment or the message itself, in the person's history
 		segno = "#" + riga.notification_type_doc
 	elif genere == "area":
