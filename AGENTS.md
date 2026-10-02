@@ -193,7 +193,7 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
-### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud (docs/progetto-ghl/45, 46, 47, 48)
+### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
 | File | Role |
 |---|---|
 | `crm/invoicing/engine/voci.py` | Every code invoicing asks somebody to choose, in words: a family per field (regimes, VAT natures, documents, payments, funds, withholdings, 770 reasons, stamp duty, keeping, channels...), each `Voce` with its name, the line on when it applies and whether a medical centre meets it (`sanita`); `voci()` for a profile, the stored values always kept — pure, tested with plain `unittest` |
@@ -206,6 +206,8 @@ mail clients do not all show an SVG.
 | `crm/invoicing/documento.py` `da_correggere()` + `estensioni.registra_controllo_bozza` (doc 48) | What stops a draft and what is worth saying, for issuing, the preview and the dialog: the document's rules and what a module would refuse later (the Sistema TS's `controlla_bozza`: the document's problems stop, the company's are said) |
 | `crm/invoicing/engine/fatturapa.py` `valida()` | The SdI's own checks on the XML, as its "Elenco dei controlli" (v1.8) states them: `00200` for the schema, `00422` per rate with the fund, `00421` rounded half up; `bloccanti()`/`codice_di()` read the code of a finding, stored too |
 | `crm/invoicing/estensioni.py` | The qualification registers in two tiers: the stored ones (what the practice edits) before every shipped one (`registra_risolutore(..., spedito=True)`), whatever order the modules load in; `QualificaRifiutata` (a switched-off qualification) stops the chain |
+| `crm/invoicing/prova.py` + `Settings/Invoicing/ProviderConnection.vue` (doc 49) | A company starts in test (`provider_environment`): its invoices are test invoices (`test_document`, `segna()` at issue), numbered on their own series (`2026/PROVA-S/1`), with a band on the PDF, the Sistema TS report checked and never sent (`ts_status` `prova`), never a client nor in the area; `go_live` (the centre's manager) when nothing blocks, taking the test invoices away; `back_to_test` (the agency) only without real invoices; `mancanze()`: what is missing, what stops going live, whose it is (the agency's rows only the agency reads). Settings > Invoicing > Test and go live |
+| `crm/invoicing/connessione.py` + `sdi/itala.py` (doc 49) | Itala, the one intermediary offered: its test and production doors by environment (a document's: `ambiente_del_documento`), the agency's account (`CRM Invoicing Settings`, permlevel 1, else `itala_client_id`/`itala_client_secret` in `common_site_config.json`) or a company's own; the company registered under it once per environment (`registra_azienda`, `/aziende`); Itala's file name and id kept on the invoice; the token harvested from Basic calls. The SdI's outcomes asked every ten minutes, only when something waits (`riconciliazione.da_chiedere`) |
 
 A field of invoicing that stores a code never shows it: it goes in `scelte.CAMPI`
 with its family, every value its DocType admits gets a name and a line in the
@@ -219,6 +221,12 @@ An invoice is opened with `useFattura()` (`apriFattura(name)`, `nuovaFattura()`)
 never `/app/crm-invoice`; a sentence of the engine with a value in it is a
 `Messaggio` (an SdI finding a `Rilievo`), never an f-string, and its English is
 in `it.po` by hand: `crm/tests/test_frasi_del_motore.py` checks both.
+What the centre sets up of invoicing is only what is its own: who issues, its
+details, its Sistema TS credentials. The channel, numbering, preservation, the
+Sistema TS's channel and certificate sit on permlevel 1 (the agency's, System
+Manager), and `crm.api.doc.get_fields` never draws a field the user cannot read.
+Anything with a lasting effect (a client, a patient, the area, a report to the
+Sistema TS) leaves a test invoice out (`test_document`); going live takes them away.
 
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |

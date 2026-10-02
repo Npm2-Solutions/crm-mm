@@ -3,7 +3,8 @@
 **Stato:** fatto (02/10/2026). Segue la fattura fatta dentro DottorCloud
 ([47](./47-fattura-dentro-dottorcloud.md)): la finestra dice tutto quello che manca
 prima di emettere; qui il Sistema TS e lo SdI lo dicono anche loro, prima, e in
-italiano.
+italiano. La prova prima di metterla dal vivo e Itala come unico intermediario sono il
+[49](./49-itala-prova-essenziale.md).
 
 ## Il bisogno
 
