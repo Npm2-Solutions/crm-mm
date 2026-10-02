@@ -514,3 +514,80 @@
 .dc-evento--annullato .dc-evento__ora {
   color: var(--ink-gray-5);
 }
+
+/* 13. The mark of a notification: its kind in a whole cloud, the category's
+       subtle under its colour (components/Notifications); small on the corner
+       of the sender's face, ringed by the page; in mint on the toast's block */
+.dc-segno {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 22%;
+  background: var(--surface-gray-2);
+  color: var(--ink-gray-6);
+}
+.dc-segno > svg {
+  width: 16px;
+  height: 16px;
+}
+.dc-segno--brand {
+  background: var(--brand-subtle);
+  color: var(--on-brand-subtle);
+}
+.dc-segno--amber {
+  background: var(--cat-amber-subtle);
+  color: var(--cat-amber-text);
+}
+.dc-segno--blue {
+  background: var(--cat-blue-subtle);
+  color: var(--cat-blue-text);
+}
+.dc-segno--violet {
+  background: var(--cat-violet-subtle);
+  color: var(--cat-violet-text);
+}
+.dc-segno--green {
+  background: var(--cat-green-subtle);
+  color: var(--cat-green-text);
+}
+.dc-segno--rose {
+  background: var(--cat-rose-subtle);
+  color: var(--cat-rose-text);
+}
+.dc-segno--piccolo {
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 0 2px var(--surface-base);
+}
+.dc-segno--piccolo > svg {
+  width: 11px;
+  height: 11px;
+}
+.dc-segno--toast {
+  width: 28px;
+  height: 28px;
+  background: rgba(95, 224, 204, 0.14);
+  color: var(--mint-300);
+}
+
+/* 14. The message a link opened on - a notification's - ringed for a moment in
+       the brand's colour, its own colours untouched, then like the others */
+.dc-segnato {
+  animation: dc-segnato 2.4s ease-out;
+}
+@keyframes dc-segnato {
+  0%,
+  45% {
+    box-shadow: 0 0 0 3px var(--brand-segno, var(--brand));
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dc-segnato {
+    animation: none;
+  }
+}

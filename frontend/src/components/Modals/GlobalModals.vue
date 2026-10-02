@@ -45,4 +45,8 @@ import {
   showAboutModal,
   showChangePasswordModal,
 } from '@/composables/modals'
+import { useAscoltoNotifiche } from '@/composables/notifiche'
+
+// the notifications as they arrive, on the computer and on the phone alike
+useAscoltoNotifiche()
 </script>

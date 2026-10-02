@@ -34,17 +34,19 @@
                 <NotificationsIcon class="size-4 text-ink-gray-7" />
                 <span
                   v-if="isCollapsed && unreadNotificationsCount"
-                  class="absolute -right-1 -top-1 size-1.5 rounded-full bg-surface-gray-9 ring-1 ring-[var(--surface-gray-1)]"
+                  class="absolute -right-1 -top-1 size-1.5 rounded-full bg-[var(--brand-segno)] ring-1 ring-[var(--surface-gray-1)]"
                 />
               </span>
             </template>
+            <!-- what is new, in the brand's subtle as the design system has
+                 its notices of news -->
             <template #suffix>
-              <Badge
+              <span
                 v-if="unreadNotificationsCount"
-                class="mr-2"
-                :label="unreadNotificationsCount"
-                variant="subtle"
-              />
+                class="mr-2 rounded-full bg-[var(--brand-subtle)] px-1.5 text-xs font-medium leading-5 text-[var(--on-brand-subtle)]"
+              >
+                {{ unreadNotificationsCount }}
+              </span>
             </template>
           </SidebarItem>
 

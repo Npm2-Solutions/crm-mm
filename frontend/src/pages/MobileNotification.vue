@@ -1,4 +1,7 @@
-<!-- eslint-disable vue/no-v-html -->
+<!--
+  The notifications on a phone: the same list as the panel, a page of its own
+  (docs/progetto-ghl/43-notifiche.md).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -10,104 +13,56 @@
     </template>
     <template #right-header>
       <Button
+        v-if="unreadNotificationsCount && scheda !== 'events'"
+        variant="ghost"
         :tooltip="__('Mark all as read')"
-        :label="__('Mark all as read')"
-        :iconLeft="MarkAsDoneIcon"
-        @click="() => mark_as_read.reload()"
-      />
+        :aria-label="__('Mark all as read')"
+        @click="segnaTutte"
+      >
+        <template #icon><LucideCheckCheck class="size-4" /></template>
+      </Button>
     </template>
   </LayoutHeader>
   <!-- the empty state centres in what is below the header, not in 106px -->
-  <div class="flex flex-1 flex-col overflow-hidden text-ink-gray-9">
-    <div
-      v-if="notifications.data?.length"
-      class="divide-y divide-outline-gray-1 overflow-y-auto text-base"
-    >
-      <RouterLink
-        v-for="n in notifications.data"
-        :key="n.comment"
-        :to="getRoute(n)"
-        class="flex cursor-pointer items-start gap-3 px-2.5 py-3 hover:bg-surface-gray-2"
-        @click="mark_doc_as_read(n.comment || n.notification_type_doc)"
-      >
-        <div class="mt-1 flex items-center gap-2.5">
-          <div
-            class="size-[5px] rounded-full"
-            :class="[n.read ? 'bg-transparent' : 'bg-surface-gray-10']"
-          />
-          <WhatsAppIcon v-if="n.type == 'WhatsApp'" class="size-7" />
-          <UserAvatar v-else :user="n.from_user.name" size="lg" />
-        </div>
-        <div>
-          <div
-            v-if="n.notification_text"
-            v-html="sanitizeHTML(n.notification_text)"
-          />
-          <div v-else class="mb-2 leading-5 text-ink-gray-5">
-            {{
-              n.reference_doctype == 'deal'
-                ? __('{0} mentioned you in a comment on the deal {1}', [
-                    n.from_user.full_name,
-                    n.reference_name,
-                  ])
-                : __('{0} mentioned you in a comment on {1}', [
-                    n.from_user.full_name,
-                    n.reference_name,
-                  ])
-            }}
-          </div>
-          <div class="text-sm text-ink-gray-5">
-            {{ __(timeAgo(n.creation)) }}
-          </div>
-        </div>
-      </RouterLink>
+  <div class="flex min-h-0 flex-1 flex-col text-ink-gray-9">
+    <div class="px-3 pb-1 pt-2">
+      <TabButtons
+        v-model="scheda"
+        :buttons="schede"
+        class="[&_button]:w-full [&_div]:w-full [&_button>span]:w-full"
+      />
     </div>
-    <div v-else class="flex flex-1 flex-col items-center justify-center gap-2">
-      <NotificationsIcon class="h-20 w-20 text-ink-gray-2" />
-      <div class="text-lg-medium text-ink-gray-4">
-        {{ __('No New Notifications') }}
-      </div>
-    </div>
+    <EventNotificationsArea v-if="scheda === 'events'" />
+    <NotificationsList v-else />
   </div>
 </template>
+
 <script setup>
+import EventNotificationsArea from '@/components/EventNotificationsArea.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
-import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
-import MarkAsDoneIcon from '@/components/Icons/MarkAsDoneIcon.vue'
-import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
-import UserAvatar from '@/components/UserAvatar.vue'
-import { notifications, notificationsStore } from '@/stores/notifications'
-import { globalStore } from '@/stores/global'
-import { timeAgo, sanitizeHTML } from '@/utils'
-import { Breadcrumbs } from 'frappe-ui'
-import { onMounted, onBeforeUnmount } from 'vue'
+import NotificationsList from '@/components/Notifications/NotificationsList.vue'
+import {
+  notificationsStore,
+  unreadNotificationsCount,
+} from '@/stores/notifications'
+import { Breadcrumbs, TabButtons } from 'frappe-ui'
+import { computed, ref } from 'vue'
+import LucideCheckCheck from '~icons/lucide/check-check'
 
-const { $socket } = globalStore()
-const { mark_as_read, mark_doc_as_read } = notificationsStore()
+const store = notificationsStore()
+const { scegli, segnaTutte } = store
 
-onBeforeUnmount(() => {
-  $socket.off('crm_notification')
+const eventi = ref(false)
+const scheda = computed({
+  get: () => (eventi.value ? 'events' : store.filtro),
+  set: (valore) => {
+    eventi.value = valore === 'events'
+    if (!eventi.value) scegli(valore)
+  },
 })
-
-onMounted(() => {
-  $socket.on('crm_notification', () => {
-    notifications.reload()
-  })
-})
-
-function getRoute(notification) {
-  let params = {
-    leadId: notification.reference_name,
-  }
-  if (notification.route_name === 'Deal') {
-    params = {
-      dealId: notification.reference_name,
-    }
-  }
-  return {
-    name: notification.route_name,
-    params: params,
-    hash: '#' + notification.comment || notification.notification_type_doc,
-  }
-}
+const schede = computed(() => [
+  { label: __('All', null, 'Notifications'), value: 'all' },
+  { label: __('Unread'), value: 'unread' },
+  { label: __('Events'), value: 'events' },
+])
 </script>

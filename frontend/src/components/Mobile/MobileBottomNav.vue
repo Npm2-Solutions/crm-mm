@@ -8,12 +8,27 @@
       :icon="tab.icon"
       :active="activeTab === tab.key"
     />
+    <!-- the notifications are behind "More": a dot says something is new -->
     <MobileNavItem
       :label="__('More')"
-      :icon="MenuIcon"
       :active="mobileSidebarOpened"
       @click="mobileSidebarOpened = true"
-    />
+    >
+      <template #default="{ active }">
+        <span class="relative">
+          <MenuIcon
+            class="size-6"
+            :class="active ? 'text-ink-gray-8' : 'text-ink-gray-5'"
+            aria-hidden="true"
+          />
+          <span
+            v-if="unreadNotificationsCount"
+            class="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-[var(--brand-segno)] ring-2 ring-[var(--surface-base)]"
+            :aria-label="__('Unread notifications')"
+          />
+        </span>
+      </template>
+    </MobileNavItem>
   </MobileNav>
 </template>
 
@@ -21,6 +36,7 @@
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
 import MenuIcon from '@/components/Icons/MenuIcon.vue'
 import { mobileSidebarOpened } from '@/composables/settings'
+import { unreadNotificationsCount } from '@/stores/notifications'
 import { callEnabled } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
 import { barraDelTelefono, menuDi } from '@/utils/menu'
