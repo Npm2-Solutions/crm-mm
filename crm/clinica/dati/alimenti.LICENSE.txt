@@ -1,0 +1,28 @@
+Table de composition nutritionnelle des aliments Ciqual 2025
+================================================================
+
+Source: Anses. 2025. Ciqual French food composition table.
+https://ciqual.anses.fr/ - https://doi.org/10.5281/zenodo.17550133
+Version of 3 November 2025, sheet in English ("Table Ciqual 2025_ENG_2025_11_03"),
+taken on 2 October 2026.
+
+The data are reused under the Licence Ouverte / Open Licence of Etalab
+(https://www.etalab.gouv.fr/licence-ouverte-open-licence/), as the French Agency
+for Food, Environmental and Occupational Health & Safety (ANSES) makes them
+available: the source and the date of the version are mentioned with them, their
+sense is not altered, and the reuser alone is responsible for the reuse.
+
+What NPM2 Solutions Srl derived from them, as the licence allows:
+
+- the names of the foods translated into Italian by NPM2 Solutions Srl (`name`);
+  ANSES's English name is kept beside each one (`name_en`);
+- of each food, only energy (kcal, Regulation EU 1169/2011), proteins,
+  carbohydrates, fats and fibre for 100 g; where the table gives no energy, it is
+  computed from the nutrients with the factors of the Regulation EU 1169/2011
+  (`kcal_computed`);
+- "traces" and values under the limit of quantification count as 0; a value the
+  table does not give stays empty;
+- each food in one of the library's groups, from CIQUAL's categories.
+
+The numbers are ANSES's. ANSES does not endorse DottorCloud and is not
+responsible for this reuse.

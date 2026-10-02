@@ -2,23 +2,32 @@
 # For license information, please see license.txt
 
 """The clinic's foods, the library its diets are written with (design.md, "I piani";
-ricerca-design.md §2.3), in Settings > Clinic > Foods. The exercises are the CRM's
-(`crm.piani.librerie`), and so is what every library shares.
+ricerca-design.md §2.3), in Settings > Clients > Libraries. The exercises are the
+CRM's (`crm.piani.librerie`), and so is what every library shares.
 
 - **Who** (`piani.librerie`): the manager and the medical director; a
   practitioner when the manager turns it on - the nutritionist who keeps the
   foods. Whoever writes a diet still adds a food from the editor.
-- **A food table** (`tabelle`): CIQUAL, free (Licence Ouverte); BDA-IEO with the
-  licence for commercial software; CREA with its written permission; USDA, public
-  domain. The sheet is read on the server, its columns and its categories shown
-  to check, the foods chosen - all, or the ones the Italian tables lack - and the
-  import says who declared which licence (`CRM Library Import`).
-- **Imported again**, a table updates its numbers; the words the centre changed -
-  a name in Italian, a group - stay the centre's. A food is switched off, not
-  deleted: a plan may point to it.
+- **The library** DottorCloud ships (`dati/alimenti.json`, made by
+  `tabelle.libreria_ciqual`): the 3,403 foods of CIQUAL 2025 that have their
+  energy, free under the Licence Ouverte, with their names in Italian, ready on
+  every site. `carica_libreria` puts it in at install and at every migrate that
+  brings a new version of the file. The centre never imports a table: an Italian
+  one (BDA-IEO with the licence for software, CREA with the written permission)
+  NPM2 adds to the library in the code.
+- **Loaded again**, the library brings its numbers; the words the centre changed -
+  a name, a group, a portion - stay the centre's, and a name the centre never
+  touched follows the library's (`library_name` keeps the one it gave). The centre
+  adds its own foods. A food is switched off, not deleted: a plan may point to it.
+- **A number the table does not give** counts as nothing: the site keeps a number.
+  A food without its energy is not in the library.
 """
 
 from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
 
 import frappe
 from frappe import _
@@ -29,23 +38,14 @@ from crm.permissions import livelli
 from crm.piani import librerie as L
 
 CIBO = "Clinic Food"
-CIBI = "Foods"
 CENTRO = L.CENTRO
-FONTI = ("CIQUAL", "CREA", "BDA-IEO", "USDA")
-#: What each source asks to be shown with its numbers, as the import proposes it.
-ATTRIBUZIONI = {
-	"CIQUAL": "ANSES-CIQUAL 2020, Licence Ouverte",
-	"CREA": "CREA, Tabelle di composizione degli alimenti",
-	"BDA-IEO": "BDA-IEO, Banca Dati di Composizione degli Alimenti",
-	"USDA": "USDA FoodData Central, public domain",
-}
-#: The sources whose numbers a centre uses only with a licence or a written
-#: permission: the import asks who declares it.
-CON_LICENZA = {
-	"CREA": "The centre has the written permission of CREA to use its tables",
-	"BDA-IEO": "The centre has the licence of BDA-IEO for commercial software",
-}
-MAX_ANTEPRIMA = 5000
+#: The library DottorCloud ships, and the table it comes from.
+LIBRERIA = Path(__file__).parent / "dati" / "alimenti.json"
+FONTE = "CIQUAL"
+#: What the licence asks to be shown with the numbers: the source and its version.
+ATTRIBUZIONE = "Anses. 2025. Ciqual French food composition table"
+#: The fingerprint of the library a site last loaded (a default of the site).
+VERSIONE_CARICATA = "crm_food_library"
 
 
 # ------------------------------------------------------------------ reading the library
@@ -76,30 +76,27 @@ def get_foods(
 ) -> dict:
 	"""A page of the foods, searched and filtered, with how many come from where."""
 	livelli.verifica("piani.librerie")
-	return {
-		**L.pagina(
-			CIBO,
-			"food_name",
-			CAMPI_CIBO,
-			L.filtri_della_pagina("food_group", group, source, enabled),
-			text,
-			start,
-		),
-		"imports": L.importazioni(CIBI),
-	}
+	return L.pagina(
+		CIBO,
+		"food_name",
+		CAMPI_CIBO,
+		L.filtri_della_pagina("food_group", group, source, enabled),
+		text,
+		start,
+	)
 
 
-# ------------------------------------------------------------------ correcting
+# ------------------------------------------------------------------ correcting, adding
 
 
 @frappe.whitelist(methods=["POST"])
-def save_food(name: str, data: dict | str) -> dict:
-	"""A food of the library corrected: its name in the centre's words, its group,
-	its portion, on or off. A table's numbers stay the table's; the centre's own
-	food has its numbers written here."""
+def save_food(name: str | None = None, data: dict | str | None = None) -> dict:
+	"""A food of the library put right, or a new one of the centre's: its name in
+	the centre's words, its group, its portion, on or off. The library's numbers
+	stay the library's; the centre's own food has its numbers written here."""
 	livelli.verifica("piani.librerie")
 	dati = frappe.parse_json(data) if isinstance(data, str) else (data or {})
-	doc = frappe.get_doc(CIBO, name)
+	doc = frappe.get_doc(CIBO, name) if name else frappe.new_doc(CIBO)
 	nome = (dati.get("food_name") or "").strip()
 	if not nome:
 		frappe.throw(_("A food has a name"))
@@ -109,155 +106,63 @@ def save_food(name: str, data: dict | str) -> dict:
 	doc.food_group = dati["food_group"]
 	doc.portion_g = flt(dati.get("portion_g")) or None
 	doc.enabled = 1 if cint(dati.get("enabled", 1)) else 0
+	if not name:
+		doc.source = CENTRO
 	if (doc.source or CENTRO) == CENTRO:
 		for campo in T.VALORI:
 			valore = dati.get(campo)
 			doc.set(campo, flt(valore) if valore not in (None, "") else None)
 		doc.kcal_computed = 0
 		doc.source_note = (dati.get("source_note") or "").strip()[:140] or None
-	doc.save(ignore_permissions=True)
+	if name:
+		doc.save(ignore_permissions=True)
+	else:
+		doc.insert(ignore_permissions=True)
 	return frappe.get_all(CIBO, filters={"name": doc.name}, fields=CAMPI_CIBO)[0]
 
 
-# ------------------------------------------------------------------ a food table
+# ------------------------------------------------------------------ the library DottorCloud ships
 
 
-def _mappa(mapping, intestazioni: list) -> dict:
-	"""The columns the person chose, over the recognised ones: an index per field,
-	the group one or more."""
-	riconosciuta = T.riconosci(intestazioni)
-	if not mapping:
-		return riconosciuta
-	scelta = frappe.parse_json(mapping) if isinstance(mapping, str) else mapping
-	mappa: dict = {}
-	for campo in T.CIBO_CAMPI:
-		valore = scelta.get(campo)
-		indici = valore if isinstance(valore, list) else [valore]
-		indici = [cint(i) for i in indici if i not in (None, "") and 0 <= cint(i) < len(intestazioni)]
-		if not indici:
-			continue
-		mappa[campo] = indici if campo == "group" else indici[0]
-	if riconosciuta.get("carbs_with_fibre") and mappa.get("carbs_g") == riconosciuta.get("carbs_g"):
-		mappa["carbs_with_fibre"] = True
-	return mappa
-
-
-def _leggi_tabella(file_url: str, mapping=None) -> dict:
-	file, contenuto = L.file_caricato(file_url)
-	try:
-		righe = T.leggi_foglio(file.file_name or file_url, contenuto)
-	except Exception:
-		frappe.throw(_("This file is not a table that can be read: an Excel sheet or a CSV"))
-	if len(righe) > T.MAX_RIGHE:
-		frappe.throw(_("A table of at most {0} rows").format(T.MAX_RIGHE))
-	indice = T.trova_intestazione(righe)
-	if indice is None:
-		frappe.throw(
-			_(
-				"The columns were not recognised: the table needs a row with the name of the food and its values"
-			)
+def carica(record: list, lingua: str | None = None) -> dict:
+	"""The library's foods into the site: a new food comes in; one already there
+	from CIQUAL - the library loaded before, or a table a centre imported - gets
+	the library's numbers again. Its name follows the library's while the centre
+	never changed it; a name, a group and a portion the centre wrote stay."""
+	lingua = lingua or L.lingua_del_sito()
+	presenti = {
+		riga.source_code: riga
+		for riga in frappe.get_all(
+			CIBO,
+			filters={"source": FONTE},
+			fields=["name", "source_code", "food_name", "name_in_source", "library_name"],
+			limit=100000,
 		)
-	intestazioni = ["" if c is None else str(c) for c in righe[indice]]
-	mappa = _mappa(mapping, intestazioni)
-	if "name" not in mappa:
-		frappe.throw(_("Say which column holds the name of the food"))
-	lingua = T.lingua_delle_colonne(intestazioni)
-	letti = T.alimenti(righe[indice + 1 :], mappa, lingua)
-	return {
-		"file": file,
-		"columns": intestazioni,
-		"mapping": mappa,
-		"language": lingua,
-		"guess": T.fonte_probabile(intestazioni),
-		"rows_read": max(len(righe) - indice - 1, 0),
-		**letti,
+		if riga.source_code
 	}
-
-
-def _chiave(cibo: dict) -> str:
-	return cibo["code"] or "name:" + T.normalizza(cibo["name"])
-
-
-def _presenti(fonte: str) -> dict[str, str]:
-	"""The foods already in the library from ``fonte``, by their key in the table."""
-	presenti = {}
-	for riga in frappe.get_all(
-		CIBO, filters={"source": fonte}, fields=["name", "source_code", "name_in_source"], limit=100000
-	):
-		if riga.source_code:
-			presenti[riga.source_code] = riga.name
-		if riga.name_in_source:
-			presenti.setdefault("name:" + T.normalizza(riga.name_in_source), riga.name)
-	return presenti
-
-
-@frappe.whitelist(methods=["POST"])
-def preview_foods(file_url: str, source: str | None = None, mapping: dict | str | None = None) -> dict:
-	"""A food table as it would be imported: the columns recognised, each category
-	with its group, the foods, which are already in the library."""
-	livelli.verifica("piani.librerie")
-	letta = _leggi_tabella(file_url, mapping)
-	fonte = source if source in FONTI else letta["guess"]
-	presenti = _presenti(fonte) if fonte else {}
-	cibi = letta["foods"]
-	return {
-		"columns": letta["columns"],
-		"mapping": letta["mapping"],
-		"language": letta["language"],
-		"source": fonte,
-		"attribution": ATTRIBUZIONI.get(fonte or ""),
-		"licence": CON_LICENZA.get(fonte or ""),
-		"categories": T.categorie(cibi),
-		"foods": [
-			{**cibo, "key": _chiave(cibo), "known": _chiave(cibo) in presenti}
-			for cibo in cibi[:MAX_ANTEPRIMA]
-		],
-		"total": len(cibi),
-		"rows_read": letta["rows_read"],
-		"without_name": letta["without_name"],
-		"without_values": letta["without_values"],
-		"twice": letta["twice"],
-		"dropped_values": letta["dropped_values"],
-		"computed": sum(1 for cibo in cibi if cibo["kcal_computed"]),
-	}
-
-
-@frappe.whitelist(methods=["POST"])
-def import_foods(
-	file_url: str,
-	source: str,
-	attribution: str | None = None,
-	mapping: dict | str | None = None,
-	groups: dict | str | None = None,
-	keys: list | str | None = None,
-	licence: int = 0,
-) -> dict:
-	"""The foods of a table into the library: the ones chosen, or all. A food
-	already there from the same table gets the table's numbers again; its name,
-	group and portion stay as the centre left them."""
-	livelli.verifica("piani.librerie")
-	if source not in FONTI:
-		frappe.throw(_("Choose the table the file comes from"))
-	dichiarazione = CON_LICENZA.get(source)
-	if dichiarazione and not cint(licence):
-		frappe.throw(_("Tick that the centre may use this table: {0}").format(_(dichiarazione)))
-	letta = _leggi_tabella(file_url, mapping)
-	scelte = frappe.parse_json(groups) if isinstance(groups, str) else groups
-	cibi = T.applica_gruppi(letta["foods"], scelte)
-	if keys is not None:
-		volute = set(frappe.parse_json(keys) if isinstance(keys, str) else keys)
-		cibi = [cibo for cibo in cibi if _chiave(cibo) in volute]
-	if not cibi:
-		frappe.throw(_("Choose at least one food"))
-	attribuzione = (attribution or "").strip()[:140] or ATTRIBUZIONI[source]
-	presenti = _presenti(source)
-	nuovi, aggiornati = [], {}
-	for cibo in cibi:
-		numeri = {campo: cibo[campo] for campo in T.VALORI}
-		numeri["kcal_computed"] = 1 if cibo["kcal_computed"] else 0
-		esistente = presenti.get(_chiave(cibo))
+	nuovi, aggiornati, visti = [], {}, set()
+	scartati = 0
+	for voce in record:
+		cibo = T.dalla_libreria(voce, lingua)
+		if not cibo or cibo["code"] in visti:
+			scartati += 1
+			continue
+		visti.add(cibo["code"])
+		# what the table does not give counts as nothing: the site keeps a number
+		numeri = {campo: cibo[campo] or 0 for campo in (*T.VALORI, "kcal_computed")}
+		esistente = presenti.get(cibo["code"])
 		if esistente:
-			aggiornati[esistente] = {**numeri, "source_note": attribuzione}
+			cambi = {
+				**numeri,
+				"name_in_source": cibo["name_in_source"],
+				"library_name": cibo["name"],
+				"source_note": ATTRIBUZIONE,
+			}
+			# a name the centre never changed - the library's, or the one of a table
+			# it imported before - becomes the library's
+			if (esistente.food_name or "") in (esistente.library_name, esistente.name_in_source):
+				cambi["food_name"] = cibo["name"]
+			aggiornati[esistente.name] = cambi
 			continue
 		nuovi.append(
 			{
@@ -265,24 +170,25 @@ def import_foods(
 				"food_group": cibo["group"],
 				"enabled": 1,
 				**numeri,
-				"source": source,
+				"source": FONTE,
 				"source_code": cibo["code"],
-				"name_in_source": cibo["name"],
-				"source_note": attribuzione,
+				"name_in_source": cibo["name_in_source"],
+				"library_name": cibo["name"],
+				"source_note": ATTRIBUZIONE,
 			}
 		)
 	L.inserisci(CIBO, nuovi)
 	frappe.db.bulk_update(CIBO, aggiornati, chunk_size=200)
-	lasciati = letta["without_name"] + letta["without_values"] + letta["twice"]
-	registro = L.registra_importazione(
-		CIBI,
-		source,
-		attribuzione,
-		letta["file"].file_name,
-		licence=_(dichiarazione) if dichiarazione else None,
-		rows_read=letta["rows_read"],
-		created_count=len(nuovi),
-		updated_count=len(aggiornati),
-		skipped_count=lasciati,
-	)
-	return {"created": len(nuovi), "updated": len(aggiornati), "skipped": lasciati, "import": registro}
+	return {"created": len(nuovi), "updated": len(aggiornati), "skipped": scartati}
+
+
+def carica_libreria(forza: bool = False) -> dict | None:
+	"""The library DottorCloud ships, into this site: at install, and at every
+	migrate whose file is not the one the site loaded last."""
+	contenuto = LIBRERIA.read_bytes()
+	impronta = hashlib.sha256(contenuto).hexdigest()
+	if not forza and frappe.db.get_default(VERSIONE_CARICATA) == impronta:
+		return None
+	fatto = carica(json.loads(contenuto))
+	frappe.db.set_default(VERSIONE_CARICATA, impronta)
+	return fatto

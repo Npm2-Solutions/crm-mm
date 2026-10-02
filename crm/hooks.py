@@ -149,7 +149,11 @@ setup_wizard_complete = "crm.demo.api.create_demo_data"
 # ------------
 
 before_install = "crm.install.before_install"
-after_install = "crm.install.after_install"
+after_install = [
+	"crm.install.after_install",
+	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
+	"crm.clinica.librerie.carica_libreria",
+]
 
 # a migrate syncs the modules of this release, whatever map a worker left in the cache
 before_migrate = ["crm.migrazione.mappa_dei_moduli"]
@@ -718,8 +722,9 @@ after_migrate = [
 	"crm.clinica.cartella.proteggi_registro_accessi",
 	# the core documents the Manager's pages write: templates, rules, imports
 	"crm.permissions.documenti.concedi_documenti_del_core",
-	# the exercise library DottorCloud ships, when its file is a new one
+	# the exercise and food libraries DottorCloud ships, when their file is a new one
 	"crm.piani.librerie.carica_libreria",
+	"crm.clinica.librerie.carica_libreria",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)
