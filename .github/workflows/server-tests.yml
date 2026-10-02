@@ -53,9 +53,6 @@ jobs:
                   python-version: "3.14"
                   node-version: "24"
                   type: "server"
-                  # never installed on frappe 16: its test bootstrap does not survive a
-                  # bare bench. The erpnext integration is covered by its own tests.
-                  install-erpnext: false
                   frappe-branch: ${{ matrix.frappe-branch }}
 
             - name: Run server tests
