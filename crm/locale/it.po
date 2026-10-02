@@ -37601,6 +37601,14 @@ msgstr "Un PDF al paziente, la spesa al Sistema TS: mai attraverso lo SdI."
 msgid "A PDF, and nothing transmitted."
 msgstr "Un PDF, e nessuna trasmissione."
 
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "ASL code"
+msgstr "Codice ASL"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "At most 20 characters: letters, digits and _ . / - (what the Sistema TS accepts). Checked at the first document."
+msgstr "Al massimo 20 caratteri: lettere, cifre e _ . / - (quelli che il Sistema TS accetta). Controllato al primo documento."
+
 #: crm/invoicing/engine/voci.py
 msgid "Card, bank transfer, cheque: a traceable method."
 msgstr "Carta, bonifico, assegno: un mezzo tracciabile."
@@ -37609,14 +37617,210 @@ msgstr "Carta, bonifico, assegno: un mezzo tracciabile."
 msgid "Cash, even only in part."
 msgstr "Contanti, anche solo in parte."
 
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Category for the Sistema TS"
+msgstr "Categoria per il Sistema TS"
+
+#: crm/invoicing/doctype/crm_service_provider/crm_service_provider.json
+msgid "Confirming it is not a formality: it decides the expense type and the VAT. In a shared calendar a wrong one gives no error, it gives rejected rows in January."
+msgstr "Confermarla non è una formalità: decide il tipo di spesa e l'IVA. In un'agenda condivisa una qualifica sbagliata non dà errori: dà righe scartate a gennaio."
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Contribution rate"
+msgstr "Aliquota del contributo"
+
+#: crm/invoicing/doctype/crm_invoice_item/crm_invoice_item.json
+msgid "Covered by a voucher or a bonus: reported as Other expenses, because it did not stay at the taxpayer's expense."
+msgstr "Coperta da un buono o da un bonus: comunicata come Altre spese, perché non è rimasta a carico del contribuente."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Downloading the file needs nothing and works from the first day; PEC and the provider each need setting up, and the list at the top says what is missing."
+msgstr "Scaricare il file non richiede nulla e funziona dal primo giorno; la PEC e il provider vanno configurati, e l'elenco in alto dice cosa manca."
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Electronic invoice (SdI)"
+msgstr "Fattura elettronica (SdI)"
+
+#: crm/invoicing/doctype/crm_billable_service/crm_billable_service.json
+msgid "Expense type (Sistema TS)"
+msgstr "Tipo di spesa (Sistema TS)"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Facility code (SSA)"
+msgstr "Codice struttura (SSA)"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "For a professional invoicing in their own name: the invoice wants first name and surname, not a company name."
+msgstr "Per un professionista che fattura a proprio nome: la fattura vuole nome e cognome, non una denominazione."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "From the official kit. It expires and is reissued: with an expired one every report is refused, silently."
+msgstr "Dal kit ufficiale. Scade e viene riemesso: con uno scaduto ogni invio viene rifiutato, senza avvisi."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Healthcare invoices to a private person never go through the SdI, so the Agenzia's free service cannot keep them: born electronic, they need a preservation service of their own. Or go back to the paper original."
+msgstr "Le fatture sanitarie a una persona fisica non passano mai dallo SdI, quindi il servizio gratuito dell'Agenzia non può conservarle: se nascono elettroniche serve un servizio di conservazione a parte. Oppure si torna all'originale cartaceo."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "How expenses reach the Sistema TS"
+msgstr "Come arrivano le spese al Sistema TS"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "How invoices reach the SdI"
+msgstr "Come arrivano le fatture allo SdI"
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "How the stamp duty is paid"
+msgstr "Come si paga il bollo"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "In test nothing reaches the SdI or the client: it is where to start, so the first real invoice is not the first test. Every document keeps the environment it left through."
+msgstr "In prova nulla arriva allo SdI né al cliente: si parte da qui, così la prima fattura vera non è la prima prova. Ogni documento ricorda l'ambiente da cui è partito."
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "It decides where the invoice goes before anything else does."
+msgstr "Decide dove va la fattura, prima di ogni altra cosa."
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "It decides which expense types can be used."
+msgstr "Decide quali tipi di spesa si possono usare."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "It decides which expense types the invoices can carry: in a facility it is the facility, not the professional who performed."
+msgstr "Decide quali tipi di spesa possono avere le fatture: in una struttura conta la struttura, non il professionista che ha eseguito la prestazione."
+
 #: crm/invoicing/engine/voci.py
 msgid "Not applicable"
 msgstr "Non applicabile"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Not asked for: the Sistema TS's answer to the first report says it."
+msgstr "Non si chiede: lo dice la risposta del Sistema TS al primo invio."
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Not for a fund's mandatory contribution; yes for the INPS 4% re-charge, which counts as fee."
+msgstr "No per il contributo obbligatorio di una cassa; sì per la rivalsa INPS del 4%, che è compenso."
 
 #: crm/invoicing/engine/voci.py
 msgid "Not traced"
 msgstr "Non tracciato"
 
+#: crm/invoicing/doctype/crm_billable_service/crm_billable_service.json
+msgid "Only when the line carries no VAT for a reason other than the healthcare exemption, which sets itself. Never guessed."
+msgstr "Solo quando la riga è senza IVA per un motivo diverso dall'esenzione sanitaria, che si imposta da sola. Non viene mai indovinato."
+
+#: crm/invoicing/doctype/crm_billable_service/crm_billable_service.json
+msgid "Particular case (Sistema TS)"
+msgstr "Caso particolare (Sistema TS)"
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Payment method"
+msgstr "Modalità di pagamento"
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Payment terms"
+msgstr "Condizioni di pagamento"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Provider name"
+msgstr "Nome del provider"
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Recipient"
+msgstr "Destinatario"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Region code"
+msgstr "Codice regione"
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Ris. AdE 9/2026 settled osteopath, chiropractor and kinesiologist: always through the SdI. Blocking one of those is the mistake in reverse."
+msgstr "La Ris. AdE 9/2026 ha chiarito osteopata, chiropratico e chinesiologo: sempre attraverso lo SdI. Bloccarne uno è l'errore al contrario."
+
 #: crm/invoicing/engine/voci.py
 msgid "Sent through the SdI."
 msgstr "Inviata attraverso lo SdI."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Shareholders"
+msgstr "Soci"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Sistema TS certificate (SanitelCF.cer)"
+msgstr "Certificato del Sistema TS (SanitelCF.cer)"
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Sistema TS operation"
+msgstr "Operazione Sistema TS"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Tax regime"
+msgstr "Regime fiscale"
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "The exemption needs both a health profession and a healthcare service: a service can narrow it, never widen it."
+msgstr "L'esenzione vuole insieme una professione sanitaria e una prestazione sanitaria: una prestazione può restringerla, mai allargarla."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The fund whose contribution goes on the invoice, if any."
+msgstr "La cassa il cui contributo va in fattura, se c'è."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The intermediary's tax code and Entratel office, for example 07874631000-000."
+msgstr "Codice fiscale e sede telematica Entratel dell'intermediario, per esempio 07874631000-000."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The invoices that never go through the SdI: a healthcare service to a private person, a document given only as a PDF (Circolare 18/E 2014)."
+msgstr "Le fatture che non passano mai dallo SdI: una prestazione sanitaria a una persona fisica, un documento dato solo in PDF (Circolare 18/E 2014)."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The name on the invoice: the company's, or the practice's for a professional."
+msgstr "Il nome in fattura: quello della società, o dello studio per un professionista."
+
+#: crm/invoicing/doctype/crm_invoice_item/crm_invoice_item.json
+msgid "Unit price"
+msgstr "Prezzo unitario"
+
+#: crm/invoicing/doctype/crm_billable_service/crm_billable_service.json
+msgid "What the patient's tax return reads. It follows who issues the invoice: a health professional invoicing in their own name has only one, and it needs no choosing."
+msgstr "Quello che legge la dichiarazione dei redditi del paziente. Dipende da chi emette la fattura: un professionista sanitario che fattura a proprio nome ne ha uno solo, e non c'è da sceglierlo."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Where the provider takes the expense file. The provider accepting it is not the Sistema TS accepting it: a report reads as sent until the real outcome comes back."
+msgstr "Dove il provider riceve il file delle spese. Che il provider lo accetti non vuol dire che il Sistema TS lo accolga: un invio resta «inviato» finché non torna l'esito vero."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Who issues, for the Sistema TS"
+msgstr "Chi emette, per il Sistema TS"
+
+#: crm/invoicing/doctype/crm_billable_service/crm_billable_service.json
+msgid "Why there is no VAT"
+msgstr "Perché non c'è IVA"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "With incoming invoices too, the ones your suppliers send are filed here: a register of what arrived, not accounts (no matching, no approval). Turn it on only where somebody will read them."
+msgstr "Con le fatture in entrata, quelle che ti mandano i fornitori vengono archiviate qui: un registro di ciò che è arrivato, non una contabilità (niente abbinamenti, niente approvazioni). Attivalo solo se qualcuno le leggerà."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "With the ASL and facility codes, the Codice Proprietario that a facility, a pharmacy or an optician reports with."
+msgstr "Con i codici ASL e struttura, forma il Codice Proprietario con cui comunicano una struttura, una farmacia o un ottico."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "With the centre's own credentials no document costs anything to report. The credentials belong to the centre and are entered by the centre."
+msgstr "Con le credenziali del centro nessun documento costa nulla da comunicare. Le credenziali sono del centro e le inserisce il centro."
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Withholding rate"
+msgstr "Aliquota della ritenuta"
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Withholding reason (Modello 770)"
+msgstr "Causale della ritenuta (Modello 770)"
+
+#: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
+msgid "Withholding type"
+msgstr "Tipo di ritenuta"
+
+#: crm/invoicing/doctype/crm_service_provider/crm_service_provider.json
+msgid "Professional qualification"
+msgstr "Qualifica professionale"

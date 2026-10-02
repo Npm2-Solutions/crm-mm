@@ -26,7 +26,7 @@
   {
    "fieldname": "identity_section",
    "fieldtype": "Section Break",
-   "label": "Provider"
+   "label": "Professional"
   },
   {
    "fieldname": "provider_name",
@@ -36,11 +36,11 @@
    "reqd": 1
   },
   {
-   "description": "Confirming this is not a formality: it decides the tipoSpesa and the VAT regime. In a shared calendar a wrong assignment produces no error, it produces rejected rows in January.",
+   "description": "Confirming it is not a formality: it decides the expense type and the VAT. In a shared calendar a wrong one gives no error, it gives rejected rows in January.",
    "fieldname": "qualification",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Qualification",
+   "label": "Professional qualification",
    "options": "CRM Professional Qualification",
    "reqd": 1
   },
@@ -111,7 +111,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Service Provider",

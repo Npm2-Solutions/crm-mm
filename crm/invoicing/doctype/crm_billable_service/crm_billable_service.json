@@ -135,10 +135,10 @@
    "label": "VAT rate"
   },
   {
-   "description": "Set it when the line carries no VAT for a reason other than the art. 10 exemption: reverse charge, out of scope, non-taxable. Never guessed.",
+   "description": "Only when the line carries no VAT for a reason other than the healthcare exemption, which sets itself. Never guessed.",
    "fieldname": "vat_nature",
    "fieldtype": "Select",
-   "label": "Natura",
+   "label": "Why there is no VAT",
    "options": "\nN1\nN2.1\nN2.2\nN3.1\nN3.2\nN3.3\nN3.4\nN3.5\nN3.6\nN4\nN5\nN6.1\nN6.2\nN6.3\nN6.4\nN6.5\nN6.6\nN6.7\nN6.8\nN6.9\nN7"
   },
   {
@@ -154,10 +154,10 @@
    "label": "Sistema TS"
   },
   {
-   "description": "TK Ticket (quota fissa e/o di partecipazione al costo) · FC Farmaco, anche omeopatico, e dispositivo medico CE · FV Farmaco per uso veterinario · AD Acquisto o affitto di dispositivo medico CE · AS Spesa sanitaria relativa ad assistenza domiciliare integrata · SR Spesa prestazione sanitaria: intramoenia · CT Spesa per certificazione medica · PI Spesa prestazione sanitaria: protesica e integrativa · IC Spesa per dispositivi, chirurgia estetica e altre prestazioni · AA Altre spese - quota NON a carico del contribuente o spesa non sanitaria · SP Spesa prestazione sanitaria del professionista sanitario (DM 8/8/2018) · SV Spesa veterinaria",
+   "description": "What the patient's tax return reads. It follows who issues the invoice: a health professional invoicing in their own name has only one, and it needs no choosing.",
    "fieldname": "ts_expense_type",
    "fieldtype": "Select",
-   "label": "tipoSpesa",
+   "label": "Expense type (Sistema TS)",
    "options": "\nTK\nFC\nFV\nAD\nAS\nSR\nCT\nPI\nIC\nAA\nSP\nSV"
   },
   {
@@ -165,10 +165,9 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "1 only with TK (emergency room), 2 only with SR (intramoenia).",
    "fieldname": "ts_expense_flag",
    "fieldtype": "Select",
-   "label": "flagTipoSpesa",
+   "label": "Particular case (Sistema TS)",
    "options": "\n1\n2"
   },
   {
@@ -217,7 +216,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-09 10:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Billable Service",

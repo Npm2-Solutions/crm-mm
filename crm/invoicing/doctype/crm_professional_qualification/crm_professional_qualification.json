@@ -49,7 +49,7 @@
   {
    "fieldname": "identity_section",
    "fieldtype": "Section Break",
-   "label": "Qualification"
+   "label": "Professional qualification"
   },
   {
    "description": "Stable identifier used by the engine, e.g. fisioterapista.",
@@ -86,7 +86,7 @@
    "label": "Enabled"
   },
   {
-   "description": "Decides whether the exemption test can even be met: it is joint, objective and subjective. A service card can narrow it, never widen it.",
+   "description": "The exemption needs both a health profession and a healthcare service: a service can narrow it, never widen it.",
    "fieldname": "is_healthcare",
    "fieldtype": "Check",
    "label": "Health profession"
@@ -120,10 +120,10 @@
   },
   {
    "default": "obbligatorio",
-   "description": "vietato: healthcare towards a natural person, forbidden since 2026. obbligatorio: expressly required (Ris. AdE 9/2026 for osteopath, chiropractor, kinesiologist). Blocking one of those is the violation in reverse.",
+   "description": "Ris. AdE 9/2026 settled osteopath, chiropractor and kinesiologist: always through the SdI. Blocking one of those is the mistake in reverse.",
    "fieldname": "sdi_rule",
    "fieldtype": "Select",
-   "label": "SdI rule",
+   "label": "Electronic invoice (SdI)",
    "options": "ammesso\nobbligatorio\nvietato",
    "reqd": 1
   },
@@ -149,10 +149,10 @@
   },
   {
    "default": "non_sanitario",
-   "description": "Decides which tipoSpesa codes are usable. It follows the register of whoever issues the document, not the service.",
+   "description": "It decides which expense types can be used.",
    "fieldname": "sender_category",
    "fieldtype": "Select",
-   "label": "Sender category",
+   "label": "Category for the Sistema TS",
    "options": "non_sanitario\nmedico_odontoiatra\nprofessionista_sanitario\nstruttura_autorizzata\nstruttura_accreditata\nveterinario\nfarmacia\nparafarmacia\nottico"
   },
   {
@@ -163,13 +163,13 @@
   {
    "fieldname": "fund_type",
    "fieldtype": "Select",
-   "label": "Fund",
+   "label": "Pension fund",
    "options": "\nTC01\nTC02\nTC03\nTC04\nTC05\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC12\nTC13\nTC14\nTC15\nTC16\nTC17\nTC18\nTC19\nTC20\nTC21\nTC22"
   },
   {
    "fieldname": "fund_rate",
    "fieldtype": "Percent",
-   "label": "Rate"
+   "label": "Contribution rate"
   },
   {
    "fieldname": "column_fund",
@@ -182,7 +182,7 @@
    "label": "Contributo integrativo (mandatory)"
   },
   {
-   "description": "False for a contributo integrativo, true for the INPS rivalsa, which is compensation.",
+   "description": "Not for a fund's mandatory contribution; yes for the INPS 4% re-charge, which counts as fee.",
    "fieldname": "fund_subject_to_withholding",
    "fieldtype": "Check",
    "label": "The levy is subject to withholding"
@@ -203,7 +203,7 @@
    "depends_on": "eval:doc.withholding_applies",
    "fieldname": "withholding_rate",
    "fieldtype": "Percent",
-   "label": "Rate"
+   "label": "Withholding rate"
   },
   {
    "fieldname": "column_withholding",
@@ -214,16 +214,15 @@
    "depends_on": "eval:doc.withholding_applies",
    "fieldname": "withholding_type",
    "fieldtype": "Select",
-   "label": "Type",
+   "label": "Withholding type",
    "options": "RT01\nRT02\nRT03\nRT04\nRT05\nRT06"
   },
   {
    "default": "A",
    "depends_on": "eval:doc.withholding_applies",
-   "description": "The Modello 770 code. 'A' is self-employment in the exercise of arts and professions.",
    "fieldname": "payment_reason",
    "fieldtype": "Data",
-   "label": "Causale pagamento",
+   "label": "Withholding reason (Modello 770)",
    "length": 2
   },
   {
@@ -271,7 +270,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-09 10:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Professional Qualification",
@@ -319,7 +318,8 @@
   }
  ],
  "row_format": "Dynamic",
- "search_fields": "qualification_name,category",
+ "search_fields": "qualification_name",
+ "show_title_field_in_link": 1,
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
