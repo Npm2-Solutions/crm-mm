@@ -20,6 +20,9 @@ arrivano dal nostro server), quindi nessun banner per il consenso.
 | `/demo/` | `pagine/demo.html` | Il modulo "Richiedi una demo" |
 | `/demo/grazie/`, `/demo/errore/` | `pagine/demo-*.html` | Dove va il modulo senza JavaScript (fuori dai motori di ricerca) |
 | `/privacy/`, `/cookie/` | `pagine/privacy.html`, `pagine/cookie.html` | Informativa e cookie del sito |
+| `/gestionale-poliambulatorio/`, `/gestionale-studio-medico/`, `/gestionale-fisioterapia/`, `/gestionale-nutrizionista/`, `/gestionale-studio-dentistico/` | `pagine/gestionale-*.html` | Una pagina per tipo di centro: quello che DottorCloud fa per loro, con le loro domande |
+| `/approfondimenti/` | `pagine/approfondimenti.html` + `approfondimenti/*.html` | Gli articoli: guide, norme con le fonti, organizzazione |
+| `/glossario/` | `pagine/glossario.html` | Le parole del centro medico, con i rimandi agli articoli |
 | `/404.html` | `pagine/404.html` | La pagina che non c'è |
 
 ## Com'è fatto
@@ -46,6 +49,30 @@ link condivisi è `brand/composizioni/condivisione-og.png`, fatta JPEG da `immag
 Nelle pagine: `{{> cta}}` inserisce una parte, `{{icon calendar-days}}` un'icona,
 `{{email}}`, `{{company}}`, `{{address}}` e `{{vat}}` i dati di NPM2 Solutions Srl, che
 stanno una volta sola in `build.mjs`. Le immagini prendono larghezza e altezza dal file.
+
+## Gli approfondimenti
+
+Un articolo è un file in `approfondimenti/<indirizzo>.html`: l'indirizzo diventa
+`/approfondimenti/<indirizzo>/`. In cima il commento con `title` (al massimo 65
+caratteri) e `description` (70–160) per Google, `headline` (il titolo nella pagina),
+`crumb` (il nome corto nel percorso), `category` (`Guide`, `Norme` o `Organizzazione`),
+`date` e, se cambia, `updated` (AAAA-MM-GG), `summary` (la frase sotto il titolo e
+nelle schede). Sotto, il testo con `<h2>`: diventano l'indice a lato. Un articolo
+`Norme` chiude con `<p class="disclaimer">` e `<section class="sources">` con le fonti:
+un test lo controlla. Le cifre di legge (bollo, sanzioni) vanno bene, il prezzo di
+DottorCloud mai.
+
+La build scrive da sola l'indice e le schede, gli articoli correlati, il feed
+`/approfondimenti/feed.xml`, la sitemap con le date e `llms.txt`.
+
+## Per i motori di ricerca
+
+`seo.mjs` aggiunge a ogni pagina i dati strutturati (schema.org, un solo `@graph`):
+l'azienda e il sito ovunque, il percorso (`BreadcrumbList`) dalla pagina `parent` del
+commento, le domande della pagina (`<details>`) come `FAQPage`, il prodotto
+(`SoftwareApplication`) sulla home e dove c'è `product: yes`, l'articolo (`BlogPosting`)
+con le sue date, il glossario (`DefinedTermSet`, da `<dt id>`). La sitemap data ogni
+pagina con il suo ultimo commit (per questo il workflow scarica tutta la storia).
 
 ## Provarlo
 

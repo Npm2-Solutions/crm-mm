@@ -1,0 +1,30 @@
+<article>
+  <header class="article__head">
+    <div class="container container--narrow">
+      {{breadcrumb}}
+      <span class="chip">{{category}}</span>
+      <h1 class="h1">{{headline}}</h1>
+      <p class="lead">{{summary}}</p>
+      <p class="article__meta">{{meta}}</p>
+    </div>
+  </header>
+  <div class="container article__layout">
+    {{toc}}
+    <div class="prose">
+      {{body}}
+    </div>
+  </div>
+</article>
+
+<section class="section section--white related" aria-labelledby="altri-titolo">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Approfondimenti</span>
+      <h2 id="altri-titolo" class="h2">Da leggere dopo.</h2>
+    </div>
+    {{related}}
+    <p style="margin-top: 32px"><a class="link-arrow" href="/approfondimenti/">Tutti gli approfondimenti {{icon arrow-right}}</a></p>
+  </div>
+</section>
+
+{{> cta}}
