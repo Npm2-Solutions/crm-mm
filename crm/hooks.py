@@ -136,6 +136,8 @@ jinja = {
 		"crm.api.site_render.crm_booking_html",
 		"crm.api.site_render.crm_contact_html",
 		"crm.api.site_render.crm_site_head",
+		# what every email wears: the brand and the centre's mark (templates/emails)
+		"crm.posta.aspetto.contesto_email",
 	],
 }
 

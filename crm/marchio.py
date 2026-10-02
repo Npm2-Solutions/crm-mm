@@ -64,6 +64,10 @@ class Marchio:
 	schermate_avvio: str = ""
 	#: One line: the phone's install sheet, the About.
 	descrizione: str = ""
+	#: The emails' marks, as PNG (no mail client shows an SVG everywhere): the
+	#: horizontal logo, 56px high for 28px, and the icon, 48px for 24px.
+	logo_email: str = ""
+	icona_email: str = ""
 
 
 DOTTORCLOUD = Marchio(
@@ -84,6 +88,8 @@ DOTTORCLOUD = Marchio(
 	},
 	schermate_avvio="/assets/crm/manifest",
 	descrizione="Il gestionale per i centri medici",
+	logo_email="/assets/crm/images/email/dottorcloud-orizzontale.png",
+	icona_email="/assets/crm/images/email/dottorcloud-icona.png",
 )
 
 #: The base's brand, where no vertical is on. NPM2 has not chosen one yet: until it
