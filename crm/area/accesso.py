@@ -203,8 +203,7 @@ def _manda_l_invito(email: str) -> None:
 					"<p>{}</p>".format(
 						esc(
 							_(
-								"{0} opened your area: your appointments, the documents they give you, "
-								"your invoices."
+								"{0} opened your area: your appointments, the documents they give you, your invoices."
 							).format(centro)
 						)
 					),

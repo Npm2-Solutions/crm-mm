@@ -331,8 +331,10 @@ def _send_email_notification(notification, event_start, before_value, interval):
 		descrizione = frappe.utils.strip_html(notification.description or "").strip()
 		message = "".join(
 			[
-				f"<p><b>{esc(notification.subject)}</b><br>"
-				f"{esc(frappe.utils.format_datetime(event_start, 'EEEE d MMMM, HH:mm'))}</p>",
+				"<p><b>{}</b><br>{}</p>".format(
+					esc(notification.subject),
+					esc(frappe.utils.format_datetime(event_start, "EEEE d MMMM, HH:mm")),
+				),
 				f"<p>{esc(descrizione)}</p>" if descrizione else "",
 				f"<p>{esc(time_remaining_text)}</p>",
 				pulsante(
