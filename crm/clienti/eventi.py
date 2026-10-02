@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import get_datetime
+from frappe.utils import cint, get_datetime
 
 from crm.clienti import cliente, pipeline, regole
 from crm.fcrm.doctype.crm_appointment.crm_appointment import person_of
@@ -64,8 +64,11 @@ def appuntamento_aggiornato(doc, method=None) -> None:
 
 
 def fattura_confermata(doc, method=None) -> None:
-	"""The first confirmed invoice made out to the person. A credit note sells nothing."""
+	"""The first confirmed invoice made out to the person. A credit note sells nothing,
+	and neither does a test invoice: it is gone the day invoicing goes live."""
 	if not regole.vendita(doc.get("document_type")) or not cliente.regole_del_crm():
+		return
+	if cint(doc.get("test_document")):
 		return
 	_senza_fermare(
 		_("Client not recorded from invoice {0}").format(doc.name),

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import get_datetime
+from frappe.utils import cint, get_datetime
 
 from crm.clinica import paziente, regole
 
@@ -62,7 +62,7 @@ def fattura_confermata(doc, method=None) -> None:
 	makes nobody a patient, nor does a credit note."""
 	if not any(riga.get("is_healthcare") for riga in doc.items or []):
 		return
-	if not regole.vendita(doc.get("document_type")):
+	if not regole.vendita(doc.get("document_type")) or cint(doc.get("test_document")):
 		return
 	if not paziente.clinica_accesa():
 		return

@@ -149,6 +149,7 @@ def _fatture_sanitarie() -> list[dict]:
 		.select(Invoice.name, Invoice.party_type, Invoice.party, Invoice.posting_date)
 		.where(
 			(Invoice.docstatus == 1)
+			& (Invoice.test_document == 0)
 			& Invoice.name.isin(sanitarie)
 			& IfNull(Invoice.document_type, "").notin(regole.NOTE_DI_CREDITO)
 		)

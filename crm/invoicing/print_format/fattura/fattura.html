@@ -45,10 +45,16 @@
 	.fattura .piede { margin-top: 26px; padding-top: 10px; border-top: 1px solid #e4e4e4; font-size: 10px; color: #767676; display: flex; justify-content: space-between; gap: 16px; }
 	.fattura .esemplare { font-size: 10px; color: #767676; text-align: right; }
 	.pagina-nuova { page-break-before: always; }
+	.fattura .prova { margin: 0 0 16px; padding: 8px 12px; border: 2px dashed #b42318; color: #b42318; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; text-align: center; }
 </style>
 
 {% for copia in range(1, esemplari + 1) %}
 <div class="fattura {% if copia > 1 %}pagina-nuova{% endif %}">
+
+	{#- issued while the company was in test: nobody may take it for a real one -#}
+	{% if doc.test_document %}
+	<div class="prova">{{ _("Test invoice: it has no fiscal value") }}</div>
+	{% endif %}
 
 	<div class="intestazione">
 		<div>
