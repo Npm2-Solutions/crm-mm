@@ -95,6 +95,38 @@ Com'era:
     provider documenta: tolta (le aziende che l'avevano tornano alle credenziali del
     centro).
 
+## Niente da scegliere dove non c'è scelta (02/10/2026, dopo)
+
+Riletta la pagina dell'azienda che emette con gli occhi dell'agenzia, che la vede
+tutta:
+
+- **Lo SdI non è una scelta**: le fatture partono da Itala sull'account dell'agenzia
+  (che lo rivende) e tornano allo stesso modo, **sempre in uscita e in entrata**, a
+  crediti come nel listino, contati da soli (Impostazioni › Il centro ›
+  Funzionalità). Il canale, la direzione, l'ambiente, l'account proprio, il webhook
+  e la casella PEC non si disegnano più: l'azienda li salva sempre così
+  (`SEMPRE` nel controller), e la scheda «Trasmissione» sparisce. L'ambiente si vede
+  e si cambia in «Prova e attivazione», l'analisi dei consumi sarà dell'agenzia.
+- **La conservazione è quella dell'Agenzia delle Entrate, gratuita**, e basta. Il
+  centro (o il suo commercialista) aderisce una volta in Fatture e Corrispettivi e lo
+  spunta nella scheda Fatturazione: finché non lo spunta, «Cosa manca» glielo dice.
+  Una fattura sanitaria a un privato resta un originale di carta con la sua copia; la
+  scheda «Documenti» sparisce.
+- **La numerazione non è mai vuota**: le serie partono da `E` e `S` anche dove erano
+  rimaste vuote, e il formato si sceglie tra esempi («2026/S/15», «S/15/2026»,
+  «15/S/2026», «2026-S-15»), tutti accettati dal Sistema TS: niente segnaposto da
+  scrivere.
+- **La scheda «Sanitario» si chiama «Sistema TS»**, e chiede prima come arrivano le
+  spese (credenziali del centro, Entratel del commercialista, file da scaricare) e
+  poi solo quello che quella strada vuole.
+- **Chi emette**: per un centro medico solo i suoi (professionista sanitario, medico
+  o odontoiatra, struttura autorizzata, struttura accreditata, non sanitario);
+  veterinario, farmacia, parafarmacia e ottico restano dove erano già scelti.
+- **Una scelta che parte con un valore non ha la riga vuota**, e quella che resta si
+  legge «—».
+- **La pagina scorre tutta insieme**, con «Aggiorna» sempre in fondo: i campi stavano
+  in una fessura sotto «Cosa manca».
+
 ## Il Sistema TS e Itala: cosa resta da decidere
 
 Itala ha anche un servizio per il Sistema TS (sistema-ts-api.it, REST v1). Letto il
