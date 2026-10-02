@@ -4,6 +4,7 @@
 
 import frappe
 from frappe import _, get_installed_apps
+from frappe.boot import get_link_title_doctypes
 from frappe.integrations.frappe_providers.frappecloud_billing import is_fc_site
 from frappe.translate import get_messages_for_boot, get_translated_doctypes
 from frappe.utils import cint, get_system_timezone
@@ -83,6 +84,9 @@ def get_boot():
 			"demo_data_created": frappe.db.get_default("crm_demo_data_created") == "1",
 			"is_fc_site": is_fc_site(),
 			"translated_doctypes": get_translated_doctypes(),
+			# the DocTypes whose links show a title, as the Desk's do (a qualification
+			# by its name, not its code)
+			"link_title_doctypes": get_link_title_doctypes(),
 			"translated_messages": get_translated_messages(),
 			# the language the words above are in, so dates and numbers speak it too
 			"lang": frappe.local.lang,
