@@ -1,0 +1,162 @@
+<!--
+title: App per i pazienti con il nome del centro · DottorCloud
+description: L'area pazienti di DottorCloud sul telefono: appuntamenti, moduli da firmare, referti e fatture, piani alimentari ed esercizi, con il nome del centro.
+path: /app-per-pazienti/
+nav: funzioni
+parent: /funzioni/
+crumb: App per i pazienti
+product: yes
+audience: Centri medici e studi che vogliono seguire i pazienti a casa
+-->
+<section class="hero hero--page">
+  <div class="container">
+    <div class="hero__text">
+      {{breadcrumb}}
+      <span class="chip arrive" style="--i: 0">{{icon smartphone}} Area pazienti</span>
+      <h1 class="h1 arrive" style="--i: 1">L'app per i pazienti, con il nome del vostro centro.</h1>
+      <p class="lead arrive" style="--i: 2">
+        Appuntamenti, moduli da firmare, referti, fatture, piani ed esercizi: il paziente trova tutto sul suo
+        telefono, e il centro lo segue anche tra una visita e l'altra.
+      </p>
+      <div class="buttons arrive" style="--i: 3">
+        <a class="button button--primary" href="/demo/">Richiedi una demo {{icon arrow-right}}</a>
+        <a class="button button--secondary" href="/funzioni/#a-casa">L'area fra le funzioni</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="area-titolo">
+  <div class="container">
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon house}} La sua area</span>
+        <h2 id="area-titolo" class="h2">La prossima visita, e cosa fare prima.</h2>
+        <p class="lead">
+          In alto la prossima visita, con i moduli da compilare per prepararla. Sotto i piani, i messaggi del
+          centro e i documenti nuovi. In cima c'è il logo del centro, non il nostro.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon scan-face}}</span>
+            <div><strong>Accesso sicuro</strong><span>Un codice la prima volta, poi il viso o l'impronta.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon pen-line}}</span>
+            <div><strong>Prepara la visita</strong><span>Moduli e consensi firmati dal telefono.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon file-text}}</span>
+            <div><strong>Documenti e fatture</strong><span>Referti, fatture e comunicazioni del medico.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon users}}</span>
+            <div><strong>Anche per i familiari</strong><span>Un genitore segue un figlio, un figlio il genitore anziano.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media feature__media--phone reveal" style="--i: 2">
+        <img
+          src="/img/home.webp"
+          alt="La pagina iniziale dell'area del paziente: la prossima visita da preparare, i piani, un messaggio della dottoressa e un nuovo referto"
+        />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="casa-titolo">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Tra una visita e l'altra</span>
+      <h2 id="casa-titolo" class="h2">Piani ed esercizi da seguire, un tocco alla volta.</h2>
+      <p class="lead">
+        Il professionista scrive il piano, il paziente lo segue e segna cosa ha fatto. Il professionista vede i
+        progressi e risponde.
+      </p>
+    </div>
+    <div class="grid grid--3">
+      <article class="card reveal" style="--i: 0">
+        <span class="bubble">{{icon apple}}</span>
+        <h3>Piano alimentare</h3>
+        <p>
+          I pasti del giorno da segnare con un tocco, le alternative equivalenti, la lista della spesa. Per i
+          <a href="/gestionale-nutrizionista/">nutrizionisti</a>.
+        </p>
+      </article>
+      <article class="card reveal" style="--i: 1">
+        <span class="bubble">{{icon dumbbell}}</span>
+        <h3>Esercizi a casa</h3>
+        <p>
+          Animazioni, serie e ripetizioni, i muscoli che lavorano. Per la
+          <a href="/gestionale-fisioterapia/">fisioterapia</a>.
+        </p>
+      </article>
+      <article class="card reveal" style="--i: 2">
+        <span class="bubble">{{icon calendar-check}}</span>
+        <h3>Cicli e abbonamenti</h3>
+        <p>A che seduta è arrivato, quante ne restano, quando scade l'abbonamento.</p>
+      </article>
+      <article class="card reveal" style="--i: 3">
+        <span class="bubble">{{icon folder-heart}}</span>
+        <h3>Referti online</h3>
+        <p>Solo con il consenso del paziente, scaricabili dopo un codice, online per 45 giorni.</p>
+      </article>
+      <article class="card reveal" style="--i: 4">
+        <span class="bubble">{{icon message-circle}}</span>
+        <h3>Messaggi del centro</h3>
+        <p>Le comunicazioni della segreteria e del medico, nello stesso posto.</p>
+      </article>
+      <article class="card reveal" style="--i: 5">
+        <span class="bubble">{{icon receipt}}</span>
+        <h3>Fatture</h3>
+        <p>Le <a href="/software-fatturazione-sanitaria/">fatture sanitarie</a> in PDF, da scaricare quando servono.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="domande-titolo">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center reveal">
+      <span class="chip">{{icon message-square-text}} Domande</span>
+      <h2 id="domande-titolo" class="h2">Le domande sull'area pazienti.</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>Il paziente deve scaricare un'app dallo store? {{icon chevron-down}}</summary>
+        <p>
+          No. L'area si apre dal browser del telefono, e si può aggiungere alla schermata iniziale come
+          un'app.
+        </p>
+      </details>
+      <details>
+        <summary>Come entra il paziente la prima volta? {{icon chevron-down}}</summary>
+        <p>
+          Il centro lo invita; lui entra con un codice che riceve, e dalla volta dopo può usare il viso o
+          l'impronta del suo telefono.
+        </p>
+      </details>
+      <details>
+        <summary>Il centro può vedere cosa vede il paziente? {{icon chevron-down}}</summary>
+        <p>
+          Sì. Dalla scheda del paziente si apre l'anteprima della sua area, senza mandargli niente: ognuno vede
+          solo quello che può già leggere nel gestionale.
+        </p>
+      </details>
+      <details>
+        <summary>Un genitore può seguire il figlio? {{icon chevron-down}}</summary>
+        <p>
+          Sì. I familiari sono collegati tra loro: chi prenota o rappresenta un'altra persona ne segue gli
+          appuntamenti e i documenti.
+        </p>
+      </details>
+    </div>
+    <p class="note" style="margin-top: 32px">
+      Approfondisci: <a href="/approfondimenti/referti-online-regole-del-garante/">i referti online e le regole del
+      Garante</a>.
+    </p>
+  </div>
+</section>
+
+{{> cta}}

@@ -217,7 +217,9 @@ describe('the pages', () => {
     assert.equal(fs.readFileSync(key, 'utf8').trim(), INDEXNOW_KEY)
     const xml = fs.readFileSync(path.join(OUT, 'sitemap.xml'), 'utf8')
     assert.equal(changedSince(xml, '2000-01-01').length, xml.match(/<url>/g).length)
-    assert.deepEqual(changedSince(xml, '2999-01-01'), [])
+    // a page with no date (not committed yet) always counts as changed
+    const undated = [...xml.matchAll(/<url><loc>([^<]+)<\/loc><\/url>/g)].map((m) => m[1])
+    assert.deepEqual(changedSince(xml, '2999-01-01'), undated)
     const sample = '<url><loc>https://a.it/x/</loc><lastmod>2026-10-02</lastmod></url>' +
       '<url><loc>https://a.it/y/</loc><lastmod>2026-09-30</lastmod></url>'
     assert.deepEqual(changedSince(sample, '2026-10-01'), ['https://a.it/x/'])

@@ -21,6 +21,7 @@ arrivano dal nostro server), quindi nessun banner per il consenso.
 | `/demo/grazie/`, `/demo/errore/` | `pagine/demo-*.html` | Dove va il modulo senza JavaScript (fuori dai motori di ricerca) |
 | `/privacy/`, `/cookie/` | `pagine/privacy.html`, `pagine/cookie.html` | Informativa e cookie del sito |
 | `/gestionale-poliambulatorio/`, `/gestionale-studio-medico/`, `/gestionale-fisioterapia/`, `/gestionale-nutrizionista/`, `/gestionale-studio-dentistico/` | `pagine/gestionale-*.html` | Una pagina per tipo di centro: quello che DottorCloud fa per loro, con le loro domande |
+| `/agenda-medica-online/`, `/cartella-clinica-elettronica/`, `/software-fatturazione-sanitaria/`, `/consenso-informato-digitale/`, `/promemoria-appuntamenti-whatsapp/`, `/app-per-pazienti/` | `pagine/*.html` con `parent: /funzioni/` | Una pagina per funzione, per chi la cerca con quelle parole: cosa fa, le domande, i rimandi agli articoli |
 | `/approfondimenti/` | `pagine/approfondimenti.html` + `approfondimenti/*.html` | Gli articoli: guide, norme con le fonti, organizzazione |
 | `/glossario/` | `pagine/glossario.html` | Le parole del centro medico, con i rimandi agli articoli |
 | `/404.html` | `pagine/404.html` | La pagina che non c'è |
@@ -73,6 +74,12 @@ commento, le domande della pagina (`<details>`) come `FAQPage`, il prodotto
 (`SoftwareApplication`) sulla home e dove c'è `product: yes`, l'articolo (`BlogPosting`)
 con le sue date, il glossario (`DefinedTermSet`, da `<dt id>`). La sitemap data ogni
 pagina con il suo ultimo commit (per questo il workflow scarica tutta la storia).
+
+Dopo ogni pubblicazione il workflow manda a IndexNow (Bing e gli altri motori che lo
+usano) le pagine della sitemap cambiate quel giorno: `indexnow.mjs`, con la chiave che il
+sito serve in `/<chiave>.txt`. Le immagini hanno nell'indirizzo l'impronta del file
+(`?v=…`, il server le tiene in cache per anni) e, quelle larghe, copie più piccole
+(`nome-800.webp`, `nome-1200.webp`, fatte da `immagini.py`) offerte in `srcset`.
 
 ## Provarlo
 
