@@ -172,11 +172,14 @@
             @click="openNoteModal"
           />
           <Button
-            class="rounded-full bg-surface-red-7 hover:bg-surface-red-8 rotate-[135deg] text-ink-base"
+            class="rounded-full bg-surface-red-7 hover:bg-surface-red-8 text-ink-base"
             :tooltip="__('Hang Up')"
-            :icon="PhoneIcon"
             @click="hangUpCall"
-          />
+          >
+            <template #icon>
+              <PhoneIcon class="rotate-[135deg]" />
+            </template>
+          </Button>
         </div>
         <div v-else-if="scelta" />
         <div v-else-if="calling || callStatus == 'initiating'">
@@ -243,10 +246,13 @@
       <Button
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full rotate-[135deg] text-ink-base"
-        :icon="PhoneIcon"
+        class="!h-6 !w-6 rounded-full text-ink-base"
         @click.stop="hangUpCall"
-      />
+      >
+        <template #icon>
+          <PhoneIcon class="rotate-[135deg]" />
+        </template>
+      </Button>
     </div>
     <div
       v-else-if="calling || callStatus == 'initiating'"
@@ -258,10 +264,13 @@
       <Button
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full rotate-[135deg] text-ink-base"
-        :icon="PhoneIcon"
+        class="!h-6 !w-6 rounded-full text-ink-base"
         @click.stop="cancelCall"
-      />
+      >
+        <template #icon>
+          <PhoneIcon class="rotate-[135deg]" />
+        </template>
+      </Button>
     </div>
     <div v-else class="flex items-center gap-2">
       <Button
@@ -275,11 +284,14 @@
       <Button
         variant="solid"
         theme="red"
-        class="!h-6 !w-6 rounded-full rotate-[135deg] text-ink-base"
+        class="!h-6 !w-6 rounded-full text-ink-base"
         :tooltip="__('Reject Call')"
-        :icon="PhoneIcon"
         @click.stop="rejectIncomingCall"
-      />
+      >
+        <template #icon>
+          <PhoneIcon class="rotate-[135deg]" />
+        </template>
+      </Button>
     </div>
   </div>
 </template>
