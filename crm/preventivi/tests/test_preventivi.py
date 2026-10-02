@@ -15,6 +15,7 @@ pipeline and how long a quote holds.
 """
 
 import json
+import unittest
 
 import frappe
 from frappe.utils import add_days, getdate
@@ -217,3 +218,210 @@ class LeImpostazioni(PreventiviCase):
 		pipeline.save_settings(quotes_pipeline=None, valid_days=None)
 		altro = self.scrive(title="Senza pipeline")
 		self.assertIsNone(self.proponi(altro["name"])["deal"])
+
+
+class LaTrattativa(PreventiviCase):
+	"""The deal is the sale, the quote what the person is asked to accept: a deal of
+	the quotes pipeline lists its quotes and makes new ones its own; accepted, it is
+	won and worth what was agreed. A quote never moves a deal of another pipeline, nor
+	opens a closed one again."""
+
+	def trattativa(self, nome_pipeline, lead=None):
+		frappe.set_user("Administrator")
+		doc = frappe.new_doc("CRM Deal")
+		doc.lead = lead or self.anna.name
+		doc.status = frappe.db.get_value(
+			"CRM Deal Status", {"pipeline": nome_pipeline}, "name", order_by="position asc"
+		)
+		doc.flags.from_inquiry = True
+		doc.insert(ignore_permissions=True)
+		return doc.name
+
+	def scrive_nella(self, deal, user=OPERATORE):
+		self.come(user)
+		return preventivi.save_quote(
+			self.anna.name,
+			json.dumps({"title": "Dalla trattativa", "items": [{"service": self.viso.name, "rate": 60}]}),
+			deal=deal,
+		)
+
+	def test_accettato_la_trattativa_vinta_vale_il_preventivo(self):
+		fatto = self.scrive()
+		self.proponi(fatto["name"])
+		self.come(DESK)
+		accettato = preventivi.accept_quote(fatto["name"])
+		deal = frappe.get_doc("CRM Deal", accettato["deal"])
+		self.assertEqual(self.tipo_del_deal(deal.name), "Won")
+		# the number the dashboards add up for what was won
+		self.assertEqual((deal.deal_value, deal.expected_deal_value), (240, 240))
+
+	def test_dalla_trattativa_i_suoi_preventivi(self):
+		primo = self.scrive()
+		deal = self.proponi(primo["name"])["deal"]
+		altro = self.scrive(title="Di Anna, senza trattativa")
+		# a new quote made from the deal's page is the deal's
+		nuovo = self.scrive_nella(deal)
+		self.assertEqual(frappe.db.get_value(preventivi.DOCTYPE, nuovo["name"], "deal"), deal)
+		della_trattativa = preventivi.get_quotes(self.anna.name, deal=deal)
+		self.assertEqual(della_trattativa["deal"], deal)
+		self.assertEqual({q["name"] for q in della_trattativa["quotes"]}, {primo["name"], nuovo["name"]})
+		# the person's page lists them all
+		self.assertEqual(
+			{q["name"] for q in preventivi.get_quotes(self.anna.name)["quotes"]},
+			{primo["name"], nuovo["name"], altro["name"]},
+		)
+		# the quote says which deal it is, in the stage's words
+		self.assertTrue(preventivi.get_quote(nuovo["name"])["deal_label"])
+		# proposed, it moves its own deal: no second deal for one sale
+		self.assertEqual(self.proponi(nuovo["name"])["deal"], deal)
+
+	def test_una_trattativa_di_un_altra_pipeline_resta_dov_e(self):
+		from crm.clienti import pipeline as nuovi_clienti
+
+		frappe.set_user("Administrator")
+		nuovi_clienti.crea()
+		primo_contatto = self.trattativa(nuovi_clienti.quale())
+		stadio = frappe.db.get_value("CRM Deal", primo_contatto, "status")
+		gia = self.scrive(title="Già scritto")
+		# its page shows the person's quotes, and a quote made there is no quote of its
+		self.come(OPERATORE)
+		qui = preventivi.get_quotes(self.anna.name, deal=primo_contatto)
+		self.assertIsNone(qui["deal"])
+		self.assertEqual([q["name"] for q in qui["quotes"]], [gia["name"]])
+		fatto = self.scrive_nella(primo_contatto)
+		self.assertFalse(frappe.db.get_value(preventivi.DOCTYPE, fatto["name"], "deal"))
+		# proposed, it goes to the quotes pipeline; the first visit's deal stays where it is
+		proposto = self.proponi(fatto["name"])
+		self.assertNotEqual(proposto["deal"], primo_contatto)
+		self.assertEqual(frappe.db.get_value("CRM Deal", proposto["deal"], "pipeline"), pipeline.quale())
+		self.assertEqual(frappe.db.get_value("CRM Deal", primo_contatto, "status"), stadio)
+
+	def test_la_trattativa_di_un_altra_persona(self):
+		frappe.set_user("Administrator")
+		bruno = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Bruno", "last_name": "Altro"}).insert(
+			ignore_permissions=True
+		)
+		sua = self.trattativa(pipeline.quale(), lead=bruno.name)
+		self.come(OPERATORE)
+		with self.assertRaises(frappe.PermissionError):
+			preventivi.get_quotes(self.anna.name, deal=sua)
+		with self.assertRaises(frappe.PermissionError):
+			self.scrive_nella(sua)
+
+	def test_una_trattativa_chiusa_non_si_riapre(self):
+		fatto = self.scrive()
+		perso = self.proponi(fatto["name"])["deal"]
+		self.come(DESK)
+		preventivi.decline_quote(fatto["name"], reason="Pricing")
+		# a new version after a "no" is a new sale: the lost deal stays lost
+		self.come(OPERATORE)
+		nuova = preventivi.copy_quote(fatto["name"])
+		self.assertFalse(frappe.db.get_value(preventivi.DOCTYPE, nuova["name"], "deal"))
+		riproposta = self.proponi(nuova["name"])
+		self.assertNotEqual(riproposta["deal"], perso)
+		self.assertEqual(self.tipo_del_deal(perso), "Lost")
+		# while the deal is open, a new version stays on it
+		self.come(OPERATORE)
+		ancora = preventivi.copy_quote(nuova["name"])
+		self.assertEqual(frappe.db.get_value(preventivi.DOCTYPE, ancora["name"], "deal"), riproposta["deal"])
+
+
+class INumeri(PreventiviCase):
+	"""The dashboard: quotes proposed, the share accepted, the ones to call back."""
+
+	def risposta(self, widget_id, viewer, scope=None):
+		from crm.dashboard import registry
+		from crm.dashboard.context import Context
+
+		frappe.set_user(viewer)
+		widget = registry.get(widget_id)
+		oggi = getdate()
+		ctx = Context.build(
+			add_days(oggi, -1),
+			add_days(oggi, 1),
+			viewer=viewer,
+			scope=scope or widget.scope,
+			config=widget.clean_config({}),
+		)
+		return widget.fn(ctx)
+
+	def test_proposti_accettati_e_da_richiamare(self):
+		accettato, rifiutato, in_attesa, ripensato = (
+			self.scrive(title=titolo)["name"] for titolo in ("Sì", "No", "Aspetta", "Ci ripensa")
+		)
+		for nome in (accettato, rifiutato, in_attesa, ripensato):
+			self.proponi(nome)
+		self.come(DESK)
+		preventivi.accept_quote(accettato)
+		preventivi.decline_quote(rifiutato, reason="Pricing")
+		preventivi.decline_quote(ripensato, reason="Pricing")
+		# put right after the "no": the same conversation, not a second "no"
+		self.come(OPERATORE)
+		preventivi.copy_quote(ripensato)
+
+		# whose work is counted is the author's: the operator's numbers are these quotes'
+		self.assertEqual(self.risposta("quotes_proposed", OPERATORE)["value"], 4)
+		self.assertEqual(self.risposta("quotes_acceptance_rate", OPERATORE)["value"], 50)
+		self.assertEqual(self.risposta("quotes_waiting_value", OPERATORE)["value"], 240)
+		lista = self.risposta("quotes_waiting", OPERATORE)
+		self.assertEqual(lista["total"], 1)
+		[voce] = lista["items"]
+		self.assertEqual((voce["title"], voce["subtitle"], voce["value"]), ("Anna Area", "Aspetta", 240))
+		self.assertEqual(voce["route"]["params"]["leadId"], self.anna.name)
+		self.assertNotIn("badge", voce)
+		# three days without an answer: to call back
+		frappe.set_user("Administrator")
+		frappe.db.set_value(
+			preventivi.DOCTYPE, in_attesa, "proposed_on", add_days(getdate(), -4), update_modified=False
+		)
+		self.assertEqual(self.risposta("quotes_waiting", OPERATORE)["items"][0]["badge"]["color"], "orange")
+
+	def test_chi_non_legge_i_preventivi_non_li_conta(self):
+		self.proponi(self.scrive()["name"])
+		# the whole centre's work, so that only the rule of reading decides
+		prima = self.risposta("quotes_waiting", SALES, scope="site")
+		self.assertIn(self.anna.name, [v["route"]["params"]["leadId"] for v in prima["items"]])
+		frappe.set_user("Administrator")
+		utenti.assegna_livelli(SALES, ["marketing"])
+		livelli_cache()
+		self.assertEqual(self.risposta("quotes_waiting", SALES, scope="site")["total"], 0)
+		self.assertEqual(self.risposta("quotes_waiting_value", SALES, scope="site")["value"], 0)
+
+
+def livelli_cache():
+	from crm.permissions import livelli
+
+	livelli.dimentica_cache()
+
+
+class IlLayoutDellaTrattativa(unittest.TestCase):
+	"""The patch that takes the products grid off the deal's page."""
+
+	def test_via_la_griglia_e_i_suoi_totali(self):
+		from crm.patches.v1_0.deals_take_their_value_from_quotes import senza_prodotti
+
+		dettagli = {"label": "Details", "columns": [{"name": "a", "fields": ["organization", "total"]}]}
+		prodotti = {"label": "Products", "columns": [{"name": "b", "fields": ["products"]}]}
+		totali = {"columns": [{"name": "c", "fields": ["total"]}, {"name": "d", "fields": ["net_total"]}]}
+		vuota = {"label": "Empty", "columns": [{"name": "e", "fields": []}]}
+		con_schede = json.dumps([{"name": "first_tab", "sections": [dettagli, prodotti, totali, vuota]}])
+		self.assertEqual(
+			json.loads(senza_prodotti(con_schede)),
+			[
+				{
+					"name": "first_tab",
+					"sections": [
+						{"label": "Details", "columns": [{"name": "a", "fields": ["organization"]}]},
+						# what was empty before is not ours to take away
+						vuota,
+					],
+				}
+			],
+		)
+		# an old layout without tabs keeps its shape
+		self.assertEqual(json.loads(senza_prodotti(json.dumps([prodotti, vuota]))), [vuota])
+		# nothing to take away, nothing touched; what does not read stays as it is
+		gia = json.dumps([vuota])
+		self.assertIs(senza_prodotti(gia), gia)
+		self.assertEqual(senza_prodotti("{rotto"), "{rotto")
+		self.assertIsNone(senza_prodotti(None))
