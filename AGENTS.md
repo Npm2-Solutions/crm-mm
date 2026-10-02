@@ -193,7 +193,7 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
-### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud (docs/progetto-ghl/45, 46, 47)
+### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud (docs/progetto-ghl/45, 46, 47, 48)
 | File | Role |
 |---|---|
 | `crm/invoicing/engine/voci.py` | Every code invoicing asks somebody to choose, in words: a family per field (regimes, VAT natures, documents, payments, funds, withholdings, 770 reasons, stamp duty, keeping, channels...), each `Voce` with its name, the line on when it applies and whether a medical centre meets it (`sanita`); `voci()` for a profile, the stored values always kept — pure, tested with plain `unittest` |
@@ -202,7 +202,9 @@ mail clients do not all show an SVG.
 | `frontend/src/utils/scelte.js`, `composables/vocabolarioFatturazione.js` | A choice's line, the stored value kept, a code's name in a row, a read-only choice by its name — tested |
 | `crm/tessera_sanitaria/preimpostazione.py` + `Settings/Invoicing/HealthcareSetup.vue` (doc 46) | With the clinic on, a medical centre's invoicing in three questions (who issues, the facility's codes or the profession, the regime): the Sistema TS category, the regime, the fund and withholding of the profession; the agenda's services become healthcare cards, exempt, with the issuer's expense type (`cards_from_services`); a new card starts as one (`card_defaults`) |
 | `crm/invoicing/emissione.py` + `components/Invoices/InvoiceDialog.vue`, `composables/fattura.js`, `utils/fattura.js` (doc 47) | The invoice made in DottorCloud's own dialog, never the Desk's form: who it is for, what was done and by whom, how it was paid, and first where it goes; `preview` classifies and adds up in memory (nothing saved half-way), `save`, `issue`, `credit_note` (to the Sistema TS the refund of the original), `delete_draft` (never a numbered one); the dialog writes only client, payment and lines, the company and the engine the rest. Opened from anywhere with `apriFattura`/`nuovaFattura` |
-| `crm/invoicing/engine/messaggi.py` | `Messaggio`: an engine sentence that keeps its template and arguments, so `documento.in_parole()` translates it whole |
+| `crm/invoicing/engine/messaggi.py` | `Messaggio`: an engine sentence that keeps its template and arguments, so `documento.in_parole()` translates it whole; `Nome` (a vocabulary's name, translated with it), `Rilievo` (an SdI finding, its code in a tail the same in every language: « (SdI 00422)»); a `Decimal` in a sentence is an amount in euros |
+| `crm/invoicing/documento.py` `da_correggere()` + `estensioni.registra_controllo_bozza` (doc 48) | What stops a draft and what is worth saying, for issuing, the preview and the dialog: the document's rules and what a module would refuse later (the Sistema TS's `controlla_bozza`: the document's problems stop, the company's are said) |
+| `crm/invoicing/engine/fatturapa.py` `valida()` | The SdI's own checks on the XML, as its "Elenco dei controlli" (v1.8) states them: `00200` for the schema, `00422` per rate with the fund, `00421` rounded half up; `bloccanti()`/`codice_di()` read the code of a finding, stored too |
 | `crm/invoicing/estensioni.py` | The qualification registers in two tiers: the stored ones (what the practice edits) before every shipped one (`registra_risolutore(..., spedito=True)`), whatever order the modules load in; `QualificaRifiutata` (a switched-off qualification) stops the chain |
 
 A field of invoicing that stores a code never shows it: it goes in `scelte.CAMPI`
@@ -215,7 +217,8 @@ its register always answers first. A new record on a settings screen starts from
 the DocType's defaults (`DocFields`), never from a copy of them in the page.
 An invoice is opened with `useFattura()` (`apriFattura(name)`, `nuovaFattura()`),
 never `/app/crm-invoice`; a sentence of the engine with a value in it is a
-`Messaggio`, never an f-string.
+`Messaggio` (an SdI finding a `Rilievo`), never an f-string, and its English is
+in `it.po` by hand: `crm/tests/test_frasi_del_motore.py` checks both.
 
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |

@@ -281,6 +281,17 @@ Se il documento non e' emettibile, l'errore elenca **tutti** i problemi, non il
 primo: chi sta correggendo ha il cliente davanti, e correggere in una passata sola
 costa niente mentre correggere in cinque costa l'appuntamento.
 
+Nella lista c'e' anche quello che il **Sistema TS** rifiuterebbe a gennaio: il
+tracciato si controlla sulla bozza (`controlla_bozza`, doc 48). Quello che riguarda
+il documento ferma l'emissione; quello che riguarda l'azienda (il suo codice
+fiscale, i codici della struttura) si dice e non ferma la fattura che il paziente
+aspetta. Tutto in parole: i tipi di spesa con il loro nome, gli importi in euro.
+
+I **rilievi dello SdI** sul file XML seguono l'elenco ufficiale dei controlli
+(v1.8) e dicono in fondo il codice con cui lo SdI risponderebbe: «manca la partita
+IVA di chi emette (SdI 00200)». L'invio si ferma solo su quelli con il codice; la
+finestra li mostra prima dell'invio.
+
 ### Un documento misto non si emette
 
 Una riga sanitaria verso persona fisica porta **tutto** il documento fuori dal
