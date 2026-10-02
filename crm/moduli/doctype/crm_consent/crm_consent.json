@@ -89,7 +89,7 @@
    "fieldname": "channel",
    "fieldtype": "Select",
    "label": "How",
-   "options": "Online booking\nWeb form\nAt the desk\nOn paper\nBy phone\nBy email\nImported",
+   "options": "Online booking\nWeb form\nAt the desk\nOn paper\nBy phone\nBy email\nBy SMS\nImported",
    "reqd": 1,
    "set_only_once": 1
   },
@@ -199,7 +199,7 @@
    "fieldname": "withdrawal_channel",
    "fieldtype": "Select",
    "label": "How",
-   "options": "\nOnline booking\nWeb form\nAt the desk\nOn paper\nBy phone\nBy email\nImported",
+   "options": "\nOnline booking\nWeb form\nAt the desk\nOn paper\nBy phone\nBy email\nBy SMS\nImported",
    "read_only": 1
   },
   {
@@ -223,7 +223,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-09-29 18:00:00.000000",
+ "modified": "2026-10-02 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "Moduli",
  "name": "CRM Consent",

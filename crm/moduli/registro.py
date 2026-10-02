@@ -38,6 +38,7 @@ CANALI = (
 	"On paper",
 	"By phone",
 	"By email",
+	"By SMS",
 	"Imported",
 )
 #: The ones a person at the desk can record by hand.

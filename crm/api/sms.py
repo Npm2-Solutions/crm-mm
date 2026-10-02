@@ -54,6 +54,15 @@ def get_sms_messages(reference_doctype: str, reference_name: str) -> list[dict]:
 	return messages
 
 
+@frappe.whitelist()
+def get_sms_stop(reference_doctype: str, reference_name: str) -> str | None:
+	"""When the person of the record wrote STOP to the centre's SMS, for the
+	composer to say so; None while the automatic SMS reach them."""
+	validate_access(reference_doctype, reference_name)
+	fermo = sms.fermato_il(reference_doctype, reference_name)
+	return str(fermo) if fermo else None
+
+
 @frappe.whitelist(methods=["POST"])
 def send_sms(reference_doctype: str, reference_name: str, to: str, message: str) -> dict:
 	"""Send an SMS from the centre's sender and log it on the record."""

@@ -139,6 +139,8 @@ class CRMLead(Document):
 		sla: DF.Link | None
 		sla_creation: DF.Datetime | None
 		sla_status: DF.Literal["", "First Response Due", "Rolling Response Due", "Failed", "Fulfilled"]
+		sms_opt_out: DF.Check
+		sms_opt_out_on: DF.Datetime | None
 		source: DF.Link | None
 		status: DF.Link
 		status_change_log: DF.Table[CRMStatusChangeLog]

@@ -40535,3 +40535,51 @@ msgstr "Le persone possono rispondere: le risposte arrivano nella conversazione 
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue
 msgid "For the answers to come back the centre needs a number that can send SMS, like a mobile one: ask for it in Numbers, above."
 msgstr "Perché le risposte tornino serve un numero che possa mandare SMS, come un mobile: chiedilo in Numeri, qui sopra."
+
+#: frontend/src/components/Activities/SMSBox.vue
+msgid "Wrote STOP on {0}: no automatic SMS reaches them. What you write here still leaves."
+msgstr "Ha scritto STOP il {0}: non le arriva più nessun SMS automatico. Quello che scrivi qui parte lo stesso."
+
+#: crm/automation/engine.py
+msgid "Wrote STOP to the centre's SMS: not sent"
+msgstr "Ha scritto STOP agli SMS del centro: non inviato"
+
+#: crm/scheduling/attese.py
+msgid "They wrote STOP to the centre's SMS and have no email on file: call them"
+msgstr "Ha scritto STOP agli SMS del centro e non ha un'email: chiamala"
+
+#: crm/telephony/sms.py
+msgid "Wrote STOP by SMS"
+msgstr "Ha scritto STOP per SMS"
+
+#: crm/telephony/sms.py
+msgid "You will not receive automatic SMS from {0} any more. Write START to have them again."
+msgstr "Non riceverà più gli SMS automatici di {0}. Scriva START per riceverli di nuovo."
+
+#: crm/telephony/sms.py
+msgid "You will not receive our automatic SMS any more. Write START to have them again."
+msgstr "Non riceverà più i nostri SMS automatici. Scriva START per riceverli di nuovo."
+
+#: crm/telephony/sms.py
+msgid "You will receive the SMS of {0} again. Write STOP to stop them."
+msgstr "Riceverà di nuovo gli SMS di {0}. Scriva STOP per non riceverli più."
+
+#: crm/telephony/sms.py
+msgid "You will receive our SMS again. Write STOP to stop them."
+msgstr "Riceverà di nuovo i nostri SMS. Scriva STOP per non riceverli più."
+
+#: crm/moduli/doctype/crm_consent/crm_consent.json
+msgid "By SMS"
+msgstr "Per SMS"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Stopped the SMS"
+msgstr "Ha fermato gli SMS"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Stopped the SMS on"
+msgstr "Ha fermato gli SMS il"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Wrote STOP to the centre's SMS: no automatic SMS reaches the person until they write START."
+msgstr "Ha scritto STOP agli SMS del centro: nessun SMS automatico le arriva finché non scrive START."

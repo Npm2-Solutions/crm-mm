@@ -1,7 +1,11 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+# For license information, please see license.txt
+
 import json
 
 import frappe
 from frappe import _
+from twilio.twiml.messaging_response import MessagingResponse
 from twilio.twiml.voice_response import VoiceResponse
 from werkzeug.wrappers import Response
 
@@ -432,9 +436,11 @@ def incoming_sms_handler(**kwargs):
 	validate_twilio_request(args)
 
 	from crm.api.sms import create_sms
+	from crm.telephony import sms as sms_del_centro
 
+	messaggio = None
 	try:
-		create_sms(
+		messaggio = create_sms(
 			type="Incoming",
 			from_number=args.From,
 			to=args.To,
@@ -446,8 +452,33 @@ def incoming_sms_handler(**kwargs):
 		frappe.log_error(title="Error while creating Twilio SMS log")
 		frappe.db.commit()
 
-	# empty TwiML: no auto-reply
-	return Response("<?xml version='1.0' encoding='UTF-8'?><Response></Response>", mimetype="text/xml")
+	# a STOP stops the centre's automatic SMS, a START has them again (doc 52):
+	# the answer says what it did, and stays in the conversation like any other
+	risposta = ""
+	if messaggio:
+		try:
+			risposta = sms_del_centro.ascolta(messaggio)
+			if risposta:
+				create_sms(
+					type="Outgoing",
+					from_number=args.To,
+					to=args.From,
+					message=risposta,
+					reference_doctype=messaggio.reference_doctype,
+					reference_name=messaggio.reference_name,
+					status="Sent",
+				)
+			frappe.db.commit()
+		except Exception:
+			frappe.db.rollback()
+			risposta = ""
+			frappe.log_error(title="DottorCloud: a STOP or START by SMS not taken")
+			frappe.db.commit()
+
+	resp = MessagingResponse()
+	if risposta:
+		resp.message(risposta)
+	return Response(resp.to_xml(), mimetype="text/xml")
 
 
 # webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged
