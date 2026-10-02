@@ -3,11 +3,12 @@
 
 import frappe
 from frappe import _
+from twilio.base.exceptions import TwilioRestException
 
 from crm.api.whatsapp import may_converse, validate_access
 from crm.integrations.twilio.twilio_handler import Twilio
 from crm.integrations.twilio.utils import get_public_url
-from crm.telephony import sms
+from crm.telephony import errori, sms
 
 SMS_FIELDS = [
 	"name",
@@ -134,6 +135,18 @@ def deliver_via_twilio(doc):
 			status_callback=get_public_url("/api/method/crm.integrations.twilio.api.update_sms_status_info"),
 		)
 		doc.db_set({"message_sid": sent.sid, "status": "Sent"})
+	except TwilioRestException as errore:
+		# Twilio's refusal in words, its code kept (doc 52); the log has the code, not the person
+		frappe.log_error(
+			title="CRM SMS: Twilio send failed", message=f"HTTP {errore.status}, error {errore.code}"
+		)
+		doc.db_set(
+			{
+				"status": "Failed",
+				"error_code": errore.code or 0,
+				"error_message": errori.in_parole(errore.code, errore.msg),
+			}
+		)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "CRM SMS: Twilio send failed")
 		doc.db_set({"status": "Failed", "error_message": _("Provider rejected the message")})

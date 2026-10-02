@@ -20,6 +20,7 @@ class CRMSMSMessage(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		error_code: DF.Int
 		error_message: DF.SmallText | None
 		message: DF.SmallText
 		message_sid: DF.Data | None

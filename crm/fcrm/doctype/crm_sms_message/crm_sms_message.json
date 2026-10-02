@@ -18,7 +18,8 @@
   "column_break_meta",
   "reference_doctype",
   "reference_name",
-  "error_message"
+  "error_message",
+  "error_code"
  ],
  "fields": [
   {
@@ -111,10 +112,17 @@
    "fieldtype": "Small Text",
    "label": "Error Message",
    "read_only": 1
+  },
+  {
+   "description": "Twilio's code for why the message did not leave or did not arrive.",
+   "fieldname": "error_code",
+   "fieldtype": "Int",
+   "label": "Error Code",
+   "read_only": 1
   }
  ],
  "links": [],
- "modified": "2026-08-31 12:00:00.000000",
+ "modified": "2026-10-02 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM SMS Message",

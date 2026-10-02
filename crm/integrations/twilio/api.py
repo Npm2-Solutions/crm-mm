@@ -499,4 +499,12 @@ def update_sms_status_info(**kwargs):
 	status = status_map.get((args.MessageStatus or "").lower())
 	name = args.MessageSid and frappe.db.get_value("CRM SMS Message", {"message_sid": args.MessageSid})
 	if name and status:
-		frappe.db.set_value("CRM SMS Message", name, "status", status)
+		valori = {"status": status}
+		# why it did not arrive, in words (doc 52)
+		if status in ("Undelivered", "Failed") and args.ErrorCode:
+			from crm.telephony import errori
+
+			valori.update(
+				error_code=frappe.utils.cint(args.ErrorCode), error_message=errori.in_parole(args.ErrorCode)
+			)
+		frappe.db.set_value("CRM SMS Message", name, valori)
