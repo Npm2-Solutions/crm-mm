@@ -7,8 +7,13 @@
   TS category. A CRM can carry several of them; one is the default.
 -->
 <template>
+  <!--
+    One scroll for the whole page: the fields had a scroller of their own under
+    what is still missing, and on a laptop it was a slit of 150px. The save bar
+    stays at the bottom while the page scrolls.
+  -->
   <div
-    class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
+    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div
       class="flex items-start justify-between gap-4 px-2 max-md:flex-col max-md:items-start max-md:gap-3"
@@ -64,13 +69,14 @@
       </div>
     </div>
 
-    <div class="min-h-0 flex-1 px-2">
+    <div class="px-2">
       <!-- a new company starts where the DocType says: DocFields reads its defaults -->
       <DocFields
         v-if="corrente || creando"
         :key="creando ? 'nuova' : `${corrente}-${versione}`"
         doctype="CRM Invoicing Company"
         :docname="creando ? '' : corrente"
+        :scroll="false"
         @saved="salvata"
       />
       <div v-else-if="!companies.loading" class="text-p-base text-ink-gray-5">
