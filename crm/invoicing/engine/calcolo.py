@@ -41,6 +41,7 @@ from .codici import (
 	TipoCassa,
 	TipoRitenuta,
 )
+from .messaggi import Messaggio
 
 CENTESIMO = Decimal("0.01")
 ZERO = Decimal("0.00")
@@ -409,9 +410,12 @@ def calcola(
 		differenza = arrotonda(calcolo.totale - calcolo.totale_ts)
 		if differenza != ZERO and all(r.va_al_ts for r in righe_utili):
 			avvisi.append(
-				f"the document total ({calcolo.totale}) does not match the amount reported to the "
-				f"Sistema TS ({calcolo.totale_ts}): difference {differenza}. The patient would see a "
-				"different number in the pre-filled return than the one they are holding"
+				Messaggio(
+					"the document total ({0}) does not match the amount reported to the Sistema TS ({1}): difference {2}. The patient would see a different number in the pre-filled return than the one they are holding",
+					calcolo.totale,
+					calcolo.totale_ts,
+					differenza,
+				)
 			)
 	return calcolo
 

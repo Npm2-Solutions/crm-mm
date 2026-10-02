@@ -37928,3 +37928,59 @@ msgstr "Una struttura, una farmacia o un ottico comunica con i codici di Regione
 #: crm/tessera_sanitaria/qualifica.py
 msgid "Whoever invoices in their own name reports with their codice fiscale: the Region, ASL and facility codes stay empty"
 msgstr "Chi fattura a proprio nome comunica con il suo codice fiscale: i codici di Regione, ASL e struttura restano vuoti"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "service not in the catalogue: a service without a card is not billable"
+msgstr "servizio senza scheda fiscale: un servizio senza scheda non si può fatturare"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "no performer on the line: without a qualification neither the expense type nor the VAT regime can be determined"
+msgstr "manca chi ha eseguito la prestazione: senza la sua qualifica non si possono stabilire né il tipo di spesa né l'IVA"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "mixed document cannot be issued: it holds lines for which the electronic invoice through the SdI is FORBIDDEN (exempt healthcare service towards a natural person) and lines for which it is MANDATORY by express provision (Ris. AdE n. 9 del 24 febbraio 2026: osteopath, chiropractor, kinesiologist). Issue two separate documents"
+msgstr "documento misto, non si può emettere: ha righe per cui la fattura elettronica allo SdI è VIETATA (prestazione sanitaria esente a una persona fisica) e righe per cui è OBBLIGATORIA per legge (Ris. AdE n. 9 del 24 febbraio 2026: osteopata, chiropratico, chinesiologo). Fai due documenti separati"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "the catalogue declares the service exempt, but {0!r} is not a health profession for exemption purposes: the service is TAXABLE at the ordinary rate and the electronic invoice through the SdI is MANDATORY (Risoluzione AdE n. 9 del 24 febbraio 2026). Correct the service card"
+msgstr "la scheda dice che il servizio è esente, ma «{0}» non è una professione sanitaria ai fini dell'esenzione: il servizio è IMPONIBILE con l'aliquota ordinaria e la fattura elettronica allo SdI è OBBLIGATORIA (Risoluzione AdE n. 9 del 24 febbraio 2026). Correggi la scheda del servizio"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "service declared taxable although performed by {0!r}: possible (cosmetic surgery, for instance), but it has to be confirmed in the catalogue"
+msgstr "servizio dichiarato imponibile anche se eseguito da «{0}»: è possibile (la chirurgia estetica, per esempio), ma va confermato sulla scheda del servizio"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "{0!r}: the service is NOT exempt and the electronic invoice through the SdI is mandatory towards the patient too. No Sistema TS report"
+msgstr "«{0}»: la prestazione NON è esente e la fattura elettronica allo SdI è obbligatoria anche verso il paziente. Niente comunicazione al Sistema TS"
+
+#: crm/invoicing/engine/classificazione.py
+msgid "a single healthcare line towards a natural person takes the whole document out of the SdI channel: only the healthcare share goes to the Sistema TS. To keep the non-healthcare line in an electronic invoice, issue it on a separate document"
+msgstr "basta una riga sanitaria verso una persona fisica per togliere tutto il documento dallo SdI: al Sistema TS va solo la parte sanitaria. Per fare elettronica la riga non sanitaria, emettila in un documento a parte"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "a rivalsa has been configured for ENPAM: ENPAM provides for no contributo integrativo to charge the patient. Check with the accountant before showing it on the invoice"
+msgstr "è impostata una rivalsa per l'ENPAM: l'ENPAM non prevede un contributo integrativo da addebitare al paziente. Verifica col commercialista prima di metterla in fattura"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "stamp duty settled with a physical stamp on the paper original: the PDF has to carry the 14-digit identifier and the date of the stamp, which must be the same as or earlier than the invoice date"
+msgstr "bollo assolto con la marca sull'originale cartaceo: il PDF deve riportare l'identificativo di 14 cifre e la data della marca, uguale o precedente alla data della fattura"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "only the stamp duty was paid in cash: the Sistema TS is told the amount of the service alone and the report stays 'traced'"
+msgstr "solo il bollo è stato pagato in contanti: al Sistema TS si comunica il solo importo della prestazione e il pagamento resta «tracciato»"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "split payment (art. 17-ter): the VAT is shown but not collected. The invoice has to carry the annotation 'scissione dei pagamenti' and the client pays the net amount"
+msgstr "split payment (art. 17-ter): l'IVA si espone ma non si incassa. La fattura deve riportare la dicitura «scissione dei pagamenti» e il cliente paga il netto"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "reverse charge: the invoice carries no VAT and has to say 'inversione contabile'. The client settles the tax"
+msgstr "inversione contabile: la fattura è senza IVA e deve riportare «inversione contabile». L'imposta la versa il cliente"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "the stamp duty becomes due only because the art. 15 advances are counted in the threshold. That is the prevailing reading of nota 2 lett. a) and it is not settled - confirm it with the accountant"
+msgstr "il bollo diventa dovuto solo perché le anticipazioni art. 15 contano nella soglia. È la lettura prevalente della nota 2 lett. a) e non è pacifica: confermala col commercialista"
+
+#: crm/invoicing/engine/calcolo.py
+msgid "the document total ({0}) does not match the amount reported to the Sistema TS ({1}): difference {2}. The patient would see a different number in the pre-filled return than the one they are holding"
+msgstr "il totale del documento ({0}) non coincide con l'importo comunicato al Sistema TS ({1}): differenza {2}. Il paziente vedrebbe nella precompilata un numero diverso da quello che ha in mano"

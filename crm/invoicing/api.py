@@ -56,7 +56,7 @@ def preview(invoice: str) -> dict:
 		"sdi_allowed": classificazione.sdi_consentito,
 		"ts_required": classificazione.ts_richiesto,
 		"errors": documento.blocchi(fattura, classificazione),
-		"warnings": classificazione.tutti_avvisi + conto.avvisi,
+		"warnings": [documento.in_parole(m) for m in (*classificazione.tutti_avvisi, *conto.avvisi)],
 		"totals": {
 			"net_total": float(conto.imponibile),
 			"fund_contribution": float(conto.cassa),
