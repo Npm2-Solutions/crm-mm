@@ -1,0 +1,131 @@
+<!--
+title: Gestionale per studio medico · DottorCloud
+description: Il gestionale per lo studio medico, anche con un medico e una segreteria: agenda, cartella con note firmate, consensi dal telefono, fatture.
+path: /gestionale-studio-medico/
+nav: per-chi
+parent: /per-chi/
+crumb: Studi medici
+product: yes
+audience: Studi medici e specialisti
+-->
+<section class="hero hero--page">
+  <div class="container">
+    <div class="hero__text">
+      {{breadcrumb}}
+      <span class="chip arrive" style="--i: 0">{{icon stethoscope}} Per gli studi medici</span>
+      <h1 class="h1 arrive" style="--i: 1">Il gestionale per lo studio medico: agenda, cartella e fatture insieme.</h1>
+      <p class="lead arrive" style="--i: 2">
+        Anche quando lo studio è un medico e una segreteria. Si parte da quello che serve oggi e si aggiunge il
+        resto quando si vuole, sulla stessa scheda del paziente.
+      </p>
+      <div class="buttons arrive" style="--i: 3">
+        <a class="button button--primary" href="/demo/">Richiedi una demo {{icon arrow-right}}</a>
+        <a class="button button--secondary" href="/funzioni/">Tutte le funzioni</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="cartella-titolo">
+  <div class="container">
+    <article class="feature">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon heart-pulse}} Cartella clinica</span>
+        <h2 id="cartella-titolo" class="h2">La cartella che il medico apre davvero.</h2>
+        <p class="lead">
+          Allergie e terapie sempre in alto, le visite su schede pensate per la tua specialità, le note firmate
+          e poi solo integrate.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small">{{icon pen-line}}</span>
+            <div><strong>Note di visita firmate</strong><span>Con il referto in PDF, fatto una volta sola.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon file-check}}</span>
+            <div><strong>Moduli e consensi</strong><span>Firmati dal paziente sul telefono, prima della visita.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon folder-heart}}</span>
+            <div><strong>Referti e documenti</strong><span>Consegnati a mano o online, con le regole del Garante.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon smartphone}}</span>
+            <div><strong>Anche dal telefono</strong><span>La tua agenda e i tuoi pazienti, tra una visita e l'altra.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media reveal" style="--i: 2">
+        <img
+          src="/img/clinica.webp"
+          alt="La cartella clinica di una paziente in DottorCloud: allergie e terapie in alto, le visite, i referti e i consensi"
+        />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="giornata-titolo">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">La giornata dello studio</span>
+      <h2 id="giornata-titolo" class="h2">Meno telefonate, meno carta, meno ricopiare.</h2>
+    </div>
+    <div class="grid grid--3">
+      <article class="card reveal" style="--i: 0">
+        <span class="bubble">{{icon message-circle}}</span>
+        <h3>Promemoria e conferme</h3>
+        <p>Su WhatsApp, da soli: il paziente risponde Sì o No e l'agenda si aggiorna.</p>
+      </article>
+      <article class="card reveal" style="--i: 1">
+        <span class="bubble">{{icon calendar-check}}</span>
+        <h3>Prenotazione online</h3>
+        <p>I pazienti prenotano anche la sera, solo negli orari e nei servizi che decidi tu.</p>
+      </article>
+      <article class="card reveal" style="--i: 2">
+        <span class="bubble">{{icon receipt}}</span>
+        <h3>Fatture e Sistema TS</h3>
+        <p>La fattura nasce dalla visita, in PDF al paziente, con le spese per la precompilata.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="domande-titolo">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center reveal">
+      <span class="chip">{{icon message-square-text}} Domande</span>
+      <h2 id="domande-titolo" class="h2">Le domande degli studi medici.</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>Va bene anche per un solo medico? {{icon chevron-down}}</summary>
+        <p>
+          Sì. Si usa quello che serve, per esempio agenda e fatture, e si accendono gli altri moduli quando si
+          vuole. Se lo studio cresce, si aggiungono persone e agende senza cambiare gestionale.
+        </p>
+      </details>
+      <details>
+        <summary>Il paziente può firmare i consensi da casa? {{icon chevron-down}}</summary>
+        <p>
+          Sì. Riceve i moduli prima della visita e li firma con il dito sul telefono; il documento firmato
+          diventa un PDF con le prove della firma e va nella sua scheda.
+        </p>
+      </details>
+      <details>
+        <summary>Serve installare qualcosa? {{icon chevron-down}}</summary>
+        <p>
+          No. DottorCloud si usa dal browser, sul computer, sul tablet e sul telefono. I pazienti hanno la loro
+          area, con il nome dello studio.
+        </p>
+      </details>
+    </div>
+    <p class="note" style="margin-top: 32px">
+      Approfondisci: <a href="/approfondimenti/consenso-informato-firmato-sul-tablet/">il consenso informato
+      digitale</a> e <a href="/approfondimenti/fattura-prestazioni-sanitarie-e-sistema-ts/">fattura sanitaria e
+      Sistema TS</a>.
+    </p>
+  </div>
+</section>
+
+{{> cta}}

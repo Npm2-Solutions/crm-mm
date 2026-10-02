@@ -1,0 +1,128 @@
+<!--
+title: Gestionale per fisioterapisti · DottorCloud
+description: Il gestionale per la fisioterapia: cicli di sedute e abbonamenti in agenda, sedute di gruppo, palestra e box, esercizi a casa sul telefono.
+path: /gestionale-fisioterapia/
+nav: per-chi
+parent: /per-chi/
+crumb: Fisioterapia
+product: yes
+audience: Studi di fisioterapia e centri di riabilitazione
+-->
+<section class="hero hero--page">
+  <div class="container">
+    <div class="hero__text">
+      {{breadcrumb}}
+      <span class="chip arrive" style="--i: 0">{{icon activity}} Per la fisioterapia</span>
+      <h1 class="h1 arrive" style="--i: 1">Il gestionale per fisioterapisti: cicli, palestra ed esercizi a casa.</h1>
+      <p class="lead arrive" style="--i: 2">
+        Dieci sedute contate in agenda, il gruppo del martedì, la palestra e i box come risorse. E gli esercizi
+        che il paziente segue a casa, sul telefono, con animazioni, serie e muscoli che lavorano.
+      </p>
+      <div class="buttons arrive" style="--i: 3">
+        <a class="button button--primary" href="/demo/">Richiedi una demo {{icon arrow-right}}</a>
+        <a class="button button--secondary" href="/funzioni/#a-casa">Gli esercizi a casa</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="cicli-titolo">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">In agenda</span>
+      <h2 id="cicli-titolo" class="h2">Le sedute si contano da sole.</h2>
+      <p class="lead">
+        Ogni appuntamento entra nel suo ciclo o abbonamento: "seduta 4 di 10", con l'importo diviso tra le sedute
+        o pagato tutto insieme, e una fattura sola per il ciclo.
+      </p>
+    </div>
+    <div class="grid grid--3">
+      <article class="card reveal" style="--i: 0">
+        <span class="bubble">{{icon repeat}}</span>
+        <h3>Cicli di sedute</h3>
+        <p>Quante ne restano, quando finisce, e la fattura del ciclo pagato in una volta.</p>
+      </article>
+      <article class="card reveal" style="--i: 1">
+        <span class="bubble">{{icon calendar-clock}}</span>
+        <h3>Abbonamenti</h3>
+        <p>Ingressi per settimana o per mese, sospensioni, rate e rinnovi, senza un foglio a parte.</p>
+      </article>
+      <article class="card reveal" style="--i: 2">
+        <span class="bubble">{{icon users}}</span>
+        <h3>Sedute di gruppo</h3>
+        <p>Posti per classe, e chi resta fuori entra in lista d'attesa e viene avvisato.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="casa-titolo">
+  <div class="container">
+    <article class="feature feature--flip">
+      <div class="feature__text reveal">
+        <span class="chip">{{icon dumbbell}} Esercizi a casa</span>
+        <h2 id="casa-titolo" class="h2">Il programma continua a casa.</h2>
+        <p class="lead">
+          Il fisioterapista prepara la seduta di esercizi, il paziente la segue sul telefono e segna cosa ha
+          fatto. Tu vedi come va.
+        </p>
+        <ul class="rows" role="list">
+          <li class="row">
+            <span class="bubble bubble--small bubble--violet">{{icon dumbbell}}</span>
+            <div><strong>Animazioni, serie e ripetizioni</strong><span>Con i muscoli che lavorano, davanti e dietro.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon flag}}</span>
+            <div><strong>Programmi a tappe</strong><span>Una tappa si apre al ritmo del paziente o con il calendario.</span></div>
+          </li>
+          <li class="row">
+            <span class="bubble bubble--small">{{icon message-square-text}}</span>
+            <div><strong>Messaggi del professionista</strong><span>"Se senti dolore al ginocchio, fermati e scrivimi."</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="feature__media feature__media--phones reveal" style="--i: 2">
+        <img src="/img/esercizi.webp" alt="La seduta di oggi sul telefono: quattro esercizi con serie e ripetizioni, uno già fatto" />
+        <img src="/img/esercizio.webp" alt="Un esercizio a casa sul telefono: squat a corpo libero con l'animazione, tre serie da dodici" />
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section section--white" aria-labelledby="domande-titolo">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center reveal">
+      <span class="chip">{{icon message-square-text}} Domande</span>
+      <h2 id="domande-titolo" class="h2">Le domande dei fisioterapisti.</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>La palestra e i box si prenotano come le stanze? {{icon chevron-down}}</summary>
+        <p>
+          Sì. Palestra, box e macchinari sono risorse con i loro orari: una seduta occupa il fisioterapista e lo
+          spazio insieme, e nessuno dei due si prenota due volte.
+        </p>
+      </details>
+      <details>
+        <summary>Il fisioterapista deve comunicare le spese al Sistema TS? {{icon chevron-down}}</summary>
+        <p>
+          Sì, i fisioterapisti sono tra le professioni sanitarie che comunicano le spese dei pazienti al
+          Sistema TS. DottorCloud le prepara dalle fatture.
+        </p>
+      </details>
+      <details>
+        <summary>Gli esercizi sono da creare uno per uno? {{icon chevron-down}}</summary>
+        <p>
+          No. C'è una libreria di esercizi con le loro immagini, che il centro può correggere e completare; il
+          fisioterapista li sceglie e decide serie, ripetizioni e recupero.
+        </p>
+      </details>
+    </div>
+    <p class="note" style="margin-top: 32px">
+      Approfondisci: <a href="/approfondimenti/ridurre-le-visite-saltate/">come ridurre le sedute saltate</a> e
+      <a href="/approfondimenti/fattura-prestazioni-sanitarie-e-sistema-ts/">fatture e Sistema TS</a>.
+    </p>
+  </div>
+</section>
+
+{{> cta}}
