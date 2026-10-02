@@ -8794,10 +8794,6 @@ msgstr "Dettagli"
 msgid "Device"
 msgstr "Dispositivo"
 
-#: frontend/src/utils/menu.js
-msgid "Dialer"
-msgstr "Tastierino"
-
 #: crm/dashboard/widgets/calls.py
 msgid "Dialer outcomes"
 msgstr "Esiti del dialer"
@@ -19319,8 +19315,8 @@ msgid "Open the area"
 msgstr "Apri l'area"
 
 #: crm/dashboard/widgets/calls.py
-msgid "Open the dialer"
-msgstr "Apri il dialer"
+msgid "Open the call round"
+msgstr "Apri il giro di chiamate"
 
 #: frontend/src/components/Plans/ProgrammeDialog.vue
 msgid "Open the first stage now"
@@ -40593,3 +40589,44 @@ msgstr "Copia il codice"
 #: frontend/src/components/PersonHeader.vue
 msgid "Next appointment"
 msgstr "Prossimo appuntamento"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "Number or name"
+msgstr "Numero o nome"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "To call back now"
+msgstr "Da richiamare adesso"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "Last calls"
+msgstr "Ultime chiamate"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "Call back"
+msgstr "Richiama"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "No calls yet"
+msgstr "Ancora nessuna chiamata"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "All calls"
+msgstr "Tutte le chiamate"
+
+#: frontend/src/components/Telephony/PhonePanel.vue
+msgid "Call round"
+msgstr "Giro di chiamate"
+
+#: frontend/src/components/Telephony/PhoneButton.vue
+msgid "Phone · {0} to call back"
+msgstr "Telefono · {0} da richiamare"
+
+#: frontend/src/pages/Calendar.vue
+msgctxt "Calendar view"
+msgid "Agenda"
+msgstr "Programma"
+
+#: frontend/src/pages/Dialer.vue
+msgid "Skip"
+msgstr "Salta"

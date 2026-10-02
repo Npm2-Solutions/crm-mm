@@ -1,26 +1,26 @@
 // Copyright (c) 2026, NPM2 Solutions Srl and contributors
 // For license information, please see license.txt
 
-// The main menu as data: the centre's work in groups, each entry with its page,
-// its icon (a name of components/Icons/menu.js) and who sees it, on the session
-// (`puo`, `puoUno`, `ambito`, `telefono`: a telephony provider is on). The day
-// first, with no label - its pages, the people, the conversations, the
-// invoices - then the archive, marketing, the phone.
-// A group nobody sees is not drawn. The phone's bar takes the first places of
-// the same menu (`barraDelTelefono`), the sidebar draws all of it.
+// The main menu as data (docs/progetto-ghl/34): the centre's work in groups,
+// each entry with its page, its icon (a name of components/Icons/menu.js) and
+// who sees it, on the session (`puo`, `puoUno`, `ambito`, `telefono`: a
+// telephony provider is on). The work of the day in one group with no label,
+// in the order it is done - who comes today, the agenda, the people, answering
+// them, what is left to do, the deals, the invoices, the numbers - then
+// marketing. A group nobody sees is not drawn. The phone's bar takes the first
+// places of the same menu (`barraDelTelefono`), the sidebar draws all of it.
+//
+// What is not an entry lives inside one, a switch in their header (`SORELLE`):
+// the waiting list beside the agenda, the companies beside the people, the
+// notes beside the tasks; the calls, the round of calls and the keypad in the
+// phone at the top of every page (components/Telephony/PhoneButton.vue).
+// A page with no entry lights the entry it lives in (utils/navigation.js).
 import { DASHBOARD_CAPABILITIES } from '@/utils/dashboard'
 
 export const MENU = [
   {
     key: 'giorno',
     entries: [
-      {
-        key: 'Dashboard',
-        label: 'Dashboard',
-        icon: 'dashboard',
-        // reading the numbers is enough: Read only opens it and makes nothing
-        condition: (c) => c.puoUno(DASHBOARD_CAPABILITIES),
-      },
       {
         // who arrives, who is waiting, who came: the desk's day
         key: 'Today',
@@ -33,13 +33,6 @@ export const MENU = [
         label: 'Agenda',
         icon: 'calendar',
         condition: (c) => c.puo('agenda.vedi'),
-      },
-      {
-        // who waits for a place that frees up
-        key: 'Waiting List',
-        label: 'Waiting list',
-        icon: 'waiting',
-        condition: (c) => c.puo('agenda.attese'),
       },
       {
         // everybody the centre has heard from: who asked, its patients, a
@@ -65,45 +58,36 @@ export const MENU = [
         condition: (c) => c.puo('persone.vedi'),
       },
       {
+        // the sale, with its quotes: work of the day for whoever sells, not
+        // marketing's
+        key: 'Deals',
+        label: 'Deals',
+        icon: 'deals',
+        condition: (c) => c.puo('trattative.vedi'),
+      },
+      {
         // the centre's register: whoever sees the centre's invoices, Read only too
         key: 'Invoices',
         label: 'Invoices',
         icon: 'invoices',
         condition: (c) => c.ambito('fatture.vedi') === 'centro',
       },
-    ],
-  },
-  {
-    // what stays on record beside the people: the companies, the notes
-    key: 'archivio',
-    label: 'Archive',
-    entries: [
       {
-        key: 'Organizations',
-        label: 'Organizations',
-        icon: 'organizations',
-        condition: (c) => c.puo('persone.vedi'),
-      },
-      {
-        key: 'Notes',
-        label: 'Notes',
-        icon: 'notes',
-        condition: (c) => c.puo('note.vedi'),
+        // the numbers: last where the day opens on Today, first where it
+        // opens here (`menuDi`)
+        key: 'Dashboard',
+        label: 'Dashboard',
+        icon: 'dashboard',
+        // reading the numbers is enough: Read only opens it and makes nothing
+        condition: (c) => c.puoUno(DASHBOARD_CAPABILITIES),
       },
     ],
   },
   {
-    // how new people arrive: the deals they open, what runs by itself, the
-    // posts, the website
+    // how new people arrive: what runs by itself, the posts, the website
     key: 'marketing',
     label: 'Marketing',
     entries: [
-      {
-        key: 'Deals',
-        label: 'Deals',
-        icon: 'deals',
-        condition: (c) => c.puo('trattative.vedi'),
-      },
       {
         key: 'Automations',
         label: 'Automations',
@@ -126,33 +110,67 @@ export const MENU = [
       },
     ],
   },
-  {
-    key: 'telefono',
-    label: 'Phone',
-    entries: [
-      {
-        key: 'Call Logs',
-        label: 'Call Logs',
-        icon: 'calls',
-        condition: (c) => c.puo('telefono.registro'),
-      },
-      {
-        key: 'Dialer',
-        label: 'Dialer',
-        icon: 'dialer',
-        condition: (c) => Boolean(c.telefono) && c.puo('telefono.chiama'),
-      },
-    ],
-  },
 ]
 
+// The pages that live together behind one entry, a switch between them in
+// their header (components/ViewBreadcrumbs.vue): the agenda and its waiting
+// list, the people and their companies, the tasks and the notes.
+export const SORELLE = [
+  [
+    {
+      key: 'Calendar',
+      label: 'Agenda',
+      condition: (c) => c.puo('agenda.vedi'),
+    },
+    {
+      key: 'Waiting List',
+      label: 'Waiting list',
+      condition: (c) => c.puo('agenda.attese'),
+    },
+  ],
+  [
+    {
+      key: 'Leads',
+      label: 'People',
+      condition: (c) => c.puo('persone.vedi'),
+    },
+    {
+      key: 'Organizations',
+      label: 'Organizations',
+      condition: (c) => c.puo('persone.vedi'),
+    },
+  ],
+  [
+    {
+      key: 'Tasks',
+      label: 'Tasks',
+      condition: (c) => c.puo('persone.vedi'),
+    },
+    {
+      key: 'Notes',
+      label: 'Notes',
+      condition: (c) => c.puo('note.vedi'),
+    },
+  ],
+]
+
+/** The pages a page lives with that the session opens, itself among them. */
+export function paginaSorelle(chiave, c, sorelle = SORELLE) {
+  const gruppo = sorelle.find((pagine) => pagine.some((p) => p.key === chiave))
+  return (gruppo || []).filter((pagina) => pagina.condition(c))
+}
+
 // The menu one sees: the groups with what they may open, the empty ones gone.
+// The numbers come first only where the day does not open on Today.
 export function menuDi(c, menu = MENU) {
   return menu
-    .map((gruppo) => ({
-      ...gruppo,
-      entries: gruppo.entries.filter((voce) => voce.condition(c)),
-    }))
+    .map((gruppo) => {
+      let entries = gruppo.entries.filter((voce) => voce.condition(c))
+      const numeri = entries.find((voce) => voce.key === 'Dashboard')
+      if (numeri && !entries.some((voce) => voce.key === 'Today'))
+        entries = [numeri, ...entries.filter((voce) => voce !== numeri)]
+      return { ...gruppo, entries }
+    })
     .filter((gruppo) => gruppo.entries.length)
 }
 

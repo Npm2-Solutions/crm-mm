@@ -1,7 +1,7 @@
 <template>
   <LayoutHeader>
     <template #left-header>
-      <ViewBreadcrumbs routeName="Calendar" />
+      <ViewBreadcrumbs routeName="Calendar" label="Agenda" />
     </template>
     <template #right-header>
       <TabButtons
@@ -9,7 +9,7 @@
         v-model="viewMode"
         :buttons="[
           { label: __('Calendar'), value: 'calendar' },
-          { label: __('Agenda'), value: 'agenda' },
+          { label: __('Agenda', null, 'Calendar view'), value: 'agenda' },
         ]"
       />
       <Tooltip

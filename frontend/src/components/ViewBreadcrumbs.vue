@@ -1,6 +1,15 @@
 <template>
-  <div class="flex items-center">
+  <div class="flex min-w-0 items-center">
+    <!-- the pages that live together, one switch between them: Persone and
+         Aziende, Da fare and Note (docs/progetto-ghl/34) -->
+    <TabButtons
+      v-if="sorelle.length > 1"
+      class="mr-1 shrink-0"
+      :options="sorelle"
+      :modelValue="routeName"
+    />
     <router-link
+      v-else
       :to="{ name: routeName }"
       class="px-0.5 py-1 text-lg-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
       :class="[
@@ -62,14 +71,28 @@
 </template>
 <script setup>
 import Icon from '@/components/Icon.vue'
-import { Dropdown } from 'frappe-ui'
+import { paginaSorelle } from '@/utils/menu'
+import { usersStore } from '@/stores/users'
+import { Dropdown, TabButtons } from 'frappe-ui'
+import { computed } from 'vue'
 
-defineProps({
+const props = defineProps({
   routeName: { type: String, required: true },
   // what to call the list when the route name is not what people call it: the
   // person list still routes as "Leads" so old links keep working
   label: { type: String, default: '' },
 })
+
+const { puo, puoUno, ambito } = usersStore()
+
+// the pages this one lives with, that the session opens (utils/menu.js)
+const sorelle = computed(() =>
+  paginaSorelle(props.routeName, { puo, puoUno, ambito }).map((pagina) => ({
+    label: __(pagina.label),
+    value: pagina.key,
+    route: { name: pagina.key },
+  })),
+)
 
 const viewControls = defineModel({ type: Object, default: () => ({}) })
 </script>

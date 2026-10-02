@@ -314,7 +314,7 @@ def callback_list(ctx: Context):
 	return charts.listing(
 		items,
 		empty=_("Nobody is waiting for a call back"),
-		more={"label": _("Open the dialer"), "route": DIALER},
+		more={"label": _("Open the call round"), "route": DIALER},
 		total=int(total(Call, Call.callback_status == "Pending", callbacks_scope(ctx))),
 	)
 
