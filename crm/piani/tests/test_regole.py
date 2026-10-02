@@ -40,6 +40,12 @@ class ITipi(UnitTestCase):
 		finally:
 			r._tipi.pop("Test kind", None)
 
+	def test_ogni_tipo_si_mostra_con_un_colore_del_sistema(self):
+		# the area draws a kind in its category's cloud: never a colour of its own
+		self.assertEqual((r.tipo(r.ALLENAMENTO).colore, r.tipo(r.ALLENAMENTO).icona), ("violet", "dumbbell"))
+		for tipo in r.tipi():
+			self.assertIn(tipo.colore, ("", "amber", "violet", "green", "blue", "rose"), tipo.chiave)
+
 	def test_ogni_genere_porta_i_suoi_campi(self):
 		campi = r.campi_voce()
 		for campo in ("kind", "times_per_week", "note", "exercise", "sets", "reps", "text"):

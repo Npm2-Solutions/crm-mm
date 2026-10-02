@@ -95,6 +95,11 @@ class TipoPiano:
 	#: One line on what it is, in English: whoever chooses which plan to write
 	#: reads it.
 	descrizione: str = ""
+	#: How it shows to the person, in the client area: a category of the design
+	#: system ("amber", "violet", "green", "blue", "rose"; empty, the brand's) and
+	#: a Lucide icon's name.
+	colore: str = ""
+	icona: str = ""
 
 
 _generi: dict[str, GenereVoce] = {}
@@ -240,6 +245,8 @@ registra_tipo(
 		(ESERCIZIO, ABITUDINE),
 		ordine=30,
 		descrizione="Exercises for the days of the week, with sets, reps and rest.",
+		colore="violet",
+		icona="dumbbell",
 	)
 )
 registra_tipo(
@@ -248,5 +255,7 @@ registra_tipo(
 		(ABITUDINE,),
 		ordine=50,
 		descrizione="Small things to keep up every day: water, a walk, sleep.",
+		colore="green",
+		icona="sprout",
 	)
 )
