@@ -236,9 +236,15 @@ never `/app/crm-invoice`; a sentence of the engine with a value in it is a
 `Messaggio` (an SdI finding a `Rilievo`), never an f-string, and its English is
 in `it.po` by hand: `crm/tests/test_frasi_del_motore.py` checks both.
 What the centre sets up of invoicing is only what is its own: who issues, its
-details, its Sistema TS credentials. The channel, numbering, preservation, the
-Sistema TS's channel and certificate sit on permlevel 1 (the agency's, System
-Manager), and `crm.api.doc.get_fields` never draws a field the user cannot read.
+details, its Sistema TS credentials, and the tick that it joined the Agenzia's free
+preservation. Numbering (series never empty, the format picked among examples) and
+the Sistema TS's way and certificate sit on permlevel 1 (the agency's, System
+Manager). What is nobody's choice - the SdI through Itala on the agency's account,
+both directions, paid in the plan's credits; the Agenzia's preservation; a paper
+original for a healthcare invoice to a person - the company's controller forces
+(`SEMPRE`) and the DocType hides. `crm.api.doc.get_fields` never draws a field the
+user cannot read, and a settings screen (`buildTabs`) draws no hidden field nor a
+section or tab left empty.
 Anything with a lasting effect (a client, a patient, the area, a report to the
 Sistema TS) leaves a test invoice out (`test_document`); going live takes them away.
 
