@@ -279,6 +279,7 @@ import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
+import LucideReceiptText from '~icons/lucide/receipt-text'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
 import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
@@ -476,6 +477,16 @@ const tabs = computed(() => {
       label: __('Notes'),
       icon: NoteIcon,
       condition: () => puo('note.vedi'),
+    },
+    // the deal's quotes: a quote proposed moves it, accepted wins it
+    {
+      name: 'Quotes',
+      label: __('Quotes'),
+      icon: LucideReceiptText,
+      condition: () =>
+        puo('preventivi.vedi') ||
+        puo('preventivi.scrivi') ||
+        puo('preventivi.gestisci'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))

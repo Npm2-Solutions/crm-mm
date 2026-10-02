@@ -19,7 +19,19 @@
           v-if="plan.status"
           variant="subtle"
           :theme="STATO[plan.status] || 'gray'"
-          :label="__(plan.status)"
+          :label="__(plan.status, null, 'Quote')"
+        />
+        <!-- the deal it belongs to, a step away -->
+        <Button
+          v-if="plan.deal && puo('trattative.vedi')"
+          variant="ghost"
+          size="sm"
+          :label="
+            plan.deal_label
+              ? __('Deal: {0}', [plan.deal_label])
+              : __('Open the deal')
+          "
+          @click="apriTrattativa"
         />
       </div>
     </template>
@@ -307,12 +319,12 @@
         <div v-if="plan.can_decide && !deciding" class="flex flex-wrap gap-2">
           <Button
             theme="red"
-            :label="__('Declined')"
+            :label="__('Declined', null, 'Quote')"
             @click="startDeciding('decline')"
           />
           <Button
             variant="solid"
-            :label="__('Accepted')"
+            :label="__('Accepted', null, 'Quote')"
             @click="startDeciding('accept')"
           />
         </div>
@@ -329,6 +341,7 @@
 <script setup>
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
+import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
 import {
   STATO,
@@ -354,6 +367,8 @@ import { useRouter } from 'vue-router'
 
 const props = defineProps({
   lead: { type: String, required: true },
+  // made from a deal's page: a new quote is that deal's
+  deal: { type: String, default: null },
   // the quote to open; none for a new one
   name: { type: String, default: null },
   priceLists: { type: Array, default: () => [] },
@@ -365,6 +380,7 @@ const show = defineModel({ type: Boolean })
 
 const router = useRouter()
 const { $dialog } = globalStore()
+const { puo } = usersStore()
 const meta = useSchedulerMeta()
 
 const plan = reactive({ items: [] })
@@ -579,6 +595,11 @@ async function pickService(item, service) {
   }
 }
 
+function apriTrattativa() {
+  show.value = false
+  router.push({ name: 'Deal', params: { dealId: plan.deal } })
+}
+
 async function save(quietly = false) {
   busy.value = 'save'
   error.value = ''
@@ -588,6 +609,7 @@ async function save(quietly = false) {
         lead: props.lead,
         data: perIlServer(plan, campi.value),
         name: plan.name || null,
+        deal: plan.name ? null : props.deal,
       }),
     )
     if (!quietly) toast.success(__('Draft saved'))
@@ -674,14 +696,14 @@ async function decide() {
       'accept',
       'crm.preventivi.api.accept_quote',
       { note: decision.note },
-      __('Accepted'),
+      __('Accepted', null, 'Quote'),
     )
   } else {
     await act(
       'decline',
       'crm.preventivi.api.decline_quote',
       { reason: decision.reason || null, note: decision.note },
-      __('Declined'),
+      __('Declined', null, 'Quote'),
     )
   }
   if (!error.value) deciding.value = ''

@@ -50,7 +50,12 @@
       v-else-if="title == 'Quotes'"
       class="h-full overflow-y-auto px-8 py-6 max-md:px-4 max-md:py-4"
     >
-      <QuotesCard :lead="docname" />
+      <!-- a person's quotes, or on a deal's page the deal's -->
+      <QuotesCard
+        v-if="doctype !== 'CRM Deal' || doc.lead"
+        :lead="doctype === 'CRM Deal' ? doc.lead : docname"
+        :deal="doctype === 'CRM Deal' ? docname : null"
+      />
     </div>
     <div
       v-else-if="title == 'Plans'"

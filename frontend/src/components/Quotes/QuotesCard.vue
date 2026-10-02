@@ -2,7 +2,8 @@
   A person's quotes (crm.preventivi): in draft for their author, proposed for who
   reads the person's quotes and for the desk that records the answer, then done
   service by service. With the clinic, a dentist's quote is a care plan: its rows
-  may be on a tooth.
+  may be on a tooth. On the page of a deal of the quotes pipeline, the deal's quotes:
+  a new one is the deal's. On any other deal's page, the person's.
 -->
 <template>
   <section
@@ -64,7 +65,7 @@
           <Badge
             variant="subtle"
             :theme="STATO[quote.status] || 'gray'"
-            :label="__(quote.status)"
+            :label="__(quote.status, null, 'Quote')"
           />
         </span>
       </button>
@@ -73,6 +74,7 @@
     <QuoteDialog
       v-model="dialog.show"
       :lead="lead"
+      :deal="quotes.data.deal"
       :name="dialog.name"
       :price-lists="quotes.data.price_lists"
       :offers="quotes.data.offers"
@@ -88,17 +90,21 @@ import { STATO } from '@/utils/preventivi'
 import { Badge, Button, createResource } from 'frappe-ui'
 import { reactive, watch } from 'vue'
 
-const props = defineProps({ lead: { type: String, required: true } })
+const props = defineProps({
+  lead: { type: String, required: true },
+  // the deal whose page this is: the server says whether quotes may be its
+  deal: { type: String, default: null },
+})
 
 const quotes = createResource({
   url: 'crm.preventivi.api.get_quotes',
-  makeParams: () => ({ lead: props.lead }),
+  makeParams: () => ({ lead: props.lead, deal: props.deal }),
   onError: () => quotes.setData(null),
 })
 
 watch(
-  () => props.lead,
-  (lead) => lead && quotes.reload(),
+  () => [props.lead, props.deal],
+  ([lead]) => lead && quotes.reload(),
   { immediate: true },
 )
 

@@ -118,6 +118,23 @@ def _stadio(pipeline: str, posizione: int | None = None, tipo: str | None = None
 	return frappe.db.get_value("CRM Deal Status", filtri, "name", order_by="position asc")
 
 
+def prende_preventivi(deal: str | None) -> bool:
+	"""Whether quotes may be this deal's: a deal of the quotes pipeline. A quote never
+	moves a deal of another pipeline - the new clients' one follows the person to
+	their first visit, and a pipeline the centre made is its own way of working."""
+	pipeline = quale()
+	return bool(deal and pipeline and frappe.db.get_value("CRM Deal", deal, "pipeline") == pipeline)
+
+
+def si_puo_spostare(deal: str | None) -> bool:
+	"""A quote's own deal goes to "quote delivered" while it is open: a closed deal
+	is never opened again by a quote."""
+	if not prende_preventivi(deal):
+		return False
+	stadio = frappe.db.get_value("CRM Deal", deal, "status")
+	return frappe.get_cached_value("CRM Deal Status", stadio, "type") not in CHIUSI
+
+
 def preventivo_consegnato(lead: str, valore: float, deal: str | None = None) -> str | None:
 	"""A quote handed to the person: its deal to "quote delivered", worth the quote.
 	None where the centre has no quotes pipeline."""
@@ -125,7 +142,7 @@ def preventivo_consegnato(lead: str, valore: float, deal: str | None = None) -> 
 	stadio = _stadio(pipeline, posizione=CONSEGNATO) if pipeline else None
 	if not stadio:
 		return None
-	if not (deal and frappe.db.exists("CRM Deal", deal)):
+	if not si_puo_spostare(deal):
 		deal = next((riga.name for riga in _aperte(lead, pipeline)), None)
 	if deal:
 		doc = frappe.get_doc("CRM Deal", deal)
@@ -148,10 +165,15 @@ def preventivo_consegnato(lead: str, valore: float, deal: str | None = None) -> 
 
 
 def preventivo_chiuso(
-	deal: str | None, accettato: bool, motivo: str | None = None, note: str | None = None
+	deal: str | None,
+	accettato: bool,
+	motivo: str | None = None,
+	note: str | None = None,
+	valore: float | None = None,
 ) -> None:
-	"""Accepted, the quote's deal is won; declined, lost - with the reason given, or
-	"Other" and the words."""
+	"""Accepted, the quote's deal is won and worth what was agreed - the number the
+	dashboards add up; declined, lost - with the reason given, or "Other" and the
+	words."""
 	if not (deal and frappe.db.exists("CRM Deal", deal)):
 		return
 	doc = frappe.get_doc("CRM Deal", deal)
@@ -159,6 +181,9 @@ def preventivo_chiuso(
 	if not stadio or doc.status == stadio:
 		return
 	doc.status = stadio
+	if accettato and valore:
+		doc.deal_value = valore
+		doc.expected_deal_value = valore
 	if not accettato:
 		doc.lost_reason = motivo if motivo and frappe.db.exists("CRM Lost Reason", motivo) else ALTRO_MOTIVO
 		doc.lost_notes = note or _("Quote declined")
@@ -175,7 +200,7 @@ def segui(doc, consegnato: bool = False, accettato=None, motivo=None, note=None)
 			if deal and deal != doc.deal:
 				doc.db_set("deal", deal, update_modified=False)
 		else:
-			preventivo_chiuso(doc.deal, bool(accettato), motivo, note)
+			preventivo_chiuso(doc.deal, bool(accettato), motivo, note, valore=flt(doc.total_net))
 	except Exception:
 		frappe.db.rollback(save_point="preventivo_deal")
 		frappe.log_error(

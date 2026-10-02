@@ -3065,7 +3065,7 @@ msgstr "Vuoi davvero togliere {0} dalla gerarchia?"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.js:9
 msgid "Are you sure you want to reset 'Create Quotation from CRM Deal' Form Script?"
-msgstr "Vuoi davvero reimpostare lo script del modulo \"Crea Preventivo da Offerta CRM\"?"
+msgstr "Vuoi davvero reimpostare lo script del modulo \"Crea preventivo dalla trattativa\"?"
 
 #: frontend/src/components/Settings/DashboardSettings.vue:236
 msgid "Are you sure you want to set the currency as {0}? This cannot be changed later."
@@ -3670,7 +3670,7 @@ msgstr "Valore medio delle trattative aperte"
 
 #: crm/api/dashboard.py:546
 msgid "Average time taken from deal creation to deal closure"
-msgstr "Tempo medio impiegato dalla creazione dell'offerta alla sua chiusura"
+msgstr "Tempo medio impiegato dalla creazione della trattativa alla sua chiusura"
 
 #: crm/api/dashboard.py:483
 msgid "Average time taken from lead creation to deal closure"
@@ -8314,7 +8314,7 @@ msgstr "Valore della trattativa"
 #: frontend/src/pages/MobileDeal.vue:391
 #: frontend/src/pages/MobileOrganization.vue:343
 msgid "Deals"
-msgstr "Offerte"
+msgstr "Trattative"
 
 #: frontend/src/components/Dashboard/AddChartModal.vue:93
 msgid "Deals by Ongoing & Won Stage"
@@ -38964,3 +38964,45 @@ msgstr "L'intermediario accreditato da cui passano le fatture: le invia e legge 
 #: crm/invoicing/engine/voci.py
 msgid "The invoices are numbered PROVA and reach nobody."
 msgstr "Le fatture hanno il numero PROVA e non arrivano a nessuno."
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgctxt "Quote"
+msgid "Draft"
+msgstr "Bozza"
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgctxt "Quote"
+msgid "Proposed"
+msgstr "Proposto"
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgctxt "Quote"
+msgid "Accepted"
+msgstr "Accettato"
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgctxt "Quote"
+msgid "Declined"
+msgstr "Rifiutato"
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgctxt "Quote"
+msgid "Completed"
+msgstr "Completato"
+
+#: frontend/src/components/Quotes/QuotesCard.vue
+msgctxt "Quote"
+msgid "Closed"
+msgstr "Chiuso"
+
+#: frontend/src/components/Quotes/QuoteDialog.vue
+msgid "Deal: {0}"
+msgstr "Trattativa: {0}"
+
+#: frontend/src/components/Quotes/QuoteDialog.vue
+msgid "Open the deal"
+msgstr "Apri la trattativa"
+
+#: crm/preventivi/api.py
+msgid "This deal belongs to somebody else"
+msgstr "Questa trattativa è di un'altra persona"
