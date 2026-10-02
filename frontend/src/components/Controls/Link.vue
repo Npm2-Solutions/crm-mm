@@ -6,7 +6,7 @@
     <Autocomplete
       ref="autocomplete"
       v-model="value"
-      :options="options.data"
+      :options="opzioni"
       :size="attrs.size || 'sm'"
       :variant="attrs.variant"
       :placeholder="attrs.placeholder"
@@ -70,8 +70,8 @@
 import Autocomplete from '@/components/frappe-ui/Autocomplete.vue'
 import { isTranslatable } from '@/utils'
 import { watchDebounced } from '@vueuse/core'
-import { createResource } from 'frappe-ui'
-import { useAttrs, computed, ref } from 'vue'
+import { call, createResource } from 'frappe-ui'
+import { useAttrs, computed, ref, watch } from 'vue'
 
 const props = defineProps({
   doctype: { type: String, required: true },
@@ -143,7 +143,7 @@ const options = createResource({
       return {
         label: option.label || option.value,
         value: option.value,
-        description: stripHtml(option.description),
+        description: senzaIlCodice(stripHtml(option.description), option),
       }
     })
     if (!props.hideMe && props.doctype == 'User') {
@@ -155,6 +155,44 @@ const options = createResource({
     return allData
   },
 })
+
+// A DocType that shows a title in its links shows it here too: a qualification
+// reads "Fisioterapista", not `fisioterapista`, also when the search did not
+// load it - one a filter leaves out stays, named, among the choices.
+const attuale = computed(() =>
+  valuePropPassed.value ? attrs.value : props.modelValue,
+)
+const titolo = ref('')
+watch(
+  () => [props.doctype, attuale.value, options.data],
+  async ([doctype, nome, caricate]) => {
+    titolo.value = ''
+    // asked only when the search has loaded and did not bring the value
+    if (!nome || !caricate || caricate.some((o) => o.value === nome)) return
+    if (!(window.link_title_doctypes || []).includes(doctype)) return
+    const trovato = await titoloDi(doctype, nome)
+    if (nome === attuale.value) titolo.value = trovato
+  },
+  { immediate: true },
+)
+
+const opzioni = computed(() => {
+  const caricate = options.data || []
+  if (!titolo.value || caricate.some((o) => o.value === attuale.value)) {
+    return caricate
+  }
+  return [...caricate, { label: titolo.value, value: attuale.value }]
+})
+
+// A record shown by its title gets its name under it from the search
+// («Fisioterapista» over `fisioterapista`): a code nobody reads, left out.
+function senzaIlCodice(descrizione, option) {
+  if (!option.label || option.label === option.value) return descrizione
+  if (descrizione === option.value) return ''
+  return descrizione.startsWith(`${option.value}, `)
+    ? descrizione.slice(option.value.length + 2)
+    : descrizione
+}
 
 function stripHtml(html) {
   if (!html) return ''
@@ -203,4 +241,22 @@ const labelClasses = computed(() => {
 })
 
 defineExpose({ reload })
+</script>
+
+<script>
+// one question per record, whichever field asks
+const titoli = new Map()
+
+function titoloDi(doctype, nome) {
+  const chiave = `${doctype}::${nome}`
+  if (!titoli.has(chiave)) {
+    titoli.set(
+      chiave,
+      call('frappe.desk.search.get_link_title', { doctype, docname: nome })
+        .then((t) => t || nome)
+        .catch(() => nome),
+    )
+  }
+  return titoli.get(chiave)
+}
 </script>
