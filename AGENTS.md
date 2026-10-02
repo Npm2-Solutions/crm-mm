@@ -216,6 +216,8 @@ its own document needs nothing more: the answer reaches the person.
 | `crm/telephony/numeri_regole.py` | Pure: the kinds of Italian number and what each is for, whose the number is (a company or a professional), an area's prefix, the regulation's fields and documents in DottorCloud's words, the files Twilio takes, its evaluation line by line, a month's price, approved documents good for the next number — tested with plain `unittest` |
 | `crm/telephony/inbound.py`, `routing.py` + `providers/base.py` (`Ring`, `Message`), `messaggi.py` | An incoming call rings everyone who answers the number at once (browser and mobile, `find_ringing`) for the answering settings' seconds; nobody picks up: the announcement and the callback (`nobody_answered`), else the apology; when the centre wants it, a message after the tone (`take_message`), kept on the call (`left_message`) and told to whoever follows the person (notification "Call"). Twilio comes back to `ring_ended`, `message_taken`, `message_recorded` |
 | `crm/telephony/numeri.py` + `CRM Phone Number Request`, `Settings/Telephony/NewNumberDialog.vue`, `utils/numeri.js` | A new number from DottorCloud: kind and price, the fields with invoicing's details in them, the documents uploaded here, Twilio's evaluation before review (a draft sent again leaves Twilio), every hour how it went with a notification ("Phone", it opens Twilio's page), the number chosen and bought pointed at DottorCloud, released from the numbers' page (only in a space); approved, the files and what was written go |
+| `crm/telephony/uscita_regole.py` + `uscita.py` | Calls going out: only to the countries the centre chose (`CRM Twilio Settings.allowed_countries`, Italy to start with), never to a premium-rate number; the number shown is the one chosen for the call when it is the centre's (`caller_ids.usable_for_outbound`), else one's own line; an Italian mobile shown on a call to Italy is blocked since 19/11/2025 (AGCOM), so the screen says so. The same countries are Twilio's dialing permissions of the space, set on saving, on connecting and every hour (`allinea_i_paesi`, only in a space). The rules pure, tested with plain `unittest` |
+| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js` | The call in the browser: before it leaves, `check_number` and `get_outbound_numbers`; with more than one number the popup asks which to show (the last one used chosen already, kept in the browser), the AGCOM warning beside a mobile; during the call the keypad (`sendDigits`); the countries in Twilio's settings page — the same rules as the server's, tested |
 
 The account's own token is never stored and never in a log: the codes travel in
 variables named `*_token` and `*_secret`, which a traceback hides, and an error of
@@ -225,6 +227,9 @@ it. Twilio Connect is not used: a Connect app cannot manage numbers, use the
 regulatory API every Italian number needs, nor make the key the browser calls with.
 A document goes to Twilio only from a file the person uploaded for it (private,
 attached to nothing) or a request's own: never another of the site's files.
+A call from the browser leaves only after the server's yes (`voice` asks
+`uscita.perche_no` again, whatever the screen did), and shows a number of the
+centre's or the caller's own line: never one the browser made up.
 
 ### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
 | File | Role |

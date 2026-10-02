@@ -174,11 +174,25 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   trascrizione è attiva, e chi segue la persona riceve l'avviso «ha lasciato un
   messaggio in segreteria», che apre la persona. Senza chi la segue, l'avviso va a
   chi risponde a quel numero, e se non c'è nessuno a chi legge tutte le chiamate.
-- **Il numero da cui si chiama**, scelto per chiamata tra quelli del centro, con
-  l'avviso AGCOM su un mobile.
-- **La tastiera** durante la chiamata, per i menu degli altri.
-- **I paesi che si possono chiamare**: l'Italia, e quelli che il centro aggiunge,
-  contro le frodi sui numeri a pagamento.
+- **Il numero da cui si chiama (fatto).** Prima che una chiamata parta dal browser,
+  DottorCloud chiede al server se può partire e quali numeri può mostrare. Con più
+  numeri del centro la finestra della chiamata chiede da quale chiamare, con già
+  scelto l'ultimo usato (lo ricorda il browser), altrimenti la propria linea. Il
+  server mostra il numero scelto solo se è uno dei numeri del centro
+  (`CRM Caller ID`), altrimenti la linea di chi chiama. Un cellulare italiano
+  mostrato su una chiamata verso l'Italia ha l'avviso: «dal novembre 2025 queste
+  chiamate vengono bloccate: scegli un numero fisso».
+- **Il tastierino (fatto).** Durante la chiamata manda i toni ai menu automatici
+  degli altri («premi 1 per…»); i tasti premuti restano scritti sopra.
+- **I paesi che si possono chiamare (fatto).** In Impostazioni → Telefono →
+  Telefonia → Twilio, «Paesi che si possono chiamare»: l'Italia di partenza, il
+  responsabile aggiunge gli altri. Il server non fa partire una chiamata verso un
+  paese che il centro non ha scelto, né mai verso un numero a pagamento (899,
+  892, 166… in ogni paese): è lì che chi ruba una linea la fa chiamare. Gli stessi
+  paesi diventano i permessi di Twilio dello spazio (le «Geo permissions», non
+  più ereditate dall'account), così nemmeno una chiave rubata chiama altrove; ogni
+  ora `assicura()` li rimette come li ha scelti il centro. Un account collegato a
+  mano dall'agenzia resta com'è.
 
 ### 4. Gli SMS (quarta parte)
 
@@ -235,6 +249,9 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 | `crm/telephony/inbound.py`, `routing.py`, `providers/base.py` (`Ring`, `Message`) | Chi squilla: tutti quelli raggiungibili insieme (`find_ringing`), per i secondi della segreteria; `nobody_answered`: l'annuncio con la richiamata o le scuse; il messaggio dopo l'annuncio quando il centro lo vuole |
 | `crm/integrations/twilio/api.py` (`ring_ended`, `message_taken`, `message_recorded`) + `crm/telephony/messaggi.py` | Dove Twilio torna: lo squillo finito, il messaggio finito, la registrazione pronta; l'avviso a chi segue la persona (tipo «Call») |
 | `frontend/src/components/Settings/Telephony/NewNumberDialog.vue` + `utils/numeri.js` | La finestra del nuovo numero e la scelta del numero; le richieste sulla pagina di Twilio, il rilascio sulla pagina dei numeri; il prezzo, il prefisso, i file e cosa manca prima di mandare — provati |
+| `crm/telephony/uscita_regole.py` | Senza sito: dove può andare una chiamata (i paesi scelti, mai un numero a pagamento, un numero italiano anche senza +39), il cellulare italiano che l'AGCOM blocca, i permessi di Twilio da mettere — provato con `unittest` |
+| `crm/telephony/uscita.py` + `CRM Twilio Settings.allowed_countries` | Le chiamate in uscita: `check_number` e `get_outbound_numbers` per la finestra, `perche_no` e `numero_da_mostrare` per `voice`, `allinea_i_paesi` (al salvataggio, al collegamento, ogni ora, solo nello spazio) |
+| `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js` | La finestra della chiamata: il numero da mostrare, l'avviso AGCOM, il tastierino; i paesi sulla pagina di Twilio — le stesse regole del server, provate |
 
 ## Da decidere
 
