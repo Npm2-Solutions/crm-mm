@@ -22,7 +22,10 @@ def registra() -> None:
 	fiscal correctness belong to the practice owner and not to a file only a
 	developer can change. Needs a site, so it is the app that calls it.
 	"""
-	from crm.invoicing import capacita, estensioni, registro
+	from crm.api import doc
+	from crm.invoicing import capacita, estensioni, registro, scelte
 
 	estensioni.registra_risolutore(registro.risolutore())
 	capacita.registra()
+	# its code selects offer their choices in words, wherever a screen draws them
+	doc.registra_adattatore(scelte.adatta_campi)

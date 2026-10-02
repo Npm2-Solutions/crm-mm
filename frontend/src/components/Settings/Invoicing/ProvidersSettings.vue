@@ -37,9 +37,14 @@
 
 <script setup>
 import RecordList from '@/components/Settings/Invoicing/RecordList.vue'
+import { useVocabolarioFatturazione } from '@/composables/vocabolarioFatturazione'
+import { nomeDi } from '@/utils/scelte'
+
+const { nomi } = useVocabolarioFatturazione()
 
 function descrivi(row) {
-  const parti = [row.qualification]
+  // the qualification by its name: "Fisioterapista", not `fisioterapista`
+  const parti = [nomeDi(nomi.value, 'qualifica', row.qualification)]
   if (row.professional_register) {
     parti.push(
       [row.professional_register, row.register_number]

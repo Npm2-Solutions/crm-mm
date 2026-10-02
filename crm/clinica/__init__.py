@@ -389,8 +389,11 @@ def registra() -> None:
 	from crm.marchio import DOTTORCLOUD
 	from crm.verticali import Verticale, registra_verticale
 
-	# and wears its brand: DottorCloud's name, marks and colours, everywhere
-	registra_verticale(Verticale(PIANO, PIANO, parole=PAROLE, marchio=DOTTORCLOUD.chiave))
+	# and wears its brand: DottorCloud's name, marks and colours, everywhere; and
+	# invoices as a healthcare practice, with only the choices it meets
+	registra_verticale(
+		Verticale(PIANO, PIANO, parole=PAROLE, marchio=DOTTORCLOUD.chiave, fatturazione="sanitario")
+	)
 	_registra_area()
 
 

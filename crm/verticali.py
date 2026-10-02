@@ -18,6 +18,8 @@ software and says so everywhere.
   and the vertical's own shows instead.
 - **Its brand** (`marchio`): the product's name, icon, logo, favicon and colours,
   everywhere, from `crm.marchio`.
+- **Its invoicing** (`fatturazione`): the profile of its trade, the only one offered
+  while it is on (`crm.invoicing.scelte`).
 
 A vertical registers from its own `registra()`, like its capabilities: the CRM
 never names one. At most one is on on a site; if two were, the first registered
@@ -42,6 +44,10 @@ class Verticale:
 	#: The key of its brand (`crm.marchio`): the product's name, icon, logo, favicon
 	#: and colours wherever it is on.
 	marchio: str | None = None
+	#: The invoicing profile of its trade (`crm.invoicing.engine.voci`): with the
+	#: clinic on, "sanitario" - only the choices a healthcare practice meets, and the
+	#: healthcare settings ready.
+	fatturazione: str | None = None
 
 
 _verticali: dict[str, Verticale] = {}

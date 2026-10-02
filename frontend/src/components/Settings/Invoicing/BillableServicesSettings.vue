@@ -38,14 +38,23 @@
 
 <script setup>
 import RecordList from '@/components/Settings/Invoicing/RecordList.vue'
+import { useVocabolarioFatturazione } from '@/composables/vocabolarioFatturazione'
+import { formatEuro } from '@/utils/invoicing'
+import { nomeDi } from '@/utils/scelte'
 
+const { nomi } = useVocabolarioFatturazione()
+
+// what the card says, in words: "Exempt (art. 10) · Health professional's
+// services · 70,00 €", never a natura or an expense type code
 function descrivi(row) {
   const parti = []
-  if (row.vat_exempt) parti.push(__('Exempt'))
-  else if (row.vat_nature) parti.push(row.vat_nature)
+  if (row.vat_exempt) parti.push(nomeDi(nomi.value, 'natura', 'N4'))
+  else if (row.vat_nature)
+    parti.push(nomeDi(nomi.value, 'natura', row.vat_nature))
   else parti.push(`${__('VAT')} ${row.vat_rate || 0}%`)
-  if (row.ts_expense_type) parti.push(`tipoSpesa ${row.ts_expense_type}`)
-  if (row.default_rate) parti.push(`${row.default_rate} EUR`)
+  if (row.ts_expense_type)
+    parti.push(nomeDi(nomi.value, 'tipo_spesa', row.ts_expense_type))
+  if (row.default_rate) parti.push(formatEuro(row.default_rate))
   return parti.join(' · ')
 }
 

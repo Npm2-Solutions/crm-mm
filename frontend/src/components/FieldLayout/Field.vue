@@ -48,11 +48,14 @@
           'Text Editor',
         ].includes(field.fieldtype)
       "
-      v-model="data[field.fieldname]"
+      :modelValue="daLeggere(field, data[field.fieldname])"
       type="text"
       :placeholder="getPlaceholder(field)"
       :disabled="true"
-      :description="__(field.description)"
+      :description="
+        spiegazioneDi(field.options, data[field.fieldname]) ||
+        __(field.description)
+      "
     />
     <Grid
       v-else-if="field.fieldtype === 'Table'"
@@ -70,7 +73,10 @@
       :class="field.prefix ? 'prefix' : ''"
       :options="field.options"
       :placeholder="getPlaceholder(field)"
-      :description="__(field.description)"
+      :description="
+        spiegazioneDi(field.options, data[field.fieldname]) ||
+        __(field.description)
+      "
       @update:modelValue="(e) => fieldChange(e, field)"
     >
       <template v-if="field.prefix" #prefix>
@@ -363,6 +369,7 @@ import {
 } from '@/utils/fieldTransforms'
 import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
+import { conValoreAttuale, daLeggere, spiegazioneDi } from '@/utils/scelte'
 
 import {
   Combobox,
@@ -515,6 +522,12 @@ const field = computed(() => {
     if (field.options[0].value !== '' && !field.reqd) {
       field.options.unshift({ label: '', value: '' })
     }
+  } else if (field.fieldtype == 'Select' && Array.isArray(field.options)) {
+    // choices in words: the value stored before stays among them
+    field.options = conValoreAttuale(
+      field.options,
+      data.value?.[field.fieldname],
+    )
   }
 
   if (field.fieldtype === 'Link' && field.options === 'User') {

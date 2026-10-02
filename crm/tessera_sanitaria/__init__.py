@@ -30,10 +30,12 @@ def registra_motore() -> None:
 	"""
 	from crm.invoicing import estensioni
 
-	from .engine import classificazione, professioni
+	from .engine import classificazione, professioni, voci
 
 	estensioni.registra_risolutore(professioni.professione)
 	estensioni.registra_arricchitore(classificazione.arricchisci)
+	# its choices, in words, for the screens invoicing draws
+	voci.registra()
 
 
 def registra() -> None:
@@ -52,6 +54,26 @@ def registra() -> None:
 	estensioni.registra_risolutore(registro_sanitario.risolutore())
 	estensioni.registra_controlli(controlli)
 	estensioni.registra_verifica(verifica_tracciato)
+	# the expense types offered are the ones the issuer's category may use
+	from crm.invoicing import scelte
+
+	scelte.registra_regola("tipo_spesa", tipi_spesa_offerti)
+
+
+def tipi_spesa_offerti(doc: dict) -> frozenset[str] | None:
+	"""The expense types the issuer may use: the invoice's company, else the default
+	one. A category that reports nothing narrows nothing."""
+	import frappe
+
+	from .engine.codici import SoggettoInviante, tipi_spesa_ammessi
+
+	azienda = doc.get("company") or frappe.db.get_single_value("CRM Invoicing Settings", "default_company")
+	if not azienda:
+		azienda = frappe.db.get_value("CRM Invoicing Company", {"is_default": 1, "enabled": 1}, "name")
+	categoria = frappe.db.get_value("CRM Invoicing Company", azienda, "sender_category") if azienda else None
+	if not categoria or categoria == SoggettoInviante.NON_SANITARIO:
+		return None
+	return tipi_spesa_ammessi(categoria)
 
 
 def controlli(emittente: dict) -> list[dict]:

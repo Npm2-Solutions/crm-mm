@@ -683,7 +683,20 @@ def get_fields(doctype: str, allow_all_fieldtypes: bool = False):
 		if field.fieldtype not in not_allowed_fieldtypes and field.fieldname:
 			_fields.append(field)
 
+	for adatta in _adattatori:
+		_fields = adatta(doctype, _fields)
 	return _fields
+
+
+#: What a module changes in its own DocTypes' fields when a screen draws them:
+#: invoicing's code selects offer their choices in words (`crm.invoicing.scelte`).
+#: Each one is called with every DocType and leaves the others' untouched.
+_adattatori: list = []
+
+
+def registra_adattatore(funzione) -> None:
+	if funzione not in _adattatori:
+		_adattatori.append(funzione)
 
 
 def getCounts(d, doctype):
