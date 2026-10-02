@@ -33,6 +33,7 @@ import LucideSquareCheck from '~icons/lucide/square-check'
 import LucideSquareX from '~icons/lucide/square-x'
 import LucideUserCheck from '~icons/lucide/user-check'
 import LucideUserX from '~icons/lucide/user-x'
+import LucideVoicemail from '~icons/lucide/voicemail'
 import LucideZap from '~icons/lucide/zap'
 
 const props = defineProps({
@@ -68,6 +69,7 @@ const ICONE = {
   'square-x': LucideSquareX,
   'user-check': LucideUserCheck,
   'user-x': LucideUserX,
+  voicemail: LucideVoicemail,
   zap: LucideZap,
 }
 </script>

@@ -78,6 +78,27 @@
           </div>
 
           <SettingRow
+            v-if="settings.doc.answer_mode === 'Ring Agents First'"
+            :label="__('Ring for')"
+            :description="
+              __(
+                'Everyone who answers the number rings at once, at the desk or on their mobile. After this long, the announcement answers.',
+              )
+            "
+          >
+            <!-- a site from before these settings has none stored: the usual is shown -->
+            <FormControl
+              :modelValue="settings.doc.ring_seconds || 20"
+              type="select"
+              class="w-32"
+              :options="secondiDiSquillo"
+              @update:modelValue="
+                (v) => (settings.doc.ring_seconds = Number(v))
+              "
+            />
+          </SettingRow>
+
+          <SettingRow
             :label="__('Respect working hours')"
             :description="
               __(
@@ -156,6 +177,54 @@
               :suffix="__('hours')"
             />
           </SettingRow>
+
+          <!-- a message after the announcement -->
+          <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
+            {{ __('Messages') }}
+          </div>
+
+          <SettingRow
+            :label="__('Let callers leave a message')"
+            :description="
+              __(
+                'After the announcement the caller can speak after the tone. The message goes on the call, written out when transcription is on, and whoever follows the person is told.',
+              )
+            "
+          >
+            <Switch v-model="settings.doc.take_messages" size="sm" />
+          </SettingRow>
+
+          <template v-if="settings.doc.take_messages">
+            <div class="py-3 px-2">
+              <div class="text-p-base-medium text-ink-gray-7">
+                {{ __('Before the tone') }}
+              </div>
+              <FormControl
+                v-model="settings.doc.message_prompt"
+                type="textarea"
+                class="mt-2"
+                rows="2"
+                :placeholder="__(defaultMessagePrompt)"
+              />
+            </div>
+
+            <SettingRow
+              :label="__('Longest message')"
+              :description="
+                __('The recording stops by itself after this long.')
+              "
+            >
+              <FormControl
+                :modelValue="settings.doc.message_seconds || 120"
+                type="select"
+                class="w-32"
+                :options="durateDelMessaggio"
+                @update:modelValue="
+                  (v) => (settings.doc.message_seconds = Number(v))
+                "
+              />
+            </SettingRow>
+          </template>
 
           <!-- what the caller hears -->
           <div class="text-base-semibold text-ink-gray-9 pt-6 pb-1">
@@ -339,6 +408,21 @@ const defaultOpenGreeting =
 const defaultClosedGreeting =
   'Thank you for calling. We are closed at the moment. We will call you back as soon as we reopen.'
 
+const defaultMessagePrompt =
+  'If you wish, leave a message after the tone, then hang up.'
+
+const secondiDiSquillo = [10, 15, 20, 30, 45].map((secondi) => ({
+  label: __('{0} seconds', [secondi]),
+  value: secondi,
+}))
+
+const durateDelMessaggio = [
+  { label: __('1 minute'), value: 60 },
+  { label: __('{0} minutes', [2]), value: 120 },
+  { label: __('{0} minutes', [3]), value: 180 },
+  { label: __('{0} minutes', [5]), value: 300 },
+]
+
 const voiceOptions = [
   { label: 'Bianca (it)', value: 'Polly.Bianca' },
   { label: 'Carla (it)', value: 'Polly.Carla' },
@@ -353,7 +437,7 @@ const isText = computed(() => settings.doc?.greeting_source !== 'Audio File')
 const modeExplanation = computed(() =>
   settings.doc?.answer_mode === 'Ring Agents First'
     ? __(
-        'Calls ring the agent who owns the number first. The announcement answers only when nobody picks up.',
+        'Calls ring everyone who answers the number, all at once. The announcement answers only when nobody picks up.',
       )
     : __(
         'Every incoming call hears the announcement and is added to the callback queue. Nobody is rung.',

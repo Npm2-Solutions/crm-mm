@@ -125,6 +125,7 @@ class ChiTipoE(UnitTestCase):
 			("Invoicing", "invoicing"),
 			("Automation", "automation"),
 			("Phone", "phone"),
+			("Call", "call"),
 			("Something new", "other"),
 		):
 			self.assertEqual(R.genere(tipo), genere)

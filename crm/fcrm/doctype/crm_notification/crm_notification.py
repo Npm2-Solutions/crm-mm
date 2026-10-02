@@ -44,6 +44,7 @@ class CRMNotification(Document):
 			"Area",
 			"Automation",
 			"Phone",
+			"Call",
 		]
 	# end: auto-generated types
 

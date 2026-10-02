@@ -52,6 +52,8 @@ DOMANDA_AREA = "{0} asked the centre a question in their area"
 NUMERO_APPROVATO = "Twilio approved the documents of the new number: choose it now"
 NUMERO_RIFIUTATO = "Twilio refused the documents of the new number: see why"
 
+MESSAGGIO_IN_SEGRETERIA = "{0} left a message on the answering service"
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -79,6 +81,7 @@ FRASI = (
 	DOMANDA_AREA,
 	NUMERO_APPROVATO,
 	NUMERO_RIFIUTATO,
+	MESSAGGIO_IN_SEGRETERIA,
 )
 
 #: The sentences that take something away: the panel draws them apart.
@@ -98,13 +101,14 @@ GENERI = {
 	"Automation": "automation",
 	"Task": "task",
 	"Phone": "phone",
+	"Call": "call",
 }
 
 
 def genere(tipo: str | None, oggetto_doctype: str | None = None, frase: str | None = None) -> str:
 	"""What the panel draws: a mention, an assignment or its removal, a task or its
 	removal, a message of a channel, the agenda, the client area, invoicing, an
-	automation, the phone's lines."""
+	automation, the phone's lines, a message on the answering service."""
 	if tipo == "Assignment":
 		if oggetto_doctype == "CRM Task":
 			return "task_removed" if frase in TOLTE else "task"
@@ -120,7 +124,7 @@ GRUPPI_EMAIL = {
 	"mentions": ("mention",),
 	"assignments": ("assigned", "unassigned", "task", "task_removed"),
 	"area": ("area",),
-	"messages": ("whatsapp", "sms", "email"),
+	"messages": ("whatsapp", "sms", "email", "call"),
 	"agenda": ("agenda",),
 	"invoicing": ("invoicing",),
 	"automations": ("automation",),
