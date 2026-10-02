@@ -40337,3 +40337,117 @@ msgstr "WhatsApp, SMS, email e segreteria"
 #: frontend/src/components/Settings/NotificationsSettings.vue
 msgid "The messages of the people you follow, those left on the answering service too: one email for each conversation."
 msgstr "I messaggi delle persone che segui, anche quelli lasciati in segreteria: un'email per ogni conversazione."
+
+#: crm/telephony/uscita_regole.py:73
+msgid "This number cannot be read: write it with its country code, +39 for Italy."
+msgstr "Questo numero non si legge: scrivilo con il prefisso del paese, +39 per l'Italia."
+
+#: crm/telephony/uscita_regole.py:75
+msgid "Premium-rate numbers are never called: they are where a stolen line is made to call, for money."
+msgstr "I numeri a pagamento non si chiamano mai: è lì che chi ruba una linea la fa chiamare, per guadagnarci."
+
+#: crm/telephony/uscita_regole.py:78
+msgid "Calls to this country are not allowed: the manager adds it in Settings → Phone → Telephony → Twilio."
+msgstr "Le chiamate verso questo paese non sono consentite: il responsabile lo aggiunge in Impostazioni → Telefono → Telefonia → Twilio."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Countries That Can Be Called"
+msgstr "Paesi che si possono chiamare"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Where calls may go: country codes separated by commas, IT for Italy. Premium-rate numbers are never called, whatever the country."
+msgstr "Dove possono andare le chiamate: i codici dei paesi separati da virgole, IT per l'Italia. I numeri a pagamento non si chiamano mai, in nessun paese."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Call from"
+msgstr "Chiama dal numero"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "{0} · your line"
+msgstr "{0} · la tua linea"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Your line"
+msgstr "La tua linea"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+#: frontend/src/pages/Dialer.vue:148
+msgid "Call"
+msgstr "Chiama"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Keypad"
+msgstr "Tastierino"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Hide the keypad"
+msgstr "Nascondi il tastierino"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Calls to Italy showing an Italian mobile have been blocked since November 2025: choose a landline."
+msgstr "Dal novembre 2025 le chiamate verso l'Italia che mostrano un cellulare italiano vengono bloccate: scegli un numero fisso."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Calls to Italy showing an Italian mobile have been blocked since November 2025: ask the manager for a landline."
+msgstr "Dal novembre 2025 le chiamate verso l'Italia che mostrano un cellulare italiano vengono bloccate: chiedi al responsabile un numero fisso."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "The phone is not ready yet: try again in a moment."
+msgstr "Il telefono non è ancora pronto: riprova tra un momento."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "Finish the call in progress first."
+msgstr "Prima chiudi la chiamata in corso."
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "The call could not start: try again."
+msgstr "La chiamata non è partita: riprova."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Calls from {brand} go only to these countries, never to premium-rate numbers."
+msgstr "Le chiamate da {brand} vanno solo verso questi paesi, mai verso i numeri a pagamento."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Calls from {brand} go only to these countries, never to premium-rate numbers. Twilio is told the same, so a stolen key could not call anywhere else either."
+msgstr "Le chiamate da {brand} vanno solo verso questi paesi, mai verso i numeri a pagamento. Lo stesso vale in Twilio: nemmeno una chiave rubata potrebbe chiamare altrove."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Remove {0}"
+msgstr "Togli {0}"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Search a country"
+msgstr "Cerca un paese"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Add a country"
+msgstr "Aggiungi un paese"
+
+#: frontend/src/components/Notifications/NotificationRow.vue:46
+msgctxt "Kind of notification"
+msgid "Call"
+msgstr "Chiamata"
+
+#: frontend/src/components/Activities/ConversationView.vue:723
+msgid "No WhatsApp messages with this person yet"
+msgstr "Ancora nessun messaggio WhatsApp con questa persona"
+
+#: frontend/src/components/Activities/ConversationView.vue:724
+msgid "No emails with this person yet"
+msgstr "Ancora nessuna email con questa persona"
+
+#: frontend/src/components/Activities/ConversationView.vue:725
+msgid "No text messages with this person yet"
+msgstr "Ancora nessun SMS con questa persona"
+
+#: frontend/src/components/Activities/ConversationView.vue:726
+msgid "No calls with this person yet"
+msgstr "Ancora nessuna chiamata con questa persona"
+
+#: frontend/src/components/Activities/ConversationView.vue:727
+msgid "No notes about this person yet"
+msgstr "Ancora nessuna nota su questa persona"
+
+#: frontend/src/components/Activities/ConversationView.vue:730
+msgid "Nothing here yet"
+msgstr "Ancora niente qui"
