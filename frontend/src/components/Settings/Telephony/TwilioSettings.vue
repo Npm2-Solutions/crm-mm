@@ -812,6 +812,15 @@ const statoDelContoInParole = computed(() => {
 const numeriInParole = computed(() => {
   const s = stato.value || {}
   if (!s.numbers) return __('No number in the space yet.')
+  if (s.not_reaching && s.numbers === 1) {
+    return __('One number, and it does not reach {brand}.')
+  }
+  if (s.not_reaching === s.numbers) {
+    return __('{0} numbers, and none of them reaches {brand}.', [s.numbers])
+  }
+  if (s.not_reaching === 1) {
+    return __('{0} numbers, one of them does not reach {brand}.', [s.numbers])
+  }
   if (s.not_reaching) {
     return __('{0} numbers, {1} of them do not reach {brand}.', [
       s.numbers,
