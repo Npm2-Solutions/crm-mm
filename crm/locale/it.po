@@ -39326,3 +39326,126 @@ msgstr "Risposte alle email del centro"
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 msgid "Where people's answers to the reminders, codes and confirmations the centre sends arrive. Empty: the mailbox where the centre reads its email."
 msgstr "Dove arrivano le risposte delle persone a promemoria, codici e conferme che il centro invia. Vuoto: la casella in cui il centro legge le sue email."
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Your email"
+msgstr "La tua email"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "The mailbox you write to people from in {brand}: their answers come back to their page. Only those answers and the emails of the people the centre knows arrive here; the rest of your post stays yours."
+msgstr "La casella da cui scrivi alle persone in {brand}: le loro risposte tornano sulla loro pagina. Arrivano qui solo quelle risposte e le email delle persone che il centro conosce; il resto della tua posta resta tuo."
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Your mailbox"
+msgstr "La tua casella"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Finish signing in"
+msgstr "Completa l'accesso"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Connect again"
+msgstr "Collega di nuovo"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Your address"
+msgstr "Il tuo indirizzo"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Your password stays with them: {brand} gets only the access to read and send, and you can take it back."
+msgstr "La tua password resta a loro: {brand} riceve solo l'accesso per leggere e inviare, e puoi toglierlo quando vuoi."
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Or with its password, where it is"
+msgstr "Oppure con la sua password, dov'è"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Where it is"
+msgstr "Dov'è"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "The centre's mailboxes you write from"
+msgstr "Le caselle del centro da cui scrivi"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Writing to a person, you choose among these and your own. Without any, you write through {brand}, in your name and the centre's, and the answers come back to the centre."
+msgstr "Scrivendo a una persona scegli tra queste e la tua. Senza nessuna, scrivi tramite {brand}, a nome tuo e del centro, e le risposte tornano al centro."
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "At the end of the emails you write from {brand}."
+msgstr "In fondo alle email che scrivi da {brand}."
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Your mailbox is connected"
+msgstr "La tua casella è collegata"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Could not connect the mailbox"
+msgstr "Non è stato possibile collegare la casella"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Could not start signing in"
+msgstr "Non è stato possibile avviare l'accesso"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Your mailbox is disconnected"
+msgstr "La tua casella è scollegata"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Could not disconnect the mailbox"
+msgstr "Non è stato possibile scollegare la casella"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgid "Signature saved"
+msgstr "Firma salvata"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgctxt "Mailbox"
+msgid "Connected"
+msgstr "Collegata"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgctxt "Mailbox"
+msgid "Disconnected"
+msgstr "Scollegata"
+
+#: frontend/src/components/Settings/Profile/MyEmail.vue
+msgctxt "Mailbox"
+msgid "Waiting for the sign-in"
+msgstr "In attesa dell'accesso"
+
+#: frontend/src/utils/caselle.js
+msgid "Waiting for the sign-in"
+msgstr "In attesa dell'accesso"
+
+#: frontend/src/utils/caselle.js
+msgid "Sign in with Google"
+msgstr "Accedi con Google"
+
+#: frontend/src/utils/caselle.js
+msgid "Sign in with Microsoft"
+msgstr "Accedi con Microsoft"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "WhatsApp, SMS and email"
+msgstr "WhatsApp, SMS ed email"
+
+#: frontend/src/utils/impostazioni.js
+msgid "The mailbox you write to people from, and your signature."
+msgstr "La casella da cui scrivi alle persone, e la tua firma."
+
+#: crm/posta/personale.py
+msgid "{0} is a mailbox of the centre already: choose it among the ones you write from."
+msgstr "{0} è già una casella del centro: sceglila tra quelle da cui scrivi."
+
+#: crm/posta/personale.py
+msgid "Signing in with this provider is not set up yet: the agency sets it up."
+msgstr "L'accesso con questo fornitore non è ancora attivo: lo attiva l'agenzia."
+
+#: crm/install.py
+msgid "Whose mailbox"
+msgstr "Di chi è la casella"
+
+#: crm/install.py
+msgid "Somebody's own mailbox, connected by them: only the answers to what they wrote and the emails of the people the centre knows are kept."
+msgstr "La casella di una persona, collegata da lei: si tengono solo le risposte a quello che ha scritto e le email delle persone che il centro conosce."
