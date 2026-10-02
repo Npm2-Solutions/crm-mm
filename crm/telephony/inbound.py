@@ -18,7 +18,9 @@ from crm.telephony import answering, callbacks, routing
 from crm.telephony.providers.base import (
 	Announcement,
 	CallInstruction,
+	Message,
 	ProviderNotSupported,
+	Ring,
 	TelephonyProvider,
 )
 
@@ -48,28 +50,47 @@ def handle_incoming_call(
 	if answering.takes_every_call(config):
 		return answer_with_service(provider, config, call_log)
 
-	attender = routing.find_attender(provider, to_number, from_number)
+	ringing = routing.find_ringing(provider, to_number, from_number)
 
-	if not attender:
+	if not ringing:
 		# "Ring Agents First" means exactly that — the announcement is the
 		# fallback, not the surprise
 		if answering.rings_agents_first(config):
 			return answer_with_service(provider, config, call_log)
-		return provider.say(
-			Announcement(
-				text=_("Agent is unavailable to take the call, please call after some time."),
-				language=config.language or "it-IT",
-				voice=config.voice or "alice",
-			)
-		)
+		return provider.say(apology(config))
 
-	if attender.get("call_receiving_device") == "Phone" and attender.get("mobile_no"):
-		return provider.dial_phone(caller_id=from_number, to_number=attender["mobile_no"])
-	return provider.dial_agent(attender["name"])
+	# everyone at once: whoever picks up first takes it; nobody within the
+	# seconds, and the carrier comes back to `nobody_answered`
+	on_phone = [r for r in ringing if r.get("call_receiving_device") == "Phone" and r.get("mobile_no")]
+	return provider.ring(
+		Ring(
+			agents=tuple(r["name"] for r in ringing if r not in on_phone),
+			phones=tuple(r["mobile_no"] for r in on_phone),
+			caller_id=from_number,
+			seconds=answering.ring_seconds(config),
+		)
+	)
+
+
+def nobody_answered(provider: TelephonyProvider, call_log=None) -> CallInstruction:
+	"""Everyone rang and nobody picked up: the announcement and the callback when the
+	answering service rings first, else the apology."""
+	config = answering.settings()
+	if answering.rings_agents_first(config):
+		return answer_with_service(provider, config, call_log)
+	return provider.say(apology(config))
+
+
+def apology(config) -> Announcement:
+	return Announcement(
+		text=_("Agent is unavailable to take the call, please call after some time."),
+		language=config.language or "it-IT",
+		voice=config.voice or "alice",
+	)
 
 
 def answer_with_service(provider: TelephonyProvider, config, call_log) -> CallInstruction:
-	"""Queue the callback, then say so.
+	"""Queue the callback, then say so - and take a message, when the centre wants.
 
 	A failure to queue must not cost the caller the announcement: they would hear
 	dead air and ring again, which is the one outcome worse than losing the queue
@@ -89,4 +110,15 @@ def answer_with_service(provider: TelephonyProvider, config, call_log) -> CallIn
 	else:
 		due = answering.callback_due(config)
 
-	return provider.say(answering.build_announcement(config, due=due))
+	annuncio = answering.build_announcement(config, due=due)
+	if answering.takes_messages(config):
+		return provider.take_message(
+			annuncio,
+			Message(
+				prompt=answering.message_prompt(config),
+				seconds=answering.message_seconds(config),
+				language=annuncio.language,
+				voice=annuncio.voice,
+			),
+		)
+	return provider.say(annuncio)

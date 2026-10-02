@@ -31,6 +31,11 @@ from crm.telephony.providers.base import Announcement
 MODE_ALWAYS = "Always Answering Service"
 MODE_RING_FIRST = "Ring Agents First"
 
+#: How long everyone rings before the announcement, and the bounds a setting keeps to.
+RING_SECONDS, RING_LEAST, RING_MOST = 20, 5, 60
+#: How long a message may last.
+MESSAGE_SECONDS, MESSAGE_LEAST, MESSAGE_MOST = 120, 10, 600
+
 SOURCE_TEXT = "Text to Speech"
 SOURCE_AUDIO = "Audio File"
 
@@ -61,6 +66,40 @@ def takes_every_call(config=None) -> bool:
 def rings_agents_first(config=None) -> bool:
 	config = config if config is not None else settings()
 	return is_enabled(config) and config.answer_mode == MODE_RING_FIRST
+
+
+def ring_seconds(config=None) -> int:
+	"""How long everyone who answers the number rings, before the announcement."""
+	config = config if config is not None else settings()
+	return max(RING_LEAST, min(cint(config.get("ring_seconds")) or RING_SECONDS, RING_MOST))
+
+
+# --------------------------------------------------------------------------
+# messages
+# --------------------------------------------------------------------------
+
+
+def takes_messages(config=None) -> bool:
+	"""Whether the caller may leave a message after the announcement."""
+	config = config if config is not None else settings()
+	return is_enabled(config) and bool(cint(config.get("take_messages")))
+
+
+def message_seconds(config=None) -> int:
+	config = config if config is not None else settings()
+	return max(MESSAGE_LEAST, min(cint(config.get("message_seconds")) or MESSAGE_SECONDS, MESSAGE_MOST))
+
+
+def message_prompt(config=None) -> str:
+	"""What the caller hears before the tone: the centre's words, else ours."""
+	config = config if config is not None else settings()
+	return (config.get("message_prompt") or "").strip() or _(
+		"If you wish, leave a message after the tone, then hang up."
+	)
+
+
+def message_thanks() -> str:
+	return _("Thank you, we have your message. Goodbye.")
 
 
 # --------------------------------------------------------------------------
