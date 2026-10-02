@@ -236,7 +236,7 @@
             <div class="flex gap-2">
               <Button
                 icon-left="external-link"
-                :label="__('Open')"
+                :label="__('Open', null, 'Action')"
                 :link="linkUrl"
               />
               <Button

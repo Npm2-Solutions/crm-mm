@@ -466,7 +466,7 @@
                 @click="copyToClipboard(pageUrl)"
               />
               <Button
-                :label="__('Open')"
+                :label="__('Open', null, 'Action')"
                 icon-left="lucide-external-link"
                 @click="openPage"
               />

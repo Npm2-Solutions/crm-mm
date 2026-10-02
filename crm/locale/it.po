@@ -37984,3 +37984,15 @@ msgstr "il bollo diventa dovuto solo perché le anticipazioni art. 15 contano ne
 #: crm/invoicing/engine/calcolo.py
 msgid "the document total ({0}) does not match the amount reported to the Sistema TS ({1}): difference {2}. The patient would see a different number in the pre-filled return than the one they are holding"
 msgstr "il totale del documento ({0}) non coincide con l'importo comunicato al Sistema TS ({1}): differenza {2}. Il paziente vedrebbe nella precompilata un numero diverso da quello che ha in mano"
+
+#: frontend/src/components/Activities/ConversationView.vue
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+#: frontend/src/components/Clinic/OutOfCareDialog.vue
+#: frontend/src/components/Settings/Booking/BookingPageSettings.vue
+#: frontend/src/components/Settings/Booking/OnlineBookingSetup.vue
+#: frontend/src/components/Settings/Forms/TemplateBuilder.vue
+#: frontend/src/pages/Invoices.vue
+#: frontend/src/pages/Website.vue
+msgctxt "Action"
+msgid "Open"
+msgstr "Apri"

@@ -714,7 +714,7 @@ function pageActions(page) {
       onClick: () => setPublished(page, !page.published),
     },
     {
-      label: __('Open'),
+      label: __('Open', null, 'Action'),
       icon: 'external-link',
       condition: () => page.published,
       onClick: () => openExternal(page.url),

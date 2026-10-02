@@ -81,7 +81,7 @@
         <Button
           v-if="chosen?.in_care"
           variant="solid"
-          :label="__('Open')"
+          :label="__('Open', null, 'Action')"
           @click="go(chosen.name)"
         />
         <Button

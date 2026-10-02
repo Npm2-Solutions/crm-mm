@@ -60,7 +60,7 @@
           <Button
             variant="ghost"
             icon="lucide-external-link"
-            :tooltip="__('Open')"
+            :tooltip="__('Open', null, 'Action')"
             :link="pageUrl"
           />
         </div>
