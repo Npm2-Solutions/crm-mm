@@ -180,6 +180,19 @@ one goes in its `FRASI` and in `it.po`) and its names, never words glued
 together; who it is from (nobody when it is DottorCloud); the person or deal it
 opens and what it is about. The panel works out where it opens.
 
+### Emails (docs/progetto-ghl/44)
+| File | Role |
+|---|---|
+| `crm/templates/emails/standard.html`, `email_header.html`, `email_footer.html` | Every email's layout over the framework's (its classes kept): with a `header` or `with_container`, the brand's canvas, the white card with the cloud's tail, the centre's mark at the top (its PNG/JPEG logo, else its name; the product's only for a centre with neither), "Powered by" under the card; light theme only. A plain email somebody wrote stays plain |
+| `crm/posta/aspetto.py` | `contesto_email()` (Jinja method: the centre's mark, the brand's colours, the signature), `pulsante(url, testo)` (a table every client draws, Outlook too), `codice(valore)` (a code in its box) — tested |
+| `crm/notifiche/posta.py` + `Settings/NotificationsSettings.vue` | Notifications by email too: each person's choices (Settings > Your account > Notifications, only the groups they receive: `riceve()`), every five minutes what is still unread after `ATTESA` minutes, one email per person, a conversation once while unread, a button that opens DottorCloud, never the Desk; the framework's assignment, mention and share emails are skipped (`notification_skip_email_types`) |
+
+An email of the system gets a title (`header=`) and `with_container=True`, its
+message in paragraphs with the words escaped, the one thing to do in a
+`pulsante()`, a code in `codice()`, and no colours of its own: the layout wears
+the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
+mail clients do not all show an SVG.
+
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |
 |---|---|
