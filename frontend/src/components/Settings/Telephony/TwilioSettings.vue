@@ -315,7 +315,11 @@
               </div>
             </div>
 
-            <div v-if="twilio.doc" class="flex flex-col gap-1.5">
+            <!-- an account connected by hand gets no trigger of DottorCloud's -->
+            <div
+              v-if="twilio.doc && stato.owner !== 'Manual'"
+              class="flex flex-col gap-1.5"
+            >
               <div class="flex flex-wrap items-center gap-2">
                 <label for="avviso-spesa" class="text-p-sm text-ink-gray-7">
                   {{ __('Tell me when the month reaches') }}
