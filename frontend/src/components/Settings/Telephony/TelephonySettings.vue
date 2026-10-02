@@ -261,14 +261,17 @@
           </span>
           <span class="text-p-sm text-ink-gray-6">
             {{
-              __('Configure your Twilio telephony integration settings here')
+              isEnabled('twilio')
+                ? __('Connected: calls and messages go through Twilio.')
+                : __(
+                    'Connect your Twilio account: calls and messages from {brand}.',
+                  )
             }}
           </span>
         </div>
         <Button
-          :label="
-            isEnabled('twilio') ? __('Update Configuration') : __('Configure')
-          "
+          class="shrink-0"
+          :label="isEnabled('twilio') ? __('Open') : __('Connect')"
           @click="emit('updateStep', 'twilio-settings')"
         />
       </div>
