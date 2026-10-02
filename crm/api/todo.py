@@ -1,7 +1,8 @@
 import frappe
-from frappe import _
 
-from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
+from crm.notifiche import regole as R
+from crm.notifiche.avvisi import avvisa, nome_utente
 
 
 def after_insert(doc, method):
@@ -39,82 +40,33 @@ def clear_owner_on_unassign(doc):
 
 
 def notify_assigned_user(doc, is_cancelled=False):
-	_doc = frappe.get_doc(doc.reference_type, doc.reference_name)
-	owner = frappe.get_cached_value("User", frappe.session.user, "full_name")
-	notification_text = get_notification_text(owner, doc, _doc, is_cancelled)
-
-	# the same sentence, without its markup
-	message = frappe.utils.strip_html(notification_text).strip()
-
-	redirect_to_doctype, redirect_to_name = get_redirect_to_doc(doc)
-
-	notify_user(
-		{
-			"owner": frappe.session.user,
-			"assigned_to": doc.allocated_to,
-			"notification_type": "Assignment",
-			"message": message,
-			"notification_text": notification_text,
-			"reference_doctype": doc.reference_type,
-			"reference_docname": doc.reference_name,
-			"redirect_to_doctype": redirect_to_doctype,
-			"redirect_to_docname": redirect_to_name,
-		}
-	)
-
-
-def get_notification_text(owner, doc, reference_doc, is_cancelled=False):
-	doctype = doc.reference_type
-
-	if doctype in ["CRM Lead", "CRM Deal"]:
-		name = (
-			reference_doc.lead_name or doc.reference_name
-			if doctype == "CRM Lead"
-			else reference_doc.organization or reference_doc.lead_name or doc.reference_name
-		)
-		if is_cancelled:
-			frase = (
-				_("{0} removed your assignment on the deal {1}")
-				if doctype == "CRM Deal"
-				else _("{0} removed your assignment on {1}")
-			)
-		else:
-			frase = (
-				_("{0} assigned you the deal {1}") if doctype == "CRM Deal" else _("{0} assigned {1} to you")
-			)
-		return f"""
-            <div class="mb-2 leading-5 text-ink-gray-5">
-                {frase.format(in_grassetto(owner), in_grassetto(name))}
-            </div>
-        """
-
-	if doctype == "CRM Task":
-		if is_cancelled:
-			return f"""
-                <div class="mb-2 leading-5 text-ink-gray-5">
-                    <span>{
-				_("Your assignment on task {0} has been removed by {1}").format(
-					f'<span class="font-medium text-ink-gray-9">{reference_doc.title}</span>',
-					f'<span class="font-medium text-ink-gray-9">{owner}</span>',
-				)
-			}</span>
-                </div>
-            """
-		return f"""
-            <div class="mb-2 leading-5 text-ink-gray-5">
-                <span class="font-medium text-ink-gray-9">{owner}</span>
-                <span>{
-			_("assigned a new task {0} to you").format(
-				f'<span class="font-medium text-ink-gray-9">{reference_doc.title}</span>'
-			)
-		}</span>
-            </div>
-        """
-
-
-def get_redirect_to_doc(doc):
+	"""Somebody assigned a person, a deal or a task, or took it back: the one it is
+	for reads it in their panel, the person or deal it belongs to a click away."""
+	da = frappe.session.user
 	if doc.reference_type == "CRM Task":
-		reference_doc = frappe.get_doc(doc.reference_type, doc.reference_name)
-		return reference_doc.reference_doctype, reference_doc.reference_docname
+		compito = frappe.db.get_value(
+			"CRM Task", doc.reference_name, ["title", "reference_doctype", "reference_docname"], as_dict=True
+		)
+		if not compito:
+			return
+		frase = R.COMPITO_TOLTO if is_cancelled else R.COMPITO
+		nomi = [nome_utente(da), compito.title or doc.reference_name]
+		riguarda = (compito.reference_doctype, compito.reference_docname)
+	else:
+		trattativa = doc.reference_type == "CRM Deal"
+		if is_cancelled:
+			frase = R.TOLTA_TRATTATIVA if trattativa else R.TOLTA
+		else:
+			frase = R.ASSEGNATA_TRATTATIVA if trattativa else R.ASSEGNATA
+		nomi = [nome_utente(da), nome_di(doc.reference_type, doc.reference_name)]
+		riguarda = (doc.reference_type, doc.reference_name)
 
-	return doc.reference_type, doc.reference_name
+	avvisa(
+		doc.allocated_to,
+		"Assignment",
+		frase,
+		nomi,
+		da=da,
+		riguarda=riguarda,
+		oggetto=(doc.reference_type, doc.reference_name),
+	)

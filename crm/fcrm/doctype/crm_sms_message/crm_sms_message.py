@@ -6,7 +6,9 @@ from frappe import _
 from frappe.model.document import Document
 
 from crm.api.doc import assigned_users_of
-from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, nome_di, notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
+from crm.notifiche import regole as R
+from crm.notifiche.avvisi import avvisa
 
 
 class CRMSMSMessage(Document):
@@ -77,30 +79,21 @@ class CRMSMSMessage(Document):
 			frappe.log_error(frappe.get_traceback(), "CRM SMS: automation trigger failed")
 
 	def notify_agents(self):
+		"""An SMS from a person: whoever follows them reads it in their panel; the
+		ones after it, while it is unread, add to it."""
 		if self.type != "Incoming" or not self.reference_doctype or not self.reference_name:
 			return
-		frase = (
-			_("You received an SMS on the deal {0}")
-			if self.reference_doctype == "CRM Deal"
-			else _("You received an SMS from {0}")
-		)
-		chi = in_grassetto(nome_di(self.reference_doctype, self.reference_name))
-		notification_text = f"""
-			<div class="mb-2 leading-5 text-ink-gray-5">
-				{frase.format(chi)}
-			</div>
-		"""
+		trattativa = self.reference_doctype == "CRM Deal"
+		nomi = [nome_di(self.reference_doctype, self.reference_name)]
 		for user in assigned_users_of(self.reference_doctype, self.reference_name):
-			notify_user(
-				{
-					"owner": self.owner,
-					"assigned_to": user,
-					"notification_type": "SMS",
-					"message": self.message,
-					"notification_text": notification_text,
-					"reference_doctype": "CRM SMS Message",
-					"reference_docname": self.name,
-					"redirect_to_doctype": self.reference_doctype,
-					"redirect_to_docname": self.reference_name,
-				}
+			avvisa(
+				user,
+				"SMS",
+				R.SMS_TRATTATIVA if trattativa else R.SMS,
+				nomi,
+				frase_molti=R.SMS_TRATTATIVA_MOLTI if trattativa else R.SMS_MOLTI,
+				da=self.owner,
+				riguarda=(self.reference_doctype, self.reference_name),
+				oggetto=("CRM SMS Message", self.name),
+				messaggio=self.message,
 			)

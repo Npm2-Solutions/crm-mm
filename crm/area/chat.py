@@ -27,12 +27,14 @@ from __future__ import annotations
 import frappe
 from frappe import _
 from frappe.rate_limiter import rate_limit
-from frappe.utils import add_days, escape_html, get_fullname, getdate, now_datetime, strip_html
+from frappe.utils import add_days, get_fullname, getdate, now_datetime, strip_html
 
 from crm.area import CHAT, messaggi
 from crm.area import chat_regole as C
 from crm.area.api import _mia
 from crm.assistente import modello
+from crm.notifiche import regole as N
+from crm.notifiche.avvisi import avvisa
 from crm.permissions import livelli
 
 SCOPO = (
@@ -181,7 +183,7 @@ def _salute() -> dict:
 
 @frappe.whitelist(methods=["POST"])
 @rate_limit(limit=40, seconds=60 * 60)
-def ask(person: str, question: str, history=None) -> dict:
+def ask(person: str, question: str, history: list | str | None = None) -> dict:
 	"""One question to the chat: an emergency, a question for a person, or an answer
 	from what the centre wrote."""
 	_mia(person)
@@ -261,20 +263,15 @@ def pass_on(person: str, question: str) -> dict:
 			"body": domanda,
 		}
 	).insert(ignore_permissions=True)
-	nome = escape_html(frappe.db.get_value("CRM Lead", person, "lead_name") or person)
+	nome = frappe.db.get_value("CRM Lead", person, "lead_name") or person
 	for utente in chi_avvisare():
-		frappe.get_doc(
-			{
-				"doctype": "CRM Notification",
-				"from_user": "Administrator",
-				"to_user": utente,
-				"type": "Area",
-				# the words stay on the board: the notification says only who asked
-				"notification_text": _("{0} asked the centre a question in their area").format(nome),
-				"reference_doctype": "CRM Lead",
-				"reference_name": person,
-				"notification_type_doctype": messaggi.MESSAGGIO,
-				"notification_type_doc": doc.name,
-			}
-		).insert(ignore_permissions=True)
+		# the words stay on the board: the notification says only who asked
+		avvisa(
+			utente,
+			"Area",
+			N.DOMANDA_AREA,
+			[nome],
+			riguarda=("CRM Lead", person),
+			oggetto=(messaggi.MESSAGGIO, doc.name),
+		)
 	return {"passed": True, "message": doc.name, "by": get_fullname(frappe.session.user)}

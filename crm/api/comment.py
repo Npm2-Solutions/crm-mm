@@ -2,11 +2,12 @@ from collections.abc import Iterable
 
 import frappe
 from bs4 import BeautifulSoup
-from frappe import _
 from frappe.desk.form.utils import add_comment as frappe_add_comment
 from frappe.utils import get_fullname
 
-from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
+from crm.notifiche import regole as R
+from crm.notifiche.avvisi import avvisa, nome_utente
 
 
 def on_update(self, method):
@@ -23,37 +24,20 @@ def notify_mentions(doc):
 	content = getattr(doc, "content", None)
 	if not content:
 		return
-	mentions = extract_mentions(content)
-	reference_doc = frappe.get_doc(doc.reference_doctype, doc.reference_name)
-	for mention in mentions:
-		owner = frappe.get_cached_value("User", doc.owner, "full_name")
-		name = (
-			reference_doc.lead_name
-			if doc.reference_doctype == "CRM Lead"
-			else reference_doc.organization or reference_doc.lead_name
-		)
-		frase = (
-			_("{0} mentioned you in a comment on the deal {1}")
-			if doc.reference_doctype == "CRM Deal"
-			else _("{0} mentioned you in a comment on {1}")
-		)
-		notification_text = f"""
-            <div class="mb-2 leading-5 text-ink-gray-5">
-                {frase.format(in_grassetto(owner), in_grassetto(name))}
-            </div>
-        """
-		notify_user(
-			{
-				"owner": doc.owner,
-				"assigned_to": mention.email,
-				"notification_type": "Mention",
-				"message": doc.content,
-				"notification_text": notification_text,
-				"reference_doctype": "Comment",
-				"reference_docname": doc.name,
-				"redirect_to_doctype": doc.reference_doctype,
-				"redirect_to_docname": doc.reference_name,
-			}
+	frase = R.MENZIONE_TRATTATIVA if doc.reference_doctype == "CRM Deal" else R.MENZIONE
+	nomi = [nome_utente(doc.owner), nome_di(doc.reference_doctype, doc.reference_name)]
+	for mention in extract_mentions(content):
+		avvisa(
+			mention.email,
+			"Mention",
+			frase,
+			nomi,
+			da=doc.owner,
+			riguarda=(doc.reference_doctype, doc.reference_name),
+			oggetto=("Comment", doc.name),
+			messaggio=doc.content,
+			# a comment saved again does not mention anybody again
+			una_volta=True,
 		)
 
 

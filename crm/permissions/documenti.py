@@ -166,7 +166,7 @@ def togli_assegnazioni(doctype: str, names: str):
 
 #: What someone with Read only may still change: what is theirs alone, and changes
 #: nothing of the centre's.
-_PROPRI = {"CRM Notification": "for_user", "User": "name", "CRM View Settings": "user"}
+_PROPRI = {"CRM Notification": "to_user", "User": "name", "CRM View Settings": "user"}
 #: Reading, printing, exporting. Sharing hands the document to somebody else, and
 #: emailing from it sends in the centre's name: both are writes.
 _LEGGE_SOLTANTO = ("read", "select", "print", "export", "report")

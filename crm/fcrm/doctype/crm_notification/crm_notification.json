@@ -6,6 +6,9 @@
  "engine": "InnoDB",
  "field_order": [
   "notification_text",
+  "sentence",
+  "sentence_args",
+  "count",
   "section_break_hace",
   "from_user",
   "type",
@@ -34,7 +37,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Type",
-   "options": "Mention\nTask\nAssignment\nWhatsApp\nSMS\nInvoicing\nAgenda\nArea",
+   "options": "Mention\nTask\nAssignment\nWhatsApp\nSMS\nInvoicing\nAgenda\nArea\nAutomation",
    "reqd": 1
   },
   {
@@ -47,7 +50,8 @@
    "in_list_view": 1,
    "label": "To User",
    "options": "User",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "comment",
@@ -112,11 +116,32 @@
   {
    "fieldname": "section_break_hace",
    "fieldtype": "Section Break"
+  },
+  {
+   "description": "In English, with its names apart: whoever reads it reads it in their own language",
+   "fieldname": "sentence",
+   "fieldtype": "Small Text",
+   "label": "Sentence",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sentence_args",
+   "fieldtype": "JSON",
+   "label": "Names",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "description": "The messages of the same person while it is unread",
+   "fieldname": "count",
+   "fieldtype": "Int",
+   "label": "How many",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-01 22:00:00.000000",
+ "modified": "2026-10-02 06:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Notification",

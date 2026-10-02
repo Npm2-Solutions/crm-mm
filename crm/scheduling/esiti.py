@@ -22,6 +22,8 @@ import frappe
 from frappe import _
 from frappe.utils import add_to_date, get_datetime, getdate, now_datetime, nowdate
 
+from crm.notifiche import regole as N
+from crm.notifiche.avvisi import avvisa
 from crm.permissions import livelli
 
 #: What the desk and the practitioner may say of a participant.
@@ -193,24 +195,15 @@ def _chiudi_la_giornata(giorno: datetime.date, adesso: datetime.datetime, ieri: 
 	aperti = senza_esito(giorno)
 	if not aperti:
 		return
-	testo = (
-		_("{0} appointments yesterday have no outcome: did they come?")
-		if ieri
-		else _("{0} appointments today have no outcome: did they come?")
-	).format(len(aperti))
 	for utente in chi_avvisare():
-		frappe.get_doc(
-			{
-				"doctype": "CRM Notification",
-				"from_user": "Administrator",
-				"to_user": utente,
-				"type": "Agenda",
-				"notification_text": testo,
-				"message": ", ".join(aperti),
-				"notification_type_doctype": "CRM Appointment",
-				"notification_type_doc": aperti[0],
-			}
-		).insert(ignore_permissions=True)
+		avvisa(
+			utente,
+			"Agenda",
+			N.ESITI_IERI if ieri else N.ESITI_OGGI,
+			[len(aperti)],
+			oggetto=("CRM Appointment", aperti[0]),
+			messaggio=", ".join(aperti),
+		)
 
 
 def giorni_indietro(giorni: int = 7) -> datetime.date:
