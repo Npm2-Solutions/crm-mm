@@ -35872,3 +35872,99 @@ msgstr "Gli alimenti con cui si scrivono le diete: la libreria di {brand}, pront
 #: frontend/src/components/Settings/Clinic/FoodsSettings.vue
 msgid "Values of the library: Anses. 2025. Ciqual French food composition table."
 msgstr "Valori della libreria: Anses. 2025. Ciqual French food composition table."
+
+#: crm/notifiche/regole.py
+msgid "{0} assigned you the task {1}"
+msgstr "{0} ti ha assegnato l'attività {1}"
+
+#: crm/notifiche/regole.py
+msgid "{0} removed your assignment on the task {1}"
+msgstr "{0} ti ha tolto l'attività {1}"
+
+#: crm/notifiche/regole.py
+msgid "You received {1} WhatsApp messages from {0}"
+msgstr "Hai ricevuto {1} messaggi WhatsApp da {0}"
+
+#: crm/notifiche/regole.py
+msgid "You received {1} WhatsApp messages on the deal {0}"
+msgstr "Hai ricevuto {1} messaggi WhatsApp sulla trattativa {0}"
+
+#: crm/notifiche/regole.py
+msgid "You received {1} SMS from {0}"
+msgstr "Hai ricevuto {1} SMS da {0}"
+
+#: crm/notifiche/regole.py
+msgid "You received {1} SMS on the deal {0}"
+msgstr "Hai ricevuto {1} SMS sulla trattativa {0}"
+
+#: crm/notifiche/api.py
+msgid "Choose the notification to read again"
+msgstr "Scegli la notifica da rileggere"
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "Sentence"
+msgstr "Frase"
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "Names"
+msgstr "Nomi"
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "In English, with its names apart: whoever reads it reads it in their own language"
+msgstr "In inglese, con i nomi a parte: chi la legge la legge nella sua lingua"
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "The messages of the same person while it is unread"
+msgstr "I messaggi della stessa persona finché non è letta"
+
+#: frontend/src/components/Notifications/NotificationsList.vue
+msgid "All read"
+msgstr "Hai letto tutto"
+
+#: frontend/src/components/Notifications/NotificationsList.vue
+msgid "No notifications"
+msgstr "Nessuna notifica"
+
+#: frontend/src/components/Notifications/NotificationsList.vue
+msgid "The notifications you have read stay under All."
+msgstr "Le notifiche lette restano in Tutte."
+
+#: frontend/src/components/Notifications/NotificationsList.vue
+msgid "Here you find who mentions you, what is assigned to you and the messages of the people you follow."
+msgstr "Qui trovi chi ti menziona, cosa ti viene assegnato e i messaggi delle persone che segui."
+
+#: frontend/src/components/Notifications.vue
+#: frontend/src/components/Notifications/NotificationRow.vue
+msgid "Unread"
+msgstr "Da leggere"
+
+#: frontend/src/components/Notifications.vue
+msgctxt "Notifications"
+msgid "All"
+msgstr "Tutte"
+
+#: frontend/src/composables/notifiche.js
+msgctxt "Toast action"
+msgid "Open"
+msgstr "Apri"
+
+#: frontend/src/components/Notifications/NotificationRow.vue
+msgctxt "Kind of notification"
+msgid "Notification"
+msgstr "Notifica"
+
+#: frontend/src/components/Mobile/MobileBottomNav.vue
+msgid "Unread notifications"
+msgstr "Notifiche da leggere"
+
+#: frontend/src/components/EventNotificationsArea.vue
+msgid "Starting now"
+msgstr "Iniziano adesso"
+
+#: frontend/src/components/EventNotificationsArea.vue
+msgid "Ongoing events"
+msgstr "In corso"
+
+#: frontend/src/components/EventNotificationsArea.vue
+msgid "Upcoming events"
+msgstr "In arrivo"

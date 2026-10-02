@@ -582,6 +582,9 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
+# a notification older than six months goes, read or not (Log Settings, crm.notifiche)
+default_log_clearing_doctypes = {"CRM Notification": 180}
+
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": [
