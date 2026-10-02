@@ -107,7 +107,7 @@ describe('the settings menu, by who reads it', () => {
       'WhatsApp: Numbers, Templates',
       'Phone: Telephony, Call scripts',
       'Marketing: Website, Social Planner, Tracking [Lead tracking · Tracked links]',
-      'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Provider connection, Options',
+      'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Test and go live, Options',
       'Integrations: Meta, Assistant',
     ])
   })
@@ -167,7 +167,7 @@ describe('the settings menu, by who reads it', () => {
     expect(comeSiLegge(menuDi(sessione('amministrazione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Phone: Telephony',
-      'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Provider connection, Options',
+      'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Test and go live, Options',
     ])
     expect(comeSiLegge(menuDi(sessione('direzione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',

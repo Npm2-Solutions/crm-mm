@@ -10,6 +10,8 @@ attached to the record, and the refusal to cancel a document that has already le
 the building.
 """
 
+from unittest.mock import patch
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -40,7 +42,12 @@ class InvoicingBase(IntegrationTestCase):
 	@staticmethod
 	def crea_azienda():
 		nome = "Studio Test Fatturazione"
+		# live, and downloading the file: the rules of a real invoice, with nothing
+		# leaving the building (the test mode and Itala have their own tests)
+		dal_vivo = {"provider_environment": "production", "sdi_mode": "export"}
 		if frappe.db.exists("CRM Invoicing Company", nome):
+			frappe.db.set_value("CRM Invoicing Company", nome, dal_vivo)
+			frappe.clear_document_cache("CRM Invoicing Company", nome)
 			return frappe.get_doc("CRM Invoicing Company", nome)
 		return frappe.get_doc(
 			{
@@ -63,6 +70,7 @@ class InvoicingBase(IntegrationTestCase):
 				"series_healthcare": "S",
 				"number_format": "{anno}/{serie}/{numero}",
 				"is_default": 1,
+				**dal_vivo,
 			}
 		).insert()
 
@@ -314,12 +322,13 @@ class TrasmissioneTest(InvoicingBase):
 			api.send_to_sdi(documento.name)
 		self.assertIn("PEC", str(errore.exception))
 
-	def test_il_provider_senza_endpoint_lo_dice(self):
+	def test_itala_senza_account_lo_dice(self):
 		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "provider")
 		documento = self._emessa_sdi()
-		with self.assertRaises(frappe.ValidationError) as errore:
-			api.send_to_sdi(documento.name)
-		self.assertIn("endpoint", str(errore.exception).lower())
+		with patch("crm.invoicing.connessione.account_agenzia", return_value=None):
+			with self.assertRaises(frappe.ValidationError) as errore:
+				api.send_to_sdi(documento.name)
+		self.assertIn("Itala is not connected yet", str(errore.exception))
 
 	def test_un_canale_sconosciuto_ripiega_su_export(self):
 		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "inesistente")
@@ -540,15 +549,13 @@ class DueRamiTest(InvoicingBase):
 		self.assertIsNotNone(voce)
 		self.assertIn("cannot reach them", voce["consequence"])
 
-	def test_un_provider_senza_endpoint_si_vede_nella_checklist(self):
-		frappe.db.set_value(
-			"CRM Invoicing Company",
-			self.azienda.name,
-			{"sdi_mode": "provider", "sdi_endpoint": None},
-		)
-		voce = self._checklist().get("Transmission channel")
+	def test_itala_non_collegata_si_vede_nella_checklist(self):
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "provider")
+		with patch("crm.invoicing.connessione.account_agenzia", return_value=None):
+			voce = self._checklist().get("Itala")
 		self.assertIsNotNone(voce)
-		self.assertIn("nothing carries it", voce["consequence"])
+		self.assertIn("once Itala is connected", voce["consequence"])
+		self.assertFalse(voce["blocking"])
 
 	def test_una_pec_senza_casella_si_vede_nella_checklist(self):
 		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, {"sdi_mode": "pec", "pec": None})
