@@ -28,6 +28,8 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, get_url, now_datetime, validate_email_address
 
 from crm.permissions import livelli
+from crm.posta.aspetto import codice as casella
+from crm.posta.aspetto import pulsante
 
 #: The role of whoever enters an area: a user of the site, never of the desk.
 RUOLO = "Client Area User"
@@ -189,15 +191,29 @@ def _manda_l_invito(email: str) -> None:
 	from crm.moduli.richieste import nome_del_centro
 
 	centro = nome_del_centro() or _("your centre")
+	esc = frappe.utils.escape_html
 	try:
 		frappe.sendmail(
 			recipients=[email],
 			subject=_("Your area at {0}").format(centro),
-			message=_(
-				"<p>{0} opened your area: your appointments, the documents they give you, "
-				'your invoices.</p><p><a href="{1}">Enter here</a> with this address: '
-				"we send you a code each time.</p>"
-			).format(frappe.utils.escape_html(centro), get_url("/area")),
+			header=_("Your area at {0}").format(esc(centro)),
+			with_container=True,
+			message="".join(
+				[
+					"<p>{}</p>".format(
+						esc(
+							_(
+								"{0} opened your area: your appointments, the documents they give you, "
+								"your invoices."
+							).format(centro)
+						)
+					),
+					pulsante(get_url("/area"), _("Enter your area")),
+					'<p class="text-muted text-small">{}</p>'.format(
+						esc(_("You enter with this address: we send you a code each time."))
+					),
+				]
+			),
 		)
 	except frappe.OutgoingEmailError:
 		# no mail from this site: the person is told at the desk
@@ -253,11 +269,23 @@ def _mandalo(email: str, codice: str) -> None:
 	from crm.moduli.richieste import nome_del_centro
 
 	centro = nome_del_centro() or _("your centre")
-	testo = _("Your code to enter the area of {0} is <b>{1}</b>. It is valid for {2} minutes.")
+	esc = frappe.utils.escape_html
 	posta = frappe.sendmail(
 		recipients=[email],
 		subject=_("Your code: {0}").format(codice),
-		message=f"<p>{testo.format(frappe.utils.escape_html(centro), codice, MINUTI_CODICE)}</p>",
+		header=_("Your code"),
+		with_container=True,
+		message="".join(
+			[
+				"<p>{}</p>".format(esc(_("Here is the code to enter the area of {0}:").format(centro))),
+				casella(codice),
+				'<p class="text-muted text-small">{}</p>'.format(
+					esc(
+						_("It is valid for {0} minutes. If you did not ask for it, ignore this email.")
+					).format(MINUTI_CODICE)
+				),
+			]
+		),
 	)
 	if posta:
 		from crm.moduli.richieste import _subito

@@ -31,6 +31,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, flt, get_url
 
 from crm.marchio import con_nome
+from crm.posta.aspetto import pulsante
 from crm.scheduling import booking_rules as rules_mod
 from crm.scheduling.availability import ACTIVE_STATUSES, get_slots, settings
 from crm.scheduling.timeutils import (
@@ -1121,8 +1122,7 @@ def send_client_email(appointment, token: str, kind: str) -> None:
 		)
 		lines = [
 			f"<p>{_('Hi {0},').format(esc(hello))}</p>",
-			f"<p><b>{esc(heading)}</b></p>",
-			f"<p>{esc(view['service'])}<br>{when} ({esc(str(tz))})</p>",
+			f"<p><b>{esc(view['service'])}</b><br>{when} ({esc(str(tz))})</p>",
 		]
 		if view["booked_for"]:
 			lines.append(f"<p>{_('The appointment is for {0}.').format(esc(view['booked_for']))}</p>")
@@ -1137,10 +1137,12 @@ def send_client_email(appointment, token: str, kind: str) -> None:
 		if view["instructions"] and kind != "cancelled":
 			lines.append(f"<p>{esc(view['instructions'])}</p>")
 		if kind != "cancelled":
-			lines.append(f'<p><a href="{manage_url(token)}">{_("Manage your booking")}</a></p>')
+			lines.append(pulsante(manage_url(token), _("Manage your booking")))
 		frappe.sendmail(
 			recipients=[mine[0].email],
 			subject=f"{heading} — {view['service']}, {when}",
+			header=esc(heading),
+			with_container=True,
 			message="".join(lines),
 			attachments=[
 				ics_file(token, view["service"], start, end, view["location"], cancelled=kind == "cancelled")
@@ -1166,10 +1168,18 @@ def notify_staff(appointment, subject: str) -> None:
 		start = from_system_naive(appointment.starts_on).astimezone(scheduling_tz())
 		frappe.sendmail(
 			recipients=emails,
-			subject=f"[{appointment.name}] {subject}: {appointment.title or appointment.service}",
-			message=con_nome(_("{0} on {1}. Open the {brand} calendar for details.")).format(
-				frappe.utils.escape_html(appointment.title or appointment.service),
-				start.strftime("%d/%m/%Y %H:%M"),
+			subject=f"{subject}: {appointment.title or appointment.service}",
+			header=frappe.utils.escape_html(subject),
+			with_container=True,
+			message="<p>{}</p>{}".format(
+				_("{0} on {1}.").format(
+					f"<b>{frappe.utils.escape_html(appointment.title or appointment.service)}</b>",
+					start.strftime("%d/%m/%Y %H:%M"),
+				),
+				pulsante(
+					get_url(f"/crm/calendar?date={start.strftime('%Y-%m-%d')}"),
+					con_nome(_("Open the agenda in {brand}")),
+				),
 			),
 			reference_doctype="CRM Appointment",
 			reference_name=appointment.name,

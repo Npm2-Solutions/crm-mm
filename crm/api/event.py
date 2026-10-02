@@ -17,7 +17,11 @@ reminders even if users don't configure them individually.
 from datetime import datetime, timedelta
 
 import frappe
+from frappe import _
 from frappe.utils import add_to_date, now_datetime
+
+from crm.marchio import con_nome
+from crm.posta.aspetto import pulsante
 
 
 def trigger_offset_event_notifications():
@@ -302,7 +306,7 @@ def _send_email_notification(notification, event_start, before_value, interval):
 
 	try:
 		recipients = set()
-		subject = f"Event Reminder: {notification.subject}"
+		subject = _("Reminder: {0}").format(notification.subject)
 
 		if notification.owner and notification.owner != "Administrator":
 			recipients.add(notification.owner)
@@ -323,23 +327,26 @@ def _send_email_notification(notification, event_start, before_value, interval):
 			return
 		time_remaining_text = _format_time_remaining(before_value, interval)
 
-		message = f"""
-		<div style="font-family: Arial, sans-serif; max-width: 600px;">
-			<h2 style="color: #333;">Event Reminder</h2>
-			<p>This is a reminder for your upcoming event:</p>
-			<div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 20px 0;">
-				<h3 style="margin: 0; color: #007bff;">{notification.subject}</h3>
-				{f'<p style="margin: 10px 0; color: #666;">{notification.description}</p>' if notification.description else ""}
-				<p style="margin: 5px 0;"><strong>Start Time:</strong> {event_start.strftime("%Y-%m-%d %H:%M:%S")}</p>
-				<p style="margin: 5px 0;"><strong>Time Remaining:</strong> {time_remaining_text}</p>
-			</div>
-			<p style="color: #666; font-size: 12px;">This is an automated reminder from your calendar system.</p>
-		</div>
-		"""
+		esc = frappe.utils.escape_html
+		descrizione = frappe.utils.strip_html(notification.description or "").strip()
+		message = "".join(
+			[
+				f"<p><b>{esc(notification.subject)}</b><br>"
+				f"{esc(frappe.utils.format_datetime(event_start, 'EEEE d MMMM, HH:mm'))}</p>",
+				f"<p>{esc(descrizione)}</p>" if descrizione else "",
+				f"<p>{esc(time_remaining_text)}</p>",
+				pulsante(
+					frappe.utils.get_url(f"/crm/calendar?date={event_start.strftime('%Y-%m-%d')}"),
+					con_nome(_("Open the agenda in {brand}")),
+				),
+			]
+		)
 
 		frappe.sendmail(
 			recipients=recipients,
 			subject=subject,
+			header=_("Event reminder"),
+			with_container=True,
 			message=message,
 			reference_doctype="Event",
 			reference_name=notification.event_name,
@@ -361,10 +368,15 @@ def _format_time_remaining(before_value, interval):
 	Returns:
 		str: Formatted time remaining message
 	"""
-	interval_labels = {"minutes": "minute(s)", "hours": "hour(s)", "days": "day(s)", "weeks": "week(s)"}
-
-	interval_label = interval_labels.get(interval, "unit(s)")
-	return f"{before_value} {interval_label}"
+	# one whole sentence per unit, and one for a single one: "1 hours" reads wrong anywhere
+	frasi = {
+		"minutes": (_("It starts in a minute."), _("It starts in {0} minutes.")),
+		"hours": (_("It starts in an hour."), _("It starts in {0} hours.")),
+		"days": (_("It starts tomorrow."), _("It starts in {0} days.")),
+		"weeks": (_("It starts in a week."), _("It starts in {0} weeks.")),
+	}
+	una, molte = frasi.get(interval, frasi["hours"])
+	return una if frappe.utils.cint(before_value) == 1 else molte.format(before_value)
 
 
 def _send_system_notification(notification):

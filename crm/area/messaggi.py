@@ -23,7 +23,7 @@ from dataclasses import dataclass
 
 import frappe
 from frappe import _
-from frappe.utils import cint, get_fullname, get_url, now_datetime
+from frappe.utils import cint, escape_html, get_fullname, get_url, now_datetime
 
 from crm.area import accesso
 from crm.permissions import livelli
@@ -169,14 +169,19 @@ def _avvisa(lead: str) -> None:
 	indirizzi = sorted({riga.user for riga in accesso.accessi_aperti(lead)})
 	if not indirizzi:
 		return
+	from crm.posta.aspetto import pulsante
+
 	centro = nome_del_centro() or _("your centre")
 	try:
 		frappe.sendmail(
 			recipients=indirizzi,
 			subject=_("News in your area at {0}").format(centro),
-			message=_(
-				'<p>There is news for you in your area.</p><p><a href="{0}">Open it here</a>.</p>'
-			).format(get_url("/area")),
+			header=_("News in your area"),
+			with_container=True,
+			message="<p>{}</p>{}".format(
+				escape_html(_("There is news for you in your area at {0}.").format(centro)),
+				pulsante(get_url("/area"), _("Open your area")),
+			),
 		)
 	except frappe.OutgoingEmailError:
 		frappe.clear_last_message()
