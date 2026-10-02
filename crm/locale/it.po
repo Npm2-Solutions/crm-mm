@@ -39525,3 +39525,255 @@ msgstr "Anno, serie e numero, con i trattini."
 #: crm/invoicing/prova.py
 msgid "Ten years is mandatory, and transmitting does not provide it. Join the Agenzia's free service once, in Fatture e Corrispettivi (you or your accountant), then tick it on the Invoicing tab: it keeps the invoices from that day on."
 msgstr "Dieci anni sono obbligatori, e trasmetterle non basta. Aderisci una volta sola al servizio gratuito dell'Agenzia, in Fatture e Corrispettivi (tu o il tuo commercialista), poi spuntalo nella scheda Fatturazione: conserva le fatture da quel giorno in poi."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Paste the Account SID."
+msgstr "Incolla l'Account SID."
+
+#: crm/telephony/collegamento_regole.py
+msgid "The Account SID starts with AC and has 34 characters: copy it again from the console."
+msgstr "L'Account SID comincia con AC e ha 34 caratteri: copialo di nuovo dalla console."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Paste the Auth Token."
+msgstr "Incolla l'Auth Token."
+
+#: crm/telephony/collegamento_regole.py
+msgid "The Auth Token has 32 letters and digits: copy it again from the console."
+msgstr "L'Auth Token ha 32 lettere e cifre: copialo di nuovo dalla console."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Twilio does not recognise these codes: copy the Account SID and the Auth Token again from the console."
+msgstr "Twilio non riconosce questi codici: copia di nuovo l'Account SID e l'Auth Token dalla console."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Twilio does not find this account, or it was closed."
+msgstr "Twilio non trova questo account, o è stato chiuso."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Twilio does not answer: try again in a few minutes."
+msgstr "Twilio non risponde: riprova tra qualche minuto."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Twilio answered with an error ({0}): try again in a few minutes."
+msgstr "Twilio ha risposto con un errore ({0}): riprova tra qualche minuto."
+
+#: crm/telephony/collegamento_regole.py
+msgid "Twilio suspended the account: calls and messages stop until it is active again."
+msgstr "Twilio ha sospeso l'account: chiamate e messaggi si fermano finché non torna attivo."
+
+#: crm/telephony/collegamento_regole.py
+msgid "The space was closed in Twilio: connect again to make a new one."
+msgstr "Lo spazio è stato chiuso su Twilio: collega di nuovo per crearne uno nuovo."
+
+#: crm/telephony/collegamento_regole.py
+msgid "A trial account: Twilio calls only the numbers you verified and sells no Italian numbers. Upgrade it on Twilio with a payment method."
+msgstr "Un account di prova: Twilio chiama solo i numeri che hai verificato e non vende numeri italiani. Attivalo su Twilio con un metodo di pagamento."
+
+#: crm/telephony/collegamento.py
+msgid "The agency connected this Twilio account: only the agency changes it."
+msgstr "Questo account Twilio l'ha collegato l'agenzia: lo cambia solo l'agenzia."
+
+#: crm/telephony/collegamento.py
+msgid "The agency's Twilio account is not set up on this server."
+msgstr "L'account Twilio dell'agenzia non è configurato su questo server."
+
+#: crm/telephony/collegamento.py
+msgid "Twilio did not give the codes of {brand}'s space: try again in a few minutes."
+msgstr "Twilio non ha dato i codici dello spazio di {brand}: riprova tra qualche minuto."
+
+#: crm/telephony/collegamento.py
+msgid "Twilio is not connected."
+msgstr "Twilio non è collegato."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Whose Account"
+msgstr "Di chi è l'account"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "The account the space lives in: the centre's own, or the agency's for a centre with the agency's front desk. Empty: connected by hand."
+msgstr "L'account in cui sta lo spazio: quello del centro, o quello dell'agenzia per un centro con la segreteria dell'agenzia. Vuoto: collegato a mano."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Account"
+msgstr "Account"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Space"
+msgstr "Spazio"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "The subaccount made in the account for this site, with its own codes: kept after disconnecting, so that connecting again finds it."
+msgstr "Il sottoaccount creato nell'account per questo sito, con i suoi codici: resta dopo lo scollegamento, così ricollegando si ritrova."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Space Name"
+msgstr "Nome dello spazio"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Connected On"
+msgstr "Collegato il"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Connected By"
+msgstr "Collegato da"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Calls and messages go through your own Twilio account: you pay Twilio, at Twilio's prices. Everything else you do here in {brand}."
+msgstr "Chiamate e messaggi passano dal tuo account Twilio: li paghi a Twilio, ai prezzi di Twilio. Tutto il resto lo fai qui in {brand}."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Create your account on Twilio, if you have none, and upgrade it with a payment method."
+msgstr "Crea il tuo account su Twilio, se non ce l'hai, e attivalo con un metodo di pagamento."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Open Twilio"
+msgstr "Apri Twilio"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "On the first page of the Twilio console, copy the Account SID and the Auth Token."
+msgstr "Nella prima pagina della console di Twilio copia l'Account SID e l'Auth Token."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Open the console"
+msgstr "Apri la console"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Paste them here and connect."
+msgstr "Incollali qui e collega."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "The token is used only now. {brand} makes its own space in your account, with its own keys, and keeps only those: it neither reads nor touches the rest of your account."
+msgstr "Il token serve solo adesso. {brand} crea il suo spazio nel tuo account, con le sue chiavi, e tiene solo quelle: il resto del tuo account non lo legge e non lo tocca."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "The agency's account"
+msgstr "L'account dell'agenzia"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "For a centre with the agency's front desk: the space lives in the agency's account, and the agency pays."
+msgstr "Per un centro con la segreteria dell'agenzia: lo spazio sta nell'account dell'agenzia, e paga l'agenzia."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Use the agency's account"
+msgstr "Usa l'account dell'agenzia"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Check"
+msgstr "Controlla"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio is connected"
+msgstr "Twilio è collegato"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio is disconnected"
+msgstr "Twilio è scollegato"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Disconnect Twilio?"
+msgstr "Scollegare Twilio?"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Calls and messages from {brand} stop. The space and its numbers stay in your Twilio account, and the numbers keep costing until you release them."
+msgstr "Chiamate e messaggi da {brand} si fermano. Lo spazio e i suoi numeri restano nel tuo account Twilio, e i numeri continuano a costare finché non li rilasci."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio account"
+msgstr "Account Twilio"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "{brand}'s space"
+msgstr "Lo spazio di {brand}"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Who pays"
+msgstr "Chi paga"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "{0} by {1}"
+msgstr "{0} da {1}"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio account: {0}, on trial"
+msgstr "Account Twilio: {0}, di prova"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio account: {0}"
+msgstr "Account Twilio: {0}"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "No number in the space yet."
+msgstr "Ancora nessun numero nello spazio."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "{0} numbers, {1} of them do not reach {brand}."
+msgstr "{0} numeri, {1} non arrivano a {brand}."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "One number, and it reaches {brand}."
+msgstr "Un numero, e arriva a {brand}."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "{0} numbers, and they all reach {brand}."
+msgstr "{0} numeri, e arrivano tutti a {brand}."
+
+#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
+msgid "Connected: calls and messages go through Twilio."
+msgstr "Collegato: chiamate e messaggi passano da Twilio."
+
+#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
+msgid "Connect your Twilio account: calls and messages from {brand}."
+msgstr "Collega il tuo account Twilio: chiamate e messaggi da {brand}."
+
+#: frontend/src/utils/twilio.js
+msgid "The centre, to Twilio"
+msgstr "Il centro, a Twilio"
+
+#: frontend/src/utils/twilio.js
+msgid "The agency"
+msgstr "L'agenzia"
+
+#: frontend/src/utils/twilio.js
+msgid "Connected by hand by the agency"
+msgstr "Collegato a mano dall'agenzia"
+
+#: frontend/src/utils/twilio.js
+msgid "One number changed in the console is pointed at {brand} again."
+msgstr "Un numero cambiato nella console punta di nuovo a {brand}."
+
+#: frontend/src/utils/twilio.js
+msgid "{0} numbers changed in the console are pointed at {brand} again."
+msgstr "{0} numeri cambiati nella console puntano di nuovo a {brand}."
+
+#: frontend/src/utils/twilio.js
+msgid "One number goes to a SIP trunk: its calls do not reach {brand}, and it stays as it is."
+msgstr "Un numero va a un trunk SIP: le sue chiamate non arrivano a {brand}, e resta com'è."
+
+#: frontend/src/utils/twilio.js
+msgid "{0} numbers go to a SIP trunk: their calls do not reach {brand}, and they stay as they are."
+msgstr "{0} numeri vanno a un trunk SIP: le loro chiamate non arrivano a {brand}, e restano come sono."
+
+#: frontend/src/utils/twilio.js
+msgid "Everything is in place."
+msgstr "È tutto a posto."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgctxt "Twilio"
+msgid "Connected"
+msgstr "Collegato"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgctxt "Twilio"
+msgid "Not connected"
+msgstr "Non collegato"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgctxt "Twilio console"
+msgid "Account SID"
+msgstr "Account SID"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgctxt "Twilio console"
+msgid "Auth Token"
+msgstr "Auth Token"
