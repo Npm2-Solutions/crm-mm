@@ -199,9 +199,11 @@ mail clients do not all show an SVG.
 | `crm/posta/servizio.py` | The agency's sending service (`dottorcloud_posta` in `common_site_config.json`) as each site's "DottorCloud" account, the default outgoing one: `assicura()` after migrate and hourly, saved only when it changes, a failure undoes only its own save; `intestazioni()` (`make_email_body_message`): From the centre's name on the service's address (the envelope too), "Anna Bianchi · Centro Aurora" for somebody without a mailbox, Reply-To the centre's (`FCRM Settings.reply_to_email`, else its main mailbox); the page's calls, syncing the agency's |
 | `crm/posta/ingresso.py` | `alla_ricezione()` on every email received: the person who wrote (`find_person`), a new one only where the mailbox says so and never a machine, the centre or a booking platform's inbox; a reply on one of DottorCloud's documents moves to the person (the document keeps a timeline link), another app's thread stays; whoever follows the person told (`avvisa`, kind "email") |
 | `crm/api/settings.py` + `Settings/EmailAccountList.vue`, `SendingService.vue`, `EmailEdit.vue`, `utils/caselle.js` | Settings > Email > Accounts: the centre's mailboxes from the providers the server knows (`FORNITORI`, servers never typed), errors in words, saved with the framework's list of document types read whole (`_dove_archivia`); where the answers go; the service never listed — tested |
+| `crm/posta/personale.py` + `crm/overrides/email_account.py`, `Settings/Profile/MyEmail.vue` | Each person's own mailbox (Settings > Your account > Your email): `Email Account.crm_owner`, connected with a provider's password or signing in with Google or Microsoft through the agency's Connected App (told apart by where it signs in), back through `/oauth_connected?provider=posta`; only replies and known people's emails are read from it (`da_tenere`), nobody becomes a person from it; the composer's From and the centre's mailboxes one writes from come from the server (`get_my_senders`, `set_my_senders`: `User.user_emails` is permlevel 1) |
 
 What DottorCloud sends by itself leaves through the service: no mailbox of the
-centre is the default outgoing one while it is on. An email received is the
+centre is the default outgoing one while it is on, and somebody's own mailbox is
+never one of the centre's (`personale.del_centro()` in every list of them). An email received is the
 person's, never a new person for somebody known; a module that sends a reminder on
 its own document needs nothing more: the answer reaches the person.
 

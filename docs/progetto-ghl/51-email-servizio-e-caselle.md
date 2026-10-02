@@ -1,8 +1,8 @@
 # 51 · Le email: il servizio di invio e le caselle
 
-**Stato:** prima parte fatta (02/10/2026): il servizio di invio dell'agenzia, le
-email che arrivano alla loro persona, la pagina delle caselle del centro. Seconda
-parte in corso: la casella di ognuno, anche con l'accesso di Google e Microsoft.
+**Stato:** fatto (02/10/2026), in due parti: il servizio di invio dell'agenzia, le
+email che arrivano alla loro persona e la pagina delle caselle del centro; poi la
+casella di ognuno, anche con l'accesso di Google e Microsoft.
 
 ## Il bisogno
 
@@ -95,18 +95,36 @@ In Impostazioni > E-mail > Account email:
 - **Le risposte alle email di DottorCloud** vanno alla casella principale, o a un
   altro indirizzo scelto in cima alla pagina; un indirizzo che non si legge in
   DottorCloud è detto: le risposte restano lì.
-- **Outlook, Hotmail e Microsoft 365** li collega l'agenzia, finché non c'è
-  l'accesso Microsoft (seconda parte).
+- **Outlook, Hotmail e Microsoft 365** non accettano più la password: una casella
+  del centro lì la collega l'agenzia; la propria si collega con «Accedi con
+  Microsoft» (sotto).
 
-### 3. La casella di ognuno (seconda parte, in corso)
+### 3. La casella di ognuno
 
-- In Impostazioni > Il tuo account: la propria casella, con gli stessi fornitori e
-  la password per le app.
-- Con l'accesso Google o Microsoft quando l'agenzia lo attiva: un clic, niente
-  password.
-- Si scrive dalla pagina di una persona con il proprio indirizzo; arrivano in
-  DottorCloud solo le email delle persone che il centro conosce, non tutta la
-  posta personale.
+In Impostazioni > Il tuo account > La tua email:
+
+- **La propria casella**: con gli stessi fornitori del centro e la loro password
+  (per le app, dove serve), o con «Accedi con Google» / «Accedi con Microsoft»
+  dove l'agenzia ha registrato DottorCloud: si apre la pagina di Google o
+  Microsoft, la password resta a loro, e la casella aspetta finché l'accesso torna.
+- **Si scrive da lì**: nella pagina di una persona il campo «Da» propone prima la
+  propria casella, poi le caselle del centro scelte nella stessa pagina. Prima la
+  lista non si vedeva per nessuno tranne l'amministratore (il framework la tiene
+  dove legge solo lui): ora la scrive e la legge il server.
+- **Arriva solo quello che è del centro**: le risposte a quello che si è scritto da
+  DottorCloud e le email delle persone che il centro conosce; il resto della posta
+  resta nella casella, mai copiato in DottorCloud. Da una casella personale non
+  nasce mai una persona. Meglio collegare l'indirizzo di lavoro.
+- **Chi la collega lo sa**: una risposta che arriva nella sua casella gli arriva
+  anche nel pannello, anche se la persona non è sua; e chi ha scritto l'email a
+  cui si risponde lo sa sempre.
+- **Senza una casella sua** si scrive tramite il servizio, «Anna Bianchi · Centro
+  Aurora», e la risposta torna alla casella del centro, sulla pagina della persona:
+  non più all'indirizzo personale di chi ha scritto, dove nessun altro la leggeva.
+- **Scollegata**, smette di leggere e scrivere e la password o l'accesso vanno via;
+  quello che ha portato resta sulle pagine delle persone.
+- La casella di una persona non compare tra le caselle del centro, e le risposte
+  alle email di DottorCloud non vanno mai lì.
 
 ## Cosa fa NPM2, una volta
 
@@ -129,11 +147,14 @@ In Impostazioni > E-mail > Account email:
   Ogni sito la segue al prossimo migrate, entro un'ora, o subito con «Sincronizza
   ora» nella pagina (che vede solo l'agenzia). Un servizio che non risponde non
   viene installato: resta un errore nel registro.
-- **Per la seconda parte**, registrare l'app di DottorCloud:
-  - su Google Cloud: verifica dell'app e valutazione di sicurezza annuale (CASA)
-    per leggere e mandare la posta, o solo le password per le app;
-  - su Microsoft Entra: l'editore verificato, perché le persone possano dare il
-    consenso da sole.
+- **Per l'accesso Google e Microsoft**, registrare l'app di DottorCloud e
+  scriverla nel Desk come «Connected App» (DottorCloud la riconosce da dove fa
+  accedere: `accounts.google.com`, `login.microsoftonline.com`):
+  - Google Cloud: l'ambito `https://mail.google.com/`, con la verifica dell'app e
+    la valutazione di sicurezza annuale (CASA); finché non c'è, restano le password
+    per le app;
+  - Microsoft Entra: `IMAP.AccessAsUser.All`, `SMTP.Send` e `offline_access`, con
+    l'editore verificato perché le persone possano dare il consenso da sole.
 
 ## Come è fatta
 
@@ -165,6 +186,15 @@ In Impostazioni > E-mail > Account email:
 - La patch `emails_reach_their_person`: le caselle smettono di fare una persona a
   ogni email (lo fa DottorCloud per chi scrive la prima volta), chi ha un livello
   smette di ricevere la copia.
+- La seconda parte:
+  - `crm/posta/personale.py`: la casella di ognuno (`crm_owner` su Email Account,
+    da `crm.install`), `connect_my_mailbox`, `start_sign_in` e `finish_sign_in`
+    con la Connected App dell'agenzia, `disconnect_my_mailbox`, `set_my_senders`
+    e `get_my_senders` (le righe `User Email` scritte dal server), `da_tenere`;
+  - `crm/overrides/email_account.py`: da una casella personale si leggono solo le
+    email da tenere;
+  - `crm/www/oauth_connected`: il ritorno da Google e Microsoft («posta»);
+  - `Settings/Profile/MyEmail.vue`, il campo «Da» di `EmailEditor.vue`.
 
 ## Verifiche
 
@@ -187,9 +217,19 @@ In Impostazioni > E-mail > Account email:
     piattaforme; un'email mandata non fa una persona;
   - l'avviso a chi segue la persona, e la seconda email si somma;
   - la patch.
+- `crm/posta/tests/test_personale.py`:
+  - la casella è di chi la collega, non fa persone, e si scrive da lì per prima;
+  - le caselle del centro da cui si scrive, mai quella di un altro; la pagina del
+    centro non la mostra; una casella del centro non diventa di nessuno;
+  - scollegata e ricollegata con un altro indirizzo è la stessa;
+  - con Google: la pagina di Google, l'attesa, l'accesso tornato;
+  - dalla casella personale solo risposte e persone note; chi l'ha collegata lo
+    sa anche se la persona non è sua.
 - `frontend/tests/unit/caselle.test.js`.
 - Nel browser, in italiano: la pagina del manager e dell'agenzia, un altro
-  indirizzo per le risposte, una casella nuova di Aruba, il telefono.
+  indirizzo per le risposte, una casella nuova di Aruba, il telefono; «La tua
+  email» con «Accedi con Google», la password che manca, la casella collegata, e
+  il campo «Da» con la propria casella.
 
 ## Fonti
 
