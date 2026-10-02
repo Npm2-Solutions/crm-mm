@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  Settings > Phone > Telephony: one's own line (the service one calls with, the
+  number one calls from), the incoming calls and the providers' pages.
+-->
 <template>
   <div class="flex h-full flex-col gap-6 px-6 py-8 max-md:px-3 max-md:py-5">
     <!-- Header -->
@@ -271,7 +277,9 @@
         </div>
         <Button
           class="shrink-0"
-          :label="isEnabled('twilio') ? __('Open') : __('Connect')"
+          :label="
+            isEnabled('twilio') ? __('Open', null, 'Action') : __('Connect')
+          "
           @click="emit('updateStep', 'twilio-settings')"
         />
       </div>
@@ -314,6 +322,7 @@ import {
   Badge,
   Combobox,
   ErrorMessage,
+  createDocumentResource,
   createResource,
   toast,
 } from 'frappe-ui'
@@ -323,7 +332,6 @@ import {
   transcriptionEnabled,
   useTelephony,
 } from '@/composables/telephony'
-import { useDocument } from '@/data/document'
 import { usersStore } from '@/stores/users'
 import { validatePhone } from '@/utils'
 import { ref, computed } from 'vue'
@@ -369,19 +377,35 @@ const { getUser, puo } = usersStore()
 
 const isNewDoc = ref(false)
 
-const { document: telephonyAgent } = useDocument(
-  'CRM Telephony Agent',
-  getUser().name,
-  {
+// one's own line, made the first time it is saved: asked for only once the
+// server says it is there, so a user who never saved it gets an empty page and
+// not a document that does not exist
+const telephonyAgent = createDocumentResource({
+  doctype: 'CRM Telephony Agent',
+  name: getUser().name,
+  auto: false,
+  setValue: {
+    onSuccess: () => toast.success(__('Document updated successfully')),
     onError: (err) => {
-      if (err.exc_type === 'DoesNotExistError') {
-        isNewDoc.value = true
-        telephonyAgent.doc = {}
-        telephonyAgent.originalDoc = {}
-      }
+      err.messages?.forEach((msg) => toast.error(msg))
     },
   },
-)
+})
+
+createResource({
+  url: 'frappe.client.get_count',
+  params: {
+    doctype: 'CRM Telephony Agent',
+    filters: { name: getUser().name },
+  },
+  auto: true,
+  onSuccess: (quanti) => {
+    if (quanti) return telephonyAgent.reload()
+    isNewDoc.value = true
+    telephonyAgent.doc = {}
+    telephonyAgent.originalDoc = {}
+  },
+})
 
 const insertResource = createResource({
   url: 'frappe.client.insert',

@@ -37991,6 +37991,7 @@ msgstr "il totale del documento ({0}) non coincide con l'importo comunicato al S
 #: frontend/src/components/Settings/Booking/BookingPageSettings.vue
 #: frontend/src/components/Settings/Booking/OnlineBookingSetup.vue
 #: frontend/src/components/Settings/Forms/TemplateBuilder.vue
+#: frontend/src/components/Settings/Telephony/TelephonySettings.vue
 #: frontend/src/pages/Invoices.vue
 #: frontend/src/pages/Website.vue
 msgctxt "Action"
