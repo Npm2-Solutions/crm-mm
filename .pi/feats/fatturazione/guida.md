@@ -75,14 +75,16 @@ ancora davanti.
 
 Tutto sta nel gruppo **Fatturazione** delle Impostazioni: *Azienda emittente*;
 *Servizi e professionisti*, con le schede dei servizi fatturabili, dei professionisti
-che li erogano e dell'albo delle qualifiche; la *Connessione al provider*; le *Opzioni*
+che li erogano e dell'albo delle qualifiche; *Prova e attivazione*; le *Opzioni*
 comuni a ogni documento.
 
-La scheda dell'azienda e' divisa per argomento, cosi' il sanitario e il Sistema TS
-hanno il loro spazio invece di stare in fondo a un modulo unico: *Company*,
-*Invoicing*, *Documents* (forma e conservazione), *Transmission* (lo SdI) e
-*Healthcare* (categoria TS, Codice Proprietario, certificato e modalita' di
-trasmissione).
+La scheda dell'azienda e' divisa per argomento. Il centro vede tre schede:
+*Azienda*, *Fatturazione* (cassa, ritenuta, bollo) e *Sanitario* (chi emette, i
+codici della struttura, le **credenziali del Sistema TS**). Il resto e'
+dell'agenzia e sta sul livello di permesso 1 (System Manager): la numerazione, i
+*Documenti* (forma e conservazione), la *Trasmissione* (il canale, Itala, la prova)
+e la modalita' e il certificato del Sistema TS. Una schermata non disegna mai un
+campo che chi la guarda non puo' leggere (doc 49).
 Le schermate rendono il layout dei DocType, quindi le spiegazioni che leggi sotto
 ogni campo sono le stesse scritte nella definizione — una regola spiegata una
 volta sola non puo' divergere dall'interfaccia che la mostra.
@@ -97,6 +99,26 @@ quando si usano; si salva il codice. Con la clinica accesa si vedono solo quelle
 un centro medico, e i tipi di spesa sono quelli che la categoria di chi emette puo'
 usare. Un valore scelto prima resta nel suo campo anche se il profilo non lo
 propone piu' (doc 45).
+
+---
+
+## Prima in prova, poi attiva
+
+Ogni azienda **parte in prova** (doc 49). Una fattura si fa, si emette e si manda
+come sara' dal vivo, ma e' di prova:
+
+- ha una serie sua, `2026/PROVA-S/1`: la numerazione vera parte da uno il giorno in
+  cui si attiva, senza buchi;
+- il PDF ha la fascia «Fattura di prova: non ha valore fiscale»;
+- quella elettronica va all'ambiente di prova di Itala, e allo SdI non arriva niente;
+- la comunicazione al Sistema TS si controlla all'emissione e non parte;
+- non fa un cliente ne' un paziente, e non compare nell'area del paziente.
+
+La pagina delle fatture lo dice («Fatturazione in prova»), la finestra della fattura
+ha il segno «Prova». **Prova e attivazione** dice cosa manca e di chi e' da fare;
+quello che impedisce di attivarla porta la croce rossa. Attivando, le fatture di
+prova vengono tolte e da quel momento ogni fattura e' vera. Tornare in prova e'
+dell'agenzia, e solo finche' non c'e' una fattura vera.
 
 ---
 
@@ -358,9 +380,10 @@ si sceglie sull'azienda emittente.
 |---|---|---|
 | `export` | niente | nessuno — il file lo consegni tu |
 | `pec` | la casella PEC dello studio | nessuno |
-| `provider` | l'API di un intermediario accreditato | il provider |
+| `provider` | Itala, l'intermediario accreditato, sull'account dell'agenzia | Itala |
 
-**Il predefinito e' `provider`**, e il motivo non e' tecnico. Le tre strade emettono
+**Il predefinito e' `provider`, cioe' Itala**, l'unico che si offre ai centri; il
+file da caricare e la PEC restano, li sceglie l'agenzia. E il motivo non e' tecnico. Le tre strade emettono
 una fattura ugualmente valida: cambia chi risponde quando il canale tace. La PEC non
 costa niente e non chiede l'accreditamento di nessuno, ma funziona solo se qualcuno
 quella casella la legge — e uno studio a cui hai appena detto che la fatturazione e'
@@ -372,10 +395,10 @@ risposta a pagamento a questo: guarda il canale, e ne risponde.
 esiste ricade li' invece di dare errore, cosi' una configurazione sbagliata lascia la
 fattura consegnabile a mano e non bloccata.
 
-Quello che il predefinito **non** fa e' ricadere in silenzio. Un'azienda su
-`provider` senza endpoint l'XML lo genera e lo conserva lo stesso, ma l'invio si
-rifiuta e dice cosa manca, e il pezzo resta in «Cosa manca» finche' non lo chiudi. Un
-canale che finge di aver mandato e' peggio di uno che si ferma.
+Quello che il predefinito **non** fa e' ricadere in silenzio. Finche' l'agenzia non
+ha collegato Itala, l'XML si genera e si conserva lo stesso, ma l'invio si rifiuta e
+dice cosa manca, e il pezzo resta in «Cosa manca» finche' non lo chiudi. Un canale
+che finge di aver mandato e' peggio di uno che si ferma.
 
 ### La PEC
 
@@ -409,32 +432,31 @@ estratto.
 Accendilo solo dove qualcuno lo legge davvero: una casella che non apre nessuno e'
 peggio di non averla.
 
-### Il provider: la connessione, e cosa resta da verificare
+### Itala, sull'account dell'agenzia
 
-Nessun fornitore e' cablato nel codice: endpoint, URL di login e campo
-dell'identificativo sono configurazione, con i valori predefiniti gia' impostati sul
-fornitore con cui il sistema viene venduto. Svuotare l'URL di login e' una scelta
-vera e chiede l'HTTP Basic.
+Itala e' l'unico intermediario, e un solo account basta per tutti i centri: quello
+dell'agenzia, nelle *Opzioni* (visibile solo all'agenzia) oppure una volta per tutto
+il server, in `common_site_config.json` (`itala_client_id`, `itala_client_secret`).
+Ogni azienda si registra da sola sotto l'account (la gestione multi-azienda di Itala,
+`/aziende`) la prima volta che parte una sua fattura, una volta per ambiente; un
+centro che ha gia' un account Itala suo lo tiene, scritto dall'agenzia sull'azienda.
+Il contratto, riassunto: `.pi/vendor/itala.md`.
 
-Autenticarsi e restarlo e' `acube.py`, condiviso con il canale Sistema TS: il token
-dura un giorno e sta in cache per azienda **e ambiente**, cosi' il passaggio in
-produzione non riusa quello di sandbox facendolo sembrare un problema di credenziali.
-Un 401 rinnova e riprova una volta; il secondo e' un problema vero.
+Gli indirizzi di prova e di produzione sono quelli pubblicati da Itala. **L'ambiente
+e' del documento**: una fattura di prova va sempre alla porta di prova, una vera
+sempre alla produzione, ed e' timbrato sulla fattura. Il token si raccoglie dalle
+risposte (`X-auth-token`) e sta in cache per account **e ambiente**; un 401 rinnova e
+riprova una volta, il secondo e' un problema vero.
 
-**L'ambiente non e' un dettaglio.** Un documento in sandbox non e' arrivato a nessuno,
-e l'unica cosa che lo distingue da una fattura vera e' quale interruttore era messo
-mesi fa. Quindi: parte da sandbox, viene **timbrato sul documento** invece di essere
-riletto dall'azienda, finisce in coda a ogni messaggio di un invio di prova, e sta in
-cima al suo pannello invece che dentro una sezione — e' l'unica impostazione il cui
-valore sbagliato non produce nessun errore.
+Itala riscrive il blocco di trasmissione con i suoi riferimenti: il nome del file che
+lo SdI ricevera' e' il suo, e si tiene sulla fattura con l'identificativo di Itala.
+Le notifiche rispondono a quel nome, gli aggiornamenti a quell'identificativo.
 
-Resta non verificata **la forma del payload del webhook**: il fornitore documenta i
-nomi degli eventi, non la busta che ci mette intorno, e questo e' stato scritto senza
-una consegna vera da leggere. Percio' niente pretende una forma: si cerca in piu'
-posti plausibili, si rifiuta di indovinare, e cio' che non si e' potuto applicare
-viene registrato con i **nomi** delle chiavi e mai con i valori — dalla stessa porta
-entra `supplier-invoice`, e quello porta il documento sanitario di qualcuno. La prima
-consegna vera chiude il punto, e il log serve a raccontartela.
+**Gli esiti si chiedono.** Un account per tanti siti non ha un webhook per ognuno:
+ogni sito chiede a Itala ogni dieci minuti, per la sua partita IVA, solo quando
+qualcosa aspetta (una fattura partita senza esito, una alla PA consegnata e non
+ancora accettata, i fornitori se si ricevono). Chi emette soltanto chiede solo le sue
+trasmissioni. Una volta al giorno si registra quello che Itala non ha risposto.
 
 ### La porta da cui tornano le ricevute
 
@@ -456,8 +478,9 @@ volte in circa dieci ore su tutto cio' che non e' 200. Quindi una consegna capit
 risponde 200 anche quando non c'era niente da applicare — gli stessi byte
 arriverebbero alla stessa risposta — e solo un guasto inatteso risponde 500.
 
-Il pannello **Impostazioni → Fatturazione → Connessione al provider** costruisce l'URL
-da incollare e genera il segreto. Il segreto si vede **una volta sola**: e' conservato
+Serve solo a un'azienda con un account Itala suo: il riquadro dell'agenzia in
+**Impostazioni → Fatturazione → Prova e attivazione** costruisce l'URL da incollare e
+genera il segreto. Il segreto si vede **una volta sola**: e' conservato
 cifrato, e un valore rileggibile da una schermata e' un valore leggibile da uno
 screenshot. Rigenerarlo e' anche ruotarlo — il vecchio smette di funzionare subito.
 
@@ -498,7 +521,8 @@ sta nell'area riservata del cliente. Quello che si deve fare e' avvisarlo, perch
 lo SdI non lo fa — e il modulo alza esattamente quell'avviso.
 
 Le ricevute si applicano da sole: sul canale PEC il controllo giornaliero legge la
-casella, sul provider arrivano via webhook, e una scaricata dal portale si applica
+casella, con Itala si chiedono ogni dieci minuti (o arrivano via webhook, per
+un'azienda con un account suo), e una scaricata dal portale si applica
 con `crm.invoicing.api.apply_sdi_notice`. Applicare due volte la stessa non fa
 nulla: la casella PEC riconsegna e i webhook ritentano.
 
@@ -563,16 +587,22 @@ non hai detto chi.
 
 ---
 
-## Sistema TS: quattro strade, una pipeline
+## Sistema TS: tre strade, una pipeline
 
-Cambiano solo gli ultimi dieci centimetri.
+Cambiano solo gli ultimi dieci centimetri, e la strada la sceglie l'agenzia: il
+centro scrive soltanto le sue credenziali.
 
 | Modalita' | Cosa serve | Chi trasmette |
 |---|---|---|
 | `credenziali_studio` | utente, password, PINCODE del centro, **nessuna delega attiva** | il CRM, in diretta |
 | `intermediario` | commercialista Entratel **con** delega attiva | il CRM, canale `/entrate/` |
-| `provider` | un endpoint sull'intermediario accreditato | il provider, sotto il proprio accreditamento |
 | `export` | niente | il centro, dal portale |
+
+Una fattura di prova non si trasmette mai (doc 49); una vera va alla produzione del
+Sistema TS. Il collaudo di Sogei si sceglie solo per un sito di sviluppo, con
+`sistema_ts_ambiente: test` nella configurazione del sito. Il certificato del kit
+ufficiale l'agenzia lo carica una volta per il sito, nelle *Opzioni*; quello di
+un'azienda vale solo se c'e'.
 
 **Il predefinito e' `credenziali_studio`**, e il motivo e' commerciale prima che
 tecnico: non costa niente a documento, ed e' questo che rende le *fatture sanitarie
@@ -582,29 +612,26 @@ circa sedicimila righe l'anno: contarle finirebbe nel prezzo o nel margine.
 Le credenziali sono **del centro e le inserisce il centro**, dalle sue impostazioni.
 Una credenziale che non hai e' un incidente che non puoi avere.
 
-`provider` e' la risposta per il centro che la strada diretta **non puo'** prenderla:
-dove la delega ce l'ha il commercialista, trasmettere in nome proprio torna `105`. E'
-un segmento vero, e poterlo servire e' una differenza che vale.
+La vecchia modalita' `provider` spediva il tracciato a un indirizzo che nessun
+intermediario documenta: e' tolta, e le aziende che l'avevano tornano alle
+credenziali del centro. Il servizio di Itala per il Sistema TS (sistema-ts-api.it)
+oggi non porta i codici di una struttura, ne' il rimborso o la variazione: regge un
+professionista a suo nome, non un poliambulatorio (doc 49).
 
 Il predefinito non blocca il salvataggio: un centro si configura prima che arrivino
 le credenziali, e fermare l'onboarding su un campo che si riempie la settimana dopo
 sarebbe assurdo. Il buco compare in «Cosa manca», l'invio si rifiuta da solo finche'
 non lo chiudi, e **la fatturazione non aspetta niente di tutto questo**.
 
-**Attenzione: il sì del provider non e' il sì del Sistema TS.** La chiamata diretta e'
-sincrona e la risposta porta il protocollo. Il provider invece prende il file e lo
-inoltra, quindi il documento resta `inviato` e non diventa `accolto`. Scrivere
-`accolto` su un 202 sarebbe inventarsi un'accettazione che nessuno ha dato, e lo
-studio se ne accorgerebbe a gennaio. Per questo il controllo della silenzio conta
-`inviato` fra i documenti in attesa.
+La chiamata diretta e' sincrona e la risposta porta il protocollo: `accolto` si
+scrive solo su un'accettazione vera, e il controllo del silenzio conta `inviato` fra
+i documenti in attesa.
 
-Il codice fiscale del paziente e' **cifrato prima di arrivare all'API di chiunque**,
-provider compreso.
+Il codice fiscale del paziente e' **cifrato prima di lasciare DottorCloud**.
 
 Chi ha bisogno delle credenziali dello studio e chi no e' una definizione sola
-(`sistema_ts.richiede_credenziali`): un'azienda su `provider` di credenziali TS non ne
-ha, e chiedergliele bloccherebbe il salvataggio su un campo che non potra' mai
-riempire.
+(`sistema_ts.richiede_credenziali`): un'azienda su `export` di credenziali TS non ne
+ha bisogno, e chiedergliele bloccherebbe il salvataggio su un campo che non riempira'.
 
 `export` resta il piano B universale e resta testato anche quando nessuno lo usa. Si
 retrocede da soli, non in silenzio: PINCODE scaduto, delega cambiata, scarti
