@@ -4,11 +4,9 @@
   and they stay on the list. They can leave it too. How it went, the page says.
 -->
 <template>
-  <article
-    class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-  >
+  <article class="area-card flex flex-col gap-2">
     <div class="flex items-start justify-between gap-2">
-      <h3 class="min-w-0 text-base font-medium text-ink-gray-9">
+      <h3 class="area-row__title min-w-0">
         {{ entry.service }}
       </h3>
       <Badge
@@ -24,7 +22,7 @@
 
     <div
       v-if="entry.offer?.can_answer"
-      class="flex flex-col gap-2 rounded-md bg-surface-gray-2 p-3"
+      class="flex flex-col gap-2 rounded-[12px_12px_12px_2px] bg-[var(--brand-subtle)] p-3"
     >
       <span
         class="text-p-base font-medium text-ink-gray-9 first-letter:uppercase"
@@ -44,11 +42,13 @@
       <div v-if="!anteprima" class="flex flex-wrap gap-2">
         <Button
           variant="solid"
+          size="lg"
           :label="__('Yes, book it')"
           :loading="busy === 'yes'"
           @click="answer('yes')"
         />
         <Button
+          size="lg"
           :label="__('No thanks')"
           :loading="busy === 'no'"
           @click="answer('no')"
@@ -67,7 +67,7 @@
     <button
       v-if="!anteprima"
       type="button"
-      class="touch-target w-fit text-p-sm text-ink-gray-6 underline underline-offset-2"
+      class="touch-target area-link w-fit"
       :disabled="busy === 'leave'"
       @click="leave"
     >

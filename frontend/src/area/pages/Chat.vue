@@ -9,12 +9,13 @@
 <template>
   <div class="flex min-h-full flex-col gap-4">
     <div class="flex flex-col gap-1">
-      <h1 class="text-xl font-semibold text-ink-gray-9">
+      <h1 class="area-title">
         {{ __('Ask the centre') }}
       </h1>
       <p
-        class="rounded-lg bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
+        class="mt-1 flex gap-2 rounded-[12px_12px_12px_2px] bg-[var(--info-subtle)] px-3 py-2.5 text-p-sm text-[var(--info)]"
       >
+        <LucideInfo class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         {{
           __(
             'This is the centre’s virtual assistant, an AI, not a person. It answers about opening hours, bookings and the centre’s frequent questions. It does not answer about your health: it offers to pass your question to a person. In an emergency call 112.',
@@ -31,7 +32,7 @@
         :class="turn.role === 'person' ? 'items-end' : 'items-start'"
       >
         <div
-          class="max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-p-base"
+          class="max-w-[85%] whitespace-pre-line px-4 py-2.5 text-p-base"
           :class="bubble(turn)"
         >
           {{ turn.text }}
@@ -60,10 +61,7 @@
           />
           <span v-else class="text-p-sm text-ink-gray-7">
             {{ __('Passed to the centre: the answer comes in') }}
-            <router-link
-              :to="{ name: 'Messages' }"
-              class="underline underline-offset-2"
-            >
+            <router-link :to="{ name: 'Messages' }" class="area-link">
               {{ __('Messages') }}
             </router-link>
           </span>
@@ -71,7 +69,7 @@
       </div>
       <div v-if="asking" class="flex items-start">
         <div
-          class="rounded-2xl bg-surface-elevation-1 px-4 py-2.5 text-p-base text-ink-gray-5 shadow-sm"
+          class="rounded-[16px_16px_16px_2px] bg-surface-elevation-1 px-4 py-2.5 text-p-base text-ink-gray-5 shadow-[inset_0_0_0_1px_var(--outline-gray-2)]"
         >
           {{ __('Writing…') }}
         </div>
@@ -82,7 +80,7 @@
     <!-- the centre's preview asks nothing: a question would reach the model -->
     <p
       v-if="anteprima"
-      class="mt-auto rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
+      class="mt-auto rounded-[12px_12px_12px_2px] bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-7"
     >
       {{ __('In the preview the chat does not answer.') }}
     </p>
@@ -104,7 +102,7 @@
       <Button
         type="submit"
         variant="solid"
-        size="md"
+        size="lg"
         class="shrink-0"
         :label="__('Send')"
         :disabled="!draft.trim() || asking"
@@ -116,6 +114,7 @@
 <script setup>
 import { Button, ErrorMessage, Textarea, call } from 'frappe-ui'
 import { ref } from 'vue'
+import LucideInfo from '~icons/lucide/info'
 import { anteprima } from '../anteprima'
 import { area } from '../store'
 
@@ -125,11 +124,14 @@ const asking = ref(false)
 const passing = ref(null)
 const error = ref('')
 
+// the person's words on the brand's soft green, the tail on their side; the
+// assistant's on a card, the cloud's tail on its own; an emergency in red
 function bubble(turn) {
-  if (turn.role === 'person') return 'bg-surface-gray-3 text-ink-gray-9'
+  if (turn.role === 'person')
+    return 'rounded-[16px_16px_2px_16px] bg-[var(--brand-subtle)] text-[var(--on-brand-subtle)]'
   if (turn.kind === 'emergency')
-    return 'bg-surface-red-2 text-ink-red-4 font-medium'
-  return 'bg-surface-elevation-1 text-ink-gray-9 shadow-sm'
+    return 'rounded-[16px_16px_16px_2px] bg-[var(--danger-subtle)] text-[var(--danger)] font-medium'
+  return 'rounded-[16px_16px_16px_2px] bg-surface-elevation-1 text-ink-gray-9 shadow-[inset_0_0_0_1px_var(--outline-gray-2)]'
 }
 
 async function send() {

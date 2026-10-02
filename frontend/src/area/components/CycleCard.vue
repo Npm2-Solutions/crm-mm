@@ -4,10 +4,8 @@
   the centre: the next appointment is in the list below.
 -->
 <template>
-  <article
-    class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-  >
-    <h3 class="text-base font-medium text-ink-gray-9">{{ cycle.service }}</h3>
+  <article class="area-card flex flex-col gap-2">
+    <h3 class="area-row__title">{{ cycle.service }}</h3>
     <!-- one segment a session, the used ones in the brand's colour -->
     <div
       v-if="tappe(cycle.counts)"

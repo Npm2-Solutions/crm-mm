@@ -1,83 +1,85 @@
 <!--
-  The first screen: the next appointment, what to prepare for it, and - where the
-  clinic adds them - the plans followed today and what the centre gave online.
+  The first screen, as the brand's phone has it: hello; the next appointment, the
+  page's deep block, and what to prepare for it; the plans followed today, in the
+  clouds of their kinds; the assistant for a question; what the centre gave
+  online.
 -->
 <template>
-  <div class="flex flex-col gap-6">
-    <h1 class="text-xl font-semibold text-ink-gray-9">
-      {{ __('Hello, {0}', [firstName]) }}
-    </h1>
+  <div class="flex flex-col gap-5">
+    <h1 class="area-title">{{ __('Hello, {0}', [firstName]) }}</h1>
     <section class="flex flex-col gap-2">
-      <h2 class="text-base font-medium text-ink-gray-7">
-        {{ __('Your next appointment') }}
-      </h2>
-      <AppointmentCard v-if="next" :appointment="next" />
-      <p v-else-if="appointments.data" class="text-p-base text-ink-gray-5">
-        {{ __('No appointments booked.') }}
-      </p>
+      <h2 class="sr-only">{{ __('Your next appointment') }}</h2>
+      <NextAppointment v-if="next" :appointment="next" />
+      <router-link
+        v-else-if="appointments.data"
+        :to="{ name: 'Appointments' }"
+        class="area-card area-row"
+      >
+        <AreaChip icona="calendar" />
+        <span class="min-w-0 flex-1">
+          <span class="area-row__title">
+            {{ __('No appointments booked.') }}
+          </span>
+          <span class="area-row__sub">{{ __('Your appointments') }}</span>
+        </span>
+        <LucideChevronRight class="area-row__go size-5" aria-hidden="true" />
+      </router-link>
     </section>
     <PrepareVisit />
     <TodayPlans v-if="section('plans')" />
-    <router-link
-      v-if="area.me?.chat"
-      :to="{ name: 'Chat' }"
-      class="flex items-center justify-between gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-    >
-      <span class="flex min-w-0 flex-col">
-        <span class="text-p-base font-medium text-ink-gray-9">
-          {{ __('A question about hours or bookings?') }}
-        </span>
-        <span class="text-p-sm text-ink-gray-5">
-          {{ __('Ask the centre’s virtual assistant, an AI') }}
-        </span>
-      </span>
-      <span class="shrink-0 text-p-sm text-ink-gray-7">→</span>
-    </router-link>
-    <PasskeyCard v-if="!anteprima" />
     <section
-      v-if="documents.data?.documents?.length"
+      v-if="area.me?.chat || documents.data?.documents?.length"
       class="flex flex-col gap-2"
     >
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-medium text-ink-gray-7">
-          {{ __('Documents online') }}
-        </h2>
-        <router-link
-          :to="{ name: 'Documents' }"
-          class="text-p-sm text-ink-gray-7 underline underline-offset-2"
-        >
-          {{ __('See all') }}
-        </router-link>
-      </div>
-      <HiddenCard
-        v-if="documents.data.documents[0].hidden"
-        :when="
-          __('Online until {0}', [day(documents.data.documents[0].expires_on)])
-        "
-      />
-      <div
-        v-else
-        class="rounded-lg bg-surface-elevation-1 p-4 text-p-base text-ink-gray-8 shadow-sm"
+      <router-link
+        v-if="area.me?.chat"
+        :to="{ name: 'Chat' }"
+        class="area-card area-row"
       >
-        {{ documents.data.documents[0].title }}
-        <span class="block text-p-sm text-ink-gray-5">
-          {{
-            __('Online until {0}', [
-              day(documents.data.documents[0].expires_on),
-            ])
-          }}
+        <AreaChip icona="message-circle-question" />
+        <span class="min-w-0 flex-1">
+          <span class="area-row__title">
+            {{ __('A question about hours or bookings?') }}
+          </span>
+          <span class="area-row__sub">
+            {{ __('Ask the centre’s virtual assistant, an AI') }}
+          </span>
         </span>
-      </div>
+        <LucideChevronRight class="area-row__go size-5" aria-hidden="true" />
+      </router-link>
+      <template v-if="documents.data?.documents?.length">
+        <HiddenCard
+          v-if="primo.hidden"
+          :when="__('Online until {0}', [day(primo.expires_on)])"
+        />
+        <router-link
+          v-else
+          :to="{ name: 'Documents' }"
+          class="area-card area-row"
+        >
+          <AreaChip colore="blue" icona="file-text" />
+          <span class="min-w-0 flex-1">
+            <span class="area-row__title">{{ primo.title }}</span>
+            <span class="area-row__sub">
+              {{ __('Online until {0}', [day(primo.expires_on)]) }}
+            </span>
+          </span>
+          <LucideChevronRight class="area-row__go size-5" aria-hidden="true" />
+        </router-link>
+      </template>
     </section>
+    <PasskeyCard v-if="!anteprima" />
   </div>
 </template>
 
 <script setup>
 import { createResource } from 'frappe-ui'
 import { computed } from 'vue'
+import LucideChevronRight from '~icons/lucide/chevron-right'
 import { anteprima } from '../anteprima'
-import AppointmentCard from '../components/AppointmentCard.vue'
+import AreaChip from '../components/AreaChip.vue'
 import HiddenCard from '../components/HiddenCard.vue'
+import NextAppointment from '../components/NextAppointment.vue'
 import PasskeyCard from '../components/PasskeyCard.vue'
 import PrepareVisit from '../components/PrepareVisit.vue'
 import TodayPlans from '../components/TodayPlans.vue'
@@ -97,6 +99,8 @@ const documents = createResource({
 })
 
 const next = computed(() => appointments.data?.upcoming?.[0])
+// the last document the centre gave
+const primo = computed(() => documents.data?.documents?.[0] || {})
 const firstName = computed(() => {
   const who = (area.me?.people || []).find((p) => p.name === person)
   return (who?.lead_name || area.me?.full_name || '').split(' ')[0]

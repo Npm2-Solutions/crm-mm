@@ -5,12 +5,10 @@
 -->
 <template>
   <section v-if="shown" class="flex flex-col gap-2">
-    <h2 class="text-base font-medium text-ink-gray-7">
+    <h2 class="area-label">
       {{ __('Entering with a passkey') }}
     </h2>
-    <div
-      class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-    >
+    <div class="area-card flex flex-col gap-3">
       <template v-if="!list.length">
         <p class="text-p-base text-ink-gray-8">
           {{

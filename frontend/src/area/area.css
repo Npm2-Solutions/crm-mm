@@ -8,3 +8,322 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+/* The area's register, as the brand draws the patient's phone (the screens of
+   the video, the ads and the presentation: brand/presentazione/sorgenti/img/
+   telefono-*.png): Espresso's tokens, larger - titles big and tight, labels in
+   small capitals, every card with the cloud's tail, a kind of thing in a cloud of
+   its category's colour, the next appointment the page's one deep block,
+   controls of 40px (control-lg). Only the area wears it.
+   In Tailwind's components layer, so a page's utilities still adjust them; every
+   class is written whole in the area's files, or the build drops it. */
+@layer components {
+  .area-title {
+    font-size: 28px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--ink-gray-9);
+  }
+  /* a section's name, or what a title is about: "I TUOI PIANI",
+     "ALLENAMENTO · DOTT.SSA VERDI" */
+  .area-label {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-gray-5);
+  }
+
+  /* the card: white, a hairline, the cloud's tail */
+  .area-card {
+    display: block;
+    border-radius: 16px 16px 16px var(--radius-tail);
+    background: var(--surface-elevation-1);
+    box-shadow: inset 0 0 0 1px var(--outline-gray-2);
+    padding: 14px 16px;
+    text-align: left;
+  }
+  :is(a, button).area-card {
+    transition: box-shadow 120ms;
+  }
+  :is(a, button).area-card:hover {
+    box-shadow: inset 0 0 0 1px var(--outline-gray-3);
+  }
+  /* what is done takes the brand's soft green */
+  .area-card--done {
+    background: color-mix(in srgb, var(--brand-subtle) 70%, white);
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--brand-segno) 35%, transparent);
+  }
+  /* a row: the chip, the words, what is done with it */
+  .area-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 64px;
+    padding: 12px 14px;
+  }
+  .area-row__title {
+    display: block;
+    font-size: 16px;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--ink-gray-9);
+  }
+  .area-row__sub {
+    display: block;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-gray-5);
+  }
+  .area-row__go {
+    flex: none;
+    margin-left: auto;
+    color: var(--ink-gray-4);
+  }
+
+  /* a kind of thing, in a cloud of its category's colour: the plans, the
+     documents, the messages (the design system's `cat-*`) */
+  .area-chip {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50% 50% 50% 22%;
+    background: var(--brand-subtle);
+    color: var(--on-brand-subtle);
+  }
+  .area-chip > svg {
+    width: 20px;
+    height: 20px;
+  }
+  .area-chip--amber {
+    background: var(--cat-amber-subtle);
+    color: var(--cat-amber-text);
+  }
+  .area-chip--violet {
+    background: var(--cat-violet-subtle);
+    color: var(--cat-violet-text);
+  }
+  .area-chip--blue {
+    background: var(--cat-blue-subtle);
+    color: var(--cat-blue-text);
+  }
+  .area-chip--rose {
+    background: var(--cat-rose-subtle);
+    color: var(--cat-rose-text);
+  }
+  .area-chip--green {
+    background: var(--cat-green-subtle);
+    color: var(--cat-green-text);
+  }
+
+  /* the next appointment: the page's one deep block, the crosses in its corner and
+     never under its words */
+  .area-deep {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 18px 18px 18px 4px;
+    background: var(--block-deep, #0b2e2a);
+    color: var(--on-block-deep, #e1f5f1);
+    padding: 16px 18px;
+  }
+  .area-deep > .dc-crosses {
+    --pitch: 32px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 96px;
+    height: 64px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .area-deep > :not(.dc-crosses) {
+    position: relative;
+  }
+  .area-deep__when {
+    padding-right: 88px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mint-300);
+  }
+  .area-deep__title {
+    margin-top: 3px;
+    padding-right: 64px;
+    font-size: 19px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: #fff;
+  }
+  .area-deep__sub {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--on-block-deep, #e1f5f1);
+    opacity: 0.9;
+  }
+  .area-deep a {
+    font-weight: 600;
+    color: var(--mint-300);
+  }
+
+  /* the days of a plan: the weekday over its number, the chosen one full */
+  .area-day {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 46px;
+    height: 58px;
+    border-radius: 14px 14px 14px var(--radius-tail);
+    background: var(--surface-elevation-1);
+    box-shadow: inset 0 0 0 1px var(--outline-gray-2);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-gray-5);
+  }
+  .area-day > b {
+    font-size: 17px;
+    line-height: 1;
+    color: var(--ink-gray-9);
+  }
+  .area-day[aria-pressed='true'] {
+    background: var(--brand-solid);
+    box-shadow: none;
+    color: color-mix(in srgb, var(--on-brand-solid) 75%, var(--brand-solid));
+  }
+  .area-day[aria-pressed='true'] > b {
+    color: var(--on-brand-solid);
+  }
+
+  /* the one tap: a cloud, ticked full in the brand's colour */
+  .area-check {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50% 50% 50% 22%;
+    background: var(--surface-gray-2);
+    color: var(--ink-gray-4);
+    transition:
+      background-color 120ms,
+      color 120ms;
+  }
+  .area-check.is-done {
+    background: var(--brand-solid);
+    color: var(--on-brand-solid);
+  }
+  .area-check > svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* the way back and the links of the area: the brand's darker green */
+  .area-back,
+  .area-link {
+    font-weight: 700;
+    color: var(--brand-strong, var(--brand-action));
+  }
+  .area-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 14px;
+  }
+  .area-link {
+    font-size: 14px;
+  }
+
+  /* the places at the bottom: the one open in the brand's colour */
+  .area-nav > a {
+    color: var(--ink-gray-4);
+  }
+  .area-nav > a.is-on {
+    color: var(--brand-strong, var(--brand-action));
+  }
+
+  /* an answer that is not "done": partly, or skipped - a fact, never a fault (no
+     red); as a button, its outline until it is chosen */
+  .area-answer {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px 8px 8px var(--radius-tail);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--outline-gray-2);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-gray-5);
+  }
+  .area-state {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 8px 8px 8px var(--radius-tail);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .area-state--partly {
+    background: var(--warning-subtle);
+    color: var(--warning);
+  }
+  .area-state--skipped {
+    background: var(--surface-gray-3);
+    color: var(--ink-gray-6);
+  }
+  .area-answer.area-state--partly,
+  .area-answer.area-state--skipped {
+    box-shadow: none;
+  }
+
+  /* the code's six boxes, over the one field that takes it */
+  .area-code {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 46px));
+    justify-content: center;
+    gap: 8px;
+  }
+  .area-code__box {
+    display: grid;
+    place-items: center;
+    height: 58px;
+    border-radius: 12px 12px 12px var(--radius-tail);
+    background: var(--surface-gray-1);
+    box-shadow: inset 0 0 0 1.5px var(--outline-gray-2);
+    font-size: 26px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-gray-9);
+  }
+  .area-code__box.is-full {
+    background: var(--surface-elevation-1);
+    box-shadow: inset 0 0 0 2px var(--brand-solid);
+  }
+  .area-code__box.is-here {
+    background: var(--surface-elevation-1);
+    box-shadow: inset 0 0 0 2px var(--brand-segno);
+  }
+  .area-code > input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    font-size: 16px;
+    caret-color: transparent;
+  }
+}

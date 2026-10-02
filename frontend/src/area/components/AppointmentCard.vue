@@ -1,17 +1,20 @@
-<!-- An appointment as the patient reads it: when, what - which session of a
-     cycle - with whom, where. In the centre's preview, one whoever previews does
-     not read shows only when. -->
+<!-- An appointment as the patient reads it: when, heading the card - in the
+     brand's colour while it is to come; what - which session of a cycle - with
+     whom, where; the way to move or cancel it. In the centre's preview, one
+     whoever previews does not read shows only when. -->
 <template>
   <HiddenCard v-if="appointment.hidden" :when="when(appointment.starts_on)" />
   <div
     v-else
-    class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+    class="area-card flex flex-col gap-1"
+    :class="{ 'opacity-70': appointment.status === 'Cancelled' }"
   >
     <div class="flex items-start justify-between gap-2">
       <span
-        class="text-base font-medium text-ink-gray-9 first-letter:uppercase"
+        class="area-label"
+        :class="past ? '' : 'text-[var(--brand-strong)]'"
       >
-        {{ when(appointment.starts_on) }}
+        {{ intestazione(appointment.starts_on, locale) }}
       </span>
       <Badge
         v-if="appointment.status === 'Cancelled'"
@@ -20,24 +23,28 @@
         :label="__('Cancelled')"
       />
     </div>
-    <span class="text-p-base text-ink-gray-8">
+    <span
+      class="area-row__title"
+      :class="{ 'line-through': appointment.status === 'Cancelled' }"
+    >
       {{ appointment.service }}
       <template v-if="laSeduta(appointment.session, t)">
         · {{ laSeduta(appointment.session, t) }}
       </template>
     </span>
-    <span v-if="appointment.staff?.length" class="text-p-sm text-ink-gray-6">
+    <span v-if="appointment.staff?.length" class="area-row__sub">
       {{ __('With {0}', [appointment.staff.join(', ')]) }}
     </span>
-    <span v-if="appointment.location" class="text-p-sm text-ink-gray-6">
+    <span v-if="appointment.location" class="area-row__sub">
       {{ appointment.location }}
     </span>
     <a
       v-if="appointment.manage_url"
       :href="appointment.manage_url"
-      class="mt-1 w-fit text-p-sm font-medium text-ink-gray-9 underline underline-offset-2"
+      class="area-link mt-1 inline-flex min-h-10 w-fit items-center gap-1"
     >
       {{ __('Move or cancel') }}
+      <LucideChevronRight class="size-4" aria-hidden="true" />
     </a>
   </div>
 </template>
@@ -45,10 +52,17 @@
 <script setup>
 import { laSeduta } from '@/utils/cicli'
 import { Badge } from 'frappe-ui'
+import LucideChevronRight from '~icons/lucide/chevron-right'
+import { intestazione } from '../aspetto'
 import { when } from '../dates'
+import { locale } from '../translation'
 import HiddenCard from './HiddenCard.vue'
 
-defineProps({ appointment: { type: Object, required: true } })
+defineProps({
+  appointment: { type: Object, required: true },
+  // one gone by: its date in grey
+  past: { type: Boolean, default: false },
+})
 
 const t = (text, args) => __(text, args)
 </script>

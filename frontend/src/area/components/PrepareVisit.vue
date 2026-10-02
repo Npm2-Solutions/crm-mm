@@ -5,13 +5,12 @@
 -->
 <template>
   <section v-if="forms.data?.forms?.length" class="flex flex-col gap-2">
-    <h2 class="text-base font-medium text-ink-gray-7">
-      {{ __('Prepare your appointment') }}
-    </h2>
-    <div
-      class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-    >
-      <p v-if="forms.data.appointment" class="text-p-sm text-ink-gray-6">
+    <h2 class="area-label">{{ __('Prepare your appointment') }}</h2>
+    <div class="area-card flex flex-col">
+      <p
+        v-if="forms.data.appointment"
+        class="pb-1 text-p-sm text-ink-gray-5 first-letter:uppercase"
+      >
         {{
           __('Before your appointment of {0}', [
             day(forms.data.appointment.starts_on),
@@ -21,18 +20,18 @@
       <div
         v-for="form in forms.data.forms"
         :key="form.template"
-        class="flex items-center justify-between gap-3 border-b border-outline-gray-1 py-2 last:border-0"
+        class="flex items-center gap-3 border-b border-outline-gray-1 py-3 last:border-0"
       >
-        <div class="flex min-w-0 flex-col">
-          <span class="text-base text-ink-gray-9">{{ form.title }}</span>
-          <span class="text-p-sm text-ink-gray-5">
-            {{ state(form) }}
-          </span>
+        <AreaChip icona="clipboard-list" />
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="area-row__title">{{ form.title }}</span>
+          <span class="area-row__sub">{{ state(form) }}</span>
         </div>
         <Button
           v-if="form.fill"
           class="shrink-0"
           variant="solid"
+          size="lg"
           :label="form.pending ? __('Continue') : __('Fill')"
           :loading="opening === form.template"
           @click="fill([form.template])"
@@ -40,7 +39,7 @@
       </div>
       <p
         v-if="!forms.data.can_fill && !anteprima"
-        class="text-p-sm text-ink-gray-6"
+        class="pt-1 text-p-sm text-ink-gray-6"
       >
         {{ whyNot[forms.data.why_not] }}
       </p>
@@ -55,6 +54,7 @@ import { ref } from 'vue'
 import { anteprima } from '../anteprima'
 import { day } from '../dates'
 import { area, messageOf } from '../store'
+import AreaChip from './AreaChip.vue'
 
 const forms = createResource({
   url: 'crm.area.api.get_forms',

@@ -7,11 +7,12 @@
   <div class="flex flex-col gap-4">
     <router-link
       :to="{ name: 'Plan', params: { plan: route.params.plan } }"
-      class="w-fit text-p-sm text-ink-gray-6 underline underline-offset-2"
+      class="area-back w-fit"
     >
+      <LucideChevronLeft class="size-4" aria-hidden="true" />
       {{ data?.plan.title || __('Your plans') }}
     </router-link>
-    <h1 class="text-xl font-semibold text-ink-gray-9">
+    <h1 class="area-title">
       {{ __('Shopping list') }}
     </h1>
     <div class="flex gap-2">
@@ -19,11 +20,11 @@
         v-for="option in options"
         :key="option.days"
         type="button"
-        class="min-h-9 shrink-0 rounded-full px-3 text-p-sm"
+        class="min-h-10 shrink-0 rounded-[12px_12px_12px_2px] px-4 text-p-sm font-semibold"
         :class="
           option.days === days
-            ? 'bg-[var(--brand-action)] text-ink-base'
-            : 'bg-surface-elevation-1 text-ink-gray-7 shadow-sm'
+            ? 'bg-[var(--brand-solid)] text-[var(--on-brand-solid)]'
+            : 'bg-surface-elevation-1 text-ink-gray-7 shadow-[inset_0_0_0_1px_var(--outline-gray-2)]'
         "
         :aria-pressed="option.days === days"
         @click="load(option.days)"
@@ -44,15 +45,13 @@
         :key="group.group"
         class="flex flex-col gap-2"
       >
-        <h2
-          class="text-base font-medium text-ink-gray-7 first-letter:uppercase"
-        >
+        <h2 class="area-label">
           {{ __(group.group) }}
         </h2>
         <label
           v-for="row in group.items"
           :key="row.food"
-          class="flex items-center gap-3 rounded-lg bg-surface-elevation-1 p-3 shadow-sm"
+          class="area-card area-row"
         >
           <Checkbox
             class="touch-target shrink-0"
@@ -81,13 +80,13 @@
       </section>
 
       <section v-if="data.groups.length" class="flex flex-col gap-2">
-        <h2 class="text-base font-medium text-ink-gray-7">
+        <h2 class="area-label">
           {{ __('To choose in the group') }}
         </h2>
         <div
           v-for="group in data.groups"
           :key="group.food_group"
-          class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
+          class="area-card flex flex-col gap-2"
         >
           <p class="text-p-base text-ink-gray-9 first-letter:uppercase">
             {{
@@ -98,7 +97,7 @@
             v-if="group.choices.length"
             class="text-p-sm text-ink-gray-7"
           >
-            <summary class="cursor-pointer text-ink-gray-8">
+            <summary class="area-link cursor-pointer">
               {{ __('Choose among') }}
             </summary>
             <ul class="mt-2 flex flex-col gap-1">
@@ -122,7 +121,7 @@
       <button
         v-if="ticked.size"
         type="button"
-        class="min-h-11 w-fit text-p-sm text-ink-gray-7 underline underline-offset-2"
+        class="min-h-11 w-fit area-link"
         @click="untick"
       >
         {{ __('Untick everything') }}
@@ -137,6 +136,7 @@ import { comeSiArriva, perGruppo, quantitaDaComprare } from '@/utils/piani'
 import { Checkbox, ErrorMessage, call } from 'frappe-ui'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import LucideChevronLeft from '~icons/lucide/chevron-left'
 import { day } from '../dates'
 import { area, messageOf } from '../store'
 import { locale } from '../translation'

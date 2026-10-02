@@ -5,12 +5,10 @@
   so far.
 -->
 <template>
-  <article
-    class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-  >
+  <article class="area-card flex flex-col gap-3">
     <div class="flex items-start justify-between gap-2">
       <div class="flex min-w-0 flex-col gap-0.5">
-        <h2 class="text-base font-medium text-ink-gray-9">{{ quote.title }}</h2>
+        <h2 class="area-row__title">{{ quote.title }}</h2>
         <p class="text-p-sm text-ink-gray-5">{{ quote.practitioner_name }}</p>
       </div>
       <!-- a care plan under way: the design system's «in progress» -->
@@ -40,15 +38,20 @@
         class="flex items-start gap-3"
       >
         <span
-          class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-p-xs"
+          class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-[50%_50%_50%_22%]"
           :class="
             item.status === 'Done'
-              ? 'bg-surface-green-2 text-ink-green-8'
-              : 'bg-surface-gray-2 text-ink-gray-6'
+              ? 'bg-[var(--brand-subtle)] text-[var(--on-brand-subtle)]'
+              : 'bg-surface-gray-2'
           "
+          role="img"
           :aria-label="item.status === 'Done' ? __('Done') : __('To do')"
         >
-          {{ item.status === 'Done' ? '✓' : '' }}
+          <LucideCheck
+            v-if="item.status === 'Done'"
+            class="size-3.5"
+            aria-hidden="true"
+          />
         </span>
         <span class="flex min-w-0 flex-1 flex-col">
           <span class="text-p-base text-ink-gray-9">
@@ -91,6 +94,7 @@
 <script setup>
 import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import { Badge } from 'frappe-ui'
+import LucideCheck from '~icons/lucide/check'
 import { day, when } from '../dates'
 
 const props = defineProps({ quote: { type: Object, required: true } })

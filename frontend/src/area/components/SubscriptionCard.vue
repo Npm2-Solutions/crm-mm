@@ -5,11 +5,9 @@
   uses an entry by itself.
 -->
 <template>
-  <article
-    class="flex flex-col gap-2 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-  >
+  <article class="area-card flex flex-col gap-2">
     <div class="flex items-start justify-between gap-2">
-      <h3 class="min-w-0 text-base font-medium text-ink-gray-9">
+      <h3 class="area-row__title min-w-0">
         {{ subscription.type }}
       </h3>
       <Badge

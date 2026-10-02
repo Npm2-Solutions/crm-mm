@@ -2,6 +2,7 @@
 // vertical says its own way (the clinic's, in crm/clinica/parole.py).
 export default {
   'Your area': 'La tua area',
+  'Enter your area': 'Entra nella tua area',
   'Enter with your email': 'Entra con la tua email',
   'We send you a code: no password to remember.':
     'Ti mandiamo un codice: nessuna password da ricordare.',
@@ -20,7 +21,6 @@ export default {
   'Your work is in {brand}.': 'Il tuo lavoro è in {brand}.',
   'Powered by {brand}': 'Con tecnologia {brand}',
   'Open {brand}': 'Apri {brand}',
-  Home: 'Inizio',
   Appointments: 'Appuntamenti',
   Documents: 'Documenti',
   Invoices: 'Fatture',
