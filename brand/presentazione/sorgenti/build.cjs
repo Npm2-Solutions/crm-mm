@@ -360,7 +360,7 @@ async function feature(pres, o) {
     const s = base(pres);
     await chip(s, 'In sintesi', 0.6, 0.6);
     T(s, 'Quello che un centro medico chiede, c\'è', { x: 0.6, y: 1.1, w: 12, h: 0.7, fontSize: 32, bold: true, color: C.ink });
-    const A = [['LuLock', 'Permessi per ruolo', 'Ognuno vede la sua parte'], ['LuCalendarDays', 'Agende senza limiti', 'Medici, stanze, attrezzature'], ['LuStethoscope', 'Cartella clinica', 'Schede, note, referti archiviati'], ['LuReceipt', 'Fatturazione', 'Elettronica, SdI e Sistema TS'],
+    const A = [['LuLock', 'Permessi per ruolo', 'Ognuno vede la sua parte'], ['LuCalendarDays', 'Agende senza limiti', 'Medici, stanze, attrezzature'], ['LuStethoscope', 'Cartella clinica', 'Schede, note, referti archiviati'], ['LuReceipt', 'Fatturazione', 'Sistema TS, SdI e PDF al paziente'],
       ['LuMessageCircle', 'Comunicazione', 'WhatsApp, promemoria, conferme'], ['LuPhoneCall', 'Telefono integrato', 'La scheda si apre mentre squilla'], ['LuSmartphone', 'App', 'Per lo staff e per i pazienti'], ['LuServer', 'Dati protetti', 'Server europei, azienda italiana']];
     const w = 2.86, h = 2.2, g = 0.25;
     for (let i = 0; i < A.length; i++) {
