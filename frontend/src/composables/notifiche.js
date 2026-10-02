@@ -10,6 +10,7 @@
 // used to listen themselves, so on a phone the count stood still until the
 // page was opened, and a calendar reminder never came at all.
 
+import { apriImpostazioni } from '@/composables/settings'
 import { useEventNotificationAlert } from '@/data/notifications'
 import { globalStore } from '@/stores/global'
 import {
@@ -32,6 +33,7 @@ export function useApriNotifica() {
     segnaLetta(riga)
     close()
     if (riga.route) router.push(riga.route)
+    else if (riga.settings) apriImpostazioni(riga.settings)
   }
 }
 
@@ -56,9 +58,13 @@ export function useAscoltoNotifiche() {
       icon: {
         render: () => h(NotificationMark, { kind: riga.kind, taglia: 'toast' }),
       },
-      action: riga.route
-        ? { label: __('Open', null, 'Toast action'), onClick: () => apri(riga) }
-        : undefined,
+      action:
+        riga.route || riga.settings
+          ? {
+              label: __('Open', null, 'Toast action'),
+              onClick: () => apri(riga),
+            }
+          : undefined,
     })
   }
 

@@ -43,6 +43,7 @@ class CRMNotification(Document):
 			"Agenda",
 			"Area",
 			"Automation",
+			"Phone",
 		]
 	# end: auto-generated types
 

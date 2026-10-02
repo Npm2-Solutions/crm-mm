@@ -29,6 +29,7 @@ export const ASPETTI = {
   agenda: { colore: 'amber', icona: 'calendar-clock', parola: 'Agenda' },
   invoicing: { colore: 'blue', icona: 'receipt-text', parola: 'Invoicing' },
   automation: { colore: 'violet', icona: 'zap', parola: 'Automation' },
+  phone: { colore: 'blue', icona: 'phone', parola: 'Phone' },
   other: { colore: 'gray', icona: 'bell', parola: 'Notification' },
 }
 

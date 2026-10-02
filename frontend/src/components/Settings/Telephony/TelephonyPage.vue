@@ -31,9 +31,18 @@ import TwilioSettings from './TwilioSettings.vue'
 import AnsweringServiceSettings from './AnsweringServiceSettings.vue'
 import TranscriptionSettings from './TranscriptionSettings.vue'
 import CallerIdSettings from './CallerIdSettings.vue'
-import { ref } from 'vue'
+import { activeTelephonyStep } from '@/composables/settings'
+import { ref, watch } from 'vue'
 
-const step = ref('telephony-settings')
+const step = ref(activeTelephonyStep.value || 'telephony-settings')
+activeTelephonyStep.value = ''
+
+// a notification about a new number opens Twilio's step, the page open or not
+watch(activeTelephonyStep, (passo) => {
+  if (!passo) return
+  step.value = passo
+  activeTelephonyStep.value = ''
+})
 
 function updateStep(newStep) {
   step.value = newStep

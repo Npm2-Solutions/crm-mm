@@ -73,6 +73,10 @@ const TESTI = {
     label: 'Automations',
     description: 'What an automation of the centre tells you.',
   },
+  phone: {
+    label: 'Phone numbers',
+    description: "Twilio's answer on the documents of a new number.",
+  },
 }
 
 const preferenze = createResource({
