@@ -316,8 +316,8 @@ describe('the pages there are', () => {
   it('names each page once', () => {
     const tutte = pagine()
     expect(new Set(tutte).size).toBe(tutte.length)
-    // the 51 pages there were, none lost, and the notifications
-    expect(tutte).toHaveLength(52)
+    // the 51 pages there were, none lost, the notifications and one's email
+    expect(tutte).toHaveLength(53)
   })
 
   it('gives every group, entry and tab a label', () => {

@@ -94,24 +94,6 @@
         <div class="flex items-center justify-between mt-6">
           <div class="flex flex-col gap-1">
             <span class="text-base-medium text-ink-gray-8">
-              {{ __('Emails & Signature') }}
-            </span>
-            <span class="text-p-sm text-ink-gray-6">
-              {{
-                __(
-                  'Manage your account emails and email signature for communication.',
-                )
-              }}
-            </span>
-          </div>
-          <Button
-            :label="__('Configure')"
-            @click="emit('updateStep', 'user-email-settings')"
-          />
-        </div>
-        <div class="flex items-center justify-between mt-6">
-          <div class="flex flex-col gap-1">
-            <span class="text-base-medium text-ink-gray-8">
               {{ __('Password') }}
             </span>
             <span class="text-p-sm text-ink-gray-6">
@@ -148,8 +130,6 @@ import {
   createDocumentResource,
 } from 'frappe-ui'
 import { ref, computed, inject, useTemplateRef, nextTick } from 'vue'
-
-const emit = defineEmits(['updateStep'])
 
 const { user: sessionUser } = inject('session')
 const user = createDocumentResource({ doctype: 'User', name: sessionUser })

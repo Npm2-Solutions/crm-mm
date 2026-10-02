@@ -176,6 +176,7 @@ import InviteUserPage from '@/components/Settings/InviteUserPage.vue'
 import ProfilePage from '@/components/Settings/Profile/ProfilePage.vue'
 import PreferencesSettings from '@/components/Settings/PreferencesSettings.vue'
 import NotificationsSettings from '@/components/Settings/NotificationsSettings.vue'
+import MyEmail from '@/components/Settings/Profile/MyEmail.vue'
 import WhatsAppSettings from '@/components/Settings/WhatsAppSettings.vue'
 import WhatsAppTemplates from '@/components/Settings/WhatsAppTemplates.vue'
 import ERPNextSettings from '@/components/Settings/ERPNextSettings.vue'
@@ -246,6 +247,7 @@ const PAGINE = {
   Profile: ProfilePage,
   Preferences: PreferencesSettings,
   Notifications: NotificationsSettings,
+  'Your email': MyEmail,
   'Google Calendar': GoogleCalendarSettings,
   Brand: BrandSettings,
   General: GeneralSettings,
