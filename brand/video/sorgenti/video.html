@@ -502,7 +502,7 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
   <div class="left">
     <div><span class="eyebrow" id="fa-e"><svg class="i" data-p="file"></svg>Fatturazione</span></div>
     <div class="cap" style="font-size:88px"><span class="kin" id="fa-h">La fattura ~nasce ~dalla ~visita.</span></div>
-    <div class="sub"><span class="kin" id="fa-s">Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.</span></div>
+    <div class="sub"><span class="kin" id="fa-s">Al paziente in PDF, le spese al Sistema TS, allo SdI quando va.</span></div>
   </div>
   <div class="card inv" id="inv" style="left:900px;top:120px;width:900px;height:820px;padding:40px 46px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -512,7 +512,7 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
     <div class="meta">
       <div><label>Codice fiscale</label><div>FRRGLI85M52H501X</div></div>
       <div><label>Professionista</label><div>Dott.ssa Rossi</div></div>
-      <div><label>Documento</label><div>Fattura elettronica · TD01</div></div>
+      <div><label>Documento</label><div>Fattura sanitaria · PDF</div></div>
       <div><label>Sistema TS</label><div>Invio automatico</div></div>
     </div>
     <div id="lns" style="margin-top:8px">
@@ -522,8 +522,8 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px"><span style="color:var(--muted);font-size:17px;display:flex;align-items:center;gap:8px"><span class="lm" data-f="#12a594" data-x="#fff" style="height:20px;display:inline-block"></span>Numerazione, bollo e codici li mette DottorCloud</span><div class="btn teal" id="emit" style="height:54px;padding:0 24px;font-size:19px"><svg class="i" data-p="send"></svg>Emetti e invia</div></div>
   </div>
-  <div class="stt" id="st1" style="left:1160px;top:770px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Inviata allo SdI<small>Sistema di Interscambio</small></div></div>
-  <div class="stt" id="st2" style="left:1190px;top:866px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Consegnata<small>Ricevuta di consegna</small></div></div>
+  <div class="stt" id="st1" style="left:1160px;top:770px"><div class="c"><svg class="i" data-p="check"></svg></div><div>PDF al paziente<small>Nella sua area, da scaricare</small></div></div>
+  <div class="stt" id="st2" style="left:1190px;top:866px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Fuori dallo SdI<small>Come vuole la legge per i pazienti</small></div></div>
   <div class="stt toast" id="st3" style="left:1220px;top:962px"><div class="c"><svg class="i" data-p="check"></svg></div><div>Trasmessa al Sistema TS<small>Per la dichiarazione precompilata</small></div></div>
 </section>
 
@@ -546,7 +546,7 @@ svg.i { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width:
     <div class="view" id="v0">
       <div class="box"><span class="lbl">Prossimo appuntamento</span><b>Gio 15 ottobre, 11:00</b><span>Visita cardiologica · Dott.ssa Rossi</span></div>
       <div class="box"><span class="lbl">Moduli</span><b>Privacy e consenso firmati</b><span>Firmati dal telefono, il 10/10</span></div>
-      <div class="box"><span class="lbl">Fatture</span><b>2 emesse, entrambe pagate</b><span>Inviate allo SdI e al Sistema TS</span></div>
+      <div class="box"><span class="lbl">Fatture</span><b>2 emesse, entrambe pagate</b><span>In PDF ai pazienti, trasmesse al Sistema TS</span></div>
       <div class="box"><span class="lbl">Conversazioni</span><b>WhatsApp · ieri alle 18:04</b><span>"Sì, confermo"</span></div>
     </div>
     <div class="view" id="v1">
@@ -906,7 +906,7 @@ const PLANS = {
 // what each ad says before and after the product
 const AD = {
   'ad-chat': ['I pazienti ~confermano ~da ~soli.', 'Promemoria e conferme su WhatsApp, in automatico.'],
-  'ad-fatt': ['La fattura ~si ~fa ~da ~sola.', 'Dalla visita allo SdI e al Sistema TS.'],
+  'ad-fatt': ['La fattura ~si ~fa ~da ~sola.', 'Dalla visita al Sistema TS, da sola.'],
   'ad-app': ['I tuoi pazienti, ~con ~la ~loro ~app.', 'Documenti, firme e piani sul telefono.'],
   'ad-ex': ['Gli esercizi a casa, ~finalmente ~seguiti.', 'Serie, animazioni e muscoli sul telefono del paziente.'],
 }[PLAN_NAME];

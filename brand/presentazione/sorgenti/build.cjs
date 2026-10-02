@@ -299,15 +299,15 @@ async function feature(pres, o) {
   // 13 · invoicing
   await feature(pres, {
     side: 'left', chip: '04 · Gestisci', title: 'La fattura nasce dalla visita',
-    sub: 'Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.',
+    sub: 'Al paziente in PDF, le spese al Sistema TS, allo SdI quando va.',
     rows: [
       ['LuReceipt', 'Dall\'appuntamento', 'Paziente, prestazioni e professionista sono già lì'],
-      ['LuSend', 'SdI', 'Invio e ricevute di consegna nel gestionale'],
+      ['LuSend', 'SdI', 'Per aziende ed enti, con le ricevute nel gestionale'],
       ['LuFileCheck', 'Sistema TS', 'Le spese sanitarie trasmesse per la precompilata'],
       ['LuStamp', 'Bollo e numerazione', 'Li mette il gestionale'],
     ],
     image: 'fattura',
-    notes: 'Risponde a "gestisce la fatturazione?". Sì: dalla visita svolta nasce la fattura elettronica, che va allo SdI e al Sistema TS. La segreteria vede anche le visite svolte e non ancora fatturate.',
+    notes: 'Risponde a "gestisce la fatturazione?". Sì: dalla visita svolta nasce la fattura. Al paziente va in PDF e le spese al Sistema TS, perché per legge una prestazione sanitaria a una persona non passa dallo SdI; ad aziende ed enti va elettronica allo SdI. La segreteria vede anche le visite svolte e non ancora fatturate.',
   });
 
   // 14 · the app
