@@ -233,6 +233,9 @@ def update_email_account(name: str, data: dict) -> str:
 	if name == servizio.ACCOUNT:
 		frappe.throw(con_nome(_("{brand}'s sending service is the agency's.")), frappe.PermissionError)
 	doc = frappe.get_doc("Email Account", name)
+	if doc.get(personale.CAMPO):
+		# somebody's own: they change it from their page (doc 51)
+		frappe.throw(_("This mailbox is somebody's own: only they change it."), frappe.PermissionError)
 	if not fornitore_di(doc):
 		frappe.throw(_("This account has servers of its own: the agency changes it."), frappe.PermissionError)
 	for campo in MODIFICABILI:

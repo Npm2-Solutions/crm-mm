@@ -39449,3 +39449,7 @@ msgstr "Di chi è la casella"
 #: crm/install.py
 msgid "Somebody's own mailbox, connected by them: only the answers to what they wrote and the emails of the people the centre knows are kept."
 msgstr "La casella di una persona, collegata da lei: si tengono solo le risposte a quello che ha scritto e le email delle persone che il centro conosce."
+
+#: crm/api/settings.py
+msgid "This mailbox is somebody's own: only they change it."
+msgstr "Questa casella è di una persona: la cambia solo lei."
