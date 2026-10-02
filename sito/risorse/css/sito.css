@@ -743,6 +743,17 @@ a:hover {
     animation: arrive var(--dc-dur-slow) var(--dc-ease-in) both;
     animation-delay: calc(var(--i, 0) * 70ms + 60ms);
   }
+  /* the hero's picture is what the browser counts as the page loaded: it moves
+     in, but is never transparent, or the page would count as late */
+  .showcase.arrive {
+    animation-name: arrive-visible;
+  }
+}
+
+@keyframes arrive-visible {
+  from {
+    transform: translateY(18px);
+  }
 }
 
 @keyframes arrive {

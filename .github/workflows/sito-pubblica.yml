@@ -92,6 +92,16 @@ jobs:
                   done
                   exit "$failed"
 
+            # Bing and the engines of IndexNow hear of the pages changed today at
+            # once; a refusal is reported and the publish stays done
+            - name: Tell the search engines
+              if: env.HOSTING_SSH_KEY != ''
+              continue-on-error: true
+              run: |
+                  if grep -qx 'dottorcloud.com' sito/domini.txt; then
+                      node sito/indexnow.mjs https://dottorcloud.com
+                  fi
+
             - name: Forget the key
               if: always() && env.HOSTING_SSH_KEY != ''
               run: rm -f ~/.ssh/hosting

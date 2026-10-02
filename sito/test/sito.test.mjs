@@ -14,6 +14,7 @@ import path from 'node:path'
 import { after, before, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
+import { INDEXNOW_KEY, changedSince, request } from '../indexnow.mjs'
 import { faqs, headings, readingMinutes, slugify, trail } from '../seo.mjs'
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -190,6 +191,41 @@ describe('the pages', () => {
         )
       }
     }
+  })
+
+  test('give images an address that changes with the file, and smaller copies', () => {
+    const home = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8')
+    const hero = home.match(/<img\b[^>]*showcase__main[^>]*>/)[0]
+    assert.match(hero, /src="\/img\/agenda\.webp\?v=[0-9a-f]{8}"/)
+    const set = hero.match(/srcset="([^"]+)"/)[1].split(', ')
+    assert.deepEqual(
+      set.map((entry) => entry.split(' ')[1]),
+      ['800w', '1200w', '2000w'],
+    )
+    for (const entry of set)
+      assert.ok(fs.existsSync(target(entry.split(' ')[0])), entry)
+    assert.match(hero, /\ssizes="[^"]+"/)
+    for (const file of pages()) {
+      const html = fs.readFileSync(file, 'utf8')
+      for (const [, url] of html.matchAll(/\s(?:src|poster)="(\/img\/[^"]+)"/g))
+        assert.match(url, /\?v=[0-9a-f]{8}$/, `${path.relative(OUT, file)}: ${url}`)
+    }
+  })
+
+  test('tell IndexNow the pages changed, with its key on the site', () => {
+    const key = path.join(OUT, `${INDEXNOW_KEY}.txt`)
+    assert.equal(fs.readFileSync(key, 'utf8').trim(), INDEXNOW_KEY)
+    const xml = fs.readFileSync(path.join(OUT, 'sitemap.xml'), 'utf8')
+    assert.equal(changedSince(xml, '2000-01-01').length, xml.match(/<url>/g).length)
+    // a page with no date (not committed yet) always counts as changed
+    const undated = [...xml.matchAll(/<url><loc>([^<]+)<\/loc><\/url>/g)].map((m) => m[1])
+    assert.deepEqual(changedSince(xml, '2999-01-01'), undated)
+    const sample = '<url><loc>https://a.it/x/</loc><lastmod>2026-10-02</lastmod></url>' +
+      '<url><loc>https://a.it/y/</loc><lastmod>2026-09-30</lastmod></url>'
+    assert.deepEqual(changedSince(sample, '2026-10-01'), ['https://a.it/x/'])
+    const body = request('https://dottorcloud.com', ['https://dottorcloud.com/'])
+    assert.equal(body.host, 'dottorcloud.com')
+    assert.equal(body.keyLocation, `https://dottorcloud.com/${INDEXNOW_KEY}.txt`)
   })
 
   test('show no price, plan or fee', () => {
