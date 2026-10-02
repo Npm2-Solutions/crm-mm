@@ -160,9 +160,20 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 
 ### 3. Le chiamate (terza parte)
 
-- **Chi risponde**: più persone insieme (nel browser o sul cellulare) per qualche
-  secondo, poi la segreteria con il messaggio e la richiamata, o un messaggio
-  lasciato (registrato, trascritto, segnalato a chi segue la persona).
+- **Chi risponde (fatto).** Una chiamata al numero del centro fa squillare insieme
+  tutti quelli che rispondono a quel numero: alla scrivania nel browser, se sono
+  collegati, o sul cellulare. Il primo che risponde la prende. Se nessuno risponde
+  entro i secondi scelti (Impostazioni > Telefonia > Segreteria, «Squilla per»,
+  20 di partenza), risponde la segreteria con l'annuncio e mette la richiamata in
+  coda; senza la segreteria, chi chiama sente le scuse invece del silenzio.
+  Prima ne squillava uno solo, e «nessuno risponde» voleva dire solo «nessuno
+  collegato».
+- **Il messaggio (fatto).** Se il centro lo vuole, dopo l'annuncio chi chiama può
+  lasciare un messaggio dopo il segnale (fino alla durata scelta): resta sulla
+  chiamata come registrazione (`CRM Call Log.left_message`), viene trascritto se la
+  trascrizione è attiva, e chi segue la persona riceve l'avviso «ha lasciato un
+  messaggio in segreteria», che apre la persona. Senza chi la segue, l'avviso va a
+  chi risponde a quel numero, e se non c'è nessuno a chi legge tutte le chiamate.
 - **Il numero da cui si chiama**, scelto per chiamata tra quelli del centro, con
   l'avviso AGCOM su un mobile.
 - **La tastiera** durante la chiamata, per i menu degli altri.
@@ -221,6 +232,8 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 | `frontend/src/components/Settings/Telephony/TwilioSettings.vue` + `utils/twilio.js` | La pagina: i tre passi, i due codici, lo stato, Controlla, Scollega; le stesse regole dei codici del server — provate |
 | `crm/telephony/numeri_regole.py` | Senza sito: i tipi di numero e a che cosa servono, di chi è il numero, il prefisso di una zona, i campi e i documenti del regolamento con le parole di DottorCloud, i file che Twilio prende, la valutazione di Twilio riga per riga, il prezzo al mese, i documenti approvati che valgono per il numero dopo — provato con `unittest` |
 | `crm/telephony/numeri.py` + `CRM Phone Number Request` | Le richieste: l'offerta (`get_number_offer`), i requisiti (`get_number_requirements`, con quello che era scritto per rimandarla), i numeri pronti (`search_numbers`), l'invio (`send_number_request`: solo i file del centro), ogni ora `aggiorna_le_richieste` con l'avviso, l'acquisto (`buy_number`), il rilascio (`release_number`), il togliere una bozza (`delete_number_request`) |
+| `crm/telephony/inbound.py`, `routing.py`, `providers/base.py` (`Ring`, `Message`) | Chi squilla: tutti quelli raggiungibili insieme (`find_ringing`), per i secondi della segreteria; `nobody_answered`: l'annuncio con la richiamata o le scuse; il messaggio dopo l'annuncio quando il centro lo vuole |
+| `crm/integrations/twilio/api.py` (`ring_ended`, `message_taken`, `message_recorded`) + `crm/telephony/messaggi.py` | Dove Twilio torna: lo squillo finito, il messaggio finito, la registrazione pronta; l'avviso a chi segue la persona (tipo «Call») |
 | `frontend/src/components/Settings/Telephony/NewNumberDialog.vue` + `utils/numeri.js` | La finestra del nuovo numero e la scelta del numero; le richieste sulla pagina di Twilio, il rilascio sulla pagina dei numeri; il prezzo, il prefisso, i file e cosa manca prima di mandare — provati |
 
 ## Da decidere
