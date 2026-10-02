@@ -1,18 +1,17 @@
 <!--
-  The centre's messages: a board, not a chat. Opening it reads what was new.
+  The centre's messages: a board, not a chat - each one a card, who wrote it in
+  the brand's cloud. Opening it reads what was new.
   The questions the person passed on from the chat are here too, with whether
   the centre read them; the answer comes as a message.
 -->
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold text-ink-gray-9">
-        {{ __('Messages') }}
-      </h1>
+    <div class="flex items-end justify-between gap-3">
+      <h1 class="area-title">{{ __('Messages') }}</h1>
       <router-link
         v-if="area.me?.chat"
         :to="{ name: 'Chat' }"
-        class="shrink-0 text-p-sm text-ink-gray-7 underline underline-offset-2"
+        class="area-link shrink-0 pb-1"
       >
         {{ __('Ask the assistant') }}
       </router-link>
@@ -22,37 +21,37 @@
       :key="message.name"
     >
       <HiddenCard v-if="message.hidden" />
+      <!-- the person's own question, on their side, in the brand's soft green -->
       <article
-        v-else
-        class="flex flex-col gap-2 rounded-lg p-4 shadow-sm"
-        :class="
-          message.kind === 'Question'
-            ? 'ml-8 bg-surface-gray-2'
-            : 'bg-surface-elevation-1'
-        "
+        v-else-if="message.kind === 'Question'"
+        class="ml-10 flex flex-col gap-1.5 rounded-[16px_16px_2px_16px] bg-[var(--brand-subtle)] px-4 py-3"
       >
-        <span
-          v-if="message.kind === 'Question'"
-          class="text-p-sm font-medium text-ink-gray-7"
-        >
+        <span class="area-label text-[var(--on-brand-subtle)]">
           {{ __('Your question') }}
         </span>
         <p class="whitespace-pre-line text-p-base text-ink-gray-9">
           {{ message.body }}
         </p>
-        <span class="text-p-sm text-ink-gray-5">
-          <template v-if="message.kind === 'Question'">
-            {{ day(message.posted_on) }} ·
-            {{
-              message.read_on
-                ? __('read by the centre')
-                : __('not read by the centre yet')
-            }}
-          </template>
-          <template v-else>
-            {{ message.author_name }} · {{ day(message.posted_on) }}
-          </template>
+        <span class="text-p-sm text-ink-gray-6">
+          {{ day(message.posted_on) }} ·
+          {{
+            message.read_on
+              ? __('read by the centre')
+              : __('not read by the centre yet')
+          }}
         </span>
+      </article>
+      <article v-else class="area-card flex flex-col gap-2">
+        <div class="flex items-center gap-2.5">
+          <AreaChip icona="message-circle" />
+          <span class="min-w-0">
+            <span class="area-row__title">{{ message.author_name }}</span>
+            <span class="area-row__sub">{{ day(message.posted_on) }}</span>
+          </span>
+        </div>
+        <p class="whitespace-pre-line text-p-base text-ink-gray-9">
+          {{ message.body }}
+        </p>
       </article>
     </template>
     <p
@@ -69,6 +68,7 @@
 import { call, createResource } from 'frappe-ui'
 import { computed } from 'vue'
 import { anteprima } from '../anteprima'
+import AreaChip from '../components/AreaChip.vue'
 import HiddenCard from '../components/HiddenCard.vue'
 import NoticeCard from '../components/NoticeCard.vue'
 import { day } from '../dates'

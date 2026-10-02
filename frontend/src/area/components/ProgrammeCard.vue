@@ -4,11 +4,9 @@
   when a stage is finished, and the next one opens.
 -->
 <template>
-  <article
-    class="flex flex-col gap-3 rounded-lg bg-surface-elevation-1 p-4 shadow-sm"
-  >
+  <article class="area-card flex flex-col gap-3">
     <div class="flex flex-col gap-0.5">
-      <h2 class="text-base font-medium text-ink-gray-9">
+      <h2 class="area-row__title">
         {{ programme.title }}
       </h2>
       <p class="text-p-sm text-ink-gray-5">
@@ -27,12 +25,26 @@
         :key="stage.key"
         class="flex gap-3"
       >
+        <!-- done, ticked; the stage open now, the brand's cross; the ones ahead,
+             their number -->
         <span
-          class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-p-xs"
+          class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-[50%_50%_50%_22%] text-p-xs font-semibold"
           :class="dot[stage.state]"
+          role="img"
           :aria-label="labels[stage.state]"
         >
-          {{ stage.state === 'done' ? '✓' : index + 1 }}
+          <LucideCheck
+            v-if="stage.state === 'done'"
+            class="size-4"
+            aria-hidden="true"
+          />
+          <span
+            v-else-if="stage.state === 'open'"
+            class="dc-cross"
+            style="--c: var(--mint-300); --s: 10px"
+            aria-hidden="true"
+          />
+          <template v-else>{{ index + 1 }}</template>
         </span>
         <span class="flex min-w-0 flex-1 flex-col gap-1">
           <span
@@ -62,21 +74,21 @@
           <router-link
             v-if="stage.state === 'open' && stage.plan"
             :to="{ name: 'Plan', params: { plan: stage.plan } }"
-            class="w-fit text-p-sm text-ink-gray-9 underline underline-offset-2"
+            class="w-fit area-link"
           >
             {{ __('Open the plan of this stage') }}
           </router-link>
           <template
             v-if="stage.state === 'open' && programme.can_finish && !anteprima"
           >
-            <button
+            <Button
               v-if="!confirming"
-              type="button"
-              class="mt-1 min-h-11 w-fit rounded-md bg-[var(--brand-action)] px-4 text-p-sm font-medium text-ink-base"
+              class="mt-1 w-fit"
+              variant="solid"
+              size="lg"
+              :label="__('I have finished this stage')"
               @click="confirming = true"
-            >
-              {{ __('I have finished this stage') }}
-            </button>
+            />
             <span v-else class="mt-1 flex flex-wrap items-center gap-2">
               <span class="text-p-sm text-ink-gray-7">
                 {{
@@ -85,21 +97,19 @@
                     : __('This is the last stage.')
                 }}
               </span>
-              <button
-                type="button"
-                class="min-h-11 rounded-md bg-[var(--brand-action)] px-4 text-p-sm font-medium text-ink-base"
-                :disabled="busy"
+              <Button
+                variant="solid"
+                size="lg"
+                :label="__('Yes, finished')"
+                :loading="busy"
                 @click="finish(stage)"
-              >
-                {{ __('Yes, finished') }}
-              </button>
-              <button
-                type="button"
-                class="min-h-11 rounded-md px-3 text-p-sm text-ink-gray-7"
+              />
+              <Button
+                variant="ghost"
+                size="lg"
+                :label="__('Not yet')"
                 @click="confirming = false"
-              >
-                {{ __('Not yet') }}
-              </button>
+              />
             </span>
           </template>
         </span>
@@ -111,7 +121,8 @@
 
 <script setup>
 import { aCheTappa } from '@/utils/programmi'
-import { ErrorMessage, call } from 'frappe-ui'
+import { Button, ErrorMessage, call } from 'frappe-ui'
+import LucideCheck from '~icons/lucide/check'
 import { computed, ref } from 'vue'
 import { anteprima } from '../anteprima'
 import { day } from '../dates'
@@ -129,8 +140,8 @@ const progress = computed(() =>
 )
 // done, open, locked: no red, only where the person stands
 const dot = {
-  done: 'bg-surface-green-2 text-ink-green-8',
-  open: 'bg-[var(--brand-action)] text-ink-base',
+  done: 'bg-[var(--brand-subtle)] text-[var(--on-brand-subtle)]',
+  open: 'bg-[var(--brand-solid)]',
   locked: 'bg-surface-gray-2 text-ink-gray-6',
 }
 const labels = {

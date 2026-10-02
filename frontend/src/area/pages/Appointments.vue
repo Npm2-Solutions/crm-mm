@@ -1,15 +1,15 @@
 <!-- Appointments: the cycles of sessions and the subscriptions going on, what
      the person waits for, the ones coming, then the last ones. -->
 <template>
-  <div class="flex flex-col gap-6">
-    <h1 class="text-xl font-semibold text-ink-gray-9">
+  <div class="flex flex-col gap-5">
+    <h1 class="area-title">
       {{ __('Your appointments') }}
     </h1>
     <section
       v-if="appointments.data?.cycles?.length"
       class="flex flex-col gap-2"
     >
-      <h2 class="text-base font-medium text-ink-gray-7">
+      <h2 class="area-label">
         {{ __('Your cycles of sessions') }}
       </h2>
       <CycleCard
@@ -22,7 +22,7 @@
       v-if="appointments.data?.subscriptions?.length"
       class="flex flex-col gap-2"
     >
-      <h2 class="text-base font-medium text-ink-gray-7">
+      <h2 class="area-label">
         {{ __('Your subscriptions') }}
       </h2>
       <SubscriptionCard
@@ -36,11 +36,12 @@
       class="flex flex-col gap-2"
     >
       <div class="flex items-center justify-between gap-2">
-        <h2 class="text-base font-medium text-ink-gray-7">
+        <h2 class="area-label">
           {{ __('Waiting list') }}
         </h2>
         <Button
           v-if="appointments.data?.can_wait && !anteprima"
+          size="md"
           :label="__('Join the waiting list')"
           icon-left="plus"
           @click="joining = true"
@@ -48,7 +49,7 @@
       </div>
       <p
         v-if="said"
-        class="rounded-md bg-surface-gray-2 px-3 py-2 text-p-sm text-ink-gray-8"
+        class="rounded-[12px_12px_12px_2px] bg-[var(--brand-subtle)] px-3 py-2 text-p-sm text-[var(--on-brand-subtle)]"
         role="status"
       >
         {{ said }}
@@ -71,7 +72,7 @@
       </p>
     </section>
     <section class="flex flex-col gap-2">
-      <h2 class="text-base font-medium text-ink-gray-7">
+      <h2 class="area-label">
         {{ __('Coming up') }}
       </h2>
       <AppointmentCard
@@ -87,11 +88,12 @@
       </p>
     </section>
     <section v-if="appointments.data?.past?.length" class="flex flex-col gap-2">
-      <h2 class="text-base font-medium text-ink-gray-7">{{ __('Past') }}</h2>
+      <h2 class="area-label">{{ __('Past') }}</h2>
       <AppointmentCard
         v-for="appointment in appointments.data.past"
         :key="appointment.name"
         :appointment="appointment"
+        past
       />
     </section>
     <WaitingJoinDialog v-model="joining" @changed="changed('')" />

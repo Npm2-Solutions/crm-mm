@@ -1,8 +1,9 @@
 <!--
-  The client area's shell: the centre's mark at the top - its logo as it is
-  drawn, wide on its own or square beside its name - and the product's signature
-  at the foot (crm.marchio), whose area it is (a parent sees their child's too),
-  and its places at the bottom, within reach of a thumb.
+  The client area's shell, as the brand draws the patient's phone: the centre's
+  mark at the top - its logo as it is drawn, wide on its own or square beside its
+  name - and the product's signature at the foot (crm.marchio), whose area it is
+  (a parent sees their child's too), and its places at the bottom, within reach
+  of a thumb, the open one in the brand's colour.
   Staff who open it are sent to DottorCloud: the area is for the centre's clients,
   but for the preview a person's page opens (crm.area.anteprima), read only.
   With the clinic on it is the patient area, and says so (window.AREA.words).
@@ -16,24 +17,27 @@
       <p class="text-p-sm text-ink-gray-5">
         {{ __('Your work is in {brand}.') }}
       </p>
-      <Button variant="solid" :label="__('Open {brand}')" @click="goCrm" />
+      <Button
+        variant="solid"
+        size="lg"
+        :label="__('Open {brand}')"
+        @click="goCrm"
+      />
     </div>
   </div>
   <router-view v-else-if="route.name === 'Login'" />
   <div v-else class="flex h-full flex-col">
-    <header
-      class="flex items-center justify-between gap-3 border-b border-outline-gray-1 bg-surface-base px-4 py-3"
-    >
+    <header class="flex items-center justify-between gap-3 px-5 pb-1 pt-4">
       <div class="flex min-w-0 items-center gap-2.5">
         <img
           v-if="logo && forma === 'wide'"
           :src="logo"
           :alt="centre || ''"
-          class="h-8 min-w-0 max-w-full object-contain object-left dark:rounded dark:bg-white dark:px-1.5 dark:py-1"
+          class="h-8 min-w-0 max-w-full object-contain object-left"
         />
         <template v-else>
           <CentreTile
-            v-if="logo"
+            v-if="logo || centre"
             :logo="logo"
             :forma="forma"
             :nome="centre"
@@ -41,22 +45,16 @@
           />
           <span
             v-if="centre"
-            class="min-w-0 truncate text-base font-semibold text-ink-gray-9"
+            class="min-w-0 truncate text-[15px] font-bold text-ink-gray-9"
           >
             {{ centre }}
           </span>
-          <template v-else-if="!logo">
-            <img
-              :src="brand.logo"
-              :alt="brand.name"
-              class="h-6 w-auto shrink-0 dark:hidden"
-            />
-            <img
-              :src="brand.logo_dark"
-              :alt="brand.name"
-              class="hidden h-6 w-auto shrink-0 dark:block"
-            />
-          </template>
+          <img
+            v-else-if="!logo"
+            :src="brand.logo"
+            :alt="brand.name"
+            class="h-6 w-auto shrink-0"
+          />
         </template>
       </div>
       <Button
@@ -76,7 +74,7 @@
     </header>
     <p
       v-if="anteprima"
-      class="border-b border-outline-gray-1 bg-surface-amber-1 px-4 py-2 text-p-sm text-ink-amber-8"
+      class="mx-5 mt-2 rounded-[12px_12px_12px_2px] bg-[var(--warning-subtle)] px-3 py-2 text-p-sm text-[var(--warning)]"
       role="status"
     >
       {{
@@ -86,12 +84,10 @@
         )
       }}
     </p>
-    <div
-      v-if="(area.me?.people || []).length > 1"
-      class="border-b border-outline-gray-1 bg-surface-elevation-1 px-4 py-2"
-    >
+    <div v-if="(area.me?.people || []).length > 1" class="px-5 pt-2">
       <FormControl
         type="select"
+        size="md"
         :label="__('Whose area')"
         :model-value="area.person"
         :options="
@@ -101,7 +97,7 @@
       />
     </div>
     <main class="min-h-0 flex-1 overflow-y-auto">
-      <div class="mx-auto w-full max-w-2xl px-4 py-5">
+      <div class="mx-auto w-full max-w-2xl px-5 pb-6 pt-3">
         <ErrorMessage v-if="area.error" :message="area.error" />
         <router-view v-else-if="area.person" :key="area.person" />
         <!-- the product signs at the foot: the centre leads at the top (where
@@ -116,7 +112,7 @@
       </div>
     </main>
     <nav
-      class="pb-safe grid border-t border-outline-gray-1 bg-surface-elevation-1"
+      class="area-nav pb-safe grid border-t border-outline-gray-1 bg-surface-elevation-1"
       :style="{
         gridTemplateColumns: `repeat(${places.length}, minmax(0, 1fr))`,
       }"
@@ -125,18 +121,14 @@
         v-for="place in places"
         :key="place.name"
         :to="{ name: place.name }"
-        class="flex min-w-0 flex-col items-center gap-1 py-2 text-[11px] leading-tight"
-        :class="
-          placeOf(route.name) === place.name
-            ? 'text-ink-gray-9 font-medium'
-            : 'text-ink-gray-5'
-        "
+        class="flex min-w-0 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-semibold leading-tight tracking-[0.02em]"
+        :class="{ 'is-on': placeOf(route.name) === place.name }"
       >
         <span class="relative">
-          <FeatherIcon :name="place.icon" class="size-5" />
+          <component :is="place.icon" class="size-[22px]" aria-hidden="true" />
           <span
             v-if="place.name === 'Messages' && unread"
-            class="absolute -right-2 -top-1 grid min-w-4 place-items-center rounded-full bg-surface-red-5 px-1 text-[10px] font-medium leading-4 text-ink-base"
+            class="absolute -right-2 -top-1 grid min-w-4 place-items-center rounded-full bg-[var(--danger)] px-1 text-[10px] font-semibold leading-4 text-white"
           >
             {{ unread }}
           </span>
@@ -148,9 +140,14 @@
 </template>
 
 <script setup>
-import { Button, ErrorMessage, FeatherIcon, FormControl } from 'frappe-ui'
+import { Button, ErrorMessage, FormControl } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import LucideCalendar from '~icons/lucide/calendar'
+import LucideFileText from '~icons/lucide/file-text'
+import LucideHouse from '~icons/lucide/house'
+import LucideListChecks from '~icons/lucide/list-checks'
+import LucideMessageCircle from '~icons/lucide/message-circle'
 import { anteprima, chiudi } from './anteprima'
 import { area, choose, loadMe, logout, section } from './store'
 import CentreTile from '@/components/CentreTile.vue'
@@ -170,26 +167,24 @@ const current = computed(() =>
   (area.me?.people || []).find((p) => p.name === area.person),
 )
 
-// the places other modules add, where they have something: "Plans" only for
-// whoever follows one - a plan, a programme, a quote - most people never do;
-// the documents to who was given some
+// the places, as the brand's phone has them: today, the agenda, the plans -
+// only for whoever follows one: a plan, a programme, a quote, most people never
+// do - the documents with the invoices, the messages
 const places = computed(() =>
   [
-    { name: 'Home', label: __('Home'), icon: 'home' },
-    { name: 'Appointments', label: __('Agenda'), icon: 'calendar' },
+    { name: 'Home', label: __('Today'), icon: LucideHouse },
+    { name: 'Appointments', label: __('Agenda'), icon: LucideCalendar },
     area.person && (section('plans') || section('quotes'))
-      ? { name: 'Plans', label: __('Plans'), icon: 'check-square' }
+      ? { name: 'Plans', label: __('Plans'), icon: LucideListChecks }
       : null,
-    { name: 'Messages', label: __('Messages'), icon: 'message-square' },
-    area.person && section('documents')
-      ? { name: 'Documents', label: __('Documents'), icon: 'file-text' }
-      : null,
-    { name: 'Invoices', label: __('Invoices'), icon: 'credit-card' },
+    { name: 'Documents', label: __('Documents'), icon: LucideFileText },
+    { name: 'Messages', label: __('Messages'), icon: LucideMessageCircle },
   ].filter(Boolean),
 )
 
-// a plan's own page lights its place in the bar
-const placeOf = (name) => (name === 'Plan' ? 'Plans' : name)
+// a page of a place lights it in the bar
+const placeOf = (name) =>
+  ({ Plan: 'Plans', PlanShopping: 'Plans', Chat: 'Messages' })[name] || name
 
 // what the centre wrote and the person has not opened yet
 const unread = computed(() => current.value?.unread || 0)

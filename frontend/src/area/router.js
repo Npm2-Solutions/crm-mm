@@ -37,11 +37,8 @@ const routes = [
     name: 'Chat',
     component: () => import('./pages/Chat.vue'),
   },
-  {
-    path: '/invoices',
-    name: 'Invoices',
-    component: () => import('./pages/Invoices.vue'),
-  },
+  // the invoices are with the documents, as on the brand's phone
+  { path: '/invoices', redirect: '/documents' },
   {
     path: '/login',
     name: 'Login',
