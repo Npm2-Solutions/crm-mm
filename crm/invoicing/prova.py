@@ -138,30 +138,15 @@ def mancanze(emittente: dict, agenzia: bool | None = None) -> list[dict]:
 			"the agency does it, the centre sets up nothing."
 		),
 	)
+	# the Agenzia's free service keeps the SdI documents: joining it is the centre's,
+	# once, in Fatture e Corrispettivi, and nobody can do it from here
 	manca(
-		modo == "pec" and not emittente.get("pec"),
-		_("PEC mailbox"),
-		_("The channel is set to PEC and the company has none: nothing can leave."),
-		"pec",
-		agenzia=True,
-	)
-	manca(
-		not emittente.get("conservation_service"),
+		not emittente.get("conservation_joined"),
 		_("Preservation of the SdI documents"),
 		_(
-			"Ten years is mandatory, and transmitting does not provide it. The Agenzia's service is free but needs an explicit adhesion in Fatture e Corrispettivi, and it only covers invoices from that day on."
+			"Ten years is mandatory, and transmitting does not provide it. Join the Agenzia's free service once, in Fatture e Corrispettivi (you or your accountant), then tick it on the Invoicing tab: it keeps the invoices from that day on."
 		),
-		"conservation_service",
-		agenzia=True,
-	)
-	manca(
-		emittente.get("document_mode") == "elettronica_extra_sdi" and not emittente.get("conservation_local"),
-		_("Preservation of the documents outside the SdI"),
-		_(
-			"Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Either name a provider for these, or switch back to a paper original and keep that."
-		),
-		"conservation_local",
-		agenzia=True,
+		"conservation_joined",
 	)
 
 	# what the modules add (the Sistema TS: credentials, certificate, qualifications)

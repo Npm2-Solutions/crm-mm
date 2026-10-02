@@ -89,10 +89,12 @@ SOGGETTO_INVIANTE = (
 		"Facility accredited with the national health service",
 		"Public or private, accredited with the SSN.",
 	),
-	_v("veterinario", "Vet", ""),
-	_v("farmacia", "Pharmacy", ""),
-	_v("parafarmacia", "Para-pharmacy", ""),
-	_v("ottico", "Optician", ""),
+	# report to the Sistema TS too, but are not a medical centre: offered outside
+	# the healthcare profile, and kept where they are already stored
+	_v("veterinario", "Vet", "", sanita=False),
+	_v("farmacia", "Pharmacy", "", sanita=False),
+	_v("parafarmacia", "Para-pharmacy", "", sanita=False),
+	_v("ottico", "Optician", "", sanita=False),
 	_v("non_sanitario", "Not healthcare", "Reports nothing to the Sistema TS.", sanita=False),
 )
 

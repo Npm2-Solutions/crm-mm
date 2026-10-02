@@ -66,7 +66,8 @@ class LeScelteInParole(IntegrationTestCase):
 		with _sanitario():
 			causale = _campo(get_fields("CRM Professional Qualification"), "payment_reason")
 		self.assertEqual(causale["fieldtype"], "Select")
-		self.assertEqual([s["value"] for s in causale["options"]], ["", "A", "M", "M2"])
+		# it starts with a value: nothing to leave empty
+		self.assertEqual([s["value"] for s in causale["options"]], ["A", "M", "M2"])
 
 	def test_le_qualifiche_di_un_centro_medico_sono_sanitarie(self):
 		with _sanitario():
@@ -91,7 +92,8 @@ class LeScelteInParole(IntegrationTestCase):
 		with _sanitario():
 			risposta = scelte.get_options("CRM Invoice", fattura)
 		pagamenti = [s["value"] for s in risposta["fields"]["payment_method"]]
-		self.assertEqual(pagamenti[:3], ["", "MP08", "MP01"])
+		# the payment method starts with one: no empty choice
+		self.assertEqual(pagamenti[:3], ["MP08", "MP01", "MP05"])
 		# a RIBA chosen before stays, named, at the end
 		self.assertEqual(pagamenti[-1], "MP12")
 		self.assertEqual(risposta["fields"]["payment_method"][-1]["label"], frappe._("RIBA"))

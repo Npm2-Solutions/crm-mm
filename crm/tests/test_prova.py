@@ -160,14 +160,19 @@ class AttivazioneTest(Base):
 		self.assertIn("VAT number", str(errore.exception))
 
 	def test_quello_che_manca_dice_chi_lo_fa(self):
-		self.imposta(tax_id="", conservation_service="")
+		self.imposta(tax_id="", conservation_joined=0)
 		righe = {riga["title"]: riga for riga in prova.mancanze(self.emittente(), agenzia=True)}
 		self.assertTrue(righe["VAT number"]["blocking"])
-		self.assertTrue(righe["Preservation of the SdI documents"]["agency"])
-		# the centre does not see what it cannot do
+		# joining the Agenzia's free preservation is the centre's: said to it, stopping nothing
+		conservazione = righe["Preservation of the SdI documents"]
+		self.assertEqual((conservazione["agency"], conservazione["blocking"]), (False, False))
 		del_centro = {riga["title"] for riga in prova.mancanze(self.emittente(), agenzia=False)}
 		self.assertIn("VAT number", del_centro)
-		self.assertNotIn("Preservation of the SdI documents", del_centro)
+		self.assertIn("Preservation of the SdI documents", del_centro)
+		# ticked once joined, it is not missing any more
+		self.imposta(conservation_joined=1)
+		righe = {riga["title"] for riga in prova.mancanze(self.emittente(), agenzia=True)}
+		self.assertNotIn("Preservation of the SdI documents", righe)
 
 	def test_in_prova_si_torna_solo_senza_fatture_vere(self):
 		self.imposta(provider_environment=connessione.PRODUZIONE)

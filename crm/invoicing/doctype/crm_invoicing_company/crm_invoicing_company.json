@@ -66,6 +66,8 @@
   "stamp_authorization_number",
   "stamp_authorization_date",
   "stamp_authorization_office",
+  "conservation_section",
+  "conservation_joined",
   "numbering_section",
   "series_electronic",
   "series_healthcare",
@@ -78,17 +80,17 @@
   "region_code",
   "asl_code",
   "ssa_code",
+  "ts_transmission_section",
+  "ts_mode",
+  "ts_delegation_status",
+  "column_ts_transmission",
+  "ts_intermediary_reference",
+  "ts_certificate",
   "ts_credentials_section",
   "ts_username",
   "column_ts_credentials",
   "ts_password",
   "ts_pincode",
-  "ts_transmission_section",
-  "ts_mode",
-  "ts_delegation_status",
-  "column_ts_transmission",
-  "ts_certificate",
-  "ts_intermediary_reference",
   "tab_documents",
   "preservation_section",
   "document_mode",
@@ -455,6 +457,7 @@
   },
   {
    "default": "E",
+   "description": "Invoices to companies and professionals, that go through the SdI.",
    "fieldname": "series_electronic",
    "fieldtype": "Data",
    "label": "Electronic series",
@@ -463,7 +466,7 @@
   },
   {
    "default": "S",
-   "description": "Separate series are not mandatory (FAQ n. 33 del 27/11/2018) but two flows in two retention systems are easier to govern apart.",
+   "description": "Healthcare invoices to private persons, that go to the Sistema TS. Separate series are not mandatory (FAQ n. 33 del 27/11/2018) but two flows are easier to govern apart.",
    "fieldname": "series_healthcare",
    "fieldtype": "Data",
    "label": "Healthcare series",
@@ -477,17 +480,17 @@
   },
   {
    "default": "{anno}/{serie}/{numero}",
-   "description": "At most 20 characters: letters, digits and _ . / - (what the Sistema TS accepts). Checked at the first document.",
+   "description": "The year, the series and the counter, in the order chosen: every one fits what the Sistema TS accepts.",
    "fieldname": "number_format",
    "fieldtype": "Data",
-   "label": "Format",
+   "label": "How the number reads",
    "permlevel": 1,
    "reqd": 1
   },
   {
    "fieldname": "tab_healthcare",
    "fieldtype": "Tab Break",
-   "label": "Healthcare"
+   "label": "Sistema TS"
   },
   {
    "fieldname": "healthcare_section",
@@ -529,7 +532,7 @@
    "length": 6
   },
   {
-   "description": "The centre's own, from the Sistema TS portal: with them the expenses are reported in the centre's name.",
+   "description": "The centre's own, from the Sistema TS portal; the accountant's Entratel ones when the accountant sends.",
    "fieldname": "ts_credentials_section",
    "fieldtype": "Section Break",
    "label": "Sistema TS credentials"
@@ -560,12 +563,12 @@
   {
    "fieldname": "ts_transmission_section",
    "fieldtype": "Section Break",
-   "label": "Sistema TS transmission",
+   "label": "Sending to the Sistema TS",
    "permlevel": 1
   },
   {
    "default": "credenziali_studio",
-   "description": "With the centre's own credentials no document costs anything to report. The credentials belong to the centre and are entered by the centre.",
+   "description": "It decides what is asked below: the centre's Sistema TS credentials, the accountant's Entratel ones, or nothing when the file is downloaded.",
    "fieldname": "ts_mode",
    "fieldtype": "Select",
    "label": "How expenses reach the Sistema TS",
@@ -619,6 +622,7 @@
    "description": "The invoices that never go through the SdI: a healthcare service to a private person, a document given only as a PDF (Circolare 18/E 2014).",
    "fieldname": "document_mode",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Documents outside the SdI",
    "options": "analogico_con_copia\nelettronica_extra_sdi",
    "permlevel": 1
@@ -628,6 +632,7 @@
    "description": "Healthcare invoices to a private person never go through the SdI, so the Agenzia's free service cannot keep them: born electronic, they need a preservation service of their own. Or go back to the paper original.",
    "fieldname": "conservation_local",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Preservation, documents outside the SdI",
    "options": "\nprovider\naltro",
    "permlevel": 1
@@ -638,9 +643,11 @@
    "permlevel": 1
   },
   {
+   "default": "agenzia_entrate",
    "description": "Ten years is mandatory and transmitting does not provide it. The Agenzia's service is free and keeps them fifteen years, but it needs an explicit adhesion in Fatture e Corrispettivi and only covers invoices from that day on.",
    "fieldname": "conservation_service",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Preservation, SdI documents",
    "options": "\nagenzia_entrate\nprovider\naltro",
    "permlevel": 1
@@ -650,6 +657,7 @@
    "description": "Who preserves each branch, and since when. A note for whoever asks in eight years - name both if the two branches went to different preservers.",
    "fieldname": "conservation_reference",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Preservation reference",
    "permlevel": 1
   },
@@ -670,16 +678,18 @@
    "description": "Itala, the accredited intermediary, is the one offered to every centre: the centre sets nothing up. Downloading the file and the centre's own PEC stay possible, for the agency to choose.",
    "fieldname": "sdi_mode",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "How invoices reach the SdI",
    "options": "export\npec\nprovider",
    "permlevel": 1
   },
   {
-   "default": "uscita",
+   "default": "entrambi",
    "depends_on": "eval:doc.sdi_mode=='provider'",
    "description": "With incoming invoices too, the ones your suppliers send are filed here: a register of what arrived, not accounts (no matching, no approval). Turn it on only where somebody will read them.",
    "fieldname": "sdi_flow",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Which direction",
    "options": "uscita\nentrambi",
    "permlevel": 1
@@ -689,6 +699,7 @@
    "description": "A company starts in test: its invoices are numbered PROVA, the electronic ones go to Itala's test environment and nothing reaches the SdI, the Sistema TS or the client. It goes live from Settings > Invoicing > Test and go live.",
    "fieldname": "provider_environment",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Test or live",
    "options": "sandbox\nproduction",
    "permlevel": 1
@@ -696,6 +707,7 @@
   {
    "fieldname": "live_since",
    "fieldtype": "Datetime",
+   "hidden": 1,
    "label": "Live since",
    "permlevel": 1,
    "read_only": 1
@@ -710,6 +722,7 @@
    "description": "The company's identifier under the agency's account, given when it is registered.",
    "fieldname": "itala_id_test",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Itala, test environment",
    "permlevel": 1,
    "read_only": 1
@@ -718,6 +731,7 @@
    "depends_on": "eval:doc.sdi_mode=='provider'",
    "fieldname": "itala_id",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Itala, production",
    "permlevel": 1,
    "read_only": 1
@@ -726,12 +740,14 @@
    "description": "Only for a company with an Itala account of its own. Empty, the agency's account is used and the company is registered under it by itself.",
    "fieldname": "sdi_username",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Own Itala account: client ID",
    "permlevel": 1
   },
   {
    "fieldname": "sdi_password",
    "fieldtype": "Password",
+   "hidden": 1,
    "label": "Client secret",
    "permlevel": 1
   },
@@ -740,6 +756,7 @@
    "description": "Only for a company with an account of its own: the token Itala sends back when it pushes updates here, as Authorization: Bearer. Under the agency's account the updates are fetched every few minutes.",
    "fieldname": "sdi_webhook_secret",
    "fieldtype": "Password",
+   "hidden": 1,
    "label": "Webhook secret",
    "permlevel": 1
   },
@@ -749,6 +766,7 @@
    "description": "Only the first invoice goes to sdi01@. The delivery receipt names the address to use from then on, and this is updated when it does.",
    "fieldname": "sdi_pec_address",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "SdI mailbox",
    "permlevel": 1
   },
@@ -756,14 +774,26 @@
    "description": "The SdI refuses a file name it has already seen, and it does not forget.",
    "fieldname": "sdi_last_progressive",
    "fieldtype": "Int",
+   "hidden": 1,
    "label": "Last transmission progressive",
    "permlevel": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "conservation_section",
+   "fieldtype": "Section Break",
+   "label": "Preservation"
+  },
+  {
+   "description": "Free, once, in Fatture e Corrispettivi (by the centre or its accountant): it keeps the invoices that pass through the SdI for fifteen years, from that day on.",
+   "fieldname": "conservation_joined",
+   "fieldtype": "Check",
+   "label": "Joined the Agenzia's preservation service"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-02 16:00:00.000000",
+ "modified": "2026-10-02 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

@@ -38,6 +38,7 @@ CAMPI: dict[tuple[str, str], str] = {
 	("CRM Invoicing Company", "withholding_type"): "tipo_ritenuta",
 	("CRM Invoicing Company", "payment_reason"): "causale_pagamento",
 	("CRM Invoicing Company", "stamp_duty_mode"): "modalita_bollo",
+	("CRM Invoicing Company", "number_format"): "formato_numero",
 	("CRM Invoicing Company", "document_mode"): "modalita_documento",
 	("CRM Invoicing Company", "conservation_local"): "conservazione_locale",
 	("CRM Invoicing Company", "conservation_service"): "conservazione_sdi",
@@ -74,8 +75,9 @@ CAMPI: dict[tuple[str, str], str] = {
 }
 
 #: Typed as a code, offered as a list: the reason of a withholding is a closed list,
-#: and the field that holds it is a two-letter text the DocType keeps as it is.
-COME_ELENCO = {"payment_reason"}
+#: and the field that holds it is a two-letter text the DocType keeps as it is; the
+#: number's format is a template a centre would get wrong, offered as examples.
+COME_ELENCO = {"payment_reason", "number_format"}
 
 #: In the healthcare profile a practice picks a qualification among the health
 #: professions: a lawyer's, an engineer's or a developer's are not a medical
@@ -154,8 +156,9 @@ def adatta_campi(doctype: str, campi: list) -> list:
 			continue
 		nuovo = campo.as_dict() if hasattr(campo, "as_dict") else dict(campo)
 		valori = (nuovo.get("options") or "").split("\n") if isinstance(nuovo.get("options"), str) else []
-		obbligatorio = bool(nuovo.get("reqd"))
-		scelte = opzioni(doctype, campo.fieldname, nuovo.get("default"), vuota=not obbligatorio)
+		# nothing to leave empty where the field must have a value, or starts with one
+		vuota = not nuovo.get("reqd") and not nuovo.get("default")
+		scelte = opzioni(doctype, campo.fieldname, nuovo.get("default"), vuota=vuota)
 		if nuovo.get("fieldtype") == "Select":
 			# every value the DocType admits stays possible: a profile hides, never forbids
 			ammesse = {v for v in valori if v}
@@ -190,7 +193,9 @@ def _scelte(doctype: str, documento: dict, righe: list | None = None) -> dict:
 		attuale = (
 			documento.get(fieldname) if righe is None else [(riga or {}).get(fieldname) for riga in righe]
 		)
-		scelte[fieldname] = opzioni(doctype, fieldname, attuale, documento, vuota=not campo.reqd)
+		scelte[fieldname] = opzioni(
+			doctype, fieldname, attuale, documento, vuota=not campo.reqd and not campo.default
+		)
 	return scelte
 
 
