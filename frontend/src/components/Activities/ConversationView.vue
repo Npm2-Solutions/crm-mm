@@ -370,6 +370,13 @@
                   theme="gray"
                   :label="__('Draft')"
                 />
+                <Button
+                  class="ml-auto"
+                  variant="ghost"
+                  size="sm"
+                  :label="__('Open', null, 'Action')"
+                  @click="apriFattura(row.item.data.name)"
+                />
               </div>
             </HappenedCard>
 
@@ -482,6 +489,7 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import SMSIcon from '@/components/Icons/SMSIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import { useFattura } from '@/composables/fattura'
 import { useWhatsAppActions } from '@/composables/whatsappActions'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
 import { usersStore } from '@/stores/users'
@@ -556,6 +564,8 @@ function openOnCalendar(kind, item) {
 
 const { isNewestFirst } = useTimelinePreferences()
 const { getUser, puo } = usersStore()
+// an invoice opens here, as it does from the invoices page
+const { apriFattura } = useFattura()
 
 // a file received goes among the person's documents
 const canArchive = computed(() => puo('documenti.aggiungi'))

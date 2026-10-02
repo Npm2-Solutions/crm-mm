@@ -37996,3 +37996,195 @@ msgstr "il totale del documento ({0}) non coincide con l'importo comunicato al S
 msgctxt "Action"
 msgid "Open"
 msgstr "Apri"
+
+#: crm/invoicing/emissione.py
+msgid "VAT {0}%"
+msgstr "IVA {0}%"
+
+#: crm/invoicing/emissione.py
+msgid "Line {0}: say who performed it. It decides the expense type and the VAT regime"
+msgstr "Riga {0}: indica chi l'ha eseguito. Decide il tipo di spesa e il regime IVA"
+
+#: crm/invoicing/emissione.py
+msgid "Add what was done: a service, and who performed it"
+msgstr "Aggiungi cosa è stato fatto: il servizio, e chi l'ha eseguito"
+
+#: crm/invoicing/emissione.py
+msgid "An issued invoice is not changed: correct it with a credit note"
+msgstr "Una fattura emessa non si modifica: si corregge con una nota di credito"
+
+#: crm/invoicing/emissione.py
+msgid "This invoice has already been issued"
+msgstr "Questa fattura è già stata emessa"
+
+#: crm/invoicing/emissione.py
+msgid "Only an issued invoice is corrected with a credit note"
+msgstr "Solo una fattura emessa si corregge con una nota di credito"
+
+#: crm/invoicing/emissione.py
+msgid "A credit note is not corrected with another credit note"
+msgstr "Una nota di credito non si corregge con un'altra nota di credito"
+
+#: crm/invoicing/emissione.py
+msgid "Credit note for invoice {0}"
+msgstr "Nota di credito per la fattura {0}"
+
+#: crm/invoicing/emissione.py
+msgid "Only a draft can be thrown away"
+msgstr "Si può eliminare solo una bozza"
+
+#: crm/invoicing/emissione.py
+msgid "This invoice already has its number: correct it and issue it again"
+msgstr "Questa fattura ha già il suo numero: correggila ed emettila di nuovo"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Where it went"
+msgstr "Dove è andata"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Where it goes"
+msgstr "Dove andrà"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "The SdI refused it"
+msgstr "Lo SdI l'ha scartata"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "A refused invoice counts as never issued: correct it and issue it again with the same number and date, within five days of the notice."
+msgstr "Una fattura scartata è come se non fosse mai stata emessa: correggila ed emettila di nuovo con lo stesso numero e la stessa data, entro cinque giorni dalla notifica."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "It corrects invoice {0}."
+msgstr "Corregge la fattura {0}."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Who it is for"
+msgstr "Per chi è"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Choose the client"
+msgstr "Scegli il cliente"
+
+#: crm/clinica/parole.py
+msgid "Choose the patient"
+msgstr "Scegli il paziente"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Nobody yet: choose the client."
+msgstr "Ancora nessuno: scegli il cliente."
+
+#: crm/clinica/parole.py
+msgid "Nobody yet: choose the patient."
+msgstr "Ancora nessuno: scegli il paziente."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Details on the invoice"
+msgstr "Dati in fattura"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "City"
+msgstr "Città"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "What was done"
+msgstr "Cosa è stato fatto"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Service"
+msgstr "Servizio"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Choose the service"
+msgstr "Scegli il servizio"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Who performed it"
+msgstr "Chi l'ha eseguito"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Remove the line"
+msgstr "Togli la riga"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Add a line"
+msgstr "Aggiungi una riga"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "How it was paid"
+msgstr "Come è stata pagata"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "The patient opposes the use of this expense in their pre-filled tax return"
+msgstr "Il paziente si oppone all'uso di questa spesa nella sua dichiarazione precompilata"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Asked by the patient: the expense still goes to the Sistema TS, without their codice fiscale."
+msgstr "Lo chiede il paziente: la spesa va comunque al Sistema TS, senza il suo codice fiscale."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Before it can be issued"
+msgstr "Prima di emetterla"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Throw the draft away"
+msgstr "Elimina la bozza"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Issue"
+msgstr "Emetti"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Correct it"
+msgstr "Correggila"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Send to the SdI"
+msgstr "Invia allo SdI"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Download the PDF"
+msgstr "Scarica il PDF"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Make the PDF"
+msgstr "Crea il PDF"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Invoice issued"
+msgstr "Fattura emessa"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Draft thrown away"
+msgstr "Bozza eliminata"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Credit note ready: check it and issue it"
+msgstr "Nota di credito pronta: controllala ed emettila"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Back in draft, with its number: correct it and issue it again"
+msgstr "Di nuovo in bozza, con il suo numero: correggila ed emettila di nuovo"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Sent to the SdI"
+msgstr "Inviata allo SdI"
+
+#: frontend/src/utils/fattura.js
+msgid "New credit note"
+msgstr "Nuova nota di credito"
+
+#: frontend/src/utils/fattura.js
+msgid "Draft invoice"
+msgstr "Bozza di fattura"
+
+#: frontend/src/utils/fattura.js
+msgid "Draft credit note"
+msgstr "Bozza di nota di credito"
+
+#: frontend/src/utils/fattura.js
+msgid "Invoice {0}"
+msgstr "Fattura {0}"
+
+#: frontend/src/utils/fattura.js
+msgid "Credit note {0}"
+msgstr "Nota di credito {0}"

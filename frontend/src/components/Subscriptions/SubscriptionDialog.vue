@@ -316,6 +316,7 @@
 </template>
 
 <script setup>
+import { useFattura } from '@/composables/fattura'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
 import { formatDate } from '@/utils'
@@ -356,6 +357,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed'])
 const show = defineModel({ type: Boolean })
+const { apriFattura } = useFattura()
 
 const router = useRouter()
 const { $dialog } = globalStore()
@@ -741,8 +743,10 @@ async function invoice(row) {
       row: row.name,
     })
     fill(done)
-    window.open(`/app/crm-invoice/${done.invoice}`, '_blank')
     emit('changed')
+    // the instalment's draft, to check and issue: one dialog at a time
+    show.value = false
+    apriFattura(done.invoice)
   } catch (e) {
     error.value = e.messages?.[0] || __('Could not open the invoice')
   } finally {
