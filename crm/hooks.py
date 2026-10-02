@@ -63,8 +63,6 @@ require_type_annotated_api_methods = True
 
 # include js in doctype views
 doctype_js = {
-	"Quotation": "public/js/erpnext_quotation_prefill.js",
-	"Sales Order": "public/js/erpnext_sales_order_customer.js",
 	"CRM Lead": "public/js/domain_enrichment.js",
 	"CRM Organization": "public/js/domain_enrichment.js",
 	"CRM Deal": "public/js/domain_enrichment.js",
@@ -298,7 +296,6 @@ has_permission = {
 	"CRM Phone Number Request": "crm.permissions.documenti.has_permission",
 	"CRM Sales Hierarchy": "crm.permissions.documenti.has_permission",
 	"CRM Service Level Agreement": "crm.permissions.documenti.has_permission",
-	"ERPNext CRM Settings": "crm.permissions.documenti.has_permission",
 	"Email Template": "crm.permissions.documenti.has_permission",
 	"Assignment Rule": "crm.permissions.documenti.has_permission",
 	"Data Import": "crm.permissions.documenti.has_permission",
@@ -446,7 +443,6 @@ doc_events = {
 			"crm.utils.ownership.credit_the_system",
 		],
 		"on_update": [
-			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext",
 			"crm.automation.engine.on_deal_updated",
 			"crm.integrations.meta.conversions.on_deal_updated",
 		],
@@ -542,30 +538,6 @@ doc_events = {
 	# whatever the upload asked
 	"File": {
 		"before_insert": ["crm.clinica.cartella.allegato_privato", "crm.documenti.api.allegato_privato"],
-	},
-	"Sales Order": {
-		"before_validate": [
-			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_on_sales_order"
-		],
-	},
-	"Item": {
-		"after_insert": ["crm.integrations.erpnext.item.after_insert"],
-		"on_update": ["crm.integrations.erpnext.item.on_update"],
-		"before_rename": ["crm.integrations.erpnext.item.before_rename"],
-		"after_rename": ["crm.integrations.erpnext.item.after_rename"],
-		"on_trash": ["crm.integrations.erpnext.item.on_trash"],
-	},
-	"User Permission": {
-		"before_validate": ["crm.integrations.erpnext.user_permission.before_validate"],
-		"after_insert": ["crm.integrations.erpnext.user_permission.after_insert"],
-		"on_update": ["crm.integrations.erpnext.user_permission.on_update"],
-		"on_trash": ["crm.integrations.erpnext.user_permission.on_trash"],
-	},
-	"DocShare": {
-		"before_validate": ["crm.integrations.erpnext.doc_share.before_validate"],
-		"after_insert": ["crm.integrations.erpnext.doc_share.after_insert"],
-		"on_update": ["crm.integrations.erpnext.doc_share.on_update"],
-		"on_trash": ["crm.integrations.erpnext.doc_share.on_trash"],
 	},
 	"User": {
 		"before_validate": ["crm.api.live_demo.validate_user"],

@@ -468,7 +468,6 @@ TECNICHE = (
 	Capacita("piano.gestisci", agenzia=True, descrizione="The centre's plan"),
 	Capacita("tecnico.integrazioni", agenzia=True, descrizione="App credentials, webhooks, IDs, raw logs"),
 	Capacita("tecnico.utenti_agenzia", agenzia=True, descrizione="The agency's own users"),
-	Capacita("tecnico.erpnext", agenzia=True),
 	Capacita("tecnico.predefiniti", agenzia=True, descrizione="Site currency and formats"),
 	Capacita(
 		"tecnico.codice",

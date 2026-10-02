@@ -135,7 +135,6 @@ class TestWebsiteFields(IntegrationTestCase):
 				"publish_on_website": 1,
 			}
 		)
-		product.flags.ignore_erpnext_sync = True
 		product.insert()
 		self.assertEqual(product.website_slug, "crema-idratante")
 

@@ -1,126 +1,25 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import unittest
-from importlib.util import find_spec
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
-# These exercise ERPNext's pricing API; skip when erpnext isn't importable.
-ERPNEXT_INSTALLED = find_spec("erpnext") is not None
-
-
-@unittest.skipUnless(ERPNEXT_INSTALLED, "erpnext not installed")
-class TestGetDealProductRate(FrappeTestCase):
-	def _fake_get_item_price(self, captured, result):
-		from erpnext.stock import get_item_details
-
-		def fake(pctx, item_code, **kwargs):
-			captured.update(pctx=pctx, item_code=item_code)
-			return result
-
-		orig = get_item_details.get_item_price
-		get_item_details.get_item_price = fake
-		self.addCleanup(setattr, get_item_details, "get_item_price", orig)
-
-	def _fake_stock_uom(self, uom):
-		orig = frappe.db.get_value
-
-		def fake(doctype, filters=None, fieldname="name", *a, **k):
-			if doctype == "Item" and fieldname == "stock_uom":
-				return uom
-			return orig(doctype, filters, fieldname, *a, **k)
-
-		frappe.db.get_value = fake
-		self.addCleanup(setattr, frappe.db, "get_value", orig)
-
-	def _fake_price_list(self, value):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		orig = crm_products._resolve_price_list
-		crm_products._resolve_price_list = lambda customer: value
-		self.addCleanup(setattr, crm_products, "_resolve_price_list", orig)
-
-	def test_passes_price_list_uom_and_date_context(self):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		captured = {}
-		self._fake_get_item_price(captured, [frappe._dict(price_list_rate=1021, uom="Nos")])
-		self._fake_stock_uom("Nos")
-		self._fake_price_list("_Test Price List 2")
-
-		rate = crm_products.get_deal_product_rate("ITM")
-
-		self.assertEqual(rate, 1021)
-		self.assertEqual(captured["item_code"], "ITM")
-		self.assertIsInstance(captured["pctx"], frappe._dict)
-		self.assertEqual(captured["pctx"]["price_list"], "_Test Price List 2")
-		self.assertEqual(captured["pctx"]["uom"], "Nos")
-		self.assertIn("transaction_date", captured["pctx"])
-
-	def test_reads_v15_tuple_result(self):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		self._fake_get_item_price({}, [("IP-1", 1021, "Nos")])
-		self._fake_stock_uom("Nos")
-		self._fake_price_list("_Test Price List 2")
-
-		self.assertEqual(crm_products.get_deal_product_rate("ITM"), 1021)
-
-	def test_returns_none_when_no_matching_price(self):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		self._fake_get_item_price({}, [])
-		self._fake_stock_uom("Nos")
-		self._fake_price_list("Standard Selling")
-
-		self.assertIsNone(crm_products.get_deal_product_rate("ITM"))
-
-	def test_returns_none_without_price_list(self):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		self._fake_price_list(None)
-		self.assertIsNone(crm_products.get_deal_product_rate("ITM"))
+from crm.fcrm.doctype.crm_products.crm_products import get_product_rate_details
 
 
-@unittest.skipUnless(ERPNEXT_INSTALLED, "erpnext not installed")
-class TestGetProductRateDetails(FrappeTestCase):
-	def _fake_contextual_rate(self, value):
-		from crm.fcrm.doctype.crm_products import crm_products
+class TestGetProductRateDetails(IntegrationTestCase):
+	def test_a_line_takes_the_products_own_price(self):
+		product = frappe.get_doc(
+			{"doctype": "CRM Product", "product_code": "LINE-PRICE", "standard_rate": 90}
+		).insert(ignore_permissions=True)
 
-		orig = crm_products._contextual_rate
-		crm_products._contextual_rate = lambda product_code, deal: value
-		self.addCleanup(setattr, crm_products, "_contextual_rate", orig)
+		out = get_product_rate_details(product.name)
 
-	def _fake_product(self, product_name, standard_rate):
-		orig = frappe.db.get_value
+		self.assertEqual(out, {"product_name": "LINE-PRICE", "rate": 90})
 
-		def fake(doctype, filters=None, fieldname="name", *a, **k):
-			if doctype == "CRM Product":
-				return frappe._dict(product_name=product_name, standard_rate=standard_rate)
-			return orig(doctype, filters, fieldname, *a, **k)
-
-		frappe.db.get_value = fake
-		self.addCleanup(setattr, frappe.db, "get_value", orig)
-
-	def test_prefers_contextual_rate(self):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		self._fake_product("Widget", 90)
-		self._fake_contextual_rate(1021)
-
-		out = crm_products.get_product_rate_details("CRM-1001", deal="D-1")
-
-		self.assertEqual(out["rate"], 1021)
-		self.assertEqual(out["product_name"], "Widget")
-
-	def test_falls_back_to_standard_rate(self):
-		from crm.fcrm.doctype.crm_products import crm_products
-
-		self._fake_product("Widget", 90)
-		self._fake_contextual_rate(None)
-
-		out = crm_products.get_product_rate_details("CRM-1001")
-
-		self.assertEqual(out["rate"], 90)
+	def test_an_unknown_product_has_no_price(self):
+		self.assertEqual(get_product_rate_details("NOT-A-PRODUCT"), {"product_name": None, "rate": None})
 
 
 class TestProductDetailsScript(unittest.TestCase):

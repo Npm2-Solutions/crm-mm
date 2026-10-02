@@ -29,7 +29,6 @@ SECRETS = {
 	"FCRM Settings": ("access_key",),
 	"CRM Meta Settings": ("webhook_verify_token",),
 	"CRM Exotel Settings": ("api_key", "webhook_verify_token"),
-	"ERPNext CRM Settings": ("api_key",),
 	"CRM Booking Connection": ("webhook_token",),
 }
 
@@ -40,7 +39,6 @@ PLAIN_TEXT = {
 	("CRM Meta Settings", "webhook_verify_token"): "plain-meta-token",
 	("CRM Exotel Settings", "api_key"): "plain-exotel-key",
 	("CRM Exotel Settings", "webhook_verify_token"): "plain-exotel-token",
-	("ERPNext CRM Settings", "api_key"): "plain-erpnext-key",
 }
 
 
@@ -122,11 +120,6 @@ class TestSecretsAreNotHandedOut(SecretsTestCase):
 		save_single("CRM Exotel Settings", enabled=0, api_key="exotel-key", webhook_verify_token="exo-verify")
 		self.assert_single_masked_for(MANAGER, "CRM Exotel Settings", "api_key", "exotel-key")
 		self.assert_single_masked_for(MANAGER, "CRM Exotel Settings", "webhook_verify_token", "exo-verify")
-
-	def test_the_erpnext_key_is_masked_for_a_sales_user(self):
-		save_single("ERPNext CRM Settings", enabled=0, api_key="erpnext-key")
-		for user in (SALES_USER, MANAGER):
-			self.assert_single_masked_for(user, "ERPNext CRM Settings", "api_key", "erpnext-key")
 
 	def test_the_agency_keys_do_not_reach_a_manager_at_all(self):
 		save_single("FCRM Settings", access_key="exchange-live-key")
@@ -246,22 +239,6 @@ class TestSecretsStillWork(SecretsTestCase):
 		finally:
 			frappe.local.request = original
 
-	def test_the_erpnext_client_gets_the_key(self):
-		from crm.fcrm.doctype.erpnext_crm_settings import erpnext_crm_settings as E
-
-		save_single(
-			"ERPNext CRM Settings",
-			enabled=0,
-			erpnext_site_url="https://erp.example.com",
-			api_key="erpnext-key",
-			api_secret="erpnext-secret",
-		)
-		with patch.object(E, "FrappeClient") as client:
-			E.get_erpnext_site_client(frappe.get_single("ERPNext CRM Settings"))
-		client.assert_called_once_with(
-			"https://erp.example.com", api_key="erpnext-key", api_secret="erpnext-secret"
-		)
-
 	def test_the_booking_token_names_its_connection(self):
 		conn = make_connection()
 		token = conn.get_password("webhook_token")
@@ -318,10 +295,10 @@ class TestTheMigrationPatch(SecretsTestCase):
 	def test_nothing_stored_stays_nothing(self):
 		from crm.patches.v1_0.encrypt_integration_secrets import execute
 
-		remove_encrypted_password("ERPNext CRM Settings", "ERPNext CRM Settings", "api_key")
-		frappe.db.set_single_value("ERPNext CRM Settings", "api_key", None)
+		remove_encrypted_password("CRM Exotel Settings", "CRM Exotel Settings", "api_key")
+		frappe.db.set_single_value("CRM Exotel Settings", "api_key", None)
 		execute()
-		self.assertFalse(frappe.db.get_single_value("ERPNext CRM Settings", "api_key"))
+		self.assertFalse(frappe.db.get_single_value("CRM Exotel Settings", "api_key"))
 		self.assertIsNone(
-			frappe.get_single("ERPNext CRM Settings").get_password("api_key", raise_exception=False)
+			frappe.get_single("CRM Exotel Settings").get_password("api_key", raise_exception=False)
 		)

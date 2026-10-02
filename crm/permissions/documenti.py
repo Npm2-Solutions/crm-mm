@@ -54,8 +54,6 @@ SCRITTURA = {
 	# the sales hierarchy: the Manager builds it (it was System Manager's)
 	"CRM Sales Hierarchy": "gerarchia.gestisci",
 	"CRM Service Level Agreement": "assegnazione.regole",
-	# the agency's, the whole page (PR 3): the Manager no longer writes it
-	"ERPNext CRM Settings": "tecnico.erpnext",
 	# core documents the Manager's pages write (PR 3b): see DEL_CORE
 	"Email Template": "modelli_messaggio.gestisci",
 	"Assignment Rule": "assegnazione.regole",
