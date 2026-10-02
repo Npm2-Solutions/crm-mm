@@ -232,6 +232,7 @@ FIELDS = (
 	"phone_number",
 	"label",
 	"enabled",
+	"provider",
 	"source",
 	"number_type",
 	"country",

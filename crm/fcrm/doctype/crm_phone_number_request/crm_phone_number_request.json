@@ -1,0 +1,198 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-02 10:00:00.000000",
+ "description": "A new Italian number asked of Twilio: the documents sent, where Twilio's check is, the numbers bought.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "number_type",
+  "end_user_type",
+  "area_code",
+  "column_break_head",
+  "status",
+  "numbers",
+  "section_who",
+  "requested_by",
+  "requested_on",
+  "column_break_who",
+  "email",
+  "failure",
+  "section_twilio",
+  "regulation_sid",
+  "bundle_sid",
+  "end_user_sid",
+  "column_break_twilio",
+  "address_sid",
+  "document_sids",
+  "section_details",
+  "details"
+ ],
+ "fields": [
+  {
+   "fieldname": "number_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind of number",
+   "options": "mobile\nlocal\ntoll_free",
+   "reqd": 1
+  },
+  {
+   "default": "business",
+   "fieldname": "end_user_type",
+   "fieldtype": "Select",
+   "label": "Whose number",
+   "options": "business\nindividual"
+  },
+  {
+   "description": "For a geographic number: the prefix of its area (02, 06, 011…).",
+   "fieldname": "area_code",
+   "fieldtype": "Data",
+   "label": "Area code"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nIn review\nApproved\nRejected",
+   "read_only": 1
+  },
+  {
+   "description": "Bought with these documents: approved, they are good for more numbers of the same kind.",
+   "fieldname": "numbers",
+   "fieldtype": "Small Text",
+   "label": "Numbers bought",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_who",
+   "fieldtype": "Section Break",
+   "label": "The request"
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "label": "Asked by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "requested_on",
+   "fieldtype": "Datetime",
+   "label": "Asked on",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_who",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Twilio writes here about the documents.",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failure",
+   "fieldtype": "Small Text",
+   "label": "What Twilio found",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_twilio",
+   "fieldtype": "Section Break",
+   "label": "In Twilio"
+  },
+  {
+   "fieldname": "regulation_sid",
+   "fieldtype": "Data",
+   "label": "Regulation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bundle_sid",
+   "fieldtype": "Data",
+   "label": "Bundle",
+   "read_only": 1
+  },
+  {
+   "fieldname": "end_user_sid",
+   "fieldtype": "Data",
+   "label": "End user",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_twilio",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address_sid",
+   "fieldtype": "Data",
+   "label": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "document_sids",
+   "fieldtype": "Small Text",
+   "label": "Documents",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_details",
+   "fieldtype": "Section Break",
+   "label": "What was written"
+  },
+  {
+   "description": "The fields and the address written for Twilio, to try again without writing them twice. Gone once Twilio approves: Twilio has its copy.",
+   "fieldname": "details",
+   "fieldtype": "JSON",
+   "label": "Details",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Phone Number Request",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

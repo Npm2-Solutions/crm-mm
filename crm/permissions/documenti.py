@@ -50,6 +50,7 @@ SCRITTURA = {
 	# the phone: everybody their own line, the manager the others' and the caller IDs
 	"CRM Telephony Agent": "telefono.configura",
 	"CRM Caller ID": "telefono.configura",
+	"CRM Phone Number Request": "telefono.configura",
 	# the sales hierarchy: the Manager builds it (it was System Manager's)
 	"CRM Sales Hierarchy": "gerarchia.gestisci",
 	"CRM Service Level Agreement": "assegnazione.regole",

@@ -295,6 +295,7 @@ has_permission = {
 	"WhatsApp Settings": "crm.permissions.documenti.has_permission",
 	"CRM Telephony Agent": "crm.permissions.documenti.has_permission",
 	"CRM Caller ID": "crm.permissions.documenti.has_permission",
+	"CRM Phone Number Request": "crm.permissions.documenti.has_permission",
 	"CRM Sales Hierarchy": "crm.permissions.documenti.has_permission",
 	"CRM Service Level Agreement": "crm.permissions.documenti.has_permission",
 	"ERPNext CRM Settings": "crm.permissions.documenti.has_permission",
@@ -613,6 +614,8 @@ scheduler_events = {
 		# DottorCloud's space in the centre's Twilio account: the app and the numbers
 		# as somebody may have changed them in the console
 		"crm.telephony.collegamento.assicura",
+		# what Twilio decided of the documents of a new number
+		"crm.telephony.numeri.aggiorna_le_richieste",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
