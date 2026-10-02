@@ -170,7 +170,7 @@ work, with the capability that opens it; never straight into the sidebar.
 ### Notifications (docs/progetto-ghl/43)
 | File | Role |
 |---|---|
-| `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…") |
+| `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations, Twilio's answer on a new number's documents); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…") |
 | `crm/notifiche/regole.py` | The sentences (English, in the catalogue), a sentence with its names in bold, the words of the ones written before, the kind — pure, tested with plain `unittest` (every sentence in `it.po` with the same places) |
 | `crm/notifiche/api.py` | The panel's page with the unread count, where each row opens (decided here), the message's first words where the reader may read them; read, all read, unread again in one query and one signal |
 | `frontend/src/components/Notifications/`, `Notifications.vue`, `pages/MobileNotification.vue`, `stores/notifications.js`, `composables/notifiche.js` + `utils/notifiche.js` | The panel and the phone's page on one list (days, the kind's mark, the dot), listened to once per layout, the brand's toast when one arrives; the look and the days tested |
@@ -178,7 +178,8 @@ work, with the capability that opens it; never straight into the sidebar.
 A module tells somebody something with `avvisa()`: a sentence of `regole` (a new
 one goes in its `FRASI` and in `it.po`) and its names, never words glued
 together; who it is from (nobody when it is DottorCloud); the person or deal it
-opens and what it is about. The panel works out where it opens.
+opens and what it is about. The panel works out where it opens: a kind about a
+settings page opens it (`api.IMPOSTAZIONI`, `apriImpostazioni`).
 
 ### Emails (docs/progetto-ghl/44)
 | File | Role |
@@ -212,6 +213,8 @@ its own document needs nothing more: the answer reaches the person.
 |---|---|
 | `crm/telephony/collegamento_regole.py` | Pure: the two codes before Twilio is asked, a SID masked, the space's name, what a number and the app need to reach DottorCloud (a SIP trunk's number left alone), Twilio's answers in words — tested with plain `unittest` |
 | `crm/telephony/collegamento.py` + `Settings/Telephony/TwilioSettings.vue`, `utils/twilio.js` | The centre pastes Account SID and Auth Token once: DottorCloud makes its space in the account (a subaccount named after the site, found again on reconnecting; a subaccount's codes make it the space), its key and TwiML app, points every number of the space at itself, and keeps only the space's codes; the agency's account the same way (`dottorcloud_twilio` in `common_site_config.json`); `assicura()` every hour, only in a space; Check, Disconnect (the key goes, the space stays) — tested with a fake Twilio (`crm/telephony/tests/twilio_finto.py`) |
+| `crm/telephony/numeri_regole.py` | Pure: the kinds of Italian number and what each is for, whose the number is (a company or a professional), an area's prefix, the regulation's fields and documents in DottorCloud's words, the files Twilio takes, its evaluation line by line, a month's price, approved documents good for the next number — tested with plain `unittest` |
+| `crm/telephony/numeri.py` + `CRM Phone Number Request`, `Settings/Telephony/NewNumberDialog.vue`, `utils/numeri.js` | A new number from DottorCloud: kind and price, the fields with invoicing's details in them, the documents uploaded here, Twilio's evaluation before review (a draft sent again leaves Twilio), every hour how it went with a notification ("Phone", it opens Twilio's page), the number chosen and bought pointed at DottorCloud, released from the numbers' page (only in a space); approved, the files and what was written go |
 
 The account's own token is never stored and never in a log: the codes travel in
 variables named `*_token` and `*_secret`, which a traceback hides, and an error of
@@ -219,6 +222,8 @@ Twilio's is logged with its status and code only. A connection made by hand in t
 Desk (`account_owner` empty) may hold other sites' numbers: nothing is repaired in
 it. Twilio Connect is not used: a Connect app cannot manage numbers, use the
 regulatory API every Italian number needs, nor make the key the browser calls with.
+A document goes to Twilio only from a file the person uploaded for it (private,
+attached to nothing) or a request's own: never another of the site's files.
 
 ### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
 | File | Role |

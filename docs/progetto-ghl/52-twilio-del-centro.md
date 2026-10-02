@@ -113,16 +113,50 @@
 - **Con un account di prova** Twilio fa chiamare solo i numeri verificati e non
   vende numeri italiani: la pagina lo dice e rimanda all'attivazione.
 
-### 2. I numeri (seconda parte)
+### 2. I numeri (seconda parte, fatta)
 
-- **Cercare e comprare** un numero italiano tra quelli che Twilio offre, con il
-  prezzo al mese dalle API dei prezzi.
-- **I documenti**: DottorCloud li compila con quello che sa già del centro (dati
-  della fatturazione: ragione sociale, partita IVA, sede) e chiede il resto (il
-  rappresentante, i due file). Li manda a Twilio, segue l'esito e lo dice a parole.
-  Approvati, il numero si compra con un clic e nasce già puntato a DottorCloud.
-- **Rilasciare un numero**, dargli un nome, dire a che cosa serve: chiamate,
-  SMS, tutte e due.
+In Impostazioni > Telefono > Telefonia > Twilio, sotto il collegamento, «Nuovo
+numero» apre una finestra in tre passi:
+
+1. **Quale numero e di chi.** Mobile, geografico (con il prefisso della zona) o
+   verde, ciascuno con a che cosa serve e il prezzo al mese che Twilio dà oggi
+   (API dei prezzi, nella valuta dell'account). Di chi è: una società o un
+   professionista a suo nome, come dice la fatturazione (il titolare con nome e
+   cognome e senza ragione sociale è un professionista): Twilio chiede documenti
+   diversi. Già qui la finestra dice se Twilio ha numeri pronti di quel tipo, e
+   quali.
+2. **A chi è intestato.** I campi del regolamento di Twilio per l'Italia, con dentro
+   quello che DottorCloud sa del centro (ragione sociale, partita IVA, sede, email:
+   mai la PEC, che può rifiutare le email normali). Un campo che DottorCloud conosce
+   ha le sue parole; gli altri quelle di Twilio.
+3. **I documenti.** Per ogni requisito il documento che lo soddisfa (la visura, una
+   bolletta della sede, il documento del legale rappresentante…), caricato qui: un
+   PDF, un JPEG o un PNG fino a 5 MB, come li prende Twilio. L'indirizzo della sede,
+   quando serve, una volta sola.
+
+**Mandati a Twilio**, DottorCloud crea l'intestatario, l'indirizzo, i documenti con i
+loro file e il pacchetto che li tiene insieme, e chiede subito a Twilio di valutarlo:
+se manca qualcosa la finestra lo dice e la richiesta resta una bozza da correggere
+(rimandandola, la bozza di prima sparisce anche da Twilio); se è tutto in regola va in
+verifica. **Ogni ora DottorCloud chiede a Twilio com'è andata** e lo dice a chi l'ha
+chiesta, tra le notifiche (e per email, se non la legge): aprendola si apre la pagina
+di Twilio. Approvati, i file e quello che era stato scritto spariscono da DottorCloud:
+Twilio ha la sua copia. Rifiutati, la richiesta dice perché e si rimanda con quello
+che era già scritto e i file già caricati.
+
+**Il numero si sceglie** tra quelli che Twilio ha (con le cifre che si vogliono, della
+zona per un geografico) e **si compra con un clic**: nasce puntato a DottorCloud per le
+chiamate e, se è un mobile, per gli SMS, e compare tra i numeri. **I documenti
+approvati valgono anche per il numero dopo** dello stesso tipo e dello stesso
+titolare (della stessa zona, per un geografico): il secondo si compra subito.
+
+**Un numero si rilascia** dalla pagina dei numeri, con una conferma: smette di
+costare e non torna indietro. Solo nello spazio di DottorCloud: un account collegato a
+mano può tenere numeri di altri siti.
+
+**Solo i file del centro vanno a Twilio.** Un documento è un file caricato da chi
+manda la richiesta, privato e non attaccato a nient'altro, o un file di una richiesta
+di prima: nessun altro file del sito (il referto di un paziente) può partire da qui.
 
 ### 3. Le chiamate (terza parte)
 
@@ -185,6 +219,9 @@
 | `crm/telephony/collegamento.py` | Il collegamento: lo spazio (nuovo, ritrovato, o il sottoaccount incollato), la chiave, l'app, i numeri puntati a DottorCloud; `assicura()` ogni ora; le chiamate della pagina (`get_twilio_connection`, `connect_twilio`, `connect_agency_twilio`, `check_twilio_connection`, `disconnect_twilio`) |
 | `CRM Twilio Settings` | Di chi è l'account (`account_owner`), l'account (`main_account_sid`, `main_account_name`), lo spazio (`space_sid`, `space_name`), chi l'ha collegato e quando; tutto a permlevel 1, la pagina lo legge dal server |
 | `frontend/src/components/Settings/Telephony/TwilioSettings.vue` + `utils/twilio.js` | La pagina: i tre passi, i due codici, lo stato, Controlla, Scollega; le stesse regole dei codici del server — provate |
+| `crm/telephony/numeri_regole.py` | Senza sito: i tipi di numero e a che cosa servono, di chi è il numero, il prefisso di una zona, i campi e i documenti del regolamento con le parole di DottorCloud, i file che Twilio prende, la valutazione di Twilio riga per riga, il prezzo al mese, i documenti approvati che valgono per il numero dopo — provato con `unittest` |
+| `crm/telephony/numeri.py` + `CRM Phone Number Request` | Le richieste: l'offerta (`get_number_offer`), i requisiti (`get_number_requirements`, con quello che era scritto per rimandarla), i numeri pronti (`search_numbers`), l'invio (`send_number_request`: solo i file del centro), ogni ora `aggiorna_le_richieste` con l'avviso, l'acquisto (`buy_number`), il rilascio (`release_number`), il togliere una bozza (`delete_number_request`) |
+| `frontend/src/components/Settings/Telephony/NewNumberDialog.vue` + `utils/numeri.js` | La finestra del nuovo numero e la scelta del numero; le richieste sulla pagina di Twilio, il rilascio sulla pagina dei numeri; il prezzo, il prefisso, i file e cosa manca prima di mandare — provati |
 
 ## Da decidere
 
