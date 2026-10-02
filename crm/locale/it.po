@@ -40583,3 +40583,15 @@ msgstr "Ha fermato gli SMS il"
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 msgid "Wrote STOP to the centre's SMS: no automatic SMS reaches the person until they write START."
 msgstr "Ha scritto STOP agli SMS del centro: nessun SMS automatico le arriva finché non scrive START."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "One number, and it does not reach {brand}."
+msgstr "Un numero, e non arriva a {brand}."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "{0} numbers, and none of them reaches {brand}."
+msgstr "{0} numeri, e nessuno arriva a {brand}."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "{0} numbers, one of them does not reach {brand}."
+msgstr "{0} numeri, uno non arriva a {brand}."
