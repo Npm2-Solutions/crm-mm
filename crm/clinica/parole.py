@@ -24,6 +24,9 @@ PAROLE = {
 	"News in the client area": "News in the patient area",
 	# the waiting list: where one joins it
 	"From the client area": "From the patient area",
+	# the notifications one receives by email too (Settings > Your account)
+	"Questions from the client area": "Questions from the patient area",
+	"What a person asks the centre from their area.": "What a patient asks the centre from their area.",
 	# the area
 	"This area is for the centre's clients.": "This area is for the centre's patients.",
 	"Prepare your appointment": "Prepare your visit",

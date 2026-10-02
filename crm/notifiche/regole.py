@@ -97,6 +97,39 @@ def genere(tipo: str | None, oggetto_doctype: str | None = None, frase: str | No
 	return GENERI.get(tipo or "", "other")
 
 
+# ------------------------------------------------------------------ by email too
+
+#: What somebody may receive by email too, when they have not read it in the panel
+#: within a few minutes, and the kinds in each.
+GRUPPI_EMAIL = {
+	"mentions": ("mention",),
+	"assignments": ("assigned", "unassigned", "task", "task_removed"),
+	"area": ("area",),
+	"messages": ("whatsapp", "sms"),
+	"agenda": ("agenda",),
+	"invoicing": ("invoicing",),
+	"automations": ("automation",),
+}
+#: On until the person says otherwise: what is for them alone. A conversation and
+#: the day's question about the agenda are read in DottorCloud.
+EMAIL_DI_SOLITO = frozenset({"mentions", "assignments", "area", "invoicing", "automations"})
+
+
+def gruppo_email(genere: str) -> str | None:
+	"""The group of the preferences a kind belongs to."""
+	return next((gruppo for gruppo, generi in GRUPPI_EMAIL.items() if genere in generi), None)
+
+
+def vuole_email(genere: str, scelte: dict | None = None) -> bool:
+	"""Whether a kind goes by email too, by the person's choices or the usual ones."""
+	gruppo = gruppo_email(genere)
+	if not gruppo:
+		return False
+	if scelte and gruppo in scelte:
+		return bool(scelte[gruppo])
+	return gruppo in EMAIL_DI_SOLITO
+
+
 # ------------------------------------------------------------------ the words
 
 

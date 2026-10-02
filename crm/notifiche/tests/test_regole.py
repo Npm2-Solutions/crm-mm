@@ -145,3 +145,25 @@ class IlCatalogo(UnitTestCase):
 			self.assertEqual(
 				sorted(re.findall(r"\{\d\}", voci[frase])), sorted(re.findall(r"\{\d\}", frase)), frase
 			)
+
+
+class PerEmail(UnitTestCase):
+	def test_quelle_di_solito(self):
+		self.assertTrue(R.vuole_email("mention"))
+		self.assertTrue(R.vuole_email("task"))
+		self.assertFalse(R.vuole_email("whatsapp"))
+		self.assertFalse(R.vuole_email("agenda"))
+
+	def test_la_scelta_della_persona(self):
+		self.assertTrue(R.vuole_email("sms", {"messages": True}))
+		self.assertFalse(R.vuole_email("mention", {"mentions": False}))
+		# a choice about another group changes nothing here
+		self.assertTrue(R.vuole_email("mention", {"messages": True}))
+
+	def test_un_tipo_senza_gruppo_non_va(self):
+		self.assertFalse(R.vuole_email("other"))
+
+	def test_ogni_tipo_ha_il_suo_gruppo(self):
+		generi = set(R.GENERI.values()) | {"assigned", "unassigned", "task", "task_removed"}
+		for genere in generi:
+			self.assertIsNotNone(R.gruppo_email(genere), genere)

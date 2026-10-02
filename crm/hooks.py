@@ -587,6 +587,11 @@ doc_events = {
 # a notification older than six months goes, read or not (Log Settings, crm.notifiche)
 default_log_clearing_doctypes = {"CRM Notification": 180}
 
+# the framework's emails for an assignment, a mention, a document shared: they named
+# doctypes and IDs and opened the Desk. DottorCloud's notifications go by email in
+# its words instead (crm.notifiche.posta)
+notification_skip_email_types = ["Assignment", "Mention", "Share"]
+
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": [
@@ -631,6 +636,8 @@ scheduler_events = {
 			"crm.scheduling.attese.ogni_dieci_minuti",
 		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
+		# what is still unread in the panel after a few minutes, by email to who wants it
+		"*/5 * * * *": ["crm.notifiche.posta.manda_le_email"],
 		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
 		"*/15 * * * *": ["crm.booking_platforms.sync.sync_all"],
 	},
