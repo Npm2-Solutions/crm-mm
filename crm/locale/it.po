@@ -39006,3 +39006,51 @@ msgstr "Apri la trattativa"
 #: crm/preventivi/api.py
 msgid "This deal belongs to somebody else"
 msgstr "Questa trattativa è di un'altra persona"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes proposed"
+msgstr "Preventivi proposti"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes handed to people in the period"
+msgstr "I preventivi consegnati alle persone nel periodo"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes accepted"
+msgstr "Preventivi accettati"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Of the quotes answered in the period, the share accepted"
+msgstr "Dei preventivi che hanno avuto una risposta nel periodo, la quota accettata"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes waiting"
+msgstr "Preventivi in attesa"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "What the quotes still waiting for an answer are worth"
+msgstr "Quanto valgono i preventivi ancora in attesa di risposta"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes waiting: {0}"
+msgstr "Preventivi in attesa: {0}"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes to call back"
+msgstr "Preventivi da richiamare"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "Quotes proposed and not answered yet, the longest waiting first"
+msgstr "I preventivi proposti e ancora senza risposta, prima quelli che aspettano da più tempo"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "No quote is waiting for an answer"
+msgstr "Nessun preventivo aspetta una risposta"
+
+#: crm/dashboard/widgets/quotes.py
+msgid "To call back"
+msgstr "Da richiamare"
+
+#: crm/dashboard/features.py
+msgid "Propose a quote to somebody to see how quotes go"
+msgstr "Proponi un preventivo a qualcuno per vedere come vanno i preventivi"

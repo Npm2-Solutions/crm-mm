@@ -145,6 +145,11 @@ TEMPLATES: tuple[Template, ...] = (
 				Line.of(LIST, "deals_closing_soon", "deals_stale", "deals_recently_won"),
 				Line.of(TABLE, "team_leaderboard"),
 			),
+			section(
+				Line.of(KPI, "quotes_proposed", "quotes_acceptance_rate", "quotes_waiting_value"),
+				Line.of(LIST, "quotes_waiting"),
+				heading=_lt("Quotes"),
+			),
 		),
 	),
 	Template(
