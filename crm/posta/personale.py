@@ -393,6 +393,10 @@ def start_sign_in(provider: str, email_id: str) -> str:
 	)
 	doc.password = None
 	_salva(doc)
+	# signing in, the password it had before is not kept
+	from frappe.utils.password import remove_encrypted_password
+
+	remove_encrypted_password("Email Account", doc.name, "password")
 	return frappe.get_doc("Connected App", app).initiate_web_application_flow(user=user, success_uri=RITORNO)
 
 

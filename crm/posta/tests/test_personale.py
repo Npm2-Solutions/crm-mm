@@ -95,6 +95,9 @@ class LaCasellaDiOgnuno(PersonaleCase):
 		frappe.set_user(MANAGER)
 		self.assertNotIn("giulia@aurora.test", [a.name for a in settings.get_email_accounts()])
 		self.assertNotIn("giulia@aurora.test", [a.name for a in settings.list_email_accounts(outgoing=1)])
+		# nor changes it
+		with self.assertRaises(frappe.PermissionError):
+			settings.update_email_account("giulia@aurora.test", {"enable_outgoing": 0})
 
 	def test_una_casella_del_centro_non_diventa_di_nessuno(self):
 		frappe.set_user(FRONT_DESK)
@@ -142,6 +145,8 @@ class AccediConGoogle(PersonaleCase):
 		).insert(ignore_permissions=True)
 
 	def test_dalla_pagina_di_google_e_ritorno(self):
+		# with a password first, then signing in: the password goes
+		self.collega(indirizzo="giulia@gmail.test")
 		frappe.set_user(FRONT_DESK)
 		self.assertEqual(personale.get_my_email()["sign_in"], {"google": True, "microsoft": False})
 		# the framework commits the state it sends Google: not in a test
@@ -163,6 +168,7 @@ class AccediConGoogle(PersonaleCase):
 			(doc.auth_method, doc.connected_app, doc.connected_user, doc.email_server),
 			("OAuth", self.app.name, FRONT_DESK, "imap.gmail.com"),
 		)
+		self.assertFalse(doc.get_password("password", raise_exception=False))
 
 	def test_senza_l_app_dell_agenzia_no(self):
 		frappe.set_user(FRONT_DESK)
