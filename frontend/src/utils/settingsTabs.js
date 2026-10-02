@@ -73,3 +73,31 @@ export function buildTabs(fields) {
 
   return tabs
 }
+
+const PREDEFINITI_DI_SESSIONE = ['today', 'now', '__user', '__today']
+
+/**
+ * Where a new record starts, as its DocType says: the field's literal default, as
+ * the value its type holds. Defaults that depend on the session (`Today`,
+ * `__user`, `:Company`, an expression) are the server's to fill.
+ */
+export function valorePredefinito(field) {
+  const predefinito = field?.default
+  if (predefinito === undefined || predefinito === null || predefinito === '') {
+    return undefined
+  }
+  const testo = String(predefinito)
+  if (
+    testo.startsWith(':') ||
+    testo.startsWith('eval:') ||
+    PREDEFINITI_DI_SESSIONE.includes(testo.toLowerCase())
+  ) {
+    return undefined
+  }
+  if (['Check', 'Int'].includes(field.fieldtype))
+    return parseInt(testo, 10) || 0
+  if (['Float', 'Currency', 'Percent'].includes(field.fieldtype)) {
+    return parseFloat(testo) || 0
+  }
+  return testo
+}

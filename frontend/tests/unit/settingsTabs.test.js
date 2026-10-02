@@ -1,4 +1,4 @@
-import { buildTabs } from '@/utils/settingsTabs'
+import { buildTabs, valorePredefinito } from '@/utils/settingsTabs'
 
 // The settings screens render a DocType's own layout, so the sections, the order
 // and above all the field descriptions come from the DocType. This is the shape
@@ -126,5 +126,28 @@ describe('buildTabs', () => {
     expect(vuota.columns[0].fields).toEqual([])
     expect(canale).not.toHaveProperty('opened')
     expect(altro.opened).toBe(false)
+  })
+})
+
+describe('valorePredefinito', () => {
+  it('starts a new record where the DocType says', () => {
+    expect(valorePredefinito({ fieldtype: 'Select', default: 'export' })).toBe(
+      'export',
+    )
+    expect(valorePredefinito({ fieldtype: 'Check', default: '1' })).toBe(1)
+    expect(valorePredefinito({ fieldtype: 'Percent', default: '20' })).toBe(20)
+    expect(valorePredefinito({ fieldtype: 'Data' })).toBeUndefined()
+  })
+
+  it("leaves the session's defaults to the server", () => {
+    expect(valorePredefinito({ fieldtype: 'Date', default: 'Today' })).toBe(
+      undefined,
+    )
+    expect(valorePredefinito({ fieldtype: 'Link', default: ':Company' })).toBe(
+      undefined,
+    )
+    expect(valorePredefinito({ fieldtype: 'Link', default: '__user' })).toBe(
+      undefined,
+    )
   })
 })
