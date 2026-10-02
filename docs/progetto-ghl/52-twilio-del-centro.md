@@ -194,13 +194,38 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   ora `assicura()` li rimette come li ha scelti il centro. Un account collegato a
   mano dall'agenzia resta com'è.
 
-### 4. Gli SMS (quarta parte)
+### 4. Gli SMS (quarta parte, fatta)
 
-- **Un mittente del centro** per tutti i messaggi automatici (promemoria, lista
-  d'attesa, area clienti, automazioni): il suo nome, o il numero mobile se vuole le
-  risposte. Oggi ce ne sono quattro, uno per posto.
-- **«STOP»** in risposta toglie il consenso agli SMS promozionali, dal registro dei
-  consensi.
+- **Un mittente del centro (fatto).** Tutti gli SMS del centro partono da un solo
+  mittente, scelto in Impostazioni → Telefono → Telefonia → Twilio, «Mittente degli
+  SMS»: il nome del centro (fino a 11 lettere senza accenti, cifre e spazi, non solo
+  cifre: Twilio lo prende senza registrarlo), a cui nessuno può rispondere, o uno dei
+  numeri dello spazio che mandano SMS, quando il centro vuole le risposte. Senza una
+  scelta parte dal primo di quei numeri, altrimenti da un nome fatto con quello del
+  centro. Prima ogni posto aveva il suo: l'SMS scritto a mano partiva dalla linea di
+  chi scriveva (e un fisso italiano non manda SMS), le automazioni dalla linea di un
+  operatore qualsiasi, la lista d'attesa e l'area clienti dal numero scritto nelle
+  loro pagine. La patch `the_centre_sends_sms_from_one_sender` fa di quel numero il
+  mittente; le due pagine ora dicono da dove partono gli SMS e portano a quella di
+  Twilio.
+- **STOP e START (fatto).** Un SMS che è solo una parola per fermare (STOP, BASTA,
+  CANCELLAMI, DISISCRIVIMI, UNSUBSCRIBE…, in italiano o in inglese, scritta in
+  qualsiasi modo) ferma gli SMS automatici del centro per quella persona
+  (`CRM Lead.sms_opt_out`, con il momento): le automazioni lo saltano («Ha scritto
+  STOP agli SMS del centro: non inviato»), la lista d'attesa manda la proposta per
+  email, l'area non manda più le novità per SMS. Nel registro dei consensi il
+  consenso al marketing è ritirato «Per SMS», o rifiutato se non era mai stato
+  chiesto. La persona riceve la risposta («Non riceverà più gli SMS automatici di
+  Centro Aurora. Scriva START per riceverli di nuovo.»), che resta nella
+  conversazione. START li fa ripartire, il consenso no: si chiede di nuovo come
+  sempre. Chi scrive a mano a quella persona lo vede sopra il box, e il suo SMS parte
+  lo stesso. Una parola sola non fa partire le automazioni sugli SMS ricevuti. A un
+  nome come mittente nessuno può rispondere, nemmeno STOP: chi manda SMS
+  promozionali sceglie un numero.
+- **Gli orari delle promozioni (fatto).** Un SMS di un'automazione che chiede il
+  consenso al marketing parte dal lunedì al sabato, dalle 8 alle 22; scritto fuori da
+  quegli orari aspetta il primo momento buono (le regole di Twilio per l'Italia). Un
+  promemoria del centro, che il consenso non lo chiede, parte quando deve.
 
 ### 5. Costi e controlli (quinta parte)
 
@@ -252,6 +277,9 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 | `crm/telephony/uscita_regole.py` | Senza sito: dove può andare una chiamata (i paesi scelti, mai un numero a pagamento, un numero italiano anche senza +39), il cellulare italiano che l'AGCOM blocca, i permessi di Twilio da mettere — provato con `unittest` |
 | `crm/telephony/uscita.py` + `CRM Twilio Settings.allowed_countries` | Le chiamate in uscita: `check_number` e `get_outbound_numbers` per la finestra, `perche_no` e `numero_da_mostrare` per `voice`, `allinea_i_paesi` (al salvataggio, al collegamento, ogni ora, solo nello spazio) |
 | `frontend/src/components/Telephony/TwilioCallUI.vue` + `utils/chiamate.js` | La finestra della chiamata: il numero da mostrare, l'avviso AGCOM, il tastierino; i paesi sulla pagina di Twilio — le stesse regole del server, provate |
+| `crm/telephony/sms_regole.py` | Senza sito: il nome del mittente che Twilio prende, quello fatto con il nome del centro, un messaggio che è solo STOP o START, gli orari delle promozioni — provato con `unittest` |
+| `crm/telephony/sms.py` + `CRM Twilio Settings` (`sms_from`, `sms_sender_name`, `sms_sender_number`) | Il mittente di tutti gli SMS (`mittente()`) e le opzioni della pagina (`get_sms_sender_options`); STOP e START (`ascolta`, `ferma`, `riprendi`, `ha_fermato`) da `incoming_sms_handler`, la risposta tenuta nella conversazione |
+| `frontend/src/components/Settings/SmsSenderLine.vue`, `Activities/SMSBox.vue` | Da dove partono gli SMS, sulle pagine dell'area e della lista d'attesa; sopra il box, la persona che ha scritto STOP |
 
 ## Da decidere
 
