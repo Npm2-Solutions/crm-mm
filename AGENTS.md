@@ -501,6 +501,10 @@ acts with (`--brand-action`, never the darkest gray), `--brand-segno` for a mark
 that is not under words (progress), a required field's mark `segno-obbligatorio`.
 A new mark of the brand goes in `espresso.css`, for every screen at once, never as
 one screen's colours.
+An element whose tag is chosen while drawing is `ElementoNativo`
+(`components/ElementoNativo.js`), never `<component :is="'button'">`: Vue resolves
+the name to frappe-ui's Button, registered for the whole app, and the card becomes
+a 28px-high button with its words cut to one line.
 
 ### The first steps (docs/progetto-ghl/37)
 | File | Role |

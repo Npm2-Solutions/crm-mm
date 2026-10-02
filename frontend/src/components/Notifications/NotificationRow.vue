@@ -12,9 +12,12 @@
   <div
     class="group relative flex items-start gap-1 rounded px-2 py-2.5 hover:bg-surface-gray-2"
   >
+    <!-- a row without a page of its own opens what it is about by itself -->
     <component
-      :is="riga.route ? RouterLink : 'button'"
-      v-bind="riga.route ? { to: riga.route } : { type: 'button' }"
+      :is="riga.route ? RouterLink : ElementoNativo"
+      v-bind="
+        riga.route ? { to: riga.route } : { tag: 'button', type: 'button' }
+      "
       class="flex min-w-0 flex-1 items-start gap-3 rounded text-left focus-visible:[outline:var(--focus-outline-default)] focus-visible:outline-offset-2"
       @click="emit('opened', riga)"
     >
@@ -72,6 +75,7 @@
 </template>
 
 <script setup>
+import ElementoNativo from '@/components/ElementoNativo'
 import NotificationMark from '@/components/Notifications/NotificationMark.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { sanitizeHTML } from '@/utils'
