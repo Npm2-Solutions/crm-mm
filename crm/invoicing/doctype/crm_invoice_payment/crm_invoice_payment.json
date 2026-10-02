@@ -19,7 +19,7 @@
    "fieldname": "payment_method",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Method",
+   "label": "Payment method",
    "options": "MP01\nMP02\nMP03\nMP04\nMP05\nMP06\nMP07\nMP08\nMP09\nMP10\nMP11\nMP12\nMP13\nMP14\nMP15\nMP16\nMP17\nMP18\nMP19\nMP20\nMP21\nMP22\nMP23",
    "reqd": 1
   },
@@ -63,7 +63,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-09 10:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice Payment",

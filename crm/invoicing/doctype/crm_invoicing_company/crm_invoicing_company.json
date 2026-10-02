@@ -123,7 +123,7 @@
    "label": "Issuer"
   },
   {
-   "description": "The Denominazione on the invoice, or the practice name for a professional.",
+   "description": "The name on the invoice: the company's, or the practice's for a professional.",
    "fieldname": "company_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -132,7 +132,7 @@
    "unique": 1
   },
   {
-   "description": "For a professional invoicing in their own name: FatturaPA wants Nome and Cognome, not a Denominazione.",
+   "description": "For a professional invoicing in their own name: the invoice wants first name and surname, not a company name.",
    "fieldname": "first_name",
    "fieldtype": "Data",
    "label": "First name"
@@ -194,10 +194,9 @@
   },
   {
    "default": "RF01",
-   "description": "RF01 Regime ordinario · RF02 Contribuenti minimi (art. 1, c. 96-117, L. 244/2007) · RF04 Agricoltura e attivita' connesse e pesca (artt. 34 e 34-bis, DPR 633/72) · RF19 forfettario",
    "fieldname": "tax_regime",
    "fieldtype": "Select",
-   "label": "Regime fiscale",
+   "label": "Tax regime",
    "options": "RF01\nRF02\nRF04\nRF05\nRF06\nRF07\nRF08\nRF09\nRF10\nRF11\nRF12\nRF13\nRF14\nRF15\nRF16\nRF17\nRF18\nRF19",
    "reqd": 1
   },
@@ -300,7 +299,7 @@
   {
    "fieldname": "sole_shareholder",
    "fieldtype": "Select",
-   "label": "Sole shareholder",
+   "label": "Shareholders",
    "options": "\nSU\nSM"
   },
   {
@@ -357,16 +356,16 @@
    "label": "Pension fund and withholding"
   },
   {
-   "description": "TC01 Cassa Nazionale Previdenza e Assistenza Avvocati e Procuratori legali · TC02 Cassa Previdenza Dottori Commercialisti ... TC22 INPS",
+   "description": "The fund whose contribution goes on the invoice, if any.",
    "fieldname": "fund_type",
    "fieldtype": "Select",
-   "label": "Fund",
+   "label": "Pension fund",
    "options": "\nTC01\nTC02\nTC03\nTC04\nTC05\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC12\nTC13\nTC14\nTC15\nTC16\nTC17\nTC18\nTC19\nTC20\nTC21\nTC22"
   },
   {
    "fieldname": "fund_rate",
    "fieldtype": "Percent",
-   "label": "Rate"
+   "label": "Contribution rate"
   },
   {
    "fieldname": "fund_mandatory",
@@ -391,20 +390,20 @@
    "default": "20",
    "fieldname": "withholding_rate",
    "fieldtype": "Percent",
-   "label": "Rate"
+   "label": "Withholding rate"
   },
   {
    "default": "RT01",
    "fieldname": "withholding_type",
    "fieldtype": "Select",
-   "label": "Type",
+   "label": "Withholding type",
    "options": "RT01\nRT02\nRT03\nRT04\nRT05\nRT06"
   },
   {
    "default": "A",
    "fieldname": "payment_reason",
    "fieldtype": "Data",
-   "label": "Causale pagamento",
+   "label": "Withholding reason (Modello 770)",
    "length": 2
   },
   {
@@ -416,7 +415,7 @@
    "default": "su_originale",
    "fieldname": "stamp_duty_mode",
    "fieldtype": "Select",
-   "label": "Mode",
+   "label": "How the stamp duty is paid",
    "options": "su_originale\nvirtuale\nnon_dovuto"
   },
   {
@@ -474,7 +473,7 @@
   },
   {
    "default": "{anno}/{serie}/{numero}",
-   "description": "Validated against the Sistema TS alphabet at the first document, not at the first submission: at most 20 characters of [A-Za-z0-9_./-].",
+   "description": "At most 20 characters: letters, digits and _ . / - (what the Sistema TS accepts). Checked at the first document.",
    "fieldname": "number_format",
    "fieldtype": "Data",
    "label": "Format",
@@ -492,7 +491,7 @@
   },
   {
    "default": "analogico_con_copia",
-   "description": "A document that transits the SdI is electronic by definition, and the Agenzia's free service preserves it. This choice is about the documents that never transit - healthcare towards a natural person, which is forbidden from the SdI, and PDF-only documents. analogico_con_copia keeps a paper original and needs nobody; elettronica_extra_sdi makes them born electronic, and then somebody has to be paid to preserve them (Circolare 18/E 2014).",
+   "description": "The invoices that never go through the SdI: a healthcare service to a private person, a document given only as a PDF (Circolare 18/E 2014).",
    "fieldname": "document_mode",
    "fieldtype": "Select",
    "label": "Documents outside the SdI",
@@ -500,7 +499,7 @@
   },
   {
    "depends_on": "eval:doc.document_mode=='elettronica_extra_sdi'",
-   "description": "Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Under elettronica_extra_sdi these need a preservation provider of their own - or switch the mode back and keep the paper original.",
+   "description": "Healthcare invoices to a private person never go through the SdI, so the Agenzia's free service cannot keep them: born electronic, they need a preservation service of their own. Or go back to the paper original.",
    "fieldname": "conservation_local",
    "fieldtype": "Select",
    "label": "Preservation, documents outside the SdI",
@@ -537,16 +536,16 @@
   },
   {
    "default": "export",
-   "description": "Export produces the file and asks nothing: it is what a practice that has not signed with a provider yet can use on day one. PEC and provider each need their own configuration, and the onboarding checklist says which.",
+   "description": "Downloading the file needs nothing and works from the first day; PEC and the provider each need setting up, and the list at the top says what is missing.",
    "fieldname": "sdi_mode",
    "fieldtype": "Select",
-   "label": "Transmission",
+   "label": "How invoices reach the SdI",
    "options": "export\npec\nprovider"
   },
   {
    "default": "uscita",
    "depends_on": "eval:doc.sdi_mode=='provider'",
-   "description": "uscita sends invoices and brings back their notices, and nothing else. entrambi also files the invoices suppliers send you - a register of what arrived, not an accounting system: no matching, no approval, no posting. Switch it on only where somebody will read it, because an inbox nobody opens is worse than none.",
+   "description": "With incoming invoices too, the ones your suppliers send are filed here: a register of what arrived, not accounts (no matching, no approval). Turn it on only where somebody will read them.",
    "fieldname": "sdi_flow",
    "fieldtype": "Select",
    "label": "Which direction",
@@ -555,7 +554,7 @@
   {
    "default": "sandbox",
    "depends_on": "eval:doc.sdi_mode=='provider'",
-   "description": "sandbox reaches nobody: the SdI never sees the document and the client never gets it. It is the default so the first real invoice is not the first test. Every document sent from here is stamped with the environment it left through, so a rehearsal can never be mistaken for an issued invoice - but nothing is actually issued until this says production.",
+   "description": "In test nothing reaches the SdI or the client: it is where to start, so the first real invoice is not the first test. Every document keeps the environment it left through.",
    "fieldname": "provider_environment",
    "fieldtype": "Select",
    "label": "Environment",
@@ -565,7 +564,7 @@
    "depends_on": "eval:doc.sdi_mode=='provider'",
    "fieldname": "sdi_provider",
    "fieldtype": "Data",
-   "label": "Provider"
+   "label": "Provider name"
   },
   {
    "depends_on": "eval:doc.sdi_mode=='provider'",
@@ -640,31 +639,32 @@
   },
   {
    "default": "non_sanitario",
-   "description": "The category of whoever issues. In a facility it diverges from the performer's, and it is this one the tracciato validates against.",
+   "description": "It decides which expense types the invoices can carry: in a facility it is the facility, not the professional who performed.",
    "fieldname": "sender_category",
    "fieldtype": "Select",
-   "label": "Sender category",
+   "label": "Who issues, for the Sistema TS",
    "options": "non_sanitario\nmedico_odontoiatra\nprofessionista_sanitario\nstruttura_autorizzata\nstruttura_accreditata\nveterinario\nfarmacia\nparafarmacia\nottico"
   },
   {
    "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
+   "description": "With the ASL and facility codes, the Codice Proprietario that a facility, a pharmacy or an optician reports with.",
    "fieldname": "region_code",
    "fieldtype": "Data",
-   "label": "codiceRegione",
+   "label": "Region code",
    "length": 3
   },
   {
    "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
    "fieldname": "asl_code",
    "fieldtype": "Data",
-   "label": "codiceAsl",
+   "label": "ASL code",
    "length": 3
   },
   {
    "depends_on": "eval:['struttura_autorizzata','struttura_accreditata','farmacia','parafarmacia','ottico'].includes(doc.sender_category)",
    "fieldname": "ssa_code",
    "fieldtype": "Data",
-   "label": "codiceSSA",
+   "label": "Facility code (SSA)",
    "length": 6
   },
   {
@@ -672,10 +672,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "From the official kit. It expires and is reissued: an expired certificate fails every submission with code 002, silently.",
+   "description": "From the official kit. It expires and is reissued: with an expired one every report is refused, silently.",
    "fieldname": "ts_certificate",
    "fieldtype": "Attach",
-   "label": "SanitelCF.cer"
+   "label": "Sistema TS certificate (SanitelCF.cer)"
   },
   {
    "fieldname": "ts_transmission_section",
@@ -684,22 +684,22 @@
   },
   {
    "default": "credenziali_studio",
-   "description": "credenziali_studio transmits straight from here with the centre's own Sistema TS credentials, and is the default: it costs nothing per document, which is what makes unlimited healthcare invoicing possible as a product rather than as a loss. The credentials belong to the centre and are entered by the centre. intermediario is the same channel for an accountant holding an active mandate. provider hands the tracciato to the intermediary instead - the answer for a centre whose accountant holds the mandate, so the direct route is closed to it. export prepares the file and the centre uploads it from the portal, and stays the tested fallback for all three.",
+   "description": "With the centre's own credentials no document costs anything to report. The credentials belong to the centre and are entered by the centre.",
    "fieldname": "ts_mode",
    "fieldtype": "Select",
-   "label": "Submission mode",
+   "label": "How expenses reach the Sistema TS",
    "options": "credenziali_studio\nintermediario\nprovider\nexport"
   },
   {
    "depends_on": "eval:doc.ts_mode=='provider'",
-   "description": "Where the provider takes the Sistema TS tracciato. The provider's acceptance is not the Sistema TS's: a document leaves here as 'inviato' and only becomes 'accolto' when the real outcome comes back.",
+   "description": "Where the provider takes the expense file. The provider accepting it is not the Sistema TS accepting it: a report reads as sent until the real outcome comes back.",
    "fieldname": "ts_provider_endpoint",
    "fieldtype": "Data",
    "label": "Sistema TS endpoint"
   },
   {
    "default": "sconosciuta",
-   "description": "Not asked for: probed. Rejection 105 means there is no mandate, 106 means there is one.",
+   "description": "Not asked for: the Sistema TS's answer to the first report says it.",
    "fieldname": "ts_delegation_status",
    "fieldtype": "Select",
    "label": "Entratel mandate",
@@ -731,7 +731,7 @@
   },
   {
    "depends_on": "eval:doc.ts_mode=='intermediario'",
-   "description": "On the Entratel channel: codicefiscale-sedetelematica of the intermediary, e.g. 07874631000-000. It travels as opzionale1.",
+   "description": "The intermediary's tax code and Entratel office, for example 07874631000-000.",
    "fieldname": "ts_intermediary_reference",
    "fieldtype": "Data",
    "label": "Entratel reference"
@@ -739,7 +739,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-22 11:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

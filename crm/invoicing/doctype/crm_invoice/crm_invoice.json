@@ -150,10 +150,9 @@
   },
   {
    "default": "TD01",
-   "description": "TD01 Fattura · TD02 Acconto / anticipo su fattura · TD03 Acconto / anticipo su parcella · TD04 Nota di credito · TD05 Nota di debito · TD06 Parcella",
    "fieldname": "document_type",
    "fieldtype": "Select",
-   "label": "Type",
+   "label": "Document type",
    "options": "TD01\nTD02\nTD03\nTD04\nTD05\nTD06\nTD07\nTD08\nTD09\nTD16\nTD17\nTD18\nTD19\nTD20\nTD21\nTD22\nTD23\nTD24\nTD25\nTD26\nTD27\nTD28",
    "reqd": 1
   },
@@ -226,7 +225,7 @@
   },
   {
    "default": "persona_fisica",
-   "description": "persona_fisica, soggetto_iva, pubblica_amministrazione, estero. It decides the channel before anything else does.",
+   "description": "It decides where the invoice goes before anything else does.",
    "fieldname": "recipient_type",
    "fieldtype": "Select",
    "label": "Recipient",
@@ -445,13 +444,13 @@
   {
    "fieldname": "fund_type",
    "fieldtype": "Select",
-   "label": "Fund",
+   "label": "Pension fund",
    "options": "\nTC01\nTC02\nTC03\nTC04\nTC05\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC12\nTC13\nTC14\nTC15\nTC16\nTC17\nTC18\nTC19\nTC20\nTC21\nTC22"
   },
   {
    "fieldname": "fund_rate",
    "fieldtype": "Percent",
-   "label": "Fund rate"
+   "label": "Contribution rate"
   },
   {
    "fieldname": "fund_mandatory",
@@ -483,14 +482,14 @@
    "depends_on": "eval:doc.apply_withholding",
    "fieldname": "withholding_rate",
    "fieldtype": "Percent",
-   "label": "Rate"
+   "label": "Withholding rate"
   },
   {
    "default": "RT01",
    "depends_on": "eval:doc.apply_withholding",
    "fieldname": "withholding_type",
    "fieldtype": "Select",
-   "label": "Type",
+   "label": "Withholding type",
    "options": "RT01\nRT02\nRT03\nRT04\nRT05\nRT06"
   },
   {
@@ -498,7 +497,7 @@
    "depends_on": "eval:doc.apply_withholding",
    "fieldname": "payment_reason",
    "fieldtype": "Data",
-   "label": "Causale pagamento",
+   "label": "Withholding reason (Modello 770)",
    "length": 2
   },
   {
@@ -521,7 +520,7 @@
   {
    "fieldname": "stamp_duty_mode",
    "fieldtype": "Select",
-   "label": "Mode",
+   "label": "How the stamp duty is paid",
    "options": "su_originale\nvirtuale\nnon_dovuto"
   },
   {
@@ -559,17 +558,16 @@
   },
   {
    "default": "MP05",
-   "description": "MP01 Contanti · MP02 Assegno · MP03 Assegno circolare · MP04 Contanti presso Tesoreria · MP05 Bonifico · MP06 Vaglia cambiario · MP07 Bollettino bancario · MP08 Carta di pagamento",
    "fieldname": "payment_method",
    "fieldtype": "Select",
-   "label": "Method",
+   "label": "Payment method",
    "options": "MP01\nMP02\nMP03\nMP04\nMP05\nMP06\nMP07\nMP08\nMP09\nMP10\nMP11\nMP12\nMP13\nMP14\nMP15\nMP16\nMP17\nMP18\nMP19\nMP20\nMP21\nMP22\nMP23"
   },
   {
    "default": "TP02",
    "fieldname": "payment_terms",
    "fieldtype": "Select",
-   "label": "Terms",
+   "label": "Payment terms",
    "options": "TP02\nTP01\nTP03"
   },
   {
@@ -686,7 +684,7 @@
    "default": "I",
    "fieldname": "ts_operation",
    "fieldtype": "Select",
-   "label": "Operation",
+   "label": "Sistema TS operation",
    "options": "I\nV\nR\nC"
   },
   {
@@ -855,7 +853,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-01 09:00:00.000000",
+ "modified": "2026-10-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",
