@@ -38528,3 +38528,15 @@ msgstr "una fattura alla pubblica amministrazione vuole il codice ufficio IPA di
 #: crm/invoicing/documento.py
 msgid "An invoice to the public administration needs the six-character office code of the IPA"
 msgstr "Una fattura alla pubblica amministrazione vuole il codice ufficio IPA di sei caratteri"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Paid before the invoice"
+msgstr "Pagata prima della fattura"
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "A prepaid package, a deposit: otherwise one of the two dates is wrong."
+msgstr "Un pacchetto prepagato, un acconto: altrimenti una delle due date è sbagliata."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Before sending it"
+msgstr "Prima di inviarla"
