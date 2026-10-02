@@ -170,6 +170,12 @@ class Mondo:
 		#: every file uploaded, (account, type, file name, attributes)
 		self.caricati: list[tuple] = []
 		self.regole = {chiave: _sid("RN") for chiave in REGOLE}
+		#: the countries each account may call (Twilio's voice geographic permissions),
+		#: and whether it takes its account's
+		self.paesi: dict[str, set[str]] = {}
+		#: the countries whose special and toll-fraud numbers are open, by account
+		self.rischiosi: dict[str, set[str]] = {}
+		self.eredita: dict[str, bool] = {}
 		#: every search of numbers for sale: (kind, contains)
 		self.cercati: list[tuple] = []
 
@@ -507,6 +513,74 @@ class _Regole:
 		]
 
 
+class _Permessi:
+	"""``client.voice.v1.dialing_permissions`` of one account: its countries, or its
+	account's while it inherits them."""
+
+	INTERRUTTORI = (
+		"low_risk_numbers_enabled",
+		"high_risk_special_numbers_enabled",
+		"high_risk_tollfraud_numbers_enabled",
+	)
+
+	def __init__(self, mondo, conto):
+		self.mondo, self.conto = mondo, conto
+		mondo.paesi.setdefault(conto.sid, {"IT", "US"})
+		mondo.rischiosi.setdefault(conto.sid, set())
+		mondo.eredita.setdefault(conto.sid, True)
+		self.countries = SimpleNamespace(list=self._paesi)
+		self.bulk_country_updates = SimpleNamespace(create=self._aggiorna)
+
+	def settings(self):
+		mondo, conto = self.mondo, self.conto
+
+		def fetch():
+			return SimpleNamespace(dialing_permissions_inheritance=mondo.eredita[conto.sid])
+
+		def update(dialing_permissions_inheritance=None):
+			mondo.eredita[conto.sid] = bool(dialing_permissions_inheritance)
+			mondo.cambi.append((conto.sid, "update DialingPermissionsSettings", conto.sid))
+			return fetch()
+
+		return SimpleNamespace(fetch=fetch, update=update)
+
+	def _di_chi(self) -> str:
+		if self.mondo.eredita[self.conto.sid] and self.conto.owner_account_sid != self.conto.sid:
+			return self.conto.owner_account_sid
+		return self.conto.sid
+
+	def _paesi(self, **filtri):
+		di = self._di_chi()
+		bassi, alti = self.mondo.paesi.get(di, set()), self.mondo.rischiosi.get(di, set())
+		righe = [
+			SimpleNamespace(
+				iso_code=paese,
+				low_risk_numbers_enabled=paese in bassi,
+				high_risk_special_numbers_enabled=paese in alti,
+				high_risk_tollfraud_numbers_enabled=paese in alti,
+			)
+			for paese in sorted(bassi | alti)
+		]
+		chiesti = {k: v for k, v in filtri.items() if k in self.INTERRUTTORI and v is not None}
+		return [r for r in righe if all(getattr(r, k) == v for k, v in chiesti.items())]
+
+	def _aggiorna(self, update_request=None):
+		if self.mondo.eredita[self.conto.sid] and self.conto.owner_account_sid != self.conto.sid:
+			raise TwilioRestException(400, "/BulkCountryUpdates", "Inherits its account's", code=13252)
+		for cambio in json.loads(update_request):
+			paese = cambio["iso_code"]
+			bassi = self.mondo.paesi[self.conto.sid]
+			alti = self.mondo.rischiosi[self.conto.sid]
+			(bassi.add if cambio["low_risk_numbers_enabled"] == "true" else bassi.discard)(paese)
+			aperti = "true" in (
+				cambio["high_risk_special_numbers_enabled"],
+				cambio["high_risk_tollfraud_numbers_enabled"],
+			)
+			(alti.add if aperti else alti.discard)(paese)
+		self.mondo.cambi.append((self.conto.sid, "create BulkCountryUpdate", self.conto.sid))
+		return SimpleNamespace(update_count=len(json.loads(update_request)))
+
+
 class _InVendita:
 	"""``available_phone_numbers("IT").<kind>``: what Twilio has for sale."""
 
@@ -535,6 +609,7 @@ class _Client:
 		self.api = SimpleNamespace(v2010=SimpleNamespace(accounts=_Conti(mondo, conto)))
 		self.numbers = SimpleNamespace(v2=SimpleNamespace(regulatory_compliance=_Regole(mondo, conto)))
 		self.addresses = _InArchivio(mondo, conto, "Address", mondo.indirizzi, "AD")
+		self.voice = SimpleNamespace(v1=SimpleNamespace(dialing_permissions=_Permessi(mondo, conto)))
 		prezzi = SimpleNamespace(phone_number_prices=mondo.prezzi, price_unit="USD", iso_country="IT")
 		self.pricing = SimpleNamespace(
 			v1=SimpleNamespace(

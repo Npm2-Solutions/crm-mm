@@ -234,6 +234,7 @@ def _collega(account_sid: str, auth_token: str, di: str) -> dict:
 	# the keys of before stop working only now that the new one is kept
 	_togli_le_chiavi(cliente, tranne=chiave.sid, anche=vecchia)
 	_aggiorna_i_numeri()
+	_allinea_i_paesi(impostazioni)
 	return {**stato(), "repaired": numeri["sistemati"], "trunked": numeri["a_un_tronco"]}
 
 
@@ -308,6 +309,13 @@ def _togli_le_chiavi(cliente, tranne: str, anche: str | None = None):
 		_registra("DottorCloud: Twilio's old keys", errore)
 
 
+def _allinea_i_paesi(impostazioni=None):
+	"""The countries the space may call, in Twilio as in DottorCloud."""
+	from crm.telephony import uscita
+
+	uscita.allinea_i_paesi(impostazioni)
+
+
 def _aggiorna_i_numeri():
 	"""The list of the numbers, from what the space really has."""
 	from crm.telephony import caller_ids
@@ -334,6 +342,8 @@ def _ripara(impostazioni) -> dict:
 		frappe.db.set_single_value(IMPOSTAZIONI, "twiml_sid", app.sid)
 	if numeri["sistemati"]:
 		_aggiorna_i_numeri()
+	# somebody may have opened other countries in the console
+	_allinea_i_paesi(impostazioni)
 	return {"conto": conto, **numeri}
 
 

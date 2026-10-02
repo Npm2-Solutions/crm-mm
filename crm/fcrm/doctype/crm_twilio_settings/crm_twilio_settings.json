@@ -12,6 +12,7 @@
   "column_break_avmt",
   "record_calls",
   "recording_notice",
+  "allowed_countries",
   "section_break_eklq",
   "account_sid",
   "column_break_yqvr",
@@ -236,12 +237,19 @@
    "options": "User",
    "permlevel": 1,
    "read_only": 1
+  },
+  {
+   "default": "IT",
+   "description": "Where calls may go: country codes separated by commas, IT for Italy. Premium-rate numbers are never called, whatever the country.",
+   "fieldname": "allowed_countries",
+   "fieldtype": "Small Text",
+   "label": "Countries That Can Be Called"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 18:00:00.000000",
+ "modified": "2026-10-02 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Twilio Settings",
