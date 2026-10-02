@@ -16,6 +16,15 @@
   "account_sid",
   "column_break_yqvr",
   "auth_token",
+  "connection_section",
+  "account_owner",
+  "main_account_sid",
+  "main_account_name",
+  "column_break_conn",
+  "space_sid",
+  "space_name",
+  "connected_on",
+  "connected_by",
   "section_break_malx",
   "api_key",
   "twiml_sid",
@@ -150,17 +159,81 @@
    "label": "Recording Notice"
   },
   {
+   "collapsible": 1,
    "fieldname": "sip_section",
    "fieldtype": "Section Break",
-   "label": "SIP Trunking",
-   "collapsible": 1
+   "label": "SIP Trunking"
   },
   {
    "description": "Elastic SIP trunks on this account, refreshed from Twilio. A number handed to a trunk no longer arrives here: Twilio ignores its voice webhook and sends the call to your own SIP infrastructure, so the answering service cannot run on it.",
    "fieldname": "sip_trunks",
    "fieldtype": "Code",
-   "options": "JSON",
    "label": "SIP Trunks",
+   "options": "JSON",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection",
+   "permlevel": 1
+  },
+  {
+   "description": "The account the space lives in: the centre's own, or the agency's for a centre with the agency's front desk. Empty: connected by hand.",
+   "fieldname": "account_owner",
+   "fieldtype": "Select",
+   "label": "Whose Account",
+   "options": "\nCentre\nAgency",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "main_account_sid",
+   "fieldtype": "Data",
+   "label": "Account",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "main_account_name",
+   "fieldtype": "Data",
+   "label": "Account Name",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_conn",
+   "fieldtype": "Column Break",
+   "permlevel": 1
+  },
+  {
+   "description": "The subaccount made in the account for this site, with its own codes: kept after disconnecting, so that connecting again finds it.",
+   "fieldname": "space_sid",
+   "fieldtype": "Data",
+   "label": "Space",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "space_name",
+   "fieldtype": "Data",
+   "label": "Space Name",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "connected_on",
+   "fieldtype": "Datetime",
+   "label": "Connected On",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "connected_by",
+   "fieldtype": "Link",
+   "label": "Connected By",
+   "options": "User",
    "permlevel": 1,
    "read_only": 1
   }
@@ -168,7 +241,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-02 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Twilio Settings",

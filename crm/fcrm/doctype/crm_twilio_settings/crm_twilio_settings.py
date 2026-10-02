@@ -14,6 +14,10 @@ from crm.permissions import livelli
 # and the caller IDs are the centre's (doc 30). The fields are split by permlevel,
 # the methods here by capability: Frappe runs a document's whitelisted method for
 # anyone who can read the document.
+#
+# A space DottorCloud made in an account (``account_owner`` set, doc 52) has its
+# codes, its key and its app from crm.telephony.collegamento: saving the centre's
+# choices here asks Twilio nothing and makes nothing there.
 TECNICO = "tecnico.integrazioni"
 CENTRO = "telefono.configura"
 
@@ -27,15 +31,22 @@ class CRMTwilioSettings(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		account_owner: DF.Literal["", "Centre", "Agency"]
 		account_sid: DF.Data | None
 		api_key: DF.Data | None
 		api_secret: DF.Password | None
 		app_name: DF.Data | None
 		auth_token: DF.Password | None
+		connected_by: DF.Link | None
+		connected_on: DF.Datetime | None
 		enabled: DF.Check
+		main_account_name: DF.Data | None
+		main_account_sid: DF.Data | None
 		record_calls: DF.Check
 		recording_notice: DF.SmallText | None
 		sip_trunks: DF.Code | None
+		space_name: DF.Data | None
+		space_sid: DF.Data | None
 		twilio_apps: DF.Data | None
 		twiml_sid: DF.Data | None
 		verify_webhook_signature: DF.Check
@@ -45,8 +56,13 @@ class CRMTwilioSettings(Document):
 	friendly_resource_name = "DottorCloud"  # System creates TwiML app & API keys with this name.
 
 	def validate(self):
+		self.new_sid = False
+		if self.flags.dal_collegamento:
+			return
 		if self.has_value_changed("enabled"):
 			livelli.verifica_nel_crm(TECNICO, messaggio=_("The agency connects and disconnects Twilio."))
+		if self.account_owner:
+			return
 		old_account_sid = frappe.db.get_single_value("CRM Twilio Settings", "account_sid")
 		if self.account_sid != old_account_sid:
 			self.new_sid = True
@@ -57,7 +73,7 @@ class CRMTwilioSettings(Document):
 	def on_update(self):
 		# Single doctype records are created in DB at time of installation and those field values are set as null.
 		# This condition make sure that we handle null.
-		if not self.account_sid:
+		if not self.account_sid or self.flags.dal_collegamento or self.account_owner:
 			return
 
 		twilio = Client(self.account_sid, self.get_password("auth_token"))
