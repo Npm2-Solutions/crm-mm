@@ -28,6 +28,10 @@ FORMATO_DEFAULT = "{anno}/{serie}/{numero}"
 
 _PLACEHOLDER = re.compile(r"\{(anno|serie|numero)(?::[^}]*)?\}")
 
+#: A test invoice counts on a series of its own (`2026/PROVA-S/1`): the real
+#: numbering starts at one on the day the company goes live, with no hole in it.
+PREFISSO_PROVA = "PROVA"
+
 
 class FormatoNonCompatibile(ValueError):
 	"""The series format would not pass the Sistema TS tracciato."""
@@ -61,6 +65,18 @@ def valida_formato(formato: str, serie: str = "S", anno: int = 2026) -> None:
 				r"at most 20 characters of the alphabet [A-Za-z0-9_./\-]. "
 				"No spaces, accents, '#' or ':'"
 			)
+
+
+def serie_di_prova(serie: str, formato: str = FORMATO_DEFAULT, anno: int = 2026) -> str:
+	"""The series a test invoice is numbered on: `PROVA-S`, or `PS` when the format
+	leaves no room for the word within the Sistema TS's twenty characters."""
+	for candidata in (f"{PREFISSO_PROVA}-{serie}", f"P{serie}"):
+		try:
+			valida_formato(formato, candidata, anno)
+		except FormatoNonCompatibile:
+			continue
+		return candidata
+	return f"P{serie}"
 
 
 def componi_senza_controllo(formato: str, serie: str, anno: int, progressivo: int) -> str:

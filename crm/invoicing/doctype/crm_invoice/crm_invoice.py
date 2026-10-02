@@ -23,7 +23,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, getdate
 
-from crm.invoicing import anagrafica, documento, estensioni, pdf, xml_sdi
+from crm.invoicing import anagrafica, documento, estensioni, pdf, prova, xml_sdi
 from crm.invoicing.engine import fatturapa
 from crm.invoicing.engine.classificazione import GuardiaSdI, guardia_sdi
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
@@ -68,6 +68,8 @@ class CRMInvoice(Document):
 				"<br>".join(problemi),
 				title=_("The document cannot be issued"),
 			)
+		# a company in test issues test invoices, numbered on a series of their own
+		prova.segna(self, preparato["azienda"])
 		documento.numera(self)
 		if self.privacy_opposition and not self.opposition_recorded_on:
 			self.opposition_recorded_on = getdate()

@@ -32,7 +32,13 @@ from crm.invoicing.engine.codici import (
 	TipoDestinatario,
 )
 from crm.invoicing.engine.messaggi import Messaggio, Nome
-from crm.invoicing.engine.numerazione import FormatoNonCompatibile, componi, prossimo, valida_formato
+from crm.invoicing.engine.numerazione import (
+	FormatoNonCompatibile,
+	componi,
+	prossimo,
+	serie_di_prova,
+	valida_formato,
+)
 
 ZERO = Decimal("0.00")
 
@@ -490,6 +496,9 @@ def numera(doc) -> None:
 	serie = (serie or "E").strip()
 	formato = emittente.get("number_format") or "{anno}/{serie}/{numero}"
 	anno = getdate(doc.posting_date).year
+	if cint(doc.get("test_document")):
+		# a test invoice counts on a series of its own: the real one starts at one
+		serie = serie_di_prova(serie, formato, anno)
 
 	try:
 		valida_formato(formato, serie, anno)

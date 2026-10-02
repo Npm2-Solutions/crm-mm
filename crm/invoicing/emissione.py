@@ -20,7 +20,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate
 
-from crm.invoicing import documento, scelte
+from crm.invoicing import documento, prova, scelte
 from crm.invoicing.engine import voci
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.permissions.livelli import puo
@@ -178,6 +178,8 @@ def _vista(doc) -> dict:
 		"name": doc.name if not doc.is_new() else None,
 		"docstatus": cint(doc.docstatus),
 		"document_number": doc.document_number,
+		# issued in test, or - a draft - to be issued while the company is in test
+		"test": bool(cint(doc.test_document)) if not bozza else _in_prova(doc.company),
 		"document_type": _scelta("tipo_documento", doc.document_type or "TD01"),
 		"is_note": (doc.document_type or "") in NOTE,
 		"posting_date": str(getdate(doc.posting_date)) if doc.posting_date else None,
@@ -237,8 +239,16 @@ def _stato(stato: str | None) -> str:
 	"""A transmission state, as the Agenzia words it: «Da inviare», not `da_inviare`."""
 	if not stato or stato == "non_applicabile":
 		return ""
+	if stato == "prova":
+		return _("Test: checked, not sent")
 	parole = stato.replace("_", " ")
 	return parole[:1].upper() + parole[1:]
+
+
+def _in_prova(company: str | None) -> bool:
+	if not company:
+		return False
+	return prova.in_prova(frappe.get_cached_doc("CRM Invoicing Company", company).as_dict())
 
 
 def _forma(company: str | None) -> dict:
@@ -254,6 +264,8 @@ def _forma(company: str | None) -> dict:
 
 def _puo(doc) -> dict:
 	emessa = cint(doc.docstatus) == 1
+	# a test invoice of a company gone live goes nowhere, and needs no correcting
+	superata = bool(cint(doc.test_document)) and not _in_prova(doc.company)
 	return {
 		"save": not emessa and frappe.has_permission(FATTURA, "write" if not doc.is_new() else "create"),
 		"issue": not emessa and frappe.has_permission(FATTURA, "submit"),
@@ -264,12 +276,14 @@ def _puo(doc) -> dict:
 		and not doc.document_number
 		and frappe.has_permission(FATTURA, "delete"),
 		"transmit": emessa
+		and not superata
 		and doc.channel == Canale.SDI
 		and doc.sdi_status == "da_inviare"
 		and puo("fatture.invia"),
 		# refused by the SdI it counts as never issued: corrected with the same number
 		"reopen": emessa and doc.sdi_status == "scartata" and frappe.has_permission(FATTURA, "submit"),
 		"credit_note": emessa
+		and not superata
 		and (doc.document_type or "TD01") not in NOTE
 		and frappe.has_permission(FATTURA, "create"),
 		"pdf": emessa and bool(doc.pdf_file),
@@ -362,6 +376,10 @@ def credit_note(invoice: str) -> dict:
 		frappe.throw(_("Only an issued invoice is corrected with a credit note"))
 	if (originale.document_type or "") in NOTE:
 		frappe.throw(_("A credit note is not corrected with another credit note"))
+	if cint(originale.test_document) and not _in_prova(originale.company):
+		frappe.throw(
+			_("The invoice it corrects was a test: it has no fiscal value, and needs no credit note.")
+		)
 
 	nota = frappe.new_doc(FATTURA)
 	nota.company = originale.company

@@ -16,7 +16,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, flt, getdate
 
-from crm.invoicing import anagrafica, connessione, documento, estensioni
+from crm.invoicing import anagrafica, connessione, documento, prova
 from crm.invoicing.engine.classificazione import GuardiaSdI
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.invoicing.engine.fatturapa import bloccanti
@@ -118,6 +118,8 @@ def send_to_sdi(invoice: str) -> dict:
 		)
 
 	emittente = documento.azienda(fattura)
+	# a test invoice goes nowhere once the company is live: it is about to be gone
+	prova.fuori_dalla_prova(fattura, emittente)
 	try:
 		esito = sdi.invia(fattura, emittente)
 	except sdi.ErroreCanale as errore:
@@ -130,6 +132,10 @@ def send_to_sdi(invoice: str) -> dict:
 			"sdi_sent_on": frappe.utils.now_datetime(),
 			"sdi_identifier": esito.identificativo or fattura.sdi_identifier,
 			"sdi_message": esito.messaggio,
+			# the intermediary renames the file it transmits: the SdI's notices answer
+			# to its name, and its own identifier is the key its updates carry
+			"sdi_filename": esito.nome_file or fattura.sdi_filename,
+			"sdi_provider_id": esito.dettagli.get("provider_id") or fattura.sdi_provider_id,
 			# Stamped on the document, not read back from the company: by the time
 			# somebody asks whether this one was real, the switch will have moved.
 			"sdi_environment": esito.dettagli.get("environment") or fattura.sdi_environment,
@@ -475,100 +481,13 @@ def onboarding_checklist(company: str) -> list[dict]:
 
 	A live list rather than a document nobody opens: it gets shorter, and every row
 	says the consequence of leaving it open - "the agenda will not propose it", "this
-	document will not reach the Sistema TS".
+	document will not reach the Sistema TS". The same list says what going live
+	needs (`crm.invoicing.prova`); the agency's rows only the agency reads.
 	"""
 	frappe.has_permission("CRM Invoicing Company", "read", throw=True)
 	if not frappe.db.exists("CRM Invoicing Company", company):
 		frappe.throw(_("Unknown company {0}").format(company))
-	emittente = frappe.get_cached_doc("CRM Invoicing Company", company).as_dict()
-
-	voci: list[dict] = []
-
-	def manca(condizione: bool, titolo: str, conseguenza: str, campo: str = "") -> None:
-		riga = _riga_mancante(condizione, titolo, conseguenza, campo)
-		if riga:
-			voci.append(riga)
-
-	manca(
-		not emittente.get("tax_id"),
-		_("VAT number"),
-		_("No invoice can be issued: FatturaPA requires it on the issuer."),
-		"tax_id",
-	)
-	manca(
-		not (emittente.get("address_line") and emittente.get("postal_code") and emittente.get("city")),
-		_("Registered office"),
-		_("Electronic invoices cannot be transmitted without it."),
-		"address_line",
-	)
-	manca(
-		emittente.get("stamp_duty_mode") == "virtuale" and not emittente.get("stamp_authorization_number"),
-		_("Stamp duty authorisation"),
-		_("The wording would not satisfy art. 15 DPR 642/72."),
-		"stamp_authorization_number",
-	)
-	manca(
-		not emittente.get("conservation_service"),
-		_("Preservation of the SdI documents"),
-		_(
-			"Ten years is mandatory, and transmitting does not provide it. The Agenzia's service is free but needs an explicit adhesion in Fatture e Corrispettivi, and it only covers invoices from that day on."
-		),
-		"conservation_service",
-	)
-	manca(
-		emittente.get("document_mode") == "elettronica_extra_sdi" and not emittente.get("conservation_local"),
-		_("Preservation of the documents outside the SdI"),
-		_(
-			"Healthcare invoices towards a natural person never transit the SdI, so the Agenzia's free service cannot reach them. Either name a provider for these, or switch back to a paper original and keep that."
-		),
-		"conservation_local",
-	)
-	manca(
-		emittente.get("sdi_mode") == "provider" and not emittente.get("sdi_endpoint"),
-		_("Transmission channel"),
-		_(
-			"The channel is set to an accredited provider but has no endpoint: the XML is written and nothing carries it. Configure it, or fall back to export and upload by hand."
-		),
-		"sdi_endpoint",
-	)
-	manca(
-		emittente.get("sdi_mode") == "provider"
-		and emittente.get("sdi_endpoint")
-		and not connessione.in_produzione(emittente),
-		_("Still on the sandbox"),
-		_(
-			"The channel is configured and working, but aimed at the provider's sandbox: documents sent from here reach nobody. Switch the environment to production once the rehearsal is done."
-		),
-		"provider_environment",
-	)
-	manca(
-		emittente.get("sdi_mode") == "provider"
-		and emittente.get("sdi_endpoint")
-		and not connessione.segreto(emittente, "sdi_webhook_secret"),
-		_("Webhook secret"),
-		_(
-			"Without it the provider has no authenticated way to push notices here, so nobody learns whether an invoice was accepted until somebody looks by hand - which is the failure an intermediary was chosen to prevent."
-		),
-		"sdi_webhook_secret",
-	)
-	manca(
-		emittente.get("sdi_mode") == "pec" and not emittente.get("pec"),
-		_("PEC mailbox"),
-		_("The channel is set to PEC and the company has none: nothing can leave."),
-		"pec",
-	)
-	manca(
-		not frappe.db.count("CRM Service Provider", {"enabled": 1}),
-		_("At least one provider"),
-		_("Nothing can be billed: the line has no qualification and therefore no VAT regime."),
-	)
-	manca(
-		not frappe.db.count("CRM Billable Service", {"enabled": 1}),
-		_("At least one service card"),
-		_("A service without a card is not billable."),
-	)
-	voci.extend(estensioni.controlli_aggiuntivi(emittente))
-	return voci
+	return prova.mancanze(frappe.get_cached_doc("CRM Invoicing Company", company).as_dict())
 
 
 @frappe.whitelist()
@@ -738,7 +657,8 @@ def reconcile_provider(company: str = "") -> dict:
 	on a schedule - because a webhook that was never delivered leaves no trace, and
 	an invoice stuck in `inviato` looks exactly like one that went through.
 	"""
-	from crm.invoicing.sdi import riconciliazione
+	from crm.invoicing import sdi
+	from crm.invoicing.sdi import itala, riconciliazione
 
 	frappe.has_permission("CRM Invoice", "write", throw=True)
 	aziende = (
@@ -749,9 +669,13 @@ def reconcile_provider(company: str = "") -> dict:
 	esiti = {}
 	for nome in aziende:
 		emittente = frappe.get_cached_doc("CRM Invoicing Company", nome).as_dict()
-		if not (emittente.get("sdi_endpoint") or "").strip():
+		if not itala.pronta(emittente) or not riconciliazione.da_chiedere(emittente):
 			continue
-		esiti[nome] = riconciliazione.riconcilia(emittente)
+		try:
+			esiti[nome] = riconciliazione.riconcilia(emittente)
+		except (sdi.ErroreCanale, connessione.ErroreProvider) as errore:
+			# one company the provider cannot answer for does not cost the others theirs
+			esiti[nome] = {"notices": 0, "incoming": 0, "skipped": 0, "problems": [str(errore)[:200]]}
 	return esiti
 
 

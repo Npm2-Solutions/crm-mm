@@ -141,12 +141,17 @@ def presenze() -> list[dict]:
 
 
 def _vendite() -> list[dict]:
-	"""Every confirmed invoice that sold something, with whom it was made out to."""
+	"""Every confirmed invoice that sold something, with whom it was made out to. A
+	test invoice sold nothing."""
 	Invoice = frappe.qb.DocType("CRM Invoice")
 	return (
 		frappe.qb.from_(Invoice)
 		.select(Invoice.name, Invoice.party_type, Invoice.party, Invoice.posting_date)
-		.where((Invoice.docstatus == 1) & IfNull(Invoice.document_type, "").notin(regole.NOTE_DI_CREDITO))
+		.where(
+			(Invoice.docstatus == 1)
+			& (Invoice.test_document == 0)
+			& IfNull(Invoice.document_type, "").notin(regole.NOTE_DI_CREDITO)
+		)
 		.run(as_dict=True)
 	)
 

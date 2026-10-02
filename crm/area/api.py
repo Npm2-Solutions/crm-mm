@@ -485,7 +485,8 @@ def fill_forms(person: str, templates: str | list) -> dict:
 def _fatture(person: str) -> list:
 	return frappe.get_all(
 		"CRM Invoice",
-		filters={"party_type": "CRM Lead", "party": person, "docstatus": 1},
+		# a test invoice is the centre's rehearsal, never the person's
+		filters={"party_type": "CRM Lead", "party": person, "docstatus": 1, "test_document": 0},
 		fields=["name", "document_number", "posting_date", "grand_total", "pdf_file"],
 		order_by="posting_date desc",
 		limit=50,

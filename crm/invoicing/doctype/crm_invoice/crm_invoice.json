@@ -13,6 +13,7 @@
   "payment_date",
   "column_document",
   "document_number",
+  "test_document",
   "series",
   "fiscal_year",
   "sequence",
@@ -90,6 +91,7 @@
   "routing_section",
   "sdi_status",
   "sdi_identifier",
+  "sdi_provider_id",
   "sdi_filename",
   "sdi_sent_on",
   "sdi_message",
@@ -181,6 +183,16 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Number",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Issued while the company was in test: numbered PROVA, it has no fiscal value and reaches nobody.",
+   "fieldname": "test_document",
+   "fieldtype": "Check",
+   "in_standard_filter": 1,
+   "label": "Test invoice",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -644,6 +656,13 @@
    "read_only": 1
   },
   {
+   "fieldname": "sdi_provider_id",
+   "fieldtype": "Data",
+   "label": "Itala's identifier",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "sdi_filename",
    "fieldtype": "Data",
    "label": "XML file name",
@@ -662,6 +681,13 @@
    "read_only": 1
   },
   {
+   "description": "Which environment carried this document. A sandbox invoice reached nobody; it is recorded on the document rather than inferred from today's settings, because the switch will have moved by the time anyone asks.",
+   "fieldname": "sdi_environment",
+   "fieldtype": "Data",
+   "label": "Environment",
+   "read_only": 1
+  },
+  {
    "description": "The applied notices, by file name. A notice applied twice would move a document that had already moved on.",
    "fieldname": "sdi_notices",
    "fieldtype": "Small Text",
@@ -677,7 +703,7 @@
    "fieldname": "ts_status",
    "fieldtype": "Select",
    "label": "Sistema TS",
-   "options": "non_applicabile\nda_inviare\npronto_export\ninviato\naccolto\nscartato\nannullato",
+   "options": "non_applicabile\nda_inviare\npronto_export\ninviato\naccolto\nscartato\nannullato\nprova",
    "read_only": 1
   },
   {
@@ -773,18 +799,18 @@
    "options": "CRM Appointment"
   },
   {
+   "description": "A cycle paid as a whole: its sessions are invoiced here",
    "fieldname": "session_cycle",
    "fieldtype": "Link",
    "label": "Cycle of sessions",
-   "options": "CRM Session Cycle",
-   "description": "A cycle paid as a whole: its sessions are invoiced here"
+   "options": "CRM Session Cycle"
   },
   {
+   "description": "An instalment of a subscription: the subscription's appointments are paid here",
    "fieldname": "subscription",
    "fieldtype": "Link",
    "label": "Subscription",
-   "options": "CRM Subscription",
-   "description": "An instalment of a subscription: the subscription's appointments are paid here"
+   "options": "CRM Subscription"
   },
   {
    "fieldname": "column_references",
@@ -841,19 +867,12 @@
    "label": "Warnings",
    "no_copy": 1,
    "read_only": 1
-  },
-  {
-   "description": "Which environment carried this document. A sandbox invoice reached nobody; it is recorded on the document rather than inferred from today's settings, because the switch will have moved by the time anyone asks.",
-   "fieldname": "sdi_environment",
-   "fieldtype": "Data",
-   "label": "Environment",
-   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-02 12:00:00.000000",
+ "modified": "2026-10-02 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoice",
@@ -890,15 +909,15 @@
    "write": 1
   },
   {
+   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
    "role": "Invoicing User",
-   "create": 1,
-   "write": 1,
-   "submit": 1
+   "submit": 1,
+   "write": 1
   },
   {
    "email": 1,
