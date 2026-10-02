@@ -28,6 +28,7 @@
   "brand_name",
   "brand_logo",
   "favicon",
+  "reply_to_email",
   "calendar_tab",
   "default_reminder_section",
   "default_calendar_view",
@@ -79,6 +80,13 @@
    "fieldname": "favicon",
    "fieldtype": "Attach",
    "label": "Favicon"
+  },
+  {
+   "description": "Where people's answers to the reminders, codes and confirmations the centre sends arrive. Empty: the mailbox where the centre reads its email.",
+   "fieldname": "reply_to_email",
+   "fieldtype": "Data",
+   "label": "Answers to the centre's emails",
+   "options": "Email"
   },
   {
    "default": "0",
@@ -233,7 +241,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-02 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",
