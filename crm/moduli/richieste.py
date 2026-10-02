@@ -51,6 +51,8 @@ from frappe.utils import (
 from crm.moduli import compilazioni, modelli, traccia
 from crm.moduli import schema as S
 from crm.permissions import livelli
+from crm.posta.aspetto import codice as casella
+from crm.posta.aspetto import pulsante
 
 RICHIESTA = compilazioni.RICHIESTA
 #: How long a link stays good, and a tablet handed over.
@@ -330,12 +332,14 @@ def manda_il_link(
 	frappe.sendmail(
 		recipients=[dove["email"]],
 		subject=_("Forms to fill before your visit"),
+		header=_("Forms to fill before your visit"),
+		with_container=True,
 		message="".join(
 			[
 				f"<p>{_('Hello,')}</p>",
 				f"<p>{invito}</p>",
-				f'<p><a href="{_indirizzo(token)}">{_("Open the forms")}</a></p>',
-				f"<p>{avviso.format(format_datetime(scadenza, 'd MMMM, HH:mm'))}</p>",
+				pulsante(_indirizzo(token), _("Open the forms")),
+				f'<p class="text-muted text-small">{avviso.format(format_datetime(scadenza, "d MMMM, HH:mm"))}</p>',
 			]
 		),
 		reference_doctype=RICHIESTA,
@@ -583,11 +587,23 @@ def send_code(token: str) -> dict:
 			"code_attempts": 0,
 		}
 	)
-	testo = _("Your code to open the forms is <b>{0}</b>. It is valid for {1} minutes.")
+	esc = escape_html
 	posta = frappe.sendmail(
 		recipients=[email],
 		subject=_("Your code: {0}").format(codice),
-		message=f"<p>{testo.format(codice, MINUTI_CODICE)}</p>",
+		header=_("Your code"),
+		with_container=True,
+		message="".join(
+			[
+				"<p>{}</p>".format(esc(_("Here is the code to open the forms:"))),
+				casella(codice),
+				'<p class="text-muted text-small">{}</p>'.format(
+					esc(
+						_("It is valid for {0} minutes. If you did not ask for it, ignore this email.")
+					).format(MINUTI_CODICE)
+				),
+			]
+		),
 		reference_doctype=RICHIESTA,
 		reference_name=capo.name,
 	)

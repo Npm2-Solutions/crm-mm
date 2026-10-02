@@ -24,6 +24,7 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 
+from crm.posta.aspetto import pulsante
 from crm.scheduling import attese as A
 from crm.scheduling import attese_regole as R
 from crm.scheduling.timeutils import scheduling_tz
@@ -164,9 +165,7 @@ def _email_d_ingresso(voce, segreto: str) -> None:
 	try:
 		servizio = A._nome_servizio(voce.service)
 		centro = nome_del_centro() or _("the centre")
-		righe = [
-			f"<p><b>{esc(_('You are on the waiting list for {0} at {1}').format(servizio, centro))}</b></p>"
-		]
+		righe = [f"<p>{esc(_('You are on the waiting list for {0} at {1}').format(servizio, centro))}</p>"]
 		if voce.contact:
 			righe.append(f"<p>{esc(_('For {0}').format(voce.lead_name))}</p>")
 		if voce.class_session:
@@ -180,12 +179,12 @@ def _email_d_ingresso(voce, segreto: str) -> None:
 		righe.append(
 			f"<p>{esc(_('When a place frees up we write to you: it goes to whoever confirms first.'))}</p>"
 		)
-		righe.append(
-			f'<p><a href="{esc(A.link_della_pagina(segreto))}">{esc(_("See or leave the waiting list"))}</a></p>'
-		)
+		righe.append(pulsante(A.link_della_pagina(segreto), _("See or leave the waiting list")))
 		frappe.sendmail(
 			recipients=[email],
 			subject=_("You are on the waiting list — {0}").format(servizio),
+			header=_("You are on the waiting list"),
+			with_container=True,
 			message="".join(righe),
 			reference_doctype=A.VOCE,
 			reference_name=voce.name,

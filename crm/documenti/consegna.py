@@ -247,16 +247,30 @@ def deliver_online(document: str, send_email: int = 1, days: int | None = None) 
 
 def _manda_il_link(email: str, link: str, scadenza) -> None:
 	from crm.moduli.richieste import nome_del_centro
+	from crm.posta.aspetto import pulsante
 
 	centro = nome_del_centro() or _("your centre")
+	esc = frappe.utils.escape_html
 	frappe.sendmail(
 		recipients=[email],
 		subject=_("A document from {0} is ready").format(centro),
-		message=_(
-			"<p>A document from {0} is ready for you.</p>"
-			'<p><a href="{1}">Open it here</a>, until {2}.</p>'
-			"<p>You will need the code the centre gave you: it is not in this email.</p>"
-		).format(frappe.utils.escape_html(centro), link, frappe.utils.format_date(scadenza)),
+		header=_("A document is ready for you"),
+		with_container=True,
+		message="".join(
+			[
+				"<p>{}</p>".format(
+					esc(
+						_("{0} has a document ready for you: you can open it until {1}.").format(
+							centro, frappe.utils.format_date(scadenza)
+						)
+					)
+				),
+				pulsante(link, _("Open the document")),
+				'<p class="text-muted text-small">{}</p>'.format(
+					esc(_("You will need the code the centre gave you: it is not in this email."))
+				),
+			]
+		),
 		now=False,
 	)
 

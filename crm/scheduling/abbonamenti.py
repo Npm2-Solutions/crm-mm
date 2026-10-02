@@ -478,6 +478,8 @@ def _ricorda(doc) -> None:
 	frappe.sendmail(
 		recipients=[email],
 		subject=_("Your subscription ends soon: {0}").format(quando),
+		header=_("Your subscription ends soon"),
+		with_container=True,
 		message="".join(righe),
 		reference_doctype=ABBONAMENTO,
 		reference_name=doc.name,

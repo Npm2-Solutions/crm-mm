@@ -93,6 +93,8 @@ class CRMInvitation(Document):
 		frappe.sendmail(
 			recipients=self.email,
 			subject=_("You have been invited to join {0}").format(title),
+			header=frappe.utils.escape_html(_("You have been invited to join {0}").format(title)),
+			with_container=True,
 			template=template,
 			args={"title": title, "invite_link": invite_link},
 			now=True,

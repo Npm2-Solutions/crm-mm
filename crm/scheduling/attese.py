@@ -44,6 +44,7 @@ from frappe.utils import (
 )
 
 from crm.permissions import livelli
+from crm.posta.aspetto import pulsante
 from crm.scheduling import attese_regole as R
 from crm.scheduling.availability import get_slots, party_busy
 from crm.scheduling.timeutils import UTC, day_bounds, from_system_naive, scheduling_tz, to_system_naive
@@ -689,12 +690,14 @@ def _per_email(voce, email: str, testo: dict) -> None:
 		+ (f"<br>{esc(_('For {0}').format(testo['per']))}" if testo["per"] else "")
 		+ "</p>",
 		f"<p>{esc(_('It is yours if you confirm by {0}; then it goes to the next person waiting.').format(testo['entro']))}</p>",
-		f'<p><a href="{esc(testo["link"])}"><b>{esc(_("Confirm or decline"))}</b></a></p>',
-		f"<p>{esc(_('From the same page you can leave the waiting list.'))}</p>",
+		pulsante(testo["link"], _("Confirm or decline")),
+		f'<p class="text-muted text-small">{esc(_("From the same page you can leave the waiting list."))}</p>',
 	]
 	posta = frappe.sendmail(
 		recipients=[email],
 		subject=_("A place has freed up: {0}, {1}").format(testo["servizio"], testo["quando"]),
+		header=_("A place has freed up"),
+		with_container=True,
 		message="".join(righe),
 		reference_doctype=VOCE,
 		reference_name=voce.name,
@@ -891,10 +894,7 @@ def _conferma_al_cliente(voce, appuntamento, segreto: str) -> None:
 		servizio = _nome_servizio(voce.service)
 		inizio, fine = _utc(appuntamento.starts_on), _utc(appuntamento.ends_on)
 		esc = escape_html
-		righe = [
-			f"<p><b>{esc(_('Your appointment is booked'))}</b></p>",
-			f"<p>{esc(servizio)}<br>{esc(quando(inizio))}</p>",
-		]
+		righe = [f"<p><b>{esc(servizio)}</b><br>{esc(quando(inizio))}</p>"]
 		if voce.contact:
 			righe.append(f"<p>{esc(_('The appointment is for {0}.').format(voce.lead_name))}</p>")
 		staff = [r.user for r in appuntamento.staff]
@@ -907,7 +907,7 @@ def _conferma_al_cliente(voce, appuntamento, segreto: str) -> None:
 			frappe.db.get_value("CRM Service", voce.service, "bookable_online")
 		)
 		if online:
-			righe.append(f'<p><a href="{manage_url(segreto)}">{esc(_("Manage your booking"))}</a></p>')
+			righe.append(pulsante(manage_url(segreto), _("Manage your booking")))
 		link = _calendar_links(servizio, inizio, fine, appuntamento.location)
 		righe.append(
 			f'<p><a href="{esc(link["google"])}">{esc(_("Add to Google Calendar"))}</a> · '
@@ -919,6 +919,8 @@ def _conferma_al_cliente(voce, appuntamento, segreto: str) -> None:
 		frappe.sendmail(
 			recipients=[email],
 			subject=_("Your appointment is booked — {0}, {1}").format(servizio, quando(inizio)),
+			header=_("Your appointment is booked"),
+			with_container=True,
 			message="".join(righe),
 			attachments=[ics_file(segreto, servizio, inizio, fine, appuntamento.location)],
 			reference_doctype=APPUNTAMENTO,
