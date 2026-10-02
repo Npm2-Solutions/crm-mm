@@ -100,7 +100,7 @@ contatti, note, chiamate, notifiche) e tutto quello che arriva dal server.
   abbinamento delle colonne, anteprima, modello da scaricare) senza traduttore. La
   build ne passa le frasi a `__()` come per gli altri suoi componenti, con una
   seconda radice (`frappe-ui/frappe`): stati, nomi dei DocType e campi nella lingua
-  dell'utente, "Importazione in Pazienti" con la clinica attiva. I pezzi di una
+  dell'utente, "Importazione in Persone", anche con la clinica attiva. I pezzi di una
   stessa frase ("caricalo dal tuo dispositivo o da un foglio Google") prendono un
   contesto.
 - **La barra dell'editor di testo** (grassetto, elenchi, titoli, tabelle): i

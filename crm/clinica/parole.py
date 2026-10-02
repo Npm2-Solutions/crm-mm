@@ -17,10 +17,10 @@ PAROLE = {
 	"Client area": "Patient area",
 	# the agenda's first appointment of a person
 	"First appointment": "First visit",
-	# the settings' group of the people the centre serves, and the booking rules';
-	# the main menu's group and its list of people, the page and its breadcrumbs
+	# the settings' group of the people the centre serves, and the booking rules'.
+	# The list of people stays "People": it holds everybody the centre has heard
+	# from - who asked, a parent, a company's contact - not only its patients
 	"Clients": "Patients",
-	"People": "Patients",
 	"News in the client area": "News in the patient area",
 	# the waiting list: where one joins it
 	"From the client area": "From the patient area",
