@@ -243,8 +243,11 @@ class LeLibrerie(PianiCase):
 		self.come(DOC1)
 		nuovo = piani_clinica.add_food("Merluzzo", "Fish", portion_g=150, kcal=82)
 		self.assertIn(nuovo["name"], [c["name"] for c in piani_clinica.search_foods("merl")])
-		# the site may have its own fish: the filter keeps to the group
-		pesci = piani_clinica.search_foods(group="Fish")
+		# the library has hundreds of fish: the filter keeps to the group, and the
+		# name that is just the word comes first
+		pesci = piani_clinica.search_foods("merluzzo", group="Fish")
+		self.assertEqual(pesci[0]["food_name"], "Merluzzo")
+		self.assertIn(nuovo["name"], [c["name"] for c in pesci if c["food_name"] == "Merluzzo"])
 		self.assertIn(nuovo["name"], [c["name"] for c in pesci])
 		self.assertEqual({c["food_group"] for c in pesci}, {"Fish"})
 		with self.assertRaises(frappe.ValidationError):

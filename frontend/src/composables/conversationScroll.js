@@ -29,14 +29,18 @@ export function atTheEnd(scrollTop, scrollHeight, clientHeight, near = NEAR) {
  * SMS — so it is shown only once all of them have (`arrived`), already placed:
  * shown as soon as the first part came in, it jumped when the rest did.
  *
+ * A link to one message — a notification's, `#<name>` — opens on that message
+ * instead (`target`), marked for a moment, until they move.
+ *
  * @param {import('vue').Ref<HTMLElement|null>} scroller
  * @param {{ newestFirst: import('vue').Ref<boolean>,
  *           readsFromTheEnd: import('vue').Ref<boolean>,
- *           arrived?: import('vue').Ref<boolean> }} options
+ *           arrived?: import('vue').Ref<boolean>,
+ *           target?: import('vue').Ref<string|null> }} options
  */
 export function useConversationScroll(
   scroller,
-  { newestFirst, readsFromTheEnd, arrived },
+  { newestFirst, readsFromTheEnd, arrived, target },
 ) {
   // placed at least once: until then the conversation is not shown
   const settled = ref(false)
@@ -44,6 +48,8 @@ export function useConversationScroll(
   let moved = false
   // at the end, and to be kept there as the conversation grows
   let pinned = true
+  // the message a link opened on, marked once
+  let marked = null
 
   function isAtEnd(el) {
     return atTheEnd(el.scrollTop, el.scrollHeight, el.clientHeight)
@@ -59,6 +65,27 @@ export function useConversationScroll(
   // Opening: the line where the new messages begin, when there is one and the
   // thread reads down; otherwise the end.
   function land(el) {
+    const one =
+      target?.value && el.querySelector('#' + CSS.escape(target.value))
+    if (one) {
+      const top =
+        one.getBoundingClientRect().top -
+        el.getBoundingClientRect().top +
+        el.scrollTop
+      el.scrollTo({
+        top: Math.max(0, top - el.clientHeight / 3),
+        behavior: 'instant',
+      })
+      pinned = isAtEnd(el)
+      if (marked !== target.value) {
+        marked = target.value
+        // the bubble it is drawn in, where there is one
+        const bubble =
+          one.closest('.bubble-lift') || one.querySelector('.bubble-lift')
+        ;(bubble || one).classList.add('dc-segnato')
+      }
+      return
+    }
     const line = !newestFirst.value && el.querySelector('[data-new-line]')
     if (line) {
       const top =

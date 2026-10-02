@@ -648,14 +648,18 @@ import { useDraft } from '@/composables/drafts'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { useTimelinePreferences } from '@/composables/useTimelinePreferences'
-import { WAYS, countByChannel, replyChannel } from '@/utils/conversation'
+import {
+  WAYS,
+  channelOf,
+  countByChannel,
+  replyChannel,
+} from '@/utils/conversation'
 import { markAnswered } from '@/composables/conversationState'
 import { whatsappEnabled } from '@/composables/whatsapp'
 import { smsEnabled } from '@/composables/sms'
 import { useDocument } from '@/data/document'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { Button, createResource, toast } from 'frappe-ui'
-import { useElementVisibility } from '@vueuse/core'
 import { useConversationScroll } from '@/composables/conversationScroll'
 import {
   ref,
@@ -798,16 +802,9 @@ onMounted(() => {
     }
   })
 
-  // the address names a tab (#activity, written in lower case) or a message
-  // to scroll to; «Activity» never matched «activity», so the tab was taken
-  // for a message that does not exist
-  nextTick(() => {
-    const hash = route.hash.slice(1) || null
-    let tabNames = props.tabs?.map((tab) => tab.name.toLowerCase())
-    if (!tabNames?.includes(hash)) {
-      scroll(hash)
-    }
-  })
+  // the conversation opens where it is read: its end, its new messages, or the
+  // message the address names after a tab's place (`target`)
+  nextTick(() => scroll())
 })
 
 function handleDocinfoUpdate({ doc, key }) {
@@ -1139,11 +1136,32 @@ const arrived = computed(
 )
 
 const scroller = ref(null)
+// A link to one comment or message — a notification's — names it after the
+// `#`, where a tab is named otherwise: the conversation opens on it.
+const target = computed(() => {
+  const name = route.hash.slice(1)
+  if (!name || props.tabs?.some((tab) => tab.name.toLowerCase() === name))
+    return null
+  return name
+})
 const { settled, follow, reopen } = useConversationScroll(scroller, {
   newestFirst: isNewestFirst,
   readsFromTheEnd,
   arrived,
+  target,
 })
+
+// …even when the channel read last would hide it: a WhatsApp message opened
+// from a notification, on a record left reading emails, shows every channel
+watch(
+  [arrived, target],
+  ([ready, name]) => {
+    if (!ready || !name || channel.value === 'all') return
+    const item = conversationItems.value.find((one) => one.name === name)
+    if (item && channelOf(item) !== channel.value) channel.value = 'all'
+  },
+  { immediate: true },
+)
 
 // The three lists are made once per person and kept (`cache`): opening the
 // same person again hands back the same lists, already full, and with the
@@ -1161,17 +1179,10 @@ watch(
 // another tab or another channel is another list, opened where it is read
 watch([title, channel], () => reopen())
 
-function scroll(hash) {
+// a link to one message is landed on by the conversation itself (`target`)
+function scroll() {
   if (['tasks', 'notes', 'events'].includes(route.hash?.slice(1))) return
-  if (!hash) return follow()
-  // a link to one message: that message, once it is drawn
-  setTimeout(() => {
-    const el = document.getElementById(hash)
-    if (el && !useElementVisibility(el).value) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      el.focus()
-    }
-  }, 300)
+  follow()
 }
 
 // what somebody has just sent is followed wherever they were reading

@@ -404,6 +404,13 @@
 [data-marchio='dottorcloud'] li.bg-surface-gray-9.rounded-md .text-ink-green-5 {
   color: #5fe0cc;
 }
+/* under the words, what the toast adds - a notification's first words - in the
+   deep block's quieter mint */
+[data-marchio='dottorcloud']
+  li.bg-surface-gray-9.rounded-md
+  [data-description] {
+  color: var(--on-block-deep-muted, #8fc7bd);
+}
 
 /* 21. Waiting, outside a button: the spinner's arc in the brand's colour
        (markup: frappe-ui's Spinner draws in the current colour) */

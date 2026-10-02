@@ -13,6 +13,7 @@ from crm.fcrm.doctype.crm_booking_calendar.crm_booking_calendar import (
 	to_system_naive,
 )
 from crm.marchio import con_nome
+from crm.posta.aspetto import pulsante
 from crm.utils import count_field
 
 BOOKING_SOURCE = "Booking"
@@ -430,14 +431,15 @@ def _send_confirmation(cal, booking, rescheduled: bool = False):
 		location_line += f"<p>{_('Price')}: <b>{price}</b></p>"
 	message = f"""
 		<p>{_("Hi {0},").format(frappe.utils.escape_html(booking.invitee_name))}</p>
-		<p>{_("Your booking is confirmed:")}</p>
 		<p><b>{frappe.utils.escape_html(cal.calendar_name)}</b><br>{when}</p>
 		{location_line}
-		<p><a href="{manage_url(cal, booking)}">{_("Reschedule or cancel")}</a></p>
+		{pulsante(manage_url(cal, booking), _("Reschedule or cancel"))}
 	"""
 	frappe.sendmail(
 		recipients=[booking.invitee_email],
 		subject=subject,
+		header=_("Your booking has been moved") if rescheduled else _("Your booking is confirmed"),
+		with_container=True,
 		message=message,
 		attachments=[_ics_attachment(cal, booking)],
 		reference_doctype="CRM Booking",
@@ -450,11 +452,19 @@ def _notify_agent(booking, subject: str):
 	agent_email = frappe.db.get_value("User", booking.agent, "email")
 	if not agent_email:
 		return
+	esc = frappe.utils.escape_html
 	frappe.sendmail(
 		recipients=[agent_email],
-		subject=f"[{booking.name}] {subject}",
-		message=con_nome(_("{0} ({1}) — status: {2}. Open {brand} for details.")).format(
-			booking.invitee_name, booking.invitee_email, _(booking.status)
+		subject=subject,
+		header=esc(subject),
+		with_container=True,
+		message="<p>{}</p>{}".format(
+			esc(
+				_("{0} ({1}) — status: {2}.").format(
+					booking.invitee_name, booking.invitee_email, _(booking.status)
+				)
+			),
+			pulsante(get_url("/crm/calendar"), con_nome(_("Open the agenda in {brand}"))),
 		),
 		reference_doctype="CRM Booking",
 		reference_name=booking.name,

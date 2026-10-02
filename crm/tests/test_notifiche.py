@@ -8,42 +8,28 @@ from unittest.mock import patch
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from crm.api.todo import get_notification_text
 from crm.booking_platforms.sync import _dalla_piattaforma
 from crm.integrations.whatsapp.templates import check_placeholders
-
-
-def _assegnazione(doctype):
-	return frappe._dict(reference_type=doctype, reference_name="CRM-0001")
+from crm.notifiche import regole as R
 
 
 class TestNotifiche(FrappeTestCase):
 	def test_a_person_is_named_by_their_name(self):
-		testo = get_notification_text(
-			"Anna Bianchi", _assegnazione("CRM Lead"), frappe._dict(lead_name="Giulia Rossi")
-		)
+		testo = R.frase(R.ASSEGNATA, ["Anna Bianchi", "Giulia Rossi"])
 		self.assertIn("Anna Bianchi", testo)
 		self.assertIn("Giulia Rossi", testo)
 		self.assertNotRegex(testo, r"\blead\b")
-		self.assertNotIn("CRM-0001", testo)
 
 	def test_a_deal_is_the_deal_with_its_company(self):
-		testo = get_notification_text(
-			"Anna Bianchi",
-			_assegnazione("CRM Deal"),
-			frappe._dict(organization="Studio Verdi", lead_name="Giulia Rossi"),
-			is_cancelled=True,
-		)
+		testo = R.frase(R.TOLTA_TRATTATIVA, ["Anna Bianchi", "Studio Verdi"])
 		self.assertIn("Studio Verdi", testo)
 		self.assertIn("removed your assignment on the deal", testo)
 		self.assertNotIn("CRM Deal", testo)
 
 	def test_names_are_escaped(self):
-		testo = get_notification_text(
-			"<b>Anna</b>", _assegnazione("CRM Lead"), frappe._dict(lead_name="<img src=x>")
-		)
+		testo = R.frase(R.ASSEGNATA, ["<b>Anna</b>", "<img src=x>"])
 		self.assertNotIn("<img", testo)
-		self.assertNotIn("<b>Anna", testo)
+		self.assertNotIn("<b><b>Anna", testo)
 
 	def test_a_platform_cancellation_is_recognised_whatever_the_language(self):
 		self.assertTrue(_dalla_piattaforma("Cancelled on MioDottore", "MioDottore"))

@@ -64,6 +64,10 @@ class Marchio:
 	schermate_avvio: str = ""
 	#: One line: the phone's install sheet, the About.
 	descrizione: str = ""
+	#: The emails' marks, as PNG (no mail client shows an SVG everywhere): the
+	#: horizontal logo, 56px high for 28px, and the icon, 48px for 24px.
+	logo_email: str = ""
+	icona_email: str = ""
 
 
 DOTTORCLOUD = Marchio(
@@ -84,6 +88,8 @@ DOTTORCLOUD = Marchio(
 	},
 	schermate_avvio="/assets/crm/manifest",
 	descrizione="Il gestionale per i centri medici",
+	logo_email="/assets/crm/images/email/dottorcloud-orizzontale.png",
+	icona_email="/assets/crm/images/email/dottorcloud-icona.png",
 )
 
 #: The base's brand, where no vertical is on. NPM2 has not chosen one yet: until it
@@ -477,9 +483,9 @@ def _scrivania(marchio: Marchio) -> None:
 def _autori() -> None:
 	"""The desk shows who created and last changed a DocType: some of the CRM's came
 	with the old product's authors' addresses."""
+	moduli = frappe.get_all("Module Def", filters={"app_name": "crm"}, pluck="name")
 	for campo in ("owner", "modified_by"):
-		frappe.db.sql(
-			f"""update `tabDocType` set `{campo}` = 'Administrator'
-			where `{campo}` like %s and module in (select name from `tabModule Def` where app_name = 'crm')""",
-			("%@frappe.io",),
-		)
+		for doctype in frappe.get_all(
+			"DocType", filters={campo: ("like", "%@frappe.io"), "module": ("in", moduli)}, pluck="name"
+		):
+			frappe.db.set_value("DocType", doctype, campo, "Administrator", update_modified=False)

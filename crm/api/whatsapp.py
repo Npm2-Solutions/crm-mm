@@ -13,8 +13,10 @@ from werkzeug.wrappers import Response
 
 from crm.api.doc import assigned_users_of
 from crm.api.lead import deal_names_of
-from crm.fcrm.doctype.crm_notification.crm_notification import in_grassetto, nome_di, notify_user
+from crm.fcrm.doctype.crm_notification.crm_notification import nome_di
 from crm.integrations.api import adopt_unknown_number, get_contact_lead_or_deal_from_number
+from crm.notifiche import regole as R
+from crm.notifiche.avvisi import avvisa
 from crm.permissions.livelli import puo
 from crm.utils import stored_value, to_e164
 
@@ -86,35 +88,24 @@ def on_update(doc, method):
 
 
 def notify_agent(doc):
-	if doc.type == "Incoming":
-		if not doc.reference_doctype or not doc.reference_name:
-			return
-		frase = (
-			_("You received a WhatsApp message on the deal {0}")
-			if doc.reference_doctype == "CRM Deal"
-			else _("You received a WhatsApp message from {0}")
+	"""A WhatsApp message from a person: whoever follows them reads it in their
+	panel; the messages after it, while it is unread, add to it."""
+	if doc.type != "Incoming" or not doc.reference_doctype or not doc.reference_name:
+		return
+	trattativa = doc.reference_doctype == "CRM Deal"
+	nomi = [nome_di(doc.reference_doctype, doc.reference_name)]
+	for user in assigned_users_of(doc.reference_doctype, doc.reference_name):
+		avvisa(
+			user,
+			"WhatsApp",
+			R.WHATSAPP_TRATTATIVA if trattativa else R.WHATSAPP,
+			nomi,
+			frase_molti=R.WHATSAPP_TRATTATIVA_MOLTI if trattativa else R.WHATSAPP_MOLTI,
+			da=doc.owner,
+			riguarda=(doc.reference_doctype, doc.reference_name),
+			oggetto=("WhatsApp Message", doc.name),
+			messaggio=doc.message,
 		)
-		chi = in_grassetto(nome_di(doc.reference_doctype, doc.reference_name))
-		notification_text = f"""
-            <div class="mb-2 leading-5 text-ink-gray-5">
-                {frase.format(chi)}
-            </div>
-        """
-		assigned_users = assigned_users_of(doc.reference_doctype, doc.reference_name)
-		for user in assigned_users:
-			notify_user(
-				{
-					"owner": doc.owner,
-					"assigned_to": user,
-					"notification_type": "WhatsApp",
-					"message": doc.message,
-					"notification_text": notification_text,
-					"reference_doctype": "WhatsApp Message",
-					"reference_docname": doc.name,
-					"redirect_to_doctype": doc.reference_doctype,
-					"redirect_to_docname": doc.reference_name,
-				}
-			)
 
 
 def may_converse() -> bool:

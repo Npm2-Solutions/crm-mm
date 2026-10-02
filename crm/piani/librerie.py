@@ -2,10 +2,10 @@
 # For license information, please see license.txt
 
 """The exercises the plans are written with (design.md, "I piani";
-ricerca-design.md §2.3), and what every library shares: a page of it, the file
-uploaded, the imports and who declared which licence (`CRM Library Import`). A
-module keeps its own libraries the same way: the clinic its foods
-(`crm.clinica.librerie`).
+ricerca-design.md §2.3), and what every library shares: a page of it, its entries
+put in all at once, the site's language. A module keeps its own libraries the same
+way: the clinic its foods (`crm.clinica.librerie`). Nobody imports a library any
+more: what `CRM Library Import` holds is the record of the imports before.
 
 - **Who** (`piani.librerie`): the manager; a practitioner when the manager turns it
   on. Whoever writes plans still adds an exercise from the editor.
@@ -37,7 +37,6 @@ from crm.piani import dataset as D
 from crm.utils import count_field
 
 ESERCIZIO = "CRM Exercise"
-IMPORTAZIONE = "CRM Library Import"
 #: Where the agency says it hosts the library's pictures: the area's settings.
 IMPOSTAZIONI = "CRM Area Settings"
 CENTRO = "Centre"
@@ -95,42 +94,6 @@ def filtri_della_pagina(campo_gruppo: str, group=None, source=None, enabled=None
 	return filtri
 
 
-def importazioni(libreria: str) -> list[dict]:
-	"""The last imports into a library: which source, who, what they declared."""
-	return frappe.get_all(
-		IMPORTAZIONE,
-		filters={"library": libreria},
-		fields=[
-			"name",
-			"source",
-			"attribution",
-			"file_name",
-			"imported_by",
-			"imported_on",
-			"licence",
-			"rows_read",
-			"created_count",
-			"updated_count",
-			"skipped_count",
-		],
-		order_by="imported_on desc",
-		limit=10,
-	)
-
-
-def file_caricato(file_url: str):
-	"""The file the session uploaded: read by who may read it."""
-	nome = frappe.db.get_value("File", {"file_url": file_url}, "name")
-	if not nome:
-		frappe.throw(_("There is no such file"))
-	file = frappe.get_doc("File", nome)
-	file.check_permission("read")
-	contenuto = file.get_content(encodings=[])
-	if isinstance(contenuto, str):
-		contenuto = contenuto.encode("utf-8")
-	return file, contenuto
-
-
 def _nuovo(adesso, valori: dict) -> tuple:
 	return (
 		frappe.generate_hash(length=10),
@@ -150,25 +113,6 @@ def inserisci(doctype: str, righe: list[dict]) -> None:
 	adesso = now_datetime()
 	campi = ["name", "creation", "modified", "owner", "modified_by", "docstatus", *righe[0].keys()]
 	frappe.db.bulk_insert(doctype, campi, [_nuovo(adesso, riga) for riga in righe], chunk_size=500)
-
-
-def registra_importazione(
-	libreria: str, fonte: str, attribuzione: str | None, file_name: str | None, **conti
-) -> str:
-	"""An import, written once: which library, which source, who, what they declared."""
-	doc = frappe.get_doc(
-		{
-			"doctype": IMPORTAZIONE,
-			"library": libreria,
-			"source": fonte,
-			"attribution": attribuzione,
-			"file_name": file_name,
-			"imported_by": frappe.session.user,
-			"imported_on": now_datetime(),
-			**conti,
-		}
-	).insert(ignore_permissions=True)
-	return doc.name
 
 
 # ------------------------------------------------------------------ the exercises
@@ -286,7 +230,7 @@ def save_media_url(url: str | None = None) -> dict:
 	return {"media_url": indirizzo}
 
 
-def _lingua_del_sito() -> str:
+def lingua_del_sito() -> str:
 	lingua = (frappe.db.get_single_value("System Settings", "language") or "it")[:2]
 	return "it" if lingua == "it" else "en"
 
@@ -295,7 +239,7 @@ def carica(record: list, lingua: str | None = None) -> dict:
 	"""The library's records into the site: a new exercise comes in; one already
 	there gets the library's pictures and muscles again, and its name, body part
 	and instructions stay as the centre left them."""
-	lingua = lingua or _lingua_del_sito()
+	lingua = lingua or lingua_del_sito()
 	presenti = {
 		riga.source_code: riga.name
 		for riga in frappe.get_all(

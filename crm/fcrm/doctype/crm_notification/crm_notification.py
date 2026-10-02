@@ -4,6 +4,8 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.query_builder import Interval
+from frappe.query_builder.functions import Now
 
 
 class CRMNotification(Document):
@@ -16,6 +18,9 @@ class CRMNotification(Document):
 		from frappe.types import DF
 
 		comment: DF.Link | None
+		count: DF.Int
+		email_due: DF.Check
+		emailed_on: DF.Datetime | None
 		from_user: DF.Link | None
 		message: DF.HTMLEditor | None
 		notification_text: DF.Text | None
@@ -24,13 +29,38 @@ class CRMNotification(Document):
 		read: DF.Check
 		reference_doctype: DF.Link | None
 		reference_name: DF.DynamicLink | None
+		sentence: DF.SmallText | None
+		sentence_args: DF.JSON | None
 		to_user: DF.Link
-		type: DF.Literal["Mention", "Task", "Assignment", "WhatsApp"]
+		type: DF.Literal[
+			"Mention", "Task", "Assignment", "WhatsApp", "SMS", "Invoicing", "Agenda", "Area", "Automation"
+		]
 	# end: auto-generated types
 
-	def on_update(self):
+	def after_insert(self):
+		# the panel and the sidebar's count, in every tab the person has open, once
+		# the notification can be read
 		if self.to_user:
-			frappe.publish_realtime("crm_notification", user=self.to_user)
+			frappe.publish_realtime(
+				"crm_notification", {"event": "new", "name": self.name}, user=self.to_user, after_commit=True
+			)
+
+	def on_update(self):
+		if self.to_user and not self.flags.in_insert:
+			frappe.publish_realtime(
+				"crm_notification", {"event": "changed"}, user=self.to_user, after_commit=True
+			)
+
+	@staticmethod
+	def clear_old_logs(days=180):
+		"""Log Settings' retention: a notification older than this goes, read or not."""
+		tabella = frappe.qb.DocType("CRM Notification")
+		frappe.db.delete(tabella, filters=(tabella.creation < (Now() - Interval(days=days))))
+
+
+def on_doctype_update():
+	# the panel asks for one person's notifications, newest first
+	frappe.db.add_index("CRM Notification", ["to_user", "creation"])
 
 
 def get_permission_query_conditions(user=None):
@@ -60,34 +90,21 @@ def has_permission(doc, ptype, user):
 
 
 def notify_user(notification):
-	"""
-	Notify the assigned user
-	"""
+	"""A notification written by its sender's words (`notification_text`): what the
+	CRM did before its sentences were kept apart. The CRM's own notifications come
+	in by `crm.notifiche.avvisi.avvisa`."""
+	from crm.notifiche.avvisi import avvisa
+
 	notification = frappe._dict(notification)
-	if notification.owner == notification.assigned_to:
-		return
-
-	values = frappe._dict(
-		doctype="CRM Notification",
-		from_user=notification.owner,
-		to_user=notification.assigned_to,
-		type=notification.notification_type,
-		message=notification.message,
-		notification_text=notification.notification_text,
-		notification_type_doctype=notification.reference_doctype,
-		notification_type_doc=notification.reference_docname,
-		reference_doctype=notification.redirect_to_doctype,
-		reference_name=notification.redirect_to_docname,
+	avvisa(
+		notification.assigned_to,
+		notification.notification_type,
+		testo_html=notification.notification_text,
+		da=notification.owner,
+		riguarda=(notification.redirect_to_doctype, notification.redirect_to_docname),
+		oggetto=(notification.reference_doctype, notification.reference_docname),
+		messaggio=notification.message,
 	)
-
-	if frappe.db.exists("CRM Notification", values):
-		return
-	frappe.get_doc(values).insert(ignore_permissions=True)
-
-
-def in_grassetto(testo) -> str:
-	"""A name inside a notification's sentence, the way the panel shows names."""
-	return f'<span class="font-medium text-ink-gray-9">{frappe.utils.escape_html(testo or "")}</span>'
 
 
 def nome_di(reference_doctype: str, reference_name: str) -> str:

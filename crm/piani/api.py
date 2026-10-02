@@ -754,12 +754,29 @@ registra_genere(Genere(R.ABITUDINE, per_la_persona=_abitudine_per_la_persona))
 # ------------------------------------------------------------------ the exercises' library
 
 
+#: How many entries a search shows, and how many it weighs to choose them.
+TROVATI = 30
+VAGLIATI = 300
+
+
 def _cerca(doctype: str, campo: str, testo: str | None, filtri: dict, campi: list[str]) -> list[dict]:
+	"""A library's entries with these words: the ones whose name starts with them
+	first, then the shortest - "mela" finds "Mela, cruda" before a tropical apple of
+	the library's thousands."""
 	filtri = {"enabled": 1, **{k: v for k, v in filtri.items() if v}}
 	parole = (testo or "").strip()
-	if parole:
-		filtri[campo] = ("like", f"%{parole}%")
-	return frappe.get_all(doctype, filters=filtri, fields=campi, order_by=f"{campo} asc", limit=30)
+	if not parole:
+		return frappe.get_all(doctype, filters=filtri, fields=campi, order_by=f"{campo} asc", limit=TROVATI)
+	# by the centre's name, or by the one in the library's source ("parmesan")
+	o_filtri = [[campo, "like", f"%{parole}%"]]
+	if frappe.get_meta(doctype).has_field("name_in_source"):
+		o_filtri.append(["name_in_source", "like", f"%{parole}%"])
+	righe = frappe.get_all(
+		doctype, filters=filtri, or_filters=o_filtri, fields=campi, order_by=f"{campo} asc", limit=VAGLIATI
+	)
+	inizio = parole.lower()
+	righe.sort(key=lambda r: (not (r.get(campo) or "").lower().startswith(inizio), len(r.get(campo) or "")))
+	return righe[:TROVATI]
 
 
 def cerca(doctype: str, campo: str, testo: str | None, filtri: dict, campi: list[str]) -> list[dict]:

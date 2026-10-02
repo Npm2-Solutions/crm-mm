@@ -35,10 +35,12 @@ from frappe.utils import flt
 from crm.assistente import modello, regole
 from crm.clinica import ASSISTENTE, RICETTE
 from crm.clinica import piani_regole as R
+from crm.clinica.librerie import CENTRO
 from crm.clinica.piani import CIBO
 from crm.moduli import consensi
 from crm.permissions import livelli
 from crm.piani import api as piani
+from crm.utils import count_field
 
 #: How many recipes a proposal holds, and how many foods of the library it reads.
 MAX_RICETTE = 3
@@ -61,18 +63,70 @@ Write the titles and the methods in the language of the nutritionist's request
 or, when it asks nothing, in the language of the food names."""
 
 
-def _libreria() -> dict[str, dict]:
-	"""The centre's foods, with what the tables say of them for 100 g."""
-	return {
+CAMPI_CIBO = ["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI]
+#: A plan's items: which foods the centre's plans use.
+VOCE = "CRM Personal Plan Item"
+#: The library's prepared dishes: a recipe makes the dish, from ingredients.
+PIATTI = "Other"
+
+
+def _cibi(nomi: list[str]) -> dict[str, dict]:
+	"""These foods, if on, with what the tables say of them for 100 g, in this order."""
+	if not nomi:
+		return {}
+	trovati = {
 		riga.name: riga
+		for riga in frappe.get_all(CIBO, filters={"name": ("in", nomi), "enabled": 1}, fields=CAMPI_CIBO)
+	}
+	return {nome: trovati[nome] for nome in nomi if nome in trovati}
+
+
+def _libreria(doc=None) -> dict[str, dict]:
+	"""The foods a recipe may be made of, up to MAX_CIBI of the library's thousands:
+	the ones of this menu, the ones the centre's plans use most, the centre's own,
+	then the library's ingredients, the plainest first ("Mela, cruda" before a
+	tropical apple) - never its prepared dishes."""
+	scelti: list[str] = []
+
+	def aggiungi(nomi) -> None:
+		for nome in nomi:
+			if len(scelti) >= MAX_CIBI:
+				return
+			if nome and nome not in scelti:
+				scelti.append(nome)
+
+	if doc is not None:
+		aggiungi(voce.food for voce in doc.items if voce.kind == R.CIBO)
+	aggiungi(
+		riga.food
 		for riga in frappe.get_all(
-			CIBO,
-			filters={"enabled": 1},
-			fields=["name", "food_name", "food_group", "portion_g", *R.NUTRIENTI],
-			order_by="food_name asc",
+			VOCE,
+			filters={"kind": R.CIBO, "food": ("is", "set")},
+			fields=["food", count_field("quante")],
+			group_by="food",
+			order_by="quante desc",
 			limit=MAX_CIBI,
 		)
-	}
+	)
+	aggiungi(
+		frappe.get_all(
+			CIBO,
+			filters={"source": CENTRO, "enabled": 1},
+			order_by="food_name asc",
+			pluck="name",
+			limit=MAX_CIBI,
+		)
+	)
+	if len(scelti) < MAX_CIBI:
+		ingredienti = frappe.get_all(
+			CIBO,
+			filters={"enabled": 1, "food_group": ("!=", PIATTI)},
+			fields=["name", "food_name"],
+			limit=100000,
+		)
+		ingredienti.sort(key=lambda r: (len(r.food_name or ""), r.food_name or ""))
+		aggiungi(r.name for r in ingredienti)
+	return _cibi(scelti)
 
 
 def disponibile(lead: str) -> dict:
@@ -154,7 +208,7 @@ def propose_recipes(
 	energia = flt(kcal) or None
 	if energia is not None and not 0 < energia <= 5000:
 		frappe.throw(_("The energy of a meal is between 1 and 5000 kcal"))
-	cibi = _libreria()
+	cibi = _libreria(doc)
 	if not cibi:
 		frappe.throw(_("The food library is empty: add the centre's foods first"))
 	risposta = modello.chiedi(
@@ -196,8 +250,19 @@ def use_recipe(event: str, moment: str, recipe: dict | str) -> dict:
 		frappe.throw(_("This is not a recipe for a plan"))
 	doc = _il_mio_menu(evento.reference_name)
 	momento = _momento(doc, moment)
-	cibi = _libreria()
 	scelta = frappe.parse_json(recipe) if isinstance(recipe, str) else (recipe or {})
+	proposte_grezze = (regole.estrai_json(evento.draft or "") or {}).get("recipes") or []
+	# the foods of the recipe chosen and of the ones proposed: the library's, if on
+	cibi = _cibi(
+		[str(voce.get("food") or "") for voce in scelta.get("items") or []]
+		+ [
+			str(c.get("id") or "")
+			for p in proposte_grezze
+			if isinstance(p, dict)
+			for c in (p.get("foods") or [])
+			if isinstance(c, dict)
+		]
+	)
 	ricetta = R.ricetta(
 		{
 			"title": scelta.get("title"),
@@ -212,9 +277,7 @@ def use_recipe(event: str, moment: str, recipe: dict | str) -> dict:
 	if not ricetta:
 		frappe.throw(_("A recipe needs its title and a food of the library"))
 	# what the model proposed, written the way the kept recipe is, for the register
-	proposte = [
-		R.ricetta(p, cibi) for p in ((regole.estrai_json(evento.draft or "") or {}).get("recipes") or [])
-	]
+	proposte = [R.ricetta(p, cibi) for p in proposte_grezze]
 	confronto = next((p for p in proposte if p and p["title"] == ricetta["title"]), None)
 	evento = modello.accetta(
 		event,

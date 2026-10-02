@@ -1,9 +1,8 @@
 <!--
   A library the plans are written with, as a settings page: searched, filtered
-  by group and source, a row opened to be put right, imports listed with who
-  declared which licence. The CRM's exercises use it (a library DottorCloud
-  ships: no import, the centre adds its own), and so does a module for its own
-  library - the clinic's foods, imported from a table: each says where its rows
+  by group and source, a row opened to be put right, a new one of the centre's
+  added. The libraries are the ones DottorCloud ships - the CRM's exercises, the
+  clinic's foods - and the centre's own: nobody imports. Each says where its rows
   come from and how they read (``library``), and keeps its own dialogs.
 -->
 <template>
@@ -22,14 +21,6 @@
         icon-left="plus"
         :label="library.newLabel"
         @click="emit('new')"
-      />
-      <Button
-        v-if="library.importLabel"
-        class="shrink-0"
-        variant="solid"
-        icon-left="upload"
-        :label="library.importLabel"
-        @click="emit('import')"
       />
     </template>
     <template #header-bottom>
@@ -125,40 +116,6 @@
         </div>
 
         <slot name="after" :data="data" />
-
-        <section
-          v-if="data?.imports?.length"
-          class="flex flex-col gap-2 border-t border-outline-gray-1 px-2 pt-4"
-        >
-          <h3 class="text-base-semibold text-ink-gray-8">
-            {{ __('Imports') }}
-          </h3>
-          <div
-            v-for="entry in data.imports"
-            :key="entry.name"
-            class="flex flex-col gap-0.5 text-p-sm"
-          >
-            <span class="text-ink-gray-8">
-              {{ entry.attribution || entry.source }}
-              <span class="text-ink-gray-5">
-                · {{ formatDate(entry.imported_on, 'D MMM YYYY, HH:mm') }} ·
-                {{ entry.imported_by }}
-              </span>
-            </span>
-            <span class="text-ink-gray-5">
-              {{
-                __('{0} added, {1} updated, {2} rows not read', [
-                  entry.created_count,
-                  entry.updated_count,
-                  entry.skipped_count,
-                ])
-              }}
-              <template v-if="entry.licence">
-                · {{ __(entry.licence) }}</template
-              >
-            </span>
-          </div>
-        </section>
       </div>
       <slot name="dialogs" :reload="reload" :data="data" />
     </template>
@@ -167,17 +124,16 @@
 
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
-import { formatDate } from '@/utils'
 import { Badge, Button, FormControl, call, debounce, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   // title, description, endpoint, nameField, groups, everyGroup, groupLabel,
-  // sources (a name, or its value and label), searchPlaceholder, newLabel or
-  // importLabel, empty, describe(row), thumbnail(row)
+  // sources (a name, or its value and label), searchPlaceholder, newLabel,
+  // empty, describe(row), thumbnail(row)
   library: { type: Object, required: true },
 })
-const emit = defineEmits(['edit', 'new', 'import'])
+const emit = defineEmits(['edit', 'new'])
 
 const filters = reactive({ text: '', group: '', source: '' })
 const data = ref(null)

@@ -1191,28 +1191,23 @@ def step_remove_from_workflow(step, ref_doc) -> str:
 
 
 def step_notify(step, ref_doc) -> str:
+	"""An automation's message, in the centre's words, to whoever follows the person
+	or deal: from DottorCloud, not from whoever made the automation."""
 	from crm.api.doc import assigned_users_of
-	from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
+	from crm.notifiche.avvisi import avvisa
 
 	message = render(step.get("message") or "", ref_doc)
 	users = assigned_users_of(ref_doc.doctype, ref_doc.name) or []
 	owner = ref_doc.get("lead_owner") or ref_doc.get("deal_owner")
 	if owner and owner not in users:
 		users.append(owner)
-	safe_message = frappe.utils.escape_html(message)
 	for user in users:
-		notify_user(
-			{
-				"owner": frappe.session.user,
-				"assigned_to": user,
-				"notification_type": "Assignment",
-				"message": message,
-				"notification_text": f'<div class="mb-2 leading-5 text-ink-gray-5">{safe_message}</div>',
-				"reference_doctype": ref_doc.doctype,
-				"reference_docname": ref_doc.name,
-				"redirect_to_doctype": ref_doc.doctype,
-				"redirect_to_docname": ref_doc.name,
-			}
+		avvisa(
+			user,
+			"Automation",
+			testo=message,
+			riguarda=(ref_doc.doctype, ref_doc.name),
+			messaggio=message,
 		)
 	return _("Notified {0} user(s)").format(len(users))
 

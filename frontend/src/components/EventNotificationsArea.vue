@@ -76,18 +76,16 @@
     </template>
   </div>
 
-  <EmptyState
-    v-else
-    title="No Upcoming Events"
-    description="You have no events scheduled"
-    :icon="EventIcon"
-    width="lg"
-  />
+  <div v-else class="flex flex-1 items-center justify-center px-6 py-10">
+    <EmptyState
+      :title="__('No Upcoming Events')"
+      :text="__('You have no events scheduled')"
+    />
+  </div>
 </template>
 <script setup>
 import MultipleAvatar from '@/components/MultipleAvatar.vue'
-import EmptyState from '@/components/ListViews/EmptyState.vue'
-import EventIcon from '@/components/Icons/EventIcon.vue'
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { useEventNotifications } from '@/data/notifications'
 import { notificationsStore } from '@/stores/notifications'
 import { dayjs } from 'frappe-ui'
@@ -184,25 +182,10 @@ const computedEvents = computed(() => {
   ]
 })
 
+// the day's clock, as everywhere in the app: «10:00 – 11:30»
 const formattedDateTime = (e) => {
   if (e.allDay) return __('All Day')
-
-  if (e.fromTime.includes(':00')) {
-    e.fromTime = e.fromTime.replace(':00', '')
-  }
-  if (e.toTime.includes(':00')) {
-    e.toTime = e.toTime.replace(':00', '')
-  }
-
-  if (
-    (e.fromTime.includes('am') && e.toTime.includes('am')) ||
-    (e.fromTime.includes('pm') && e.toTime.includes('pm'))
-  ) {
-    const fromTime = e.fromTime.replace(' am', '').replace(' pm', '')
-    return `${fromTime} - ${e.toTime} `
-  }
-
-  return `${e.fromTime} - ${e.toTime}`
+  return `${e.fromTime} – ${e.toTime}`
 }
 
 function eventDate(e) {

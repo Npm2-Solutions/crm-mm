@@ -98,7 +98,7 @@ function comeSiLegge(menu) {
 describe('the settings menu, by who reads it', () => {
   it('gives the manager every area of the centre, in eleven groups', () => {
     expect(comeSiLegge(menuDi(sessione('manager')))).toEqual([
-      'Your account: Profile, Preferences, Google Calendar',
+      'Your account: Profile, Preferences, Notifications, Google Calendar',
       'The centre: General [Name & logo · Conversations · Dashboard · Menu], Users [Users · Invite · Hierarchy], Features',
       'Agenda: Services [Services · Price lists · Subscriptions], Hours & shifts [Hours & rules · Team rota], Rooms & equipment, Calendar & reminders, Waiting list, Online booking [Services & people · Page & rules · Platforms]',
       'Clients: Forms, Consents, Client area, Libraries [Exercises · Foods]',
@@ -112,12 +112,12 @@ describe('the settings menu, by who reads it', () => {
     ])
   })
 
-  it('had 48 entries in sixteen groups: now 33, none alone in its group', () => {
+  it('had 48 entries in sixteen groups: now 34 for 49 pages, none alone in its group', () => {
     const menu = menuDi(sessione('manager'))
     const voci = menu.flatMap((gruppo) => gruppo.items)
-    expect(voci).toHaveLength(33)
-    // every page is still there, as an entry or a tab
-    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(48)
+    expect(voci).toHaveLength(34)
+    // every page is still there, as an entry or a tab, and the notifications
+    expect(voci.flatMap((v) => v.tabs || [v])).toHaveLength(49)
     expect(menu.filter((gruppo) => gruppo.items.length === 1)).toEqual([])
   })
 
@@ -133,7 +133,7 @@ describe('the settings menu, by who reads it', () => {
 
   it('shows the front desk its own account, the team rota and the rooms', () => {
     expect(comeSiLegge(menuDi(sessione('segreteria')))).toEqual([
-      'Your account: Profile, Preferences, Google Calendar',
+      'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Agenda: Hours & shifts, Rooms & equipment',
       'Phone: Telephony',
     ])
@@ -142,7 +142,7 @@ describe('the settings menu, by who reads it', () => {
   it('shows a practitioner their shifts and nothing of the centre', () => {
     const menu = menuDi(sessione('operatore'))
     expect(comeSiLegge(menu)).toEqual([
-      'Your account: Profile, Preferences, Google Calendar',
+      'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Agenda: Hours & shifts',
       'Phone: Telephony',
     ])
@@ -153,7 +153,7 @@ describe('the settings menu, by who reads it', () => {
 
   it('shows marketing what it works with', () => {
     expect(comeSiLegge(menuDi(sessione('marketing')))).toEqual([
-      'Your account: Profile, Preferences, Google Calendar',
+      'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Clients: Forms',
       'Email: Templates',
       'WhatsApp: Templates',
@@ -165,12 +165,12 @@ describe('the settings menu, by who reads it', () => {
 
   it('shows accounting the invoicing, and the medical director the forms and the libraries', () => {
     expect(comeSiLegge(menuDi(sessione('amministrazione')))).toEqual([
-      'Your account: Profile, Preferences, Google Calendar',
+      'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Phone: Telephony',
       'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Provider connection, Options',
     ])
     expect(comeSiLegge(menuDi(sessione('direzione')))).toEqual([
-      'Your account: Profile, Preferences, Google Calendar',
+      'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Clients: Forms, Libraries [Exercises · Foods]',
       'Phone: Telephony',
       'Integrations: Assistant',
@@ -207,6 +207,7 @@ describe('a page asked for by its name', () => {
     const nomi = [
       ['Profile', 'Profile', null],
       ['Preferences', 'Preferences', null],
+      ['Notifications', 'Notifications', null],
       ['General', 'General settings', 'General'],
       ['Dashboard', 'General settings', 'Dashboard'],
       ['Defaults', 'General settings', 'Defaults'],
@@ -315,8 +316,8 @@ describe('the pages there are', () => {
   it('names each page once', () => {
     const tutte = pagine()
     expect(new Set(tutte).size).toBe(tutte.length)
-    // the 51 pages there were, none lost
-    expect(tutte).toHaveLength(51)
+    // the 51 pages there were, none lost, and the notifications
+    expect(tutte).toHaveLength(52)
   })
 
   it('gives every group, entry and tab a label', () => {

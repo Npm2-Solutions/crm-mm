@@ -5,11 +5,14 @@
 "I piani", "Le librerie"; ricerca-design.md §2.3). The exercises dataset is the
 CRM's (`crm.piani.dataset`).
 
-- **A table is a sheet**: CIQUAL as ANSES publishes it (Excel, French or English),
-  the Italian tables as the centre receives them with the licence (BDA-IEO) or the
-  written permission (CREA), any other in the same shape: a row a food, a column a
-  value for 100 g. The columns are recognised by their names; what is not
-  recognised the person importing says.
+- **The library DottorCloud ships** (`dati/alimenti.json`) is made here from CIQUAL
+  as ANSES publishes it, the sheet in English (`libreria_ciqual`): each food with
+  its code, its name in Italian (NPM2's, kept by code from one version to the
+  next), ANSES's English, its group and its values for 100 g. The centre never
+  imports a table: an Italian one (BDA-IEO with the licence for software, CREA with
+  the written permission) NPM2 adds the same way.
+- **A table is a sheet**: a row a food, a column a value for 100 g. The columns
+  are recognised by their names, in Italian, French or English.
 - **The numbers are the table's**: "4,63" is 4.63; "-" is not known and is not
   counted; "traces" and "< 0,15" (under what the laboratory measures) count as
   nothing. Energy only in kJ becomes kcal; carbohydrates "by difference" lose the
@@ -19,9 +22,9 @@ CRM's (`crm.piani.dataset`).
   component is missing) is computed from proteins, carbohydrates, fats, fibre and
   alcohol with the factors of the Regulation EU 1169/2011 - the table's own way,
   within a few kcal where both exist - and the food says so.
-- **The group is the centre's**: the table's own category becomes one of the
-  library's groups by its words, in Italian, French or English; the person
-  importing sees each category with the group it became and may change it.
+- **The group** comes from the table's own category, by its words, in Italian,
+  French or English; where the words say the wrong group, NPM2 says the right one
+  (`GRUPPI_CIQUAL`). The centre puts a food in another group as it likes.
 """
 
 from __future__ import annotations
@@ -718,23 +721,90 @@ def alimenti(righe: list[list], mappa: dict, lingua: str = "it") -> dict:
 	}
 
 
-def categorie(cibi: list[dict]) -> list[dict]:
-	"""Each category of a table with the group it became and how many foods it
-	holds, in the table's order: what the person importing checks."""
-	viste: dict[str, dict] = {}
-	for cibo in cibi:
-		chiave = cibo.get("category") or ""
-		if chiave not in viste:
-			viste[chiave] = {"category": chiave, "group": cibo["group"], "count": 0}
-		viste[chiave]["count"] += 1
-	return list(viste.values())
+# ------------------------------------------------------------------ the library DottorCloud ships
+
+#: CIQUAL's categories whose words say the wrong group, by their code: a pastry
+#: dough is flour, a plant-based alternative to meat is a pulse's.
+GRUPPI_CIQUAL = {"0305": "Cereals and tubers", "040309": "Legumes"}
 
 
-def applica_gruppi(cibi: list[dict], scelte: dict | None) -> list[dict]:
-	"""The groups the person importing chose for the categories; the rest as read."""
-	scelte = {k: v for k, v in (scelte or {}).items() if v in GRUPPI}
-	for cibo in cibi:
-		scelto = scelte.get(cibo.get("category") or "")
-		if scelto:
-			cibo["group"] = scelto
-	return cibi
+def _colonna(intestazioni: list, nome: str) -> int | None:
+	testi = [normalizza(t) for t in intestazioni]
+	return testi.index(nome) if nome in testi else None
+
+
+def libreria_ciqual(righe: list[list], nomi: dict[str, str] | None = None) -> tuple[list[dict], list[str]]:
+	"""The library DottorCloud ships, from CIQUAL's sheet in English as ANSES
+	publishes it: each food with its code, its name in Italian (``nomi``, by code;
+	else the English, and the code among the ones to translate), ANSES's English,
+	its group and its values for 100 g. A food the table gives no energy for, not
+	even from its nutrients, stays out: a diet counts calories, and 0 would be
+	wrong. The foods and the codes still to translate."""
+	nomi = nomi or {}
+	indice = trova_intestazione(righe)
+	if indice is None:
+		raise ValueError("not CIQUAL's sheet")
+	intestazioni = ["" if c is None else str(c) for c in righe[indice]]
+	mappa = riconosci(intestazioni)
+	sottogruppi = [
+		i
+		for i in (_colonna(intestazioni, n) for n in ("alim ssssgrp code", "alim ssgrp code"))
+		if i is not None
+	]
+	gruppi_dei_codici = {}
+	for riga in righe[indice + 1 :]:
+		codice = _testo(_cella(list(riga), mappa.get("code")))
+		for i in sottogruppi:
+			sotto = _testo(_cella(list(riga), i))
+			if sotto in GRUPPI_CIQUAL:
+				gruppi_dei_codici[codice] = GRUPPI_CIQUAL[sotto]
+				break
+	voci, da_tradurre = [], []
+	for cibo in alimenti(righe[indice + 1 :], mappa, lingua_delle_colonne(intestazioni))["foods"]:
+		if cibo["kcal"] is None:
+			continue
+		nome = (nomi.get(cibo["code"]) or "").strip()
+		if not nome:
+			da_tradurre.append(cibo["code"])
+		voci.append(
+			{
+				"code": cibo["code"],
+				"name": (nome or cibo["name"])[:140],
+				"name_en": cibo["name"],
+				"group": gruppi_dei_codici.get(cibo["code"], cibo["group"]),
+				**{campo: cibo[campo] for campo in VALORI},
+				"kcal_computed": 1 if cibo["kcal_computed"] else 0,
+			}
+		)
+	return voci, da_tradurre
+
+
+def dalla_libreria(voce, lingua: str = "it") -> dict | None:
+	"""A food of the library as the site keeps it: its name in the site's language
+	(Italian, else ANSES's English), the English as the source's name, a group the
+	library has, values a food can have. None for a record that is not one, or one
+	without its energy."""
+	if not isinstance(voce, dict):
+		return None
+	codice = _testo(voce.get("code"))[:40]
+	inglese = re.sub(r"\s+", " ", _testo(voce.get("name_en")))[:140]
+	italiano = re.sub(r"\s+", " ", _testo(voce.get("name")))[:140]
+	nome = (italiano if lingua == "it" else "") or inglese or italiano
+	if not codice or not nome:
+		return None
+	valori = {campo: numero(voce.get(campo)) for campo in VALORI}
+	if valori["kcal"] is not None and valori["kcal"] > KCAL_MAX:
+		valori["kcal"] = None
+	for campo in VALORI[1:]:
+		if valori[campo] is not None and valori[campo] > 100:
+			valori[campo] = None
+	if valori["kcal"] is None:
+		return None
+	return {
+		"code": codice,
+		"name": nome,
+		"name_in_source": inglese or nome,
+		"group": voce.get("group") if voce.get("group") in GRUPPI else ALTRO,
+		**valori,
+		"kcal_computed": 1 if voce.get("kcal_computed") else 0,
+	}

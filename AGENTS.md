@@ -167,6 +167,32 @@ separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 A new page that people open every day goes in the menu's data, in the group of its
 work, with the capability that opens it; never straight into the sidebar.
 
+### Notifications (docs/progetto-ghl/43)
+| File | Role |
+|---|---|
+| `crm/notifiche/avvisi.py` | `avvisa()`: the one door every notification comes in by (mentions, assignments, tasks, WhatsApp, SMS, the agenda, the client area, invoicing, automations); the same one unread is not written twice, a person's messages add to the unread one ("3 WhatsApp messages from…") |
+| `crm/notifiche/regole.py` | The sentences (English, in the catalogue), a sentence with its names in bold, the words of the ones written before, the kind — pure, tested with plain `unittest` (every sentence in `it.po` with the same places) |
+| `crm/notifiche/api.py` | The panel's page with the unread count, where each row opens (decided here), the message's first words where the reader may read them; read, all read, unread again in one query and one signal |
+| `frontend/src/components/Notifications/`, `Notifications.vue`, `pages/MobileNotification.vue`, `stores/notifications.js`, `composables/notifiche.js` + `utils/notifiche.js` | The panel and the phone's page on one list (days, the kind's mark, the dot), listened to once per layout, the brand's toast when one arrives; the look and the days tested |
+
+A module tells somebody something with `avvisa()`: a sentence of `regole` (a new
+one goes in its `FRASI` and in `it.po`) and its names, never words glued
+together; who it is from (nobody when it is DottorCloud); the person or deal it
+opens and what it is about. The panel works out where it opens.
+
+### Emails (docs/progetto-ghl/44)
+| File | Role |
+|---|---|
+| `crm/templates/emails/standard.html`, `email_header.html`, `email_footer.html` | Every email's layout over the framework's (its classes kept): with a `header` or `with_container`, the brand's canvas, the white card with the cloud's tail, the centre's mark at the top (its PNG/JPEG logo, else its name; the product's only for a centre with neither), "Powered by" under the card; light theme only. A plain email somebody wrote stays plain |
+| `crm/posta/aspetto.py` | `contesto_email()` (Jinja method: the centre's mark, the brand's colours, the signature), `pulsante(url, testo)` (a table every client draws, Outlook too), `codice(valore)` (a code in its box) — tested |
+| `crm/notifiche/posta.py` + `Settings/NotificationsSettings.vue` | Notifications by email too: each person's choices (Settings > Your account > Notifications, only the groups they receive: `riceve()`), every five minutes what is still unread after `ATTESA` minutes, one email per person, a conversation once while unread, a button that opens DottorCloud, never the Desk; the framework's assignment, mention and share emails are skipped (`notification_skip_email_types`) |
+
+An email of the system gets a title (`header=`) and `with_container=True`, its
+message in paragraphs with the words escaped, the one thing to do in a
+`pulsante()`, a code in `codice()`, and no colours of its own: the layout wears
+the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
+mail clients do not all show an SVG.
+
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |
 |---|---|
@@ -319,8 +345,8 @@ the draft with `modello.accetta`.
 | `crm/clinica/pipeline.py` | Phase 1's first seam: the CRM's two pipelines where the clinic is switched on, the new clients one named "New patients" (`NUOVI_PAZIENTI`) |
 | `crm/clinica/menu.py` | The nutritionist's menu: targets on the plan, nutrients from the tables (`piani_regole.nutrienti`, same cases as `utils/piani.js` in `tests/casi_nutrienti.json`), recipes proposed by the assistant, kept only as library foods |
 | `piani_regole.spesa` + `ShoppingListDialog.vue`, `frontend/src/area/pages/PlanShopping.vue` | The shopping list of a diet: grams summed on the server over the days asked (times a week, the plan's period), rounded up in the browser; in the CRM to copy for the patient, in the area with ticks kept on the phone |
-| `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` | The foods (`piani.librerie`): a food table read on the server (CIQUAL, BDA-IEO and CREA with the licence declared, any sheet in their shape), its columns and categories checked before import, energy from the EU factors when missing; imported again, numbers update and the centre's words stay |
-| `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clients > Libraries, the Foods tab: the list, correcting a food, the import of a table; the exercises' page is the CRM's (`Settings/Plans/`) |
+| `crm/clinica/tabelle.py` + `crm/clinica/librerie.py` + `dati/alimenti.json` | The foods (`piani.librerie`): the library DottorCloud ships, CIQUAL 2025 under the Licence Ouverte with the names in Italian (NPM2's, kept by code from one version to the next; `alimenti.LICENSE.txt`), made by `tabelle.libreria_ciqual` from ANSES's sheet and loaded at install and at every migrate that brings a new file (`carica_libreria`). The centre never imports: it puts names right and adds its own; an Italian table (BDA-IEO, CREA) NPM2 adds the same way once licensed. Loaded again, numbers update, a name the centre changed stays (`library_name` keeps the library's own); a food without its energy is left out |
+| `frontend/src/components/Settings/Clinic/` + `frontend/src/utils/librerie.js` | Settings > Clients > Libraries, the Foods tab: the list, correcting a food, a new one of the centre's; the exercises' page is the CRM's (`Settings/Plans/`) |
 | `crm/clinica/cure_regole.py` | The teeth without a site: FDI teeth and arches, surfaces, the chart's conditions, the teeth on a quote's rows (`valida_denti`) — tested with plain `unittest` |
 | `crm/clinica/cure.py` + `crm/clinica/custom/crm_quote*.json` | The odontogram (`Clinic Dental Chart`, `cure.scrivi` and a dentist's qualification); a care plan is a quote of the CRM's: the tooth and its surfaces on its rows, only by a dentist, read as "Tooth 36 · OM" (`preventivi.registra_estensione`) |
 | `frontend/src/components/Clinic/DentalCard.vue`, `DentalChart.vue` + `utils/cure.js` | The Clinic tab's teeth and the chart; the same rules as `cure_regole.py` — tested |
@@ -471,7 +497,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **785 tests · ~15s** — all must pass before committing
+- **878 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

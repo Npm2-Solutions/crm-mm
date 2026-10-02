@@ -136,6 +136,8 @@ jinja = {
 		"crm.api.site_render.crm_booking_html",
 		"crm.api.site_render.crm_contact_html",
 		"crm.api.site_render.crm_site_head",
+		# what every email wears: the brand and the centre's mark (templates/emails)
+		"crm.posta.aspetto.contesto_email",
 	],
 }
 
@@ -149,7 +151,11 @@ setup_wizard_complete = "crm.demo.api.create_demo_data"
 # ------------
 
 before_install = "crm.install.before_install"
-after_install = "crm.install.after_install"
+after_install = [
+	"crm.install.after_install",
+	# the foods DottorCloud ships, with their names in Italian: the clinic's, hooked on here
+	"crm.clinica.librerie.carica_libreria",
+]
 
 # a migrate syncs the modules of this release, whatever map a worker left in the cache
 before_migrate = ["crm.migrazione.mappa_dei_moduli"]
@@ -578,6 +584,14 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
+# a notification older than six months goes, read or not (Log Settings, crm.notifiche)
+default_log_clearing_doctypes = {"CRM Notification": 180}
+
+# the framework's emails for an assignment, a mention, a document shared: they named
+# doctypes and IDs and opened the Desk. DottorCloud's notifications go by email in
+# its words instead (crm.notifiche.posta)
+notification_skip_email_types = ["Assignment", "Mention", "Share"]
+
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": [
@@ -622,6 +636,8 @@ scheduler_events = {
 			"crm.scheduling.attese.ogni_dieci_minuti",
 		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
+		# what is still unread in the panel after a few minutes, by email to who wants it
+		"*/5 * * * *": ["crm.notifiche.posta.manda_le_email"],
 		# bookings taken on MioDottore, SimplyBook, Cal.com… and calendar feeds
 		"*/15 * * * *": ["crm.booking_platforms.sync.sync_all"],
 	},
@@ -718,8 +734,9 @@ after_migrate = [
 	"crm.clinica.cartella.proteggi_registro_accessi",
 	# the core documents the Manager's pages write: templates, rules, imports
 	"crm.permissions.documenti.concedi_documenti_del_core",
-	# the exercise library DottorCloud ships, when its file is a new one
+	# the exercise and food libraries DottorCloud ships, when their file is a new one
 	"crm.piani.librerie.carica_libreria",
+	"crm.clinica.librerie.carica_libreria",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)

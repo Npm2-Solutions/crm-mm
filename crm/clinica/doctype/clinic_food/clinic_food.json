@@ -23,7 +23,8 @@
   "source_code",
   "column_source",
   "source_note",
-  "name_in_source"
+  "name_in_source",
+  "library_name"
  ],
  "fields": [
   {
@@ -134,11 +135,18 @@
    "fieldtype": "Data",
    "label": "Name in the table",
    "read_only": 1
+  },
+  {
+   "fieldname": "library_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Name in the library",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-03 00:00:00.000000",
+ "modified": "2026-10-04 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Clinica",
  "name": "Clinic Food",
