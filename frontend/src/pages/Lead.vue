@@ -16,7 +16,9 @@
         v-if="document.actions?.length"
         :actions="document.actions"
       />
+      <!-- what a website says about the person: only where there is one -->
       <EnrichFromWebsite
+        v-if="doc.website"
         doctype="CRM Lead"
         :docname="leadId"
         :website="doc.website"
@@ -65,129 +67,48 @@
       </Tabs>
     </div>
     <Resizer class="flex flex-col justify-between border-l" side="right">
-      <!-- The record's id, for copying: it was styled as the panel's title,
-           in bigger type than the name right under it. -->
-      <button
-        class="group flex h-[45px] shrink-0 cursor-copy items-center gap-1.5 border-b px-5 py-2.5 text-left text-p-sm tabular-nums text-ink-gray-5 hover:text-ink-gray-7"
-        :title="__('Copy')"
-        @click="copyToClipboard(leadId)"
-      >
-        <span class="truncate">{{ leadId }}</span>
-        <span
-          class="lucide-copy size-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-          aria-hidden="true"
-        />
-      </button>
+      <!-- who the person is, how to reach them, what comes next: the head
+           the phone draws too (PersonHeader). The record's code, for copying,
+           sits in its More menu: on top of the panel it read as its title -->
       <FileUploader
         :validateFile="validateIsImageFile"
         @success="(file) => updateField('image', file.file_url)"
       >
         <template #default="{ openFileSelector }">
-          <div class="flex items-center justify-start gap-5 border-b p-5">
-            <div class="group relative size-12">
-              <Avatar
-                size="3xl"
-                class="size-12"
-                :label="title"
-                :image="doc.image || doc.organization_logo"
-              />
-              <component
-                :is="doc.image ? Dropdown : 'div'"
-                v-if="canWrite"
-                v-bind="
-                  doc.image
-                    ? {
-                        options: [
-                          {
-                            icon: 'upload',
-                            label: doc.image
-                              ? __('Change Image')
-                              : __('Upload Image'),
-                            onClick: openFileSelector,
-                          },
-                          {
-                            icon: 'trash-2',
-                            label: __('Remove Image'),
-                            onClick: () => updateField('image', ''),
-                          },
-                        ],
-                      }
-                    : { onClick: openFileSelector }
-                "
-                class="!absolute bottom-0 left-0 right-0"
-              >
-                <div
-                  class="z-[1] absolute bottom-0.5 left-0 right-0.5 flex h-9 cursor-pointer items-center justify-center rounded-b-full bg-black bg-opacity-40 pt-3 opacity-0 duration-300 ease-in-out group-hover:opacity-100"
-                  style="
-                    -webkit-clip-path: inset(12px 0 0 0);
-                    clip-path: inset(12px 0 0 0);
-                  "
-                >
-                  <CameraIcon class="size-4 cursor-pointer text-white" />
+          <div class="flex flex-col gap-2 border-b p-5">
+            <PersonHeader
+              :doc="doc"
+              :title="title"
+              :more="altro(openFileSelector)"
+              @write="scrivi"
+            >
+              <template #avatar>
+                <div class="group relative size-12 shrink-0">
+                  <Avatar
+                    size="3xl"
+                    class="size-12"
+                    :label="title"
+                    :image="doc.image || doc.organization_logo"
+                  />
+                  <button
+                    v-if="canWrite"
+                    type="button"
+                    class="absolute inset-0 flex items-end justify-center overflow-hidden rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+                    :aria-label="
+                      doc.image ? __('Change Image') : __('Upload Image')
+                    "
+                    @click="openFileSelector"
+                  >
+                    <span
+                      class="flex h-5 w-full items-center justify-center bg-black/40"
+                    >
+                      <CameraIcon class="size-3.5 text-white" />
+                    </span>
+                  </button>
                 </div>
-              </component>
-            </div>
-            <div class="flex flex-col gap-2.5 truncate">
-              <Tooltip :text="doc.lead_name || __('Set First Name')">
-                <div class="truncate text-3xl-medium text-ink-gray-9">
-                  {{ title }}
-                </div>
-              </Tooltip>
-              <div class="flex gap-1.5">
-                <Button
-                  v-if="callEnabled"
-                  :tooltip="__('Make a Call')"
-                  :icon="PhoneIcon"
-                  @click="
-                    () =>
-                      doc.mobile_no
-                        ? makeCall(doc.mobile_no)
-                        : toast.error(
-                            __('Please set a mobile number to make calls'),
-                          )
-                  "
-                />
-
-                <Button
-                  v-if="puo('conversazioni.usa')"
-                  :tooltip="__('Send an Email')"
-                  :icon="Email2Icon"
-                  @click="
-                    doc.email
-                      ? openEmailBox()
-                      : toast.error(
-                          __('Please set an email address to send emails'),
-                        )
-                  "
-                />
-                <Button
-                  :tooltip="__('Go to Website')"
-                  :icon="LinkIcon"
-                  @click="
-                    doc.website
-                      ? openWebsite(doc.website)
-                      : toast.error(__('Please set a website to visit'))
-                  "
-                />
-
-                <Button
-                  v-if="canWrite"
-                  :tooltip="__('Attach a File')"
-                  :icon="AttachmentIcon"
-                  @click="showFilesUploader = true"
-                />
-
-                <Button
-                  v-if="canDelete"
-                  :tooltip="__('Delete')"
-                  variant="subtle"
-                  theme="red"
-                  icon="lucide-trash-2"
-                  @click="deleteLead"
-                />
-              </div>
-              <ErrorMessage :message="__(error)" />
-            </div>
+              </template>
+            </PersonHeader>
+            <ErrorMessage :message="__(error)" />
           </div>
         </template>
       </FileUploader>
@@ -256,17 +177,15 @@ import ErrorPage from '@/components/ErrorPage.vue'
 import Icon from '@/components/Icon.vue'
 import Resizer from '@/components/Resizer.vue'
 import ActivityIcon from '@/components/Icons/ActivityIcon.vue'
-import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import EventIcon from '@/components/Icons/EventIcon.vue'
-import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
-import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
+import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
@@ -300,12 +219,10 @@ import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
-import { callEnabled } from '@/composables/telephony'
 import {
   createResource,
   FileUploader,
   Dropdown,
-  Tooltip,
   Avatar,
   Tabs,
   Breadcrumbs,
@@ -319,7 +236,7 @@ import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useUnsavedChangesWarning } from '@/composables/useUnsavedChangesWarning'
 
 const { brand } = getSettings()
-const { $dialog, $socket, makeCall } = globalStore()
+const { $dialog, $socket } = globalStore()
 const { doctypeMeta } = getMeta('CRM Lead')
 
 const route = useRoute()
@@ -592,11 +509,42 @@ function deleteLead() {
   showDeleteLinkedDocModal.value = true
 }
 
-// «Send an email»: the Activity tab, its composer on email, the cursor in it.
-// It used to look for an «Emails» tab — gone since the channels became one
-// stream — so from any other tab the button did nothing at all.
-function openEmailBox() {
-  activities.value?.write?.('email')
+// Writing from the head of the page: the Activity tab, its composer on the
+// channel chosen, the cursor in it - from whatever tab is open.
+function scrivi(canale) {
+  activities.value?.write?.(canale)
+}
+
+// the head's More menu: what one does less often with a person
+function altro(openFileSelector) {
+  return [
+    doc.value.website && {
+      label: __('Go to Website'),
+      icon: 'external-link',
+      onClick: () => openWebsite(doc.value.website),
+    },
+    canWrite.value && {
+      label: doc.value.image ? __('Change Image') : __('Upload Image'),
+      icon: 'camera',
+      onClick: openFileSelector,
+    },
+    canWrite.value && {
+      label: __('Attach a File'),
+      icon: 'paperclip',
+      onClick: () => (showFilesUploader.value = true),
+    },
+    {
+      label: __('Copy the code'),
+      icon: 'copy',
+      onClick: () => copyToClipboard(props.leadId),
+    },
+    canDelete.value && {
+      label: __('Delete'),
+      icon: 'trash-2',
+      theme: 'red',
+      onClick: deleteLead,
+    },
+  ]
 }
 
 function saveChange(data) {

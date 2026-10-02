@@ -72,6 +72,8 @@ PAROLE = {
 	# new clients (`crm.clienti`): with the clinic, whoever becomes a patient
 	"New clients": "New patients",
 	"Client since": "Patient since",
+	# the head of a person's page (PersonHeader)
+	"Client since {0}": "Patient since {0}",
 	"Became Client": "Became Patient",
 	"The person becomes a client of the centre: the first time they come, or their first invoice.": (
 		"The person becomes a patient of the centre: first visit, first healthcare invoice, "
