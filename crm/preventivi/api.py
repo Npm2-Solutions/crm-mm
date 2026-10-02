@@ -6,7 +6,8 @@ preventivo"); the rules without a site are `regole`.
 
 - **A draft is its author's**: services from the price list, each with its
   quantity, price and discount, in phases; whoever writes quotes
-  (`preventivi.scrivi`) writes one.
+  (`preventivi.scrivi`) writes one. Made from the page of a deal of the quotes
+  pipeline, it is that deal's: the deal's page lists its quotes.
 - **Proposed**, it is frozen: its PDF is made to hand over, and the person's deal in
   the quotes pipeline goes to "quote delivered". It is read by whoever reads the
   person's quotes (`preventivi.vedi`) and sees the person; the author or who
@@ -300,6 +301,7 @@ def _dettaglio(doc) -> dict:
 		"totals": R.totali([voce.as_dict() for voce in doc.items]),
 		"quote_pdf": doc.quote_pdf,
 		"deal": doc.deal,
+		"deal_label": _trattativa(doc.deal),
 		"accepted_by_name": get_fullname(doc.accepted_by) if doc.accepted_by else None,
 		"acceptance_note": doc.acceptance_note,
 		"declined_on": str(doc.declined_on) if doc.declined_on else None,
@@ -318,6 +320,14 @@ def _dettaglio(doc) -> dict:
 	}
 
 
+def _trattativa(deal: str | None) -> str | None:
+	"""A deal as the quote names it: its stage, in the reader's words."""
+	if not deal:
+		return None
+	stadio = frappe.db.get_value("CRM Deal", deal, "status")
+	return _(stadio) if stadio else None
+
+
 def offre() -> dict:
 	"""What the editor offers the session besides the CRM's rows: a module's fields."""
 	fatto = {}
@@ -327,22 +337,40 @@ def offre() -> dict:
 	return fatto
 
 
+def _della_trattativa(lead: str, deal: str | None) -> str | None:
+	"""The deal whose quotes these are: one of the person's, in the quotes pipeline.
+	The page of a deal of another pipeline shows the person's quotes, and a quote
+	made there finds its deal when it is proposed."""
+	if not deal:
+		return None
+	if frappe.db.get_value("CRM Deal", deal, "lead") != lead:
+		frappe.throw(_("This deal belongs to somebody else"), frappe.PermissionError)
+	from crm.preventivi import pipeline
+
+	return deal if pipeline.prende_preventivi(deal) else None
+
+
 @frappe.whitelist()
-def get_quotes(lead: str) -> dict:
-	"""The person's quotes the session reads, the most recent first."""
+def get_quotes(lead: str, deal: str | None = None) -> dict:
+	"""The person's quotes the session reads, the most recent first; from the page of
+	a deal of the quotes pipeline, the deal's."""
 	_della_persona(lead)
+	filtri = {"lead": lead}
+	deal = _della_trattativa(lead, deal)
+	if deal:
+		filtri["deal"] = deal
 	preventivi = [
 		doc
 		for doc in (
 			frappe.get_doc(DOCTYPE, nome)
-			for nome in frappe.get_all(
-				DOCTYPE, filters={"lead": lead}, pluck="name", order_by="creation desc"
-			)
+			for nome in frappe.get_all(DOCTYPE, filters=filtri, pluck="name", order_by="creation desc")
 		)
 		if puo_leggere(doc)
 	]
 	return {
 		"quotes": [_riga(doc) for doc in preventivi],
+		# the deal a new quote made here belongs to
+		"deal": deal,
 		"can_write": scrive(),
 		"offers": offre(),
 		"price_lists": frappe.get_all(
@@ -404,8 +432,9 @@ def nuovo(lead: str):
 
 
 @frappe.whitelist(methods=["POST"])
-def save_quote(lead: str, data: str | dict, name: str | None = None) -> dict:
-	"""A draft, new or put right, by its author."""
+def save_quote(lead: str, data: str | dict, name: str | None = None, deal: str | None = None) -> dict:
+	"""A draft, new or put right, by its author; made from a deal's page, it is that
+	deal's quote."""
 	_della_persona(lead)
 	dati = frappe.parse_json(data) if isinstance(data, str) else (data or {})
 	if name:
@@ -416,6 +445,7 @@ def save_quote(lead: str, data: str | dict, name: str | None = None) -> dict:
 		if not scrive():
 			frappe.throw(_("Not permitted"), frappe.PermissionError)
 		doc = nuovo(lead)
+		doc.deal = _della_trattativa(lead, deal)
 	voci = _voci_dal_modulo(dati)
 	# a draft may be unfinished, never wrong
 	if voci:
@@ -575,6 +605,11 @@ def copy_quote(name: str) -> dict:
 	doc.price_list = fonte.price_list
 	doc.patient_notes = fonte.patient_notes
 	doc.replaces = fonte.name
+	# the same deal while it is open: a closed one is never opened again by a quote
+	from crm.preventivi import pipeline
+
+	if pipeline.si_puo_spostare(fonte.deal):
+		doc.deal = fonte.deal
 	campi = campi_voce()
 	for voce in fonte.items:
 		if voce.status == R.ANNULLATA:

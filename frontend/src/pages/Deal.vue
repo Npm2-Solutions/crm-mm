@@ -383,6 +383,7 @@ import EventIcon from '@/components/Icons/EventIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
+import LucideReceiptText from '~icons/lucide/receipt-text'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import KanbanIcon from '@/components/Icons/KanbanIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
@@ -633,6 +634,16 @@ const tabs = computed(() => {
       label: __('Notes'),
       icon: NoteIcon,
       condition: () => puo('note.vedi'),
+    },
+    // the deal's quotes: a quote proposed moves it, accepted wins it
+    {
+      name: 'Quotes',
+      label: __('Quotes'),
+      icon: LucideReceiptText,
+      condition: () =>
+        puo('preventivi.vedi') ||
+        puo('preventivi.scrivi') ||
+        puo('preventivi.gestisci'),
     },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
