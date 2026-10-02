@@ -17,15 +17,38 @@ from frappe import _
 from frappe.model.document import Document
 
 from crm.invoicing.engine import codice_fiscale as cf
-from crm.invoicing.engine.numerazione import FormatoNonCompatibile, valida_formato
+from crm.invoicing.engine.numerazione import FORMATO_DEFAULT, FormatoNonCompatibile, valida_formato
+
+#: What is never anybody's choice (the agency's word, 02/10/2026): the invoices
+#: leave through Itala on the agency's account and come back the same way, in both
+#: directions, paid in the plan's SdI credits; the Agenzia's free service keeps the
+#: SdI documents; a healthcare invoice to a person stays a paper original with its
+#: copy. The fields stay, hidden: the code that reads them reads these.
+SEMPRE = {
+	"sdi_mode": "provider",
+	"sdi_flow": "entrambi",
+	"conservation_service": "agenzia_entrate",
+	"document_mode": "analogico_con_copia",
+}
+#: The series a company starts from, never empty.
+SERIE = {"series_electronic": "E", "series_healthcare": "S"}
 
 
 class CRMInvoicingCompany(Document):
 	def validate(self):
+		self.sempre_cosi()
 		self.valida_identificativi()
 		self.valida_numerazione()
 		self.valida_bollo()
 		self.unica_predefinita()
+
+	def sempre_cosi(self):
+		"""The fixed choices, and a numbering that is never empty: a series left blank
+		gets its own, the format the first of the examples."""
+		self.update(SEMPRE)
+		for campo, serie in SERIE.items():
+			self.set(campo, (self.get(campo) or "").strip() or serie)
+		self.number_format = (self.number_format or "").strip() or FORMATO_DEFAULT
 
 	def valida_identificativi(self):
 		if self.tax_id and not cf.partita_iva_ue_valida(self.tax_id, self.country):

@@ -387,6 +387,19 @@ MODALITA_DOCUMENTO = (
 	),
 )
 
+# ------------------------------------------------------------------ numbering
+
+#: How an invoice's number reads: the year, the series and the counter, in the
+#: order chosen. Every one fits the Sistema TS's twenty characters with a six-digit
+#: counter and the test series (`numerazione.valida_formato`): a picker, so that a
+#: centre cannot write one that the Sistema TS refuses in January.
+FORMATO_NUMERO = (
+	_v("{anno}/{serie}/{numero}", "2026/S/15", "Year, series, number: the most common.", sanita=True),
+	_v("{serie}/{numero}/{anno}", "S/15/2026", "Series, number, year.", sanita=True),
+	_v("{numero}/{serie}/{anno}", "15/S/2026", "Number, series, year.", sanita=True),
+	_v("{anno}-{serie}-{numero}", "2026-S-15", "Year, series and number, with dashes.", sanita=True),
+)
+
 CONSERVAZIONE_SDI = (
 	_v(
 		"agenzia_entrate",
@@ -497,6 +510,7 @@ _FAMIGLIE: dict[str, tuple[Voce, ...]] = {
 	"causale_pagamento": CAUSALE_PAGAMENTO,
 	"modalita_bollo": MODALITA_BOLLO,
 	"modalita_documento": MODALITA_DOCUMENTO,
+	"formato_numero": FORMATO_NUMERO,
 	"conservazione_sdi": CONSERVAZIONE_SDI,
 	"conservazione_locale": CONSERVAZIONE_LOCALE,
 	"canale_sdi": CANALE_SDI,

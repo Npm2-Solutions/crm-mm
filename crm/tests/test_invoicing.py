@@ -539,15 +539,13 @@ class DueRamiTest(InvoicingBase):
 		)
 		self.assertNotIn("Preservation of the documents outside the SdI", self._checklist())
 
-	def test_l_elettronico_extra_sdi_lo_chiede(self):
-		frappe.db.set_value(
-			"CRM Invoicing Company",
-			self.azienda.name,
-			{"document_mode": "elettronica_extra_sdi", "conservation_local": None},
-		)
-		voce = self._checklist().get("Preservation of the documents outside the SdI")
-		self.assertIsNotNone(voce)
-		self.assertIn("cannot reach them", voce["consequence"])
+	def test_il_cartaceo_e_sempre_cosi(self):
+		# the original of a healthcare invoice to a person is never anybody's choice
+		azienda = frappe.get_doc("CRM Invoicing Company", self.azienda.name)
+		azienda.document_mode = "elettronica_extra_sdi"
+		azienda.save(ignore_permissions=True)
+		self.assertEqual(azienda.document_mode, "analogico_con_copia")
+		self.assertNotIn("Preservation of the documents outside the SdI", self._checklist())
 
 	def test_itala_non_collegata_si_vede_nella_checklist(self):
 		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "sdi_mode", "provider")
@@ -557,6 +555,11 @@ class DueRamiTest(InvoicingBase):
 		self.assertIn("once Itala is connected", voce["consequence"])
 		self.assertFalse(voce["blocking"])
 
-	def test_una_pec_senza_casella_si_vede_nella_checklist(self):
-		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, {"sdi_mode": "pec", "pec": None})
-		self.assertIn("PEC mailbox", self._checklist())
+	def test_la_conservazione_la_spunta_il_centro(self):
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "conservation_joined", 0)
+		voce = self._checklist().get("Preservation of the SdI documents")
+		self.assertIsNotNone(voce)
+		self.assertIn("Fatture e Corrispettivi", voce["consequence"])
+		self.assertFalse(voce["blocking"])
+		frappe.db.set_value("CRM Invoicing Company", self.azienda.name, "conservation_joined", 1)
+		self.assertNotIn("Preservation of the SdI documents", self._checklist())
