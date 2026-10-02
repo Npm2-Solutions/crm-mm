@@ -193,6 +193,20 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
+### Invoicing in words (docs/progetto-ghl/45)
+| File | Role |
+|---|---|
+| `crm/invoicing/engine/voci.py` | Every code invoicing asks somebody to choose, in words: a family per field (regimes, VAT natures, documents, payments, funds, withholdings, 770 reasons, stamp duty, keeping, channels...), each `Voce` with its name, the line on when it applies and whether a medical centre meets it (`sanita`); `voci()` for a profile, the stored values always kept — pure, tested with plain `unittest` |
+| `crm/tessera_sanitaria/engine/voci.py` | The Sistema TS's families (expense types in the specification's words, particular cases, who issues, how it is sent, the mandate, the operation), registered into invoicing's vocabulary |
+| `crm/invoicing/scelte.py` | Which field speaks which family (`CAMPI`), the rules that narrow one by the document (`registra_regola`: expense types by the issuer's category), the healthcare profile (`Verticale.fatturazione`: the clinic's `sanitario`), `adatta_campi` on `crm.api.doc.get_fields` (`registra_adattatore`), `get_options` for the Desk's invoice, `get_vocabulary` for list rows |
+| `frontend/src/utils/scelte.js`, `composables/vocabolarioFatturazione.js` | A choice's line, the stored value kept, a code's name in a row, a read-only choice by its name — tested |
+
+A field of invoicing that stores a code never shows it: it goes in `scelte.CAMPI`
+with its family, every value its DocType admits gets a name and a line in the
+vocabulary (and in `it.po`), and the ones a medical centre meets carry `sanita`.
+Labels and descriptions say what a field is for in plain words, never a list of
+codes nor the tracciato's names (`tipoSpesa`). What is stored stays the code.
+
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |
 |---|---|
@@ -497,7 +511,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **878 tests · ~15s** — all must pass before committing
+- **884 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
