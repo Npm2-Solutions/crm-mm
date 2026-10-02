@@ -17,6 +17,8 @@ export const TWILIO = {
   console: 'https://console.twilio.com',
   // the log of the account's problems, where Twilio says every detail
   registro: 'https://console.twilio.com/us1/monitor/logs/debugger/errors',
+  // how a number of another Italian operator comes to Twilio
+  portabilita: 'https://www.twilio.com/en-us/guidelines/it/porting',
 }
 
 const SID = /^AC[0-9a-fA-F]{32}$/

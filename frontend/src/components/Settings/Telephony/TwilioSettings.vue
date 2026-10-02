@@ -415,6 +415,10 @@
                 @click="apriNuovo()"
               />
               <Button
+                :label="__('I already have a number')"
+                @click="trasloco = true"
+              />
+              <Button
                 :label="__('Manage')"
                 @click="emit('updateStep', 'caller-id-settings')"
               />
@@ -759,9 +763,16 @@
     :richiesta="nuovo.richiesta"
     @changed="aggiornaLeRichieste"
   />
+  <MoveNumberDialog
+    v-if="trasloco"
+    v-model="trasloco"
+    :del-centro="stato.owner === 'Centre'"
+    @moved="connessione.reload()"
+  />
 </template>
 <script setup>
 import SceltaRadio from '@/components/Settings/Invoicing/SceltaRadio.vue'
+import MoveNumberDialog from '@/components/Settings/Telephony/MoveNumberDialog.vue'
 import NewNumberDialog from '@/components/Settings/Telephony/NewNumberDialog.vue'
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
@@ -992,6 +1003,8 @@ watch(
 )
 const richieste = computed(() => offerta.data?.requests || [])
 const nuovo = reactive({ aperto: false, richiesta: null })
+// a number the centre already has, moved in or forwarded (doc 52)
+const trasloco = ref(false)
 
 function apriNuovo(richiesta = null) {
   nuovo.richiesta = richiesta

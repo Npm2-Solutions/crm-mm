@@ -242,11 +242,47 @@ class Mondo:
 			sms_application_sid=None,
 			trunk_sid=None,
 			capabilities={"voice": True, "sms": sms, "mms": False},
+			bundle_sid=None,
+			address_sid=None,
 		)
 		for chiave, valore in valori.items():
 			setattr(numero, chiave, valore)
 		self.numeri[conto].append(numero)
 		return numero
+
+	def approvato(self, conto: str, tipo: str = "local") -> SimpleNamespace:
+		"""A bundle of documents Twilio already approved, in ``conto``."""
+		chiave = next(k for k in REGOLE if k[0] == tipo)
+		pacchetto = SimpleNamespace(
+			sid=_sid("BU"),
+			account=conto,
+			friendly_name="Centro Aurora",
+			email="amministrazione@aurora.example",
+			regola=chiave,
+			status="twilio-approved",
+			oggetti=[],
+		)
+		self.pacchetti[pacchetto.sid] = pacchetto
+		return pacchetto
+
+	def indirizzo(self, conto: str, **valori) -> SimpleNamespace:
+		"""An address of ``conto``, as Twilio's Address resource keeps it."""
+		indirizzo = SimpleNamespace(
+			sid=_sid("AD"),
+			account=conto,
+			attributes={},
+			customer_name="Centro Aurora",
+			street="Via Roma 1",
+			city="Milano",
+			region="MI",
+			postal_code="20121",
+			iso_country="IT",
+			friendly_name="Sede",
+		)
+		for chiave, valore in valori.items():
+			setattr(indirizzo, chiave, valore)
+		self.indirizzi[indirizzo.sid] = indirizzo
+		return indirizzo
 
 	def sottoconti(self, padre: str) -> list[SimpleNamespace]:
 		return [c for c in self.conti.values() if c.owner_account_sid == padre and c.sid != padre]
@@ -393,6 +429,47 @@ class _Una:
 			(self.risorsa.conto.sid, f"delete {self.risorsa.tipo}", self.cosa.sid)
 		)
 		return True
+
+
+class _Numeri(_Risorsa):
+	"""An account's numbers: one moves to a subaccount as Twilio moves it, with an
+	approved bundle and the address already there."""
+
+	def __call__(self, sid):
+		for cosa in self.elenco:
+			if cosa.sid == sid:
+				return _UnNumero(self, cosa)
+		raise TwilioRestException(404, f"/{self.tipo}/{sid}", "Not found", code=20404)
+
+
+class _UnNumero(_Una):
+	"""One number: fetched, released, changed - or moved to a subaccount."""
+
+	def update(self, account_sid=None, **valori):
+		mondo, conto, numero = self.risorsa.mondo, self.risorsa.conto, self.cosa
+		uri = f"/IncomingPhoneNumbers/{numero.sid}"
+		if account_sid and account_sid != conto.sid:
+			destinazione = mondo.conti.get(account_sid)
+			if not destinazione or destinazione.owner_account_sid != conto.sid:
+				raise TwilioRestException(400, uri, "Not a subaccount of this account", code=20003)
+			if numero.bundle_sid:
+				pacchetto = mondo.pacchetti.get(valori.get("bundle_sid"))
+				if not pacchetto or pacchetto.account != account_sid or pacchetto.status != "twilio-approved":
+					raise TwilioRestException(400, uri, "Bundle not approved", code=21649)
+			if numero.address_sid:
+				indirizzo = mondo.indirizzi.get(valori.get("address_sid"))
+				if not indirizzo or indirizzo.account != account_sid:
+					raise TwilioRestException(
+						400, uri, "The address is not in the target account", code=21615
+					)
+			self.risorsa.elenco.remove(numero)
+			mondo.numeri[account_sid].append(numero)
+			mondo.cambi.append((conto.sid, "move IncomingPhoneNumber", numero.sid))
+		for chiave, valore in valori.items():
+			setattr(numero, chiave, valore)
+		if valori:
+			mondo.cambi.append((conto.sid, "update IncomingPhoneNumber", numero.sid))
+		return numero
 
 
 class _Conti:
@@ -704,7 +781,7 @@ class _Client:
 		self.keys = _Risorsa(mondo, conto, "Key", mondo.chiavi[sid])
 		self.new_keys = _Risorsa(mondo, conto, "Key", mondo.chiavi[sid], crea=nuova_chiave)
 		self.applications = _Risorsa(mondo, conto, "Application", mondo.app[sid], crea=nuova_app)
-		self.incoming_phone_numbers = _Risorsa(
+		self.incoming_phone_numbers = _Numeri(
 			mondo, conto, "IncomingPhoneNumber", mondo.numeri[sid], crea=compra
 		)
 		self.outgoing_caller_ids = _Risorsa(mondo, conto, "OutgoingCallerId", [])
@@ -732,6 +809,34 @@ class _Client:
 			),
 			triggers=_Soglie(mondo, conto, "UsageTrigger", mondo.soglie[sid], crea=nuova_soglia),
 		)
+
+		def request(method, uri, data=None, **_valori):
+			"""What the SDK does not have: Twilio's bundle clones."""
+			parti = uri.rstrip("/").split("/")
+			if method != "POST" or parti[-1] != "Clones":
+				return SimpleNamespace(
+					status_code=404, text=json.dumps({"message": "Not found", "code": 20404})
+				)
+			originale = mondo.pacchetti.get(parti[-2])
+			verso = mondo.conti.get((data or {}).get("TargetAccountSid"))
+			if not originale or originale.account != conto.sid:
+				return SimpleNamespace(
+					status_code=404, text=json.dumps({"message": "Bundle not found", "code": 20404})
+				)
+			if originale.status != "twilio-approved" or not verso or verso.owner_account_sid != conto.sid:
+				return SimpleNamespace(
+					status_code=400,
+					text=json.dumps({"message": "The bundle cannot be cloned", "code": 22217}),
+				)
+			copia = SimpleNamespace(**{**vars(originale), "sid": _sid("BU"), "account": verso.sid})
+			mondo.pacchetti[copia.sid] = copia
+			mondo.cambi.append((conto.sid, "clone Bundle", copia.sid))
+			return SimpleNamespace(
+				status_code=201,
+				text=json.dumps({"bundle_sid": copia.sid, "account_sid": verso.sid, "status": copia.status}),
+			)
+
+		self.request = request
 		allarmi = mondo.allarmi[sid]
 		self.monitor = SimpleNamespace(
 			v1=SimpleNamespace(
