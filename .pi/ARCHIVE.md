@@ -2077,3 +2077,23 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | "Il CRM" nell'interfaccia diventa DottorCloud; "CRM" resta per la categoria e nei nomi tecnici | È il nome del prodotto che il centro compra; "Zoho CRM" o le Impostazioni CRM di ERPNext sono altra cosa |
 | Nelle traduzioni si cambia la frase e si tiene la traduzione solo dove c'era | Il file italiano non è tenuto al passo dal fork: aggiungerne qui e là lo renderebbe più incoerente, non meno |
 | Nei documenti la storia e la licenza restano esatte | "Nato da un CRM open source", le licenze dei componenti: servono a chi deve rispettarle |
+
+## Niente più ERPNext
+
+> **Completato** (02/10/2026). DottorCloud non si collega più a ERPNext: tolte le
+> impostazioni (`ERPNext CRM Settings`) con la loro pagina, `crm/integrations/erpnext`,
+> la sincronizzazione tra prodotti e articoli (`CRM Product Sync Issue`, il lavoro di
+> riconciliazione), il prezzo delle righe preso dai listini di ERPNext, gli script sulle
+> offerte e gli ordini di ERPNext, la capacità `tecnico.erpnext`, l'opzione della CI che
+> installava ERPNext.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Tolta tutta, non spenta | Richiesta di NPM2 del 02/10/2026. DottorCloud fa le sue fatture (doc 45–49); l'integrazione veniva dal progetto originale |
+| La patch `dottorcloud_does_not_connect_erpnext` toglie le impostazioni con la chiave e il segreto del sito remoto, i problemi della sincronizzazione, lo script «Create Quotation from CRM Deal» e i campi aggiunti a trattative, prodotti, articoli, offerte e clienti | Sono quello che l'integrazione aveva lasciato su un sito; i campi tolti lasciano le colonne, quindi quello che contenevano resta nel database |
+| I permessi su Item dati ai ruoli di vendita restano | Sono di ERPNext: toglierli cambierebbe un sito che lo usa per conto suo |
+| Una riga di trattativa prende il prezzo del prodotto | Senza ERPNext non c'è un listino del cliente da cui prenderlo |
+| Le vecchie patch che creavano i campi per ERPNext escono da `patches.txt` | Su un sito nuovo creerebbero quello che la patch nuova toglie |
+

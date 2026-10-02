@@ -88,7 +88,8 @@
     resta: niente di scritto dal centro sparisce;
   - i campi restano nel DocType: chi la vuole la rimette dalla disposizione dei
     campi;
-  - `CRM Product` resta per la vetrina del sito e per ERPNext.
+  - `CRM Product` resta per la vetrina del sito (ERPNext, l'altro uso, è stato tolto il
+    02/10/2026).
 - **Le dashboard**, nella dashboard Vendite, sezione «Preventivi»:
   - **Preventivi proposti** nel periodo;
   - **Preventivi accettati**: dei preventivi che hanno avuto una risposta nel

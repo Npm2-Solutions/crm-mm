@@ -53,10 +53,10 @@ Telefono           Telefonia · Script delle chiamate
 Marketing          Sito Web · Social Planner · Tracciamento [Tracciamento dei contatti · Link tracciati]
 Fatturazione       Azienda emittente · Servizi e professionisti [Servizi fatturabili ·
                    Professionisti · Qualifiche] · Connessione al provider · Opzioni
-Integrazioni       Meta · ERPNext* · Sigillo e marca temporale* · Assistente
+Integrazioni       Meta · Sigillo e marca temporale* · Assistente
 ```
 
-`*` dell'agenzia. Con la clinica accesa "Clienti" si legge **Pazienti** e "Area
+`*` dell'agenzia. ERPNext, che stava fra le integrazioni, è stato tolto il 02/10/2026. Con la clinica accesa "Clienti" si legge **Pazienti** e "Area
 clienti" **Area pazienti** (`crm/clinica/parole.py`); *Deals* si legge
 "Trattative" ([doc 50](./50-trattative-e-preventivi.md)).
 
@@ -92,7 +92,7 @@ fila delle schede, la voce è quella pagina.
 | Marketing | Il tuo account; Clienti: Moduli; i modelli di Email e WhatsApp; Telefono; Marketing; Integrazioni: Meta |
 | Amministrazione | Il tuo account; Telefono; Fatturazione |
 | Direzione sanitaria | Il tuo account; Clienti: Moduli, Librerie; Telefono; Integrazioni: Assistente |
-| Agenzia | Come il manager, più Formati, ERPNext, Sigillo e marca temporale |
+| Agenzia | Come il manager, più Formati, Sigillo e marca temporale |
 
 ### La voce dell'operatore si apre
 
