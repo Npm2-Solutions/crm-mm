@@ -17,7 +17,9 @@ msgstr ""
 msgid " (New)"
 msgstr " (Nuovo)"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
+#: crm/api/__init__.py
+#: crm/api/comment.py
+#: crm/api/session.py
 msgid " and "
 msgstr " e "
 
@@ -1097,15 +1099,13 @@ msgstr "ACTIVE, PAUSED, DISAPPROVED, WITH_ISSUES… Così Meta dice se questa in
 msgid "API Base URL"
 msgstr "URL di base dell'API"
 
+#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:45
+#: frontend/src/components/Settings/emailConfig.js:87
 #. Label of the api_key (Data) field in DocType 'CRM Exotel Settings'
 #. Label of the api_key (Data) field in DocType 'CRM Twilio Settings'
 #. Label of the api_key (Data) field in DocType 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
-#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-#: frontend/src/components/Settings/ERPNextSettings.vue:80
-#: frontend/src/components/Settings/Telephony/ExotelSettings.vue:45
-#: frontend/src/components/Settings/emailConfig.js:87
 msgid "API Key"
 msgstr "Chiave API"
 
@@ -1113,12 +1113,10 @@ msgstr "Chiave API"
 msgid "API Key / Token"
 msgstr "Chiave API / token"
 
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+#: frontend/src/components/Settings/emailConfig.js:93
 #. Label of the api_secret (Password) field in DocType 'CRM Twilio Settings'
 #. Label of the api_secret (Password) field in DocType 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-#: frontend/src/components/Settings/ERPNextSettings.vue:88
-#: frontend/src/components/Settings/emailConfig.js:93
 msgid "API Secret"
 msgstr "Segreto API"
 
@@ -1140,7 +1138,6 @@ msgstr "Chiave API"
 msgid "API key / token"
 msgstr "Chiave API / token"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:500
 #: frontend/src/components/Settings/emailConfig.js:192
 msgid "API key is required"
 msgstr "La chiave API è obbligatoria"
@@ -1148,10 +1145,6 @@ msgstr "La chiave API è obbligatoria"
 #: crm/moduli/doctype/crm_signature_settings/crm_signature_settings.json
 msgid "API secret"
 msgstr "Chiave segreta API"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:503
-msgid "API secret is required"
-msgstr "La chiave segreta API è obbligatoria"
 
 #: frontend/src/frontend/src/components/Settings/WhatsAppTemplates.vue
 msgid "APPROVED"
@@ -1465,10 +1458,6 @@ msgstr "Aggiungi un assegnatario"
 #: frontend/src/components/Calendar/Attendee.vue:122
 msgid "Add Attendee"
 msgstr "Aggiungi un partecipante"
-
-#: crm/fcrm/doctype/crm_product/crm_product_list.js:3
-msgid "Add CRM Product"
-msgstr ""
 
 #: frontend/src/components/Dashboard/AddChartModal.vue:2
 msgid "Add Chart"
@@ -3063,10 +3052,6 @@ msgstr "Vuoi davvero rimuovere questa scheda e tutto quello che contiene?"
 msgid "Are you sure you want to remove {0} from the hierarchy?"
 msgstr "Vuoi davvero togliere {0} dalla gerarchia?"
 
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.js:9
-msgid "Are you sure you want to reset 'Create Quotation from CRM Deal' Form Script?"
-msgstr "Vuoi davvero reimpostare lo script del modulo \"Crea preventivo dalla trattativa\"?"
-
 #: frontend/src/components/Settings/DashboardSettings.vue:236
 msgid "Are you sure you want to set the currency as {0}? This cannot be changed later."
 msgstr "Vuoi davvero impostare {0} come valuta? Poi non si potrà più cambiare."
@@ -3248,8 +3233,8 @@ msgid "Assignees"
 msgstr "Assegnatari"
 
 #: frontend/src/utils/impostazioni.js
-#. Option for the 'Type' (Select) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
+#. Option for the 'Type' (Select) field in DocType 'CRM Notification'
 msgid "Assignment"
 msgstr "Assegnazione"
 
@@ -3510,10 +3495,6 @@ msgstr "Indirizzo dell'autorità"
 msgid "Authorization was cancelled"
 msgstr "L'autorizzazione è stata annullata"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:213
-msgid "Auto Create Customer"
-msgstr "Crea il cliente in automatico"
-
 #: frontend/src/components/Settings/DashboardSettings.vue:49
 msgid "Auto Update Expected Deal Value"
 msgstr "Aggiorna in automatico il valore previsto della trattativa"
@@ -3579,10 +3560,6 @@ msgstr "Calcola in automatico il \"Valore previsto della trattativa\" dal totale
 #: crm/dashboard/widgets/automations.py
 msgid "Automation"
 msgstr "Automazione"
-
-#: frontend/src/components/Settings/Settings.vue:190
-msgid "Automation & Rules"
-msgstr ""
 
 #: crm/dashboard/widgets/automations.py
 msgid "Automation activity"
@@ -4176,14 +4153,6 @@ msgstr "Bevande e tabacco"
 #: frontend/src/components/Settings/PlanSettings.vue
 msgid "Beyond what is included, SdI credits, minutes, SMS and advanced signatures are billed by the agency once a month. WhatsApp messages are paid by the centre directly to Meta."
 msgstr "Oltre quello che è incluso, crediti SdI, minuti, SMS e firme avanzate li fattura l'agenzia una volta al mese. I messaggi WhatsApp li paga il centro direttamente a Meta."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Bidirectional Product Sync"
-msgstr "Sincronizza i prodotti nei due sensi"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:195
-msgid "Bidirectional sync of existing CRM Products and ERPNext Items. Runs in the background."
-msgstr ""
 
 #: frontend/src/utils/impostazioni.js
 msgid "Billable services"
@@ -5151,11 +5120,6 @@ msgid "CRM Product"
 msgstr "Prodotto"
 
 #. Name of a DocType
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
-msgid "CRM Product Sync Issue"
-msgstr "Problema di sincronizzazione del prodotto"
-
-#. Name of a DocType
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "CRM Products"
 msgstr "Prodotti"
@@ -5420,9 +5384,9 @@ msgstr "Importazioni da CSV"
 msgid "Cal.com"
 msgstr "Cal.com"
 
-#. Label of the calendar_tab (Tab Break) field in DocType 'FCRM Settings'
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 #: frontend/src/components/Settings/Settings.vue:142
+#. Label of the calendar_tab (Tab Break) field in DocType 'FCRM Settings'
 msgid "Calendar"
 msgstr "Calendario"
 
@@ -5832,10 +5796,6 @@ msgstr "Non puoi cambiare il ruolo di un utente con accesso da amministratore"
 msgid "Cannot delete standard items {0}"
 msgstr "Le voci standard non si possono eliminare: {0}"
 
-#: crm/fcrm/doctype/crm_product/crm_product.py:81
-msgid "Cannot delete: linked ERPNext Item {0} is referenced by a Quotation. Remove the reference or delete the Item in ERPNext first."
-msgstr "Non si può eliminare: l'articolo ERPNext collegato {0} è usato in un preventivo. Prima togli il riferimento o elimina l'articolo in ERPNext."
-
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleListItem.vue:170
 msgid "Cannot enable rule without adding users in it"
 msgstr "Non puoi attivare la regola senza utenti: aggiungine almeno uno"
@@ -5851,10 +5811,6 @@ msgstr "Non puoi invitare con questo ruolo"
 #: frontend/src/components/Settings/Hierarchy/useDragDrop.js:73
 msgid "Cannot move a manager under one of their own reports"
 msgstr "Non puoi spostare un responsabile sotto uno dei suoi collaboratori"
-
-#: crm/integrations/erpnext/utils.py:64
-msgid "Cannot rename: an unrelated {0} '{1}' already exists on the other side. Resolve manually first."
-msgstr "Non si può rinominare: dall'altra parte esiste già un {0} '{1}' non collegato. Prima risolvi a mano."
 
 #: crm/fcrm/doctype/crm_user_capability/crm_user_capability.json
 msgid "Capability"
@@ -6676,7 +6632,7 @@ msgstr "Azienda"
 msgid "Company Description"
 msgstr "Descrizione dell'azienda"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:130
+#: crm/domain_enrichment/doctype/crm_enrichment_run/crm_enrichment_run.json
 msgid "Company Name"
 msgstr "Nome dell'azienda"
 
@@ -6684,18 +6640,9 @@ msgstr "Nome dell'azienda"
 msgid "Company description discovered by Domain Enrichment."
 msgstr "La descrizione dell'azienda, trovata completando i dati dal sito web."
 
-#. Label of the erpnext_company (Data) field in DocType 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "Company in ERPNext site"
-msgstr "Azienda nel sito ERPNext"
-
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
 msgid "Company logo discovered by Domain Enrichment."
 msgstr "Il logo dell'azienda, trovato completando i dati dal sito web."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:517
-msgid "Company name is required"
-msgstr "Il nome dell'azienda è obbligatorio"
 
 #: crm/install.py
 msgid "Competition"
@@ -6915,10 +6862,6 @@ msgstr "Conformità"
 #: frontend/src/components/Settings/Social/SocialSettings.vue
 msgid "Connect"
 msgstr "Collega"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:274
-msgid "Connect ERPNext to {brand}"
-msgstr "Collega ERPNext a {brand}"
 
 #: frontend/src/pages/SocialPlanner.vue
 msgid "Connect Facebook & Instagram to start scheduling."
@@ -7401,10 +7344,6 @@ msgstr "Non è stato possibile creare la serie"
 msgid "Could not create the site"
 msgstr "Non è stato possibile creare il sito"
 
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:156
-msgid "Could not create {brand}'s custom fields on {0} automatically. If it is running the latest ERPNext, enable the CRM data synchronization in its CRM Settings, otherwise check the Error Log."
-msgstr "Non è stato possibile creare automaticamente i campi di {brand} su {0}. Se usa l'ultima versione di ERPNext, attiva la sincronizzazione dei dati del CRM nelle sue Impostazioni CRM, altrimenti controlla il registro degli errori."
-
 #: frontend/src/pages/Automations.vue
 msgid "Could not delete"
 msgstr "Non è stato possibile eliminare"
@@ -7809,16 +7748,6 @@ msgstr "Crea prima un'azienda emittente."
 msgid "Create and design"
 msgstr "Crea e disegna"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:217
-msgid "Create customer in ERPNext when the deal status is changed"
-msgstr "Crea il cliente in ERPNext quando cambia lo stato della trattativa"
-
-#. Label of the create_customer_on_status_change (Check) field in DocType
-#. 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "Create customer on status change"
-msgstr "Crea il cliente al cambio di stato"
-
 #: frontend/src/pages/Automations.vue
 msgid "Create one"
 msgstr "Creane una"
@@ -7826,16 +7755,6 @@ msgstr "Creane una"
 #: crm/fcrm/doctype/crm_booking_connection/crm_booking_connection.json
 msgid "Create or Link the Client as Lead"
 msgstr "Crea o collega la scheda del cliente"
-
-#: crm/fcrm/doctype/crm_product/crm_product.js:12
-#: crm/fcrm/doctype/crm_product/crm_product_list.js:10
-#: frontend/src/composables/document.js:29
-msgid "Create products as Items in ERPNext"
-msgstr "Crea i prodotti come articoli in ERPNext"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:435
-msgid "Create quotation button on deal page and auto customer creation on deal status change will be disabled. Are you sure?"
-msgstr "Verranno disattivati il pulsante per creare un preventivo nella pagina della trattativa e la creazione automatica del cliente quando cambia lo stato della trattativa. Vuoi continuare?"
 
 #: frontend/src/pages/Invoices.vue
 msgid "Create the company"
@@ -8005,7 +7924,6 @@ msgid "Customised Online Rules"
 msgstr "Regole online personalizzate"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:617
-#: frontend/src/components/Settings/Settings.vue:206
 msgid "Customization"
 msgstr "Personalizzazione"
 
@@ -8272,12 +8190,6 @@ msgstr "Trattativa creata"
 msgid "Deal Owner"
 msgstr "Responsabile della trattativa"
 
-#. Label of the deal_status (Link) field in DocType 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-#: frontend/src/components/Settings/ERPNextSettings.vue:241
-msgid "Deal Status"
-msgstr "Stato della trattativa"
-
 #: crm/fcrm/doctype/crm_automation/crm_automation.json
 msgid "Deal Status Changed"
 msgstr "Stato della trattativa cambiato"
@@ -8299,10 +8211,6 @@ msgstr "Trattativa creata"
 #: crm/api/dashboard.py:1023
 msgid "Deal generation channel analysis"
 msgstr "Da quali canali arrivano le trattative"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:522
-msgid "Deal status is required"
-msgstr "Lo stato della trattativa è obbligatorio"
 
 #: crm/api/dashboard.py:1078 crm/api/dashboard.py:1141
 msgid "Deal value"
@@ -8861,7 +8769,6 @@ msgstr "Amministrazione"
 
 #: crm/fcrm/doctype/crm_automation_step_log/crm_automation_step_log.json
 #. Label of the detail (Small Text) field in DocType 'CRM Product Sync Issue'
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
 msgid "Detail"
 msgstr "Dettaglio"
 
@@ -8879,12 +8786,6 @@ msgstr "Dettagliata"
 #: frontend/src/pages/MobileOrganization.vue:338
 msgid "Details"
 msgstr "Dettagli"
-
-#. Label of the detected_on (Datetime) field in DocType 'CRM Product Sync
-#. Issue'
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
-msgid "Detected On"
-msgstr "Rilevato il"
 
 #. Label of the call_receiving_device (Select) field in DocType 'CRM Telephony
 #. Agent'
@@ -8938,18 +8839,12 @@ msgid "Direction"
 msgstr "Direzione"
 
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.js:30
-#: frontend/src/components/Settings/ERPNextSettings.vue:32
-#: frontend/src/components/Settings/ERPNextSettings.vue:440
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:31
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:316
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:29
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:29
 msgid "Disable"
 msgstr "Disattiva"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:434
-msgid "Disable ERPNext Integration"
-msgstr "Disattiva l'integrazione con ERPNext"
 
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:310
 msgid "Disable Sales Hierarchy"
@@ -9041,11 +8936,6 @@ msgstr "Importo dello sconto"
 #: frontend/src/components/SalesHierarchyBanner.vue:13
 msgid "Dismiss"
 msgstr "Nascondi"
-
-#. Label of the dismissed (Check) field in DocType 'CRM Product Sync Issue'
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
-msgid "Dismissed"
-msgstr "Ignorato"
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:114
 msgid "Display format for dates across the system"
@@ -9404,60 +9294,8 @@ msgid "During working hours"
 msgstr "Negli orari di lavoro"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:634
-#: frontend/src/components/Settings/Settings.vue:231
 msgid "ERPNext"
 msgstr "ERPNext"
-
-#. Name of a DocType
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "ERPNext CRM Settings"
-msgstr "Impostazioni ERPNext"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "ERPNext Items always sync into {brand}'s products. Turn this on to also sync product changes back to ERPNext Items."
-msgstr "Gli articoli di ERPNext arrivano sempre nei prodotti di {brand}. Attiva questa opzione per riportare anche le modifiche dei prodotti negli articoli di ERPNext."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:3
-#: frontend/src/components/Settings/ERPNextSettings.vue:9
-msgid "ERPNext Settings"
-msgstr "Impostazioni ERPNext"
-
-#. Label of the section_break_oubd (Section Break) field in DocType 'ERPNext
-#. CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "ERPNext Site API's"
-msgstr "API del sito ERPNext"
-
-#. Label of the erpnext_site_url (Data) field in DocType 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "ERPNext Site URL"
-msgstr "URL del sito ERPNext"
-
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:161
-msgid "ERPNext custom fields not created"
-msgstr "Campi personalizzati di ERPNext non creati"
-
-#: crm/fcrm/doctype/crm_product/crm_product.py:42
-msgid "ERPNext integration is active. Create an Item in ERPNext and it will appear among {brand}'s products automatically."
-msgstr "L'integrazione con ERPNext è attiva. Crea un articolo in ERPNext e comparirà da solo tra i prodotti di {brand}."
-
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:220
-msgid "ERPNext integration must be enabled on the same site"
-msgstr "L'integrazione con ERPNext deve essere attiva sullo stesso sito"
-
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:70
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:87
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:523
-msgid "ERPNext is not installed in the current site"
-msgstr "ERPNext non è installato su questo sito"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:71
-msgid "ERPNext is not installed on this site either install it or enter the URL of your ERPNext site to connect"
-msgstr "ERPNext non è installato su questo sito: installalo oppure inserisci l'URL del tuo sito ERPNext da collegare"
-
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:27
-msgid "ERPNext is not integrated with {brand}"
-msgstr "ERPNext non è integrato con {brand}"
 
 #: crm/dashboard/widgets/marketing.py
 msgid "Each ad: what it cost, the people it brought, the deals it won"
@@ -9717,9 +9555,6 @@ msgstr "Elettronica"
 msgid "Elty"
 msgstr "Elty"
 
-#. Label of the email (Data) field in DocType 'CRM Contacts'
-#. Label of the email (Data) field in DocType 'CRM Invitation'
-#. Label of the email (Data) field in DocType 'CRM Lead'
 #: crm/fcrm/doctype/crm_contacts/crm_contacts.json
 #: crm/fcrm/doctype/crm_invitation/crm_invitation.json
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
@@ -9736,6 +9571,9 @@ msgstr "Elty"
 #: frontend/src/pages/Organization.vue:503
 #: frontend/src/pages/Organization.vue:531
 #: frontend/src/pages/PersonaForm.vue:77
+#. Label of the email (Data) field in DocType 'CRM Contacts'
+#. Label of the email (Data) field in DocType 'CRM Invitation'
+#. Label of the email (Data) field in DocType 'CRM Lead'
 msgid "Email"
 msgstr "E-mail"
 
@@ -9984,7 +9822,6 @@ msgid "Empty: until the sessions are used"
 msgstr "Vuoto: finché non si usano tutte le sedute"
 
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.js:30
-#: frontend/src/components/Settings/ERPNextSettings.vue:287
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:72
 #: frontend/src/components/Settings/Telephony/ExotelSettings.vue:117
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:124
@@ -10055,24 +9892,10 @@ msgstr "Attiva per le aziende"
 msgid "Enable lead tracking"
 msgstr "Attiva il tracciamento dei contatti"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:278
-msgid "Enable the integration to create quotations and auto create customers in ERPNext."
-msgstr ""
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Enable the integration to create quotations and more in ERPNext."
-msgstr "Attiva l'integrazione per creare preventivi e altro in ERPNext."
-
-#. Label of the enabled (Check) field in DocType 'CRM Exotel Settings'
-#. Label of the enabled (Check) field in DocType 'CRM Form Script'
-#. Label of the enabled (Check) field in DocType 'CRM Service Level Agreement'
-#. Label of the enabled (Check) field in DocType 'CRM Twilio Settings'
-#. Label of the enabled (Check) field in DocType 'ERPNext CRM Settings'
 #: crm/fcrm/doctype/crm_exotel_settings/crm_exotel_settings.json
 #: crm/fcrm/doctype/crm_form_script/crm_form_script.json
 #: crm/fcrm/doctype/crm_service_level_agreement/crm_service_level_agreement.json
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue:32
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRulesList.vue:18
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:18
@@ -10082,6 +9905,11 @@ msgstr "Attiva l'integrazione per creare preventivi e altro in ERPNext."
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSources.vue:57
 #: frontend/src/components/Settings/Sla/SlaPolicyList.vue:65
 #: frontend/src/components/Settings/Sla/SlaPolicyView.vue:30
+#. Label of the enabled (Check) field in DocType 'CRM Exotel Settings'
+#. Label of the enabled (Check) field in DocType 'CRM Form Script'
+#. Label of the enabled (Check) field in DocType 'CRM Service Level Agreement'
+#. Label of the enabled (Check) field in DocType 'CRM Twilio Settings'
+#. Label of the enabled (Check) field in DocType 'ERPNext CRM Settings'
 msgid "Enabled"
 msgstr "Abilitato"
 
@@ -11184,7 +11012,6 @@ msgid "Failed to save outcome"
 msgstr "Non è stato possibile salvare l'esito"
 
 #: frontend/src/components/Settings/DefaultsSettings.vue:169
-#: frontend/src/components/Settings/ERPNextSettings.vue:342
 msgid "Failed to save settings"
 msgstr "Non è stato possibile salvare le impostazioni"
 
@@ -11219,10 +11046,6 @@ msgstr "Invio dell'email non riuscito!"
 #: frontend/src/components/Settings/Meta/MetaConnection.vue
 msgid "Failed to start login"
 msgstr "Non è stato possibile avviare l'accesso"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:333
-msgid "Failed to start sync"
-msgstr "Non è stato possibile avviare la sincronizzazione"
 
 #: frontend/src/components/Settings/Meta/MetaLeadForms.vue
 msgid "Failed to start the import"
@@ -11868,10 +11691,6 @@ msgstr "ID del modulo"
 #: crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json
 msgid "Form Name"
 msgstr "Nome del modulo"
-
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.js:18
-msgid "Form Script updated successfully"
-msgstr ""
 
 #: crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json
 msgid "Form Status"
@@ -13201,10 +13020,6 @@ msgstr "Percorso non valido"
 msgid "Invalid script"
 msgstr "Script non valido"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Invalid site URL"
-msgstr "URL del sito non valido"
-
 #: crm/api/dialer.py
 msgid "Invalid source"
 msgstr "Origine non valida"
@@ -13484,10 +13299,6 @@ msgstr "Comincia troppo presto per aspettare una risposta"
 #: frontend/src/components/Settings/Pipelines/PipelineList.vue
 msgid "It starts with the standard stages — rename, recolour and reorder them next."
 msgstr "Parte con le fasi standard: poi puoi rinominarle, cambiarne il colore e riordinarle."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Item Group"
-msgstr "Gruppo articoli"
 
 #: frontend/src/pages/FormFill.vue
 msgid "Its answers go. Nothing was signed on it."
@@ -14620,10 +14431,6 @@ msgstr "Numero Exotel non valido"
 msgid "Invalid GeoJSON"
 msgstr "GeoJSON non valido"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:495
-msgid "Invalid Site URL"
-msgstr ""
-
 #: frontend/src/composables/event.js:247
 msgid "Invalid Start Or End Time"
 msgstr "Ora di inizio o di fine non valida"
@@ -14756,12 +14563,6 @@ msgstr "È"
 msgid "Is Default"
 msgstr "È predefinito"
 
-#. Label of the is_erpnext_in_different_site (Check) field in DocType 'ERPNext
-#. CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "Is ERPNext installed on a different site?"
-msgstr "ERPNext è installato su un altro sito?"
-
 #. Label of the is_group (Check) field in DocType 'CRM Sales Hierarchy'
 #. Label of the is_group (Check) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_sales_hierarchy/crm_sales_hierarchy.json
@@ -14873,7 +14674,6 @@ msgstr "Chiave"
 
 #: frontend/src/components/Documents/DocumentDialog.vue
 #. Label of the kind (Select) field in DocType 'CRM Product Sync Issue'
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
 msgid "Kind"
 msgstr "Tipo"
 
@@ -15052,7 +14852,9 @@ msgstr ""
 msgid "Lead Sync Source created successfully"
 msgstr ""
 
-#: frontend/src/components/Settings/Settings.vue:237
+#: crm/lead_syncing/doctype/facebook_ad/facebook_ad.json
+#: crm/lead_syncing/doctype/facebook_ad_account/facebook_ad_account.json
+#: crm/lead_syncing/doctype/facebook_ad_insight/facebook_ad_insight.json
 msgid "Lead Syncing"
 msgstr ""
 
@@ -15142,10 +14944,6 @@ msgstr "Simile"
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:51
 msgid "Link"
 msgstr "Collegamento"
-
-#: crm/fcrm/doctype/crm_product/reconcile_job.py:100
-msgid "Linked Item {0} no longer exists"
-msgstr "L'articolo collegato {0} non esiste più"
 
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:404
 msgid "Linked With"
@@ -15341,10 +15139,6 @@ msgstr "Gestisci"
 msgid "Manage CRM users by adding or inviting them, and assign roles to control their access and permissions"
 msgstr ""
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:4
-msgid "Manage ERPNext integration settings"
-msgstr "Gestisci le impostazioni dell'integrazione con ERPNext"
-
 #: frontend/src/components/Settings/Profile/ProfileSettings.vue:100
 msgid "Manage your account emails and email signature for communication."
 msgstr "Gestisci gli indirizzi email del tuo account e la firma delle tue email."
@@ -15429,10 +15223,6 @@ msgstr "Contributo obbligatorio esposto in fattura (art. 8, c. 3, D.Lgs. 103/199
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
 msgid "Manual"
 msgstr "Manuale"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Manual Sync"
-msgstr "Sincronizzazione manuale"
 
 #: frontend/src/components/Settings/Scheduling/OnlineBookingPanel.vue
 msgid "Manual approval"
@@ -17236,10 +17026,6 @@ msgstr "Ancora nessun odontogramma. L'odontogramma dice com'è ogni dente; un pi
 #: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.py
 msgid "No closed-hours audio set — callers outside working hours hear the open-hours one."
 msgstr "Nessun audio per l'orario di chiusura: chi chiama fuori orario sente quello dell'orario di apertura."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:323
-msgid "No companies found in the given site"
-msgstr "Nessuna azienda nel sito indicato"
 
 #: frontend/src/components/Settings/Invoicing/InvoicingCompany.vue
 msgid "No company yet. Create the first one."
@@ -19798,10 +19584,6 @@ msgstr "Logo dell'azienda"
 msgid "Organization Name"
 msgstr "Nome dell'azienda"
 
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:503
-msgid "Organization or a primary Contact is required to create a customer"
-msgstr "Per creare un cliente serve un'azienda o un contatto principale"
-
 #: crm/fcrm/doctype/crm_lead/crm_lead.py
 msgid "Organization {0} does not exist"
 msgstr "L'azienda {0} non esiste"
@@ -21300,10 +21082,9 @@ msgstr "Probabilità"
 msgid "Probe the Entratel mandate"
 msgstr "Verifica la delega Entratel"
 
+#: crm/fcrm/doctype/crm_products/crm_products.json
 #. Label of the product (Link) field in DocType 'CRM Product Sync Issue'
 #. Label of the product_code (Link) field in DocType 'CRM Products'
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
-#: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Product"
 msgstr "Prodotto"
 
@@ -21318,19 +21099,6 @@ msgstr "Codice del prodotto"
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Product Name"
 msgstr "Nome del prodotto"
-
-#. Label of the sync_issues (Table) field in DocType 'ERPNext CRM Settings'
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
-msgid "Product Sync Issues"
-msgstr "Problemi di sincronizzazione dei prodotti"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Product sync started."
-msgstr "Sincronizzazione dei prodotti avviata."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:330
-msgid "Product sync started. Items will appear shortly."
-msgstr ""
 
 #: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
 msgid "Production"
@@ -22226,10 +21994,6 @@ msgstr "Ricarica"
 msgid "Refresh Apps"
 msgstr "Aggiorna le app"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:157
-msgid "Refresh Companies"
-msgstr "Aggiorna le aziende"
-
 #: frontend/src/components/Settings/Social/SocialSettings.vue
 msgid "Refresh profiles"
 msgstr "Aggiorna i profili"
@@ -22711,10 +22475,6 @@ msgstr "Reimposta"
 msgid "Reset Changes"
 msgstr "Reimposta modifiche"
 
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.js:7
-msgid "Reset ERPNext Form Script"
-msgstr ""
-
 #: frontend/vite/frappeUi.js
 msgid "Reset Mapping"
 msgstr "Ripristina l'abbinamento"
@@ -23191,14 +22951,6 @@ msgstr "Regole di {0}"
 msgid "Run"
 msgstr "Avvia"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Run a manual bi-directional sync between ERPNext Items and {brand}'s products."
-msgstr "Avvia a mano una sincronizzazione nei due sensi tra gli articoli di ERPNext e i prodotti di {brand}."
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "Run a manual synchronization to pull the latest Items from ERPNext."
-msgstr "Avvia a mano una sincronizzazione per prendere gli ultimi articoli da ERPNext."
-
 #: frontend/src/components/Automations/StepPanel.vue
 msgid "Run only if…"
 msgstr "Esegui solo se…"
@@ -23392,8 +23144,6 @@ msgstr ""
 msgid "Sales Hierarchy enabled"
 msgstr ""
 
-#. Name of a role
-#. Option for the 'Role' (Select) field in DocType 'CRM Invitation'
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
 #: crm/fcrm/doctype/crm_communication_status/crm_communication_status.json
 #: crm/fcrm/doctype/crm_dashboard/crm_dashboard.json
@@ -23420,7 +23170,6 @@ msgstr ""
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 #: crm/fcrm/doctype/fcrm_note/fcrm_note.json
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 #: crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json
@@ -23428,6 +23177,8 @@ msgstr ""
 #: crm/lead_syncing/doctype/failed_lead_sync_log/failed_lead_sync_log.json
 #: crm/lead_syncing/doctype/lead_sync_source/lead_sync_source.json
 #: frontend/src/components/Settings/Hierarchy/Hierarchy.vue:276
+#. Name of a role
+#. Option for the 'Role' (Select) field in DocType 'CRM Invitation'
 msgid "Sales Manager"
 msgstr "Responsabile vendite"
 
@@ -23435,8 +23186,6 @@ msgstr "Responsabile vendite"
 msgid "Sales Trend"
 msgstr ""
 
-#. Name of a role
-#. Option for the 'Role' (Select) field in DocType 'CRM Invitation'
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
 #: crm/fcrm/doctype/crm_communication_status/crm_communication_status.json
 #: crm/fcrm/doctype/crm_dashboard/crm_dashboard.json
@@ -23460,7 +23209,6 @@ msgstr ""
 #: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 #: crm/fcrm/doctype/fcrm_note/fcrm_note.json
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 #: frontend/src/components/Modals/AddExistingUserModal.vue:92
@@ -23472,6 +23220,8 @@ msgstr ""
 #: frontend/src/components/Settings/Users.vue:243
 #: frontend/src/components/Settings/Users.vue:246
 #: frontend/src/pages/Dashboard.vue:95
+#. Name of a role
+#. Option for the 'Role' (Select) field in DocType 'CRM Invitation'
 msgid "Sales User"
 msgstr "Utente vendite"
 
@@ -23944,10 +23694,6 @@ msgstr "Seleziona"
 msgid "Select All"
 msgstr "Seleziona tutto"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:176
-msgid "Select Company"
-msgstr "Scegli l'azienda"
-
 #: frontend/src/components/Settings/DashboardSettings.vue:89
 msgid "Select Currency"
 msgstr "Seleziona valuta"
@@ -24041,10 +23787,6 @@ msgstr "Scegli il periodo"
 msgid "Select the assignees for {0}."
 msgstr "Scegli a chi assegnare le {0}."
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:245
-msgid "Select the deal status to trigger the auto customer creation in ERPNext"
-msgstr "Scegli lo stato della trattativa che crea in automatico il cliente in ERPNext"
-
 #: frontend/src/components/Settings/CalendarSettings.vue:38
 msgid "Select the default view for your calendar. This will be the initial view when you open the calendar"
 msgstr "Scegli la vista predefinita dell'agenda: è quella che vedi quando la apri"
@@ -24060,10 +23802,6 @@ msgstr "Scegli l'ora"
 #: frontend/src/components/Settings/DefaultsSettings.vue:131
 msgid "Select whether to display time with or without seconds"
 msgstr "Scegli se mostrare l'ora con o senza secondi"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:133
-msgid "Select your ERPNext company to connect with"
-msgstr "Scegli l'azienda di ERPNext da collegare"
 
 #: frontend/src/components/FieldLayout/Field.vue:574
 msgid "Select {0}"
@@ -24631,10 +24369,6 @@ msgstr "Impostazione aggiornata"
 msgid "Settings"
 msgstr "Impostazioni"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:339
-msgid "Settings saved"
-msgstr "Impostazioni salvate"
-
 #: frontend/src/components/Settings/DefaultsSettings.vue:166
 msgid "Settings updated successfully"
 msgstr "Impostazioni aggiornate"
@@ -25110,17 +24844,11 @@ msgstr "Sistema di Interscambio"
 msgid "Site"
 msgstr "Sito web"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue:66
+#: crm/fcrm/doctype/meta_page_route/meta_page_route.json
+#: crm/fcrm/doctype/meta_whatsapp_route/meta_whatsapp_route.json
+#: crm/fcrm/doctype/whatsapp_signup_session/whatsapp_signup_session.json
 msgid "Site URL"
 msgstr "URL del sito"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:490
-msgid "Site URL is required"
-msgstr "L'URL del sito è obbligatorio"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:473
-msgid "Site connection validated"
-msgstr "Connessione al sito verificata"
 
 #: frontend/src/components/Settings/Website/WebsiteSettings.vue
 msgid "Site enabled"
@@ -26068,14 +25796,9 @@ msgid "Sync Enabled"
 msgstr "Sincronizzazione attiva"
 
 #: crm/lead_syncing/doctype/lead_sync_source/lead_sync_source.js:6
-#: frontend/src/components/Settings/ERPNextSettings.vue:206
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSourceForm.vue:23
 msgid "Sync Now"
 msgstr "Sincronizza ora"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:191
-msgid "Sync Products with ERPNext"
-msgstr ""
 
 #: frontend/src/components/Settings/LeadSyncing/FailureLogs.vue:132
 msgid "Sync Successful!"
@@ -26123,16 +25846,10 @@ msgstr ""
 msgid "System"
 msgstr "Sistema"
 
-#: frontend/src/components/Settings/Settings.vue:119
-msgid "System Configuration"
-msgstr ""
-
 #: frontend/src/components/Settings/DefaultsSettings.vue:6
 msgid "System Defaults"
 msgstr ""
 
-#. Name of a role
-#. Option for the 'Role' (Select) field in DocType 'CRM Invitation'
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
 #: crm/fcrm/doctype/crm_communication_status/crm_communication_status.json
 #: crm/fcrm/doctype/crm_dashboard/crm_dashboard.json
@@ -26159,13 +25876,14 @@ msgstr ""
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
-#: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 #: crm/fcrm/doctype/fcrm_note/fcrm_note.json
 #: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
 #: crm/lead_syncing/doctype/facebook_lead_form/facebook_lead_form.json
 #: crm/lead_syncing/doctype/facebook_page/facebook_page.json
 #: crm/lead_syncing/doctype/failed_lead_sync_log/failed_lead_sync_log.json
 #: crm/lead_syncing/doctype/lead_sync_source/lead_sync_source.json
+#. Name of a role
+#. Option for the 'Role' (Select) field in DocType 'CRM Invitation'
 msgid "System Manager"
 msgstr "Amministratore di Sistema"
 
@@ -26787,10 +26505,6 @@ msgstr "Il token di accesso non è più valido, quindi non si può leggere né i
 #: crm/integrations/meta/errors.py
 msgid "The account is temporarily blocked for a policy violation. Meta lifts it by itself, and nothing in {brand} can shorten it — check the app's Alerts in the Meta dashboard for what triggered it."
 msgstr "L'account è bloccato temporaneamente per una violazione delle normative. Meta lo sblocca da solo, e niente in {brand} può accorciare il blocco: controlla gli avvisi dell'app nella dashboard di Meta per capire cosa l'ha causato."
-
-#: frontend/src/utils/impostazioni.js
-msgid "The accounting system the agency connects."
-msgstr "Il gestionale contabile che collega l'agenzia."
 
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 msgid "The ad that produced the first submission. Kept as the id, not the name, because the name changes and the spend report joins on this."
@@ -27556,10 +27270,6 @@ msgstr "Il link è stato inviato a {0}. Online fino al {1}."
 msgid "The login worked but no Page came with it. Press \"Add Pages from Facebook\" and tick the Pages you administer — granting them all is fine, you choose here which ones {brand} actually uses."
 msgstr "L'accesso è riuscito, ma senza nessuna pagina. Premi \"Aggiungi pagine da Facebook\" e spunta le pagine che amministri: puoi concederle tutte, poi qui scegli quali usa davvero {brand}."
 
-#: frontend/src/utils/impostazioni.js
-msgid "The mailboxes {brand} sends and receives from."
-msgstr "Le caselle da cui {brand} manda e riceve."
-
 #: frontend/src/components/Settings/Invoicing/InvoicingDefaults.vue
 msgid "The mandate is not asked for, it is probed: one real document goes out in the practice’s own name and the rejection code answers. 105 means there is no mandate, 106 means there is one."
 msgstr "La delega non si chiede: si verifica. Parte un documento vero a nome dello studio e risponde il codice di scarto: 105 vuol dire che la delega non c'è, 106 che c'è."
@@ -28094,10 +27804,6 @@ msgstr "Il servizio non è prenotabile online"
 #: crm/fcrm/doctype/crm_plan_module/crm_plan_module.json
 msgid "The service that includes the module, for as long as it runs"
 msgstr "Il servizio che comprende il modulo, finché è in corso"
-
-#: frontend/src/utils/impostazioni.js
-msgid "The service that takes the invoices to the tax system."
-msgstr "Il servizio che porta le fatture al fisco."
 
 #: crm/invoicing/documento.py
 msgid "The service {0} has no fiscal card: a service without a card is not billable"
@@ -30424,7 +30130,6 @@ msgstr "Appuntamenti in arrivo per cliente"
 #: frontend/src/components/Settings/CalendarSettings.vue:21
 #: frontend/src/components/Settings/DashboardSettings.vue:19
 #: frontend/src/components/Settings/DefaultsSettings.vue:19
-#: frontend/src/components/Settings/ERPNextSettings.vue:41
 #: frontend/src/components/Settings/EmailTemplate/EditEmailTemplate.vue:21
 #: frontend/src/components/Settings/HomeActions.vue:16
 #: frontend/src/components/Settings/LeadSyncing/LeadSyncSourceForm.vue:30
@@ -30574,10 +30279,6 @@ msgstr "Urgente: prima degli altri"
 msgid "Use"
 msgstr "Uso"
 
-#: crm/fcrm/doctype/crm_product/crm_product.py:45
-msgid "Use ERPNext to Create Products"
-msgstr "Crea i prodotti in ERPNext"
-
 #: crm/domain_enrichment/doctype/crm_enrichment_settings/crm_enrichment_settings.json
 msgid "Use Sitemap"
 msgstr "Usa la sitemap"
@@ -30657,11 +30358,7 @@ msgstr "Token di accesso dell'utente"
 msgid "User Agent"
 msgstr "User agent"
 
-#: frontend/src/components/Settings/Settings.vue:99
-msgid "User Configuration"
-msgstr ""
-
-#: frontend/src/components/Settings/Settings.vue:150
+#: frontend/src/utils/impostazioni.js
 msgid "User Management"
 msgstr ""
 
@@ -30854,10 +30551,6 @@ msgstr "Verificato dal commercialista"
 #: crm/invoicing/doctype/crm_billable_service/crm_billable_service.json
 msgid "Verified on"
 msgstr "Verificato il"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue:110
-msgid "Verify Connection"
-msgstr "Verifica la connessione"
 
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
 msgid "Verify Webhook Signature"
@@ -31702,13 +31395,13 @@ msgid "What {brand} includes for your centre, and the extras you can add when yo
 msgstr "Cosa comprende {brand} per il tuo centro, e gli extra da aggiungere quando servono."
 
 #: frontend/src/components/Settings/WhatsAppSettings.vue
-#. Option for the 'Type' (Select) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
 #: frontend/src/components/Layouts/AppSidebar.vue:633
 #: frontend/src/components/Settings/Settings.vue:225
 #: frontend/src/pages/Deal.vue:606 frontend/src/pages/Lead.vue:458
 #: frontend/src/pages/MobileDeal.vue:478 frontend/src/pages/MobileLead.vue:325
 #: frontend/src/pages/PersonaForm.vue:76
+#. Option for the 'Type' (Select) field in DocType 'CRM Notification'
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
@@ -32194,10 +31887,6 @@ msgstr "Chi emette le fatture"
 msgid "Who issues the invoices, what is billed, how they reach the tax system."
 msgstr "Chi emette le fatture, cosa si fattura, come arrivano al fisco."
 
-#: frontend/src/utils/impostazioni.js
-msgid "Who issues the invoices: details, numbering, transmission."
-msgstr "Chi emette le fatture: dati, numerazione, trasmissione."
-
 #: frontend/src/components/Clinic/ClinicArea.vue
 msgid "Who opened it"
 msgstr "Chi l'ha aperta"
@@ -32460,11 +32149,10 @@ msgstr "Donna"
 
 #: crm/api/pipeline.py
 #: crm/dashboard/widgets/marketing.py
-#. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
-#. Option for the 'Type' (Select) field in DocType 'CRM Lead Status'
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
-#: frontend/src/components/Settings/ERPNextSettings.vue:254
+#. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
+#. Option for the 'Type' (Select) field in DocType 'CRM Lead Status'
 msgid "Won"
 msgstr "Vinta"
 
@@ -33734,11 +33422,15 @@ msgstr "non è"
 msgid "is set"
 msgstr "è impostato"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
+#: frontend/src/area/pages/Plan.vue
+#: frontend/src/components/Dashboard/DashboardGrid.vue
+#: frontend/src/components/Dashboard/DashboardItem.vue
 msgid "item"
 msgstr "articolo"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
+#: crm/booking_platforms/schedulers.py
+#: crm/clinica/menu.py
+#: crm/clinica/piani_regole.py
 msgid "items"
 msgstr "articoli"
 
@@ -34129,11 +33821,13 @@ msgstr "priorità {0}"
 msgid "private"
 msgstr "privato"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
+#: crm/posta/aspetto.py
 msgid "product"
 msgstr "prodotto"
 
-#: frontend/src/components/Settings/ERPNextSettings.vue
+#: crm/fcrm/doctype/crm_deal/crm_deal.json
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+#: crm/fcrm/doctype/crm_products/crm_products.py
 msgid "products"
 msgstr "prodotti"
 
@@ -34383,11 +34077,6 @@ msgstr "domani"
 #: frontend/src/components/Automations/StepPanel.vue
 msgid "total"
 msgstr "in totale"
-
-#. Option for the 'Kind' (Select) field in DocType 'CRM Product Sync Issue'
-#: crm/fcrm/doctype/crm_product_sync_issue/crm_product_sync_issue.json
-msgid "unlinked_orphan"
-msgstr ""
 
 #: frontend/src/utils/automation.js
 msgid "until a click on {0}"
@@ -35235,10 +34924,6 @@ msgstr "{0} nuove, {1} aggiornate, {2} annullate"
 #: frontend/src/components/Calendar/CalendarEventPanel.vue:647
 msgid "{0} no"
 msgstr "{0} no"
-
-#: frontend/src/components/Settings/ERPNextSettings.vue
-msgid "{0} not yet synced"
-msgstr "{0} ancora da sincronizzare"
 
 #: frontend/src/components/Settings/Invoicing/InvoicingDefaults.vue
 msgid "{0} notices applied"
