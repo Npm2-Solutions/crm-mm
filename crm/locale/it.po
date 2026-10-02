@@ -36336,3 +36336,1287 @@ msgstr "Usa il link qui sotto per confermare la richiesta"
 #: crm/templates/emails/standard.html
 msgid "The contents of this email are strictly confidential. Please do not forward this email to anyone."
 msgstr "Questa email è riservata: non inoltrarla a nessuno."
+
+#: crm/invoicing/engine/voci.py
+msgid "Ordinary regime"
+msgstr "Regime ordinario"
+
+#: crm/invoicing/engine/voci.py
+msgid "VAT is charged, or the exemption is stated, as the law says: the usual regime of a company or a professional."
+msgstr "L'IVA si applica, o si indica l'esenzione, come dice la legge: il regime di solito di una società o di un professionista."
+
+#: crm/invoicing/engine/voci.py
+msgid "Flat-rate regime (forfettario)"
+msgstr "Regime forfettario"
+
+#: crm/invoicing/engine/voci.py
+msgid "No VAT on the invoice (L. 190/2014), for who has chosen it, with revenue up to EUR 85,000."
+msgstr "Niente IVA in fattura (L. 190/2014), per chi l'ha scelto, con ricavi fino a 85.000 €."
+
+#: crm/invoicing/engine/voci.py
+msgid "Minimum taxpayers (minimi)"
+msgstr "Contribuenti minimi"
+
+#: crm/invoicing/engine/voci.py
+msgid "The old regime of L. 244/2007, only for who still has it."
+msgstr "Il vecchio regime della L. 244/2007, solo per chi lo ha ancora."
+
+#: crm/invoicing/engine/voci.py
+msgid "VAT on a cash basis"
+msgstr "IVA per cassa"
+
+#: crm/invoicing/engine/voci.py
+msgid "VAT is due when the client pays (art. 32-bis D.L. 83/2012)."
+msgstr "L'IVA è dovuta quando il cliente paga (art. 32-bis D.L. 83/2012)."
+
+#: crm/invoicing/engine/voci.py
+msgid "VAT on a cash basis, public administration"
+msgstr "IVA per cassa, pubblica amministrazione"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 6, c. 5, DPR 633/72."
+msgstr "Art. 6, c. 5, DPR 633/72."
+
+#: crm/invoicing/engine/voci.py
+msgid "Agriculture and fishing"
+msgstr "Agricoltura e pesca"
+
+#: crm/invoicing/engine/voci.py
+msgid "Artt. 34 and 34-bis DPR 633/72."
+msgstr "Artt. 34 e 34-bis DPR 633/72."
+
+#: crm/invoicing/engine/voci.py
+msgid "Salt and tobacco"
+msgstr "Sali e tabacchi"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 74, c. 1, DPR 633/72."
+msgstr "Art. 74, c. 1, DPR 633/72."
+
+#: crm/invoicing/engine/voci.py
+msgid "Matches"
+msgstr "Fiammiferi"
+
+#: crm/invoicing/engine/voci.py
+msgid "Public telephony"
+msgstr "Telefonia pubblica"
+
+#: crm/invoicing/engine/voci.py
+msgid "Transport and parking tickets"
+msgstr "Biglietti di trasporto e sosta"
+
+#: crm/invoicing/engine/voci.py
+msgid "Entertainment and games"
+msgstr "Intrattenimenti e giochi"
+
+#: crm/invoicing/engine/voci.py
+msgid "The tariff annexed to DPR 640/72."
+msgstr "La tariffa allegata al DPR 640/72."
+
+#: crm/invoicing/engine/voci.py
+msgid "Travel agencies"
+msgstr "Agenzie di viaggio"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 74-ter DPR 633/72."
+msgstr "Art. 74-ter DPR 633/72."
+
+#: crm/invoicing/engine/voci.py
+msgid "Farm holidays (agriturismo)"
+msgstr "Agriturismo"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 5, c. 2, L. 413/91."
+msgstr "Art. 5, c. 2, L. 413/91."
+
+#: crm/invoicing/engine/voci.py
+msgid "Door-to-door sales"
+msgstr "Vendite a domicilio"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 25-bis, c. 6, DPR 600/73."
+msgstr "Art. 25-bis, c. 6, DPR 600/73."
+
+#: crm/invoicing/engine/voci.py
+msgid "Second-hand goods, art and antiques"
+msgstr "Beni usati, oggetti d'arte e d'antiquariato"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 36 D.L. 41/95."
+msgstr "Art. 36 D.L. 41/95."
+
+#: crm/invoicing/engine/voci.py
+msgid "Art auctions"
+msgstr "Aste di oggetti d'arte"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 40-bis D.L. 41/95."
+msgstr "Art. 40-bis D.L. 41/95."
+
+#: crm/invoicing/engine/voci.py
+msgid "Another special regime"
+msgstr "Un altro regime speciale"
+
+#: crm/invoicing/engine/voci.py
+msgid "A regime that is not in this list."
+msgstr "Un regime che non è in questo elenco."
+
+#: crm/invoicing/engine/voci.py
+msgid "Single shareholder"
+msgstr "Socio unico"
+
+#: crm/invoicing/engine/voci.py
+msgid "The company has one shareholder."
+msgstr "La società ha un solo socio."
+
+#: crm/invoicing/engine/voci.py
+msgid "Several shareholders"
+msgstr "Più soci"
+
+#: crm/invoicing/engine/voci.py
+msgid "Not in liquidation"
+msgstr "Non in liquidazione"
+
+#: crm/invoicing/engine/voci.py
+msgid "In liquidation"
+msgstr "In liquidazione"
+
+#: crm/invoicing/engine/voci.py
+msgid "Exempt (art. 10)"
+msgstr "Esente (art. 10)"
+
+#: crm/invoicing/engine/voci.py
+msgid "Healthcare services of diagnosis, care and rehabilitation, and the other operations of art. 10 DPR 633/72."
+msgstr "Prestazioni sanitarie di diagnosi, cura e riabilitazione, e le altre operazioni dell'art. 10 DPR 633/72."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not subject: flat-rate or minimum regime"
+msgstr "Non soggetta: regime forfettario o dei minimi"
+
+#: crm/invoicing/engine/voci.py
+msgid "Who invoices is in the flat-rate (forfettario) or minimum regime, or in another case outside VAT."
+msgstr "Chi fattura è nel regime forfettario o dei minimi, o in un altro caso fuori dal campo IVA."
+
+#: crm/invoicing/engine/voci.py
+msgid "Excluded: advances re-charged (art. 15)"
+msgstr "Esclusa: anticipazioni riaddebitate (art. 15)"
+
+#: crm/invoicing/engine/voci.py
+msgid "Amounts paid in the client's name and on their behalf, re-charged exactly as paid."
+msgstr "Somme pagate in nome e per conto del cliente, riaddebitate esattamente come pagate."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not subject: taxed abroad"
+msgstr "Non soggetta: tassata all'estero"
+
+#: crm/invoicing/engine/voci.py
+msgid "A service whose VAT is due in another country (artt. 7-7-septies)."
+msgstr "Una prestazione la cui IVA è dovuta in un altro paese (artt. 7-7-septies)."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not taxable: exports"
+msgstr "Non imponibile: esportazioni"
+
+#: crm/invoicing/engine/voci.py
+msgid "Goods sent outside the European Union."
+msgstr "Beni spediti fuori dall'Unione europea."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not taxable: supplies within the EU"
+msgstr "Non imponibile: cessioni intracomunitarie"
+
+#: crm/invoicing/engine/voci.py
+msgid "Goods sold to a VAT subject of another member state."
+msgstr "Beni venduti a un soggetto IVA di un altro stato membro."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not taxable: supplies to San Marino"
+msgstr "Non imponibile: cessioni verso San Marino"
+
+#: crm/invoicing/engine/voci.py
+msgid "Not taxable: operations treated as exports"
+msgstr "Non imponibile: operazioni assimilate alle esportazioni"
+
+#: crm/invoicing/engine/voci.py
+msgid "International transport and the services tied to it."
+msgstr "Trasporti internazionali e i servizi collegati."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not taxable: declaration of intent"
+msgstr "Non imponibile: dichiarazione d'intento"
+
+#: crm/invoicing/engine/voci.py
+msgid "A habitual exporter has sent its declaration of intent."
+msgstr "Un esportatore abituale ha mandato la sua dichiarazione d'intento."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not taxable: other cases"
+msgstr "Non imponibile: altri casi"
+
+#: crm/invoicing/engine/voci.py
+msgid "Other non-taxable operations that do not count towards the ceiling."
+msgstr "Altre operazioni non imponibili che non concorrono al plafond."
+
+#: crm/invoicing/engine/voci.py
+msgid "Margin regime"
+msgstr "Regime del margine"
+
+#: crm/invoicing/engine/voci.py
+msgid "Second-hand goods, art and travel agencies: VAT is not shown on the invoice."
+msgstr "Beni usati, arte e agenzie di viaggio: l'IVA non è esposta in fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: scrap and recovered materials"
+msgstr "Inversione contabile: rottami e materiali di recupero"
+
+#: crm/invoicing/engine/voci.py
+msgid "The client pays the VAT, not who invoices."
+msgstr "L'IVA la versa il cliente, non chi fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: gold and pure silver"
+msgstr "Inversione contabile: oro e argento puro"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: building subcontracting"
+msgstr "Inversione contabile: subappalto in edilizia"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: sale of buildings"
+msgstr "Inversione contabile: cessione di fabbricati"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: mobile phones"
+msgstr "Inversione contabile: telefoni cellulari"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: electronic products"
+msgstr "Inversione contabile: prodotti elettronici"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: building and related services"
+msgstr "Inversione contabile: edilizia e settori connessi"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: energy sector"
+msgstr "Inversione contabile: settore energetico"
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge: other cases"
+msgstr "Inversione contabile: altri casi"
+
+#: crm/invoicing/engine/voci.py
+msgid "VAT paid in another EU state"
+msgstr "IVA assolta in un altro stato UE"
+
+#: crm/invoicing/engine/voci.py
+msgid "Distance sales and digital services declared through the OSS."
+msgstr "Vendite a distanza e servizi digitali dichiarati tramite l'OSS."
+
+#: crm/invoicing/engine/voci.py
+msgid "The usual document."
+msgstr "Il documento di sempre."
+
+#: crm/invoicing/engine/voci.py
+msgid "Cancels or reduces an invoice already issued, which it refers to."
+msgstr "Annulla o riduce una fattura già emessa, che richiama."
+
+#: crm/invoicing/engine/voci.py
+msgid "Debit note"
+msgstr "Nota di debito"
+
+#: crm/invoicing/engine/voci.py
+msgid "Adds to an invoice already issued, which it refers to."
+msgstr "Aggiunge un importo a una fattura già emessa, che richiama."
+
+#: crm/invoicing/engine/voci.py
+msgid "Advance on an invoice"
+msgstr "Acconto su fattura"
+
+#: crm/invoicing/engine/voci.py
+msgid "A payment on account before the service is complete, for instance before a dental treatment."
+msgstr "Un pagamento in acconto prima che la prestazione sia completa, per esempio prima di una cura dentale."
+
+#: crm/invoicing/engine/voci.py
+msgid "Professional fee note (parcella)"
+msgstr "Parcella"
+
+#: crm/invoicing/engine/voci.py
+msgid "What a professional issues for their fee: it counts as an invoice."
+msgstr "Quello che un professionista emette per il suo compenso: vale come fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "Advance on a professional fee note"
+msgstr "Acconto su parcella"
+
+#: crm/invoicing/engine/voci.py
+msgid "Simplified invoice"
+msgstr "Fattura semplificata"
+
+#: crm/invoicing/engine/voci.py
+msgid "For amounts up to EUR 400."
+msgstr "Per importi fino a 400 €."
+
+#: crm/invoicing/engine/voci.py
+msgid "Simplified credit note"
+msgstr "Nota di credito semplificata"
+
+#: crm/invoicing/engine/voci.py
+msgid "Simplified debit note"
+msgstr "Nota di debito semplificata"
+
+#: crm/invoicing/engine/voci.py
+msgid "Deferred invoice"
+msgstr "Fattura differita"
+
+#: crm/invoicing/engine/voci.py
+msgid "Groups the deliveries or services of a month, with their documents."
+msgstr "Raggruppa le consegne o le prestazioni di un mese, con i loro documenti."
+
+#: crm/invoicing/engine/voci.py
+msgid "Deferred invoice, triangular sale"
+msgstr "Fattura differita, operazione triangolare"
+
+#: crm/invoicing/engine/voci.py
+msgid "Art. 21, c. 4, third period, lett. b)."
+msgstr "Art. 21, c. 4, terzo periodo, lett. b)."
+
+#: crm/invoicing/engine/voci.py
+msgid "Reverse charge supplement"
+msgstr "Integrazione per inversione contabile"
+
+#: crm/invoicing/engine/voci.py
+msgid "Not issued to a client: it completes a purchase invoice."
+msgstr "Non si emette a un cliente: completa una fattura d'acquisto."
+
+#: crm/invoicing/engine/voci.py
+msgid "Self-invoice: services bought abroad"
+msgstr "Autofattura: servizi acquistati all'estero"
+
+#: crm/invoicing/engine/voci.py
+msgid "Not issued to a client: it completes a purchase."
+msgstr "Non si emette a un cliente: completa un acquisto."
+
+#: crm/invoicing/engine/voci.py
+msgid "Supplement: goods bought within the EU"
+msgstr "Integrazione: beni acquistati nell'UE"
+
+#: crm/invoicing/engine/voci.py
+msgid "Self-invoice: goods under art. 17, c. 2"
+msgstr "Autofattura: beni ex art. 17, c. 2"
+
+#: crm/invoicing/engine/voci.py
+msgid "Self-invoice to regularise a purchase"
+msgstr "Autofattura per regolarizzare un acquisto"
+
+#: crm/invoicing/engine/voci.py
+msgid "Self-invoice for exceeding the ceiling"
+msgstr "Autofattura per splafonamento"
+
+#: crm/invoicing/engine/voci.py
+msgid "Goods taken out of a VAT warehouse"
+msgstr "Estrazione di beni da un deposito IVA"
+
+#: crm/invoicing/engine/voci.py
+msgid "Goods taken out of a VAT warehouse, VAT paid"
+msgstr "Estrazione di beni da un deposito IVA, con versamento dell'IVA"
+
+#: crm/invoicing/engine/voci.py
+msgid "Sale of depreciable assets"
+msgstr "Cessione di beni ammortizzabili"
+
+#: crm/invoicing/engine/voci.py
+msgid "Self-consumption or free supplies"
+msgstr "Autoconsumo o cessioni gratuite"
+
+#: crm/invoicing/engine/voci.py
+msgid "Purchases from San Marino with VAT"
+msgstr "Acquisti da San Marino con IVA"
+
+#: crm/invoicing/engine/voci.py
+msgid "Card or app"
+msgstr "Carta o app"
+
+#: crm/invoicing/engine/voci.py
+msgid "Debit, credit or prepaid card at the POS, or a payment app: traceable."
+msgstr "Bancomat, carta di credito o prepagata al POS, o un'app di pagamento: tracciabile."
+
+#: crm/invoicing/engine/voci.py
+msgid "Cash"
+msgstr "Contanti"
+
+#: crm/invoicing/engine/voci.py
+msgid "Not traceable: on a healthcare service the patient loses the 19% tax deduction."
+msgstr "Non tracciabile: su una prestazione sanitaria il paziente perde la detrazione del 19%."
+
+#: crm/invoicing/engine/voci.py
+msgid "Bank transfer"
+msgstr "Bonifico"
+
+#: crm/invoicing/engine/voci.py
+msgid "Traceable."
+msgstr "Tracciabile."
+
+#: crm/invoicing/engine/voci.py
+msgid "Cheque"
+msgstr "Assegno"
+
+#: crm/invoicing/engine/voci.py
+msgid "Banker's draft"
+msgstr "Assegno circolare"
+
+#: crm/invoicing/engine/voci.py
+msgid "SEPA direct debit"
+msgstr "Addebito diretto SEPA"
+
+#: crm/invoicing/engine/voci.py
+msgid "SEPA direct debit, CORE"
+msgstr "Addebito diretto SEPA CORE"
+
+#: crm/invoicing/engine/voci.py
+msgid "SEPA direct debit, B2B"
+msgstr "Addebito diretto SEPA B2B"
+
+#: crm/invoicing/engine/voci.py
+msgid "Between businesses."
+msgstr "Tra imprese."
+
+#: crm/invoicing/engine/voci.py
+msgid "PagoPA"
+msgstr "PagoPA"
+
+#: crm/invoicing/engine/voci.py
+msgid "Payment to a public administration."
+msgstr "Pagamento a una pubblica amministrazione."
+
+#: crm/invoicing/engine/voci.py
+msgid "RIBA"
+msgstr "RIBA"
+
+#: crm/invoicing/engine/voci.py
+msgid "Bank receipt."
+msgstr "Ricevuta bancaria."
+
+#: crm/invoicing/engine/voci.py
+msgid "MAV"
+msgstr "MAV"
+
+#: crm/invoicing/engine/voci.py
+msgid "Payment notice."
+msgstr "Pagamento mediante avviso."
+
+#: crm/invoicing/engine/voci.py
+msgid "Bank slip"
+msgstr "Bollettino bancario"
+
+#: crm/invoicing/engine/voci.py
+msgid "Postal slip"
+msgstr "Bollettino postale"
+
+#: crm/invoicing/engine/voci.py
+msgid "RID"
+msgstr "RID"
+
+#: crm/invoicing/engine/voci.py
+msgid "Interbank direct debit."
+msgstr "Addebito diretto interbancario."
+
+#: crm/invoicing/engine/voci.py
+msgid "RID for utilities"
+msgstr "RID utenze"
+
+#: crm/invoicing/engine/voci.py
+msgid "Fast RID"
+msgstr "RID veloce"
+
+#: crm/invoicing/engine/voci.py
+msgid "Bank domiciliation"
+msgstr "Domiciliazione bancaria"
+
+#: crm/invoicing/engine/voci.py
+msgid "Postal domiciliation"
+msgstr "Domiciliazione postale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Promissory note"
+msgstr "Vaglia cambiario"
+
+#: crm/invoicing/engine/voci.py
+msgid "Cash at the Treasury"
+msgstr "Contanti presso la Tesoreria"
+
+#: crm/invoicing/engine/voci.py
+msgid "Payments to a public administration."
+msgstr "Pagamenti a una pubblica amministrazione."
+
+#: crm/invoicing/engine/voci.py
+msgid "Treasury receipt"
+msgstr "Quietanza erario"
+
+#: crm/invoicing/engine/voci.py
+msgid "Transfer between special accounts"
+msgstr "Giroconto su conti di contabilità speciale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Deduction from sums already collected"
+msgstr "Trattenuta su somme già riscosse"
+
+#: crm/invoicing/engine/voci.py
+msgid "In one payment"
+msgstr "In un'unica soluzione"
+
+#: crm/invoicing/engine/voci.py
+msgid "In instalments"
+msgstr "A rate"
+
+#: crm/invoicing/engine/voci.py
+msgid "In advance"
+msgstr "Anticipato"
+
+#: crm/invoicing/engine/voci.py
+msgid "Paid before the service, on account."
+msgstr "Pagato prima della prestazione, in acconto."
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAM: doctors and dentists"
+msgstr "ENPAM: medici e odontoiatri"
+
+#: crm/invoicing/engine/voci.py
+msgid "Nothing is charged to the patient: ENPAM puts no contribution on the invoice."
+msgstr "Al paziente non si addebita nulla: l'ENPAM non ha contributi in fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAP: psychologists"
+msgstr "ENPAP: psicologi"
+
+#: crm/invoicing/engine/voci.py
+msgid "A 2% contribution on the fee, shown on the invoice."
+msgstr "Contributo del 2% sul compenso, esposto in fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAPI: nurses and health assistants"
+msgstr "ENPAPI: infermieri e assistenti sanitari"
+
+#: crm/invoicing/engine/voci.py
+msgid "A 4% contribution on the fee, shown on the invoice."
+msgstr "Contributo del 4% sul compenso, esposto in fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAB: biologists and nutritionists"
+msgstr "ENPAB: biologi e nutrizionisti"
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAV: vets"
+msgstr "ENPAV: veterinari"
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAF: pharmacists"
+msgstr "ENPAF: farmacisti"
+
+#: crm/invoicing/engine/voci.py
+msgid "INPS, separate management"
+msgstr "INPS, gestione separata"
+
+#: crm/invoicing/engine/voci.py
+msgid "The optional 4% re-charge of a professional without a fund of their own, such as a physiotherapist or a speech therapist."
+msgstr "La rivalsa facoltativa del 4% di un professionista senza una cassa propria, come un fisioterapista o un logopedista."
+
+#: crm/invoicing/engine/voci.py
+msgid "Cassa Forense: lawyers"
+msgstr "Cassa Forense: avvocati"
+
+#: crm/invoicing/engine/voci.py
+msgid "A 4% contribution, shown on the invoice."
+msgstr "Contributo del 4%, esposto in fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "Accountants' fund"
+msgstr "Cassa dei commercialisti"
+
+#: crm/invoicing/engine/voci.py
+msgid "Surveyors' fund"
+msgstr "Cassa dei geometri"
+
+#: crm/invoicing/engine/voci.py
+msgid "Inarcassa: engineers and architects"
+msgstr "Inarcassa: ingegneri e architetti"
+
+#: crm/invoicing/engine/voci.py
+msgid "Notaries' fund"
+msgstr "Cassa del notariato"
+
+#: crm/invoicing/engine/voci.py
+msgid "Bookkeepers' fund"
+msgstr "Cassa ragionieri e periti commerciali"
+
+#: crm/invoicing/engine/voci.py
+msgid "ENASARCO: sales agents"
+msgstr "ENASARCO: agenti di commercio"
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPACL: labour consultants"
+msgstr "ENPACL: consulenti del lavoro"
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAIA: agricultural technicians"
+msgstr "ENPAIA: agrotecnici e periti agrari"
+
+#: crm/invoicing/engine/voci.py
+msgid "Maritime agencies' fund"
+msgstr "Fondo delle agenzie marittime"
+
+#: crm/invoicing/engine/voci.py
+msgid "INPGI: journalists"
+msgstr "INPGI: giornalisti"
+
+#: crm/invoicing/engine/voci.py
+msgid "ONAOSI: orphans of healthcare workers"
+msgstr "ONAOSI: orfani dei sanitari"
+
+#: crm/invoicing/engine/voci.py
+msgid "CASAGIT: journalists' health fund"
+msgstr "CASAGIT: cassa sanitaria dei giornalisti"
+
+#: crm/invoicing/engine/voci.py
+msgid "EPPI: industrial experts"
+msgstr "EPPI: periti industriali"
+
+#: crm/invoicing/engine/voci.py
+msgid "EPAP: agronomists, geologists, chemists, actuaries"
+msgstr "EPAP: agronomi, geologi, chimici, attuari"
+
+#: crm/invoicing/engine/voci.py
+msgid "Withholding tax, natural person"
+msgstr "Ritenuta d'acconto, persona fisica"
+
+#: crm/invoicing/engine/voci.py
+msgid "The 20% withholding on a professional's fee, when the client is a company or another professional."
+msgstr "La ritenuta del 20% sul compenso di un professionista, quando il cliente è un'azienda o un altro professionista."
+
+#: crm/invoicing/engine/voci.py
+msgid "Withholding tax, legal person"
+msgstr "Ritenuta d'acconto, persona giuridica"
+
+#: crm/invoicing/engine/voci.py
+msgid "For an association of professionals or a professional company (STP)."
+msgstr "Per un'associazione di professionisti o una società tra professionisti (STP)."
+
+#: crm/invoicing/engine/voci.py
+msgid "INPS contribution"
+msgstr "Contributo INPS"
+
+#: crm/invoicing/engine/voci.py
+msgid "Withheld as a social security contribution."
+msgstr "Trattenuto come contributo previdenziale."
+
+#: crm/invoicing/engine/voci.py
+msgid "ENASARCO contribution"
+msgstr "Contributo ENASARCO"
+
+#: crm/invoicing/engine/voci.py
+msgid "ENPAM contribution"
+msgstr "Contributo ENPAM"
+
+#: crm/invoicing/engine/voci.py
+msgid "Another social security contribution"
+msgstr "Un altro contributo previdenziale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Professional work"
+msgstr "Lavoro professionale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Fees for work done in the habitual exercise of a profession: the usual case."
+msgstr "Compensi per il lavoro svolto nell'esercizio abituale di una professione: il caso di sempre."
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional self-employment"
+msgstr "Lavoro autonomo occasionale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Work that is not habitual."
+msgstr "Un lavoro non abituale."
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional work, ENPAPI"
+msgstr "Lavoro occasionale, ENPAPI"
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional work for which enrolment in the ENPAPI separate management is due."
+msgstr "Lavoro occasionale per cui è dovuta l'iscrizione alla gestione separata ENPAPI."
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional work, no separate management"
+msgstr "Lavoro occasionale, senza gestione separata"
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional work with no enrolment due."
+msgstr "Lavoro occasionale per cui non è dovuta l'iscrizione."
+
+#: crm/invoicing/engine/voci.py
+msgid "Works of the mind, by their author"
+msgstr "Opere dell'ingegno, dell'autore"
+
+#: crm/invoicing/engine/voci.py
+msgid "Copyright and patents used by the author or the inventor."
+msgstr "Diritti d'autore e brevetti usati dall'autore o dall'inventore."
+
+#: crm/invoicing/engine/voci.py
+msgid "Works of the mind, by others"
+msgstr "Opere dell'ingegno, di altri"
+
+#: crm/invoicing/engine/voci.py
+msgid "Copyright used by somebody other than the author."
+msgstr "Diritti d'autore usati da chi non è l'autore."
+
+#: crm/invoicing/engine/voci.py
+msgid "Works of the mind, bought"
+msgstr "Opere dell'ingegno, acquistate"
+
+#: crm/invoicing/engine/voci.py
+msgid "Copyright acquired for a consideration."
+msgstr "Diritti d'autore acquistati a titolo oneroso."
+
+#: crm/invoicing/engine/voci.py
+msgid "Participation agreements"
+msgstr "Associazione in partecipazione"
+
+#: crm/invoicing/engine/voci.py
+msgid "Profits of a participation agreement where only work is contributed."
+msgstr "Utili di un'associazione in partecipazione con apporto di solo lavoro."
+
+#: crm/invoicing/engine/voci.py
+msgid "Founding members' profits"
+msgstr "Utili dei soci promotori e fondatori"
+
+#: crm/invoicing/engine/voci.py
+msgid "Profits of the promoting and founding members of a company."
+msgstr "Utili dei soci promotori e fondatori di una società."
+
+#: crm/invoicing/engine/voci.py
+msgid "Protest of bills"
+msgstr "Levata di protesti"
+
+#: crm/invoicing/engine/voci.py
+msgid "By municipal secretaries."
+msgstr "Da parte dei segretari comunali."
+
+#: crm/invoicing/engine/voci.py
+msgid "End of a professional sporting career"
+msgstr "Fine di un'attività sportiva professionale"
+
+#: crm/invoicing/engine/voci.py
+msgid "End of an agency relationship"
+msgstr "Fine di un rapporto di agenzia"
+
+#: crm/invoicing/engine/voci.py
+msgid "End of notarial functions"
+msgstr "Fine delle funzioni notarili"
+
+#: crm/invoicing/engine/voci.py
+msgid "Obligations to do, not to do or allow"
+msgstr "Obblighi di fare, non fare o permettere"
+
+#: crm/invoicing/engine/voci.py
+msgid "Amateur sport allowances"
+msgstr "Compensi dello sport dilettantistico"
+
+#: crm/invoicing/engine/voci.py
+msgid "Travel allowances, refunds and prizes in amateur sport."
+msgstr "Indennità di trasferta, rimborsi e premi nello sport dilettantistico."
+
+#: crm/invoicing/engine/voci.py
+msgid "Obligations to do, no separate management"
+msgstr "Obblighi di fare, senza gestione separata"
+
+#: crm/invoicing/engine/voci.py
+msgid "Equipment hired from non-residents"
+msgstr "Attrezzature noleggiate da non residenti"
+
+#: crm/invoicing/engine/voci.py
+msgid "Commissions, single-firm agent"
+msgstr "Provvigioni, agente monomandatario"
+
+#: crm/invoicing/engine/voci.py
+msgid "Commissions, multi-firm agent"
+msgstr "Provvigioni, agente plurimandatario"
+
+#: crm/invoicing/engine/voci.py
+msgid "Commissions to a commission agent"
+msgstr "Provvigioni a un commissionario"
+
+#: crm/invoicing/engine/voci.py
+msgid "Commissions to a broker"
+msgstr "Provvigioni a un mediatore"
+
+#: crm/invoicing/engine/voci.py
+msgid "Commissions to a business finder"
+msgstr "Provvigioni a un procacciatore d'affari"
+
+#: crm/invoicing/engine/voci.py
+msgid "Door-to-door sales commissions"
+msgstr "Provvigioni per vendite a domicilio"
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional commercial activity"
+msgstr "Attività commerciale occasionale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Occasional door-to-door selling"
+msgstr "Vendita a domicilio occasionale"
+
+#: crm/invoicing/engine/voci.py
+msgid "Another reason"
+msgstr "Un'altra causale"
+
+#: crm/invoicing/engine/voci.py
+msgid "A reason that is not in this list."
+msgstr "Una causale che non è in questo elenco."
+
+#: crm/invoicing/engine/voci.py
+msgid "Stamp on the paper original"
+msgstr "Marca da bollo sull'originale cartaceo"
+
+#: crm/invoicing/engine/voci.py
+msgid "A EUR 2 stamp (marca da bollo) on the copy you hand over, for exempt invoices over EUR 77.47."
+msgstr "Una marca da bollo da 2 € sulla copia che consegni, per le fatture esenti sopra 77,47 €."
+
+#: crm/invoicing/engine/voci.py
+msgid "Virtual stamp duty, authorised"
+msgstr "Bollo virtuale, autorizzato"
+
+#: crm/invoicing/engine/voci.py
+msgid "Paid to the Agenzia under an authorisation (art. 15 DPR 642/72): its number and date go on every invoice."
+msgstr "Pagato all'Agenzia con un'autorizzazione (art. 15 DPR 642/72): numero e data vanno su ogni fattura."
+
+#: crm/invoicing/engine/voci.py
+msgid "Never due"
+msgstr "Mai dovuto"
+
+#: crm/invoicing/engine/voci.py
+msgid "No exempt invoice of yours ever goes over EUR 77.47."
+msgstr "Nessuna tua fattura esente supera mai 77,47 €."
+
+#: crm/invoicing/engine/voci.py
+msgid "On paper, with a copy"
+msgstr "Su carta, con una copia"
+
+#: crm/invoicing/engine/voci.py
+msgid "The invoices that do not go through the SdI are printed, and the paper original is kept, in two copies: nobody to pay for preservation."
+msgstr "Le fatture che non passano dallo SdI si stampano e si conserva l'originale cartaceo, in due copie: nessuno da pagare per la conservazione."
+
+#: crm/invoicing/engine/voci.py
+msgid "Electronic, outside the SdI"
+msgstr "Elettroniche, fuori dallo SdI"
+
+#: crm/invoicing/engine/voci.py
+msgid "The PDF is the original: a paid preservation service has to keep it for ten years."
+msgstr "L'originale è il PDF: un servizio di conservazione a pagamento deve conservarlo per dieci anni."
+
+#: crm/invoicing/engine/voci.py
+msgid "Agenzia delle Entrate, free"
+msgstr "Agenzia delle Entrate, gratuita"
+
+#: crm/invoicing/engine/voci.py
+msgid "Join once in Fatture e Corrispettivi: it keeps the invoices that pass through the SdI for fifteen years."
+msgstr "Aderisci una volta in Fatture e Corrispettivi: conserva per quindici anni le fatture che passano dallo SdI."
+
+#: crm/invoicing/engine/voci.py
+msgid "The provider"
+msgstr "Il provider"
+
+#: crm/invoicing/engine/voci.py
+msgid "The accredited provider that transmits keeps them too."
+msgstr "Il provider accreditato che le trasmette le conserva anche."
+
+#: crm/invoicing/engine/voci.py
+msgid "Another service"
+msgstr "Un altro servizio"
+
+#: crm/invoicing/engine/voci.py
+msgid "Name it in the reference."
+msgstr "Indicalo nel riferimento."
+
+#: crm/invoicing/engine/voci.py
+msgid "Accredited provider, automatic"
+msgstr "Provider accreditato, automatico"
+
+#: crm/invoicing/engine/voci.py
+msgid "It sends the invoices and reads the notices that come back: the recommended way."
+msgstr "Manda le fatture e legge le ricevute che tornano: il modo consigliato."
+
+#: crm/invoicing/engine/voci.py
+msgid "Your PEC mailbox"
+msgstr "La tua PEC"
+
+#: crm/invoicing/engine/voci.py
+msgid "Free, but somebody has to read the notices that come back."
+msgstr "Gratis, ma qualcuno deve leggere le ricevute che tornano."
+
+#: crm/invoicing/engine/voci.py
+msgid "Download and upload it yourself"
+msgstr "Scarichi il file e lo carichi tu"
+
+#: crm/invoicing/engine/voci.py
+msgid "The file is prepared here: you upload it in Fatture e Corrispettivi."
+msgstr "Il file si prepara qui: lo carichi tu in Fatture e Corrispettivi."
+
+#: crm/invoicing/engine/voci.py
+msgid "Outgoing only"
+msgstr "Solo in uscita"
+
+#: crm/invoicing/engine/voci.py
+msgid "The invoices you issue."
+msgstr "Le fatture che emetti."
+
+#: crm/invoicing/engine/voci.py
+msgid "Outgoing and incoming"
+msgstr "In uscita e in entrata"
+
+#: crm/invoicing/engine/voci.py
+msgid "The purchase invoices too, read here."
+msgstr "Anche le fatture d'acquisto, lette qui."
+
+#: crm/invoicing/engine/voci.py
+msgid "Sandbox: what is sent from here reaches nobody."
+msgstr "Ambiente di prova: quello che parte da qui non arriva a nessuno."
+
+#: crm/invoicing/engine/voci.py
+msgid "Live (production)"
+msgstr "Reale (produzione)"
+
+#: crm/invoicing/engine/voci.py
+msgid "What is sent reaches the SdI."
+msgstr "Quello che parte arriva allo SdI."
+
+#: crm/invoicing/engine/voci.py
+msgid "Never through the SdI"
+msgstr "Mai tramite lo SdI"
+
+#: crm/invoicing/engine/voci.py
+msgid "A healthcare service to a patient: a PDF to the patient, the expense to the Sistema TS."
+msgstr "Una prestazione sanitaria a un paziente: il PDF al paziente, la spesa al Sistema TS."
+
+#: crm/invoicing/engine/voci.py
+msgid "Always through the SdI"
+msgstr "Sempre tramite lo SdI"
+
+#: crm/invoicing/engine/voci.py
+msgid "An electronic invoice, whoever the client is."
+msgstr "Una fattura elettronica, chiunque sia il cliente."
+
+#: crm/invoicing/engine/voci.py
+msgid "Through the SdI when the client is a business"
+msgstr "Tramite lo SdI quando il cliente è un'azienda"
+
+#: crm/invoicing/engine/voci.py
+msgid "Towards a company or a professional, as a doctor billing an employer."
+msgstr "Verso un'azienda o un professionista, come un medico che fattura al datore di lavoro."
+
+#: crm/invoicing/engine/voci.py
+msgid "Profession with a register"
+msgstr "Professione ordinistica"
+
+#: crm/invoicing/engine/voci.py
+msgid "Lawyer, accountant, engineer, architect..."
+msgstr "Avvocato, commercialista, ingegnere, architetto..."
+
+#: crm/invoicing/engine/voci.py
+msgid "Profession without a register"
+msgstr "Professione non ordinistica"
+
+#: crm/invoicing/engine/voci.py
+msgid "Consultant, trainer, developer..."
+msgstr "Consulente, formatore, sviluppatore..."
+
+#: crm/invoicing/engine/voci.py
+msgid "Private person"
+msgstr "Privato"
+
+#: crm/invoicing/engine/voci.py
+msgid "A patient or a private client, with no VAT number."
+msgstr "Un paziente o un cliente privato, senza partita IVA."
+
+#: crm/invoicing/engine/voci.py
+msgid "Company or professional"
+msgstr "Azienda o professionista"
+
+#: crm/invoicing/engine/voci.py
+msgid "Has a VAT number."
+msgstr "Ha la partita IVA."
+
+#: crm/invoicing/engine/voci.py
+msgid "Public administration"
+msgstr "Pubblica amministrazione"
+
+#: crm/invoicing/engine/voci.py
+msgid "Abroad"
+msgstr "Estero"
+
+#: crm/invoicing/engine/voci.py
+msgid "A client outside Italy."
+msgstr "Un cliente fuori dall'Italia."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Visits and specialist services"
+msgstr "Visite e prestazioni specialistiche"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "General and specialist visits, diagnostic and instrumental tests, surgery other than aesthetic, medical certificates, hospital stays net of comfort."
+msgstr "Visite generiche e specialistiche, esami diagnostici e strumentali, chirurgia non estetica, certificati medici, ricoveri al netto del comfort."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Health professional's services"
+msgstr "Prestazioni del professionista sanitario"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Services of a health profession (physiotherapist, psychologist, nurse, dietitian...) invoiced in their own name."
+msgstr "Prestazioni di una professione sanitaria (fisioterapista, psicologo, infermiere, dietista...) fatturate a nome proprio."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Aesthetic surgery and medicine"
+msgstr "Chirurgia e medicina estetica"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Aesthetic surgery and aesthetic medicine, outpatient or in hospital: not a deductible healthcare expense."
+msgstr "Chirurgia estetica e medicina estetica, ambulatoriale o in ricovero: non è una spesa sanitaria detraibile."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Other expenses"
+msgstr "Altre spese"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "What is not a deductible healthcare expense, or a share the patient did not bear."
+msgstr "Quello che non è una spesa sanitaria detraibile, o una parte che il paziente non ha sostenuto."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Ticket"
+msgstr "Ticket"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Co-payment for public healthcare: fixed share or difference from the reference price, emergency room, direct access."
+msgstr "Quota a carico del cittadino nella sanità pubblica: quota fissa o differenza dal prezzo di riferimento, pronto soccorso, accesso diretto."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "ECG, spirometry, Holter and similar tests"
+msgstr "ECG, spirometria, Holter ed esami simili"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "ECG, spirometry, blood pressure and heart Holter, glycaemia, cholesterol and triglyceride tests, blood pressure, pharmacy services and similar."
+msgstr "ECG, spirometria, Holter pressorio e cardiaco, test di glicemia, colesterolo e trigliceridi, misurazione della pressione, servizi della farmacia e simili."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Prosthetic and supplementary care"
+msgstr "Protesica e integrativa"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Thermal cures"
+msgstr "Cure termali"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Purchase or rental of a CE medical device"
+msgstr "Acquisto o affitto di un dispositivo medico CE"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Medicines and CE medical devices"
+msgstr "Farmaci e dispositivi medici CE"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Medicines, homeopathic too, and CE medical devices."
+msgstr "Farmaci, anche omeopatici, e dispositivi medici CE."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Veterinary medicines"
+msgstr "Farmaci veterinari"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Veterinary expenses"
+msgstr "Spese veterinarie"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Emergency room ticket"
+msgstr "Ticket di pronto soccorso"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Only with the Ticket expense type."
+msgstr "Solo con il tipo di spesa Ticket."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Intramoenia visit"
+msgstr "Visita in intramoenia"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Only with Visits and specialist services."
+msgstr "Solo con Visite e prestazioni specialistiche."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Health professional, in their own name"
+msgstr "Professionista sanitario, a suo nome"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Physiotherapist, psychologist, nurse, dietitian, speech therapist...: every service goes to the Sistema TS as a health professional's service."
+msgstr "Fisioterapista, psicologo, infermiere, dietista, logopedista...: ogni prestazione va al Sistema TS come prestazione del professionista sanitario."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Doctor or dentist, in their own name"
+msgstr "Medico o odontoiatra, a suo nome"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Visits and specialist services, aesthetic medicine, other expenses."
+msgstr "Visite e prestazioni specialistiche, medicina estetica, altre spese."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Healthcare facility authorised by the Region"
+msgstr "Struttura sanitaria autorizzata dalla Regione"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "A clinic or practice authorised under art. 8-ter D.Lgs. 502/1992: it needs the Region, ASL and facility codes."
+msgstr "Un ambulatorio o un centro autorizzato ai sensi dell'art. 8-ter D.Lgs. 502/1992: servono i codici di Regione, ASL e struttura."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Facility accredited with the national health service"
+msgstr "Struttura accreditata con il Servizio Sanitario Nazionale"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Public or private, accredited with the SSN."
+msgstr "Pubblica o privata, accreditata con il SSN."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Vet"
+msgstr "Veterinario"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Pharmacy"
+msgstr "Farmacia"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Para-pharmacy"
+msgstr "Parafarmacia"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Optician"
+msgstr "Ottico"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Not healthcare"
+msgstr "Non sanitario"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Reports nothing to the Sistema TS."
+msgstr "Non comunica nulla al Sistema TS."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "With the centre's Sistema TS credentials"
+msgstr "Con le credenziali Sistema TS del centro"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Every invoice is reported the same day, at no cost per document: the recommended way."
+msgstr "Ogni fattura viene comunicata il giorno stesso, senza costi per documento: il modo consigliato."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Through the accountant (Entratel)"
+msgstr "Tramite il commercialista (Entratel)"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "When the accountant holds a mandate to send on the centre's behalf."
+msgstr "Quando il commercialista ha una delega a inviare per conto del centro."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Through the provider"
+msgstr "Tramite il provider"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Under the accredited provider's own accreditation."
+msgstr "Con l'accreditamento del provider stesso."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Download the file and upload it"
+msgstr "Scarichi il file e lo carichi"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "You upload it yourself on the Sistema TS portal, by 31 January."
+msgstr "Lo carichi tu sul portale del Sistema TS, entro il 31 gennaio."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Not known yet"
+msgstr "Ancora sconosciuta"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "The first report finds it out."
+msgstr "La scopre il primo invio."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "No mandate"
+msgstr "Nessuna delega"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "The centre reports in its own name."
+msgstr "Il centro comunica a nome proprio."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Mandate active"
+msgstr "Delega attiva"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "The accountant holds a mandate: reports in the centre's own name are refused."
+msgstr "Il commercialista ha una delega: gli invii a nome del centro vengono rifiutati."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Cannot be checked"
+msgstr "Non verificabile"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "New expense"
+msgstr "Nuova spesa"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Correction"
+msgstr "Variazione"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Corrects an expense already reported."
+msgstr "Corregge una spesa già comunicata."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Refund"
+msgstr "Rimborso"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Money given back to the patient."
+msgstr "Soldi restituiti al paziente."
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Cancellation"
+msgstr "Cancellazione"
+
+#: crm/tessera_sanitaria/engine/voci.py
+msgid "Removes an expense reported by mistake."
+msgstr "Toglie una spesa comunicata per errore."
+
+#: crm/invoicing/engine/voci.py
+msgid "A PDF to the patient, the expense to the Sistema TS: never through the SdI."
+msgstr "Un PDF al paziente, la spesa al Sistema TS: mai attraverso lo SdI."
+
+#: crm/invoicing/engine/voci.py
+msgid "A PDF, and nothing transmitted."
+msgstr "Un PDF, e nessuna trasmissione."
+
+#: crm/invoicing/engine/voci.py
+msgid "Card, bank transfer, cheque: a traceable method."
+msgstr "Carta, bonifico, assegno: un mezzo tracciabile."
+
+#: crm/invoicing/engine/voci.py
+msgid "Cash, even only in part."
+msgstr "Contanti, anche solo in parte."
+
+#: crm/invoicing/engine/voci.py
+msgid "Not applicable"
+msgstr "Non applicabile"
+
+#: crm/invoicing/engine/voci.py
+msgid "Not traced"
+msgstr "Non tracciato"
+
+#: crm/invoicing/engine/voci.py
+msgid "Sent through the SdI."
+msgstr "Inviata attraverso lo SdI."
