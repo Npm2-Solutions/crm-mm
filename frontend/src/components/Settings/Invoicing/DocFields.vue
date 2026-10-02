@@ -47,7 +47,7 @@
 
 <script setup>
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
-import { buildTabs } from '@/utils/settingsTabs'
+import { buildTabs, valorePredefinito } from '@/utils/settingsTabs'
 import {
   createDocumentResource,
   createResource,
@@ -101,6 +101,22 @@ watch(
   () => props.defaults,
   (valori) => Object.assign(local, valori || {}),
   { immediate: true, deep: true },
+)
+
+// A new record starts where its DocType says, filled in front of whoever creates
+// it: one place decides, not a copy here that drifts (the SdI channel once read
+// "provider" on this screen and "export" everywhere else).
+watch(
+  () => fields.data,
+  (campi) => {
+    if (props.docname || !campi) return
+    for (const campo of campi) {
+      if (local[campo.fieldname] !== undefined) continue
+      const valore = valorePredefinito(campo)
+      if (valore !== undefined) local[campo.fieldname] = valore
+    }
+  },
+  { immediate: true },
 )
 
 async function save() {

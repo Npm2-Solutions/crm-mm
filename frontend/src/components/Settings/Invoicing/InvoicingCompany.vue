@@ -45,7 +45,7 @@
     <!-- What is still missing, and what each gap costs. A live list, not a
          document nobody opens: it gets shorter. -->
     <div
-      v-if="checklist.data?.length"
+      v-if="checklist.data?.length && !creando"
       class="mx-2 flex flex-col gap-2 rounded-xl border border-outline-amber-2 bg-surface-amber-1 px-4 py-3"
     >
       <span class="text-p-base-medium text-ink-gray-8">
@@ -58,12 +58,12 @@
     </div>
 
     <div class="min-h-0 flex-1 px-2">
+      <!-- a new company starts where the DocType says: DocFields reads its defaults -->
       <DocFields
         v-if="corrente || creando"
-        :key="corrente || 'nuova'"
+        :key="creando ? 'nuova' : corrente"
         doctype="CRM Invoicing Company"
         :docname="creando ? '' : corrente"
-        :defaults="creando ? predefiniti : {}"
         @saved="salvata"
       />
       <div v-else-if="!companies.loading" class="text-p-base text-ink-gray-5">
@@ -80,28 +80,6 @@ import { computed, ref, watch } from 'vue'
 
 const corrente = ref('')
 const creando = ref(false)
-
-const predefiniti = {
-  tax_regime: 'RF01',
-  country: 'IT',
-  series_electronic: 'E',
-  series_healthcare: 'S',
-  number_format: '{anno}/{serie}/{numero}',
-  stamp_duty_mode: 'su_originale',
-  sender_category: 'non_sanitario',
-  // Same as the DocType's own defaults: two places disagreeing about where a
-  // company starts is how a company starts somewhere nobody chose.
-  //
-  // The two channels differ on purpose. The SdI goes through the accredited
-  // intermediary, because somebody has to watch it. The Sistema TS goes out on
-  // the centre's own credentials, because it costs nothing per document and that
-  // is what makes unlimited healthcare invoicing a product rather than a loss.
-  ts_mode: 'credenziali_studio',
-  sdi_mode: 'provider',
-  sdi_flow: 'uscita',
-  provider_environment: 'sandbox',
-  enabled: 1,
-}
 
 const companies = createListResource({
   doctype: 'CRM Invoicing Company',
