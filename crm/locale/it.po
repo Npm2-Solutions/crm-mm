@@ -39054,3 +39054,275 @@ msgstr "Da richiamare"
 #: crm/dashboard/features.py
 msgid "Propose a quote to somebody to see how quotes go"
 msgstr "Proponi un preventivo a qualcuno per vedere come vanno i preventivi"
+
+#: frontend/src/utils/caselle.js
+msgid "Gmail wants two-step verification and an app password, made in your Google account under Security."
+msgstr "Gmail vuole la verifica in due passaggi e una password per le app, da creare nel tuo account Google alla voce Sicurezza."
+
+#: frontend/src/utils/caselle.js
+msgid "The mailbox's own password, the one of Aruba's webmail. A certified (PEC) mailbox is not this one."
+msgstr "La password della casella, quella della webmail di Aruba. Una casella PEC non è questa."
+
+#: frontend/src/utils/caselle.js
+msgid "iCloud wants an app-specific password, made in your Apple account under Sign-In and Security."
+msgstr "iCloud vuole una password specifica per l'app, da creare nel tuo account Apple alla voce Accesso e sicurezza."
+
+#: frontend/src/utils/caselle.js
+msgid "Yahoo wants an app password, made in your account under Security."
+msgstr "Yahoo vuole una password per le app, da creare nel tuo account alla voce Sicurezza."
+
+#: frontend/src/utils/caselle.js
+msgid "The mailbox's own password. If it is refused, check in the mailbox's settings that access from other programs (IMAP) is on."
+msgstr "La password della casella. Se viene rifiutata, controlla nelle impostazioni della casella che l'accesso da altri programmi (IMAP) sia attivo."
+
+#: frontend/src/utils/caselle.js
+msgid "Receives"
+msgstr "Riceve"
+
+#: frontend/src/utils/caselle.js
+msgid "The emails that arrive here are read in {brand}, on the page of whoever wrote them."
+msgstr "Le email che arrivano qui si leggono in {brand}, sulla pagina di chi le ha scritte."
+
+#: frontend/src/utils/caselle.js
+msgid "A new person for whoever writes the first time"
+msgstr "Una persona nuova per chi scrive la prima volta"
+
+#: frontend/src/utils/caselle.js
+msgid "Somebody the centre does not know yet becomes a person. Never an automatic sender, nor somebody of the centre."
+msgstr "Chi il centro non conosce ancora diventa una persona. Mai un mittente automatico, né qualcuno del centro."
+
+#: frontend/src/utils/caselle.js
+msgid "Main mailbox"
+msgstr "Casella principale"
+
+#: frontend/src/utils/caselle.js
+msgid "The answers to {brand}'s emails arrive here, when no other address is chosen."
+msgstr "Le risposte alle email di {brand} arrivano qui, se non è scelto un altro indirizzo."
+
+#: frontend/src/utils/caselle.js
+msgid "Sends"
+msgstr "Invia"
+
+#: frontend/src/utils/caselle.js
+msgid "You write from this mailbox in {brand}, and the answers come back here."
+msgstr "In {brand} si scrive da questa casella, e le risposte tornano qui."
+
+#: frontend/src/utils/caselle.js
+msgid "Sends {brand}'s emails"
+msgstr "Invia le email di {brand}"
+
+#: frontend/src/utils/caselle.js
+msgid "Reminders, codes and confirmations leave from this mailbox."
+msgstr "Promemoria, codici e conferme partono da questa casella."
+
+#: frontend/src/utils/caselle.js
+msgid "Set up by the agency"
+msgstr "Configurata dall'agenzia"
+
+#: frontend/src/utils/caselle.js
+msgid "Choose where the mailbox is."
+msgstr "Scegli dov'è la casella."
+
+#: frontend/src/utils/caselle.js
+msgid "Write the address."
+msgstr "Scrivi l'indirizzo."
+
+#: frontend/src/utils/caselle.js
+msgid "The address is not an email address."
+msgstr "L'indirizzo non è un indirizzo email."
+
+#: frontend/src/utils/caselle.js
+msgid "Write the password."
+msgstr "Scrivi la password."
+
+#: frontend/src/utils/caselle.js
+msgid "A mailbox receives, sends, or both."
+msgstr "Una casella riceve, invia o tutte e due."
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "{brand}'s emails"
+msgstr "Le email di {brand}"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Reminders, codes, confirmations and notifications leave from {brand}'s sending service, in the centre's name. People read:"
+msgstr "Promemoria, codici, conferme e notifiche partono dal servizio di invio di {brand}, a nome del centro. Le persone leggono:"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Reminders, codes, confirmations and notifications leave from the centre's mailbox that sends them."
+msgstr "Promemoria, codici, conferme e notifiche partono dalla casella del centro che li invia."
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Answers go to"
+msgstr "Le risposte vanno a"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "reception@yourcentre.com"
+msgstr "segreteria@iltuocentro.it"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Nobody reads the answers yet: add a mailbox that receives, or write an address."
+msgstr "Nessuno legge ancora le risposte: aggiungi una casella che riceve, o scrivi un indirizzo."
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "An address not read in {brand}: the answers stay in that mailbox, not on the person’s page."
+msgstr "Un indirizzo che non si legge in {brand}: le risposte restano in quella casella, non sulla pagina della persona."
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "People answer a reminder as any email, and the answer arrives on their page."
+msgstr "Le persone rispondono a un promemoria come a qualsiasi email, e la risposta arriva sulla loro pagina."
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Sending service, for the agency"
+msgstr "Servizio di invio, per l'agenzia"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Not configured: write it in the server’s configuration (dottorcloud_posta), then sync."
+msgstr "Non configurato: scrivilo nella configurazione del server (dottorcloud_posta), poi sincronizza."
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "The main mailbox ({0})"
+msgstr "La casella principale ({0})"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "The main mailbox (none yet)"
+msgstr "La casella principale (non c'è ancora)"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Another address…"
+msgstr "Un altro indirizzo…"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Saved"
+msgstr "Salvato"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Could not save the address"
+msgstr "Non è stato possibile salvare l'indirizzo"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "The sending service is up to date"
+msgstr "Il servizio di invio è aggiornato"
+
+#: frontend/src/components/Settings/SendingService.vue
+msgid "Could not sync the sending service"
+msgstr "Non è stato possibile sincronizzare il servizio di invio"
+
+#: frontend/src/components/Settings/EmailAccountList.vue
+msgid "The centre's mailboxes in {brand}: the emails people write arrive on their page, and you answer them from there."
+msgstr "Le caselle del centro in {brand}: le email che le persone scrivono arrivano sulla loro pagina, e da lì rispondi."
+
+#: frontend/src/components/Settings/EmailAccountList.vue
+msgid "Add a mailbox"
+msgstr "Aggiungi una casella"
+
+#: frontend/src/components/Settings/EmailAccountList.vue
+msgid "The centre's mailboxes"
+msgstr "Le caselle del centro"
+
+#: frontend/src/components/Settings/EmailAccountList.vue
+msgid "No mailbox yet"
+msgstr "Nessuna casella, per ora"
+
+#: frontend/src/components/Settings/EmailAccountList.vue
+msgid "Add the centre’s mailbox: the emails people write arrive on their page in {brand}."
+msgstr "Aggiungi la casella del centro: le email che le persone scrivono arrivano sulla loro pagina in {brand}."
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Where is the centre’s mailbox? Its servers are known already: you write the address and the password."
+msgstr "Dov'è la casella del centro? I suoi server li conosciamo già: scrivi l'indirizzo e la password."
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "What the mailbox does in {brand}. A new password replaces the one it has."
+msgstr "Cosa fa la casella in {brand}. Una password nuova sostituisce quella che ha."
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Outlook, Hotmail and Microsoft 365 sign in on Microsoft’s own page: the agency connects them."
+msgstr "Outlook, Hotmail e Microsoft 365 accedono dalla pagina di Microsoft: le collega l'agenzia."
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "How to make it"
+msgstr "Come crearla"
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Unchanged"
+msgstr "Invariata"
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Reception"
+msgstr "Segreteria"
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "How {brand} calls the mailbox; empty, its address."
+msgstr "Come {brand} chiama la casella; vuoto, il suo indirizzo."
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Mailbox added"
+msgstr "Casella aggiunta"
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Mailbox saved"
+msgstr "Casella salvata"
+
+#: frontend/src/components/Settings/EmailEdit.vue
+msgid "Could not save the mailbox"
+msgstr "Non è stato possibile salvare la casella"
+
+#: frontend/src/utils/impostazioni.js
+msgid "The centre's mailboxes, and where the answers to {brand}'s emails go."
+msgstr "Le caselle del centro, e dove vanno le risposte alle email di {brand}."
+
+#: crm/api/settings.py
+msgid "The address or the password is not right. Gmail, iCloud and Yahoo want an app password, made in the mailbox's own security settings."
+msgstr "L'indirizzo o la password non sono giusti. Gmail, iCloud e Yahoo vogliono una password per le app, da creare nelle impostazioni di sicurezza della casella."
+
+#: crm/api/settings.py
+msgid "The mailbox's server does not answer: try again in a few minutes."
+msgstr "Il server della casella non risponde: riprova tra qualche minuto."
+
+#: crm/api/settings.py
+msgid "The mailbox could not be connected: {0}"
+msgstr "Non è stato possibile collegare la casella: {0}"
+
+#: crm/api/settings.py
+msgid "{brand}'s sending service is the agency's."
+msgstr "Il servizio di invio di {brand} è dell'agenzia."
+
+#: crm/api/settings.py
+msgid "{0} is the name of the sending service: choose another."
+msgstr "{0} è il nome del servizio di invio: scegline un altro."
+
+#: crm/api/settings.py
+msgid "This mailbox is set up by the agency."
+msgstr "Questa casella la configura l'agenzia."
+
+#: crm/posta/servizio.py
+msgid "{0}: the sending service did not answer"
+msgstr "{0}: il servizio di invio non ha risposto"
+
+#: crm/posta/servizio.py
+msgid "{0} is not an email address"
+msgstr "{0} non è un indirizzo email"
+
+#: crm/notifiche/regole.py
+msgid "You received an email from {0}"
+msgstr "Hai ricevuto un'email da {0}"
+
+#: crm/notifiche/regole.py
+msgid "You received {1} emails from {0}"
+msgstr "Hai ricevuto {1} email da {0}"
+
+#: crm/notifiche/regole.py
+msgid "You received an email on the deal {0}"
+msgstr "Hai ricevuto un'email sulla trattativa {0}"
+
+#: crm/notifiche/regole.py
+msgid "You received {1} emails on the deal {0}"
+msgstr "Hai ricevuto {1} email sulla trattativa {0}"
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Answers to the centre's emails"
+msgstr "Risposte alle email del centro"
+
+#: crm/fcrm/doctype/fcrm_settings/fcrm_settings.json
+msgid "Where people's answers to the reminders, codes and confirmations the centre sends arrive. Empty: the mailbox where the centre reads its email."
+msgstr "Dove arrivano le risposte delle persone a promemoria, codici e conferme che il centro invia. Vuoto: la casella in cui il centro legge le sue email."
