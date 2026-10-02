@@ -407,6 +407,73 @@
               "
             />
           </div>
+
+          <div class="h-px border-t border-outline-elevation-2" />
+
+          <div class="flex flex-col gap-2">
+            <div class="flex min-w-0 flex-col">
+              <div
+                id="paesi-che-si-chiamano"
+                class="text-p-base-medium text-ink-gray-7"
+              >
+                {{ __('Countries That Can Be Called') }}
+              </div>
+              <div class="text-p-sm text-ink-gray-5">
+                {{
+                  stato.owner === 'Manual'
+                    ? __(
+                        'Calls from {brand} go only to these countries, never to premium-rate numbers.',
+                      )
+                    : __(
+                        'Calls from {brand} go only to these countries, never to premium-rate numbers. Twilio is told the same, so a stolen key could not call anywhere else either.',
+                      )
+                }}
+              </div>
+            </div>
+            <div
+              class="flex flex-wrap items-center gap-1.5"
+              role="list"
+              aria-labelledby="paesi-che-si-chiamano"
+            >
+              <Badge
+                v-for="codice in paesiScelti"
+                :key="codice"
+                role="listitem"
+                size="lg"
+                variant="subtle"
+                theme="gray"
+              >
+                {{ nomeDelPaese(codice, lingua) }}
+                <template v-if="paesiScelti.length > 1" #suffix>
+                  <button
+                    type="button"
+                    class="touch-target -mr-1 flex size-4 items-center justify-center rounded hover:bg-surface-gray-4"
+                    :aria-label="
+                      __('Remove {0}', [nomeDelPaese(codice, lingua)])
+                    "
+                    @click="togliIlPaese(codice)"
+                  >
+                    <span class="lucide-x size-3" aria-hidden="true" />
+                  </button>
+                </template>
+              </Badge>
+              <Combobox
+                :model-value="null"
+                :options="paesiDaAggiungere(paesiScelti, lingua)"
+                :placeholder="__('Search a country')"
+                @update:selected-option="(o) => o && aggiungiIlPaese(o.value)"
+              >
+                <template #trigger="{ open, setOpen }">
+                  <Button
+                    variant="ghost"
+                    icon-left="lucide-plus"
+                    :label="__('Add a country')"
+                    @click="setOpen(!open)"
+                  />
+                </template>
+              </Combobox>
+            </div>
+          </div>
         </template>
 
         <template v-if="stato.agency">
@@ -498,6 +565,15 @@ import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
 import { globalStore } from '@/stores/global'
 import { formatDate } from '@/utils'
+import {
+  comeSalvati,
+  conIlPaese,
+  nomeDelPaese,
+  paesi,
+  paesiDaAggiungere,
+  senzaIlPaese,
+} from '@/utils/chiamate'
+import { appLocale } from '@/utils/locale'
 import { nomeDellaRichiesta, statoDellaRichiesta } from '@/utils/numeri'
 import {
   TWILIO,
@@ -508,6 +584,7 @@ import {
 } from '@/utils/twilio'
 import {
   Badge,
+  Combobox,
   ErrorMessage,
   FormControl,
   Switch,
@@ -743,6 +820,22 @@ function chiediDiTogliere(riga) {
   })
 }
 
+// where calls may go: Italy to start with, the manager adds the others (doc 52)
+const lingua = appLocale() || 'it'
+const paesiScelti = computed(() => paesi(twilio.doc?.allowed_countries))
+
+function aggiungiIlPaese(codice) {
+  twilio.doc.allowed_countries = comeSalvati(
+    conIlPaese(twilio.doc.allowed_countries, codice),
+  )
+}
+
+function togliIlPaese(codice) {
+  twilio.doc.allowed_countries = comeSalvati(
+    senzaIlPaese(twilio.doc.allowed_countries, codice),
+  )
+}
+
 function update() {
   twilio.save.submit(null, { onSuccess: () => twilio.reload() })
 }
@@ -753,7 +846,8 @@ const isDirty = computed(() => {
   if (!doc || !prima) return false
   return (
     Boolean(doc.record_calls) !== Boolean(prima.record_calls) ||
-    (doc.recording_notice || '') !== (prima.recording_notice || '')
+    (doc.recording_notice || '') !== (prima.recording_notice || '') ||
+    comeSalvati(doc.allowed_countries) !== comeSalvati(prima.allowed_countries)
   )
 })
 </script>
