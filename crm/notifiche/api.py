@@ -53,6 +53,8 @@ CON_ANTEPRIMA = frozenset({"mention", "whatsapp", "sms", "email", "invoicing"})
 MESSAGGI = ("whatsapp", "sms", "email")
 #: The record pages a notification opens, and the name of their parameter.
 PAGINE = {"CRM Lead": ("Lead", "leadId"), "CRM Deal": ("Deal", "dealId")}
+#: The kinds that open a page of the settings instead: the page, and the step of it.
+IMPOSTAZIONI = {"phone": {"page": "Telephony", "step": "twilio-settings"}}
 
 
 @frappe.whitelist()
@@ -97,6 +99,7 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 				"count": cint(riga.count) or 1,
 				"creation": riga.creation,
 				"route": percorso(riga, genere, esistenti, compiti_aperti),
+				"settings": IMPOSTAZIONI.get(genere),
 			}
 		)
 	return pannello

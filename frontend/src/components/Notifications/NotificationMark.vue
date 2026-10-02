@@ -27,6 +27,7 @@ import LucideCalendarClock from '~icons/lucide/calendar-clock'
 import LucideMail from '~icons/lucide/mail'
 import LucideMessageCircleQuestion from '~icons/lucide/message-circle-question'
 import LucideMessageSquareText from '~icons/lucide/message-square-text'
+import LucidePhone from '~icons/lucide/phone'
 import LucideReceiptText from '~icons/lucide/receipt-text'
 import LucideSquareCheck from '~icons/lucide/square-check'
 import LucideSquareX from '~icons/lucide/square-x'
@@ -61,6 +62,7 @@ const ICONE = {
   mail: LucideMail,
   'message-circle-question': LucideMessageCircleQuestion,
   'message-square-text': LucideMessageSquareText,
+  phone: LucidePhone,
   'receipt-text': LucideReceiptText,
   'square-check': LucideSquareCheck,
   'square-x': LucideSquareX,

@@ -62,6 +62,7 @@
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import NotificationRow from '@/components/Notifications/NotificationRow.vue'
+import { apriImpostazioni } from '@/composables/settings'
 import { notifications, notificationsStore } from '@/stores/notifications'
 import { sezioni } from '@/utils/notifiche'
 import { dayjsLocal } from 'frappe-ui'
@@ -87,9 +88,14 @@ const giorni = computed(() =>
 )
 
 // a row is a link: the browser goes where it leads; here it is read and the
-// panel closes. A row that leads nowhere is only read
+// panel closes. A row about the settings opens them; one that leads nowhere is
+// only read
 function apri(riga) {
   segnaLetta(riga)
   if (riga.route) store.close()
+  else if (riga.settings) {
+    store.close()
+    apriImpostazioni(riga.settings)
+  }
 }
 </script>

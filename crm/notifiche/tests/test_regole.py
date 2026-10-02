@@ -124,6 +124,7 @@ class ChiTipoE(UnitTestCase):
 			("Area", "area"),
 			("Invoicing", "invoicing"),
 			("Automation", "automation"),
+			("Phone", "phone"),
 			("Something new", "other"),
 		):
 			self.assertEqual(R.genere(tipo), genere)
@@ -153,6 +154,8 @@ class PerEmail(UnitTestCase):
 		self.assertTrue(R.vuole_email("task"))
 		self.assertFalse(R.vuole_email("whatsapp"))
 		self.assertFalse(R.vuole_email("agenda"))
+		# Twilio's answer on a new number comes after days: by email too
+		self.assertTrue(R.vuole_email("phone"))
 
 	def test_la_scelta_della_persona(self):
 		self.assertTrue(R.vuole_email("sms", {"messages": True}))

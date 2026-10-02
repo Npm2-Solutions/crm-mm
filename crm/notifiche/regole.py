@@ -49,6 +49,9 @@ ESITI_IERI = "{0} appointments yesterday have no outcome: did they come?"
 
 DOMANDA_AREA = "{0} asked the centre a question in their area"
 
+NUMERO_APPROVATO = "Twilio approved the documents of the new number: choose it now"
+NUMERO_RIFIUTATO = "Twilio refused the documents of the new number: see why"
+
 #: Every sentence of this module, for the catalogue's test.
 FRASI = (
 	MENZIONE,
@@ -74,6 +77,8 @@ FRASI = (
 	ESITI_OGGI,
 	ESITI_IERI,
 	DOMANDA_AREA,
+	NUMERO_APPROVATO,
+	NUMERO_RIFIUTATO,
 )
 
 #: The sentences that take something away: the panel draws them apart.
@@ -92,13 +97,14 @@ GENERI = {
 	"Invoicing": "invoicing",
 	"Automation": "automation",
 	"Task": "task",
+	"Phone": "phone",
 }
 
 
 def genere(tipo: str | None, oggetto_doctype: str | None = None, frase: str | None = None) -> str:
 	"""What the panel draws: a mention, an assignment or its removal, a task or its
 	removal, a message of a channel, the agenda, the client area, invoicing, an
-	automation."""
+	automation, the phone's lines."""
 	if tipo == "Assignment":
 		if oggetto_doctype == "CRM Task":
 			return "task_removed" if frase in TOLTE else "task"
@@ -118,10 +124,11 @@ GRUPPI_EMAIL = {
 	"agenda": ("agenda",),
 	"invoicing": ("invoicing",),
 	"automations": ("automation",),
+	"phone": ("phone",),
 }
 #: On until the person says otherwise: what is for them alone. A conversation and
 #: the day's question about the agenda are read in DottorCloud.
-EMAIL_DI_SOLITO = frozenset({"mentions", "assignments", "area", "invoicing", "automations"})
+EMAIL_DI_SOLITO = frozenset({"mentions", "assignments", "area", "invoicing", "automations", "phone"})
 
 
 def gruppo_email(genere: str) -> str | None:

@@ -59,7 +59,8 @@ def riceve(gruppo: str, utente: str | None = None) -> bool:
 	"""Whether a person is among those a group's notifications go to: the page
 	offers them only those. The questions from the area go to who reads the boards,
 	the day's question about the agenda to who marks every appointment, invoicing's
-	alerts to who manages invoicing (`monitoraggio.avvisa`)."""
+	alerts to who manages invoicing (`monitoraggio.avvisa`), Twilio's answer on a
+	new number's documents to who sets the phone up."""
 	from crm.permissions import livelli
 
 	utente = utente or frappe.session.user
@@ -71,6 +72,8 @@ def riceve(gruppo: str, utente: str | None = None) -> bool:
 		return livelli.ambito("agenda.presenze", utente) == livelli.CENTRO
 	if gruppo == "invoicing":
 		return "Invoicing Manager" in frappe.get_roles(utente)
+	if gruppo == "phone":
+		return livelli.puo("telefono.configura", utente)
 	return True
 
 
