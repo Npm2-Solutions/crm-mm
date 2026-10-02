@@ -126,6 +126,11 @@ def _invoicing() -> bool:
 	)
 
 
+def _quotes() -> bool:
+	# a quote handed to somebody: drafts alone say nothing about how quotes go
+	return bool(frappe.db.exists("CRM Quote", {"proposed_on": ("is", "set")}))
+
+
 def _sistema_ts() -> bool:
 	# a healthcare practice, which owes the Sistema TS its patients' expenses
 	return bool(
@@ -245,6 +250,13 @@ FEATURES: dict[str, Feature] = {
 			_lt("Set up the issuing company to start invoicing"),
 			"Issuing company",
 			_invoicing,
+		),
+		Feature(
+			"quotes",
+			_lt("Quotes"),
+			_lt("Propose a quote to somebody to see how quotes go"),
+			None,
+			_quotes,
 		),
 		Feature(
 			"sistema_ts",

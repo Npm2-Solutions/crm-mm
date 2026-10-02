@@ -14,6 +14,7 @@ from crm.dashboard.widgets import (
 	invoicing,
 	marketing,
 	people,
+	quotes,
 	sales,
 	sms_email,
 	social,
