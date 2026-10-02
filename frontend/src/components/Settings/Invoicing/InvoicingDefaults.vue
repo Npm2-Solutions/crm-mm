@@ -38,7 +38,9 @@
       />
     </div>
 
+    <!-- the agency's: reading a PEC mailbox, probing a mandate -->
     <div
+      v-if="tecnico"
       class="mx-2 flex flex-col gap-3 border-t border-outline-elevation-2 pt-4"
     >
       <div class="text-p-base-medium text-ink-gray-7">
@@ -70,8 +72,12 @@
 
 <script setup>
 import DocFields from '@/components/Settings/Invoicing/DocFields.vue'
+import { usersStore } from '@/stores/users'
 import { createListResource, Button, Dropdown, call, toast } from 'frappe-ui'
 import { computed, ref } from 'vue'
+
+// the channel of each company, and what maintains it, are the agency's
+const tecnico = usersStore().puo('fatture.segreti')
 
 const scansione = ref(false)
 const sondaggio = ref(false)
@@ -81,7 +87,7 @@ const companies = createListResource({
   fields: ['name', 'company_name', 'ts_mode'],
   filters: { enabled: 1 },
   pageLength: 100,
-  auto: true,
+  auto: tecnico,
 })
 
 const opzioniSonda = computed(() =>

@@ -403,7 +403,7 @@ export const MENU = [
         key: 'Issuing company',
         label: 'Issuing company',
         description:
-          'Who issues the invoices: details, numbering, transmission.',
+          'Who issues the invoices: details, tax regime, Sistema TS credentials.',
       },
       {
         key: 'Services & providers',
@@ -416,9 +416,11 @@ export const MENU = [
         ],
       },
       {
+        // the key stays: links are built on it
         key: 'Provider connection',
-        label: 'Provider connection',
-        description: 'The service that takes the invoices to the tax system.',
+        label: 'Test and go live',
+        description:
+          'Try invoicing before the first real invoice, then go live.',
       },
       {
         key: 'Invoicing defaults',

@@ -38540,3 +38540,427 @@ msgstr "Un pacchetto prepagato, un acconto: altrimenti una delle due date è sba
 #: frontend/src/components/Invoices/InvoiceDialog.vue
 msgid "Before sending it"
 msgstr "Prima di inviarla"
+
+#: crm/invoicing/prova.py
+msgid "It goes on every invoice, and electronic invoices cannot be transmitted without it."
+msgstr "Va su ogni fattura, e senza la sede le fatture elettroniche non si possono trasmettere."
+
+#: crm/invoicing/prova.py
+msgid "Itala"
+msgstr "Itala"
+
+#: crm/invoicing/prova.py
+msgid "Electronic invoices, the ones to companies and public bodies, leave once Itala is connected: the agency does it, the centre sets up nothing."
+msgstr "Le fatture elettroniche, quelle ad aziende ed enti pubblici, partono quando Itala è collegata: lo fa l'agenzia, il centro non imposta niente."
+
+#: crm/invoicing/prova.py
+msgid "Invoicing went live: from now on every invoice is real."
+msgstr "La fatturazione è attiva: da adesso ogni fattura è vera."
+
+#: crm/invoicing/prova.py
+msgid "Invoicing is back in test."
+msgstr "La fatturazione è tornata in prova."
+
+#: crm/invoicing/prova.py
+msgid "This is a test invoice and the company is live now: it does not leave."
+msgstr "È una fattura di prova e adesso la fatturazione è attiva: non parte."
+
+#: crm/invoicing/prova.py
+msgid "This company is live already."
+msgstr "La fatturazione di questa azienda è già attiva."
+
+#: crm/invoicing/prova.py
+msgid "The invoice it corrects was a test: it has no fiscal value, and needs no credit note."
+msgstr "La fattura che corregge era di prova: non ha valore fiscale e non le serve una nota di credito."
+
+#: crm/invoicing/prova.py
+msgid "A test credit note cannot correct a real invoice."
+msgstr "Una nota di credito di prova non corregge una fattura vera."
+
+#: crm/invoicing/prova.py
+msgid "Test invoice"
+msgstr "Fattura di prova"
+
+#: crm/invoicing/prova.py
+msgid "Not ready to go live"
+msgstr "Manca ancora qualcosa per attivarla"
+
+#: crm/invoicing/prova.py
+msgid "{0} real invoices are issued: the company stays live, their numbering is a fiscal fact."
+msgstr "Sono state emesse {0} fatture vere: la fatturazione resta attiva, la loro numerazione è un fatto fiscale."
+
+#: crm/invoicing/prova.py
+msgid "Itala will register the company with its first electronic invoice: {0}"
+msgstr "Itala registrerà l'azienda con la sua prima fattura elettronica: {0}"
+
+#: crm/invoicing/connessione.py
+msgid "Itala is not connected yet: the agency enters its account, then invoices can leave."
+msgstr "Itala non è ancora collegata: l'agenzia inserisce il suo account, poi le fatture possono partire."
+
+#: crm/invoicing/connessione.py
+msgid "[TEST - this document reached nobody]"
+msgstr "[PROVA - questo documento non è arrivato a nessuno]"
+
+#: crm/invoicing/connessione.py
+msgid "Itala refused the account ({0}). The credentials never appear in this message."
+msgstr "Itala ha rifiutato l'account ({0}). Le credenziali non compaiono mai in questo messaggio."
+
+#: crm/invoicing/connessione.py
+msgid "Itala is unreachable: {0}"
+msgstr "Itala non risponde: {0}"
+
+#: crm/invoicing/sdi/itala.py
+msgid "The company has no VAT number: Itala cannot register it"
+msgstr "L'azienda non ha la partita IVA: Itala non può registrarla"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala's update list is not JSON"
+msgstr "L'elenco degli aggiornamenti di Itala non è in JSON"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala did not register the company ({0}): {1}"
+msgstr "Itala non ha registrato l'azienda ({0}): {1}"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala answered {0}: {1}"
+msgstr "Itala ha risposto {0}: {1}"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala refused the document: {0}"
+msgstr "Itala ha rifiutato il documento: {0}"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Itala answered {0} when asked for updates: {1}"
+msgstr "Itala ha risposto {0} alla richiesta degli aggiornamenti: {1}"
+
+#: crm/invoicing/sdi/itala.py
+msgid "Accepted by Itala{0}. The outcome arrives as a notice."
+msgstr "Presa in carico da Itala{0}. L'esito arriva con una notifica."
+
+#: crm/invoicing/emissione.py
+msgid "Test: checked, not sent"
+msgstr "Prova: controllata, non inviata"
+
+#: crm/tessera_sanitaria/__init__.py
+msgid "The expenses wait to be reported until they are entered, from the Sistema TS portal: the deadline is the end of January."
+msgstr "Le spese restano da comunicare finché non vengono inserite, dal portale del Sistema TS: la scadenza è la fine di gennaio."
+
+#: crm/tessera_sanitaria/trasporto.py
+msgid "This is a test invoice: the Sistema TS does not receive it. What it would have received was checked when it was issued."
+msgstr "È una fattura di prova: il Sistema TS non la riceve. Quello che avrebbe ricevuto è stato controllato all'emissione."
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Test invoice: it has no fiscal value"
+msgstr "Fattura di prova: non ha valore fiscale"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Tax code"
+msgstr "Codice fiscale"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Paid on"
+msgstr "Pagata il"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Billed to"
+msgstr "Intestata a"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Qty"
+msgstr "Q.tà"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Stamp duty recovery"
+msgstr "Recupero dell'imposta di bollo"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Pension fund contribution"
+msgstr "Contributo della cassa previdenziale"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Advances excluded from the base"
+msgstr "Anticipazioni escluse dall'imponibile"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "VAT paid by the client (art. 17-ter)"
+msgstr "IVA versata dal cliente (art. 17-ter)"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Payment to"
+msgstr "Pagamento a"
+
+#: crm/invoicing/print_format/fattura/fattura.html
+msgid "Copy for the client ({0} of {1})"
+msgstr "Copia per il cliente ({0} di {1})"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The centre's own, from the Sistema TS portal: with them the expenses are reported in the centre's name."
+msgstr "Sono del centro, dal portale del Sistema TS: con queste le spese si comunicano a nome del centro."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "From the official kit. Empty here, the one in the invoicing settings is used for every company. It expires and is reissued: with an expired one every report is refused, silently."
+msgstr "Dal kit ufficiale. Vuoto qui, vale quello delle impostazioni della fatturazione, per ogni azienda. Scade e viene riemesso: con uno scaduto ogni comunicazione è rifiutata, in silenzio."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Itala, the accredited intermediary, is the one offered to every centre: the centre sets nothing up. Downloading the file and the centre's own PEC stay possible, for the agency to choose."
+msgstr "Itala, l'intermediario accreditato, è quello offerto a ogni centro: il centro non imposta niente. Scaricare il file e la PEC del centro restano possibili, li sceglie l'agenzia."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Test or live"
+msgstr "In prova o attiva"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "A company starts in test: its invoices are numbered PROVA, the electronic ones go to Itala's test environment and nothing reaches the SdI, the Sistema TS or the client. It goes live from Settings > Invoicing > Test and go live."
+msgstr "Un'azienda parte in prova: le sue fatture hanno il numero PROVA, quelle elettroniche vanno all'ambiente di prova di Itala e niente arriva allo SdI, al Sistema TS o al cliente. Si attiva da Impostazioni > Fatturazione > Prova e attivazione."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Live since"
+msgstr "Attiva dal"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Itala, test environment"
+msgstr "Itala, ambiente di prova"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The company's identifier under the agency's account, given when it is registered."
+msgstr "L'identificativo dell'azienda sotto l'account dell'agenzia, dato quando viene registrata."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Itala, production"
+msgstr "Itala, produzione"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Own Itala account: client ID"
+msgstr "Account Itala proprio: client ID"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Only for a company with an Itala account of its own. Empty, the agency's account is used and the company is registered under it by itself."
+msgstr "Solo per un'azienda con un account Itala suo. Vuoto, si usa l'account dell'agenzia e l'azienda vi viene registrata da sola."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Client secret"
+msgstr "Client secret"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Only for a company with an account of its own: the token Itala sends back when it pushes updates here, as Authorization: Bearer. Under the agency's account the updates are fetched every few minutes."
+msgstr "Solo per un'azienda con un account suo: il token che Itala rimanda quando spinge qui gli aggiornamenti, come Authorization: Bearer. Con l'account dell'agenzia gli aggiornamenti si vanno a prendere ogni pochi minuti."
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "Itala, the agency's account"
+msgstr "Itala, l'account dell'agenzia"
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "One account for every centre: each company is registered under it by itself, the first time an invoice of it leaves. Empty here, the server's is used (itala_client_id and itala_client_secret in common_site_config.json)."
+msgstr "Un account per ogni centro: ogni azienda vi viene registrata da sola, la prima volta che parte una sua fattura. Vuoto qui, si usa quello del server (itala_client_id e itala_client_secret in common_site_config.json)."
+
+#: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
+msgid "From the official kit, for every company of this site that does not carry its own. It expires and is reissued: with an expired one every report is refused, silently."
+msgstr "Dal kit ufficiale, per ogni azienda di questo sito che non ha il suo. Scade e viene riemesso: con uno scaduto ogni comunicazione è rifiutata, in silenzio."
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Issued while the company was in test: numbered PROVA, it has no fiscal value and reaches nobody."
+msgstr "Emessa mentre la fatturazione era in prova: ha il numero PROVA, non ha valore fiscale e non arriva a nessuno."
+
+#: crm/invoicing/doctype/crm_invoice/crm_invoice.json
+msgid "Itala's identifier"
+msgstr "Identificativo di Itala"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Test and go live"
+msgstr "Prova e attivazione"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Try invoicing before the first real invoice: in test the invoices are numbered PROVA and reach nobody, not the SdI, not the Sistema TS, not the patient."
+msgstr "Prova la fatturazione prima della prima fattura vera: in prova le fatture hanno il numero PROVA e non arrivano a nessuno, né allo SdI, né al Sistema TS, né al paziente."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "In test"
+msgstr "In prova"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Since {0}: every invoice is real."
+msgstr "Dal {0}: ogni fattura è vera."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Every invoice is real."
+msgstr "Ogni fattura è vera."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The invoices issued now are test invoices: numbered PROVA, with a band on the PDF. The electronic ones go to Itala’s test environment; the report to the Sistema TS is checked and not sent."
+msgstr "Le fatture emesse adesso sono di prova: hanno il numero PROVA e una fascia sul PDF. Quelle elettroniche vanno all'ambiente di prova di Itala; la comunicazione al Sistema TS viene controllata e non inviata."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "One test invoice issued so far."
+msgstr "Finora è stata emessa una fattura di prova."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "{0} test invoices issued so far."
+msgstr "Finora sono state emesse {0} fatture di prova."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Go live"
+msgstr "Attiva la fatturazione"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Back to test"
+msgstr "Torna in prova"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Before going live"
+msgstr "Prima di attivarla"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Nothing stops going live. These are worth doing too."
+msgstr "Niente impedisce di attivarla. Vale la pena fare anche queste."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "What is marked with the cross is needed to go live."
+msgstr "Quello segnato con la croce serve per attivarla."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Needed to go live"
+msgstr "Serve per attivarla"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "How invoices leave"
+msgstr "Come partono le fatture"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Electronic invoices, to companies and public bodies: through Itala, an intermediary accredited by the Agenzia delle Entrate. Connected."
+msgstr "Le fatture elettroniche, ad aziende ed enti pubblici: tramite Itala, intermediario accreditato dall'Agenzia delle Entrate. Collegata."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Electronic invoices, to companies and public bodies: through Itala, an intermediary accredited by the Agenzia delle Entrate. {brand} connects it."
+msgstr "Le fatture elettroniche, ad aziende ed enti pubblici: tramite Itala, intermediario accreditato dall'Agenzia delle Entrate. La collega {brand}."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Invoices to patients: a PDF to the patient, and the expense to the Sistema TS in the centre’s name, with its credentials."
+msgstr "Le fatture ai pazienti: un PDF al paziente, e la spesa al Sistema TS a nome del centro, con le sue credenziali."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Itala, for the agency"
+msgstr "Itala, per l'agenzia"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Only the agency sees this block: the account every centre sends with, and where this company stands at Itala."
+msgstr "Questo riquadro lo vede solo l'agenzia: l'account con cui inviano tutti i centri, e a che punto è questa azienda presso Itala."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Itala account"
+msgstr "Account Itala"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Registered at Itala, test"
+msgstr "Registrata presso Itala, prova"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Not yet"
+msgstr "Non ancora"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Registered at Itala, production"
+msgstr "Registrata presso Itala, produzione"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Register at Itala now"
+msgstr "Registrala ora presso Itala"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The account is entered in Invoicing > Options, or once for the whole server; the company is registered by itself with its first electronic invoice."
+msgstr "L'account si inserisce in Fatturazione > Opzioni, oppure una volta per tutto il server; l'azienda si registra da sola con la sua prima fattura elettronica."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The company’s own"
+msgstr "Quello dell'azienda"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The agency’s, on this site"
+msgstr "Quello dell'agenzia, su questo sito"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The agency’s, for the whole server"
+msgstr "Quello dell'agenzia, per tutto il server"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Not entered yet"
+msgstr "Non ancora inserito"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "The centre’s PEC mailbox"
+msgstr "La PEC del centro"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Itala, automatic"
+msgstr "Itala, automatico"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Go live?"
+msgstr "Attivare la fatturazione?"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "From now on every invoice is real, numbered from one."
+msgstr "Da adesso ogni fattura è vera, numerata da uno."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "From now on every invoice is real, numbered from one. The test invoice is removed."
+msgstr "Da adesso ogni fattura è vera, numerata da uno. La fattura di prova viene tolta."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "From now on every invoice is real, numbered from one. The {0} test invoices are removed."
+msgstr "Da adesso ogni fattura è vera, numerata da uno. Le {0} fatture di prova vengono tolte."
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Invoicing is live"
+msgstr "La fatturazione è attiva"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Could not go live"
+msgstr "Non è stato possibile attivarla"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Invoicing is back in test"
+msgstr "La fatturazione è tornata in prova"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Could not go back to test"
+msgstr "Non è stato possibile tornare in prova"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Registered at Itala"
+msgstr "Registrata presso Itala"
+
+#: frontend/src/components/Settings/Invoicing/ProviderConnection.vue
+msgid "Could not register at Itala"
+msgstr "Non è stato possibile registrarla presso Itala"
+
+#: frontend/src/pages/Invoices.vue
+msgid "Invoicing in test"
+msgstr "Fatturazione in prova"
+
+#: frontend/src/pages/Invoices.vue
+msgid "The invoices are numbered PROVA and reach nobody. When everything is right, go live."
+msgstr "Le fatture hanno il numero PROVA e non arrivano a nessuno. Quando è tutto a posto, attiva la fatturazione."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "A test invoice: it has no fiscal value and reached nobody."
+msgstr "Una fattura di prova: non ha valore fiscale e non è arrivata a nessuno."
+
+#: frontend/src/components/Invoices/InvoiceDialog.vue
+msgid "Invoicing is in test: this invoice will be numbered PROVA and reach nobody."
+msgstr "La fatturazione è in prova: questa fattura avrà il numero PROVA e non arriverà a nessuno."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Who issues the invoices: details, tax regime, Sistema TS credentials."
+msgstr "Chi emette le fatture: i dati, il regime fiscale, le credenziali del Sistema TS."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Try invoicing before the first real invoice, then go live."
+msgstr "Prova la fatturazione prima della prima fattura vera, poi attivala."
+
+#: crm/invoicing/engine/voci.py
+msgid "The accredited intermediary the invoices go through: it sends them and reads the notices that come back."
+msgstr "L'intermediario accreditato da cui passano le fatture: le invia e legge le notifiche che tornano."
+
+#: crm/invoicing/engine/voci.py
+msgid "The invoices are numbered PROVA and reach nobody."
+msgstr "Le fatture hanno il numero PROVA e non arrivano a nessuno."

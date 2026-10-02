@@ -675,11 +675,23 @@ def get_fields(doctype: str, allow_all_fieldtypes: bool = False):
 	not_allowed_fieldtypes = [*list(frappe.model.no_value_fields), "Read Only"]
 	if allow_all_fieldtypes:
 		not_allowed_fieldtypes = []
-	fields = frappe.get_meta(doctype).fields
+	meta = frappe.get_meta(doctype)
+	# what sits on a permission level the user cannot read is not drawn: its value
+	# never reaches them, and an empty field they cannot fill is a question nobody
+	# can answer (the agency's keys on a centre's settings page)
+	# (a child table has no permissions of its own: its parent's decide, elsewhere)
+	alti = any((field.permlevel or 0) > 0 for field in meta.fields)
+	leggibili = (
+		set(meta.get_permlevel_access("read"))
+		if alti and not meta.istable and frappe.session.user != "Administrator"
+		else None
+	)
 
 	_fields = []
 
-	for field in fields:
+	for field in meta.fields:
+		if leggibili is not None and (field.permlevel or 0) > 0 and field.permlevel not in leggibili:
+			continue
 		if field.fieldtype not in not_allowed_fieldtypes and field.fieldname:
 			_fields.append(field)
 

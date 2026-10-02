@@ -20,6 +20,19 @@
           :label="__('Draft')"
           theme="orange"
         />
+        <!-- issued in test, or to be issued while invoicing is in test -->
+        <Badge
+          v-if="vista?.test"
+          :label="__('Test')"
+          theme="red"
+          :title="
+            vista.docstatus === 1
+              ? __('A test invoice: it has no fiscal value and reached nobody.')
+              : __(
+                  'Invoicing is in test: this invoice will be numbered PROVA and reach nobody.',
+                )
+          "
+        />
       </div>
     </template>
     <template #body-content>

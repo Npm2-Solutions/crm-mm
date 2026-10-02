@@ -63,6 +63,31 @@
       </div>
 
       <template v-else>
+        <!-- invoicing in test: said where invoices are made, every time -->
+        <div
+          v-if="prova.data?.company && !prova.data.live"
+          class="flex items-center justify-between gap-3 rounded-xl border border-outline-amber-2 bg-surface-amber-1 px-4 py-3 max-md:flex-col max-md:items-start"
+        >
+          <div class="flex min-w-0 flex-col gap-0.5">
+            <span class="text-p-base-medium text-ink-gray-8">
+              {{ __('Invoicing in test') }}
+            </span>
+            <span class="text-p-sm text-ink-gray-6">
+              {{
+                __(
+                  'The invoices are numbered PROVA and reach nobody. When everything is right, go live.',
+                )
+              }}
+            </span>
+          </div>
+          <Button
+            v-if="puo('fatture.configura')"
+            class="shrink-0"
+            :label="__('Test and go live')"
+            @click="openSettings('Provider connection')"
+          />
+        </div>
+
         <div class="flex items-center gap-1">
           <Button
             v-for="entry in tabs"
@@ -419,7 +444,7 @@ const tabs = computed(() => [
 
 const companies = createListResource({
   doctype: 'CRM Invoicing Company',
-  fields: ['name', 'company_name', 'sender_category', 'ts_mode', 'is_default'],
+  fields: ['name', 'company_name', 'sender_category', 'is_default'],
   filters: { enabled: 1 },
   pageLength: 50,
   auto: true,
@@ -437,11 +462,13 @@ const companyOptions = computed(() =>
   })),
 )
 
-const tsMode = computed(
-  () =>
-    (companies.data || []).find((r) => r.name === company.value)?.ts_mode ||
-    'export',
-)
+// where the company is (in test or live) and how it reports to the Sistema TS:
+// the server says it, the channel being the agency's to read
+const prova = createResource({ url: 'crm.invoicing.prova.get_status' })
+const tsMode = computed(() => prova.data?.ts_mode || 'export')
+watch(company, (nome) => {
+  if (nome) prova.fetch({ company: nome })
+})
 
 const healthcareCompany = computed(() => {
   const row = (companies.data || []).find((r) => r.name === company.value)
