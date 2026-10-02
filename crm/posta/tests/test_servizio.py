@@ -20,7 +20,7 @@ from unittest.mock import patch
 import frappe
 
 from crm.posta import servizio
-from crm.tests.test_documenti_del_core import AGENCY, FRONT_DESK, MANAGER, CoreTestCase
+from crm.tests.test_documenti_del_core import AGENCY, FRONT_DESK, MANAGER, CoreTestCase, make_user
 
 CONF = {
 	"server": "smtp.servizio.test",
@@ -135,13 +135,17 @@ class IlServizioDiInvio(ServizioCase):
 		self.assertEqual(_intestazione(coda.message, "Reply-To"), "Centro Aurora <info@aurora.test>")
 
 	def test_chi_scrive_senza_casella_sua_scrive_a_nome_del_centro(self):
+		make_user("anna.bianchi@personale.test", "Sales User")
 		servizio.assicura()
 		coda = self.manda(sender="Anna Bianchi <anna.bianchi@personale.test>")
 		self.assertEqual(
 			_intestazione(coda.message, "From"), f"Anna Bianchi · Centro Aurora <{CONF['mittente']}>"
 		)
-		# the answer goes back to who wrote
-		self.assertIn("anna.bianchi@personale.test", _intestazione(coda.message, "Reply-To"))
+		# the answer comes back to the centre, where whoever follows the person reads it
+		self.assertEqual(_intestazione(coda.message, "Reply-To"), "Centro Aurora <segreteria@aurora.test>")
+		# a Reply-To somebody chose stays
+		coda = self.manda(sender="Anna Bianchi <anna.bianchi@personale.test>", reply_to="dott@studio.test")
+		self.assertIn("dott@studio.test", _intestazione(coda.message, "Reply-To"))
 
 	def test_senza_configurazione_si_ferma_e_torna_la_casella_del_centro(self):
 		servizio.assicura()

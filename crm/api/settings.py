@@ -19,7 +19,7 @@ from frappe import _
 
 from crm.marchio import con_nome
 from crm.permissions.livelli import richiede
-from crm.posta import servizio
+from crm.posta import personale, servizio
 
 #: What the settings page shows of an account: never a password or a key.
 CAMPI_ACCOUNT = (
@@ -137,7 +137,12 @@ def get_email_accounts() -> list[dict]:
 	service, which is the agency's."""
 	righe = frappe.get_all(
 		"Email Account",
-		filters={"email_id": ["not like", "%example%"], "name": ["!=", servizio.ACCOUNT]},
+		filters={
+			"email_id": ["not like", "%example%"],
+			"name": ["!=", servizio.ACCOUNT],
+			# somebody's own mailbox is theirs, on their own page (doc 51)
+			**personale.del_centro(),
+		},
 		fields=list(CAMPI_ACCOUNT),
 		order_by="creation asc",
 	)
@@ -160,6 +165,7 @@ def list_email_accounts(incoming: bool = False, outgoing: bool = False) -> list[
 	if frappe.utils.sbool(outgoing):
 		filters["enable_outgoing"] = 1
 	filters["name"] = ["!=", servizio.ACCOUNT]
+	filters.update(personale.del_centro())
 	return frappe.get_all(
 		"Email Account", filters=filters, fields=["name", "email_id"], order_by="email_account_name asc"
 	)
