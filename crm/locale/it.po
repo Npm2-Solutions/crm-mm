@@ -40451,3 +40451,87 @@ msgstr "Ancora nessuna nota su questa persona"
 #: frontend/src/components/Activities/ConversationView.vue:730
 msgid "Nothing here yet"
 msgstr "Ancora niente qui"
+
+#: crm/telephony/sms_regole.py
+msgid "Write the name people will see as the sender."
+msgstr "Scrivi il nome che le persone vedranno come mittente."
+
+#: crm/telephony/sms_regole.py
+msgid "The name can be at most 11 characters, spaces included."
+msgstr "Il nome può avere al massimo 11 caratteri, spazi compresi."
+
+#: crm/telephony/sms_regole.py
+msgid "The name can have only letters without accents, digits and spaces."
+msgstr "Il nome può avere solo lettere senza accenti, cifre e spazi."
+
+#: crm/telephony/sms_regole.py
+msgid "The name cannot be digits alone: it would look like a number."
+msgstr "Il nome non può essere fatto di sole cifre: sembrerebbe un numero."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.py
+msgid "Choose one of the numbers that can send SMS."
+msgstr "Scegli uno dei numeri che possono mandare SMS."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "SMS Sender"
+msgstr "Mittente degli SMS"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Sender's Name"
+msgstr "Nome del mittente"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Sender's Number"
+msgstr "Numero del mittente"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "What people see as the sender of every SMS the centre sends: its name, or one of its numbers when the answers must come back."
+msgstr "Quello che le persone vedono come mittente di ogni SMS del centro: il suo nome, o uno dei suoi numeri quando le risposte devono tornare."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Up to 11 letters without accents, digits and spaces: nobody can answer a name."
+msgstr "Fino a 11 lettere senza accenti, cifre e spazi: a un nome nessuno può rispondere."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "One of the space's numbers that can send SMS: the answers come back to the person's conversation."
+msgstr "Uno dei numeri dello spazio che possono mandare SMS: le risposte tornano nella conversazione della persona."
+
+#: crm/api/sms.py
+msgid "The SMS cannot leave: the centre has no sender yet. The manager sets it in Settings → Phone → Telephony → Twilio."
+msgstr "L'SMS non può partire: il centro non ha ancora un mittente. Il responsabile lo imposta in Impostazioni → Telefono → Telefonia → Twilio."
+
+#: frontend/src/components/Settings/SmsSenderLine.vue
+msgid "The centre has no SMS sender yet: SMS are not offered."
+msgstr "Il centro non ha ancora un mittente degli SMS: gli SMS non sono offerti."
+
+#: frontend/src/components/Settings/SmsSenderLine.vue
+msgid "They leave from the centre’s number {0}: people can reply."
+msgstr "Partono dal numero del centro {0}: le persone possono rispondere."
+
+#: frontend/src/components/Settings/SmsSenderLine.vue
+msgid "They leave with the centre’s name, {0}: nobody can reply to a name."
+msgstr "Partono con il nome del centro, {0}: a un nome nessuno può rispondere."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Every SMS the centre sends leaves from here: the waiting list’s offers, the client area’s news, the automations, the ones written by hand."
+msgstr "Ogni SMS del centro parte da qui: le proposte della lista d'attesa, le novità dell'area clienti, le automazioni, quelli scritti a mano."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "The centre’s name"
+msgstr "Il nome del centro"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Up to 11 letters without accents, digits and spaces. Nobody can reply to a name."
+msgstr "Fino a 11 lettere senza accenti, cifre e spazi. A un nome nessuno può rispondere."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "One of the centre’s numbers"
+msgstr "Uno dei numeri del centro"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "People can reply: the answers reach the person’s conversation, and a STOP is heard."
+msgstr "Le persone possono rispondere: le risposte arrivano nella conversazione della persona, e uno STOP viene ascoltato."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "For the answers to come back the centre needs a number that can send SMS, like a mobile one: ask for it in Numbers, above."
+msgstr "Perché le risposte tornino serve un numero che possa mandare SMS, come un mobile: chiedilo in Numeri, qui sopra."

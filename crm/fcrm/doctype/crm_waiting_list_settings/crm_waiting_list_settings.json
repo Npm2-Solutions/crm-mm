@@ -18,9 +18,7 @@
   "column_break_join",
   "default_until_days",
   "channels_section",
-  "whatsapp_template",
-  "column_break_channels",
-  "sms_number"
+  "whatsapp_template"
  ],
  "fields": [
   {
@@ -111,22 +109,12 @@
    "fieldtype": "Data",
    "label": "WhatsApp template",
    "description": "Approved: its variables are the name, the service, the day and time, the link"
-  },
-  {
-   "fieldname": "column_break_channels",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "sms_number",
-   "fieldtype": "Data",
-   "label": "SMS from",
-   "options": "Phone"
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-30 22:00:00.000000",
+ "modified": "2026-10-02 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Waiting List Settings",

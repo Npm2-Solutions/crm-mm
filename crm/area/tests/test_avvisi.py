@@ -19,6 +19,7 @@ import frappe
 
 from crm.area import api, avvisi, messaggi
 from crm.area.tests.test_area import ANNA, DESK, MANAGER, AreaCase
+from crm.telephony.tests.test_sms import mittente_di_prova
 
 NUMERO = "+393331234567"
 MODELLO = "novita-area-prova"
@@ -53,8 +54,8 @@ class AvvisiCase(AreaCase):
 
 	def offri(self, whatsapp=None, sms=None, twilio=0):
 		frappe.db.set_single_value(avvisi.IMPOSTAZIONI, "whatsapp_template", whatsapp)
-		frappe.db.set_single_value(avvisi.IMPOSTAZIONI, "sms_number", sms)
-		frappe.db.set_single_value("CRM Twilio Settings", "enabled", twilio)
+		# the SMS leave from the centre's one sender (doc 52)
+		mittente_di_prova(numero=sms, acceso=twilio)
 
 	def ha_scritto(self, canale=avvisi.WHATSAPP):
 		frappe.set_user("Administrator")
@@ -172,10 +173,9 @@ class LeImpostazioni(AvvisiCase):
 		with self.assertRaises(frappe.PermissionError):
 			avvisi.save_notice_settings(MODELLO)
 		self.come(MANAGER)
-		fatto = avvisi.save_notice_settings(MODELLO, "+39 02 1234 5678")
-		self.assertEqual((fatto["whatsapp_template"], fatto["sms_number"]), (MODELLO, "+390212345678"))
+		self.offri(sms="+390212345678", twilio=1)
+		fatto = avvisi.save_notice_settings(MODELLO)
+		self.assertEqual((fatto["whatsapp_template"], fatto["sms_sender"]), (MODELLO, "+390212345678"))
 		self.assertIn(MODELLO, [t.name for t in fatto["templates"]])
 		with self.assertRaises(frappe.ValidationError):
 			avvisi.save_notice_settings("un-template-che-non-c-e")
-		with self.assertRaises(frappe.ValidationError):
-			avvisi.save_notice_settings(None, "non è un numero")

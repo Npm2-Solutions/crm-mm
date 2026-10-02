@@ -24,13 +24,3 @@ class CRMWaitingListSettings(Document):
 			and frappe.db.exists("WhatsApp Templates", self.whatsapp_template)
 		):
 			frappe.throw(_("This WhatsApp template does not exist"))
-		if (self.sms_number or "").strip():
-			from crm.utils import to_e164
-
-			# a number it cannot read comes back as it was written: only E.164 is kept
-			numero = to_e164(self.sms_number)
-			if not numero.startswith("+"):
-				frappe.throw(_("Write the SMS number with its prefix, like +39…"))
-			self.sms_number = numero
-		else:
-			self.sms_number = None
