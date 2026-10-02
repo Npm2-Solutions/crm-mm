@@ -227,12 +227,34 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   quegli orari aspetta il primo momento buono (le regole di Twilio per l'Italia). Un
   promemoria del centro, che il consenso non lo chiede, parte quando deve.
 
-### 5. Costi e controlli (quinta parte)
+### 5. Costi e controlli (quinta parte, fatta)
 
-- **Quanto ha speso lo spazio questo mese**, per voce (chiamate, SMS, numeri,
-  registrazioni), il credito dell'account e un avviso quando scende.
-- **Gli errori di Twilio a parole**: un numero senza documenti, il credito finito,
-  un indirizzo che non risponde.
+- **Questo mese (fatto).** Sulla pagina di Twilio, sotto Controlla: quanto ha speso lo
+  spazio dal primo del mese, come lo conta Twilio (i suoi «usage records»), per voce
+  (chiamate con i minuti, SMS, numeri, registrazioni e trascrizioni, il resto), nella
+  valuta dell'account. Lo vede chi paga lo spazio: il responsabile del centro
+  sull'account del centro, l'agenzia sul suo. Quello che Twilio dice resta dieci
+  minuti, poi si chiede di nuovo.
+- **Il credito** è dell'account, e uno spazio non ne ha uno suo: Twilio non lo dice
+  a chi ha solo le chiavi dello spazio. La pagina lo spiega: si vede e si ricarica su
+  Twilio.
+- **L'avviso di spesa (fatto).** «Avvisami quando il mese arriva a»: l'importo diventa
+  un «usage trigger» dello spazio (sulla spesa totale, ogni mese), che Twilio non sa
+  cambiare: un importo nuovo ne mette uno nuovo al posto del vecchio, vuoto lo toglie.
+  Quando la spesa ci arriva Twilio chiama `spend_reached` e chi paga riceve la
+  notifica «La spesa Twilio del mese è arrivata a …, oltre l'avviso a …», che apre la
+  pagina di Twilio. Ogni ora `assicura()` lo rimette se qualcuno l'ha tolto nella
+  console; sull'account dell'agenzia lo mette solo l'agenzia.
+- **I problemi degli ultimi 7 giorni (fatto)**, dal registro di Twilio (Monitor),
+  uno per codice con quante volte e l'ultima: quelli che un centro incontra detti da
+  DottorCloud (il telefono spento, il numero che non esiste più, l'SMS fermato
+  dall'operatore, il credito finito, i paesi non permessi, Twilio che non raggiunge
+  DottorCloud), gli altri con le parole di Twilio e il codice; un pulsante apre il
+  registro di Twilio.
+- **Un SMS che non parte o non arriva (fatto)** dice perché con le stesse frasi e
+  tiene il codice di Twilio (`CRM SMS Message.error_code`): quando Twilio lo rifiuta
+  e quando Twilio poi dice che non è arrivato. Nel log restano solo il codice e lo
+  stato, mai il numero né le parole.
 
 ### 6. I numeri che il centro ha già (sesta parte)
 
@@ -280,6 +302,8 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 | `crm/telephony/sms_regole.py` | Senza sito: il nome del mittente che Twilio prende, quello fatto con il nome del centro, un messaggio che è solo STOP o START, gli orari delle promozioni — provato con `unittest` |
 | `crm/telephony/sms.py` + `CRM Twilio Settings` (`sms_from`, `sms_sender_name`, `sms_sender_number`) | Il mittente di tutti gli SMS (`mittente()`) e le opzioni della pagina (`get_sms_sender_options`); STOP e START (`ascolta`, `ferma`, `riprendi`, `ha_fermato`) da `incoming_sms_handler`, la risposta tenuta nella conversazione |
 | `frontend/src/components/Settings/SmsSenderLine.vue`, `Activities/SMSBox.vue` | Da dove partono gli SMS, sulle pagine dell'area e della lista d'attesa; sopra il box, la persona che ha scritto STOP |
+| `crm/telephony/consumi_regole.py`, `errori_regole.py` | Senza sito: la spesa del mese per voce, l'importo dell'avviso e che cosa fare del trigger; i codici di Twilio a parole, i problemi raggruppati per codice — provati con `unittest` |
+| `crm/telephony/consumi.py` + `errori.py`, `CRM Twilio Settings.spend_alert` | La spesa e i problemi per la pagina (`get_twilio_usage`), l'avviso come trigger dello spazio (`allinea_l_avviso`, al salvataggio e ogni ora), `spend_reached` che lo dice a chi paga; un codice di Twilio a parole (`errori.in_parole`), anche sugli SMS |
 
 ## Da decidere
 
