@@ -42,7 +42,8 @@ export const MENU = [
         condition: (c) => c.puo('agenda.attese'),
       },
       {
-        // the people the centre looks after: with the clinic, its patients.
+        // everybody the centre has heard from: who asked, its patients, a
+        // parent, a company's contact - "People" with the clinic on too.
         // "Lead" is what one of them is at the start, not what they are
         // forever: they stay here after a deal is opened
         key: 'Leads',

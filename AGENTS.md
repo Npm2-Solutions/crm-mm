@@ -349,7 +349,8 @@ A module of the plan that makes the CRM the software of a trade registers a
 translated in its boot, the area in its own, the server asks `parola()`), and the
 places of the base it hides because it shows its own. The CRM underneath speaks
 neutral words (clients, appointments, the client area); with the clinic on it says
-patients, visits, the patient area, everywhere. A new place of the base that names
+patients, visits, the patient area, everywhere - but the list of people stays
+"People": it holds everybody the centre has heard from, not only its patients. A new place of the base that names
 the people adds its pair to the vertical's words (`crm/clinica/parole.py`).
 
 ### The clinic (`crm/clinica`, switched on by the plan's "clinica" module)

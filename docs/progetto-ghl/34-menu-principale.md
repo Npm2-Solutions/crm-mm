@@ -12,7 +12,7 @@
 
 ```
 Notifiche
-Dashboard · Oggi · Agenda · Lista d'attesa · Pazienti · Conversazioni · Da fare · Fatture
+Dashboard · Oggi · Agenda · Lista d'attesa · Persone · Conversazioni · Da fare · Fatture
 ARCHIVIO      Aziende · Note
 MARKETING     Trattative · Automazioni · Social Planner · Sito web
 TELEFONO      Chiamate · Tastierino
@@ -33,8 +33,9 @@ Impostazioni · Comprimi
   (con email e telefono mascherati), le aziende e il suo gruppo; l'amministrazione
   la dashboard, l'agenda, le persone e le fatture; la direzione sanitaria l'agenda
   e i pazienti.
-- **Le parole**: "Persone" (con la clinica "Pazienti", nel menu, nel titolo della
-  pagina e nelle briciole), "Da fare" per le attività (non "Attività", che è la
+- **Le parole**: "Persone", anche con la clinica: nell'elenco c'è chiunque il centro
+  abbia sentito, chi ha chiesto, un genitore, il contatto di un'azienda, non solo i
+  pazienti (02/10/2026); "Da fare" per le attività (non "Attività", che è la
   cronologia della persona), "Aziende", "Chiamate", "Tastierino".
 - **Le impostazioni** hanno una voce in fondo alla barra (sul telefono in fondo al
   cassetto): prima si trovavano solo nel menu sotto il nome.
@@ -46,8 +47,8 @@ Impostazioni · Comprimi
 
 La barra in basso prende i primi quattro posti dello stesso menu: la giornata, le
 persone, le conversazioni, le fatture prima del resto. Segreteria, professionisti
-e manager hanno *Oggi · Agenda · Pazienti · Chat*; l'amministrazione *Agenda ·
-Pazienti · Fatture · Dashboard*. "Altro" apre il cassetto con tutto il menu.
+e manager hanno *Oggi · Agenda · Persone · Chat*; l'amministrazione *Agenda ·
+Persone · Fatture · Dashboard*. "Altro" apre il cassetto con tutto il menu.
 
 ## Come è fatto
 
@@ -55,7 +56,7 @@ Pazienti · Fatture · Dashboard*. "Altro" apre il cassetto con tutto il menu.
   vede); `menuDi()`, `barraDelTelefono()`.
 - `AppSidebar.vue` lo disegna, `MobileBottomNav.vue` ne prende la barra, con le
   stesse icone (`components/Icons/menu.js`); `utils/navigation.js` tiene accesa la
-  scheda della barra dentro la sua sezione (una persona tiene accesi i Pazienti).
+  scheda della barra dentro la sua sezione (una persona tiene accese le Persone).
 - Le etichette di gruppo come le vuole il design system (piccole, maiuscole).
 
 ## Test
