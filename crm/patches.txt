@@ -87,3 +87,4 @@ crm.clinica.patches.patients_are_clients
 crm.patches.v1_0.sheets_are_the_crms
 crm.patches.v1_0.web_forms_are_templates
 crm.patches.v1_0.invoicing_tries_before_it_goes_live
+crm.patches.v1_0.deals_take_their_value_from_quotes

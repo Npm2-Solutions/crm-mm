@@ -349,7 +349,7 @@ def add_default_fields_layout(force=False):
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
-			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","company_description","industry","no_of_employees","annual_revenue"]},{"name":"column_gM4w","fields":["website","linkedin","twitter","facebook","closed_date","next_step"]},{"name":"column_gWmE","fields":["territory","probability","deal_owner"]}]},{"label":"Products","name":"section_jHhQ","opened":true,"columns":[{"name":"column_xiNF","fields":["products"]}],"editingLabel":false,"hideLabel":true},{"label":"New Section","name":"section_WNOQ","opened":true,"columns":[{"name":"column_ziBW","fields":["total"]},{"label":"","name":"column_wuwA","fields":["net_total"]}],"hideBorder":true,"hideLabel":true}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","company_description","industry","no_of_employees","annual_revenue"]},{"name":"column_gM4w","fields":["website","linkedin","twitter","facebook","closed_date","next_step"]},{"name":"column_gWmE","fields":["territory","probability","deal_owner"]}]}]}]',
 		},
 	}
 
