@@ -1,3 +1,10 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  Every number the account can present, what kind it is, whether a call to it
+  reaches DottorCloud; a number of the space released from here (doc 52).
+-->
 <template>
   <SettingsLayoutBase>
     <template #title>
@@ -128,6 +135,18 @@
                   size="sm"
                   @click="toggle(row)"
                 />
+                <Button
+                  v-if="
+                    row.enabled &&
+                    row.provider === 'twilio' &&
+                    row.source === 'Account Number'
+                  "
+                  :label="__('Release')"
+                  size="sm"
+                  theme="red"
+                  variant="subtle"
+                  @click="chiediDiRilasciare(row)"
+                />
               </div>
             </div>
 
@@ -199,6 +218,7 @@
 
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
+import { globalStore } from '@/stores/global'
 import {
   Badge,
   Dialog,
@@ -212,6 +232,7 @@ import {
 import { computed, reactive, ref } from 'vue'
 
 const emit = defineEmits(['updateStep'])
+const { $dialog } = globalStore()
 
 const syncing = ref(false)
 const error = ref('')
@@ -271,6 +292,39 @@ async function toggle(row) {
     row.enabled = result.enabled ? 1 : 0
   } catch (e) {
     toast.error(e.messages?.[0] || __('Could not change the number'))
+  }
+}
+
+// a number of the space, given back to Twilio: it stops costing, for good
+function chiediDiRilasciare(row) {
+  $dialog({
+    title: __('Release {0}?', [row.phone_number]),
+    message: __(
+      'The number goes back to Twilio: it stops costing, and whoever calls it hears it does not exist. It cannot be undone: Twilio may give it to somebody else.',
+    ),
+    actions: [
+      {
+        label: __('Release'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (chiudi) => {
+          chiudi()
+          rilascia(row)
+        },
+      },
+    ],
+  })
+}
+
+async function rilascia(row) {
+  try {
+    await call('crm.telephony.numeri.release_number', {
+      phone_number: row.phone_number,
+    })
+    toast.success(__('{0} is released', [row.phone_number]))
+    callerIds.reload()
+  } catch (e) {
+    toast.error(e.messages?.[0] || __('Could not release the number'))
   }
 }
 

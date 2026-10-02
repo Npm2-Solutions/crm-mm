@@ -258,22 +258,114 @@
 
         <div class="h-px border-t border-outline-elevation-2" />
 
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex min-w-0 flex-col">
-            <div class="text-p-base-medium text-ink-gray-7">
-              {{ __('Numbers') }}
+        <div class="flex flex-col gap-3">
+          <div
+            class="flex items-center justify-between gap-4 max-md:flex-col max-md:items-start"
+          >
+            <div class="flex min-w-0 flex-col">
+              <div class="text-p-base-medium text-ink-gray-7">
+                {{ __('Numbers') }}
+              </div>
+              <div
+                class="text-p-sm"
+                :class="
+                  stato.not_reaching ? 'text-ink-red-8' : 'text-ink-gray-5'
+                "
+              >
+                {{ numeriInParole }}
+              </div>
             </div>
+            <div class="flex shrink-0 gap-2">
+              <Button
+                :label="__('New number')"
+                icon-left="lucide-plus"
+                :disabled="!offerta.data"
+                :loading="offerta.loading"
+                @click="apriNuovo()"
+              />
+              <Button
+                :label="__('Manage')"
+                @click="emit('updateStep', 'caller-id-settings')"
+              />
+            </div>
+          </div>
+
+          <!-- the numbers asked of Twilio: where each request is -->
+          <div
+            v-if="richieste.length"
+            class="flex flex-col divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
+          >
             <div
-              class="text-p-sm"
-              :class="stato.not_reaching ? 'text-ink-red-8' : 'text-ink-gray-5'"
+              v-for="riga in richieste"
+              :key="riga.name"
+              class="flex items-start justify-between gap-3 px-4 py-3 max-md:flex-col"
             >
-              {{ numeriInParole }}
+              <div class="flex min-w-0 flex-col gap-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-p-base-medium text-ink-gray-8">
+                    {{ nomeDellaRichiesta(riga) }}
+                  </span>
+                  <Badge
+                    :label="
+                      __(
+                        statoDellaRichiesta(riga).label,
+                        null,
+                        'Number request',
+                      )
+                    "
+                    :theme="statoDellaRichiesta(riga).theme"
+                    variant="subtle"
+                  />
+                </div>
+                <span class="text-p-sm text-ink-gray-6">
+                  {{ __(...statoDellaRichiesta(riga).riga) }}
+                </span>
+                <span
+                  v-if="riga.numbers.length"
+                  class="text-p-sm text-ink-gray-7"
+                >
+                  {{
+                    __('Bought: {0}', [
+                      riga.numbers.map((n) => n.label).join(', '),
+                    ])
+                  }}
+                </span>
+                <span
+                  v-for="motivo in riga.failures"
+                  :key="motivo"
+                  class="text-p-sm text-ink-red-8"
+                  >{{ motivo }}</span
+                >
+              </div>
+              <div class="flex shrink-0 flex-wrap gap-2">
+                <Button
+                  v-if="riga.may_buy"
+                  :label="
+                    riga.numbers.length
+                      ? __('Another number')
+                      : __('Choose the number')
+                  "
+                  @click="apriNuovo(riga)"
+                />
+                <template v-if="riga.may_resend">
+                  <Button :label="__('Send again')" @click="apriNuovo(riga)" />
+                  <Button
+                    :label="__('Remove')"
+                    theme="red"
+                    variant="subtle"
+                    @click="chiediDiTogliere(riga)"
+                  />
+                </template>
+              </div>
             </div>
           </div>
           <Button
-            class="shrink-0"
-            :label="__('Manage')"
-            @click="emit('updateStep', 'caller-id-settings')"
+            v-if="richieste.some((r) => r.status === 'In review')"
+            class="w-fit"
+            :label="__('Ask Twilio now')"
+            icon-left="lucide-refresh-cw"
+            :loading="chiediATwilio.loading"
+            @click="chiediATwilio.submit()"
           />
         </div>
 
@@ -392,12 +484,21 @@
       </div>
     </template>
   </SettingsLayoutBase>
+  <NewNumberDialog
+    v-if="nuovo.aperto && offerta.data"
+    v-model="nuovo.aperto"
+    :offerta="offerta.data"
+    :richiesta="nuovo.richiesta"
+    @changed="aggiornaLeRichieste"
+  />
 </template>
 <script setup>
+import NewNumberDialog from '@/components/Settings/Telephony/NewNumberDialog.vue'
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
 import { globalStore } from '@/stores/global'
 import { formatDate } from '@/utils'
+import { nomeDellaRichiesta, statoDellaRichiesta } from '@/utils/numeri'
 import {
   TWILIO,
   chiPaga,
@@ -413,7 +514,7 @@ import {
   createResource,
   toast,
 } from 'frappe-ui'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const emit = defineEmits(['updateStep'])
 const { $dialog } = globalStore()
@@ -582,6 +683,65 @@ const trunks = computed(() => {
     return []
   }
 })
+
+// the numbers asked of Twilio, and what Twilio sells now (doc 52)
+const offerta = createResource({
+  url: 'crm.telephony.numeri.get_number_offer',
+  onError: (e) => toast.error(e.messages?.[0] || e.message),
+})
+watch(
+  () => stato.value?.connected,
+  (collegato) => {
+    if (collegato) offerta.fetch()
+  },
+  { immediate: true },
+)
+const richieste = computed(() => offerta.data?.requests || [])
+const nuovo = reactive({ aperto: false, richiesta: null })
+
+function apriNuovo(richiesta = null) {
+  nuovo.richiesta = richiesta
+  nuovo.aperto = true
+}
+
+function aggiornaLeRichieste(elenco) {
+  if (offerta.data) offerta.data = { ...offerta.data, requests: elenco }
+  connessione.reload()
+}
+
+const chiediATwilio = createResource({
+  url: 'crm.telephony.numeri.refresh_number_requests',
+  method: 'POST',
+  onSuccess: (dati) => aggiornaLeRichieste(dati.requests),
+  onError: (e) => toast.error(e.messages?.[0] || e.message),
+})
+
+const togli = createResource({
+  url: 'crm.telephony.numeri.delete_number_request',
+  method: 'POST',
+  onSuccess: (dati) => aggiornaLeRichieste(dati.requests),
+  onError: (e) => toast.error(e.messages?.[0] || e.message),
+})
+
+function chiediDiTogliere(riga) {
+  $dialog({
+    title: __('Remove the request?'),
+    message: __(
+      'The documents written for it go, here and in Twilio. Nothing has been bought with them.',
+    ),
+    actions: [
+      {
+        label: __('Remove'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (chiudi) => {
+          chiudi()
+          togli.submit({ request: riga.name })
+        },
+      },
+    ],
+  })
+}
 
 function update() {
   twilio.save.submit(null, { onSuccess: () => twilio.reload() })
