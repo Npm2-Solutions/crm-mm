@@ -40,6 +40,7 @@ class FCRMSettings(Document):
 		enable_forecasting: DF.Check
 		event_notifications: DF.Table[EventNotifications]
 		favicon: DF.Attach | None
+		reply_to_email: DF.Data | None
 		service_provider: DF.Literal[
 			"frankfurter.app", "fawazahmed-exchange-api", "exchangerate.host", "exchangerate-api"
 		]

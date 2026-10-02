@@ -592,6 +592,10 @@ default_log_clearing_doctypes = {"CRM Notification": 180}
 # its words instead (crm.notifiche.posta)
 notification_skip_email_types = ["Assignment", "Mention", "Share"]
 
+# an email leaving through the agency's sending service comes from the centre, and its
+# answers go to the centre (crm.posta.servizio)
+make_email_body_message = ["crm.posta.servizio.intestazioni"]
+
 scheduler_events = {
 	"all": ["crm.api.event.trigger_offset_event_notifications"],
 	"hourly": [
@@ -602,6 +606,8 @@ scheduler_events = {
 		"crm.api.conversations.wake_the_snoozed",
 		# once the day's last appointment ended: "did they come?"
 		"crm.scheduling.esiti.fine_giornata",
+		# the agency's sending service, as its configuration says now
+		"crm.posta.servizio.assicura",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
@@ -740,6 +746,8 @@ after_migrate = [
 	# the exercise and food libraries DottorCloud ships, when their file is a new one
 	"crm.piani.librerie.carica_libreria",
 	"crm.clinica.librerie.carica_libreria",
+	# DottorCloud's own emails leave through the agency's sending service
+	"crm.posta.servizio.assicura",
 ]
 
 # Rows other modules add to a record's history (`crm.api.activities`)
