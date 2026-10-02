@@ -8,7 +8,6 @@
   "enabled",
   "default_company",
   "column_general",
-  "healthcare_enabled",
   "advances_in_stamp_base",
   "delivery_section",
   "attach_pdf",
@@ -41,13 +40,6 @@
   {
    "fieldname": "column_general",
    "fieldtype": "Column Break"
-  },
-  {
-   "default": "1",
-   "description": "Turns on the Sistema TS reporting and the SdI ban on healthcare services towards natural persons. The ban itself is server-side and cannot be switched off.",
-   "fieldname": "healthcare_enabled",
-   "fieldtype": "Check",
-   "label": "Healthcare branch enabled"
   },
   {
    "default": "1",
@@ -110,7 +102,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-09 10:00:00.000000",
+ "modified": "2026-10-02 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Settings",

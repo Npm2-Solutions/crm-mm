@@ -87,7 +87,7 @@
       The checkbox draws its own label beside the box and the description under
       both. Handed only the description, it stacked box and description in one
       column and a separate label squeezed itself into a sliver on the right —
-      «Healthcare branch enabled» in three lines of 70px. The separate label also
+      «Email the client on issue» in three lines of 70px. The separate label also
       flipped the value without going through fieldChange; the real one clicks
       the box, and the box reports the change.
     -->
