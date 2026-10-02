@@ -13,6 +13,11 @@
   "record_calls",
   "recording_notice",
   "allowed_countries",
+  "sms_section",
+  "sms_from",
+  "column_break_sms",
+  "sms_sender_name",
+  "sms_sender_number",
   "section_break_eklq",
   "account_sid",
   "column_break_yqvr",
@@ -244,12 +249,44 @@
    "fieldname": "allowed_countries",
    "fieldtype": "Small Text",
    "label": "Countries That Can Be Called"
+  },
+  {
+   "fieldname": "sms_section",
+   "fieldtype": "Section Break",
+   "label": "SMS"
+  },
+  {
+   "description": "What people see as the sender of every SMS the centre sends: its name, or one of its numbers when the answers must come back.",
+   "fieldname": "sms_from",
+   "fieldtype": "Select",
+   "label": "SMS Sender",
+   "options": "\nName\nNumber"
+  },
+  {
+   "fieldname": "column_break_sms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.sms_from=='Name'",
+   "description": "Up to 11 letters without accents, digits and spaces: nobody can answer a name.",
+   "fieldname": "sms_sender_name",
+   "fieldtype": "Data",
+   "label": "Sender's Name",
+   "length": 11
+  },
+  {
+   "depends_on": "eval:doc.sms_from=='Number'",
+   "description": "One of the space's numbers that can send SMS: the answers come back to the person's conversation.",
+   "fieldname": "sms_sender_number",
+   "fieldtype": "Data",
+   "label": "Sender's Number",
+   "options": "Phone"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 20:00:00.000000",
+ "modified": "2026-10-02 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Twilio Settings",

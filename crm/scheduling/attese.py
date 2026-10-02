@@ -48,6 +48,7 @@ from crm.posta.aspetto import pulsante
 from crm.scheduling import attese_regole as R
 from crm.scheduling.availability import get_slots, party_busy
 from crm.scheduling.timeutils import UTC, day_bounds, from_system_naive, scheduling_tz, to_system_naive
+from crm.telephony import sms as sms_del_centro
 
 VOCE = "CRM Waiting List Entry"
 OFFERTA = "CRM Waiting List Offer"
@@ -80,7 +81,8 @@ def impostazioni() -> frappe._dict:
 		online=_si(doc.get("online_join"), True),
 		area=_si(doc.get("area_join"), True),
 		whatsapp=_modello_whatsapp(doc.get("whatsapp_template")),
-		sms=_numero_sms(doc.get("sms_number")),
+		# the centre's one sender (doc 52), the same as every other SMS of its
+		sms=sms_del_centro.mittente(),
 	)
 
 
@@ -88,12 +90,6 @@ def _modello_whatsapp(nome: str | None) -> str | None:
 	if not nome or not frappe.db.exists("DocType", "WhatsApp Templates"):
 		return None
 	return nome if frappe.db.exists("WhatsApp Templates", nome) else None
-
-
-def _numero_sms(numero: str | None) -> str | None:
-	if not cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled")):
-		return None
-	return (numero or "").strip() or None
 
 
 def canali_offerti(conf=None) -> list[str]:
@@ -1313,7 +1309,7 @@ def get_settings() -> dict:
 		"online_join": int(conf.online),
 		"area_join": int(conf.area),
 		"whatsapp_template": doc.get("whatsapp_template"),
-		"sms_number": doc.get("sms_number"),
+		"sms_sender": conf.sms,
 		"templates": modelli,
 		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
 	}
@@ -1334,7 +1330,6 @@ def save_settings(data: dict | str) -> dict:
 		"online_join",
 		"area_join",
 		"whatsapp_template",
-		"sms_number",
 	):
 		if campo in dati:
 			doc.set(campo, dati[campo])

@@ -44,6 +44,7 @@ from crm.scheduling import attese_pubblico as P
 from crm.scheduling import attese_regole as R
 from crm.scheduling.availability import forget_settings
 from crm.scheduling.timeutils import to_system_naive
+from crm.telephony.tests.test_sms import mittente_di_prova
 from crm.tests import test_scheduling as agenda
 
 DESK = "attese.desk@example.com"
@@ -82,7 +83,6 @@ class Aiuti:
 			online_join=1,
 			area_join=1,
 			whatsapp_template=None,
-			sms_number=None,
 		)
 		self.domani = self.tomorrow(10)
 		giorno = agenda.ALL_DAYS[self.domani.weekday()]
@@ -630,8 +630,8 @@ class ChiLaVede(AtteseCase):
 
 class ICanali(AtteseCase):
 	def test_sms_col_link(self):
-		frappe.db.set_single_value("CRM Twilio Settings", "enabled", 1)
-		self.impostazioni(sms_number="+39 02 1234 5678")
+		# the offers leave from the centre's one sender (doc 52)
+		mittente_di_prova(numero="+390212345678")
 		giulia = self.in_lista(self.giulia, channel="SMS")
 		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
 			self.annulla(self.occupato)

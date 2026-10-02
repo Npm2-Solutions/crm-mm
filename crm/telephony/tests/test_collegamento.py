@@ -40,6 +40,9 @@ VUOTE = {
 	"space_name": "",
 	"connected_on": None,
 	"connected_by": None,
+	"sms_from": "",
+	"sms_sender_name": "",
+	"sms_sender_number": "",
 	"webhook_base_url": "",
 }
 

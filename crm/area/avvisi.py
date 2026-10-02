@@ -29,6 +29,7 @@ from frappe.utils import cint, get_url, now_datetime
 
 from crm.area import accesso
 from crm.permissions import livelli
+from crm.telephony import sms
 
 AVVISO = "CRM Area Notice"
 IMPOSTAZIONI = "CRM Area Settings"
@@ -49,9 +50,8 @@ def _modello_whatsapp() -> str | None:
 
 
 def _numero_sms() -> str | None:
-	if not cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled")):
-		return None
-	return (frappe.db.get_single_value(IMPOSTAZIONI, "sms_number") or "").strip() or None
+	"""The centre's one sender (doc 52), the same as every other SMS of its."""
+	return sms.mittente()
 
 
 def offerti() -> list[str]:
@@ -77,29 +77,20 @@ def get_notice_settings() -> dict:
 		)
 	return {
 		"whatsapp_template": frappe.db.get_single_value(IMPOSTAZIONI, "whatsapp_template"),
-		"sms_number": frappe.db.get_single_value(IMPOSTAZIONI, "sms_number"),
+		"sms_sender": _numero_sms(),
 		"templates": modelli,
 		"twilio": bool(cint(frappe.db.get_single_value("CRM Twilio Settings", "enabled"))),
 	}
 
 
 @frappe.whitelist(methods=["POST"])
-def save_notice_settings(whatsapp_template: str | None = None, sms_number: str | None = None) -> dict:
+def save_notice_settings(whatsapp_template: str | None = None) -> dict:
 	"""What the area offers besides the email: the centre's, with the channels'
-	capability."""
-	from crm.utils import to_e164
-
+	capability. The SMS leave from the centre's one sender (Twilio's page)."""
 	livelli.verifica("canali.configura")
 	if whatsapp_template and not frappe.db.exists("WhatsApp Templates", whatsapp_template):
 		frappe.throw(_("This WhatsApp template does not exist"))
-	numero = None
-	if (sms_number or "").strip():
-		# a number it cannot read comes back as it was written: only E.164 is kept
-		numero = to_e164(sms_number)
-		if not numero.startswith("+"):
-			frappe.throw(_("Write the SMS number with its prefix, like +39…"))
 	frappe.db.set_single_value(IMPOSTAZIONI, "whatsapp_template", whatsapp_template or None)
-	frappe.db.set_single_value(IMPOSTAZIONI, "sms_number", numero)
 	return get_notice_settings()
 
 

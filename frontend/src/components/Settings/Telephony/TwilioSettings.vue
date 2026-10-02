@@ -474,6 +474,76 @@
               </Combobox>
             </div>
           </div>
+
+          <div class="h-px border-t border-outline-elevation-2" />
+
+          <div class="flex flex-col gap-2">
+            <div class="flex min-w-0 flex-col">
+              <div id="mittente-sms" class="text-p-base-medium text-ink-gray-7">
+                {{ __('SMS Sender') }}
+              </div>
+              <div class="text-p-sm text-ink-gray-5">
+                {{
+                  __(
+                    'Every SMS the centre sends leaves from here: the waiting list’s offers, the client area’s news, the automations, the ones written by hand.',
+                  )
+                }}
+              </div>
+            </div>
+            <div
+              class="flex flex-col gap-2"
+              role="radiogroup"
+              aria-labelledby="mittente-sms"
+            >
+              <SceltaRadio
+                v-model="mittente"
+                nome="mittente-sms"
+                :scelta="{
+                  value: 'Name',
+                  label: __('The centre’s name'),
+                  description: __(
+                    'Up to 11 letters without accents, digits and spaces. Nobody can reply to a name.',
+                  ),
+                }"
+              />
+              <div v-if="mittente === 'Name'" class="md:pl-7">
+                <FormControl
+                  v-model="nomeSms"
+                  :maxlength="11"
+                  :placeholder="opzioniSms.data?.name"
+                />
+              </div>
+              <SceltaRadio
+                v-if="numeriSms.length"
+                v-model="mittente"
+                nome="mittente-sms"
+                :scelta="{
+                  value: 'Number',
+                  label: __('One of the centre’s numbers'),
+                  description: __(
+                    'People can reply: the answers reach the person’s conversation, and a STOP is heard.',
+                  ),
+                }"
+              />
+              <div
+                v-if="mittente === 'Number' && numeriSms.length"
+                class="md:pl-7"
+              >
+                <FormControl
+                  v-model="numeroSms"
+                  type="select"
+                  :options="numeriSms"
+                />
+              </div>
+              <p v-if="!numeriSms.length" class="text-p-sm text-ink-gray-5">
+                {{
+                  __(
+                    'For the answers to come back the centre needs a number that can send SMS, like a mobile one: ask for it in Numbers, above.',
+                  )
+                }}
+              </p>
+            </div>
+          </div>
         </template>
 
         <template v-if="stato.agency">
@@ -560,6 +630,7 @@
   />
 </template>
 <script setup>
+import SceltaRadio from '@/components/Settings/Invoicing/SceltaRadio.vue'
 import NewNumberDialog from '@/components/Settings/Telephony/NewNumberDialog.vue'
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
@@ -836,8 +907,73 @@ function togliIlPaese(codice) {
   )
 }
 
+// who every SMS of the centre comes from (doc 52): its name, or one of its
+// numbers that can send SMS; while nothing is chosen, the one the server uses
+const opzioniSms = createResource({
+  url: 'crm.telephony.sms.get_sms_sender_options',
+})
+watch(
+  () => stato.value?.connected,
+  (collegato) => {
+    if (collegato) opzioniSms.fetch()
+  },
+  { immediate: true },
+)
+const numeriSms = computed(() =>
+  (opzioniSms.data?.numbers || []).map((n) => ({
+    label: n.label ? `${n.label} · ${n.number}` : n.number,
+    value: n.number,
+  })),
+)
+const mittente = computed({
+  get() {
+    if (twilio.doc?.sms_from) return twilio.doc.sms_from
+    return opzioniSms.data?.sender?.startsWith('+') ? 'Number' : 'Name'
+  },
+  set(valore) {
+    twilio.doc.sms_from = valore
+    if (valore === 'Name' && !twilio.doc.sms_sender_name) {
+      twilio.doc.sms_sender_name = opzioniSms.data?.name || ''
+    }
+    if (valore === 'Number' && !twilio.doc.sms_sender_number) {
+      twilio.doc.sms_sender_number = numeriSms.value[0]?.value || ''
+    }
+  },
+})
+
+// while nothing is chosen the fields show the sender in use, and writing in
+// them is choosing it
+const inUso = computed(() => opzioniSms.data?.sender || '')
+const nomeSms = computed({
+  get() {
+    if (twilio.doc?.sms_from || twilio.doc?.sms_sender_name) {
+      return twilio.doc.sms_sender_name || ''
+    }
+    return inUso.value.startsWith('+') ? '' : inUso.value
+  },
+  set(valore) {
+    twilio.doc.sms_from = 'Name'
+    twilio.doc.sms_sender_name = valore
+  },
+})
+const numeroSms = computed({
+  get() {
+    if (twilio.doc?.sms_sender_number) return twilio.doc.sms_sender_number
+    return inUso.value.startsWith('+') ? inUso.value : ''
+  },
+  set(valore) {
+    twilio.doc.sms_from = 'Number'
+    twilio.doc.sms_sender_number = valore
+  },
+})
+
 function update() {
-  twilio.save.submit(null, { onSuccess: () => twilio.reload() })
+  twilio.save.submit(null, {
+    onSuccess: () => {
+      twilio.reload()
+      opzioniSms.reload()
+    },
+  })
 }
 
 const isDirty = computed(() => {
@@ -847,7 +983,11 @@ const isDirty = computed(() => {
   return (
     Boolean(doc.record_calls) !== Boolean(prima.record_calls) ||
     (doc.recording_notice || '') !== (prima.recording_notice || '') ||
-    comeSalvati(doc.allowed_countries) !== comeSalvati(prima.allowed_countries)
+    comeSalvati(doc.allowed_countries) !==
+      comeSalvati(prima.allowed_countries) ||
+    ['sms_from', 'sms_sender_name', 'sms_sender_number'].some(
+      (campo) => (doc[campo] || '') !== (prima[campo] || ''),
+    )
   )
 })
 </script>

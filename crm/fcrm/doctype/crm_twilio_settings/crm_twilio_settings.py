@@ -46,6 +46,9 @@ class CRMTwilioSettings(Document):
 		record_calls: DF.Check
 		recording_notice: DF.SmallText | None
 		sip_trunks: DF.Code | None
+		sms_from: DF.Literal["", "Name", "Number"]
+		sms_sender_name: DF.Data | None
+		sms_sender_number: DF.Data | None
 		space_name: DF.Data | None
 		space_sid: DF.Data | None
 		twilio_apps: DF.Data | None
@@ -60,6 +63,7 @@ class CRMTwilioSettings(Document):
 		self.new_sid = False
 		if self.flags.dal_collegamento:
 			return
+		self.valida_il_mittente_degli_sms()
 		if self.has_value_changed("enabled"):
 			livelli.verifica_nel_crm(TECNICO, messaggio=_("The agency connects and disconnects Twilio."))
 		if self.account_owner:
@@ -70,6 +74,24 @@ class CRMTwilioSettings(Document):
 		else:
 			self.new_sid = False
 		self.validate_twilio_account()
+
+	def valida_il_mittente_degli_sms(self):
+		"""The SMS sender as Twilio takes it: a name it accepts, or one of the space's
+		numbers that can send SMS. Asked only when the choice changes: a number taken
+		away later is the sender's fallback's business, not every save's."""
+		if not any(
+			self.has_value_changed(campo) for campo in ("sms_from", "sms_sender_name", "sms_sender_number")
+		):
+			return
+		from crm.telephony import sms
+		from crm.telephony import sms_regole as R
+
+		if self.sms_from == "Name":
+			self.sms_sender_name = (self.sms_sender_name or "").strip()
+			if motivo := R.problema_del_nome(self.sms_sender_name):
+				frappe.throw(_(motivo), title=_("SMS Sender"))
+		elif self.sms_from == "Number" and self.sms_sender_number not in sms.numeri_sms():
+			frappe.throw(_("Choose one of the numbers that can send SMS."), title=_("SMS Sender"))
 
 	def on_update(self):
 		# the countries the centre may call, set in Twilio's permissions of the space too

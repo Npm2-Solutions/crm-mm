@@ -1,9 +1,13 @@
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
+# For license information, please see license.txt
+
 import frappe
 from frappe import _
 
 from crm.api.whatsapp import may_converse, validate_access
 from crm.integrations.twilio.twilio_handler import Twilio
 from crm.integrations.twilio.utils import get_public_url
+from crm.telephony import sms
 
 SMS_FIELDS = [
 	"name",
@@ -52,17 +56,26 @@ def get_sms_messages(reference_doctype: str, reference_name: str) -> list[dict]:
 
 @frappe.whitelist(methods=["POST"])
 def send_sms(reference_doctype: str, reference_name: str, to: str, message: str) -> dict:
-	"""Send an SMS from the current agent's Twilio number and log it on the record."""
+	"""Send an SMS from the centre's sender and log it on the record."""
 	validate_access(reference_doctype, reference_name, permtype="write")
 	message = (message or "").strip()
 	if not message:
 		frappe.throw(_("Message cannot be empty"))
 	if not (to or "").strip():
 		frappe.throw(_("Recipient number is missing"))
+	# one sender for every SMS of the centre (doc 52), never somebody's own line:
+	# an Italian landline cannot send SMS, and the answers must reach the centre
+	da = sms.mittente()
+	if not da:
+		frappe.throw(
+			_(
+				"The SMS cannot leave: the centre has no sender yet. The manager sets it in Settings → Phone → Telephony → Twilio."
+			)
+		)
 
 	doc = create_sms(
 		type="Outgoing",
-		from_number=get_agent_number(),
+		from_number=da,
 		to=to.strip(),
 		message=message,
 		reference_doctype=reference_doctype,
@@ -70,15 +83,6 @@ def send_sms(reference_doctype: str, reference_name: str, to: str, message: str)
 	)
 	deliver_via_twilio(doc)
 	return {"name": doc.name, "status": doc.status}
-
-
-def get_agent_number(user: str | None = None) -> str:
-	number = frappe.db.get_value("CRM Telephony Agent", user or frappe.session.user, "twilio_number")
-	if not number:
-		frappe.throw(
-			_("Your account is not configured with a Twilio number. Please contact your administrator.")
-		)
-	return number
 
 
 def create_sms(
@@ -129,14 +133,12 @@ def deliver_via_twilio(doc):
 def send_automation_sms(to: str, message: str, reference_doctype=None, reference_name=None) -> bool:
 	"""Channel adapter used by the automation engine: best-effort, never raises."""
 	try:
-		settings_number = frappe.get_all(
-			"CRM Telephony Agent", filters={"twilio_number": ["is", "set"]}, pluck="twilio_number", limit=1
-		)
-		if not settings_number:
+		da = sms.mittente()
+		if not da:
 			return False
 		doc = create_sms(
 			type="Outgoing",
-			from_number=settings_number[0],
+			from_number=da,
 			to=to,
 			message=message,
 			reference_doctype=reference_doctype,

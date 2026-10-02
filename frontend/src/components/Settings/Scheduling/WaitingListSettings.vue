@@ -1,8 +1,11 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   How the centre runs its waiting lists: whether a place that frees up is offered
   by itself, to how many at once, how long they have to answer, how far ahead the
   list looks; where one joins (the booking page, the client area); the channels
-  the offers go by besides the email.
+  the offers go by besides the email (the SMS from the centre's one sender).
 -->
 <template>
   <SettingsLayoutBase>
@@ -179,21 +182,11 @@
               }}
             </span>
           </div>
-          <div class="flex flex-col gap-1.5">
-            <FormControl
-              v-model="form.sms_number"
-              :label="__('SMS from')"
-              placeholder="+39…"
-              :disabled="!settings.data.twilio"
-            />
-            <span class="text-p-sm text-ink-gray-5">
-              {{
-                settings.data.twilio
-                  ? __('The centre’s Twilio number. Empty: no SMS.')
-                  : __('Twilio is not connected: SMS are not offered.')
-              }}
-            </span>
-          </div>
+          <SmsSenderLine
+            class="!px-0"
+            :sender="settings.data.sms_sender || ''"
+            :twilio="settings.data.twilio"
+          />
         </section>
         <ErrorMessage :message="error" />
       </div>
@@ -206,6 +199,7 @@
 
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
+import SmsSenderLine from '@/components/Settings/SmsSenderLine.vue'
 import {
   Button,
   ErrorMessage,
@@ -228,7 +222,6 @@ const CAMPI = [
   'online_join',
   'area_join',
   'whatsapp_template',
-  'sms_number',
 ]
 const TICKS = ['enabled', 'online_join', 'area_join']
 
@@ -289,7 +282,6 @@ async function save() {
         online_join: form.online_join ? 1 : 0,
         area_join: form.area_join ? 1 : 0,
         whatsapp_template: form.whatsapp_template || null,
-        sms_number: form.sms_number || null,
       }),
     })
     settings.data = data

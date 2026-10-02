@@ -1,8 +1,12 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   News in the client area, told outside it: the email always says only that
   there is news; WhatsApp and SMS may say the same, to the person's own number
   that wrote to the centre, if they ask for it in their area. Here the centre
-  chooses what it offers: the approved template, the number SMS leave from.
+  chooses what it offers: the approved template; the SMS leave from the centre's
+  one sender, set on Twilio's page.
 -->
 <template>
   <SettingsLayoutBase>
@@ -50,21 +54,10 @@
             }}
           </span>
         </div>
-        <div class="flex flex-col gap-1.5 px-2">
-          <FormControl
-            v-model="form.sms_number"
-            :label="__('SMS from')"
-            placeholder="+39…"
-            :disabled="!settings.data.twilio"
-          />
-          <span class="text-p-sm text-ink-gray-5">
-            {{
-              settings.data.twilio
-                ? __('The centre’s Twilio number. Empty: no SMS.')
-                : __('Twilio is not connected: SMS are not offered.')
-            }}
-          </span>
-        </div>
+        <SmsSenderLine
+          :sender="settings.data.sms_sender || ''"
+          :twilio="settings.data.twilio"
+        />
         <ErrorMessage :message="error" />
       </div>
       <div v-else class="mt-[35%] flex items-center justify-center">
@@ -76,6 +69,7 @@
 
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
+import SmsSenderLine from '@/components/Settings/SmsSenderLine.vue'
 import {
   Button,
   ErrorMessage,
@@ -87,15 +81,14 @@ import {
 } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
 
-const form = reactive({ whatsapp_template: '', sms_number: '' })
-const saved = reactive({ whatsapp_template: '', sms_number: '' })
+const form = reactive({ whatsapp_template: '' })
+const saved = reactive({ whatsapp_template: '' })
 const saving = ref(false)
 const error = ref('')
 
 function fill(data) {
   for (const target of [form, saved]) {
     target.whatsapp_template = data.whatsapp_template || ''
-    target.sms_number = data.sms_number || ''
   }
 }
 
@@ -113,11 +106,7 @@ const templateOptions = computed(() => [
   })),
 ])
 
-const dirty = computed(
-  () =>
-    form.whatsapp_template !== saved.whatsapp_template ||
-    form.sms_number !== saved.sms_number,
-)
+const dirty = computed(() => form.whatsapp_template !== saved.whatsapp_template)
 
 async function save() {
   saving.value = true
@@ -125,7 +114,6 @@ async function save() {
   try {
     const data = await call('crm.area.avvisi.save_notice_settings', {
       whatsapp_template: form.whatsapp_template || null,
-      sms_number: form.sms_number || null,
     })
     settings.data = data
     fill(data)

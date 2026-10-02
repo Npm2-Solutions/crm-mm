@@ -90,3 +90,4 @@ crm.patches.v1_0.invoicing_tries_before_it_goes_live
 crm.patches.v1_0.deals_take_their_value_from_quotes
 crm.patches.v1_0.emails_reach_their_person
 crm.patches.v1_0.invoicing_only_what_somebody_sets
+crm.patches.v1_0.the_centre_sends_sms_from_one_sender
