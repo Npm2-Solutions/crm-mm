@@ -280,6 +280,94 @@ def add_attribution_sections(layout: list, doctype: str) -> bool:
 	return added
 
 
+# A person's page starts with the person: their name and how to reach them, then
+# where they came from and whose they are; the company they work for, which a
+# centre's clients rarely have, closed at the end (the_person_first_on_their_page).
+LEAD_SIDE_PANEL = json.dumps(
+	[
+		{
+			"label": "Person",
+			"name": "person_section",
+			"opened": True,
+			"columns": [
+				{
+					"name": "column_XmW2",
+					"fields": [
+						"first_name",
+						"last_name",
+						"mobile_no",
+						"phone",
+						"email",
+						"gender",
+						"salutation",
+					],
+				}
+			],
+		},
+		{
+			"label": "Details",
+			"name": "details_section",
+			"opened": True,
+			"columns": [{"name": "column_kl92", "fields": ["source", "lead_owner", "job_title"]}],
+		},
+		{
+			"label": "Organization",
+			"name": "organization_section",
+			"opened": False,
+			"columns": [
+				{
+					"name": "column_OrgA",
+					"fields": [
+						"organization",
+						"company_description",
+						"website",
+						"territory",
+						"industry",
+						"no_of_employees",
+						"linkedin",
+						"twitter",
+						"facebook",
+					],
+				}
+			],
+		},
+	]
+)
+LEAD_DATA_FIELDS = json.dumps(
+	[
+		{
+			"label": "Person",
+			"name": "person_section",
+			"opened": True,
+			"columns": [
+				{"name": "column_6c5g", "fields": ["first_name", "mobile_no", "salutation"]},
+				{"name": "column_1n7Q", "fields": ["last_name", "phone", "gender"]},
+				{"name": "column_cT6C", "fields": ["email"]},
+			],
+		},
+		{
+			"label": "Details",
+			"name": "details_section",
+			"opened": True,
+			"columns": [
+				{"name": "column_OKSX", "fields": ["source", "lead_owner"]},
+				{"name": "column_TbYq", "fields": ["job_title"]},
+			],
+		},
+		{
+			"label": "Organization",
+			"name": "organization_section",
+			"opened": False,
+			"columns": [
+				{"name": "column_OrgA", "fields": ["organization", "company_description", "industry"]},
+				{"name": "column_OrgB", "fields": ["website", "linkedin", "twitter", "facebook"]},
+				{"name": "column_OrgC", "fields": ["territory", "no_of_employees"]},
+			],
+		},
+	]
+)
+
+
 def _with_attribution(layout: str, doctype: str) -> str:
 	"""A seeded Data Fields layout with the attribution sections appended."""
 	parsed = json.loads(layout)
@@ -326,7 +414,7 @@ def add_default_fields_layout(force=False):
 	sidebar_fields_layouts = {
 		"CRM Lead-Side Panel": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_kl92", "fields": ["organization", "company_description", "website", "territory", "industry", "no_of_employees", "job_title", "source", "lead_owner", "linkedin", "twitter", "facebook"]}]}, {"label": "Person", "name": "person_section", "opened": true, "columns": [{"name": "column_XmW2", "fields": ["salutation", "first_name", "last_name", "email", "mobile_no"]}]}]',
+			"layout": LEAD_SIDE_PANEL,
 		},
 		"CRM Deal-Side Panel": {
 			"doctype": "CRM Deal",
@@ -345,7 +433,7 @@ def add_default_fields_layout(force=False):
 	data_fields_layouts = {
 		"CRM Lead-Data Fields": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_ZgLG", "fields": ["organization", "company_description", "industry", "no_of_employees"]}, {"name": "column_TbYq", "fields": ["website", "linkedin", "twitter", "facebook", "job_title"]}, {"name": "column_OKSX", "fields": ["territory", "source", "lead_owner"]}]}, {"label": "Person", "name": "person_section", "opened": true, "columns": [{"name": "column_6c5g", "fields": ["salutation", "email"]}, {"name": "column_1n7Q", "fields": ["first_name", "mobile_no"]}, {"name": "column_cT6C", "fields": ["last_name"]}]}]',
+			"layout": LEAD_DATA_FIELDS,
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",

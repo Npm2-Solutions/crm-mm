@@ -3173,7 +3173,7 @@ msgstr ""
 #: frontend/src/components/ListBulkActions.vue:184
 #: frontend/src/components/Modals/AssignmentModal.vue:4
 msgid "Assign To"
-msgstr "Assegna A"
+msgstr "Assegna a"
 
 #: frontend/src/components/AssignToBody.vue:67
 msgid "Assign To Me"
@@ -40561,3 +40561,35 @@ msgstr "Questi non sono i codici dell'account in cui è lo spazio di {brand}."
 #: crm/telephony/trasloco_regole.py
 msgid "It goes to a SIP trunk, which takes its calls: it stays where it is."
 msgstr "Va a un trunk SIP, che prende le sue chiamate: resta dov'è."
+
+#: frontend/src/components/PersonHeader.vue
+msgid "No phone number yet"
+msgstr "Ancora nessun numero di telefono"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "No email address yet"
+msgstr "Ancora nessun indirizzo e-mail"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "{0} · with {brand}"
+msgstr "{0} · con {brand}"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "{0} · from your phone"
+msgstr "{0} · dal tuo telefono"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "Client since {0}"
+msgstr "Cliente dal {0}"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "Last visit {0}"
+msgstr "Ultima visita il {0}"
+
+#: frontend/src/pages/Lead.vue
+msgid "Copy the code"
+msgstr "Copia il codice"
+
+#: frontend/src/components/PersonHeader.vue
+msgid "Next appointment"
+msgstr "Prossimo appuntamento"

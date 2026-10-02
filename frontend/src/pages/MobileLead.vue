@@ -3,34 +3,41 @@
     <header
       class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
     >
-      <Breadcrumbs :items="breadcrumbs">
+      <Breadcrumbs :items="breadcrumbs" class="min-w-0">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
+      <!-- whom the person is with, beside their name as on the computer -->
+      <div v-if="doc.name" class="flex shrink-0 items-center gap-2">
+        <CustomActions
+          v-if="document._actions?.length"
+          :actions="document._actions"
+        />
+        <CustomActions
+          v-if="document.actions?.length"
+          :actions="document.actions"
+        />
+        <AssignTo
+          v-model="assignees.data"
+          doctype="CRM Lead"
+          :docname="leadId"
+        />
+      </div>
     </header>
   </LayoutHeader>
-  <div
-    v-if="doc.name"
-    class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
-  >
-    <AssignTo v-model="assignees.data" doctype="CRM Lead" :docname="leadId" />
-    <div class="flex items-center gap-2">
-      <CustomActions
-        v-if="document._actions?.length"
-        :actions="document._actions"
-      />
-      <CustomActions
-        v-if="document.actions?.length"
-        :actions="document.actions"
-      />
-      <Button
-        v-if="canWrite && puo('trattative.scrivi')"
-        :label="__('New Deal')"
-        variant="solid"
-        @click="showConvertToDealModal = true"
-      />
-    </div>
+  <!-- the phone's contact card: who, what comes next, call and write -->
+  <div v-if="doc.name" class="border-b px-3 pb-3 pt-3">
+    <PersonHeader :doc="doc" :title="title" :more="altro" @write="scrivi">
+      <template #avatar>
+        <Avatar
+          size="2xl"
+          class="size-11 shrink-0"
+          :label="title"
+          :image="doc.image || doc.organization_logo"
+        />
+      </template>
+    </PersonHeader>
   </div>
   <div v-if="doc.name" class="flex h-full overflow-hidden">
     <Tabs
@@ -73,6 +80,7 @@
         </div>
         <Activities
           v-else
+          ref="activities"
           v-model:reload="reload"
           v-model:tabIndex="tabIndex"
           doctype="CRM Lead"
@@ -115,6 +123,7 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
+import PersonHeader from '@/components/PersonHeader.vue'
 import LucideRadar from '~icons/lucide/radar'
 import LucideStethoscope from '~icons/lucide/stethoscope'
 import LucideFileSignature from '~icons/lucide/file-signature'
@@ -134,7 +143,7 @@ import PatientSection from '@/components/PatientSection.vue'
 import RelatedPeopleSection from '@/components/RelatedPeopleSection.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
-import { setupCustomizations } from '@/utils'
+import { setupCustomizations, openWebsite, copyToClipboard } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
@@ -144,6 +153,7 @@ import { isMobileView } from '@/composables/settings'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 import { useSelectedTabInView } from '@/composables/selectedTabInView'
 import {
+  Avatar,
   createResource,
   Tabs,
   Breadcrumbs,
@@ -151,7 +161,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
 
@@ -171,8 +181,18 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 
-const { triggerOnRender, assignees, document, scripts, error, canWrite } =
-  useDocument('CRM Lead', props.leadId)
+const {
+  triggerOnRender,
+  assignees,
+  permissions,
+  document,
+  scripts,
+  error,
+  canWrite,
+} = useDocument('CRM Lead', props.leadId)
+
+const canDelete = computed(() => permissions.data?.permissions?.delete || false)
+const activities = ref(null)
 
 const doc = computed(() => document.doc || {})
 
@@ -408,6 +428,44 @@ function deleteLead() {
 }
 
 const showConvertToDealModal = ref(false)
+
+// Writing from the card: the Activity tab, its composer on the channel chosen.
+// From Details the tab is not drawn yet: it opens first, then the composer.
+async function scrivi(canale) {
+  const indice = tabs.value.findIndex((tab) => tab.name === 'Activity')
+  if (indice >= 0 && tabIndex.value !== indice) {
+    tabIndex.value = indice
+    await nextTick()
+    await nextTick()
+  }
+  activities.value?.write?.(canale)
+}
+
+// the card's More menu: what one does less often with a person
+const altro = computed(() => [
+  canWrite.value &&
+    puo('trattative.scrivi') && {
+      label: __('New Deal'),
+      icon: 'plus',
+      onClick: () => (showConvertToDealModal.value = true),
+    },
+  doc.value.website && {
+    label: __('Go to Website'),
+    icon: 'external-link',
+    onClick: () => openWebsite(doc.value.website),
+  },
+  {
+    label: __('Copy the code'),
+    icon: 'copy',
+    onClick: () => copyToClipboard(props.leadId),
+  },
+  canDelete.value && {
+    label: __('Delete'),
+    icon: 'trash-2',
+    theme: 'red',
+    onClick: deleteLead,
+  },
+])
 
 function saveChange(data) {
   document.save.submit(null, {
