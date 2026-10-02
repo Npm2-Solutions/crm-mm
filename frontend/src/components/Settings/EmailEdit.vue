@@ -1,196 +1,220 @@
 <template>
-  <div class="flex flex-col h-full gap-4">
-    <!-- title and desc -->
-    <div role="heading" aria-level="1" class="flex justify-between gap-1">
-      <h2 class="text-2xl-semibold text-ink-gray-8">
-        {{ __('Edit Email') }}
+  <div class="flex min-h-0 flex-1 flex-col gap-5 text-ink-gray-8">
+    <div class="flex flex-col gap-1">
+      <h2
+        class="flex gap-2 text-2xl-semibold leading-tight md:h-5 md:leading-none"
+      >
+        {{ nuova ? __('Add a mailbox') : accountData.email_account_name }}
       </h2>
+      <p class="text-p-base text-ink-gray-6">
+        {{
+          nuova
+            ? __(
+                'Where is the centre’s mailbox? Its servers are known already: you write the address and the password.',
+              )
+            : __(
+                'What the mailbox does in {brand}. A new password replaces the one it has.',
+              )
+        }}
+      </p>
     </div>
-    <div class="w-fit">
-      <EmailProviderIcon
-        :logo="emailIcon[accountData.service]"
-        :label="accountData.service"
-      />
-    </div>
-    <!-- banner for setting up email account -->
-    <div
-      class="flex items-center gap-2 p-2 rounded-md ring-1 ring-outline-gray-3"
-    >
-      <CircleAlert class="size-6 text-ink-gray-4 min-w-5 min-h-5 max-w-5" />
-      <div class="text-xs text-ink-gray-6 text-wrap">
-        {{ info.description }}
-        <a :href="info.link" target="_blank" class="underline">
-          {{ __('here') }}
-        </a>
-        .
+
+    <div class="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
+      <!-- where the mailbox is: chosen once, its servers are the server's -->
+      <div v-if="nuova" class="flex flex-col gap-2">
+        <div class="flex flex-wrap gap-x-2 gap-y-3">
+          <button
+            v-for="f in FORNITORI"
+            :key="f.chiave"
+            type="button"
+            class="w-[72px] rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3"
+            :aria-pressed="stato.provider === f.chiave"
+            @click="stato.provider = f.chiave"
+          >
+            <EmailProviderIcon
+              :logo="logoDi[f.chiave]"
+              :name="f.nome"
+              :label="f.nome"
+              :selected="stato.provider === f.chiave"
+            />
+          </button>
+        </div>
+        <p class="text-p-sm text-ink-gray-5">
+          {{
+            __(
+              'Outlook, Hotmail and Microsoft 365 sign in on Microsoft’s own page: the agency connects them.',
+            )
+          }}
+        </p>
       </div>
-    </div>
-    <!-- fields -->
-    <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-1 gap-4">
+      <div v-else class="flex items-center gap-3">
+        <EmailProviderIcon
+          :logo="logoDi[stato.provider]"
+          :name="scelto?.nome || ''"
+        />
+        <span class="text-p-base text-ink-gray-7">{{ scelto?.nome }}</span>
+      </div>
+
+      <template v-if="scelto">
+        <!-- what the provider asks of the password -->
         <div
-          v-for="field in fields"
-          :key="field.name"
-          class="flex flex-col gap-1"
+          class="flex items-start gap-2 rounded-lg border border-outline-gray-2 px-3 py-2 text-ink-gray-6"
         >
+          <LucideInfo class="mt-0.5 size-4 shrink-0" />
+          <p class="text-p-sm">
+            {{ __(scelto.nota) }}
+            <a
+              v-if="scelto.link"
+              :href="scelto.link"
+              target="_blank"
+              rel="noopener"
+              class="underline"
+              >{{ __('How to make it') }}</a
+            >
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
           <FormControl
-            v-model="state[field.name]"
-            :label="field.label"
-            :name="field.name"
-            :type="field.type"
-            :placeholder="field.placeholder"
+            v-model="stato.email_id"
+            type="email"
+            :label="__('Address')"
+            :placeholder="__('reception@yourcentre.com')"
+          />
+          <FormControl
+            v-model="stato.password"
+            type="password"
+            :label="__('Password')"
+            :placeholder="nuova ? '' : __('Unchanged')"
+          />
+          <FormControl
+            v-model="stato.email_account_name"
+            type="text"
+            :label="__('Name')"
+            :placeholder="__('Reception')"
+            :description="
+              __('How {brand} calls the mailbox; empty, its address.')
+            "
           />
         </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <template v-for="field in incomingOutgoingFields" :key="field.name">
+
+        <div class="flex flex-col divide-y divide-outline-gray-1">
           <div
-            v-if="field.condition ? field.condition(state) : true"
-            class="flex flex-col gap-1"
+            v-for="i in interruttori(stato, servizio)"
+            :key="i.campo"
+            class="flex items-start justify-between gap-4 py-3"
           >
-            <FormControl
-              v-model="state[field.name]"
-              :label="field.label"
-              :name="field.name"
-              :type="field.type"
-            />
-            <p class="text-ink-gray-4 text-p-sm">{{ field.description }}</p>
+            <div class="flex min-w-0 flex-col gap-0.5">
+              <span class="text-p-base-medium text-ink-gray-8">
+                {{ __(i.etichetta) }}
+              </span>
+              <span class="text-p-sm text-ink-gray-5">
+                {{ __(i.descrizione) }}
+              </span>
+            </div>
+            <Switch v-model="stato[i.campo]" class="shrink-0" />
           </div>
-        </template>
-      </div>
-      <ErrorMessage v-if="error" class="ml-1" :message="error" />
+        </div>
+      </template>
+      <ErrorMessage v-if="errore" :message="errore" />
     </div>
-    <!-- action buttons -->
-    <div class="flex justify-between mt-auto">
+
+    <div class="dialog-footer flex justify-between gap-2">
       <Button
         :label="__('Back')"
-        theme="gray"
         variant="outline"
-        :disabled="loading"
+        :disabled="salvando"
         @click="emit('update:step', 'email-list')"
       />
       <Button
-        :label="__('Update Account')"
+        :label="nuova ? __('Add') : __('Save')"
         variant="solid"
-        :loading="loading"
-        @click="updateAccount"
+        :disabled="!scelto"
+        :loading="salvando"
+        @click="salva"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
-import { call, toast } from 'frappe-ui'
-import EmailProviderIcon from './EmailProviderIcon.vue'
 import {
-  emailIcon,
-  services,
-  popularProviderFields,
-  customProviderFields,
-  validateInputs,
-  incomingOutgoingFields,
-} from './emailConfig'
-import CircleAlert from '~icons/lucide/circle-alert'
+  Button,
+  call,
+  ErrorMessage,
+  FormControl,
+  Switch,
+  toast,
+} from 'frappe-ui'
+import { computed, reactive, ref } from 'vue'
+import LucideInfo from '~icons/lucide/info'
+import {
+  daCorreggere,
+  FORNITORI,
+  fornitore,
+  interruttori,
+} from '@/utils/caselle'
+import { logoDi } from './emailConfig'
+import EmailProviderIcon from './EmailProviderIcon.vue'
 
 const props = defineProps({
+  // the mailbox to change; without a name, a new one (`servizio`: whether
+  // {brand}'s emails leave through the agency's service)
   accountData: { type: Object, default: () => ({}) },
 })
 
 const emit = defineEmits(['update:step'])
 
-const state = reactive({
-  email_account_name: props.accountData.email_account_name || '',
-  service: props.accountData.service || '',
-  email_id: props.accountData.email_id || '',
-  api_key: props.accountData?.api_key || null,
-  api_secret: props.accountData?.api_secret || null,
-  password: props.accountData?.password || null,
-  frappe_mail_site: props.accountData?.frappe_mail_site || '',
-  enable_incoming: props.accountData.enable_incoming || false,
-  enable_outgoing: props.accountData.enable_outgoing || false,
-  default_outgoing: props.accountData.default_outgoing || false,
-  default_incoming: props.accountData.default_incoming || false,
-  create_lead_from_incoming_email:
-    props.accountData.create_lead_from_incoming_email || false,
+const nuova = computed(() => !props.accountData?.name)
+const servizio = Boolean(props.accountData?.servizio)
+
+const stato = reactive({
+  provider: props.accountData?.provider || '',
+  email_account_name: props.accountData?.email_account_name || '',
+  email_id: props.accountData?.email_id || '',
+  // the list never carries a password: typing one is the change
+  password: '',
+  enable_incoming: nuova.value
+    ? true
+    : Boolean(props.accountData.enable_incoming),
+  enable_outgoing: nuova.value
+    ? true
+    : Boolean(props.accountData.enable_outgoing),
+  default_incoming: Boolean(props.accountData?.default_incoming),
+  default_outgoing: Boolean(props.accountData?.default_outgoing),
+  create_lead_from_incoming_email: nuova.value
+    ? true
+    : Boolean(props.accountData.create_lead_from_incoming_email),
 })
 
-const info = {
-  description: __('To know more about setting up email accounts, click'),
-  link: 'https://docs.erpnext.com/docs/user/manual/en/email-account',
-}
+const scelto = computed(() => fornitore(stato.provider))
 
-const isCustomService = computed(() => {
-  return services.find((s) => s.name === props.accountData.service)?.custom
-})
-
-const fields = computed(() => {
-  if (isCustomService.value) {
-    return customProviderFields
-  }
-  return popularProviderFields
-})
-
-const error = ref()
-const loading = ref(false)
-async function updateAccount() {
-  error.value = validateInputs(state, isCustomService.value, true)
-  if (error.value) return
-  const old = { ...props.accountData }
-  const updatedEmailAccount = { ...state }
-
-  const nameChanged =
-    old.email_account_name !== updatedEmailAccount.email_account_name
-  delete old.email_account_name
-  delete updatedEmailAccount.email_account_name
-
-  const otherFieldsChanged = isDirty.value
-  const values = updatedEmailAccount
-
-  if (!nameChanged && !otherFieldsChanged) {
-    toast.info(__('No changes made'))
-    return
-  }
-
+const errore = ref('')
+const salvando = ref(false)
+async function salva() {
+  const problema = daCorreggere(stato, !nuova.value)
+  errore.value = problema ? __(problema) : ''
+  if (problema) return
+  const dati = { ...stato }
+  if (!dati.password) delete dati.password
+  salvando.value = true
   try {
-    loading.value = true
-    await call('crm.api.settings.update_email_account', {
-      name: props.accountData.name || props.accountData.email_account_name,
-      data: {
-        ...values,
-        ...(nameChanged
-          ? { email_account_name: state.email_account_name }
-          : {}),
-      },
-    })
-    succesHandler()
-  } catch {
-    errorHandler()
+    if (nuova.value) {
+      await call('crm.api.settings.create_email_account', { data: dati })
+      toast.success(__('Mailbox added'))
+    } else {
+      await call('crm.api.settings.update_email_account', {
+        name: props.accountData.name,
+        data: dati,
+      })
+      toast.success(__('Mailbox saved'))
+    }
+    emit('update:step', 'email-list')
+  } catch (e) {
+    // the server says what went wrong in words: the password, the server
+    errore.value = e.messages?.[0] || __('Could not save the mailbox')
+  } finally {
+    salvando.value = false
   }
-}
-
-const isDirty = computed(() => {
-  return (
-    state.email_id !== props.accountData.email_id ||
-    // the list never carries a password or a key: typing one is the change
-    Boolean(state.api_key) ||
-    Boolean(state.api_secret) ||
-    Boolean(state.password) ||
-    state.enable_incoming !== props.accountData.enable_incoming ||
-    state.enable_outgoing !== props.accountData.enable_outgoing ||
-    state.default_outgoing !== props.accountData.default_outgoing ||
-    state.default_incoming !== props.accountData.default_incoming ||
-    state.frappe_mail_site !== props.accountData.frappe_mail_site
-  )
-})
-
-function succesHandler() {
-  emit('update:step', 'email-list')
-  toast.success(__('Email account updated successfully'))
-}
-
-function errorHandler() {
-  loading.value = false
-  error.value = __('Failed to update email account: invalid credentials')
 }
 </script>

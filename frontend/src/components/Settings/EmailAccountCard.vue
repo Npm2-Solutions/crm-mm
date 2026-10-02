@@ -1,47 +1,54 @@
 <template>
+  <!-- a row, not a button: the brand's button styles would draw it as one -->
   <div
-    class="flex items-center justify-between px-2 py-3 border-outline-elevation-2 cursor-pointer hover:bg-surface-gray-1 rounded"
+    :role="emailAccount.editable ? 'button' : undefined"
+    :tabindex="emailAccount.editable ? 0 : undefined"
+    class="flex w-full items-center justify-between gap-3 rounded px-2 py-3 text-left max-md:flex-col max-md:items-start"
+    :class="{
+      'cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-outline-gray-3':
+        emailAccount.editable,
+    }"
+    @click="emailAccount.editable && $emit('click')"
+    @keydown.enter.prevent="emailAccount.editable && $emit('click')"
+    @keydown.space.prevent="emailAccount.editable && $emit('click')"
   >
-    <!-- avatar and name -->
-    <div class="flex items-center justify-between gap-2">
-      <EmailProviderIcon :logo="emailIcon[emailAccount.service]" />
-      <div>
-        <div class="text-p-base text-ink-gray-8">
+    <div class="flex min-w-0 items-center gap-3">
+      <EmailProviderIcon
+        :logo="logoDi[emailAccount.provider]"
+        :name="fornitore(emailAccount.provider)?.nome || ''"
+      />
+      <div class="flex min-w-0 flex-col">
+        <span class="truncate text-p-base text-ink-gray-8">
           {{ emailAccount.email_account_name }}
-        </div>
-        <div class="text-p-sm text-ink-gray-5">{{ emailAccount.email_id }}</div>
+        </span>
+        <span class="truncate text-p-sm text-ink-gray-5">
+          {{ emailAccount.email_id }}
+        </span>
       </div>
     </div>
-    <div>
-      <Badge variant="subtle" :label="badgeTitle" theme="gray" />
+    <!-- what it does, in words; and whose it is when it is the agency's -->
+    <div class="flex shrink-0 flex-wrap justify-end gap-1 max-md:justify-start">
+      <Badge
+        v-for="segno in segni(emailAccount, servizio)"
+        :key="segno"
+        variant="subtle"
+        theme="gray"
+        :label="__(segno)"
+      />
     </div>
-    <!-- email id -->
   </div>
 </template>
 
 <script setup>
-import { emailIcon } from './emailConfig'
+import { Badge } from 'frappe-ui'
+import { fornitore, segni } from '@/utils/caselle'
+import { logoDi } from './emailConfig'
 import EmailProviderIcon from './EmailProviderIcon.vue'
-import { computed } from 'vue'
 
-const props = defineProps({
+defineEmits(['click'])
+defineProps({
   emailAccount: { type: Object, required: true },
-})
-
-const badgeTitle = computed(() => {
-  if (
-    props.emailAccount.default_incoming &&
-    props.emailAccount.default_outgoing
-  ) {
-    return __('Default Sending & Inbox')
-  } else if (props.emailAccount.default_incoming) {
-    return __('Default Inbox')
-  } else if (props.emailAccount.default_outgoing) {
-    return __('Default Sending')
-  } else {
-    return __('Inbox')
-  }
+  // whether {brand}'s emails leave through the agency's service
+  servizio: { type: Boolean, default: false },
 })
 </script>
-
-<style scoped></style>

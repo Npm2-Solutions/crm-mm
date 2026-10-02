@@ -1,12 +1,11 @@
 <template>
-  <div class="flex-1 p-8 max-md:px-5 max-md:py-5">
-    <div v-if="step === 'email-add'" class="h-full">
-      <EmailAdd @update:step="updateStep" />
-    </div>
-    <div v-else-if="step === 'email-list'" class="h-full">
+  <!-- the page fills the pane: what is long scrolls inside it, the buttons stay -->
+  <div class="flex min-h-0 flex-1 flex-col p-8 max-md:px-5 max-md:py-5">
+    <div v-if="step === 'email-list'" class="flex min-h-0 flex-1 flex-col">
       <EmailAccountList @update:step="updateStep" />
     </div>
-    <div v-else-if="step === 'email-edit'" class="h-full">
+    <!-- a new mailbox and one to change: the same form -->
+    <div v-else class="flex min-h-0 flex-1 flex-col">
       <EmailEdit :account-data="accountData" @update:step="updateStep" />
     </div>
   </div>
@@ -14,7 +13,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import EmailAdd from './EmailAdd.vue'
 import EmailAccountList from './EmailAccountList.vue'
 import EmailEdit from './EmailEdit.vue'
 
@@ -22,6 +20,6 @@ const step = ref('email-list')
 const accountData = ref(null)
 function updateStep(newStep, data) {
   step.value = newStep
-  accountData.value = data
+  accountData.value = data || {}
 }
 </script>

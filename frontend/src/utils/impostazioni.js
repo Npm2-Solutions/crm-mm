@@ -294,7 +294,8 @@ export const MENU = [
       {
         key: 'Accounts',
         label: 'Accounts',
-        description: 'The mailboxes {brand} sends and receives from.',
+        description:
+          "The centre's mailboxes, and where the answers to {brand}'s emails go.",
         condition: puo('email.account_centro'),
       },
       {
