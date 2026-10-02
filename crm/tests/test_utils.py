@@ -672,13 +672,9 @@ class TestCreateLeadFromIncomingEmail(IntegrationTestCase):
 		source = frappe.db.get_value("CRM Lead", {"email": "leadsource@example.com"}, "source")
 		self.assertEqual(source, "Email")
 
-	def test_lead_created_for_sent_communication_with_communication_type(self):
-		"""A sent communication with communication_type='Communication' should still create a lead.
-
-		The guard condition uses AND: both sent_or_received != 'Received' AND
-		communication_type != 'Communication' must be true to bail out. When the
-		type IS 'Communication', the second condition is false and the function proceeds.
-		"""
+	def test_no_lead_from_a_sent_communication(self):
+		"""An email the centre sent is nobody writing to it: no person is made of the
+		address it went to (`crm.posta.ingresso`)."""
 		email_account = self._make_email_account()
 		doc = frappe.get_doc(
 			{
@@ -693,7 +689,7 @@ class TestCreateLeadFromIncomingEmail(IntegrationTestCase):
 		)
 		create_lead_from_incoming_email(doc)
 
-		self.assertTrue(frappe.db.exists("CRM Lead", {"email": "sentcomm@example.com"}))
+		self.assertFalse(frappe.db.exists("CRM Lead", {"email": "sentcomm@example.com"}))
 
 
 class TestNoSqlFunctionsInFields(UnitTestCase):

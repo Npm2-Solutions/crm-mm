@@ -39,6 +39,10 @@ SMS = "You received an SMS from {0}"
 SMS_MOLTI = "You received {1} SMS from {0}"
 SMS_TRATTATIVA = "You received an SMS on the deal {0}"
 SMS_TRATTATIVA_MOLTI = "You received {1} SMS on the deal {0}"
+EMAIL = "You received an email from {0}"
+EMAIL_MOLTI = "You received {1} emails from {0}"
+EMAIL_TRATTATIVA = "You received an email on the deal {0}"
+EMAIL_TRATTATIVA_MOLTI = "You received {1} emails on the deal {0}"
 
 ESITI_OGGI = "{0} appointments today have no outcome: did they come?"
 ESITI_IERI = "{0} appointments yesterday have no outcome: did they come?"
@@ -63,6 +67,10 @@ FRASI = (
 	SMS_MOLTI,
 	SMS_TRATTATIVA,
 	SMS_TRATTATIVA_MOLTI,
+	EMAIL,
+	EMAIL_MOLTI,
+	EMAIL_TRATTATIVA,
+	EMAIL_TRATTATIVA_MOLTI,
 	ESITI_OGGI,
 	ESITI_IERI,
 	DOMANDA_AREA,
@@ -78,6 +86,7 @@ GENERI = {
 	"Mention": "mention",
 	"WhatsApp": "whatsapp",
 	"SMS": "sms",
+	"Email": "email",
 	"Agenda": "agenda",
 	"Area": "area",
 	"Invoicing": "invoicing",
@@ -105,7 +114,7 @@ GRUPPI_EMAIL = {
 	"mentions": ("mention",),
 	"assignments": ("assigned", "unassigned", "task", "task_removed"),
 	"area": ("area",),
-	"messages": ("whatsapp", "sms"),
+	"messages": ("whatsapp", "sms", "email"),
 	"agenda": ("agenda",),
 	"invoicing": ("invoicing",),
 	"automations": ("automation",),

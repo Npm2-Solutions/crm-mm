@@ -39,7 +39,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Type",
-   "options": "Mention\nTask\nAssignment\nWhatsApp\nSMS\nInvoicing\nAgenda\nArea\nAutomation",
+   "options": "Mention\nTask\nAssignment\nWhatsApp\nSMS\nEmail\nInvoicing\nAgenda\nArea\nAutomation",
    "reqd": 1
   },
   {
@@ -157,7 +157,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-02 09:00:00.000000",
+ "modified": "2026-10-02 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Notification",

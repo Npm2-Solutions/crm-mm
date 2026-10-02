@@ -33,7 +33,16 @@ class CRMNotification(Document):
 		sentence_args: DF.JSON | None
 		to_user: DF.Link
 		type: DF.Literal[
-			"Mention", "Task", "Assignment", "WhatsApp", "SMS", "Invoicing", "Agenda", "Area", "Automation"
+			"Mention",
+			"Task",
+			"Assignment",
+			"WhatsApp",
+			"SMS",
+			"Email",
+			"Invoicing",
+			"Agenda",
+			"Area",
+			"Automation",
 		]
 	# end: auto-generated types
 

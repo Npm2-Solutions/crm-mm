@@ -287,46 +287,11 @@ def _get_communication_status(doc: Communication) -> str | None:
 
 
 def create_lead_from_incoming_email(doc: Communication, method: str | None = None):
-	if doc.doctype != "Communication":
-		return
+	"""An email received reaches its person, or makes one where the mailbox says so
+	(`crm.posta.ingresso`)."""
+	from crm.posta.ingresso import alla_ricezione
 
-	if doc.sent_or_received != "Received" and doc.communication_type != "Communication":
-		return
-
-	if doc.reference_doctype and doc.reference_name:
-		return
-
-	if not doc.email_account:
-		return
-
-	create_lead_enabled = frappe.db.get_value(
-		"Email Account", doc.email_account, "create_lead_from_incoming_email"
-	)
-	if not create_lead_enabled:
-		return
-
-	if frappe.db.exists("CRM Lead", {"email": doc.sender}):
-		return
-
-	lead = frappe.new_doc("CRM Lead")
-	lead.email = doc.sender
-
-	if doc.sender_full_name:
-		lead.first_name = doc.sender_full_name.split(" ")[0]
-		lead.last_name = (
-			doc.sender_full_name.split(" ")[-1] if len(doc.sender_full_name.split(" ")) > 1 else ""
-		)
-	else:
-		lead.first_name = doc.sender.split("@")[0]
-
-	if frappe.db.exists("CRM Lead Source", "Email"):
-		lead.source = "Email"
-
-	lead.insert(ignore_permissions=True)
-
-	doc.reference_doctype = "CRM Lead"
-	doc.reference_name = lead.name
-	doc.save(ignore_permissions=True)
+	alla_ricezione(doc)
 
 
 def on_comment_insert(doc: Comment, method: str | None = None):
