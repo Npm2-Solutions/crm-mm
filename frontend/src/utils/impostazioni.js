@@ -34,7 +34,7 @@ export const MENU = [
     key: 'account',
     label: 'Your account',
     description:
-      'Your profile, how {brand} looks for you, the calendar you bring.',
+      'Your profile, how {brand} looks for you, your notifications by email, the calendar you bring.',
     items: [
       {
         key: 'Profile',
@@ -45,6 +45,12 @@ export const MENU = [
         key: 'Preferences',
         label: 'Preferences',
         description: 'The theme and the language you read {brand} in.',
+      },
+      {
+        // what reaches you by email too when the panel has not been read
+        key: 'Notifications',
+        label: 'Notifications',
+        description: 'What reaches your email too, when you have not read it.',
       },
       {
         // each person connects their own: the hours they are busy elsewhere

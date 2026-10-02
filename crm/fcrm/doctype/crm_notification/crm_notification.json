@@ -9,6 +9,8 @@
   "sentence",
   "sentence_args",
   "count",
+  "email_due",
+  "emailed_on",
   "section_break_hace",
   "from_user",
   "type",
@@ -137,11 +139,25 @@
    "fieldtype": "Int",
    "label": "How many",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Still unread a few minutes after it came, it goes by email to whoever wants this kind",
+   "fieldname": "email_due",
+   "fieldtype": "Check",
+   "label": "By email if unread",
+   "read_only": 1
+  },
+  {
+   "fieldname": "emailed_on",
+   "fieldtype": "Datetime",
+   "label": "Sent by email on",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-02 06:00:00.000000",
+ "modified": "2026-10-02 09:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Notification",

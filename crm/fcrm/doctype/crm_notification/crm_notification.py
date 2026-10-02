@@ -19,6 +19,8 @@ class CRMNotification(Document):
 
 		comment: DF.Link | None
 		count: DF.Int
+		email_due: DF.Check
+		emailed_on: DF.Datetime | None
 		from_user: DF.Link | None
 		message: DF.HTMLEditor | None
 		notification_text: DF.Text | None

@@ -80,7 +80,7 @@ def righe_del_pannello(righe: list, utente: str) -> list[dict]:
 	mittenti = _mittenti({r.from_user for r in righe if r.from_user and r.from_user not in SISTEMA})
 	esistenti = _esistenti(righe)
 	compiti_aperti = _compiti_aperti(righe, utente)
-	conversazioni = _legge_le_conversazioni()
+	conversazioni = _legge_le_conversazioni(utente)
 	pannello = []
 	for riga in righe:
 		genere = R.genere(riga.type, riga.notification_type_doctype, riga.sentence)
@@ -191,10 +191,12 @@ def _compiti_aperti(righe: list, utente: str) -> set:
 	)
 
 
-def _legge_le_conversazioni() -> bool:
-	from crm.api.whatsapp import may_converse
+def _legge_le_conversazioni(utente: str | None = None) -> bool:
+	"""Whether whoever reads - the session, or the person an email goes to - reads
+	the conversations: the first words of a message are theirs only then."""
+	from crm.permissions.livelli import nel_crm, puo
 
-	return may_converse()
+	return not nel_crm(utente) or puo("conversazioni.vedi", utente)
 
 
 # ------------------------------------------------------------------ reading them
@@ -226,7 +228,9 @@ def _segna(names, letta: int) -> dict:
 		if not nomi:
 			return {"unread": da_leggere(utente)}
 		filtri["name"] = ("in", [str(n) for n in nomi])
-	frappe.db.set_value(NOTIFICA, filtri, "read", letta, update_modified=False)
+	# read, it no longer goes by email
+	cambi = {"read": letta, "email_due": 0} if letta else {"read": letta}
+	frappe.db.set_value(NOTIFICA, filtri, cambi, update_modified=False)
 	frappe.publish_realtime("crm_notification", {"event": "read"}, user=utente, after_commit=True)
 	return {"unread": da_leggere(utente)}
 

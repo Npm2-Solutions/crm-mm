@@ -175,6 +175,7 @@ import Hierarchy from '@/components/Settings/Hierarchy/Hierarchy.vue'
 import InviteUserPage from '@/components/Settings/InviteUserPage.vue'
 import ProfilePage from '@/components/Settings/Profile/ProfilePage.vue'
 import PreferencesSettings from '@/components/Settings/PreferencesSettings.vue'
+import NotificationsSettings from '@/components/Settings/NotificationsSettings.vue'
 import WhatsAppSettings from '@/components/Settings/WhatsAppSettings.vue'
 import WhatsAppTemplates from '@/components/Settings/WhatsAppTemplates.vue'
 import ERPNextSettings from '@/components/Settings/ERPNextSettings.vue'
@@ -244,6 +245,7 @@ const user = computed(() => getUser() || {})
 const PAGINE = {
   Profile: ProfilePage,
   Preferences: PreferencesSettings,
+  Notifications: NotificationsSettings,
   'Google Calendar': GoogleCalendarSettings,
   Brand: BrandSettings,
   General: GeneralSettings,

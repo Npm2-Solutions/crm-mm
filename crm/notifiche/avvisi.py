@@ -24,6 +24,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint
 
+from crm.notifiche import posta
 from crm.notifiche import regole as R
 
 NOTIFICA = "CRM Notification"
@@ -86,6 +87,9 @@ def avvisa(
 		return None
 
 	quanti = 1
+	# by email too, if it stays unread a few minutes and the person wants this kind
+	per_email = R.vuole_email(R.genere(tipo, doctype_oggetto, frase), posta.preferenze(destinatario))
+	gia_per_email = None
 	if frase_molti and nome_riguarda:
 		# the one about the same person, not yet read, gives its place and its count
 		prima = frappe.db.get_value(
@@ -97,12 +101,14 @@ def avvisa(
 				"reference_name": nome_riguarda,
 				"read": 0,
 			},
-			["name", "count"],
+			["name", "count", "emailed_on"],
 			as_dict=True,
 			order_by="creation desc",
 		)
 		if prima:
 			quanti = (cint(prima.count) or 1) + 1
+			# a conversation goes by email once while it is unread, not at every message
+			gia_per_email = prima.emailed_on
 			frappe.delete_doc(NOTIFICA, prima.name, ignore_permissions=True, force=True)
 			frase, nomi = frase_molti, [*nomi, quanti]
 
@@ -123,6 +129,8 @@ def avvisa(
 			"reference_name": nome_riguarda,
 			"notification_type_doctype": doctype_oggetto,
 			"notification_type_doc": nome_oggetto,
+			"email_due": 1 if per_email and not gia_per_email else 0,
+			"emailed_on": gia_per_email,
 		}
 	)
 	# written after what it is about: a message deleted meanwhile does not stop it,
