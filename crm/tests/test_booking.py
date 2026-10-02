@@ -41,6 +41,17 @@ def first_slot(route):
 	return slots[0]["start"]
 
 
+def first_slot_with_room(route, minutes):
+	"""The first free slot with ``minutes`` after it on the same day: a test that
+	looks at what follows a booking would find midnight there late in the evening."""
+	cal = frappe.get_doc("CRM Booking Calendar", {"route": route})
+	today = datetime.date.today()
+	for slot in cal.get_available_slots(today, today + datetime.timedelta(days=2)):
+		if (slot["start"] + datetime.timedelta(minutes=minutes)).date() == slot["start"].date():
+			return slot["start"]
+	raise AssertionError("expected a free slot with room after it")
+
+
 class TestBooking(IntegrationTestCase):
 	def tearDown(self):
 		frappe.set_user("Administrator")
@@ -180,7 +191,8 @@ class TestBooking(IntegrationTestCase):
 
 	def test_buffer_blocks_adjacent_slot(self):
 		make_calendar(route="buffer-cal", buffer_after=30)
-		start = first_slot("buffer-cal")
+		# the booking, its buffer and the slot after it, all before midnight
+		start = first_slot_with_room("buffer-cal", 90)
 		B.book(route="buffer-cal", start=start.isoformat(), invitee_name="E", invitee_email="e@example.com")
 		cal = frappe.get_doc("CRM Booking Calendar", {"route": "buffer-cal"})
 		adjacent = start + datetime.timedelta(minutes=30)
