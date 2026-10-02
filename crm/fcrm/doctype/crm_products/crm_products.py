@@ -1,4 +1,5 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
 import frappe
@@ -31,61 +32,13 @@ class CRMProducts(Document):
 
 
 @frappe.whitelist()
-def get_product_rate_details(product_code: str, deal: str | None = None) -> dict:
+def get_product_rate_details(product_code: str) -> dict:
+	"""A deal line's product: its name and its own price."""
 	product = (
 		frappe.db.get_value("CRM Product", product_code, ["product_name", "standard_rate"], as_dict=True)
 		or {}
 	)
-	rate = _contextual_rate(product_code, deal) or product.get("standard_rate")
-	return {"product_name": product.get("product_name"), "rate": rate}
-
-
-def _contextual_rate(product_code: str, deal: str | None):
-	"""Rate from the linked ERPNext Item, priced in the deal's context."""
-	if not frappe.get_meta("CRM Product").has_field("erpnext_item_code"):
-		return None
-	item_code = frappe.db.get_value("CRM Product", product_code, "erpnext_item_code")
-	if not item_code:
-		return None
-	return get_deal_product_rate(item_code, deal)
-
-
-def _resolve_price_list(customer: str | None):
-	"""Customer's default price list, else the default selling price list."""
-	if customer and frappe.db.exists("Customer", customer):
-		from erpnext.accounts.party import get_default_price_list
-
-		if pl := get_default_price_list(frappe.get_cached_doc("Customer", customer)):
-			return pl
-	return frappe.db.get_single_value("Selling Settings", "selling_price_list")
-
-
-def get_deal_product_rate(item_code: str, deal: str | None = None):
-	"""Resolve a deal line rate the way ERPNext prices a quotation line."""
-	if not frappe.db.exists("DocType", "Item Price"):
-		return None
-	customer = frappe.db.get_value("CRM Deal", deal, "erpnext_customer") if deal else None
-	price_list = _resolve_price_list(customer)
-	if not price_list:
-		return None
-	from erpnext.stock.get_item_details import get_item_price
-
-	pctx = frappe._dict(
-		{
-			"price_list": price_list,
-			"customer": customer,
-			"uom": frappe.db.get_value("Item", item_code, "stock_uom"),
-			"transaction_date": frappe.utils.nowdate(),
-		}
-	)
-	return _price_list_rate(get_item_price(pctx, item_code))
-
-
-def _price_list_rate(rows):
-	if not rows:
-		return None
-	row = rows[0]
-	return row.price_list_rate if isinstance(row, dict) else row[1]
+	return {"product_name": product.get("product_name"), "rate": product.get("standard_rate")}
 
 
 def create_product_details_script(doctype):
@@ -156,7 +109,6 @@ class CRMProducts {
 
     let a = await call("crm.fcrm.doctype.crm_products.crm_products.get_product_rate_details", {
         product_code: productCode,
-        deal: this.doc.name,
     })
     if (!a || row.product_code !== productCode) return
 

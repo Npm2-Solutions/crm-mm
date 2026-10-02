@@ -26,13 +26,10 @@ crm.patches.v1_0.create_default_lost_reasons
 crm.patches.v1_0.add_fields_in_assignment_rule
 crm.patches.v1_0.add_fb_lead_source
 crm.patches.v1_0.update_lead_status_type
-crm.patches.v1_0.reset_erpnext_form_script #04-03-2026
-crm.patches.v1_0.create_custom_fields_for_erpnext_in_crm
 execute:frappe.db.set_single_value("FCRM Settings", "update_timestamp_on_new_communication", 1)
 crm.patches.v1_0.add_email_in_default_lead_sources
 crm.patches.v1_0.create_email_account_custom_field
 crm.patches.v1_0.create_default_quick_filters
-crm.patches.v1_0.create_custom_fields_for_product_item_sync
 crm.patches.v1_0.add_forecasting_section_in_quick_entry
 crm.patches.v1_0.set_persona_captured_for_existing_sites
 crm.patches.v1_0.add_enrichment_fields_to_layouts
@@ -91,3 +88,4 @@ crm.patches.v1_0.deals_take_their_value_from_quotes
 crm.patches.v1_0.emails_reach_their_person
 crm.patches.v1_0.invoicing_only_what_somebody_sets
 crm.patches.v1_0.the_centre_sends_sms_from_one_sender
+crm.patches.v1_0.dottorcloud_does_not_connect_erpnext

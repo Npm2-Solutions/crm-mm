@@ -1,3 +1,5 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 """Daily snapshot of which features a site has configured and how much it uses them."""
 
 import frappe
@@ -12,7 +14,7 @@ def capture_feature_state():
 
 	properties = {}
 
-	for collect in (lead_sync_state, product_sync_state, sales_hierarchy_state):
+	for collect in (lead_sync_state, sales_hierarchy_state):
 		try:
 			properties.update(collect())
 		except Exception:
@@ -40,23 +42,6 @@ def count_synced_leads(days: int | None = None) -> int:
 		filters["creation"] = [">", add_days(nowdate(), -days)]
 
 	return frappe.db.count("CRM Lead", filters)
-
-
-def product_sync_state() -> dict:
-	settings = frappe.get_cached_doc("ERPNext CRM Settings")
-
-	state = {
-		"erpnext_sync_enabled": bool(settings.enabled),
-		"products_sync_enabled": bool(settings.sync_products),
-		"products_total": frappe.db.count("CRM Product"),
-		"product_sync_issues_open": frappe.db.count("CRM Product Sync Issue", {"dismissed": 0}),
-	}
-
-	# erpnext_item_code is a custom field, added only once the integration is enabled
-	if frappe.db.has_column("CRM Product", "erpnext_item_code"):
-		state["products_synced_total"] = frappe.db.count("CRM Product", {"erpnext_item_code": ["is", "set"]})
-
-	return state
 
 
 def sales_hierarchy_state() -> dict:
