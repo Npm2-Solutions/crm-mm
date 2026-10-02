@@ -27,10 +27,23 @@ frappe.ui.form.on("CRM Invoice", {
     });
   },
 
+  refresh(frm) {
+    scelte_in_parole(frm);
+    // the states stay the Agenzia's words, what a portal receipt says - but as
+    // words: «Da inviare», not `da_inviare`
+    ["sdi_status", "ts_status"].forEach((campo) =>
+      frm.set_df_property(campo, "formatter", (valore) =>
+        frappe.utils.escape_html(stato_in_parole(valore)),
+      ),
+    );
+  },
+
   company(frm) {
     // A second company can have a different shape: ask again rather than
-    // carrying the first one's answer into it.
+    // carrying the first one's answer into it. Its category decides the
+    // expense types too.
     frm.trigger("onload");
+    scelte_in_parole(frm);
   },
 });
 
@@ -79,4 +92,54 @@ function applica_forma(frm) {
     });
   }
   griglia.refresh();
+}
+
+/**
+ * Codes in words. Every select that holds a code offers its choices by name,
+ * only the ones the practice meets (crm.invoicing.scelte: with the clinic on,
+ * the healthcare ones), and a stored code reads as its name: "Card or app",
+ * not MP08. The values already on the document stay offered, whatever the
+ * profile, so nothing chosen before disappears from its own field.
+ */
+function scelte_in_parole(frm) {
+  frappe.call({
+    method: "crm.invoicing.scelte.get_options",
+    args: { doctype: frm.doctype, doc: frm.doc },
+    callback: ({ message }) => {
+      const scelte = message || {};
+      Object.entries(scelte.fields || {}).forEach(([campo, opzioni]) => {
+        frm.set_df_property(campo, "options", opzioni);
+        frm.set_df_property(campo, "formatter", nome_da(opzioni));
+      });
+      Object.entries(scelte.tables || {}).forEach(([tabella, campi]) => {
+        const griglia = frm.fields_dict[tabella] && frm.fields_dict[tabella].grid;
+        if (!griglia || !griglia.grid_rows) return;
+        Object.entries(campi).forEach(([campo, opzioni]) => {
+          griglia.update_docfield_property(campo, "options", opzioni);
+          griglia.update_docfield_property(campo, "formatter", nome_da(opzioni));
+        });
+        griglia.refresh();
+      });
+    },
+  });
+}
+
+/** What a read-only field or a grid row shows: the name of its code. */
+function nome_da(opzioni) {
+  const nomi = {};
+  opzioni.forEach((opzione) => {
+    nomi[opzione.value] = opzione.label;
+  });
+  return (valore) =>
+    frappe.utils.escape_html(
+      valore && nomi[valore] ? nomi[valore] : valore || "",
+    );
+}
+
+/** The same as the console's `statusLabel` (frontend/src/utils/invoicing.js). */
+function stato_in_parole(stato) {
+  const parole = String(stato || "")
+    .replace(/_/g, " ")
+    .trim();
+  return parole.charAt(0).toUpperCase() + parole.slice(1);
 }
