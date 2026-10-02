@@ -181,20 +181,62 @@ export function imageSize(file) {
   throw new Error(`cannot read the size of ${file}`)
 }
 
+const versions = new Map()
+// an address with the file's fingerprint: /img/agenda.webp?v=1a2b3c4d
+export function versioned(src) {
+  if (!versions.has(src)) {
+    const data = fs.readFileSync(path.join(OUT, src))
+    const hash = crypto.createHash('sha256').update(data).digest('hex')
+    versions.set(src, `${src}?v=${hash.slice(0, 8)}`)
+  }
+  return versions.get(src)
+}
+
+// agenda.webp -> agenda-800.webp, agenda-1200.webp, smallest first
+function smallerCopies(file) {
+  const dir = path.dirname(file)
+  const ext = path.extname(file)
+  const base = path.basename(file, ext)
+  const pattern = new RegExp(`^${base}-(\\d+)${ext.replace('.', '\\.')}$`)
+  const prefix = path.posix.dirname(path.relative(OUT, file).split(path.sep).join('/'))
+  return fs
+    .readdirSync(dir)
+    .map((name) => [name, name.match(pattern)])
+    .filter(([, match]) => match)
+    .map(([name, match]) => ({ src: `/${prefix}/${name}`, width: +match[1] }))
+    .sort((a, b) => a.width - b.width)
+}
+
 function sizeImages(html, file) {
   return html.replace(/<img\b([^>]*?)\s*\/?>/g, (tag, attrs) => {
     const src = attrs.match(/\ssrc="([^"]+)"/)?.[1]
     if (!src) throw new Error(`${file}: an <img> without src`)
     if (!/\salt="/.test(attrs)) throw new Error(`${file}: ${src} has no alt`)
     let extra = ''
-    if (src.startsWith('/') && !/\swidth="/.test(attrs)) {
-      const { width, height } = imageSize(path.join(OUT, src.split('?')[0]))
-      extra += ` width="${width}" height="${height}"`
+    if (src.startsWith('/') && !src.includes('?')) {
+      const local = path.join(OUT, src)
+      const { width, height } = imageSize(local)
+      if (!/\swidth="/.test(attrs))
+        extra += ` width="${width}" height="${height}"`
+      // the server keeps images for years: a new file gets a new address
+      attrs = attrs.replace(/\ssrc="[^"]+"/, ` src="${versioned(src)}"`)
+      const smaller = smallerCopies(local)
+      if (smaller.length && !/\ssrcset="/.test(attrs)) {
+        const set = [...smaller, { src, width }]
+          .map((copy) => `${versioned(copy.src)} ${copy.width}w`)
+          .join(', ')
+        // the pictures are made at twice the widest the page shows them
+        const sizes =
+          attrs.match(/\ssizes="([^"]+)"/)?.[1] ??
+          `(max-width: 900px) calc(100vw - 32px), ${Math.round(width / 2)}px`
+        attrs = attrs.replace(/\ssizes="[^"]+"/, '')
+        extra += ` srcset="${set}" sizes="${sizes}"`
+      }
     }
     if (!/\sloading="/.test(attrs)) extra += ' loading="lazy"'
     if (!/\sdecoding="/.test(attrs)) extra += ' decoding="async"'
     return `<img${attrs}${extra} />`
-  })
+  }).replace(/\sposter="(\/[^"?]+)"/g, (_, src) => ` poster="${versioned(src)}"`)
 }
 
 // --- favicon.ico: the 32px PNG inside an ICO container ---
@@ -223,6 +265,7 @@ function ico(png) {
 
 export function build() {
   fs.rmSync(OUT, { recursive: true, force: true })
+  versions.clear()
   fs.mkdirSync(OUT, { recursive: true })
 
   // static files first: the pages measure the images in OUT

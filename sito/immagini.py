@@ -44,6 +44,11 @@ LARGHEZZE = {
 }
 
 
+# smaller copies of the wide pictures, for phones and narrow columns:
+# the build offers them in srcset as <name>-<width>.webp
+RIDOTTE = (800, 1200)
+
+
 # the phones, upright (brand/video/sorgenti/telefoni.mjs makes telefono-<name>.png)
 TELEFONI = {nome: 640 for nome in ("login", "home", "firma", "dieta", "esercizio", "esercizi", "staff")}
 
@@ -72,6 +77,9 @@ def main() -> None:
 	USCITA.mkdir(parents=True, exist_ok=True)
 	for nome, larghezza in LARGHEZZE.items():
 		webp(SCHERMATE / f"{nome}.png", USCITA / f"{nome}.webp", larghezza)
+		for ridotta in RIDOTTE:
+			if ridotta < larghezza:
+				webp(SCHERMATE / f"{nome}.png", USCITA / f"{nome}-{ridotta}.webp", ridotta)
 	for nome, larghezza in TELEFONI.items():
 		webp(SCHERMATE / f"telefono-{nome}.png", USCITA / f"{nome}.webp", larghezza)
 	condivisione()

@@ -192,6 +192,25 @@ describe('the pages', () => {
     }
   })
 
+  test('give images an address that changes with the file, and smaller copies', () => {
+    const home = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8')
+    const hero = home.match(/<img\b[^>]*showcase__main[^>]*>/)[0]
+    assert.match(hero, /src="\/img\/agenda\.webp\?v=[0-9a-f]{8}"/)
+    const set = hero.match(/srcset="([^"]+)"/)[1].split(', ')
+    assert.deepEqual(
+      set.map((entry) => entry.split(' ')[1]),
+      ['800w', '1200w', '2000w'],
+    )
+    for (const entry of set)
+      assert.ok(fs.existsSync(target(entry.split(' ')[0])), entry)
+    assert.match(hero, /\ssizes="[^"]+"/)
+    for (const file of pages()) {
+      const html = fs.readFileSync(file, 'utf8')
+      for (const [, url] of html.matchAll(/\s(?:src|poster)="(\/img\/[^"]+)"/g))
+        assert.match(url, /\?v=[0-9a-f]{8}$/, `${path.relative(OUT, file)}: ${url}`)
+    }
+  })
+
   test('show no price, plan or fee', () => {
     const money =
       /€|\beuro\b|\bprezz[io]|\blistin[oi]\b|\btariff|\bcost[aio]\b|\bcanone|al mese|\/mese|\bgratis|\bgratuit|\bpiano (base|pro|premium|start)/i
