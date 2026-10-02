@@ -40595,3 +40595,99 @@ msgstr "{0} numeri, e nessuno arriva a {brand}."
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue
 msgid "{0} numbers, one of them does not reach {brand}."
 msgstr "{0} numeri, uno non arriva a {brand}."
+
+#: crm/telephony/errori_regole.py
+msgid "The Twilio account is not active: usually its credit ran out. Top it up on Twilio."
+msgstr "L'account Twilio non è attivo: di solito il credito è finito. Ricaricalo su Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio refused {brand}'s codes: check the connection on Twilio's page."
+msgstr "Twilio ha rifiutato i codici di {brand}: controlla il collegamento nella pagina di Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "The person's number is not a valid number."
+msgstr "Il numero della persona non è un numero valido."
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio does not take the SMS sender: choose another one on Twilio's page."
+msgstr "Twilio non accetta il mittente degli SMS: scegline un altro nella pagina di Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "SMS to this country are not allowed in the Twilio account's permissions."
+msgstr "Gli SMS verso questo paese non sono permessi nell'account Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "This number of the centre cannot send SMS."
+msgstr "Questo numero del centro non può mandare SMS."
+
+#: crm/telephony/errori_regole.py
+msgid "The person had asked Twilio to stop the SMS from this number, with STOP."
+msgstr "La persona aveva chiesto a Twilio di fermare gli SMS da questo numero, con STOP."
+
+#: crm/telephony/errori_regole.py
+msgid "The person's number cannot receive SMS from this sender."
+msgstr "Il numero della persona non può ricevere SMS da questo mittente."
+
+#: crm/telephony/errori_regole.py
+msgid "The person's number is not a mobile: it cannot receive SMS."
+msgstr "Il numero della persona non è un cellulare: non può ricevere SMS."
+
+#: crm/telephony/errori_regole.py
+msgid "The person's phone was off or out of reach."
+msgstr "Il telefono della persona era spento o non raggiungibile."
+
+#: crm/telephony/errori_regole.py
+msgid "The person's number does not exist any more."
+msgstr "Il numero della persona non esiste più."
+
+#: crm/telephony/errori_regole.py
+msgid "The person's number is a landline, or its operator does not take SMS."
+msgstr "Il numero della persona è un fisso, o il suo operatore non accetta SMS."
+
+#: crm/telephony/errori_regole.py
+msgid "The operator stopped the message as unwanted."
+msgstr "L'operatore ha fermato il messaggio come indesiderato."
+
+#: crm/telephony/errori_regole.py
+msgid "The operator did not deliver the message and did not say why."
+msgstr "L'operatore non ha consegnato il messaggio e non ha detto perché."
+
+#: crm/telephony/errori_regole.py
+msgid "The number called is not a valid number."
+msgstr "Il numero chiamato non è un numero valido."
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio blocked the call: it holds that number at risk of fraud."
+msgstr "Twilio ha bloccato la chiamata: considera quel numero a rischio di frode."
+
+#: crm/telephony/errori_regole.py
+msgid "Calls to this country are not allowed in the Twilio account's permissions."
+msgstr "Le chiamate verso questo paese non sono permesse nell'account Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio blocked the call: the number is premium-rate or on its block list."
+msgstr "Twilio ha bloccato la chiamata: il numero è a pagamento o tra quelli che blocca."
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio could not reach {brand}: an incoming call or SMS may have been lost."
+msgstr "Twilio non ha raggiunto {brand}: una chiamata o un SMS in arrivo potrebbe essere andato perso."
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio could not read {brand}'s answer to a call or an SMS."
+msgstr "Twilio non ha capito la risposta di {brand} a una chiamata o a un SMS."
+
+#: crm/telephony/errori.py
+msgid "Twilio says: {0} (error {1})"
+msgstr "Twilio dice: {0} (errore {1})"
+
+#: crm/telephony/errori.py
+msgid "Twilio refused it (error {0})."
+msgstr "Twilio l'ha rifiutato (errore {0})."
+
+#: crm/telephony/errori.py
+msgid "Twilio refused it."
+msgstr "Twilio l'ha rifiutato."
+
+#: crm/fcrm/doctype/crm_sms_message/crm_sms_message.json
+msgid "Twilio's code for why the message did not leave or did not arrive."
+msgstr "Il codice di Twilio per cui il messaggio non è partito o non è arrivato."
