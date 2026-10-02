@@ -131,7 +131,8 @@ def opzioni(
 		for voce in voci.voci(famiglia, profilo(), attuale, ammessi)
 	]
 	if vuota:
-		scelte.insert(0, {"value": "", "label": "", "description": ""})
+		# a dash, not a blank row: an empty line in a list of names reads as broken
+		scelte.insert(0, {"value": "", "label": "—", "description": ""})
 	return scelte
 
 
