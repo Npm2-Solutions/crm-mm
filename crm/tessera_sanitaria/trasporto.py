@@ -28,11 +28,10 @@ import time
 
 import frappe
 from frappe import _
-from frappe.utils import getdate
+from frappe.utils import cint, getdate
 from frappe.utils.password import get_decrypted_password
 
-from crm.invoicing import connessione, documento
-from crm.invoicing.engine import busta
+from crm.invoicing import documento
 from crm.tessera_sanitaria import documento as ts
 from crm.tessera_sanitaria.engine.codici import (
 	CODICE_DELEGA_ASSENTE,
@@ -49,7 +48,6 @@ from crm.tessera_sanitaria.engine.tracciato import (
 	analizza_risposta,
 	canale_per_modalita,
 	costruisci_busta,
-	costruisci_file_allegato,
 	destinazione,
 	soap_action,
 )
@@ -91,9 +89,14 @@ def _credenziali(emittente: dict) -> Credenziali:
 
 
 def _ambiente() -> str:
-	"""Test until somebody says otherwise. Production is an explicit act."""
-	valore = (frappe.conf.get("sistema_ts_ambiente") or "test").strip().lower()
-	return Ambiente.PRODUZIONE if valore.startswith("prod") else Ambiente.TEST
+	"""Production: a document that reaches this point is a real one.
+
+	The test is the company's (`crm.invoicing.prova`): a test invoice is checked when
+	it is issued and never transmitted, so nothing here has to guess. A developer's
+	site points at the Sistema TS's own test environment with `sistema_ts_ambiente`.
+	"""
+	valore = (frappe.conf.get("sistema_ts_ambiente") or "produzione").strip().lower()
+	return Ambiente.TEST if valore.startswith("test") else Ambiente.PRODUZIONE
 
 
 def _post(url: str, corpo: bytes, intestazioni: dict, credenziali: Credenziali) -> bytes:
@@ -155,6 +158,14 @@ def invia_documento(nome_fattura: str, operazione: str | None = None) -> dict:
 	fattura.check_permission("submit")
 	if fattura.docstatus != 1:
 		frappe.throw(_("Only an issued invoice can be reported"))
+	if cint(fattura.get("test_document")):
+		frappe.throw(
+			_(
+				"This is a test invoice: the Sistema TS does not receive it. What it would have received "
+				"was checked when it was issued."
+			),
+			title=_("Test invoice"),
+		)
 	if fattura.ts_status not in ("da_inviare", "pronto_export", "scartato"):
 		frappe.throw(_("This invoice is in state {0}: there is nothing to send").format(fattura.ts_status))
 
@@ -175,11 +186,6 @@ def invia_documento(nome_fattura: str, operazione: str | None = None) -> dict:
 			"<br>".join(documento.in_parole(errore) for errore in esito_validazione.errori),
 			title=_("The Sistema TS would refuse this document"),
 		)
-
-	if modalita == "provider":
-		# The tracciato is validated the same way whichever door it leaves by. What
-		# changes past this point is only who carries it, and what an answer means.
-		return _invia_tramite_provider(fattura, emittente, spesa)
 
 	scelta = Operazione(
 		{
@@ -238,84 +244,6 @@ def _registra_esito(fattura, emittente: dict, esito: Esito, modalita: str) -> No
 		payload={"codes": esito.codici_errore},
 	)
 	_reagisci_ai_codici(emittente, esito, modalita)
-
-
-def _invia_tramite_provider(fattura, emittente: dict, spesa) -> dict:
-	"""Hand the tracciato to the intermediary.
-
-	**A provider's yes is not the Sistema TS's yes.** On the direct channel the call
-	is synchronous and the answer is the outcome, protocol and all. Here the provider
-	takes the file and forwards it, exactly as it does for the SdI, so the honest
-	state is `inviato` - never `accolto`. Writing `accolto` on a 202 would invent an
-	acceptance nobody gave, and the practice would find out next January.
-
-	The file is the standard attached-file tracciato, encrypted here as always: the
-	patient's fiscal code is ciphered before it reaches anybody's API, provider
-	included.
-	"""
-	endpoint = (emittente.get("ts_provider_endpoint") or "").strip()
-	if not endpoint:
-		frappe.throw(
-			_("No Sistema TS endpoint for the provider: the tracciato is ready, the channel is not."),
-			title=_("Sistema TS"),
-		)
-
-	contenuto = costruisci_file_allegato([spesa], ts.cifratore(emittente))
-	try:
-		risposta = connessione.posta(emittente, endpoint, contenuto, tipo="application/xml")
-	except connessione.ErroreProvider as errore:
-		documento.registra(fattura, "ts_sent", str(errore), stato="errore")
-		frappe.throw(str(errore), title=_("Sistema TS"))
-
-	if risposta.status_code not in (200, 201, 202):
-		# Truncated on purpose: a provider that echoes the document back would
-		# otherwise write a patient's healthcare data into a log.
-		messaggio = _("The provider answered {0}: {1}").format(
-			risposta.status_code, (risposta.text or "")[:500]
-		)
-		fattura.db_set("ts_status", "scartato", update_modified=False)
-		documento.registra(fattura, "ts_rejected", messaggio, stato="scartato")
-		frappe.throw(messaggio, title=_("Sistema TS"))
-
-	identificativo = _identificativo_provider(risposta)
-	riassunto = _("Handed to {0}{1}. The Sistema TS outcome arrives separately.").format(
-		emittente.get("sdi_provider") or _("the provider"),
-		f" ({identificativo})" if identificativo else "",
-	) + connessione.etichetta_ambiente(emittente)
-
-	fattura.db_set(
-		{
-			"ts_status": "inviato",
-			"ts_year": fattura.ts_year or getdate(fattura.payment_date).year,
-		},
-		update_modified=False,
-	)
-	documento.registra(fattura, "ts_sent", riassunto, stato="inviato", payload={"identifier": identificativo})
-	return {
-		"accepted": False,
-		"sent": True,
-		"protocol": None,
-		"identifier": identificativo,
-		"codes": [],
-		"summary": riassunto,
-	}
-
-
-def _identificativo_provider(risposta) -> str | None:
-	"""The provider's own reference, wherever it hid it. Shared shape with the SdI side."""
-	try:
-		corpo = risposta.json() if risposta.content else {}
-	except ValueError:
-		return None
-	if isinstance(corpo, str):
-		return corpo.strip() or None
-	if not isinstance(corpo, dict):
-		return None
-	for chiave in busta.CHIAVI_UUID:
-		valore = corpo.get(chiave)
-		if valore:
-			return str(valore)
-	return None
 
 
 def _reagisci_ai_codici(emittente: dict, esito: Esito, modalita: str) -> None:

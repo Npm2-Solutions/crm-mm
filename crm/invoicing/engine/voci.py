@@ -408,8 +408,8 @@ CONSERVAZIONE_LOCALE = (
 CANALE_SDI = (
 	_v(
 		"provider",
-		"Accredited provider, automatic",
-		"It sends the invoices and reads the notices that come back: the recommended way.",
+		"Itala, automatic",
+		"The accredited intermediary the invoices go through: it sends them and reads the notices that come back.",
 		sanita=True,
 	),
 	_v("pec", "Your PEC mailbox", "Free, but somebody has to read the notices that come back.", sanita=True),
@@ -427,8 +427,8 @@ FLUSSO_SDI = (
 )
 
 AMBIENTE = (
-	_v("sandbox", "Test", "Sandbox: what is sent from here reaches nobody.", sanita=True),
-	_v("production", "Live (production)", "What is sent reaches the SdI.", sanita=True),
+	_v("sandbox", "In test", "The invoices are numbered PROVA and reach nobody.", sanita=True),
+	_v("production", "Live", "Every invoice is real.", sanita=True),
 )
 
 # ------------------------------------------------------------------ qualifications and clients
