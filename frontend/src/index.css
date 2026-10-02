@@ -177,6 +177,26 @@
   color: var(--ink-gray-9);
 }
 
+/* A select whose choices carry a line under their name (the invoicing codes in
+   words, `crm/invoicing/scelte.py`).
+
+   frappe-ui stacks the choices in a flex column and gives each a minimum
+   height of one line: when the list is taller than the room it has, the
+   choices shrink to that minimum instead of the list scrolling, and every line
+   was drawn over the next choice's name. A choice keeps its height, the list
+   scrolls. The line wraps instead of stretching the list across the page:
+   frappe-ui cuts it on one line, which made the list as wide as the longest
+   line and spilled it out of the settings. */
+[role='listbox'] [role='option'] {
+  flex-shrink: 0;
+}
+[role='option'] [data-slot='item-label'] .truncate.text-p-sm {
+  white-space: normal;
+}
+[role='listbox'][data-slot='content'] {
+  max-width: min(32rem, calc(100vw - 2rem));
+}
+
 /* Reka menu content (e.g. the kebab menu inside PrimaryDropdown) portals to
    <body> without a z-index, so it falls behind frappe-ui Popover content
    (z-[100]). Lift menus above popovers so nested menus stay visible. */
