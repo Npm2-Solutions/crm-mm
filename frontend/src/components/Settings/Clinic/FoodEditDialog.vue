@@ -1,10 +1,14 @@
 <!--
   A food of the library, put right: its name in the centre's words, its group,
-  its portion, on or off. A table's numbers stay the table's, shown with where
-  they come from; the centre's own food has its numbers written here.
+  its portion, on or off. The library's numbers stay the library's, shown with
+  where they come from; the centre's own food - a new one too - has its numbers
+  written here.
 -->
 <template>
-  <Dialog v-model="show" :options="{ title: __('Food'), size: 'lg' }">
+  <Dialog
+    v-model="show"
+    :options="{ title: food ? __('Food') : __('New food'), size: 'lg' }"
+  >
     <template #body-content>
       <div v-if="form" class="flex flex-col gap-3">
         <FormControl v-model="form.food_name" :label="__('Name')" />
@@ -122,7 +126,11 @@ const saving = ref(false)
 const error = ref('')
 
 const own = computed(() => (props.food?.source || 'Centre') === 'Centre')
-const groupOptions = GRUPPI.map((g) => ({ label: __(g), value: g }))
+const groupOptions = computed(() => [
+  // a new food: its group chosen, never guessed
+  ...(props.food ? [] : [{ label: __('Choose the group'), value: '' }]),
+  ...GRUPPI.map((g) => ({ label: __(g), value: g })),
+])
 const fields = [
   { key: 'kcal', label: __('kcal') },
   { key: 'protein_g', label: __('Proteins (g)') },
@@ -132,11 +140,11 @@ const fields = [
 ]
 
 watch(show, (open) => {
-  if (!open || !props.food) return
+  if (!open) return
   error.value = ''
-  const food = props.food
+  const food = props.food || { food_group: '', enabled: 1 }
   form.value = {
-    food_name: food.food_name,
+    food_name: food.food_name || '',
     food_group: food.food_group,
     portion_g: food.portion_g || '',
     enabled: Boolean(food.enabled),
@@ -150,7 +158,7 @@ async function save() {
   error.value = ''
   try {
     await call('crm.clinica.librerie.save_food', {
-      name: props.food.name,
+      name: props.food?.name || null,
       data: JSON.stringify({
         ...form.value,
         enabled: form.value.enabled ? 1 : 0,

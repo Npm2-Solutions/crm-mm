@@ -3,10 +3,14 @@
 
 """The food tables as the clinic's library reads them, without a site: the columns
 by their names in Italian, French and English, the numbers as the tables write
-them, the categories into the library's groups, the energy a table leaves out. The
-exercises dataset is the CRM's (`crm/piani/tests/test_dataset.py`)."""
+them, the categories into the library's groups, the energy a table leaves out; the
+library DottorCloud ships, made from CIQUAL with its names in Italian, and the file
+in the code. The exercises dataset is the CRM's (`crm/piani/tests/test_dataset.py`)."""
 
 from __future__ import annotations
+
+import json
+from pathlib import Path
 
 try:
 	from frappe.tests import UnitTestCase
@@ -178,22 +182,6 @@ class IGruppi(UnitTestCase):
 		self.assertEqual(T.gruppo_da(["cream and similar", "milk and milk products"], "en"), "Milk and dairy")
 		self.assertEqual(T.gruppo_da(["-", "ice cream and sorbet"], "en"), "Sweets")
 
-	def test_chi_importa_sceglie_per_categoria(self):
-		cibi = [
-			{"name": "a", "category": "herbs", "group": "Other"},
-			{"name": "b", "category": "herbs", "group": "Other"},
-			{"name": "c", "category": "fruits", "group": "Fruit"},
-		]
-		self.assertEqual(
-			T.categorie(cibi),
-			[
-				{"category": "herbs", "group": "Other", "count": 2},
-				{"category": "fruits", "group": "Fruit", "count": 1},
-			],
-		)
-		T.applica_gruppi(cibi, {"herbs": "Vegetables", "fruits": "not a group"})
-		self.assertEqual([c["group"] for c in cibi], ["Vegetables", "Vegetables", "Fruit"])
-
 
 class GliAlimenti(UnitTestCase):
 	def riga(self, **valori):
@@ -291,3 +279,109 @@ class IlFoglio(UnitTestCase):
 	def test_un_csv_in_utf8_con_le_virgole(self):
 		testo = "﻿name,kcal,protein\nOats,389,16.9\n"
 		self.assertEqual(T.leggi_foglio("t.csv", testo.encode("utf-8"))[1], ["Oats", "389", "16.9"])
+
+
+class LaLibreria(UnitTestCase):
+	def riga(self, **valori):
+		riga = [""] * len(CIQUAL_EN)
+		for campo, valore in valori.items():
+			riga[CIQUAL_EN.index(campo)] = valore
+		return riga
+
+	def foglio(self):
+		kcal = "Energy, Regulation EU No 1169/2011 (kcal/100g)"
+		return [
+			CIQUAL_EN,
+			self.riga(
+				alim_ssgrp_code="0201",
+				alim_ssssgrp_code="020101",
+				alim_grp_nom_eng="fruits, vegetables, legumes and nuts",
+				alim_ssgrp_nom_eng="vegetables",
+				alim_code="20047",
+				alim_nom_eng="Carrot, raw",
+				**{kcal: "36,5", "Protein (g/100g)": "0,63"},
+			),
+			# "pastry" says sweets: the dough is flour
+			self.riga(
+				alim_ssgrp_code="0305",
+				alim_ssssgrp_code="000000",
+				alim_grp_nom_eng="cereal products",
+				alim_ssgrp_nom_eng="pastry dough",
+				alim_code="23402",
+				alim_nom_eng="Thin-crust pizza dough, prepacked, raw",
+				**{kcal: "268", "Fat (g/100g)": "10,2"},
+			),
+			# no energy, and not enough to compute it: left out
+			self.riga(
+				alim_ssgrp_code="0201",
+				alim_ssssgrp_code="020102",
+				alim_grp_nom_eng="fruits, vegetables, legumes and nuts",
+				alim_ssgrp_nom_eng="vegetables",
+				alim_code="20040",
+				alim_nom_eng="Leek, cooked",
+				**{"Protein (g/100g)": "0,8"},
+			),
+		]
+
+	def test_dalla_tabella_dell_anses_con_i_nomi_italiani(self):
+		voci, da_tradurre = T.libreria_ciqual(self.foglio(), {"20047": "Carota, cruda"})
+		self.assertEqual(da_tradurre, ["23402"])
+		carota, pasta = voci
+		self.assertEqual(
+			carota,
+			{
+				"code": "20047",
+				"name": "Carota, cruda",
+				"name_en": "Carrot, raw",
+				"group": "Vegetables",
+				"kcal": 36.5,
+				"protein_g": 0.63,
+				"carbs_g": None,
+				"fat_g": None,
+				"fibre_g": None,
+				"kcal_computed": 0,
+			},
+		)
+		# not translated yet: the English, until NPM2 writes it
+		self.assertEqual(
+			(pasta["name"], pasta["group"]), ("Thin-crust pizza dough, prepacked, raw", "Cereals and tubers")
+		)
+
+	def test_come_il_sito_la_tiene(self):
+		voce = {
+			"code": "20047",
+			"name": "Carota, cruda",
+			"name_en": "Carrot, raw",
+			"group": "Vegetables",
+			"kcal": 36.5,
+		}
+		cibo = T.dalla_libreria(voce, "it")
+		self.assertEqual(
+			(cibo["name"], cibo["name_in_source"], cibo["group"]),
+			("Carota, cruda", "Carrot, raw", "Vegetables"),
+		)
+		self.assertEqual(T.dalla_libreria(voce, "en")["name"], "Carrot, raw")
+		# a group the library has not, values no food has, a record that is not one
+		strano = T.dalla_libreria({**voce, "group": "Snacks", "fat_g": 120, "protein_g": 2}, "it")
+		self.assertEqual((strano["group"], strano["fat_g"], strano["protein_g"]), ("Other", None, 2.0))
+		self.assertIsNone(T.dalla_libreria({**voce, "kcal": 4000}, "it"))
+		self.assertIsNone(T.dalla_libreria({"name": "Senza codice", "kcal": 1}, "it"))
+		self.assertIsNone(T.dalla_libreria("not a food", "it"))
+		# without its energy it is no food of the library: 0 kcal would be wrong
+		self.assertIsNone(T.dalla_libreria({**voce, "kcal": None, "protein_g": 1.2}, "it"))
+
+
+class LaLibreriaNelCodice(UnitTestCase):
+	"""The file DottorCloud ships: every food reads, one name each, in Italian."""
+
+	def test_ogni_alimento_si_legge(self):
+		voci = json.loads((Path(T.__file__).parent / "dati" / "alimenti.json").read_text(encoding="utf-8"))
+		self.assertGreater(len(voci), 3000)
+		letti = [T.dalla_libreria(v, "it") for v in voci]
+		self.assertTrue(all(letti))
+		self.assertEqual(len({c["code"] for c in letti}), len(letti))
+		self.assertEqual(len({c["name"].lower() for c in letti}), len(letti))
+		self.assertTrue(all(c["group"] in T.GRUPPI for c in letti))
+		# in Italian: the carrot is a carrot
+		carota = next(c for c in letti if c["code"] == "20009")
+		self.assertEqual((carota["name"], carota["name_in_source"]), ("Carota, cruda", "Carrot, raw"))

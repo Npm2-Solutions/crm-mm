@@ -1,20 +1,17 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The libraries on a real site: a food table in, the exercises of the dataset in,
-corrected in the centre's words, imported again without losing them.
+"""The libraries on a real site: the foods and the exercises DottorCloud ships,
+put in the centre's words, loaded again without losing them.
 
-The manager uploads a table in CIQUAL's shape: the columns and the categories are
-recognised, "herbs" goes to the vegetables because the manager says so, and only
-the two foods chosen come in. The dietitian renames one in Italian; the next
-version of the table brings new numbers and keeps the name. CREA and BDA-IEO come
-in only when somebody declares the centre may use them, and the import says who.
-The exercises of the library DottorCloud ships come with their steps in Italian;
-loaded again, they keep the centre's words; their pictures appear, with whose they
-are, once the agency says where it hosts them. The centre adds its own.
+The foods come with their names in Italian, ANSES's English beside them, and the
+plans find them by either. The dietitian renames one; the next version of the
+library brings new numbers and keeps the name, while a name nobody touched follows
+the library's - a table a centre imported before included. The centre adds its own
+foods, with their numbers. The exercises come with their steps in Italian; loaded
+again, they keep the centre's words; their pictures appear, with whose they are,
+once the agency says where it hosts them. The centre adds its own.
 """
-
-import json
 
 import frappe
 
@@ -31,17 +28,34 @@ from crm.piani import dataset as T
 from crm.piani import librerie as librerie_crm
 from crm.piani import regole as r
 
-INTESTAZIONE = (
-	"alim_grp_nom_eng;alim_ssgrp_nom_eng;alim_code;alim_nom_eng;"
-	"Energy, Regulation EU No 1169/2011 (kcal/100g);Protein (g/100g);Carbohydrate (g/100g);"
-	"Fat (g/100g);Fibres (g/100g)"
-)
-RIGHE = (
-	"fruits, vegetables, legumes and nuts;vegetables;T20047;Carrot, raw;36,5;0,63;6,6;traces;2,7",
-	"miscellaneous;herbs;T11014;Basil, fresh;-;3,15;1,05;0,64;3,9",
-	"cereal products;pasta, rice and grains;T9811;Pasta, cooked;157;5,6;30,3;0,9;1,8",
-	"cereal products;pasta, rice and grains;T9999;;100;1;1;1;1",
-)
+CIBI = [
+	{
+		"code": "T20047",
+		"name": "Carota, cruda",
+		"name_en": "Carrot, raw",
+		"group": "Vegetables",
+		"kcal": 36.5,
+		"protein_g": 0.63,
+		"carbs_g": 6.6,
+		"fat_g": 0,
+		"fibre_g": 2.7,
+		"kcal_computed": 0,
+	},
+	{
+		"code": "T11014",
+		"name": "Basilico, fresco",
+		"name_en": "Basil, fresh",
+		"group": "Other",
+		"kcal": 30.4,
+		"protein_g": 3.15,
+		"carbs_g": 1.05,
+		"fat_g": 0.64,
+		"fibre_g": 3.9,
+		"kcal_computed": 1,
+	},
+	{"code": "T9999", "name": "Senza valori", "name_en": "No values", "group": "Other"},
+	"not a food",
+]
 DATASET = [
 	{
 		"id": "T001",
@@ -79,24 +93,8 @@ class LibrerieCase(PianiCase):
 		frappe.set_user("Administrator")
 		frappe.db.set_single_value(librerie_crm.IMPOSTAZIONI, "exercise_media_url", None)
 
-	def carica(self, user, nome, contenuto) -> str:
-		"""A file as the session uploads it: private, its own."""
-		self.come(user)
-		file = frappe.get_doc(
-			{"doctype": "File", "file_name": nome, "content": contenuto, "is_private": 1}
-		).insert(ignore_permissions=True)
-		return file.file_url
-
-	def tabella(self, user=MANAGER, righe=RIGHE) -> str:
-		testo = "\n".join((INTESTAZIONE, *righe)) + "\n"
-		return self.carica(user, "ciqual.csv", testo.encode("utf-8"))
-
-	def importa(self, url, **altro):
-		altro.setdefault("source", "CIQUAL")
-		return librerie.import_foods(url, **altro)
-
 	def cibo(self, codice):
-		return frappe.get_doc(librerie.CIBO, {"source": "CIQUAL", "source_code": codice})
+		return frappe.get_doc(librerie.CIBO, {"source": librerie.FONTE, "source_code": codice})
 
 
 class ChiLeTiene(LibrerieCase):
@@ -117,92 +115,89 @@ class ChiLeTiene(LibrerieCase):
 		self.assertIn("rows", librerie_crm.get_exercises())
 
 
-class UnaTabella(LibrerieCase):
-	def test_l_anteprima_dice_colonne_categorie_e_cibi(self):
-		url = self.tabella()
-		vista = librerie.preview_foods(url)
-		self.assertEqual((vista["source"], vista["language"]), ("CIQUAL", "en"))
-		self.assertEqual(vista["columns"][vista["mapping"]["name"]], "alim_nom_eng")
-		self.assertEqual(
-			[(c["category"], c["group"], c["count"]) for c in vista["categories"]],
-			[
-				("vegetables", "Vegetables", 1),
-				("herbs", "Other", 1),
-				("pasta, rice and grains", "Cereals and tubers", 1),
-			],
-		)
-		self.assertEqual(vista["total"], 3)
-		self.assertEqual(vista["without_name"], 1)
-		# basil has no energy in the table: computed from its nutrients, and said
-		basilico = next(c for c in vista["foods"] if c["code"] == "T11014")
-		self.assertEqual((basilico["kcal"], basilico["kcal_computed"]), (30.4, True))
-		self.assertEqual(vista["computed"], 1)
-		self.assertFalse(any(c["known"] for c in vista["foods"]))
-
-	def test_solo_i_cibi_scelti_con_i_gruppi_scelti(self):
-		url = self.tabella()
-		fatto = self.importa(
-			url, groups=json.dumps({"herbs": "Vegetables"}), keys=json.dumps(["T20047", "T11014"])
-		)
-		self.assertEqual((fatto["created"], fatto["updated"]), (2, 0))
+class LaLibreriaDegliAlimenti(LibrerieCase):
+	def test_i_nomi_in_italiano_e_l_inglese_della_tabella(self):
+		fatto = librerie.carica(CIBI, "it")
+		self.assertEqual((fatto["created"], fatto["updated"], fatto["skipped"]), (2, 0, 2))
 		basilico = self.cibo("T11014")
-		self.assertEqual((basilico.food_group, basilico.name_in_source), ("Vegetables", "Basil, fresh"))
-		self.assertEqual((basilico.kcal, basilico.kcal_computed), (30.4, 1))
-		self.assertEqual(basilico.source_note, librerie.ATTRIBUZIONI["CIQUAL"])
-		self.assertFalse(frappe.db.exists(librerie.CIBO, {"source_code": "T9811"}))
-		registro = frappe.get_doc(librerie_crm.IMPORTAZIONE, fatto["import"])
 		self.assertEqual(
-			(registro.library, registro.source, registro.imported_by, registro.created_count),
-			("Foods", "CIQUAL", MANAGER, 2),
+			(basilico.food_name, basilico.name_in_source, basilico.food_group),
+			("Basilico, fresco", "Basil, fresh", "Other"),
 		)
-		# the plans find them
+		# the table gave no energy: computed from its nutrients, and said
+		self.assertEqual((basilico.kcal, basilico.kcal_computed), (30.4, 1))
+		self.assertEqual(basilico.source_note, librerie.ATTRIBUZIONE)
+		# the plans find it by the centre's words, and by the table's
 		self.come(DOC1)
-		self.assertIn("Carrot, raw", [c.food_name for c in piani_clinica.search_foods("carrot")])
+		self.assertIn("Carota, cruda", [c.food_name for c in piani_clinica.search_foods("carota")])
+		self.assertIn("Carota, cruda", [c.food_name for c in piani_clinica.search_foods("carrot")])
 
 	def test_di_nuovo_i_numeri_nuovi_il_nome_del_centro(self):
-		self.importa(self.tabella())
+		librerie.carica(CIBI, "it")
 		self.come(MANAGER)
 		carota = self.cibo("T20047")
 		librerie.save_food(
 			carota.name,
-			{"food_name": "Carota cruda", "food_group": "Vegetables", "portion_g": 100, "kcal": 999},
+			{"food_name": "Carote del centro", "food_group": "Vegetables", "portion_g": 100, "kcal": 999},
 		)
 		carota.reload()
-		# a table's numbers are the table's: the name is the centre's
-		self.assertEqual((carota.food_name, carota.portion_g, carota.kcal), ("Carota cruda", 100, 36.5))
-		nuova = tuple(r.replace("36,5", "41") for r in RIGHE)
-		fatto = self.importa(self.tabella(righe=nuova), attribution="ANSES-CIQUAL 2025")
-		self.assertEqual((fatto["created"], fatto["updated"]), (0, 3))
+		# the library's numbers are the library's: the name is the centre's
+		self.assertEqual((carota.food_name, carota.portion_g, carota.kcal), ("Carote del centro", 100, 36.5))
+		nuova = [dict(CIBI[0], kcal=41), dict(CIBI[1], name="Basilico fresco, foglie")]
+		frappe.set_user("Administrator")
+		fatto = librerie.carica(nuova, "it")
+		self.assertEqual((fatto["created"], fatto["updated"]), (0, 2))
 		carota.reload()
+		self.assertEqual((carota.food_name, carota.kcal), ("Carote del centro", 41))
+		# nobody renamed the basil: it follows the library
+		self.assertEqual(self.cibo("T11014").food_name, "Basilico fresco, foglie")
+
+	def test_una_tabella_importata_prima_prende_i_nomi_italiani(self):
+		# a centre imported CIQUAL in French before the library came
+		frappe.get_doc(
+			{
+				"doctype": librerie.CIBO,
+				"food_name": "Carotte, crue",
+				"food_group": "Vegetables",
+				"kcal": 36,
+				"source": librerie.FONTE,
+				"source_code": "T20047",
+				"name_in_source": "Carotte, crue",
+			}
+		).insert(ignore_permissions=True)
+		fatto = librerie.carica(CIBI, "it")
+		self.assertEqual((fatto["created"], fatto["updated"]), (1, 1))
+		carota = self.cibo("T20047")
 		self.assertEqual(
-			(carota.food_name, carota.kcal, carota.source_note), ("Carota cruda", 41, "ANSES-CIQUAL 2025")
+			(carota.food_name, carota.name_in_source, carota.kcal), ("Carota, cruda", "Carrot, raw", 36.5)
 		)
-		self.assertTrue(librerie.preview_foods(self.tabella())["foods"][0]["known"])
 
-	def test_crea_e_bda_ieo_solo_con_la_licenza(self):
-		url = self.tabella()
-		for fonte in ("CREA", "BDA-IEO"):
-			with self.assertRaises(frappe.ValidationError):
-				self.importa(url, source=fonte)
-		fatto = self.importa(url, source="BDA-IEO", licence=1)
-		registro = frappe.get_doc(librerie_crm.IMPORTAZIONE, fatto["import"])
-		self.assertIn("BDA-IEO", registro.licence)
-		self.assertEqual(frappe.db.get_value(librerie.CIBO, {"source_code": "T9811"}, "source"), "BDA-IEO")
+	def test_in_un_sito_inglese_i_nomi_della_tabella(self):
+		librerie.carica(CIBI, "en")
+		self.assertEqual(self.cibo("T20047").food_name, "Carrot, raw")
 
-	def test_un_file_che_non_e_una_tabella(self):
-		url = self.carica(MANAGER, "note.csv", b"una nota\nqualcosa\n")
-		with self.assertRaises(frappe.ValidationError):
-			librerie.preview_foods(url)
-		# the columns said by hand: the first is the name, the second the kcal
-		url = self.carica(MANAGER, "t.csv", b"cibo;energia\nMela;52\n")
-		with self.assertRaises(frappe.ValidationError):
-			librerie.preview_foods(url)
+	def test_la_libreria_si_carica_una_volta_per_versione(self):
+		# the site loaded the shipped file at install: the same file is not loaded again
+		librerie.carica_libreria()
+		self.assertIsNone(librerie.carica_libreria())
+		self.assertTrue(frappe.db.exists(librerie.CIBO, {"source": librerie.FONTE, "source_code": "20009"}))
 
-	def test_il_file_di_un_altro_non_si_legge(self):
-		url = self.tabella(user=DOC1)
+	def test_il_centro_aggiunge_i_suoi(self):
 		self.come(MANAGER)
-		with self.assertRaises(frappe.PermissionError):
-			librerie.preview_foods(url)
+		fatto = librerie.save_food(
+			None,
+			{"food_name": "Pane del forno di via Roma", "food_group": "Cereals and tubers", "kcal": 270},
+		)
+		self.assertEqual(
+			(fatto["food_name"], fatto["kcal"], fatto["source"]),
+			("Pane del forno di via Roma", 270, librerie.CENTRO),
+		)
+		self.assertIn(
+			"Pane del forno di via Roma",
+			[r["food_name"] for r in librerie.get_foods(text="via Roma", source="Centre")["rows"]],
+		)
+		with self.assertRaises(frappe.ValidationError):
+			librerie.save_food(None, {"food_name": " ", "food_group": "Cereals and tubers"})
 
 
 class IlCiboDelCentro(LibrerieCase):

@@ -1,52 +1,61 @@
 <!--
-  The clinic's foods, the library its diets are written with. A food table comes
-  in from a file (CIQUAL, BDA-IEO with the licence, CREA with the permission);
-  here a name becomes the centre's own, a group is put right, a food is switched
-  off. Imported again, a table brings its numbers, never over the centre's words.
+  The clinic's foods, the library its diets are written with: the library
+  DottorCloud ships, ready on every site with its names in Italian
+  (`crm.clinica.librerie.carica_libreria`), and the centre's own. Here a name
+  becomes the centre's, a group is put right, a food is switched off or added.
+  The centre never imports a table: NPM2 adds to the library in the code.
   The page is the CRM's library page (Settings/Plans/LibraryPage.vue).
 -->
 <template>
   <LibraryPage
     :library="library"
     @edit="(row) => Object.assign(editing, { show: true, row })"
-    @import="importing = true"
+    @new="Object.assign(editing, { show: true, row: null })"
   >
+    <template #after="{ data }">
+      <p v-if="data?.sources?.CIQUAL" class="px-2 text-p-xs text-ink-gray-5">
+        {{
+          __(
+            'Values of the library: Anses. 2025. Ciqual French food composition table.',
+          )
+        }}
+      </p>
+    </template>
     <template #dialogs="{ reload }">
       <FoodEditDialog
         v-model="editing.show"
         :food="editing.row"
         @saved="reload"
       />
-      <FoodImportDialog v-model="importing" @imported="reload" />
     </template>
   </LibraryPage>
 </template>
 
 <script setup>
 import FoodEditDialog from '@/components/Settings/Clinic/FoodEditDialog.vue'
-import FoodImportDialog from '@/components/Settings/Clinic/FoodImportDialog.vue'
 import LibraryPage from '@/components/Settings/Plans/LibraryPage.vue'
 import { FONTI } from '@/utils/librerie'
 import { GRUPPI } from '@/utils/piani'
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 
 const editing = reactive({ show: false, row: null })
-const importing = ref(false)
 
 const library = {
   title: __('Foods'),
   description: __(
-    'The foods diets are written with. The numbers come from the tables; the names and groups are the centre’s.',
+    'The foods diets are written with: the {brand} library, ready to use with its values for 100 g, and the centre’s own. Names and groups can be put in the centre’s words.',
   ),
   endpoint: 'crm.clinica.librerie.get_foods',
   nameField: 'food_name',
   groups: GRUPPI,
   everyGroup: __('Every group'),
   groupLabel: __('Group'),
-  sources: FONTI,
+  sources: FONTI.map((fonte) =>
+    fonte === 'CIQUAL' ? { value: fonte, label: __('Library') } : fonte,
+  ),
   searchPlaceholder: __('Search a food'),
-  importLabel: __('Import a table'),
-  empty: __('No foods yet: import a table, or add them while writing a plan.'),
+  newLabel: __('New food'),
+  empty: __('No foods yet: add the centre’s own with New food.'),
   describe: (row) => {
     const parts = [__(row.food_group)]
     if (row.kcal !== null && row.kcal !== undefined)

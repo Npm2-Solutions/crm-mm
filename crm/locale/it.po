@@ -35856,3 +35856,19 @@ msgstr "Questa è un'anteprima: da qui non si cambia e non si manda niente"
 #: crm/piani/area.py
 msgid "In this preview you do not read this plan"
 msgstr "In questa anteprima non puoi leggere questo piano"
+
+#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
+msgid "New food"
+msgstr "Nuovo alimento"
+
+#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
+msgid "No foods yet: add the centre’s own with New food."
+msgstr "Ancora nessun alimento: aggiungi quelli del centro con Nuovo alimento."
+
+#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
+msgid "The foods diets are written with: the {brand} library, ready to use with its values for 100 g, and the centre’s own. Names and groups can be put in the centre’s words."
+msgstr "Gli alimenti con cui si scrivono le diete: la libreria di {brand}, pronta con i valori per 100 g, e quelli del centro. Nomi e gruppi si possono scrivere con le parole del centro."
+
+#: frontend/src/components/Settings/Clinic/FoodsSettings.vue
+msgid "Values of the library: Anses. 2025. Ciqual French food composition table."
+msgstr "Valori della libreria: Anses. 2025. Ciqual French food composition table."
