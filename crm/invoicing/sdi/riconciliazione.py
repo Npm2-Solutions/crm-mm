@@ -41,12 +41,38 @@ def _vuole_ingresso(emittente: dict) -> bool:
 	return _direzione(emittente) == ENTRAMBI
 
 
+def da_chiedere(emittente: dict) -> bool:
+	"""Whether there is anything to ask the provider for this company.
+
+	Asked every ten minutes, so it asks only when something waits: an invoice that
+	left and has no outcome yet, one delivered to a public body that has still to
+	accept it, or a company that receives its suppliers' invoices.
+	"""
+	if _vuole_ingresso(emittente):
+		return True
+	nome = emittente.get("name")
+	if frappe.db.exists("CRM Invoice", {"company": nome, "docstatus": 1, "sdi_status": "inviato"}):
+		return True
+	return bool(
+		frappe.db.exists(
+			"CRM Invoice",
+			{"company": nome, "docstatus": 1, "recipient_type": "pubblica_amm", "sdi_status": "consegnata"},
+		)
+	)
+
+
 def riconcilia(emittente: dict, voci: list[dict] | None = None) -> dict:
-	"""Apply everything outstanding. Returns what it did, per direction."""
+	"""Apply everything outstanding. Returns what it did, per direction.
+
+	A company that only issues asks for its transmissions alone: the invoices its
+	suppliers send stay unread at the provider, for whoever does want them. One
+	that receives too asks for both - never for the receptions alone, or the
+	outcome of what it sent would never come back.
+	"""
 	if voci is None:
 		voci = itala.aggiornamenti(
 			emittente,
-			solo_ricezioni="true" if _direzione(emittente) == ENTRAMBI else None,
+			solo_trasmissioni=None if _vuole_ingresso(emittente) else "true",
 		)
 
 	esito = {"notices": 0, "incoming": 0, "skipped": 0, "problems": []}
@@ -56,6 +82,9 @@ def riconcilia(emittente: dict, voci: list[dict] | None = None) -> dict:
 			continue
 		try:
 			if voce.get("ricezione") in (1, "1", True):
+				if not _vuole_ingresso(emittente):
+					esito["skipped"] += 1
+					continue
 				esito["incoming"] += 1 if _registra_ingresso(emittente, voce) else 0
 			else:
 				esito["notices"] += 1 if _applica_aggiornamento(emittente, voce) else 0
@@ -92,7 +121,10 @@ def _annota_senza_notifica(voce: dict, motivo: str | None) -> bool:
 	identificativo = voce.get("sdi_identificativo")
 	nome_file = voce.get("sdi_nome_file")
 	nome = None
-	if nome_file:
+	if voce.get("id"):
+		# their own identifier, kept when the invoice left: the one key that never moves
+		nome = frappe.db.get_value("CRM Invoice", {"sdi_provider_id": str(voce["id"])}, "name")
+	if not nome and nome_file:
 		nome = frappe.db.get_value("CRM Invoice", {"sdi_filename": nome_file}, "name")
 	if not nome and identificativo:
 		nome = frappe.db.get_value("CRM Invoice", {"sdi_identifier": str(identificativo)}, "name")

@@ -37,18 +37,19 @@ def controlla_certificati() -> list[dict]:
 	Once it has, every submission fails with code 002 - and it fails silently until
 	somebody reads a response. Ninety days of warning is the point of this check.
 	"""
+	from crm.tessera_sanitaria.documento import certificato_del_sito, contenuto_allegato
 	from crm.tessera_sanitaria.engine.tracciato import Cifratore
 
 	giorni = cint(frappe.db.get_single_value("CRM Invoicing Settings", "certificate_warning_days")) or 90
+	del_sito = certificato_del_sito()
 	rilievi: list[dict] = []
 	for azienda in _aziende_sanitarie():
-		if not azienda.get("ts_certificate"):
+		certificato = azienda.get("ts_certificate") or del_sito
+		if not certificato:
 			rilievi.append({"company": azienda["name"], "issue": "missing"})
 			continue
 		try:
-			from crm.tessera_sanitaria.documento import contenuto_allegato
-
-			cifratore = Cifratore.da_certificato(contenuto_allegato(azienda["ts_certificate"]))
+			cifratore = Cifratore.da_certificato(contenuto_allegato(certificato))
 		except Exception as errore:
 			rilievi.append({"company": azienda["name"], "issue": "unreadable", "detail": str(errore)})
 			avvisa(

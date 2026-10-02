@@ -17,7 +17,13 @@
   "monitoring_section",
   "ts_silence_days",
   "column_monitoring",
-  "certificate_warning_days"
+  "certificate_warning_days",
+  "itala_section",
+  "itala_client_id",
+  "column_itala",
+  "itala_client_secret",
+  "ts_section",
+  "ts_certificate"
  ],
  "fields": [
   {
@@ -97,12 +103,49 @@
    "fieldname": "certificate_warning_days",
    "fieldtype": "Int",
    "label": "Warn N days before the TS certificate expires"
+  },
+  {
+   "description": "One account for every centre: each company is registered under it by itself, the first time an invoice of it leaves. Empty here, the server's is used (itala_client_id and itala_client_secret in common_site_config.json).",
+   "fieldname": "itala_section",
+   "fieldtype": "Section Break",
+   "label": "Itala, the agency's account",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "itala_client_id",
+   "fieldtype": "Data",
+   "label": "Client ID",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_itala",
+   "fieldtype": "Column Break",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "itala_client_secret",
+   "fieldtype": "Password",
+   "label": "Client secret",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "ts_section",
+   "fieldtype": "Section Break",
+   "label": "Sistema TS",
+   "permlevel": 1
+  },
+  {
+   "description": "From the official kit, for every company of this site that does not carry its own. It expires and is reissued: with an expired one every report is refused, silently.",
+   "fieldname": "ts_certificate",
+   "fieldtype": "Attach",
+   "label": "Sistema TS certificate (SanitelCF.cer)",
+   "permlevel": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 14:00:00.000000",
+ "modified": "2026-10-02 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Settings",
@@ -139,6 +182,12 @@
    "read": 1,
    "report": 1,
    "role": "Invoicing User"
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
   }
  ],
  "row_format": "Dynamic",

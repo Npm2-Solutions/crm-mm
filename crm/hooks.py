@@ -634,6 +634,9 @@ scheduler_events = {
 			"crm.integrations.meta.leads.catch_up_recent_leads",
 			# an offer nobody answered goes to the next one waiting; the whole list hourly
 			"crm.scheduling.attese.ogni_dieci_minuti",
+			# the SdI's outcomes from Itala: one account for every centre has no
+			# webhook to call each site, so each site asks, and only when it waits
+			"crm.invoicing.monitoraggio.riconcilia_provider",
 		],
 		"*/2 * * * *": ["crm.social.publisher.process_due_posts"],
 		# what is still unread in the panel after a few minutes, by email to who wants it

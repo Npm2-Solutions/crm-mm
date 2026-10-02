@@ -160,14 +160,20 @@ def contenuto_allegato(url: str) -> bytes:
 	return contenuto
 
 
+def certificato_del_sito() -> str | None:
+	"""The official kit's certificate the agency keeps once, for every company of the
+	site that does not carry its own."""
+	return frappe.db.get_single_value("CRM Invoicing Settings", "ts_certificate") or None
+
+
 def cifratore(emittente: dict) -> Cifratore:
-	"""The encryptor for the company's certificate, or the stand-in.
+	"""The encryptor for the company's certificate, or the site's, or the stand-in.
 
 	Without a certificate the file is still built - `export` mode has to work on day
 	one - but it is built with a stand-in that writes `NONCIFRATO` into the field,
 	so a file that is not ready to send can never be mistaken for one that is.
 	"""
-	allegato = emittente.get("ts_certificate")
+	allegato = emittente.get("ts_certificate") or certificato_del_sito()
 	if not allegato:
 		return CifratoreFittizio()
 	try:

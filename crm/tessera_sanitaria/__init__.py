@@ -81,39 +81,38 @@ def tipi_spesa_offerti(doc: dict) -> frozenset[str] | None:
 def controlli(emittente: dict) -> list[dict]:
 	"""The gaps this module's duties create, and only when they are owed.
 
-	A company that reports no healthcare expenses is asked for no certificate, no
-	credentials and no channel - the rows appear with the duty, not with the module.
+	A company that reports no healthcare expenses is asked for no certificate and no
+	credentials - the rows appear with the duty, not with the module.
 	"""
 	from frappe import _
 
 	from crm.invoicing import registro
 	from crm.invoicing.api import _riga_mancante
+	from crm.tessera_sanitaria.documento import certificato_del_sito
 	from crm.tessera_sanitaria.engine.tracciato import richiede_credenziali
 
 	voci: list[dict] = []
 	if emittente.get("sender_category") not in (None, "", "non_sanitario"):
+		certificato = _riga_mancante(
+			not (emittente.get("ts_certificate") or certificato_del_sito()),
+			_("Sistema TS certificate"),
+			_("The expense file is built with a stand-in and cannot be submitted."),
+			"ts_certificate",
+		)
+		if certificato:
+			# the agency's: the official kit's certificate, the same for every centre
+			certificato["agency"] = True
 		voci.extend(
 			riga
 			for riga in (
-				_riga_mancante(
-					not emittente.get("ts_certificate"),
-					_("Sistema TS certificate"),
-					_("The expense file is built with a stand-in and cannot be submitted."),
-					"ts_certificate",
-				),
+				certificato,
 				_riga_mancante(
 					richiede_credenziali(emittente.get("ts_mode")) and not emittente.get("ts_username"),
 					_("Sistema TS credentials"),
-					_("Submission falls back to export until they arrive."),
-					"ts_username",
-				),
-				_riga_mancante(
-					emittente.get("ts_mode") == "provider" and not emittente.get("ts_provider_endpoint"),
-					_("Sistema TS channel"),
 					_(
-						"The Sistema TS is set to go through the provider but has no endpoint: the tracciato is built and nothing carries it. Configure it, or fall back to export and upload from the portal."
+						"The expenses wait to be reported until they are entered, from the Sistema TS portal: the deadline is the end of January."
 					),
-					"ts_provider_endpoint",
+					"ts_username",
 				),
 			)
 			if riga

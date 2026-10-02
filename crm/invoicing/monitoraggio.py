@@ -66,12 +66,12 @@ def leggi_ricevute() -> list[dict]:
 	return ricezione.scansiona_posta()
 
 
-def riconcilia_provider() -> list[dict]:
+def riconcilia_provider(rumoroso: bool = False) -> list[dict]:
 	"""Ask the provider for what it is holding, for every company on that channel.
 
-	The webhook is the fast path and this is the one that catches what it missed: a
-	delivery that never arrived leaves no trace anywhere, and the invoice it was
-	about sits in `inviato` looking exactly like one that went through.
+	Every ten minutes, because under the agency's account nothing calls a site back:
+	an invoice that left sits in `inviato` until somebody asks. Quietly, since Itala
+	down for ten minutes is no news; once a day, what it could not answer is logged.
 	"""
 	from crm.invoicing.api import reconcile_provider
 
@@ -80,12 +80,22 @@ def riconcilia_provider() -> list[dict]:
 	except Exception as errore:
 		frappe.log_error(title="Provider reconciliation failed", message=str(errore))
 		return []
+	if rumoroso:
+		for nome, esito in esiti.items():
+			if esito.get("problems"):
+				frappe.log_error(
+					title="Provider reconciliation failed", message=f"{nome}: " + "; ".join(esito["problems"])
+				)
 	return [{"company": nome, **esito} for nome, esito in esiti.items()]
+
+
+def riconcilia_provider_del_giorno() -> list[dict]:
+	return riconcilia_provider(rumoroso=True)
 
 
 def giornaliero() -> None:
 	"""Everything invoicing watches, once a day. One failing never hides the rest."""
-	for controllo in (leggi_ricevute, riconcilia_provider):
+	for controllo in (leggi_ricevute, riconcilia_provider_del_giorno):
 		try:
 			controllo()
 		except Exception:
