@@ -2,7 +2,7 @@
 
 **Stato:** fatto (02/10/2026). È la seconda delle tre parti della fatturazione
 semplice: la prima è [45](./45-codici-in-parole.md) (ogni codice col suo nome), la
-terza sarà la fattura fatta dentro DottorCloud.
+terza [47](./47-fattura-dentro-dottorcloud.md) (la fattura fatta dentro DottorCloud).
 
 ## Il bisogno
 
