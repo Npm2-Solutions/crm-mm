@@ -428,8 +428,10 @@ def get_datetime_from_timestamp(timestamp):
 	return frappe.utils.format_datetime(converted_datetime, "yyyy-MM-dd HH:mm:ss")
 
 
-# webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged
-@frappe.whitelist(allow_guest=True)  # nosemgrep: guest-whitelisted-method
+# webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged.
+# Twilio posts it - DottorCloud points every number's SMS here with POST - and the
+# request commits what it wrote.
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def incoming_sms_handler(**kwargs):
 	"""Webhook called by Twilio when an SMS arrives on one of our numbers."""
 	args = frappe._dict(kwargs)
@@ -446,16 +448,16 @@ def incoming_sms_handler(**kwargs):
 			to=args.To,
 			message=args.Body or "",
 		)
-		frappe.db.commit()
 	except Exception:
 		frappe.db.rollback()
 		frappe.log_error(title="Error while creating Twilio SMS log")
-		frappe.db.commit()
 
 	# a STOP stops the centre's automatic SMS, a START has them again (doc 52):
-	# the answer says what it did, and stays in the conversation like any other
+	# the answer says what it did, and stays in the conversation like any other;
+	# one that fails takes nothing of the message with it
 	risposta = ""
 	if messaggio:
+		frappe.db.savepoint("stop_o_start")
 		try:
 			risposta = sms_del_centro.ascolta(messaggio)
 			if risposta:
@@ -468,12 +470,10 @@ def incoming_sms_handler(**kwargs):
 					reference_name=messaggio.reference_name,
 					status="Sent",
 				)
-			frappe.db.commit()
 		except Exception:
-			frappe.db.rollback()
+			frappe.db.rollback(save_point="stop_o_start")
 			risposta = ""
 			frappe.log_error(title="DottorCloud: a STOP or START by SMS not taken")
-			frappe.db.commit()
 
 	resp = MessagingResponse()
 	if risposta:
@@ -481,8 +481,9 @@ def incoming_sms_handler(**kwargs):
 	return Response(resp.to_xml(), mimetype="text/xml")
 
 
-# webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged
-@frappe.whitelist(allow_guest=True)  # nosemgrep: guest-whitelisted-method
+# webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged.
+# Twilio posts a message's status, always: the request commits it.
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def update_sms_status_info(**kwargs):
 	"""Delivery status callback for outgoing SMS."""
 	args = frappe._dict(kwargs)
@@ -499,4 +500,3 @@ def update_sms_status_info(**kwargs):
 	name = args.MessageSid and frappe.db.get_value("CRM SMS Message", {"message_sid": args.MessageSid})
 	if name and status:
 		frappe.db.set_value("CRM SMS Message", name, "status", status)
-		frappe.db.commit()  # nosemgrep: frappe-manual-commit — not POST-only: a GET callback would be rolled back
