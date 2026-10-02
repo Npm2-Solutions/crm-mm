@@ -17,10 +17,23 @@
 //   SITO_ANTEPRIMA=1                  a preview: noindex, and robots.txt says no
 //   SITO_DIST=/some/folder            where to write (default sito/dist)
 
+import { execFileSync } from 'node:child_process'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import {
+  breadcrumbHtml,
+  feed,
+  headings,
+  italianDate,
+  readingMinutes,
+  sitemap,
+  structuredData,
+  trail,
+  wordCount,
+} from './seo.mjs'
 
 const SITE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.dirname(SITE)
@@ -35,6 +48,9 @@ const PREVIEW = process.env.SITO_ANTEPRIMA === '1'
 export const COMPANY = {
   company: 'NPM2 Solutions Srl',
   address: 'Via San Gregorio 55, 20124 Milano',
+  street: 'Via San Gregorio 55',
+  postalCode: '20124',
+  city: 'Milano',
   vat: 'IT13832480969',
   email: 'info@npm2solutions.com',
 }
@@ -234,33 +250,75 @@ export function build() {
     .slice(0, 10)
 
   const layout = read(path.join(SITE, 'parti/layout.html'))
+
+  // every page first, so breadcrumbs and lists can name the others
   const pages = []
   for (const name of fs.readdirSync(path.join(SITE, 'pagine')).sort()) {
     if (!name.endsWith('.html')) continue
     const file = path.join('pagine', name)
-    const page = parsePage(read(path.join(SITE, file)), file)
+    pages.push({ ...parsePage(read(path.join(SITE, file)), file), file })
+  }
+  const articles = readArticles()
+  pages.push(...articles)
+  const byPath = new Map(pages.map((page) => [page.path, page]))
+  for (const page of pages) {
+    if (page.parent && !byPath.has(page.parent))
+      throw new Error(`${page.file}: its parent ${page.parent} is not a page`)
+  }
+
+  const listed = articles.filter((a) => a.index !== 'no')
+  const shared = {
+    elenco_articoli: articleList(listed),
+    ultimi_articoli: articleCards(listed.slice(0, 3)),
+  }
+  const image = `${ORIGIN}/img/condivisione.jpg`
+
+  for (const page of pages) {
     const noindex = PREVIEW || page.index === 'no'
+    const crumbs = trail(page, byPath)
     const values = {
       ...COMPANY,
+      ...shared,
       title: escape(page.title),
       description: escape(page.description),
       canonical: escape(ORIGIN + page.path),
       origin: ORIGIN,
       robots: noindex ? '<meta name="robots" content="noindex" />' : '',
-      head: page.path === '/' ? organization() : '',
+      breadcrumb: breadcrumbHtml(crumbs),
+      ogtype: page.article ? 'article' : 'website',
+      ogextra: page.article
+        ? [
+            `<meta property="article:published_time" content="${page.date}" />`,
+            `<meta property="article:modified_time" content="${page.updated || page.date}" />`,
+            `<meta property="article:section" content="${escape(page.category)}" />`,
+          ].join('\n    ')
+        : '',
       version,
       year: String(new Date().getFullYear()),
     }
-    values.content = render(page.content, page, values)
+    let content = page.content
+    if (page.article) content = articleContent(page, articles, values)
+    values.content = render(content, page, values)
+    values.head = structuredData({
+      origin: ORIGIN,
+      page: { ...page, product: page.product === 'yes' || page.path === '/' },
+      crumbs,
+      html: values.content,
+      company: COMPANY,
+      logo: `${ORIGIN}/img/logo.svg`,
+      image,
+    })
     let html = render(layout, page, values)
     const left = html.match(/\{\{[^}]*\}\}/)
-    if (left) throw new Error(`${file}: ${left[0]} was not replaced`)
-    html = sizeImages(html, file)
+    if (left) throw new Error(`${page.file}: ${left[0]} was not replaced`)
+    html = sizeImages(html, page.file)
     const target = page.path.endsWith('/')
       ? path.join(OUT, page.path, 'index.html')
       : path.join(OUT, page.path)
     write(target, html)
-    pages.push({ ...page, noindex })
+    page.noindex = noindex
+    page.lastmod =
+      page.updated || page.date || lastChange(path.join(SITE, page.file))
   }
 
   write(
@@ -269,40 +327,163 @@ export function build() {
       ? 'User-agent: *\nDisallow: /\n'
       : `User-agent: *\nDisallow: /api/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`,
   )
-  const listed = pages.filter((page) => !page.noindex)
   write(
     path.join(OUT, 'sitemap.xml'),
-    '<?xml version="1.0" encoding="UTF-8"?>\n' +
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-      listed
-        .map((page) => `  <url><loc>${ORIGIN}${page.path}</loc></url>\n`)
-        .join('') +
-      '</urlset>\n',
+    sitemap(
+      ORIGIN,
+      pages.filter((page) => !page.noindex),
+    ),
+  )
+  write(path.join(OUT, 'approfondimenti/feed.xml'), feed(ORIGIN, listed))
+  write(
+    path.join(OUT, 'llms.txt'),
+    llms(pages.filter((page) => !page.noindex)),
   )
   // the deploy script looks for this before it replaces a folder's contents
   write(path.join(OUT, '.sito-dottorcloud'), `${version}\n`)
   return pages
 }
 
-function organization() {
-  const data = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: COMPANY.company,
-    url: ORIGIN,
-    logo: `${ORIGIN}/img/logo.svg`,
-    email: COMPANY.email,
-    vatID: COMPANY.vat,
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Via San Gregorio 55',
-      postalCode: '20124',
-      addressLocality: 'Milano',
-      addressCountry: 'IT',
-    },
-    brand: { '@type': 'Brand', name: 'DottorCloud' },
+// --- articles: sito/approfondimenti/<slug>.html, newest first ---
+
+export const CATEGORIES = ['Guide', 'Norme', 'Organizzazione']
+
+function readArticles() {
+  const dir = path.join(SITE, 'approfondimenti')
+  if (!fs.existsSync(dir)) return []
+  const out = []
+  for (const name of fs.readdirSync(dir).sort()) {
+    if (!name.endsWith('.html')) continue
+    const file = path.join('approfondimenti', name)
+    const page = parsePage(
+      read(path.join(SITE, file)).replace(
+        /^<!--\n/,
+        `<!--\npath: /approfondimenti/${name.replace(/\.html$/, '')}/\n`,
+      ),
+      file,
+    )
+    for (const key of ['headline', 'category', 'date', 'summary']) {
+      if (!page[key]) throw new Error(`${file}: "${key}" is missing`)
+    }
+    if (!CATEGORIES.includes(page.category))
+      throw new Error(
+        `${file}: the category is one of ${CATEGORIES.join(', ')}`,
+      )
+    for (const key of ['date', 'updated']) {
+      if (page[key] && !/^\d{4}-\d{2}-\d{2}$/.test(page[key]))
+        throw new Error(`${file}: ${key} is YYYY-MM-DD`)
+    }
+    const { html, toc } = headings(page.content)
+    out.push({
+      ...page,
+      file,
+      content: html,
+      toc,
+      article: true,
+      nav: 'approfondimenti',
+      parent: '/approfondimenti/',
+      crumb: page.crumb || page.headline,
+      words: wordCount(html),
+      minutes: readingMinutes(html),
+    })
   }
-  return `<script type="application/ld+json">${JSON.stringify(data)}</script>`
+  return out.sort((a, b) => (b.date + b.path).localeCompare(a.date + a.path))
+}
+
+function articleContent(page, articles, values) {
+  const toc = page.toc.length
+    ? `<nav class="toc" aria-label="In questo articolo"><p>In questo articolo</p><ol role="list">${page.toc
+        .map((h) => `<li><a href="#${h.id}">${escape(h.text)}</a></li>`)
+        .join('')}</ol></nav>`
+    : ''
+  const others = articles.filter((a) => a !== page && a.index !== 'no')
+  const related = [
+    ...others.filter((a) => a.category === page.category),
+    ...others.filter((a) => a.category !== page.category),
+  ].slice(0, 3)
+  const when =
+    page.updated && page.updated !== page.date
+      ? `Aggiornato il <time datetime="${page.updated}">${italianDate(page.updated)}</time>`
+      : `<time datetime="${page.date}">${italianDate(page.date)}</time>`
+  const fill = {
+    ...values,
+    headline: escape(page.headline),
+    summary: escape(page.summary),
+    category: escape(page.category),
+    meta: `${when} · ${page.minutes} min di lettura · Redazione DottorCloud`,
+    toc,
+    body: render(page.content, page, values),
+    related: articleCards(related),
+  }
+  return render(read(path.join(SITE, 'parti/articolo.html')), page, fill)
+}
+
+function articleCard(a) {
+  return `<article class="card post-card">
+  <span class="post-card__category">${escape(a.category)}</span>
+  <h3><a href="${a.path}">${escape(a.headline)}</a></h3>
+  <p>${escape(a.summary)}</p>
+  <p class="post-card__meta"><time datetime="${a.date}">${italianDate(a.date)}</time> · ${a.minutes} min</p>
+</article>`
+}
+
+function articleCards(list) {
+  return `<div class="grid grid--3 post-grid">${list.map(articleCard).join('\n')}</div>`
+}
+
+/** The index: the articles by category, each category with its anchor. */
+function articleList(list) {
+  return CATEGORIES.filter((c) => list.some((a) => a.category === c))
+    .map((c) => {
+      const id = c.toLowerCase()
+      return `<section class="post-group" id="${id}" aria-labelledby="gruppo-${id}">
+  <h2 id="gruppo-${id}" class="h3">${c}</h2>
+  ${articleCards(list.filter((a) => a.category === c))}
+</section>`
+    })
+    .join('\n')
+}
+
+// --- dates and the summary for assistants ---
+
+const changes = new Map()
+
+/** The day a file last changed, from git; nothing outside a repository. */
+function lastChange(file) {
+  if (!changes.has(file)) {
+    let day = ''
+    try {
+      day = execFileSync('git', ['log', '-1', '--format=%cs', '--', file], {
+        cwd: SITE,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim()
+    } catch {
+      day = ''
+    }
+    changes.set(file, day)
+  }
+  return changes.get(file)
+}
+
+/** llms.txt: what the site is and its pages, for assistants that read it. */
+function llms(pages) {
+  const line = (p) =>
+    `- [${p.headline || p.title.replace(/\s*·\s*DottorCloud$/, '')}](${ORIGIN}${p.path}): ${p.description}`
+  const main = pages.filter((p) => !p.article)
+  const posts = pages.filter((p) => p.article)
+  return `# DottorCloud
+
+> Il gestionale per i centri medici di NPM2 Solutions Srl: agenda per medici, stanze e attrezzature, cartella clinica, fatture con il Sistema TS, WhatsApp, telefono, marketing e l'app per i pazienti. Ognuno vede solo quello che gli serve. Il sito non pubblica prezzi: si richiede una demo.
+
+## Pagine
+
+${main.map(line).join('\n')}
+
+## Approfondimenti
+
+${posts.map(line).join('\n')}
+`
 }
 
 if (

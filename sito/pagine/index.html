@@ -1,6 +1,6 @@
 <!--
-title: DottorCloud · Il gestionale per il tuo centro medico
-description: Agende, cartelle cliniche, fatture elettroniche e Sistema TS, WhatsApp, telefono e l'app per i pazienti. Tutto il centro medico in un posto solo, con ognuno che vede solo quello che gli serve.
+title: DottorCloud · Il gestionale per centri medici e poliambulatori
+description: Agende, cartella clinica, fatture con il Sistema TS, WhatsApp, telefono e app per i pazienti: tutto il centro medico in un posto solo.
 path: /
 nav: home
 -->
@@ -370,6 +370,18 @@ nav: home
   </div>
 </section>
 
+<section class="section section--white" aria-labelledby="letture-titolo">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Approfondimenti</span>
+      <h2 id="letture-titolo" class="h2">Per chi gestisce un centro medico.</h2>
+      <p class="lead">Norme spiegate con le fonti, guide pratiche e il modo di organizzare la giornata.</p>
+    </div>
+    {{ultimi_articoli}}
+    <p style="margin-top: 32px"><a class="link-arrow" href="/approfondimenti/">Tutti gli approfondimenti {{icon arrow-right}}</a></p>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="domande-titolo">
   <div class="container container--narrow">
     <div class="section-head section-head--center reveal">
@@ -403,7 +415,7 @@ nav: home
         </p>
       </details>
       <details>
-        <summary>Fa le fatture elettroniche e il Sistema TS? {{icon chevron-down}}</summary>
+        <summary>Fa le fatture e il Sistema TS? {{icon chevron-down}}</summary>
         <p>
           Sì. Dalla visita svolta nasce la fattura: al paziente in PDF, con le spese trasmesse al Sistema TS
           (una prestazione sanitaria a una persona, per legge, non passa dallo SdI); ad aziende ed enti

@@ -39,6 +39,9 @@ jobs:
 
             - uses: actions/checkout@v4
               if: env.HOSTING_SSH_KEY != ''
+              with:
+                  # the whole history: the sitemap dates each page by its last commit
+                  fetch-depth: 0
 
             - uses: actions/setup-node@v4
               if: env.HOSTING_SSH_KEY != ''
