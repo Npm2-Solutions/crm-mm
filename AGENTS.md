@@ -193,6 +193,18 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
+### The sending service and the centre's mailboxes (docs/progetto-ghl/51)
+| File | Role |
+|---|---|
+| `crm/posta/servizio.py` | The agency's sending service (`dottorcloud_posta` in `common_site_config.json`) as each site's "DottorCloud" account, the default outgoing one: `assicura()` after migrate and hourly, saved only when it changes, a failure undoes only its own save; `intestazioni()` (`make_email_body_message`): From the centre's name on the service's address (the envelope too), "Anna Bianchi · Centro Aurora" for somebody without a mailbox, Reply-To the centre's (`FCRM Settings.reply_to_email`, else its main mailbox); the page's calls, syncing the agency's |
+| `crm/posta/ingresso.py` | `alla_ricezione()` on every email received: the person who wrote (`find_person`), a new one only where the mailbox says so and never a machine, the centre or a booking platform's inbox; a reply on one of DottorCloud's documents moves to the person (the document keeps a timeline link), another app's thread stays; whoever follows the person told (`avvisa`, kind "email") |
+| `crm/api/settings.py` + `Settings/EmailAccountList.vue`, `SendingService.vue`, `EmailEdit.vue`, `utils/caselle.js` | Settings > Email > Accounts: the centre's mailboxes from the providers the server knows (`FORNITORI`, servers never typed), errors in words, saved with the framework's list of document types read whole (`_dove_archivia`); where the answers go; the service never listed — tested |
+
+What DottorCloud sends by itself leaves through the service: no mailbox of the
+centre is the default outgoing one while it is on. An email received is the
+person's, never a new person for somebody known; a module that sends a reminder on
+its own document needs nothing more: the answer reaches the person.
+
 ### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
 | File | Role |
 |---|---|
