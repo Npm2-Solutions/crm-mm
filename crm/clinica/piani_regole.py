@@ -109,6 +109,8 @@ registra_tipo(
 		funzioni=frozenset({"meals", "calories", "targets", "nutrients", "recipes", "shopping"}),
 		ordine=10,
 		descrizione="The day's meals with foods and grams: calories and nutrients counted, the shopping list ready.",
+		colore="amber",
+		icona="apple",
 	)
 )
 registra_tipo(
@@ -121,6 +123,8 @@ registra_tipo(
 		funzioni=frozenset({"meals", "calories", "shopping"}),
 		ordine=20,
 		descrizione="Food groups in portions, to swap freely within each group.",
+		colore="amber",
+		icona="salad",
 	)
 )
 registra_tipo(
@@ -132,6 +136,8 @@ registra_tipo(
 		modulo=MODULO,
 		ordine=40,
 		descrizione="Exercises to do at home between sessions, and how often.",
+		colore="violet",
+		icona="dumbbell",
 	)
 )
 

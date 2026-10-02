@@ -185,13 +185,16 @@ def descrivi_tipo(chiave: str) -> dict:
 	"""A kind as the screens use it: what it holds and what they offer for it."""
 	tipo = R.tipo(chiave)
 	if not tipo:
-		return {"key": chiave, "items": [], "features": []}
+		return {"key": chiave, "items": [], "features": [], "colour": "", "icon": ""}
 	return {
 		"key": tipo.chiave,
 		"description": tipo.descrizione,
 		"items": list(tipo.generi),
 		"features": sorted(tipo.funzioni),
 		"clinical": tipo.clinico,
+		# how the person sees it in their area
+		"colour": tipo.colore,
+		"icon": tipo.icona,
 	}
 
 

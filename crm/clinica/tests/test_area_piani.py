@@ -108,6 +108,8 @@ class IlGiorno(AreaPianiCase):
 		self.entra()
 		[riga] = area_piani.area_plans(self.anna.name)["plans"]
 		self.assertEqual((riga["name"], riga["today"], riga["done_today"]), (piano, 3, 0))
+		# a menu shows as food: nutrition's amber, an apple
+		self.assertEqual((riga["colour"], riga["icon"]), ("amber", "apple"))
 		self.assertEqual(api.get_me()["people"][0]["sections"]["plans"], 1)
 		fatto = self.giorno(piano)
 		self.assertEqual([m["label"] for m in fatto["moments"]], ["Pranzo", "Solo oggi"])

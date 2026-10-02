@@ -89,6 +89,13 @@ def _voci_del_giorno(doc, giorno) -> tuple[list[dict], list[dict]]:
 	return del_giorno, [v for v in voci if v["moment"] in chiavi]
 
 
+def _aspetto(tipo: str) -> dict:
+	"""What a kind offers on the person's screens, and how it shows: its colour
+	and its icon."""
+	del_tipo = piani.descrivi_tipo(tipo)
+	return {campo: del_tipo[campo] for campo in ("features", "colour", "icon")}
+
+
 @frappe.whitelist()
 def area_plans(person: str) -> dict:
 	"""The plans the person follows now, and how today is going on each."""
@@ -112,7 +119,7 @@ def area_plans(person: str) -> dict:
 				"done_today": len([v for v in di_oggi if v["key"] in fatti]),
 				# a stage's plan says which programme it is part of
 				"programme": doc.get("programme"),
-				"features": piani.descrivi_tipo(doc.plan_type)["features"],
+				**_aspetto(doc.plan_type),
 			}
 		)
 	return {"plans": voci}
@@ -201,7 +208,7 @@ def area_plan(person: str, plan: str, day: str | None = None) -> dict:
 			"instructions": doc.instructions,
 			"starts_on": doc.starts_on,
 			"ends_on": doc.ends_on,
-			"features": piani.descrivi_tipo(doc.plan_type)["features"],
+			**_aspetto(doc.plan_type),
 		},
 		"day": str(giorno),
 		"today": str(oggi),
