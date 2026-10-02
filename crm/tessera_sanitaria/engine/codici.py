@@ -83,19 +83,22 @@ TIPI_SPESA_PER_SOGGETTO: dict[str, frozenset[str]] = {
 	SoggettoInviante.NON_SANITARIO: frozenset(),
 }
 
+#: The specification's own words (730 - Spese Sanitarie, WS sincrono v1.3 del
+#: 20/12/2020, Tabella 4). `SR` is not "intramoenia" - that is `flagTipoSpesa` 2 on
+#: an `SR` line - and `CT` is thermal cures, not a certificate.
 DESCRIZIONE_TIPO_SPESA: dict[str, str] = {
-	"TK": "Ticket (quota fissa e/o di partecipazione al costo)",
-	"FC": "Farmaco, anche omeopatico, e dispositivo medico CE",
+	"TK": "Ticket (quota fissa e/o differenza con il prezzo di riferimento, franchigia, pronto soccorso e accesso diretto)",
+	"FC": "Farmaco, anche omeopatico; dispositivi medici CE",
 	"FV": "Farmaco per uso veterinario",
 	"AD": "Acquisto o affitto di dispositivo medico CE",
-	"AS": "Spesa sanitaria relativa ad assistenza domiciliare integrata",
-	"SR": "Spesa prestazione sanitaria: intramoenia",
-	"CT": "Spesa per certificazione medica",
-	"PI": "Spesa prestazione sanitaria: protesica e integrativa",
-	"IC": "Spesa per dispositivi, chirurgia estetica e altre prestazioni",
-	"AA": "Altre spese - quota NON a carico del contribuente o spesa non sanitaria",
-	"SP": "Spesa prestazione sanitaria del professionista sanitario (DM 8/8/2018)",
-	"SV": "Spesa veterinaria",
+	"AS": "Spese sanitarie relative ad ECG, spirometria, Holter pressorio e cardiaco, test per glicemia, colesterolo e trigliceridi o misurazione della pressione sanguigna, prestazioni previste dalla farmacia dei servizi e simili",
+	"SR": "Prestazioni sanitarie: assistenza specialistica ambulatoriale esclusi interventi di chirurgia estetica; visita medica generica e specialistica o prestazioni diagnostiche e strumentali; prestazione chirurgica ad esclusione della chirurgia estetica; certificazione medica; ricoveri ospedalieri, al netto del comfort",
+	"CT": "Cure termali",
+	"PI": "Protesica e integrativa",
+	"IC": "Prestazioni di chirurgia estetica e di medicina estetica (ambulatoriale o ospedaliera)",
+	"AA": "Altre spese",
+	"SP": "Prestazioni sanitarie",
+	"SV": "Spese veterinarie",
 }
 
 #: `flagTipoSpesa` is only admitted with these expense types.
