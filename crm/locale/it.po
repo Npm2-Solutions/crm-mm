@@ -40791,3 +40791,87 @@ msgstr "Il codice di Twilio per cui il messaggio non è partito o non è arrivat
 #: crm/notifiche/regole.py
 msgid "This month's Twilio spend has reached {0}, past the alert at {1}"
 msgstr "La spesa Twilio del mese è arrivata a {0}, oltre l'avviso a {1}"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "A number the centre already has"
+msgstr "Un numero che il centro ha già"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "In the centre’s Twilio account"
+msgstr "Nell'account Twilio del centro"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "It moves into {brand}’s space, with its documents."
+msgstr "Si sposta nello spazio di {brand}, con i suoi documenti."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "With another operator"
+msgstr "Con un altro operatore"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "TIM, Vodafone, Fastweb…: forwarded, or ported to Twilio."
+msgstr "TIM, Vodafone, Fastweb…: inoltrato, o portato su Twilio."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "The space is in the agency’s Twilio account: a number of the centre’s cannot move into it. Forward its calls instead."
+msgstr "Lo spazio è nell'account Twilio dell'agenzia: un numero del centro non ci si può spostare. Inoltra le sue chiamate."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "{0} is in {brand}’s space now."
+msgstr "Il numero {0} ora è nello spazio di {brand}."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Its calls reach {brand}, and its SMS if it can send them: choose who answers it in the phone’s settings."
+msgstr "Le sue chiamate arrivano a {brand}, e i suoi SMS se può mandarli: scegli chi risponde nelle impostazioni del telefono."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Paste the codes of the centre’s Twilio account again: they serve to move the number, and {brand} does not keep them."
+msgstr "Incolla di nuovo i codici dell'account Twilio del centro: servono a spostare il numero, e {brand} non li tiene."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "There is no number in the account outside {brand}’s space."
+msgstr "Nell'account non c'è nessun numero fuori dallo spazio di {brand}."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Forward its calls"
+msgstr "Inoltrare le chiamate"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Ask the operator to forward the calls to one of the centre’s numbers in {brand}: they arrive here, and the number stays where it is. Its SMS do not follow."
+msgstr "Chiedi all'operatore di inoltrare le chiamate a uno dei numeri del centro in {brand}: arrivano qui, e il numero resta dov'è. I suoi SMS non seguono."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Port it to Twilio"
+msgstr "Portarlo su Twilio"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Twilio takes it with its own form, from the big operators, in up to six weeks. Once it is in the centre’s Twilio account, move it here with «In the centre’s Twilio account»."
+msgstr "Twilio lo prende con il suo modulo, dai grandi operatori, in fino a sei settimane. Quando è nell'account Twilio del centro, spostalo qui con «Nell'account Twilio del centro»."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Porting to Twilio, for Italy"
+msgstr "La portabilità su Twilio, per l'Italia"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Show the numbers"
+msgstr "Mostra i numeri"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Move it into the space"
+msgstr "Spostalo nello spazio"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "I already have a number"
+msgstr "Ho già un numero"
+
+#: crm/telephony/trasloco.py
+msgid "Only a number of the centre's own Twilio account moves into its space."
+msgstr "Nello spazio si sposta solo un numero dell'account Twilio del centro."
+
+#: crm/telephony/trasloco.py
+msgid "These are not the codes of the account {brand}'s space is in."
+msgstr "Questi non sono i codici dell'account in cui è lo spazio di {brand}."
+
+#: crm/telephony/trasloco_regole.py
+msgid "It goes to a SIP trunk, which takes its calls: it stays where it is."
+msgstr "Va a un trunk SIP, che prende le sue chiamate: resta dov'è."
