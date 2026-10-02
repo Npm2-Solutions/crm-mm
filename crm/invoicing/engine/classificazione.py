@@ -35,6 +35,7 @@ from .codici import (
 	RegolaSdI,
 	TipoDestinatario,
 )
+from .messaggi import Messaggio
 from .qualifica import Risolutore
 
 
@@ -262,12 +263,18 @@ def classifica_riga(
 	# profession). The catalogue can only narrow it, never widen it.
 	if riga.esente_iva and not prof.esente_iva:
 		errori.append(
-			f"the catalogue declares the service exempt, but {prof.etichetta!r} is not a health profession for exemption purposes: the service is TAXABLE at the ordinary rate and the electronic invoice through the SdI is MANDATORY (Risoluzione AdE n. 9 del 24 febbraio 2026). Correct the service card"
+			Messaggio(
+				"the catalogue declares the service exempt, but {0!r} is not a health profession for exemption purposes: the service is TAXABLE at the ordinary rate and the electronic invoice through the SdI is MANDATORY (Risoluzione AdE n. 9 del 24 febbraio 2026). Correct the service card",
+				prof.etichetta,
+			)
 		)
 	esente = riga.esente_iva and prof.esente_iva
 	if not riga.esente_iva and prof.esente_iva and riga.is_sanitaria:
 		avvisi.append(
-			f"service declared taxable although performed by {prof.etichetta!r}: possible (cosmetic surgery, for instance), but it has to be confirmed in the catalogue"
+			Messaggio(
+				"service declared taxable although performed by {0!r}: possible (cosmetic surgery, for instance), but it has to be confirmed in the catalogue",
+				prof.etichetta,
+			)
 		)
 
 	# ------------------------------------------------------------------ routing
@@ -296,7 +303,10 @@ def classifica_riga(
 		and riga.is_sanitaria
 	):
 		avvisi.append(
-			f"{prof.etichetta!r}: the service is NOT exempt and the electronic invoice through the SdI is mandatory towards the patient too. No Sistema TS report"
+			Messaggio(
+				"{0!r}: the service is NOT exempt and the electronic invoice through the SdI is mandatory towards the patient too. No Sistema TS report",
+				prof.etichetta,
+			)
 		)
 
 	# ------------------------------------------------------------- expense type

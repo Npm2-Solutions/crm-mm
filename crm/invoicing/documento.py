@@ -30,6 +30,7 @@ from crm.invoicing.engine.codici import (
 	RegimeFiscale,
 	TipoDestinatario,
 )
+from crm.invoicing.engine.messaggi import Messaggio
 from crm.invoicing.engine.numerazione import FormatoNonCompatibile, componi, prossimo, valida_formato
 
 ZERO = Decimal("0.00")
@@ -358,6 +359,15 @@ def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 # ------------------------------------------------------------ blocking checks
 
 
+def in_parole(messaggio: str) -> str:
+	"""A message of the engine in the reader's language: its template translated and
+	filled again with its values (`engine.messaggi.Messaggio`); a plain one is its
+	own template."""
+	if isinstance(messaggio, Messaggio):
+		return _(messaggio.modello).format(*messaggio.argomenti)
+	return _(messaggio)
+
+
 def blocchi(doc, classificazione) -> list[str]:
 	"""Everything wrong with the document, at once.
 
@@ -365,7 +375,7 @@ def blocchi(doc, classificazione) -> list[str]:
 	front of them, and correcting in one pass costs nothing while correcting in five
 	costs the appointment.
 	"""
-	problemi: list[str] = list(classificazione.tutti_errori)
+	problemi: list[str] = [in_parole(errore) for errore in classificazione.tutti_errori]
 
 	if doc.recipient_type == TipoDestinatario.PERSONA_FISICA:
 		if not doc.billing_name:

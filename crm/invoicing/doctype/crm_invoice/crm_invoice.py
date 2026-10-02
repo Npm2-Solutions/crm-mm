@@ -186,7 +186,7 @@ class CRMInvoice(Document):
 		classificazione = preparato["classificazione"]
 		if self.docstatus == 0 and classificazione.tutti_errori:
 			frappe.msgprint(
-				"<br>".join(classificazione.tutti_errori),
+				"<br>".join(documento.in_parole(errore) for errore in classificazione.tutti_errori),
 				title=_("This document cannot be issued yet"),
 				indicator="orange",
 			)
