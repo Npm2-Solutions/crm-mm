@@ -128,6 +128,8 @@ const props = defineProps({
   badges: { type: Function, default: () => [] },
   defaults: { type: Object, default: () => ({}) },
   deletable: { type: Boolean, default: true },
+  // which rows the list shows, before any search: all of them unless the page says
+  visibile: { type: Function, default: null },
 })
 
 const filtro = ref('')
@@ -144,7 +146,9 @@ const rows = createListResource({
 
 const visibili = computed(() => {
   const testo = filtro.value.trim().toLowerCase()
-  const elenco = rows.data || []
+  const elenco = (rows.data || []).filter((row) =>
+    props.visibile ? props.visibile(row) : true,
+  )
   if (!testo) return elenco
   return elenco.filter((row) =>
     Object.values(row).some((v) =>

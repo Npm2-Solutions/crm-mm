@@ -80,24 +80,25 @@ def valida_servizio(doc, metodo=None):
 		)
 
 
+def MANCANO_I_CODICI() -> str:
+	"""Said where the codes are asked for, the same everywhere."""
+	return _(
+		"A facility, a pharmacy or an optician reports with the Region, ASL and facility codes of its Sistema TS authorisation (the Codice Proprietario): all three are needed"
+	)
+
+
 def valida_azienda(doc, metodo=None):
 	categoria = doc.sender_category or SoggettoInviante.NON_SANITARIO
 	if categoria == SoggettoInviante.NON_SANITARIO:
 		return
 	if categoria in SOGGETTI_CON_CODICE_PROPRIETARIO:
 		if not (doc.region_code and doc.asl_code and doc.ssa_code):
-			frappe.throw(
-				_(
-					"A {0} needs the full Codice Proprietario (codiceRegione-codiceAsl-codiceSSA) "
-					"from its 'Abilitazione al Sistema TS' document"
-				).format(categoria)
-			)
+			frappe.throw(MANCANO_I_CODICI())
 	elif any((doc.region_code, doc.asl_code, doc.ssa_code)):
 		frappe.throw(
 			_(
-				"A {0} transmits as a natural person: codiceRegione, codiceAsl and codiceSSA have "
-				"to be empty, only the codice fiscale is used"
-			).format(categoria)
+				"Whoever invoices in their own name reports with their codice fiscale: the Region, ASL and facility codes stay empty"
+			)
 		)
 	# Deliberately not a throw. The intended mode is the centre's own credentials,
 	# and a centre is set up before its credentials arrive - blocking the save

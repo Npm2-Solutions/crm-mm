@@ -34,8 +34,33 @@
     order-by="category asc, qualification_name asc"
     :describe="descrivi"
     :badges="etichette"
+    :visibile="visibile"
   >
     <template #banner>
+      <!-- with the clinic on, the register a medical centre reads: the health
+           professions, and any other one somebody already performs with -->
+      <div
+        v-if="sanitario && nascoste"
+        class="mx-2 flex items-center justify-between gap-4 text-p-sm text-ink-gray-6 max-md:flex-col max-md:items-start"
+      >
+        <span class="min-w-0">
+          {{
+            tutte
+              ? __('Every qualification, the other professions too.')
+              : __('The health professions, and the ones in use.')
+          }}
+        </span>
+        <Button
+          class="shrink-0"
+          variant="ghost"
+          :label="
+            tutte
+              ? __('Only the health professions')
+              : __('Show the other professions ({0})', [nascoste])
+          "
+          @click="tutte = !tutte"
+        />
+      </div>
       <!-- The exemption test is joint and the catalogue never infers, so the
            entries that still need an accountant's word say so until somebody
            gives it. -->
@@ -62,8 +87,44 @@
 
 <script setup>
 import RecordList from '@/components/Settings/Invoicing/RecordList.vue'
-import { createListResource } from 'frappe-ui'
-import { computed } from 'vue'
+import { useVocabolarioFatturazione } from '@/composables/vocabolarioFatturazione'
+import { createListResource, Button } from 'frappe-ui'
+import { computed, ref } from 'vue'
+
+const { profilo } = useVocabolarioFatturazione()
+const sanitario = computed(() => profilo.value === 'sanitario')
+const tutte = ref(false)
+
+// the qualifications somebody performs with stay in sight, whatever they are
+const inUso = createListResource({
+  doctype: 'CRM Service Provider',
+  fields: ['qualification'],
+  pageLength: 500,
+  auto: true,
+})
+const usate = computed(
+  () => new Set((inUso.data || []).map((riga) => riga.qualification)),
+)
+const tutteLeQualifiche = createListResource({
+  doctype: 'CRM Professional Qualification',
+  fields: ['name', 'category'],
+  pageLength: 500,
+  auto: true,
+})
+
+function sanitariaOUsata(row) {
+  return row.category === 'sanitaria' || usate.value.has(row.name)
+}
+
+function visibile(row) {
+  return !sanitario.value || tutte.value || sanitariaOUsata(row)
+}
+
+const nascoste = computed(
+  () =>
+    (tutteLeQualifiche.data || []).filter((row) => !sanitariaOUsata(row))
+      .length,
+)
 
 const daVerificareRes = createListResource({
   doctype: 'CRM Professional Qualification',
