@@ -287,7 +287,7 @@
               rel="noopener"
               class="shrink-0 text-ink-blue-link underline"
             >
-              {{ __('Open') }}
+              {{ __('Open', null, 'Action') }}
             </a>
           </div>
           <div v-if="doc.reschedule_count" class="text-ink-gray-5">
