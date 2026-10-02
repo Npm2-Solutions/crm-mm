@@ -59,6 +59,7 @@ from frappe.utils import add_to_date, cint, cstr, flt, get_datetime, now_datetim
 from jinja2 import DebugUndefined
 from jinja2.sandbox import SandboxedEnvironment
 
+from crm.telephony import sms
 from crm.utils import count_field
 
 # built on first render, then reused: it holds filters only, nothing site-specific
@@ -681,6 +682,20 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 					step_type,
 					"Skipped",
 					_("No marketing consent: not sent"),
+				)
+				enrollment.current_step += 1
+				continue
+
+			if step_type == "send_sms" and sms.ha_fermato(
+				enrollment.reference_doctype, enrollment.reference_name
+			):
+				# a STOP is heard by every automation, consent or not (doc 52)
+				log_step(
+					enrollment,
+					enrollment.current_step,
+					step_type,
+					"Skipped",
+					_("Wrote STOP to the centre's SMS: not sent"),
 				)
 				enrollment.current_step += 1
 				continue

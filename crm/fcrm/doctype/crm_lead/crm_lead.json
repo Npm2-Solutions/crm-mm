@@ -123,7 +123,9 @@
   "conversation_unread",
   "conversation_seen_until",
   "conversation_seen_by",
-  "marketing_consent"
+  "marketing_consent",
+  "sms_opt_out",
+  "sms_opt_out_on"
  ],
  "fields": [
   {
@@ -819,13 +821,28 @@
    "label": "Marketing consent",
    "options": "\nGiven\nRefused\nWithdrawn",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Wrote STOP to the centre's SMS: no automatic SMS reaches the person until they write START.",
+   "fieldname": "sms_opt_out",
+   "fieldtype": "Check",
+   "label": "Stopped the SMS",
+   "read_only": 1
+  },
+  {
+   "depends_on": "sms_opt_out",
+   "fieldname": "sms_opt_out_on",
+   "fieldtype": "Datetime",
+   "label": "Stopped the SMS on",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-01 18:00:00.000000",
+ "modified": "2026-10-02 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

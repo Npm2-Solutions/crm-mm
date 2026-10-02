@@ -1,7 +1,8 @@
 # Copyright (c) 2026, NPM2 Solutions Srl and contributors
 # For license information, please see license.txt
 
-"""The SMS of the centre without a site: the sender's name (doc 52, fourth part)."""
+"""The SMS of the centre without a site: the sender's name, the words that stop
+and start again (doc 52, fourth part)."""
 
 import unittest
 
@@ -35,3 +36,17 @@ class IlNome(unittest.TestCase):
 		self.assertEqual(R.nome_dal_centro("Più"), "Piu")
 		self.assertEqual(R.nome_dal_centro("123"), "")
 		self.assertEqual(R.nome_dal_centro(""), "")
+
+
+class LeParole(unittest.TestCase):
+	def test_stop_come_lo_scrive_la_gente(self):
+		for testo in ("STOP", "stop", " Stop! ", "stop all", "Basta.", "ARRESTA", "unsubscribe"):
+			self.assertEqual(R.parola_chiave(testo), "stop", testo)
+
+	def test_di_nuovo(self):
+		for testo in ("START", "inizia", "Iscrivimi"):
+			self.assertEqual(R.parola_chiave(testo), "start", testo)
+
+	def test_un_messaggio_non_e_una_parola(self):
+		for testo in ("Basta così, grazie", "stop alle 18?", "", None, "Posso spostare l'appuntamento?"):
+			self.assertEqual(R.parola_chiave(testo), "", testo)

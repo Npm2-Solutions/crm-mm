@@ -595,8 +595,15 @@ def manda_proposta(voce, riga, segreto: str, conf=None) -> tuple[str | None, str
 
 	conf = conf or impostazioni()
 	chi, email, numero = _destinatario(voce)
-	canali = R.come_mandare(voce.channel, canali_offerti(conf), bool(email), bool(numero))
+	offerti = canali_offerti(conf)
+	# a STOP to the centre's SMS is heard here too (doc 52): the offer goes another way
+	fermato = sms_del_centro.ha_fermato("CRM Lead", chi)
+	if fermato:
+		offerti = [canale for canale in offerti if canale != R.SMS]
+	canali = R.come_mandare(voce.channel, offerti, bool(email), bool(numero))
 	if not canali:
+		if fermato and numero:
+			return None, _("They wrote STOP to the centre's SMS and have no email on file: call them")
 		return None, _("No email or mobile on file: call them")
 	testo = {
 		"centro": nome_del_centro() or _("the centre"),

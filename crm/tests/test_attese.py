@@ -640,6 +640,16 @@ class ICanali(AtteseCase):
 		self.assertIn("/lista-attesa/", sms.message)
 		self.assertEqual(self.voce(giulia).offers[0].channel, R.SMS)
 
+	def test_chi_ha_scritto_stop_la_riceve_per_email(self):
+		# a STOP to the centre's SMS is heard by the waiting list too (doc 52)
+		mittente_di_prova(numero="+390212345678")
+		frappe.db.set_value("CRM Lead", self.giulia.name, "sms_opt_out", 1)
+		giulia = self.in_lista(self.giulia, channel="SMS")
+		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
+			self.annulla(self.occupato)
+		consegna.assert_not_called()
+		self.assertEqual(self.voce(giulia).offers[0].channel, R.EMAIL)
+
 	def test_whatsapp_col_link_nelle_variabili(self):
 		if not frappe.db.exists("DocType", "WhatsApp Templates"):
 			self.skipTest("frappe_whatsapp is not installed")

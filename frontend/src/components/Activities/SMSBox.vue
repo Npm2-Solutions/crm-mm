@@ -1,5 +1,26 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  Writing an SMS from the centre's one sender (doc 52). A person who wrote STOP
+  gets no automatic SMS any more: the box says so, and what somebody writes here
+  by hand still leaves.
+-->
 <template>
   <div class="px-1.5 pb-1.5 pt-1" v-bind="$attrs">
+    <div
+      v-if="fermo.data"
+      class="flex items-start gap-1.5 px-2 pb-1 pt-0.5 text-p-xs text-ink-gray-5"
+    >
+      <LucideMessageSquareOff class="mt-px size-3.5 shrink-0" />
+      <span class="min-w-0">
+        {{
+          __(
+            'Wrote STOP on {0}: no automatic SMS reaches them. What you write here still leaves.',
+            [formatDate(fermo.data, 'D MMMM YYYY')],
+          )
+        }}
+      </span>
+    </div>
     <div class="flex items-end gap-1">
       <Textarea
         ref="textareaRef"
@@ -57,9 +78,10 @@ import { markAnswered } from '@/composables/conversationState'
 import { useDraft } from '@/composables/drafts'
 import { useGrowingTextarea } from '@/composables/growingTextarea'
 import { smsSegments } from '@/utils/conversation'
+import { formatDate } from '@/utils'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource, Textarea, Tooltip, toast } from 'frappe-ui'
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, nextTick, watch } from 'vue'
 
 defineOptions({ inheritAttrs: false })
 
@@ -80,6 +102,18 @@ const content = useDraft('smsDraft', props.doctype, doc.value.name)
 const { fit } = useGrowingTextarea(textareaRef, content)
 
 const length = computed(() => smsSegments(content.value))
+
+// when the person wrote STOP to the centre's SMS, if they did
+const fermo = createResource({
+  url: 'crm.api.sms.get_sms_stop',
+  params: { reference_doctype: props.doctype, reference_name: doc.value.name },
+  auto: Boolean(props.doctype && doc.value.name),
+})
+// a STOP or a START arrives as a message: the thread moving asks again
+watch(
+  () => sms.value?.data?.length,
+  () => fermo.params.reference_name && fermo.reload(),
+)
 
 function show() {
   nextTick(() => {

@@ -69,7 +69,11 @@ class CRMSMSMessage(Document):
 		self.run_automation_triggers()
 
 	def run_automation_triggers(self):
-		if self.type != "Incoming":
+		from crm.telephony import sms_regole
+
+		# a STOP or a START is asked of DottorCloud, not written for an automation
+		# to answer (doc 52)
+		if self.type != "Incoming" or sms_regole.parola_chiave(self.message):
 			return
 		try:
 			from crm.automation.engine import process_event

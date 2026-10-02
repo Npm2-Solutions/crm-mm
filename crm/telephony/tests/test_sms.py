@@ -11,17 +11,22 @@ all leave from it; somebody's own line - an Italian landline cannot send SMS -
 never again.
 """
 
+import json
 from unittest.mock import patch
 
 import frappe
 
 from crm.api import sms as sms_api
+from crm.automation import engine
+from crm.integrations.twilio import api as twilio_api
+from crm.moduli import consensi, registro
 from crm.patches.v1_0 import the_centre_sends_sms_from_one_sender as patch_mittente
 from crm.telephony import sms
 from crm.telephony.tests.test_collegamento import TwilioCase
 
 CELLULARE = "+393331234567"
 FISSO = "+390212345678"
+PERSONA = "+393401112233"
 
 
 def numero_sms(numero: str, sms_capable: int = 1) -> None:
@@ -174,3 +179,121 @@ class IlNumeroDiPrima(TwilioCase):
 		frappe.db.set_single_value(sms.IMPOSTAZIONI, {"sms_from": "Name", "sms_sender_name": "Aurora"})
 		patch_mittente.execute()
 		self.assertEqual(frappe.db.get_single_value(sms.IMPOSTAZIONI, "sms_from"), "Name")
+
+
+class IlFermo(TwilioCase):
+	"""STOP and START, written to the centre's number: nothing automatic by SMS any
+	more, the marketing consent withdrawn - or refused, when it was never asked -
+	and an answer that says so, kept in the conversation."""
+
+	def setUp(self):
+		super().setUp()
+		mittente_di_prova(numero=CELLULARE)
+		self.persona = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Sara", "last_name": "Stop", "mobile_no": PERSONA}
+		).insert(ignore_permissions=True)
+		for finto in (
+			patch("crm.integrations.twilio.api.validate_twilio_request", return_value=None),
+			patch("crm.moduli.richieste.nome_del_centro", return_value="Aurora"),
+			# the webhook commits for Twilio's sake; a test keeps everything to roll back
+			patch.object(frappe.db, "commit"),
+		):
+			finto.start()
+			self.addCleanup(finto.stop)
+
+	def scrive(self, testo: str) -> str:
+		"""The person writes ``testo`` to the centre's number; what Twilio is told back."""
+		frappe.set_user("Guest")
+		try:
+			risposta = twilio_api.incoming_sms_handler(From=PERSONA, To=CELLULARE, Body=testo)
+		finally:
+			frappe.set_user("Administrator")
+		return risposta.get_data(as_text=True)
+
+	def fermo(self):
+		return frappe.db.get_value(
+			"CRM Lead", self.persona.name, ["sms_opt_out", "sms_opt_out_on"], as_dict=True
+		)
+
+	def test_stop_ferma_e_lo_dice(self):
+		xml = self.scrive(" Stop! ")
+		self.assertIn("<Message>", xml)
+		self.assertIn("START", xml)
+		fermo = self.fermo()
+		self.assertEqual(fermo.sms_opt_out, 1)
+		self.assertTrue(fermo.sms_opt_out_on)
+		self.assertTrue(sms.ha_fermato("CRM Lead", self.persona.name))
+		# the answer stays in the conversation, from the number written to
+		[risposta] = frappe.get_all(
+			"CRM SMS Message",
+			filters={
+				"type": "Outgoing",
+				"reference_doctype": "CRM Lead",
+				"reference_name": self.persona.name,
+			},
+			fields=["from", "to", "status"],
+		)
+		self.assertEqual((risposta["from"], risposta.to, risposta.status), (CELLULARE, PERSONA, "Sent"))
+		# never asked about marketing: the register says no, by SMS
+		self.assertEqual(consensi.stato(self.persona.name, sms.CONSENSO), registro.RIFIUTATO)
+		self.assertEqual(consensi.risposta_attuale(self.persona.name, sms.CONSENSO)["channel"], sms.CANALE)
+
+	def test_stop_revoca_il_consenso_dato(self):
+		consensi.registra_risposta(self.persona.name, sms.CONSENSO, stato=registro.DATO)
+		self.scrive("STOP")
+		attuale = consensi.risposta_attuale(self.persona.name, sms.CONSENSO)
+		self.assertEqual(attuale["status"], registro.REVOCATO)
+		self.assertEqual(
+			frappe.db.get_value(consensi.REGISTRO, attuale["name"], "withdrawal_channel"), sms.CANALE
+		)
+		# a second STOP writes nothing more
+		self.scrive("stop")
+		self.assertEqual(len(consensi.risposte(self.persona.name, sms.CONSENSO)), 1)
+
+	def test_start_riprende_ma_non_ridà_il_consenso(self):
+		self.scrive("STOP")
+		xml = self.scrive("start")
+		self.assertIn("STOP", xml)
+		self.assertEqual(self.fermo().sms_opt_out, 0)
+		self.assertFalse(sms.ha_fermato("CRM Lead", self.persona.name))
+		self.assertEqual(consensi.stato(self.persona.name, sms.CONSENSO), registro.RIFIUTATO)
+
+	def test_un_messaggio_resta_un_messaggio(self):
+		xml = self.scrive("Stop, mi richiami domani")
+		self.assertNotIn("<Message>", xml)
+		self.assertEqual(self.fermo().sms_opt_out, 0)
+
+	def test_una_parola_non_muove_le_automazioni(self):
+		with patch("crm.automation.engine.process_event") as evento:
+			self.scrive("STOP")
+			self.scrive("Grazie, a domani")
+		[(chiamata, _messaggio)] = [c.args for c in evento.call_args_list]
+		self.assertEqual(chiamata, "sms_received")
+
+	def test_chi_scrive_lo_vede_nel_box(self):
+		self.assertIsNone(sms_api.get_sms_stop("CRM Lead", self.persona.name))
+		self.scrive("STOP")
+		self.assertTrue(sms_api.get_sms_stop("CRM Lead", self.persona.name))
+
+	def test_un_automazione_non_lo_manda(self):
+		automazione = automazione_sms()
+		self.scrive("STOP")
+		with patch("crm.api.sms.deliver_via_twilio") as consegna:
+			iscrizione = engine.enroll(automazione.name, "CRM Lead", self.persona.name, {})
+		consegna.assert_not_called()
+		[riga] = frappe.get_doc("CRM Automation Enrollment", iscrizione).logs
+		self.assertEqual((riga.action, riga.status), ("send_sms", "Skipped"))
+
+
+def automazione_sms(**campi):
+	"""An automation of one SMS, nothing else."""
+	return frappe.get_doc(
+		{
+			"doctype": "CRM Automation",
+			"title": "Un SMS",
+			"enabled": 1,
+			"trigger_event": "Lead Created",
+			"steps": json.dumps([{"type": "send_sms", "message": "Ci vediamo domani"}]),
+			**campi,
+		}
+	).insert(ignore_permissions=True)

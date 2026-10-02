@@ -252,8 +252,12 @@ def avvisa_fuori(lead: str) -> list[tuple[str, str]]:
 	fatti = []
 	for utente in sorted({riga.user for riga in accesso.accessi_aperti(lead)}):
 		scelti = _scelti(utente)
+		persona = _persona_di(utente)
 		for canale in canali:
 			if not (scelti.get(canale) and scelti[canale].enabled):
+				continue
+			# a STOP to the centre's SMS is heard by the area's news too (doc 52)
+			if canale == SMS and sms.ha_fermato("CRM Lead", persona):
 				continue
 			if frappe.cache.get_value(_chiave_pausa(utente, canale)):
 				continue
@@ -261,7 +265,7 @@ def avvisa_fuori(lead: str) -> list[tuple[str, str]]:
 			if not numero:
 				continue
 			try:
-				(_manda_whatsapp if canale == WHATSAPP else _manda_sms)(_persona_di(utente), numero, centro)
+				(_manda_whatsapp if canale == WHATSAPP else _manda_sms)(persona, numero, centro)
 			except Exception:
 				frappe.clear_last_message()
 				frappe.log_error(title=f"Area news not sent by {canale}")

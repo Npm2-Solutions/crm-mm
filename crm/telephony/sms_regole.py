@@ -6,6 +6,8 @@
 - **One sender**: the centre's name - up to eleven letters, digits and spaces,
   not digits alone, what Twilio takes as a name - or one of its numbers that can
   send SMS, when the centre wants the answers.
+- **STOP**: a message that is nothing but a word to stop - or to start again - is
+  that request, in Italian or in English; anything else is a message.
 
 The words are English, translated where they are shown.
 """
@@ -54,6 +56,24 @@ GENERICHE = frozenset(
 	}
 )
 
+#: The words that stop the centre's automatic SMS, and the ones that start them again.
+FERMA = frozenset(
+	{
+		"STOP",
+		"STOP ALL",
+		"STOPALL",
+		"ARRESTA",
+		"BASTA",
+		"CANCELLAMI",
+		"DISISCRIVIMI",
+		"UNSUBSCRIBE",
+		"CANCEL",
+		"END",
+		"QUIT",
+	}
+)
+RIPRENDI = frozenset({"START", "INIZIA", "ISCRIVIMI", "UNSTOP"})
+
 
 def problema_del_nome(nome: str | None) -> str:
 	"""Why ``nome`` cannot be the sender's name; '' when it can."""
@@ -92,3 +112,15 @@ def nome_dal_centro(nome_centro: str | None) -> str:
 		scelte.append(parola)
 	nome = " ".join(scelte) or proprie[0][:LUNGHEZZA_NOME]
 	return "" if problema_del_nome(nome) else nome
+
+
+def parola_chiave(testo: str | None) -> str:
+	"""'stop' or 'start' when the whole message is one of those words, written
+	however; '' for a message."""
+	parole = re.sub(r"[^\w ]+", " ", (testo or "").upper())
+	parole = re.sub(r"\s+", " ", parole).strip()
+	if parole in FERMA:
+		return "stop"
+	if parole in RIPRENDI:
+		return "start"
+	return ""
