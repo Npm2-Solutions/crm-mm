@@ -162,12 +162,14 @@ class CRMInvoice(Document):
 		if pagante and not self.causale:
 			self.causale = anagrafica.causale_per_conto(self)
 		if not self.billing_name:
-			self.billing_name = (
-				record.get("organization_name")
-				or record.get("organization")
-				or " ".join(p for p in (record.get("first_name"), record.get("last_name")) if p).strip()
-				or record.get("name")
-			)
+			persona = " ".join(p for p in (record.get("first_name"), record.get("last_name")) if p).strip()
+			organizzazione = record.get("organization_name") or record.get("organization")
+			# a private person is invoiced in their own name: the company a lead
+			# works for is not who receives a patient's invoice
+			if self.recipient_type == TipoDestinatario.PERSONA_FISICA:
+				self.billing_name = persona or organizzazione or record.get("name")
+			else:
+				self.billing_name = organizzazione or persona or record.get("name")
 		if self.recipient_type == TipoDestinatario.PERSONA_FISICA:
 			if not self.first_name:
 				self.first_name = record.get("first_name")
