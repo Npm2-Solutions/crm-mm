@@ -394,3 +394,28 @@
   -webkit-mask: var(--cross) center / contain no-repeat;
   mask: var(--cross) center / contain no-repeat;
 }
+
+/* il movimento dei segni: le croci scorrono piano dentro i loro blocchi,
+   in diagonale, di un passo del motivo e ricominciano senza scatti; la gobba
+   respira. Fermi con prefers-reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .crosses,
+  .section--teal::after,
+  .section--night::before {
+    animation: croci-scorrono 14s linear infinite;
+  }
+  .showcase__art .crosses { animation-name: croci-scorrono-mezzo-passo; }
+  .section--night::before { animation-duration: 18s; animation-direction: reverse; }
+  .showcase__art .bump { animation: gobba-respira 6s ease-in-out infinite; }
+}
+@keyframes croci-scorrono {
+  from { -webkit-mask-position: 0 0; mask-position: 0 0; }
+  to { -webkit-mask-position: 40px 40px; mask-position: 40px 40px; }
+}
+@keyframes croci-scorrono-mezzo-passo {
+  from { -webkit-mask-position: 20px 20px; mask-position: 20px 20px; }
+  to { -webkit-mask-position: 60px 60px; mask-position: 60px 60px; }
+}
+@keyframes gobba-respira {
+  50% { translate: 0 -6px; }
+}
