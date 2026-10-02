@@ -67,6 +67,8 @@ const processedTabs = computed(() => {
       const processedTab = tabOverrides ? { ...tab, ...tabOverrides } : tab
       return {
         ...processedTab,
+        // the DocType's tab names, in the reader's language
+        label: processedTab.label ? __(processedTab.label) : processedTab.label,
         sections: processedTab.sections.map((section) => {
           const sectionOverrides = ov[section.name]
           return sectionOverrides

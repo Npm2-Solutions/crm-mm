@@ -44,6 +44,10 @@ export function buildTabs(fields) {
         label: field.label,
         name: field.fieldname,
         hideBorder: field.hide_border,
+        // what the DocType says of its sections: one it keeps folded starts
+        // folded, one that depends on the document shows only when it applies
+        ...(field.collapsible ? { opened: false } : {}),
+        ...(field.depends_on ? { dependsOn: field.depends_on } : {}),
         columns: [{ name: unique('column'), fields: [] }],
       })
     } else if (field.fieldtype === 'Column Break') {
@@ -56,6 +60,15 @@ export function buildTabs(fields) {
       const lastColumn = lastSection.columns[lastSection.columns.length - 1]
       lastColumn.fields.push(field)
     }
+  })
+
+  // a tab never opens on a folded section: the Desk folds the SdI's and the
+  // healthcare identity, which here are what their tab is for
+  tabs.forEach((tab) => {
+    const prima = tab.sections.find((section) =>
+      section.columns.some((column) => column.fields.length),
+    )
+    if (prima?.opened === false) delete prima.opened
   })
 
   return tabs
