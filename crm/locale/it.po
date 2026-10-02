@@ -40233,3 +40233,107 @@ msgstr "In verifica"
 #: frontend/src/components/Settings/Telephony/NewNumberDialog.vue
 msgid "Upload another file"
 msgstr "Carica un altro file"
+
+#: crm/telephony/answering.py
+msgid "If you wish, leave a message after the tone, then hang up."
+msgstr "Se vuoi, lascia un messaggio dopo il segnale, poi riattacca."
+
+#: crm/telephony/answering.py
+msgid "Thank you, we have your message. Goodbye."
+msgstr "Grazie, abbiamo il tuo messaggio. Arrivederci."
+
+#: crm/telephony/providers/base.py
+msgid "{0} cannot ring several people at once."
+msgstr "{0} non fa squillare più persone insieme."
+
+#: crm/notifiche/regole.py
+msgid "{0} left a message on the answering service"
+msgstr "{0} ha lasciato un messaggio in segreteria"
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "Ring For (seconds)"
+msgstr "Squilla per (secondi)"
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "Everyone who answers the number rings at once for this long; then the announcement."
+msgstr "Squillano insieme per questo tempo tutti quelli che rispondono al numero; poi l'annuncio."
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "Let Callers Leave a Message"
+msgstr "Fai lasciare un messaggio"
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "After the announcement, the caller can leave a message: it goes on the call, written out when transcription is on, and whoever follows the person is told."
+msgstr "Dopo l'annuncio, chi chiama può lasciare un messaggio: resta sulla chiamata, trascritto se la trascrizione è attiva, e chi segue la persona viene avvisato."
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "Before the Tone"
+msgstr "Prima del segnale"
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "Said after the announcement, before the tone. Left empty, a standard sentence is said."
+msgstr "Detto dopo l'annuncio, prima del segnale. Se è vuoto, si dice una frase standard."
+
+#: crm/fcrm/doctype/crm_answering_settings/crm_answering_settings.json
+msgid "Longest Message (seconds)"
+msgstr "Messaggio più lungo (secondi)"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.json
+msgid "Left a Message"
+msgstr "Ha lasciato un messaggio"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.json
+msgid "The caller left a message on the answering service: the recording is the message."
+msgstr "Chi ha chiamato ha lasciato un messaggio in segreteria: la registrazione è il messaggio."
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Ring for"
+msgstr "Squilla per"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Everyone who answers the number rings at once, at the desk or on their mobile. After this long, the announcement answers."
+msgstr "Squillano insieme tutti quelli che rispondono al numero, alla scrivania o sul cellulare. Dopo questo tempo risponde l'annuncio."
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "{0} seconds"
+msgstr "{0} secondi"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Let callers leave a message"
+msgstr "Fai lasciare un messaggio"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "After the announcement the caller can speak after the tone. The message goes on the call, written out when transcription is on, and whoever follows the person is told."
+msgstr "Dopo l'annuncio, chi chiama può parlare dopo il segnale. Il messaggio resta sulla chiamata, trascritto se la trascrizione è attiva, e chi segue la persona viene avvisato."
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Before the tone"
+msgstr "Prima del segnale"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Longest message"
+msgstr "Durata massima del messaggio"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "The recording stops by itself after this long."
+msgstr "La registrazione si ferma da sola dopo questo tempo."
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "1 minute"
+msgstr "1 minuto"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "{0} minutes"
+msgstr "{0} minuti"
+
+#: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
+msgid "Calls ring everyone who answers the number, all at once. The announcement answers only when nobody picks up."
+msgstr "Le chiamate fanno squillare insieme tutti quelli che rispondono al numero. L'annuncio parte solo se nessuno risponde."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "WhatsApp, SMS, email and answering service"
+msgstr "WhatsApp, SMS, email e segreteria"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "The messages of the people you follow, those left on the answering service too: one email for each conversation."
+msgstr "I messaggi delle persone che segui, anche quelli lasciati in segreteria: un'email per ogni conversazione."
