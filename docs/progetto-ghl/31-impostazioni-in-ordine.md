@@ -46,7 +46,7 @@ Agenda             Servizi [Servizi · Listini · Abbonamenti]
                    Sale e attrezzature · Calendario e promemoria · Lista d'attesa
                    Prenotazione online [Servizi e persone · Pagina e regole · Piattaforme]
 Clienti            Moduli · Consensi · Area clienti · Librerie [Esercizi · Alimenti]
-Offerte            Pipeline · Assegnazione [Regole · Tempi di risposta]
+Trattative         Pipeline · Assegnazione [Regole · Tempi di risposta]
 E-mail             Account · Modelli
 WhatsApp           Numeri · Modelli
 Telefono           Telefonia · Script delle chiamate
@@ -57,8 +57,8 @@ Integrazioni       Meta · ERPNext* · Sigillo e marca temporale* · Assistente
 ```
 
 `*` dell'agenzia. Con la clinica accesa "Clienti" si legge **Pazienti** e "Area
-clienti" **Area pazienti** (`crm/clinica/parole.py`); "Offerte" è la traduzione
-che l'app dà già a *Deals*.
+clienti" **Area pazienti** (`crm/clinica/parole.py`); *Deals* si legge
+"Trattative" ([doc 50](./50-trattative-e-preventivi.md)).
 
 - **Email, WhatsApp e Telefono hanno la stessa forma**: da dove si scrive, cosa si
   manda. Telefonia è uscita dalle Integrazioni, gli script delle chiamate dalle

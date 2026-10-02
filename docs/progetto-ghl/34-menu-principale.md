@@ -14,7 +14,7 @@
 Notifiche
 Dashboard · Oggi · Agenda · Lista d'attesa · Pazienti · Conversazioni · Da fare · Fatture
 ARCHIVIO      Aziende · Note
-MARKETING     Offerte · Automazioni · Social Planner · Sito web
+MARKETING     Trattative · Automazioni · Social Planner · Sito web
 TELEFONO      Chiamate · Tastierino
 …
 Impostazioni · Comprimi
@@ -25,7 +25,7 @@ Impostazioni · Comprimi
   posto, le persone, i messaggi, le cose da fare, le fatture). Senza etichetta: è il
   menu.
 - **Archivio**: le aziende e le note, che si cercano quando servono.
-- **Marketing**: come arrivano le persone nuove: le offerte, le automazioni, i post,
+- **Marketing**: come arrivano le persone nuove: le trattative, le automazioni, i post,
   il sito.
 - **Telefono**: le chiamate, e il tastierino dove la telefonia è accesa.
 - **Ognuno vede solo quello che gli serve**: ogni voce chiede la sua capacità, come

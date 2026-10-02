@@ -308,20 +308,27 @@ and its rule on going online. A document with the mark is read like the clinical
 record, every listing in the access log; without the clinic only whom it is for and
 who added it read it.
 
-### Quotes (`crm/preventivi`, followed to the end by the agenda)
+### Quotes (`crm/preventivi`, followed to the end by the agenda; deals and quotes, doc 50)
 | File | Role |
 |---|---|
 | `crm/preventivi/regole.py` | A quote without a site: its states, the rows' amounts and sums, the phases, which row an appointment takes, what is checked before it is proposed — tested with plain `unittest` |
-| `crm/preventivi/api.py` | `CRM Quote` on the person's Quotes tab: a draft of its author (`preventivi.scrivi`); proposed, read with `preventivi.vedi` and the person, recorded accepted or declined by the author or `preventivi.gestisci` (the desk); a new version, closed half-way; what a module adds to the rows (`registra_estensione`) |
+| `crm/preventivi/api.py` | `CRM Quote` on the person's Quotes tab, and on the deal's: a draft of its author (`preventivi.scrivi`); proposed, read with `preventivi.vedi` and the person, recorded accepted or declined by the author or `preventivi.gestisci` (the desk); a new version, closed half-way; what a module adds to the rows (`registra_estensione`); who reads one as a condition (`condizione`), which the dashboard counts on |
 | `crm/preventivi/documento.py` + `templates/preventivo.html` | The quote's PDF, made once when it is proposed, private |
 | `crm/preventivi/appuntamenti.py` | `CRM Appointment` doc_events: an appointment of a service still to do takes its row at the price agreed, done when the person came, given back when cancelled |
-| `crm/preventivi/pipeline.py` + `CRM Quote Settings` | The "Quotes" pipeline: delivered, won, lost with the reason; which one and how long a quote holds, in Settings > Deals > Pipelines |
+| `crm/preventivi/pipeline.py` + `CRM Quote Settings` | The "Quotes" pipeline: delivered, won (worth the quote) or lost with the reason; which one and how long a quote holds, in Settings > Deals > Pipelines. A quote is a deal's only in that pipeline (`prende_preventivi`): it moves no other pipeline's deal and opens no closed one (`si_puo_spostare`) |
 | `crm/preventivi/area.py` | The quotes proposed and going on, in the person's area (the Plans page) |
-| `frontend/src/components/Quotes/` + `utils/preventivi.js` | The Quotes tab (`QuotesCard`), the editor and reader (`QuoteDialog`: a module's row fields where the server offers them); the same sums as `regole.py` — tested; `area/components/QuoteCard.vue` in the area |
+| `frontend/src/components/Quotes/` + `utils/preventivi.js` | The Quotes tab of the person and of the deal (`QuotesCard`, the deal the server confirms), the editor and reader (`QuoteDialog`: a module's row fields where the server offers them, the deal a click away, the states with the "Quote" context); the same sums as `regole.py` — tested; `area/components/QuoteCard.vue` in the area |
+| `crm/dashboard/widgets/quotes.py` | Quotes proposed, the share accepted (a "no" followed by a new version is not one), what the waiting ones are worth, the ones to call back after three days; only what the viewer reads, in the quotes' currency; the Sales dashboard's "Quotes" section |
 
 With the clinic on, what a health professional writes carries the mark: a dentist's
 care plan is a quote read like the clinical record (and by the desk once proposed),
 every opening in the access log.
+
+A deal is the sale, a quote what the person is asked to accept: two levels, as in
+every CRM ("Deals" reads "Trattative"). A deal's value comes from its quotes: the
+deal has no products grid of its own (the fields stay, `CRM Product` stays for the
+website and ERPNext). Marketing's "offers", if they come, are catalogue packages,
+neutral where the clinic is on.
 
 ### New clients (`crm/clienti`)
 | File | Role |
