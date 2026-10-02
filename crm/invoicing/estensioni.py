@@ -19,36 +19,52 @@ from contextlib import contextmanager
 from crm.invoicing.engine import professioni
 from crm.invoicing.engine.qualifica import Risolutore
 
-#: Resolvers, in registration order. A chain rather than one slot, because more
-#: than one register legitimately answers: what the practice edited, what the
-#: healthcare module adds, and what this module ships. Module-level rather than a
+#: Resolvers, in registration order, in two tiers. A chain rather than one slot,
+#: because more than one register legitimately answers: what the practice edited
+#: (the stored registers), and what the modules ship. Module-level rather than a
 #: Frappe hook so the engine stays importable without a site.
 _risolutori: list[Risolutore] = []
+_spediti: list[Risolutore] = []
 
 
-def registra_risolutore(funzione: Risolutore) -> None:
-	"""Add a register. The last one registered is asked first."""
-	if funzione not in _risolutori:
-		_risolutori.append(funzione)
+class QualificaRifiutata(KeyError):
+	"""A register that owns the code and refuses it - a qualification the practice
+	switched off. The chain stops here: a shipped register answering instead would
+	undo the practice's own choice without a word."""
+
+
+def registra_risolutore(funzione: Risolutore, *, spedito: bool = False) -> None:
+	"""Add a register: a stored one, what the practice edited, or a shipped one
+	(`spedito`). Every stored register is asked before any shipped one, whichever
+	module loaded first; within a tier, the last registered is asked first."""
+	registri = _spediti if spedito else _risolutori
+	if funzione not in registri:
+		registri.append(funzione)
 
 
 def risolutore() -> Risolutore:
-	"""Ask each register in turn, most recently added first.
+	"""Ask the stored registers, then the shipped ones, most recently added first.
 
-	A register says "not mine" by raising `KeyError`, and the chain moves on. The
-	floor is this module's own twenty qualifications - not a neutral answer, because
-	a lawyer's invoice without Cassa Forense and withholding is a **wrong invoice**,
-	not an incomplete one.
+	A register says "not mine" by raising `KeyError`, and the chain moves on; one
+	that owns the code and refuses it raises `QualificaRifiutata`, and the chain
+	stops. The tiers are what makes the practice's edit win: a healthcare
+	qualification the practice made ordinary, or switched off, used to be answered
+	by the shipped healthcare register, which loads after invoicing's stored one.
 
-	The last link raises too. A qualification nobody configured has no VAT regime, no
-	fund and no withholding, and inventing any of the three produces a document that
-	is wrong in a way nobody notices until it is too late.
+	The floor is this module's own twenty qualifications - not a neutral answer,
+	because a lawyer's invoice without Cassa Forense and withholding is a **wrong
+	invoice**, not an incomplete one. The last link raises too. A qualification
+	nobody configured has no VAT regime, no fund and no withholding, and inventing
+	any of the three produces a document that is wrong in a way nobody notices until
+	it is too late.
 	"""
 
 	def _risolvi(codice: str):
-		for funzione in reversed(_risolutori):
+		for funzione in (*reversed(_risolutori), *reversed(_spediti)):
 			try:
 				return funzione(codice)
+			except QualificaRifiutata:
+				raise
 			except KeyError:
 				continue
 		return professioni.professione(codice)
@@ -126,9 +142,10 @@ def senza_estensioni():
 	true, because a test three modules earlier had thrown the register away.
 	"""
 	global _arricchitore
-	risolutori, arricchitore = list(_risolutori), _arricchitore
+	risolutori, spediti, arricchitore = list(_risolutori), list(_spediti), _arricchitore
 	verifiche_precedenti, controlli_precedenti = list(_verifiche), list(_controlli)
 	_risolutori.clear()
+	_spediti.clear()
 	_verifiche.clear()
 	_controlli.clear()
 	_arricchitore = None
@@ -136,6 +153,7 @@ def senza_estensioni():
 		yield
 	finally:
 		_risolutori[:] = risolutori
+		_spediti[:] = spediti
 		_verifiche[:] = verifiche_precedenti
 		_controlli[:] = controlli_precedenti
 		_arricchitore = arricchitore
