@@ -51,12 +51,13 @@ def preview(invoice: str) -> dict:
 	preparato = documento.prepara(fattura)
 	classificazione = preparato["classificazione"]
 	conto = preparato["calcolo"]
+	errori, avvisi = documento.da_correggere(fattura, preparato)
 	return {
 		"channel": classificazione.canale,
 		"sdi_allowed": classificazione.sdi_consentito,
 		"ts_required": classificazione.ts_richiesto,
-		"errors": documento.blocchi(fattura, classificazione),
-		"warnings": [documento.in_parole(m) for m in (*classificazione.tutti_avvisi, *conto.avvisi)],
+		"errors": errori,
+		"warnings": avvisi,
 		"totals": {
 			"net_total": float(conto.imponibile),
 			"fund_contribution": float(conto.cassa),
@@ -640,8 +641,8 @@ def invoice_channel(invoice: str) -> dict:
 		"deadline": str(getdate(fattura.posting_date)),
 		# Everything wrong with it as it stands, so the interface can say it beside
 		# the line that caused it instead of in a dialog at the end.
-		"blocking": classificazione.tutti_errori,
-		"warnings": list(classificazione.avvisi),
+		"blocking": [documento.in_parole(errore) for errore in classificazione.tutti_errori],
+		"warnings": [documento.in_parole(avviso) for avviso in classificazione.avvisi],
 		"issuable": classificazione.valido,
 	}
 

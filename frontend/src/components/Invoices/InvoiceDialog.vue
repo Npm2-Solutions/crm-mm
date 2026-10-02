@@ -84,6 +84,21 @@
             }}
           </span>
         </div>
+        <div
+          v-if="vista.findings?.length"
+          class="flex flex-col gap-1 rounded-lg border border-outline-amber-2 bg-surface-amber-1 px-4 py-3"
+        >
+          <span class="text-p-base-medium text-ink-gray-8">
+            {{ __('Before sending it') }}
+          </span>
+          <span
+            v-for="rilievo in vista.findings"
+            :key="rilievo"
+            class="text-p-sm text-ink-gray-7"
+          >
+            {{ rilievo }}
+          </span>
+        </div>
         <div v-if="vista.reference?.number" class="text-p-sm text-ink-gray-6">
           {{ __('It corrects invoice {0}.', [vista.reference.number]) }}
         </div>
@@ -290,7 +305,9 @@
                 )
               "
             />
+            <!-- a refund is paid on the day of its credit note -->
             <FormControl
+              v-if="!vista.is_note"
               v-model="vista.payment.payment_date"
               type="date"
               :label="__('Payment date')"
@@ -300,7 +317,22 @@
             {{ metodoDiPagamento }}
           </div>
           <FormControl
-            v-if="vista.destination?.value === 'pdf_ts' && modificabile"
+            v-if="modificabile && pagataPrima"
+            v-model="vista.payment.advance_payment"
+            type="checkbox"
+            :label="__('Paid before the invoice')"
+            :description="
+              __(
+                'A prepaid package, a deposit: otherwise one of the two dates is wrong.',
+              )
+            "
+          />
+          <FormControl
+            v-if="
+              vista.destination?.value === 'pdf_ts' &&
+              modificabile &&
+              !vista.is_note
+            "
             v-model="vista.payment.privacy_opposition"
             type="checkbox"
             :label="
@@ -332,8 +364,10 @@
             {{ problema }}
           </span>
         </div>
+        <!-- on a draft what is worth knowing before issuing it; on an issued
+             invoice what was found when it was issued (the Sistema TS's report) -->
         <div
-          v-if="vista.warnings.length && vista.docstatus === 0"
+          v-if="vista.warnings.length"
           class="flex flex-col gap-1 rounded-lg border border-outline-amber-2 bg-surface-amber-1 px-4 py-3"
         >
           <span
@@ -476,6 +510,12 @@ const modificabile = computed(
   () => vista.value?.docstatus === 0 && vista.value?.can?.save,
 )
 const mostraProfessionista = computed(() => !vista.value?.shape?.solo)
+// paid before the invoice's date: a prepaid package, or a wrong date
+const pagataPrima = computed(() => {
+  const pagata = vista.value?.payment?.payment_date
+  const emessa = vista.value?.posting_date
+  return Boolean(pagata && emessa && pagata < emessa)
+})
 
 const titolo = computed(() =>
   __(titoloDellaFattura(vista.value), [vista.value?.document_number]),

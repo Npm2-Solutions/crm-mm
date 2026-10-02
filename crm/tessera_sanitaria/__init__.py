@@ -55,6 +55,7 @@ def registra() -> None:
 	estensioni.registra_risolutore(registro_sanitario.risolutore())
 	estensioni.registra_controlli(controlli)
 	estensioni.registra_verifica(verifica_tracciato)
+	estensioni.registra_controllo_bozza(controlla_bozza)
 	# the expense types offered are the ones the issuer's category may use
 	from crm.invoicing import scelte
 
@@ -133,6 +134,48 @@ def controlli(emittente: dict) -> list[dict]:
 	return voci
 
 
+def controlla_bozza(doc, preparato) -> tuple[list, list]:
+	"""What the Sistema TS would refuse in this draft, said before it is issued.
+
+	An issued document is frozen: a report refused in January is a credit note and a
+	phone call. So the tracciato is checked on the draft, with the number it does not
+	have yet standing in, and what belongs to the document stops the issue. What
+	belongs to the company (its codes, its codice fiscale) is said, and does not stop
+	the invoice the patient is waiting for. What invoicing already says about the
+	patient and the payment is left to it, not said twice.
+	"""
+	if not preparato["classificazione"].ts_richiesto:
+		return [], []
+
+	from crm.invoicing.engine.messaggi import Messaggio
+
+	from .documento import documento_spesa
+	from .engine import tracciato
+
+	spesa = documento_spesa(doc, preparato["azienda"])
+	if not spesa.id_spesa.num_documento:
+		# the number comes at issue; its format was checked when the company chose it
+		spesa.id_spesa.num_documento = "1"
+	esito = tracciato.valida_documento(spesa)
+	del_centro = tracciato.valida_proprietario(spesa.proprietario).errori
+
+	def gia_detto(errore) -> bool:
+		modello = getattr(errore, "modello", errore)
+		if modello == tracciato.SERVE_IL_PAGAMENTO:
+			return not doc.payment_method
+		return modello in tracciato.GIA_DETTI
+
+	errori = [errore for errore in esito.errori if errore not in del_centro and not gia_detto(errore)]
+	avvisi = list(esito.avvisi) + [
+		Messaggio(
+			"the Sistema TS will refuse its report until the issuing company is complete: {0}",
+			errore if isinstance(errore, Messaggio) else Messaggio(errore),
+		)
+		for errore in del_centro
+	]
+	return errori, avvisi
+
+
 def verifica_tracciato(doc, preparato) -> None:
 	"""Check the Sistema TS tracciato while the document is still a draft.
 
@@ -144,12 +187,14 @@ def verifica_tracciato(doc, preparato) -> None:
 	from . import documento as ts
 
 	esito = ts.verifica(doc, preparato["azienda"])
-	if esito.errori or esito.avvisi:
+	errori = [documento.in_parole(errore) for errore in esito.errori]
+	avvisi = [documento.in_parole(avviso) for avviso in esito.avvisi]
+	if errori or avvisi:
 		documento.registra(
 			doc,
 			"ts_prepared",
-			"\n".join(esito.errori + esito.avvisi),
-			stato="errori" if esito.errori else "avvisi",
+			"\n".join(errori + avvisi),
+			stato="errori" if errori else "avvisi",
 		)
-	if esito.errori:
-		doc.db_set("warnings", "\n".join(esito.errori), update_modified=False)
+	if errori:
+		doc.db_set("warnings", "\n".join(errori), update_modified=False)

@@ -60,7 +60,9 @@ class CRMInvoice(Document):
 
 	def before_submit(self):
 		preparato = getattr(self, "_preparato", None) or documento.prepara(self)
-		problemi = documento.blocchi(self, preparato["classificazione"])
+		# what the document's rules and the modules' would refuse: a report refused
+		# in January is a credit note, and the issued document can no longer change
+		problemi, _avvisi = documento.da_correggere(self, preparato)
 		if problemi:
 			frappe.throw(
 				"<br>".join(problemi),
@@ -208,6 +210,8 @@ class CRMInvoice(Document):
 		xml, nome, rilievi = xml_sdi.genera(self, preparato, progressivo)
 		if troppo_grande := fatturapa.dimensione_ammessa(xml):
 			rilievi.append(troppo_grande)
+		# in the words of whoever issues it, each with the code the SdI would answer
+		rilievi = [documento.in_parole(rilievo) for rilievo in rilievi]
 
 		allegato = frappe.get_doc(
 			{

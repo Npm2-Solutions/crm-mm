@@ -12,10 +12,13 @@ refund of that invoice, with the original's identifier.
 
 from __future__ import annotations
 
+from decimal import Decimal
+from unittest.mock import patch
+
 import frappe
 
 from crm.invoicing import api, documento, emissione
-from crm.invoicing.engine.messaggi import Messaggio
+from crm.invoicing.engine.messaggi import Messaggio, Nome
 from crm.invoicing.sdi import ricezione
 from crm.tests.test_invoicing import CF_PAZIENTE, PIVA, InvoicingBase
 
@@ -138,6 +141,26 @@ class LaFatturaDentroDottorCloud(InvoicingBase):
 		self.assertEqual(bozza["totals"]["withholding"], 0)
 		self.assertFalse(frappe.db.get_value("CRM Invoice", bozza["name"], "apply_withholding"))
 
+	def test_i_nomi_e_le_frasi_dentro_si_traducono(self):
+		catalogo = {
+			'"{0}" only goes with "{1}"': "«{0}» va solo con «{1}»",
+			"until it is complete: {0}": "finché non è completa: {0}",
+			"the code is missing": "manca il codice",
+			"Ticket": "Ticket del SSN",
+			"Visits": "Visite",
+		}
+		frase = Messaggio('"{0}" only goes with "{1}"', Nome("Ticket"), [Nome("Visits"), "SR"])
+		self.assertEqual(frase, '"Ticket" only goes with "Visits, SR"')
+		annidata = Messaggio("until it is complete: {0}", Messaggio("the code is missing"))
+		with patch("crm.invoicing.documento._", side_effect=lambda testo: catalogo.get(testo, testo)):
+			# a name is translated, a code typed by somebody is not
+			self.assertEqual(documento.in_parole(frase), "«Ticket del SSN» va solo con «Visite, SR»")
+			self.assertEqual(documento.in_parole(annidata), "finché non è completa: manca il codice")
+		# an amount the way the screens write it
+		self.assertEqual(
+			documento.in_parole(Messaggio("above {0}", Decimal("99999.99"))), "above 99.999,99 €"
+		)
+
 	def test_i_messaggi_del_motore_si_traducono_col_loro_modello(self):
 		messaggio = Messaggio("{0!r} is not a health profession", "Massaggiatore")
 		self.assertEqual(messaggio, "'Massaggiatore' is not a health profession")
@@ -159,6 +182,17 @@ class UnaScartataSiCorregge(InvoicingBase):
 		ricezione.applica_file(corpo, fattura.sdi_filename.replace(".xml", "_NS_001.xml"))
 		fattura.reload()
 		return fattura
+
+	def test_quello_che_lo_sdi_rifiuterebbe_si_vede_prima_di_inviarla(self):
+		fattura = self.fattura(self.trattamento.name, self.osteopata.name)
+		fattura.submit()
+		fattura.db_set("sdi_message", "the document has no lines (SdI 00200)\nremark", update_modified=False)
+		vista = emissione.get_invoice(fattura.name)
+		self.assertEqual(vista["findings"], ["the document has no lines (SdI 00200)", "remark"])
+		# sending stops on the one with a code, and says it
+		with self.assertRaises(frappe.ValidationError) as errore:
+			api.send_to_sdi(fattura.name)
+		self.assertIn("(SdI 00200)", str(errore.exception))
 
 	def test_si_corregge_con_lo_stesso_numero_e_non_si_butta(self):
 		fattura = self._scartata()

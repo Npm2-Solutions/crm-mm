@@ -21,7 +21,6 @@ from frappe import _
 from frappe.utils import cint, flt, getdate
 
 from crm.invoicing import documento, scelte
-from crm.invoicing.documento import in_parole
 from crm.invoicing.engine import voci
 from crm.invoicing.engine.codici import Canale, TipoDestinatario
 from crm.permissions.livelli import puo
@@ -159,20 +158,20 @@ def _da_completare(doc) -> list[str]:
 def _vista(doc) -> dict:
 	"""The invoice as the dialog draws it: everything in words."""
 	bozza = cint(doc.docstatus) == 0
-	errori, avvisi, conto, totali = [], [], None, None
+	errori, avvisi, totali = [], [], None
 	if bozza and doc.get("items"):
 		errori = _da_completare(doc)
 		if not errori:
 			preparato = documento.prepara(doc)
-			classificazione, conto = preparato["classificazione"], preparato["calcolo"]
-			errori = documento.blocchi(doc, classificazione)
-			avvisi = [in_parole(m) for m in (*classificazione.tutti_avvisi, *conto.avvisi)]
-			totali = _totali(doc, conto)
+			errori, avvisi = documento.da_correggere(doc, preparato)
+			totali = _totali(doc, preparato["calcolo"])
 	elif bozza:
 		errori = [_("Add what was done: a service, and who performed it")]
 		totali = _totali(doc)
 	else:
 		totali = _totali(doc)
+		# what was found when it was issued: the Sistema TS's report, the engine's notes
+		avvisi = [riga for riga in (doc.warnings or "").splitlines() if riga.strip()]
 
 	scelte_fattura = scelte.get_options(FATTURA, doc.as_dict())
 	return {
@@ -219,6 +218,10 @@ def _vista(doc) -> dict:
 		"pdf": doc.pdf_file,
 		# what the SdI said when it refused it: the thing to correct
 		"rejection": doc.sdi_message if doc.sdi_status == "scartata" else None,
+		# what the SdI's own checks found in the file before it leaves, each with its code
+		"findings": [riga for riga in (doc.sdi_message or "").splitlines() if riga.strip()]
+		if doc.sdi_status == "da_inviare"
+		else [],
 		"reference": {
 			"name": doc.reference_invoice,
 			"number": frappe.db.get_value(FATTURA, doc.reference_invoice, "document_number")
