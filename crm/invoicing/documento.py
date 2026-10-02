@@ -24,13 +24,14 @@ from crm.invoicing.engine import codice_fiscale as cf
 from crm.invoicing.engine import diciture
 from crm.invoicing.engine.classificazione import RigaDaClassificare, classifica
 from crm.invoicing.engine.codici import (
+	LUNGHEZZA_CODICE_PA,
 	NATURE_REVERSE_CHARGE,
 	Canale,
 	ModalitaBollo,
 	RegimeFiscale,
 	TipoDestinatario,
 )
-from crm.invoicing.engine.messaggi import Messaggio
+from crm.invoicing.engine.messaggi import Messaggio, Nome
 from crm.invoicing.engine.numerazione import FormatoNonCompatibile, componi, prossimo, valida_formato
 
 ZERO = Decimal("0.00")
@@ -214,7 +215,7 @@ def prepara(doc) -> dict:
 	_scrivi_righe(doc, conto)
 	_scrivi_riepilogo(doc, conto)
 	doc.legal_notes = "\n".join(annotazioni(doc, emittente, classificazione, conto))
-	doc.warnings = "\n".join(classificazione.tutti_avvisi + conto.avvisi)
+	doc.warnings = "\n".join(in_parole(avviso) for avviso in (*classificazione.tutti_avvisi, *conto.avvisi))
 	return {"classificazione": classificazione, "calcolo": conto, "azienda": emittente}
 
 
@@ -359,13 +360,47 @@ def annotazioni(doc, emittente: dict, classificazione, conto) -> list[str]:
 # ------------------------------------------------------------ blocking checks
 
 
+def in_euro(importo: Decimal) -> str:
+	"""An amount as the screens write it (`formatEuro`): 99.999,99 €."""
+	testo = f"{importo:,.2f}"
+	return testo.replace(",", "\x00").replace(".", ",").replace("\x00", ".") + " €"
+
+
+def _valore_in_parole(valore):
+	"""A value of a sentence in the reader's language: a name translated, a sentence
+	inside a sentence translated whole, a list of names one by one, an amount in
+	euros, anything else as it is."""
+	if isinstance(valore, list | tuple):
+		return ", ".join(str(_valore_in_parole(voce)) for voce in valore)
+	if isinstance(valore, Decimal):
+		return in_euro(valore)
+	if isinstance(valore, Messaggio):
+		return in_parole(valore)
+	if isinstance(valore, Nome):
+		return _(str(valore))
+	return valore
+
+
 def in_parole(messaggio: str) -> str:
 	"""A message of the engine in the reader's language: its template translated and
 	filled again with its values (`engine.messaggi.Messaggio`); a plain one is its
 	own template."""
 	if isinstance(messaggio, Messaggio):
-		return _(messaggio.modello).format(*messaggio.argomenti)
+		parole = _(messaggio.modello).format(*(_valore_in_parole(valore) for valore in messaggio.argomenti))
+		# the SdI's code of a finding, the same in every language
+		return parole + getattr(messaggio, "coda", "")
 	return _(messaggio)
+
+
+def da_correggere(doc, preparato) -> tuple[list[str], list[str]]:
+	"""What stops a draft and what is worth saying about it, in words: the document's
+	own rules (`blocchi`), the engine's warnings, and what a module would refuse
+	later (`estensioni.controlli_bozza`: the Sistema TS's report)."""
+	classificazione, conto = preparato["classificazione"], preparato["calcolo"]
+	suoi_errori, suoi_avvisi = estensioni.controlli_bozza(doc, preparato)
+	errori = blocchi(doc, classificazione) + [in_parole(errore) for errore in suoi_errori]
+	avvisi = [in_parole(avviso) for avviso in (*classificazione.tutti_avvisi, *conto.avvisi, *suoi_avvisi)]
+	return errori, avvisi
 
 
 def blocchi(doc, classificazione) -> list[str]:
@@ -414,6 +449,14 @@ def blocchi(doc, classificazione) -> list[str]:
 				"The payment date precedes the document date: if this is a prepaid package say so, "
 				"otherwise one of the two dates is wrong"
 			)
+		)
+
+	if (
+		doc.recipient_type == TipoDestinatario.PUBBLICA_AMMINISTRAZIONE
+		and len((doc.recipient_code or "").strip()) != LUNGHEZZA_CODICE_PA
+	):
+		problemi.append(
+			_("An invoice to the public administration needs the six-character office code of the IPA")
 		)
 
 	if doc.document_type in ("TD04", "TD05", "TD08", "TD09") and not doc.reference_invoice:

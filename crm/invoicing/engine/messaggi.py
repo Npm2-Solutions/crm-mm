@@ -15,14 +15,56 @@ no values is its own template.
 from __future__ import annotations
 
 
+def in_chiaro(valore):
+	"""A value as the English text shows it: a list of names joined by commas."""
+	if isinstance(valore, list | tuple):
+		return ", ".join(str(voce) for voce in valore)
+	return valore
+
+
 class Messaggio(str):
-	"""A sentence of the engine: the English text, its template and its values."""
+	"""A sentence of the engine: the English text, its template and its values.
+
+	A value that is a name (an expense type, a category: `Nome`) is translated with
+	the sentence; a list of them is joined by commas. Any other value - an amount, a
+	code the person typed - goes in as it is."""
 
 	modello: str
 	argomenti: tuple
 
 	def __new__(cls, modello: str, *argomenti) -> Messaggio:
-		testo = super().__new__(cls, modello.format(*argomenti))
+		testo = super().__new__(cls, modello.format(*(in_chiaro(valore) for valore in argomenti)))
 		testo.modello = modello
 		testo.argomenti = argomenti
 		return testo
+
+
+class Rilievo(Messaggio):
+	"""A finding of the SdI's own checks: a sentence, and the code the SdI would
+	answer with (its "Elenco dei controlli"). The code stays out of the words, at the
+	end and the same in every language: support looks it up, and
+	`fatturapa.bloccanti` tells a rejection from a remark even in a stored message."""
+
+	codice: str
+
+	def __new__(cls, codice: str, modello: str, *argomenti) -> Rilievo:
+		testo = Messaggio.__new__(cls, modello, *argomenti)
+		testo = str.__new__(cls, f"{testo}{coda_sdi(codice)}")
+		testo.modello = modello
+		testo.argomenti = argomenti
+		testo.codice = codice
+		return testo
+
+	@property
+	def coda(self) -> str:
+		return coda_sdi(self.codice)
+
+
+def coda_sdi(codice: str) -> str:
+	"""How a finding says the code the SdI would answer with: « (SdI 00422)»."""
+	return f" (SdI {codice})"
+
+
+class Nome(str):
+	"""A name from a vocabulary (`Voce.etichetta`) put in a sentence: it is
+	translated where the sentence is, never shown as its code."""

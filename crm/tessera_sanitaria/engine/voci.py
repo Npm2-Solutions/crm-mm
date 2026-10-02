@@ -15,6 +15,7 @@ is not decided here but by its category (`codici.TIPI_SPESA_PER_SOGGETTO`).
 
 from __future__ import annotations
 
+from crm.invoicing.engine.messaggi import Nome
 from crm.invoicing.engine.voci import Voce
 
 
@@ -140,6 +141,21 @@ FAMIGLIE = {
 	"stato_delega": STATO_DELEGA,
 	"operazione_ts": OPERAZIONE,
 }
+
+
+def nome(famiglia: tuple[Voce, ...], valore: str | None) -> Nome:
+	"""A code of a family by its name, for a sentence (`Messaggio`): translated where
+	the sentence is read; a code nobody named stays itself."""
+	voce = next((voce for voce in famiglia if voce.valore == valore), None)
+	return Nome(voce.etichetta if voce else (valore or ""))
+
+
+def nomi(famiglia: tuple[Voce, ...], valori) -> tuple[Nome, ...]:
+	"""Several codes of a family by their names, in the order the family offers them."""
+	scelti = set(valori)
+	noti = [voce.valore for voce in famiglia]
+	ordinati = [valore for valore in noti if valore in scelti] + sorted(scelti - set(noti))
+	return tuple(nome(famiglia, valore) for valore in ordinati)
 
 
 def registra() -> None:

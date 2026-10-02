@@ -22,9 +22,9 @@ from __future__ import annotations
 import frappe
 from frappe import _
 
+from crm.invoicing.engine import voci
 from crm.invoicing.engine.codici import RegolaSdI
 from crm.tessera_sanitaria.engine.codici import (
-	DESCRIZIONE_TIPO_SPESA,
 	SOGGETTI_CON_CODICE_PROPRIETARIO,
 	SoggettoInviante,
 	tipi_spesa_ammessi,
@@ -50,17 +50,17 @@ def valida(doc, metodo=None):
 		frappe.throw(
 			_(
 				"A qualification that reports to the Sistema TS is one whose documents towards a "
-				"natural person cannot go through the SdI. Set the SdI rule to 'vietato', or turn "
-				"the Sistema TS duty off."
-			)
+				"natural person cannot go through the SdI. Set the electronic invoice to «{0}», or "
+				"turn the Sistema TS duty off."
+			).format(_(voci.etichetta("regola_sdi", RegolaSdI.VIETATO)))
 		)
 
 	if doc.ts_required and not tipi_spesa_ammessi(doc.sender_category):
 		frappe.throw(
 			_(
-				"Sender category {0} has no admitted tipoSpesa: pick the category the Sistema TS "
+				"«{0}» has no expense type of the Sistema TS: choose the category the Sistema TS "
 				"enrolled this profession under"
-			).format(doc.sender_category)
+			).format(_(voci.etichetta("soggetto_inviante", doc.sender_category)) or "-")
 		)
 
 
@@ -68,15 +68,19 @@ def valida_servizio(doc, metodo=None):
 	if doc.ts_expense_type and not doc.is_healthcare:
 		frappe.throw(
 			_(
-				"A tipoSpesa on a service that is not healthcare: the Sistema TS only knows "
-				"healthcare expenses. Either the service is healthcare or the code does not belong."
+				"An expense type of the Sistema TS on a service that is not healthcare: the Sistema "
+				"TS only knows healthcare expenses. Either the service is healthcare, or the expense "
+				"type goes."
 			)
 		)
 	if doc.ts_expense_flag and doc.ts_expense_type not in ("TK", "SR"):
 		frappe.throw(
-			_(
-				"flagTipoSpesa is only admitted with TK (emergency room) or SR (intramoenia), not with {0}"
-			).format(DESCRIZIONE_TIPO_SPESA.get(doc.ts_expense_type, "-"))
+			_("«{0}» only goes with the expense type «{1}» or «{2}», not with «{3}»").format(
+				_(voci.etichetta("flag_tipo_spesa", doc.ts_expense_flag)),
+				_(voci.etichetta("tipo_spesa", "TK")),
+				_(voci.etichetta("tipo_spesa", "SR")),
+				_(voci.etichetta("tipo_spesa", doc.ts_expense_type)) or "-",
+			)
 		)
 
 

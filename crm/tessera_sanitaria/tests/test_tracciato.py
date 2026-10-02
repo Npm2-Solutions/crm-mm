@@ -76,7 +76,7 @@ class ValidazioneTest(UnitTestCase):
 			)
 		)
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("are omitted" in e for e in esito.errori))
+		self.assertTrue(any("stay empty" in e for e in esito.errori))
 
 	def test_la_struttura_senza_codice_proprietario_non_passa(self):
 		esito = valida_documento(
@@ -100,7 +100,7 @@ class ValidazioneTest(UnitTestCase):
 	def test_l_opposizione_esclude_il_codice_fiscale(self):
 		esito = valida_documento(documento(flag_opposizione=True))
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("must be absent" in e for e in esito.errori))
+		self.assertTrue(any("without their codice fiscale" in e for e in esito.errori))
 
 	def test_con_opposizione_e_senza_cf_il_documento_si_trasmette(self):
 		esito = valida_documento(documento(flag_opposizione=True, cf_cittadino=None))
@@ -127,7 +127,7 @@ class ValidazioneTest(UnitTestCase):
 			)
 		)
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("numDocumento" in e for e in esito.errori))
+		self.assertTrue(any("the invoice number" in e for e in esito.errori))
 
 	def test_aliquota_e_natura_sono_alternative(self):
 		esito = valida_documento(
@@ -148,7 +148,7 @@ class ValidazioneTest(UnitTestCase):
 	def test_il_pagamento_anticipato_va_dichiarato(self):
 		esito = valida_documento(documento(data_pagamento=date(2025, 12, 20)))
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("flagPagamentoAnticipato" in e for e in esito.errori))
+		self.assertTrue(any("advance payment" in e for e in esito.errori))
 
 	def test_col_pacchetto_prepagato_l_anno_e_quello_del_pagamento(self):
 		spesa = documento(data_pagamento=date(2025, 12, 20), flag_pagamento_anticipato=True)
@@ -163,7 +163,7 @@ class ValidazioneTest(UnitTestCase):
 	def test_il_rimborso_vuole_il_documento_originario(self):
 		esito = valida_documento(documento(flag_operazione=OperazioneTS.RIMBORSO))
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("idRimborso" in e for e in esito.errori))
+		self.assertTrue(any("the original invoice is missing" in e for e in esito.errori))
 
 	def test_l_importo_e_sempre_positivo(self):
 		esito = valida_documento(
@@ -179,7 +179,7 @@ class ValidazioneTest(UnitTestCase):
 			)
 		)
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("not a Sistema TS subject" in e for e in esito.errori))
+		self.assertTrue(any("does not report to the Sistema TS" in e for e in esito.errori))
 
 	def test_le_fatture_hanno_dispositivo_uno(self):
 		esito = valida_documento(
@@ -193,7 +193,7 @@ class ValidazioneTest(UnitTestCase):
 			)
 		)
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("dispositivo is always 1" in e for e in esito.errori))
+		self.assertTrue(any("cash register number 1" in e for e in esito.errori))
 
 	def test_solleva_se_invalido_alza_erroreTS(self):
 		with self.assertRaises(ErroreTS):

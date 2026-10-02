@@ -172,7 +172,8 @@ def invia_documento(nome_fattura: str, operazione: str | None = None) -> dict:
 	esito_validazione = ts.verifica(fattura, emittente)
 	if esito_validazione.errori:
 		frappe.throw(
-			"<br>".join(esito_validazione.errori), title=_("The document does not pass the tracciato")
+			"<br>".join(documento.in_parole(errore) for errore in esito_validazione.errori),
+			title=_("The Sistema TS would refuse this document"),
 		)
 
 	if modalita == "provider":
