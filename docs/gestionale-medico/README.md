@@ -1054,29 +1054,30 @@ guarda, per esempio per fare la spesa".
 
 ### Le librerie: le tabelle e gli esercizi
 
-Fatte il 30/09/2026, in Impostazioni > Clinic > Libraries (`crm/clinica/librerie.py`,
+Fatte il 30/09/2026, in Impostazioni > Clienti > Librerie (`crm/clinica/librerie.py`,
 il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
 
 - **Chi le tiene** (`piani.librerie`): il manager e la direzione sanitaria; un
   operatore quando il manager glielo accende (la nutrizionista che cura gli
   alimenti). Chi scrive i piani continua ad aggiungere un alimento o un esercizio
   dall'editor.
-- **Una tabella degli alimenti** si carica come foglio Excel (.xlsx, .xls) o CSV:
-  - CIQUAL come la pubblica ANSES, in francese o in inglese (Licence Ouverte);
-  - BDA-IEO con la licenza per i software commerciali, CREA con il permesso scritto:
-    si importano solo con la spunta "il centro può usarla", e l'importazione tiene
-    chi l'ha dichiarato (`Clinic Library Import`);
-  - qualunque altra tabella nella stessa forma (USDA compresa): una riga per
-    alimento, una colonna per valore su 100 g.
-- **Il server legge, la persona controlla**, prima che entri niente:
-  - le colonne si riconoscono dal nome, in italiano, francese e inglese; quello che
-    non si riconosce si sceglie a mano;
-  - ogni categoria della tabella diventa uno dei gruppi della libreria con le sue
-    parole ("vegetable oils" sono oli, "fruits de mer" pesce, "légumes" verdure,
-    "legumes" legumi) e si può cambiare, categoria per categoria. Sulla tabella
-    CIQUAL vera tutte le 64 categorie finiscono nel gruppo giusto;
-  - gli alimenti si scelgono: tutti per una tabella italiana, uno per uno per
-    CIQUAL e USDA, che riempiono i buchi e non hanno i nomi in italiano.
+- **La libreria degli alimenti** (dal 02/10/2026): la diamo noi, nel codice
+  (`crm/clinica/dati/alimenti.json`), e si carica da sola all'installazione e a ogni
+  aggiornamento che porta un file nuovo. Il centro non importa più tabelle.
+  - I 3.403 alimenti di CIQUAL 2025 (ANSES, Licence Ouverte) che hanno l'energia,
+    ognuno con il nome in italiano tradotto da NPM2 e l'inglese dell'ANSES accanto:
+    si cercano in tutte e due le lingue. Fonte e versione, come chiede la licenza,
+    stanno in `alimenti.LICENSE.txt`, in ogni alimento e in fondo alla pagina.
+  - Il file lo fa `tabelle.libreria_ciqual` dal foglio inglese dell'ANSES; i nomi
+    italiani restano per codice da una versione alla successiva, e un codice nuovo
+    esce tra quelli da tradurre.
+  - I gruppi vengono dalle categorie di CIQUAL; dove le parole sbagliano lo dice
+    NPM2 (`GRUPPI_CIQUAL`: le paste per torte sono farina, le alternative vegetali
+    alla carne legumi).
+  - Ricaricata, la libreria porta i numeri nuovi; un nome che il centro non ha
+    cambiato segue quello della libreria, uno cambiato resta del centro.
+  - Le tabelle italiane (BDA-IEO con la licenza per i software, CREA con il
+    permesso scritto) le aggiungiamo noi allo stesso modo, quando ci sono.
 - **I numeri sono della tabella**: "4,63" è 4,63; "-" non è noto e non si conta;
   "traces" e "< 0,15" valgono zero. L'energia solo in kJ diventa kcal; i
   carboidrati "per differenza" perdono la fibra. Un valore impossibile (più di 100
@@ -1099,9 +1100,9 @@ il lettore puro `crm/clinica/tabelle.py`, provato senza sito).
     reimportare. L'assistente non le tocca mai.
   - Il paziente vede l'animazione nell'area, con "© Gym visual" sotto; la foto del
     centro, se c'è, vince, e allora non è di Gym visual.
-- **Importata di nuovo**, una tabella porta i suoi numeri nuovi e il dataset le sue
-  immagini e i muscoli; le parole del centro (il nome in italiano, il gruppo, come
-  si fa un esercizio) restano sue. Un alimento o un esercizio si spegne, non si
+- **Caricate di nuovo**, la libreria degli alimenti porta i suoi numeri nuovi e
+  quella degli esercizi le sue immagini e i muscoli; le parole del centro (un nome,
+  il gruppo, come si fa un esercizio) restano sue. Un alimento o un esercizio si spegne, non si
   cancella: un piano può averlo.
 
 ### I cicli di sedute

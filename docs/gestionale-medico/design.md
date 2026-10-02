@@ -294,6 +294,20 @@ riabilitazione restano alla clinica.*
   free-exercise-db restano la riserva libera. Per la fisioterapia non
   c'è una libreria libera con le figure (dell'NHS si riusano i testi, non le
   immagini né i video): restano i video del centro, più un link YouTube o Vimeo.
+- **La libreria degli alimenti, come arriva** (02/10/2026): la diamo noi, come gli
+  esercizi. È nel codice (`crm/clinica/dati/alimenti.json`): i 3.403 alimenti di
+  CIQUAL 2025 (ANSES, Licence Ouverte) che hanno l'energia, con i nomi in italiano
+  tradotti da NPM2 e l'inglese dell'ANSES accanto, perché si cercano in tutte e
+  due le lingue. Si carica da sola all'installazione e a ogni aggiornamento che
+  porta un file nuovo (`carica_libreria`); la licenza chiede fonte e versione, che
+  stanno nel file `alimenti.LICENSE.txt`, in ogni alimento e in fondo alla pagina.
+  Il centro non importa più tabelle: corregge nomi e gruppi, aggiunge i suoi.
+  - un nome che il centro non ha cambiato segue la libreria (una traduzione
+    corretta arriva da sola); uno cambiato resta del centro;
+  - gli 80 alimenti di CIQUAL senza energia restano fuori: le colonne del sito
+    tengono un numero, e 0 kcal sarebbe falso;
+  - BDA-IEO (licenza per i software, a pagamento) e CREA (permesso scritto) le
+    aggiungiamo noi allo stesso modo quando ci sono, con i nomi già in italiano.
 - **La libreria degli esercizi, come arriva** (01/10/2026): la diamo noi. È nel
   codice (`crm/piani/dati/esercizi.json`, fatto una volta da exercises-dataset, con
   la licenza MIT dei dati accanto) e si carica da sola all'installazione e a ogni
@@ -717,6 +731,8 @@ PR piccole, ognuna utile da sola:
    gli avvisi.
 6. Quali piani per primi: alimentazione, allenamento, esercizi di fisioterapia?
    Per gli alimenti si compra la licenza BDA-IEO o si parte dalle tabelle libere?
+   *Si parte da CIQUAL 2025, libera, con i nomi in italiano (02/10/2026); BDA-IEO
+   si aggiunge alla libreria quando c'è la licenza.*
 7. Il paziente può rispondere ai messaggi? Se sì, è una chat, e ai medici arriva
    un'altra casella.
 8. Registrare la visita mentre si svolge: mai, oppure con uno scribe che ha già il
