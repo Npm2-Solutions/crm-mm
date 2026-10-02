@@ -18,6 +18,10 @@
   "column_break_sms",
   "sms_sender_name",
   "sms_sender_number",
+  "spend_section",
+  "spend_alert",
+  "column_break_spend",
+  "spend_alert_trigger",
   "section_break_eklq",
   "account_sid",
   "column_break_yqvr",
@@ -281,12 +285,37 @@
    "fieldtype": "Data",
    "label": "Sender's Number",
    "options": "Phone"
+  },
+  {
+   "fieldname": "spend_section",
+   "fieldtype": "Section Break",
+   "label": "Spend"
+  },
+  {
+   "description": "When this month's spend reaches this amount, in the Twilio account's currency (usually dollars), whoever pays for the space is told. Empty: no alert.",
+   "fieldname": "spend_alert",
+   "fieldtype": "Float",
+   "label": "Spend Alert",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_spend",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "spend_alert_trigger",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Spend Alert Trigger",
+   "permlevel": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-02 21:00:00.000000",
+ "modified": "2026-10-02 22:00:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Twilio Settings",

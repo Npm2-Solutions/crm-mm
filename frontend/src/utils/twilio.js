@@ -15,6 +15,8 @@
 export const TWILIO = {
   registrazione: 'https://www.twilio.com/try-twilio',
   console: 'https://console.twilio.com',
+  // the log of the account's problems, where Twilio says every detail
+  registro: 'https://console.twilio.com/us1/monitor/logs/debugger/errors',
 }
 
 const SID = /^AC[0-9a-fA-F]{32}$/
@@ -93,4 +95,36 @@ export function righeDelControllo(esito) {
   }
   if (!righe.length) righe.push(['Everything is in place.', 0])
   return righe
+}
+
+/**
+ * What a kind of this month's spend counted, as [sentence, values] to translate
+ * where it is drawn: «40 calls · 310 min», «One SMS», «2 numbers». Nothing for a
+ * kind that counts nothing, or that Twilio counts only in money.
+ */
+export function quantiNellaVoce(voce) {
+  const quanti = Number(voce?.count) || 0
+  if (!quanti) return null
+  if (voce.key === 'calls') {
+    const minuti = Number(voce.minutes) || 0
+    return quanti === 1
+      ? ['One call · {0} min', [minuti]]
+      : ['{0} calls · {1} min', [quanti, minuti]]
+  }
+  if (voce.key === 'sms') {
+    return quanti === 1 ? ['One SMS', []] : ['{0} SMS', [quanti]]
+  }
+  if (voce.key === 'numbers') {
+    return quanti === 1 ? ['One number', []] : ['{0} numbers', [quanti]]
+  }
+  return null
+}
+
+/**
+ * How often a problem came back in the last days, as [sentence, values]: «Once»,
+ * «3 times».
+ */
+export function quanteVolte(volte) {
+  const quante = Number(volte) || 0
+  return quante <= 1 ? ['Once', []] : ['{0} times', [quante]]
 }

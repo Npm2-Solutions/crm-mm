@@ -344,6 +344,13 @@ def _ripara(impostazioni) -> dict:
 		_aggiorna_i_numeri()
 	# somebody may have opened other countries in the console
 	_allinea_i_paesi(impostazioni)
+	# the spend alert the centre set, as Twilio keeps it
+	from crm.telephony import consumi
+
+	try:
+		consumi.allinea_l_avviso(impostazioni)
+	except NON_RISPONDE as errore:
+		_registra("DottorCloud: the spend alert", errore)
 	return {"conto": conto, **numeri}
 
 

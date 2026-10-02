@@ -482,6 +482,19 @@ def incoming_sms_handler(**kwargs):
 
 
 # webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged.
+# Twilio posts it when this month's spend reaches the centre's alert (doc 52).
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def spend_reached(**kwargs):
+	"""Twilio's usage trigger: whoever pays for the space is told."""
+	args = frappe._dict(kwargs)
+	validate_twilio_request(args)
+
+	from crm.telephony import consumi
+
+	consumi.speso(args.UsageTriggerSid, args.CurrentValue, args.TriggerValue)
+
+
+# webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged.
 # Twilio posts a message's status, always: the request commits it.
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
 def update_sms_status_info(**kwargs):

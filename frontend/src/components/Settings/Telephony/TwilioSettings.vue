@@ -256,6 +256,137 @@
           />
         </div>
 
+        <!--
+          What the space spends and what went wrong in it (doc 52), for whoever
+          pays for it: this month by kind, the alert, the last days' problems in
+          words. The credit is the account's, and Twilio shows it.
+        -->
+        <template v-if="consumi.data?.visible">
+          <div class="h-px border-t border-outline-elevation-2" />
+
+          <div class="flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex min-w-0 flex-col">
+                <div class="text-p-base-medium text-ink-gray-7">
+                  {{ __('This month') }}
+                </div>
+                <div class="text-p-sm text-ink-gray-5">
+                  {{
+                    __(
+                      'What the space spent since {0}, as Twilio counts it. The credit is the account’s: Twilio shows it, and that is where it is topped up.',
+                      [formatDate(consumi.data.since, 'D MMMM')],
+                    )
+                  }}
+                </div>
+              </div>
+              <div
+                v-if="consumi.data.month"
+                class="shrink-0 text-lg font-semibold tabular-nums text-ink-gray-9"
+              >
+                {{ soldi(consumi.data.month.total) }}
+              </div>
+            </div>
+            <p v-if="consumi.data.error" class="text-p-sm text-ink-red-8">
+              {{ consumi.data.error }}
+            </p>
+            <div
+              v-else
+              class="flex flex-col divide-y divide-outline-gray-1 rounded border border-outline-gray-1"
+            >
+              <div
+                v-for="voce in consumi.data.month.items"
+                :key="voce.key"
+                class="flex items-center justify-between gap-3 px-3 py-2"
+              >
+                <div class="flex min-w-0 flex-col">
+                  <span class="text-p-sm text-ink-gray-8">{{
+                    voce.label
+                  }}</span>
+                  <span
+                    v-if="quantiNellaVoce(voce)"
+                    class="text-p-xs text-ink-gray-5"
+                  >
+                    {{ __(...quantiNellaVoce(voce)) }}
+                  </span>
+                </div>
+                <span class="shrink-0 text-p-sm tabular-nums text-ink-gray-8">
+                  {{ soldi(voce.price) }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="twilio.doc" class="flex flex-col gap-1.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <label for="avviso-spesa" class="text-p-sm text-ink-gray-7">
+                  {{ __('Tell me when the month reaches') }}
+                </label>
+                <div class="flex shrink-0 items-center gap-1.5">
+                  <FormControl
+                    id="avviso-spesa"
+                    v-model="avvisoDiSpesa"
+                    class="w-36"
+                    type="number"
+                    min="0"
+                    step="1"
+                    :placeholder="__('No alert')"
+                  />
+                  <span class="text-p-sm text-ink-gray-5">
+                    {{ consumi.data.month?.currency }}
+                  </span>
+                </div>
+              </div>
+              <p class="text-p-xs text-ink-gray-5">
+                {{
+                  __(
+                    'Twilio says it once a month, the moment the spend gets there: whoever pays for the space reads it among the notifications. Empty: no alert.',
+                  )
+                }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0 text-p-base-medium text-ink-gray-7">
+                {{ __('Problems in the last {0} days', [consumi.data.days]) }}
+              </div>
+              <Button
+                class="shrink-0"
+                variant="ghost"
+                size="sm"
+                icon-left="lucide-external-link"
+                :label="__('Twilio’s log')"
+                @click="apri(TWILIO.registro)"
+              />
+            </div>
+            <p
+              v-if="!consumi.data.error && !consumi.data.problems?.length"
+              class="text-p-sm text-ink-gray-5"
+            >
+              {{ __('None: calls and SMS went through.') }}
+            </p>
+            <div
+              v-for="problema in consumi.data.problems"
+              :key="problema.code || problema.twilio"
+              class="flex flex-col gap-0.5 rounded bg-surface-gray-1 px-3 py-2"
+            >
+              <span class="text-p-sm text-ink-gray-8">{{
+                problema.sentence
+              }}</span>
+              <span class="text-p-xs text-ink-gray-5">
+                {{ __(...quanteVolte(problema.count)) }} ·
+                {{
+                  __('last on {0}', [
+                    formatDate(problema.last, 'ddd D MMM, HH:mm'),
+                  ])
+                }}<template v-if="problema.code">
+                  · {{ __('error {0}', [problema.code]) }}</template
+                >
+              </span>
+            </div>
+          </div>
+        </template>
+
         <div class="h-px border-t border-outline-elevation-2" />
 
         <div class="flex flex-col gap-3">
@@ -645,11 +776,17 @@ import {
   senzaIlPaese,
 } from '@/utils/chiamate'
 import { appLocale } from '@/utils/locale'
-import { nomeDellaRichiesta, statoDellaRichiesta } from '@/utils/numeri'
+import {
+  nomeDellaRichiesta,
+  prezzoAlMese,
+  statoDellaRichiesta,
+} from '@/utils/numeri'
 import {
   TWILIO,
   chiPaga,
   cosaManca,
+  quanteVolte,
+  quantiNellaVoce,
   righeDelControllo,
   statoDelConto,
 } from '@/utils/twilio'
@@ -916,6 +1053,29 @@ function togliIlPaese(codice) {
   )
 }
 
+// what the space spends and what went wrong in it (doc 52), for whoever pays
+const consumi = createResource({
+  url: 'crm.telephony.consumi.get_twilio_usage',
+})
+watch(
+  () => stato.value?.connected,
+  (collegato) => {
+    if (collegato) consumi.fetch()
+  },
+  { immediate: true },
+)
+function soldi(valore) {
+  return prezzoAlMese(valore, consumi.data?.month?.currency || 'USD', lingua)
+}
+// no alert is an empty field, not a 0
+const avvisoDiSpesa = computed({
+  get: () => twilio.doc?.spend_alert || '',
+  set: (valore) => {
+    twilio.doc.spend_alert =
+      valore === '' || valore === null ? 0 : Number(valore)
+  },
+})
+
 // who every SMS of the centre comes from (doc 52): its name, or one of its
 // numbers that can send SMS; while nothing is chosen, the one the server uses
 const opzioniSms = createResource({
@@ -996,7 +1156,8 @@ const isDirty = computed(() => {
       comeSalvati(prima.allowed_countries) ||
     ['sms_from', 'sms_sender_name', 'sms_sender_number'].some(
       (campo) => (doc[campo] || '') !== (prima[campo] || ''),
-    )
+    ) ||
+    Number(doc.spend_alert || 0) !== Number(prima.spend_alert || 0)
   )
 })
 </script>
