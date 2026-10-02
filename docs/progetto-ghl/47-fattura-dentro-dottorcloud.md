@@ -2,7 +2,9 @@
 
 **Stato:** fatto (02/10/2026). È la terza delle tre parti della fatturazione
 semplice: la prima è [45](./45-codici-in-parole.md) (ogni codice col suo nome), la
-seconda [46](./46-fatturazione-sanitaria.md) (un centro medico già impostato).
+seconda [46](./46-fatturazione-sanitaria.md) (un centro medico già impostato). I
+controlli del Sistema TS e dello SdI prima di emettere, in parole, sono il
+[48](./48-controlli-in-parole.md).
 
 ## Il bisogno
 
