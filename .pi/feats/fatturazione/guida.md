@@ -61,12 +61,13 @@ ogni interazione in piu' e' un minuto al giorno.
 Nel pannello, sotto «Da fare», c'e' la coda **«Dall'agenda, non ancora fatturati»**:
 appuntamenti passati che non hanno prodotto un documento. Solo passati — una lista che
 mostra le prenotazioni di domani e' una lista di cui non ti fidi. Un bottone apre la
-bozza con i quattro campi gia' a posto.
+bozza, gia' compilata, nella finestra della fattura.
 
-**E la bozza dice dove andra' prima di essere emessa**: un badge *Fattura elettronica
-via SdI* oppure *PDF al cliente, comunicato al Sistema TS*. L'errore si vede prima di
-farlo, non dopo — un documento che si scopre non emettibile al momento dell'emissione
-ha gia' consumato il tempo di chi l'ha scritto, col cliente ancora davanti.
+**E la bozza dice dove andra' prima di essere emessa**: in cima alla finestra,
+*Fattura elettronica* oppure *PDF + Sistema TS*, con la riga che lo spiega. L'errore
+si vede prima di farlo, non dopo — un documento che si scopre non emettibile al
+momento dell'emissione ha gia' consumato il tempo di chi l'ha scritto, col cliente
+ancora davanti.
 
 ---
 
@@ -231,6 +232,49 @@ Alla conferma il documento **si congela** e prende la sua strada:
 Il canale **non si sceglie**: lo decide la classificazione. In lista lo vedi
 accanto al totale.
 
+### La finestra della fattura
+
+La fattura si fa in una finestra di DottorCloud, mai nel Desk
+(`crm/invoicing/emissione.py`, `InvoiceDialog.vue`; doc 47). Quattro parti:
+
+1. **Per chi e'**: il paziente (il cliente, senza la clinica), il tipo di
+   destinatario, e i *Dati in fattura* presi dalla sua scheda fiscale. A una persona
+   fisica la fattura va a suo nome, mai a quello dell'azienda per cui lavora.
+2. **Cosa e' stato fatto**: il servizio e chi l'ha eseguito, quantita' e prezzo. Il
+   prezzo, la descrizione e il professionista vengono dalla scheda del servizio;
+   cambiando servizio arrivano quelli nuovi. Uno studio con un solo professionista
+   non lo chiede.
+3. **Come e' stata pagata**: la modalita' (con la riga che dice se e' tracciabile) e
+   la data; per una fattura che va al Sistema TS, l'opposizione del paziente.
+4. **Dove andra'**, in cima, prima di tutto.
+
+Mentre si scrive, il server classifica e conta **in memoria**: dove andra', quanto fa
+(imponibile, cassa, IVA, bollo, ritenuta, totale) e tutto quello che manca. Una riga
+senza chi l'ha eseguita lo dice, e il totale non si mostra finche' non sarebbe quello
+vero. Niente si salva a meta': *Salva la bozza* e *Emetti* sono gli unici due modi di
+scrivere. La finestra scrive solo cliente, pagamento e righe; cassa, ritenuta, bollo
+e canale li decidono l'azienda e il motore — anche la ritenuta di una bozza gia'
+salvata, se cambia il destinatario: mai verso un privato.
+
+Si apre da *Nuova fattura* e *Apri* nel pannello, da *Emetti la fattura* di un
+appuntamento, di un ciclo o di una rata di abbonamento, e dalla fattura nella storia
+della persona.
+
+### La nota di credito
+
+Su una fattura emessa, *Nota di credito* prepara una bozza TD04 con lo stesso
+cliente e le stesse righe, che dice quale fattura corregge. Si controlla e si emette
+come una fattura. Se l'originale e' andato al Sistema TS, la nota e' il suo
+**rimborso** (operazione R) e la comunicazione porta il riferimento al documento
+originale: partita IVA, data e numero.
+
+### Una scartata si corregge
+
+Una fattura scartata dallo SdI si considera non emessa. La finestra mostra il motivo
+e offre *Correggila* invece di *Invia*: torna in bozza **con il suo numero e la sua
+data**, si corregge e si emette di nuovo, entro cinque giorni dalla notifica. Una
+bozza che ha gia' il numero non si elimina: lascerebbe un buco nella numerazione.
+
 ### La validazione dice tutto insieme
 
 Se il documento non e' emettibile, l'errore elenca **tutti** i problemi, non il
@@ -276,7 +320,7 @@ non se ne accorge nessuno.
 
 ## Il pannello
 
-`/crm/fatture`, voce **Invoices** nella barra laterale. Tre schede.
+`/crm/fatture`, voce **Fatture** nella barra laterale. Tre schede.
 
 **Da fare.** Ogni documento emesso che ha ancora un bottone da premere: da
 trasmettere allo SdI, scartato, da comunicare al Sistema TS. Un bottone non premuto
@@ -289,8 +333,8 @@ compare solo sui documenti che quel canale possono prenderlo.
 **Sistema TS.** Contatori dell'anno, scadenza e giorni che mancano, ultimo invio
 accolto, e il bottone che prepara lo zip.
 
-La creazione e la modifica di un documento avvengono sulla sua form: il pannello e'
-la console dell'operatore, non un secondo editor.
+Ogni documento si apre nella sua finestra (*Apri*), la stessa con cui si crea: il
+pannello e' la console dell'operatore, la finestra e' l'unico editor.
 
 ---
 
