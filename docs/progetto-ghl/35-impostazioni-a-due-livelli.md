@@ -19,7 +19,7 @@
 │ ▦ Agenda       ◀ │ │ Servizi                                          › │ │
 │ ⚇ Pazienti       │ │ Cosa offre il centro, i suoi listini e i suoi      │ │
 │                  │ │ abbonamenti.                                       │ │
-│ ▥ Offerte        │ ├────────────────────────────────────────────────────┤ │
+│ ▥ Trattative     │ ├────────────────────────────────────────────────────┤ │
 │ ✉ E-mail         │ │ Orari e turni                                    › │ │
 │ ✆ WhatsApp       │ │ Quando è aperto il centro, e chi lavora quando.    │ │
 │ ☏ Telefono       │ ├────────────────────────────────────────────────────┤ │

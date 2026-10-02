@@ -61,7 +61,7 @@ pagina con il suo link diretto (`?settings=<chiave>`).
 
 ## Fatto: il resto dell'app e le parole del server (PR 3)
 
-Le pagine che restavano (automazioni, social, sito, tastierino, offerte, aziende,
+Le pagine che restavano (automazioni, social, sito, tastierino, trattative, aziende,
 contatti, note, chiamate, notifiche) e tutto quello che arriva dal server.
 
 - **Le frasi del server**: messaggi d'errore, email, notifiche, testi delle
@@ -147,7 +147,7 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | Inglese | Italiano |
 |---|---|
 | Lead, person | persona, la scheda della persona (con la clinica: paziente) |
-| Deal | trattativa (la pagina del menu: "Offerte") |
+| Deal | trattativa (la pagina del menu: "Trattative", [doc 50](./50-trattative-e-preventivi.md)) |
 | Contact, Organization | contatto, azienda |
 | Task | cosa da fare (la lista: "Da fare") |
 | Call log | chiamata |
