@@ -801,7 +801,9 @@ standard_dropdown_items = [
 # to assume about the other. It runs here, when the hooks load, and before every
 # request and job: outside developer mode Frappe serves hooks from its cache, and a
 # worker that finds them there never imports this file.
-before_request = ["crm.registrazione.carica"]
+# Itala pushes its updates with `Authorization: Bearer`: taken away from that one
+# address before Frappe authenticates the request (crm/invoicing/sdi/webhook.py)
+before_request = ["crm.registrazione.carica", "crm.invoicing.sdi.webhook.prima_della_richiesta"]
 before_job = ["crm.registrazione.carica"]
 
 from crm.registrazione import carica as _carica_moduli

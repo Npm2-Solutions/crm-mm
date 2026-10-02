@@ -68,6 +68,7 @@
   "stamp_authorization_office",
   "conservation_section",
   "conservation_joined",
+  "recipient_code_registered",
   "numbering_section",
   "series_electronic",
   "series_healthcare",
@@ -107,6 +108,7 @@
   "column_sdi",
   "itala_id_test",
   "itala_id",
+  "itala_site",
   "sdi_username",
   "sdi_password",
   "sdi_webhook_secret",
@@ -737,6 +739,15 @@
    "read_only": 1
   },
   {
+   "description": "The site that reads the company's updates at Itala. A copy of the site elsewhere reads none: it would take them away from this one.",
+   "fieldname": "itala_site",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Reads Itala's updates",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
    "description": "Only for a company with an Itala account of its own. Empty, the agency's account is used and the company is registered under it by itself.",
    "fieldname": "sdi_username",
    "fieldtype": "Data",
@@ -789,11 +800,17 @@
    "fieldname": "conservation_joined",
    "fieldtype": "Check",
    "label": "Joined the Agenzia's preservation service"
+  },
+  {
+   "description": "Once, in Fatture e Corrispettivi (by the centre or its accountant): Itala's recipient code as the address of the invoices your suppliers send. From that day they arrive here.",
+   "fieldname": "recipient_code_registered",
+   "fieldtype": "Check",
+   "label": "Registered Itala's recipient code"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-02 19:00:00.000000",
+ "modified": "2026-10-02 23:45:00.000000",
  "modified_by": "Administrator",
  "module": "Invoicing",
  "name": "CRM Invoicing Company",

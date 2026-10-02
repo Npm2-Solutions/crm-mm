@@ -123,8 +123,23 @@ def send_to_sdi(invoice: str) -> dict:
 	try:
 		esito = sdi.invia(fattura, emittente)
 	except sdi.ErroreCanale as errore:
-		documento.registra(fattura, "sdi_sent", str(errore), stato="errore")
-		frappe.throw(str(errore), title=_("Transmission"))
+		# A send whose answer was lost may have arrived: the next one asks Itala
+		# first (`itala.invia`). The attempt stays in the log either way, so it is
+		# kept before the error undoes the rest.
+		incerto = getattr(errore, "incerto", False)
+		documento.registra(fattura, "sdi_sent", str(errore), stato="incerto" if incerto else "errore")
+		if not frappe.flags.in_test:
+			frappe.db.commit()  # nosemgrep: frappe-manual-commit
+		frappe.throw(
+			str(errore)
+			+ (
+				"<br><br>"
+				+ _("It may have reached Itala all the same: sending it again first asks whether it did.")
+				if incerto
+				else ""
+			),
+			title=_("Transmission"),
+		)
 
 	fattura.db_set(
 		{
@@ -143,7 +158,14 @@ def send_to_sdi(invoice: str) -> dict:
 		update_modified=False,
 	)
 	documento.registra(fattura, "sdi_sent", esito.messaggio, stato=esito.canale)
-	return esito.come_dizionario()
+	if esito.dettagli.get("transmitted_xml"):
+		from crm.invoicing.sdi.riconciliazione import conserva_trasmesso
+
+		conserva_trasmesso(fattura, esito.dettagli["transmitted_xml"])
+	risposta = esito.come_dizionario()
+	# the XML is on the invoice now, not in the answer
+	risposta.pop("transmitted_xml", None)
+	return risposta
 
 
 @frappe.whitelist(methods=["POST"])
@@ -577,11 +599,12 @@ def provider_webhook():
 	This is the only endpoint in the module that answers an unauthenticated caller,
 	so it answers as little as possible: a refused delivery learns nothing about why.
 
-	The status code is the contract with the provider's retry queue - it retries
-	fifteen times over about ten hours on anything that is not a 200. So a delivery
-	that was understood returns 200 even when there was nothing to apply, because
-	sending the same bytes again would reach the same answer; an unexpected failure
-	returns 500, because that one is worth trying again.
+	The status code is the contract with the provider's retry queue - Itala tries
+	again every three hours, for up to three days, on anything that is not a 200. So
+	a delivery that was understood returns 200 even when there was nothing to apply,
+	because sending the same bytes again would reach the same answer; an unexpected
+	failure returns 500, because that one is worth trying again. What it brings is
+	kept before it is applied (`riconciliazione`): a 200 never loses an update.
 	"""
 	from crm.invoicing.sdi import webhook
 
@@ -616,9 +639,9 @@ def webhook_endpoint(company: str) -> dict:
 	return {
 		"url": url,
 		"configured": configurato,
-		"header": "X-Provider-Token",
+		"header": "Authorization: Bearer",
 		"hint": _(
-			"In the provider's configuration set the authentication token to the secret you generated here, as a header named X-Acube-Token or as a query parameter named token."
+			"In Itala's dashboard set the webhook to this address and its token to the secret generated here: Itala sends it as Authorization: Bearer. Only for a company with an account of its own: under the agency's account the updates are fetched every ten minutes."
 		),
 	}
 

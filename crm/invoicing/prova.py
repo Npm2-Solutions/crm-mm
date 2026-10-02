@@ -138,6 +138,38 @@ def mancanze(emittente: dict, agenzia: bool | None = None) -> list[dict]:
 			"the agency does it, the centre sets up nothing."
 		),
 	)
+	# the invoices the suppliers send come here only once Itala's recipient code is
+	# the centre's address at the Agenzia: the centre's to do, once, as preservation
+	codice = connessione.codice_destinatario()
+	manca(
+		modo == itala.CODICE and not codice,
+		_("Itala's recipient code"),
+		_(
+			"Itala gives it with the account: without it the centre cannot be told what to register to receive its suppliers' invoices here."
+		),
+		"itala_recipient_code",
+		agenzia=True,
+	)
+	manca(
+		modo == itala.CODICE and bool(codice) and not emittente.get("recipient_code_registered"),
+		_("Your suppliers' invoices"),
+		_(
+			"Register the recipient code {0} once in Fatture e Corrispettivi (ivaservizi.agenziaentrate.gov.it), you or your accountant, then tick it on the Invoicing tab: from that day the invoices your suppliers send arrive here."
+		).format(codice),
+		"recipient_code_registered",
+	)
+	# a copy of the site reads nothing of Itala's, so as not to take the updates
+	# away from the site that reads them
+	sito = (emittente.get("itala_site") or "").strip()
+	manca(
+		modo == itala.CODICE and bool(sito) and sito != frappe.local.site,
+		_("Itala's updates"),
+		_(
+			"This site is not {0}, the one that reads the company's updates at Itala: it reads none, so as not to take them away from that one. If this is the company's site now, clear Reads Itala's updates on the company."
+		).format(sito),
+		"itala_site",
+		agenzia=True,
+	)
 	# the Agenzia's free service keeps the SdI documents: joining it is the centre's,
 	# once, in Fatture e Corrispettivi, and nobody can do it from here
 	manca(
@@ -316,3 +348,20 @@ def register_at_itala(company: str, environment: str | None = None) -> dict:
 	except (ErroreCanale, connessione.ErroreProvider) as errore:
 		frappe.throw(str(errore), title=_("Itala"))
 	return {"id": identificativo, "status": get_status(company)}
+
+
+@frappe.whitelist(methods=["POST"])
+@richiede(AGENZIA)
+def remove_from_itala(company: str, environment: str | None = None) -> dict:
+	"""Take the company away from the agency's account at Itala: a centre that
+	leaves stops sending and receiving through it. In production by default."""
+	doc = frappe.get_doc(AZIENDA, company)
+	doc.check_permission("write")
+	emittente = doc.as_dict()
+	try:
+		tolta = itala.rimuovi_azienda(emittente, environment or connessione.PRODUZIONE)
+	except (ErroreCanale, connessione.ErroreProvider) as errore:
+		frappe.throw(str(errore), title=_("Itala"))
+	if tolta:
+		doc.add_comment("Info", _("Removed from the agency's account at Itala."))
+	return {"removed": tolta, "status": get_status(company)}

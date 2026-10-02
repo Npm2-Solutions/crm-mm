@@ -8,8 +8,11 @@ be taken out.
 
 ## Electronic invoices — fattura-elettronica-api.it, REST API 2.0
 
-Guide: https://fattura-elettronica-api.it/guida2.0/ (OpenAPI at
-`/docs/fattura-elettronica-api.yaml`).
+Guide: https://www.fattura-elettronica-api.it/documentazione/ (the old
+`/guida2.0/` redirects there); OpenAPI 3.0.3 at
+https://www.fattura-elettronica-api.it/docs/fattura-elettronica-api.yaml (only on
+`www.`). FAQ: https://www.fattura-elettronica-api.it/faq/. Official PHP client:
+github.com/clixclix2/FatturaElettronicaAPIClient2. Read again on 02/10/2026.
 
 - **Doors.** Test `https://fattura-elettronica-api.it/ws2.0/test`, production
   `https://fattura-elettronica-api.it/ws2.0/prod`.
@@ -20,11 +23,15 @@ Guide: https://fattura-elettronica-api.it/guida2.0/ (OpenAPI at
   the next ones Bearer, without ever calling `/authentication`.
 - **Errors.** Always JSON; 400, 401, 404 carry `{"error": "..."}`.
 - **Sending an XML.** `POST /fatture`, `Content-Type: application/xml`, the whole
-  FatturaPA. They add or rewrite `FatturaElettronicaHeader/DatiTrasmissione` with
-  their own references and progressive. Answer: `id`, `sdi_identificativo` (or null),
-  `sdi_nome_file` (the name of the file actually transmitted), `sdi_fattura`,
-  `sdi_stato` (`INVI` sent, `PREN` taken in charge and not yet at the SdI, `ERRO`
-  error, see `sdi_messaggio`), `sdi_messaggio`.
+  FatturaPA, **unsigned**: they add or rewrite `FatturaElettronicaHeader/
+  DatiTrasmissione` with their own references and progressive, and **sign the
+  invoices to a public body themselves** (FAQ; the credits of a PA invoice include
+  the signature). A signed `.p7m` could not be rewritten. Answer: `id` (theirs),
+  `sdi_identificativo` (**null while `PREN`**: the SdI's id comes later, with the
+  updates - their `id` is not it), `sdi_nome_file` (the name of the file actually
+  transmitted), `sdi_fattura` (the XML actually transmitted), `sdi_stato` (`INVI`
+  sent, `PREN` taken in charge and not yet at the SdI, `ERRO` error, see
+  `sdi_messaggio`), `sdi_messaggio`.
 - **Sending from JSON.** `POST /fatture`, `Content-Type: application/json`, the
   data only; `piva_mittente` in multi-company accounts. Not used here: the XML is
   built and checked in DottorCloud.
@@ -37,18 +44,43 @@ Guide: https://fattura-elettronica-api.it/guida2.0/ (OpenAPI at
   `ricezione: 0` transmission updates: `sdi_stato` `INVI`, `PREN`, `ERRO`, `CONS`
   delivered, `NONC` not delivered (the obligation is met), and for the public
   administration `ACCE` accepted, `RIFI` refused, `DECO` term elapsed.
-- **One document.** `GET /fatture/{id}`; its PDF `GET /fatture/{id}/pdf`; its
-  attachments `GET /fatture/{id}/allegati`; **the SdI's original notice**
-  `GET /fatture/{id}/notifica` (XML, with its file name).
-- **Webhook.** URL and token set in their dashboard, one per account: the same JSON
-  as `GET /fatture`, unread only, with `Authorization: Bearer <token>`; a 200 marks
-  them delivered, anything else is retried every 3 hours for 3 days.
+- **Reading uses an update up.** An update returned once is not returned again
+  (the PHP client's `ricevi()`: "non viene più trasmesso", unless "Da leggere" is
+  ticked again in their dashboard). So DottorCloud keeps every update before it
+  applies it (`CRM SdI Update`) and tries a failed one again. Two sites polling the
+  same VAT number steal each other's updates: a copy of a site reads nothing
+  (`itala_site`).
+- **One document.** `GET /fatture/{id}` (one object: `ricezione`, `id`,
+  `sdi_identificativo`, `sdi_stato`, `sdi_messaggio`), asked for an invoice that has
+  heard nothing for a day; its PDF `GET /fatture/{id}/pdf`; its attachments
+  `GET /fatture/{id}/allegati`; **the SdI's original notice**
+  `GET /fatture/{id}/notifica` (`Content-Type: application/xml`; its own file name
+  in `Content-Disposition` when given - not documented, read when there - else one
+  name per state).
+- **Webhook.** URL and token set in their dashboard, one per account: `POST`, the
+  same JSON as `GET /fatture` (a list), unread only, with `Authorization: Bearer
+  <token>`; a 200 marks them delivered, anything else is retried every 3 hours for
+  up to 3 days. Frappe reads any Bearer as its own OAuth token and would refuse the
+  call: the webhook's address takes the header away before Frappe looks
+  (`webhook.prima_della_richiesta`). Only for a company with an account of its own:
+  on the agency's shared account the updates are polled with `partita_iva`.
 - **Multi-company.** For accounts enabled to it: `POST /aziende` (required
   `ragione_sociale`, `piva`, `cfis`; with invoices sent as XML only `piva` and
   `cfis` matter), `PUT /aziende/{id}`, `GET /aziende`, `GET /aziende/{id}`,
-  `DELETE /aziende/{id}`. The record: `id`, `ragione_sociale`, address, `piva`,
-  `cfis`, `abilita_ricezione` (default 1), `tipo_regime_fiscale`, register and REA
-  data, administration phone and email, `iban`.
+  `DELETE /aziende/{id}` (a centre that leaves: `remove_from_itala`). The record:
+  `id`, `ragione_sociale`, address, `piva`, `cfis`, `abilita_ricezione` (default 1,
+  sent as 1: both directions), `tipo_regime_fiscale`, register and REA data,
+  administration phone and email, `iban`.
+- **Receiving.** The account gets a recipient code ("il codice te lo forniamo dopo
+  la tua iscrizione"): each company registers it at ivaservizi.agenziaentrate.gov.it
+  as the address of its invoices, and from then on its suppliers' invoices reach
+  Itala (`itala_recipient_code` on the settings, `recipient_code_registered` on the
+  company). Every invoice received costs a credit.
+- **Reselling.** Allowed: the agency keeps each client's written authorisation to
+  send invoices on its behalf (FAQ).
+- **Timeouts.** A `POST /fatture` whose answer is lost may have arrived: before
+  sending again, `GET /fatture?numero_documento&anno_documento&partita_iva` says
+  whether Itala has it (an SdI duplicate is rejection 00404).
 - **Pages.** `per_page` (default 100, at most 1000), `page`; a `Link: <...>
   rel="next"` header when there is another page.
 

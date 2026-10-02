@@ -34,7 +34,7 @@ from dataclasses import dataclass, field
 
 import frappe
 from frappe import _
-from frappe.utils import cint
+from frappe.utils import cint, now_datetime
 from frappe.utils.password import get_decrypted_password
 
 from crm.invoicing.engine import busta
@@ -65,7 +65,13 @@ TIMEOUT = 60
 
 
 class ErroreProvider(Exception):
-	"""The provider could not be talked to. Never carries a credential."""
+	"""The provider could not be talked to. Never carries a credential.
+
+	`incerto`: the request may have reached it and only the answer was lost."""
+
+	def __init__(self, messaggio: str = "", incerto: bool = False):
+		super().__init__(messaggio)
+		self.incerto = incerto
 
 
 @dataclass(frozen=True)
@@ -133,6 +139,14 @@ def account_agenzia() -> tuple[str, str] | None:
 	return None
 
 
+def codice_destinatario() -> str:
+	"""Itala's recipient code for the agency's account: each centre registers it at
+	the Agenzia to receive its suppliers' invoices here. On the site first, else the
+	server's (`itala_codice_destinatario`)."""
+	codice = (frappe.db.get_single_value(IMPOSTAZIONI, "itala_recipient_code") or "").strip()
+	return (codice or str(frappe.conf.get("itala_codice_destinatario") or "")).strip().upper()
+
+
 def da_dove_l_account() -> str:
 	"""Where the agency's account is read from: `site`, `server`, or nothing."""
 	if (frappe.db.get_single_value(IMPOSTAZIONI, "itala_client_id") or "").strip():
@@ -183,7 +197,8 @@ def raccogli_token(chi: Accesso, risposta) -> None:
 		frappe.cache().set_value(
 			chi.chiave_cache,
 			testate["X-auth-token"],
-			expires_in_sec=busta.durata_token(testate.get("X-auth-expires")),
+			# their expiry is Italy's time, as the site's clock is
+			expires_in_sec=busta.durata_token(testate.get("X-auth-expires"), now_datetime()),
 		)
 
 
@@ -220,8 +235,11 @@ def _chiama(chi: Accesso, metodo: str, url: str, **argomenti):
 			dimentica_token(chi)
 			risposta = _una(rinnova=True)
 	except Exception as errore:
+		# a send that timed out, or lost its connection, may have arrived all the
+		# same: who sends again must ask first (`itala.invia`)
+		incerto = metodo == "POST" and _forse_arrivata(errore)
 		# the message may carry the URL, never the credentials: they are in a header
-		raise ErroreProvider(_("Itala is unreachable: {0}").format(str(errore))) from None
+		raise ErroreProvider(_("Itala is unreachable: {0}").format(str(errore)), incerto=incerto) from None
 
 	if risposta.status_code == 401:
 		raise ErroreProvider(
@@ -229,6 +247,15 @@ def _chiama(chi: Accesso, metodo: str, url: str, **argomenti):
 		)
 	raccogli_token(chi, risposta)
 	return risposta
+
+
+def _forse_arrivata(errore: Exception) -> bool:
+	"""Whether a failed call may have reached Itala: a timeout or a connection lost
+	once it was open. One that never connected did not arrive."""
+	nome = type(errore).__name__
+	if nome in ("ConnectTimeout", "SSLError", "InvalidURL", "MissingSchema"):
+		return False
+	return "Timeout" in nome or nome in ("ConnectionError", "ChunkedEncodingError", "ProtocolError")
 
 
 def posta(chi: Accesso, percorso: str, contenuto, tipo: str = "application/xml"):
@@ -239,8 +266,13 @@ def posta_json(chi: Accesso, percorso: str, dati: dict):
 	return _chiama(chi, "POST", chi.url(percorso), json=dati)
 
 
-def leggi(chi: Accesso, percorso: str, parametri: dict | None = None):
-	return _chiama(chi, "GET", chi.url(percorso), params=parametri or {})
+def leggi(chi: Accesso, percorso: str, parametri: dict | None = None, accetta: str = "application/json"):
+	"""A GET. `accetta`: what is asked back - a notice is the SdI's XML."""
+	return _chiama(chi, "GET", chi.url(percorso), params=parametri or {}, headers={"Accept": accetta})
+
+
+def cancella(chi: Accesso, percorso: str):
+	return _chiama(chi, "DELETE", chi.url(percorso))
 
 
 def etichetta_ambiente(ambiente_scelto: str) -> str:

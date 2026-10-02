@@ -210,3 +210,34 @@ gestisce la sessione.
     credenziali del Sistema TS;
   - una fattura `2026/PROVA-S/1` emessa, attivata la fatturazione: tolta, e niente
     più fascia.
+
+## Rilette le guide di Itala (02/10/2026)
+
+La guida, l'OpenAPI, le FAQ e il client PHP ufficiale di Itala, riletti uno per uno
+contro il codice (`.pi/vendor/itala.md`). Quello che non tornava, e com'è adesso:
+
+| Cosa | Prima | Adesso |
+|---|---|---|
+| La fattura alla PA | partiva il `.p7m` se allegato: Itala riscrive i dati di trasmissione e firma lei, una firma non si riscrive | parte sempre l'XML, così com'è; il campo del `.p7m` resta per la PEC del centro |
+| Il webhook | Itala presenta `Authorization: Bearer`, e Frappe rifiutava ogni Bearer non suo prima dell'endpoint | l'intestazione si toglie per quell'indirizzo prima che Frappe la legga (`before_request`) e si confronta col segreto |
+| Le notifiche | il nome usato per non applicarle due volte era quello della fattura: la seconda notifica di una fattura alla PA (accettata o rifiutata) passava per «già applicata» | ogni notifica col suo nome (`Content-Disposition`, o uno per stato) |
+| Lo stato di Itala senza notifica | si scrivevano `consegnato`, `accettato`, `rifiutato`, stati che la fattura non ha: la guardia sull'annullamento non li vedeva | gli stati della fattura (`consegnata`, `esito_pa`, `mancata_consegna`, `scartata`…), solo quelli che il campo ammette; chi deve fare qualcosa (non consegnata, rifiutata, non passata) lo sa |
+| L'identificativo SdI | si scriveva l'id di Itala; quello vero, che arriva dopo, non si scriveva mai | l'identificativo è solo `sdi_identificativo`, scritto quando arriva, con il nome del file trasmesso |
+| Un aggiornamento letto | Itala lo dà una volta: se applicarlo falliva, era perso e la fattura restava «inviata» | si tiene prima (`CRM SdI Update`) e si ritenta al giro dopo; una fattura muta da un giorno si chiede per nome (`GET /fatture/{id}`) |
+| La PA in attesa d'esito | il filtro cercava `pubblica_amm`, che non esiste | `pubblica_amministrazione` |
+| Il webhook su un account condiviso | ogni riga finiva sulla società dell'indirizzo | una riga di un'altra partita IVA non è della società |
+| Una copia del sito | leggeva gli aggiornamenti e li toglieva al sito vero | legge solo il sito che ha registrato la società (`itala_site`); l'agenzia lo vede in quello che manca |
+| Un invio senza risposta | rinviando si rischiava il doppione (scarto 00404) | si chiede prima a Itala se ce l'ha, per numero e anno |
+| Le fatture dei fornitori | nessuno diceva al centro di registrare il codice destinatario di Itala | il codice è dell'account (Impostazioni dell'agenzia); il centro lo registra una volta in Fatture e Corrispettivi e lo spunta, come la conservazione |
+| L'XML trasmesso | non si teneva quello che ha lo SdI | si tiene accanto al nostro (`sdi_sent_file`) |
+| Un centro che se ne va | niente | «Togli da Itala» per l'agenzia (`DELETE /aziende/{id}`) |
+| La registrazione | `abilita_ricezione` lasciato al default | detto: 1 |
+| La scadenza del token | confrontata con l'ora del server | con l'ora del sito, che è quella di Itala |
+
+Da verificare con un account vero (le guide non lo dicono): se l'ambiente di prova
+simula gli esiti, se `GET /fatture/{id}` segna l'aggiornamento come letto, come
+Itala manda il nome della notifica.
+
+Test: `crm/tests/test_itala_flusso.py` (sul sito, rete finta) e
+`crm/invoicing/tests/test_itala.py` (gli stati, il nome della notifica, la partita
+IVA, la scadenza).

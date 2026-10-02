@@ -232,6 +232,18 @@
             :label="__('Register at Itala now')"
             @click="registra"
           />
+          <!-- a centre that leaves: it stops sending and receiving through the
+               agency's account -->
+          <Button
+            v-if="
+              !stato.data.agency.own_account &&
+              stato.data.agency.registered.production
+            "
+            theme="red"
+            :loading="lavoro === 'togli'"
+            :label="__('Remove from Itala')"
+            @click="togliDaItala"
+          />
           <span class="text-p-sm text-ink-gray-5">
             {{
               __(
@@ -484,6 +496,37 @@ async function registra() {
   } finally {
     lavoro.value = ''
   }
+}
+
+function togliDaItala() {
+  $dialog({
+    title: __('Remove the company from Itala?'),
+    message: __(
+      'Only for a centre that leaves: its invoices stop leaving through the agency’s account, and the ones its suppliers send stop arriving here.',
+    ),
+    actions: [
+      {
+        label: __('Remove from Itala'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: async (chiudi) => {
+          chiudi()
+          lavoro.value = 'togli'
+          try {
+            const esito = await call('crm.invoicing.prova.remove_from_itala', {
+              company: azienda.value,
+            })
+            stato.data = esito.status
+            toast.success(__('Removed from Itala'))
+          } catch (e) {
+            toast.error(e.messages?.[0] || __('Could not remove it from Itala'))
+          } finally {
+            lavoro.value = ''
+          }
+        },
+      },
+    ],
+  })
 }
 
 async function generaSegreto() {

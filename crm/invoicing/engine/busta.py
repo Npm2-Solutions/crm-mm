@@ -22,7 +22,9 @@ from __future__ import annotations
 import base64
 import binascii
 import hmac
+import re
 from datetime import datetime
+from urllib.parse import unquote
 
 #: The provider's events. Only a notification carries an SdI notice; the rest are
 #: lifecycle news, kept because silence about them is how an invoice dies quietly.
@@ -154,20 +156,26 @@ def porta_una_notifica(evento: str | None) -> bool:
 
 # --------------------------------------------------------- the provider's words
 
-#: The intermediary's transmission states, and what each means for a document here.
+#: The intermediary's transmission states, and the invoice state each leaves behind
+#: (the `sdi_status` options, the same the SdI's own notices give: `ricevute`).
 #: `NONC` is the one that gets misread: not delivered is **not** a failure - the
 #: invoice is issued, the sender's obligation is discharged, and what is owed is
-#: telling the client to go and fetch it.
+#: telling the client to go and fetch it. A public body's answer, yes or no, is its
+#: outcome (`esito_pa`), as the notice it sends is; Itala's `ERRO` is a transmission
+#: that did not go through: not issued, to correct and send again.
 STATO_PROVIDER = {
 	"PREN": "inviato",
 	"INVI": "inviato",
-	"CONS": "consegnato",
+	"CONS": "consegnata",
 	"NONC": "mancata_consegna",
-	"ACCE": "accettato",
-	"RIFI": "rifiutato",
+	"ACCE": "esito_pa",
+	"RIFI": "esito_pa",
 	"DECO": "decorrenza_termini",
-	"ERRO": "errore",
+	"ERRO": "scartata",
 }
+
+#: The states somebody has to hear about, as the notices behind them say it.
+STATI_DA_DIRE = frozenset({"NONC", "RIFI", "ERRO"})
 
 #: States that mean the SdI has answered, so there is a notice worth fetching.
 #: Asking for one before that is a wasted call and a 404 to explain.
@@ -224,12 +232,13 @@ DURATA_MASSIMA = 23 * 3600
 MARGINE = 60
 
 
-def durata_token(scadenza: str | None) -> int:
+def durata_token(scadenza: str | None, adesso: datetime | None = None) -> int:
 	"""How long to keep a token, from what the provider said rather than a guess.
 
 	An unreadable or absent expiry falls back to a short life: re-authenticating an
 	hour early costs one call, while trusting a number nobody stated costs a failed
-	invoice at the worst moment.
+	invoice at the worst moment. The expiry carries no time zone: it is Italy's, as
+	`adesso` is when the site's clock is (the caller passes it).
 	"""
 	if not scadenza:
 		return DURATA_PRUDENTE
@@ -237,5 +246,47 @@ def durata_token(scadenza: str | None) -> int:
 		fine = datetime.strptime(str(scadenza).strip(), "%Y-%m-%d %H:%M:%S")
 	except (TypeError, ValueError):
 		return DURATA_PRUDENTE
-	restano = int((fine - datetime.now()).total_seconds()) - MARGINE
+	restano = int((fine - (adesso or datetime.now())).total_seconds()) - MARGINE
 	return max(MARGINE, min(restano, DURATA_MASSIMA))
+
+
+_NOME_IN_DISPOSIZIONE = re.compile(r"""filename\*?\s*=\s*(?:UTF-8''|utf-8'')?"?([^";]+)"?""", re.IGNORECASE)
+
+
+def nome_da_disposizione(valore: str | None) -> str | None:
+	"""The file name a `Content-Disposition` gives: the notice's own, which is what
+	tells one notice of an invoice from the next. Only a plain name is kept: a path,
+	or anything that is not a file's name, is no name."""
+	if not valore:
+		return None
+	trovato = _NOME_IN_DISPOSIZIONE.search(str(valore))
+	if not trovato:
+		return None
+	nome = unquote(trovato.group(1).strip())
+	if not nome or "/" in nome or "\\" in nome or nome.startswith("."):
+		return None
+	return nome[:140]
+
+
+def della_partita_iva(voce, partita_iva: str | None) -> bool:
+	"""Whether a row the provider pushed or listed belongs to this VAT number.
+
+	Under the agency's account the rows of every centre come from one place: a row
+	that names another VAT number is somebody else's. One that names none is taken
+	as the company's whose door it came through (the list is filtered by it)."""
+	if not isinstance(voce, dict):
+		return False
+	nominata = ""
+	for chiave in ("partita_iva", "piva"):
+		valore = voce.get(chiave)
+		if isinstance(valore, (str, int)) and str(valore).strip():
+			nominata = str(valore)
+			break
+	if not nominata:
+		return True
+	return bool(partita_iva) and _partita_iva(nominata) == _partita_iva(partita_iva)
+
+
+def _partita_iva(valore) -> str:
+	"""A VAT number as compared: letters and digits only, without the IT prefix."""
+	return "".join(c for c in str(valore or "") if c.isalnum()).upper().removeprefix("IT")
