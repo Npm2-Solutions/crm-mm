@@ -6,7 +6,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from werkzeug.wrappers import Response
 
 from crm.integrations.api import find_contact_by_phone_number
-from crm.telephony import answering, inbound, messaggi, transcription
+from crm.telephony import answering, inbound, messaggi, transcription, uscita
 from crm.telephony.providers import get as get_provider
 
 from .twilio_handler import Twilio, TwilioCallDetails
@@ -136,18 +136,22 @@ def generate_access_token():
 def voice(**kwargs):
 	"""This is a webhook called by twilio to get instructions when the voice call request comes to twilio server."""
 
-	def _get_caller_number(caller):
+	def _get_caller(caller):
 		identity = (caller or "").replace("client:", "").strip()
-		if not identity:
-			return None
-		user = Twilio.emailid_from_identity(identity)
-		return frappe.db.get_value("CRM Telephony Agent", user, "twilio_number")
+		return Twilio.emailid_from_identity(identity) if identity else None
 
 	args = frappe._dict(kwargs)
 	twilio = validate_twilio_request(args, require_application_sid=True)
 
-	# Generate TwiML instructions to make a call
-	from_number = _get_caller_number(args.Caller)
+	# where the call may go: the centre's countries, never a premium-rate number
+	if motivo := uscita.perche_no(args.To):
+		resp = VoiceResponse()
+		resp.say(motivo, language=answering.settings().language or "it-IT")
+		resp.hangup()
+		return Response(resp.to_xml(), mimetype="text/xml")
+
+	# the number shown: the one chosen for the call when it is the centre's, else one's own line
+	from_number = uscita.numero_da_mostrare(_get_caller(args.Caller), args.CallFrom)
 	if not from_number:
 		resp = VoiceResponse()
 		resp.say(_("Your account is not configured with a phone number. Please contact your administrator."))

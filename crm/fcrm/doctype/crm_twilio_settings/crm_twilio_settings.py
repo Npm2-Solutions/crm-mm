@@ -33,6 +33,7 @@ class CRMTwilioSettings(Document):
 
 		account_owner: DF.Literal["", "Centre", "Agency"]
 		account_sid: DF.Data | None
+		allowed_countries: DF.SmallText | None
 		api_key: DF.Data | None
 		api_secret: DF.Password | None
 		app_name: DF.Data | None
@@ -71,6 +72,12 @@ class CRMTwilioSettings(Document):
 		self.validate_twilio_account()
 
 	def on_update(self):
+		# the countries the centre may call, set in Twilio's permissions of the space too
+		if self.has_value_changed("allowed_countries") and self.account_owner:
+			from crm.telephony import uscita
+
+			uscita.allinea_i_paesi(self)
+
 		# Single doctype records are created in DB at time of installation and those field values are set as null.
 		# This condition make sure that we handle null.
 		if not self.account_sid or self.flags.dal_collegamento or self.account_owner:
