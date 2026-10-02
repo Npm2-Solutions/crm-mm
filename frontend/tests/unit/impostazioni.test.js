@@ -66,7 +66,6 @@ LIVELLI.manager = Object.fromEntries(DEL_MANAGER.map((c) => [c, 'centro']))
 LIVELLI.agenzia = {
   ...LIVELLI.manager,
   'tecnico.predefiniti': 'centro',
-  'tecnico.erpnext': 'centro',
   'tecnico.integrazioni': 'centro',
 }
 
@@ -127,7 +126,7 @@ describe('the settings menu, by who reads it', () => {
       'The centre: General [Name & logo · Conversations · Dashboard · Menu · Formats], Users [Users · Invite · Hierarchy], Features',
     )
     expect(menu.at(-1)).toBe(
-      'Integrations: Meta, ERPNext, Seal and time stamp, Assistant',
+      'Integrations: Meta, Seal and time stamp, Assistant',
     )
   })
 
@@ -260,7 +259,6 @@ describe('a page asked for by its name', () => {
       ['Ad performance', 'Meta connection', null],
       ['Lead quality', 'Meta connection', null],
       ['Telephony', 'Telephony', null],
-      ['ERPNext', 'ERPNext', null],
       ['News in the client area', 'News in the client area', null],
       ['Seal and time stamp', 'Seal and time stamp', null],
       ['Assistant', 'Assistant', null],
@@ -316,8 +314,9 @@ describe('the pages there are', () => {
   it('names each page once', () => {
     const tutte = pagine()
     expect(new Set(tutte).size).toBe(tutte.length)
-    // the 51 pages there were, none lost, the notifications and one's email
-    expect(tutte).toHaveLength(53)
+    // the 51 pages there were, none lost, the notifications and one's email;
+    // ERPNext gone (02/10/2026)
+    expect(tutte).toHaveLength(52)
   })
 
   it('gives every group, entry and tab a label', () => {

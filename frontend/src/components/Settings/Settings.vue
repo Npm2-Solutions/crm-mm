@@ -179,7 +179,6 @@ import NotificationsSettings from '@/components/Settings/NotificationsSettings.v
 import MyEmail from '@/components/Settings/Profile/MyEmail.vue'
 import WhatsAppSettings from '@/components/Settings/WhatsAppSettings.vue'
 import WhatsAppTemplates from '@/components/Settings/WhatsAppTemplates.vue'
-import ERPNextSettings from '@/components/Settings/ERPNextSettings.vue'
 import DefaultsSettings from '@/components/Settings/DefaultsSettings.vue'
 import BrandSettings from '@/components/Settings/BrandSettings.vue'
 import CalendarSettings from '@/components/Settings/CalendarSettings.vue'
@@ -295,7 +294,6 @@ const PAGINE = {
   'Invoicing defaults': InvoicingDefaults,
   // one page with its own tabs: the connection and the three things it feeds
   'Meta connection': MetaSettings,
-  ERPNext: ERPNextSettings,
   'Seal and time stamp': SealSettings,
   Assistant: AssistantSettings,
 }

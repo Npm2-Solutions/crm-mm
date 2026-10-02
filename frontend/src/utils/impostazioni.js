@@ -455,12 +455,6 @@ export const MENU = [
         condition: puo('meta.gestisci'),
       },
       {
-        key: 'ERPNext',
-        label: 'ERPNext',
-        description: 'The accounting system the agency connects.',
-        condition: puo('tecnico.erpnext'),
-      },
-      {
         // the centre's certificate and the time-stamping authority
         key: 'Seal and time stamp',
         label: 'Seal and time stamp',
