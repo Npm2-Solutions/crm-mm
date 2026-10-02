@@ -9,7 +9,7 @@ relay such as Amazon SES or Brevo, its domain proven once with SPF, DKIM and
 DMARC). The centre sets nothing up: the email comes from the centre - its name -
 and the answers go to the centre's own address. Somebody writing from a person's
 page without a mailbox of their own writes through it too, in their name and the
-centre's (`intestazioni`).
+centre's, and the answer comes back to the centre (`intestazioni`).
 
 The agency writes the service once, for every site of the server, in
 `common_site_config.json` (or in one site's `site_config.json`):
@@ -38,6 +38,7 @@ from frappe import _
 from frappe.utils import cint, parse_addr, validate_email_address
 
 from crm.permissions.livelli import puo, richiede
+from crm.posta import personale
 
 #: The configuration's key, and the account it becomes on each site.
 CONF = "dottorcloud_posta"
@@ -157,7 +158,7 @@ def _ferma() -> None:
 	if not (precedente and frappe.db.get_value("Email Account", precedente, "enable_outgoing")):
 		precedente = frappe.db.get_value(
 			"Email Account",
-			{"enable_outgoing": 1, "name": ["!=", ACCOUNT]},
+			{"enable_outgoing": 1, "name": ["!=", ACCOUNT], **personale.del_centro()},
 			"name",
 			order_by="creation asc",
 		)
@@ -186,7 +187,10 @@ def casella_principale() -> str | None:
 		{"enable_incoming": 1},
 	):
 		trovato = frappe.db.get_value(
-			"Email Account", {**filtri, "name": ["!=", ACCOUNT]}, "email_id", order_by="creation asc"
+			"Email Account",
+			{**filtri, "name": ["!=", ACCOUNT], **personale.del_centro()},
+			"email_id",
+			order_by="creation asc",
 		)
 		if trovato:
 			return trovato
@@ -216,6 +220,10 @@ def mostrato(nome_mittente: str | None, centro: str) -> str:
 	return nome_mittente
 
 
+def _lavora_qui(indirizzo: str) -> bool:
+	return bool(frappe.db.exists("User", {"email": indirizzo, "user_type": "System User", "enabled": 1}))
+
+
 def intestazioni(mail) -> None:
 	"""`make_email_body_message`: an email leaving through the service comes from the
 	centre, on the service's address, and its answers go to the centre.
@@ -230,8 +238,12 @@ def intestazioni(mail) -> None:
 	mail.sender = _formatta(mostrato(nome, centro), account.email_id)
 	mail.set_header("From", mail.sender)
 
+	# the answer to an email written here comes back here, to the centre, where
+	# whoever follows the person reads it - also when somebody of the centre wrote it
+	# without a mailbox of their own (the framework would send it to their address);
+	# a Reply-To somebody chose stays
 	_nome, risponde = parse_addr(mail.reply_to or "")
-	if risponde and risponde != account.email_id:
+	if risponde and risponde != account.email_id and not _lavora_qui(risponde):
 		return
 	risposte = indirizzo_per_le_risposte()
 	if risposte:
@@ -257,7 +269,12 @@ def get_sending_service() -> dict:
 		# the mailboxes the page lists (`crm.api.settings.get_email_accounts`)
 		"inboxes": frappe.get_all(
 			"Email Account",
-			filters={"enable_incoming": 1, "name": ["!=", ACCOUNT], "email_id": ["not like", "%example%"]},
+			filters={
+				"enable_incoming": 1,
+				"name": ["!=", ACCOUNT],
+				"email_id": ["not like", "%example%"],
+				**personale.del_centro(),
+			},
 			pluck="email_id",
 			order_by="creation asc",
 		),

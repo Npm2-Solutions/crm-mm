@@ -17,7 +17,8 @@ answers, else nothing. Here what follows, on every email received (Communication
   a person is made for them. Never for an automatic sender - "noreply", a mail
   server's bounce - nor for somebody of the centre, one of its mailboxes, or the
   mailbox a booking platform writes to (its sync finds the person);
-- whoever follows the person is told, as for WhatsApp.
+- whoever follows the person is told, as for WhatsApp, and so are whose own mailbox
+  it reached and who wrote the email it answers.
 
 The person is found as everywhere else (`crm.api.lead.find_person`), by their email.
 """
@@ -27,6 +28,8 @@ from __future__ import annotations
 import re
 
 import frappe
+
+from crm.posta import personale
 
 PERSONA = "CRM Lead"
 #: Where an email already belongs to somebody: their page or their deal's.
@@ -95,6 +98,9 @@ def _nuova(doc) -> str | None:
 	a machine, never for a reply to something else."""
 	if doc.reference_doctype or not doc.email_account or mittente_automatico(doc.sender):
 		return None
+	# somebody's own mailbox brings only people the centre knows (crm.posta.personale)
+	if personale.di_chi(doc.email_account):
+		return None
 	if not frappe.db.get_value("Email Account", doc.email_account, "create_lead_from_incoming_email"):
 		return None
 	if del_centro(doc.sender) or frappe.db.exists(
@@ -132,6 +138,22 @@ def nome_e_cognome(nome_completo: str | None, indirizzo: str | None) -> tuple[st
 	return (indirizzo or "").partition("@")[0], ""
 
 
+def destinatari(doc, seguono: list[str]) -> list[str]:
+	"""Whoever follows the person; whose own mailbox it reached; who wrote the email it
+	answers, when they work in DottorCloud."""
+	from crm.permissions.livelli import nel_crm
+
+	chi = list(seguono)
+	proprietario = personale.di_chi(doc.email_account)
+	if proprietario:
+		chi.append(proprietario)
+	if doc.in_reply_to:
+		autore = frappe.db.get_value("Communication", doc.in_reply_to, "owner")
+		if autore and nel_crm(autore):
+			chi.append(autore)
+	return list(dict.fromkeys(chi))
+
+
 def avvisa(doc) -> None:
 	"""Whoever follows the person reads it in their panel; the emails after it, while
 	it is unread, add to it."""
@@ -144,7 +166,7 @@ def avvisa(doc) -> None:
 		return
 	trattativa = doc.reference_doctype == "CRM Deal"
 	nomi = [nome_di(doc.reference_doctype, doc.reference_name)]
-	for user in assigned_users_of(doc.reference_doctype, doc.reference_name):
+	for user in destinatari(doc, assigned_users_of(doc.reference_doctype, doc.reference_name)):
 		scrivi(
 			user,
 			"Email",

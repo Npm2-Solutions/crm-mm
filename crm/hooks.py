@@ -311,6 +311,8 @@ has_permission = {
 override_doctype_class = {
 	"Contact": "crm.overrides.contact.CustomContact",
 	"Email Template": "crm.overrides.email_template.CustomEmailTemplate",
+	# somebody's own mailbox brings only the centre's emails (crm.posta.personale)
+	"Email Account": "crm.overrides.email_account.CasellaDiDottorCloud",
 }
 
 # Document Events
@@ -746,6 +748,8 @@ after_migrate = [
 	# the exercise and food libraries DottorCloud ships, when their file is a new one
 	"crm.piani.librerie.carica_libreria",
 	"crm.clinica.librerie.carica_libreria",
+	# whose own mailbox an account is (doc 51)
+	"crm.install.add_email_account_custom_field",
 	# DottorCloud's own emails leave through the agency's sending service
 	"crm.posta.servizio.assicura",
 ]

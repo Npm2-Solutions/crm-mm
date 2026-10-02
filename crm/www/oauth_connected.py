@@ -19,6 +19,8 @@ no_cache = 1
 SETTINGS_PAGE = {
 	"meta": "Meta connection",
 	"google": "Google Calendar",
+	# somebody's own mailbox, signing in with Google or Microsoft (doc 51)
+	"posta": "Your email",
 }
 
 

@@ -434,25 +434,38 @@ def add_email_template_custom_fields():
 
 
 def add_email_account_custom_field():
-	if not frappe.get_meta("Email Account").has_field("create_lead_from_incoming_email"):
-		click.secho("* Installing Custom Fields in Email Account")
-
-		create_custom_fields(
+	"""What DottorCloud adds to a mailbox: whether who writes the first time becomes a
+	person, and whose own mailbox it is (doc 51). At install and at every migrate."""
+	meta = frappe.get_meta("Email Account")
+	campi = []
+	if not meta.has_field("create_lead_from_incoming_email"):
+		campi.append(
 			{
-				"Email Account": [
-					{
-						"default": "0",
-						"fieldname": "create_lead_from_incoming_email",
-						"fieldtype": "Check",
-						"label": "Create Lead from Incoming Emails",
-						"description": "Automatically create a lead when an incoming email is received from an unknown contact",
-						"insert_after": "create_contact",
-					}
-				]
+				"default": "0",
+				"fieldname": "create_lead_from_incoming_email",
+				"fieldtype": "Check",
+				"label": "Create Lead from Incoming Emails",
+				"description": "Automatically create a lead when an incoming email is received from an unknown contact",
+				"insert_after": "create_contact",
 			}
 		)
-
-		frappe.clear_cache(doctype="Email Account")
+	if not meta.has_field("crm_owner"):
+		campi.append(
+			{
+				"fieldname": "crm_owner",
+				"fieldtype": "Link",
+				"options": "User",
+				"label": "Whose mailbox",
+				"description": "Somebody's own mailbox, connected by them: only the answers to what they wrote and the emails of the people the centre knows are kept.",
+				"insert_after": "create_lead_from_incoming_email",
+				"read_only": 1,
+			}
+		)
+	if not campi:
+		return
+	click.secho("* Installing Custom Fields in Email Account")
+	create_custom_fields({"Email Account": campi})
+	frappe.clear_cache(doctype="Email Account")
 
 
 def add_whatsapp_custom_fields():

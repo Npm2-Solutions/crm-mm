@@ -37,7 +37,7 @@
 	if (!page) return
 	var target = '/crm?settings=' + encodeURIComponent(page)
 	if (result.error) {
-		target += '&' + (result.provider === 'google' ? 'google_error' : 'meta_error')
+		target += '&' + result.provider + '_error'
 		target += '=' + encodeURIComponent(result.error)
 	}
 	window.location.replace(target)
