@@ -122,10 +122,30 @@ describe('buildTabs', () => {
       campo('extra', 'Section Break', { collapsible: 1 }),
       campo('sdi_endpoint'),
     ])
-    const [vuota, canale, altro] = sdi.sections
-    expect(vuota.columns[0].fields).toEqual([])
+    // the empty section a tab break opens with is not drawn
+    const [canale, altro] = sdi.sections
+    expect(sdi.sections).toHaveLength(2)
     expect(canale).not.toHaveProperty('opened')
     expect(altro.opened).toBe(false)
+  })
+
+  it('draws nothing of what the DocType hides, nor what is left empty', () => {
+    const tabs = buildTabs([
+      campo('tab_company', 'Tab Break', { label: 'Company' }),
+      campo('company_name'),
+      campo('preservation', 'Section Break'),
+      campo('conservation_service', 'Select', { hidden: 1 }),
+      campo('tab_sdi', 'Tab Break', { label: 'Transmission' }),
+      campo('sdi_mode', 'Select', { hidden: 1 }),
+      campo('col', 'Column Break'),
+      campo('sdi_flow', 'Select', { hidden: 1 }),
+    ])
+    // the section with only hidden fields goes, and the tab with nothing left
+    expect(tabs.map((t) => t.label)).toEqual(['Company'])
+    expect(tabs[0].sections).toHaveLength(1)
+    expect(
+      tabs[0].sections[0].columns[0].fields.map((f) => f.fieldname),
+    ).toEqual(['company_name'])
   })
 })
 

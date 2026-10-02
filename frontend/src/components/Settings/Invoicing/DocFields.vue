@@ -27,8 +27,14 @@
           :context="context"
         />
       </div>
+      <!-- in a page that scrolls as a whole, the save bar stays in sight -->
       <div
         class="flex items-center justify-between gap-3 border-t border-outline-gray-2 pt-3"
+        :class="
+          scroll
+            ? ''
+            : 'sticky -bottom-8 z-[1] -mb-8 bg-surface-elevation-2 pb-8'
+        "
       >
         <ErrorMessage :message="error" />
         <div class="ml-auto flex items-center gap-2">

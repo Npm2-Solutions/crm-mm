@@ -55,7 +55,9 @@ export function buildTabs(fields) {
         name: field.fieldname,
         fields: [],
       })
-    } else {
+    } else if (!field.hidden) {
+      // a field the DocType hides is nobody's to fill (the SdI's channel, fixed):
+      // not drawn, and a section or a tab left with nothing goes with it
       const lastSection = sections[sections.length - 1]
       const lastColumn = lastSection.columns[lastSection.columns.length - 1]
       lastColumn.fields.push(field)
@@ -72,6 +74,13 @@ export function buildTabs(fields) {
   })
 
   return tabs
+    .map((tab) => ({
+      ...tab,
+      sections: tab.sections.filter((section) =>
+        section.columns.some((column) => column.fields.length),
+      ),
+    }))
+    .filter((tab) => tab.sections.length)
 }
 
 const PREDEFINITI_DI_SESSIONE = ['today', 'now', '__user', '__today']
