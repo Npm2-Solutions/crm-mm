@@ -2,11 +2,15 @@
 # For license information, please see license.txt
 
 """The SMS of the centre without a site: the sender's name, the words that stop
-and start again (doc 52, fourth part)."""
+and start again, the hours of a promotional SMS (doc 52, fourth part)."""
 
 import unittest
+from datetime import datetime
 
 from crm.telephony import sms_regole as R
+
+# 2 October 2026 is a Friday
+VENERDI = datetime(2026, 10, 2)
 
 
 class IlNome(unittest.TestCase):
@@ -50,3 +54,24 @@ class LeParole(unittest.TestCase):
 	def test_un_messaggio_non_e_una_parola(self):
 		for testo in ("Basta così, grazie", "stop alle 18?", "", None, "Posso spostare l'appuntamento?"):
 			self.assertEqual(R.parola_chiave(testo), "", testo)
+
+
+class LeOre(unittest.TestCase):
+	def test_da_lunedi_a_sabato_dalle_8_alle_22(self):
+		self.assertTrue(R.ora_consentita(VENERDI.replace(hour=8)))
+		self.assertTrue(R.ora_consentita(VENERDI.replace(hour=21, minute=59)))
+		self.assertFalse(R.ora_consentita(VENERDI.replace(hour=22)))
+		self.assertFalse(R.ora_consentita(VENERDI.replace(hour=7, minute=59)))
+		self.assertFalse(R.ora_consentita(datetime(2026, 10, 4, 12)))  # Sunday
+
+	def test_il_momento_dopo(self):
+		# Friday night: Saturday at 8
+		self.assertEqual(R.prossimo_momento(VENERDI.replace(hour=23)), datetime(2026, 10, 3, 8))
+		# Friday early: the same morning at 8
+		self.assertEqual(R.prossimo_momento(VENERDI.replace(hour=6)), datetime(2026, 10, 2, 8))
+		# Saturday night and Sunday: Monday at 8
+		self.assertEqual(R.prossimo_momento(datetime(2026, 10, 3, 22, 30)), datetime(2026, 10, 5, 8))
+		self.assertEqual(R.prossimo_momento(datetime(2026, 10, 4, 15)), datetime(2026, 10, 5, 8))
+		# open already: now
+		adesso = VENERDI.replace(hour=10, minute=15)
+		self.assertEqual(R.prossimo_momento(adesso), adesso)

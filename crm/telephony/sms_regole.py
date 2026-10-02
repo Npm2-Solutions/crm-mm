@@ -8,6 +8,9 @@
   send SMS, when the centre wants the answers.
 - **STOP**: a message that is nothing but a word to stop - or to start again - is
   that request, in Italian or in English; anything else is a message.
+- **Promotional hours**: a promotional SMS leaves from Monday to Saturday between
+  8:00 and 22:00, never on Sunday (Twilio's rules for Italy); one written outside
+  them waits for the next moment they are open.
 
 The words are English, translated where they are shown.
 """
@@ -16,6 +19,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from datetime import datetime, time, timedelta
 
 #: Twilio's longest name for a sender.
 LUNGHEZZA_NOME = 11
@@ -74,6 +78,10 @@ FERMA = frozenset(
 )
 RIPRENDI = frozenset({"START", "INIZIA", "ISCRIVIMI", "UNSTOP"})
 
+#: When a promotional SMS may leave: Monday to Saturday, from 8:00 to 22:00.
+APRE, CHIUDE = time(8, 0), time(22, 0)
+DOMENICA = 6
+
 
 def problema_del_nome(nome: str | None) -> str:
 	"""Why ``nome`` cannot be the sender's name; '' when it can."""
@@ -124,3 +132,20 @@ def parola_chiave(testo: str | None) -> str:
 	if parole in RIPRENDI:
 		return "start"
 	return ""
+
+
+def ora_consentita(momento: datetime) -> bool:
+	"""Whether a promotional SMS may leave at ``momento`` (the centre's local time)."""
+	return momento.weekday() != DOMENICA and APRE <= momento.time() < CHIUDE
+
+
+def prossimo_momento(momento: datetime) -> datetime:
+	"""The first moment from ``momento`` on when a promotional SMS may leave."""
+	if ora_consentita(momento):
+		return momento
+	giorno = momento.date()
+	if momento.time() >= CHIUDE:
+		giorno += timedelta(days=1)
+	if giorno.weekday() == DOMENICA:
+		giorno += timedelta(days=1)
+	return datetime.combine(giorno, APRE, tzinfo=momento.tzinfo)

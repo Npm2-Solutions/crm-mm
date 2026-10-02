@@ -59,7 +59,7 @@ from frappe.utils import add_to_date, cint, cstr, flt, get_datetime, now_datetim
 from jinja2 import DebugUndefined
 from jinja2.sandbox import SandboxedEnvironment
 
-from crm.telephony import sms
+from crm.telephony import sms, sms_regole
 from crm.utils import count_field
 
 # built on first render, then reused: it holds filters only, nothing site-specific
@@ -704,6 +704,19 @@ def advance_enrollment(enrollment_name: str, wait_result: str | None = None) -> 
 				state["waiting_for"] = {"kind": "window"}
 				enrollment.status = "Waiting"
 				enrollment.wait_until = to_naive_utc_free(next_window_open(automation))
+				break
+
+			adesso = now_datetime()
+			if (
+				step_type == "send_sms"
+				and automation.get("marketing_consent")
+				and not sms_regole.ora_consentita(adesso)
+			):
+				# a promotional SMS leaves Monday to Saturday, 8 to 22 (Twilio's rules
+				# for Italy): written outside them, it waits for them
+				state["waiting_for"] = {"kind": "window"}
+				enrollment.status = "Waiting"
+				enrollment.wait_until = sms_regole.prossimo_momento(adesso)
 				break
 
 			try:
