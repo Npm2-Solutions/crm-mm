@@ -40676,6 +40676,82 @@ msgstr "Twilio non ha raggiunto {brand}: una chiamata o un SMS in arrivo potrebb
 msgid "Twilio could not read {brand}'s answer to a call or an SMS."
 msgstr "Twilio non ha capito la risposta di {brand} a una chiamata o a un SMS."
 
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "What the space spent since {0}, as Twilio counts it. The credit is the account’s: Twilio shows it, and that is where it is topped up."
+msgstr "Quanto ha speso lo spazio dal {0}, come lo conta Twilio. Il credito è dell'account: lo mostra Twilio, ed è lì che si ricarica."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Tell me when the month reaches"
+msgstr "Avvisami quando il mese arriva a"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "No alert"
+msgstr "Nessun avviso"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio says it once a month, the moment the spend gets there: whoever pays for the space reads it among the notifications. Empty: no alert."
+msgstr "Twilio lo dice una volta al mese, appena la spesa ci arriva: chi paga lo spazio lo legge tra le notifiche. Vuoto: nessun avviso."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Problems in the last {0} days"
+msgstr "Problemi negli ultimi {0} giorni"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "Twilio’s log"
+msgstr "Il registro di Twilio"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "None: calls and SMS went through."
+msgstr "Nessuno: chiamate e SMS sono passati."
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "last on {0}"
+msgstr "l'ultima {0}"
+
+#: frontend/src/components/Settings/Telephony/TwilioSettings.vue
+msgid "error {0}"
+msgstr "errore {0}"
+
+#: frontend/src/utils/twilio.js
+msgid "One call · {0} min"
+msgstr "Una chiamata · {0} min"
+
+#: frontend/src/utils/twilio.js
+msgid "{0} calls · {1} min"
+msgstr "{0} chiamate · {1} min"
+
+#: frontend/src/utils/twilio.js
+msgid "One SMS"
+msgstr "Un SMS"
+
+#: frontend/src/utils/twilio.js
+msgid "{0} SMS"
+msgstr "{0} SMS"
+
+#: frontend/src/utils/twilio.js
+msgid "One number"
+msgstr "Un numero"
+
+#: frontend/src/utils/twilio.js
+msgid "{0} numbers"
+msgstr "{0} numeri"
+
+#: frontend/src/utils/twilio.js
+msgid "Once"
+msgstr "Una volta"
+
+#: frontend/src/utils/twilio.js
+msgid "{0} times"
+msgstr "{0} volte"
+
+#: crm/telephony/consumi_regole.py
+msgid "Recordings and transcriptions"
+msgstr "Registrazioni e trascrizioni"
+
+#: crm/telephony/consumi_regole.py
+msgid "The alert is an amount between 0 and 100,000."
+msgstr "L'avviso è un importo tra 0 e 100.000."
+
 #: crm/telephony/errori.py
 msgid "Twilio says: {0} (error {1})"
 msgstr "Twilio dice: {0} (errore {1})"
@@ -40688,6 +40764,30 @@ msgstr "Twilio l'ha rifiutato (errore {0})."
 msgid "Twilio refused it."
 msgstr "Twilio l'ha rifiutato."
 
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.py
+msgid "The agency pays for this account: it sets the alert."
+msgstr "Questo account lo paga l'agenzia: l'avviso lo mette lei."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.py
+msgid "Twilio did not take the alert now: {0} It is tried again within the hour."
+msgstr "Twilio ora non ha preso l'avviso: {0} Si riprova entro un'ora."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Spend Alert"
+msgstr "Avviso di spesa"
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "When this month's spend reaches this amount, in the Twilio account's currency (usually dollars), whoever pays for the space is told. Empty: no alert."
+msgstr "Quando la spesa del mese arriva a questo importo, nella valuta dell'account Twilio (di solito dollari), chi paga lo spazio viene avvisato. Vuoto: nessun avviso."
+
+#: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
+msgid "Spend Alert Trigger"
+msgstr "Trigger dell'avviso di spesa"
+
 #: crm/fcrm/doctype/crm_sms_message/crm_sms_message.json
 msgid "Twilio's code for why the message did not leave or did not arrive."
 msgstr "Il codice di Twilio per cui il messaggio non è partito o non è arrivato."
+
+#: crm/notifiche/regole.py
+msgid "This month's Twilio spend has reached {0}, past the alert at {1}"
+msgstr "La spesa Twilio del mese è arrivata a {0}, oltre l'avviso a {1}"

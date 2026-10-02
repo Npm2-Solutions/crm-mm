@@ -43,6 +43,8 @@ VUOTE = {
 	"sms_from": "",
 	"sms_sender_name": "",
 	"sms_sender_number": "",
+	"spend_alert": 0,
+	"spend_alert_trigger": "",
 	"webhook_base_url": "",
 }
 

@@ -51,6 +51,7 @@ DOMANDA_AREA = "{0} asked the centre a question in their area"
 
 NUMERO_APPROVATO = "Twilio approved the documents of the new number: choose it now"
 NUMERO_RIFIUTATO = "Twilio refused the documents of the new number: see why"
+SPESA_TWILIO = "This month's Twilio spend has reached {0}, past the alert at {1}"
 
 MESSAGGIO_IN_SEGRETERIA = "{0} left a message on the answering service"
 
@@ -81,6 +82,7 @@ FRASI = (
 	DOMANDA_AREA,
 	NUMERO_APPROVATO,
 	NUMERO_RIFIUTATO,
+	SPESA_TWILIO,
 	MESSAGGIO_IN_SEGRETERIA,
 )
 

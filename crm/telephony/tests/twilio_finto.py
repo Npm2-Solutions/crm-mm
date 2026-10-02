@@ -12,13 +12,17 @@ The numbers Twilio has for sale are ``Mondo.in_vendita``; its regulations are
 ``REGOLE``, the way its Regulation resource writes them; a bundle's evaluation looks
 at what was assigned to it as Twilio would - every field of whose the number is,
 a document of an accepted kind for each requirement. ``Mondo.carica`` stands for
-the upload of a document's file.
+the upload of a document's file. What a space spends this month is
+``Mondo.spende``, a line of its log of problems ``Mondo.problema``; its usage
+triggers are kept as Twilio keeps them.
 """
 
 from __future__ import annotations
 
 import json
 import secrets
+from datetime import datetime
+from decimal import Decimal
 from types import SimpleNamespace
 
 from twilio.base.exceptions import TwilioRestException
@@ -178,6 +182,11 @@ class Mondo:
 		self.eredita: dict[str, bool] = {}
 		#: every search of numbers for sale: (kind, contains)
 		self.cercati: list[tuple] = []
+		#: this month's usage records by account and category, the usage triggers and
+		#: the log of problems (Twilio's Monitor)
+		self.consumi: dict[str, dict[str, SimpleNamespace]] = {}
+		self.soglie: dict[str, list[SimpleNamespace]] = {}
+		self.allarmi: dict[str, list[SimpleNamespace]] = {}
 
 	def conto(self, nome: str, padre: str | None = None, tipo: str = "Full", stato: str = "active"):
 		sid = _sid("AC")
@@ -191,7 +200,34 @@ class Mondo:
 		)
 		self.conti[sid] = conto
 		self.chiavi[sid], self.app[sid], self.numeri[sid] = [], [], []
+		self.consumi[sid], self.soglie[sid], self.allarmi[sid] = {}, [], []
 		return conto
+
+	def spende(
+		self, conto: str, categoria: str, price: str, count=0, usage=0, usage_unit="", price_unit="usd"
+	):
+		"""This month's record of a category, as Twilio's usage records give it."""
+		self.consumi[conto][categoria] = SimpleNamespace(
+			category=categoria,
+			count=str(count),
+			usage=str(usage),
+			usage_unit=usage_unit,
+			price=Decimal(price),
+			price_unit=price_unit,
+		)
+
+	def problema(self, conto: str, codice: str, testo: str, quando: datetime, livello: str = "error"):
+		"""A line of Twilio's log of problems (Monitor's alerts)."""
+		self.allarmi[conto].append(
+			SimpleNamespace(
+				sid=_sid("NO"),
+				error_code=codice,
+				alert_text=testo,
+				log_level=livello,
+				date_created=quando,
+				more_info=f"https://www.twilio.com/docs/errors/{codice}",
+			)
+		)
 
 	def numero(self, conto: str, telefono: str, sms: bool = False, **valori):
 		numero = SimpleNamespace(
@@ -327,6 +363,13 @@ class _Risorsa:
 		self.elenco.append(cosa)
 		self.mondo.cambi.append((self.conto.sid, f"create {self.tipo}", cosa.sid))
 		return cosa
+
+
+class _Soglie(_Risorsa):
+	"""The usage triggers, which Twilio lists by category."""
+
+	def list(self, usage_category=None, **_filtri):
+		return [c for c in self.elenco if usage_category is None or c.usage_category == usage_category]
 
 
 class _Una:
@@ -665,4 +708,38 @@ class _Client:
 			mondo, conto, "IncomingPhoneNumber", mondo.numeri[sid], crea=compra
 		)
 		self.outgoing_caller_ids = _Risorsa(mondo, conto, "OutgoingCallerId", [])
+
+		def nuova_soglia(callback_url=None, trigger_value=None, usage_category=None, **valori):
+			return SimpleNamespace(
+				sid=_sid("UT"),
+				callback_url=callback_url,
+				callback_method=valori.get("callback_method", "POST"),
+				trigger_value=str(trigger_value),
+				usage_category=usage_category,
+				trigger_by=valori.get("trigger_by"),
+				recurring=valori.get("recurring"),
+				friendly_name=valori.get("friendly_name"),
+			)
+
+		consumi = mondo.consumi[sid]
+		self.usage = SimpleNamespace(
+			records=SimpleNamespace(
+				this_month=SimpleNamespace(
+					list=lambda category=None, **_f: [
+						r for c, r in consumi.items() if category is None or c == category
+					]
+				)
+			),
+			triggers=_Soglie(mondo, conto, "UsageTrigger", mondo.soglie[sid], crea=nuova_soglia),
+		)
+		allarmi = mondo.allarmi[sid]
+		self.monitor = SimpleNamespace(
+			v1=SimpleNamespace(
+				alerts=SimpleNamespace(
+					list=lambda log_level=None, **_f: [
+						a for a in allarmi if log_level is None or a.log_level == log_level
+					]
+				)
+			)
+		)
 		self.trunking = SimpleNamespace(v1=SimpleNamespace(trunks=_Risorsa(mondo, conto, "Trunk", [])))

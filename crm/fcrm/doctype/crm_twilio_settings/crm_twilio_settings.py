@@ -51,6 +51,8 @@ class CRMTwilioSettings(Document):
 		sms_sender_number: DF.Data | None
 		space_name: DF.Data | None
 		space_sid: DF.Data | None
+		spend_alert: DF.Float
+		spend_alert_trigger: DF.Data | None
 		twilio_apps: DF.Data | None
 		twiml_sid: DF.Data | None
 		verify_webhook_signature: DF.Check
@@ -64,6 +66,7 @@ class CRMTwilioSettings(Document):
 		if self.flags.dal_collegamento:
 			return
 		self.valida_il_mittente_degli_sms()
+		self.valida_l_avviso_della_spesa()
 		if self.has_value_changed("enabled"):
 			livelli.verifica_nel_crm(TECNICO, messaggio=_("The agency connects and disconnects Twilio."))
 		if self.account_owner:
@@ -93,12 +96,45 @@ class CRMTwilioSettings(Document):
 		elif self.sms_from == "Number" and self.sms_sender_number not in sms.numeri_sms():
 			frappe.throw(_("Choose one of the numbers that can send SMS."), title=_("SMS Sender"))
 
+	def valida_l_avviso_della_spesa(self):
+		"""The monthly alert is an amount, set by whoever pays for the space: on the
+		agency's account, the agency."""
+		if not self.has_value_changed("spend_alert"):
+			return
+		from crm.telephony import consumi_regole as R
+
+		if self.account_owner == "Agency":
+			livelli.verifica_nel_crm(
+				TECNICO, messaggio=_("The agency pays for this account: it sets the alert.")
+			)
+		try:
+			soglia = R.soglia(self.spend_alert)
+		except ValueError as errore:
+			frappe.throw(_(str(errore)), title=_("Spend Alert"))
+		self.spend_alert = float(soglia or 0)
+
 	def on_update(self):
 		# the countries the centre may call, set in Twilio's permissions of the space too
 		if self.has_value_changed("allowed_countries") and self.account_owner:
 			from crm.telephony import uscita
 
 			uscita.allinea_i_paesi(self)
+
+		# the spend alert, a usage trigger in the space; what Twilio does not take
+		# now is put back within the hour
+		if self.has_value_changed("spend_alert") and self.account_owner:
+			from crm.telephony import collegamento, consumi
+
+			try:
+				consumi.allinea_l_avviso(self)
+			except collegamento.NON_RISPONDE as errore:
+				collegamento._registra("DottorCloud: the spend alert", errore)
+				frappe.msgprint(
+					_("Twilio did not take the alert now: {0} It is tried again within the hour.").format(
+						collegamento.in_parole(errore)
+					),
+					title=_("Spend Alert"),
+				)
 
 		# Single doctype records are created in DB at time of installation and those field values are set as null.
 		# This condition make sure that we handle null.

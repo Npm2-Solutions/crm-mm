@@ -6,6 +6,8 @@ import {
   chiPaga,
   cosaManca,
   pulito,
+  quanteVolte,
+  quantiNellaVoce,
   righeDelControllo,
   statoDelConto,
 } from '@/utils/twilio'
@@ -65,5 +67,39 @@ describe('the connection in words', () => {
       2,
     ])
     expect(righe[1][0]).toContain('One number goes to a SIP trunk')
+  })
+})
+
+describe('what the space spends this month', () => {
+  it('says what each kind counted', () => {
+    expect(quantiNellaVoce({ key: 'calls', count: 40, minutes: 310 })).toEqual([
+      '{0} calls · {1} min',
+      [40, 310],
+    ])
+    expect(quantiNellaVoce({ key: 'calls', count: 1, minutes: 3 })).toEqual([
+      'One call · {0} min',
+      [3],
+    ])
+    expect(quantiNellaVoce({ key: 'sms', count: '1' })).toEqual(['One SMS', []])
+    expect(quantiNellaVoce({ key: 'sms', count: 12 })).toEqual([
+      '{0} SMS',
+      [12],
+    ])
+    expect(quantiNellaVoce({ key: 'numbers', count: 2 })).toEqual([
+      '{0} numbers',
+      [2],
+    ])
+  })
+
+  it('says nothing of what counted nothing, or only money', () => {
+    expect(quantiNellaVoce({ key: 'calls', count: 0 })).toBeNull()
+    expect(quantiNellaVoce({ key: 'recordings', count: 5 })).toBeNull()
+    expect(quantiNellaVoce({ key: 'other', count: null })).toBeNull()
+    expect(quantiNellaVoce(null)).toBeNull()
+  })
+
+  it('says how often a problem came back', () => {
+    expect(quanteVolte(1)).toEqual(['Once', []])
+    expect(quanteVolte(4)).toEqual(['{0} times', [4]])
   })
 })
