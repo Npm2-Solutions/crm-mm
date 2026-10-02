@@ -207,6 +207,19 @@ never one of the centre's (`personale.del_centro()` in every list of them). An e
 person's, never a new person for somebody known; a module that sends a reminder on
 its own document needs nothing more: the answer reaches the person.
 
+### The centre's Twilio account (docs/progetto-ghl/52)
+| File | Role |
+|---|---|
+| `crm/telephony/collegamento_regole.py` | Pure: the two codes before Twilio is asked, a SID masked, the space's name, what a number and the app need to reach DottorCloud (a SIP trunk's number left alone), Twilio's answers in words — tested with plain `unittest` |
+| `crm/telephony/collegamento.py` + `Settings/Telephony/TwilioSettings.vue`, `utils/twilio.js` | The centre pastes Account SID and Auth Token once: DottorCloud makes its space in the account (a subaccount named after the site, found again on reconnecting; a subaccount's codes make it the space), its key and TwiML app, points every number of the space at itself, and keeps only the space's codes; the agency's account the same way (`dottorcloud_twilio` in `common_site_config.json`); `assicura()` every hour, only in a space; Check, Disconnect (the key goes, the space stays) — tested with a fake Twilio (`crm/telephony/tests/twilio_finto.py`) |
+
+The account's own token is never stored and never in a log: the codes travel in
+variables named `*_token` and `*_secret`, which a traceback hides, and an error of
+Twilio's is logged with its status and code only. A connection made by hand in the
+Desk (`account_owner` empty) may hold other sites' numbers: nothing is repaired in
+it. Twilio Connect is not used: a Connect app cannot manage numbers, use the
+regulatory API every Italian number needs, nor make the key the browser calls with.
+
 ### Invoicing in words, a medical centre's preset, the invoice inside DottorCloud, test and Itala (docs/progetto-ghl/45, 46, 47, 48, 49)
 | File | Role |
 |---|---|
