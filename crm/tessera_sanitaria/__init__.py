@@ -32,7 +32,8 @@ def registra_motore() -> None:
 
 	from .engine import classificazione, professioni, voci
 
-	estensioni.registra_risolutore(professioni.professione)
+	# shipped: asked after every register the practice edits
+	estensioni.registra_risolutore(professioni.professione, spedito=True)
 	estensioni.registra_arricchitore(classificazione.arricchisci)
 	# its choices, in words, for the screens invoicing draws
 	voci.registra()

@@ -22,6 +22,7 @@ import frappe
 from frappe import _
 
 from crm.invoicing.engine.professioni import Professione
+from crm.invoicing.estensioni import QualificaRifiutata
 
 CAMPI = (
 	"code",
@@ -90,8 +91,11 @@ def professione(codice: str | None) -> Professione:
 	record = frappe.db.get_value("CRM Professional Qualification", codice, CAMPI, as_dict=True)
 	if record:
 		if not record.get("enabled"):
-			raise KeyError(
-				_("The qualification {0} is disabled: re-enable it or pick another one").format(codice)
+			# switched off by the practice: no shipped register may answer instead
+			raise QualificaRifiutata(
+				_("The qualification {0} is disabled: re-enable it or pick another one").format(
+					record.get("qualification_name") or codice
+				)
 			)
 		return da_record(record)
 	raise KeyError(codice)

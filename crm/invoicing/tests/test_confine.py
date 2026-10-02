@@ -95,12 +95,71 @@ class ConfineTest(UnitTestCase):
 			raise KeyError(codice)
 
 		estensioni.registra_risolutore(segnaposto)
+		estensioni.registra_risolutore(segnaposto, spedito=True)
 		try:
 			with estensioni.senza_estensioni():
 				self.assertNotIn(segnaposto, estensioni._risolutori)
+				self.assertNotIn(segnaposto, estensioni._spediti)
 			self.assertIn(segnaposto, estensioni._risolutori)
+			self.assertIn(segnaposto, estensioni._spediti)
 		finally:
 			estensioni._risolutori.remove(segnaposto)
+			estensioni._spediti.remove(segnaposto)
+
+
+def _registro(risposte: dict):
+	"""A register that answers for the codes it knows, and refuses the rest."""
+
+	def risolvi(codice: str):
+		if codice not in risposte:
+			raise KeyError(codice)
+		if isinstance(risposte[codice], Exception):
+			raise risposte[codice]
+		return risposte[codice]
+
+	return risolvi
+
+
+class LaCatenaDeiRegistri(UnitTestCase):
+	"""What the practice wrote wins over what shipped, whoever loaded first.
+
+	Invoicing registers its stored register when it loads; the healthcare module
+	loads after it and ships thirty-six qualifications. Asked last-registered-first,
+	the shipped osteopath answered before the practice's own row: a qualification
+	the practice had corrected, or switched off, came back as it shipped.
+	"""
+
+	def test_quello_che_ha_scritto_il_centro_vince_su_quello_spedito(self):
+		from crm.invoicing import estensioni
+
+		with estensioni.senza_estensioni():
+			estensioni.registra_risolutore(_registro({"massoterapista": "del centro"}))
+			# a module that loads later ships its own register
+			estensioni.registra_risolutore(
+				_registro({"massoterapista": "spedita", "osteopata": "spedita"}), spedito=True
+			)
+			risolvi = estensioni.risolutore()
+			self.assertEqual(risolvi("massoterapista"), "del centro")
+			# what the practice never wrote comes from what shipped
+			self.assertEqual(risolvi("osteopata"), "spedita")
+
+	def test_una_qualifica_spenta_ferma_la_catena(self):
+		from crm.invoicing import estensioni
+
+		with estensioni.senza_estensioni():
+			spenta = estensioni.QualificaRifiutata("osteopata is disabled")
+			estensioni.registra_risolutore(_registro({"osteopata": spenta}))
+			estensioni.registra_risolutore(_registro({"osteopata": "spedita"}), spedito=True)
+			with self.assertRaises(estensioni.QualificaRifiutata):
+				estensioni.risolutore()("osteopata")
+
+	def test_fra_due_registri_del_centro_risponde_l_ultimo(self):
+		from crm.invoicing import estensioni
+
+		with estensioni.senza_estensioni():
+			estensioni.registra_risolutore(_registro({"osteopata": "ordinaria"}))
+			estensioni.registra_risolutore(_registro({"osteopata": "sanitaria"}))
+			self.assertEqual(estensioni.risolutore()("osteopata"), "sanitaria")
 
 
 class FormaStudioTest(UnitTestCase):
