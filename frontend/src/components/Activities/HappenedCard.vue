@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Something that happened, rather than something that was said.
 
   An appointment booked, a task set, a note written, a stage moved, a call: none
@@ -19,9 +22,9 @@
 <template>
   <div class="flex justify-center px-3 sm:px-4">
     <!-- a card that stands for something with a page of its own opens it -->
-    <component
-      :is="opens ? 'button' : 'div'"
+    <ElementoNativo
       v-if="card"
+      :tag="opens ? 'button' : 'div'"
       :type="opens ? 'button' : undefined"
       class="w-full max-w-md rounded-xl border px-3 py-2 text-left shadow-sm"
       :class="[
@@ -47,7 +50,7 @@
       <div class="min-w-0 break-words text-base text-ink-gray-8">
         <slot />
       </div>
-    </component>
+    </ElementoNativo>
 
     <div
       v-else
@@ -69,6 +72,7 @@
 </template>
 
 <script setup>
+import ElementoNativo from '@/components/ElementoNativo'
 import { computed } from 'vue'
 
 const props = defineProps({
