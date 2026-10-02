@@ -193,19 +193,24 @@ message in paragraphs with the words escaped, the one thing to do in a
 the brand that is on. The marks are PNG (`Marchio.logo_email`, `icona_email`):
 mail clients do not all show an SVG.
 
-### Invoicing in words (docs/progetto-ghl/45)
+### Invoicing in words, a medical centre's preset (docs/progetto-ghl/45, 46)
 | File | Role |
 |---|---|
 | `crm/invoicing/engine/voci.py` | Every code invoicing asks somebody to choose, in words: a family per field (regimes, VAT natures, documents, payments, funds, withholdings, 770 reasons, stamp duty, keeping, channels...), each `Voce` with its name, the line on when it applies and whether a medical centre meets it (`sanita`); `voci()` for a profile, the stored values always kept — pure, tested with plain `unittest` |
 | `crm/tessera_sanitaria/engine/voci.py` | The Sistema TS's families (expense types in the specification's words, particular cases, who issues, how it is sent, the mandate, the operation), registered into invoicing's vocabulary |
 | `crm/invoicing/scelte.py` | Which field speaks which family (`CAMPI`), the rules that narrow one by the document (`registra_regola`: expense types by the issuer's category), the healthcare profile (`Verticale.fatturazione`: the clinic's `sanitario`), `adatta_campi` on `crm.api.doc.get_fields` (`registra_adattatore`), `get_options` for the Desk's invoice, `get_vocabulary` for list rows |
 | `frontend/src/utils/scelte.js`, `composables/vocabolarioFatturazione.js` | A choice's line, the stored value kept, a code's name in a row, a read-only choice by its name — tested |
+| `crm/tessera_sanitaria/preimpostazione.py` + `Settings/Invoicing/HealthcareSetup.vue` (doc 46) | With the clinic on, a medical centre's invoicing in three questions (who issues, the facility's codes or the profession, the regime): the Sistema TS category, the regime, the fund and withholding of the profession; the agenda's services become healthcare cards, exempt, with the issuer's expense type (`cards_from_services`); a new card starts as one (`card_defaults`) |
+| `crm/invoicing/estensioni.py` | The qualification registers in two tiers: the stored ones (what the practice edits) before every shipped one (`registra_risolutore(..., spedito=True)`), whatever order the modules load in; `QualificaRifiutata` (a switched-off qualification) stops the chain |
 
 A field of invoicing that stores a code never shows it: it goes in `scelte.CAMPI`
 with its family, every value its DocType admits gets a name and a line in the
 vocabulary (and in `it.po`), and the ones a medical centre meets carry `sanita`.
 Labels and descriptions say what a field is for in plain words, never a list of
 codes nor the tracciato's names (`tipoSpesa`). What is stored stays the code.
+A register a module ships goes in with `spedito=True`: what the practice wrote in
+its register always answers first. A new record on a settings screen starts from
+the DocType's defaults (`DocFields`), never from a copy of them in the page.
 
 ### The settings (docs/progetto-ghl/31, 35)
 | File | Role |
@@ -511,7 +516,7 @@ yarn test:run      # single run
 yarn test          # watch mode
 ```
 
-- **884 tests · ~15s** — all must pass before committing
+- **886 tests · ~15s** — all must pass before committing
 - Location: `frontend/tests/unit/`
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`

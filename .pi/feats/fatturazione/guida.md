@@ -101,6 +101,14 @@ propone piu' (doc 45).
 
 ## Prima di emettere: quattro cose
 
+Con la clinica accesa la fatturazione e' quella di un centro medico, e si imposta
+con **tre domande** in cima alla pagina dell'azienda emittente: chi emette (una
+struttura autorizzata, un medico o dentista a suo nome, un altro professionista
+sanitario a suo nome, una struttura accreditata), i codici della struttura o la
+professione, il regime. Da li' vengono categoria del Sistema TS, cassa e ritenuta;
+i servizi dell'agenda diventano schede sanitarie esenti con un clic nella pagina
+dei servizi fatturabili (doc 46).
+
 ### 1. L'azienda emittente — `CRM Invoicing Company`
 
 Chi firma le fatture. Partita IVA, sede, regime fiscale, cassa e ritenuta,
@@ -129,7 +137,10 @@ ammessa, e quale cassa si applica.
 
 **Il registro e' tuo.** Il file `engine/professioni.py` e' il punto di partenza
 documentato — e' dove sta la ricerca — ma i record vincono, e una tua correzione
-non viene mai sovrascritta da una migrazione.
+non viene mai sovrascritta da una migrazione. Vincono anche sul registro sanitario
+spedito: una qualifica che rendi ordinaria resta ordinaria, una che spegni viene
+rifiutata, non torna com'era. Con la clinica accesa l'elenco mostra le professioni
+sanitarie e quelle in uso; le altre sono dietro «Mostra le altre professioni».
 
 Le voci con `needs_verification` sono i punti che il commercialista deve chiudere
 prima del go-live: ostetrica (cassa), massoterapista (categoria TS), geometra
