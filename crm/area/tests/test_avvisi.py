@@ -26,11 +26,18 @@ MODELLO = "novita-area-prova"
 
 
 class AvvisiCase(AreaCase):
+	#: whether the centre offers WhatsApp too: its template needs frappe_whatsapp
+	whatsapp = True
+
 	def setUp(self):
 		super().setUp()
 		self.invita()
 		frappe.set_user("Administrator")
 		frappe.db.set_value("CRM Lead", self.anna.name, "mobile_no", "+39 333 1234567")
+		if not self.whatsapp:
+			self.offri()
+			self.addCleanup(self.pulisci_pause)
+			return
 		if not frappe.db.exists("WhatsApp Templates", MODELLO):
 			modello = frappe.get_doc(
 				{
@@ -155,17 +162,6 @@ class LAvviso(AvvisiCase):
 		self.assertIn("There is news in your area at", sms.message)
 		self.assertNotIn("referto", sms.message)
 
-	def test_chi_ha_scritto_stop_niente_sms(self):
-		# a STOP to the centre's SMS is heard by the area's news too (doc 52)
-		self.offri(sms="+390212345678", twilio=1)
-		self.ha_scritto(avvisi.SMS)
-		self.sceglie(avvisi.SMS)
-		frappe.set_user("Administrator")
-		frappe.db.set_value("CRM Lead", self.anna.name, "sms_opt_out", 1)
-		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
-			self.scrive("Il referto è pronto: lo trova nell'area")
-		consegna.assert_not_called()
-
 	def test_un_avviso_che_non_parte_non_ferma_la_bacheca(self):
 		self.ha_scritto()
 		self.sceglie()
@@ -176,6 +172,27 @@ class LAvviso(AvvisiCase):
 		self.assertEqual(messaggio["body"], "Porti la tessera sanitaria")
 		frappe.set_user("Administrator")
 		self.assertEqual(frappe.db.count("Error Log"), prima + 1)
+
+
+class LoStop(AvvisiCase):
+	"""A STOP to the centre's SMS is heard by the area's news too (doc 52)."""
+
+	whatsapp = False
+
+	def test_chi_ha_scritto_stop_niente_sms(self):
+		self.offri(sms="+390212345678", twilio=1)
+		self.ha_scritto(avvisi.SMS)
+		self.sceglie(avvisi.SMS)
+		frappe.set_user("Administrator")
+		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
+			self.scrive("Il referto è pronto: lo trova nell'area")
+		consegna.assert_called_once()
+		frappe.set_user("Administrator")
+		frappe.cache.delete_value(avvisi._chiave_pausa(ANNA, avvisi.SMS))
+		frappe.db.set_value("CRM Lead", self.anna.name, "sms_opt_out", 1)
+		with mock.patch("crm.api.sms.deliver_via_twilio") as consegna:
+			self.scrive("Domani alle 9")
+		consegna.assert_not_called()
 
 
 class LeImpostazioni(AvvisiCase):
