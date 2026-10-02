@@ -265,6 +265,17 @@ class IlFermo(TwilioCase):
 		self.assertNotIn("<Message>", xml)
 		self.assertEqual(self.fermo().sms_opt_out, 0)
 
+	def test_uno_stop_che_non_va_lascia_il_messaggio(self):
+		with patch("crm.telephony.sms.ascolta", side_effect=RuntimeError("giù")):
+			xml = self.scrive("STOP")
+		self.assertNotIn("<Message>", xml)
+		self.assertTrue(
+			frappe.db.exists(
+				"CRM SMS Message",
+				{"type": "Incoming", "reference_doctype": "CRM Lead", "reference_name": self.persona.name},
+			)
+		)
+
 	def test_una_parola_non_muove_le_automazioni(self):
 		with patch("crm.automation.engine.process_event") as evento:
 			self.scrive("STOP")
