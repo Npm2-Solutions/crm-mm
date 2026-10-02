@@ -54,6 +54,24 @@ DottorCloud è il gestionale dei centri medici di NPM2 Solutions Srl. Il gestion
 - Raggi di Espresso: `radius-4` (8px, `rounded`) per controlli e righe, `radius-5` per pulsanti lg e avvisi, `radius-6` (12) per carte e menu, `radius-7` (16) per finestre e StatTile, `radius-full` per badge e switch; più `radius-tail` (2px) per la coda della nuvola.
 - Ombre: le elevazioni di Espresso (`elevation-sm`, `-base`, `-lg`, `-2xl`) con l'ombra tinta del verde scuro del marchio invece del nero.
 
+## L'area paziente
+
+Sul telefono del paziente il sistema è lo stesso, più grande, come lo disegnano il
+video, le pubblicità e la presentazione (`../../presentazione/sorgenti/img/telefono-*.png`).
+Nel codice sono le classi `area-*` di `frontend/src/area/area.css`:
+
+- titolo della pagina 28px bold stretto (`area-title`), sezioni in maiuscoletto 12px
+  (`area-label`);
+- carte bianche con il filo e la coda (`area-card`), righe con la nuvola del tipo, le
+  parole e la freccia (`area-row`, `area-chip--amber|violet|blue|rose|green`);
+- il prossimo appuntamento è il blocco `block-deep` della pagina, con le croci nel
+  suo angolo e l'ora in menta (`area-deep`);
+- i giorni a tessera, il giorno scelto pieno (`area-day`); la spunta in una nuvola
+  che si riempie del verde dell'azione (`area-check`); il codice in sei caselle
+  (`area-code`);
+- controlli da 40px (`control-lg`), la barra in basso con il posto aperto nel colore
+  del marchio.
+
 ## Movimento
 
 Le curve di Espresso (120–300ms). In più: il pomello dello switch e la croce entrano con un piccolo rimbalzo (`cubic-bezier(.34,1.56,.64,1)`, 160ms); la croce del caricamento ruota di 90° e respira. Con `prefers-reduced-motion` restano solo le dissolvenze.
