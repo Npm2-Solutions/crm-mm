@@ -14,8 +14,10 @@ Plugged in through `crm.invoicing.estensioni.registra_arricchitore`.
 from __future__ import annotations
 
 from crm.invoicing.engine.classificazione import RigaDaClassificare
+from crm.invoicing.engine.messaggi import Messaggio
 
 from .codici import FLAG_TIPO_SPESA_AMMESSO, tipi_spesa_ammessi
+from .voci import FLAG_TIPO_SPESA, SOGGETTO_INVIANTE, TIPO_SPESA, nome, nomi
 
 
 def risolvi_tipo_spesa(
@@ -50,9 +52,12 @@ def risolvi_tipo_spesa(
 		return candidato, problemi
 	if candidato:
 		problemi.append(
-			f"the catalogue proposes tipoSpesa {candidato!r}, which is not admitted to whoever "
-			f"issues the document (category {emittente!r}; admitted: {', '.join(sorted(ammessi))}). "
-			"The expense type follows the issuer of the fiscal document, not the service"
+			Messaggio(
+				'the service card says the expense type is "{0}", which is not admitted to whoever issues the invoice ("{1}" can only use {2}). The expense type follows who issues the invoice, not the service: correct the service card',
+				nome(TIPO_SPESA, candidato),
+				nome(SOGGETTO_INVIANTE, emittente),
+				nomi(TIPO_SPESA, ammessi),
+			)
 		)
 		return None, problemi
 
@@ -63,16 +68,21 @@ def risolvi_tipo_spesa(
 	naturali = tipi_spesa_ammessi(erogatore)
 	if erogatore != emittente and not (naturali & ammessi):
 		problemi.append(
-			f"tipoSpesa not determinable: the service is performed by a subject of category "
-			f"{erogatore!r} (which would use {', '.join(sorted(naturali))}), but the document is "
-			f"issued by {emittente!r}, which cannot use those codes "
-			f"(admitted: {', '.join(sorted(ammessi))}). Pick it on the service card"
+			Messaggio(
+				'the expense type is not determinable: the service is performed by "{0}", who would use {1}, but the invoice is issued by "{2}", who can only use {3}. Choose it on the service card',
+				nome(SOGGETTO_INVIANTE, erogatore),
+				nomi(TIPO_SPESA, naturali),
+				nome(SOGGETTO_INVIANTE, emittente),
+				nomi(TIPO_SPESA, ammessi),
+			)
 		)
 	else:
 		problemi.append(
-			f"tipoSpesa not determinable for {emittente!r}: the catalogue does not say, and the "
-			f"issuer's category admits more than one ({', '.join(sorted(ammessi))}). Pick it on "
-			"the service card"
+			Messaggio(
+				'the expense type is not determinable: the service card does not say, and "{0}" can use more than one ({1}). Choose it on the service card',
+				nome(SOGGETTO_INVIANTE, emittente),
+				nomi(TIPO_SPESA, ammessi),
+			)
 		)
 	return None, problemi
 
@@ -91,6 +101,11 @@ def arricchisci(riga, emittente: str | None, erogatore: str | None) -> tuple[str
 		atteso = FLAG_TIPO_SPESA_AMMESSO.get(flag)
 		if atteso != tipo_spesa:
 			problemi.append(
-				f"flagTipoSpesa={flag} is only admitted with tipoSpesa={atteso}, not with {tipo_spesa!r}"
+				Messaggio(
+					'"{0}" only goes with the expense type "{1}", not with "{2}"',
+					nome(FLAG_TIPO_SPESA, flag),
+					nome(TIPO_SPESA, atteso),
+					nome(TIPO_SPESA, tipo_spesa),
+				)
 			)
 	return tipo_spesa, problemi

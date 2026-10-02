@@ -168,7 +168,7 @@ class TipoSpesaTest(UnitTestCase):
 			soggetto_emittente="medico_odontoiatra",
 		)
 		self.assertFalse(esito.valido)
-		self.assertTrue(any("flagTipoSpesa=1" in e for e in esito.tutti_errori))
+		self.assertTrue(any("only goes with the expense type" in e for e in esito.tutti_errori))
 
 
 class SenzaSchedaTest(UnitTestCase):

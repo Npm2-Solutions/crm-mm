@@ -38188,3 +38188,343 @@ msgstr "Fattura {0}"
 #: frontend/src/utils/fattura.js
 msgid "Credit note {0}"
 msgstr "Nota di credito {0}"
+
+#: crm/tessera_sanitaria/engine/classificazione.py
+msgid "the service card says the expense type is \"{0}\", which is not admitted to whoever issues the invoice (\"{1}\" can only use {2}). The expense type follows who issues the invoice, not the service: correct the service card"
+msgstr "la scheda del servizio dice che il tipo di spesa è «{0}», che chi emette la fattura non può usare («{1}» può usare solo {2}). Il tipo di spesa segue chi emette la fattura, non il servizio: correggi la scheda del servizio"
+
+#: crm/tessera_sanitaria/engine/classificazione.py
+msgid "the expense type is not determinable: the service is performed by \"{0}\", who would use {1}, but the invoice is issued by \"{2}\", who can only use {3}. Choose it on the service card"
+msgstr "il tipo di spesa non si può stabilire: la prestazione la esegue «{0}», che userebbe {1}, ma la fattura la emette «{2}», che può usare solo {3}. Sceglilo sulla scheda del servizio"
+
+#: crm/tessera_sanitaria/engine/classificazione.py
+msgid "the expense type is not determinable: the service card does not say, and \"{0}\" can use more than one ({1}). Choose it on the service card"
+msgstr "il tipo di spesa non si può stabilire: la scheda del servizio non lo dice, e «{0}» ne può usare più di uno ({1}). Sceglilo sulla scheda del servizio"
+
+#: crm/tessera_sanitaria/engine/classificazione.py
+msgid "\"{0}\" only goes with the expense type \"{1}\", not with \"{2}\""
+msgstr "«{0}» va solo con il tipo di spesa «{1}», non con «{2}»"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "whoever issues does not report to the Sistema TS: this document is not reported"
+msgstr "chi emette non comunica al Sistema TS: questo documento non si comunica"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the codice fiscale of whoever issues is missing"
+msgstr "manca il codice fiscale di chi emette"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the codice fiscale of whoever issues is not valid: {0}"
+msgstr "il codice fiscale di chi emette non è valido: {0}"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "\"{0}\" reports with the codice fiscale alone: the Region, ASL and facility codes stay empty"
+msgstr "«{0}» comunica con il solo codice fiscale: i codici di Regione, ASL e struttura restano vuoti"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "\"{0}\" reports with the Region, ASL and facility codes of its Sistema TS authorisation (the Codice Proprietario): all three are needed"
+msgstr "«{0}» comunica con i codici di Regione, ASL e struttura della sua abilitazione al Sistema TS (il Codice Proprietario): servono tutti e tre"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the Region code of the Sistema TS authorisation has three characters"
+msgstr "il codice della Regione dell'abilitazione al Sistema TS ha tre caratteri"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the ASL code of the Sistema TS authorisation has three characters"
+msgstr "il codice dell'ASL dell'abilitazione al Sistema TS ha tre caratteri"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the facility code of the Sistema TS authorisation has five or six characters"
+msgstr "il codice della struttura dell'abilitazione al Sistema TS ha cinque o sei caratteri"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the VAT number of whoever issues has eleven digits (a professional without one uses the eleven-digit code the Sistema TS issued)"
+msgstr "la partita IVA di chi emette ha undici cifre (un professionista che non ce l'ha usa il codice di undici cifre rilasciato dal Sistema TS)"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "a document issued before {0} is not reported"
+msgstr "un documento emesso prima del {0} non si comunica"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the cash register number goes from 1 to 999"
+msgstr "il numero del registratore di cassa va da 1 a 999"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "an invoice has cash register number 1: the others belong to receipts"
+msgstr "una fattura ha il registratore di cassa numero 1: gli altri sono degli scontrini"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the invoice number {0} cannot be reported: at most 20 letters, digits and the characters _ . / - (no spaces, accents, # or :)"
+msgstr "il numero di fattura {0} non si può comunicare: al massimo 20 tra lettere, cifre e i caratteri _ . / - (niente spazi, accenti, # o :)"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "a payment before {0} is not reported"
+msgstr "un pagamento prima del {0} non si comunica"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the payment comes before the invoice: it has to be marked as an advance payment (the prepaid package case)"
+msgstr "il pagamento viene prima della fattura: va segnato come pagamento anticipato (il caso del pacchetto prepagato)"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "it is marked as an advance payment, but the payment comes after the invoice: check it, the mark is for the opposite case"
+msgstr "è segnato come pagamento anticipato, ma il pagamento viene dopo la fattura: controlla, il segno è per il caso opposto"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "a refund is paid on the day of its document: the payment date is the credit note's date"
+msgstr "un rimborso si paga il giorno del suo documento: la data di pagamento è quella della nota di credito"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "a refund names the document it refunds: the original invoice is missing"
+msgstr "un rimborso dice quale documento rimborsa: manca la fattura originale"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the patient opposed: the expense goes without their codice fiscale, anonymously"
+msgstr "il paziente ha fatto opposizione: la spesa va senza il suo codice fiscale, in forma anonima"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the patient's codice fiscale is missing and they did not oppose: the opposition is an explicit choice, not an empty field"
+msgstr "manca il codice fiscale del paziente, e non ha fatto opposizione: l'opposizione è una scelta esplicita, non un campo vuoto"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "the patient's codice fiscale is not valid: {0} (an omocodia code is valid, it is not an error)"
+msgstr "il codice fiscale del paziente non è valido: {0} (un codice di omocodia è valido, non è un errore)"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "nothing on the document goes to the Sistema TS"
+msgstr "niente del documento va al Sistema TS"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: the expense type \"{1}\" is not admitted to \"{2}\", who can only use {3}. The expense type follows the register of whoever issues, not the service"
+msgstr "riga {0}: il tipo di spesa «{1}» non è ammesso per «{2}», che può usare solo {3}. Il tipo di spesa segue chi emette, non il servizio"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: there is no particular case {1}"
+msgstr "riga {0}: non esiste il caso particolare {1}"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: \"{1}\" only goes with the expense type \"{2}\", not with \"{3}\""
+msgstr "riga {0}: «{1}» va solo con il tipo di spesa «{2}», non con «{3}»"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: the amount must be above zero, refunds included"
+msgstr "riga {0}: l'importo deve essere più di zero, anche per un rimborso"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: the amount is above what the Sistema TS takes ({1})"
+msgstr "riga {0}: l'importo supera quello che il Sistema TS accetta ({1})"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: a VAT rate and a reason for no VAT are alternatives, never together"
+msgstr "riga {0}: un'aliquota IVA e il motivo per cui non c'è IVA sono alternativi, mai insieme"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: it needs either a VAT rate or the reason there is no VAT"
+msgstr "riga {0}: serve un'aliquota IVA o il motivo per cui non c'è IVA"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "line {0}: \"{1}\" is not admitted on this kind of document"
+msgstr "riga {0}: «{1}» non è ammesso su questo tipo di documento"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "how it was paid is needed: these expense types say whether the payment was traceable (since 1/1/2020)"
+msgstr "serve come è stata pagata: per questi tipi di spesa si dice se il pagamento era tracciabile (dal 1/1/2020)"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "payment not traceable: the patient loses the 19% deduction. If any part was paid in cash, the whole document counts as not traceable"
+msgstr "pagamento non tracciabile: il paziente perde la detrazione del 19%. Se anche una parte è stata pagata in contanti, tutto il documento conta come non tracciabile"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "whether the payment was traceable does not count for these expense types: it is not reported"
+msgstr "per questi tipi di spesa la tracciabilità del pagamento non conta: non si comunica"
+
+#: crm/tessera_sanitaria/engine/tracciato.py
+msgid "none"
+msgstr "nessuno"
+
+#: crm/tessera_sanitaria/__init__.py
+msgid "the Sistema TS will refuse its report until the issuing company is complete: {0}"
+msgstr "il Sistema TS rifiuterà la comunicazione finché l'azienda emittente non è completa: {0}"
+
+#: crm/tessera_sanitaria/qualifica.py
+msgid "A qualification that reports to the Sistema TS is one whose documents towards a natural person cannot go through the SdI. Set the electronic invoice to «{0}», or turn the Sistema TS duty off."
+msgstr "Una qualifica che comunica al Sistema TS è una i cui documenti verso una persona fisica non possono passare dallo SdI. Imposta la fattura elettronica su «{0}», o togli l'obbligo del Sistema TS."
+
+#: crm/tessera_sanitaria/qualifica.py
+msgid "«{0}» has no expense type of the Sistema TS: choose the category the Sistema TS enrolled this profession under"
+msgstr "«{0}» non ha tipi di spesa del Sistema TS: scegli la categoria con cui il Sistema TS ha registrato questa professione"
+
+#: crm/tessera_sanitaria/qualifica.py
+msgid "An expense type of the Sistema TS on a service that is not healthcare: the Sistema TS only knows healthcare expenses. Either the service is healthcare, or the expense type goes."
+msgstr "Un tipo di spesa del Sistema TS su un servizio non sanitario: il Sistema TS conosce solo spese sanitarie. O il servizio è sanitario, o il tipo di spesa va tolto."
+
+#: crm/tessera_sanitaria/qualifica.py
+msgid "«{0}» only goes with the expense type «{1}» or «{2}», not with «{3}»"
+msgstr "«{0}» va solo con il tipo di spesa «{1}» o «{2}», non con «{3}»"
+
+#: crm/tessera_sanitaria/trasporto.py
+msgid "The Sistema TS would refuse this document"
+msgstr "Il Sistema TS rifiuterebbe questo documento"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the file is {0} KB, over the {1} KB the SdI accepts: usually an embedded attachment"
+msgstr "il file pesa {0} KB, oltre i {1} KB che lo SdI accetta: di solito per un allegato incorporato"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "an invoice to the public administration goes to its six-character office code: \"{0}\" has {1}"
+msgstr "una fattura alla pubblica amministrazione va al suo codice ufficio di sei caratteri: «{0}» ne ha {1}"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the recipient code has seven characters: \"{0}\" has {1}"
+msgstr "il codice destinatario ha sette caratteri: «{0}» ne ha {1}"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client has neither a recipient code nor a PEC: the invoice reaches the SdI and stops there. It is valid, but the client never receives it"
+msgstr "il cliente non ha né un codice destinatario né una PEC: la fattura arriva allo SdI e si ferma lì. È valida, ma il cliente non la riceve"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the transmission number is letters and digits, at most ten"
+msgstr "il progressivo di invio è fatto di lettere e cifre, al massimo dieci"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the address of whoever issues is incomplete: the street and the town are needed"
+msgstr "l'indirizzo di chi emette è incompleto: servono la via e il comune"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the country of whoever issues is a two-letter code, not \"{0}\""
+msgstr "il paese di chi emette è un codice di due lettere, non «{0}»"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the postal code of whoever issues has five digits, not \"{0}\""
+msgstr "il CAP di chi emette ha cinque cifre, non «{0}»"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the province of whoever issues is two letters, not \"{0}\""
+msgstr "la provincia di chi emette è di due lettere, non «{0}»"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client's address is incomplete: the street and the town are needed"
+msgstr "l'indirizzo del cliente è incompleto: servono la via e il comune"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client's country is a two-letter code, not \"{0}\""
+msgstr "il paese del cliente è un codice di due lettere, non «{0}»"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client's postal code has five digits, not \"{0}\""
+msgstr "il CAP del cliente ha cinque cifre, non «{0}»"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client's province is two letters, not \"{0}\""
+msgstr "la provincia del cliente è di due lettere, non «{0}»"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the VAT number of whoever issues is missing"
+msgstr "manca la partita IVA di chi emette"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "whoever issues has neither a company name nor a first and last name"
+msgstr "chi emette non ha né una ragione sociale né nome e cognome"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client has neither a VAT number nor a codice fiscale: at least one is needed"
+msgstr "il cliente non ha né partita IVA né codice fiscale: ne serve almeno uno"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the client has neither a company name nor a first and last name"
+msgstr "il cliente non ha né una ragione sociale né nome e cognome"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the document number is missing"
+msgstr "manca il numero del documento"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the document number \"{0}\" has no digit: the SdI wants at least one"
+msgstr "il numero del documento «{0}» non ha cifre: lo SdI ne vuole almeno una"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "a credit or debit note says which document it corrects, and this one does not: the SdI accepts it, the client's accounting does not"
+msgstr "una nota di credito o di debito dice quale documento corregge, e questa non lo dice: lo SdI la accetta, la contabilità del cliente no"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the document has no lines"
+msgstr "il documento non ha righe"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the document has no VAT summary"
+msgstr "il documento non ha il riepilogo IVA"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "line {0} has no VAT and does not say why: the reason is mandatory"
+msgstr "la riga {0} non ha IVA e non dice perché: il motivo è obbligatorio"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "line {0} has both a VAT rate and a reason for no VAT"
+msgstr "la riga {0} ha sia un'aliquota IVA sia il motivo per cui non c'è IVA"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "line {0} uses \"{1}\", no longer admitted: choose one of its detailed reasons"
+msgstr "la riga {0} usa «{1}», che non è più ammesso: scegli uno dei suoi motivi di dettaglio"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "a block of the VAT summary has no VAT and does not say why"
+msgstr "un blocco del riepilogo IVA non ha IVA e non dice perché"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "a block of the VAT summary has both a VAT rate and a reason for no VAT"
+msgstr "un blocco del riepilogo IVA ha sia un'aliquota sia il motivo per cui non c'è IVA"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the VAT summary uses \"{0}\", no longer admitted: choose one of its detailed reasons"
+msgstr "il riepilogo IVA usa «{0}», che non è più ammesso: scegli uno dei suoi motivi di dettaglio"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "there is no VAT summary for the {0}% rate"
+msgstr "manca il riepilogo IVA per l'aliquota del {0}%"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the VAT summary at {0}% carries {1}, the lines and the fund's contributions make {2}"
+msgstr "il riepilogo IVA al {0}% riporta {1}, le righe e i contributi della cassa fanno {2}"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the VAT summary at {0}% differs from the lines by {1}: the SdI accepts it, check it"
+msgstr "il riepilogo IVA al {0}% differisce dalle righe di {1}: lo SdI lo accetta, controllalo"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the VAT summary at {0}% carries {1} of tax, its taxable amount makes {2}"
+msgstr "il riepilogo IVA al {0}% riporta {1} di imposta, il suo imponibile fa {2}"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the document's total ({0}) is not what the VAT summary makes ({1}): the SdI accepts it, the client's accounting does not"
+msgstr "il totale del documento ({0}) non è quello che fa il riepilogo IVA ({1}): lo SdI lo accetta, la contabilità del cliente no"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the fund's contribution has no VAT and does not say why: the reason is mandatory"
+msgstr "il contributo della cassa non ha IVA e non dice perché: il motivo è obbligatorio"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the fund's contribution has both a VAT rate and a reason for no VAT"
+msgstr "il contributo della cassa ha sia un'aliquota IVA sia il motivo per cui non c'è IVA"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "a line is subject to withholding, and the invoice carries no withholding"
+msgstr "una riga è soggetta a ritenuta, e la fattura non riporta nessuna ritenuta"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the fund's contribution is subject to withholding, and the invoice carries no withholding"
+msgstr "il contributo della cassa è soggetto a ritenuta, e la fattura non riporta nessuna ritenuta"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the invoice carries a withholding, and no line and no contribution is subject to it: say what it was computed on"
+msgstr "la fattura riporta una ritenuta, ma nessuna riga e nessun contributo vi è soggetto: indica su cosa è calcolata"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "the invoice carries a withholding of zero or less: check it"
+msgstr "la fattura riporta una ritenuta pari a zero o negativa: controllala"
+
+#: crm/invoicing/engine/fatturapa.py
+msgid "an invoice to the public administration needs the six-character office code of the IPA: \"{0}\" is not one"
+msgstr "una fattura alla pubblica amministrazione vuole il codice ufficio IPA di sei caratteri: «{0}» non lo è"
+
+#: crm/invoicing/documento.py
+msgid "An invoice to the public administration needs the six-character office code of the IPA"
+msgstr "Una fattura alla pubblica amministrazione vuole il codice ufficio IPA di sei caratteri"

@@ -48,6 +48,9 @@ from decimal import ROUND_HALF_UP, Decimal
 from xml.etree import ElementTree as ET
 
 from crm.invoicing.engine import codice_fiscale as cf
+from crm.invoicing.engine.messaggi import Messaggio as Frase
+from crm.invoicing.engine.messaggi import Nome
+from crm.invoicing.engine.voci import etichetta
 
 from .codici import (
 	FLAG_TIPO_SPESA_AMMESSO,
@@ -65,6 +68,9 @@ from .codici import (
 	TipoMessaggioTS,
 	tipi_spesa_ammessi,
 )
+from .voci import FLAG_TIPO_SPESA, SOGGETTO_INVIANTE, TIPO_SPESA
+from .voci import nome as nome_voce
+from .voci import nomi as nomi_voci
 
 NAMESPACE_SINCRONO = "http://documentospesap730.sanita.finanze.it"
 
@@ -258,38 +264,59 @@ def _cf_soggetto_valido(valore: str | None) -> bool:
 	return cf.valido(valore)
 
 
+#: What invoicing says on its own about the patient and the payment
+#: (`crm.invoicing.documento.blocchi`): a draft's check leaves these to it.
+MANCA_IL_CF = "the patient's codice fiscale is missing and they did not oppose: the opposition is an explicit choice, not an empty field"
+CF_NON_VALIDO = (
+	"the patient's codice fiscale is not valid: {0} (an omocodia code is valid, it is not an error)"
+)
+PAGATO_PRIMA = "the payment comes before the invoice: it has to be marked as an advance payment (the prepaid package case)"
+SERVE_IL_PAGAMENTO = (
+	"how it was paid is needed: these expense types say whether the payment was traceable (since 1/1/2020)"
+)
+GIA_DETTI = frozenset({MANCA_IL_CF, CF_NON_VALIDO, PAGATO_PRIMA})
+
+
 def valida_proprietario(proprietario: Proprietario) -> RisultatoValidazione:
 	esito = RisultatoValidazione()
 	soggetto = proprietario.soggetto
 
 	if soggetto == SoggettoInviante.NON_SANITARIO:
-		esito.errori.append(
-			"the issuer is not a Sistema TS subject: this document does not belong in the tracciato"
-		)
+		esito.errori.append("whoever issues does not report to the Sistema TS: this document is not reported")
 		return esito
 	if not proprietario.cf_proprietario:
-		esito.errori.append("cfProprietario is missing")
+		esito.errori.append("the codice fiscale of whoever issues is missing")
 	elif not _cf_soggetto_valido(proprietario.cf_proprietario):
-		esito.errori.append(f"cfProprietario is not valid: {proprietario.cf_proprietario!r}")
+		esito.errori.append(
+			Frase("the codice fiscale of whoever issues is not valid: {0}", proprietario.cf_proprietario)
+		)
 
 	terna = (proprietario.codice_regione, proprietario.codice_asl, proprietario.codice_ssa)
 	if proprietario.e_persona_fisica:
 		if any(terna):
 			esito.errori.append(
-				f"for subject {soggetto!r} codiceRegione, codiceAsl and codiceSSA are omitted: only cfProprietario is filled"
+				Frase(
+					'"{0}" reports with the codice fiscale alone: the Region, ASL and facility codes stay empty',
+					nome_voce(SOGGETTO_INVIANTE, soggetto),
+				)
 			)
 	elif soggetto in SOGGETTI_CON_CODICE_PROPRIETARIO:
 		if not all(terna):
 			esito.errori.append(
-				f"subject {soggetto!r} needs the full Codice Proprietario (codiceRegione-codiceAsl-codiceSSA), from the 'Abilitazione al Sistema TS' document"
+				Frase(
+					'"{0}" reports with the Region, ASL and facility codes of its Sistema TS authorisation (the Codice Proprietario): all three are needed',
+					nome_voce(SOGGETTO_INVIANTE, soggetto),
+				)
 			)
 		else:
 			if len(proprietario.codice_regione or "") != 3:
-				esito.errori.append("codiceRegione must be three characters")
+				esito.errori.append("the Region code of the Sistema TS authorisation has three characters")
 			if len(proprietario.codice_asl or "") != 3:
-				esito.errori.append("codiceAsl must be three characters")
+				esito.errori.append("the ASL code of the Sistema TS authorisation has three characters")
 			if not 5 <= len(proprietario.codice_ssa or "") <= 6:
-				esito.errori.append("codiceSSA must be five or six characters")
+				esito.errori.append(
+					"the facility code of the Sistema TS authorisation has five or six characters"
+				)
 	return esito
 
 
@@ -308,61 +335,59 @@ def valida_documento(documento: DocumentoSpesa) -> RisultatoValidazione:
 	# ------------------------------------------------------------- identifier
 	if not cf.identificativo_ts_valido(id_spesa.p_iva):
 		esito.errori.append(
-			"pIva must be exactly eleven digits (professionals without a VAT number use the eleven-digit code issued by the Sistema TS)"
+			"the VAT number of whoever issues has eleven digits (a professional without one uses the eleven-digit code the Sistema TS issued)"
 		)
 	if id_spesa.data_emissione < DATA_MINIMA_EMISSIONE:
-		esito.errori.append(f"dataEmissione cannot precede {DATA_MINIMA_EMISSIONE.isoformat()}")
-	if not 1 <= id_spesa.dispositivo <= 999:
-		esito.errori.append("dispositivo must be between 1 and 999")
-	if documento.tipo_documento == TipoDocumentoTS.FATTURA and id_spesa.dispositivo != 1:
 		esito.errori.append(
-			"for invoices dispositivo is always 1: the cash-register progressive belongs to receipts"
+			Frase("a document issued before {0} is not reported", DATA_MINIMA_EMISSIONE.strftime("%d/%m/%Y"))
 		)
+	if not 1 <= id_spesa.dispositivo <= 999:
+		esito.errori.append("the cash register number goes from 1 to 999")
+	if documento.tipo_documento == TipoDocumentoTS.FATTURA and id_spesa.dispositivo != 1:
+		esito.errori.append("an invoice has cash register number 1: the others belong to receipts")
 	if not NUM_DOCUMENTO_PATTERN.match(id_spesa.num_documento or ""):
 		esito.errori.append(
-			f"numDocumento {id_spesa.num_documento!r} is not admitted: at most 20 characters of the "
-			r"alphabet [A-Za-z0-9_./\-] - no spaces, accents, '#' or ':'"
+			Frase(
+				"the invoice number {0} cannot be reported: at most 20 letters, digits and the characters _ . / - (no spaces, accents, # or :)",
+				id_spesa.num_documento or "-",
+			)
 		)
 
 	# ------------------------------------------------------------------ dates
 	if documento.data_pagamento < DATA_MINIMA_PAGAMENTO:
-		esito.errori.append(f"dataPagamento cannot precede {DATA_MINIMA_PAGAMENTO.isoformat()}")
-	if documento.data_pagamento < id_spesa.data_emissione and not documento.flag_pagamento_anticipato:
 		esito.errori.append(
-			"dataPagamento precedes dataEmissione: flagPagamentoAnticipato=1 is required (the prepaid package case)"
+			Frase("a payment before {0} is not reported", DATA_MINIMA_PAGAMENTO.strftime("%d/%m/%Y"))
 		)
+	if documento.data_pagamento < id_spesa.data_emissione and not documento.flag_pagamento_anticipato:
+		esito.errori.append(PAGATO_PRIMA)
 	if documento.flag_pagamento_anticipato and documento.data_pagamento > id_spesa.data_emissione:
 		esito.avvisi.append(
-			"flagPagamentoAnticipato is set but the payment follows the issue: check it, the flag is for the opposite case"
+			"it is marked as an advance payment, but the payment comes after the invoice: check it, the mark is for the opposite case"
 		)
 	if documento.flag_operazione == OperazioneTS.RIMBORSO:
 		if documento.data_pagamento != id_spesa.data_emissione:
-			esito.errori.append("with flagOperazione=R the dataPagamento must equal the dataEmissione")
-		if documento.id_rimborso is None:
 			esito.errori.append(
-				"with flagOperazione=R an idRimborso is required: the identifier of the original document"
+				"a refund is paid on the day of its document: the payment date is the credit note's date"
 			)
+		if documento.id_rimborso is None:
+			esito.errori.append("a refund names the document it refunds: the original invoice is missing")
 
 	# ------------------------------------------------------------- opposition
-	# The document is transmitted either way, but without cfCittadino. Sending the
-	# code with the flag set gets the row rejected.
+	# The document is transmitted either way, but without the patient's codice
+	# fiscale. Sending the code with the opposition gets the row rejected.
 	if documento.flag_opposizione:
 		if documento.cf_cittadino:
 			esito.errori.append(
-				"with flagOpposizione=1 the cfCittadino field must be absent: the document is transmitted anyway, anonymously"
+				"the patient opposed: the expense goes without their codice fiscale, anonymously"
 			)
 	elif not documento.cf_cittadino:
-		esito.errori.append(
-			"cfCittadino is missing and no opposition was declared: the opposition is an explicit choice, not an empty field"
-		)
+		esito.errori.append(MANCA_IL_CF)
 	elif not cf.valido(documento.cf_cittadino):
-		esito.errori.append(
-			f"cfCittadino is not valid: {documento.cf_cittadino!r} (an omocodia code is valid, it is not an error)"
-		)
+		esito.errori.append(Frase(CF_NON_VALIDO, documento.cf_cittadino))
 
 	# ------------------------------------------------------------------ items
 	if not documento.voci:
-		esito.errori.append("the document has no expense item")
+		esito.errori.append("nothing on the document goes to the Sistema TS")
 
 	natura_ammessa = (
 		NATURE_IVA_FATTURA
@@ -373,41 +398,60 @@ def valida_documento(documento: DocumentoSpesa) -> RisultatoValidazione:
 
 	serve_tracciabilita = False
 	for indice, voce in enumerate(documento.voci, start=1):
-		prefisso = f"item {indice}"
 		if voce.tipo_spesa not in ammessi:
 			esito.errori.append(
-				f"{prefisso}: tipoSpesa {voce.tipo_spesa!r} is not admitted for subject {soggetto!r}. Admitted: {', '.join(sorted(ammessi)) or 'none'}. The expense type follows the register of whoever issues, not the service"
+				Frase(
+					'line {0}: the expense type "{1}" is not admitted to "{2}", who can only use {3}. The expense type follows the register of whoever issues, not the service',
+					indice,
+					nome_voce(TIPO_SPESA, voce.tipo_spesa),
+					nome_voce(SOGGETTO_INVIANTE, soggetto),
+					nomi_voci(TIPO_SPESA, ammessi) or Nome("none"),
+				)
 			)
 		if voce.flag_tipo_spesa is not None:
 			atteso = FLAG_TIPO_SPESA_AMMESSO.get(voce.flag_tipo_spesa)
 			if atteso is None:
 				esito.errori.append(
-					f"{prefisso}: flagTipoSpesa {voce.flag_tipo_spesa!r} is not foreseen (1 and 2 only)"
+					Frase("line {0}: there is no particular case {1}", indice, voce.flag_tipo_spesa)
 				)
 			elif voce.tipo_spesa != atteso:
 				esito.errori.append(
-					f"{prefisso}: flagTipoSpesa={voce.flag_tipo_spesa} is only admitted with tipoSpesa={atteso}, not with {voce.tipo_spesa!r}"
+					Frase(
+						'line {0}: "{1}" only goes with the expense type "{2}", not with "{3}"',
+						indice,
+						nome_voce(FLAG_TIPO_SPESA, voce.flag_tipo_spesa),
+						nome_voce(TIPO_SPESA, atteso),
+						nome_voce(TIPO_SPESA, voce.tipo_spesa),
+					)
 				)
 		if voce.importo <= Decimal("0"):
-			esito.errori.append(f"{prefisso}: importo must be positive, refunds included")
+			esito.errori.append(Frase("line {0}: the amount must be above zero, refunds included", indice))
 		elif voce.importo > IMPORTO_MASSIMO:
-			esito.errori.append(f"{prefisso}: importo above the tracciato maximum ({IMPORTO_MASSIMO})")
+			esito.errori.append(
+				Frase(
+					"line {0}: the amount is above what the Sistema TS takes ({1})", indice, IMPORTO_MASSIMO
+				)
+			)
 
 		ha_aliquota = voce.aliquota_iva is not None
 		ha_natura = bool(voce.natura_iva)
 		if ha_aliquota and ha_natura:
-			esito.errori.append(f"{prefisso}: aliquotaIVA and naturaIVA are alternatives, never together")
+			esito.errori.append(
+				Frase("line {0}: a VAT rate and a reason for no VAT are alternatives, never together", indice)
+			)
 		elif not ha_aliquota and not ha_natura:
-			esito.errori.append(f"{prefisso}: either aliquotaIVA or naturaIVA is required")
+			esito.errori.append(
+				Frase("line {0}: it needs either a VAT rate or the reason there is no VAT", indice)
+			)
 		elif ha_natura:
 			natura = voce.natura_iva or ""
-			if len(natura) > natura_max_len:
+			if len(natura) > natura_max_len or natura not in natura_ammessa:
 				esito.errori.append(
-					f"{prefisso}: naturaIVA {natura!r} is too long for tipoDocumento={documento.tipo_documento} (max {natura_max_len} characters)"
-				)
-			elif natura not in natura_ammessa:
-				esito.errori.append(
-					f"{prefisso}: naturaIVA {natura!r} is not admitted for tipoDocumento={documento.tipo_documento}"
+					Frase(
+						'line {0}: "{1}" is not admitted on this kind of document',
+						indice,
+						Nome(etichetta("natura", natura)),
+					)
 				)
 
 		if tracciabilita_obbligatoria(soggetto, voce.tipo_spesa):
@@ -416,13 +460,15 @@ def valida_documento(documento: DocumentoSpesa) -> RisultatoValidazione:
 	# -------------------------------------------------------- traced payment
 	if serve_tracciabilita:
 		if documento.pagamento_tracciato is None:
-			esito.errori.append("pagamentoTracciato is mandatory for these expense types (since 1/1/2020)")
+			esito.errori.append(SERVE_IL_PAGAMENTO)
 		elif documento.pagamento_tracciato is False:
 			esito.avvisi.append(
-				"payment not traced: the patient loses the 19% deduction. Watch mixed payments - if any part is in cash the document is reported as not traced"
+				"payment not traceable: the patient loses the 19% deduction. If any part was paid in cash, the whole document counts as not traceable"
 			)
 	elif documento.pagamento_tracciato is not None:
-		esito.avvisi.append("pagamentoTracciato is filled but not required for these expense types")
+		esito.avvisi.append(
+			"whether the payment was traceable does not count for these expense types: it is not reported"
+		)
 
 	return esito
 

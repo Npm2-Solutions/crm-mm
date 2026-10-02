@@ -26,6 +26,7 @@ from decimal import Decimal
 import frappe
 from frappe.utils import getdate
 
+from crm.invoicing import documento
 from crm.invoicing.engine.codici import (
 	CODICE_DESTINATARIO_ESTERO,
 	LUNGHEZZA_CODICE_PA,
@@ -39,6 +40,7 @@ from crm.invoicing.engine.fatturapa import (
 	Contatti,
 	DettaglioPagamento,
 	DocumentoCollegato,
+	ErroreFatturaPA,
 	FatturaElettronica,
 	IscrizioneREA,
 	Sede,
@@ -173,7 +175,13 @@ def costruisci(doc, preparato: dict, progressivo: str | None = None) -> FatturaE
 
 	pa = doc.recipient_type == TipoDestinatario.PUBBLICA_AMMINISTRAZIONE
 	estero = (doc.country or "IT").upper() != "IT"
-	codice, pec = codice_destinatario(doc.recipient_code, doc.pec, estero=estero, pubblica_amministrazione=pa)
+	try:
+		codice, pec = codice_destinatario(
+			doc.recipient_code, doc.pec, estero=estero, pubblica_amministrazione=pa
+		)
+	except ErroreFatturaPA as errore:
+		# the draft's checks say it first (`documento.blocchi`): this is the net under them
+		frappe.throw(documento.in_parole(errore.args[0]))
 
 	progressivo = progressivo or progressivo_alfanumerico(int(emittente.get("sdi_last_progressive") or 0) + 1)
 

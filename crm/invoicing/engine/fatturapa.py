@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from xml.etree import ElementTree as ET
 
 from .codici import (
@@ -38,6 +38,9 @@ from .codici import (
 	EsigibilitaIVA,
 	TipoDocumento,
 )
+from .messaggi import Messaggio as Frase
+from .messaggi import Nome, Rilievo
+from .voci import etichetta
 
 NAMESPACE = "http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2"
 SCHEMA_LOCATION = (
@@ -605,8 +608,10 @@ def codice_destinatario(
 	if pubblica_amministrazione:
 		if len(pulito) != LUNGHEZZA_CODICE_PA:
 			raise ErroreFatturaPA(
-				"an invoice to the public administration needs the six-character IPA office code: "
-				f"{pulito!r} is not one"
+				Frase(
+					'an invoice to the public administration needs the six-character office code of the IPA: "{0}" is not one',
+					pulito,
+				)
 			)
 		return pulito, None
 	if estero:
@@ -619,7 +624,7 @@ def codice_destinatario(
 # ------------------------------------------------------------------ validation
 
 
-def dimensione_ammessa(dati: bytes | str) -> str | None:
+def dimensione_ammessa(dati: bytes | str) -> Rilievo | None:
 	"""Say whether the file is within what the SdI takes, or why it is not.
 
 	Rejection `00003` is measured on the file, not on the invoice: an attachment
@@ -629,9 +634,11 @@ def dimensione_ammessa(dati: bytes | str) -> str | None:
 	byte = len(dati.encode() if isinstance(dati, str) else dati)
 	if byte <= DIMENSIONE_MASSIMA_FILE:
 		return None
-	return (
-		f"00003: the file is {-(-byte // 1024)} KB, over the {DIMENSIONE_MASSIMA_FILE // 1024} KB the "
-		"SdI accepts. Usually an embedded attachment"
+	return Rilievo(
+		"00003",
+		"the file is {0} KB, over the {1} KB the SdI accepts: usually an embedded attachment",
+		-(-byte // 1024),
+		DIMENSIONE_MASSIMA_FILE // 1024,
 	)
 
 
@@ -639,8 +646,9 @@ def valida(fattura: FatturaElettronica) -> list[str]:
 	"""Re-read the document with the SdI's own checks, before sending it.
 
 	Rejection is not free: the invoice counts as not issued, and the five days to
-	resubmit run from the notice, not from when somebody notices. Every message
-	here carries the SdI code so it can be looked up in the specification.
+	resubmit run from the notice, not from when somebody notices. Every check the SdI
+	makes says the code it would answer with, from its "Elenco dei controlli"
+	(v1.8): `00200` for a file the schema refuses, the content checks by number.
 	"""
 	problemi: list[str] = []
 	problemi.extend(_valida_trasmissione(fattura))
@@ -653,13 +661,22 @@ def valida(fattura: FatturaElettronica) -> list[str]:
 #: A finding that carries an SdI code is one the SdI itself would reject on. The
 #: rest are things a human on the other side will notice - a credit note that does
 #: not say what it corrects, an invoice with nowhere to be delivered - and they are
-#: worth saying without stopping the document.
-_CODICE = re.compile(r"^\d{5}:")
+#: worth saying without stopping the document. A stored message keeps the code at
+#: the end (« (SdI 00422)»); one stored before says it first («00422: ...»).
+_CODICE = re.compile(r"(?:^(\d{5}):|\(SdI (\d{5})\)\s*$)")
+
+
+def codice_di(rilievo: str) -> str | None:
+	"""The SdI code of a finding, a sentence or a stored line of one; none for a remark."""
+	if isinstance(rilievo, Rilievo):
+		return rilievo.codice
+	trovato = _CODICE.search(rilievo or "")
+	return (trovato.group(1) or trovato.group(2)) if trovato else None
 
 
 def bloccanti(problemi: list[str]) -> list[str]:
 	"""The subset of findings that would come back as a rejection."""
-	return [p for p in problemi if _CODICE.match(p)]
+	return [p for p in problemi if codice_di(p)]
 
 
 def _valida_trasmissione(fattura: FatturaElettronica) -> list[str]:
@@ -668,179 +685,279 @@ def _valida_trasmissione(fattura: FatturaElettronica) -> list[str]:
 	if fattura.formato == FORMATO_PA:
 		if len(codice) != LUNGHEZZA_CODICE_PA:
 			problemi.append(
-				f"00427: with FormatoTrasmissione FPA12 the CodiceDestinatario is six characters, "
-				f"{codice!r} has {len(codice)}"
+				Rilievo(
+					"00427",
+					'an invoice to the public administration goes to its six-character office code: "{0}" has {1}',
+					codice,
+					len(codice),
+				)
 			)
 	elif len(codice) != LUNGHEZZA_CODICE_PRIVATI:
 		problemi.append(
-			f"00427: with FormatoTrasmissione FPR12 the CodiceDestinatario is seven characters, "
-			f"{codice!r} has {len(codice)}"
+			Rilievo("00427", 'the recipient code has seven characters: "{0}" has {1}', codice, len(codice))
 		)
 	if codice == CODICE_DESTINATARIO_ASSENTE and not fattura.pec_destinatario:
 		problemi.append(
-			"the recipient has neither an interchange code nor a PEC address: the invoice reaches "
-			"the SdI and stops there. It is valid, but the client never receives it"
+			"the client has neither a recipient code nor a PEC: the invoice reaches the SdI and stops "
+			"there. It is valid, but the client never receives it"
 		)
 	if not re.fullmatch(r"[A-Za-z0-9]{1,10}", fattura.progressivo_invio or ""):
-		problemi.append("00001: ProgressivoInvio must be alphanumeric, at most ten characters")
+		problemi.append(Rilievo("00001", "the transmission number is letters and digits, at most ten"))
 	return problemi
+
+
+#: The sentences on an address, one for each side: «chi emette» and «il cliente»
+#: take different words around them in Italian, so neither is glued in.
+_SEDE = {
+	"cedente": {
+		"incompleta": "the address of whoever issues is incomplete: the street and the town are needed",
+		"nazione": 'the country of whoever issues is a two-letter code, not "{0}"',
+		"cap": 'the postal code of whoever issues has five digits, not "{0}"',
+		"provincia": 'the province of whoever issues is two letters, not "{0}"',
+	},
+	"cessionario": {
+		"incompleta": "the client's address is incomplete: the street and the town are needed",
+		"nazione": 'the client\'s country is a two-letter code, not "{0}"',
+		"cap": 'the client\'s postal code has five digits, not "{0}"',
+		"provincia": 'the client\'s province is two letters, not "{0}"',
+	},
+}
 
 
 def _valida_anagrafiche(fattura: FatturaElettronica) -> list[str]:
 	problemi: list[str] = []
 	cedente = fattura.cedente.anagrafica
 	if not cedente.id_codice:
-		problemi.append("00400: the CedentePrestatore has no IdFiscaleIVA")
+		problemi.append(Rilievo("00200", "the VAT number of whoever issues is missing"))
 	if not (cedente.denominazione or (cedente.nome and cedente.cognome)):
-		problemi.append("00000: the CedentePrestatore has neither a Denominazione nor Nome/Cognome")
+		problemi.append(
+			Rilievo("00200", "whoever issues has neither a company name nor a first and last name")
+		)
 
 	cessionario = fattura.cessionario.anagrafica
 	if not (cessionario.id_codice or cessionario.codice_fiscale):
 		problemi.append(
-			"00417: the CessionarioCommittente has neither IdFiscaleIVA nor CodiceFiscale - at "
-			"least one of the two is mandatory"
+			Rilievo(
+				"00417", "the client has neither a VAT number nor a codice fiscale: at least one is needed"
+			)
 		)
 	if not (cessionario.denominazione or (cessionario.nome and cessionario.cognome)):
-		problemi.append("00000: the CessionarioCommittente has neither a Denominazione nor Nome/Cognome")
+		problemi.append(Rilievo("00200", "the client has neither a company name nor a first and last name"))
 
-	for etichetta, sede in (
-		("CedentePrestatore", fattura.cedente.sede),
-		("CessionarioCommittente", fattura.cessionario.sede),
-	):
+	for parte, sede in (("cedente", fattura.cedente.sede), ("cessionario", fattura.cessionario.sede)):
+		frasi = _SEDE[parte]
 		if not sede.indirizzo or not sede.comune:
-			problemi.append(
-				f"00000: the {etichetta} address is incomplete (Indirizzo and Comune are mandatory)"
-			)
+			problemi.append(Rilievo("00200", frasi["incompleta"]))
 		nazione = (sede.nazione or "").upper()
 		if not re.fullmatch(r"[A-Z]{2}", nazione):
-			problemi.append(f"00000: {etichetta} Nazione must be a two-letter ISO code, not {sede.nazione!r}")
+			problemi.append(Rilievo("00200", frasi["nazione"], sede.nazione or ""))
 		cap = re.sub(r"\s", "", sede.cap or "")
 		if nazione == "IT" and not re.fullmatch(r"\d{5}", cap):
-			problemi.append(
-				f"00000: {etichetta} CAP must be five digits for an Italian address, not {sede.cap!r}"
-			)
+			problemi.append(Rilievo("00200", frasi["cap"], sede.cap or ""))
 		if sede.provincia and not re.fullmatch(r"[A-Za-z]{2}", sede.provincia.strip()):
-			problemi.append(f"00000: {etichetta} Provincia must be two letters, not {sede.provincia!r}")
+			problemi.append(Rilievo("00200", frasi["provincia"], sede.provincia))
 	return problemi
+
+
+def _natura(codice: str | None) -> Nome:
+	"""A VAT nature by its name, for a sentence."""
+	return Nome(etichetta("natura", codice) or codice or "")
 
 
 def _valida_documento(fattura: FatturaElettronica) -> list[str]:
 	problemi: list[str] = []
 	if not fattura.numero:
-		problemi.append("00425: the document number is missing")
+		problemi.append(Rilievo("00200", "the document number is missing"))
 	elif not any(c.isdigit() for c in fattura.numero):
 		problemi.append(
-			f"00425: the document number {fattura.numero!r} contains no digit - the SdI requires at least one"
+			Rilievo(
+				"00425", 'the document number "{0}" has no digit: the SdI wants at least one', fattura.numero
+			)
 		)
 	if fattura.tipo_documento in TIPI_DOCUMENTO_CON_RIFERIMENTO and not fattura.documenti_collegati:
 		problemi.append(
-			f"{fattura.tipo_documento} without DatiFattureCollegate: a credit or debit note has to "
-			"say which document it corrects. The SdI accepts it, the recipient's accounting does not"
+			"a credit or debit note says which document it corrects, and this one does not: the SdI "
+			"accepts it, the client's accounting does not"
 		)
 	if not fattura.linee:
-		problemi.append("00423: the document has no DettaglioLinee")
+		problemi.append(Rilievo("00200", "the document has no lines"))
 	if not fattura.riepiloghi:
-		problemi.append("00419: the document has no DatiRiepilogo")
+		problemi.append(Rilievo("00200", "the document has no VAT summary"))
 	for linea in fattura.linee:
 		if linea.aliquota_iva == ZERO and not linea.natura:
 			problemi.append(
-				f"00400: line {linea.numero} has AliquotaIVA zero without a Natura - the reason the "
-				"tax is not charged is mandatory"
+				Rilievo(
+					"00400", "line {0} has no VAT and does not say why: the reason is mandatory", linea.numero
+				)
 			)
 		if linea.aliquota_iva != ZERO and linea.natura:
 			problemi.append(
-				f"00401: line {linea.numero} carries a Natura together with a non-zero AliquotaIVA"
+				Rilievo("00401", "line {0} has both a VAT rate and a reason for no VAT", linea.numero)
 			)
 		if linea.natura in NATURE_RITIRATE:
 			problemi.append(
-				f"00445: line {linea.numero} uses Natura {linea.natura!r}, retired with tracciato "
-				"1.2.2 - use the sub-code"
+				Rilievo(
+					"00445",
+					'line {0} uses "{1}", no longer admitted: choose one of its detailed reasons',
+					linea.numero,
+					_natura(linea.natura),
+				)
 			)
 	for riepilogo in fattura.riepiloghi:
 		if riepilogo.aliquota_iva == ZERO and not riepilogo.natura:
-			problemi.append("00429: a DatiRiepilogo block has AliquotaIVA zero without a Natura")
+			problemi.append(Rilievo("00429", "a block of the VAT summary has no VAT and does not say why"))
 		if riepilogo.aliquota_iva != ZERO and riepilogo.natura:
-			problemi.append("00430: a DatiRiepilogo block carries a Natura with a non-zero AliquotaIVA")
+			problemi.append(
+				Rilievo("00430", "a block of the VAT summary has both a VAT rate and a reason for no VAT")
+			)
 		if riepilogo.natura in NATURE_RITIRATE:
-			problemi.append(f"00445: DatiRiepilogo uses the retired Natura {riepilogo.natura!r}")
+			problemi.append(
+				Rilievo(
+					"00445",
+					'the VAT summary uses "{0}", no longer admitted: choose one of its detailed reasons',
+					_natura(riepilogo.natura),
+				)
+			)
 	return problemi
 
 
+def _aliquota(valore) -> Decimal:
+	return Decimal(valore).quantize(Decimal("0.01"))
+
+
+def _percento(aliquota) -> str:
+	"""A rate for a sentence: 22, 4,5 - a number, never an amount in euros."""
+	return f"{Decimal(aliquota):.2f}".rstrip("0").rstrip(".").replace(".", ",")
+
+
 def _valida_importi(fattura: FatturaElettronica) -> list[str]:
+	"""The SdI's arithmetic, as its "Elenco dei controlli" (v1.8) states it."""
 	problemi: list[str] = []
 
-	# 00423 - each summary block's taxable amount against the lines that feed it.
-	per_chiave: dict[tuple[str, str], Decimal] = {}
+	# 00419 and 00422: for every distinct VAT rate, of the lines and of the fund's
+	# contributions, there is a summary, and its taxable amount is the lines' totals
+	# plus the contributions plus its rounding - within one euro.
+	attesi: dict[Decimal, Decimal] = {}
 	for linea in fattura.linee:
-		chiave = (_d(linea.aliquota_iva), linea.natura or "")
-		per_chiave[chiave] = per_chiave.get(chiave, ZERO) + Decimal(linea.prezzo_totale)
+		chiave = _aliquota(linea.aliquota_iva)
+		attesi[chiave] = attesi.get(chiave, ZERO) + Decimal(linea.prezzo_totale)
+	for cassa in fattura.dati_cassa:
+		chiave = _aliquota(cassa.aliquota_iva)
+		attesi[chiave] = attesi.get(chiave, ZERO) + Decimal(cassa.importo_contributo)
+	dichiarati: dict[Decimal, Decimal] = {}
 	for riepilogo in fattura.riepiloghi:
-		chiave = (_d(riepilogo.aliquota_iva), riepilogo.natura or "")
-		atteso = per_chiave.pop(chiave, None)
-		if atteso is None:
-			continue
-		# The levy and the re-charged stamp duty live in the summary and not on a
-		# line, so the summary is legitimately the larger of the two.
-		if Decimal(riepilogo.imponibile_importo) < atteso - TOLLERANZA_CENTESIMO:
-			problemi.append(
-				f"00423: the DatiRiepilogo block at {riepilogo.aliquota_iva}% carries "
-				f"{riepilogo.imponibile_importo} against {atteso} on the lines"
-			)
-		# 00421 - the tax against its own taxable amount.
-		atteso_imposta = (
-			Decimal(riepilogo.imponibile_importo) * Decimal(riepilogo.aliquota_iva) / Decimal("100")
-		).quantize(Decimal("0.01"))
-		if abs(Decimal(riepilogo.imposta) - atteso_imposta) > TOLLERANZA_CENTESIMO:
-			problemi.append(
-				f"00421: the DatiRiepilogo block at {riepilogo.aliquota_iva}% carries Imposta "
-				f"{riepilogo.imposta}, computed {atteso_imposta}"
-			)
-	for (aliquota, natura), importo in per_chiave.items():
-		problemi.append(
-			f"00419: there are lines at {aliquota}%"
-			+ (f" with Natura {natura}" if natura else "")
-			+ f" totalling {importo} and no matching DatiRiepilogo block"
+		chiave = _aliquota(riepilogo.aliquota_iva)
+		dichiarati[chiave] = (
+			dichiarati.get(chiave, ZERO)
+			+ Decimal(riepilogo.imponibile_importo)
+			- Decimal(riepilogo.arrotondamento or ZERO)
 		)
+	for aliquota, atteso in attesi.items():
+		if aliquota not in dichiarati:
+			problemi.append(
+				Rilievo("00419", "there is no VAT summary for the {0}% rate", _percento(aliquota))
+			)
+			continue
+		differenza = abs(dichiarati[aliquota] - atteso)
+		if differenza >= TOLLERANZA_TOTALE:
+			problemi.append(
+				Rilievo(
+					"00422",
+					"the VAT summary at {0}% carries {1}, the lines and the fund's contributions make {2}",
+					_percento(aliquota),
+					dichiarati[aliquota],
+					atteso,
+				)
+			)
+		elif differenza >= TOLLERANZA_CENTESIMO:
+			# within what the SdI accepts, and still not the same number
+			problemi.append(
+				Frase(
+					"the VAT summary at {0}% differs from the lines by {1}: the SdI accepts it, check it",
+					_percento(aliquota),
+					differenza,
+				)
+			)
 
-	# 00422 - the document total against the summary blocks.
+	# 00421 - each block's tax on its own taxable amount, rounded half up.
+	for riepilogo in fattura.riepiloghi:
+		calcolata = (
+			Decimal(riepilogo.imponibile_importo) * Decimal(riepilogo.aliquota_iva) / Decimal("100")
+		).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+		if abs(Decimal(riepilogo.imposta) - calcolata) >= TOLLERANZA_CENTESIMO:
+			problemi.append(
+				Rilievo(
+					"00421",
+					"the VAT summary at {0}% carries {1} of tax, its taxable amount makes {2}",
+					_percento(riepilogo.aliquota_iva),
+					Decimal(riepilogo.imposta),
+					calcolata,
+				)
+			)
+
+	# The document's total is not one of the SdI's checks: a total that does not
+	# hold is accepted, and noticed by whoever receives it.
 	atteso_totale = sum(
 		(Decimal(r.imponibile_importo) + Decimal(r.imposta) for r in fattura.riepiloghi), ZERO
 	)
+	totale = Decimal(fattura.importo_totale)
 	if fattura.bollo_virtuale and fattura.importo_bollo:
 		# A virtual stamp duty that is not re-charged does not enter the total; when
-		# it is re-charged it is already inside a summary block. Either way the gap
-		# stays within the one-euro tolerance, so we only warn on a real divergence.
-		atteso_totale_con_bollo = atteso_totale + Decimal(fattura.importo_bollo)
-		if (
-			abs(Decimal(fattura.importo_totale) - atteso_totale) > TOLLERANZA_TOTALE
-			and abs(Decimal(fattura.importo_totale) - atteso_totale_con_bollo) > TOLLERANZA_TOTALE
-		):
-			problemi.append(
-				f"00422: ImportoTotaleDocumento {fattura.importo_totale} against {atteso_totale} "
-				f"from the summary blocks ({atteso_totale_con_bollo} counting the stamp duty)"
-			)
-	elif abs(Decimal(fattura.importo_totale) - atteso_totale) > TOLLERANZA_TOTALE:
+		# it is re-charged it is already inside a summary block.
+		atteso_con_bollo = atteso_totale + Decimal(fattura.importo_bollo)
+		fuori = (
+			abs(totale - atteso_totale) > TOLLERANZA_TOTALE
+			and abs(totale - atteso_con_bollo) > TOLLERANZA_TOTALE
+		)
+	else:
+		fuori = abs(totale - atteso_totale) > TOLLERANZA_TOTALE
+	if fuori:
 		problemi.append(
-			f"00422: ImportoTotaleDocumento {fattura.importo_totale} against {atteso_totale} from "
-			"the summary blocks"
+			Frase(
+				"the document's total ({0}) is not what the VAT summary makes ({1}): the SdI accepts it, "
+				"the client's accounting does not",
+				totale,
+				atteso_totale,
+			)
 		)
 
 	for cassa in fattura.dati_cassa:
 		if cassa.aliquota_iva == ZERO and not cassa.natura:
-			problemi.append("00413: DatiCassaPrevidenziale has AliquotaIVA zero without a Natura")
+			problemi.append(
+				Rilievo(
+					"00413",
+					"the fund's contribution has no VAT and does not say why: the reason is mandatory",
+				)
+			)
 		if cassa.aliquota_iva != ZERO and cassa.natura:
-			problemi.append("00414: DatiCassaPrevidenziale carries a Natura with a non-zero AliquotaIVA")
-	for ritenuta in fattura.dati_ritenuta:
-		if Decimal(ritenuta.importo_ritenuta) <= ZERO:
-			problemi.append("00434: DatiRitenuta with a zero or negative ImportoRitenuta")
+			problemi.append(
+				Rilievo("00414", "the fund's contribution has both a VAT rate and a reason for no VAT")
+			)
+
+	# 00411 and 00415: a line or a contribution subject to withholding, and no
+	# withholding on the document.
+	if not fattura.dati_ritenuta:
+		if any(linea.ritenuta for linea in fattura.linee):
+			problemi.append(
+				Rilievo("00411", "a line is subject to withholding, and the invoice carries no withholding")
+			)
+		if any(cassa.ritenuta for cassa in fattura.dati_cassa):
+			problemi.append(
+				Rilievo(
+					"00415",
+					"the fund's contribution is subject to withholding, and the invoice carries no withholding",
+				)
+			)
+	else:
 		if not any(linea.ritenuta for linea in fattura.linee) and not any(
-			c.ritenuta for c in fattura.dati_cassa
+			cassa.ritenuta for cassa in fattura.dati_cassa
 		):
 			problemi.append(
-				"00415: DatiRitenuta is present but no line and no levy is flagged Ritenuta=SI - the "
-				"SdI wants to know what the withholding was computed on"
+				"the invoice carries a withholding, and no line and no contribution is subject to it: say "
+				"what it was computed on"
 			)
-			break
+		if any(Decimal(ritenuta.importo_ritenuta) <= ZERO for ritenuta in fattura.dati_ritenuta):
+			problemi.append("the invoice carries a withholding of zero or less: check it")
 	return problemi
 
 

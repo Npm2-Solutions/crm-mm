@@ -22,6 +22,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
+from crm.invoicing.documento import in_parole
 from crm.tessera_sanitaria.engine.codici import (
 	OperazioneTS,
 	SoggettoInviante,
@@ -95,7 +96,10 @@ def documento_spesa(doc, emittente: dict) -> DocumentoSpesa:
 			# For invoices the cash-register progressive is always 1.
 			dispositivo=1,
 		),
-		data_pagamento=getdate(doc.payment_date or doc.posting_date),
+		# a refund is paid on the day of the credit note: the tracciato wants the two the same
+		data_pagamento=getdate(doc.posting_date)
+		if doc.ts_operation == OperazioneTS.RIMBORSO
+		else getdate(doc.payment_date or doc.posting_date),
 		voci=voci,
 		cf_cittadino=None if doc.privacy_opposition else (doc.fiscal_code or None),
 		flag_opposizione=bool(doc.privacy_opposition),
@@ -224,7 +228,13 @@ def prepara_invio(azienda: str, anno: int) -> dict:
 			documenti.append(spesa)
 			per_numero[fattura.document_number] = nome
 		else:
-			scartate.append({"invoice": nome, "number": fattura.document_number, "errors": esito.errori})
+			scartate.append(
+				{
+					"invoice": nome,
+					"number": fattura.document_number,
+					"errors": [in_parole(errore) for errore in esito.errori],
+				}
+			)
 
 	if not documenti:
 		return {"parts": [], "skipped": scartate, "count": 0}

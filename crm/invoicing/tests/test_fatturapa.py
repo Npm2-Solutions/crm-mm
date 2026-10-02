@@ -28,11 +28,18 @@ from crm.invoicing.engine.fatturapa import (
 	Linea,
 	Riepilogo,
 	Sede,
+	bloccanti,
 	codice_destinatario,
+	codice_di,
 	progressivo_alfanumerico,
 	valida,
 )
 from crm.invoicing.tests.base import UnitTestCase
+
+
+def codici(problemi) -> set[str]:
+	"""The SdI codes among the findings: a remark has none."""
+	return {codice_di(problema) for problema in problemi} - {None}
 
 
 def fattura(**kwargs) -> FatturaElettronica:
@@ -236,8 +243,8 @@ class ValidazioneTest(UnitTestCase):
 				importo_totale=Decimal("100.00"),
 			)
 		)
-		self.assertTrue(any(p.startswith("00400") for p in problemi))
-		self.assertTrue(any(p.startswith("00429") for p in problemi))
+		self.assertIn("00400", codici(problemi))
+		self.assertIn("00429", codici(problemi))
 
 	def test_natura_con_aliquota_non_nulla_e_bloccante(self):
 		problemi = valida(
@@ -254,7 +261,7 @@ class ValidazioneTest(UnitTestCase):
 				]
 			)
 		)
-		self.assertTrue(any(p.startswith("00401") for p in problemi))
+		self.assertIn("00401", codici(problemi))
 
 	def test_le_nature_ritirate_sono_rifiutate(self):
 		problemi = valida(
@@ -280,11 +287,11 @@ class ValidazioneTest(UnitTestCase):
 				importo_totale=Decimal("100.00"),
 			)
 		)
-		self.assertTrue(any(p.startswith("00445") for p in problemi))
+		self.assertIn("00445", codici(problemi))
 
 	def test_il_numero_senza_cifre_viene_scartato(self):
 		problemi = valida(fattura(numero="FATTURA/ANNO"))
-		self.assertTrue(any(p.startswith("00425") for p in problemi))
+		self.assertIn("00425", codici(problemi))
 
 	def test_l_imposta_deve_tornare_col_suo_imponibile(self):
 		problemi = valida(
@@ -298,7 +305,7 @@ class ValidazioneTest(UnitTestCase):
 				]
 			)
 		)
-		self.assertTrue(any(p.startswith("00421") for p in problemi))
+		self.assertIn("00421", codici(problemi))
 
 	def test_una_riga_senza_riepilogo_viene_notata(self):
 		problemi = valida(
@@ -314,11 +321,61 @@ class ValidazioneTest(UnitTestCase):
 				]
 			)
 		)
-		self.assertTrue(any(p.startswith("00419") for p in problemi))
+		self.assertIn("00419", codici(problemi))
 
-	def test_il_totale_deve_reggere_i_riepiloghi(self):
+	def test_il_totale_che_non_torna_si_dice_e_non_ferma(self):
+		# the document's total is not one of the SdI's checks: said, not blocking
 		problemi = valida(fattura(importo_totale=Decimal("999.00")))
-		self.assertTrue(any(p.startswith("00422") for p in problemi))
+		self.assertTrue(any("document's total" in p for p in problemi))
+		self.assertEqual(bloccanti(problemi), [])
+
+	def test_il_riepilogo_torna_con_le_righe_e_la_cassa(self):
+		# 00422: per rate, the lines plus the fund's contribution, within one euro
+		cassa = DatiCassa("TC22", Decimal("4.00"), Decimal("40.00"), Decimal("22.00"))
+		riepilogo = Riepilogo(
+			aliquota_iva=Decimal("22.00"), imponibile_importo=Decimal("1040.00"), imposta=Decimal("228.80")
+		)
+		documento = fattura(dati_cassa=[cassa], riepiloghi=[riepilogo], importo_totale=Decimal("1268.80"))
+		self.assertEqual(bloccanti(valida(documento)), [])
+		# one euro off is a rejection, fifty cents a remark
+		for imponibile, codice in (("1041.00", {"00422", "00421"}), ("1040.50", {"00421"})):
+			riepilogo = Riepilogo(
+				aliquota_iva=Decimal("22.00"),
+				imponibile_importo=Decimal(imponibile),
+				imposta=Decimal("228.80"),
+			)
+			problemi = valida(
+				fattura(dati_cassa=[cassa], riepiloghi=[riepilogo], importo_totale=Decimal("1268.80"))
+			)
+			self.assertEqual(codici(problemi), codice, problemi)
+
+	def test_l_imposta_si_arrotonda_per_eccesso_dal_cinque(self):
+		# 100.45 at 10% is 10.045: the SdI wants 10.05, not 10.04
+		def con_imposta(imposta):
+			return valida(
+				fattura(
+					linee=[
+						Linea(
+							numero=1,
+							descrizione="Consulenza",
+							prezzo_unitario=Decimal("100.45"),
+							prezzo_totale=Decimal("100.45"),
+							aliquota_iva=Decimal("10.00"),
+						)
+					],
+					riepiloghi=[
+						Riepilogo(
+							aliquota_iva=Decimal("10.00"),
+							imponibile_importo=Decimal("100.45"),
+							imposta=Decimal(imposta),
+						)
+					],
+					importo_totale=Decimal("110.50"),
+				)
+			)
+
+		self.assertNotIn("00421", codici(con_imposta("10.05")))
+		self.assertIn("00421", codici(con_imposta("10.04")))
 
 	def test_il_cessionario_senza_identificativo_e_bloccante(self):
 		problemi = valida(
@@ -329,11 +386,12 @@ class ValidazioneTest(UnitTestCase):
 				)
 			)
 		)
-		self.assertTrue(any(p.startswith("00417") for p in problemi))
+		self.assertIn("00417", codici(problemi))
 
 	def test_la_nota_di_credito_deve_dire_cosa_corregge(self):
 		problemi = valida(fattura(tipo_documento=TipoDocumento.NOTA_CREDITO))
-		self.assertTrue(any("DatiFattureCollegate" in p for p in problemi))
+		self.assertTrue(any("says which document it corrects" in p for p in problemi))
+		self.assertEqual(bloccanti(problemi), [])
 
 	def test_la_nota_di_credito_col_riferimento_e_valida(self):
 		documento = fattura(
@@ -353,7 +411,8 @@ class ValidazioneTest(UnitTestCase):
 				)
 			)
 		)
-		self.assertTrue(any("CAP" in p for p in problemi))
+		self.assertTrue(any("postal code" in p for p in problemi))
+		self.assertIn("00200", codici(problemi))
 
 	def test_un_cap_estero_non_deve_essere_italiano(self):
 		documento = fattura(
@@ -366,10 +425,33 @@ class ValidazioneTest(UnitTestCase):
 		self.assertEqual(valida(documento), [])
 
 	def test_la_ritenuta_vuole_sapere_su_cosa_si_calcola(self):
+		# not one of the SdI's checks: said, not blocking
 		problemi = valida(
 			fattura(dati_ritenuta=[DatiRitenuta("RT01", Decimal("200.00"), Decimal("20.00"), "A")])
 		)
-		self.assertTrue(any(p.startswith("00415") for p in problemi))
+		self.assertTrue(any("say what it was computed on" in p for p in problemi))
+		self.assertEqual(bloccanti(problemi), [])
+
+	def test_una_riga_soggetta_a_ritenuta_vuole_la_ritenuta(self):
+		linea = Linea(
+			numero=1,
+			descrizione="Consulenza",
+			prezzo_unitario=Decimal("1000.00"),
+			prezzo_totale=Decimal("1000.00"),
+			aliquota_iva=Decimal("22.00"),
+			ritenuta=True,
+		)
+		self.assertIn("00411", codici(valida(fattura(linee=[linea]))))
+		cassa = DatiCassa("TC22", Decimal("4.00"), Decimal("40.00"), Decimal("22.00"), ritenuta=True)
+		riepilogo = Riepilogo(
+			aliquota_iva=Decimal("22.00"), imponibile_importo=Decimal("1040.00"), imposta=Decimal("228.80")
+		)
+		self.assertIn(
+			"00415",
+			codici(
+				valida(fattura(dati_cassa=[cassa], riepiloghi=[riepilogo], importo_totale=Decimal("1268.80")))
+			),
+		)
 
 	def test_senza_codice_e_senza_pec_la_fattura_si_ferma_allo_sdi(self):
 		problemi = valida(fattura(codice_destinatario=CODICE_DESTINATARIO_ASSENTE))
@@ -403,10 +485,13 @@ class RilieviBloccantiTest(UnitTestCase):
 	"""A finding with an SdI code stops the file; the rest are worth saying anyway."""
 
 	def test_i_codici_sdi_sono_bloccanti(self):
-		from crm.invoicing.engine.fatturapa import bloccanti
-
-		problemi = ["00421: imposta", "the recipient has nowhere to receive it", "00400: natura"]
-		self.assertEqual(bloccanti(problemi), ["00421: imposta", "00400: natura"])
+		# a message stored before says the code first; one stored now, at the end
+		problemi = [
+			"00421: imposta",
+			"the recipient has nowhere to receive it",
+			"la riga 1 non ha IVA (SdI 00400)",
+		]
+		self.assertEqual(bloccanti(problemi), ["00421: imposta", "la riga 1 non ha IVA (SdI 00400)"])
 
 	def test_una_fattura_senza_recapito_e_valida_ma_non_recapitabile(self):
 		from crm.invoicing.engine.fatturapa import bloccanti
@@ -428,7 +513,7 @@ class DimensioniTest(UnitTestCase):
 		from crm.invoicing.engine.fatturapa import DIMENSIONE_MASSIMA_FILE, dimensione_ammessa
 
 		rilievo = dimensione_ammessa(b"x" * (DIMENSIONE_MASSIMA_FILE + 1))
-		self.assertTrue(rilievo.startswith("00003"))
+		self.assertEqual(codice_di(rilievo), "00003")
 
 	def test_il_rilievo_di_dimensione_e_bloccante(self):
 		from crm.invoicing.engine.fatturapa import (

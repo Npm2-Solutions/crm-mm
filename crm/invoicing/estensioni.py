@@ -107,6 +107,30 @@ def verifiche(doc, preparato) -> None:
 		funzione(doc, preparato)
 
 
+#: What a module would refuse later, checked on a draft while it can still be
+#: corrected: a document issued is frozen, and a report refused in January is a
+#: credit note and a phone call. Each check answers (errors, warnings): the errors
+#: stop the issue, the warnings are said.
+_controlli_bozza: list = []
+
+
+def registra_controllo_bozza(funzione) -> None:
+	"""Contribute a check of a draft. Called once, when a module loads."""
+	if funzione not in _controlli_bozza:
+		_controlli_bozza.append(funzione)
+
+
+def controlli_bozza(doc, preparato) -> tuple[list, list]:
+	"""Every registered check of a draft: what stops it, and what is worth saying."""
+	errori: list = []
+	avvisi: list = []
+	for funzione in _controlli_bozza:
+		suoi_errori, suoi_avvisi = funzione(doc, preparato)
+		errori.extend(suoi_errori)
+		avvisi.extend(suoi_avvisi)
+	return errori, avvisi
+
+
 #: Extra rows for the onboarding checklist. A module that adds a duty adds the gap
 #: that comes with it, rather than invoicing carrying a list of other people's
 #: obligations it cannot explain.
@@ -144,10 +168,12 @@ def senza_estensioni():
 	global _arricchitore
 	risolutori, spediti, arricchitore = list(_risolutori), list(_spediti), _arricchitore
 	verifiche_precedenti, controlli_precedenti = list(_verifiche), list(_controlli)
+	bozze_precedenti = list(_controlli_bozza)
 	_risolutori.clear()
 	_spediti.clear()
 	_verifiche.clear()
 	_controlli.clear()
+	_controlli_bozza.clear()
 	_arricchitore = None
 	try:
 		yield
@@ -156,4 +182,5 @@ def senza_estensioni():
 		_spediti[:] = spediti
 		_verifiche[:] = verifiche_precedenti
 		_controlli[:] = controlli_precedenti
+		_controlli_bozza[:] = bozze_precedenti
 		_arricchitore = arricchitore
