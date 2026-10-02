@@ -39453,3 +39453,75 @@ msgstr "La casella di una persona, collegata da lei: si tengono solo le risposte
 #: crm/api/settings.py
 msgid "This mailbox is somebody's own: only they change it."
 msgstr "Questa casella è di una persona: la cambia solo lei."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Sending to the Sistema TS"
+msgstr "Invio al Sistema TS"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "It decides what is asked below: the centre's Sistema TS credentials, the accountant's Entratel ones, or nothing when the file is downloaded."
+msgstr "Decide che cosa si chiede qui sotto: le credenziali del Sistema TS del centro, quelle Entratel del commercialista, o niente se il file si scarica."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The centre's own, from the Sistema TS portal; the accountant's Entratel ones when the accountant sends."
+msgstr "Quelle del centro, dal portale del Sistema TS; quelle Entratel del commercialista quando invia lui."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Invoices to companies and professionals, that go through the SdI."
+msgstr "Le fatture ad aziende e professionisti, che passano dallo SdI."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Healthcare invoices to private persons, that go to the Sistema TS. Separate series are not mandatory (FAQ n. 33 del 27/11/2018) but two flows are easier to govern apart."
+msgstr "Le fatture sanitarie ai privati, che vanno al Sistema TS. Le serie separate non sono obbligatorie (FAQ n. 33 del 27/11/2018), ma due flussi si governano meglio separati."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "How the number reads"
+msgstr "Come si legge il numero"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "The year, the series and the counter, in the order chosen: every one fits what the Sistema TS accepts."
+msgstr "L'anno, la serie e il progressivo, nell'ordine scelto: tutti vanno bene per il Sistema TS."
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Joined the Agenzia's preservation service"
+msgstr "Adesione al servizio di conservazione dell'Agenzia fatta"
+
+#: crm/invoicing/doctype/crm_invoicing_company/crm_invoicing_company.json
+msgid "Free, once, in Fatture e Corrispettivi (by the centre or its accountant): it keeps the invoices that pass through the SdI for fifteen years, from that day on."
+msgstr "Gratuita, una volta sola, in Fatture e Corrispettivi (dal centro o dal suo commercialista): conserva per quindici anni le fatture passate dallo SdI, da quel giorno in poi."
+
+#: crm/invoicing/engine/voci.py
+msgid "2026/S/15"
+msgstr "2026/S/15"
+
+#: crm/invoicing/engine/voci.py
+msgid "Year, series, number: the most common."
+msgstr "Anno, serie, numero: il più usato."
+
+#: crm/invoicing/engine/voci.py
+msgid "S/15/2026"
+msgstr "S/15/2026"
+
+#: crm/invoicing/engine/voci.py
+msgid "Series, number, year."
+msgstr "Serie, numero, anno."
+
+#: crm/invoicing/engine/voci.py
+msgid "15/S/2026"
+msgstr "15/S/2026"
+
+#: crm/invoicing/engine/voci.py
+msgid "Number, series, year."
+msgstr "Numero, serie, anno."
+
+#: crm/invoicing/engine/voci.py
+msgid "2026-S-15"
+msgstr "2026-S-15"
+
+#: crm/invoicing/engine/voci.py
+msgid "Year, series and number, with dashes."
+msgstr "Anno, serie e numero, con i trattini."
+
+#: crm/invoicing/prova.py
+msgid "Ten years is mandatory, and transmitting does not provide it. Join the Agenzia's free service once, in Fatture e Corrispettivi (you or your accountant), then tick it on the Invoicing tab: it keeps the invoices from that day on."
+msgstr "Dieci anni sono obbligatori, e trasmetterle non basta. Aderisci una volta sola al servizio gratuito dell'Agenzia, in Fatture e Corrispettivi (tu o il tuo commercialista), poi spuntalo nella scheda Fatturazione: conserva le fatture da quel giorno in poi."
