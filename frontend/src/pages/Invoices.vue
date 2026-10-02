@@ -4,8 +4,14 @@
       <Breadcrumbs
         :items="[{ label: __('Invoices'), route: { name: 'Invoices' } }]"
       />
-      <Dropdown v-if="companies.data?.length > 1" :options="companyOptions">
-        <Button variant="ghost" iconRight="chevron-down">
+      <!-- the company's name gives way on a phone, it does not run under the
+           buttons -->
+      <Dropdown
+        v-if="companies.data?.length > 1"
+        class="min-w-0"
+        :options="companyOptions"
+      >
+        <Button variant="ghost" iconRight="chevron-down" class="max-w-full">
           <span class="truncate">{{ company || __('All companies') }}</span>
         </Button>
       </Dropdown>
@@ -14,8 +20,10 @@
       <Button
         v-if="puo('fatture.configura')"
         variant="ghost"
-        :label="__('Settings')"
-        iconLeft="settings"
+        :label="isMobileView ? undefined : __('Settings')"
+        :iconLeft="isMobileView ? undefined : 'settings'"
+        :icon="isMobileView ? 'settings' : undefined"
+        :aria-label="__('Settings')"
         @click="openSettings('Issuing company')"
       />
       <Button
@@ -23,7 +31,7 @@
         variant="solid"
         :label="__('New invoice')"
         iconLeft="plus"
-        @click="openDesk('crm-invoice/new')"
+        @click="nuovaFattura(null, { alCambio: ricarica })"
       />
     </template>
   </LayoutHeader>
@@ -159,8 +167,8 @@
               />
               <Button
                 variant="subtle"
-                :label="__('Open')"
-                @click="openDesk('crm-invoice/' + row.name)"
+                :label="__('Open', null, 'Action')"
+                @click="apriFattura(row.name, { alCambio: ricarica })"
               />
             </div>
           </div>
@@ -210,16 +218,20 @@
                    take that channel. A greyed-out button invites somebody to go
                    looking for how to turn it on. -->
               <Button
-                v-if="row.channel === 'sdi' && row.docstatus === 1"
+                v-if="
+                  row.channel === 'sdi' &&
+                  row.docstatus === 1 &&
+                  row.sdi_status === 'da_inviare'
+                "
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Transmit')"
                 @click="transmit(row)"
               />
               <Button
-                variant="ghost"
-                icon="external-link"
-                @click="openDesk('crm-invoice/' + row.name)"
+                variant="subtle"
+                :label="__('Open', null, 'Action')"
+                @click="apriFattura(row.name, { alCambio: ricarica })"
               />
             </div>
           </div>
@@ -380,11 +392,17 @@ import {
   toast,
 } from 'frappe-ui'
 import { computed, ref, watch } from 'vue'
-import { activeSettingsPage, showSettings } from '@/composables/settings'
+import { useFattura } from '@/composables/fattura'
+import {
+  activeSettingsPage,
+  isMobileView,
+  showSettings,
+} from '@/composables/settings'
 import { usersStore } from '@/stores/users'
 
 // the front desk issues invoices; configuring invoicing is the manager's
 const { puo } = usersStore()
+const { apriFattura, nuovaFattura } = useFattura()
 
 const tab = ref('todo')
 const company = ref('')
@@ -465,13 +483,6 @@ const daFatturare = createResource({
   auto: puo('fatture.emetti'),
 })
 
-// Solo practitioner or centre. Derived from how many providers are enabled, so a
-// practice that hires its second physiotherapist never has to flip a setting.
-const forma = createResource({
-  url: 'crm.invoicing.api.practice_shape',
-  auto: true,
-})
-
 const emettendo = ref('')
 const allAppointments = ref(false)
 
@@ -481,9 +492,9 @@ async function fatturaIncontro(incontro) {
     const nome = await call('crm.invoicing.api.issue_from_appointment', {
       appointment: incontro.name,
     })
-    daFatturare.reload()
-    invoices.reload()
-    openDesk(`crm-invoice/${nome}`)
+    ricarica()
+    // the draft the agenda filled in, to check and issue here
+    apriFattura(nome, { alCambio: ricarica })
   } catch (errore) {
     // The commonest one is a service with no fiscal card, and saying so is more
     // use than a generic failure: it names the thing to go and configure.
@@ -534,8 +545,11 @@ function channelLabel(channel) {
   }[channel]
 }
 
-function openDesk(route) {
-  window.open(`/app/${route}`, '_blank')
+// whatever the invoice dialog changed shows up in the lists behind it
+function ricarica() {
+  daFatturare.reload()
+  invoices.reload()
+  if (company.value) pending.fetch({ company: company.value })
 }
 
 function openSettings(page) {

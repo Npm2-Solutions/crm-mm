@@ -24,11 +24,15 @@
        phone's drawer alike -->
   <FirstStepsPanel />
   <FieldLayoutDialogContainer />
+  <!-- the invoice, made and read inside DottorCloud: from the invoices, the
+       agenda, a cycle, a subscription -->
+  <InvoiceDialog />
 </template>
 <script setup>
 import Settings from '@/components/Settings/Settings.vue'
 import FirstStepsPanel from '@/components/FirstSteps/FirstStepsPanel.vue'
 import FieldLayoutDialogContainer from '@/components/Modals/FieldLayoutDialogContainer.vue'
+import InvoiceDialog from '@/components/Invoices/InvoiceDialog.vue'
 import ChangePasswordModal from '@/components/Modals/ChangePasswordModal.vue'
 import CreateDocumentModal from '@/components/Modals/CreateDocumentModal.vue'
 import QuickEntryModal from '@/components/Modals/QuickEntryModal.vue'

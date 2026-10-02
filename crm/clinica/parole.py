@@ -103,4 +103,8 @@ PAROLE = {
 		"The stage after a booking has to be one of the new patients pipeline's stages"
 	),
 	"New clients and quotes need two different pipelines": "New patients and quotes need two different pipelines",
+	# the invoice: who it is for
+	"Client": "Patient",
+	"Choose the client": "Choose the patient",
+	"Nobody yet: choose the client.": "Nobody yet: choose the patient.",
 }
