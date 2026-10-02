@@ -12,9 +12,11 @@ never again.
 """
 
 import json
+from datetime import datetime
 from unittest.mock import patch
 
 import frappe
+from frappe.utils import get_datetime
 
 from crm.api import sms as sms_api
 from crm.automation import engine
@@ -297,3 +299,41 @@ def automazione_sms(**campi):
 			**campi,
 		}
 	).insert(ignore_permissions=True)
+
+
+class LOrarioDellaPromozione(TwilioCase):
+	"""A promotional SMS leaves Monday to Saturday, 8 to 22: written outside those
+	hours it waits for them; a reminder of the centre's does not wait."""
+
+	def setUp(self):
+		super().setUp()
+		mittente_di_prova(numero=CELLULARE)
+		self.persona = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Paola", "last_name": "Promo", "mobile_no": PERSONA}
+		).insert(ignore_permissions=True)
+		consensi.registra_risposta(self.persona.name, sms.CONSENSO, stato=registro.DATO)
+
+	def iscrivi(self, automazione, adesso):
+		with (
+			patch("crm.automation.engine.now_datetime", return_value=adesso),
+			patch("crm.api.sms.deliver_via_twilio") as consegna,
+		):
+			iscrizione = engine.enroll(automazione.name, "CRM Lead", self.persona.name, {})
+		return frappe.get_doc("CRM Automation Enrollment", iscrizione), consegna
+
+	def test_la_domenica_aspetta_il_lunedi_alle_otto(self):
+		domenica = datetime(2026, 10, 4, 10, 0)
+		iscrizione, consegna = self.iscrivi(automazione_sms(marketing_consent=1), domenica)
+		consegna.assert_not_called()
+		self.assertEqual(iscrizione.status, "Waiting")
+		self.assertEqual(get_datetime(iscrizione.wait_until), datetime(2026, 10, 5, 8, 0))
+
+	def test_un_promemoria_parte_anche_la_domenica(self):
+		domenica = datetime(2026, 10, 4, 10, 0)
+		_iscrizione, consegna = self.iscrivi(automazione_sms(), domenica)
+		consegna.assert_called_once()
+
+	def test_di_giorno_parte(self):
+		sabato = datetime(2026, 10, 3, 21, 59)
+		_iscrizione, consegna = self.iscrivi(automazione_sms(marketing_consent=1), sabato)
+		consegna.assert_called_once()
