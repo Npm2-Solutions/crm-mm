@@ -9,6 +9,8 @@ import {
   PREFERITI_DEL_TELEFONO,
   barraDelTelefono,
   menuDi,
+  paginaSorelle,
+  SORELLE,
 } from '@/utils/menu'
 
 // what each level may open of the menu, as crm/permissions/catalogo.py gives it
@@ -113,91 +115,87 @@ function parole(menu) {
 }
 
 describe('the main menu', () => {
-  it("gives the manager the centre's whole work, in four groups", () => {
+  it("gives the manager the day's work in one group, then marketing", () => {
     expect(parole(menuDi(sessione('manager')))).toEqual([
       [
         '-',
         [
-          'Dashboard',
           'Today',
           'Agenda',
-          'Waiting list',
           'People',
           'Conversations',
           'Tasks',
+          'Deals',
           'Invoices',
+          'Dashboard',
         ],
       ],
-      ['Archive', ['Organizations', 'Notes']],
-      ['Marketing', ['Deals', 'Automations', 'Social Planner', 'Site']],
-      ['Phone', ['Call Logs', 'Dialer']],
+      ['Marketing', ['Automations', 'Social Planner', 'Site']],
     ])
   })
 
-  it('gives the front desk its day, the people and the phone', () => {
+  it('gives the front desk its day, the people and their deals', () => {
     expect(parole(menuDi(sessione('segreteria')))).toEqual([
       [
         '-',
         [
-          'Dashboard',
           'Today',
           'Agenda',
-          'Waiting list',
           'People',
           'Conversations',
           'Tasks',
+          'Deals',
           'Invoices',
+          'Dashboard',
         ],
       ],
-      ['Archive', ['Organizations', 'Notes']],
-      ['Marketing', ['Deals']],
-      ['Phone', ['Call Logs', 'Dialer']],
     ])
   })
 
   it('gives a practitioner their day and their people, not the register of invoices', () => {
-    const menu = parole(menuDi(sessione('operatore')))
-    expect(menu[0]).toEqual([
-      '-',
+    expect(parole(menuDi(sessione('operatore')))).toEqual([
       [
-        'Dashboard',
-        'Today',
-        'Agenda',
-        'Waiting list',
-        'People',
-        'Conversations',
-        'Tasks',
+        '-',
+        [
+          'Today',
+          'Agenda',
+          'People',
+          'Conversations',
+          'Tasks',
+          'Deals',
+          'Dashboard',
+        ],
       ],
     ])
-    expect(menu[1]).toEqual(['Archive', ['Organizations', 'Notes']])
   })
 
-  it('gives marketing its group and the people, masked, nothing of the day', () => {
+  it('opens on the numbers where the day does not open on Today', () => {
     expect(parole(menuDi(sessione('marketing')))).toEqual([
-      ['-', ['Dashboard', 'People', 'Tasks']],
-      ['Archive', ['Organizations']],
-      ['Marketing', ['Deals', 'Automations', 'Social Planner', 'Site']],
+      ['-', ['Dashboard', 'People', 'Tasks', 'Deals']],
+      ['Marketing', ['Automations', 'Social Planner', 'Site']],
     ])
-  })
-
-  it('gives accounting the invoices and what they come from', () => {
     expect(parole(menuDi(sessione('amministrazione')))).toEqual([
-      ['-', ['Dashboard', 'Agenda', 'People', 'Tasks', 'Invoices']],
-      ['Archive', ['Organizations']],
-      ['Marketing', ['Deals']],
+      ['-', ['Dashboard', 'Agenda', 'People', 'Tasks', 'Deals', 'Invoices']],
     ])
-  })
-
-  it('gives the medical director the agenda and the patients', () => {
     expect(parole(menuDi(sessione('direzione')))).toEqual([
       ['-', ['Dashboard', 'Agenda', 'People', 'Tasks']],
-      ['Archive', ['Organizations']],
     ])
   })
 
-  it('leaves the dialer out where no telephony is on', () => {
-    const menu = parole(menuDi(sessione('segreteria', { telefono: false })))
-    expect(menu.at(-1)).toEqual(['Phone', ['Call Logs']])
+  it('keeps the phone out of the menu: it is at the top of every page', () => {
+    for (const livello of Object.keys(LIVELLI)) {
+      const chiavi = menuDi(sessione(livello)).flatMap((gruppo) =>
+        gruppo.entries.map((voce) => voce.key),
+      )
+      expect(chiavi).not.toContain('Dialer')
+      expect(chiavi).not.toContain('Call Logs')
+    }
+  })
+
+  it('has no entry for what lives inside another one', () => {
+    const chiavi = MENU.flatMap((gruppo) => gruppo.entries.map((v) => v.key))
+    for (const dentro of ['Organizations', 'Notes', 'Waiting List'])
+      expect(chiavi).not.toContain(dentro)
   })
 
   it('draws no group nobody sees', () => {
@@ -266,12 +264,7 @@ describe("the phone's bar", () => {
       'Invoices',
       'Dashboard',
     ])
-    expect(barra('marketing')).toEqual([
-      'Leads',
-      'Dashboard',
-      'Tasks',
-      'Organizations',
-    ])
+    expect(barra('marketing')).toEqual(['Leads', 'Dashboard', 'Tasks', 'Deals'])
   })
 
   it('never has more than four places', () => {
@@ -279,5 +272,38 @@ describe("the phone's bar", () => {
       expect(barra(livello).length).toBeLessThanOrEqual(4)
     }
     expect(PREFERITI_DEL_TELEFONO[0]).toBe('Today')
+  })
+})
+
+describe('the pages that live together', () => {
+  const chiavi = (pagina, livello) =>
+    paginaSorelle(pagina, sessione(livello)).map((p) => p.key)
+
+  it('puts the companies beside the people, the notes beside the tasks', () => {
+    expect(chiavi('Leads', 'manager')).toEqual(['Leads', 'Organizations'])
+    expect(chiavi('Organizations', 'manager')).toEqual([
+      'Leads',
+      'Organizations',
+    ])
+    expect(chiavi('Notes', 'segreteria')).toEqual(['Tasks', 'Notes'])
+  })
+
+  it('leaves out what the level does not open: no switch of one', () => {
+    expect(chiavi('Tasks', 'marketing')).toEqual(['Tasks'])
+    expect(chiavi('Tasks', 'direzione')).toEqual(['Tasks'])
+  })
+
+  it('is nothing for a page that lives alone', () => {
+    expect(chiavi('Invoices', 'manager')).toEqual([])
+  })
+
+  it('names pages the router has', () => {
+    const router = fs.readFileSync(
+      path.resolve(import.meta.dirname, '../../src/router.js'),
+      'utf8',
+    )
+    for (const pagine of SORELLE)
+      for (const pagina of pagine)
+        expect(router, pagina.key).toContain(`name: '${pagina.key}'`)
   })
 })

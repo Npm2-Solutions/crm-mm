@@ -13,6 +13,14 @@ describe('currentNavKey', () => {
     ).toBe('Da chiamare')
   })
 
+  it('lights the section a page lives in', () => {
+    expect(currentNavKey({ name: 'Lead' })).toBe('Leads')
+    expect(currentNavKey({ name: 'Organizations' })).toBe('Leads')
+    expect(currentNavKey({ name: 'Notes' })).toBe('Tasks')
+    expect(currentNavKey({ name: 'Waiting List' })).toBe('Calendar')
+    expect(currentNavKey({ name: 'Deal' })).toBe('Deals')
+  })
+
   it('survives being asked about nothing', () => {
     expect(currentNavKey(undefined)).toBeUndefined()
     expect(currentNavKey({})).toBeUndefined()
@@ -30,8 +38,13 @@ describe('bottomNavTabFor', () => {
     expect(bottomNavTabFor({ name: 'Conversations' })).toBe('Conversations')
   })
 
+  it('keeps people lit on their companies', () => {
+    expect(bottomNavTabFor({ name: 'Organizations' })).toBe('Leads')
+    expect(bottomNavTabFor({ name: 'Notes' })).toBe('Tasks')
+  })
+
   it('answers nothing for the places with no tab', () => {
-    expect(bottomNavTabFor({ name: 'Organizations' })).toBeNull()
+    expect(bottomNavTabFor({ name: 'Invoices' })).toBeNull()
     expect(bottomNavTabFor(undefined)).toBeNull()
   })
 })

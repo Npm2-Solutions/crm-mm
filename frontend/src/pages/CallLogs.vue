@@ -8,6 +8,14 @@
         v-if="callLogsListView?.customListActions"
         :actions="callLogsListView.customListActions"
       />
+      <!-- the round of calls starts from the register too, not only from
+           the phone at the top -->
+      <Button
+        v-if="callEnabled && puo('telefono.chiama')"
+        :label="__('Call round')"
+        iconLeft="list-ordered"
+        :route="{ name: 'Dialer' }"
+      />
       <Button
         variant="solid"
         :label="__('Create')"
@@ -69,12 +77,15 @@ import CallLogsListView from '@/components/ListViews/CallLogsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
 import { useDoctypeModal } from '@/composables/doctypeModal'
+import { callEnabled } from '@/composables/telephony'
+import { usersStore } from '@/stores/users'
 import { getCallLogDetail } from '@/utils/callLog'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { createResource } from 'frappe-ui'
 import { computed, ref, onMounted } from 'vue'
 
 const callLogsListView = ref(null)
+const { puo } = usersStore()
 
 // callLogs data is loaded in the ViewControls component
 const callLogs = ref({})

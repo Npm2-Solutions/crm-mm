@@ -161,11 +161,14 @@ separate capabilities (`conversazioni.vedi`/`.usa`, `note.vedi`/`.scrivi`).
 ### The main menu (docs/progetto-ghl/34)
 | File | Role |
 |---|---|
-| `frontend/src/utils/menu.js` | The menu as data: the day's group (no label), the archive, marketing, the phone; each entry its page, icon and `condition` on the session; `menuDi()`, `barraDelTelefono()` (the phone's four places) — tested |
-| `frontend/src/components/Layouts/AppSidebar.vue`, `Mobile/MobileBottomNav.vue`, `Icons/menu.js` | The sidebar draws the menu with the design system's group labels, the phone's bar takes its places; the same icons |
+| `frontend/src/utils/menu.js` | The menu as data: the day's group (no label, the dashboard last where the day opens on Today), then marketing; each entry its page, icon and `condition` on the session; the pages that live together (`SORELLE`: Agenda and the waiting list, People and the companies, Tasks and the notes); `menuDi()`, `paginaSorelle()`, `barraDelTelefono()` (the phone's four places) — tested |
+| `frontend/src/components/Layouts/AppSidebar.vue`, `Mobile/MobileBottomNav.vue`, `Icons/menu.js`, `ViewBreadcrumbs.vue` | The sidebar draws the menu with the design system's group labels, the phone's bar takes its places; the same icons; a page with sisters draws their switch in its header, and lights the entry it lives in (`utils/navigation.js`) |
+| `frontend/src/components/Telephony/PhoneButton.vue`, `PhonePanel.vue` + `crm/telephony/pannello.py`, `utils/telefono.js` | The phone at the top right of every page where a telephony is on: a number or a name, the keypad, the last calls, the callbacks owed, the register and the round of calls (`Dialer`) — never menu entries |
 
 A new page that people open every day goes in the menu's data, in the group of its
-work, with the capability that opens it; never straight into the sidebar.
+work, with the capability that opens it; never straight into the sidebar. A page
+that belongs with another goes in `SORELLE`, not in the menu; an action (calling)
+is never a menu entry.
 
 ### Notifications (docs/progetto-ghl/43)
 | File | Role |

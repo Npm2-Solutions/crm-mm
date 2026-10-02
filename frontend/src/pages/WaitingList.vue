@@ -8,11 +8,7 @@
 <template>
   <LayoutHeader>
     <template #left-header>
-      <Breadcrumbs
-        :items="[
-          { label: __('Waiting list'), route: { name: 'Waiting List' } },
-        ]"
-      />
+      <ViewBreadcrumbs routeName="Waiting List" label="Waiting list" />
     </template>
     <template #right-header>
       <TabButtons
@@ -154,6 +150,7 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import WaitingDialog from '@/components/Waiting/WaitingDialog.vue'
 import { useSchedulerMeta } from '@/composables/scheduling'
@@ -162,7 +159,6 @@ import { STATO, comeStaLOfferta, quandoPuo } from '@/utils/attese'
 import { appLocale } from '@/utils/locale'
 import {
   Badge,
-  Breadcrumbs,
   FormControl,
   TabButtons,
   createResource,

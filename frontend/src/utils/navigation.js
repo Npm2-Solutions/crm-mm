@@ -6,13 +6,16 @@
  * on what counts as being «in» a section.
  */
 
-// The tab bar is coarser than the sidebar on purpose: a detail page, and a saved
-// view of a list, both keep their section lit. Five tabs going dark because you
-// opened a record would read as broken. A section is its own page and these.
+// A section is its own page and the ones inside it: a record of its list, the
+// pages that live with it behind a switch in their header (utils/menu.js,
+// SORELLE), the waiting list behind the agenda. Both the sidebar and the phone's
+// bar keep the section lit there: an entry going dark because you opened a
+// record, or the companies of the people, would read as broken.
 const DENTRO = {
-  Leads: ['Lead', 'Contacts', 'Contact'],
+  Leads: ['Lead', 'Contacts', 'Contact', 'Organizations', 'Organization'],
   Deals: ['Deal'],
-  Organizations: ['Organization'],
+  Calendar: ['Waiting List'],
+  Tasks: ['Notes'],
   Automations: ['Automation'],
   Website: ['WebsitePage'],
 }
@@ -20,9 +23,18 @@ const DENTRO = {
 // the tabs the bar had before it followed the menu (utils/menu.js)
 const TAB_DI_SEMPRE = ['Leads', 'Deals', 'Tasks', 'Conversations']
 
-/** The sidebar's notion: a saved view wins over the route it is a view of. */
+/** The section a page lives in: the one it is inside, else its own. */
+export function sezioneDi(name) {
+  if (!name) return name
+  return Object.keys(DENTRO).find((key) => DENTRO[key].includes(name)) || name
+}
+
+/**
+ * The sidebar's notion: a saved view wins over the route it is a view of; a
+ * page inside a section lights the section.
+ */
 export function currentNavKey(route) {
-  return route?.query?.view || route?.name
+  return route?.query?.view || sezioneDi(route?.name)
 }
 
 /** Which of the bar's tabs a route belongs to, or null for the ones with no tab. */

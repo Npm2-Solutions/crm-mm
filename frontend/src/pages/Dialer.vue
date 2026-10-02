@@ -1,8 +1,10 @@
 <template>
   <LayoutHeader>
     <template #left-header>
+      <!-- the round of calls: a queue of people to call one after another,
+           opened from the phone at the top of the page (doc 34) -->
       <Breadcrumbs
-        :items="[{ label: __('Dialer'), route: { name: 'Dialer' } }]"
+        :items="[{ label: __('Call round'), route: { name: 'Dialer' } }]"
       />
     </template>
     <template #right-header>
