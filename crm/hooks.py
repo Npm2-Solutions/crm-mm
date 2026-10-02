@@ -610,6 +610,9 @@ scheduler_events = {
 		"crm.scheduling.esiti.fine_giornata",
 		# the agency's sending service, as its configuration says now
 		"crm.posta.servizio.assicura",
+		# DottorCloud's space in the centre's Twilio account: the app and the numbers
+		# as somebody may have changed them in the console
+		"crm.telephony.collegamento.assicura",
 	],
 	"daily": [
 		"crm.integrations.meta.leads.check_token_health",
