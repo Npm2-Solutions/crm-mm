@@ -299,15 +299,15 @@ async function feature(pres, o) {
   // 13 · invoicing
   await feature(pres, {
     side: 'left', chip: '04 · Gestisci', title: 'La fattura nasce dalla visita',
-    sub: 'Elettronica, allo SdI e al Sistema TS, senza ricopiare niente.',
+    sub: 'Al paziente in PDF, le spese al Sistema TS, allo SdI quando va.',
     rows: [
       ['LuReceipt', 'Dall\'appuntamento', 'Paziente, prestazioni e professionista sono già lì'],
-      ['LuSend', 'SdI', 'Invio e ricevute di consegna nel gestionale'],
+      ['LuSend', 'SdI', 'Per aziende ed enti, con le ricevute nel gestionale'],
       ['LuFileCheck', 'Sistema TS', 'Le spese sanitarie trasmesse per la precompilata'],
       ['LuStamp', 'Bollo e numerazione', 'Li mette il gestionale'],
     ],
     image: 'fattura',
-    notes: 'Risponde a "gestisce la fatturazione?". Sì: dalla visita svolta nasce la fattura elettronica, che va allo SdI e al Sistema TS. La segreteria vede anche le visite svolte e non ancora fatturate.',
+    notes: 'Risponde a "gestisce la fatturazione?". Sì: dalla visita svolta nasce la fattura. Al paziente va in PDF e le spese al Sistema TS, perché per legge una prestazione sanitaria a una persona non passa dallo SdI; ad aziende ed enti va elettronica allo SdI. La segreteria vede anche le visite svolte e non ancora fatturate.',
   });
 
   // 14 · the app
@@ -360,7 +360,7 @@ async function feature(pres, o) {
     const s = base(pres);
     await chip(s, 'In sintesi', 0.6, 0.6);
     T(s, 'Quello che un centro medico chiede, c\'è', { x: 0.6, y: 1.1, w: 12, h: 0.7, fontSize: 32, bold: true, color: C.ink });
-    const A = [['LuLock', 'Permessi per ruolo', 'Ognuno vede la sua parte'], ['LuCalendarDays', 'Agende senza limiti', 'Medici, stanze, attrezzature'], ['LuStethoscope', 'Cartella clinica', 'Schede, note, referti archiviati'], ['LuReceipt', 'Fatturazione', 'Elettronica, SdI e Sistema TS'],
+    const A = [['LuLock', 'Permessi per ruolo', 'Ognuno vede la sua parte'], ['LuCalendarDays', 'Agende senza limiti', 'Medici, stanze, attrezzature'], ['LuStethoscope', 'Cartella clinica', 'Schede, note, referti archiviati'], ['LuReceipt', 'Fatturazione', 'Sistema TS, SdI e PDF al paziente'],
       ['LuMessageCircle', 'Comunicazione', 'WhatsApp, promemoria, conferme'], ['LuPhoneCall', 'Telefono integrato', 'La scheda si apre mentre squilla'], ['LuSmartphone', 'App', 'Per lo staff e per i pazienti'], ['LuServer', 'Dati protetti', 'Server europei, azienda italiana']];
     const w = 2.86, h = 2.2, g = 0.25;
     for (let i = 0; i < A.length; i++) {

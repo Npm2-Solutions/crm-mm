@@ -21,10 +21,10 @@ più" o "Contattaci").
 
 ## La fattura nasce dalla visita — `grafiche/fattura-*`, `video/DottorCloud-ad-fatt-*`
 
-- **Testo principale:** Chiudi la visita e la fattura è pronta: elettronica,
-  inviata allo SdI e trasmessa al Sistema TS. Senza ricopiare niente.
+- **Testo principale:** Chiudi la visita e la fattura è pronta: al paziente in
+  PDF, le spese al Sistema TS, allo SdI quando va. Senza ricopiare niente.
 - **Titolo:** La fattura si fa da sola
-- **Descrizione:** SdI e Sistema TS inclusi
+- **Descrizione:** Sistema TS e SdI inclusi
 
 ## I pazienti confermano da soli — `grafiche/conferme-*`, `video/DottorCloud-ad-chat-*`
 

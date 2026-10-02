@@ -72,7 +72,7 @@ attraversa lo schermo.
 | 35,0–40,2 | Visita | Cartella clinica | "Schede cliniche, note e referti. Al sicuro." |
 | 40,2–45,0 | Visita | Assistente IA, "Presto" | "L'assistente IA per il medico." |
 | 45,0–47,2 | 04 | Mappa: "Dopo la visita" | "Fattura e richiami, da soli." |
-| 47,2–51,2 | Dopo | Fattura → SdI → Sistema TS | "La fattura nasce dalla visita." |
+| 47,2–51,2 | Dopo | Fattura → PDF al paziente → Sistema TS | "La fattura nasce dalla visita." |
 | 51,2–54,6 | Dopo | Automazione: recensione, richiamo a 6 mesi | "Automazioni che lavorano al posto tuo." |
 | 54,6–56,8 | 05 | Mappa: "A casa" | "Piani, esercizi e documenti sul telefono." |
 | 56,8–61,6 | A casa | Accesso: codice via SMS, viso, home | "Il paziente entra con un codice, poi col viso." |

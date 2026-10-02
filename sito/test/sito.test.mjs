@@ -14,6 +14,8 @@ import path from 'node:path'
 import { after, before, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
+import { faqs, headings, readingMinutes, slugify, trail } from '../seo.mjs'
+
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'sito-'))
 
@@ -193,9 +195,19 @@ describe('the pages', () => {
   test('show no price, plan or fee', () => {
     const money =
       /€|\beuro\b|\bprezz[io]|\blistin[oi]\b|\btariff|\bcost[aio]\b|\bcanone|al mese|\/mese|\bgratis|\bgratuit|\bpiano (base|pro|premium|start)/i
+    // the articles and the glossary quote the law's amounts (the stamp duty,
+    // the fines): they are checked for the product's own price only
+    const editorial = (file) =>
+      /^(approfondimenti|glossario)\//.test(path.relative(OUT, file))
     for (const file of pages()) {
       const words = text(fs.readFileSync(file, 'utf8'))
-      assert.doesNotMatch(words, money, path.relative(OUT, file))
+      if (editorial(file))
+        assert.doesNotMatch(
+          words,
+          /DottorCloud (costa|a partire da)|prezz[io] di DottorCloud|\bpiano (base|pro|premium|start)/i,
+          path.relative(OUT, file),
+        )
+      else assert.doesNotMatch(words, money, path.relative(OUT, file))
     }
   })
 
@@ -230,6 +242,147 @@ describe('the pages', () => {
 })
 
 // --- the demo form ---
+
+describe('what search engines read', () => {
+  const html = (file) => fs.readFileSync(file, 'utf8')
+  const indexed = () =>
+    pages().filter((file) => !/name="robots" content="noindex"/.test(html(file)))
+  const graph = (file) => {
+    const scripts = [...html(file).matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    assert.equal(scripts.length, 1, `${path.relative(OUT, file)}: one JSON-LD block`)
+    return JSON.parse(scripts[0][1])['@graph']
+  }
+  const ofType = (nodes, type) => nodes.filter((n) => n['@type'] === type)
+
+  test('every page to index has a short title and a description Google shows whole', () => {
+    for (const file of indexed()) {
+      const page = html(file)
+      const title = page.match(/<title>([^<]*)<\/title>/)[1]
+      const description = page
+        .match(/<meta name="description" content="([^"]*)"/)[1]
+        .replace(/&#39;|&apos;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&')
+      const where = path.relative(OUT, file)
+      assert.ok(title.length <= 65, `${where}: the title has ${title.length} characters`)
+      assert.ok(
+        description.length >= 70 && description.length <= 160,
+        `${where}: the description has ${description.length} characters`,
+      )
+    }
+  })
+
+  test('every page says who we are, and where it sits', () => {
+    for (const file of pages()) {
+      const nodes = graph(file)
+      const where = path.relative(OUT, file)
+      assert.equal(ofType(nodes, 'Organization').length, 1, where)
+      assert.equal(ofType(nodes, 'WebSite').length, 1, where)
+      const canonical = html(file).match(/<link rel="canonical" href="([^"]+)"/)[1]
+      if (canonical === 'https://dottorcloud.com/') continue
+      const [crumbs] = ofType(nodes, 'BreadcrumbList')
+      assert.ok(crumbs, `${where}: breadcrumbs`)
+      const items = crumbs.itemListElement
+      assert.equal(items[0].item, 'https://dottorcloud.com/', where)
+      assert.equal(items.at(-1).item, canonical, where)
+    }
+  })
+
+  test('the questions of a page are its FAQ', () => {
+    for (const file of pages()) {
+      const asked = (html(file).match(/<details\b/g) || []).length
+      if (!asked) continue
+      const nodes = graph(file)
+      const faq = nodes.find((n) => n['@type'] === 'FAQPage') || nodes.find((n) => n.mainEntity)
+      assert.ok(faq, path.relative(OUT, file))
+      assert.equal(faq.mainEntity.length, asked, path.relative(OUT, file))
+    }
+  })
+
+  test('the product is described on the home and on each kind of centre', () => {
+    for (const where of ['', 'gestionale-poliambulatorio', 'gestionale-studio-medico', 'gestionale-fisioterapia', 'gestionale-nutrizionista', 'gestionale-studio-dentistico']) {
+      const nodes = graph(path.join(OUT, where, 'index.html'))
+      assert.equal(ofType(nodes, 'SoftwareApplication').length, 1, where || 'home')
+    }
+  })
+
+  test('an article has its date, its section, its table of contents and its readers', () => {
+    const dir = path.join(OUT, 'approfondimenti')
+    const articles = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => path.join(dir, e.name, 'index.html'))
+    assert.ok(articles.length >= 8, `${articles.length} articles`)
+    for (const file of articles) {
+      const page = html(file)
+      const where = path.relative(OUT, file)
+      const [post] = ofType(graph(file), 'BlogPosting')
+      assert.ok(post, where)
+      assert.match(post.datePublished, /^\d{4}-\d{2}-\d{2}$/, where)
+      assert.ok(post.wordCount > 500, `${where}: ${post.wordCount} words`)
+      assert.match(page, /<meta property="og:type" content="article" \/>/, where)
+      assert.match(page, /<nav class="toc"/, where)
+      assert.match(page, /class="breadcrumb"/, where)
+      // an article on the rules says where they come from, and that it is not advice
+      if (post.articleSection === 'Norme') {
+        assert.match(page, /<section class="sources">/, where)
+        assert.match(page, /class="disclaimer"/, where)
+      }
+    }
+  })
+
+  test('the glossary defines its terms', () => {
+    const file = path.join(OUT, 'glossario', 'index.html')
+    const [set] = ofType(graph(file), 'DefinedTermSet')
+    assert.equal(set.hasDefinedTerm.length, (html(file).match(/<dt\b/g) || []).length)
+  })
+
+  test('the sitemap lists every page to index, the feed every article', () => {
+    const sitemap = fs.readFileSync(path.join(OUT, 'sitemap.xml'), 'utf8')
+    for (const file of indexed()) {
+      const canonical = html(file).match(/<link rel="canonical" href="([^"]+)"/)[1]
+      assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), canonical)
+    }
+    assert.match(sitemap, /approfondimenti\/ridurre-le-visite-saltate\/<\/loc><lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/)
+    const feed = fs.readFileSync(path.join(OUT, 'approfondimenti', 'feed.xml'), 'utf8')
+    const items = (feed.match(/<item>/g) || []).length
+    const articles = fs.readdirSync(path.join(OUT, 'approfondimenti'), { withFileTypes: true }).filter((e) => e.isDirectory()).length
+    assert.equal(items, articles)
+    assert.ok(fs.existsSync(path.join(OUT, 'llms.txt')))
+  })
+})
+
+describe('the pieces of seo.mjs', () => {
+  test('slugify keeps letters and numbers, without accents', () => {
+    assert.equal(slugify('Perché il Sistema TS è annuale?'), 'perche-il-sistema-ts-e-annuale')
+  })
+
+  test('every heading gets an id once, and the table of contents follows', () => {
+    const { html, toc } = headings('<h2>Uno</h2><p>x</p><h2>Uno</h2><h2 id="tre">Tre</h2>')
+    assert.deepEqual(toc.map((h) => h.id), ['uno', 'uno-2', 'tre'])
+    assert.match(html, /<h2 id="uno-2">Uno<\/h2>/)
+  })
+
+  test('the FAQ is read from the questions on the page', () => {
+    const out = faqs('<details><summary>Si può? <svg><path/></svg></summary><p>Sì, <b>certo</b>.</p></details>')
+    assert.deepEqual(out, [{ question: 'Si può?', answer: 'Sì, certo .' }])
+  })
+
+  test('the trail goes from the home page through the parents', () => {
+    const pages = [
+      { path: '/', title: 'DottorCloud · Il gestionale' },
+      { path: '/approfondimenti/', title: 'Approfondimenti · DottorCloud', crumb: 'Approfondimenti' },
+      { path: '/approfondimenti/x/', title: 'X · DottorCloud', parent: '/approfondimenti/', crumb: 'X' },
+    ]
+    const byPath = new Map(pages.map((p) => [p.path, p]))
+    assert.deepEqual(trail(pages[2], byPath).map((c) => c.name), ['Home', 'Approfondimenti', 'X'])
+  })
+
+  test('reading takes at least a minute', () => {
+    assert.equal(readingMinutes('<p>poche parole</p>'), 1)
+    assert.equal(readingMinutes(`<p>${'parola '.repeat(1000)}</p>`), 5)
+  })
+})
 
 const php = spawnSync('php', ['-v']).status === 0
 const mails = path.join(OUT, 'posta.txt')

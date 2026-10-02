@@ -1,6 +1,6 @@
 <!--
-title: DottorCloud · Il gestionale per il tuo centro medico
-description: Agende, cartelle cliniche, fatture elettroniche e Sistema TS, WhatsApp, telefono e l'app per i pazienti. Tutto il centro medico in un posto solo, con ognuno che vede solo quello che gli serve.
+title: DottorCloud · Il gestionale per centri medici e poliambulatori
+description: Agende, cartella clinica, fatture con il Sistema TS, WhatsApp, telefono e app per i pazienti: tutto il centro medico in un posto solo.
 path: /
 nav: home
 -->
@@ -195,8 +195,8 @@ nav: home
         <span class="chip">{{icon receipt}} Fatture e Sistema TS</span>
         <h2 class="h2">La fattura nasce dalla visita.</h2>
         <p class="lead">
-          Chiudi la visita e la fattura è pronta: elettronica, inviata allo SdI e trasmessa al Sistema TS.
-          Senza ricopiare niente.
+          Chiudi la visita e la fattura è pronta: al paziente in PDF, con le spese trasmesse al Sistema TS;
+          alle aziende elettronica, allo SdI. Senza ricopiare niente.
         </p>
         <ul class="rows" role="list">
           <li class="row">
@@ -205,7 +205,7 @@ nav: home
           </li>
           <li class="row">
             <span class="bubble bubble--small">{{icon send}}</span>
-            <div><strong>SdI e Sistema TS</strong><span>Invio, ricevute e spese sanitarie per la precompilata.</span></div>
+            <div><strong>Sistema TS e SdI</strong><span>Le spese per la precompilata; lo SdI solo dove la legge lo vuole.</span></div>
           </li>
           <li class="row">
             <span class="bubble bubble--small">{{icon stamp}}</span>
@@ -217,7 +217,7 @@ nav: home
       <div class="feature__media reveal" style="--i: 2">
         <img
           src="/img/fattura.webp"
-          alt="La fattura di Giulia Ferri nata dall'appuntamento del 13/10: visita cardiologica, elettrocardiogramma e marca da bollo automatica, poi inviata allo SdI, consegnata e trasmessa al Sistema TS"
+          alt="La fattura di Giulia Ferri nata dall'appuntamento del 13/10: visita cardiologica, elettrocardiogramma e marca da bollo automatica; il PDF nell'area della paziente, fuori dallo SdI, e le spese trasmesse al Sistema TS"
         />
       </div>
     </article>
@@ -370,6 +370,18 @@ nav: home
   </div>
 </section>
 
+<section class="section section--white" aria-labelledby="letture-titolo">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Approfondimenti</span>
+      <h2 id="letture-titolo" class="h2">Per chi gestisce un centro medico.</h2>
+      <p class="lead">Norme spiegate con le fonti, guide pratiche e il modo di organizzare la giornata.</p>
+    </div>
+    {{ultimi_articoli}}
+    <p style="margin-top: 32px"><a class="link-arrow" href="/approfondimenti/">Tutti gli approfondimenti {{icon arrow-right}}</a></p>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="domande-titolo">
   <div class="container container--narrow">
     <div class="section-head section-head--center reveal">
@@ -403,10 +415,11 @@ nav: home
         </p>
       </details>
       <details>
-        <summary>Fa le fatture elettroniche e il Sistema TS? {{icon chevron-down}}</summary>
+        <summary>Fa le fatture e il Sistema TS? {{icon chevron-down}}</summary>
         <p>
-          Sì. Dalla visita svolta nasce la fattura elettronica, che va allo SdI e al Sistema TS. Bollo e
-          numerazione li mette il gestionale, e la segreteria vede anche le visite svolte e non ancora
+          Sì. Dalla visita svolta nasce la fattura: al paziente in PDF, con le spese trasmesse al Sistema TS
+          (una prestazione sanitaria a una persona, per legge, non passa dallo SdI); ad aziende ed enti
+          elettronica, allo SdI. Bollo e numerazione li mette il gestionale, e la segreteria vede anche le visite svolte e non ancora
           fatturate.
         </p>
       </details>
