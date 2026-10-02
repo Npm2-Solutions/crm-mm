@@ -1188,7 +1188,7 @@ msgstr "Accetta la chiamata"
 
 #: crm/fcrm/doctype/crm_invitation/crm_invitation.js:7
 msgid "Accept Invitation"
-msgstr "Accetta l'Invito"
+msgstr "Accetta l'invito"
 
 #: crm/dashboard/widgets/invoicing.py
 #. Option for the 'Status' (Select) field in DocType 'CRM Invitation'
@@ -12064,6 +12064,14 @@ msgstr "Dal kit ufficiale. Scade e viene rilasciato di nuovo: con un certificato
 #: crm/clinica/parole.py
 msgid "From the patient area"
 msgstr "Dall'area pazienti"
+
+#: crm/clinica/parole.py
+msgid "Questions from the patient area"
+msgstr "Domande dall'area pazienti"
+
+#: crm/clinica/parole.py
+msgid "What a patient asks the centre from their area."
+msgstr "Quello che un paziente chiede al centro dalla sua area."
 
 #: crm/scheduling/attese.py
 msgid "From the same page you can leave the waiting list."
@@ -35968,3 +35976,363 @@ msgstr "In corso"
 #: frontend/src/components/EventNotificationsArea.vue
 msgid "Upcoming events"
 msgstr "In arrivo"
+
+#: crm/notifiche/posta.py
+msgid "Open in {brand}"
+msgstr "Apri in {brand}"
+
+#: crm/notifiche/posta.py
+msgid "You have {0} notifications in {brand}"
+msgstr "Hai {0} notifiche in {brand}"
+
+#: crm/notifiche/posta.py
+msgid "Open it"
+msgstr "Apri"
+
+#: crm/notifiche/posta.py
+msgid "And {0} more."
+msgstr "E altre {0}."
+
+#: crm/notifiche/posta.py
+msgid "Open the notifications"
+msgstr "Apri le notifiche"
+
+#: crm/notifiche/posta.py
+msgid "We write to you because you have not read it in {brand} yet. Choose what you receive by email in <a href=\"{0}\">your notification settings</a>."
+msgstr "Ti scriviamo perché non l'hai ancora letta in {brand}. Scegli cosa ricevere per email nelle <a href=\"{0}\">impostazioni delle tue notifiche</a>."
+
+#: crm/notifiche/posta.py
+msgid "Choose what to receive by email"
+msgstr "Scegli cosa ricevere per email"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Assignments and tasks"
+msgstr "Assegnazioni e attività"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Who mentions you in a note or a comment."
+msgstr "Chi ti menziona in una nota o in un commento."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "A person, a deal or a task given to you, or taken back."
+msgstr "Una persona, una trattativa o un'attività che ti viene data, o tolta."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "Questions from the client area"
+msgstr "Domande dall'area clienti"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "What a person asks the centre from their area."
+msgstr "Quello che una persona chiede al centro dalla sua area."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "WhatsApp and SMS"
+msgstr "WhatsApp e SMS"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "The messages of the people you follow: one email for each conversation."
+msgstr "I messaggi delle persone che segui: un'email per ogni conversazione."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "The appointments of the day still without an outcome."
+msgstr "Gli appuntamenti del giorno ancora senza esito."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "An invoice rejected or not delivered, a deadline."
+msgstr "Una fattura scartata o non consegnata, una scadenza."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "What an automation of the centre tells you."
+msgstr "Quello che ti dice un'automazione del centro."
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "The choice was not saved"
+msgstr "La scelta non è stata salvata"
+
+#: frontend/src/components/Settings/NotificationsSettings.vue
+msgid "What reaches your email too, when you have not read it in {brand} within {0} minutes. Several at once come in one email."
+msgstr "Cosa ti arriva anche per email, quando non l'hai letto in {brand} entro {0} minuti. Più notifiche insieme arrivano in un'email sola."
+
+#: frontend/src/utils/impostazioni.js
+msgid "What reaches your email too, when you have not read it."
+msgstr "Cosa ti arriva anche per email, quando non l'hai letto."
+
+#: frontend/src/utils/impostazioni.js
+msgid "Your profile, how {brand} looks for you, your notifications by email, the calendar you bring."
+msgstr "Il tuo profilo, come vedi {brand}, le notifiche per email, il calendario che porti."
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "By email if unread"
+msgstr "Per email se non letta"
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "Sent by email on"
+msgstr "Mandata per email il"
+
+#: crm/fcrm/doctype/crm_notification/crm_notification.json
+msgid "Still unread a few minutes after it came, it goes by email to whoever wants this kind"
+msgstr "Ancora da leggere qualche minuto dopo l'arrivo, va per email a chi vuole questo tipo"
+
+#: crm/api/booking.py
+msgid "{0} ({1}) — status: {2}."
+msgstr "{0} ({1}) — stato: {2}."
+
+#: crm/area/accesso.py
+msgid "{0} opened your area: your appointments, the documents they give you, your invoices."
+msgstr "{0} ha aperto la tua area: i tuoi appuntamenti, i documenti che ti consegna, le tue fatture."
+
+#: crm/area/accesso.py
+msgid "Enter your area"
+msgstr "Entra nella tua area"
+
+#: crm/area/accesso.py
+msgid "You enter with this address: we send you a code each time."
+msgstr "Entri con questo indirizzo: ogni volta ti mandiamo un codice."
+
+#: crm/area/accesso.py
+#: crm/moduli/richieste.py
+msgid "Your code"
+msgstr "Il tuo codice"
+
+#: crm/area/accesso.py
+msgid "Here is the code to enter the area of {0}:"
+msgstr "Ecco il codice per entrare nell'area di {0}:"
+
+#: crm/area/accesso.py
+#: crm/moduli/richieste.py
+msgid "It is valid for {0} minutes. If you did not ask for it, ignore this email."
+msgstr "Vale {0} minuti. Se non l'hai chiesto tu, ignora questa email."
+
+#: crm/area/messaggi.py
+msgid "News in your area"
+msgstr "Novità nella tua area"
+
+#: crm/area/messaggi.py
+msgid "There is news for you in your area at {0}."
+msgstr "Ci sono novità per te nella tua area di {0}."
+
+#: crm/area/messaggi.py
+msgid "Open your area"
+msgstr "Apri la tua area"
+
+#: crm/documenti/consegna.py
+msgid "A document is ready for you"
+msgstr "Un documento è pronto per te"
+
+#: crm/documenti/consegna.py
+msgid "{0} has a document ready for you: you can open it until {1}."
+msgstr "{0} ha un documento pronto per te: puoi aprirlo fino al {1}."
+
+#: crm/documenti/consegna.py
+msgid "Open the document"
+msgstr "Apri il documento"
+
+#: crm/documenti/consegna.py
+msgid "You will need the code the centre gave you: it is not in this email."
+msgstr "Ti servirà il codice che ti ha dato il centro: non è in questa email."
+
+#: crm/moduli/richieste.py
+msgid "Here is the code to open the forms:"
+msgstr "Ecco il codice per aprire i moduli:"
+
+#: crm/scheduling/attese.py
+msgid "A place has freed up"
+msgstr "Si è liberato un posto"
+
+#: crm/scheduling/attese_pubblico.py
+msgid "You are on the waiting list"
+msgstr "Sei in lista d'attesa"
+
+#: crm/scheduling/abbonamenti.py
+msgid "Your subscription ends soon"
+msgstr "Il tuo abbonamento sta per finire"
+
+#: crm/api/service_booking.py
+msgid "{0} on {1}."
+msgstr "{0} il {1}."
+
+#: crm/api/service_booking.py
+#: crm/api/booking.py
+#: crm/api/event.py
+msgid "Open the agenda in {brand}"
+msgstr "Apri l'agenda in {brand}"
+
+#: crm/api/event.py
+msgid "Reminder: {0}"
+msgstr "Promemoria: {0}"
+
+#: crm/api/event.py
+msgid "Event reminder"
+msgstr "Promemoria"
+
+#: crm/api/event.py
+msgid "It starts in a minute."
+msgstr "Inizia tra un minuto."
+
+#: crm/api/event.py
+msgid "It starts in {0} minutes."
+msgstr "Inizia tra {0} minuti."
+
+#: crm/api/event.py
+msgid "It starts in an hour."
+msgstr "Inizia tra un'ora."
+
+#: crm/api/event.py
+msgid "It starts in {0} hours."
+msgstr "Inizia tra {0} ore."
+
+#: crm/api/event.py
+msgid "It starts tomorrow."
+msgstr "Inizia domani."
+
+#: crm/api/event.py
+msgid "It starts in {0} days."
+msgstr "Inizia tra {0} giorni."
+
+#: crm/api/event.py
+msgid "It starts in a week."
+msgstr "Inizia tra una settimana."
+
+#: crm/api/event.py
+msgid "It starts in {0} weeks."
+msgstr "Inizia tra {0} settimane."
+
+#: crm/api/plan.py
+msgid "A trial of {0} has started"
+msgstr "È iniziata la prova di {0}"
+
+#: crm/templates/emails/crm_invitation.html
+msgid "Accept the invitation to choose your password and start: you will find the work the centre gave you."
+msgstr "Accetta l'invito per scegliere la tua password e cominciare: troverai il lavoro che il centro ti ha affidato."
+
+#: crm/templates/emails/standard.html
+msgid "Dear"
+msgstr "Gentile"
+
+#: crm/templates/emails/standard.html
+msgid "We received a request to reset the password for your account. Click the button below to set a new password."
+msgstr "Abbiamo ricevuto una richiesta di reimpostare la password del tuo account. Usa il pulsante qui sotto per sceglierne una nuova."
+
+#: crm/templates/emails/standard.html
+msgid "If you did not request a password reset, please ignore this email. Your password will remain unchanged."
+msgstr "Se non hai chiesto tu di reimpostare la password, ignora questa email: la tua password resta la stessa."
+
+#: crm/templates/emails/standard.html
+msgid "Thank you"
+msgstr "Grazie"
+
+#: crm/templates/emails/standard.html
+msgid "Complete your registration"
+msgstr "Completa la registrazione"
+
+#: crm/templates/emails/standard.html
+msgid "Your login ID is:"
+msgstr "Il tuo nome utente è:"
+
+#: crm/templates/emails/standard.html
+msgid "Click the button below to complete your registration and set a new password."
+msgstr "Usa il pulsante qui sotto per completare la registrazione e scegliere la tua password."
+
+#: crm/templates/emails/standard.html
+msgid "Or copy and paste this link:"
+msgstr "Oppure copia e incolla questo indirizzo:"
+
+#: crm/templates/emails/standard.html
+msgid "Verification code"
+msgstr "Codice di verifica"
+
+#: crm/templates/emails/standard.html
+msgid "Use the code below to complete your sign-in."
+msgstr "Usa questo codice per completare l'accesso."
+
+#: crm/templates/emails/standard.html
+msgid "If you did not request this code, you can safely ignore this email."
+msgstr "Se non hai chiesto tu questo codice, puoi ignorare questa email."
+
+#: crm/templates/emails/standard.html
+msgid "Log in to {0}"
+msgstr "Accedi a {0}"
+
+#: crm/templates/emails/standard.html
+msgid "Click the button below to sign in to your account. This link will expire in {0} minutes."
+msgstr "Usa il pulsante qui sotto per accedere al tuo account. Il collegamento vale {0} minuti."
+
+#: crm/templates/emails/standard.html
+msgid "Log In to {0}"
+msgstr "Accedi a {0}"
+
+#: crm/templates/emails/standard.html
+msgid "If you didn't request this link, you can ignore this email. Someone may have entered your email address by mistake."
+msgstr "Se non hai chiesto tu questo collegamento, ignora questa email: qualcuno potrebbe aver scritto il tuo indirizzo per errore."
+
+#: crm/templates/emails/standard.html
+msgid "You've been invited"
+msgstr "Hai ricevuto un invito"
+
+#: crm/templates/emails/standard.html
+msgid "Click below to accept your invitation and get started."
+msgstr "Usa il pulsante qui sotto per accettare l'invito e cominciare."
+
+#: crm/templates/emails/standard.html
+msgid "Dear System Manager,"
+msgstr "Gentile amministratore,"
+
+#: crm/templates/emails/standard.html
+msgid "Invitation cancelled"
+msgstr "Invito annullato"
+
+#: crm/templates/emails/standard.html
+msgid "Invitation expired"
+msgstr "Invito scaduto"
+
+#: crm/notifiche/posta.py
+msgid "We write to you because you have not read them in {brand} yet. Choose what you receive by email in <a href=\"{0}\">your notification settings</a>."
+msgstr "Ti scriviamo perché non le hai ancora lette in {brand}. Scegli cosa ricevere per email nelle <a href=\"{0}\">impostazioni delle tue notifiche</a>."
+
+#: crm/templates/emails/standard.html
+msgid "Reset Password"
+msgstr "Reimposta la password"
+
+#: crm/templates/emails/standard.html
+msgid "You've been invited to join {0}."
+msgstr "Ti hanno invitato in {0}."
+
+#: crm/templates/emails/standard.html
+msgid "If this was a mistake or you need access again, please reach out to your team."
+msgstr "Se è un errore o ti serve di nuovo l'accesso, scrivi al tuo centro."
+
+#: crm/templates/emails/standard.html
+msgid "You can ask your team to resend the invitation if you'd still like to join."
+msgstr "Se vuoi ancora entrare, chiedi al tuo centro di mandarti di nuovo l'invito."
+
+#: crm/templates/emails/standard.html
+msgid "Login and view in Browser"
+msgstr "Accedi e leggilo nel browser"
+
+#: crm/templates/emails/standard.html
+msgid "Download Data"
+msgstr "Scarica i dati"
+
+#: crm/templates/emails/standard.html
+msgid "Download Link"
+msgstr "Link per scaricare"
+
+#: crm/templates/emails/standard.html
+msgid "Dear User,"
+msgstr "Gentile utente,"
+
+#: crm/templates/emails/standard.html
+msgid "Click on the link below to approve the request"
+msgstr "Usa il link qui sotto per approvare la richiesta"
+
+#: crm/templates/emails/standard.html
+msgid "Click on the link below to download your data"
+msgstr "Usa il link qui sotto per scaricare i tuoi dati"
+
+#: crm/templates/emails/standard.html
+msgid "Click on the link below to verify your request"
+msgstr "Usa il link qui sotto per confermare la richiesta"
+
+#: crm/templates/emails/standard.html
+msgid "The contents of this email are strictly confidential. Please do not forward this email to anyone."
+msgstr "Questa email è riservata: non inoltrarla a nessuno."
