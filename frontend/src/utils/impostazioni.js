@@ -53,6 +53,14 @@ export const MENU = [
         description: 'What reaches your email too, when you have not read it.',
       },
       {
+        // the mailbox one writes to people from, and the signature (doc 51)
+        key: 'Your email',
+        label: 'Your email',
+        description:
+          'The mailbox you write to people from, and your signature.',
+        condition: puo('conversazioni.usa'),
+      },
+      {
         // each person connects their own: the hours they are busy elsewhere
         key: 'Google Calendar',
         label: 'Google Calendar',

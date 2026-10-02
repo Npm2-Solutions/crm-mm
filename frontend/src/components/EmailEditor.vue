@@ -276,7 +276,13 @@ import {
   fullToolbar,
   uploadFile,
 } from '@/components/editor/config'
-import { Button, FileUploader, call, FormControl } from 'frappe-ui'
+import {
+  Button,
+  FileUploader,
+  call,
+  createResource,
+  FormControl,
+} from 'frappe-ui'
 import {
   Editor,
   EditorContent,
@@ -284,7 +290,6 @@ import {
   EditorTableMenu,
 } from 'frappe-ui/editor'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { useDocument } from '@/data/document'
 import { validateEmail, submitShortcutLabel } from '@/utils'
 import { quotes } from '@/utils/emailDraft'
 import { isMobileView } from '@/composables/breakpoints'
@@ -332,7 +337,6 @@ const content = defineModel('content', { type: String, default: '' })
 
 const { capture } = useTelemetry()
 const { user: sessionUser } = inject('session')
-const { document: user } = useDocument('User', sessionUser)
 
 const textEditor = ref(null)
 const cc = ref(false)
@@ -390,17 +394,26 @@ const extensions = buildEditorExtensions({
   extra: [CustomParagraph],
 })
 
+// where one writes from: one's own mailbox first, then the centre's one chose
+// (Settings > Your account > Your email). The list lives on the user, where only
+// the administrator reads it, so the server hands it over (doc 51). None: one
+// writes through {brand}'s service, in one's name and the centre's.
+const mittenti = createResource({
+  url: 'crm.posta.personale.get_my_senders',
+  cache: 'crm-my-senders',
+  auto: true,
+})
+
 const from = computed(() => {
-  if (!user.doc || !user.doc.user_emails?.length) return []
-  let emails = user.doc.user_emails.map((e) => {
-    return {
-      label: e.email_account + ' <' + e.email_id + '>',
-      value: e.email_id,
-    }
-  })
-
-  if (emails.length == 1 && emails[0].email_id === sessionUser) return []
-
+  const emails = (mittenti.data || []).map((e) => ({
+    // one's own mailbox is named after its address: said once
+    label:
+      e.email_account === e.email_id
+        ? e.email_id
+        : e.email_account + ' <' + e.email_id + '>',
+    value: e.email_id,
+  }))
+  if (emails.length == 1 && emails[0].value === sessionUser) return []
   return emails
 })
 

@@ -162,3 +162,40 @@ export function rispostaDaSalvare(scelta, altro) {
 export function risposteSenzaCasella(stato) {
   return Boolean(stato?.active) && !stato?.reply_to
 }
+
+/** Signing in with Google or Microsoft, where the agency set it up (doc 51). */
+export const ACCESSI = [
+  { chiave: 'google', nome: 'Google', etichetta: 'Sign in with Google' },
+  {
+    chiave: 'microsoft',
+    nome: 'Microsoft',
+    etichetta: 'Sign in with Microsoft',
+  },
+]
+
+/** The provider's name, a password provider's or a sign-in's. */
+export function nomeDelFornitore(chiave) {
+  return (
+    fornitore(chiave)?.nome ||
+    ACCESSI.find((a) => a.chiave === chiave)?.nome ||
+    ''
+  )
+}
+
+/** One's own mailbox in words: connected, waiting for the sign-in, disconnected. */
+export function statoDellaCasella(casella) {
+  if (!casella) return ''
+  if (casella.waiting) return 'Waiting for the sign-in'
+  return casella.connected ? 'Connected' : 'Disconnected'
+}
+
+/**
+ * What stops connecting one's own mailbox with its password; '' when nothing does.
+ * `stessa`: it is there with this provider already, and keeps its password.
+ */
+export function daCorreggerePropria(stato, stessa = false) {
+  return daCorreggere(
+    { ...stato, enable_incoming: true, enable_outgoing: true },
+    stessa,
+  )
+}

@@ -3,9 +3,13 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  ACCESSI,
   ALTRO,
   FORNITORI,
   daCorreggere,
+  daCorreggerePropria,
+  nomeDelFornitore,
+  statoDellaCasella,
   fornitore,
   iniziale,
   interruttori,
@@ -161,5 +165,39 @@ describe('where the answers go', () => {
     expect(risposteSenzaCasella({ ...stato, reply_to: null })).toBe(true)
     // without the service, the centre's own mailbox sends and receives them
     expect(risposteSenzaCasella({ active: false, reply_to: null })).toBe(false)
+  })
+})
+
+describe('one’s own mailbox', () => {
+  it('says how it stands', () => {
+    expect(statoDellaCasella({ connected: true, waiting: false })).toBe(
+      'Connected',
+    )
+    expect(statoDellaCasella({ connected: false, waiting: true })).toBe(
+      'Waiting for the sign-in',
+    )
+    expect(statoDellaCasella({ connected: false, waiting: false })).toBe(
+      'Disconnected',
+    )
+    expect(statoDellaCasella(null)).toBe('')
+  })
+
+  it('names its provider, a password one or a sign-in', () => {
+    expect(nomeDelFornitore('aruba')).toBe('Aruba')
+    expect(nomeDelFornitore('microsoft')).toBe('Microsoft')
+    expect(nomeDelFornitore('altro')).toBe('')
+    expect(ACCESSI.map((a) => a.chiave)).toEqual(['google', 'microsoft'])
+  })
+
+  it('asks for a provider, an address and the password, not what it does', () => {
+    const propria = {
+      provider: 'libero',
+      email_id: 'giulia@libero.it',
+      password: '',
+    }
+    expect(daCorreggerePropria(propria)).toBe('Write the password.')
+    // the same mailbox again: its password stays
+    expect(daCorreggerePropria(propria, true)).toBe('')
+    expect(daCorreggerePropria({ ...propria, password: 'x' })).toBe('')
   })
 })
