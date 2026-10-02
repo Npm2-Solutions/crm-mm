@@ -57,9 +57,9 @@ const TESTI = {
     description: 'What a person asks the centre from their area.',
   },
   messages: {
-    label: 'WhatsApp, SMS and email',
+    label: 'WhatsApp, SMS, email and answering service',
     description:
-      'The messages of the people you follow: one email for each conversation.',
+      'The messages of the people you follow, those left on the answering service too: one email for each conversation.',
   },
   agenda: {
     label: 'Agenda',

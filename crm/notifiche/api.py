@@ -144,6 +144,9 @@ def percorso(riga, genere: str, esistenti: dict, compiti_aperti: set) -> dict | 
 		segno = "#" + riga.notification_type_doc
 	elif genere == "area":
 		segno = "#area"
+	elif genere == "call":
+		# the message is a call of the person's: their activity has it
+		segno = "#activity"
 	elif genere == "task" and riga.notification_type_doc in compiti_aperti:
 		segno = "#tasks"
 	return {"name": nome_pagina, "params": {parametro: riga.reference_name}, "hash": segno}
