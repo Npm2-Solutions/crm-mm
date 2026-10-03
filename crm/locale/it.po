@@ -41613,3 +41613,291 @@ msgstr "Qui compaiono i contatti che lavorano in questa azienda."
 #: frontend/src/pages/Contact.vue
 msgid "The deals this contact takes part in appear here."
 msgstr "Qui compaiono le trattative di cui fa parte questo contatto."
+
+#: frontend/src/utils/automation.js
+msgid "Talk to the contact"
+msgstr "Parla con la persona"
+
+#: frontend/src/utils/automation.js
+msgid "Update the record"
+msgstr "Aggiorna la scheda"
+
+#: frontend/src/utils/automation.js
+msgid "Deal (opportunity)"
+msgstr "Trattativa"
+
+#: frontend/src/utils/automation.js
+msgid "Logic and timing"
+msgstr "Logica e tempi"
+
+#: frontend/src/utils/automation.js
+msgid "Data and other automations"
+msgstr "Dati e altre automazioni"
+
+#: frontend/src/utils/automation.js
+msgid "Send Email"
+msgstr "Invia un'email"
+
+#: frontend/src/utils/automation.js
+msgid "Emails the address on the record."
+msgstr "Scrive all'indirizzo email della scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Send SMS"
+msgstr "Invia un SMS"
+
+#: frontend/src/utils/automation.js
+msgid "Texts the mobile number on the record."
+msgstr "Manda un SMS al cellulare della scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Send WhatsApp Template"
+msgstr "Invia un modello WhatsApp"
+
+#: frontend/src/utils/automation.js
+msgid "Sends an approved WhatsApp template."
+msgstr "Invia un modello WhatsApp approvato."
+
+#: frontend/src/utils/automation.js
+msgid "Internal Notification"
+msgstr "Notifica interna"
+
+#: frontend/src/utils/automation.js
+msgid "Notifies the owner and the assignees inside {brand}."
+msgstr "Avvisa in {brand} il responsabile e chi è assegnato."
+
+#: frontend/src/utils/automation.js
+msgid "Opens a task on the record."
+msgstr "Apre una cosa da fare sulla scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Assign User"
+msgstr "Assegna a qualcuno"
+
+#: frontend/src/utils/automation.js
+msgid "One user, or several for an even round robin."
+msgstr "Un utente, o più di uno a turno in parti uguali."
+
+#: frontend/src/utils/automation.js
+msgid "Leaves a note in the record timeline."
+msgstr "Lascia una nota nella cronologia della scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Add Tag"
+msgstr "Aggiungi un'etichetta"
+
+#: frontend/src/utils/automation.js
+msgid "Tags the record — other automations can listen for it."
+msgstr "Mette un'etichetta sulla scheda: altre automazioni possono partire da lì."
+
+#: frontend/src/utils/automation.js
+msgid "Remove Tag"
+msgstr "Togli un'etichetta"
+
+#: frontend/src/utils/automation.js
+msgid "Takes a tag off the record."
+msgstr "Toglie un'etichetta dalla scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Update Field"
+msgstr "Aggiorna un campo"
+
+#: frontend/src/utils/automation.js
+msgid "Writes a value on the person or the deal."
+msgstr "Scrive un valore sulla persona o sulla trattativa."
+
+#: frontend/src/utils/automation.js
+msgid "Convert Lead to Deal"
+msgstr "Apri una trattativa"
+
+#: frontend/src/utils/automation.js
+msgid "Opens a deal for the person, to follow the sale."
+msgstr "Apre una trattativa per la persona, per seguire la vendita."
+
+#: frontend/src/utils/automation.js
+msgid "Calls an external URL with the record data."
+msgstr "Chiama un indirizzo esterno con i dati della scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Add to Automation"
+msgstr "Aggiungi a un'automazione"
+
+#: frontend/src/utils/automation.js
+msgid "Enrols the record in another automation."
+msgstr "Iscrive la scheda a un'altra automazione."
+
+#: frontend/src/utils/automation.js
+msgid "Remove from Automation"
+msgstr "Togli da un'automazione"
+
+#: frontend/src/utils/automation.js
+msgid "Pulls the record out of another automation."
+msgstr "Toglie la scheda da un'altra automazione."
+
+#: frontend/src/utils/automation.js
+msgid "Wait"
+msgstr "Attendi"
+
+#: frontend/src/utils/automation.js
+msgid "Holds here for a delay, a time of day or an answer."
+msgstr "Si ferma qui per un po', fino a un'ora del giorno o fino a una risposta."
+
+#: frontend/src/utils/automation.js
+msgid "If / Else"
+msgstr "Se / Altrimenti"
+
+#: frontend/src/utils/automation.js
+msgid "Splits the flow on conditions, with a \"None\" branch."
+msgstr "Divide il percorso secondo delle condizioni, con un ramo «Nessuno»."
+
+#: frontend/src/utils/automation.js
+msgid "Split Test"
+msgstr "Test A/B"
+
+#: frontend/src/utils/automation.js
+msgid "Sends a percentage of records down each path."
+msgstr "Manda una percentuale delle schede su ogni percorso."
+
+#: frontend/src/utils/automation.js
+msgid "A checkpoint records jump forward to when they reach it."
+msgstr "Un traguardo: chi lo raggiunge salta avanti fino a qui."
+
+#: frontend/src/utils/automation.js
+msgid "Go To"
+msgstr "Vai a"
+
+#: frontend/src/utils/automation.js
+msgid "Jumps to a labelled step."
+msgstr "Salta a un passo con la sua etichetta."
+
+#: frontend/src/utils/automation.js
+msgid "Stop If"
+msgstr "Fermati se"
+
+#: frontend/src/utils/automation.js
+msgid "Leaves the automation when a condition is met."
+msgstr "Esce dall'automazione quando una condizione è vera."
+
+#: frontend/src/utils/automation.js
+msgid "Exit"
+msgstr "Esci"
+
+#: frontend/src/utils/automation.js
+msgid "Ends the automation for this record."
+msgstr "Termina l'automazione per questa scheda."
+
+#: frontend/src/utils/automation.js
+msgid "Move Deal to Stage"
+msgstr "Sposta la trattativa di fase"
+
+#: frontend/src/utils/automation.js
+msgid "Moves the deal to another stage of its pipeline."
+msgstr "Sposta la trattativa in un'altra fase della sua pipeline."
+
+#: frontend/src/utils/automation.js
+msgid "Set Deal Value"
+msgstr "Imposta il valore della trattativa"
+
+#: frontend/src/utils/automation.js
+msgid "Writes the expected value of the deal."
+msgstr "Scrive il valore previsto della trattativa."
+
+#: frontend/src/utils/automation.js
+msgid "Set Expected Closing Date"
+msgstr "Imposta la data di chiusura prevista"
+
+#: frontend/src/utils/automation.js
+msgid "Writes the expected closing date of the deal."
+msgstr "Scrive la data di chiusura prevista della trattativa."
+
+#: frontend/src/utils/automation.js
+msgid "Set Next Step"
+msgstr "Imposta il prossimo passo"
+
+#: frontend/src/utils/automation.js
+msgid "Writes the next step agreed with the customer."
+msgstr "Scrive il prossimo passo concordato con la persona."
+
+#: frontend/src/utils/automation.js
+msgid "Activity on the record"
+msgstr "Attività sulla scheda"
+
+#: frontend/src/utils/automation.js
+msgid "Time and integrations"
+msgstr "Tempo e integrazioni"
+
+#: frontend/src/utils/automation.js
+msgid "The person moves to another status."
+msgstr "La persona passa a un altro stato."
+
+#: frontend/src/utils/automation.js
+msgid "The deal moves to another stage of the pipeline."
+msgstr "La trattativa passa a un'altra fase della pipeline."
+
+#: frontend/src/utils/automation.js
+msgid "The client books online, on the booking page."
+msgstr "La persona prenota online, dalla pagina delle prenotazioni."
+
+#: frontend/src/utils/automation.js
+msgid "An online booking is cancelled."
+msgstr "Una prenotazione online viene annullata."
+
+#: frontend/src/utils/automation.js
+msgid "The contact answers by SMS, WhatsApp or email."
+msgstr "La persona risponde per SMS, WhatsApp o email."
+
+#: frontend/src/utils/automation.js
+msgid "Read tracking on an email sent by {brand}."
+msgstr "La persona apre un'email mandata da {brand}."
+
+#: frontend/src/utils/automation.js
+msgid "A click on a tracked link inside a message."
+msgstr "Un clic su un link tracciato dentro un messaggio."
+
+#: frontend/src/utils/automation.js
+msgid "A date field comes up — birthdays, renewals, anything."
+msgstr "Arriva una data: un compleanno, un rinnovo, qualsiasi cosa."
+
+#: frontend/src/utils/automation.js
+msgid "An external system posts to a URL and enrols the contact."
+msgstr "Un sistema esterno chiama un indirizzo e iscrive la persona."
+
+#: frontend/src/utils/automation.js
+msgid "Contact replied"
+msgstr "La persona ha risposto"
+
+#: frontend/src/utils/automation.js
+msgid "Tracked link clicked"
+msgstr "Clic su un link tracciato"
+
+#: frontend/src/utils/automation.js
+msgid "Tag added"
+msgstr "Etichetta aggiunta"
+
+#: frontend/src/utils/automation.js
+msgid "Status becomes"
+msgstr "Lo stato diventa"
+
+#: frontend/src/utils/automation.js
+msgid "A period of time"
+msgstr "Un periodo di tempo"
+
+#: frontend/src/utils/automation.js
+msgid "A time of day"
+msgstr "Un'ora del giorno"
+
+#: frontend/src/utils/automation.js
+msgid "The contact to reply"
+msgstr "Che la persona risponda"
+
+#: frontend/src/utils/automation.js
+msgid "A tracked link click"
+msgstr "Un clic su un link tracciato"
+
+#: frontend/src/utils/automation.js
+msgid "Full name"
+msgstr "Nome completo"
+
+#: frontend/src/utils/automation.js
+msgid "A form is filled in, an ad's or one on the website — by a new person or by one {brand} already knows."
+msgstr "Qualcuno compila un modulo, di un annuncio o del sito: una persona nuova o una che {brand} conosce già."

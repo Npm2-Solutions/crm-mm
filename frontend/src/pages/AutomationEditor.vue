@@ -14,7 +14,7 @@
           v-model="draft.title"
           :placeholder="__('Untitled automation')"
           :size="Math.max((draft.title || __('Untitled automation')).length, 8)"
-          class="h-8 min-w-0 max-w-64 border-0 bg-transparent p-0 text-base font-medium text-ink-gray-8 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
+          class="h-8 min-w-0 max-w-64 text-ellipsis border-0 bg-transparent p-0 text-base font-medium text-ink-gray-8 placeholder:text-ink-gray-4 focus:outline-none focus:ring-0"
         />
         <!-- on a phone the «Live» switch right underneath already says it -->
         <Badge
@@ -24,11 +24,20 @@
           size="sm"
         />
         <Badge
-          v-if="dirty"
+          v-if="dirty && !isMobileView"
           :label="__('Not saved')"
           theme="orange"
           variant="subtle"
           size="sm"
+        />
+        <!-- on a phone a dot says it: at 360px the badge left the title
+             three words -->
+        <span
+          v-else-if="dirty"
+          class="size-2 shrink-0 rounded-full bg-surface-amber-5"
+          role="img"
+          :aria-label="__('Not saved')"
+          :title="__('Not saved')"
         />
       </div>
     </template>

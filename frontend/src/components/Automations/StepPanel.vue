@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div v-if="step" class="flex h-full flex-col">
     <div
@@ -14,7 +18,7 @@
           {{ stepLabel(step.type) }}
         </div>
         <div class="truncate text-sm text-ink-gray-5">
-          {{ stepDefinition(step.type).description }}
+          {{ __(stepDefinition(step.type).description) }}
         </div>
       </div>
       <Button
