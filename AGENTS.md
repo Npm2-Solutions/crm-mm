@@ -618,7 +618,9 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   (one line per thing, found by typing, the next action a tap away, its data
   from `crm/api/sul_telefono.py`), never the desk's table in rows; the page's
   main action is `PulsanteAggiungi`; more than five tabs go through
-  `SchedeDelTelefono`.
+  `SchedeDelTelefono`; pulled down from its top it reloads
+  (`useTiraPerAggiornare` and `TiraPerAggiornare`: the browser's own pull is
+  off, it reloaded the whole app).
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A page that opens over another (a panel) hides what it covers there
