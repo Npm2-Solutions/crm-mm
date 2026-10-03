@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the contacts are a list of their own, found by typing
+  (components/Mobile/ElencoContatti.vue).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -9,6 +15,7 @@
         :actions="contactsListView.customListActions"
       />
       <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -16,7 +23,17 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: typed to find, one line each, the + where the thumb is -->
+  <template v-if="isMobileView">
+    <ElencoContatti />
+    <PulsanteAggiungi
+      v-if="puo('persone.scrivi')"
+      :label="__('New contact')"
+      @click="showContactModal = true"
+    />
+  </template>
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="contacts"
     v-model:loadMore="loadMore"
@@ -25,7 +42,7 @@
     doctype="Contact"
   />
   <ContactsListView
-    v-if="contacts.data && rows.length"
+    v-if="!isMobileView && contacts.data && rows.length"
     ref="contactsListView"
     v-model="contacts.data.page_length_count"
     v-model:list="contacts"
@@ -48,7 +65,7 @@
     "
   />
   <EmptyState
-    v-else-if="contacts.data && !rows.length"
+    v-else-if="!isMobileView && contacts.data && !rows.length"
     name="Contacts"
     :icon="ContactsIcon"
   />
@@ -68,6 +85,10 @@ import ContactModal from '@/components/Modals/ContactModal.vue'
 import ContactsListView from '@/components/ListViews/ContactsListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import ViewControls from '@/components/ViewControls.vue'
+import ElencoContatti from '@/components/Mobile/ElencoContatti.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
+import { usersStore } from '@/stores/users'
 import { getMeta } from '@/stores/meta'
 import { organizationsStore } from '@/stores/organizations.js'
 import { formatDate } from '@/utils'
@@ -77,6 +98,7 @@ import { ref, computed } from 'vue'
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('Contact')
 const { getOrganization } = organizationsStore()
+const { puo } = usersStore()
 
 const showContactModal = ref(false)
 

@@ -23,3 +23,22 @@ export function splitColumnsForCard(columns = []) {
 
   return { title, trailing, details }
 }
+
+/**
+ * Whether a cell has something to show under its label: not nothing, not an
+ * empty list, not a link without a name, not an amount of zero (a company's
+ * revenue nobody wrote is not «€ 0.00»).
+ */
+export function haValore(valore, column = {}) {
+  if (valore === null || valore === undefined || valore === '') return false
+  if (Array.isArray(valore)) return valore.length > 0
+  if (typeof valore === 'object')
+    return ['label', 'timeAgo', 'value', 'name'].some(
+      (chiave) =>
+        valore[chiave] !== undefined &&
+        valore[chiave] !== '' &&
+        valore[chiave] !== null,
+    )
+  if (column.type === 'Currency' && Number(valore) === 0) return false
+  return true
+}

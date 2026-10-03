@@ -4,9 +4,9 @@
 /**
  * The phone's own screens (docs/progetto-ghl/29), without a screen: what the
  * line under a person's name says, the open tasks by when they are due, the
- * stage a deals board opens on, a deal's value only when it has one. What the
- * server gives is `crm/api/sul_telefono.py`; the words are English, translated
- * where they are drawn.
+ * stage a deals board opens on, a deal's value only when it has one, a
+ * company's line, a call's. What the server gives is `crm/api/sul_telefono.py`;
+ * the words are English, translated where they are drawn.
  */
 
 import { mascherato } from '@/utils/schedaPersona'
@@ -247,4 +247,50 @@ export function elencoDelGiorno(appuntamenti = [], eventi = [], giorno) {
 export function doveAdesso(righe = [], giorno, adesso = new Date()) {
   if (scritto(adesso) !== String(giorno).slice(0, 10)) return -1
   return righe.findIndex((riga) => !riga.intero && riga.inizio > adesso)
+}
+
+// ------------------------------------------------------------------ companies
+
+/** A website as one reads it: `https://www.acme.it/chi-siamo` is `acme.it`. */
+export function dominioDi(sito) {
+  const testo = String(sito || '').trim()
+  if (!testo) return ''
+  try {
+    const url = new URL(
+      /^[a-z]+:\/\//i.test(testo) ? testo : `https://${testo}`,
+    )
+    return url.hostname.replace(/^www\./, '')
+  } catch {
+    return testo
+  }
+}
+
+/** The line under a company's name: what it does and where it is online. */
+export function rigaDellAzienda(azienda = {}) {
+  return [azienda.industry, dominioDi(azienda.website)]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+// ------------------------------------------------------------------ calls
+
+/**
+ * Which way a call went, for its mark: `missed` (an incoming call nobody took,
+ * or a message left instead), `incoming`, `outgoing`.
+ */
+export function versoDellaChiamata(chiamata = {}) {
+  if (chiamata.missed) return 'missed'
+  return chiamata.type === 'Incoming' ? 'incoming' : 'outgoing'
+}
+
+/** How long a call lasted as a clock reads it - `1:49`, `1:02:03` - or ''. */
+export function durataDellaChiamata(secondi) {
+  const totale = Math.round(Number(secondi) || 0)
+  if (totale <= 0) return ''
+  const ore = Math.floor(totale / 3600)
+  const minuti = Math.floor((totale % 3600) / 60)
+  const resto = String(totale % 60).padStart(2, '0')
+  return ore
+    ? `${ore}:${String(minuti).padStart(2, '0')}:${resto}`
+    : `${minuti}:${resto}`
 }

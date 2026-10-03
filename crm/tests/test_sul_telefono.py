@@ -4,7 +4,8 @@
 """The phone's own lists (docs/progetto-ghl/29): a person found by a number
 written any way, by name or by email, a page at a time, with when they come
 next; the open tasks by when they are due, one's own or everybody's; the deals
-of a pipeline by stage."""
+of a pipeline by stage; the companies with their deals; the register of calls,
+found by a name or a number."""
 
 import datetime
 
@@ -197,3 +198,92 @@ class LeTrattative(IntegrationTestCase):
 		]
 		self.assertEqual(righe, [nuova.name, vecchia.name])
 		self.assertNotIn(vecchia.name, _nomi(T.get_deals("Qualification", vecchia.pipeline)))
+
+
+class IContatti(IntegrationTestCase):
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_by_name_company_or_a_number_however_written(self):
+		contatto = frappe.get_doc(
+			{
+				"doctype": "Contact",
+				"first_name": "Contattissimo",
+				"company_name": "Ditta Contattata",
+				"phone_nos": [{"phone": "+39 345 222 3344", "is_primary_mobile_no": 1}],
+			}
+		).insert(ignore_permissions=True)
+		for cercato in ("Contattissimo", "Ditta Contattata", "3452223344", "345 222 33 44"):
+			self.assertIn(contatto.name, _nomi(T.get_contacts(cercato)), cercato)
+		self.assertNotIn(contatto.name, _nomi(T.get_contacts("Nessunodicosi")))
+		self.assertEqual(T.get_contacts("34")["rows"], [])
+
+
+class LeAziende(IntegrationTestCase):
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_found_by_name_with_their_deals(self):
+		nome = f"Aziendina {frappe.generate_hash(length=6)}"
+		azienda = frappe.get_doc(
+			{"doctype": "CRM Organization", "organization_name": nome, "website": "https://aziendina.example"}
+		).insert(ignore_permissions=True)
+		persona = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Aziendale"}).insert()
+		for _ in range(2):
+			frappe.get_doc(
+				{"doctype": "CRM Deal", "lead": persona.name, "organization": azienda.name}
+			).insert()
+
+		riga = next(r for r in T.get_organizations(nome)["rows"] if r.name == azienda.name)
+		self.assertEqual(riga.deals, 2)
+		self.assertIn(azienda.name, _nomi(T.get_organizations("aziendina.example")))
+		self.assertNotIn(azienda.name, _nomi(T.get_organizations("Nessunadicosi")))
+
+
+class LeChiamate(IntegrationTestCase):
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def chiamata(self, persona=None, **campi):
+		campi.setdefault("type", "Incoming")
+		campi.setdefault("status", "Completed")
+		if persona:
+			campi.update(reference_doctype="CRM Lead", reference_docname=persona.name)
+		return frappe.get_doc(
+			{"doctype": "CRM Call Log", "id": frappe.generate_hash(length=12), **campi}
+		).insert(ignore_permissions=True)
+
+	def test_a_number_however_it_is_written_or_a_name(self):
+		persona = frappe.get_doc({"doctype": "CRM Lead", "first_name": "Chiamatissima"}).insert()
+		entrata = self.chiamata(persona, **{"from": "+39 333 765 4321", "to": "+39 02 1234567"})
+		uscita = self.chiamata(type="Outgoing", **{"from": "+39 02 1234567", "to": "+393337654321"})
+		for scritto in ("3337654321", "+39 333 765 43 21", "7654321"):
+			self.assertTrue({entrata.name, uscita.name} <= _nomi(T.get_calls(scritto)), scritto)
+		per_nome = _nomi(T.get_calls("Chiamatissima"))
+		self.assertIn(entrata.name, per_nome)
+		self.assertNotIn(uscita.name, per_nome)
+		self.assertEqual(T.get_calls("33")["rows"], [])
+
+	def test_with_whom_and_whether_nobody_took_it(self):
+		persona = frappe.get_doc(
+			{"doctype": "CRM Lead", "first_name": "Persa", "last_name": "Chiamata"}
+		).insert()
+		persa = self.chiamata(
+			persona, status="No Answer", **{"from": "+39 347 000 1111", "to": "+39 02 1234567"}
+		)
+		uscita = self.chiamata(
+			persona,
+			type="Outgoing",
+			status="No Answer",
+			**{"from": "+39 02 1234567", "to": "+39 347 000 1111"},
+		)
+		righe = {r["name"]: r for r in T.get_calls("Persa Chiamata")["rows"]}
+		self.assertTrue(righe[persa.name]["missed"])
+		self.assertEqual(righe[persa.name]["number"], "+39 347 000 1111")
+		self.assertEqual(righe[persa.name]["person"], persona.lead_name)
+		# a call of ours nobody answered is not one we missed
+		self.assertFalse(righe[uscita.name]["missed"])
+		self.assertEqual(righe[uscita.name]["number"], "+39 347 000 1111")

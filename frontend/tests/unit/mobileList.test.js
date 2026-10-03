@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { splitColumnsForCard } from '@/utils/mobileList'
+import { haValore, splitColumnsForCard } from '@/utils/mobileList'
 
 // The shape the server sends for the default People list.
 const leadColumns = [
@@ -76,5 +76,26 @@ describe('splitColumnsForCard', () => {
     ])
     expect(title.key).toBe('name')
     expect(details).toEqual([])
+  })
+})
+
+describe('a detail worth its label', () => {
+  it('has something to show', () => {
+    expect(haValore('Milano')).toBe(true)
+    expect(haValore(12)).toBe(true)
+    expect(haValore(0)).toBe(true)
+    expect(haValore({ label: 'Acme' })).toBe(true)
+    expect(haValore({ timeAgo: '3 giorni fa' })).toBe(true)
+  })
+
+  it('says nothing over nothing', () => {
+    expect(haValore(null)).toBe(false)
+    expect(haValore(undefined)).toBe(false)
+    expect(haValore('')).toBe(false)
+    expect(haValore([])).toBe(false)
+    expect(haValore({ label: '' })).toBe(false)
+    // a revenue nobody wrote is not «€ 0.00»
+    expect(haValore(0, { type: 'Currency' })).toBe(false)
+    expect(haValore(1200, { type: 'Currency' })).toBe(true)
   })
 })
