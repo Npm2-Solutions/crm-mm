@@ -46,6 +46,7 @@
                   />
                   <component
                     :is="organization.doc.organization_logo ? Dropdown : 'div'"
+                    v-if="canWrite"
                     v-bind="
                       organization.doc.organization_logo
                         ? {
@@ -263,6 +264,7 @@ const showDeleteLinkedDocModal = ref(false)
 const {
   document: organization,
   permissions,
+  canWrite,
   scripts,
   triggerOnRender,
   error: nonSiApre,
