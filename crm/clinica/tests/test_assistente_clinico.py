@@ -39,6 +39,17 @@ def risposta(testo):
 	return finta
 
 
+def _inizio_del_segno() -> str:
+	"""How a checked draft's mark begins in the centre's language, the one it is
+	written in (`crm.assistente.modello.segno`)."""
+	from frappe import _
+
+	from crm.assistente import regole
+	from crm.lingue import del_centro
+
+	return _(regole.SEGNO, lang=del_centro()).split("{0}")[0].strip()
+
+
 class AssistenteClinicoCase(RecordCase):
 	def setUp(self):
 		super().setUp()
@@ -132,7 +143,7 @@ class LaNotaTenuta(AssistenteClinicoCase):
 		)
 		self.assertIn("la signora Cartella", nota.content)
 		self.assertIn(tenuta["mark"], nota.content)
-		self.assertTrue(tenuta["mark"].startswith("AI draft, checked by"))
+		self.assertTrue(tenuta["mark"].startswith(_inizio_del_segno()))
 		evento = frappe.get_doc(modello.EVENTO, fatto["event"])
 		self.assertEqual((evento.status, evento.checked_by), (regole.ACCETTATA, DOC1))
 		self.assertIn("+Dott. Uno", evento.difference)
@@ -150,7 +161,7 @@ class LaNotaTenuta(AssistenteClinicoCase):
 		)
 		self.assertEqual((messaggio.kind, messaggio.author), ("Care", DOC1))
 		self.assertIn("Faccia gli esercizi", messaggio.body)
-		self.assertIn("AI draft, checked by", messaggio.body)
+		self.assertIn(_inizio_del_segno(), messaggio.body)
 
 	def test_scartata_non_lascia_note(self):
 		self.consenso()
