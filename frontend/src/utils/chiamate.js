@@ -93,6 +93,22 @@ export function bloccataInItalia(numeri = [], mostrato = '', paese = '') {
   )
 }
 
+/**
+ * Whether the call may arrive without the number shown, or not arrive: an
+ * Italian landline of another operator's, only verified in Twilio, shown on a
+ * call to Italy - since 19/08/2025 an Italian operator may block it (AGCOM
+ * 106/25/CONS). The server's `uscita_regole.incerta_in_italia`.
+ */
+export function incertaInItalia(numeri = [], mostrato = '', paese = '') {
+  const numero = numeri.find((n) => n.number === mostrato)
+  return Boolean(
+    paese === ITALIA &&
+      numero?.verified &&
+      !numero.mobile &&
+      numero.number.startsWith('+39'),
+  )
+}
+
 /** Whether to ask which number to show: only when there is more than one. */
 export function siSceglie(numeri = []) {
   return numeri.length > 1

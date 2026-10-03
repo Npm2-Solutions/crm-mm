@@ -3,7 +3,8 @@
   For license information, please see license.txt
 
   Every number the account can present, what kind it is, whether a call to it
-  reaches DottorCloud; a number of the space released from here (doc 52).
+  reaches DottorCloud; a number of the space released from here, one of another
+  operator's verified to be shown on calls, or removed from Twilio (doc 52).
 -->
 <template>
   <SettingsLayoutBase>
@@ -32,13 +33,16 @@
 
     <template #header-actions>
       <div class="flex gap-2">
-        <Button :label="__('Verify a number')" @click="openVerify" />
         <Button
-          variant="solid"
           :label="__('Refresh')"
           icon-left="lucide-refresh-cw"
           :loading="syncing"
           @click="refresh"
+        />
+        <Button
+          variant="solid"
+          :label="__('Verify a number')"
+          @click="openVerify()"
         />
       </div>
     </template>
@@ -73,7 +77,7 @@
             {{
               __(
                 '{0} of {1} numbers do not reach {brand}. The answering service can only answer on the ones that do.',
-                [unreachable.length, callerIds.data.length],
+                [unreachable.length, delConto.length],
               )
             }}
           </p>
@@ -83,12 +87,18 @@
           class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
         >
           <div v-for="row in callerIds.data" :key="row.name" class="px-4 py-3">
-            <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
+            <div
+              class="flex items-start justify-between gap-4 max-md:flex-col max-md:gap-2"
+            >
+              <div class="min-w-0 max-md:w-full">
+                <div class="flex flex-wrap items-center gap-2">
                   <span
                     class="text-base-medium text-ink-gray-8"
-                    :class="!row.enabled && 'line-through text-ink-gray-5'"
+                    :class="
+                      !row.enabled &&
+                      !daVerificare(row) &&
+                      'line-through text-ink-gray-5'
+                    "
                   >
                     {{ row.phone_number }}
                   </span>
@@ -99,13 +109,13 @@
                     :theme="row.number_type === 'Mobile' ? 'orange' : 'gray'"
                   />
                   <Badge
-                    v-if="row.source === 'Verified Caller ID'"
-                    :label="__('Verified')"
+                    v-if="verifica(row)"
+                    :label="__(verifica(row).label, null, 'Caller ID')"
                     variant="subtle"
-                    theme="blue"
+                    :theme="verifica(row).theme"
                   />
                   <Badge
-                    v-if="!row.enabled"
+                    v-if="!row.enabled && !verifica(row)"
                     :label="__('Off')"
                     variant="subtle"
                     theme="gray"
@@ -113,15 +123,22 @@
                 </div>
                 <FormControl
                   :modelValue="row.label"
-                  class="mt-1.5 w-72"
+                  class="mt-1.5 w-72 max-md:w-full"
                   size="sm"
                   :placeholder="__('Whose number is this?')"
                   @change="(e) => saveLabel(row, e.target.value)"
                 />
               </div>
 
-              <div class="flex shrink-0 items-center gap-2">
+              <div class="flex shrink-0 flex-wrap items-center gap-2">
                 <Badge
+                  v-if="row.source === VERIFICATO"
+                  :label="__('Calls out only')"
+                  variant="subtle"
+                  theme="gray"
+                />
+                <Badge
+                  v-else
                   :label="
                     row.routes_to_crm
                       ? __('Reaches {brand}')
@@ -131,6 +148,13 @@
                   :theme="row.routes_to_crm ? 'green' : 'red'"
                 />
                 <Button
+                  v-if="daVerificare(row)"
+                  :label="__('Verify again')"
+                  size="sm"
+                  @click="openVerify(row)"
+                />
+                <Button
+                  v-else
                   :label="row.enabled ? __('Disable') : __('Enable')"
                   size="sm"
                   @click="toggle(row)"
@@ -147,11 +171,33 @@
                   variant="subtle"
                   @click="chiediDiRilasciare(row)"
                 />
+                <Button
+                  v-if="
+                    row.provider === 'twilio' &&
+                    row.source === 'Verified Caller ID' &&
+                    row.verification_status === 'Verified'
+                  "
+                  :label="__('Remove')"
+                  size="sm"
+                  theme="red"
+                  variant="subtle"
+                  @click="chiediDiTogliere(row)"
+                />
               </div>
             </div>
 
             <p v-if="row.routing_note" class="mt-1.5 text-p-sm text-ink-gray-5">
               {{ row.routing_note }}
+            </p>
+            <p
+              v-if="incertoInItalia(row)"
+              class="mt-1 text-p-sm text-ink-amber-8"
+            >
+              {{
+                __(
+                  'In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, move the number to Twilio.',
+                )
+              }}
             </p>
             <p v-if="row.sip_trunk" class="mt-1 text-p-sm text-ink-gray-5">
               {{ __('SIP trunk') }}: {{ row.sip_trunk }}
@@ -164,64 +210,27 @@
     </template>
   </SettingsLayoutBase>
 
-  <!-- verify a number the practice owns elsewhere -->
-  <Dialog v-model="showVerify" :options="{ title: __('Verify a caller ID') }">
-    <template #body-content>
-      <div class="flex flex-col gap-4">
-        <p class="text-p-sm text-ink-gray-6">
-          {{
-            __(
-              'Twilio rings the number and gives you a code. Answer it and type the code to prove you control the line — that is what separates a caller ID you may present from spoofing.',
-            )
-          }}
-        </p>
-        <FormControl
-          v-model="verifyForm.phone_number"
-          :label="__('Number')"
-          placeholder="+39..."
-        />
-        <FormControl
-          v-model="verifyForm.label"
-          :label="__('Label')"
-          :placeholder="__('Studio Rossi — reception')"
-        />
-
-        <div
-          v-if="verification"
-          class="rounded-md bg-surface-gray-2 px-3 py-3 text-center"
-        >
-          <div class="text-p-sm text-ink-gray-6">
-            {{ __('Answer the call and type this code:') }}
-          </div>
-          <div class="mt-1 text-2xl-semibold tracking-widest text-ink-gray-9">
-            {{ verification.validation_code }}
-          </div>
-        </div>
-
-        <ErrorMessage :message="verifyError" />
-      </div>
-    </template>
-    <template #actions>
-      <div class="flex justify-end gap-2">
-        <Button :label="__('Close')" @click="showVerify = false" />
-        <Button
-          v-if="!verification"
-          variant="solid"
-          :label="__('Call me')"
-          :loading="verifying"
-          @click="startVerification"
-        />
-      </div>
-    </template>
-  </Dialog>
+  <!-- a number of another operator's, verified to be shown on calls -->
+  <VerifyNumberDialog
+    v-model="showVerify"
+    :numero-iniziale="daRiverificare.phone_number"
+    :nome-iniziale="daRiverificare.label"
+    @changed="callerIds.reload()"
+  />
 </template>
 
 <script setup>
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
+import VerifyNumberDialog from '@/components/Settings/Telephony/VerifyNumberDialog.vue'
 import { globalStore } from '@/stores/global'
 import {
+  NON_VERIFICATO,
+  IN_ATTESA,
+  numeroItaliano,
+  statoDellaVerifica,
+} from '@/utils/verificati'
+import {
   Badge,
-  Dialog,
   ErrorMessage,
   FormControl,
   LoadingIndicator,
@@ -237,10 +246,32 @@ const { $dialog } = globalStore()
 const syncing = ref(false)
 const error = ref('')
 const showVerify = ref(false)
-const verifying = ref(false)
-const verifyError = ref('')
-const verification = ref(null)
-const verifyForm = reactive({ phone_number: '', label: '' })
+const daRiverificare = reactive({ phone_number: '', label: '' })
+
+const VERIFICATO = 'Verified Caller ID'
+
+// a verified number's state; one of before the states, verified and on
+function verifica(row) {
+  if (row.source !== VERIFICATO) return null
+  return statoDellaVerifica(
+    row.verification_status || (row.enabled ? 'Verified' : ''),
+  )
+}
+
+function daVerificare(row) {
+  return (
+    row.source === VERIFICATO &&
+    [IN_ATTESA, NON_VERIFICATO].includes(row.verification_status)
+  )
+}
+
+function incertoInItalia(row) {
+  return (
+    row.source === VERIFICATO &&
+    row.enabled &&
+    numeroItaliano(row.phone_number) === 'fisso'
+  )
+}
 
 const callerIds = createResource({
   url: 'crm.telephony.caller_ids.get_caller_ids',
@@ -248,8 +279,12 @@ const callerIds = createResource({
   auto: true,
 })
 
+// a verified number is shown on calls, and its calls ring elsewhere: by design
+const delConto = computed(() =>
+  (callerIds.data || []).filter((row) => row.source !== VERIFICATO),
+)
 const unreachable = computed(() =>
-  (callerIds.data || []).filter((row) => !row.routes_to_crm),
+  delConto.value.filter((row) => !row.routes_to_crm),
 )
 
 async function refresh() {
@@ -328,27 +363,50 @@ async function rilascia(row) {
   }
 }
 
-function openVerify() {
-  verification.value = null
-  verifyError.value = ''
-  verifyForm.phone_number = ''
-  verifyForm.label = ''
+function openVerify(row = null) {
+  daRiverificare.phone_number = row?.phone_number || ''
+  daRiverificare.label = row?.label || ''
   showVerify.value = true
 }
 
-async function startVerification() {
-  verifying.value = true
-  verifyError.value = ''
+// a verified number out of Twilio: not shown on calls any more
+function chiediDiTogliere(row) {
+  $dialog({
+    title: __('Remove {0} from Twilio?', [row.phone_number]),
+    message: __(
+      'It is not shown on calls any more. Calls to it keep ringing where they ring now; to show it again, verify it again.',
+    ),
+    actions: [
+      {
+        label: __('Remove'),
+        variant: 'solid',
+        theme: 'red',
+        onClick: (chiudi) => {
+          chiudi()
+          togli(row)
+        },
+      },
+    ],
+  })
+}
+
+async function togli(row) {
   try {
-    verification.value = await call('crm.telephony.caller_ids.verify_number', {
-      phone_number: verifyForm.phone_number,
-      label: verifyForm.label || null,
+    const esito = await call('crm.telephony.verificati.remove_verified', {
+      phone_number: row.phone_number,
     })
+    toast.success(__('{0} is removed from Twilio', [row.phone_number]))
+    if (esito.lines) {
+      toast.warning(
+        __(
+          '{0} people had it as their own line: give them another in the phone’s settings.',
+          [esito.lines],
+        ),
+      )
+    }
+    callerIds.reload()
   } catch (e) {
-    verifyError.value =
-      e.messages?.[0] || __('Could not start the verification')
-  } finally {
-    verifying.value = false
+    toast.error(e.messages?.[0] || __('Could not remove the number'))
   }
 }
 </script>

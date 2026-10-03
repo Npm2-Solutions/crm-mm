@@ -772,12 +772,19 @@
     v-model="trasloco"
     :del-centro="stato.owner === 'Centre'"
     @moved="connessione.reload()"
+    @verifica="verificaUnNumero"
+  />
+  <VerifyNumberDialog
+    v-if="verifica"
+    v-model="verifica"
+    @changed="connessione.reload()"
   />
 </template>
 <script setup>
 import SceltaRadio from '@/components/Settings/Invoicing/SceltaRadio.vue'
 import MoveNumberDialog from '@/components/Settings/Telephony/MoveNumberDialog.vue'
 import NewNumberDialog from '@/components/Settings/Telephony/NewNumberDialog.vue'
+import VerifyNumberDialog from '@/components/Settings/Telephony/VerifyNumberDialog.vue'
 import { setEnabled } from '@/composables/telephony'
 import { useDocument } from '@/data/document'
 import { globalStore } from '@/stores/global'
@@ -1009,6 +1016,13 @@ const richieste = computed(() => offerta.data?.requests || [])
 const nuovo = reactive({ aperto: false, richiesta: null })
 // a number the centre already has, moved in or forwarded (doc 52)
 const trasloco = ref(false)
+// or kept with its operator and verified, to be shown on calls
+const verifica = ref(false)
+
+function verificaUnNumero() {
+  trasloco.value = false
+  verifica.value = true
+}
 
 function apriNuovo(richiesta = null) {
   nuovo.richiesta = richiesta
