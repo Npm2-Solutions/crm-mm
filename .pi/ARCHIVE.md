@@ -2167,3 +2167,25 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Un modulo congelato su parole nostre in un'altra lingua ha una nuova versione, chiesta a nessuno | Chi ha già firmato ha firmato quelle parole, e la sua firma resta valida; la bozza non si pubblica di nascosto |
 | Le librerie si ricaricano quando cambia la lingua (la lingua è nell'impronta salvata), e cambiano solo le parole della libreria | Esercizi e alimenti caricati in inglese tornano in italiano senza toccare quello che il centro ha scritto |
 | Le pipeline nascono nella stessa lingua; quelle già create in inglese si leggono in italiano dal catalogo | Rinominare le fasi vorrebbe dire rinominare documenti a cui puntano le trattative |
+
+## Il telefono come un'app: fogli, «Altro», impostazioni, liste
+
+> **Completato** (03/10/2026). Un giro di prova ha toccato su un telefono ogni
+> pulsante, menu e dialogo (doc 29, terza parte): restavano dialoghi centrati da
+> finestra, menu da mouse, campi che fanno ingrandire iOS, pulsanti da 28px, il
+> «Altro» che apriva la barra del computer in un cassetto, le impostazioni con lo
+> stesso titolo tre volte, e il menu «Lista» dell'agenda sopra il pannello
+> dell'appuntamento.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| I fogli, i fogli di azioni, i campi, gli anelli al tocco e gli avvisi si fanno in un foglio di stile solo (`telefono.css`), sul markup di frappe-ui | Ogni schermata li prende insieme, comprese quelle che verranno: correggere dialogo per dialogo ne avrebbe lasciati fuori |
+| «Altro» è una pagina (`/altro`), non un cassetto | Una pagina si scorre, ha il suo indietro, ha spazio per righe da pollice; il cassetto era la barra del computer stretta a 260px |
+| Le voci dell'account sono dati (`vociAccount.js`), disegnate come menu sul computer e come righe sul telefono | Le stesse voci, nello stesso ordine del centro, senza due copie da tenere allineate |
+| Nelle impostazioni del telefono la barra dice dove torna, la pagina dice dov'è | Come la barra di un'app: il titolo della pagina una volta sola, non nella barra, nella pagina e nella scheda |
+| Aziende, contatti e chiamate hanno le loro liste del telefono, dal server in una chiamata | Erano le tabelle del computer a schede con etichette; sono liste che si aprono dal menu, dalla scheda di un'azienda, dal telefono |
+| Sul telefono l'agenda non ha la settimana | Sette colonne da 45px non mostrano né un nome né un'ora |
+| Nelle liste del telefono le caselle compaiono tenendo premuta una riga | È il gesto delle liste di un telefono; le caselle sempre lì facevano aprire o scegliere per sbaglio |
+| Un centro senza valuta conta in euro | Il ripiego era il dollaro del framework: «$ 0.00» nel modulo di un'azienda italiana |
