@@ -68,6 +68,7 @@
               :appointment="appointment"
               :participant="participant"
               :canMark="appointment.can_mark"
+              :past="giornoPassato"
               :now="now"
               @changed="day.reload()"
             />
@@ -136,6 +137,7 @@
                 :appointment="appointment"
                 :participant="participant"
                 :canMark="appointment.can_mark"
+                :past="giornoPassato"
                 :now="now"
                 @changed="day.reload()"
               />
@@ -183,6 +185,7 @@
                 :appointment="appointment"
                 :participant="{ ...participant }"
                 :canMark="appointment.can_mark"
+                :past="true"
                 :now="now"
                 @changed="day.reload()"
               />
@@ -295,6 +298,10 @@ const stats = computed(() => {
 })
 
 const isToday = computed(() => !date.value || date.value === day.data?.today)
+// a day gone by asks whether they came, never to check them in
+const giornoPassato = computed(() =>
+  Boolean(date.value && day.data?.today && date.value < day.data.today),
+)
 const dayLabel = computed(() =>
   isToday.value
     ? __('Today')

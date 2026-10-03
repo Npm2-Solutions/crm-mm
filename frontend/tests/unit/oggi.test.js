@@ -3,6 +3,7 @@ import {
   firstOfPast,
   NEXT,
   byDay,
+  prossimiEsiti,
   shiftDay,
   minutesWaiting,
   summarize,
@@ -74,6 +75,14 @@ describe('the day', () => {
     expect(NEXT.Booked[0]).toBe('Arrived')
     expect(NEXT.Arrived).toEqual(['Attended', 'Booked'])
     expect(NEXT['No Show']).toEqual(['Booked'])
+  })
+
+  it('asks a day gone by whether they came, never to check them in', () => {
+    expect(prossimiEsiti('Booked')).toEqual(['Arrived', 'No Show'])
+    expect(prossimiEsiti('Booked', true)).toEqual(['Attended', 'No Show'])
+    // what was said is undone the same way, today or days later
+    expect(prossimiEsiti('No Show', true)).toEqual(['Booked'])
+    expect(prossimiEsiti('Unknown')).toEqual([])
   })
 
   it('groups the days left open, the latest first', () => {
