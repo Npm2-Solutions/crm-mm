@@ -8,12 +8,14 @@ and the words of the consents it records, and never changes.
 """
 
 import json
+from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, nowdate
 
-from crm.moduli import consensi, modelli
+from crm import lingue
+from crm.moduli import consensi, modelli, registro
 from crm.moduli import schema as S
 from crm.permissions import livelli, utenti
 
@@ -183,6 +185,80 @@ class LaPubblicazione(ModelliCase):
 		nome = self.bozza(enabled=0)["name"]
 		with self.assertRaises(frappe.ValidationError):
 			modelli.publish_template(nome)
+
+
+class LaLinguaDelCentro(ModelliCase):
+	"""A site set up in English gave its consents English words, and a form froze
+	them. DottorCloud's words follow the centre's language, and the form gets a new
+	version with them, asked of nobody; the words a centre wrote stay its own."""
+
+	def setUp(self):
+		super().setUp()
+		# the centre's language, whatever the bench running the tests was set up in
+		self.enterContext(patch.object(lingue, "del_centro", return_value="it"))
+
+	def in_inglese(self):
+		"""The site spoke English when its consents were made and its forms published."""
+		return patch.object(lingue, "del_centro", return_value="en")
+
+	def parole(self, chiave):
+		return frappe.db.get_value(consensi.TIPO, chiave, ["text", "text_version"], as_dict=True)
+
+	def test_le_parole_di_dottorcloud_seguono_la_lingua(self):
+		with self.in_inglese():
+			consensi.assicura_tipi()
+		inglese = self.parole("marketing")
+		self.assertEqual(inglese.text, registro.tipo("marketing").testi["en"])
+		consensi.assicura_tipi()
+		italiano = self.parole("marketing")
+		self.assertEqual(italiano.text, registro.tipo("marketing").testi["it"])
+		# other words are another version of the consent
+		self.assertEqual(italiano.text_version, inglese.text_version + 1)
+
+	def test_le_parole_del_centro_restano_sue(self):
+		consensi.save_consent_type("marketing", text="Newsletter and offers: yes, please.")
+		with self.in_inglese():
+			consensi.assicura_tipi()
+		consensi.assicura_tipi()
+		self.assertEqual(self.parole("marketing").text, "Newsletter and offers: yes, please.")
+
+	def test_un_modulo_congelato_in_inglese_ha_una_versione_in_italiano(self):
+		with self.in_inglese():
+			consensi.assicura_tipi()
+			nome = self.bozza()["name"]
+			modelli.publish_template(nome)
+		# the draft holds a change not published yet: it is not the renewal's to publish
+		cambiato = json.loads(json.dumps(PRIVACY))
+		cambiato["sections"][0]["fields"][0]["text"] = "How we use your data, and for how long."
+		modelli.save_template(name=nome, schema=json.dumps(cambiato))
+
+		consensi.assicura_tipi()
+		nuove = modelli.consensi_nella_lingua_del_centro()
+		versione = modelli.get_version(modelli.get_template(nome)["current_version"])
+		self.assertIn(versione["name"], nuove)
+		self.assertEqual(versione["version"], 2)
+		self.assertFalse(versione["asked_from"])
+		campi = {c["id"]: c for c in S.campi(versione["schema"])}
+		self.assertEqual(campi["marketing"]["text"], registro.tipo("marketing").testi["it"])
+		self.assertEqual(campi["read"]["text"], registro.tipo("privacy_notice").testi["it"])
+		self.assertEqual(campi["notice"]["text"], "How we use your data.")
+		self.assertEqual(versione["schema_hash"], S.impronta(versione["schema"]))
+		# once is enough
+		self.assertNotIn(versione["name"], modelli.consensi_nella_lingua_del_centro())
+
+	def test_un_modulo_con_le_parole_del_centro_non_si_tocca(self):
+		consensi.save_consent_type("marketing", text="Newsletter and offers: yes, please.")
+		with self.in_inglese():
+			consensi.assicura_tipi()
+			nome = self.bozza()["name"]
+			modelli.publish_template(nome)
+		consensi.assicura_tipi()
+		modelli.consensi_nella_lingua_del_centro()
+		# the privacy notice was DottorCloud's: that one is renewed, the marketing words stay
+		versione = modelli.get_version(modelli.get_template(nome)["current_version"])
+		campi = {c["id"]: c for c in S.campi(versione["schema"])}
+		self.assertEqual(campi["marketing"]["text"], "Newsletter and offers: yes, please.")
+		self.assertEqual(campi["read"]["text"], registro.tipo("privacy_notice").testi["it"])
 
 
 class IlDatoClinico(ModelliCase):

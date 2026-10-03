@@ -57,6 +57,16 @@ class TipiTest(UnitTestCase):
 		self.assertEqual(r.testo_per_lingua(tipo, "de"), "Acconsento")
 		self.assertEqual(r.testo_per_lingua(tipo, None), "Acconsento")
 
+	def test_si_traducono_solo_le_parole_di_dottorcloud(self):
+		tipo = r.TipoConsenso("prova", "Prova", testi={"it": "Acconsento.", "en": "I agree."})
+		self.assertEqual(r.testo_da_tradurre(tipo, "I agree.", "it"), "Acconsento.")
+		self.assertEqual(r.testo_da_tradurre(tipo, " I agree. ", "it"), "Acconsento.")
+		# already in the language, or words the centre wrote: nothing to do
+		self.assertIsNone(r.testo_da_tradurre(tipo, "Acconsento.", "it"))
+		self.assertIsNone(r.testo_da_tradurre(tipo, "I agree, says our lawyer.", "it"))
+		# a language nothing was shipped in leaves the words where they are
+		self.assertIsNone(r.testo_da_tradurre(tipo, "I agree.", "de"))
+
 	def test_una_natura_che_non_esiste_non_si_registra(self):
 		with self.assertRaises(ValueError):
 			r.registra_tipo(r.TipoConsenso("prova", "Prova", natura="Maybe"))

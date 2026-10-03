@@ -571,23 +571,28 @@ def pubblica(modello, notes: str | None = None, asked_from: str | None = None):
 			frappe.throw(_("Nothing changed since version {0}").format(modello.current_version_number))
 	if asked_from and getdate(asked_from) < getdate():
 		frappe.throw(_("A form is asked again from today on, not from the past"))
+	return _nuova_versione(modello, modello, bozza, notes, asked_from)
 
+
+def _nuova_versione(modello, fonte, schema: dict, notes: str | None = None, asked_from: str | None = None):
+	"""The template's next version: ``schema`` frozen with its hash, the title, use
+	and marks of ``fonte`` - the draft being published, or the version renewed."""
 	numero = cint(modello.current_version_number) + 1
 	versione = frappe.get_doc(
 		{
 			"doctype": VERSIONE,
 			"template": modello.name,
 			"version": numero,
-			"title": modello.title,
-			"use": modello.use,
-			"clinical": modello.clinical,
-			"specialty": modello.specialty,
+			"title": fonte.title,
+			"use": fonte.use,
+			"clinical": fonte.clinical,
+			"specialty": fonte.specialty,
 			"published_on": now_datetime(),
 			"published_by": frappe.session.user,
 			"asked_from": asked_from or None,
 			"notes": notes,
-			"schema": json.dumps(bozza, ensure_ascii=False),
-			"schema_hash": S.impronta(bozza),
+			"schema": json.dumps(schema, ensure_ascii=False),
+			"schema_hash": S.impronta(schema),
 		}
 	).insert(ignore_permissions=True)
 	modello.db_set(
@@ -598,6 +603,45 @@ def pubblica(modello, notes: str | None = None, asked_from: str | None = None):
 		}
 	)
 	return versione
+
+
+def consensi_nella_lingua_del_centro() -> list[str]:
+	"""A new version of every form whose consents were frozen on DottorCloud's words
+	in another language than the centre's, with the register's words of today: a
+	site set up in English froze its first forms in English. The draft is not
+	touched, nobody who signed before is asked again, and words a centre wrote are
+	never replaced. Returns the new versions."""
+	from frappe.translate import print_language
+
+	from crm import lingue
+	from crm.moduli import consensi, registro
+
+	lingua = lingue.del_centro()
+	oggi = {
+		riga.name: riga for riga in frappe.get_all(consensi.TIPO, fields=["name", "text", "text_version"])
+	}
+	nuove = []
+	for riga in frappe.get_all(
+		MODELLO, filters={"current_version": ("is", "set")}, fields=["name", "current_version"]
+	):
+		versione = frappe.get_doc(VERSIONE, riga.current_version)
+		schema = carica_schema(versione.schema)
+		rinnovata = False
+		for campo in S.campi(schema):
+			tipo = registro.tipo(campo.get("consent_type")) if campo.get("type") == "consent" else None
+			adesso = oggi.get(tipo.chiave) if tipo else None
+			tradotto = tipo and registro.testo_da_tradurre(tipo, campo.get("text"), lingua)
+			# only when the register gives the very words the form should have had
+			if not (adesso and tradotto and tradotto.strip() == (adesso.text or "").strip()):
+				continue
+			campo["text"] = adesso.text
+			campo["text_version"] = cint(adesso.text_version) or 1
+			rinnovata = True
+		if rinnovata:
+			with print_language(lingua):
+				nota = _("The consents in the centre's language")
+			nuove.append(_nuova_versione(frappe.get_doc(MODELLO, riga.name), versione, schema, nota).name)
+	return nuove
 
 
 def indirizzo_libero(base: str) -> str:

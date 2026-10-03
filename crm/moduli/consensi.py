@@ -18,6 +18,7 @@ import frappe
 from frappe import _
 from frappe.utils import now_datetime
 
+from crm import lingue
 from crm.moduli import registro
 from crm.permissions import livelli, org_hierarchy
 
@@ -41,17 +42,22 @@ _CAMPI_RIGA = (
 
 
 def assicura_tipi() -> None:
-	"""Create the registered kinds that are not there yet, in the site's language.
+	"""Create the registered kinds that are not there yet, and give the ones still on
+	DottorCloud's words those of the centre's language.
 
-	Never touches one that exists: its text is the centre's, checked by whoever
-	answers for privacy there, and a migration must not put the shipped one back.
+	Never touches a text the centre wrote: it is checked by whoever answers for
+	privacy there, and a migration must not put the shipped one back. The shipped
+	words follow the language, though: a site set up in English before DottorCloud
+	came gave its kinds English words, and an Italian centre's people must not read
+	words nobody chose. A new text is a new version of it (`CRM Consent Type`).
 	"""
 	from crm.registrazione import carica
 
 	carica()
-	lingua = frappe.db.get_single_value("System Settings", "language")
+	lingua = lingue.del_centro()
 	for tipo in registro.tipi():
 		if frappe.db.exists(TIPO, tipo.chiave):
+			_nella_lingua(tipo, lingua)
 			continue
 		frappe.get_doc(
 			{
@@ -66,6 +72,20 @@ def assicura_tipi() -> None:
 				"enabled": 1,
 			}
 		).insert(ignore_permissions=True)
+
+
+def _nella_lingua(tipo, lingua: str) -> None:
+	nuovo = registro.testo_da_tradurre(tipo, frappe.db.get_value(TIPO, tipo.chiave, "text"), lingua)
+	if nuovo:
+		doc = frappe.get_doc(TIPO, tipo.chiave)
+		doc.text = nuovo
+		doc.save(ignore_permissions=True)
+
+
+def dopo_la_configurazione(_args=None) -> None:
+	"""The setup wizard chose the site's language and country: the consents'
+	shipped words follow them, before any form is published on them."""
+	assicura_tipi()
 
 
 def _nel_piano(tipi: list[dict]) -> list[dict]:
