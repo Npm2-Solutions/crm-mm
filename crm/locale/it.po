@@ -42078,3 +42078,7 @@ msgstr "Qui compaiono le cose da fare su questa scheda."
 #: frontend/src/components/Activities/Activities.vue
 msgid "The files attached to this record appear here."
 msgstr "Qui compaiono i file allegati a questa scheda."
+
+#: frontend/src/components/Modals/CallLogDetailModal.vue
+msgid "Nobody answered"
+msgstr "Nessuno ha risposto"

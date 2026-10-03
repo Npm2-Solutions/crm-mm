@@ -28,6 +28,12 @@ describe('getCallStatusLabel', () => {
     expect(getCallStatusLabel('No Answer', undefined)).toBe('No Answer')
   })
 
+  it('reads an incoming call the caller dropped first as missed, as the list does', () => {
+    expect(getCallStatusLabel('Canceled', 'Incoming')).toBe('Missed Call')
+    expect(getCallStatusLabel('Busy', 'Incoming')).toBe('Missed Call')
+    expect(getCallStatusLabel('Canceled', 'Outgoing')).toBe('Canceled')
+  })
+
   it('leaves other statuses unaffected by call type', () => {
     expect(getCallStatusLabel('Completed', 'Incoming')).toBe('Completed')
     expect(getCallStatusLabel('Completed', 'Outgoing')).toBe('Completed')

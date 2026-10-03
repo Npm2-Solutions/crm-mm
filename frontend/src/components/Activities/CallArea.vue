@@ -120,7 +120,7 @@
         <Badge
           v-else
           :label="getCallStatusLabel(call.status, call.type)"
-          :theme="statusColorMap[call.status]"
+          :theme="getCallStatusColor(call.status, call.type)"
         />
       </div>
       <div
@@ -150,7 +150,7 @@ import InProgressBadge from '@/components/Espresso/InProgressBadge.vue'
 import AudioPlayer from '@/components/Activities/AudioPlayer.vue'
 import CallLogDetailModal from '@/components/Modals/CallLogDetailModal.vue'
 import TimelineTimestamp from '@/components/Activities/TimelineTimestamp.vue'
-import { getCallStatusLabel, statusColorMap } from '@/utils/callLog.js'
+import { getCallStatusColor, getCallStatusLabel } from '@/utils/callLog.js'
 import { formatDate } from '@/utils'
 import { Avatar, Badge, createResource } from 'frappe-ui'
 import { computed, reactive, ref } from 'vue'
