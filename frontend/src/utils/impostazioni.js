@@ -349,6 +349,10 @@ export const MENU = [
         key: 'Telephony',
         label: 'Telephony',
         description: 'The lines {brand} calls and answers on.',
+        // one's own line is for whoever calls, the centre's lines for whoever
+        // sets them up: the others found a title over an empty page
+        condition: (c) =>
+          c.puo('telefono.chiama') || c.puo('telefono.configura'),
       },
       {
         key: 'Call Scripts',

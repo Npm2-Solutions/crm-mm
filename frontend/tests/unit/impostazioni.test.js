@@ -9,8 +9,16 @@ import { MENU, menuDi, pagine, schedaDi, trova } from '@/utils/impostazioni'
 // what each level may do, as crm/permissions/catalogo.py gives it with every
 // module of the plan on (`calcola`)
 const LIVELLI = {
-  segreteria: { 'agenda.turni': 'centro', 'google_calendar.proprio': 'centro' },
-  operatore: { 'agenda.turni': 'suoi', 'google_calendar.proprio': 'centro' },
+  segreteria: {
+    'agenda.turni': 'centro',
+    'google_calendar.proprio': 'centro',
+    'telefono.chiama': 'centro',
+  },
+  operatore: {
+    'agenda.turni': 'suoi',
+    'google_calendar.proprio': 'centro',
+    'telefono.chiama': 'centro',
+  },
   marketing: {
     'modelli_messaggio.gestisci': 'centro',
     'moduli_lead.gestisci': 'centro',
@@ -36,7 +44,9 @@ const LIVELLI = {
 const DEL_MANAGER = [
   'impostazioni.generali',
   'pipeline.configura',
+  'telefono.chiama',
   'telefono.copioni_scrivi',
+  'telefono.configura',
   'utenti.gestisci',
   'gerarchia.gestisci',
   'piano.vedi',
@@ -156,7 +166,6 @@ describe('the settings menu, by who reads it', () => {
       'Clients: Forms',
       'Email: Templates',
       'WhatsApp: Templates',
-      'Phone: Telephony',
       'Marketing: Website, Social Planner, Tracking [Lead tracking · Tracked links]',
       'Integrations: Meta',
     ])
@@ -165,13 +174,11 @@ describe('the settings menu, by who reads it', () => {
   it('shows accounting the invoicing, and the medical director the forms and the libraries', () => {
     expect(comeSiLegge(menuDi(sessione('amministrazione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
-      'Phone: Telephony',
       'Invoicing: Issuing company, Services & providers [Billable services · Providers · Qualifications], Test and go live, Options',
     ])
     expect(comeSiLegge(menuDi(sessione('direzione')))).toEqual([
       'Your account: Profile, Preferences, Notifications, Google Calendar',
       'Clients: Forms, Libraries [Exercises · Foods]',
-      'Phone: Telephony',
       'Integrations: Assistant',
     ])
   })
