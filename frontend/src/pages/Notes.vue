@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the notes are a list of their own, found by typing their title or
+  their words (components/Mobile/ElencoNote.vue), and «+» writes one.
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -5,7 +11,7 @@
     </template>
     <template #right-header>
       <Button
-        v-if="puo('note.scrivi')"
+        v-if="!isMobileView && puo('note.scrivi')"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -13,7 +19,17 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: the notes found by typing, one line each -->
+  <template v-if="isMobileView">
+    <ElencoNote ref="elencoNote" @apri="editNote" />
+    <PulsanteAggiungi
+      v-if="puo('note.scrivi')"
+      :label="__('New note')"
+      @click="createNote"
+    />
+  </template>
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="notes"
     v-model:loadMore="loadMore"
@@ -24,7 +40,7 @@
       defaultViewName: __('Notes View'),
     }"
   />
-  <div class="flex-1 overflow-y-auto">
+  <div v-if="!isMobileView" class="flex-1 overflow-y-auto">
     <div
       v-if="notes.data?.data?.length"
       class="grid grid-cols-1 gap-2 px-3 pb-2 sm:grid-cols-4 sm:gap-4 sm:px-5 sm:pb-3"
@@ -86,7 +102,7 @@
     </div>
   </div>
   <ListFooter
-    v-if="notes.data?.data?.length"
+    v-if="!isMobileView && notes.data?.data?.length"
     v-model="notes.data.page_length_count"
     class="border-t px-3 py-2 sm:px-5"
     :options="{
@@ -95,7 +111,7 @@
     }"
     @loadMore="() => loadMore++"
   />
-  <EmptyState v-else name="Notes" :icon="NoteIcon" />
+  <EmptyState v-else-if="!isMobileView" name="Notes" :icon="NoteIcon" />
 </template>
 
 <script setup>
@@ -104,13 +120,16 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import ViewControls from '@/components/ViewControls.vue'
+import ElencoNote from '@/components/Mobile/ElencoNote.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { timeAgo, formatDate, sanitizeHTML } from '@/utils'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { call, Dropdown, Tooltip, ListFooter } from 'frappe-ui'
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 const { getUser, puo } = usersStore()
 const { capture } = useTelemetry()
@@ -121,6 +140,13 @@ const notes = ref({})
 const loadMore = ref(1)
 const updatedPageCount = ref(20)
 const viewControls = ref(null)
+const elencoNote = ref(null)
+
+// what was written shows again: the phone's list, or the desk's
+function ricarica() {
+  if (isMobileView.value) elencoNote.value?.ricarica()
+  else notes.value.reload()
+}
 
 watch(
   () => notes.value?.data?.page_length_count,
@@ -133,11 +159,11 @@ watch(
 
 const noteCallbacks = {
   afterInsert: () => {
-    notes.value.reload()
+    ricarica()
     capture('note_created')
   },
   afterUpdate: () => {
-    notes.value.reload()
+    ricarica()
     capture('note_updated')
   },
 }
@@ -164,8 +190,20 @@ async function deleteNote(name) {
     doctype: 'FCRM Note',
     name,
   })
-  notes.value.reload()
+  ricarica()
 }
+
+// a link that names a note (a notification, a mention) opens it; on a phone
+// the list does not hold every note, the note is opened by its name
+onMounted(() => {
+  if (!isMobileView.value) return
+  const searchParams = new URLSearchParams(window.location.search)
+  const noteName = searchParams.get('open')
+  if (!noteName) return
+  editNote(noteName)
+  searchParams.delete('open')
+  window.history.replaceState(null, '', window.location.pathname)
+})
 
 const openNoteFromURL = () => {
   const searchParams = new URLSearchParams(window.location.search)

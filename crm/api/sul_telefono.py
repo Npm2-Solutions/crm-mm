@@ -23,12 +23,16 @@ email and phone come masked to whoever may not read them.
 - **Calls**: the register, the latest first, with whom each was (the person, else
   the number), which way, whether nobody took it; found by a name or a number
   written any way.
+- **Notes**: the latest written first, found by their title or their words, each
+  with its first words as plain text and the person or deal it is about.
 """
 
 from __future__ import annotations
 
+import re
+
 import frappe
-from frappe.utils import cint, now_datetime
+from frappe.utils import cint, now_datetime, strip_html
 
 from crm.permissions import livelli
 from crm.telephony.pannello import persa
@@ -405,4 +409,48 @@ def get_calls(text: str | None = None, start: int = 0) -> dict:
 		)
 		for r in pagina["rows"]
 	]
+	return pagina
+
+
+# ------------------------------------------------------------------ notes
+
+#: How much of a note its line on the phone shows.
+INIZIO_DELLA_NOTA = 160
+
+
+#: Where one block of a note ends and the next begins: a space, or the last
+#: word of a line runs into the first of the next.
+FINE_DEL_BLOCCO = re.compile(r"<br\s*/?>|</(?:p|div|li|h[1-6]|blockquote)>", re.IGNORECASE)
+
+
+def _inizio(contenuto: str | None) -> str:
+	"""A note's words as plain text, on one line."""
+	return " ".join(strip_html(FINE_DEL_BLOCCO.sub(" ", contenuto or "")).split())
+
+
+@frappe.whitelist()
+def get_notes(text: str | None = None, start: int = 0) -> dict:
+	"""The notes the session reads, the latest written first; found by their
+	title or their words; each with its first words as plain text and the name
+	of the person or deal it is about."""
+	livelli.verifica_nel_crm("note.vedi")
+	start = max(cint(start), 0)
+	testo = (text or "").strip()
+	o_filtri = None
+	if testo:
+		simile = f"%{testo}%"
+		o_filtri = [["title", "like", simile], ["content", "like", simile]]
+	righe = frappe.get_list(
+		"FCRM Note",
+		or_filters=o_filtri,
+		fields=["name", "title", "content", "owner", "modified", "reference_doctype", "reference_docname"],
+		order_by="modified desc",
+		offset=start,
+		limit=PER_PAGINA + 1,
+	)
+	pagina = _pagina(righe, start)
+	nomi = _nomi_dei_riferimenti(pagina["rows"])
+	for riga in pagina["rows"]:
+		riga["reference_title"] = nomi.get((riga.reference_doctype, riga.reference_docname), "")
+		riga["content"] = _inizio(riga.content)[:INIZIO_DELLA_NOTA]
 	return pagina

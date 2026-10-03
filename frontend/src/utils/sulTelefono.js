@@ -294,3 +294,13 @@ export function durataDellaChiamata(secondi) {
     ? `${ore}:${String(minuti).padStart(2, '0')}:${resto}`
     : `${minuti}:${resto}`
 }
+
+// ------------------------------------------------------------------ notes
+
+/**
+ * The line under a note's words: who wrote it, about whom, when - what of it is
+ * known, `Anna Bianchi · Laura Rossi · 2 ore fa`.
+ */
+export function rigaDellaNota(nota = {}, { autore = '', quando = '' } = {}) {
+  return [autore, nota.reference_title, quando].filter(Boolean).join(' · ')
+}
