@@ -173,8 +173,8 @@ is never a menu entry.
 ### The phone's own screens (docs/progetto-ghl/29, second part)
 | File | Role |
 |---|---|
-| `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number — tested in `crm/tests/test_sul_telefono.py` |
-| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More), `PulsanteAggiungi` (the page's «+») |
+| `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals; contacts; companies with their deals; the register of calls by a name or a number; notes by their title or words, their first words in plain text — tested in `crm/tests/test_sul_telefono.py` |
+| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoContatti`, `ElencoAziende`, `ElencoChiamate`, `ElencoNote`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More), `PulsanteAggiungi` (the page's «+»), `DescrizioneRipiegata` (a tab's explaining line, two lines and «Show more») |
 | `frontend/src/pages/Altro.vue` + `composables/vociAccount.js`, `visteSalvate.js` | The phone's «More» page (`/altro`): the profile, the notifications, the menu entries the bar has no room for, the saved views, the first steps, the account's entries the sidebar's dropdown draws too |
 | `frontend/src/telefono.css` | What every screen shares on a phone, found by frappe-ui's markup: a dialog is a sheet from the bottom (grabber, title and actions that stay), a menu or a select's list a sheet of 48px rows, a field 16px and 40px tall (iOS zooms under 16px), small controls a touch ring, a form's full-width action 44px, a toast above the bar |
 | `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls — tested |
@@ -530,7 +530,9 @@ frappe-ui's components with its variables, the brand's action colour for what on
 acts with (`--brand-action`, never the darkest gray), `--brand-segno` for a mark
 that is not under words (progress), a required field's mark `segno-obbligatorio`.
 A new mark of the brand goes in `espresso.css`, for every screen at once, never as
-one screen's colours.
+one screen's colours. A token it sets for the light theme gets its value in the
+dark block too: `:root[data-marchio]` weighs more than frappe-ui's
+`[data-theme=dark]`, so without one the light colour stays on the dark.
 An element whose tag is chosen while drawing is `ElementoNativo`
 (`components/ElementoNativo.js`), never `<component :is="'button'">`: Vue resolves
 the name to frappe-ui's Button, registered for the whole app, and the card becomes
@@ -618,6 +620,13 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   (`v-show`), or the covered page's positioned controls are drawn over it.
 - An icon given by name to frappe-ui is Feather's (`crm/fcrm/feather_icons.json`)
   or `lucide-…`: any other name draws an empty circle.
+- A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
+  setting's words above, its field under them as wide as the screen, a switch
+  beside its words; a page's save bar is the screen's bar, its button as wide
+  as it. A page's fields wait for the settings they read (`v-if="settings.doc"`).
+- Text never wears the palest inks (`ink-*-4`): warnings take the 7th step.
+- A table one writes in (a quote's rows) is a card per row on a phone; a table
+  one only reads keeps its columns and scrolls sideways.
 
 ---
 

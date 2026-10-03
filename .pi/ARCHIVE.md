@@ -2189,3 +2189,28 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Sul telefono l'agenda non ha la settimana | Sette colonne da 45px non mostrano né un nome né un'ora |
 | Nelle liste del telefono le caselle compaiono tenendo premuta una riga | È il gesto delle liste di un telefono; le caselle sempre lì facevano aprire o scegliere per sbaglio |
 | Un centro senza valuta conta in euro | Il ripiego era il dollaro del framework: «$ 0.00» nel modulo di un'azienda italiana |
+
+## Il telefono, pagina per pagina: impostazioni, fogli, note, parole
+
+> **Completato** (03/10/2026). Un secondo giro ha aperto una per una le pagine
+> delle impostazioni, i fogli e le pagine rimaste sul telefono (doc 29, quarta
+> parte): impostazioni con riquadri che scorrevano dentro altri e campi da
+> 160px accanto a parole in colonna, pulsanti dei fogli che uscivano dallo
+> schermo, scelte in inglese, il titolo delle automazioni ridotto a «A..», le
+> note con la testata del computer.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Sul telefono una pagina delle impostazioni scorre tutta insieme (`data-pagina-impostazioni`), con regole di `telefono.css` e non pagina per pagina | Un riquadro che scorre dentro una pagina che scorre non si usa col pollice; le pagine sono più di cinquanta |
+| Le parole di un'impostazione sopra, il campo sotto, un interruttore accanto | Come le impostazioni del telefono stesso: accanto, il campo era una casella da 160px e le parole una colonna di tre parole a riga |
+| I pulsanti di un foglio sono larghi uguali, ma mai più stretti delle loro parole: allora vanno a capo (`flex: 1 0 0` con `min-width: max-content`) | Divisi in parti uguali senza minimo, quattro pulsanti tagliavano «Salva la bozza»; uno per riga sarebbe stato troppo alto; larghi quanto le parole, «Annulla» e «Crea» erano due pulsanti diversi |
+| Le note hanno la loro lista del telefono (`get_notes`) | Era la griglia del computer con la scelta della vista, «Crea» e i filtri in una testata da 390px |
+| Il valore di una scelta si traduce quando si mostra, il valore salvato resta | Lo stato di una chiamata e la priorità di una cosa da fare arrivavano in inglese; tradurli nei dati avrebbe rotto filtri e automazioni |
+| Il motivo di una proposta non partita si traduce quando si legge | Lo scrive anche un processo in background, che lavora in inglese |
+| La scritta di una bozza dell'assistente è nella lingua del centro | La legge il paziente nei messaggi, non chi l'ha controllata |
+| Una prenotazione dalle pagine del centro senza visita tracciata è traffico diretto, e una patch corregge le vecchie | «Terze parti» è il canale delle piattaforme: la pagina del centro è sua |
+| Sul tema scuro gli stati (`ink-amber-8`, `ink-red-8`, `ink-green-8`) hanno i colori che il design system disegna sullo scuro | Le regole del chiaro (`:root[data-marchio]`) pesano più di quelle scure di frappe-ui (`[data-theme=dark]`): senza un valore scuro loro, «In attesa» e «Non venuti» restavano scuri su scuro |
+| Sul telefono le righe di un preventivo sono schede | Una tabella che scorre di lato si può leggere, non scrivere: il prezzo restava fuori dallo schermo mentre lo si scriveva |
+| Il nome di un campo dentro una frase va in minuscolo, tranne le sigle, le abbreviazioni e i nomi con una maiuscola dentro (`in_frase`) | «Aggiungi Sito web…» aveva la maiuscola a metà frase; «IVA», «N.» e «WhatsApp» restano come sono scritti |

@@ -245,6 +245,46 @@ sono di Lucide; automazioni e post social hanno le loro (prima il fulmine delle
 trattative e la freccia di un link esterno). Un centro che non ha scelto una
 valuta conta in euro, non in dollari.
 
+## Quarta parte: ogni pagina, ogni foglio (03/10/2026)
+
+Un secondo giro ha aperto una per una le pagine delle impostazioni, i fogli e
+le pagine rimaste, sul telefono di 390 punti; quello che si è visto è stato
+corretto per tutte le schermate insieme quando la causa era comune.
+
+| Dove | Sul telefono |
+|---|---|
+| Impostazioni | Una pagina scorre tutta insieme, senza riquadri che scorrono dentro altri. Le parole di un'impostazione stanno sopra e il suo campo sotto, largo quanto lo schermo; un interruttore resta accanto alle sue parole. Le tendine sono alte 40 e a 16px come i campi. La barra «Aggiorna» della fatturazione è quella dello schermo, col pulsante largo. Il tema mostra il segno senza il nome tagliato; chi fa cosa tiene stretta la colonna dei servizi, i nomi interi e i segni sotto; i formati, il livello di un utente sotto il suo indirizzo, i listini uno sotto l'altro, i segni sotto i nomi negli elenchi della fatturazione; gli elenchi vuoti hanno lo stato vuoto del design system. Nome e logo, Conversazioni e Calendario, aperte da un link, non vanno più in errore. |
+| La scheda di una persona | Il titolo della scheda non si ripete (lo dice già la barra), i pulsanti di eventi e cose da fare sono larghi quanto lo schermo, la riga che spiega una scheda si ferma a due righe con «Mostra altro» (`DescrizioneRipiegata`), l'avviso delle 24 ore di WhatsApp dice l'essenziale. |
+| I fogli | I pulsanti in fondo prendono la larghezza qualunque riga li contenga, larghi uguali, e vanno a capo invece di uscire dallo schermo (quattro, nel post social); un segnaposto vuoto che spingeva un pulsante a destra sparisce; un avviso sopra un foglio aperto arriva dall'alto. La barra di un editor va su due righe invece di tagliare gli ultimi pulsanti. Un evento ha i campi tutti alti uguali (i partecipanti, gli avvisi, il colore). Le righe di un preventivo sono schede: il servizio e la descrizione larghi quanto lo schermo, poi fase, prezzo e sconto affiancati e l'importo; erano sette colonne che uscivano dal bordo. Chi ha aperto una cartella mette chi e quando sulla prima riga, cosa sotto. Allegare non chiede di trascinare file, che su un telefono non si trascinano. |
+| Le scelte | Il valore di un campo a scelta (tipo di chiamata, stato, priorità) si legge nella lingua di chi legge, salvato com'è; un elenco a tendina non ripete il nome come descrizione («Consulenza» sotto «Consulenza»). |
+| Note | Un elenco suo (`ElencoNote`, `get_notes`): si trova scrivendo il titolo o le parole, una riga per nota con le prime parole, chi l'ha scritta, di chi parla e quando, «+» ne scrive una. |
+| Automazioni | Il titolo non si riduce più a una lettera: le ricette sono un'icona e «+» ne crea una. |
+| Lista d'attesa | I tre numeri su una riga, come i riquadri del design system. |
+| /prenota | I passi su una riga: quello dove si è dice il suo nome, gli altri il numero. |
+
+Le scritte troppo chiare per essere lette (il rosso e il blu `ink-*-4`) sono
+del settimo passo; i comandi che comparivano solo al passaggio del mouse si
+vedono su uno schermo al tocco. Sul tema scuro gli stati (in attesa, non
+venuti, confermato) restavano coi colori del chiaro, scuri su scuro: ora hanno
+quelli che il design system disegna sullo scuro. A 360 punti il nome di un
+numero di Oggi va su due righe invece di tagliarsi.
+
+Le parole: Sig., Dott. e gli altri titoli, i generi, le fonti che mancavano,
+le parti del giorno, le ricette delle automazioni e quello che scrivono, la
+data di un evento («3 ott 2026», non «ott 3, 2026»), il selettore data e ora
+di frappe-ui, «Pianifica» un post (era un sostantivo), il motivo per cui una
+proposta della lista d'attesa non è partita, la provenienza di una persona
+(«Prenotazione online», non `service_booking`), «Da fare» per quanto resta di
+un preventivo (era «Sinistra»), il nome di un campo a metà frase in minuscolo
+(«Aggiungi sito web…», non «Aggiungi Sito web…»). Le opzioni della fatturazione
+non parlano più del «progetto originale». La scritta che accompagna una bozza
+dell'assistente è nella lingua del centro: la legge il paziente, non chi l'ha
+controllata.
+
+Una prenotazione dalle pagine del centro senza una visita tracciata era tra le
+«Terze parti», come quelle di una piattaforma: ora è traffico diretto, e una
+patch corregge quelle già salvate.
+
 ## File
 
 | File | Cosa cambia |
@@ -273,6 +313,16 @@ valuta conta in euro, non in dollari.
 | `frontend/src/components/Mobile/ElencoAziende.vue`, `ElencoContatti.vue`, `ElencoChiamate.vue` + `crm/api/sul_telefono.py` (`get_organizations`, `get_contacts`, `get_calls`) | Le liste di aziende, contatti e chiamate |
 | `frontend/src/components/ListViews/MobileListRows.vue`, `utils/mobileList.js` | La scelta tenendo premuto, i dettagli vuoti tolti |
 | `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | Oggi sul telefono |
+| `frontend/src/components/Mobile/ElencoNote.vue`, `pages/Notes.vue` + `crm/api/sul_telefono.py` (`get_notes`) | Le note sul telefono |
+| `frontend/src/components/Mobile/DescrizioneRipiegata.vue` | La riga che spiega una scheda, piegata a due righe |
+| `frontend/src/telefono.css` (impostazioni, fogli, tendine, avvisi) | Una pagina che scorre sola, le righe delle impostazioni, i pulsanti dei fogli che vanno a capo, le tendine a 40px, l'avviso dall'alto sopra un foglio |
+| `frontend/src/components/Settings/**` | Le pagine delle impostazioni sul telefono, gli stati vuoti, i campi che aspettano le impostazioni |
+| `frontend/src/components/FieldLayout/Field.vue`, `Controls/Link.vue` | Le scelte tradotte, le descrizioni che non ripetono il nome |
+| `crm/api/booking.py` (`categoria_senza_visita`) + `crm/patches/v1_0/the_centres_own_pages_are_direct_traffic.py` | Le pagine del centro sono traffico diretto |
+| `crm/assistente/modello.py` (`segno`) | La scritta di una bozza nella lingua del centro |
+| `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
+| `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
+| `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 
 ## Non incluso
 
