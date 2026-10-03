@@ -1,4 +1,5 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
 # For license information, please see license.txt
 
 import json
@@ -176,11 +177,21 @@ def get_permlevel_access(permission_type="write", doctype=None, parent_doctype=N
 	return allowed_permlevels
 
 
+def in_frase(label: str) -> str:
+	"""A field's name inside a sentence: «Sito web» reads «sito web» after
+	«Aggiungi», while an acronym («IVA»), an abbreviation («N.») or a name with a
+	capital inside («WhatsApp») stays as it is written."""
+	primo = label.split(" ", 1)[0]
+	if len(primo) > 1 and primo[0].isupper() and primo[1:] == primo[1:].lower() and not primo.endswith("."):
+		return label[0].lower() + label[1:]
+	return label
+
+
 def get_field_obj(field):
-	# in the user's language: «Aggiungi Sito web...», «Scegli Azienda...». A field to
+	# in the user's language: «Aggiungi sito web...», «Scegli azienda...». A field to
 	# pick from (a link, a choice) asks to choose: the placeholder set first used to
 	# keep «Add» on those too.
-	label = _(field.label or "")
+	label = in_frase(_(field.label or ""))
 	choose = field.fieldtype == "Link" or (field.fieldtype == "Select" and field.options)
 	field["placeholder"] = field.get("placeholder") or (
 		_("Select {0}...").format(label) if choose else _("Add {0}...").format(label)
