@@ -118,7 +118,8 @@ def reads(widget: registry.Widget, user: str | None = None) -> bool:
 	if not capacita:
 		return True
 	ambito = livelli.ambito(capacita, user or frappe.session.user)
-	if not ambito:
+	# the agenda as free and busy slots is no agenda to list
+	if not ambito or ambito == livelli.LIBERO_OCCUPATO:
 		return False
 	return widget.scope != "site" or ambito in (livelli.CENTRO, livelli.MASCHERATO)
 

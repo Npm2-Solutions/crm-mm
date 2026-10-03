@@ -153,6 +153,8 @@ def waiting_list(ctx: Context):
 	size=(10, 8),
 	live=True,
 	options=(ROWS,),
+	# a list shows the records themselves, not a number: whoever reads them
+	reader="conversazioni.vedi",
 )
 def conversations_waiting_list(ctx: Context):
 	return waiting_list(ctx)
@@ -168,6 +170,7 @@ widget(
 	live=True,
 	scope="me",
 	options=(ROWS,),
+	reader="conversazioni.vedi",
 )(waiting_list)
 
 

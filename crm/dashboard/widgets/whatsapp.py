@@ -330,6 +330,8 @@ def whatsapp_from_phone(ctx: Context):
 	size=(10, 8),
 	requires=WHATSAPP,
 	options=(ROWS,),
+	# a list shows the records themselves, not a number: whoever reads them
+	reader="conversazioni.vedi",
 )
 def whatsapp_failed_list(ctx: Context):
 	table = messages()

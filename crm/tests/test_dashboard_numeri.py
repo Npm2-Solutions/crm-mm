@@ -73,6 +73,22 @@ class TestWhoReadsWhichNumbers(FacoltativiTestCase):
 		self.assertFalse(self.legge(OPERATORE, "invoiced_revenue"))
 		self.assertTrue(store.own_numbers_only(registry.get("appointments_today")))
 
+	def test_a_list_shows_records_and_asks_for_reading_them(self):
+		"""The medical director reads the desk's numbers (doc 30), not its conversations:
+		«Who has waited longest» showed them the names and the messages."""
+		from unittest.mock import patch
+
+		capacita = {"numeri.operativi": "centro", "agenda.vedi": "centro"}
+		with patch("crm.permissions.livelli.ambito", lambda nome, user=None: capacita.get(nome)):
+			self.assertTrue(store.reads(registry.get("conversations_waiting")))
+			self.assertFalse(store.reads(registry.get("conversations_waiting_list")))
+			self.assertFalse(store.reads(registry.get("my_conversations")))
+			self.assertTrue(store.reads(registry.get("appointments_upcoming")))
+			self.assertFalse(store.reads(registry.get("callbacks_list")))
+			# the agenda as free and busy slots lists nobody
+			capacita["agenda.vedi"] = "libero_occupato"
+			self.assertFalse(store.reads(registry.get("appointments_upcoming")))
+
 	def test_the_manager_reads_them_all(self):
 		for widget_id in ("appointments_today", "invoiced_revenue", "website_visitors"):
 			self.assertTrue(self.legge(MANAGER, widget_id), widget_id)

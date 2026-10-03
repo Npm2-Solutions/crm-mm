@@ -507,6 +507,8 @@ def next_appointments(ctx: Context):
 	live=True,
 	requires=AGENDA,
 	options=(ROWS,),
+	# a list shows the records themselves, not a number: whoever reads them
+	reader="agenda.vedi",
 )
 def appointments_upcoming(ctx: Context):
 	return next_appointments(ctx)
@@ -533,6 +535,7 @@ widget(
 	scope="me",
 	requires=AGENDA,
 	options=(ROWS,),
+	reader="agenda.vedi",
 )(todays_appointments)
 
 
@@ -546,6 +549,8 @@ widget(
 	live=True,
 	requires=AGENDA,
 	options=(ROWS,),
+	# a list shows the records themselves, not a number: whoever reads them
+	reader="agenda.vedi",
 )
 def appointments_to_confirm_list(ctx: Context):
 	return upcoming(

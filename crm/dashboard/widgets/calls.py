@@ -329,6 +329,8 @@ def callback_list(ctx: Context):
 	live=True,
 	requires=CALLS,
 	options=(ROWS,),
+	# a list shows the records themselves, not a number: whoever reads them
+	reader="telefono.registro",
 )
 def callbacks_list(ctx: Context):
 	return callback_list(ctx)
@@ -345,6 +347,7 @@ widget(
 	scope="me",
 	requires=CALLS,
 	options=(ROWS,),
+	reader="telefono.registro",
 )(callback_list)
 
 
