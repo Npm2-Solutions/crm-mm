@@ -43,6 +43,41 @@ let smettiDiSeguire = () => {}
 onMounted(() => (smettiDiSeguire = seguiLaTastiera()))
 onBeforeUnmount(() => smettiDiSeguire())
 
+// the phone's status bar and the browser's own bar wear the app's colour,
+// light or dark, and change with it (Android; an iPhone's installed app
+// keeps its own)
+function coloreDellaBarra() {
+  let meta = document.querySelector('meta[name="theme-color"]')
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.append(meta)
+  }
+  meta.content = inRgb(
+    getComputedStyle(document.documentElement).backgroundColor,
+  )
+}
+
+// the tokens are written in oklch(), which an older phone's browser does not
+// read in a meta: a pixel painted with the colour gives it back in rgb
+function inRgb(colore) {
+  const tela = document.createElement('canvas').getContext('2d')
+  if (!tela) return colore
+  tela.fillStyle = colore
+  tela.fillRect(0, 0, 1, 1)
+  const [r, g, b] = tela.getImageData(0, 0, 1, 1).data
+  return `rgb(${r}, ${g}, ${b})`
+}
+const cambioDiTema = new MutationObserver(coloreDellaBarra)
+onMounted(() => {
+  coloreDellaBarra()
+  cambioDiTema.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme', 'data-marchio'],
+  })
+})
+onBeforeUnmount(() => cambioDiTema.disconnect())
+
 // what one taps shows it is pressed (`active:`) in place of the browser's grey
 // flash (telefono.css); iPhone shows it only where a touch is listened to
 function alTocco() {}
