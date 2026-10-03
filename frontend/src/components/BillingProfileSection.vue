@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- The codice fiscale and the address, written once for every invoice.
        Only for who may see billing details at all: marketing sees the person,
@@ -122,7 +126,7 @@ const fields = computed(() => {
 const bornOn = computed(() => {
   const data = profile.data
   if (!data?.birth_date) return ''
-  const born = formatDate(data.birth_date, '', true)
+  const born = formatDate(data.birth_date, 'D MMM YYYY')
   const sex = { M: __('male'), F: __('female') }[data.sex]
   return sex ? __('Born on {0}, {1}', [born, sex]) : __('Born on {0}', [born])
 })

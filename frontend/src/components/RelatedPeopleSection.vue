@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- The people this person belongs with: a parent, a child, a partner, a
        guardian. Who pays, books or acts for whom is said in words, from this
@@ -245,7 +249,7 @@ watch(
 const me = computed(() => related.data?.first_name || '')
 
 const RELATIONS = {
-  Parent: __('Parent'),
+  Parent: __('Parent', null, 'Family relation'),
   Child: __('Child'),
   'Legal guardian': __('Legal guardian'),
   Ward: __('Ward'),

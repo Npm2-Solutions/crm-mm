@@ -90,7 +90,7 @@
       <Button
         class="ml-auto shrink-0"
         variant="subtle"
-        :label="__('Stop')"
+        :label="__('Stop', null, 'Stop recording')"
         @click="stopRecording"
       />
     </template>

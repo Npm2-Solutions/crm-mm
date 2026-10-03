@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Where you answer people.
 
   The Inbox used to be a view of the People list, and clicking a row took you
@@ -212,7 +215,7 @@ function whyLabel(why, row) {
     return __('Put off until {0}', [when])
   }
   if (why === 'answered') return __('Answered · no longer waiting')
-  if (why === 'read') return __('Read')
+  if (why === 'read') return __('Read', null, 'Conversation read')
   if (why === 'reopened') return __('Back in Open')
   return ''
 }

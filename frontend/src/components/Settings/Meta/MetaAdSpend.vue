@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   What the ads cost, next to what they brought.
 
   Meta can show the cost per lead; only this table can show the cost per
@@ -94,7 +97,7 @@
                     · {{ account.currency }}</template
                   >
                   <template v-if="account.last_synced_on">
-                    · {{ __('read') }} {{ account.last_synced_on }}
+                    · {{ __('read on {0}', [account.last_synced_on]) }}
                   </template>
                 </div>
                 <div

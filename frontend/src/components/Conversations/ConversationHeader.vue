@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Who you are talking to, and what you decide about it.
 
   The middle of the screen had no name on it. The person was in the column on
@@ -241,7 +244,7 @@ const seenBy = computed(() => {
 })
 
 const seenLabel = computed(() => {
-  if (!seenBy.value) return __('Read')
+  if (!seenBy.value) return __('Read', null, 'Message read')
   const first = seenBy.value.split(' ')[0]
   const at = props.person.conversation_seen_until
   return at

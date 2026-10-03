@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- What this person agreed to, on which words, when and how: the consent
        register, one line per kind. A consent is withdrawn here as easily as it
@@ -195,7 +199,9 @@ function stateLabel(type) {
   const status = type.current?.status
   if (!status) return __('No answer')
   if (status === 'Given') {
-    return type.kind === 'Consent' ? __('Given') : __('Read')
+    return type.kind === 'Consent'
+      ? __('Given')
+      : __('Read', null, 'Notice acknowledged')
   }
   return status === 'Refused' ? __('Refused') : __('Withdrawn')
 }
@@ -204,12 +210,12 @@ function stateDetail(current) {
   const channel = (c) => CHANNEL_LABELS[c] || c
   if (current.status === 'Withdrawn' && current.withdrawn_on) {
     return __('on {0}, {1}', [
-      formatDate(current.withdrawn_on, '', true),
+      formatDate(current.withdrawn_on, 'D MMM YYYY'),
       channel(current.withdrawal_channel).toLowerCase(),
     ])
   }
   const when = __('on {0}, {1}', [
-    formatDate(current.answered_on, '', true),
+    formatDate(current.answered_on, 'D MMM YYYY'),
     channel(current.channel).toLowerCase(),
   ])
   return current.given_by_name

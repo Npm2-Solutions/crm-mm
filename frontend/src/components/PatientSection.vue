@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- Whether the person is a patient, since when and why: only where the plan
        has the clinic, and only for who may know it. Marketing does not. -->
@@ -19,7 +23,7 @@
               <span>
                 {{
                   __('Patient since {0}', [
-                    formatDate(patient.patient_since, '', true),
+                    formatDate(patient.patient_since, 'D MMM YYYY'),
                   ])
                 }}
               </span>

@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The patient's summary: allergies, medications, conditions, parameters.
 
   A line is the last value a practitioner confirmed. The answers of signed forms
@@ -12,7 +15,9 @@
     class="flex flex-col gap-3 rounded-lg border border-outline-gray-2 p-4"
   >
     <div class="flex items-center justify-between gap-2">
-      <h3 class="text-base-semibold text-ink-gray-8">{{ __('Summary') }}</h3>
+      <h3 class="text-base-semibold text-ink-gray-8">
+        {{ __('Summary', null, "Patient's clinical summary") }}
+      </h3>
       <Badge
         v-if="summary.data.proposals.length"
         theme="blue"

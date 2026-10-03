@@ -451,7 +451,7 @@ const EVENTS = {
   opened: __('Link opened'),
   code_sent: __('Code sent'),
   code_verified: __('Code checked'),
-  created: __('Started'),
+  created: __('Started', null, 'Form filled half-way'),
   answers_saved: __('Answers saved'),
   filled: __('Filled by the person'),
   signed: __('Signed'),

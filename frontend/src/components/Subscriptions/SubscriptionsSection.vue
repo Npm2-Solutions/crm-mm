@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- The person's subscriptions: a month of the gym, three months of pilates
        twice a week. Sold here, the appointments of the services they comprise
@@ -146,10 +150,14 @@ function line(sub) {
     parts.push(__('until {0}', [formatDate(sub.ends_on, 'D MMM YYYY')]))
   } else {
     parts.push(
-      __('{0} to {1}', [
-        formatDate(sub.starts_on, 'D MMM YYYY'),
-        formatDate(sub.ends_on, 'D MMM YYYY'),
-      ]),
+      __(
+        '{0} to {1}',
+        [
+          formatDate(sub.starts_on, 'D MMM YYYY'),
+          formatDate(sub.ends_on, 'D MMM YYYY'),
+        ],
+        'Date range',
+      ),
     )
   }
   if (sub.renewed_by) parts.push(__('renewed'))

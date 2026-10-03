@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Where the new messages begin.
 
   A conversation opened with something unread in it used to look exactly like
@@ -66,7 +69,8 @@ const title = computed(() =>
 )
 
 const caption = computed(() => {
-  if (!props.whatsapp) return props.unread ? '' : __('Read')
+  if (!props.whatsapp)
+    return props.unread ? '' : __('Read', null, 'Message read')
   if (!props.receipts) {
     return props.unread
       ? __('They get no blue ticks from {brand}')

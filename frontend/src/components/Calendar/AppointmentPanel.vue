@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   An appointment, in the same side panel as an event.
 
   It used to be a dialog four columns wide, opened over the calendar: two
@@ -500,7 +503,7 @@
             class="w-full"
             variant="outline"
             :modelValue="form.time"
-            :placeholder="__('Start')"
+            :placeholder="__('Start', null, 'Start time')"
             @update:modelValue="setStart"
           />
           <TimePicker

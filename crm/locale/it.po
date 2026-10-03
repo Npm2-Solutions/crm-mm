@@ -41458,3 +41458,78 @@ msgstr "Da fare"
 #: frontend/src/pages/AutomationEditor.vue
 msgid "Hide stats"
 msgstr "Nascondi le statistiche"
+
+#: frontend/src/components/RelatedPeopleSection.vue
+msgctxt "Family relation"
+msgid "Parent"
+msgstr "Genitore"
+
+#: frontend/src/components/Calendar/AppointmentPanel.vue
+msgctxt "Start time"
+msgid "Start"
+msgstr "Inizio"
+
+#: frontend/src/components/CycleDialog.vue
+msgctxt "Cycle of sessions"
+msgid "Sessions"
+msgstr "Sedute"
+
+#: frontend/src/components/Clinic/ClinicSummary.vue
+msgctxt "Patient's clinical summary"
+msgid "Summary"
+msgstr "Sintesi"
+
+#: frontend/src/components/Moduli/FormsArea.vue
+msgctxt "Form filled half-way"
+msgid "Started"
+msgstr "Iniziato"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgctxt "Stop recording"
+msgid "Stop"
+msgstr "Ferma"
+
+#: frontend/src/components/Activities/TouchCard.vue
+msgctxt "Web page a visit came from"
+msgid "Referrer"
+msgstr "Pagina di provenienza"
+
+#: frontend/src/components/Settings/Meta/MetaAdSpend.vue
+msgid "read on {0}"
+msgstr "aggiornato il {0}"
+
+#: frontend/src/components/Subscriptions/SubscriptionDialog.vue
+msgctxt "Date range"
+msgid "{0} to {1}"
+msgstr "{0} – {1}"
+
+#: frontend/src/components/Automations/StepPanel.vue
+msgid "Template"
+msgstr "Modello"
+
+#: frontend/src/components/Settings/Forms/TemplateFieldCard.vue
+msgid "Rename"
+msgstr "Rinomina"
+
+#: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue
+msgid "<p>Dear {{ lead_name }},</p>\n\n<p>This is a reminder for the payment of {{ grand_total }}.</p>\n\n<p>Thanks,</p>\n<p>The team</p>"
+msgstr "<p>Gentile {{ lead_name }},</p>\n\n<p>le ricordiamo il pagamento di {{ grand_total }}.</p>\n\n<p>Grazie,</p>\n<p>Lo staff</p>"
+
+#: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue
+msgid "Dear {{ lead_name }}, \n\nThis is a reminder for the payment of {{ grand_total }}. \n\nThanks, \nThe team"
+msgstr "Gentile {{ lead_name }}, \n\nle ricordiamo il pagamento di {{ grand_total }}. \n\nGrazie, \nLo staff"
+
+#: frontend/src/components/ConsentsSection.vue
+msgctxt "Notice acknowledged"
+msgid "Read"
+msgstr "Presa visione"
+
+#: frontend/src/components/Conversations/ConversationHeader.vue
+msgctxt "Message read"
+msgid "Read"
+msgstr "Letto"
+
+#: frontend/src/pages/Conversations.vue
+msgctxt "Conversation read"
+msgid "Read"
+msgstr "Letta"
