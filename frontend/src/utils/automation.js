@@ -13,8 +13,6 @@
  * this layer adds is a stable `id` per node, which the backend keeps.
  */
 
-import { conMarchio } from './marchio'
-
 export const STEP_CATEGORIES = [
   { name: 'communication', label: 'Talk to the contact', icon: 'send' },
   { name: 'contact', label: 'Update the record', icon: 'user' },
@@ -60,9 +58,9 @@ export const STEP_CATALOG = {
     icon: 'bell',
     theme: 'blue',
     category: 'communication',
-    description: conMarchio(
-      'Notifies the owner and the assignees inside {brand}.',
-    ),
+    // {brand} as written: `__()` fills it where it is drawn, after it found
+    // the sentence in the catalogue
+    description: 'Notifies the owner and the assignees inside {brand}.',
     defaults: { message: '' },
     gateable: true,
   },
@@ -116,7 +114,7 @@ export const STEP_CATALOG = {
     icon: 'edit-3',
     theme: 'gray',
     category: 'contact',
-    description: 'Writes a value on the lead or the deal.',
+    description: 'Writes a value on the person or the deal.',
     defaults: { field: '', value: '' },
     gateable: true,
   },
@@ -125,7 +123,7 @@ export const STEP_CATALOG = {
     icon: 'briefcase',
     theme: 'green',
     category: 'deal',
-    description: 'The GHL "create opportunity": turns the lead into a deal.',
+    description: 'Opens a deal for the person, to follow the sale.',
     defaults: {},
     gateable: true,
   },
@@ -255,7 +253,7 @@ export const PALETTE = [
     key: 'deal_stage',
     type: 'set_field',
     label: 'Move Deal to Stage',
-    description: 'Sets the deal status — the GHL pipeline stage move.',
+    description: 'Moves the deal to another stage of its pipeline.',
     icon: 'flag',
     theme: 'green',
     category: 'deal',
@@ -294,7 +292,7 @@ export const PALETTE = [
 ]
 
 export const TRIGGER_CATEGORIES = [
-  { name: 'lead', label: 'Lead', icon: 'user' },
+  { name: 'lead', label: 'Person', icon: 'user' },
   { name: 'deal', label: 'Deal (opportunity)', icon: 'briefcase' },
   { name: 'appointment', label: 'Appointments', icon: 'calendar' },
   { name: 'messaging', label: 'Conversations', icon: 'message-square' },
@@ -311,15 +309,13 @@ export const TRIGGER_CATALOG = {
     category: 'lead',
     icon: 'clipboard',
     doctype: 'CRM Lead',
-    hint: conMarchio(
-      "A form is filled in, an ad's or one on the website — by a new person or by one {brand} already knows.",
-    ),
+    hint: "A form is filled in, an ad's or one on the website — by a new person or by one {brand} already knows.",
   },
   'Lead Status Changed': {
     category: 'lead',
     icon: 'refresh-cw',
     doctype: 'CRM Lead',
-    hint: 'The lead moves to another status.',
+    hint: 'The person moves to another status.',
   },
   // the first time the person comes (crm.clienti); with the clinic, a patient
   'Became Client': {
@@ -366,7 +362,7 @@ export const TRIGGER_CATALOG = {
   'Email Opened': {
     category: 'messaging',
     icon: 'mail',
-    hint: conMarchio('Read tracking on an email sent by {brand}.'),
+    hint: 'Read tracking on an email sent by {brand}.',
   },
   'Trigger Link Clicked': {
     category: 'messaging',
