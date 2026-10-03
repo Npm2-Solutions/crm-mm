@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import { createRouter, createWebHistory } from 'vue-router'
 import { standardViewTypesFor } from '@/utils/viewTypes'
 import { DASHBOARD_CAPABILITIES } from '@/utils/dashboard'
@@ -210,8 +212,11 @@ const routes = [
     component: () => import('@/pages/WaitingList.vue'),
   },
   {
-    // the desk's day: arrivals, the waiting room, what the last days left open
-    path: '/oggi',
+    // the desk's day: arrivals, the waiting room, what the last days left
+    // open - a view of the agenda (utils/menu.js, SORELLE); its first address
+    // still opens it
+    path: '/accoglienza',
+    alias: '/oggi',
     name: 'Today',
     meta: { richiede: 'agenda.presenze' },
     component: () => import('@/pages/Today.vue'),

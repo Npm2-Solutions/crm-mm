@@ -1,9 +1,17 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  The reception desk: the day's appointments as the desk welcomes them - who
+  is expected, who is in the waiting room, who came - with what the last days
+  left without an outcome and what is left to invoice. A view of the agenda,
+  beside it in the header's switch (utils/menu.js, SORELLE); the route keeps
+  its first name, Today, and its first address, /oggi.
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
-      <Breadcrumbs
-        :items="[{ label: __('Today'), route: { name: 'Today' } }]"
-      />
+      <ViewBreadcrumbs routeName="Today" label="Reception desk" />
     </template>
     <template #right-header>
       <div class="flex items-center gap-1">
@@ -14,10 +22,7 @@
           :aria-label="__('Previous day')"
           @click="shift(-1)"
         />
-        <!-- on a phone the title already says today: the way back only from
-             another day -->
         <Button
-          v-if="!isMobileView || !isToday"
           variant="ghost"
           :label="dayLabel"
           :title="__('Back to today')"
@@ -213,12 +218,12 @@
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
 import { laSeduta } from '@/utils/cicli'
-import { isMobileView } from '@/composables/breakpoints'
 import {
   byDay,
   firstOfPast,
@@ -228,7 +233,7 @@ import {
   waitingRoom,
 } from '@/utils/oggi'
 import { formatDate } from '@/utils'
-import { Breadcrumbs, Button, createResource, usePageMeta } from 'frappe-ui'
+import { Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 // the centre's day, as the server counts it: a browser in another time zone
@@ -307,5 +312,5 @@ function appointmentLine(appointment) {
   return [appointment.service, session, who].filter(Boolean).join(' · ')
 }
 
-usePageMeta(() => ({ title: __('Today') }))
+usePageMeta(() => ({ title: __('Reception desk') }))
 </script>

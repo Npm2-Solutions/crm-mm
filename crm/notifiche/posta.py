@@ -175,7 +175,8 @@ def _manda(utente: str, righe: list) -> None:
 
 def indirizzo(percorso: dict | None) -> str:
 	"""The address in DottorCloud a notification opens: the person or the deal on
-	what it names, the desk's day, the invoices; the panel's page without one."""
+	what it names, the desk's day (the agenda's reception desk), the invoices; the
+	panel's page without one."""
 	if not percorso:
 		return get_url(PAGINA)
 	nome = percorso.get("name")
@@ -186,7 +187,7 @@ def indirizzo(percorso: dict | None) -> str:
 	if nome == "Deal":
 		return get_url(f"/crm/deals/{parametri.get('dealId')}{segno}")
 	if nome == "Today":
-		return get_url("/crm/oggi")
+		return get_url("/crm/accoglienza")
 	if nome == "Invoices":
 		return get_url("/crm/fatture")
 	return get_url(PAGINA)

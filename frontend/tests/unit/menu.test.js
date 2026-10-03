@@ -122,7 +122,6 @@ describe('the main menu', () => {
       [
         '-',
         [
-          'Today',
           'Agenda',
           'People',
           'Conversations',
@@ -141,7 +140,6 @@ describe('the main menu', () => {
       [
         '-',
         [
-          'Today',
           'Agenda',
           'People',
           'Conversations',
@@ -158,20 +156,12 @@ describe('the main menu', () => {
     expect(parole(menuDi(sessione('operatore')))).toEqual([
       [
         '-',
-        [
-          'Today',
-          'Agenda',
-          'People',
-          'Conversations',
-          'Tasks',
-          'Deals',
-          'Dashboard',
-        ],
+        ['Agenda', 'People', 'Conversations', 'Tasks', 'Deals', 'Dashboard'],
       ],
     ])
   })
 
-  it('opens on the numbers where the day does not open on Today', () => {
+  it('opens on the numbers where the day does not open on the reception desk', () => {
     expect(parole(menuDi(sessione('marketing')))).toEqual([
       ['-', ['Dashboard', 'People', 'Tasks', 'Deals']],
       ['Marketing', ['Automations', 'Social Planner', 'Site']],
@@ -196,7 +186,7 @@ describe('the main menu', () => {
 
   it('has no entry for what lives inside another one', () => {
     const chiavi = MENU.flatMap((gruppo) => gruppo.entries.map((v) => v.key))
-    for (const dentro of ['Organizations', 'Notes', 'Waiting List'])
+    for (const dentro of ['Organizations', 'Notes', 'Waiting List', 'Today'])
       expect(chiavi).not.toContain(dentro)
   })
 
@@ -238,24 +228,26 @@ describe("the phone's bar", () => {
   const barra = (livello, opzioni) =>
     barraDelTelefono(menuDi(sessione(livello, opzioni))).map((voce) => voce.key)
 
-  it('puts the day, the people and the conversations under the thumb', () => {
+  it('puts the agenda, the people and the conversations under the thumb', () => {
+    // the reception desk is in the agenda: its place goes to the invoices, or
+    // to what is left to do where the level has no register of invoices
     expect(barra('manager')).toEqual([
-      'Today',
       'Calendar',
       'Leads',
       'Conversations',
+      'Invoices',
     ])
     expect(barra('segreteria')).toEqual([
-      'Today',
       'Calendar',
       'Leads',
       'Conversations',
+      'Invoices',
     ])
     expect(barra('operatore')).toEqual([
-      'Today',
       'Calendar',
       'Leads',
       'Conversations',
+      'Tasks',
     ])
   })
 
@@ -273,7 +265,8 @@ describe("the phone's bar", () => {
     for (const livello of Object.keys(LIVELLI)) {
       expect(barra(livello).length).toBeLessThanOrEqual(4)
     }
-    expect(PREFERITI_DEL_TELEFONO[0]).toBe('Today')
+    expect(PREFERITI_DEL_TELEFONO[0]).toBe('Calendar')
+    expect(PREFERITI_DEL_TELEFONO).not.toContain('Today')
   })
 })
 
