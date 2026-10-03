@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify'
 import { toast, dayjsLocal, dayjs, getConfig, FeatherIcon } from 'frappe-ui'
 import { h } from 'vue'
 import { traQuanto } from '@/utils/quando'
+import { daLeggere } from '@/utils/scelte'
 
 export function formatTime(seconds) {
   const days = Math.floor(seconds / (3600 * 24))
@@ -891,6 +892,29 @@ export function clearCache() {
 export function isTranslatable(doctype) {
   let translatedDoctypes = window.translated_doctypes || []
   return translatedDoctypes.includes(doctype)
+}
+
+// What a field shows to who cannot change it (the side panel, the Data tab):
+// a date in the system's format, a person by their name, a source or a stage in
+// the reader's language, a choice by its name - never the value as stored
+// («2026-09-30», «sarah.demo@example.com», «Online booking»).
+export function valoreDaLeggere(field, valore) {
+  if (!valore) return valore
+  if (field?.fieldtype === 'Date') return formatDate(valore, '', true)
+  if (field?.fieldtype === 'Datetime')
+    return formatDate(valore, datetimeFormat())
+  // a link to a user is drawn as fieldtype «User» by the layouts
+  if (
+    field?.fieldtype === 'User' ||
+    (field?.fieldtype === 'Link' && field.options === 'User')
+  )
+    return usersStore().getUser(valore)?.full_name || valore
+  if (field?.fieldtype === 'Link' && isTranslatable(field.options))
+    return __(valore)
+  // a choice listed as words, one per line: its value is the word to translate
+  if (field?.fieldtype === 'Select' && !Array.isArray(field.options))
+    return __(valore)
+  return daLeggere(field, valore)
 }
 
 export function sanitizeHTML(html = '', options = {}) {

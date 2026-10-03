@@ -51,7 +51,7 @@
           'Text Editor',
         ].includes(field.fieldtype)
       "
-      :modelValue="daLeggere(field, data[field.fieldname])"
+      :modelValue="valoreDaLeggere(field, data[field.fieldname])"
       type="text"
       :placeholder="getPlaceholder(field)"
       :disabled="true"
@@ -366,6 +366,7 @@ import {
   isNull,
   interpolateTemplate,
   validatePhone,
+  valoreDaLeggere,
 } from '@/utils'
 import { flt, formatNumber, formatCurrency } from '@/utils/numberFormat.js'
 import { getMeta } from '@/stores/meta'
@@ -376,7 +377,7 @@ import {
 import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
 import { mascherato } from '@/utils/schedaPersona'
-import { conValoreAttuale, daLeggere, spiegazioneDi } from '@/utils/scelte'
+import { conValoreAttuale, spiegazioneDi } from '@/utils/scelte'
 
 import {
   Combobox,
