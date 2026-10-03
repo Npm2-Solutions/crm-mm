@@ -111,7 +111,7 @@ class TestRoutingDerivation(IntegrationTestCase):
 	def test_a_verified_number_is_outbound_only(self):
 		result = caller_ids._routing({"source": caller_ids.SOURCE_VERIFIED})
 		self.assertEqual(result["routes_to_crm"], 0)
-		self.assertIn("outgoing caller ID", result["routing_note"])
+		self.assertIn("shown on the calls you make", result["routing_note"])
 
 	def test_pointing_at_the_outbound_app_is_called_out(self):
 		result = caller_ids._routing(
