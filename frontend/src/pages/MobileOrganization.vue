@@ -211,7 +211,8 @@ const props = defineProps({
 })
 
 const { brand } = getSettings()
-const { getUser } = usersStore()
+const { getUser, ambito } = usersStore()
+const leggeRecapiti = ambito('persone.vedi') !== 'mascherato'
 const { $dialog } = globalStore()
 const { getDealStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Organization')
@@ -365,6 +366,8 @@ const VUOTI = {
     description: 'The contacts who work at this organization appear here.',
   },
 }
+// the contacts are names, emails and phones: whoever sees people masked
+// (Marketing) reads none of them, and an empty tab would say there are none
 const tabs = [
   {
     name: 'Details',
@@ -383,7 +386,7 @@ const tabs = [
     icon: h(ContactsIcon, { class: 'h-4 w-4' }),
     count: computed(() => contacts.data?.length),
   },
-]
+].filter((tab) => tab.label !== 'Contacts' || leggeRecapiti)
 // the tab open, by its name: the details come first here, so the index that
 // picks deals or contacts on the computer is one off on a phone
 const aperta = computed(() => tabs[tabIndex.value]?.name)

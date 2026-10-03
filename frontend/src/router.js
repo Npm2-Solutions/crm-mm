@@ -27,6 +27,10 @@ async function shouldCapturePersona() {
   return !!enabled
 }
 
+// Every scope of people's records but the masked one: who reads names, emails
+// and phones (the address book)
+const RECAPITI = ['centro', 'team', 'suoi']
+
 const routes = [
   {
     path: '/',
@@ -159,12 +163,16 @@ const routes = [
     alias: '/contacts',
     path: '/contacts/view/:viewType?',
     name: 'Contacts',
-    meta: { richiede: 'persone.vedi' },
+    // the address book is names, emails and phones: whoever sees people with
+    // them masked (Marketing) does not read it (crm/permissions/seguono.py)
+    meta: { richiede: 'persone.vedi', ambito: RECAPITI },
     component: () => import('@/pages/Contacts.vue'),
   },
   {
     path: '/contacts/:contactId',
     name: 'Contact',
+    // not the address book's scope: an entry opens its person, whom Marketing
+    // reads masked (a deal's contact arrow leads there)
     meta: { richiede: 'persone.vedi' },
     component: () => import(`@/pages/${handleMobileView('Contact')}.vue`),
     props: true,
@@ -302,11 +310,13 @@ const LANDINGS = [
 ]
 
 // What a page asks (doc 30): a capability, or one of several; with `ambito`,
-// one of them on that much of the centre.
+// one of them on that much of the centre (or on one of a list of scopes).
 function meets(meta, { puoUno, ambito }) {
   if (!meta?.richiede) return true
-  if (meta.ambito)
-    return [].concat(meta.richiede).some((c) => ambito(c) === meta.ambito)
+  if (meta.ambito) {
+    const ambiti = [].concat(meta.ambito)
+    return [].concat(meta.richiede).some((c) => ambiti.includes(ambito(c)))
+  }
   return puoUno(meta.richiede)
 }
 
