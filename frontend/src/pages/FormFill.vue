@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A form filled with a person, and signed on the screen.
 
   While it is a draft the answers can be saved and finished later; signing sends
@@ -72,7 +75,7 @@
 
       <div
         v-if="stops.length"
-        class="flex flex-col gap-1 rounded-lg bg-surface-red-1 px-4 py-3 text-sm text-ink-red-4"
+        class="flex flex-col gap-1 rounded-lg bg-surface-red-1 px-4 py-3 text-sm text-ink-red-7"
         role="alert"
       >
         <div class="flex items-center gap-2 font-medium">
@@ -90,7 +93,7 @@
         class="flex flex-col gap-2 rounded-lg bg-surface-blue-1 px-4 py-3 text-sm"
         role="status"
       >
-        <span class="font-medium text-ink-blue-4">
+        <span class="font-medium text-ink-blue-7">
           {{ __('With {0} for the signatures', [data.provider_name]) }}
         </span>
         <span class="text-ink-gray-7">
@@ -123,7 +126,7 @@
         v-else-if="
           !signed && ['Declined', 'Expired'].includes(data.provider_status)
         "
-        class="rounded-lg bg-surface-red-1 px-4 py-3 text-sm text-ink-red-4"
+        class="rounded-lg bg-surface-red-1 px-4 py-3 text-sm text-ink-red-7"
         role="alert"
       >
         {{

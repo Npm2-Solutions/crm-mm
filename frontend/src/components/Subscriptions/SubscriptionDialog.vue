@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A subscription: sold here, followed here. Sold, it is a type from a day - maybe
   at another price or paid otherwise - with who follows it. Read, it says until
   when it lasts, how this week's or month's entries stand, each appointment that
@@ -211,7 +214,7 @@
               </span>
               <span
                 class="text-p-sm"
-                :class="row.problem ? 'text-ink-red-4' : 'text-ink-gray-6'"
+                :class="row.problem ? 'text-ink-red-7' : 'text-ink-gray-6'"
               >
                 {{ instalmentLine(row) }}
               </span>

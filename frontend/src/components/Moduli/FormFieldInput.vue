@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="flex flex-col gap-2" :data-field="field.id">
     <!-- a text to read is not a question: its words are the whole of it -->
@@ -14,7 +18,7 @@
           {{ field.label }}
           <span
             v-if="required"
-            class="segno-obbligatorio text-ink-red-4"
+            class="segno-obbligatorio text-ink-red-7"
             aria-hidden="true"
             >*</span
           >
@@ -340,7 +344,7 @@
         />
       </template>
 
-      <p v-if="missing" class="text-sm text-ink-red-4">
+      <p v-if="missing" class="text-sm text-ink-red-7">
         {{
           field.must_accept
             ? __('To go on, this has to be accepted')
@@ -351,7 +355,7 @@
 
     <div
       v-if="stop !== undefined"
-      class="flex items-start gap-2 rounded-md bg-surface-red-1 px-3 py-2 text-sm text-ink-red-4"
+      class="flex items-start gap-2 rounded-md bg-surface-red-1 px-3 py-2 text-sm text-ink-red-7"
       role="alert"
     >
       <LucideTriangleAlert class="mt-0.5 size-4 shrink-0" />

@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Forms the person fills on their own: a link by email, for home, or the desk's
   tablet handed over. The server says where a link goes (the person, or who
   signs for them) and which forms are filled away but signed at the desk.
@@ -73,7 +76,7 @@
           v-if="mode === 'link'"
           class="rounded-lg bg-surface-gray-2 px-3 py-2.5 text-p-sm"
         >
-          <span v-if="options.link.reason" class="text-ink-red-4">
+          <span v-if="options.link.reason" class="text-ink-red-7">
             {{ options.link.reason }}
           </span>
           <span v-else class="text-ink-gray-7">
@@ -100,7 +103,7 @@
           />
           <p
             v-if="options.minor && !options.representatives.length"
-            class="text-p-sm text-ink-red-4"
+            class="text-p-sm text-ink-red-7"
           >
             {{
               __(

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <SettingsLayoutBase
     v-if="user.doc"
@@ -29,7 +32,7 @@
                   />
                   <div
                     v-if="user.doc.user_image"
-                    class="z-[1] size-4 absolute -top-1 -right-1 flex cursor-pointer items-center justify-center rounded-full bg-surface-base opacity-0 duration-300 ease-in-out group-hover:opacity-100 hover:bg-surface-gray-2 outline outline-black-overlay-50"
+                    class="z-[1] size-4 absolute -top-1 -right-1 flex cursor-pointer items-center justify-center rounded-full bg-surface-base opacity-0 duration-300 ease-in-out group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-surface-gray-2 outline outline-black-overlay-50"
                     @click.stop="updateImage()"
                     @mouseenter="isHoveringRemove = true"
                     @mouseleave="isHoveringRemove = false"

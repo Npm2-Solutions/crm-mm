@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="hierarchy-tree-row flex items-center gap-1 mb-1"
@@ -54,7 +57,9 @@
         v-if="canEdit"
         class="ml-auto flex gap-1 transition-opacity"
         :class="
-          isHighlighted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          isHighlighted
+            ? 'opacity-100'
+            : 'opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100'
         "
         @click.stop
       >

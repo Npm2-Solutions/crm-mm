@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div
     class="rounded border bg-surface-elevation-2 text-ink-gray-8"
@@ -30,7 +34,7 @@
         </span>
         <span
           v-if="field.required || field.must_accept"
-          class="shrink-0 text-ink-red-4"
+          class="shrink-0 text-ink-red-7"
         >
           *
         </span>

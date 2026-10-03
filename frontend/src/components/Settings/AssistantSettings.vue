@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The assistant: documentation support the professional reviews. Where the
   model runs - provider, address, model, key, region, the contract that keeps
   nothing - is the agency's; whether the centre uses it, and for what, the
@@ -13,7 +16,7 @@
           v-if="status.data"
           variant="subtle"
           :theme="status.data.enabled ? 'green' : 'gray'"
-          :label="status.data.enabled ? __('Running') : __('Off')"
+          :label="status.data.enabled ? __('On') : __('Off')"
         />
       </div>
     </template>
@@ -322,7 +325,7 @@
             {{ detail.event.output_tokens }}
           </span>
         </div>
-        <p v-if="detail.event.error" class="text-ink-red-4">
+        <p v-if="detail.event.error" class="text-ink-red-7">
           {{ detail.event.error }}
         </p>
         <p

@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!-- What the person waits for: a service on some days, a seat in a full
        class. Put on the list here; a place that frees up is offered by itself,
@@ -48,7 +52,7 @@
               v-if="entry.offer"
               class="text-p-sm"
               :class="
-                entry.offer.channel ? 'text-ink-gray-5' : 'text-ink-red-4'
+                entry.offer.channel ? 'text-ink-gray-5' : 'text-ink-red-7'
               "
             >
               {{ offerLine(entry.offer) }}

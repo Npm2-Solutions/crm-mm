@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Teleport to="body">
     <div
@@ -36,7 +39,7 @@
             />
           </div>
           <Button
-            class="absolute -top-2 -left-2 shadow ring-inset !bg-surface-elevation-1 hover:!bg-surface-gray-1 text-ink-gray-3 !p-0 !size-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            class="absolute -top-2 -left-2 shadow ring-inset !bg-surface-elevation-1 hover:!bg-surface-gray-1 text-ink-gray-3 !p-0 !size-5 rounded-full opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity"
             @click="completeAlert(alert.id)"
           >
             <span
