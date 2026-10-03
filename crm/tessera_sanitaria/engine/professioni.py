@@ -263,7 +263,7 @@ _ELENCO: list[ProfessioneSanitaria] = [
 	),
 	_sanitaria(
 		"terapista_neuro_psicomotricita",
-		"Terapista della neuro e psicomotricita' dell'eta' evolutiva",
+		"Terapista della neuro e psicomotricità dell'età evolutiva",
 		SoggettoInviante.PROFESSIONISTA_SANITARIO,
 		dal=2019,
 	),

@@ -266,7 +266,7 @@ _ELENCO: list[Professione] = [
 	# ============================================================== companies
 	_professionale(
 		"societa_servizi",
-		"Societa' o impresa di servizi",
+		"Società o impresa di servizi",
 		categoria=Categoria.IMPRESA,
 		cassa=None,
 		percentuale=None,

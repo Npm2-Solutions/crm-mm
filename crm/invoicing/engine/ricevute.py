@@ -41,12 +41,12 @@ class TipoRicevuta(StrEnum):
 
 
 DESCRIZIONE_RICEVUTA: dict[str, str] = {
-	"RC": "Ricevuta di consegna: la fattura e' stata recapitata al destinatario",
+	"RC": "Ricevuta di consegna: la fattura è stata recapitata al destinatario",
 	"NS": "Notifica di scarto: la fattura si considera non emessa",
-	"MC": "Mancata consegna: la fattura e' emessa e depositata nell'area riservata del destinatario",
-	"AT": "Attestazione di avvenuta trasmissione con impossibilita' di recapito",
+	"MC": "Mancata consegna: la fattura è emessa e depositata nell'area riservata del destinatario",
+	"AT": "Attestazione di avvenuta trasmissione con impossibilità di recapito",
 	"NE": "Notifica di esito committente: la PA ha accettato o rifiutato il documento",
-	"DT": "Decorrenza termini: la PA non si e' espressa entro quindici giorni",
+	"DT": "Decorrenza termini: la PA non si è espressa entro quindici giorni",
 	"EC": "Scarto dell'esito committente",
 }
 
@@ -90,7 +90,7 @@ DESCRIZIONE_SCARTO: dict[str, str] = {
 	"00003": "Le dimensioni del file superano quelle ammesse",
 	"00102": "File non integro (firma non valida)",
 	"00200": "File non conforme al formato",
-	"00201": "Piu' di 50 errori di formato",
+	"00201": "Più di 50 errori di formato",
 	"00300": "IdFiscaleIVA del CedentePrestatore non valido",
 	"00301": "IdFiscaleIVA del CessionarioCommittente non valido",
 	"00305": "Codice destinatario non valido",
@@ -100,8 +100,8 @@ DESCRIZIONE_SCARTO: dict[str, str] = {
 	"00313": "PEC destinatario non valida",
 	"00318": "Errore di elaborazione del file",
 	"00320": "Fattura duplicata",
-	"00321": "Fattura gia' trasmessa e accolta",
-	"00327": "CessionarioCommittente in Gruppo IVA: il codice fiscale deve essere quello della societa' partecipante, non del Gruppo",
+	"00321": "Fattura già trasmessa e accolta",
+	"00327": "CessionarioCommittente in Gruppo IVA: il codice fiscale deve essere quello della società partecipante, non del Gruppo",
 	"00330": "IdFiscaleIVA del CedentePrestatore cessato",
 	"00400": "Aliquota IVA a zero senza Natura",
 	"00401": "Natura presente con aliquota diversa da zero",
