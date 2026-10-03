@@ -40,6 +40,7 @@
                   />
                   <component
                     :is="contact.doc.image ? Dropdown : 'div'"
+                    v-if="canWrite"
                     v-bind="
                       contact.doc.image
                         ? {
@@ -237,6 +238,7 @@ const router = useRouter()
 const {
   document: contact,
   permissions,
+  canWrite,
   scripts,
   triggerOnRender,
   error: nonSiApre,

@@ -30,6 +30,7 @@
               />
               <component
                 :is="organization.doc.organization_logo ? Dropdown : 'div'"
+                v-if="canWrite"
                 v-bind="
                   organization.doc.organization_logo
                     ? {
@@ -224,6 +225,7 @@ const router = useRouter()
 const {
   document: organization,
   permissions,
+  canWrite,
   triggerOnRender,
   error: nonSiApre,
 } = useDocument('CRM Organization', props.organizationId)
