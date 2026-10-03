@@ -4129,10 +4129,6 @@ msgstr "Tra"
 msgid "Beverage & Tobacco"
 msgstr "Bevande e tabacco"
 
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "Beyond what is included, SdI credits, minutes, SMS and advanced signatures are billed by the agency once a month. WhatsApp messages are paid by the centre directly to Meta."
-msgstr "Oltre quello che è incluso, crediti SdI, minuti, SMS e firme avanzate li fattura l'agenzia una volta al mese. I messaggi WhatsApp li paga il centro direttamente a Meta."
-
 #: frontend/src/utils/impostazioni.js
 msgid "Billable services"
 msgstr "Servizi fatturabili"
@@ -5467,10 +5463,6 @@ msgstr "Chiamata rifiutata"
 #: crm/integrations/twilio/api.py:166
 msgid "Call log not found"
 msgstr "Chiamata non trovata"
-
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "Call minutes this month"
-msgstr "Minuti di chiamata questo mese"
 
 #: frontend/src/components/Activities/CallArea.vue
 msgid "Call not answered"
@@ -22963,10 +22955,6 @@ msgstr "Invio dell'SMS non riuscito (vedi il registro degli errori)"
 #: frontend/src/components/Settings/PlanSettings.vue
 msgid "SMS sent"
 msgstr "SMS inviati"
-
-#: frontend/src/components/Settings/PlanSettings.vue
-msgid "SMS sent this month"
-msgstr "SMS inviati questo mese"
 
 #: crm/automation/engine.py
 msgid "SMS sent to {0}"
@@ -40984,3 +40972,7 @@ msgstr "Vista"
 #: frontend/src/components/Mobile/ElencoPersone.vue
 msgid "Name or company"
 msgstr "Nome o azienda"
+
+#: frontend/src/components/Settings/PlanSettings.vue
+msgid "Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. The centre pays WhatsApp messages directly to Meta, and calls, numbers and SMS to Twilio when the account is its own."
+msgstr "Oltre quello che è incluso, crediti SdI e firme avanzate li fattura l'agenzia una volta al mese. I messaggi WhatsApp il centro li paga direttamente a Meta, e chiamate, numeri e SMS a Twilio quando l'account è il suo."

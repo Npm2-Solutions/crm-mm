@@ -88,9 +88,9 @@ AMBULATORI = {"Solo": 1, "Studio": 2, "Centre": 5, "Polyclinic": 10, "Large": No
 #: SdI credits a year that come with invoicing, by size.
 CREDITI_SDI = {"Solo": 240, "Studio": 500, "Centre": 1200, "Polyclinic": 2400, "Large": 2400}
 
-#: Minutes a month that come with the phone; signatures a year with the advanced
-#: signature.
-MINUTI_INCLUSI = 714
+#: Signatures a year that come with the advanced signature. The phone counts
+#: nothing: a year's fee switches it on, and calls, numbers and SMS are paid to
+#: Twilio by whoever owns the account (the listino, 03/10/2026).
 FIRME_INCLUSE = 2000
 
 #: Used past this share of what is included, the page warns (the listino: at 80%).
