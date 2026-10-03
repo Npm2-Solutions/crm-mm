@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <!--
     Email and the team's notes: always ready to be written in, the way the
@@ -92,6 +95,8 @@ import {
   written,
 } from '@/utils/emailDraft'
 import { usersStore } from '@/stores/users'
+import { getSettings } from '@/stores/settings'
+import { nomeDelCentro } from '@/utils/marchio'
 import { markAnswered } from '@/composables/conversationState'
 import { useDraft } from '@/composables/drafts'
 import { useTelemetry } from 'frappe-ui/frappe'
@@ -126,6 +131,7 @@ const FILES = {
     write: (v) => JSON.stringify(v),
   },
 }
+const { brand } = getSettings()
 const newEmail = kept('emailBoxContent')
 const newComment = kept('commentBoxContent')
 // one list each: a file attached to the email is not attached to the note
@@ -134,12 +140,19 @@ const commentAttachments = kept('commentAttachments', [], FILES)
 const newEmailEditor = ref(null)
 const newCommentEditor = ref(null)
 
-// «Mario Rossi (#CRM-LEAD-…)», once there is a record to name: before it has
-// loaded there is nothing to say, and «(#undefined)» is not a subject.
+// The centre's name, once there is a record to write from: it is what the
+// person reads in their inbox. Never the record's code, as it was («Mario Rossi
+// (#CRM-LEAD-…)»): a reply reaches the person by its headers and by who writes
+// (crm.posta.ingresso), not by the subject. A centre without a name: whom it is
+// to.
 const subject = computed(() => {
   if (!doc.value?.name) return ''
-  const prefix = doc.value.lead_name || doc.value.organization || ''
-  return prefix ? `${prefix} (#${doc.value.name})` : `#${doc.value.name}`
+  return (
+    nomeDelCentro(brand.name) ||
+    doc.value.lead_name ||
+    doc.value.organization ||
+    ''
+  )
 })
 
 const signature = createResource({
