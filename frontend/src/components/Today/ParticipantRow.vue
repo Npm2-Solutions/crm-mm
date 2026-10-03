@@ -21,7 +21,9 @@
       <span v-else class="truncate text-base-medium text-ink-gray-8">
         {{ participant.participant_name }}
       </span>
+      <!-- a day gone by asks with its buttons: «In arrivo» there is not true -->
       <Badge
+        v-if="!(past && participant.status === 'Booked')"
         :label="
           __(
             STATUS[participant.status]?.label || participant.status,
