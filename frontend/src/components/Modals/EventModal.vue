@@ -340,7 +340,10 @@ onMounted(() => {
 
     oldEvent.value = JSON.parse(JSON.stringify(_event.value))
 
-    setTimeout(() => title.value?.el?.focus(), 100)
+    // without scrolling: at 100ms a phone's sheet is still rising from below
+    // the screen, and the browser scrolled it to reach the field - once up,
+    // its title and close button were above the screen
+    setTimeout(() => title.value?.el?.focus({ preventScroll: true }), 100)
   }
 })
 
@@ -459,7 +462,7 @@ function duplicateEvent() {
 
   _event.value.id = 'duplicate'
   _event.value.title = _event.value.title + ' (Copy)'
-  setTimeout(() => title.value?.el?.focus(), 100)
+  setTimeout(() => title.value?.el?.focus({ preventScroll: true }), 100)
 }
 
 function deleteEvent() {

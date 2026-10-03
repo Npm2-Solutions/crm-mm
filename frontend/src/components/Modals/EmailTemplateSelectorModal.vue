@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog v-model:open="show" :title="__('Email Templates')" :size="'4xl'">
     <template #default>
@@ -130,5 +133,12 @@ const filteredTemplates = computed(() => {
   )
 })
 
-watch(show, (value) => value && nextTick(() => searchInput.value?.el?.focus()))
+// without scrolling: on a phone the sheet is still rising when the field is
+// focused (components/Modals/EventModal.vue)
+watch(
+  show,
+  (value) =>
+    value &&
+    nextTick(() => searchInput.value?.el?.focus({ preventScroll: true })),
+)
 </script>

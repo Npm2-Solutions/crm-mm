@@ -202,14 +202,18 @@
       its own and keeps anything sticky inside it from sticking; `clip` cuts the
       same corners without that. */
 @media (max-width: 767px) {
+  /* the sheet sits at the bottom by its own top margin, not by the row's
+     alignment: a sheet taller than the screen then grows downwards, where the
+     container scrolls. Pushed down by `flex-end`, it overflowed upwards, out
+     of reach, its title and close button with it (an event at 360px). */
   .dialog-scroll-container > div[data-position] {
     min-height: 100%;
     min-height: 100dvh;
-    justify-content: flex-end;
+    justify-content: flex-start;
     padding: max(2.75rem, env(safe-area-inset-top, 0px)) 0 0;
   }
   .dialog-content {
-    margin: 0 !important;
+    margin: auto 0 0 !important;
     width: 100%;
     max-width: none !important;
     overflow: clip;
