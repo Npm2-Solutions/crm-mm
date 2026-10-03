@@ -10,8 +10,11 @@
 -->
 <template>
   <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+    <!-- touch-pan-y: sideways, the finger is the agenda's (it changes the
+         week, the day), never the browser's back -->
     <div
-      class="flex shrink-0 items-center gap-1 border-b border-outline-gray-2 px-1 py-2"
+      ref="striscia"
+      class="flex shrink-0 touch-pan-y items-center gap-1 border-b border-outline-gray-2 px-1 py-2"
     >
       <Button
         variant="ghost"
@@ -79,7 +82,7 @@
 
     <div
       ref="contenitore"
-      class="min-h-0 flex-1 overflow-y-auto px-3 pb-24 pt-2"
+      class="min-h-0 flex-1 touch-pan-y overflow-y-auto px-3 pb-24 pt-2"
     >
       <!-- pulled down from the top, the day reloads -->
       <TiraPerAggiornare v-bind="tira" />
@@ -164,6 +167,7 @@
 <script setup>
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { useScorriGiorni } from '@/composables/scorriGiorni'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
@@ -192,6 +196,17 @@ const giorno = defineModel('date', { type: String, required: true })
 const emit = defineEmits(['open'])
 const contenitore = ref(null)
 const tira = useTiraPerAggiornare(contenitore, () => props.aggiorna())
+// swiped sideways: the day's list moves a day, the week's strip a week
+const striscia = ref(null)
+useScorriGiorni(
+  contenitore,
+  (verso) => (giorno.value = spostaGiorno(giorno.value, verso)),
+  { segue: true },
+)
+useScorriGiorni(
+  striscia,
+  (verso) => (giorno.value = spostaGiorno(giorno.value, 7 * verso)),
+)
 
 const { getUser } = usersStore()
 const lingua = window.navigator?.language || 'it-IT'
