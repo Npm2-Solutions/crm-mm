@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -49,26 +53,24 @@
             </template>
           </Button>
         </Dropdown>
-        <!-- on a phone the words go and the icons stay, so Save still fits -->
+        <!-- on a phone the stats and the test run are in the ⋯ menu: beside
+             Save they left the title three words -->
         <Button
-          v-if="draft.name"
+          v-if="draft.name && !isMobileView"
           :variant="showStats ? 'subtle' : 'ghost'"
-          :label="isMobileView ? undefined : __('Stats')"
-          :icon="isMobileView ? 'lucide-bar-chart-2' : undefined"
-          :aria-label="__('Stats')"
+          :label="__('Stats')"
           @click="toggleStats"
         >
-          <template v-if="!isMobileView" #prefix>
+          <template #prefix>
             <FeatherIcon name="bar-chart-2" class="size-4" />
           </template>
         </Button>
         <Button
-          :label="isMobileView ? undefined : __('Test run')"
-          :icon="isMobileView ? 'lucide-play' : undefined"
-          :aria-label="__('Test run')"
+          v-if="!isMobileView"
+          :label="__('Test run')"
           @click="showPreview = true"
         >
-          <template v-if="!isMobileView" #prefix>
+          <template #prefix>
             <FeatherIcon name="play" class="size-4" />
           </template>
         </Button>
@@ -465,6 +467,18 @@ const paletteEntries = computed(() =>
 )
 
 const moreOptions = computed(() => [
+  {
+    label: __('Test run'),
+    icon: 'play',
+    condition: () => isMobileView.value,
+    onClick: () => (showPreview.value = true),
+  },
+  {
+    label: showStats.value ? __('Hide stats') : __('Stats'),
+    icon: 'bar-chart-2',
+    condition: () => isMobileView.value && Boolean(draft.name),
+    onClick: toggleStats,
+  },
   {
     label: __('Duplicate automation'),
     icon: 'copy',

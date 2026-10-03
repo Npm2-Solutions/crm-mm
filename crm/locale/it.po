@@ -41454,3 +41454,7 @@ msgstr "Carica da"
 msgctxt "Quote amount still to do"
 msgid "Left"
 msgstr "Da fare"
+
+#: frontend/src/pages/AutomationEditor.vue
+msgid "Hide stats"
+msgstr "Nascondi le statistiche"
