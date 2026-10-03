@@ -358,7 +358,7 @@ fra quello che decide il centro e quello che resta all'agenzia.
 | Sito | Manager | Man, Mkt | domini e certificati |
 | Voci del menu utente | Manager | Man, solo icone e indirizzi sicuri (già così) | — |
 | Meta | Manager; la parte tecnica System Manager | Man, Mkt | app, webhook, log (già così) |
-| Telefono | ognuno il suo; Manager il resto | ognuno il suo; Man segreteria, numeri, ID chiamante | chiavi di Twilio, Exotel e trascrizione, TwiML, SIP |
+| Telefono | ognuno il suo; Manager il resto | ognuno il suo; Man segreteria, numeri, ID chiamante | chiavi di Twilio e trascrizione, TwiML, SIP (Exotel tolto il 03/10/2026) |
 | ERPNext (tolto il 02/10/2026) | Manager | — | tutta |
 | Fuori dal modale: campi delle schede, viste pubbliche, filtri rapidi | Manager | Man | — |
 | Script dei moduli (Form Script) | dal Desk | — | tutta |
@@ -424,8 +424,9 @@ quello che dice il listino.
 - **Un superamento della taglia non blocca mai niente.** Se le agende attive
   superano quelle della taglia, il CRM avvisa e propone la taglia sopra, ma
   appuntamenti e fatture funzionano.
-- **Consumi**: il CRM conta agende attive, messaggi WhatsApp e SMS, minuti di
-  telefono e firme avanzate, e li manda all'agenzia ogni mese per la fattura.
+- **Consumi**: il CRM conta i crediti SdI e le firme avanzate dell'anno, che
+  l'agenzia fattura oltre quelli inclusi. WhatsApp lo fattura Meta al centro;
+  chiamate e SMS li fattura Twilio a chi ha l'account (listino, 03/10/2026).
 - **La console dell'agenzia** può essere il vostro CRM: i centri come
   organizzazioni, il piano come abbonamento, le fatture emesse con il modulo di
   fatturazione che c'è già.
@@ -645,9 +646,10 @@ di Sales Manager e Sales User.
 (permlevel 1, solo System Manager) e si vede con `tecnico.integrazioni`:
 
 - **Cruscotto**: la chiave del servizio di cambio. Il provider lo sceglie il centro;
-- **Telefono**: le credenziali di Twilio ed Exotel, l'app TwiML, i trunk SIP, il
-  test della connessione, e collegare o scollegare il provider. Al centro restano la
-  registrazione delle chiamate con il suo avviso e gli ID chiamante;
+- **Telefono**: le credenziali di Twilio (Exotel tolto il 03/10/2026), l'app
+  TwiML, i trunk SIP, il test della connessione, e collegare o scollegare il
+  provider. Al centro restano la registrazione delle chiamate con il suo avviso e
+  gli ID chiamante;
 - **Trascrizione**: l'indirizzo del servizio, la chiave, il modello e i limiti. Il
   centro la accende, sceglie lingua, vocabolario e per quanto si tengono le
   trascrizioni; se il servizio manca, glielo dice ("l'agenzia deve prima

@@ -2097,3 +2097,24 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Una riga di trattativa prende il prezzo del prodotto | Senza ERPNext non c'è un listino del cliente da cui prenderlo |
 | Le vecchie patch che creavano i campi per ERPNext escono da `patches.txt` | Su un sito nuovo creerebbero quello che la patch nuova toglie |
 
+## Niente più Exotel, e il telefono a 50 € l'anno
+
+> **Completato** (03/10/2026). DottorCloud usa solo Twilio: tolte le impostazioni
+> di Exotel (`CRM Exotel Settings`) con la loro pagina, `crm/integrations/exotel`,
+> il fornitore `crm/telephony/providers/exotel.py`, la chiamata nel browser
+> (`ExotelCallUI.vue`) e il numero Exotel sulla linea di ognuno. Il telefono con
+> l'account del centro costa 50 € l'anno per attivarlo, e basta: il piano non
+> conta più minuti né SMS.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Exotel tolto tutto, non spento | Richiesta di NPM2 del 03/10/2026. Era il fornitore per l'India del progetto originale; i centri italiani usano Twilio (doc 52) |
+| La patch `dottorcloud_does_not_use_exotel` toglie le impostazioni con le loro chiavi e svuota il mezzo predefinito delle linee e delle chiamate che nominavano Exotel | Una linea con Exotel predefinito chiamerebbe con un fornitore che non c'è; le chiamate registrate restano e perdono solo il nome del fornitore |
+| La colonna `exotel_number` resta nel database | Un campo tolto lascia la colonna: quello che conteneva non si perde |
+| Con un fornitore solo la Telefonia non chiede il mezzo predefinito; una chiamata con un predefinito spento usa quello acceso | Con una scelta sola non c'è niente da scegliere, e un predefinito vecchio non deve lasciare la chiamata senza fornitore |
+| La riga «Cellulare personale» della Telefonia se ne va, il campo resta | La riga era di Exotel; il campo lo legge chi decide chi squilla, quando la linea squilla sul cellulare (con il cellulare dell'utente se è vuoto) |
+| Il telefono: 50 € l'anno per attivarlo; chiamate, numeri e SMS a Twilio | Richiesta di NPM2 del 03/10/2026: con l'account del centro i minuti li paga il centro a Twilio, quindi i 714 minuti inclusi non avevano senso (doc 52) |
+| Nei consumi del piano restano crediti SdI e firme avanzate | Chiamate e SMS li fattura Twilio a chi ha l'account; la spesa per tipo sta nella pagina di Twilio, per chi paga |
+| Con la segreteria dell'agenzia il telefono resta nel prezzo del servizio, gli SMS nella fattura del mese | Lì lo spazio è nell'account dell'agenzia, che paga Twilio |
