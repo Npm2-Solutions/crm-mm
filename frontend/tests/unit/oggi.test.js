@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  firstOfPast,
   NEXT,
   byDay,
   shiftDay,
@@ -101,5 +102,51 @@ describe('moving between days', () => {
     expect(shiftDay('2026-09-30', 1)).toBe('2026-10-01')
     expect(shiftDay('2026-01-01', -1)).toBe('2025-12-31')
     expect(shiftDay(null, 1)).toBe(null)
+  })
+})
+
+describe('the open past, the first few', () => {
+  const persona = (name, status = 'Booked') => ({ name, status })
+  const groups = [
+    {
+      day: '2026-10-02',
+      appointments: [
+        {
+          name: 'A1',
+          participants: [persona('p1'), persona('p2', 'Attended')],
+        },
+        { name: 'A2', participants: [persona('p3'), persona('p4')] },
+      ],
+    },
+    {
+      day: '2026-10-01',
+      appointments: [{ name: 'A3', participants: [persona('p5')] }],
+    },
+  ]
+
+  it('keeps the days and only who is still expected', () => {
+    const shown = firstOfPast(groups, 10)
+    expect(shown.map((g) => g.day)).toEqual(['2026-10-02', '2026-10-01'])
+    expect(shown[0].appointments[0].participants.map((p) => p.name)).toEqual([
+      'p1',
+    ])
+  })
+
+  it('stops after so many people, in the middle of an appointment too', () => {
+    const shown = firstOfPast(groups, 2)
+    expect(shown).toHaveLength(1)
+    expect(
+      shown[0].appointments.flatMap((a) => a.participants.map((p) => p.name)),
+    ).toEqual(['p1', 'p3'])
+  })
+
+  it('leaves out an appointment where everybody has an outcome', () => {
+    const chiusi = [
+      {
+        day: '2026-10-02',
+        appointments: [{ name: 'A', participants: [persona('x', 'No Show')] }],
+      },
+    ]
+    expect(firstOfPast(chiusi, 4)).toEqual([])
   })
 })

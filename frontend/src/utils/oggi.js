@@ -69,6 +69,31 @@ export function byDay(appointments = []) {
     .map(([day, items]) => ({ day, appointments: items }))
 }
 
+/**
+ * The first `quanti` people still without an outcome, in their days: the groups
+ * of `byDay` cut after them, each appointment with only the ones still expected.
+ */
+export function firstOfPast(groups = [], quanti = 4) {
+  const shown = []
+  let left = quanti
+  for (const group of groups) {
+    if (left <= 0) break
+    const appointments = []
+    for (const appointment of group.appointments) {
+      if (left <= 0) break
+      const expected = (appointment.participants || []).filter(
+        (p) => p.status === 'Booked',
+      )
+      if (!expected.length) continue
+      const taken = expected.slice(0, left)
+      left -= taken.length
+      appointments.push({ ...appointment, participants: taken })
+    }
+    if (appointments.length) shown.push({ day: group.day, appointments })
+  }
+  return shown
+}
+
 /** «09:30» from a stored datetime, «» from anything else. */
 export function timeOf(datetime) {
   const match = /[ T](\d{2}):(\d{2})/.exec(String(datetime ?? ''))

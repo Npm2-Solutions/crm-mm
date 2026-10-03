@@ -62,11 +62,11 @@
 
   <!-- filters. On a phone they are one row that scrolls sideways — wrapped,
        the five of them took three rows, a seventh of the screen, above every
-       day — and they step aside while a panel is open, which takes the
-       screen below the header. -->
+       day — fading at the edge so it shows there is more, and they step aside
+       while a panel is open, which takes the screen below the header. -->
   <div
     v-show="!(isMobileView && panelOpen)"
-    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0"
+    class="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-3 py-2 sm:px-5 max-md:flex-nowrap max-md:overflow-x-auto max-md:pr-8 max-md:[mask-image:linear-gradient(to_right,#000_calc(100%-2.5rem),transparent)] max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0"
   >
     <MultiSelectFilter
       v-model="filters.services"
@@ -122,9 +122,13 @@
     (month, week, day: appointments and events together), and beside either
     one the panel of what is open.
   -->
+  <!-- On a phone the panel takes the whole width: what it opened from steps
+       aside, or its controls - positioned, the view's select and the day's
+       arrows - were drawn over the panel's title. -->
   <div class="flex h-full overflow-hidden">
     <div
       v-if="viewMode === 'agenda'"
+      v-show="!(isMobileView && panelOpen)"
       class="flex min-w-0 flex-1 flex-col overflow-hidden"
     >
       <div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
@@ -200,6 +204,7 @@
     <!-- a phone opens on the day as a list; the hours' grid is one choice away -->
     <AgendaDelGiorno
       v-else-if="viewMode === 'elenco'"
+      v-show="!(isMobileView && panelOpen)"
       v-model:date="agendaDate"
       :appointments="appointments"
       :events="shownEvents"
@@ -221,6 +226,7 @@
     </AgendaDelGiorno>
     <Calendar
       v-else
+      v-show="!(isMobileView && panelOpen)"
       ref="calendar"
       class="min-w-0 flex-1 overflow-hidden"
       :config="{
@@ -505,9 +511,10 @@ const vistePerIlComputer = [
   { label: __('Week'), value: 'Week' },
   { label: __('Month'), value: 'Month' },
 ]
+// a phone has no week: seven columns of 45px read nothing, not even a name
 const vistePerIlTelefono = [
   { label: __('List'), value: 'List' },
-  ...vistePerIlComputer,
+  ...vistePerIlComputer.filter((vista) => vista.value !== 'Week'),
 ]
 
 const calendar = ref(null)
