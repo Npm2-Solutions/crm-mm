@@ -626,7 +626,9 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   `useElencoDelTelefono`), while the menu opens it from the top.
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
-  phone. A page that opens over another (a panel) hides what it covers there
+  phone. A sheet taken by its grabber follows the finger down and closes as
+  Escape does (`utils/trascinaFoglio.js`); a dialog that is a screen of its own
+  draws no grabber and is not dragged. A page that opens over another (a panel) hides what it covers there
   (`v-show`), or the covered page's positioned controls are drawn over it, and
   registers with `chiudeConIndietro(chiudi)` (`utils/indietro.js`): Android's
   back closes it before leaving the page, as it does a sheet or a menu.
