@@ -8,6 +8,7 @@
   <div class="flex h-app w-full" data-cornice-telefono>
     <div class="flex h-full min-w-0 flex-1 flex-col px-safe">
       <MobileAppHeader />
+      <SenzaRete />
       <!-- The scroll box is this wrapper, not the whole column, so the header
            stays put and the tab bar is never scrolled off the bottom. -->
       <div
@@ -24,6 +25,7 @@
 <script setup>
 import MobileAppHeader from '@/components/Mobile/MobileAppHeader.vue'
 import MobileBottomNav from '@/components/Mobile/MobileBottomNav.vue'
+import SenzaRete from '@/components/SenzaRete.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
 import { seguiLaTastiera } from '@/utils/tastieraAperta'
 import { registerScrollContainer, unregisterScrollContainer } from 'frappe-ui'
