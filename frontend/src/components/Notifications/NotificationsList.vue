@@ -7,7 +7,10 @@
   list in the panel and on the phone's page.
 -->
 <template>
-  <div class="flex min-h-0 flex-1 flex-col">
+  <!-- one box that scrolls whatever it holds: pulled down from its top on a
+       phone it reloads, the empty list too -->
+  <div ref="contenitore" class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <TiraPerAggiornare v-bind="tira" class="shrink-0" />
     <div
       v-if="!notifications.fetched && notifications.loading"
       class="flex flex-1 items-center justify-center py-10"
@@ -29,7 +32,7 @@
         "
       />
     </div>
-    <div v-else class="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+    <div v-else class="shrink-0 px-2 pb-3">
       <section v-for="s in giorni" :key="s.key" :aria-label="__(s.label)">
         <h3
           class="sticky top-0 z-[1] bg-surface-base px-2 pb-1 pt-3 text-[11px] font-medium uppercase tracking-wide text-ink-gray-5"
@@ -61,18 +64,24 @@
 <script setup>
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import LoaderMark from '@/components/Espresso/LoaderMark.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import NotificationRow from '@/components/Notifications/NotificationRow.vue'
 import { apriImpostazioni } from '@/composables/settings'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { notifications, notificationsStore } from '@/stores/notifications'
 import { sezioni } from '@/utils/notifiche'
 import { dayjsLocal } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const store = notificationsStore()
 const { segnaLetta, segnaDaLeggere, mostraAltre } = store
 const filtro = computed(() => store.filtro)
 
 const righe = computed(() => notifications.data?.rows || [])
+
+// pulled down on a phone: the same page of rows again, from the server
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, () => notifications.reload())
 
 // the reader's clock: the server's moments are moved onto it before the days
 // are cut, as the conversations' list does

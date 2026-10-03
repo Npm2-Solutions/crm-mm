@@ -57,6 +57,7 @@
       :counts="counts.data || {}"
       :loading="people.loading"
       :active="chosen"
+      :aggiorna="refreshList"
       @open="choose"
       @loadMore="loadMore"
     />
@@ -411,16 +412,19 @@ function loadMore() {
 }
 
 function reload() {
-  people.reload()
-  unread.fetch()
-  counts.reload()
-  if (chosen.value) person.fetch()
+  return Promise.all([
+    people.reload(),
+    unread.fetch(),
+    counts.reload(),
+    chosen.value && person.fetch(),
+  ])
 }
 
-// the button: the list as it is, without the row that was on its way out
+// the button, and the list pulled down on a phone: the list as it is, without
+// the row that was on its way out
 function refreshList() {
   shown.value = shown.value.filter((row) => !row.leaving)
-  reload()
+  return reload()
 }
 
 // a message arriving reorders this list, so it has to be told — and so does a

@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The left column: which conversation you are reading, and how to find it.
 
   A chat list, so it behaves like one — the base view is everything still going
@@ -90,7 +93,8 @@
       </TextInput>
     </div>
 
-    <div class="flex-1 overflow-y-auto" @scroll="onScroll">
+    <div ref="contenitore" class="flex-1 overflow-y-auto" @scroll="onScroll">
+      <TiraPerAggiornare v-bind="tira" />
       <ConversationList
         :rows="rows"
         :unread="unread"
@@ -117,11 +121,13 @@
 
 <script setup>
 import ConversationList from '@/components/ConversationList.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import LucideChevronDown from '~icons/lucide/chevron-down'
 import LucideChevronUp from '~icons/lucide/chevron-up'
 import LucideSearch from '~icons/lucide/search'
 import { Dropdown, LoadingIndicator, TextInput, Tooltip } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -130,9 +136,14 @@ const props = defineProps({
   counts: { type: Object, default: () => ({}) },
   loading: { type: Boolean, default: false },
   active: { type: String, default: '' },
+  // the list pulled down from its top on a phone: what reloads it, a promise
+  aggiorna: { type: Function, default: null },
 })
 
 const emit = defineEmits(['open', 'loadMore'])
+
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, () => props.aggiorna?.())
 
 const view = defineModel('view', { type: String, default: 'open' })
 const search = defineModel('search', { type: String, default: '' })

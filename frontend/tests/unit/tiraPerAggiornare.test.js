@@ -86,6 +86,29 @@ describe('useTiraPerAggiornare', () => {
     smonta()
   })
 
+  it('follows a box drawn after the page, once the list has rows', async () => {
+    const contenitore = ref(null)
+    const pronta = ref(false)
+    const aggiorna = vi.fn()
+    const app = createApp({
+      setup() {
+        useTiraPerAggiornare(contenitore, aggiorna)
+        return () => (pronta.value ? h('div', { ref: contenitore }) : h('span'))
+      },
+    })
+    const radice = document.createElement('div')
+    document.body.append(radice)
+    app.mount(radice)
+    pronta.value = true
+    await nextTick()
+    const box = contenitore.value
+    tocco(box, 'touchstart', 100)
+    tocco(box, 'touchmove', 100 + 2 * SOGLIA_TIRATA + 10)
+    tocco(box, 'touchend')
+    expect(aggiorna).toHaveBeenCalledTimes(1)
+    app.unmount()
+  })
+
   it('reloads nothing when the phone takes the gesture back', () => {
     const aggiorna = vi.fn()
     const { stato, box, smonta } = monta(aggiorna)

@@ -6,7 +6,7 @@
  * browser's own pull reloaded the whole app, a form half written with it, and
  * is off (telefono.css); this one reloads only the list under the finger.
  */
-import { onBeforeUnmount, onMounted, reactive } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, watch } from 'vue'
 
 // how far the finger has to bring the mark down before letting go reloads
 export const SOGLIA_TIRATA = 64
@@ -90,15 +90,19 @@ export function useTiraPerAggiornare(contenitore, aggiorna) {
     ['touchend', su],
     ['touchcancel', annulla],
   ]
+  // the box may come later, or be another one (a list drawn once it has
+  // rows): the finger is followed on whichever box is there now
   let box = null
-  onMounted(() => {
-    box = contenitore.value
+  function segui(nuovo) {
+    if (nuovo === box) return
+    for (const [evento, fn] of ascolti) box?.removeEventListener(evento, fn)
+    box = nuovo || null
     for (const [evento, fn] of ascolti) {
       box?.addEventListener(evento, fn, { passive: true })
     }
-  })
-  onBeforeUnmount(() => {
-    for (const [evento, fn] of ascolti) box?.removeEventListener(evento, fn)
-  })
+  }
+  watch(contenitore, segui, { flush: 'post' })
+  onMounted(() => segui(contenitore.value))
+  onBeforeUnmount(() => segui(null))
   return stato
 }
