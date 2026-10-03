@@ -92,15 +92,16 @@
       :tabs="tabs"
       class="flex flex-1 overflow-auto flex-col [&>[role='tablist']]:gap-7.5 [&>[role='tablist']]:px-4 [&>[role='tabpanel']:not([hidden])]:flex [&>[role='tabpanel']:not([hidden])]:grow"
     >
+      <!-- the words only, as a person's tabs: with their icons the three
+           ran past a 360px screen -->
       <template #tab-item="{ tab, selected }">
         <button
-          v-if="tab.name !== 'Details'"
           class="group flex items-center gap-2 border-b border-transparent py-2.5 text-base text-ink-gray-5 duration-300 ease-in-out hover:text-ink-gray-9"
           :class="{ 'text-ink-gray-9': selected }"
         >
-          <component :is="tab.icon" v-if="tab.icon" class="h-5" />
           {{ __(tab.label) }}
           <Badge
+            v-if="tab.count !== undefined"
             class="group-hover:bg-surface-gray-10"
             :class="[selected ? 'bg-surface-gray-10' : 'bg-gray-600']"
             variant="solid"
@@ -133,28 +134,25 @@
           </div>
         </div>
         <DealsListView
-          v-if="tab.label === 'Deals' && rows.length"
+          v-if="tab.name === 'Deals' && rows.length"
           class="mt-4"
           :rows="rows"
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
         <ContactsListView
-          v-if="tab.label === 'Contacts' && rows.length"
+          v-if="tab.name === 'Contacts' && rows.length"
           class="mt-4"
           :rows="rows"
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <div
-          v-if="!rows.length && tab.name !== 'Details'"
-          class="grid flex-1 place-items-center text-2xl-medium text-ink-gray-4"
-        >
-          <div class="flex flex-col items-center justify-center space-y-3">
-            <component :is="tab.icon" class="!h-10 !w-10" />
-            <div>{{ __('No {0} Found', [__(tab.label)]) }}</div>
-          </div>
-        </div>
+        <EmptyState
+          v-if="!rows.length && VUOTI[tab.name]"
+          :name="__(tab.label)"
+          :title="VUOTI[tab.name].title"
+          :description="VUOTI[tab.name].description"
+        />
       </template>
     </Tabs>
   </div>
@@ -167,6 +165,7 @@ import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import ContactsListView from '@/components/ListViews/ContactsListView.vue'
+import EmptyState from '@/components/ListViews/EmptyState.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
@@ -344,25 +343,39 @@ function getParsedSections(_sections) {
 }
 
 const tabIndex = ref(0)
+// an empty tab says so in a whole sentence, never a tab's name glued into one
+const VUOTI = {
+  Deals: {
+    title: 'No deals yet',
+    description: 'The deals with this organization appear here.',
+  },
+  Contacts: {
+    title: 'No contacts yet',
+    description: 'The contacts who work at this organization appear here.',
+  },
+}
 const tabs = [
   {
     name: 'Details',
-    label: __('Details'),
+    label: 'Details',
     icon: DetailsIcon,
   },
   {
     name: 'Deals',
-    label: __('Deals'),
+    label: 'Deals',
     icon: h(DealsIcon, { class: 'h-4 w-4' }),
     count: computed(() => deals.data?.length),
   },
   {
     name: 'Contacts',
-    label: __('Contacts'),
+    label: 'Contacts',
     icon: h(ContactsIcon, { class: 'h-4 w-4' }),
     count: computed(() => contacts.data?.length),
   },
 ]
+// the tab open, by its name: the details come first here, so the index that
+// picks deals or contacts on the computer is one off on a phone
+const aperta = computed(() => tabs[tabIndex.value]?.name)
 
 const deals = createListResource({
   type: 'list',
@@ -409,19 +422,17 @@ const contacts = createListResource({
 })
 
 const rows = computed(() => {
-  let list = !tabIndex.value ? deals : contacts
-
-  if (!list.data) return []
-
-  return list.data.map((row) => {
-    return !tabIndex.value ? getDealRowObject(row) : getContactRowObject(row)
-  })
+  if (aperta.value === 'Deals')
+    return (deals.data || []).map((row) => getDealRowObject(row))
+  if (aperta.value === 'Contacts')
+    return (contacts.data || []).map((row) => getContactRowObject(row))
+  return []
 })
 
 const { getFormattedCurrency } = getMeta('CRM Deal')
 
 const columns = computed(() => {
-  return tabIndex.value === 0 ? dealColumns : contactColumns
+  return aperta.value === 'Deals' ? dealColumns : contactColumns
 })
 
 function getDealRowObject(deal) {
@@ -479,6 +490,8 @@ const dealColumns = [
   {
     label: __('Status'),
     key: 'status',
+    // the stage's name in the reader's language, as in the deals' own list
+    options: 'CRM Deal Status',
     width: '10rem',
   },
   {
