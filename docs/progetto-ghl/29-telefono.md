@@ -148,6 +148,10 @@ toccando il riquadro intero) e le caselle con la loro etichetta accanto
   telefono.
 - **Tabelle**: una larghezza minima per colonna e lo scorrimento di lato, non
   colonne schiacciate a niente.
+- **Mentre si scrive la cornice segue la tastiera** (`utils/tastieraAperta.js`):
+  un elemento fisso in fondo allo schermo finisce sotto la tastiera; quello che
+  deve restare in vista sta in fondo alla cornice o a un foglio, non in
+  `position: fixed`.
 - **Ogni campo chiede la sua tastiera**: `tastieraDi(field)` per un campo di
   un DocType, `tastiera('telefono' | 'email' | 'url' | 'intero' | 'codice' |
   'cifre')` per gli altri (`utils/tastiera.js`); un numero intero su
@@ -349,6 +353,46 @@ Restano come sono, e perché:
   pubbliche (`/prenota`, i moduli del sito, l'area) li suggeriscono già: lì la
   persona scrive i suoi.
 
+## Settima parte: scrivere sul telefono (03/10/2026)
+
+La tastiera copre il fondo dello schermo senza accorciare la pagina: iPhone, e
+Chrome su Android, rimpiccioliscono solo la parte che si vede (il «visual
+viewport») e la fanno scivolare verso il campo. La cornice dell'app restava
+alta quanto lo schermo, e quello che sta in fondo finiva sotto la tastiera:
+«Crea» di un foglio, la casella della chat, «Prenota l'appuntamento». Intanto
+la testata scivolava via in alto.
+
+`utils/tastieraAperta.js` guarda il visual viewport mentre qualcuno scrive, e
+scrive sulla radice quanto se ne vede. `telefono.css` (e `area.css` per l'area):
+
+| Dove | Con la tastiera aperta |
+|---|---|
+| La cornice dell'app (`data-cornice-telefono`) | Alta quanto la parte visibile e ferma in alto: la testata resta, la lista o la chat finiscono sulla tastiera |
+| La barra in basso | Si toglie, come nelle app del telefono, e torna quando la tastiera si chiude |
+| Un foglio | Si appoggia sulla tastiera, il titolo in alto e i pulsanti in vista; lo spazio sopra il foglio si riduce |
+| La lista di un menu, di una scelta, di un campo collegato | Sopra la tastiera, con la ricerca in cima e «Pulisci» in fondo |
+| Le impostazioni | Alte quanto la parte visibile, la barra del salvataggio sopra la tastiera |
+| L'area del paziente | La stessa cosa: la chat col centro, i dialoghi, i posti in basso che si tolgono |
+
+Con il tocco, come in un'app:
+
+- **Niente lampo grigio a ogni tocco.** Quello che si tocca mostra da sé che è
+  premuto: i pulsanti di frappe-ui, la barra, le righe delle liste. iPhone lo
+  mostra solo dove si ascolta il tocco, e la cornice lo ascolta.
+- **Tirando giù in cima a una lista l'app non si ricarica**, e la cornice non
+  rimbalza: le liste scorrono nei loro riquadri.
+- **Tenendo premuto non compare il menu del browser.** Sulla barra, sulle
+  schede, sui pulsanti e sulle righe non si apre il menu di un link e non si
+  seleziona una parola: una riga tenuta premuta si sceglie (`MobileListRows`).
+
+La prova è stata fatta in Chromium con un visual viewport finto, alto 508 punti
+come con la tastiera di un iPhone da 844, e un riquadro al posto della
+tastiera. Così si sono provati la persona nuova, il nuovo appuntamento, la
+ricerca, una nota, la lista di un campo collegato, una conversazione WhatsApp e
+la chat dell'area: il campo attivo resta in vista e la tastiera, chiudendosi,
+riporta tutto com'era. Su un iPhone vero va guardato appena possibile, perché
+nessun browser di prova ha la sua tastiera.
+
 ## File
 
 | File | Cosa cambia |
@@ -390,6 +434,7 @@ Restano come sono, e perché:
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
+| `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
 | `frontend/src/utils/tastiera.js` + `FieldLayout/Field.vue`, `SidePanelLayout.vue`, `BillingProfileSection.vue`, `Invoices/InvoiceDialog.vue`, `Calendar/AppointmentPanel.vue`, `Telephony/CallUI.vue`, le impostazioni | La tastiera di ogni campo. Testato in `tests/unit/tastiera.test.js` |
 
 ## Non incluso
