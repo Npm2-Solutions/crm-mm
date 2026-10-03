@@ -40992,3 +40992,167 @@ msgstr "Preventivo consegnato"
 #: crm/clienti/pipeline.py
 msgid "Request"
 msgstr "Richiesta"
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "Name, website or industry"
+msgstr "Nome, sito o settore"
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "Search organizations"
+msgstr "Cerca aziende"
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "1 deal"
+msgstr "1 trattativa"
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "{0} deals"
+msgstr "{0} trattative"
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "Nothing found for «{0}»."
+msgstr "Nessun risultato per «{0}»."
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "No organizations yet"
+msgstr "Ancora nessuna azienda"
+
+#: frontend/src/components/Mobile/ElencoAziende.vue
+msgid "The companies your people work for: add one with the + button."
+msgstr "Le aziende per cui lavorano le tue persone: aggiungine una con il pulsante +."
+
+#: frontend/src/pages/Organizations.vue
+msgid "New organization"
+msgstr "Nuova azienda"
+
+#: frontend/src/components/Mobile/ElencoChiamate.vue
+msgid "Name or number"
+msgstr "Nome o numero"
+
+#: frontend/src/components/Mobile/ElencoChiamate.vue
+msgid "Search calls"
+msgstr "Cerca chiamate"
+
+#: frontend/src/components/Mobile/ElencoChiamate.vue
+msgid "Call back {0}"
+msgstr "Richiama {0}"
+
+#: frontend/src/components/Mobile/ElencoChiamate.vue
+msgid "The calls made and received through {brand} are kept here."
+msgstr "Qui restano le chiamate fatte e ricevute con {brand}."
+
+#: frontend/src/components/Mobile/ElencoChiamate.vue
+msgid "Missed · left a message"
+msgstr "Persa · ha lasciato un messaggio"
+
+#: frontend/src/pages/CallLogs.vue
+msgid "Log a call"
+msgstr "Registra una chiamata"
+
+#: frontend/src/components/Mobile/ElencoContatti.vue
+msgid "Name, company, number or email"
+msgstr "Nome, azienda, numero o email"
+
+#: frontend/src/components/Mobile/ElencoContatti.vue
+msgid "Search contacts"
+msgstr "Cerca contatti"
+
+#: frontend/src/components/Mobile/ElencoContatti.vue
+msgid "No contacts yet"
+msgstr "Ancora nessun contatto"
+
+#: frontend/src/components/Mobile/ElencoContatti.vue
+msgid "The people of the companies you work with: add one with the + button."
+msgstr "Le persone delle aziende con cui lavori: aggiungine una con il pulsante +."
+
+#: frontend/src/pages/Contacts.vue
+msgid "New contact"
+msgstr "Nuovo contatto"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.py
+msgid "Receiver"
+msgstr "Destinatario"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.py
+msgid "From (number)"
+msgstr "Dal numero"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.py
+msgid "To (number)"
+msgstr "Al numero"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Activities Found"
+msgstr "Ancora nessuna attività"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Emails Found"
+msgstr "Ancora nessuna email"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Comments Found"
+msgstr "Ancora nessun commento"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Data Fields Added Yet"
+msgstr "Ancora nessun dato"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Notes Found"
+msgstr "Ancora nessuna nota"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Tasks Found"
+msgstr "Ancora nessuna cosa da fare"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No Attachments Found"
+msgstr "Ancora nessun allegato"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No WhatsApp Messages Found"
+msgstr "Ancora nessun messaggio WhatsApp"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No SMS Found"
+msgstr "Ancora nessun SMS"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "There are no activities to display here. Go ahead and make some changes."
+msgstr "Qui compare quello che succede: chiamate, messaggi, note e modifiche."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No emails found in your inbox. New messages will appear here soon."
+msgstr "Le email scambiate con questa persona compaiono qui."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Be the first to add one."
+msgstr "Scrivi il primo."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No data fields have been added yet."
+msgstr "Nessun campo è stato ancora aggiunto."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Nothing here for now. Add a note to keep track of things."
+msgstr "Per ora niente: aggiungi una nota per tenere traccia delle cose."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Nothing to do at the moment. Start organizing by adding one here."
+msgstr "Per ora niente: aggiungi una cosa da fare per organizzarti."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "No files have been attached yet. Upload files to see them here."
+msgstr "Ancora nessun file: caricane uno per vederlo qui."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Start a conversation now!"
+msgstr "Inizia una conversazione."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "Send a text message now!"
+msgstr "Manda un SMS."
+
+#: frontend/src/components/Modals/ContactModal.vue
+msgid "Mobile No"
+msgstr "Cellulare"

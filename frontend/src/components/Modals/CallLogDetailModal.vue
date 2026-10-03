@@ -330,7 +330,11 @@ const detailFields = computed(() => {
         class: 'h-3.5 w-3.5',
       }),
       name: 'type',
-      value: data.type.label + ' Call',
+      // one sentence each way, never «Incoming» glued to an English word
+      value:
+        callLog.value.data.type === 'Incoming'
+          ? __('Incoming call')
+          : __('Outgoing call'),
     },
     {
       icon: ContactsIcon,
@@ -343,7 +347,7 @@ const detailFields = computed(() => {
     {
       icon: data._lead ? LeadsIcon : Dealsicon,
       name: 'reference_doc',
-      value: data._lead ? 'Lead' : 'Deal',
+      value: data._lead ? __('Open the person') : __('Open the deal'),
       link: () => {
         if (data._lead) {
           router.push({
