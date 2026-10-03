@@ -2118,3 +2118,20 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Il telefono: 50 € l'anno per attivarlo; chiamate, numeri e SMS a Twilio | Richiesta di NPM2 del 03/10/2026: con l'account del centro i minuti li paga il centro a Twilio, quindi i 714 minuti inclusi non avevano senso (doc 52) |
 | Nei consumi del piano restano crediti SdI e firme avanzate | Chiamate e SMS li fattura Twilio a chi ha l'account; la spesa per tipo sta nella pagina di Twilio, per chi paga |
 | Con la segreteria dell'agenzia il telefono resta nel prezzo del servizio, gli SMS nella fattura del mese | Lì lo spazio è nell'account dell'agenzia, che paga Twilio |
+
+## Le notifiche di prima dicono il nome
+
+> **Completato** (03/10/2026). Le notifiche scritte prima che le frasi stessero a
+> parte (02/10/2026) si leggevano con le parole di allora: in inglese, le prime con
+> il codice della persona («You received a whatsapp message in lead
+> CRM-LEAD-2026-00397»). La patch `the_old_notifications_name_the_person` dà loro la
+> frase e i nomi di oggi.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| La frase si ricava dal tipo e da che cosa riguarda la notifica, non dalle sue parole | Le parole cambiano da una versione all'altra e da una lingua all'altra; il tipo, la persona o la trattativa e chi l'ha fatto stanno nei campi da sempre |
+| Un'assegnazione tolta si riconosce dalle parole senza i nomi («removed», «rimossa», «tolto») | È l'unica cosa che i campi non dicono; il titolo di un'attività («Dente tolto») è in grassetto e non conta |
+| Convertite: messaggi (WhatsApp, SMS, email), menzioni, assegnazioni e attività, domande dall'area | Sono i tipi che dicevano una frase fissa; automazioni, fatturazione e Sistema TS hanno parole proprie, scritte già nella lingua del centro |
+| Una su una persona, una trattativa o un'attività che non c'è più resta com'era | Il nome non c'è più da dire, e il pannello non apre niente |

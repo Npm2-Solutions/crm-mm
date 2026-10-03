@@ -93,3 +93,4 @@ crm.patches.v1_0.the_person_first_on_their_page
 crm.patches.v1_0.itala_states_are_the_invoices
 crm.patches.v1_0.the_lost_reason_shows_on_the_lost_deal
 crm.patches.v1_0.dottorcloud_does_not_use_exotel
+crm.patches.v1_0.the_old_notifications_name_the_person

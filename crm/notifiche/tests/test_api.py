@@ -235,6 +235,78 @@ class DoveSiApre(NotificheCase):
 		self.assertEqual(self.pannello()["rows"][0]["text"], "<b>Anna</b> mentioned you")
 
 
+class ScrittePrimaConIlNome(NotificheCase):
+	"""What was written before the sentences were kept apart reads like the rest
+	once the patch has run: the person by their name, in the reader's language."""
+
+	def vecchia(self, **campi):
+		doc = frappe.get_doc({"doctype": NOTIFICA, "to_user": BRUNO, **campi})
+		# as they were written: what they were about may be gone since
+		doc.flags.ignore_links = True
+		return doc.insert(ignore_permissions=True)
+
+	def test_un_whatsapp_con_il_codice_dice_il_nome(self):
+		from crm.patches.v1_0 import the_old_notifications_name_the_person as patch
+
+		self.vecchia(
+			type="WhatsApp",
+			from_user=ANNA,
+			notification_text=(
+				'<div class="mb-2 leading-5 text-ink-gray-5"><span class="font-medium text-ink-gray-9">'
+				"You</span><span>received a whatsapp message in lead</span>"
+				f'<span class="font-medium text-ink-gray-9">{self.laura.name}</span></div>'
+			),
+			message="test",
+			notification_type_doctype="WhatsApp Message",
+			notification_type_doc="nessuno",
+			reference_doctype="CRM Lead",
+			reference_name=self.laura.name,
+		)
+		patch.execute()
+		patch.execute()
+		self.come(BRUNO, "it")
+		riga = self.pannello()["rows"][0]
+		self.assertEqual(riga["kind"], "whatsapp")
+		self.assertEqual(riga["text"], "Hai ricevuto un messaggio WhatsApp da <b>Laura Notifica</b>")
+		self.assertNotIn(self.laura.name, riga["text"])
+
+	def test_un_assegnazione_tolta_e_le_parole_di_un_automazione(self):
+		from crm.patches.v1_0 import the_old_notifications_name_the_person as patch
+
+		self.vecchia(
+			type="Assignment",
+			from_user=ANNA,
+			notification_text=(
+				"<span>Your assignment on lead "
+				'<span class="font-medium text-ink-gray-9">Laura Notifica</span> has been removed by '
+				'<span class="font-medium text-ink-gray-9">Anna</span></span>'
+			),
+			notification_type_doctype="CRM Lead",
+			notification_type_doc=self.laura.name,
+			reference_doctype="CRM Lead",
+			reference_name=self.laura.name,
+		)
+		automazione = self.vecchia(type="Automation", notification_text="Richiamare Laura entro oggi")
+		patch.execute()
+		self.come(BRUNO, "it")
+		testi = [riga["text"] for riga in self.pannello()["rows"]]
+		self.assertIn("<b>Anna Notifiche</b> ti ha tolto l'assegnazione di <b>Laura Notifica</b>", testi)
+		self.assertIn("Richiamare Laura entro oggi", testi)
+		self.assertFalse(frappe.db.get_value(NOTIFICA, automazione.name, "sentence"))
+
+	def test_di_una_persona_tolta_resta_com_era(self):
+		from crm.patches.v1_0 import the_old_notifications_name_the_person as patch
+
+		vecchia = self.vecchia(
+			type="WhatsApp",
+			notification_text="<span>You received a whatsapp message in lead CRM-LEAD-0</span>",
+			reference_doctype="CRM Lead",
+			reference_name="CRM-LEAD-0",
+		)
+		patch.execute()
+		self.assertFalse(frappe.db.get_value(NOTIFICA, vecchia.name, "sentence"))
+
+
 class LeggerleTutte(NotificheCase):
 	def setUp(self):
 		super().setUp()
