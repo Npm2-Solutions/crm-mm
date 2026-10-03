@@ -285,7 +285,7 @@
         </p>
       </section>
     </div>
-    <div v-else-if="plan.error" class="px-2 text-p-base text-ink-red-4">
+    <div v-else-if="plan.error" class="px-2 text-p-base text-ink-red-7">
       {{ plan.error.messages?.[0] || __('The plan could not be loaded') }}
     </div>
   </div>

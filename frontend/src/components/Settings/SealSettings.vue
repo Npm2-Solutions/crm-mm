@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The centre's seal and the time stamp: the agency installs the centre's
   certificate and the time-stamping authority; from then on the signed forms and
   the reports come out sealed, and stamped. A test page shows whether it works.
@@ -147,7 +150,7 @@
             <span
               :class="
                 !status.data.valid_now
-                  ? 'text-ink-red-4'
+                  ? 'text-ink-red-7'
                   : status.data.days_left < 30
                     ? 'text-ink-amber-8'
                     : 'text-ink-gray-6'
@@ -168,7 +171,7 @@
               }}
             </span>
           </template>
-          <span v-if="status.data.error" class="text-ink-red-4">
+          <span v-if="status.data.error" class="text-ink-red-7">
             {{ status.data.error }}
           </span>
         </div>
