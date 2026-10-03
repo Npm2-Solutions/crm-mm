@@ -340,6 +340,20 @@ class TestJourney(TrackingTestCase):
 		journey = T.get_journey("CRM Lead", lead.name)
 		self.assertEqual(str(journey["created_on"]), str(lead.creation))
 
+	def test_a_source_dottorcloud_wrote_reads_in_words(self):
+		lead = make_lead()
+		frappe.db.set_value(
+			"CRM Lead",
+			lead.name,
+			{"first_touch_source": "service_booking", "first_touch_medium": "booking"},
+		)
+		journey = T.get_journey("CRM Lead", lead.name)
+		self.assertEqual(journey["first_touch"]["source_label"], "Online booking")
+		self.assertEqual(T.nome_della_fonte("calendly"), "Calendly")
+		# a campaign's own source is the centre's words, not ours
+		self.assertIsNone(T.nome_della_fonte("newsletter"))
+		self.assertIsNone(T.nome_della_fonte(None))
+
 	def test_journey_refuses_a_doctype_it_does_not_track(self):
 		with self.assertRaises(frappe.ValidationError):
 			T.get_journey("User", "Administrator")
