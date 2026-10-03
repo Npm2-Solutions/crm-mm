@@ -149,6 +149,56 @@ toccando il riquadro intero) e le caselle con la loro etichetta accanto
 - **Tabelle**: una larghezza minima per colonna e lo scorrimento di lato, non
   colonne schiacciate a niente.
 
+## Seconda parte: schermate fatte per il telefono (03/10/2026)
+
+La prima parte aveva messo a posto le pagine del computer viste su un
+telefono. Ma le pagine che si aprono ogni giorno restavano quelle del computer,
+rimpicciolite: le persone come righe di una tabella pensata per quindici
+colonne, le cose da fare e le trattative come colonne di una lavagna da far
+scorrere di lato, l'agenda come una griglia di ore che ne mostra quattro alla
+volta e riduce un appuntamento di mezz'ora a una striscia, la scheda di una
+persona con quindici schede in una riga da scorrere.
+
+Le app di CRM e di agenda fatte per il telefono (HubSpot, Pipedrive, Google
+Calendar, i gestionali delle cliniche) fanno tutte le stesse scelte, e le
+abbiamo prese:
+
+- **una riga per cosa**, cercata scrivendo, con l'azione che viene dopo a un
+  tocco: si chiama una persona dalla sua riga;
+- **l'azione principale in basso a destra**, sopra la barra: «+»;
+- **la giornata come elenco**, in ordine di ora, con il segno di «adesso»;
+- **poche schede, le altre sotto «Altro»**.
+
+| Pagina | Sul telefono |
+|---|---|
+| Persone | `ElencoPersone`: si cerca per nome, per email o per numero scritto in qualsiasi modo («+39 340 111 2233», «3401112233», «340-111-2233»: si confrontano le ultime nove cifre). Ogni riga dice chi è, come raggiungerla e quando torna («Oggi 15:30», per chi vede l'agenda). Il telefono è a un tocco. La lista cresce scorrendo, una pagina alla volta. |
+| Da fare | `ElencoCose`: Mie o Di tutti, divise per quando scadono (In ritardo, Oggi, Domani, Più avanti, Senza un giorno). Il cerchio la segna fatta, con «Annulla» nell'avviso. |
+| Trattative | `TrattativePerFase`: le fasi sono una riga di chip, ciascuna con quante trattative contiene. Le trattative della fase scelta sono schede una sotto l'altra: chi, quanto vale, chi la segue, quando si è mossa. La pagina si apre sulla prima fase aperta che ha trattative. Il «+» mette la nuova trattativa nella pipeline e nella fase che si vedono, mai in una chiusa. |
+| Agenda | `AgendaDelGiorno`: il telefono apre sul giorno come elenco. Prima quello che dura tutto il giorno, poi tutto in ordine di ora, con una linea dove cade adesso. Sopra c'è la settimana per saltare a un giorno. La griglia delle ore resta a una scelta (Lista, Giorno, Settimana, Mese) e si apre sullo stesso giorno. «Tutto il giorno» accanto alle ore va su due righe corte. |
+| Oggi | I quattro numeri stanno in una riga di riquadri piccoli (`dc-stat-row`): gli appuntamenti cominciano nella prima schermata. |
+| Una persona, una trattativa | `SchedeDelTelefono`: le schede di ogni giorno in una barra corta (Attività, Dettagli, Eventi, poi Clinica o Da fare), le altre sotto «Altro», che mostra il nome della scheda aperta quando è una di quelle. Le sei azioni rapide stanno in una riga. |
+
+Il server dà ogni lista in una sola chiamata (`crm/api/sul_telefono.py`), con
+gli stessi permessi di tutto il resto: `frappe.get_list` decide chi vede quale
+persona, trattativa e cosa da fare, e email e telefono arrivano mascherati a
+chi non può leggerli.
+
+Nel giro abbiamo trovato due errori, ora corretti:
+
+- `defaultPipeline`, letto da uno store Pinia senza `storeToRefs`, perdeva la
+  reattività: una nuova trattativa non prendeva la pipeline predefinita.
+- Una trattativa senza responsabile mostrava il nome di chi la guardava:
+  `getUser()` senza un nome restituisce l'utente della sessione.
+
+Le regole per le prossime schermate si allungano:
+
+- **Una lista che si apre ogni giorno ha la sua forma da telefono** in
+  `components/Mobile/`, con i dati da `crm/api/sul_telefono.py`. Non è la
+  tabella del computer a righe.
+- **L'azione principale di una pagina è `PulsanteAggiungi`**, non un pulsante
+  nell'intestazione.
+- **Più di cinque schede passano per `SchedeDelTelefono`.**
+
 ## File
 
 | File | Cosa cambia |
@@ -167,6 +217,10 @@ toccando il riquadro intero) e le caselle con la loro etichetta accanto
 | `frontend/src/components/ListViews/MobileListRows.vue` | La casella di selezione dal bordo dello schermo |
 | `frontend/src/utils/index.js` | `datetimeFormat()`: data e ora al minuto |
 | `crm/integrations/meta/api.py` | Il controllo del webhook senza un'app, testato in `crm/tests/test_meta_webhook_check.py` |
+| `crm/api/sul_telefono.py` | Le liste del telefono: persone (cifre, nome, email, il prossimo appuntamento), cose da fare aperte, fasi e trattative. Testato in `crm/tests/test_sul_telefono.py` |
+| `frontend/src/components/Mobile/ElencoPersone.vue`, `ElencoCose.vue`, `TrattativePerFase.vue`, `AgendaDelGiorno.vue`, `SchedeDelTelefono.vue`, `PulsanteAggiungi.vue` | Le schermate fatte per il telefono |
+| `frontend/src/utils/sulTelefono.js` | Le parti pure: la riga di una persona, i gruppi delle cose da fare, la fase di partenza, il valore di una trattativa, la settimana, la giornata in ordine, dove cade adesso. Testato |
+| `frontend/src/pages/Leads.vue`, `Tasks.vue`, `Deals.vue`, `Calendar.vue`, `Today.vue`, `MobileLead.vue`, `MobileDeal.vue`, `components/PersonHeader.vue` | Le schermate del telefono al posto di tabelle e lavagne |
 
 ## Non incluso
 

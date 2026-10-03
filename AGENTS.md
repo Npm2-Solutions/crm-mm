@@ -170,6 +170,13 @@ work, with the capability that opens it; never straight into the sidebar. A page
 that belongs with another goes in `SORELLE`, not in the menu; an action (calling)
 is never a menu entry.
 
+### The phone's own screens (docs/progetto-ghl/29, second part)
+| File | Role |
+|---|---|
+| `crm/api/sul_telefono.py` | One call per list a phone opens every day, through `frappe.get_list`'s permissions: people by name, email or a number written any way (the last nine digits compared), with the next appointment for whoever reads the agenda; open tasks, one's own or everybody's; a pipeline's stages with their counts and a stage's deals — tested in `crm/tests/test_sul_telefono.py` |
+| `frontend/src/components/Mobile/` | `ElencoPersone`, `ElencoCose`, `TrattativePerFase` (in place of the desk's list and kanban), `AgendaDelGiorno` (the agenda opens on the day as a list, the hours' grid one choice away), `SchedeDelTelefono` (a record's everyday tabs in a short bar, the rest behind More), `PulsanteAggiungi` (the page's «+») |
+| `frontend/src/utils/sulTelefono.js` | Pure: a person's line, the tasks by when they are due, the stage a board opens on, a deal's value, the week, the day in order, where now falls — tested |
+
 ### Notifications (docs/progetto-ghl/43)
 | File | Role |
 |---|---|
@@ -591,6 +598,11 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
 - In a row the words get `min-w-0`, the control `shrink-0`; descriptions wrap.
 - Three or four fields per row become one (or two); tables keep a minimum column
   width and scroll sideways.
+- A list people open every day gets its own phone screen in `components/Mobile/`
+  (one line per thing, found by typing, the next action a tap away, its data
+  from `crm/api/sul_telefono.py`), never the desk's table in rows; the page's
+  main action is `PulsanteAggiungi`; more than five tabs go through
+  `SchedeDelTelefono`.
 
 ---
 
