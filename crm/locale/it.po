@@ -42090,3 +42090,27 @@ msgstr "Sei senza rete: finché non torna, le modifiche non si salvano."
 #: frontend/src/components/Mobile/TiraPerAggiornare.vue
 msgid "Updating the list…"
 msgstr "Aggiorno l'elenco…"
+
+#: frontend/src/components/Mobile/InstallaApp.vue
+msgid "Put {brand} on your home screen"
+msgstr "Metti {brand} sulla schermata Home"
+
+#: frontend/src/components/Mobile/InstallaApp.vue
+msgid "It opens like an app: full screen, without the browser."
+msgstr "Si apre come un'app: a tutto schermo, senza il browser."
+
+#: frontend/src/components/Mobile/InstallaApp.vue
+msgid "In Safari tap Share, then «Add to Home Screen»."
+msgstr "In Safari tocca Condividi, poi «Aggiungi alla schermata Home»."
+
+#: frontend/src/components/Mobile/InstallaApp.vue
+msgid "Open the browser’s menu (⋮), then «Install app» or «Add to Home screen»."
+msgstr "Apri il menu del browser (⋮), poi «Installa app» o «Aggiungi a schermata Home»."
+
+#: frontend/src/components/Mobile/InstallaApp.vue
+msgid "Install"
+msgstr "Installa"
+
+#: frontend/src/components/Mobile/InstallaApp.vue
+msgid "Not now"
+msgstr "Non ora"
