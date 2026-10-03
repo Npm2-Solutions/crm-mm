@@ -5,10 +5,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  ALTRE_PAGINE,
   MENU,
   PREFERITI_DEL_TELEFONO,
   barraDelTelefono,
   menuDi,
+  nomeDellaPagina,
   paginaSorelle,
   SORELLE,
 } from '@/utils/menu'
@@ -305,5 +307,30 @@ describe('the pages that live together', () => {
     for (const pagine of SORELLE)
       for (const pagina of pagine)
         expect(router, pagina.key).toContain(`name: '${pagina.key}'`)
+  })
+})
+
+describe("a page's name, for its tab", () => {
+  it('says the menu’s words, never the route’s', () => {
+    expect(nomeDellaPagina('Leads')).toBe('People')
+    expect(nomeDellaPagina('Calendar')).toBe('Agenda')
+    expect(nomeDellaPagina('Waiting List')).toBe('Waiting list')
+    expect(nomeDellaPagina('Organizations')).toBe('Organizations')
+    expect(nomeDellaPagina('Call Logs')).toBe('Calls')
+    expect(nomeDellaPagina('Lead')).toBe('People')
+  })
+
+  it('is nothing for a page with no name', () => {
+    expect(nomeDellaPagina('Home')).toBe('')
+    expect(nomeDellaPagina(undefined)).toBe('')
+  })
+
+  it('names pages the router has', () => {
+    const router = fs.readFileSync(
+      path.resolve(import.meta.dirname, '../../src/router.js'),
+      'utf8',
+    )
+    for (const pagina of Object.keys(ALTRE_PAGINE))
+      expect(router, pagina).toContain(`name: '${pagina}'`)
   })
 })

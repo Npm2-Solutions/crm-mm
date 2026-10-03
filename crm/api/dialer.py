@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 
 from crm.api import call_scripts
+from crm.permissions import livelli
 from crm.telephony import callbacks
 
 DISPOSITIONS = ["Interested", "Not Interested", "No Answer", "Callback", "Voicemail", "Wrong Number"]
@@ -17,9 +18,17 @@ hearing their answering machine is not reaching them.
 """
 
 
-def _get_session(name: str):
+def _get_session(name: str, scrive: bool = True):
+	"""A call round is its agent's. Whoever reads all the centre's calls may look at
+	another's; the one who sets up the centre's phone may also carry it on."""
 	doc = frappe.get_doc("CRM Dial Session", name)
-	if doc.agent != frappe.session.user and "Sales Manager" not in frappe.get_roles():
+	if doc.agent == frappe.session.user:
+		return doc
+	if scrive:
+		permesso = livelli.puo("telefono.configura")
+	else:
+		permesso = livelli.ambito("telefono.registro") == livelli.CENTRO
+	if not permesso:
 		frappe.throw(_("This dial session belongs to another agent"), frappe.PermissionError)
 	return doc
 
@@ -311,7 +320,7 @@ def get_entry_context(session: str, idx: int) -> dict:
 	the agent lands on a contact, each one a chance for the panel to be half-drawn
 	when the call connects.
 	"""
-	doc = _get_session(session)
+	doc = _get_session(session, scrive=False)
 	entry = next((e for e in doc.entries if e.idx == int(idx)), None)
 	if not entry:
 		frappe.throw(_("Entry not found"))

@@ -251,7 +251,7 @@
                         class="text-sm text-ink-gray-8"
                         type="select"
                         variant="outline"
-                        :options="field.options"
+                        :options="scelteTradotte(field.options)"
                         @update:modelValue="(e) => fieldChange(e, field, row)"
                       />
                       <Password
@@ -797,6 +797,14 @@ function getDefaultValue(defaultValue, fieldtype) {
 
   return defaultValue
 }
+
+// a choice in the reader's words; what is stored stays the value
+const scelteTradotte = (options) =>
+  getOptions(options).map((option) =>
+    typeof option === 'string'
+      ? { label: __(option), value: option }
+      : { ...option, label: __(option.label ?? option.value ?? '') },
+  )
 
 const getOptions = (options) => {
   if (Array.isArray(options)) {

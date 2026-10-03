@@ -40985,3 +40985,59 @@ msgstr "Non verificato"
 #: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
 msgid "Calls out only"
 msgstr "Solo in uscita"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Move"
+msgstr "Sposta"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "https://… or /crm/…"
+msgstr "https://… o /crm/…"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "New window"
+msgstr "Nuova finestra"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Visible"
+msgstr "Visibile"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Add a link"
+msgstr "Aggiungi un collegamento"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Add a separator"
+msgstr "Aggiungi un separatore"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Every link needs a name."
+msgstr "Ogni collegamento ha bisogno di un nome."
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "An address starts with https:// or with / for a page of {brand}."
+msgstr "Un indirizzo comincia con https:// o con / per una pagina di {brand}."
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Comes with {brand}"
+msgstr "Arriva con {brand}"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Opens the other apps of the site"
+msgstr "Apre le altre applicazioni del sito"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Opens the settings"
+msgstr "Apre le impostazioni"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "The version and the licence"
+msgstr "La versione e la licenza"
+
+#: frontend/src/components/Settings/HomeActions.vue
+msgid "Always shown: nobody is left without a way out"
+msgstr "Sempre visibile: nessuno resta senza un modo per uscire"
+
+#: frontend/src/components/Settings/AssistantSettings.vue
+msgid "Provider"
+msgstr "Fornitore"

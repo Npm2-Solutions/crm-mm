@@ -48,7 +48,9 @@
                 @click="openPipeline(pipeline)"
               >
                 <div class="text-base-medium text-ink-gray-7 truncate">
-                  {{ pipeline.name || __('Without pipeline') }}
+                  {{
+                    pipeline.name ? __(pipeline.name) : __('Without pipeline')
+                  }}
                 </div>
                 <Badge v-if="pipeline.is_default" theme="gray" size="sm">
                   {{ __('Default') }}
@@ -223,7 +225,7 @@ const moveDeals = reactive({
 const moveTargets = computed(() =>
   (pipelines.data || [])
     .filter((p) => p.name && p.name !== moveDeals.pipeline && !p.disabled)
-    .map((p) => ({ label: p.name, value: p.name })),
+    .map((p) => ({ label: __(p.name), value: p.name })),
 )
 
 // the "no pipeline yet" bucket is a reading aid, not a pipeline to edit
@@ -294,7 +296,7 @@ async function setAsDefault(pipeline) {
   try {
     await call('crm.api.pipeline.set_default_pipeline', { name: pipeline.name })
     reloadPipelines()
-    toast.success(__('{0} is now the default pipeline', [pipeline.name]))
+    toast.success(__('{0} is now the default pipeline', [__(pipeline.name)]))
   } catch (error) {
     toast.error(error.messages?.[0] || error.message)
   }

@@ -15,7 +15,7 @@
       >
         <template #default="{ open }">
           <Button
-            :label="currentPipeline || __('All pipelines')"
+            :label="currentPipeline ? __(currentPipeline) : __('All pipelines')"
             :tooltip="__('Pipeline')"
             :iconRight="open ? 'chevron-up' : 'chevron-down'"
           >

@@ -5,6 +5,8 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from crm.api import dialer as D
+from crm.permissions import livelli
+from crm.tests.test_documenti_del_core import FRONT_DESK, MANAGER, CoreTestCase
 
 
 class TestDialer(IntegrationTestCase):
@@ -68,3 +70,32 @@ class TestDialer(IntegrationTestCase):
 		ended = D.end_session(session=session["name"], cancel=True)
 		self.assertEqual(ended["status"], "Cancelled")
 		self.assertIsNone(D.get_active_session())
+
+
+class UnGiroDiUnAltro(CoreTestCase):
+	"""A round is its agent's: whoever reads all the centre's calls looks at it, only
+	who sets up the centre's phone carries it on - capabilities, never a role."""
+
+	def setUp(self):
+		super().setUp()
+		piano = frappe.get_single("CRM Plan")
+		piano.set("modules", [{"module": "telefono", "status": "Active"}])
+		piano.save()
+		livelli.dimentica_cache()
+
+	def test_la_segreteria_guarda_il_responsabile_continua(self):
+		for i in range(2):
+			frappe.get_doc(
+				{"doctype": "CRM Lead", "first_name": f"Giro{i}", "mobile_no": f"+3933311100{i:02d}"}
+			).insert()
+		session = D.create_session(doctype="CRM Lead", limit=2)
+		idx = session["current"]["idx"]
+
+		frappe.set_user(FRONT_DESK)
+		self.assertEqual(D.get_entry_context(session["name"], idx)["idx"], idx)
+		with self.assertRaises(frappe.PermissionError):
+			D.complete_entry(session=session["name"], idx=idx, disposition="Interested")
+
+		frappe.set_user(MANAGER)
+		esito = D.complete_entry(session=session["name"], idx=idx, disposition="Interested")
+		self.assertEqual(esito["done"], 1)

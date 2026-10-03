@@ -16,13 +16,14 @@
       <div v-if="form" class="flex flex-col gap-3">
         <div class="flex items-start gap-3 max-md:flex-col">
           <figure
-            v-if="exercise?.animation || exercise?.picture"
+            v-if="(exercise?.animation || exercise?.picture) && !nonCaricata"
             class="flex shrink-0 flex-col gap-1"
           >
             <img
               :src="exercise.animation || exercise.picture"
               alt=""
               class="size-36 rounded-md object-cover"
+              @error="nonCaricata = true"
             />
             <figcaption
               v-if="exercise.media_attribution"
@@ -131,6 +132,8 @@ const show = defineModel({ type: Boolean })
 
 const form = ref(null)
 const saving = ref(false)
+// the library's picture did not load: no broken one in its place
+const nonCaricata = ref(false)
 const error = ref('')
 const partOptions = PARTI.map((p) => ({ label: __(p), value: p }))
 
@@ -149,6 +152,7 @@ watch(show, (open) => {
   if (!open) return
   const esercizio = props.exercise || { enabled: 1 }
   error.value = ''
+  nonCaricata.value = false
   form.value = {
     ...Object.fromEntries(CAMPI.map((c) => [c, esercizio[c] || ''])),
     enabled: Boolean(esercizio.enabled),
