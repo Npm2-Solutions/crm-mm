@@ -41041,3 +41041,96 @@ msgstr "Sempre visibile: nessuno resta senza un modo per uscire"
 #: frontend/src/components/Settings/AssistantSettings.vue
 msgid "Provider"
 msgstr "Fornitore"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "Mark done: {0}"
+msgstr "Segna fatta: {0}"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "Nothing left for you"
+msgstr "Non ti resta niente da fare"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "Nothing left to do"
+msgstr "Non resta niente da fare"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "A call to make, a document to send: add it with the + button."
+msgstr "Una chiamata da fare, un documento da mandare: aggiungila con il pulsante +."
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "More are open: the computer shows them all."
+msgstr "Ce ne sono altre aperte: dal computer le vedi tutte."
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "Everybody’s"
+msgstr "Di tutti"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "Done: {0}"
+msgstr "Fatta: {0}"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgid "Could not mark it done"
+msgstr "Non è stato possibile segnarla fatta"
+
+#: frontend/src/utils/sulTelefono.js
+msgid "Later"
+msgstr "Più avanti"
+
+#: frontend/src/utils/sulTelefono.js
+msgid "Without a day"
+msgstr "Senza un giorno"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Name, number or email"
+msgstr "Nome, numero o email"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Search people"
+msgstr "Cerca persone"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Call {0}"
+msgstr "Chiama {0}"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Nobody found for «{0}»."
+msgstr "Nessuno trovato per «{0}»."
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "No people yet"
+msgstr "Ancora nessuna persona"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Whoever writes, calls or books is here: add one with the + button."
+msgstr "Chi scrive, chiama o prenota è qui: aggiungine una con il pulsante +."
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Today {0}"
+msgstr "Oggi {0}"
+
+#: frontend/src/components/Mobile/ElencoPersone.vue
+msgid "Tomorrow {0}"
+msgstr "Domani {0}"
+
+#: frontend/src/components/Mobile/TrattativePerFase.vue
+msgid "A deal moves here from its page, or starts here with the + button."
+msgstr "Una trattativa arriva qui dalla sua pagina, o parte da qui con il pulsante +."
+
+#: frontend/src/pages/Deals.vue
+msgid "New deal"
+msgstr "Nuova trattativa"
+
+#: frontend/src/pages/Tasks.vue
+msgid "New task"
+msgstr "Nuova cosa da fare"
+
+#: frontend/src/pages/Leads.vue
+msgid "New person"
+msgstr "Nuova persona"
+
+#: frontend/src/components/Mobile/ElencoCose.vue
+msgctxt "Tasks"
+msgid "Mine"
+msgstr "Mie"

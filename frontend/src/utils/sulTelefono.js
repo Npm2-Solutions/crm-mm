@@ -1,0 +1,143 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
+/**
+ * The phone's own screens (docs/progetto-ghl/34), without a screen: what the
+ * line under a person's name says, the open tasks by when they are due, the
+ * stage a deals board opens on, a deal's value only when it has one. What the
+ * server gives is `crm/api/sul_telefono.py`; the words are English, translated
+ * where they are drawn.
+ */
+
+/** The line under a person's name: how to reach them, else their company. */
+export function contattoDi(persona = {}) {
+  return (
+    persona.mobile_no ||
+    persona.phone ||
+    persona.email ||
+    persona.organization ||
+    ''
+  )
+}
+
+function inizioDelGiorno(data) {
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate())
+}
+
+function letta(valore) {
+  if (!valore) return null
+  const data = new Date(String(valore).replace(' ', 'T'))
+  return Number.isNaN(data.getTime()) ? null : data
+}
+
+/** The groups of the open tasks, in the order they are shown. */
+export const GRUPPI_DI_COSE = [
+  { key: 'late', label: 'Late' },
+  { key: 'today', label: 'Today' },
+  { key: 'tomorrow', label: 'Tomorrow' },
+  { key: 'later', label: 'Later' },
+  { key: 'undated', label: 'Without a day' },
+]
+
+/** Which group a task falls in, from its due date and now. */
+export function gruppoDi(cosa, adesso = new Date()) {
+  const scadenza = letta(cosa?.due_date)
+  if (!scadenza) return 'undated'
+  const oggi = inizioDelGiorno(adesso)
+  const domani = new Date(oggi)
+  domani.setDate(oggi.getDate() + 1)
+  const dopodomani = new Date(oggi)
+  dopodomani.setDate(oggi.getDate() + 2)
+  // past its hour is late, today's morning too
+  if (scadenza < adesso) return 'late'
+  if (scadenza < domani) return 'today'
+  if (scadenza < dopodomani) return 'tomorrow'
+  return 'later'
+}
+
+/** The open tasks in their groups, empty groups left out, each in its order. */
+export function cosePerGruppo(cose = [], adesso = new Date()) {
+  const gruppi = Object.fromEntries(GRUPPI_DI_COSE.map((g) => [g.key, []]))
+  for (const cosa of cose) gruppi[gruppoDi(cosa, adesso)].push(cosa)
+  return GRUPPI_DI_COSE.filter((g) => gruppi[g.key].length).map((g) => ({
+    ...g,
+    rows: gruppi[g.key],
+  }))
+}
+
+/**
+ * When a task is due, said briefly: the hour for today and tomorrow, the day
+ * otherwise (the group says which one), nothing without a date.
+ */
+export function scadenzaInBreve(dueDate, locale, adesso = new Date()) {
+  const scadenza = letta(dueDate)
+  if (!scadenza) return ''
+  const gruppo = gruppoDi({ due_date: dueDate }, adesso)
+  const ora = new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(scadenza)
+  if (gruppo === 'today' || gruppo === 'tomorrow') return ora
+  const opzioni = { weekday: 'short', day: 'numeric', month: 'short' }
+  if (scadenza.getFullYear() !== adesso.getFullYear()) opzioni.year = 'numeric'
+  return new Intl.DateTimeFormat(locale, opzioni).format(scadenza)
+}
+
+/**
+ * The stage a deals board opens on: the one asked for when it has deals, else
+ * the first open stage with deals, else the first stage.
+ */
+export function faseIniziale(fasi = [], conteggi = {}, chiesta = '') {
+  if (chiesta && fasi.some((f) => f.name === chiesta)) return chiesta
+  const conTrattative = (f) => (conteggi[f.name] || 0) > 0
+  const aperta = (f) => !['Won', 'Lost'].includes(f.type)
+  return (
+    fasi.find((f) => aperta(f) && conTrattative(f))?.name ||
+    fasi.find(conTrattative)?.name ||
+    fasi[0]?.name ||
+    ''
+  )
+}
+
+/** A deal's value as a card shows it: nothing when it has none yet. */
+export function valoreDellaTrattativa(trattativa = {}, locale) {
+  const valore = Number(trattativa.deal_value) || 0
+  if (!valore) return ''
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: trattativa.currency || 'EUR',
+      maximumFractionDigits: valore >= 100 ? 0 : 2,
+    }).format(valore)
+  } catch {
+    return new Intl.NumberFormat(locale).format(valore)
+  }
+}
+
+/**
+ * When a person comes next, for the chip on their line: `today` or `tomorrow`
+ * with the hour, else the day; null without an appointment.
+ */
+export function quandoTorna(startsOn, locale, adesso = new Date()) {
+  const inizio = letta(startsOn)
+  if (!inizio) return null
+  const ora = new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(inizio)
+  const giorno = Math.round(
+    (inizioDelGiorno(inizio) - inizioDelGiorno(adesso)) / 86400000,
+  )
+  if (giorno === 0) return { quando: 'today', ora }
+  if (giorno === 1) return { quando: 'tomorrow', ora }
+  return {
+    quando: 'day',
+    ora,
+    giorno: new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+    }).format(inizio),
+  }
+}
