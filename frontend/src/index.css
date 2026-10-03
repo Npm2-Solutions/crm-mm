@@ -10,6 +10,8 @@
 @import './marchio.css';
 @import './espresso.css';
 @import './espresso-componenti.css';
+/* the app on a phone: sheets, fields, targets (docs/progetto-ghl/29) */
+@import './telefono.css';
 
 @layer utilities {
   /* The mobile shell measures itself against the *visible* viewport. `100vh` on a
@@ -202,64 +204,4 @@
    (z-[100]). Lift menus above popovers so nested menus stay visible. */
 .menu-content {
   z-index: 101;
-}
-
-/* A control drawn for a mouse, reached with a finger.
-
-   A switch is 16px tall, the options button on a note 20px: a thumb misses
-   them, or taps the row they sit in and opens it instead. On a touch screen
-   an invisible ring around them takes the tap; they keep their size and the
-   layout does not move. Not with a mouse, where the ring would take clicks
-   meant for whatever is next to it. `.touch-target` is for a small control
-   with room around it; frappe-ui's switch is always one, and is already
-   positioned for the ring. */
-@media (pointer: coarse) {
-  .touch-target:not(.absolute, .fixed, .sticky) {
-    position: relative;
-  }
-  .touch-target::after,
-  button[role='switch']::after {
-    content: '';
-    position: absolute;
-    inset: -10px -8px;
-  }
-}
-
-/* The settings on a phone: a screen of their own, not a card floating over the
-   page. frappe-ui gives a dialog no class of its own, so it is found by what it
-   holds. */
-@media (max-width: 767px) {
-  .dialog-scroll-container > div:has(> .dialog-content > .settings-modal) {
-    padding: 0;
-  }
-  .dialog-content:has(> .settings-modal) {
-    margin: 0;
-    max-width: none;
-    border-radius: 0;
-  }
-}
-
-/* A dialog on a phone.
-
-   A long form — a new lead, a new deal — is taller than the screen, and the
-   dialog scrolls as a whole: its Create button came into view only at the very
-   end. The row of actions (`.dialog-footer`) stays at the bottom of the screen
-   while the form scrolls under it. frappe-ui clips the dialog with
-   `overflow: hidden`, which makes it a scroll box of its own and keeps anything
-   sticky inside it from sticking; `clip` cuts the same corners without that.
-   A dialog built on frappe-ui's own `#actions` (a new event, a task) takes no
-   class of ours for that row: it is found by the classes frappe-ui gives it. */
-@media (max-width: 767px) {
-  .dialog-content {
-    overflow: clip;
-  }
-  .dialog-footer,
-  .dialog-content > div.px-4.pb-7.pt-4 {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    border-top: 1px solid var(--outline-elevation-2);
-    background-color: var(--surface-elevation-1);
-    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-  }
 }
