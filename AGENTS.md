@@ -603,8 +603,12 @@ new module would not sync.
 
 ## Mobile
 
-`isMobileView` (< 768px) picks the phone components, so what changes on a phone
-uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
+`isMobileView` (< 768px, or a phone held sideways: under 500px tall and
+touched, `isPhoneSize`) picks the phone components, so what changes on a phone
+uses `max-md:` — not `sm:`, which leaves 640–768px half desktop. A phone's rule in
+CSS asks `(max-width: 767px), (max-height: 499px) and (pointer: coarse)`, as
+`telefono.css` does; sideways, what stays put is compact (a record's card in one
+row, the bar's words beside their icons).
 
 - Nothing only on hover: add `[@media(hover:none)]:opacity-100`, or reveal on focus.
 - Small controls get `.touch-target` (an invisible ring on touch screens); frappe-ui
