@@ -2135,3 +2135,18 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Un'assegnazione tolta si riconosce dalle parole senza i nomi («removed», «rimossa», «tolto») | È l'unica cosa che i campi non dicono; il titolo di un'attività («Dente tolto») è in grassetto e non conta |
 | Convertite: messaggi (WhatsApp, SMS, email), menzioni, assegnazioni e attività, domande dall'area | Sono i tipi che dicevano una frase fissa; automazioni, fatturazione e Sistema TS hanno parole proprie, scritte già nella lingua del centro |
 | Una su una persona, una trattativa o un'attività che non c'è più resta com'era | Il nome non c'è più da dire, e il pannello non apre niente |
+
+## I test del server tutti verdi
+
+> **Completato** (03/10/2026). Sul CI restavano rossi 17 test, sempre gli stessi, e
+> «Coverage Wrap Up». Nessuno era un errore del prodotto: il banco del CI ha solo
+> frappe e crm, e Codecov non ha il token.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| I test che usano WhatsApp si saltano dove frappe_whatsapp non c'è (`crm.tests.serve_whatsapp`), e girano dove c'è | Scelta di NPM2 del 03/10/2026. I DocType di WhatsApp sono dell'app: sul banco del CI non esistono, e Frappe cercava il controller in `frappe.core` |
+| Solo la parte WhatsApp si salta: gli avvisi dell'area per email e SMS, gli SMS che seguono la persona, i servizi, listini e fasi del manager girano ovunque (`con_whatsapp()`) | Saltare un test intero per un DocType solo toglierebbe al CI quello che può provare |
+| I test delle chiamate del sito fanno come se Builder ci fosse (`livelli.registro_isolato` con il requisito «builder»); uno nuovo prova che senza Builder nessuno gestisce il sito | `sito.gestisci` chiede Builder dal doc 30: i test erano rimasti a prima, e fallivano anche in locale |
+| Senza `CODECOV_TOKEN` la copertura non si invia e il passo lo dice, invece di fallire | Il token è un segreto del repository: finché manca, la copertura resta negli artefatti della run |
