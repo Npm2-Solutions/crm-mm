@@ -103,16 +103,23 @@ const { fit } = useGrowingTextarea(textareaRef, content)
 
 const length = computed(() => smsSegments(content.value))
 
-// when the person wrote STOP to the centre's SMS, if they did
+// when the person wrote STOP to the centre's SMS, if they did. Asked of the
+// person as they are when it is asked: the box can be drawn before the person
+// has loaded, and a resource never fetched has no params to read
 const fermo = createResource({
   url: 'crm.api.sms.get_sms_stop',
-  params: { reference_doctype: props.doctype, reference_name: doc.value.name },
+  makeParams: () => ({
+    reference_doctype: props.doctype,
+    reference_name: doc.value.name,
+  }),
   auto: Boolean(props.doctype && doc.value.name),
 })
-// a STOP or a START arrives as a message: the thread moving asks again
+// the person arriving, or a STOP or a START arriving as a message, asks again
 watch(
-  () => sms.value?.data?.length,
-  () => fermo.params.reference_name && fermo.reload(),
+  () => [doc.value.name, sms.value?.data?.length],
+  ([nome], [prima]) => {
+    if (nome && (nome !== prima || fermo.fetched)) fermo.reload()
+  },
 )
 
 function show() {
