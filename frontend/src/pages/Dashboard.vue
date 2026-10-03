@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <LayoutHeader>
@@ -159,6 +162,8 @@
 
     <div ref="area" class="relative flex min-h-0 flex-1">
       <div ref="scroller" class="min-w-0 flex-1 overflow-y-auto">
+        <!-- pulled down from the top on a phone, the numbers reload -->
+        <TiraPerAggiornare v-bind="tira" />
         <div
           v-if="loadingLayout && !items.length"
           class="grid grid-cols-2 gap-4 p-5 lg:grid-cols-5"
@@ -319,6 +324,7 @@ import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import Link from '@/components/Controls/Link.vue'
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import DashboardGrid from '@/components/Dashboard/DashboardGrid.vue'
 import DashboardDialog from '@/components/Dashboard/DashboardDialog.vue'
 import PeriodPicker from '@/components/Dashboard/PeriodPicker.vue'
@@ -326,6 +332,7 @@ import WidgetConfigDialog from '@/components/Dashboard/WidgetConfigDialog.vue'
 import WidgetLibrary from '@/components/Dashboard/WidgetLibrary.vue'
 import { isStructural, layoutWidgets } from '@/components/Dashboard/meta'
 import { isMobileView } from '@/composables/breakpoints'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { activeSettingsPage, showSettings } from '@/composables/settings'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
@@ -372,6 +379,10 @@ const loadingLayout = ref(false)
 const refreshing = ref(false)
 const updatedAt = ref(null)
 const scroller = ref(null)
+// as the header's Refresh, while nobody is moving the widgets
+const tira = useTiraPerAggiornare(scroller, () =>
+  editing.value ? null : loadAnswers(),
+)
 const area = ref(null)
 
 const period = ref(DEFAULT_PERIOD)
