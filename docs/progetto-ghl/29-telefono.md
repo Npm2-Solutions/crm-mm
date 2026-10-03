@@ -389,6 +389,15 @@ Con il tocco, come in un'app:
   torna, le modifiche non si salvano», finché la rete non torna.
 - **La barra di stato ha il colore dell'app**, chiara o scura, e lo cambia col
   tema (`theme-color`).
+- **«Indietro» chiude prima quello che sta sopra.** Il tasto di Android (e
+  quello del browser) con un foglio, un menu, una lista o il pannello
+  dell'agenda aperto lasciava la pagina, e una nota scritta a metà con lei.
+  Ora chiude quello che sta sopra e resta; il secondo «indietro» lascia la
+  pagina. Nessuna voce finta nella cronologia: una guardia del router
+  riconosce l'indietro (il browser ha già messo lo stato della voce di
+  destinazione) e annulla la navigazione, e il router rimette l'indirizzo da
+  solo (`utils/indietro.js`). Un pannello di pagina si iscrive con
+  `chiudeConIndietro(chiudi)`.
 - **Tenendo premuto non compare il menu del browser.** Sulla barra, sulle
   schede, sui pulsanti e sulle righe non si apre il menu di un link e non si
   seleziona una parola: una riga tenuta premuta si sceglie (`MobileListRows`).
@@ -444,6 +453,7 @@ nessun browser di prova ha la sua tastiera.
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 | `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/` | Una lista tirata giù dalla cima si ricarica. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
+| `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
 | `frontend/src/utils/tastiera.js` + `FieldLayout/Field.vue`, `SidePanelLayout.vue`, `BillingProfileSection.vue`, `Invoices/InvoiceDialog.vue`, `Calendar/AppointmentPanel.vue`, `Telephony/CallUI.vue`, le impostazioni | La tastiera di ogni campo. Testato in `tests/unit/tastiera.test.js` |
 
