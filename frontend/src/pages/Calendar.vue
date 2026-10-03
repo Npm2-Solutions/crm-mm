@@ -452,6 +452,7 @@ import {
   toast,
 } from 'frappe-ui'
 import {
+  onBeforeUnmount,
   onMounted,
   ref,
   reactive,
@@ -460,6 +461,7 @@ import {
   nextTick,
   watch,
 } from 'vue'
+import { chiudeConIndietro } from '@/utils/indietro'
 import { useRoute } from 'vue-router'
 
 const { user } = sessionStore()
@@ -1082,6 +1084,24 @@ watch(
 
 const eventPanel = ref(null)
 const showEventPanel = ref(false)
+
+// on a phone the panel covers the agenda: a back closes it, not the page.
+// After `showEventPanel`: the watch reads it at once
+let togliDaIndietro = null
+watch(
+  () => panelOpen.value && isMobileView.value,
+  (sopra) => {
+    togliDaIndietro?.()
+    togliDaIndietro = sopra
+      ? chiudeConIndietro(() =>
+          showEventPanel.value ? close() : closeAppointment(),
+        )
+      : null
+  },
+  // the panel may open while the page is made (?new=appointment)
+  { immediate: true },
+)
+onBeforeUnmount(() => togliDaIndietro?.())
 const event = ref({})
 const mode = ref('')
 const lastRange = ref(null)

@@ -27,9 +27,11 @@ import MobileAppHeader from '@/components/Mobile/MobileAppHeader.vue'
 import MobileBottomNav from '@/components/Mobile/MobileBottomNav.vue'
 import SenzaRete from '@/components/SenzaRete.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
+import { chiudiPrimaDiTornare } from '@/utils/indietro'
 import { seguiLaTastiera } from '@/utils/tastieraAperta'
 import { registerScrollContainer, unregisterScrollContainer } from 'frappe-ui'
 import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
+import { useRouter } from 'vue-router'
 
 // frappe-ui's shells publish their scroll element to a shared registry; this
 // layout is not one of them, so it registers its own. Without it `MobileNavItem`
@@ -79,6 +81,13 @@ onMounted(() => {
   })
 })
 onBeforeUnmount(() => cambioDiTema.disconnect())
+
+// Android's back, and the browser's, closes a sheet, a menu or the agenda's
+// panel before it leaves the page (utils/indietro.js)
+const router = useRouter()
+let smettiIndietro = () => {}
+onMounted(() => (smettiIndietro = chiudiPrimaDiTornare(router)))
+onBeforeUnmount(() => smettiIndietro())
 
 // what one taps shows it is pressed (`active:`) in place of the browser's grey
 // flash (telefono.css); iPhone shows it only where a touch is listened to
