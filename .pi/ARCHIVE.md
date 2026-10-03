@@ -2294,3 +2294,31 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | La scheda Chiamate vuota dice «Ancora nessuna chiamata» | Diceva «Ancora nessuna attività» e parlava di messaggi e note |
 | In Accoglienza un giorno passato chiede «Presente» o «Assente», mai «Accogli» | Nessuno si accoglie in sala d'attesa due giorni dopo: la domanda del giorno passato è se è venuto (`prossimiEsiti`) |
 | Lo stato di una persona sola è al singolare, senza genere: «In arrivo», «Presente», «Assente» (contesto «One person») | Le caselle del giorno contano tutti («Attesi», «Non venuti»); sulla riga di una persona «Non venuti» era un plurale |
+
+## La segreteria, il marketing e l'amministrazione al telefono
+
+> Il giro che preme ogni pulsante, a 390 punti, coi profili della segreteria, del
+> marketing e dell'amministrazione (3 ottobre 2026). La segreteria ha trovato un
+> errore vero nel riquadro degli SMS. Il marketing apriva la Panoramica sugli
+> appuntamenti di oggi e le chiamate perse, vedeva in chiaro email e telefono dei
+> contatti di una trattativa, apriva i Dati di una persona come un modulo da
+> compilare (con «numero non valido» sul cellulare mascherato) e trovava la
+> rubrica «vuota». L'amministrazione non aveva i numeri delle fatture, cambiava le
+> persone dalla rubrica e trovava una pagina Telefonia vuota. Arrivando a
+> Trattative dalla barra, la pagina restava bianca per tutti.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Ogni widget della dashboard chiede la capacità che ne legge i numeri: la sua categoria (`registry.READERS`: operativi, economici, di marketing, o quella dei record) o la sua (`reader`); un widget `site` la chiede sul centro | La tabella del doc 30 c'era, nel registro delle capacità, ma la dashboard chiedeva solo «è da manager?». Il valore dell'agenda è un numero economico; i preventivi li legge `preventivi.vedi` |
+| Fatturazione, marketing, automazioni e social non sono più «solo per manager» | Li decide la capacità: l'Amministrazione ha la Fatturazione, il Marketing i suoi numeri, la segreteria e il medico no |
+| Quello che il livello non legge non c'è: né nel catalogo né «non disponibile»; una dashboard condivisa senza niente da leggere è fuori dall'elenco, e un modello dice per chi è (`Template.reader`) | Nessuno accende dalla dashboard i numeri di un livello. L'Agenda conteneva i nuovi clienti, che il Marketing legge: senza il lettore del modello gli restava una dashboard «Agenda» con un numero solo |
+| I contatti di una trattativa arrivano mascherati a chi non legge la rubrica | `get_deal_contacts` leggeva le voci come salvate: la trattativa dava al Marketing quello che la scheda della persona gli maschera |
+| La rubrica è chiusa a chi vede le persone mascherate; la voce singola resta aperta perché porta alla persona | Il Marketing la trovava «vuota»: non lo è, il suo livello non legge i recapiti. Una rotta può chiedere una capacità su una lista di ambiti |
+| Una voce della rubrica si scrive come la sua persona (`persone.scrivi`, `persone.elimina`) | Quello che si cambia sulla voce torna sulla persona: chi legge le persone senza cambiarle le cambiava da lì |
+| Un campo di una scheda è di sola lettura quando il server dice che la scheda non si scrive (`canWrite` in `Field.vue`), e «Salva» non c'è | Il pannello laterale lo faceva già, la scheda Dati no |
+| Un numero mascherato non è un numero sbagliato, e non ha il tasto Chiama | «Inserisci un numero di telefono valido» su «+39XXXXXX»; e «Nessun numero» non era vero |
+| La pagina Telefonia è di chi chiama o la imposta | Per gli altri era un titolo sopra il vuoto |
+| La pagina Trattative si mette in ascolto della pipeline prima di sceglierla | Con le pipeline già caricate da un'altra pagina, la scelta avveniva prima che ci fosse chi la sentiva: nessun conteggio e nessuna trattativa |
+| L'oggetto proposto di un'email è il nome del centro, o quello della persona | Era il codice della scheda, e l'oggetto è obbligatorio: non può restare vuoto |
