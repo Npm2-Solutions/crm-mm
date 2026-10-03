@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A quote (crm.preventivi). Its author writes the draft: services from the price
   list, in phases, with a discount - and what a module adds to a row, where the
   server offers it: the clinic's tooth and surfaces, to a dentist. Proposed, it is
@@ -57,7 +60,77 @@
           />
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- on a phone a row is a card: the service and its words as wide as
+             the screen, the numbers side by side, its amount; the table's
+             seven columns ran off the edge -->
+        <div v-if="isMobileView" class="flex flex-col gap-3">
+          <div
+            v-for="(item, index) in plan.items"
+            :key="item.key"
+            class="flex flex-col gap-2 rounded-lg border border-outline-gray-2 p-3"
+          >
+            <div class="flex items-center gap-2">
+              <FormControl
+                class="min-w-0 flex-1"
+                :modelValue="item.service"
+                type="select"
+                :options="serviceOptions"
+                :placeholder="__('Service')"
+                :aria-label="__('Service')"
+                @update:modelValue="(value) => pickService(item, value)"
+              />
+              <Button
+                variant="ghost"
+                icon="x"
+                class="shrink-0 touch-target"
+                :aria-label="__('Remove the service')"
+                @click="plan.items.splice(index, 1)"
+              />
+            </div>
+            <TextInput
+              v-model="item.description"
+              :placeholder="__('Description')"
+              :aria-label="__('Description')"
+            />
+            <div v-if="teeth" class="grid grid-cols-2 gap-2">
+              <FormControl
+                v-model="item.tooth"
+                :label="__('Tooth')"
+                :placeholder="'36'"
+              />
+              <FormControl
+                v-model="item.surfaces"
+                :label="__('Surfaces')"
+                :placeholder="'MOD'"
+                :disabled="!item.tooth"
+              />
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <FormControl
+                v-model="item.phase"
+                type="number"
+                :label="__('Phase')"
+              />
+              <FormControl
+                v-model="item.rate"
+                type="number"
+                :label="__('Price')"
+              />
+              <FormControl
+                v-model="item.discount"
+                type="number"
+                :label="__('Discount %')"
+              />
+            </div>
+            <div class="flex items-baseline justify-between gap-3">
+              <span class="text-p-sm text-ink-gray-6">{{ __('Amount') }}</span>
+              <span class="text-p-base tabular-nums text-ink-gray-8">
+                {{ money(importo(item.qty, item.rate, item.discount)) }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div v-else class="overflow-x-auto">
           <div
             class="flex flex-col gap-2"
             :class="teeth ? 'min-w-[720px]' : 'min-w-[600px]'"
@@ -339,6 +412,7 @@
 </template>
 
 <script setup>
+import { isMobileView } from '@/composables/breakpoints'
 import { useSchedulerMeta } from '@/composables/scheduling'
 import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
@@ -536,7 +610,7 @@ const Totals = (p) => {
   rows.push([__('Total'), p.money(t.net), true])
   if (p.done) {
     rows.push([__('Done'), p.money(t.done)])
-    rows.push([__('Left'), p.money(t.left)])
+    rows.push([__('Left', null, 'Quote amount still to do'), p.money(t.left)])
   }
   return h(
     'dl',

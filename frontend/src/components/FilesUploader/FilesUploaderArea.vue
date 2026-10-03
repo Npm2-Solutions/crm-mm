@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div v-if="showWebLink">
     <TextInput v-model="webLink" placeholder="https://example.com" />
@@ -14,14 +17,19 @@
   <div v-else>
     <div
       v-show="files.length === 0"
-      class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-outline-gray-3 min-h-64 text-ink-gray-5"
+      class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-outline-gray-3 min-h-64 max-md:min-h-40 text-ink-gray-5"
       @dragover.prevent="dragover"
       @dragleave.prevent="dragleave"
       @drop.prevent="dropfiles"
     >
       <div v-if="!isDragging" class="flex flex-col gap-3">
+        <!-- a phone has nothing to drag files from -->
         <div class="text-center text-ink-gray-5">
-          {{ __('Drag & Drop files here or upload from') }}
+          {{
+            isMobileView
+              ? __('Upload from')
+              : __('Drag & Drop files here or upload from')
+          }}
         </div>
         <div
           class="grid grid-flow-col justify-center gap-4 text-center text-base"
@@ -35,7 +43,11 @@
             @change="onFileInput"
           />
           <div>
-            <Button icon="lucide-monitor" size="md" @click="browseFiles" />
+            <Button
+              :icon="isMobileView ? 'lucide-smartphone' : 'lucide-monitor'"
+              size="md"
+              @click="browseFiles"
+            />
             <div class="mt-1">{{ __('Device') }}</div>
           </div>
           <div v-if="!disableFileBrowser">
@@ -128,6 +140,7 @@
 </template>
 <script setup>
 import FileTextIcon from '@/components/Icons/FileTextIcon.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import FileAudioIcon from '@/components/Icons/FileAudioIcon.vue'
 import FileVideoIcon from '@/components/Icons/FileVideoIcon.vue'
 import { formatDate, convertSize } from '@/utils'

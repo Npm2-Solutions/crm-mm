@@ -48,7 +48,7 @@
           <div class="flex w-full gap-1 sm:w-9/12">
             <Dropdown class="" :options="colors">
               <div
-                class="flex items-center justify-center size-7 shrink-0 border border-outline-gray-2 bg-surface-base hover:border-outline-gray-3 hover:shadow-sm rounded cursor-pointer"
+                class="flex items-center justify-center size-7 max-md:size-10 shrink-0 border border-outline-gray-2 bg-surface-base hover:border-outline-gray-3 hover:shadow-sm rounded cursor-pointer"
               >
                 <div
                   class="size-2.5 rounded-full cursor-pointer"
