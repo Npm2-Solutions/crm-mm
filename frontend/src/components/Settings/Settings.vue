@@ -11,7 +11,7 @@
            entry one opens, with the way back to its category. On a phone they
            do not fit side by side, so it becomes a list that pushes to a page
            and comes back, and it takes the whole screen (`.settings-modal` in
-           index.css): as a card it kept frappe-ui's margins, 16px a side and
+           telefono.css): as a card it kept frappe-ui's margins, 16px a side and
            48px above, and was 32px taller than the screen. -->
       <div
         class="settings-modal flex bg-surface-gray-1"
@@ -20,31 +20,73 @@
         "
       >
         <div
-          class="m-1 flex shrink-0 flex-col overflow-y-auto rounded-l-lg bg-surface-gray-1"
+          class="flex shrink-0 flex-col overflow-y-auto bg-surface-gray-1"
           :class="
             isMobileView
-              ? ['w-full rounded-lg', { hidden: showingDetail }]
-              : 'w-56'
+              ? ['w-full', { hidden: showingDetail }]
+              : 'm-1 w-56 rounded-l-lg'
           "
         >
-          <!-- The `#body` slot suppresses the dialog's own chrome, so on a phone
-               — where there is no backdrop left to tap — this is the only way out. -->
+          <!-- On a phone the categories are a page of their own: a large title,
+               the way out (the `#body` slot suppresses the dialog's own chrome,
+               and there is no backdrop left to tap), the categories as rows a
+               thumb hits, each with its icon in a tile. -->
+          <template v-if="isMobileView">
+            <div class="flex items-center justify-between gap-2 px-4 pb-2 pt-3">
+              <h1 class="text-2xl-semibold text-ink-gray-9">
+                {{ __('Settings') }}
+              </h1>
+              <Button
+                variant="ghost"
+                size="md"
+                icon="x"
+                :aria-label="__('Close')"
+                @click="showSettings = false"
+              />
+            </div>
+            <nav class="px-4 pb-8 pt-2" :aria-label="__('Settings')">
+              <ul
+                class="divide-y divide-outline-gray-1 overflow-hidden rounded-2xl bg-surface-elevation-1 shadow-sm ring-1 ring-outline-gray-1"
+              >
+                <li v-for="gruppo in tabs" :key="gruppo.key">
+                  <button
+                    type="button"
+                    class="flex min-h-[3.25rem] w-full items-center gap-3 px-4 py-2 text-left active:bg-surface-gray-2"
+                    @click="apriCategoria(gruppo.key)"
+                  >
+                    <span
+                      class="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-gray-2 text-ink-gray-7"
+                      aria-hidden="true"
+                    >
+                      <Icon :icon="gruppo.icon" class="size-[18px]" />
+                    </span>
+                    <span
+                      class="min-w-0 flex-1 truncate text-base text-ink-gray-9"
+                    >
+                      {{ __(gruppo.label) }}
+                    </span>
+                    <span
+                      class="lucide-chevron-right size-5 shrink-0 text-ink-gray-4"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </template>
           <div
-            class="flex items-center justify-between px-2 py-1.5"
-            :class="{ 'md:pt-3': !isMobileView }"
+            v-else
+            class="flex items-center justify-between px-2 py-1.5 md:pt-3"
           >
             <span class="text-base-medium text-ink-gray-9">
               {{ __('Settings') }}
             </span>
-            <Button
-              v-if="isMobileView"
-              variant="ghost"
-              icon="x"
-              :aria-label="__('Close')"
-              @click="showSettings = false"
-            />
           </div>
-          <nav class="space-y-[3px] px-1 pb-2" :aria-label="__('Settings')">
+          <nav
+            v-if="!isMobileView"
+            class="space-y-[3px] px-1 pb-2"
+            :aria-label="__('Settings')"
+          >
             <SidebarItem
               v-for="gruppo in tabs"
               :key="gruppo.key"
@@ -66,23 +108,35 @@
         >
           <div
             v-if="isMobileView"
-            class="sticky top-0 z-10 flex items-center gap-1 border-b border-outline-elevation-2 bg-surface-elevation-2 px-2 py-1.5"
+            class="sticky top-0 z-10 flex min-h-12 items-center justify-between gap-2 border-b border-outline-elevation-2 bg-surface-elevation-2 pl-1 pr-2"
           >
+            <!-- named after where it goes, as an app's bar does: the page
+                 below says where one is with its own title -->
+            <button
+              type="button"
+              class="flex h-11 min-w-0 items-center gap-0.5 rounded-lg pl-1 pr-2 text-base text-[var(--brand-action)] active:opacity-60"
+              @click="indietro"
+            >
+              <span
+                class="lucide-chevron-left size-6 shrink-0"
+                aria-hidden="true"
+              />
+              <span class="truncate">
+                {{
+                  __(
+                    activeTab && gruppoAperto ? gruppoAperto.label : 'Settings',
+                  )
+                }}
+              </span>
+            </button>
             <Button
               variant="ghost"
-              icon="chevron-left"
-              :aria-label="__('Back')"
-              @click="indietro"
+              size="md"
+              icon="x"
+              class="shrink-0"
+              :aria-label="__('Close')"
+              @click="showSettings = false"
             />
-            <span class="truncate text-base-medium text-ink-gray-9">
-              {{
-                __(
-                  activeTab
-                    ? activeTab.title || activeTab.label
-                    : gruppoAperto?.label || 'Settings',
-                )
-              }}
-            </span>
           </div>
           <template v-if="activeTab">
             <!-- the way back to the category the entry belongs to -->
