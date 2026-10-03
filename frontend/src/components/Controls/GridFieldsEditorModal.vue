@@ -38,6 +38,7 @@
                   v-model="field.columns"
                   variant="outline"
                   type="number"
+                  inputmode="numeric"
                   class="w-20"
                 />
                 <Button

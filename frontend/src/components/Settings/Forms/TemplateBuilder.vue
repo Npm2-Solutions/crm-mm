@@ -407,7 +407,7 @@
           />
           <FormControl
             v-model="tpl.success_url"
-            type="text"
+            type="url"
             :label="__('Then it goes to')"
             placeholder="https://www.example.com/grazie"
             :description="

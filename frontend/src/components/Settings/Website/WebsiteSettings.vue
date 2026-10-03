@@ -251,6 +251,7 @@
           <FormControl
             v-model="form.vat_number"
             type="text"
+            v-bind="tastiera('codice')"
             :label="__('VAT number')"
           />
         </div>
@@ -261,11 +262,22 @@
           :label="__('Address')"
         />
         <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
-          <FormControl v-model="form.email" type="text" :label="__('Email')" />
-          <FormControl v-model="form.phone" type="text" :label="__('Phone')" />
+          <FormControl
+            v-model="form.email"
+            type="text"
+            v-bind="tastiera('email')"
+            :label="__('Email')"
+          />
+          <FormControl
+            v-model="form.phone"
+            type="text"
+            v-bind="tastiera('telefono')"
+            :label="__('Phone')"
+          />
           <FormControl
             v-model="form.whatsapp_number"
             type="text"
+            v-bind="tastiera('cifre')"
             :label="__('WhatsApp')"
             placeholder="393331234567"
             :description="__('Digits only, with the country code.')"
@@ -318,7 +330,7 @@
             />
             <FormControl
               v-model="link.url"
-              type="text"
+              type="url"
               class="flex-1"
               placeholder="https://"
             />
@@ -387,6 +399,7 @@
             placeholder="G-XXXXXXX"
           />
           <FormControl
+            inputmode="numeric"
             v-model="form.meta_pixel_id"
             type="text"
             :label="__('Meta Pixel ID')"
@@ -424,6 +437,7 @@
 <script setup>
 import ImageField from '@/components/Settings/Website/ImageField.vue'
 import { activeSettingsSite } from '@/composables/settings'
+import { tastiera } from '@/utils/tastiera'
 import { createResource, FormControl, Switch, call, toast } from 'frappe-ui'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 

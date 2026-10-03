@@ -65,6 +65,7 @@
           />
         </div>
         <FormControl
+          type="url"
           v-model="form.video_url"
           :label="__('Video (YouTube or Vimeo)')"
           placeholder="https://"

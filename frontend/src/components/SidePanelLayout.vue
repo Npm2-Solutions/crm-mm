@@ -241,6 +241,7 @@
                           v-else-if="field.fieldtype === 'Percent'"
                           class="form-control"
                           type="text"
+                          v-bind="tastieraDi(field)"
                           variant="ghost"
                           :value="getFormattedPercent(field.fieldname, doc)"
                           :placeholder="field.placeholder"
@@ -263,6 +264,7 @@
                           v-else-if="field.fieldtype === 'Int'"
                           class="form-control"
                           type="text"
+                          v-bind="tastieraDi(field)"
                           variant="ghost"
                           :value="doc[field.fieldname] || '0'"
                           :placeholder="field.placeholder"
@@ -274,6 +276,7 @@
                           v-else-if="field.fieldtype === 'Float'"
                           class="form-control"
                           type="text"
+                          v-bind="tastieraDi(field)"
                           variant="ghost"
                           :value="getFormattedFloat(field.fieldname, doc)"
                           :placeholder="field.placeholder"
@@ -287,6 +290,7 @@
                           v-else-if="field.fieldtype === 'Currency'"
                           class="form-control"
                           type="text"
+                          v-bind="tastieraDi(field)"
                           variant="ghost"
                           :value="getFormattedCurrency(field.fieldname, doc)"
                           :placeholder="field.placeholder"
@@ -368,10 +372,12 @@
                           :disabled="Boolean(field.read_only)"
                           @change="(v) => fieldChange(v, field)"
                         />
+                        <!-- the phone's dial pad, the email's @ (utils/tastiera) -->
                         <TextInput
                           v-else
                           class="form-control"
                           type="text"
+                          v-bind="tastieraDi(field)"
                           variant="ghost"
                           :modelValue="doc[field.fieldname]"
                           :placeholder="field.placeholder"
@@ -454,6 +460,7 @@ import {
   valoreDaLeggere,
 } from '@/utils'
 import { flt } from '@/utils/numberFormat.js'
+import { tastieraDi } from '@/utils/tastiera'
 import {
   Checkbox,
   DatePicker,

@@ -111,6 +111,7 @@
         </div>
         <div class="grid grid-cols-2 gap-4 px-2 py-3 max-md:grid-cols-1">
           <FormControl
+            type="url"
             v-model="settings.doc.tsa_url"
             :label="__('Authority address')"
             placeholder="https://"

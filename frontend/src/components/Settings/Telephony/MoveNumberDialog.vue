@@ -77,6 +77,8 @@
             </p>
             <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
               <FormControl
+                autocapitalize="none"
+                spellcheck="false"
                 v-model="codici.sid"
                 :label="__('Account SID')"
                 autocomplete="off"

@@ -102,6 +102,7 @@
             <FormControl
               v-model.number="form.duration"
               type="number"
+              inputmode="numeric"
               min="5"
               :label="__('Duration (min)')"
             />
@@ -183,6 +184,7 @@
               v-if="form.staff_selection === 'Any one'"
               v-model.number="form.staff_count"
               type="number"
+              inputmode="numeric"
               min="1"
               :label="__('Professionals per appointment')"
             />
@@ -256,6 +258,7 @@
               <FormControl
                 v-model.number="row.staff_count"
                 type="number"
+                inputmode="numeric"
                 min="1"
               />
               <Button
@@ -282,12 +285,14 @@
             <FormControl
               v-model.number="form.min_participants"
               type="number"
+              inputmode="numeric"
               min="1"
               :label="__('Minimum participants')"
             />
             <FormControl
               v-model.number="form.max_participants"
               type="number"
+              inputmode="numeric"
               min="1"
               :label="__('Maximum participants')"
               :description="__('Above 1 it becomes a group session')"
@@ -315,6 +320,7 @@
               <FormControl
                 v-model.number="row.quantity"
                 type="number"
+                inputmode="numeric"
                 min="1"
               />
               <label
@@ -359,18 +365,21 @@
             <FormControl
               v-model.number="form.slot_interval"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('Slot step (min)')"
             />
             <FormControl
               v-model.number="form.buffer_before"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('Buffer before')"
             />
             <FormControl
               v-model.number="form.buffer_after"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('Buffer after')"
             />

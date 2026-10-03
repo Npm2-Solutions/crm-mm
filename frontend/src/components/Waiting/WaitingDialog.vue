@@ -63,6 +63,7 @@
           <FormControl
             v-model="form.seats"
             type="number"
+            inputmode="numeric"
             :label="__('Places')"
             :min="1"
             :max="MASSIMO_POSTI"

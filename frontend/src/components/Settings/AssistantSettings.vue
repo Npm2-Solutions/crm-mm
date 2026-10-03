@@ -198,6 +198,7 @@
                 autocomplete="off"
               />
               <FormControl
+                type="url"
                 v-model="settings.doc.base_url"
                 :label="__('Endpoint')"
                 placeholder="https://"
@@ -219,11 +220,13 @@
                 <FormControl
                   v-model.number="settings.doc.request_timeout"
                   type="number"
+                  inputmode="numeric"
                   :label="__('Timeout (seconds)')"
                 />
                 <FormControl
                   v-model.number="settings.doc.max_output_tokens"
                   type="number"
+                  inputmode="numeric"
                   :label="__('Longest answer (tokens)')"
                 />
               </div>

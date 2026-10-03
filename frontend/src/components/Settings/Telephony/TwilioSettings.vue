@@ -132,6 +132,8 @@
               </span>
               <div class="grid grid-cols-2 gap-4 max-md:grid-cols-1">
                 <FormControl
+                  autocapitalize="none"
+                  spellcheck="false"
                   v-model="codici.account_sid"
                   :label="__('Account SID', null, 'Twilio console')"
                   type="text"

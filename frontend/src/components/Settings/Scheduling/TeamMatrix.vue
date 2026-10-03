@@ -215,6 +215,7 @@
           <FormControl
             v-model.number="editing.values.duration"
             type="number"
+            inputmode="numeric"
             min="0"
             :label="__('Own length (min)')"
             :placeholder="String(editing.service?.duration || '')"
@@ -222,6 +223,7 @@
           <FormControl
             v-model.number="editing.values.priority"
             type="number"
+            inputmode="numeric"
             :label="__('Priority')"
             :description="__('Lower is picked first')"
           />

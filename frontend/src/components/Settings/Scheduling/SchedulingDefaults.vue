@@ -56,6 +56,7 @@
           <FormControl
             v-model.number="form.default_duration"
             type="number"
+            inputmode="numeric"
             min="5"
             :label="__('Default length (min)')"
           />

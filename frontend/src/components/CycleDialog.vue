@@ -42,6 +42,7 @@
           <FormControl
             v-model="form.sessions"
             type="number"
+            inputmode="numeric"
             :label="__('Sessions', null, 'Cycle of sessions')"
             :min="1"
             :max="MAX_SEDUTE"

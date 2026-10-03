@@ -86,6 +86,7 @@
           <FormControl
             v-model="form.limit"
             type="number"
+            inputmode="numeric"
             :label="__('Max records')"
           />
           <ErrorMessage :message="createError" />

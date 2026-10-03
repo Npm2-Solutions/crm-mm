@@ -28,6 +28,7 @@
                   :key="field.name + resets"
                   class="form-control"
                   type="text"
+                  v-bind="tastieraDi({ fieldname: field.name })"
                   variant="ghost"
                   :modelValue="values[field.name]"
                   :placeholder="__('Add {0}...', [field.label])"
@@ -70,6 +71,7 @@
 import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import { usersStore } from '@/stores/users'
 import { formatDate } from '@/utils'
+import { tastieraDi } from '@/utils/tastiera'
 import { TextInput, createResource, call, toast } from 'frappe-ui'
 import { ref, computed, watch } from 'vue'
 

@@ -55,6 +55,7 @@
         v-model.number="form.online_max_participants"
         class="w-40"
         type="number"
+        inputmode="numeric"
         min="1"
         :max="form.max_participants"
         :label="__('Seats per booking')"
@@ -104,6 +105,7 @@
                 v-else
                 v-model.number="form[rule.key]"
                 type="number"
+                inputmode="numeric"
                 min="0"
               />
             </template>
@@ -152,18 +154,21 @@
         <FormControl
           v-model.number="form.max_bookings_per_day"
           type="number"
+          inputmode="numeric"
           min="0"
           :label="__('Max per day')"
         />
         <FormControl
           v-model.number="form.max_bookings_per_week"
           type="number"
+          inputmode="numeric"
           min="0"
           :label="__('Max per week')"
         />
         <FormControl
           v-model.number="form.max_concurrent"
           type="number"
+          inputmode="numeric"
           min="0"
           :label="__('Max at the same time')"
         />
@@ -192,12 +197,14 @@
         <FormControl
           v-model.number="form.max_active_per_customer"
           type="number"
+          inputmode="numeric"
           min="0"
           :label="__('Upcoming per client')"
         />
         <FormControl
           v-model.number="form.min_days_between"
           type="number"
+          inputmode="numeric"
           min="0"
           :label="__('Days between visits')"
         />

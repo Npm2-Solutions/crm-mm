@@ -313,6 +313,7 @@
             <FormControl
               v-model.number="form.max_daily_appointments"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('Appointments per day')"
               :placeholder="__('No limit')"
@@ -320,6 +321,7 @@
             <FormControl
               v-model.number="form.max_weekly_appointments"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('Appointments per week')"
               :placeholder="__('No limit')"

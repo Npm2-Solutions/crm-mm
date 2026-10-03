@@ -169,11 +169,13 @@
             />
             <FormControl
               v-model="vista.client.fiscal_code"
+              v-bind="tastiera('codice')"
               :label="__('Codice fiscale')"
             />
             <FormControl
               v-if="vista.client.recipient_type !== 'persona_fisica'"
               v-model="vista.client.tax_id"
+              v-bind="tastiera('codice')"
               :label="__('Partita IVA / VAT number')"
             />
             <FormControl
@@ -188,9 +190,14 @@
             <template v-if="vista.client.recipient_type === 'soggetto_iva'">
               <FormControl
                 v-model="vista.client.recipient_code"
+                v-bind="tastiera('codice')"
                 :label="__('Codice destinatario')"
               />
-              <FormControl v-model="vista.client.pec" :label="__('PEC')" />
+              <FormControl
+                v-model="vista.client.pec"
+                v-bind="tastiera('email')"
+                :label="__('PEC')"
+              />
             </template>
           </div>
         </section>
@@ -496,6 +503,7 @@ import {
 } from '@/utils/fattura'
 import { formatEuro } from '@/utils/invoicing'
 import { spiegazioneDi } from '@/utils/scelte'
+import { tastiera } from '@/utils/tastiera'
 import { watchDebounced } from '@vueuse/core'
 import {
   Badge,

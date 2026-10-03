@@ -384,6 +384,7 @@
           <FormControl
             v-model.number="editing.website_order"
             type="number"
+            inputmode="numeric"
             :label="__('Sort order')"
           />
         </div>

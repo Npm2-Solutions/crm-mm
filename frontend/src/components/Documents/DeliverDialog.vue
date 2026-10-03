@@ -80,6 +80,7 @@
                 <FormControl
                   v-model="days"
                   type="number"
+                  inputmode="numeric"
                   :label="__('Online for days')"
                   :min="1"
                   :max="info.data.online.max_days"

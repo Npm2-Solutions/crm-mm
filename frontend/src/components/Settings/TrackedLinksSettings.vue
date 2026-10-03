@@ -82,7 +82,7 @@
         />
         <FormControl
           v-model="form.target_url"
-          type="text"
+          type="url"
           :label="__('Target URL')"
           :placeholder="'https://…'"
         />
