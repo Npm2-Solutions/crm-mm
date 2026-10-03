@@ -141,7 +141,7 @@
 
 <script setup>
 import { Button, ErrorMessage, FormControl } from 'frappe-ui'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import LucideCalendar from '~icons/lucide/calendar'
 import LucideFileText from '~icons/lucide/file-text'
@@ -153,6 +153,22 @@ import { area, choose, loadMe, logout, section } from './store'
 import CentreTile from '@/components/CentreTile.vue'
 import { useFormaDelLogo } from '@/composables/formaDelLogo'
 import { marchio } from '@/utils/marchio'
+import { seguiLaTastiera } from '@/utils/tastieraAperta'
+
+// the keyboard covers the bottom of the phone without making the page any
+// shorter: while the person writes (the chat, a code), the area follows what
+// one sees, the places at the bottom step aside (area.css); a pressed place
+// shows it, where iPhone listens to a touch
+let smettiDiSeguire = () => {}
+function alTocco() {}
+onMounted(() => {
+  smettiDiSeguire = seguiLaTastiera()
+  document.addEventListener('touchstart', alTocco, { passive: true })
+})
+onBeforeUnmount(() => {
+  smettiDiSeguire()
+  document.removeEventListener('touchstart', alTocco)
+})
 
 const route = useRoute()
 const boot = window.AREA || {}

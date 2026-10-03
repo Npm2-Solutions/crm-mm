@@ -327,3 +327,36 @@
     caret-color: transparent;
   }
 }
+
+/* Writing on a phone: the keyboard covers the bottom of the screen without
+   making the page shorter (utils/tastieraAperta.js). While the person writes,
+   the area is as tall as what one sees: the header stays, the places at the
+   bottom step aside, the chat's box sits on the keyboard, a dialog's buttons
+   in sight. No grey flash at a tap, no pull that reloads the area. */
+@media (max-width: 767px) {
+  :root[data-tastiera='aperta'] #app {
+    position: relative;
+    top: var(--vista-sopra, 0px);
+    height: var(--altezza-con-tastiera, 100%);
+  }
+  :root[data-tastiera='aperta'] .area-nav {
+    display: none;
+  }
+  :root[data-tastiera='aperta'] .dialog-scroll-container {
+    top: var(--vista-sopra, 0px);
+    bottom: var(--tastiera, 0px);
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+  .area-nav a,
+  button {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
