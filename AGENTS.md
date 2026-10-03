@@ -625,6 +625,10 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   (`v-show`), or the covered page's positioned controls are drawn over it.
 - An icon given by name to frappe-ui is Feather's (`crm/fcrm/feather_icons.json`)
   or `lucide-…`: any other name draws an empty circle.
+- While somebody writes, the frame follows the keyboard (`utils/tastieraAperta.js`:
+  `:root[data-tastiera='aperta']`, `--altezza-con-tastiera`, `--tastiera`): what
+  must stay in sight sits at the bottom of the frame or of a sheet, never
+  `position: fixed` at the bottom of the screen, which the keyboard covers.
 - A field asks for its keyboard (`utils/tastiera.js`): `tastieraDi(field)` for
   a DocType's field, `tastiera('telefono')`, `'email'`, `'url'`, `'codice'`,
   `'cifre'` elsewhere; a whole number on `type="number"` has
