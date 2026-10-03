@@ -624,7 +624,9 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A page that opens over another (a panel) hides what it covers there
-  (`v-show`), or the covered page's positioned controls are drawn over it.
+  (`v-show`), or the covered page's positioned controls are drawn over it, and
+  registers with `chiudeConIndietro(chiudi)` (`utils/indietro.js`): Android's
+  back closes it before leaving the page, as it does a sheet or a menu.
 - An icon given by name to frappe-ui is Feather's (`crm/fcrm/feather_icons.json`)
   or `lucide-…`: any other name draws an empty circle.
 - While somebody writes, the frame follows the keyboard (`utils/tastieraAperta.js`:
