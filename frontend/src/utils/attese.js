@@ -7,6 +7,8 @@
  * crm/scheduling/attese_regole.py's. Pure: tested.
  */
 
+import { hhmm } from './scheduler'
+
 export const IN_ATTESA = 'Waiting'
 export const PROPOSTA = 'Offered'
 export const PRENOTATA = 'Booked'
@@ -76,7 +78,7 @@ export function quandoPuo(voce, t = format, locale) {
     return (voce?.days || [])
       .map(
         (riga) =>
-          `${giornoBreve(riga.workday, locale)} ${String(riga.start_time).slice(0, 5)}–${String(riga.end_time).slice(0, 5)}`,
+          `${giornoBreve(riga.workday, locale)} ${hhmm(riga.start_time)}–${hhmm(riga.end_time)}`,
       )
       .join(', ')
   }

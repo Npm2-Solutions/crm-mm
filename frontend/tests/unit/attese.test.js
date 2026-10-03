@@ -50,6 +50,17 @@ describe('when the person can', () => {
     expect(quandoPuo(voce, undefined, 'en-GB')).toBe('Tue 15:00–17:00')
   })
 
+  it('reads a morning hour the server sends without its zero', () => {
+    // a Time column comes as a timedelta: nine o'clock is "9:00:00"
+    const voce = {
+      choice: null,
+      days: [
+        { workday: 'Tuesday', start_time: '9:00:00', end_time: '12:30:00' },
+      ],
+    }
+    expect(quandoPuo(voce, undefined, 'en-GB')).toBe('Tue 09:00–12:30')
+  })
+
   it('names a weekday in the language shown', () => {
     expect(giornoBreve('Monday', 'it-IT')).toBe('lun')
     expect(giornoBreve('Sunday', 'en-GB')).toBe('Sun')
