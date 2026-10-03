@@ -337,6 +337,7 @@ telefono, un'email, i giorni di un'impostazione, l'importo di una trattativa.
 | Codice fiscale, partita IVA, codice destinatario, codice SSA | Le maiuscole, mai corrette dal telefono |
 | Codice regione e ASL del Sistema TS, gli ID di Meta e WhatsApp | Le cifre |
 | Il SID di Twilio | Né maiuscole né correzioni: è un codice che distingue maiuscole e minuscole |
+| La ricerca delle liste (persone, contatti, aziende, chiamate, note, chat) | Il tasto «Cerca», che chiude la tastiera sui risultati; un cognome non viene mai corretto in una parola (`tastiera('cerca')`) |
 
 Restano come sono, e perché:
 

@@ -644,7 +644,8 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   `position: fixed` at the bottom of the screen, which the keyboard covers.
 - A field asks for its keyboard (`utils/tastiera.js`): `tastieraDi(field)` for
   a DocType's field, `tastiera('telefono')`, `'email'`, `'url'`, `'codice'`,
-  `'cifre'` elsewhere; a whole number on `type="number"` has
+  `'cifre'`, `'cerca'` (a list's search: the key closes the keyboard, a
+  surname is never corrected) elsewhere; a whole number on `type="number"` has
   `inputmode="numeric"`. An amount on `type="number"` keeps the browser's
   keyboard: iPhone's decimal pad has only the comma.
 - A settings page scrolls as one on a phone (`data-pagina-impostazioni`): a
