@@ -16,11 +16,13 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from crm import lingue
 from crm.permissions import livelli
 from crm.preventivi.api import DOCTYPE, IMPOSTAZIONI
 
-#: The stages, in the site's language: data the board shows, not strings of the
-#: interface. Name, description, then stage, colour, type, probability.
+#: The stages, in the centre's language (`crm.lingue`): data the board shows, not
+#: strings of the interface. Name, description, then stage, colour, type,
+#: probability.
 PREVENTIVI = {
 	"it": (
 		"Preventivi",
@@ -50,7 +52,7 @@ CHIUSI = ("Won", "Lost")
 
 
 def _lingua() -> str:
-	lingua = (frappe.db.get_single_value("System Settings", "language") or "it")[:2]
+	lingua = lingue.del_centro()
 	return lingua if lingua in PREVENTIVI else "it"
 
 

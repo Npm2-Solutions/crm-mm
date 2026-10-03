@@ -144,8 +144,10 @@ jinja = {
 # setup_wizard_stages = "crm.setup.setup_wizard.setup_wizard.get_setup_stages"
 setup_wizard_complete = [
 	# DottorCloud's own words in the language and country the wizard chose
-	# (`crm.lingue`): the consents'
+	# (`crm.lingue`): the consents', the libraries' (the clinic's foods hooked on here)
 	"crm.moduli.consensi.dopo_la_configurazione",
+	"crm.piani.librerie.dopo_la_configurazione",
+	"crm.clinica.librerie.dopo_la_configurazione",
 	"crm.demo.api.create_demo_data",
 ]
 # setup_wizard_test = "crm.setup.setup_wizard.test_setup_wizard.run_setup_wizard_test"

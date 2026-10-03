@@ -162,6 +162,33 @@ def _percorso(valore, forma: re.Pattern) -> str | None:
 	return percorso if forma.match(percorso) else None
 
 
+#: The languages the library's words come in.
+LINGUE = ("it", "en")
+
+
+def _parole(record: dict, lingua: str) -> dict:
+	"""What the library writes of an exercise in ``lingua`` and the centre may
+	rewrite: its equipment and how it is done."""
+	return {
+		"equipment": parola(str(record.get("equipment") or ""), lingua)[:140] or None,
+		"instructions": _passi(record, lingua) or None,
+	}
+
+
+def nella_lingua(record: dict, lingua: str, attuali: dict) -> dict:
+	"""The library's words a site keeps of an exercise in another language than
+	``lingua``, in ``lingua``: a site loaded in English before it said it is in
+	Italy. Words the centre wrote are the library's in no language, and stay."""
+	cambi = {}
+	for campo, nuovo in _parole(record, lingua).items():
+		attuale = (attuali.get(campo) or "").strip() or None
+		if not nuovo or attuale == nuovo:
+			continue
+		if attuale in {_parole(record, altra)[campo] for altra in LINGUE if altra != lingua}:
+			cambi[campo] = nuovo
+	return cambi
+
+
 def esercizio(record, lingua: str = "it") -> dict | None:
 	"""An exercise of the dataset as the library keeps it; None for a record that
 	is not one. Its pictures are paths in the dataset: where they are served from
@@ -184,10 +211,9 @@ def esercizio(record, lingua: str = "it") -> dict | None:
 		"name": nome,
 		"name_in_source": nome,
 		"body_part": PARTI_DATASET.get(str(record.get("body_part") or "").strip().lower(), "Other"),
-		"equipment": parola(str(record.get("equipment") or ""), lingua)[:140] or None,
 		"primary_muscles": principale or None,
 		"secondary_muscles": ", ".join(secondari) or None,
-		"instructions": _passi(record, lingua) or None,
+		**_parole(record, lingua),
 		"media_path": _percorso(record.get("image"), _PERCORSO_IMMAGINE),
 		"animation_path": _percorso(record.get("gif_url"), _PERCORSO_ANIMAZIONE),
 		# the media's owner, cited wherever they are shown

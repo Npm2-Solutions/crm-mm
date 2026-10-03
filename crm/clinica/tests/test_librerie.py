@@ -13,8 +13,14 @@ again, they keep the centre's words; their pictures appear, with whose they are,
 once the agency says where it hosts them. The centre adds its own.
 """
 
+import json
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
+
 import frappe
 
+from crm import lingue
 from crm.clinica import librerie
 from crm.clinica import piani as piani_clinica
 from crm.clinica import piani_regole as R
@@ -176,6 +182,31 @@ class LaLibreriaDegliAlimenti(LibrerieCase):
 		librerie.carica(CIBI, "en")
 		self.assertEqual(self.cibo("T20047").food_name, "Carrot, raw")
 
+	def test_un_sito_caricato_in_inglese_passa_all_italiano(self):
+		# a site that spoke the framework's English before it said it is in Italy
+		with tempfile.TemporaryDirectory() as cartella:
+			file = Path(cartella) / "alimenti.json"
+			file.write_text(json.dumps(CIBI))
+			self.addCleanup(
+				frappe.db.set_default,
+				librerie.VERSIONE_CARICATA,
+				frappe.db.get_default(librerie.VERSIONE_CARICATA),
+			)
+			with patch.object(librerie, "LIBRERIA", file):
+				with patch.object(lingue, "del_centro", return_value="en"):
+					self.assertIsNotNone(librerie.carica_libreria())
+					self.assertIsNone(librerie.carica_libreria())
+				self.assertEqual(self.cibo("T20047").food_name, "Carrot, raw")
+				self.come(MANAGER)
+				basilico = self.cibo("T11014")
+				librerie.save_food(basilico.name, {"food_name": "Basilico dell'orto", "food_group": "Other"})
+				frappe.set_user("Administrator")
+				# the same file, wanted in Italian: loaded again, and the names nobody
+				# touched follow; the centre's stays
+				self.assertIsNotNone(librerie.carica_libreria())
+		self.assertEqual(self.cibo("T20047").food_name, "Carota, cruda")
+		self.assertEqual(self.cibo("T11014").food_name, "Basilico dell'orto")
+
 	def test_la_libreria_si_carica_una_volta_per_versione(self):
 		# the site loaded the shipped file at install: the same file is not loaded again
 		librerie.carica_libreria()
@@ -250,6 +281,35 @@ class GliEsercizi(LibrerieCase):
 		self.assertEqual(
 			(addome.exercise_name, addome.animation_path), ("Crunch a tre quarti", "videos/0001-nuovo.gif")
 		)
+
+	def test_un_sito_caricato_in_inglese_passa_all_italiano(self):
+		librerie_crm.carica(DATASET, "en")
+		addome = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T001"})
+		self.assertEqual(
+			(addome.equipment, addome.instructions, addome.primary_muscles),
+			("body weight", "1. Lie flat.", "abs"),
+		)
+		# the centre wrote how the curl is done, and kept the library's equipment
+		self.come(MANAGER)
+		curl = frappe.get_doc(librerie_crm.ESERCIZIO, {"source": T.DATASET, "source_code": "T002"})
+		librerie_crm.save_exercise(
+			curl.name,
+			{
+				"exercise_name": curl.exercise_name,
+				"body_part": curl.body_part,
+				"equipment": curl.equipment,
+				"instructions": "Gomiti fermi.",
+			},
+		)
+		frappe.set_user("Administrator")
+		librerie_crm.carica(DATASET, "it")
+		addome.reload()
+		curl.reload()
+		self.assertEqual(
+			(addome.equipment, addome.instructions, addome.primary_muscles),
+			("corpo libero", "1. Sdraiati sulla schiena.\n2. Solleva il busto.", "addominali"),
+		)
+		self.assertEqual((curl.equipment, curl.instructions), ("bilanciere", "Gomiti fermi."))
 
 	def test_la_libreria_si_carica_una_volta_per_versione(self):
 		# the site loaded the shipped file at install: the same file is not loaded again

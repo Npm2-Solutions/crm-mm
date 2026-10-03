@@ -17,15 +17,16 @@ CRM's (`crm.piani.librerie`), and so is what every library shares.
   NPM2 adds to the library in the code.
 - **Loaded again**, the library brings its numbers; the words the centre changed -
   a name, a group, a portion - stay the centre's, and a name the centre never
-  touched follows the library's (`library_name` keeps the one it gave). The centre
-  adds its own foods. A food is switched off, not deleted: a plan may point to it.
+  touched follows the library's (`library_name` keeps the one it gave), in the
+  centre's language (`crm.lingue`): a site loaded in English before it said it is
+  in Italy loads it again, and its foods' names take Italian. The centre adds its
+  own foods. A food is switched off, not deleted: a plan may point to it.
 - **A number the table does not give** counts as nothing: the site keeps a number.
   A food without its energy is not in the library.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
@@ -44,7 +45,8 @@ LIBRERIA = Path(__file__).parent / "dati" / "alimenti.json"
 FONTE = "CIQUAL"
 #: What the licence asks to be shown with the numbers: the source and its version.
 ATTRIBUZIONE = "Anses. 2025. Ciqual French food composition table"
-#: The fingerprint of the library a site last loaded (a default of the site).
+#: The library a site last loaded, its fingerprint and the language of its names
+#: (a default of the site).
 VERSIONE_CARICATA = "crm_food_library"
 
 
@@ -184,11 +186,25 @@ def carica(record: list, lingua: str | None = None) -> dict:
 
 def carica_libreria(forza: bool = False) -> dict | None:
 	"""The library DottorCloud ships, into this site: at install, and at every
-	migrate whose file is not the one the site loaded last."""
+	migrate whose file is not the one the site loaded last, or whose names the
+	centre wants in another language."""
 	contenuto = LIBRERIA.read_bytes()
-	impronta = hashlib.sha256(contenuto).hexdigest()
-	if not forza and frappe.db.get_default(VERSIONE_CARICATA) == impronta:
+	lingua = L.lingua_del_sito()
+	segno = L.caricata(contenuto, lingua)
+	if not forza and frappe.db.get_default(VERSIONE_CARICATA) == segno:
 		return None
-	fatto = carica(json.loads(contenuto))
-	frappe.db.set_default(VERSIONE_CARICATA, impronta)
+	fatto = carica(json.loads(contenuto), lingua)
+	frappe.db.set_default(VERSIONE_CARICATA, segno)
 	return fatto
+
+
+def dopo_la_configurazione(_args=None) -> None:
+	"""The setup wizard chose the site's language and country: the foods' names
+	follow them, in the background."""
+	frappe.enqueue(
+		"crm.clinica.librerie.carica_libreria",
+		queue="long",
+		job_id="crm-libreria-alimenti",
+		deduplicate=True,
+		enqueue_after_commit=True,
+	)

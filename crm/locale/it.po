@@ -40980,3 +40980,15 @@ msgstr "Oltre quello che è incluso, crediti SdI e firme avanzate li fattura l'a
 #: crm/moduli/modelli.py
 msgid "The consents in the centre's language"
 msgstr "I consensi nella lingua del centro"
+
+#: crm/preventivi/pipeline.py
+msgid "Quote to prepare"
+msgstr "Preventivo da fare"
+
+#: crm/preventivi/pipeline.py
+msgid "Quote delivered"
+msgstr "Preventivo consegnato"
+
+#: crm/clienti/pipeline.py
+msgid "Request"
+msgstr "Richiesta"

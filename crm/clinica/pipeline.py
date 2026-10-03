@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import frappe
 
-#: The new clients pipeline in the clinic's words, in the site's language: data the
+#: The new clients pipeline in the clinic's words, in the centre's language: data the
 #: board shows, not strings of the interface (`crm.clienti.pipeline.registra_nomi`).
 NUOVI_PAZIENTI = {
 	"it": (
