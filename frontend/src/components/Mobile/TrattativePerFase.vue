@@ -185,7 +185,14 @@ function forseAltre() {
   })
 }
 
-// the default pipeline to start with, once the pipelines are there
+watch(pipeline, (nome) => {
+  scelta.value = ''
+  conteggiResource.submit({ pipeline: nome })
+})
+// the default pipeline to start with, once the pipelines are there. They are
+// there already when another page asked for them first, and the pipeline is
+// set while the page is made: the watch above has to be listening by then, or
+// the stages stay at 0 and no deal is asked for
 watch(
   () => defaultPipeline.value?.name,
   (nome) => {
@@ -193,10 +200,6 @@ watch(
   },
   { immediate: true },
 )
-watch(pipeline, (nome) => {
-  scelta.value = ''
-  conteggiResource.submit({ pipeline: nome })
-})
 
 defineExpose({
   ricarica: () => conteggiResource.submit({ pipeline: pipeline.value }),
