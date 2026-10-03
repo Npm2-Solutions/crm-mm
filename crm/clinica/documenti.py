@@ -26,6 +26,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, get_fullname, getdate
 
+from crm import lingue
 from crm.clinica import dossier
 from crm.documenti import api, consegna
 from crm.documenti import regole as R
@@ -146,7 +147,9 @@ def dal_referto(visita) -> str | None:
 		{
 			"doctype": api.DOCTYPE,
 			"lead": visita.lead,
-			"title": visita.get("title") or _("Visit"),
+			# a title kept on the document: the centre's language, not whoever signed's
+			# («Visit» stayed in English for a practitioner reading in English)
+			"title": visita.get("title") or _("Visit", lang=lingue.del_centro()),
 			"document_type": REFERTO,
 			"document_date": getdate(visita.record_date or visita.signed_on),
 			"practitioner": visita.practitioner,
