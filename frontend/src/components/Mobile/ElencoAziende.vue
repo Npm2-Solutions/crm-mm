@@ -98,50 +98,16 @@
 
 <script setup>
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
-import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { rigaDellAzienda } from '@/utils/sulTelefono'
-import {
-  Avatar,
-  LoadingIndicator,
-  TextInput,
-  createResource,
-  debounce,
-} from 'frappe-ui'
-import { ref, watch } from 'vue'
+import { Avatar, LoadingIndicator, TextInput } from 'frappe-ui'
 
 const { puo } = usersStore()
 
-const testo = ref('')
-const righe = ref([])
-const altre = ref(false)
-const contenitore = ref(null)
-
-const carica = createResource({
-  url: 'crm.api.sul_telefono.get_organizations',
-  onSuccess(dati) {
-    righe.value = dati.start ? [...righe.value, ...dati.rows] : dati.rows
-    altre.value = dati.more
-  },
-})
-
-function cerca() {
-  return carica.submit({ text: testo.value.trim(), start: 0 })
-}
-
-const tira = useTiraPerAggiornare(contenitore, cerca)
-
-watch(testo, debounce(cerca, 300))
-cerca()
-
-// near the bottom: the next page, once
-function forseAltre() {
-  const el = contenitore.value
-  if (!el || !altre.value || carica.loading) return
-  if (el.scrollTop + el.clientHeight < el.scrollHeight - 300) return
-  carica.submit({ text: testo.value.trim(), start: righe.value.length })
-}
+const { testo, righe, contenitore, carica, cerca, forseAltre, tira } =
+  useElencoDelTelefono('crm.api.sul_telefono.get_organizations', 'aziende')
 
 defineExpose({ ricarica: cerca })
 </script>

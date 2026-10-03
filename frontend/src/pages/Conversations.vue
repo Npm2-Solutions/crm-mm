@@ -156,6 +156,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import { globalStore } from '@/stores/global'
 import { isMobileView, viewportWidth } from '@/composables/breakpoints'
 import { readReceipts } from '@/composables/conversationState'
+import { useRitorno } from '@/composables/ritorno'
 import { keepInPlace, laterLabel, whyItLeft } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
 import { schedaChiusa } from '@/utils/schedaChiusa'
@@ -184,6 +185,22 @@ const search = ref('')
 // only the unread, among the view that is open
 const onlyUnread = ref(false)
 const pageLength = ref(40)
+// back to this page from a person's: the list as it was left - the view, the
+// search, the unread only, how many it showed - before it is asked for
+useRitorno('conversazioni', {
+  stato: () => ({
+    view: view.value,
+    search: search.value,
+    onlyUnread: onlyUnread.value,
+    pageLength: pageLength.value,
+  }),
+  rimetti: (salvato) => {
+    view.value = salvato.view
+    search.value = salvato.search
+    onlyUnread.value = salvato.onlyUnread
+    pageLength.value = salvato.pageLength
+  },
+})
 
 const people = createResource({
   url: 'crm.api.conversations.people',

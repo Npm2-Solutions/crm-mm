@@ -21,6 +21,7 @@
         :aria-label="__('Pipeline')"
       />
       <div
+        ref="schede"
         class="-mx-3 flex gap-2 overflow-x-auto px-3 pb-2"
         role="tablist"
         :aria-label="__('Stages')"
@@ -106,21 +107,24 @@
 
 <script setup>
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useRitorno } from '@/composables/ritorno'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import { pipelinesStore } from '@/stores/pipelines'
 import { usersStore } from '@/stores/users'
 import { parseColor, timeAgo } from '@/utils'
+import { senzaDoppioni } from '@/utils/ritorno'
 import { faseIniziale, valoreDellaTrattativa } from '@/utils/sulTelefono'
 import {
   Avatar,
   FormControl,
   LoadingIndicator,
+  call,
   createResource,
 } from 'frappe-ui'
 import { storeToRefs } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const pipelineStore = pipelinesStore()
 const { pipelines, getStages } = pipelineStore
@@ -134,6 +138,10 @@ const scelta = ref('')
 const righe = ref([])
 const altre = ref(false)
 const contenitore = ref(null)
+const schede = ref(null)
+// where each page of the stage loaded since the first starts: a list put
+// back asks them all again
+let inizi = [0]
 
 const pipelineAttive = computed(() =>
   (pipelines.data || [])
@@ -146,7 +154,15 @@ const conteggiResource = createResource({
   url: 'crm.api.sul_telefono.get_deal_stages',
   onSuccess: () => {
     // the stage it was on, else the first open one with deals
-    scegli(faseIniziale(fasi.value, conteggi.value, scelta.value))
+    const fase = faseIniziale(fasi.value, conteggi.value, scelta.value)
+    // the list put back is still the stage's: brought up to date where it is
+    if (tornata && fase === scelta.value) {
+      tornata = null
+      rinfresca()
+      return
+    }
+    tornata = null
+    scegli(fase)
   },
 })
 const conteggi = computed(() =>
@@ -158,10 +174,39 @@ const conteggi = computed(() =>
 const carica = createResource({
   url: 'crm.api.sul_telefono.get_deals',
   onSuccess(dati) {
-    righe.value = dati.start ? [...righe.value, ...dati.rows] : dati.rows
+    if (dati.start) {
+      righe.value = senzaDoppioni([...righe.value, ...dati.rows])
+      if (!inizi.includes(dati.start)) inizi.push(dati.start)
+    } else {
+      righe.value = dati.rows
+      inizi = [0]
+    }
     altre.value = dati.more
   },
 })
+
+// the stage put back, brought up to date page by page and in silence: a deal
+// changed on its page shows as it is now, where it was
+async function rinfresca() {
+  const fase = scelta.value
+  const nome = pipeline.value
+  try {
+    const pagine = await Promise.all(
+      inizi.map((start) =>
+        call('crm.api.sul_telefono.get_deals', {
+          status: fase,
+          pipeline: nome,
+          start,
+        }),
+      ),
+    )
+    if (scelta.value !== fase || pipeline.value !== nome) return
+    righe.value = senzaDoppioni(pagine.flatMap((pagina) => pagina.rows))
+    altre.value = Boolean(pagine.at(-1)?.more)
+  } catch {
+    if (scelta.value === fase) scegli(fase)
+  }
+}
 
 // the company when the title is the person, else who follows the deal; never
 // the viewer standing in for nobody (getUser() without a name is the session's)
@@ -192,6 +237,34 @@ function forseAltre() {
     start: righe.value.length,
   })
 }
+
+// back from a deal's page: the pipeline, the stage, its deals and where the
+// list was, at once; the counts and the deals then brought up to date
+let tornata = useRitorno('trattative', {
+  contenitore,
+  stato: () => ({
+    pipeline: pipeline.value,
+    scelta: scelta.value,
+    righe: righe.value,
+    altre: altre.value,
+    inizi: [...inizi],
+  }),
+  rimetti: (salvato) => {
+    pipeline.value = salvato.pipeline
+    scelta.value = salvato.scelta
+    righe.value = salvato.righe
+    altre.value = salvato.altre
+    inizi = [...salvato.inizi]
+  },
+})
+if (tornata) conteggiResource.submit({ pipeline: pipeline.value })
+// the stage chosen in sight in its row, when the row was put back
+onMounted(() => {
+  if (!tornata) return
+  schede.value
+    ?.querySelector('[aria-selected="true"]')
+    ?.scrollIntoView?.({ block: 'nearest', inline: 'center' })
+})
 
 watch(pipeline, (nome) => {
   scelta.value = ''

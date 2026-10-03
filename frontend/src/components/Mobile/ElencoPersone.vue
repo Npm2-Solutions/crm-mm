@@ -105,55 +105,21 @@
 
 <script setup>
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
-import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
 import { contattoDi, quandoTorna } from '@/utils/sulTelefono'
-import {
-  Avatar,
-  LoadingIndicator,
-  TextInput,
-  createResource,
-  debounce,
-} from 'frappe-ui'
-import { computed, ref, watch } from 'vue'
+import { Avatar, LoadingIndicator, TextInput } from 'frappe-ui'
+import { computed } from 'vue'
 
 const { puo, ambito } = usersStore()
 // whoever reads people masked finds them by name only (the server says so too)
 const mascherati = computed(() => ambito('persone.vedi') === 'mascherato')
 const lingua = window.navigator?.language || 'it-IT'
 
-const testo = ref('')
-const righe = ref([])
-const altre = ref(false)
-const contenitore = ref(null)
-
-const carica = createResource({
-  url: 'crm.api.sul_telefono.get_people',
-  onSuccess(dati) {
-    righe.value = dati.start ? [...righe.value, ...dati.rows] : dati.rows
-    altre.value = dati.more
-  },
-})
-
-function cerca() {
-  return carica.submit({ text: testo.value.trim(), start: 0 })
-}
-
-const tira = useTiraPerAggiornare(contenitore, cerca)
-
-const cercaPocoDopo = debounce(cerca, 300)
-watch(testo, cercaPocoDopo)
-cerca()
-
-// near the bottom: the next page, once
-function forseAltre() {
-  const el = contenitore.value
-  if (!el || !altre.value || carica.loading) return
-  if (el.scrollTop + el.clientHeight < el.scrollHeight - 300) return
-  carica.submit({ text: testo.value.trim(), start: righe.value.length })
-}
+const { testo, righe, contenitore, carica, cerca, forseAltre, tira } =
+  useElencoDelTelefono('crm.api.sul_telefono.get_people', 'persone')
 
 function nomeDi(persona) {
   return persona.lead_name || persona.first_name || persona.name

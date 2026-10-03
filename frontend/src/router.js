@@ -9,6 +9,7 @@ import { sessionStore } from '@/stores/session'
 import { viewsStore } from '@/stores/views'
 import { isMobileView } from '@/composables/breakpoints'
 import { nomeDellaPagina } from '@/utils/menu'
+import { segnaIRitorni } from '@/utils/ritorno'
 
 let personaChecked = false
 export const PERSONA_DONE_KEY = 'crm_persona_captured'
@@ -292,6 +293,10 @@ let router = createRouter({
   history: createWebHistory('/crm'),
   routes,
 })
+
+// a back to a list finds it as it was left (utils/ritorno.js): noted first,
+// before any guard sends the navigation elsewhere
+segnaIRitorni(router)
 
 // Where to land when the default page is not one's own: the first one the level
 // opens. The desk's day for who has it (the front desk, the practitioners, the
