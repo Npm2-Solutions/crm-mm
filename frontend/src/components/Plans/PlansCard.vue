@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The person's plans, a tab of their page: a training, habits, and the kinds a
   module brings - the clinic's diets and exercises at home. Each is written by
   whoever's qualification allows its kind, and followed by the person in their
@@ -13,13 +16,13 @@
     >
       <!-- the tab's header names it: here, what a plan is -->
       <div class="flex min-w-0 max-w-2xl flex-col gap-1">
-        <p class="text-p-base text-ink-gray-6">
+        <DescrizioneRipiegata>
           {{
             __(
               'What the person follows between one appointment and the next: a training, habits, a diet, exercises at home. You write it here and publish it; they find it in their area and tick off what they do.',
             )
           }}
-        </p>
+        </DescrizioneRipiegata>
       </div>
       <Dropdown
         v-if="plans.data.kinds.length && !vuoto"
@@ -196,6 +199,7 @@
 </template>
 
 <script setup>
+import DescrizioneRipiegata from '@/components/Mobile/DescrizioneRipiegata.vue'
 import PlanDialog from '@/components/Plans/PlanDialog.vue'
 import ProgrammeDialog from '@/components/Plans/ProgrammeDialog.vue'
 import CategoryTag from '@/components/Espresso/CategoryTag.vue'

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <!--
@@ -42,8 +45,10 @@
     v-if="!windowOpen"
     class="mx-3 mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg bg-surface-amber-1 px-3 py-2 ring-1 ring-inset ring-outline-amber-2"
   >
+    <!-- on a phone in a line, beside its button: the composer keeps its room -->
     <span class="min-w-0 flex-1 text-p-sm text-ink-amber-9">
-      {{ windowNotice }}
+      <span class="max-md:hidden">{{ windowNotice }}</span>
+      <span class="md:hidden">{{ windowNoticeShort }}</span>
     </span>
     <Button
       size="sm"
@@ -280,6 +285,12 @@ const windowNotice = computed(() =>
     : __(
         'This contact has never written here: WhatsApp only delivers an approved template until they reply.',
       ),
+)
+
+const windowNoticeShort = computed(() =>
+  lastIncomingAt.value
+    ? __('Over 24 hours: WhatsApp takes only a template')
+    : __('Never written here: WhatsApp takes only a template'),
 )
 
 // What WhatsApp actually accepts, from Meta's media reference. A file outside

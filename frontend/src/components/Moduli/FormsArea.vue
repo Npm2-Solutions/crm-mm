@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The person's forms: what they signed, what is half-filled, and a form to fill
   now, with them at the desk or on their own (a link by email, the desk's
   tablet). Signed ones open read-only, with their PDF; a draft opens where it
@@ -10,13 +13,13 @@
     <div
       class="flex items-start justify-between gap-3 max-md:flex-col max-md:items-stretch"
     >
-      <p class="min-w-0 text-p-base text-ink-gray-6">
+      <DescrizioneRipiegata>
         {{
           __(
             "Privacy, consents, questionnaires: filled with the person and signed on the screen, or on their own from a link or the desk's tablet. The sheets are written by the operator during the appointment. What is signed is kept as it was, with its PDF.",
           )
         }}
-      </p>
+      </DescrizioneRipiegata>
       <div
         v-if="data?.can_fill && data.templates.length"
         class="flex shrink-0 gap-2 max-md:flex-wrap"
@@ -209,6 +212,7 @@
 
 <script setup>
 import EmptyState from '@/components/ListViews/EmptyState.vue'
+import DescrizioneRipiegata from '@/components/Mobile/DescrizioneRipiegata.vue'
 import RequestRow from '@/components/Moduli/RequestRow.vue'
 import SendFormsDialog from '@/components/Moduli/SendFormsDialog.vue'
 import { formatDate } from '@/utils'
