@@ -75,7 +75,7 @@
           </template>
         </Button>
         <Button
-          v-if="!isMobileView"
+          v-if="!isMobileView && gestisce"
           :label="__('Test run')"
           @click="showPreview = true"
         >
@@ -83,7 +83,10 @@
             <FeatherIcon name="play" class="size-4" />
           </template>
         </Button>
+        <!-- who reads the automations without building them (doc 30) opens
+             one to see it: nothing here saves, tries or switches it -->
         <Button
+          v-if="gestisce"
           variant="solid"
           :label="__('Save')"
           :loading="saving"
@@ -113,6 +116,7 @@
       <Switch
         :modelValue="Boolean(draft.enabled)"
         size="sm"
+        :disabled="!gestisce"
         @update:modelValue="togglePublish"
       />
       {{ __('Live') }}
@@ -236,7 +240,7 @@
         </div>
 
         <div
-          v-if="draft.name"
+          v-if="draft.name && gestisce"
           class="rounded-lg border border-outline-red-2 p-3 text-sm"
         >
           <div class="font-medium text-ink-gray-8">{{ __('Danger zone') }}</div>
@@ -314,6 +318,7 @@ import {
   ref,
 } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import { usersStore } from '@/stores/users'
 import {
   PALETTE,
   STEP_CATEGORIES,
@@ -335,6 +340,8 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const { puo } = usersStore()
+const gestisce = computed(() => puo('automazioni.gestisci'))
 
 // with a context: "Builder" is also the name of a product
 const TABS = [
@@ -447,7 +454,10 @@ const selectedEntry = computed(() =>
 
 const selectedStep = computed(() => selectedEntry.value?.step || null)
 
-const dirty = computed(() => saved.value !== JSON.stringify(payload()))
+// who cannot save has nothing left unsaved: no question on leaving
+const dirty = computed(
+  () => gestisce.value && saved.value !== JSON.stringify(payload()),
+)
 
 const paletteCategories = computed(() =>
   clipboard.value
@@ -479,7 +489,7 @@ const moreOptions = computed(() => [
   {
     label: __('Test run'),
     icon: 'play',
-    condition: () => isMobileView.value,
+    condition: () => isMobileView.value && gestisce.value,
     onClick: () => (showPreview.value = true),
   },
   {
@@ -491,7 +501,7 @@ const moreOptions = computed(() => [
   {
     label: __('Duplicate automation'),
     icon: 'copy',
-    condition: () => Boolean(draft.name),
+    condition: () => Boolean(draft.name) && gestisce.value,
     onClick: duplicate,
   },
   {
@@ -725,7 +735,7 @@ function toggleWindowDay(day) {
 function onKeydown(event) {
   if ((event.metaKey || event.ctrlKey) && event.key === 's') {
     event.preventDefault()
-    save()
+    if (gestisce.value) save()
   }
   if (event.key === 'Escape') selectedId.value = null
 }
