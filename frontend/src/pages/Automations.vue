@@ -14,15 +14,16 @@
       <div class="flex items-center gap-2">
         <!-- on a phone the recipes are an icon and «+» creates: the title had
              the room of one letter -->
+        <!-- making one is the manager's (doc 30): who reads them only opens them -->
         <Button
-          v-if="isMobileView"
+          v-if="isMobileView && gestisce"
           icon="book-open"
           :aria-label="__('Start from a recipe')"
           :tooltip="__('Start from a recipe')"
           @click="showRecipes = true"
         />
         <Button
-          v-else
+          v-else-if="gestisce"
           :label="__('Start from a recipe')"
           @click="showRecipes = true"
         >
@@ -31,7 +32,7 @@
           </template>
         </Button>
         <Button
-          v-if="!isMobileView"
+          v-if="!isMobileView && gestisce"
           variant="solid"
           iconLeft="plus"
           :label="__('Create')"
@@ -110,7 +111,12 @@
             {{ row.enrolled_count }}
             {{ __('total') }}
           </div>
-          <Dropdown :options="rowOptions(row)" placement="right" @click.stop>
+          <Dropdown
+            v-if="gestisce"
+            :options="rowOptions(row)"
+            placement="right"
+            @click.stop
+          >
             <Button variant="ghost" icon="lucide-more-horizontal" @click.stop />
           </Dropdown>
         </div>
@@ -135,7 +141,7 @@
             )
           }}
         </span>
-        <div class="mt-2 flex gap-2">
+        <div v-if="gestisce" class="mt-2 flex gap-2">
           <Button
             :label="__('Start from a recipe')"
             @click="showRecipes = true"
@@ -151,7 +157,7 @@
     </div>
   </div>
   <PulsanteAggiungi
-    v-if="isMobileView"
+    v-if="isMobileView && gestisce"
     :label="__('New automation')"
     @click="create()"
   />
@@ -208,9 +214,12 @@ import {
 } from 'frappe-ui'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { usersStore } from '@/stores/users'
 import { RECIPES, newTrigger, triggerDefinition } from '@/utils/automation'
 
 const router = useRouter()
+const { puo } = usersStore()
+const gestisce = computed(() => puo('automazioni.gestisci'))
 
 const FILTERS = [
   { name: 'all', label: 'All' },
