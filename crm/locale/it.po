@@ -41597,3 +41597,19 @@ msgstr "Le condizioni di questo SLA sono state scritte in {0}, in un modo che qu
 #: frontend/src/utils/menu.js
 msgid "Reception desk"
 msgstr "Accoglienza"
+
+#: frontend/src/pages/Organization.vue
+msgid "No deals yet"
+msgstr "Ancora nessuna trattativa"
+
+#: frontend/src/pages/Organization.vue
+msgid "The deals with this organization appear here."
+msgstr "Qui compaiono le trattative con questa azienda."
+
+#: frontend/src/pages/Organization.vue
+msgid "The contacts who work at this organization appear here."
+msgstr "Qui compaiono i contatti che lavorano in questa azienda."
+
+#: frontend/src/pages/Contact.vue
+msgid "The deals this contact takes part in appear here."
+msgstr "Qui compaiono le trattative di cui fa parte questo contatto."

@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <LayoutHeader v-if="organization.doc">
     <template #left-header>
@@ -171,12 +174,10 @@
         <!-- the list's own copy sent people to a Create button this page
              does not have -->
         <EmptyState
-          v-if="!rows.length"
-          :icon="tab.icon"
+          v-if="!rows.length && VUOTI[tab.label]"
           :name="__(tab.label)"
-          :description="
-            __('No {0} linked to this organization yet.', [__(tab.label)])
-          "
+          :title="VUOTI[tab.label].title"
+          :description="VUOTI[tab.label].description"
         />
       </template>
     </Tabs>
@@ -395,6 +396,17 @@ function getParsedSections(_sections) {
 }
 
 const tabIndex = ref(0)
+// an empty tab says so in a whole sentence, never a tab's name glued into one
+const VUOTI = {
+  Deals: {
+    title: 'No deals yet',
+    description: 'The deals with this organization appear here.',
+  },
+  Contacts: {
+    title: 'No contacts yet',
+    description: 'The contacts who work at this organization appear here.',
+  },
+}
 const tabs = [
   {
     label: 'Deals',
@@ -523,6 +535,8 @@ const dealColumns = [
   {
     label: __('Status'),
     key: 'status',
+    // the stage's name in the reader's language, as in the deals' own list
+    options: 'CRM Deal Status',
     width: '10rem',
   },
   {

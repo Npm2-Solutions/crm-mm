@@ -141,21 +141,20 @@
           </div>
         </div>
         <DealsListView
-          v-else-if="tab.label === 'Deals' && rows.length"
+          v-else-if="tab.name === 'Deals' && rows.length"
           class="mt-4"
           :rows="rows"
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <div
-          v-if="tab.label === 'Deals' && !rows.length"
-          class="grid flex-1 place-items-center text-2xl-medium text-ink-gray-4"
-        >
-          <div class="flex flex-col items-center justify-center space-y-3">
-            <component :is="tab.icon" class="!h-10 !w-10" />
-            <div>{{ __('No {0} found', [__(tab.label.toLowerCase())]) }}</div>
-          </div>
-        </div>
+        <!-- by the tab's name: its label is in the reader's language, and
+             the deals never showed in Italian -->
+        <EmptyState
+          v-if="tab.name === 'Deals' && !rows.length"
+          name="Deals"
+          title="No deals yet"
+          description="The deals this contact takes part in appear here."
+        />
       </template>
     </Tabs>
   </div>
@@ -170,6 +169,7 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
+import EmptyState from '@/components/ListViews/EmptyState.vue'
 import { validateIsImageFile } from '@/utils'
 import { useContactFields } from '@/composables/useContactFields'
 import { timestampCell } from '@/composables/useTimelinePreferences'
@@ -389,6 +389,8 @@ const dealColumns = [
   {
     label: __('Status'),
     key: 'status',
+    // the stage's name in the reader's language, as in the deals' own list
+    options: 'CRM Deal Status',
     width: '10rem',
   },
   {

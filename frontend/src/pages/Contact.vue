@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <LayoutHeader v-if="contact.doc">
     <template #left-header>
@@ -153,9 +156,9 @@
         />
         <EmptyState
           v-if="!rows.length"
-          :icon="tab.icon"
           name="Deals"
-          :description="__('No deals linked to this contact yet.')"
+          title="No deals yet"
+          description="The deals this contact takes part in appear here."
         />
       </template>
     </Tabs>
@@ -399,6 +402,8 @@ const dealColumns = [
   {
     label: __('Status'),
     key: 'status',
+    // the stage's name in the reader's language, as in the deals' own list
+    options: 'CRM Deal Status',
     width: '10rem',
   },
   {
