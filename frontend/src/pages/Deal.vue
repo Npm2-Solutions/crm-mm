@@ -30,7 +30,7 @@
       >
         <template #default="{ open }">
           <Button
-            :label="doc.pipeline || __('Pipeline')"
+            :label="doc.pipeline ? __(doc.pipeline) : __('Pipeline')"
             :tooltip="__('Pipeline')"
             :iconRight="open ? 'chevron-up' : 'chevron-down'"
           >

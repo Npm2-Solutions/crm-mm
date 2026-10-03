@@ -402,7 +402,8 @@ const { puo } = usersStore()
 // where the model runs, and with which key, is the agency's (doc 30); whether
 // to use it, the manager's; the clinic's events, the medical director's to read
 const tecnico = puo('tecnico.integrazioni')
-const canConfigure = puo('assistente.registro') || tecnico
+// reading the register is not setting it up: the medical director reads it too
+const canConfigure = puo('impostazioni.generali') || tecnico
 const canReadRegister =
   puo('assistente.registro') || puo('assistente.registro_clinico')
 

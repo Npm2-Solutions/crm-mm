@@ -154,6 +154,40 @@ export const SORELLE = [
   ],
 ]
 
+// What the pages with no entry of their own are called: a record by its list, the
+// keypad's round, an import. A page with nothing to say keeps the product's name.
+export const ALTRE_PAGINE = {
+  Notifications: 'Notifications',
+  Inbox: 'Conversations',
+  Lead: 'People',
+  Deal: 'Deals',
+  Contacts: 'Contacts',
+  Contact: 'Contacts',
+  Organization: 'Organizations',
+  'Call Logs': 'Calls',
+  Dialer: 'Call round',
+  Automation: 'Automation',
+  WebsitePage: 'Site',
+  FormFill: 'Form',
+  DataImportList: 'Data Import',
+  NewDataImport: 'Data Import',
+  DataImport: 'Data Import',
+  'Not Permitted': 'Not permitted',
+}
+
+/**
+ * What a page is called, in the menu's words (to translate where it is shown):
+ * its entry's, else its sibling's, else its own; '' for a page with no name.
+ */
+export function nomeDellaPagina(chiave, menu = MENU, sorelle = SORELLE) {
+  for (const gruppo of menu)
+    for (const voce of gruppo.entries)
+      if (voce.key === chiave) return voce.label
+  for (const gruppo of sorelle)
+    for (const pagina of gruppo) if (pagina.key === chiave) return pagina.label
+  return ALTRE_PAGINE[chiave] || ''
+}
+
 /** The pages a page lives with that the session opens, itself among them. */
 export function paginaSorelle(chiave, c, sorelle = SORELLE) {
   const gruppo = sorelle.find((pagine) => pagine.some((p) => p.key === chiave))

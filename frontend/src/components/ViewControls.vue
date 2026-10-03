@@ -334,6 +334,7 @@ import { usersStore } from '@/stores/users'
 import { organizationsStore } from '@/stores/organizations'
 import { getMeta } from '@/stores/meta'
 import { isEmoji } from '@/utils'
+import { nomeDellaPagina } from '@/utils/menu'
 import {
   Combobox,
   Tooltip,
@@ -428,8 +429,9 @@ const currentView = computed(() => {
 usePageMeta(() => {
   let label = currentView.value.label
   if (currentView.value.is_standard) {
-    let routeName = route.name
-    label = `${routeName} - ${label}`
+    // the page in the menu's words: «Persone - Lista», never the route's name
+    const pagina = nomeDellaPagina(route.name)
+    label = `${pagina ? __(pagina) : route.name} - ${label}`
   }
   return {
     title: label,

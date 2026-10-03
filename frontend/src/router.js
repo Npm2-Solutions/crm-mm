@@ -6,6 +6,7 @@ import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
 import { viewsStore } from '@/stores/views'
 import { isMobileView } from '@/composables/breakpoints'
+import { nomeDellaPagina } from '@/utils/menu'
 
 let personaChecked = false
 export const PERSONA_DONE_KEY = 'crm_persona_captured'
@@ -304,6 +305,14 @@ function allowed(name, store) {
 function firstAllowed(store) {
   return LANDINGS.find((name) => allowed(name, store)) || 'Notifications'
 }
+
+// every tab says which page it is; a page that names itself (a person, a view)
+// does it after this. Moving within a page leaves the page's own name alone.
+router.afterEach((to, from) => {
+  if (to.name === from.name) return
+  const nome = nomeDellaPagina(to.name)
+  if (nome) document.title = __(nome)
+})
 
 router.beforeEach(async (to, from, next) => {
   router.previousRoute = from

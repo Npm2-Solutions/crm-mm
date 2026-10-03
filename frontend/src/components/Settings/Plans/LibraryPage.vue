@@ -71,12 +71,23 @@
             @click="emit('edit', { ...row })"
           >
             <img
-              v-if="library.thumbnail?.(row)"
+              v-if="
+                library.thumbnail?.(row) &&
+                !nonCaricate.has(library.thumbnail(row))
+              "
               :src="library.thumbnail(row)"
               alt=""
               class="size-10 shrink-0 rounded object-cover"
               loading="lazy"
+              @error="nonCaricate.add(library.thumbnail(row))"
             />
+            <span
+              v-else-if="library.thumbnail"
+              class="flex size-10 shrink-0 items-center justify-center rounded bg-surface-gray-2 text-ink-gray-4"
+              aria-hidden="true"
+            >
+              <span class="lucide-image-off size-4" />
+            </span>
             <span class="flex min-w-0 flex-1 flex-col">
               <span
                 class="truncate text-base"
@@ -136,6 +147,8 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'new'])
 
 const filters = reactive({ text: '', group: '', source: '' })
+// a picture that did not load leaves its place to a quiet mark, never a broken one
+const nonCaricate = reactive(new Set())
 const data = ref(null)
 const rows = ref([])
 const loadingMore = ref(false)

@@ -8,11 +8,12 @@
   <article class="flex flex-col gap-2 py-3 first:pt-2 last:pb-0">
     <div class="flex items-start gap-3">
       <img
-        v-if="item.kind === 'Exercise' && item.image"
+        v-if="item.kind === 'Exercise' && item.image && !nonCaricata"
         :src="item.image"
         alt=""
         class="size-16 shrink-0 rounded-[12px_12px_12px_2px] bg-[var(--cat-violet-subtle)] object-cover"
         loading="lazy"
+        @error="nonCaricata = true"
       />
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
         <p class="text-[16px] font-semibold leading-snug text-ink-gray-9">
@@ -105,7 +106,7 @@
     <details
       v-if="
         item.kind === 'Exercise' &&
-        (item.instructions || item.image || item.video_url)
+        (item.instructions || (item.image && !nonCaricata) || item.video_url)
       "
       class="text-p-sm text-ink-gray-7"
     >
@@ -114,11 +115,12 @@
       </summary>
       <div class="mt-2 flex flex-col gap-2">
         <img
-          v-if="item.image"
+          v-if="item.image && !nonCaricata"
           :src="item.image"
           alt=""
           class="max-h-56 w-full rounded-[16px_16px_16px_2px] bg-[var(--cat-violet-subtle)] object-contain"
           loading="lazy"
+          @error="nonCaricata = true"
         />
         <p v-if="item.instructions" class="whitespace-pre-line">
           {{ item.instructions }}
@@ -142,6 +144,7 @@
 
 <script setup>
 import { descrivi } from '@/utils/piani'
+import { ref } from 'vue'
 import LucideCheck from '~icons/lucide/check'
 
 defineProps({
@@ -150,6 +153,9 @@ defineProps({
   busy: { type: Boolean, default: false },
 })
 defineEmits(['log'])
+
+// the exercise's picture did not load: its place is left to the words
+const nonCaricata = ref(false)
 
 const labels = {
   Done: __('Done'),
