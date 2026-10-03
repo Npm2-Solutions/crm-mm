@@ -85,6 +85,17 @@
     min-height: 2.5rem;
     font-size: 16px;
   }
+  /* a combobox drawn on reka-ui's own parts (the attendees of an event): the
+     box around its input */
+  div.h-7:has(> input[role='combobox']),
+  div.h-8:has(> input[role='combobox']) {
+    height: 2.5rem;
+  }
+  /* an editor's toolbar: its buttons on two rows rather than the last ones
+     cut off at the edge of the screen */
+  [data-slot='fixed-menu'] {
+    flex-wrap: wrap;
+  }
 }
 
 /* 3. The settings on a phone: a screen of their own, not a card floating over
@@ -252,9 +263,10 @@
      row, a footer that holds it, or the footer that is the row itself
      (`dialog-footer flex`, the commonest); a group of buttons in it shares
      its part, and a placeholder that only pushed a button to the right goes.
-     A button never gets narrower than its words: four of them («Save draft»,
-     «Approve», «Schedule», «Publish now») go on two rows instead of running
-     off the screen */
+     The buttons of a row are as wide as each other, and a button never gets
+     narrower than its words: four of them («Save draft», «Approve»,
+     «Schedule», «Publish now») go on two rows instead of running off the
+     screen */
   .dialog-content > div.px-4.pb-7.pt-4 > div.flex:not(.flex-col),
   .dialog-footer.flex:not(.flex-col),
   .dialog-footer > div.flex:not(.flex-col) {
@@ -270,7 +282,8 @@
     > div.flex:not(.flex-col)
     > div
     > button {
-    flex: 1 0 auto;
+    flex: 1 0 0;
+    min-width: max-content;
   }
   .dialog-footer > div.flex:not(.flex-col) > div:has(> button),
   .dialog-footer.flex:not(.flex-col) > div:has(> button),

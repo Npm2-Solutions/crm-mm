@@ -41445,3 +41445,12 @@ msgstr "Scegli data e ora"
 msgctxt "Social post action"
 msgid "Schedule"
 msgstr "Pianifica"
+
+#: frontend/src/components/FilesUploader/FilesUploaderArea.vue
+msgid "Upload from"
+msgstr "Carica da"
+
+#: frontend/src/components/Quotes/QuoteDialog.vue
+msgctxt "Quote amount still to do"
+msgid "Left"
+msgstr "Da fare"

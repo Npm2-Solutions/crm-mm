@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <!--
     The clinical record of one person: visits and notes, newest first.
@@ -411,21 +415,23 @@
         {{ __('Nobody has opened it yet.') }}
       </div>
       <div v-else class="flex max-h-[60vh] flex-col overflow-y-auto">
+        <!-- who and when on the first line, what under it as wide as the
+             row: beside the date it went on two lines on a phone -->
         <div
           v-for="(row, i) in log.rows"
           :key="i"
-          class="flex items-center justify-between gap-3 border-b border-outline-gray-1 py-2 text-p-sm last:border-0"
+          class="flex flex-col border-b border-outline-gray-1 py-2 text-p-sm last:border-0"
         >
-          <span class="flex min-w-0 flex-col">
-            <span class="truncate text-ink-gray-8">
+          <span class="flex items-baseline justify-between gap-3">
+            <span class="min-w-0 truncate text-ink-gray-8">
               {{ row.viewed_by_name || row.viewed_by }}
             </span>
-            <span class="text-p-xs text-ink-gray-5">
-              {{ openedWhat(row) }}
+            <span class="shrink-0 tabular-nums text-p-xs text-ink-gray-5">
+              {{ formatDate(row.creation, '') }}
             </span>
           </span>
-          <span class="shrink-0 tabular-nums text-ink-gray-5">
-            {{ formatDate(row.creation, '') }}
+          <span class="text-p-xs text-ink-gray-5">
+            {{ openedWhat(row) }}
           </span>
         </div>
       </div>
