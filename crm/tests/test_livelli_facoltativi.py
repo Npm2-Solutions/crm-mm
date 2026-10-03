@@ -108,6 +108,27 @@ class TestMarketingSeesMasked(FacoltativiTestCase):
 		self.assertEqual(numbers_of("CRM Lead", self.persona.name), [CELLULARE])
 		self.assertFalse(frappe.has_permission("CRM Lead", "read", user="Guest"))
 
+	def test_a_deal_s_contacts_come_masked(self):
+		"""The deal's contacts were read from the address book as stored: the deal
+		handed Marketing the email and the phone its person page masks."""
+		from crm.fcrm.doctype.crm_deal.api import get_deal_contacts
+
+		trattativa = frappe.get_doc(
+			{
+				"doctype": "CRM Deal",
+				"lead": self.persona.name,
+				"contacts": [{"contact": self.persona.contact, "is_primary": 1}],
+			}
+		).insert(ignore_permissions=True)
+		self.come(MARKETING)
+		contatto = get_deal_contacts(trattativa.name)[0]
+		self.assertEqual(contatto["full_name"], "Mario Rossi")
+		self.assertEqual(contatto["email"], "XXXXXX@studio.test")
+		self.assertEqual(contatto["mobile_no"], "+39XXXXXX")
+		self.come(SEGRETERIA)
+		contatto = get_deal_contacts(trattativa.name)[0]
+		self.assertEqual((contatto["email"], contatto["mobile_no"]), (EMAIL, CELLULARE))
+
 	def test_saving_does_not_write_the_mask_back(self):
 		self.come(MANAGER)
 		doc = frappe.get_doc("CRM Lead", self.persona.name)
