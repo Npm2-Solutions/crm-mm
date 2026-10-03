@@ -58,8 +58,10 @@ CAPACITA = (
 		Capacita(
 			"piani.librerie",
 			PIANO,
-			descrizione="Keep the centre's libraries the plans are written with: import the exercises, "
-			"correct names and groups, switch an item off",
+			# the centre never imports: the library is DottorCloud's, the centre
+			# corrects it and adds its own (crm.piani.librerie)
+			descrizione="Keep the centre's libraries the plans are written with: correct names and "
+			"groups, add the centre's own, switch an item off",
 		),
 		{"manager": CENTRO, "operatore": A_SCELTA},
 	),

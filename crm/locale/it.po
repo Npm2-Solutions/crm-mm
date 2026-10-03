@@ -41909,3 +41909,31 @@ msgstr "Non aspetta nessuno"
 #: frontend/src/pages/WaitingList.vue
 msgid "From a person’s page, put them on the list when there is no place: what frees up goes to them."
 msgstr "Dalla pagina di una persona, mettila in lista quando non c'è posto: quello che si libera va a lei."
+
+#: crm/moduli/modelli.py
+msgid "Filled in by the person: a privacy notice, consents, a questionnaire"
+msgstr "Lo compila la persona: un'informativa, dei consensi, un questionario"
+
+#: crm/moduli/modelli.py
+msgid "Written by the operator during an appointment: a treatment sheet, an assessment"
+msgstr "La scrive l'operatore durante un appuntamento: una scheda di trattamento, una valutazione"
+
+#: crm/moduli/modelli.py
+msgid "Filled in by anybody on the centre's website: a request, a contact. It finds the person, or makes them, and opens their deal"
+msgstr "Lo compila chiunque sul sito del centro: una richiesta, un contatto. Trova la persona, o la crea, e apre la sua trattativa"
+
+#: crm/permissions/catalogo.py
+msgid "Book over a conflict"
+msgstr "Prenotare anche dove l'orario è già occupato"
+
+#: crm/invoicing/capacita.py
+msgid "Send to the SdI and the Sistema TS"
+msgstr "Inviare allo SdI e al Sistema TS"
+
+#: crm/piani/__init__.py
+msgid "Keep the centre's libraries the plans are written with: correct names and groups, add the centre's own, switch an item off"
+msgstr "Curare le librerie con cui si scrivono i piani: correggere nomi e gruppi, aggiungere le voci del centro, spegnerne una"
+
+#: crm/permissions/catalogo.py
+msgid "Write social drafts, for a manager to approve"
+msgstr "Scrivere le bozze dei post social, che un responsabile approva"
