@@ -270,10 +270,51 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
   del centro. Solo nello spazio dell'account del centro: quello dell'agenzia è un altro
   account, e i codici di un account diverso da quello dello spazio non spostano niente.
 - **Il numero storico di un altro operatore (fatto)**, «Con un altro operatore»: la
-  pagina spiega le due strade. O l'operatore inoltra le chiamate a un numero del centro
-  in DottorCloud (gli SMS non seguono), o il numero si porta su Twilio con il modulo di
-  Twilio (dai grandi operatori, fino a sei settimane), con la guida di Twilio per
-  l'Italia; arrivato nell'account, si sposta nello spazio come sopra.
+  pagina spiega le tre strade. Mostrarlo nelle chiamate (sotto), o l'operatore inoltra
+  le chiamate a un numero del centro in DottorCloud (gli SMS non seguono), o il numero
+  si porta su Twilio con il modulo di Twilio (dai grandi operatori, fino a sei
+  settimane), con la guida di Twilio per l'Italia; arrivato nell'account, si sposta
+  nello spazio come sopra.
+
+### 7. Un numero verificato, da mostrare nelle chiamate (fatto)
+
+Il centro tiene il suo fisso con il suo operatore e lo vuole nelle chiamate che fa da
+DottorCloud. Non serve comprare un numero né mandare documenti: Twilio lo **verifica**
+(«Verified Caller ID», verificato il 02/10/2026 sulla documentazione di Twilio).
+
+- **Come si fa.** Su Impostazioni → Telefono → Telefonia → Twilio, Numeri →
+  «Gestisci» → «Verifica un numero», o da «Ho già un numero» → «Con un altro
+  operatore» → «Verificalo»: il numero, il suo nome, e se la linea ha un centralino
+  le cifre da comporre dopo la risposta (un interno, `w` per mezzo secondo
+  d'attesa) e i secondi prima della chiamata (da 0 a 60). Twilio chiama il numero
+  **da +1 415 723 4000, in inglese** (altre lingue non ci sono), e chiede un codice di
+  sei cifre che DottorCloud mostra sullo schermo: chi risponde lo digita sulla
+  tastiera del telefono. **Nessun documento**: rispondere dimostra che la linea è
+  del centro. Le chiamate verso quel numero continuano a squillare dove squillano.
+- **Nello spazio.** La verifica si fa nello spazio di DottorCloud (il sottoaccount),
+  perché è lo spazio che chiama: un numero verificato nell'account principale non
+  vale per le chiamate dello spazio. Un numero che è già dello spazio non si
+  verifica (Twilio risponde 21449), uno già verificato si ritrova (21450).
+- **Come va a finire.** La riga del numero (`CRM Caller ID`) nasce «In attesa»,
+  spenta; si accende quando Twilio dice che è verificato. Twilio lo dice alla fine
+  della sua chiamata (`crm.integrations.twilio.api.caller_id_verified`, la sua
+  StatusCallback, firmata come ogni sua richiesta); la finestra lo chiede ogni tre
+  secondi finché aspetta, così lo sa anche un sito che Twilio non raggiunge; ogni ora
+  `assicura()` rilegge i numeri dello spazio. Chi l'ha chiesto riceve l'avviso
+  («Telefono») se la finestra era chiusa; dopo un quarto d'ora senza risposta la
+  verifica è «Non riuscita» e si rifà con «Verifica di nuovo».
+- **Toglierlo.** «Rimuovi» lo toglie da Twilio: non si mostra più; la riga resta,
+  spenta. Se qualcuno lo aveva come propria linea, la pagina lo dice.
+- **In Italia (AGCOM 106/25/CONS).** Dal 19 agosto 2025 un operatore italiano può
+  bloccare una chiamata dall'estero che mostra un fisso italiano di un'altra rete, e
+  Twilio mostra un numero italiano verificato in Italia solo per quanto lo lasciano
+  gli operatori; dal 19 novembre 2025 un cellulare italiano è bloccato del tutto. La
+  finestra della verifica, l'elenco dei numeri e la finestra della chiamata lo
+  dicono: per essere sicuri che il numero si veda, si porta su Twilio. Verificare
+  serve senza dubbi per le chiamate all'estero.
+- **Solo numeri veri.** Si mostrano solo i numeri dello spazio e quelli verificati:
+  una riga scritta a mano nel Desk non si offre più, Twilio rifiuterebbe la chiamata
+  (13214). Un numero non verificato non si accende a mano.
 
 ## La stessa strada per l'agenzia
 
@@ -316,6 +357,8 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 | `crm/telephony/consumi.py` + `errori.py`, `CRM Twilio Settings.spend_alert` | La spesa e i problemi per la pagina (`get_twilio_usage`), l'avviso come trigger dello spazio (`allinea_l_avviso`, al salvataggio e ogni ora), `spend_reached` che lo dice a chi paga; un codice di Twilio a parole (`errori.in_parole`), anche sugli SMS |
 | `crm/telephony/trasloco_regole.py` | Senza sito: quale numero dell'account si sposta e quale resta (un trunk SIP), che cosa serve allo spazio prima (i documenti, l'indirizzo) — provato con `unittest` |
 | `crm/telephony/trasloco.py` + `Settings/Telephony/MoveNumberDialog.vue` | «Ho già un numero»: i numeri dell'account del centro con i suoi codici incollati per quella richiesta (`get_account_numbers`), lo spostamento con il clone dei documenti e la copia dell'indirizzo (`move_number`); la guida per un numero di un altro operatore |
+| `crm/telephony/verificati_regole.py` | Senza sito: il nome che Twilio tiene, l'interno e l'attesa come li prende, come è andata, quando una verifica è scaduta, i rifiuti di Twilio a parole — provato con `unittest` |
+| `crm/telephony/verificati.py` + `Settings/Telephony/VerifyNumberDialog.vue`, `utils/verificati.js` | La verifica (`verify_number`, `verification_state`, `remove_verified`), la risposta di Twilio (`alla_fine_della_chiamata`), le verifiche dimenticate (`scadute`, ogni ora con la lista); la finestra con il codice e l'elenco con gli stati — provati con Twilio finto |
 
 ## Da decidere
 
@@ -328,6 +371,7 @@ di prima: nessun altro file del sito (il referto di un paziente) può partire da
 
 - Twilio, [Known Limitations for Connect Apps](https://support.twilio.com/hc/en-us/articles/36665782139931-Known-Limitations-for-Connect-Apps) e [Twilio Connect](https://www.twilio.com/docs/iam/connect)
 - Twilio, [Subaccounts](https://www.twilio.com/docs/iam/api/subaccounts) e [Bundle Clones](https://www.twilio.com/docs/phone-numbers/regulatory/api/clones-resource)
+- Twilio, [OutgoingCallerIds](https://www.twilio.com/docs/voice/api/outgoing-caller-ids) e [Verifying Caller IDs at Scale](https://www.twilio.com/docs/voice/api/verifying-caller-ids-scale)
 - Twilio, Italia: [documenti dei numeri](https://www.twilio.com/en-us/guidelines/it/regulatory), [portabilità](https://www.twilio.com/en-us/guidelines/it/porting), [SMS](https://www.twilio.com/en-us/guidelines/it/sms), [prezzi della voce](https://www.twilio.com/en-us/voice/pricing/it), [prezzi dei numeri](https://assets.cdn.prod.twilio.com/pricing-csv/SiteNumbersPricing.csv)
 - Twilio, [Regulatory and Compliance, ottobre 2025](https://www.twilio.com/en-us/blog/insights/2025-october-regulatory-updates) (AGCOM)
 - AGCOM, [delibera 106/25/CONS](https://www.agcom.it/provvedimenti/delibera-106-25-cons)
