@@ -382,9 +382,12 @@ Con il tocco, come in un'app:
 - **Tirando giù in cima a una lista si ricarica la lista, non l'app.** Il
   gesto del browser ricaricava tutto, anche un modulo scritto a metà: è spento,
   e la cornice non rimbalza. Le liste del telefono (persone, contatti, aziende,
-  chiamate, note, cose da fare, trattative per fase, la giornata dell'agenda)
-  hanno il loro: una freccia che si gira quando basta lasciare, poi il segno
-  che gira finché la lista non è tornata (`composables/tiraPerAggiornare.js`).
+  chiamate, note, cose da fare, trattative per fase, la giornata dell'agenda,
+  le chat, le notifiche e gli eventi) hanno il loro: una freccia che si gira
+  quando basta lasciare, poi il segno che gira finché la lista non è tornata
+  (`composables/tiraPerAggiornare.js`). Si tira la scatola che scorre, che c'è
+  anche quando la lista è vuota: «Nessuna notifica» si tira come una lista
+  piena, per vedere se ne è arrivata una.
 - **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
   torna, le modifiche non si salvano», finché la rete non torna.
 - **La barra di stato ha il colore dell'app**, chiara o scura, e lo cambia col
@@ -455,7 +458,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
-| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/` | Una lista tirata giù dalla cima si ricarica. Testato in `tests/unit/tiraPerAggiornare.test.js` |
+| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/indietro.js` + `components/Layouts/MobileLayout.vue`, `pages/Calendar.vue`, `components/Settings/Settings.vue`, `pages/Conversations.vue`, `area/App.vue` | «Indietro» chiude foglio, menu o pannello prima di lasciare la pagina. Testato in `tests/unit/indietro.test.js` |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
