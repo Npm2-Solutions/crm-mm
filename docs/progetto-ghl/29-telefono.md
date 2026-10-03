@@ -429,7 +429,9 @@ Con il tocco, come in un'app:
   Android con il pulsante «Installa», che chiede al browser (`beforeinstallprompt`,
   tenuto da `utils/installa.js`); su iPhone, che non lo offre, con i due tocchi
   in Safari (Condividi, poi «Aggiungi alla schermata Home»). Non c'è più una
-  volta installata, né dopo «Non ora» su quel telefono.
+  volta installata, né dopo «Non ora» su quel telefono. L'area del paziente ha
+  la sua, nella pagina iniziale e nel suo stile (`area/components/InstallCard.vue`):
+  chi ha l'area sulla schermata Home ha l'app del centro.
 - **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
   torna, le modifiche non si salvano», finché la rete non torna.
 - **Un foglio si tira giù per metterlo via.** La maniglia in cima a un
