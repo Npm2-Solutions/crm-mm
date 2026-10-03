@@ -398,7 +398,15 @@ Con il tocco, come in un'app:
   (`utils/ritorno.js`). «Persone» in cima alla scheda fa lo stesso: la briciola
   della pagina da cui si è arrivati torna indietro invece di riaprirla da capo,
   e ha l'altezza di un pollice. Un'app installata su iPhone non ha il gesto per
-  tornare: la briciola è la via del ritorno (`tornaConLeBriciole`).
+  tornare: la briciola è la via del ritorno (`tornaConLeBriciole`). Le schede
+  della barra in basso fanno lo stesso: dalla scheda di una persona aperta dalla
+  lista, «Persone» è la lista com'era.
+- **La scheda su cui si è, toccata di nuovo, torna in cima.** frappe-ui faceva
+  scorrere la cornice, ma le liste del telefono scorrono in una scatola loro: il
+  tocco non faceva niente. Ora la pagina torna su; con una chat aperta, «Chat»
+  torna all'elenco delle chat, come nelle app del telefono
+  (`utils/schedaAttiva.js`: una pagina dice cosa fa prima con
+  `alToccoDellaScheda`).
 - **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
   torna, le modifiche non si salvano», finché la rete non torna.
 - **Un foglio si tira giù per metterlo via.** La maniglia in cima a un
@@ -477,6 +485,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
+| `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
 | `frontend/src/utils/trascinaFoglio.js` | Un foglio preso per la maniglia segue il dito; lasciato abbastanza giù, o con un colpo, si chiude, se no torna su (`siChiude`). Testato in `tests/unit/trascinaFoglio.test.js` |
 | `frontend/src/utils/ritorno.js` + `composables/ritorno.js`, `composables/elencoDelTelefono.js` | Una lista ritrovata com'era tornando indietro (`useRitorno`: le parole cercate, le righe, il punto, poi aggiornata); le cinque liste che si cercano (persone, contatti, aziende, chiamate, note) scritte una volta sola in `useElencoDelTelefono`. Testato in `tests/unit/ritorno.test.js` e `elencoDelTelefono.test.js` |
 | `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
