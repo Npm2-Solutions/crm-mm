@@ -398,6 +398,14 @@ Con il tocco, come in un'app:
   (`utils/ritorno.js`).
 - **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
   torna, le modifiche non si salvano», finché la rete non torna.
+- **Un foglio si tira giù per metterlo via.** La maniglia in cima a un
+  dialogo era solo disegnata. Ora preso per la cima (la maniglia, il titolo) il
+  foglio segue il dito e lo schermo dietro si schiarisce. Lasciato oltre un
+  terzo, o con un colpo veloce, si chiude come con Esc; se no torna su. Mai dal
+  modulo né da un foglio già scorso: lì il dito scorre, scrive, firma. Un
+  dialogo che non si può ancora chiudere (impostazioni con modifiche non
+  salvate) torna su; le impostazioni, schermo intero senza maniglia, non si
+  tirano (`utils/trascinaFoglio.js`).
 - **La barra di stato ha il colore dell'app**, chiara o scura, e lo cambia col
   tema (`theme-color`).
 - **«Indietro» chiude prima quello che sta sopra.** Il tasto di Android (e
@@ -466,6 +474,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
+| `frontend/src/utils/trascinaFoglio.js` | Un foglio preso per la maniglia segue il dito; lasciato abbastanza giù, o con un colpo, si chiude, se no torna su (`siChiude`). Testato in `tests/unit/trascinaFoglio.test.js` |
 | `frontend/src/utils/ritorno.js` + `composables/ritorno.js`, `composables/elencoDelTelefono.js` | Una lista ritrovata com'era tornando indietro (`useRitorno`: le parole cercate, le righe, il punto, poi aggiornata); le cinque liste che si cercano (persone, contatti, aziende, chiamate, note) scritte una volta sola in `useElencoDelTelefono`. Testato in `tests/unit/ritorno.test.js` e `elencoDelTelefono.test.js` |
 | `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/`, `Conversations/ConversationPicker.vue`, `Notifications/NotificationsList.vue`, `EventNotificationsArea.vue` | Una lista tirata giù dalla cima si ricarica; il gesto segue la scatola che scorre anche quando compare dopo. Testato in `tests/unit/tiraPerAggiornare.test.js` |
 | `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
