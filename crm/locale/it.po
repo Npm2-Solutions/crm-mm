@@ -84,8 +84,8 @@ msgid "0 = unlimited"
 msgstr "0 = senza limite"
 
 #: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
-msgid "0 means no expiry. The 45-day cap of the original design existed because the file lived outside the controller's systems; here it does not."
-msgstr "0 vuol dire senza scadenza. Il limite di 45 giorni del progetto originale c'era perché il file stava fuori dai sistemi del titolare del trattamento; qui no."
+msgid "0 means no expiry: the file stays in the centre's own systems, so its link can stay open."
+msgstr "0 vuol dire senza scadenza: il file resta nei sistemi del centro, e il suo link può restare aperto."
 
 #: crm/assistente/doctype/crm_ai_event/crm_ai_event.json
 msgid "0 taken as it was, 1 nothing of it stayed"
@@ -2086,8 +2086,8 @@ msgid "Albo professionale"
 msgstr "Albo professionale"
 
 #: frontend/src/crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
-msgid "Alert after N days with no accepted TS submission"
-msgstr "Avvisa dopo N giorni senza un invio TS accolto"
+msgid "Warn when no expense has reached the Sistema TS for (days)"
+msgstr "Avvisa se nessuna spesa arriva al Sistema TS da (giorni)"
 
 #: frontend/vite/frappeUi.js
 msgid "Align Center"
@@ -16353,7 +16353,7 @@ msgstr "Nuova scheda"
 #: frontend/src/components/Activities/ActivityHeader.vue:48
 #: frontend/src/pages/Deals.vue:514 frontend/src/pages/Leads.vue:548
 msgid "New Task"
-msgstr "Nuovo task"
+msgstr "Nuova cosa da fare"
 
 #: frontend/src/components/Settings/EmailTemplate/NewEmailTemplate.vue:10
 msgid "New Template"
@@ -18387,7 +18387,7 @@ msgstr "Proposte fatte ({0})"
 
 #: frontend/src/pages/WaitingList.vue
 msgid "Offers to answer"
-msgstr "Proposte in attesa di risposta"
+msgstr "Proposte"
 
 #: frontend/src/crm/clinica/tabelle.py
 msgid "Oils and fats"
@@ -27135,8 +27135,8 @@ msgid "The monthly sample a person re-reads"
 msgstr "Il campione mensile che una persona rilegge"
 
 #: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
-msgid "The most dangerous failure in this domain produces no error: it produces absence, and absence surfaces in January."
-msgstr "Il problema più pericoloso, in questo campo, non dà errori: dà un'assenza, e l'assenza viene fuori a gennaio."
+msgid "An expense that never left gives no error: without this warning it shows only at the January deadline."
+msgstr "Una spesa mai partita non dà errori: senza questo avviso si scopre solo alla scadenza di gennaio."
 
 #: crm/dashboard/widgets/people.py
 msgid "The most recent people to reach you"
@@ -30598,8 +30598,8 @@ msgid "Ward"
 msgstr "Persona tutelata"
 
 #: frontend/src/crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
-msgid "Warn N days before the TS certificate expires"
-msgstr "Avvisa N giorni prima della scadenza del certificato TS"
+msgid "Warn before the Sistema TS certificate expires (days)"
+msgstr "Avvisa prima della scadenza del certificato del Sistema TS (giorni)"
 
 #: crm/clinica/doctype/clinic_record/clinic_record.json
 msgid "Warnings"
@@ -41156,3 +41156,71 @@ msgstr "Manda un SMS."
 #: frontend/src/components/Modals/ContactModal.vue
 msgid "Mobile No"
 msgstr "Cellulare"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgid "Over 24 hours: WhatsApp takes only a template"
+msgstr "Oltre le 24 ore: WhatsApp accetta solo un modello"
+
+#: frontend/src/components/Activities/WhatsAppBox.vue
+msgid "Never written here: WhatsApp takes only a template"
+msgstr "Non ha mai scritto: WhatsApp accetta solo un modello"
+
+#: crm/api/tracking.py
+msgid "Booking page"
+msgstr "Pagina di prenotazione"
+
+#: crm/api/tracking.py
+msgid "Website form"
+msgstr "Modulo del sito"
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "No price lists yet"
+msgstr "Ancora nessun listino"
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "Services keep their own price until a list says otherwise."
+msgstr "I servizi tengono il loro prezzo finché un listino non dice altro."
+
+#: frontend/src/components/Settings/Scheduling/PriceListsSettings.vue
+msgid "Pick a price list above."
+msgstr "Scegli un listino qui sopra."
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "No templates yet"
+msgstr "Ancora nessun modello"
+
+#: frontend/src/components/Settings/WhatsAppTemplates.vue
+msgid "WhatsApp lets a business write first, or after 24 hours of silence, only with a template Meta has approved: create one here, or bring the ones you already have on Meta."
+msgstr "WhatsApp lascia scrivere per primi, o dopo 24 ore di silenzio, solo con un modello approvato da Meta: creane uno qui, o porta quelli che hai già su Meta."
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "No tracked links yet"
+msgstr "Ancora nessun link tracciato"
+
+#: frontend/src/components/Settings/TrackedLinksSettings.vue
+msgid "A short link that counts who opens it and can start an automation: put one in a message instead of the address."
+msgstr "Un link corto che conta chi lo apre e può far partire un'automazione: mettilo in un messaggio al posto dell'indirizzo."
+
+#: frontend/src/components/Settings/Invoicing/InvoicingCompany.vue
+msgid "No company yet"
+msgstr "Ancora nessuna azienda"
+
+#: frontend/src/components/Settings/Invoicing/InvoicingCompany.vue
+msgid "Create the one whose VAT number goes on the invoices."
+msgstr "Crea quella con la partita IVA che va in fattura."
+
+#: frontend/src/components/Settings/CallScriptsSettings.vue
+msgid "No scripts yet"
+msgstr "Ancora nessuno script"
+
+#: frontend/src/components/Settings/CallScriptsSettings.vue
+msgid "What to say on a call, step by step, in front of whoever answers."
+msgstr "Cosa dire in una chiamata, passo dopo passo, davanti a chi risponde."
+
+#: frontend/src/components/Settings/Scheduling/TeamMatrix.vue
+msgid "Create the first one: here you then say who does what."
+msgstr "Crea il primo: qui poi dici chi fa cosa."
+
+#: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
+msgid "Add the first one: the agenda books it with the appointments that need it."
+msgstr "Aggiungi il primo: l'agenda lo prenota con gli appuntamenti che ne hanno bisogno."
