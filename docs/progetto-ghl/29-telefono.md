@@ -296,6 +296,23 @@ Una prenotazione dalle pagine del centro senza una visita tracciata era tra le
 «Terze parti», come quelle di una piattaforma: ora è traffico diretto, e una
 patch corregge quelle già salvate.
 
+## Quinta parte: a 360 punti e al buio (03/10/2026)
+
+Il giro che preme ogni pulsante e apre ogni foglio (`tocca.mjs`) è passato di
+nuovo su tutte le pagine, sul telefono più stretto (360 punti) e col tema scuro:
+milleduecento stati, nessuna pagina più larga dello schermo, nessun campo sotto
+i 16px.
+
+| Dove | Sul telefono |
+|---|---|
+| I fogli più alti dello schermo | Si aprono dal titolo, con la X per chiudere. Un evento, a 360 punti, si apriva già scorso: il campo del titolo prendeva il fuoco mentre il foglio saliva da sotto lo schermo, e il browser lo scorreva per raggiungerlo; ora il fuoco non scorre (`preventScroll`). Un foglio più alto dello schermo cresce verso il basso, dove si scorre: spinto in fondo, prima traboccava in alto, fuori portata. |
+| Un'azienda | Le trattative si vedono: la scheda «Trattative» mostrava i contatti, perché sul telefono i dettagli vengono prima e le schede si contavano come sul computer. Le tre schede stanno sullo schermo senza icone, come quelle di una persona; una scheda vuota lo dice in una frase intera («Ancora nessun contatto»), non «Ancora niente in Trattative». La fase di una trattativa si legge in italiano, qui e nel contatto. |
+| Un contatto | Le sue trattative si vedono anche in italiano: la scheda si cercava per il nome tradotto. |
+| Automazioni | I passi parlano italiano: «Invia un'email», «Attendi», «Se / Altrimenti», «Apri una trattativa», le loro descrizioni, le categorie e gli obiettivi. Le frasi col nome del prodotto si traducono (il nome si mette dopo, `__()`), e nessuna nomina un altro prodotto. Nella testata, al posto di «Non salvata» c'è un punto: a 360 punti la scritta lasciava del titolo tre lettere. |
+| Moduli | Nell'editor lo stato del modulo («Versione 1») va sotto il titolo invece di uscire dallo schermo. |
+| Lista d'attesa | Vuota, ha lo stato vuoto del design system. |
+| Importazione | «Scegli cosa importare» chiede «Cerca», non «Search doctype»: è il segnaposto di ogni campo collegato di frappe-ui che non ne ha uno suo. |
+
 ## File
 
 | File | Cosa cambia |
@@ -325,6 +342,8 @@ patch corregge quelle già salvate.
 | `frontend/src/components/ListViews/MobileListRows.vue`, `utils/mobileList.js` | La scelta tenendo premuto, i dettagli vuoti tolti |
 | `frontend/src/pages/Today.vue`, `components/Today/ParticipantRow.vue`, `utils/oggi.js` (`firstOfPast`) | L'accoglienza sul telefono |
 | `frontend/src/components/ViewBreadcrumbs.vue` | Tre pagine sorelle sul telefono: la pagina aperta è il titolo, le altre nel suo menu |
+| `frontend/src/pages/MobileOrganization.vue`, `MobileContact.vue` | Le trattative e i contatti di un'azienda e di un contatto, per nome della scheda |
+| `frontend/tests/unit/automationParole.test.js` | Ogni parola del catalogo delle automazioni ha il suo italiano, nessuna nomina un altro prodotto |
 | `frontend/src/components/Mobile/ElencoNote.vue`, `pages/Notes.vue` + `crm/api/sul_telefono.py` (`get_notes`) | Le note sul telefono |
 | `frontend/src/components/Mobile/DescrizioneRipiegata.vue` | La riga che spiega una scheda, piegata a due righe |
 | `frontend/src/telefono.css` (impostazioni, fogli, tendine, avvisi) | Una pagina che scorre sola, le righe delle impostazioni, i pulsanti dei fogli che vanno a capo, le tendine a 40px, l'avviso dall'alto sopra un foglio |

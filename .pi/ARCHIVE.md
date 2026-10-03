@@ -2238,3 +2238,24 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Sul telefono tre sorelle sono il menu del titolo («Accoglienza ▾»); due restano il selettore | Tre nomi italiani non stanno accanto ai pulsanti della testata a 360 punti; due sì, e si vedono senza aprire niente |
 | Il posto della barra del telefono che era di Oggi va alle fatture, o alle cose da fare per chi non ha il registro delle fatture | L'agenda nella barra porta già all'accoglienza, e l'accoglienza resta la pagina d'ingresso |
 | Il pulsante del giorno dice sempre quale giorno, anche oggi | Il titolo diceva «Oggi»; ora è il nome della vista, e il giorno lo dice il pulsante |
+
+## Il telefono a 360 punti e al buio
+
+> **Completato** (03/10/2026). Il giro che preme ogni pulsante e apre ogni
+> foglio è passato su tutte le pagine a 360 punti col tema scuro (doc 29,
+> quinta parte): nessuna pagina più larga dello schermo; un evento che si
+> apriva già scorso, le trattative di un'azienda che non si vedevano, l'editor
+> delle automazioni in inglese.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Un foglio sta in fondo per il suo margine in alto (`margin-top: auto`), non per `justify-content: flex-end` | Spinto in fondo, un foglio più alto dello schermo traboccava in alto, dove non si scorre: il titolo e la X restavano fuori portata |
+| Un campo prende il fuoco all'apertura con `preventScroll` | Il foglio sale da sotto lo schermo per 260 ms: il fuoco dato a 100 ms faceva scorrere il contenitore per raggiungere il campo, e a foglio salito il titolo era sopra lo schermo |
+| Sul telefono le schede di un'azienda si scelgono per nome, non per posizione | I dettagli vengono prima solo sul telefono: «Trattative» era la seconda e prendeva i contatti, e il confronto col nome tradotto falliva in italiano |
+| Una scheda vuota lo dice in una frase intera per scheda | «Ancora niente in Trattative» incollava il nome di una scheda in una frase |
+| Il catalogo delle automazioni tiene `{brand}` com'è scritto; lo riempie `__()` quando la frase si disegna | Riempito al caricamento del modulo, la frase non era più quella del catalogo e si leggeva in inglese |
+| Nessuna frase dell'editor delle automazioni nomina un altro prodotto | «Il "create opportunity" di GHL» diceva a un centro il nome di un concorrente; un test lo impedisce |
+| Sul telefono «Non salvata» è un punto accanto al titolo | Il pulsante Salva è lì accanto; la scritta toglieva al titolo tutto lo spazio |
+| Un campo collegato di frappe-ui senza segnaposto dice «Cerca» | Diceva «Search doctype», in inglese e con il nome tecnico del tipo di documento |
