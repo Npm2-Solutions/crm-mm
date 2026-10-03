@@ -775,6 +775,14 @@ con `persone.elimina`, del Manager. Prima Sales User bastava: il medico trovava
 Amministrazione) ne poteva modificare una. L'azienda che il server crea da sé, con
 la persona che la nomina o con la trattativa, nasce comunque.
 
+**Anche la voce della rubrica si scrive come la sua persona.** La voce è l'email e
+il cellulare della persona, e quello che si cambia lì torna sulla persona
+(`update_leads_email_mobile_no`): l'Amministrazione, che legge le persone senza
+cambiarle, le cambiava dalla rubrica. Ora una voce si crea e si modifica con
+`persone.scrivi` e si elimina con `persone.elimina` (`_SCRITTURE["Contact"]`, nel
+`has_permission` della rubrica e nel suo `validate`); quello che il server scrive
+per la persona, con `ignore_permissions`, passa come prima.
+
 **Leggere ha la sua capacità, come per persone e trattative.** Email, WhatsApp e
 SMS si leggono con `conversazioni.vedi` e si scrivono con `conversazioni.usa`; le
 note, e i commenti interni della cronologia, si leggono con `note.vedi` e si

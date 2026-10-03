@@ -225,6 +225,14 @@ _SCRITTURE = {
 		"write": "persone.scrivi",
 		"delete": "persone.elimina",
 	},
+	# an address book entry is the person's email and phone, written back to the
+	# person (`crm.api.contact.update_leads_email_mobile_no`): changing one is
+	# changing the person
+	"Contact": {
+		"create": "persone.scrivi",
+		"write": "persone.scrivi",
+		"delete": "persone.elimina",
+	},
 }
 
 
@@ -237,8 +245,8 @@ def _puo_scrivere(doctype: str, ptype: str | None, user: str | None) -> bool:
 
 
 def scrittura_per_capacita(doc, method=None):
-	"""`validate` of people, companies, deals and notes: a save on the user's behalf asks for the
-	capability even on a record shared with them.
+	"""`validate` of people, companies, address book entries, deals and notes: a save on the
+	user's behalf asks for the capability even on a record shared with them.
 
 	Frappe grants what is shared without asking the `has_permission` hooks, and the
 	CRM shares every person and deal with its owner, for writing: an owner whose

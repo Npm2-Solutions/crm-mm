@@ -63,6 +63,36 @@ class TestTheAddressBookFollowsThePerson(FacoltativiTestCase):
 		self.assertEqual(get_owning_lead(contatto), self.persona.name)
 
 
+class TestAnEntryIsWrittenLikeItsPerson(FacoltativiTestCase):
+	"""The entry's email and phone are written back to the person: Accounting, which
+	reads people without changing them, changed them through the address book."""
+
+	def test_who_reads_the_person_reads_the_entry_but_does_not_change_it(self):
+		contatto = _contatto_di(self.persona)
+		self.come(AMMINISTRAZIONE)
+		self.assertTrue(frappe.has_permission("Contact", "read", doc=contatto))
+		self.assertFalse(frappe.has_permission("Contact", "write", doc=contatto))
+		self.assertFalse(frappe.has_permission("Contact", "delete", doc=contatto))
+		permessi = get_doc_permissions("Contact", contatto)["permissions"]
+		self.assertEqual(permessi["write"], 0)
+		voce = frappe.get_doc("Contact", contatto)
+		voce.first_name = "Cambiato"
+		with self.assertRaises(frappe.PermissionError):
+			voce.save()
+
+	def test_the_front_desk_changes_it(self):
+		self.come(SEGRETERIA)
+		self.assertTrue(frappe.has_permission("Contact", "write", doc=_contatto_di(self.persona)))
+
+	def test_what_the_server_writes_for_the_person_goes_through(self):
+		# a person saved by somebody who writes people carries the change to the entry
+		self.come(SEGRETERIA)
+		persona = frappe.get_doc("CRM Lead", self.persona.name)
+		persona.mobile_no = "+393339876543"
+		persona.save()
+		self.assertEqual(frappe.db.get_value("Contact", persona.contact, "mobile_no"), "+393339876543")
+
+
 class TestACompanyIsWrittenLikeAPerson(FacoltativiTestCase):
 	def setUp(self):
 		super().setUp()
