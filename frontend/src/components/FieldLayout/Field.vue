@@ -311,7 +311,10 @@
       :disabled="Boolean(field.read_only)"
       :description="__(field.description)"
       :error="
-        Boolean(data[field.fieldname]) && !validatePhone(data[field.fieldname])
+        Boolean(data[field.fieldname]) &&
+        !field.read_only &&
+        !mascherato(data[field.fieldname]) &&
+        !validatePhone(data[field.fieldname])
           ? __('Enter a valid phone number')
           : undefined
       "
@@ -372,6 +375,7 @@ import {
 } from '@/utils/fieldTransforms'
 import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
+import { mascherato } from '@/utils/schedaPersona'
 import { conValoreAttuale, daLeggere, spiegazioneDi } from '@/utils/scelte'
 
 import {
@@ -415,6 +419,13 @@ const formDocument = ref(null)
 // Standalone mode: context injected from FieldLayout when context prop is set
 const standaloneContext = inject('fieldLayoutContext', null)
 
+// Whether the record may be changed, as the server says (doc 30): a level that
+// reads a person without changing them (Marketing, Read only) gets every field
+// to read, not a form whose Save would be refused. A dialog's own form and a
+// new record stay writable; a table's rows follow their record.
+let scrittura = null
+const scrivibile = computed(() => (scrittura ? scrittura.value : true))
+
 if (standaloneContext) {
   // Standalone mode — no useDocument, no scripting triggers
   // Field changes update data directly
@@ -449,10 +460,13 @@ if (standaloneContext) {
     triggerOnRowAdd,
     triggerOnRowRemove,
     document: doc,
+    canWrite,
   } = useDocument(doctype, resolvedName)
   triggerOnChange = trigger
   triggerButton = triggerBtn
   formDocument.value = doc
+  scrittura = canWrite
+  provide('documentoScrivibile', canWrite)
 
   provide('triggerOnChange', triggerOnChange)
   provide('triggerButton', triggerButton)
@@ -466,6 +480,7 @@ if (standaloneContext) {
   triggerOnChange = inject('triggerOnChange', () => {})
   triggerButton = inject('triggerButton', () => {})
   parentDoc = inject('parentDoc')
+  scrittura = inject('documentoScrivibile', null)
 }
 
 // For grid rows: inject overrides provided by Grid.vue
@@ -585,7 +600,7 @@ const field = computed(() => {
       field.mandatory_depends_on,
       data.value,
     ),
-    read_only: effectiveReadOnly,
+    read_only: effectiveReadOnly || !scrivibile.value,
   }
 
   _field.visible = isFieldVisible(_field, scriptHidden)

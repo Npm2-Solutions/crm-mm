@@ -19,7 +19,9 @@
         :icon="EditIcon"
         @click="showDataFieldsModal = true"
       />
+      <!-- a level that reads the record without changing it has nothing to save -->
       <Button
+        v-if="canWrite"
         :label="__('Save')"
         :disabled="!document.isDirty"
         variant="solid"
@@ -91,7 +93,7 @@ const attrs = instance?.vnode?.props ?? {}
 
 const showDataFieldsModal = ref(false)
 
-const { document } = useDocument(props.doctype, props.docname)
+const { document, canWrite } = useDocument(props.doctype, props.docname)
 const fieldLayoutTabStorageKey = computed(
   () => `fieldLayoutTab:${props.doctype}:${props.docname}`,
 )
