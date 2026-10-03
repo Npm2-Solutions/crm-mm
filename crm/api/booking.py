@@ -1,3 +1,6 @@
+# Copyright (c) 2026, NPM2 Solutions Srl and contributors
+# For license information, please see license.txt
+
 import datetime
 import json
 from zoneinfo import ZoneInfo
@@ -344,6 +347,15 @@ def _find_or_create_lead(booking, crm_vid: str | None = None, crm_sid: str | Non
 	)
 
 
+def categoria_senza_visita(source_dimension: str) -> str:
+	"""The channel of a booking that came with no tracked visit: the centre's own
+	pages (booking, online booking, a website form) were reached directly, a
+	platform's booking came through a third party."""
+	from crm.api.tracking import FONTI_NOSTRE
+
+	return "Direct Traffic" if source_dimension in FONTI_NOSTRE else "Third Party"
+
+
 def find_or_create_person(
 	full_name: str,
 	email: str | None,
@@ -401,7 +413,7 @@ def find_or_create_person(
 		lead,
 		visitor_id=crm_vid,
 		session_id=crm_sid,
-		category="Third Party",
+		category=categoria_senza_visita(source_dimension),
 		dimensions={"source": source_dimension, "medium": medium},
 	)
 	lead.insert(ignore_permissions=True)
