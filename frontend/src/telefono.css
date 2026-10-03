@@ -206,6 +206,11 @@
      alignment: a sheet taller than the screen then grows downwards, where the
      container scrolls. Pushed down by `flex-end`, it overflowed upwards, out
      of reach, its title and close button with it (an event at 360px). */
+  /* the sheet moves with the finger that drags it by its grabber
+     (utils/trascinaFoglio.js): its box does not bounce on its own as well */
+  .dialog-scroll-container {
+    overscroll-behavior-y: none;
+  }
   .dialog-scroll-container > div[data-position] {
     min-height: 100%;
     min-height: 100dvh;

@@ -29,6 +29,7 @@ import SenzaRete from '@/components/SenzaRete.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
 import { chiudiPrimaDiTornare } from '@/utils/indietro'
 import { seguiLaTastiera } from '@/utils/tastieraAperta'
+import { trascinaIFogli } from '@/utils/trascinaFoglio'
 import { registerScrollContainer, unregisterScrollContainer } from 'frappe-ui'
 import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
@@ -88,6 +89,12 @@ const router = useRouter()
 let smettiIndietro = () => {}
 onMounted(() => (smettiIndietro = chiudiPrimaDiTornare(router)))
 onBeforeUnmount(() => smettiIndietro())
+
+// a sheet taken by its grabber follows the finger down and, far enough, closes
+// (utils/trascinaFoglio.js)
+let smettiDiTrascinare = () => {}
+onMounted(() => (smettiDiTrascinare = trascinaIFogli()))
+onBeforeUnmount(() => smettiDiTrascinare())
 
 // what one taps shows it is pressed (`active:`) in place of the browser's grey
 // flash (telefono.css); iPhone shows it only where a touch is listened to
