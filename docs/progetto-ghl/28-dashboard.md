@@ -93,7 +93,11 @@ elimina.
   Meta e i social quelli di marketing (`numeri.marketing`); trattative, persone e
   automazioni li legge chi legge i record, le cose da fare tutti. Un widget puo'
   chiederne un'altra (`reader`): il valore dell'agenda e quello perso con le assenze
-  sono numeri economici, i preventivi li legge `preventivi.vedi`. Un widget `site`
+  sono numeri economici, i preventivi li legge `preventivi.vedi`, e un elenco che
+  mostra i record stessi chiede di leggerli: chi aspetta una risposta
+  `conversazioni.vedi`, i prossimi appuntamenti `agenda.vedi` (non quella a liberi
+  e occupati), le richiamate `telefono.registro`. La direzione sanitaria legge i
+  numeri della segreteria, non i suoi messaggi. Un widget `site`
   conta tutto il centro e chiede la capacita' su tutto il centro: un operatore legge
   il suo fatturato, non quello dello studio; chi la ha solo sui suoi vede solo il
   suo lavoro anche in un widget del team. Cosi' il Marketing non vede gli
