@@ -15,8 +15,11 @@
   says how many are in each, and leaves the column to the conversations.
 -->
 <template>
+  <!-- on a phone the whole screen, held upright or sideways (`isMobileView`):
+       `sm:` left 320px of it and the rest empty, sideways and from 640px -->
   <div
-    class="flex w-full shrink-0 flex-col overflow-hidden bg-surface-base sm:w-80 sm:border-r"
+    class="flex shrink-0 flex-col overflow-hidden bg-surface-base"
+    :class="isMobileView ? 'w-full' : 'w-80 border-r'"
   >
     <div class="flex shrink-0 flex-col gap-2 px-3 pb-2 pt-2.5">
       <div class="flex min-w-0 items-center justify-between gap-2">
@@ -122,6 +125,7 @@
 <script setup>
 import ConversationList from '@/components/ConversationList.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useRitorno } from '@/composables/ritorno'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import { tastiera } from '@/utils/tastiera'
