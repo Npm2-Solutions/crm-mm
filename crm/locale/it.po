@@ -41589,3 +41589,7 @@ msgstr "La risposta dell'assistente non è quella richiesta"
 #: crm/assistente/modello.py
 msgid "The assistant could not be asked"
 msgstr "Non è stato possibile chiedere all'assistente"
+
+#: frontend/src/components/Settings/Sla/SlaPolicyView.vue
+msgid "The conditions of this SLA were written in {0}, in a way this page cannot show: write them again here to manage them from this page."
+msgstr "Le condizioni di questo SLA sono state scritte in {0}, in un modo che questa pagina non sa mostrare: riscrivile qui per gestirle da questa pagina."
