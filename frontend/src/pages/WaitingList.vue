@@ -130,6 +130,7 @@
             </span>
           </button>
           <RouterLink
+            v-if="entry.can_open"
             :to="{ name: 'Lead', params: { leadId: entry.lead } }"
             class="flex shrink-0 items-center px-3 text-ink-gray-5 hover:text-ink-gray-8 focus-visible:text-ink-gray-8 focus-visible:outline-none"
             :aria-label="__('Open {0}', [entry.lead_name])"

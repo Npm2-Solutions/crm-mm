@@ -615,6 +615,23 @@ class ChiLaVede(AtteseCase):
 		).insert(ignore_permissions=True)
 		self.assertEqual(self.nomi(VENDITE), {self.di_giulia})
 
+	def test_la_persona_si_apre_dove_si_legge(self):
+		"""Waiting for one's service does not make somebody one's own (doc 30): the
+		entry says whether the person's page opens, and it opens for who reads them."""
+
+		def apribile(user):
+			self.come(user)
+			try:
+				voci = A.get_waiting_list()["entries"]
+				return next(v["can_open"] for v in voci if v["name"] == self.di_giulia)
+			finally:
+				frappe.set_user("Administrator")
+
+		self.assertTrue(apribile(DESK))
+		self.assertFalse(apribile(CHIARA))
+		frappe.db.set_value("CRM Lead", self.giulia.name, "lead_owner", CHIARA)
+		self.assertTrue(apribile(CHIARA))
+
 	def test_il_marketing_no(self):
 		self.come(MARKETING)
 		with self.assertRaises(frappe.PermissionError):
