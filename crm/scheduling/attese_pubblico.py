@@ -27,7 +27,7 @@ from frappe.utils import add_days, cint, get_fullname, getdate, now_datetime
 from crm.posta.aspetto import pulsante
 from crm.scheduling import attese as A
 from crm.scheduling import attese_regole as R
-from crm.scheduling.timeutils import scheduling_tz
+from crm.scheduling.timeutils import hhmm, scheduling_tz
 
 # ------------------------------------------------------------------ joining from /prenota
 
@@ -145,7 +145,7 @@ def _scelte_a_parole(voce) -> str:
 	"""The days and parts of an entry in words, for an email."""
 	scelte = R.scelte_da(voce.days)
 	if scelte is None:
-		return ", ".join(f"{_(r.workday)} {str(r.start_time)[:5]}–{str(r.end_time)[:5]}" for r in voce.days)
+		return ", ".join(f"{_(r.workday)} {hhmm(r.start_time)}–{hhmm(r.end_time)}" for r in voce.days)
 	giorni = ", ".join(_(g) for g in scelte["days"]) if 0 < len(scelte["days"]) < 7 else _("Any day")
 	nomi = {"morning": _("morning"), "afternoon": _("afternoon"), "evening": _("evening")}
 	parti = ", ".join(nomi[p] for p in scelte["parts"]) if scelte["parts"] else _("any time")
@@ -249,8 +249,7 @@ def vista(voce, riga=None) -> dict:
 		else None,
 		"choice": R.scelte_da(voce.days),
 		"days": [
-			{"workday": r.workday, "start": str(r.start_time)[:5], "end": str(r.end_time)[:5]}
-			for r in voce.days
+			{"workday": r.workday, "start": hhmm(r.start_time), "end": hhmm(r.end_time)} for r in voce.days
 		],
 		"until": str(voce.until) if voce.until else None,
 		"channel": voce.channel,

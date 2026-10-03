@@ -36,6 +36,7 @@ from crm.assistente import modello
 from crm.notifiche import regole as N
 from crm.notifiche.avvisi import avvisa
 from crm.permissions import livelli
+from crm.scheduling.timeutils import hhmm
 
 SCOPO = (
 	"Administrative support for the centre's clients: opening hours, bookings and the centre's "
@@ -63,10 +64,7 @@ Answer with JSON only: {{"answer": "...", "handoff": false}}
 
 def _ora(valore) -> str:
 	"""A Time as the database gives it (a timedelta) or as text: HH:MM."""
-	if hasattr(valore, "total_seconds"):
-		minuti = int(valore.total_seconds() // 60)
-		return f"{minuti // 60:02d}:{minuti % 60:02d}"
-	return str(valore)[:5]
+	return hhmm(valore) or ""
 
 
 def _orari() -> list[str]:

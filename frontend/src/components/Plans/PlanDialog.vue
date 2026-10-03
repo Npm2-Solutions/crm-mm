@@ -344,6 +344,7 @@ import PlanNutrientsTable from '@/components/Clinic/PlanNutrientsTable.vue'
 import RecipeDialog from '@/components/Clinic/RecipeDialog.vue'
 import ShoppingListDialog from '@/components/Clinic/ShoppingListDialog.vue'
 import { formatDate } from '@/utils'
+import { hhmm } from '@/utils/scheduler'
 import {
   CIBO,
   ESITI,
@@ -494,10 +495,6 @@ function addOptions(moment) {
 
 function describe(item) {
   return descrivi(item, (text, args) => __(text, args))
-}
-
-function hhmm(time) {
-  return String(time).slice(0, 5)
 }
 
 const period = computed(() => {
