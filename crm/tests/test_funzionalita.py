@@ -134,12 +134,12 @@ class LaPaginaDelleFunzionalita(IntegrationTestCase):
 		livelli.dimentica_cache()
 		frappe.set_user(MANAGER)
 		uso = plan.get_plan()["usage"]
-		# WhatsApp is not counted: Meta bills the centre
-		self.assertNotIn("whatsapp", uso)
+		# WhatsApp is not counted, Meta bills the centre; nor calls and SMS,
+		# Twilio bills them to whoever owns the account
+		self.assertEqual(set(uso), {"sdi_credits", "signatures"})
 		self.assertEqual(uso["sdi_credits"]["included"], 500)
-		self.assertEqual(uso["call_minutes"]["included"], 714)
 		self.assertEqual(uso["signatures"]["included"], 2000)
-		for voce in ("sdi_credits", "call_minutes", "signatures"):
+		for voce in ("sdi_credits", "signatures"):
 			self.assertIn("warn", uso[voce])
 		# without invoicing there are no credits to count
 		frappe.set_user("Administrator")

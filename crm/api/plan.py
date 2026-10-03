@@ -19,7 +19,7 @@ from collections.abc import Iterable
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, get_first_day, get_last_day, getdate, now, nowdate
+from frappe.utils import add_days, getdate, now, nowdate
 
 from crm import verticali
 from crm.fcrm.doctype.crm_plan.crm_plan import (
@@ -27,7 +27,6 @@ from crm.fcrm.doctype.crm_plan.crm_plan import (
 	AVVISO,
 	CREDITI_SDI,
 	FIRME_INCLUSE,
-	MINUTI_INCLUSI,
 	crediti_sdi,
 )
 from crm.permissions import livelli
@@ -194,25 +193,12 @@ def ambulatori() -> int:
 
 def consumi(taglia: str | None = None, accesi: set[str] = frozenset(), giorno: str | None = None) -> dict:
 	"""What the centre used, as the agency bills it: the SdI credits and the
-	advanced signatures of the year, the SMS and the minutes of the month, each
-	with what the plan includes. WhatsApp is not counted: Meta bills the centre."""
+	advanced signatures of the year, each with what the plan includes. WhatsApp
+	is not counted, Meta bills the centre; nor are calls and SMS, which Twilio
+	bills to whoever owns the account, and Twilio's page shows what they cost."""
 	giorno = getdate(giorno or nowdate())
-	mese = ["between", [get_first_day(giorno), get_last_day(giorno)]]
 	anno = ["between", [getdate(f"{giorno.year}-01-01"), getdate(f"{giorno.year}-12-31")]]
-	secondi = frappe.get_all(
-		"CRM Call Log",
-		filters={"creation": mese, "status": "Completed"},
-		fields=[{"SUM": "duration", "as": "total"}],
-	)
-	uso = {
-		"sms": {"used": frappe.db.count("CRM SMS Message", {"type": "Outgoing", "creation": mese})},
-		"call_minutes": {
-			"used": round((secondi[0].total or 0) / 60) if secondi else 0,
-			"included": MINUTI_INCLUSI if "telefono" in accesi else None,
-		},
-		"sdi_credits": None,
-		"signatures": None,
-	}
+	uso = {"sdi_credits": None, "signatures": None}
 	if "fatturazione" in accesi:
 		inviate = frappe.get_all(
 			"CRM Invoice",

@@ -255,7 +255,7 @@
           </p>
           <FeatureSetUp :pagine="['Rooms & Equipment']" />
         </div>
-        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4 max-md:grid-cols-1">
+        <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
           <div
             v-for="item in usage"
             :key="item.label"
@@ -279,7 +279,7 @@
         <p class="text-p-sm text-ink-gray-5">
           {{
             __(
-              'Beyond what is included, SdI credits, minutes, SMS and advanced signatures are billed by the agency once a month. WhatsApp messages are paid by the centre directly to Meta.',
+              'Beyond what is included, SdI credits and advanced signatures are billed by the agency once a month. The centre pays WhatsApp messages directly to Meta, and calls, numbers and SMS to Twilio when the account is its own.',
             )
           }}
         </p>
@@ -381,18 +381,14 @@ const sizeText = computed(() =>
 )
 
 // what the agency bills, each with what the plan includes: the SdI credits with
-// invoicing, the signatures with the advanced signature
+// invoicing, the signatures with the advanced signature. Calls and SMS are not
+// here: Twilio bills them to whoever owns the account
 const usage = computed(() => {
   const uso = plan.data?.usage || {}
   return [
     uso.sdi_credits && {
       label: __('SdI credits this year'),
       ...uso.sdi_credits,
-    },
-    uso.sms && { label: __('SMS sent this month'), ...uso.sms },
-    uso.call_minutes && {
-      label: __('Call minutes this month'),
-      ...uso.call_minutes,
     },
     uso.signatures && {
       label: __('Advanced signatures this year'),
