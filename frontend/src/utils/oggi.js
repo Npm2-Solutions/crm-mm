@@ -10,6 +10,15 @@ export const NEXT = {
   'No Show': ['Booked'],
 }
 
+/**
+ * The outcomes to offer next. A day gone by asks whether they came: nobody is
+ * checked into a waiting room days later.
+ */
+export function prossimiEsiti(status, passato = false) {
+  if (passato && status === 'Booked') return ['Attended', 'No Show']
+  return NEXT[status] || []
+}
+
 /** Whole minutes since `arrivedAt`, never negative. */
 export function minutesWaiting(arrivedAt, now = new Date()) {
   if (!arrivedAt) return 0

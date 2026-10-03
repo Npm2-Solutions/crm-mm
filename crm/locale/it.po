@@ -42001,3 +42001,18 @@ msgstr "Forse l'indirizzo è sbagliato, o la pagina non è tra quelle che il tuo
 #: frontend/src/pages/InvalidPage.vue
 msgid "Go to the start"
 msgstr "Vai all'inizio"
+
+#: frontend/src/components/Today/ParticipantRow.vue
+msgctxt "One person"
+msgid "Expected"
+msgstr "In arrivo"
+
+#: frontend/src/components/Today/ParticipantRow.vue
+msgctxt "One person"
+msgid "Came"
+msgstr "Presente"
+
+#: frontend/src/components/Today/ParticipantRow.vue
+msgctxt "One person"
+msgid "Did not come"
+msgstr "Assente"

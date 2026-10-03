@@ -22,7 +22,13 @@
         {{ participant.participant_name }}
       </span>
       <Badge
-        :label="__(STATUS[participant.status]?.label || participant.status)"
+        :label="
+          __(
+            STATUS[participant.status]?.label || participant.status,
+            null,
+            'One person',
+          )
+        "
         :theme="STATUS[participant.status]?.theme || 'gray'"
         variant="subtle"
         class="shrink-0"
@@ -63,9 +69,9 @@
       class="flex shrink-0 items-center gap-1.5 max-md:w-full max-md:gap-2"
     >
       <Button
-        v-for="(outcome, i) in NEXT[participant.status] || []"
+        v-for="(outcome, i) in prossimiEsiti(participant.status, past)"
         :key="outcome"
-        :label="__(ACTIONS[outcome])"
+        :label="__(ACTIONS[outcome], null, 'One person')"
         :variant="i === 0 && outcome !== 'Booked' ? 'solid' : 'subtle'"
         :theme="outcome === 'No Show' ? 'red' : 'gray'"
         :size="isMobileView ? 'lg' : 'sm'"
@@ -79,7 +85,12 @@
 
 <script setup>
 import { isMobileView } from '@/composables/breakpoints'
-import { NEXT, minutesWaiting, timeOf, waitingLabel } from '@/utils/oggi'
+import {
+  minutesWaiting,
+  prossimiEsiti,
+  timeOf,
+  waitingLabel,
+} from '@/utils/oggi'
 import { Badge, Button, call, toast } from 'frappe-ui'
 import { ref } from 'vue'
 
@@ -87,12 +98,15 @@ const props = defineProps({
   appointment: { type: Object, required: true },
   participant: { type: Object, required: true },
   canMark: { type: Boolean, default: false },
+  // a day gone by: whether they came, not checking them in
+  past: { type: Boolean, default: false },
   now: { type: Date, default: () => new Date() },
 })
 
 const emit = defineEmits(['changed'])
 
-// what each outcome is called on its button, and on the badge once given
+// what each outcome is called on its button, and on the badge once given: for
+// one person («Assente»), where the day's tiles count them all («Non venuti»)
 const ACTIONS = {
   Arrived: 'Check in',
   Attended: 'Came',
