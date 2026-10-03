@@ -75,16 +75,19 @@
           <div class="grid grid-cols-3 gap-3 max-md:grid-cols-1">
             <FormControl
               v-model="risposte.region_code"
+              v-bind="tastiera('cifre')"
               :label="__('Region code')"
               maxlength="3"
             />
             <FormControl
               v-model="risposte.asl_code"
+              v-bind="tastiera('cifre')"
               :label="__('ASL code')"
               maxlength="3"
             />
             <FormControl
               v-model="risposte.ssa_code"
+              v-bind="tastiera('codice')"
               :label="__('Facility code (SSA)')"
               maxlength="6"
             />
@@ -136,6 +139,7 @@
 
 <script setup>
 import Scelta from '@/components/Settings/Invoicing/SceltaRadio.vue'
+import { tastiera } from '@/utils/tastiera'
 import {
   createResource,
   Button,

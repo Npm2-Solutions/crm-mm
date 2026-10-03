@@ -79,6 +79,7 @@
               <FormControl
                 v-model="stage.days"
                 type="number"
+                inputmode="numeric"
                 :label="__('Days')"
               />
             </div>

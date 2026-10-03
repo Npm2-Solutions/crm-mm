@@ -449,6 +449,7 @@
               </p>
               <div class="grid grid-cols-2 gap-3">
                 <FormControl
+                  inputmode="numeric"
                   v-model="manual.phone_number_id"
                   type="text"
                   :label="__('Phone number ID')"

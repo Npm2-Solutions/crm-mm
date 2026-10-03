@@ -105,6 +105,7 @@
           <FormControl
             v-model.number="form.capacity"
             type="number"
+            inputmode="numeric"
             min="1"
             :label="__('Concurrent appointments')"
             :description="__('1 means exclusive use')"
@@ -112,6 +113,7 @@
           <FormControl
             v-model.number="form.seats"
             type="number"
+            inputmode="numeric"
             min="0"
             :label="__('Seats')"
             :description="__('0 = no limit')"

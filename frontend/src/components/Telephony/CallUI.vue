@@ -22,6 +22,7 @@
         <FormControl
           v-model="mobileNumber"
           type="text"
+          v-bind="tastiera('telefono')"
           :label="__('Mobile Number')"
         />
         <FormControl
@@ -55,6 +56,7 @@ import {
   useTelephony,
 } from '@/composables/telephony'
 import { globalStore } from '@/stores/global'
+import { tastiera } from '@/utils/tastiera'
 import { FormControl, call, toast } from 'frappe-ui'
 import { computed, nextTick, ref, watch } from 'vue'
 

@@ -301,12 +301,14 @@
           <FormControl
             v-model.number="form.sync_window_days"
             type="number"
+            inputmode="numeric"
             min="1"
             :label="__('Days ahead')"
           />
           <FormControl
             v-model.number="form.lookback_days"
             type="number"
+            inputmode="numeric"
             min="0"
             :label="__('Days back')"
           />

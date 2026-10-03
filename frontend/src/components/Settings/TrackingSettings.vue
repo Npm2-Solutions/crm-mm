@@ -119,6 +119,7 @@
           <FormControl
             v-model.number="settings.doc.session_timeout_minutes"
             type="number"
+            inputmode="numeric"
             class="w-24"
           />
         </SettingsRow>
@@ -221,6 +222,7 @@
           <FormControl
             v-model.number="settings.doc.retention_days"
             type="number"
+            inputmode="numeric"
             class="w-24"
           />
         </SettingsRow>

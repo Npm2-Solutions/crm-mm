@@ -37,6 +37,7 @@
       <FormControl
         v-model="form.valid_days"
         type="number"
+        inputmode="numeric"
         :label="__('A quote holds, in days')"
         :placeholder="__('60')"
         :min="1"

@@ -93,6 +93,7 @@
 
             <div class="grid grid-cols-2 gap-4 px-2 py-3 max-md:grid-cols-1">
               <FormControl
+                type="url"
                 v-model="settings.doc.base_url"
                 :label="__('Base URL')"
                 placeholder="https://api.openai.com/v1"
@@ -150,6 +151,7 @@
             <FormControl
               v-model.number="settings.doc.transcript_retention_days"
               type="number"
+              inputmode="numeric"
               class="w-24"
               :suffix="__('days')"
             />
@@ -166,6 +168,7 @@
             <FormControl
               v-model.number="settings.doc.recording_retention_days"
               type="number"
+              inputmode="numeric"
               class="w-24"
               :suffix="__('days')"
             />
@@ -187,6 +190,7 @@
               <FormControl
                 v-model.number="settings.doc.max_recording_mb"
                 type="number"
+                inputmode="numeric"
                 class="w-24"
                 suffix="MB"
               />
@@ -201,6 +205,7 @@
               <FormControl
                 v-model.number="settings.doc.request_timeout"
                 type="number"
+                inputmode="numeric"
                 class="w-24"
                 :suffix="__('seconds')"
               />

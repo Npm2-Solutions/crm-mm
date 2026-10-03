@@ -103,6 +103,7 @@
           <FormControl
             v-model="step.due_in_days"
             type="number"
+            inputmode="numeric"
             :label="__('Due in (days)')"
           />
           <FormControl
@@ -211,7 +212,7 @@
               }))
             "
           />
-          <FormControl v-model="step.url" type="text" :label="__('URL')" />
+          <FormControl v-model="step.url" type="url" :label="__('URL')" />
           <MergeFieldInput
             v-model="step.body"
             type="textarea"
@@ -249,16 +250,19 @@
             <FormControl
               v-model="step.days"
               type="number"
+              inputmode="numeric"
               :label="__('Days')"
             />
             <FormControl
               v-model="step.hours"
               type="number"
+              inputmode="numeric"
               :label="__('Hours')"
             />
             <FormControl
               v-model="step.minutes"
               type="number"
+              inputmode="numeric"
               :label="__('Minutes')"
             />
           </div>
@@ -297,6 +301,7 @@
             <FormControl
               v-model="step.timeout_hours"
               type="number"
+              inputmode="numeric"
               :label="__('Timeout in hours (empty = wait forever)')"
             />
             <p class="text-xs text-ink-gray-4">
@@ -432,6 +437,7 @@
             <FormControl
               v-model="path.percent"
               type="number"
+              inputmode="numeric"
               :label="index === 0 ? '%' : ''"
             />
             <Button

@@ -61,6 +61,7 @@
               <FormControl
                 v-model.number="form.offers_at_once"
                 type="number"
+                inputmode="numeric"
                 min="1"
                 max="10"
                 :label="__('Offered at once to')"
@@ -77,6 +78,7 @@
               <FormControl
                 v-model.number="form.hours_to_answer"
                 type="number"
+                inputmode="numeric"
                 min="1"
                 max="72"
                 :label="__('Hours to answer')"
@@ -93,6 +95,7 @@
               <FormControl
                 v-model.number="form.min_notice_hours"
                 type="number"
+                inputmode="numeric"
                 min="0"
                 :label="__('Offer places starting in at least (hours)')"
               />
@@ -104,6 +107,7 @@
               <FormControl
                 v-model.number="form.days_ahead"
                 type="number"
+                inputmode="numeric"
                 min="1"
                 max="90"
                 :label="__('Look ahead (days)')"
@@ -142,6 +146,7 @@
             <FormControl
               v-model.number="form.default_until_days"
               type="number"
+              inputmode="numeric"
               min="1"
               max="365"
               :label="__('An entry made online waits (days)')"

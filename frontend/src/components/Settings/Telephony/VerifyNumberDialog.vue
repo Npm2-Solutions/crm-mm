@@ -75,6 +75,7 @@
             <FormControl
               v-model="modulo.call_delay"
               type="number"
+              inputmode="numeric"
               :label="__('Seconds before the call')"
               :description="__('Time to get to the phone: from 0 to 60.')"
             />

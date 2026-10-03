@@ -56,7 +56,12 @@
         @picked="(row) => (item.exercise_name = row.exercise_name)"
       />
       <div class="grid grid-cols-5 gap-2 max-md:grid-cols-2">
-        <FormControl v-model="item.sets" type="number" :label="__('Sets')" />
+        <FormControl
+          v-model="item.sets"
+          type="number"
+          inputmode="numeric"
+          :label="__('Sets')"
+        />
         <FormControl v-model="item.reps" :label="__('Repetitions')" />
         <FormControl
           v-model="item.duration"

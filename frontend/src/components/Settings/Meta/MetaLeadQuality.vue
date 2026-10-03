@@ -52,6 +52,7 @@
           </div>
 
           <FormControl
+            inputmode="numeric"
             v-model="form.dataset_id"
             type="text"
             :label="__('Dataset (pixel) ID from Events Manager')"
@@ -62,6 +63,8 @@
                count, so a code left in place silently switches the feature
                off. An administrator's, not something to find in passing. -->
           <FormControl
+            autocapitalize="characters"
+            spellcheck="false"
             v-if="isAdmin || form.test_code"
             v-model="form.test_code"
             type="text"

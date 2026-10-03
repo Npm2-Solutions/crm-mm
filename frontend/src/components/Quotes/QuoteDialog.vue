@@ -109,6 +109,7 @@
               <FormControl
                 v-model="item.phase"
                 type="number"
+                inputmode="numeric"
                 :label="__('Phase')"
               />
               <FormControl
@@ -182,6 +183,7 @@
               <TextInput
                 v-model="item.phase"
                 type="number"
+                inputmode="numeric"
                 :aria-label="__('Phase')"
               />
               <TextInput

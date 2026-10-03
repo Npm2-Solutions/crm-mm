@@ -267,6 +267,7 @@
           <FormControl
             v-model.number="ruleForm.priority"
             type="number"
+            inputmode="numeric"
             :label="__('Priority')"
             :description="__('Highest wins')"
           />
@@ -316,12 +317,14 @@
             <FormControl
               v-model.number="ruleForm.min_participants"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('From N people')"
             />
             <FormControl
               v-model.number="ruleForm.max_participants"
               type="number"
+              inputmode="numeric"
               min="0"
               :label="__('Up to N people')"
             />

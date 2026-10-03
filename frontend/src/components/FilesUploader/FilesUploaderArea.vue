@@ -3,7 +3,7 @@
 -->
 <template>
   <div v-if="showWebLink">
-    <TextInput v-model="webLink" placeholder="https://example.com" />
+    <TextInput type="url" v-model="webLink" placeholder="https://example.com" />
   </div>
   <div v-else-if="showCamera">
     <video v-show="!cameraImage" ref="video" class="rounded" autoplay></video>

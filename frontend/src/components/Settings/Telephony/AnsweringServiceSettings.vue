@@ -127,6 +127,7 @@
             <FormControl
               v-model.number="settings.doc.callback_hours"
               type="number"
+              inputmode="numeric"
               class="w-24"
               :suffix="__('hours')"
             />
@@ -143,6 +144,7 @@
             <FormControl
               v-model.number="settings.doc.dedupe_window_hours"
               type="number"
+              inputmode="numeric"
               class="w-24"
             />
           </SettingRow>
@@ -158,6 +160,7 @@
             <FormControl
               v-model.number="settings.doc.max_callback_attempts"
               type="number"
+              inputmode="numeric"
               class="w-24"
             />
           </SettingRow>
@@ -173,6 +176,7 @@
             <FormControl
               v-model.number="settings.doc.retry_after_hours"
               type="number"
+              inputmode="numeric"
               class="w-24"
               :suffix="__('hours')"
             />

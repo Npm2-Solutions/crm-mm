@@ -88,6 +88,7 @@
           <FormControl
             v-model.number="form.months"
             type="number"
+            inputmode="numeric"
             :min="1"
             :max="MAX_MESI"
             :label="__('Months')"
@@ -134,6 +135,7 @@
             v-if="form.entries !== ILLIMITATI"
             v-model.number="form.entries_count"
             type="number"
+            inputmode="numeric"
             :min="1"
             :label="__('How many')"
           />
@@ -156,6 +158,7 @@
             v-model.number="form.max_suspension_days"
             class="max-w-xs"
             type="number"
+            inputmode="numeric"
             :min="0"
             :label="__('Days of suspension at most')"
             :placeholder="__('Empty: as many as needed')"
@@ -171,6 +174,7 @@
           <FormControl
             v-model.number="form.remind_days"
             type="number"
+            inputmode="numeric"
             :min="0"
             :label="__('Remind days before the end')"
           />

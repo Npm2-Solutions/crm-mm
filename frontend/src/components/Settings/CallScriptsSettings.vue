@@ -145,6 +145,7 @@
             <FormControl
               v-model.number="draft.order"
               type="number"
+              inputmode="numeric"
               :label="__('Order')"
               class="w-24"
             />

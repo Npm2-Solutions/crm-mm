@@ -106,6 +106,7 @@
           <FormControl
             v-else
             v-model="telephonyAgent.doc.twilio_number"
+            v-bind="tastiera('telefono')"
             class="flex-1 truncate w-44 p-1"
             :placeholder="__('Enter Twilio Number')"
             :error="
@@ -247,6 +248,7 @@ import {
 } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
 import { validatePhone } from '@/utils'
+import { tastiera } from '@/utils/tastiera'
 import { ref, computed } from 'vue'
 
 const { isEnabled } = useTelephony()

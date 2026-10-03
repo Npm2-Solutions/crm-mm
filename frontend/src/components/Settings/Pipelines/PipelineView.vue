@@ -121,6 +121,7 @@
                   v-model="stage.probability"
                   class="w-20"
                   type="number"
+                  inputmode="numeric"
                   :placeholder="__('%')"
                 />
                 <Tooltip

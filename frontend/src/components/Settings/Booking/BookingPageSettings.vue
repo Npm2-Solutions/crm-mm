@@ -222,6 +222,7 @@
           <FormControl
             v-model.number="link.height"
             type="number"
+            inputmode="numeric"
             min="400"
             :label="__('Embed height (px)')"
           />
@@ -304,7 +305,7 @@
         </h3>
         <FormControl
           v-model="form.privacy_policy_url"
-          type="text"
+          type="url"
           :label="__('Privacy policy URL')"
           placeholder="https://…/privacy"
         />
@@ -331,6 +332,7 @@
           v-model.number="form.max_active_per_customer"
           class="w-60"
           type="number"
+          inputmode="numeric"
           min="0"
           :label="__('Upcoming bookings per client')"
           :description="

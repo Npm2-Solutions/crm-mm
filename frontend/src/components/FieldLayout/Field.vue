@@ -222,6 +222,7 @@
     <FormattedInput
       v-else-if="field.fieldtype === 'Int'"
       type="text"
+      v-bind="tastieraDi(field)"
       :placeholder="getPlaceholder(field)"
       :value="data[field.fieldname] || '0'"
       :disabled="Boolean(field.read_only)"
@@ -231,6 +232,7 @@
     <FormattedInput
       v-else-if="field.fieldtype === 'Percent'"
       type="text"
+      v-bind="tastieraDi(field)"
       :value="getFormattedPercent(field.fieldname, data)"
       :placeholder="getPlaceholder(field)"
       :disabled="Boolean(field.read_only)"
@@ -240,6 +242,7 @@
     <FormattedInput
       v-else-if="field.fieldtype === 'Float'"
       type="text"
+      v-bind="tastieraDi(field)"
       :value="getFormattedFloat(field.fieldname, data)"
       :placeholder="getPlaceholder(field)"
       :disabled="Boolean(field.read_only)"
@@ -249,6 +252,7 @@
     <FormattedInput
       v-else-if="field.fieldtype === 'Currency'"
       type="text"
+      v-bind="tastieraDi(field)"
       :value="getFormattedCurrency(field.fieldname, data, parentDoc)"
       :placeholder="getPlaceholder(field)"
       :disabled="Boolean(field.read_only)"
@@ -303,9 +307,11 @@
       :disabled="Boolean(field.read_only)"
       @change="(v) => fieldChange(v, field)"
     />
+    <!-- the phone's dial pad, the email's @, a website's keyboard (utils/tastiera) -->
     <FormControl
       v-else-if="field.options === 'Phone'"
       type="text"
+      v-bind="tastieraDi(field)"
       :placeholder="getPlaceholder(field)"
       :value="data[field.fieldname]"
       :disabled="Boolean(field.read_only)"
@@ -324,6 +330,7 @@
       <FormControl
         class="flex-1"
         type="text"
+        v-bind="tastieraDi(field)"
         :placeholder="getPlaceholder(field)"
         :value="data[field.fieldname]"
         :disabled="Boolean(field.read_only)"
@@ -378,6 +385,7 @@ import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
 import { mascherato } from '@/utils/schedaPersona'
 import { conValoreAttuale, spiegazioneDi } from '@/utils/scelte'
+import { tastieraDi } from '@/utils/tastiera'
 
 import {
   Combobox,

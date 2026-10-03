@@ -341,6 +341,7 @@
               v-model.number="repeat.occurrences"
               class="w-16"
               type="number"
+              inputmode="numeric"
               size="sm"
               min="1"
               :aria-label="__('Times')"
@@ -450,11 +451,13 @@
             <div class="grid grid-cols-2 gap-1.5">
               <TextInput
                 v-model="row.phone"
+                v-bind="tastiera('telefono')"
                 variant="outline"
                 :placeholder="__('Phone')"
               />
               <TextInput
                 v-model="row.email"
+                v-bind="tastiera('email')"
                 variant="outline"
                 :placeholder="__('Email')"
               />
@@ -616,6 +619,7 @@
               v-model.number="row.quantity"
               class="w-14"
               type="number"
+              v-bind="tastiera('intero')"
               variant="outline"
               min="1"
               :aria-label="__('Quantity')"
@@ -790,6 +794,7 @@ import { usersStore } from '@/stores/users'
 import { laSeduta } from '@/utils/cicli'
 import { appLocale } from '@/utils/locale'
 import { addMinutes, minutesBetween } from '@/utils/scheduler'
+import { tastiera } from '@/utils/tastiera'
 import {
   Badge,
   Button,
