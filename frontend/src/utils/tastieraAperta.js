@@ -135,6 +135,14 @@ export function seguiLaTastiera(win = window) {
     if (!frame) frame = win.requestAnimationFrame(aggiorna)
   }
 
+  // the search key closes the keyboard over the results, as a phone's own
+  // searches do: they are there already, found as one typed
+  function invio(evento) {
+    if (evento.key !== 'Enter' || evento.defaultPrevented) return
+    if (evento.isComposing) return
+    if (evento.target?.matches?.("input[type='search']")) evento.target.blur()
+  }
+
   const ascolti = [
     [vista, 'resize'],
     [vista, 'scroll'],
@@ -143,10 +151,12 @@ export function seguiLaTastiera(win = window) {
     [documento, 'focusout'],
   ]
   for (const [chi, evento] of ascolti) chi.addEventListener(evento, pianifica)
+  documento.addEventListener('keydown', invio)
   return () => {
     for (const [chi, evento] of ascolti) {
       chi.removeEventListener(evento, pianifica)
     }
+    documento.removeEventListener('keydown', invio)
     if (frame) win.cancelAnimationFrame(frame)
     chiudi()
   }

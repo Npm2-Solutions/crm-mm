@@ -28,9 +28,18 @@ const TASTIERE = {
   },
   // a code made only of digits: the Sistema TS's region, ASL, facility
   cifre: { inputmode: 'numeric', autocorrect: 'off', spellcheck: 'false' },
+  // a search: the key says «Search» and closes the keyboard over the results
+  // (utils/tastieraAperta.js); a surname is never corrected into a word
+  cerca: {
+    type: 'search',
+    enterkeyhint: 'search',
+    autocorrect: 'off',
+    autocapitalize: 'none',
+    spellcheck: 'false',
+  },
 }
 
-/** The attributes of a keyboard by its name (`telefono`, `email`, `url`, `intero`, `decimale`, `codice`, `cifre`). */
+/** The attributes of a keyboard by its name (`telefono`, `email`, `url`, `intero`, `decimale`, `codice`, `cifre`, `cerca`). */
 export function tastiera(nome) {
   return TASTIERE[nome] || {}
 }
