@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A form from paper: the PDF the centre already prints, read by the assistant,
   proposed as fields to check. Nothing is saved but a draft, and only when the
   person building it says so; the register keeps what they changed.
@@ -139,7 +142,7 @@ async function read() {
       file_url: fileUrl.value,
     })
     if (done.error) {
-      error.value = __('The assistant did not answer: {0}', [done.error])
+      error.value = done.error
       return
     }
     proposal.value = done

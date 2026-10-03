@@ -326,7 +326,7 @@
           </span>
         </div>
         <p v-if="detail.event.error" class="text-ink-red-7">
-          {{ detail.event.error }}
+          {{ __(detail.event.error) }}
         </p>
         <p
           v-if="detail.event.status === 'Accepted' && !detail.event.difference"

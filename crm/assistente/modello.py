@@ -34,6 +34,30 @@ IMPOSTAZIONI = "CRM Assistant Settings"
 EVENTO = "CRM AI Event"
 VERSIONE_ANTHROPIC = "2023-06-01"
 
+#: What went wrong, as whoever asked reads it: kept in the register in English
+#: and translated where it is shown (`_(risposta.errore)`), never an exception's
+#: name («ConnectionError»). Each one is in `it.po` by hand (a test checks).
+NON_IN_TEMPO = "The assistant did not answer in time"
+NON_RAGGIUNTO = "The assistant cannot be reached right now"
+CHIAVE_RIFIUTATA = "The assistant refused the access the agency set up"
+TROPPE_RICHIESTE = "The assistant is busy: try again in a minute"
+SERVIZIO_IN_ERRORE = "The assistant's service has a problem: try again later"
+NON_ACCETTATA = "The assistant did not accept the request"
+NON_LEGGIBILE = "The assistant's answer could not be read"
+NON_RICHIESTA = "The assistant's answer is not what was asked"
+NON_CHIESTO = "The assistant could not be asked"
+ERRORI = (
+	NON_IN_TEMPO,
+	NON_RAGGIUNTO,
+	CHIAVE_RIFIUTATA,
+	TROPPE_RICHIESTE,
+	SERVIZIO_IN_ERRORE,
+	NON_ACCETTATA,
+	NON_LEGGIBILE,
+	NON_RICHIESTA,
+	NON_CHIESTO,
+)
+
 
 @dataclass
 class Risposta:
@@ -117,11 +141,21 @@ def _invia(cfg, istruzioni: str, testo: str) -> tuple[str, int | None, int | Non
 
 
 def _errore(eccezione: Exception) -> str:
-	if isinstance(eccezione, requests.HTTPError) and eccezione.response is not None:
-		return f"HTTP {eccezione.response.status_code}"
+	"""The sentence for what went wrong (`ERRORI`)."""
 	if isinstance(eccezione, requests.Timeout):
-		return "The model did not answer in time"
-	return eccezione.__class__.__name__
+		return NON_IN_TEMPO
+	if isinstance(eccezione, requests.ConnectionError):
+		return NON_RAGGIUNTO
+	if isinstance(eccezione, requests.HTTPError) and eccezione.response is not None:
+		stato = eccezione.response.status_code
+		if stato in (401, 403):
+			return CHIAVE_RIFIUTATA
+		if stato == 429:
+			return TROPPE_RICHIESTE
+		return SERVIZIO_IN_ERRORE if stato >= 500 else NON_ACCETTATA
+	if isinstance(eccezione, ValueError | KeyError | TypeError | IndexError):
+		return NON_LEGGIBILE
+	return NON_CHIESTO
 
 
 def chiedi(
@@ -163,7 +197,7 @@ def chiedi(
 		if json_atteso:
 			dati = regole.estrai_json(scritto)
 			if dati is None:
-				errore = "The answer is not what was asked"
+				errore = NON_RICHIESTA
 	except Exception as eccezione:
 		errore = _errore(eccezione)
 	evento.duration_ms = int((time.monotonic() - inizio) * 1000)

@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A visit dictated: the practitioner's words - typed, pasted, or dictated with
   the device's own dictation - proposed as answers of the sheet. Nothing is
   written by itself: the practitioner ticks what to keep, and medicines,
@@ -151,7 +154,7 @@ async function propose() {
     })
     event.value = done.event
     if (done.error) {
-      error.value = __('The assistant did not answer: {0}', [done.error])
+      error.value = done.error
       return
     }
     proposals.value = done.proposals
