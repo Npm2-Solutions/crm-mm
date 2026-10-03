@@ -1,16 +1,24 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="flex h-full flex-col text-ink-gray-8">
     <!-- header: back with the title, where it stands, preview, save, publish -->
     <div
       class="flex items-center justify-between gap-3 px-6 pb-3 pt-8 max-md:flex-col max-md:items-start max-md:px-3 max-md:pt-5"
     >
-      <div class="flex min-w-0 items-center gap-2">
+      <!-- on a phone the title takes the row and where it stands goes under
+           it: beside a long title the badge ran off the screen -->
+      <div
+        class="flex min-w-0 items-center gap-2 max-md:w-full max-md:flex-wrap"
+      >
         <Button
           variant="ghost"
           icon-left="lucide-chevron-left"
           :label="tpl.title || __('Untitled')"
           size="md"
-          class="-ml-4 !max-w-96 !justify-start !pr-0 text-lg-semibold text-ink-gray-7 hover:bg-transparent hover:opacity-70 max-md:-ml-2"
+          class="-ml-4 !max-w-96 !justify-start !pr-0 text-lg-semibold text-ink-gray-7 hover:bg-transparent hover:opacity-70 max-md:-ml-2 max-md:!max-w-full"
           @click="goBack"
         />
         <Badge
