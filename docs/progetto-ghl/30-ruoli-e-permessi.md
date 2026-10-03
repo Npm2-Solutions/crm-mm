@@ -746,12 +746,29 @@ con `crm.utils.stored_value`, che non passa da nessuna maschera. La rubrica del
 core (Contact) non si maschera, perché la regola varrebbe per tutto il sito: a chi
 vede le persone mascherate è negata del tutto.
 
+**La rubrica segue la persona** (dal 03/10/2026). Ogni persona ha la sua voce nella
+rubrica (`CRM Lead.contact`), e la voce è poco più del nome, dell'email e del
+telefono: un Operatore, che delle persone vede le sue, nella rubrica leggeva quelle
+di tutto il centro. Ora una voce si legge se si legge la persona a cui appartiene,
+o se sta su una trattativa che si vede; una voce di nessuno (il contatto di
+un'azienda, un record vecchio) resta del centro
+(`seguono.contact_conditions`, una condizione per l'elenco e per la scheda). La
+voce di una persona che non si segue non porta più alla sua scheda
+(`contact.get_owning_lead` cerca fra le persone che si leggono).
+
 **Scrivere chiede la capacità, non basta vedere.** Tutti i livelli hanno Sales
 User, e Sales User può scrivere ed eliminare persone e trattative: una persona si
 crea e si modifica con `persone.scrivi`, si elimina con `persone.elimina` (il
 Manager); una trattativa con `trattative.scrivi`. Prima la Direzione sanitaria
 poteva modificare o eliminare una persona dall'API, e leggeva chiamate e note: non
 più.
+
+**Un'azienda si scrive come una persona** (dal 03/10/2026). Le aziende stanno dalla
+parte delle persone: si creano e si modificano con `persone.scrivi`, si eliminano
+con `persone.elimina`, del Manager. Prima Sales User bastava: il medico trovava
+«Elimina» sulla scheda di ogni azienda, e chi non scrive le persone (Direzione,
+Amministrazione) ne poteva modificare una. L'azienda che il server crea da sé, con
+la persona che la nomina o con la trattativa, nasce comunque.
 
 **Leggere ha la sua capacità, come per persone e trattative.** Email, WhatsApp e
 SMS si leggono con `conversazioni.vedi` e si scrivono con `conversazioni.usa`; le

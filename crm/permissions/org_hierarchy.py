@@ -218,6 +218,13 @@ _SCRITTURE = {
 		"email": "conversazioni.usa",
 	},
 	"FCRM Note": {"create": "note.scrivi", "write": "note.scrivi", "delete": "note.scrivi"},
+	# a company is on the people's side: who writes people writes companies, and
+	# deleting one is the Manager's, as deleting a person is
+	"CRM Organization": {
+		"create": "persone.scrivi",
+		"write": "persone.scrivi",
+		"delete": "persone.elimina",
+	},
 }
 
 
@@ -230,7 +237,7 @@ def _puo_scrivere(doctype: str, ptype: str | None, user: str | None) -> bool:
 
 
 def scrittura_per_capacita(doc, method=None):
-	"""`validate` of people, deals and notes: a save on the user's behalf asks for the
+	"""`validate` of people, companies, deals and notes: a save on the user's behalf asks for the
 	capability even on a record shared with them.
 
 	Frappe grants what is shared without asking the `has_permission` hooks, and the
@@ -250,6 +257,10 @@ def has_lead_permission(doc, ptype, user):
 
 def has_deal_permission(doc, ptype, user):
 	return _puo_scrivere("CRM Deal", ptype, user) and _has_permission(doc, ptype, user, "CRM Deal")
+
+
+def has_organization_permission(doc, ptype, user):
+	return _puo_scrivere("CRM Organization", ptype, user)
 
 
 # --------------------------------------------------------------------------
@@ -305,6 +316,14 @@ def visible_leads(user: str | None = None):
 	if _scope(user, "CRM Lead") is None:
 		return None
 	return _visible("CRM Lead", user)
+
+
+def visible_deals(user: str | None = None):
+	"""The deals ``user`` sees, as a subquery, or ``None`` when they see them all."""
+	user = user or frappe.session.user
+	if _scope(user, "CRM Deal") is None:
+		return None
+	return _visible("CRM Deal", user)
 
 
 def sees_everyone(user: str | None = None) -> bool:
