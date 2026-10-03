@@ -144,14 +144,14 @@ const newCommentEditor = ref(null)
 // person reads in their inbox. Never the record's code, as it was («Mario Rossi
 // (#CRM-LEAD-…)»): a reply reaches the person by its headers and by who writes
 // (crm.posta.ingresso), not by the subject. A centre without a name: whom it is
-// to.
+// to; nobody's name, a word, since an email is never sent without a subject.
 const subject = computed(() => {
   if (!doc.value?.name) return ''
   return (
     nomeDelCentro(brand.name) ||
     doc.value.lead_name ||
     doc.value.organization ||
-    ''
+    __('Message')
   )
 })
 
