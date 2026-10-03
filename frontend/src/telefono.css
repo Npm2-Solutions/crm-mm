@@ -461,3 +461,103 @@
     min-height: 2.75rem;
   }
 }
+
+/* 8. Writing. The keyboard covers the bottom of the screen without making the
+      page shorter; while somebody writes, `utils/tastieraAperta.js` says how
+      much of it one sees. The frame of the app is that tall and starts where
+      what one sees starts: the header stays, the bar at the bottom steps
+      aside (as a phone's own apps do), and the box that scrolls - a list, a
+      chat, the agenda's panel - ends on the keyboard with its buttons. A sheet
+      and a list's sheet sit on the keyboard, their Save in sight. */
+@media (max-width: 767px) {
+  :root[data-tastiera='aperta'] [data-cornice-telefono] {
+    position: relative;
+    top: var(--vista-sopra, 0px);
+    height: var(--altezza-con-tastiera, 100dvh);
+  }
+  :root[data-tastiera='aperta'] nav[data-slot='mobile-nav'] {
+    display: none;
+  }
+  /* the settings are a screen of their own inside a dialog */
+  :root[data-tastiera='aperta'] .settings-modal.h-app {
+    height: var(--altezza-con-tastiera, 100dvh);
+    padding-bottom: 0;
+  }
+  :root[data-tastiera='aperta'] .dialog-scroll-container {
+    top: var(--vista-sopra, 0px);
+    bottom: var(--tastiera, 0px);
+  }
+  /* the screen behind needs no room above the sheet: the keyboard took it */
+  :root[data-tastiera='aperta'] .dialog-scroll-container > div[data-position] {
+    min-height: 100%;
+    padding-top: 0.5rem;
+  }
+  :root[data-tastiera='aperta'] .dialog-content {
+    padding-bottom: 0;
+  }
+  :root[data-tastiera='aperta'] .dialog-footer,
+  :root[data-tastiera='aperta'] .dialog-content > div.px-4.pb-7.pt-4 {
+    padding-bottom: 0.75rem;
+  }
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]:has(> [role='menu']),
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]:has(> [role='listbox']),
+  :root[data-tastiera='aperta']
+    div[style*='position: fixed']:has(> [role='listbox'][data-slot='content']),
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]:has(> [role='dialog'] [role='listbox']) {
+    bottom: var(--tastiera, 0px) !important;
+    max-height: calc(var(--altezza-con-tastiera, 100dvh) - 1rem) !important;
+  }
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]
+    > [role='menu'],
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]
+    > [role='listbox'],
+  :root[data-tastiera='aperta']
+    div[style*='position: fixed']
+    > [role='listbox'][data-slot='content'] {
+    max-height: calc(var(--altezza-con-tastiera, 100dvh) - 1rem) !important;
+    padding-bottom: 0;
+  }
+  /* a link field's list, between its search and its «Clear» */
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    [role='listbox'] {
+    max-height: calc(var(--altezza-con-tastiera, 100dvh) - 10rem) !important;
+  }
+  :root[data-tastiera='aperta']
+    [data-reka-popper-content-wrapper]
+    > [role='dialog']
+    div:has(> [role='listbox']) {
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* 9. A finger, not a mouse. No grey flash at every tap: what one taps shows
+      it is pressed by itself (frappe-ui's buttons, the bar, the rows of the
+      lists). Pulling down at the top of a list does not reload the whole
+      app, nor does the frame bounce: the lists scroll in their own boxes.
+      Holding a finger on the bar, a tab, a button or a row chooses the row
+      (`MobileListRows`) or does nothing: never the browser's menu of a link
+      nor a selected word. */
+@media (max-width: 767px) {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+  nav[data-slot='mobile-nav'] a,
+  [role='tab'],
+  button,
+  [data-cornice-telefono] a[href].flex {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
