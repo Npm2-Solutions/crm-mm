@@ -223,8 +223,11 @@ def scarta(nome: str) -> None:
 
 
 def segno(evento) -> str:
-	"""The words a checked draft carries."""
-	return _(regole.SEGNO).format(
+	"""The words a checked draft carries, in the centre's language: the patient
+	reads them, whatever language the practitioner who checked it works in."""
+	from crm.lingue import del_centro
+
+	return _(regole.SEGNO, lang=del_centro()).format(
 		get_fullname(evento.checked_by), frappe.utils.format_datetime(evento.checked_on, "dd/MM/yyyy HH:mm")
 	)
 

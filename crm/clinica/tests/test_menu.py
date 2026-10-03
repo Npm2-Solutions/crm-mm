@@ -33,6 +33,17 @@ from crm.piani import api as piani
 from crm.piani import regole as r
 
 
+def _inizio_del_segno() -> str:
+	"""How a checked draft's mark begins in the centre's language, the one it is
+	written in (`crm.assistente.modello.segno`)."""
+	from frappe import _
+
+	from crm.assistente import regole
+	from crm.lingue import del_centro
+
+	return _(regole.SEGNO, lang=del_centro()).split("{0}")[0].strip()
+
+
 class MenuCase(PianiCase):
 	def setUp(self):
 		super().setUp()
@@ -217,7 +228,7 @@ class LeRicette(MenuCase):
 		nota = piano["moments"][0]["note"]
 		self.assertIn("Pasta e piselli", nota)
 		self.assertIn("Cuoci i piselli", nota)
-		self.assertIn("AI draft, checked by", nota)
+		self.assertIn(_inizio_del_segno(), nota)
 		evento = frappe.get_doc(modello.EVENTO, fatto["event"])
 		self.assertEqual(evento.status, regole.ACCETTATA)
 		self.assertIn("Piselli surgelati: 120 g", evento.final)
