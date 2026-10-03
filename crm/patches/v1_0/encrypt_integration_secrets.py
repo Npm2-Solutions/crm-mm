@@ -9,7 +9,6 @@ from frappe.utils.password import set_encrypted_password
 SECRETS = {
 	"FCRM Settings": ("access_key",),
 	"CRM Meta Settings": ("webhook_verify_token",),
-	"CRM Exotel Settings": ("api_key", "webhook_verify_token"),
 	"CRM Booking Connection": ("webhook_token",),
 	"CRM Automation": ("webhook_key",),
 }

@@ -51,7 +51,7 @@ class FakeProvider(TelephonyProvider):
 
 
 class DashboardProvider(FakeProvider):
-	"""A carrier whose call flow lives in its own dashboard, like Exotel."""
+	"""A carrier whose call flow lives in its own dashboard, not in DottorCloud."""
 
 	name = "dashboard"
 	label = "Dashboard"
@@ -241,7 +241,12 @@ class TestRegistry(IntegrationTestCase):
 
 	def test_the_shipped_carriers_load(self):
 		self.assertEqual(providers.get("twilio").label, "Twilio")
-		self.assertEqual(providers.get("exotel").label, "Exotel")
+
+	def test_exotel_is_no_longer_a_carrier(self):
+		# DottorCloud gave it up on 03/10/2026: a call log that still says so
+		# has no carrier behind it
+		self.assertNotIn("exotel", providers.REGISTRY)
+		self.assertIsNone(providers.for_medium("Exotel"))
 
 	def test_an_unknown_carrier_is_refused(self):
 		with self.assertRaises(frappe.ValidationError):
@@ -252,15 +257,13 @@ class TestRegistry(IntegrationTestCase):
 
 	def test_a_call_log_medium_finds_its_carrier(self):
 		self.assertEqual(providers.for_medium("Twilio").name, "twilio")
-		self.assertEqual(providers.for_medium("exotel").name, "exotel")
+		self.assertEqual(providers.for_medium("twilio").name, "twilio")
 
 	def test_a_manual_call_has_no_carrier_behind_it(self):
 		self.assertIsNone(providers.for_medium("Manual"))
 		self.assertIsNone(providers.for_medium(None))
 
-	def test_only_twilio_can_run_the_answering_service(self):
-		# Exotel's flow lives in its own dashboard, so it is not a candidate
-		self.assertFalse(providers.get("exotel").controls_call_flow)
+	def test_twilio_can_run_the_answering_service(self):
 		self.assertTrue(providers.get("twilio").controls_call_flow)
 
 	def test_a_carrier_can_be_added_at_runtime(self):

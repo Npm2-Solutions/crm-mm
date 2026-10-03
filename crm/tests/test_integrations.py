@@ -20,38 +20,28 @@ class TestIntegrations(IntegrationTestCase):
 	def tearDown(self):
 		frappe.db.rollback()
 
-	def test_is_call_integration_enabled_both_disabled(self):
-		"""Test is_call_integration_enabled when both integrations are disabled"""
-		# Ensure both are disabled
+	def test_is_call_integration_enabled_disabled(self):
+		"""Twilio off: no call integration is on"""
 		frappe.db.set_single_value("CRM Twilio Settings", "enabled", 0)
-		frappe.db.set_single_value("CRM Exotel Settings", "enabled", 0)
 
 		result = is_call_integration_enabled()
 
 		self.assertFalse(result["integrations"]["twilio"])
-		self.assertFalse(result["integrations"]["exotel"])
 
-	def test_is_call_integration_enabled_twilio_only(self):
-		"""Test is_call_integration_enabled with only Twilio enabled"""
-		# Enable Twilio settings
+	def test_is_call_integration_enabled_twilio(self):
+		"""Twilio on: its calls are on"""
 		frappe.db.set_single_value("CRM Twilio Settings", "enabled", 1)
-		frappe.db.set_single_value("CRM Exotel Settings", "enabled", 0)
 
 		result = is_call_integration_enabled()
 
 		self.assertTrue(result["integrations"]["twilio"])
-		self.assertFalse(result["integrations"]["exotel"])
 
-	def test_is_call_integration_enabled_exotel_only(self):
-		"""Test is_call_integration_enabled with only Exotel enabled"""
-		# Enable Exotel settings
-		frappe.db.set_single_value("CRM Exotel Settings", "enabled", 1)
-		frappe.db.set_single_value("CRM Twilio Settings", "enabled", 0)
-
+	def test_exotel_is_gone(self):
+		"""DottorCloud no longer offers Exotel (03/10/2026): nothing names it"""
 		result = is_call_integration_enabled()
 
-		self.assertFalse(result["integrations"]["twilio"])
-		self.assertTrue(result["integrations"]["exotel"])
+		self.assertNotIn("exotel", result["integrations"])
+		self.assertNotIn("exotel", [p["name"] for p in result["providers"]])
 
 	def test_get_user_default_calling_medium_no_agent(self):
 		"""Test get_user_default_calling_medium when user has no telephony agent record"""
@@ -87,14 +77,14 @@ class TestIntegrations(IntegrationTestCase):
 		if frappe.db.exists("CRM Telephony Agent", frappe.session.user):
 			frappe.delete_doc("CRM Telephony Agent", frappe.session.user)
 
-		result = set_default_calling_medium("Exotel")
+		result = set_default_calling_medium("Twilio")
 
-		self.assertEqual(result, "Exotel")
+		self.assertEqual(result, "Twilio")
 		self.assertTrue(frappe.db.exists("CRM Telephony Agent", frappe.session.user))
 
 		# Verify the record was created correctly
 		agent = frappe.get_doc("CRM Telephony Agent", frappe.session.user)
-		self.assertEqual(agent.default_medium, "Exotel")
+		self.assertEqual(agent.default_medium, "Twilio")
 
 	def test_set_default_calling_medium_updates_existing_record(self):
 		"""Test set_default_calling_medium updates existing telephony agent"""
@@ -106,18 +96,17 @@ class TestIntegrations(IntegrationTestCase):
 			{
 				"doctype": "CRM Telephony Agent",
 				"user": frappe.session.user,
-				"default_medium": "Twilio",
+				"default_medium": "",
 			}
 		).insert()
 
-		# Update to Exotel
-		result = set_default_calling_medium("Exotel")
+		result = set_default_calling_medium("Twilio")
 
-		self.assertEqual(result, "Exotel")
+		self.assertEqual(result, "Twilio")
 
 		# Verify the record was updated
 		agent = frappe.get_doc("CRM Telephony Agent", frappe.session.user)
-		self.assertEqual(agent.default_medium, "Exotel")
+		self.assertEqual(agent.default_medium, "Twilio")
 
 	def test_add_note_to_call_log_creates_new_note(self):
 		"""Test add_note_to_call_log creates new note and links it to call log"""

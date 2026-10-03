@@ -1,3 +1,5 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 import ipaddress
 import socket
 from urllib.parse import urlparse, urlunparse
@@ -428,7 +430,7 @@ def get_recording_url(call_log_name: str):
 		frappe.throw(_("Recording URL not found"), frappe.DoesNotExistError)
 
 	auth = _get_recording_credentials(log.telephony_medium)
-	# forward the browser's Range header so the provider (Twilio/Exotel CDN) can return
+	# forward the browser's Range header so the provider (Twilio's CDN) can return
 	# just the requested bytes; falls back to the full file if it doesn't support ranges
 	req_headers = {}
 	range_header = frappe.get_request_header("Range")

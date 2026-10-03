@@ -3,7 +3,7 @@
 
 """Calls: how many, how many missed, how long, and who still needs a call back.
 
-Offered when a telephony provider (Twilio, Exotel) is on. A call belongs to the
+Offered when a telephony provider (Twilio) is on. A call belongs to the
 agent who made it (``caller``) or took it (``receiver``). "Missed" is an incoming
 call nobody picked up — no answer, declined, or hung up before anyone did; the
 same reading as the call log in the app (``utils/callLog.js``).

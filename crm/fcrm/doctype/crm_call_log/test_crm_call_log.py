@@ -432,8 +432,8 @@ class TestCRMCallLog(IntegrationTestCase):
 		call = create_test_call_log(telephony_medium="Twilio")
 		self.assertEqual(call.telephony_medium, "Twilio")
 
-		call2 = create_test_call_log(telephony_medium="Exotel")
-		self.assertEqual(call2.telephony_medium, "Exotel")
+		call2 = create_test_call_log(telephony_medium="Manual")
+		self.assertEqual(call2.telephony_medium, "Manual")
 
 	def test_recording_credentials_manual_medium_needs_no_auth(self):
 		"""A manually added recording is fetched as-is, with no provider auth."""
@@ -463,15 +463,6 @@ class TestCRMCallLog(IntegrationTestCase):
 		settings.get_password.return_value = "twilio_secret"
 		with patch("crm.integrations.api.frappe.get_single", return_value=settings):
 			self.assertEqual(_get_recording_credentials("Twilio"), ("ACxxxxxxxx", "twilio_secret"))
-
-	def test_recording_credentials_exotel_configured_returns_tuple(self):
-		"""Exotel with both key and token set yields the auth pair."""
-		settings = MagicMock()
-		# both are Password fields: read through get_password, never off the document
-		secrets = {"api_key": "exotel_key", "api_token": "exotel_token"}
-		settings.get_password.side_effect = lambda fieldname, raise_exception=True: secrets.get(fieldname)
-		with patch("crm.integrations.api.frappe.get_single", return_value=settings):
-			self.assertEqual(_get_recording_credentials("Exotel"), ("exotel_key", "exotel_token"))
 
 
 def create_test_call_log(**kwargs):
