@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the stages are a row of chips and the deals cards
+  (components/Mobile/TrattativePerFase.vue).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -9,7 +15,11 @@
         :actions="dealsListView.customListActions"
       />
       <Dropdown
-        v-if="route.params.viewType == 'kanban' && pipelines.data?.length"
+        v-if="
+          !isMobileView &&
+          route.params.viewType == 'kanban' &&
+          pipelines.data?.length
+        "
         :options="pipelineDropdownOptions"
         placement="right"
       >
@@ -26,6 +36,7 @@
         </template>
       </Dropdown>
       <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -33,7 +44,16 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: the stages as chips, the deals of one under the other -->
+  <template v-if="isMobileView">
+    <TrattativePerFase ref="trattativePerFase" />
+    <PulsanteAggiungi
+      :label="__('New deal')"
+      @click="nuovaTrattativaSulTelefono"
+    />
+  </template>
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="deals"
     v-model:loadMore="loadMore"
@@ -45,7 +65,7 @@
     }"
   />
   <KanbanView
-    v-if="route.params.viewType == 'kanban'"
+    v-if="!isMobileView && route.params.viewType == 'kanban'"
     v-model="deals"
     :options="{
       // a card opens the panel, not another page: the pipeline stays behind it
@@ -221,7 +241,7 @@
     </template>
   </KanbanView>
   <DealsListView
-    v-else-if="deals.data && rows.length"
+    v-else-if="!isMobileView && deals.data && rows.length"
     ref="dealsListView"
     v-model="deals.data.page_length_count"
     v-model:list="deals"
@@ -244,7 +264,7 @@
     "
   />
   <EmptyState
-    v-else-if="deals.data && !rows.length"
+    v-else-if="!isMobileView && deals.data && !rows.length"
     name="Deals"
     :icon="DealsIcon"
   />
@@ -280,6 +300,9 @@ import KanbanView from '@/components/Kanban/KanbanView.vue'
 import DealPanel from '@/components/Deals/DealPanel.vue'
 import DealModal from '@/components/Modals/DealModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
+import TrattativePerFase from '@/components/Mobile/TrattativePerFase.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { getMeta } from '@/stores/meta'
 import { globalStore } from '@/stores/global'
@@ -562,6 +585,15 @@ function parseRows(rows, columns = []) {
     _rows['_comment_count'] = deal._comment_count
     return _rows
   })
+}
+
+// a deal started on the phone goes in the pipeline and stage on screen
+const trattativePerFase = ref(null)
+function nuovaTrattativaSulTelefono() {
+  const { pipeline, fase } = trattativePerFase.value?.dove() || {}
+  if (pipeline) defaults.pipeline = pipeline
+  if (fase) defaults.status = fase
+  showDealModal.value = true
 }
 
 function onNewClick(column) {

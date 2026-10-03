@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the people are a list of their own, found by name or number
+  (components/Mobile/ElencoPersone.vue).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -20,6 +26,7 @@
         @click="showOutOfCare = true"
       />
       <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -27,8 +34,14 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: typed to find, one line each, the + where the thumb is -->
+  <template v-if="isMobileView">
+    <ElencoPersone />
+    <PulsanteAggiungi :label="__('New person')" @click="showLeadModal = true" />
+  </template>
   <OutOfCareDialog v-if="puo('clinica.fuori_equipe')" v-model="showOutOfCare" />
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="leads"
     v-model:loadMore="loadMore"
@@ -40,7 +53,7 @@
     }"
   />
   <LeadsListView
-    v-if="leads.data && rows.length"
+    v-if="!isMobileView && leads.data && rows.length"
     ref="leadsListView"
     v-model="leads.data.page_length_count"
     v-model:list="leads"
@@ -63,7 +76,7 @@
     "
   />
   <EmptyState
-    v-else-if="leads.data && !rows.length"
+    v-else-if="!isMobileView && leads.data && !rows.length"
     name="Leads"
     :icon="LeadsIcon"
   />
@@ -85,6 +98,9 @@ import EmptyState from '@/components/ListViews/EmptyState.vue'
 import LeadModal from '@/components/Modals/LeadModal.vue'
 import OutOfCareDialog from '@/components/Clinic/OutOfCareDialog.vue'
 import ViewControls from '@/components/ViewControls.vue'
+import ElencoPersone from '@/components/Mobile/ElencoPersone.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { getMeta } from '@/stores/meta'
 import { usersStore } from '@/stores/users'
 import { statusesStore } from '@/stores/statuses'

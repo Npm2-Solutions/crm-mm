@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone the open tasks come by when they are due, done with one tap
+  (components/Mobile/ElencoCose.vue).
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -9,6 +15,7 @@
         :actions="tasksListView.customListActions"
       />
       <Button
+        v-if="!isMobileView"
         variant="solid"
         :label="__('Create')"
         iconLeft="plus"
@@ -16,7 +23,13 @@
       />
     </template>
   </LayoutHeader>
+  <!-- on a phone: what is left, by when it is due, done with one tap -->
+  <template v-if="isMobileView">
+    <ElencoCose ref="elencoCose" @apri="showTask" />
+    <PulsanteAggiungi :label="__('New task')" @click="createTask()" />
+  </template>
   <ViewControls
+    v-if="!isMobileView"
     ref="viewControls"
     v-model="tasks"
     v-model:loadMore="loadMore"
@@ -28,7 +41,7 @@
     }"
   />
   <KanbanView
-    v-if="$route.params.viewType == 'kanban' && rows.length"
+    v-if="!isMobileView && $route.params.viewType == 'kanban' && rows.length"
     v-model="tasks"
     :options="{
       onClick: (row) => showTask(row.name),
@@ -171,7 +184,7 @@
     </template>
   </KanbanView>
   <TasksListView
-    v-else-if="tasks.data && rows.length"
+    v-else-if="!isMobileView && tasks.data && rows.length"
     ref="tasksListView"
     v-model="tasks.data.page_length_count"
     v-model:list="tasks"
@@ -195,7 +208,7 @@
     "
   />
   <EmptyState
-    v-else-if="tasks.data && !rows.length"
+    v-else-if="!isMobileView && tasks.data && !rows.length"
     name="Tasks"
     :icon="Email2Icon"
   />
@@ -205,7 +218,7 @@
     name="Tasks"
     doctype="CRM Task"
     :docname="taskToDelete"
-    :reload="() => tasks.reload()"
+    :reload="ricaricaLeCose"
   />
 </template>
 
@@ -222,6 +235,9 @@ import TasksListView from '@/components/ListViews/TasksListView.vue'
 import EmptyState from '@/components/ListViews/EmptyState.vue'
 import KanbanView from '@/components/Kanban/KanbanView.vue'
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
+import ElencoCose from '@/components/Mobile/ElencoCose.vue'
+import PulsanteAggiungi from '@/components/Mobile/PulsanteAggiungi.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { getMeta } from '@/stores/meta'
 import { usersStore } from '@/stores/users'
@@ -240,6 +256,7 @@ const { capture } = useTelemetry()
 const router = useRouter()
 
 const tasksListView = ref(null)
+const elencoCose = ref(null)
 
 // tasks data is loaded in the ViewControls component
 const tasks = ref({})
@@ -347,13 +364,19 @@ function parseRows(rows, columns = []) {
 
 const { showModal } = useDoctypeModal()
 
+// the list the page shows: the desk's, or the phone's
+function ricaricaLeCose() {
+  if (isMobileView.value) elencoCose.value?.ricarica()
+  else tasks.value.reload()
+}
+
 const taskCallbacks = {
   afterInsert: () => {
-    tasks.value.reload()
+    ricaricaLeCose()
     capture('task_created')
   },
   afterUpdate: () => {
-    tasks.value.reload()
+    ricaricaLeCose()
     capture('task_updated')
   },
 }
