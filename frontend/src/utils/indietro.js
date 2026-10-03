@@ -100,3 +100,47 @@ export function chiudiPrimaDiTornare(router, win = window) {
     return false
   })
 }
+
+/**
+ * Whether the crumb at `percorso` leads where the history came from
+ * (`indietro`, the router's `history.state.back`): the same page, and the same
+ * view of it when the crumb names one.
+ */
+export function stessoPosto(router, percorso, indietro) {
+  if (!percorso || !indietro) return false
+  const crumb = router.resolve(percorso)
+  const prima = router.resolve(indietro)
+  if (!crumb.name || crumb.name !== prima.name) return false
+  if ((crumb.query.view || '') !== (prima.query.view || '')) return false
+  const tipo = crumb.params.viewType
+  return !tipo || tipo === prima.params.viewType
+}
+
+/**
+ * On a phone the crumb a page came from («People» over a person) takes it
+ * back, to the list as it was left (utils/ritorno.js), instead of opening that
+ * page anew from the top. An iPhone's installed app has no swipe back: the
+ * crumb is the way back. A crumb that leads anywhere else goes there as it
+ * always did. Gives back the function that stops it.
+ */
+export function tornaConLeBriciole(router, win = window) {
+  const base = router.options.history?.base || ''
+  function alClic(evento) {
+    if (evento.defaultPrevented || evento.button !== 0) return
+    if (evento.metaKey || evento.ctrlKey || evento.shiftKey || evento.altKey)
+      return
+    const link = evento.target.closest?.('#app-header a[href]')
+    if (!link) return
+    let percorso = link.getAttribute('href')
+    if (base && percorso.startsWith(base)) {
+      percorso = percorso.slice(base.length) || '/'
+    }
+    const qui = router.currentRoute.value
+    if (router.resolve(percorso).name === qui.name) return
+    if (!stessoPosto(router, percorso, win.history.state?.back)) return
+    evento.preventDefault()
+    router.back()
+  }
+  win.document.addEventListener('click', alClic, true)
+  return () => win.document.removeEventListener('click', alClic, true)
+}

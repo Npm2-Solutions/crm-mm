@@ -44,6 +44,20 @@
   }
 }
 
+/* The crumbs at the top of a page are 26px tall, and the one a page came
+   from is the way back to it (utils/indietro.js): a ring makes it a thumb's
+   height. */
+@media (pointer: coarse) and (max-width: 767px) {
+  #app-header a[href].text-ink-gray-5 {
+    position: relative;
+  }
+  #app-header a[href].text-ink-gray-5::after {
+    content: '';
+    position: absolute;
+    inset: -9px -4px;
+  }
+}
+
 /* 2. A field on a phone: 16px, or iOS zooms the whole page in when it is
       tapped and leaves it zoomed. A line one types on is 40px tall. */
 @media (max-width: 767px) {

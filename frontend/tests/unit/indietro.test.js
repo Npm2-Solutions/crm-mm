@@ -5,8 +5,11 @@ import {
   chiudiPrimaDiTornare,
   dallaCronologia,
   qualcosaSopra,
+  stessoPosto,
+  tornaConLeBriciole,
 } from '@/utils/indietro'
 import { ref } from 'vue'
+import { createMemoryHistory, createRouter } from 'vue-router'
 
 describe('dallaCronologia', () => {
   it("is a back when the history already holds the target's entry", () => {
@@ -118,5 +121,74 @@ describe('chiudiPrimaDiTornare', () => {
     )
     expect(premuto.mock.calls[0][0].key).toBe('Escape')
     document.removeEventListener('keydown', premuto)
+  })
+})
+
+describe('the crumb a page came from', () => {
+  const vuota = { render: () => null }
+  function instradatore() {
+    return createRouter({
+      history: createMemoryHistory('/crm'),
+      routes: [
+        { path: '/leads/view/:viewType?', name: 'Leads', component: vuota },
+        { path: '/leads/:leadId', name: 'Lead', component: vuota },
+        { path: '/deals/view/:viewType?', name: 'Deals', component: vuota },
+      ],
+    })
+  }
+
+  it('is the same place when the history came from that page and view', () => {
+    const r = instradatore()
+    expect(stessoPosto(r, '/leads/view', '/leads/view/list')).toBe(true)
+    expect(
+      stessoPosto(r, '/leads/view/list?view=x', '/leads/view/list?view=x'),
+    ).toBe(true)
+    // «People» over a person opened from a view of them: not that view
+    expect(stessoPosto(r, '/leads/view', '/leads/view/list?view=x')).toBe(false)
+    expect(stessoPosto(r, '/leads/view', '/deals/view/kanban')).toBe(false)
+    expect(stessoPosto(r, '/leads/view', undefined)).toBe(false)
+  })
+
+  async function pagina(indietro) {
+    const r = instradatore()
+    await r.push('/leads/p1')
+    const testata = document.createElement('div')
+    testata.id = 'app-header'
+    const briciola = document.createElement('a')
+    briciola.setAttribute('href', '/crm/leads/view')
+    const questa = document.createElement('a')
+    questa.setAttribute('href', '/crm/leads/p1')
+    testata.append(briciola, questa)
+    document.body.append(testata)
+    const win = { document, history: { state: { back: indietro } } }
+    r.back = vi.fn()
+    const smetti = tornaConLeBriciole(r, win)
+    return { r, briciola, questa, smetti }
+  }
+
+  function clic(el) {
+    const evento = new MouseEvent('click', { bubbles: true, cancelable: true })
+    el.dispatchEvent(evento)
+    return evento
+  }
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('goes back to the list it came from', async () => {
+    const { r, briciola, smetti } = await pagina('/leads/view/list')
+    expect(clic(briciola).defaultPrevented).toBe(true)
+    expect(r.back).toHaveBeenCalledTimes(1)
+    smetti()
+  })
+
+  it('leads where it always did when the page came from elsewhere', async () => {
+    const { r, briciola, questa, smetti } = await pagina('/deals/view/kanban')
+    expect(clic(briciola).defaultPrevented).toBe(false)
+    // the page's own crumb is no way back
+    expect(clic(questa).defaultPrevented).toBe(false)
+    expect(r.back).not.toHaveBeenCalled()
+    smetti()
   })
 })
