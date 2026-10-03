@@ -623,7 +623,9 @@ uses `max-md:` — not `sm:`, which leaves 640–768px half desktop.
   off, it reloaded the whole app), on the box that scrolls, there even when the
   list is empty; a back finds it as it was left, its search, rows and scroll,
   then brought up to date (`useRitorno`; a list found by typing is
-  `useElencoDelTelefono`), while the menu opens it from the top.
+  `useElencoDelTelefono`), while the menu opens it from the top; the crumb a
+  record came from goes back to it (`tornaConLeBriciole`: an iPhone's
+  installed app has no swipe back).
 - A dialog, a menu and a select are sheets from the bottom by themselves
   (`telefono.css`): never a size, a margin or a position of one's own on a
   phone. A sheet taken by its grabber follows the finger down and closes as

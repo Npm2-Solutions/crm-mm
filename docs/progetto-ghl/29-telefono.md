@@ -395,7 +395,10 @@ Con il tocco, come in un'app:
   già nella riga. Solo l'indietro la rimette così: aperta dal menu riparte
   dall'inizio, come una pagina nel browser. Quello che si ricorda resta in
   memoria per la sessione: un nome cercato non si scrive sul telefono
-  (`utils/ritorno.js`).
+  (`utils/ritorno.js`). «Persone» in cima alla scheda fa lo stesso: la briciola
+  della pagina da cui si è arrivati torna indietro invece di riaprirla da capo,
+  e ha l'altezza di un pollice. Un'app installata su iPhone non ha il gesto per
+  tornare: la briciola è la via del ritorno (`tornaConLeBriciole`).
 - **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
   torna, le modifiche non si salvano», finché la rete non torna.
 - **Un foglio si tira giù per metterlo via.** La maniglia in cima a un
