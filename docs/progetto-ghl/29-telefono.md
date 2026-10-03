@@ -148,6 +148,10 @@ toccando il riquadro intero) e le caselle con la loro etichetta accanto
   telefono.
 - **Tabelle**: una larghezza minima per colonna e lo scorrimento di lato, non
   colonne schiacciate a niente.
+- **Ogni campo chiede la sua tastiera**: `tastieraDi(field)` per un campo di
+  un DocType, `tastiera('telefono' | 'email' | 'url' | 'intero' | 'codice' |
+  'cifre')` per gli altri (`utils/tastiera.js`); un numero intero su
+  `type="number"` ha `inputmode="numeric"`.
 
 ## Seconda parte: schermate fatte per il telefono (03/10/2026)
 
@@ -313,6 +317,38 @@ i 16px.
 | Lista d'attesa | Vuota, ha lo stato vuoto del design system. |
 | Importazione | «Scegli cosa importare» chiede «Cerca», non «Search doctype»: è il segnaposto di ogni campo collegato di frappe-ui che non ne ha uno suo. |
 
+## Sesta parte: la tastiera giusta (03/10/2026)
+
+Il giro guarda gli schermi, non la tastiera che sale. Toccando un campo, il
+telefono apriva la tastiera delle lettere quasi ovunque: per un numero di
+telefono, un'email, i giorni di un'impostazione, l'importo di una trattativa.
+
+| Campo | Sul telefono |
+|---|---|
+| Cellulare e telefono (scheda, persona nuova, «Per chi è?» dell'agenda, la chiamata, il numero dell'operatore, i recapiti del sito) | Il tastierino del telefono, con + * # |
+| Email e PEC | La tastiera con la @, senza maiuscola all'inizio |
+| Sito, link, indirizzi dei servizi | La tastiera degli indirizzi, con / e .com |
+| Ricavi, valore, probabilità, ogni campo numerico di una scheda | Il tastierino con la virgola: la scheda legge il numero nel formato del sistema (`flt`) |
+| Giorni, ore, minuti, posti, limiti, priorità (76 campi, quasi tutti nelle impostazioni) | Il tastierino delle cifre |
+| Codice fiscale, partita IVA, codice destinatario, codice SSA | Le maiuscole, mai corrette dal telefono |
+| Codice regione e ASL del Sistema TS, gli ID di Meta e WhatsApp | Le cifre |
+| Il SID di Twilio | Né maiuscole né correzioni: è un codice che distingue maiuscole e minuscole |
+
+Restano come sono, e perché:
+
+- **Gli importi dei dialoghi** (prezzo di un appuntamento, di una fattura, di
+  un preventivo, di un ciclo): sono `type="number"`, letti dal browser. Il
+  tastierino decimale di iPhone mostra solo il separatore della lingua del
+  telefono, la virgola, e Safari su un `type="number"` può non accettarla;
+  la tastiera dei numeri di oggi ha punto e virgola.
+- **Il CAP** e **lo scostamento in giorni di un'automazione**: un CAP straniero
+  può avere lettere, uno scostamento può essere negativo, e il tastierino
+  delle cifre non ha né lettere né meno.
+- **Nessun suggerimento automatico** dei propri dati: i campi tengono
+  `autocomplete="off"` di frappe-ui, perché sono di un altro. Le pagine
+  pubbliche (`/prenota`, i moduli del sito, l'area) li suggeriscono già: lì la
+  persona scrive i suoi.
+
 ## File
 
 | File | Cosa cambia |
@@ -354,6 +390,7 @@ i 16px.
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
+| `frontend/src/utils/tastiera.js` + `FieldLayout/Field.vue`, `SidePanelLayout.vue`, `BillingProfileSection.vue`, `Invoices/InvoiceDialog.vue`, `Calendar/AppointmentPanel.vue`, `Telephony/CallUI.vue`, le impostazioni | La tastiera di ogni campo. Testato in `tests/unit/tastiera.test.js` |
 
 ## Non incluso
 
