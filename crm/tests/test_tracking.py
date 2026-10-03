@@ -319,6 +319,15 @@ class TestAttribution(TrackingTestCase):
 		# idempotent
 		self.assertEqual(T.visitor_for(lead), visitor_id)
 
+	def test_the_centres_own_pages_are_direct_traffic_without_a_visit(self):
+		"""A booking with no tracked visit: the centre's own pages were reached
+		directly, a platform's booking came through a third party."""
+		from crm.api.booking import categoria_senza_visita
+
+		for nostra in ("service_booking", "booking_page", "web_form"):
+			self.assertEqual(categoria_senza_visita(nostra), "Direct Traffic")
+		self.assertEqual(categoria_senza_visita("miodottore"), "Third Party")
+
 
 class TestJourney(TrackingTestCase):
 	def test_journey_returns_the_snapshots_sessions_and_events(self):
