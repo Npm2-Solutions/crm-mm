@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -85,8 +89,10 @@
             :label="__('Max records')"
           />
           <ErrorMessage :message="createError" />
+          <!-- as wide as the form: its action, 44px on a phone -->
           <Button
             variant="solid"
+            class="w-full"
             :label="__('Build queue')"
             :loading="creating"
             @click="createSession"

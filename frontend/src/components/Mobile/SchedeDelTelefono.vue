@@ -5,7 +5,9 @@
   A record's tabs on a phone (docs/progetto-ghl/29): a row of fifteen tabs
   scrolled sideways hides most of them, so the bar holds the few one opens every
   day - the ones asked for, in that order, the first four there are - and "More"
-  holds the rest. When the open tab is one of those, "More" says its name.
+  holds the rest. When the open tab is one of those, "More" says its name. Each
+  tab is as wide as its name and the room left is shared: in equal parts,
+  «Documenti» was «Docu…» beside «Eventi».
 -->
 <template>
   <div
@@ -19,7 +21,7 @@
       type="button"
       role="tab"
       :aria-selected="scheda.name === aperta?.name"
-      class="relative flex min-w-0 flex-1 items-center justify-center px-1 py-3 text-base"
+      class="relative flex min-w-0 flex-auto items-center justify-center px-1 py-3 text-base"
       :class="
         scheda.name === aperta?.name
           ? 'font-medium text-ink-gray-9'
@@ -41,7 +43,7 @@
           role="tab"
           :aria-selected="apertaTraLeAltre"
           aria-haspopup="menu"
-          class="relative flex min-w-0 flex-1 items-center justify-center gap-1 px-1 py-3 text-base"
+          class="relative flex min-w-0 flex-auto items-center justify-center gap-1 px-1 py-3 text-base"
           :class="
             apertaTraLeAltre ? 'font-medium text-ink-gray-9' : 'text-ink-gray-5'
           "

@@ -133,7 +133,10 @@
             {{ describe(form) }}
           </div>
         </div>
-        <div class="flex shrink-0 flex-wrap items-center gap-1.5">
+        <!-- on a phone the marks go under the words, which keep the row -->
+        <div
+          class="flex shrink-0 flex-wrap items-center gap-1.5 max-md:basis-full max-md:pl-7"
+        >
           <Badge
             v-if="form.alerts?.length"
             :label="
