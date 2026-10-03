@@ -256,6 +256,14 @@ const SOSTITUZIONI_FRAPPE = {
       '{{ __(field.label) || field.fieldname }}',
     ],
   ],
+  // a link field with no placeholder of its own said «Search doctype» (the
+  // data import's «what to import»): «Search», whatever it links to
+  'Link/Link.vue': [
+    [
+      ':placeholder="placeholder ?? `Search ${doctype.toLowerCase()}`"',
+      `:placeholder="placeholder ?? __('Search')"`,
+    ],
+  ],
   'DataImport/UploadStep.vue': [
     frase('Choose Import'),
     frase('Continue'),

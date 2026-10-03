@@ -41901,3 +41901,11 @@ msgstr "Nome completo"
 #: frontend/src/utils/automation.js
 msgid "A form is filled in, an ad's or one on the website — by a new person or by one {brand} already knows."
 msgstr "Qualcuno compila un modulo, di un annuncio o del sito: una persona nuova o una che {brand} conosce già."
+
+#: frontend/src/pages/WaitingList.vue
+msgid "Nobody is waiting"
+msgstr "Non aspetta nessuno"
+
+#: frontend/src/pages/WaitingList.vue
+msgid "From a person’s page, put them on the list when there is no place: what frees up goes to them."
+msgstr "Dalla pagina di una persona, mettila in lista quando non c'è posto: quello che si libera va a lei."

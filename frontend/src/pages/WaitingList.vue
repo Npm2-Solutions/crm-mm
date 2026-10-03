@@ -66,18 +66,20 @@
       >
         <LoadingIndicator class="size-4" />
       </div>
-      <div
+      <!-- the design system's empty list, as every other one -->
+      <EmptyState
+        v-else-if="!entries.length && closed"
+        :title="__('Nobody has left the line yet')"
+      />
+      <EmptyState
         v-else-if="!entries.length"
-        class="rounded-lg border border-dashed border-outline-gray-2 px-4 py-8 text-center text-p-base text-ink-gray-5"
-      >
-        {{
-          closed
-            ? __('Nobody has left the line yet')
-            : __(
-                'Nobody is waiting. From a person’s page, put them on the list when there is no place: what frees up goes to them.',
-              )
-        }}
-      </div>
+        :title="__('Nobody is waiting')"
+        :text="
+          __(
+            'From a person’s page, put them on the list when there is no place: what frees up goes to them.',
+          )
+        "
+      />
       <ol
         v-else
         class="divide-y divide-outline-gray-1 rounded-lg border border-outline-gray-2"
@@ -149,6 +151,7 @@
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
