@@ -14,7 +14,10 @@
   >
     <template #body-content>
       <div v-if="form" class="flex flex-col gap-3">
-        <div class="flex items-start gap-3 max-md:flex-col">
+        <!-- on a phone the picture goes above and the fields take the whole width -->
+        <div
+          class="flex items-start gap-3 max-md:flex-col max-md:items-stretch"
+        >
           <figure
             v-if="(exercise?.animation || exercise?.picture) && !nonCaricata"
             class="flex shrink-0 flex-col gap-1"
