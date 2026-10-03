@@ -183,6 +183,19 @@ describe('the crumb a page came from', () => {
     smetti()
   })
 
+  it('takes the tab of the bar back to the list it came from too', async () => {
+    const { r, smetti } = await pagina('/leads/view/list')
+    const barra = document.createElement('nav')
+    barra.dataset.slot = 'mobile-nav'
+    const scheda = document.createElement('a')
+    scheda.setAttribute('href', '/crm/leads/view')
+    barra.append(scheda)
+    document.body.append(barra)
+    expect(clic(scheda).defaultPrevented).toBe(true)
+    expect(r.back).toHaveBeenCalledTimes(1)
+    smetti()
+  })
+
   it('leads where it always did when the page came from elsewhere', async () => {
     const { r, briciola, questa, smetti } = await pagina('/deals/view/kanban')
     expect(clic(briciola).defaultPrevented).toBe(false)
