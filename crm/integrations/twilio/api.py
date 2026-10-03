@@ -481,6 +481,22 @@ def incoming_sms_handler(**kwargs):
 	return Response(resp.to_xml(), mimetype="text/xml")
 
 
+# webhook authenticity is enforced by validate_twilio_request(); Twilio posts here, as it is told:
+# a number's verification is over (doc 52).
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method
+def caller_id_verified(**kwargs):
+	"""Twilio's call to verify a number is over: verified, or not."""
+	args = frappe._dict(kwargs)
+	validate_twilio_request(args)
+
+	from crm.telephony import verificati
+
+	verificati.alla_fine_della_chiamata(
+		args.VerificationStatus, args.CallSid, args.To, args.OutgoingCallerIdSid
+	)
+	return _acknowledged()
+
+
 # webhook authenticity is enforced by validate_twilio_request(); guest access itself is unchanged.
 # Twilio posts it when this month's spend reaches the centre's alert (doc 52).
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep: guest-whitelisted-method

@@ -121,6 +121,7 @@ class TwilioProvider(TelephonyProvider):
 			capabilities = number.capabilities or {}
 			rows.append(
 				{
+					"sid": number.sid,
 					"phone_number": number.phone_number,
 					"label": number.friendly_name,
 					"source": "Account Number",
@@ -141,6 +142,7 @@ class TwilioProvider(TelephonyProvider):
 		for verified in client.outgoing_caller_ids.list():
 			rows.append(
 				{
+					"sid": verified.sid,
 					"phone_number": verified.phone_number,
 					"label": verified.friendly_name,
 					"source": "Verified Caller ID",
@@ -223,20 +225,46 @@ class TwilioProvider(TelephonyProvider):
 	# verifying a number the practice owns
 	# ------------------------------------------------------------------
 
-	def start_caller_id_verification(self, phone_number: str, label: str | None = None) -> dict:
+	def start_caller_id_verification(
+		self,
+		phone_number: str,
+		friendly_name: str | None = None,
+		extension: str | None = None,
+		call_delay: int = 0,
+		status_callback: str | None = None,
+	) -> dict:
 		"""Ask Twilio to ring a number and hand back the code to type on it.
 
 		This is the legitimate way to present a number you own but did not buy here:
-		answering the call and entering the code proves you control the line.
+		answering the call and entering the code proves you control the line. The
+		call comes from +1 415 723 4000 and speaks English; ``extension`` is dialled
+		once it is answered, ``call_delay`` seconds pass before it leaves, and Twilio
+		posts to ``status_callback`` how it went.
 		"""
-		request = self._rest().validation_requests.create(
-			phone_number=phone_number, friendly_name=label or phone_number
-		)
+		valori = {"phone_number": phone_number, "friendly_name": (friendly_name or phone_number)[:64]}
+		if extension:
+			valori["extension"] = extension
+		if call_delay:
+			valori["call_delay"] = int(call_delay)
+		if status_callback:
+			valori["status_callback"] = status_callback
+			valori["status_callback_method"] = "POST"
+		request = self._rest().validation_requests.create(**valori)
 		return {
 			"phone_number": request.phone_number,
 			"validation_code": request.validation_code,
 			"call_sid": request.call_sid,
 		}
+
+	def find_verified_caller_id(self, phone_number: str) -> str | None:
+		"""The SID of the space's verified caller ID for this number, if Twilio has one."""
+		for verified in self._rest().outgoing_caller_ids.list(phone_number=phone_number, limit=1):
+			return verified.sid
+		return None
+
+	def remove_verified_caller_id(self, sid: str) -> None:
+		"""Take a verified caller ID out of the space: it cannot be shown any more."""
+		self._rest().outgoing_caller_ids(sid).delete()
 
 	def settings(self):
 		return frappe.get_cached_doc("CRM Twilio Settings")

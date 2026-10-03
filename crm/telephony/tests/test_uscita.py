@@ -200,7 +200,13 @@ class LaChiamata(TwilioCase):
 		frappe.set_user(MANAGER)
 		self.assertEqual(
 			uscita.check_number(FISSO, FISSO),
-			{"ok": True, "reason": "", "country": "IT", "blocked_in_italy": False},
+			{
+				"ok": True,
+				"reason": "",
+				"country": "IT",
+				"blocked_in_italy": False,
+				"uncertain_in_italy": False,
+			},
 		)
 		self.assertTrue(uscita.check_number(FISSO, CELLULARE)["blocked_in_italy"])
 		self.assertFalse(uscita.check_number(LONDRA)["ok"])

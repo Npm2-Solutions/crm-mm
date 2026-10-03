@@ -27,12 +27,18 @@ class CRMCallerID(Document):
 		]
 		phone_number: DF.Data
 		provider: DF.Data | None
+		provider_sid: DF.Data | None
 		routes_to_crm: DF.Check
 		routing_note: DF.SmallText | None
 		sip_trunk: DF.Data | None
 		sip_trunk_sid: DF.Data | None
 		sms_capable: DF.Check
 		source: DF.Literal["Account Number", "Verified Caller ID", "Manual"]
+		verification_call_sid: DF.Data | None
+		verification_requested_by: DF.Link | None
+		verification_requested_on: DF.Datetime | None
+		verification_status: DF.Literal["", "Pending", "Verified", "Failed"]
+		verified_on: DF.Datetime | None
 		voice_capable: DF.Check
 		voice_url: DF.SmallText | None
 	# end: auto-generated types

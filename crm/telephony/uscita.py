@@ -54,8 +54,8 @@ def get_outbound_numbers() -> dict:
 	proprio = frappe.db.get_value("CRM Telephony Agent", frappe.session.user, "twilio_number")
 	righe = frappe.get_all(
 		"CRM Caller ID",
-		filters={"enabled": 1, "provider": "twilio", "voice_capable": 1},
-		fields=["phone_number", "label"],
+		filters=caller_ids.outbound_filters("twilio"),
+		fields=["phone_number", "label", "source"],
 		order_by="phone_number asc",
 	)
 	numeri = [
@@ -63,15 +63,31 @@ def get_outbound_numbers() -> dict:
 			"number": riga.phone_number,
 			"label": riga.label or "",
 			"mobile": R.cellulare_italiano(riga.phone_number),
+			# verified, not Twilio's: shown in Italy as far as the operators let it
+			"verified": riga.source == caller_ids.SOURCE_VERIFIED,
 			"own": riga.phone_number == proprio,
 		}
 		for riga in righe
 	]
 	if proprio and not any(n["own"] for n in numeri):
 		numeri.insert(
-			0, {"number": proprio, "label": "", "mobile": R.cellulare_italiano(proprio), "own": True}
+			0,
+			{
+				"number": proprio,
+				"label": "",
+				"mobile": R.cellulare_italiano(proprio),
+				"verified": _verificato(proprio),
+				"own": True,
+			},
 		)
 	return {"numbers": numeri, "countries": consentiti()}
+
+
+def _verificato(numero: str | None) -> bool:
+	"""Whether a number is only verified in Twilio, not one of the space's."""
+	return bool(numero) and (
+		frappe.db.get_value("CRM Caller ID", numero, "source") == caller_ids.SOURCE_VERIFIED
+	)
 
 
 @frappe.whitelist()
@@ -85,6 +101,7 @@ def check_number(number: str, show: str | None = None) -> dict:
 		"reason": motivo,
 		"country": R.paese_di(number),
 		"blocked_in_italy": R.bloccata_in_italia(show, number),
+		"uncertain_in_italy": R.incerta_in_italia(show, number, _verificato(show)),
 	}
 
 
