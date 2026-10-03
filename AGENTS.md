@@ -622,6 +622,12 @@ yarn test          # watch mode
 - Only pure utility functions are unit-tested (no Vue component tests yet)
 - Add tests in `tests/unit/` when adding pure logic to `src/utils/`
 
+The server's tests run on a CI bench with only frappe and crm. What needs
+frappe_whatsapp asks `crm.tests.serve_whatsapp(self)` (skipped there, run where
+the app is) or `con_whatsapp()` to leave WhatsApp's part out; what needs Builder
+stands in for it with `livelli.registro_isolato` and the "builder" requirement.
+Without the repository's `CODECOV_TOKEN` the coverage stays in the run's artifacts.
+
 ---
 
 ## Commit style
