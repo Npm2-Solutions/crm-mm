@@ -2623,10 +2623,6 @@ msgstr "Tasso di risposta"
 msgid "Answer required"
 msgstr "Risposta obbligatoria"
 
-#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
-msgid "Answer the call and type this code:"
-msgstr "Rispondi alla chiamata e digita questo codice:"
-
 #: frontend/src/components/Settings/Telephony/AnsweringServiceSettings.vue
 msgid "Answer with"
 msgstr "Rispondi con"
@@ -5497,10 +5493,6 @@ msgstr "Chiamata rifiutata"
 #: crm/integrations/twilio/api.py:166
 msgid "Call log not found"
 msgstr "Chiamata non trovata"
-
-#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
-msgid "Call me"
-msgstr "Chiamami"
 
 #: frontend/src/components/Settings/PlanSettings.vue
 msgid "Call minutes this month"
@@ -29787,10 +29779,6 @@ msgstr "Twilio non è collegato: niente proposte via SMS."
 msgid "Twilio is not enabled"
 msgstr "Twilio non è attivo"
 
-#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
-msgid "Twilio rings the number and gives you a code. Answer it and type the code to prove you control the line — that is what separates a caller ID you may present from spoofing."
-msgstr "Twilio chiama il numero e ti dà un codice. Rispondi e digita il codice per dimostrare che la linea è tua: è questo che distingue un ID chiamante che puoi mostrare da uno falsificato."
-
 #: crm/invoicing/doctype/crm_billing_profile/crm_billing_profile.json
 msgid "Two letters, e.g. IT."
 msgstr "Due lettere, es. IT."
@@ -30528,10 +30516,6 @@ msgstr "Note sulla verifica"
 msgid "Verified Caller ID"
 msgstr "ID chiamante verificato"
 
-#: crm/telephony/caller_ids.py
-msgid "Verified as an outgoing caller ID only. It can be presented on calls you place, but incoming calls to it do not belong to this account."
-msgstr "Verificato solo come ID chiamante in uscita. Può comparire sulle chiamate che fai, ma le chiamate in arrivo a questo numero non appartengono a questo account."
-
 #: crm/invoicing/doctype/crm_professional_qualification/crm_professional_qualification.json
 msgid "Verified by"
 msgstr "Verificato da"
@@ -30547,10 +30531,6 @@ msgstr "Verificato il"
 #: crm/fcrm/doctype/crm_twilio_settings/crm_twilio_settings.json
 msgid "Verify Webhook Signature"
 msgstr "Verifica la firma del webhook"
-
-#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
-msgid "Verify a caller ID"
-msgstr "Verifica un ID chiamante"
 
 #: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
 msgid "Verify a number"
@@ -40283,10 +40263,6 @@ msgid "The person's number is not a valid number."
 msgstr "Il numero della persona non è un numero valido."
 
 #: crm/telephony/errori_regole.py
-msgid "Twilio does not take the SMS sender: choose another one on Twilio's page."
-msgstr "Twilio non accetta il mittente degli SMS: scegline un altro nella pagina di Twilio."
-
-#: crm/telephony/errori_regole.py
 msgid "SMS to this country are not allowed in the Twilio account's permissions."
 msgstr "Gli SMS verso questo paese non sono permessi nell'account Twilio."
 
@@ -40782,3 +40758,230 @@ msgstr "Codice destinatario"
 #: crm/invoicing/doctype/crm_invoicing_settings/crm_invoicing_settings.json
 msgid "The seven characters Itala gives the account: each centre registers them at the Agenzia, and its suppliers' invoices arrive here."
 msgstr "I sette caratteri che Itala dà all'account: ogni centro li registra all'Agenzia, e le fatture dei suoi fornitori arrivano qui."
+
+#: crm/telephony/verificati_regole.py
+msgid "This number is already one of the centre's numbers on Twilio: it can be shown on calls already."
+msgstr "Questo numero è già uno dei numeri del centro su Twilio: si può già mostrare nelle chiamate."
+
+#: crm/telephony/verificati_regole.py
+msgid "This number is verified already: it can be shown on calls."
+msgstr "Questo numero è già verificato: si può mostrare nelle chiamate."
+
+#: crm/telephony/verificati_regole.py
+msgid "Twilio waits from 0 to 60 seconds before calling."
+msgstr "Twilio aspetta da 0 a 60 secondi prima di chiamare."
+
+#: crm/telephony/verificati_regole.py
+msgid "Twilio does not take this number: write it with its country code, +39 for Italy."
+msgstr "Twilio non accetta questo numero: scrivilo con il prefisso del paese, +39 per l'Italia."
+
+#: crm/telephony/verificati_regole.py
+msgid "The Twilio space may not call this country: add it to the countries the centre calls."
+msgstr "Lo spazio Twilio non può chiamare questo paese: aggiungilo ai paesi che il centro chiama."
+
+#: crm/telephony/verificati_regole.py
+msgid "Twilio asks to wait a little: try again in a minute."
+msgstr "Twilio chiede di aspettare un poco: riprova tra un minuto."
+
+#: crm/telephony/verificati_regole.py
+msgid "The extension takes digits, * and #, and w for half a second's wait: at most 32."
+msgstr "L'interno accetta cifre, * e #, e w per aspettare mezzo secondo: al massimo 32."
+
+#: crm/telephony/verificati.py
+msgid "Only a verified number is removed here: a number of Twilio's is released."
+msgstr "Qui si toglie solo un numero verificato: un numero di Twilio si rilascia."
+
+#: crm/telephony/verificati.py
+msgid "Removed from Twilio: it is not shown on calls any more."
+msgstr "Tolto da Twilio: non si mostra più nelle chiamate."
+
+#: crm/telephony/caller_ids.py
+msgid "Verified to be shown on the calls you make. Calls to it still ring wherever the line is, not in {brand}."
+msgstr "Verificato per mostrarlo nelle chiamate che fai. Le chiamate a questo numero squillano ancora dove si trova la linea, non in {brand}."
+
+#: crm/telephony/caller_ids.py
+msgid "{0} is not verified: verify it first."
+msgstr "{0} non è verificato: prima verificalo."
+
+#: crm/notifiche/regole.py
+msgid "{0} is verified: it can be shown on calls"
+msgstr "{0} è verificato: si può mostrare nelle chiamate"
+
+#: crm/notifiche/regole.py
+msgid "{0} was not verified: the call was not answered or the code was not typed"
+msgstr "{0} non è stato verificato: nessuno ha risposto alla chiamata o il codice non è stato digitato"
+
+#: crm/telephony/errori_regole.py
+msgid "Twilio does not take the number or the name shown: choose one of the centre's, or verify it, on Twilio's page."
+msgstr "Twilio non accetta il numero o il nome mostrato: scegline uno del centro, o verificalo, nella pagina di Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "The number shown on the call is neither one of the centre's in Twilio nor verified there: choose another, or verify it on Twilio's page."
+msgstr "Il numero mostrato nella chiamata non è uno di quelli del centro su Twilio, né è verificato lì: scegline un altro, o verificalo nella pagina di Twilio."
+
+#: crm/telephony/errori_regole.py
+msgid "The number shown on the call is not verified in the Twilio space: verify it on Twilio's page, under Numbers."
+msgstr "Il numero mostrato nella chiamata non è verificato nello spazio Twilio: verificalo nella pagina di Twilio, alla voce Numeri."
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "SID at the provider"
+msgstr "SID presso il fornitore"
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "How the provider names the number: Twilio's PN… code."
+msgstr "Come il fornitore chiama il numero: il codice PN… di Twilio."
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "Verification"
+msgstr "Verifica"
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "Pending: Twilio is calling the number and waits for the code. Verified: it can be shown on calls. Failed: the call was not answered or the code was not typed."
+msgstr "In attesa: Twilio chiama il numero e aspetta il codice. Verificato: si può mostrare nelle chiamate. Non riuscita: nessuno ha risposto o il codice non è stato digitato."
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "Verified On"
+msgstr "Verificato il"
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "Asked By"
+msgstr "Chiesto da"
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "Asked On"
+msgstr "Chiesto il"
+
+#: crm/fcrm/doctype/crm_caller_id/crm_caller_id.json
+msgid "Verification Call"
+msgstr "Chiamata di verifica"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Show a number of yours on calls"
+msgstr "Mostra un tuo numero nelle chiamate"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Twilio calls the number from {0}: a recorded voice, in English, asks for a code that appears here, to type on the phone’s keypad. No document is needed: answering proves the line is the centre’s. Calls to the number keep ringing where they ring now."
+msgstr "Twilio chiama il numero dal {0}: una voce registrata, in inglese, chiede un codice che compare qui, da digitare sulla tastiera del telefono. Non serve nessun documento: rispondere dimostra che la linea è del centro. Le chiamate al numero continuano a squillare dove squillano ora."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "The line has a switchboard"
+msgstr "La linea ha un centralino"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Twilio dials an extension once the call is answered, or waits before calling."
+msgstr "Twilio compone un interno quando la chiamata riceve risposta, o aspetta prima di chiamare."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Digits after the answer"
+msgstr "Cifre dopo la risposta"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "The extension, w to wait half a second: ww101."
+msgstr "L'interno, w per aspettare mezzo secondo: ww101."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Seconds before the call"
+msgstr "Secondi prima della chiamata"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Time to get to the phone: from 0 to 60."
+msgstr "Il tempo per arrivare al telefono: da 0 a 60."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Twilio is calling {0}. Answer, and when the voice asks, type this code:"
+msgstr "Twilio sta chiamando il {0}. Rispondi e, quando la voce lo chiede, digita questo codice:"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Waiting for the code…"
+msgstr "In attesa del codice…"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "The call comes from {0}."
+msgstr "La chiamata arriva dal {0}."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "{0} is verified: it can be shown on calls."
+msgstr "{0} è verificato: si può mostrare nelle chiamate."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "{0} was not verified: the call was not answered or the code was not typed."
+msgstr "{0} non è stato verificato: nessuno ha risposto alla chiamata o il codice non è stato digitato."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "Call the number"
+msgstr "Chiama il numero"
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "An Italian mobile is not shown on calls to Italy since November 2025 (AGCOM): verify it only to call abroad."
+msgstr "Dal novembre 2025 un cellulare italiano non si mostra nelle chiamate verso l'Italia (AGCOM): verificalo solo per chiamare all'estero."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "In Italy it is shown as far as the operators let it: since August 2025 an Italian operator may block a call from abroad that shows an Italian landline of another network (AGCOM). To be sure it is shown, move the number to Twilio."
+msgstr "In Italia si mostra per quanto lo lasciano gli operatori: dall'agosto 2025 un operatore italiano può bloccare una chiamata dall'estero che mostra un fisso italiano di un'altra rete (AGCOM). Per essere sicuro che si mostri, porta il numero su Twilio."
+
+#: frontend/src/components/Settings/Telephony/VerifyNumberDialog.vue
+msgid "The extension takes digits, * and #, and w for half a second’s wait: at most 32."
+msgstr "L'interno accetta cifre, * e #, e w per aspettare mezzo secondo: al massimo 32."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Verify again"
+msgstr "Verifica di nuovo"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, move the number to Twilio."
+msgstr "In Italia si mostra per quanto lo lasciano gli operatori (AGCOM, agosto 2025): per esserne sicuro, porta il numero su Twilio."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Remove {0} from Twilio?"
+msgstr "Togliere {0} da Twilio?"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "It is not shown on calls any more. Calls to it keep ringing where they ring now; to show it again, verify it again."
+msgstr "Non si mostra più nelle chiamate. Le chiamate al numero continuano a squillare dove squillano ora; per mostrarlo di nuovo, verificalo di nuovo."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "{0} is removed from Twilio"
+msgstr "{0} è tolto da Twilio"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "{0} people had it as their own line: give them another in the phone’s settings."
+msgstr "{0} persone lo avevano come propria linea: dagliene un'altra nelle impostazioni del telefono."
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Could not remove the number"
+msgstr "Non è stato possibile togliere il numero"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Show it on the calls you make"
+msgstr "Mostralo nelle chiamate che fai"
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Twilio verifies it with a call and a code, with no document: calls to it keep ringing where they ring now. In Italy it is shown as far as the operators let it (AGCOM, August 2025): to be sure, port it."
+msgstr "Twilio lo verifica con una chiamata e un codice, senza documenti: le chiamate al numero continuano a squillare dove squillano ora. In Italia si mostra per quanto lo lasciano gli operatori (AGCOM, agosto 2025): per esserne sicuro, portalo su Twilio."
+
+#: frontend/src/components/Settings/Telephony/MoveNumberDialog.vue
+msgid "Verify it"
+msgstr "Verificalo"
+
+#: frontend/src/components/Telephony/TwilioCallUI.vue
+msgid "This number is only verified in Twilio: in Italy the call may arrive without it, as the operators allow since August 2025."
+msgstr "Questo numero è solo verificato su Twilio: in Italia la chiamata può arrivare senza, come lo consentono gli operatori dall'agosto 2025."
+
+#: frontend/src/utils/verificati.js
+msgctxt "Caller ID"
+msgid "Waiting for the code"
+msgstr "In attesa del codice"
+
+#: frontend/src/utils/verificati.js
+msgctxt "Caller ID"
+msgid "Verified"
+msgstr "Verificato"
+
+#: frontend/src/utils/verificati.js
+msgctxt "Caller ID"
+msgid "Not verified"
+msgstr "Non verificato"
+
+#: frontend/src/components/Settings/Telephony/CallerIdSettings.vue
+msgid "Calls out only"
+msgstr "Solo in uscita"
