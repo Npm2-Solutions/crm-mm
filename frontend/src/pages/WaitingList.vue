@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Who waits, in the line's order: the urgent first, then who joined first. Each
   says what they wait for, when they can, and how the place offered to them
   stands - waiting for an answer, or not sent because there is nothing to send
@@ -41,23 +44,20 @@
         </div>
       </div>
 
-      <!-- how the line stands, at a glance -->
-      <div v-if="!closed" class="grid grid-cols-3 gap-3">
-        <div
-          v-for="stat in stats"
+      <!-- how the line stands, at a glance: the design system's tiles, on a
+           phone one short row; who is to be called, when there is somebody,
+           in red -->
+      <div v-if="!closed" class="dc-stat-row grid grid-cols-3 gap-3">
+        <StatTile
+          v-for="(stat, i) in stats"
           :key="stat.label"
-          class="flex min-w-0 flex-col gap-1 rounded-lg border border-outline-gray-2 px-4 py-3"
+          :label="__(stat.label)"
+          :blocco="i === 0"
         >
-          <span class="text-p-sm text-ink-gray-5">{{ __(stat.label) }}</span>
-          <span
-            class="text-2xl-semibold tabular-nums"
-            :class="
-              stat.alert && stat.value ? 'text-ink-red-4' : 'text-ink-gray-8'
-            "
-          >
+          <span :class="{ 'text-ink-red-6': stat.alert && stat.value }">
             {{ stat.value }}
           </span>
-        </div>
+        </StatTile>
       </div>
 
       <div
@@ -121,7 +121,7 @@
               v-if="entry.offer"
               class="text-p-sm"
               :class="
-                entry.offer.channel ? 'text-ink-gray-6' : 'text-ink-red-4'
+                entry.offer.channel ? 'text-ink-gray-6' : 'text-ink-red-7'
               "
             >
               {{ offerLine(entry.offer) }}
@@ -149,6 +149,7 @@
 </template>
 
 <script setup>
+import StatTile from '@/components/Espresso/StatTile.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ViewBreadcrumbs from '@/components/ViewBreadcrumbs.vue'
 import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'

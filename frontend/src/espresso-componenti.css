@@ -249,7 +249,9 @@
    above its word, no crosses - the list under it starts on the first screen */
 @media (max-width: 767px) {
   .dc-stat-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: 8px;
   }
   .dc-stat-row .dc-stat {
