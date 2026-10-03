@@ -136,7 +136,7 @@ the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
 | `crm/permissions/catalogo.py` | The CRM's own levels and capabilities; `crm/invoicing/capacita.py` adds invoicing's |
 | `crm/permissions/utenti.py` | Role Profiles from the registry, giving levels, the migration of old users |
 | `crm/registrazione.py` | Every module registers here, once per process (`before_request`, `before_job`) |
-| `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability; the listino's numbers (`AMBULATORI` by size, `CREDITI_SDI`, included minutes and signatures) and `crediti_sdi()` |
+| `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability; the listino's numbers (`AMBULATORI` by size, `CREDITI_SDI`, included signatures) and `crediti_sdi()`. The phone counts nothing: a year's fee, calls and SMS paid to Twilio by whoever owns the account |
 | `crm/api/plan.py` + `Settings/PlanSettings.vue`, `utils/funzionalita.js` | Settings > The centre > Features (doc 36): what the product comprises (`compresi()`: the base, the vertical's module and what it comprises), the extras (invoicing, marketing, phone, assistant, advanced signature) and their trial, the size in rooms and the usage the agency bills; each module registers the settings pages it is set up from (`ModuloPiano.impostazioni`) |
 | `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
 | `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
@@ -238,6 +238,9 @@ its own document needs nothing more: the answer reaches the person.
 An SMS DottorCloud sends leaves from `sms.mittente()`, never from somebody's own
 line; one it sends by itself skips a person who wrote STOP (`sms.ha_fermato`), and a
 promotional one (an automation asking `marketing_consent`) waits for its hours.
+
+Twilio is the only carrier (`crm/telephony/providers`): Exotel went on
+03/10/2026 (`dottorcloud_does_not_use_exotel`).
 
 The account's own token is never stored and never in a log: the codes travel in
 variables named `*_token` and `*_secret`, which a traceback hides, and an error of

@@ -322,7 +322,8 @@ DottorCloud. Non serve comprare un numero né mandare documenti: Twilio lo **ver
   dell'agenzia**, `dottorcloud_twilio` in `common_site_config.json` (`account_sid`,
   `auth_token`), e i consumi li paga l'agenzia: «Usa l'account dell'agenzia», solo
   per l'agenzia.
-- È il caso del listino: il telefono a 50 € al mese con 714 minuti inclusi.
+- Il listino lo mette nel prezzo della segreteria: il telefono e le chiamate
+  stanno nel servizio, gli SMS nella fattura del mese.
 
 ## Cosa fa NPM2, una volta
 
@@ -360,12 +361,22 @@ DottorCloud. Non serve comprare un numero né mandare documenti: Twilio lo **ver
 | `crm/telephony/verificati_regole.py` | Senza sito: il nome che Twilio tiene, l'interno e l'attesa come li prende, come è andata, quando una verifica è scaduta, i rifiuti di Twilio a parole — provato con `unittest` |
 | `crm/telephony/verificati.py` + `Settings/Telephony/VerifyNumberDialog.vue`, `utils/verificati.js` | La verifica (`verify_number`, `verification_state`, `remove_verified`), la risposta di Twilio (`alla_fine_della_chiamata`), le verifiche dimenticate (`scadute`, ogni ora con la lista); la finestra con il codice e l'elenco con gli stati — provati con Twilio finto |
 
-## Da decidere
+## Deciso (03/10/2026)
 
-1. **Il prezzo del telefono con l'account del centro.** Il listino dice 50 € al mese
-   con 714 minuti inclusi, ma con l'account del centro i minuti li paga il centro a
-   Twilio: i minuti inclusi lì non hanno senso.
-2. **Exotel** (India) resta tra i fornitori: per i centri italiani non serve.
+1. **Il telefono con l'account del centro costa 50 € l'anno**, per attivarlo, e
+   nient'altro: chiamate, numeri e SMS il centro li paga a Twilio, al prezzo di
+   Twilio. DottorCloud non conta più minuti né SMS (via `MINUTI_INCLUSI`): nella
+   pagina Funzionalità restano crediti SdI e firme avanzate, la spesa del telefono
+   sta nella pagina di Twilio
+   ([listino](../gestionale-medico/listino.md#gli-extra)). Con la segreteria
+   dell'agenzia resta nel prezzo del servizio.
+2. **Exotel è tolto.** Era il fornitore per l'India arrivato con il progetto
+   originale: per i centri italiani non serviva. Via le sue impostazioni con la
+   loro pagina, la chiamata nel browser, il webhook e il numero sulla linea di
+   ognuno; Twilio è l'unico fornitore (`crm/telephony/providers`), e con un
+   fornitore solo le impostazioni non chiedono più quale usare. La patch
+   `dottorcloud_does_not_use_exotel` toglie le impostazioni con le loro chiavi e
+   svuota il mezzo predefinito che lo nominava; le chiamate registrate restano.
 
 ## Fonti
 

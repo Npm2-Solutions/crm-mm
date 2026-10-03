@@ -1,10 +1,12 @@
 # Il listino di DottorCloud
 
-**Stato:** ✅ listino finale (01/10/2026). Le soglie degli ambulatori si
-verificano con i primi centri. Prezzi al mese, IVA esclusa. Sostituisce il
-listino a moduli del 29/09: ora la parte clinica è inclusa, la taglia la danno
-gli ambulatori e la fatturazione è un extra. Il CRM conta così dal 01/10/2026:
-vedi [Nel CRM](#nel-crm).
+**Stato:** ✅ listino finale (01/10/2026), con il telefono cambiato il
+03/10/2026: 50 € l'anno per attivarlo, e chiamate, numeri e SMS li paga il centro
+a Twilio. Le soglie degli ambulatori si verificano con i primi centri. Prezzi al
+mese, IVA esclusa, se non dicono altro. Sostituisce il listino a moduli del 29/09:
+ora la parte clinica è inclusa, la taglia la danno gli ambulatori e la
+fatturazione è un extra. Il CRM conta così dal 01/10/2026: vedi
+[Nel CRM](#nel-crm).
 
 ## In una pagina
 
@@ -13,7 +15,8 @@ vedi [Nel CRM](#nel-crm).
   illimitati.
 - **Gli extra si aggiungono**: fatturazione, marketing, telefono, assistente,
   firma avanzata.
-- **I consumi si pagano a parte.** WhatsApp lo paga il centro direttamente a Meta.
+- **I consumi si pagano a parte.** WhatsApp lo paga il centro direttamente a Meta,
+  chiamate e SMS a Twilio, sul suo account.
 - **I servizi dell'agenzia sbloccano gli extra con cui lavora.** Il piano lo paga
   sempre il centro.
 
@@ -49,7 +52,6 @@ Le funzioni sono le stesse in tutti i livelli: cambia solo la taglia.
 | Fatturazione | 15 € | 25 € | 39 € | 59 € |
 | Crediti SdI inclusi, l'anno | 240 | 500 | 1.200 | 2.400 |
 | Marketing | 29 € | 49 € | 79 € | 109 € |
-| Telefono | 50 € | 50 € | 50 € | 50 € |
 
 - **Fatturazione**: fatture illimitate e invio al Sistema TS con le credenziali
   dello studio, sempre compreso. Le fatture sanitarie ai privati vanno al TS e non
@@ -57,8 +59,12 @@ Le funzioni sono le stesse in tutti i livelli: cambia solo la taglia.
   con un altro programma.
 - **Marketing**: automazioni, campagne, Meta (lead e spesa), social,
   tracciamento, costo per nuovo paziente, sito.
-- **Telefono**: centralino nel browser, dialer, registrazioni e trascrizioni, con
-  714 minuti al mese inclusi.
+- **Telefono**: 50 € l'anno per attivarlo, per ogni taglia, e nient'altro.
+  Centralino nel browser, dialer, registrazioni e trascrizioni sull'account Twilio
+  del centro, collegato da DottorCloud ([doc 52](../progetto-ghl/52-twilio-del-centro.md)):
+  chiamate, numeri e SMS il centro li paga a Twilio, al prezzo di Twilio, e la
+  spesa la vede nella pagina di Twilio. Con la segreteria dell'agenzia è nel
+  prezzo del servizio.
 - **Assistente**: 19 € al mese per ogni professionista che lo usa. Scrive le bozze
   dalla nota, mette la visita dettata nei campi, riassume prima della visita.
 - **Firma avanzata**: 39 € al mese per centro, fino a 2.000 firme l'anno.
@@ -78,9 +84,9 @@ parte: chi fattura con DottorCloud ce l'ha.
 | Voce | Prezzo | Come si paga |
 |---|---|---|
 | Messaggi WhatsApp | tariffe di Meta | a Meta, con la carta del centro in Business Suite |
+| Chiamate, numeri e SMS | tariffe di Twilio | a Twilio, sull'account del centro |
 | Crediti SdI oltre quelli inclusi | 0,10 € a credito, pacchetti da 500 (50 €) | nella fattura del mese |
-| Minuti oltre i 714 | 0,04 € al minuto | nella fattura del mese |
-| SMS | a consumo | nella fattura del mese |
+| SMS sull'account dell'agenzia, con la segreteria | a consumo | nella fattura del mese |
 | Firme avanzate oltre le 2.000 l'anno | a consumo | nella fattura del mese |
 
 Un credito vale una fattura trasmessa allo SdI o ricevuta; una fattura alla PA ne
@@ -92,7 +98,7 @@ CRM avvisa all'80%.
 
 | Servizio | Prezzo indicativo | Sblocca |
 |---|---|---|
-| Segreteria: telefono e WhatsApp, prenotazioni, richiami | da 250 € fino a circa 100 appuntamenti al mese, circa 490 € fino a 250 | Telefono, minuti compresi, e gli account della segreteria |
+| Segreteria: telefono e WhatsApp, prenotazioni, richiami | da 250 € fino a circa 100 appuntamenti al mese, circa 490 € fino a 250 | Telefono, chiamate comprese, e gli account della segreteria |
 | Campagne e lead: inserzioni, moduli, automazioni di contatto e richiamo, report | 390–890 € più il budget pubblicitario | Marketing |
 | Crescita: campagne più la segreteria che richiama i lead | i due servizi insieme, scontati | Telefono e Marketing |
 | Avvio: importazione, configurazione, modelli, formazione | 290–1.490 € una volta sola, gratis con 12 mesi di servizio | — |
@@ -102,8 +108,9 @@ CRM avvisa all'80%.
 - **Quando un servizio finisce**, gli extra che sbloccava restano attivi 30 giorni.
   Poi si pagano a listino, oppure diventano di sola lettura: non si cancella
   niente, e campagne e automazioni vanno in pausa.
-- **Con la segreteria i minuti li consuma l'agenzia**: il telefono e l'eccedenza
-  stanno nel prezzo del servizio.
+- **Con la segreteria il telefono è dell'agenzia**: lo spazio Twilio sta nel suo
+  account, e il telefono e le chiamate sono nel prezzo del servizio; gli SMS vanno
+  nella fattura del mese.
 
 ## Esempi
 
@@ -111,6 +118,7 @@ CRM avvisa all'80%.
 |---|---|---|
 | Fisioterapista da solo, che fattura con DottorCloud | Solo + Fatturazione | 64 € |
 | Studio di nutrizione, 2 stanze, 4 professioniste | Studio + Fatturazione | 124 € |
+| Fisioterapia, 2 stanze, che chiama i pazienti dal browser | Studio + Fatturazione + Telefono, con il suo account Twilio | 124 € più 50 € l'anno; chiamate e SMS a Twilio |
 | Poliambulatorio, 5 ambulatori, 14 specialisti, campagne dell'agenzia | Centro + Fatturazione; Marketing incluso nel servizio | 228 € più le campagne |
 | Poliambulatorio, 8 ambulatori, 25 specialisti, segreteria dell'agenzia | Poliambulatorio + Fatturazione; Telefono incluso nel servizio | 378 € più la segreteria |
 
@@ -175,12 +183,14 @@ Funzionalità:
 3. **La firma avanzata è un extra** (`firma`), spenta finché il piano non la
    comprende: senza, niente di nuovo parte verso il fornitore, e quello che era
    partito torna firmato o rifiutato.
-4. **Nei consumi** crediti SdI e firme avanzate dell'anno, SMS e minuti del mese
-   (714 inclusi con il telefono, 2.000 firme l'anno con la firma avanzata);
-   WhatsApp no, perché li fattura Meta al centro.
+4. **Nei consumi** crediti SdI e firme avanzate dell'anno (2.000 firme l'anno con
+   la firma avanzata). WhatsApp no, perché lo fattura Meta al centro; chiamate e
+   SMS nemmeno (dal 03/10/2026): li fattura Twilio a chi ha l'account, e la spesa
+   del mese per tipo sta nella pagina di Twilio, per chi paga (il responsabile del
+   centro sul suo account, l'agenzia sul suo).
 
 I numeri stanno in `crm/fcrm/doctype/crm_plan/crm_plan.py` (`AMBULATORI`,
-`CREDITI_SDI`, `MINUTI_INCLUSI`, `FIRME_INCLUSE`): cambiano con il listino.
+`CREDITI_SDI`, `FIRME_INCLUSE`): cambiano con il listino.
 
 ## Da decidere
 

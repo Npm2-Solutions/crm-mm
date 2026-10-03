@@ -44,7 +44,7 @@ EXTRA   gratis per 14 giorni, poi l'agenzia li aggiunge al piano dal mese dopo
 
 DIMENSIONE E CONSUMI
   Studio, fino a 2 ambulatori · 3 ambulatori nell'agenda (avviso: oltre la taglia)
-  Crediti SdI quest'anno 412 / 500 · SMS questo mese · Minuti 120 / 714 · Firme 30 / 2000
+  Crediti SdI quest'anno 412 / 500 · Firme avanzate quest'anno 30 / 2000
 ```
 
 - **Compreso in DottorCloud**: la base, il modulo del verticale acceso (la
@@ -66,9 +66,11 @@ DIMENSIONE E CONSUMI
   Centro fino a 5, Poliambulatorio fino a 10, oltre. Superarla non blocca niente.
 - **I consumi** come li fattura l'agenzia, ognuno con quello che il piano
   comprende: crediti SdI dell'anno (con la fatturazione: uno a fattura inviata o
-  ricevuta, tre alla PA, niente per una scartata), SMS del mese, minuti del mese
-  (714 con il telefono), firme avanzate dell'anno (2.000). Oltre l'80% la pagina
-  avvisa. WhatsApp no: lo paga il centro a Meta.
+  ricevuta, tre alla PA, niente per una scartata) e firme avanzate dell'anno
+  (2.000). Oltre l'80% la pagina avvisa. WhatsApp no: lo paga il centro a Meta.
+  Chiamate e SMS nemmeno, dal 03/10/2026: il telefono è un canone l'anno, e
+  chiamate, numeri e SMS li fattura Twilio a chi ha l'account; la spesa sta nella
+  pagina di Twilio ([doc 52](./52-twilio-del-centro.md)).
 - **Il nome**: "Funzionalità", non "Piano", che sono i piani dei pazienti (esercizi,
   diete). Il nome della pagina resta `Plan` nei link (`?settings=Plan`).
 - **Tutto in italiano**: i moduli, le loro frasi, gli stati, le dimensioni; con la
@@ -81,7 +83,7 @@ DIMENSIONE E CONSUMI
 | `crm/permissions/livelli.py` | `ModuloPiano.impostazioni`: le pagine dove si imposta un modulo, nell'ordine in cui si fa |
 | `crm/permissions/catalogo.py`, `crm/area`, `crm/clinica`, `crm/assistente` | Ogni modulo registra le sue pagine con sé |
 | `crm/api/plan.py` | `compresi()` (puro): la base, il modulo del verticale e quello che comprende; `get_plan()` dice di ogni modulo se è compreso (`included`) e dove si imposta (`settings`), gli ambulatori (`ambulatori()`) e i consumi (`consumi()`) |
-| `crm/fcrm/doctype/crm_plan/crm_plan.py` | I numeri del listino (`AMBULATORI`, `CREDITI_SDI`, `MINUTI_INCLUSI`, `FIRME_INCLUSE`, l'avviso all'80%) e `crediti_sdi()`, puro |
+| `crm/fcrm/doctype/crm_plan/crm_plan.py` | I numeri del listino (`AMBULATORI`, `CREDITI_SDI`, `FIRME_INCLUSE`, l'avviso all'80%) e `crediti_sdi()`, puro |
 | `crm/invoicing/capacita.py`, `crm/moduli/firme.py` | La fatturazione e la firma avanzata come moduli del piano; con la firma spenta niente di nuovo va al fornitore (`firme.attivo()`), quello partito torna |
 | `frontend/src/utils/funzionalita.js` | `dividi()` compreso ed extra, `doveSiImposta()` i link fra le pagine che la persona vede — puro, testato |
 | `frontend/src/components/Settings/PlanSettings.vue`, `FeatureSetUp.vue` | La pagina e i link; il menu visibile arriva da `Settings.vue` (`provide('menuDelleImpostazioni')`) |
