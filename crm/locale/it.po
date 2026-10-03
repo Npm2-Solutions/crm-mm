@@ -42056,3 +42056,13 @@ msgstr "Assente"
 #: crm/dashboard/store.py:139
 msgid "Your level does not read these numbers"
 msgstr "Il tuo livello non vede questi numeri"
+
+#: frontend/src/pages/Dashboard.vue
+msgctxt "Dashboards"
+msgid "Team"
+msgstr "Del gruppo"
+
+#: frontend/src/pages/Dashboard.vue
+msgctxt "Dashboards"
+msgid "Mine"
+msgstr "Mie"

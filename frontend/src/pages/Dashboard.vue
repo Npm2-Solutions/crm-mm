@@ -448,9 +448,17 @@ const switcherOptions = computed(() => {
     current.value?.name,
   )
   const groups = []
+  // "dashboard" is feminine in Italian: the groups have their own words
   if (shared.length)
-    groups.push({ group: __('Team'), items: shared.map(entry) })
-  if (mine.length) groups.push({ group: __('Mine'), items: mine.map(entry) })
+    groups.push({
+      group: __('Team', null, 'Dashboards'),
+      items: shared.map(entry),
+    })
+  if (mine.length)
+    groups.push({
+      group: __('Mine', null, 'Dashboards'),
+      items: mine.map(entry),
+    })
   if (waiting.length)
     groups.push({ group: __('Not set up yet'), items: waiting.map(entry) })
   if (canCreate.value)
