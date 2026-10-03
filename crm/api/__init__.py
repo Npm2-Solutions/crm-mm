@@ -1,3 +1,5 @@
+# Modifications copyright (c) 2026, NPM2 Solutions Srl
+
 from urllib.parse import urlencode
 
 import frappe
@@ -7,8 +9,6 @@ from frappe.core.api.file import get_max_file_size
 from frappe.rate_limiter import rate_limit
 from frappe.translate import get_all_translations
 from frappe.utils import cstr, sha256_hash, split_emails, validate_email_address
-
-from crm.utils import is_frappe_version
 
 
 # nosemgrep: guest-whitelisted-method — the login page needs its strings before anyone is logged in
@@ -59,17 +59,12 @@ def check_app_permission():
 	if frappe.session.user == "Administrator":
 		return True
 
-	allowed_modules = []
-
-	if is_frappe_version("15"):
-		allowed_modules = frappe.config.get_modules_from_all_apps_for_user()
-	elif is_frappe_version("16", above=True):
-		from frappe.utils.modules import get_modules_from_all_apps_for_user
-
-		allowed_modules = get_modules_from_all_apps_for_user()
-
-	allowed_modules = [x["module_name"] for x in allowed_modules]
-	if "FCRM" not in allowed_modules:
+	# FCRM is the app's module: whoever has it blocked has no way in. Asked of the
+	# blocked modules, not of Frappe's list of every app's modules: that list is
+	# cached per app, and a request that misses the cache while another fills it
+	# gets None back (`frappe.utils.caching.redis_cache`), which made the whole
+	# page a server error and the apps screen lose DottorCloud.
+	if "FCRM" in _moduli_bloccati(frappe.session.user):
 		return False
 
 	# every role a module registered as a way in: the levels decide the rest
@@ -77,6 +72,15 @@ def check_app_permission():
 
 	livelli.carica()
 	return bool(livelli.ruoli_di_accesso() & set(frappe.get_roles()))
+
+
+def _moduli_bloccati(user: str) -> list[str]:
+	"""The modules closed to ``user``: their own and everybody's (Administrator's),
+	as Frappe reads them."""
+	return [
+		*frappe.get_cached_doc("User", "Administrator").get_blocked_modules(),
+		*frappe.get_cached_doc("User", user).get_blocked_modules(),
+	]
 
 
 # nosemgrep: guest-whitelisted-method — the invitation link itself: the key is the credential, 10/h
