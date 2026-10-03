@@ -7,6 +7,7 @@ import { initSocket } from './socket'
 import router from './router'
 import translationPlugin from './translation'
 import { indossa } from './utils/marchio'
+import { ascoltaLInstallazione } from './utils/installa'
 import App from './App.vue'
 
 import {
@@ -44,6 +45,9 @@ let globalComponents = {
 // the product's brand - the vertical's - before anything is drawn: its colours,
 // favicon, name and home-screen icon (crm.marchio)
 indossa()
+// the browser's offer to put the app on the home screen, kept for the More
+// page (utils/installa.js)
+ascoltaLInstallazione()
 
 // create a pinia instance
 let pinia = createPinia()

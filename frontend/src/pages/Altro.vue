@@ -46,6 +46,9 @@
 
     <FirstStepsCard />
 
+    <!-- on the home screen it opens like an app -->
+    <InstallaApp />
+
     <section
       v-for="gruppo in gruppi"
       :key="gruppo.key"
@@ -117,6 +120,7 @@ import LucideSettings from '~icons/lucide/settings'
 import LucideBrushCleaning from '~icons/lucide/brush-cleaning'
 import ElementoNativo from '@/components/ElementoNativo'
 import FirstStepsCard from '@/components/FirstSteps/FirstStepsCard.vue'
+import InstallaApp from '@/components/Mobile/InstallaApp.vue'
 import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
