@@ -41553,3 +41553,39 @@ msgstr "Pressione arteriosa"
 #: crm/clinica/sintesi.py
 msgid "Heart rate"
 msgstr "Frequenza cardiaca"
+
+#: crm/assistente/modello.py
+msgid "The assistant did not answer in time"
+msgstr "L'assistente non ha risposto in tempo"
+
+#: crm/assistente/modello.py
+msgid "The assistant cannot be reached right now"
+msgstr "L'assistente ora non è raggiungibile"
+
+#: crm/assistente/modello.py
+msgid "The assistant refused the access the agency set up"
+msgstr "L'assistente ha rifiutato l'accesso impostato dall'agenzia"
+
+#: crm/assistente/modello.py
+msgid "The assistant is busy: try again in a minute"
+msgstr "L'assistente è occupato: riprova tra un minuto"
+
+#: crm/assistente/modello.py
+msgid "The assistant's service has a problem: try again later"
+msgstr "Il servizio dell'assistente ha un problema: riprova più tardi"
+
+#: crm/assistente/modello.py
+msgid "The assistant did not accept the request"
+msgstr "L'assistente non ha accettato la richiesta"
+
+#: crm/assistente/modello.py
+msgid "The assistant's answer could not be read"
+msgstr "Non si riesce a leggere la risposta dell'assistente"
+
+#: crm/assistente/modello.py
+msgid "The assistant's answer is not what was asked"
+msgstr "La risposta dell'assistente non è quella richiesta"
+
+#: crm/assistente/modello.py
+msgid "The assistant could not be asked"
+msgstr "Non è stato possibile chiedere all'assistente"

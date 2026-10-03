@@ -24,6 +24,7 @@ from crm.moduli import consensi
 from crm.moduli.pdf import pdf_da_html
 from crm.permissions import livelli, utenti
 from crm.permissions.test_org_hierarchy import make_user
+from crm.tests.test_frasi_costanti import _msgid
 
 MANAGER = "assistente.manager@example.com"
 SALES = "assistente.sales@example.com"
@@ -179,15 +180,39 @@ class IlRegistro(AssistenteCase):
 		self.come(MANAGER)
 		with mock.patch.object(requests, "post", side_effect=requests.Timeout()):
 			risposta = modello.chiedi("form_from_paper", "istruzioni", "testo")
-		self.assertEqual(risposta.errore, "The model did not answer in time")
+		self.assertEqual(risposta.errore, modello.NON_IN_TEMPO)
 		with mock.patch.object(requests, "post", return_value=risposta_anthropic("Non so")):
 			strana = modello.chiedi("form_from_paper", "istruzioni", "testo", json_atteso=True)
-		self.assertEqual(strana.errore, "The answer is not what was asked")
+		self.assertEqual(strana.errore, modello.NON_RICHIESTA)
 		frappe.set_user("Administrator")
 		self.assertEqual(
 			frappe.db.get_value(modello.EVENTO, risposta.evento, ["status", "error"]),
-			(regole.FALLITA, "The model did not answer in time"),
+			(regole.FALLITA, modello.NON_IN_TEMPO),
 		)
+
+	def test_un_errore_si_dice_in_parole(self):
+		def http(stato):
+			risposta = requests.Response()
+			risposta.status_code = stato
+			return requests.HTTPError(response=risposta)
+
+		casi = [
+			(requests.ConnectionError(), modello.NON_RAGGIUNTO),
+			(requests.ConnectTimeout(), modello.NON_IN_TEMPO),
+			(http(401), modello.CHIAVE_RIFIUTATA),
+			(http(403), modello.CHIAVE_RIFIUTATA),
+			(http(429), modello.TROPPE_RICHIESTE),
+			(http(503), modello.SERVIZIO_IN_ERRORE),
+			(http(400), modello.NON_ACCETTATA),
+			(ValueError(), modello.NON_LEGGIBILE),
+			(RuntimeError(), modello.NON_CHIESTO),
+		]
+		for eccezione, frase in casi:
+			self.assertEqual(modello._errore(eccezione), frase, repr(eccezione))
+		# what the person reads is in Italian: the sentences are constants the
+		# catalog's extraction does not see
+		catalogo = _msgid()
+		self.assertEqual([frase for frase in modello.ERRORI if frase not in catalogo], [])
 
 	def test_non_si_cancella_e_lo_legge_chi_deve(self):
 		self.come(MANAGER)

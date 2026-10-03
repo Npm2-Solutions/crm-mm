@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The summary before the visit: what the practitioner may read of the record,
   summarised with its sources numbered, [1], [2]. No scores, no alerts, no
   advice; nothing is kept but the register's event.
@@ -71,7 +74,7 @@ watch(show, async (open) => {
       lead: props.lead,
     })
     if (answer.error) {
-      error.value = __('The assistant did not answer: {0}', [answer.error])
+      error.value = answer.error
     } else {
       summary.value = answer
     }

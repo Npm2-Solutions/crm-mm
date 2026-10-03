@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Recipes for one meal of a menu: the assistant proposes which foods of the
   library go together and how to prepare them; the engine scales the grams to the
   meal's energy and counts every number from the tables. The nutritionist picks
@@ -167,7 +170,7 @@ async function propose() {
     event.value = answer.error ? null : answer.event
     recipes.value = answer.recipes || []
     if (answer.error) {
-      error.value = __('The assistant did not answer: {0}', [answer.error])
+      error.value = answer.error
     }
   } catch (e) {
     error.value = e.messages?.join(' ') || e.message

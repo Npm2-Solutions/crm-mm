@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A draft from one's signed note: a letter to the family doctor, or the
   instructions after the visit. The assistant writes only what the note says and
   leaves gaps in square brackets; the practitioner reads it, corrects it, and
@@ -115,7 +118,7 @@ watch(show, async (open) => {
     text.value = done.draft || ''
     if (done.error) {
       failed.value = true
-      error.value = __('The assistant did not answer: {0}', [done.error])
+      error.value = done.error
     }
   } catch (e) {
     error.value = e.messages?.join(' ') || e.message
