@@ -2282,3 +2282,15 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Una conversazione aperta dall'indirizzo aspetta la persona; dall'elenco si apre subito | La persona di un indirizzo può non essere da leggere: il codice al posto del nome e «Non permesso». Una riga dell'elenco l'ha già data il server |
 | Il giorno libero di un professionista è una scheda di tre righe sul telefono | Sei colonne in 358 punti: il motivo largo zero e «Tutto il giorno» su tre righe |
 | Un test vuole nel catalogo le parole degli usi, dei livelli e delle capacità a scelta, e una frase per ogni capacità a scelta | Si traducono dove si disegnano e l'estrazione non le vede; senza frase lo schermo mostrava il nome tecnico |
+
+### Il medico al telefono, seconda passata
+
+| Decisione | Perché |
+|---|---|
+| Le azioni di una visita in bozza vanno a capo | Allegare, dettare, modificare ed eliminare stavano su una riga più larga della scheda: tutta la scheda Clinica scorreva di lato |
+| Sul telefono i segni di un documento e di un preventivo («Dati sanitari», «Oscurato», lo stato) vanno sotto le parole | Accanto alle parole le stringevano in una colonna di cinque righe |
+| I tipi di documento e di voce dei registri sono nel catalogo, e un test li vuole | «Test result», «Imaging», «Prescription» si leggevano in inglese sulla scheda Documenti del medico |
+| «Discard» è «Scarta» | «Annulla» è «Cancel»: scartare una proposta, una bozza dell'IA o un vocale diceva un'altra cosa, e accanto a un «Annulla» vero erano due pulsanti uguali |
+| La scheda Chiamate vuota dice «Ancora nessuna chiamata» | Diceva «Ancora nessuna attività» e parlava di messaggi e note |
+| In Accoglienza un giorno passato chiede «Presente» o «Assente», mai «Accogli» | Nessuno si accoglie in sala d'attesa due giorni dopo: la domanda del giorno passato è se è venuto (`prossimiEsiti`) |
+| Lo stato di una persona sola è al singolare, senza genere: «In arrivo», «Presente», «Assente» (contesto «One person») | Le caselle del giorno contano tutti («Attesi», «Non venuti»); sulla riga di una persona «Non venuti» era un plurale |

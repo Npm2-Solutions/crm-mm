@@ -139,7 +139,7 @@ the JavaScript asks Python's truth (`truthy()`: `[]` and `{}` are false).
 | `crm/fcrm/doctype/crm_plan/` | The centre's plan: the second key of every capability; the listino's numbers (`AMBULATORI` by size, `CREDITI_SDI`, included signatures) and `crediti_sdi()`. The phone counts nothing: a year's fee, calls and SMS paid to Twilio by whoever owns the account |
 | `crm/api/plan.py` + `Settings/PlanSettings.vue`, `utils/funzionalita.js` | Settings > The centre > Features (doc 36): what the product comprises (`compresi()`: the base, the vertical's module and what it comprises), the extras (invoicing, marketing, phone, assistant, advanced signature) and their trial, the size in rooms and the usage the agency bills; each module registers the settings pages it is set up from (`ModuloPiano.impostazioni`) |
 | `crm/permissions/org_hierarchy.py` | Which people and deals a user sees: the scope of `persone.vedi` / `trattative.vedi` (centre, team, own + in care); calls, notes, tasks follow them |
-| `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings |
+| `crm/permissions/seguono.py` | What follows the person: appointments (`agenda.vedi`, busy time for the rest), WhatsApp, SMS, tracking, old bookings, the address book (an entry is its owner's, or comes with a deal one sees; nobody's is the centre's) |
 | `crm/permissions/documenti.py` | Writing what the screens keep for the manager (services, price lists, shifts, stages, public views, WhatsApp templates, hierarchy, caller IDs) asks for the capability. `DEL_CORE`: the core documents the manager writes (email templates, assignment rules, imports) get a role's rule, narrowed by the capability |
 | `crm/permissions/condizioni.py` | Guided conditions to Python, pure: for anybody but the agency the server writes assignment-rule and SLA conditions itself |
 | `frontend/src/router.js`, `utils/impostazioni.js` | Each route declares `meta.richiede`, each page of the settings its `condition` in the menu: hidden from the menu means closed at its address too |
@@ -152,6 +152,9 @@ list and record); a new settings document gets its capability in `documenti.SCRI
 and the hook in `hooks.py`. On a settings page, what is the agency's (keys, endpoints,
 webhook secrets, a tag for a website) sits on permlevel 1, System Manager's only, the
 screen shows it on `puo('tecnico.integrazioni')` and its methods ask for that.
+A company is written like a person (`persone.scrivi`, deleted with `persone.elimina`).
+A record's page that does not open says why in words (`utils/schedaChiusa.js`),
+never the server's sentence nor the record's code.
 People's email and phone carry Frappe's `mask`: `frappe.get_list` and the client
 get masked values for Marketing; code that sends reads `crm.utils.stored_value`.
 A record's page asks `useDocument(...).canWrite` (from `crm.api.doc.get_doc_permissions`,
