@@ -1,3 +1,10 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  The price lists and, beside the one chosen, its rules; on a phone the rules
+  come under the lists.
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -27,9 +34,9 @@
       />
     </div>
 
-    <div class="flex flex-1 gap-4 overflow-hidden px-2">
+    <div class="flex flex-1 gap-4 overflow-hidden px-2 max-md:flex-col">
       <!-- price lists -->
-      <div class="w-64 shrink-0 overflow-y-auto">
+      <div class="w-64 shrink-0 overflow-y-auto max-md:w-full">
         <!-- an empty bordered list drew a stray hairline over the empty state -->
         <div
           v-if="priceLists.data?.length"
@@ -72,17 +79,21 @@
             />
           </div>
         </div>
-        <div
+        <EmptyState
           v-if="!priceLists.data?.length && !priceLists.loading"
-          class="px-2 pt-3 text-p-sm text-ink-gray-5"
-        >
-          {{ __('Create a price list to start.') }}
-        </div>
+          :title="__('No price lists yet')"
+          :text="
+            __('Services keep their own price until a list says otherwise.')
+          "
+        />
       </div>
 
       <!-- rules -->
       <div class="flex flex-1 flex-col overflow-hidden">
-        <div v-if="selected" class="mb-2 flex items-center justify-between">
+        <div
+          v-if="selected"
+          class="mb-2 flex items-center justify-between gap-2 max-md:flex-wrap"
+        >
           <span class="text-p-base-medium text-ink-gray-8">
             {{ __('Rules of {0}', [selected]) }}
           </span>
@@ -159,7 +170,10 @@
             v-else-if="!selected && priceLists.data?.length"
             class="px-1 text-p-sm text-ink-gray-5"
           >
-            {{ __('Pick a price list on the left.') }}
+            <span class="max-md:hidden">{{
+              __('Pick a price list on the left.')
+            }}</span>
+            <span class="md:hidden">{{ __('Pick a price list above.') }}</span>
           </div>
         </div>
       </div>
@@ -349,6 +363,7 @@
 
 <script setup>
 import Link from '@/components/Controls/Link.vue'
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
 import { computed, reactive, ref, watch } from 'vue'
 import { hhmm } from '@/utils/scheduler'

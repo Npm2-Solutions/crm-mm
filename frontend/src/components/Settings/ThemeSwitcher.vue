@@ -1,6 +1,11 @@
-<!-- The three cards share the row evenly and clip their pictures: «System»
-     draws two windows, and at their natural width it pushed itself off a
-     phone's screen. -->
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The three cards share the row evenly and clip their pictures: «System»
+  draws two windows, and at their natural width it pushed itself off a
+  phone's screen. On a phone the window shows the mark without the name,
+  which a third of the screen cut in half.
+-->
 <template>
   <div class="flex gap-3">
     <div
@@ -29,7 +34,7 @@
                 class="size-5 object-cover"
               />
               <component :is="logo" v-else class="size-5 shrink-0 rounded" />
-              <div>{{ __(name) }}</div>
+              <div class="max-md:hidden">{{ __(name) }}</div>
             </div>
             <div class="flex flex-col flex-1 gap-[5px]">
               <div class="bg-gray-100 w-full h-1.5"></div>
@@ -77,7 +82,7 @@
                 class="size-5 object-cover"
               />
               <component :is="logo" v-else class="size-5 shrink-0 rounded" />
-              <div>{{ __(name) }}</div>
+              <div class="max-md:hidden">{{ __(name) }}</div>
             </div>
             <div class="flex flex-col flex-1 gap-[5px]">
               <div class="bg-gray-800 w-full h-1.5"></div>
@@ -130,7 +135,7 @@
                   class="size-5 object-cover"
                 />
                 <component :is="logo" v-else class="size-5 shrink-0 rounded" />
-                <div>{{ __(name) }}</div>
+                <div class="max-md:hidden">{{ __(name) }}</div>
               </div>
             </div>
           </div>
@@ -154,7 +159,7 @@
                   class="size-5 object-cover"
                 />
                 <component :is="logo" v-else class="size-5 shrink-0 rounded" />
-                <div>{{ __(name) }}</div>
+                <div class="max-md:hidden">{{ __(name) }}</div>
               </div>
             </div>
           </div>

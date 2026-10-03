@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -32,7 +35,9 @@
       </div>
     </div>
 
-    <div class="flex-1 flex flex-col overflow-y-auto">
+    <!-- the settings arrive after the page: opened by a link, it was drawn on
+         a document not there yet -->
+    <div v-if="settings.doc" class="flex-1 flex flex-col overflow-y-auto">
       <div class="flex items-center justify-between gap-4 py-3 px-2">
         <div class="flex min-w-0 flex-col">
           <div class="text-p-base-medium text-ink-gray-7">

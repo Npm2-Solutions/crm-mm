@@ -1,3 +1,11 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  Who does what: the services down, the people across, a tap on a cell gives
+  or takes a service. On a phone the services' column stays put at the left
+  and the people scroll sideways under it.
+-->
 <template>
   <!-- the body of the Services page: services by people, one grid -->
   <div class="isolate flex min-h-0 flex-1 flex-col gap-4 text-ink-gray-8">
@@ -9,7 +17,7 @@
         <thead class="sticky top-0 z-10 bg-surface-elevation-2">
           <tr>
             <th
-              class="sticky left-0 z-20 w-[300px] min-w-[300px] border-b border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 text-left align-bottom text-p-xs font-medium text-ink-gray-5"
+              class="sticky left-0 z-20 w-[300px] min-w-[300px] max-md:w-[188px] max-md:min-w-[188px] border-b border-outline-gray-2 bg-surface-elevation-2 px-3 py-2 text-left align-bottom text-p-xs font-medium text-ink-gray-5"
             >
               {{ __('Service') }}
             </th>
@@ -56,51 +64,77 @@
               <td
                 class="sticky left-0 border-b border-outline-elevation-2 bg-surface-elevation-2 px-3 py-2 group-hover:bg-surface-gray-1"
               >
-                <div class="flex items-center gap-2">
-                  <span
-                    class="size-2.5 shrink-0 rounded-full"
-                    :style="{ backgroundColor: service.color || '#4C7EFF' }"
-                  />
-                  <!-- as tall as the row's first line, not just the text: a
-                       finger aimed at a 21px name missed it -->
-                  <button
-                    class="-my-1.5 min-w-0 truncate py-1.5 text-left text-p-base-medium text-ink-gray-8 hover:underline"
-                    :class="service.enabled ? '' : 'line-through opacity-60'"
-                    @click="emit('edit', service)"
-                  >
-                    {{ service.service_name }}
-                  </button>
-                  <Badge
-                    v-if="service.bookable_online"
-                    :label="__('Online')"
-                    theme="blue"
-                    size="sm"
-                  />
-                  <Badge
-                    v-if="!service.enabled"
-                    :label="__('Off')"
-                    theme="gray"
-                    size="sm"
-                  />
-                  <span class="grow" />
-                  <Dropdown :options="rowActions(service)">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon="lucide-ellipsis"
-                      :disabled="busy"
+                <!-- on a phone the column keeps its width and the words wrap
+                     in it: a table as wide as its longest warning pushed
+                     everybody's column off the screen -->
+                <div class="max-md:w-[164px]">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="size-2.5 shrink-0 rounded-full"
+                      :style="{ backgroundColor: service.color || '#4C7EFF' }"
                     />
-                  </Dropdown>
-                </div>
-                <div class="truncate pl-4.5 text-p-xs text-ink-gray-5">
-                  {{ describe(service) }}
-                </div>
-                <div
-                  v-for="warning in service.warnings"
-                  :key="warning"
-                  class="mt-0.5 pl-4.5 text-p-xs text-ink-amber-8"
-                >
-                  {{ warning }}
+                    <!-- as tall as the row's first line, not just the text: a
+                       finger aimed at a 21px name missed it -->
+                    <!-- on a phone the name wraps and its marks go under
+                         it: beside them «Controllo» read «Cont…» -->
+                    <button
+                      class="-my-1.5 min-w-0 py-1.5 text-left text-p-base-medium text-ink-gray-8 hover:underline md:truncate max-md:[overflow-wrap:anywhere]"
+                      :class="service.enabled ? '' : 'line-through opacity-60'"
+                      @click="emit('edit', service)"
+                    >
+                      {{ service.service_name }}
+                    </button>
+                    <Badge
+                      v-if="service.bookable_online"
+                      class="max-md:hidden"
+                      :label="__('Online')"
+                      theme="blue"
+                      size="sm"
+                    />
+                    <Badge
+                      v-if="!service.enabled"
+                      class="max-md:hidden"
+                      :label="__('Off')"
+                      theme="gray"
+                      size="sm"
+                    />
+                    <span class="grow" />
+                    <Dropdown :options="rowActions(service)">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon="lucide-ellipsis"
+                        :disabled="busy"
+                      />
+                    </Dropdown>
+                  </div>
+                  <div
+                    v-if="service.bookable_online || !service.enabled"
+                    class="mb-0.5 flex gap-1 pl-4.5 md:hidden"
+                  >
+                    <Badge
+                      v-if="service.bookable_online"
+                      :label="__('Online')"
+                      theme="blue"
+                      size="sm"
+                    />
+                    <Badge
+                      v-if="!service.enabled"
+                      :label="__('Off')"
+                      theme="gray"
+                      size="sm"
+                    />
+                  </div>
+                  <div class="pl-4.5 text-p-xs text-ink-gray-5 md:truncate">
+                    {{ describe(service) }}
+                  </div>
+                  <div
+                    v-for="warning in service.warnings"
+                    :key="warning"
+                    class="mt-0.5 pl-4.5 text-p-xs text-ink-amber-8"
+                  >
+                    {{ warning }}
+                  </div>
                 </div>
               </td>
               <td
@@ -117,7 +151,7 @@
                 >
                   <span
                     v-if="!cell(service, person.user)"
-                    class="lucide-plus size-3.5 opacity-0 group-hover:opacity-100"
+                    class="lucide-plus size-3.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
                   />
                   <template v-else>
                     <span class="lucide-check size-3.5" />
@@ -158,9 +192,11 @@
           {{ __('Click to assign') }}
         </span>
       </div>
-      <div v-else-if="!matrix.loading" class="px-2 text-p-base text-ink-gray-5">
-        {{ __('No services yet. Create the first one!') }}
-      </div>
+      <EmptyState
+        v-else-if="!matrix.loading"
+        :title="__('No services yet')"
+        :text="__('Create the first one: here you then say who does what.')"
+      />
     </div>
   </div>
 
@@ -236,6 +272,7 @@
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import {
   createResource,

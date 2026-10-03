@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -67,8 +71,9 @@
       <div class="mb-4 max-md:overflow-x-auto max-md:[scrollbar-width:none]">
         <TabButtons v-model="editorTab" :buttons="editorTabs" />
       </div>
+      <!-- on a phone the sheet scrolls, not a box of its own inside it -->
       <div
-        class="-mx-1 flex h-[min(540px,62vh)] flex-col gap-4 overflow-y-auto px-1 pb-1"
+        class="-mx-1 flex h-[min(540px,62vh)] flex-col gap-4 overflow-y-auto px-1 pb-1 max-md:h-auto max-md:overflow-visible"
       >
         <!-- what it is and what it costs -->
         <template v-if="editorTab === 'details'">
@@ -93,7 +98,7 @@
             :rows="2"
             :label="__('Description')"
           />
-          <div class="grid grid-cols-[1fr_1fr_110px] gap-3">
+          <div class="grid grid-cols-[1fr_1fr_110px] gap-3 max-md:grid-cols-2">
             <FormControl
               v-model.number="form.duration"
               type="number"
@@ -291,10 +296,11 @@
           <!-- resources -->
           <div class="flex flex-col gap-2">
             <FormLabel :label="__('Rooms & equipment it needs')" />
+            <!-- on a phone in two lines: what, then how many, required, remove -->
             <div
               v-for="(row, i) in form.resources"
               :key="i"
-              class="grid grid-cols-[130px_1fr_70px_90px_32px] items-end gap-2"
+              class="grid grid-cols-[130px_1fr_70px_90px_32px] items-end gap-2 max-md:grid-cols-[1fr_1fr] max-md:rounded-lg max-md:border max-md:border-outline-gray-2 max-md:p-2"
             >
               <FormControl
                 v-model="row.resource_type"

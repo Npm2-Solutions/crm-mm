@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A list of records with an editor over it, for the three catalogues invoicing
   depends on: qualifications, services and providers.
 
@@ -44,10 +47,12 @@
         <div
           v-for="row in visibili"
           :key="row.name"
-          class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1"
+          class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-gray-1 max-md:flex-col max-md:items-start max-md:gap-1.5 max-md:active:bg-surface-gray-2"
           @click="apri(row.name)"
         >
-          <div class="min-w-0 flex-1">
+          <!-- on a phone the marks go under the words: beside them they left
+               the name «Massaggio decontra…» -->
+          <div class="min-w-0 flex-1 max-md:w-full">
             <div class="truncate text-p-base-medium text-ink-gray-8">
               {{ row[titleField] || row.name }}
             </div>
@@ -55,13 +60,15 @@
               {{ describe(row) }}
             </div>
           </div>
-          <Badge
-            v-for="badge in badges(row)"
-            :key="badge.label"
-            :label="badge.label"
-            :theme="badge.theme"
-            size="sm"
-          />
+          <div v-if="badges(row).length" class="flex shrink-0 gap-1.5">
+            <Badge
+              v-for="badge in badges(row)"
+              :key="badge.label"
+              :label="badge.label"
+              :theme="badge.theme"
+              size="sm"
+            />
+          </div>
         </div>
       </div>
       <div

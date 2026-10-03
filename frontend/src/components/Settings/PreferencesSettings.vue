@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone a setting's words come first and its field under them, as wide
+  as the screen.
+-->
 <template>
   <SettingsLayoutBase
     v-if="user.doc"
@@ -48,8 +54,10 @@
             @click="save()"
           />
         </div>
-        <div class="flex items-center justify-between mt-6">
-          <div class="flex flex-col gap-1">
+        <div
+          class="mt-6 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2"
+        >
+          <div class="flex min-w-0 flex-col gap-1">
             <span class="text-base-medium text-ink-gray-8">
               {{ __('Language') }}
             </span>
@@ -61,12 +69,14 @@
           <Link
             v-model="user.doc.language"
             doctype="Language"
-            class="w-40"
+            class="w-40 shrink-0 max-md:w-full"
             :placeholder="__('System default')"
           />
         </div>
-        <div class="flex items-center justify-between mt-6">
-          <div class="flex flex-col gap-1">
+        <div
+          class="mt-6 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2"
+        >
+          <div class="flex min-w-0 flex-col gap-1">
             <span class="text-base-medium text-ink-gray-8">
               {{ __('Timezone') }}
             </span>
@@ -76,7 +86,7 @@
           </div>
           <Combobox
             v-model="user.doc.time_zone"
-            class="w-40"
+            class="w-40 shrink-0 max-md:w-full"
             :options="getTimezoneOptions()"
           />
         </div>

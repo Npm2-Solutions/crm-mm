@@ -33,7 +33,7 @@
         </p>
         <span
           v-if="dati.active && dati.sender"
-          class="break-all text-p-sm-medium text-ink-gray-8"
+          class="text-p-sm-medium text-ink-gray-8 [overflow-wrap:anywhere]"
         >
           {{ dati.sender }}
         </span>
@@ -107,7 +107,7 @@
         <span class="text-ink-gray-5">
           {{ __('Sending service, for the agency') }}
         </span>
-        <span class="break-all text-ink-gray-8">
+        <span class="text-ink-gray-8 [overflow-wrap:anywhere]">
           {{
             dati.server ||
             __(

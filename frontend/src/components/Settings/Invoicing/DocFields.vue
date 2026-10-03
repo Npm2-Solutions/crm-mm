@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   One record of one DocType, rendered from the DocType's own layout.
 
   The point is that the explanations live in one place. Every rule this module
@@ -27,20 +30,23 @@
           :context="context"
         />
       </div>
-      <!-- in a page that scrolls as a whole, the save bar stays in sight -->
+      <!-- in a page that scrolls as a whole, the save bar stays in sight
+           (past the page's padding on a desk; on a phone the screen scrolls,
+           with no padding to go past, and its button is as wide as the bar) -->
       <div
-        class="flex items-center justify-between gap-3 border-t border-outline-gray-2 pt-3"
+        class="flex items-center justify-between gap-3 border-t border-outline-gray-2 pt-3 max-md:flex-col max-md:items-stretch"
         :class="
           scroll
             ? ''
-            : 'sticky -bottom-8 z-[1] -mb-8 bg-surface-elevation-2 pb-8'
+            : 'sticky -bottom-8 z-[1] -mb-8 bg-surface-elevation-2 pb-8 max-md:bottom-0 max-md:-mb-5 max-md:pb-4'
         "
       >
         <ErrorMessage :message="error" />
-        <div class="ml-auto flex items-center gap-2">
+        <div class="ml-auto flex items-center gap-2 max-md:ml-0">
           <slot name="actions" />
           <Button
             variant="solid"
+            class="max-md:h-11 max-md:flex-1 max-md:text-base"
             :loading="saving"
             :label="docname ? __('Update') : __('Create')"
             @click="save"

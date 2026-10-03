@@ -1,3 +1,6 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <Dialog
     v-model:open="showSettings"
@@ -156,7 +159,10 @@
               :key="activeTab.key"
               :voce="activeTab"
             />
-            <component :is="activeTab.component" v-else />
+            <!-- the page, as one scroll on a phone (telefono.css) -->
+            <div v-else data-pagina-impostazioni class="contents">
+              <component :is="activeTab.component" />
+            </div>
           </template>
           <!-- a category: what it is for, and each of its entries with a line
                on what one sets up there -->

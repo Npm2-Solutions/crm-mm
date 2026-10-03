@@ -1,3 +1,7 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+-->
 <template>
   <div class="flex flex-col gap-2">
     <div v-if="label" class="text-p-base-medium text-ink-gray-8">
@@ -28,10 +32,12 @@
       v-if="!anyTimeLabel || restricted"
       class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
     >
+      <!-- on a phone the day on its line, its hours under it as wide as the
+           row: beside the day the two times, at 16px, had room for «00:(» -->
       <div
         v-for="day in WEEKDAYS"
         :key="day"
-        class="group flex min-h-11 items-start gap-3 px-3 py-2"
+        class="group flex min-h-11 items-start gap-3 px-3 py-2 max-md:flex-col max-md:items-stretch max-md:gap-2"
       >
         <label class="flex h-7 w-32 shrink-0 cursor-pointer items-center gap-2">
           <Switch
@@ -52,17 +58,17 @@
           <div
             v-for="(row, i) in windows(day)"
             :key="i"
-            class="flex items-center gap-1"
+            class="flex items-center gap-1 max-md:w-full"
           >
             <FormControl
-              class="w-[92px]"
+              class="w-[92px] max-md:flex-1"
               :modelValue="hhmm(row.start_time)"
               type="time"
               @update:modelValue="(v) => patch(row, { start_time: v })"
             />
             <span class="text-ink-gray-4">–</span>
             <FormControl
-              class="w-[92px]"
+              class="w-[92px] max-md:flex-1"
               :modelValue="hhmm(row.end_time)"
               type="time"
               @update:modelValue="(v) => patch(row, { end_time: v })"
@@ -86,7 +92,7 @@
           <Button
             variant="ghost"
             size="sm"
-            class="opacity-0 transition-opacity group-hover:opacity-100"
+            class="opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
             :label="__('Copy to all')"
             :tooltip="__('Use these hours on every open day')"
             icon-left="lucide-copy"

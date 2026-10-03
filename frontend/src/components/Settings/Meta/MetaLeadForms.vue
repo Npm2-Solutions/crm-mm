@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Lead Ads: the forms on the Pages switched on in Connection, and where their
   answers land in the CRM.
 
@@ -323,7 +326,7 @@
           <div
             v-for="q in mappingQuestions"
             :key="q.key"
-            class="grid grid-cols-2 items-center gap-3"
+            class="grid grid-cols-2 items-center gap-3 max-md:grid-cols-1 max-md:gap-1.5"
           >
             <div class="min-w-0">
               <div class="flex items-center gap-2">

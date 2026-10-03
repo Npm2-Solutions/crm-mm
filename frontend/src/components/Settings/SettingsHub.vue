@@ -43,6 +43,7 @@
     </div>
     <div
       :id="`settings-panel-${slug(voce.key)}`"
+      data-pagina-impostazioni
       :role="voce.tabs.length > 1 ? 'tabpanel' : undefined"
       :aria-labelledby="
         voce.tabs.length > 1 ? `settings-tab-${slug(scheda.key)}` : undefined

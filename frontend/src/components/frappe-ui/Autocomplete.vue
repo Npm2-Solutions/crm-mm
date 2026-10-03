@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The button says it opens a list (`aria-haspopup`): a screen reader announces
+  it, and on a phone it is drawn as a field, not as a button (telefono.css).
+-->
 <template>
   <Combobox v-model="selectedValue" nullable>
     <Popover v-model:show="showOptions" class="w-full" :placement="placement">
@@ -14,6 +20,9 @@
         >
           <div class="w-full">
             <button
+              type="button"
+              aria-haspopup="listbox"
+              :aria-expanded="showOptions"
               class="relative flex h-7 w-full items-center justify-between gap-2 rounded px-2 py-1 transition-colors pr-7"
               :class="inputClasses"
               @click="() => !disabled && togglePopover()"

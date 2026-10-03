@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   Who signs the invoices.
 
   Everything a document needs before it can exist is on this one record: VAT
@@ -79,14 +82,17 @@
         :scroll="false"
         @saved="salvata"
       />
-      <div v-else-if="!companies.loading" class="text-p-base text-ink-gray-5">
-        {{ __('No company yet. Create the first one.') }}
-      </div>
+      <EmptyState
+        v-else-if="!companies.loading"
+        :title="__('No company yet')"
+        :text="__('Create the one whose VAT number goes on the invoices.')"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import DocFields from '@/components/Settings/Invoicing/DocFields.vue'
 import HealthcareSetup from '@/components/Settings/Invoicing/HealthcareSetup.vue'
 import { createListResource, createResource, Button, Dropdown } from 'frappe-ui'

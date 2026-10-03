@@ -1,3 +1,9 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  What to say on a call, step by step.
+-->
 <template>
   <SettingsLayoutBase>
     <template #title>
@@ -35,6 +41,7 @@
         <Button
           v-if="!draft"
           variant="solid"
+          icon-left="plus"
           :label="__('New script')"
           @click="newScript"
         />
@@ -62,22 +69,23 @@
         <div v-if="scripts.loading" class="flex justify-center py-16">
           <LoadingIndicator class="size-5" />
         </div>
-        <div
+        <EmptyState
           v-else-if="!scripts.data?.length"
-          class="rounded-lg border border-dashed border-outline-gray-2 px-4 py-12 text-center"
+          :title="__('No scripts yet')"
+          :text="
+            __(
+              'What to say on a call, step by step, in front of whoever answers.',
+            )
+          "
         >
-          <p class="text-p-base text-ink-gray-6">
-            {{ __('No scripts yet.') }}
-          </p>
           <!-- the header's «New script» is the primary action; this one is
                the same thing said closer to the empty list -->
           <Button
-            class="mt-3"
             variant="subtle"
             :label="__('Write the first one')"
             @click="newScript"
           />
-        </div>
+        </EmptyState>
         <div
           v-else
           class="divide-y divide-outline-elevation-2 rounded-lg border border-outline-gray-2"
@@ -212,6 +220,7 @@
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import SettingsLayoutBase from '@/components/Layouts/SettingsLayoutBase.vue'
 import RichTextField from '@/components/RichTextField.vue'
 import {
