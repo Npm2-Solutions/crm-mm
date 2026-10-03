@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A cycle of sessions: sold here, followed here. New or put right, it says the
   service, how many sessions, from when and maybe until when, the price of the
   whole cycle and how it is paid. Read, it says how far it is - each appointment
@@ -39,7 +42,7 @@
           <FormControl
             v-model="form.sessions"
             type="number"
-            :label="__('Sessions')"
+            :label="__('Sessions', null, 'Cycle of sessions')"
             :min="1"
             :max="MAX_SEDUTE"
           />

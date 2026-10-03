@@ -244,10 +244,14 @@
             >
               <span class="min-w-0 flex-1 text-p-base text-ink-gray-8">
                 {{
-                  __('{0} to {1}', [
-                    formatDate(row.from_date, 'D MMM YYYY'),
-                    formatDate(row.to_date, 'D MMM YYYY'),
-                  ])
+                  __(
+                    '{0} to {1}',
+                    [
+                      formatDate(row.from_date, 'D MMM YYYY'),
+                      formatDate(row.to_date, 'D MMM YYYY'),
+                    ],
+                    'Date range',
+                  )
                 }}
                 <span v-if="row.reason" class="text-ink-gray-5">
                   · {{ row.reason }}
@@ -517,10 +521,14 @@ const practitionerOptions = computed(() => [
 
 const facts = computed(() => {
   const parts = [
-    __('{0} to {1}', [
-      formatDate(sub.starts_on, 'D MMM YYYY'),
-      formatDate(sub.ends_on, 'D MMM YYYY'),
-    ]),
+    __(
+      '{0} to {1}',
+      [
+        formatDate(sub.starts_on, 'D MMM YYYY'),
+        formatDate(sub.ends_on, 'D MMM YYYY'),
+      ],
+      'Date range',
+    ),
     cosaDa(sub, t),
   ]
   if (sub.price)

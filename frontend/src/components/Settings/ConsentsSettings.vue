@@ -99,7 +99,7 @@
               {{
                 __('Version {0}, since {1}', [
                   type.text_version,
-                  formatDate(type.text_updated_on, '', true),
+                  formatDate(type.text_updated_on, 'D MMM YYYY'),
                 ])
               }}
             </span>

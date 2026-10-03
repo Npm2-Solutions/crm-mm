@@ -270,7 +270,7 @@ const REASONS = {
   every_appointment: () => __('Signed for each appointment'),
 }
 const PENDING = {
-  draft: () => __('Started'),
+  draft: () => __('Started', null, 'Form filled half-way'),
   sent: () => __('Link sent'),
   to_sign_at_desk: () => __('To sign at the desk'),
 }

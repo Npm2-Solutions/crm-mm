@@ -94,7 +94,10 @@ const rows = computed(() => {
       label: __('Landing page'),
       value: fromAnAd ? __('Lead form') : t.landing_page,
     },
-    { label: __('Referrer'), value: t.referrer },
+    {
+      label: __('Referrer', null, 'Web page a visit came from'),
+      value: t.referrer,
+    },
   ].filter((row) => says(row.value, t.category))
 })
 </script>
