@@ -8803,7 +8803,7 @@ msgstr "Disabilitato"
 #: frontend/src/components/CommentBox.vue:74
 #: frontend/src/components/EmailEditor.vue:178
 msgid "Discard"
-msgstr "Annulla"
+msgstr "Scarta"
 
 #: frontend/src/components/Settings/SealSettings.vue
 #: frontend/src/components/Settings/Telephony/TwilioSettings.vue:25
@@ -42001,6 +42001,42 @@ msgstr "Forse l'indirizzo è sbagliato, o la pagina non è tra quelle che il tuo
 #: frontend/src/pages/InvalidPage.vue
 msgid "Go to the start"
 msgstr "Vai all'inizio"
+
+#: crm/documenti/regole.py
+msgid "Contract"
+msgstr "Contratto"
+
+#: crm/documenti/regole.py
+msgid "Identity document"
+msgstr "Documento d'identità"
+
+#: crm/documenti/regole.py
+msgid "Photo"
+msgstr "Foto"
+
+#: crm/clinica/documenti.py
+msgid "External report"
+msgstr "Referto esterno"
+
+#: crm/clinica/documenti.py
+msgid "Test result"
+msgstr "Esito di esame"
+
+#: crm/clinica/documenti.py
+msgid "Imaging"
+msgstr "Diagnostica per immagini"
+
+#: crm/clinica/documenti.py
+msgid "Prescription"
+msgstr "Prescrizione"
+
+#: crm/clinica/piani_regole.py
+msgid "Food group"
+msgstr "Gruppo di alimenti"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "The calls with this person appear here, made or received, and the ones logged by hand."
+msgstr "Qui compaiono le chiamate con questa persona, fatte o ricevute, e quelle registrate a mano."
 
 #: frontend/src/components/Today/ParticipantRow.vue
 msgctxt "One person"

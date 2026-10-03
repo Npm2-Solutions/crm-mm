@@ -1018,6 +1018,9 @@ const emptyText = computed(() => {
     text = 'No WhatsApp Messages Found'
   } else if (title.value == 'SMS') {
     text = 'No SMS Found'
+  } else if (title.value == 'Calls') {
+    // the Calls tab said "No activity yet" and listed messages and notes
+    text = 'No calls yet'
   }
   return text
 })
@@ -1044,6 +1047,9 @@ const emptyTextDescription = computed(() => {
     description = 'Start a conversation now!'
   } else if (title.value == 'SMS') {
     description = 'Send a text message now!'
+  } else if (title.value == 'Calls') {
+    description =
+      'The calls with this person appear here, made or received, and the ones logged by hand.'
   }
   return description
 })
@@ -1066,6 +1072,8 @@ const emptyTextIcon = computed(() => {
     icon = WhatsAppIcon
   } else if (title.value == 'SMS') {
     icon = SMSIcon
+  } else if (title.value == 'Calls') {
+    icon = InboundCallIcon
   }
   return h(icon, { class: 'text-ink-gray-4' })
 })
