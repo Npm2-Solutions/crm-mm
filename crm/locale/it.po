@@ -41224,3 +41224,224 @@ msgstr "Crea il primo: qui poi dici chi fa cosa."
 #: frontend/src/components/Settings/Scheduling/ResourcesSettings.vue
 msgid "Add the first one: the agenda books it with the appointments that need it."
 msgstr "Aggiungi il primo: l'agenda lo prenota con gli appuntamenti che ne hanno bisogno."
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.json
+msgid "Cancelled"
+msgstr "Annullato"
+
+#: crm/fcrm/doctype/crm_call_log/crm_call_log.json
+msgid "Skipped"
+msgstr "Saltato"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Mr"
+msgstr "Sig."
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Mrs"
+msgstr "Sig.ra"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Ms"
+msgstr "Sig.ra"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Dr"
+msgstr "Dott."
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Prof"
+msgstr "Prof."
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Madam"
+msgstr "Signora"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Miss"
+msgstr "Signorina"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Master"
+msgstr "Signorino"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Mx"
+msgstr "Mx"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Male"
+msgstr "Uomo"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Female"
+msgstr "Donna"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Prefer not to say"
+msgstr "Preferisce non dirlo"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Genderqueer"
+msgstr "Genderqueer"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Non-Conforming"
+msgstr "Non conforme"
+
+#: crm/fcrm/doctype/crm_lead/crm_lead.json
+msgid "Transgender"
+msgstr "Transgender"
+
+#: frontend/src/components/Mobile/ElencoNote.vue
+msgid "Title or words of the note"
+msgstr "Titolo o parole della nota"
+
+#: frontend/src/components/Mobile/ElencoNote.vue
+msgid "Search notes"
+msgstr "Cerca tra le note"
+
+#: frontend/src/components/Mobile/ElencoNote.vue
+msgid "No notes yet"
+msgstr "Ancora nessuna nota"
+
+#: frontend/src/components/Mobile/ElencoNote.vue
+msgid "What is worth remembering about a person or a deal: write it with the + button."
+msgstr "Quello che vale la pena ricordare di una persona o di una trattativa: scrivilo con il pulsante +."
+
+#: frontend/src/pages/Notes.vue
+msgid "New note"
+msgstr "Nuova nota"
+
+#: frontend/src/pages/Automations.vue
+msgid "New automation"
+msgstr "Nuova automazione"
+
+#: crm/install.py
+msgid "Reference"
+msgstr "Segnalazione"
+
+#: crm/fcrm/doctype/crm_lead_source/crm_lead_source.json
+msgid "Cold Call"
+msgstr "Telefonata a freddo"
+
+#: crm/fcrm/doctype/crm_lead_source/crm_lead_source.json
+msgid "Email Campaign"
+msgstr "Campagna email"
+
+#: frontend/src/utils/attese.js
+msgid "Afternoon"
+msgstr "Pomeriggio"
+
+#: frontend/src/utils/attese.js
+msgid "Evening"
+msgstr "Sera"
+
+#: frontend/src/utils/automation.js
+msgid "Welcome a new lead"
+msgstr "Benvenuto a un nuovo contatto"
+
+#: frontend/src/utils/automation.js
+msgid "Email straight away, reminder after two days, task for the owner."
+msgstr "Un'email subito, un promemoria dopo due giorni, una cosa da fare per chi lo segue."
+
+#: frontend/src/utils/automation.js
+msgid "Recall after a year"
+msgstr "Richiamo dopo un anno"
+
+#: frontend/src/utils/automation.js
+msgid "Whoever last came a year ago, and agreed to marketing, is invited to book again."
+msgstr "Chi è venuto l'ultima volta un anno fa, e ha acconsentito al marketing, viene invitato a prenotare di nuovo."
+
+#: frontend/src/utils/automation.js
+msgid "No-show follow-up"
+msgstr "Dopo un appuntamento mancato"
+
+#: frontend/src/utils/automation.js
+msgid "Texts whoever missed the appointment and asks them to rebook."
+msgstr "Scrive un SMS a chi non è venuto e gli chiede di prenotare di nuovo."
+
+#: frontend/src/utils/automation.js
+msgid "Deal moved stage"
+msgstr "Trattativa cambiata di fase"
+
+#: frontend/src/utils/automation.js
+msgid "Notifies the team and tags the deal when the stage changes."
+msgstr "Avvisa il team ed etichetta la trattativa quando cambia fase."
+
+#: frontend/src/utils/automation.js
+msgid "Long nurture with a split test"
+msgstr "Percorso lungo con test A/B"
+
+#: frontend/src/utils/automation.js
+msgid "Two subject lines, 50/50, and a goal that stops the sequence."
+msgstr "Due oggetti, metà e metà, e un obiettivo che ferma la sequenza."
+
+#: frontend/src/utils/automation.js
+msgid "Nice to meet you, {{ first_name }}"
+msgstr "Piacere di conoscerti, {{ first_name }}"
+
+#: frontend/src/utils/automation.js
+msgid "Hi {{ first_name }}, thanks for getting in touch."
+msgstr "Ciao {{ first_name }}, grazie per averci contattato."
+
+#: frontend/src/utils/automation.js
+msgid "Still interested, {{ first_name }}?"
+msgstr "Ti interessa ancora, {{ first_name }}?"
+
+#: frontend/src/utils/automation.js
+msgid "Just checking you got my message."
+msgstr "Volevo solo sapere se hai ricevuto il mio messaggio."
+
+#: frontend/src/utils/automation.js
+msgid "Call {{ lead_name }}"
+msgstr "Chiamare {{ lead_name }}"
+
+#: frontend/src/utils/automation.js
+msgid "Time for your check-up, {{ first_name }}"
+msgstr "È ora del tuo controllo, {{ first_name }}"
+
+#: frontend/src/utils/automation.js
+msgid "Hi {{ first_name }}, it has been a year since your last visit. Shall we book the next one?"
+msgstr "Ciao {{ first_name }}, è passato un anno dalla tua ultima visita. Prenotiamo la prossima?"
+
+#: frontend/src/utils/automation.js
+msgid "Call {{ lead_name }} for the recall"
+msgstr "Chiamare {{ lead_name }} per il richiamo"
+
+#: frontend/src/utils/automation.js
+msgid "Hi {{ first_name }}, we missed you today. Shall we rebook?"
+msgstr "Ciao {{ first_name }}, oggi non ti abbiamo visto. Prenotiamo di nuovo?"
+
+#: frontend/src/utils/automation.js
+msgid "Rebook {{ lead_name }}"
+msgstr "Riprenotare {{ lead_name }}"
+
+#: frontend/src/utils/automation.js
+msgid "Deal {{ organization }} is now {{ status }}"
+msgstr "La trattativa {{ organization }} ora è {{ status }}"
+
+#: frontend/src/utils/automation.js
+msgid "stage-changed"
+msgstr "cambio-fase"
+
+#: frontend/src/utils/automation.js
+msgid "A tip for you"
+msgstr "Un consiglio per te"
+
+#: frontend/src/utils/automation.js
+msgid "{{ first_name }}, one idea"
+msgstr "{{ first_name }}, un'idea"
+
+#: frontend/src/utils/automation.js
+msgid "Did you get my email, {{ first_name }}?"
+msgstr "Hai ricevuto la mia email, {{ first_name }}?"
+
+#: frontend/vite/frappeUi.js
+msgid "Select date & time"
+msgstr "Scegli data e ora"
+
+#: frontend/src/pages/SocialPlanner.vue
+msgctxt "Social post action"
+msgid "Schedule"
+msgstr "Pianifica"
