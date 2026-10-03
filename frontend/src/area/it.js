@@ -258,6 +258,14 @@ export default {
     'La prossima volta entra con il volto o l’impronta invece del codice. La chiave resta su questo telefono.',
   'Add a passkey': 'Aggiungi una passkey',
   'Not now': 'Non ora',
+  'On your home screen': 'Sulla schermata Home',
+  'Add the area to your home screen: it opens like an app, without the browser.':
+    'Aggiungi l’area alla schermata Home: si apre come un’app, senza il browser.',
+  'In Safari tap Share, then «Add to Home Screen».':
+    'In Safari tocca Condividi, poi «Aggiungi alla schermata Home».',
+  'Open the browser’s menu (⋮), then «Install app» or «Add to Home screen».':
+    'Apri il menu del browser (⋮), poi «Installa app» o «Aggiungi a schermata Home».',
+  Install: 'Installa',
   'used {0}': 'usata il {0}',
   'added {0}': 'aggiunta il {0}',
   Remove: 'Togli',

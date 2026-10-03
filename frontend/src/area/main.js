@@ -7,10 +7,13 @@ import App from './App.vue'
 import router from './router'
 import { translate } from './translation'
 import { indossa, marchio } from '@/utils/marchio'
+import { ascoltaLInstallazione } from '@/utils/installa'
 
 // the product's brand - the vertical's - before anything shows: its colours,
 // its icons, its name in the tab next to the centre's
 indossa(document, marchio(window.AREA?.brand))
+// the browser's offer to put the area on the home screen, kept for the card
+ascoltaLInstallazione()
 
 setConfig('resourceFetcher', frappeRequest)
 

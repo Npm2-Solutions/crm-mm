@@ -69,6 +69,7 @@
       </template>
     </section>
     <PasskeyCard v-if="!anteprima" />
+    <InstallCard v-if="!anteprima" />
   </div>
 </template>
 
@@ -79,6 +80,7 @@ import LucideChevronRight from '~icons/lucide/chevron-right'
 import { anteprima } from '../anteprima'
 import AreaChip from '../components/AreaChip.vue'
 import HiddenCard from '../components/HiddenCard.vue'
+import InstallCard from '../components/InstallCard.vue'
 import NextAppointment from '../components/NextAppointment.vue'
 import PasskeyCard from '../components/PasskeyCard.vue'
 import PrepareVisit from '../components/PrepareVisit.vue'
