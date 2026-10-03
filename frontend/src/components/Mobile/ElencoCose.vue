@@ -13,7 +13,9 @@
       <TabButtons v-model="di" :options="opzioni" class="w-full" />
     </div>
 
-    <div class="min-h-0 flex-1 overflow-y-auto pb-20">
+    <div ref="contenitore" class="min-h-0 flex-1 overflow-y-auto pb-20">
+      <!-- pulled down from the top, the list reloads -->
+      <TiraPerAggiornare v-bind="tira" />
       <section v-for="gruppo in gruppi" :key="gruppo.key" class="pb-2">
         <h3
           class="sticky top-0 z-[1] bg-surface-base px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-wide"
@@ -101,6 +103,8 @@
 </template>
 
 <script setup>
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { cosePerGruppo, scadenzaInBreve } from '@/utils/sulTelefono'
@@ -132,8 +136,10 @@ const carica = createResource({
 const gruppi = computed(() => cosePerGruppo(righe.value))
 
 function ricarica() {
-  carica.submit({ mine: di.value === 'mie' ? 1 : 0 })
+  return carica.submit({ mine: di.value === 'mie' ? 1 : 0 })
 }
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, ricarica)
 watch(di, ricarica)
 ricarica()
 

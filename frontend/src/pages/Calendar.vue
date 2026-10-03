@@ -213,6 +213,7 @@
       :serviceColors="serviceColors"
       :selected="selectedAppointment"
       :caricando="scheduler.loading"
+      :aggiorna="ricaricaIlGiorno"
       @open="showDetails"
     >
       <template #vista>
@@ -690,9 +691,14 @@ function schedulerRange() {
   }
 }
 
+// the day pulled down on a phone: its appointments and its events
+function ricaricaIlGiorno() {
+  return Promise.all([reloadScheduler(), events.reload()])
+}
+
 function reloadScheduler() {
   const range = schedulerRange()
-  scheduler.submit({
+  return scheduler.submit({
     start: range.start,
     end: range.end,
     services: filters.services,

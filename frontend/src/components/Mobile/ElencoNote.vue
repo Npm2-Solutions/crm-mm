@@ -32,6 +32,8 @@
       class="min-h-0 flex-1 overflow-y-auto pb-20"
       @scroll.passive="forseAltre"
     >
+      <!-- pulled down from the top, the list reloads -->
+      <TiraPerAggiornare v-bind="tira" />
       <button
         v-for="nota in righe"
         :key="nota.name"
@@ -78,6 +80,8 @@
 </template>
 
 <script setup>
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { timeAgo } from '@/utils'
@@ -108,8 +112,10 @@ const carica = createResource({
 })
 
 function cerca() {
-  carica.submit({ text: testo.value.trim(), start: 0 })
+  return carica.submit({ text: testo.value.trim(), start: 0 })
 }
+
+const tira = useTiraPerAggiornare(contenitore, cerca)
 
 watch(testo, debounce(cerca, 300))
 cerca()

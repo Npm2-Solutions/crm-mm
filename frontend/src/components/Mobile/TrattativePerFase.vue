@@ -51,6 +51,8 @@
       class="min-h-0 flex-1 overflow-y-auto px-3 pb-20"
       @scroll.passive="forseAltre"
     >
+      <!-- pulled down from the top, the counts and the stage reload -->
+      <TiraPerAggiornare v-bind="tira" />
       <router-link
         v-for="trattativa in righe"
         :key="trattativa.name"
@@ -103,6 +105,8 @@
 </template>
 
 <script setup>
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import { pipelinesStore } from '@/stores/pipelines'
@@ -167,6 +171,10 @@ function secondaRiga(trattativa) {
   if (!trattativa.deal_owner) return ''
   return getUser(trattativa.deal_owner)?.full_name || trattativa.deal_owner
 }
+
+const tira = useTiraPerAggiornare(contenitore, () =>
+  conteggiResource.submit({ pipeline: pipeline.value }),
+)
 
 function scegli(fase) {
   scelta.value = fase

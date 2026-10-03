@@ -77,7 +77,12 @@
       </div>
     </div>
 
-    <div class="min-h-0 flex-1 overflow-y-auto px-3 pb-24 pt-2">
+    <div
+      ref="contenitore"
+      class="min-h-0 flex-1 overflow-y-auto px-3 pb-24 pt-2"
+    >
+      <!-- pulled down from the top, the day reloads -->
+      <TiraPerAggiornare v-bind="tira" />
       <template v-for="(riga, i) in righe" :key="riga.id">
         <div
           v-if="i === adesso"
@@ -157,6 +162,8 @@
 </template>
 
 <script setup>
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { NAMED_HEX } from '@/utils/calendarColors'
@@ -177,10 +184,14 @@ const props = defineProps({
   // the appointment open in the panel beside, if any
   selected: { type: String, default: '' },
   caricando: { type: Boolean, default: false },
+  // what reloads the day when it is pulled down from the top
+  aggiorna: { type: Function, default: () => {} },
 })
 // the day shown, YYYY-MM-DD: the page's own, so the grid opens on it too
 const giorno = defineModel('date', { type: String, required: true })
 const emit = defineEmits(['open'])
+const contenitore = ref(null)
+const tira = useTiraPerAggiornare(contenitore, () => props.aggiorna())
 
 const { getUser } = usersStore()
 const lingua = window.navigator?.language || 'it-IT'

@@ -42086,3 +42086,7 @@ msgstr "Nessuno ha risposto"
 #: frontend/src/components/SenzaRete.vue
 msgid "No network: until it comes back, changes are not saved."
 msgstr "Sei senza rete: finché non torna, le modifiche non si salvano."
+
+#: frontend/src/components/Mobile/TiraPerAggiornare.vue
+msgid "Updating the list…"
+msgstr "Aggiorno l'elenco…"

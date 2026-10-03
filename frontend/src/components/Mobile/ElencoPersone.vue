@@ -33,6 +33,8 @@
       class="min-h-0 flex-1 overflow-y-auto pb-20"
       @scroll.passive="forseAltre"
     >
+      <!-- pulled down from the top, the list reloads -->
+      <TiraPerAggiornare v-bind="tira" />
       <div
         v-for="persona in righe"
         :key="persona.name"
@@ -102,6 +104,8 @@
 </template>
 
 <script setup>
+import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
+import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { indirizzoTel, mascherato } from '@/utils/schedaPersona'
@@ -134,8 +138,10 @@ const carica = createResource({
 })
 
 function cerca() {
-  carica.submit({ text: testo.value.trim(), start: 0 })
+  return carica.submit({ text: testo.value.trim(), start: 0 })
 }
+
+const tira = useTiraPerAggiornare(contenitore, cerca)
 
 const cercaPocoDopo = debounce(cerca, 300)
 watch(testo, cercaPocoDopo)
