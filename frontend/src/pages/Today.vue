@@ -14,7 +14,10 @@
           :aria-label="__('Previous day')"
           @click="shift(-1)"
         />
+        <!-- on a phone the title already says today: the way back only from
+             another day -->
         <Button
+          v-if="!isMobileView || !isToday"
           variant="ghost"
           :label="dayLabel"
           :title="__('Back to today')"
@@ -150,8 +153,10 @@
             }}
           </p>
         </div>
+        <!-- the first ones, the rest one tap away: a week left open is a page
+             of its own, not something to scroll past to reach the invoices -->
         <div
-          v-for="group in pastOpen"
+          v-for="group in pastOpenShown"
           :key="group.day"
           class="flex flex-col gap-1"
         >
@@ -179,6 +184,13 @@
             </template>
           </div>
         </div>
+        <Button
+          v-if="pastOpenHidden"
+          :label="__('Show all {0}', [pastOpenCount])"
+          size="lg"
+          class="self-start max-md:w-full"
+          @click="allPastOpen = true"
+        />
       </section>
 
       <!-- and what is left to invoice -->
@@ -206,7 +218,15 @@ import LoaderMark from '@/components/Espresso/LoaderMark.vue'
 import StatTile from '@/components/Espresso/StatTile.vue'
 import ParticipantRow from '@/components/Today/ParticipantRow.vue'
 import { laSeduta } from '@/utils/cicli'
-import { byDay, shiftDay, summarize, timeOf, waitingRoom } from '@/utils/oggi'
+import { isMobileView } from '@/composables/breakpoints'
+import {
+  byDay,
+  firstOfPast,
+  shiftDay,
+  summarize,
+  timeOf,
+  waitingRoom,
+} from '@/utils/oggi'
 import { formatDate } from '@/utils'
 import { Breadcrumbs, Button, createResource, usePageMeta } from 'frappe-ui'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
@@ -242,6 +262,23 @@ onBeforeUnmount(() => clearInterval(timer))
 const appointments = computed(() => day.data?.appointments || [])
 const waiting = computed(() => waitingRoom(appointments.value))
 const pastOpen = computed(() => byDay(day.data?.past_open || []))
+
+// what the last days left open: the first few, the rest when asked
+const PAST_SHOWN = 4
+const allPastOpen = ref(false)
+const pastOpenShown = computed(() =>
+  allPastOpen.value ? pastOpen.value : firstOfPast(pastOpen.value, PAST_SHOWN),
+)
+const pastOpenCount = computed(() =>
+  (day.data?.past_open || []).reduce(
+    (n, appointment) =>
+      n + appointment.participants.filter((p) => p.status === 'Booked').length,
+    0,
+  ),
+)
+const pastOpenHidden = computed(
+  () => !allPastOpen.value && pastOpenCount.value > PAST_SHOWN,
+)
 const stats = computed(() => {
   const counts = summarize(appointments.value)
   return [
@@ -252,8 +289,9 @@ const stats = computed(() => {
   ]
 })
 
+const isToday = computed(() => !date.value || date.value === day.data?.today)
 const dayLabel = computed(() =>
-  !date.value || date.value === day.data?.today
+  isToday.value
     ? __('Today')
     : formatDate(day.data?.date || date.value, 'ddd D MMM'),
 )

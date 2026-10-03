@@ -1,11 +1,20 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  One person of an appointment on the desk's day: who, how they stand, the forms
+  they owe, how long they have been waiting, and the next outcomes to give. On a
+  phone the name has its own line and the outcomes the next, as wide as the
+  screen and as tall as a thumb.
+-->
 <template>
-  <div class="flex items-center gap-3 py-2 max-md:flex-wrap">
+  <div class="flex items-center gap-3 py-2 max-md:flex-wrap max-md:py-3">
     <!-- a phone gives the name its own line, and the buttons the next -->
     <div class="flex min-w-0 flex-1 items-center gap-2 max-md:basis-full">
       <RouterLink
         v-if="participant.party_type === 'CRM Lead' && participant.party"
         :to="{ name: 'Lead', params: { leadId: participant.party } }"
-        class="truncate text-base-medium text-ink-gray-8 hover:underline"
+        class="truncate text-base-medium text-ink-gray-8 hover:underline max-md:-my-2 max-md:py-2"
       >
         {{ participant.participant_name || participant.party }}
       </RouterLink>
@@ -49,15 +58,19 @@
         {{ waitingLabel(minutesWaiting(participant.arrived_at, now)) }}
       </span>
     </div>
-    <div v-if="canMark" class="flex shrink-0 items-center gap-1.5">
+    <div
+      v-if="canMark"
+      class="flex shrink-0 items-center gap-1.5 max-md:w-full max-md:gap-2"
+    >
       <Button
         v-for="(outcome, i) in NEXT[participant.status] || []"
         :key="outcome"
         :label="__(ACTIONS[outcome])"
         :variant="i === 0 && outcome !== 'Booked' ? 'solid' : 'subtle'"
         :theme="outcome === 'No Show' ? 'red' : 'gray'"
+        :size="isMobileView ? 'lg' : 'sm'"
         :loading="busy === outcome"
-        class="touch-target"
+        class="touch-target max-md:flex-1"
         @click="mark(outcome)"
       />
     </div>
@@ -65,6 +78,7 @@
 </template>
 
 <script setup>
+import { isMobileView } from '@/composables/breakpoints'
 import { NEXT, minutesWaiting, timeOf, waitingLabel } from '@/utils/oggi'
 import { Badge, Button, call, toast } from 'frappe-ui'
 import { ref } from 'vue'
