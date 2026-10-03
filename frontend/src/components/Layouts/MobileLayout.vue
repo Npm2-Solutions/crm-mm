@@ -28,6 +28,7 @@ import MobileBottomNav from '@/components/Mobile/MobileBottomNav.vue'
 import SenzaRete from '@/components/SenzaRete.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
 import { chiudiPrimaDiTornare, tornaConLeBriciole } from '@/utils/indietro'
+import { allaCimaConLaScheda } from '@/utils/schedaAttiva'
 import { seguiLaTastiera } from '@/utils/tastieraAperta'
 import { trascinaIFogli } from '@/utils/trascinaFoglio'
 import { registerScrollContainer, unregisterScrollContainer } from 'frappe-ui'
@@ -89,6 +90,11 @@ const router = useRouter()
 let smettiIndietro = () => {}
 onMounted(() => (smettiIndietro = chiudiPrimaDiTornare(router)))
 onBeforeUnmount(() => smettiIndietro())
+
+// the tab one is on, tapped again, takes its page back to the top
+let smettiCima = () => {}
+onMounted(() => (smettiCima = allaCimaConLaScheda()))
+onBeforeUnmount(() => smettiCima())
 
 // the crumb a page came from goes back to it, the list as it was left
 let smettiBriciole = () => {}

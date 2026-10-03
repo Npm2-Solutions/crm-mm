@@ -120,8 +120,10 @@ export function stessoPosto(router, percorso, indietro) {
  * On a phone the crumb a page came from («People» over a person) takes it
  * back, to the list as it was left (utils/ritorno.js), instead of opening that
  * page anew from the top. An iPhone's installed app has no swipe back: the
- * crumb is the way back. A crumb that leads anywhere else goes there as it
- * always did. Gives back the function that stops it.
+ * crumb is the way back. A tab of the bar at the bottom does the same: from a
+ * person opened from the list, «People» is the list as it was. A crumb or a
+ * tab that leads anywhere else goes there as it always did. Gives back the
+ * function that stops it.
  */
 export function tornaConLeBriciole(router, win = window) {
   const base = router.options.history?.base || ''
@@ -129,7 +131,9 @@ export function tornaConLeBriciole(router, win = window) {
     if (evento.defaultPrevented || evento.button !== 0) return
     if (evento.metaKey || evento.ctrlKey || evento.shiftKey || evento.altKey)
       return
-    const link = evento.target.closest?.('#app-header a[href]')
+    const link = evento.target.closest?.(
+      "#app-header a[href], nav[data-slot='mobile-nav'] a[href]",
+    )
     if (!link) return
     let percorso = link.getAttribute('href')
     if (base && percorso.startsWith(base)) {

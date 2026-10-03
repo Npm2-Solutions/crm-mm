@@ -159,6 +159,7 @@ import { readReceipts } from '@/composables/conversationState'
 import { useRitorno } from '@/composables/ritorno'
 import { keepInPlace, laterLabel, whyItLeft } from '@/utils/conversation'
 import { appLocale } from '@/utils/locale'
+import { alToccoDellaScheda } from '@/utils/schedaAttiva'
 import { schedaChiusa } from '@/utils/schedaChiusa'
 import {
   Breadcrumbs,
@@ -447,6 +448,18 @@ function refreshList() {
 // a message arriving reorders this list, so it has to be told — and so does a
 // reply sent from the composer, which is also the moment it was read
 const refresh = debounce(() => reload(), 400)
+
+// on a phone the Chat tab, tapped while a conversation is open, goes back to
+// the list of them (utils/schedaAttiva.js), as a phone's own apps do
+let smettiScheda = () => {}
+onMounted(() => {
+  smettiScheda = alToccoDellaScheda(() => {
+    if (!isMobileView.value || !chosen.value) return false
+    back()
+    return true
+  })
+})
+onBeforeUnmount(() => smettiScheda())
 
 onMounted(() => {
   $socket.on('crm_sms_message', refresh)
