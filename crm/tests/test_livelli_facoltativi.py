@@ -281,6 +281,19 @@ class TestReadOnly(FacoltativiTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			utenti.verifica_livelli(["sola_lettura"])
 
+	def test_preparing_the_sistema_ts_file_is_transmitting(self):
+		"""The year's file is what goes to the Sistema TS: the invoices page offered
+		«Prepare the submission file» to the read-only level, and the server asked
+		only whether its roles may create a submission."""
+		from unittest.mock import patch
+
+		from crm.tessera_sanitaria.api import prepare_ts_submission
+
+		utenti.assegna_livelli(SOLA_LETTURA, ["amministrazione", "sola_lettura"])
+		self.come(SOLA_LETTURA)
+		with patch("frappe.has_permission", return_value=True):
+			self.assertRaises(frappe.PermissionError, prepare_ts_submission, "Studio", 2026)
+
 
 class TestWritingAsksTheCapability(FacoltativiTestCase):
 	def test_only_the_manager_deletes_a_person(self):

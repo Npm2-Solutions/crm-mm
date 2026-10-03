@@ -184,7 +184,11 @@
                    it. On an export company the file is prepared and uploaded
                    from the portal, so there is nothing to press. -->
               <Button
-                v-if="row.action === 'ts' && tsMode !== 'export'"
+                v-if="
+                  row.action === 'ts' &&
+                  tsMode !== 'export' &&
+                  puo('fatture.invia')
+                "
                 variant="subtle"
                 :loading="sending === row.name"
                 :label="__('Report', null, 'Sistema TS')"
@@ -327,7 +331,8 @@
                     : __('Nothing has been accepted yet.')
                 }}
               </div>
-              <div>
+              <!-- preparing the year's file is sending it: who transmits -->
+              <div v-if="puo('fatture.invia')">
                 <Button
                   variant="solid"
                   :loading="preparing"

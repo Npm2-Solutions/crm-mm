@@ -69,7 +69,11 @@ def prepare_ts_submission(company: str, year: int) -> dict:
 	Invoices that do not validate are listed and left behind rather than holding the
 	whole year hostage: a single broken row must not cost the deadline.
 	"""
+	from crm.permissions.livelli import verifica_nel_crm
+
 	frappe.has_permission("CRM TS Submission", "create", throw=True)
+	# the year's file is what goes to the Sistema TS: who transmits, as for one invoice
+	verifica_nel_crm("fatture.invia", messaggio=_("You are not allowed to transmit invoices"))
 	return ts.prepara_invio(company, int(year))
 
 
