@@ -60,5 +60,11 @@ describe('tastiera', () => {
     expect(tastiera('cifre').inputmode).toBe('numeric')
     expect(tastiera('telefono').type).toBe('tel')
     expect(tastiera('nessuna')).toEqual({})
+    // a search: the key says so, and a surname is never corrected
+    expect(tastiera('cerca')).toMatchObject({
+      type: 'search',
+      enterkeyhint: 'search',
+      autocorrect: 'off',
+    })
   })
 })

@@ -12,7 +12,7 @@
     <div class="shrink-0 px-3 pb-2 pt-1">
       <TextInput
         v-model="testo"
-        type="search"
+        v-bind="tastiera('cerca')"
         size="md"
         :placeholder="__('Name, website or industry')"
         :aria-label="__('Search organizations')"
@@ -99,6 +99,7 @@
 <script setup>
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useElencoDelTelefono } from '@/composables/elencoDelTelefono'
+import { tastiera } from '@/utils/tastiera'
 import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { usersStore } from '@/stores/users'
 import { rigaDellAzienda } from '@/utils/sulTelefono'

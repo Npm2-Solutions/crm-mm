@@ -84,7 +84,7 @@
       </div>
       <TextInput
         v-model="search"
-        type="text"
+        v-bind="tastiera('cerca')"
         :placeholder="__('Search a name, a company, a number')"
       >
         <template #prefix>
@@ -124,6 +124,7 @@ import ConversationList from '@/components/ConversationList.vue'
 import TiraPerAggiornare from '@/components/Mobile/TiraPerAggiornare.vue'
 import { useRitorno } from '@/composables/ritorno'
 import { useTiraPerAggiornare } from '@/composables/tiraPerAggiornare'
+import { tastiera } from '@/utils/tastiera'
 import LucideChevronDown from '~icons/lucide/chevron-down'
 import LucideChevronUp from '~icons/lucide/chevron-up'
 import LucideSearch from '~icons/lucide/search'

@@ -154,4 +154,27 @@ describe('seguiLaTastiera', () => {
     smetti()
     expect(document.documentElement.dataset.tastiera).toBeUndefined()
   })
+
+  it('closes the keyboard when the search key is pressed in a search', () => {
+    const { win } = finestra()
+    const smetti = seguiLaTastiera(win)
+    const cerca = document.createElement('input')
+    cerca.type = 'search'
+    const nome = document.createElement('input')
+    document.body.append(cerca, nome)
+    const invio = (el) =>
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+      )
+    cerca.focus()
+    invio(cerca)
+    expect(document.activeElement).not.toBe(cerca)
+    // any other field keeps Enter for itself
+    nome.focus()
+    invio(nome)
+    expect(document.activeElement).toBe(nome)
+    smetti()
+    cerca.remove()
+    nome.remove()
+  })
 })
