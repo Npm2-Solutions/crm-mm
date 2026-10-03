@@ -1,8 +1,12 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The odontogram: the teeth as the dentist sees them - the patient's right on the
   left, the upper arch above the lower - each with a mark for each condition it
   has. A missing tooth is struck through. Picking a tooth says what it is; the
-  card that holds the chart writes it.
+  card that holds the chart writes it. On a phone an arch's row wraps after its
+  first quadrant: sixteen teeth side by side ran off the screen.
 -->
 <template>
   <div class="overflow-x-auto">
@@ -16,7 +20,7 @@
         <div class="flex items-end gap-0.5">
           <template v-for="(dente, i) in riga" :key="dente">
             <div
-              v-if="i === riga.length / 2"
+              v-if="!aCapo && i === riga.length / 2"
               class="mx-1 self-stretch border-l border-outline-gray-2"
               aria-hidden="true"
             />
@@ -68,6 +72,7 @@
 </template>
 
 <script setup>
+import { isMobileView } from '@/composables/breakpoints'
 import { arcate, delDente, mancante, segno as punto } from '@/utils/cure'
 import { computed } from 'vue'
 
@@ -79,7 +84,16 @@ const props = defineProps({
 })
 const emit = defineEmits(['select'])
 
-const righe = computed(() => arcate(props.dentition))
+// on a phone each row wraps after its first quadrant, read on as one row
+const aCapo = isMobileView
+const righe = computed(() => {
+  const intere = arcate(props.dentition)
+  if (!aCapo.value) return intere
+  return intere.flatMap((riga) => [
+    riga.slice(0, riga.length / 2),
+    riga.slice(riga.length / 2),
+  ])
+})
 // the rows above the line are the upper arch: half of them
 const divisione = computed(() => righe.value.length / 2)
 
