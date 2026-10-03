@@ -42066,3 +42066,15 @@ msgstr "Del gruppo"
 msgctxt "Dashboards"
 msgid "Mine"
 msgstr "Mie"
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "The notes written on this record appear here."
+msgstr "Qui compaiono le note scritte su questa scheda."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "The tasks about this record appear here."
+msgstr "Qui compaiono le cose da fare su questa scheda."
+
+#: frontend/src/components/Activities/Activities.vue
+msgid "The files attached to this record appear here."
+msgstr "Qui compaiono i file allegati a questa scheda."

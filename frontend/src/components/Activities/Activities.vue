@@ -680,7 +680,7 @@ import {
 import { useRoute } from 'vue-router'
 
 const { $socket } = globalStore()
-const { getUser, puo } = usersStore()
+const { getUser, puo, solaLettura } = usersStore()
 const { capture } = useTelemetry()
 const { isNewestFirst } = useTimelinePreferences()
 
@@ -1036,13 +1036,18 @@ const emptyTextDescription = computed(() => {
   } else if (title.value == 'Data') {
     description = 'No data fields have been added yet.'
   } else if (title.value == 'Notes') {
-    description = 'Nothing here for now. Add a note to keep track of things.'
+    // an invitation to add is for who can: the others read that there is none
+    description = puo('note.scrivi')
+      ? 'Nothing here for now. Add a note to keep track of things.'
+      : 'The notes written on this record appear here.'
   } else if (title.value == 'Tasks') {
-    description =
-      'Nothing to do at the moment. Start organizing by adding one here.'
+    description = !solaLettura()
+      ? 'Nothing to do at the moment. Start organizing by adding one here.'
+      : 'The tasks about this record appear here.'
   } else if (title.value == 'Attachments') {
-    description =
-      'No files have been attached yet. Upload files to see them here.'
+    description = canWrite.value
+      ? 'No files have been attached yet. Upload files to see them here.'
+      : 'The files attached to this record appear here.'
   } else if (title.value == 'WhatsApp') {
     description = 'Start a conversation now!'
   } else if (title.value == 'SMS') {
