@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  How the calendar opens and when events are reminded; the fields wait for the
+  settings, as a page opened from a link draws before they come.
+-->
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div
@@ -32,8 +38,9 @@
       </div>
     </div>
 
-    <!-- Fields -->
-    <div class="flex flex-1 flex-col overflow-y-auto">
+    <!-- Fields: once the settings have come, or the first draw reads them
+         from nothing -->
+    <div v-if="settings.doc" class="flex flex-1 flex-col overflow-y-auto">
       <div class="flex items-center justify-between gap-8 py-3 px-2">
         <div class="flex flex-col">
           <div class="text-p-base-medium text-ink-gray-7 truncate">
@@ -271,12 +278,12 @@ import { computed } from 'vue'
 const { _settings: settings } = getSettings()
 
 const notifications = computed({
-  get: () => settings.doc.event_notifications || [],
+  get: () => settings.doc?.event_notifications || [],
   set: (val) => (settings.doc.event_notifications = val),
 })
 
 const allDayNotifications = computed({
-  get: () => settings.doc.all_day_event_notifications || [],
+  get: () => settings.doc?.all_day_event_notifications || [],
   set: (val) => (settings.doc.all_day_event_notifications = val),
 })
 
