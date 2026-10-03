@@ -8,11 +8,12 @@
       :icon="tab.icon"
       :active="activeTab === tab.key"
     />
-    <!-- the notifications are behind "More": a dot says something is new -->
+    <!-- the rest is on the "More" page, the notifications first: a dot says
+         something is new. It stays lit on the pages one opens from there -->
     <MobileNavItem
+      :to="{ name: 'More' }"
       :label="__('More')"
-      :active="mobileSidebarOpened"
-      @click="mobileSidebarOpened = true"
+      :active="!activeTab"
     >
       <template #default="{ active }">
         <span class="relative">
@@ -35,7 +36,6 @@
 <script setup>
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
 import MenuIcon from '@/components/Icons/MenuIcon.vue'
-import { mobileSidebarOpened } from '@/composables/settings'
 import { unreadNotificationsCount } from '@/stores/notifications'
 import { callEnabled } from '@/composables/telephony'
 import { usersStore } from '@/stores/users'
@@ -50,7 +50,7 @@ const { puo, puoUno, ambito } = usersStore()
 
 // The four places a phone opens all day, from the same menu as the sidebar
 // (utils/menu.js): the day's pages, the people, the conversations. Everything
-// else stays one tap away behind "More", which is the drawer.
+// else stays one tap away behind "More" (pages/Altro.vue).
 const tabs = computed(() =>
   barraDelTelefono(
     menuDi({ puo, puoUno, ambito, telefono: callEnabled.value }),

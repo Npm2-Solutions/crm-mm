@@ -11,8 +11,6 @@
   <div class="relative flex h-full bg-surface-gray-1">
     <Sidebar
       v-model:collapsed="isSidebarCollapsed"
-      :disable-collapse="mobile"
-      :width="mobile ? '260px' : undefined"
       class="border-r border-outline-gray-1"
     >
       <div class="flex h-full flex-col p-2">
@@ -25,9 +23,7 @@
           <SidebarItem
             id="notifications-btn"
             :label="__('Notifications')"
-            :to="mobile ? { name: 'Notifications' } : undefined"
-            :active="mobile && activeItem === 'Notifications'"
-            @click="onNotificationsClick"
+            @click="toggleNotificationPanel()"
           >
             <template #prefix>
               <span class="relative grid size-4 place-items-center">
@@ -148,19 +144,8 @@
         </div>
 
         <!-- the settings, where one looks for them: not only in the menu under
-             the name. On the phone at the drawer's foot -->
-        <FirstStepsCard v-if="mobile" class="mt-3" />
-        <SidebarItem
-          v-if="mobile"
-          :label="__('Settings')"
-          class="mt-2"
-          @click="openSettings"
-        >
-          <template #prefix>
-            <LucideSettings class="size-4 text-ink-gray-7" />
-          </template>
-        </SidebarItem>
-        <div v-if="!mobile" class="mt-auto flex flex-col gap-1 pt-2">
+             the name -->
+        <div class="mt-auto flex flex-col gap-1 pt-2">
           <div class="mb-1 flex flex-col gap-2">
             <FirstStepsCard :collapsed="isCollapsed" />
           </div>
@@ -193,7 +178,7 @@
         </div>
       </div>
     </Sidebar>
-    <Notifications v-if="!mobile" />
+    <Notifications />
   </div>
 </template>
 
@@ -202,21 +187,14 @@ import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideSettings from '~icons/lucide/settings'
 import CollapsibleSection from '@/components/CollapsibleSection.vue'
 import Icon from '@/components/Icon.vue'
-import PinIcon from '@/components/Icons/PinIcon.vue'
 import UserDropdown from '@/components/UserDropdown.vue'
 import FirstStepsCard from '@/components/FirstSteps/FirstStepsCard.vue'
-import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
-import DealsIcon from '@/components/Icons/DealsIcon.vue'
-import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
-import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
-import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import { callEnabled } from '@/composables/telephony'
-import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import Notifications from '@/components/Notifications.vue'
 import { currentNavKey } from '@/utils/navigation'
-import { viewsStore } from '@/stores/views'
+import { useVisteSalvate } from '@/composables/visteSalvate'
 import {
   unreadNotificationsCount,
   notificationsStore,
@@ -224,29 +202,22 @@ import {
 import { usersStore } from '@/stores/users'
 import { menuDi } from '@/utils/menu'
 import { ICONE_DEL_MENU } from '@/components/Icons/menu'
-import { showSettings, mobileSidebarOpened } from '@/composables/settings'
+import { showSettings } from '@/composables/settings'
 import { Sidebar, SidebarItem, SidebarLabel, Tooltip } from 'frappe-ui'
 import { useStorage } from '@vueuse/core'
 import { useDemoData } from '@/composables/demoData'
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
-const props = defineProps({
-  mobile: { type: Boolean, default: false },
-})
-
 const route = useRoute()
 
-const { getPinnedViews, getPublicViews } = viewsStore()
 const { toggle: toggleNotificationPanel } = notificationsStore()
 const { clearDemoData, isDemoDataCreated } = useDemoData()
 const { puo, puoUno, ambito } = usersStore()
 
 const isSidebarCollapsed = useStorage('isSidebarCollapsed', false)
 
-// The mobile drawer pins the sidebar open, so it is never visually collapsed
-// even when the stored rail state says otherwise.
-const isCollapsed = computed(() => isSidebarCollapsed.value && !props.mobile)
+const isCollapsed = computed(() => isSidebarCollapsed.value)
 
 // the menu one sees: the groups of the centre's work with what one may open
 const menu = computed(() =>
@@ -256,67 +227,12 @@ const menu = computed(() =>
 // the icon of each entry of the menu (utils/menu.js names them)
 const ICONE = ICONE_DEL_MENU
 
-// Settings is a dialog and so is the phone's nav drawer: one focus trap at a time
 function openSettings() {
-  mobileSidebarOpened.value = false
   showSettings.value = true
 }
 
 // the views saved for everyone and the pinned ones, after the menu
-const savedViews = computed(() => {
-  const viste = []
-  if (getPublicViews().length) {
-    viste.push({
-      name: 'Public Views',
-      opened: true,
-      views: parseView(getPublicViews()),
-    })
-  }
-  if (getPinnedViews().length) {
-    viste.push({
-      name: 'Pinned Views',
-      opened: true,
-      views: parseView(getPinnedViews()),
-    })
-  }
-  return viste
-})
-
-function parseView(views) {
-  return views.map((view) => {
-    return {
-      label: view.label,
-      icon: getIcon(view.route_name, view.icon),
-      key: view.name,
-      to: {
-        name: view.route_name,
-        params: { viewType: view.type || 'list' },
-        query: { view: view.name },
-      },
-    }
-  })
-}
-
-function getIcon(routeName, icon) {
-  if (icon) return icon
-
-  switch (routeName) {
-    case 'Leads':
-      return LeadsIcon
-    case 'Deals':
-      return DealsIcon
-    case 'Contacts':
-      return ContactsIcon
-    case 'Organizations':
-      return OrganizationsIcon
-    case 'Notes':
-      return NoteIcon
-    case 'Call Logs':
-      return PhoneIcon
-    default:
-      return PinIcon
-  }
-}
+const savedViews = useVisteSalvate()
 
 // A saved view's key is its name; a plain nav item's key is its route name.
 function currentRouteKey() {
@@ -340,23 +256,10 @@ function selectItem(event, key) {
     return
   }
   activeItem.value = key
-  // Selecting the row for the route already open leaves the URL unchanged, so
-  // the drawer's navigation watcher never fires. Close it here too.
-  if (props.mobile) {
-    mobileSidebarOpened.value = false
-  }
 }
 
 watch(
   () => [route.name, route.query.view, route.params.viewType],
   () => (activeItem.value = currentRouteKey()),
 )
-
-function onNotificationsClick(event) {
-  if (props.mobile) {
-    selectItem(event, 'Notifications')
-  } else {
-    toggleNotificationPanel()
-  }
-}
 </script>

@@ -4,11 +4,7 @@
 // The first steps (doc 37), shared by the sidebar's card and the panel: the
 // server's list (crm/primi_passi.py), whether the panel is open, whether the
 // person hid them - on this browser, a convenience - and taking a step.
-import {
-  activeSettingsPage,
-  mobileSidebarOpened,
-  showSettings,
-} from '@/composables/settings'
+import { activeSettingsPage, showSettings } from '@/composables/settings'
 import { useBroadcast } from '@/composables/useBroadcast'
 import { sessionStore } from '@/stores/session'
 import { daMostrare, riassunto } from '@/utils/primiPassi'
@@ -82,7 +78,6 @@ export function usePrimiPassi() {
   }
 
   function apriPannello() {
-    mobileSidebarOpened.value = false
     pannelloPrimiPassi.value = true
     ricarica()
   }
@@ -91,7 +86,6 @@ export function usePrimiPassi() {
   // open there.
   function fai(passo) {
     pannelloPrimiPassi.value = false
-    mobileSidebarOpened.value = false
     if (passo.page) {
       activeSettingsPage.value = passo.page
       showSettings.value = true
