@@ -67,14 +67,21 @@
   select.h-8,
   button.h-7[data-slot='trigger'],
   button.h-8[data-slot='trigger'],
+  button.h-7[aria-haspopup='listbox'],
+  button.h-8[aria-haspopup='listbox'],
   [role='combobox'].h-7,
   [role='combobox'].h-8 {
     height: 2.5rem;
     font-size: 16px;
   }
-  /* frappe-ui's select grows with what it holds: its least height instead */
-  button.min-h-7[data-slot='trigger'],
-  button.min-h-8[data-slot='trigger'] {
+  /* what a picker shows reads as what one types beside it */
+  button[aria-haspopup='listbox']:is(.h-7, .h-8) .text-base {
+    font-size: 16px;
+  }
+  /* frappe-ui's select and combobox grow with what they hold: their least
+     height instead (the combobox's is a box around its input, not a button) */
+  [data-slot='trigger'].min-h-7,
+  [data-slot='trigger'].min-h-8 {
     min-height: 2.5rem;
     font-size: 16px;
   }
@@ -94,6 +101,84 @@
   }
   .dialog-content:has(> .settings-modal)::before {
     content: none;
+  }
+  /* A setting's row: its words, then the field it sets, as wide as the
+     screen. Side by side the words were a column of three words a line, and
+     the field a box of 160px. A switch stays beside its words, as in a
+     phone's own settings, and a row of a list (a menu, a level) is no
+     setting's row. */
+  .settings-modal
+    div.flex.items-center.justify-between:has(> div.flex-col:first-child):has(
+      > div:last-child
+        :is(
+          select,
+          input,
+          textarea,
+          [data-slot='trigger'],
+          [role='combobox'],
+          [aria-haspopup='listbox'],
+          .form-control
+        )
+    ):not(:has([role='switch'])) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .settings-modal
+    div.flex.items-center.justify-between:has(> div.flex-col:first-child):has(
+      > div:last-child
+        :is(
+          select,
+          input,
+          textarea,
+          [data-slot='trigger'],
+          [role='combobox'],
+          [aria-haspopup='listbox'],
+          .form-control
+        )
+    ):not(:has([role='switch']))
+    > div:last-child,
+  .settings-modal
+    div.flex.items-center.justify-between:has(> div.flex-col:first-child):has(
+      > div:last-child
+        :is(
+          select,
+          input,
+          textarea,
+          [data-slot='trigger'],
+          [role='combobox'],
+          [aria-haspopup='listbox'],
+          .form-control
+        )
+    ):not(:has([role='switch']))
+    > div:last-child
+    :is(.w-32, .w-36, .w-40, .w-44, .w-48, .w-52, .w-56, .w-60, .w-64) {
+    width: 100%;
+  }
+}
+
+/* A settings page on a phone scrolls as one, its title and actions with the
+   rest: on a desk its list or form scrolls in a box under a header that
+   stays, which on a phone left half the screen still and the other half a
+   window - and the last lines cut. A short list that scrolls on purpose
+   (`max-h-*`) keeps doing so. */
+@media (max-width: 767px) {
+  /* a page's columns, not what fills a box (an avatar's letter, a picture) */
+  .settings-modal [data-pagina-impostazioni] .h-full.flex-col {
+    height: auto;
+  }
+  .settings-modal
+    [data-pagina-impostazioni]
+    .overflow-y-auto:not([class*='max-h-']) {
+    overflow-y: visible;
+  }
+  .settings-modal
+    [data-pagina-impostazioni]
+    .flex-1.overflow-y-auto:not([class*='max-h-']),
+  .settings-modal
+    [data-pagina-impostazioni]
+    .min-h-0.overflow-y-auto:not([class*='max-h-']) {
+    flex: none;
   }
 }
 

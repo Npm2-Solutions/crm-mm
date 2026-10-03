@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The Meta connection: the Facebook account the CRM reads with, and the Pages it
   uses.
 
@@ -28,7 +31,7 @@
           }}
         </span>
       </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 gap-3 max-md:grid-cols-1">
         <FormControl
           v-model="appForm.app_id"
           type="text"

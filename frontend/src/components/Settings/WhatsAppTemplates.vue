@@ -1,3 +1,9 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  The centre's WhatsApp templates: what Meta lets a business send first.
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -80,12 +86,15 @@
         </div>
       </div>
 
-      <div
+      <EmptyState
         v-else
-        class="rounded-lg border border-dashed border-outline-gray-2 p-6 text-center text-p-base text-ink-gray-5"
-      >
-        {{ __('No templates yet.') }}
-      </div>
+        :title="__('No templates yet')"
+        :text="
+          __(
+            'WhatsApp lets a business write first, or after 24 hours of silence, only with a template Meta has approved: create one here, or bring the ones you already have on Meta.',
+          )
+        "
+      />
     </div>
   </div>
 
@@ -207,6 +216,7 @@
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import { createResource, Dialog, FormControl, toast } from 'frappe-ui'
 import { ref, reactive, computed } from 'vue'
 

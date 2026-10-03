@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The people who work with DottorCloud and their levels; on a phone a row is
+  the name and address, the level under them, the menu at the side.
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 p-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -94,35 +100,29 @@
       <ul class="divide-y divide-outline-elevation-2 overflow-y-auto px-2">
         <template v-for="user in usersList" :key="user.name">
           <!-- the name gives way, not the role: an address as long as the
-               row pushed the role and the menu past the edge of a phone -->
-          <li class="flex items-center justify-between gap-3 py-2">
-            <div class="flex min-w-0 items-center">
-              <Avatar
-                :image="user.user_image"
-                :label="user.full_name"
-                size="xl"
-              />
-              <div class="ml-3 flex min-w-0 flex-col">
-                <div class="truncate text-p-base text-ink-gray-8">
-                  {{ user.full_name }}
-                </div>
-                <div class="truncate text-p-sm text-ink-gray-5">
-                  {{ user.name }}
-                </div>
+               row pushed the role and the menu past the edge of a phone. On a
+               phone the role goes under the address, where the name keeps the
+               row's width -->
+          <li
+            class="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-3 py-2 max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:gap-y-1.5"
+          >
+            <Avatar
+              :image="user.user_image"
+              :label="user.full_name"
+              size="xl"
+              class="max-md:row-span-2 max-md:self-start"
+            />
+            <div class="flex min-w-0 flex-col">
+              <div class="truncate text-p-base text-ink-gray-8">
+                {{ user.full_name }}
+              </div>
+              <div class="truncate text-p-sm text-ink-gray-5">
+                {{ user.name }}
               </div>
             </div>
-            <div class="flex shrink-0 flex-row-reverse items-center gap-2">
-              <Dropdown
-                :options="getMoreOptions(user)"
-                :button="{
-                  icon: 'more-horizontal',
-                  onblur: (e) => {
-                    e.stopPropagation()
-                    confirmRemove = false
-                  },
-                }"
-                placement="right"
-              />
+            <div
+              class="flex min-w-0 justify-end max-md:col-start-2 max-md:row-start-2 max-md:justify-start"
+            >
               <Tooltip
                 v-if="user.agency"
                 :text="
@@ -135,7 +135,7 @@
               </Tooltip>
               <Button
                 v-else
-                class="max-w-56 max-md:max-w-36"
+                class="max-w-56 max-md:max-w-full"
                 :icon-left="levelIcon(user)"
                 @click="editing = user"
               >
@@ -143,6 +143,19 @@
                   {{ levelText(user) }}
                 </span>
               </Button>
+            </div>
+            <div class="max-md:col-start-3 max-md:row-start-1">
+              <Dropdown
+                :options="getMoreOptions(user)"
+                :button="{
+                  icon: 'more-horizontal',
+                  onblur: (e) => {
+                    e.stopPropagation()
+                    confirmRemove = false
+                  },
+                }"
+                placement="right"
+              />
             </div>
           </li>
         </template>

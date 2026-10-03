@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   A library the plans are written with, as a settings page: searched, filtered
   by group and source, a row opened to be put right, a new one of the centre's
   added. The libraries are the ones DottorCloud ships - the CRM's exercises, the
@@ -106,9 +109,12 @@
                 theme="gray"
                 :label="__('Off')"
               />
+              <!-- what the centre added is the exception worth a mark; a
+                   «Library» on every row of the library said nothing -->
               <Badge
+                v-if="(row.source || 'Centre') === 'Centre'"
                 variant="subtle"
-                :theme="(row.source || 'Centre') === 'Centre' ? 'blue' : 'gray'"
+                theme="blue"
                 :label="sourceLabel(row.source)"
               />
             </span>

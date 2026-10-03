@@ -1,4 +1,7 @@
 <!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
   The switches that apply to every document, and the two buttons that only make
   sense here.
 
@@ -13,7 +16,7 @@
     cut mid-line, and Update floating halfway down the screen.
   -->
   <div
-    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8"
+    class="flex h-full flex-col gap-6 overflow-y-auto py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
   >
     <div class="flex flex-col gap-1 px-2">
       <h2

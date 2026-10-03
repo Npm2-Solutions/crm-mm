@@ -1,3 +1,9 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  Short links that count who opens them and can start an automation.
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -46,9 +52,15 @@
           />
         </div>
       </div>
-      <div v-else-if="!links.loading" class="text-p-base text-ink-gray-5">
-        {{ __('No tracked links yet.') }}
-      </div>
+      <EmptyState
+        v-else-if="!links.loading"
+        :title="__('No tracked links yet')"
+        :text="
+          __(
+            'A short link that counts who opens it and can start an automation: put one in a message instead of the address.',
+          )
+        "
+      />
     </div>
   </div>
 
@@ -93,6 +105,7 @@
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import {
   createListResource,
   createResource,

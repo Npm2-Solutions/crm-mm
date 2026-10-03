@@ -1,3 +1,9 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  On a phone each format's picker takes the screen's width under its words:
+  at its desk width «yyyy-mm-dd» read «yyyy-mm-d».
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -59,7 +65,7 @@
           <Link
             v-model="settings.doc.currency"
             doctype="Currency"
-            class="w-24"
+            class="w-24 max-md:w-full"
           />
         </div>
       </div>
@@ -77,7 +83,7 @@
             v-model="settings.doc.currency_precision"
             :options="getOptions('currency_precision')"
             :placeholder="3"
-            class="!w-16"
+            class="!w-16 max-md:!w-full"
           />
         </div>
       </div>
@@ -99,7 +105,7 @@
           <Select
             v-model="settings.doc.number_format"
             :options="getOptions('number_format')"
-            class="!w-32"
+            class="!w-32 max-md:!w-full"
           />
         </div>
       </div>
@@ -117,7 +123,7 @@
             v-model="settings.doc.float_precision"
             :options="getOptions('float_precision')"
             :placeholder="3"
-            class="!w-16"
+            class="!w-16 max-md:!w-full"
           />
         </div>
       </div>
@@ -135,7 +141,7 @@
           <Select
             v-model="settings.doc.date_format"
             :options="getOptions('date_format')"
-            class="!w-32"
+            class="!w-32 max-md:!w-full"
           />
         </div>
       </div>
@@ -152,7 +158,7 @@
           <Select
             v-model="settings.doc.time_format"
             :options="getOptions('time_format')"
-            class="!w-28"
+            class="!w-28 max-md:!w-full"
           />
         </div>
       </div>

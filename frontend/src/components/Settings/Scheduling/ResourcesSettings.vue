@@ -1,3 +1,9 @@
+<!--
+  Copyright (c) 2026, NPM2 Solutions Srl and contributors
+  For license information, please see license.txt
+
+  Rooms, machines and vehicles an appointment takes besides the people.
+-->
 <template>
   <div
     class="flex h-full flex-col gap-6 py-8 px-6 text-ink-gray-8 max-md:px-3 max-md:py-5"
@@ -66,12 +72,15 @@
           </div>
         </div>
       </div>
-      <div
+      <EmptyState
         v-if="!resources.data?.length && !resources.loading"
-        class="px-2 text-p-base text-ink-gray-5"
-      >
-        {{ __('No rooms or equipment yet. Add the first one!') }}
-      </div>
+        :title="__('No rooms or equipment yet')"
+        :text="
+          __(
+            'Add the first one: the agenda books it with the appointments that need it.',
+          )
+        "
+      />
     </div>
   </div>
 
@@ -159,6 +168,7 @@
 </template>
 
 <script setup>
+import EmptyState from '@/components/Espresso/EmptyState.vue'
 import ColourPicker from '@/components/Settings/Scheduling/ColourPicker.vue'
 import WeeklyHours from '@/components/Settings/Scheduling/WeeklyHours.vue'
 import { createResource, Dialog, FormControl, Switch, toast } from 'frappe-ui'
