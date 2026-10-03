@@ -803,7 +803,15 @@ solo quello che il livello può fare: scrivere a qualcuno, un evento o un
 appuntamento (`agenda.prenota`), registrare una chiamata (`telefono.chiama`), una
 nota, un task (non in Sola lettura). I pulsanti di chiamata si vedono con
 `telefono.chiama`; i filtri dei canali della cronologia (email, chiamate, commenti)
-e i passi del "Getting started" solo a chi li legge o li può fare.
+e i passi del "Getting started" solo a chi li legge o li può fare. Lo stesso nelle
+pagine: l'agenda crea, trascina e ripete con `agenda.prenota`, e il pannello di un
+appuntamento offre modifica, stato ed esiti secondo `can_write` e il cestino secondo
+`can_delete`, che il server calcola per quell'appuntamento; il registro delle
+chiamate registra con `telefono.chiama`, le automazioni si costruiscono con
+`automazioni.gestisci`; «Comunica» al Sistema TS e il file dell'anno chiedono
+`fatture.invia`; l'immagine di un contatto o di un'azienda la cambia chi la
+modifica. Un campo che non si modifica si legge come altrove: la data nel formato
+del sistema, un utente col suo nome, una fonte tradotta.
 
 **I numeri della dashboard seguono la tabella.** Ogni widget chiede la capacità
 che ne legge i numeri (`numeri.operativi`, `numeri.economici`, `numeri.marketing`,
