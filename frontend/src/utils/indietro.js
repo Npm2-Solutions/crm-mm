@@ -11,6 +11,8 @@
  * router puts the address back by itself (it moves forward again, silently).
  */
 
+import { unref } from 'vue'
+
 // what lies on top: a dialog (a sheet on a phone), a menu, a select's list, a
 // link field's list
 const SOPRA = [
@@ -20,17 +22,21 @@ const SOPRA = [
   "[data-reka-popper-content-wrapper] > [role='dialog']",
 ].join(', ')
 
-// panels of a page a back closes first (the agenda's): the last one opened first
+// panels a back closes first (the agenda's, a page of the settings): the last
+// one opened first
 const pannelli = []
 
 /**
- * A panel of the page a back closes before leaving it: `chiudi` closes it.
- * Gives back the function that takes it off, when the panel closes.
+ * A panel a back closes before leaving the page: `chiudi` closes it (or takes
+ * it one step back). A panel inside a sheet (the settings) gives its element,
+ * a ref or a node: a back closes it before the sheet that holds it. Gives
+ * back the function that takes it off, when the panel closes.
  */
-export function chiudeConIndietro(chiudi) {
-  pannelli.push(chiudi)
+export function chiudeConIndietro(chiudi, elemento = null) {
+  const voce = { chiudi, elemento }
+  pannelli.push(voce)
   return () => {
-    const dove = pannelli.lastIndexOf(chiudi)
+    const dove = pannelli.lastIndexOf(voce)
     if (dove >= 0) pannelli.splice(dove, 1)
   }
 }
@@ -40,9 +46,21 @@ export function qualcosaSopra(documento = document) {
   return Boolean(documento.querySelector(SOPRA)) || pannelli.length > 0
 }
 
-/** Closes what lies on top: a dialog or a list as Escape does, else the last panel. */
+/**
+ * Closes what lies on top: a panel inside the sheet on top, else the sheet or
+ * the list as Escape does, else the last panel of the page.
+ */
 export function chiudiSopra(documento = document) {
-  if (documento.querySelector(SOPRA)) {
+  const sopra = [...documento.querySelectorAll(SOPRA)].at(-1)
+  if (sopra) {
+    // [...].reverse(): toReversed() is missing on an older phone's browser
+    const dentro = [...pannelli]
+      .reverse()
+      .find((voce) => sopra.contains(unref(voce.elemento) || null))
+    if (dentro) {
+      dentro.chiudi()
+      return
+    }
     const dove = documento.activeElement || documento.body
     dove.dispatchEvent(
       new KeyboardEvent('keydown', {
@@ -55,7 +73,7 @@ export function chiudiSopra(documento = document) {
     )
     return
   }
-  pannelli.at(-1)?.()
+  pannelli.at(-1)?.chiudi()
 }
 
 /**

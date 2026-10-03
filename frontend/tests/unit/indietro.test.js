@@ -6,6 +6,7 @@ import {
   dallaCronologia,
   qualcosaSopra,
 } from '@/utils/indietro'
+import { ref } from 'vue'
 
 describe('dallaCronologia', () => {
   it("is a back when the history already holds the target's entry", () => {
@@ -91,5 +92,31 @@ describe('chiudiPrimaDiTornare', () => {
     expect(r.prova({ fullPath: '/leads' }, { fullPath: '/calendar' })).toBe(
       true,
     )
+  })
+
+  it('takes a panel inside the sheet on top one step back before the sheet', () => {
+    const foglio = document.createElement('div')
+    foglio.className = 'dialog-content'
+    foglio.dataset.state = 'open'
+    const impostazioni = document.createElement('div')
+    foglio.append(impostazioni)
+    document.body.append(foglio)
+    const premuto = vi.fn()
+    document.addEventListener('keydown', premuto)
+    const r = router()
+    chiudiPrimaDiTornare(r, finestra('/altro'))
+    const indietro = vi.fn()
+    const togli = chiudeConIndietro(indietro, ref(impostazioni))
+    expect(r.prova({ fullPath: '/altro' }, { fullPath: '/calendar' })).toBe(
+      false,
+    )
+    expect(indietro).toHaveBeenCalledTimes(1)
+    expect(premuto).not.toHaveBeenCalled()
+    togli()
+    expect(r.prova({ fullPath: '/altro' }, { fullPath: '/calendar' })).toBe(
+      false,
+    )
+    expect(premuto.mock.calls[0][0].key).toBe('Escape')
+    document.removeEventListener('keydown', premuto)
   })
 })
