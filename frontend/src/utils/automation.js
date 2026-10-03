@@ -1,3 +1,6 @@
+// Copyright (c) 2026, NPM2 Solutions Srl and contributors
+// For license information, please see license.txt
+
 /**
  * Automation builder: catalogue and pure helpers.
  *
@@ -1088,16 +1091,19 @@ export const RECIPES = [
     trigger_event: 'Lead Created',
     build: () => [
       newStep('send_email', {
-        subject: 'Nice to meet you, {{ first_name }}',
-        message: 'Hi {{ first_name }}, thanks for getting in touch.',
+        subject: __('Nice to meet you, {{ first_name }}'),
+        message: __('Hi {{ first_name }}, thanks for getting in touch.'),
       }),
       newStep('wait', { mode: 'duration', days: 2, hours: 0, minutes: 0 }),
       newStep('goal', { event: 'reply', outcome: 'end' }),
       newStep('send_email', {
-        subject: 'Still interested, {{ first_name }}?',
-        message: 'Just checking you got my message.',
+        subject: __('Still interested, {{ first_name }}?'),
+        message: __('Just checking you got my message.'),
       }),
-      newStep('create_task', { title: 'Call {{ lead_name }}', due_in_days: 1 }),
+      newStep('create_task', {
+        title: __('Call {{ lead_name }}'),
+        due_in_days: 1,
+      }),
     ],
   },
   {
@@ -1117,14 +1123,14 @@ export const RECIPES = [
     marketing_consent: true,
     build: () => [
       newStep('send_email', {
-        subject: 'Time for your check-up, {{ first_name }}',
+        subject: __('Time for your check-up, {{ first_name }}'),
         message:
           'Hi {{ first_name }}, it has been a year since your last visit. Shall we book the next one?',
       }),
       newStep('wait', { mode: 'duration', days: 7, hours: 0, minutes: 0 }),
       newStep('goal', { event: 'booking_booked', outcome: 'end' }),
       newStep('create_task', {
-        title: 'Call {{ lead_name }} for the recall',
+        title: __('Call {{ lead_name }} for the recall'),
         due_in_days: 1,
       }),
     ],
@@ -1138,11 +1144,13 @@ export const RECIPES = [
     trigger_event: 'Appointment No Show',
     build: () => [
       newStep('send_sms', {
-        message: 'Hi {{ first_name }}, we missed you today. Shall we rebook?',
+        message: __(
+          'Hi {{ first_name }}, we missed you today. Shall we rebook?',
+        ),
       }),
       newStep('wait', { mode: 'duration', days: 1, hours: 0, minutes: 0 }),
       newStep('create_task', {
-        title: 'Rebook {{ lead_name }}',
+        title: __('Rebook {{ lead_name }}'),
         due_in_days: 0,
       }),
     ],
@@ -1155,9 +1163,9 @@ export const RECIPES = [
     trigger_event: 'Deal Status Changed',
     build: () => [
       newStep('notify', {
-        message: 'Deal {{ organization }} is now {{ status }}',
+        message: __('Deal {{ organization }} is now {{ status }}'),
       }),
-      newStep('add_tag', { tag: 'stage-changed' }),
+      newStep('add_tag', { tag: __('stage-changed') }),
     ],
   },
   {
@@ -1170,11 +1178,11 @@ export const RECIPES = [
     build: () => {
       const split = newStep('split')
       split.paths[0].steps = [
-        newStep('send_email', { subject: 'A tip for you', message: '…' }),
+        newStep('send_email', { subject: __('A tip for you'), message: '…' }),
       ]
       split.paths[1].steps = [
         newStep('send_email', {
-          subject: '{{ first_name }}, one idea',
+          subject: __('{{ first_name }}, one idea'),
           message: '…',
         }),
       ]
@@ -1183,7 +1191,7 @@ export const RECIPES = [
         split,
         newStep('wait', { mode: 'duration', days: 3, hours: 0, minutes: 0 }),
         newStep('send_sms', {
-          message: 'Did you get my email, {{ first_name }}?',
+          message: __('Did you get my email, {{ first_name }}?'),
         }),
       ]
     },
