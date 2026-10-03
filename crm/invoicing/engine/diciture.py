@@ -217,9 +217,9 @@ def pagamento(codice: str | None, tracciato: bool | None) -> str:
 	from .codici import DESCRIZIONE_PAGAMENTO
 
 	etichetta = DESCRIZIONE_PAGAMENTO.get(codice or "", codice or "")
-	testo = f"Modalita' di pagamento: {etichetta}."
+	testo = f"Modalità di pagamento: {etichetta}."
 	if tracciato is False:
-		testo += " Pagamento non tracciabile: la spesa non da' diritto alla detrazione del 19%."
+		testo += " Pagamento non tracciabile: la spesa non dà diritto alla detrazione del 19%."
 	return testo
 
 
