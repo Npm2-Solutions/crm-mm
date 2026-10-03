@@ -53,10 +53,16 @@
           <!-- on a phone the marks go under the words: beside them they left
                the name «Massaggio decontra…» -->
           <div class="min-w-0 flex-1 max-md:w-full">
-            <div class="truncate text-p-base-medium text-ink-gray-8">
+            <div
+              class="truncate text-p-base-medium text-ink-gray-8 max-md:whitespace-normal"
+            >
               {{ row[titleField] || row.name }}
             </div>
-            <div class="truncate text-p-sm text-ink-gray-5">
+            <!-- the regime and the nature are the line's point: on a phone
+                 it wraps, cut it said «Prestazioni del professionista sanit…» -->
+            <div
+              class="truncate text-p-sm text-ink-gray-5 max-md:whitespace-normal"
+            >
               {{ describe(row) }}
             </div>
           </div>
