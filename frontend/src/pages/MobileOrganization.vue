@@ -156,6 +156,11 @@
       </template>
     </Tabs>
   </div>
+  <ErrorPage
+    v-else-if="chiusa"
+    :errorTitle="chiusa.titolo"
+    :errorMessage="chiusa.testo"
+  />
 </template>
 
 <script setup>
@@ -177,6 +182,8 @@ import { globalStore } from '@/stores/global'
 import { usersStore } from '@/stores/users'
 import { statusesStore } from '@/stores/statuses'
 import { getView } from '@/utils/view'
+import { schedaChiusa } from '@/utils/schedaChiusa'
+import ErrorPage from '@/components/ErrorPage.vue'
 import {
   validateIsImageFile,
   openWebsite as openExternalWebsite,
@@ -217,9 +224,13 @@ const {
   document: organization,
   permissions,
   triggerOnRender,
+  error: nonSiApre,
 } = useDocument('CRM Organization', props.organizationId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
+
+// why the page did not open, in words
+const chiusa = computed(() => schedaChiusa(nonSiApre.value, 'CRM Organization'))
 
 onMounted(async () => {
   if (organization.doc) await triggerOnRender()

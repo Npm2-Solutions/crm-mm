@@ -6,7 +6,7 @@ import { showSettings, activeSettingsPage } from '@/composables/settings'
 import { runSequentially, parseAssignees, sanitizeText } from '@/utils'
 import { findMissingMandatory } from '@/utils/fieldTransforms'
 import { createDocumentResource, createResource, toast } from 'frappe-ui'
-import { ref, reactive, computed, getCurrentInstance } from 'vue'
+import { reactive, computed, getCurrentInstance } from 'vue'
 
 const documentsCache = {}
 const controllersCache = {}
@@ -25,8 +25,6 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
   const vm = getCurrentInstance()?.proxy
   documentsCache[doctype] = documentsCache[doctype] || {}
 
-  const error = ref('')
-
   if (!documentsCache[doctype][docname || '']) {
     if (docname) {
       documentsCache[doctype][docname] = createDocumentResource(
@@ -35,20 +33,6 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
           doctype: doctype,
           name: docname,
           onSuccess: async () => await setupFormScript(),
-          onError: (err) => {
-            error.value = err
-            if (err.exc_type === 'DoesNotExistError') {
-              toast.error(__(err.messages[0] || 'Document does not exist'))
-            }
-            if (err.exc_type === 'PermissionError') {
-              toast.error(
-                __(
-                  err.messages[0] ||
-                    'You do not have permission to access this document',
-                ),
-              )
-            }
-          },
           setValue: {
             onSuccess: () => {
               triggerOnSave()
@@ -384,7 +368,12 @@ export function useDocument(doctype, docname, resourceOverrides = {}) {
         0,
     ),
     scripts,
-    error,
+    // why it did not load, for whoever asks: kept on the resource, so the page
+    // opened a second time knows it too. The page says it in words
+    // (`utils/schedaChiusa.js`), never in a toast on top of it
+    error: computed(
+      () => documentsCache[doctype][docname || '']?.get?.error || null,
+    ),
     getControllers,
     triggerOnLoad,
     triggerOnRender,

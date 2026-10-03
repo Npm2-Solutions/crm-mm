@@ -192,6 +192,7 @@ import { validateIsImageFile, setupCustomizations } from '@/utils'
 import { useContactFields } from '@/composables/useContactFields'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { getView } from '@/utils/view'
+import { schedaChiusa } from '@/utils/schedaChiusa'
 import { useDocument } from '@/data/document'
 import { getSettings } from '@/stores/settings'
 import { getMeta } from '@/stores/meta'
@@ -233,17 +234,20 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 
-const errorTitle = ref('')
-const errorMessage = ref('')
-
 const {
   document: contact,
   permissions,
   scripts,
   triggerOnRender,
+  error: nonSiApre,
 } = useDocument('Contact', props.contactId)
 
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
+
+// why the page did not open, in words
+const chiusa = computed(() => schedaChiusa(nonSiApre.value, 'Contact'))
+const errorTitle = computed(() => chiusa.value?.titolo || '')
+const errorMessage = computed(() => chiusa.value?.testo || '')
 
 const transformField = useContactFields(contact)
 
