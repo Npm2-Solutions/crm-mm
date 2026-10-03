@@ -1134,6 +1134,16 @@ def get_waiting_list(service: str | None = None, staff: str | None = None, close
 		VOCE, filters=filtri, pluck="name", order_by=ordine, limit=200 if not cint(closed) else 50
 	)
 	voci = [descrivi(frappe.get_doc(VOCE, nome)) for nome in nomi]
+	# the person's page only where it opens: waiting for one's service does not
+	# make somebody one's own (doc 30), and the link would lead to a refusal
+	persone = list({v["lead"] for v in voci if v["lead"]})
+	leggibili = (
+		set(frappe.get_list("CRM Lead", filters={"name": ("in", persone)}, pluck="name", limit=len(persone)))
+		if persone
+		else set()
+	)
+	for voce in voci:
+		voce["can_open"] = voce["lead"] in leggibili
 	return {"entries": voci, **_potere()}
 
 
