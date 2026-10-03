@@ -481,7 +481,9 @@ site installed before anybody chose is in the framework's English. Times are the
 system's 24-hour clock (`HH:mm`, the only one Frappe has), never `hh:mm a`.
 When one English sentence needs two Italian ones, the rarer place passes a
 context (`__('Hours', null, 'Service editor tab')`) and the catalog gives it a
-`msgctxt` entry.
+`msgctxt` entry. A short word the framework already translates («Read», «Start»,
+«Parent») is read in Italian where it is used: its translation is the
+framework's place's («Leggere» a permission), and ours passes a context.
 
 A sentence is whole in every language: never a DocType's name or an English word
 glued into it ("mentioned you in {0}" with "lead"), one sentence per case instead

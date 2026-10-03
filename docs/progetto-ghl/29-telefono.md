@@ -258,7 +258,7 @@ corretto per tutte le schermate insieme quando la causa era comune.
 | I fogli | I pulsanti in fondo prendono la larghezza qualunque riga li contenga, larghi uguali, e vanno a capo invece di uscire dallo schermo (quattro, nel post social); un segnaposto vuoto che spingeva un pulsante a destra sparisce; un avviso sopra un foglio aperto arriva dall'alto. La barra di un editor va su due righe invece di tagliare gli ultimi pulsanti. Un evento ha i campi tutti alti uguali (i partecipanti, gli avvisi, il colore). Le righe di un preventivo sono schede: il servizio e la descrizione larghi quanto lo schermo, poi fase, prezzo e sconto affiancati e l'importo; erano sette colonne che uscivano dal bordo. Chi ha aperto una cartella mette chi e quando sulla prima riga, cosa sotto. Allegare non chiede di trascinare file, che su un telefono non si trascinano. |
 | Le scelte | Il valore di un campo a scelta (tipo di chiamata, stato, priorità) si legge nella lingua di chi legge, salvato com'è; un elenco a tendina non ripete il nome come descrizione («Consulenza» sotto «Consulenza»). |
 | Note | Un elenco suo (`ElencoNote`, `get_notes`): si trova scrivendo il titolo o le parole, una riga per nota con le prime parole, chi l'ha scritta, di chi parla e quando, «+» ne scrive una. |
-| Automazioni | Il titolo non si riduce più a una lettera: le ricette sono un'icona e «+» ne crea una. |
+| Automazioni | Il titolo non si riduce più a una lettera: le ricette sono un'icona e «+» ne crea una. Nell'editor il titolo resta intero: la prova a vuoto e le statistiche stanno nel menu «⋯». |
 | Lista d'attesa | I tre numeri su una riga, come i riquadri del design system. |
 | /prenota | I passi su una riga: quello dove si è dice il suo nome, gli altri il numero. |
 
@@ -276,7 +276,14 @@ di frappe-ui, «Pianifica» un post (era un sostantivo), il motivo per cui una
 proposta della lista d'attesa non è partita, la provenienza di una persona
 («Prenotazione online», non `service_booking`), «Da fare» per quanto resta di
 un preventivo (era «Sinistra»), il nome di un campo a metà frase in minuscolo
-(«Aggiungi sito web…», non «Aggiungi Sito web…»). Le opzioni della fatturazione
+(«Aggiungi sito web…», non «Aggiungi Sito web…»). Le parole brevi che il
+framework traduce in un senso solo hanno il loro dove le usiamo in un altro:
+«Genitore» (non «Principale»), l'«Inizio» di un orario (non «Avvia»), le
+«Sedute» di un ciclo, la «Sintesi» del paziente, un modulo «Iniziato», «Ferma»
+la registrazione, la «Pagina di provenienza» di una visita, «Presa visione»
+per un'informativa e «Letto» per un messaggio (erano «Leggere»), un periodo
+«1 ott 2026 – 31 ott 2026». Nelle frasi di una scheda le date sono per esteso
+(«Paziente dal 29 set 2026»), non nel formato del sistema. Le opzioni della fatturazione
 non parlano più del «progetto originale». La scritta che accompagna una bozza
 dell'assistente è nella lingua del centro: la legge il paziente, non chi l'ha
 controllata.
