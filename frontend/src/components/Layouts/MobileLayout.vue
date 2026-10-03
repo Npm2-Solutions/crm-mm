@@ -27,7 +27,7 @@ import MobileAppHeader from '@/components/Mobile/MobileAppHeader.vue'
 import MobileBottomNav from '@/components/Mobile/MobileBottomNav.vue'
 import SenzaRete from '@/components/SenzaRete.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
-import { chiudiPrimaDiTornare } from '@/utils/indietro'
+import { chiudiPrimaDiTornare, tornaConLeBriciole } from '@/utils/indietro'
 import { seguiLaTastiera } from '@/utils/tastieraAperta'
 import { trascinaIFogli } from '@/utils/trascinaFoglio'
 import { registerScrollContainer, unregisterScrollContainer } from 'frappe-ui'
@@ -89,6 +89,11 @@ const router = useRouter()
 let smettiIndietro = () => {}
 onMounted(() => (smettiIndietro = chiudiPrimaDiTornare(router)))
 onBeforeUnmount(() => smettiIndietro())
+
+// the crumb a page came from goes back to it, the list as it was left
+let smettiBriciole = () => {}
+onMounted(() => (smettiBriciole = tornaConLeBriciole(router)))
+onBeforeUnmount(() => smettiBriciole())
 
 // a sheet taken by its grabber follows the finger down and, far enough, closes
 // (utils/trascinaFoglio.js)
