@@ -417,6 +417,13 @@ Con il tocco, come in un'app:
   i tasti rotondi senza parole, che restano il loro nome per chi non vede) e la
   barra in basso mette le parole accanto alle icone. Un tablet di traverso,
   alto più di 500px, resta il computer.
+- **Il giorno dell'agenda si sfoglia col dito**, come nel calendario del
+  telefono: la lista del giorno spinta a sinistra è il giorno dopo, a destra
+  quello prima, e segue un poco il dito; la striscia della settimana sposta di
+  una settimana. Solo un gesto di lato conta: su e giù la lista scorre (o si
+  tira per aggiornare), e dal bordo dello schermo è l'indietro del telefono.
+  Un gesto di lato in una pagina non porta più il browser alla pagina prima
+  (`touch-pan-y`, `overscroll-behavior-x: none`; `composables/scorriGiorni.js`).
 - **Sulla schermata Home si apre come un'app**, a tutto schermo, senza le
   barre del browser e con la sua icona. In «Altro» una scheda lo propone: su
   Android con il pulsante «Installa», che chiede al browser (`beforeinstallprompt`,
@@ -502,6 +509,7 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
 | `frontend/src/composables/breakpoints.js` (`isPhoneSize`) + `telefono.css` sezione 10 | Il telefono tenuto di traverso resta un telefono, la scheda e la barra compatte. Testato in `tests/unit/breakpoints.test.js` |
+| `frontend/src/composables/scorriGiorni.js` | Il giorno (e la settimana) dell'agenda si sfogliano di lato (`direzioneDelGesto`). Testato in `tests/unit/scorriGiorni.test.js` |
 | `frontend/src/utils/installa.js` + `components/Mobile/InstallaApp.vue` | L'app sulla schermata Home: cosa propone «Altro» (`comeInstallare`), l'offerta del browser tenuta per il pulsante. Testato in `tests/unit/installa.test.js` |
 | `frontend/src/utils/schedaAttiva.js` | La scheda della barra su cui si è, toccata di nuovo, porta la pagina in cima; una pagina può fare prima altro (`alToccoDellaScheda`: una chat aperta torna all'elenco). Testato in `tests/unit/schedaAttiva.test.js` |
 | `frontend/src/utils/trascinaFoglio.js` | Un foglio preso per la maniglia segue il dito; lasciato abbastanza giù, o con un colpo, si chiude, se no torna su (`siChiude`). Testato in `tests/unit/trascinaFoglio.test.js` |
