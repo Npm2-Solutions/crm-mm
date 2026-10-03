@@ -1,3 +1,8 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  The lost reason in the side panel only while this deal is lost.
+-->
 <template>
   <LayoutHeader>
     <template #left-header>
@@ -166,7 +171,7 @@
         class="flex flex-1 flex-col justify-between overflow-hidden"
       >
         <SidePanelLayout
-          :sections="sections.data"
+          :sections="sezioni"
           :addContact="addContact"
           doctype="CRM Deal"
           :docname="dealId"
@@ -410,6 +415,7 @@ import {
   isTranslatable,
 } from '@/utils'
 import { getView } from '@/utils/view'
+import { sezioniDellaTrattativa } from '@/utils/pipelines'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
@@ -475,6 +481,14 @@ const {
 const canDelete = computed(() => permissions.data?.permissions?.delete || false)
 
 const doc = computed(() => document.doc || {})
+
+// the lost reason only while this deal is lost
+const sezioni = computed(() =>
+  sezioniDellaTrattativa(
+    sections.data,
+    getDealStatus(doc.value.status)?.type === 'Lost',
+  ),
+)
 
 useUnsavedChangesWarning(() => document.isDirty)
 

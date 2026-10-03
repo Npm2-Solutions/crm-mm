@@ -418,7 +418,8 @@ def add_default_fields_layout(force=False):
 		},
 		"CRM Deal-Side Panel": {
 			"doctype": "CRM Deal",
-			"layout": '[{"label": "Contacts", "name": "contacts_section", "opened": true, "editable": false, "contacts": []}, {"label": "Organization Details", "name": "organization_section", "opened": true, "columns": [{"name": "column_na2Q", "fields": ["organization", "company_description", "industry", "no_of_employees", "website", "territory", "annual_revenue", "closed_date", "probability", "next_step", "deal_owner", "linkedin", "twitter", "facebook"]}]}]',
+			# the lost reason stays in the layout: a deal's page shows it while it is lost
+			"layout": '[{"label": "Contacts", "name": "contacts_section", "opened": true, "editable": false, "contacts": []}, {"label": "Lost Reason", "name": "lost_reason_section", "opened": true, "columns": [{"name": "lost_reason_column", "fields": ["lost_reason", "lost_notes"]}]}, {"label": "Organization Details", "name": "organization_section", "opened": true, "columns": [{"name": "column_na2Q", "fields": ["organization", "company_description", "industry", "no_of_employees", "website", "territory", "annual_revenue", "closed_date", "probability", "next_step", "deal_owner", "linkedin", "twitter", "facebook"]}]}]',
 		},
 		"Contact-Side Panel": {
 			"doctype": "Contact",
