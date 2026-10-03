@@ -19,13 +19,15 @@ from __future__ import annotations
 import frappe
 from frappe import _
 
+from crm import lingue
 from crm.permissions import livelli
 from crm.verticali import parola
 
 IMPOSTAZIONI = "CRM Client Settings"
 
-#: The stages, in the site's language: they are data the board shows, not strings
-#: of the interface. Name, description, then stage, colour, type, probability.
+#: The stages, in the centre's language (`crm.lingue`): they are data the board
+#: shows, not strings of the interface. Name, description, then stage, colour,
+#: type, probability.
 NUOVI_CLIENTI = {
 	"it": (
 		"Nuovi clienti",
@@ -69,8 +71,7 @@ def _definizione() -> tuple:
 
 	attiva = verticali.attiva()
 	definizione = _nomi.get(attiva.chiave, NUOVI_CLIENTI) if attiva else NUOVI_CLIENTI
-	lingua = (frappe.db.get_single_value("System Settings", "language") or "it")[:2]
-	return definizione.get(lingua) or definizione["it"]
+	return definizione.get(lingue.del_centro()) or definizione["it"]
 
 
 def impostazioni() -> frappe._dict:

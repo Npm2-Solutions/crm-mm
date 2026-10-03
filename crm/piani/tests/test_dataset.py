@@ -57,6 +57,26 @@ class GliEsercizi(UnitTestCase):
 			},
 		)
 
+	def test_le_parole_della_libreria_nella_lingua_del_centro(self):
+		inglese = T.esercizio(RECORD, "en")
+		# a site loaded in English before it said it is in Italy
+		self.assertEqual(
+			T.nella_lingua(RECORD, "it", inglese),
+			{"equipment": "corpo libero", "instructions": "1. Sdraiati sulla schiena.\n2. Solleva il busto."},
+		)
+		# words already right, or the centre's own: nothing to do
+		self.assertEqual(T.nella_lingua(RECORD, "it", T.esercizio(RECORD, "it")), {})
+		self.assertEqual(
+			T.nella_lingua(RECORD, "it", {**inglese, "instructions": "Piano, guardando avanti."}),
+			{"equipment": "corpo libero"},
+		)
+		self.assertEqual(
+			T.nella_lingua(RECORD, "it", {**inglese, "equipment": None}),
+			{"instructions": T.esercizio(RECORD, "it")["instructions"]},
+		)
+		# and back, on a site that chose English
+		self.assertEqual(T.nella_lingua(RECORD, "en", T.esercizio(RECORD, "it"))["equipment"], "body weight")
+
 	def test_in_inglese_e_senza_passi(self):
 		record = {**RECORD, "name": "barbell curl", "instruction_steps": {}}
 		fatto = T.esercizio(record, "en")

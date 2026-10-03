@@ -20,6 +20,9 @@ more: what `CRM Library Import` holds is the record of the imports before.
   centre changed - a name in Italian, the body part, how it is done - stay the
   centre's. The centre adds its own exercises. An exercise is switched off, not
   deleted: a plan may point to it.
+- **In the centre's language** (`crm.lingue`): a site loaded in English before
+  it said it is in Italy loads the library again, and the library's own words
+  take Italian; the centre's stay.
 """
 
 from __future__ import annotations
@@ -32,6 +35,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime
 
+from crm import lingue
 from crm.permissions import livelli
 from crm.piani import dataset as D
 from crm.utils import count_field
@@ -43,7 +47,8 @@ CENTRO = "Centre"
 PER_PAGINA = 50
 #: The exercise library DottorCloud ships.
 LIBRERIA = Path(__file__).parent / "dati" / "esercizi.json"
-#: The fingerprint of the library a site last loaded (a default of the site).
+#: The library a site last loaded, its fingerprint and the language of its words
+#: (a default of the site).
 VERSIONE_CARICATA = "crm_exercise_library"
 
 
@@ -231,19 +236,30 @@ def save_media_url(url: str | None = None) -> dict:
 
 
 def lingua_del_sito() -> str:
-	lingua = (frappe.db.get_single_value("System Settings", "language") or "it")[:2]
-	return "it" if lingua == "it" else "en"
+	"""The libraries' words in the centre's language (`crm.lingue`): Italian, else
+	English."""
+	return "it" if lingue.del_centro() == "it" else "en"
+
+
+def caricata(contenuto: bytes, lingua: str) -> str:
+	"""What a site keeps of the library it loaded: a new file, or words wanted in
+	another language, load it again."""
+	return f"{hashlib.sha256(contenuto).hexdigest()} {lingua}"
 
 
 def carica(record: list, lingua: str | None = None) -> dict:
 	"""The library's records into the site: a new exercise comes in; one already
 	there gets the library's pictures and muscles again, and its name, body part
-	and instructions stay as the centre left them."""
+	and instructions stay as the centre left them. The library's own words the
+	site keeps in another language take ``lingua``."""
 	lingua = lingua or lingua_del_sito()
 	presenti = {
-		riga.source_code: riga.name
+		riga.source_code: riga
 		for riga in frappe.get_all(
-			ESERCIZIO, filters={"source": D.DATASET}, fields=["name", "source_code"], limit=100000
+			ESERCIZIO,
+			filters={"source": D.DATASET},
+			fields=["name", "source_code", "equipment", "instructions"],
+			limit=100000,
 		)
 		if riga.source_code
 	}
@@ -267,7 +283,7 @@ def carica(record: list, lingua: str | None = None) -> dict:
 		}
 		esistente = presenti.get(esercizio["code"])
 		if esistente:
-			aggiornati[esistente] = immagini
+			aggiornati[esistente.name] = {**immagini, **D.nella_lingua(voce, lingua, esistente)}
 			continue
 		nuovi.append(
 			{
@@ -289,11 +305,25 @@ def carica(record: list, lingua: str | None = None) -> dict:
 
 def carica_libreria(forza: bool = False) -> dict | None:
 	"""The library DottorCloud ships, into this site: at install, and at every
-	migrate whose file is not the one the site loaded last."""
+	migrate whose file is not the one the site loaded last, or whose words the
+	centre wants in another language."""
 	contenuto = LIBRERIA.read_bytes()
-	impronta = hashlib.sha256(contenuto).hexdigest()
-	if not forza and frappe.db.get_default(VERSIONE_CARICATA) == impronta:
+	lingua = lingua_del_sito()
+	segno = caricata(contenuto, lingua)
+	if not forza and frappe.db.get_default(VERSIONE_CARICATA) == segno:
 		return None
-	fatto = carica(json.loads(contenuto))
-	frappe.db.set_default(VERSIONE_CARICATA, impronta)
+	fatto = carica(json.loads(contenuto), lingua)
+	frappe.db.set_default(VERSIONE_CARICATA, segno)
 	return fatto
+
+
+def dopo_la_configurazione(_args=None) -> None:
+	"""The setup wizard chose the site's language and country: the library's words
+	follow them, in the background."""
+	frappe.enqueue(
+		"crm.piani.librerie.carica_libreria",
+		queue="long",
+		job_id="crm-libreria-esercizi",
+		deduplicate=True,
+		enqueue_after_commit=True,
+	)
