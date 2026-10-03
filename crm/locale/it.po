@@ -42082,3 +42082,7 @@ msgstr "Qui compaiono i file allegati a questa scheda."
 #: frontend/src/components/Modals/CallLogDetailModal.vue
 msgid "Nobody answered"
 msgstr "Nessuno ha risposto"
+
+#: frontend/src/components/SenzaRete.vue
+msgid "No network: until it comes back, changes are not saved."
+msgstr "Sei senza rete: finché non torna, le modifiche non si salvano."

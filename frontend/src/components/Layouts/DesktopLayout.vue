@@ -3,6 +3,7 @@
     <AppSidebar />
     <div class="flex-1 flex flex-col h-full overflow-auto bg-surface-base">
       <AppHeader />
+      <SenzaRete />
       <slot />
     </div>
     <GlobalModals />
@@ -12,4 +13,5 @@
 import AppSidebar from '@/components/Layouts/AppSidebar.vue'
 import AppHeader from '@/components/Layouts/AppHeader.vue'
 import GlobalModals from '@/components/Modals/GlobalModals.vue'
+import SenzaRete from '@/components/SenzaRete.vue'
 </script>
