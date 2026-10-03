@@ -574,9 +574,12 @@
     -webkit-tap-highlight-color: transparent;
     background-color: var(--surface-base);
   }
+  /* nor does a sideways swipe in a page (a row of chips, the agenda's day)
+     take the browser back: the phone's own edge does that */
   html,
   body {
     overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
   }
   nav[data-slot='mobile-nav'] a,
   [role='tab'],
