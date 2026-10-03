@@ -379,8 +379,16 @@ Con il tocco, come in un'app:
 - **Niente lampo grigio a ogni tocco.** Quello che si tocca mostra da sé che è
   premuto: i pulsanti di frappe-ui, la barra, le righe delle liste. iPhone lo
   mostra solo dove si ascolta il tocco, e la cornice lo ascolta.
-- **Tirando giù in cima a una lista l'app non si ricarica**, e la cornice non
-  rimbalza: le liste scorrono nei loro riquadri.
+- **Tirando giù in cima a una lista si ricarica la lista, non l'app.** Il
+  gesto del browser ricaricava tutto, anche un modulo scritto a metà: è spento,
+  e la cornice non rimbalza. Le liste del telefono (persone, contatti, aziende,
+  chiamate, note, cose da fare, trattative per fase, la giornata dell'agenda)
+  hanno il loro: una freccia che si gira quando basta lasciare, poi il segno
+  che gira finché la lista non è tornata (`composables/tiraPerAggiornare.js`).
+- **Senza rete l'app lo dice**: sotto la testata, «Sei senza rete: finché non
+  torna, le modifiche non si salvano», finché la rete non torna.
+- **La barra di stato ha il colore dell'app**, chiara o scura, e lo cambia col
+  tema (`theme-color`).
 - **Tenendo premuto non compare il menu del browser.** Sulla barra, sulle
   schede, sui pulsanti e sulle righe non si apre il menu di un link e non si
   seleziona una parola: una riga tenuta premuta si sceglie (`MobileListRows`).
@@ -434,6 +442,8 @@ nessun browser di prova ha la sua tastiera.
 | `frontend/src/espresso.css` (tema scuro) | Gli stati leggibili sullo scuro |
 | `frontend/src/components/Quotes/QuoteDialog.vue`, `Modals/EventModal.vue`, `Calendar/EventNotifications.vue`, `Clinic/ClinicArea.vue`, `FilesUploader/FilesUploaderArea.vue` | Le righe di un preventivo, un evento, chi ha aperto una cartella, allegare |
 | `crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.py` (`in_frase`) | Il nome di un campo dentro il suo segnaposto |
+| `frontend/src/composables/tiraPerAggiornare.js` + `components/Mobile/TiraPerAggiornare.vue`, le liste di `components/Mobile/` | Una lista tirata giù dalla cima si ricarica. Testato in `tests/unit/tiraPerAggiornare.test.js` |
+| `frontend/src/components/SenzaRete.vue` | La riga che dice che manca la rete, sul telefono e sul computer |
 | `frontend/src/utils/tastieraAperta.js` + `components/Layouts/MobileLayout.vue`, `area/App.vue`, `telefono.css` (8, 9), `area/area.css` | La cornice che segue la tastiera, il tocco da app. Testato in `tests/unit/tastieraAperta.test.js` |
 | `frontend/src/utils/tastiera.js` + `FieldLayout/Field.vue`, `SidePanelLayout.vue`, `BillingProfileSection.vue`, `Invoices/InvoiceDialog.vue`, `Calendar/AppointmentPanel.vue`, `Telephony/CallUI.vue`, le impostazioni | La tastiera di ogni campo. Testato in `tests/unit/tastiera.test.js` |
 
