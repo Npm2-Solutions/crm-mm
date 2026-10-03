@@ -408,9 +408,11 @@ Fatta il 29/09/2026 (fase 1), in `crm/clinica/pipeline.py`:
 - **Le due pipeline nascono con la clinica.** Quando l'agenzia la accende, il CRM
   crea "Nuovi pazienti" (richiesta, contattato, appuntamento fissato, venuto,
   non venuto) e "Preventivi" (da fare, consegnato, accettato, rifiutato), nella
-  lingua del sito. Una pipeline con quel nome fatta a mano si usa così com'è. In
-  Impostazioni → Pipeline, la sezione "Centro medico" dice quali sono e dove una
-  prenotazione sposta la richiesta (`Clinic Settings`), e le crea se mancano.
+  lingua del centro (`crm.lingue`: quella del sito, l'italiano se è rimasto
+  sull'inglese del framework). Una pipeline con quel nome fatta a mano si usa così
+  com'è. In Impostazioni → Pipeline, la sezione "Centro medico" dice quali sono e
+  dove una prenotazione sposta la richiesta (`Clinic Settings`), e le crea se
+  mancano.
 - **La prenotazione sposta la richiesta** aperta di "Nuovi pazienti" su
   "appuntamento fissato"; una già più avanti resta dov'è, e le altre pipeline non
   si toccano.

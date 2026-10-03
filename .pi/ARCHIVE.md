@@ -2150,3 +2150,20 @@ tutto una volta per processo, chiamato da `hooks.py`, da `before_request`, da
 | Solo la parte WhatsApp si salta: gli avvisi dell'area per email e SMS, gli SMS che seguono la persona, i servizi, listini e fasi del manager girano ovunque (`con_whatsapp()`) | Saltare un test intero per un DocType solo toglierebbe al CI quello che può provare |
 | I test delle chiamate del sito fanno come se Builder ci fosse (`livelli.registro_isolato` con il requisito «builder»); uno nuovo prova che senza Builder nessuno gestisce il sito | `sito.gestisci` chiede Builder dal doc 30: i test erano rimasti a prima, e fallivano anche in locale |
 | Senza `CODECOV_TOKEN` la copertura non si invia e il passo lo dice, invece di fallire | Il token è un segreto del repository: finché manca, la copertura resta negli artefatti della run |
+
+## Le parole di DottorCloud nella lingua del centro
+
+> **Completato** (03/10/2026). Un modulo mostrava i consensi in inglese («I have
+> read the privacy notice.») accanto alle etichette in italiano: il registro dei
+> consensi era nato con la lingua di sistema del sito, ancora l'inglese del
+> framework, e ogni versione del modulo aveva congelato quelle parole.
+
+### Decisioni
+
+| Decisione | Perché |
+|---|---|
+| Una regola sola per quello che DottorCloud scrive una volta nel sito (`crm/lingue.py`): la lingua del sito, l'italiano se è rimasto sull'inglese del framework in Italia o senza paese | L'inglese di un sito appena installato non è una scelta del centro; un sito che sceglie l'inglese fuori dall'Italia lo tiene |
+| Le parole spedite da DottorCloud in un'altra lingua seguono quella del centro, a ogni migrate e dopo la configurazione iniziale; quelle scritte dal centro mai | Il testo di un consenso è del centro, che lo fa controllare a chi risponde della privacy: si riconosce come nostro solo se è uguale, parola per parola, a uno di quelli spediti |
+| Un modulo congelato su parole nostre in un'altra lingua ha una nuova versione, chiesta a nessuno | Chi ha già firmato ha firmato quelle parole, e la sua firma resta valida; la bozza non si pubblica di nascosto |
+| Le librerie si ricaricano quando cambia la lingua (la lingua è nell'impronta salvata), e cambiano solo le parole della libreria | Esercizi e alimenti caricati in inglese tornano in italiano senza toccare quello che il centro ha scritto |
+| Le pipeline nascono nella stessa lingua; quelle già create in inglese si leggono in italiano dal catalogo | Rinominare le fasi vorrebbe dire rinominare documenti a cui puntano le trattative |

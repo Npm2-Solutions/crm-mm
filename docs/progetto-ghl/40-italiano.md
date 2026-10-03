@@ -113,6 +113,35 @@ contatti, note, chiamate, notifiche) e tutto quello che arriva dal server.
   Dove frappe dà una sua traduzione con le maiuscole a una parola dell'app, il
   catalogo di DottorCloud ne ha una sua.
 
+## Fatto: le parole di DottorCloud nella lingua del centro (03/10/2026)
+
+Un modulo pubblicato mostrava i consensi in inglese ("I have read the privacy
+notice.", "I agree to receive news, offers and reminders…") accanto alle etichette
+in italiano. Le etichette passano dal traduttore; il testo di un consenso no: è un
+dato, scritto una volta nel registro e congelato in ogni versione del modulo
+(la firma lo copre). Il registro l'aveva scritto nella lingua di sistema del sito,
+che al momento dell'installazione era ancora l'inglese del framework.
+
+- **Una regola sola** (`crm/lingue.py`, `del_centro()`): quello che DottorCloud
+  scrive una volta nel sito è nella lingua del sito, l'italiano se il sito non ha
+  scelto o è rimasto sull'inglese del framework in Italia (o senza paese).
+  L'inglese resta per un sito che l'ha scelto e non è in Italia. La seguono i testi
+  dei consensi, le fasi delle pipeline "Preventivi" e "Nuovi clienti", le
+  istruzioni e l'attrezzatura degli esercizi, i nomi degli alimenti.
+- **Le parole di DottorCloud seguono la lingua, quelle del centro no**: a ogni
+  migrate, e dopo la configurazione iniziale, un testo di consenso che è ancora
+  quello spedito in un'altra lingua prende quello della lingua del centro (una
+  nuova versione del testo, `registro.testo_da_tradurre`); un testo riscritto dal
+  centro non si tocca. Lo stesso per le librerie: si ricaricano quando cambia la
+  lingua, e solo le parole della libreria cambiano.
+- **I moduli già pubblicati** con i consensi congelati in inglese hanno una nuova
+  versione con le parole di oggi (`modelli.consensi_nella_lingua_del_centro`, la
+  patch `the_consents_speak_the_centres_language`): non è richiesta a nessuno che
+  abbia già firmato, la bozza resta com'è, e un consenso con le parole del centro
+  resta il suo.
+- **Le pipeline già create in inglese** si leggono in italiano: le fasi passano da
+  `__()`, e il catalogo ha anche "Quote to prepare", "Quote delivered" e "Request".
+
 ## Come si trovano le frasi in inglese
 
 - **Nel codice**: le chiamate `__('…')` del frontend e `_()`/`_lt()` del server, e le
@@ -180,6 +209,7 @@ Come parla DottorCloud, in italiano: valgono per ogni frase nuova.
 | File | Cosa fa |
 |---|---|
 | `crm/locale/it.po` | Il catalogo di DottorCloud: vince su quello del framework |
+| `crm/lingue.py` | La lingua delle parole che DottorCloud scrive nel sito (consensi, fasi, librerie): quella del sito, l'italiano se è rimasto sull'inglese del framework in Italia |
 | `frontend/vite/frappeUi.js` | Le parole di frappe-ui nella lingua dell'utente, alla build: i componenti, l'importazione dei dati, la barra dell'editor |
 | `frontend/src/components/ListViews/*ListView.vue`, `Kanban/KanbanView.vue` | I valori a scelta e le colonne del Kanban tradotti |
 | `frontend/src/area/it.js` | Il dizionario dell'area clienti |
