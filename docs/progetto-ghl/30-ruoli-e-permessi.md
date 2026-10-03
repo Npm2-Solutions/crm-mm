@@ -754,7 +754,12 @@ o se sta su una trattativa che si vede; una voce di nessuno (il contatto di
 un'azienda, un record vecchio) resta del centro
 (`seguono.contact_conditions`, una condizione per l'elenco e per la scheda). La
 voce di una persona che non si segue non porta più alla sua scheda
-(`contact.get_owning_lead` cerca fra le persone che si leggono).
+(`contact.get_owning_lead` cerca fra le persone che si leggono). Il Marketing, che
+vede le persone mascherate, non apre la rubrica (la pagina chiede `persone.vedi`
+su un ambito che non sia `mascherato`, e l'azienda non mostra la scheda dei
+contatti), e i contatti di una trattativa gli arrivano mascherati come sulla
+scheda della persona: prima `get_deal_contacts` li leggeva come salvati, e la
+trattativa gli dava in chiaro email e telefono (il giro del 03/10/2026).
 
 **Scrivere chiede la capacità, non basta vedere.** Tutti i livelli hanno Sales
 User, e Sales User può scrivere ed eliminare persone e trattative: una persona si

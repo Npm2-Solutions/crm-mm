@@ -249,7 +249,8 @@ const props = defineProps({
 
 const { brand } = getSettings()
 const { $dialog, $socket } = globalStore()
-const { getUser } = usersStore()
+const { getUser, ambito } = usersStore()
+const leggeRecapiti = ambito('persone.vedi') !== 'mascherato'
 const { getDealStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Organization')
 const { capture } = useTelemetry()
@@ -411,6 +412,8 @@ const VUOTI = {
     description: 'The contacts who work at this organization appear here.',
   },
 }
+// the contacts are names, emails and phones: whoever sees people masked
+// (Marketing) reads none of them, and an empty tab would say there are none
 const tabs = [
   {
     label: 'Deals',
@@ -422,7 +425,7 @@ const tabs = [
     icon: ContactsIcon,
     count: computed(() => contacts.data?.length),
   },
-]
+].filter((tab) => tab.label !== 'Contacts' || leggeRecapiti)
 
 const deals = createListResource({
   type: 'list',
