@@ -33,7 +33,7 @@ export function getCallLogDetail(row, log, columns = []) {
   } else if (row === 'status') {
     return {
       label: getCallStatusLabel(log.status, log.type),
-      color: statusColorMap[log.status],
+      color: getCallStatusColor(log.status, log.type),
       // a call going on now is drawn as the design system's «in progress»
       inProgress: log.status === 'In Progress',
     }
@@ -74,13 +74,23 @@ export const statusLabelMap = {
   'In Progress': __('In Progress'),
 }
 
-// 'No Answer' only reads as "Missed Call" for incoming calls — an unanswered
-// outgoing call wasn't missed by the CRM user who placed it.
+// An incoming call nobody took reads as "Missed Call", whichever way it ended
+// (the same as the server's `pannello.PERSE`, which the list of calls marks
+// missed: a caller who hung up first is «Canceled» to Twilio, not to the desk).
+// An unanswered outgoing call wasn't missed by the CRM user who placed it.
+const PERSE = ['No Answer', 'Busy', 'Failed', 'Canceled']
+
 export function getCallStatusLabel(status, type) {
-  if (status === 'No Answer' && type === 'Incoming') {
+  if (type === 'Incoming' && PERSE.includes(status)) {
     return __('Missed Call')
   }
   return statusLabelMap[status]
+}
+
+// …and in the red the list draws it in, whatever Twilio called the ending
+export function getCallStatusColor(status, type) {
+  if (type === 'Incoming' && PERSE.includes(status)) return 'red'
+  return statusColorMap[status]
 }
 
 export const statusColorMap = {

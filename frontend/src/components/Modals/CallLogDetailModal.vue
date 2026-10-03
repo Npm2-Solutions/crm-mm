@@ -10,32 +10,14 @@
             </h3>
           </div>
           <div class="flex items-center gap-1">
-            <Dropdown
-              :options="[
-                {
-                  group: __('Options'),
-                  hideLabel: true,
-                  items: [
-                    {
-                      label: note ? __('Edit Note') : __('Add Note'),
-                      icon: NoteIcon,
-                      onClick: () => showNote(note),
-                    },
-                    {
-                      label: task ? __('Edit Task') : __('Add Task'),
-                      icon: TaskIcon,
-                      onClick: () => showTask(task),
-                    },
-                  ],
-                },
-              ]"
-            >
+            <!-- a note and a task are for who writes them (doc 30) -->
+            <Dropdown v-if="opzioni.length" :options="opzioni">
               <template #default>
                 <Button variant="ghost" icon="lucide-more-horizontal" />
               </template>
             </Dropdown>
             <Button
-              v-if="!isMobileView"
+              v-if="!isMobileView && puo('telefono.chiama')"
               variant="ghost"
               :tooltip="__('Edit Call Log')"
               :icon="EditIcon"
@@ -76,14 +58,21 @@
                   class="lucide-arrow-right mx-1 h-4 w-4 text-ink-gray-5"
                   aria-hidden="true"
                 />
-                <Avatar
-                  :image="field.value.receiver.image"
-                  :label="field.value.receiver.label"
-                  size="sm"
-                />
-                <div class="ml-1 flex flex-col gap-1">
-                  {{ field.value.receiver.label }}
-                </div>
+                <!-- a call nobody picked up has nobody at the other end: an
+                     empty circle read as a picture that did not load -->
+                <template v-if="field.value.receiver?.label">
+                  <Avatar
+                    :image="field.value.receiver.image"
+                    :label="field.value.receiver.label"
+                    size="sm"
+                  />
+                  <div class="ml-1 flex flex-col gap-1">
+                    {{ field.value.receiver.label }}
+                  </div>
+                </template>
+                <span v-else class="text-ink-gray-5">
+                  {{ __('Nobody answered') }}
+                </span>
               </div>
               <Tooltip v-else-if="field.tooltip" :text="field.tooltip">
                 {{ field.value }}
@@ -213,6 +202,7 @@ import { isMobileView } from '@/composables/settings'
 import { transcriptionEnabled } from '@/composables/telephony'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { useDocument } from '@/data/document'
+import { usersStore } from '@/stores/users'
 import { useTelemetry } from 'frappe-ui/frappe'
 import { FeatherIcon, Dropdown, Avatar, Tooltip, call, toast } from 'frappe-ui'
 import { ref, computed, h, watch } from 'vue'
@@ -229,6 +219,24 @@ const { showModal } = useDoctypeModal()
 
 const note = ref('')
 const task = ref('')
+
+const { puo, solaLettura } = usersStore()
+const opzioni = computed(() => {
+  const items = []
+  if (puo('note.scrivi'))
+    items.push({
+      label: note.value ? __('Edit Note') : __('Add Note'),
+      icon: NoteIcon,
+      onClick: () => showNote(note.value),
+    })
+  if (!solaLettura())
+    items.push({
+      label: task.value ? __('Edit Task') : __('Add Task'),
+      icon: TaskIcon,
+      onClick: () => showTask(task.value),
+    })
+  return items.length ? [{ group: __('Options'), hideLabel: true, items }] : []
+})
 // a call log can carry a recording_url that no longer resolves to a playable file
 // (recording never made / expired) — track load failure to show a fallback instead
 // of a dead 0:00 player
