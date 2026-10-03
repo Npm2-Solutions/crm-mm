@@ -18,6 +18,8 @@ describe('currentNavKey', () => {
     expect(currentNavKey({ name: 'Organizations' })).toBe('Leads')
     expect(currentNavKey({ name: 'Notes' })).toBe('Tasks')
     expect(currentNavKey({ name: 'Waiting List' })).toBe('Calendar')
+    // the reception desk is a view of the agenda, not an entry of its own
+    expect(currentNavKey({ name: 'Today' })).toBe('Calendar')
     expect(currentNavKey({ name: 'Deal' })).toBe('Deals')
   })
 
@@ -50,17 +52,18 @@ describe('bottomNavTabFor', () => {
 })
 
 describe('bottomNavTabFor, with the bar the menu gives', () => {
-  const tabs = ['Today', 'Calendar', 'Leads', 'Conversations']
+  const tabs = ['Calendar', 'Leads', 'Conversations', 'Invoices']
 
-  it("lights the day's pages and keeps people lit inside a person", () => {
-    expect(bottomNavTabFor({ name: 'Today' }, tabs)).toBe('Today')
+  it('lights the agenda on its reception desk and people inside a person', () => {
+    expect(bottomNavTabFor({ name: 'Today' }, tabs)).toBe('Calendar')
     expect(bottomNavTabFor({ name: 'Calendar' }, tabs)).toBe('Calendar')
+    expect(bottomNavTabFor({ name: 'Waiting List' }, tabs)).toBe('Calendar')
     expect(bottomNavTabFor({ name: 'Lead' }, tabs)).toBe('Leads')
     expect(bottomNavTabFor({ name: 'Contact' }, tabs)).toBe('Leads')
   })
 
   it('answers nothing for a page that has no tab in this bar', () => {
     expect(bottomNavTabFor({ name: 'Deal' }, tabs)).toBeNull()
-    expect(bottomNavTabFor({ name: 'Invoices' }, tabs)).toBeNull()
+    expect(bottomNavTabFor({ name: 'Tasks' }, tabs)).toBeNull()
   })
 })

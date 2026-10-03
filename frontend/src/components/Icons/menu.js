@@ -4,7 +4,6 @@
 // The icon of each entry of the main menu, by the name utils/menu.js gives it:
 // the sidebar and the phone's bar draw the same ones.
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
-import LucideClipboardCheck from '~icons/lucide/clipboard-check'
 import LucideGlobe from '~icons/lucide/globe'
 import LucideReceipt from '~icons/lucide/receipt-text'
 import LucideShare from '~icons/lucide/share-2'
@@ -19,7 +18,6 @@ import { markRaw } from 'vue'
 export const ICONE_DEL_MENU = Object.fromEntries(
   Object.entries({
     dashboard: LucideLayoutDashboard,
-    today: LucideClipboardCheck,
     calendar: CalendarIcon,
     conversations: SMSIcon,
     tasks: TaskIcon,

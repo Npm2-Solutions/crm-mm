@@ -1,9 +1,31 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+-->
 <template>
   <div class="flex min-w-0 items-center">
     <!-- the pages that live together, one switch between them: Persone and
-         Aziende, Da fare and Note (docs/progetto-ghl/34) -->
+         Aziende, Da fare and Note (docs/progetto-ghl/34). Three do not fit
+         beside a phone's buttons: there the one open is the title, the
+         others in its menu -->
+    <Dropdown v-if="aTendina" :options="vociSorelle">
+      <template #default="{ open }">
+        <Button
+          variant="ghost"
+          class="text-lg-medium text-nowrap"
+          :label="sorelle.find((pagina) => pagina.value === routeName)?.label"
+          :iconRight="open ? 'chevron-up' : 'chevron-down'"
+        />
+      </template>
+      <template #item-suffix="{ selected }">
+        <span
+          v-if="selected"
+          class="dc-scelto lucide-check size-4 text-ink-gray-7"
+          aria-hidden="true"
+        />
+      </template>
+    </Dropdown>
     <TabButtons
-      v-if="sorelle.length > 1"
+      v-else-if="sorelle.length > 1"
       class="mr-1 shrink-0"
       :options="sorelle"
       :modelValue="routeName"
@@ -71,6 +93,7 @@
 </template>
 <script setup>
 import Icon from '@/components/Icon.vue'
+import { isMobileView } from '@/composables/breakpoints'
 import { paginaSorelle } from '@/utils/menu'
 import { usersStore } from '@/stores/users'
 import { Dropdown, TabButtons } from 'frappe-ui'
@@ -91,6 +114,15 @@ const sorelle = computed(() =>
     label: __(pagina.label),
     value: pagina.key,
     route: { name: pagina.key },
+  })),
+)
+
+const aTendina = computed(() => isMobileView.value && sorelle.value.length > 2)
+const vociSorelle = computed(() =>
+  sorelle.value.map((pagina) => ({
+    label: pagina.label,
+    route: pagina.route,
+    selected: pagina.value === props.routeName,
   })),
 )
 

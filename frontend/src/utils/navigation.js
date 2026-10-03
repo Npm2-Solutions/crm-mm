@@ -8,13 +8,14 @@
 
 // A section is its own page and the ones inside it: a record of its list, the
 // pages that live with it behind a switch in their header (utils/menu.js,
-// SORELLE), the waiting list behind the agenda. Both the sidebar and the phone's
-// bar keep the section lit there: an entry going dark because you opened a
-// record, or the companies of the people, would read as broken.
+// SORELLE), the reception desk and the waiting list behind the agenda. Both
+// the sidebar and the phone's bar keep the section lit there: an entry going
+// dark because you opened a record, or the companies of the people, would read
+// as broken.
 const DENTRO = {
   Leads: ['Lead', 'Contacts', 'Contact', 'Organizations', 'Organization'],
   Deals: ['Deal'],
-  Calendar: ['Waiting List'],
+  Calendar: ['Today', 'Waiting List'],
   Tasks: ['Notes'],
   Automations: ['Automation'],
   Website: ['WebsitePage'],

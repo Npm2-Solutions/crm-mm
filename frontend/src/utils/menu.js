@@ -5,29 +5,25 @@
 // each entry with its page, its icon (a name of components/Icons/menu.js) and
 // who sees it, on the session (`puo`, `puoUno`, `ambito`, `telefono`: a
 // telephony provider is on). The work of the day in one group with no label,
-// in the order it is done - who comes today, the agenda, the people, answering
-// them, what is left to do, the deals, the invoices, the numbers - then
-// marketing. A group nobody sees is not drawn. The phone's bar takes the first
-// places of the same menu (`barraDelTelefono`), the sidebar draws all of it.
+// in the order it is done - the agenda (with the reception desk), the people,
+// answering them, what is left to do, the deals, the invoices, the numbers -
+// then marketing. A group nobody sees is not drawn. The phone's bar takes the
+// first places of the same menu (`barraDelTelefono`), the sidebar draws all of
+// it.
 //
 // What is not an entry lives inside one, a switch in their header (`SORELLE`):
-// the waiting list beside the agenda, the companies beside the people, the
-// notes beside the tasks; the calls, the round of calls and the keypad in the
-// phone at the top of every page (components/Telephony/PhoneButton.vue).
-// A page with no entry lights the entry it lives in (utils/navigation.js).
+// the reception desk and the waiting list beside the agenda - the same day's
+// appointments, for welcoming people and for booking them - the companies
+// beside the people, the notes beside the tasks; the calls, the round of calls
+// and the keypad in the phone at the top of every page
+// (components/Telephony/PhoneButton.vue). A page with no entry lights the entry
+// it lives in (utils/navigation.js).
 import { DASHBOARD_CAPABILITIES } from '@/utils/dashboard'
 
 export const MENU = [
   {
     key: 'giorno',
     entries: [
-      {
-        // who arrives, who is waiting, who came: the desk's day
-        key: 'Today',
-        label: 'Today',
-        icon: 'today',
-        condition: (c) => c.puo('agenda.presenze'),
-      },
       {
         key: 'Calendar',
         label: 'Agenda',
@@ -73,8 +69,8 @@ export const MENU = [
         condition: (c) => c.ambito('fatture.vedi') === 'centro',
       },
       {
-        // the numbers: last where the day opens on Today, first where it
-        // opens here (`menuDi`)
+        // the numbers: last where the day opens on the reception desk, first
+        // where it opens here (`menuDi`)
         key: 'Dashboard',
         label: 'Dashboard',
         icon: 'dashboard',
@@ -113,10 +109,18 @@ export const MENU = [
 ]
 
 // The pages that live together behind one entry, a switch between them in
-// their header (components/ViewBreadcrumbs.vue): the agenda and its waiting
-// list, the people and their companies, the tasks and the notes.
+// their header (components/ViewBreadcrumbs.vue): the agenda with its reception
+// desk and its waiting list, the people and their companies, the tasks and the
+// notes.
 export const SORELLE = [
   [
+    {
+      // who arrives, who is waiting, who came: the day's appointments as the
+      // desk welcomes them (the route keeps its name, Today)
+      key: 'Today',
+      label: 'Reception desk',
+      condition: (c) => c.puo('agenda.presenze'),
+    },
     {
       key: 'Calendar',
       label: 'Agenda',
@@ -196,13 +200,14 @@ export function paginaSorelle(chiave, c, sorelle = SORELLE) {
 }
 
 // The menu one sees: the groups with what they may open, the empty ones gone.
-// The numbers come first only where the day does not open on Today.
+// The numbers come first only where the day does not open on the reception
+// desk (whoever marks arrivals lands there).
 export function menuDi(c, menu = MENU) {
   return menu
     .map((gruppo) => {
       let entries = gruppo.entries.filter((voce) => voce.condition(c))
       const numeri = entries.find((voce) => voce.key === 'Dashboard')
-      if (numeri && !entries.some((voce) => voce.key === 'Today'))
+      if (numeri && !c.puo('agenda.presenze'))
         entries = [numeri, ...entries.filter((voce) => voce !== numeri)]
       return { ...gruppo, entries }
     })
@@ -210,10 +215,10 @@ export function menuDi(c, menu = MENU) {
 }
 
 // The phone's bar: four places a phone opens all day, the rest behind "More"
-// (pages/Altro.vue). The day's pages, the people, the conversations
-// and the invoices first; then whatever else the level opens, in the menu's order.
+// (pages/Altro.vue). The agenda (the reception desk is in it), the people, the
+// conversations and the invoices first; then whatever else the level opens, in
+// the menu's order.
 export const PREFERITI_DEL_TELEFONO = [
-  'Today',
   'Calendar',
   'Leads',
   'Conversations',

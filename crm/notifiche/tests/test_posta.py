@@ -155,6 +155,6 @@ class DoveApre(PostaCase):
 		self.assertTrue(
 			posta.indirizzo({"name": "Deal", "params": {"dealId": "D-1"}}).endswith("/crm/deals/D-1")
 		)
-		self.assertTrue(posta.indirizzo({"name": "Today"}).endswith("/crm/oggi"))
+		self.assertTrue(posta.indirizzo({"name": "Today"}).endswith("/crm/accoglienza"))
 		self.assertTrue(posta.indirizzo({"name": "Invoices"}).endswith("/crm/fatture"))
 		self.assertTrue(posta.indirizzo(None).endswith("/crm/notifications"))
