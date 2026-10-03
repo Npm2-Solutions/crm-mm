@@ -1,41 +1,21 @@
 <!--
   Modifications copyright (c) 2026, NPM2 Solutions Srl
 
-  The tabs one opens every day in a short bar, the rest behind More.
+  The tabs one opens every day in a short bar, the rest behind More; the name
+  in the header, its stage beside who follows it.
 -->
 <template>
   <LayoutHeader>
     <header
       class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
     >
-      <Breadcrumbs :items="breadcrumbs">
+      <!-- the deal's name has the header to itself: its stage is in the row
+           below, where it covered the name -->
+      <Breadcrumbs :items="breadcrumbs" class="min-w-0">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
-      <div class="absolute right-0">
-        <Dropdown v-if="doc && canWrite" :options="statuses">
-          <template #default="{ open }">
-            <Button
-              v-if="doc.status"
-              :label="statusLabel(doc.status)"
-              :iconRight="open ? 'chevron-up' : 'chevron-down'"
-            >
-              <template #prefix>
-                <IndicatorIcon :class="getDealStatus(doc.status).color" />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
-        <!-- where it stands, for whoever reads the deal and does not move it -->
-        <div
-          v-else-if="doc.status"
-          class="flex h-7 items-center gap-1.5 px-2 text-base text-ink-gray-7"
-        >
-          <IndicatorIcon :class="getDealStatus(doc.status).color" />
-          {{ statusLabel(doc.status) }}
-        </div>
-      </div>
     </header>
   </LayoutHeader>
   <div
@@ -43,7 +23,7 @@
     class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
   >
     <AssignTo v-model="assignees.data" doctype="CRM Deal" :docname="dealId" />
-    <div class="flex items-center gap-2">
+    <div class="flex min-w-0 items-center gap-2">
       <CustomActions
         v-if="document._actions?.length"
         :actions="document._actions"
@@ -52,6 +32,27 @@
         v-if="document.actions?.length"
         :actions="document.actions"
       />
+      <Dropdown v-if="doc && canWrite" :options="statuses">
+        <template #default="{ open }">
+          <Button
+            v-if="doc.status"
+            :label="statusLabel(doc.status)"
+            :iconRight="open ? 'chevron-up' : 'chevron-down'"
+          >
+            <template #prefix>
+              <IndicatorIcon :class="getDealStatus(doc.status).color" />
+            </template>
+          </Button>
+        </template>
+      </Dropdown>
+      <!-- where it stands, for whoever reads the deal and does not move it -->
+      <div
+        v-else-if="doc.status"
+        class="flex h-7 items-center gap-1.5 px-2 text-base text-ink-gray-7"
+      >
+        <IndicatorIcon :class="getDealStatus(doc.status).color" />
+        {{ statusLabel(doc.status) }}
+      </div>
     </div>
   </div>
   <div v-if="doc.name" class="flex h-full flex-col overflow-hidden">
