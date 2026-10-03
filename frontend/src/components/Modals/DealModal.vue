@@ -1,3 +1,8 @@
+<!--
+  Modifications copyright (c) 2026, NPM2 Solutions Srl
+
+  A new deal goes in the default pipeline when no stage says which.
+-->
 <template>
   <Dialog v-model:open="show" :size="'3xl'">
     <template #body>
@@ -83,6 +88,7 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia'
 import { useFirstFieldFocus } from '@/composables/firstFieldFocus'
 import EditIcon from '@/components/Icons/EditIcon.vue'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
@@ -103,8 +109,10 @@ const props = defineProps({
 
 const { getUser, puo } = usersStore()
 const { getDealStatus, statusOptions } = statusesStore()
-const { pipelines, getStageNames, getPipelineOfStage, defaultPipeline } =
-  pipelinesStore()
+const pipelineStore = pipelinesStore()
+const { pipelines, getStageNames, getPipelineOfStage } = pipelineStore
+// a computed read off the store stays a ref only through storeToRefs
+const { defaultPipeline } = storeToRefs(pipelineStore)
 
 const show = defineModel({ type: Boolean })
 
